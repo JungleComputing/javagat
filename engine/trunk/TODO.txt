@@ -1,0 +1,12 @@
+- format TODOs and readmes in HTML (to avoid linebreak problems windows/linux)
+- fix firing of metrics: store unsubscribe / subscribe until a good moment, 
+  don't handle them in the upcall itself
+- document preferences
+- implement GATSelf
+- Allow adaptor.name preference to be a list
+- change CVS dir structure / migrate to new server
+- fix release page: mention that there are no external deps, list adaptors
+- GAT factory: create versions that don't need a context? 
+  Use a default context when none is provided? --Ask Andre what he thinks
+- Think about the case where an adaptor throws an exception because there is an irrecoverable
+  error (file does not extist). In this case, there is no need to try the other adaptors.

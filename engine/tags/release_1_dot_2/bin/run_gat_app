@@ -1,0 +1,40 @@
+#!/bin/sh
+
+if [ -z "$GAT_LOCATION" ] ; then
+        echo GAT_LOCATION variable not set, using $PWD/..
+	GAT_LOCATION=$PWD/..
+fi
+
+
+# ---- do not touch anything below this line ----
+
+GAT_ENGINE_LOCATION=$GAT_LOCATION/JavaGATEngine
+GAT_ADAPTOR_LOCATION=$GAT_LOCATION/JavaGATAdaptors
+
+add_to_classpath () {
+	DIRLIBS=${1}/*.jar
+	for i in ${DIRLIBS}
+	do
+		 # if the directory is empty, then it will return the input string
+		 # this is stupid, so case for it
+		 if [ "$i" != "${DIRLIBS}" ] ; then
+			if [ -z "$GAT_CLASSPATH" ] ; then
+		GAT_CLASSPATH=$i
+			else
+		GAT_CLASSPATH="$i":$GAT_CLASSPATH
+			fi
+		 fi
+	done
+}
+
+GAT_ENGINE_JAR=$GAT_ENGINE_LOCATION/lib/GAT.jar
+GAT_ENGINE_EXTERNAL_JARS=$GAT_ENGINE_LOCATION/external
+
+GAT_ADAPTORS=$GAT_ADAPTOR_LOCATION/lib
+GAT_ADAPTOR_EXTERNAL_JARS=$GAT_ADAPTOR_LOCATION/external
+
+add_to_classpath $GAT_ENGINE_EXTERNAL_JARS
+
+OUR_CP=$CLASSPATH:$GAT_ENGINE_JAR:$GAT_CLASSPATH:$GAT_ENGINE_LOCATION/lib/GAT-tests.jar
+
+java -cp $OUR_CP -Dgat.adaptor.path=$GAT_ADAPTORS:$GAT_ADAPTOR_EXTERNAL_JARS $*

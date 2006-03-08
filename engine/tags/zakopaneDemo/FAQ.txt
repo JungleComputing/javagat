@@ -1,0 +1,42 @@
+Q: What is the difference between DataBrowsingFileAdaptor and DataMovementFileAdaptor?
+
+A:
+Good question! They are both File adaptors. Because the Java GAT has
+dynamic binding, an adaptor does not have to implement the full
+functionality of the GAT object API. So basically, DataMovement
+interfaces to the gridlab data service, while DataBrowsing interfaces
+to the gridlab data browsing service. Currently, WP-8 implemented
+those as two different services (they will be merged at some point I
+heard).
+
+So together, the two adaptors implement remote files, but they can be
+used seperately. In the latter case, some methods will not work,
+others will. So if you have only DataMovement, File.copy will work,
+but File.getSize() throws an exception...
+
+
+Q: Why is there a split DefaultFileInputStreamAdaptor and DefaultFileOutputStreamAdaptor?
+
+A: 
+OK, these are indeed seperate objects in the Java GAT. We chose to do
+that, because it is like that in normal Java, and because this way all
+Java's IO code can be reused. The streams extend java.io.InputStream
+and OutputStream. So this way you can use Java serialization, RMI,
+etc. with the GAT.
+
+
+Q: What of DefaultRandomAccessFileAdaptor?
+
+A:
+OK, that is something that is completely missing in the GAT. It is
+sort of scheduled for the GAT API 2.0 I think, but the Java GAT
+already has it... Again, it is compatible with the java.io.*
+classes...  In the current GAT API spec, you can seek in streams. The
+idea is to seperate the streaming and random access access to files.
+
+So, to summarize, the Java GAT File API is slightly different that
+what the API spec prescribes. Two reasons for that:
+
+1. Fits better in Java (compatible with java.io.*)
+2. The next GAT spec will probably look similar to this anyway.
+

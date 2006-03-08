@@ -1,0 +1,10 @@
+- fix firing of metrics: store unsubscribe / subscribe until a good moment, 
+  don't handle them in the upcall itself
+- make preferences more uniform, document them
+- implement GATSelf
+- adaptor.name preference can be a list
+- all adaptors should use the security contexts
+- write more documentation
+- copy global preferences into object prefs first
+- change CVS dir structure / migrate to new server
+- fix release page: mention that there are no external deps, list adaptors

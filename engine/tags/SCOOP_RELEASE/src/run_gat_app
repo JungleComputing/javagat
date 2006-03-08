@@ -1,0 +1,14 @@
+#!/bin/sh
+
+GAT_ENGINE_LOCATION=/home/rob/contrib/eclipse/workspace/JavaGATEngine
+GAT_ADAPTOR_LOCATION=/home/rob/contrib/eclipse/workspace/JavaGATAdaptors
+
+OGSA=$GAT_ADAPTOR_LOCATION/external
+GAT_ADAPTORS=$GAT_ADAPTOR_LOCATION/lib
+GAT_JAR=$GAT_ENGINE_LOCATION/lib/GAT.jar
+
+for i in $OGSA/*.jar . ; do OGSA_JARS=$OGSA_JARS:$i ; done
+for i in $GAT_ADAPTORS/*.jar . ; do GAT_ADAPTOR_JARS=$GAT_ADAPTOR_JARS:$i ; done
+OUR_CP=$OGSA_JARS:$GAT_ADAPTOR_JARS:$GAT_JAR:$GAT_ENGINE_LOCATION/tmp:.:$CLASSPATH
+
+java -cp $OUR_CP -Dgat.adaptor.path=$GAT_ADAPTORS $*

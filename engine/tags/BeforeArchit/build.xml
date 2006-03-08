@@ -1,0 +1,84 @@
+<project name="GAT" default="build" basedir=".">
+    <description>
+      Build file for GAT
+    </description>
+  <!-- Global properties for GAT -->
+  <property name="src" location="src"/>
+  <property name="tmp" location="tmp"/>
+  <property name="lib" location="lib"/>
+  <property name="doc" location="doc"/>
+  <property name="log" location="log"/>
+  <property name="test" location="test"/>
+	
+  <target name="init">
+    <!-- Create the time stamp -->
+    <tstamp/>
+
+    <!-- Create the build directory structure used by compile -->
+    <mkdir dir="${src}"/>
+    <mkdir dir="${lib}"/>
+    <mkdir dir="${tmp}"/>
+    <mkdir dir="${doc}"/>
+    <mkdir dir="${doc}/html"/>
+    <mkdir dir="${doc}/html/javadoc"/>
+    <mkdir dir="${log}"/>
+
+    <!-- Start recording build process -->
+    <record name="${log}/build.log" action="start"/>
+  </target>
+
+  <target name="compile" depends="init" description="compile the source " >
+    <!-- Compile the java code from ${src} into ${tmp} -->
+    <javac srcdir="${src}" destdir="${tmp}" debug="on"/>
+  </target>
+
+  <target name="javadoc" depends="init" description="make javadoc" >
+    <!-- Compile the java doc from ${src} into ${doc}/html/javadoc -->
+    <javadoc sourcepath="${src}" destdir="${doc}/html/javadoc" packagenames="org.gridlab.*" overview="src/overview.html"/>
+  </target>
+
+  <target name="javadoc-noframes" depends="init" description="make javadoc" >
+    <!-- Compile the java doc from ${src} into ${doc}/html/javadoc -->
+    <javadoc sourcepath="${src}" destdir="${doc}/html/javadoc" packagenames="org.gridlab.*" overview="src/overview.html" />
+  </target>
+
+  <target name="dist" depends="build,javadoc" description="build the distribution" >
+  </target>
+
+  <target name="build" depends="compile" description="build the JAR file" >
+
+    <!-- Create the distribution directory -->
+    <mkdir dir="${lib}"/>
+
+    <!-- Put everything in ${tmp} into the GAT.jar file -->
+    <jar jarfile="${lib}/GAT.jar" basedir="${tmp}"/>
+
+    <!-- Sign the GAT.jar file 
+    <signjar jar="${lib}/GAT.jar" alias="xxxxx" storepass="yyyyy" storetype="pkcs12"/>
+    -->
+
+    <!-- Stop recording build process -->
+    <record name="${log}/build.log" action="stop"/>
+  </target>
+
+  <target name="compile-tests" depends="init" description="compile the tests" >
+    <!-- Compile the java code from ${test} into ${tmp} -->
+    <javac srcdir="${test}" destdir="${tmp}"/>
+  </target>
+	   
+  <target name="clean" description="clean up" >
+      <delete includeEmptyDirs="true" failonerror="false">
+          <fileset dir="tmp" includes="**/*"/>
+          <fileset dir="tmp/org"/>
+          <fileset dir="lib" includes="**/*"/>
+      </delete>
+      <delete file="${test}/file/test_input_copy.dat"/>
+  </target>
+
+  <target name="distclean" depends="clean" description="clean up, including docs" >
+      <delete includeEmptyDirs="true" failonerror="false">
+          <fileset dir="doc/html/javadoc" includes="**/*"/>
+      </delete>
+  </target>
+
+</project>
