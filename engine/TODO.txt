@@ -10,3 +10,7 @@
   Use a default context when none is provided? --Ask Andre what he thinks
 - Think about the case where an adaptor throws an exception because there is an irrecoverable
   error (file does not extist). In this case, there is no need to try the other adaptors.
+  
+  SSH: - If the executable does not exist, we get no error.
+       - Broker does not work to fs3
+       
