@@ -1,0 +1,39 @@
+STATUS:
+
+adaptor                                         status
+--------------------------------------------------------
+LOCAL ADAPTORS
+
+File Adaptor:                                   done
+FileStreams:                                    done
+RandomAccessFile:                               done
+Logical file adaptor:                           done
+pipe (sockets):                                 done
+Advertservice Adaptor:                          done
+ResourceBroker Adaptor:                         done
+monitoring:                                     coding
+
+
+REMOTE ADAPTORS
+
+GridLab service discovery (igrid):              90% done
+GridLab File Adaptor (file movement&browsing):  done
+GridLab LogicalFile Adaptor:                    coding
+GridLab Advertservice Adaptor (storagebox):     done
+GridLab ResourceBroker Adaptor:                 done
+Gridlab monitoring:                             planning
+
+LogicalFile on top of File adaptor:             done
+Pipe adaptor (sockets):                         done
+
+Globus Gridftp File adaptor:                    done
+Globus Gridftp FileStreams:                     done
+Globus ResourceBroker:                          coding
+
+FTP File:                                       done
+HTTP File:                                      done
+HTTPS File:                                     done
+
+FTP FileSteams:                                 done
+HTTP FileStreams:                               done
+HTTPS FileStreams:                              done

@@ -1,0 +1,337 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- edited with XMLSPY v5 rel. 4 U (http://www.xmlspy.com) by Juliusz Pukacki (Instytut Chemii Bioorganicznej PAN) -->
+<!-- recznie dodana enumeracja do typu zadania -> poprawka z xmlspya-->
+<!-- modyfikacja: usuniecie restriction na minLen-->
+<!-- usuniecie command-->
+<!-- zmiana w resources na integer-->
+<!-- zmiana: localrmname jest enumeracja (fork, lsf..)-->
+<!-- zmiana typu argumentu typu value - typ  zlozony  -->
+<!-- wydziedziczenie fileType z baseFile -->
+<!-- zmiana collection na collectionfile -->
+<!-- dodanie parametrow siecowych-->
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" attributeFormDefault="unqualified">
+	<xs:element name="grmsjob">
+		<xs:annotation>
+			<xs:documentation>Job Description for Gridlab Resource Management System</xs:documentation>
+		</xs:annotation>
+		<xs:complexType>
+			<xs:choice>
+				<xs:element name="simplejob" type="simplejobType">
+					<xs:annotation>
+						<xs:documentation>Description of Simple Job</xs:documentation>
+					</xs:annotation>
+				</xs:element>
+				<xs:element name="workflowjob" type="workflowType">
+					<xs:annotation>
+						<xs:documentation>Description of Workflow Job (not implemented yet)</xs:documentation>
+					</xs:annotation>
+				</xs:element>
+			</xs:choice>
+			<xs:attribute name="appid" type="xs:string" use="required"/>
+		</xs:complexType>
+	</xs:element>
+	<xs:complexType name="simplejobType">
+		<xs:annotation>
+			<xs:documentation>Description of Simple Job</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="resource" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Resource requirement section</xs:documentation>
+				</xs:annotation>
+				<xs:complexType>
+					<xs:all>
+						<xs:element name="osname" type="xs:string" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation>Operating sysem name</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="ostype" type="xs:string" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation>Operating system type</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="osversion" type="xs:string" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation>Operating system version</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="osrelease" type="xs:string" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation>Operating system release</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="hostname" type="xs:string" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation>Host name</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="localrmname" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation>Local resource management system name</xs:documentation>
+							</xs:annotation>
+							<xs:simpleType>
+								<xs:restriction base="xs:string">
+									<xs:enumeration value="fork"/>
+									<xs:enumeration value="lsf"/>
+									<xs:enumeration value="pbs"/>
+									<xs:enumeration value="condor"/>
+								</xs:restriction>
+							</xs:simpleType>
+						</xs:element>
+						<xs:element name="memory" type="xs:integer" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation>Amount of memory required</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="cpucount" type="xs:integer" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation>Number of cpus required</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="cpuspeed" type="xs:integer" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation>Required cpu performace</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="maxtime" type="xs:integer" minOccurs="0"/>
+						<xs:element name="maxwalltime" type="xs:integer" minOccurs="0"/>
+						<xs:element name="maxcputime" type="xs:integer" minOccurs="0"/>
+						<xs:element name="bandwidth" minOccurs="0">
+							<xs:complexType>
+								<xs:simpleContent>
+									<xs:extension base="xs:integer">
+										<xs:attribute name="hostname" type="xs:string" use="optional"/>
+									</xs:extension>
+								</xs:simpleContent>
+							</xs:complexType>
+						</xs:element>
+						<xs:element name="latency" minOccurs="0">
+							<xs:complexType>
+								<xs:simpleContent>
+									<xs:extension base="xs:integer">
+										<xs:attribute name="hostname" type="xs:string" use="optional"/>
+									</xs:extension>
+								</xs:simpleContent>
+							</xs:complexType>
+						</xs:element>
+						<xs:element name="capacity" minOccurs="0">
+							<xs:complexType>
+								<xs:simpleContent>
+									<xs:extension base="xs:integer">
+										<xs:attribute name="hostname" type="xs:string" use="optional"/>
+									</xs:extension>
+								</xs:simpleContent>
+							</xs:complexType>
+						</xs:element>
+					</xs:all>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="executable">
+				<xs:annotation>
+					<xs:documentation>Application description section</xs:documentation>
+				</xs:annotation>
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="file" type="fileType">
+							<xs:annotation>
+								<xs:documentation>Location of executable of application</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="arguments" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation>Arguments of execution</xs:documentation>
+							</xs:annotation>
+							<xs:complexType>
+								<xs:sequence>
+									<xs:element name="value" type="valueType" minOccurs="0" maxOccurs="unbounded"/>
+									<xs:element name="file" type="fileType" minOccurs="0" maxOccurs="unbounded"/>
+									<xs:element name="directory" type="directoryType" minOccurs="0" maxOccurs="unbounded">
+										<xs:annotation>
+											<xs:documentation>Not implemented yet</xs:documentation>
+										</xs:annotation>
+									</xs:element>
+								</xs:sequence>
+							</xs:complexType>
+						</xs:element>
+						<xs:element name="stdin" type="baseFile" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation>Standard input stream location</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="stdout" type="baseFile" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation>Standard output stream location</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="stderr" type="baseFile" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation>Standard error stream location</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="environment" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation>Environment variables</xs:documentation>
+							</xs:annotation>
+							<xs:complexType>
+								<xs:sequence>
+									<xs:element name="variable" maxOccurs="unbounded">
+										<xs:complexType>
+											<xs:simpleContent>
+												<xs:extension base="xs:string">
+													<xs:attribute name="name" type="xs:string" use="required"/>
+												</xs:extension>
+											</xs:simpleContent>
+										</xs:complexType>
+									</xs:element>
+								</xs:sequence>
+							</xs:complexType>
+						</xs:element>
+						<xs:element name="checkpoint" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation>Checkpint files location</xs:documentation>
+							</xs:annotation>
+							<xs:complexType>
+								<xs:choice>
+									<xs:element name="directory" type="directoryType">
+										<xs:annotation>
+											<xs:documentation>Checkpoint directory (not implemented yet)</xs:documentation>
+										</xs:annotation>
+									</xs:element>
+									<xs:element name="file" type="fileType" maxOccurs="unbounded">
+										<xs:annotation>
+											<xs:documentation>Checkpoint files description</xs:documentation>
+										</xs:annotation>
+									</xs:element>
+								</xs:choice>
+							</xs:complexType>
+						</xs:element>
+					</xs:sequence>
+					<xs:attribute name="type" use="required">
+						<xs:simpleType>
+							<xs:restriction base="xs:string">
+								<xs:enumeration value="single"/>
+								<xs:enumeration value="multiple"/>
+								<xs:enumeration value="mpi"/>
+							</xs:restriction>
+						</xs:simpleType>
+					</xs:attribute>
+					<xs:attribute name="count" type="xs:int" use="optional" default="1"/>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="reservation" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Parameters for advnced scheduling</xs:documentation>
+				</xs:annotation>
+				<xs:complexType>
+					<xs:all>
+						<xs:element name="deadline" type="xs:dateTime" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation>Deadline for job execution</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="estime" type="xs:dateTime" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation>Earliest possible time for job execution.</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="datasize" type="xs:double" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation>Size of the data that need to be transfered to the resource</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+					</xs:all>
+				</xs:complexType>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="fileType">
+		<xs:annotation>
+			<xs:documentation>Element that describes a file</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="baseFile">
+				<xs:attribute name="name" type="xs:string" use="required"/>
+				<xs:attribute name="type" use="required">
+					<xs:simpleType>
+						<xs:restriction base="xs:string">
+							<xs:enumeration value="in"/>
+							<xs:enumeration value="out"/>
+							<xs:enumeration value="inout"/>
+						</xs:restriction>
+					</xs:simpleType>
+				</xs:attribute>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="directoryType">
+		<xs:annotation>
+			<xs:documentation>Element that describes a directory</xs:documentation>
+		</xs:annotation>
+		<xs:choice>
+			<xs:element name="url" type="xs:string">
+				<xs:annotation>
+					<xs:documentation>Url location of directory</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="collection">
+				<xs:annotation>
+					<xs:documentation>Collection from Replica Management System - not implemented yet</xs:documentation>
+				</xs:annotation>
+				<xs:complexType>
+					<xs:attribute name="name" type="xs:string" use="required"/>
+				</xs:complexType>
+			</xs:element>
+		</xs:choice>
+		<xs:attribute name="name" type="xs:string" use="required"/>
+		<xs:attribute name="type" use="required">
+			<xs:simpleType>
+				<xs:restriction base="xs:string">
+					<xs:enumeration value="in"/>
+					<xs:enumeration value="out"/>
+					<xs:enumeration value="inout"/>
+				</xs:restriction>
+			</xs:simpleType>
+		</xs:attribute>
+	</xs:complexType>
+	<xs:complexType name="valueType">
+		<xs:annotation>
+			<xs:documentation>Decribtion of value for arguments definition</xs:documentation>
+		</xs:annotation>
+		<xs:simpleContent>
+			<xs:extension base="xs:string"/>
+		</xs:simpleContent>
+	</xs:complexType>
+	<xs:complexType name="baseFile">
+		<xs:annotation>
+			<xs:documentation>Base element for file describtion</xs:documentation>
+		</xs:annotation>
+		<xs:choice>
+			<xs:element name="collectionfile">
+				<xs:annotation>
+					<xs:documentation>File from Replica Management system</xs:documentation>
+				</xs:annotation>
+				<xs:complexType>
+					<xs:simpleContent>
+						<xs:extension base="xs:string">
+							<xs:attribute name="name" type="xs:string" use="required"/>
+						</xs:extension>
+					</xs:simpleContent>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="url" type="xs:string">
+				<xs:annotation>
+					<xs:documentation>Url location of file</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:choice>
+	</xs:complexType>
+	<xs:complexType name="workflowType">
+		<xs:annotation>
+			<xs:documentation>Description of Workflow Job</xs:documentation>
+		</xs:annotation>
+		<xs:simpleContent>
+			<xs:extension base="xs:string"/>
+		</xs:simpleContent>
+	</xs:complexType>
+</xs:schema>

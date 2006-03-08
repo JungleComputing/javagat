@@ -1,0 +1,7 @@
+org.gridlab.gat.advert.cpi
+org.gridlab.gat.advert.cpi.storagebox
+org.gridlab.gat.io.cpi
+org.gridlab.gat.io.cpi.dataMovement
+org.gridlab.gat.io.cpi.fileBrowsing
+org.gridlab.gat.resources.cpi
+org.gridlab.gat.resources.cpi.grms

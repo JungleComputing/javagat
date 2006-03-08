@@ -1,0 +1,105 @@
+<project name="GAT" default="dist" basedir=".">
+    <description>
+      Build file for DefaultFileAdaptor
+    </description>
+  <!-- Global properties for GAT -->
+  <property name="src" location="src"/>
+  <property name="tmp" location="tmp"/>
+  <property name="lib" location="lib"/>
+  <property name="doc" location="doc"/>
+  <property name="log" location="log"/>
+  <property name="bin" location="bin"/>
+  <property name="etc" location="etc"/>
+
+  <target name="init">
+    <!-- Create the time stamp -->
+    <tstamp/>
+
+    <!-- Create the build directory structure used by compile -->
+    <mkdir dir="${src}"/>
+    <mkdir dir="${lib}"/>
+    <mkdir dir="${tmp}"/>
+    <mkdir dir="${doc}"/>
+    <mkdir dir="${doc}/html"/>
+    <mkdir dir="${doc}/html/javadoc"/>
+    <mkdir dir="${log}"/>
+    <mkdir dir="${bin}"/>
+    <mkdir dir="${etc}"/>
+
+    <!-- Start recording build process -->
+    <record name="${log}/build.log" action="start"/>
+  </target>
+
+  <target name="compile" depends="init" description="compile the source " >
+    <!-- Compile the java code from ${src} into ${tmp} -->
+    <javac srcdir="${src}" destdir="${tmp}"/>
+  </target>
+
+  <target name="javadoc" depends="init" description="make javadoc" >
+    <!-- Compile the java doc from ${src} into ${doc}/html/javadoc -->
+    <javadoc sourcepath="${src}" destdir="${doc}/html/javadoc" packagenames="org.gridlab.*" overview="src/overview.html"/>
+  </target>
+
+  <target name="dist" depends="compile, javadoc" description="generate the distribution" >
+
+    <!-- Create the distribution directory -->
+    <mkdir dir="${lib}"/>
+
+    <!-- Put FileAdaptor in ${tmp} into the DefaultFileAdaptor.jar file -->
+    <jar jarfile="${lib}/DefaultFileAdaptor.jar" basedir="${tmp}" includes="**/DefaultFileAdaptor.class" manifest="etc/FileManifest"/>
+    
+    <!-- Sign the DefaultFileAdaptor.jar file -->
+    <signjar jar="${lib}/DefaultFileAdaptor.jar" alias="xxxxx" storepass="yyyyy" storetype="pkcs12"/>
+
+    <!-- Put LogicalFileAdaptor in ${tmp} into the DefaultLogicalFileAdaptor.jar file -->
+    <jar jarfile="${lib}/DefaultLogicalFileAdaptor.jar" basedir="${tmp}" includes="**/DefaultLogicalFileAdaptor.class" manifest="etc/LogicalFileManifest"/>
+    
+    <!-- Sign the DefaultLogicalFileAdaptor.jar file -->
+    <signjar jar="${lib}/DefaultLogicalFileAdaptor.jar" alias="xxxxx" storepass="yyyyy" storetype="pkcs12"/>
+
+    <!-- Put DefaultCollectionAdaptor in ${tmp} into the DefaultCollectionAdaptor.jar file -->
+    <jar jarfile="${lib}/DefaultCollectionAdaptor.jar" basedir="${tmp}" includes="**/DefaultCollectionAdaptor.class" manifest="etc/CollectionManifest"/>
+    
+    <!-- Sign the DefaultCollectionAdaptor.jar file -->
+    <signjar jar="${lib}/DefaultCollectionAdaptor.jar" alias="xxxxx" storepass="yyyyy" storetype="pkcs12"/>
+    
+    <!-- Put DefaultResourceBrokerAdaptor in ${tmp} into the DefaultResourceBrokerAdaptor.jar file -->
+    <jar jarfile="${lib}/DefaultResourceBrokerAdaptor.jar" basedir="${tmp}" includes="**/DefaultResourceBrokerAdaptor.class **/DefaultHardwareResource.class **/DefaultReservation.class" manifest="etc/ResourceBrokerManifest"/>
+    
+    <!-- Sign the DefaultResourceBrokerAdaptor.jar file -->
+    <signjar jar="${lib}/DefaultResourceBrokerAdaptor.jar" alias="xxxxx" storepass="yyyyy" storetype="pkcs12"/>
+    
+    <!-- Put DefaultSimpleJobAdaptor in ${tmp} into the DefaultSimpleJobAdaptor.jar file -->
+    <jar jarfile="${lib}/DefaultSimpleJobAdaptor.jar" basedir="${tmp}" includes="**/DefaultSimpleJobAdaptor.class **/StopThread.class" manifest="etc/SimpleJobManifest"/>
+    
+    <!-- Sign the DefaultSimpleJobAdaptor.jar file -->
+    <signjar jar="${lib}/DefaultSimpleJobAdaptor.jar" alias="xxxxx" storepass="yyyyy" storetype="pkcs12"/>
+    
+    <!-- Put DefaultCheckpointableSimpleJobAdaptor in ${tmp} into the DefaultCheckpointableSimpleJobAdaptor.jar file -->
+    <jar jarfile="${lib}/DefaultCheckpointableSimpleJobAdaptor.jar" basedir="${tmp}" includes="**/DefaultCheckpointableSimpleJobAdaptor.class **/StopThread.class" manifest="etc/CheckpointableSimpleJobManifest"/>
+    
+    <!-- Sign the DefaultCheckpointableSimpleJobAdaptor.jar file -->
+    <signjar jar="${lib}/DefaultCheckpointableSimpleJobAdaptor.jar" alias="xxxxx" storepass="yyyyy" storetype="pkcs12"/>
+     
+    <!-- Put DefaultFileStreamAdaptor in ${tmp} into the DefaultFileStreamAdaptor.jar file -->
+    <jar jarfile="${lib}/DefaultFileStreamAdaptor.jar" basedir="${tmp}" includes="**/DefaultFileStreamAdaptor.class" manifest="etc/FileStreamManifest"/>
+    
+    <!-- Sign the DefaultFileStreamAdaptor.jar file -->
+    <signjar jar="${lib}/DefaultFileStreamAdaptor.jar" alias="xxxxx" storepass="yyyyy" storetype="pkcs12"/>
+    
+    <!-- Put DefaultStreamAdaptor in ${tmp} into the DefaultStreamAdaptor.jar file -->
+    <jar jarfile="${lib}/DefaultStreamAdaptor.jar" basedir="${tmp}" includes="**/DefaultStreamAdaptor.class" manifest="etc/StreamManifest"/>
+    
+    <!-- Sign the DefaultStreamAdaptor.jar file -->
+    <signjar jar="${lib}/DefaultStreamAdaptor.jar" alias="xxxxx" storepass="yyyyy" storetype="pkcs12"/>
+                          
+    <!-- Stop recording build process -->
+    <record name="${log}/build.log" action="stop"/>
+  </target>
+   
+  <target name="clean" description="clean up" >
+      <delete dir="${tmp}/org"/> 
+      <delete file="${log}/build.log"/> 
+      <delete file="${lib}/GAT.jar"/> 
+  </target>
+</project>

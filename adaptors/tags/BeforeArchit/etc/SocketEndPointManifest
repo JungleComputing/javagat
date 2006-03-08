@@ -1,0 +1,10 @@
+Manifest-Version: 1.0
+Created-By: 1.4.1_01 (Apple Computer, Inc.)
+Extension-Name: org.gridlab.gat.io
+Implementation-Title: SocketEndPointAdaptor
+Implementation-Version: 1.0
+Implementation-Vendor: GridLab
+Implementation-Vendor-Id: org.gridlab
+Sealed: false
+GATAdaptor: true
+EndPointCpi-class: org.gridlab.gat.io.cpi.SocketEndPointAdaptor

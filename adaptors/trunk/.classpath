@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="src" path="/JavaGATEngine"/>
+	<classpathentry kind="lib" path="external/axis.jar"/>
+	<classpathentry kind="lib" path="external/cog-axis.jar"/>
+	<classpathentry kind="lib" path="external/cog-tomcat.jar"/>
+	<classpathentry kind="lib" path="external/cryptix.jar"/>
+	<classpathentry kind="lib" path="external/cryptix32.jar"/>
+	<classpathentry kind="lib" path="external/cryptix-asn1.jar"/>
+	<classpathentry kind="lib" path="external/jaxrpc.jar"/>
+	<classpathentry kind="lib" path="external/jboss-j2ee.jar"/>
+	<classpathentry kind="lib" path="external/jdbc-se2.0.jar"/>
+	<classpathentry kind="lib" path="external/jgss.jar"/>
+	<classpathentry kind="lib" path="external/jta1.0.1.jar"/>
+	<classpathentry kind="lib" path="external/ogsa.jar"/>
+	<classpathentry kind="lib" path="external/ogsa-samples.jar"/>
+	<classpathentry kind="lib" path="external/puretls.jar"/>
+	<classpathentry kind="lib" path="external/saaj.jar"/>
+	<classpathentry kind="lib" path="external/servlet.jar"/>
+	<classpathentry kind="lib" path="external/wsif.jar"/>
+	<classpathentry kind="lib" path="external/xalan.jar"/>
+	<classpathentry kind="lib" path="external/xmlParserAPIs.jar"/>
+	<classpathentry kind="lib" path="external/xmlsec.jar"/>
+	<classpathentry kind="lib" path="external/jce-jdk13-120.jar"/>
+	<classpathentry kind="lib" path="external/junit.jar"/>
+	<classpathentry kind="lib" path="external/jzlib-1.0.5.jar"/>
+	<classpathentry kind="lib" path="/JavaGATEngine/external/castor-0.9.6.jar"/>
+	<classpathentry kind="lib" path="/JavaGATEngine/external/castor-0.9.6-xml.jar"/>
+	<classpathentry kind="lib" path="/JavaGATEngine/external/log4j-1.2.8.jar"/>
+	<classpathentry kind="lib" path="/JavaGATEngine/external/log4j-core.jar"/>
+	<classpathentry sourcepath="/j2ssh/src" kind="lib" path="external/j2ssh-core-0.2.7-rob.jar"/>
+	<classpathentry kind="lib" path="external/cog-jglobus-1.2-rob.jar"/>
+	<classpathentry kind="lib" path="external/ProActive.jar"/>
+	<classpathentry sourcepath="/home/rob/contrib/jsch-0.1.24" kind="lib" path="external/jsch-0.1.24.jar"/>
+	<classpathentry kind="lib" path="external/commons-discovery.jar"/>
+	<classpathentry kind="lib" path="external/wsdl4j.jar"/>
+	<classpathentry kind="output" path="tmp_eclipse"/>
+</classpath>

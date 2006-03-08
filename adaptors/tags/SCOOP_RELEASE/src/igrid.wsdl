@@ -1,0 +1,1157 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions name="igrid"
+ targetNamespace="urn:igrid"
+ xmlns:tns="urn:igrid"
+ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
+ xmlns:SOAP-ENC="http://schemas.xmlsoap.org/soap/encoding/"
+ xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+ xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+ xmlns:gridlab="urn:igrid"
+ xmlns:SOAP="http://schemas.xmlsoap.org/wsdl/soap/"
+ xmlns:WSDL="http://schemas.xmlsoap.org/wsdl/"
+ xmlns="http://schemas.xmlsoap.org/wsdl/">
+
+<types>
+
+ <schema targetNamespace="urn:igrid"
+  xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
+  xmlns:SOAP-ENC="http://schemas.xmlsoap.org/soap/encoding/"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+  xmlns:gridlab="urn:igrid"
+  xmlns="http://www.w3.org/2001/XMLSchema"
+  elementFormDefault="qualified"
+  attributeFormDefault="qualified">
+  <import namespace="http://schemas.xmlsoap.org/soap/encoding/"/>
+  <simpleType name="dimeData">
+   <restriction base="xsd:base64Binary">
+   </restriction>
+  </simpleType>
+  <element name="register-webservice">
+   <complexType>
+    <sequence>
+    <element name="name" type="xsd:string" minOccurs="1" maxOccurs="1" nillable="true"/>
+    <element name="wsdllocation" type="xsd:string" minOccurs="1" maxOccurs="1" nillable="true"/>
+    <element name="description" type="xsd:string" minOccurs="1" maxOccurs="1" nillable="true"/>
+    <element name="url" type="xsd:string" minOccurs="1" maxOccurs="1" nillable="true"/>
+    <element name="keywords" type="xsd:string" minOccurs="1" maxOccurs="1" nillable="true"/>
+    <element name="validity-time" type="xsd:int" minOccurs="1" maxOccurs="1"/>
+    </sequence>
+   </complexType>
+  </element>
+  <element name="register-webserviceResponse">
+   <complexType>
+    <sequence>
+     <element name="result" type="xsd:int"/>
+    </sequence>
+   </complexType>
+  </element>
+  <element name="unregister-webservice">
+   <complexType>
+    <sequence>
+    <element name="name" type="xsd:string" minOccurs="1" maxOccurs="1" nillable="true"/>
+    <element name="url" type="xsd:string" minOccurs="1" maxOccurs="1" nillable="true"/>
+    <element name="allinst" type="xsd:int" minOccurs="1" maxOccurs="1"/>
+    </sequence>
+   </complexType>
+  </element>
+  <element name="unregister-webserviceResponse">
+   <complexType>
+    <sequence>
+     <element name="result" type="xsd:int"/>
+    </sequence>
+   </complexType>
+  </element>
+  <element name="istore">
+   <complexType>
+    <sequence>
+    <element name="data" type="gridlab:dimeData" minOccurs="1" maxOccurs="1" nillable="true"/>
+    </sequence>
+   </complexType>
+  </element>
+  <element name="istoreResponse">
+   <complexType>
+    <sequence>
+     <element name="result" type="xsd:int"/>
+    </sequence>
+   </complexType>
+  </element>
+  <element name="search">
+   <complexType>
+    <sequence>
+    <element name="filter" type="xsd:string" minOccurs="1" maxOccurs="1" nillable="true"/>
+    </sequence>
+   </complexType>
+  </element>
+  <element name="searchResponse">
+   <complexType>
+    <sequence>
+     <element name="result" type="xsd:string"/>
+    </sequence>
+   </complexType>
+  </element>
+  <element name="update-webservice">
+   <complexType>
+    <sequence>
+    <element name="name" type="xsd:string" minOccurs="1" maxOccurs="1" nillable="true"/>
+    <element name="keywords" type="xsd:string" minOccurs="1" maxOccurs="1" nillable="true"/>
+    <element name="description" type="xsd:string" minOccurs="1" maxOccurs="1" nillable="true"/>
+    <element name="url" type="xsd:string" minOccurs="1" maxOccurs="1" nillable="true"/>
+    <element name="validity-time" type="xsd:int" minOccurs="1" maxOccurs="1"/>
+    </sequence>
+   </complexType>
+  </element>
+  <element name="update-webserviceResponse">
+   <complexType>
+    <sequence>
+     <element name="result" type="xsd:int"/>
+    </sequence>
+   </complexType>
+  </element>
+  <element name="register-service">
+   <complexType>
+    <sequence>
+    <element name="name" type="xsd:string" minOccurs="1" maxOccurs="1" nillable="true"/>
+    <element name="hostname" type="xsd:string" minOccurs="1" maxOccurs="1" nillable="true"/>
+    <element name="port" type="xsd:int" minOccurs="1" maxOccurs="1"/>
+    <element name="protocol" type="xsd:string" minOccurs="1" maxOccurs="1" nillable="true"/>
+    <element name="dport" type="xsd:int" minOccurs="1" maxOccurs="1"/>
+    <element name="description" type="xsd:string" minOccurs="1" maxOccurs="1" nillable="true"/>
+    <element name="keywords" type="xsd:string" minOccurs="1" maxOccurs="1" nillable="true"/>
+    <element name="validity-time" type="xsd:int" minOccurs="1" maxOccurs="1"/>
+    </sequence>
+   </complexType>
+  </element>
+  <element name="register-serviceResponse">
+   <complexType>
+    <sequence>
+     <element name="result" type="xsd:int"/>
+    </sequence>
+   </complexType>
+  </element>
+  <element name="unregister-service">
+   <complexType>
+    <sequence>
+    <element name="name" type="xsd:string" minOccurs="1" maxOccurs="1" nillable="true"/>
+    <element name="hostname" type="xsd:string" minOccurs="1" maxOccurs="1" nillable="true"/>
+    <element name="port" type="xsd:int" minOccurs="1" maxOccurs="1"/>
+    <element name="allinst" type="xsd:int" minOccurs="1" maxOccurs="1"/>
+    </sequence>
+   </complexType>
+  </element>
+  <element name="unregister-serviceResponse">
+   <complexType>
+    <sequence>
+     <element name="result" type="xsd:int"/>
+    </sequence>
+   </complexType>
+  </element>
+  <element name="update-service">
+   <complexType>
+    <sequence>
+    <element name="name" type="xsd:string" minOccurs="1" maxOccurs="1" nillable="true"/>
+    <element name="keywords" type="xsd:string" minOccurs="1" maxOccurs="1" nillable="true"/>
+    <element name="description" type="xsd:string" minOccurs="1" maxOccurs="1" nillable="true"/>
+    <element name="url" type="xsd:string" minOccurs="1" maxOccurs="1" nillable="true"/>
+    <element name="dport" type="xsd:int" minOccurs="1" maxOccurs="1"/>
+    <element name="validity-time" type="xsd:int" minOccurs="1" maxOccurs="1"/>
+    </sequence>
+   </complexType>
+  </element>
+  <element name="update-serviceResponse">
+   <complexType>
+    <sequence>
+     <element name="result" type="xsd:int"/>
+    </sequence>
+   </complexType>
+  </element>
+  <element name="lookup-webservice">
+   <complexType>
+    <sequence>
+    <element name="name" type="xsd:string" minOccurs="1" maxOccurs="1" nillable="true"/>
+    <element name="hostname" type="xsd:string" minOccurs="1" maxOccurs="1" nillable="true"/>
+    </sequence>
+   </complexType>
+  </element>
+  <element name="lookup-webserviceResponse">
+   <complexType>
+    <sequence>
+     <element name="result" type="xsd:string"/>
+    </sequence>
+   </complexType>
+  </element>
+  <element name="lookup-service">
+   <complexType>
+    <sequence>
+    <element name="name" type="xsd:string" minOccurs="1" maxOccurs="1" nillable="true"/>
+    <element name="hostname" type="xsd:string" minOccurs="1" maxOccurs="1" nillable="true"/>
+    <element name="dport" type="xsd:int" minOccurs="1" maxOccurs="1"/>
+    <element name="sport" type="xsd:int" minOccurs="1" maxOccurs="1"/>
+    <element name="prot" type="xsd:string" minOccurs="1" maxOccurs="1" nillable="true"/>
+    </sequence>
+   </complexType>
+  </element>
+  <element name="lookup-serviceResponse">
+   <complexType>
+    <sequence>
+     <element name="result" type="xsd:string"/>
+    </sequence>
+   </complexType>
+  </element>
+  <element name="lookup-firewall">
+   <complexType>
+    <sequence>
+    <element name="name" type="xsd:string" minOccurs="1" maxOccurs="1" nillable="true"/>
+    </sequence>
+   </complexType>
+  </element>
+  <element name="lookup-firewallResponse">
+   <complexType>
+    <sequence>
+     <element name="result" type="xsd:string"/>
+    </sequence>
+   </complexType>
+  </element>
+  <element name="lookup-system">
+   <complexType>
+    <sequence>
+    <element name="name" type="xsd:string" minOccurs="1" maxOccurs="1" nillable="true"/>
+    <element name="system" type="xsd:string" minOccurs="1" maxOccurs="1" nillable="true"/>
+    </sequence>
+   </complexType>
+  </element>
+  <element name="lookup-systemResponse">
+   <complexType>
+    <sequence>
+     <element name="result" type="xsd:string"/>
+    </sequence>
+   </complexType>
+  </element>
+  <element name="lookup-user">
+   <complexType>
+    <sequence>
+    <element name="name" type="xsd:string" minOccurs="1" maxOccurs="1" nillable="true"/>
+    </sequence>
+   </complexType>
+  </element>
+  <element name="lookup-userResponse">
+   <complexType>
+    <sequence>
+     <element name="result" type="xsd:string"/>
+    </sequence>
+   </complexType>
+  </element>
+  <element name="lookup-vo">
+   <complexType>
+    <sequence>
+    <element name="name" type="xsd:string" minOccurs="1" maxOccurs="1" nillable="true"/>
+    </sequence>
+   </complexType>
+  </element>
+  <element name="lookup-voResponse">
+   <complexType>
+    <sequence>
+     <element name="result" type="xsd:string"/>
+    </sequence>
+   </complexType>
+  </element>
+  <element name="lookup-ca">
+   <complexType>
+    <sequence>
+    <element name="name" type="xsd:string" minOccurs="1" maxOccurs="1" nillable="true"/>
+    </sequence>
+   </complexType>
+  </element>
+  <element name="lookup-caResponse">
+   <complexType>
+    <sequence>
+     <element name="result" type="xsd:string"/>
+    </sequence>
+   </complexType>
+  </element>
+  <element name="lookup-lrms">
+   <complexType>
+    <sequence>
+    <element name="name" type="xsd:string" minOccurs="1" maxOccurs="1" nillable="true"/>
+    </sequence>
+   </complexType>
+  </element>
+  <element name="lookup-lrmsResponse">
+   <complexType>
+    <sequence>
+     <element name="result" type="xsd:string"/>
+    </sequence>
+   </complexType>
+  </element>
+  <element name="lookup-cpu">
+   <complexType>
+    <sequence>
+    <element name="mhz" type="xsd:int" minOccurs="1" maxOccurs="1"/>
+    <element name="cache" type="xsd:int" minOccurs="1" maxOccurs="1"/>
+    <element name="number" type="xsd:int" minOccurs="1" maxOccurs="1"/>
+    <element name="load" type="xsd:float" minOccurs="1" maxOccurs="1"/>
+    </sequence>
+   </complexType>
+  </element>
+  <element name="lookup-cpuResponse">
+   <complexType>
+    <sequence>
+     <element name="result" type="xsd:string"/>
+    </sequence>
+   </complexType>
+  </element>
+  <element name="lookup-memory">
+   <complexType>
+    <sequence>
+    <element name="total-ram" type="xsd:int" minOccurs="1" maxOccurs="1"/>
+    <element name="total-swap" type="xsd:int" minOccurs="1" maxOccurs="1"/>
+    <element name="free-ram" type="xsd:int" minOccurs="1" maxOccurs="1"/>
+    <element name="free-swap" type="xsd:int" minOccurs="1" maxOccurs="1"/>
+    </sequence>
+   </complexType>
+  </element>
+  <element name="lookup-memoryResponse">
+   <complexType>
+    <sequence>
+     <element name="result" type="xsd:string"/>
+    </sequence>
+   </complexType>
+  </element>
+  <element name="lookup-network">
+   <complexType>
+    <sequence>
+    <element name="address" type="xsd:string" minOccurs="1" maxOccurs="1" nillable="true"/>
+    </sequence>
+   </complexType>
+  </element>
+  <element name="lookup-networkResponse">
+   <complexType>
+    <sequence>
+     <element name="result" type="xsd:string"/>
+    </sequence>
+   </complexType>
+  </element>
+  <element name="lookup-device">
+   <complexType>
+    <sequence>
+    <element name="device" type="xsd:string" minOccurs="1" maxOccurs="1" nillable="true"/>
+    </sequence>
+   </complexType>
+  </element>
+  <element name="lookup-deviceResponse">
+   <complexType>
+    <sequence>
+     <element name="result" type="xsd:string"/>
+    </sequence>
+   </complexType>
+  </element>
+  <element name="register-vo">
+   <complexType>
+    <sequence>
+    <element name="name" type="xsd:string" minOccurs="1" maxOccurs="1" nillable="true"/>
+    <element name="helpDeskPN" type="xsd:string" minOccurs="1" maxOccurs="1" nillable="true"/>
+    <element name="restype" type="xsd:string" minOccurs="1" maxOccurs="1" nillable="true"/>
+    <element name="jobm" type="xsd:string" minOccurs="1" maxOccurs="1" nillable="true"/>
+    <element name="queue" type="xsd:string" minOccurs="1" maxOccurs="1" nillable="true"/>
+    <element name="fs-path" type="xsd:string" minOccurs="1" maxOccurs="1" nillable="true"/>
+    <element name="helpDeskURL" type="xsd:string" minOccurs="1" maxOccurs="1" nillable="true"/>
+    <element name="adminname" type="xsd:string" minOccurs="1" maxOccurs="1" nillable="true"/>
+    <element name="host" type="xsd:string" minOccurs="1" maxOccurs="1" nillable="true"/>
+    <element name="validity-time" type="xsd:int" minOccurs="1" maxOccurs="1"/>
+    </sequence>
+   </complexType>
+  </element>
+  <element name="register-voResponse">
+   <complexType>
+    <sequence>
+     <element name="result" type="xsd:int"/>
+    </sequence>
+   </complexType>
+  </element>
+  <element name="unregister-vo">
+   <complexType>
+    <sequence>
+    <element name="name" type="xsd:string" minOccurs="1" maxOccurs="1" nillable="true"/>
+    <element name="host" type="xsd:string" minOccurs="1" maxOccurs="1" nillable="true"/>
+    <element name="allinst" type="xsd:int" minOccurs="1" maxOccurs="1"/>
+    </sequence>
+   </complexType>
+  </element>
+  <element name="unregister-voResponse">
+   <complexType>
+    <sequence>
+     <element name="result" type="xsd:int"/>
+    </sequence>
+   </complexType>
+  </element>
+  <element name="update-vo">
+   <complexType>
+    <sequence>
+    <element name="name" type="xsd:string" minOccurs="1" maxOccurs="1" nillable="true"/>
+    <element name="restype" type="xsd:string" minOccurs="1" maxOccurs="1" nillable="true"/>
+    <element name="jobm" type="xsd:string" minOccurs="1" maxOccurs="1" nillable="true"/>
+    <element name="queue" type="xsd:string" minOccurs="1" maxOccurs="1" nillable="true"/>
+    <element name="helpDeskURL" type="xsd:string" minOccurs="1" maxOccurs="1" nillable="true"/>
+    <element name="adminname" type="xsd:string" minOccurs="1" maxOccurs="1" nillable="true"/>
+    <element name="host" type="xsd:string" minOccurs="1" maxOccurs="1" nillable="true"/>
+    <element name="validity-time" type="xsd:int" minOccurs="1" maxOccurs="1"/>
+    </sequence>
+   </complexType>
+  </element>
+  <element name="update-voResponse">
+   <complexType>
+    <sequence>
+     <element name="result" type="xsd:int"/>
+    </sequence>
+   </complexType>
+  </element>
+  <element name="register-firewall">
+   <complexType>
+    <sequence>
+    <element name="hostname" type="xsd:string" minOccurs="1" maxOccurs="1" nillable="true"/>
+    <element name="ports" type="xsd:string" minOccurs="1" maxOccurs="1" nillable="true"/>
+    <element name="admindn" type="xsd:string" minOccurs="1" maxOccurs="1" nillable="true"/>
+    <element name="host" type="xsd:string" minOccurs="1" maxOccurs="1" nillable="true"/>
+    <element name="validity-time" type="xsd:int" minOccurs="1" maxOccurs="1"/>
+    </sequence>
+   </complexType>
+  </element>
+  <element name="register-firewallResponse">
+   <complexType>
+    <sequence>
+     <element name="result" type="xsd:int"/>
+    </sequence>
+   </complexType>
+  </element>
+  <element name="unregister-firewall">
+   <complexType>
+    <sequence>
+    <element name="hostname" type="xsd:string" minOccurs="1" maxOccurs="1" nillable="true"/>
+    </sequence>
+   </complexType>
+  </element>
+  <element name="unregister-firewallResponse">
+   <complexType>
+    <sequence>
+     <element name="result" type="xsd:int"/>
+    </sequence>
+   </complexType>
+  </element>
+  <element name="update-firewall">
+   <complexType>
+    <sequence>
+    <element name="hostname" type="xsd:string" minOccurs="1" maxOccurs="1" nillable="true"/>
+    <element name="admindn" type="xsd:string" minOccurs="1" maxOccurs="1" nillable="true"/>
+    <element name="ports" type="xsd:string" minOccurs="1" maxOccurs="1" nillable="true"/>
+    <element name="type-por" type="xsd:int" minOccurs="1" maxOccurs="1"/>
+    <element name="validity-time" type="xsd:int" minOccurs="1" maxOccurs="1"/>
+    </sequence>
+   </complexType>
+  </element>
+  <element name="update-firewallResponse">
+   <complexType>
+    <sequence>
+     <element name="result" type="xsd:int"/>
+    </sequence>
+   </complexType>
+  </element>
+  <element name="register-wsdlloc">
+   <complexType>
+    <sequence>
+    <element name="name" type="xsd:string" minOccurs="1" maxOccurs="1" nillable="true"/>
+    <element name="wsdlloc" type="xsd:string" minOccurs="1" maxOccurs="1" nillable="true"/>
+    </sequence>
+   </complexType>
+  </element>
+  <element name="register-wsdllocResponse">
+   <complexType>
+    <sequence>
+     <element name="result" type="xsd:int"/>
+    </sequence>
+   </complexType>
+  </element>
+  <element name="unregister-wsdlloc">
+   <complexType>
+    <sequence>
+    <element name="name" type="xsd:string" minOccurs="1" maxOccurs="1" nillable="true"/>
+    <element name="wsdlloc" type="xsd:string" minOccurs="1" maxOccurs="1" nillable="true"/>
+    </sequence>
+   </complexType>
+  </element>
+  <element name="unregister-wsdllocResponse">
+   <complexType>
+    <sequence>
+     <element name="result" type="xsd:int"/>
+    </sequence>
+   </complexType>
+  </element>
+  <element name="getServiceDescription">
+   <complexType>
+    <sequence>
+    </sequence>
+   </complexType>
+  </element>
+  <element name="getServiceDescriptionResponse">
+   <complexType>
+    <sequence>
+     <element name="result" type="xsd:string"/>
+    </sequence>
+   </complexType>
+  </element>
+ </schema>
+
+</types>
+
+<message name="register-webserviceRequest">
+ <part name="parameters" element="gridlab:register-webservice"/>
+</message>
+
+<message name="register-webserviceResponse">
+ <part name="parameters" element="gridlab:register-webserviceResponse"/>
+</message>
+
+<message name="unregister-webserviceRequest">
+ <part name="parameters" element="gridlab:unregister-webservice"/>
+</message>
+
+<message name="unregister-webserviceResponse">
+ <part name="parameters" element="gridlab:unregister-webserviceResponse"/>
+</message>
+
+<message name="istoreRequest">
+ <part name="parameters" element="gridlab:istore"/>
+</message>
+
+<message name="istoreResponse">
+ <part name="parameters" element="gridlab:istoreResponse"/>
+</message>
+
+<message name="searchRequest">
+ <part name="parameters" element="gridlab:search"/>
+</message>
+
+<message name="searchResponse">
+ <part name="parameters" element="gridlab:searchResponse"/>
+</message>
+
+<message name="update-webserviceRequest">
+ <part name="parameters" element="gridlab:update-webservice"/>
+</message>
+
+<message name="update-webserviceResponse">
+ <part name="parameters" element="gridlab:update-webserviceResponse"/>
+</message>
+
+<message name="register-serviceRequest">
+ <part name="parameters" element="gridlab:register-service"/>
+</message>
+
+<message name="register-serviceResponse">
+ <part name="parameters" element="gridlab:register-serviceResponse"/>
+</message>
+
+<message name="unregister-serviceRequest">
+ <part name="parameters" element="gridlab:unregister-service"/>
+</message>
+
+<message name="unregister-serviceResponse">
+ <part name="parameters" element="gridlab:unregister-serviceResponse"/>
+</message>
+
+<message name="update-serviceRequest">
+ <part name="parameters" element="gridlab:update-service"/>
+</message>
+
+<message name="update-serviceResponse">
+ <part name="parameters" element="gridlab:update-serviceResponse"/>
+</message>
+
+<message name="lookup-webserviceRequest">
+ <part name="parameters" element="gridlab:lookup-webservice"/>
+</message>
+
+<message name="lookup-webserviceResponse">
+ <part name="parameters" element="gridlab:lookup-webserviceResponse"/>
+</message>
+
+<message name="lookup-serviceRequest">
+ <part name="parameters" element="gridlab:lookup-service"/>
+</message>
+
+<message name="lookup-serviceResponse">
+ <part name="parameters" element="gridlab:lookup-serviceResponse"/>
+</message>
+
+<message name="lookup-firewallRequest">
+ <part name="parameters" element="gridlab:lookup-firewall"/>
+</message>
+
+<message name="lookup-firewallResponse">
+ <part name="parameters" element="gridlab:lookup-firewallResponse"/>
+</message>
+
+<message name="lookup-systemRequest">
+ <part name="parameters" element="gridlab:lookup-system"/>
+</message>
+
+<message name="lookup-systemResponse">
+ <part name="parameters" element="gridlab:lookup-systemResponse"/>
+</message>
+
+<message name="lookup-userRequest">
+ <part name="parameters" element="gridlab:lookup-user"/>
+</message>
+
+<message name="lookup-userResponse">
+ <part name="parameters" element="gridlab:lookup-userResponse"/>
+</message>
+
+<message name="lookup-voRequest">
+ <part name="parameters" element="gridlab:lookup-vo"/>
+</message>
+
+<message name="lookup-voResponse">
+ <part name="parameters" element="gridlab:lookup-voResponse"/>
+</message>
+
+<message name="lookup-caRequest">
+ <part name="parameters" element="gridlab:lookup-ca"/>
+</message>
+
+<message name="lookup-caResponse">
+ <part name="parameters" element="gridlab:lookup-caResponse"/>
+</message>
+
+<message name="lookup-lrmsRequest">
+ <part name="parameters" element="gridlab:lookup-lrms"/>
+</message>
+
+<message name="lookup-lrmsResponse">
+ <part name="parameters" element="gridlab:lookup-lrmsResponse"/>
+</message>
+
+<message name="lookup-cpuRequest">
+ <part name="parameters" element="gridlab:lookup-cpu"/>
+</message>
+
+<message name="lookup-cpuResponse">
+ <part name="parameters" element="gridlab:lookup-cpuResponse"/>
+</message>
+
+<message name="lookup-memoryRequest">
+ <part name="parameters" element="gridlab:lookup-memory"/>
+</message>
+
+<message name="lookup-memoryResponse">
+ <part name="parameters" element="gridlab:lookup-memoryResponse"/>
+</message>
+
+<message name="lookup-networkRequest">
+ <part name="parameters" element="gridlab:lookup-network"/>
+</message>
+
+<message name="lookup-networkResponse">
+ <part name="parameters" element="gridlab:lookup-networkResponse"/>
+</message>
+
+<message name="lookup-deviceRequest">
+ <part name="parameters" element="gridlab:lookup-device"/>
+</message>
+
+<message name="lookup-deviceResponse">
+ <part name="parameters" element="gridlab:lookup-deviceResponse"/>
+</message>
+
+<message name="register-voRequest">
+ <part name="parameters" element="gridlab:register-vo"/>
+</message>
+
+<message name="register-voResponse">
+ <part name="parameters" element="gridlab:register-voResponse"/>
+</message>
+
+<message name="unregister-voRequest">
+ <part name="parameters" element="gridlab:unregister-vo"/>
+</message>
+
+<message name="unregister-voResponse">
+ <part name="parameters" element="gridlab:unregister-voResponse"/>
+</message>
+
+<message name="update-voRequest">
+ <part name="parameters" element="gridlab:update-vo"/>
+</message>
+
+<message name="update-voResponse">
+ <part name="parameters" element="gridlab:update-voResponse"/>
+</message>
+
+<message name="register-firewallRequest">
+ <part name="parameters" element="gridlab:register-firewall"/>
+</message>
+
+<message name="register-firewallResponse">
+ <part name="parameters" element="gridlab:register-firewallResponse"/>
+</message>
+
+<message name="unregister-firewallRequest">
+ <part name="parameters" element="gridlab:unregister-firewall"/>
+</message>
+
+<message name="unregister-firewallResponse">
+ <part name="parameters" element="gridlab:unregister-firewallResponse"/>
+</message>
+
+<message name="update-firewallRequest">
+ <part name="parameters" element="gridlab:update-firewall"/>
+</message>
+
+<message name="update-firewallResponse">
+ <part name="parameters" element="gridlab:update-firewallResponse"/>
+</message>
+
+<message name="register-wsdllocRequest">
+ <part name="parameters" element="gridlab:register-wsdlloc"/>
+</message>
+
+<message name="register-wsdllocResponse">
+ <part name="parameters" element="gridlab:register-wsdllocResponse"/>
+</message>
+
+<message name="unregister-wsdllocRequest">
+ <part name="parameters" element="gridlab:unregister-wsdlloc"/>
+</message>
+
+<message name="unregister-wsdllocResponse">
+ <part name="parameters" element="gridlab:unregister-wsdllocResponse"/>
+</message>
+
+<message name="getServiceDescriptionRequest">
+ <part name="parameters" element="gridlab:getServiceDescription"/>
+</message>
+
+<message name="getServiceDescriptionResponse">
+ <part name="parameters" element="gridlab:getServiceDescriptionResponse"/>
+</message>
+
+<portType name="igridPortType">
+ <operation name="register-webservice">
+  <documentation>Service definition of function gridlab__register_webservice</documentation>
+  <input message="tns:register-webserviceRequest"/>
+  <output message="tns:register-webserviceResponse"/>
+ </operation>
+ <operation name="unregister-webservice">
+  <documentation>Service definition of function gridlab__unregister_webservice</documentation>
+  <input message="tns:unregister-webserviceRequest"/>
+  <output message="tns:unregister-webserviceResponse"/>
+ </operation>
+ <operation name="istore">
+  <documentation>Service definition of function gridlab__istore</documentation>
+  <input message="tns:istoreRequest"/>
+  <output message="tns:istoreResponse"/>
+ </operation>
+ <operation name="search">
+  <documentation>Service definition of function gridlab__search</documentation>
+  <input message="tns:searchRequest"/>
+  <output message="tns:searchResponse"/>
+ </operation>
+ <operation name="update-webservice">
+  <documentation>Service definition of function gridlab__update_webservice</documentation>
+  <input message="tns:update-webserviceRequest"/>
+  <output message="tns:update-webserviceResponse"/>
+ </operation>
+ <operation name="register-service">
+  <documentation>Service definition of function gridlab__register_service</documentation>
+  <input message="tns:register-serviceRequest"/>
+  <output message="tns:register-serviceResponse"/>
+ </operation>
+ <operation name="unregister-service">
+  <documentation>Service definition of function gridlab__unregister_service</documentation>
+  <input message="tns:unregister-serviceRequest"/>
+  <output message="tns:unregister-serviceResponse"/>
+ </operation>
+ <operation name="update-service">
+  <documentation>Service definition of function gridlab__update_service</documentation>
+  <input message="tns:update-serviceRequest"/>
+  <output message="tns:update-serviceResponse"/>
+ </operation>
+ <operation name="lookup-webservice">
+  <documentation>Service definition of function gridlab__lookup_webservice</documentation>
+  <input message="tns:lookup-webserviceRequest"/>
+  <output message="tns:lookup-webserviceResponse"/>
+ </operation>
+ <operation name="lookup-service">
+  <documentation>Service definition of function gridlab__lookup_service</documentation>
+  <input message="tns:lookup-serviceRequest"/>
+  <output message="tns:lookup-serviceResponse"/>
+ </operation>
+ <operation name="lookup-firewall">
+  <documentation>Service definition of function gridlab__lookup_firewall</documentation>
+  <input message="tns:lookup-firewallRequest"/>
+  <output message="tns:lookup-firewallResponse"/>
+ </operation>
+ <operation name="lookup-system">
+  <documentation>Service definition of function gridlab__lookup_system</documentation>
+  <input message="tns:lookup-systemRequest"/>
+  <output message="tns:lookup-systemResponse"/>
+ </operation>
+ <operation name="lookup-user">
+  <documentation>Service definition of function gridlab__lookup_user</documentation>
+  <input message="tns:lookup-userRequest"/>
+  <output message="tns:lookup-userResponse"/>
+ </operation>
+ <operation name="lookup-vo">
+  <documentation>Service definition of function gridlab__lookup_vo</documentation>
+  <input message="tns:lookup-voRequest"/>
+  <output message="tns:lookup-voResponse"/>
+ </operation>
+ <operation name="lookup-ca">
+  <documentation>Service definition of function gridlab__lookup_ca</documentation>
+  <input message="tns:lookup-caRequest"/>
+  <output message="tns:lookup-caResponse"/>
+ </operation>
+ <operation name="lookup-lrms">
+  <documentation>Service definition of function gridlab__lookup_lrms</documentation>
+  <input message="tns:lookup-lrmsRequest"/>
+  <output message="tns:lookup-lrmsResponse"/>
+ </operation>
+ <operation name="lookup-cpu">
+  <documentation>Service definition of function gridlab__lookup_cpu</documentation>
+  <input message="tns:lookup-cpuRequest"/>
+  <output message="tns:lookup-cpuResponse"/>
+ </operation>
+ <operation name="lookup-memory">
+  <documentation>Service definition of function gridlab__lookup_memory</documentation>
+  <input message="tns:lookup-memoryRequest"/>
+  <output message="tns:lookup-memoryResponse"/>
+ </operation>
+ <operation name="lookup-network">
+  <documentation>Service definition of function gridlab__lookup_network</documentation>
+  <input message="tns:lookup-networkRequest"/>
+  <output message="tns:lookup-networkResponse"/>
+ </operation>
+ <operation name="lookup-device">
+  <documentation>Service definition of function gridlab__lookup_device</documentation>
+  <input message="tns:lookup-deviceRequest"/>
+  <output message="tns:lookup-deviceResponse"/>
+ </operation>
+ <operation name="register-vo">
+  <documentation>Service definition of function gridlab__register_vo</documentation>
+  <input message="tns:register-voRequest"/>
+  <output message="tns:register-voResponse"/>
+ </operation>
+ <operation name="unregister-vo">
+  <documentation>Service definition of function gridlab__unregister_vo</documentation>
+  <input message="tns:unregister-voRequest"/>
+  <output message="tns:unregister-voResponse"/>
+ </operation>
+ <operation name="update-vo">
+  <documentation>Service definition of function gridlab__update_vo</documentation>
+  <input message="tns:update-voRequest"/>
+  <output message="tns:update-voResponse"/>
+ </operation>
+ <operation name="register-firewall">
+  <documentation>Service definition of function gridlab__register_firewall</documentation>
+  <input message="tns:register-firewallRequest"/>
+  <output message="tns:register-firewallResponse"/>
+ </operation>
+ <operation name="unregister-firewall">
+  <documentation>Service definition of function gridlab__unregister_firewall</documentation>
+  <input message="tns:unregister-firewallRequest"/>
+  <output message="tns:unregister-firewallResponse"/>
+ </operation>
+ <operation name="update-firewall">
+  <documentation>Service definition of function gridlab__update_firewall</documentation>
+  <input message="tns:update-firewallRequest"/>
+  <output message="tns:update-firewallResponse"/>
+ </operation>
+ <operation name="register-wsdlloc">
+  <documentation>Service definition of function gridlab__register_wsdlloc</documentation>
+  <input message="tns:register-wsdllocRequest"/>
+  <output message="tns:register-wsdllocResponse"/>
+ </operation>
+ <operation name="unregister-wsdlloc">
+  <documentation>Service definition of function gridlab__unregister_wsdlloc</documentation>
+  <input message="tns:unregister-wsdllocRequest"/>
+  <output message="tns:unregister-wsdllocResponse"/>
+ </operation>
+ <operation name="getServiceDescription">
+  <documentation>Service definition of function gridlab__getServiceDescription</documentation>
+  <input message="tns:getServiceDescriptionRequest"/>
+  <output message="tns:getServiceDescriptionResponse"/>
+ </operation>
+</portType>
+
+<binding name="igrid" type="tns:igridPortType">
+ <SOAP:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+ <operation name="register-webservice">
+  <SOAP:operation style="document" soapAction=""/>
+  <input>
+   <SOAP:body use="literal"/>
+  </input>
+  <output>
+   <SOAP:body use="literal"/>
+  </output>
+ </operation>
+ <operation name="unregister-webservice">
+  <SOAP:operation style="document" soapAction=""/>
+  <input>
+   <SOAP:body use="literal"/>
+  </input>
+  <output>
+   <SOAP:body use="literal"/>
+  </output>
+ </operation>
+ <operation name="istore">
+  <SOAP:operation style="document" soapAction=""/>
+  <input>
+   <SOAP:body use="literal"/>
+  </input>
+  <output>
+   <SOAP:body use="literal"/>
+  </output>
+ </operation>
+ <operation name="search">
+  <SOAP:operation style="document" soapAction=""/>
+  <input>
+   <SOAP:body use="literal"/>
+  </input>
+  <output>
+   <SOAP:body use="literal"/>
+  </output>
+ </operation>
+ <operation name="update-webservice">
+  <SOAP:operation style="document" soapAction=""/>
+  <input>
+   <SOAP:body use="literal"/>
+  </input>
+  <output>
+   <SOAP:body use="literal"/>
+  </output>
+ </operation>
+ <operation name="register-service">
+  <SOAP:operation style="document" soapAction=""/>
+  <input>
+   <SOAP:body use="literal"/>
+  </input>
+  <output>
+   <SOAP:body use="literal"/>
+  </output>
+ </operation>
+ <operation name="unregister-service">
+  <SOAP:operation style="document" soapAction=""/>
+  <input>
+   <SOAP:body use="literal"/>
+  </input>
+  <output>
+   <SOAP:body use="literal"/>
+  </output>
+ </operation>
+ <operation name="update-service">
+  <SOAP:operation style="document" soapAction=""/>
+  <input>
+   <SOAP:body use="literal"/>
+  </input>
+  <output>
+   <SOAP:body use="literal"/>
+  </output>
+ </operation>
+ <operation name="lookup-webservice">
+  <SOAP:operation style="document" soapAction=""/>
+  <input>
+   <SOAP:body use="literal"/>
+  </input>
+  <output>
+   <SOAP:body use="literal"/>
+  </output>
+ </operation>
+ <operation name="lookup-service">
+  <SOAP:operation style="document" soapAction=""/>
+  <input>
+   <SOAP:body use="literal"/>
+  </input>
+  <output>
+   <SOAP:body use="literal"/>
+  </output>
+ </operation>
+ <operation name="lookup-firewall">
+  <SOAP:operation style="document" soapAction=""/>
+  <input>
+   <SOAP:body use="literal"/>
+  </input>
+  <output>
+   <SOAP:body use="literal"/>
+  </output>
+ </operation>
+ <operation name="lookup-system">
+  <SOAP:operation style="document" soapAction=""/>
+  <input>
+   <SOAP:body use="literal"/>
+  </input>
+  <output>
+   <SOAP:body use="literal"/>
+  </output>
+ </operation>
+ <operation name="lookup-user">
+  <SOAP:operation style="document" soapAction=""/>
+  <input>
+   <SOAP:body use="literal"/>
+  </input>
+  <output>
+   <SOAP:body use="literal"/>
+  </output>
+ </operation>
+ <operation name="lookup-vo">
+  <SOAP:operation style="document" soapAction=""/>
+  <input>
+   <SOAP:body use="literal"/>
+  </input>
+  <output>
+   <SOAP:body use="literal"/>
+  </output>
+ </operation>
+ <operation name="lookup-ca">
+  <SOAP:operation style="document" soapAction=""/>
+  <input>
+   <SOAP:body use="literal"/>
+  </input>
+  <output>
+   <SOAP:body use="literal"/>
+  </output>
+ </operation>
+ <operation name="lookup-lrms">
+  <SOAP:operation style="document" soapAction=""/>
+  <input>
+   <SOAP:body use="literal"/>
+  </input>
+  <output>
+   <SOAP:body use="literal"/>
+  </output>
+ </operation>
+ <operation name="lookup-cpu">
+  <SOAP:operation style="document" soapAction=""/>
+  <input>
+   <SOAP:body use="literal"/>
+  </input>
+  <output>
+   <SOAP:body use="literal"/>
+  </output>
+ </operation>
+ <operation name="lookup-memory">
+  <SOAP:operation style="document" soapAction=""/>
+  <input>
+   <SOAP:body use="literal"/>
+  </input>
+  <output>
+   <SOAP:body use="literal"/>
+  </output>
+ </operation>
+ <operation name="lookup-network">
+  <SOAP:operation style="document" soapAction=""/>
+  <input>
+   <SOAP:body use="literal"/>
+  </input>
+  <output>
+   <SOAP:body use="literal"/>
+  </output>
+ </operation>
+ <operation name="lookup-device">
+  <SOAP:operation style="document" soapAction=""/>
+  <input>
+   <SOAP:body use="literal"/>
+  </input>
+  <output>
+   <SOAP:body use="literal"/>
+  </output>
+ </operation>
+ <operation name="register-vo">
+  <SOAP:operation style="document" soapAction=""/>
+  <input>
+   <SOAP:body use="literal"/>
+  </input>
+  <output>
+   <SOAP:body use="literal"/>
+  </output>
+ </operation>
+ <operation name="unregister-vo">
+  <SOAP:operation style="document" soapAction=""/>
+  <input>
+   <SOAP:body use="literal"/>
+  </input>
+  <output>
+   <SOAP:body use="literal"/>
+  </output>
+ </operation>
+ <operation name="update-vo">
+  <SOAP:operation style="document" soapAction=""/>
+  <input>
+   <SOAP:body use="literal"/>
+  </input>
+  <output>
+   <SOAP:body use="literal"/>
+  </output>
+ </operation>
+ <operation name="register-firewall">
+  <SOAP:operation style="document" soapAction=""/>
+  <input>
+   <SOAP:body use="literal"/>
+  </input>
+  <output>
+   <SOAP:body use="literal"/>
+  </output>
+ </operation>
+ <operation name="unregister-firewall">
+  <SOAP:operation style="document" soapAction=""/>
+  <input>
+   <SOAP:body use="literal"/>
+  </input>
+  <output>
+   <SOAP:body use="literal"/>
+  </output>
+ </operation>
+ <operation name="update-firewall">
+  <SOAP:operation style="document" soapAction=""/>
+  <input>
+   <SOAP:body use="literal"/>
+  </input>
+  <output>
+   <SOAP:body use="literal"/>
+  </output>
+ </operation>
+ <operation name="register-wsdlloc">
+  <SOAP:operation style="document" soapAction=""/>
+  <input>
+   <SOAP:body use="literal"/>
+  </input>
+  <output>
+   <SOAP:body use="literal"/>
+  </output>
+ </operation>
+ <operation name="unregister-wsdlloc">
+  <SOAP:operation style="document" soapAction=""/>
+  <input>
+   <SOAP:body use="literal"/>
+  </input>
+  <output>
+   <SOAP:body use="literal"/>
+  </output>
+ </operation>
+ <operation name="getServiceDescription">
+  <SOAP:operation style="document" soapAction=""/>
+  <input>
+   <SOAP:body use="literal"/>
+  </input>
+  <output>
+   <SOAP:body use="literal"/>
+  </output>
+ </operation>
+</binding>
+
+<service name="igrid">
+ <documentation>gSOAP 2.6.2 generated service definition</documentation>
+ <port name="igrid" binding="tns:igrid">
+  <SOAP:address location="httpg://gridsurfer.unile.it:19000"/>
+ </port>
+</service>
+
+</definitions>

@@ -1,0 +1,12 @@
+In short, you write an adaptor by extending the CPI class.  A good
+starting point is the LocalFile adaptor in
+src/org/gridlab/gat/io/cpi/local/LocalFileAdaptor.java
+
+It extends the FileCPI class, and extends the methods in that class.
+You don't have to implement all methods. The JavaGAT has late binding,
+so if a method does not exist for a particular adaptor, the engine
+will select another adaptor automatically...
+
+Cheers,
+
+Rob

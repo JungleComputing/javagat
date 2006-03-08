@@ -1,0 +1,35 @@
+package hu.sztaki.lpds.monitor;
+
+/**
+ * The <code>Version</code> class contains the version of the Mercury package
+ * the Java interface was built for.
+ *
+ * This class is used by both the Java and the JNI component to test each
+ * other's version number.
+ *
+ * @author Gábor Gombás
+ * @version $Id: Version.java.in,v 1.1 2005/06/13 01:50:35 aagapi Exp $
+ *
+ * Use, modification and distribution is subject to the GridLal Software
+ * License. See the "COPYING" file in the root directory of the source
+ * tree or obtain a copy at http://www.gridlab.org/GLlicense.txt
+ */
+
+public final class Version {
+
+	/**
+	 * Returns the version of the Java interface package.
+	 *
+	 * @return		the version string.
+	 */
+	public static final String getVersion() {
+		return "@PACKAGE_VERSION@";
+	}
+
+	/**
+	 * Returns the version of the underlying JNI libraries.
+	 *
+	 * @return		the version string.
+	 */
+	public static final native String getNativeVersion();
+}

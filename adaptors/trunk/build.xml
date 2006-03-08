@@ -1,0 +1,271 @@
+<project name="GATAdaptors" default="build" basedir=".">
+        <description>
+        Build file for Java GAT Adaptors.
+        </description>
+
+        <property environment="env"/>
+
+	<!-- Global properties for GAT -->
+
+	<!-- Get the path to the engine. If GAT_LOCATION is set, use it. Otherwise,
+             default to ../JavaGATEngine.
+	-->
+	<property name="env.GAT_LOCATION" location=".." /> 
+        <property name="engine_path" location="${env.GAT_LOCATION}/JavaGATEngine" />
+
+	<property name="src" location="src" />
+	<property name="tmp" location="tmp" />
+	<property name="lib" location="lib" />
+	<property name="doc" location="doc" />
+	<property name="external" location="external" />
+	<property name="java.debug.value" value="true" />
+
+	<path id="external_jars">
+		<fileset dir="${external}">
+			<include name="*.jar" />
+		</fileset>
+		<fileset dir="${engine_path}/external">
+			<include name="*.jar" />
+		</fileset>
+		<fileset dir="${engine_path}/lib">
+			<include name="GAT.jar" />
+		</fileset>
+	</path>
+
+	<target name="javadoc" description="make javadoc">
+		<!-- Compile the java doc from ${src} into ${doc}/html/javadoc -->
+	        <javadoc destdir="doc/html/javadoc" verbose="false" access="public" use="true" notree="false" nonavbar="false" noindex="false" splitindex="true" author="true" version="true" nodeprecatedlist="false" nodeprecated="false" packagenames="org.gridlab.gat.resources.cpi.local,org.gridlab.gat.io.cpi.sockets,org.gridlab.gat.advert.cpi.storagebox,org.gridlab.gat.io.cpi.dataMovement,org.gridlab.gat.generic,org.gridlab.gat.advert.cpi.local,org.gridlab.gat.io.cpi.globus,org.gridlab.gat.io.cpi.local,org.gridlab.gat.resources.cpi.grms,org.gridlab.gat.io.cpi.fileBrowsing,org.gridlab.gat.resources.cpi.globus" sourcepath="src:../JavaGATEngine" classpath="../JavaGATEngine/tmp:external/jboss-j2ee.jar:external/commons-discovery.jar:external/axis.jar:tmp:external/jaxrpc.jar:external/cryptix.jar:external/servlet.jar:external/ogsa.jar:external/xercesImpl.jar:external/saaj.jar:external/cog-tomcat.jar:external/xmlParserAPIs.jar:external/wsif.jar:external/castor-0.9.5.3-xml.jar:external/castor-0.9.5.3.jar:external/ogsa-samples.jar:external/cryptix32.jar:external/jgss.jar:external/xalan.jar:external/xmlsec.jar:external/log4j-core.jar:external/cog-jglobus.jar:external/cog-axis.jar:external/cryptix-asn1.jar:external/wsdl4j.jar:external/jta1.0.1.jar:external/jdbc-se2.0.jar:external/commons-logging.jar:external/puretls.jar:external/jce-jdk13-117.jar"/>
+	</target>
+
+	<target name="build" depends="clean" description="build the JARs and documentation">
+		<!-- Create the distribution end tmp directory -->
+		<mkdir dir="${lib}" />
+		<mkdir dir="${tmp}" />
+
+		<!-- Compile the java code from ${src} into ${tmp} -->
+		<javac source="1.4" srcdir="${src}" destdir="${tmp}" debug="on" >
+			<classpath refid="external_jars" />
+		</javac>
+
+		<jar jarfile="${lib}/LocalFileAdaptor.jar" basedir="${tmp}" includes="**/LocalFileAdaptor.class,**/SerializedFile.class">
+			<manifest>
+				<attribute name="FileCpi-class" value="org.gridlab.gat.io.cpi.local.LocalFileAdaptor" />
+			</manifest>
+		</jar>
+
+		<jar jarfile="${lib}/LocalFileInputStreamAdaptor.jar" basedir="${tmp}" includes="**/LocalFileInputStreamAdaptor.class">
+			<manifest>
+				<attribute name="FileInputStreamCpi-class" value="org.gridlab.gat.io.cpi.local.LocalFileInputStreamAdaptor" />
+			</manifest>
+		</jar>
+
+		<jar jarfile="${lib}/SftpFileInputStreamAdaptor.jar" basedir="${tmp}" includes="**/sftp/*.class">
+			<manifest>
+				<attribute name="FileInputStreamCpi-class" value="org.gridlab.gat.io.cpi.sftp.SftpFileInputStreamAdaptor" />
+			</manifest>
+		</jar>
+
+		<jar jarfile="${lib}/SftpNewFileInputStreamAdaptor.jar" basedir="${tmp}" includes="**/sftpnew/*.class,**/ssh/*.class">
+			<manifest>
+				<attribute name="FileInputStreamCpi-class" value="org.gridlab.gat.io.cpi.sftpnew.SftpNewFileInputStreamAdaptor" />
+			</manifest>
+		</jar>
+
+			<jar jarfile="${lib}/SftpFileOutputStreamAdaptor.jar" basedir="${tmp}" includes="**/sftp/*.class">
+			<manifest>
+				<attribute name="FileOutputStreamCpi-class" value="org.gridlab.gat.io.cpi.sftp.SftpFileOutputStreamAdaptor" />
+			</manifest>
+		</jar>
+
+	    <jar jarfile="${lib}/LocalFileOutputStreamAdaptor.jar" basedir="${tmp}" includes="**/LocalFileOutputStreamAdaptor.class">
+			<manifest>
+				<attribute name="FileOutputStreamCpi-class" value="org.gridlab.gat.io.cpi.local.LocalFileOutputStreamAdaptor" />
+			</manifest>
+		</jar>
+
+		<jar jarfile="${lib}/LocalRandomAccessFileAdaptor.jar" basedir="${tmp}" includes="**/LocalRandomAccessFileAdaptor.class">
+			<manifest>
+				<attribute name="RandomAccessFileCpi-class" value="org.gridlab.gat.io.cpi.local.LocalRandomAccessFileAdaptor" />
+			</manifest>
+		</jar>
+
+		<jar jarfile="${lib}/LocalAdvertServiceAdaptor.jar" basedir="${tmp}" includes="**/LocalAdvertServiceAdaptor*.class">
+			<manifest>
+				<attribute name="AdvertServiceCpi-class" value="org.gridlab.gat.advert.cpi.local.LocalAdvertServiceAdaptor" />
+			</manifest>
+		</jar>
+
+		<jar jarfile="${lib}/SshFileAdaptor.jar" basedir="${tmp}" includes="**/Ssh*.class,**/SSHSecurityUtils.class">
+			<manifest>
+				<attribute name="FileCpi-class" value="org.gridlab.gat.io.cpi.ssh.SshFileAdaptor" />
+			</manifest>
+		</jar>
+
+		<jar jarfile="${lib}/SftpFileAdaptor.jar" basedir="${tmp}" includes="**/sftp/*.class">
+			<manifest>
+				<attribute name="FileCpi-class" value="org.gridlab.gat.io.cpi.sftp.SftpFileAdaptor" />
+			</manifest>
+		</jar>
+
+	    <jar jarfile="${lib}/StorageBoxAdaptor.jar" basedir="${tmp}" includes="**/StorageBoxAdvertAdaptor.class,org/storagebox/www/sbns/*.class">
+			<manifest>
+				<attribute name="AdvertServiceCpi-class" value="org.gridlab.gat.advert.cpi.storagebox.StorageBoxAdvertAdaptor" />
+			</manifest>
+		</jar>
+
+        <jar jarfile="${lib}/MercuryMonitorableAdaptor.jar" basedir="${tmp}" includes="**/MercuryMonitorableAdaptor.class,**/LocalMetricListener.class,**/MonitorizedMetric.class,**/MeasurementTrigger.class,**/Measuree.class,hu/sztaki/lpds/monitor/*.class,hu/sztaki/lpds/monitor/producer/*.class">
+            <manifest>
+                <attribute name="MonitorableCpi-class" value="org.gridlab.gat.monitoring.cpi.mercury.MercuryMonitorableAdaptor" />
+            </manifest>
+        </jar>
+
+		<jar jarfile="${lib}/DataMovementFileAdaptor.jar" basedir="${tmp}" includes="**/DataMovementFileAdaptor.class,**/DATA_movement_services/**,**/ServiceLocator.class,**/igrid_pkg/*.class">
+			<manifest>
+				<attribute name="FileCpi-class" value="org.gridlab.gat.io.cpi.fileBrowsing.DataFileBrowsingAdaptor" />
+			</manifest>
+		</jar>
+
+		<jar jarfile="${lib}/FTPFileAdaptor.jar" basedir="${tmp}" includes="org/gridlab/gat/io/cpi/globus/**">
+			<manifest>
+				<attribute name="FileCpi-class" value="org.gridlab.gat.io.cpi.globus.FTPFileAdaptor" />
+			</manifest>
+		</jar>
+
+		<jar jarfile="${lib}/GridFTPFileAdaptor.jar" basedir="${tmp}" includes="org/gridlab/gat/io/cpi/globus/**,org/gridlab/gat/security/**">
+			<manifest>
+				<attribute name="FileCpi-class" value="org.gridlab.gat.io.cpi.globus.GridFTPFileAdaptor" />
+			</manifest>
+		</jar>
+
+		<jar jarfile="${lib}/FTPFileInputStreamAdaptor.jar" basedir="${tmp}" includes="org/gridlab/gat/io/cpi/globus/**">
+			<manifest>
+				<attribute name="FileInputStreamCpi-class" value="org.gridlab.gat.io.cpi.globus.FTPFileInputStreamAdaptor" />
+			</manifest>
+		</jar>
+
+		<jar jarfile="${lib}/GridFTPFileInputStreamAdaptor.jar" basedir="${tmp}" includes="org/gridlab/gat/io/cpi/globus/**,org/gridlab/gat/security/**">
+			<manifest>
+				<attribute name="FileInputStreamCpi-class" value="org.gridlab.gat.io.cpi.globus.GridFTPFileInputStreamAdaptor" />
+			</manifest>
+		</jar>
+
+		<jar jarfile="${lib}/HTTPFileInputStreamAdaptor.jar" basedir="${tmp}" includes="org/gridlab/gat/io/cpi/globus/**">
+			<manifest>
+				<attribute name="FileInputStreamCpi-class" value="org.gridlab.gat.io.cpi.globus.HTTPFileInputStreamAdaptor" />
+			</manifest>
+		</jar>
+
+		<jar jarfile="${lib}/HTTPSFileInputStreamAdaptor.jar" basedir="${tmp}" includes="org/gridlab/gat/io/cpi/globus/**">
+			<manifest>
+				<attribute name="FileInputStreamCpi-class" value="org.gridlab.gat.io.cpi.globus.HTTPSFileInputStreamAdaptor" />
+			</manifest>
+		</jar>
+
+		<jar jarfile="${lib}/SSHFileInputStreamAdaptor.jar" basedir="${tmp}" includes="org/gridlab/gat/io/cpi/ssh/**">
+			<manifest>
+				<attribute name="FileInputStreamCpi-class" value="org.gridlab.gat.io.cpi.ssh.SshFileInputStreamAdaptor" />
+			</manifest>
+		</jar>
+
+		<jar jarfile="${lib}/SSHFileOutputStreamAdaptor.jar" basedir="${tmp}" includes="org/gridlab/gat/io/cpi/ssh/**">
+			<manifest>
+				<attribute name="FileOutputStreamCpi-class" value="org.gridlab.gat.io.cpi.ssh.SshFileOutputStreamAdaptor" />
+			</manifest>
+		</jar>
+
+		<jar jarfile="${lib}/FTPFileOutputStreamAdaptor.jar" basedir="${tmp}" includes="org/gridlab/gat/io/cpi/globus/**">
+			<manifest>
+				<attribute name="FileOutputStreamCpi-class" value="org.gridlab.gat.io.cpi.globus.FTPFileOutputStreamAdaptor" />
+			</manifest>
+		</jar>
+
+		<jar jarfile="${lib}/GridFTPFileOutputStreamAdaptor.jar" basedir="${tmp}" includes="org/gridlab/gat/io/cpi/globus/**,org/gridlab/gat/security/**">
+			<manifest>
+				<attribute name="FileOutputStreamCpi-class" value="org.gridlab.gat.io.cpi.globus.GridFTPFileOutputStreamAdaptor" />
+			</manifest>
+		</jar>
+
+		<jar jarfile="${lib}/HTTPFileOutputStreamAdaptor.jar" basedir="${tmp}" includes="org/gridlab/gat/io/cpi/globus/**">
+			<manifest>
+				<attribute name="FileOutputStreamCpi-class" value="org.gridlab.gat.io.cpi.globus.HTTPFileOutputStreamAdaptor" />
+			</manifest>
+		</jar>
+
+		<jar jarfile="${lib}/HTTPSFileOutputStreamAdaptor.jar" basedir="${tmp}" includes="org/gridlab/gat/io/cpi/globus/**">
+			<manifest>
+				<attribute name="FileOutputStreamCpi-class" value="org.gridlab.gat.io.cpi.globus.HTTPSFileOutputStreamAdaptor" />
+			</manifest>
+		</jar>
+
+		<jar jarfile="${lib}/DataBrowsingFileAdaptor.jar" basedir="${tmp}" includes="**/DataFileBrowsingAdaptor.class,**/DATA_browsing_services/*.class,**/DATA_browsing_services/holders/*.class">
+			<manifest>
+				<attribute name="FileCpi-class" value="org.gridlab.gat.io.cpi.dataMovement.DataMovementFileAdaptor" />
+			</manifest>
+		</jar>
+
+		<jar jarfile="${lib}/LocalLogicalFileAdaptor.jar" basedir="${tmp}" includes="**/LocalLogicalFileAdaptor.class">
+			<manifest>
+				<attribute name="LogicalFileCpi-class" value="org.gridlab.gat.io.cpi.local.LocalLogicalFileAdaptor" />
+			</manifest>
+		</jar>
+
+		<jar jarfile="${lib}/GridLabLogicalFileAdaptor.jar" basedir="${tmp}" includes="**/ReplicaServiceAdaptor.class,zibdms_pkg/**">
+			<manifest>
+				<attribute name="LogicalFileCpi-class" value="org.gridlab.gat.io.cpi.replicaService.ReplicaServiceAdaptor" />
+			</manifest>
+		</jar>
+
+		<jar jarfile="${lib}/LocalResourceBrokerAdaptor.jar" basedir="${tmp}" includes="org/gridlab/gat/resources/cpi/local/*.class">
+			<manifest>
+				<attribute name="ResourceBrokerCpi-class" value="org.gridlab.gat.resources.cpi.local.LocalResourceBrokerAdaptor" />
+			</manifest>
+		</jar>
+
+		<jar jarfile="${lib}/SshResourceBrokerAdaptor.jar" basedir="${tmp}" includes="org/gridlab/gat/resources/cpi/ssh/*.class">
+			<manifest>
+				<attribute name="ResourceBrokerCpi-class" value="org.gridlab.gat.resources.cpi.ssh.SshBrokerAdaptor" />
+			</manifest>
+		</jar>
+
+		<jar jarfile="${lib}/GRMSBrokerAdaptor.jar" basedir="${tmp}" includes="**/grms_schema/*.class **/grms_schema/types/*.class **/grms_pkg/*.class **/grms_pkg/holders/*.class **/grms**/*.class">
+			<manifest>
+				<attribute name="ResourceBrokerCpi-class" value="org.gridlab.gat.resources.cpi.grms.GrmsBrokerAdaptor" />
+			</manifest>
+		</jar>
+
+		<jar jarfile="${lib}/GlobusBrokerAdaptor.jar" basedir="${tmp}" includes="**/org/gridlab/gat/resources/cpi/globus/*.class">
+			<manifest>
+				<attribute name="ResourceBrokerCpi-class" value="org.gridlab.gat.resources.cpi.globus.GlobusBrokerAdaptor" />
+			</manifest>
+		</jar>
+
+
+                 <jar jarfile="${lib}/ProActiveBrokerAdaptor.jar" basedir="${tmp}" includes="**/org/gridlab/gat/resources/cpi/proactive/*.class,**/org/objectweb/proactive/GATAdaptor/*.class">
+                         <manifest>
+                                 <attribute name="ResourceBrokerCpi-class" value="org.gridlab.gat.resources.cpi.proactive.ProActiveBrokerAdaptor" />
+                         </manifest>
+                 </jar>
+
+
+		<jar jarfile="${lib}/SocketEndpointAdaptor.jar" basedir="${tmp}" includes="**/org/gridlab/gat/io/cpi/sockets/*.class">
+			<manifest>
+				<attribute name="EndpointCpi-class" value="org.gridlab.gat.io.cpi.sockets.SocketEndpointAdaptor" />
+			</manifest>
+		</jar>
+
+	    <delete dir="${tmp}"/>
+
+		<!-- Copy external libraries to lib directory -->
+		<copy todir="${lib}">
+	    <fileset dir="${external}">
+	    </fileset>
+	    </copy>
+	</target>
+
+	<target name="clean" description="clean up">
+        <delete dir="${tmp}"/>
+        <delete dir="${lib}"/>
+        <delete dir="${doc}/html/javadoc" />
+	</target>
+
+</project>

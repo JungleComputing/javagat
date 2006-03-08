@@ -1,0 +1,9 @@
+#!/bin/sh
+
+OGSA=/home/rob/contrib/gsiws/ogsa-3.0.2/lib
+
+GEN_CLASSPATH=$OGSA/axis.jar:$OGSA/cog-axis.jar:$OGSA/cog-jglobus.jar:$OGSA/cog-tomcat.jar:$OGSA/commons-discovery.jar:$OGSA/commons-logging.jar:$OGSA/cryptix-asn1.jar:$OGSA/cryptix.jar:$OGSA/cryptix32.jar:$OGSA/jaxrpc.jar:$OGSA/jboss-j2ee.jar:$OGSA/jce-jdk13-117.jar:$OGSA/jgss.jar:$OGSA/log4j-core.jar:$OGSA/ogsa-samples.jar:$OGSA/ogsa.jar:$OGSA/puretls.jar:$OGSA/saaj.jar:$OGSA/servlet.jar:$OGSA/wsdl4j.jar:$OGSA/wsif.jar:$OGSA/xalan.jar:$OGSA/xercesImpl.jar:$OGSA/xmlParserAPIs.jar:$OGSA/xmlsec.jar:.
+
+java -cp $GEN_CLASSPATH -Djava.protocol.handler.pkgs=org.globus.net.protocol \
+      org.apache.axis.wsdl.WSDL2Java -v \
+      GridLabGSICopy.wsdl
