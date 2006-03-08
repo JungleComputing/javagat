@@ -11,7 +11,7 @@
              default to ../JavaGATEngine.
 	-->
 	<property name="env.GAT_LOCATION" location=".." /> 
-        <property name="engine_path" location="${env.GAT_LOCATION}/JavaGATEngine" />
+        <property name="engine_path" location="${env.GAT_LOCATION}/engine" />
 
 	<property name="src" location="src" />
 	<property name="tmp" location="tmp" />
