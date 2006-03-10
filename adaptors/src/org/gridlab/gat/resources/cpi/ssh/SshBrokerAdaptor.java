@@ -57,7 +57,7 @@ public class SshBrokerAdaptor extends ResourceBrokerCpi {
      *            A GATContext which will be used to execute remote jobs
      */
     public SshBrokerAdaptor(GATContext gatContext, Preferences preferences)
-            throws Exception {
+        throws Exception {
         super(gatContext, preferences);
 
         checkName("ssh");
@@ -77,7 +77,7 @@ public class SshBrokerAdaptor extends ResourceBrokerCpi {
      *            hardware resource
      */
     public Reservation reserveResource(ResourceDescription resourceDescription,
-            TimePeriod timePeriod) {
+        TimePeriod timePeriod) {
         throw new UnsupportedOperationException("Not implemented");
     }
 
@@ -102,7 +102,7 @@ public class SshBrokerAdaptor extends ResourceBrokerCpi {
      * @see org.gridlab.gat.resources.ResourceBroker#submitJob(org.gridlab.gat.resources.JobDescription)
      */
     public Job submitJob(JobDescription description)
-            throws GATInvocationException, IOException {
+        throws GATInvocationException, IOException {
         SoftwareDescription sd = description.getSoftwareDescription();
         if (sd == null) {
             throw new GATInvocationException(
@@ -131,8 +131,8 @@ public class SshBrokerAdaptor extends ResourceBrokerCpi {
         Session session;
         /*decide where to run*/
         try {
-            if (host != null)
-                session = prepareSession(new URI("any://" + host + "/"));
+            if (host != null) session = prepareSession(new URI("any://" + host
+                + "/"));
             else {
                 session = prepareSession(location);
                 host = location.getHost();
@@ -149,14 +149,43 @@ public class SshBrokerAdaptor extends ResourceBrokerCpi {
         if (GATEngine.VERBOSE) {
             System.err.println("running command: " + command);
         }
+
+        int retry = 0;
         Channel channel;
-        try {
-            session.connect();
-            channel = session.openChannel("exec");
-            ((ChannelExec) channel).setCommand(command);
-        } catch (Exception e) {
-            throw new GATInvocationException("could not open a SSH channel: "
-                + e);
+        while (true) {
+            try {
+                session.connect();
+                channel = session.openChannel("exec");
+                ((ChannelExec) channel).setCommand(command);
+                
+                // ok, no exception, all is well
+                break;
+            } catch (Exception e) {
+                // due to a bug in the jsch lib, it can sometimes throw an exveption
+                // that the version string is invalid, while this is not the case.
+                // The real problem is that the ssh daemon has reached the maximum number of
+                // unauthenticated connections. Just retry a couple of times.
+                if (e.getMessage().equals("invalid server's version string")) {
+                    retry++;
+                    if (retry > 5) {
+                        throw new GATInvocationException(
+                            "could not open a SSH channel (after 5 retries): "
+                                + e);
+                    }
+
+                    try {
+                        Thread.sleep(1000);
+                    } catch (Exception x) { 
+                        //Ignore
+                    }
+                    if(GATEngine.VERBOSE) {
+                        System.err.println("retry SSH connect");
+                    }
+                } else {
+                    throw new GATInvocationException(
+                        "could not open a SSH channel: " + e);
+                }
+            }
         }
 
         org.gridlab.gat.io.File stdin = sd.getStdin();
@@ -250,7 +279,7 @@ public class SshBrokerAdaptor extends ResourceBrokerCpi {
      *      org.gridlab.gat.util.TimePeriod)
      */
     public Reservation reserveResource(Resource resource, TimePeriod timePeriod)
-            throws RemoteException, IOException {
+        throws RemoteException, IOException {
         throw new UnsupportedOperationException("Not implemented");
     }
 
@@ -320,7 +349,7 @@ public class SshBrokerAdaptor extends ResourceBrokerCpi {
 
     /* does not add stdin to set of files to preStage */
     protected Map resolvePreStagedFiles(JobDescription description, String host)
-            throws GATInvocationException {
+        throws GATInvocationException {
         SoftwareDescription sd = description.getSoftwareDescription();
         if (sd == null) {
             throw new GATInvocationException(
@@ -348,7 +377,7 @@ public class SshBrokerAdaptor extends ResourceBrokerCpi {
     }
 
     protected Map resolvePostStagedFiles(JobDescription description, String host)
-            throws GATInvocationException {
+        throws GATInvocationException {
         SoftwareDescription sd = description.getSoftwareDescription();
         if (sd == null) {
             throw new GATInvocationException(
@@ -379,7 +408,7 @@ public class SshBrokerAdaptor extends ResourceBrokerCpi {
     /* Creates a file object for the destination of the preStaged src file */
     /* should be protected in the ResourceBrokerCpi class*/
     protected File resolvePreStagedFile(File srcFile, String host)
-            throws GATInvocationException {
+        throws GATInvocationException {
         URI src = srcFile.toURI();
         String path = new java.io.File(src.getPath()).getName();
 
@@ -399,7 +428,7 @@ public class SshBrokerAdaptor extends ResourceBrokerCpi {
     }
 
     protected File resolvePostStagedFile(File f, String host)
-            throws GATInvocationException {
+        throws GATInvocationException {
         File res = null;
 
         URI src = f.toURI();

@@ -71,7 +71,7 @@ public class ProActiveJob extends Job {
             IOException {
         HashMap m = new HashMap();
         setState(); // update the state
-        m.put("state", getStateString());
+        m.put("state", getStateString(state));
         m.put("proActiveState", "" + getProActiveState());
         // m.put("error", "" + j.getError());
         m.put("id", jobID);

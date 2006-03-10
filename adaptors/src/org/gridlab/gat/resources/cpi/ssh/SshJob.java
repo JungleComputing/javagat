@@ -106,7 +106,7 @@ public class SshJob extends Job {
         // update state
         getState();
 
-        m.put("state", getStateString());
+        m.put("state", getStateString(state));
         m.put("exitValue", "" + exitVal);
         m.put("hostname", host);
 
@@ -170,7 +170,7 @@ public class SshJob extends Job {
             exited = true;
             exitVal = exitValue;
             state = STOPPED;
-            v = new MetricValue(this, getStateString(), statusMetric, System
+            v = new MetricValue(this, getStateString(state), statusMetric, System
                 .currentTimeMillis());
         }
         if (GATEngine.DEBUG) {

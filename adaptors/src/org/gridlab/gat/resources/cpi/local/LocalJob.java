@@ -82,8 +82,8 @@ public class LocalJob extends Job {
         // update state
         getState();
 
-        m.put("state", getStateString());
-        m.put("resManState", getStateString());
+        m.put("state", getStateString(state));
+        m.put("resManState", getStateString(state));
         m.put("resManName", "Local");
         m.put("exitValue", "" + exitVal);
         m.put("hostname", IPUtils.getLocalHostName());
@@ -147,7 +147,7 @@ public class LocalJob extends Job {
             exited = true;
             exitVal = exitValue;
             state = STOPPED;
-            v = new MetricValue(this, getStateString(), statusMetric, System
+            v = new MetricValue(this, getStateString(state), statusMetric, System
                 .currentTimeMillis());
         }
 

@@ -104,7 +104,7 @@ public class GrmsJob extends Job {
 
         String status = jobInfo.getJobStatus().getValue();
         updateState(status);
-        res.put("state", getStateString());
+        res.put("state", getStateString(state));
 
         res.put("userDn", jobInfo.getUserDn());
         res.put("resManState", status);

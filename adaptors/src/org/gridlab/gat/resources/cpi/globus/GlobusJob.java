@@ -71,7 +71,7 @@ public class GlobusJob extends Job implements GramJobListener,
     public synchronized Map getInfo() {
         HashMap m = new HashMap();
         setState(); // update the state
-        m.put("state", getStateString());
+        m.put("state", getStateString(state));
         m.put("resManState", getGlobusState());
         m.put("resManName", "Globus");
         m.put("error", "" + j.getError());
@@ -242,7 +242,7 @@ public class GlobusJob extends Job implements GramJobListener,
             }
 
             setState();
-            stateString = getStateString();
+            stateString = getStateString(state);
 
             if ((globusState == STATUS_DONE) || (globusState == STATUS_FAILED)) {
                 stopHandlers();
@@ -279,7 +279,7 @@ public class GlobusJob extends Job implements GramJobListener,
                 }
 
                 setState();
-                stateString = getStateString();
+                stateString = getStateString(state);
             }
 
             MetricValue v2 = new MetricValue(this, stateString, statusMetric,

@@ -83,7 +83,7 @@ public abstract class Job implements Monitorable, Advertisable {
 
     protected Preferences preferences;
 
-    protected String getStateString() {
+    public static String getStateString(int state) {
         switch (state) {
         case INITIAL:
             return "INITIAL";

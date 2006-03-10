@@ -13,4 +13,5 @@
   
   SSH: - If the executable does not exist, we get no error.
        - Broker does not work to fs3
+       - Also add retry code for file stransfers (already done for job submit)
        
