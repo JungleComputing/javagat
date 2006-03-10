@@ -641,7 +641,8 @@ public class GATEngine {
                     } catch (Throwable t) {
                         System.err
                             .println("WARNING, user callback threw exception: "
-                                + e);
+                                + t);
+                        t.printStackTrace();
                     }
                 }
             }
