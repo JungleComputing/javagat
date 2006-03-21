@@ -106,7 +106,7 @@ public abstract class Job implements Monitorable, Advertisable {
     }
 
     public JobDescription getJobDescription() {
-        throw new Error("Not implemented");
+        throw new RuntimeException("Not implemented");
     }
 
     /**
@@ -120,7 +120,7 @@ public abstract class Job implements Monitorable, Advertisable {
      *             Upon non-remote IO problem
      */
     public void unSchedule() throws GATInvocationException, IOException {
-        throw new Error("Not implemented");
+        throw new RuntimeException("Not implemented");
     }
 
     /**
@@ -134,7 +134,7 @@ public abstract class Job implements Monitorable, Advertisable {
      *             Upon non-remote IO problem
      */
     public void stop() throws GATInvocationException, IOException {
-        throw new Error("Not implemented");
+        throw new RuntimeException("Not implemented");
     }
 
     /**
@@ -150,7 +150,7 @@ public abstract class Job implements Monitorable, Advertisable {
      *             Upon non-remote IO problem
      */
     public int getState() throws GATInvocationException, IOException {
-        throw new Error("Not implemented");
+        throw new RuntimeException("Not implemented");
     }
 
     /**
@@ -202,7 +202,7 @@ public abstract class Job implements Monitorable, Advertisable {
      * @throws java.io.IOException Upon non-remote IO problem
      */
     public Map getInfo() throws GATInvocationException, IOException {
-        throw new Error("Not implemented");
+        throw new RuntimeException("Not implemented");
     }
 
     /**
@@ -219,7 +219,7 @@ public abstract class Job implements Monitorable, Advertisable {
      *             Upon non-remote IO problem
      */
     public String getJobID() throws GATInvocationException, IOException {
-        throw new Error("Not implemented");
+        throw new RuntimeException("Not implemented");
     }
 
     /**
@@ -244,7 +244,7 @@ public abstract class Job implements Monitorable, Advertisable {
      *             Upon non-remote IO problem
      */
     public void checkpoint() throws GATInvocationException, IOException {
-        throw new Error("Not implemented");
+        throw new RuntimeException("Not implemented");
     }
 
     /**
@@ -257,7 +257,7 @@ public abstract class Job implements Monitorable, Advertisable {
      *             Upon non-remote IO problem
      */
     public void migrate() throws GATInvocationException, IOException {
-        throw new Error("Not implemented");
+        throw new RuntimeException("Not implemented");
     }
 
     /**
@@ -286,7 +286,7 @@ public abstract class Job implements Monitorable, Advertisable {
      */
     public void migrate(HardwareResourceDescription hardwareResourceDescription)
             throws GATInvocationException, IOException {
-        throw new Error("Not implemented");
+        throw new RuntimeException("Not implemented");
     }
 
     /**
@@ -318,7 +318,7 @@ public abstract class Job implements Monitorable, Advertisable {
      * @return the clone of the job
      */
     public Job cloneJob(HardwareResource resource) {
-        throw new Error("Not implemented");
+        throw new RuntimeException("Not implemented");
     }
 
     public MetricValue getMeasurement(Metric metric)
@@ -327,7 +327,7 @@ public abstract class Job implements Monitorable, Advertisable {
             return GATEngine.getMeasurement(this, metric);
         }
 
-        throw new Error("Not implemented");
+        throw new RuntimeException("Not implemented");
     }
 
     public final List getMetricDefinitions() throws GATInvocationException {

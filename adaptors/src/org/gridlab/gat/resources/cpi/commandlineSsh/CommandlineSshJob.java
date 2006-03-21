@@ -164,6 +164,27 @@ public class CommandlineSshJob extends Job {
         GATEngine.fireMetric(this, v);
     }
 
+    public void stop() throws GATInvocationException, IOException {
+        MetricValue v;
+        
+        synchronized (this) {
+            p.destroy();
+            state = STOPPED;
+            v = new MetricValue(this, getStateString(state), statusMetric, System
+                .currentTimeMillis());
+        }
+
+        if (GATEngine.DEBUG) {
+            System.err.println("commandline ssh job callback: firing event: " + v);
+        }
+
+        GATEngine.fireMetric(this, v);
+    }
+
+    public void unSchedule() throws GATInvocationException, IOException {
+        throw new GATInvocationException("not in scheduled state");
+    }
+
     class ProcessWaiter extends Thread {
         ProcessWaiter() {
             start();
