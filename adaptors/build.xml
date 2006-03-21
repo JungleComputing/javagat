@@ -221,6 +221,12 @@
 			</manifest>
 		</jar>
 
+		<jar jarfile="${lib}/CommandlineSshResourceBrokerAdaptor.jar" basedir="${tmp}" includes="org/gridlab/gat/resources/cpi/commandlineSsh/*.class">
+			<manifest>
+				<attribute name="ResourceBrokerCpi-class" value="org.gridlab.gat.resources.cpi.commandlineSsh.CommandlineSshResourceBrokerAdaptor" />
+			</manifest>
+		</jar>
+
 		<jar jarfile="${lib}/SshResourceBrokerAdaptor.jar" basedir="${tmp}" includes="org/gridlab/gat/resources/cpi/ssh/*.class">
 			<manifest>
 				<attribute name="ResourceBrokerCpi-class" value="org.gridlab.gat.resources.cpi.ssh.SshBrokerAdaptor" />

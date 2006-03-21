@@ -753,7 +753,7 @@ public class GATEngine {
 
         String name = (String) preferences.get(adaptorType + ".adaptor.name");
 
-        //		System.err.println("checkname of type " + adaptorType + " name " + adaptorName + " selected = " + name);
+		System.err.println("checkname of type " + adaptorType + " name " + adaptorName + " selected = " + name);
         if ((name != null) && !name.equalsIgnoreCase(adaptorName)) {
             throw new AdaptorNotSelectedException("this adaptor (" + adaptorName
                 + ") was not selected by the user.");
