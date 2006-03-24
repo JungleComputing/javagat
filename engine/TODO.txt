@@ -14,4 +14,6 @@
   SSH: - If the executable does not exist, we get no error.
        - Broker does not work to fs3
        - Also add retry code for file stransfers (already done for job submit)
-       
+
+brokering: also allow output to be printed on the sceen, when no output files are given.
+maybe use special property for this? Not all middlewares can do this.
