@@ -1,6 +1,10 @@
 package org.gridlab.gat.resources.cpi.commandlineSsh;
 
-import org.gridlab.gat.AdaptorNotApplicableException;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.rmi.RemoteException;
+import java.util.List;
+
 import org.gridlab.gat.CommandNotFoundException;
 import org.gridlab.gat.FilePrestageException;
 import org.gridlab.gat.GAT;
@@ -11,7 +15,6 @@ import org.gridlab.gat.Preferences;
 import org.gridlab.gat.TimePeriod;
 import org.gridlab.gat.URI;
 import org.gridlab.gat.engine.GATEngine;
-import org.gridlab.gat.engine.IPUtils;
 import org.gridlab.gat.io.FileInputStream;
 import org.gridlab.gat.io.FileOutputStream;
 import org.gridlab.gat.resources.Job;
@@ -23,13 +26,6 @@ import org.gridlab.gat.resources.SoftwareDescription;
 import org.gridlab.gat.resources.cpi.ResourceBrokerCpi;
 import org.gridlab.gat.util.InputForwarder;
 import org.gridlab.gat.util.OutputForwarder;
-
-import java.io.IOException;
-import java.io.OutputStream;
-
-import java.rmi.RemoteException;
-
-import java.util.List;
 
 /**
  * An instance of this class is used to reserve resources.
@@ -143,7 +139,9 @@ public class CommandlineSshResourceBrokerAdaptor extends ResourceBrokerCpi {
             throw new FilePrestageException("local broker", e);
         }
 
-        String command = "ssh " + host + " " + path + " " + getArguments(description);
+        // we must use the -t option to ssh (allocates pseudo TTY).
+        // If we don't, there is no way to kill the remote process.
+        String command = "ssh -t -t " + host + " " + path + " " + getArguments(description);
 
         if (GATEngine.VERBOSE) {
             System.err.println("running command: " + command);
