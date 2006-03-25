@@ -17,6 +17,8 @@ import org.gridlab.gat.URI;
 import org.gridlab.gat.engine.GATEngine;
 import org.gridlab.gat.io.FileInputStream;
 import org.gridlab.gat.io.FileOutputStream;
+import org.gridlab.gat.io.cpi.ssh.SSHSecurityUtils;
+import org.gridlab.gat.io.cpi.ssh.SshUserInfo;
 import org.gridlab.gat.resources.Job;
 import org.gridlab.gat.resources.JobDescription;
 import org.gridlab.gat.resources.Reservation;
@@ -62,6 +64,13 @@ import org.gridlab.gat.util.OutputForwarder;
  * HardwareResourceDescription.
  */
 public class CommandlineSshResourceBrokerAdaptor extends ResourceBrokerCpi {
+
+    public static final int SSH_PORT = 22;
+
+    private SshUserInfo sui;
+    
+	private boolean windows = false;
+	
     /**
      * This method constructs a CommandlineSshResourceBrokerAdaptor instance
      * corresponding to the passed GATContext.
@@ -74,6 +83,8 @@ public class CommandlineSshResourceBrokerAdaptor extends ResourceBrokerCpi {
         super(gatContext, preferences);
 
         checkName("commandlineSsh");
+        String osname = System.getProperty("os.name");
+        if(osname.startsWith("Windows")) windows = true;
     }
 
     /**
@@ -133,16 +144,65 @@ public class CommandlineSshResourceBrokerAdaptor extends ResourceBrokerCpi {
             host = "localhost";
         }
 
+
+        try {
+            sui = SSHSecurityUtils.getSshCredential(gatContext, preferences,
+                "ssh", location, SSH_PORT);
+        } catch (Exception e) {
+            System.out.println("SshFileAdaptor: failed to retrieve credentials"
+                + e);
+        }
+
+        if (sui == null) {
+            throw new GATInvocationException(
+                "Unable to retrieve user info for authentication");
+        }
+
+            if (sui.privateKeyfile != null) {
+                System.err.println("key file argument not supported yet");
+            }
+
+            //to be modified, this part goes inside the SSHSecurityUtils
+            if (location.getUserInfo() != null) {
+                sui.username = location.getUserInfo();
+            }
+
+            /*allow port override*/
+            int port = location.getPort();
+            /*it will always return -1 for user@host:path*/
+            if (port == -1) {
+                port = SSH_PORT;
+            }
+
+            if (GATEngine.DEBUG) {
+                System.err.println("Prepared session for location " + location
+                    + " with username: " + sui.username + "; host: " + host);
+            }
+        
         try {
             preStageFiles(description, host);
         } catch (GATInvocationException e) {
             throw new FilePrestageException("local broker", e);
         }
 
-        // we must use the -t option to ssh (allocates pseudo TTY).
-        // If we don't, there is no way to kill the remote process.
-        String command = "ssh -t -t " + host + " " + path + " " + getArguments(description);
-
+        String command = null;
+        if(windows) {
+        	command = "sexec " + sui.username + "@" + host + " -unat=yes -cmd=" + path + " " + getArguments(description);
+        	if(sui.getPassword() == null) { // public/private key
+        		int slot = sui.getPrivateKeySlot();
+        		if(slot == -1) { // not set by the user, assume he only has one key
+        			slot = 0;
+        		}
+        		command += " -pk=" + slot;
+        	} else { // password
+        		command += " -pw=" + sui.getPassword();
+        	}
+        } else {
+        	// we must use the -t option to ssh (allocates pseudo TTY).
+        	// If we don't, there is no way to kill the remote process.
+        	command = "ssh -t -t " + host + " " + path + " " + getArguments(description);
+        }
+        
         if (GATEngine.VERBOSE) {
             System.err.println("running command: " + command);
         }

@@ -43,7 +43,8 @@ class SshContextCreator implements SecurityContextCreator {
                 info = new SshUserInfo();
                 info.username = c.getUsername();
                 info.password = c.getPassphrase();
-
+                info.privateKeySlot = c.getPrivateKeySlot();
+                
                 return info;
             } else { // public / private key
 
@@ -54,6 +55,7 @@ class SshContextCreator implements SecurityContextCreator {
                     info = new SshUserInfo();
                     info.username = c.getUsername();
                     info.privateKeyfile = c.getKeyfile().getPath();
+                    info.privateKeySlot = c.getPrivateKeySlot();
 
                     return info;
                 }
@@ -91,6 +93,10 @@ public class SSHSecurityUtils {
 
         if (preferences != null) {
             info.password = (String) preferences.get("password");
+            String slot = (String) preferences.get("privateKeySlot");
+            if(slot != null) {
+            	info.privateKeySlot = Integer.parseInt(slot);
+            }
         }
 
         return info;

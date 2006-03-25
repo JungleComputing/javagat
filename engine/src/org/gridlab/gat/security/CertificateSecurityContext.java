@@ -23,6 +23,11 @@ public class CertificateSecurityContext extends SecurityContext {
      */
     private String username = null;
 
+    /**
+     * Some ssh implementations on windows (tunnelier) use a private key slot
+     */
+    private int privateKeySlot = -1;
+    
     public CertificateSecurityContext() {
     }
 
@@ -115,4 +120,12 @@ public class CertificateSecurityContext extends SecurityContext {
             + ((dataObjects == null) ? "" : ("userdata = " + dataObjects))
             + ")";
     }
+
+	public int getPrivateKeySlot() {
+		return privateKeySlot;
+	}
+
+	public void setPrivateKeySlot(int privateKeySlot) {
+		this.privateKeySlot = privateKeySlot;
+	}
 }

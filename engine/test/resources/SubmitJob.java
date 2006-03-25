@@ -3,10 +3,16 @@
  */
 package resources;
 
+import java.net.URISyntaxException;
+import java.util.Hashtable;
+import java.util.Map;
+
 import org.gridlab.gat.GAT;
 import org.gridlab.gat.GATContext;
+import org.gridlab.gat.GATObjectCreationException;
 import org.gridlab.gat.Preferences;
 import org.gridlab.gat.URI;
+import org.gridlab.gat.io.File;
 import org.gridlab.gat.resources.HardwareResourceDescription;
 import org.gridlab.gat.resources.Job;
 import org.gridlab.gat.resources.JobDescription;
@@ -14,78 +20,90 @@ import org.gridlab.gat.resources.ResourceBroker;
 import org.gridlab.gat.resources.ResourceDescription;
 import org.gridlab.gat.resources.SoftwareDescription;
 
-import java.net.URISyntaxException;
-
-import java.util.Hashtable;
-import java.util.Map;
-
 /**
  * @author rob
  */
 public class SubmitJob {
-    public static void main(String[] args) {
-        GATContext context = new GATContext();
-        Preferences prefs = new Preferences();
-        prefs.put("ResourceBroker.adaptor.name", "grms");
+	public static void main(String[] args) {
+		GATContext context = new GATContext();
+		Preferences prefs = new Preferences();
+		prefs.put("ResourceBroker.adaptor.name", "commandlineSsh");
 
-        URI exe = null;
+		URI exe = null, out = null, err = null;
 
-        try {
-            exe = new URI("file:////bin/date");
-        } catch (URISyntaxException e) {
-            System.err.println("syntax error in URI");
-            System.exit(1);
-        }
+		File outFile = null;
+		File errFile = null;
 
-        SoftwareDescription sd = new SoftwareDescription();
-        sd.setLocation(exe);
+		try {
+			exe = new URI("file:////bin/date");
+			out = new URI("any:///date.out");
+			err = new URI("any:///date.err");
+		} catch (URISyntaxException e) {
+			System.err.println("syntax error in URI");
+			System.exit(1);
+		}
 
-        Hashtable hardwareAttributes = new Hashtable();
+		try {
+			outFile = GAT.createFile(context, prefs, out);
+			errFile = GAT.createFile(context, prefs, err);
+		} catch (GATObjectCreationException e) {
+			System.err.println("error creating file: " + e);
+			System.exit(1);
+		}
 
-        ResourceDescription rd = new HardwareResourceDescription(
-            hardwareAttributes);
+		SoftwareDescription sd = new SoftwareDescription();
+		sd.setLocation(exe);
+		sd.setStdout(outFile);
+		sd.setStderr(errFile);
 
-        JobDescription jd = null;
-        ResourceBroker broker = null;
+		Hashtable hardwareAttributes = new Hashtable();
 
-        try {
-            jd = new JobDescription(sd, rd);
-            broker = GAT.createResourceBroker(context, prefs);
-        } catch (Exception e) {
-            System.err.println("Could not create Job description: " + e);
-            System.exit(1);
-        }
+		hardwareAttributes.put("machine.node", "fs0.das2.cs.vu.nl");
 
-        Job job = null;
+		ResourceDescription rd = new HardwareResourceDescription(
+				hardwareAttributes);
 
-        try {
-            job = broker.submitJob(jd);
-        } catch (Exception e) {
-            System.err.println("submission failed: " + e);
-            e.printStackTrace();
-            System.exit(1);
-        }
+		JobDescription jd = null;
+		ResourceBroker broker = null;
 
-        while (true) {
-            try {
-                Map info = job.getInfo();
-                System.err.print("job info: ");
-                System.err.println(info);
+		try {
+			jd = new JobDescription(sd, rd);
+			broker = GAT.createResourceBroker(context, prefs);
+		} catch (Exception e) {
+			System.err.println("Could not create Job description: " + e);
+			System.exit(1);
+		}
 
-                String state = (String) info.get("state");
+		Job job = null;
 
-                if ((state == null) || state.equals("STOPPED")
-                    || state.equals("SUBMISSION_ERROR")) {
-                    break;
-                }
+		try {
+			job = broker.submitJob(jd);
+		} catch (Exception e) {
+			System.err.println("submission failed: " + e);
+			e.printStackTrace();
+			System.exit(1);
+		}
 
-                Thread.sleep(10000);
-            } catch (Exception e) {
-                System.err.println("getInfo failed: " + e);
-                e.printStackTrace();
+		while (true) {
+			try {
+				Map info = job.getInfo();
+				System.err.print("job info: ");
+				System.err.println(info);
 
-                break;
-            }
-        }
-    }
+				String state = (String) info.get("state");
+
+				if ((state == null) || state.equals("STOPPED")
+						|| state.equals("SUBMISSION_ERROR")) {
+					break;
+				}
+
+				Thread.sleep(10000);
+			} catch (Exception e) {
+				System.err.println("getInfo failed: " + e);
+				e.printStackTrace();
+
+				break;
+			}
+		}
+	}
 }
