@@ -68,9 +68,9 @@ public class CommandlineSshResourceBrokerAdaptor extends ResourceBrokerCpi {
     public static final int SSH_PORT = 22;
 
     private SshUserInfo sui;
-    
-	private boolean windows = false;
-	
+
+    private boolean windows = false;
+
     /**
      * This method constructs a CommandlineSshResourceBrokerAdaptor instance
      * corresponding to the passed GATContext.
@@ -84,7 +84,7 @@ public class CommandlineSshResourceBrokerAdaptor extends ResourceBrokerCpi {
 
         checkName("commandlineSsh");
         String osname = System.getProperty("os.name");
-        if(osname.startsWith("Windows")) windows = true;
+        if (osname.startsWith("Windows")) windows = true;
     }
 
     /**
@@ -144,7 +144,6 @@ public class CommandlineSshResourceBrokerAdaptor extends ResourceBrokerCpi {
             host = "localhost";
         }
 
-
         try {
             sui = SSHSecurityUtils.getSshCredential(gatContext, preferences,
                 "ssh", location, SSH_PORT);
@@ -158,27 +157,29 @@ public class CommandlineSshResourceBrokerAdaptor extends ResourceBrokerCpi {
                 "Unable to retrieve user info for authentication");
         }
 
-            if (sui.privateKeyfile != null) {
+        if (sui.privateKeyfile != null) {
+            if(GATEngine.DEBUG) {
                 System.err.println("key file argument not supported yet");
             }
+        }
 
-            //to be modified, this part goes inside the SSHSecurityUtils
-            if (location.getUserInfo() != null) {
-                sui.username = location.getUserInfo();
-            }
+        //to be modified, this part goes inside the SSHSecurityUtils
+        if (location.getUserInfo() != null) {
+            sui.username = location.getUserInfo();
+        }
 
-            /*allow port override*/
-            int port = location.getPort();
-            /*it will always return -1 for user@host:path*/
-            if (port == -1) {
-                port = SSH_PORT;
-            }
+        /*allow port override*/
+        int port = location.getPort();
+        /*it will always return -1 for user@host:path*/
+        if (port == -1) {
+            port = SSH_PORT;
+        }
 
-            if (GATEngine.DEBUG) {
-                System.err.println("Prepared session for location " + location
-                    + " with username: " + sui.username + "; host: " + host);
-            }
-        
+        if (GATEngine.DEBUG) {
+            System.err.println("Prepared session for location " + location
+                + " with username: " + sui.username + "; host: " + host);
+        }
+
         try {
             preStageFiles(description, host);
         } catch (GATInvocationException e) {
@@ -186,23 +187,25 @@ public class CommandlineSshResourceBrokerAdaptor extends ResourceBrokerCpi {
         }
 
         String command = null;
-        if(windows) {
-        	command = "sexec " + sui.username + "@" + host + " -unat=yes -cmd=" + path + " " + getArguments(description);
-        	if(sui.getPassword() == null) { // public/private key
-        		int slot = sui.getPrivateKeySlot();
-        		if(slot == -1) { // not set by the user, assume he only has one key
-        			slot = 0;
-        		}
-        		command += " -pk=" + slot;
-        	} else { // password
-        		command += " -pw=" + sui.getPassword();
-        	}
+        if (windows) {
+            command = "sexec " + sui.username + "@" + host + " -unat=yes -cmd="
+                + path + " " + getArguments(description);
+            if (sui.getPassword() == null) { // public/private key
+                int slot = sui.getPrivateKeySlot();
+                if (slot == -1) { // not set by the user, assume he only has one key
+                    slot = 0;
+                }
+                command += " -pk=" + slot;
+            } else { // password
+                command += " -pw=" + sui.getPassword();
+            }
         } else {
-        	// we must use the -t option to ssh (allocates pseudo TTY).
-        	// If we don't, there is no way to kill the remote process.
-        	command = "ssh -t -t " + host + " " + path + " " + getArguments(description);
+            // we must use the -t option to ssh (allocates pseudo TTY).
+            // If we don't, there is no way to kill the remote process.
+            command = "ssh -t -t " + host + " " + path + " "
+                + getArguments(description);
         }
-        
+
         if (GATEngine.VERBOSE) {
             System.err.println("running command: " + command);
         }
@@ -214,7 +217,7 @@ public class CommandlineSshResourceBrokerAdaptor extends ResourceBrokerCpi {
             throw new CommandNotFoundException("commandlineSsh broker", e);
         }
 
-        org.gridlab.gat.io.File stdin =  sd.getStdin();
+        org.gridlab.gat.io.File stdin = sd.getStdin();
         org.gridlab.gat.io.File stdout = sd.getStdout();
         org.gridlab.gat.io.File stderr = sd.getStderr();
 
@@ -237,7 +240,7 @@ public class CommandlineSshResourceBrokerAdaptor extends ResourceBrokerCpi {
         }
 
         OutputForwarder outForwarder = null;
-        
+
         // we must always read the output and error streams to avoid deadlocks
         if (stdout == null) {
             new OutputForwarder(p.getInputStream(), false); // throw away output
@@ -251,9 +254,9 @@ public class CommandlineSshResourceBrokerAdaptor extends ResourceBrokerCpi {
                 throw new GATInvocationException("commandlineSsh broker", e);
             }
         }
-        
+
         OutputForwarder errForwarder = null;
-        
+
         // we must always read the output and error streams to avoid deadlocks
         if (stderr == null) {
             new OutputForwarder(p.getErrorStream(), false); // throw away output
@@ -268,7 +271,8 @@ public class CommandlineSshResourceBrokerAdaptor extends ResourceBrokerCpi {
             }
         }
 
-        return new CommandlineSshJob(this, description, p, outForwarder, errForwarder);
+        return new CommandlineSshJob(this, description, p, outForwarder,
+            errForwarder);
     }
 
     /*
