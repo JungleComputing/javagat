@@ -100,7 +100,8 @@ public class GATEngine {
             adaptors.printAdaptorList();
         }
 
-        Runtime.getRuntime().addShutdownHook(new EndHook());
+        // Don't add a shutdown hook, the application might add one that depends on GAT 
+        //        Runtime.getRuntime().addShutdownHook(new EndHook());
     }
 
     static boolean propertySet(String name) {
