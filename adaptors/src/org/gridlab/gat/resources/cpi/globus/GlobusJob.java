@@ -6,6 +6,7 @@ import java.util.Map;
 import org.globus.gram.Gram;
 import org.globus.gram.GramJob;
 import org.globus.gram.GramJobListener;
+import org.globus.gram.internal.GRAMConstants;
 import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.advert.Advertisable;
 import org.gridlab.gat.engine.GATEngine;
@@ -178,7 +179,22 @@ public class GlobusJob extends Job implements GramJobListener,
         try {
             j.cancel();
         } catch (Exception e) {
-            throw new GATInvocationException("globus job", e);
+            if(GATEngine.VERBOSE) {
+                System.err.println("got an exception while cancelling job: " + e); 
+            }
+
+            try {
+                j.signal(GRAMConstants.SIGNAL_CANCEL);
+            } catch (Exception e2) {
+                if(GATEngine.VERBOSE) {
+                    System.err.println("got an exception while sending signal to job: " + e2); 
+                }
+                
+                GATInvocationException x = new GATInvocationException();
+                x.add("globus job", e);
+                x.add("globus job", e2);
+                throw x;
+            }
         }
 
         stopHandlers();
@@ -188,7 +204,7 @@ public class GlobusJob extends Job implements GramJobListener,
 
     public void unSchedule() throws GATInvocationException {
         if (getState() != SCHEDULED) {
-            throw new GATInvocationException("Job is not in SHCEDULED state");
+            throw new GATInvocationException("Job is not in SCHEDULED state");
         }
 
         try {
