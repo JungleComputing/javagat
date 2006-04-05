@@ -17,10 +17,44 @@ import org.gridlab.gat.resources.Job;
 import org.gridlab.gat.resources.JobDescription;
 
 /**
+ * This thread actively polls the globus state of a job. this is needed in case of firewalls.
+ * 
+ * @author rob
+ *
+ */
+class JobPoller extends Thread {
+    GlobusJob j;
+
+    JobPoller(GlobusJob j) {
+        this.j = j;
+    }
+
+    public void run() {
+        while (true) {
+            if (j.getState() == Job.STOPPED) return;
+            if (j.getState() == Job.SUBMISSION_ERROR) return;
+
+            j.getStateActive();
+
+            synchronized (this) {
+                try {
+                    wait(10 * 1000);
+                } catch (Exception e) {
+                    // Ignore
+                }
+            }
+        }
+    }
+}
+
+/**
  * @author rob
  */
 public class GlobusJob extends Job implements GramJobListener,
         org.globus.gram.internal.GRAMConstants {
+
+    static final int GRAM_JOBMANAGER_CONNECTION_FAILURE = 79;
+
     static int jobsAlive = 0;
 
     GlobusBrokerAdaptor broker;
@@ -39,8 +73,10 @@ public class GlobusJob extends Job implements GramJobListener,
 
     String jobID;
 
+    JobPoller poller;
+
     public GlobusJob(GlobusBrokerAdaptor broker, JobDescription jobDescription,
-            GramJob j) {
+        GramJob j) {
         this.broker = broker;
         this.jobDescription = jobDescription;
         this.j = j;
@@ -55,6 +91,9 @@ public class GlobusJob extends Job implements GramJobListener,
             MetricDefinition.DISCRETE, "String", null, null, returnDef);
         GATEngine.registerMetric(this, "getJobStatus", statusMetricDefinition);
         statusMetric = statusMetricDefinition.createMetric(null);
+
+        poller = new JobPoller(this);
+        poller.start();
     }
 
     public JobDescription getJobDescription() {
@@ -75,7 +114,7 @@ public class GlobusJob extends Job implements GramJobListener,
         m.put("state", getStateString(state));
         m.put("resManState", getGlobusState());
         m.put("resManName", "Globus");
-        m.put("error", "" + j.getError());
+        m.put("resManError", "" + j.getError());
         m.put("id", j.getIDAsString());
 
         if (getState() == RUNNING) {
@@ -116,6 +155,15 @@ public class GlobusJob extends Job implements GramJobListener,
     }
 
     protected void setState() {
+        if (j.getError() == GRAM_JOBMANAGER_CONNECTION_FAILURE) {
+            if (postStageFinished) {
+                state = STOPPED;
+            } else {
+                state = RUNNING;
+            }
+            return;
+        }
+
         switch (j.getStatus()) {
         case STATUS_ACTIVE:
             state = RUNNING;
@@ -179,17 +227,20 @@ public class GlobusJob extends Job implements GramJobListener,
         try {
             j.cancel();
         } catch (Exception e) {
-            if(GATEngine.VERBOSE) {
-                System.err.println("got an exception while cancelling job: " + e); 
+            if (GATEngine.VERBOSE) {
+                System.err.println("got an exception while cancelling job: "
+                    + e);
             }
 
             try {
                 j.signal(GRAMConstants.SIGNAL_CANCEL);
             } catch (Exception e2) {
-                if(GATEngine.VERBOSE) {
-                    System.err.println("got an exception while sending signal to job: " + e2); 
+                if (GATEngine.VERBOSE) {
+                    System.err
+                        .println("got an exception while sending signal to job: "
+                            + e2);
                 }
-                
+
                 GATInvocationException x = new GATInvocationException();
                 x.add("globus job", e);
                 x.add("globus job", e2);
@@ -244,17 +295,53 @@ public class GlobusJob extends Job implements GramJobListener,
     }
 
     /**
+     * we need this if there is a firewall/NAT blocking traffic from the job to the local machine
+     *
+     */
+    void getStateActive() {
+        if (GATEngine.VERBOSE) {
+            System.err.println("polling state of globus job");
+        }
+        try {
+            if (j != null) {
+                Gram.jobStatus(j); // this call will trigger the listeners if the state changed.
+            }
+        } catch (NullPointerException x) {
+            // ignore, fore some reason the first time, gram throws a null pointer exception.
+        } catch (Exception e) {
+            if (GATEngine.VERBOSE) {
+                System.err
+                    .println("WARNING, could not get state of globus job: " + e);
+            }
+
+            if (j.getError() == GRAM_JOBMANAGER_CONNECTION_FAILURE) {
+                // this means we could not contact the job manager, assume the job has been finished.
+                // report that the status has changed
+                statusChanged(j);
+                synchronized (poller) {
+                    poller.notifyAll();
+                }
+            }
+        }
+    }
+
+    /**
      * @see org.globus.gram.GramJobListener#statusChanged(org.globus.gram.GramJob)
      */
     public void statusChanged(GramJob newJob) {
         String stateString = null;
         int globusState = newJob.getStatus();
 
+        if (newJob.getError() == GRAM_JOBMANAGER_CONNECTION_FAILURE) {
+            globusState = STATUS_DONE;
+        }
+
         synchronized (this) {
             if (GATEngine.VERBOSE) {
                 System.err.println("globus job callback: new Job id: "
                     + newJob.getIDAsString() + ", state = "
-                    + newJob.getStatusAsString());
+                    + newJob.getStatusAsString() + " error = "
+                    + newJob.getError());
             }
 
             setState();
@@ -274,7 +361,7 @@ public class GlobusJob extends Job implements GramJobListener,
 
         GATEngine.fireMetric(this, v);
 
-        if (j.getStatus() == STATUS_DONE) {
+        if (globusState == STATUS_DONE) {
             if (GATEngine.VERBOSE) {
                 System.err.println("globus job callback: post stage starting");
             }

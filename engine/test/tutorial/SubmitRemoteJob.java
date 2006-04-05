@@ -33,6 +33,7 @@ public class SubmitRemoteJob {
             Thread.sleep(1000);
         }
 
+        System.err.println("job DONE, state = " + job.getInfo());
         GAT.end();
     }
 }
