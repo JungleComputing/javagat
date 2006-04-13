@@ -3,9 +3,11 @@ package org.gridlab.gat.resources.cpi.proactive;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Hashtable;
+import java.util.Map;
 import java.util.StringTokenizer;
 import java.util.Vector;
 
+import org.gridlab.gat.AdaptorNotApplicableException;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.GATObjectCreationException;
@@ -13,6 +15,7 @@ import org.gridlab.gat.Preferences;
 import org.gridlab.gat.io.File;
 import org.gridlab.gat.resources.Job;
 import org.gridlab.gat.resources.JobDescription;
+import org.gridlab.gat.resources.SoftwareDescription;
 import org.gridlab.gat.resources.cpi.ResourceBrokerCpi;
 import org.objectweb.proactive.ProActive;
 import org.objectweb.proactive.GATAdaptor.ProActiveLauncher;
@@ -196,6 +199,20 @@ public class ProActiveBrokerAdaptor extends ResourceBrokerCpi {
 
     public Job submitJob(JobDescription description)
             throws GATInvocationException, IOException {
+        
+        SoftwareDescription sd = description.getSoftwareDescription();
+
+        if (sd == null) {
+            throw new GATInvocationException(
+                "The job description does not contain a software description");
+        }
+
+        // we do not support environment yet
+        Map env = sd.getEnvironment();
+        if(env == null || env.isEmpty()) {
+            throw new AdaptorNotApplicableException("cannot handle environment");
+        }
+        
         //		ResourceDescription rd = null;
         boolean classpathNext = false;
         HashMap JVMParams = new HashMap();

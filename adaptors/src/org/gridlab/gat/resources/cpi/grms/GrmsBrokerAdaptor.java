@@ -44,6 +44,7 @@ import org.globus.gsi.gssapi.auth.SelfAuthorization;
 
 import org.gridforum.jgss.ExtendedGSSManager;
 
+import org.gridlab.gat.AdaptorNotApplicableException;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.GATObjectCreationException;
@@ -246,6 +247,12 @@ public class GrmsBrokerAdaptor extends ResourceBrokerCpi {
         if (sd == null) {
             throw new GATInvocationException(
                 "The job description does not contain a software description");
+        }
+
+        // we do not support environment yet
+        Map myEnv = sd.getEnvironment();
+        if(myEnv == null || myEnv.isEmpty()) {
+            throw new AdaptorNotApplicableException("cannot handle environment");
         }
 
         // @@@ for now we only do simple Jobs.

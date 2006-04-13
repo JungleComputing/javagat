@@ -3,6 +3,9 @@
  */
 package org.gridlab.gat.resources.cpi.globus;
 
+import java.util.Map;
+import java.util.Set;
+
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.globus.common.ResourceManagerContact;
@@ -84,6 +87,20 @@ public class GlobusBrokerAdaptor extends ResourceBrokerCpi {
             rsl += (" (stderr = " + stderr.getPath() + ")");
         }
 
+        // set the environment
+        Map env = sd.getEnvironment();
+        if(env != null && !env.isEmpty()) {
+            Set s = env.keySet();
+            String[] keys = (String[]) s.toArray();
+            rsl += "(environment = ";
+            
+            for(int i=0; i<keys.length; i++) {
+                String val = (String) env.get(keys[i]); 
+                rsl += "(" + keys[i] + "\"" + val + "\")";
+            }
+            rsl += ")";
+        }
+        
         if (GATEngine.VERBOSE) {
             System.err.println("RSL: " + rsl);
         }

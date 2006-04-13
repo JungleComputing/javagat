@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.gridlab.gat.AdaptorNotApplicableException;
 import org.gridlab.gat.GAT;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
@@ -107,6 +108,12 @@ public class SshBrokerAdaptor extends ResourceBrokerCpi {
         if (sd == null) {
             throw new GATInvocationException(
                 "The job description does not contain a software description");
+        }
+
+        // we do not support environment yet
+        Map env = sd.getEnvironment();
+        if(env == null || env.isEmpty()) {
+            throw new AdaptorNotApplicableException("cannot handle environment");
         }
 
         URI location = getLocationURI(description);

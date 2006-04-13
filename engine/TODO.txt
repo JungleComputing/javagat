@@ -4,7 +4,6 @@
 - document preferences
 - implement GATSelf
 - Allow adaptor.name preference to be a list
-- change CVS dir structure / migrate to new server
 - fix release page: mention that there are no external deps, list adaptors
 - GAT factory: create versions that don't need a context? 
   Use a default context when none is provided? --Ask Andre what he thinks
@@ -17,3 +16,6 @@
 
 brokering: also allow output to be printed on the sceen, when no output files are given.
 maybe use special property for this? Not all middlewares can do this.
+
+- start Java apps
+- support environment vars in ssh broker.

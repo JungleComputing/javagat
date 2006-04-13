@@ -4,7 +4,9 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.rmi.RemoteException;
 import java.util.List;
+import java.util.Map;
 
+import org.gridlab.gat.AdaptorNotApplicableException;
 import org.gridlab.gat.CommandNotFoundException;
 import org.gridlab.gat.FilePrestageException;
 import org.gridlab.gat.GAT;
@@ -132,6 +134,12 @@ public class CommandlineSshResourceBrokerAdaptor extends ResourceBrokerCpi {
         if (sd == null) {
             throw new GATInvocationException(
                 "The job description does not contain a software description");
+        }
+
+        // we do not support environment yet
+        Map env = sd.getEnvironment();
+        if(env == null || env.isEmpty()) {
+            throw new AdaptorNotApplicableException("cannot handle environment");
         }
 
         URI location = getLocationURI(description);
