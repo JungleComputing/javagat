@@ -148,7 +148,7 @@ public class SoftwareDescription implements java.io.Serializable {
         this.location = new URI(location);
     }
 
-    /* dest can be null, this means file with the same name in the PWD at the remote machine */
+    /* dest can be null, this means file with the same name in the CWD at the remote machine */
     public void addPreStagedFile(File src, File dest) {
         if (src == null) {
             throw new NullPointerException(
@@ -158,7 +158,7 @@ public class SoftwareDescription implements java.io.Serializable {
         preStagedFiles.put(src, dest);
     }
 
-    /* src can be null, this means file with the same name in the PWD at the remote machine */
+    /* src can be null, this means file with the same name in the CWD at the remote machine */
     public void addPostStagedFile(File src, File dest) {
         if (dest == null) {
             throw new NullPointerException(
