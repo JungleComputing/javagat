@@ -520,6 +520,51 @@ public abstract class FileCpi implements File {
         }
     }
 
+    protected static void deleteDirectory(GATContext gatContext,
+            Preferences preferences, URI dirUri) throws GATInvocationException {
+        File dir;
+        try {
+            dir = GAT.createFile(gatContext, preferences, dirUri);
+        } catch (GATObjectCreationException e) {
+            throw new GATInvocationException("generic file cpi", e);
+        }
+        
+        File[] files = dir.listFiles(new FileFilter() {
+                    public boolean accept(File file) {
+                        try {
+                            return file.isDirectory();
+                        } catch (Exception e) {
+                            return false;
+                        }
+                    }
+                });
+
+        if (files == null) {
+            return; // Directory could not be read
+        }
+
+        for (int i = 0; i < files.length; i++) {
+            deleteDirectory(gatContext, preferences, files[i].toURI());
+            files[i].delete();
+        }
+
+        files = dir.listFiles(new FileFilter() {
+                    public boolean accept(File file) {
+                        try {
+                            return !file.isDirectory();
+                        } catch (Exception e) {
+                            return false;
+                        }
+                    }
+                });
+
+        for (int i = 0; i < files.length; i++) {
+            files[i].delete();
+        }
+
+        dir.delete();
+    }
+    
     public String marshal() {
         SerializedFile f = new SerializedFile();
         f.setLocation(location.toString());
