@@ -760,10 +760,11 @@ public class GATEngine {
                 + ") was not selected by the user.");
         }
     }
-
+/*
     private static class EndHook extends Thread {
         public void run() {
             end();
         }
     }
+*/
 }
