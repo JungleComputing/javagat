@@ -167,6 +167,16 @@ public class SftpFileAdaptor extends FileCpi {
         }
     }
 
+    public long length() throws GATInvocationException {
+        try {
+            FileAttributes attr = c.sftp.stat(location.getPath());
+
+            return attr.getSize().longValue();
+        } catch (IOException e) {
+            throw new GATInvocationException("sftp", e);
+        }
+    }
+
     public boolean mkdir() throws GATInvocationException {
         try {
             c.sftp.mkdir(getPath());

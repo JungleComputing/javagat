@@ -516,6 +516,16 @@ public abstract class GlobusFileAdaptor extends FileCpi {
         }
     }
 
+    public long length() throws GATInvocationException {
+        try {
+            FileInfo info = getInfo();
+
+            return info.getSize();
+        } catch (Exception e) {
+            throw new GATInvocationException("gridftp", e);
+        }
+    }
+    
     public boolean mkdir() throws GATInvocationException {
         FTPClient client = null;
 
