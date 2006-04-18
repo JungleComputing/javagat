@@ -168,7 +168,9 @@ public class CommandlineSshFileAdaptor extends FileCpi {
             command += sui.username + "@" + src.getHost() + ":" + src.getPath()
                 + " " + dest.getPath();
         } else {
-            command = "scp -r " + sui.username + "@" + src.getHost() + ":"
+            command = "scp -r " 
+                + "-o BatchMode=yes -o StrictHostKeyChecking=yes"
+                + sui.username + "@" + src.getHost() + ":"
                 + src.getPath() + " " + dest.getPath();
         }
 
@@ -239,7 +241,9 @@ public class CommandlineSshFileAdaptor extends FileCpi {
 
             command += src.getPath() + " " + sui.username + "@" + dest.getHost() + ":" + dest.getPath();
         } else {
-            command = "scp -r " + src.getPath() + " " + sui.username + "@" + dest.getHost() + ":"
+            command = "scp -r " 
+                + "-o BatchMode=yes -o StrictHostKeyChecking=yes"
+                + src.getPath() + " " + sui.username + "@" + dest.getHost() + ":"
                 + dest.getPath();
         }
 
