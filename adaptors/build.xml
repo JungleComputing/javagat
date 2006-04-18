@@ -137,6 +137,12 @@
 			</manifest>
 		</jar>
 
+		<jar jarfile="${lib}/CommandlineSshFileAdaptor.jar" basedir="${tmp}" includes="org/gridlab/gat/io/cpi/commandlineSsh/*.class">
+			<manifest>
+				<attribute name="FileCpi-class" value="org.gridlab.gat.io.cpi.commandlineSsh.CommandlineSshFileAdaptor" />
+			</manifest>
+		</jar>
+
 		<jar jarfile="${lib}/FTPFileInputStreamAdaptor.jar" basedir="${tmp}" includes="org/gridlab/gat/io/cpi/globus/**">
 			<manifest>
 				<attribute name="FileInputStreamCpi-class" value="org.gridlab.gat.io.cpi.globus.FTPFileInputStreamAdaptor" />

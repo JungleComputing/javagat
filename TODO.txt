@@ -19,3 +19,5 @@ maybe use special property for this? Not all middlewares can do this.
 
 - start Java apps
 - support environment vars in ssh broker.
+- top level build file
+- split gridlab adaptors

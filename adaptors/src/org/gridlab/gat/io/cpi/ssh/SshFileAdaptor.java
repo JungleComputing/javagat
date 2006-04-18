@@ -338,9 +338,6 @@ public class SshFileAdaptor extends FileCpi {
          *                else
          *                        fail
          **/
-        if (loc == null) {
-            return;
-        }
 
         if (isLocalFile) {
             if (loc.refersToLocalHost()) {

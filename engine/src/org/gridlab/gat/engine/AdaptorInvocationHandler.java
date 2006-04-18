@@ -21,6 +21,9 @@ import java.util.LinkedList;
  * @author rob
  */
 public class AdaptorInvocationHandler implements InvocationHandler {
+    
+    static final boolean OPTIMIZE_ADAPTOR_POLICY = false;
+    
     private static final Colobus colobus = Colobus
         .getColobus(AdaptorInvocationHandler.class.getName());
 
@@ -138,7 +141,7 @@ public class AdaptorInvocationHandler implements InvocationHandler {
                             + " on adaptor " + adaptornames[i] + " DONE");
                     }
 
-                    if (i != 0) {
+                    if (OPTIMIZE_ADAPTOR_POLICY && i != 0) {
                         // move successful adaptor to start of list
                         synchronized (adaptorlist) {
                             adaptorlist.remove(adaptornames[i]);
