@@ -1,0 +1,875 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions name="DATA_movement"
+ targetNamespace="urn:DATA_movement_services"
+ xmlns:tns="urn:DATA_movement_services"
+ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
+ xmlns:SOAP-ENC="http://schemas.xmlsoap.org/soap/encoding/"
+ xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+ xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+ xmlns:GridLabFileNS1="urn:DATA_movement_services"
+ xmlns:SOAP="http://schemas.xmlsoap.org/wsdl/soap/"
+ xmlns:WSDL="http://schemas.xmlsoap.org/wsdl/"
+ xmlns="http://schemas.xmlsoap.org/wsdl/">
+
+<types>
+
+ <schema targetNamespace="urn:DATA_movement_services"
+  xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
+  xmlns:SOAP-ENC="http://schemas.xmlsoap.org/soap/encoding/"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+  xmlns:GridLabFileNS1="urn:DATA_movement_services"
+  xmlns="http://www.w3.org/2001/XMLSchema"
+  elementFormDefault="unqualified"
+  attributeFormDefault="unqualified">
+  <import namespace="http://schemas.xmlsoap.org/soap/encoding/"/>
+  <complexType name="FileTask">
+   <sequence>
+    <element name="id" type="xsd:long" minOccurs="1" maxOccurs="1"/>
+    <element name="type" type="xsd:int" minOccurs="1" maxOccurs="1"/>
+    <element name="status" type="xsd:int" minOccurs="1" maxOccurs="1"/>
+    <element name="progress-percentage" type="xsd:double" minOccurs="1" maxOccurs="1"/>
+    <element name="error-code" type="xsd:int" minOccurs="1" maxOccurs="1"/>
+    <element name="error-string" type="xsd:string" minOccurs="0" maxOccurs="1" nillable="true"/>
+    <element name="user-DN" type="xsd:string" minOccurs="0" maxOccurs="1" nillable="true"/>
+   </sequence>
+  </complexType>
+  <complexType name="string-vector">
+   <sequence>
+    <element name="item" type="xsd:string" minOccurs="0" maxOccurs="unbounded" nillable="true"/>
+   </sequence>
+  </complexType>
+  <complexType name="FileTask-array">
+   <sequence>
+    <element name="item" type="GridLabFileNS1:FileTask" minOccurs="0" maxOccurs="unbounded" nillable="true"/>
+   </sequence>
+  </complexType>
+  <complexType name="Directory-entry">
+   <sequence>
+    <element name="name" type="xsd:string" minOccurs="0" maxOccurs="1" nillable="true"/>
+    <element name="Charset" type="xsd:string" minOccurs="0" maxOccurs="1" nillable="true"/>
+    <element name="Perm" type="xsd:string" minOccurs="0" maxOccurs="1" nillable="true"/>
+    <element name="Modify" type="xsd:string" minOccurs="0" maxOccurs="1" nillable="true"/>
+    <element name="Size" type="xsd:long" minOccurs="1" maxOccurs="1"/>
+    <element name="mode" type="xsd:int" minOccurs="1" maxOccurs="1"/>
+    <element name="Type" type="xsd:string" minOccurs="0" maxOccurs="1" nillable="true"/>
+   </sequence>
+  </complexType>
+  <complexType name="ArrayOfDirectory-entry">
+   <complexContent>
+    <restriction base="SOAP-ENC:Array">
+     <sequence>
+      <element name="item" type="GridLabFileNS1:Directory-entry" minOccurs="0" maxOccurs="unbounded"/>
+     </sequence>
+     <attribute ref="SOAP-ENC:arrayType" WSDL:arrayType="GridLabFileNS1:Directory-entry[]"/>
+    </restriction>
+   </complexContent>
+  </complexType>
+ </schema>
+
+</types>
+
+<message name="DATACopyFileRequest">
+ <part name="source-URL" type="xsd:string"/>
+ <part name="dest-URL" type="xsd:string"/>
+ <part name="use-parallel" type="xsd:int"/>
+ <part name="no-overwrite" type="xsd:int"/>
+ <part name="maintain-permissions" type="xsd:int"/>
+</message>
+
+<message name="DATACopyFileResponse">
+ <part name="response" type="xsd:string"/>
+</message>
+
+<message name="DATACopyFileDefaultsRequest">
+ <part name="source-URL" type="xsd:string"/>
+ <part name="dest-URL" type="xsd:string"/>
+</message>
+
+<message name="DATACopyFileDefaultsResponse">
+ <part name="response" type="xsd:string"/>
+</message>
+
+<message name="DATAMoveFileRequest">
+ <part name="source-URL" type="xsd:string"/>
+ <part name="dest-URL" type="xsd:string"/>
+ <part name="use-parallel" type="xsd:int"/>
+ <part name="no-overwrite" type="xsd:int"/>
+ <part name="maintain-permissions" type="xsd:int"/>
+</message>
+
+<message name="DATAMoveFileResponse">
+ <part name="response" type="xsd:string"/>
+</message>
+
+<message name="DATAMoveFileDefaultsRequest">
+ <part name="source-URL" type="xsd:string"/>
+ <part name="dest-URL" type="xsd:string"/>
+</message>
+
+<message name="DATAMoveFileDefaultsResponse">
+ <part name="response" type="xsd:string"/>
+</message>
+
+<message name="DATADeleteFileDefaultsRequest">
+ <part name="in-URL" type="xsd:string"/>
+</message>
+
+<message name="DATADeleteFileDefaultsResponse">
+ <part name="response" type="xsd:string"/>
+</message>
+
+<message name="isAliveRequest">
+ <part name="dump" type="xsd:int"/>
+</message>
+
+<message name="isAliveResponse">
+ <part name="response" type="xsd:int"/>
+</message>
+
+<message name="getServiceDescriptionRequest">
+</message>
+
+<message name="getServiceDescriptionResponse">
+ <part name="description" type="xsd:string"/>
+</message>
+
+<message name="DATATransferFileRequest">
+ <part name="operation" type="xsd:int"/>
+ <part name="source-URL" type="xsd:string"/>
+ <part name="dest-URL" type="xsd:string"/>
+ <part name="use-parallel" type="xsd:int"/>
+ <part name="no-overwrite" type="xsd:int"/>
+ <part name="maintain-permissions" type="xsd:int"/>
+</message>
+
+<message name="DATATransferFileResponse">
+ <part name="response" type="xsd:string"/>
+</message>
+
+<message name="DATAinit-CopyFileRequest">
+ <part name="source-URL" type="xsd:string"/>
+ <part name="dest-URL" type="xsd:string"/>
+ <part name="use-parallel" type="xsd:int"/>
+ <part name="no-overwrite" type="xsd:int"/>
+ <part name="maintain-permissions" type="xsd:int"/>
+</message>
+
+<message name="FileTask">
+ <part name="id" type="xsd:long"/>
+ <part name="type" type="xsd:int"/>
+ <part name="status" type="xsd:int"/>
+ <part name="progress-percentage" type="xsd:double"/>
+ <part name="error-code" type="xsd:int"/>
+ <part name="error-string" type="xsd:string"/>
+ <part name="user-DN" type="xsd:string"/>
+</message>
+
+<message name="DATAinit-MoveFileRequest">
+ <part name="source-URL" type="xsd:string"/>
+ <part name="dest-URL" type="xsd:string"/>
+ <part name="use-parallel" type="xsd:int"/>
+ <part name="no-overwrite" type="xsd:int"/>
+ <part name="maintain-permissions" type="xsd:int"/>
+</message>
+
+<message name="DATAinit-DeleteFileRequest">
+ <part name="source-URL" type="xsd:string"/>
+</message>
+
+<message name="DATAinit-TransferFileRequest">
+ <part name="operation" type="xsd:int"/>
+ <part name="source-URL" type="xsd:string"/>
+ <part name="dest-URL" type="xsd:string"/>
+ <part name="use-parallel" type="xsd:int"/>
+ <part name="no-overwrite" type="xsd:int"/>
+ <part name="maintain-permissions" type="xsd:int"/>
+</message>
+
+<message name="DATArestartFileTaskRequest">
+ <part name="id" type="xsd:long"/>
+</message>
+
+<message name="DATAgetFileTaskRequest">
+ <part name="id" type="xsd:long"/>
+</message>
+
+<message name="DATAwaitFileTaskRequest">
+ <part name="id" type="xsd:long"/>
+</message>
+
+<message name="DATAstopFileTaskRequest">
+ <part name="id" type="xsd:long"/>
+</message>
+
+<message name="DATAdeleteFileTaskRequest">
+ <part name="id" type="xsd:long"/>
+</message>
+
+<message name="DATAdeleteFileTaskResponse">
+ <part name="response" type="xsd:int"/>
+</message>
+
+<message name="DATAmultipleCopyRequest">
+ <part name="in-URLs" type="GridLabFileNS1:string-vector"/>
+</message>
+
+<message name="DATAmultipleCopyResponse">
+ <part name="response" type="xsd:string"/>
+</message>
+
+<message name="DATAStopCacheRequest">
+</message>
+
+<message name="DATAStopCacheResponse">
+ <part name="response" type="xsd:string"/>
+</message>
+
+<message name="DATAConnectedMkdirRequest">
+ <part name="in-URL" type="xsd:string"/>
+</message>
+
+<message name="DATAConnectedMkdirResponse">
+ <part name="resp" type="xsd:string"/>
+</message>
+
+<message name="DATA-FTP-MkdirRequest">
+ <part name="in-URL" type="xsd:string"/>
+ <part name="cached" type="xsd:int"/>
+</message>
+
+<message name="DATA-FTP-MkdirResponse">
+ <part name="resp" type="xsd:string"/>
+</message>
+
+<message name="DATAConnectedModTimeRequest">
+ <part name="in-URL" type="xsd:string"/>
+</message>
+
+<message name="Time-response">
+ <part name="seconds" type="xsd:long"/>
+ <part name="response" type="xsd:string"/>
+</message>
+
+<message name="DATA-FTP-ModTimeRequest">
+ <part name="in-URL" type="xsd:string"/>
+ <part name="cached" type="xsd:int"/>
+</message>
+
+<message name="DATAConnectedSizeRequest">
+ <part name="in-URL" type="xsd:string"/>
+</message>
+
+<message name="Size-response">
+ <part name="size" type="xsd:unsignedLong"/>
+ <part name="response" type="xsd:string"/>
+</message>
+
+<message name="DATA-FTP-SizeRequest">
+ <part name="in-URL" type="xsd:string"/>
+ <part name="cached" type="xsd:int"/>
+</message>
+
+<message name="DATAConnectedListRequest">
+ <part name="in-URL" type="xsd:string"/>
+ <part name="verbose" type="xsd:int"/>
+</message>
+
+<message name="List-response">
+ <part name="retlist" type="xsd:string"/>
+ <part name="response" type="xsd:string"/>
+</message>
+
+<message name="DATA-FTP-SimpleListRequest">
+ <part name="in-URL" type="xsd:string"/>
+ <part name="cached" type="xsd:int"/>
+</message>
+
+<message name="DATA-FTP-ListRequest">
+ <part name="in-URL" type="xsd:string"/>
+ <part name="verbose" type="xsd:int"/>
+ <part name="cached" type="xsd:int"/>
+</message>
+
+<message name="DATA-FTP-VerboseListRequest">
+ <part name="in-URL" type="xsd:string"/>
+ <part name="cached" type="xsd:int"/>
+</message>
+
+<message name="DATA-FTP-MachineListDirectoryRequest">
+ <part name="in-URL" type="xsd:string"/>
+ <part name="cached" type="xsd:int"/>
+</message>
+
+<message name="DATA-FTP-MachineListFileRequest">
+ <part name="in-URL" type="xsd:string"/>
+ <part name="cached" type="xsd:int"/>
+</message>
+
+<message name="DATA-FTP-StructuredMachineListDirectoryRequest">
+ <part name="in-URL" type="xsd:string"/>
+ <part name="cached" type="xsd:int"/>
+</message>
+
+<message name="List-structured-response">
+ <part name="entries" type="GridLabFileNS1:ArrayOfDirectory-entry"/>
+ <part name="response" type="xsd:string"/>
+</message>
+
+<message name="DATA-FTP-StructuredMachineListFileRequest">
+ <part name="in-URL" type="xsd:string"/>
+ <part name="cached" type="xsd:int"/>
+</message>
+
+<message name="List-structured-file-response">
+ <part name="file" type="GridLabFileNS1:Directory-entry"/>
+ <part name="response" type="xsd:string"/>
+</message>
+
+<message name="DATA-FTP-DeleteRequest">
+ <part name="in-URL" type="xsd:string"/>
+ <part name="cached" type="xsd:int"/>
+</message>
+
+<message name="DATA-FTP-DeleteResponse">
+ <part name="resp" type="xsd:string"/>
+</message>
+
+<message name="DATA-FTP-ExistsRequest">
+ <part name="in-URL" type="xsd:string"/>
+ <part name="cached" type="xsd:int"/>
+</message>
+
+<message name="DATA-FTP-ExistsResponse">
+ <part name="resp" type="xsd:string"/>
+</message>
+
+<message name="DATA-FTP-ChmodRequest">
+ <part name="in-URL" type="xsd:string"/>
+ <part name="mode" type="xsd:int"/>
+ <part name="cached" type="xsd:int"/>
+</message>
+
+<message name="DATA-FTP-ChmodResponse">
+ <part name="resp" type="xsd:string"/>
+</message>
+
+<portType name="DATA_movementPortType">
+ <operation name="DATACopyFile">
+  <documentation>Service definition of function GridLabFileNS1__DATACopyFile</documentation>
+  <input message="tns:DATACopyFileRequest"/>
+  <output message="tns:DATACopyFileResponse"/>
+ </operation>
+ <operation name="DATACopyFileDefaults">
+  <documentation>Service definition of function GridLabFileNS1__DATACopyFileDefaults</documentation>
+  <input message="tns:DATACopyFileDefaultsRequest"/>
+  <output message="tns:DATACopyFileDefaultsResponse"/>
+ </operation>
+ <operation name="DATAMoveFile">
+  <documentation>Service definition of function GridLabFileNS1__DATAMoveFile</documentation>
+  <input message="tns:DATAMoveFileRequest"/>
+  <output message="tns:DATAMoveFileResponse"/>
+ </operation>
+ <operation name="DATAMoveFileDefaults">
+  <documentation>Service definition of function GridLabFileNS1__DATAMoveFileDefaults</documentation>
+  <input message="tns:DATAMoveFileDefaultsRequest"/>
+  <output message="tns:DATAMoveFileDefaultsResponse"/>
+ </operation>
+ <operation name="DATADeleteFileDefaults">
+  <documentation>Service definition of function GridLabFileNS1__DATADeleteFileDefaults</documentation>
+  <input message="tns:DATADeleteFileDefaultsRequest"/>
+  <output message="tns:DATADeleteFileDefaultsResponse"/>
+ </operation>
+ <operation name="isAlive">
+  <documentation>Service definition of function GridLabFileNS1__isAlive</documentation>
+  <input message="tns:isAliveRequest"/>
+  <output message="tns:isAliveResponse"/>
+ </operation>
+ <operation name="getServiceDescription">
+  <documentation>Service definition of function GridLabFileNS1__getServiceDescription</documentation>
+  <input message="tns:getServiceDescriptionRequest"/>
+  <output message="tns:getServiceDescriptionResponse"/>
+ </operation>
+ <operation name="DATATransferFile">
+  <documentation>Service definition of function GridLabFileNS1__DATATransferFile</documentation>
+  <input message="tns:DATATransferFileRequest"/>
+  <output message="tns:DATATransferFileResponse"/>
+ </operation>
+ <operation name="DATAinit-CopyFile">
+  <documentation>Service definition of function GridLabFileNS1__DATAinit_CopyFile</documentation>
+  <input message="tns:DATAinit-CopyFileRequest"/>
+  <output message="tns:FileTask"/>
+ </operation>
+ <operation name="DATAinit-MoveFile">
+  <documentation>Service definition of function GridLabFileNS1__DATAinit_MoveFile</documentation>
+  <input message="tns:DATAinit-MoveFileRequest"/>
+  <output message="tns:FileTask"/>
+ </operation>
+ <operation name="DATAinit-DeleteFile">
+  <documentation>Service definition of function GridLabFileNS1__DATAinit_DeleteFile</documentation>
+  <input message="tns:DATAinit-DeleteFileRequest"/>
+  <output message="tns:FileTask"/>
+ </operation>
+ <operation name="DATAinit-TransferFile">
+  <documentation>Service definition of function GridLabFileNS1__DATAinit_TransferFile</documentation>
+  <input message="tns:DATAinit-TransferFileRequest"/>
+  <output message="tns:FileTask"/>
+ </operation>
+ <operation name="DATArestartFileTask">
+  <documentation>Service definition of function GridLabFileNS1__DATArestartFileTask</documentation>
+  <input message="tns:DATArestartFileTaskRequest"/>
+  <output message="tns:FileTask"/>
+ </operation>
+ <operation name="DATAgetFileTask">
+  <documentation>Service definition of function GridLabFileNS1__DATAgetFileTask</documentation>
+  <input message="tns:DATAgetFileTaskRequest"/>
+  <output message="tns:FileTask"/>
+ </operation>
+ <operation name="DATAwaitFileTask">
+  <documentation>Service definition of function GridLabFileNS1__DATAwaitFileTask</documentation>
+  <input message="tns:DATAwaitFileTaskRequest"/>
+  <output message="tns:FileTask"/>
+ </operation>
+ <operation name="DATAstopFileTask">
+  <documentation>Service definition of function GridLabFileNS1__DATAstopFileTask</documentation>
+  <input message="tns:DATAstopFileTaskRequest"/>
+  <output message="tns:FileTask"/>
+ </operation>
+ <operation name="DATAdeleteFileTask">
+  <documentation>Service definition of function GridLabFileNS1__DATAdeleteFileTask</documentation>
+  <input message="tns:DATAdeleteFileTaskRequest"/>
+  <output message="tns:DATAdeleteFileTaskResponse"/>
+ </operation>
+ <operation name="DATAmultipleCopy">
+  <documentation>Service definition of function GridLabFileNS1__DATAmultipleCopy</documentation>
+  <input message="tns:DATAmultipleCopyRequest"/>
+  <output message="tns:DATAmultipleCopyResponse"/>
+ </operation>
+ <operation name="DATAStopCache">
+  <documentation>Service definition of function GridLabFileNS1__DATAStopCache</documentation>
+  <input message="tns:DATAStopCacheRequest"/>
+  <output message="tns:DATAStopCacheResponse"/>
+ </operation>
+ <operation name="DATAConnectedMkdir">
+  <documentation>Service definition of function GridLabFileNS1__DATAConnectedMkdir</documentation>
+  <input message="tns:DATAConnectedMkdirRequest"/>
+  <output message="tns:DATAConnectedMkdirResponse"/>
+ </operation>
+ <operation name="DATA-FTP-Mkdir">
+  <documentation>Service definition of function GridLabFileNS1__DATA_FTP_Mkdir</documentation>
+  <input message="tns:DATA-FTP-MkdirRequest"/>
+  <output message="tns:DATA-FTP-MkdirResponse"/>
+ </operation>
+ <operation name="DATAConnectedModTime">
+  <documentation>Service definition of function GridLabFileNS1__DATAConnectedModTime</documentation>
+  <input message="tns:DATAConnectedModTimeRequest"/>
+  <output message="tns:Time-response"/>
+ </operation>
+ <operation name="DATA-FTP-ModTime">
+  <documentation>Service definition of function GridLabFileNS1__DATA_FTP_ModTime</documentation>
+  <input message="tns:DATA-FTP-ModTimeRequest"/>
+  <output message="tns:Time-response"/>
+ </operation>
+ <operation name="DATAConnectedSize">
+  <documentation>Service definition of function GridLabFileNS1__DATAConnectedSize</documentation>
+  <input message="tns:DATAConnectedSizeRequest"/>
+  <output message="tns:Size-response"/>
+ </operation>
+ <operation name="DATA-FTP-Size">
+  <documentation>Service definition of function GridLabFileNS1__DATA_FTP_Size</documentation>
+  <input message="tns:DATA-FTP-SizeRequest"/>
+  <output message="tns:Size-response"/>
+ </operation>
+ <operation name="DATAConnectedList">
+  <documentation>Service definition of function GridLabFileNS1__DATAConnectedList</documentation>
+  <input message="tns:DATAConnectedListRequest"/>
+  <output message="tns:List-response"/>
+ </operation>
+ <operation name="DATA-FTP-SimpleList">
+  <documentation>Service definition of function GridLabFileNS1__DATA_FTP_SimpleList</documentation>
+  <input message="tns:DATA-FTP-SimpleListRequest"/>
+  <output message="tns:List-response"/>
+ </operation>
+ <operation name="DATA-FTP-List">
+  <documentation>Service definition of function GridLabFileNS1__DATA_FTP_List</documentation>
+  <input message="tns:DATA-FTP-ListRequest"/>
+  <output message="tns:List-response"/>
+ </operation>
+ <operation name="DATA-FTP-VerboseList">
+  <documentation>Service definition of function GridLabFileNS1__DATA_FTP_VerboseList</documentation>
+  <input message="tns:DATA-FTP-VerboseListRequest"/>
+  <output message="tns:List-response"/>
+ </operation>
+ <operation name="DATA-FTP-MachineListDirectory">
+  <documentation>Service definition of function GridLabFileNS1__DATA_FTP_MachineListDirectory</documentation>
+  <input message="tns:DATA-FTP-MachineListDirectoryRequest"/>
+  <output message="tns:List-response"/>
+ </operation>
+ <operation name="DATA-FTP-MachineListFile">
+  <documentation>Service definition of function GridLabFileNS1__DATA_FTP_MachineListFile</documentation>
+  <input message="tns:DATA-FTP-MachineListFileRequest"/>
+  <output message="tns:List-response"/>
+ </operation>
+ <operation name="DATA-FTP-StructuredMachineListDirectory">
+  <documentation>Service definition of function GridLabFileNS1__DATA_FTP_StructuredMachineListDirectory</documentation>
+  <input message="tns:DATA-FTP-StructuredMachineListDirectoryRequest"/>
+  <output message="tns:List-structured-response"/>
+ </operation>
+ <operation name="DATA-FTP-StructuredMachineListFile">
+  <documentation>Service definition of function GridLabFileNS1__DATA_FTP_StructuredMachineListFile</documentation>
+  <input message="tns:DATA-FTP-StructuredMachineListFileRequest"/>
+  <output message="tns:List-structured-file-response"/>
+ </operation>
+ <operation name="DATA-FTP-Delete">
+  <documentation>Service definition of function GridLabFileNS1__DATA_FTP_Delete</documentation>
+  <input message="tns:DATA-FTP-DeleteRequest"/>
+  <output message="tns:DATA-FTP-DeleteResponse"/>
+ </operation>
+ <operation name="DATA-FTP-Exists">
+  <documentation>Service definition of function GridLabFileNS1__DATA_FTP_Exists</documentation>
+  <input message="tns:DATA-FTP-ExistsRequest"/>
+  <output message="tns:DATA-FTP-ExistsResponse"/>
+ </operation>
+ <operation name="DATA-FTP-Chmod">
+  <documentation>Service definition of function GridLabFileNS1__DATA_FTP_Chmod</documentation>
+  <input message="tns:DATA-FTP-ChmodRequest"/>
+  <output message="tns:DATA-FTP-ChmodResponse"/>
+ </operation>
+</portType>
+
+<binding name="DATA_movement" type="tns:DATA_movementPortType">
+ <SOAP:binding style="rpc" transport="http://schemas.xmlsoap.org/soap/http"/>
+ <operation name="DATACopyFile">
+  <SOAP:operation style="rpc" soapAction=""/>
+  <input>
+   <SOAP:body use="encoded" namespace="urn:DATA_movement_services" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+  </input>
+  <output>
+   <SOAP:body use="encoded" namespace="urn:DATA_movement_services" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+  </output>
+ </operation>
+ <operation name="DATACopyFileDefaults">
+  <SOAP:operation style="rpc" soapAction=""/>
+  <input>
+   <SOAP:body use="encoded" namespace="urn:DATA_movement_services" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+  </input>
+  <output>
+   <SOAP:body use="encoded" namespace="urn:DATA_movement_services" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+  </output>
+ </operation>
+ <operation name="DATAMoveFile">
+  <SOAP:operation style="rpc" soapAction=""/>
+  <input>
+   <SOAP:body use="encoded" namespace="urn:DATA_movement_services" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+  </input>
+  <output>
+   <SOAP:body use="encoded" namespace="urn:DATA_movement_services" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+  </output>
+ </operation>
+ <operation name="DATAMoveFileDefaults">
+  <SOAP:operation style="rpc" soapAction=""/>
+  <input>
+   <SOAP:body use="encoded" namespace="urn:DATA_movement_services" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+  </input>
+  <output>
+   <SOAP:body use="encoded" namespace="urn:DATA_movement_services" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+  </output>
+ </operation>
+ <operation name="DATADeleteFileDefaults">
+  <SOAP:operation style="rpc" soapAction=""/>
+  <input>
+   <SOAP:body use="encoded" namespace="urn:DATA_movement_services" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+  </input>
+  <output>
+   <SOAP:body use="encoded" namespace="urn:DATA_movement_services" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+  </output>
+ </operation>
+ <operation name="isAlive">
+  <SOAP:operation style="rpc" soapAction=""/>
+  <input>
+   <SOAP:body use="encoded" namespace="urn:DATA_movement_services" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+  </input>
+  <output>
+   <SOAP:body use="encoded" namespace="urn:DATA_movement_services" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+  </output>
+ </operation>
+ <operation name="getServiceDescription">
+  <SOAP:operation style="rpc" soapAction=""/>
+  <input>
+   <SOAP:body use="encoded" namespace="urn:DATA_movement_services" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+  </input>
+  <output>
+   <SOAP:body use="encoded" namespace="urn:DATA_movement_services" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+  </output>
+ </operation>
+ <operation name="DATATransferFile">
+  <SOAP:operation style="rpc" soapAction=""/>
+  <input>
+   <SOAP:body use="encoded" namespace="urn:DATA_movement_services" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+  </input>
+  <output>
+   <SOAP:body use="encoded" namespace="urn:DATA_movement_services" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+  </output>
+ </operation>
+ <operation name="DATAinit-CopyFile">
+  <SOAP:operation style="rpc" soapAction=""/>
+  <input>
+   <SOAP:body use="encoded" namespace="urn:DATA_movement_services" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+  </input>
+  <output>
+   <SOAP:body use="encoded" namespace="urn:DATA_movement_services" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+  </output>
+ </operation>
+ <operation name="DATAinit-MoveFile">
+  <SOAP:operation style="rpc" soapAction=""/>
+  <input>
+   <SOAP:body use="encoded" namespace="urn:DATA_movement_services" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+  </input>
+  <output>
+   <SOAP:body use="encoded" namespace="urn:DATA_movement_services" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+  </output>
+ </operation>
+ <operation name="DATAinit-DeleteFile">
+  <SOAP:operation style="rpc" soapAction=""/>
+  <input>
+   <SOAP:body use="encoded" namespace="urn:DATA_movement_services" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+  </input>
+  <output>
+   <SOAP:body use="encoded" namespace="urn:DATA_movement_services" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+  </output>
+ </operation>
+ <operation name="DATAinit-TransferFile">
+  <SOAP:operation style="rpc" soapAction=""/>
+  <input>
+   <SOAP:body use="encoded" namespace="urn:DATA_movement_services" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+  </input>
+  <output>
+   <SOAP:body use="encoded" namespace="urn:DATA_movement_services" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+  </output>
+ </operation>
+ <operation name="DATArestartFileTask">
+  <SOAP:operation style="rpc" soapAction=""/>
+  <input>
+   <SOAP:body use="encoded" namespace="urn:DATA_movement_services" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+  </input>
+  <output>
+   <SOAP:body use="encoded" namespace="urn:DATA_movement_services" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+  </output>
+ </operation>
+ <operation name="DATAgetFileTask">
+  <SOAP:operation style="rpc" soapAction=""/>
+  <input>
+   <SOAP:body use="encoded" namespace="urn:DATA_movement_services" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+  </input>
+  <output>
+   <SOAP:body use="encoded" namespace="urn:DATA_movement_services" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+  </output>
+ </operation>
+ <operation name="DATAwaitFileTask">
+  <SOAP:operation style="rpc" soapAction=""/>
+  <input>
+   <SOAP:body use="encoded" namespace="urn:DATA_movement_services" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+  </input>
+  <output>
+   <SOAP:body use="encoded" namespace="urn:DATA_movement_services" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+  </output>
+ </operation>
+ <operation name="DATAstopFileTask">
+  <SOAP:operation style="rpc" soapAction=""/>
+  <input>
+   <SOAP:body use="encoded" namespace="urn:DATA_movement_services" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+  </input>
+  <output>
+   <SOAP:body use="encoded" namespace="urn:DATA_movement_services" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+  </output>
+ </operation>
+ <operation name="DATAdeleteFileTask">
+  <SOAP:operation style="rpc" soapAction=""/>
+  <input>
+   <SOAP:body use="encoded" namespace="urn:DATA_movement_services" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+  </input>
+  <output>
+   <SOAP:body use="encoded" namespace="urn:DATA_movement_services" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+  </output>
+ </operation>
+ <operation name="DATAmultipleCopy">
+  <SOAP:operation style="rpc" soapAction=""/>
+  <input>
+   <SOAP:body use="encoded" namespace="urn:DATA_movement_services" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+  </input>
+  <output>
+   <SOAP:body use="encoded" namespace="urn:DATA_movement_services" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+  </output>
+ </operation>
+ <operation name="DATAStopCache">
+  <SOAP:operation style="rpc" soapAction=""/>
+  <input>
+   <SOAP:body use="encoded" namespace="urn:DATA_movement_services" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+  </input>
+  <output>
+   <SOAP:body use="encoded" namespace="urn:DATA_movement_services" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+  </output>
+ </operation>
+ <operation name="DATAConnectedMkdir">
+  <SOAP:operation style="rpc" soapAction=""/>
+  <input>
+   <SOAP:body use="encoded" namespace="urn:DATA_movement_services" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+  </input>
+  <output>
+   <SOAP:body use="encoded" namespace="urn:DATA_movement_services" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+  </output>
+ </operation>
+ <operation name="DATA-FTP-Mkdir">
+  <SOAP:operation style="rpc" soapAction=""/>
+  <input>
+   <SOAP:body use="encoded" namespace="urn:DATA_movement_services" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+  </input>
+  <output>
+   <SOAP:body use="encoded" namespace="urn:DATA_movement_services" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+  </output>
+ </operation>
+ <operation name="DATAConnectedModTime">
+  <SOAP:operation style="rpc" soapAction=""/>
+  <input>
+   <SOAP:body use="encoded" namespace="urn:DATA_movement_services" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+  </input>
+  <output>
+   <SOAP:body use="encoded" namespace="urn:DATA_movement_services" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+  </output>
+ </operation>
+ <operation name="DATA-FTP-ModTime">
+  <SOAP:operation style="rpc" soapAction=""/>
+  <input>
+   <SOAP:body use="encoded" namespace="urn:DATA_movement_services" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+  </input>
+  <output>
+   <SOAP:body use="encoded" namespace="urn:DATA_movement_services" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+  </output>
+ </operation>
+ <operation name="DATAConnectedSize">
+  <SOAP:operation style="rpc" soapAction=""/>
+  <input>
+   <SOAP:body use="encoded" namespace="urn:DATA_movement_services" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+  </input>
+  <output>
+   <SOAP:body use="encoded" namespace="urn:DATA_movement_services" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+  </output>
+ </operation>
+ <operation name="DATA-FTP-Size">
+  <SOAP:operation style="rpc" soapAction=""/>
+  <input>
+   <SOAP:body use="encoded" namespace="urn:DATA_movement_services" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+  </input>
+  <output>
+   <SOAP:body use="encoded" namespace="urn:DATA_movement_services" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+  </output>
+ </operation>
+ <operation name="DATAConnectedList">
+  <SOAP:operation style="rpc" soapAction=""/>
+  <input>
+   <SOAP:body use="encoded" namespace="urn:DATA_movement_services" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+  </input>
+  <output>
+   <SOAP:body use="encoded" namespace="urn:DATA_movement_services" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+  </output>
+ </operation>
+ <operation name="DATA-FTP-SimpleList">
+  <SOAP:operation style="rpc" soapAction=""/>
+  <input>
+   <SOAP:body use="encoded" namespace="urn:DATA_movement_services" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+  </input>
+  <output>
+   <SOAP:body use="encoded" namespace="urn:DATA_movement_services" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+  </output>
+ </operation>
+ <operation name="DATA-FTP-List">
+  <SOAP:operation style="rpc" soapAction=""/>
+  <input>
+   <SOAP:body use="encoded" namespace="urn:DATA_movement_services" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+  </input>
+  <output>
+   <SOAP:body use="encoded" namespace="urn:DATA_movement_services" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+  </output>
+ </operation>
+ <operation name="DATA-FTP-VerboseList">
+  <SOAP:operation style="rpc" soapAction=""/>
+  <input>
+   <SOAP:body use="encoded" namespace="urn:DATA_movement_services" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+  </input>
+  <output>
+   <SOAP:body use="encoded" namespace="urn:DATA_movement_services" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+  </output>
+ </operation>
+ <operation name="DATA-FTP-MachineListDirectory">
+  <SOAP:operation style="rpc" soapAction=""/>
+  <input>
+   <SOAP:body use="encoded" namespace="urn:DATA_movement_services" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+  </input>
+  <output>
+   <SOAP:body use="encoded" namespace="urn:DATA_movement_services" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+  </output>
+ </operation>
+ <operation name="DATA-FTP-MachineListFile">
+  <SOAP:operation style="rpc" soapAction=""/>
+  <input>
+   <SOAP:body use="encoded" namespace="urn:DATA_movement_services" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+  </input>
+  <output>
+   <SOAP:body use="encoded" namespace="urn:DATA_movement_services" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+  </output>
+ </operation>
+ <operation name="DATA-FTP-StructuredMachineListDirectory">
+  <SOAP:operation style="rpc" soapAction=""/>
+  <input>
+   <SOAP:body use="encoded" namespace="urn:DATA_movement_services" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+  </input>
+  <output>
+   <SOAP:body use="encoded" namespace="urn:DATA_movement_services" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+  </output>
+ </operation>
+ <operation name="DATA-FTP-StructuredMachineListFile">
+  <SOAP:operation style="rpc" soapAction=""/>
+  <input>
+   <SOAP:body use="encoded" namespace="urn:DATA_movement_services" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+  </input>
+  <output>
+   <SOAP:body use="encoded" namespace="urn:DATA_movement_services" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+  </output>
+ </operation>
+ <operation name="DATA-FTP-Delete">
+  <SOAP:operation style="rpc" soapAction=""/>
+  <input>
+   <SOAP:body use="encoded" namespace="urn:DATA_movement_services" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+  </input>
+  <output>
+   <SOAP:body use="encoded" namespace="urn:DATA_movement_services" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+  </output>
+ </operation>
+ <operation name="DATA-FTP-Exists">
+  <SOAP:operation style="rpc" soapAction=""/>
+  <input>
+   <SOAP:body use="encoded" namespace="urn:DATA_movement_services" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+  </input>
+  <output>
+   <SOAP:body use="encoded" namespace="urn:DATA_movement_services" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+  </output>
+ </operation>
+ <operation name="DATA-FTP-Chmod">
+  <SOAP:operation style="rpc" soapAction=""/>
+  <input>
+   <SOAP:body use="encoded" namespace="urn:DATA_movement_services" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+  </input>
+  <output>
+   <SOAP:body use="encoded" namespace="urn:DATA_movement_services" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+  </output>
+ </operation>
+</binding>
+
+<service name="DATA_movement">
+ <documentation>gSOAP 2.6.2 generated service definition</documentation>
+ <port name="DATA_movement" binding="tns:DATA_movement">
+  <SOAP:address location="httpg://cluster3.zib.de:18090"/>
+ </port>
+</service>
+
+</definitions>

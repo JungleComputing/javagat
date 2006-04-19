@@ -1,0 +1,434 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions name="DATA_movement"
+ xmlns="http://schemas.xmlsoap.org/wsdl/"
+ xmlns:SOAP="http://schemas.xmlsoap.org/wsdl/soap/"
+ xmlns:WSDL="http://schemas.xmlsoap.org/wsdl/"
+ targetNamespace="urn:DATA_movement_services"
+ xmlns:tns="urn:DATA_movement_services"
+ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
+ xmlns:SOAP-ENC="http://schemas.xmlsoap.org/soap/encoding/"
+ xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+ xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+ xmlns:ns="urn:DATA_movement_services">
+
+<types>
+ <schema targetNamespace="urn:DATA_movement_services"
+  xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
+  xmlns:SOAP-ENC="http://schemas.xmlsoap.org/soap/encoding/"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+  xmlns:ns="urn:DATA_movement_services"
+  xmlns="http://www.w3.org/2001/XMLSchema"
+  elementFormDefault="unqualified"
+  attributeFormDefault="unqualified">
+
+  <simpleType name="Enum1">
+   <restriction base="xsd:string">
+    <enumeration value="false"/>
+    <enumeration value="true"/>
+   </restriction>
+  </simpleType>
+
+  <complexType name="FileTask">
+   <sequence>
+    <element name="id" type="xsd:long" minOccurs="1" maxOccurs="1"/>
+    <element name="type" type="xsd:int" minOccurs="1" maxOccurs="1"/>
+    <element name="status" type="xsd:int" minOccurs="1" maxOccurs="1"/>
+    <element name="progress-percentage" type="xsd:double" minOccurs="1" maxOccurs="1"/>
+    <element name="error-code" type="xsd:int" minOccurs="1" maxOccurs="1"/>
+    <element name="error-string" type="xsd:string" minOccurs="1" maxOccurs="1" nillable="true"/>
+    <element name="user-DN" type="xsd:string" minOccurs="1" maxOccurs="1" nillable="true"/>
+   </sequence>
+  </complexType>
+
+ </schema>
+</types>
+
+<message name="DATACopyFileRequest">
+ <part name="source-URL" type="xsd:string"/>
+ <part name="dest-URL" type="xsd:string"/>
+ <part name="max-retries" type="xsd:int"/>
+ <part name="use-parallel" type="xsd:int"/>
+</message>
+
+<message name="DATACopyFileResponse">
+ <part name="response" type="xsd:string"/>
+</message>
+
+<message name="DATACopyFileDefaultsRequest">
+ <part name="source-URL" type="xsd:string"/>
+ <part name="dest-URL" type="xsd:string"/>
+</message>
+
+<message name="DATACopyFileDefaultsResponse">
+ <part name="response" type="xsd:string"/>
+</message>
+
+<message name="DATAMoveFileRequest">
+ <part name="source-URL" type="xsd:string"/>
+ <part name="dest-URL" type="xsd:string"/>
+ <part name="max-retries" type="xsd:int"/>
+ <part name="use-parallel" type="xsd:int"/>
+</message>
+
+<message name="DATAMoveFileResponse">
+ <part name="response" type="xsd:string"/>
+</message>
+
+<message name="DATAMoveFileDefaultsRequest">
+ <part name="source-URL" type="xsd:string"/>
+ <part name="dest-URL" type="xsd:string"/>
+</message>
+
+<message name="DATAMoveFileDefaultsResponse">
+ <part name="response" type="xsd:string"/>
+</message>
+
+<message name="DATADeleteFileDefaultsRequest">
+ <part name="in-URL" type="xsd:string"/>
+</message>
+
+<message name="DATADeleteFileDefaultsResponse">
+ <part name="response" type="xsd:string"/>
+</message>
+
+<message name="isAliveRequest">
+ <part name="dump" type="xsd:int"/>
+</message>
+
+<message name="isAliveResponse">
+ <part name="response" type="xsd:int"/>
+</message>
+
+<message name="getServiceDescriptionRequest">
+</message>
+
+<message name="getServiceDescriptionResponse">
+ <part name="description" type="xsd:string"/>
+</message>
+
+<message name="DATATransferFileRequest">
+ <part name="operation" type="xsd:int"/>
+ <part name="source-URL" type="xsd:string"/>
+ <part name="dest-URL" type="xsd:string"/>
+ <part name="max-retries" type="xsd:int"/>
+ <part name="use-parallel" type="xsd:int"/>
+</message>
+
+<message name="DATATransferFileResponse">
+ <part name="response" type="xsd:string"/>
+</message>
+
+<message name="DATAinit-CopyFileRequest">
+ <part name="source-URL" type="xsd:string"/>
+ <part name="dest-URL" type="xsd:string"/>
+ <part name="max-retries" type="xsd:int"/>
+ <part name="use-parallel" type="xsd:int"/>
+</message>
+
+<message name="FileTask">
+ <part name="id" type="xsd:long"/>
+ <part name="type" type="xsd:int"/>
+ <part name="status" type="xsd:int"/>
+ <part name="progress-percentage" type="xsd:double"/>
+ <part name="error-code" type="xsd:int"/>
+ <part name="error-string" type="xsd:string"/>
+ <part name="user-DN" type="xsd:string"/>
+</message>
+
+<message name="DATAinit-MoveFileRequest">
+ <part name="source-URL" type="xsd:string"/>
+ <part name="dest-URL" type="xsd:string"/>
+ <part name="max-retries" type="xsd:int"/>
+ <part name="use-parallel" type="xsd:int"/>
+</message>
+
+<message name="DATAinit-DeleteFileRequest">
+ <part name="source-URL" type="xsd:string"/>
+</message>
+
+<message name="DATAinit-TransferFileRequest">
+ <part name="operation" type="xsd:int"/>
+ <part name="source-URL" type="xsd:string"/>
+ <part name="dest-URL" type="xsd:string"/>
+ <part name="max-retries" type="xsd:int"/>
+ <part name="use-parallel" type="xsd:int"/>
+</message>
+
+<message name="DATArestartFileTaskRequest">
+ <part name="id" type="xsd:long"/>
+</message>
+
+<message name="DATAgetFileTaskRequest">
+ <part name="id" type="xsd:long"/>
+</message>
+
+<message name="DATAwaitFileTaskRequest">
+ <part name="id" type="xsd:long"/>
+</message>
+
+<message name="DATAstopFileTaskRequest">
+ <part name="id" type="xsd:long"/>
+</message>
+
+<message name="DATAdeleteFileTaskRequest">
+ <part name="id" type="xsd:long"/>
+</message>
+
+<message name="DATAdeleteFileTaskResponse">
+ <part name="response" type="xsd:int"/>
+</message>
+
+<portType name="DATA_movementPortType">
+ <operation name="DATACopyFile">
+  <documentation>Service definition of function ns__DATACopyFile</documentation>
+  <input message="tns:DATACopyFileRequest"/>
+  <output message="tns:DATACopyFileResponse"/>
+ </operation>
+ <operation name="DATACopyFileDefaults">
+  <documentation>Service definition of function ns__DATACopyFileDefaults</documentation>
+  <input message="tns:DATACopyFileDefaultsRequest"/>
+  <output message="tns:DATACopyFileDefaultsResponse"/>
+ </operation>
+ <operation name="DATAMoveFile">
+  <documentation>Service definition of function ns__DATAMoveFile</documentation>
+  <input message="tns:DATAMoveFileRequest"/>
+  <output message="tns:DATAMoveFileResponse"/>
+ </operation>
+ <operation name="DATAMoveFileDefaults">
+  <documentation>Service definition of function ns__DATAMoveFileDefaults</documentation>
+  <input message="tns:DATAMoveFileDefaultsRequest"/>
+  <output message="tns:DATAMoveFileDefaultsResponse"/>
+ </operation>
+ <operation name="DATADeleteFileDefaults">
+  <documentation>Service definition of function ns__DATADeleteFileDefaults</documentation>
+  <input message="tns:DATADeleteFileDefaultsRequest"/>
+  <output message="tns:DATADeleteFileDefaultsResponse"/>
+ </operation>
+ <operation name="isAlive">
+  <documentation>Service definition of function ns__isAlive</documentation>
+  <input message="tns:isAliveRequest"/>
+  <output message="tns:isAliveResponse"/>
+ </operation>
+ <operation name="getServiceDescription">
+  <documentation>Service definition of function ns__getServiceDescription</documentation>
+  <input message="tns:getServiceDescriptionRequest"/>
+  <output message="tns:getServiceDescriptionResponse"/>
+ </operation>
+ <operation name="DATATransferFile">
+  <documentation>Service definition of function ns__DATATransferFile</documentation>
+  <input message="tns:DATATransferFileRequest"/>
+  <output message="tns:DATATransferFileResponse"/>
+ </operation>
+ <operation name="DATAinit-CopyFile">
+  <documentation>Service definition of function ns__DATAinit_CopyFile</documentation>
+  <input message="tns:DATAinit-CopyFileRequest"/>
+  <output message="tns:FileTask"/>
+ </operation>
+ <operation name="DATAinit-MoveFile">
+  <documentation>Service definition of function ns__DATAinit_MoveFile</documentation>
+  <input message="tns:DATAinit-MoveFileRequest"/>
+  <output message="tns:FileTask"/>
+ </operation>
+ <operation name="DATAinit-DeleteFile">
+  <documentation>Service definition of function ns__DATAinit_DeleteFile</documentation>
+  <input message="tns:DATAinit-DeleteFileRequest"/>
+  <output message="tns:FileTask"/>
+ </operation>
+ <operation name="DATAinit-TransferFile">
+  <documentation>Service definition of function ns__DATAinit_TransferFile</documentation>
+  <input message="tns:DATAinit-TransferFileRequest"/>
+  <output message="tns:FileTask"/>
+ </operation>
+ <operation name="DATArestartFileTask">
+  <documentation>Service definition of function ns__DATArestartFileTask</documentation>
+  <input message="tns:DATArestartFileTaskRequest"/>
+  <output message="tns:FileTask"/>
+ </operation>
+ <operation name="DATAgetFileTask">
+  <documentation>Service definition of function ns__DATAgetFileTask</documentation>
+  <input message="tns:DATAgetFileTaskRequest"/>
+  <output message="tns:FileTask"/>
+ </operation>
+ <operation name="DATAwaitFileTask">
+  <documentation>Service definition of function ns__DATAwaitFileTask</documentation>
+  <input message="tns:DATAwaitFileTaskRequest"/>
+  <output message="tns:FileTask"/>
+ </operation>
+ <operation name="DATAstopFileTask">
+  <documentation>Service definition of function ns__DATAstopFileTask</documentation>
+  <input message="tns:DATAstopFileTaskRequest"/>
+  <output message="tns:FileTask"/>
+ </operation>
+ <operation name="DATAdeleteFileTask">
+  <documentation>Service definition of function ns__DATAdeleteFileTask</documentation>
+  <input message="tns:DATAdeleteFileTaskRequest"/>
+  <output message="tns:DATAdeleteFileTaskResponse"/>
+ </operation>
+</portType>
+
+<binding name="DATA_movementBinding" type="tns:DATA_movementPortType">
+ <SOAP:binding style="rpc" transport="http://schemas.xmlsoap.org/soap/http"/>
+ <operation name="DATACopyFile">
+  <SOAP:operation soapAction=""/>
+  <input>
+   <SOAP:body use="encoded" namespace="urn:DATA_movement_services" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+  </input>
+  <output>
+   <SOAP:body use="encoded" namespace="urn:DATA_movement_services" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+  </output>
+ </operation>
+ <operation name="DATACopyFileDefaults">
+  <SOAP:operation soapAction=""/>
+  <input>
+   <SOAP:body use="encoded" namespace="urn:DATA_movement_services" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+  </input>
+  <output>
+   <SOAP:body use="encoded" namespace="urn:DATA_movement_services" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+  </output>
+ </operation>
+ <operation name="DATAMoveFile">
+  <SOAP:operation soapAction=""/>
+  <input>
+   <SOAP:body use="encoded" namespace="urn:DATA_movement_services" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+  </input>
+  <output>
+   <SOAP:body use="encoded" namespace="urn:DATA_movement_services" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+  </output>
+ </operation>
+ <operation name="DATAMoveFileDefaults">
+  <SOAP:operation soapAction=""/>
+  <input>
+   <SOAP:body use="encoded" namespace="urn:DATA_movement_services" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+  </input>
+  <output>
+   <SOAP:body use="encoded" namespace="urn:DATA_movement_services" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+  </output>
+ </operation>
+ <operation name="DATADeleteFileDefaults">
+  <SOAP:operation soapAction=""/>
+  <input>
+   <SOAP:body use="encoded" namespace="urn:DATA_movement_services" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+  </input>
+  <output>
+   <SOAP:body use="encoded" namespace="urn:DATA_movement_services" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+  </output>
+ </operation>
+ <operation name="isAlive">
+  <SOAP:operation soapAction=""/>
+  <input>
+   <SOAP:body use="encoded" namespace="urn:DATA_movement_services" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+  </input>
+  <output>
+   <SOAP:body use="encoded" namespace="urn:DATA_movement_services" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+  </output>
+ </operation>
+ <operation name="getServiceDescription">
+  <SOAP:operation soapAction=""/>
+  <input>
+   <SOAP:body use="encoded" namespace="urn:DATA_movement_services" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+  </input>
+  <output>
+   <SOAP:body use="encoded" namespace="urn:DATA_movement_services" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+  </output>
+ </operation>
+ <operation name="DATATransferFile">
+  <SOAP:operation soapAction=""/>
+  <input>
+   <SOAP:body use="encoded" namespace="urn:DATA_movement_services" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+  </input>
+  <output>
+   <SOAP:body use="encoded" namespace="urn:DATA_movement_services" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+  </output>
+ </operation>
+ <operation name="DATAinit-CopyFile">
+  <SOAP:operation soapAction=""/>
+  <input>
+   <SOAP:body use="encoded" namespace="urn:DATA_movement_services" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+  </input>
+  <output>
+   <SOAP:body use="encoded" namespace="urn:DATA_movement_services" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+  </output>
+ </operation>
+ <operation name="DATAinit-MoveFile">
+  <SOAP:operation soapAction=""/>
+  <input>
+   <SOAP:body use="encoded" namespace="urn:DATA_movement_services" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+  </input>
+  <output>
+   <SOAP:body use="encoded" namespace="urn:DATA_movement_services" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+  </output>
+ </operation>
+ <operation name="DATAinit-DeleteFile">
+  <SOAP:operation soapAction=""/>
+  <input>
+   <SOAP:body use="encoded" namespace="urn:DATA_movement_services" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+  </input>
+  <output>
+   <SOAP:body use="encoded" namespace="urn:DATA_movement_services" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+  </output>
+ </operation>
+ <operation name="DATAinit-TransferFile">
+  <SOAP:operation soapAction=""/>
+  <input>
+   <SOAP:body use="encoded" namespace="urn:DATA_movement_services" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+  </input>
+  <output>
+   <SOAP:body use="encoded" namespace="urn:DATA_movement_services" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+  </output>
+ </operation>
+ <operation name="DATArestartFileTask">
+  <SOAP:operation soapAction=""/>
+  <input>
+   <SOAP:body use="encoded" namespace="urn:DATA_movement_services" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+  </input>
+  <output>
+   <SOAP:body use="encoded" namespace="urn:DATA_movement_services" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+  </output>
+ </operation>
+ <operation name="DATAgetFileTask">
+  <SOAP:operation soapAction=""/>
+  <input>
+   <SOAP:body use="encoded" namespace="urn:DATA_movement_services" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+  </input>
+  <output>
+   <SOAP:body use="encoded" namespace="urn:DATA_movement_services" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+  </output>
+ </operation>
+ <operation name="DATAwaitFileTask">
+  <SOAP:operation soapAction=""/>
+  <input>
+   <SOAP:body use="encoded" namespace="urn:DATA_movement_services" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+  </input>
+  <output>
+   <SOAP:body use="encoded" namespace="urn:DATA_movement_services" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+  </output>
+ </operation>
+ <operation name="DATAstopFileTask">
+  <SOAP:operation soapAction=""/>
+  <input>
+   <SOAP:body use="encoded" namespace="urn:DATA_movement_services" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+  </input>
+  <output>
+   <SOAP:body use="encoded" namespace="urn:DATA_movement_services" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+  </output>
+ </operation>
+ <operation name="DATAdeleteFileTask">
+  <SOAP:operation soapAction=""/>
+  <input>
+   <SOAP:body use="encoded" namespace="urn:DATA_movement_services" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+  </input>
+  <output>
+   <SOAP:body use="encoded" namespace="urn:DATA_movement_services" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+  </output>
+ </operation>
+</binding>
+
+<service name="DATA_movement">
+ <documentation>gSOAP 2.3.8 generated service definition</documentation>
+ <port name="DATA_movement" binding="tns:DATA_movementBinding">
+  <SOAP:address location="httpg://litchi.zib.de:18090"/>
+ </port>
+</service>
+
+</definitions>
