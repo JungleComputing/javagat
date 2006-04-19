@@ -1,0 +1,428 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified">
+  <xs:element name="HOSTS">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element maxOccurs="unbounded" ref="HOST"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="HOST">
+    <xs:complexType >
+      <xs:sequence >
+        <xs:element ref="SYSTEM" minOccurs="0"/>
+        <xs:element ref="FIREWALL" minOccurs="0"/>
+        <xs:element ref="NETWORKS" minOccurs="0"/>
+        <xs:element ref="CPU" minOccurs="0"/>
+        <xs:element ref="DEVICES" minOccurs="0"/>
+        <xs:element ref="MEMORY" minOccurs="0"/>
+        <xs:element ref="VOS" minOccurs="0"/>
+        <xs:element ref="SERVICES" minOccurs="0"/>
+        <xs:element ref="WEBSERVICES" minOccurs="0"/>
+        <xs:element ref="CAS" minOccurs="0"/>
+        <xs:element ref="USERS" minOccurs="0"/>
+        <xs:element ref="LRMS" minOccurs="0"/>
+      </xs:sequence>
+      <xs:attribute name="domain_name" use="optional" type="xs:NCName"/>
+      <xs:attribute name="name" use="required" type="xs:NCName"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="SYSTEM">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="release" minOccurs="0"/>
+        <xs:element ref="version" minOccurs="0"/>
+        <xs:element ref="machine" minOccurs="0"/>
+      </xs:sequence>
+      <xs:attribute name="created_at" use="required" type="xs:long"/>
+      <xs:attribute name="name" use="required" type="xs:NCName"/>
+      <xs:attribute name="valid_for" use="required" type="xs:long"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="release" type="xs:string"/>
+  <xs:element name="machine" type="xs:string"/>
+  <xs:element name="FIREWALL">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="admin_dn" minOccurs="0"/>
+        <xs:element ref="publisher"/>
+        <xs:element ref="FIREWALLPORTS" minOccurs="0"/>
+      </xs:sequence>
+      <xs:attribute name="created_at" use="required" type="xs:long"/>
+      <xs:attribute name="host" use="required" type="xs:NCName"/>
+      <xs:attribute name="valid_for" use="required" type="xs:long"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="admin_dn" type="xs:string"/>
+  <xs:element name="FIREWALLPORTS">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element maxOccurs="unbounded" ref="port"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="port">
+    <xs:complexType>
+      <xs:attribute name="created_at" use="required" type="xs:long"/>
+      <xs:attribute name="prot" use="required" type="xs:NCName"/>
+      <xs:attribute name="range" use="required" type="xs:NMTOKEN"/>
+      <xs:attribute name="valid_for" use="required" type="xs:long"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="NETWORKS">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element maxOccurs="unbounded" ref="NETWORK"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="NETWORK">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="address" minOccurs="0"/>
+        <xs:element ref="mask" minOccurs="0"/>
+      </xs:sequence>
+      <xs:attribute name="created_at" use="required" type="xs:long"/>
+      <xs:attribute name="interface" use="required" type="xs:NCName"/>
+      <xs:attribute name="valid_for" use="required" type="xs:long"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="address" type="xs:string"/>
+  <xs:element name="mask" type="xs:string"/>
+  <xs:element name="CPU">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="number" minOccurs="0"/>
+        <xs:element ref="vendor" minOccurs="0"/>
+        <xs:element ref="version" minOccurs="0"/>
+        <xs:element ref="model" minOccurs="0"/>
+        <xs:element ref="cpu_mhz" minOccurs="0"/>
+        <xs:element ref="cache_size" minOccurs="0"/>
+        <xs:element ref="features" minOccurs="0"/>
+        <xs:element ref="cpu_d" minOccurs="0" maxOccurs="unbounded"/>
+      </xs:sequence>
+      <xs:attribute name="created_at" use="required" type="xs:long"/>
+      <xs:attribute name="valid_for" use="required" type="xs:long"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="number" type="xs:integer"/>
+  <xs:element name="vendor" type="xs:NCName"/>
+  <xs:element name="model" type="xs:string"/>
+  <xs:element name="cpu_mhz" type="xs:decimal"/>
+  <xs:element name="cache_size" type="xs:integer"/>
+  <xs:element name="features" type="xs:string"/>
+  <xs:element name="cpu_d">
+    <xs:complexType>
+      <xs:attribute name="id" use="required" type="xs:integer"/>
+      <xs:attribute name="created_at" use="required" type="xs:long"/>
+      <xs:attribute name="idle_time" use="optional" type="xs:decimal"/>
+      <xs:attribute name="load" use="optional" type="xs:decimal"/>
+      <xs:attribute name="nice_time" use="optional" type="xs:decimal"/>
+      <xs:attribute name="system_time" use="optional" type="xs:decimal"/>
+      <xs:attribute name="user_time" use="optional" type="xs:decimal"/>
+      <xs:attribute name="valid_for" use="required" type="xs:long"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="DEVICES">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element maxOccurs="unbounded" ref="DEVICE"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="DEVICE">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="mount_point" minOccurs="0"/>
+        <xs:element ref="fs_type" minOccurs="0"/>
+        <xs:element ref="size" minOccurs="0"/>
+        <xs:element ref="free_space" minOccurs="0"/>
+      </xs:sequence>
+      <xs:attribute name="created_at" use="required" type="xs:long"/>
+      <xs:attribute name="name" use="required" type="xs:NCName"/>
+      <xs:attribute name="valid_for" use="required" type="xs:long"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="mount_point" type="xs:string"/>
+  <xs:element name="fs_type" type="xs:NCName"/>
+  <xs:element name="size" type="xs:decimal"/>
+  <xs:element name="free_space">
+    <xs:complexType>
+      <xs:attribute name="created_at" use="required" type="xs:long"/>
+      <xs:attribute name="size" use="required" type="xs:decimal"/>
+      <xs:attribute name="valid_for" use="required" type="xs:long"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="MEMORY">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="total_ram" minOccurs="0"/>
+        <xs:element ref="total_swap" minOccurs="0"/>
+        <xs:element ref="mem_d" minOccurs="0"/>
+      </xs:sequence>
+      <xs:attribute name="created_at" use="required" type="xs:long"/>
+      <xs:attribute name="valid_for" use="required" type="xs:long"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="total_ram" type="xs:decimal"/>
+  <xs:element name="total_swap" type="xs:decimal"/>
+  <xs:element name="mem_d">
+    <xs:complexType>
+      <xs:attribute name="created_at" use="required" type="xs:long"/>
+      <xs:attribute name="free_ram" use="required" type="xs:decimal"/>
+      <xs:attribute name="free_swap" use="required" type="xs:decimal"/>
+      <xs:attribute name="valid_for" use="required" type="xs:long"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="VOS">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element maxOccurs="unbounded" ref="VO"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="VO">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="publisher"/>
+        <xs:element ref="admin_name" minOccurs="0"/>
+        <xs:element ref="resource_type" minOccurs="0"/>
+        <xs:element ref="help_desk_url" minOccurs="0"/>
+        <xs:element ref="job_manager" minOccurs="0"/>
+        <xs:element ref="queue" minOccurs="0"/>
+        <xs:element ref="VOFS" minOccurs="0"/>
+        <xs:element ref="VOHD" minOccurs="0"/>
+      </xs:sequence>
+      <xs:attribute name="created_at" use="required" type="xs:long"/>
+      <xs:attribute name="name" use="required" type="xs:NCName"/>
+      <xs:attribute name="valid_for" use="required" type="xs:long"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="VOFS">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element maxOccurs="unbounded" ref="VO_FS"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="VO_FS">
+    <xs:complexType>
+      <xs:attribute name="path" use="required" type="xs:string"/>
+      <xs:attribute name="type" use="optional" type="xs:NCName"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="VOHD">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element maxOccurs="unbounded" ref="phone"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="phone">
+    <xs:complexType>
+      <xs:attribute name="num" use="required" type="xs:string"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="admin_name" type="xs:string"/>
+  <xs:element name="resource_type" type="xs:NCName"/>
+  <xs:element name="help_desk_url" type="xs:anyURI"/>
+  <xs:element name="job_manager" type="xs:NCName"/>
+  <xs:element name="queue" type="xs:NCName"/>
+  <xs:element name="SERVICES">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element maxOccurs="unbounded" ref="SERVICE"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="SERVICE">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="ACCESS_URLS"/>
+        <xs:element ref="description" minOccurs="0"/>
+        <xs:element ref="keywords" minOccurs="0"/>
+        <xs:element ref="def_port" minOccurs="0"/>
+      </xs:sequence>
+      <xs:attribute name="name" use="required" type="xs:NCName"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="def_port" type="xs:integer"/>
+  <xs:element name="WEBSERVICES">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element maxOccurs="unbounded" ref="WEBSERVICE"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="WEBSERVICE">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="WSDL_LOCATIONURLS"/>
+        <xs:element ref="ACCESS_URLS"/>
+        <xs:element ref="description" minOccurs="0"/>
+        <xs:element ref="keywords" minOccurs="0"/>
+      </xs:sequence>
+      <xs:attribute name="name" use="required" type="xs:NCName"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="WSDL_LOCATIONURLS">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element maxOccurs="unbounded" ref="wsdl"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="wsdl">
+    <xs:complexType>
+      <xs:attribute name="url" use="required" type="xs:string"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="CAS">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element maxOccurs="unbounded" ref="CA"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="CA">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="version" minOccurs="0"/>
+        <xs:element ref="serial_num" minOccurs="0"/>
+        <xs:element ref="sig_alg" minOccurs="0"/>
+        <xs:element ref="issuer" minOccurs="0"/>
+        <xs:element ref="valid_from" minOccurs="0"/>
+        <xs:element ref="valid_to" minOccurs="0"/>
+        <xs:element ref="pk_alg" minOccurs="0"/>
+        <xs:element ref="rsa_pk" minOccurs="0"/>
+        <xs:element ref="crl_url" minOccurs="0"/>
+        <xs:element ref="certificate" minOccurs="0"/>
+      </xs:sequence>
+      <xs:attribute name="created_at" use="required" type="xs:long"/>
+      <xs:attribute name="subject" use="required" type="xs:NCName"/>
+      <xs:attribute name="valid_for" use="required" type="xs:long"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="serial_num" type="xs:integer"/>
+  <xs:element name="sig_alg" type="xs:integer"/>
+  <xs:element name="issuer" type="xs:NCName"/>
+  <xs:element name="valid_from" type="xs:integer"/>
+  <xs:element name="valid_to" type="xs:integer"/>
+  <xs:element name="pk_alg" type="xs:NCName"/>
+  <xs:element name="rsa_pk" type="xs:NCName"/>
+  <xs:element name="crl_url" type="xs:NCName"/>
+  <xs:element name="certificate" type="xs:base64Binary"/>
+  <xs:element name="USERS">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element maxOccurs="unbounded" ref="USER"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="USER">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="login" minOccurs="0"/>
+        <xs:element ref="shell" minOccurs="0"/>
+        <xs:element ref="home" minOccurs="0"/>
+      </xs:sequence>
+      <xs:attribute name="created_at" use="required" type="xs:long"/>
+      <xs:attribute name="dn" use="required" type="xs:NCName"/>
+      <xs:attribute name="valid_for" use="required" type="xs:long"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="login" type="xs:NCName"/>
+  <xs:element name="shell" type="xs:NCName"/>
+  <xs:element name="home" type="xs:string"/>
+  <xs:element name="version" type="xs:string"/>
+  <xs:element name="publisher" type="xs:string"/>
+  <xs:element name="ACCESS_URLS">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element maxOccurs="unbounded" ref="ACCESS_URL"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="ACCESS_URL">
+    <xs:complexType>
+      <xs:attribute name="created_at" use="required" type="xs:long"/>
+      <xs:attribute name="publisher" use="required" type="xs:string"/>
+      <xs:attribute name="url" use="required" type="xs:anyURI"/>
+      <xs:attribute name="valid_for" use="required" type="xs:long"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="description" type="xs:string"/>
+  <xs:element name="keywords" type="xs:string"/>
+  <xs:element name="LRMS">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="QUEUES" minOccurs="0"/>
+      </xs:sequence>
+      <xs:attribute name="created_at" use="required" type="xs:long"/>
+      <xs:attribute name="type" use="optional" type="xs:string"/>
+      <xs:attribute name="valid_for" use="required" type="xs:long"/>
+      <xs:attribute name="version" use="optional" type="xs:string"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="QUEUES">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element maxOccurs="unbounded" ref="QUEUE"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="QUEUE">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="asscpunum"/>
+        <xs:element ref="status" minOccurs="0"/>
+        <xs:element ref="maxqueue" minOccurs="0"/>
+        <xs:element ref="maxrun" minOccurs="0"/>
+        <xs:element ref="queued" minOccurs="0"/>
+        <xs:element ref="running" minOccurs="0"/>
+        <xs:element ref="maxwct" minOccurs="0"/>
+        <xs:element ref="maxcput" minOccurs="0"/>
+        <xs:element ref="JOBS" minOccurs="0"/>
+      </xs:sequence>
+      <xs:attribute name="name" use="required" type="xs:NCName"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="JOBS">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element maxOccurs="unbounded" ref="JOB"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="JOB">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="owner" minOccurs="0"/>
+        <xs:element ref="status" minOccurs="0"/>
+        <xs:element ref="reqcput" minOccurs="0"/>
+        <xs:element ref="subtime" minOccurs="0"/>
+        <xs:element ref="usedcput" minOccurs="0"/>
+        <xs:element ref="usedmem" minOccurs="0"/>
+        <xs:element ref="usedwt" minOccurs="0"/>
+        <xs:element ref="estimatert" minOccurs="0"/>
+      </xs:sequence>
+      <xs:attribute name="job_id" use="required" type="xs:string"/>
+      <xs:attribute name="name" use="required" type="xs:NCName"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="owner" type="xs:string"/>
+  <xs:element name="reqcput" type="xs:long"/>
+  <xs:element name="subtime" type="xs:long"/>
+  <xs:element name="usedcput" type="xs:long"/>
+  <xs:element name="usedmem" type="xs:integer"/>
+  <xs:element name="usedwt" type="xs:long"/>
+  <xs:element name="estimatert" type="xs:long"/>
+  <xs:element name="asscpunum" type="xs:integer"/>
+  <xs:element name="maxqueue" type="xs:integer"/>
+  <xs:element name="maxrun" type="xs:integer"/>
+  <xs:element name="queued" type="xs:integer"/>
+  <xs:element name="running" type="xs:integer"/>
+  <xs:element name="maxwct" type="xs:long"/>
+  <xs:element name="maxcput" type="xs:long"/>
+  <xs:element name="status" type="xs:NCName"/>
+</xs:schema>
