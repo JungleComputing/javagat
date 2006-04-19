@@ -5,15 +5,15 @@ if [ -z "$1" ] ; then
 	exit 1
 fi
 
-cd engine; ant clean; cd -
-cd engine; rm -rf tmp_eclipse; cd -
-cd adaptors; ant clean; cd -
-cd adaptors; rm -rf tmp_eclipse; cd -
+cd engine; ant clean; rm -rf tmp_eclipse*; cd -
+cd adaptors; ant clean; rm -rf tmp_eclipse*; cd -
+cd gridlabAdaptors; ant clean; rm -rf tmp_eclipse*; cd -
 rm -rf JavaGAT-$1
 mkdir JavaGAT-$1
 cp -R engine JavaGAT-$1
 cp -R adaptors JavaGAT-$1
-cp README.txt JavaGAT-$1
+cp -R gridlabAdaptors JavaGAT-$1
+cp *.txt JavaGAT-$1
 find JavaGAT-$1 -name .svn -exec rm -rf {} \; 2> /dev/null
 find JavaGAT-$1 -name \*~ -exec rm -rf {} \; 2> /dev/null
 find JavaGAT-$1 -name .??\* -exec rm -rf {} \; 2> /dev/null
