@@ -77,7 +77,7 @@
 			</manifest>
 		</jar>
 
-	    <jar jarfile="${lib}/LocalFileOutputStreamAdaptor.jar" basedir="${tmp}" includes="**/LocalFileOutputStreamAdaptor.class">
+	    	<jar jarfile="${lib}/LocalFileOutputStreamAdaptor.jar" basedir="${tmp}" includes="**/LocalFileOutputStreamAdaptor.class">
 			<manifest>
 				<attribute name="FileOutputStreamCpi-class" value="org.gridlab.gat.io.cpi.local.LocalFileOutputStreamAdaptor" />
 			</manifest>
@@ -104,24 +104,6 @@
 		<jar jarfile="${lib}/SftpFileAdaptor.jar" basedir="${tmp}" includes="**/sftp/*.class">
 			<manifest>
 				<attribute name="FileCpi-class" value="org.gridlab.gat.io.cpi.sftp.SftpFileAdaptor" />
-			</manifest>
-		</jar>
-
-	    <jar jarfile="${lib}/StorageBoxAdaptor.jar" basedir="${tmp}" includes="**/StorageBoxAdvertAdaptor.class,org/storagebox/www/sbns/*.class">
-			<manifest>
-				<attribute name="AdvertServiceCpi-class" value="org.gridlab.gat.advert.cpi.storagebox.StorageBoxAdvertAdaptor" />
-			</manifest>
-		</jar>
-
-        <jar jarfile="${lib}/MercuryMonitorableAdaptor.jar" basedir="${tmp}" includes="**/MercuryMonitorableAdaptor.class,**/LocalMetricListener.class,**/MonitorizedMetric.class,**/MeasurementTrigger.class,**/Measuree.class,hu/sztaki/lpds/monitor/*.class,hu/sztaki/lpds/monitor/producer/*.class">
-            <manifest>
-                <attribute name="MonitorableCpi-class" value="org.gridlab.gat.monitoring.cpi.mercury.MercuryMonitorableAdaptor" />
-            </manifest>
-        </jar>
-
-		<jar jarfile="${lib}/DataMovementFileAdaptor.jar" basedir="${tmp}" includes="**/DataMovementFileAdaptor.class,**/DATA_movement_services/**,**/ServiceLocator.class,**/igrid_pkg/*.class">
-			<manifest>
-				<attribute name="FileCpi-class" value="org.gridlab.gat.io.cpi.fileBrowsing.DataFileBrowsingAdaptor" />
 			</manifest>
 		</jar>
 
@@ -203,21 +185,9 @@
 			</manifest>
 		</jar>
 
-		<jar jarfile="${lib}/DataBrowsingFileAdaptor.jar" basedir="${tmp}" includes="**/DataFileBrowsingAdaptor.class,**/DATA_browsing_services/*.class,**/DATA_browsing_services/holders/*.class">
-			<manifest>
-				<attribute name="FileCpi-class" value="org.gridlab.gat.io.cpi.dataMovement.DataMovementFileAdaptor" />
-			</manifest>
-		</jar>
-
 		<jar jarfile="${lib}/LocalLogicalFileAdaptor.jar" basedir="${tmp}" includes="**/LocalLogicalFileAdaptor.class">
 			<manifest>
 				<attribute name="LogicalFileCpi-class" value="org.gridlab.gat.io.cpi.local.LocalLogicalFileAdaptor" />
-			</manifest>
-		</jar>
-
-		<jar jarfile="${lib}/GridLabLogicalFileAdaptor.jar" basedir="${tmp}" includes="**/ReplicaServiceAdaptor.class,zibdms_pkg/**">
-			<manifest>
-				<attribute name="LogicalFileCpi-class" value="org.gridlab.gat.io.cpi.replicaService.ReplicaServiceAdaptor" />
 			</manifest>
 		</jar>
 
@@ -245,18 +215,11 @@
 			</manifest>
 		</jar>
 
-		<jar jarfile="${lib}/GRMSBrokerAdaptor.jar" basedir="${tmp}" includes="**/grms_schema/*.class **/grms_schema/types/*.class **/grms_pkg/*.class **/grms_pkg/holders/*.class **/grms**/*.class">
-			<manifest>
-				<attribute name="ResourceBrokerCpi-class" value="org.gridlab.gat.resources.cpi.grms.GrmsBrokerAdaptor" />
-			</manifest>
-		</jar>
-
 		<jar jarfile="${lib}/GlobusBrokerAdaptor.jar" basedir="${tmp}" includes="**/org/gridlab/gat/resources/cpi/globus/*.class">
 			<manifest>
 				<attribute name="ResourceBrokerCpi-class" value="org.gridlab.gat.resources.cpi.globus.GlobusBrokerAdaptor" />
 			</manifest>
 		</jar>
-
 
                  <jar jarfile="${lib}/ProActiveBrokerAdaptor.jar" basedir="${tmp}" includes="**/org/gridlab/gat/resources/cpi/proactive/*.class,**/org/objectweb/proactive/GATAdaptor/*.class">
                          <manifest>
@@ -264,14 +227,13 @@
                          </manifest>
                  </jar>
 
-
 		<jar jarfile="${lib}/SocketEndpointAdaptor.jar" basedir="${tmp}" includes="**/org/gridlab/gat/io/cpi/sockets/*.class">
 			<manifest>
 				<attribute name="EndpointCpi-class" value="org.gridlab.gat.io.cpi.sockets.SocketEndpointAdaptor" />
 			</manifest>
 		</jar>
 
-	    <delete dir="${tmp}"/>
+	    	<delete dir="${tmp}"/>
 
 		<!-- Copy external libraries to lib directory -->
 		<copy todir="${lib}">
