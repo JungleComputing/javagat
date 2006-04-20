@@ -1,10 +1,12 @@
 package org.gridlab.gat.io.cpi.globus;
 
+import java.util.Enumeration;
+import java.util.Hashtable;
+
 import org.globus.ftp.DataChannelAuthentication;
 import org.globus.ftp.FTPClient;
 import org.globus.ftp.GridFTPClient;
 import org.globus.ftp.GridFTPSession;
-
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.GATObjectCreationException;
@@ -12,11 +14,7 @@ import org.gridlab.gat.Preferences;
 import org.gridlab.gat.URI;
 import org.gridlab.gat.engine.GATEngine;
 import org.gridlab.gat.security.globus.GlobusSecurityUtils;
-
 import org.ietf.jgss.GSSCredential;
-
-import java.util.Enumeration;
-import java.util.Hashtable;
 
 public class GridFTPFileAdaptor extends GlobusFileAdaptor {
     static final boolean USE_CLIENT_CACHING = true;
@@ -36,8 +34,6 @@ public class GridFTPFileAdaptor extends GlobusFileAdaptor {
     public GridFTPFileAdaptor(GATContext gatContext, Preferences preferences,
             URI location) throws GATObjectCreationException {
         super(gatContext, preferences, location);
-
-        checkName("gridftp");
 
         if (!location.isCompatible("gsiftp") && !location.isCompatible("file")) {
             throw new GATObjectCreationException("cannot handle this URI ("

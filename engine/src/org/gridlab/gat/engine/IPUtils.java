@@ -1,7 +1,6 @@
 package org.gridlab.gat.engine;
 
 import java.net.InetAddress;
-
 import java.util.Properties;
 
 /**

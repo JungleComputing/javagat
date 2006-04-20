@@ -1,5 +1,9 @@
 package org.gridlab.gat.resources;
 
+import java.io.IOException;
+import java.util.List;
+import java.util.Map;
+
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.Preferences;
@@ -10,11 +14,6 @@ import org.gridlab.gat.monitoring.MetricDefinition;
 import org.gridlab.gat.monitoring.MetricListener;
 import org.gridlab.gat.monitoring.MetricValue;
 import org.gridlab.gat.monitoring.Monitorable;
-
-import java.io.IOException;
-
-import java.util.List;
-import java.util.Map;
 
 /**
  * An instance of this class represents a job.

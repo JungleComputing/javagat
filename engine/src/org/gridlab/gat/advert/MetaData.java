@@ -4,7 +4,6 @@
 package org.gridlab.gat.advert;
 
 import java.io.Serializable;
-
 import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Map;

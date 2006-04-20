@@ -17,12 +17,12 @@
  ******************************************************************************/
 package examples;
 
+import java.io.PrintWriter;
+
 import org.gridlab.gat.GAT;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.URI;
 import org.gridlab.gat.io.FileOutputStream;
-
-import java.io.PrintWriter;
 
 public class FileStreamSimple {
     public static void main(String[] args) {

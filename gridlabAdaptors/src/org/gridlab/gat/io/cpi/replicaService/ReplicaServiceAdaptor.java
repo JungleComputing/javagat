@@ -72,8 +72,6 @@ public class ReplicaServiceAdaptor extends LogicalFileCpi {
             throws GATObjectCreationException, GATObjectCreationException {
         super(gatContext, preferences, name, mode);
 
-        checkName("replicaService");
-
         if (name.startsWith("/")) {
             absName = name;
         } else {

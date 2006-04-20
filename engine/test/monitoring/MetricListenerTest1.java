@@ -1,5 +1,8 @@
 package monitoring;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.gridlab.gat.GAT;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.Preferences;
@@ -8,9 +11,6 @@ import org.gridlab.gat.monitoring.MetricDefinition;
 import org.gridlab.gat.monitoring.MetricListener;
 import org.gridlab.gat.monitoring.MetricValue;
 import org.gridlab.gat.monitoring.Monitorable;
-
-import java.util.HashMap;
-import java.util.Map;
 
 public class MetricListenerTest1 implements MetricListener {
     public int times = 0;

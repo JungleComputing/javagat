@@ -1,17 +1,16 @@
 package org.gridlab.gat.io;
 
+import java.io.IOException;
+import java.io.Serializable;
+import java.net.MalformedURLException;
+import java.net.URL;
+
 import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.URI;
 import org.gridlab.gat.advert.Advertisable;
 import org.gridlab.gat.io.cpi.FileFilter;
 import org.gridlab.gat.io.cpi.FilenameFilter;
 import org.gridlab.gat.monitoring.Monitorable;
-
-import java.io.IOException;
-import java.io.Serializable;
-
-import java.net.MalformedURLException;
-import java.net.URL;
 
 /**
  * @author rob

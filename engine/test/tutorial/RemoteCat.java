@@ -1,12 +1,12 @@
 package tutorial;
 
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+
 import org.gridlab.gat.GAT;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.URI;
 import org.gridlab.gat.io.FileInputStream;
-
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
 
 class RemoteCat {
     public static void main(String[] args) throws Exception {

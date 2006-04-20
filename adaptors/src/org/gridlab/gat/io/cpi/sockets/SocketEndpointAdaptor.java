@@ -3,8 +3,14 @@
  */
 package org.gridlab.gat.io.cpi.sockets;
 
-import org.exolab.castor.xml.Marshaller;
+import java.io.IOException;
+import java.io.Serializable;
+import java.io.StringWriter;
+import java.net.InetAddress;
+import java.net.ServerSocket;
+import java.net.Socket;
 
+import org.exolab.castor.xml.Marshaller;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.GATObjectCreationException;
@@ -15,14 +21,6 @@ import org.gridlab.gat.engine.IPUtils;
 import org.gridlab.gat.io.Pipe;
 import org.gridlab.gat.io.PipeListener;
 import org.gridlab.gat.io.cpi.EndpointCpi;
-
-import java.io.IOException;
-import java.io.Serializable;
-import java.io.StringWriter;
-
-import java.net.InetAddress;
-import java.net.ServerSocket;
-import java.net.Socket;
 
 /**
  * @author rob

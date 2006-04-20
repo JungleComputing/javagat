@@ -3,10 +3,9 @@
  */
 package org.gridlab.gat.io.cpi.ssh;
 
-import com.jcraft.jsch.Channel;
-import com.jcraft.jsch.ChannelExec;
-import com.jcraft.jsch.JSch;
-import com.jcraft.jsch.Session;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
@@ -16,9 +15,10 @@ import org.gridlab.gat.URI;
 import org.gridlab.gat.engine.GATEngine;
 import org.gridlab.gat.io.cpi.FileInputStreamCpi;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import com.jcraft.jsch.Channel;
+import com.jcraft.jsch.ChannelExec;
+import com.jcraft.jsch.JSch;
+import com.jcraft.jsch.Session;
 
 /**
  * @author rob
@@ -40,8 +40,6 @@ public class SshFileInputStreamAdaptor extends FileInputStreamCpi {
             Preferences preferences, URI location)
             throws GATObjectCreationException {
         super(gatContext, preferences, location);
-
-        checkName("ssh");
 
         if (!location.isCompatible("ssh")) {
             throw new GATObjectCreationException("cannot handle this URI");

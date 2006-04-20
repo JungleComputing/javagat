@@ -37,8 +37,6 @@ public class GlobusBrokerAdaptor extends ResourceBrokerCpi {
     public GlobusBrokerAdaptor(GATContext gatContext, Preferences preferences)
             throws GATObjectCreationException {
         super(gatContext, preferences);
-        checkName("globus");
-
         // turn off all annoying cog prints
         if (!GATEngine.DEBUG) {
             Logger logger = Logger.getLogger(NoAuthorization.class.getName());

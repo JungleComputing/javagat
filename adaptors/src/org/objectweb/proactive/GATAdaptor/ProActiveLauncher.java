@@ -1,15 +1,15 @@
 package org.objectweb.proactive.GATAdaptor;
 
 import java.io.Serializable;
+import java.util.HashMap;
+
+import org.objectweb.proactive.Body;
 import org.objectweb.proactive.InitActive;
 import org.objectweb.proactive.RunActive;
 import org.objectweb.proactive.Service;
-import org.objectweb.proactive.Body;
 import org.objectweb.proactive.core.node.Node;
 import org.objectweb.proactive.core.process.JVMProcessImpl;
 import org.objectweb.proactive.core.process.AbstractExternalProcess.StandardOutputMessageLogger;
-
-import java.util.HashMap;
 
 public class ProActiveLauncher implements Serializable, InitActive, RunActive,
         LauncherJobListener {

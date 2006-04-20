@@ -1,8 +1,8 @@
 package org.gridlab.gat.monitoring;
 
-import org.gridlab.gat.GATInvocationException;
-
 import java.util.List;
+
+import org.gridlab.gat.GATInvocationException;
 
 /**
  * Interface which is to be implemented by any classes which are capable of

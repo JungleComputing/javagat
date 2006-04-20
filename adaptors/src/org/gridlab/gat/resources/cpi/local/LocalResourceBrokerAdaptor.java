@@ -1,5 +1,11 @@
 package org.gridlab.gat.resources.cpi.local;
 
+import java.io.IOException;
+import java.io.OutputStream;
+import java.rmi.RemoteException;
+import java.util.List;
+import java.util.Map;
+
 import org.gridlab.gat.AdaptorNotApplicableException;
 import org.gridlab.gat.CommandNotFoundException;
 import org.gridlab.gat.FilePrestageException;
@@ -23,14 +29,6 @@ import org.gridlab.gat.resources.SoftwareDescription;
 import org.gridlab.gat.resources.cpi.ResourceBrokerCpi;
 import org.gridlab.gat.util.InputForwarder;
 import org.gridlab.gat.util.OutputForwarder;
-
-import java.io.IOException;
-import java.io.OutputStream;
-
-import java.rmi.RemoteException;
-
-import java.util.List;
-import java.util.Map;
 
 /**
  * An instance of this class is used to reserve resources.
@@ -77,8 +75,6 @@ public class LocalResourceBrokerAdaptor extends ResourceBrokerCpi {
     public LocalResourceBrokerAdaptor(GATContext gatContext,
             Preferences preferences) throws GATObjectCreationException {
         super(gatContext, preferences);
-
-        checkName("local");
     }
 
     /**

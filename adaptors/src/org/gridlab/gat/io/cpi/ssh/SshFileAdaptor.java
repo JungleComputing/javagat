@@ -1,10 +1,19 @@
 package org.gridlab.gat.io.cpi.ssh;
 
-import com.jcraft.jsch.Channel;
-import com.jcraft.jsch.ChannelExec;
-import com.jcraft.jsch.JSch;
-import com.jcraft.jsch.JSchException;
-import com.jcraft.jsch.Session;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileFilter;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.FilenameFilter;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.URISyntaxException;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.StringTokenizer;
 
 import org.gridlab.gat.GAT;
 import org.gridlab.gat.GATContext;
@@ -15,22 +24,11 @@ import org.gridlab.gat.URI;
 import org.gridlab.gat.engine.GATEngine;
 import org.gridlab.gat.io.cpi.FileCpi;
 
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileFilter;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.FilenameFilter;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-
-import java.net.URISyntaxException;
-
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.StringTokenizer;
+import com.jcraft.jsch.Channel;
+import com.jcraft.jsch.ChannelExec;
+import com.jcraft.jsch.JSch;
+import com.jcraft.jsch.JSchException;
+import com.jcraft.jsch.Session;
 
 public class SshFileAdaptor extends FileCpi {
     private static final int XOS = 1;
@@ -79,8 +77,6 @@ public class SshFileAdaptor extends FileCpi {
     public SshFileAdaptor(GATContext gatContext, Preferences preferences,
             URI location) throws GATObjectCreationException {
         super(gatContext, preferences, location);
-
-        checkName("ssh");
 
         if (!location.isCompatible("ssh")) {
             throw new GATObjectCreationException("cannot handle this URI");

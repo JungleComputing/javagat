@@ -1,8 +1,14 @@
 package org.gridlab.gat.io.cpi.globus;
 
+import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.StringReader;
+import java.util.StringTokenizer;
+import java.util.Vector;
+
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
-
 import org.globus.ftp.Buffer;
 import org.globus.ftp.DataSink;
 import org.globus.ftp.FTPClient;
@@ -13,11 +19,9 @@ import org.globus.ftp.exception.ClientException;
 import org.globus.ftp.exception.FTPException;
 import org.globus.ftp.exception.ServerException;
 import org.globus.ftp.vanilla.FTPControlChannel;
-
 import org.globus.gsi.gssapi.GlobusGSSManagerImpl;
 import org.globus.gsi.gssapi.auth.HostAuthorization;
 import org.globus.gsi.gssapi.auth.SelfAuthorization;
-
 import org.gridlab.gat.GAT;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
@@ -27,14 +31,6 @@ import org.gridlab.gat.URI;
 import org.gridlab.gat.engine.GATEngine;
 import org.gridlab.gat.io.File;
 import org.gridlab.gat.io.cpi.FileCpi;
-
-import java.io.BufferedReader;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.StringReader;
-
-import java.util.StringTokenizer;
-import java.util.Vector;
 
 public abstract class GlobusFileAdaptor extends FileCpi {
     static final int DEFAULT_GRIDFTP_PORT = 2811;

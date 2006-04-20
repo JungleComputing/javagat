@@ -1,5 +1,9 @@
 package org.gridlab.gat.io.cpi;
 
+import java.io.IOException;
+import java.util.List;
+import java.util.Vector;
+
 import org.gridlab.gat.GAT;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
@@ -15,11 +19,6 @@ import org.gridlab.gat.monitoring.MetricDefinition;
 import org.gridlab.gat.monitoring.MetricListener;
 import org.gridlab.gat.monitoring.MetricValue;
 import org.gridlab.gat.monitoring.Monitorable;
-
-import java.io.IOException;
-
-import java.util.List;
-import java.util.Vector;
 
 /**
  * Capability provider interface to the LogicalFile class.
@@ -252,10 +251,6 @@ public abstract class LogicalFileCpi implements LogicalFile, Monitorable {
     public MetricValue getMeasurement(Metric metric)
             throws GATInvocationException {
         throw new UnsupportedOperationException("Not implemented");
-    }
-
-    protected void checkName(String adaptor) throws GATObjectCreationException {
-        GATEngine.checkName(preferences, "LogicalFile", adaptor);
     }
 
     public String marshal() {

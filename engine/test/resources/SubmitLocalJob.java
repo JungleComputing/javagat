@@ -3,6 +3,10 @@
  */
 package resources;
 
+import java.net.URISyntaxException;
+import java.util.Hashtable;
+import java.util.Map;
+
 import org.gridlab.gat.GAT;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.Preferences;
@@ -14,11 +18,6 @@ import org.gridlab.gat.resources.JobDescription;
 import org.gridlab.gat.resources.ResourceBroker;
 import org.gridlab.gat.resources.ResourceDescription;
 import org.gridlab.gat.resources.SoftwareDescription;
-
-import java.net.URISyntaxException;
-
-import java.util.Hashtable;
-import java.util.Map;
 
 /**
  * @author rob

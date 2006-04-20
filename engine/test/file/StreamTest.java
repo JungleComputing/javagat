@@ -1,12 +1,12 @@
 package file;
 
+import java.io.PrintWriter;
+
 import org.gridlab.gat.GAT;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.URI;
 import org.gridlab.gat.io.FileInputStream;
 import org.gridlab.gat.io.FileOutputStream;
-
-import java.io.PrintWriter;
 
 class StreamTest {
     public static void main(String[] args) {

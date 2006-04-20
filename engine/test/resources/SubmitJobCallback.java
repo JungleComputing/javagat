@@ -3,6 +3,9 @@
  */
 package resources;
 
+import java.net.URISyntaxException;
+import java.util.Hashtable;
+
 import org.gridlab.gat.GAT;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATObjectCreationException;
@@ -19,10 +22,6 @@ import org.gridlab.gat.resources.JobDescription;
 import org.gridlab.gat.resources.ResourceBroker;
 import org.gridlab.gat.resources.ResourceDescription;
 import org.gridlab.gat.resources.SoftwareDescription;
-
-import java.net.URISyntaxException;
-
-import java.util.Hashtable;
 
 /**
  * @author rob

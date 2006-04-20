@@ -1,10 +1,10 @@
 package tutorial;
 
+import java.util.List;
+
 import org.gridlab.gat.GAT;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.monitoring.Monitorable;
-
-import java.util.List;
 
 public class ListMetricDefinitions {
     public static void main(String[] args) throws Exception {

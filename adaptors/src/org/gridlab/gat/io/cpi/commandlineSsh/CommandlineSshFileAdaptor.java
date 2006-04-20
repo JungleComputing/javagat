@@ -32,8 +32,6 @@ public class CommandlineSshFileAdaptor extends FileCpi {
             throws GATObjectCreationException {
         super(gatContext, preferences, location);
 
-        checkName("commandlineSsh");
-
         if (!location.isCompatible("ssh")) {
             throw new AdaptorNotSelectedException("cannot handle this URI");
         }

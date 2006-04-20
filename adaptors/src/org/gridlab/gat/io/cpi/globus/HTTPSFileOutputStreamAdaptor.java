@@ -1,19 +1,16 @@
 package org.gridlab.gat.io.cpi.globus;
 
+import java.io.OutputStream;
+
 import org.globus.gsi.gssapi.auth.SelfAuthorization;
-
 import org.globus.io.streams.GassOutputStream;
-
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.GATObjectCreationException;
 import org.gridlab.gat.Preferences;
 import org.gridlab.gat.URI;
 import org.gridlab.gat.security.globus.GlobusSecurityUtils;
-
 import org.ietf.jgss.GSSCredential;
-
-import java.io.OutputStream;
 
 /**
  * A DefaultFileStreamAdaptor represents a connection to open file, the file may
@@ -34,8 +31,6 @@ public class HTTPSFileOutputStreamAdaptor extends GlobusFileOutputStreamAdaptor 
             Preferences preferences, URI location, Boolean append)
             throws GATObjectCreationException {
         super(gatContext, preferences, location, append);
-
-        checkName("https");
 
         if (!location.isCompatible("https")) {
             throw new GATObjectCreationException("cannot handle this URI");

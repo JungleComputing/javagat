@@ -3,22 +3,20 @@
  */
 package org.gridlab.gat.advert.cpi;
 
+import java.util.List;
+import java.util.NoSuchElementException;
+
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
-import org.gridlab.gat.GATObjectCreationException;
 import org.gridlab.gat.Preferences;
 import org.gridlab.gat.advert.AdvertService;
 import org.gridlab.gat.advert.Advertisable;
 import org.gridlab.gat.advert.MetaData;
-import org.gridlab.gat.engine.GATEngine;
 import org.gridlab.gat.monitoring.Metric;
 import org.gridlab.gat.monitoring.MetricDefinition;
 import org.gridlab.gat.monitoring.MetricListener;
 import org.gridlab.gat.monitoring.MetricValue;
 import org.gridlab.gat.monitoring.Monitorable;
-
-import java.util.List;
-import java.util.NoSuchElementException;
 
 /**
  * @author rob
@@ -158,9 +156,5 @@ public class AdvertServiceCpi implements AdvertService, Monitorable {
     public MetricDefinition getMetricDefinitionByName(String name)
             throws GATInvocationException {
         throw new UnsupportedOperationException("Not implemented");
-    }
-
-    protected void checkName(String adaptor) throws GATObjectCreationException {
-        GATEngine.checkName(preferences, "AdvertService", adaptor);
     }
 }

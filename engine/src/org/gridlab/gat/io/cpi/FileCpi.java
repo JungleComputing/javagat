@@ -1,5 +1,11 @@
 package org.gridlab.gat.io.cpi;
 
+import java.net.MalformedURLException;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.util.List;
+import java.util.Vector;
+
 import org.gridlab.gat.GAT;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
@@ -13,13 +19,6 @@ import org.gridlab.gat.monitoring.Metric;
 import org.gridlab.gat.monitoring.MetricDefinition;
 import org.gridlab.gat.monitoring.MetricListener;
 import org.gridlab.gat.monitoring.MetricValue;
-
-import java.net.MalformedURLException;
-import java.net.URISyntaxException;
-import java.net.URL;
-
-import java.util.List;
-import java.util.Vector;
 
 /**
  * Capability provider interface to the File class.
@@ -422,10 +421,6 @@ public abstract class FileCpi implements File {
 
     public final URL toURL() throws MalformedURLException {
         return location.toURL();
-    }
-
-    protected void checkName(String adaptor) throws GATObjectCreationException {
-        GATEngine.checkName(preferences, "File", adaptor);
     }
 
     protected static URI fixURI(URI in, String destScheme) {

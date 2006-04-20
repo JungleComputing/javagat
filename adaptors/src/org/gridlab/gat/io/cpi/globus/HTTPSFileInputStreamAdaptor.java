@@ -1,27 +1,22 @@
 package org.gridlab.gat.io.cpi.globus;
 
+import java.io.InputStream;
+
 import org.globus.gsi.gssapi.auth.SelfAuthorization;
-
 import org.globus.io.streams.GassInputStream;
-
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.GATObjectCreationException;
 import org.gridlab.gat.Preferences;
 import org.gridlab.gat.URI;
 import org.gridlab.gat.security.globus.GlobusSecurityUtils;
-
 import org.ietf.jgss.GSSCredential;
-
-import java.io.InputStream;
 
 public class HTTPSFileInputStreamAdaptor extends GlobusFileInputStreamAdaptor {
     public HTTPSFileInputStreamAdaptor(GATContext gatContext,
             Preferences preferences, URI location)
             throws GATObjectCreationException {
         super(gatContext, preferences, location);
-
-        checkName("https");
 
         if (!location.isCompatible("https")) {
             throw new GATObjectCreationException("cannot handle this URI");

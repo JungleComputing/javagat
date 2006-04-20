@@ -84,7 +84,6 @@ public class CommandlineSshPrunResourceBrokerAdaptor extends ResourceBrokerCpi {
             Preferences preferences) throws GATObjectCreationException {
         super(gatContext, preferences);
 
-        checkName("commandlineSshPrun");
         String osname = System.getProperty("os.name");
         if (osname.startsWith("Windows")) windows = true;
     }

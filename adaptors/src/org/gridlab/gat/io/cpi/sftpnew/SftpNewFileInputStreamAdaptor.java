@@ -26,8 +26,6 @@ public class SftpNewFileInputStreamAdaptor extends FileInputStreamCpi {
             throws GATObjectCreationException {
         super(gatContext, preferences, location);
 
-        checkName("sftp");
-
         if (!location.isCompatible("sftp")) {
             throw new GATObjectCreationException("cannot handle this URI");
         }

@@ -1,7 +1,9 @@
 package org.gridlab.gat.io.cpi.globus;
 
-import org.globus.io.streams.FTPOutputStream;
+import java.io.OutputStream;
+import java.util.List;
 
+import org.globus.io.streams.FTPOutputStream;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.GATObjectCreationException;
@@ -10,17 +12,11 @@ import org.gridlab.gat.URI;
 import org.gridlab.gat.security.PasswordSecurityContext;
 import org.gridlab.gat.security.cpi.SecurityContextUtils;
 
-import java.io.OutputStream;
-
-import java.util.List;
-
 public class FTPFileOutputStreamAdaptor extends GlobusFileOutputStreamAdaptor {
     public FTPFileOutputStreamAdaptor(GATContext gatContext,
             Preferences preferences, URI location, Boolean append)
             throws GATObjectCreationException {
         super(gatContext, preferences, location, append);
-
-        checkName("ftp");
 
         if (!location.isCompatible("ftp")) {
             throw new GATObjectCreationException("cannot handle this URI");

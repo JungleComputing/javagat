@@ -1,11 +1,10 @@
 package org.gridlab.gat.monitoring;
 
-import org.gridlab.gat.GATInvocationException;
-
 import java.io.Serializable;
-
 import java.util.HashMap;
 import java.util.Map;
+
+import org.gridlab.gat.GATInvocationException;
 
 /**
  * An instance of this class is a decription of a measurable quantity within a

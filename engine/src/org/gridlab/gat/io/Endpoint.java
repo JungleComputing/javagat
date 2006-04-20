@@ -3,11 +3,11 @@
  */
 package org.gridlab.gat.io;
 
+import java.io.Serializable;
+
 import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.advert.Advertisable;
 import org.gridlab.gat.monitoring.Monitorable;
-
-import java.io.Serializable;
 
 /**
  * An Endpoint represents an endpoint of a Pipe. An Endpoint can be created, and

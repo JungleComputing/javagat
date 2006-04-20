@@ -1,10 +1,6 @@
 package org.gridlab.gat.io.cpi.sftpnew;
 
-import com.jcraft.jsch.Channel;
-import com.jcraft.jsch.ChannelSftp;
-import com.jcraft.jsch.JSch;
-import com.jcraft.jsch.JSchException;
-import com.jcraft.jsch.Session;
+import java.util.Hashtable;
 
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATObjectCreationException;
@@ -14,7 +10,11 @@ import org.gridlab.gat.io.cpi.FileCpi;
 import org.gridlab.gat.io.cpi.ssh.SSHSecurityUtils;
 import org.gridlab.gat.io.cpi.ssh.SshUserInfo;
 
-import java.util.Hashtable;
+import com.jcraft.jsch.Channel;
+import com.jcraft.jsch.ChannelSftp;
+import com.jcraft.jsch.JSch;
+import com.jcraft.jsch.JSchException;
+import com.jcraft.jsch.Session;
 
 public class SftpNewFileAdaptor extends FileCpi {
     public static final int SSH_PORT = 22;
@@ -30,8 +30,6 @@ public class SftpNewFileAdaptor extends FileCpi {
     public SftpNewFileAdaptor(GATContext gatContext, Preferences preferences,
             URI location) throws GATObjectCreationException {
         super(gatContext, preferences, location);
-
-        checkName("sftpnew");
 
         if (!location.isCompatible("sftp") && !location.isCompatible("file")) {
             throw new GATObjectCreationException("cannot handle this URI");

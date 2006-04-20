@@ -1,5 +1,7 @@
 package org.gridlab.gat.resources.cpi.commandlineSshPrun;
 
+import java.util.Hashtable;
+
 import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.advert.Advertisable;
 import org.gridlab.gat.monitoring.MetricDefinition;
@@ -7,8 +9,6 @@ import org.gridlab.gat.resources.HardwareResource;
 import org.gridlab.gat.resources.HardwareResourceDescription;
 import org.gridlab.gat.resources.Reservation;
 import org.gridlab.gat.resources.ResourceDescription;
-
-import java.util.Hashtable;
 
 /**
  * An instance of this interface is an abstract representation of a physical

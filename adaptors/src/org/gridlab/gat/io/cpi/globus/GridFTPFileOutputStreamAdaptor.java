@@ -1,19 +1,17 @@
 package org.gridlab.gat.io.cpi.globus;
 
+import java.io.IOException;
+import java.io.OutputStream;
+
 import org.globus.ftp.GridFTPClient;
 import org.globus.ftp.GridFTPSession;
 import org.globus.ftp.exception.FTPException;
-
 import org.globus.io.streams.FTPOutputStream;
-
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.GATObjectCreationException;
 import org.gridlab.gat.Preferences;
 import org.gridlab.gat.URI;
-
-import java.io.IOException;
-import java.io.OutputStream;
 
 class GridFTPOutputStream extends FTPOutputStream {
     public GridFTPOutputStream(String file, boolean passive, int type,
@@ -33,8 +31,6 @@ public class GridFTPFileOutputStreamAdaptor extends
             Preferences preferences, URI location, Boolean append)
             throws GATObjectCreationException {
         super(gatContext, preferences, location, append);
-
-        checkName("gridftp");
 
         if (!location.isCompatible("gsiftp")) {
             throw new GATObjectCreationException("cannot handle this URI");

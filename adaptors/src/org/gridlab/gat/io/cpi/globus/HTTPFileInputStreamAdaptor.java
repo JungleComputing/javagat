@@ -1,14 +1,13 @@
 package org.gridlab.gat.io.cpi.globus;
 
-import org.globus.io.streams.HTTPInputStream;
+import java.io.InputStream;
 
+import org.globus.io.streams.HTTPInputStream;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.GATObjectCreationException;
 import org.gridlab.gat.Preferences;
 import org.gridlab.gat.URI;
-
-import java.io.InputStream;
 
 /**
  * A DefaultFileStreamAdaptor represents a connection to open file, the file may
@@ -29,8 +28,6 @@ public class HTTPFileInputStreamAdaptor extends GlobusFileInputStreamAdaptor {
             Preferences preferences, URI location)
             throws GATObjectCreationException {
         super(gatContext, preferences, location);
-
-        checkName("http");
 
         if (!location.isCompatible("http")) {
             throw new GATObjectCreationException("cannot handle this URI");

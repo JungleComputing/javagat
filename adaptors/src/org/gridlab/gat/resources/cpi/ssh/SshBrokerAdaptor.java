@@ -22,8 +22,8 @@ import org.gridlab.gat.engine.GATEngine;
 import org.gridlab.gat.io.File;
 import org.gridlab.gat.io.FileInputStream;
 import org.gridlab.gat.io.FileOutputStream;
-import org.gridlab.gat.io.cpi.ssh.SshUserInfo;
 import org.gridlab.gat.io.cpi.ssh.SSHSecurityUtils;
+import org.gridlab.gat.io.cpi.ssh.SshUserInfo;
 import org.gridlab.gat.resources.Job;
 import org.gridlab.gat.resources.JobDescription;
 import org.gridlab.gat.resources.Reservation;
@@ -60,8 +60,6 @@ public class SshBrokerAdaptor extends ResourceBrokerCpi {
     public SshBrokerAdaptor(GATContext gatContext, Preferences preferences)
         throws Exception {
         super(gatContext, preferences);
-
-        checkName("ssh");
     }
 
     /**

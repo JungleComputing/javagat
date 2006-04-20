@@ -3,11 +3,11 @@
  */
 package org.gridlab.gat.io;
 
-import org.gridlab.gat.GATInvocationException;
-import org.gridlab.gat.monitoring.Monitorable;
-
 import java.io.InputStream;
 import java.io.OutputStream;
+
+import org.gridlab.gat.GATInvocationException;
+import org.gridlab.gat.monitoring.Monitorable;
 
 /**
  * A Pipe represents a connection to another process.

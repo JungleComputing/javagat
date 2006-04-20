@@ -1,22 +1,19 @@
 package org.gridlab.gat.io.cpi.globus;
 
-import org.globus.io.streams.HTTPOutputStream;
+import java.io.OutputStream;
 
+import org.globus.io.streams.HTTPOutputStream;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.GATObjectCreationException;
 import org.gridlab.gat.Preferences;
 import org.gridlab.gat.URI;
 
-import java.io.OutputStream;
-
 public class HTTPFileOutputStreamAdaptor extends GlobusFileOutputStreamAdaptor {
     public HTTPFileOutputStreamAdaptor(GATContext gatContext,
             Preferences preferences, URI location, Boolean append)
             throws GATObjectCreationException {
         super(gatContext, preferences, location, append);
-
-        checkName("http");
 
         if (!location.isCompatible("http")) {
             throw new GATObjectCreationException("cannot handle this URI");

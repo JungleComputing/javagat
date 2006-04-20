@@ -430,10 +430,6 @@ public abstract class ResourceBrokerCpi implements ResourceBroker {
         }
     }
 
-    protected void checkName(String adaptor) throws GATObjectCreationException {
-        GATEngine.checkName(preferences, "ResourceBroker", adaptor);
-    }
-
     public String getHostname(JobDescription description)
             throws GATInvocationException {
         ResourceDescription d = description.getResourceDescription();

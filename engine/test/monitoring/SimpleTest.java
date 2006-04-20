@@ -1,14 +1,14 @@
 package monitoring;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.gridlab.gat.GAT;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.Preferences;
 import org.gridlab.gat.monitoring.Metric;
 import org.gridlab.gat.monitoring.MetricValue;
 import org.gridlab.gat.monitoring.Monitorable;
-
-import java.util.HashMap;
-import java.util.Map;
 
 class Server implements Runnable {
     public void run() {

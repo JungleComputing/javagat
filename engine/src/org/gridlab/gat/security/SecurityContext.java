@@ -1,9 +1,9 @@
 package org.gridlab.gat.security;
 
-import org.gridlab.gat.engine.GATEngine;
-
 import java.util.HashMap;
 import java.util.StringTokenizer;
+
+import org.gridlab.gat.engine.GATEngine;
 
 /** A container for security Information.
  *

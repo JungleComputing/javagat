@@ -1,10 +1,18 @@
 package NQueens;
 
-import org.gridlab.gat.*;
-import org.gridlab.gat.io.*;
-import org.gridlab.gat.resources.*;
 import java.util.Hashtable;
 import java.util.StringTokenizer;
+
+import org.gridlab.gat.GAT;
+import org.gridlab.gat.GATContext;
+import org.gridlab.gat.Preferences;
+import org.gridlab.gat.URI;
+import org.gridlab.gat.io.File;
+import org.gridlab.gat.resources.HardwareResourceDescription;
+import org.gridlab.gat.resources.JobDescription;
+import org.gridlab.gat.resources.ResourceBroker;
+import org.gridlab.gat.resources.ResourceDescription;
+import org.gridlab.gat.resources.SoftwareDescription;
 
 public class NQueensSolver {
     static GATContext context = new GATContext();

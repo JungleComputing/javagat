@@ -1,5 +1,8 @@
 package org.gridlab.gat.io.cpi.local;
 
+import java.io.FileOutputStream;
+import java.io.IOException;
+
 import org.gridlab.gat.AdaptorNotSelectedException;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
@@ -8,9 +11,6 @@ import org.gridlab.gat.Preferences;
 import org.gridlab.gat.URI;
 import org.gridlab.gat.io.cpi.FileOutputStreamCpi;
 
-import java.io.FileOutputStream;
-import java.io.IOException;
-
 public class LocalFileOutputStreamAdaptor extends FileOutputStreamCpi {
     FileOutputStream out;
 
@@ -18,8 +18,6 @@ public class LocalFileOutputStreamAdaptor extends FileOutputStreamCpi {
             Preferences preferences, URI location, Boolean append)
             throws IOException, GATObjectCreationException {
         super(gatContext, preferences, location, append);
-
-        checkName("local");
 
         if (!location.refersToLocalHost()) {
             throw new AdaptorNotSelectedException(

@@ -3,6 +3,9 @@
  */
 package org.gridlab.gat.io.cpi.sftp;
 
+import java.io.IOException;
+import java.io.InputStream;
+
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.GATObjectCreationException;
@@ -10,12 +13,9 @@ import org.gridlab.gat.Preferences;
 import org.gridlab.gat.URI;
 import org.gridlab.gat.io.cpi.FileInputStreamCpi;
 
-import java.io.IOException;
-import java.io.InputStream;
-
-import com.sshtools.j2ssh.sftp.SftpSubsystemClient;
-import com.sshtools.j2ssh.sftp.SftpFileInputStream;
 import com.sshtools.j2ssh.sftp.SftpFile;
+import com.sshtools.j2ssh.sftp.SftpFileInputStream;
+import com.sshtools.j2ssh.sftp.SftpSubsystemClient;
 
 /**
  * @author rob
@@ -33,8 +33,6 @@ public class SftpFileInputStreamAdaptor extends FileInputStreamCpi {
             Preferences preferences, URI location)
             throws GATObjectCreationException {
         super(gatContext, preferences, location);
-
-        checkName("sftp");
 
         if (!location.isCompatible("sftp")) {
             throw new GATObjectCreationException("cannot handle this URI");

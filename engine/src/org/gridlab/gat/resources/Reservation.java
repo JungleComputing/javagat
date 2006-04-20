@@ -1,7 +1,6 @@
 package org.gridlab.gat.resources;
 
 import java.io.IOException;
-
 import java.rmi.RemoteException;
 
 /**

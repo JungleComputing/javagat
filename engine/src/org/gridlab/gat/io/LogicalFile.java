@@ -1,14 +1,13 @@
 package org.gridlab.gat.io;
 
+import java.io.IOException;
+import java.io.Serializable;
+import java.util.List;
+
 import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.URI;
 import org.gridlab.gat.advert.Advertisable;
 import org.gridlab.gat.monitoring.Monitorable;
-
-import java.io.IOException;
-import java.io.Serializable;
-
-import java.util.List;
 
 /**
  * An abstract representation of a set of identical physical files.

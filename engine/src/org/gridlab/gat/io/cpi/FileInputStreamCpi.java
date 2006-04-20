@@ -1,18 +1,16 @@
 package org.gridlab.gat.io.cpi;
 
+import java.util.List;
+
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
-import org.gridlab.gat.GATObjectCreationException;
 import org.gridlab.gat.Preferences;
 import org.gridlab.gat.URI;
-import org.gridlab.gat.engine.GATEngine;
 import org.gridlab.gat.io.FileInputStreamInterface;
 import org.gridlab.gat.monitoring.Metric;
 import org.gridlab.gat.monitoring.MetricDefinition;
 import org.gridlab.gat.monitoring.MetricListener;
 import org.gridlab.gat.monitoring.MetricValue;
-
-import java.util.List;
 
 public abstract class FileInputStreamCpi implements FileInputStreamInterface {
     protected GATContext gatContext;
@@ -187,9 +185,5 @@ public abstract class FileInputStreamCpi implements FileInputStreamInterface {
      */
     public long skip(long n) throws GATInvocationException {
         throw new UnsupportedOperationException("Not implemented");
-    }
-
-    protected void checkName(String adaptor) throws GATObjectCreationException {
-        GATEngine.checkName(preferences, "FileInputStream", adaptor);
     }
 }

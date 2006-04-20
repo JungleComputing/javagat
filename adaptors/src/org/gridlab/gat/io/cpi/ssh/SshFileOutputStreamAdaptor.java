@@ -36,8 +36,6 @@ public class SshFileOutputStreamAdaptor extends FileOutputStreamCpi {
             throws GATObjectCreationException {
         super(gatContext, preferences, location, append);
 
-        checkName("ssh");
-
         if (!location.isCompatible("ssh")) {
             throw new GATObjectCreationException("cannot handle this URI");
         }

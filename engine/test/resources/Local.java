@@ -1,5 +1,7 @@
 package resources;
 
+import java.util.Hashtable;
+
 import org.gridlab.gat.GAT;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.URI;
@@ -10,8 +12,6 @@ import org.gridlab.gat.resources.JobDescription;
 import org.gridlab.gat.resources.ResourceBroker;
 import org.gridlab.gat.resources.ResourceDescription;
 import org.gridlab.gat.resources.SoftwareDescription;
-
-import java.util.Hashtable;
 
 public class Local {
     public static void main(String[] args) throws Exception {

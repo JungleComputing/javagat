@@ -3,6 +3,9 @@
  */
 package org.gridlab.gat;
 
+import java.lang.reflect.Proxy;
+import java.net.URISyntaxException;
+
 import org.gridlab.gat.advert.AdvertService;
 import org.gridlab.gat.advert.cpi.AdvertServiceCpi;
 import org.gridlab.gat.engine.AdaptorInvocationHandler;
@@ -26,10 +29,6 @@ import org.gridlab.gat.monitoring.Monitorable;
 import org.gridlab.gat.monitoring.cpi.MonitorableCpi;
 import org.gridlab.gat.resources.ResourceBroker;
 import org.gridlab.gat.resources.cpi.ResourceBrokerCpi;
-
-import java.lang.reflect.Proxy;
-
-import java.net.URISyntaxException;
 
 /**
  * @author rob
