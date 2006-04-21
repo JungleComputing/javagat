@@ -3,9 +3,9 @@
  */
 package org.gridlab.gat.io.cpi;
 
-import org.gridlab.gat.advert.Advertisable;
-
 import java.io.Serializable;
+
+import org.gridlab.gat.advert.Advertisable;
 
 /**
  * @author rob

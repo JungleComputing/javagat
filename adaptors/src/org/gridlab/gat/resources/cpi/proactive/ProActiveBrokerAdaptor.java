@@ -116,7 +116,6 @@ public class ProActiveBrokerAdaptor extends ResourceBrokerCpi {
     public ProActiveBrokerAdaptor(GATContext gatContext, Preferences preferences)
             throws GATObjectCreationException {
         super(gatContext, preferences);
-        checkName("proActive");
 
         if(true) throw new GATObjectCreationException("proactive adaptor is disabled for now");
         

@@ -3,19 +3,18 @@
  */
 package org.gridlab.gat.engine;
 
-import colobus.Colobus;
+import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.Hashtable;
+import java.util.LinkedList;
 
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.GATObjectCreationException;
 import org.gridlab.gat.Preferences;
 
-import java.lang.reflect.InvocationHandler;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-
-import java.util.Hashtable;
-import java.util.LinkedList;
+import colobus.Colobus;
 
 /**
  * @author rob
@@ -221,22 +220,6 @@ public class AdaptorInvocationHandler implements InvocationHandler {
             parameterTypes[count] = newParameters[count].getClass();
         }
 
-        /*
-         * for (int i = 0; i &lt; l.size(); i++) { Adaptor a = l.get(i); if
-         * (a.satisfies(preferences)) { Object o = null; try { o =
-         * a.newInstance(parameterTypes, newParameters); if (VERBOSE) {
-         * System.err .println(&quot;getAdaptorList: Created adaptor instance of
-         * type &quot; + a.getName()); } result.add(o); } catch (Throwable t) {
-         * if (exc == null) { exc = new GATObjectCreationException(); }
-         * exc.add(a.toString(), t); if (VERBOSE) { System.err
-         * .println(&quot;getAdaptorList: Could not create an instance of
-         * Adaptor &quot; + a.getName()); } } } else { // it does not satisfy
-         * prefs. if (exc == null) { exc = new GATObjectCreationException(); }
-         * exc.add(a.toString(), new GATInvocationException( &quot;adaptor does
-         * not satisfy preferences&quot;)); } }
-         */
-        Object o;
-
         if (!adaptor.satisfies(preferences)) {
             // it does not satisfy prefs.
             GATObjectCreationException exc = new GATObjectCreationException();
@@ -245,11 +228,20 @@ public class AdaptorInvocationHandler implements InvocationHandler {
             throw (exc);
         }
 
+        // check if the adaptor has been excluded in the preferences
+        if(!GATEngine.isAdaptorSelected(preferences, adaptor)) {
+            GATObjectCreationException exc = new GATObjectCreationException();
+            exc.add(adaptor.toString(), new GATInvocationException(
+                "adaptor has not been selected by the user"));
+            throw (exc);
+        }
+        
         long startHandle = colobus.fireStartEvent("creating adaptor "
             + adaptor.getName());
 
+        Object result;
         try {
-            o = adaptor.newInstance(parameterTypes, newParameters);
+            result = adaptor.newInstance(parameterTypes, newParameters);
             colobus.fireStopEvent(startHandle, "creating adaptor "
                 + adaptor.getName() + " (success)");
         } catch (Throwable t) {
@@ -272,6 +264,6 @@ public class AdaptorInvocationHandler implements InvocationHandler {
                 + " adaptor for type " + adaptor.getCpi());
         }
 
-        return o;
+        return result;
     }
 }

@@ -1,11 +1,10 @@
 package org.gridlab.gat.resources;
 
+import java.io.IOException;
+import java.util.List;
+
 import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.TimePeriod;
-
-import java.io.IOException;
-
-import java.util.List;
 
 /**
  * An instance of this class is used to reserve resources or to submit jobs.

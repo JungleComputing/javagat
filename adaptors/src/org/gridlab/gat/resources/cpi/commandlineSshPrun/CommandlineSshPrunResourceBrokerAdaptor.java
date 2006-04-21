@@ -84,7 +84,6 @@ public class CommandlineSshPrunResourceBrokerAdaptor extends ResourceBrokerCpi {
             Preferences preferences) throws GATObjectCreationException {
         super(gatContext, preferences);
 
-        checkName("commandlineSshPrun");
         String osname = System.getProperty("os.name");
         if (osname.startsWith("Windows")) windows = true;
     }
@@ -138,7 +137,7 @@ public class CommandlineSshPrunResourceBrokerAdaptor extends ResourceBrokerCpi {
 
         // we do not support environment yet
         Map env = sd.getEnvironment();
-        if(env == null || env.isEmpty()) {
+        if(env != null && !env.isEmpty()) {
             throw new AdaptorNotApplicableException("cannot handle environment");
         }
 
@@ -210,7 +209,7 @@ public class CommandlineSshPrunResourceBrokerAdaptor extends ResourceBrokerCpi {
         } else {
             // we must use the -t option to ssh (allocates pseudo TTY).
             // If we don't, there is no way to kill the remote process.
-            command = "ssh -t -t " + host + " /home/rob/bin/do_prun " + path + " "
+            command = "ssh -o BatchMode=yes -o StrictHostKeyChecking=yes -t -t " + host + " /home/rob/bin/do_prun " + path + " "
                 + getArguments(description);
         }
 

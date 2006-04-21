@@ -1,11 +1,11 @@
 package org.gridlab.gat.resources;
 
+import java.util.List;
+
 import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.monitoring.Metric;
 import org.gridlab.gat.monitoring.MetricListener;
 import org.gridlab.gat.monitoring.MetricValue;
-
-import java.util.List;
 
 /**
  * An instance of this interface is an abstract representation of a physical

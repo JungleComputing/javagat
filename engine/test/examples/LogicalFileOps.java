@@ -19,13 +19,13 @@
  ******************************************************************************/
 package examples;
 
+import java.util.List;
+
 import org.gridlab.gat.GAT;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.URI;
 import org.gridlab.gat.io.File;
 import org.gridlab.gat.io.LogicalFile;
-
-import java.util.List;
 
 public class LogicalFileOps {
     public static void main(String[] args) {

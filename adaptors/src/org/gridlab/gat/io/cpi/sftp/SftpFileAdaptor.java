@@ -40,8 +40,6 @@ public class SftpFileAdaptor extends FileCpi {
             URI location) throws GATObjectCreationException {
         super(gatContext, preferences, location);
 
-        checkName("sftp");
-
         if (!location.isCompatible("sftp") && !location.isCompatible("file")) {
             throw new GATObjectCreationException("cannot handle this URI");
         }

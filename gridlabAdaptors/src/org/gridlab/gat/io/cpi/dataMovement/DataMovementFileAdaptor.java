@@ -51,8 +51,6 @@ public class DataMovementFileAdaptor extends FileCpi {
             throws GATObjectCreationException {
         super(gatContext, preferences, location);
 
-        checkName("dataMovement");
-
         if (!location.isCompatible("gsiftp")) {
             throw new GATObjectCreationException("cannot handle this URI");
         }

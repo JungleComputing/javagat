@@ -1,5 +1,9 @@
 package org.gridlab.gat.io;
 
+import java.io.IOException;
+import java.io.OutputStream;
+import java.util.List;
+
 import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.engine.GATIOException;
 import org.gridlab.gat.monitoring.Metric;
@@ -7,11 +11,6 @@ import org.gridlab.gat.monitoring.MetricDefinition;
 import org.gridlab.gat.monitoring.MetricListener;
 import org.gridlab.gat.monitoring.MetricValue;
 import org.gridlab.gat.monitoring.Monitorable;
-
-import java.io.IOException;
-import java.io.OutputStream;
-
-import java.util.List;
 
 /**
  * A FileOutputStream represents a connection to open file, the file may be

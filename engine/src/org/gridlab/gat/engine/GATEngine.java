@@ -1,9 +1,26 @@
 package org.gridlab.gat.engine;
 
+import java.io.File;
+import java.io.IOException;
+import java.io.StringReader;
+import java.io.StringWriter;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.net.URL;
+import java.net.URLClassLoader;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.NoSuchElementException;
+import java.util.Properties;
+import java.util.StringTokenizer;
+import java.util.Vector;
+import java.util.jar.Attributes;
+import java.util.jar.JarFile;
+import java.util.jar.Manifest;
+
 import org.exolab.castor.xml.Marshaller;
 import org.exolab.castor.xml.Unmarshaller;
-
-import org.gridlab.gat.AdaptorNotSelectedException;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.GATObjectCreationException;
@@ -22,28 +39,6 @@ import org.gridlab.gat.monitoring.MetricListener;
 import org.gridlab.gat.monitoring.MetricValue;
 import org.gridlab.gat.monitoring.cpi.MonitorableCpi;
 import org.gridlab.gat.resources.cpi.ResourceBrokerCpi;
-
-import java.io.File;
-import java.io.IOException;
-import java.io.StringReader;
-import java.io.StringWriter;
-
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-
-import java.net.URL;
-import java.net.URLClassLoader;
-
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.NoSuchElementException;
-import java.util.Properties;
-import java.util.StringTokenizer;
-import java.util.Vector;
-import java.util.jar.Attributes;
-import java.util.jar.JarFile;
-import java.util.jar.Manifest;
 
 /**
  * @author rob
@@ -740,30 +735,42 @@ public class GATEngine {
      * @param adaptorName the name of the adaptor
      * @throws GATObjectCreationException
      */
-    public static void checkName(Preferences preferences, String adaptorType,
-            String adaptorName) throws GATObjectCreationException {
+    public static boolean isAdaptorSelected(Preferences preferences, Adaptor adaptor)
+            throws GATObjectCreationException {
+        String adaptorType = adaptor.getShortCpiName();
+        String adaptorName = adaptor.getShortAdaptorClassName();
+        String postfix = adaptorType + "Adaptor";
+        String prefix = null;
+
+        // The prefix is the class name of the adaptor, with the TypeAdaptor part stripped of:
+        // So, "SshFileAdaptor" becomes "Ssh".
+        if (adaptorName.length() > postfix.length()) {
+            prefix = adaptorName.substring(0, adaptorName.length()
+                - postfix.length());
+        }
+
+        // If we only want local adaptors, the prefix must be "Local"
         String local = (String) preferences.get("adaptors.local");
-
-        if ((local != null) && local.equalsIgnoreCase("true")
-            && !adaptorName.equalsIgnoreCase("local")) {
-            throw new AdaptorNotSelectedException("this adaptor (" + adaptorName
-                + ") was not selected by the user.\n"
-                + "Only local adaptors will be used "
-                + "(property adaptors.local was set to true)");
+        if ((local != null) && local.equalsIgnoreCase("true")) {
+            if (prefix == null || !prefix.equalsIgnoreCase("local")) {
+                return false;
+            }
         }
 
-        String name = (String) preferences.get(adaptorType + ".adaptor.name");
+        String selected = (String) preferences.get(adaptorType
+            + ".adaptor.name");
+        if (selected != null) {
+            if (selected.equalsIgnoreCase(adaptorName)) {
+                return true;
+            }
 
-//	System.err.println("checkname of type " + adaptorType + " name " + adaptorName + " selected = " + name);
-        if ((name != null) && !name.equalsIgnoreCase(adaptorName)) {
-            throw new AdaptorNotSelectedException("this adaptor (" + adaptorName
-                + ") was not selected by the user.");
-        }
-    }
+            if (prefix != null && selected.equalsIgnoreCase(prefix)) {
+                return true;
+            }
 
-    private static class EndHook extends Thread {
-        public void run() {
-            end();
+            return false;
         }
+
+        return true;
     }
 }

@@ -3,33 +3,32 @@
  */
 package org.gridlab.gat.engine;
 
-import org.gridlab.gat.GATObjectCreationException;
-import org.gridlab.gat.Preferences;
-
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
-
 import java.util.Iterator;
+
+import org.gridlab.gat.GATObjectCreationException;
+import org.gridlab.gat.Preferences;
 
 /**
  * @author rob
  */
 class Adaptor {
+    /** The fully qualified class name of the api we implement. */
     String cpi;
 
-    /** The fully qualified class name of the api we implement. */
+    /** The class of the api this adaptor implements. */
     Class cpiClass;
 
-    /** The class of the api this adaptor implements. */
+    /** The fully qualified class name of this adaptor. */
     String adaptorName;
 
-    /** The fully qualified class name of this adaptor. */
+    /** The actual class of this adaptor, must be a subclass of cpiClass. */
     Class adaptorClass;
 
-    /** The actual class of this adaptor, must be a subclass of cpiClass. */
+    /** Preferences associated with this adaptor. */
     Preferences preferences;
 
-    /** Preferences associated with this adaptor. */
     /**
      * @param cpiClass
      *            The class of the api this adaptor implements.
@@ -128,7 +127,32 @@ class Adaptor {
         return adaptorName;
     }
 
+    Class getAdaptorClass() {
+        return adaptorClass;
+    }
+    
     public String toString() {
         return getName();
+    }
+
+    public String getShortCpiName() {
+        String shortCpiName = cpiClass.getName();
+        int index = shortCpiName.lastIndexOf(".");
+        if(index > 0) {
+            shortCpiName = shortCpiName.substring(index+1);
+        }
+        
+        // clip of the "Cpi"
+        return shortCpiName.substring(0, shortCpiName.length()-3);
+    }
+
+    public String getShortAdaptorClassName() {
+        String shortAdaptorClassName = adaptorClass.getName();
+        int index = shortAdaptorClassName.lastIndexOf(".");
+        if(index > 0) {
+            shortAdaptorClassName = shortAdaptorClassName.substring(index+1);
+        }
+        
+        return shortAdaptorClassName;
     }
 }

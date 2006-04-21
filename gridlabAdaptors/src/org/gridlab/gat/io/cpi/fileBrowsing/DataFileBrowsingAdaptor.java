@@ -54,8 +54,6 @@ public class DataFileBrowsingAdaptor extends FileCpi {
             throws GATObjectCreationException {
         super(gatContext, preferences, location);
 
-        checkName("fileBrowsing");
-
         if (!location.isCompatible("gsiftp")) {
             throw new GATObjectCreationException("cannot handle this URI");
         }

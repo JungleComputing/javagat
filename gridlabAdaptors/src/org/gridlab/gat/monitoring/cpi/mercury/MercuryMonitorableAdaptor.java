@@ -285,12 +285,6 @@ public class MercuryMonitorableAdaptor extends MonitorableCpi {
             Preferences preferences) throws GATObjectCreationException {
         super(gatContext, preferences);
 
-        try {
-            checkName("mercury");
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
         if (preferences.containsKey("monitoring.adaptor.mercury.producer")) {
             producer_URL = (String) preferences
                 .get("monitoring.adaptor.mercury.producer");

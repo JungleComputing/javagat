@@ -3,10 +3,10 @@
  */
 package org.gridlab.gat.advert;
 
+import java.util.NoSuchElementException;
+
 import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.monitoring.Monitorable;
-
-import java.util.NoSuchElementException;
 
 /**
  * @author rob

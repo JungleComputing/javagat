@@ -1,11 +1,20 @@
 package tutorial;
 
-import org.gridlab.gat.*;
-import org.gridlab.gat.io.File;
-import org.gridlab.gat.monitoring.*;
-import org.gridlab.gat.resources.*;
-
 import java.util.Hashtable;
+
+import org.gridlab.gat.GAT;
+import org.gridlab.gat.GATContext;
+import org.gridlab.gat.io.File;
+import org.gridlab.gat.monitoring.Metric;
+import org.gridlab.gat.monitoring.MetricDefinition;
+import org.gridlab.gat.monitoring.MetricListener;
+import org.gridlab.gat.monitoring.MetricValue;
+import org.gridlab.gat.resources.HardwareResourceDescription;
+import org.gridlab.gat.resources.Job;
+import org.gridlab.gat.resources.JobDescription;
+import org.gridlab.gat.resources.ResourceBroker;
+import org.gridlab.gat.resources.ResourceDescription;
+import org.gridlab.gat.resources.SoftwareDescription;
 
 public class SubmitJobCallback implements MetricListener {
     boolean exit = false;

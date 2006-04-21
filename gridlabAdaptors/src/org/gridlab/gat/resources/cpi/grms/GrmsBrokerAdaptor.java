@@ -88,8 +88,6 @@ public class GrmsBrokerAdaptor extends ResourceBrokerCpi {
             throws Exception {
         super(gatContext, preferences);
 
-        checkName("grms");
-
         // turn off all annoying cog prints
         if (!GATEngine.DEBUG) {
             Logger logger = Logger.getLogger(IdentityAuthorization.class

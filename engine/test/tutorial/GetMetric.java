@@ -1,14 +1,14 @@
 package tutorial;
 
+import java.util.Date;
+import java.util.HashMap;
+
 import org.gridlab.gat.GAT;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.monitoring.Metric;
 import org.gridlab.gat.monitoring.MetricDefinition;
 import org.gridlab.gat.monitoring.MetricValue;
 import org.gridlab.gat.monitoring.Monitorable;
-
-import java.util.Date;
-import java.util.HashMap;
 
 public class GetMetric {
     public static void main(String[] args) throws Exception {

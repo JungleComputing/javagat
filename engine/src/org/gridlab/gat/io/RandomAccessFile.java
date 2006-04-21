@@ -1,8 +1,8 @@
 package org.gridlab.gat.io;
 
-import org.gridlab.gat.monitoring.Monitorable;
-
 import java.io.IOException;
+
+import org.gridlab.gat.monitoring.Monitorable;
 
 /**
  * This class is used for random access to local and remote files.

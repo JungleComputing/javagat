@@ -3,6 +3,10 @@
  */
 package org.gridlab.gat.resources.cpi.commandlineSshPrun;
 
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
+
 import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.engine.GATEngine;
 import org.gridlab.gat.engine.IPUtils;
@@ -12,11 +16,6 @@ import org.gridlab.gat.monitoring.MetricValue;
 import org.gridlab.gat.resources.Job;
 import org.gridlab.gat.resources.JobDescription;
 import org.gridlab.gat.util.OutputForwarder;
-
-import java.io.IOException;
-
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * @author rob

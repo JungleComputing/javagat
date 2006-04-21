@@ -15,6 +15,10 @@ class RemoteCopyPerformanceTest {
         GATContext context = new GATContext();
         Preferences prefs = new Preferences();
 
+        if (args.length == 3) {
+            prefs.put("File.adaptor.name", args[2]);
+        }
+
         try {
             src = new URI(args[0]);
             dest = new URI(args[1]);
@@ -26,24 +30,26 @@ class RemoteCopyPerformanceTest {
             System.exit(1);
         }
 
-        
-        try {
-            long size = file.length();
-            long start = System.currentTimeMillis();
-            System.err.print("Copying file...");
-            file.copy(dest);
-            System.err.println("DONE");
-            long time = System.currentTimeMillis() - start;
-            double kb = size / 1024.0;
-            double secs = time / 1000.0;
-            double speed = kb / secs;    
-            System.err.println("copied " + kb + " KBytes in " + secs + " seconds: " + speed + " KByte/s");
-        } catch (Exception e) {
-            System.err.println("Could not copy file:" + e);
-            System.err.println("STACK TRACE:");
-            e.printStackTrace();
-            GAT.end();
-            System.exit(1);
+        for (int i = 0; i < 5; i++) {
+            try {
+                long size = file.length();
+                long start = System.currentTimeMillis();
+                System.err.print("Copying file...");
+                file.copy(dest);
+                System.err.println("DONE");
+                long time = System.currentTimeMillis() - start;
+                double kb = size / 1024.0;
+                double secs = time / 1000.0;
+                double speed = kb / secs;
+                System.err.println("copied " + kb + " KBytes in " + secs
+                    + " seconds: " + speed + " KByte/s");
+            } catch (Exception e) {
+                System.err.println("Could not copy file:" + e);
+                System.err.println("STACK TRACE:");
+                e.printStackTrace();
+                GAT.end();
+                System.exit(1);
+            }
         }
 
         GAT.end();

@@ -1,10 +1,10 @@
 package org.gridlab.gat;
 
-import org.gridlab.gat.security.SecurityContext;
-
 import java.util.Enumeration;
 import java.util.List;
 import java.util.Vector;
+
+import org.gridlab.gat.security.SecurityContext;
 
 /**
  * An instance of this class is the primary GAT state object.

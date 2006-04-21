@@ -1,8 +1,8 @@
 package file;
 
 import java.io.BufferedReader;
-import java.io.InputStreamReader;
 import java.io.FileOutputStream;
+import java.io.InputStreamReader;
 import java.io.PrintStream;
 
 import org.gridlab.gat.GAT;

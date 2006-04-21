@@ -1,15 +1,15 @@
 package monitoring;
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import org.gridlab.gat.GAT;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.Preferences;
 import org.gridlab.gat.monitoring.Metric;
 import org.gridlab.gat.monitoring.MetricDefinition;
 import org.gridlab.gat.monitoring.Monitorable;
-
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 public class SimpleTest1 {
     public static void main(String[] args) {

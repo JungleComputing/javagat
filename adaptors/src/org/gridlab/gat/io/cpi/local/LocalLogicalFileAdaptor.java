@@ -22,7 +22,5 @@ public class LocalLogicalFileAdaptor extends LogicalFileCpi {
             Preferences preferences, String name, Integer mode)
             throws Exception {
         super(gatContext, preferences, name, mode);
-
-        checkName("local");
     }
 }

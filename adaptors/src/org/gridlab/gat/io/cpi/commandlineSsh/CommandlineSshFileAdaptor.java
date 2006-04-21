@@ -32,8 +32,6 @@ public class CommandlineSshFileAdaptor extends FileCpi {
             throws GATObjectCreationException {
         super(gatContext, preferences, location);
 
-        checkName("commandlineSsh");
-
         if (!location.isCompatible("ssh")) {
             throw new AdaptorNotSelectedException("cannot handle this URI");
         }
@@ -77,7 +75,7 @@ public class CommandlineSshFileAdaptor extends FileCpi {
 
         if (dest.refersToLocalHost()) {
             if (GATEngine.DEBUG) {
-                System.err.println("Globus file: copy remote to local");
+                System.err.println("commandlineSsh file: copy remote to local");
             }
 
             copyToLocal(fixURI(toURI(), "commandlineSsh"), fixURI(dest,
@@ -88,7 +86,7 @@ public class CommandlineSshFileAdaptor extends FileCpi {
 
         if (toURI().refersToLocalHost()) {
             if (GATEngine.DEBUG) {
-                System.err.println("Globus file: copy local to remote");
+                System.err.println("commandlineSsh file: copy local to remote");
             }
 
             copyToRemote(fixURI(toURI(), "commandlineSsh"), fixURI(dest,
@@ -99,7 +97,7 @@ public class CommandlineSshFileAdaptor extends FileCpi {
 
         // source is remote, dest is remote.
         if (GATEngine.DEBUG) {
-            System.err.println("Globus file: copy remote to remote");
+            System.err.println("commandlineSsh file: copy remote to remote");
         }
 
         copyThirdParty(fixURI(toURI(), "commandlineSsh"), fixURI(dest,

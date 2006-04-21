@@ -53,8 +53,6 @@ public class StorageBoxAdvertAdaptor extends AdvertServiceCpi {
             Preferences preferences) throws GATObjectCreationException {
         super(gatContext, preferences);
 
-        checkName("storagebox");
-
         try {
             // Prepare httpg handler. 
             p = new SimpleProvider();

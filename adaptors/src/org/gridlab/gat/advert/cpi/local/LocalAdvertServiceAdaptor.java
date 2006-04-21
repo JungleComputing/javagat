@@ -3,15 +3,6 @@
  */
 package org.gridlab.gat.advert.cpi.local;
 
-import org.gridlab.gat.GATContext;
-import org.gridlab.gat.GATInvocationException;
-import org.gridlab.gat.GATObjectCreationException;
-import org.gridlab.gat.Preferences;
-import org.gridlab.gat.advert.Advertisable;
-import org.gridlab.gat.advert.MetaData;
-import org.gridlab.gat.advert.cpi.AdvertServiceCpi;
-import org.gridlab.gat.engine.GATEngine;
-
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -21,15 +12,21 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.RandomAccessFile;
 import java.io.Serializable;
-
 import java.net.URI;
-
 import java.nio.channels.FileChannel;
-
 import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.NoSuchElementException;
 import java.util.Vector;
+
+import org.gridlab.gat.GATContext;
+import org.gridlab.gat.GATInvocationException;
+import org.gridlab.gat.GATObjectCreationException;
+import org.gridlab.gat.Preferences;
+import org.gridlab.gat.advert.Advertisable;
+import org.gridlab.gat.advert.MetaData;
+import org.gridlab.gat.advert.cpi.AdvertServiceCpi;
+import org.gridlab.gat.engine.GATEngine;
 
 /**
  * @author rob
@@ -50,8 +47,6 @@ public class LocalAdvertServiceAdaptor extends AdvertServiceCpi {
     public LocalAdvertServiceAdaptor(GATContext gatContext,
             Preferences preferences) throws GATObjectCreationException {
         super(gatContext, preferences);
-
-        checkName("local");
 
         String home = System.getProperty("user.home");
 

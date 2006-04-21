@@ -3,6 +3,10 @@
  */
 package org.gridlab.gat.io.cpi.local;
 
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.RandomAccessFile;
+
 import org.gridlab.gat.AdaptorNotSelectedException;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATObjectCreationException;
@@ -10,10 +14,6 @@ import org.gridlab.gat.Preferences;
 import org.gridlab.gat.URI;
 import org.gridlab.gat.io.File;
 import org.gridlab.gat.io.cpi.RandomAccessFileCpi;
-
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.RandomAccessFile;
 
 /**
  * @author rob
@@ -25,8 +25,6 @@ public class LocalRandomAccessFileAdaptor extends RandomAccessFileCpi {
             Preferences preferences, File file, String mode)
             throws GATObjectCreationException {
         super(gatContext, preferences, file, mode);
-
-        checkName("local");
 
         URI location = file.toURI();
         

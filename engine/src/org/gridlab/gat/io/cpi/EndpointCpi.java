@@ -1,10 +1,10 @@
 package org.gridlab.gat.io.cpi;
 
+import java.util.List;
+
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
-import org.gridlab.gat.GATObjectCreationException;
 import org.gridlab.gat.Preferences;
-import org.gridlab.gat.engine.GATEngine;
 import org.gridlab.gat.io.Endpoint;
 import org.gridlab.gat.io.Pipe;
 import org.gridlab.gat.io.PipeListener;
@@ -12,8 +12,6 @@ import org.gridlab.gat.monitoring.Metric;
 import org.gridlab.gat.monitoring.MetricDefinition;
 import org.gridlab.gat.monitoring.MetricListener;
 import org.gridlab.gat.monitoring.MetricValue;
-
-import java.util.List;
 
 /**
  * Capability provider interface to the Endpoint class.
@@ -113,9 +111,5 @@ public abstract class EndpointCpi implements Endpoint {
      */
     public String marshal() {
         throw new UnsupportedOperationException("Not implemented");
-    }
-
-    protected void checkName(String adaptor) throws GATObjectCreationException {
-        GATEngine.checkName(preferences, "Endpoint", adaptor);
     }
 }

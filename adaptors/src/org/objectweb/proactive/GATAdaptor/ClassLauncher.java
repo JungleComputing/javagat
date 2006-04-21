@@ -1,8 +1,7 @@
 package org.objectweb.proactive.GATAdaptor;
 
-import java.lang.reflect.Method;
 import java.io.Serializable;
-import org.objectweb.proactive.GATAdaptor.LauncherJobListener;
+import java.lang.reflect.Method;
 
 public class ClassLauncher implements Runnable, Serializable {
 

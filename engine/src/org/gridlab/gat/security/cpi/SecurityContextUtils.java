@@ -3,6 +3,9 @@
  */
 package org.gridlab.gat.security.cpi;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.gridlab.gat.CouldNotInitializeCredentialException;
 import org.gridlab.gat.CredentialExpiredExeption;
 import org.gridlab.gat.GATContext;
@@ -11,9 +14,6 @@ import org.gridlab.gat.Preferences;
 import org.gridlab.gat.URI;
 import org.gridlab.gat.engine.GATEngine;
 import org.gridlab.gat.security.SecurityContext;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /** This class privides some utility methods to help adaptors to deal
  * with GAT security contexts.

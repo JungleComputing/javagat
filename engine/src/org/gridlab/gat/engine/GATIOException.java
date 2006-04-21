@@ -3,9 +3,9 @@
  */
 package org.gridlab.gat.engine;
 
-import org.gridlab.gat.GATInvocationException;
-
 import java.io.IOException;
+
+import org.gridlab.gat.GATInvocationException;
 
 /**
  * @author rob

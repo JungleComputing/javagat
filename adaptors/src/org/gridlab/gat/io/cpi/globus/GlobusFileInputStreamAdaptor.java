@@ -1,14 +1,14 @@
 package org.gridlab.gat.io.cpi.globus;
 
+import java.io.IOException;
+import java.io.InputStream;
+
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.GATObjectCreationException;
 import org.gridlab.gat.Preferences;
 import org.gridlab.gat.URI;
 import org.gridlab.gat.io.cpi.FileInputStreamCpi;
-
-import java.io.IOException;
-import java.io.InputStream;
 
 public abstract class GlobusFileInputStreamAdaptor extends FileInputStreamCpi {
     InputStream in;

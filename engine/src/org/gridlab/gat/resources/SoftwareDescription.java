@@ -4,13 +4,12 @@
  */
 package org.gridlab.gat.resources;
 
-import org.gridlab.gat.URI;
-import org.gridlab.gat.io.File;
-
 import java.net.URISyntaxException;
-
 import java.util.HashMap;
 import java.util.Map;
+
+import org.gridlab.gat.URI;
+import org.gridlab.gat.io.File;
 
 /**
  * @author rob
