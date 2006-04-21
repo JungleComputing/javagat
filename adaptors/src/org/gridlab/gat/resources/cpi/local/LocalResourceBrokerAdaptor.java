@@ -126,7 +126,7 @@ public class LocalResourceBrokerAdaptor extends ResourceBrokerCpi {
 
         // we do not support environment yet
         Map env = sd.getEnvironment();
-        if(env == null || env.isEmpty()) {
+        if(env != null && !env.isEmpty()) {
             throw new AdaptorNotApplicableException("cannot handle environment");
         }
 

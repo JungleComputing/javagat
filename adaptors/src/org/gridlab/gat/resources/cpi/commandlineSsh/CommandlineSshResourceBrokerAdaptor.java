@@ -137,7 +137,7 @@ public class CommandlineSshResourceBrokerAdaptor extends ResourceBrokerCpi {
 
         // we do not support environment yet
         Map env = sd.getEnvironment();
-        if(env == null || env.isEmpty()) {
+        if(env != null && !env.isEmpty()) {
             throw new AdaptorNotApplicableException("cannot handle environment");
         }
 
@@ -209,7 +209,7 @@ public class CommandlineSshResourceBrokerAdaptor extends ResourceBrokerCpi {
         } else {
             // we must use the -t option to ssh (allocates pseudo TTY).
             // If we don't, there is no way to kill the remote process.
-            command = "ssh -t -t " + host + " " + path + " "
+            command = "ssh -o BatchMode=yes -o StrictHostKeyChecking=yes -t -t " + host + " " + path + " "
                 + getArguments(description);
         }
 
