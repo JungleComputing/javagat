@@ -20,4 +20,3 @@
 - start Java apps
 - support environment vars in ssh broker.
 - top level build file
-- remove checkName calls -> engine can check if there is a public getName method
