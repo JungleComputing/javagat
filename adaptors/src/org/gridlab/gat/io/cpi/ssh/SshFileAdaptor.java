@@ -972,7 +972,7 @@ public class SshFileAdaptor extends FileCpi {
             }
 
             throw new GATInvocationException("SshFileAdaptor: internal error: "
-                + e + " in scpFromRemoteToLocal " + getPath() + " to " + loc);
+                + " in scpFromRemoteToLocal " + getPath() + " to " + loc, e);
         }
     }
 

@@ -478,6 +478,8 @@ public abstract class FileCpi implements File {
         // list all the files and copy recursively.
         File[] files = dir.listFiles();
 
+        if(files == null) return;
+        
         for (int i = 0; i < files.length; i++) {
             File f = files[i];
 

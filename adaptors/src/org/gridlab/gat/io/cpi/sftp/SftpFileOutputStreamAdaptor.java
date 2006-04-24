@@ -89,24 +89,6 @@ public class SftpFileOutputStreamAdaptor extends FileOutputStreamCpi {
     }
 
     /*
-     protected void doFlush() throws GATInvocationException {
-     String path = location.getPath();
-
-     try {
-     c = SftpFileAdaptor.openConnection(
-     gatContext, preferences, location
-     );
-
-     ByteArrayInputStream in =
-     new ByteArrayInputStream(out.toByteArray());
-     c.sftp.put(in, path);
-     } catch (Exception e) {
-     throw new GATInvocationException("sftp file outputstream", e);
-     }
-     }
-     */
-
-    /*
      * (non-Javadoc)
      *
      * @see java.io.OutputStream#close()
@@ -121,6 +103,8 @@ public class SftpFileOutputStreamAdaptor extends FileOutputStreamCpi {
         } catch (IOException e) {
             throw new GATInvocationException("globus output stream", e);
         }
+
+     SftpFileAdaptor.closeConnection(c);
     }
 
     /*
