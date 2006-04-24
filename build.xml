@@ -1,0 +1,17 @@
+<project name="JavaGAT" default="build" basedir=".">
+	<description>
+	      Build file for GAT
+    	</description>
+	
+	<target name="build" description="build everything" depends="clean">
+		<ant dir="engine"/>
+		<ant dir="adaptors"/>
+		<ant dir="gridlabAdaptors"/>
+	</target>
+	
+	<target name="clean" description="clean up">
+		<ant dir="engine" target="clean"/>
+		<ant dir="adaptors" target="clean"/>
+		<ant dir="gridlabAdaptors" target="clean"/>
+	</target>
+</project>
