@@ -3,12 +3,15 @@
 	      Build file for GAT
     	</description>
 	
-	<target name="build" description="build everything" depends="clean">
+	<target name="build" description="build everything">
 		<ant dir="engine"/>
 		<ant dir="adaptors"/>
-		<ant dir="gridlabAdaptors"/>
 	</target>
 	
+	<target name="gridlab" depends="build" description="build the gridlab adaptors">
+		<ant dir="gridlabAdaptors"/>
+	</target>
+
 	<target name="clean" description="clean up">
 		<ant dir="engine" target="clean"/>
 		<ant dir="adaptors" target="clean"/>
