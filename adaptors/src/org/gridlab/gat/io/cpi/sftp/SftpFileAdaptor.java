@@ -34,8 +34,6 @@ import com.sshtools.j2ssh.transport.publickey.SshPublicKey;
 public class SftpFileAdaptor extends FileCpi {
     public static final int SSH_PORT = 22;
 
-    SftpConnection c;
-
     public SftpFileAdaptor(GATContext gatContext, Preferences preferences,
             URI location) throws GATObjectCreationException {
         super(gatContext, preferences, location);
@@ -43,13 +41,11 @@ public class SftpFileAdaptor extends FileCpi {
         if (!location.isCompatible("sftp") && !location.isCompatible("file")) {
             throw new GATObjectCreationException("cannot handle this URI");
         }
-
-        c = openConnection(gatContext, preferences, location);
     }
 
     protected static SftpConnection openConnection(GATContext context,
             Preferences preferences, URI location)
-            throws GATObjectCreationException {
+            throws GATInvocationException {
         SftpConnection res = new SftpConnection();
 
         res.ssh = new SshClient();
@@ -66,11 +62,11 @@ public class SftpFileAdaptor extends FileCpi {
             info = SftpSecurityUtils.getSftpCredential(context, preferences,
                 "sftp", location, SSH_PORT);
         } catch (CouldNotInitializeCredentialException e) {
-            throw new GATObjectCreationException("sftp", e);
+            throw new GATInvocationException("sftp", e);
         } catch (CredentialExpiredExeption e2) {
-            throw new GATObjectCreationException("sftp", e2);
+            throw new GATInvocationException("sftp", e2);
         }
-    
+
         SshConnectionProperties connectionProp = new SshConnectionProperties();
         connectionProp.setHost(location.getHost());
 
@@ -93,8 +89,7 @@ public class SftpFileAdaptor extends FileCpi {
                 int result = res.ssh.authenticate(pwd);
 
                 if (result != AuthenticationProtocolState.COMPLETE) {
-                    throw new GATObjectCreationException(
-                        "Unable to authenticate");
+                    throw new GATInvocationException("Unable to authenticate");
                 }
             } else { // no password, try key-based authentication
 
@@ -105,14 +100,13 @@ public class SftpFileAdaptor extends FileCpi {
                 int result = res.ssh.authenticate(pkey);
 
                 if (result != AuthenticationProtocolState.COMPLETE) {
-                    throw new GATObjectCreationException(
-                        "Unable to authenticate");
+                    throw new GATInvocationException("Unable to authenticate");
                 }
             }
 
             res.sftp = res.ssh.openSftpClient();
         } catch (IOException e) {
-            throw new GATObjectCreationException("sftp", e);
+            throw new GATInvocationException("sftp", e);
         }
 
         return res;
@@ -124,6 +118,9 @@ public class SftpFileAdaptor extends FileCpi {
     }
 
     public String[] list() throws GATInvocationException {
+
+        SftpConnection c = openConnection(gatContext, preferences, location);
+
         try {
             c.sftp.cd(location.getPath());
 
@@ -140,50 +137,65 @@ public class SftpFileAdaptor extends FileCpi {
             return children;
         } catch (IOException e) {
             throw new GATInvocationException("sftp", e);
+        } finally {
+            closeConnection(c);
         }
     }
 
     public boolean exists() throws GATInvocationException {
+        SftpConnection c = openConnection(gatContext, preferences, location);
         try {
             c.sftp.stat(location.getPath());
             return true;
         } catch (IOException e) {
             //added by Ana
             return false;
+        } finally {
+            closeConnection(c);
         }
     }
 
     public boolean isDirectory() throws GATInvocationException {
+        SftpConnection c = openConnection(gatContext, preferences, location);
         try {
             FileAttributes attr = c.sftp.stat(location.getPath());
 
             return attr.isDirectory();
         } catch (IOException e) {
             throw new GATInvocationException("sftp", e);
+        } finally {
+            closeConnection(c);
         }
     }
 
     public long length() throws GATInvocationException {
+        SftpConnection c = openConnection(gatContext, preferences, location);
         try {
             FileAttributes attr = c.sftp.stat(location.getPath());
 
             return attr.getSize().longValue();
         } catch (IOException e) {
             throw new GATInvocationException("sftp", e);
+        } finally {
+            closeConnection(c);
         }
     }
 
     public boolean mkdir() throws GATInvocationException {
+        SftpConnection c = openConnection(gatContext, preferences, location);
         try {
             c.sftp.mkdir(getPath());
         } catch (IOException e) {
             return false;
+        } finally {
+            closeConnection(c);
         }
 
         return true;
     }
 
     public boolean mkdirs() throws GATInvocationException {
+        SftpConnection c = openConnection(gatContext, preferences, location);
         String dir = getPath();
         java.util.StringTokenizer tokens = new java.util.StringTokenizer(dir,
             "/");
@@ -202,6 +214,7 @@ public class SftpFileAdaptor extends FileCpi {
                 } catch (IOException ex2) {
                     /* we can't create it
                      */
+                    closeConnection(c);
                     return false;
                 }
             }
@@ -209,14 +222,19 @@ public class SftpFileAdaptor extends FileCpi {
             path += "/";
         }
 
+        closeConnection(c);
+
         return true;
     }
 
     public boolean delete() throws GATInvocationException {
+        SftpConnection c = openConnection(gatContext, preferences, location);
         try {
             c.sftp.rm(getPath());
         } catch (IOException e) {
             return false;
+        } finally {
+            closeConnection(c);
         }
 
         return true;
@@ -279,6 +297,7 @@ public class SftpFileAdaptor extends FileCpi {
     }
 
     protected void copyToLocal(URI src, URI dest) throws GATInvocationException {
+        SftpConnection c = openConnection(gatContext, preferences, location);
         // copy from a remote machine to the local machine
         try {
             // if it is a relative path, we must make it an absolute path.
@@ -293,6 +312,8 @@ public class SftpFileAdaptor extends FileCpi {
             c.sftp.get(src.getPath(), destPath);
         } catch (IOException e) {
             throw new GATInvocationException("sftp", e);
+        } finally {
+            closeConnection(c);
         }
     }
 
@@ -300,6 +321,7 @@ public class SftpFileAdaptor extends FileCpi {
     protected void copyThirdParty(URI src, URI dest)
             throws GATInvocationException {
         java.io.File tmp = null;
+        SftpConnection tmpCon = null;
 
         try {
             // use a local tmp file.
@@ -309,18 +331,21 @@ public class SftpFileAdaptor extends FileCpi {
 
             copyToLocal(src, tmpURI);
 
-            SftpConnection tmpCon = openConnection(gatContext, preferences,
-                dest);
+            tmpCon = openConnection(gatContext, preferences, dest);
             tmpCon.sftp.put(tmpURI.getPath(), dest.getPath());
         } catch (Exception e2) {
             throw new GATInvocationException("sftp", e2);
         } finally {
             tmp.delete();
+            if (tmpCon != null) closeConnection(tmpCon);
         }
     }
 
     protected void copyToRemote(URI src, URI dest)
             throws GATInvocationException {
+
+        SftpConnection tmpCon = null;
+
         // copy from the local machine to a remote machine.
         try {
             // if it is a relative path, we must make it an absolute path.
@@ -332,12 +357,13 @@ public class SftpFileAdaptor extends FileCpi {
                 srcPath = f.getCanonicalPath();
             }
 
-            SftpConnection tmpCon = openConnection(gatContext, preferences,
-                dest);
+            tmpCon = openConnection(gatContext, preferences, dest);
             tmpCon.sftp.put(srcPath, dest.getPath());
-            
+
         } catch (Exception e) {
             throw new GATInvocationException("sftp", e);
+        } finally {
+            if (tmpCon != null) closeConnection(tmpCon);
         }
     }
 }
