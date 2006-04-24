@@ -118,11 +118,9 @@ public class SftpFileAdaptor extends FileCpi {
         return res;
     }
 
-    public boolean closeConnection() {
+    public static void closeConnection(SftpConnection c) {
         c.sftp = null;
         c.ssh.disconnect();
-
-        return true;
     }
 
     public String[] list() throws GATInvocationException {

@@ -60,17 +60,7 @@ public class SftpFileInputStreamAdaptor extends FileInputStreamCpi {
             c = SftpFileAdaptor.openConnection(gatContext, preferences,
                 location);
 
-            /*
              // no need to buffer this, it is only writing to memory
-             ByteArrayOutputStream baos = new ByteArrayOutputStream(1024 * 1024);
-
-             c.sftp.get(path, baos);
-
-             ByteArrayInputStream is =
-             new ByteArrayInputStream(baos.toByteArray());
-
-             return is;
-             */
             SftpSubsystemClient ssc = c.ssh.openSftpChannel();
             SftpFile sf = ssc.openFile(path, SftpSubsystemClient.OPEN_READ);
             filesize = sf.getAttributes().getSize().longValue();
@@ -90,13 +80,6 @@ public class SftpFileInputStreamAdaptor extends FileInputStreamCpi {
      * @see java.io.InputStream#available()
      */
     public int available() throws GATInvocationException {
-        /* 
-         try {
-         return in.available();
-         } catch (IOException e) {
-         throw new GATInvocationException("GlobusFileInputStream", e);
-         }
-         */
         return (int) available;
 
     }
@@ -110,8 +93,10 @@ public class SftpFileInputStreamAdaptor extends FileInputStreamCpi {
         try {
             in.close();
         } catch (IOException e) {
-            throw new GATInvocationException("GlobusFileInputStream", e);
+            throw new GATInvocationException("SftpFileInputStream", e);
         }
+        
+        SftpFileAdaptor.closeConnection(c);
     }
 
     /*
@@ -143,7 +128,7 @@ public class SftpFileInputStreamAdaptor extends FileInputStreamCpi {
             if (res > -1) available--;
             return res;
         } catch (IOException e) {
-            throw new GATInvocationException("GlobusFileInputStream", e);
+            throw new GATInvocationException("SftpFileInputStream", e);
         }
     }
 
@@ -159,7 +144,7 @@ public class SftpFileInputStreamAdaptor extends FileInputStreamCpi {
             available -= res;
             return res;
         } catch (IOException e) {
-            throw new GATInvocationException("GlobusFileInputStream", e);
+            throw new GATInvocationException("SftpFileInputStream", e);
         }
     }
 
@@ -174,7 +159,7 @@ public class SftpFileInputStreamAdaptor extends FileInputStreamCpi {
             available -= res;
             return res;
         } catch (IOException e) {
-            throw new GATInvocationException("GlobusFileInputStream", e);
+            throw new GATInvocationException("SftpFileInputStream", e);
         }
     }
 
@@ -188,7 +173,7 @@ public class SftpFileInputStreamAdaptor extends FileInputStreamCpi {
             available = filesize;
             in.reset();
         } catch (IOException e) {
-            throw new GATInvocationException("GlobusFileInputStream", e);
+            throw new GATInvocationException("SftpFileInputStream", e);
         }
     }
 
@@ -203,7 +188,7 @@ public class SftpFileInputStreamAdaptor extends FileInputStreamCpi {
             available -= res;
             return res;
         } catch (IOException e) {
-            throw new GATInvocationException("GlobusFileInputStream", e);
+            throw new GATInvocationException("SftpFileInputStream", e);
         }
     }
 }
