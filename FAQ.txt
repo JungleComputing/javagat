@@ -83,6 +83,20 @@ from the "external" directory of the JavaGATAdaptors should also be in
 the adaptor path...  There is no need to put the adaptor jars in the
 classpath. 
 
+
+Q: In the java GAT engine is there a location or file where the order 
+   in which the adaptors are loaded can be specified?
+
+A: Yes, there is a way to do that, you can specify a AdaptorOrderPolicy 
+   class that defines some ordering. There is a default ordering specified 
+   in org.gridlab.gat.engine.DefaultAdaptorOrderPolicy. You can subclass 
+   the AdaptorOrderPolicy class or the DefaultAdaptorOrderPolicy class.
+   Next, you can tell the GAT to use your ordering, by setting the Java 
+   system property "adaptor.order.policy" to your class.
+
+
+
+
 Have Fun,
 
 Rob
