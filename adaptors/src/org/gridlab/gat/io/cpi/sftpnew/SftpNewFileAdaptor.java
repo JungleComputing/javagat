@@ -116,7 +116,7 @@ public class SftpNewFileAdaptor extends FileCpi {
         // We don't have to handle the local case, the GAT engine will select
         // the local adaptor.
         if (dest.refersToLocalHost() && (toURI().refersToLocalHost())) {
-            throw new GATInvocationException("sftp cannot copy local files");
+            throw new GATInvocationException("sftpnew cannot copy local files");
         }
 
         // create a seperate file object to determine whether the source
@@ -132,12 +132,12 @@ public class SftpNewFileAdaptor extends FileCpi {
                 return;
             }
         } catch (Exception e) {
-            throw new GATInvocationException("sftp", e);
+            throw new GATInvocationException("sftpnew", e);
         }
 
         if (dest.refersToLocalHost()) {
             if (GATEngine.DEBUG) {
-                System.err.println("sftp file: copy remote to local");
+                System.err.println("sftpnew file: copy remote to local");
             }
 
             copyToLocal(toURI(), dest);
@@ -147,7 +147,7 @@ public class SftpNewFileAdaptor extends FileCpi {
 
         if (toURI().refersToLocalHost()) {
             if (GATEngine.DEBUG) {
-                System.err.println("sftp file: copy local to remote");
+                System.err.println("sftpnew file: copy local to remote");
             }
 
             copyToRemote(toURI(), dest);
@@ -157,7 +157,7 @@ public class SftpNewFileAdaptor extends FileCpi {
 
         // source is remote, dest is remote.
         if (GATEngine.DEBUG) {
-            System.err.println("sftp file: copy remote to remote");
+            System.err.println("sftpnew file: copy remote to remote");
         }
 
         copyThirdParty(toURI(), dest);
@@ -179,7 +179,7 @@ public class SftpNewFileAdaptor extends FileCpi {
             c.channel.get(src.getPath(), destPath);
             
         } catch (Exception e) {
-            throw new GATInvocationException("sftp", e);
+            throw new GATInvocationException("sftpnew", e);
         } finally {
             closeChannel(c);
         }
@@ -202,7 +202,7 @@ public class SftpNewFileAdaptor extends FileCpi {
             tmpCon = createChannel(gatContext, preferences, dest);
             tmpCon.channel.put(tmpURI.getPath(), dest.getPath());
         } catch (Exception e2) {
-            throw new GATInvocationException("sftp", e2);
+            throw new GATInvocationException("sftpnew", e2);
         } finally {
             tmp.delete();
             if (tmpCon != null) closeChannel(tmpCon);
@@ -229,7 +229,7 @@ public class SftpNewFileAdaptor extends FileCpi {
             tmpCon.channel.put(srcPath, dest.getPath());
 
         } catch (Exception e) {
-            throw new GATInvocationException("sftp", e);
+            throw new GATInvocationException("sftpnew", e);
         } finally {
             if (tmpCon != null) closeChannel(tmpCon);
         }
@@ -242,7 +242,7 @@ public class SftpNewFileAdaptor extends FileCpi {
 
             return attr.getSize();
         } catch (Exception e) {
-            throw new GATInvocationException("sftp", e);
+            throw new GATInvocationException("sftpnew", e);
         } finally {
             closeChannel(c);
         }
@@ -255,7 +255,7 @@ public class SftpNewFileAdaptor extends FileCpi {
 
             return attr.isDir();
         } catch (Exception e) {
-            throw new GATInvocationException("sftp", e);
+            throw new GATInvocationException("sftpnew", e);
         } finally {
             closeChannel(c);
         }
