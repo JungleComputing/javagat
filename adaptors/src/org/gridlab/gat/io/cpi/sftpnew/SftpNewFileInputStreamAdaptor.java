@@ -19,7 +19,7 @@ import org.gridlab.gat.io.cpi.FileInputStreamCpi;
 public class SftpNewFileInputStreamAdaptor extends FileInputStreamCpi {
     InputStream in;
 
-    private SftpConnection connection;
+    private SftpNewConnection connection;
 
     public SftpNewFileInputStreamAdaptor(GATContext gatContext,
             Preferences preferences, URI location)
