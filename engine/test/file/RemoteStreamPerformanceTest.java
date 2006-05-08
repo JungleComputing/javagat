@@ -15,7 +15,7 @@ class RemoteStreamPerformanceTest {
         Preferences prefs = new Preferences();
 
         if (args.length == 2) {
-            prefs.put("File.adaptor.name", args[1]);
+            prefs.put("FileInputStream.adaptor.name", args[1]);
         }
 
         byte[] buf = new byte[1024*1024];
