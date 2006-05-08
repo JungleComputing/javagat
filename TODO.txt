@@ -21,3 +21,6 @@
 - start Java apps
 - support environment vars in ssh broker.
 - top level build file
+- create a copying fileinput stream, might have better performance. Only use it for small files?
+- implement missing methods in sftpnew adaptor
+- cache connections for ssh adaptor (Ana?)
