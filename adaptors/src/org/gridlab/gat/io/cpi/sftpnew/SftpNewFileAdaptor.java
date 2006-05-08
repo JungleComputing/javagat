@@ -19,12 +19,10 @@ import com.jcraft.jsch.ChannelSftp;
 import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.Session;
+import com.jcraft.jsch.SftpATTRS;
 
 public class SftpNewFileAdaptor extends FileCpi {
     public static final int SSH_PORT = 22;
-
-    //    private ChannelSftp channel;
-    //    private Session session;
 
     /**
      * @param gatContext
@@ -38,8 +36,6 @@ public class SftpNewFileAdaptor extends FileCpi {
         if (!location.isCompatible("sftp") && !location.isCompatible("file")) {
             throw new GATObjectCreationException("cannot handle this URI");
         }
-
-        //        channel = createChannel(gatContext, preferences, location);
     }
 
     protected static SftpConnection createChannel(GATContext gatContext,
@@ -236,6 +232,32 @@ public class SftpNewFileAdaptor extends FileCpi {
             throw new GATInvocationException("sftp", e);
         } finally {
             if (tmpCon != null) closeChannel(tmpCon);
+        }
+    }
+
+    public long length() throws GATInvocationException {
+        SftpConnection c = createChannel(gatContext, preferences, location);
+        try {
+            SftpATTRS attr = c.channel.lstat(location.getPath());
+
+            return attr.getSize();
+        } catch (Exception e) {
+            throw new GATInvocationException("sftp", e);
+        } finally {
+            closeChannel(c);
+        }
+    }
+
+    public boolean isDirectory() throws GATInvocationException {
+        SftpConnection c = createChannel(gatContext, preferences, location);
+        try {
+            SftpATTRS attr = c.channel.lstat(location.getPath());
+
+            return attr.isDir();
+        } catch (Exception e) {
+            throw new GATInvocationException("sftp", e);
+        } finally {
+            closeChannel(c);
         }
     }
 }

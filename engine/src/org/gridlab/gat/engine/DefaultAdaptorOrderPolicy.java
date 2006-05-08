@@ -60,6 +60,8 @@ public class DefaultAdaptorOrderPolicy implements AdaptorOrderPolicy {
         insertPos = l.placeAdaptor(insertPos,
             "org.gridlab.gat.io.cpi.ssh.SshFileAdaptor");
         insertPos = l.placeAdaptor(insertPos,
+        "org.gridlab.gat.io.cpi.sftpnew.SftpNewFileAdaptor");
+        insertPos = l.placeAdaptor(insertPos,
             "org.gridlab.gat.io.cpi.sftp.SftpFileAdaptor");
 
         // rest in random order
