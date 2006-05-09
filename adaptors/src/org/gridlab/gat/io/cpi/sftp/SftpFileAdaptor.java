@@ -148,7 +148,6 @@ public class SftpFileAdaptor extends FileCpi {
             c.sftp.stat(location.getPath());
             return true;
         } catch (IOException e) {
-            //added by Ana
             return false;
         } finally {
             closeConnection(c);

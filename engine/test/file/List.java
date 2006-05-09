@@ -16,9 +16,12 @@ class List {
         GATContext context = new GATContext();
         Preferences prefs = new Preferences();
 
-        //		prefs.put("file.adaptor.name", "gridftp");
+        if(args.length == 2) {
+            prefs.put("File.adaptor.name", args[1]);
+        }
+
         try {
-            src = new URI("any://fs0.das2.cs.vu.nl//bin");
+            src = new URI(args[0]);
             file = GAT.createFile(context, prefs, src);
         } catch (Exception e) {
             System.err.println("File creation failed: " + e);
@@ -32,11 +35,14 @@ class List {
                 System.err.println("    " + res[i]);
             }
 
-            System.err.println("-----REMOTE-FILE COPY TEST-OK---------");
+            System.err.println("-----REMOTE-FILE LIST TEST-OK---------");
         } catch (Exception e) {
             System.err.println("Could not list file:" + e);
             e.printStackTrace();
+            GAT.end();
             System.exit(1);
         }
+        
+        GAT.end();
     }
 }

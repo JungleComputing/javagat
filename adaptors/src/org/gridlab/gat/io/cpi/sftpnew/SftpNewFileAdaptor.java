@@ -2,6 +2,7 @@ package org.gridlab.gat.io.cpi.sftpnew;
 
 import java.util.Enumeration;
 import java.util.Hashtable;
+import java.util.Vector;
 
 import org.gridlab.gat.GAT;
 import org.gridlab.gat.GATContext;
@@ -21,9 +22,12 @@ import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.Session;
 import com.jcraft.jsch.SftpATTRS;
+import com.jcraft.jsch.SftpException;
+import com.jcraft.jsch.ChannelSftp.LsEntry;
 
 public class SftpNewFileAdaptor extends FileCpi {
     public static final int SSH_PORT = 22;
+
     static final boolean USE_CLIENT_CACHING = true;
 
     private static Hashtable clienttable = new Hashtable();
@@ -43,19 +47,19 @@ public class SftpNewFileAdaptor extends FileCpi {
     }
 
     private static String getClientKey(URI hostURI, Preferences preferences) {
-        return hostURI.resolveHost() + ":"
-            + hostURI.getPort(SSH_PORT) + preferences; // include preferences in key
+        return hostURI.resolveHost() + ":" + hostURI.getPort(SSH_PORT)
+            + preferences; // include preferences in key
     }
 
     protected static SftpNewConnection createChannel(GATContext gatContext,
-        Preferences preferences, URI location)
-        throws GATInvocationException {
-        if(!USE_CLIENT_CACHING) {
+            Preferences preferences, URI location)
+            throws GATInvocationException {
+        if (!USE_CLIENT_CACHING) {
             return doWorkCreateChannel(gatContext, preferences, location);
         }
 
         SftpNewConnection c = null;
-        
+
         String key = getClientKey(location, preferences);
 
         if (clienttable.containsKey(key)) {
@@ -70,29 +74,29 @@ public class SftpNewFileAdaptor extends FileCpi {
                 }
             } catch (Exception except) {
                 if (GATEngine.DEBUG) {
-                    System.err
-                        .println("could not reuse cached client: "
-                            + except);
+                    System.err.println("could not reuse cached client: "
+                        + except);
                     except.printStackTrace();
                 }
 
                 c = null;
             }
         }
-        
-        if(c == null) {
+
+        if (c == null) {
             c = doWorkCreateChannel(gatContext, preferences, location);
         }
-        
+
         return c;
     }
-    
+
     private static SftpNewConnection doWorkCreateChannel(GATContext gatContext,
             Preferences preferences, URI location)
             throws GATInvocationException {
-        
+
         if (GATEngine.DEBUG) {
-            System.err.println("sftpnew: creating client to " + location.getHost());
+            System.err.println("sftpnew: creating client to "
+                + location.getHost());
         }
 
         JSch jsch = new JSch();
@@ -139,7 +143,7 @@ public class SftpNewFileAdaptor extends FileCpi {
             res.userInfo = sui;
             res.remoteMachine = location;
             res.preferences = preferences;
-            
+
             return res;
         } catch (JSchException jsche) {
             throw new GATInvocationException(
@@ -147,12 +151,13 @@ public class SftpNewFileAdaptor extends FileCpi {
         }
     }
 
-    public static void closeChannel(SftpNewConnection c) throws GATInvocationException {
-        if(!USE_CLIENT_CACHING) {
+    public static void closeChannel(SftpNewConnection c)
+            throws GATInvocationException {
+        if (!USE_CLIENT_CACHING) {
             doWorkCloseChannel(c);
             return;
         }
-        
+
         String key = getClientKey(c.remoteMachine, c.preferences);
 
         if (!clienttable.containsKey(key)) {
@@ -175,8 +180,9 @@ public class SftpNewFileAdaptor extends FileCpi {
             }
         }
     }
-    
-    private static void doWorkCloseChannel(SftpNewConnection connection) throws GATInvocationException {
+
+    private static void doWorkCloseChannel(SftpNewConnection connection)
+            throws GATInvocationException {
         if (connection.channel != null) {
             try {
                 connection.channel.disconnect();
@@ -262,7 +268,7 @@ public class SftpNewFileAdaptor extends FileCpi {
             }
 
             c.channel.get(src.getPath(), destPath);
-            
+
         } catch (Exception e) {
             throw new GATInvocationException("sftpnew", e);
         } finally {
@@ -341,6 +347,156 @@ public class SftpNewFileAdaptor extends FileCpi {
             return attr.isDir();
         } catch (Exception e) {
             throw new GATInvocationException("sftpnew", e);
+        } finally {
+            closeChannel(c);
+        }
+    }
+
+    public boolean canRead() throws GATInvocationException {
+        SftpNewConnection c = createChannel(gatContext, preferences, location);
+        try {
+            SftpATTRS attr = c.channel.lstat(location.getPath());
+
+            String permissions = attr.getPermissionsString();
+            return permissions.charAt(1) == 'r';
+        } catch (Exception e) {
+            throw new GATInvocationException("sftpnew", e);
+        } finally {
+            closeChannel(c);
+        }
+    }
+
+    public boolean canWrite() throws GATInvocationException {
+        SftpNewConnection c = createChannel(gatContext, preferences, location);
+        try {
+            SftpATTRS attr = c.channel.lstat(location.getPath());
+
+            String permissions = attr.getPermissionsString();
+            return permissions.charAt(2) == 'w';
+        } catch (Exception e) {
+            throw new GATInvocationException("sftpnew", e);
+        } finally {
+            closeChannel(c);
+        }
+    }
+
+    public long lastModified() throws GATInvocationException {
+        SftpNewConnection c = createChannel(gatContext, preferences, location);
+        try {
+            SftpATTRS attr = c.channel.lstat(location.getPath());
+            return (long) attr.getMTime() * 1000;
+        } catch (Exception e) {
+            throw new GATInvocationException("sftpnew", e);
+        } finally {
+            closeChannel(c);
+        }
+    }
+
+    public boolean isFile() throws GATInvocationException {
+        return !isDirectory();
+    }
+
+    public boolean exists() throws GATInvocationException {
+        SftpNewConnection c = createChannel(gatContext, preferences, location);
+        try {
+            c.channel.lstat(location.getPath());
+            return true;
+        } catch (SftpException e) {
+            if (e.id == ChannelSftp.SSH_FX_NO_SUCH_FILE) {
+                return false;
+            }
+            throw new GATInvocationException("sftpnew", e);
+        } finally {
+            closeChannel(c);
+        }
+    }
+
+    public boolean delete() throws GATInvocationException {
+        SftpNewConnection c = createChannel(gatContext, preferences, location);
+        try {
+            if (isFile()) {
+                c.channel.rm(location.getPath());
+            } else {
+                c.channel.rmdir(location.getPath());
+            }
+            return true;
+        } catch (SftpException e) {
+            if (e.id == ChannelSftp.SSH_FX_NO_SUCH_FILE) {
+                return false;
+            }
+            throw new GATInvocationException("sftpnew", e);
+        } finally {
+            closeChannel(c);
+        }
+    }
+
+    public boolean mkdir() throws GATInvocationException {
+        SftpNewConnection c = createChannel(gatContext, preferences, location);
+        try {
+            c.channel.mkdir(location.getPath());
+            return true;
+        } catch (SftpException e) {
+            if (e.id == ChannelSftp.SSH_FX_FAILURE) {
+                return false;
+            }
+            throw new GATInvocationException("sftpnew", e);
+        } finally {
+            closeChannel(c);
+        }
+    }
+
+    public boolean mkdirs() throws GATInvocationException {
+        SftpNewConnection c = createChannel(gatContext, preferences, location);
+        String dir = getPath();
+        java.util.StringTokenizer tokens = new java.util.StringTokenizer(dir,
+            "/");
+        String path = dir.startsWith("/") ? "/" : "";
+
+        while (tokens.hasMoreElements()) {
+            path += (String) tokens.nextElement();
+            try {
+                c.channel.lstat(path);
+            } catch (SftpException ex) {
+                if (ex.id == ChannelSftp.SSH_FX_NO_SUCH_FILE) {
+
+                    /* The directory does not exist, we create it.
+                     */
+                    try {
+                        c.channel.mkdir(path);
+                    } catch (Exception ex2) {
+                        /* we can't create it 
+                         */
+                        closeChannel(c);
+                        throw new GATInvocationException("sftpnew", ex2);
+                    }
+                } else {
+                    throw new GATInvocationException("sftpnew", ex);
+                }
+            }
+
+            path += "/";
+        }
+
+        closeChannel(c);
+
+        return true;
+    }
+
+    public String[] list() throws GATInvocationException {
+
+        SftpNewConnection c = createChannel(gatContext, preferences, location);
+
+        try {
+            Vector ls = c.channel.ls(location.getPath());
+
+            String[] res = new String[ls.size()];
+            for (int i = 0; i < res.length; i++) {
+                res[i] = ((LsEntry) ls.get(i)).getFilename();
+            }
+
+            return res;
+        } catch (Exception e) {
+            throw new GATInvocationException("sftp", e);
         } finally {
             closeChannel(c);
         }
