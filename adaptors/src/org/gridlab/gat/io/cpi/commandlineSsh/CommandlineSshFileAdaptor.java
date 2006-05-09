@@ -1,5 +1,7 @@
 package org.gridlab.gat.io.cpi.commandlineSsh;
 
+import java.io.FileFilter;
+import java.io.FilenameFilter;
 import java.io.IOException;
 
 import org.gridlab.gat.AdaptorNotSelectedException;
@@ -14,6 +16,7 @@ import org.gridlab.gat.engine.GATEngine;
 import org.gridlab.gat.io.File;
 import org.gridlab.gat.io.cpi.FileCpi;
 import org.gridlab.gat.io.cpi.ssh.SSHSecurityUtils;
+import org.gridlab.gat.io.cpi.ssh.SshFileAdaptor;
 import org.gridlab.gat.io.cpi.ssh.SshUserInfo;
 import org.gridlab.gat.util.OutputForwarder;
 
@@ -22,6 +25,13 @@ public class CommandlineSshFileAdaptor extends FileCpi {
 
     private boolean windows = false;
 
+    /** We use an ssh adaptor for all operations, except copy.
+     * This is done this way, because the auto optimizing of adaptor ordering by the 
+     * engine does not select this adaptor anymore if another call is done before 
+     * the copy.
+     */
+    private SshFileAdaptor sshAdaptor;
+    
     /**
      * @param gatContext
      * @param preferences
@@ -38,6 +48,8 @@ public class CommandlineSshFileAdaptor extends FileCpi {
 
         String osname = System.getProperty("os.name");
         if (osname.startsWith("Windows")) windows = true;
+        
+        sshAdaptor = new SshFileAdaptor(gatContext, preferences, location);
     }
 
     /**
@@ -288,5 +300,236 @@ public class CommandlineSshFileAdaptor extends FileCpi {
             // Cannot happen
             return 1;
         }
+    }
+
+    /* (non-Javadoc)
+     * @see org.gridlab.gat.io.cpi.ssh.SshFileAdaptor#canRead()
+     */
+    public boolean canRead() {
+        return sshAdaptor.canRead();
+    }
+
+    /* (non-Javadoc)
+     * @see org.gridlab.gat.io.cpi.ssh.SshFileAdaptor#canWrite()
+     */
+    public boolean canWrite() {
+        return sshAdaptor.canWrite();
+    }
+
+    /* (non-Javadoc)
+     * @see org.gridlab.gat.io.cpi.ssh.SshFileAdaptor#createNewFile()
+     */
+    public boolean createNewFile() throws GATInvocationException {
+        return sshAdaptor.createNewFile();
+    }
+
+    /* (non-Javadoc)
+     * @see org.gridlab.gat.io.cpi.ssh.SshFileAdaptor#delete()
+     */
+    public boolean delete() {
+        return sshAdaptor.delete();
+    }
+
+    /* (non-Javadoc)
+     * @see org.gridlab.gat.io.cpi.ssh.SshFileAdaptor#exists()
+     */
+    public boolean exists() throws GATInvocationException {
+        return sshAdaptor.exists();
+    }
+
+    /* (non-Javadoc)
+     * @see org.gridlab.gat.io.cpi.ssh.SshFileAdaptor#getAbsoluteFile()
+     */
+    public File getAbsoluteFile() throws GATInvocationException {
+        return sshAdaptor.getAbsoluteFile();
+    }
+
+    /* (non-Javadoc)
+     * @see org.gridlab.gat.io.cpi.ssh.SshFileAdaptor#getAbsolutePath()
+     */
+    public String getAbsolutePath() throws GATInvocationException {
+        return sshAdaptor.getAbsolutePath();
+    }
+
+    /* (non-Javadoc)
+     * @see org.gridlab.gat.io.cpi.ssh.SshFileAdaptor#getCanonicalFile()
+     */
+    public File getCanonicalFile() throws GATInvocationException {
+        return sshAdaptor.getCanonicalFile();
+    }
+
+    /* (non-Javadoc)
+     * @see org.gridlab.gat.io.cpi.ssh.SshFileAdaptor#getCanonicalPath()
+     */
+    public String getCanonicalPath() throws GATInvocationException {
+        return sshAdaptor.getCanonicalPath();
+    }
+
+    /* (non-Javadoc)
+     * @see org.gridlab.gat.io.cpi.ssh.SshFileAdaptor#getParent()
+     */
+    public String getParent() {
+        return sshAdaptor.getParent();
+    }
+
+    /* (non-Javadoc)
+     * @see org.gridlab.gat.io.cpi.ssh.SshFileAdaptor#getParentFile()
+     */
+    public File getParentFile() throws GATInvocationException {
+        return sshAdaptor.getParentFile();
+    }
+
+    /* (non-Javadoc)
+     * @see org.gridlab.gat.io.cpi.ssh.SshFileAdaptor#isAbsolute()
+     */
+    public boolean isAbsolute() {
+        return sshAdaptor.isAbsolute();
+    }
+
+    /* (non-Javadoc)
+     * @see org.gridlab.gat.io.cpi.ssh.SshFileAdaptor#isDirectory()
+     */
+    public boolean isDirectory() {
+        return sshAdaptor.isDirectory();
+    }
+
+    /* (non-Javadoc)
+     * @see org.gridlab.gat.io.cpi.ssh.SshFileAdaptor#isFile()
+     */
+    public boolean isFile() {
+        return sshAdaptor.isFile();
+    }
+
+    /* (non-Javadoc)
+     * @see org.gridlab.gat.io.cpi.ssh.SshFileAdaptor#isHidden()
+     */
+    public boolean isHidden() {
+        return sshAdaptor.isHidden();
+    }
+
+    /* (non-Javadoc)
+     * @see org.gridlab.gat.io.cpi.ssh.SshFileAdaptor#lastModified()
+     */
+    public long lastModified() throws GATInvocationException {
+        return sshAdaptor.lastModified();
+    }
+
+    /* (non-Javadoc)
+     * @see org.gridlab.gat.io.cpi.ssh.SshFileAdaptor#length()
+     */
+    public long length() throws GATInvocationException {
+        return sshAdaptor.length();
+    }
+
+    /* (non-Javadoc)
+     * @see org.gridlab.gat.io.cpi.ssh.SshFileAdaptor#list()
+     */
+    public String[] list() throws GATInvocationException {
+        return sshAdaptor.list();
+    }
+
+    /* (non-Javadoc)
+     * @see org.gridlab.gat.io.cpi.ssh.SshFileAdaptor#list(java.io.FilenameFilter)
+     */
+    public String[] list(FilenameFilter arg0) throws GATInvocationException {
+        return sshAdaptor.list(arg0);
+    }
+
+    /* (non-Javadoc)
+     * @see org.gridlab.gat.io.cpi.FileCpi#list(org.gridlab.gat.io.cpi.FilenameFilter)
+     */
+    public String[] list(org.gridlab.gat.io.cpi.FilenameFilter filter) throws GATInvocationException {
+        return sshAdaptor.list(filter);
+    }
+
+    /* (non-Javadoc)
+     * @see org.gridlab.gat.io.cpi.ssh.SshFileAdaptor#listFiles()
+     */
+    public File[] listFiles() throws GATInvocationException {
+        return sshAdaptor.listFiles();
+    }
+
+    /* (non-Javadoc)
+     * @see org.gridlab.gat.io.cpi.ssh.SshFileAdaptor#listFiles(java.io.FileFilter)
+     */
+    public File[] listFiles(FileFilter arg0) throws GATInvocationException {
+        return sshAdaptor.listFiles(arg0);
+    }
+
+    /* (non-Javadoc)
+     * @see org.gridlab.gat.io.cpi.FileCpi#listFiles(org.gridlab.gat.io.cpi.FileFilter)
+     */
+    public File[] listFiles(org.gridlab.gat.io.cpi.FileFilter filter) throws GATInvocationException {
+        return sshAdaptor.listFiles(filter);
+    }
+
+    /* (non-Javadoc)
+     * @see org.gridlab.gat.io.cpi.ssh.SshFileAdaptor#listFiles(java.io.FilenameFilter)
+     */
+    public File[] listFiles(FilenameFilter arg0) throws GATInvocationException {
+        return sshAdaptor.listFiles(arg0);
+    }
+
+    /* (non-Javadoc)
+     * @see org.gridlab.gat.io.cpi.FileCpi#listFiles(org.gridlab.gat.io.cpi.FilenameFilter)
+     */
+    public File[] listFiles(org.gridlab.gat.io.cpi.FilenameFilter filter) throws GATInvocationException {
+        return sshAdaptor.listFiles(filter);
+    }
+
+    /* (non-Javadoc)
+     * @see org.gridlab.gat.io.cpi.ssh.SshFileAdaptor#mkdir()
+     */
+    public boolean mkdir() throws GATInvocationException {
+        return sshAdaptor.mkdir();
+    }
+
+    /* (non-Javadoc)
+     * @see org.gridlab.gat.io.cpi.ssh.SshFileAdaptor#mkdirs()
+     */
+    public boolean mkdirs() {
+        return sshAdaptor.mkdirs();
+    }
+
+    /* (non-Javadoc)
+     * @see org.gridlab.gat.io.cpi.ssh.SshFileAdaptor#move(org.gridlab.gat.URI)
+     */
+    public void move(URI destination) throws GATInvocationException {
+        sshAdaptor.move(destination);
+    }
+
+    /* (non-Javadoc)
+     * @see org.gridlab.gat.io.cpi.ssh.SshFileAdaptor#renameTo(java.io.File)
+     */
+    public boolean renameTo(java.io.File arg0) throws GATInvocationException {
+        return sshAdaptor.renameTo(arg0);
+    }
+
+    /* (non-Javadoc)
+     * @see org.gridlab.gat.io.cpi.ssh.SshFileAdaptor#renameTo(org.gridlab.gat.io.File)
+     */
+    public boolean renameTo(File arg0) throws GATInvocationException {
+        return sshAdaptor.renameTo(arg0);
+    }
+
+    /* (non-Javadoc)
+     * @see org.gridlab.gat.io.cpi.ssh.SshFileAdaptor#renameTo(org.gridlab.gat.URI)
+     */
+    public void renameTo(URI destination) throws GATInvocationException {
+        sshAdaptor.renameTo(destination);
+    }
+
+    /* (non-Javadoc)
+     * @see org.gridlab.gat.io.cpi.ssh.SshFileAdaptor#setLastModified(long)
+     */
+    public boolean setLastModified(long arg0) {
+        return sshAdaptor.setLastModified(arg0);
+    }
+
+    /* (non-Javadoc)
+     * @see org.gridlab.gat.io.cpi.ssh.SshFileAdaptor#setReadOnly()
+     */
+    public boolean setReadOnly() {
+        return sshAdaptor.setReadOnly();
     }
 }

@@ -19,10 +19,12 @@ class RemoteCopyPerformanceTest {
             prefs.put("File.adaptor.name", args[2]);
         }
 
+        long size = 0;
         try {
             src = new URI(args[0]);
             dest = new URI(args[1]);
             file = GAT.createFile(context, prefs, src);
+            size = file.length();
         } catch (Exception e) {
             System.err.println("File creation failed: " + e);
             e.printStackTrace();
@@ -32,7 +34,6 @@ class RemoteCopyPerformanceTest {
 
         for (int i = 0; i < 5; i++) {
             try {
-                long size = file.length();
                 long start = System.currentTimeMillis();
                 System.err.print("Copying file...");
                 file.copy(dest);

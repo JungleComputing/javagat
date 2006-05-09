@@ -21,7 +21,7 @@ import colobus.Colobus;
  */
 public class AdaptorInvocationHandler implements InvocationHandler {
     
-    static final boolean OPTIMIZE_ADAPTOR_POLICY = false;
+    static final boolean OPTIMIZE_ADAPTOR_POLICY = true;
     
     private static final Colobus colobus = Colobus
         .getColobus(AdaptorInvocationHandler.class.getName());

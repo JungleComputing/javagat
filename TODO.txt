@@ -14,6 +14,7 @@
        - Broker does not work to fs3
        - Also add retry code for file stransfers (already done for job submit)
        - use a cache to save on connection setup time(also for sftp)
+       - remote streaming seems to hang
 
 - brokering: also allow output to be printed on the sceen, when no output files are given.
   maybe use special property for this? Not all middlewares can do this.
@@ -21,3 +22,7 @@
 - start Java apps
 - support environment vars in ssh broker.
 - top level build file
+- fix 1.5 compile errors
+- create a copying fileinput stream, might have better performance. Only use it for small files?
+- implement missing methods in sftpnew adaptor
+- cache connections for ssh adaptor (Ana?)

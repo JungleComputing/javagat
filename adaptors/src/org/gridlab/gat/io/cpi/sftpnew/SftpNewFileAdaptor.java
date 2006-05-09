@@ -1,11 +1,16 @@
 package org.gridlab.gat.io.cpi.sftpnew;
 
+import java.util.Enumeration;
 import java.util.Hashtable;
 
+import org.gridlab.gat.GAT;
 import org.gridlab.gat.GATContext;
+import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.GATObjectCreationException;
 import org.gridlab.gat.Preferences;
 import org.gridlab.gat.URI;
+import org.gridlab.gat.engine.GATEngine;
+import org.gridlab.gat.io.File;
 import org.gridlab.gat.io.cpi.FileCpi;
 import org.gridlab.gat.io.cpi.ssh.SSHSecurityUtils;
 import org.gridlab.gat.io.cpi.ssh.SshUserInfo;
@@ -15,12 +20,13 @@ import com.jcraft.jsch.ChannelSftp;
 import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.Session;
+import com.jcraft.jsch.SftpATTRS;
 
 public class SftpNewFileAdaptor extends FileCpi {
     public static final int SSH_PORT = 22;
+    static final boolean USE_CLIENT_CACHING = true;
 
-    //    private ChannelSftp channel;
-    //    private Session session;
+    private static Hashtable clienttable = new Hashtable();
 
     /**
      * @param gatContext
@@ -34,13 +40,61 @@ public class SftpNewFileAdaptor extends FileCpi {
         if (!location.isCompatible("sftp") && !location.isCompatible("file")) {
             throw new GATObjectCreationException("cannot handle this URI");
         }
-
-        //        channel = createChannel(gatContext, preferences, location);
     }
 
-    protected static SftpConnection createChannel(GATContext gatContext,
+    private static String getClientKey(URI hostURI, Preferences preferences) {
+        return hostURI.resolveHost() + ":"
+            + hostURI.getPort(SSH_PORT) + preferences; // include preferences in key
+    }
+
+    protected static SftpNewConnection createChannel(GATContext gatContext,
+        Preferences preferences, URI location)
+        throws GATInvocationException {
+        if(!USE_CLIENT_CACHING) {
+            return doWorkCreateChannel(gatContext, preferences, location);
+        }
+
+        SftpNewConnection c = null;
+        
+        String key = getClientKey(location, preferences);
+
+        if (clienttable.containsKey(key)) {
+            c = (SftpNewConnection) clienttable.remove(key);
+
+            try {
+                // test if the client is still alive
+                c.channel.lpwd();
+
+                if (GATEngine.DEBUG) {
+                    System.err.println("using cached client");
+                }
+            } catch (Exception except) {
+                if (GATEngine.DEBUG) {
+                    System.err
+                        .println("could not reuse cached client: "
+                            + except);
+                    except.printStackTrace();
+                }
+
+                c = null;
+            }
+        }
+        
+        if(c == null) {
+            c = doWorkCreateChannel(gatContext, preferences, location);
+        }
+        
+        return c;
+    }
+    
+    private static SftpNewConnection doWorkCreateChannel(GATContext gatContext,
             Preferences preferences, URI location)
-            throws GATObjectCreationException {
+            throws GATInvocationException {
+        
+        if (GATEngine.DEBUG) {
+            System.err.println("sftpnew: creating client to " + location.getHost());
+        }
+
         JSch jsch = new JSch();
         Hashtable configJsch = new Hashtable();
         configJsch.put("StrictHostKeyChecking", "no");
@@ -57,7 +111,7 @@ public class SftpNewFileAdaptor extends FileCpi {
         }
 
         if (sui == null) {
-            throw new GATObjectCreationException(
+            throw new GATInvocationException(
                 "Unable to retrieve user info for authentication");
         }
 
@@ -78,16 +132,254 @@ public class SftpNewFileAdaptor extends FileCpi {
             Channel c = session.openChannel("sftp");
             c.connect();
 
-            SftpConnection res = new SftpConnection();
+            SftpNewConnection res = new SftpNewConnection();
             res.channel = (ChannelSftp) c;
             res.session = session;
             res.jsch = jsch;
             res.userInfo = sui;
-
+            res.remoteMachine = location;
+            res.preferences = preferences;
+            
             return res;
         } catch (JSchException jsche) {
-            throw new GATObjectCreationException(
+            throw new GATInvocationException(
                 "internal error in SftpnewFileAdaptor: " + jsche);
         }
+    }
+
+    public static void closeChannel(SftpNewConnection c) throws GATInvocationException {
+        if(!USE_CLIENT_CACHING) {
+            doWorkCloseChannel(c);
+            return;
+        }
+        
+        String key = getClientKey(c.remoteMachine, c.preferences);
+
+        if (!clienttable.containsKey(key)) {
+            clienttable.put(key, c);
+        } else {
+            try {
+                if (GATEngine.DEBUG) {
+                    System.err.println("closing client");
+                }
+
+                doWorkCloseChannel(c);
+            } catch (Exception e) {
+                if (GATEngine.DEBUG) {
+                    System.err
+                        .println("end of sftpnew adaptor, closing client, got exception (ignoring): "
+                            + e);
+                }
+
+                // ignore
+            }
+        }
+    }
+    
+    private static void doWorkCloseChannel(SftpNewConnection connection) throws GATInvocationException {
+        if (connection.channel != null) {
+            try {
+                connection.channel.disconnect();
+            } catch (Throwable t) { // ignore
+            }
+        }
+
+        if (connection.session != null) {
+            try {
+                connection.session.disconnect();
+            } catch (Throwable t) { // ignore
+            }
+        }
+    }
+
+    /*
+     * (non-Javadoc)
+     *
+     * @see org.gridlab.gat.io.File#copy(java.net.URI)
+     */
+    public void copy(URI dest) throws GATInvocationException {
+        // We don't have to handle the local case, the GAT engine will select
+        // the local adaptor.
+        if (dest.refersToLocalHost() && (toURI().refersToLocalHost())) {
+            throw new GATInvocationException("sftpnew cannot copy local files");
+        }
+
+        // create a seperate file object to determine whether the source
+        // is a directory. This is needed, because the source might be a local
+        // file, and sftp might not be installed locally.
+        // This goes wrong for local -> remote copies.
+        try {
+            File f = GAT.createFile(gatContext, preferences, toURI());
+
+            if (f.isDirectory()) {
+                copyDirectory(gatContext, preferences, toURI(), dest);
+
+                return;
+            }
+        } catch (Exception e) {
+            throw new GATInvocationException("sftpnew", e);
+        }
+
+        if (dest.refersToLocalHost()) {
+            if (GATEngine.DEBUG) {
+                System.err.println("sftpnew file: copy remote to local");
+            }
+
+            copyToLocal(toURI(), dest);
+
+            return;
+        }
+
+        if (toURI().refersToLocalHost()) {
+            if (GATEngine.DEBUG) {
+                System.err.println("sftpnew file: copy local to remote");
+            }
+
+            copyToRemote(toURI(), dest);
+
+            return;
+        }
+
+        // source is remote, dest is remote.
+        if (GATEngine.DEBUG) {
+            System.err.println("sftpnew file: copy remote to remote");
+        }
+
+        copyThirdParty(toURI(), dest);
+    }
+
+    protected void copyToLocal(URI src, URI dest) throws GATInvocationException {
+        SftpNewConnection c = createChannel(gatContext, preferences, src);
+        // copy from a remote machine to the local machine
+        try {
+            // if it is a relative path, we must make it an absolute path.
+            // the sftp library uses paths relative to the user's home dir.
+            String destPath = dest.getPath();
+
+            if (!destPath.startsWith("/")) {
+                java.io.File f = new java.io.File(destPath);
+                destPath = f.getCanonicalPath();
+            }
+
+            c.channel.get(src.getPath(), destPath);
+            
+        } catch (Exception e) {
+            throw new GATInvocationException("sftpnew", e);
+        } finally {
+            closeChannel(c);
+        }
+    }
+
+    // Try copying using temp file.
+    protected void copyThirdParty(URI src, URI dest)
+            throws GATInvocationException {
+        java.io.File tmp = null;
+        SftpNewConnection tmpCon = null;
+
+        try {
+            // use a local tmp file.
+            tmp = java.io.File.createTempFile("GAT_SFTP_", ".tmp");
+
+            URI tmpURI = new URI(tmp.getCanonicalPath()); // convert to GAT URI
+
+            copyToLocal(src, tmpURI);
+
+            tmpCon = createChannel(gatContext, preferences, dest);
+            tmpCon.channel.put(tmpURI.getPath(), dest.getPath());
+        } catch (Exception e2) {
+            throw new GATInvocationException("sftpnew", e2);
+        } finally {
+            tmp.delete();
+            if (tmpCon != null) closeChannel(tmpCon);
+        }
+    }
+
+    protected void copyToRemote(URI src, URI dest)
+            throws GATInvocationException {
+
+        SftpNewConnection tmpCon = null;
+
+        // copy from the local machine to a remote machine.
+        try {
+            // if it is a relative path, we must make it an absolute path.
+            // the sftp library uses paths relative to the user's home dir.
+            String srcPath = src.getPath();
+
+            if (!srcPath.startsWith("/")) {
+                java.io.File f = new java.io.File(srcPath);
+                srcPath = f.getCanonicalPath();
+            }
+
+            tmpCon = createChannel(gatContext, preferences, dest);
+            tmpCon.channel.put(srcPath, dest.getPath());
+
+        } catch (Exception e) {
+            throw new GATInvocationException("sftpnew", e);
+        } finally {
+            if (tmpCon != null) closeChannel(tmpCon);
+        }
+    }
+
+    public long length() throws GATInvocationException {
+        SftpNewConnection c = createChannel(gatContext, preferences, location);
+        try {
+            SftpATTRS attr = c.channel.lstat(location.getPath());
+
+            return attr.getSize();
+        } catch (Exception e) {
+            throw new GATInvocationException("sftpnew", e);
+        } finally {
+            closeChannel(c);
+        }
+    }
+
+    public boolean isDirectory() throws GATInvocationException {
+        SftpNewConnection c = createChannel(gatContext, preferences, location);
+        try {
+            SftpATTRS attr = c.channel.lstat(location.getPath());
+
+            return attr.isDir();
+        } catch (Exception e) {
+            throw new GATInvocationException("sftpnew", e);
+        } finally {
+            closeChannel(c);
+        }
+    }
+
+    public static void end() {
+        if (GATEngine.DEBUG) {
+            System.err.println("end of sftpnew adaptor");
+        }
+
+        // destroy the cache
+        if (clienttable == null) {
+            return;
+        }
+
+        Enumeration e = clienttable.elements();
+
+        while (e.hasMoreElements()) {
+            SftpNewConnection c = (SftpNewConnection) e.nextElement();
+
+            try {
+                if (GATEngine.DEBUG) {
+                    System.err
+                        .println("end of sftpnew adaptor, closing client");
+                }
+
+                doWorkCloseChannel(c);
+            } catch (Exception x) {
+                if (GATEngine.DEBUG) {
+                    System.err
+                        .println("end of gridftp adaptor, closing client, got exception (ignoring): "
+                            + x);
+                }
+
+                // ignore
+            }
+        }
+
+        clienttable.clear();
+        clienttable = null;
     }
 }
