@@ -144,7 +144,7 @@ public class CommandlineSshFileAdaptor extends FileCpi {
 
         //to be modified, this part goes inside the SSHSecurityUtils
         if (src.getUserInfo() != null) {
-            sui.username = dest.getUserInfo();
+            sui.username = src.getUserInfo();
         }
 
         /*allow port override*/
@@ -218,7 +218,7 @@ public class CommandlineSshFileAdaptor extends FileCpi {
 
         //to be modified, this part goes inside the SSHSecurityUtils
         if (dest.getUserInfo() != null) {
-            sui.username = src.getUserInfo();
+            sui.username = dest.getUserInfo();
         }
 
         /*allow port override*/
