@@ -56,9 +56,9 @@ public class DefaultAdaptorOrderPolicy implements AdaptorOrderPolicy {
         insertPos = l.placeAdaptor(insertPos,
             "org.gridlab.gat.io.cpi.globus.GridFTPFileAdaptor");
         insertPos = l.placeAdaptor(insertPos,
-        "org.gridlab.gat.io.cpi.commandlineSsh.CommandlineSshFileAdaptor");
+            "org.gridlab.gat.io.cpi.commandlineSsh.CommandlineSshFileAdaptor");
         insertPos = l.placeAdaptor(insertPos,
-        "org.gridlab.gat.io.cpi.sftpnew.SftpNewFileAdaptor");
+            "org.gridlab.gat.io.cpi.sftpnew.SftpNewFileAdaptor");
         insertPos = l.placeAdaptor(insertPos,
             "org.gridlab.gat.io.cpi.ssh.SshFileAdaptor");
         insertPos = l.placeAdaptor(insertPos,
@@ -73,8 +73,11 @@ public class DefaultAdaptorOrderPolicy implements AdaptorOrderPolicy {
             "org.gridlab.gat.io.cpi.local.LocalFileInputStreamAdaptor");
         insertPos = l.placeAdaptor(insertPos,
             "org.gridlab.gat.io.cpi.globus.GridFTPFileInputStreamAdaptor");
+        insertPos = l
+            .placeAdaptor(insertPos,
+                "org.gridlab.gat.io.cpi.copyingFileInputStream.CopyingFileInputStreamAdaptor");
         insertPos = l.placeAdaptor(insertPos,
-        "org.gridlab.gat.io.cpi.sftpnew.SftpNewFileInputStreamAdaptor");
+            "org.gridlab.gat.io.cpi.sftpnew.SftpNewFileInputStreamAdaptor");
         insertPos = l.placeAdaptor(insertPos,
             "org.gridlab.gat.io.cpi.ssh.SshFileInputStreamAdaptor");
         insertPos = l.placeAdaptor(insertPos,
