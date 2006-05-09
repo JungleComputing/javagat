@@ -59,6 +59,12 @@
 			</manifest>
 		</jar>
 
+		<jar jarfile="${lib}/CopyingFileInputStreamAdaptor.jar" basedir="${tmp}" includes="**/CopyingFileInputStreamAdaptor.class">
+			<manifest>
+				<attribute name="FileInputStreamCpi-class" value="org.gridlab.gat.io.cpi.copyingFileInputStream.CopyingFileInputStreamAdaptor" />
+			</manifest>
+		</jar>
+
 		<jar jarfile="${lib}/SftpFileInputStreamAdaptor.jar" basedir="${tmp}" includes="**/sftp/*.class">
 			<manifest>
 				<attribute name="FileInputStreamCpi-class" value="org.gridlab.gat.io.cpi.sftp.SftpFileInputStreamAdaptor" />

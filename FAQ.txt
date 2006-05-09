@@ -95,6 +95,12 @@ A: Yes, there is a way to do that, you can specify a AdaptorOrderPolicy
    system property "adaptor.order.policy" to your class.
 
 
+Q: Sometimes the SSH or SFTP adaptor seems to hang at startup, while reading random numbers
+A: Right, I understand this is a bug in some combinations of linux and Java.
+   If you add the option "-Djava.security.egd=file:/dev/urandom" to your Java command, it should be fixed.
+   You can also add this option to the run_gat_app script if you want:
+   bin/run_gat_app -Djava.security.egd=file:/dev/urandom file.RemoteCopyPerformanceTest any://fs0.das2.cs.vu.nl/testfile2m any:///testfile
+
 
 
 Have Fun,
