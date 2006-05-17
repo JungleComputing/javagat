@@ -6,6 +6,7 @@ import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.Preferences;
 import org.gridlab.gat.URI;
+import org.gridlab.gat.engine.GATEngine;
 import org.gridlab.gat.io.FileOutputStreamInterface;
 import org.gridlab.gat.monitoring.Metric;
 import org.gridlab.gat.monitoring.MetricDefinition;
@@ -50,6 +51,10 @@ public abstract class FileOutputStreamCpi implements FileOutputStreamInterface {
         this.preferences = preferences;
         this.location = location;
         this.append = append.booleanValue();
+
+        if(GATEngine.DEBUG) {
+            System.err.println("FileOutputStreamCpi: created stream with URI " + location);
+        }
     }
 
     /**
