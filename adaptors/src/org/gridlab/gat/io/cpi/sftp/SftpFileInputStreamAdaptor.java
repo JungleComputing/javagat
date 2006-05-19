@@ -81,7 +81,6 @@ public class SftpFileInputStreamAdaptor extends FileInputStreamCpi {
      */
     public int available() throws GATInvocationException {
         return (int) available;
-
     }
 
     /*
@@ -102,19 +101,10 @@ public class SftpFileInputStreamAdaptor extends FileInputStreamCpi {
     /*
      * (non-Javadoc)
      *
-     * @see java.io.InputStream#mark(int)
-     */
-    public synchronized void mark(int arg0) {
-        in.mark(arg0);
-    }
-
-    /*
-     * (non-Javadoc)
-     *
      * @see java.io.InputStream#markSupported()
      */
     public boolean markSupported() {
-        return in.markSupported();
+        return false;
     }
 
     /*
@@ -125,7 +115,7 @@ public class SftpFileInputStreamAdaptor extends FileInputStreamCpi {
     public int read() throws GATInvocationException {
         try {
             int res = in.read();
-            if (res > -1) available--;
+            if (res >= 0) available--;
             return res;
         } catch (IOException e) {
             throw new GATInvocationException("SftpFileInputStream", e);
@@ -141,7 +131,7 @@ public class SftpFileInputStreamAdaptor extends FileInputStreamCpi {
             throws GATInvocationException {
         try {
             int res = in.read(b, offset, len);
-            available -= res;
+            if (res >= 0) available -= res;
             return res;
         } catch (IOException e) {
             throw new GATInvocationException("SftpFileInputStream", e);
@@ -156,22 +146,8 @@ public class SftpFileInputStreamAdaptor extends FileInputStreamCpi {
     public int read(byte[] arg0) throws GATInvocationException {
         try {
             int res = in.read(arg0);
-            available -= res;
+            if (res >= 0) available -= res;
             return res;
-        } catch (IOException e) {
-            throw new GATInvocationException("SftpFileInputStream", e);
-        }
-    }
-
-    /*
-     * (non-Javadoc)
-     *
-     * @see java.io.InputStream#reset()
-     */
-    public synchronized void reset() throws GATInvocationException {
-        try {
-            available = filesize;
-            in.reset();
         } catch (IOException e) {
             throw new GATInvocationException("SftpFileInputStream", e);
         }
