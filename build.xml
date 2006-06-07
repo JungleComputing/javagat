@@ -5,6 +5,7 @@
 	
 	<target name="build" description="build everything">
 		<ant dir="engine"/>
+		<ant dir="tests"/>
 		<ant dir="adaptors"/>
 	</target>
 	
@@ -14,6 +15,7 @@
 
 	<target name="clean" description="clean up">
 		<ant dir="engine" target="clean"/>
+		<ant dir="tests" target="clean"/>
 		<ant dir="adaptors" target="clean"/>
 		<ant dir="gridlabAdaptors" target="clean"/>
 	</target>
