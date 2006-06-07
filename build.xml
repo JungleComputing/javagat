@@ -1,12 +1,13 @@
 <project name="JavaGAT" default="build" basedir=".">
 	<description>
-	      Build file for GAT
+	      Build file for the Java GAT
     	</description>
 	
 	<target name="build" description="build everything">
 		<ant dir="engine"/>
 		<ant dir="tests"/>
 		<ant dir="adaptors"/>
+		<ant dir="engine" target="javadoc"/>
 	</target>
 	
 	<target name="gridlab" depends="build" description="build the gridlab adaptors">
