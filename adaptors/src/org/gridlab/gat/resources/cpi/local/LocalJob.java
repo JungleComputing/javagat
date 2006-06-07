@@ -21,6 +21,32 @@ import org.gridlab.gat.util.OutputForwarder;
  * @author rob
  */
 public class LocalJob extends Job {
+    class ProcessWaiter extends Thread {
+        ProcessWaiter() {
+            start();
+        }
+
+        public void run() {
+            try {
+                int exitValue = p.waitFor();
+                
+                // Wait for the output forwarders to finish!
+                // You may lose output if you don't -- Jason
+                if (out != null) {
+                        out.waitUntilFinished();
+                }
+
+                if (err != null) {
+                        err.waitUntilFinished();
+                }
+
+                finished(exitValue);
+            } catch (InterruptedException e) {
+                // Cannot happen
+            }
+        }
+    }
+
     static int globalJobID = 0;
 
     LocalResourceBrokerAdaptor broker;
@@ -34,8 +60,6 @@ public class LocalJob extends Job {
     Process p;
 
     int exitVal = 0;
-
-    boolean exited = false;
 
     MetricDefinition statusMetricDefinition;
 
@@ -94,6 +118,14 @@ public class LocalJob extends Job {
         return m;
     }
 
+    /* (non-Javadoc)
+     * @see org.gridlab.gat.resources.Job#getExitStatus()
+     */
+    public synchronized int getExitStatus() throws GATInvocationException {
+         if(state != STOPPED) throw new GATInvocationException("not in RUNNING state");
+         return exitVal;
+    }
+
     /*
      * (non-Javadoc)
      *
@@ -132,9 +164,20 @@ public class LocalJob extends Job {
     }
 
     void finished(int exitValue) {
-        GATInvocationException tmpExc = null;
         MetricValue v = null;
 
+        synchronized (this) {
+            exitVal = exitValue;
+            state = POST_STAGING;
+            v = new MetricValue(this, getStateString(state), statusMetric, System
+                .currentTimeMillis());
+            if (GATEngine.DEBUG) {
+                System.err.println("default job callback: firing event: " + v);
+            }
+        }
+        GATEngine.fireMetric(this, v);
+
+        GATInvocationException tmpExc = null;
         try {
             broker.postStageFiles(description, "localhost");
         } catch (GATInvocationException e) {
@@ -143,44 +186,15 @@ public class LocalJob extends Job {
 
         synchronized (this) {
             postStageException = tmpExc;
-            exited = true;
-            exitVal = exitValue;
             state = STOPPED;
             v = new MetricValue(this, getStateString(state), statusMetric, System
                 .currentTimeMillis());
-        }
 
-        if (GATEngine.DEBUG) {
-            System.err.println("default job callback: firing event: " + v);
-        }
-
-        GATEngine.fireMetric(this, v);
-    }
-
-    class ProcessWaiter extends Thread {
-        ProcessWaiter() {
-            start();
-        }
-
-        public void run() {
-            try {
-                int exitValue = p.waitFor();
-                
-                // Wait for the output forwarders to finish!
-                // You may lose output if you don't -- Jason
-                if (out != null) {
-                        out.waitUntilFinished();
-                }
-
-                if (err != null) {
-                        err.waitUntilFinished();
-                }
-
-                finished(exitValue);
-            } catch (InterruptedException e) {
-                // Cannot happen
+            if (GATEngine.DEBUG) {
+                System.err.println("default job callback: firing event: " + v);
             }
         }
+        GATEngine.fireMetric(this, v);
     }
 
     public void stop() throws GATInvocationException, IOException {
