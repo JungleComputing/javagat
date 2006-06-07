@@ -24,21 +24,15 @@
 		<!-- Compile the java code from ${src} into ${tmp} -->
 		<javac srcdir="${src}" destdir="${tmp}" debug="on" >
 			<classpath refid="external_jars" />
-        <!-- <compilerarg value="-Xlint:unchecked"/> -->
 		</javac>
 
 		<!-- Put everything in ${tmp} into the GAT.jar file -->
 		<jar jarfile="${lib}/GAT.jar" basedir="${tmp}" />
 
-		<!-- Sign the GAT.jar file 
-        <signjar jar="${lib}/GAT.jar" alias="xxxxx" storepass="yyyyy" storetype="pkcs12"/>
-        -->
-
 		<!-- Copy external libraries to lib directory -->
 		<copy todir="${lib}">
-	    <fileset dir="${external}">
-	    </fileset>
-	    </copy>
+		    <fileset dir="${external}"/>
+		</copy>
 		
 		<delete dir="${tmp}" />
 	</target>
@@ -51,25 +45,19 @@
 
 		<!-- Put everything in ${tmp} into the GAT.jar file -->
 		<jar jarfile="${lib}/GAT-tests.jar" basedir="${tmp}" />
-
-		<!-- Sign the GAT-tests.jar file 
-        <signjar jar="${lib}/tets.jar" alias="xxxxx" storepass="yyyyy" storetype="pkcs12"/>
-        -->
-		
 		<delete dir="${tmp}" />
 	</target>
 
-	<target name="build" description="build everything" depends="clean,compile,compile-tests">
-	</target>
+	<target name="build" description="build everything" depends="clean,compile,compile-tests"/>
 	
-    <target name="javadoc" depends="compile" description="generate javadoc for gat users">
-        <javadoc destdir="doc/html/javadoc" 
+	<target name="javadoc" depends="compile" description="generate javadoc for gat users">
+            <javadoc destdir="${doc}" 
         	access="public" use="true" notree="false" nonavbar="false" 
         	noindex="false" splitindex="true" version="true" 
         	nodeprecatedlist="false" nodeprecated="false" 
-            verbose="false"
+                verbose="false"
         	classpath="${lib}/GAT.jar">
-            <link href="http://java.sun.com/j2se/1.4.2/docs/api/"/>
+                <link href="http://java.sun.com/j2se/1.4.2/docs/api/"/>
         	
     		<fileset dir="${src}">
     			<include name="**/*.java" />
@@ -79,19 +67,18 @@
     			<exclude name="**/FileInputStreamInterface.java" />
     			<exclude name="**/FileOutputStreamInterface.java" />
     		</fileset>
-
         </javadoc>
     </target>
 
 	<target name="javadoc-devel" depends="compile" description="generate all javadocs">
-		<javadoc destdir="${doc}/html/javadoc" access="public" packagenames="org.gridlab.*" sourcepath="${src}" overview="src/overview.html">
+		<javadoc destdir="${doc}" access="public" packagenames="org.gridlab.*" sourcepath="${src}" overview="src/overview.html">
 			<link href="http://java.sun.com/j2se/1.4.2/docs/api/" />
 		</javadoc>
 	</target>
-	
+
 	<target name="clean" description="clean up">
 		<delete dir="${tmp}" />
 		<delete dir="${lib}" />
-		<delete dir="${doc}/html/javadoc" />
+		<delete dir="${doc}" />
 	</target>
 </project>
