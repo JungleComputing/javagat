@@ -212,12 +212,8 @@ public class GlobusJob extends Job implements GramJobListener,
     }
 
     public void stop() throws GATInvocationException {
-        if (getState() != RUNNING) {
-            throw new GATInvocationException("Job is not running");
-        }
-
         try {
-            j.cancel();
+            if(j != null) j.cancel();
         } catch (Exception e) {
             if (GATEngine.VERBOSE) {
                 System.err.println("got an exception while cancelling job: "
@@ -238,22 +234,6 @@ public class GlobusJob extends Job implements GramJobListener,
                 x.add("globus job", e2);
                 throw x;
             }
-        }
-
-        stopHandlers();
-
-        state = INITIAL;
-    }
-
-    public void unSchedule() throws GATInvocationException {
-        if (getState() != SCHEDULED) {
-            throw new GATInvocationException("Job is not in SCHEDULED state");
-        }
-
-        try {
-            j.cancel();
-        } catch (Exception e) {
-            throw new GATInvocationException("globus job", e);
         }
 
         stopHandlers();

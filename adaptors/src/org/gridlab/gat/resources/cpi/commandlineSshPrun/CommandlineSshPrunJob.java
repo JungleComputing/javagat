@@ -192,10 +192,6 @@ public class CommandlineSshPrunJob extends Job {
         GATEngine.fireMetric(this, v);
     }
 
-    public void unSchedule() throws GATInvocationException, IOException {
-        throw new GATInvocationException("not in scheduled state");
-    }
-
     class ProcessWaiter extends Thread {
         ProcessWaiter() {
             start();

@@ -95,21 +95,26 @@ public abstract class Job implements Monitorable, Advertisable {
     /**
      * Stops the associated physical job. Upon a successful call to this method
      * the associated physical job is forcibly terminated. This method can only
-     * be called on a in the SCHEDULED state.
+     * be called on a job in the SCHEDULED or RUNNING state.
+     * 
      *
+     * @deprecated Deprecated, because there is a race condition here. 
+     * The job state can change between the call to getState and the call to 
+     * stop/unSchedule. Use stop instead.
+     * 
      * @throws GATInvocationException
      *             Thrown upon problems accessing the remote instance
      * @throws java.io.IOException
      *             Upon non-remote IO problem
      */
-    public void unSchedule() throws GATInvocationException, IOException {
-        throw new RuntimeException("Not implemented");
+    public final void unSchedule() throws GATInvocationException, IOException {
+        stop();
     }
 
     /**
      * Stops the associated physical job. Upon a successful call to this method
-     * the associated physical job is forcibly terminated. This method can only
-     * be called on a in the Running state.
+     * the associated physical job is forcibly terminated. This method can be called in 
+     * any state.
      *
      * @throws GATInvocationException
      *             Thrown upon problems accessing the remote instance

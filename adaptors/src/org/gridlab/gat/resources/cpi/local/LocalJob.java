@@ -201,7 +201,7 @@ public class LocalJob extends Job {
         MetricValue v;
         
         synchronized (this) {
-            p.destroy();
+            if (p!= null) p.destroy();
             state = STOPPED;
             v = new MetricValue(this, getStateString(state), statusMetric, System
                 .currentTimeMillis());
@@ -212,9 +212,5 @@ public class LocalJob extends Job {
         }
 
         GATEngine.fireMetric(this, v);
-    }
-
-    public void unSchedule() throws GATInvocationException, IOException {
-        throw new GATInvocationException("not in scheduled state");
     }
 }

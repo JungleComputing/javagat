@@ -115,12 +115,4 @@ public class ProActiveJob extends Job {
     protected void setState() {
         state = launcher.getStatus(jobID);
     }
-
-    public void stop() throws GATInvocationException, IOException {
-        throw new Error("Not implemented");
-    }
-
-    public void unSchedule() throws GATInvocationException, IOException {
-        throw new Error("Not implemented");
-    }
 }
