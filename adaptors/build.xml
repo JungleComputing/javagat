@@ -53,6 +53,12 @@
 			</manifest>
 		</jar>
 
+		<jar jarfile="${lib}/ZorillaFileAdaptor.jar" basedir="${tmp}" includes="**/ZorillaFileAdaptor.class">
+			<manifest>
+				<attribute name="FileCpi-class" value="org.gridlab.gat.io.cpi.zorilla.ZorillaFileAdaptor" />
+			</manifest>
+		</jar>
+
 		<jar jarfile="${lib}/LocalFileInputStreamAdaptor.jar" basedir="${tmp}" includes="**/LocalFileInputStreamAdaptor.class">
 			<manifest>
 				<attribute name="FileInputStreamCpi-class" value="org.gridlab.gat.io.cpi.local.LocalFileInputStreamAdaptor" />
@@ -209,6 +215,12 @@
 			</manifest>
 		</jar>
 
+		<jar jarfile="${lib}/ZorillaResourceBrokerAdaptor.jar" basedir="${tmp}" includes="org/gridlab/gat/resources/cpi/zorilla/*.class">
+			<manifest>
+				<attribute name="ResourceBrokerCpi-class" value="org.gridlab.gat.resources.cpi.zorilla.ZorillaResourceBrokerAdaptor" />
+			</manifest>
+		</jar>
+		
 		<jar jarfile="${lib}/CommandlineSshResourceBrokerAdaptor.jar" basedir="${tmp}" includes="org/gridlab/gat/resources/cpi/commandlineSsh/*.class">
 			<manifest>
 				<attribute name="ResourceBrokerCpi-class" value="org.gridlab.gat.resources.cpi.commandlineSsh.CommandlineSshResourceBrokerAdaptor" />
