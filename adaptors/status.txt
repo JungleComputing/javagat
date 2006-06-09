@@ -45,3 +45,8 @@ SFTP FileStreams:                               done
 FTP FileSteams:                                 done
 HTTP FileStreams:                               done
 HTTPS FileStreams:                              done
+
+Commandline ssh File                            done
+Commandline ssh ResourceBroker                  done
+Copying file input stream adaptor               done
+Commandline SSH prun adaptor                    done

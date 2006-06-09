@@ -55,6 +55,10 @@ public abstract class FileCpi implements File {
         this.gatContext = gatContext;
         this.preferences = preferences;
         this.location = location;
+
+        if(GATEngine.DEBUG) {
+            System.err.println("FileCpi: created file with URI " + location);
+        }
     }
 
     /**
