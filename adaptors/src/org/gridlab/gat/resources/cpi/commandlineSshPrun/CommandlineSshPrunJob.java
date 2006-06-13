@@ -35,8 +35,6 @@ public class CommandlineSshPrunJob extends Job {
 
     int exitVal = 0;
 
-    boolean exited = false;
-
     MetricDefinition statusMetricDefinition;
 
     Metric statusMetric;
@@ -68,6 +66,14 @@ public class CommandlineSshPrunJob extends Job {
 
     static synchronized int allocJobID() {
         return globalJobID++;
+    }
+
+    /* (non-Javadoc)
+     * @see org.gridlab.gat.resources.Job#getExitStatus()
+     */
+    public synchronized int getExitStatus() throws GATInvocationException {
+         if(state != STOPPED) throw new GATInvocationException("not in RUNNING state");
+         return exitVal;
     }
 
     /*
@@ -135,6 +141,16 @@ public class CommandlineSshPrunJob extends Job {
         GATInvocationException tmpExc = null;
         MetricValue v = null;
 
+        synchronized (this) {
+            exitVal = exitValue;
+            state = POST_STAGING;
+            v = new MetricValue(this, getStateString(state), statusMetric, System
+                .currentTimeMillis());
+            if (GATEngine.DEBUG) {
+                System.err.println("default job callback: firing event: " + v);
+            }
+        }
+        GATEngine.fireMetric(this, v);
 
         try {
             String host = broker.getHostname(description);
@@ -149,17 +165,13 @@ public class CommandlineSshPrunJob extends Job {
 
         synchronized (this) {
             postStageException = tmpExc;
-            exited = true;
-            exitVal = exitValue;
             state = STOPPED;
             v = new MetricValue(this, getStateString(state), statusMetric, System
                 .currentTimeMillis());
+            if (GATEngine.DEBUG) {
+                System.err.println("default job callback: firing event: " + v);
+            }
         }
-
-        if (GATEngine.DEBUG) {
-            System.err.println("default job callback: firing event: " + v);
-        }
-
         GATEngine.fireMetric(this, v);
     }
 
@@ -178,10 +190,6 @@ public class CommandlineSshPrunJob extends Job {
         }
 
         GATEngine.fireMetric(this, v);
-    }
-
-    public void unSchedule() throws GATInvocationException, IOException {
-        throw new GATInvocationException("not in scheduled state");
     }
 
     class ProcessWaiter extends Thread {

@@ -18,47 +18,16 @@ import org.gridlab.gat.monitoring.Monitorable;
 /**
  * An instance of this class represents a job.
  * <p>
- * A job is what one normally considers when referring to a starting a program.
+ * A job is what one normally considers when referring to starting a program.
  * Thus, a job is primarily described by the software which is to execute during
  * this job. The description of the software which is to execute during this job
- * is given by an instance of the class SoftwareResourceDescription. As detailed
- * in the description section of the documentation for the class
- * SoftwareResourceDescription, an instance of the class
- * SoftwareResourceDescription describes a software component. uses this
- * description to describe the software which is to execute during this simple
- * job.
+ * is given by an instance of the class SoftwareResourceDescription.
  * <p>
  * Upon creating an instance of the class the associated physical job is not
  * immediately running. An instance of the class has various states which it can
- * be in, only one of which maps to a running physical job. In particular the
- * various state are as follows
- * <ul>
- * <li><em>INITIAL</em></li>
- * <li><em>SCHEDULED</em></li>
- * <li><em>RUNNING</em></li>
- * <li><em>STOPPED</em></li>
- * <li><em>SUBMISSION_ERROR</em></li>
- * </ul>
- * A description of the various states diagrammed in figure below is as follows:
- * <center><img src="doc-files/SimpleJob.jpg" height="600" width="150">
- * </center> <em>INITIAL</em> An instance of the class has been constructed,
- * but the method Submit has not yet been successfully called on this instance.
+ * be in, only one of which maps to a running physical job.
  * <p>
- * <em>SCHEDULED</em> The method Submit has been successfully called on an
- * instance of while the instance was in the Constructed state.
- * <p>
- * <em>RUNNING</em> The physical job corresponding to an instance of a is
- * running.
- * <p>
- * <em>STOPPED</em> The physical job corresponding to an instance of a was
- * running but is not currently running due to a successful call to the method
- * Stop, or the physical job corresponding to an instance of a was running but
- * is not currently running due to the physical job completing.
- * <p>
- * <em>SUBMISSION_ERROR</em> An error occurred while submitting this job.
- * <p>
- * <p>
- * In addition a allows one or more Metrics to be monitored.
+ * In addition, a Job allows one or more Metrics to be monitored.
  */
 public abstract class Job implements Monitorable, Advertisable {
     /** Constructed state indicator */
@@ -75,7 +44,19 @@ public abstract class Job implements Monitorable, Advertisable {
 
     /** Submission error state indicator */
     public static final int SUBMISSION_ERROR = 4;
+    
+    /** The job has been paused */
+    public static final int ON_HOLD = 5;
 
+    /** The input files of the job are being pre-staged */
+    public static final int PRE_STAGING = 6;
+
+    /** The output files of the job are being post-staged */
+    public static final int POST_STAGING = 7;
+    
+    /** The job state is unkown for some reason. May be a network problem. */
+    public static final int UNKNOWN = 8;
+    
     protected int state = INITIAL;
 
     protected GATContext gatContext;
@@ -86,21 +67,24 @@ public abstract class Job implements Monitorable, Advertisable {
         switch (state) {
         case INITIAL:
             return "INITIAL";
-
         case SCHEDULED:
             return "SCHEDULED";
-
         case RUNNING:
             return "RUNNING";
-
         case STOPPED:
             return "STOPPED";
-
         case SUBMISSION_ERROR:
             return "SUBMISSION_ERROR";
-
+        case ON_HOLD:
+            return "ON_HOLD";
+        case PRE_STAGING:
+            return "PRE_STAGING";
+        case POST_STAGING:
+            return "POST_STAGING";
+        case UNKNOWN:
+            return "UNKNOWN";
         default:
-            return "UNKNOWN_STATE";
+            throw new RuntimeException("unknown job state in getStateString");
         }
     }
 
@@ -111,21 +95,26 @@ public abstract class Job implements Monitorable, Advertisable {
     /**
      * Stops the associated physical job. Upon a successful call to this method
      * the associated physical job is forcibly terminated. This method can only
-     * be called on a in the SCHEDULED state.
+     * be called on a job in the SCHEDULED or RUNNING state.
+     * 
      *
+     * @deprecated Deprecated, because there is a race condition here. 
+     * The job state can change between the call to getState and the call to 
+     * stop/unSchedule. Use stop instead.
+     * 
      * @throws GATInvocationException
      *             Thrown upon problems accessing the remote instance
      * @throws java.io.IOException
      *             Upon non-remote IO problem
      */
-    public void unSchedule() throws GATInvocationException, IOException {
-        throw new RuntimeException("Not implemented");
+    public final void unSchedule() throws GATInvocationException, IOException {
+        stop();
     }
 
     /**
      * Stops the associated physical job. Upon a successful call to this method
-     * the associated physical job is forcibly terminated. This method can only
-     * be called on a in the Running state.
+     * the associated physical job is forcibly terminated. This method can be called in 
+     * any state.
      *
      * @throws GATInvocationException
      *             Thrown upon problems accessing the remote instance
@@ -188,8 +177,10 @@ public abstract class Job implements Monitorable, Advertisable {
      *  in the Stopped state otherwise it is null.
      * <p>
      * <em>postStageError<em>
-     * This key is present in the map if the application did run, but one or more files could not be post staged.
-     * The data value attached to this key is the exception that occurred while poststageing.
+     * This key is present in the map if the application did run, but one or more files 
+     * could not be post staged.
+     * The data value attached to this key is the exception that occurred while 
+     * poststageing.
      *
      * Other key/value pairs will be in future added to the list of key/value
      * pairs returned in this java.util.Map as the need develops.
@@ -320,6 +311,27 @@ public abstract class Job implements Monitorable, Advertisable {
         throw new RuntimeException("Not implemented");
     }
 
+    /** Put a job on hold, pause it.
+     * This can be called in SCHEDULED or RUNNING state.
+     */
+    public void hold() {
+        throw new RuntimeException("Not implemented");
+    }
+    
+    /** Resume a job that was paused with the "hold" method.
+     * This can be called only in the ON_HOLD state. 
+     */
+    public void resume() {
+        throw new RuntimeException("Not implemented");
+    }
+    
+    /** Returns the exit status of a job. 
+     * @return the exit status of a job.
+     */
+    public int getExitStatus() throws GATInvocationException {
+        throw new RuntimeException("Not implemented");
+    }
+    
     public MetricValue getMeasurement(Metric metric)
             throws GATInvocationException {
         if (metric.getDefinition().getMeasurementType() == MetricDefinition.DISCRETE) {
