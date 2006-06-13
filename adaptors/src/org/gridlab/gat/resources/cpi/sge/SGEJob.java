@@ -12,6 +12,7 @@ import java.lang.String;
 import java.util.Map;
 import java.util.HashMap;
 import org.ggf.drmaa.*;
+import org.ggf.drmaa.JobInfo;
 
 import org.gridlab.gat.engine.GATEngine;
 import org.gridlab.gat.monitoring.Metric;
@@ -104,21 +105,24 @@ public class SGEJob extends Job{
                     state = SCHEDULED;
                     break;
                 case Session.SYSTEM_ON_HOLD:
-                    state = SCHEDULED;
+                    state = ON_HOLD;
                     break;
                 case Session.USER_ON_HOLD:
-                    state = SCHEDULED;
+                    state = ON_HOLD;
                     break;
                 case Session.USER_SYSTEM_ON_HOLD:
-                    state = SCHEDULED;
+                    state = ON_HOLD;
                     break;
                 default:
                     System.err.println("WARNING: SGE Job: unknown DRMAA state: "
                             + status);
             }
             
-        } catch(DrmaaException e) {
-            
+        }
+        catch(DrmaaException e) {
+            System.err.println("-- SGEJob EXCEPTION --");
+            System.err.println("Got an exception while retrieving resource manager status:");
+            System.err.println(e);      
         }
     }
     
@@ -135,44 +139,58 @@ public class SGEJob extends Job{
             m.put("jobID", jobID);
             
         } catch (DrmaaException e) {
-            if (GATEngine.VERBOSE) {
-                System.err.println("got an exception while retrieving job " +
-                        "information: "+ e);
-            }
+                System.err.println("-- SGEJob EXCEPTION --");
+                System.err.println("Got an exception while retrieving resource manager status:");
+                System.err.println(e);
         }
         
         return m;
     }
     
-    public void stop() throws GATInvocationException {
-        if (getState() != RUNNING) {
-            throw new GATInvocationException("Cant stop(): job is not running");
-        }
-
-        try {  
-            
-            session.control (jobID, Session.TERMINATE);
-            state = INITIAL;            
-            
-        } catch(DrmaaException e) {
-            System.err.println("Execption in SGEBRokerAdaptor");
-            System.err.println(e);            
-        }
-    }
-
-    public void unSchedule() throws GATInvocationException {
-        if (getState() != SCHEDULED) {
-            throw new GATInvocationException("Can't unSchedule(): job is not scheduled");
-        }
+    public int getExitStatus() {
+        
+        JobInfo info = null;
+        int retVal = -255;
         
         try {
-            session.control(jobID, Session.TERMINATE);
-            state = INITIAL;
-
-        } catch(DrmaaException e) {
-            System.err.println("Execption in SGEBRokerAdaptor");
-            System.err.println(e);        
+            info = session.wait(jobID, Session.TIMEOUT_NO_WAIT);            
+        }
+        catch (ExitTimeoutException ete) {
+            /* This exception is OK - it's always thrown, when the job is still
+             * running. Just ignore and do nothing...*/
+        }
+        catch(DrmaaException e) {
+            System.err.println("-- SGEJob EXCEPTION --");
+            System.err.println("Got an exception while retrieving JobInfo:");
+            System.err.println(e);
+        }
+        
+        if( info != null ) {
+            if( info.hasExited() ) {
+                retVal = info.getExitStatus();
+            }
+            else {
+                retVal = -255;
+            }
+        }
+        
+        return retVal;
+    }
+    
+    public void stop() throws GATInvocationException {
+        if ((getState() != RUNNING) || (getState() != ON_HOLD) || (getState() != SCHEDULED) ) {
+            throw new GATInvocationException("Cant stop(): job is not in a running state");
+        }
+        else {
+            try {  
+                session.control (jobID, Session.TERMINATE);
+                state = INITIAL;            
+            } 
+            catch(DrmaaException e) {
+                System.err.println("-- SGEJob EXCEPTION --");
+                System.err.println("Got an exception while trying to TERMINATE job:");
+                System.err.println(e);
+            }
         }
     }
-
 }
