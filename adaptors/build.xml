@@ -245,6 +245,13 @@
                          </manifest>
                  </jar>
 
+                 <jar jarfile="${lib}/PbsBrokerAdaptor.jar" basedir="${tmp}" includes="**/org/gridlab/gat/resources/cpi/pbs_resource/*.class">
+                         <manifest>
+                                 <attribute name="ResourceBrokerCpi-class" value="org.gridlab.gat.resources.cpi.pbs_resource.PbsBrokerAdaptor" />
+                         </manifest>
+                 </jar>
+
+
 		<jar jarfile="${lib}/SocketEndpointAdaptor.jar" basedir="${tmp}" includes="**/org/gridlab/gat/io/cpi/sockets/*.class">
 			<manifest>
 				<attribute name="EndpointCpi-class" value="org.gridlab.gat.io.cpi.sockets.SocketEndpointAdaptor" />
