@@ -81,10 +81,11 @@
 
     <!-- Create the JAR from ${destdir} classes -->
     <target name="jar" depends="build" description="Jars the files">
-       <copyfile src="${GAT_LOC}/engine/lib/GAT.jar" dest="bin/lib/GAT.jar"/>
-       <copyfile src="${GAT_LOC}/engine/lib/colobus.jar" dest="bin/lib/colobus.jar"/>
-       <copyfile src="${GAT_LOC}/adaptors/lib/PbsBrokerAdaptor.jar" dest="bin/lib/PbsBrokerAdaptor.jar"/>
-       <copyfile src="${commons_cli_jar}" dest="bin/lib/commons-cli-1.0.jar"/>
+       <delete file="bin/SubmitPBSJob.jar" failonerror="false" />
+       <copy file="${GAT_LOC}/engine/lib/GAT.jar"                tofile="bin/lib/GAT.jar"/>
+       <copy file="${GAT_LOC}/engine/lib/colobus.jar"            tofile="bin/lib/colobus.jar"/>
+       <copy file="${GAT_LOC}/adaptors/lib/PbsBrokerAdaptor.jar" tofile="bin/lib/PbsBrokerAdaptor.jar"/>
+       <copy file="${commons_cli_jar}"                           tofile="bin/lib/commons-cli-1.0.jar"/>
 
        <jar jarfile = "bin/SubmitPBSJob.jar">
           <fileset dir = "bin" />
