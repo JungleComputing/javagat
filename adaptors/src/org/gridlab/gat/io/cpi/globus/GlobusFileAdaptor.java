@@ -371,7 +371,8 @@ public abstract class GlobusFileAdaptor extends FileCpi {
         if (isOldServer(preferences)) {
             if (isDirectory()) {
                 throw new GATInvocationException(
-                    "an old server cannot get info for a directory because it does not support the \"list -d\" command\nIf you need this functionality, please upgrade your server.");
+                    "an old server cannot get info for a directory because it does not support the \"list -d\" command\n" + 
+                    "If you need this functionality, please upgrade your server.");
             }
         }
 
@@ -513,6 +514,13 @@ public abstract class GlobusFileAdaptor extends FileCpi {
     }
 
     public long length() throws GATInvocationException {
+        try {
+            if(isDirectory()) return 0;
+        } catch (Exception e) {
+            // Hmm, that did not work.
+            // let's assume it is a file, and continue.
+        }
+        
         try {
             FileInfo info = getInfo();
 
