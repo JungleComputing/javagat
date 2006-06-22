@@ -79,6 +79,9 @@ public abstract class GlobusFileAdaptor extends FileCpi {
                 .getLogger(SelfAuthorization.class.getName());
             logger4.setLevel(Level.OFF);
         }
+
+        cachedInfo = (FileInfo) preferences.get("GAT_INTERNAL_FILE_INFO");
+        preferences.remove("GAT_INTERNAL_FILE_INFO");
     }
 
     static protected boolean isPassive(Preferences preferences) {
@@ -318,37 +321,84 @@ public abstract class GlobusFileAdaptor extends FileCpi {
         FTPClient client = null;
 
         try {
-            if (isDirectory()) {
-                String remotePath = getPath();
+            if (!isDirectory()) {
+                return null;
+            }
+            String remotePath = getPath();
 
-                client = createClient(toURI());
+            client = createClient(toURI());
 
-                if (!remotePath.equals("")) {
-                    client.changeDir(remotePath);
-                }
-
-                setActiveOrPassive(client, preferences);
-
-                Vector v = null;
-
-                // we know it is a dir, so we can use this call.
-                // for some reason, on old servers the list() method returns
-                // an empty list if there are many files. 
-                v = listNoMinusD(client, remotePath);
-
-                String[] res = new String[v.size()];
-
-                for (int i = 0; i < v.size(); i++) {
-                    FileInfo info = ((FileInfo) v.get(i));
-                    res[i] = getName(info);
-                }
-
-                return res;
+            if (!remotePath.equals("")) {
+                client.changeDir(remotePath);
             }
 
-            // OK, not a dir, just return the list...
-            String[] res = new String[1];
-            res[0] = getName(getInfo());
+            setActiveOrPassive(client, preferences);
+
+            Vector v = null;
+
+            // we know it is a dir, so we can use this call.
+            // for some reason, on old servers the list() method returns
+            // an empty list if there are many files. 
+            v = listNoMinusD(client, remotePath);
+
+            String[] res = new String[v.size()];
+
+            for (int i = 0; i < v.size(); i++) {
+                FileInfo info = ((FileInfo) v.get(i));
+                res[i] = getName(info);
+            }
+
+            return res;
+        } catch (Exception e) {
+            throw new GATInvocationException("gridftp", e);
+        } finally {
+            if (client != null) {
+                destroyClient(client, toURI(), preferences);
+            }
+        }
+    }
+
+    public File[] listFiles() throws GATInvocationException {
+        FTPClient client = null;
+
+        try {
+            if (!isDirectory()) {
+                return null;
+            }
+            String remotePath = getPath();
+
+            client = createClient(toURI());
+
+            if (!remotePath.equals("")) {
+                client.changeDir(remotePath);
+            }
+
+            setActiveOrPassive(client, preferences);
+
+            Vector v = null;
+
+            // we know it is a dir, so we can use this call.
+            // for some reason, on old servers the list() method returns
+            // an empty list if there are many files. 
+            v = listNoMinusD(client, remotePath);
+
+            File[] res = new File[v.size()];
+
+            for (int i = 0; i < v.size(); i++) {
+                FileInfo info = ((FileInfo) v.get(i));
+                
+                String uri = location.toString();
+                if (!uri.endsWith("/")) {
+                    uri += "/";
+                }
+                uri += getName(info);
+                
+                // Improve the performance of further file accesses to the list.
+                // pass the FileInfo object via the preferences. 
+                Preferences newPrefs = (Preferences) preferences.clone();
+                newPrefs.put("GAT_INTERNAL_FILE_INFO", info);
+                res[i] = GAT.createFile(gatContext, newPrefs, new URI(uri));
+            }
 
             return res;
         } catch (Exception e) {
@@ -526,12 +576,12 @@ public abstract class GlobusFileAdaptor extends FileCpi {
 
     public long length() throws GATInvocationException {
         try {
-            if(isDirectory()) return 0;
+            if (isDirectory()) return 0;
         } catch (Exception e) {
             // Hmm, that did not work.
             // let's assume it is a file, and continue.
         }
-        
+
         try {
             FileInfo info = getInfo();
 

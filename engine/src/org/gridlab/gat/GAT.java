@@ -426,8 +426,8 @@ public class GAT {
      * file identified by the passed File and whose access rights are determined
      * by the passed GATContext. This stream overwrites the existing file.
      *
-     * @param location
-     *            location of the file to read from
+     * @param file
+     *            the file to read from
      * @param gatContext
      *            A GATContext which is used to determine the access rights for
      *            this File.
@@ -445,8 +445,8 @@ public class GAT {
      * file identified by the passed File and whose access rights are determined
      * by the passed GATContext.  This stream overwrites the existing file.
      *
-     * @param location
-     *            location of the file to read from
+     * @param file
+     *            the file to read from
      * @param gatContext
      *            A GATContext which is used to determine the access rights for
      *            this File.
@@ -466,8 +466,8 @@ public class GAT {
      * file identified by the passed File and whose access rights are determined
      * by the passed GATContext.
      *
-     * @param location
-     *            location of the file to read from
+     * @param file
+     *            the file to read from
      * @param gatContext
      *            A GATContext which is used to determine the access rights for
      *            this File.
@@ -486,8 +486,8 @@ public class GAT {
      * file identified by the passed file and whose access rights are determined
      * by the passed GATContext.
      *
-     * @param location
-     *            URI of the location the file to read from
+     * @param file
+     *            the file to read from
      * @param gatContext
      *            A GATContext which is used to determine the access rights for
      *            this File.
@@ -709,8 +709,9 @@ public class GAT {
      * @throws GATObjectCreationException
      *             Thrown upon creation problems
      */
-    public static RandomAccessFile createRandomAccessFile(GATContext gatContext, File file,
-            String mode) throws GATObjectCreationException {
+    public static RandomAccessFile createRandomAccessFile(
+        GATContext gatContext, File file, String mode)
+        throws GATObjectCreationException {
         Object[] array = { file, mode };
 
         return (RandomAccessFile) getAdaptorProxy(RandomAccessFileCpi.class,
@@ -737,9 +738,9 @@ public class GAT {
      * @throws GATObjectCreationException
      *             Thrown upon creation problems
      */
-    public static RandomAccessFile createRandomAccessFile(GATContext gatContext,
-            Preferences preferences, File file, String mode)
-            throws GATObjectCreationException {
+    public static RandomAccessFile createRandomAccessFile(
+        GATContext gatContext, Preferences preferences, File file, String mode)
+        throws GATObjectCreationException {
         Object[] array = { file, mode };
 
         return (RandomAccessFile) getAdaptorProxy(RandomAccessFileCpi.class,

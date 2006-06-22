@@ -6,7 +6,7 @@ In many cases we don't exactly know what JavaGAT is used for.
 
 - Max Planck Institute for Astrophysics in Garching (Alexander Beck-Ratzka)
 
-- Louisiane State University (Rion Dooley)
+- Louisiane State University, University of Texas (Rion Dooley)
   A computational chemistry middleware project that needs a lot of grid-type features.
 
 - AMOLF, the Institute for Atomic and Molecular Physics, The Netherlands 
