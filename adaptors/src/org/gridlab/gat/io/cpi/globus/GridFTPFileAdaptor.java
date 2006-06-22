@@ -228,7 +228,7 @@ public class GridFTPFileAdaptor extends GlobusFileAdaptor {
             } catch (Exception e) {
                 if (GATEngine.DEBUG) {
                     System.err
-                        .println("end of gridftp adaptor, closing client, got exception (ignoring): "
+                        .println("doWorkDestroyClient, closing client, got exception (ignoring): "
                             + e);
                 }
 
