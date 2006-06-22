@@ -21,3 +21,5 @@
        - remote streaming seems to hang
        - cache connections for ssh adaptor (Ana?)
        - support environment vars in ssh broker.
+
+- resource broker adaptors should fill in ALL defined states in the getInfo call.
