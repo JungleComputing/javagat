@@ -52,7 +52,7 @@ public class GAT {
      *             Thrown upon creation problems
      */
     public static File createFile(GATContext gatContext, URI location)
-            throws GATObjectCreationException {
+        throws GATObjectCreationException {
         return createFile(gatContext, null, location);
     }
 
@@ -72,7 +72,7 @@ public class GAT {
      *             Thrown upon creation problems
      */
     public static File createFile(GATContext gatContext, String location)
-            throws GATObjectCreationException {
+        throws GATObjectCreationException {
         try {
             return createFile(gatContext, null, new URI(location));
         } catch (URISyntaxException e) {
@@ -99,8 +99,8 @@ public class GAT {
      *             Thrown upon creation problems
      */
     public static File createFile(GATContext gatContext,
-            Preferences preferences, String location)
-            throws GATObjectCreationException {
+        Preferences preferences, String location)
+        throws GATObjectCreationException {
         try {
             return createFile(gatContext, preferences, new URI(location));
         } catch (URISyntaxException e) {
@@ -127,8 +127,8 @@ public class GAT {
      *             Thrown upon creation problems
      */
     public static File createFile(GATContext gatContext,
-            Preferences preferences, URI location)
-            throws GATObjectCreationException {
+        Preferences preferences, URI location)
+        throws GATObjectCreationException {
         Object[] array = { location };
         File f = (File) getAdaptorProxy(FileCpi.class, File.class, gatContext,
             preferences, array);
@@ -150,7 +150,7 @@ public class GAT {
      *             Thrown upon creation problems
      */
     public static LogicalFile createLogicalFile(GATContext gatContext,
-            String name, int mode) throws GATObjectCreationException {
+        String name, int mode) throws GATObjectCreationException {
         return createLogicalFile(gatContext, null, name, mode);
     }
 
@@ -170,8 +170,8 @@ public class GAT {
      *             Thrown upon creation problems
      */
     public static LogicalFile createLogicalFile(GATContext gatContext,
-            Preferences preferences, String name, int mode)
-            throws GATObjectCreationException {
+        Preferences preferences, String name, int mode)
+        throws GATObjectCreationException {
         Integer modeTmp = new Integer(mode);
         Object[] array = { name, modeTmp };
 
@@ -181,7 +181,7 @@ public class GAT {
 
     /**
      * Constructs a FileInputStream instance which corresponds to the physical
-     * file identified by the passed File and whose access rights are determined
+     * file identified by the passed URI and whose access rights are determined
      * by the passed GATContext.
      *
      * @param location
@@ -194,13 +194,13 @@ public class GAT {
      *             Thrown upon creation problems
      */
     public static FileInputStream createFileInputStream(GATContext gatContext,
-            URI location) throws GATObjectCreationException {
+        URI location) throws GATObjectCreationException {
         return createFileInputStream(gatContext, null, location);
     }
 
     /**
      * Constructs a FileInputStream instance which corresponds to the physical
-     * file identified by the passed file and whose access rights are determined
+     * file identified by the passed URI and whose access rights are determined
      * by the passed GATContext.
      *
      * @param location
@@ -216,8 +216,8 @@ public class GAT {
      *             Thrown upon creation problems
      */
     public static FileInputStream createFileInputStream(GATContext gatContext,
-            Preferences preferences, URI location)
-            throws GATObjectCreationException {
+        Preferences preferences, URI location)
+        throws GATObjectCreationException {
         Object[] array = { location };
         FileInputStreamInterface res = (FileInputStreamInterface) getAdaptorProxy(
             FileInputStreamCpi.class, FileInputStreamInterface.class,
@@ -231,6 +231,45 @@ public class GAT {
      * file identified by the passed File and whose access rights are determined
      * by the passed GATContext.
      *
+     * @param file the file to read from
+     * @param gatContext
+     *            A GATContext which is used to determine the access rights for
+     *            this File.
+     * @return The fileInputStream object
+     * @throws GATObjectCreationException
+     *             Thrown upon creation problems
+     */
+    public static FileInputStream createFileInputStream(GATContext gatContext,
+        File file) throws GATObjectCreationException {
+        return createFileInputStream(gatContext, null, file.toURI());
+    }
+
+    /**
+     * Constructs a FileInputStream instance which corresponds to the physical
+     * file identified by the passed file and whose access rights are determined
+     * by the passed GATContext.
+     *
+     * @param file the file to read from
+     * @param gatContext
+     *            A GATContext which is used to determine the access rights for
+     *            this File.
+     * @param preferences
+     *            A Preferences which is used to determine the user's
+     *            preferences for this File.
+     * @return The file object
+     * @throws GATObjectCreationException
+     *             Thrown upon creation problems
+     */
+    public static FileInputStream createFileInputStream(GATContext gatContext,
+        Preferences preferences, File file) throws GATObjectCreationException {
+        return createFileInputStream(gatContext, preferences, file.toURI());
+    }
+
+    /**
+     * Constructs a FileInputStream instance which corresponds to the physical
+     * file identified by the passed URI (in String format) and whose access rights are determined
+     * by the passed GATContext.
+     *
      * @param location
      *            location of the file to read from
      * @param gatContext
@@ -241,7 +280,7 @@ public class GAT {
      *             Thrown upon creation problems
      */
     public static FileInputStream createFileInputStream(GATContext gatContext,
-            String location) throws GATObjectCreationException {
+        String location) throws GATObjectCreationException {
         try {
             return createFileInputStream(gatContext, null, new URI(location));
         } catch (URISyntaxException e) {
@@ -251,7 +290,7 @@ public class GAT {
 
     /**
      * Constructs a FileInputStream instance which corresponds to the physical
-     * file identified by the passed file and whose access rights are determined
+     * file identified by the passed URI (in String format) and whose access rights are determined
      * by the passed GATContext.
      *
      * @param location
@@ -267,8 +306,8 @@ public class GAT {
      *             Thrown upon creation problems
      */
     public static FileInputStream createFileInputStream(GATContext gatContext,
-            Preferences preferences, String location)
-            throws GATObjectCreationException {
+        Preferences preferences, String location)
+        throws GATObjectCreationException {
         try {
             return createFileInputStream(gatContext, preferences, new URI(
                 location));
@@ -279,7 +318,7 @@ public class GAT {
 
     /**
      * Constructs a FileOutputStream instance which corresponds to the physical
-     * file identified by the passed File and whose access rights are determined
+     * file identified by the passed URI and whose access rights are determined
      * by the passed GATContext. This stream overwrites the existing file.
      *
      * @param location
@@ -292,8 +331,8 @@ public class GAT {
      *             Thrown upon creation problems
      */
     public static FileOutputStream createFileOutputStream(
-            GATContext gatContext, String location)
-            throws GATObjectCreationException {
+        GATContext gatContext, String location)
+        throws GATObjectCreationException {
         try {
             return createFileOutputStream(gatContext, null, new URI(location),
                 false);
@@ -304,7 +343,7 @@ public class GAT {
 
     /**
      * Constructs a FileOutputStream instance which corresponds to the physical
-     * file identified by the passed File and whose access rights are determined
+     * file identified by the passed URI and whose access rights are determined
      * by the passed GATContext.  This stream overwrites the existing file.
      *
      * @param location
@@ -317,8 +356,8 @@ public class GAT {
      *             Thrown upon creation problems
      */
     public static FileOutputStream createFileOutputStream(
-            GATContext gatContext, Preferences preferences, String location)
-            throws GATObjectCreationException {
+        GATContext gatContext, Preferences preferences, String location)
+        throws GATObjectCreationException {
         try {
             return createFileOutputStream(gatContext, preferences, new URI(
                 location), false);
@@ -329,7 +368,7 @@ public class GAT {
 
     /**
      * Constructs a FileOutputStream instance which corresponds to the physical
-     * file identified by the passed File and whose access rights are determined
+     * file identified by the passed URI and whose access rights are determined
      * by the passed GATContext.
      *
      * @param location
@@ -343,8 +382,8 @@ public class GAT {
      *             Thrown upon creation problems
      */
     public static FileOutputStream createFileOutputStream(
-            GATContext gatContext, String location, boolean append)
-            throws GATObjectCreationException {
+        GATContext gatContext, String location, boolean append)
+        throws GATObjectCreationException {
         try {
             return createFileOutputStream(gatContext, null, new URI(location),
                 append);
@@ -355,7 +394,7 @@ public class GAT {
 
     /**
      * Constructs a FileOutputStream instance which corresponds to the physical
-     * file identified by the passed file and whose access rights are determined
+     * file identified by the passed URI and whose access rights are determined
      * by the passed GATContext.
      *
      * @param location
@@ -372,8 +411,8 @@ public class GAT {
      *             Thrown upon creation problems
      */
     public static FileOutputStream createFileOutputStream(
-            GATContext gatContext, Preferences preferences, String location,
-            boolean append) throws GATObjectCreationException {
+        GATContext gatContext, Preferences preferences, String location,
+        boolean append) throws GATObjectCreationException {
         try {
             return createFileOutputStream(gatContext, preferences, new URI(
                 location), append);
@@ -397,9 +436,8 @@ public class GAT {
      *             Thrown upon creation problems
      */
     public static FileOutputStream createFileOutputStream(
-            GATContext gatContext, URI location)
-            throws GATObjectCreationException {
-        return createFileOutputStream(gatContext, null, location, false);
+        GATContext gatContext, File file) throws GATObjectCreationException {
+        return createFileOutputStream(gatContext, null, file.toURI(), false);
     }
 
     /**
@@ -417,9 +455,10 @@ public class GAT {
      *             Thrown upon creation problems
      */
     public static FileOutputStream createFileOutputStream(
-            GATContext gatContext, Preferences preferences, URI location)
-            throws GATObjectCreationException {
-        return createFileOutputStream(gatContext, preferences, location, false);
+        GATContext gatContext, Preferences preferences, File file)
+        throws GATObjectCreationException {
+        return createFileOutputStream(gatContext, preferences, file.toURI(),
+            false);
     }
 
     /**
@@ -437,9 +476,9 @@ public class GAT {
      *             Thrown upon creation problems
      */
     public static FileOutputStream createFileOutputStream(
-            GATContext gatContext, URI location, boolean append)
-            throws GATObjectCreationException {
-        return createFileOutputStream(gatContext, null, location, append);
+        GATContext gatContext, File file, boolean append)
+        throws GATObjectCreationException {
+        return createFileOutputStream(gatContext, null, file.toURI(), append);
     }
 
     /**
@@ -460,8 +499,91 @@ public class GAT {
      *             Thrown upon creation problems
      */
     public static FileOutputStream createFileOutputStream(
-            GATContext gatContext, Preferences preferences, URI location,
-            boolean append) throws GATObjectCreationException {
+        GATContext gatContext, Preferences preferences, File file,
+        boolean append) throws GATObjectCreationException {
+        return createFileOutputStream(gatContext, preferences, file.toURI(),
+            append);
+    }
+
+    /**
+     * Constructs a FileOutputStream instance which corresponds to the physical
+     * file identified by the passed URI and whose access rights are determined
+     * by the passed GATContext. This stream overwrites the existing file.
+     *
+     * @param location
+     *            location of the file to read from
+     * @param gatContext
+     *            A GATContext which is used to determine the access rights for
+     *            this File.
+     * @return The fileOutputStream object
+     * @throws GATObjectCreationException
+     *             Thrown upon creation problems
+     */
+    public static FileOutputStream createFileOutputStream(
+        GATContext gatContext, URI location) throws GATObjectCreationException {
+        return createFileOutputStream(gatContext, null, location, false);
+    }
+
+    /**
+     * Constructs a FileOutputStream instance which corresponds to the physical
+     * file identified by the passed URI and whose access rights are determined
+     * by the passed GATContext.  This stream overwrites the existing file.
+     *
+     * @param location
+     *            location of the file to read from
+     * @param gatContext
+     *            A GATContext which is used to determine the access rights for
+     *            this File.
+     * @return The fileOutputStream object
+     * @throws GATObjectCreationException
+     *             Thrown upon creation problems
+     */
+    public static FileOutputStream createFileOutputStream(
+        GATContext gatContext, Preferences preferences, URI location)
+        throws GATObjectCreationException {
+        return createFileOutputStream(gatContext, preferences, location, false);
+    }
+
+    /**
+     * Constructs a FileOutputStream instance which corresponds to the physical
+     * file identified by the passed URI and whose access rights are determined
+     * by the passed GATContext.
+     *
+     * @param location
+     *            location of the file to read from
+     * @param gatContext
+     *            A GATContext which is used to determine the access rights for
+     *            this File.
+     * @return The fileOutputStream object
+     * @throws GATObjectCreationException
+     *             Thrown upon creation problems
+     */
+    public static FileOutputStream createFileOutputStream(
+        GATContext gatContext, URI location, boolean append)
+        throws GATObjectCreationException {
+        return createFileOutputStream(gatContext, null, location, append);
+    }
+
+    /**
+     * Constructs a FileOutputStream instance which corresponds to the physical
+     * file identified by the passed URI and whose access rights are determined
+     * by the passed GATContext.
+     *
+     * @param location
+     *            URI of the location the file to read from
+     * @param gatContext
+     *            A GATContext which is used to determine the access rights for
+     *            this File.
+     * @param preferences
+     *            A Preferences which is used to determine the user's
+     *            preferences for this File.
+     * @return The file object
+     * @throws GATObjectCreationException
+     *             Thrown upon creation problems
+     */
+    public static FileOutputStream createFileOutputStream(
+        GATContext gatContext, Preferences preferences, URI location,
+        boolean append) throws GATObjectCreationException {
         Object[] array = { location, new Boolean(append) };
         FileOutputStreamInterface res = (FileOutputStreamInterface) getAdaptorProxy(
             FileOutputStreamCpi.class, FileOutputStreamInterface.class,
@@ -484,7 +606,7 @@ public class GAT {
      *             Thrown upon creation problems
      */
     public static Endpoint createEndpoint(GATContext gatContext,
-            Preferences preferences) throws GATObjectCreationException {
+        Preferences preferences) throws GATObjectCreationException {
         return (Endpoint) getAdaptorProxy(EndpointCpi.class, Endpoint.class,
             gatContext, preferences, null);
     }
@@ -500,7 +622,7 @@ public class GAT {
      *             Thrown upon creation problems
      */
     public static Endpoint createEndpoint(GATContext gatContext)
-            throws GATObjectCreationException {
+        throws GATObjectCreationException {
         return createEndpoint(gatContext, null);
     }
 
@@ -518,7 +640,7 @@ public class GAT {
      *             Thrown upon creation problems
      */
     public static AdvertService createAdvertService(GATContext gatContext,
-            Preferences preferences) throws GATObjectCreationException {
+        Preferences preferences) throws GATObjectCreationException {
         return (AdvertService) getAdaptorProxy(AdvertServiceCpi.class,
             AdvertService.class, gatContext, preferences, null);
     }
@@ -534,7 +656,7 @@ public class GAT {
      *             Thrown upon creation problems
      */
     public static AdvertService createAdvertService(GATContext gatContext)
-            throws GATObjectCreationException {
+        throws GATObjectCreationException {
         return (AdvertService) getAdaptorProxy(AdvertServiceCpi.class,
             AdvertService.class, gatContext, null, null);
     }
@@ -549,7 +671,7 @@ public class GAT {
      *             Thrown upon creation problems
      */
     public static Monitorable createMonitorable(GATContext gatContext)
-            throws GATObjectCreationException {
+        throws GATObjectCreationException {
         return createMonitorable(gatContext, null);
     }
 
@@ -565,7 +687,7 @@ public class GAT {
      *             Thrown upon creation problems
      */
     public static Monitorable createMonitorable(GATContext gatContext,
-            Preferences preferences) throws GATObjectCreationException {
+        Preferences preferences) throws GATObjectCreationException {
         return (Monitorable) getAdaptorProxy(MonitorableCpi.class,
             Monitorable.class, gatContext, preferences, null);
     }
@@ -625,7 +747,7 @@ public class GAT {
     }
 
     public static ResourceBroker createResourceBroker(GATContext gatContext)
-            throws GATObjectCreationException {
+        throws GATObjectCreationException {
         return createResourceBroker(gatContext, null);
     }
 
@@ -642,7 +764,7 @@ public class GAT {
      *             Thrown upon creation problems
      */
     public static ResourceBroker createResourceBroker(GATContext gatContext,
-            Preferences preferences) throws GATObjectCreationException {
+        Preferences preferences) throws GATObjectCreationException {
         return (ResourceBroker) getAdaptorProxy(ResourceBrokerCpi.class,
             ResourceBroker.class, gatContext, preferences, null);
     }
@@ -652,9 +774,8 @@ public class GAT {
     }
 
     protected static Object getAdaptorProxy(Class cpiClass,
-            Class interfaceClass, GATContext gatContext,
-            Preferences preferences, Object[] tmpParams)
-            throws GATObjectCreationException {
+        Class interfaceClass, GATContext gatContext, Preferences preferences,
+        Object[] tmpParams) throws GATObjectCreationException {
         GATEngine gatEngine = GATEngine.getGATEngine();
 
         AdaptorList adaptors = gatEngine.getAdaptorList(cpiClass);
