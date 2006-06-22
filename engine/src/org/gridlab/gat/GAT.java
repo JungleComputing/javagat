@@ -587,11 +587,11 @@ public class GAT {
      * @throws GATObjectCreationException
      *             Thrown upon creation problems
      */
-    public static File createRandomAccessFile(GATContext gatContext, File file,
+    public static RandomAccessFile createRandomAccessFile(GATContext gatContext, File file,
             String mode) throws GATObjectCreationException {
         Object[] array = { file, mode };
 
-        return (File) getAdaptorProxy(RandomAccessFileCpi.class,
+        return (RandomAccessFile) getAdaptorProxy(RandomAccessFileCpi.class,
             RandomAccessFile.class, gatContext, null, array);
     }
 
@@ -615,12 +615,12 @@ public class GAT {
      * @throws GATObjectCreationException
      *             Thrown upon creation problems
      */
-    public static File createRandomAccessFile(GATContext gatContext,
+    public static RandomAccessFile createRandomAccessFile(GATContext gatContext,
             Preferences preferences, File file, String mode)
             throws GATObjectCreationException {
         Object[] array = { file, mode };
 
-        return (File) getAdaptorProxy(RandomAccessFileCpi.class,
+        return (RandomAccessFile) getAdaptorProxy(RandomAccessFileCpi.class,
             RandomAccessFile.class, gatContext, preferences, array);
     }
 

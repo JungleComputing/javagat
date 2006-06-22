@@ -43,6 +43,9 @@ public abstract class GlobusFileAdaptor extends FileCpi {
 
     private FileInfo cachedInfo = null;
 
+    // cache dir info, getting it can be an expensive operation, especially on old servers.
+    private int isDir = -1; // < 0 means don't know yet, 0 means no, 1 means yes.
+
     /**
      * Constructs a LocalFileAdaptor instance which corresponds to the physical
      * file identified by the passed URI and whose access rights are determined
@@ -56,7 +59,7 @@ public abstract class GlobusFileAdaptor extends FileCpi {
      *            this LocalFileAdaptor.
      */
     public GlobusFileAdaptor(GATContext gatContext, Preferences preferences,
-            URI location) throws GATObjectCreationException {
+        URI location) throws GATObjectCreationException {
         super(gatContext, preferences, location);
 
         // turn off all annoying cog prints
@@ -110,12 +113,12 @@ public abstract class GlobusFileAdaptor extends FileCpi {
      *
      */
     protected abstract FTPClient createClient(GATContext gatContext,
-            Preferences preferences, URI hostURI) throws GATInvocationException;
+        Preferences preferences, URI hostURI) throws GATInvocationException;
 
     /** Destroy a client that was created with a createClient call.
      * This might, for instance, put the client back in a cache. */
     protected abstract void destroyClient(FTPClient c, URI hostURI,
-            Preferences preferences);
+        Preferences preferences);
 
     /*
      * (non-Javadoc)
@@ -176,7 +179,7 @@ public abstract class GlobusFileAdaptor extends FileCpi {
     // first try efficient 3rd party transfer.
     // If that fails, try copying using temp file.
     protected void copyThirdParty(URI src, URI dest)
-            throws GATInvocationException {
+        throws GATInvocationException {
         // this only works with passive = false
         Preferences p2 = (Preferences) preferences.clone();
         p2.put("ftp.connection.passive", "false");
@@ -213,13 +216,13 @@ public abstract class GlobusFileAdaptor extends FileCpi {
                 throw oops;
             }
         } finally {
-            destroyClient(srcClient, src, p2);
-            destroyClient(destClient, dest, p2);
+            if (srcClient != null) destroyClient(srcClient, src, p2);
+            if (destClient != null) destroyClient(destClient, dest, p2);
         }
     }
 
     protected void copyToRemote(URI src, URI dest)
-            throws GATInvocationException {
+        throws GATInvocationException {
         // copy from the local machine to a remote machine.
         FTPClient client = null;
 
@@ -244,8 +247,8 @@ public abstract class GlobusFileAdaptor extends FileCpi {
                 destroyClient(client, dest, preferences);
             }
         }
-    } 
-    
+    }
+
     /*
      * (non-Javadoc)
      *
@@ -273,9 +276,7 @@ public abstract class GlobusFileAdaptor extends FileCpi {
         } catch (Exception e) {
             throw new GATInvocationException("gridftp", e);
         } finally {
-            if (client != null) {
-                destroyClient(client, src, preferences);
-            }
+            if (client != null) destroyClient(client, src, preferences);
         }
     }
 
@@ -294,7 +295,7 @@ public abstract class GlobusFileAdaptor extends FileCpi {
         } catch (Exception e) {
             throw new GATInvocationException("gridftp", e);
         } finally {
-            destroyClient(client, toURI(), preferences);
+            if (client != null) destroyClient(client, toURI(), preferences);
         }
 
         return false;
@@ -330,16 +331,10 @@ public abstract class GlobusFileAdaptor extends FileCpi {
 
                 Vector v = null;
 
-                if (isOldServer(preferences)) {
-                    v = listNoMinusD(client, remotePath);
-                } else {
-                    // we know it is a dir, so we can use this call.
-                    // for some reason, on old servers the list() method returns
-                    // an empty list if there are many files. 
-                    v = listNoMinusD(client, remotePath);
-
-                    //                    v = client.list();
-                }
+                // we know it is a dir, so we can use this call.
+                // for some reason, on old servers the list() method returns
+                // an empty list if there are many files. 
+                v = listNoMinusD(client, remotePath);
 
                 String[] res = new String[v.size()];
 
@@ -359,7 +354,9 @@ public abstract class GlobusFileAdaptor extends FileCpi {
         } catch (Exception e) {
             throw new GATInvocationException("gridftp", e);
         } finally {
-            destroyClient(client, toURI(), preferences);
+            if (client != null) {
+                destroyClient(client, toURI(), preferences);
+            }
         }
     }
 
@@ -369,13 +366,13 @@ public abstract class GlobusFileAdaptor extends FileCpi {
         }
 
         if (isOldServer(preferences)) {
-            if (isDirectory()) {
+            if (isDirectorySlow()) {
                 throw new GATInvocationException(
-                    "an old server cannot get info for a directory because it does not support the \"list -d\" command\n" + 
-                    "If you need this functionality, please upgrade your server.");
+                    "an old server cannot get info for a directory because it does not "
+                        + "support the \"list -d\" command\n"
+                        + "If you need this functionality, please upgrade your server.");
             }
         }
-
         FTPClient client = null;
 
         try {
@@ -419,17 +416,19 @@ public abstract class GlobusFileAdaptor extends FileCpi {
         } catch (Exception e) {
             throw new GATInvocationException("gridftp", e);
         } finally {
-            destroyClient(client, toURI(), preferences);
+            if (client != null) destroyClient(client, toURI(), preferences);
         }
     }
 
-    public boolean isDirectory() throws GATInvocationException {
-        // we now always use the code for the old servers,
-        // the method we used before (with the getInfo call
-        // does not work with links.
-        // old servers do not support the list -d command, so
-        // we cannot get info for a directory
-        //        if (isOldServer(preferences)) {
+    private boolean isDirectorySlow() throws GATInvocationException {
+        // return cached value if we know it.
+        if (isDir == 0) {
+            return false;
+        } else if (isDir == 1) {
+            return true;
+        }
+        // don't know yet... Try the slow method now
+
         boolean dir = true;
         String remotePath = getPath();
 
@@ -449,7 +448,7 @@ public abstract class GlobusFileAdaptor extends FileCpi {
         try {
             cwd = client.getCurrentDir();
         } catch (Exception e) {
-            destroyClient(client, toURI(), preferences);
+            if (client != null) destroyClient(client, toURI(), preferences);
             throw new GATInvocationException("gridftp", e);
         }
 
@@ -463,44 +462,56 @@ public abstract class GlobusFileAdaptor extends FileCpi {
         try {
             client.changeDir(cwd);
         } catch (Exception e) {
-            destroyClient(client, toURI(), preferences);
+            if (client != null) destroyClient(client, toURI(), preferences);
             throw new GATInvocationException("gridftp", e);
         }
 
-        destroyClient(client, toURI(), preferences);
+        if (client != null) destroyClient(client, toURI(), preferences);
 
+        if (dir) {
+            isDir = 1;
+        } else {
+            isDir = 0;
+        }
         return dir;
+    }
 
-        //        }
-        // The normal case, for a recent server
+    public boolean isDirectory() throws GATInvocationException {
+        // return cached value if we know it.
+        if (isDir == 0) {
+            return false;
+        } else if (isDir == 1) {
+            return true;
+        }
+        // don't know yet... Try the fast method now
 
-        /*
-         try {
-         FileInfo info = getInfo();
-         return info.isDirectory();
-         } catch (Exception e) {
-         throw new GATInvocationException("gridftp", e);
-         }
-         */
+        try {
+            FileInfo info = getInfo();
+            if (info.isDirectory()) {
+                isDir = 1;
+                return true;
+            } else if (info.isDevice()) {
+                isDir = 0;
+                return false;
+            } else if (info.isFile()) {
+                isDir = 0;
+                return false;
+            }
+
+            // it can also be a link, so continue with slow method            
+        } catch (Exception e) {
+            if (GATEngine.DEBUG) {
+                System.err
+                    .println("fast isDirectory failed, falling back to slower version: "
+                        + e);
+            }
+        }
+
+        return isDirectorySlow();
     }
 
     public boolean isFile() throws GATInvocationException {
-        // we now always use the code for the old servers,
-        // the method we used before (with the getInfo call
-        // does not work with links.
-        //        if (isOldServer(preferences)) {
         return !isDirectory();
-
-        //        }
-
-        /*
-         try {
-         FileInfo info = getInfo();
-         return info.isFile();
-         } catch (Exception e) {
-         throw new GATInvocationException("gridftp", e);
-         }
-         */
     }
 
     public boolean canRead() throws GATInvocationException {
@@ -529,7 +540,7 @@ public abstract class GlobusFileAdaptor extends FileCpi {
             throw new GATInvocationException("gridftp", e);
         }
     }
-    
+
     public boolean mkdir() throws GATInvocationException {
         FTPClient client = null;
 
@@ -541,7 +552,7 @@ public abstract class GlobusFileAdaptor extends FileCpi {
         } catch (Exception e) {
             throw new GATInvocationException("gridftp", e);
         } finally {
-            destroyClient(client, toURI(), preferences);
+            if (client != null) destroyClient(client, toURI(), preferences);
         }
 
         return false;
@@ -582,7 +593,7 @@ public abstract class GlobusFileAdaptor extends FileCpi {
         } catch (Exception e) {
             throw new GATInvocationException("gridftp", e);
         } finally {
-            destroyClient(client, toURI(), preferences);
+            if (client != null) destroyClient(client, toURI(), preferences);
         }
     }
 
@@ -602,7 +613,7 @@ public abstract class GlobusFileAdaptor extends FileCpi {
         } catch (Exception e) {
             throw new GATInvocationException("gridftp", e);
         } finally {
-            destroyClient(client, toURI(), preferences);
+            if (client != null) destroyClient(client, toURI(), preferences);
         }
     }
 
@@ -653,7 +664,7 @@ public abstract class GlobusFileAdaptor extends FileCpi {
     }
 
     protected static void setActiveOrPassive(FTPClient c,
-            Preferences preferences) throws GATInvocationException {
+        Preferences preferences) throws GATInvocationException {
         if (isPassive(preferences)) {
             if (GATEngine.DEBUG) {
                 System.err
@@ -675,12 +686,12 @@ public abstract class GlobusFileAdaptor extends FileCpi {
         }
     }
 
-    /** this method is used for old servers that do not support the "list -d"
+    /** This method is used for old servers that do not support the "list -d"
      * command. The problem is that is does not work for directories, only for
      * files.
      */
     private Vector listNoMinusD(FTPClient c, String filter)
-            throws ServerException, ClientException, IOException {
+        throws ServerException, ClientException, IOException {
         final ByteArrayOutputStream received = new ByteArrayOutputStream(1000);
 
         // unnamed DataSink subclass will write data channel content

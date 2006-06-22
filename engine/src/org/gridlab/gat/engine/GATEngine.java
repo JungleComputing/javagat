@@ -201,7 +201,7 @@ public class GATEngine {
             urls[i] = (URL) adaptorPathURLs.get(i);
         }
 
-        gatClassLoader = new URLClassLoader(urls);
+        gatClassLoader = new URLClassLoader(urls, this.getClass().getClassLoader());
 
         // Populate cpiClasses
         loadJarFiles(adaptorPathList);
