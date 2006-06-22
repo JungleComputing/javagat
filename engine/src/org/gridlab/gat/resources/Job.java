@@ -149,11 +149,16 @@ public abstract class Job implements Monitorable, Advertisable {
      * information. The minimum set of keys which the returned java.util.Map
      * contains is as follows:
      * <ul>
+     * <li><em>state</em></li>
      * <li><em>hostname</em></li>
      * <li><em>submissiontime</em></li>
      * <li><em>starttime</em></li>
      * <li><em>stoptime</em></li>
      * </ul>
+     * <p>
+     * <em>state</em> The key state corresponds to a java.lang.String
+     * value which is the name of the state the job is in. The sate strings are literally
+     * the same as the name of the constants used, e.g., "RUNNING", or "STOPPED".
      * <p>
      * <em>hostname</em> The key hostname corresponds to a java.lang.String
      * value which is the name of the host on which the physical job is running,
