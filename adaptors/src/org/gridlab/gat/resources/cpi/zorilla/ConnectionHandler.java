@@ -96,9 +96,10 @@ public final class ConnectionHandler implements Runnable {
         return result;
     }
 
-    private void readFile() throws IOException, GATInvocationException, GATObjectCreationException {
+    private void readFile() throws IOException, GATInvocationException,
+        GATObjectCreationException {
         String jobID = in.readUTF();
-        if (!jobID.equalsIgnoreCase(job.getJobID())) {
+        if (job.getJobID() != null && !jobID.equalsIgnoreCase(job.getJobID())) {
             throw new IOException("unknown job: " + jobID);
         }
 
@@ -106,12 +107,13 @@ public final class ConnectionHandler implements Runnable {
         long offset = in.readLong();
         long length = in.readLong();
 
-        File file = findFile(path);
-        
-        out.writeInt(ClientProtocol.STATUS_OK);
-        out.writeUTF("OK");
+        logger.debug("recieved read file request. job = " + jobID + ", path = "
+            + path + ", offset = " + offset + ", length = " + length);
 
-        
+        File file = findFile(path);
+
+        logger.debug("reading from file: " + file);
+
         if (offset >= file.length()) {
             out.writeInt(ClientProtocol.STATUS_OK);
             out.writeUTF("OK");
@@ -119,28 +121,33 @@ public final class ConnectionHandler implements Runnable {
             out.flush();
             return;
         }
+        
+        if (length == -1) {
+            length = file.length() - offset;
+        }
 
         if (file.length() < (offset + length)) {
             length = file.length() - offset;
         }
 
-        
-        // FIXME: what context?
-        FileInputStream fileIn = GAT.createFileInputStream(new GATContext(), file
-            .toURI());
-        fileIn.skip(offset);
-        
-
         out.writeInt(ClientProtocol.STATUS_OK);
         out.writeUTF("OK");
         out.writeLong(length);
+        out.flush();
+
+        logger.debug("sending " + length + " bytes");
+
+        // FIXME: what context?
+        FileInputStream fileIn = GAT.createFileInputStream(new GATContext(),
+            file.toURI());
+        fileIn.skip(offset);
 
         byte[] buffer = new byte[32 * 1024];
 
         while (length > 0) {
-            int read = (int) Math.min(buffer.length, length);
+            int maxRead = (int) Math.min(buffer.length, length);
 
-            read = fileIn.read(buffer, 0, read);
+            int read = fileIn.read(buffer, 0, maxRead);
 
             out.write(buffer, 0, read);
 
@@ -148,6 +155,8 @@ public final class ConnectionHandler implements Runnable {
         }
         fileIn.close();
         out.flush();
+        
+        logger.debug("done handling read request");
 
     }
 
@@ -160,17 +169,14 @@ public final class ConnectionHandler implements Runnable {
         String path = in.readUTF();
         long offset = in.readLong();
         long length = in.readLong();
-        
-        if (offset != 0) {
-            throw new IOException("can only write from start of file");
-        }
 
         File file = findFile(path);
 
         // FIXME: what context?
-        FileOutputStream fileOut = GAT.createFileOutputStream(new GATContext(), file
-            .toURI());
-        
+        RandomAccessFile fileOut = GAT.createRandomAccessFile(new GATContext(),
+            file, "w");
+        fileOut.seek(offset);
+
         byte[] buffer = new byte[32 * 1024];
 
         while (length > 0) {
@@ -183,7 +189,7 @@ public final class ConnectionHandler implements Runnable {
             length -= read;
         }
         fileOut.close();
-        
+
         out.writeInt(ClientProtocol.STATUS_OK);
         out.writeUTF("OK");
         out.flush();
@@ -194,19 +200,22 @@ public final class ConnectionHandler implements Runnable {
         if (!jobID.equalsIgnoreCase(job.getJobID())) {
             throw new IOException("unknown job: " + jobID);
         }
-        
+
         String executable = in.readUTF();
         Map attributes = ClientProtocol.readStringMap(in);
         Map status = ClientProtocol.readStringMap(in);
         int phase = in.readInt();
-        
-        job.setState(executable, attributes, status, phase);
-        
+
         out.writeInt(ClientProtocol.STATUS_OK);
         out.writeUTF("OK");
+        out.flush();
+
+        job.setState(executable, attributes, status, phase);
     }
 
     public void run() {
+        logger.debug("received new callback connection");
+
         try {
             int clientProtoVersion = in.readInt();
             int authentication = in.readInt();
@@ -225,9 +234,13 @@ public final class ConnectionHandler implements Runnable {
                 throw new IOException("illegal authentication");
             }
 
+            logger.debug("send back connection init ack");
+
             out.writeInt(ClientProtocol.STATUS_OK);
             out.writeUTF("OK");
             out.flush();
+
+            logger.debug("waiting for request");
 
             while (!socket.isClosed()) {
                 logger.debug("receiving node request message");
@@ -237,6 +250,10 @@ public final class ConnectionHandler implements Runnable {
                 logger.debug("received opcode: " + opcode);
 
                 switch (opcode) {
+                case ClientProtocol.CLOSE_CONNECTION:
+                    //close connection received
+                    socket.close();
+                    break;
                 case ClientProtocol.READ_FILE:
                     readFile();
                     break;

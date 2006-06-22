@@ -32,4 +32,4 @@ add_to_gat_classpath () {
 add_to_gat_classpath $GAT_ENGINE_LOCATION/lib
 add_to_gat_classpath $GAT_TESTS_LOCATION/lib
 
-java -cp $CLASSPATH:$GAT_CLASSPATH -Dgat.adaptor.path=$GAT_ADAPTOR_LOCATION/lib:$GAT_GRIDLAB_ADAPTOR_LOCATION/lib $*
+java -cp $CLASSPATH:$GAT_CLASSPATH  -Dlog4j.configuration=file:$GAT_LOCATION/log4j.properties -Dgat.adaptor.path=$GAT_ADAPTOR_LOCATION/lib:$GAT_GRIDLAB_ADAPTOR_LOCATION/lib $*

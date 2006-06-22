@@ -114,8 +114,9 @@ public class ZorillaResourceBrokerAdaptor extends ResourceBrokerCpi {
         String addressString = (String) preferences.get("zorilla.node.address");
 
         if (addressString == null) {
+            //localhost address on default port
             nodeSocketAddress = new InetSocketAddress(InetAddress
-                .getLocalHost(), ClientProtocol.DEFAULT_PORT);
+                .getByName(null), ClientProtocol.DEFAULT_PORT);
         } else {
             nodeSocketAddress = parseSocketAddress(addressString);
         }
@@ -189,7 +190,7 @@ public class ZorillaResourceBrokerAdaptor extends ResourceBrokerCpi {
         throw new UnsupportedOperationException("Not implemented");
     }
 
-    SocketAddress getNodeSocketAddress() {
+    InetSocketAddress getNodeSocketAddress() {
         return nodeSocketAddress;
     }
 }

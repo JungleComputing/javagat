@@ -21,6 +21,7 @@ import java.io.BufferedOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.HashMap;
@@ -132,7 +133,7 @@ public class ZorillaJob extends Job implements Runnable {
         throws GATInvocationException {
         this.broker = broker;
         this.description = description;
-        
+
         logger.debug("creating zorilla job");
 
         try {
@@ -143,10 +144,6 @@ public class ZorillaJob extends Job implements Runnable {
 
         connectionManager = new ConnectionManager(this, serverSocket);
 
-        id = submitJob(description);
-
-        updateState();
-
         // Tell the engine that we provide job.status events
         HashMap returnDef = new HashMap();
         returnDef.put("status", String.class);
@@ -154,7 +151,11 @@ public class ZorillaJob extends Job implements Runnable {
             MetricDefinition.DISCRETE, "String", null, null, returnDef);
         statusMetric = statusMetricDefinition.createMetric(null);
         GATEngine.registerMetric(this, "getJobStatus", statusMetricDefinition);
-        
+
+        id = submitJob(description);
+
+        updateState();
+
         logger.debug("done creating job");
 
         new Thread(this).start();
@@ -200,10 +201,13 @@ public class ZorillaJob extends Job implements Runnable {
         }
 
         try {
-            logger.debug("connecting");
-            
+
             Socket socket = new Socket();
-            socket.connect(broker.getNodeSocketAddress());
+            InetSocketAddress address = broker.getNodeSocketAddress();
+
+            logger.debug("connecting to " + address);
+
+            socket.connect(address);
 
             DataOutputStream out = new DataOutputStream(
                 new BufferedOutputStream(socket.getOutputStream()));
@@ -222,7 +226,7 @@ public class ZorillaJob extends Job implements Runnable {
                 throw new GATInvocationException(
                     "error while connecting to node: " + message);
             }
-            
+
             logger.debug("connection esablished, submitting");
 
             out.writeInt(ClientProtocol.SUBMIT_JOB);
@@ -250,12 +254,12 @@ public class ZorillaJob extends Job implements Runnable {
             out.writeInt(1);
 
             out.flush();
-            
+
             logger.debug("written request, waiting for reply");
 
             status = in.readInt();
             message = in.readUTF();
-            
+
             logger.debug("node returned " + status + ": " + message);
 
             if (status != ClientProtocol.STATUS_OK) {
@@ -264,7 +268,12 @@ public class ZorillaJob extends Job implements Runnable {
                 throw new GATInvocationException("node returned " + status
                     + ": " + message);
             }
+
             String jobID = in.readUTF();
+
+            //close connection
+            out.writeInt(ClientProtocol.CLOSE_CONNECTION);
+            out.flush();
             socket.close();
 
             logger.debug("submitted job " + jobID);
@@ -272,8 +281,7 @@ public class ZorillaJob extends Job implements Runnable {
             return jobID;
         } catch (IOException e) {
             logger.debug("exception on submitting", e);
-            throw new GATInvocationException("Zorilla",
-                e);
+            throw new GATInvocationException("Zorilla", e);
         }
     }
 
@@ -285,11 +293,13 @@ public class ZorillaJob extends Job implements Runnable {
     public synchronized Map getInfo() {
         HashMap m = new HashMap();
 
-        m.put("state", getStateString(getState()));
-        m.put("resManState", getStateString(getState()));
-        m.put("resManName", "Zorilla");
-        m.put("hostname", IPUtils.getLocalHostName());
+        // stuff from zorilla node
         m.putAll(this.status);
+
+        m.put("state", getStateString(getState()));
+        m.put("resManState", m.get("phase"));
+        m.put("resManName", "Zorilla");
+        m.put("hostname", broker.getNodeSocketAddress().getHostName());
         if (error != null) {
             m.put("resManError", error.getMessage());
         }
@@ -362,6 +372,10 @@ public class ZorillaJob extends Job implements Runnable {
             Map attributes = ClientProtocol.readStringMap(in);
             Map statusMap = ClientProtocol.readStringMap(in);
             int phase = in.readInt();
+            
+            //close connection
+            out.writeInt(ClientProtocol.CLOSE_CONNECTION);
+            out.flush();
             socket.close();
 
             setState(executable, attributes, statusMap, phase);
@@ -370,29 +384,35 @@ public class ZorillaJob extends Job implements Runnable {
         }
     }
 
-    synchronized void setState(String executable, Map attributes, Map status,
-        int phase) {
-        boolean change = (phase != this.phase);
+    void setState(String executable, Map attributes, Map status, int phase) {
+        boolean change;
 
-        this.executable = executable;
-        this.attributes = attributes;
-        this.status = status;
-        this.phase = phase;
+        synchronized (this) {
+            change = (phase != this.phase);
 
-        // convert Zorilla phase to GAT state
-        if (phase == ClientProtocol.PHASE_UNKNOWN) {
-            this.state = Job.UNKNOWN;
-        } else if (phase == ClientProtocol.PHASE_INITIAL
-            || phase == ClientProtocol.PHASE_SCHEDULING) {
-            this.state = Job.INITIAL;
-        } else if (phase == ClientProtocol.PHASE_RUNNING
-            || phase == ClientProtocol.PHASE_CLOSED) {
-            this.state = Job.RUNNING;
-        } else if (phase == ClientProtocol.PHASE_COMPLETED
-            || phase == ClientProtocol.PHASE_CANCELLED) {
-            this.state = Job.STOPPED;
-        } else if (phase == ClientProtocol.PHASE_ERROR) {
-            this.state = Job.SUBMISSION_ERROR;
+            this.executable = executable;
+            this.attributes = attributes;
+            this.status = status;
+            this.phase = phase;
+
+            // convert Zorilla phase to GAT state
+            if (phase == ClientProtocol.PHASE_UNKNOWN) {
+                this.state = Job.UNKNOWN;
+            } else if (phase == ClientProtocol.PHASE_INITIAL
+                || phase == ClientProtocol.PHASE_SCHEDULING) {
+                this.state = Job.INITIAL;
+            } else if (phase == ClientProtocol.PHASE_RUNNING
+                || phase == ClientProtocol.PHASE_CLOSED) {
+                this.state = Job.RUNNING;
+            } else if (phase == ClientProtocol.PHASE_COMPLETED
+                || phase == ClientProtocol.PHASE_CANCELLED) {
+                this.state = Job.STOPPED;
+                notifyAll();
+            } else if (phase == ClientProtocol.PHASE_ERROR) {
+                this.state = Job.SUBMISSION_ERROR;
+                notifyAll();
+            }
+
         }
 
         if (change) {
@@ -427,9 +447,9 @@ public class ZorillaJob extends Job implements Runnable {
         }
 
         GATEngine.fireMetric(this, v);
-        
+
     }
-    
+
     public void run() {
         synchronized (this) {
             while (phase < ClientProtocol.PHASE_COMPLETED) {
@@ -441,7 +461,10 @@ public class ZorillaJob extends Job implements Runnable {
                 }
 
                 try {
-                    wait(10 * 1000);
+                    // wait for 5 minutes, then poll again
+                    // the node should send us updates if there
+                    // are significant changes
+                    wait(5 * 60 * 1000);
                 } catch (InterruptedException e) {
                     // IGNORE
                 }
@@ -450,9 +473,10 @@ public class ZorillaJob extends Job implements Runnable {
         }
         // one last callback
         doCallBack();
-        
-        //FIXME: do this at a sane time
-        //connectionManager.close();
+
+        // FIXME: do this at a sane time
+        connectionManager.close();
+        logger.debug("Zorilla Job exits..");
     }
 
 }
