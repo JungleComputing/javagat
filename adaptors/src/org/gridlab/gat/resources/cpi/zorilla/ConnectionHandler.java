@@ -161,6 +161,8 @@ public final class ConnectionHandler implements Runnable {
     }
 
     private void writeFile() throws IOException, GATObjectCreationException {
+        logger.debug("received write file request");
+        
         String jobID = in.readUTF();
         if (!jobID.equalsIgnoreCase(job.getJobID())) {
             throw new IOException("unknown job: " + jobID);
@@ -169,13 +171,18 @@ public final class ConnectionHandler implements Runnable {
         String path = in.readUTF();
         long offset = in.readLong();
         long length = in.readLong();
+        
+        logger.debug("writing file, job = " + jobID + ", path = " + path 
+            + ", offset = " + offset + ", length = " + length);
 
         File file = findFile(path);
+        
+        logger.debug("writing to physical file " + file);
 
         // FIXME: what context?
-        RandomAccessFile fileOut = GAT.createRandomAccessFile(new GATContext(),
-            file, "w");
-        fileOut.seek(offset);
+        //RandomAccessFile fileOut = GAT.createRandomAccessFile(new GATContext(), file, "w");
+        FileOutputStream fileOut = GAT.createFileOutputStream(new GATContext(), file);
+       // fileOut.seek(offset);
 
         byte[] buffer = new byte[32 * 1024];
 
@@ -183,12 +190,16 @@ public final class ConnectionHandler implements Runnable {
             int read = (int) Math.min(buffer.length, length);
 
             read = in.read(buffer, 0, read);
+            
+            logger.debug("read " + read + " bytes from stream, writing to disk");
 
             fileOut.write(buffer, 0, read);
 
             length -= read;
         }
         fileOut.close();
+        
+        logger.debug("done");
 
         out.writeInt(ClientProtocol.STATUS_OK);
         out.writeUTF("OK");
@@ -279,6 +290,7 @@ public final class ConnectionHandler implements Runnable {
                 // IGNORE
             }
             logger.debug("error on handling request", e);
+            e.printStackTrace(System.err);
         }
         close();
         logger.debug("user connection handler " + this + " exits");

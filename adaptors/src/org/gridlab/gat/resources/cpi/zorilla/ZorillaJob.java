@@ -53,8 +53,6 @@ public class ZorillaJob extends Job implements Runnable {
 
     private Map attributes; // Map<String, String>
 
-    private Map environment; // Map<String, String>
-
     private Map status; // Map<String, String>
 
     private int phase; // zorilla phase (NOT GAT phase)
@@ -291,19 +289,34 @@ public class ZorillaJob extends Job implements Runnable {
      * @see org.gridlab.gat.resources.Job#getInfo()
      */
     public synchronized Map getInfo() {
-        HashMap m = new HashMap();
+        HashMap info = new HashMap();
 
         // stuff from zorilla node
-        m.putAll(this.status);
+        info.putAll(this.status);
 
-        m.put("state", getStateString(getState()));
-        m.put("resManState", m.get("phase"));
-        m.put("resManName", "Zorilla");
-        m.put("hostname", broker.getNodeSocketAddress().getHostName());
+        info.put("state", getStateString(getState()));
+        info.put("resManState", info.get("phase"));
+        info.put("resManName", "Zorilla");
+        info.put("hostname", broker.getNodeSocketAddress().getHostName());
         if (error != null) {
-            m.put("resManError", error.getMessage());
+            info.put("resManError", error.getMessage());
         }
-        return m;
+        
+        info.put("executable", executable);
+
+        //attributes map as a string
+        Iterator iterator = attributes.entrySet().iterator();
+        String attributeString = "";
+        while (iterator.hasNext()) {
+            Map.Entry entry = (Map.Entry) iterator.next();
+            attributeString += entry.getKey() + "=" + entry.getValue() + "&";
+        }
+        if (attributeString.length() > 1) {
+            attributeString = attributeString.substring(0, attributeString.length() - 1);
+        }
+        info.put("attributes", attributeString);
+
+        return info;
     }
 
     /*

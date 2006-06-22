@@ -26,6 +26,9 @@ import java.util.Hashtable;
  * this instance corresponds.
  */
 public class ZorillaHardwareResource extends HardwareResource {
+
+    private static final long serialVersionUID = 1L;
+
     /**
      * Gets the HardwareResourceDescription which describes this
      * HardwareResource instance.
