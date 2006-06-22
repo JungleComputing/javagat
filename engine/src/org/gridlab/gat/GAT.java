@@ -426,8 +426,8 @@ public class GAT {
      * file identified by the passed File and whose access rights are determined
      * by the passed GATContext. This stream overwrites the existing file.
      *
-     * @param location
-     *            location of the file to read from
+     * @param file
+     *            the file to read from
      * @param gatContext
      *            A GATContext which is used to determine the access rights for
      *            this File.
@@ -445,8 +445,8 @@ public class GAT {
      * file identified by the passed File and whose access rights are determined
      * by the passed GATContext.  This stream overwrites the existing file.
      *
-     * @param location
-     *            location of the file to read from
+     * @param file
+     *            the file to read from
      * @param gatContext
      *            A GATContext which is used to determine the access rights for
      *            this File.
@@ -466,8 +466,8 @@ public class GAT {
      * file identified by the passed File and whose access rights are determined
      * by the passed GATContext.
      *
-     * @param location
-     *            location of the file to read from
+     * @param file
+     *            the file to read from
      * @param gatContext
      *            A GATContext which is used to determine the access rights for
      *            this File.
@@ -486,8 +486,8 @@ public class GAT {
      * file identified by the passed file and whose access rights are determined
      * by the passed GATContext.
      *
-     * @param location
-     *            URI of the location the file to read from
+     * @param file
+     *            the file to read from
      * @param gatContext
      *            A GATContext which is used to determine the access rights for
      *            this File.
