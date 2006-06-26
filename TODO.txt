@@ -18,7 +18,7 @@
        - Also add retry code for file stransfers (already done for job submit)
        - use a cache to save on connection setup time(also for sftp)
        - remote streaming seems to hang
+
+- resource broker adaptors should fill in ALL defined states in the getInfo call.=======
        - cache connections for ssh adaptor (Ana?)
        - support environment vars in ssh broker.
-
-- resource broker adaptors should fill in ALL defined states in the getInfo call.

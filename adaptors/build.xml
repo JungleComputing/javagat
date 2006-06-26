@@ -233,6 +233,12 @@
 			</manifest>
 		</jar>
 
+		<jar jarfile="${lib}/SGEBrokerAdaptor.jar" basedir="${tmp}" includes="**/org/gridlab/gat/resources/cpi/sge/*.class">
+			<manifest>
+				<attribute name="ResourceBrokerCpi-class" value="org.gridlab.gat.resources.cpi.sge.SGEBrokerAdaptor" />
+			</manifest>
+		</jar>
+
                  <jar jarfile="${lib}/ProActiveBrokerAdaptor.jar" basedir="${tmp}" includes="**/org/gridlab/gat/resources/cpi/proactive/*.class,**/org/objectweb/proactive/GATAdaptor/*.class">
                          <manifest>
                                  <attribute name="ResourceBrokerCpi-class" value="org.gridlab.gat.resources.cpi.proactive.ProActiveBrokerAdaptor" />
