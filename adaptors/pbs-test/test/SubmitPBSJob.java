@@ -223,7 +223,14 @@ public class SubmitPBSJob {
                     Nodes = new String("1");
                 }
                 
-            LString = new String("walltime=" + Time + ",file=" + Filesize + ",mem=" + Memsize + ",nodes=" + Nodes + ":" + Queue);
+            if (Queue!=null)
+                {
+                    LString = new String("walltime=" + Time + ",file=" + Filesize + ",mem=" + Memsize + ",nodes=" + Nodes + ":" + Queue);
+                }
+            else
+                {
+                    LString = new String("walltime=" + Time + ",file=" + Filesize + ",mem=" + Memsize + ",nodes=" + Nodes);
+                }
  
 
          
@@ -293,11 +300,7 @@ public class SubmitPBSJob {
         */
 
         ArgValue = CmdLine.getOptionValue("q");
-        if (ArgValue==null)
-            {
-                throw new IllegalArgumentException("missing argument -q <Queue>");
-            }
-        else
+        if (ArgValue!=null)
             {
                 Args.put("Queue",ArgValue);
                 ArgValue = null;
