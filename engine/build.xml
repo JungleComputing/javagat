@@ -1,97 +1,68 @@
 <project name="GATEngine" default="build" basedir=".">
-	<description>
+    <description>
       Build file for GAT
     </description>
-	<!-- Global properties for GAT -->
-	<property name="src" location="src" />
-	<property name="tmp" location="tmp" />
-	<property name="lib" location="lib" />
-	<property name="doc" location="doc" />
-	<property name="test" location="test" />
-	<property name="java.debug.value" value="true" />
-	<property name="external" location="external" />
+    <!-- Global properties for GAT -->
+    <property name="src" location="src" />
+    <property name="tmp" location="tmp" />
+    <property name="lib" location="lib" />
+    <property name="doc" location="../doc/javadoc" />
+    <property name="java.debug.value" value="true" />
+    <property name="external" location="external" />
 
-	<path id="external_jars">
-		<fileset dir="${external}">
-			<include name="*.jar" />
-		</fileset>
-	</path>
+    <path id="external_jars">
+        <fileset dir="${external}">
+            <include name="*.jar" />
+        </fileset>
+    </path>
 
-	<target name="compile" description="compile the source ">
-		<mkdir dir="${tmp}" />
-		<mkdir dir="${lib}" />
+    <target name="compile" description="compile the source ">
+        <mkdir dir="${tmp}" />
+        <mkdir dir="${lib}" />
 
-		<!-- Compile the java code from ${src} into ${tmp} -->
-		<javac srcdir="${src}" destdir="${tmp}" debug="on" >
-			<classpath refid="external_jars" />
-        <!-- <compilerarg value="-Xlint:unchecked"/> -->
-		</javac>
+        <!-- Compile the java code from ${src} into ${tmp} -->
+        <javac srcdir="${src}" destdir="${tmp}" debug="on">
+            <classpath refid="external_jars" />
+        </javac>
 
-		<!-- Put everything in ${tmp} into the GAT.jar file -->
-		<jar jarfile="${lib}/GAT.jar" basedir="${tmp}" />
+        <!-- Put everything in ${tmp} into the GAT.jar file -->
+        <jar jarfile="${lib}/GAT.jar" basedir="${tmp}" />
 
-		<!-- Sign the GAT.jar file 
-        <signjar jar="${lib}/GAT.jar" alias="xxxxx" storepass="yyyyy" storetype="pkcs12"/>
-        -->
+        <!-- Copy external libraries to lib directory -->
+        <copy todir="${lib}">
+            <fileset dir="${external}" />
+        </copy>
 
-		<!-- Copy external libraries to lib directory -->
-		<copy todir="${lib}">
-	    <fileset dir="${external}">
-	    </fileset>
-	    </copy>
-		
-		<delete dir="${tmp}" />
-	</target>
+        <delete dir="${tmp}" />
+    </target>
 
-	<target name="compile-tests" description="compile the tests">
-		<mkdir dir="${tmp}" />
+    <target name="build" description="build everything" depends="clean,compile" />
 
-		<!-- Compile the java code from ${test} into ${tmp} -->
-		<javac srcdir="${test}" destdir="${tmp}" debug="on" classpath="${lib}/GAT.jar" />
+    <target name="javadoc" description="generate javadoc for gat users">
+        <delete dir="${doc}" />
+        <javadoc destdir="${doc}" access="public" use="true" notree="false" nonavbar="false" noindex="false" splitindex="true" version="true" nodeprecatedlist="false" nodeprecated="false" verbose="false" classpath="${lib}/GAT.jar">
+            <link href="http://java.sun.com/j2se/1.4.2/docs/api/" />
 
-		<!-- Put everything in ${tmp} into the GAT.jar file -->
-		<jar jarfile="${lib}/GAT-tests.jar" basedir="${tmp}" />
-
-		<!-- Sign the GAT-tests.jar file 
-        <signjar jar="${lib}/tets.jar" alias="xxxxx" storepass="yyyyy" storetype="pkcs12"/>
-        -->
-		
-		<delete dir="${tmp}" />
-	</target>
-
-	<target name="build" description="build everything" depends="clean,compile,compile-tests">
-	</target>
-	
-    <target name="javadoc" depends="compile" description="generate javadoc for gat users">
-        <javadoc destdir="doc/html/javadoc" 
-        	access="public" use="true" notree="false" nonavbar="false" 
-        	noindex="false" splitindex="true" version="true" 
-        	nodeprecatedlist="false" nodeprecated="false" 
-            verbose="false"
-        	classpath="${lib}/GAT.jar">
-            <link href="http://java.sun.com/j2se/1.4.2/docs/api/"/>
-        	
-    		<fileset dir="${src}">
-    			<include name="**/*.java" />
-    			<exclude name="**/cpi/*" />
-    			<exclude name="**/engine/*" />
-    			<exclude name="org/gridlab/gat/util/*" />
-    			<exclude name="**/FileInputStreamInterface.java" />
-    			<exclude name="**/FileOutputStreamInterface.java" />
-    		</fileset>
-
+            <fileset dir="${src}">
+                <include name="**/*.java" />
+                <exclude name="**/cpi/*" />
+                <exclude name="**/engine/*" />
+                <exclude name="org/gridlab/gat/util/*" />
+                <exclude name="**/FileInputStreamInterface.java" />
+                <exclude name="**/FileOutputStreamInterface.java" />
+            </fileset>
         </javadoc>
     </target>
 
-	<target name="javadoc-devel" depends="compile" description="generate all javadocs">
-		<javadoc destdir="${doc}/html/javadoc" access="public" packagenames="org.gridlab.*" sourcepath="${src}" overview="src/overview.html">
-			<link href="http://java.sun.com/j2se/1.4.2/docs/api/" />
-		</javadoc>
-	</target>
-	
-	<target name="clean" description="clean up">
-		<delete dir="${tmp}" />
-		<delete dir="${lib}" />
-		<delete dir="${doc}/html/javadoc" />
-	</target>
+    <target name="javadoc-devel" description="generate all javadocs">
+        <javadoc destdir="${doc}" access="public" packagenames="org.gridlab.*" sourcepath="${src}" overview="src/overview.html">
+            <link href="http://java.sun.com/j2se/1.4.2/docs/api/" />
+        </javadoc>
+    </target>
+
+    <target name="clean" description="clean up">
+        <delete dir="${tmp}" />
+        <delete dir="${lib}" />
+        <delete dir="${doc}" />
+    </target>
 </project>

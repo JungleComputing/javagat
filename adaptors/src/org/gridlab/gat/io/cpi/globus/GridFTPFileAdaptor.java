@@ -49,6 +49,7 @@ public class GridFTPFileAdaptor extends GlobusFileAdaptor {
         }
 
         /* try to create a client to see if the remote site has a gridftp server */
+        /*
         GridFTPClient c = null;
 
         try {
@@ -59,6 +60,7 @@ public class GridFTPFileAdaptor extends GlobusFileAdaptor {
         }
 
         doWorkDestroyClient(c, location, preferences);
+        */
     }
 
     protected URI fixURI(URI in) {
@@ -228,7 +230,7 @@ public class GridFTPFileAdaptor extends GlobusFileAdaptor {
             } catch (Exception e) {
                 if (GATEngine.DEBUG) {
                     System.err
-                        .println("end of gridftp adaptor, closing client, got exception (ignoring): "
+                        .println("doWorkDestroyClient, closing client, got exception (ignoring): "
                             + e);
                 }
 

@@ -13,17 +13,21 @@ import org.gridlab.gat.Preferences;
 import org.gridlab.gat.URI;
 import org.gridlab.gat.io.cpi.FileInputStreamCpi;
 
+import com.jcraft.jsch.SftpATTRS;
+
 /**
  * @author rob
  */
 public class SftpNewFileInputStreamAdaptor extends FileInputStreamCpi {
     InputStream in;
 
+    long available = -1;
+
     private SftpNewConnection connection;
 
     public SftpNewFileInputStreamAdaptor(GATContext gatContext,
-            Preferences preferences, URI location)
-            throws GATObjectCreationException {
+        Preferences preferences, URI location)
+        throws GATObjectCreationException {
         super(gatContext, preferences, location);
 
         if (!location.isCompatible("sftp")) {
@@ -52,6 +56,9 @@ public class SftpNewFileInputStreamAdaptor extends FileInputStreamCpi {
             connection = SftpNewFileAdaptor.createChannel(gatContext,
                 preferences, location);
 
+            SftpATTRS attr = connection.channel.lstat(location.getPath());
+            available = attr.getSize();
+
             return connection.channel.get(path);
         } catch (Exception e) {
             throw new GATInvocationException("sftp file inputstream", e);
@@ -64,11 +71,7 @@ public class SftpNewFileInputStreamAdaptor extends FileInputStreamCpi {
      * @see java.io.InputStream#available()
      */
     public int available() throws GATInvocationException {
-        try {
-            return in.available();
-        } catch (IOException e) {
-            throw new GATInvocationException("SftpNewFileInputStream", e);
-        }
+            return (int) available;
     }
 
     /*
@@ -90,19 +93,10 @@ public class SftpNewFileInputStreamAdaptor extends FileInputStreamCpi {
     /*
      * (non-Javadoc)
      *
-     * @see java.io.InputStream#mark(int)
-     */
-    public synchronized void mark(int arg0) {
-        in.mark(arg0);
-    }
-
-    /*
-     * (non-Javadoc)
-     *
      * @see java.io.InputStream#markSupported()
      */
     public boolean markSupported() {
-        return in.markSupported();
+        return false;
     }
 
     /*
@@ -112,7 +106,9 @@ public class SftpNewFileInputStreamAdaptor extends FileInputStreamCpi {
      */
     public int read() throws GATInvocationException {
         try {
-            return in.read();
+            int res = in.read();
+            if (res >= 0) available--;
+            return res;
         } catch (IOException e) {
             throw new GATInvocationException("SftpNewFileInputStream", e);
         }
@@ -124,9 +120,11 @@ public class SftpNewFileInputStreamAdaptor extends FileInputStreamCpi {
      * @see java.io.InputStream#read(byte[], int, int)
      */
     public int read(byte[] b, int offset, int len)
-            throws GATInvocationException {
+        throws GATInvocationException {
         try {
-            return in.read(b, offset, len);
+            int res = in.read(b, offset, len);
+            if (res >= 0) available -= res;
+            return res;
         } catch (IOException e) {
             throw new GATInvocationException("SftpNewFileInputStream", e);
         }
@@ -139,20 +137,9 @@ public class SftpNewFileInputStreamAdaptor extends FileInputStreamCpi {
      */
     public int read(byte[] arg0) throws GATInvocationException {
         try {
-            return in.read(arg0);
-        } catch (IOException e) {
-            throw new GATInvocationException("SftpNewFileInputStream", e);
-        }
-    }
-
-    /*
-     * (non-Javadoc)
-     *
-     * @see java.io.InputStream#reset()
-     */
-    public synchronized void reset() throws GATInvocationException {
-        try {
-            in.reset();
+            int res = in.read(arg0);
+            if (res >= 0) available -= res;
+            return res;
         } catch (IOException e) {
             throw new GATInvocationException("SftpNewFileInputStream", e);
         }
@@ -165,7 +152,9 @@ public class SftpNewFileInputStreamAdaptor extends FileInputStreamCpi {
      */
     public long skip(long arg0) throws GATInvocationException {
         try {
-            return in.skip(arg0);
+            long res = in.skip(arg0);
+            if (res >= 0) available -= res;
+            return res;
         } catch (IOException e) {
             throw new GATInvocationException("SftpNewFileInputStream", e);
         }

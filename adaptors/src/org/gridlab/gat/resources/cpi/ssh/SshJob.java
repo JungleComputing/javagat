@@ -63,8 +63,6 @@ public class SshJob extends Job {
 
     int exitVal = 0;
 
-    boolean exited = false;
-
     MetricDefinition statusMetricDefinition;
 
     Metric statusMetric;
@@ -155,9 +153,28 @@ public class SshJob extends Job {
         return null;
     }
 
+    /* (non-Javadoc)
+     * @see org.gridlab.gat.resources.Job#getExitStatus()
+     */
+    public synchronized int getExitStatus() throws GATInvocationException {
+         if(state != STOPPED) throw new GATInvocationException("not in RUNNING state");
+         return exitVal;
+    }
+
     void finished(int exitValue) {
         GATInvocationException tmpExc = null;
         MetricValue v = null;
+
+        synchronized (this) {
+            exitVal = exitValue;
+            state = POST_STAGING;
+            v = new MetricValue(this, getStateString(state), statusMetric, System
+                .currentTimeMillis());
+            if (GATEngine.DEBUG) {
+                System.err.println("default job callback: firing event: " + v);
+            }
+        }
+        GATEngine.fireMetric(this, v);
 
         try {
             broker.postStageFiles(description, host);
@@ -167,16 +184,13 @@ public class SshJob extends Job {
 
         synchronized (this) {
             postStageException = tmpExc;
-            exited = true;
-            exitVal = exitValue;
             state = STOPPED;
             v = new MetricValue(this, getStateString(state), statusMetric, System
                 .currentTimeMillis());
+            if (GATEngine.DEBUG) {
+                System.err.println("default job callback: firing event: " + v);
+            }
         }
-        if (GATEngine.DEBUG) {
-            System.err.println("default job callback: firing event: " + v);
-        }
-
         GATEngine.fireMetric(this, v);
     }
 

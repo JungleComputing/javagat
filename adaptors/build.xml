@@ -71,7 +71,7 @@
 			</manifest>
 		</jar>
 
-		<jar jarfile="${lib}/SftpNewFileInputStreamAdaptor.jar" basedir="${tmp}" includes="**/sftpnew/*.class,**/ssh/*.class">
+		<jar jarfile="${lib}/SftpNewFileInputStreamAdaptor.jar" basedir="${tmp}" includes="**/sftpnew/*.class,org/gridlab/gat/io/cpi/ssh/**">
 			<manifest>
 				<attribute name="FileInputStreamCpi-class" value="org.gridlab.gat.io.cpi.sftpnew.SftpNewFileInputStreamAdaptor" />
 			</manifest>
@@ -113,7 +113,7 @@
 			</manifest>
 		</jar>
 
-		<jar jarfile="${lib}/SftpNewFileAdaptor.jar" basedir="${tmp}" includes="**/sftpnew/*.class,**/ssh/*.class">
+		<jar jarfile="${lib}/SftpNewFileAdaptor.jar" basedir="${tmp}" includes="**/sftpnew/*.class,org/gridlab/gat/io/cpi/ssh/**">
 			<manifest>
 				<attribute name="FileCpi-class" value="org.gridlab.gat.io.cpi.sftpnew.SftpNewFileAdaptor" />
 			</manifest>
@@ -230,6 +230,12 @@
 		<jar jarfile="${lib}/GlobusBrokerAdaptor.jar" basedir="${tmp}" includes="**/org/gridlab/gat/resources/cpi/globus/*.class">
 			<manifest>
 				<attribute name="ResourceBrokerCpi-class" value="org.gridlab.gat.resources.cpi.globus.GlobusBrokerAdaptor" />
+			</manifest>
+		</jar>
+
+		<jar jarfile="${lib}/SGEBrokerAdaptor.jar" basedir="${tmp}" includes="**/org/gridlab/gat/resources/cpi/sge/*.class">
+			<manifest>
+				<attribute name="ResourceBrokerCpi-class" value="org.gridlab.gat.resources.cpi.sge.SGEBrokerAdaptor" />
 			</manifest>
 		</jar>
 

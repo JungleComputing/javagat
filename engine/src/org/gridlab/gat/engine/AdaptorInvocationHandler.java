@@ -240,6 +240,10 @@ public class AdaptorInvocationHandler implements InvocationHandler {
             + adaptor.getName());
 
         Object result;
+        if (GATEngine.DEBUG) {
+            System.err.println("initAdaptor: trying to instantiate " + adaptor.getName()
+                + " adaptor for type " + adaptor.getCpi());
+        }
         try {
             result = adaptor.newInstance(parameterTypes, newParameters);
             colobus.fireStopEvent(startHandle, "creating adaptor "

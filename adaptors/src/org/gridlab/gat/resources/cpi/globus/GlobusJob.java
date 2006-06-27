@@ -33,8 +33,9 @@ class JobPoller extends Thread {
         while (true) {
             if (j.getState() == Job.STOPPED) return;
             if (j.getState() == Job.SUBMISSION_ERROR) return;
-
             j.getStateActive();
+            if (j.getState() == Job.STOPPED) return;
+            if (j.getState() == Job.SUBMISSION_ERROR) return;
 
             synchronized (this) {
                 try {
@@ -94,6 +95,14 @@ public class GlobusJob extends Job implements GramJobListener,
 
         poller = new JobPoller(this);
         poller.start();
+    }
+
+    /* (non-Javadoc)
+     * @see org.gridlab.gat.resources.Job#getExitStatus()
+     */
+    public synchronized int getExitStatus() throws GATInvocationException {
+         if(state != STOPPED) throw new GATInvocationException("not in RUNNING state");
+         return 0; // @@@ we have to assume that the job ran correctly.
     }
 
     public JobDescription getJobDescription() {
@@ -156,10 +165,11 @@ public class GlobusJob extends Job implements GramJobListener,
 
     protected void setState() {
         if (j.getError() == GRAM_JOBMANAGER_CONNECTION_FAILURE) {
+            // assume the job was done, and gram exited
             if (postStageFinished) {
                 state = STOPPED;
             } else {
-                state = RUNNING;
+                state = POST_STAGING;
             }
             return;
         }
@@ -167,52 +177,34 @@ public class GlobusJob extends Job implements GramJobListener,
         switch (j.getStatus()) {
         case STATUS_ACTIVE:
             state = RUNNING;
-
             break;
-
         case STATUS_DONE:
-
             if (postStageFinished) {
                 state = STOPPED;
             } else {
-                state = RUNNING;
+                state = POST_STAGING;
             }
-
             break;
-
         case STATUS_FAILED:
             state = SUBMISSION_ERROR;
-
             break;
-
         case STATUS_PENDING:
             state = SCHEDULED;
-
             break;
-
         case STATUS_STAGE_IN:
-            state = SCHEDULED;
-
+            state = PRE_STAGING;
             break;
-
         case STATUS_STAGE_OUT:
-            state = SCHEDULED;
-
+            state = POST_STAGING;
             break;
-
         case STATUS_SUSPENDED:
-            state = STOPPED;
-
+            state = ON_HOLD;
             break;
-
         case 0: // unknown (no constant :-( )
             state = INITIAL;
-
         case STATUS_UNSUBMITTED:
             state = INITIAL;
-
             break;
-
         default:
             System.err.println("WARNING: Globus job: unknown state: "
                 + j.getStatus() + " (" + j.getStatusAsString() + ")");
@@ -220,12 +212,8 @@ public class GlobusJob extends Job implements GramJobListener,
     }
 
     public void stop() throws GATInvocationException {
-        if (getState() != RUNNING) {
-            throw new GATInvocationException("Job is not running");
-        }
-
         try {
-            j.cancel();
+            if(j != null) j.cancel();
         } catch (Exception e) {
             if (GATEngine.VERBOSE) {
                 System.err.println("got an exception while cancelling job: "
@@ -246,22 +234,6 @@ public class GlobusJob extends Job implements GramJobListener,
                 x.add("globus job", e2);
                 throw x;
             }
-        }
-
-        stopHandlers();
-
-        state = INITIAL;
-    }
-
-    public void unSchedule() throws GATInvocationException {
-        if (getState() != SCHEDULED) {
-            throw new GATInvocationException("Job is not in SCHEDULED state");
-        }
-
-        try {
-            j.cancel();
-        } catch (Exception e) {
-            throw new GATInvocationException("globus job", e);
         }
 
         stopHandlers();
@@ -295,7 +267,8 @@ public class GlobusJob extends Job implements GramJobListener,
     }
 
     /**
-     * we need this if there is a firewall/NAT blocking traffic from the job to the local machine
+     * we need this if there is a firewall/NAT blocking traffic from the job to the 
+     * local machine
      *
      */
     void getStateActive() {
