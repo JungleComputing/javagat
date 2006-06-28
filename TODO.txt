@@ -22,3 +22,4 @@
        - support environment vars in ssh broker.
 
 - resource broker adaptors should fill in ALL defined states in the getInfo call.
+- GAT_LOCATION -> JAVAGAT_HOME
