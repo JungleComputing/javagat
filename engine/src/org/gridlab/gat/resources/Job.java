@@ -319,14 +319,14 @@ public abstract class Job implements Monitorable, Advertisable {
     /** Put a job on hold, pause it.
      * This can be called in SCHEDULED or RUNNING state.
      */
-    public void hold() {
+    public void hold() throws GATInvocationException, IOException {
         throw new RuntimeException("Not implemented");
     }
     
     /** Resume a job that was paused with the "hold" method.
      * This can be called only in the ON_HOLD state. 
      */
-    public void resume() {
+    public void resume() throws GATInvocationException, IOException {
         throw new RuntimeException("Not implemented");
     }
     

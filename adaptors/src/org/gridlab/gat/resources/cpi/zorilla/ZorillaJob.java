@@ -417,6 +417,8 @@ public class ZorillaJob extends Job implements Runnable {
             } else if (phase == ClientProtocol.PHASE_RUNNING
                 || phase == ClientProtocol.PHASE_CLOSED) {
                 this.state = Job.RUNNING;
+//            } else if (phase == ZoniProtocol.PHASE_POST_STAGING) {
+//                this.state = Job.POST_STAGING;
             } else if (phase == ClientProtocol.PHASE_COMPLETED
                 || phase == ClientProtocol.PHASE_CANCELLED) {
                 this.state = Job.STOPPED;

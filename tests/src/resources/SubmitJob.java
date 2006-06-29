@@ -27,7 +27,7 @@ public class SubmitJob {
 	public static void main(String[] args) {
 		GATContext context = new GATContext();
 		Preferences prefs = new Preferences();
-		prefs.put("ResourceBroker.adaptor.name", "commandlineSsh");
+		prefs.put("ResourceBroker.adaptor.name", "zorilla");
 
 		URI exe = null, out = null, err = null;
 
@@ -36,8 +36,8 @@ public class SubmitJob {
 
 		try {
 			exe = new URI("file:////bin/date");
-			out = new URI("any:///date.out");
-			err = new URI("any:///date.err");
+			out = new URI("file:///date.out");
+			err = new URI("file:///date.err");
 		} catch (URISyntaxException e) {
 			System.err.println("syntax error in URI");
 			System.exit(1);
@@ -58,7 +58,6 @@ public class SubmitJob {
 
 		Hashtable hardwareAttributes = new Hashtable();
 
-		hardwareAttributes.put("machine.node", "fs0.das2.cs.vu.nl");
 
 		ResourceDescription rd = new HardwareResourceDescription(
 				hardwareAttributes);
@@ -92,8 +91,11 @@ public class SubmitJob {
 
 				String state = (String) info.get("state");
 
+				System.out.println("state = X" + state + "X");
+
 				if ((state == null) || state.equals("STOPPED")
 						|| state.equals("SUBMISSION_ERROR")) {
+					System.out.println("done");
 					break;
 				}
 

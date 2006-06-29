@@ -700,7 +700,7 @@ public class GAT {
      * @param gatContext
      *            A GATContext which is used to determine the access rights for
      *            this File.
-     * @param file
+     * @param location a URI for the file to access
      *            The file to access
      * @param mode
      *            The mode to open the file with. See java.io.RandomAccessFile
@@ -710,12 +710,13 @@ public class GAT {
      *             Thrown upon creation problems
      */
     public static RandomAccessFile createRandomAccessFile(
-        GATContext gatContext, File file, String mode)
+        GATContext gatContext, String location, String mode)
         throws GATObjectCreationException {
-        Object[] array = { file, mode };
-
-        return (RandomAccessFile) getAdaptorProxy(RandomAccessFileCpi.class,
-            RandomAccessFile.class, gatContext, null, array);
+            try {
+                return createRandomAccessFile(gatContext, null, new URI(location), mode);
+            } catch (URISyntaxException e) {
+                throw new GATObjectCreationException("random access file", e);
+            }
     }
 
     /**
@@ -729,7 +730,34 @@ public class GAT {
      * @param preferences
      *            A Preferences which is used to determine the user's
      *            preferences for this File.
-     * @param file
+     * @param location
+     *            the URI of the file to access
+     * @param mode
+     *            The mode to open the file with. See java.io.RandomAccessFile
+     *            for details.
+     * @return The random access file object
+     * @throws GATObjectCreationException
+     *             Thrown upon creation problems
+     */
+    public static RandomAccessFile createRandomAccessFile(
+        GATContext gatContext, Preferences preferences, String location, String mode)
+        throws GATObjectCreationException {
+        try {
+            return createRandomAccessFile(gatContext, preferences, new URI(location), mode);
+        } catch (URISyntaxException e) {
+            throw new GATObjectCreationException("random access file", e);
+        }
+    }
+
+    /**
+     * Constructs a RandomAccessFile instance which corresponds to the physical
+     * file identified by the passed URI and whose access rights are determined
+     * by the passed GATContext.
+     *
+     * @param gatContext
+     *            A GATContext which is used to determine the access rights for
+     *            this File.
+     * @param location a URI for the file to access
      *            The file to access
      * @param mode
      *            The mode to open the file with. See java.io.RandomAccessFile
@@ -739,9 +767,35 @@ public class GAT {
      *             Thrown upon creation problems
      */
     public static RandomAccessFile createRandomAccessFile(
-        GATContext gatContext, Preferences preferences, File file, String mode)
+        GATContext gatContext, URI location, String mode)
         throws GATObjectCreationException {
-        Object[] array = { file, mode };
+        return createRandomAccessFile(gatContext, null, location, mode);
+    }
+
+    /**
+     * Constructs a RandomAccessFile instance which corresponds to the physical
+     * file identified by the passed URI and whose access rights are determined
+     * by the passed GATContext.
+     *
+     * @param gatContext
+     *            A GATContext which is used to determine the access rights for
+     *            this File.
+     * @param preferences
+     *            A Preferences which is used to determine the user's
+     *            preferences for this File.
+     * @param location
+     *            the URI of the file to access
+     * @param mode
+     *            The mode to open the file with. See java.io.RandomAccessFile
+     *            for details.
+     * @return The random access file object
+     * @throws GATObjectCreationException
+     *             Thrown upon creation problems
+     */
+    public static RandomAccessFile createRandomAccessFile(
+        GATContext gatContext, Preferences preferences, URI location, String mode)
+        throws GATObjectCreationException {
+        Object[] array = { location, mode };
 
         return (RandomAccessFile) getAdaptorProxy(RandomAccessFileCpi.class,
             RandomAccessFile.class, gatContext, preferences, array);

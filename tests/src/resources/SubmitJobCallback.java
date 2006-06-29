@@ -50,17 +50,18 @@ public class SubmitJobCallback implements MetricListener {
 
         GATContext context = new GATContext();
         Preferences prefs = new Preferences();
-        prefs.put("ResourceBroker.adaptor.name", "globus");
-        prefs.put("ResourceBroker.jobmanager", "pbs");
+        prefs.put("ResourceBroker.adaptor.name", "zorilla");
 
         URI exe = null;
         URI out = null;
         URI err = null;
+        URI in = null;
 
         try {
-            exe = new URI("file:////bin/date");
-            out = new URI("any:///date.out");
-            err = new URI("any:///date.err");
+            exe = new URI("file:////usr/bin/cat");
+            out = new URI("file:///date.out");
+            err = new URI("file:///date.err");
+            in = new URI("file:///bla");
         } catch (URISyntaxException e) {
             System.err.println("syntax error in URI: " + e);
             System.exit(1);
@@ -68,10 +69,12 @@ public class SubmitJobCallback implements MetricListener {
 
         File outFile = null;
         File errFile = null;
+        File inFile = null;
 
         try {
             outFile = GAT.createFile(context, prefs, out);
             errFile = GAT.createFile(context, prefs, err);
+            inFile = GAT.createFile(context, prefs, in);
         } catch (GATObjectCreationException e) {
             System.err.println("error creating file: " + e);
             System.exit(1);
@@ -81,10 +84,10 @@ public class SubmitJobCallback implements MetricListener {
         sd.setLocation(exe);
         sd.setStdout(outFile);
         sd.setStderr(errFile);
+        sd.setStdin(inFile);
 
         Hashtable hardwareAttributes = new Hashtable();
 
-        hardwareAttributes.put("machine.node", "fs0.das2.cs.vu.nl");
 
         ResourceDescription rd = new HardwareResourceDescription(
             hardwareAttributes);

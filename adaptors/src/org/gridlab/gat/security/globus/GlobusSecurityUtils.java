@@ -55,6 +55,11 @@ class GlobusContextCreator implements SecurityContextCreator {
                 System.err
                     .println("WARNING: URI for key file does not refer to local host, skipping this security context");
             } else {
+                if(GATEngine.VERBOSE) {
+                    System.err.println("globus security: getting certificate from: " + keyURI
+                        .getPath());
+                }
+                   
                 GSSCredential cred = GlobusSecurityUtils.getCredential(keyURI
                     .getPath());
 

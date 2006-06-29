@@ -53,12 +53,6 @@
 			</manifest>
 		</jar>
 
-		<jar jarfile="${lib}/ZorillaFileAdaptor.jar" basedir="${tmp}" includes="**/ZorillaFileAdaptor.class">
-			<manifest>
-				<attribute name="FileCpi-class" value="org.gridlab.gat.io.cpi.zorilla.ZorillaFileAdaptor" />
-			</manifest>
-		</jar>
-
 		<jar jarfile="${lib}/LocalFileInputStreamAdaptor.jar" basedir="${tmp}" includes="**/LocalFileInputStreamAdaptor.class">
 			<manifest>
 				<attribute name="FileInputStreamCpi-class" value="org.gridlab.gat.io.cpi.local.LocalFileInputStreamAdaptor" />
@@ -245,11 +239,24 @@
 			</manifest>
 		</jar>
 
+		<jar jarfile="${lib}/SGEBrokerAdaptor.jar" basedir="${tmp}" includes="**/org/gridlab/gat/resources/cpi/sge/*.class">
+			<manifest>
+				<attribute name="ResourceBrokerCpi-class" value="org.gridlab.gat.resources.cpi.sge.SGEBrokerAdaptor" />
+			</manifest>
+		</jar>
+
                  <jar jarfile="${lib}/ProActiveBrokerAdaptor.jar" basedir="${tmp}" includes="**/org/gridlab/gat/resources/cpi/proactive/*.class,**/org/objectweb/proactive/GATAdaptor/*.class">
                          <manifest>
                                  <attribute name="ResourceBrokerCpi-class" value="org.gridlab.gat.resources.cpi.proactive.ProActiveBrokerAdaptor" />
                          </manifest>
                  </jar>
+
+                 <jar jarfile="${lib}/PbsBrokerAdaptor.jar" basedir="${tmp}" includes="**/org/gridlab/gat/resources/cpi/pbs_resource/*.class">
+                         <manifest>
+                                 <attribute name="ResourceBrokerCpi-class" value="org.gridlab.gat.resources.cpi.pbs_resource.PbsBrokerAdaptor" />
+                         </manifest>
+                 </jar>
+
 
 		<jar jarfile="${lib}/SocketEndpointAdaptor.jar" basedir="${tmp}" includes="**/org/gridlab/gat/io/cpi/sockets/*.class">
 			<manifest>
