@@ -1,12 +1,12 @@
 package org.gridlab.gat.io.cpi;
 
-import java.io.IOException;
 import java.util.List;
 
+import org.gridlab.gat.GAT;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.Preferences;
-import org.gridlab.gat.io.File;
+import org.gridlab.gat.URI;
 import org.gridlab.gat.io.RandomAccessFile;
 import org.gridlab.gat.monitoring.Metric;
 import org.gridlab.gat.monitoring.MetricDefinition;
@@ -27,7 +27,7 @@ public abstract class RandomAccessFileCpi implements RandomAccessFile {
 
     protected Preferences preferences;
 
-    protected File file;
+    protected URI location;
 
     protected String mode;
 
@@ -47,10 +47,10 @@ public abstract class RandomAccessFileCpi implements RandomAccessFile {
      *            see RandomAccessFile
      */
     public RandomAccessFileCpi(GATContext gatContext, Preferences preferences,
-            File file, String mode) {
+            URI location, String mode) {
         this.gatContext = gatContext;
         this.preferences = preferences;
-        this.file = file;
+        this.location = location;
         this.mode = mode;
     }
 
@@ -61,15 +61,19 @@ public abstract class RandomAccessFileCpi implements RandomAccessFile {
 
         org.gridlab.gat.io.RandomAccessFile rf = (org.gridlab.gat.io.RandomAccessFile) object;
 
-        return file.equals(rf.getFile());
+        return location.equals(rf.toURI());
     }
 
     public int hashCode() {
-        return file.hashCode();
+        return location.hashCode();
     }
 
-    public org.gridlab.gat.io.File getFile() {
-        return file;
+    public org.gridlab.gat.io.File getFile() throws GATInvocationException {
+        try {
+            return GAT.createFile(gatContext, preferences, location);
+        } catch (Exception e) {
+            throw new GATInvocationException("random access file cpi", e);
+        }
     }
 
     /*
@@ -77,7 +81,7 @@ public abstract class RandomAccessFileCpi implements RandomAccessFile {
      *
      * @see org.gridlab.gat.io.RandomAccessFile#close()
      */
-    public void close() throws IOException {
+    public void close() throws GATInvocationException {
         throw new UnsupportedOperationException("Not implemented");
     }
 
@@ -86,7 +90,7 @@ public abstract class RandomAccessFileCpi implements RandomAccessFile {
      *
      * @see org.gridlab.gat.io.RandomAccessFile#getFilePointer()
      */
-    public long getFilePointer() throws IOException {
+    public long getFilePointer() throws GATInvocationException {
         throw new UnsupportedOperationException("Not implemented");
     }
 
@@ -95,7 +99,7 @@ public abstract class RandomAccessFileCpi implements RandomAccessFile {
      *
      * @see org.gridlab.gat.io.RandomAccessFile#length()
      */
-    public long length() throws IOException {
+    public long length() throws GATInvocationException {
         throw new UnsupportedOperationException("Not implemented");
     }
 
@@ -104,7 +108,7 @@ public abstract class RandomAccessFileCpi implements RandomAccessFile {
      *
      * @see org.gridlab.gat.io.RandomAccessFile#read()
      */
-    public int read() throws IOException {
+    public int read() throws GATInvocationException {
         throw new UnsupportedOperationException("Not implemented");
     }
 
@@ -113,7 +117,7 @@ public abstract class RandomAccessFileCpi implements RandomAccessFile {
      *
      * @see org.gridlab.gat.io.RandomAccessFile#read(byte[], int, int)
      */
-    public int read(byte[] arg0, int arg1, int arg2) throws IOException {
+    public int read(byte[] arg0, int arg1, int arg2) throws GATInvocationException {
         throw new UnsupportedOperationException("Not implemented");
     }
 
@@ -122,7 +126,7 @@ public abstract class RandomAccessFileCpi implements RandomAccessFile {
      *
      * @see org.gridlab.gat.io.RandomAccessFile#read(byte[])
      */
-    public int read(byte[] arg0) throws IOException {
+    public int read(byte[] arg0) throws GATInvocationException {
         throw new UnsupportedOperationException("Not implemented");
     }
 
@@ -131,7 +135,7 @@ public abstract class RandomAccessFileCpi implements RandomAccessFile {
      *
      * @see org.gridlab.gat.io.RandomAccessFile#seek(long)
      */
-    public void seek(long arg0) throws IOException {
+    public void seek(long arg0) throws GATInvocationException {
         throw new UnsupportedOperationException("Not implemented");
     }
 
@@ -140,7 +144,7 @@ public abstract class RandomAccessFileCpi implements RandomAccessFile {
      *
      * @see org.gridlab.gat.io.RandomAccessFile#setLength(long)
      */
-    public void setLength(long arg0) throws IOException {
+    public void setLength(long arg0) throws GATInvocationException {
         throw new UnsupportedOperationException("Not implemented");
     }
 
@@ -149,7 +153,7 @@ public abstract class RandomAccessFileCpi implements RandomAccessFile {
      *
      * @see org.gridlab.gat.io.RandomAccessFile#skipBytes(int)
      */
-    public int skipBytes(int arg0) throws IOException {
+    public int skipBytes(int arg0) throws GATInvocationException {
         throw new UnsupportedOperationException("Not implemented");
     }
 
@@ -158,7 +162,7 @@ public abstract class RandomAccessFileCpi implements RandomAccessFile {
      *
      * @see org.gridlab.gat.io.RandomAccessFile#write(byte[], int, int)
      */
-    public void write(byte[] arg0, int arg1, int arg2) throws IOException {
+    public void write(byte[] arg0, int arg1, int arg2) throws GATInvocationException {
         throw new UnsupportedOperationException("Not implemented");
     }
 
@@ -167,7 +171,7 @@ public abstract class RandomAccessFileCpi implements RandomAccessFile {
      *
      * @see org.gridlab.gat.io.RandomAccessFile#write(byte[])
      */
-    public void write(byte[] arg0) throws IOException {
+    public void write(byte[] arg0) throws GATInvocationException {
         throw new UnsupportedOperationException("Not implemented");
     }
 
@@ -176,7 +180,7 @@ public abstract class RandomAccessFileCpi implements RandomAccessFile {
      *
      * @see org.gridlab.gat.io.RandomAccessFile#write(int)
      */
-    public void write(int arg0) throws IOException {
+    public void write(int arg0) throws GATInvocationException {
         throw new UnsupportedOperationException("Not implemented");
     }
 

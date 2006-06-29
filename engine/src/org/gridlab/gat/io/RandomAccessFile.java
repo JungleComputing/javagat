@@ -1,7 +1,7 @@
 package org.gridlab.gat.io;
 
-import java.io.IOException;
-
+import org.gridlab.gat.GATInvocationException;
+import org.gridlab.gat.URI;
 import org.gridlab.gat.monitoring.Monitorable;
 
 /**
@@ -28,46 +28,42 @@ public interface RandomAccessFile extends Monitorable, java.io.Serializable {
      */
     public boolean equals(Object object);
 
-    /**
-     * Get the file that was used to create this random access file.
-     *
-     * @return the file
-     */
-    public org.gridlab.gat.io.File getFile();
 
+    public URI toURI();
+    
     /** See {@link java.io.RandomAccessFile#close}. */
-    public void close() throws IOException;
+    public void close() throws GATInvocationException;
 
     /** See {@link java.io.RandomAccessFile#getFilePointer()}. */
-    public long getFilePointer() throws IOException;
+    public long getFilePointer() throws GATInvocationException;
 
     /** See {@link java.io.RandomAccessFile#length()}. */
-    public long length() throws IOException;
+    public long length() throws GATInvocationException;
 
     /** See {@link java.io.RandomAccessFile#read()}. */
-    public int read() throws IOException;
+    public int read() throws GATInvocationException;
 
     /** See {@link java.io.RandomAccessFile#read(byte[], int, int)}. */
-    public int read(byte[] arg0, int arg1, int arg2) throws IOException;
+    public int read(byte[] arg0, int arg1, int arg2) throws GATInvocationException;
 
     /** See {@link java.io.RandomAccessFile#read(byte[])}. */
-    public int read(byte[] arg0) throws IOException;
+    public int read(byte[] arg0) throws GATInvocationException;
 
     /** See {@link java.io.RandomAccessFile#seek}. */
-    public void seek(long arg0) throws IOException;
+    public void seek(long arg0) throws GATInvocationException;
 
     /** See {@link java.io.RandomAccessFile#setLength(long)}. */
-    public void setLength(long arg0) throws IOException;
+    public void setLength(long arg0) throws GATInvocationException;
 
     /** See {@link java.io.RandomAccessFile#skipBytes(int)}. */
-    public int skipBytes(int arg0) throws IOException;
+    public int skipBytes(int arg0) throws GATInvocationException;
 
     /** See {@link java.io.RandomAccessFile#write(byte[], int, int)}. */
-    public void write(byte[] arg0, int arg1, int arg2) throws IOException;
+    public void write(byte[] arg0, int arg1, int arg2) throws GATInvocationException;
 
     /** See {@link java.io.RandomAccessFile#write(byte[])}. */
-    public void write(byte[] arg0) throws IOException;
+    public void write(byte[] arg0) throws GATInvocationException;
 
     /** See {@link java.io.RandomAccessFile#write(int)}. */
-    public void write(int arg0) throws IOException;
+    public void write(int arg0) throws GATInvocationException;
 }
