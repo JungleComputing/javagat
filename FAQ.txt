@@ -1,7 +1,55 @@
+Q: How do certificates work in JavaGAT?
+
+A:
+GAT itself does not require a certificate, but some adaptors require
+them. So it depends on what you do whether you need a certificate or
+not. If you use GAT with the SSH or FTP adaptors, you won't need a
+certificate. If you need the Globus adaptors, you also need a Globus
+certificate.
+
+It is certainly possible to use the Globus adaptors in JavaGAT on a
+machine that does not have a GTK installed. You do still need a proxy
+certificate in that case. You could copy it by hand, for instance, or
+you could use a myproxy server. Or, if there is a shared filesystem,
+you can load it directly.
+
+The files in engine/src/org/gridlab/gat/security contain classes that
+allow you to access certificates in the JavaGAT.
+
+So you can do things like this to tell GAT where your certificate is:
+
+GatContext context = new GATContext();
+CertificateSecurityContext c = new CertificateSecurityContext(keyfile, 
+    username, passphrase);
+context.addSecurityContext(c);
+
+Or, if you have a myproxy server:
+
+GatContext context = new GATContext();
+MyProxyServerCredentialSecurityContext c = new 
+    MyProxyServerCredentialSecurityContext(host, port, username, 
+    password);
+context.addSecurityContext(c);
+
+If your certificate is in the default location, and if you did a
+grid-proxy-init, you don't have to do anything, JavaGAT will then
+automatically find your proxy certificate.
+
+
+Q: what about Globus Tookit 4?
+A:
+For Java, we don't have GT4 adaptors yet, only adaptors
+for GT2 and GT3. However, I received reports that our adaptors also
+work with GT4 file transfer and job submission, as it is backwards
+compatible, but I haven't tried this myself. But without a real GT4
+adaptor, we cannot use GT4-specific features.
+
+
+
 Q: What is the difference between DataBrowsingFileAdaptor and DataMovementFileAdaptor?
 
 A:
-Good question! They are both File adaptors. Because the Java GAT has
+They are both File adaptors. Because the Java GAT has
 dynamic binding, an adaptor does not have to implement the full
 functionality of the GAT object API. So basically, DataMovement
 interfaces to the gridlab data service, while DataBrowsing interfaces
@@ -28,11 +76,12 @@ etc. with the GAT.
 Q: What of DefaultRandomAccessFileAdaptor?
 
 A:
-OK, that is something that is completely missing in the GAT. It is
-sort of scheduled for the GAT API 2.0 I think, but the Java GAT
-already has it... Again, it is compatible with the java.io.*
-classes...  In the current GAT API spec, you can seek in streams. The
-idea is to seperate the streaming and random access access to files.
+OK, that is something that is completely missing in the GAT
+specification. It is sort of scheduled for the GAT API 2.0 I think,
+but the Java GAT already has it... Again, it is compatible with the
+java.io.* classes...  In the current GAT API spec, you can seek in
+streams. The idea is to seperate the streaming and random access
+access to files.
 
 So, to summarize, the Java GAT File API is slightly different that
 what the API spec prescribes. Two reasons for that:
@@ -100,7 +149,6 @@ A: Right, I understand this is a bug in some combinations of linux and Java.
    If you add the option "-Djava.security.egd=file:/dev/urandom" to your Java command, it should be fixed.
    You can also add this option to the run_gat_app script if you want:
    bin/run_gat_app -Djava.security.egd=file:/dev/urandom file.RemoteCopyPerformanceTest any://fs0.das2.cs.vu.nl/testfile2m any:///testfile
-
 
 
 Have Fun,
