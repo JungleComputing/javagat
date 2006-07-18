@@ -1,3 +1,33 @@
+Q: How do the security contexts work?
+
+A: In JavaGAT, you can deal with security contexts as folows:
+
+GATContext context = new GATContext();
+
+// create a security context with a password
+SecurityContext pwd = 
+    new PasswordSecurityContext(username, password);
+
+// restrict access to hostname1 and hostname2 machines,
+// and only the ftp and ssh adaptors are allowed to use
+// this credential
+pwd.addNote("hosts", "hostname1:port1,hostname2:port2");
+pwd.addNote("adaptors", "ftp,ssh");
+
+// load a certificate
+SecurityContext cert = 
+    new CertificateSecurityContext(keyfile, username, passphrase);
+
+// add them to the GAT context
+context.addSecurityContext(pwd);
+context.addSecurityContext(cert);
+
+
+Note that all of this is optional. If you just do a grid-proxy-init,
+and leave everything in its default location, GAT will automatically
+work. In that case you don't have to create any security contexts...
+
+
 Q: How do certificates work in JavaGAT?
 
 A:
@@ -121,7 +151,8 @@ A: Not if the file object explicitely defines a scheme in the URI.  So
    use the "any" scheme: any://fs0.das2.cs.vu.nl//home/rob/foo
 
 
-Q: I get an error saying "GAT: No adaptors could be loaded" when I run without the run_gat_app script
+Q: I get an error saying "GAT: No adaptors could be loaded" when I run without 
+   the run_gat_app script
 
 A: You can point the place where the adaptors are located out to the
 engine with the -Dgat.adaptor.path=XXX:YYY:ZZZ commandline option,
@@ -146,9 +177,11 @@ A: Yes, there is a way to do that, you can specify a AdaptorOrderPolicy
 
 Q: Sometimes the SSH or SFTP adaptor seems to hang at startup, while reading random numbers
 A: Right, I understand this is a bug in some combinations of linux and Java.
-   If you add the option "-Djava.security.egd=file:/dev/urandom" to your Java command, it should be fixed.
+   If you add the option "-Djava.security.egd=file:/dev/urandom" to your Java command, 
+   it should be fixed. 
    You can also add this option to the run_gat_app script if you want:
-   bin/run_gat_app -Djava.security.egd=file:/dev/urandom file.RemoteCopyPerformanceTest any://fs0.das2.cs.vu.nl/testfile2m any:///testfile
+   bin/run_gat_app -Djava.security.egd=file:/dev/urandom \
+     file.RemoteCopyPerformanceTest any://fs0.das2.cs.vu.nl/testfile2m any:///testfile
 
 
 Have Fun,
