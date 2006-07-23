@@ -3,11 +3,16 @@
  */
 package org.gridlab.gat.resources.cpi.zorilla;
 
+import nl.vu.zorilla.zoni.JobInfo;
+import nl.vu.zorilla.zoni.ZoniConnection;
+import nl.vu.zorilla.zoni.ZoniException;
+import nl.vu.zorilla.zoni.ZoniProtocol;
+
 import org.apache.log4j.Logger;
 import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.URI;
 import org.gridlab.gat.engine.GATEngine;
-import org.gridlab.gat.engine.IPUtils;
+
 import org.gridlab.gat.io.File;
 import org.gridlab.gat.monitoring.Metric;
 import org.gridlab.gat.monitoring.MetricDefinition;
@@ -16,14 +21,7 @@ import org.gridlab.gat.resources.Job;
 import org.gridlab.gat.resources.JobDescription;
 import org.gridlab.gat.resources.SoftwareDescription;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
 import java.io.IOException;
-import java.net.InetSocketAddress;
-import java.net.ServerSocket;
-import java.net.Socket;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -45,21 +43,11 @@ public class ZorillaJob extends Job implements Runnable {
 
     Metric statusMetric;
 
-    // status of job
+    private String jobID;
 
-    private final String id; // UUID
+    private JobInfo info;
 
-    private String executable; // URI
-
-    private Map attributes; // Map<String, String>
-
-    private Map status; // Map<String, String>
-
-    private int phase; // zorilla phase (NOT GAT phase)
-
-    private final ServerSocket serverSocket;
-
-    private final ConnectionManager connectionManager;
+    private int lastState = -1;
 
     // GAT state in parent class...
     // protected int state;
@@ -70,25 +58,22 @@ public class ZorillaJob extends Job implements Runnable {
     // will add the full path in case of a local file
     private static String filetoString(File file) throws GATInvocationException {
         if (file == null) {
-            return "";
+            return null;
         }
 
-        if (file.toURI().isLocal() && !file.toURI().isAbsolute()) {
-            file = file.getAbsoluteFile();
+        if (!file.toURI().isLocal()) {
+            throw new GATInvocationException(
+                    "zorilla can only handle local files");
         }
 
-        return file.toURI().toString();
+        return file.getAbsolutePath();
     }
 
-    private static String virtualPath(URI uri) throws GATInvocationException {
-        String[] pathElements = uri.getPath().split("/");
-
-        if (pathElements.length == 0) {
-            throw new GATInvocationException(
-                "could not find filename in given uri: " + uri);
+    private static String virtualPath(File file) throws GATInvocationException {
+        if (file == null) {
+            return null;
         }
-
-        return "/" + pathElements[pathElements.length - 1];
+        return "/" + file.getName();
     }
 
     // private Map<String, String(URI)> toStringMap(Map<File, File>);
@@ -104,74 +89,41 @@ public class ZorillaJob extends Job implements Runnable {
             File value = (File) entry.getValue();
 
             // value is "virtual" path in zorilla
-            String path;
+            String virtualPath = virtualPath(key);
+            String physicalPath = filetoString(value);
 
-            if (value == null) {
-                path = virtualPath(key.toURI());
-            } else {
-                URI virtualURI = value.toURI();
-                String virtualScheme = virtualURI.getScheme();
-
-                if (virtualScheme != null
-                    && !virtualScheme.equalsIgnoreCase("zorilla")) {
-                    throw new GATInvocationException(
-                        "destination scheme can only be \"zorilla\" or null");
-                }
-
-                path = virtualURI.getPath();
-
-            }
-
-            result.put(path, filetoString(key));
+            result.put(virtualPath, physicalPath);
         }
         return result;
     }
 
     ZorillaJob(ZorillaResourceBrokerAdaptor broker, JobDescription description)
-        throws GATInvocationException {
+            throws GATInvocationException {
         this.broker = broker;
         this.description = description;
 
         logger.debug("creating zorilla job");
 
-        try {
-            serverSocket = new ServerSocket(0);
-        } catch (IOException e) {
-            throw new GATInvocationException("error on creating zorilla job", e);
-        }
-
-        connectionManager = new ConnectionManager(this, serverSocket);
-
         // Tell the engine that we provide job.status events
         HashMap returnDef = new HashMap();
         returnDef.put("status", String.class);
         statusMetricDefinition = new MetricDefinition("job.status",
-            MetricDefinition.DISCRETE, "String", null, null, returnDef);
+                MetricDefinition.DISCRETE, "String", null, null, returnDef);
         statusMetric = statusMetricDefinition.createMetric(null);
         GATEngine.registerMetric(this, "getJobStatus", statusMetricDefinition);
-
-        id = submitJob(description);
-
-        updateState();
-
-        logger.debug("done creating job");
-
-        new Thread(this).start();
-    }
-
-    private String submitJob(JobDescription description)
-        throws GATInvocationException {
 
         // data needed to submit a job
         URI executable;
         String[] arguments;
+        Map attributes; // Map<String, String>
         Map environment; // Map<String, String>
-        Map preStageFiles; // Map<String, String> (file path, URI.toString())
-        Map postStageFiles; // Map<String, URI> (file path, URI.toString())
+        Map preStageFiles; // Map<String, String> (virtual file path, physical
+        // file path)
+        Map postStageFiles; // Map<String, String> (file path, physical file
+        // path)
         String stdout;
         String stdin;
         String stderr;
-        Map attributes; // Map<String, String>
 
         SoftwareDescription soft = description.getSoftwareDescription();
 
@@ -199,88 +151,26 @@ public class ZorillaJob extends Job implements Runnable {
         }
 
         try {
+            ZoniConnection connection = new ZoniConnection(broker
+                    .getNodeSocketAddress(), null, ZoniProtocol.TYPE_CLIENT);
 
-            Socket socket = new Socket();
-            InetSocketAddress address = broker.getNodeSocketAddress();
-
-            logger.debug("connecting to " + address);
-
-            socket.connect(address);
-
-            DataOutputStream out = new DataOutputStream(
-                new BufferedOutputStream(socket.getOutputStream()));
-            DataInputStream in = new DataInputStream(new BufferedInputStream(
-                socket.getInputStream()));
-
-            out.writeInt(ClientProtocol.VERSION);
-            out.writeInt(ClientProtocol.AUTHENTICATION_NONE);
-            out.flush();
-
-            int status = in.readInt();
-            String message = in.readUTF();
-
-            if (status != ClientProtocol.STATUS_OK) {
-                socket.close();
-                throw new GATInvocationException(
-                    "error while connecting to node: " + message);
-            }
-
-            logger.debug("connection esablished, submitting");
-
-            out.writeInt(ClientProtocol.SUBMIT_JOB);
-            out.writeUTF(executable.toString());
-
-            // arguments;
-            out.writeInt(arguments.length);
-            for (int i = 0; i < arguments.length; i++) {
-                out.writeUTF(arguments[i]);
-            }
-
-            ClientProtocol.writeStringMap(environment, out);
-            ClientProtocol.writeStringMap(preStageFiles, out);
-            ClientProtocol.writeStringMap(postStageFiles, out);
-            out.writeUTF(stdout);
-            out.writeUTF(stdin);
-            out.writeUTF(stderr);
-            ClientProtocol.writeStringMap(attributes, out);
-
-            // callback address
-            out.writeUTF(IPUtils.getLocalHostAddress().getHostAddress());
-            // callback port
-            out.writeInt(serverSocket.getLocalPort());
-            // request state callbacks
-            out.writeInt(1);
-
-            out.flush();
-
-            logger.debug("written request, waiting for reply");
-
-            status = in.readInt();
-            message = in.readUTF();
-
-            logger.debug("node returned " + status + ": " + message);
-
-            if (status != ClientProtocol.STATUS_OK) {
-                socket.close();
-                System.exit(1);
-                throw new GATInvocationException("node returned " + status
-                    + ": " + message);
-            }
-
-            String jobID = in.readUTF();
-
-            //close connection
-            out.writeInt(ClientProtocol.CLOSE_CONNECTION);
-            out.flush();
-            socket.close();
-
-            logger.debug("submitted job " + jobID);
-
-            return jobID;
+            jobID = connection.submitJob(executable.toString(), arguments,
+                    environment, attributes, preStageFiles, postStageFiles,
+                    stdout, stdin, stderr);
+            connection.close();
         } catch (IOException e) {
-            logger.debug("exception on submitting", e);
-            throw new GATInvocationException("Zorilla", e);
+            throw new GATInvocationException(
+                    "cannot submit job to zorilla node", e);
+        } catch (ZoniException e) {
+            throw new GATInvocationException(
+                    "cannot submit job to zorilla node", e);
         }
+
+        updateState();
+
+        logger.debug("done creating job");
+
+        new Thread(this).start();
     }
 
     /*
@@ -288,35 +178,36 @@ public class ZorillaJob extends Job implements Runnable {
      * 
      * @see org.gridlab.gat.resources.Job#getInfo()
      */
-    public synchronized Map getInfo() {
-        HashMap info = new HashMap();
+    public synchronized Map getInfo() throws GATInvocationException {
+        HashMap result = new HashMap();
 
         // stuff from zorilla node
-        info.putAll(this.status);
+        result.putAll(info.getStatus());
 
-        info.put("state", getStateString(getState()));
-        info.put("resManState", info.get("phase"));
-        info.put("resManName", "Zorilla");
-        info.put("hostname", broker.getNodeSocketAddress().getHostName());
+        result.put("state", getStateString(getState()));
+        result.put("resManState", result.get("phase"));
+        result.put("resManName", "Zorilla");
+        result.put("hostname", broker.getNodeSocketAddress().getHostName());
         if (error != null) {
-            info.put("resManError", error.getMessage());
+            result.put("resManError", error.getMessage());
         }
-        
-        info.put("executable", executable);
 
-        //attributes map as a string
-        Iterator iterator = attributes.entrySet().iterator();
+        result.put("executable", info.getExecutable());
+
+        // attributes map as a string
+        Iterator iterator = info.getAttributes().entrySet().iterator();
         String attributeString = "";
         while (iterator.hasNext()) {
             Map.Entry entry = (Map.Entry) iterator.next();
             attributeString += entry.getKey() + "=" + entry.getValue() + "&";
         }
         if (attributeString.length() > 1) {
-            attributeString = attributeString.substring(0, attributeString.length() - 1);
+            attributeString = attributeString.substring(0, attributeString
+                    .length() - 1);
         }
-        info.put("attributes", attributeString);
+        result.put("attributes", attributeString);
 
-        return info;
+        return result;
     }
 
     /*
@@ -334,109 +225,56 @@ public class ZorillaJob extends Job implements Runnable {
      * @see org.gridlab.gat.resources.Job#getJobID()
      */
     public synchronized String getJobID() {
-        return id;
+        return jobID;
     }
 
     private void updateState() throws GATInvocationException {
         try {
+            ZoniConnection connection = new ZoniConnection(broker
+                    .getNodeSocketAddress(), null, ZoniProtocol.TYPE_CLIENT);
 
-            Socket socket = new Socket();
-            socket.connect(broker.getNodeSocketAddress());
+            JobInfo info = connection.getJobInfo(jobID);
+            connection.close();
 
-            DataOutputStream out = new DataOutputStream(
-                new BufferedOutputStream(socket.getOutputStream()));
-            DataInputStream in = new DataInputStream(new BufferedInputStream(
-                socket.getInputStream()));
-
-            out.writeInt(ClientProtocol.VERSION);
-            out.writeInt(ClientProtocol.AUTHENTICATION_NONE);
-            out.flush();
-
-            int status = in.readInt();
-            String message = in.readUTF();
-
-            if (status != ClientProtocol.STATUS_OK) {
-                socket.close();
-                throw new GATInvocationException(
-                    "error while connecting to node: " + message);
+            synchronized (this) {
+                this.info = info;
             }
-
-            out.writeInt(ClientProtocol.GET_JOB_INFO);
-            out.writeUTF(id);
-            out.flush();
-
-            status = in.readInt();
-            message = in.readUTF();
-
-            if (status != ClientProtocol.STATUS_OK) {
-                socket.close();
-                throw new GATInvocationException(
-                    "error while getting job info: " + message);
-            }
-
-            if (!in.readUTF().equalsIgnoreCase(id)) {
-                socket.close();
-                throw new GATInvocationException(
-                    "error while getting job info,"
-                        + " received info for wrong job");
-            }
-
-            String executable = in.readUTF();
-            Map attributes = ClientProtocol.readStringMap(in);
-            Map statusMap = ClientProtocol.readStringMap(in);
-            int phase = in.readInt();
-            
-            //close connection
-            out.writeInt(ClientProtocol.CLOSE_CONNECTION);
-            out.flush();
-            socket.close();
-
-            setState(executable, attributes, statusMap, phase);
-        } catch (IOException e) {
-            throw new GATInvocationException("ioexeption on updating state", e);
-        }
-    }
-
-    void setState(String executable, Map attributes, Map status, int phase) {
-        boolean change;
-
-        synchronized (this) {
-            change = (phase != this.phase);
-
-            this.executable = executable;
-            this.attributes = attributes;
-            this.status = status;
-            this.phase = phase;
-
-            // convert Zorilla phase to GAT state
-            if (phase == ClientProtocol.PHASE_UNKNOWN) {
-                this.state = Job.UNKNOWN;
-            } else if (phase == ClientProtocol.PHASE_INITIAL
-                || phase == ClientProtocol.PHASE_SCHEDULING) {
-                this.state = Job.INITIAL;
-            } else if (phase == ClientProtocol.PHASE_RUNNING
-                || phase == ClientProtocol.PHASE_CLOSED) {
-                this.state = Job.RUNNING;
-//            } else if (phase == ZoniProtocol.PHASE_POST_STAGING) {
-//                this.state = Job.POST_STAGING;
-            } else if (phase == ClientProtocol.PHASE_COMPLETED
-                || phase == ClientProtocol.PHASE_CANCELLED) {
-                this.state = Job.STOPPED;
-                notifyAll();
-            } else if (phase == ClientProtocol.PHASE_ERROR) {
-                this.state = Job.SUBMISSION_ERROR;
-                notifyAll();
-            }
-
-        }
-
-        if (change) {
             doCallBack();
+
+        } catch (IOException e) {
+            throw new GATInvocationException("could not update state", e);
+        } catch (ZoniException e) {
+            throw new GATInvocationException("could not update state", e);
         }
+
     }
 
-    public synchronized int getState() {
-        return state;
+    // convert Zorilla phase to GAT state
+    private int state(int phase) throws GATInvocationException {
+        if (phase == ZoniProtocol.PHASE_UNKNOWN) {
+            return Job.UNKNOWN;
+        } else if (phase == ZoniProtocol.PHASE_INITIAL) {
+            return Job.INITIAL;
+        } else if (phase == ZoniProtocol.PHASE_PRE_STAGE) {
+            return Job.PRE_STAGING;
+        } else if (phase == ZoniProtocol.PHASE_SCHEDULING) {
+            return Job.SCHEDULED;
+        } else if (phase == ZoniProtocol.PHASE_RUNNING
+                || phase == ZoniProtocol.PHASE_CLOSED) {
+            return Job.RUNNING;
+        } else if (phase == ZoniProtocol.PHASE_POST_STAGING) {
+            return Job.POST_STAGING;
+        } else if (phase == ZoniProtocol.PHASE_COMPLETED
+                || phase == ZoniProtocol.PHASE_CANCELLED) {
+            return Job.STOPPED;
+        } else if (phase == ZoniProtocol.PHASE_ERROR) {
+            return Job.SUBMISSION_ERROR;
+        }
+        throw new GATInvocationException("unknown Zorilla phase: " + phase);
+    }
+
+    public synchronized int getState() throws GATInvocationException {
+        return state(info.getPhase());
     }
 
     /*
@@ -449,12 +287,18 @@ public class ZorillaJob extends Job implements Runnable {
         return null;
     }
 
-    private void doCallBack() {
+    private void doCallBack() throws GATInvocationException {
         MetricValue v = null;
 
         synchronized (this) {
-            v = new MetricValue(this, getStateString(getState()), statusMetric,
-                System.currentTimeMillis());
+            int state = getState();
+
+            if (state == lastState) {
+                // no need to do callback, no significant change
+                return;
+            }
+            v = new MetricValue(this, getStateString(state), statusMetric,
+                    System.currentTimeMillis());
         }
 
         if (GATEngine.DEBUG) {
@@ -466,32 +310,30 @@ public class ZorillaJob extends Job implements Runnable {
     }
 
     public void run() {
-        synchronized (this) {
-            while (phase < ClientProtocol.PHASE_COMPLETED) {
-                try {
-                    updateState();
-                } catch (Exception e) {
-                    error = new GATInvocationException("Zorilla", e);
+        while (true) {
+            try {
+                updateState();
+            } catch (Exception e) {
+                error = new GATInvocationException("Zorilla", e);
+                synchronized (this) {
                     state = Job.SUBMISSION_ERROR;
+                    return;
+                }
+            }
+
+            synchronized (this) {
+                if (info.getPhase() >= ZoniProtocol.PHASE_COMPLETED) {
+                    logger.debug("Zorilla Job exits..");
+                    return;
                 }
 
                 try {
-                    // wait for 5 minutes, then poll again
-                    // the node should send us updates if there
-                    // are significant changes
-                    wait(5 * 60 * 1000);
+                    wait(5 * 1000);
                 } catch (InterruptedException e) {
                     // IGNORE
                 }
-
             }
         }
-        // one last callback
-        doCallBack();
 
-        // FIXME: do this at a sane time
-        connectionManager.close();
-        logger.debug("Zorilla Job exits..");
     }
-
 }

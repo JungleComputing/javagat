@@ -1,5 +1,7 @@
 package org.gridlab.gat.resources.cpi.zorilla;
 
+import nl.vu.zorilla.zoni.ZoniProtocol;
+
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.Preferences;
@@ -73,7 +75,7 @@ public class ZorillaResourceBrokerAdaptor extends ResourceBrokerCpi {
 
     private static InetSocketAddress parseSocketAddress(String string)
         throws GATInvocationException {
-        int port = ClientProtocol.DEFAULT_PORT;
+        int port = ZoniProtocol.DEFAULT_PORT;
 
         String[] strings = string.split(":");
 
@@ -112,7 +114,7 @@ public class ZorillaResourceBrokerAdaptor extends ResourceBrokerCpi {
         if (addressString == null) {
             //localhost address on default port
             nodeSocketAddress = new InetSocketAddress(InetAddress
-                .getByName(null), ClientProtocol.DEFAULT_PORT);
+                .getByName(null), ZoniProtocol.DEFAULT_PORT);
         } else {
             nodeSocketAddress = parseSocketAddress(addressString);
         }
