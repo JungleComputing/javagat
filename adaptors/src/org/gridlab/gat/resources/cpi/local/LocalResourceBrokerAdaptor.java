@@ -140,7 +140,6 @@ public class LocalResourceBrokerAdaptor extends ResourceBrokerCpi {
         }
 
         String host = getHostname(description);
-
         if (host != null) {
             if (!host.equals("localhost")
                 && !host.equals(IPUtils.getLocalHostName())) {

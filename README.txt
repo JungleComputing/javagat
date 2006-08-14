@@ -52,8 +52,9 @@ you most likely don't need this step.
 
 RUNNING GAT APPLICATIONS
 ------------------------
-To run GAT applications, you can use the bin/run_gat_app script, both
-on Windows and Unix systems.
+To run GAT applications, you can use the provided example script bin/run_gat_app, both
+on Windows and Unix systems. You do not have to use this script, it is just an easy 
+example script that works in simple cases.
 
 If you don't use this script, you have to specify the directory that
 contains the .jar files of the adaptors with:
