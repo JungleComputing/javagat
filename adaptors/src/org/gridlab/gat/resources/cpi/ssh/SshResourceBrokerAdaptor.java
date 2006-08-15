@@ -44,7 +44,7 @@ import com.jcraft.jsch.Session;
  * An instance of this class is used to execute remote jobs. 
  */
 
-public class SshBrokerAdaptor extends ResourceBrokerCpi {
+public class SshResourceBrokerAdaptor extends ResourceBrokerCpi {
 
     public static final int SSH_PORT = 22;
 
@@ -57,7 +57,7 @@ public class SshBrokerAdaptor extends ResourceBrokerCpi {
      * @param gatContext
      *            A GATContext which will be used to execute remote jobs
      */
-    public SshBrokerAdaptor(GATContext gatContext, Preferences preferences)
+    public SshResourceBrokerAdaptor(GATContext gatContext, Preferences preferences)
         throws Exception {
         super(gatContext, preferences);
     }

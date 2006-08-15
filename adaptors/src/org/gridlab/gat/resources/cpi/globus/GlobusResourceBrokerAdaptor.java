@@ -33,8 +33,8 @@ import org.ietf.jgss.GSSException;
 /**
  * @author rob
  */
-public class GlobusBrokerAdaptor extends ResourceBrokerCpi {
-    public GlobusBrokerAdaptor(GATContext gatContext, Preferences preferences)
+public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
+    public GlobusResourceBrokerAdaptor(GATContext gatContext, Preferences preferences)
             throws GATObjectCreationException {
         super(gatContext, preferences);
         // turn off all annoying cog prints
