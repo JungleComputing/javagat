@@ -58,7 +58,7 @@ public class GlobusJob extends Job implements GramJobListener,
 
     static int jobsAlive = 0;
 
-    GlobusBrokerAdaptor broker;
+    GlobusResourceBrokerAdaptor broker;
 
     JobDescription jobDescription;
 
@@ -76,7 +76,7 @@ public class GlobusJob extends Job implements GramJobListener,
 
     JobPoller poller;
 
-    public GlobusJob(GlobusBrokerAdaptor broker, JobDescription jobDescription,
+    public GlobusJob(GlobusResourceBrokerAdaptor broker, JobDescription jobDescription,
         GramJob j) {
         this.broker = broker;
         this.jobDescription = jobDescription;

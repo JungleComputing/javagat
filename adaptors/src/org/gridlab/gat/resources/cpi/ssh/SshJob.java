@@ -45,7 +45,7 @@ public class SshJob extends Job {
         }
     }
 
-    SshBrokerAdaptor broker;
+    SshResourceBrokerAdaptor broker;
 
     GATInvocationException postStageException = null;
 
@@ -71,7 +71,7 @@ public class SshJob extends Job {
         return globalJobID++;
     }
 
-    SshJob(SshBrokerAdaptor broker, JobDescription description,
+    SshJob(SshResourceBrokerAdaptor broker, JobDescription description,
         Session session, Channel channel, String host)
         throws GATInvocationException {
         this.broker = broker;

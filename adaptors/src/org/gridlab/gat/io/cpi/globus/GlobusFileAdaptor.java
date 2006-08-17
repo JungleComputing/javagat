@@ -198,7 +198,7 @@ public abstract class GlobusFileAdaptor extends FileCpi {
             srcClient.setActive(hp);
 
             boolean append = true;
-            String remoteSrcFile = this.getPath();
+            String remoteSrcFile = src.getPath();
             String remoteDestFile = dest.getPath();
 
             srcClient.transfer(remoteSrcFile, destClient, remoteDestFile,
@@ -209,7 +209,7 @@ public abstract class GlobusFileAdaptor extends FileCpi {
                 java.io.File tmp = null;
                 tmp = java.io.File.createTempFile("GATgridFTP", ".tmp");
 
-                copyToLocal(toURI(), new URI(tmp.toURI()));
+                copyToLocal(src, new URI(tmp.toURI()));
                 copyToRemote(new URI(tmp.toURI()), dest);
             } catch (Exception e2) {
                 GATInvocationException oops = new GATInvocationException();
