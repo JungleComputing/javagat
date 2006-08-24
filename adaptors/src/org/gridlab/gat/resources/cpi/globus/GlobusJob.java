@@ -101,7 +101,7 @@ public class GlobusJob extends Job implements GramJobListener,
      * @see org.gridlab.gat.resources.Job#getExitStatus()
      */
     public synchronized int getExitStatus() throws GATInvocationException {
-         if(state != STOPPED) throw new GATInvocationException("not in STOPPED state");
+         if(state != STOPPED) throw new GATInvocationException("not in RUNNING state");
          return 0; // @@@ we have to assume that the job ran correctly.
     }
 
