@@ -171,25 +171,24 @@ public class GATEngine {
                 adaptorPathList.addAll(l);
             }
         }
-
-        if (DEBUG) {
-            System.err.println("List of GAT jar files is: ");
-            printJars(adaptorPathList);
-        }
-
+        
         ArrayList adaptorPathURLs = new ArrayList();
 
+        // Sort jar files: put adaptors first.
+        // Adaptors might override classes in the external jars,
+        // to fix bugs in globus for instance.
         for (int i = 0; i < adaptorPathList.size(); i++) {
             JarFile jarFile = (JarFile) adaptorPathList.get(i);
 
             try {
                 File f = new File(jarFile.getName());
 
-                // this does not work for windows (slashes)
-                //                String path = "file://" + f.getCanonicalPath();
-                //                URL u = new URL(path);
-                //                adaptorPathURLs.add(u);
-                adaptorPathURLs.add(f.toURL());
+                if(jarFile.getName().endsWith("Adaptor.jar")) {
+                    adaptorPathURLs.add(0, f.toURL()); // add to beginning
+                } else {
+                    adaptorPathURLs.add(f.toURL()); // add to end
+                }
+
             } catch (Exception e) {
                 throw new Error(e);
             }
@@ -201,16 +200,20 @@ public class GATEngine {
             urls[i] = (URL) adaptorPathURLs.get(i);
         }
 
+        if (DEBUG) {
+            System.err.println("List of GAT jar files is: ");
+            printJars(urls);
+        }
+
         gatClassLoader = new URLClassLoader(urls, this.getClass().getClassLoader());
 
         // Populate cpiClasses
         loadJarFiles(adaptorPathList);
     }
 
-    protected void printJars(List l) {
-        for (int i = 0; i < l.size(); i++) {
-            JarFile f = (JarFile) l.get(i);
-            System.err.println("    " + f.getName());
+    protected void printJars(URL[] urls) {
+        for (int i = 0; i < urls.length; i++) {
+            System.err.println("    " + urls[i].getFile());
         }
     }
 

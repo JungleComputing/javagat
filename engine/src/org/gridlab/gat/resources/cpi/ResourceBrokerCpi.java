@@ -136,7 +136,7 @@ public abstract class ResourceBrokerCpi implements ResourceBroker {
 
         if(a == null) return 1;
         
-        if((a instanceof String)) {
+        if(!(a instanceof String)) {
             throw new GATInvocationException("the cpu count must be a string");
         }
         

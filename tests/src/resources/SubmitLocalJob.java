@@ -26,7 +26,7 @@ public class SubmitLocalJob {
     public static void main(String[] args) {
         GATContext context = new GATContext();
         Preferences prefs = new Preferences();
-        prefs.put("ResourceBroker.adaptor.name", "local");
+        prefs.put("ResourceBroker.adaptor.name", "Zorilla");
 
         URI exe = null;
 

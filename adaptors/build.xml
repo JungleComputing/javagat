@@ -119,13 +119,13 @@
 			</manifest>
 		</jar>
 
-		<jar jarfile="${lib}/FTPFileAdaptor.jar" basedir="${tmp}" includes="org/gridlab/gat/io/cpi/globus/**">
+		<jar jarfile="${lib}/FTPFileAdaptor.jar" basedir="${tmp}" includes="org/gridlab/gat/io/cpi/globus/**,org/globus/ftp/vanilla/**">
 			<manifest>
 				<attribute name="FileCpi-class" value="org.gridlab.gat.io.cpi.globus.FTPFileAdaptor" />
 			</manifest>
 		</jar>
 
-		<jar jarfile="${lib}/GridFTPFileAdaptor.jar" basedir="${tmp}" includes="org/gridlab/gat/io/cpi/globus/**,org/gridlab/gat/security/**">
+		<jar jarfile="${lib}/GridFTPFileAdaptor.jar" basedir="${tmp}" includes="org/gridlab/gat/io/cpi/globus/**,org/gridlab/gat/security/**,org/globus/ftp/vanilla/**">
 			<manifest>
 				<attribute name="FileCpi-class" value="org.gridlab.gat.io.cpi.globus.GridFTPFileAdaptor" />
 			</manifest>
@@ -137,25 +137,25 @@
 			</manifest>
 		</jar>
 
-		<jar jarfile="${lib}/FTPFileInputStreamAdaptor.jar" basedir="${tmp}" includes="org/gridlab/gat/io/cpi/globus/**">
+		<jar jarfile="${lib}/FTPFileInputStreamAdaptor.jar" basedir="${tmp}" includes="org/gridlab/gat/io/cpi/globus/**,org/globus/ftp/vanilla/**">
 			<manifest>
 				<attribute name="FileInputStreamCpi-class" value="org.gridlab.gat.io.cpi.globus.FTPFileInputStreamAdaptor" />
 			</manifest>
 		</jar>
 
-		<jar jarfile="${lib}/GridFTPFileInputStreamAdaptor.jar" basedir="${tmp}" includes="org/gridlab/gat/io/cpi/globus/**,org/gridlab/gat/security/**">
+		<jar jarfile="${lib}/GridFTPFileInputStreamAdaptor.jar" basedir="${tmp}" includes="org/gridlab/gat/io/cpi/globus/**,org/gridlab/gat/security/**,org/globus/ftp/vanilla/**">
 			<manifest>
 				<attribute name="FileInputStreamCpi-class" value="org.gridlab.gat.io.cpi.globus.GridFTPFileInputStreamAdaptor" />
 			</manifest>
 		</jar>
 
-		<jar jarfile="${lib}/HTTPFileInputStreamAdaptor.jar" basedir="${tmp}" includes="org/gridlab/gat/io/cpi/globus/**">
+		<jar jarfile="${lib}/HTTPFileInputStreamAdaptor.jar" basedir="${tmp}" includes="org/gridlab/gat/io/cpi/globus/**,org/globus/ftp/vanilla/**">
 			<manifest>
 				<attribute name="FileInputStreamCpi-class" value="org.gridlab.gat.io.cpi.globus.HTTPFileInputStreamAdaptor" />
 			</manifest>
 		</jar>
 
-		<jar jarfile="${lib}/HTTPSFileInputStreamAdaptor.jar" basedir="${tmp}" includes="org/gridlab/gat/io/cpi/globus/**">
+		<jar jarfile="${lib}/HTTPSFileInputStreamAdaptor.jar" basedir="${tmp}" includes="org/gridlab/gat/io/cpi/globus/**,org/globus/ftp/vanilla/**">
 			<manifest>
 				<attribute name="FileInputStreamCpi-class" value="org.gridlab.gat.io.cpi.globus.HTTPSFileInputStreamAdaptor" />
 			</manifest>
@@ -173,25 +173,25 @@
 			</manifest>
 		</jar>
 
-		<jar jarfile="${lib}/FTPFileOutputStreamAdaptor.jar" basedir="${tmp}" includes="org/gridlab/gat/io/cpi/globus/**">
+		<jar jarfile="${lib}/FTPFileOutputStreamAdaptor.jar" basedir="${tmp}" includes="org/gridlab/gat/io/cpi/globus/**,org/globus/ftp/vanilla/**">
 			<manifest>
 				<attribute name="FileOutputStreamCpi-class" value="org.gridlab.gat.io.cpi.globus.FTPFileOutputStreamAdaptor" />
 			</manifest>
 		</jar>
 
-		<jar jarfile="${lib}/GridFTPFileOutputStreamAdaptor.jar" basedir="${tmp}" includes="org/gridlab/gat/io/cpi/globus/**,org/gridlab/gat/security/**">
+		<jar jarfile="${lib}/GridFTPFileOutputStreamAdaptor.jar" basedir="${tmp}" includes="org/gridlab/gat/io/cpi/globus/**,org/gridlab/gat/security/**,org/globus/ftp/vanilla/**">
 			<manifest>
 				<attribute name="FileOutputStreamCpi-class" value="org.gridlab.gat.io.cpi.globus.GridFTPFileOutputStreamAdaptor" />
 			</manifest>
 		</jar>
 
-		<jar jarfile="${lib}/HTTPFileOutputStreamAdaptor.jar" basedir="${tmp}" includes="org/gridlab/gat/io/cpi/globus/**">
+		<jar jarfile="${lib}/HTTPFileOutputStreamAdaptor.jar" basedir="${tmp}" includes="org/gridlab/gat/io/cpi/globus/**,org/globus/ftp/vanilla/**">
 			<manifest>
 				<attribute name="FileOutputStreamCpi-class" value="org.gridlab.gat.io.cpi.globus.HTTPFileOutputStreamAdaptor" />
 			</manifest>
 		</jar>
 
-		<jar jarfile="${lib}/HTTPSFileOutputStreamAdaptor.jar" basedir="${tmp}" includes="org/gridlab/gat/io/cpi/globus/**">
+		<jar jarfile="${lib}/HTTPSFileOutputStreamAdaptor.jar" basedir="${tmp}" includes="org/gridlab/gat/io/cpi/globus/**,org/globus/ftp/vanilla/**">
 			<manifest>
 				<attribute name="FileOutputStreamCpi-class" value="org.gridlab.gat.io.cpi.globus.HTTPSFileOutputStreamAdaptor" />
 			</manifest>
@@ -229,13 +229,13 @@
 
   		<jar jarfile="${lib}/SshResourceBrokerAdaptor.jar" basedir="${tmp}" includes="org/gridlab/gat/resources/cpi/ssh/*.class">
 			<manifest>
-				<attribute name="ResourceBrokerCpi-class" value="org.gridlab.gat.resources.cpi.ssh.SshBrokerAdaptor" />
+				<attribute name="ResourceBrokerCpi-class" value="org.gridlab.gat.resources.cpi.ssh.SshResourceBrokerAdaptor" />
 			</manifest>
 		</jar>
 
-		<jar jarfile="${lib}/GlobusBrokerAdaptor.jar" basedir="${tmp}" includes="**/org/gridlab/gat/resources/cpi/globus/*.class">
+		<jar jarfile="${lib}/GlobusResourceBrokerAdaptor.jar" basedir="${tmp}" includes="**/org/gridlab/gat/resources/cpi/globus/*.class,org/globus/ftp/vanilla/**">
 			<manifest>
-				<attribute name="ResourceBrokerCpi-class" value="org.gridlab.gat.resources.cpi.globus.GlobusBrokerAdaptor" />
+				<attribute name="ResourceBrokerCpi-class" value="org.gridlab.gat.resources.cpi.globus.GlobusResourceBrokerAdaptor" />
 			</manifest>
 		</jar>
 
@@ -247,7 +247,7 @@
 
                  <jar jarfile="${lib}/ProActiveBrokerAdaptor.jar" basedir="${tmp}" includes="**/org/gridlab/gat/resources/cpi/proactive/*.class,**/org/objectweb/proactive/GATAdaptor/*.class">
                          <manifest>
-                                 <attribute name="ResourceBrokerCpi-class" value="org.gridlab.gat.resources.cpi.proactive.ProActiveBrokerAdaptor" />
+                                 <attribute name="ResourceBrokerCpi-class" value="org.gridlab.gat.resources.cpi.proactive.ProActiveResourceBrokerAdaptor" />
                          </manifest>
                  </jar>
 

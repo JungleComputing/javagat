@@ -35,7 +35,7 @@ public class SubmitJob {
 		File errFile = null;
 
 		try {
-			exe = new URI("file:////bin/date");
+			exe = new URI("java:NQueens");
 			out = new URI("file:///date.out");
 			err = new URI("file:///date.err");
 		} catch (URISyntaxException e) {
@@ -55,6 +55,15 @@ public class SubmitJob {
 		sd.setLocation(exe);
 		sd.setStdout(outFile);
 		sd.setStderr(errFile);
+
+                String[] arguments = new String[] {"21", "1", "5"};
+
+                sd.setArguments(arguments);
+
+                java.util.HashMap map = new java.util.HashMap();
+                map.put("nr.of.workers", "2");
+
+                sd.setAttributes(map);
 
 		Hashtable hardwareAttributes = new Hashtable();
 

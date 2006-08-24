@@ -88,7 +88,7 @@ class GrabberThread extends Thread {
 
 }
 
-public class ProActiveBrokerAdaptor extends ResourceBrokerCpi {
+public class ProActiveResourceBrokerAdaptor extends ResourceBrokerCpi {
 
     ProActiveDescriptor[] pads;
 
@@ -113,7 +113,7 @@ public class ProActiveBrokerAdaptor extends ResourceBrokerCpi {
 
     private static int MAX_WAIT_TRIES=10;
 
-    public ProActiveBrokerAdaptor(GATContext gatContext, Preferences preferences)
+    public ProActiveResourceBrokerAdaptor(GATContext gatContext, Preferences preferences)
             throws GATObjectCreationException {
         super(gatContext, preferences);
 

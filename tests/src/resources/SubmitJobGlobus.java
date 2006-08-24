@@ -24,9 +24,9 @@ import org.gridlab.gat.resources.SoftwareDescription;
 /**
  * @author rob
  */
-public class SubmitJobLocalDemo implements MetricListener {
+public class SubmitJobGlobus implements MetricListener {
     public static void main(String[] args) throws Exception {
-        new SubmitJobLocalDemo().start(args);
+        new SubmitJobGlobus().start(args);
     }
 
     public synchronized void processMetricEvent(MetricValue val) {
@@ -36,21 +36,21 @@ public class SubmitJobLocalDemo implements MetricListener {
     public void start(String[] args) throws Exception {
         GATContext context = new GATContext();
         Preferences prefs = new Preferences();
-        prefs.put("adaptors.zorilla", "true");
+        prefs.put("ResourceBroker.adaptor.name", "Globus");
 
-        File outFile = GAT.createFile(context, prefs, new URI(
-            "file:///date.out"));
-        File errFile = GAT.createFile(context, prefs, new URI(
-            "file:///date.err"));
-        File stageInFile = null;
-            
+        File outFile = GAT.createFile(context, prefs,
+            new URI("any:///out"));
+        File errFile = GAT.createFile(context, prefs,
+            new URI("any:///err"));
 
         SoftwareDescription sd = new SoftwareDescription();
-        sd.setLocation(new URI("file:////bin/date"));
+        sd.setLocation(new URI(args[0]));
         sd.setStdout(outFile);
         sd.setStderr(errFile);
 
         Hashtable hardwareAttributes = new Hashtable();
+        hardwareAttributes.put("machine.node", "fs0.das2.cs.vu.nl");
+
         ResourceDescription rd = new HardwareResourceDescription(
             hardwareAttributes);
 
@@ -71,5 +71,7 @@ public class SubmitJobLocalDemo implements MetricListener {
 
         System.err.println("SubmitJobCallback: Job finished, state = "
             + job.getInfo());
+        
+        GAT.end();
     }
 }
