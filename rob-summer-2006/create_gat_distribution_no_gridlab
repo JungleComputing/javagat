@@ -1,0 +1,26 @@
+#!/bin/sh
+
+if [ -z "$1" ] ; then
+        echo use the desired version number as an argument
+	exit 1
+fi
+
+cd engine; ant clean; rm -rf tmp_eclipse*; cd -
+cd adaptors; ant clean; rm -rf tmp_eclipse*; cd -
+cd tests; ant clean; rm -rf tmp_eclipse*; cd -
+rm -rf JavaGAT-$1
+mkdir JavaGAT-$1
+cp -R engine JavaGAT-$1
+cp -R adaptors JavaGAT-$1
+cp -R tests JavaGAT-$1
+cp -R doc JavaGAT-$1
+cp -R bin JavaGAT-$1
+cp *.txt JavaGAT-$1
+cp *.xml JavaGAT-$1
+cp *.properties JavaGAT-$1
+find JavaGAT-$1 -name .svn -exec rm -rf {} \; 2> /dev/null
+find JavaGAT-$1 -name \*~ -exec rm -rf {} \; 2> /dev/null
+find JavaGAT-$1 -name .??\* -exec rm -rf {} \; 2> /dev/null
+tar czf JavaGAT-$1.tgz JavaGAT-$1
+zip -r JavaGAT-$1.zip JavaGAT-$1
+rm -rf JavaGAT-$1

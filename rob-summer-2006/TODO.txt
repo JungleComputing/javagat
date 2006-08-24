@@ -1,0 +1,25 @@
+- format TODOs and readmes in HTML (to avoid linebreak problems windows/linux)
+- fix firing of metrics: store unsubscribe / subscribe until a good moment, 
+  don't handle them in the upcall itself
+- document preferences
+- implement GATSelf
+- Allow adaptor.name preference to be a list
+- fix release page: mention that there are no external deps, list adaptors
+- GAT factory: create versions that don't need a context? 
+  Use a default context when none is provided? --Ask Andre what he thinks
+- Think about the case where an adaptor throws an exception because there is an irrecoverable
+  error (file does not extist). In this case, there is no need to try the other adaptors.
+- brokering: also allow output to be printed on the sceen, when no output files are given.
+  maybe use special property for this? Not all middlewares can do this.
+- start Java apps
+
+  SSH: - If the executable does not exist, we get no error.
+       - Broker does not work to fs3
+       - Also add retry code for file stransfers (already done for job submit)
+       - use a cache to save on connection setup time(also for sftp)
+       - remote streaming seems to hang
+       - cache connections for ssh adaptor (Ana?)
+       - support environment vars in ssh broker.
+
+- resource broker adaptors should fill in ALL defined states in the getInfo call.
+- GAT_LOCATION -> JAVAGAT_HOME
