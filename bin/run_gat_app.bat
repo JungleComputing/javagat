@@ -20,4 +20,4 @@ SET GAT_CLASSPATH=
 FOR %%i IN ("%GAT_ENGINE_LIBS%\*.jar") DO CALL "%GAT_ENGINE_LOCATION%\bin\AddToGATClassPath.bat" %%i
 FOR %%i IN ("%GAT_TESTS_LIB%\*.jar") DO CALL "%GAT_ENGINE_LOCATION%\bin\AddToGATClassPath.bat" %%i
 
-java -cp %CLASSPATH%;%GAT_CLASSPATH% -Dgat.adaptor.path=%GAT_ADAPTORS% %*
+java -cp %CLASSPATH%;%GAT_CLASSPATH% -Dlog4j.configuration=file:%GAT_LOCATION%\log4j.properties -Dgat.adaptor.path=%GAT_ADAPTORS% %*
