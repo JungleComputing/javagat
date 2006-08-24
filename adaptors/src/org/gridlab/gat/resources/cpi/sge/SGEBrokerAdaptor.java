@@ -23,6 +23,7 @@ import org.gridlab.gat.URI;
 // org.gridlab.gat.resources imports
 import org.gridlab.gat.resources.cpi.ResourceBrokerCpi;
 import org.gridlab.gat.resources.ResourceDescription;
+import org.gridlab.gat.resources.HardwareResourceDescription;
 import org.gridlab.gat.resources.SoftwareDescription;
 import org.gridlab.gat.resources.Reservation;
 import org.gridlab.gat.resources.Resource;
@@ -31,9 +32,12 @@ import org.gridlab.gat.resources.JobDescription;
 import org.gridlab.gat.resources.cpi.ResourceBrokerCpi;
 import org.gridlab.gat.FilePrestageException;
 
+import org.gridlab.gat.resources.Job;
+
 import java.rmi.RemoteException;
 import java.io.IOException;
 import java.util.Map;
+import java.util.HashMap;
 import java.util.Set;
 import java.util.List;
 
@@ -41,7 +45,11 @@ import java.util.List;
  *
  * @author ole.weidner
  */
+
+
+
 public class SGEBrokerAdaptor extends ResourceBrokerCpi {
+
     
     private Session SGEsession;
 
@@ -109,8 +117,8 @@ public class SGEBrokerAdaptor extends ResourceBrokerCpi {
         }        
        
         try {          
-            
-            SGEsession.init(null);
+        
+            SGEsession.init( hostURI.toString() );
             JobTemplate jt = SGEsession.createJobTemplate();
         
             if( sd.getLocation() != null)
@@ -129,12 +137,17 @@ public class SGEBrokerAdaptor extends ResourceBrokerCpi {
         
             sgejob = new SGEJob(this, description,SGEsession, id);
         
-        
+
+            
+            
         } catch(DrmaaException e) {
             System.err.println("Execption in SGEBRokerAdaptor");
             System.err.println(e);
         }
         
+       
+       
+       
         return sgejob;
     }
 }
