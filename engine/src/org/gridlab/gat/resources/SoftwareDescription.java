@@ -269,4 +269,32 @@ public class SoftwareDescription implements java.io.Serializable {
     public void setStdout(File stdout) {
         this.stdout = stdout;
     }
+    
+    public String toString() {
+        String res = "SoftwareDescription(";
+        res += "location: " + (location == null ? "null" : location.toString());
+        
+        res += ", arguments: ";
+        if(arguments != null) {
+            for (int i=0; i<arguments.length; i++) {
+                res += "";
+                    if(i != arguments.length -1) res += ", ";
+            }
+        } else {
+            res += "null";
+        }
+
+        res += ", stdin: " + (stdin == null ? "null" : stdin.toString());
+        res += ", stdout: " + (stdout == null ? "null" : stdout.toString());
+        res += ", stderr: " + (stderr == null ? "null" : stderr.toString());
+
+        res += ", environment: " + (environment == null ? "null" : environment.toString());
+        res += ", preStaged: " + (preStagedFiles == null ? "null" : preStagedFiles.toString());
+        res += ", postStaged: " + (postStagedFiles == null ? "null" : postStagedFiles.toString());
+        res += ", attributes: " + (attributes == null ? "null" : attributes.toString());
+
+        res += ")";
+        
+        return res;
+    }
 }

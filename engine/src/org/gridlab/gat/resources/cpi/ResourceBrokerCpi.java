@@ -292,7 +292,7 @@ public abstract class ResourceBrokerCpi implements ResourceBroker {
         dest += ((src.getUserInfo() == null) ? "" : src.getUserInfo());
         dest += host;
         dest += ((src.getPort() == -1) ? "" : (":" + src.getPort()));
-        dest += ("/" + f.getName());
+        dest += ("/" + f.getPath());
 
         URI destURI = null;
 
@@ -330,14 +330,20 @@ public abstract class ResourceBrokerCpi implements ResourceBroker {
             while (i.hasNext()) {
                 File destFile = (File) i.next();
                 File srcFile = (File) post.get(destFile);
+                File newDest;
+                
+                try {
+                    newDest = GAT.createFile(gatContext, preferences, destFile.getName());
+                } catch (GATObjectCreationException e) {
+                    throw new GATInvocationException("resourcebroker cpi", e);
+                }
 
                 if (srcFile != null) { // already set manually
-                    result.put(destFile, srcFile);
-
+                    result.put(newDest, srcFile);
                     continue;
                 }
 
-                result.put(destFile, resolvePostStagedFile(destFile, host));
+                result.put(newDest, resolvePostStagedFile(destFile, host));
             }
         }
 
@@ -398,7 +404,7 @@ public abstract class ResourceBrokerCpi implements ResourceBroker {
                 "The job description does not contain a software description");
         }
 
-        Map files = resolvePostStagedFiles(description, host);
+        Map files = resolvePostStagedFiles(description, host);        
         Set keys = files.keySet();
         Iterator i = keys.iterator();
 
@@ -409,16 +415,16 @@ public abstract class ResourceBrokerCpi implements ResourceBroker {
             File srcFile = (File) files.get(destFile);
 
             try {
-                if (!destFile.equals(srcFile)) {
+                if (!destFile.equals(srcFile) && !srcFile.isAbsolute()) {
                     if (GATEngine.VERBOSE) {
                         System.err
                             .println("resource broker cpi remove poststaged:");
                         System.err.println("  remove " + srcFile.toURI());
                     }
 
-                    if (srcFile.exists()) {
-                        srcFile.delete();
-                    }
+                    // Just try to delete it, even though it might not exists.
+                    // We catch the exception and continue anyway.
+                    srcFile.delete();
                 }
             } catch (Exception e) {
                 exceptions.add("resource broker cpi", e);

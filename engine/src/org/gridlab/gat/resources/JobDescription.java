@@ -86,4 +86,16 @@ public class JobDescription implements java.io.Serializable {
     public void setSoftwareDescription(SoftwareDescription softwareDescription) {
         this.softwareDescription = softwareDescription;
     }
+    
+    public String toString() {
+        String res = " JobDescription(";
+
+        res += "softwareDescription: " + (softwareDescription == null ?  "null" : softwareDescription.toString());
+        res += ", resourceDescription: " + (resourceDescription == null ?  "null" : resourceDescription.toString());
+        res += ", resource: " + (resource == null ?  "null" : resource.toString());
+        
+        res += ")";
+        
+        return res;
+    }
 }

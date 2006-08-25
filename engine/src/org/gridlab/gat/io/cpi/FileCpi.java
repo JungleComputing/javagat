@@ -226,8 +226,8 @@ public abstract class FileCpi implements File {
         return location.hashCode();
     }
 
-    public boolean isAbsolute() throws GATInvocationException {
-        throw new UnsupportedOperationException("Not implemented");
+    public final boolean isAbsolute() throws GATInvocationException {
+        return new java.io.File(location.getPath()).isAbsolute();
     }
 
     public boolean isDirectory() throws GATInvocationException {

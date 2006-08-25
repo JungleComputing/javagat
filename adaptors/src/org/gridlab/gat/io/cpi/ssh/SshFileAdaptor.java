@@ -1818,29 +1818,6 @@ public class SshFileAdaptor extends FileCpi {
     /*
      * (non-Javadoc)
      *
-     * @see org.gridlab.gat.io.File#isAbsolute()
-     */
-    public boolean isAbsolute() {
-        switch (osType) {
-        case XOS:
-
-            if (getPath().startsWith("/")) {
-                return true;
-            } else {
-                return false;
-            }
-
-        case WOS:
-            throw new Error("Not implemented");
-
-        default:
-            throw new Error("Unknown remote OS type");
-        }
-    }
-
-    /*
-     * (non-Javadoc)
-     *
      * @see org.gridlab.gat.io.File#isDirectory()
      */
     public boolean isDirectory() {

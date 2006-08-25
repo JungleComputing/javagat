@@ -139,7 +139,6 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
         String contact = getResourceManagerContact(description);
 
         URI hostUri;
-
         try {
             hostUri = new URI(host);
         } catch (Exception e) {

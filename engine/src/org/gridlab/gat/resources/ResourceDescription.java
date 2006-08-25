@@ -218,4 +218,15 @@ public abstract class ResourceDescription implements java.io.Serializable {
             throws NoSuchElementException {
         resourceDescriptions.remove(hardwareResourceDescription);
     }
+    
+    public String toString() {
+        String res = "ResourceDescription(";
+
+        res += ", attributes: " + (attributes == null ? "null" : attributes.toString());
+        res += ", resourceDescriptions: " + (resourceDescriptions == null ? "null" : resourceDescriptions.toString());
+
+        res += ")";
+        
+        return res;
+    }
 }
