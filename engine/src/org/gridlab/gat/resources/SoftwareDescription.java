@@ -33,7 +33,7 @@ public class SoftwareDescription implements java.io.Serializable {
 
     private HashMap preStagedFiles; // contains (src, dest) tuples
 
-    private HashMap postStagedFiles; // contains (dest,src) tuples !!! (key cannot be null)
+    private HashMap postStagedFiles; // contains (src, dest) tuples
 
     private HashMap attributes;
 
@@ -157,18 +157,18 @@ public class SoftwareDescription implements java.io.Serializable {
         preStagedFiles.put(src, dest);
     }
 
-    /* src can be null, this means file with the same name in the CWD at the remote machine */
+    /* dest can be null, this means file with the same name in the CWD at the remote machine */
     public void addPostStagedFile(File src, File dest) {
-        if (dest == null) {
+        if (src == null) {
             throw new NullPointerException(
                 "the destination file cannot be null when adding a postStaged file");
         }
 
-        postStagedFiles.put(dest, src);
+        postStagedFiles.put(src, dest);
     }
 
     /**
-     * @return Returns the postStaged files. the order inside a tuple in this map is (dest,src)
+     * @return Returns the postStaged files. the order inside a tuple in this map is (src, dest)
      */
     public Map getPostStaged() {
         return postStagedFiles;
@@ -182,7 +182,7 @@ public class SoftwareDescription implements java.io.Serializable {
         postStagedFiles = new HashMap();
 
         for (int i = 0; i < postStaged.length; i++) {
-            addPostStagedFile(null, postStaged[i]);
+            addPostStagedFile(postStaged[i], null);
         }
     }
 
