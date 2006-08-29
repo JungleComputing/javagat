@@ -3,13 +3,14 @@
  */
 package org.gridlab.gat;
 
+import ibis.util.IPUtils;
+
 import java.io.File;
 import java.io.Serializable;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
 
-import org.gridlab.gat.engine.IPUtils;
 import org.gridlab.gat.util.URIEncoder;
 
 /**

@@ -1,5 +1,7 @@
 package org.gridlab.gat.resources.cpi.local;
 
+import ibis.util.IPUtils;
+
 import java.io.IOException;
 import java.io.OutputStream;
 import java.rmi.RemoteException;
@@ -17,7 +19,6 @@ import org.gridlab.gat.Preferences;
 import org.gridlab.gat.TimePeriod;
 import org.gridlab.gat.URI;
 import org.gridlab.gat.engine.GATEngine;
-import org.gridlab.gat.engine.IPUtils;
 import org.gridlab.gat.io.FileInputStream;
 import org.gridlab.gat.io.FileOutputStream;
 import org.gridlab.gat.resources.Job;

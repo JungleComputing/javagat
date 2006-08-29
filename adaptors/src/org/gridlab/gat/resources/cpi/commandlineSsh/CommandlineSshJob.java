@@ -3,13 +3,14 @@
  */
 package org.gridlab.gat.resources.cpi.commandlineSsh;
 
+import ibis.util.IPUtils;
+
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
 import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.engine.GATEngine;
-import org.gridlab.gat.engine.IPUtils;
 import org.gridlab.gat.monitoring.Metric;
 import org.gridlab.gat.monitoring.MetricDefinition;
 import org.gridlab.gat.monitoring.MetricValue;
