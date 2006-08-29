@@ -3,6 +3,8 @@
  */
 package org.gridlab.gat.io.cpi.sockets;
 
+import ibis.util.IPUtils;
+
 import java.io.IOException;
 import java.io.Serializable;
 import java.io.StringWriter;
@@ -17,7 +19,6 @@ import org.gridlab.gat.GATObjectCreationException;
 import org.gridlab.gat.Preferences;
 import org.gridlab.gat.advert.Advertisable;
 import org.gridlab.gat.engine.GATEngine;
-import org.gridlab.gat.engine.IPUtils;
 import org.gridlab.gat.io.Pipe;
 import org.gridlab.gat.io.PipeListener;
 import org.gridlab.gat.io.cpi.EndpointCpi;
