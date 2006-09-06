@@ -8,34 +8,48 @@
 package org.gridlab.gat.resources.cpi.sge;
 
 // org.ggf.drmaa imports
-import java.io.IOException;
-import java.rmi.RemoteException;
-import java.util.List;
+import java.util.Properties;
+import org.ggf.drmaa.*;
+import com.sun.grid.drmaa.SessionFactoryImpl;
 
-import org.ggf.drmaa.DrmaaException;
-import org.ggf.drmaa.JobTemplate;
-import org.ggf.drmaa.Session;
-import org.ggf.drmaa.SessionFactory;
-import org.gridlab.gat.FilePrestageException;
+
+// org.gridlab.gat imports
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.GATObjectCreationException;
 import org.gridlab.gat.Preferences;
 import org.gridlab.gat.TimePeriod;
 import org.gridlab.gat.URI;
-import org.gridlab.gat.resources.Job;
-import org.gridlab.gat.resources.JobDescription;
+// org.gridlab.gat.resources imports
+import org.gridlab.gat.resources.cpi.ResourceBrokerCpi;
+import org.gridlab.gat.resources.ResourceDescription;
+import org.gridlab.gat.resources.HardwareResourceDescription;
+import org.gridlab.gat.resources.SoftwareDescription;
 import org.gridlab.gat.resources.Reservation;
 import org.gridlab.gat.resources.Resource;
-import org.gridlab.gat.resources.ResourceDescription;
-import org.gridlab.gat.resources.SoftwareDescription;
+import org.gridlab.gat.resources.Job;
+import org.gridlab.gat.resources.JobDescription;
 import org.gridlab.gat.resources.cpi.ResourceBrokerCpi;
+import org.gridlab.gat.FilePrestageException;
+
+import org.gridlab.gat.resources.Job;
+
+import java.rmi.RemoteException;
+import java.io.IOException;
+import java.util.Map;
+import java.util.HashMap;
+import java.util.Set;
+import java.util.List;
 
 /**
  *
  * @author ole.weidner
  */
+
+
+
 public class SGEBrokerAdaptor extends ResourceBrokerCpi {
+
     
     private Session SGEsession;
 
@@ -103,8 +117,8 @@ public class SGEBrokerAdaptor extends ResourceBrokerCpi {
         }        
        
         try {          
-            
-            SGEsession.init(null);
+        
+            SGEsession.init( hostURI.toString() );
             JobTemplate jt = SGEsession.createJobTemplate();
         
             if( sd.getLocation() != null)
@@ -123,12 +137,17 @@ public class SGEBrokerAdaptor extends ResourceBrokerCpi {
         
             sgejob = new SGEJob(this, description,SGEsession, id);
         
-        
+
+            
+            
         } catch(DrmaaException e) {
             System.err.println("Execption in SGEBRokerAdaptor");
             System.err.println(e);
         }
         
+       
+       
+       
         return sgejob;
     }
 }
