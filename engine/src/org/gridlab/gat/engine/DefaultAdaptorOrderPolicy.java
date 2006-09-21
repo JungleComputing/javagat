@@ -105,9 +105,9 @@ public class DefaultAdaptorOrderPolicy implements AdaptorOrderPolicy {
         insertPos = l.placeAdaptor(insertPos,
             "org.gridlab.gat.resources.cpi.local.LocalResourceBrokerAdaptor");
         insertPos = l.placeAdaptor(insertPos,
-            "org.gridlab.gat.resources.cpi.globus.GlobusBrokerAdaptor");
+            "org.gridlab.gat.resources.cpi.globus.GlobusResourceBrokerAdaptor");
         insertPos = l.placeAdaptor(insertPos,
-            "org.gridlab.gat.resources.cpi.ssh.SshBrokerAdaptor");
+            "org.gridlab.gat.resources.cpi.ssh.SshResourceBrokerAdaptor");
 
         // rest in random order
     }
