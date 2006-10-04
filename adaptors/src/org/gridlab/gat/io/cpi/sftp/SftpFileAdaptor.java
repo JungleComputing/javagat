@@ -7,7 +7,7 @@ import java.io.IOException;
 import java.util.Iterator;
 
 import org.gridlab.gat.CouldNotInitializeCredentialException;
-import org.gridlab.gat.CredentialExpiredExeption;
+import org.gridlab.gat.CredentialExpiredException;
 import org.gridlab.gat.GAT;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
@@ -63,7 +63,7 @@ public class SftpFileAdaptor extends FileCpi {
                 "sftp", location, SSH_PORT);
         } catch (CouldNotInitializeCredentialException e) {
             throw new GATInvocationException("sftp", e);
-        } catch (CredentialExpiredExeption e2) {
+        } catch (CredentialExpiredException e2) {
             throw new GATInvocationException("sftp", e2);
         }
 
