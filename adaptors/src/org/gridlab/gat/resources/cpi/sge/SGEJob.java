@@ -233,7 +233,7 @@ public class SGEJob extends Job{
         try {
             m.put(  "hostname",
                     jobDescription.getSoftwareDescription().getLocation().toASCIIString());
-            m.put("checkpointable", 0);
+            m.put("checkpointable", "0");
             m.put("scheduletime",   null);
             m.put("resManName","Sun Grid Engine");
             m.put("state",getStateString(state));

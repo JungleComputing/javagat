@@ -13,16 +13,17 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Vector;
 
+import org.gridlab.gat.GAT;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.GATObjectCreationException;
 import org.gridlab.gat.Preferences;
 import org.gridlab.gat.URI;
 import org.gridlab.gat.io.File;
-import org.gridlab.gat.resources.HardwareResourceDescription;
 import org.gridlab.gat.resources.Job;
 import org.gridlab.gat.resources.JobDescription;
 import org.gridlab.gat.resources.ResourceDescription;
+import org.gridlab.gat.resources.HardwareResourceDescription;
 import org.gridlab.gat.resources.SoftwareDescription;
 import org.gridlab.gat.resources.cpi.ResourceBrokerCpi;
 
@@ -138,32 +139,14 @@ public class PbsBrokerAdaptor extends ResourceBrokerCpi implements IParameter {
 
 
                 /**
-                   old version without the usage of hardware resources.
-                */
-
-                //                 job.addString("A", sd.getAttributes().get(IArgument.ACCOUNT));
-                //                 job.addDate("a", sd.getAttributes().get(IArgument.DATETIME));
-                //                 job.addBoolean("j", sd.getAttributes().get(IArgument.JOIN));
-                //                 job.addString("M", sd.getAttributes().get(IArgument.MAIL));
-                //                 job.addString("m", sd.getAttributes().get(IArgument.MAILCOND));
-                //                 job.addString("S", sd.getAttributes().get(IArgument.SHELL));
-                //                 job.addString("p", sd.getAttributes().get(IArgument.PRIORITY));
-                //                 job.addString("q", sd.getAttributes().get(IArgument.QUEUE));
-                //                 job.addString("u", sd.getAttributes().get(IArgument.USER));
-                //                 job.addBoolean("r", sd.getAttributes().get(IArgument.RERUN));
-                //                 job.addParam("V", sd.getAttributes().get(IArgument.ENV));
-                //                 job.addString("v", getEnvironment(sd.getEnvironment()));
-                //                 job.addString("N", tmpname);
-
-                /**
-                   new version with usage of hardware resources. In the first realization same
+                   The hardware resources. In the first realization same
                    args as in C-GAT PBS adaptor.
                 */
 
                 Queue = (String) rdJob_attr.get("machine.queue");
                 if (Queue==null)
                     {
-                        throw new GATInvocationException("Missing queue parameter; job submit to PBS failed.");
+                        Queue=new String("");
                     }
                 else
                     {
@@ -193,8 +176,14 @@ public class PbsBrokerAdaptor extends ResourceBrokerCpi implements IParameter {
                     {
                         Nodes = new String("1");
                     }
-                
-                LString = new String("walltime=" + Time + ",file=" + Filesize + ",mem=" + Memsize + ",nodes=" + Nodes + ":" + Queue);
+                if (Queue.length()==0)
+                    {
+                        LString = new String("walltime=" + Time + ",file=" + Filesize + ",mem=" + Memsize + ",nodes=" + Nodes);
+                    }
+                else
+                    {
+                        LString = new String("walltime=" + Time + ",file=" + Filesize + ",mem=" + Memsize + ",nodes=" + Nodes + ":" + Queue);
+                    }
                 if (LString==null)
                     {
                         throw new GATInvocationException("Cannot construct -l option; job submit to PBS failed.");
