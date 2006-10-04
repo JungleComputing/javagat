@@ -4,7 +4,7 @@
 package org.gridlab.gat.security.cpi;
 
 import org.gridlab.gat.CouldNotInitializeCredentialException;
-import org.gridlab.gat.CredentialExpiredExeption;
+import org.gridlab.gat.CredentialExpiredException;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.Preferences;
@@ -24,7 +24,7 @@ public interface SecurityContextCreator {
      */
     public Object createUserData(GATContext gatContext,
             Preferences preferences, URI location, SecurityContext c)
-            throws CouldNotInitializeCredentialException, CredentialExpiredExeption;
+            throws CouldNotInitializeCredentialException, CredentialExpiredException;
 
     /**
      * This method is called by the methods in the SecurityContextUtils class to instantiate adaptor-specific security data.
@@ -38,5 +38,5 @@ public interface SecurityContextCreator {
      */
     public SecurityContext createDefaultSecurityContext(GATContext gatContext,
             Preferences preferences, URI location)
-            throws CouldNotInitializeCredentialException, CredentialExpiredExeption;
+            throws CouldNotInitializeCredentialException, CredentialExpiredException;
 }

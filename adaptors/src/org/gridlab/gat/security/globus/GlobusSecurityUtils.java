@@ -11,7 +11,7 @@ import org.globus.myproxy.MyProxy;
 import org.globus.myproxy.MyProxyException;
 import org.gridforum.jgss.ExtendedGSSManager;
 import org.gridlab.gat.CouldNotInitializeCredentialException;
-import org.gridlab.gat.CredentialExpiredExeption;
+import org.gridlab.gat.CredentialExpiredException;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.Preferences;
@@ -29,7 +29,7 @@ import org.ietf.jgss.GSSException;
 class GlobusContextCreator implements SecurityContextCreator {
     public SecurityContext createDefaultSecurityContext(GATContext gatContext,
         Preferences preferences, URI location)
-        throws CouldNotInitializeCredentialException, CredentialExpiredExeption {
+        throws CouldNotInitializeCredentialException, CredentialExpiredException {
         // automatically try and insert the default credential if it was not there.
         GSSCredential cred = GlobusSecurityUtils.getDefaultCredential(
             gatContext, preferences);
@@ -41,7 +41,7 @@ class GlobusContextCreator implements SecurityContextCreator {
 
     public Object createUserData(GATContext gatContext,
         Preferences preferences, URI location, SecurityContext inContext)
-        throws CouldNotInitializeCredentialException, CredentialExpiredExeption {
+        throws CouldNotInitializeCredentialException, CredentialExpiredException {
         // we need to try to create the credential given the securityContext
         // if it fails, just try the next one on the list.
         if (inContext instanceof CertificateSecurityContext) {
@@ -102,7 +102,7 @@ public class GlobusSecurityUtils {
     public static GSSCredential getGlobusCredential(GATContext context,
         Preferences preferences, String adaptorName, URI location,
         int defaultPort) throws CouldNotInitializeCredentialException,
-        CredentialExpiredExeption {
+        CredentialExpiredException {
         Object data = SecurityContextUtils.getSecurityUserData(context,
             preferences, adaptorName, "globus", location, defaultPort,
             new GlobusContextCreator());
@@ -117,7 +117,7 @@ public class GlobusSecurityUtils {
         }
 
         if (remaining == 0) {
-            throw new CredentialExpiredExeption("gridftp credential expired");
+            throw new CredentialExpiredException("gridftp credential expired");
         }
 
         return (GSSCredential) data;
@@ -135,7 +135,7 @@ public class GlobusSecurityUtils {
      */
     protected static GSSCredential getDefaultCredential(GATContext gatContext,
         Preferences preferences) throws CouldNotInitializeCredentialException,
-        CredentialExpiredExeption {
+        CredentialExpiredException {
         GSSCredential credential = null;
 
         // First check the gat preferences for a valid credential explicitly

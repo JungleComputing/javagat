@@ -277,8 +277,8 @@ public class SoftwareDescription implements java.io.Serializable {
         res += ", arguments: ";
         if(arguments != null) {
             for (int i=0; i<arguments.length; i++) {
-                res += "";
-                    if(i != arguments.length -1) res += ", ";
+                res += arguments[i];
+                if(i != arguments.length -1) res += ", ";
             }
         } else {
             res += "null";

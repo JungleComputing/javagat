@@ -14,7 +14,7 @@ import org.globus.gram.GramException;
 import org.globus.gram.GramJob;
 import org.globus.gsi.gssapi.auth.NoAuthorization;
 import org.gridlab.gat.CouldNotInitializeCredentialException;
-import org.gridlab.gat.CredentialExpiredExeption;
+import org.gridlab.gat.CredentialExpiredException;
 import org.gridlab.gat.FilePrestageException;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
@@ -152,7 +152,7 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
                 ResourceManagerContact.DEFAULT_PORT);
         } catch (CouldNotInitializeCredentialException e) {
             throw new GATInvocationException("globus", e);
-        } catch (CredentialExpiredExeption e) {
+        } catch (CredentialExpiredException e) {
             throw new GATInvocationException("globus", e);
         }
 

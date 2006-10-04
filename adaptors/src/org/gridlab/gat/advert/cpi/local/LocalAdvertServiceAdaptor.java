@@ -204,7 +204,6 @@ public class LocalAdvertServiceAdaptor extends AdvertServiceCpi {
             out = new ObjectOutputStream(bout);
 
             out.writeObject(hash);
-            out.close();
         } catch (Exception e) {
             throw new GATInvocationException("local advert", e);
         } finally {
