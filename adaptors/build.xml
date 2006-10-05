@@ -65,7 +65,7 @@
 			</manifest>
 		</jar>
 
-		<jar jarfile="${lib}/SftpFileInputStreamAdaptor.jar" basedir="${tmp}" includes="**/sftp/*.class">
+		<jar jarfile="${lib}/SftpFileInputStreamAdaptor.jar" basedir="${tmp}" includes="**/sftp/*.class,**/j2ssh/**">
 			<manifest>
 				<attribute name="FileInputStreamCpi-class" value="org.gridlab.gat.io.cpi.sftp.SftpFileInputStreamAdaptor" />
 			</manifest>
@@ -77,7 +77,7 @@
 			</manifest>
 		</jar>
 
-		<jar jarfile="${lib}/SftpFileOutputStreamAdaptor.jar" basedir="${tmp}" includes="**/sftp/*.class">
+		<jar jarfile="${lib}/SftpFileOutputStreamAdaptor.jar" basedir="${tmp}" includes="**/sftp/*.class,**/j2ssh/**">
 			<manifest>
 				<attribute name="FileOutputStreamCpi-class" value="org.gridlab.gat.io.cpi.sftp.SftpFileOutputStreamAdaptor" />
 			</manifest>
@@ -107,7 +107,7 @@
 			</manifest>
 		</jar>
 
-		<jar jarfile="${lib}/SftpFileAdaptor.jar" basedir="${tmp}" includes="**/sftp/*.class">
+		<jar jarfile="${lib}/SftpFileAdaptor.jar" basedir="${tmp}" includes="**/sftp/*.class,**/j2ssh/**">
 			<manifest>
 				<attribute name="FileCpi-class" value="org.gridlab.gat.io.cpi.sftp.SftpFileAdaptor" />
 			</manifest>
