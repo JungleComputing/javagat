@@ -27,6 +27,7 @@ class JobPoller extends Thread {
 
     JobPoller(GlobusJob j) {
         this.j = j;
+        setDaemon(true);
     }
 
     public void run() {
