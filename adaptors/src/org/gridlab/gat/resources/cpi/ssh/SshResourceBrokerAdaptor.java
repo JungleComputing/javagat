@@ -156,7 +156,7 @@ public class SshResourceBrokerAdaptor extends ResourceBrokerCpi {
         }
 
         int retry = 0;
-        Channel channel;
+        Channel channel = null;
         while (true) {
             try {
                 session.connect();
@@ -172,9 +172,10 @@ public class SshResourceBrokerAdaptor extends ResourceBrokerCpi {
                 // unauthenticated connections. Just retry a couple of times.
                 if (e.getMessage().equals("invalid server's version string")) {
                     retry++;
-                    if (retry > 5) {
+                    if (retry > 3) {
+                        session.disconnect();
                         throw new GATInvocationException(
-                            "could not open a SSH channel (after 5 retries): "
+                            "could not open a SSH channel (after 3 retries): "
                                 + e);
                     }
 
@@ -187,6 +188,7 @@ public class SshResourceBrokerAdaptor extends ResourceBrokerCpi {
                         System.err.println("retry SSH connect");
                     }
                 } else {
+                    session.disconnect();
                     throw new GATInvocationException(
                         "could not open a SSH channel: " + e);
                 }
