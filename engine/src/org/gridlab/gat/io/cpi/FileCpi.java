@@ -114,8 +114,9 @@ public abstract class FileCpi implements File {
         // Step 2: Delete the original file
         delete();
 
+        // This is not correct: files are immutable. --Rob
         // Step 3: Update location
-        this.location = destination;
+        // this.location = destination;
     }
 
     public void copy(URI loc) throws GATInvocationException {

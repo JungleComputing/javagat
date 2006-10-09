@@ -388,6 +388,10 @@ public abstract class TransportProtocolCommon implements TransportProtocol,
                 log.error("The Transport Protocol thread failed", e);
 
                 //log.info(e.getMessage());
+
+                synchronized (state) {
+                    state.notifyAll();
+                }       
                 stop();
             }
         } finally {

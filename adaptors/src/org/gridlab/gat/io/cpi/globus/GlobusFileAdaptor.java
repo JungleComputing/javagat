@@ -41,6 +41,8 @@ public abstract class GlobusFileAdaptor extends FileCpi {
 
     static final int DEFAULT_HTTPS_PORT = 443;
 
+    static final int NO_SUCH_FILE_OR_DIRECTORY = 550;
+
     private FileInfo cachedInfo = null;
 
     // cache dir info, getting it can be an expensive operation, especially on old servers.
@@ -59,7 +61,7 @@ public abstract class GlobusFileAdaptor extends FileCpi {
      *            this LocalFileAdaptor.
      */
     public GlobusFileAdaptor(GATContext gatContext, Preferences preferences,
-        URI location) throws GATObjectCreationException {
+            URI location) throws GATObjectCreationException {
         super(gatContext, preferences, location);
 
         // turn off all annoying cog prints
@@ -67,16 +69,16 @@ public abstract class GlobusFileAdaptor extends FileCpi {
             Logger logger = Logger.getLogger(FTPControlChannel.class.getName());
             logger.setLevel(Level.OFF);
 
-            Logger logger2 = Logger.getLogger(GlobusGSSManagerImpl.class
-                .getName());
+            Logger logger2 =
+                    Logger.getLogger(GlobusGSSManagerImpl.class.getName());
             logger2.setLevel(Level.OFF);
 
-            Logger logger3 = Logger
-                .getLogger(HostAuthorization.class.getName());
+            Logger logger3 =
+                    Logger.getLogger(HostAuthorization.class.getName());
             logger3.setLevel(Level.OFF);
 
-            Logger logger4 = Logger
-                .getLogger(SelfAuthorization.class.getName());
+            Logger logger4 =
+                    Logger.getLogger(SelfAuthorization.class.getName());
             logger4.setLevel(Level.OFF);
         }
 
@@ -116,12 +118,12 @@ public abstract class GlobusFileAdaptor extends FileCpi {
      *
      */
     protected abstract FTPClient createClient(GATContext gatContext,
-        Preferences preferences, URI hostURI) throws GATInvocationException;
+            Preferences preferences, URI hostURI) throws GATInvocationException;
 
     /** Destroy a client that was created with a createClient call.
      * This might, for instance, put the client back in a cache. */
     protected abstract void destroyClient(FTPClient c, URI hostURI,
-        Preferences preferences);
+            Preferences preferences);
 
     /*
      * (non-Javadoc)
@@ -139,16 +141,26 @@ public abstract class GlobusFileAdaptor extends FileCpi {
         // is a directory. This is needed, because the source might be a local
         // file, and gridftp might not be installed locally.
         // This goes wrong for local -> remote copies.
-        try {
-            File f = GAT.createFile(gatContext, preferences, toURI());
-
-            if (f.isDirectory()) {
-                copyDirectory(gatContext, preferences, toURI(), dest);
-
-                return;
+        if (toURI().refersToLocalHost()) {
+            try {
+                java.io.File f = new java.io.File(getPath());
+                if (f.isDirectory()) {
+                    copyDirectory(gatContext, preferences, toURI(), dest);
+                    return;
+                }
+            } catch (Exception e) {
+                // ignore
             }
-        } catch (Exception e) {
-            throw new GATInvocationException("gridftp", e);
+        } else {
+            try {
+                File f = GAT.createFile(gatContext, preferences, toURI());
+                if (f.isDirectory()) {
+                    copyDirectory(gatContext, preferences, toURI(), dest);
+                    return;
+                }
+            } catch (Exception e) {
+                throw new GATInvocationException("gridftp", e);
+            }
         }
 
         if (dest.refersToLocalHost()) {
@@ -182,7 +194,7 @@ public abstract class GlobusFileAdaptor extends FileCpi {
     // first try efficient 3rd party transfer.
     // If that fails, try copying using temp file.
     protected void copyThirdParty(URI src, URI dest)
-        throws GATInvocationException {
+            throws GATInvocationException {
         // this only works with passive = false
         Preferences p2 = (Preferences) preferences.clone();
         p2.put("ftp.connection.passive", "false");
@@ -225,7 +237,7 @@ public abstract class GlobusFileAdaptor extends FileCpi {
     }
 
     protected void copyToRemote(URI src, URI dest)
-        throws GATInvocationException {
+            throws GATInvocationException {
         // copy from the local machine to a remote machine.
         FTPClient client = null;
 
@@ -295,13 +307,19 @@ public abstract class GlobusFileAdaptor extends FileCpi {
             } else {
                 client.deleteFile(remotePath);
             }
+        } catch (ServerException s) {
+            if (s.getCode() == ServerException.SERVER_REFUSED) { // file not found
+                return false;
+            } else {
+                throw new GATInvocationException("gridftp", s);
+            }
         } catch (Exception e) {
             throw new GATInvocationException("gridftp", e);
         } finally {
             if (client != null) destroyClient(client, toURI(), preferences);
         }
 
-        return false;
+        return true;
     }
 
     //  aarg, the COG returns a flakey name for links.
@@ -386,13 +404,13 @@ public abstract class GlobusFileAdaptor extends FileCpi {
 
             for (int i = 0; i < v.size(); i++) {
                 FileInfo info = ((FileInfo) v.get(i));
-                
+
                 String uri = location.toString();
                 if (!uri.endsWith("/")) {
                     uri += "/";
                 }
                 uri += getName(info);
-                
+
                 // Improve the performance of further file accesses to the list.
                 // pass the FileInfo object via the preferences. 
                 Preferences newPrefs = (Preferences) preferences.clone();
@@ -714,7 +732,7 @@ public abstract class GlobusFileAdaptor extends FileCpi {
     }
 
     protected static void setActiveOrPassive(FTPClient c,
-        Preferences preferences) throws GATInvocationException {
+            Preferences preferences) throws GATInvocationException {
         if (isPassive(preferences)) {
             if (GATEngine.DEBUG) {
                 System.err
@@ -741,7 +759,7 @@ public abstract class GlobusFileAdaptor extends FileCpi {
      * files.
      */
     private Vector listNoMinusD(FTPClient c, String filter)
-        throws ServerException, ClientException, IOException {
+            throws ServerException, ClientException, IOException {
         final ByteArrayOutputStream received = new ByteArrayOutputStream(1000);
 
         // unnamed DataSink subclass will write data channel content
@@ -764,8 +782,8 @@ public abstract class GlobusFileAdaptor extends FileCpi {
          System.err.println("result of list " + filter + " is: "
          + received.toString());
          */
-        BufferedReader reader = new BufferedReader(new StringReader(received
-            .toString()));
+        BufferedReader reader =
+                new BufferedReader(new StringReader(received.toString()));
 
         Vector fileList = new Vector();
         FileInfo fileInfo = null;

@@ -147,6 +147,14 @@ public class SoftwareDescription implements java.io.Serializable {
         this.location = new URI(location);
     }
 
+    public void addPreStagedFile(File src) {
+        addPreStagedFile(src, null);
+    }
+
+    public void addPostStagedFile(File src) {
+        addPostStagedFile(src, null);
+    }
+    
     /* dest can be null, this means file with the same name in the CWD at the remote machine */
     public void addPreStagedFile(File src, File dest) {
         if (src == null) {
