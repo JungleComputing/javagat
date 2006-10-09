@@ -125,6 +125,7 @@ public class GlobusJob extends Job implements GramJobListener,
         m.put("resManState", getGlobusState());
         m.put("resManName", "Globus");
         m.put("resManError", "" + j.getError());
+        m.put("resManId", j.getIDAsString());
         m.put("id", j.getIDAsString());
 
         if (getState() == RUNNING) {
@@ -303,6 +304,7 @@ public class GlobusJob extends Job implements GramJobListener,
      * @see org.globus.gram.GramJobListener#statusChanged(org.globus.gram.GramJob)
      */
     public void statusChanged(GramJob newJob) {
+        jobID = j.getIDAsString();
         String stateString = null;
         int globusState = newJob.getStatus();
 

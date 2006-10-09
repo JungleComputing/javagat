@@ -22,8 +22,6 @@ import org.gridlab.gat.util.OutputForwarder;
  * @author rob
  */
 public class CommandlineSshPrunJob extends Job {
-    static int globalJobID = 0;
-
     CommandlineSshPrunResourceBrokerAdaptor broker;
 
     GATInvocationException postStageException = null;
@@ -63,10 +61,6 @@ public class CommandlineSshPrunJob extends Job {
         GATEngine.registerMetric(this, "getJobStatus", statusMetricDefinition);
 
         new ProcessWaiter();
-    }
-
-    static synchronized int allocJobID() {
-        return globalJobID++;
     }
 
     /* (non-Javadoc)
