@@ -48,8 +48,6 @@ public class LocalJob extends Job {
         }
     }
 
-    static int globalJobID = 0;
-
     LocalResourceBrokerAdaptor broker;
 
     GATInvocationException postStageException = null;
@@ -89,10 +87,6 @@ public class LocalJob extends Job {
         GATEngine.registerMetric(this, "getJobStatus", statusMetricDefinition);
 
         new ProcessWaiter();
-    }
-
-    static synchronized int allocJobID() {
-        return globalJobID++;
     }
 
     /*

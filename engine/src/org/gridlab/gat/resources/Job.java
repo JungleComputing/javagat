@@ -56,12 +56,18 @@ public abstract class Job implements Monitorable, Advertisable {
     
     /** The job state is unkown for some reason. May be a network problem. */
     public static final int UNKNOWN = 8;
+
+    protected static int globalJobID = 0;
     
     protected int state = INITIAL;
 
     protected GATContext gatContext;
 
     protected Preferences preferences;
+
+    protected static synchronized int allocJobID() {
+        return globalJobID++;
+    }
 
     public static String getStateString(int state) {
         switch (state) {
@@ -364,4 +370,21 @@ public abstract class Job implements Monitorable, Advertisable {
             Metric metric) throws GATInvocationException {
         GATEngine.removeMetricListener(this, metricListener, metric);
     }
+    
+    public String toString() {
+        String res = "gat job";
+
+        String id = null;
+        try {
+            id = getJobID();
+        } catch (Exception e) {
+            // ignore
+        }
+        if(id != null) res += ", id is " + id;
+        else {
+            res += ", " + "not initialized";
+        }
+
+        return res;
+    }    
 }

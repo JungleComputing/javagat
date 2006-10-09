@@ -59,17 +59,11 @@ public class SshJob extends Job {
 
     String host;
 
-    static int globalJobID = 0;
-
     int exitVal = 0;
 
     MetricDefinition statusMetricDefinition;
 
     Metric statusMetric;
-
-    static synchronized int allocJobID() {
-        return globalJobID++;
-    }
 
     SshJob(SshResourceBrokerAdaptor broker, JobDescription description,
         Session session, Channel channel, String host)
