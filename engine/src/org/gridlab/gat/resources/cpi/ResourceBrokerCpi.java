@@ -378,8 +378,7 @@ public abstract class ResourceBrokerCpi implements ResourceBroker {
         if (stdout != null) {
             try {
                 File destFile =
-                        GAT.createFile(gatContext, preferences, stdout
-                            .getPath() + "/" + stdout.getName());
+                        GAT.createFile(gatContext, preferences, stdout.getName());
                 result.put(resolvePostStagedFile(stdout, host), destFile);
             } catch (GATObjectCreationException e) {
                 throw new GATInvocationException("resourcebroker cpi", e);
@@ -390,7 +389,7 @@ public abstract class ResourceBrokerCpi implements ResourceBroker {
         if (stderr != null) {
             try {
                 File destFile =
-                        GAT.createFile(gatContext, preferences, stderr.getPath() + "/" + stderr
+                        GAT.createFile(gatContext, preferences, stderr
                             .getName());
                 result.put(resolvePostStagedFile(stderr, host), destFile);
             } catch (GATObjectCreationException e) {
@@ -398,7 +397,7 @@ public abstract class ResourceBrokerCpi implements ResourceBroker {
             }
         }
 
-        if (GATEngine.DEBUG) {
+        if (GATEngine.VERBOSE) {
             System.err.println("RESOLVE_POST: ");
             Set keys = result.keySet();
             Iterator i = keys.iterator();
