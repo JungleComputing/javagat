@@ -131,11 +131,11 @@ public class LocalResourceBrokerAdaptor extends ResourceBrokerCpi {
         String[] environment = null;
         Map env = sd.getEnvironment();
         int index = 0;
-        if(env != null) {
+        if (env != null) {
             environment = new String[env.size()];
             Set keys = env.keySet();
             Iterator i = keys.iterator();
-            while(i.hasNext()) {
+            while (i.hasNext()) {
                 String key = (String) i.next();
                 String val = (String) env.get(key);
                 environment[index] = key + "=" + val;
@@ -149,7 +149,8 @@ public class LocalResourceBrokerAdaptor extends ResourceBrokerCpi {
         if (location.refersToLocalHost()) {
             path = location.getPath();
         } else {
-            throw new AdaptorNotApplicableException("not a local file: " + location);
+            throw new AdaptorNotApplicableException("not a local file: "
+                + location);
         }
 
         String host = getHostname(description);
@@ -171,21 +172,25 @@ public class LocalResourceBrokerAdaptor extends ResourceBrokerCpi {
 
         String home = System.getProperty("user.home");
         java.io.File f = null;
-        if(home != null) {
+        if (home != null) {
             f = new java.io.File(home);
         }
 
         if (GATEngine.VERBOSE) {
             System.err.println("running command: " + command);
-            System.err.println("  environment:");
-            for(int i=0; i<environment.length; i++) {
-                System.err.println("    " + environment[i]);
+
+            if (environment != null) {
+                System.err.println("  environment:");
+                for (int i = 0; i < environment.length; i++) {
+                    System.err.println("    " + environment[i]);
+                }
             }
-            if(home != null) {
+            
+            if (home != null) {
                 System.err.println("working dir is: " + home);
             }
         }
-        
+
         Process p = null;
         try {
             p = Runtime.getRuntime().exec(command.toString(), environment, f);
@@ -193,7 +198,7 @@ public class LocalResourceBrokerAdaptor extends ResourceBrokerCpi {
             throw new CommandNotFoundException("local broker", e);
         }
 
-        org.gridlab.gat.io.File stdin =  sd.getStdin();
+        org.gridlab.gat.io.File stdin = sd.getStdin();
         org.gridlab.gat.io.File stdout = sd.getStdout();
         org.gridlab.gat.io.File stderr = sd.getStderr();
 
@@ -206,8 +211,9 @@ public class LocalResourceBrokerAdaptor extends ResourceBrokerCpi {
             }
         } else {
             try {
-                FileInputStream fin = GAT.createFileInputStream(gatContext,
-                    preferences, stdin.toURI());
+                FileInputStream fin =
+                        GAT.createFileInputStream(gatContext, preferences,
+                            stdin.toURI());
                 OutputStream out = p.getOutputStream();
                 new InputForwarder(out, fin);
             } catch (GATObjectCreationException e) {
@@ -216,31 +222,33 @@ public class LocalResourceBrokerAdaptor extends ResourceBrokerCpi {
         }
 
         OutputForwarder outForwarder = null;
-        
+
         // we must always read the output and error streams to avoid deadlocks
         if (stdout == null) {
             new OutputForwarder(p.getInputStream(), false); // throw away output
         } else {
             stdout = resolvePostStagedFile(stdout, "localhost");
             try {
-                FileOutputStream out = GAT.createFileOutputStream(gatContext,
-                    preferences, stdout.toURI());
+                FileOutputStream out =
+                        GAT.createFileOutputStream(gatContext, preferences,
+                            stdout.toURI());
                 outForwarder = new OutputForwarder(p.getInputStream(), out);
             } catch (GATObjectCreationException e) {
                 throw new GATInvocationException("local broker", e);
             }
         }
-        
+
         OutputForwarder errForwarder = null;
-        
+
         // we must always read the output and error streams to avoid deadlocks
         if (stderr == null) {
             new OutputForwarder(p.getErrorStream(), false); // throw away output
         } else {
             stderr = resolvePostStagedFile(stderr, "localhost");
             try {
-                FileOutputStream out = GAT.createFileOutputStream(gatContext,
-                    preferences, stderr.toURI());
+                FileOutputStream out =
+                        GAT.createFileOutputStream(gatContext, preferences,
+                            stderr.toURI());
                 errForwarder = new OutputForwarder(p.getErrorStream(), out);
             } catch (GATObjectCreationException e) {
                 throw new GATInvocationException("local broker", e);
