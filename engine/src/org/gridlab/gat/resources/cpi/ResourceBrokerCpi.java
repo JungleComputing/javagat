@@ -552,7 +552,7 @@ public abstract class ResourceBrokerCpi implements ResourceBroker {
         return (File[]) res.toArray(result);
     }
 
-    protected void deleteFiles(JobDescription jobDescription, String host)
+    public void deleteFiles(JobDescription jobDescription, String host)
             throws GATInvocationException {
         File[] files = resolveDeletedFiles(jobDescription, host);
 
@@ -571,7 +571,7 @@ public abstract class ResourceBrokerCpi implements ResourceBroker {
         if (e.getNrChildren() != 0) throw e;
     }
 
-    protected void wipeFiles(JobDescription jobDescription, String host)
+    public void wipeFiles(JobDescription jobDescription, String host)
             throws GATInvocationException {
         /// @@@ try to wipe
         deleteFiles(jobDescription, host);

@@ -70,6 +70,8 @@ public class GlobusJob extends Job implements GramJobListener,
     Metric statusMetric;
 
     GATInvocationException postStageException = null;
+    GATInvocationException deleteException = null;
+    GATInvocationException wipeException = null;
 
     boolean postStageFinished = false;
 
@@ -134,6 +136,12 @@ public class GlobusJob extends Job implements GramJobListener,
 
         if (postStageException != null) {
             m.put("postStageError", postStageException);
+        }
+        if (deleteException != null) {
+            m.put("deleteError", deleteException);
+        }
+        if (wipeException != null) {
+            m.put("wipeError", wipeException);
         }
 
         return m;
@@ -347,6 +355,22 @@ public class GlobusJob extends Job implements GramJobListener,
                     .getHostname(jobDescription));
             } catch (GATInvocationException e) {
                 postStageException = e;
+            }
+
+            if (GATEngine.VERBOSE) {
+                System.err.println("globus job callback: delete starting");
+            }
+
+            try {
+                broker.deleteFiles(jobDescription, broker.getHostname(jobDescription));
+            } catch (GATInvocationException e) {
+                deleteException = e;
+            }
+
+            try {
+                broker.wipeFiles(jobDescription, broker.getHostname(jobDescription));
+            } catch (GATInvocationException e) {
+                wipeException = e;
             }
 
             synchronized (this) {
