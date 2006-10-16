@@ -650,7 +650,7 @@ public abstract class ResourceBrokerCpi implements ResourceBroker {
 
         // and now delete them 
         try {
-//            deleteFiles(jobDescription, host);
+            deleteFiles(jobDescription, host);
         } catch (Exception x) {
             e.add("resource broker", x);
         }
