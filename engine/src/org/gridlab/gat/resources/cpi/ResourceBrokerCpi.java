@@ -18,6 +18,7 @@ import org.gridlab.gat.TimePeriod;
 import org.gridlab.gat.URI;
 import org.gridlab.gat.engine.GATEngine;
 import org.gridlab.gat.io.File;
+import org.gridlab.gat.io.FileOutputStream;
 import org.gridlab.gat.resources.HardwareResourceDescription;
 import org.gridlab.gat.resources.Job;
 import org.gridlab.gat.resources.JobDescription;
@@ -378,7 +379,8 @@ public abstract class ResourceBrokerCpi implements ResourceBroker {
         if (stdout != null) {
             try {
                 File srcFile =
-                        GAT.createFile(gatContext, preferences, stdout.getName());
+                        GAT.createFile(gatContext, preferences, stdout
+                            .getName());
                 result.put(resolvePostStagedFile(srcFile, host), stdout);
             } catch (GATObjectCreationException e) {
                 throw new GATInvocationException("resourcebroker cpi", e);
@@ -524,7 +526,6 @@ public abstract class ResourceBrokerCpi implements ResourceBroker {
 
     protected File[] resolveDeletedFiles(JobDescription description, String host)
             throws GATInvocationException {
-
         SoftwareDescription sd = description.getSoftwareDescription();
         if (sd == null) {
             return null;
@@ -543,6 +544,34 @@ public abstract class ResourceBrokerCpi implements ResourceBroker {
         }
 
         ArrayList files = sd.getDeletedFiles();
+        for (int j = 0; j < files.size(); j++) {
+            res.add(resolvePostStagedFile((File) files.get(j), host));
+        }
+
+        File[] result = new File[res.size()];
+        return (File[]) res.toArray(result);
+    }
+
+    protected File[] resolveWipedFiles(JobDescription description, String host)
+            throws GATInvocationException {
+        SoftwareDescription sd = description.getSoftwareDescription();
+        if (sd == null) {
+            return null;
+        }
+
+        ArrayList res = new ArrayList();
+
+        if (sd.wipePreStaged()) {
+            Map tmp = resolvePreStagedFiles(description, host);
+            res.addAll(tmp.values());
+        }
+
+        if (sd.wipePostStaged()) {
+            Map tmp = resolvePostStagedFiles(description, host);
+            res.addAll(tmp.keySet());
+        }
+
+        ArrayList files = sd.getWipedFiles();
         for (int j = 0; j < files.size(); j++) {
             res.add(resolvePostStagedFile((File) files.get(j), host));
         }
@@ -570,9 +599,62 @@ public abstract class ResourceBrokerCpi implements ResourceBroker {
         if (e.getNrChildren() != 0) throw e;
     }
 
+    protected void wipeFile(File f) throws GATInvocationException {
+        long size = f.length();
+        
+        FileOutputStream out = null;
+        
+        try {
+            out = GAT.createFileOutputStream(gatContext, f);
+        } catch (GATObjectCreationException e) {
+            throw new GATInvocationException("resource broker", e);
+        }
+        
+        int bufSize = 64 * 1024;
+        byte[] buf = new byte[bufSize]; 
+        long wiped = 0;
+        while (wiped != size) {
+            int toWipe;
+            if(size - wiped < bufSize) {
+                toWipe = (int) (size - wiped); 
+            } else {
+                toWipe = bufSize;
+            }
+                
+            try {
+                out.write(buf, 0, toWipe);
+            } catch (Exception e) {
+                throw new GATInvocationException("resource broker", e);
+            }
+            wiped += toWipe;
+        }
+    }
+    
     public void wipeFiles(JobDescription jobDescription, String host)
             throws GATInvocationException {
-        /// @@@ try to wipe
-        deleteFiles(jobDescription, host);
+
+        File[] files = resolveDeletedFiles(jobDescription, host);
+
+        GATInvocationException e = new GATInvocationException();
+        for (int i = 0; i < files.length; i++) {
+            try {
+                if (GATEngine.VERBOSE) {
+                    System.err.println("WIPE_FILE:" + files[i]);
+                }
+                
+                wipeFile(files[i]);
+            } catch (Exception x) {
+                e.add("resource broker", x);
+            }
+        }
+
+        // and now delete them 
+        try {
+//            deleteFiles(jobDescription, host);
+        } catch (Exception x) {
+            e.add("resource broker", x);
+        }
+
+        if (e.getNrChildren() != 0) throw e;
     }
 }
