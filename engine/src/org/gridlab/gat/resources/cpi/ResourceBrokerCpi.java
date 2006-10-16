@@ -398,7 +398,7 @@ public abstract class ResourceBrokerCpi implements ResourceBroker {
             }
         }
 
-        if (GATEngine.VERBOSE) {
+        if (GATEngine.DEBUG) {
             System.err.println("RESOLVE_POST: ");
             Set keys = result.keySet();
             Iterator i = keys.iterator();
