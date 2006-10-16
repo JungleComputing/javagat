@@ -5,8 +5,10 @@ import ibis.util.IPUtils;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.rmi.RemoteException;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.gridlab.gat.AdaptorNotApplicableException;
 import org.gridlab.gat.CommandNotFoundException;
@@ -125,10 +127,20 @@ public class LocalResourceBrokerAdaptor extends ResourceBrokerCpi {
                 "The job description does not contain a software description");
         }
 
-        // we do not support environment yet
+        // fill in the environment
+        String[] environment = null;
         Map env = sd.getEnvironment();
-        if(env != null && !env.isEmpty()) {
-            throw new AdaptorNotApplicableException("cannot handle environment");
+        int index = 0;
+        if(env != null) {
+            environment = new String[env.size()];
+            Set keys = env.keySet();
+            Iterator i = keys.iterator();
+            while(i.hasNext()) {
+                String key = (String) i.next();
+                String val = (String) env.get(key);
+                environment[index] = key + "=" + val;
+                index++;
+            }
         }
 
         URI location = getLocationURI(description);
@@ -157,13 +169,26 @@ public class LocalResourceBrokerAdaptor extends ResourceBrokerCpi {
 
         String command = path + " " + getArguments(description);
 
-        if (GATEngine.VERBOSE) {
-            System.err.println("running command: " + command);
+        String home = System.getProperty("user.home");
+        java.io.File f = null;
+        if(home != null) {
+            f = new java.io.File(home);
         }
 
+        if (GATEngine.VERBOSE) {
+            System.err.println("running command: " + command);
+            System.err.println("  environment:");
+            for(int i=0; i<environment.length; i++) {
+                System.err.println("    " + environment[i]);
+            }
+            if(home != null) {
+                System.err.println("working dir is: " + home);
+            }
+        }
+        
         Process p = null;
         try {
-            p = Runtime.getRuntime().exec(command.toString());
+            p = Runtime.getRuntime().exec(command.toString(), environment, f);
         } catch (IOException e) {
             throw new CommandNotFoundException("local broker", e);
         }
