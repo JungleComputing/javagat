@@ -48,7 +48,7 @@ public class URIEncoder {
     public static void encodeUri(String uri, StringBuffer buf) {
         for (int i = 0; i < uri.length(); i++) {
             char c = uri.charAt(i);
-            int cInt = (int) c;
+            int cInt = c;
 
             if ((ESCAPE_CHARS.indexOf(c) >= 0) || (cInt <= 0x20)) {
                 // Escape character

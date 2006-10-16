@@ -40,7 +40,7 @@ class JobPoller extends Thread {
 
             synchronized (this) {
                 try {
-                    wait(10 * 1000);
+                    wait(60 * 1000);
                 } catch (Exception e) {
                     // Ignore
                 }
@@ -70,6 +70,8 @@ public class GlobusJob extends Job implements GramJobListener,
     Metric statusMetric;
 
     GATInvocationException postStageException = null;
+    GATInvocationException deleteException = null;
+    GATInvocationException wipeException = null;
 
     boolean postStageFinished = false;
 
@@ -103,7 +105,7 @@ public class GlobusJob extends Job implements GramJobListener,
      */
     public synchronized int getExitStatus() throws GATInvocationException {
          if(state != STOPPED) throw new GATInvocationException("not in RUNNING state");
-         return 0; // @@@ we have to assume that the job ran correctly.
+         return 0; // We have to assume that the job ran correctly. Globus does not return the exit code.
     }
 
     public JobDescription getJobDescription() {
@@ -134,6 +136,12 @@ public class GlobusJob extends Job implements GramJobListener,
 
         if (postStageException != null) {
             m.put("postStageError", postStageException);
+        }
+        if (deleteException != null) {
+            m.put("deleteError", deleteException);
+        }
+        if (wipeException != null) {
+            m.put("wipeError", wipeException);
         }
 
         return m;
@@ -240,6 +248,22 @@ public class GlobusJob extends Job implements GramJobListener,
 
         stopHandlers();
 
+        if (GATEngine.VERBOSE) {
+            System.err.println("globus job stop: delete/wipe starting");
+        }
+
+        try {
+            broker.deleteFiles(jobDescription, broker.getHostname(jobDescription));
+        } catch (GATInvocationException e) {
+            deleteException = e;
+        }
+
+        try {
+            broker.wipeFiles(jobDescription, broker.getHostname(jobDescription));
+        } catch (GATInvocationException e) {
+            wipeException = e;
+        }
+        
         state = INITIAL;
     }
 
@@ -274,7 +298,7 @@ public class GlobusJob extends Job implements GramJobListener,
      *
      */
     void getStateActive() {
-        if (GATEngine.VERBOSE) {
+        if (GATEngine.DEBUG) {
             System.err.println("polling state of globus job");
         }
         try {
@@ -284,7 +308,7 @@ public class GlobusJob extends Job implements GramJobListener,
         } catch (NullPointerException x) {
             // ignore, fore some reason the first time, gram throws a null pointer exception.
         } catch (Exception e) {
-            if (GATEngine.VERBOSE) {
+            if (GATEngine.DEBUG) {
                 System.err
                     .println("WARNING, could not get state of globus job: " + e);
             }
@@ -347,6 +371,22 @@ public class GlobusJob extends Job implements GramJobListener,
                     .getHostname(jobDescription));
             } catch (GATInvocationException e) {
                 postStageException = e;
+            }
+
+            if (GATEngine.VERBOSE) {
+                System.err.println("globus job callback: delete/wipe starting");
+            }
+
+            try {
+                broker.deleteFiles(jobDescription, broker.getHostname(jobDescription));
+            } catch (GATInvocationException e) {
+                deleteException = e;
+            }
+
+            try {
+                broker.wipeFiles(jobDescription, broker.getHostname(jobDescription));
+            } catch (GATInvocationException e) {
+                wipeException = e;
             }
 
             synchronized (this) {
