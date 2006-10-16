@@ -40,7 +40,7 @@ class JobPoller extends Thread {
 
             synchronized (this) {
                 try {
-                    wait(10 * 1000);
+                    wait(60 * 1000);
                 } catch (Exception e) {
                     // Ignore
                 }
@@ -282,7 +282,7 @@ public class GlobusJob extends Job implements GramJobListener,
      *
      */
     void getStateActive() {
-        if (GATEngine.VERBOSE) {
+        if (GATEngine.DEBUG) {
             System.err.println("polling state of globus job");
         }
         try {
@@ -292,7 +292,7 @@ public class GlobusJob extends Job implements GramJobListener,
         } catch (NullPointerException x) {
             // ignore, fore some reason the first time, gram throws a null pointer exception.
         } catch (Exception e) {
-            if (GATEngine.VERBOSE) {
+            if (GATEngine.DEBUG) {
                 System.err
                     .println("WARNING, could not get state of globus job: " + e);
             }
