@@ -51,7 +51,7 @@ public class SubmitJobCallback implements MetricListener {
         SoftwareDescription sd = new SoftwareDescription();
         sd.setLocation("any://" + hostname + "//bin/hostname");
         sd.setStdout(outFile);
-        sd.setPreStaged(stageInDir);
+        sd.addPreStagedFile(stageInDir);
 
         Hashtable attributes = new Hashtable();
         attributes.put("machine.node", hostname);

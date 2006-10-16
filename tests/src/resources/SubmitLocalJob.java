@@ -45,12 +45,9 @@ public class SubmitLocalJob {
                 "file:////home/rob/test1.dat"));
             sd.setStdout(stdout);
 
-            File[] prestaged = new File[2];
-            prestaged[0] = GAT
-                .createFile(context, new URI("file:////bin/echo"));
-            prestaged[1] = GAT.createFile(context, new URI(
-                "file:////bin/hostname"));
-            sd.setPreStaged(prestaged);
+            sd.addPreStagedFile(GAT.createFile(context, new URI("file:////bin/echo")));
+            sd.addPreStagedFile(GAT.createFile(context, new URI(
+                "file:////bin/hostname")));
         } catch (Exception e) {
             System.err.println("could not create stdout file");
         }

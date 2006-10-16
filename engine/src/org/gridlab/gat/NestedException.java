@@ -106,7 +106,7 @@ class NestedException extends Exception {
 
         for (int i = 0; i < throwables.size(); i++) {
             if (adaptorNames.get(i) != null) {
-                res += ("*** " + adaptorNames.get(i) + " adaptor failed: ");
+                res += ("*** " + adaptorNames.get(i) + " failed: ");
             }
 
             String msg = ((Throwable) throwables.get(i)).getMessage();

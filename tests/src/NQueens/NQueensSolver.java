@@ -287,9 +287,17 @@ public class NQueensSolver {
                 if (stderr != null) sd.setStderr(stderr);
                 if (stdin != null) sd.setStdin(stdin);
 
-                if (stageIns != null) sd.setPreStaged(stageIns);
+                if (stageIns != null) {
+                    for(int i=0; i<stageIns.length; i++) {
+                        sd.addPreStagedFile(stageIns[i]);
+                    }
+                }
 
-                if (stageOuts != null) sd.setPostStaged(stageOuts);
+                if (stageOuts != null) {
+                    for(int i=0; i<stageOuts.length; i++) {
+                        sd.addPostStagedFile(stageOuts[i]);
+                    }
+                }
 
                 sd.setArguments(arguments);
 

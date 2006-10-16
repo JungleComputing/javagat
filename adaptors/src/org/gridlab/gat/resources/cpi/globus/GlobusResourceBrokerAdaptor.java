@@ -34,8 +34,8 @@ import org.ietf.jgss.GSSException;
  * @author rob
  */
 public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
-    public GlobusResourceBrokerAdaptor(GATContext gatContext, Preferences preferences)
-            throws GATObjectCreationException {
+    public GlobusResourceBrokerAdaptor(GATContext gatContext,
+            Preferences preferences) throws GATObjectCreationException {
         super(gatContext, preferences);
         // turn off all annoying cog prints
         if (!GATEngine.DEBUG) {
@@ -73,6 +73,23 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
 
         rsl += " (count = " + getCPUCount(description) + ")";
 
+        rsl += " (hostCount = " + getHostCount(description) + ")";
+
+        long maxTime = getLongAttribute(description, "maxTime", -1);
+        if (maxTime > 0) {
+            rsl += " (maxTime = " + maxTime + ")";
+        }
+
+        long maxWallTime = getLongAttribute(description, "maxWallTime", -1);
+        if (maxWallTime > 0) {
+            rsl += " (maxWallTime = " + maxWallTime + ")";
+        }
+
+        long maxCPUTime = getLongAttribute(description, "maxCPUTime", -1);
+        if (maxCPUTime > 0) {
+            rsl += " (maxCPUTime = " + maxCPUTime + ")";
+        }
+
         org.gridlab.gat.io.File stdout = sd.getStdout();
 
         if (stdout != null) {
@@ -87,18 +104,18 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
 
         // set the environment
         Map env = sd.getEnvironment();
-        if(env != null && !env.isEmpty()) {
+        if (env != null && !env.isEmpty()) {
             Set s = env.keySet();
             String[] keys = (String[]) s.toArray();
             rsl += "(environment = ";
-            
-            for(int i=0; i<keys.length; i++) {
-                String val = (String) env.get(keys[i]); 
+
+            for (int i = 0; i < keys.length; i++) {
+                String val = (String) env.get(keys[i]);
                 rsl += "(" + keys[i] + "\"" + val + "\")";
             }
             rsl += ")";
         }
-        
+
         if (GATEngine.VERBOSE) {
             System.err.println("RSL: " + rsl);
         }
@@ -109,8 +126,8 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
     String getResourceManagerContact(JobDescription description)
             throws GATInvocationException {
         String res = null;
-        String jobManager = (String) preferences
-            .get("ResourceBroker.jobmanager");
+        String jobManager =
+                (String) preferences.get("ResourceBroker.jobmanager");
 
         String hostname = getHostname(description);
 
@@ -147,9 +164,10 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
 
         GSSCredential credential = null;
         try {
-            credential = GlobusSecurityUtils.getGlobusCredential(gatContext,
-                preferences, "gram", hostUri,
-                ResourceManagerContact.DEFAULT_PORT);
+            credential =
+                    GlobusSecurityUtils.getGlobusCredential(gatContext,
+                        preferences, "gram", hostUri,
+                        ResourceManagerContact.DEFAULT_PORT);
         } catch (CouldNotInitializeCredentialException e) {
             throw new GATInvocationException("globus", e);
         } catch (CredentialExpiredException e) {
@@ -179,7 +197,8 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
         } catch (GramException e) {
             throw new GATInvocationException("globus", e); // no idea what went wrong 
         } catch (GSSException e2) {
-            throw new GATInvocationException("globus", new CouldNotInitializeCredentialException("globus", e2));
+            throw new GATInvocationException("globus",
+                new CouldNotInitializeCredentialException("globus", e2));
         }
 
         return res;

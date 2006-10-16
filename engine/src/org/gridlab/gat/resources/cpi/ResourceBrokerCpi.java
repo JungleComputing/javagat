@@ -2,6 +2,7 @@ package org.gridlab.gat.resources.cpi;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -119,28 +120,57 @@ public abstract class ResourceBrokerCpi implements ResourceBroker {
     }
 
     // utility methods
-    protected int getCPUCount(JobDescription description)
-            throws GATInvocationException {
-        ResourceDescription rd = description.getResourceDescription();
+    protected int getIntAttribute(JobDescription description, String name,
+            int defaultVal) {
+        SoftwareDescription sd = description.getSoftwareDescription();
 
-        if (rd == null) {
-            throw new GATInvocationException(
-                "The job description does not contain a resource description");
+        if (sd == null) {
+            return defaultVal;
         }
 
-        if(!(rd instanceof HardwareResourceDescription)) {
-            throw new GATInvocationException("The resource description is not a hardware resource description");
+        Map attributes = sd.getAttributes();
+        Integer val = (Integer) attributes.get(name);
+
+        if (val == null) return defaultVal;
+        return val.intValue();
+    }
+
+    protected long getLongAttribute(JobDescription description, String name,
+            long defaultVal) {
+        SoftwareDescription sd = description.getSoftwareDescription();
+
+        if (sd == null) {
+            return defaultVal;
         }
 
-        Object a = ((HardwareResourceDescription) rd).getResourceAttribute("cpu.count");
+        Map attributes = sd.getAttributes();
+        Long val = (Long) attributes.get(name);
 
-        if(a == null) return 1;
-        
-        if(!(a instanceof String)) {
-            throw new GATInvocationException("the cpu count must be a string");
+        if (val == null) return defaultVal;
+        return val.longValue();
+    }
+
+    protected boolean getBooleanAttribute(JobDescription description,
+            String name, boolean defaultVal) {
+        SoftwareDescription sd = description.getSoftwareDescription();
+
+        if (sd == null) {
+            return defaultVal;
         }
-        
-        return Integer.parseInt((String) a);
+
+        Map attributes = sd.getAttributes();
+        Boolean val = (Boolean) attributes.get(name);
+
+        if (val == null) return defaultVal;
+        return val.booleanValue();
+    }
+
+    protected int getCPUCount(JobDescription description) {
+        return getIntAttribute(description, "count", 1);
+    }
+
+    protected int getHostCount(JobDescription description) {
+        return getIntAttribute(description, "hostCount", 1);
     }
 
     protected String getLocation(JobDescription description)
@@ -328,15 +358,18 @@ public abstract class ResourceBrokerCpi implements ResourceBroker {
             while (i.hasNext()) {
                 File srcFile = (File) i.next();
                 File destFile = (File) post.get(srcFile);
-                
-                if(destFile == null) {
+
+                if (destFile == null) {
                     try {
-                        destFile = GAT.createFile(gatContext, preferences, srcFile.getName());
+                        destFile =
+                                GAT.createFile(gatContext, preferences, srcFile
+                                    .getName());
                     } catch (GATObjectCreationException e) {
-                        throw new GATInvocationException("resourcebroker cpi", e);
+                        throw new GATInvocationException("resourcebroker cpi",
+                            e);
                     }
                 }
-                
+
                 result.put(resolvePostStagedFile(srcFile, host), destFile);
             }
         }
@@ -344,7 +377,9 @@ public abstract class ResourceBrokerCpi implements ResourceBroker {
         File stdout = sd.getStdout();
         if (stdout != null) {
             try {
-                File destFile = GAT.createFile(gatContext, preferences, stdout.getName());
+                File destFile =
+                        GAT.createFile(gatContext, preferences, stdout
+                            .getName());
                 result.put(resolvePostStagedFile(stdout, host), destFile);
             } catch (GATObjectCreationException e) {
                 throw new GATInvocationException("resourcebroker cpi", e);
@@ -354,14 +389,16 @@ public abstract class ResourceBrokerCpi implements ResourceBroker {
         File stderr = sd.getStderr();
         if (stderr != null) {
             try {
-                File destFile = GAT.createFile(gatContext, preferences, stderr.getName());
+                File destFile =
+                        GAT.createFile(gatContext, preferences, stderr
+                            .getName());
                 result.put(resolvePostStagedFile(stderr, host), destFile);
             } catch (GATObjectCreationException e) {
                 throw new GATInvocationException("resourcebroker cpi", e);
             }
         }
 
-        if(GATEngine.VERBOSE) {
+        if (GATEngine.VERBOSE) {
             System.err.println("RESOLVE_POST: ");
             Set keys = result.keySet();
             Iterator i = keys.iterator();
@@ -369,10 +406,11 @@ public abstract class ResourceBrokerCpi implements ResourceBroker {
             while (i.hasNext()) {
                 File srcFile = (File) i.next();
                 File destFile = (File) result.get(srcFile);
-                System.err.println("    " + srcFile.toURI() + " -> " + destFile.toURI());
+                System.err.println("    " + srcFile.toURI() + " -> "
+                    + destFile.toURI());
             }
         }
-        
+
         return result;
     }
 
@@ -397,8 +435,8 @@ public abstract class ResourceBrokerCpi implements ResourceBroker {
             try {
                 if (!destFile.equals(srcFile)) {
                     if (GATEngine.VERBOSE) {
-                        System.err.println("POSTSTAGE: " + srcFile.toURI() + " to "
-                            + destFile.toURI());
+                        System.err.println("POSTSTAGE: " + srcFile.toURI()
+                            + " to " + destFile.toURI());
                     }
 
                     srcFile.copy(destFile.toURI());
@@ -408,7 +446,7 @@ public abstract class ResourceBrokerCpi implements ResourceBroker {
             }
         }
 
-        if(exceptions.getNrChildren() != 0) {
+        if (exceptions.getNrChildren() != 0) {
             throw exceptions;
         }
     }
@@ -422,29 +460,29 @@ public abstract class ResourceBrokerCpi implements ResourceBroker {
                 "The job description does not contain a software description");
         }
 
-        Map files = resolvePostStagedFiles(description, host);        
+        Map files = resolvePostStagedFiles(description, host);
         Set keys = files.keySet();
         Iterator i = keys.iterator();
 
         GATInvocationException exceptions = new GATInvocationException();
-        
+
         while (i.hasNext()) {
             File srcFile = (File) i.next();
 
             try {
-                    if (GATEngine.VERBOSE) {
-                        System.err.println("REMOVE POSTSTAGED: " + srcFile.toURI());
-                    }
+                if (GATEngine.VERBOSE) {
+                    System.err.println("REMOVE POSTSTAGED: " + srcFile.toURI());
+                }
 
-                    // Just try to delete it, even though it might not exists.
-                    // We catch the exception and continue anyway.
-                    srcFile.delete();
+                // Just try to delete it, even though it might not exists.
+                // We catch the exception and continue anyway.
+                srcFile.delete();
             } catch (Exception e) {
                 exceptions.add("resource broker cpi", e);
             }
         }
-        
-        if(exceptions.getNrChildren() != 0) {
+
+        if (exceptions.getNrChildren() != 0) {
             throw exceptions;
         }
     }
@@ -475,7 +513,6 @@ public abstract class ResourceBrokerCpi implements ResourceBroker {
                     return (String) val;
                 } else {
                     String[] hostList = (String[]) val;
-
                     return hostList[0];
                 }
             }
@@ -484,5 +521,59 @@ public abstract class ResourceBrokerCpi implements ResourceBroker {
         }
 
         return null;
+    }
+
+    protected File[] resolveDeletedFiles(JobDescription description, String host)
+            throws GATInvocationException {
+
+        SoftwareDescription sd = description.getSoftwareDescription();
+        if (sd == null) {
+            return null;
+        }
+
+        ArrayList res = new ArrayList();
+
+        if (sd.deletePreStaged()) {
+            Map tmp = resolvePreStagedFiles(description, host);
+            res.addAll(tmp.values());
+        }
+
+        if (sd.deletePostStaged()) {
+            Map tmp = resolvePostStagedFiles(description, host);
+            res.addAll(tmp.keySet());
+        }
+
+        ArrayList files = sd.getDeletedFiles();
+        for (int j = 0; j < files.size(); j++) {
+            res.add(resolvePostStagedFile((File) files.get(j), host));
+        }
+
+        File[] result = new File[res.size()];
+        return (File[]) res.toArray(result);
+    }
+
+    protected void deleteFiles(JobDescription jobDescription, String host)
+            throws GATInvocationException {
+        File[] files = resolveDeletedFiles(jobDescription, host);
+
+        GATInvocationException e = new GATInvocationException();
+        for (int i = 0; i < files.length; i++) {
+            try {
+                if (GATEngine.VERBOSE) {
+                    System.err.println("DELETE_FILE:" + files[i]);
+                }
+                files[i].delete();
+            } catch (Exception x) {
+                e.add("resource broker", x);
+            }
+        }
+
+        if (e.getNrChildren() != 0) throw e;
+    }
+
+    protected void wipeFiles(JobDescription jobDescription, String host)
+            throws GATInvocationException {
+        /// @@@ try to wipe
+        deleteFiles(jobDescription, host);
     }
 }
