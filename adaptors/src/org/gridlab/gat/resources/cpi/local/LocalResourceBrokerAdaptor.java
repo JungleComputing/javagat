@@ -211,11 +211,8 @@ public class LocalResourceBrokerAdaptor extends ResourceBrokerCpi {
             }
         } else {
             try {
-/*                FileInputStream fin =
-                        GAT.createFileInputStream(gatContext, preferences,
-                            stdin.toURI());
-  */              
-                java.io.FileInputStream fin = new java.io.FileInputStream(stdin.getName());
+                String name = (home == null ?  "" : home + java.io.File.separator) + stdin.getName();
+                java.io.FileInputStream fin = new java.io.FileInputStream(name);
                 
                 OutputStream out = p.getOutputStream();
                 new InputForwarder(out, fin);
@@ -235,7 +232,9 @@ public class LocalResourceBrokerAdaptor extends ResourceBrokerCpi {
                 /*FileOutputStream out =
                         GAT.createFileOutputStream(gatContext, preferences,
                             stdout.toURI());*/
-                java.io.FileOutputStream out = new java.io.FileOutputStream(stdout.getName());
+                String name = (home == null ?  "" : home + java.io.File.separator) + stdout.getName();
+
+                java.io.FileOutputStream out = new java.io.FileOutputStream(name);
                 outForwarder = new OutputForwarder(p.getInputStream(), out);
             } catch (Exception e) {
                 throw new GATInvocationException("local broker", e);
@@ -253,7 +252,8 @@ public class LocalResourceBrokerAdaptor extends ResourceBrokerCpi {
 /*                FileOutputStream out =
                         GAT.createFileOutputStream(gatContext, preferences,
                             stderr.toURI());*/
-                java.io.FileOutputStream out = new java.io.FileOutputStream(stderr.getName());
+                String name = (home == null ?  "" : home + java.io.File.separator) + stderr.getName();
+                java.io.FileOutputStream out = new java.io.FileOutputStream(name);
 
                 errForwarder = new OutputForwarder(p.getErrorStream(), out);
             } catch (Exception e) {
