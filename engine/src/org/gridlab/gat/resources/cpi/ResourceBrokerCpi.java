@@ -633,7 +633,7 @@ public abstract class ResourceBrokerCpi implements ResourceBroker {
     public void wipeFiles(JobDescription jobDescription, String host)
             throws GATInvocationException {
 
-        File[] files = resolveDeletedFiles(jobDescription, host);
+        File[] files = resolveWipedFiles(jobDescription, host);
 
         GATInvocationException e = new GATInvocationException();
         for (int i = 0; i < files.length; i++) {
