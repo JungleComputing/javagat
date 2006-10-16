@@ -646,13 +646,15 @@ public abstract class ResourceBrokerCpi implements ResourceBroker {
             } catch (Exception x) {
                 e.add("resource broker", x);
             }
-        }
 
-        // and now delete them 
-        try {
-            deleteFiles(jobDescription, host);
-        } catch (Exception x) {
-            e.add("resource broker", x);
+            try {
+                if (GATEngine.VERBOSE) {
+                    System.err.println("DELETE_FILE:" + files[i]);
+                }
+                files[i].delete();
+            } catch (Exception x) {
+                e.add("resource broker", x);
+            }        
         }
 
         if (e.getNrChildren() != 0) throw e;
