@@ -93,13 +93,13 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
         org.gridlab.gat.io.File stdout = sd.getStdout();
 
         if (stdout != null) {
-            rsl += (" (stdout = " + stdout.getPath() + ")");
+            rsl += (" (stdout = " + stdout.getName() + ")");
         }
 
         org.gridlab.gat.io.File stderr = sd.getStderr();
 
         if (stderr != null) {
-            rsl += (" (stderr = " + stderr.getPath() + ")");
+            rsl += (" (stderr = " + stderr.getName() + ")");
         }
 
         // set the environment
