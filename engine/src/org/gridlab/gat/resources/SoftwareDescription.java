@@ -224,7 +224,7 @@ public class SoftwareDescription implements java.io.Serializable {
         addPreStagedFile(src, null);
     }
 
-    /** dest can be null, this means file with the same name in the CWD at the remote machine */
+    /** Dest can be null, this means file with the same name in the CWD at the remote machine */
     public void addPreStagedFile(File src, File dest) {
         if (src == null) {
             throw new NullPointerException(
