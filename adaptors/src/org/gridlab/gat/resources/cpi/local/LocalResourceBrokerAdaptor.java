@@ -13,7 +13,6 @@ import java.util.Set;
 import org.gridlab.gat.AdaptorNotApplicableException;
 import org.gridlab.gat.CommandNotFoundException;
 import org.gridlab.gat.FilePrestageException;
-import org.gridlab.gat.GAT;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.GATObjectCreationException;
@@ -21,8 +20,6 @@ import org.gridlab.gat.Preferences;
 import org.gridlab.gat.TimePeriod;
 import org.gridlab.gat.URI;
 import org.gridlab.gat.engine.GATEngine;
-import org.gridlab.gat.io.FileInputStream;
-import org.gridlab.gat.io.FileOutputStream;
 import org.gridlab.gat.resources.Job;
 import org.gridlab.gat.resources.JobDescription;
 import org.gridlab.gat.resources.Reservation;
@@ -212,8 +209,7 @@ public class LocalResourceBrokerAdaptor extends ResourceBrokerCpi {
         } else {
             try {
                 String name = (home == null ?  "" : home + java.io.File.separator) + stdin.getName();
-                java.io.FileInputStream fin = new java.io.FileInputStream(name);
-                
+                java.io.FileInputStream fin = new java.io.FileInputStream(name);                
                 OutputStream out = p.getOutputStream();
                 new InputForwarder(out, fin);
             } catch (Exception e) {
@@ -229,11 +225,7 @@ public class LocalResourceBrokerAdaptor extends ResourceBrokerCpi {
         } else {
             stdout = resolvePostStagedFile(stdout, "localhost");
             try {
-                /*FileOutputStream out =
-                        GAT.createFileOutputStream(gatContext, preferences,
-                            stdout.toURI());*/
                 String name = (home == null ?  "" : home + java.io.File.separator) + stdout.getName();
-
                 java.io.FileOutputStream out = new java.io.FileOutputStream(name);
                 outForwarder = new OutputForwarder(p.getInputStream(), out);
             } catch (Exception e) {
@@ -249,12 +241,8 @@ public class LocalResourceBrokerAdaptor extends ResourceBrokerCpi {
         } else {
             stderr = resolvePostStagedFile(stderr, "localhost");
             try {
-/*                FileOutputStream out =
-                        GAT.createFileOutputStream(gatContext, preferences,
-                            stderr.toURI());*/
                 String name = (home == null ?  "" : home + java.io.File.separator) + stderr.getName();
                 java.io.FileOutputStream out = new java.io.FileOutputStream(name);
-
                 errForwarder = new OutputForwarder(p.getErrorStream(), out);
             } catch (Exception e) {
                 throw new GATInvocationException("local broker", e);

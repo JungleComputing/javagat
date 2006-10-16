@@ -51,6 +51,8 @@ public class LocalJob extends Job {
     LocalResourceBrokerAdaptor broker;
 
     GATInvocationException postStageException = null;
+    GATInvocationException deleteException = null;
+    GATInvocationException wipeException = null;
 
     JobDescription description;
 
@@ -108,6 +110,12 @@ public class LocalJob extends Job {
 
         if (postStageException != null) {
             m.put("postStageError", postStageException);
+        }
+        if (deleteException != null) {
+            m.put("deleteError", deleteException);
+        }
+        if (wipeException != null) {
+            m.put("wipeError", wipeException);
         }
 
         return m;
@@ -173,12 +181,34 @@ public class LocalJob extends Job {
         GATEngine.fireMetric(this, v);
 
         GATInvocationException tmpExc = null;
+
+        if (GATEngine.VERBOSE) {
+            System.err.println("job: poststage starting");
+        }
         try {
             broker.postStageFiles(description, "localhost");
         } catch (GATInvocationException e) {
             tmpExc = e;
         }
 
+        if (GATEngine.VERBOSE) {
+            System.err.println("job: delete/wipe starting");
+        }
+        try {
+            broker.deleteFiles(description, broker.getHostname(description));
+        } catch (GATInvocationException e) {
+            deleteException = e;
+        }
+
+        try {
+            broker.wipeFiles(description, broker.getHostname(description));
+        } catch (GATInvocationException e) {
+            wipeException = e;
+        }
+
+
+        
+        
         synchronized (this) {
             postStageException = tmpExc;
             state = STOPPED;
@@ -202,6 +232,23 @@ public class LocalJob extends Job {
                 .currentTimeMillis());
         }
 
+        if (GATEngine.VERBOSE) {
+            System.err.println("globus job stop: delete/wipe starting");
+        }
+
+        try {
+            broker.deleteFiles(description, broker.getHostname(description));
+        } catch (GATInvocationException e) {
+            deleteException = e;
+        }
+
+        try {
+            broker.wipeFiles(description, broker.getHostname(description));
+        } catch (GATInvocationException e) {
+            wipeException = e;
+        }
+
+        
         if (GATEngine.DEBUG) {
             System.err.println("default job callback: firing event: " + v);
         }
