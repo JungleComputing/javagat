@@ -36,12 +36,6 @@ import java.util.NoSuchElementException;
  * root of the tree to any leaf where the requirements of every node on that
  * path are met.
  */
-/**
- * @author rob
- *
- * TODO To change the template for this generated type comment go to
- * Window - Preferences - Java - Code Generation - Code and Comments
- */
 public abstract class ResourceDescription implements java.io.Serializable {
     /**
      * This member variable holds the Map which describes this resource".
