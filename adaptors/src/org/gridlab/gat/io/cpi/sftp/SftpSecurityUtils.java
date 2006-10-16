@@ -7,7 +7,7 @@ import java.io.File;
 import java.io.IOException;
 
 import org.gridlab.gat.CouldNotInitializeCredentialException;
-import org.gridlab.gat.CredentialExpiredExeption;
+import org.gridlab.gat.CredentialExpiredException;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.Preferences;
 import org.gridlab.gat.URI;
@@ -27,7 +27,7 @@ import com.sshtools.j2ssh.transport.publickey.SshPrivateKeyFile;
 class SftpContextCreator implements SecurityContextCreator {
     public SecurityContext createDefaultSecurityContext(GATContext gatContext,
             Preferences preferences, URI location)
-            throws CouldNotInitializeCredentialException, CredentialExpiredExeption {
+            throws CouldNotInitializeCredentialException, CredentialExpiredException {
         SftpUserInfo cred = SftpSecurityUtils.getDefaultUserInfo(gatContext,
             preferences, location);
         CertificateSecurityContext c = new CertificateSecurityContext();
@@ -38,7 +38,7 @@ class SftpContextCreator implements SecurityContextCreator {
 
     public Object createUserData(GATContext gatContext,
             Preferences preferences, URI location, SecurityContext inContext)
-            throws CouldNotInitializeCredentialException, CredentialExpiredExeption {
+            throws CouldNotInitializeCredentialException, CredentialExpiredException {
         SftpUserInfo info;
 
         if (inContext instanceof CertificateSecurityContext) {
@@ -82,7 +82,7 @@ class SftpContextCreator implements SecurityContextCreator {
 public class SftpSecurityUtils {
     protected static SftpUserInfo getSftpCredential(GATContext context,
             Preferences preferences, String adaptorName, URI location,
-            int defaultPort) throws CouldNotInitializeCredentialException, CredentialExpiredExeption {
+            int defaultPort) throws CouldNotInitializeCredentialException, CredentialExpiredException {
         Object data = SecurityContextUtils.getSecurityUserData(context,
             preferences, adaptorName, "sftp", location, defaultPort,
             new SftpContextCreator());
@@ -92,7 +92,7 @@ public class SftpSecurityUtils {
 
     protected static SftpUserInfo getDefaultUserInfo(GATContext gatContext,
             Preferences preferences, URI location)
-            throws CouldNotInitializeCredentialException, CredentialExpiredExeption {
+            throws CouldNotInitializeCredentialException, CredentialExpiredException {
         SftpUserInfo info = new SftpUserInfo();
         info.privateKey = getDefaultPrivateKey(gatContext, preferences);
         info.username = getUser(gatContext, preferences, location);
@@ -105,7 +105,7 @@ public class SftpSecurityUtils {
     }
 
     private static SshPrivateKey getDefaultPrivateKey(GATContext context,
-            Preferences preferences) throws CouldNotInitializeCredentialException, CredentialExpiredExeption {
+            Preferences preferences) throws CouldNotInitializeCredentialException, CredentialExpiredException {
         String keyfile = null;
 
         if (preferences != null) {
@@ -177,7 +177,7 @@ public class SftpSecurityUtils {
     }
 
     protected static SshPrivateKey loadKey(String keyfile)
-            throws CouldNotInitializeCredentialException, CredentialExpiredExeption {
+            throws CouldNotInitializeCredentialException, CredentialExpiredException {
         if (GATEngine.DEBUG) {
             System.err.println("trying to load ssh key from: " + keyfile);
         }
@@ -198,7 +198,7 @@ public class SftpSecurityUtils {
     }
 
     private static String getUser(GATContext context, Preferences preferences,
-            URI location) throws CouldNotInitializeCredentialException, CredentialExpiredExeption {
+            URI location) throws CouldNotInitializeCredentialException, CredentialExpiredException {
         String user = location.getUserInfo();
 
         if (user == null) {

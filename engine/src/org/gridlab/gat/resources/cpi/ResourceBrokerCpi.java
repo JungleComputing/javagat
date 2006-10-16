@@ -136,7 +136,7 @@ public abstract class ResourceBrokerCpi implements ResourceBroker {
 
         if(a == null) return 1;
         
-        if((a instanceof String)) {
+        if(!(a instanceof String)) {
             throw new GATInvocationException("the cpu count must be a string");
         }
         
@@ -230,11 +230,9 @@ public abstract class ResourceBrokerCpi implements ResourceBroker {
 
                 if (destFile != null) { // already set manually
                     result.put(srcFile, destFile);
-
-                    continue;
+                } else {
+                    result.put(srcFile, resolvePreStagedFile(srcFile, host));
                 }
-
-                result.put(srcFile, resolvePreStagedFile(srcFile, host));
             }
         }
 
@@ -292,7 +290,7 @@ public abstract class ResourceBrokerCpi implements ResourceBroker {
         dest += ((src.getUserInfo() == null) ? "" : src.getUserInfo());
         dest += host;
         dest += ((src.getPort() == -1) ? "" : (":" + src.getPort()));
-        dest += ("/" + f.getName());
+        dest += ("/" + f.getPath());
 
         URI destURI = null;
 
@@ -328,31 +326,53 @@ public abstract class ResourceBrokerCpi implements ResourceBroker {
             Iterator i = keys.iterator();
 
             while (i.hasNext()) {
-                File destFile = (File) i.next();
-                File srcFile = (File) post.get(destFile);
-
-                if (srcFile != null) { // already set manually
-                    result.put(destFile, srcFile);
-
-                    continue;
+                File srcFile = (File) i.next();
+                File destFile = (File) post.get(srcFile);
+                
+                if(destFile == null) {
+                    try {
+                        destFile = GAT.createFile(gatContext, preferences, srcFile.getName());
+                    } catch (GATObjectCreationException e) {
+                        throw new GATInvocationException("resourcebroker cpi", e);
+                    }
                 }
-
-                result.put(destFile, resolvePostStagedFile(destFile, host));
+                
+                result.put(resolvePostStagedFile(srcFile, host), destFile);
             }
         }
 
         File stdout = sd.getStdout();
-
         if (stdout != null) {
-            result.put(stdout, resolvePreStagedFile(stdout, host));
+            try {
+                File destFile = GAT.createFile(gatContext, preferences, stdout.getName());
+                result.put(resolvePostStagedFile(stdout, host), destFile);
+            } catch (GATObjectCreationException e) {
+                throw new GATInvocationException("resourcebroker cpi", e);
+            }
         }
 
         File stderr = sd.getStderr();
-
         if (stderr != null) {
-            result.put(stderr, resolvePreStagedFile(stderr, host));
+            try {
+                File destFile = GAT.createFile(gatContext, preferences, stderr.getName());
+                result.put(resolvePostStagedFile(stderr, host), destFile);
+            } catch (GATObjectCreationException e) {
+                throw new GATInvocationException("resourcebroker cpi", e);
+            }
         }
 
+        if(GATEngine.VERBOSE) {
+            System.err.println("RESOLVE_POST: ");
+            Set keys = result.keySet();
+            Iterator i = keys.iterator();
+
+            while (i.hasNext()) {
+                File srcFile = (File) i.next();
+                File destFile = (File) result.get(srcFile);
+                System.err.println("    " + srcFile.toURI() + " -> " + destFile.toURI());
+            }
+        }
+        
         return result;
     }
 
@@ -369,23 +389,27 @@ public abstract class ResourceBrokerCpi implements ResourceBroker {
         Set keys = files.keySet();
         Iterator i = keys.iterator();
 
+        GATInvocationException exceptions = new GATInvocationException();
         while (i.hasNext()) {
-            File destFile = (File) i.next();
-            File srcFile = (File) files.get(destFile);
+            File srcFile = (File) i.next();
+            File destFile = (File) files.get(srcFile);
 
             try {
                 if (!destFile.equals(srcFile)) {
                     if (GATEngine.VERBOSE) {
-                        System.err.println("resource broker cpi poststage:");
-                        System.err.println("  copy " + srcFile.toURI() + " to "
+                        System.err.println("POSTSTAGE: " + srcFile.toURI() + " to "
                             + destFile.toURI());
                     }
 
                     srcFile.copy(destFile.toURI());
                 }
             } catch (Exception e) {
-                throw new GATInvocationException("resource broker cpi", e);
+                exceptions.add("resource broker cpi", e);
             }
+        }
+
+        if(exceptions.getNrChildren() != 0) {
+            throw exceptions;
         }
     }
 
@@ -398,28 +422,23 @@ public abstract class ResourceBrokerCpi implements ResourceBroker {
                 "The job description does not contain a software description");
         }
 
-        Map files = resolvePostStagedFiles(description, host);
+        Map files = resolvePostStagedFiles(description, host);        
         Set keys = files.keySet();
         Iterator i = keys.iterator();
 
         GATInvocationException exceptions = new GATInvocationException();
         
         while (i.hasNext()) {
-            File destFile = (File) i.next();
-            File srcFile = (File) files.get(destFile);
+            File srcFile = (File) i.next();
 
             try {
-                if (!destFile.equals(srcFile)) {
                     if (GATEngine.VERBOSE) {
-                        System.err
-                            .println("resource broker cpi remove poststaged:");
-                        System.err.println("  remove " + srcFile.toURI());
+                        System.err.println("REMOVE POSTSTAGED: " + srcFile.toURI());
                     }
 
-                    if (srcFile.exists()) {
-                        srcFile.delete();
-                    }
-                }
+                    // Just try to delete it, even though it might not exists.
+                    // We catch the exception and continue anyway.
+                    srcFile.delete();
             } catch (Exception e) {
                 exceptions.add("resource broker cpi", e);
             }

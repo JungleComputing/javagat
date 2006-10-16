@@ -1,26 +1,11 @@
-package org.gridlab.gat.resources.cpi.local;
+package org.gridlab.gat.resources.cpi.zorilla;
 
-import ibis.util.IPUtils;
+import nl.vu.zorilla.zoni.ZoniProtocol;
 
-import java.io.IOException;
-import java.io.OutputStream;
-import java.rmi.RemoteException;
-import java.util.List;
-import java.util.Map;
-
-import org.gridlab.gat.AdaptorNotApplicableException;
-import org.gridlab.gat.CommandNotFoundException;
-import org.gridlab.gat.FilePrestageException;
-import org.gridlab.gat.GAT;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
-import org.gridlab.gat.GATObjectCreationException;
 import org.gridlab.gat.Preferences;
 import org.gridlab.gat.TimePeriod;
-import org.gridlab.gat.URI;
-import org.gridlab.gat.engine.GATEngine;
-import org.gridlab.gat.io.FileInputStream;
-import org.gridlab.gat.io.FileOutputStream;
 import org.gridlab.gat.resources.Job;
 import org.gridlab.gat.resources.JobDescription;
 import org.gridlab.gat.resources.Reservation;
@@ -28,8 +13,12 @@ import org.gridlab.gat.resources.Resource;
 import org.gridlab.gat.resources.ResourceDescription;
 import org.gridlab.gat.resources.SoftwareDescription;
 import org.gridlab.gat.resources.cpi.ResourceBrokerCpi;
-import org.gridlab.gat.util.InputForwarder;
-import org.gridlab.gat.util.OutputForwarder;
+
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.net.UnknownHostException;
+
+import java.util.List;
 
 /**
  * An instance of this class is used to reserve resources.
@@ -65,17 +54,71 @@ import org.gridlab.gat.util.OutputForwarder;
  * LocalResourceBrokerAdaptor with the appropriate instance of
  * HardwareResourceDescription.
  */
-public class LocalResourceBrokerAdaptor extends ResourceBrokerCpi {
+public class ZorillaResourceBrokerAdaptor extends ResourceBrokerCpi {
+
+    private final InetSocketAddress nodeSocketAddress;
+
+    private static int parsePort(String string) throws GATInvocationException {
+        int port;
+        try {
+            port = Integer.parseInt(string);
+        } catch (NumberFormatException e) {
+            throw new GATInvocationException("could not parse port", e);
+        }
+
+        if (port <= 0) {
+            throw new GATInvocationException("invalid port "
+                + "(must be non-zero positive number): " + string);
+        }
+        return port;
+    }
+
+    private static InetSocketAddress parseSocketAddress(String string)
+        throws GATInvocationException {
+        int port = ZoniProtocol.DEFAULT_PORT;
+
+        String[] strings = string.split(":");
+
+        if (strings.length > 2) {
+            throw new GATInvocationException("illegal address format: "
+                + string);
+        } else if (strings.length == 2) {
+            // format was "host:port, extract port number"
+            port = parsePort(strings[1]);
+        }
+
+        InetAddress address = null;
+        try {
+            address = InetAddress.getByName(strings[0]);
+        } catch (UnknownHostException e) {
+            throw new GATInvocationException("invalid address: " + string
+                + " exception: " + e);
+        }
+
+        return new InetSocketAddress(address, port);
+    }
+
     /**
      * This method constructs a LocalResourceBrokerAdaptor instance
      * corresponding to the passed GATContext.
-     *
+     * 
      * @param gatContext
      *            A GATContext which will be used to broker resources
      */
-    public LocalResourceBrokerAdaptor(GATContext gatContext,
-            Preferences preferences) throws GATObjectCreationException {
+    public ZorillaResourceBrokerAdaptor(GATContext gatContext,
+        Preferences preferences) throws Exception {
         super(gatContext, preferences);
+
+        String addressString = (String) preferences.get("zorilla.node.address");
+
+        if (addressString == null) {
+            //localhost address on default port
+            nodeSocketAddress = new InetSocketAddress(InetAddress
+                .getByName(null), ZoniProtocol.DEFAULT_PORT);
+        } else {
+            nodeSocketAddress = parseSocketAddress(addressString);
+        }
+
     }
 
     /**
@@ -83,7 +126,7 @@ public class LocalResourceBrokerAdaptor extends ResourceBrokerCpi {
      * specified time period. Upon reserving the specified hardware resource
      * this method returns a Reservation. Upon failing to reserve the specified
      * hardware resource this method returns an error.
-     *
+     * 
      * @param resourceDescription
      *            A description, a HardwareResourceDescription, of the hardware
      *            resource to reserve
@@ -92,7 +135,7 @@ public class LocalResourceBrokerAdaptor extends ResourceBrokerCpi {
      *            hardware resource
      */
     public Reservation reserveResource(ResourceDescription resourceDescription,
-            TimePeriod timePeriod) {
+        TimePeriod timePeriod) {
         throw new UnsupportedOperationException("Not implemented");
     }
 
@@ -101,7 +144,7 @@ public class LocalResourceBrokerAdaptor extends ResourceBrokerCpi {
      * Upon finding the specified hardware resource(s) this method returns a
      * java.util.List of HardwareResource instances. Upon failing to find the
      * specified hardware resource this method returns an error.
-     *
+     * 
      * @param resourceDescription
      *            A description, a HardwareResoucreDescription, of the hardware
      *            resource(s) to find
@@ -113,11 +156,11 @@ public class LocalResourceBrokerAdaptor extends ResourceBrokerCpi {
 
     /*
      * (non-Javadoc)
-     *
+     * 
      * @see org.gridlab.gat.resources.ResourceBroker#submitJob(org.gridlab.gat.resources.JobDescription)
      */
     public Job submitJob(JobDescription description)
-            throws GATInvocationException {
+        throws GATInvocationException {
         SoftwareDescription sd = description.getSoftwareDescription();
 
         if (sd == null) {
@@ -125,114 +168,27 @@ public class LocalResourceBrokerAdaptor extends ResourceBrokerCpi {
                 "The job description does not contain a software description");
         }
 
-        // we do not support environment yet
-        Map env = sd.getEnvironment();
-        if(env != null && !env.isEmpty()) {
-            throw new AdaptorNotApplicableException("cannot handle environment");
-        }
-
-        URI location = getLocationURI(description);
-        String path = null;
-
-        if (location.refersToLocalHost()) {
-            path = location.getPath();
-        } else {
-            throw new AdaptorNotApplicableException("not a local file: " + location);
-        }
-
         String host = getHostname(description);
+
         if (host != null) {
-            if (!host.equals("localhost")
-                && !host.equals(IPUtils.getLocalHostName())) {
-                throw new AdaptorNotApplicableException(
-                    "cannot run jobs on remote machines with the local adaptor");
-            }
+            throw new GATInvocationException(
+                "cannot specify host with the Zorilla adaptor");
         }
 
-        try {
-            preStageFiles(description, "localhost");
-        } catch (GATInvocationException e) {
-            throw new FilePrestageException("local broker", e);
-        }
-
-        String command = path + " " + getArguments(description);
-
-        if (GATEngine.VERBOSE) {
-            System.err.println("running command: " + command);
-        }
-
-        Process p = null;
-        try {
-            p = Runtime.getRuntime().exec(command.toString());
-        } catch (IOException e) {
-            throw new CommandNotFoundException("local broker", e);
-        }
-
-        org.gridlab.gat.io.File stdin =  sd.getStdin();
-        org.gridlab.gat.io.File stdout = sd.getStdout();
-        org.gridlab.gat.io.File stderr = sd.getStderr();
-
-        if (stdin == null) {
-            // close stdin.
-            try {
-                p.getOutputStream().close();
-            } catch (Throwable e) {
-                // ignore
-            }
-        } else {
-            try {
-                FileInputStream fin = GAT.createFileInputStream(gatContext,
-                    preferences, stdin.toURI());
-                OutputStream out = p.getOutputStream();
-                new InputForwarder(out, fin);
-            } catch (GATObjectCreationException e) {
-                throw new GATInvocationException("local broker", e);
-            }
-        }
-
-        OutputForwarder outForwarder = null;
-        
-        // we must always read the output and error streams to avoid deadlocks
-        if (stdout == null) {
-            new OutputForwarder(p.getInputStream(), false); // throw away output
-        } else {
-            stdout = resolvePostStagedFile(stdout, "localhost");
-            try {
-                FileOutputStream out = GAT.createFileOutputStream(gatContext,
-                    preferences, stdout.toURI());
-                outForwarder = new OutputForwarder(p.getInputStream(), out);
-            } catch (GATObjectCreationException e) {
-                throw new GATInvocationException("local broker", e);
-            }
-        }
-        
-        OutputForwarder errForwarder = null;
-        
-        // we must always read the output and error streams to avoid deadlocks
-        if (stderr == null) {
-            new OutputForwarder(p.getErrorStream(), false); // throw away output
-        } else {
-            stderr = resolvePostStagedFile(stderr, "localhost");
-            try {
-                FileOutputStream out = GAT.createFileOutputStream(gatContext,
-                    preferences, stderr.toURI());
-                errForwarder = new OutputForwarder(p.getErrorStream(), out);
-            } catch (GATObjectCreationException e) {
-                throw new GATInvocationException("local broker", e);
-            }
-        }
-
-        return new LocalJob(this, description, p, outForwarder, errForwarder);
+        return new ZorillaJob(this, description);
     }
 
     /*
      * (non-Javadoc)
-     *
+     * 
      * @see org.gridlab.gat.resources.ResourceBroker#reserveResource(org.gridlab.gat.resources.Resource,
      *      org.gridlab.gat.util.TimePeriod)
      */
-    public Reservation reserveResource(Resource resource, TimePeriod timePeriod)
-            throws RemoteException, IOException {
+    public Reservation reserveResource(Resource resource, TimePeriod timePeriod) {
         throw new UnsupportedOperationException("Not implemented");
+    }
+
+    InetSocketAddress getNodeSocketAddress() {
+        return nodeSocketAddress;
     }
 }

@@ -327,15 +327,6 @@ public class LocalFileAdaptor extends FileCpi {
     /*
      * (non-Javadoc)
      *
-     * @see org.gridlab.gat.io.File#isAbsolute()
-     */
-    public boolean isAbsolute() {
-        return f.isAbsolute();
-    }
-
-    /*
-     * (non-Javadoc)
-     *
      * @see org.gridlab.gat.io.File#isDirectory()
      */
     public boolean isDirectory() {

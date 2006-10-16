@@ -14,7 +14,7 @@ import org.globus.gram.GramException;
 import org.globus.gram.GramJob;
 import org.globus.gsi.gssapi.auth.NoAuthorization;
 import org.gridlab.gat.CouldNotInitializeCredentialException;
-import org.gridlab.gat.CredentialExpiredExeption;
+import org.gridlab.gat.CredentialExpiredException;
 import org.gridlab.gat.FilePrestageException;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
@@ -33,8 +33,8 @@ import org.ietf.jgss.GSSException;
 /**
  * @author rob
  */
-public class GlobusBrokerAdaptor extends ResourceBrokerCpi {
-    public GlobusBrokerAdaptor(GATContext gatContext, Preferences preferences)
+public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
+    public GlobusResourceBrokerAdaptor(GATContext gatContext, Preferences preferences)
             throws GATObjectCreationException {
         super(gatContext, preferences);
         // turn off all annoying cog prints
@@ -139,7 +139,6 @@ public class GlobusBrokerAdaptor extends ResourceBrokerCpi {
         String contact = getResourceManagerContact(description);
 
         URI hostUri;
-
         try {
             hostUri = new URI(host);
         } catch (Exception e) {
@@ -153,7 +152,7 @@ public class GlobusBrokerAdaptor extends ResourceBrokerCpi {
                 ResourceManagerContact.DEFAULT_PORT);
         } catch (CouldNotInitializeCredentialException e) {
             throw new GATInvocationException("globus", e);
-        } catch (CredentialExpiredExeption e) {
+        } catch (CredentialExpiredException e) {
             throw new GATInvocationException("globus", e);
         }
 

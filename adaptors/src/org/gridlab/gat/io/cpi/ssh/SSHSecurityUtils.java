@@ -4,7 +4,7 @@
 package org.gridlab.gat.io.cpi.ssh;
 
 import org.gridlab.gat.CouldNotInitializeCredentialException;
-import org.gridlab.gat.CredentialExpiredExeption;
+import org.gridlab.gat.CredentialExpiredException;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.Preferences;
 import org.gridlab.gat.URI;
@@ -20,7 +20,7 @@ import org.gridlab.gat.security.cpi.SecurityContextUtils;
 class SshContextCreator implements SecurityContextCreator {
     public SecurityContext createDefaultSecurityContext(GATContext gatContext,
             Preferences preferences, URI location)
-            throws CouldNotInitializeCredentialException, CredentialExpiredExeption {
+            throws CouldNotInitializeCredentialException, CredentialExpiredException {
         SshUserInfo cred = SSHSecurityUtils.getDefaultUserInfo(gatContext,
             preferences, location);
         CertificateSecurityContext c = new CertificateSecurityContext();
@@ -31,7 +31,7 @@ class SshContextCreator implements SecurityContextCreator {
 
     public Object createUserData(GATContext gatContext,
             Preferences preferences, URI location, SecurityContext inContext)
-            throws CouldNotInitializeCredentialException, CredentialExpiredExeption {
+            throws CouldNotInitializeCredentialException, CredentialExpiredException {
         SshUserInfo info;
 
         if (inContext instanceof CertificateSecurityContext) {
@@ -76,7 +76,7 @@ class SshContextCreator implements SecurityContextCreator {
 public class SSHSecurityUtils {
     public static SshUserInfo getSshCredential(GATContext context,
             Preferences preferences, String adaptorName, URI location,
-            int defaultPort) throws CouldNotInitializeCredentialException, CredentialExpiredExeption {
+            int defaultPort) throws CouldNotInitializeCredentialException, CredentialExpiredException {
         Object data = SecurityContextUtils.getSecurityUserData(context,
             preferences, adaptorName, "ssh", location, defaultPort,
             new SshContextCreator());
@@ -86,7 +86,7 @@ public class SSHSecurityUtils {
 
     protected static SshUserInfo getDefaultUserInfo(GATContext gatContext,
             Preferences preferences, URI location)
-            throws CouldNotInitializeCredentialException, CredentialExpiredExeption {
+            throws CouldNotInitializeCredentialException, CredentialExpiredException {
         SshUserInfo info = new SshUserInfo();
         info.privateKeyfile = getDefaultPrivateKeyfile(gatContext, preferences);
         info.username = getUser(gatContext, preferences, location);
@@ -161,7 +161,7 @@ public class SSHSecurityUtils {
     }
 
     private static String getUser(GATContext context, Preferences preferences,
-            URI location) throws CouldNotInitializeCredentialException, CredentialExpiredExeption {
+            URI location) throws CouldNotInitializeCredentialException, CredentialExpiredException {
         String user = location.getUserInfo();
 
         if (user == null) {
