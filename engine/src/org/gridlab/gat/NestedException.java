@@ -51,8 +51,16 @@ class NestedException extends Exception {
             }
         }
 
+        String shortName = null;
+        int pos = adaptor.lastIndexOf(".");
+        if(pos < 0) {
+            shortName = adaptor;
+        } else {
+            shortName = adaptor.substring(pos+1);
+        }
+
         throwables.add(t);
-        adaptorNames.add(adaptor);
+        adaptorNames.add(shortName);
     }
 
     public String getMessage() {
@@ -98,15 +106,7 @@ class NestedException extends Exception {
 
         for (int i = 0; i < throwables.size(); i++) {
             if (adaptorNames.get(i) != null) {
-                String shortName = null;
-                String name = (String)adaptorNames.get(i);
-                int pos = name.lastIndexOf(".");
-                if(pos < 0) {
-                    shortName = name;
-                } else {
-                    shortName = name.substring(pos+1);
-                }
-                res += ("*** " + shortName + " adaptor failed: ");
+                res += ("*** " + adaptorNames.get(i) + " adaptor failed: ");
             }
 
             String msg = ((Throwable) throwables.get(i)).getMessage();
