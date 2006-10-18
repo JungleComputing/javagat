@@ -715,12 +715,11 @@ public abstract class ResourceBrokerCpi implements ResourceBroker {
      * @return
      * @throws GATInvocationException
      */
-    protected String createSandbox(JobDescription description) throws GATInvocationException {
-        String host = getHostname(description);
+    protected String createSandbox(JobDescription description, String host) throws GATInvocationException {
         if(host == null) {
             throw new GATInvocationException("cannot create a sandbox without a host name");
         }
-        
+
         String sandbox = null;
         try {
             sandbox = createSandboxDir(host);
@@ -742,6 +741,16 @@ public abstract class ResourceBrokerCpi implements ResourceBroker {
 
         return sandbox;
     }
+    /** Creates a complete sandbox directory. This requires prestaging of the requested files. 
+     * 
+     * @param description
+     * @return
+     * @throws GATInvocationException
+     */
+    protected String createSandbox(JobDescription description) throws GATInvocationException {
+        String host = getHostname(description);
+        return createSandbox(description, host);
+    }    
     
     protected void retrieveAndCleanup(JobCpi j) {
         if (GATEngine.VERBOSE) {
