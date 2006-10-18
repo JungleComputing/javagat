@@ -166,9 +166,10 @@ public class LocalResourceBrokerAdaptor extends ResourceBrokerCpi {
         if(home == null) {
             throw new GATInvocationException("local broker could not get user home dir");
         }
+
+        home = home + java.io.File.separator + sandbox;
         
-        
-        java.io.File f = new java.io.File(home + java.io.File.separator + sandbox);
+        java.io.File f = new java.io.File(home);
 
         if (GATEngine.VERBOSE) {
             System.err.println("running command: " + command);
@@ -181,7 +182,7 @@ public class LocalResourceBrokerAdaptor extends ResourceBrokerCpi {
             }
             
             if (home != null) {
-                System.err.println("working dir is: " + home);
+                System.err.println("working dir is: " + f.getPath());
             }
         }
 
