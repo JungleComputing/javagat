@@ -302,6 +302,23 @@ public abstract class ResourceBrokerCpi implements ResourceBroker {
 
                 srcFile.copy(destFile.toURI());
             } catch (Throwable e) {
+                if (GATEngine.VERBOSE) {
+                    System.err.println("prestage failed, removing already staged files.");
+                }
+
+                // remove / wipe filews we already prestaged.
+                try {
+                    deleteFiles(description, getHostname(description));
+                } catch (GATInvocationException e1) {
+                    // ignore
+                }
+
+                try {
+                    wipeFiles(description, getHostname(description));
+                } catch (GATInvocationException e2) {
+                    // ignore
+                }
+                
                 throw new GATInvocationException("resource broker cpi", e);
             }
         }
