@@ -342,6 +342,8 @@ public abstract class ResourceBrokerCpi implements ResourceBroker {
         URI src = f.toURI();
 
         if (host == null) {
+            System.err.println("HOST IS NULL");
+            new Exception().printStackTrace();
             host = "";
         }
 
