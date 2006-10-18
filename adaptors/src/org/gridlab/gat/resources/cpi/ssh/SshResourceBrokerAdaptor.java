@@ -266,7 +266,7 @@ public class SshResourceBrokerAdaptor extends ResourceBrokerCpi {
             System.err.println("finished setting stderr");
         }
 
-        preStageFiles(description, host);
+        String sandbox = createSandbox(description);
 
         try {
             channel.connect();
@@ -275,7 +275,7 @@ public class SshResourceBrokerAdaptor extends ResourceBrokerCpi {
                 "Ssh broker: could not connect on " + "channel using SSH", e);
         }
 
-        Job j = new SshJob(this, description, session, channel, host);
+        Job j = new SshJob(this, description, session, channel, host, sandbox);
         return j;
     }
 

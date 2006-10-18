@@ -180,7 +180,7 @@ public class ProActiveResourceBrokerAdaptor extends ResourceBrokerCpi {
 
     void preStage(JobDescription description, String host) {
         try {
-            java.util.Map files = resolvePreStagedFiles(description, host);
+            java.util.Map files = resolvePreStagedFiles(description, host, null);
             java.util.Set keys = files.keySet();
             java.util.Iterator i = keys.iterator();
             while (i.hasNext()) {

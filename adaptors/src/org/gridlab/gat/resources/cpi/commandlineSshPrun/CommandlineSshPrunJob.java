@@ -5,7 +5,6 @@ package org.gridlab.gat.resources.cpi.commandlineSshPrun;
 
 import ibis.util.IPUtils;
 
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -14,14 +13,14 @@ import org.gridlab.gat.engine.GATEngine;
 import org.gridlab.gat.monitoring.Metric;
 import org.gridlab.gat.monitoring.MetricDefinition;
 import org.gridlab.gat.monitoring.MetricValue;
-import org.gridlab.gat.resources.Job;
 import org.gridlab.gat.resources.JobDescription;
+import org.gridlab.gat.resources.cpi.JobCpi;
 import org.gridlab.gat.util.OutputForwarder;
 
 /**
  * @author rob
  */
-public class CommandlineSshPrunJob extends Job {
+public class CommandlineSshPrunJob extends JobCpi {
     CommandlineSshPrunResourceBrokerAdaptor broker;
 
     GATInvocationException postStageException = null;
@@ -43,9 +42,9 @@ public class CommandlineSshPrunJob extends Job {
     OutputForwarder err;
     
     CommandlineSshPrunJob(CommandlineSshPrunResourceBrokerAdaptor broker, JobDescription description,
-            Process p, OutputForwarder out, OutputForwarder err) {
+            Process p, String host, String sandbox, OutputForwarder out, OutputForwarder err) {
+        super(description, host, sandbox);
         this.broker = broker;
-        this.description = description;
         jobID = allocJobID();
         state = RUNNING;
         this.p = p;
@@ -98,28 +97,10 @@ public class CommandlineSshPrunJob extends Job {
     /*
      * (non-Javadoc)
      *
-     * @see org.gridlab.gat.resources.Job#getJobDescription()
-     */
-    public JobDescription getJobDescription() {
-        return description;
-    }
-
-    /*
-     * (non-Javadoc)
-     *
      * @see org.gridlab.gat.resources.Job#getJobID()
      */
-    public String getJobID() throws GATInvocationException, IOException {
+    public String getJobID() {
         return "" + jobID;
-    }
-
-    /*
-     * (non-Javadoc)
-     *
-     * @see org.gridlab.gat.resources.Job#getState()
-     */
-    public synchronized int getState() {
-        return state;
     }
 
     /*
@@ -133,7 +114,6 @@ public class CommandlineSshPrunJob extends Job {
     }
 
     void finished(int exitValue) {
-        GATInvocationException tmpExc = null;
         MetricValue v = null;
 
         synchronized (this) {
@@ -147,19 +127,9 @@ public class CommandlineSshPrunJob extends Job {
         }
         GATEngine.fireMetric(this, v);
 
-        try {
-            String host = broker.getHostname(description);
-            if (host == null) {
-                host = "localhost";
-            }
-
-            broker.postStageFiles(description, host);
-        } catch (GATInvocationException e) {
-            tmpExc = e;
-        }
+        retrieveAndCleanup(broker);
 
         synchronized (this) {
-            postStageException = tmpExc;
             state = STOPPED;
             v = new MetricValue(this, getStateString(state), statusMetric, System
                 .currentTimeMillis());
@@ -170,7 +140,7 @@ public class CommandlineSshPrunJob extends Job {
         GATEngine.fireMetric(this, v);
     }
 
-    public void stop() throws GATInvocationException, IOException {
+    public void stop() throws GATInvocationException {
         MetricValue v;
         
         synchronized (this) {

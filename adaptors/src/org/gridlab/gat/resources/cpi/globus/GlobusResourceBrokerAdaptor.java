@@ -15,7 +15,6 @@ import org.globus.gram.GramJob;
 import org.globus.gsi.gssapi.auth.NoAuthorization;
 import org.gridlab.gat.CouldNotInitializeCredentialException;
 import org.gridlab.gat.CredentialExpiredException;
-import org.gridlab.gat.FilePrestageException;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.GATObjectCreationException;
@@ -174,22 +173,10 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
             throw new GATInvocationException("globus", e);
         }
 
-        if (host != null) {
-            try {
-                removePostStagedFiles(description, host);
-            } catch (GATInvocationException e) {
-                // ignore, maybe the files did not exist anyway
-            }
-
-            try {
-                preStageFiles(description, host);
-            } catch (Exception e) {
-                throw new FilePrestageException("globus", e);
-            }
-        }
+        String sandbox = createSandbox(description);
 
         GramJob j = new GramJob(credential, rsl);
-        GlobusJob res = new GlobusJob(this, description, j);
+        GlobusJob res = new GlobusJob(this, description, j, host, sandbox);
         j.addListener(res);
 
         try {

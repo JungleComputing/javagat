@@ -20,6 +20,7 @@ import org.gridlab.gat.monitoring.MetricValue;
 import org.gridlab.gat.resources.Job;
 import org.gridlab.gat.resources.JobDescription;
 import org.gridlab.gat.resources.SoftwareDescription;
+import org.gridlab.gat.resources.cpi.JobCpi;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -29,7 +30,7 @@ import java.util.Map;
 /**
  * @author rob
  */
-public class ZorillaJob extends Job implements Runnable {
+public class ZorillaJob extends JobCpi implements Runnable {
 
     private static final Logger logger = Logger.getLogger(ZorillaJob.class);
 
@@ -99,6 +100,7 @@ public class ZorillaJob extends Job implements Runnable {
 
     ZorillaJob(ZorillaResourceBrokerAdaptor broker, JobDescription description)
             throws GATInvocationException {
+        super(description, null, null);
         this.broker = broker;
         this.description = description;
 
@@ -213,15 +215,6 @@ public class ZorillaJob extends Job implements Runnable {
     /*
      * (non-Javadoc)
      * 
-     * @see org.gridlab.gat.resources.Job#getJobDescription()
-     */
-    public JobDescription getJobDescription() {
-        return description;
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
      * @see org.gridlab.gat.resources.Job#getJobID()
      */
     public synchronized String getJobID() {
@@ -273,8 +266,12 @@ public class ZorillaJob extends Job implements Runnable {
         throw new GATInvocationException("unknown Zorilla phase: " + phase);
     }
 
-    public synchronized int getState() throws GATInvocationException {
-        return state(info.getPhase());
+    public synchronized int getState() {
+        try {
+            return state(info.getPhase());
+        } catch (Exception e) {
+            return UNKNOWN;
+        }
     }
 
     /*

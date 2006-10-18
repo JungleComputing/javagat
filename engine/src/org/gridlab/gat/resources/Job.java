@@ -1,12 +1,9 @@
 package org.gridlab.gat.resources;
 
-import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
-import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
-import org.gridlab.gat.Preferences;
 import org.gridlab.gat.advert.Advertisable;
 import org.gridlab.gat.engine.GATEngine;
 import org.gridlab.gat.monitoring.Metric;
@@ -57,18 +54,6 @@ public abstract class Job implements Monitorable, Advertisable {
     /** The job state is unkown for some reason. May be a network problem. */
     public static final int UNKNOWN = 8;
 
-    protected static int globalJobID = 0;
-    
-    protected int state = INITIAL;
-
-    protected GATContext gatContext;
-
-    protected Preferences preferences;
-
-    protected static synchronized int allocJobID() {
-        return globalJobID++;
-    }
-
     public static String getStateString(int state) {
         switch (state) {
         case INITIAL:
@@ -94,9 +79,7 @@ public abstract class Job implements Monitorable, Advertisable {
         }
     }
 
-    public JobDescription getJobDescription() {
-        throw new RuntimeException("Not implemented");
-    }
+    public abstract JobDescription getJobDescription();
 
     /**
      * Stops the associated physical job. Upon a successful call to this method
@@ -110,10 +93,8 @@ public abstract class Job implements Monitorable, Advertisable {
      * 
      * @throws GATInvocationException
      *             Thrown upon problems accessing the remote instance
-     * @throws java.io.IOException
-     *             Upon non-remote IO problem
      */
-    public final void unSchedule() throws GATInvocationException, IOException {
+    public final void unSchedule() throws GATInvocationException {
         stop();
     }
 
@@ -124,28 +105,20 @@ public abstract class Job implements Monitorable, Advertisable {
      *
      * @throws GATInvocationException
      *             Thrown upon problems accessing the remote instance
-     * @throws java.io.IOException
-     *             Upon non-remote IO problem
      */
-    public void stop() throws GATInvocationException, IOException {
+    public void stop() throws GATInvocationException {
         throw new RuntimeException("Not implemented");
     }
 
     /**
      * This method returns the state of the associated . This is one of the
      * associated public member variables INITIAL, SCHEDULED,
-     * RUNNING, STOPPED, or SUBMISSSION_ERROR.
+     * RUNNING, STOPPED, UNKNOWN or SUBMISSSION_ERROR.
      *
      * @return This method returns the state of the associated , one of the
      *         associated member variables
-     * @throws GATInvocationException
-     *             Thrown upon problems accessing the remote instance
-     * @throws java.io.IOException
-     *             Upon non-remote IO problem
      */
-    public int getState() throws GATInvocationException, IOException {
-        throw new RuntimeException("Not implemented");
-    }
+    public abstract int getState();
 
     /**
      * This method returns an instance of the class java.util.Map which contains
@@ -200,9 +173,8 @@ public abstract class Job implements Monitorable, Advertisable {
      * information about the associated .
      * @throws GATInvocationException Thrown upon problems
      * accessing the remote instance
-     * @throws java.io.IOException Upon non-remote IO problem
      */
-    public Map getInfo() throws GATInvocationException, IOException {
+    public Map getInfo() throws GATInvocationException {
         throw new RuntimeException("Not implemented");
     }
 
@@ -216,10 +188,8 @@ public abstract class Job implements Monitorable, Advertisable {
      *         job ID
      * @throws GATInvocationException
      *             Thrown upon problems accessing the remote instance
-     * @throws java.io.IOException
-     *             Upon non-remote IO problem
      */
-    public String getJobID() throws GATInvocationException, IOException {
+    public String getJobID() throws GATInvocationException {
         throw new RuntimeException("Not implemented");
     }
 
@@ -241,10 +211,8 @@ public abstract class Job implements Monitorable, Advertisable {
      *
      * @throws GATInvocationException
      *             Thrown upon problems accessing the remote instance
-     * @throws java.io.IOException
-     *             Upon non-remote IO problem
      */
-    public void checkpoint() throws GATInvocationException, IOException {
+    public void checkpoint() throws GATInvocationException {
         throw new RuntimeException("Not implemented");
     }
 
@@ -257,7 +225,7 @@ public abstract class Job implements Monitorable, Advertisable {
      * @throws java.io.IOException
      *             Upon non-remote IO problem
      */
-    public void migrate() throws GATInvocationException, IOException {
+    public void migrate() throws GATInvocationException {
         throw new RuntimeException("Not implemented");
     }
 
@@ -282,11 +250,9 @@ public abstract class Job implements Monitorable, Advertisable {
      *            HardwareResourceDescription
      * @throws GATInvocationException
      *             Thrown upon problems accessing the remote instance
-     * @throws java.io.IOException
-     *             Upon non-remote IO problem
      */
     public void migrate(HardwareResourceDescription hardwareResourceDescription)
-            throws GATInvocationException, IOException {
+            throws GATInvocationException {
         throw new RuntimeException("Not implemented");
     }
 
@@ -325,14 +291,14 @@ public abstract class Job implements Monitorable, Advertisable {
     /** Put a job on hold, pause it.
      * This can be called in SCHEDULED or RUNNING state.
      */
-    public void hold() throws GATInvocationException, IOException {
+    public void hold() throws GATInvocationException {
         throw new RuntimeException("Not implemented");
     }
     
     /** Resume a job that was paused with the "hold" method.
      * This can be called only in the ON_HOLD state. 
      */
-    public void resume() throws GATInvocationException, IOException {
+    public void resume() throws GATInvocationException {
         throw new RuntimeException("Not implemented");
     }
     

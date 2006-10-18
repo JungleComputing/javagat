@@ -12,7 +12,6 @@ import java.util.Set;
 
 import org.gridlab.gat.AdaptorNotApplicableException;
 import org.gridlab.gat.CommandNotFoundException;
-import org.gridlab.gat.FilePrestageException;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.GATObjectCreationException;
@@ -159,12 +158,8 @@ public class LocalResourceBrokerAdaptor extends ResourceBrokerCpi {
             }
         }
 
-        try {
-            preStageFiles(description, "localhost");
-        } catch (GATInvocationException e) {
-            throw new FilePrestageException("local broker", e);
-        }
-
+        String sandbox = createSandbox(description);
+        
         String command = path + " " + getArguments(description);
 
         String home = System.getProperty("user.home");
@@ -223,7 +218,7 @@ public class LocalResourceBrokerAdaptor extends ResourceBrokerCpi {
         if (stdout == null) {
             new OutputForwarder(p.getInputStream(), false); // throw away output
         } else {
-            stdout = resolvePostStagedFile(stdout, "localhost");
+            stdout = resolvePostStagedFile(stdout, "localhost", sandbox);
             try {
                 String name = (home == null ?  "" : home + java.io.File.separator) + stdout.getName();
                 java.io.FileOutputStream out = new java.io.FileOutputStream(name);
@@ -239,7 +234,7 @@ public class LocalResourceBrokerAdaptor extends ResourceBrokerCpi {
         if (stderr == null) {
             new OutputForwarder(p.getErrorStream(), false); // throw away output
         } else {
-            stderr = resolvePostStagedFile(stderr, "localhost");
+            stderr = resolvePostStagedFile(stderr, "localhost", sandbox);
             try {
                 String name = (home == null ?  "" : home + java.io.File.separator) + stderr.getName();
                 java.io.FileOutputStream out = new java.io.FileOutputStream(name);
@@ -249,7 +244,7 @@ public class LocalResourceBrokerAdaptor extends ResourceBrokerCpi {
             }
         }
 
-        return new LocalJob(this, description, p, outForwarder, errForwarder);
+        return new LocalJob(this, description, p, host, sandbox,  outForwarder, errForwarder);
     }
 
     /*

@@ -15,6 +15,7 @@ import org.gridlab.gat.monitoring.MetricDefinition;
 import org.gridlab.gat.monitoring.MetricValue;
 import org.gridlab.gat.resources.Job;
 import org.gridlab.gat.resources.JobDescription;
+import org.gridlab.gat.resources.cpi.JobCpi;
 
 /**
  * This thread actively polls the globus state of a job. this is needed in case of firewalls.
@@ -37,7 +38,7 @@ class JobPoller extends Thread {
             j.getStateActive();
             if (j.getState() == Job.STOPPED) return;
             if (j.getState() == Job.SUBMISSION_ERROR) return;
-
+            
             synchronized (this) {
                 try {
                     wait(60 * 1000);
@@ -52,7 +53,7 @@ class JobPoller extends Thread {
 /**
  * @author rob
  */
-public class GlobusJob extends Job implements GramJobListener,
+public class GlobusJob extends JobCpi implements GramJobListener,
         org.globus.gram.internal.GRAMConstants {
 
     static final int GRAM_JOBMANAGER_CONNECTION_FAILURE = 79;
@@ -61,17 +62,11 @@ public class GlobusJob extends Job implements GramJobListener,
 
     GlobusResourceBrokerAdaptor broker;
 
-    JobDescription jobDescription;
-
     GramJob j;
 
     MetricDefinition statusMetricDefinition;
 
     Metric statusMetric;
-
-    GATInvocationException postStageException = null;
-    GATInvocationException deleteException = null;
-    GATInvocationException wipeException = null;
 
     boolean postStageFinished = false;
 
@@ -80,9 +75,9 @@ public class GlobusJob extends Job implements GramJobListener,
     JobPoller poller;
 
     public GlobusJob(GlobusResourceBrokerAdaptor broker, JobDescription jobDescription,
-        GramJob j) {
+        GramJob j, String host, String sandbox) {
+        super(jobDescription, host, sandbox);
         this.broker = broker;
-        this.jobDescription = jobDescription;
         this.j = j;
         jobID = j.getIDAsString();
         state = SCHEDULED;
@@ -108,10 +103,6 @@ public class GlobusJob extends Job implements GramJobListener,
          return 0; // We have to assume that the job ran correctly. Globus does not return the exit code.
     }
 
-    public JobDescription getJobDescription() {
-        return jobDescription;
-    }
-
     protected String getGlobusState() {
         if ((j.getStatus() == STATUS_DONE) && !postStageFinished) {
             return "POST_STAGING";
@@ -120,7 +111,7 @@ public class GlobusJob extends Job implements GramJobListener,
         return j.getStatusAsString();
     }
 
-    public synchronized Map getInfo() {
+    public synchronized Map getInfo() throws GATInvocationException {
         HashMap m = new HashMap();
         setState(); // update the state
         m.put("state", getStateString(state));
@@ -149,10 +140,6 @@ public class GlobusJob extends Job implements GramJobListener,
 
     public String getJobID() {
         return jobID;
-    }
-
-    public synchronized int getState() {
-        return state;
     }
 
     /*
@@ -252,17 +239,7 @@ public class GlobusJob extends Job implements GramJobListener,
             System.err.println("globus job stop: delete/wipe starting");
         }
 
-        try {
-            broker.deleteFiles(jobDescription, broker.getHostname(jobDescription));
-        } catch (GATInvocationException e) {
-            deleteException = e;
-        }
-
-        try {
-            broker.wipeFiles(jobDescription, broker.getHostname(jobDescription));
-        } catch (GATInvocationException e) {
-            wipeException = e;
-        }
+        retrieveAndCleanup(broker);
         
         state = INITIAL;
     }
@@ -358,37 +335,10 @@ public class GlobusJob extends Job implements GramJobListener,
         if (GATEngine.DEBUG) {
             System.err.println("globus job callback: firing event: " + v);
         }
-
         GATEngine.fireMetric(this, v);
 
+        retrieveAndCleanup(broker);
         if (globusState == STATUS_DONE) {
-            if (GATEngine.VERBOSE) {
-                System.err.println("globus job callback: post stage starting");
-            }
-
-            try {
-                broker.postStageFiles(jobDescription, broker
-                    .getHostname(jobDescription));
-            } catch (GATInvocationException e) {
-                postStageException = e;
-            }
-
-            if (GATEngine.VERBOSE) {
-                System.err.println("globus job callback: delete/wipe starting");
-            }
-
-            try {
-                broker.deleteFiles(jobDescription, broker.getHostname(jobDescription));
-            } catch (GATInvocationException e) {
-                deleteException = e;
-            }
-
-            try {
-                broker.wipeFiles(jobDescription, broker.getHostname(jobDescription));
-            } catch (GATInvocationException e) {
-                wipeException = e;
-            }
-
             synchronized (this) {
                 postStageFinished = true;
 

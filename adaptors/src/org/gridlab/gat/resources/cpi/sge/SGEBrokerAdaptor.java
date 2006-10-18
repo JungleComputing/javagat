@@ -84,13 +84,13 @@ public class SGEBrokerAdaptor extends ResourceBrokerCpi {
        /* Handle pre-/poststaging */
         if (host != null) {
             try {
-                removePostStagedFiles(description, host);
+                removePostStagedFiles(description, host, null);
             } catch (GATInvocationException e) {
                 // ignore, maybe the files did not exist anyway
             }
 
             try {
-                preStageFiles(description, host);
+                preStageFiles(description, host, null);
             } catch (Exception e) {
                 throw new FilePrestageException("SGEBrokerAdaptor", e);
             }

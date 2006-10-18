@@ -21,21 +21,22 @@ import org.gridlab.gat.monitoring.Metric;
 import org.gridlab.gat.monitoring.MetricDefinition;
 import org.gridlab.gat.resources.Job;
 import org.gridlab.gat.resources.JobDescription;
+import org.gridlab.gat.resources.cpi.JobCpi;
 
 /**
  *
  * @author ole.weidner
  */
-public class SGEJob extends Job{
+public class SGEJob extends JobCpi {
     
     private String jobID;    
     private MetricDefinition statusMetricDefinition;
     private Metric statusMetric;
-    private JobDescription jobDescription;
     private Session session;
     
     public SGEJob(SGEBrokerAdaptor broker, JobDescription jobDescription,
             Session session, String id) {
+        super(jobDescription, null, null);
         
         jobID = id;
         this.jobDescription = jobDescription;
@@ -51,10 +52,6 @@ public class SGEJob extends Job{
         statusMetric = statusMetricDefinition.createMetric(null); 
     }
 
-    public JobDescription getJobDescription() {
-        return jobDescription;
-    }
- 
     public String getJobID() {
         return jobID;
     }

@@ -5,7 +5,6 @@ package org.gridlab.gat.resources.cpi.local;
 
 import ibis.util.IPUtils;
 
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -14,14 +13,14 @@ import org.gridlab.gat.engine.GATEngine;
 import org.gridlab.gat.monitoring.Metric;
 import org.gridlab.gat.monitoring.MetricDefinition;
 import org.gridlab.gat.monitoring.MetricValue;
-import org.gridlab.gat.resources.Job;
 import org.gridlab.gat.resources.JobDescription;
+import org.gridlab.gat.resources.cpi.JobCpi;
 import org.gridlab.gat.util.OutputForwarder;
 
 /**
  * @author rob
  */
-public class LocalJob extends Job {
+public class LocalJob extends JobCpi {
     class ProcessWaiter extends Thread {
         ProcessWaiter() {
             start();
@@ -50,12 +49,6 @@ public class LocalJob extends Job {
 
     LocalResourceBrokerAdaptor broker;
 
-    GATInvocationException postStageException = null;
-    GATInvocationException deleteException = null;
-    GATInvocationException wipeException = null;
-
-    JobDescription description;
-
     int jobID;
 
     Process p;
@@ -71,9 +64,9 @@ public class LocalJob extends Job {
     OutputForwarder err;
     
     LocalJob(LocalResourceBrokerAdaptor broker, JobDescription description,
-            Process p, OutputForwarder out, OutputForwarder err) {
+            Process p, String host, String sandbox, OutputForwarder out, OutputForwarder err) {
+        super(description, host, sandbox);
         this.broker = broker;
-        this.description = description;
         jobID = allocJobID();
         state = RUNNING;
         this.p = p;
@@ -96,7 +89,7 @@ public class LocalJob extends Job {
      *
      * @see org.gridlab.gat.resources.Job#getInfo()
      */
-    public synchronized Map getInfo() {
+    public synchronized Map getInfo() throws GATInvocationException {
         HashMap m = new HashMap();
 
         // update state
@@ -132,28 +125,10 @@ public class LocalJob extends Job {
     /*
      * (non-Javadoc)
      *
-     * @see org.gridlab.gat.resources.Job#getJobDescription()
-     */
-    public JobDescription getJobDescription() {
-        return description;
-    }
-
-    /*
-     * (non-Javadoc)
-     *
      * @see org.gridlab.gat.resources.Job#getJobID()
      */
-    public String getJobID() throws GATInvocationException, IOException {
+    public String getJobID() throws GATInvocationException {
         return "" + jobID;
-    }
-
-    /*
-     * (non-Javadoc)
-     *
-     * @see org.gridlab.gat.resources.Job#getState()
-     */
-    public synchronized int getState() {
-        return state;
     }
 
     /*
@@ -180,38 +155,9 @@ public class LocalJob extends Job {
         }
         GATEngine.fireMetric(this, v);
 
-        GATInvocationException tmpExc1 = null;
-        GATInvocationException tmpExc2 = null;
-        GATInvocationException tmpExc3 = null;
-
-        if (GATEngine.VERBOSE) {
-            System.err.println("job: poststage starting");
-        }
-        try {
-            broker.postStageFiles(description, "localhost");
-        } catch (GATInvocationException e) {
-            tmpExc1 = e;
-        }
-
-        if (GATEngine.VERBOSE) {
-            System.err.println("job: delete/wipe starting");
-        }
-        try {
-            broker.deleteFiles(description, "localhost");
-        } catch (GATInvocationException e) {
-            tmpExc2 = e;
-        }
-
-        try {
-            broker.wipeFiles(description, "localhost");
-        } catch (GATInvocationException e) {
-            tmpExc3 = e;
-        }
-
+        retrieveAndCleanup(broker);
+        
         synchronized (this) {
-            postStageException = tmpExc1;
-            deleteException = tmpExc2;
-            wipeException  = tmpExc3;
             state = STOPPED;
             v = new MetricValue(this, getStateString(state), statusMetric, System
                 .currentTimeMillis());
@@ -223,7 +169,7 @@ public class LocalJob extends Job {
         GATEngine.fireMetric(this, v);
     }
 
-    public void stop() throws GATInvocationException, IOException {
+    public void stop() throws GATInvocationException {
         MetricValue v;
         
         synchronized (this) {
@@ -237,18 +183,7 @@ public class LocalJob extends Job {
             System.err.println("globus job stop: delete/wipe starting");
         }
 
-        try {
-            broker.deleteFiles(description, broker.getHostname(description));
-        } catch (GATInvocationException e) {
-            deleteException = e;
-        }
-
-        try {
-            broker.wipeFiles(description, broker.getHostname(description));
-        } catch (GATInvocationException e) {
-            wipeException = e;
-        }
-
+        retrieveAndCleanup(broker);
         
         if (GATEngine.DEBUG) {
             System.err.println("default job callback: firing event: " + v);

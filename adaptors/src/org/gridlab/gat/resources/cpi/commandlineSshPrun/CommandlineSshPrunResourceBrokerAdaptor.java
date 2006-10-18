@@ -8,7 +8,6 @@ import java.util.Map;
 
 import org.gridlab.gat.AdaptorNotApplicableException;
 import org.gridlab.gat.CommandNotFoundException;
-import org.gridlab.gat.FilePrestageException;
 import org.gridlab.gat.GAT;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
@@ -187,12 +186,8 @@ public class CommandlineSshPrunResourceBrokerAdaptor extends ResourceBrokerCpi {
                 + " with username: " + sui.username + "; host: " + host);
         }
 
-        try {
-            preStageFiles(description, host);
-        } catch (GATInvocationException e) {
-            throw new FilePrestageException("commandline ssh prun broker", e);
-        }
-
+        String sandbox = createSandbox(description);
+        
         String command = null;
         if (windows) {
             command = "sexec " + sui.username + "@" + host + " -unat=yes -cmd="
@@ -252,7 +247,7 @@ public class CommandlineSshPrunResourceBrokerAdaptor extends ResourceBrokerCpi {
         if (stdout == null) {
             new OutputForwarder(p.getInputStream(), false); // throw away output
         } else {
-            stdout = resolvePostStagedFile(stdout, host);
+            stdout = resolvePostStagedFile(stdout, host, sandbox);
             try {
                 FileOutputStream out = GAT.createFileOutputStream(gatContext,
                     preferences, stdout.toURI());
@@ -268,7 +263,7 @@ public class CommandlineSshPrunResourceBrokerAdaptor extends ResourceBrokerCpi {
         if (stderr == null) {
             new OutputForwarder(p.getErrorStream(), false); // throw away output
         } else {
-            stderr = resolvePostStagedFile(stderr, host);
+            stderr = resolvePostStagedFile(stderr, host, sandbox);
             try {
                 FileOutputStream out = GAT.createFileOutputStream(gatContext,
                     preferences, stderr.toURI());
@@ -278,7 +273,7 @@ public class CommandlineSshPrunResourceBrokerAdaptor extends ResourceBrokerCpi {
             }
         }
 
-        return new CommandlineSshPrunJob(this, description, p, outForwarder,
+        return new CommandlineSshPrunJob(this, description, p, host, sandbox, outForwarder,
             errForwarder);
     }
 
