@@ -163,10 +163,12 @@ public class LocalResourceBrokerAdaptor extends ResourceBrokerCpi {
         String command = path + " " + getArguments(description);
 
         String home = System.getProperty("user.home");
-        java.io.File f = null;
-        if (home != null) {
-            f = new java.io.File(home);
+        if(home == null) {
+            throw new GATInvocationException("local broker could not get user home dir");
         }
+        
+        
+        java.io.File f = new java.io.File(home + java.io.File.separator + sandbox);
 
         if (GATEngine.VERBOSE) {
             System.err.println("running command: " + command);
