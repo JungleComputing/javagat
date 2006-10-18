@@ -158,7 +158,7 @@ public class LocalResourceBrokerAdaptor extends ResourceBrokerCpi {
             }
         }
 
-        String sandbox = createSandbox(description);
+        String sandbox = createSandbox(description, "localhost");
         
         String command = path + " " + getArguments(description);
 
