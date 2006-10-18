@@ -34,6 +34,7 @@ public abstract class JobCpi extends Job {
     protected JobCpi(JobDescription jobDescription, String host, String sandbox) {
         this.jobDescription = jobDescription;
         this.sandbox = sandbox;
+        this.host = host;
     }
     
     public final JobDescription getJobDescription() {
