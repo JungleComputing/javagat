@@ -180,7 +180,9 @@ public class LocalJob extends Job {
         }
         GATEngine.fireMetric(this, v);
 
-        GATInvocationException tmpExc = null;
+        GATInvocationException tmpExc1 = null;
+        GATInvocationException tmpExc2 = null;
+        GATInvocationException tmpExc3 = null;
 
         if (GATEngine.VERBOSE) {
             System.err.println("job: poststage starting");
@@ -188,29 +190,28 @@ public class LocalJob extends Job {
         try {
             broker.postStageFiles(description, "localhost");
         } catch (GATInvocationException e) {
-            tmpExc = e;
+            tmpExc1 = e;
         }
 
         if (GATEngine.VERBOSE) {
             System.err.println("job: delete/wipe starting");
         }
         try {
-            broker.deleteFiles(description, broker.getHostname(description));
+            broker.deleteFiles(description, "localhost");
         } catch (GATInvocationException e) {
-            deleteException = e;
+            tmpExc2 = e;
         }
 
         try {
-            broker.wipeFiles(description, broker.getHostname(description));
+            broker.wipeFiles(description, "localhost");
         } catch (GATInvocationException e) {
-            wipeException = e;
+            tmpExc3 = e;
         }
 
-
-        
-        
         synchronized (this) {
-            postStageException = tmpExc;
+            postStageException = tmpExc1;
+            deleteException = tmpExc2;
+            wipeException  = tmpExc3;
             state = STOPPED;
             v = new MetricValue(this, getStateString(state), statusMetric, System
                 .currentTimeMillis());
