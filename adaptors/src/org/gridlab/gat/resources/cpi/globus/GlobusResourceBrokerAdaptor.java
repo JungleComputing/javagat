@@ -34,7 +34,7 @@ import org.ietf.jgss.GSSException;
  */
 public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
     public GlobusResourceBrokerAdaptor(GATContext gatContext,
-            Preferences preferences) throws GATObjectCreationException {
+        Preferences preferences) throws GATObjectCreationException {
         super(gatContext, preferences);
         // turn off all annoying cog prints
         if (!GATEngine.DEBUG) {
@@ -43,8 +43,8 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
         }
     }
 
-    protected String createRSL(JobDescription description)
-            throws GATInvocationException {
+    protected String createRSL(JobDescription description, String host,
+        String sandbox) throws GATInvocationException {
         SoftwareDescription sd = description.getSoftwareDescription();
 
         if (sd == null) {
@@ -92,13 +92,15 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
         org.gridlab.gat.io.File stdout = sd.getStdout();
 
         if (stdout != null) {
-            rsl += (" (stdout = " + stdout.getName() + ")");
+            rsl += (" (stdout = "
+                + resolvePostStagedFile(stdout, host, sandbox).getPath() + ")");
         }
 
         org.gridlab.gat.io.File stderr = sd.getStderr();
 
         if (stderr != null) {
-            rsl += (" (stderr = " + stderr.getName() + ")");
+            rsl += (" (stderr = "
+                + resolvePostStagedFile(stderr, host, sandbox).getPath() + ")");
         }
 
         // set the environment
@@ -123,10 +125,10 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
     }
 
     String getResourceManagerContact(JobDescription description)
-            throws GATInvocationException {
+        throws GATInvocationException {
         String res = null;
-        String jobManager =
-                (String) preferences.get("ResourceBroker.jobmanager");
+        String jobManager = (String) preferences
+            .get("ResourceBroker.jobmanager");
 
         String hostname = getHostname(description);
 
@@ -149,9 +151,8 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
     }
 
     public Job submitJob(JobDescription description)
-            throws GATInvocationException {
+        throws GATInvocationException {
         String host = getHostname(description);
-        String rsl = createRSL(description);
         String contact = getResourceManagerContact(description);
 
         URI hostUri;
@@ -163,10 +164,9 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
 
         GSSCredential credential = null;
         try {
-            credential =
-                    GlobusSecurityUtils.getGlobusCredential(gatContext,
-                        preferences, "gram", hostUri,
-                        ResourceManagerContact.DEFAULT_PORT);
+            credential = GlobusSecurityUtils.getGlobusCredential(gatContext,
+                preferences, "gram", hostUri,
+                ResourceManagerContact.DEFAULT_PORT);
         } catch (CouldNotInitializeCredentialException e) {
             throw new GATInvocationException("globus", e);
         } catch (CredentialExpiredException e) {
@@ -175,6 +175,7 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
 
         String sandbox = createSandbox(description);
 
+        String rsl = createRSL(description, host, sandbox);
         GramJob j = new GramJob(credential, rsl);
         GlobusJob res = new GlobusJob(this, description, j, host, sandbox);
         j.addListener(res);
