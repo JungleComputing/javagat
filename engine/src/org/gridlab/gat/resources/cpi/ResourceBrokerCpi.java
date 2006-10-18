@@ -54,7 +54,7 @@ public abstract class ResourceBrokerCpi implements ResourceBroker {
      *             no adaptor could be loaded
      */
     protected ResourceBrokerCpi(GATContext gatContext, Preferences preferences)
-            throws GATObjectCreationException {
+        throws GATObjectCreationException {
         this.gatContext = gatContext;
         this.preferences = preferences;
     }
@@ -65,7 +65,7 @@ public abstract class ResourceBrokerCpi implements ResourceBroker {
      * @see org.gridlab.gat.resources.ResourceBroker#findResources(org.gridlab.gat.resources.ResourceDescription)
      */
     public List findResources(ResourceDescription resourceDescription)
-            throws GATInvocationException, IOException {
+        throws GATInvocationException, IOException {
         throw new UnsupportedOperationException("Not implemented");
     }
 
@@ -76,7 +76,7 @@ public abstract class ResourceBrokerCpi implements ResourceBroker {
      *      org.gridlab.gat.util.TimePeriod)
      */
     public Reservation reserveResource(Resource resource, TimePeriod timePeriod)
-            throws GATInvocationException, IOException {
+        throws GATInvocationException, IOException {
         throw new UnsupportedOperationException("Not implemented");
     }
 
@@ -87,7 +87,7 @@ public abstract class ResourceBrokerCpi implements ResourceBroker {
      *      org.gridlab.gat.util.TimePeriod)
      */
     public Reservation reserveResource(ResourceDescription resourceDescription,
-            TimePeriod timePeriod) throws GATInvocationException, IOException {
+        TimePeriod timePeriod) throws GATInvocationException, IOException {
         throw new UnsupportedOperationException("Not implemented");
     }
 
@@ -97,13 +97,13 @@ public abstract class ResourceBrokerCpi implements ResourceBroker {
      * @see org.gridlab.gat.resources.ResourceBroker#submitJob(org.gridlab.gat.resources.JobDescription)
      */
     public Job submitJob(JobDescription description)
-            throws GATInvocationException, IOException {
+        throws GATInvocationException, IOException {
         throw new UnsupportedOperationException("Not implemented");
     }
 
     // utility methods
     protected URI getLocationURI(JobDescription description)
-            throws GATInvocationException {
+        throws GATInvocationException {
         SoftwareDescription sd = description.getSoftwareDescription();
 
         if (sd == null) {
@@ -123,7 +123,7 @@ public abstract class ResourceBrokerCpi implements ResourceBroker {
 
     // utility methods
     protected int getIntAttribute(JobDescription description, String name,
-            int defaultVal) {
+        int defaultVal) {
         SoftwareDescription sd = description.getSoftwareDescription();
 
         if (sd == null) {
@@ -138,7 +138,7 @@ public abstract class ResourceBrokerCpi implements ResourceBroker {
     }
 
     protected long getLongAttribute(JobDescription description, String name,
-            long defaultVal) {
+        long defaultVal) {
         SoftwareDescription sd = description.getSoftwareDescription();
 
         if (sd == null) {
@@ -153,7 +153,7 @@ public abstract class ResourceBrokerCpi implements ResourceBroker {
     }
 
     protected boolean getBooleanAttribute(JobDescription description,
-            String name, boolean defaultVal) {
+        String name, boolean defaultVal) {
         SoftwareDescription sd = description.getSoftwareDescription();
 
         if (sd == null) {
@@ -176,7 +176,7 @@ public abstract class ResourceBrokerCpi implements ResourceBroker {
     }
 
     protected String getLocation(JobDescription description)
-            throws GATInvocationException {
+        throws GATInvocationException {
         URI u = getLocationURI(description);
 
         if (u == null) {
@@ -190,7 +190,7 @@ public abstract class ResourceBrokerCpi implements ResourceBroker {
     }
 
     protected String[] getArgumentsArray(JobDescription description)
-            throws GATInvocationException {
+        throws GATInvocationException {
         SoftwareDescription sd = description.getSoftwareDescription();
 
         if (sd == null) {
@@ -202,7 +202,7 @@ public abstract class ResourceBrokerCpi implements ResourceBroker {
     }
 
     protected String getArguments(JobDescription description)
-            throws GATInvocationException {
+        throws GATInvocationException {
         String[] arguments = getArgumentsArray(description);
         String argString = "";
 
@@ -218,8 +218,8 @@ public abstract class ResourceBrokerCpi implements ResourceBroker {
     }
 
     /* Creates a file object for the destination of the preStaged src file */
-    protected File resolvePreStagedFile(File srcFile, String host, String sandbox)
-            throws GATInvocationException {
+    protected File resolvePreStagedFile(File srcFile, String host,
+        String sandbox) throws GATInvocationException {
         URI src = srcFile.toURI();
         String path = new java.io.File(src.getPath()).getName();
 
@@ -242,8 +242,8 @@ public abstract class ResourceBrokerCpi implements ResourceBroker {
     }
 
     /* also adds stdin to set of files to preStage */
-    protected Map resolvePreStagedFiles(JobDescription description, String host, String sandbox)
-            throws GATInvocationException {
+    protected Map resolvePreStagedFiles(JobDescription description,
+        String host, String sandbox) throws GATInvocationException {
         SoftwareDescription sd = description.getSoftwareDescription();
 
         if (sd == null) {
@@ -263,14 +263,16 @@ public abstract class ResourceBrokerCpi implements ResourceBroker {
                 File destFile = (File) pre.get(srcFile);
 
                 if (destFile != null) { // already set manually
-                    if(destFile.isAbsolute()) {
+                    if (destFile.isAbsolute()) {
                         result.put(srcFile, destFile);
                     } else {
                         // @@@ we could support this (mkdirhier, etc)
-                        throw new GATInvocationException("cannot have a relative destination name, we are running in a sandbox");
+                        throw new GATInvocationException(
+                            "cannot have a relative destination name, we are running in a sandbox");
                     }
                 } else {
-                    result.put(srcFile, resolvePreStagedFile(srcFile, host, sandbox));
+                    result.put(srcFile, resolvePreStagedFile(srcFile, host,
+                        sandbox));
                 }
             }
         }
@@ -284,8 +286,8 @@ public abstract class ResourceBrokerCpi implements ResourceBroker {
         return result;
     }
 
-    protected void preStageFiles(JobDescription description, String host, String sandbox)
-            throws GATInvocationException {
+    protected void preStageFiles(JobDescription description, String host,
+        String sandbox) throws GATInvocationException {
         SoftwareDescription sd = description.getSoftwareDescription();
 
         if (sd == null) {
@@ -334,7 +336,7 @@ public abstract class ResourceBrokerCpi implements ResourceBroker {
     }
 
     protected File resolvePostStagedFile(File f, String host, String sandbox)
-            throws GATInvocationException {
+        throws GATInvocationException {
         File res = null;
 
         URI src = f.toURI();
@@ -368,8 +370,8 @@ public abstract class ResourceBrokerCpi implements ResourceBroker {
         return res;
     }
 
-    protected Map resolvePostStagedFiles(JobDescription description, String host, String sandbox)
-            throws GATInvocationException {
+    protected Map resolvePostStagedFiles(JobDescription description,
+        String host, String sandbox) throws GATInvocationException {
         SoftwareDescription sd = description.getSoftwareDescription();
 
         if (sd == null) {
@@ -390,26 +392,26 @@ public abstract class ResourceBrokerCpi implements ResourceBroker {
 
                 if (destFile == null) {
                     try {
-                        destFile =
-                                GAT.createFile(gatContext, preferences, srcFile
-                                    .getName());
+                        destFile = GAT.createFile(gatContext, preferences,
+                            srcFile.getName());
                     } catch (GATObjectCreationException e) {
                         throw new GATInvocationException("resourcebroker cpi",
                             e);
                     }
                 }
 
-                result.put(resolvePostStagedFile(srcFile, host, sandbox), destFile);
+                result.put(resolvePostStagedFile(srcFile, host, sandbox),
+                    destFile);
             }
         }
 
         File stdout = sd.getStdout();
         if (stdout != null) {
             try {
-                File srcFile =
-                        GAT.createFile(gatContext, preferences, stdout
-                            .getName());
-                result.put(resolvePostStagedFile(srcFile, host, sandbox), stdout);
+                File srcFile = GAT.createFile(gatContext, preferences, stdout
+                    .getName());
+                result.put(resolvePostStagedFile(srcFile, host, sandbox),
+                    stdout);
             } catch (GATObjectCreationException e) {
                 throw new GATInvocationException("resourcebroker cpi", e);
             }
@@ -418,10 +420,10 @@ public abstract class ResourceBrokerCpi implements ResourceBroker {
         File stderr = sd.getStderr();
         if (stderr != null) {
             try {
-                File srcFile =
-                        GAT.createFile(gatContext, preferences, stderr
-                            .getName());
-                result.put(resolvePostStagedFile(srcFile, host, sandbox), stderr);
+                File srcFile = GAT.createFile(gatContext, preferences, stderr
+                    .getName());
+                result.put(resolvePostStagedFile(srcFile, host, sandbox),
+                    stderr);
             } catch (GATObjectCreationException e) {
                 throw new GATInvocationException("resourcebroker cpi", e);
             }
@@ -443,8 +445,8 @@ public abstract class ResourceBrokerCpi implements ResourceBroker {
         return result;
     }
 
-    public void postStageFiles(JobDescription description, String host, String sandbox)
-            throws GATInvocationException {
+    public void postStageFiles(JobDescription description, String host,
+        String sandbox) throws GATInvocationException {
         SoftwareDescription sd = description.getSoftwareDescription();
 
         if (sd == null) {
@@ -480,8 +482,8 @@ public abstract class ResourceBrokerCpi implements ResourceBroker {
         }
     }
 
-    public void removePostStagedFiles(JobDescription description, String host, String sandbox)
-            throws GATInvocationException {
+    public void removePostStagedFiles(JobDescription description, String host,
+        String sandbox) throws GATInvocationException {
         SoftwareDescription sd = description.getSoftwareDescription();
 
         if (sd == null) {
@@ -517,7 +519,7 @@ public abstract class ResourceBrokerCpi implements ResourceBroker {
     }
 
     public String getHostname(JobDescription description)
-            throws GATInvocationException {
+        throws GATInvocationException {
         ResourceDescription d = description.getResourceDescription();
 
         if (d == null) {
@@ -552,8 +554,8 @@ public abstract class ResourceBrokerCpi implements ResourceBroker {
         return null;
     }
 
-    protected File[] resolveDeletedFiles(JobDescription description, String host, String sandbox)
-            throws GATInvocationException {
+    protected File[] resolveDeletedFiles(JobDescription description,
+        String host, String sandbox) throws GATInvocationException {
         SoftwareDescription sd = description.getSoftwareDescription();
         if (sd == null) {
             return null;
@@ -580,8 +582,8 @@ public abstract class ResourceBrokerCpi implements ResourceBroker {
         return (File[]) res.toArray(result);
     }
 
-    protected File[] resolveWipedFiles(JobDescription description, String host, String sandbox)
-            throws GATInvocationException {
+    protected File[] resolveWipedFiles(JobDescription description, String host,
+        String sandbox) throws GATInvocationException {
         SoftwareDescription sd = description.getSoftwareDescription();
         if (sd == null) {
             return null;
@@ -608,8 +610,8 @@ public abstract class ResourceBrokerCpi implements ResourceBroker {
         return (File[]) res.toArray(result);
     }
 
-    public void deleteFiles(JobDescription jobDescription, String host, String sandbox)
-            throws GATInvocationException {
+    public void deleteFiles(JobDescription jobDescription, String host,
+        String sandbox) throws GATInvocationException {
         File[] files = resolveDeletedFiles(jobDescription, host, sandbox);
 
         GATInvocationException e = new GATInvocationException();
@@ -658,8 +660,8 @@ public abstract class ResourceBrokerCpi implements ResourceBroker {
         }
     }
 
-    public void wipeFiles(JobDescription jobDescription, String host, String sandbox)
-            throws GATInvocationException {
+    public void wipeFiles(JobDescription jobDescription, String host,
+        String sandbox) throws GATInvocationException {
 
         File[] files = resolveWipedFiles(jobDescription, host, sandbox);
 
@@ -689,35 +691,36 @@ public abstract class ResourceBrokerCpi implements ResourceBroker {
     }
 
     private String createSandboxDir(String host) throws GATInvocationException {
-        for (int i = 0; i < 10; i++) {
-            String sandbox = getSandboxName();
+        String sandbox = getSandboxName();
 
-            try {
-                URI location = new URI("any://" + host + "/" + sandbox);
-                File f = GAT.createFile(gatContext, location);
-                if (f.mkdir()) {
-                    return sandbox;
-                }
-            } catch (Exception e) {
-                throw new GATInvocationException("resource broker", e);
+        try {
+            URI location = new URI("any://" + host + "/" + sandbox);
+            File f = GAT.createFile(gatContext, location);
+            if (f.mkdir()) {
+                return sandbox;
             }
+        } catch (Exception e) {
+            throw new GATInvocationException("resource broker", e);
         }
+
         throw new GATInvocationException("could not create a sandbox");
     }
 
     private String getSandboxName() {
         return "JavaGAT_SANDBOX_" + Math.random();
     }
-    
+
     /** Creates a complete sandbox directory. This requires prestaging of the requested files. 
      * 
      * @param description
      * @return
      * @throws GATInvocationException
      */
-    protected String createSandbox(JobDescription description, String host) throws GATInvocationException {
-        if(host == null) {
-            throw new GATInvocationException("cannot create a sandbox without a host name");
+    protected String createSandbox(JobDescription description, String host)
+        throws GATInvocationException {
+        if (host == null) {
+            throw new GATInvocationException(
+                "cannot create a sandbox without a host name");
         }
 
         String sandbox = null;
@@ -741,17 +744,19 @@ public abstract class ResourceBrokerCpi implements ResourceBroker {
 
         return sandbox;
     }
+
     /** Creates a complete sandbox directory. This requires prestaging of the requested files. 
      * 
      * @param description
      * @return
      * @throws GATInvocationException
      */
-    protected String createSandbox(JobDescription description) throws GATInvocationException {
+    protected String createSandbox(JobDescription description)
+        throws GATInvocationException {
         String host = getHostname(description);
         return createSandbox(description, host);
-    }    
-    
+    }
+
     protected void retrieveAndCleanup(JobCpi j) {
         if (GATEngine.VERBOSE) {
             System.err.println("post stage starting");
