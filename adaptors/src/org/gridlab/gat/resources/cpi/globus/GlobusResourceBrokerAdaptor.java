@@ -103,6 +103,8 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
                 + resolvePostStagedFile(stderr, host, sandbox).getPath() + ")");
         }
 
+        // @@@ stdin
+        
         // set the environment
         Map env = sd.getEnvironment();
         if (env != null && !env.isEmpty()) {
