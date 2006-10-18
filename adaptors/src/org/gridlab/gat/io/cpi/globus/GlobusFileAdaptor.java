@@ -623,7 +623,7 @@ public abstract class GlobusFileAdaptor extends FileCpi {
             if (client != null) destroyClient(client, toURI(), preferences);
         }
 
-        return false;
+        return true;
     }
 
     public boolean canWrite() throws GATInvocationException {
