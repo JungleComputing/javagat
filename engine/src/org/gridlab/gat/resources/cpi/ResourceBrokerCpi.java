@@ -708,6 +708,20 @@ public abstract class ResourceBrokerCpi implements ResourceBroker {
         throw new GATInvocationException("could not create a sandbox");
     }
 
+    private void removeSandboxDir(String host, String sandbox) throws GATInvocationException {
+        try {
+            URI location = new URI("any://" + host + "/" + sandbox);
+            File f = GAT.createFile(gatContext, location);
+            if (f.delete()) {
+                return;
+            }
+        } catch (Exception e) {
+            throw new GATInvocationException("resource broker", e);
+        }
+
+        throw new GATInvocationException("could not create a sandbox");
+    }
+
     private String getSandboxName() {
         return "JavaGAT_SANDBOX_" + Math.random();
     }
@@ -784,6 +798,12 @@ public abstract class ResourceBrokerCpi implements ResourceBroker {
             wipeFiles(j.jobDescription, j.host, j.sandbox);
         } catch (GATInvocationException e) {
             j.wipeException = e;
+        }
+        
+        try {
+            removeSandboxDir(j.host, j.sandbox);
+        } catch (GATInvocationException e) {
+            // ignore
         }
     }
 }
