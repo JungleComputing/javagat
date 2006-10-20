@@ -15,6 +15,7 @@ import org.gridlab.gat.monitoring.MetricDefinition;
 import org.gridlab.gat.monitoring.MetricValue;
 import org.gridlab.gat.resources.JobDescription;
 import org.gridlab.gat.resources.cpi.JobCpi;
+import org.gridlab.gat.resources.cpi.Sandbox;
 import org.gridlab.gat.util.OutputForwarder;
 
 /**
@@ -40,8 +41,8 @@ public class CommandlineSshJob extends JobCpi {
     OutputForwarder err;
     
     CommandlineSshJob(CommandlineSshResourceBrokerAdaptor broker, JobDescription description,
-            Process p, String host, String sandbox, OutputForwarder out, OutputForwarder err) {
-        super(description, host, sandbox);
+            Process p, Sandbox sandbox, OutputForwarder out, OutputForwarder err) {
+        super(description, sandbox);
         this.broker = broker;
         this.description = description;
         jobID = allocJobID();
@@ -126,7 +127,7 @@ public class CommandlineSshJob extends JobCpi {
         }
         GATEngine.fireMetric(this, v);
 
-        retrieveAndCleanup(broker);
+        sandbox.retrieveAndCleanup(this);
 
         synchronized (this) {
             state = STOPPED;

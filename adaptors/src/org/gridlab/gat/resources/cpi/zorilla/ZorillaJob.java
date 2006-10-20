@@ -100,7 +100,7 @@ public class ZorillaJob extends JobCpi implements Runnable {
 
     ZorillaJob(ZorillaResourceBrokerAdaptor broker, JobDescription description)
             throws GATInvocationException {
-        super(description, null, null);
+        super(description, null);
         this.broker = broker;
         this.description = description;
 

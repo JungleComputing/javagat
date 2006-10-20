@@ -31,6 +31,7 @@ import org.gridlab.gat.resources.Resource;
 import org.gridlab.gat.resources.ResourceDescription;
 import org.gridlab.gat.resources.SoftwareDescription;
 import org.gridlab.gat.resources.cpi.ResourceBrokerCpi;
+import org.gridlab.gat.resources.cpi.Sandbox;
 import org.gridlab.gat.util.InputForwarder;
 import org.gridlab.gat.util.OutputForwarder;
 
@@ -266,7 +267,7 @@ public class SshResourceBrokerAdaptor extends ResourceBrokerCpi {
             System.err.println("finished setting stderr");
         }
 
-        String sandbox = createSandbox(description);
+        Sandbox sandbox = new Sandbox(gatContext, preferences, description, host, null);
 
         try {
             channel.connect();
@@ -275,7 +276,7 @@ public class SshResourceBrokerAdaptor extends ResourceBrokerCpi {
                 "Ssh broker: could not connect on " + "channel using SSH", e);
         }
 
-        Job j = new SshJob(this, description, session, channel, host, sandbox);
+        Job j = new SshJob(this, description, session, channel, sandbox);
         return j;
     }
 

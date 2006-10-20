@@ -12,12 +12,12 @@ import org.gridlab.gat.resources.JobDescription;
 public abstract class JobCpi extends Job {
     protected JobDescription jobDescription;
 
-    protected String sandbox;
-    protected String host;
+    protected Sandbox sandbox;
 
     protected GATInvocationException postStageException = null;
     protected GATInvocationException deleteException = null;
     protected GATInvocationException wipeException = null;
+    protected GATInvocationException removeSandboxException = null;
 
     protected static int globalJobID = 0;
 
@@ -31,18 +31,13 @@ public abstract class JobCpi extends Job {
         return globalJobID++;
     }
     
-    protected JobCpi(JobDescription jobDescription, String host, String sandbox) {
+    protected JobCpi(JobDescription jobDescription, Sandbox sandbox) {
         this.jobDescription = jobDescription;
         this.sandbox = sandbox;
-        this.host = host;
     }
     
     public final JobDescription getJobDescription() {
         return jobDescription;
-    }
-    
-    protected void retrieveAndCleanup(ResourceBrokerCpi broker) {
-        broker.retrieveAndCleanup(this);
     }
     
     public synchronized int getState() {

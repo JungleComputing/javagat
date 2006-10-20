@@ -33,7 +33,7 @@ public class ProActiveJob extends JobCpi {
     public ProActiveJob(ProActiveLauncher launcher,
             JobDescription jobDescription, String jobID, Node node)
             throws GATInvocationException {
-        super(jobDescription, null, null);
+        super(jobDescription, null);
         this.launcher = launcher;
         this.jobDescription = jobDescription;
         this.jobID = jobID;

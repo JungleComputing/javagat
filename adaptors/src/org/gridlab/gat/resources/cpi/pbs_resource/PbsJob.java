@@ -10,7 +10,6 @@ import java.util.Iterator;
 import java.util.Map;
 
 import org.gridlab.gat.GATInvocationException;
-import org.gridlab.gat.resources.Job;
 import org.gridlab.gat.resources.JobDescription;
 import org.gridlab.gat.resources.cpi.JobCpi;
 
@@ -29,7 +28,7 @@ public class PbsJob extends JobCpi {
     //	private Metric mMetric;
 
     public PbsJob(PbsBrokerAdaptor broker, JobDescription description, String id) {
-        super(description, null, null);
+        super(description, null);
         mBroker = broker;
         mDescription = description;
         mId = id;

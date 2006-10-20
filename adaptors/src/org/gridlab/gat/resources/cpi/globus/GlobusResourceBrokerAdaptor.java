@@ -25,6 +25,7 @@ import org.gridlab.gat.resources.Job;
 import org.gridlab.gat.resources.JobDescription;
 import org.gridlab.gat.resources.SoftwareDescription;
 import org.gridlab.gat.resources.cpi.ResourceBrokerCpi;
+import org.gridlab.gat.resources.cpi.Sandbox;
 import org.gridlab.gat.security.globus.GlobusSecurityUtils;
 import org.ietf.jgss.GSSCredential;
 import org.ietf.jgss.GSSException;
@@ -44,7 +45,7 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
     }
 
     protected String createRSL(JobDescription description, String host,
-        String sandbox) throws GATInvocationException {
+        Sandbox sandbox) throws GATInvocationException {
         SoftwareDescription sd = description.getSoftwareDescription();
 
         if (sd == null) {
@@ -93,14 +94,14 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
 
         if (stdout != null) {
             rsl += (" (stdout = "
-                + resolvePostStagedFile(stdout, host, sandbox).getPath() + ")");
+                + sandbox.getResolvedStdout().getPath() + ")");
         }
 
         org.gridlab.gat.io.File stderr = sd.getStderr();
 
         if (stderr != null) {
             rsl += (" (stderr = "
-                + resolvePostStagedFile(stderr, host, sandbox).getPath() + ")");
+                + sandbox.getResolvedStderr().getPath() + ")");
         }
 
         // @@@ stdin
@@ -175,11 +176,11 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
             throw new GATInvocationException("globus", e);
         }
 
-        String sandbox = createSandbox(description);
+        Sandbox sandbox = new Sandbox(gatContext, preferences, description, host, null);
 
         String rsl = createRSL(description, host, sandbox);
         GramJob j = new GramJob(credential, rsl);
-        GlobusJob res = new GlobusJob(this, description, j, host, sandbox);
+        GlobusJob res = new GlobusJob(this, description, j, sandbox);
         j.addListener(res);
 
         try {

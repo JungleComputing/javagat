@@ -108,7 +108,7 @@ public class PbsBrokerAdaptor extends ResourceBrokerCpi implements IParameter {
         String host = getHostname(description);
         if (host != null) {
             //			removePostStagedFiles(description, host);
-            preStageFiles(description, host, null);
+//            preStageFiles(description, host, null);
         }
         java.io.File temp = java.io.File.createTempFile("pbs", null);
         try {

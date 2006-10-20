@@ -1,0 +1,107 @@
+/*
+ * Created on Oct 20, 2006 by rob
+ */
+package org.gridlab.gat.resources.cpi;
+
+import org.gridlab.gat.GAT;
+import org.gridlab.gat.GATContext;
+import org.gridlab.gat.GATInvocationException;
+import org.gridlab.gat.GATObjectCreationException;
+import org.gridlab.gat.Preferences;
+import org.gridlab.gat.URI;
+import org.gridlab.gat.io.File;
+import org.gridlab.gat.io.FileOutputStream;
+
+public abstract class StagedFile {
+    GATContext gatContext;
+
+    Preferences preferences;
+
+    File origSrc;
+
+    File origDest;
+
+    File resolvedSrc;
+
+    File resolvedDest;
+
+    String host;
+
+    String sandbox;
+
+    boolean inSandbox;
+
+
+    public StagedFile(GATContext context, Preferences preferences,
+        File origSrc, File origDest, String host, String sandbox) {
+        super();
+        this.gatContext = context;
+        this.preferences = preferences;
+        this.origSrc = origSrc;
+        this.origDest = origDest;
+        this.host = host;
+        this.sandbox = sandbox;
+    }
+
+    /** Creates a file object that points to the sandbox. */
+    protected File resolve(File f, boolean useNameOnly) throws GATInvocationException {
+        if (!useNameOnly && f.isAbsolute()) {
+            return f;
+        }
+
+        URI uri = f.toURI();
+
+        String dest = "any://";
+        dest += (uri.getUserInfo() == null) ? "" : uri.getUserInfo();
+        dest += host;
+        dest += (uri.getPort() == -1) ? "" : (":" + uri.getPort());
+        dest += "/";
+        dest += sandbox == null ? "" : sandbox + "/";
+        if(useNameOnly) {
+            java.io.File tmp = new java.io.File(uri.getPath()); 
+            dest += tmp.getName();
+        } else {
+            dest += uri.getPath();
+        }
+
+        try {
+            URI destURI = new URI(dest);
+
+            return GAT.createFile(gatContext, preferences, destURI);
+        } catch (Exception e) {
+            throw new GATInvocationException(
+                "Resource broker generic preStage", e);
+        }
+    }
+    
+    protected void wipe(File f) throws GATInvocationException {
+        long size = f.length();
+
+        FileOutputStream out = null;
+
+        try {
+            out = GAT.createFileOutputStream(gatContext, f);
+        } catch (GATObjectCreationException e) {
+            throw new GATInvocationException("resource broker", e);
+        }
+
+        int bufSize = 64 * 1024;
+        byte[] buf = new byte[bufSize];
+        long wiped = 0;
+        while (wiped != size) {
+            int toWipe;
+            if (size - wiped < bufSize) {
+                toWipe = (int) (size - wiped);
+            } else {
+                toWipe = bufSize;
+            }
+
+            try {
+                out.write(buf, 0, toWipe);
+            } catch (Exception e) {
+                throw new GATInvocationException("resource broker", e);
+            }
+            wiped += toWipe;
+        }
+    }
+}

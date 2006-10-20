@@ -27,6 +27,7 @@ import org.gridlab.gat.resources.Resource;
 import org.gridlab.gat.resources.ResourceDescription;
 import org.gridlab.gat.resources.SoftwareDescription;
 import org.gridlab.gat.resources.cpi.ResourceBrokerCpi;
+import org.gridlab.gat.resources.cpi.Sandbox;
 import org.gridlab.gat.util.InputForwarder;
 import org.gridlab.gat.util.OutputForwarder;
 
@@ -186,7 +187,7 @@ public class CommandlineSshResourceBrokerAdaptor extends ResourceBrokerCpi {
                 + " with username: " + sui.username + "; host: " + host);
         }
 
-        String sandbox = createSandbox(description);
+        Sandbox sandbox = new Sandbox(gatContext, preferences, description, host, null);
 
         String command = null;
         if (windows) {
@@ -247,7 +248,7 @@ public class CommandlineSshResourceBrokerAdaptor extends ResourceBrokerCpi {
         if (stdout == null) {
             new OutputForwarder(p.getInputStream(), false); // throw away output
         } else {
-            stdout = resolvePostStagedFile(stdout, host, sandbox);
+            stdout = sandbox.getResolvedStdout();
             try {
                 FileOutputStream out = GAT.createFileOutputStream(gatContext,
                     preferences, stdout.toURI());
@@ -263,7 +264,7 @@ public class CommandlineSshResourceBrokerAdaptor extends ResourceBrokerCpi {
         if (stderr == null) {
             new OutputForwarder(p.getErrorStream(), false); // throw away output
         } else {
-            stderr = resolvePostStagedFile(stderr, host, sandbox);
+            stderr = sandbox.getResolvedStderr();
             try {
                 FileOutputStream out = GAT.createFileOutputStream(gatContext,
                     preferences, stderr.toURI());
@@ -273,7 +274,7 @@ public class CommandlineSshResourceBrokerAdaptor extends ResourceBrokerCpi {
             }
         }
 
-        return new CommandlineSshJob(this, description, p, host, sandbox, outForwarder, errForwarder);
+        return new CommandlineSshJob(this, description, p, sandbox, outForwarder, errForwarder);
     }
 
     /*

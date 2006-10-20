@@ -26,6 +26,7 @@ import org.gridlab.gat.resources.Resource;
 import org.gridlab.gat.resources.ResourceDescription;
 import org.gridlab.gat.resources.SoftwareDescription;
 import org.gridlab.gat.resources.cpi.ResourceBrokerCpi;
+import org.gridlab.gat.resources.cpi.Sandbox;
 import org.gridlab.gat.util.InputForwarder;
 import org.gridlab.gat.util.OutputForwarder;
 
@@ -158,18 +159,16 @@ public class LocalResourceBrokerAdaptor extends ResourceBrokerCpi {
             }
         }
 
-        String sandbox = createSandbox(description, "localhost");
-        
-        String command = path + " " + getArguments(description);
-
         String home = System.getProperty("user.home");
         if(home == null) {
             throw new GATInvocationException("local broker could not get user home dir");
         }
 
-        home = home + java.io.File.separator + sandbox;
+        Sandbox sandbox = new Sandbox(gatContext, preferences, description, "localhost", home);
         
-        java.io.File f = new java.io.File(home);
+        String command = path + " " + getArguments(description);
+
+        java.io.File f = new java.io.File(sandbox.getSandbox());
 
         if (GATEngine.VERBOSE) {
             System.err.println("running command: " + command);
@@ -193,9 +192,9 @@ public class LocalResourceBrokerAdaptor extends ResourceBrokerCpi {
             throw new CommandNotFoundException("local broker", e);
         }
 
-        org.gridlab.gat.io.File stdin = sd.getStdin();
-        org.gridlab.gat.io.File stdout = sd.getStdout();
-        org.gridlab.gat.io.File stderr = sd.getStderr();
+        org.gridlab.gat.io.File stdin  = sandbox.getResolvedStdin();
+        org.gridlab.gat.io.File stdout = sandbox.getResolvedStdout();
+        org.gridlab.gat.io.File stderr = sandbox.getResolvedStderr();
 
         if (stdin == null) {
             // close stdin.
@@ -206,8 +205,7 @@ public class LocalResourceBrokerAdaptor extends ResourceBrokerCpi {
             }
         } else {
             try {
-                String name = (home == null ?  "" : home + java.io.File.separator) + stdin.getName();
-                java.io.FileInputStream fin = new java.io.FileInputStream(name);                
+                java.io.FileInputStream fin = new java.io.FileInputStream(stdin.getAbsolutePath());
                 OutputStream out = p.getOutputStream();
                 new InputForwarder(out, fin);
             } catch (Exception e) {
@@ -221,10 +219,8 @@ public class LocalResourceBrokerAdaptor extends ResourceBrokerCpi {
         if (stdout == null) {
             new OutputForwarder(p.getInputStream(), false); // throw away output
         } else {
-            stdout = resolvePostStagedFile(stdout, "localhost", sandbox);
             try {
-                String name = (home == null ?  "" : home + java.io.File.separator) + stdout.getName();
-                java.io.FileOutputStream out = new java.io.FileOutputStream(name);
+                java.io.FileOutputStream out = new java.io.FileOutputStream(stdout.getAbsolutePath());
                 outForwarder = new OutputForwarder(p.getInputStream(), out);
             } catch (Exception e) {
                 throw new GATInvocationException("local broker", e);
@@ -237,10 +233,8 @@ public class LocalResourceBrokerAdaptor extends ResourceBrokerCpi {
         if (stderr == null) {
             new OutputForwarder(p.getErrorStream(), false); // throw away output
         } else {
-            stderr = resolvePostStagedFile(stderr, "localhost", sandbox);
             try {
-                String name = (home == null ?  "" : home + java.io.File.separator) + stderr.getName();
-                java.io.FileOutputStream out = new java.io.FileOutputStream(name);
+                java.io.FileOutputStream out = new java.io.FileOutputStream(stderr.getAbsolutePath());
                 errForwarder = new OutputForwarder(p.getErrorStream(), out);
             } catch (Exception e) {
                 throw new GATInvocationException("local broker", e);

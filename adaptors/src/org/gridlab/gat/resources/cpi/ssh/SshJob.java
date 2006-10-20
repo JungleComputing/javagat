@@ -3,7 +3,6 @@
  */
 package org.gridlab.gat.resources.cpi.ssh;
 
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -14,6 +13,7 @@ import org.gridlab.gat.monitoring.MetricDefinition;
 import org.gridlab.gat.monitoring.MetricValue;
 import org.gridlab.gat.resources.JobDescription;
 import org.gridlab.gat.resources.cpi.JobCpi;
+import org.gridlab.gat.resources.cpi.Sandbox;
 
 import com.jcraft.jsch.Channel;
 import com.jcraft.jsch.Session;
@@ -62,9 +62,9 @@ public class SshJob extends JobCpi {
     Metric statusMetric;
 
     SshJob(SshResourceBrokerAdaptor broker, JobDescription description,
-        Session session, Channel channel, String host, String sandbox)
+        Session session, Channel channel, Sandbox sandbox)
         throws GATInvocationException {
-        super(description, host, sandbox);
+        super(description, sandbox);
         this.broker = broker;
         jobID = allocJobID();
         state = RUNNING;
@@ -94,7 +94,7 @@ public class SshJob extends JobCpi {
 
         m.put("state", getStateString(state));
         m.put("exitValue", "" + exitVal);
-        m.put("hostname", host);
+        m.put("hostname", sandbox.getHost());
 
         if (postStageException != null) {
             m.put("postStageError", postStageException);
@@ -144,7 +144,7 @@ public class SshJob extends JobCpi {
         }
         GATEngine.fireMetric(this, v);
 
-        retrieveAndCleanup(broker);
+        sandbox.retrieveAndCleanup(this);
 
         synchronized (this) {
             state = STOPPED;

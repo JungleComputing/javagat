@@ -15,6 +15,7 @@ import org.gridlab.gat.monitoring.MetricDefinition;
 import org.gridlab.gat.monitoring.MetricValue;
 import org.gridlab.gat.resources.JobDescription;
 import org.gridlab.gat.resources.cpi.JobCpi;
+import org.gridlab.gat.resources.cpi.Sandbox;
 import org.gridlab.gat.util.OutputForwarder;
 
 /**
@@ -64,8 +65,8 @@ public class LocalJob extends JobCpi {
     OutputForwarder err;
     
     LocalJob(LocalResourceBrokerAdaptor broker, JobDescription description,
-            Process p, String host, String sandbox, OutputForwarder out, OutputForwarder err) {
-        super(description, host, sandbox);
+            Process p, String host, Sandbox sandbox, OutputForwarder out, OutputForwarder err) {
+        super(description, sandbox);
         this.broker = broker;
         jobID = allocJobID();
         state = RUNNING;
@@ -155,7 +156,7 @@ public class LocalJob extends JobCpi {
         }
         GATEngine.fireMetric(this, v);
 
-        retrieveAndCleanup(broker);
+        sandbox.retrieveAndCleanup(this);
         
         synchronized (this) {
             state = STOPPED;
@@ -180,10 +181,10 @@ public class LocalJob extends JobCpi {
         }
 
         if (GATEngine.VERBOSE) {
-            System.err.println("globus job stop: delete/wipe starting");
+            System.err.println("local job stop: delete/wipe starting");
         }
 
-        retrieveAndCleanup(broker);
+        sandbox.retrieveAndCleanup(this);
         
         if (GATEngine.DEBUG) {
             System.err.println("default job callback: firing event: " + v);

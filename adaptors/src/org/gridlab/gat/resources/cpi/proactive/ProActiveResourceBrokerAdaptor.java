@@ -12,7 +12,6 @@ import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.GATObjectCreationException;
 import org.gridlab.gat.Preferences;
-import org.gridlab.gat.io.File;
 import org.gridlab.gat.resources.Job;
 import org.gridlab.gat.resources.JobDescription;
 import org.gridlab.gat.resources.SoftwareDescription;
@@ -179,6 +178,7 @@ public class ProActiveResourceBrokerAdaptor extends ResourceBrokerCpi {
     }
 
     void preStage(JobDescription description, String host) {
+/*
         try {
             java.util.Map files = resolvePreStagedFiles(description, host, null);
             java.util.Set keys = files.keySet();
@@ -193,7 +193,7 @@ public class ProActiveResourceBrokerAdaptor extends ResourceBrokerCpi {
         } catch (Throwable e) {
             e.printStackTrace();
         }
-
+*/
     }
 
     public Job submitJob(JobDescription description)

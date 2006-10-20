@@ -16,6 +16,7 @@ import org.gridlab.gat.monitoring.MetricValue;
 import org.gridlab.gat.resources.Job;
 import org.gridlab.gat.resources.JobDescription;
 import org.gridlab.gat.resources.cpi.JobCpi;
+import org.gridlab.gat.resources.cpi.Sandbox;
 
 /**
  * This thread actively polls the globus state of a job. this is needed in case of firewalls.
@@ -75,8 +76,8 @@ public class GlobusJob extends JobCpi implements GramJobListener,
     JobPoller poller;
 
     public GlobusJob(GlobusResourceBrokerAdaptor broker, JobDescription jobDescription,
-        GramJob j, String host, String sandbox) {
-        super(jobDescription, host, sandbox);
+        GramJob j, Sandbox sandbox) {
+        super(jobDescription, sandbox);
         this.broker = broker;
         this.j = j;
         jobID = j.getIDAsString();
@@ -239,7 +240,7 @@ public class GlobusJob extends JobCpi implements GramJobListener,
             System.err.println("globus job stop: delete/wipe starting");
         }
 
-        retrieveAndCleanup(broker);
+        sandbox.retrieveAndCleanup(this);
         
         state = INITIAL;
     }
@@ -339,7 +340,7 @@ public class GlobusJob extends JobCpi implements GramJobListener,
 
         // @@@ also cleanup if failed
         if (globusState == STATUS_DONE) {
-            retrieveAndCleanup(broker);
+            sandbox.retrieveAndCleanup(this);
             synchronized (this) {
                 postStageFinished = true;
 
