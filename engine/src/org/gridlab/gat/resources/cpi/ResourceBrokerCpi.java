@@ -713,6 +713,10 @@ public abstract class ResourceBrokerCpi implements ResourceBroker {
             URI location = new URI("any://" + host + "/" + sandbox);
             File f = GAT.createFile(gatContext, location);
             if (f.delete()) {
+                if (GATEngine.VERBOSE) {
+                    System.err.println("deleted sandbox dir");
+                }
+
                 return;
             }
         } catch (Exception e) {
@@ -803,6 +807,9 @@ public abstract class ResourceBrokerCpi implements ResourceBroker {
         try {
             removeSandboxDir(j.host, j.sandbox);
         } catch (GATInvocationException e) {
+            if (GATEngine.VERBOSE) {
+                System.err.println("deleting of sandbox dir failed: " + e);
+            }
             // ignore
         }
     }
