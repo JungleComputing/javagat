@@ -109,7 +109,7 @@ public class Sandbox {
         }
 
         if (GATEngine.VERBOSE) {
-            System.out.println("sandbox: " + sandbox);
+            System.err.println("sandbox: " + sandbox);
         }
     }
 

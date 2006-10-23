@@ -26,7 +26,8 @@ import org.gridlab.gat.resources.cpi.Sandbox;
  */
 class JobPoller extends Thread {
     GlobusJob j;
-
+    boolean die = false;
+    
     JobPoller(GlobusJob j) {
         this.j = j;
         setDaemon(true);
@@ -46,8 +47,19 @@ class JobPoller extends Thread {
                 } catch (Exception e) {
                     // Ignore
                 }
+                if(die) {
+                    if(GATEngine.DEBUG) {
+                        System.err.println("Job poller killed");
+                    }
+                    return;
+                }
             }
         }
+    }
+    
+    synchronized void die() {
+        die = true;
+        notifyAll();
     }
 }
 
@@ -303,13 +315,21 @@ public class GlobusJob extends JobCpi implements GramJobListener,
     }
 
     /**
+     * This method handes callbacks from globus.
      * @see org.globus.gram.GramJobListener#statusChanged(org.globus.gram.GramJob)
      */
     public void statusChanged(GramJob newJob) {
+        
+        // If we ever receive a callback, we can kill the job poller thread; we are not 
+        // behind a firewall.
+        poller.die();
+        
         jobID = j.getIDAsString();
         String stateString = null;
         int globusState = newJob.getStatus();
 
+        
+        
         if (newJob.getError() == GRAM_JOBMANAGER_CONNECTION_FAILURE) {
             globusState = STATUS_DONE;
         }
