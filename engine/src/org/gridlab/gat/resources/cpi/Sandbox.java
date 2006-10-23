@@ -51,16 +51,17 @@ public class Sandbox {
     }
 
     private void createSandboxDir(String host) throws GATInvocationException {
-        sandbox = getSandboxName();
-
-        try {
-            URI location = new URI("any://" + host + "/" + sandbox);
-            File f = GAT.createFile(gatContext, location);
-            if (f.mkdir()) {
-                return;
+        for (int i = 0; i < 10; i++) {
+            sandbox = getSandboxName();
+            try {
+                URI location = new URI("any://" + host + "/" + sandbox);
+                File f = GAT.createFile(gatContext, location);
+                if (f.mkdir()) {
+                    return;
+                }
+            } catch (Exception e) {
+                throw new GATInvocationException("resource broker", e);
             }
-        } catch (Exception e) {
-            throw new GATInvocationException("resource broker", e);
         }
 
         throw new GATInvocationException("could not create a sandbox");
@@ -206,34 +207,34 @@ public class Sandbox {
 
     public File getResolvedStdout() {
         PoststagedFile f = post.getStdout();
-        if(f == null) return null;
+        if (f == null) return null;
         return f.resolvedSrc;
     }
 
     public File getResolvedStderr() {
         PoststagedFile f = post.getStderr();
-        if(f == null) return null;
+        if (f == null) return null;
         return f.resolvedSrc;
     }
 
     /** returns the URI relative to the sandbox, or an absolute path if it was absolute. */
     public URI getRelativeStdin() {
         PrestagedFile f = pre.getStdin();
-        if(f == null) return null;
+        if (f == null) return null;
         return f.relativeURI;
     }
 
     /** returns the URI relative to the sandbox, or an absolute path if it was absolute. */
     public URI getRelativeStdout() {
         PoststagedFile f = post.getStdout();
-        if(f == null) return null;
+        if (f == null) return null;
         return f.relativeURI;
     }
-    
+
     /** returns the URI relative to the sandbox, or an absolute path if it was absolute. */
     public URI getRelativeStderr() {
         PoststagedFile f = post.getStderr();
-        if(f == null) return null;
+        if (f == null) return null;
         return f.relativeURI;
     }
 
