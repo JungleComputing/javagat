@@ -32,7 +32,7 @@ public class GridFTPFileAdaptor extends GlobusFileAdaptor {
      *                   this LocalFileAdaptor.
      */
     public GridFTPFileAdaptor(GATContext gatContext, Preferences preferences,
-            URI location) throws GATObjectCreationException {
+        URI location) throws GATObjectCreationException {
         super(gatContext, preferences, location);
 
         if (!location.isCompatible("gsiftp") && !location.isCompatible("file")) {
@@ -50,17 +50,17 @@ public class GridFTPFileAdaptor extends GlobusFileAdaptor {
 
         /* try to create a client to see if the remote site has a gridftp server */
         /*
-        GridFTPClient c = null;
+         GridFTPClient c = null;
 
-        try {
-            c = doWorkCreateClient(gatContext, preferences, location);
-        } catch (GATInvocationException e) {
-            throw new GATObjectCreationException(
-                "Could not create a gridftp connection to " + location, e);
-        }
+         try {
+         c = doWorkCreateClient(gatContext, preferences, location);
+         } catch (GATInvocationException e) {
+         throw new GATObjectCreationException(
+         "Could not create a gridftp connection to " + location, e);
+         }
 
-        doWorkDestroyClient(c, location, preferences);
-        */
+         doWorkDestroyClient(c, location, preferences);
+         */
     }
 
     protected URI fixURI(URI in) {
@@ -68,7 +68,7 @@ public class GridFTPFileAdaptor extends GlobusFileAdaptor {
     }
 
     private static void setConnectionOptions(GridFTPClient c,
-            Preferences preferences) throws Exception {
+        Preferences preferences) throws Exception {
         c.setType(GridFTPSession.TYPE_IMAGE);
 
         //        c.setMode(GridFTPSession.MODE_BLOCK);
@@ -81,7 +81,7 @@ public class GridFTPFileAdaptor extends GlobusFileAdaptor {
      * by default.
      */
     private static void setSecurityOptions(GridFTPClient c,
-            Preferences preferences) throws Exception {
+        Preferences preferences) throws Exception {
         if (isOldServer(preferences)) {
             if (GATEngine.DEBUG) {
                 System.err
@@ -124,7 +124,7 @@ public class GridFTPFileAdaptor extends GlobusFileAdaptor {
      * @param hostURI the uri of the FTP host
      */
     protected FTPClient createClient(GATContext gatContext,
-            Preferences preferences, URI hostURI) throws GATInvocationException {
+        Preferences preferences, URI hostURI) throws GATInvocationException {
         return doWorkCreateClient(gatContext, preferences, hostURI);
     }
 
@@ -133,8 +133,22 @@ public class GridFTPFileAdaptor extends GlobusFileAdaptor {
             + hostURI.getPort(DEFAULT_GRIDFTP_PORT) + preferences; // include preferences in key
     }
 
+    private static synchronized GridFTPClient getFromCache(String key) {
+        GridFTPClient client = null;
+        if (clienttable.containsKey(key)) {
+            client = (GridFTPClient) clienttable.remove(key);
+        }
+        return client;
+    }
+
+    private static synchronized void putInCache(String key, GridFTPClient c) {
+        if (!clienttable.containsKey(key)) {
+            clienttable.put(key, c);
+        }
+    }
+
     protected static GridFTPClient doWorkCreateClient(GATContext gatContext,
-            Preferences preferences, URI hostURI) throws GATInvocationException {
+        Preferences preferences, URI hostURI) throws GATInvocationException {
         try {
             GSSCredential credential = GlobusSecurityUtils.getGlobusCredential(
                 gatContext, preferences, "gridftp", hostURI,
@@ -157,9 +171,8 @@ public class GridFTPFileAdaptor extends GlobusFileAdaptor {
             String key = getClientKey(hostURI, preferences);
 
             if (USE_CLIENT_CACHING) {
-                if (clienttable.containsKey(key)) {
-                    client = (GridFTPClient) clienttable.remove(key);
-
+                client = getFromCache(key);
+                if (client != null) {
                     try {
                         // test if the client is still alive
                         client.getCurrentDir();
@@ -210,12 +223,12 @@ public class GridFTPFileAdaptor extends GlobusFileAdaptor {
     }
 
     protected void destroyClient(FTPClient c, URI hostURI,
-            Preferences preferences) {
+        Preferences preferences) {
         doWorkDestroyClient(c, hostURI, preferences);
     }
 
     protected static void doWorkDestroyClient(FTPClient c, URI hostURI,
-            Preferences preferences) {
+        Preferences preferences) {
         String key = getClientKey(hostURI, preferences);
 
         if (USE_CLIENT_CACHING && !clienttable.containsKey(key)) {
