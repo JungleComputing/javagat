@@ -9,12 +9,12 @@ import org.gridlab.gat.Preferences;
 import org.gridlab.gat.engine.GATEngine;
 import org.gridlab.gat.io.File;
 
-public class PrestagedFile extends StagedFile {
+public class PreStagedFile extends StagedFile {
     boolean isExecutable;
 
     boolean isStdIn;
 
-    public PrestagedFile(GATContext context, Preferences preferences, File src,
+    public PreStagedFile(GATContext context, Preferences preferences, File src,
         File dest, String host, String sandbox, boolean isStdIn,
         boolean isExecutable) throws GATInvocationException {
         super(context, preferences, src, dest, host, sandbox);

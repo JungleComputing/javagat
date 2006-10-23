@@ -17,7 +17,7 @@ import org.gridlab.gat.io.File;
 import org.gridlab.gat.resources.JobDescription;
 import org.gridlab.gat.resources.SoftwareDescription;
 
-public class PrestagedFileSet {
+public class PreStagedFileSet {
     GATContext gatContext;
 
     Preferences preferences;
@@ -32,7 +32,7 @@ public class PrestagedFileSet {
 
     ArrayList files; // elements are of type PreStageFile.
 
-    public PrestagedFileSet(GATContext gatContext, Preferences preferences,
+    public PreStagedFileSet(GATContext gatContext, Preferences preferences,
         JobDescription description, String host, String sandbox,
         boolean preStageStdin) throws GATInvocationException {
         this.gatContext = gatContext;
@@ -71,7 +71,7 @@ public class PrestagedFileSet {
                 File srcFile = (File) i.next();
                 File destFile = (File) pre.get(srcFile);
                 files
-                    .add(new PrestagedFile(gatContext, preferences, srcFile,
+                    .add(new PreStagedFile(gatContext, preferences, srcFile,
                         destFile, host, sandbox, false, srcFile.toURI().equals(
                             exe)));
             }
@@ -81,7 +81,7 @@ public class PrestagedFileSet {
             File stdin = sd.getStdin();
 
             if (stdin != null) {
-                files.add(new PrestagedFile(gatContext, preferences, stdin,
+                files.add(new PreStagedFile(gatContext, preferences, stdin,
                     null, host, sandbox, true, stdin.toURI().equals(exe)));
             }
         }
@@ -96,7 +96,7 @@ public class PrestagedFileSet {
         }
 
         for (int i = 0; i < files.size(); i++) {
-            PrestagedFile f = (PrestagedFile) files.get(i);
+            PreStagedFile f = (PreStagedFile) files.get(i);
 
             try {
                 f.prestage();
@@ -115,7 +115,7 @@ public class PrestagedFileSet {
         GATInvocationException e = new GATInvocationException();
         for (int i = 0; i < files.size(); i++) {
             try {
-                ((PrestagedFile) files.get(i)).delete(onlySandbox);
+                ((PreStagedFile) files.get(i)).delete(onlySandbox);
             } catch (Exception x) {
                 e.add("resource broker", x);
             }
@@ -128,7 +128,7 @@ public class PrestagedFileSet {
         GATInvocationException e = new GATInvocationException();
         for (int i = 0; i < files.size(); i++) {
             try {
-                ((PrestagedFile) files.get(i)).wipe(onlySandbox);
+                ((PreStagedFile) files.get(i)).wipe(onlySandbox);
             } catch (Exception x) {
                 e.add("resource broker", x);
             }
@@ -137,9 +137,9 @@ public class PrestagedFileSet {
         if (e.getNrChildren() != 0) throw e;
     }
 
-    PrestagedFile getStdin() {
+    PreStagedFile getStdin() {
         for (int i = 0; i < files.size(); i++) {
-            PrestagedFile f = (PrestagedFile) files.get(i);
+            PreStagedFile f = (PreStagedFile) files.get(i);
             if (f.isStdIn) {
                 return f;
             }
