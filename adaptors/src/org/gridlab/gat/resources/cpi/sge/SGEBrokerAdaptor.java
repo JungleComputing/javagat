@@ -29,12 +29,17 @@ import org.gridlab.gat.resources.Resource;
 import org.gridlab.gat.resources.ResourceDescription;
 import org.gridlab.gat.resources.SoftwareDescription;
 import org.gridlab.gat.resources.cpi.ResourceBrokerCpi;
+import org.gridlab.gat.resources.cpi.Sandbox;
 
 /**
  *
  * @author ole.weidner
  */
+
+
+
 public class SGEBrokerAdaptor extends ResourceBrokerCpi {
+
     
     private Session SGEsession;
 
@@ -73,6 +78,7 @@ public class SGEBrokerAdaptor extends ResourceBrokerCpi {
        String host = getHostname(description);
        
        URI hostURI;
+       Sandbox sandbox = null;
        
         try {
             hostURI = new URI(host);
@@ -82,30 +88,17 @@ public class SGEBrokerAdaptor extends ResourceBrokerCpi {
        
        /* Handle pre-/poststaging */
         if (host != null) {
-/*
-            try {
-                removePostStagedFiles(description, host, null);
-            } catch (GATInvocationException e) {
-                // ignore, maybe the files did not exist anyway
-            }
-
-            try {
-                preStageFiles(description, host, null);
-            } catch (Exception e) {
-                throw new FilePrestageException("SGEBrokerAdaptor", e);
-            }
-            */
+            sandbox = new Sandbox(gatContext, preferences, description, host, null, false, true, true, true);
         }
        
-        
         if (sd == null) {
             throw new GATInvocationException(
                 "The job description does not contain a software description");
         }        
        
         try {          
-            
-            SGEsession.init(null);
+        
+            SGEsession.init( hostURI.toString() );
             JobTemplate jt = SGEsession.createJobTemplate();
         
             if( sd.getLocation() != null)
@@ -122,14 +115,19 @@ public class SGEBrokerAdaptor extends ResourceBrokerCpi {
         
             SGEsession.deleteJobTemplate(jt);
         
-            sgejob = new SGEJob(this, description,SGEsession, id);
+            sgejob = new SGEJob(this, description,SGEsession, id, sandbox);
         
-        
+
+            
+            
         } catch(DrmaaException e) {
             System.err.println("Execption in SGEBRokerAdaptor");
             System.err.println(e);
         }
         
+       
+       
+       
         return sgejob;
     }
 }

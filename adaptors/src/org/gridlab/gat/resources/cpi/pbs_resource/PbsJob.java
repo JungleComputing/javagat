@@ -12,6 +12,7 @@ import java.util.Map;
 import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.resources.JobDescription;
 import org.gridlab.gat.resources.cpi.JobCpi;
+import org.gridlab.gat.resources.cpi.Sandbox;
 
 /**
  * @author  doerl
@@ -21,27 +22,19 @@ public class PbsJob extends JobCpi {
 
     private PbsBrokerAdaptor mBroker;
 
-    private JobDescription mDescription;
-
     private String mId;
 
     //	private Metric mMetric;
 
-    public PbsJob(PbsBrokerAdaptor broker, JobDescription description, String id) {
-        super(description, null);
+    public PbsJob(PbsBrokerAdaptor broker, JobDescription description, String id, Sandbox sandbox) {
+        super(description, sandbox);
         mBroker = broker;
-        mDescription = description;
         mId = id;
         state = INITIAL;
     }
 
     public Map getInfo() throws GATInvocationException {
-        Map result;
-        try {
-            result = mBroker.getInfo(mId);
-        } catch (IOException e) {
-            throw new GATInvocationException("pbs", e);
-        }
+        Map result = mBroker.getInfo(mId);
         result.put("state", getStateString(getState()));
         for (Iterator i = result.keySet().iterator(); i.hasNext();) {
             Object key = i.next();
@@ -75,7 +68,7 @@ public class PbsJob extends JobCpi {
         return result;
     }
 
-    public String getJobID() {
+    public String getJobID() throws GATInvocationException {
         return mId;
     }
 
@@ -96,26 +89,18 @@ public class PbsJob extends JobCpi {
 
     public void stop() throws GATInvocationException {
         if (getState() == SCHEDULED) {
-            try {
-                PbsMessage res = mBroker.unScheduleJob(mId);
-                if (!res.isDeleted()) {
-                    throw new GATInvocationException(res.getMessage());
-                }
-            } catch (IOException e) {
-                throw new GATInvocationException("pbs", e);
+            PbsMessage res = mBroker.unScheduleJob(mId);
+            if (!res.isDeleted()) {
+                throw new GATInvocationException(res.getMessage());
             }
             state = INITIAL;
             return;
         }
 
         if (getState() == RUNNING) {
-            try {
-                PbsMessage res = mBroker.cancelJob(mId);
-                if (!res.isDeleted()) {
-                    throw new GATInvocationException(res.getMessage());
-                }
-            } catch (IOException e) {
-                throw new GATInvocationException("pbs", e);
+            PbsMessage res = mBroker.cancelJob(mId);
+            if (!res.isDeleted()) {
+                throw new GATInvocationException(res.getMessage());
             }
             state = INITIAL;
             return;
@@ -135,7 +120,7 @@ public class PbsJob extends JobCpi {
         state = INITIAL;
     }
 
-    public void release() throws GATInvocationException, IOException {
+    public void release() throws GATInvocationException {
         if (getState() != RUNNING) {
             throw new GATInvocationException("Job is not running");
         }
@@ -145,16 +130,16 @@ public class PbsJob extends JobCpi {
         //         }
         state = INITIAL;
     }
-    /*
-     public void unSchedule() throws GATInvocationException, IOException {
-     if (getState() != SCHEDULED) {
-     throw new GATInvocationException("Job is not in schedule state");
-     }
-     PbsMessage res = mBroker.unScheduleJob(mId);
-     if (!res.isDeleted()) {
-     throw new GATInvocationException(res.getMessage());
-     }
-     state = INITIAL;
-     }
-     */
+/*
+    public void unSchedule() throws GATInvocationException, IOException {
+        if (getState() != SCHEDULED) {
+            throw new GATInvocationException("Job is not in schedule state");
+        }
+        PbsMessage res = mBroker.unScheduleJob(mId);
+        if (!res.isDeleted()) {
+            throw new GATInvocationException(res.getMessage());
+        }
+        state = INITIAL;
+    }
+    */
 }

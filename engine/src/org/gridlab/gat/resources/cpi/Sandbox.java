@@ -31,15 +31,19 @@ public class Sandbox {
 
     String sandboxRoot;
 
+    boolean createSandboxDir;
+
     public Sandbox(GATContext gatContext, Preferences preferences,
         JobDescription jobDescription, String host, String sandboxRoot,
-        boolean preStageStdin, boolean postStageStdout, boolean postStageStderr)
+        boolean createSandboxDir, boolean preStageStdin,
+        boolean postStageStdout, boolean postStageStderr)
         throws GATInvocationException {
         this.jobDescription = jobDescription;
         this.gatContext = gatContext;
         this.preferences = preferences;
         this.host = host;
         this.sandboxRoot = sandboxRoot;
+        this.createSandboxDir = createSandboxDir;
 
         initSandbox();
 
@@ -53,6 +57,7 @@ public class Sandbox {
     private void createSandboxDir(String host) throws GATInvocationException {
         for (int i = 0; i < 10; i++) {
             sandbox = getSandboxName();
+
             try {
                 URI location = new URI("any://" + host + "/" + sandbox);
                 File f = GAT.createFile(gatContext, location);
@@ -92,11 +97,18 @@ public class Sandbox {
             res += sandboxRoot + "/";
         }
         res += ".JavaGAT_SANDBOX_" + Math.random();
-
         return res;
     }
 
     private void initSandbox() throws GATInvocationException {
+        if(!createSandboxDir) {
+            if (GATEngine.VERBOSE) {
+                System.err.println("sandbox: NO SANDBOX");
+            }
+            sandbox = sandboxRoot;
+            return;
+        }
+        
         if (host == null) {
             throw new GATInvocationException(
                 "cannot create a sandbox without a host name");

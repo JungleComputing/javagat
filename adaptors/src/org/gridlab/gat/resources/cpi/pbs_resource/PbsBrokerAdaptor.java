@@ -25,6 +25,7 @@ import org.gridlab.gat.resources.JobDescription;
 import org.gridlab.gat.resources.ResourceDescription;
 import org.gridlab.gat.resources.SoftwareDescription;
 import org.gridlab.gat.resources.cpi.ResourceBrokerCpi;
+import org.gridlab.gat.resources.cpi.Sandbox;
 
 /**
  * @author  doerl
@@ -35,12 +36,15 @@ public class PbsBrokerAdaptor extends ResourceBrokerCpi implements IParameter {
     public PbsBrokerAdaptor(GATContext context, Preferences pref)
         throws GATObjectCreationException {
         super(context, pref);
-        System.out.println("constructor: PbsBrokerAdaptor");
-//         checkName("pbs");
+//        System.out.println("constructor: PbsBrokerAdaptor");
     }
 
-    public PbsMessage cancelJob(String id) throws IOException {
-        return new PbsMessage(Executer.singleResult("qdel " + id));
+    public PbsMessage cancelJob(String id)  throws GATInvocationException {
+        try {
+            return new PbsMessage(Executer.singleResult("qdel " + id));
+        } catch (IOException e) {
+            throw new GATInvocationException("pbs", e);
+        }
     }
 
     /*************************************************************************************************/
@@ -81,6 +85,8 @@ public class PbsBrokerAdaptor extends ResourceBrokerCpi implements IParameter {
         ResourceDescription rdJob=null;
         HashMap rdJob_attr=null;
 
+        Sandbox sandbox = null;
+
         /**
            get the descriptions
         */
@@ -108,7 +114,7 @@ public class PbsBrokerAdaptor extends ResourceBrokerCpi implements IParameter {
         String host = getHostname(description);
         if (host != null) {
             //			removePostStagedFiles(description, host);
-//            preStageFiles(description, host, null);
+            sandbox = new Sandbox(gatContext, preferences, description, host, null, false, true, true, true);
         }
         java.io.File temp = java.io.File.createTempFile("pbs", null);
         try {
@@ -117,12 +123,14 @@ public class PbsBrokerAdaptor extends ResourceBrokerCpi implements IParameter {
             if (pos > 0) {
                 tmpname = tmpname.substring(0, pos);
             }
+            /* this peace of code is unused, and gives warnings --Rob
             String retName = null;
             try {
                 retName = (String) sd.getAttributes().get(IArgument.SHDIR);
             }
             catch (ClassCastException ex1) {
             }
+            */
             //			try {
             //				File retFile = GAT.createFile(gatContext, retName);
             //				sd.addPostStagedFile(retFile, resolvePostStagedFile(retFile, host));
@@ -138,32 +146,14 @@ public class PbsBrokerAdaptor extends ResourceBrokerCpi implements IParameter {
 
 
                 /**
-                   old version without the usage of hardware resources.
-                */
-
-                //                 job.addString("A", sd.getAttributes().get(IArgument.ACCOUNT));
-                //                 job.addDate("a", sd.getAttributes().get(IArgument.DATETIME));
-                //                 job.addBoolean("j", sd.getAttributes().get(IArgument.JOIN));
-                //                 job.addString("M", sd.getAttributes().get(IArgument.MAIL));
-                //                 job.addString("m", sd.getAttributes().get(IArgument.MAILCOND));
-                //                 job.addString("S", sd.getAttributes().get(IArgument.SHELL));
-                //                 job.addString("p", sd.getAttributes().get(IArgument.PRIORITY));
-                //                 job.addString("q", sd.getAttributes().get(IArgument.QUEUE));
-                //                 job.addString("u", sd.getAttributes().get(IArgument.USER));
-                //                 job.addBoolean("r", sd.getAttributes().get(IArgument.RERUN));
-                //                 job.addParam("V", sd.getAttributes().get(IArgument.ENV));
-                //                 job.addString("v", getEnvironment(sd.getEnvironment()));
-                //                 job.addString("N", tmpname);
-
-                /**
-                   new version with usage of hardware resources. In the first realization same
+                   The hardware resources. In the first realization same
                    args as in C-GAT PBS adaptor.
                 */
 
                 Queue = (String) rdJob_attr.get("machine.queue");
                 if (Queue==null)
                     {
-                        throw new GATInvocationException("Missing queue parameter; job submit to PBS failed.");
+                        Queue=new String("");
                     }
                 else
                     {
@@ -193,8 +183,14 @@ public class PbsBrokerAdaptor extends ResourceBrokerCpi implements IParameter {
                     {
                         Nodes = new String("1");
                     }
-                
-                LString = new String("walltime=" + Time + ",file=" + Filesize + ",mem=" + Memsize + ",nodes=" + Nodes + ":" + Queue);
+                if (Queue.length()==0)
+                    {
+                        LString = new String("walltime=" + Time + ",file=" + Filesize + ",mem=" + Memsize + ",nodes=" + Nodes);
+                    }
+                else
+                    {
+                        LString = new String("walltime=" + Time + ",file=" + Filesize + ",mem=" + Memsize + ",nodes=" + Nodes + ":" + Queue);
+                    }
                 if (LString==null)
                     {
                         throw new GATInvocationException("Cannot construct -l option; job submit to PBS failed.");
@@ -281,20 +277,28 @@ public class PbsBrokerAdaptor extends ResourceBrokerCpi implements IParameter {
                 temp.delete();
             }
         }
-        return new PbsJob(this, description, id);
+        return new PbsJob(this, description, id, sandbox);
     }
 
-    public PbsMessage unScheduleJob(String id) throws IOException {
-        return new PbsMessage(Executer.singleResult("qdel " + id));
-    }
-
-    Map getInfo(String id) throws IOException {
-        Vector params = Executer.allResults("qstat -f " + id);
-        if (params.isEmpty()) {
-            return new HashMap();
+    public PbsMessage unScheduleJob(String id) throws GATInvocationException {
+        try{
+            return new PbsMessage(Executer.singleResult("qdel " + id));
+        } catch (IOException e) {
+            throw new GATInvocationException("pbs", e);
         }
-        params.remove(0);
-        return Executer.getPropertiesForm(params, '=');
+    }
+
+    Map getInfo(String id) throws GATInvocationException {
+        try {
+            Vector params = Executer.allResults("qstat -f " + id);
+            if (params.isEmpty()) {
+                return new HashMap();
+            }
+            params.remove(0);
+            return Executer.getPropertiesForm(params, '=');
+        } catch (IOException e) {
+            throw new GATInvocationException("pbs", e);
+        }
     }
 
     int getState(String id) throws IOException {
