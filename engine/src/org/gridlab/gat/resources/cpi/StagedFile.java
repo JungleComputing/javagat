@@ -33,7 +33,6 @@ public abstract class StagedFile {
 
     URI relativeURI;
 
-
     public StagedFile(GATContext context, Preferences preferences,
         File origSrc, File origDest, String host, String sandbox) {
         super();
@@ -46,7 +45,8 @@ public abstract class StagedFile {
     }
 
     /** Creates a file object that points to the sandbox. */
-    protected File resolve(File f, boolean useNameOnly) throws GATInvocationException {
+    protected File resolve(File f, boolean useNameOnly)
+        throws GATInvocationException {
         if (!useNameOnly && f.isAbsolute()) {
             relativeURI = f.toURI();
             return f;
@@ -61,7 +61,7 @@ public abstract class StagedFile {
         dest += (uri.getPort() == -1) ? "" : (":" + uri.getPort());
         dest += "/";
         dest += sandbox == null ? "" : sandbox + "/";
-        if(useNameOnly) {
+        if (useNameOnly) {
             java.io.File tmp = new java.io.File(uri.getPath());
             dest += tmp.getName();
             relativeDest = tmp.getName();
@@ -76,11 +76,10 @@ public abstract class StagedFile {
 
             return GAT.createFile(gatContext, preferences, destURI);
         } catch (Exception e) {
-            throw new GATInvocationException(
-                "StageFile", e);
+            throw new GATInvocationException("StageFile", e);
         }
     }
-    
+
     protected void wipe(File f) throws GATInvocationException {
         long size = f.length();
 
@@ -92,23 +91,31 @@ public abstract class StagedFile {
             throw new GATInvocationException("resource broker", e);
         }
 
-        int bufSize = 64 * 1024;
-        byte[] buf = new byte[bufSize];
-        long wiped = 0;
-        while (wiped != size) {
-            int toWipe;
-            if (size - wiped < bufSize) {
-                toWipe = (int) (size - wiped);
-            } else {
-                toWipe = bufSize;
-            }
+        try {
+            int bufSize = 64 * 1024;
+            byte[] buf = new byte[bufSize];
+            long wiped = 0;
+            while (wiped != size) {
+                int toWipe;
+                if (size - wiped < bufSize) {
+                    toWipe = (int) (size - wiped);
+                } else {
+                    toWipe = bufSize;
+                }
 
-            try {
                 out.write(buf, 0, toWipe);
-            } catch (Exception e) {
-                throw new GATInvocationException("resource broker", e);
+                wiped += toWipe;
             }
-            wiped += toWipe;
+        } catch (Exception e) {
+            throw new GATInvocationException("resource broker", e);
+        } finally {
+            if(out != null) {
+                try {
+                    out.close();
+                } catch (Exception e) {
+                    // ignore
+                }
+            }
         }
     }
 }
