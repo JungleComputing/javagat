@@ -25,6 +25,8 @@ public class SshJob extends JobCpi {
     class ProcessWaiter extends Thread {
 
         ProcessWaiter() {
+            setName("ssh resourceBroker adaptor waiter");
+            setDaemon(true);
             start();
         }
 

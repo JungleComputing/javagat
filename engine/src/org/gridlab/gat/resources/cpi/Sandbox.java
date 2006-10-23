@@ -32,7 +32,8 @@ public class Sandbox {
     String sandboxRoot;
 
     public Sandbox(GATContext gatContext, Preferences preferences,
-        JobDescription jobDescription, String host, String sandboxRoot)
+        JobDescription jobDescription, String host, String sandboxRoot,
+        boolean preStageStdin, boolean postStageStdout, boolean postStageStderr)
         throws GATInvocationException {
         this.jobDescription = jobDescription;
         this.gatContext = gatContext;
@@ -43,9 +44,9 @@ public class Sandbox {
         initSandbox();
 
         pre = new PrestagedFileSet(gatContext, preferences, jobDescription,
-            host, sandbox);
+            host, sandbox, preStageStdin);
         post = new PoststagedFileSet(gatContext, preferences, jobDescription,
-            host, sandbox);
+            host, sandbox, postStageStdout, postStageStderr);
         createSandbox();
     }
 
@@ -86,11 +87,11 @@ public class Sandbox {
 
     private String getSandboxName() {
         String res = "";
-        if(sandboxRoot != null) {
+        if (sandboxRoot != null) {
             res += sandboxRoot + "/";
         }
         res += ".JavaGAT_SANDBOX_" + Math.random();
-        
+
         return res;
     }
 
@@ -105,8 +106,8 @@ public class Sandbox {
         } catch (Exception e) {
             throw new FilePrestageException("resource broker", e);
         }
-        
-        if(GATEngine.VERBOSE) {
+
+        if (GATEngine.VERBOSE) {
             System.out.println("sandbox: " + sandbox);
         }
     }
@@ -115,7 +116,7 @@ public class Sandbox {
      */
     private void createSandbox() throws GATInvocationException {
         try {
-            post.delete(false);
+            post.delete(false); // only delete files that aren't going in the sandbox
         } catch (GATInvocationException e) {
             // ignore, maybe the files did not exist anyway
         }
@@ -123,6 +124,9 @@ public class Sandbox {
         try {
             pre.prestage();
         } catch (Exception e) {
+            if (GATEngine.VERBOSE) {
+                System.err.println("prestage failed, cleaning up");
+            }
             // remove / wipe files we already prestaged.
             retrieveAndCleanup(null);
             throw new FilePrestageException("resource broker", e);
@@ -152,13 +156,13 @@ public class Sandbox {
         SoftwareDescription sd = jobDescription.getSoftwareDescription();
 
         try {
-            if(sd.wipePreStaged()) {
-                pre.wipe(false);                
+            if (sd.wipePreStaged()) {
+                pre.wipe(false);
             }
-            if(sd.wipePostStaged()) {
-                post.wipe(false);                
+            if (sd.wipePostStaged()) {
+                post.wipe(false);
             }
-            
+
             PoststagedFileSet del = new PoststagedFileSet(gatContext,
                 preferences, sd.getWipedFiles(), host, sandbox);
             del.wipe(false);
@@ -182,7 +186,7 @@ public class Sandbox {
             removeSandboxException = e;
         }
 
-        if(j != null) {
+        if (j != null) {
             j.deleteException = deleteException;
             j.wipeException = wipeException;
             j.postStageException = poststageException;
@@ -195,17 +199,44 @@ public class Sandbox {
     }
 
     public File getResolvedStdin() {
-        return pre.getResolvedStdin();
+        PrestagedFile f = pre.getStdin();
+        if (f == null) return null;
+        return f.resolvedDest;
     }
 
     public File getResolvedStdout() {
-        return post.getResolvedStdout();
+        PoststagedFile f = post.getStdout();
+        if(f == null) return null;
+        return f.resolvedSrc;
     }
 
     public File getResolvedStderr() {
-        return post.getResolvedStderr();
+        PoststagedFile f = post.getStderr();
+        if(f == null) return null;
+        return f.resolvedSrc;
+    }
+
+    /** returns the URI relative to the sandbox, or an absolute path if it was absolute. */
+    public URI getRelativeStdin() {
+        PrestagedFile f = pre.getStdin();
+        if(f == null) return null;
+        return f.relativeURI;
+    }
+
+    /** returns the URI relative to the sandbox, or an absolute path if it was absolute. */
+    public URI getRelativeStdout() {
+        PoststagedFile f = post.getStdout();
+        if(f == null) return null;
+        return f.relativeURI;
     }
     
+    /** returns the URI relative to the sandbox, or an absolute path if it was absolute. */
+    public URI getRelativeStderr() {
+        PoststagedFile f = post.getStderr();
+        if(f == null) return null;
+        return f.relativeURI;
+    }
+
     public String getHost() {
         return host;
     }

@@ -38,7 +38,7 @@ public class SftpNewFileAdaptor extends FileCpi {
      * @param location
      */
     public SftpNewFileAdaptor(GATContext gatContext, Preferences preferences,
-            URI location) throws GATObjectCreationException {
+        URI location) throws GATObjectCreationException {
         super(gatContext, preferences, location);
 
         if (!location.isCompatible("sftp") && !location.isCompatible("file")) {
@@ -52,8 +52,7 @@ public class SftpNewFileAdaptor extends FileCpi {
     }
 
     protected static SftpNewConnection createChannel(GATContext gatContext,
-            Preferences preferences, URI location)
-            throws GATInvocationException {
+        Preferences preferences, URI location) throws GATInvocationException {
         if (!USE_CLIENT_CACHING) {
             return doWorkCreateChannel(gatContext, preferences, location);
         }
@@ -91,8 +90,7 @@ public class SftpNewFileAdaptor extends FileCpi {
     }
 
     private static SftpNewConnection doWorkCreateChannel(GATContext gatContext,
-            Preferences preferences, URI location)
-            throws GATInvocationException {
+        Preferences preferences, URI location) throws GATInvocationException {
 
         if (GATEngine.DEBUG) {
             System.err.println("sftpnew: creating client to "
@@ -152,7 +150,7 @@ public class SftpNewFileAdaptor extends FileCpi {
     }
 
     public static void closeChannel(SftpNewConnection c)
-            throws GATInvocationException {
+        throws GATInvocationException {
         if (!USE_CLIENT_CACHING) {
             doWorkCloseChannel(c);
             return;
@@ -182,7 +180,7 @@ public class SftpNewFileAdaptor extends FileCpi {
     }
 
     private static void doWorkCloseChannel(SftpNewConnection connection)
-            throws GATInvocationException {
+        throws GATInvocationException {
         if (connection.channel != null) {
             try {
                 connection.channel.disconnect();
@@ -278,7 +276,7 @@ public class SftpNewFileAdaptor extends FileCpi {
 
     // Try copying using temp file.
     protected void copyThirdParty(URI src, URI dest)
-            throws GATInvocationException {
+        throws GATInvocationException {
         java.io.File tmp = null;
         SftpNewConnection tmpCon = null;
 
@@ -301,7 +299,7 @@ public class SftpNewFileAdaptor extends FileCpi {
     }
 
     protected void copyToRemote(URI src, URI dest)
-            throws GATInvocationException {
+        throws GATInvocationException {
 
         SftpNewConnection tmpCon = null;
 
@@ -413,8 +411,18 @@ public class SftpNewFileAdaptor extends FileCpi {
 
     public boolean delete() throws GATInvocationException {
         SftpNewConnection c = createChannel(gatContext, preferences, location);
+        boolean isFile = true;
         try {
-            if (isFile()) {
+            isFile = isFile();
+        } catch (GATInvocationException e) {
+            if(e.getMessage().equals("No such file")) {
+                return false;
+            }
+            throw e;
+        }
+
+        try {
+            if (isFile) {
                 c.channel.rm(location.getPath());
             } else {
                 c.channel.rmdir(location.getPath());

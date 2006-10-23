@@ -27,20 +27,27 @@ public class PoststagedFileSet {
 
     String sandbox;
 
+    boolean postStageStdout;
+
+    boolean postStageStderr;
+
     ArrayList files = new ArrayList();; // elements are of type PostStageFile.
 
     public PoststagedFileSet(GATContext gatContext, Preferences preferences,
-        JobDescription description, String host, String sandbox)
+        JobDescription description, String host, String sandbox,
+        boolean postStageStdout, boolean postStageStderr)
         throws GATInvocationException {
         this.gatContext = gatContext;
         this.preferences = preferences;
         this.description = description;
         this.host = host;
         this.sandbox = sandbox;
-        
+        this.postStageStdout = postStageStdout;
+        this.postStageStderr = postStageStderr;
+
         resolve();
-        
-        if(GATEngine.VERBOSE) {
+
+        if (GATEngine.VERBOSE) {
             System.err.println(this);
         }
     }
@@ -56,7 +63,7 @@ public class PoststagedFileSet {
         resolveFiles(files);
     }
 
-    /* also adds stdout, stderrto set of files to preStage */
+    /** also adds stdout, stderrto set of files to preStage if needed. */
     private void resolve() throws GATInvocationException {
         SoftwareDescription sd = description.getSoftwareDescription();
 
@@ -80,16 +87,20 @@ public class PoststagedFileSet {
             }
         }
 
-        File stdout = sd.getStdout();
-        if (stdout != null) {
-            files.add(new PoststagedFile(gatContext, preferences, null, stdout,
-                host, sandbox, true, false));
+        if (postStageStdout) {
+            File stdout = sd.getStdout();
+            if (stdout != null) {
+                files.add(new PoststagedFile(gatContext, preferences, null,
+                    stdout, host, sandbox, true, false));
+            }
         }
 
-        File stderr = sd.getStderr();
-        if (stderr != null) {
-            files.add(new PoststagedFile(gatContext, preferences, null, stderr,
-                host, sandbox, false, true));
+        if (postStageStderr) {
+            File stderr = sd.getStderr();
+            if (stderr != null) {
+                files.add(new PoststagedFile(gatContext, preferences, null,
+                    stderr, host, sandbox, false, true));
+            }
         }
     }
 
@@ -126,11 +137,12 @@ public class PoststagedFileSet {
         }
     }
 
-    public void delete(boolean onlySandbox) throws GATInvocationException {
+    public void delete(boolean deleteFilesInSandbox)
+        throws GATInvocationException {
         GATInvocationException e = new GATInvocationException();
         for (int i = 0; i < files.size(); i++) {
             try {
-                ((PoststagedFile) files.get(i)).delete(onlySandbox);
+                ((PoststagedFile) files.get(i)).delete(deleteFilesInSandbox);
             } catch (Exception x) {
                 e.add("resource broker", x);
             }
@@ -152,32 +164,32 @@ public class PoststagedFileSet {
         if (e.getNrChildren() != 0) throw e;
     }
 
-    File getResolvedStdout() {
-        for(int i=0; i<files.size(); i++) {
+    PoststagedFile getStdout() {
+        for (int i = 0; i < files.size(); i++) {
             PoststagedFile f = (PoststagedFile) files.get(i);
-            if(f.isStdout) {
-                return f.resolvedSrc;
+            if (f.isStdout) {
+                return f;
             }
         }
-        
+
         return null;
     }
 
-    File getResolvedStderr() {
-        for(int i=0; i<files.size(); i++) {
+    PoststagedFile getStderr() {
+        for (int i = 0; i < files.size(); i++) {
             PoststagedFile f = (PoststagedFile) files.get(i);
-            if(f.isStderr) {
-                return f.resolvedSrc;
+            if (f.isStderr) {
+                return f;
             }
         }
-        
+
         return null;
     }
-    
+
     public String toString() {
         String res = "";
         res += "PostStagedFileSet:\n";
-        for(int i=0; i<files.size(); i++) {
+        for (int i = 0; i < files.size(); i++) {
             res += files.get(i) + "\n";
         }
         return res;

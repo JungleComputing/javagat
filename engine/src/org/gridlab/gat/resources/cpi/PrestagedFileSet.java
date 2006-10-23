@@ -19,29 +19,37 @@ import org.gridlab.gat.resources.SoftwareDescription;
 
 public class PrestagedFileSet {
     GATContext gatContext;
+
     Preferences preferences;
 
     JobDescription description;
+
     String host;
+
     String sandbox;
 
+    boolean preStageStdin;
+
     ArrayList files; // elements are of type PreStageFile.
-    
-    public PrestagedFileSet(GATContext gatContext, Preferences preferences, JobDescription description, String host, String sandbox) throws GATInvocationException {
+
+    public PrestagedFileSet(GATContext gatContext, Preferences preferences,
+        JobDescription description, String host, String sandbox,
+        boolean preStageStdin) throws GATInvocationException {
         this.gatContext = gatContext;
         this.preferences = preferences;
         this.description = description;
         this.host = host;
         this.sandbox = sandbox;
-        
+        this.preStageStdin = preStageStdin;
+
         resolve();
-        
-        if(GATEngine.VERBOSE) {
+
+        if (GATEngine.VERBOSE) {
             System.err.println(this);
         }
     }
-    
-    /* also adds stdin to set of files to preStage */
+
+    /** Also adds stdin to set of files to preStage if needed */
     private void resolve() throws GATInvocationException {
         SoftwareDescription sd = description.getSoftwareDescription();
 
@@ -51,7 +59,7 @@ public class PrestagedFileSet {
         }
 
         URI exe = sd.getLocation();
-        
+
         files = new ArrayList();
         Map pre = sd.getPreStaged();
 
@@ -62,14 +70,20 @@ public class PrestagedFileSet {
             while (i.hasNext()) {
                 File srcFile = (File) i.next();
                 File destFile = (File) pre.get(srcFile);
-                files.add(new PrestagedFile(gatContext, preferences, srcFile, destFile, host, sandbox, false, srcFile.toURI().equals(exe)));
+                files
+                    .add(new PrestagedFile(gatContext, preferences, srcFile,
+                        destFile, host, sandbox, false, srcFile.toURI().equals(
+                            exe)));
             }
         }
 
-        File stdin = sd.getStdin();
+        if (preStageStdin) {
+            File stdin = sd.getStdin();
 
-        if (stdin != null) {
-            files.add(new PrestagedFile(gatContext, preferences, stdin, null, host, sandbox, true, stdin.toURI().equals(exe)));
+            if (stdin != null) {
+                files.add(new PrestagedFile(gatContext, preferences, stdin,
+                    null, host, sandbox, true, stdin.toURI().equals(exe)));
+            }
         }
     }
 
@@ -81,7 +95,7 @@ public class PrestagedFileSet {
                 "The job description does not contain a software description");
         }
 
-        for(int i=0; i<files.size(); i++) {
+        for (int i = 0; i < files.size(); i++) {
             PrestagedFile f = (PrestagedFile) files.get(i);
 
             try {
@@ -122,22 +136,22 @@ public class PrestagedFileSet {
 
         if (e.getNrChildren() != 0) throw e;
     }
-    
-    File getResolvedStdin() {
-        for(int i=0; i<files.size(); i++) {
+
+    PrestagedFile getStdin() {
+        for (int i = 0; i < files.size(); i++) {
             PrestagedFile f = (PrestagedFile) files.get(i);
-            if(f.isStdIn) {
-                return f.resolvedDest;
+            if (f.isStdIn) {
+                return f;
             }
         }
-        
+
         return null;
     }
-    
+
     public String toString() {
         String res = "";
         res += "PreStagedFileSet:\n";
-        for(int i=0; i<files.size(); i++) {
+        for (int i = 0; i < files.size(); i++) {
             res += files.get(i) + "\n";
         }
         return res;

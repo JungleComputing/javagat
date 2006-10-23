@@ -267,7 +267,7 @@ public class SshResourceBrokerAdaptor extends ResourceBrokerCpi {
             System.err.println("finished setting stderr");
         }
 
-        Sandbox sandbox = new Sandbox(gatContext, preferences, description, host, null);
+        Sandbox sandbox = new Sandbox(gatContext, preferences, description, host, null, false, false, false);
 
         try {
             channel.connect();

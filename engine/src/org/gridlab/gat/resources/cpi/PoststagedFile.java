@@ -47,8 +47,8 @@ public class PoststagedFile extends StagedFile {
         resolvedSrc.copy(resolvedDest.toURI());
     }
 
-    protected void delete(boolean onlySandbox) throws GATInvocationException {
-        if(!onlySandbox || (onlySandbox && inSandbox)) {
+    protected void delete(boolean deleteFilesInSandbox) throws GATInvocationException {
+        if(deleteFilesInSandbox || !inSandbox) {
             if (GATEngine.VERBOSE) {
                 System.err.println("DELETE_FILE:" + resolvedSrc);
             }

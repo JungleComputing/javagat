@@ -338,9 +338,11 @@ public class GlobusJob extends JobCpi implements GramJobListener,
         }
         GATEngine.fireMetric(this, v);
 
-        // @@@ also cleanup if failed
-        if (globusState == STATUS_DONE) {
+        if ((globusState == STATUS_DONE) || (globusState == STATUS_FAILED)) {
             sandbox.retrieveAndCleanup(this);
+        }
+
+        if (globusState == STATUS_DONE) {
             synchronized (this) {
                 postStageFinished = true;
 

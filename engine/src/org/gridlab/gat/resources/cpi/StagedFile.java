@@ -31,6 +31,8 @@ public abstract class StagedFile {
 
     boolean inSandbox;
 
+    URI relativeURI;
+
 
     public StagedFile(GATContext context, Preferences preferences,
         File origSrc, File origDest, String host, String sandbox) {
@@ -46,11 +48,13 @@ public abstract class StagedFile {
     /** Creates a file object that points to the sandbox. */
     protected File resolve(File f, boolean useNameOnly) throws GATInvocationException {
         if (!useNameOnly && f.isAbsolute()) {
+            relativeURI = f.toURI();
             return f;
         }
 
         URI uri = f.toURI();
 
+        String relativeDest = null;
         String dest = "any://";
         dest += (uri.getUserInfo() == null) ? "" : uri.getUserInfo();
         dest += host;
@@ -58,19 +62,22 @@ public abstract class StagedFile {
         dest += "/";
         dest += sandbox == null ? "" : sandbox + "/";
         if(useNameOnly) {
-            java.io.File tmp = new java.io.File(uri.getPath()); 
+            java.io.File tmp = new java.io.File(uri.getPath());
             dest += tmp.getName();
+            relativeDest = tmp.getName();
         } else {
             dest += uri.getPath();
+            relativeDest = uri.getPath();
         }
 
         try {
             URI destURI = new URI(dest);
+            relativeURI = new URI(relativeDest);
 
             return GAT.createFile(gatContext, preferences, destURI);
         } catch (Exception e) {
             throw new GATInvocationException(
-                "Resource broker generic preStage", e);
+                "StageFile", e);
         }
     }
     

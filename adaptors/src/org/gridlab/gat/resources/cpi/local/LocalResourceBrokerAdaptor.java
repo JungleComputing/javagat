@@ -164,7 +164,7 @@ public class LocalResourceBrokerAdaptor extends ResourceBrokerCpi {
             throw new GATInvocationException("local broker could not get user home dir");
         }
 
-        Sandbox sandbox = new Sandbox(gatContext, preferences, description, "localhost", home);
+        Sandbox sandbox = new Sandbox(gatContext, preferences, description, "localhost", home, true, true, true);
         
         String command = path + " " + getArguments(description);
 

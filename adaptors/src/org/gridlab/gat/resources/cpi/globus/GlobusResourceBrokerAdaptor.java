@@ -75,6 +75,8 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
 
         rsl += " (hostCount = " + getHostCount(description) + ")";
 
+        rsl += " (directory = " + sandbox.getSandbox() + ")";
+
         long maxTime = getLongAttribute(description, "maxTime", -1);
         if (maxTime > 0) {
             rsl += " (maxTime = " + maxTime + ")";
@@ -91,21 +93,23 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
         }
 
         org.gridlab.gat.io.File stdout = sd.getStdout();
-
         if (stdout != null) {
             rsl += (" (stdout = "
-                + sandbox.getResolvedStdout().getPath() + ")");
+                + sandbox.getRelativeStdout().getPath() + ")");
         }
 
         org.gridlab.gat.io.File stderr = sd.getStderr();
-
         if (stderr != null) {
             rsl += (" (stderr = "
-                + sandbox.getResolvedStderr().getPath() + ")");
+                + sandbox.getRelativeStderr().getPath() + ")");
         }
 
-        // @@@ stdin
-        
+        org.gridlab.gat.io.File stdin = sd.getStdin();
+        if (stdin != null) {
+            rsl += (" (stdin = "
+                + sandbox.getRelativeStdin().getPath() + ")");
+        }
+
         // set the environment
         Map env = sd.getEnvironment();
         if (env != null && !env.isEmpty()) {
@@ -176,7 +180,7 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
             throw new GATInvocationException("globus", e);
         }
 
-        Sandbox sandbox = new Sandbox(gatContext, preferences, description, host, null);
+        Sandbox sandbox = new Sandbox(gatContext, preferences, description, host, null, true, true, true);
 
         String rsl = createRSL(description, host, sandbox);
         GramJob j = new GramJob(credential, rsl);

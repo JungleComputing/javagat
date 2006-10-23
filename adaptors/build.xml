@@ -71,7 +71,7 @@
 			</manifest>
 		</jar>
 
-		<jar jarfile="${lib}/SftpNewFileInputStreamAdaptor.jar" basedir="${tmp}" includes="**/sftpnew/*.class,org/gridlab/gat/io/cpi/ssh/**">
+		<jar jarfile="${lib}/SftpNewFileInputStreamAdaptor.jar" basedir="${tmp}" includes="**/sftpnew/*.class,org/gridlab/gat/io/cpi/ssh/**,com/jcraft/jsch/**">
 			<manifest>
 				<attribute name="FileInputStreamCpi-class" value="org.gridlab.gat.io.cpi.sftpnew.SftpNewFileInputStreamAdaptor" />
 			</manifest>
@@ -101,7 +101,7 @@
 			</manifest>
 		</jar>
 
-		<jar jarfile="${lib}/SshFileAdaptor.jar" basedir="${tmp}" includes="**/Ssh*.class,**/SSHSecurityUtils.class">
+		<jar jarfile="${lib}/SshFileAdaptor.jar" basedir="${tmp}" includes="**/Ssh*.class,**/SSHSecurityUtils.class,com/jcraft/jsch/**">
 			<manifest>
 				<attribute name="FileCpi-class" value="org.gridlab.gat.io.cpi.ssh.SshFileAdaptor" />
 			</manifest>
@@ -113,7 +113,7 @@
 			</manifest>
 		</jar>
 
-		<jar jarfile="${lib}/SftpNewFileAdaptor.jar" basedir="${tmp}" includes="**/sftpnew/*.class,org/gridlab/gat/io/cpi/ssh/**">
+		<jar jarfile="${lib}/SftpNewFileAdaptor.jar" basedir="${tmp}" includes="**/sftpnew/*.class,org/gridlab/gat/io/cpi/ssh/**,com/jcraft/jsch/**">
 			<manifest>
 				<attribute name="FileCpi-class" value="org.gridlab.gat.io.cpi.sftpnew.SftpNewFileAdaptor" />
 			</manifest>
@@ -131,7 +131,7 @@
 			</manifest>
 		</jar>
 
-		<jar jarfile="${lib}/CommandlineSshFileAdaptor.jar" basedir="${tmp}" includes="org/gridlab/gat/io/cpi/commandlineSsh/*.class">
+		<jar jarfile="${lib}/CommandlineSshFileAdaptor.jar" basedir="${tmp}" includes="org/gridlab/gat/io/cpi/commandlineSsh/*.class,com/jcraft/jsch/**">
 			<manifest>
 				<attribute name="FileCpi-class" value="org.gridlab.gat.io.cpi.commandlineSsh.CommandlineSshFileAdaptor" />
 			</manifest>
@@ -161,13 +161,13 @@
 			</manifest>
 		</jar>
 
-		<jar jarfile="${lib}/SSHFileInputStreamAdaptor.jar" basedir="${tmp}" includes="org/gridlab/gat/io/cpi/ssh/**">
+		<jar jarfile="${lib}/SSHFileInputStreamAdaptor.jar" basedir="${tmp}" includes="org/gridlab/gat/io/cpi/ssh/**,com/jcraft/jsch/**">
 			<manifest>
 				<attribute name="FileInputStreamCpi-class" value="org.gridlab.gat.io.cpi.ssh.SshFileInputStreamAdaptor" />
 			</manifest>
 		</jar>
 
-		<jar jarfile="${lib}/SSHFileOutputStreamAdaptor.jar" basedir="${tmp}" includes="org/gridlab/gat/io/cpi/ssh/**">
+		<jar jarfile="${lib}/SSHFileOutputStreamAdaptor.jar" basedir="${tmp}" includes="org/gridlab/gat/io/cpi/ssh/**,com/jcraft/jsch/**">
 			<manifest>
 				<attribute name="FileOutputStreamCpi-class" value="org.gridlab.gat.io.cpi.ssh.SshFileOutputStreamAdaptor" />
 			</manifest>
@@ -215,19 +215,19 @@
 			</manifest>
 		</jar>
 		
-		<jar jarfile="${lib}/CommandlineSshResourceBrokerAdaptor.jar" basedir="${tmp}" includes="org/gridlab/gat/resources/cpi/commandlineSsh/*.class">
+		<jar jarfile="${lib}/CommandlineSshResourceBrokerAdaptor.jar" basedir="${tmp}" includes="org/gridlab/gat/resources/cpi/commandlineSsh/*.class,com/jcraft/jsch/**">
 			<manifest>
 				<attribute name="ResourceBrokerCpi-class" value="org.gridlab.gat.resources.cpi.commandlineSsh.CommandlineSshResourceBrokerAdaptor" />
 			</manifest>
 		</jar>
 
-		<jar jarfile="${lib}/CommandlineSshPrunResourceBrokerAdaptor.jar" basedir="${tmp}" includes="org/gridlab/gat/resources/cpi/commandlineSshPrun/*.class">
+		<jar jarfile="${lib}/CommandlineSshPrunResourceBrokerAdaptor.jar" basedir="${tmp}" includes="org/gridlab/gat/resources/cpi/commandlineSshPrun/*.class,com/jcraft/jsch/**">
 			<manifest>
 				<attribute name="ResourceBrokerCpi-class" value="org.gridlab.gat.resources.cpi.commandlineSshPrun.CommandlineSshPrunResourceBrokerAdaptor" />
 			</manifest>
 		</jar>
 
-  		<jar jarfile="${lib}/SshResourceBrokerAdaptor.jar" basedir="${tmp}" includes="org/gridlab/gat/resources/cpi/ssh/*.class">
+  		<jar jarfile="${lib}/SshResourceBrokerAdaptor.jar" basedir="${tmp}" includes="org/gridlab/gat/resources/cpi/ssh/*.class,com/jcraft/jsch/**">
 			<manifest>
 				<attribute name="ResourceBrokerCpi-class" value="org.gridlab.gat.resources.cpi.ssh.SshResourceBrokerAdaptor" />
 			</manifest>
