@@ -229,7 +229,7 @@ public class LocalFileAdaptor extends FileCpi {
      * @see org.gridlab.gat.io.File#compareTo(gat.io.File)
      */
     public int compareTo(org.gridlab.gat.io.File other) {
-        return f.compareTo(other);
+        return toURI().compareTo(other.toURI());
     }
 
     /*
@@ -238,7 +238,15 @@ public class LocalFileAdaptor extends FileCpi {
      * @see org.gridlab.gat.io.File#compareTo(java.lang.Object)
      */
     public int compareTo(Object other) {
-        return f.compareTo(other);
+        if(other instanceof org.gridlab.gat.io.File) {
+            org.gridlab.gat.io.File o = (org.gridlab.gat.io.File) other;
+            return toURI().compareTo(o.toURI());
+        } else if(other instanceof URI) {
+            URI u = (URI) other;
+            return toURI().compareTo(u);
+        } else {
+            return -1;
+        }
     }
 
     /*
