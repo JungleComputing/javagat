@@ -82,7 +82,8 @@ public class GlobusJob extends JobCpi implements GramJobListener,
     Metric statusMetric;
 
     boolean postStageFinished = false;
-
+    boolean postStageStarted = false;
+    
     String jobID;
 
     JobPoller poller;
@@ -323,18 +324,17 @@ public class GlobusJob extends JobCpi implements GramJobListener,
         // If we ever receive a callback, we can kill the job poller thread; we are not 
         // behind a firewall.
         poller.die();
-        
+
         jobID = j.getIDAsString();
         String stateString = null;
         int globusState = newJob.getStatus();
 
-        
-        
         if (newJob.getError() == GRAM_JOBMANAGER_CONNECTION_FAILURE) {
             globusState = STATUS_DONE;
         }
 
         synchronized (this) {
+            if(postStageStarted) return; // we don't want to postStage twice (can happen with jobpoller)
             if (GATEngine.VERBOSE) {
                 System.err.println("globus job callback: new Job id: "
                     + newJob.getIDAsString() + ", state = "
@@ -347,6 +347,7 @@ public class GlobusJob extends JobCpi implements GramJobListener,
 
             if ((globusState == STATUS_DONE) || (globusState == STATUS_FAILED)) {
                 stopHandlers();
+                postStageStarted = true;
             }
         }
 
