@@ -141,10 +141,12 @@ public class GridFTPFileAdaptor extends GlobusFileAdaptor {
         return client;
     }
 
-    private static synchronized void putInCache(String key, GridFTPClient c) {
+    private static synchronized boolean putInCache(String key, FTPClient c) {
         if (!clienttable.containsKey(key)) {
             clienttable.put(key, c);
+            return true;
         }
+        return false;
     }
 
     protected static GridFTPClient doWorkCreateClient(GATContext gatContext,
@@ -231,9 +233,7 @@ public class GridFTPFileAdaptor extends GlobusFileAdaptor {
         Preferences preferences) {
         String key = getClientKey(hostURI, preferences);
 
-        if (USE_CLIENT_CACHING && !clienttable.containsKey(key)) {
-            clienttable.put(key, c);
-        } else {
+        if (!USE_CLIENT_CACHING || !putInCache(key, c)) {
             try {
                 if (GATEngine.DEBUG) {
                     System.err.println("closing gridftp client");

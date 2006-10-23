@@ -51,6 +51,22 @@ public class SftpNewFileAdaptor extends FileCpi {
             + preferences; // include preferences in key
     }
 
+    private static synchronized SftpNewConnection getFromCache(String key) {
+        SftpNewConnection client = null;
+        if (clienttable.containsKey(key)) {
+            client = (SftpNewConnection) clienttable.remove(key);
+        }
+        return client;
+    }
+
+    private static synchronized boolean putInCache(String key, SftpNewConnection c) {
+        if (!clienttable.containsKey(key)) {
+            clienttable.put(key, c);
+            return true;
+        }
+        return false;
+    }
+
     protected static SftpNewConnection createChannel(GATContext gatContext,
         Preferences preferences, URI location) throws GATInvocationException {
         if (!USE_CLIENT_CACHING) {
@@ -60,10 +76,9 @@ public class SftpNewFileAdaptor extends FileCpi {
         SftpNewConnection c = null;
 
         String key = getClientKey(location, preferences);
-
-        if (clienttable.containsKey(key)) {
-            c = (SftpNewConnection) clienttable.remove(key);
-
+        c = getFromCache(key);
+        
+        if (c != null) {
             try {
                 // test if the client is still alive
                 c.channel.lpwd();
@@ -158,9 +173,7 @@ public class SftpNewFileAdaptor extends FileCpi {
 
         String key = getClientKey(c.remoteMachine, c.preferences);
 
-        if (!clienttable.containsKey(key)) {
-            clienttable.put(key, c);
-        } else {
+        if (!putInCache(key, c)) {
             try {
                 if (GATEngine.DEBUG) {
                     System.err.println("closing client");
