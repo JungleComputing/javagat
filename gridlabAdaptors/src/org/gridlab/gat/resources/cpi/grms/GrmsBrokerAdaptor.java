@@ -51,7 +51,6 @@ import org.gridlab.gat.GATObjectCreationException;
 import org.gridlab.gat.Preferences;
 import org.gridlab.gat.URI;
 import org.gridlab.gat.engine.GATEngine;
-import org.gridlab.gat.engine.IPUtils;
 import org.gridlab.gat.resources.HardwareResourceDescription;
 import org.gridlab.gat.resources.Job;
 import org.gridlab.gat.resources.JobDescription;
@@ -60,6 +59,8 @@ import org.gridlab.gat.resources.SoftwareDescription;
 import org.gridlab.gat.resources.cpi.ResourceBrokerCpi;
 
 import org.ietf.jgss.GSSCredential;
+
+import ibis.util.IPUtils;
 
 import java.io.IOException;
 import java.io.StringWriter;
@@ -502,7 +503,7 @@ public class GrmsBrokerAdaptor extends ResourceBrokerCpi {
             throw new GATInvocationException(res.getErrorMessage());
         }
 
-        return new GrmsJob(this, description, jobId.value);
+        return new GrmsJob(this, description, jobId.value, null);
     }
 
     Grms getGrms() {
