@@ -16,7 +16,6 @@ import org.ggf.drmaa.DrmaaException;
 import org.ggf.drmaa.JobTemplate;
 import org.ggf.drmaa.Session;
 import org.ggf.drmaa.SessionFactory;
-import org.gridlab.gat.FilePrestageException;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.GATObjectCreationException;
@@ -83,17 +82,19 @@ public class SGEBrokerAdaptor extends ResourceBrokerCpi {
        
        /* Handle pre-/poststaging */
         if (host != null) {
+/*
             try {
-                removePostStagedFiles(description, host);
+                removePostStagedFiles(description, host, null);
             } catch (GATInvocationException e) {
                 // ignore, maybe the files did not exist anyway
             }
 
             try {
-                preStageFiles(description, host);
+                preStageFiles(description, host, null);
             } catch (Exception e) {
                 throw new FilePrestageException("SGEBrokerAdaptor", e);
             }
+            */
         }
        
         

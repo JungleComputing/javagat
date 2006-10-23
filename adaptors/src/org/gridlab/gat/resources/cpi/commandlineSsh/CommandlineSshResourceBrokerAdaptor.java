@@ -8,7 +8,6 @@ import java.util.Map;
 
 import org.gridlab.gat.AdaptorNotApplicableException;
 import org.gridlab.gat.CommandNotFoundException;
-import org.gridlab.gat.FilePrestageException;
 import org.gridlab.gat.GAT;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
@@ -28,6 +27,7 @@ import org.gridlab.gat.resources.Resource;
 import org.gridlab.gat.resources.ResourceDescription;
 import org.gridlab.gat.resources.SoftwareDescription;
 import org.gridlab.gat.resources.cpi.ResourceBrokerCpi;
+import org.gridlab.gat.resources.cpi.Sandbox;
 import org.gridlab.gat.util.InputForwarder;
 import org.gridlab.gat.util.OutputForwarder;
 
@@ -187,11 +187,7 @@ public class CommandlineSshResourceBrokerAdaptor extends ResourceBrokerCpi {
                 + " with username: " + sui.username + "; host: " + host);
         }
 
-        try {
-            preStageFiles(description, host);
-        } catch (GATInvocationException e) {
-            throw new FilePrestageException("local broker", e);
-        }
+        Sandbox sandbox = new Sandbox(gatContext, preferences, description, host, null, false, false, false);
 
         String command = null;
         if (windows) {
@@ -252,7 +248,7 @@ public class CommandlineSshResourceBrokerAdaptor extends ResourceBrokerCpi {
         if (stdout == null) {
             new OutputForwarder(p.getInputStream(), false); // throw away output
         } else {
-            stdout = resolvePostStagedFile(stdout, host);
+            stdout = sandbox.getResolvedStdout();
             try {
                 FileOutputStream out = GAT.createFileOutputStream(gatContext,
                     preferences, stdout.toURI());
@@ -268,7 +264,7 @@ public class CommandlineSshResourceBrokerAdaptor extends ResourceBrokerCpi {
         if (stderr == null) {
             new OutputForwarder(p.getErrorStream(), false); // throw away output
         } else {
-            stderr = resolvePostStagedFile(stderr, host);
+            stderr = sandbox.getResolvedStderr();
             try {
                 FileOutputStream out = GAT.createFileOutputStream(gatContext,
                     preferences, stderr.toURI());
@@ -278,8 +274,7 @@ public class CommandlineSshResourceBrokerAdaptor extends ResourceBrokerCpi {
             }
         }
 
-        return new CommandlineSshJob(this, description, p, outForwarder,
-            errForwarder);
+        return new CommandlineSshJob(this, description, p, sandbox, outForwarder, errForwarder);
     }
 
     /*

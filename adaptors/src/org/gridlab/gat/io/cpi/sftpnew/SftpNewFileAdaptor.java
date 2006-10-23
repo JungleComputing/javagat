@@ -38,7 +38,7 @@ public class SftpNewFileAdaptor extends FileCpi {
      * @param location
      */
     public SftpNewFileAdaptor(GATContext gatContext, Preferences preferences,
-            URI location) throws GATObjectCreationException {
+        URI location) throws GATObjectCreationException {
         super(gatContext, preferences, location);
 
         if (!location.isCompatible("sftp") && !location.isCompatible("file")) {
@@ -51,9 +51,24 @@ public class SftpNewFileAdaptor extends FileCpi {
             + preferences; // include preferences in key
     }
 
+    private static synchronized SftpNewConnection getFromCache(String key) {
+        SftpNewConnection client = null;
+        if (clienttable.containsKey(key)) {
+            client = (SftpNewConnection) clienttable.remove(key);
+        }
+        return client;
+    }
+
+    private static synchronized boolean putInCache(String key, SftpNewConnection c) {
+        if (!clienttable.containsKey(key)) {
+            clienttable.put(key, c);
+            return true;
+        }
+        return false;
+    }
+
     protected static SftpNewConnection createChannel(GATContext gatContext,
-            Preferences preferences, URI location)
-            throws GATInvocationException {
+        Preferences preferences, URI location) throws GATInvocationException {
         if (!USE_CLIENT_CACHING) {
             return doWorkCreateChannel(gatContext, preferences, location);
         }
@@ -61,10 +76,9 @@ public class SftpNewFileAdaptor extends FileCpi {
         SftpNewConnection c = null;
 
         String key = getClientKey(location, preferences);
-
-        if (clienttable.containsKey(key)) {
-            c = (SftpNewConnection) clienttable.remove(key);
-
+        c = getFromCache(key);
+        
+        if (c != null) {
             try {
                 // test if the client is still alive
                 c.channel.lpwd();
@@ -91,8 +105,7 @@ public class SftpNewFileAdaptor extends FileCpi {
     }
 
     private static SftpNewConnection doWorkCreateChannel(GATContext gatContext,
-            Preferences preferences, URI location)
-            throws GATInvocationException {
+        Preferences preferences, URI location) throws GATInvocationException {
 
         if (GATEngine.DEBUG) {
             System.err.println("sftpnew: creating client to "
@@ -152,7 +165,7 @@ public class SftpNewFileAdaptor extends FileCpi {
     }
 
     public static void closeChannel(SftpNewConnection c)
-            throws GATInvocationException {
+        throws GATInvocationException {
         if (!USE_CLIENT_CACHING) {
             doWorkCloseChannel(c);
             return;
@@ -160,9 +173,7 @@ public class SftpNewFileAdaptor extends FileCpi {
 
         String key = getClientKey(c.remoteMachine, c.preferences);
 
-        if (!clienttable.containsKey(key)) {
-            clienttable.put(key, c);
-        } else {
+        if (!putInCache(key, c)) {
             try {
                 if (GATEngine.DEBUG) {
                     System.err.println("closing client");
@@ -182,7 +193,7 @@ public class SftpNewFileAdaptor extends FileCpi {
     }
 
     private static void doWorkCloseChannel(SftpNewConnection connection)
-            throws GATInvocationException {
+        throws GATInvocationException {
         if (connection.channel != null) {
             try {
                 connection.channel.disconnect();
@@ -278,7 +289,7 @@ public class SftpNewFileAdaptor extends FileCpi {
 
     // Try copying using temp file.
     protected void copyThirdParty(URI src, URI dest)
-            throws GATInvocationException {
+        throws GATInvocationException {
         java.io.File tmp = null;
         SftpNewConnection tmpCon = null;
 
@@ -301,7 +312,7 @@ public class SftpNewFileAdaptor extends FileCpi {
     }
 
     protected void copyToRemote(URI src, URI dest)
-            throws GATInvocationException {
+        throws GATInvocationException {
 
         SftpNewConnection tmpCon = null;
 
@@ -413,8 +424,18 @@ public class SftpNewFileAdaptor extends FileCpi {
 
     public boolean delete() throws GATInvocationException {
         SftpNewConnection c = createChannel(gatContext, preferences, location);
+        boolean isFile = true;
         try {
-            if (isFile()) {
+            isFile = isFile();
+        } catch (GATInvocationException e) {
+            if(e.getMessage().equals("No such file")) {
+                return false;
+            }
+            throw e;
+        }
+
+        try {
+            if (isFile) {
                 c.channel.rm(location.getPath());
             } else {
                 c.channel.rmdir(location.getPath());

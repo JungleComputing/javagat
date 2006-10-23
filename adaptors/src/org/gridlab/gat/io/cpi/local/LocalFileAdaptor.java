@@ -30,7 +30,7 @@ public class LocalFileAdaptor extends FileCpi {
      * @param location
      */
     public LocalFileAdaptor(GATContext gatContext, Preferences preferences,
-            URI location) throws GATObjectCreationException {
+        URI location) throws GATObjectCreationException {
         super(gatContext, preferences, location);
 
         if (!location.refersToLocalHost()) {
@@ -43,6 +43,30 @@ public class LocalFileAdaptor extends FileCpi {
         }
 
         location = correctURI(location);
+
+        // we have a host name, which means that this file is relative to $HOME
+        if (location.getHost() != null) {
+            String home = System.getProperty("user.home");
+            if (home == null) {
+                throw new GATObjectCreationException(
+                    "local file adaptor could not get user home dir");
+            }
+
+            String dest = location.getScheme() + "://";
+            dest += (location.getUserInfo() == null) ? "" : location
+                .getUserInfo();
+            dest += location.getHost();
+            dest += (location.getPort() == -1) ? ""
+                : (":" + location.getPort());
+            dest += "/";
+            dest += location.getPath();
+
+            try {
+                location = new URI(dest);
+            } catch (URISyntaxException e) {
+                throw new Error("internal error in LocalFile: " + e);
+            }
+        }
 
         if (GATEngine.DEBUG) {
             System.err.println("LocalFileAdaptor: LOCATION = " + location);
@@ -254,7 +278,7 @@ public class LocalFileAdaptor extends FileCpi {
      * @see org.gridlab.gat.io.File#getAbsoluteFile()
      */
     public org.gridlab.gat.io.File getAbsoluteFile()
-            throws GATInvocationException {
+        throws GATInvocationException {
         try {
             return GAT.createFile(gatContext, preferences, localToURI(f
                 .getAbsoluteFile().getPath()));
@@ -278,7 +302,7 @@ public class LocalFileAdaptor extends FileCpi {
      * @see org.gridlab.gat.io.File#getCanonicalFile()
      */
     public org.gridlab.gat.io.File getCanonicalFile()
-            throws GATInvocationException {
+        throws GATInvocationException {
         try {
             return GAT.createFile(gatContext, preferences, localToURI(f
                 .getCanonicalFile().getPath()));
@@ -315,7 +339,7 @@ public class LocalFileAdaptor extends FileCpi {
      * @see org.gridlab.gat.io.File#getParentFile()
      */
     public org.gridlab.gat.io.File getParentFile()
-            throws GATInvocationException {
+        throws GATInvocationException {
         try {
             return GAT.createFile(gatContext, preferences, localToURI(f
                 .getParentFile().getPath()));
@@ -375,7 +399,7 @@ public class LocalFileAdaptor extends FileCpi {
      * @see org.gridlab.gat.io.File#list()
      */
     public String[] list() throws GATInvocationException,
-            GATInvocationException {
+        GATInvocationException {
         return f.list();
     }
 
@@ -415,7 +439,7 @@ public class LocalFileAdaptor extends FileCpi {
      * @see org.gridlab.gat.io.File#listFiles(java.io.FileFilter)
      */
     public org.gridlab.gat.io.File[] listFiles(FileFilter arg0)
-            throws GATInvocationException {
+        throws GATInvocationException {
         File[] r = f.listFiles(arg0);
         org.gridlab.gat.io.File[] res = new org.gridlab.gat.io.File[r.length];
 
@@ -437,7 +461,7 @@ public class LocalFileAdaptor extends FileCpi {
      * @see org.gridlab.gat.io.File#listFiles(java.io.FilenameFilter)
      */
     public org.gridlab.gat.io.File[] listFiles(FilenameFilter arg0)
-            throws GATInvocationException {
+        throws GATInvocationException {
         File[] r = f.listFiles(arg0);
         org.gridlab.gat.io.File[] res = new org.gridlab.gat.io.File[r.length];
 

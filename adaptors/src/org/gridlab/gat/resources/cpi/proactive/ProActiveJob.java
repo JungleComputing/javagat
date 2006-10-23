@@ -1,6 +1,5 @@
 package org.gridlab.gat.resources.cpi.proactive;
 
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -9,17 +8,15 @@ import org.gridlab.gat.advert.Advertisable;
 import org.gridlab.gat.engine.GATEngine;
 import org.gridlab.gat.monitoring.Metric;
 import org.gridlab.gat.monitoring.MetricDefinition;
-import org.gridlab.gat.resources.Job;
 import org.gridlab.gat.resources.JobDescription;
+import org.gridlab.gat.resources.cpi.JobCpi;
 import org.objectweb.proactive.GATAdaptor.ProActiveLauncher;
 import org.objectweb.proactive.core.node.Node;
 
-public class ProActiveJob extends Job {
+public class ProActiveJob extends JobCpi {
     static int jobsAlive = 0;
 
     ProActiveLauncher launcher;
-
-    JobDescription jobDescription;
 
     // GramJob j;
 
@@ -29,8 +26,6 @@ public class ProActiveJob extends Job {
 
     Metric statusMetric;
 
-    GATInvocationException postStageException = null;
-
     boolean postStageFinished = false;
 
     String jobID;
@@ -38,6 +33,7 @@ public class ProActiveJob extends Job {
     public ProActiveJob(ProActiveLauncher launcher,
             JobDescription jobDescription, String jobID, Node node)
             throws GATInvocationException {
+        super(jobDescription, null);
         this.launcher = launcher;
         this.jobDescription = jobDescription;
         this.jobID = jobID;
@@ -59,16 +55,11 @@ public class ProActiveJob extends Job {
         statusMetric = statusMetricDefinition.createMetric(null);
     }
 
-    public JobDescription getJobDescription() {
-        return jobDescription;
-    }
-
     protected int getProActiveState() {
         return launcher.getStatus(jobID);
     }
 
-    public synchronized Map getInfo() throws GATInvocationException,
-            IOException {
+    public synchronized Map getInfo() throws GATInvocationException {
         HashMap m = new HashMap();
         setState(); // update the state
         m.put("state", getStateString(state));
@@ -86,12 +77,8 @@ public class ProActiveJob extends Job {
         return m;
     }
 
-    public String getJobID() throws GATInvocationException, IOException {
+    public String getJobID() {
         return jobID;
-    }
-
-    public synchronized int getState() {
-        return state;
     }
 
     /*

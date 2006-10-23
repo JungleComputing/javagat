@@ -46,8 +46,7 @@ public class SubmitLocalJob {
             sd.setStdout(stdout);
 
             sd.addPreStagedFile(GAT.createFile(context, new URI("file:////bin/echo")));
-            sd.addPreStagedFile(GAT.createFile(context, new URI(
-                "file:////bin/hostname")));
+            sd.addPreStagedFile(GAT.createFile(context, new URI("file:////bin/hostname")));
         } catch (Exception e) {
             System.err.println("could not create stdout file");
         }
@@ -74,6 +73,7 @@ public class SubmitLocalJob {
             job = broker.submitJob(jd);
         } catch (Exception e) {
             System.err.println("submission failed: " + e);
+            e.printStackTrace();
             System.exit(1);
         }
 
