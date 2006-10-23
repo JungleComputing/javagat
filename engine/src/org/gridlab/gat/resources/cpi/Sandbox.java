@@ -25,9 +25,9 @@ public class Sandbox {
 
     String sandbox;
 
-    PrestagedFileSet pre;
+    PreStagedFileSet pre;
 
-    PoststagedFileSet post;
+    PostStagedFileSet post;
 
     String sandboxRoot;
 
@@ -47,9 +47,9 @@ public class Sandbox {
 
         initSandbox();
 
-        pre = new PrestagedFileSet(gatContext, preferences, jobDescription,
+        pre = new PreStagedFileSet(gatContext, preferences, jobDescription,
             host, sandbox, preStageStdin);
-        post = new PoststagedFileSet(gatContext, preferences, jobDescription,
+        post = new PostStagedFileSet(gatContext, preferences, jobDescription,
             host, sandbox, postStageStdout, postStageStderr);
         createSandbox();
     }
@@ -176,7 +176,7 @@ public class Sandbox {
                 post.wipe(false);
             }
 
-            PoststagedFileSet del = new PoststagedFileSet(gatContext,
+            PostStagedFileSet del = new PostStagedFileSet(gatContext,
                 preferences, sd.getWipedFiles(), host, sandbox);
             del.wipe(false);
         } catch (GATInvocationException e) {
@@ -186,7 +186,7 @@ public class Sandbox {
         try {
             pre.delete(!sd.deletePreStaged());
             post.delete(!sd.deletePostStaged());
-            PoststagedFileSet del = new PoststagedFileSet(gatContext,
+            PostStagedFileSet del = new PostStagedFileSet(gatContext,
                 preferences, sd.getDeletedFiles(), host, sandbox);
             del.delete(false);
         } catch (GATInvocationException e) {
@@ -212,40 +212,40 @@ public class Sandbox {
     }
 
     public File getResolvedStdin() {
-        PrestagedFile f = pre.getStdin();
+        PreStagedFile f = pre.getStdin();
         if (f == null) return null;
         return f.resolvedDest;
     }
 
     public File getResolvedStdout() {
-        PoststagedFile f = post.getStdout();
+        PostStagedFile f = post.getStdout();
         if (f == null) return null;
         return f.resolvedSrc;
     }
 
     public File getResolvedStderr() {
-        PoststagedFile f = post.getStderr();
+        PostStagedFile f = post.getStderr();
         if (f == null) return null;
         return f.resolvedSrc;
     }
 
     /** returns the URI relative to the sandbox, or an absolute path if it was absolute. */
     public URI getRelativeStdin() {
-        PrestagedFile f = pre.getStdin();
+        PreStagedFile f = pre.getStdin();
         if (f == null) return null;
         return f.relativeURI;
     }
 
     /** returns the URI relative to the sandbox, or an absolute path if it was absolute. */
     public URI getRelativeStdout() {
-        PoststagedFile f = post.getStdout();
+        PostStagedFile f = post.getStdout();
         if (f == null) return null;
         return f.relativeURI;
     }
 
     /** returns the URI relative to the sandbox, or an absolute path if it was absolute. */
     public URI getRelativeStderr() {
-        PoststagedFile f = post.getStderr();
+        PostStagedFile f = post.getStderr();
         if (f == null) return null;
         return f.relativeURI;
     }

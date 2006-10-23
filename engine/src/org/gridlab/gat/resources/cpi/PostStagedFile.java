@@ -9,11 +9,11 @@ import org.gridlab.gat.Preferences;
 import org.gridlab.gat.engine.GATEngine;
 import org.gridlab.gat.io.File;
 
-public class PoststagedFile extends StagedFile {
+public class PostStagedFile extends StagedFile {
     boolean isStdout;
     boolean isStderr;
     
-    public PoststagedFile(GATContext context, Preferences preferences, File origSrc, File origDest, String host, String sandbox, boolean isStdOut, boolean isStderr)  throws GATInvocationException {
+    public PostStagedFile(GATContext context, Preferences preferences, File origSrc, File origDest, String host, String sandbox, boolean isStdOut, boolean isStderr)  throws GATInvocationException {
         super(context, preferences, origSrc, origDest, host, sandbox);
         this.isStdout = isStdOut;
         this.isStderr = isStderr;

@@ -16,7 +16,7 @@ import org.gridlab.gat.io.File;
 import org.gridlab.gat.resources.JobDescription;
 import org.gridlab.gat.resources.SoftwareDescription;
 
-public class PoststagedFileSet {
+public class PostStagedFileSet {
     GATContext gatContext;
 
     Preferences preferences;
@@ -33,7 +33,7 @@ public class PoststagedFileSet {
 
     ArrayList files = new ArrayList();; // elements are of type PostStageFile.
 
-    public PoststagedFileSet(GATContext gatContext, Preferences preferences,
+    public PostStagedFileSet(GATContext gatContext, Preferences preferences,
         JobDescription description, String host, String sandbox,
         boolean postStageStdout, boolean postStageStderr)
         throws GATInvocationException {
@@ -52,7 +52,7 @@ public class PoststagedFileSet {
         }
     }
 
-    public PoststagedFileSet(GATContext gatContext, Preferences preferences,
+    public PostStagedFileSet(GATContext gatContext, Preferences preferences,
         ArrayList files, String host, String sandbox)
         throws GATInvocationException {
         this.gatContext = gatContext;
@@ -82,7 +82,7 @@ public class PoststagedFileSet {
                 File srcFile = (File) i.next();
                 File destFile = (File) post.get(srcFile);
 
-                files.add(new PoststagedFile(gatContext, preferences, srcFile,
+                files.add(new PostStagedFile(gatContext, preferences, srcFile,
                     destFile, host, sandbox, false, false));
             }
         }
@@ -90,7 +90,7 @@ public class PoststagedFileSet {
         if (postStageStdout) {
             File stdout = sd.getStdout();
             if (stdout != null) {
-                files.add(new PoststagedFile(gatContext, preferences, null,
+                files.add(new PostStagedFile(gatContext, preferences, null,
                     stdout, host, sandbox, true, false));
             }
         }
@@ -98,7 +98,7 @@ public class PoststagedFileSet {
         if (postStageStderr) {
             File stderr = sd.getStderr();
             if (stderr != null) {
-                files.add(new PoststagedFile(gatContext, preferences, null,
+                files.add(new PostStagedFile(gatContext, preferences, null,
                     stderr, host, sandbox, false, true));
             }
         }
@@ -109,7 +109,7 @@ public class PoststagedFileSet {
 
         for (int i = 0; i < f.size(); i++) {
             File srcFile = (File) f.get(i);
-            files.add(new PoststagedFile(gatContext, preferences, srcFile,
+            files.add(new PostStagedFile(gatContext, preferences, srcFile,
                 null, host, sandbox, false, false));
         }
     }
@@ -123,7 +123,7 @@ public class PoststagedFileSet {
         }
 
         for (int i = 0; i < files.size(); i++) {
-            PoststagedFile f = (PoststagedFile) files.get(i);
+            PostStagedFile f = (PostStagedFile) files.get(i);
 
             GATInvocationException exceptions = new GATInvocationException();
             try {
@@ -142,7 +142,7 @@ public class PoststagedFileSet {
         GATInvocationException e = new GATInvocationException();
         for (int i = 0; i < files.size(); i++) {
             try {
-                ((PoststagedFile) files.get(i)).delete(deleteFilesInSandbox);
+                ((PostStagedFile) files.get(i)).delete(deleteFilesInSandbox);
             } catch (Exception x) {
                 e.add("resource broker", x);
             }
@@ -155,7 +155,7 @@ public class PoststagedFileSet {
         GATInvocationException e = new GATInvocationException();
         for (int i = 0; i < files.size(); i++) {
             try {
-                ((PoststagedFile) files.get(i)).wipe(onlySandbox);
+                ((PostStagedFile) files.get(i)).wipe(onlySandbox);
             } catch (Exception x) {
                 e.add("resource broker", x);
             }
@@ -164,9 +164,9 @@ public class PoststagedFileSet {
         if (e.getNrChildren() != 0) throw e;
     }
 
-    PoststagedFile getStdout() {
+    PostStagedFile getStdout() {
         for (int i = 0; i < files.size(); i++) {
-            PoststagedFile f = (PoststagedFile) files.get(i);
+            PostStagedFile f = (PostStagedFile) files.get(i);
             if (f.isStdout) {
                 return f;
             }
@@ -175,9 +175,9 @@ public class PoststagedFileSet {
         return null;
     }
 
-    PoststagedFile getStderr() {
+    PostStagedFile getStderr() {
         for (int i = 0; i < files.size(); i++) {
-            PoststagedFile f = (PoststagedFile) files.get(i);
+            PostStagedFile f = (PostStagedFile) files.get(i);
             if (f.isStderr) {
                 return f;
             }
