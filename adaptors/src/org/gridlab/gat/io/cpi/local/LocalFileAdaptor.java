@@ -245,7 +245,7 @@ public class LocalFileAdaptor extends FileCpi {
             URI u = (URI) other;
             return toURI().compareTo(u);
         } else {
-            return -1;
+            throw new RuntimeException("files can only be compared to files and URIs");
         }
     }
 
