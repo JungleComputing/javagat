@@ -187,7 +187,7 @@ public class CommandlineSshResourceBrokerAdaptor extends ResourceBrokerCpi {
                 + " with username: " + sui.username + "; host: " + host);
         }
 
-        Sandbox sandbox = new Sandbox(gatContext, preferences, description, host, null, false, false, false);
+        Sandbox sandbox = new Sandbox(gatContext, preferences, description, host, null, true, false, false, false);
 
         String command = null;
         if (windows) {

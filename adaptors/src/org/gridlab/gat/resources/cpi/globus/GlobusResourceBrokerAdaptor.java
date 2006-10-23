@@ -180,7 +180,7 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
             throw new GATInvocationException("globus", e);
         }
 
-        Sandbox sandbox = new Sandbox(gatContext, preferences, description, host, null, true, true, true);
+        Sandbox sandbox = new Sandbox(gatContext, preferences, description, host, null, true, true, true, true);
 
         String rsl = createRSL(description, host, sandbox);
         GramJob j = new GramJob(credential, rsl);
