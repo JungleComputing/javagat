@@ -2,7 +2,7 @@ package org.gridlab.gat.io.cpi.commandlineSsh;
 
 import java.io.IOException;
 
-import org.gridlab.gat.AdaptorNotSelectedException;
+import org.gridlab.gat.AdaptorNotApplicableException;
 import org.gridlab.gat.CommandNotFoundException;
 import org.gridlab.gat.GAT;
 import org.gridlab.gat.GATContext;
@@ -41,7 +41,7 @@ public class CommandlineSshFileAdaptor extends FileCpi {
         super(gatContext, preferences, location);
 
         if (!location.isCompatible("ssh")) {
-            throw new AdaptorNotSelectedException("cannot handle this URI");
+            throw new AdaptorNotApplicableException("cannot handle this URI");
         }
 
         String osname = System.getProperty("os.name");

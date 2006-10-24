@@ -26,6 +26,20 @@
  */
 package com.sshtools.j2ssh.transport;
 
+import java.io.IOException;
+import java.io.InterruptedIOException;
+import java.math.BigInteger;
+import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Vector;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import com.sshtools.j2ssh.SshException;
 import com.sshtools.j2ssh.SshThread;
 import com.sshtools.j2ssh.configuration.ConfigurationLoader;
@@ -36,23 +50,6 @@ import com.sshtools.j2ssh.transport.kex.KeyExchangeException;
 import com.sshtools.j2ssh.transport.kex.SshKeyExchange;
 import com.sshtools.j2ssh.transport.kex.SshKeyExchangeFactory;
 import com.sshtools.j2ssh.util.Hash;
-
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-
-import java.io.IOException;
-import java.io.InterruptedIOException;
-
-import java.math.BigInteger;
-
-import java.security.NoSuchAlgorithmException;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Vector;
 
 
 /**

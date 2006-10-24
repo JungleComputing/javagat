@@ -11,11 +11,11 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 
 import org.gridlab.gat.AdaptorNotApplicableException;
-import org.gridlab.gat.AdaptorNotSelectedException;
 import org.gridlab.gat.GAT;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.GATObjectCreationException;
+import org.gridlab.gat.MethodNotApplicableException;
 import org.gridlab.gat.Preferences;
 import org.gridlab.gat.URI;
 import org.gridlab.gat.engine.GATEngine;
@@ -34,12 +34,12 @@ public class LocalFileAdaptor extends FileCpi {
         super(gatContext, preferences, location);
 
         if (!location.refersToLocalHost()) {
-            throw new AdaptorNotSelectedException(
+            throw new AdaptorNotApplicableException(
                 "Cannot use remote files with the local file adaptor");
         }
 
         if (!location.isCompatible("file")) {
-            throw new AdaptorNotSelectedException("cannot handle this URI");
+            throw new AdaptorNotApplicableException("cannot handle this URI");
         }
 
         location = correctURI(location);
@@ -106,7 +106,7 @@ public class LocalFileAdaptor extends FileCpi {
      */
     public void copy(URI destination) throws GATInvocationException {
         if (!destination.refersToLocalHost()) {
-            throw new AdaptorNotApplicableException(
+            throw new MethodNotApplicableException(
                 "default file: cannot copy to remote destination");
         }
 
@@ -510,7 +510,7 @@ public class LocalFileAdaptor extends FileCpi {
      */
     public void move(URI destination) throws GATInvocationException {
         if (!destination.refersToLocalHost()) {
-            throw new AdaptorNotApplicableException(
+            throw new MethodNotApplicableException(
                 "default file: cannot move to remote destination");
         }
 

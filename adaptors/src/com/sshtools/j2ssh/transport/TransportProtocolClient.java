@@ -26,6 +26,13 @@
  */
 package com.sshtools.j2ssh.transport;
 
+import java.io.IOException;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+
 import com.sshtools.j2ssh.SshException;
 import com.sshtools.j2ssh.transport.cipher.SshCipher;
 import com.sshtools.j2ssh.transport.cipher.SshCipherFactory;
@@ -36,15 +43,6 @@ import com.sshtools.j2ssh.transport.kex.SshKeyExchange;
 import com.sshtools.j2ssh.transport.publickey.SshKeyPair;
 import com.sshtools.j2ssh.transport.publickey.SshKeyPairFactory;
 import com.sshtools.j2ssh.transport.publickey.SshPublicKey;
-
-import java.io.IOException;
-
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
 
 
 /**

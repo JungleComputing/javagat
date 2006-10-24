@@ -9,6 +9,7 @@ import java.lang.reflect.Method;
 import java.util.Hashtable;
 import java.util.LinkedList;
 
+import org.gridlab.gat.AdaptorNotSelectedException;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.GATObjectCreationException;
@@ -230,10 +231,7 @@ public class AdaptorInvocationHandler implements InvocationHandler {
 
         // check if the adaptor has been excluded in the preferences
         if(!GATEngine.isAdaptorSelected(preferences, adaptor)) {
-            GATObjectCreationException exc = new GATObjectCreationException();
-            exc.add(adaptor.toString(), new GATInvocationException(
-                "adaptor has not been selected by the user"));
-            throw (exc);
+            throw new AdaptorNotSelectedException("adaptor has not been selected by the user");
         }
         
         long startHandle = colobus.fireStartEvent("creating adaptor "

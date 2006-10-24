@@ -3,6 +3,11 @@
  */
 package org.gridlab.gat.resources.cpi.zorilla;
 
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+
 import nl.vu.zorilla.zoni.JobInfo;
 import nl.vu.zorilla.zoni.ZoniConnection;
 import nl.vu.zorilla.zoni.ZoniException;
@@ -12,7 +17,6 @@ import org.apache.log4j.Logger;
 import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.URI;
 import org.gridlab.gat.engine.GATEngine;
-
 import org.gridlab.gat.io.File;
 import org.gridlab.gat.monitoring.Metric;
 import org.gridlab.gat.monitoring.MetricDefinition;
@@ -21,11 +25,6 @@ import org.gridlab.gat.resources.Job;
 import org.gridlab.gat.resources.JobDescription;
 import org.gridlab.gat.resources.SoftwareDescription;
 import org.gridlab.gat.resources.cpi.JobCpi;
-
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
 
 /**
  * @author rob

@@ -10,11 +10,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.gridlab.gat.AdaptorNotApplicableException;
 import org.gridlab.gat.GAT;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.GATObjectCreationException;
+import org.gridlab.gat.MethodNotApplicableException;
 import org.gridlab.gat.Preferences;
 import org.gridlab.gat.TimePeriod;
 import org.gridlab.gat.URI;
@@ -112,7 +112,7 @@ public class SshResourceBrokerAdaptor extends ResourceBrokerCpi {
         // we do not support environment yet
         Map env = sd.getEnvironment();
         if(env != null && !env.isEmpty()) {
-            throw new AdaptorNotApplicableException("cannot handle environment");
+            throw new MethodNotApplicableException("cannot handle environment");
         }
 
         URI location = getLocationURI(description);
