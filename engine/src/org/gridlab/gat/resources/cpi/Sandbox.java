@@ -211,6 +211,12 @@ public class Sandbox {
         return sandbox;
     }
 
+    public File getResolvedExecutable() {
+        PreStagedFile f = pre.getExecutable();
+        if (f == null) return null;
+        return f.resolvedDest;
+    }
+    
     public File getResolvedStdin() {
         PreStagedFile f = pre.getStdin();
         if (f == null) return null;

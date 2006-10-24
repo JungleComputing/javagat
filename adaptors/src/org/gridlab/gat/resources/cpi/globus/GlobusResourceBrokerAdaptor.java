@@ -12,6 +12,7 @@ import org.globus.common.ResourceManagerContact;
 import org.globus.gram.Gram;
 import org.globus.gram.GramException;
 import org.globus.gram.GramJob;
+import org.globus.gram.internal.GRAMConstants;
 import org.globus.gsi.gssapi.auth.NoAuthorization;
 import org.gridlab.gat.CouldNotInitializeCredentialException;
 import org.gridlab.gat.CredentialExpiredException;
@@ -21,6 +22,7 @@ import org.gridlab.gat.GATObjectCreationException;
 import org.gridlab.gat.Preferences;
 import org.gridlab.gat.URI;
 import org.gridlab.gat.engine.GATEngine;
+import org.gridlab.gat.io.File;
 import org.gridlab.gat.resources.Job;
 import org.gridlab.gat.resources.JobDescription;
 import org.gridlab.gat.resources.SoftwareDescription;
@@ -131,7 +133,20 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
         return rsl;
     }
 
-    String getResourceManagerContact(JobDescription description)
+    protected String createChmodRSL(JobDescription description, String host,
+            Sandbox sandbox, String executable) {
+            String rsl = "& (executable = /bin/chmod)";
+
+            rsl += " (arguments = \"+x\" \"" + executable + "\")";
+
+            if (GATEngine.DEBUG) {
+                System.err.println("CHMOD RSL: " + rsl);
+            }
+
+            return rsl;
+        }
+
+    protected String getResourceManagerContact(JobDescription description)
         throws GATInvocationException {
         String res = null;
         String jobManager = (String) preferences
@@ -157,6 +172,46 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
             "The Globus resource broker needs a hostname");
     }
 
+    private void runChmod(GSSCredential credential, JobDescription description, String host,
+            Sandbox sandbox, File resolvedExe) throws GATInvocationException {
+        if(GATEngine.VERBOSE) {
+            System.err.println("running remote (" + host + "/jobmanager-fork) chmod command to set executable bit on");
+        }
+        String chmodRsl = createChmodRSL(description, host, sandbox, resolvedExe.getPath());
+        GramJob j = new GramJob(credential, chmodRsl);
+        try {
+            Gram.request(host + "/jobmanager-fork", j);
+        } catch (GramException e) {
+            if(GATEngine.VERBOSE) {
+                System.err.println("could not run chmod on executable: " + GramError.getGramErrorString(e.getErrorCode()));
+            }
+            // ignore
+            return;
+        } catch (GSSException e2) {
+            throw new CouldNotInitializeCredentialException("globus", e2);
+        }
+        
+        while(true) {
+            int status = j.getStatus();
+
+            if(GATEngine.DEBUG) {
+                System.err.println("chmod status = " + status);
+            }
+            if(status == GRAMConstants.STATUS_DONE) {
+                return;
+            }
+            if(status == GRAMConstants.STATUS_FAILED) {
+                return;
+            }
+
+            try {
+                Thread.sleep(500);
+            } catch (Exception e) {
+                // ignore
+            }
+        }
+    }
+    
     public Job submitJob(JobDescription description)
         throws GATInvocationException {
         String host = getHostname(description);
@@ -181,7 +236,18 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
         }
 
         Sandbox sandbox = new Sandbox(gatContext, preferences, description, host, null, true, true, true, true);
-
+        
+        // If we staged in the executable, we have to do a chmod.
+        // Globus loses the executable bit :-(
+        File resolvedExe = sandbox.getResolvedExecutable();
+        if(resolvedExe != null) {
+            try {
+                runChmod(credential, description, host, sandbox, resolvedExe);
+            } catch (Exception e) {
+                // ignore
+            }
+        }
+        
         String rsl = createRSL(description, host, sandbox);
         GramJob j = new GramJob(credential, rsl);
         GlobusJob res = new GlobusJob(this, description, j, sandbox);

@@ -3,7 +3,7 @@
  */
 package org.gridlab.gat;
 
-public class CouldNotInitializeCredentialException extends Exception {
+public class CouldNotInitializeCredentialException extends GATInvocationException {
     public CouldNotInitializeCredentialException() {
         super();
     }

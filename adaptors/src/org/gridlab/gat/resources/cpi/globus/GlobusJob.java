@@ -132,6 +132,7 @@ public class GlobusJob extends JobCpi implements GramJobListener,
         m.put("resManState", getGlobusState());
         m.put("resManName", "Globus");
         m.put("resManError", GramError.getGramErrorString(j.getError()));
+        m.put("resManErrorNr", "" + j.getError());
         m.put("resManId", j.getIDAsString());
         m.put("id", j.getIDAsString());
 
@@ -197,7 +198,11 @@ public class GlobusJob extends JobCpi implements GramJobListener,
             }
             break;
         case STATUS_FAILED:
-            state = SUBMISSION_ERROR;
+            if(postStageFinished) {
+                state = SUBMISSION_ERROR;
+            } else {
+                state = POST_STAGING;
+            }
             break;
         case STATUS_PENDING:
             state = SCHEDULED;
@@ -339,7 +344,7 @@ public class GlobusJob extends JobCpi implements GramJobListener,
                 System.err.println("globus job callback: new Job id: "
                     + newJob.getIDAsString() + ", state = "
                     + newJob.getStatusAsString() + " error = "
-                    + newJob.getError());
+                    + GramError.getGramErrorString(newJob.getError()));
             }
 
             setState();
@@ -359,11 +364,9 @@ public class GlobusJob extends JobCpi implements GramJobListener,
         }
         GATEngine.fireMetric(this, v);
 
-        if ((globusState == STATUS_DONE) || (globusState == STATUS_FAILED)) {
+        if (globusState == STATUS_DONE || globusState == STATUS_FAILED) {
             sandbox.retrieveAndCleanup(this);
-        }
 
-        if (globusState == STATUS_DONE) {
             synchronized (this) {
                 postStageFinished = true;
 

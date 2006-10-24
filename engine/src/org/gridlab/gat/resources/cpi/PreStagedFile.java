@@ -6,6 +6,7 @@ package org.gridlab.gat.resources.cpi;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.Preferences;
+import org.gridlab.gat.URI;
 import org.gridlab.gat.engine.GATEngine;
 import org.gridlab.gat.io.File;
 
@@ -14,14 +15,17 @@ public class PreStagedFile extends StagedFile {
 
     boolean isStdIn;
 
+    URI exe;
+    
+
     public PreStagedFile(GATContext context, Preferences preferences, File src,
         File dest, String host, String sandbox, boolean isStdIn,
-        boolean isExecutable) throws GATInvocationException {
+        URI exe) throws GATInvocationException {
         super(context, preferences, src, dest, host, sandbox);
 
         this.isStdIn = isStdIn;
-        this.isExecutable = isExecutable;
-
+        this.exe = exe;
+        
         resolve();
     }
 
@@ -40,6 +44,22 @@ public class PreStagedFile extends StagedFile {
         } else {
             resolvedDest = resolve(origSrc, true);
             inSandbox = true;
+        }
+
+        if(inSandbox) {
+            if(exe.getPath().startsWith("/")) {
+                // file is relative, exe is absolute
+                isExecutable = false;
+                return;
+            }
+        
+            if(relativeURI.getPath().equals(exe.getPath())) {
+                isExecutable = true;
+            }
+        } else {
+            if(resolvedDest.getPath().equals(exe.getPath())) {
+                isExecutable = true;
+            }
         }
     }
 
