@@ -9,7 +9,6 @@ import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Vector;
 
@@ -203,7 +202,7 @@ public class PbsBrokerAdaptor extends ResourceBrokerCpi implements IParameter {
                 HwArg = (String) rdJob_attr.get("Jobname");
                 if (HwArg==null)
                     {
-                        HwArg = (String) System.getProperty("user.name");
+                        HwArg = System.getProperty("user.name");
                     }
                 if (HwArg!=null) job.addString("N",HwArg); /** System.getProperty can deliver a null... */
                 HwArg = null;
@@ -308,7 +307,8 @@ public class PbsBrokerAdaptor extends ResourceBrokerCpi implements IParameter {
         }
         return job.getState();
     }
-
+    
+    /* unused, gives warnings --Rob
     private static void addResource(StringBuffer sb, String key, Object val) {
         if (val != null) {
             if (sb.length() > 0) {
@@ -350,7 +350,7 @@ public class PbsBrokerAdaptor extends ResourceBrokerCpi implements IParameter {
         }
         return sb.toString();
     }
-
+*/
     //	private String getInURI(File file) {
     //		URI uri = file.toURI();
     //		String host = uri.getHost();

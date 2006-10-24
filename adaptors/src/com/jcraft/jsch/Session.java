@@ -73,7 +73,7 @@ public class Session implements Runnable{
 
   private byte[] I_C; // the payload of the client's SSH_MSG_KEXINIT
   private byte[] I_S; // the payload of the server's SSH_MSG_KEXINIT
-  private byte[] K_S; // the host key
+//  private byte[] K_S; // the host key
 
   private byte[] session_id;
 
@@ -126,7 +126,7 @@ public class Session implements Runnable{
   private UserInfo userinfo;
 
   private String hostKeyAlias=null;
-  private int serverAliveInterval=0;
+//  private int serverAliveInterval=0;
   private int serverAliveCountMax=1;
 
   String host="127.0.0.1";
@@ -1474,9 +1474,7 @@ break;
       write(packet);
     }
     catch(Exception e){
-      if(e instanceof Throwable)
-        throw new JSchException(e.toString(), (Throwable)e);
-      throw new JSchException(e.toString());
+        throw new JSchException(e.toString(), e);
     }
 
     grr.setThread(Thread.currentThread());
@@ -1537,7 +1535,7 @@ break;
     if(config==null) config=new java.util.Hashtable();
     for(java.util.Enumeration e=foo.keys() ; e.hasMoreElements() ;) {
       String key=(String)(e.nextElement());
-      config.put(key, (String)(foo.get(key)));
+      config.put(key, foo.get(key));
     }
   }
   public void setSocketFactory(SocketFactory foo){ socket_factory=foo;}
@@ -1556,9 +1554,7 @@ break;
       timeout=foo;
     }
     catch(Exception e){
-      if(e instanceof Throwable)
-        throw new JSchException(e.toString(), (Throwable)e);
-      throw new JSchException(e.toString());
+      throw new JSchException(e.toString(), e);
     }
   }
   public String getServerVersion(){
@@ -1603,7 +1599,7 @@ break;
   }
   public void setServerAliveInterval(int interval) throws JSchException {
     setTimeout(interval);
-    this.serverAliveInterval=interval;
+//    this.serverAliveInterval=interval;
   }
   public void setServerAliveCountMax(int count){
     this.serverAliveCountMax=count;

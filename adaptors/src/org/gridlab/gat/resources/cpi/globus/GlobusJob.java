@@ -131,7 +131,7 @@ public class GlobusJob extends JobCpi implements GramJobListener,
         m.put("state", getStateString(state));
         m.put("resManState", getGlobusState());
         m.put("resManName", "Globus");
-        m.put("resManError", "" + j.getError());
+        m.put("resManError", GramError.getGramErrorString(j.getError()));
         m.put("resManId", j.getIDAsString());
         m.put("id", j.getIDAsString());
 
