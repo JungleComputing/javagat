@@ -3,7 +3,7 @@
  */
 package org.gridlab.gat;
 
-public class CredentialExpiredException extends Exception {
+public class CredentialExpiredException extends GATInvocationException {
     public CredentialExpiredException(String s) {
         super(s);
     }

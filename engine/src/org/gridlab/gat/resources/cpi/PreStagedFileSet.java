@@ -59,7 +59,11 @@ public class PreStagedFileSet {
         }
 
         URI exe = sd.getLocation();
-
+        if(exe == null) {
+            throw new GATInvocationException(
+            "The job description does not contain an executable location");    
+        }
+        
         files = new ArrayList();
         Map pre = sd.getPreStaged();
 
@@ -70,10 +74,8 @@ public class PreStagedFileSet {
             while (i.hasNext()) {
                 File srcFile = (File) i.next();
                 File destFile = (File) pre.get(srcFile);
-                files
-                    .add(new PreStagedFile(gatContext, preferences, srcFile,
-                        destFile, host, sandbox, false, srcFile.toURI().equals(
-                            exe)));
+                files.add(new PreStagedFile(gatContext, preferences, srcFile,
+                    destFile, host, sandbox, false, exe)); 
             }
         }
 
@@ -82,7 +84,7 @@ public class PreStagedFileSet {
 
             if (stdin != null) {
                 files.add(new PreStagedFile(gatContext, preferences, stdin,
-                    null, host, sandbox, true, stdin.toURI().equals(exe)));
+                    null, host, sandbox, true, exe));
             }
         }
     }
@@ -141,6 +143,17 @@ public class PreStagedFileSet {
         for (int i = 0; i < files.size(); i++) {
             PreStagedFile f = (PreStagedFile) files.get(i);
             if (f.isStdIn) {
+                return f;
+            }
+        }
+
+        return null;
+    }
+
+    PreStagedFile getExecutable() {
+        for (int i = 0; i < files.size(); i++) {
+            PreStagedFile f = (PreStagedFile) files.get(i);
+            if (f.isExecutable) {
                 return f;
             }
         }

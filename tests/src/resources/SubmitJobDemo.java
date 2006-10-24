@@ -33,7 +33,8 @@ public class SubmitJobDemo implements MetricListener {
         notifyAll();
     }
 
-    public void start(String[] args) throws Exception {
+    public void start(String[] args) {
+        try {
         GATContext context = new GATContext();
         Preferences prefs = new Preferences();
         prefs.put("ResourceBroker.adaptor.name", "globus");
@@ -74,5 +75,11 @@ public class SubmitJobDemo implements MetricListener {
 
         System.err.println("SubmitJobCallback: Job finished, state = "
             + job.getInfo());
+        } catch (Exception e) {
+            System.err.println("an error occurred: " + e);
+            e.printStackTrace();
+        } finally {
+            GAT.end();
+        }
     }
 }

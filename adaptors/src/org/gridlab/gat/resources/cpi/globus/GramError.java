@@ -5,6 +5,7 @@ package org.gridlab.gat.resources.cpi.globus;
 
 public class GramError {
     private static String[] errorStrings = new String[] {
+        "NO_ERROR", 
         "PARAMETER_NOT_SUPPORTED",
         "INALID_REQUEST",
         "NO_RESOURCES",
@@ -108,6 +109,6 @@ public class GramError {
             return "UNKNOWN_ERROR";
         }
         
-        return errorCode + ": " + errorStrings[errorCode];
+        return errorStrings[errorCode];
     }
 }
