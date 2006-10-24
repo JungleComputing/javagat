@@ -10,11 +10,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.gridlab.gat.AdaptorNotApplicableException;
 import org.gridlab.gat.CommandNotFoundException;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.GATObjectCreationException;
+import org.gridlab.gat.MethodNotApplicableException;
 import org.gridlab.gat.Preferences;
 import org.gridlab.gat.TimePeriod;
 import org.gridlab.gat.URI;
@@ -146,7 +146,7 @@ public class LocalResourceBrokerAdaptor extends ResourceBrokerCpi {
         if (location.refersToLocalHost()) {
             path = location.getPath();
         } else {
-            throw new AdaptorNotApplicableException("not a local file: "
+            throw new MethodNotApplicableException("not a local file: "
                 + location);
         }
 
@@ -154,7 +154,7 @@ public class LocalResourceBrokerAdaptor extends ResourceBrokerCpi {
         if (host != null) {
             if (!host.equals("localhost")
                 && !host.equals(IPUtils.getLocalHostName())) {
-                throw new AdaptorNotApplicableException(
+                throw new MethodNotApplicableException(
                     "cannot run jobs on remote machines with the local adaptor");
             }
         }

@@ -1,5 +1,10 @@
 package org.gridlab.gat.resources.cpi.zorilla;
 
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.net.UnknownHostException;
+import java.util.List;
+
 import nl.vu.zorilla.zoni.ZoniProtocol;
 
 import org.gridlab.gat.GATContext;
@@ -13,12 +18,6 @@ import org.gridlab.gat.resources.Resource;
 import org.gridlab.gat.resources.ResourceDescription;
 import org.gridlab.gat.resources.SoftwareDescription;
 import org.gridlab.gat.resources.cpi.ResourceBrokerCpi;
-
-import java.net.InetAddress;
-import java.net.InetSocketAddress;
-import java.net.UnknownHostException;
-
-import java.util.List;
 
 /**
  * An instance of this class is used to reserve resources.
