@@ -18,7 +18,6 @@ import org.ggf.drmaa.JobInfo;
 import org.ggf.drmaa.Session;
 import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.engine.GATEngine;
-import org.gridlab.gat.monitoring.Metric;
 import org.gridlab.gat.monitoring.MetricDefinition;
 import org.gridlab.gat.resources.JobDescription;
 import org.gridlab.gat.resources.cpi.JobCpi;
@@ -32,7 +31,7 @@ public class SGEJob extends JobCpi {
     
     private String jobID;
     private MetricDefinition statusMetricDefinition;
-    private Metric statusMetric;
+//    private Metric statusMetric;
     private JobDescription jobDescription;
     private Session session;
     private Hashtable time;
@@ -58,7 +57,6 @@ public class SGEJob extends JobCpi {
         }
         
         public void run() {
-            Thread thisThread = Thread.currentThread();
             while (state != Session.RUNNING) {
                 try {
                     state = session.getJobProgramStatus(jobID);
@@ -68,7 +66,7 @@ public class SGEJob extends JobCpi {
                     else if( state == Session.DONE ) {
                         //TODO
                     }
-                    thisThread.sleep(SLEEP);
+                    Thread.sleep(SLEEP);
                 }
                 catch (DrmaaException e) {
                     //TODO
@@ -107,14 +105,13 @@ public class SGEJob extends JobCpi {
         }
         
         public void run() {
-            Thread thisThread = Thread.currentThread();
             while (state != Session.DONE) {
                 try {
                     state = session.getJobProgramStatus(jobID);
                     if( state == Session.FAILED) {
                         //TODO
                     }
-                    thisThread.sleep(SLEEP);
+                    Thread.sleep(SLEEP);
                 }
                 catch (DrmaaException e) {
                     //TODO
@@ -143,7 +140,7 @@ public class SGEJob extends JobCpi {
                 MetricDefinition.DISCRETE, "String", null, null, returnDef);
         
         GATEngine.registerMetric(this, "getJobStatus", statusMetricDefinition);
-        statusMetric = statusMetricDefinition.createMetric(null);
+//        statusMetric = statusMetricDefinition.createMetric(null);
         
         time = new Hashtable();
         
