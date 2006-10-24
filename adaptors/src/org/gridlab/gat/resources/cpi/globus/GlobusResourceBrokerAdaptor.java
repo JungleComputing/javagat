@@ -133,9 +133,9 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
         return rsl;
     }
 
-    protected String createChmodRSL(JobDescription description, String host,
+    protected String createChmodRSL(JobDescription description, String host, String chmodLocation,
             Sandbox sandbox, String executable) {
-            String rsl = "& (executable = /bin/chmod)";
+            String rsl = "& (executable = " + chmodLocation + ")";
 
             rsl += " (arguments = \"+x\" \"" + executable + "\")";
 
@@ -172,12 +172,12 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
             "The Globus resource broker needs a hostname");
     }
 
-    private void runChmod(GSSCredential credential, JobDescription description, String host,
+    private void runChmod(GSSCredential credential, JobDescription description, String host, String chmodLocation,
             Sandbox sandbox, File resolvedExe) throws GATInvocationException {
         if(GATEngine.VERBOSE) {
-            System.err.println("running remote (" + host + "/jobmanager-fork) chmod command to set executable bit on");
+            System.err.println("running " + chmodLocation + " on " + host + "/jobmanager-fork to set executable bit on");
         }
-        String chmodRsl = createChmodRSL(description, host, sandbox, resolvedExe.getPath());
+        String chmodRsl = createChmodRSL(description, host, chmodLocation, sandbox, resolvedExe.getPath());
         GramJob j = new GramJob(credential, chmodRsl);
         try {
             Gram.request(host + "/jobmanager-fork", j);
@@ -242,7 +242,12 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
         File resolvedExe = sandbox.getResolvedExecutable();
         if(resolvedExe != null) {
             try {
-                runChmod(credential, description, host, sandbox, resolvedExe);
+                runChmod(credential, description, host, "/bin/chmod", sandbox, resolvedExe);
+            } catch (Exception e) {
+                // ignore
+            }
+            try {
+                runChmod(credential, description, host, "/usr/bin/chmod", sandbox, resolvedExe);
             } catch (Exception e) {
                 // ignore
             }
