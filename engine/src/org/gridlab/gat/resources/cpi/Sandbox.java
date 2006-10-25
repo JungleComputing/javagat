@@ -42,7 +42,14 @@ public class Sandbox {
         this.gatContext = gatContext;
         this.preferences = preferences;
         this.host = host;
-        this.sandboxRoot = sandboxRoot;
+        
+        // The user preference sandboxRoot overwrites the one specified by the adaptor.
+        String sandboxRootPref = (String) preferences.get("sandboxRoot");
+        if(sandboxRootPref != null) {
+            this.sandboxRoot = sandboxRootPref;
+        } else {
+            this.sandboxRoot = sandboxRoot;
+        }
         this.createSandboxDir = createSandboxDir;
 
         initSandbox();
