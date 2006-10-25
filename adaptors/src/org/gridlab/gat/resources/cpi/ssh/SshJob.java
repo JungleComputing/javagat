@@ -157,9 +157,11 @@ public class SshJob extends JobCpi {
             }
         }
         GATEngine.fireMetric(this, v);
+        finished();
     }
 
     public void stop() throws GATInvocationException {
+        MetricValue v = null;
         if (channel != null) {
             try {
                 channel.sendSignal("TERM");
@@ -179,7 +181,24 @@ public class SshJob extends JobCpi {
         }
         
         synchronized (this) {
-            state = STOPPED;
+            state = POST_STAGING;
+            v = new MetricValue(this, getStateString(state), statusMetric, System
+                .currentTimeMillis());
+            if (GATEngine.DEBUG) {
+                System.err.println("default job callback: firing event: " + v);
+            }
         }
+        GATEngine.fireMetric(this, v);
+        
+        synchronized (this) {
+            state = STOPPED;
+            v = new MetricValue(this, getStateString(state), statusMetric, System
+                .currentTimeMillis());
+            if (GATEngine.DEBUG) {
+                System.err.println("default job callback: firing event: " + v);
+            }
+        }
+        GATEngine.fireMetric(this, v);
+        finished();
     }
 }

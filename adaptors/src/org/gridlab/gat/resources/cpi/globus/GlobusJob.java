@@ -259,8 +259,9 @@ public class GlobusJob extends JobCpi implements GramJobListener,
         }
 
         sandbox.retrieveAndCleanup(this);
-        
+
         state = INITIAL;
+        finished();
     }
 
     protected void stopHandlers() {
@@ -387,6 +388,7 @@ public class GlobusJob extends JobCpi implements GramJobListener,
             }
 
             GATEngine.fireMetric(this, v2);
+            finished();
         }
     }
 }

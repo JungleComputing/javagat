@@ -168,28 +168,36 @@ public class LocalJob extends JobCpi {
             }
         }
         GATEngine.fireMetric(this, v);
+        finished();
     }
 
     public void stop() throws GATInvocationException {
-        MetricValue v;
-        
+        MetricValue v = null;
+
         synchronized (this) {
             if (p!= null) p.destroy();
+            state = POST_STAGING;
+            v = new MetricValue(this, getStateString(state), statusMetric, System
+                .currentTimeMillis());
+            if (GATEngine.DEBUG) {
+                System.err.println("default job callback: firing event: " + v);
+            }
+        }
+        GATEngine.fireMetric(this, v);
+
+        sandbox.retrieveAndCleanup(this);
+        
+        synchronized (this) {
             state = STOPPED;
             v = new MetricValue(this, getStateString(state), statusMetric, System
                 .currentTimeMillis());
         }
-
-        if (GATEngine.VERBOSE) {
-            System.err.println("local job stop: delete/wipe starting");
-        }
-
-        sandbox.retrieveAndCleanup(this);
         
         if (GATEngine.DEBUG) {
             System.err.println("default job callback: firing event: " + v);
         }
 
         GATEngine.fireMetric(this, v);
+        finished();
     }
 }
