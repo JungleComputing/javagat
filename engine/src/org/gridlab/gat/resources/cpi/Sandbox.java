@@ -3,6 +3,8 @@
  */
 package org.gridlab.gat.resources.cpi;
 
+import java.util.Map;
+
 import org.gridlab.gat.FilePrestageException;
 import org.gridlab.gat.GAT;
 import org.gridlab.gat.GATContext;
@@ -44,7 +46,14 @@ public class Sandbox {
         this.host = host;
         
         // The user preference sandboxRoot overwrites the one specified by the adaptor.
-        String sandboxRootPref = (String) preferences.get("sandboxRoot");
+        String sandboxRootPref = null;
+        SoftwareDescription sd = jobDescription.getSoftwareDescription();
+        if(sd != null) {
+            Map attr = sd.getAttributes();
+            if(attr != null) {
+                sandboxRootPref = (String) attr.get("sandboxRoot");
+            }
+        }
         if(sandboxRootPref != null) {
             this.sandboxRoot = sandboxRootPref;
         } else {
