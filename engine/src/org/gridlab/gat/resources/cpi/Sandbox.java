@@ -51,14 +51,15 @@ public class Sandbox {
         if(sd != null) {
             Map attr = sd.getAttributes();
             if(attr != null) {
+                System.err.println("attr = " + attr);
                 sandboxRootPref = (String) attr.get("sandboxRoot");
-                if(GATEngine.DEBUG) {
-                    System.err.println("set sandboxRoot to " + sandboxRootPref);
-                }
             }
         }
         if(sandboxRootPref != null) {
             this.sandboxRoot = sandboxRootPref;
+            if(GATEngine.DEBUG) {
+                System.err.println("set sandboxRoot to " + sandboxRootPref);
+            }
         } else {
             this.sandboxRoot = sandboxRoot;
         }
