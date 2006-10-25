@@ -52,6 +52,9 @@ public class Sandbox {
             Map attr = sd.getAttributes();
             if(attr != null) {
                 sandboxRootPref = (String) attr.get("sandboxRoot");
+                if(GATEngine.DEBUG) {
+                    System.err.println("set sandboxRoot to " + sandboxRootPref);
+                }
             }
         }
         if(sandboxRootPref != null) {
