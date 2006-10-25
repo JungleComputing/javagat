@@ -48,7 +48,11 @@ public abstract class JobCpi extends Job {
     protected JobCpi(JobDescription jobDescription, Sandbox sandbox) {
         this.jobDescription = jobDescription;
         this.sandbox = sandbox;
-        jobList.add(this);
+        
+        String pref = (String) preferences.get("killJobsOnExit");
+        if(pref == null || pref.equalsIgnoreCase("true")) {
+            jobList.add(this);
+        }
     }
 
     public final JobDescription getJobDescription() {
