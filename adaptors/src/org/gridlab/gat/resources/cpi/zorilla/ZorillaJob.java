@@ -27,7 +27,7 @@ import org.gridlab.gat.resources.SoftwareDescription;
 import org.gridlab.gat.resources.cpi.JobCpi;
 
 /**
- * @author rob
+ * @author ndrost
  */
 public class ZorillaJob extends JobCpi implements Runnable {
 
