@@ -587,12 +587,6 @@ public abstract class FileCpi implements File {
         }
     }
 
-    /*
-     static {
-     // we must tell the gat engine that we can unmarshal files.
-     GATEngine.registerAdvertisable(FileCpi.class);
-     }
-     */
     private static class DeleteHook extends Thread {
         FileCpi f;
 
