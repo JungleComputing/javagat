@@ -24,7 +24,7 @@ import org.gridlab.gat.io.cpi.commandlineSsh.CommandlineSshFileAdaptor;
  */
 public class CopyingFileInputStreamAdaptor extends FileInputStreamCpi {
 
-    private static final int MAX_SIZE = 100 * 1024 * 1024;
+    private static final int MAX_SIZE = 1 * 1024 * 1024;
 
     FileInputStream in;
     java.io.File localFile;
