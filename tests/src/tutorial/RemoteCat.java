@@ -17,8 +17,13 @@ class RemoteCat {
         InputStreamReader reader = new InputStreamReader(in); // these are
         BufferedReader buf = new BufferedReader(reader); // standard java classes 
 
-        String result = buf.readLine();
-        System.err.println("result = " + result);
+        while(true) {
+            String result = buf.readLine();
+            if(result == null) {
+                break;
+            }
+            System.out.println(result);
+        }
         in.close();
         GAT.end();
     }
