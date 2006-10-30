@@ -8,7 +8,9 @@ import ibis.util.IPUtils;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
+import org.gridlab.gat.Preferences;
 import org.gridlab.gat.engine.GATEngine;
 import org.gridlab.gat.monitoring.Metric;
 import org.gridlab.gat.monitoring.MetricDefinition;
@@ -42,9 +44,9 @@ public class CommandlineSshPrunJob extends JobCpi {
 
     OutputForwarder err;
     
-    CommandlineSshPrunJob(CommandlineSshPrunResourceBrokerAdaptor broker, JobDescription description,
+    CommandlineSshPrunJob(GATContext gatContext, Preferences preferences, CommandlineSshPrunResourceBrokerAdaptor broker, JobDescription description,
             Process p, Sandbox sandbox, OutputForwarder out, OutputForwarder err) {
-        super(description, sandbox);
+        super(gatContext, preferences, description, sandbox);
         this.broker = broker;
         jobID = allocJobID();
         state = RUNNING;

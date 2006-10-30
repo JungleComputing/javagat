@@ -115,7 +115,7 @@ public class SGEBrokerAdaptor extends ResourceBrokerCpi {
         
             SGEsession.deleteJobTemplate(jt);
         
-            sgejob = new SGEJob(this, description,SGEsession, id, sandbox);
+            sgejob = new SGEJob(gatContext, preferences, this, description,SGEsession, id, sandbox);
         
 
             

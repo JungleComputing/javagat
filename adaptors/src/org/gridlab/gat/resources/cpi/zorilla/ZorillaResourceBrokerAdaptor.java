@@ -145,7 +145,7 @@ public class ZorillaResourceBrokerAdaptor extends ResourceBrokerCpi {
                 "cannot specify host with the Zorilla adaptor");
         }
 
-        return new ZorillaJob(this, description);
+        return new ZorillaJob(gatContext, preferences, this, description);
     }
 
     /*

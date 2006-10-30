@@ -276,7 +276,7 @@ public class SshResourceBrokerAdaptor extends ResourceBrokerCpi {
                 "Ssh broker: could not connect on " + "channel using SSH", e);
         }
 
-        Job j = new SshJob(this, description, session, channel, sandbox);
+        Job j = new SshJob(gatContext, preferences, this, description, session, channel, sandbox);
         return j;
     }
 

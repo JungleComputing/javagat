@@ -3,7 +3,9 @@ package org.gridlab.gat.resources.cpi.proactive;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
+import org.gridlab.gat.Preferences;
 import org.gridlab.gat.advert.Advertisable;
 import org.gridlab.gat.engine.GATEngine;
 import org.gridlab.gat.monitoring.Metric;
@@ -30,10 +32,10 @@ public class ProActiveJob extends JobCpi {
 
     String jobID;
 
-    public ProActiveJob(ProActiveLauncher launcher,
+    public ProActiveJob(GATContext gatContext, Preferences preferences, ProActiveLauncher launcher,
             JobDescription jobDescription, String jobID, Node node)
             throws GATInvocationException {
-        super(jobDescription, null);
+        super(gatContext, preferences, jobDescription, null);
         this.launcher = launcher;
         this.jobDescription = jobDescription;
         this.jobID = jobID;

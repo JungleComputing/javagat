@@ -7,7 +7,9 @@ import org.globus.gram.Gram;
 import org.globus.gram.GramJob;
 import org.globus.gram.GramJobListener;
 import org.globus.gram.internal.GRAMConstants;
+import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
+import org.gridlab.gat.Preferences;
 import org.gridlab.gat.advert.Advertisable;
 import org.gridlab.gat.engine.GATEngine;
 import org.gridlab.gat.monitoring.Metric;
@@ -88,9 +90,9 @@ public class GlobusJob extends JobCpi implements GramJobListener,
 
     JobPoller poller;
 
-    public GlobusJob(GlobusResourceBrokerAdaptor broker, JobDescription jobDescription,
+    public GlobusJob(GATContext gatContext, Preferences preferences, GlobusResourceBrokerAdaptor broker, JobDescription jobDescription,
         GramJob j, Sandbox sandbox) {
-        super(jobDescription, sandbox);
+        super(gatContext, preferences, jobDescription, sandbox);
         this.broker = broker;
         this.j = j;
         jobID = j.getIDAsString();

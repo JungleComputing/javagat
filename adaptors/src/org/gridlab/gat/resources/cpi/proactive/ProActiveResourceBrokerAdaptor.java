@@ -323,7 +323,7 @@ public class ProActiveResourceBrokerAdaptor extends ResourceBrokerCpi {
 
         // super.postStageFiles(description, node.getNodeInformation().getHostName());
 
-        ProActiveJob paj = new ProActiveJob(launcher, description, jobID, node);
+        ProActiveJob paj = new ProActiveJob(gatContext, preferences, launcher, description, jobID, node);
         /*
          try
          {

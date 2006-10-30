@@ -16,7 +16,9 @@ import org.ggf.drmaa.DrmaaException;
 import org.ggf.drmaa.ExitTimeoutException;
 import org.ggf.drmaa.JobInfo;
 import org.ggf.drmaa.Session;
+import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
+import org.gridlab.gat.Preferences;
 import org.gridlab.gat.engine.GATEngine;
 import org.gridlab.gat.monitoring.MetricDefinition;
 import org.gridlab.gat.resources.JobDescription;
@@ -125,9 +127,9 @@ public class SGEJob extends JobCpi {
         }
     }
     
-    public SGEJob(SGEBrokerAdaptor broker, JobDescription jobDescription,
+    public SGEJob(GATContext gatContext, Preferences preferences, SGEBrokerAdaptor broker, JobDescription jobDescription,
             Session session, String id, Sandbox sandbox) {
-        super(jobDescription, sandbox);
+        super(gatContext, preferences, jobDescription, sandbox);
         
         jobID = id;
         this.jobDescription = jobDescription;

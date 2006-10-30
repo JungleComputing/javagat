@@ -14,7 +14,9 @@ import nl.vu.zorilla.zoni.ZoniException;
 import nl.vu.zorilla.zoni.ZoniProtocol;
 
 import org.apache.log4j.Logger;
+import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
+import org.gridlab.gat.Preferences;
 import org.gridlab.gat.URI;
 import org.gridlab.gat.engine.GATEngine;
 import org.gridlab.gat.io.File;
@@ -97,9 +99,9 @@ public class ZorillaJob extends JobCpi implements Runnable {
         return result;
     }
 
-    ZorillaJob(ZorillaResourceBrokerAdaptor broker, JobDescription description)
+    ZorillaJob(GATContext gatContext, Preferences preferences, ZorillaResourceBrokerAdaptor broker, JobDescription description)
             throws GATInvocationException {
-        super(description, null);
+        super(gatContext, preferences, description, null);
         this.broker = broker;
         this.description = description;
 
