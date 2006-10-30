@@ -45,7 +45,9 @@ public abstract class JobCpi extends Job {
         return globalJobID++;
     }
 
-    protected JobCpi(JobDescription jobDescription, Sandbox sandbox) {
+    protected JobCpi(GATContext gatContext, Preferences preferences, JobDescription jobDescription, Sandbox sandbox) {
+        this.gatContext = gatContext;
+        this.preferences = preferences;
         this.jobDescription = jobDescription;
         this.sandbox = sandbox;
         

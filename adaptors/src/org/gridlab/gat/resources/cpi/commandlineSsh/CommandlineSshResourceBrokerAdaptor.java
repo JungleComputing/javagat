@@ -274,7 +274,7 @@ public class CommandlineSshResourceBrokerAdaptor extends ResourceBrokerCpi {
             }
         }
 
-        return new CommandlineSshJob(this, description, p, sandbox, outForwarder, errForwarder);
+        return new CommandlineSshJob(gatContext, preferences, this, description, p, sandbox, outForwarder, errForwarder);
     }
 
     /*

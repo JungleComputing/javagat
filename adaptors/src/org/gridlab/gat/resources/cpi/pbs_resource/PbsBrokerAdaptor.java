@@ -276,7 +276,7 @@ public class PbsBrokerAdaptor extends ResourceBrokerCpi implements IParameter {
                 temp.delete();
             }
         }
-        return new PbsJob(this, description, id, sandbox);
+        return new PbsJob(gatContext, preferences, this, description, id, sandbox);
     }
 
     public PbsMessage unScheduleJob(String id) throws GATInvocationException {

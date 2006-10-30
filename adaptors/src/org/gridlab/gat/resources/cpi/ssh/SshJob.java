@@ -6,7 +6,9 @@ package org.gridlab.gat.resources.cpi.ssh;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
+import org.gridlab.gat.Preferences;
 import org.gridlab.gat.engine.GATEngine;
 import org.gridlab.gat.monitoring.Metric;
 import org.gridlab.gat.monitoring.MetricDefinition;
@@ -63,10 +65,10 @@ public class SshJob extends JobCpi {
 
     Metric statusMetric;
 
-    SshJob(SshResourceBrokerAdaptor broker, JobDescription description,
+    SshJob(GATContext gatContext, Preferences preferences, SshResourceBrokerAdaptor broker, JobDescription description,
         Session session, Channel channel, Sandbox sandbox)
         throws GATInvocationException {
-        super(description, sandbox);
+        super(gatContext, preferences, description, sandbox);
         this.broker = broker;
         jobID = allocJobID();
         state = RUNNING;

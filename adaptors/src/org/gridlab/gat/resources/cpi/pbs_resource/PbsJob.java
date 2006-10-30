@@ -9,7 +9,9 @@ import java.io.IOException;
 import java.util.Iterator;
 import java.util.Map;
 
+import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
+import org.gridlab.gat.Preferences;
 import org.gridlab.gat.resources.JobDescription;
 import org.gridlab.gat.resources.cpi.JobCpi;
 import org.gridlab.gat.resources.cpi.Sandbox;
@@ -26,8 +28,8 @@ public class PbsJob extends JobCpi {
 
     //	private Metric mMetric;
 
-    public PbsJob(PbsBrokerAdaptor broker, JobDescription description, String id, Sandbox sandbox) {
-        super(description, sandbox);
+    public PbsJob(GATContext gatContext, Preferences preferences, PbsBrokerAdaptor broker, JobDescription description, String id, Sandbox sandbox) {
+        super(gatContext, preferences, description, sandbox);
         mBroker = broker;
         mId = id;
         state = INITIAL;

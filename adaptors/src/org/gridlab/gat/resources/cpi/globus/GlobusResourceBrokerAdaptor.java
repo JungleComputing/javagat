@@ -255,7 +255,7 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
         
         String rsl = createRSL(description, host, sandbox);
         GramJob j = new GramJob(credential, rsl);
-        GlobusJob res = new GlobusJob(this, description, j, sandbox);
+        GlobusJob res = new GlobusJob(gatContext, preferences, this, description, j, sandbox);
         j.addListener(res);
 
         try {

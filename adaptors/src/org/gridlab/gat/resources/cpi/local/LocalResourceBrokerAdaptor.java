@@ -241,7 +241,7 @@ public class LocalResourceBrokerAdaptor extends ResourceBrokerCpi {
             }
         }
 
-        return new LocalJob(this, description, p, host, sandbox,  outForwarder, errForwarder);
+        return new LocalJob(gatContext, preferences, this, description, p, host, sandbox,  outForwarder, errForwarder);
     }
 
     /*

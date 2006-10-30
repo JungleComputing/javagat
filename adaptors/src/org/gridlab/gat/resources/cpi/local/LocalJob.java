@@ -8,7 +8,9 @@ import ibis.util.IPUtils;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
+import org.gridlab.gat.Preferences;
 import org.gridlab.gat.engine.GATEngine;
 import org.gridlab.gat.monitoring.Metric;
 import org.gridlab.gat.monitoring.MetricDefinition;
@@ -64,9 +66,9 @@ public class LocalJob extends JobCpi {
 
     OutputForwarder err;
     
-    LocalJob(LocalResourceBrokerAdaptor broker, JobDescription description,
+    LocalJob(GATContext gatContext, Preferences preferences, LocalResourceBrokerAdaptor broker, JobDescription description,
             Process p, String host, Sandbox sandbox, OutputForwarder out, OutputForwarder err) {
-        super(description, sandbox);
+        super(gatContext, preferences, description, sandbox);
         this.broker = broker;
         jobID = allocJobID();
         state = RUNNING;
