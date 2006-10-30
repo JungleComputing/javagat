@@ -295,6 +295,7 @@ public class ZorillaJob extends JobCpi implements Runnable {
                 // no need to do callback, no significant change
                 return;
             }
+            lastState = state;
             v = new MetricValue(this, getStateString(state), statusMetric,
                     System.currentTimeMillis());
         }
