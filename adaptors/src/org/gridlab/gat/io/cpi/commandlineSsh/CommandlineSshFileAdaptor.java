@@ -11,8 +11,8 @@ import org.gridlab.gat.Preferences;
 import org.gridlab.gat.URI;
 import org.gridlab.gat.engine.GATEngine;
 import org.gridlab.gat.io.cpi.FileCpi;
-import org.gridlab.gat.io.cpi.sftpnew.SftpNewFileAdaptor;
 import org.gridlab.gat.io.cpi.ssh.SSHSecurityUtils;
+import org.gridlab.gat.io.cpi.ssh.SshFileAdaptor;
 import org.gridlab.gat.io.cpi.ssh.SshUserInfo;
 import org.gridlab.gat.util.OutputForwarder;
 
@@ -26,7 +26,7 @@ public class CommandlineSshFileAdaptor extends FileCpi {
      * engine does not select this adaptor anymore if another call is done before 
      * the copy.
      */
-    private SftpNewFileAdaptor sftpAdaptor;
+    private SshFileAdaptor sftpAdaptor;
     
     /**
      * @param gatContext
@@ -45,7 +45,7 @@ public class CommandlineSshFileAdaptor extends FileCpi {
         String osname = System.getProperty("os.name");
         if (osname.startsWith("Windows")) windows = true;
         
-        sftpAdaptor = new SftpNewFileAdaptor(gatContext, preferences, location);
+        sftpAdaptor = new SshFileAdaptor(gatContext, preferences, location);
     }
 
     /**
