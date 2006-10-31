@@ -232,9 +232,20 @@ public class SshFileAdaptor extends FileCpi {
             InputStream err = ((ChannelExec) channel).getErrStream();
             channel.connect();
 
+            long start = System.currentTimeMillis();
             while (true) {
+                long time = System.currentTimeMillis() - start;
+                if(time > 2000) {
+                    break;
+                }
                 if (channel.isEOF()) {
                     break;
+                }
+                
+                try {
+                    Thread.sleep(100);
+                } catch (Exception e) {
+                    // ignore
                 }
             }
 

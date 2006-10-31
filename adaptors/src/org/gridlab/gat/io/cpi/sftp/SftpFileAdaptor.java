@@ -8,14 +8,12 @@ import java.util.Iterator;
 
 import org.gridlab.gat.CouldNotInitializeCredentialException;
 import org.gridlab.gat.CredentialExpiredException;
-import org.gridlab.gat.GAT;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.GATObjectCreationException;
 import org.gridlab.gat.Preferences;
 import org.gridlab.gat.URI;
 import org.gridlab.gat.engine.GATEngine;
-import org.gridlab.gat.io.File;
 import org.gridlab.gat.io.cpi.FileCpi;
 
 import com.sshtools.j2ssh.SshClient;
@@ -255,16 +253,9 @@ public class SftpFileAdaptor extends FileCpi {
         // is a directory. This is needed, because the source might be a local
         // file, and sftp might not be installed locally.
         // This goes wrong for local -> remote copies.
-        try {
-            File f = GAT.createFile(gatContext, preferences, toURI());
-
-            if (f.isDirectory()) {
-                copyDirectory(gatContext, preferences, toURI(), dest);
-
-                return;
-            }
-        } catch (Exception e) {
-            throw new GATInvocationException("sftp", e);
+        if(determineIsDirectory()) {
+            copyDirectory(gatContext, preferences, toURI(), dest);
+            return;
         }
 
         if (dest.refersToLocalHost()) {

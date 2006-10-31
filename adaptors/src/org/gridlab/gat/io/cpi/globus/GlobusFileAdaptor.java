@@ -141,26 +141,9 @@ public abstract class GlobusFileAdaptor extends FileCpi {
         // is a directory. This is needed, because the source might be a local
         // file, and gridftp might not be installed locally.
         // This goes wrong for local -> remote copies.
-        if (toURI().refersToLocalHost()) {
-            try {
-                java.io.File f = new java.io.File(getPath());
-                if (f.isDirectory()) {
-                    copyDirectory(gatContext, preferences, toURI(), dest);
-                    return;
-                }
-            } catch (Exception e) {
-                // ignore
-            }
-        } else {
-            try {
-                File f = GAT.createFile(gatContext, preferences, toURI());
-                if (f.isDirectory()) {
-                    copyDirectory(gatContext, preferences, toURI(), dest);
-                    return;
-                }
-            } catch (Exception e) {
-                throw new GATInvocationException("gridftp", e);
-            }
+        if(determineIsDirectory()) {
+            copyDirectory(gatContext, preferences, toURI(), dest);
+            return;
         }
 
         if (dest.refersToLocalHost()) {

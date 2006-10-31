@@ -4,14 +4,12 @@ import java.io.IOException;
 
 import org.gridlab.gat.AdaptorNotApplicableException;
 import org.gridlab.gat.CommandNotFoundException;
-import org.gridlab.gat.GAT;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.GATObjectCreationException;
 import org.gridlab.gat.Preferences;
 import org.gridlab.gat.URI;
 import org.gridlab.gat.engine.GATEngine;
-import org.gridlab.gat.io.File;
 import org.gridlab.gat.io.cpi.FileCpi;
 import org.gridlab.gat.io.cpi.sftpnew.SftpNewFileAdaptor;
 import org.gridlab.gat.io.cpi.ssh.SSHSecurityUtils;
@@ -69,18 +67,11 @@ public class CommandlineSshFileAdaptor extends FileCpi {
 
         // create a seperate file object to determine whether the source
         // is a directory. This is needed, because the source might be a local
-        // file, and commandlineSsh might not be installed locally.
+        // file, and ssh might not be installed locally.
         // This goes wrong for local -> remote copies.
-        try {
-            File f = GAT.createFile(gatContext, preferences, toURI());
-
-            if (f.isDirectory()) {
-                copyDirectory(gatContext, preferences, toURI(), dest);
-
-                return;
-            }
-        } catch (Exception e) {
-            throw new GATInvocationException("commandlineSsh", e);
+        if(determineIsDirectory()) {
+            copyDirectory(gatContext, preferences, toURI(), dest);
+            return;
         }
 
         if (dest.refersToLocalHost()) {
