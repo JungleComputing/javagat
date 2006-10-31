@@ -150,7 +150,8 @@ public class ProActiveJob extends JobCpi {
         }
 
         // launch
-        jobID = launcher.launch(className, jvmArgs, progArgs, null, node);
+        jobID = launcher.launch(className, jvmArgs, progArgs, null, node)
+                .stringValue();
         watcher.addJob(this);
         setState();
         if (state == RUNNING) {
@@ -160,7 +161,7 @@ public class ProActiveJob extends JobCpi {
 
     private void setState() {
         if (state != STOPPED && state != POST_STAGING) {
-            int jobState = launcher.getStatus(jobID);
+            int jobState = launcher.getStatus(jobID).intValue();
             switch(jobState) {
             case ProActiveLauncher.RUNNING:
                 state = RUNNING;
@@ -187,10 +188,6 @@ public class ProActiveJob extends JobCpi {
             lastState = state;
             v = new MetricValue(this, getStateString(state), statusMetric,
                     System.currentTimeMillis());
-        }
-
-        if (GATEngine.DEBUG) {
-            System.err.println("default job callback: firing event: " + v);
         }
 
         GATEngine.fireMetric(this, v);
@@ -283,7 +280,7 @@ public class ProActiveJob extends JobCpi {
             throw new GATInvocationException("getExitStatus called when "
                     + "state != STOPPED");
         }
-        return launcher.getExitStatus(jobID);
+        return launcher.getExitStatus(jobID).intValue();
     }
 
     public String getJobID() {

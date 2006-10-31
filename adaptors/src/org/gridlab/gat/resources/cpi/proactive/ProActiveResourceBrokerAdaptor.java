@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.StringTokenizer;
 import java.util.Vector;
 
+import org.apache.log4j.Logger;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.GATObjectCreationException;
@@ -23,6 +24,7 @@ import org.objectweb.proactive.core.descriptor.data.VirtualNode;
 import org.objectweb.proactive.core.node.Node;
 import org.objectweb.proactive.core.node.NodeInformation;
 import org.objectweb.proactive.core.runtime.ProActiveRuntime;
+import org.objectweb.proactive.core.util.wrapper.IntWrapper;
 
 class GrabberThread extends Thread {
     String descriptor;
@@ -76,10 +78,10 @@ class GrabberThread extends Thread {
                     }
                     adaptor.gridNodesVector.add(crtNodes[j]);
                 } catch(Exception e) {
-                    System.out.println("Starting launcher on "
+                    ProActiveResourceBrokerAdaptor.logger.error(
+                            "Starting launcher on "
                             + crtNodes[j].getNodeInformation().getURL()
-                            + " failed:");
-                    e.printStackTrace();
+                            + " failed:", e);
                 }
             }
 
@@ -90,7 +92,8 @@ class GrabberThread extends Thread {
                     + vn.getNumberOfCurrentlyCreatedNodes());
             */
         } catch (Exception e) {
-            e.printStackTrace();
+            ProActiveResourceBrokerAdaptor.logger.error(
+                    "Exception in GrabberThread:", e);
         }
 
     }
@@ -106,6 +109,9 @@ public class ProActiveResourceBrokerAdaptor extends ResourceBrokerCpi {
     private int gridNodesIndex = 0;
 
     private static final int MAX_WAIT_TRIES=10;
+
+    static final Logger logger
+        = ibis.util.GetLogger.getLogger(ProActiveResourceBrokerAdaptor.class);
 
     public ProActiveResourceBrokerAdaptor(GATContext gatContext,
             Preferences preferences) throws GATObjectCreationException {
@@ -133,7 +139,7 @@ public class ProActiveResourceBrokerAdaptor extends ResourceBrokerCpi {
             try {
                 new GrabberThread(descriptorURLs[i], this, preferences).start();
             } catch (Exception e) {
-                e.printStackTrace();
+                logger.error("Creation of GrabberThread failed:", e);
             }
         }
 
@@ -141,12 +147,12 @@ public class ProActiveResourceBrokerAdaptor extends ResourceBrokerCpi {
 
         while (gridNodesVector.size() == 0 && waitTries < MAX_WAIT_TRIES ) {
             // TODO: FIX THIS
-            System.out.println("Trying to initialize grid from ProActive site descriptors ... attempt "+waitTries+"/"+MAX_WAIT_TRIES);
+            logger.info("Trying to initialize grid from ProActive site descriptors ... attempt "+waitTries+"/"+MAX_WAIT_TRIES);
             waitTries ++;
             try {
                 Thread.sleep(20000);
             } catch (Exception e) {
-                e.printStackTrace();
+                // ignored
             }
         }
     }
@@ -165,7 +171,7 @@ public class ProActiveResourceBrokerAdaptor extends ResourceBrokerCpi {
 
             launcherTable.put(node, launcher);
 
-            System.out.println("Started launcher on: "
+            logger.info("Started launcher on: "
                     + nodeInf.getHostName() + ", url: "
                     + nodeInf.getURL());
         }
@@ -176,13 +182,13 @@ public class ProActiveResourceBrokerAdaptor extends ResourceBrokerCpi {
         for (Iterator i = launcherTable.entrySet().iterator(); i.hasNext();) {
             Map.Entry e = (Map.Entry) i.next();
             Node n = (Node) e.getKey();
-            System.out.println("Killing active objects on node "
+            logger.info("Killing active objects on node "
                     + n.getNodeInformation().getURL());
             try {
                 Object[] objs = n.getActiveObjects();
-                if (objs != null) {
+                if (logger.isInfoEnabled() && objs != null) {
                     for (int j = 0; j < objs.length; j++) {
-                        System.out.println("Object " + j + ": " + objs[j]);
+                        logger.info("Object " + j + ": " + objs[j]);
                     }
                 }
                 ProActiveRuntime rt = n.getProActiveRuntime();
@@ -192,22 +198,21 @@ public class ProActiveResourceBrokerAdaptor extends ResourceBrokerCpi {
                 // ProActiveLauncher l = (ProActiveLauncher) e.getValue();
                 // l.die();
             } catch(Exception ex) {
-                // ex.printStackTrace();
-                // ignored
+                logger.info("Got exception from killRT, ignored:", ex);
             }
         }
     }
 
-    private int getBestSiteCrawler() {
+    private Node getBestSiteCrawler() {
         if (gridNodesVector == null || gridNodesVector.size() == 0) {
-            return -1;
+            return null;
         }
 
         int rv = gridNodesIndex++;
 
         if (gridNodesIndex == gridNodesVector.size()) gridNodesIndex = 0;
 
-        return rv;
+        return (Node) gridNodesVector.get(rv);
     }
 
     public Job submitJob(JobDescription description)
@@ -221,24 +226,23 @@ public class ProActiveResourceBrokerAdaptor extends ResourceBrokerCpi {
         }
 
         for (;;) {
-            int index = getBestSiteCrawler();
+            Node node = getBestSiteCrawler();
 
-            if (index <= -1) {
+            if (node == null) {
                 throw new GATInvocationException(
                         "There are no nodes available, cannot launch job.");
             }
 
-            Node node = (Node) gridNodesVector.get(index);
             NodeInformation nodeInf = node.getNodeInformation();
 
-            System.out.println("node.getNodeInformation().getHostName() = "
+            logger.info("node.getNodeInformation().getHostName() = "
                     + nodeInf.getHostName());
 
             ProActiveLauncher launcher;
             try {
                 launcher = startLauncher(node, false);
             } catch (Exception e) {
-                System.out.println("Failed to deploy launcher on node "
+                logger.warn("Failed to deploy launcher on node "
                         + nodeInf.getURL() + ", removing node ...");
                 gridNodesVector.remove(node);
                 continue;
@@ -248,27 +252,30 @@ public class ProActiveResourceBrokerAdaptor extends ResourceBrokerCpi {
                 return new ProActiveJob(gatContext, preferences, launcher,
                         description, node);
             } catch(Throwable e) {
-                System.out.println("Launcher on node " + nodeInf.getURL()
+                logger.warn("Launcher on node " + nodeInf.getURL()
                         + " failed to launch. Pinging ...");
                 boolean pingFailed = false;
                 try {
-                    launcher.ping();
+                    IntWrapper iw = launcher.ping();
+                    if (iw.intValue() != 0) {
+                        throw new Exception("Whatever ...");
+                    }
                 } catch(Exception ex) {
                     pingFailed = true;
                 }
                 if (pingFailed) {
-                    System.out.println("Redeploying launcher on node "
+                    logger.warn("Redeploying launcher on node "
                             + nodeInf.getURL());
                     try {
                         launcher = startLauncher(node, true);
                     } catch (Exception ex) {
-                        System.out.println("Failed to deploy launcher on node "
+                        logger.warn("Failed to deploy launcher on node "
                                 + nodeInf.getURL() + ", removing node ...");
                         gridNodesVector.remove(node);
                         continue;
                     }
                 } else {
-                    System.out.println("Launcher ping succeeded, something "
+                    logger.error("Launcher ping succeeded, something "
                             + "else is wrong");
                     throw new GATInvocationException("Failed to launch", e);
                 }
@@ -276,7 +283,7 @@ public class ProActiveResourceBrokerAdaptor extends ResourceBrokerCpi {
                     return new ProActiveJob(gatContext, preferences, launcher,
                             description, node);
                 } catch(Throwable ex) {
-                    System.out.println("Launcher on node " + nodeInf.getURL()
+                    logger.error("Launcher on node " + nodeInf.getURL()
                         + " failed to launch, giving up");
                     throw new GATInvocationException("Failed to launch", ex);
                 }

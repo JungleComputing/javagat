@@ -6,7 +6,8 @@ import java.util.ArrayList;
  * This class provides a thread that keeps track of the status of all
  * ProActiveJobs. We cannot use a separate thread for each job, because
  * there can be many simultaneous jobs. On the other hand, this may be
- * too slow. We'll see.
+ * too slow. We'll see. Maybe we need one of these for each cluster
+ * (virtual node?).
  */
 class ProActiveJobWatcher extends Thread {
 
