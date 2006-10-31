@@ -39,7 +39,7 @@ public class CommandlineSshFileAdaptor extends FileCpi {
         super(gatContext, preferences, location);
 
         if (!location.isCompatible("ssh")) {
-            throw new AdaptorNotApplicableException("cannot handle this URI");
+            throw new AdaptorNotApplicableException("cannot handle this URI: " + location);
         }
 
         String osname = System.getProperty("os.name");
