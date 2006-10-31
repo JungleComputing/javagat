@@ -236,7 +236,7 @@ public class SshFileAdaptor extends FileCpi {
             while (true) {
                 long time = System.currentTimeMillis() - start;
                 if(time > 2000) {
-                    break;
+                    return XOS;
                 }
                 if (channel.isEOF()) {
                     break;
