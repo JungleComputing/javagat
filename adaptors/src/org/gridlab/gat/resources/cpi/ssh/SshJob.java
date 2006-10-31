@@ -116,16 +116,6 @@ public class SshJob extends JobCpi {
         return "" + jobID;
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.gridlab.gat.advert.Advertisable#marshal()
-     */
-    public String marshal() {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
     /* (non-Javadoc)
      * @see org.gridlab.gat.resources.Job#getExitStatus()
      */

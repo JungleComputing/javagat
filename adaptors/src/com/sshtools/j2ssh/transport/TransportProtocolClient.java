@@ -322,7 +322,7 @@ public class TransportProtocolClient extends TransportProtocolCommon {
      * @throws TransportProtocolException
      */
     protected void onStartTransportProtocol() throws IOException {
-        synchronized (state) { // @@@ added by rob. 
+        synchronized (state) { // added by Rob. 
         while ((state.getValue() != TransportProtocolState.CONNECTED) &&
                 (state.getValue() != TransportProtocolState.DISCONNECTED) &&
                 (state.getLastError() == null)) {
