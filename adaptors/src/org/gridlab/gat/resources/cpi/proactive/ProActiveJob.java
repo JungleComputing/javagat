@@ -39,10 +39,9 @@ public class ProActiveJob extends JobCpi {
 
     private int lastState = -1;
 
-    static ProActiveJobWatcher watcher = new ProActiveJobWatcher();
-
     public ProActiveJob(GATContext gatContext, Preferences preferences,
-            ProActiveLauncher launcher, JobDescription jobDescription, Node node)
+            ProActiveLauncher launcher, JobDescription jobDescription,
+            Node node, ProActiveJobWatcher w)
             throws GATInvocationException {
         super(gatContext, preferences, jobDescription, null);
         this.jobDescription = jobDescription;
@@ -119,7 +118,7 @@ public class ProActiveJob extends JobCpi {
             }
         }
 
-        // Get more JVM args from attributes???
+        // TODO: Get more JVM args from attributes???
 
         // preStage.
         state = PRE_STAGING;
@@ -149,17 +148,17 @@ public class ProActiveJob extends JobCpi {
             }
         }
 
-        // launch
+        // launch, synchronized because result is accessed.
         jobID = launcher.launch(className, jvmArgs, progArgs, null, node)
                 .stringValue();
-        watcher.addJob(this);
+        w.addJob(this);
         setState();
         if (state == RUNNING) {
             infoMap.put("starttime", new Long(System.currentTimeMillis()));
         }
     }
 
-    private void setState() {
+    int setState() {
         if (state != STOPPED && state != POST_STAGING) {
             int jobState = launcher.getStatus(jobID).intValue();
             switch(jobState) {
@@ -175,6 +174,7 @@ public class ProActiveJob extends JobCpi {
             }
         }
         doCallBack();
+        return state;
     }
 
     private void doCallBack() {
@@ -191,7 +191,6 @@ public class ProActiveJob extends JobCpi {
         }
 
         GATEngine.fireMetric(this, v);
-
     }
 
     public void stop() throws GATInvocationException {
@@ -249,6 +248,7 @@ public class ProActiveJob extends JobCpi {
                 t.start();
             } catch(Exception e) {
                 postStageException = new GATInvocationException("Failed postStage", e);
+                setStopped();
             }
         } else {
             setStopped();
@@ -260,6 +260,7 @@ public class ProActiveJob extends JobCpi {
         infoMap.put("stoptime", new Long(System.currentTimeMillis()));
         state = STOPPED;
         jobsAlive--;
+        setState();
     }
 
     public synchronized Map getInfo() throws GATInvocationException {
