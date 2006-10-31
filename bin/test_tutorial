@@ -3,19 +3,19 @@
 echo ---------- RemoteCopy ------------
 echo bin/run_gat_app tutorial.RemoteCopy /bin/echo foo
 bin/run_gat_app tutorial.RemoteCopy /bin/echo foo
-rm foo
+rm -f foo
 
 echo bin/run_gat_app tutorial.RemoteCopy ssh://mars.cs.vu.nl//bin/echo foo
 bin/run_gat_app tutorial.RemoteCopy ssh://mars.cs.vu.nl//bin/echo foo
-rm foo
+rm -f foo
 
 echo bin/run_gat_app tutorial.RemoteCopy gsiftp://eltoro.pcz.pl//bin/echo foo
 bin/run_gat_app tutorial.RemoteCopy gsiftp://eltoro.pcz.pl//bin/echo foo
-rm foo
+rm -f foo
 
 echo bin/run_gat_app tutorial.RemoteCopy any://mars.cs.vu.nl//bin/echo foo
 bin/run_gat_app tutorial.RemoteCopy any://mars.cs.vu.nl//bin/echo foo
-rm foo
+rm -f foo
 
 echo bin/run_gat_app tutorial.RemoteCopy /bin/echo any://mars.cs.vu.nl/foo
 bin/run_gat_app tutorial.RemoteCopy /bin/echo any://mars.cs.vu.nl/foo
