@@ -31,6 +31,8 @@ import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.Session;
 
 public class SshFileAdaptor extends FileCpi {
+    private static final int TIMEOUT = 2000; // millis
+    
     private static final int XOS = 1;
 
     private static final int WOS = 2;
@@ -223,6 +225,25 @@ public class SshFileAdaptor extends FileCpi {
         }
     }
 
+    private void waitForEOF() {
+        long start = System.currentTimeMillis();
+        while (true) {
+            long time = System.currentTimeMillis() - start;
+            if(time > TIMEOUT) {
+                throw new Error("timeout waiting for EOF");
+            }
+            if (channel.isEOF()) {
+                return;
+            }
+            
+            try {
+                Thread.sleep(100);
+            } catch (Exception e) {
+                // ignore
+            }
+        }
+    }
+    
     protected int determineRemoteOS() throws GATObjectCreationException {
         try {
             session.connect();
@@ -232,22 +253,7 @@ public class SshFileAdaptor extends FileCpi {
             InputStream err = ((ChannelExec) channel).getErrStream();
             channel.connect();
 
-            long start = System.currentTimeMillis();
-            while (true) {
-                long time = System.currentTimeMillis() - start;
-                if(time > 2000) {
-                    return XOS;
-                }
-                if (channel.isEOF()) {
-                    break;
-                }
-                
-                try {
-                    Thread.sleep(100);
-                } catch (Exception e) {
-                    // ignore
-                }
-            }
+            waitForEOF();
 
             if (GATEngine.DEBUG) {
                 System.err.println("SshFileAdaptor: determineOS");
@@ -259,11 +265,7 @@ public class SshFileAdaptor extends FileCpi {
                 err = ((ChannelExec) channel).getErrStream();
                 channel.connect();
 
-                while (true) {
-                    if (channel.isEOF()) {
-                        break;
-                    }
-                }
+                waitForEOF();
 
                 if (GATEngine.DEBUG) {
                     System.err.println("SshFileAdaptor: determineOS");
@@ -520,11 +522,7 @@ public class SshFileAdaptor extends FileCpi {
             InputStream err = ((ChannelExec) channel).getErrStream();
             channel.connect();
 
-            while (true) {
-                if (channel.isEOF()) {
-                    break;
-                }
-            }
+            waitForEOF();
 
             if (err.available() == 0) {
                 cleanSession(session, channel);
@@ -1015,11 +1013,7 @@ public class SshFileAdaptor extends FileCpi {
                 err = ((ChannelExec) channel).getErrStream();
                 channel.connect();
 
-                while (true) {
-                    if (channel.isEOF()) {
-                        break;
-                    }
-                }
+                waitForEOF();
 
                 if (err.available() != 0) {
                     cleanSession(session, channel);
@@ -1044,11 +1038,7 @@ public class SshFileAdaptor extends FileCpi {
                 err = ((ChannelExec) channel).getErrStream();
                 channel.connect();
 
-                while (true) {
-                    if (channel.isEOF()) {
-                        break;
-                    }
-                }
+                waitForEOF();
 
                 if (err.available() != 0) {
                     cleanSession(session, channel);
@@ -1141,12 +1131,8 @@ public class SshFileAdaptor extends FileCpi {
                 res = ((ChannelExec) channel).getInputStream();
                 channel.connect();
 
-                while (true) {
-                    if (channel.isEOF()) {
-                        break;
-                    }
-                }
-
+                waitForEOF();
+                
                 if (err.available() != 0) {
                     cleanSession(session, channel);
 
@@ -1205,11 +1191,7 @@ public class SshFileAdaptor extends FileCpi {
                 res = ((ChannelExec) channel).getInputStream();
                 channel.connect();
 
-                while (true) {
-                    if (channel.isEOF()) {
-                        break;
-                    }
-                }
+                waitForEOF();
 
                 if (err.available() != 0) {
                     cleanSession(session, channel);
@@ -1285,11 +1267,7 @@ public class SshFileAdaptor extends FileCpi {
                 err = ((ChannelExec) channel).getErrStream();
                 channel.connect();
 
-                while (true) {
-                    if (channel.isEOF()) {
-                        break;
-                    }
-                }
+                waitForEOF();
 
                 if (err.available() != 0) {
                     cleanSession(session, channel);
@@ -1309,11 +1287,7 @@ public class SshFileAdaptor extends FileCpi {
                 err = ((ChannelExec) channel).getErrStream();
                 channel.connect();
 
-                while (true) {
-                    if (channel.isEOF()) {
-                        break;
-                    }
-                }
+                waitForEOF();
 
                 if (err.available() != 0) {
                     cleanSession(session, channel);
@@ -1370,11 +1344,7 @@ public class SshFileAdaptor extends FileCpi {
                 err = ((ChannelExec) channel).getErrStream();
                 channel.connect();
 
-                while (true) {
-                    if (channel.isEOF()) {
-                        break;
-                    }
-                }
+                waitForEOF();
 
                 if (err.available() != 0) {
                     itExists = TRUE;
@@ -1401,11 +1371,7 @@ public class SshFileAdaptor extends FileCpi {
                 err = ((ChannelExec) channel).getErrStream();
                 channel.connect();
 
-                while (true) {
-                    if (channel.isEOF()) {
-                        break;
-                    }
-                }
+                waitForEOF();
 
                 if (err.available() != 0) {
                     itExists = TRUE;
@@ -1479,11 +1445,7 @@ public class SshFileAdaptor extends FileCpi {
                 err = ((ChannelExec) channel).getErrStream();
                 channel.connect();
 
-                while (true) {
-                    if (channel.isEOF()) {
-                        break;
-                    }
-                }
+                waitForEOF();
 
                 if (err.available() != 0) {
                     itExists = TRUE;
@@ -1510,11 +1472,7 @@ public class SshFileAdaptor extends FileCpi {
                 err = ((ChannelExec) channel).getErrStream();
                 channel.connect();
 
-                while (true) {
-                    if (channel.isEOF()) {
-                        break;
-                    }
-                }
+                waitForEOF();
 
                 if (err.available() != 0) {
                     itExists = TRUE;
@@ -1563,11 +1521,7 @@ public class SshFileAdaptor extends FileCpi {
                 err = ((ChannelExec) channel).getErrStream();
                 channel.connect();
 
-                while (true) {
-                    if (channel.isEOF()) {
-                        break;
-                    }
-                }
+                waitForEOF();
 
                 if (err.available() != 0) {
                     itExists = FALSE;
@@ -1598,11 +1552,7 @@ public class SshFileAdaptor extends FileCpi {
                 err = ((ChannelExec) channel).getErrStream();
                 channel.connect();
 
-                while (true) {
-                    if (channel.isEOF()) {
-                        break;
-                    }
-                }
+                waitForEOF();
 
                 if (err.available() != 0) {
                     itExists = FALSE;
@@ -1706,11 +1656,7 @@ public class SshFileAdaptor extends FileCpi {
                 res = ((ChannelExec) channel).getInputStream();
                 channel.connect();
 
-                while (true) {
-                    if (channel.isEOF()) {
-                        break;
-                    }
-                }
+                waitForEOF();
 
                 if (err.available() != 0) {
                     cleanSession(session, channel);
@@ -1865,11 +1811,7 @@ public class SshFileAdaptor extends FileCpi {
             InputStream err = ((ChannelExec) channel).getErrStream();
             channel.connect();
 
-            while (true) {
-                if (channel.isEOF()) {
-                    break;
-                }
-            }
+            waitForEOF();
 
             if (err.available() != 0) {
                 isDir = FALSE;
@@ -1978,11 +1920,7 @@ public class SshFileAdaptor extends FileCpi {
                 res = ((ChannelExec) channel).getInputStream();
                 channel.connect();
 
-                while (true) {
-                    if (channel.isEOF()) {
-                        break;
-                    }
-                }
+                waitForEOF();
 
                 if (err.available() != 0) {
                     cleanSession(session, channel);
@@ -2009,11 +1947,7 @@ public class SshFileAdaptor extends FileCpi {
                 res = ((ChannelExec) channel).getInputStream();
                 channel.connect();
 
-                while (true) {
-                    if (channel.isEOF()) {
-                        break;
-                    }
-                }
+                waitForEOF();
 
                 if (err.available() != 0) {
                     cleanSession(session, channel);
@@ -2084,11 +2018,7 @@ public class SshFileAdaptor extends FileCpi {
                 res = ((ChannelExec) channel).getInputStream();
                 channel.connect();
 
-                while (true) {
-                    if (channel.isEOF()) {
-                        break;
-                    }
-                }
+                waitForEOF();
 
                 if (err.available() != 0) {
                     cleanSession(session, channel);
@@ -2105,11 +2035,7 @@ public class SshFileAdaptor extends FileCpi {
                 res = ((ChannelExec) channel).getInputStream();
                 channel.connect();
 
-                while (true) {
-                    if (channel.isEOF()) {
-                        break;
-                    }
-                }
+                waitForEOF();
 
                 if (err.available() != 0) {
                     cleanSession(session, channel);
@@ -2311,11 +2237,7 @@ public class SshFileAdaptor extends FileCpi {
                 err = ((ChannelExec) channel).getErrStream();
                 channel.connect();
 
-                while (true) {
-                    if (channel.isEOF()) {
-                        break;
-                    }
-                }
+                waitForEOF();
 
                 if (err.available() != 0) {
                     cleanSession(session, channel);
@@ -2366,11 +2288,7 @@ public class SshFileAdaptor extends FileCpi {
                 err = ((ChannelExec) channel).getErrStream();
                 channel.connect();
 
-                while (true) {
-                    if (channel.isEOF()) {
-                        break;
-                    }
-                }
+                waitForEOF();
 
                 if (err.available() != 0) {
                     cleanSession(session, channel);
@@ -2387,11 +2305,7 @@ public class SshFileAdaptor extends FileCpi {
                 err = ((ChannelExec) channel).getErrStream();
                 channel.connect();
 
-                while (true) {
-                    if (channel.isEOF()) {
-                        break;
-                    }
-                }
+                waitForEOF();
 
                 if (err.available() != 0) {
                     cleanSession(session, channel);
@@ -2560,11 +2474,7 @@ public class SshFileAdaptor extends FileCpi {
                 err = ((ChannelExec) channel).getErrStream();
                 channel.connect();
 
-                while (true) {
-                    if (channel.isEOF()) {
-                        break;
-                    }
-                }
+                waitForEOF();
 
                 if (err.available() != 0) {
                     cleanSession(session, channel);
@@ -2661,11 +2571,7 @@ public class SshFileAdaptor extends FileCpi {
                 err = ((ChannelExec) channel).getErrStream();
                 channel.connect();
 
-                while (true) {
-                    if (channel.isEOF()) {
-                        break;
-                    }
-                }
+                waitForEOF();
 
                 if (err.available() != 0) {
                     cleanSession(session, channel);
