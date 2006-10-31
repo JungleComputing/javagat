@@ -390,7 +390,7 @@ public class Session implements Runnable{
         isAuthed=true;
 	connectThread=new Thread(this);
 	connectThread.setName("Connect thread "+host+" session");
-        connectThread.setDaemon(true); // @@@ added by Rob
+        connectThread.setDaemon(true); // added by Rob
 	connectThread.start();
 	return;
       }

@@ -275,16 +275,6 @@ public class ZorillaJob extends JobCpi implements Runnable {
         }
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.gridlab.gat.advert.Advertisable#marshal()
-     */
-    public String marshal() {
-        // FIXME: Auto-generated method stub
-        return null;
-    }
-
     private void doCallBack() throws GATInvocationException {
         MetricValue v = null;
 

@@ -839,7 +839,7 @@ public class GAT {
             return null;
         }
 
-        /** @@@ maybe we want to support a "default" context. */
+        /** Maybe we want to support a "default" context. */
         if (gatContext == null) {
             gatContext = new GATContext(); // get default context here, not a new one
         }

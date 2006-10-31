@@ -3,8 +3,6 @@
  */
 package org.gridlab.gat.resources.cpi;
 
-// @@@ allow job killing to be turned off
-
 import java.util.ArrayList;
 
 import org.gridlab.gat.GATContext;
@@ -63,6 +61,15 @@ public abstract class JobCpi extends Job {
 
     public synchronized int getState() {
         return state;
+    }
+
+    /*
+     * (non-Javadoc)
+     *
+     * @see org.gridlab.gat.advert.Advertisable#marshal()
+     */
+    public String marshal() {
+        return null;
     }
 
     protected void finished() {

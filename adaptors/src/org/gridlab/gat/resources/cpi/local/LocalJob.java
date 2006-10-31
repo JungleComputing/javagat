@@ -134,16 +134,6 @@ public class LocalJob extends JobCpi {
         return "" + jobID;
     }
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see org.gridlab.gat.advert.Advertisable#marshal()
-     */
-    public String marshal() {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
     void finished(int exitValue) {
         MetricValue v = null;
 
