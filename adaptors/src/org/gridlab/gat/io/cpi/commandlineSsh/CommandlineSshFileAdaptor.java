@@ -65,15 +65,8 @@ public class CommandlineSshFileAdaptor extends FileCpi {
                 "commandlineSsh cannot copy local files");
         }
 
-        // create a seperate file object to determine whether the source
-        // is a directory. This is needed, because the source might be a local
-        // file, and ssh might not be installed locally.
-        // This goes wrong for local -> remote copies.
-        if(determineIsDirectory()) {
-            copyDirectory(gatContext, preferences, toURI(), dest);
-            return;
-        }
-
+        // we don't have to check if the URI is a file or a directory, we always copy with the "-r" flag.
+        
         if (dest.refersToLocalHost()) {
             if (GATEngine.DEBUG) {
                 System.err.println("commandlineSsh file: copy remote to local");
