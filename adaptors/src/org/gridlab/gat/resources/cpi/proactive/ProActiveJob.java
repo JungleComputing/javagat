@@ -1,20 +1,19 @@
 package org.gridlab.gat.resources.cpi.proactive;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
-import org.gridlab.gat.URI;
 import org.gridlab.gat.Preferences;
-import org.gridlab.gat.advert.Advertisable;
+import org.gridlab.gat.URI;
 import org.gridlab.gat.engine.GATEngine;
-import org.gridlab.gat.monitoring.Metric;
-import org.gridlab.gat.monitoring.MetricValue;
-import org.gridlab.gat.monitoring.MetricDefinition;
 import org.gridlab.gat.io.File;
+import org.gridlab.gat.monitoring.Metric;
+import org.gridlab.gat.monitoring.MetricDefinition;
+import org.gridlab.gat.monitoring.MetricValue;
 import org.gridlab.gat.resources.JobDescription;
 import org.gridlab.gat.resources.SoftwareDescription;
 import org.gridlab.gat.resources.cpi.JobCpi;

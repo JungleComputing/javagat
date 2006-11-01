@@ -51,7 +51,6 @@ public class Sandbox {
         if(sd != null) {
             Map attr = sd.getAttributes();
             if(attr != null) {
-                System.err.println("attr = " + attr);
                 sandboxRootPref = (String) attr.get("sandboxRoot");
             }
         }

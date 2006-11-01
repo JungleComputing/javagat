@@ -141,26 +141,9 @@ public abstract class GlobusFileAdaptor extends FileCpi {
         // is a directory. This is needed, because the source might be a local
         // file, and gridftp might not be installed locally.
         // This goes wrong for local -> remote copies.
-        if (toURI().refersToLocalHost()) {
-            try {
-                java.io.File f = new java.io.File(getPath());
-                if (f.isDirectory()) {
-                    copyDirectory(gatContext, preferences, toURI(), dest);
-                    return;
-                }
-            } catch (Exception e) {
-                // ignore
-            }
-        } else {
-            try {
-                File f = GAT.createFile(gatContext, preferences, toURI());
-                if (f.isDirectory()) {
-                    copyDirectory(gatContext, preferences, toURI(), dest);
-                    return;
-                }
-            } catch (Exception e) {
-                throw new GATInvocationException("gridftp", e);
-            }
+        if(determineIsDirectory()) {
+            copyDirectory(gatContext, preferences, toURI(), dest);
+            return;
         }
 
         if (dest.refersToLocalHost()) {
@@ -201,7 +184,8 @@ public abstract class GlobusFileAdaptor extends FileCpi {
 
         FTPClient srcClient = null;
         FTPClient destClient = null;
-
+        File tmpFile = null;
+        
         try {
             srcClient = createClient(gatContext, p2, src);
             destClient = createClient(gatContext, p2, dest);
@@ -220,9 +204,14 @@ public abstract class GlobusFileAdaptor extends FileCpi {
                 // use a local tmp file.
                 java.io.File tmp = null;
                 tmp = java.io.File.createTempFile("GATgridFTP", ".tmp");
-
-                copyToLocal(src, new URI(tmp.toURI()));
-                copyToRemote(new URI(tmp.toURI()), dest);
+                URI u = new URI("any:///" + tmp.getPath());
+                if(GATEngine.DEBUG) {
+                	System.err.println("thirdparty copy failed, using temp file: " + u);
+                }
+                tmpFile = GAT.createFile(gatContext, preferences, u);
+                
+                copyToLocal(src, u);
+                tmpFile.copy(dest);
             } catch (Exception e2) {
                 GATInvocationException oops = new GATInvocationException();
                 oops.add("Globus file", e);
@@ -233,6 +222,13 @@ public abstract class GlobusFileAdaptor extends FileCpi {
         } finally {
             if (srcClient != null) destroyClient(srcClient, src, p2);
             if (destClient != null) destroyClient(destClient, dest, p2);
+            if(tmpFile != null) {
+            	try {
+            		tmpFile.delete();
+            	} catch (Exception e) {
+            		// ignore
+            	}
+            }
         }
     }
 

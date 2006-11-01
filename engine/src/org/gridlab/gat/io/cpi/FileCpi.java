@@ -56,7 +56,7 @@ public abstract class FileCpi implements File {
         this.preferences = preferences;
         this.location = location;
 
-        if(GATEngine.DEBUG) {
+        if (GATEngine.DEBUG) {
             System.err.println("FileCpi: created file with URI " + location);
         }
     }
@@ -468,8 +468,8 @@ public abstract class FileCpi implements File {
 
         // create destination dir
         try {
-            org.gridlab.gat.io.File destDir = GAT.createFile(gatContext,
-                preferences, dest);
+            org.gridlab.gat.io.File destDir =
+                    GAT.createFile(gatContext, preferences, dest);
 
             if (GATEngine.DEBUG) {
                 System.err.println("copyDirectory: mkdir of " + destDir);
@@ -483,8 +483,8 @@ public abstract class FileCpi implements File {
         // list all the files and copy recursively.
         File[] files = dir.listFiles();
 
-        if(files == null) return;
-        
+        if (files == null) return;
+
         for (int i = 0; i < files.length; i++) {
             File f = files[i];
 
@@ -530,16 +530,16 @@ public abstract class FileCpi implements File {
         } catch (GATObjectCreationException e) {
             throw new GATInvocationException("generic file cpi", e);
         }
-        
+
         File[] files = dir.listFiles(new FileFilter() {
-                    public boolean accept(File file) {
-                        try {
-                            return file.isDirectory();
-                        } catch (Exception e) {
-                            return false;
-                        }
-                    }
-                });
+            public boolean accept(File file) {
+                try {
+                    return file.isDirectory();
+                } catch (Exception e) {
+                    return false;
+                }
+            }
+        });
 
         if (files == null) {
             return; // Directory could not be read
@@ -551,14 +551,14 @@ public abstract class FileCpi implements File {
         }
 
         files = dir.listFiles(new FileFilter() {
-                    public boolean accept(File file) {
-                        try {
-                            return !file.isDirectory();
-                        } catch (Exception e) {
-                            return false;
-                        }
-                    }
-                });
+            public boolean accept(File file) {
+                try {
+                    return !file.isDirectory();
+                } catch (Exception e) {
+                    return false;
+                }
+            }
+        });
 
         for (int i = 0; i < files.length; i++) {
             files[i].delete();
@@ -566,7 +566,7 @@ public abstract class FileCpi implements File {
 
         dir.delete();
     }
-    
+
     public String marshal() {
         SerializedFile f = new SerializedFile();
         f.setLocation(location.toString());
@@ -576,14 +576,37 @@ public abstract class FileCpi implements File {
 
     public static Advertisable unmarshal(GATContext context,
             Preferences preferences, String s) {
-        SerializedFile f = (SerializedFile) GATEngine.defaultUnmarshal(
-            SerializedFile.class, s);
+        SerializedFile f =
+                (SerializedFile) GATEngine.defaultUnmarshal(
+                    SerializedFile.class, s);
 
         try {
             return GAT.createFile(context, preferences,
                 new URI(f.getLocation()));
         } catch (Exception e) {
             throw new Error("could not create new GAT object");
+        }
+    }
+
+    protected boolean determineIsDirectory() throws GATInvocationException {
+        // create a seperate file object to determine whether this file
+        // is a directory. This is needed, because the source might be a local
+        // file, and some adaptors might not work locally (like gridftp).
+        // This goes wrong for local -> remote copies.
+        if (toURI().refersToLocalHost()) {
+            try {
+                java.io.File f = new java.io.File(getPath());
+                return f.isDirectory();
+            } catch (Exception e) {
+                throw new GATInvocationException("fileCPI", e);
+            }
+        } else {
+            try {
+                File f = GAT.createFile(gatContext, preferences, toURI());
+                return f.isDirectory();
+            } catch (Exception e) {
+                throw new GATInvocationException("fileCPI", e);
+            }
         }
     }
 

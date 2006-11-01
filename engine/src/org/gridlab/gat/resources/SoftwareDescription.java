@@ -219,6 +219,13 @@ public class SoftwareDescription implements java.io.Serializable {
         return preStagedFiles;
     }
 
+    public void setPreStaged(File[] files) {
+    	preStagedFiles = new HashMap();
+    	for(int i=0; i<files.length; i++) {
+    		addPreStagedFile(files[i]);
+    	}
+    }
+    
     /** Add a prestaged file. The file will have the same name in the CWD at the remote machine. */
     public void addPreStagedFile(File src) {
         addPreStagedFile(src, null);
@@ -239,6 +246,13 @@ public class SoftwareDescription implements java.io.Serializable {
      */
     public Map getPostStaged() {
         return postStagedFiles;
+    }
+
+    public void setPostStaged(File[] files) {
+    	postStagedFiles = new HashMap();
+    	for(int i=0; i<files.length; i++) {
+    		addPostStagedFile(files[i]);
+    	}
     }
 
     /** Add a file to poststage. 

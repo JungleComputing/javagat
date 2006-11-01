@@ -2,7 +2,6 @@ package org.gridlab.gat.resources.cpi.proactive;
 
 import java.io.Serializable;
 import java.util.HashMap;
-import java.util.Map;
 import java.util.Map.Entry;
 
 import org.apache.log4j.Logger;
