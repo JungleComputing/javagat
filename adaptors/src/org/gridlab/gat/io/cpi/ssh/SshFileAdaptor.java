@@ -1313,7 +1313,7 @@ public class SshFileAdaptor extends FileCpi {
     public boolean delete() {
         if (isLocalFile) {
             throw new Error(
-                "SshFileAdaptor for local files: only copy to remote machine");
+                "SshFileAdaptor cannot delete local files");
         }
 
         try {

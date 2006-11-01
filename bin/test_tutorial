@@ -19,10 +19,11 @@ rm -f foo
 
 echo bin/run_gat_app tutorial.RemoteCopy /bin/echo any://mars.cs.vu.nl/foo
 bin/run_gat_app tutorial.RemoteCopy /bin/echo any://mars.cs.vu.nl/foo
+ssh mars.cs.vu.nl rm -f foo
 
 echo bin/run_gat_app tutorial.RemoteCopy any://flits.cs.vu.nl//bin/echo any://mars.cs.vu.nl/hiha.dat
 bin/run_gat_app tutorial.RemoteCopy any://flits.cs.vu.nl//bin/echo any://mars.cs.vu.nl/hiha.dat
-
+ssh mars.cs.vu.nl rm -f hiha.dat
 
 echo ---------- RemoteCat ------------
 
