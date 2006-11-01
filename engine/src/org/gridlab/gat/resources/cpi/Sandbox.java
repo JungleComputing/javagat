@@ -47,11 +47,13 @@ public class Sandbox {
         
         // The user preference sandboxRoot overwrites the one specified by the adaptor.
         String sandboxRootPref = null;
+        String sandboxDisabledPref = null;
         SoftwareDescription sd = jobDescription.getSoftwareDescription();
         if(sd != null) {
             Map attr = sd.getAttributes();
             if(attr != null) {
                 sandboxRootPref = (String) attr.get("sandboxRoot");
+                sandboxDisabledPref = (String) attr.get("disableSandbox");
             }
         }
         if(sandboxRootPref != null) {
@@ -62,7 +64,16 @@ public class Sandbox {
         } else {
             this.sandboxRoot = sandboxRoot;
         }
-        this.createSandboxDir = createSandboxDir;
+
+        if(sandboxDisabledPref != null) {
+        	if(sandboxDisabledPref.equalsIgnoreCase("true")) {
+        		this.createSandboxDir = false;
+        	} else {
+                this.createSandboxDir = createSandboxDir;        		
+        	}
+        } else {
+        	this.createSandboxDir = createSandboxDir;
+        }
 
         initSandbox();
 
