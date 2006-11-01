@@ -251,7 +251,7 @@ public class GrmsBrokerAdaptor extends ResourceBrokerCpi {
         // we do not support environment yet
         Map myEnv = sd.getEnvironment();
         if(myEnv == null || myEnv.isEmpty()) {
-            throw new AdaptorNotApplicableException("cannot handle environment");
+            throw new GATInvocationException("grms", new AdaptorNotApplicableException("cannot handle environment"));
         }
 
         // @@@ for now we only do simple Jobs.
@@ -503,7 +503,7 @@ public class GrmsBrokerAdaptor extends ResourceBrokerCpi {
             throw new GATInvocationException(res.getErrorMessage());
         }
 
-        return new GrmsJob(this, description, jobId.value, null);
+        return new GrmsJob(gatContext, preferences, this, description, jobId.value, null);
     }
 
     Grms getGrms() {

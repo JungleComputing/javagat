@@ -12,7 +12,9 @@ import java.util.Calendar;
 import java.util.Map;
 import java.util.TreeMap;
 
+import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
+import org.gridlab.gat.Preferences;
 import org.gridlab.gat.advert.Advertisable;
 import org.gridlab.gat.resources.JobDescription;
 import org.gridlab.gat.resources.cpi.JobCpi;
@@ -28,9 +30,9 @@ public class GrmsJob extends JobCpi {
 
     Grms grms;
 
-    public GrmsJob(GrmsBrokerAdaptor broker, JobDescription jobDescription,
+    public GrmsJob(GATContext gatContext, Preferences preferences, GrmsBrokerAdaptor broker, JobDescription jobDescription,
         String jobId, Sandbox sandbox) {
-        super(jobDescription, sandbox);
+        super(gatContext, preferences, jobDescription, sandbox);
         this.broker = broker;
         this.jobId = jobId;
         this.jobDescription = jobDescription;
