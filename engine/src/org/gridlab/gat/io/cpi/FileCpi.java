@@ -602,10 +602,16 @@ public abstract class FileCpi implements File {
             }
         } else {
             try {
+                return isDirectory();
+            } catch (Exception e) {
+            	// ignore
+            }
+
+            try {
                 File f = GAT.createFile(gatContext, preferences, toURI());
                 return f.isDirectory();
-            } catch (Exception e) {
-                throw new GATInvocationException("fileCPI", e);
+            } catch (Exception e2) {
+                throw new GATInvocationException("fileCPI", e2);
             }
         }
     }

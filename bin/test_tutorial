@@ -1,29 +1,35 @@
 #!/bin/sh
 
 echo ---------- RemoteCopy ------------
+rm -f foo
 echo bin/run_gat_app tutorial.RemoteCopy /bin/echo foo
 bin/run_gat_app tutorial.RemoteCopy /bin/echo foo
 rm -f foo
 
+rm -f foo
 echo bin/run_gat_app tutorial.RemoteCopy ssh://mars.cs.vu.nl//bin/echo foo
 bin/run_gat_app tutorial.RemoteCopy ssh://mars.cs.vu.nl//bin/echo foo
 rm -f foo
  
+rm -f foo
 echo bin/run_gat_app tutorial.RemoteCopy gsiftp://fs1.das2.liacs.nl//bin/echo foo
 bin/run_gat_app tutorial.RemoteCopy gsiftp://fs1.das2.liacs.nl//bin/echo foo
 rm -f foo
 
+rm -f foo
 echo bin/run_gat_app tutorial.RemoteCopy any://mars.cs.vu.nl//bin/echo foo
 bin/run_gat_app tutorial.RemoteCopy any://mars.cs.vu.nl//bin/echo foo
 rm -f foo
 
+ssh mars.cs.vu.nl rm -f foo
 echo bin/run_gat_app tutorial.RemoteCopy /bin/echo any://mars.cs.vu.nl/foo
 bin/run_gat_app tutorial.RemoteCopy /bin/echo any://mars.cs.vu.nl/foo
 ssh mars.cs.vu.nl rm -f foo
 
-echo bin/run_gat_app tutorial.RemoteCopy any://flits.cs.vu.nl//bin/echo any://mars.cs.vu.nl/hiha.dat
-bin/run_gat_app tutorial.RemoteCopy any://flits.cs.vu.nl//bin/echo any://mars.cs.vu.nl/hiha.dat
-ssh mars.cs.vu.nl rm -f hiha.dat
+ssh fs2.das2.nikhef.nl rm -f hiha.dat
+echo bin/run_gat_app tutorial.RemoteCopy any://fs1.das2.liacs.nl//bin/echo any://fs2.das2.nikhef.nl/hiha.dat
+bin/run_gat_app tutorial.RemoteCopy any://fs1.das2.liacs.nl//bin/echo any://fs2.das2.nikhef.nl/hiha.dat
+ssh fs2.das2.nikhef.nl rm -f hiha.dat
 
 echo ---------- RemoteCat ------------
 
@@ -35,6 +41,7 @@ bin/run_gat_app tutorial.RemoteCat any://mars.cs.vu.nl/.bashrc
 
 echo ---------- SubmitLocalJob ------------
 
+rm -f hostname.txt
 echo bin/run_gat_app tutorial.SubmitLocalJob
 bin/run_gat_app tutorial.SubmitLocalJob
 cat hostname.txt
@@ -48,8 +55,9 @@ bin/run_gat_app tutorial.SubmitRemoteJob fs0.das2.cs.vu.nl
 cat hostname.txt
 rm -f hostname.txt
 
-echo bin/run_gat_app tutorial.SubmitRemoteJob skirit.ics.muni.cz
-bin/run_gat_app tutorial.SubmitRemoteJob skirit.ics.muni.cz
+rm -f hostname.txt
+echo bin/run_gat_app tutorial.SubmitRemoteJob fs1.das2.liacs.nl
+bin/run_gat_app tutorial.SubmitRemoteJob fs1.das2.liacs.nl
 cat hostname.txt
 rm -f hostname.txt
 
@@ -99,8 +107,8 @@ bin/run_gat_app tutorial.GetMetric node001.das2.cs.vu.nl
 
 echo ---------- SubmitJobCallback ------------
 
-gsissh -p 2222 eltoro.pcz.pl rm -rf testDir
-bin/run_gat_app tutorial.SubmitJobCallback eltoro.pcz.pl 
+ssh fs1.das2.liacs.nl rm -rf testDir
+bin/run_gat_app tutorial.SubmitJobCallback fs1.das2.liacs.nl
 cat hostname.txt
 rm -f hostname.txt
-gsissh -p 2222 eltoro.pcz.pl rm -rf testDir
+ssh fs1.das2.liacs.nl rm -rf testDir
