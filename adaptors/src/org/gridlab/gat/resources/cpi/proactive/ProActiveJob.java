@@ -17,6 +17,7 @@ import org.gridlab.gat.monitoring.MetricValue;
 import org.gridlab.gat.resources.JobDescription;
 import org.gridlab.gat.resources.SoftwareDescription;
 import org.gridlab.gat.resources.cpi.JobCpi;
+import org.gridlab.gat.resources.cpi.Sandbox;
 import org.objectweb.proactive.core.node.Node;
 import org.objectweb.proactive.filetransfer.FileTransfer;
 import org.objectweb.proactive.filetransfer.FileVector;
@@ -40,9 +41,9 @@ public class ProActiveJob extends JobCpi {
 
     public ProActiveJob(GATContext gatContext, Preferences preferences,
             ProActiveLauncher launcher, JobDescription jobDescription,
-            Node node, ProActiveJobWatcher w)
+            Node node, ProActiveJobWatcher w, Sandbox sandbox)
             throws GATInvocationException {
-        super(gatContext, preferences, jobDescription, null);
+        super(gatContext, preferences, jobDescription, sandbox);
         this.jobDescription = jobDescription;
         this.launcher = launcher;
         this.node = node;
@@ -120,41 +121,41 @@ public class ProActiveJob extends JobCpi {
         // TODO: Get more JVM args from attributes???
 
         // preStage.
-        state = PRE_STAGING;
-        Map preStageFiles;   // Map<File, File> (virtual file path, physical
-                             // file path)
-        preStageFiles = soft.getPreStaged();
-        if (preStageFiles != null && preStageFiles.size() != 0) {
-            java.io.File[] srcFiles = new java.io.File[preStageFiles.size()];
-            java.io.File[] dstFiles = new java.io.File[preStageFiles.size()];
-            int index = 0;
-            for (Iterator i = preStageFiles.entrySet().iterator(); i.hasNext();) {
-                Map.Entry e = (Map.Entry) i.next();
-                String key = ((File) e.getKey()).getPath();
-                srcFiles[index] = new java.io.File(key);
-                if (e.getValue() == null) {
-                    dstFiles[index] = srcFiles[index];
-                } else {
-                    String val = ((File) e.getValue()).getPath();
-                    dstFiles[index] = new java.io.File(val);
+        if (sandbox == null) {
+            state = PRE_STAGING;
+            Map preStageFiles;   // Map<File, File> (virtual file path, physical
+                                 // file path)
+            preStageFiles = soft.getPreStaged();
+            if (preStageFiles != null && preStageFiles.size() != 0) {
+                java.io.File[] srcFiles = new java.io.File[preStageFiles.size()];
+                java.io.File[] dstFiles = new java.io.File[preStageFiles.size()];
+                int index = 0;
+                for (Iterator i = preStageFiles.entrySet().iterator(); i.hasNext();) {
+                    Map.Entry e = (Map.Entry) i.next();
+                    String key = ((File) e.getKey()).getPath();
+                    srcFiles[index] = new java.io.File(key);
+                    if (e.getValue() == null) {
+                        dstFiles[index] = srcFiles[index];
+                    } else {
+                        String val = ((File) e.getValue()).getPath();
+                        dstFiles[index] = new java.io.File(val);
+                    }
+                    index++;
                 }
-                index++;
-            }
-            try {
-                FileTransfer.pushFiles(node, srcFiles, dstFiles).waitForAll();
-            } catch(Exception e) {
-                throw new GATInvocationException("preStage copy failed", e);
+                try {
+                    FileTransfer.pushFiles(node, srcFiles, dstFiles).waitForAll();
+                } catch(Exception e) {
+                    throw new GATInvocationException("preStage copy failed", e);
+                }
             }
         }
 
         // launch, synchronized because result is accessed.
         jobID = launcher.launch(className, jvmArgs, progArgs, null, node)
                 .stringValue();
+        infoMap.put("starttime", new Long(System.currentTimeMillis()));
         w.addJob(this);
         setState();
-        if (state == RUNNING) {
-            infoMap.put("starttime", new Long(System.currentTimeMillis()));
-        }
     }
 
     int setState() {
@@ -212,6 +213,12 @@ public class ProActiveJob extends JobCpi {
 
     synchronized void initiatePostStaging() {
         SoftwareDescription soft = jobDescription.getSoftwareDescription();
+        if (sandbox != null) {
+            sandbox.retrieveAndCleanup(this);
+            setStopped();
+            return;
+        }
+
         Map postStageFiles = soft.getPostStaged();
 
         if (postStageFiles != null && postStageFiles.size() != 0) {

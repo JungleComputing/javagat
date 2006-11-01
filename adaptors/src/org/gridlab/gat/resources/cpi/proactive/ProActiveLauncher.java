@@ -110,6 +110,9 @@ public class ProActiveLauncher implements Serializable, InitActive, RunActive {
 
         jvm.setClassname(classname);
 
+        jvm.setLog4jFile(null);
+        jvm.setPolicyFile(null);
+
         if (classpath != null) {
             jvm.setClasspath(classpath);
         }

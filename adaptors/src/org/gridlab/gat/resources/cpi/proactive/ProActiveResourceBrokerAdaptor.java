@@ -16,6 +16,7 @@ import org.gridlab.gat.resources.Job;
 import org.gridlab.gat.resources.JobDescription;
 import org.gridlab.gat.resources.SoftwareDescription;
 import org.gridlab.gat.resources.cpi.ResourceBrokerCpi;
+import org.gridlab.gat.resources.cpi.Sandbox;
 import org.objectweb.proactive.ProActive;
 import org.objectweb.proactive.core.node.Node;
 import org.objectweb.proactive.core.node.NodeInformation;
@@ -32,7 +33,7 @@ public class ProActiveResourceBrokerAdaptor extends ResourceBrokerCpi {
 
     private int gotNodesFromDescriptors = 0;
 
-    private ArrayList[] nodes;
+    private ArrayList[] clusters;
 
     private int currentList = 0;
 
@@ -57,8 +58,8 @@ public class ProActiveResourceBrokerAdaptor extends ResourceBrokerCpi {
                 xmls.add(tok.nextToken());
             }
             descriptorURLs = (String[]) xmls.toArray(new String[xmls.size()]);
-            nodes = new ArrayList[descriptorURLs.length];
-            watchers = new ProActiveJobWatcher[nodes.length];
+            clusters = new ArrayList[descriptorURLs.length];
+            watchers = new ProActiveJobWatcher[clusters.length];
         } else {
             throw new GATObjectCreationException("No descriptors provided. Set"
                     + " the ResourceBroker.proActive.descriptors preference to "
@@ -110,7 +111,7 @@ public class ProActiveResourceBrokerAdaptor extends ResourceBrokerCpi {
     synchronized void addNodes(String descriptor, ArrayList nodes) {
         for (int i = 0; i < descriptorURLs.length; i++) {
             if (descriptorURLs[i].equals(descriptor)) {
-                this.nodes[i] = nodes;
+                this.clusters[i] = nodes;
                 totalNodes += nodes.size();
                 gotNodesFromDescriptors++;
                 if (gotNodesFromDescriptors == descriptorURLs.length
@@ -124,7 +125,7 @@ public class ProActiveResourceBrokerAdaptor extends ResourceBrokerCpi {
 
     synchronized void removeNode(int index) {
         totalNodes--;
-        nodes[currentList].remove(index);
+        clusters[currentList].remove(index);
         currentIndex--;
     }
 
@@ -157,11 +158,11 @@ public class ProActiveResourceBrokerAdaptor extends ResourceBrokerCpi {
         if (totalNodes <= 0) {
             return -1;
         }
-        while (nodes[currentList] == null
-                || currentIndex >= nodes[currentList].size()) {
+        while (clusters[currentList] == null
+                || currentIndex >= clusters[currentList].size()) {
             currentIndex = 0;
             currentList++;
-            if (currentList >= nodes.length) {
+            if (currentList >= clusters.length) {
                 currentList = 0;
             }
         }
@@ -178,6 +179,8 @@ public class ProActiveResourceBrokerAdaptor extends ResourceBrokerCpi {
                     "Job description does not contain a software description");
         }
 
+        Sandbox sandbox = null;
+
         for (;;) {
             int index = getBestSiteCrawler();
 
@@ -185,9 +188,17 @@ public class ProActiveResourceBrokerAdaptor extends ResourceBrokerCpi {
                 throw new GATInvocationException("No nodes available");
             }
 
-            Node node = (Node) nodes[currentList].get(index);
+            Node node = (Node) clusters[currentList].get(index);
 
             NodeInformation nodeInf = node.getNodeInformation();
+
+            if (preferences.containsKey("useSandbox")) {
+                if (sandbox != null) {
+                    sandbox.retrieveAndCleanup(null);
+                }
+                sandbox = new Sandbox(gatContext, preferences, description,
+                        nodeInf.getHostName(), null, true, false, false, false);
+            }
 
             logger.info("node.getNodeInformation().getHostName() = "
                     + nodeInf.getHostName());
@@ -204,7 +215,7 @@ public class ProActiveResourceBrokerAdaptor extends ResourceBrokerCpi {
 
             try {
                 return new ProActiveJob(gatContext, preferences, launcher,
-                        description, node, watchers[currentList]);
+                        description, node, watchers[currentList], sandbox);
             } catch(Throwable e) {
                 logger.warn("Launcher on node " + nodeInf.getURL()
                         + " failed to launch. Pinging ...");
@@ -235,7 +246,7 @@ public class ProActiveResourceBrokerAdaptor extends ResourceBrokerCpi {
                 }
                 try {
                     return new ProActiveJob(gatContext, preferences, launcher,
-                            description, node, watchers[currentList]);
+                            description, node, watchers[currentList], sandbox);
                 } catch(Throwable ex) {
                     logger.error("Launcher on node " + nodeInf.getURL()
                         + " failed to launch, giving up");
