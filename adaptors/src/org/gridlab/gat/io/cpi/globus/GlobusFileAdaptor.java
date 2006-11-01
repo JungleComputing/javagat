@@ -203,9 +203,14 @@ public abstract class GlobusFileAdaptor extends FileCpi {
                 // use a local tmp file.
                 java.io.File tmp = null;
                 tmp = java.io.File.createTempFile("GATgridFTP", ".tmp");
-
-                copyToLocal(src, new URI(tmp.toURI()));
-                copyToRemote(new URI(tmp.toURI()), dest);
+                URI u = new URI(tmp.toURI());
+                
+                if(GATEngine.DEBUG) {
+                	System.err.println("thirdparty copy failed, using temp file: " + u);
+                }
+                
+                copyToLocal(src, u);
+                copyToRemote(u, dest);
             } catch (Exception e2) {
                 GATInvocationException oops = new GATInvocationException();
                 oops.add("Globus file", e);
