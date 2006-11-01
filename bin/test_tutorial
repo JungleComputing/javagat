@@ -48,8 +48,8 @@ bin/run_gat_app tutorial.SubmitRemoteJob fs0.das2.cs.vu.nl
 cat hostname.txt
 rm -f hostname.txt
 
-echo bin/run_gat_app tutorial.SubmitRemoteJob skirit.ics.muni.cz
-bin/run_gat_app tutorial.SubmitRemoteJob skirit.ics.muni.cz
+echo bin/run_gat_app tutorial.SubmitRemoteJob fs1.das2.liacs.nl
+bin/run_gat_app tutorial.SubmitRemoteJob fs1.das2.liacs.nl
 cat hostname.txt
 rm -f hostname.txt
 
