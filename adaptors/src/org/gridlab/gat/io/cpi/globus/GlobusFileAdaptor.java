@@ -184,7 +184,8 @@ public abstract class GlobusFileAdaptor extends FileCpi {
 
         FTPClient srcClient = null;
         FTPClient destClient = null;
-
+        File tmpFile = null;
+        
         try {
             srcClient = createClient(gatContext, p2, src);
             destClient = createClient(gatContext, p2, dest);
@@ -207,10 +208,10 @@ public abstract class GlobusFileAdaptor extends FileCpi {
                 if(GATEngine.DEBUG) {
                 	System.err.println("thirdparty copy failed, using temp file: " + u);
                 }
-                File f = GAT.createFile(gatContext, preferences, u);
+                tmpFile = GAT.createFile(gatContext, preferences, u);
                 
                 copyToLocal(src, u);
-                f.copy(dest);
+                tmpFile.copy(dest);
             } catch (Exception e2) {
                 GATInvocationException oops = new GATInvocationException();
                 oops.add("Globus file", e);
@@ -221,6 +222,13 @@ public abstract class GlobusFileAdaptor extends FileCpi {
         } finally {
             if (srcClient != null) destroyClient(srcClient, src, p2);
             if (destClient != null) destroyClient(destClient, dest, p2);
+            if(tmpFile != null) {
+            	try {
+            		tmpFile.delete();
+            	} catch (Exception e) {
+            		// ignore
+            	}
+            }
         }
     }
 
