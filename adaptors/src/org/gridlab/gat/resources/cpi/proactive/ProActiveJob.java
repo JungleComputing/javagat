@@ -23,7 +23,6 @@ import org.objectweb.proactive.filetransfer.FileTransfer;
 import org.objectweb.proactive.filetransfer.FileVector;
 
 public class ProActiveJob extends JobCpi {
-    static int jobsAlive = 0;
 
     private MetricDefinition statusMetricDefinition;
 
@@ -39,6 +38,8 @@ public class ProActiveJob extends JobCpi {
 
     private int lastState = -1;
 
+    private int exitStatus = 0;
+
     public ProActiveJob(GATContext gatContext, Preferences preferences,
             ProActiveLauncher launcher, JobDescription jobDescription,
             Node node, ProActiveJobWatcher w, Sandbox sandbox)
@@ -49,8 +50,6 @@ public class ProActiveJob extends JobCpi {
         this.node = node;
         infoMap.put("submissiontime", new Long(System.currentTimeMillis()));
         infoMap.put("hostname", node.getNodeInformation().getHostName());
-        state = SCHEDULED;
-        jobsAlive++;
 
         // Tell the engine that we provide job.status events
         HashMap returnDef = new HashMap();
@@ -59,6 +58,8 @@ public class ProActiveJob extends JobCpi {
             MetricDefinition.DISCRETE, "String", null, null, returnDef);
         GATEngine.registerMetric(this, "getJobStatus", statusMetricDefinition);
         statusMetric = statusMetricDefinition.createMetric(null);
+
+        setState(SCHEDULED);
 
         SoftwareDescription soft = jobDescription.getSoftwareDescription();
 
@@ -122,7 +123,7 @@ public class ProActiveJob extends JobCpi {
 
         // preStage.
         if (sandbox == null) {
-            state = PRE_STAGING;
+            setState(PRE_STAGING);
             Map preStageFiles;   // Map<File, File> (virtual file path, physical
                                  // file path)
             preStageFiles = soft.getPreStaged();
@@ -151,35 +152,25 @@ public class ProActiveJob extends JobCpi {
         }
 
         // launch, synchronized because result is accessed.
-        jobID = launcher.launch(className, jvmArgs, progArgs, null, node)
-                .stringValue();
-        infoMap.put("starttime", new Long(System.currentTimeMillis()));
-        w.addJob(this);
-        setState();
-    }
-
-    int setState() {
-        if (state != STOPPED && state != POST_STAGING) {
-            int jobState = launcher.getStatus(jobID).intValue();
-            switch(jobState) {
-            case ProActiveLauncher.RUNNING:
-                state = RUNNING;
-                break;
-            case ProActiveLauncher.ERROR:
-                state = SUBMISSION_ERROR;
-                break;
-            case ProActiveLauncher.FINISHED:
-                state = POST_STAGING;
-                break;
-            }
+        jobID = w.getNewID();
+        w.addJob(jobID, this);
+        String res = launcher.launch(className, jvmArgs, progArgs, null, node,
+                jobID).stringValue();
+        if (res == null) {
+            w.removeJob(jobID);
+            setState(SUBMISSION_ERROR);
         }
-        doCallBack();
-        return state;
     }
 
-    private void doCallBack() {
+    void setStarted() {
+        infoMap.put("starttime", new Long(System.currentTimeMillis()));
+        setState(RUNNING);
+    }
+
+    private void setState(int newState) {
         MetricValue v = null;
 
+        state = newState;
         synchronized (this) {
             if (state == lastState) {
                 // no need to do callback, no significant change
@@ -188,17 +179,14 @@ public class ProActiveJob extends JobCpi {
             lastState = state;
             v = new MetricValue(this, getStateString(state), statusMetric,
                     System.currentTimeMillis());
+            GATEngine.fireMetric(this, v);
         }
-
-        GATEngine.fireMetric(this, v);
     }
 
     public void stop() throws GATInvocationException {
-        setState();
         if (state == RUNNING) {
             launcher.stopJob(jobID);
         }
-        infoMap.put("stoptime", new Long(System.currentTimeMillis()));
     }
 
     /*
@@ -211,8 +199,9 @@ public class ProActiveJob extends JobCpi {
         return null;
     }
 
-    synchronized void initiatePostStaging() {
+    synchronized void initiatePostStaging(int exitStatus) {
         SoftwareDescription soft = jobDescription.getSoftwareDescription();
+        setState(POST_STAGING);
         if (sandbox != null) {
             sandbox.retrieveAndCleanup(this);
             setStopped();
@@ -264,13 +253,10 @@ public class ProActiveJob extends JobCpi {
     synchronized void setStopped() {
         infoMap.remove("hostname");
         infoMap.put("stoptime", new Long(System.currentTimeMillis()));
-        state = STOPPED;
-        jobsAlive--;
-        setState();
+        setState(STOPPED);
     }
 
     public synchronized Map getInfo() throws GATInvocationException {
-        setState(); // update the state
         infoMap.put("state", getStateString(state));
         infoMap.put("id", jobID);
         if (postStageException != null) {
@@ -281,13 +267,10 @@ public class ProActiveJob extends JobCpi {
 
     public int getExitStatus() throws GATInvocationException {
         if (state != STOPPED) {
-            setState();
-        }
-        if (state != STOPPED) {
             throw new GATInvocationException("getExitStatus called when "
                     + "state != STOPPED");
         }
-        return launcher.getExitStatus(jobID).intValue();
+        return exitStatus;
     }
 
     public String getJobID() {

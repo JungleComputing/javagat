@@ -40,6 +40,7 @@ public class ProActiveResourceBrokerAdaptor extends ResourceBrokerCpi {
     private int currentIndex = 0;
 
     private ProActiveJobWatcher[] watchers;
+    private ProActiveJobWatcher[] watcherStubs;
 
     static final Logger logger
         = ibis.util.GetLogger.getLogger(ProActiveResourceBrokerAdaptor.class);
@@ -60,6 +61,7 @@ public class ProActiveResourceBrokerAdaptor extends ResourceBrokerCpi {
             descriptorURLs = (String[]) xmls.toArray(new String[xmls.size()]);
             clusters = new ArrayList[descriptorURLs.length];
             watchers = new ProActiveJobWatcher[clusters.length];
+            watcherStubs = new ProActiveJobWatcher[clusters.length];
         } else {
             throw new GATObjectCreationException("No descriptors provided. Set"
                     + " the ResourceBroker.proActive.descriptors preference to "
@@ -68,11 +70,19 @@ public class ProActiveResourceBrokerAdaptor extends ResourceBrokerCpi {
 
         for (int i = 0; i < descriptorURLs.length; i++) {
             // Spawn a JobWatcher thread for each descriptor.
-            watchers[i] = new ProActiveJobWatcher(descriptorURLs[i], this,
-                    preferences);
+            watchers[i] = new ProActiveJobWatcher();
+            try {
+                watcherStubs[i] = (ProActiveJobWatcher) ProActive.turnActive(
+                        watchers[i]);
+            } catch(Exception e) {
+                throw new GATObjectCreationException(
+                        "Could not turn job watcher active", e);
+            }
+            // Spawn a grabber thread for each descriptor.
+            new GrabberThread(descriptorURLs[i], this, preferences);
         }
 
-        // The JobWatcher threads make an inventory of the nodes available.
+        // The grabber threads make an inventory of the nodes available.
         // Wait until at least one has made available some nodes, or all
         // of them don't have any nodes.
         synchronized (this) {
@@ -87,7 +97,8 @@ public class ProActiveResourceBrokerAdaptor extends ResourceBrokerCpi {
         }
     }
 
-    ProActiveLauncher startLauncher(Node node, boolean force) throws Exception {
+    ProActiveLauncher startLauncher(Node node, boolean force, int index)
+            throws Exception {
         NodeInformation nodeInf = node.getNodeInformation();
         ProActiveLauncher launcher 
             = (ProActiveLauncher) launcherTable.get(node);
@@ -97,7 +108,9 @@ public class ProActiveResourceBrokerAdaptor extends ResourceBrokerCpi {
                 launcherTable.remove(node);
             }
             launcher = (ProActiveLauncher) ProActive.newActive(
-                    ProActiveLauncher.class.getName(), null, node);
+                    ProActiveLauncher.class.getName(),
+                    new Object[] { watcherStubs[index] },
+                    node);
 
             launcherTable.put(node, launcher);
 
@@ -111,6 +124,7 @@ public class ProActiveResourceBrokerAdaptor extends ResourceBrokerCpi {
     synchronized void addNodes(String descriptor, ArrayList nodes) {
         for (int i = 0; i < descriptorURLs.length; i++) {
             if (descriptorURLs[i].equals(descriptor)) {
+                System.out.println("addNodes: len = " + nodes.size());
                 this.clusters[i] = nodes;
                 totalNodes += nodes.size();
                 gotNodesFromDescriptors++;
@@ -127,6 +141,8 @@ public class ProActiveResourceBrokerAdaptor extends ResourceBrokerCpi {
         totalNodes--;
         clusters[currentList].remove(index);
         currentIndex--;
+        System.out.println("Remove node");
+        (new Throwable()).printStackTrace();
     }
 
     public static void end() {
@@ -205,8 +221,9 @@ public class ProActiveResourceBrokerAdaptor extends ResourceBrokerCpi {
 
             ProActiveLauncher launcher;
             try {
-                launcher = startLauncher(node, false);
+                launcher = startLauncher(node, false, currentList);
             } catch (Exception e) {
+                e.printStackTrace();
                 logger.warn("Failed to deploy launcher on node "
                         + nodeInf.getURL() + ", removing node ...");
                 removeNode(index);
@@ -232,7 +249,7 @@ public class ProActiveResourceBrokerAdaptor extends ResourceBrokerCpi {
                     logger.warn("Redeploying launcher on node "
                             + nodeInf.getURL());
                     try {
-                        launcher = startLauncher(node, true);
+                        launcher = startLauncher(node, true, currentList);
                     } catch (Exception ex) {
                         logger.warn("Failed to deploy launcher on node "
                                 + nodeInf.getURL() + ", removing node ...");
