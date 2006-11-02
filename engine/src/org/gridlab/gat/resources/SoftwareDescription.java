@@ -262,7 +262,7 @@ public class SoftwareDescription implements java.io.Serializable {
         addPostStagedFile(src, null);
     }
 
-    /** dest can be null, this means file with the same name in the CWD at the remote machine */
+    /** dest can be null, this means file with the same name in the CWD at the local machine */
     public void addPostStagedFile(File src, File dest) {
         if (src == null) {
             throw new NullPointerException(

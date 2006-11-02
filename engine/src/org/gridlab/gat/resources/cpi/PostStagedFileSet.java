@@ -31,7 +31,7 @@ public class PostStagedFileSet {
 
     boolean postStageStderr;
 
-    ArrayList files = new ArrayList();; // elements are of type PostStageFile.
+    ArrayList files = new ArrayList(); // elements are of type PostStageFile.
 
     public PostStagedFileSet(GATContext gatContext, Preferences preferences,
         JobDescription description, String host, String sandbox,

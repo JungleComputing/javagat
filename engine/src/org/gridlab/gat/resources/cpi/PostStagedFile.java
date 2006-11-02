@@ -3,9 +3,11 @@
  */
 package org.gridlab.gat.resources.cpi;
 
+import org.gridlab.gat.GAT;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.Preferences;
+import org.gridlab.gat.URI;
 import org.gridlab.gat.engine.GATEngine;
 import org.gridlab.gat.io.File;
 
@@ -20,21 +22,31 @@ public class PostStagedFile extends StagedFile {
         resolve();
     }
 
-    /* Creates a file object for the destination of the preStaged src file */
+    /* Creates a file object for the destination of the postStaged file.
+     * Src cannot be null, dest can be. */
     private void resolve() throws GATInvocationException {
-        resolvedDest = origDest;
-
-        if (origSrc != null) { // already set manually
-            if (origSrc.isAbsolute()) {
-                resolvedSrc = origSrc;
-                inSandbox = false;
-            } else {
-                resolvedSrc = resolve(origSrc, false);
-                inSandbox = true;
-            }
+        if(origSrc.isAbsolute()) {
+            // ok, keep it
+            resolvedSrc = origSrc;
+            inSandbox = false;
         } else {
-            resolvedSrc = resolve(origDest, true);
+            // in sandbox
+            resolvedSrc = resolve(origSrc, false);
             inSandbox = true;
+        }
+        
+        if(origDest == null) {
+            // file with same name in CWD
+            String dir = System.getProperty("user.dir");
+            if(dir != null) dir = "";
+                try {
+                    URI resolvedDestURI = new URI("any:///" + dir + "/" + origSrc.getName()); 
+                    resolvedDest = GAT.createFile(gatContext, preferences, resolvedDestURI);
+                } catch (Exception e) {
+                    throw new GATInvocationException("poststagedFile", e);
+                }
+        } else {
+            resolvedDest = origDest;
         }
     }
 
@@ -66,7 +78,10 @@ public class PostStagedFile extends StagedFile {
     }
 
     public String toString() {
-        return "PostStaged: " + resolvedSrc.toURI() + " -> " + resolvedDest.toURI()
+        String srcURI = resolvedSrc == null ? "" : resolvedSrc.toURI().toString();
+        String destURI = resolvedDest == null ? "" : resolvedDest.toURI().toString();
+        
+        return "PostStaged: " + srcURI + " -> " + destURI
             + (isStdout ? " (STDOUT)" : "") + (isStderr ? " (STDERR)" : "");
     }
 }
