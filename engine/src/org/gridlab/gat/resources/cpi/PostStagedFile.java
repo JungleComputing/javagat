@@ -3,38 +3,74 @@
  */
 package org.gridlab.gat.resources.cpi;
 
+import org.gridlab.gat.GAT;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.Preferences;
+import org.gridlab.gat.URI;
 import org.gridlab.gat.engine.GATEngine;
 import org.gridlab.gat.io.File;
 
 public class PostStagedFile extends StagedFile {
     boolean isStdout;
+
     boolean isStderr;
-    
-    public PostStagedFile(GATContext context, Preferences preferences, File origSrc, File origDest, String host, String sandbox, boolean isStdOut, boolean isStderr)  throws GATInvocationException {
+
+    public PostStagedFile(GATContext context, Preferences preferences,
+            File origSrc, File origDest, String host, String sandbox,
+            boolean isStdOut, boolean isStderr) throws GATInvocationException {
         super(context, preferences, origSrc, origDest, host, sandbox);
         this.isStdout = isStdOut;
         this.isStderr = isStderr;
         resolve();
     }
 
-    /* Creates a file object for the destination of the preStaged src file */
+    /* Creates a file object for the destination of the postStaged file.
+     * Src cannot be null, dest can be. */
     private void resolve() throws GATInvocationException {
-        resolvedDest = origDest;
+        if (origSrc.isAbsolute()) {
+            // ok, keep it
+            resolvedSrc = origSrc;
+            inSandbox = false;
+        } else {
+            // in sandbox
+            resolvedSrc = resolve(origSrc, false);
+            inSandbox = true;
+        }
 
-        if (origSrc != null) { // already set manually
-            if (origSrc.isAbsolute()) {
-                resolvedSrc = origSrc;
-                inSandbox = false;
-            } else {
-                resolvedSrc = resolve(origSrc, false);
-                inSandbox = true;
+        String dir = System.getProperty("user.dir");
+        if (dir == null) {
+            throw new GATInvocationException("cannot get current working directory");
+        }
+
+        if (origDest == null) {
+            // file with same name in CWD
+            try {
+                URI resolvedDestURI =
+                        new URI("any:///" + dir + "/" + origSrc.getName());
+                resolvedDest =
+                        GAT
+                            .createFile(gatContext, preferences,
+                                resolvedDestURI);
+            } catch (Exception e) {
+                throw new GATInvocationException("poststagedFile", e);
             }
         } else {
-            resolvedSrc = resolve(origDest, true);
-            inSandbox = true;
+            if (origDest.isAbsolute()) {
+                resolvedDest = origDest;
+            } else {
+                // file with same name in CWD
+                try {
+                    URI resolvedDestURI =
+                            new URI("any:///" + dir + "/" + origSrc.getPath());
+                    resolvedDest =
+                            GAT
+                                .createFile(gatContext, preferences,
+                                    resolvedDestURI);
+                } catch (Exception e) {
+                    throw new GATInvocationException("poststagedFile", e);
+                }
+            }
         }
     }
 
@@ -47,8 +83,9 @@ public class PostStagedFile extends StagedFile {
         resolvedSrc.copy(resolvedDest.toURI());
     }
 
-    protected void delete(boolean deleteFilesInSandbox) throws GATInvocationException {
-        if(deleteFilesInSandbox || !inSandbox) {
+    protected void delete(boolean deleteFilesInSandbox)
+            throws GATInvocationException {
+        if (deleteFilesInSandbox || !inSandbox) {
             if (GATEngine.VERBOSE) {
                 System.err.println("DELETE_FILE:" + resolvedSrc);
             }
@@ -57,7 +94,7 @@ public class PostStagedFile extends StagedFile {
     }
 
     protected void wipe(boolean onlySandbox) throws GATInvocationException {
-        if(!onlySandbox || (onlySandbox && inSandbox)) {
+        if (!onlySandbox || (onlySandbox && inSandbox)) {
             if (GATEngine.VERBOSE) {
                 System.err.println("WIPE_FILE:" + resolvedSrc);
             }
@@ -66,7 +103,12 @@ public class PostStagedFile extends StagedFile {
     }
 
     public String toString() {
-        return "PostStaged: " + resolvedSrc.toURI() + " -> " + resolvedDest.toURI()
+        String srcURI =
+                resolvedSrc == null ? "" : resolvedSrc.toURI().toString();
+        String destURI =
+                resolvedDest == null ? "" : resolvedDest.toURI().toString();
+
+        return "PostStaged: " + srcURI + " -> " + destURI
             + (isStdout ? " (STDOUT)" : "") + (isStderr ? " (STDERR)" : "");
     }
 }

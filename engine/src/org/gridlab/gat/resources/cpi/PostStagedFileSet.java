@@ -8,9 +8,11 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
+import org.gridlab.gat.GAT;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.Preferences;
+import org.gridlab.gat.URI;
 import org.gridlab.gat.engine.GATEngine;
 import org.gridlab.gat.io.File;
 import org.gridlab.gat.resources.JobDescription;
@@ -31,12 +33,12 @@ public class PostStagedFileSet {
 
     boolean postStageStderr;
 
-    ArrayList files = new ArrayList();; // elements are of type PostStageFile.
+    ArrayList files = new ArrayList(); // elements are of type PostStageFile.
 
     public PostStagedFileSet(GATContext gatContext, Preferences preferences,
-        JobDescription description, String host, String sandbox,
-        boolean postStageStdout, boolean postStageStderr)
-        throws GATInvocationException {
+            JobDescription description, String host, String sandbox,
+            boolean postStageStdout, boolean postStageStderr)
+            throws GATInvocationException {
         this.gatContext = gatContext;
         this.preferences = preferences;
         this.description = description;
@@ -53,8 +55,8 @@ public class PostStagedFileSet {
     }
 
     public PostStagedFileSet(GATContext gatContext, Preferences preferences,
-        ArrayList files, String host, String sandbox)
-        throws GATInvocationException {
+            ArrayList files, String host, String sandbox)
+            throws GATInvocationException {
         this.gatContext = gatContext;
         this.preferences = preferences;
         this.host = host;
@@ -90,16 +92,30 @@ public class PostStagedFileSet {
         if (postStageStdout) {
             File stdout = sd.getStdout();
             if (stdout != null) {
-                files.add(new PostStagedFile(gatContext, preferences, null,
-                    stdout, host, sandbox, true, false));
+                try {
+                    File f =
+                            GAT.createFile(gatContext, preferences, new URI(
+                                "any:///" + stdout.getName()));
+                    files.add(new PostStagedFile(gatContext, preferences, f,
+                        stdout, host, sandbox, true, false));
+                } catch (Exception e) {
+                    throw new GATInvocationException("postStagedFileSet", e);
+                }
             }
         }
 
         if (postStageStderr) {
             File stderr = sd.getStderr();
             if (stderr != null) {
-                files.add(new PostStagedFile(gatContext, preferences, null,
-                    stderr, host, sandbox, false, true));
+                try {
+                    File f =
+                            GAT.createFile(gatContext, preferences, new URI(
+                                "any:///" + stderr.getName()));
+                    files.add(new PostStagedFile(gatContext, preferences, f,
+                        stderr, host, sandbox, false, true));
+                } catch (Exception e) {
+                    throw new GATInvocationException("postStagedFileSet", e);
+                }
             }
         }
     }
@@ -138,7 +154,7 @@ public class PostStagedFileSet {
     }
 
     public void delete(boolean deleteFilesInSandbox)
-        throws GATInvocationException {
+            throws GATInvocationException {
         GATInvocationException e = new GATInvocationException();
         for (int i = 0; i < files.size(); i++) {
             try {
