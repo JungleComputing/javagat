@@ -39,7 +39,7 @@ public class PostStagedFile extends StagedFile {
         }
 
         String dir = System.getProperty("user.dir");
-        if (dir != null) {
+        if (dir == null) {
             throw new GATInvocationException("cannot get current working directory");
         }
 
