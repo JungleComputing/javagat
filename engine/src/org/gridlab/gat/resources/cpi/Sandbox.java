@@ -160,7 +160,10 @@ public class Sandbox {
     private void createSandbox() throws GATInvocationException {
         try {
             post.delete(false); // only delete files that aren't going in the sandbox
-        } catch (GATInvocationException e) {
+        } catch (Exception e) {
+            if(GATEngine.VERBOSE) {
+                System.err.println("warning, delete poststage failed: " + e);
+            }
             // ignore, maybe the files did not exist anyway
         }
 
