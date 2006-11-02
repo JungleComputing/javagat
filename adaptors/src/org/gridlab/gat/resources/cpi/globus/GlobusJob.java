@@ -27,9 +27,9 @@ import org.gridlab.gat.resources.cpi.Sandbox;
  *
  */
 class JobPoller extends Thread {
-    GlobusJob j;
+    private GlobusJob j;
 
-    boolean die = false;
+    private boolean die = false;
 
     JobPoller(GlobusJob j) {
         this.j = j;
@@ -330,9 +330,10 @@ public class GlobusJob extends JobCpi implements GramJobListener,
      * @see org.globus.gram.GramJobListener#statusChanged(org.globus.gram.GramJob)
      */
     public void statusChanged(GramJob newJob) {
-        // If we ever receive a callback, we can kill the job poller thread; we are not 
+        // If we ever receive a gram callback, we can kill the job poller thread; we are not 
         // behind a firewall.
-        poller.die();
+        // OOPS, this is not possible, the poll also generates this callback!
+//        poller.die();
 
         handleStatusChange(newJob);
     }
