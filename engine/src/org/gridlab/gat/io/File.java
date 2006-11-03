@@ -102,17 +102,6 @@ public class File extends java.io.File implements Monitorable, Serializable, Adv
         f.removeMetricListener(metricListener, metric);
     }
 
-    /* (non-Javadoc)
-     * @see java.lang.Comparable#compareTo(java.lang.Object)
-     */
-    public int compareTo(Object other) {
-        try {
-            return f.compareTo(other);
-        } catch (Exception e) {
-            throw new Error(e);
-        }
-    }
-
     /**
      * This method copies the physical file represented by this File instance to
      * a physical file identified by the passed URI.
