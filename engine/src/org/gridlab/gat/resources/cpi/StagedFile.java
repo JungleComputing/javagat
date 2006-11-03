@@ -48,11 +48,11 @@ public abstract class StagedFile {
     protected File resolve(File f, boolean useNameOnly)
         throws GATInvocationException {
         if (!useNameOnly && f.isAbsolute()) {
-            relativeURI = f.toURI();
+            relativeURI = f.toGATURI();
             return f;
         }
 
-        URI uri = f.toURI();
+        URI uri = f.toGATURI();
 
         String relativeDest = null;
         String dest = "any://";

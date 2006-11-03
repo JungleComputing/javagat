@@ -63,7 +63,7 @@ public class ZorillaJob extends JobCpi implements Runnable {
             return null;
         }
 
-        if (!file.toURI().isLocal()) {
+        if (!file.toGATURI().isLocal()) {
             throw new GATInvocationException(
                     "zorilla can only handle local files");
         }

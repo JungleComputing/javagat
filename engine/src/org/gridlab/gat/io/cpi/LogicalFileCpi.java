@@ -92,7 +92,7 @@ public abstract class LogicalFileCpi implements LogicalFile, Monitorable {
      *            represented by this LogicalFile instance.
      */
     public void addFile(File file) throws GATInvocationException {
-        addURI(file.toURI());
+        addURI(file.toGATURI());
     }
 
     /**
@@ -123,7 +123,7 @@ public abstract class LogicalFileCpi implements LogicalFile, Monitorable {
      *            represented by this LogicalFile instance.
      */
     public void removeFile(File file) throws GATInvocationException {
-        removeURI(file.toURI());
+        removeURI(file.toGATURI());
     }
 
     /**

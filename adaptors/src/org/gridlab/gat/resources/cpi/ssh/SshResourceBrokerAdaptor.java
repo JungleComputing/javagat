@@ -214,7 +214,7 @@ public class SshResourceBrokerAdaptor extends ResourceBrokerCpi {
         } else {
             try {
                 FileInputStream fin = GAT.createFileInputStream(gatContext,
-                    preferences, stdin.toURI());
+                    preferences, stdin.toGATURI());
 
                 OutputStream out = channel.getOutputStream();
                 new InputForwarder(out, fin);
@@ -235,7 +235,7 @@ public class SshResourceBrokerAdaptor extends ResourceBrokerCpi {
         } else {
             try {
                 FileOutputStream out = GAT.createFileOutputStream(gatContext,
-                    preferences, stdout.toURI());
+                    preferences, stdout.toGATURI());
 
                 new OutputForwarder(channel.getInputStream(), out);
 
@@ -254,7 +254,7 @@ public class SshResourceBrokerAdaptor extends ResourceBrokerCpi {
         } else {
             try {
                 FileOutputStream out = GAT.createFileOutputStream(gatContext,
-                    preferences, stderr.toURI());
+                    preferences, stderr.toGATURI());
 
                 new OutputForwarder(((ChannelExec) channel).getErrStream(), out);
 
@@ -417,7 +417,7 @@ public class SshResourceBrokerAdaptor extends ResourceBrokerCpi {
     /* should be protected in the ResourceBrokerCpi class*/
     protected File resolvePreStagedFile(File srcFile, String host)
         throws GATInvocationException {
-        URI src = srcFile.toURI();
+        URI src = srcFile.toGATURI();
         String path = new java.io.File(src.getPath()).getName();
 
         String dest = "any://";
@@ -439,7 +439,7 @@ public class SshResourceBrokerAdaptor extends ResourceBrokerCpi {
         throws GATInvocationException {
         File res = null;
 
-        URI src = f.toURI();
+        URI src = f.toGATURI();
 
         if (host == null) host = "";
 

@@ -234,7 +234,7 @@ public class CommandlineSshPrunResourceBrokerAdaptor extends ResourceBrokerCpi {
         } else {
             try {
                 FileInputStream fin = GAT.createFileInputStream(gatContext,
-                    preferences, stdin.toURI());
+                    preferences, stdin.toGATURI());
                 OutputStream out = p.getOutputStream();
                 new InputForwarder(out, fin);
             } catch (GATObjectCreationException e) {
@@ -251,7 +251,7 @@ public class CommandlineSshPrunResourceBrokerAdaptor extends ResourceBrokerCpi {
             stdout = sandbox.getResolvedStdout();
             try {
                 FileOutputStream out = GAT.createFileOutputStream(gatContext,
-                    preferences, stdout.toURI());
+                    preferences, stdout.toGATURI());
                 outForwarder = new OutputForwarder(p.getInputStream(), out);
             } catch (GATObjectCreationException e) {
                 throw new GATInvocationException("commandlineSshPrun broker", e);
@@ -267,7 +267,7 @@ public class CommandlineSshPrunResourceBrokerAdaptor extends ResourceBrokerCpi {
             stderr = sandbox.getResolvedStderr();
             try {
                 FileOutputStream out = GAT.createFileOutputStream(gatContext,
-                    preferences, stderr.toURI());
+                    preferences, stderr.toGATURI());
                 errForwarder = new OutputForwarder(p.getErrorStream(), out);
             } catch (GATObjectCreationException e) {
                 throw new GATInvocationException("commandlineSshPrun broker", e);

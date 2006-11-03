@@ -70,7 +70,7 @@ public class PreStagedFile extends StagedFile {
                 + resolvedDest.toURI());
         }
 
-        resolvedSrc.copy(resolvedDest.toURI());
+        resolvedSrc.copy(resolvedDest.toGATURI());
     }
 
     protected void delete(boolean onlySandbox) throws GATInvocationException {

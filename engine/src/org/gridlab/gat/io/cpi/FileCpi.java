@@ -15,6 +15,7 @@ import org.gridlab.gat.URI;
 import org.gridlab.gat.advert.Advertisable;
 import org.gridlab.gat.engine.GATEngine;
 import org.gridlab.gat.io.File;
+import org.gridlab.gat.io.FileInterface;
 import org.gridlab.gat.monitoring.Metric;
 import org.gridlab.gat.monitoring.MetricDefinition;
 import org.gridlab.gat.monitoring.MetricListener;
@@ -29,7 +30,7 @@ import org.gridlab.gat.monitoring.MetricValue;
  * this File class and will be used to implement the corresponding method in the
  * File class at runtime.
  */
-public abstract class FileCpi implements File {
+public abstract class FileCpi implements FileInterface {
     protected GATContext gatContext;
 
     protected Preferences preferences;
@@ -481,7 +482,7 @@ public abstract class FileCpi implements File {
         }
 
         // list all the files and copy recursively.
-        File[] files = dir.listFiles();
+        File[] files = (File[]) dir.listFiles();
 
         if (files == null) return;
 
@@ -513,7 +514,7 @@ public abstract class FileCpi implements File {
                     System.err.println("copyDirectory: copying dir " + f);
                 }
 
-                copyDirectory(gatContext, preferences, f.toURI(), newDest);
+                copyDirectory(gatContext, preferences, f.toGATURI(), newDest);
             } else {
                 throw new GATInvocationException(
                     "file cpi, don't know how to handle file: " + f
@@ -531,8 +532,8 @@ public abstract class FileCpi implements File {
             throw new GATInvocationException("generic file cpi", e);
         }
 
-        File[] files = dir.listFiles(new FileFilter() {
-            public boolean accept(File file) {
+        File[] files = (File[]) dir.listFiles(new java.io.FileFilter() {
+            public boolean accept(java.io.File file) {
                 try {
                     return file.isDirectory();
                 } catch (Exception e) {
@@ -546,12 +547,12 @@ public abstract class FileCpi implements File {
         }
 
         for (int i = 0; i < files.length; i++) {
-            deleteDirectory(gatContext, preferences, files[i].toURI());
+            deleteDirectory(gatContext, preferences, files[i].toGATURI());
             files[i].delete();
         }
 
-        files = dir.listFiles(new FileFilter() {
-            public boolean accept(File file) {
+        files = (File[]) dir.listFiles(new java.io.FileFilter() {
+            public boolean accept(java.io.File file) {
                 try {
                     return !file.isDirectory();
                 } catch (Exception e) {
