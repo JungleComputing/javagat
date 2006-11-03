@@ -47,7 +47,6 @@ class FileFilterForwarder implements org.gridlab.gat.io.cpi.FileFilter {
      * @see org.gridlab.gat.io.cpi.FileFilter#accept(org.gridlab.gat.io.File)
      */
     public boolean accept(File pathname) {
-        // TODO Auto-generated method stub
         return f.accept(pathname);
     }
 }
@@ -64,15 +63,14 @@ public class File extends java.io.File implements Monitorable, Serializable, Adv
      * @see org.gridlab.gat.advert.Advertisable#marshal()
      */
     public String marshal() {
-        // TODO Auto-generated method stub
-        return null;
+        return f.marshal();
     }
 
     /* (non-Javadoc)
      * @see org.gridlab.gat.monitoring.Monitorable#addMetricListener(org.gridlab.gat.monitoring.MetricListener, org.gridlab.gat.monitoring.Metric)
      */
     public void addMetricListener(MetricListener metricListener, Metric metric) throws GATInvocationException {
-        // TODO Auto-generated method stub
+        f.addMetricListener(metricListener, metric);
         
     }
 
@@ -80,32 +78,28 @@ public class File extends java.io.File implements Monitorable, Serializable, Adv
      * @see org.gridlab.gat.monitoring.Monitorable#getMeasurement(org.gridlab.gat.monitoring.Metric)
      */
     public MetricValue getMeasurement(Metric metric) throws GATInvocationException {
-        // TODO Auto-generated method stub
-        return null;
+        return f.getMeasurement(metric);
     }
 
     /* (non-Javadoc)
      * @see org.gridlab.gat.monitoring.Monitorable#getMetricDefinitionByName(java.lang.String)
      */
     public MetricDefinition getMetricDefinitionByName(String name) throws GATInvocationException {
-        // TODO Auto-generated method stub
-        return null;
+        return f.getMetricDefinitionByName(name);
     }
 
     /* (non-Javadoc)
      * @see org.gridlab.gat.monitoring.Monitorable#getMetricDefinitions()
      */
     public List getMetricDefinitions() throws GATInvocationException {
-        // TODO Auto-generated method stub
-        return null;
+        return f.getMetricDefinitions();
     }
 
     /* (non-Javadoc)
      * @see org.gridlab.gat.monitoring.Monitorable#removeMetricListener(org.gridlab.gat.monitoring.MetricListener, org.gridlab.gat.monitoring.Metric)
      */
     public void removeMetricListener(MetricListener metricListener, Metric metric) throws GATInvocationException {
-        // TODO Auto-generated method stub
-        
+        f.removeMetricListener(metricListener, metric);
     }
 
     /* (non-Javadoc)
