@@ -138,19 +138,20 @@ public class PostStagedFileSet {
                 "The job description does not contain a software description");
         }
 
+        GATInvocationException exceptions = new GATInvocationException();
         for (int i = 0; i < files.size(); i++) {
             PostStagedFile f = (PostStagedFile) files.get(i);
 
-            GATInvocationException exceptions = new GATInvocationException();
             try {
                 f.poststage();
             } catch (Throwable e) {
                 exceptions.add("resource broker cpi", e);
             }
-            if (exceptions.getNrChildren() != 0) {
-                throw exceptions;
-            }
         }
+        if (exceptions.getNrChildren() != 0) {
+            throw exceptions;
+        }
+
     }
 
     public void delete(boolean deleteFilesInSandbox)
