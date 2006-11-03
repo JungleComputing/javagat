@@ -111,9 +111,12 @@ public class File extends java.io.File implements Monitorable, Serializable, Adv
     /* (non-Javadoc)
      * @see java.lang.Comparable#compareTo(java.lang.Object)
      */
-    public int compareTo(Object arg0) {
-        // TODO Auto-generated method stub
-        return 0;
+    public int compareTo(Object other) {
+        try {
+            return f.compareTo(other);
+        } catch (Exception e) {
+            throw new Error(e);
+        }
     }
 
     /**
