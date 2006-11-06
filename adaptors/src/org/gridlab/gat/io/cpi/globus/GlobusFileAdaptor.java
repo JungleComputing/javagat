@@ -291,6 +291,19 @@ public abstract class GlobusFileAdaptor extends FileCpi {
         }
     }
 
+    public long lastModified() throws GATInvocationException {
+        FTPClient client = null;
+
+        try {
+            client = createClient(toURI());
+            return client.getLastModified(getPath()).getTime();
+        } catch (Exception e) {
+            throw new GATInvocationException("gridftp", e);
+        } finally {
+            if (client != null) destroyClient(client, toURI(), preferences);
+        }
+    }
+    
     public boolean delete() throws GATInvocationException {
         FTPClient client = null;
 
