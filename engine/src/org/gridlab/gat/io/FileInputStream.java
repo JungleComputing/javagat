@@ -25,6 +25,8 @@ import org.gridlab.gat.monitoring.Monitorable;
 public class FileInputStream extends InputStream implements Monitorable {
     FileInputStreamInterface in;
 
+    /** Do not use this constructur, it is for internal GAT use.
+     */
     public FileInputStream(FileInputStreamInterface in) {
         this.in = in;
     }
