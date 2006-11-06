@@ -752,8 +752,8 @@ public abstract class GlobusFileAdaptor extends FileCpi {
             }
 
             try {
-                c.setActive();
                 c.setLocalPassive();
+                c.setActive();
             } catch (Exception e) {
                 throw new GATInvocationException("globus", e);
             }
