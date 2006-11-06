@@ -195,7 +195,13 @@ public class GlobusJob extends JobCpi implements GramJobListener,
 
         switch (j.getStatus()) {
         case STATUS_ACTIVE:
-            state = RUNNING;
+            if(postStageFinished) {
+                state = STOPPED;
+            } else if(postStageStarted) {
+                state = POST_STAGING;
+            } else {
+                state = RUNNING;
+            }
             break;
         case STATUS_DONE:
             if (postStageFinished) {
@@ -361,6 +367,7 @@ public class GlobusJob extends JobCpi implements GramJobListener,
 
             if ((globusState == STATUS_DONE) || (globusState == STATUS_FAILED)) {
                 stopHandlers();
+                poller.die();
                 postStageStarted = true;
             }
         }
