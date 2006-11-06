@@ -18,7 +18,7 @@ class GrabberThread extends Thread {
     private String descriptor;
 
     /** The resource broker. */
-    private ProActiveResourceBrokerAdaptor adaptor;
+    private ProActiveResourceBrokerAdaptor broker;
 
     /** Preferences as specified by the GAT user. */
     private Preferences preferences;
@@ -26,12 +26,18 @@ class GrabberThread extends Thread {
     /** List of nodes from this cluster. */
     private ArrayList nodes = new ArrayList();
 
-    GrabberThread(String descriptor,
-            ProActiveResourceBrokerAdaptor adaptor,
+    /**
+     * Constructor, initializes the fields with the specified parameters
+     * and starts the thread.
+     * @param descriptor filename of the ProActive descriptor.
+     * @param broker the resource broker.
+     * @param preferences the preferences.
+     */
+    GrabberThread(String descriptor, ProActiveResourceBrokerAdaptor broker,
             Preferences preferences) {
         setDaemon(true);
         this.descriptor = descriptor;
-        this.adaptor = adaptor;
+        this.broker = broker;
         this.preferences = preferences;
         start();
     }
@@ -61,7 +67,7 @@ class GrabberThread extends Thread {
                 }
             }
 
-            adaptor.addNodes(descriptor, nodes);
+            broker.addNodes(descriptor, nodes);
 
             /*
             System.out.println("vn.getNumberOfCreatedNodesAfterDeployment() = "
@@ -74,7 +80,7 @@ class GrabberThread extends Thread {
             ProActiveResourceBrokerAdaptor.logger.error(
                     "Exception in GrabberThread:", e);
             nodes.clear();
-            adaptor.addNodes(descriptor, nodes);
+            broker.addNodes(descriptor, nodes);
         }
     }
 }

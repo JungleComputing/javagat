@@ -1,7 +1,8 @@
 package org.gridlab.gat.resources.cpi.proactive;
 
 import java.util.ArrayList;
-import java.util.Hashtable;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.StringTokenizer;
@@ -12,7 +13,6 @@ import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.GATObjectCreationException;
 import org.gridlab.gat.Preferences;
-import org.gridlab.gat.resources.Job;
 import org.gridlab.gat.resources.JobDescription;
 import org.gridlab.gat.resources.SoftwareDescription;
 import org.gridlab.gat.resources.cpi.ResourceBrokerCpi;
@@ -21,172 +21,223 @@ import org.objectweb.proactive.ProActive;
 import org.objectweb.proactive.core.node.Node;
 import org.objectweb.proactive.core.node.NodeInformation;
 import org.objectweb.proactive.core.runtime.ProActiveRuntime;
-import org.objectweb.proactive.core.util.wrapper.IntWrapper;
 
-public class ProActiveResourceBrokerAdaptor extends ResourceBrokerCpi {
+/**
+ * This class implements the JavaGat resource broker for ProActive.
+ */
+public class ProActiveResourceBrokerAdaptor extends ResourceBrokerCpi
+        implements Runnable {
 
-    private static Hashtable launcherTable = new Hashtable();
+    /** Maps a ProActive descriptor filename to a JobWatcher object. */
+    private static HashMap descr2watcher = new HashMap();
 
-    String descriptorURLs[];
+    /** Maps a ProActive descriptor filename to a JobWatcher stub. */
+    private static HashMap descr2watcherStub = new HashMap();
 
+    /** Maps a ProActive descriptor filename to a set of NodeInfo. */
+    private static HashMap descr2nodeset = new HashMap();
+
+    /** List of jobs to schedule. */
+    private ArrayList jobList = new ArrayList();
+
+    /** Total number of nodes, as obtained from the descriptors. */
     private int totalNodes = 0;
 
-    private int gotNodesFromDescriptors = 0;
+    /** Number of nodes not scheduled to a job. */
+    private int availableNodes = 0;
 
-    private ArrayList[] clusters;
+    /** Every cluster has its own job watcher. */
+    private JobWatcher[] watchers;
 
-    private int currentList = 0;
+    /** A JobWatcher is a ProActive object, so has a stub. */
+    private JobWatcher[] watcherStubs;
 
-    private int currentIndex = 0;
+    /** Job to be scheduled next. */
+    private Job nextJob = null;
 
-    private ProActiveJobWatcher[] watchers;
-    private ProActiveJobWatcher[] watcherStubs;
-
+    /** Logger. */
     static final Logger logger
         = ibis.util.GetLogger.getLogger(ProActiveResourceBrokerAdaptor.class);
 
+    /**
+     * Constructs a ResourceBroker for ProActive.
+     * @param gatContext the JavaGat context.
+     * @param preferences the preferences.
+     */
     public ProActiveResourceBrokerAdaptor(GATContext gatContext,
             Preferences preferences) throws GATObjectCreationException {
 
         super(gatContext, preferences);
 
-        if (preferences.containsKey("ResourceBroker.proActive.descriptors")) {
-            String descriptors = (String) preferences
+        // First, obtain ProActiver descriptors. */
+        String descriptors = (String) preferences
                 .get("ResourceBroker.proActive.descriptors");
-            StringTokenizer tok = new StringTokenizer(descriptors, ",");
-            Vector xmls = new Vector();
-            while (tok.hasMoreTokens()) {
-                xmls.add(tok.nextToken());
-            }
-            descriptorURLs = (String[]) xmls.toArray(new String[xmls.size()]);
-            clusters = new ArrayList[descriptorURLs.length];
-            watchers = new ProActiveJobWatcher[clusters.length];
-            watcherStubs = new ProActiveJobWatcher[clusters.length];
-        } else {
+        if (preferences == null) {
             throw new GATObjectCreationException("No descriptors provided. Set"
                     + " the ResourceBroker.proActive.descriptors preference to "
                     + " a comma-separated list of ProActive descriptor xmls.");
         }
+        StringTokenizer tok = new StringTokenizer(descriptors, ",");
+        ArrayList xmls = new ArrayList();
+        while (tok.hasMoreTokens()) {
+            xmls.add(tok.nextToken());
+        }
+        watchers = new JobWatcher[xmls.size()];
+        watcherStubs = new JobWatcher[watchers.length];
 
-        for (int i = 0; i < descriptorURLs.length; i++) {
+        for (int i = 0; i < xmls.size(); i++) {
             // Spawn a JobWatcher thread for each descriptor.
-            watchers[i] = new ProActiveJobWatcher();
+            String descr = (String) xmls.get(i);
+            watchers[i] = new JobWatcher();
+            descr2watcher.put(descr, watchers[i]);
             try {
-                watcherStubs[i] = (ProActiveJobWatcher) ProActive.turnActive(
-                        watchers[i]);
+                watcherStubs[i]
+                        = (JobWatcher) ProActive.turnActive(watchers[i]);
+                descr2watcherStub.put(descr, watcherStubs[i]);
             } catch(Exception e) {
                 throw new GATObjectCreationException(
                         "Could not turn job watcher active", e);
             }
             // Spawn a grabber thread for each descriptor.
-            new GrabberThread(descriptorURLs[i], this, preferences);
+            new GrabberThread(descr, this, preferences);
         }
 
-        // The grabber threads make an inventory of the nodes available.
-        // Wait until at least one has made available some nodes, or all
-        // of them don't have any nodes.
-        synchronized (this) {
-            while (gotNodesFromDescriptors < descriptorURLs.length &&
-                    totalNodes == 0) {
-                try {
-                    wait();
-                } catch(Exception e) {
-                    // ignored
+        // And finally, start a scheduler thread.
+        Thread t = new Thread(this, "Resource broker thread");
+        t.setDaemon(true);
+        t.start();
+    }
+
+    /**
+     * Adds the specified nodes, that were found on the specified descriptor,
+     * to the available nodes, provided that a launcher could be started
+     * on them.
+     * @param descriptor the ProActive descriptor URL.
+     * @param nodes the list of nodes.
+     */
+    void addNodes(String descriptor, ArrayList nodes) {
+        HashSet h = new HashSet();
+        JobWatcher watcher = (JobWatcher) descr2watcher.get(descriptor);
+        JobWatcher stub = (JobWatcher) descr2watcherStub.get(descriptor);
+        logger.debug("Adding " + nodes.size() + " nodes");
+
+        // Set up parameters for parallel creation of launchers.
+        Node[] proActiveNodes = (Node[]) nodes.toArray(new Node[0]);
+        Object[][] parameters = new Object[proActiveNodes.length][];
+        NodeInfo[] nodeInfo = new NodeInfo[proActiveNodes.length];
+        for (int i = 0; i < proActiveNodes.length; i++) {
+            nodeInfo[i] = new NodeInfo(proActiveNodes[i], watcher, descriptor,
+                    this);
+            parameters[i] = new Object[] { stub, proActiveNodes[i]};
+            h.add(nodeInfo[i]);
+        }
+
+        // Create launchers in parallel.
+        Object[] launchers;
+        try {
+            launchers = ProActive.newActiveInParallel(
+                    Launcher.class.getName(), parameters, proActiveNodes);
+        } catch(Throwable e) {
+            logger.error("Internal error, launch creation failed ...", e);
+            return;
+        }
+
+        // Process result of launcher creation.
+        for (int i = 0; i < nodeInfo.length; i++) {
+            nodeInfo[i].launcher = (Launcher) launchers[i];
+        }
+        synchronized(this) {
+            descr2nodeset.put(descriptor, h);
+            totalNodes += nodeInfo.length;
+            availableNodes += nodeInfo.length;
+            notifyAll();
+        }
+        logger.debug("Added " + nodeInfo.length + " nodes");
+    }
+
+    /**
+     * Reserves and returns the specified number of nodes.
+     * @param n the number of nodes requested.
+     * @return an array containing the nodes.
+     */
+    private NodeInfo[] obtainNodes(int n) {
+        NodeInfo[] nodes = new NodeInfo[n];
+        int count = 0;
+
+        // Should we sort the clusters here???
+        // Do a "best fit"? Or "largest cluster first"???
+        for (Iterator d = descr2nodeset.values().iterator(); d.hasNext();) {
+            HashSet h = (HashSet) d.next();
+            for (Iterator i = h.iterator(); i.hasNext();) {
+                NodeInfo nodeInfo = (NodeInfo) i.next();
+                nodes[count++] = nodeInfo;
+                h.remove(nodeInfo);
+                if (count == n) {
+                    break;
                 }
             }
         }
-    }
-
-    ProActiveLauncher startLauncher(Node node, boolean force, int index)
-            throws Exception {
-        NodeInformation nodeInf = node.getNodeInformation();
-        ProActiveLauncher launcher 
-            = (ProActiveLauncher) launcherTable.get(node);
-
-        if (force || launcher == null) {
-            if (launcher != null) {
-                launcherTable.remove(node);
-            }
-            launcher = (ProActiveLauncher) ProActive.newActive(
-                    ProActiveLauncher.class.getName(),
-                    new Object[] { watcherStubs[index] },
-                    node);
-
-            launcherTable.put(node, launcher);
-
-            logger.info("Started launcher on: "
-                    + nodeInf.getHostName() + ", url: "
-                    + nodeInf.getURL());
+        availableNodes -= count;
+        if (count != n) {
+            // Should not get here.
+            logger.warn("Available node count is wrong!");
         }
-        return launcher;
+        return nodes;
     }
 
-    synchronized void addNodes(String descriptor, ArrayList nodes) {
-        for (int i = 0; i < descriptorURLs.length; i++) {
-            if (descriptorURLs[i].equals(descriptor)) {
-                System.out.println("addNodes: len = " + nodes.size());
-                this.clusters[i] = nodes;
-                totalNodes += nodes.size();
-                gotNodesFromDescriptors++;
-                if (gotNodesFromDescriptors == descriptorURLs.length
-                        || totalNodes != 0) {
-                    notifyAll();
-                }
-                break;
-            }
+    /**
+     * Makes the specified node available for allocation.
+     * @param node the node.
+     */
+    synchronized void releaseNode(NodeInfo node) {
+        if (node.suspect) {
+            // TODO: possibly try and resqueue this node ???
+            // Restart launcher on it ???
+            totalNodes--;
+            logger.warn("Remove node " + node.hostName);
+            return;
+        }
+        HashSet h = (HashSet) descr2nodeset.get(node.descriptor);
+        h.add(node);
+        availableNodes++;
+        if (nextJob != null && nextJob.getNumNodes() <= availableNodes) {
+            notifyAll();
         }
     }
 
-    synchronized void removeNode(int index) {
-        totalNodes--;
-        clusters[currentList].remove(index);
-        currentIndex--;
-        System.out.println("Remove node");
-        (new Throwable()).printStackTrace();
-    }
-
+    /**
+     * Invoked by the JavaGat when the user calls GAT.end().
+     * Cleans up by killing all nodes.
+     */
     public static void end() {
-        for (Iterator i = launcherTable.entrySet().iterator(); i.hasNext();) {
-            Map.Entry e = (Map.Entry) i.next();
-            Node n = (Node) e.getKey();
-            logger.info("Killing active objects on node "
-                    + n.getNodeInformation().getURL());
-            try {
-                Object[] objs = n.getActiveObjects();
-                if (logger.isInfoEnabled() && objs != null) {
-                    for (int j = 0; j < objs.length; j++) {
-                        logger.info("Object " + j + ": " + objs[j]);
-                    }
+        for (Iterator d = descr2nodeset.values().iterator(); d.hasNext();) {
+            HashSet h = (HashSet) d.next();
+            for (Iterator i =h.iterator(); i.hasNext();) {
+                NodeInfo nodeInfo = (NodeInfo) i.next();
+                logger.info("Killing active objects on node "
+                        + nodeInfo.hostName);
+                try {
+                    ProActiveRuntime rt = nodeInfo.node.getProActiveRuntime();
+                    // Is there a better way to do this???
+                    rt.killRT(true);
+                } catch(Exception ex) {
+                    logger.info("Got exception from killRT, ignored:", ex);
                 }
-                ProActiveRuntime rt = n.getProActiveRuntime();
-                // rt.killNode(n.getNodeInformation().getName());
-                rt.killRT(true);
-                // n.killAllActiveObjects();
-                // ProActiveLauncher l = (ProActiveLauncher) e.getValue();
-                // l.die();
-            } catch(Exception ex) {
-                logger.info("Got exception from killRT, ignored:", ex);
             }
         }
     }
 
-    private synchronized int getBestSiteCrawler() {
-        if (totalNodes <= 0) {
-            return -1;
-        }
-        while (clusters[currentList] == null
-                || currentIndex >= clusters[currentList].size()) {
-            currentIndex = 0;
-            currentList++;
-            if (currentList >= clusters.length) {
-                currentList = 0;
-            }
-        }
-        return currentIndex++;
-    }
-
-    public Job submitJob(JobDescription description)
+    /**
+     * Submits a job described by the specified description to the job
+     * queue and returns it.
+     * @param description the job description.
+     * @return the job.
+     * @exception GATInvocationException when something goes wrong.
+     */
+    public org.gridlab.gat.resources.Job submitJob(JobDescription description)
         throws GATInvocationException {
+
+        Job submittedJob;
 
         SoftwareDescription sd = description.getSoftwareDescription();
 
@@ -195,80 +246,60 @@ public class ProActiveResourceBrokerAdaptor extends ResourceBrokerCpi {
                     "Job description does not contain a software description");
         }
 
-        Sandbox sandbox = null;
+        submittedJob = new Job(gatContext, preferences, description, this);
 
+        synchronized(this) {
+            jobList.add(submittedJob);
+            if (jobList.size() == 1) {
+                notifyAll();
+            }
+        }
+
+        return submittedJob;
+    }
+
+    /**
+     * Very simple-minded scheduling thread. It tries to schedule jobs
+     * first-in, first-out (FIFO).
+     */
+    public void run() {
+        Job job;
         for (;;) {
-            int index = getBestSiteCrawler();
-
-            if (index == -1) {
-                throw new GATInvocationException("No nodes available");
-            }
-
-            Node node = (Node) clusters[currentList].get(index);
-
-            NodeInformation nodeInf = node.getNodeInformation();
-
-            if (preferences.containsKey("useSandbox")) {
-                if (sandbox != null) {
-                    sandbox.retrieveAndCleanup(null);
-                }
-                sandbox = new Sandbox(gatContext, preferences, description,
-                        nodeInf.getHostName(), null, true, false, false, false);
-            }
-
-            logger.info("node.getNodeInformation().getHostName() = "
-                    + nodeInf.getHostName());
-
-            ProActiveLauncher launcher;
-            try {
-                launcher = startLauncher(node, false, currentList);
-            } catch (Exception e) {
-                e.printStackTrace();
-                logger.warn("Failed to deploy launcher on node "
-                        + nodeInf.getURL() + ", removing node ...");
-                removeNode(index);
-                continue;
-            }
-
-            try {
-                return new ProActiveJob(gatContext, preferences, launcher,
-                        description, node, watchers[currentList], sandbox);
-            } catch(Throwable e) {
-                logger.warn("Launcher on node " + nodeInf.getURL()
-                        + " failed to launch. Pinging ...");
-                boolean pingFailed = false;
-                try {
-                    IntWrapper iw = launcher.ping();
-                    if (iw.intValue() != 0) {
-                        throw new Exception("Whatever ...");
-                    }
-                } catch(Exception ex) {
-                    pingFailed = true;
-                }
-                if (pingFailed) {
-                    logger.warn("Redeploying launcher on node "
-                            + nodeInf.getURL());
+            NodeInfo[] nodes;
+            synchronized(this) {
+                // Obtain the first job from the joblist.
+                while (jobList.size() == 0) {
                     try {
-                        launcher = startLauncher(node, true, currentList);
-                    } catch (Exception ex) {
-                        logger.warn("Failed to deploy launcher on node "
-                                + nodeInf.getURL() + ", removing node ...");
-                        removeNode(index);
-                        continue;
+                        wait();
+                    } catch(Exception e) {
+                        // ignored
                     }
-                } else {
-                    logger.error("Launcher ping succeeded, something "
-                            + "else is wrong");
-                    throw new GATInvocationException("Failed to launch", e);
                 }
-                try {
-                    return new ProActiveJob(gatContext, preferences, launcher,
-                            description, node, watchers[currentList], sandbox);
-                } catch(Throwable ex) {
-                    logger.error("Launcher on node " + nodeInf.getURL()
-                        + " failed to launch, giving up");
-                    throw new GATInvocationException("Failed to launch", ex);
+                logger.debug("Got job to schedule");
+                nextJob = (Job) jobList.remove(0);
+
+                int nNodes = nextJob.getNumNodes();
+
+                logger.debug("Want " + nNodes + " nodes");
+
+                // Obtain enough nodes for it.
+                while (availableNodes < nNodes) {
+                    try {
+                        wait();
+                    } catch(Exception e) {
+                        // ignored
+                    }
                 }
+
+                logger.debug("Got nodes to schedule the job on");
+                nodes = obtainNodes(nNodes);
+                job = nextJob;
+                nextJob = null;
+            }
+            try {
+                job.startJob(nodes);
+            } catch(Throwable e) {
+                logger.warn("startJob threw exception: ", e);
             }
         }
     }
