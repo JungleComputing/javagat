@@ -740,7 +740,7 @@ public abstract class GlobusFileAdaptor extends FileCpi {
                 c.setPassive();
                 c.setLocalActive();
             } catch (Exception e) {
-                throw new GATInvocationException("ftp", e);
+                throw new GATInvocationException("globus", e);
             }
         } else {
             if (GATEngine.DEBUG) {
