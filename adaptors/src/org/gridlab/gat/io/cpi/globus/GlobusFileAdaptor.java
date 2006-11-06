@@ -89,8 +89,6 @@ public abstract class GlobusFileAdaptor extends FileCpi {
     static protected boolean isPassive(Preferences preferences) {
         boolean passive;
 
-        System.err.println("PREFS: " + preferences);
-
         String tmp = (String) preferences.get("ftp.connection.passive");
 
         if ((tmp != null) && tmp.equalsIgnoreCase("false")) {
