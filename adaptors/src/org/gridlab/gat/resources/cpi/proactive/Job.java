@@ -63,7 +63,7 @@ public class Job extends JobCpi {
     private int nInstances = 1;
 
     /** Number of nodes on which these instances must be run. */
-    private int nNodes = -1;
+    private int nNodes = 1;
 
     /** When set, use the Sandbox mechanism for stage-in and state-out. */
     private boolean wantsSandbox = true;
@@ -173,6 +173,7 @@ public class Job extends JobCpi {
             // Get more JVM arguments.
             for (Iterator i = attributes.keySet().iterator(); i.hasNext();) {
                 String key = (String) i.next();
+                System.out.println("Attribute: " + key);
                 if (key.equalsIgnoreCase("minMemory")) {
                     Integer minMem = (Integer) attributes.get(key);
                     if (minMem != null) {
@@ -187,7 +188,8 @@ public class Job extends JobCpi {
                         space = " ";
                     }
                 } else if (key.equalsIgnoreCase("count")) {
-                    // Number of instances to create. If not specified, 1.
+                    // Number of instances to create. If not specified,
+                    // you get the number of nodes specified.
                     Integer count = (Integer) attributes.get(key);
                     if (count != null) {
                         nInstances = count.intValue();
@@ -209,9 +211,17 @@ public class Job extends JobCpi {
                     classPath = (String) attributes.get(key);
                 }
             }
-        }
-        if (nNodes == -1) {
-            nNodes = nInstances;
+            if (attributes.get("count") != null) {
+                if (nInstances < nNodes) {
+                    throw new GATInvocationException(
+                            "number of instances < number of nodes?");
+                }
+            } else {
+                nInstances = nNodes;
+            }
+            if (attributes.get("hostCount") == null) {
+                nNodes = nInstances;
+            }
         }
     }
 
@@ -265,6 +275,16 @@ public class Job extends JobCpi {
     }
 
     /**
+     * Sets the SUBMISSION_ERROR state for this job, with the exception
+     * that was the cause of this.
+     * @param e the exception.
+     */
+    void submissionError(GATInvocationException e) {
+        setState(SUBMISSION_ERROR);
+        infoMap.put("submissionError", e);
+    }
+
+    /**
      * Called by the resource broker to run this job on the specified nodes.
      * @param nodes the nodes to run on.
      * @exception GATInvocationException is thrown when something goes wrong.
@@ -272,8 +292,7 @@ public class Job extends JobCpi {
     void startJob(NodeInfo[] nodes) throws GATInvocationException {
         // Check of number of nodes makes sense.
         if (nodes.length != nNodes || nNodes == 0) {
-            setState(SUBMISSION_ERROR);
-            infoMap.put("submissionError",
+            submissionError(
                 new GATInvocationException("Wrong number of nodes allocated"));
             return;
         }
@@ -328,9 +347,7 @@ public class Job extends JobCpi {
                     node.decrCount(false);
                 }
             }
-            setState(SUBMISSION_ERROR);
-            infoMap.put("submissionError",
-                new GATInvocationException("launcher failed"));
+            submissionError(new GATInvocationException("launcher failed"));
         } else {
             // Increment node 0 count for postStage.
             nodes[0].incrCount();

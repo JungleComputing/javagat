@@ -55,6 +55,12 @@ public class ProActiveResourceBrokerAdaptor extends ResourceBrokerCpi
     /** Job to be scheduled next. */
     private Job nextJob = null;
 
+    /**
+     * Number of ProActive descriptors for which an addNodes call is
+     * still expected.
+     */
+    private int remainingCalls;
+
     /** Logger. */
     static final Logger logger
         = ibis.util.GetLogger.getLogger(ProActiveResourceBrokerAdaptor.class);
@@ -84,6 +90,8 @@ public class ProActiveResourceBrokerAdaptor extends ResourceBrokerCpi
         }
         watchers = new JobWatcher[xmls.size()];
         watcherStubs = new JobWatcher[watchers.length];
+
+        remainingCalls = watchers.length;
 
         for (int i = 0; i < xmls.size(); i++) {
             // Spawn a JobWatcher thread for each descriptor.
@@ -120,6 +128,10 @@ public class ProActiveResourceBrokerAdaptor extends ResourceBrokerCpi
         JobWatcher watcher = (JobWatcher) descr2watcher.get(descriptor);
         JobWatcher stub = (JobWatcher) descr2watcherStub.get(descriptor);
         logger.debug("Adding " + nodes.size() + " nodes");
+
+        synchronized(this) {
+            remainingCalls--;
+        }
 
         // Set up parameters for parallel creation of launchers.
         Node[] proActiveNodes = (Node[]) nodes.toArray(new Node[0]);
@@ -160,7 +172,7 @@ public class ProActiveResourceBrokerAdaptor extends ResourceBrokerCpi
      * @param n the number of nodes requested.
      * @return an array containing the nodes.
      */
-    private NodeInfo[] obtainNodes(int n) {
+    private synchronized NodeInfo[] obtainNodes(int n) {
         NodeInfo[] nodes = new NodeInfo[n];
         int count = 0;
 
@@ -168,13 +180,16 @@ public class ProActiveResourceBrokerAdaptor extends ResourceBrokerCpi
         // Do a "best fit"? Or "largest cluster first"???
         for (Iterator d = descr2nodeset.values().iterator(); d.hasNext();) {
             HashSet h = (HashSet) d.next();
+            int index = count;
             for (Iterator i = h.iterator(); i.hasNext();) {
                 NodeInfo nodeInfo = (NodeInfo) i.next();
                 nodes[count++] = nodeInfo;
-                h.remove(nodeInfo);
                 if (count == n) {
                     break;
                 }
+            }
+            for (int i = index; i < count; i++) {
+                h.remove(nodes[i]);
             }
         }
         availableNodes -= count;
@@ -282,8 +297,16 @@ public class ProActiveResourceBrokerAdaptor extends ResourceBrokerCpi
 
                 logger.debug("Want " + nNodes + " nodes");
 
+
                 // Obtain enough nodes for it.
                 while (availableNodes < nNodes) {
+                    if (totalNodes < nNodes && remainingCalls <= 0) {
+                        nextJob.submissionError(new GATInvocationException(
+                                    "Not enough nodes available (" + totalNodes
+                                    + "<" + nNodes + ")"));
+                        nextJob = null;
+                        break;
+                    }
                     try {
                         wait();
                     } catch(Exception e) {
@@ -291,10 +314,14 @@ public class ProActiveResourceBrokerAdaptor extends ResourceBrokerCpi
                     }
                 }
 
-                logger.debug("Got nodes to schedule the job on");
-                nodes = obtainNodes(nNodes);
-                job = nextJob;
-                nextJob = null;
+                if (nextJob != null) {
+                    logger.debug("Got nodes to schedule the job on");
+                    nodes = obtainNodes(nNodes);
+                    job = nextJob;
+                    nextJob = null;
+                } else {
+                    continue;
+                }
             }
             try {
                 job.startJob(nodes);
