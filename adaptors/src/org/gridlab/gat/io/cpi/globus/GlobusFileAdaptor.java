@@ -748,7 +748,7 @@ public abstract class GlobusFileAdaptor extends FileCpi {
         if (isPassive(preferences)) {
             if (GATEngine.DEBUG) {
                 System.err
-                    .println("gridftp: using local active / remote passive");
+                    .println("gridftp: using local active / remote PASSIVE");
             }
 
             /** Assume the local host is behind a firewall */
@@ -761,7 +761,7 @@ public abstract class GlobusFileAdaptor extends FileCpi {
         } else {
             if (GATEngine.DEBUG) {
                 System.err
-                    .println("gridftp: using local passive / remote active");
+                    .println("gridftp: using local passive / remote ACTIVE");
             }
 
             try {
