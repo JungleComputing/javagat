@@ -51,6 +51,32 @@ class FileFilterForwarder implements org.gridlab.gat.io.cpi.FileFilter {
     }
 }
 
+/**
+ * @author rob
+ */
+/** An abstract representation of a physical file. (See java.io.file)
+ * <p>
+ * An instance of this class presents an abstract, system-independent view of a
+ * physical file. User interfaces and operating systems use system-dependent
+ * pathname strings to identify physical files. GAT, however, uses an operating
+ * system independent pathname string to identify a physical file. A physical
+ * file in GAT is identified by a URI.
+ * <p>
+ * An instance of this File class allows for various high-level operations to be
+ * preformed on a physical file. For example, one can, with a single API call,
+ * copy a physical file from one location to a second location, move a physical
+ * file from one location to a second location, delete a physical file, and
+ * preform various other operations on a physical file. The utility of this
+ * high-level view of a physical file is multi-fold. The client of an instance
+ * of this class does not have to concern themselves with the details of reading
+ * every single byte of a physical file when all they wish to do is copy the
+ * physical file to a new location. Similarly, a client does not have to deal
+ * with all the various error states that can occur when moving a physical file.
+ * Have all the various bytes been read correctly? Have all the various bytes
+ * been saved correctly? Did the deletion of the original file proceed
+ * correctly? The client simply has to call a single API call and the physical
+ * file is moved.
+ */
 public class File extends java.io.File implements Monitorable, Serializable, Advertisable {
     org.gridlab.gat.io.FileInterface f;
 
@@ -558,11 +584,7 @@ public class File extends java.io.File implements Monitorable, Serializable, Adv
      * @see java.io.File#toURI()
      */
     public java.net.URI toURI() {
-        try {
-      return f.toURI().toJavaURI();
-        } catch (Exception e) {
-            throw new Error(e);
-        }
+        throw new Error("please use toGATURI to retreive a file's URI.");
     }
 
     /**
