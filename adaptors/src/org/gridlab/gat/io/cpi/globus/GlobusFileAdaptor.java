@@ -760,6 +760,12 @@ public abstract class GlobusFileAdaptor extends FileCpi {
                 System.err
                     .println("gridftp: using local passive / remote active");
             }
+            try {
+                c.setLocalPassive();
+                c.setActive();
+            } catch (Exception e) {
+                throw new GATInvocationException("ftp", e);
+            }
         }
     }
 
