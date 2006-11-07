@@ -576,7 +576,13 @@ public abstract class GlobusFileAdaptor extends FileCpi {
             }
 
             // it can also be a link, so continue with slow method            
-        } catch (Exception e) {
+        } catch (GATInvocationException e) {
+            if(e.getMessage().equals("File not found")) {
+                if(GATEngine.DEBUG) {
+                    System.err.println("file not found in isDirectory");
+                }
+                throw e;
+            }
             if (GATEngine.DEBUG) {
                 System.err
                     .println("fast isDirectory failed, falling back to slower version: "
