@@ -206,7 +206,7 @@ public class ProActiveResourceBrokerAdaptor extends ResourceBrokerCpi
      */
     synchronized void releaseNode(NodeInfo node) {
         if (node.suspect) {
-            // TODO: possibly try and resqueue this node ???
+            // TODO: possibly try and rescue this node ???
             // Restart launcher on it ???
             totalNodes--;
             logger.warn("Remove node " + node.hostName);
@@ -232,11 +232,13 @@ public class ProActiveResourceBrokerAdaptor extends ResourceBrokerCpi
                 logger.info("Killing active objects on node "
                         + nodeInfo.hostName);
                 try {
-                    ProActiveRuntime rt = nodeInfo.node.getProActiveRuntime();
-                    // Is there a better way to do this???
-                    rt.killRT(true);
+                    nodeInfo.node.getProActiveRuntime().killRT(true);
                 } catch(Exception ex) {
-                    logger.info("Got exception from killRT, ignored:", ex);
+                    // logger.info("Got exception from killRT, ignored:", ex);
+                    // print removed, killRT always seems to give an
+                    // exception: EOFException, unmarshallReturnHeader,
+                    // which is understandable, because we are killing the
+                    // other side, after all.
                 }
             }
         }
