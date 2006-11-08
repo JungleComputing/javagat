@@ -51,7 +51,7 @@ public abstract class FileCpi implements File {
      *            the preferences to be associated with this adaptor
      */
     protected FileCpi(GATContext gatContext, Preferences preferences,
-            URI location) {
+        URI location) {
         this.gatContext = gatContext;
         this.preferences = preferences;
         this.location = location;
@@ -124,7 +124,7 @@ public abstract class FileCpi implements File {
     }
 
     public void addMetricListener(MetricListener metricListener, Metric metric)
-            throws GATInvocationException {
+        throws GATInvocationException {
         throw new UnsupportedOperationException("Not implemented");
     }
 
@@ -133,17 +133,17 @@ public abstract class FileCpi implements File {
     }
 
     public void removeMetricListener(MetricListener metricListener,
-            Metric metric) throws GATInvocationException {
+        Metric metric) throws GATInvocationException {
         throw new UnsupportedOperationException("Not implemented");
     }
 
     public MetricDefinition getMetricDefinitionByName(String name)
-            throws GATInvocationException {
+        throws GATInvocationException {
         throw new UnsupportedOperationException("Not implemented");
     }
 
     public MetricValue getMeasurement(Metric metric)
-            throws GATInvocationException {
+        throws GATInvocationException {
         throw new UnsupportedOperationException("Not implemented");
     }
 
@@ -367,7 +367,7 @@ public abstract class FileCpi implements File {
     }
 
     public File[] listFiles(FilenameFilter filter)
-            throws GATInvocationException {
+        throws GATInvocationException {
         if (!isDirectory()) {
             return null;
         }
@@ -405,7 +405,27 @@ public abstract class FileCpi implements File {
     }
 
     public boolean mkdirs() throws GATInvocationException {
-        throw new UnsupportedOperationException("Not implemented");
+        if (exists()) {
+            return false;
+        }
+        if (mkdir()) {
+            return true;
+        }
+
+        File canonFile = null;
+        try {
+            canonFile = getCanonicalFile();
+        } catch (Exception e) {
+            return false;
+        }
+
+        File parent = canonFile.getParentFile();
+
+        if (parent == null) {
+            return false;
+        }
+
+        return parent.mkdirs() && canonFile.mkdir();
     }
 
     public boolean renameTo(File arg0) throws GATInvocationException {
@@ -452,8 +472,8 @@ public abstract class FileCpi implements File {
     }
 
     protected static void copyDirectory(GATContext gatContext,
-            Preferences preferences, URI dirURI, URI dest)
-            throws GATInvocationException {
+        Preferences preferences, URI dirURI, URI dest)
+        throws GATInvocationException {
         if (GATEngine.DEBUG) {
             System.err.println("copyDirectory");
         }
@@ -468,8 +488,8 @@ public abstract class FileCpi implements File {
 
         // create destination dir
         try {
-            org.gridlab.gat.io.File destDir =
-                    GAT.createFile(gatContext, preferences, dest);
+            org.gridlab.gat.io.File destDir = GAT.createFile(gatContext,
+                preferences, dest);
 
             if (GATEngine.DEBUG) {
                 System.err.println("copyDirectory: mkdir of " + destDir);
@@ -522,8 +542,8 @@ public abstract class FileCpi implements File {
         }
     }
 
-    protected static void deleteDirectory(GATContext gatContext,
-            Preferences preferences, URI dirUri) throws GATInvocationException {
+    public static void recursiveDeleteDirectory(GATContext gatContext,
+        Preferences preferences, URI dirUri) throws GATInvocationException {
         File dir;
         try {
             dir = GAT.createFile(gatContext, preferences, dirUri);
@@ -531,40 +551,62 @@ public abstract class FileCpi implements File {
             throw new GATInvocationException("generic file cpi", e);
         }
 
-        File[] files = dir.listFiles(new FileFilter() {
-            public boolean accept(File file) {
-                try {
-                    return file.isDirectory();
-                } catch (Exception e) {
-                    return false;
+        GATInvocationException deleteException = new GATInvocationException();
+        File[] files = null;
+
+        try {
+            files = dir.listFiles(new FileFilter() {
+                public boolean accept(File file) {
+                    try {
+                        return file.isDirectory();
+                    } catch (Exception e) {
+                        return false;
+                    }
                 }
+            });
+        } catch (GATInvocationException e) {
+            deleteException.add("file cpi", e);
+        }
+
+        if (files != null) {
+            for (int i = 0; i < files.length; i++) {
+                recursiveDeleteDirectory(gatContext, preferences, files[i]
+                    .toURI());
+                files[i].delete();
             }
-        });
-
-        if (files == null) {
-            return; // Directory could not be read
         }
 
-        for (int i = 0; i < files.length; i++) {
-            deleteDirectory(gatContext, preferences, files[i].toURI());
-            files[i].delete();
-        }
+        files = null;
 
-        files = dir.listFiles(new FileFilter() {
-            public boolean accept(File file) {
-                try {
-                    return !file.isDirectory();
-                } catch (Exception e) {
-                    return false;
+        try {
+            files = dir.listFiles(new FileFilter() {
+                public boolean accept(File file) {
+                    try {
+                        return !file.isDirectory();
+                    } catch (Exception e) {
+                        return false;
+                    }
                 }
-            }
-        });
-
-        for (int i = 0; i < files.length; i++) {
-            files[i].delete();
+            });
+        } catch (GATInvocationException e) {
+            deleteException.add("file cpi", e);
         }
 
-        dir.delete();
+        if (files != null) {
+            for (int i = 0; i < files.length; i++) {
+                files[i].delete();
+            }
+        }
+
+        try {
+            dir.delete();
+        } catch (GATInvocationException e) {
+            deleteException.add("file cpi", e);
+        }
+        
+        if (deleteException.getNrChildren() != 0) {
+            throw deleteException;
+        }
     }
 
     public String marshal() {
@@ -575,10 +617,9 @@ public abstract class FileCpi implements File {
     }
 
     public static Advertisable unmarshal(GATContext context,
-            Preferences preferences, String s) {
-        SerializedFile f =
-                (SerializedFile) GATEngine.defaultUnmarshal(
-                    SerializedFile.class, s);
+        Preferences preferences, String s) {
+        SerializedFile f = (SerializedFile) GATEngine.defaultUnmarshal(
+            SerializedFile.class, s);
 
         try {
             return GAT.createFile(context, preferences,
@@ -604,7 +645,7 @@ public abstract class FileCpi implements File {
             try {
                 return isDirectory();
             } catch (Exception e) {
-            	// ignore
+                // ignore
             }
 
             try {

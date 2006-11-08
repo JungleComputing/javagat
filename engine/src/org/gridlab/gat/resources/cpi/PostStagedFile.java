@@ -56,12 +56,15 @@ public class PostStagedFile extends StagedFile {
             } else {
                 // file with same name in CWD
                 try {
-                    URI resolvedDestURI =
-                            new URI("any:///" + dir + "/" + origSrc.getPath());
-                    resolvedDest =
-                            GAT
-                                .createFile(gatContext, preferences,
-                                    resolvedDestURI);
+                    String destURIString = "any://";
+                    if(origDest.toURI().getHost() == null) {
+                        destURIString += "/" + dir + "/";
+                    } else {
+                        destURIString += origDest.toURI().getHost() + "/";
+                    }
+                    
+                    destURIString += origDest.getPath();
+                    resolvedDest = GAT.createFile(gatContext, preferences, new URI(destURIString));
                 } catch (Exception e) {
                     throw new GATInvocationException("poststagedFile", e);
                 }

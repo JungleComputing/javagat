@@ -69,6 +69,24 @@ public class PreStagedFile extends StagedFile {
                 + resolvedDest.toURI());
         }
 
+        // create any directories if needed.
+        if(resolvedSrc.isDirectory()) {
+            // dest is also a dir, create it.
+            if(GATEngine.VERBOSE) {
+                System.err.println("creating dir: " + resolvedDest);
+            }
+            resolvedDest.mkdirs();
+        } else {
+            // src is a file, dest is also a file.
+            File dir = resolvedDest.getParentFile();
+            if(dir != null) {
+                if(GATEngine.VERBOSE) {
+                    System.err.println("creating dir: " + dir);
+                }
+                dir.mkdirs();
+            }
+        }
+            
         resolvedSrc.copy(resolvedDest.toURI());
     }
 

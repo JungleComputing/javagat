@@ -3,6 +3,7 @@
  */
 package org.gridlab.gat.resources.cpi;
 
+import java.net.URISyntaxException;
 import java.util.Map;
 
 import org.gridlab.gat.FilePrestageException;
@@ -13,6 +14,7 @@ import org.gridlab.gat.Preferences;
 import org.gridlab.gat.URI;
 import org.gridlab.gat.engine.GATEngine;
 import org.gridlab.gat.io.File;
+import org.gridlab.gat.io.cpi.FileCpi;
 import org.gridlab.gat.resources.JobDescription;
 import org.gridlab.gat.resources.SoftwareDescription;
 
@@ -44,35 +46,35 @@ public class Sandbox {
         this.gatContext = gatContext;
         this.preferences = preferences;
         this.host = host;
-        
+
         // The user preference sandboxRoot overwrites the one specified by the adaptor.
         String sandboxRootPref = null;
         String sandboxDisabledPref = null;
         SoftwareDescription sd = jobDescription.getSoftwareDescription();
-        if(sd != null) {
+        if (sd != null) {
             Map attr = sd.getAttributes();
-            if(attr != null) {
+            if (attr != null) {
                 sandboxRootPref = (String) attr.get("sandboxRoot");
                 sandboxDisabledPref = (String) attr.get("disableSandbox");
             }
         }
-        if(sandboxRootPref != null) {
+        if (sandboxRootPref != null) {
             this.sandboxRoot = sandboxRootPref;
-            if(GATEngine.DEBUG) {
+            if (GATEngine.DEBUG) {
                 System.err.println("set sandboxRoot to " + sandboxRootPref);
             }
         } else {
             this.sandboxRoot = sandboxRoot;
         }
 
-        if(sandboxDisabledPref != null) {
-        	if(sandboxDisabledPref.equalsIgnoreCase("true")) {
-        		this.createSandboxDir = false;
-        	} else {
-                this.createSandboxDir = createSandboxDir;        		
-        	}
+        if (sandboxDisabledPref != null) {
+            if (sandboxDisabledPref.equalsIgnoreCase("true")) {
+                this.createSandboxDir = false;
+            } else {
+                this.createSandboxDir = createSandboxDir;
+            }
         } else {
-        	this.createSandboxDir = createSandboxDir;
+            this.createSandboxDir = createSandboxDir;
         }
 
         initSandbox();
@@ -95,30 +97,22 @@ public class Sandbox {
                     return;
                 }
             } catch (Exception e) {
-                throw new GATInvocationException("resource broker", e);
+                throw new GATInvocationException("sandbox", e);
             }
         }
 
         throw new GATInvocationException("could not create a sandbox");
     }
 
-    private void removeSandboxDir(String host, String sandbox)
-        throws GATInvocationException {
+    private void removeSandboxDir() throws GATInvocationException {
+        URI location = null;
         try {
-            URI location = new URI("any://" + host + "/" + sandbox);
-            File f = GAT.createFile(gatContext, location);
-            if (f.delete()) {
-                if (GATEngine.VERBOSE) {
-                    System.err.println("deleted sandbox dir");
-                }
-
-                return;
-            }
-        } catch (Exception e) {
-            throw new GATInvocationException("resource broker", e);
+            location = new URI("any://" + host + "/" + sandbox);
+        } catch (URISyntaxException e) {
+            throw new GATInvocationException("sandbox", e);
         }
 
-        throw new GATInvocationException("could not create a sandbox");
+        FileCpi.recursiveDeleteDirectory(gatContext, preferences, location);
     }
 
     private String getSandboxName() {
@@ -131,14 +125,14 @@ public class Sandbox {
     }
 
     private void initSandbox() throws GATInvocationException {
-        if(!createSandboxDir) {
+        if (!createSandboxDir) {
             if (GATEngine.VERBOSE) {
                 System.err.println("sandbox: NO SANDBOX");
             }
             sandbox = sandboxRoot;
             return;
         }
-        
+
         if (host == null) {
             throw new GATInvocationException(
                 "cannot create a sandbox without a host name");
@@ -147,7 +141,7 @@ public class Sandbox {
         try {
             createSandboxDir(host);
         } catch (Exception e) {
-            throw new FilePrestageException("resource broker", e);
+            throw new FilePrestageException("sandbox", e);
         }
 
         if (GATEngine.VERBOSE) {
@@ -158,24 +152,114 @@ public class Sandbox {
     /** Creates a complete sandbox directory. This requires prestaging of the requested files. 
      */
     private void createSandbox() throws GATInvocationException {
+        if (GATEngine.VERBOSE) {
+            System.err.println("deleting post stage files outside sandbox");
+        }
         try {
             post.delete(false); // only delete files that aren't going in the sandbox
         } catch (Exception e) {
-            if(GATEngine.VERBOSE) {
+            if (GATEngine.VERBOSE) {
                 System.err.println("warning, delete poststage failed: " + e);
             }
             // ignore, maybe the files did not exist anyway
         }
+        if (GATEngine.VERBOSE) {
+            System.err.println("deleting post stage files outside sandbox done");
+        }
 
+        if (GATEngine.VERBOSE) {
+            System.err.println("pre stage starting");
+        }
         try {
             pre.prestage();
         } catch (Exception e) {
             if (GATEngine.VERBOSE) {
-                System.err.println("prestage failed, cleaning up");
+                System.err.println("prestage FAILED, cleaning up");
             }
             // remove / wipe files we already prestaged.
             retrieveAndCleanup(null);
-            throw new FilePrestageException("resource broker", e);
+            throw new FilePrestageException("sandbox", e);
+        }
+        if (GATEngine.VERBOSE) {
+            System.err.println("pre stage done (SUCCESS)");
+        }
+    }
+
+    private void wipe() throws GATInvocationException {
+        SoftwareDescription sd = jobDescription.getSoftwareDescription();
+        GATInvocationException wipeException = new GATInvocationException();
+
+        if (GATEngine.VERBOSE) {
+            System.err.println("wipe starting");
+        }
+
+        try {
+            if (sd.wipePreStaged()) {
+                pre.wipe(false);
+            }
+        } catch (GATInvocationException e) {
+            wipeException.add("sandbox", e);
+        }
+
+        try {
+            if (sd.wipePostStaged()) {
+                post.wipe(false);
+            }
+        } catch (GATInvocationException e) {
+            wipeException.add("sandbox", e);
+        }
+
+        try {
+            PostStagedFileSet del = new PostStagedFileSet(gatContext,
+                preferences, sd.getWipedFiles(), host, sandbox);
+            del.wipe(false);
+        } catch (GATInvocationException e) {
+            wipeException.add("sandbox", e);
+        }
+
+        if (GATEngine.VERBOSE) {
+            System.err.println("wipe done " + (wipeException.getNrChildren() == 0 ? "(SUCCESS)" : "(FAILURE)"));
+        }
+
+        if (wipeException.getNrChildren() != 0) {
+            throw wipeException;
+        }
+    }
+
+    private void delete() throws GATInvocationException {
+        SoftwareDescription sd = jobDescription.getSoftwareDescription();
+        GATInvocationException deleteException = new GATInvocationException();
+
+        if (GATEngine.VERBOSE) {
+            System.err.println("delete starting");
+        }
+
+        try {
+            pre.delete(!sd.deletePreStaged());
+        } catch (GATInvocationException e) {
+            deleteException.add("delete", e);
+        }
+        
+        try {
+            post.delete(!sd.deletePostStaged());
+        } catch (GATInvocationException e) {
+            deleteException.add("delete", e);
+        }
+        
+        try {
+            PostStagedFileSet del = new PostStagedFileSet(gatContext,
+                preferences, sd.getDeletedFiles(), host, sandbox);
+            del.delete(false);
+        } catch (GATInvocationException e) {
+            deleteException.add("delete", e);
+        }
+
+        if (GATEngine.VERBOSE) {
+            System.err.println("delete done " + (deleteException.getNrChildren() == 0 ? "(SUCCESS)" : "(FAILURE)"));
+        }
+
+        if (deleteException.getNrChildren() != 0) {
+            throw deleteException;
         }
     }
 
@@ -188,48 +272,37 @@ public class Sandbox {
         if (GATEngine.VERBOSE) {
             System.err.println("post stage starting");
         }
-
         try {
             post.poststage();
         } catch (GATInvocationException e) {
             poststageException = e;
         }
-
         if (GATEngine.VERBOSE) {
-            System.err.println("delete/wipe starting");
+            System.err.println("post stage done " + (poststageException == null ? "(SUCCESS)" : "(FAILURE)"));
         }
 
-        SoftwareDescription sd = jobDescription.getSoftwareDescription();
-
         try {
-            if (sd.wipePreStaged()) {
-                pre.wipe(false);
-            }
-            if (sd.wipePostStaged()) {
-                post.wipe(false);
-            }
-
-            PostStagedFileSet del = new PostStagedFileSet(gatContext,
-                preferences, sd.getWipedFiles(), host, sandbox);
-            del.wipe(false);
+            wipe();
         } catch (GATInvocationException e) {
             wipeException = e;
         }
 
         try {
-            pre.delete(!sd.deletePreStaged());
-            post.delete(!sd.deletePostStaged());
-            PostStagedFileSet del = new PostStagedFileSet(gatContext,
-                preferences, sd.getDeletedFiles(), host, sandbox);
-            del.delete(false);
+            delete();
         } catch (GATInvocationException e) {
             deleteException = e;
         }
 
+        if(GATEngine.VERBOSE) {
+            System.err.println("removing sandbox dir");
+        }
         try {
-            removeSandboxDir(host, sandbox);
+            removeSandboxDir();
         } catch (GATInvocationException e) {
             removeSandboxException = e;
+        }
+        if(GATEngine.VERBOSE) {
+            System.err.println("removing sandbox dir done " + (removeSandboxException == null ? "(SUCCESS)" : "(FAILURE)"));
         }
 
         if (j != null) {
@@ -249,7 +322,7 @@ public class Sandbox {
         if (f == null) return null;
         return f.resolvedDest;
     }
-    
+
     public File getResolvedStdin() {
         PreStagedFile f = pre.getStdin();
         if (f == null) return null;

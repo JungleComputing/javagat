@@ -391,7 +391,8 @@ public abstract class GlobusFileAdaptor extends FileCpi {
 
     public File[] listFiles() throws GATInvocationException {
         FTPClient client = null;
-
+        String CWD = null;
+        
         try {
             if (!isDirectory()) {
                 return null;
@@ -399,6 +400,7 @@ public abstract class GlobusFileAdaptor extends FileCpi {
             String remotePath = getPath();
 
             client = createClient(toURI());
+            CWD = client.getCurrentDir();
 
             if (!remotePath.equals("")) {
                 client.changeDir(remotePath);
@@ -436,6 +438,13 @@ public abstract class GlobusFileAdaptor extends FileCpi {
             throw new GATInvocationException("gridftp", e);
         } finally {
             if (client != null) {
+                if(CWD != null) {
+                    try {
+                        client.changeDir(CWD);
+                    } catch (Exception e) {
+                        // ignore
+                    }
+                }
                 destroyClient(client, toURI(), preferences);
             }
         }

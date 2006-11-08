@@ -28,7 +28,7 @@ public class CommandlineSshFileAdaptor extends FileCpi {
 	 * way, because the auto optimizing of adaptor ordering by the engine does
 	 * not select this adaptor anymore if another call is done before the copy.
 	 */
-	private SshFileAdaptor sftpAdaptor;
+	private SshFileAdaptor sshAdaptor;
 
 	/**
 	 * @param gatContext
@@ -49,7 +49,7 @@ public class CommandlineSshFileAdaptor extends FileCpi {
 		if (osname.startsWith("Windows"))
 			windows = true;
 
-		sftpAdaptor = new SshFileAdaptor(gatContext, preferences, location);
+		sshAdaptor = new SshFileAdaptor(gatContext, preferences, location);
 	}
 
 	/**
@@ -318,46 +318,46 @@ public class CommandlineSshFileAdaptor extends FileCpi {
 	}
 
 	public boolean canRead() throws GATInvocationException {
-		return sftpAdaptor.canRead();
+		return sshAdaptor.canRead();
 	}
 
 	public boolean canWrite() throws GATInvocationException {
-		return sftpAdaptor.canWrite();
+		return sshAdaptor.canWrite();
 	}
 
 	public boolean delete() throws GATInvocationException {
-		return sftpAdaptor.delete();
+		return sshAdaptor.delete();
 	}
 
 	public boolean exists() throws GATInvocationException {
-		return sftpAdaptor.exists();
+		return sshAdaptor.exists();
 	}
 
 	public boolean isDirectory() throws GATInvocationException {
-		return sftpAdaptor.isDirectory();
+		return sshAdaptor.isDirectory();
 	}
 
 	public boolean isFile() throws GATInvocationException {
-		return sftpAdaptor.isFile();
+		return sshAdaptor.isFile();
 	}
 
 	public long lastModified() throws GATInvocationException {
-		return sftpAdaptor.lastModified();
+		return sshAdaptor.lastModified();
 	}
 
 	public long length() throws GATInvocationException {
-		return sftpAdaptor.length();
+		return sshAdaptor.length();
 	}
 
 	public String[] list() throws GATInvocationException {
-		return sftpAdaptor.list();
+		return sshAdaptor.list();
 	}
 
 	public boolean mkdir() throws GATInvocationException {
-		return sftpAdaptor.mkdir();
+		return sshAdaptor.mkdir();
 	}
 
 	public boolean mkdirs() throws GATInvocationException {
-		return sftpAdaptor.mkdirs();
+		return sshAdaptor.mkdirs();
 	}
 }
