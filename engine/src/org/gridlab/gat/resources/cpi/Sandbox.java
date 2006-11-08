@@ -158,8 +158,6 @@ public class Sandbox {
     /** Creates a complete sandbox directory. This requires prestaging of the requested files. 
      */
     private void createSandbox() throws GATInvocationException {
-        // @@@
-        /*  
         try {
             post.delete(false); // only delete files that aren't going in the sandbox
         } catch (Exception e) {
@@ -168,7 +166,7 @@ public class Sandbox {
             }
             // ignore, maybe the files did not exist anyway
         }
-*/
+
         try {
             pre.prestage();
         } catch (Exception e) {

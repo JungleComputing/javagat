@@ -17,7 +17,6 @@ import org.gridlab.gat.resources.JobDescription;
 import org.gridlab.gat.resources.SoftwareDescription;
 import org.gridlab.gat.resources.cpi.JobCpi;
 import org.gridlab.gat.resources.cpi.Sandbox;
-import org.objectweb.proactive.core.node.Node;
 import org.objectweb.proactive.core.util.wrapper.StringWrapper;
 import org.objectweb.proactive.filetransfer.FileTransfer;
 import org.objectweb.proactive.filetransfer.FileVector;
@@ -328,7 +327,7 @@ public class Job extends JobCpi {
 
         // Check launch results.
         for (int i = 0; i < nInstances; i++) {
-            NodeInfo node = nodes[i % nodes.length];
+//            NodeInfo node = nodes[i % nodes.length]; // @@@ unused (gave warning) --Rob 
 
             if (result[i] == null || result[i].stringValue() == null) {
                 failed = true;

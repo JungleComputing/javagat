@@ -311,6 +311,10 @@ public abstract class GlobusFileAdaptor extends FileCpi {
             String remotePath = getPath();
             client = createClient(toURI());
 
+            if(!client.exists(remotePath)) {
+                return false;
+            }
+            
             if (isDirectory()) {
                 client.deleteDir(remotePath);
             } else {

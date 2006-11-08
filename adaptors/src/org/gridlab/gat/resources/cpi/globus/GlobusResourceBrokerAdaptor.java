@@ -192,6 +192,11 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
         }
         
         while(true) {
+            try {
+                Gram.jobStatus(j);
+            } catch (Exception e) {
+                // ignore
+            }
             int status = j.getStatus();
 
             if(GATEngine.DEBUG) {

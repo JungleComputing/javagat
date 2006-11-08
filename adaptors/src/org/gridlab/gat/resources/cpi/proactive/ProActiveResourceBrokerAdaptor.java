@@ -4,9 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.Map;
 import java.util.StringTokenizer;
-import java.util.Vector;
 
 import org.apache.log4j.Logger;
 import org.gridlab.gat.GATContext;
@@ -16,11 +14,8 @@ import org.gridlab.gat.Preferences;
 import org.gridlab.gat.resources.JobDescription;
 import org.gridlab.gat.resources.SoftwareDescription;
 import org.gridlab.gat.resources.cpi.ResourceBrokerCpi;
-import org.gridlab.gat.resources.cpi.Sandbox;
 import org.objectweb.proactive.ProActive;
 import org.objectweb.proactive.core.node.Node;
-import org.objectweb.proactive.core.node.NodeInformation;
-import org.objectweb.proactive.core.runtime.ProActiveRuntime;
 
 /**
  * This class implements the JavaGat resource broker for ProActive.

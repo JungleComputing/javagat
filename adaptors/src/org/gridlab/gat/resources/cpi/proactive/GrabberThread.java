@@ -1,7 +1,6 @@
 package org.gridlab.gat.resources.cpi.proactive;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 
 import org.gridlab.gat.Preferences;
 import org.objectweb.proactive.ProActive;

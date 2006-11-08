@@ -129,10 +129,14 @@ public class URI implements Serializable, Comparable {
     }
 
     public boolean equals(Object arg0) {
+        if(arg0 == null) {
+            return false;
+        }
+        
         if (!(arg0 instanceof URI)) {
             return false;
         }
-
+        
         URI other = (URI) arg0;
 
         if (other.getScheme().equals("any") || getScheme().equals("any")) {

@@ -35,15 +35,14 @@ public class PreStagedFile extends StagedFile {
 
         if (origDest != null) { // already set manually
             if (origDest.isAbsolute()) {
-                resolvedDest = origDest;
                 inSandbox = false;
             } else {
-                resolvedDest = resolve(origDest, false);
                 inSandbox = true;
             }
+            resolvedDest = resolve(origDest, false);
         } else {
-            resolvedDest = resolve(origSrc, true);
             inSandbox = true;
+            resolvedDest = resolve(origSrc, true);
         }
 
         if(inSandbox) {
@@ -94,7 +93,6 @@ public class PreStagedFile extends StagedFile {
 
     public String toString() {
         return "PreStaged: " + resolvedSrc.toURI() + " -> " + resolvedDest.toURI()
-            + (isStdIn ? " (STDIN)" : "") + (isExecutable ? " (EXE)" : "");
+            + (isStdIn ? " (STDIN)" : "") + (isExecutable ? " (EXE)" : "") + (inSandbox ? " (IN SANDBOX)" : " (OUTSIDE SANDBOX)");
     }
-
 }
