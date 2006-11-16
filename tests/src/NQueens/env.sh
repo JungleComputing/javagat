@@ -41,10 +41,6 @@ if [ -f $PROACTIVE/ProActive_examples.jar ]
 then
     CLASSPATH=$CLASSPATH:$PROACTIVE/ProActive_examples.jar
 fi
-if [ -f $PROACTIVE/lib/asm.jar ]
-then
-    CLASSPATH=$CLASSPATH:$PROACTIVE/lib/asm.jar
-fi
 if [ -f $PROACTIVE/lib/log4j.jar ]
 then
     CLASSPATH=$CLASSPATH:$PROACTIVE/lib/log4j.jar
@@ -138,6 +134,10 @@ fi
 
 #--------------------------------------------------
 # jars to set when using Fractal GUI
+if [ -f $PROACTIVE/lib/components/asm-2.2.1.jar ]
+then
+    CLASSPATH=$CLASSPATH:$PROACTIVE/lib/components/asm-2.2.1.jar
+fi
 if [ -f $PROACTIVE/lib/components/fractal-adl.jar ]
 then
     CLASSPATH=$CLASSPATH:$PROACTIVE/lib/components/fractal-adl.jar
@@ -227,11 +227,52 @@ then
     CLASSPATH=$CLASSPATH:$PROACTIVE/lib/scilab/javasci.jar
 fi 
 
+#--------------------------------------------------------
+# when using TimIt
+if [ -f $PROACTIVE/lib/timit/batik-awt-util.jar ]
+then
+	CLASSPATH=$CLASSPATH:$PROACTIVE/lib/timit/batik-awt-util.jar
+fi
+if [ -f $PROACTIVE/lib/timit/batik-dom.jar ]
+then
+	CLASSPATH=$CLASSPATH:$PROACTIVE/lib/timit/batik-dom.jar
+fi
+if [ -f $PROACTIVE/lib/timit/batik-svggen.jar ]
+then
+	CLASSPATH=$CLASSPATH:$PROACTIVE/lib/timit/batik-svggen.jar
+fi
+if [ -f $PROACTIVE/lib/timit/batik-util.jar ]
+then
+	CLASSPATH=$CLASSPATH:$PROACTIVE/lib/timit/batik-util.jar
+fi
+if [ -f $PROACTIVE/lib/timit/batik-xml.jar ]
+then
+	CLASSPATH=$CLASSPATH:$PROACTIVE/lib/timit/batik-xml.jar
+fi
+if [ -f $PROACTIVE/lib/timit/commons-cli-1.0.jar ]
+then
+	CLASSPATH=$CLASSPATH:$PROACTIVE/lib/timit/commons-cli-1.0.jar
+fi
+if [ -f $PROACTIVE/lib/timit/jcommon-1.0.6.jar ]
+then
+	CLASSPATH=$CLASSPATH:$PROACTIVE/lib/timit/jcommon-1.0.6.jar
+fi
+if [ -f $PROACTIVE/lib/timit/jdom.jar ]
+then
+	CLASSPATH=$CLASSPATH:$PROACTIVE/lib/timit/jdom.jar
+fi
+if [ -f $PROACTIVE/lib/timit/jfreechart-1.0.2.jar ]
+then
+	CLASSPATH=$CLASSPATH:$PROACTIVE/lib/timit/jfreechart-1.0.2.jar
+fi
+
+
+
 #echo "CLASSPATH"=$CLASSPATH 
 export CLASSPATH
 
 
-JAVACMD=$JAVA_HOME"/bin/java -Djava.security.manager -Djava.security.policy=$PROACTIVE/scripts/proactive.java.policy -Dlog4j.configuration=file:$PROACTIVE/scripts/proactive-log4j"
+JAVACMD="$JAVA_HOME/bin/java -Djava.security.manager -Djava.security.policy=$PROACTIVE/scripts/proactive.java.policy -Dlog4j.configuration=file:$PROACTIVE/scripts/proactive-log4j"
 export JAVACMD
 
 
