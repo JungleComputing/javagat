@@ -44,7 +44,7 @@ class GrabberThread extends Thread {
     public void run() {
         String virtualNodeName
             = (String) preferences.get(
-                    "ResourceBroker.proActive.virtualNodeName");
+                    "ResourceBroker.ProActive.VirtualNodeName");
         try {
             // Get information from ProActive descriptor
             ProActiveDescriptor pad

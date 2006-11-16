@@ -47,9 +47,6 @@ public class ProActiveResourceBrokerAdaptor extends ResourceBrokerCpi
     /** A JobWatcher is a ProActive object, so has a stub. */
     private JobWatcher[] watcherStubs;
 
-    /** Job to be scheduled next. */
-    private Job nextJob = null;
-
     /**
      * Number of ProActive descriptors for which an addNodes call is
      * still expected.
@@ -72,10 +69,10 @@ public class ProActiveResourceBrokerAdaptor extends ResourceBrokerCpi
 
         // First, obtain ProActiver descriptors. */
         String descriptors = (String) preferences
-                .get("ResourceBroker.proActive.descriptors");
+                .get("ResourceBroker.ProActive.Descriptors");
         if (preferences == null) {
             throw new GATObjectCreationException("No descriptors provided. Set"
-                    + " the ResourceBroker.proActive.descriptors preference to "
+                    + " the ResourceBroker.ProActive.Descriptors preference to "
                     + " a comma-separated list of ProActive descriptor xmls.");
         }
         StringTokenizer tok = new StringTokenizer(descriptors, ",");
@@ -153,13 +150,20 @@ public class ProActiveResourceBrokerAdaptor extends ResourceBrokerCpi
         for (int i = 0; i < nodeInfo.length; i++) {
             nodeInfo[i].launcher = (Launcher) launchers[i];
         }
+
+        int nNodes = proActiveNodes.length;
+
+        // Here, we should somehow figure out how many CPUs each node
+        // represents. Then, we can increment nNodes with the surplus
+        // CPUs and create NodeInfo structures for them ...
+
         synchronized(this) {
             descr2nodeset.put(descriptor, h);
-            totalNodes += nodeInfo.length;
-            availableNodes += nodeInfo.length;
+            totalNodes += nNodes;
+            availableNodes += nNodes;
             notifyAll();
         }
-        logger.debug("Added " + nodeInfo.length + " nodes");
+        logger.debug("Added " + nNodes + " nodes");
     }
 
     /**
@@ -210,7 +214,7 @@ public class ProActiveResourceBrokerAdaptor extends ResourceBrokerCpi
         HashSet h = (HashSet) descr2nodeset.get(node.descriptor);
         h.add(node);
         availableNodes++;
-        if (nextJob != null && nextJob.getNumNodes() <= availableNodes) {
+        if (jobList.size() != 0) {
             notifyAll();
         }
     }
@@ -275,9 +279,9 @@ public class ProActiveResourceBrokerAdaptor extends ResourceBrokerCpi
      * first-in, first-out (FIFO).
      */
     public void run() {
-        Job job;
         for (;;) {
             NodeInfo[] nodes;
+            Job job;
             synchronized(this) {
                 // Obtain the first job from the joblist.
                 while (jobList.size() == 0) {
@@ -288,42 +292,62 @@ public class ProActiveResourceBrokerAdaptor extends ResourceBrokerCpi
                     }
                 }
                 logger.debug("Got job to schedule");
-                nextJob = (Job) jobList.remove(0);
+                job = (Job) jobList.get(0);
 
-                int nNodes = nextJob.getNumNodes();
+                int nNodes = job.getNumNodes();
+
+                if (nNodes == 0) {
+                    jobList.remove(0);
+                    continue;
+                }
 
                 logger.debug("Want " + nNodes + " nodes");
 
-
-                // Obtain enough nodes for it.
-                while (availableNodes < nNodes) {
-                    if (totalNodes < nNodes && remainingCalls <= 0) {
-                        nextJob.submissionError(new GATInvocationException(
-                                    "Not enough nodes available (" + totalNodes
-                                    + "<" + nNodes + ")"));
-                        nextJob = null;
-                        break;
+                if (job.softHostCount) {
+                    while (availableNodes == 0) {
+                        try {
+                            wait();
+                        } catch(Exception e) {
+                            // ignored
+                        }
                     }
-                    try {
-                        wait();
-                    } catch(Exception e) {
-                        // ignored
-                    }
-                }
-
-                if (nextJob != null) {
-                    logger.debug("Got nodes to schedule the job on");
-                    nodes = obtainNodes(nNodes);
-                    job = nextJob;
-                    nextJob = null;
                 } else {
-                    continue;
+                    while (availableNodes < nNodes) {
+                        if (totalNodes < nNodes && remainingCalls == 0) {
+                            job.submissionError(new GATInvocationException(
+                                        "Not enough nodes"));
+                            jobList.remove(0);
+                            job = null;
+                            break;
+                        }
+                        try {
+                            wait();
+                        } catch(Exception e) {
+                            // ignored
+                        }
+                    }
+                    if (job == null) {
+                        continue;
+                    }
                 }
+
+                int n = availableNodes;
+                if (n > nNodes) {
+                    n = nNodes;
+                }
+
+                nodes = obtainNodes(n);
             }
             try {
                 job.startJob(nodes);
             } catch(Throwable e) {
                 logger.warn("startJob threw exception: ", e);
+            }
+            
+            synchronized(this) {
+                if (job.getNumNodes() == 0) {
+                    jobList.remove(0);
+                }
             }
         }
     }

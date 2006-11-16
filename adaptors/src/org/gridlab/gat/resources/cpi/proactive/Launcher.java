@@ -9,7 +9,7 @@ import org.objectweb.proactive.RunActive;
 import org.objectweb.proactive.Service;
 import org.objectweb.proactive.core.node.Node;
 import org.objectweb.proactive.core.process.JVMProcessImpl;
-import org.objectweb.proactive.core.process.AbstractExternalProcess.StandardOutputMessageLogger;
+import org.objectweb.proactive.core.util.RemoteProcessMessageLogger;
 import org.objectweb.proactive.core.util.wrapper.StringWrapper;
 
 /**
@@ -23,7 +23,7 @@ public class Launcher implements Serializable, RunActive {
     private HashMap jobs = new HashMap();
 
     /** For debugging and error messages. */
-    private static final Logger logger
+    private final Logger logger
             = ibis.util.GetLogger.getLogger(Launcher.class);
 
     /** For making callbacks to maintain job administration. */
@@ -31,6 +31,44 @@ public class Launcher implements Serializable, RunActive {
 
     /** Node on which this launcher is running. */
     final Node node;
+
+    /** Collects output and passes it on to the jobWatcher. */
+    class OutputLogger implements RemoteProcessMessageLogger {
+        String jobID;
+        OutputLogger(String jobID) {
+            this.jobID = jobID;
+        }
+        public void log(String message) {
+            jobWatcher.addOutput(jobID, message);
+        }
+
+        public void log(String message, Throwable e) {
+            jobWatcher.addOutput(jobID, message + e);
+        }
+
+        public void log(Throwable e) {
+            jobWatcher.addOutput(jobID, "" + e);
+        }
+    }
+
+    /** Collects error output and passes it on to the jobWatcher. */
+    class ErrorLogger implements RemoteProcessMessageLogger {
+        String jobID;
+        ErrorLogger(String jobID) {
+            this.jobID = jobID;
+        }
+        public void log(String message) {
+            jobWatcher.addError(jobID, message);
+        }
+
+        public void log(String message, Throwable e) {
+            jobWatcher.addError(jobID, message + e);
+        }
+
+        public void log(Throwable e) {
+            jobWatcher.addError(jobID, "" + e);
+        }
+    }
 
     /**
      * Every time an application JVM is started, an accompanying thread
@@ -43,19 +81,14 @@ public class Launcher implements Serializable, RunActive {
         /** The identification of the job. */
         String jobID;
 
-        /** Instance number for this job. */
-        int instanceNo;
-
         /**
          * Constructor, with specified initial values for the fields.
          * @param jvm the JVM.
          * @param jobID the job identification.
-         * @param instanceNo instance number of this job.
          */
-        public Watcher(JVMProcessImpl jvm, String jobID, int instanceNo) {
+        public Watcher(JVMProcessImpl jvm, String jobID) {
             this.jvm = jvm;
             this.jobID = jobID;
-            this.instanceNo = instanceNo;
             setDaemon(true);
             start();
         }
@@ -71,8 +104,14 @@ public class Launcher implements Serializable, RunActive {
                     // ignored
                 }
             }
-
-            jobWatcher.finishedJob(jobID, instanceNo, jvm.exitValue());
+            int eval = 0;
+            try {
+                eval = jvm.exitValue();
+            } catch(Exception e) {
+                // Is sometimes thrown, even after waitfor.
+                // We ignore it, and lose the exit status.
+            }
+            jobWatcher.finishedJob(jobID, eval);
         }
     }
 
@@ -116,17 +155,17 @@ public class Launcher implements Serializable, RunActive {
      * @param progArgs application arguments.
      * @param classpath the classpath.
      * @param jobID identification for this job.
-     * @param instanceNo the instance number of this job.
      * @return a string wrapper containing the job id or <code>null</code>
      * in case of failure.
      */
     public StringWrapper launch(String classname, String jvmArgs,
-            String progArgs, String classpath, String jobID, int instanceNo) {
+            String progArgs, String classpath, String jobID) {
 
+        logger.info("Serving launch");
         // Create the JVM process and set its parameters.
         JVMProcessImpl jvm = new JVMProcessImpl(
-                new StandardOutputMessageLogger(),
-                new StandardOutputMessageLogger());
+                new OutputLogger(jobID),
+                new ErrorLogger(jobID));
 
         jvm.setClassname(classname);
 
@@ -150,7 +189,7 @@ public class Launcher implements Serializable, RunActive {
             }
 
             jobWatcher.startedJob(jobID);
-            new Watcher(jvm, jobID, instanceNo);
+            new Watcher(jvm, jobID);
         } catch (Exception e) {
             logger.warn("Got exception during createVM:",  e);
             return new StringWrapper(null);
@@ -164,6 +203,7 @@ public class Launcher implements Serializable, RunActive {
      */
     public void stopJob(String id) {
         JVMProcessImpl jvm;
+        logger.info("Serving stopJob");
         synchronized(jobs) {
             jvm = (JVMProcessImpl) jobs.get(id);
         }

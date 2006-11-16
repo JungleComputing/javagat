@@ -57,10 +57,9 @@ public class JobWatcher implements java.io.Serializable, RunActive {
      * Notifies that the specified job instance finished with the specified
      * exit status.
      * @param instanceID identification of the job instance.
-     * @param instanceNo the instance number within the job.
      * @param exitStatus its exit status.
      */
-    public void finishedJob(String instanceID, int instanceNo, int exitStatus) {
+    public void finishedJob(String instanceID, int exitStatus) {
         Job job;
 
         synchronized(this) {
@@ -69,7 +68,7 @@ public class JobWatcher implements java.io.Serializable, RunActive {
         }
 
         if (job != null) {
-            job.finish(instanceNo, exitStatus);
+            job.finish(instanceID, exitStatus);
         }
     }
 
@@ -81,6 +80,24 @@ public class JobWatcher implements java.io.Serializable, RunActive {
         Job job = (Job) jobs.get(instanceID);
         if (job != null) {
             job.setStarted();
+        }
+    }
+
+    public void addOutput(String instanceID, String out) {
+        Job job = (Job) jobs.get(instanceID);
+        if (job != null) {
+            job.stdout(out);
+        } else {
+            System.out.println(out);
+        }
+    }
+
+    public void addError(String instanceID, String err) {
+        Job job = (Job) jobs.get(instanceID);
+        if (job != null) {
+            job.stderr(err);
+        } else {
+            System.err.println(err);
         }
     }
 }

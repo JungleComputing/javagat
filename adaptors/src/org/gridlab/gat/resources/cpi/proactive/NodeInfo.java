@@ -4,6 +4,9 @@ import org.objectweb.proactive.core.node.Node;
 
 /**
  * Container for some information about a node.
+ * Note that a ProActive node may have more than one cpu. In that case,
+ * there should be more than one NodeInfo object for it, so each NodeInfo
+ * object represents one schedulable cpu.
  */
 class NodeInfo {
 
@@ -25,8 +28,8 @@ class NodeInfo {
     /** The watcher for this node's cluster. */
     JobWatcher watcher;
 
-    /** Number of jobs currently running on this node. */
-    int jobCount = 0;
+    /** ID of the instance currently running on this node, or null. */
+    String instanceID;
 
     /** Set to true if this node is suspected not to work. */
     boolean suspect = false;
@@ -47,23 +50,22 @@ class NodeInfo {
     }
 
     /**
-     * Increments the job count for this node.
+     * Sets the instanceID for this node.
      */
-    synchronized void incrCount() {
-        jobCount++;
+    synchronized void setID(String id) {
+        instanceID = id;
     }
 
     /**
-     * Decrements the job count for this node, and sets the suspect flag
+     * Releases this node, and sets the suspect flag
      * if instructed to do so.
+     * @param suspect the flag.
      */
-    synchronized void decrCount(boolean suspect) {
-        jobCount--;
+    synchronized void release(boolean suspect) {
+        instanceID = null;
         if (suspect) {
             suspect = true;
         }
-        if (jobCount == 0) {
-            broker.releaseNode(this);
-        }
+        broker.releaseNode(this);
     }
 }

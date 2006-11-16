@@ -1,5 +1,11 @@
 package org.gridlab.gat.resources.cpi.proactive;
 
+import java.io.BufferedOutputStream;
+import java.io.FileOutputStream;
+import java.io.OutputStream;
+import java.io.PrintStream;
+
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -58,20 +64,17 @@ public class Job extends JobCpi {
     /** The broker that submitted this job. */
     private ProActiveResourceBrokerAdaptor broker;
 
-    /** Number of instances of the application. */
-    private int nInstances = 1;
-
-    /** Number of nodes on which these instances must be run. */
+    /** Number of nodes on which to run. */
     private int nNodes = 1;
+
+    /** Set if the number of nodes only indicates a maximum. */
+    boolean softHostCount = false;
 
     /** When set, use the Sandbox mechanism for stage-in and state-out. */
     private boolean wantsSandbox = true;
 
     /** List of nodes on which the job instances are run. */
-    private NodeInfo[] nodes = null;
-
-    /** Identification of the job instances. */
-    private String[] jobIDs = null;
+    private ArrayList nodes = new ArrayList();
 
     /** Identification of this Gatjob. */
     private String jobID = null;
@@ -81,6 +84,29 @@ public class Job extends JobCpi {
 
     /** Counts how many instances are finished. */
     private int finished = 0;
+
+    /** Set when staging must be done on all nodes. */
+    private boolean stageOnAll = false;
+
+    /** 
+     * Node on which staging is done, in case <code>stageOnAll</code> is false.
+     */
+    private NodeInfo stageNode = null;
+
+    /** Maps instance ids to nodes. */
+    private HashMap id2Node = new HashMap();
+
+    /** Set if preStage is needed. */
+    private boolean needsPreStage;
+
+    /** Set if postStage is needed. */
+    private boolean needsPostStage;
+
+    /** Stream for standard output stream of application. */
+    private PrintStream myStdout = System.out;
+
+    /** Stream for standard error stream of application. */
+    private PrintStream myStderr = System.err;
 
     /**
      * Constructor. There is no Sandbox here, because at this point
@@ -101,9 +127,19 @@ public class Job extends JobCpi {
         super(gatContext, preferences, jobDescription, null);
         this.broker = broker;
 
-        if (preferences.get("noSandbox") != null) {
+        if (preferences.get("ResourceBroker.ProActive.noSandbox") != null) {
             wantsSandbox = false;
         }
+        if (preferences.get("ResourceBroker.ProActive.stageOnAll") != null) {
+            stageOnAll = true;
+        }
+
+        SoftwareDescription soft = jobDescription.getSoftwareDescription();
+        Map preStageFiles = soft.getPreStaged();
+        Map postStageFiles = soft.getPostStaged();
+
+        needsPreStage = preStageFiles != null && preStageFiles.size() != 0;
+        needsPostStage = postStageFiles != null && postStageFiles.size() != 0;
 
         // Tell the engine that we provide job.status events
         HashMap returnDef = new HashMap();
@@ -118,8 +154,6 @@ public class Job extends JobCpi {
         infoMap.put("submissiontime", new Long(System.currentTimeMillis()));
 
         // Get everything we need from the job description.
-        SoftwareDescription soft = jobDescription.getSoftwareDescription();
-
         URI executable = soft.getLocation();
         String scheme = executable.getScheme();
         if (! "java".equalsIgnoreCase(scheme)) {
@@ -128,13 +162,32 @@ public class Job extends JobCpi {
         }
 
         className = executable.getSchemeSpecificPart();
+ 
+        File stdout = soft.getStdout();
+        if (stdout != null) {
+            try {
+                OutputStream o = new BufferedOutputStream(new FileOutputStream(stdout.getPath()));
+                myStdout = new PrintStream(o, true);
+            } catch(Exception e) {
+                throw new GATInvocationException(
+                        "Could not create file " + stdout, e);
+            }
+        }
 
-        if (soft.getStdin() != null
-                || soft.getStdout() != null
-                || soft.getStderr() != null) {
+        File stderr = soft.getStderr();
+        if (stderr != null) {
+            try {
+                OutputStream o = new BufferedOutputStream(new FileOutputStream(stderr.getPath()));
+                myStderr = new PrintStream(o, true);
+            } catch(Exception e) {
+                throw new GATInvocationException(
+                        "Could not create file " + stderr, e);
+            }
+        }
+
+        if (soft.getStdin() != null) {
             throw new GATInvocationException(
-                    "Redirection of standard input, output or error is not "
-                    + "supported.");
+                    "Redirection of standard input is not supported.");
         }
 
         Map environment;
@@ -157,13 +210,11 @@ public class Job extends JobCpi {
         }
 
         // Get JVM arguments.
-        jvmArgs = "";
-        String space = "";
+        jvmArgs = "-server";
         for (Iterator i = environment.entrySet().iterator(); i.hasNext();) {
             Map.Entry e = (Map.Entry) i.next();
-            jvmArgs = jvmArgs + space + "-D" + (String) e.getKey() + "="
+            jvmArgs = jvmArgs + " -D" + (String) e.getKey() + "="
                     + (String) e.getValue();
-            space = " ";
         }
 
         Map attributes;
@@ -172,29 +223,16 @@ public class Job extends JobCpi {
             // Get more JVM arguments.
             for (Iterator i = attributes.keySet().iterator(); i.hasNext();) {
                 String key = (String) i.next();
-                System.out.println("Attribute: " + key);
                 if (key.equalsIgnoreCase("minMemory")) {
                     Integer minMem = (Integer) attributes.get(key);
                     if (minMem != null) {
-                        jvmArgs = jvmArgs + space + "-Xms" + minMem.intValue()
+                        jvmArgs = jvmArgs + " -Xms" + minMem.intValue()
                                 + "M";
-                        space = " ";
                     }
                 } else if (key.equalsIgnoreCase("maxMemory")) {
                     Integer maxMem = (Integer) attributes.get(key);
                     if (maxMem != null) {
-                        jvmArgs = jvmArgs + space + "-Xmx" + maxMem.intValue() + "M";
-                        space = " ";
-                    }
-                } else if (key.equalsIgnoreCase("count")) {
-                    // Number of instances to create. If not specified,
-                    // you get the number of nodes specified.
-                    Integer count = (Integer) attributes.get(key);
-                    if (count != null) {
-                        nInstances = count.intValue();
-                        if (nInstances <= 0) {
-                            throw new GATInvocationException("Illegal count");
-                        }
+                        jvmArgs = jvmArgs + " -Xmx" + maxMem.intValue() + "M";
                     }
                 } else if (key.equalsIgnoreCase("hostCount")) {
                     // Number of hosts. If not specified, you get the number
@@ -206,44 +244,45 @@ public class Job extends JobCpi {
                             throw new GATInvocationException("Illegal hostCount");
                         }
                     }
+                } else if (key.equalsIgnoreCase("softHostCount")) {
+                    softHostCount = true;
                 } else if (key.equalsIgnoreCase("classpath")) {
                     classPath = (String) attributes.get(key);
                 }
             }
-            if (attributes.get("count") != null) {
-                if (nInstances < nNodes) {
-                    throw new GATInvocationException(
-                            "number of instances < number of nodes?");
-                }
-            } else {
-                nInstances = nNodes;
-            }
-            if (attributes.get("hostCount") == null) {
-                nNodes = nInstances;
-            }
         }
     }
 
+    synchronized void stdout(String out) {
+        myStdout.println(out);
+    }
+
+    synchronized void stderr(String err) {
+        myStderr.println(err);
+    }
+
     /**
-     * Returns the number of nodes required to run this job.
+     * Returns the number of nodes still required to run this job.
      * @return the number of nodes required.
      */
-    int getNumNodes() {
-        return nNodes;
+    synchronized int getNumNodes() {
+        if (nNodes == nodes.size()) {
+            return 0;
+        }
+        if (finished != 0 && finished == nodes.size()) {
+            return 0;
+        }
+        return nNodes - nodes.size();
     }
 
     private void preStage(NodeInfo node) throws GATInvocationException {
-        setState(PRE_STAGING);
-
         if (wantsSandbox) {
             // Constructor also does pre-staging.
             sandbox = new Sandbox(gatContext, preferences, jobDescription,
-                    nodes[0].hostName, null, true, false, false, false);
+                    node.hostName, null, true, false, false, false);
         } else {
             SoftwareDescription soft = jobDescription.getSoftwareDescription();
-            Map preStageFiles;   // Map<File, File> (virtual file path, physical
-                                 // file path)
-            preStageFiles = soft.getPreStaged();
+            Map preStageFiles = soft.getPreStaged();
             if (preStageFiles != null && preStageFiles.size() != 0) {
                 java.io.File[] srcFiles
                         = new java.io.File[preStageFiles.size()];
@@ -285,71 +324,101 @@ public class Job extends JobCpi {
 
     /**
      * Called by the resource broker to run this job on the specified nodes.
-     * @param nodes the nodes to run on.
+     * @param newNodes the nodes to start the job on.
      * @exception GATInvocationException is thrown when something goes wrong.
+     * @return the number of nodes on which launching succeeded.
      */
-    void startJob(NodeInfo[] nodes) throws GATInvocationException {
+    void startJob(NodeInfo[] newNodes) throws GATInvocationException {
         // Check of number of nodes makes sense.
-        if (nodes.length != nNodes || nNodes == 0) {
+        if (nodes.size() + newNodes.length > nNodes) {
             submissionError(
                 new GATInvocationException("Wrong number of nodes allocated"));
             return;
         }
 
-        this.nodes = nodes;
+        if (needsPreStage) {
+            if (stageOnAll) {
+                if (nodes.size() == 0) {
+                    setState(PRE_STAGING);
+                }
+                for (int i = 0; i < newNodes.length; i++) {
+                    preStage(newNodes[i]);
+                }
+            } else if (nodes.size() == 0) {
+                preStage(newNodes[0]);
+            }
+        }
 
-        // or prestage on all nodes ???
-        preStage(nodes[0]);
-
-        jobID = getNewID();
-
-        setState(SCHEDULED);
-        infoMap.put("hostname", nodes[0].hostName);
+        if (nodes.size() == 0) {
+            // New job.
+            stageNode = newNodes[0];
+            jobID = getNewID();
+            setState(SCHEDULED);
+            infoMap.put("hostname", stageNode.hostName);
+        }
 
         // Launch jobs, asynchronously.
-        StringWrapper[] result = new StringWrapper[nInstances];
-        jobIDs = new String[nInstances];
 
         boolean failed = false;
 
-        for (int i = 0; i < nInstances; i++) {
-            NodeInfo node = nodes[i % nodes.length];
-            jobIDs[i] = getNewID();
-            node.watcher.addJob(jobIDs[i], this);
+        int start = nodes.size();
+
+        StringWrapper[] results = new StringWrapper[newNodes.length];
+
+        for (int i = 0; i < newNodes.length; i++) {
+            NodeInfo node = newNodes[i];
+            String id = getNewID();
+            node.watcher.addJob(id, this);
             try {
-                result[i] = node.launcher.launch(className, jvmArgs, progArgs,
-                        null, jobIDs[i], i);
+                results[i] = node.launcher.launch(className,
+                        jvmArgs + " -Dibis.pool.cluster=" + node.descriptor,
+                        progArgs, null, id);
             } catch(Exception e) {
-                failed = true;
+                // Dealt with later: results[i] stays null.
             }
-            node.incrCount();
+            nodes.add(node);
+            node.setID(id);
         }
 
-        // Check launch results.
-        for (int i = 0; i < nInstances; i++) {
-//            NodeInfo node = nodes[i % nodes.length]; // @@@ unused (gave warning) --Rob 
-
-            if (result[i] == null || result[i].stringValue() == null) {
-                failed = true;
-                break;
-            }
-        }
-
-        if (failed) {
-            for (int i = 0; i < nInstances; i++) {
-                NodeInfo node = nodes[i % nodes.length];
-                node.watcher.removeJob(jobIDs[i]);
-                node.launcher.stopJob(jobIDs[i]);
-                if (result[i] == null || result[i].stringValue() == null) {
-                    node.decrCount(true);
+        if (softHostCount) {
+            // Check launch results on this batch. When the hostCount is soft,
+            // it does not really matter if a launch fails so the run
+            // continues.
+            for (int i = 0; i < newNodes.length; i++) {
+                String id = newNodes[i].instanceID;
+                NodeInfo node = (NodeInfo) nodes.get(start);
+                if (results[i] == null || results[i].stringValue() == null) {
+                    nodes.remove(start);
+                    node.watcher.removeJob(id);
+                    node.release(true);
                 } else {
-                    node.decrCount(false);
+                    start++;
+                    id2Node.put(id, node);
                 }
             }
-            submissionError(new GATInvocationException("launcher failed"));
         } else {
-            // Increment node 0 count for postStage.
-            nodes[0].incrCount();
+            boolean failure = false;
+
+            for (int i = 0; i < newNodes.length; i++) {
+                if (results[i] == null || results[i].stringValue() == null) {
+                    failure = true;
+                }
+            }
+            if (failure) {
+                for (int i = 0; i < newNodes.length; i++) {
+                    NodeInfo node = newNodes[i];
+                    String id = node.instanceID;
+                    nodes.remove(0);
+                    node.watcher.removeJob(id);
+                    if (results[i] == null
+                            || results[i].stringValue() == null) {
+                        node.release(true);
+                    } else {
+                        node.launcher.stopJob(id);
+                        node.release(false);
+                    }
+                }
+            }
         }
     }
 
@@ -359,6 +428,8 @@ public class Job extends JobCpi {
             infoMap.put("starttime", new Long(System.currentTimeMillis()));
             setState(RUNNING);
             started = true;
+        } else if (state == STOPPED) {
+            stop();
         }
     }
 
@@ -385,11 +456,11 @@ public class Job extends JobCpi {
      * stopped.
      */
     public void stop() {
-        if (state == RUNNING) {
-            for (int i = 0; i < nInstances; i++) {
-                NodeInfo node = nodes[i % nodes.length];
+        for (int i = 0; i < nodes.size(); i++) {
+            NodeInfo node = (NodeInfo) nodes.get(i);
+            if (node.instanceID != null) {
                 try {
-                    node.launcher.stopJob(jobIDs[i]);
+                    node.launcher.stopJob(node.instanceID);
                 } catch(Exception e) {
                     // Ignored, continue with other nodes.
                     // Probably does not happen anyway, because the stopJob
@@ -403,20 +474,27 @@ public class Job extends JobCpi {
     /**
      * This method is invoked by a JobWatcher when it detects that an
      * instance has finished. The exit status is supplied.
-     * @param instanceNo the instance number that is finished.
+     * @param id the instance id that is finished.
      * @param exitStatus the exit status of the instance.
      */
-    synchronized void finish(int instanceNo, int exitStatus) {
+    synchronized void finish(String id, int exitStatus) {
         if (exitStatus != 0 && this.exitStatus == 0) {
             this.exitStatus = exitStatus;
         }
-        finished++;
-        int nodeNo = instanceNo % nNodes;
-        nodes[nodeNo].decrCount(false);
-        if (finished == nInstances) {
-            // All are done.
-            postStage(nodes[0]);
-            // or postStage on all nodes ???
+        NodeInfo node = (NodeInfo) id2Node.get(id);
+        if (node != null) {
+            finished++;
+            if (state != STOPPED && needsPostStage && stageOnAll) {
+                postStage(node);
+            }
+            node.release(false);
+            if (finished == nodes.size()) {
+                // All are done.
+                if (state != STOPPED && needsPostStage && ! stageOnAll) {
+                    postStage(stageNode);
+                }
+                setStopped();
+            }
         }
     }
 
@@ -429,7 +507,6 @@ public class Job extends JobCpi {
         setState(POST_STAGING);
         if (sandbox != null) {
             sandbox.retrieveAndCleanup(this);
-            setStopped();
             return;
         }
 
@@ -463,7 +540,6 @@ public class Job extends JobCpi {
                         if (fileVector != null) {
                             fileVector.waitForAll();
                         }
-                        setStopped();
                     }
                 };
                 t.setDaemon(true);
@@ -471,22 +547,23 @@ public class Job extends JobCpi {
             } catch(Exception e) {
                 postStageException
                         = new GATInvocationException("Failed postStage", e);
-                setStopped();
             }
-        } else {
-            setStopped();
         }
     }
 
     /**
      * Notifies that the Job is done.
+     * This method can be called several times when dealing with "soft"
+     * host counts.
      */
     private synchronized void setStopped() {
-        infoMap.remove("hostname");
-        infoMap.put("stoptime", new Long(System.currentTimeMillis()));
-        nodes[0].decrCount(false);
-        finished();
-        setState(STOPPED);
+        if (state != STOPPED) {
+            infoMap.remove("hostname");
+            infoMap.put("stoptime", new Long(System.currentTimeMillis()));
+            finished();
+            setState(STOPPED);
+        }
+
     }
 
     /**
