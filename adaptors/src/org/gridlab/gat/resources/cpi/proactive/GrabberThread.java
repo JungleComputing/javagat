@@ -51,6 +51,8 @@ class GrabberThread extends Thread {
                     = ProActive.getProactiveDescriptor(descriptor);
             pad.activateMappings();
             if (virtualNodeName != null) {
+                ProActiveResourceBrokerAdaptor.logger.info(
+                        "virtualNodeName = " + virtualNodeName);
                 VirtualNode vn = pad.getVirtualNode(virtualNodeName);
                 Node[] crtNodes = vn.getNodes();
                 for (int i = 0; i < crtNodes.length; i++) {

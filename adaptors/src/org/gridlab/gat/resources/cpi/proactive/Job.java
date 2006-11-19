@@ -1,9 +1,13 @@
 package org.gridlab.gat.resources.cpi.proactive;
 
 import java.io.BufferedOutputStream;
+import java.io.BufferedReader;
+import java.io.FileReader;
 import java.io.FileOutputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.PrintStream;
+import java.io.Reader;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -108,6 +112,67 @@ public class Job extends JobCpi {
     /** Stream for standard error stream of application. */
     private PrintStream myStderr = System.err;
 
+    /** Handler for standard input. */
+    private InputHandler inputHandler;
+
+    /** Input provider thread for job. */
+    class InputHandler extends Thread {
+        private boolean done = false;
+        private BufferedReader inputReader;
+
+        InputHandler(BufferedReader reader) {
+            inputReader = reader;
+            setDaemon(true);
+        }
+
+        private String getInput() {
+            String s = null;
+            if (! done) {
+                try {
+                    s = inputReader.readLine();
+                } catch(Exception e) {
+                    done = true;
+                }
+            }
+            return s;
+        }
+
+        synchronized void doStop() {
+            done = true;
+            try {
+                inputReader.close();
+            } catch(Exception e) {
+                // ignored
+            }
+            notifyAll();
+        }
+
+        public void run() {
+            for (;;) {
+                String input = getInput();
+                if (input == null) {
+                    done = true;
+                }
+                for (int i = 0; i < nodes.size(); i++) {
+                    NodeInfo node = (NodeInfo) nodes.get(i);
+                    synchronized(node) {
+                        if (jobID.equals(node.getJobID())) {
+                            System.out.println("Providing input for node "
+                                    + node.hostName + ": " + input);
+                            node.launcher.provideInput(node.getInstanceID(),
+                                    input);
+                        }
+                    }
+                }
+                synchronized(this) {
+                    if (done) {
+                        return;
+                    }
+                }
+            }
+        }
+    }
+
     /**
      * Constructor. There is no Sandbox here, because at this point
      * it is not known on which node(s) the job will be run. The sandbox
@@ -166,7 +231,8 @@ public class Job extends JobCpi {
         File stdout = soft.getStdout();
         if (stdout != null) {
             try {
-                OutputStream o = new BufferedOutputStream(new FileOutputStream(stdout.getPath()));
+                OutputStream o = new BufferedOutputStream(
+                        new FileOutputStream(stdout.getPath()));
                 myStdout = new PrintStream(o, true);
             } catch(Exception e) {
                 throw new GATInvocationException(
@@ -177,7 +243,8 @@ public class Job extends JobCpi {
         File stderr = soft.getStderr();
         if (stderr != null) {
             try {
-                OutputStream o = new BufferedOutputStream(new FileOutputStream(stderr.getPath()));
+                OutputStream o = new BufferedOutputStream(
+                        new FileOutputStream(stderr.getPath()));
                 myStderr = new PrintStream(o, true);
             } catch(Exception e) {
                 throw new GATInvocationException(
@@ -185,10 +252,20 @@ public class Job extends JobCpi {
             }
         }
 
-        if (soft.getStdin() != null) {
-            throw new GATInvocationException(
-                    "Redirection of standard input is not supported.");
+        Reader reader;
+        File stdin = soft.getStdin();
+        if (stdin != null) {
+            try {
+                reader = new FileReader(stdin.getPath());
+            } catch(Exception e) {
+                throw new GATInvocationException(
+                        "Could not open input file " + stdin, e);
+            }
+        } else {
+            reader = new InputStreamReader(System.in);
         }
+
+        inputHandler = new InputHandler(new BufferedReader(reader));
 
         Map environment;
         environment = soft.getEnvironment();
@@ -269,7 +346,7 @@ public class Job extends JobCpi {
         if (nNodes == nodes.size()) {
             return 0;
         }
-        if (finished != 0 && finished == nodes.size()) {
+        if (finished != 0) {
             return 0;
         }
         return nNodes - nodes.size();
@@ -370,14 +447,16 @@ public class Job extends JobCpi {
             String id = getNewID();
             node.watcher.addJob(id, this);
             try {
-                results[i] = node.launcher.launch(className,
-                        jvmArgs + " -Dibis.pool.cluster=" + node.descriptor,
-                        progArgs, null, id);
+                synchronized(node) {
+                    results[i] = node.launcher.launch(className,
+                            jvmArgs + " -Dibis.pool.cluster=" + node.descriptor,
+                            progArgs, classPath, id);
+                }
             } catch(Exception e) {
                 // Dealt with later: results[i] stays null.
             }
             nodes.add(node);
-            node.setID(id);
+            node.setID(jobID, id);
         }
 
         if (softHostCount) {
@@ -385,9 +464,9 @@ public class Job extends JobCpi {
             // it does not really matter if a launch fails so the run
             // continues.
             for (int i = 0; i < newNodes.length; i++) {
-                String id = newNodes[i].instanceID;
+                String id = newNodes[i].getInstanceID();
                 NodeInfo node = (NodeInfo) nodes.get(start);
-                if (results[i] == null || results[i].stringValue() == null) {
+                if (results[i].stringValue() == null) {
                     nodes.remove(start);
                     node.watcher.removeJob(id);
                     node.release(true);
@@ -395,6 +474,9 @@ public class Job extends JobCpi {
                     start++;
                     id2Node.put(id, node);
                 }
+            }
+            if (start > 0 && ! inputHandler.isAlive()) {
+                inputHandler.start();
             }
         } else {
             boolean failure = false;
@@ -407,16 +489,22 @@ public class Job extends JobCpi {
             if (failure) {
                 for (int i = 0; i < newNodes.length; i++) {
                     NodeInfo node = newNodes[i];
-                    String id = node.instanceID;
+                    String id = node.getInstanceID();
                     nodes.remove(0);
                     node.watcher.removeJob(id);
                     if (results[i] == null
                             || results[i].stringValue() == null) {
                         node.release(true);
                     } else {
-                        node.launcher.stopJob(id);
+                        synchronized(node) {
+                            node.launcher.stopJob(id);
+                        }
                         node.release(false);
                     }
+                }
+            } else {
+                if (! inputHandler.isAlive()) {
+                    inputHandler.start();
                 }
             }
         }
@@ -458,9 +546,11 @@ public class Job extends JobCpi {
     public void stop() {
         for (int i = 0; i < nodes.size(); i++) {
             NodeInfo node = (NodeInfo) nodes.get(i);
-            if (node.instanceID != null) {
+            if (jobID.equals(node.getJobID())) {
                 try {
-                    node.launcher.stopJob(node.instanceID);
+                    synchronized(node) {
+                        node.launcher.stopJob(node.getInstanceID());
+                    }
                 } catch(Exception e) {
                     // Ignored, continue with other nodes.
                     // Probably does not happen anyway, because the stopJob
@@ -562,6 +652,7 @@ public class Job extends JobCpi {
             infoMap.put("stoptime", new Long(System.currentTimeMillis()));
             finished();
             setState(STOPPED);
+            inputHandler.doStop();
         }
 
     }

@@ -31,6 +31,9 @@ class NodeInfo {
     /** ID of the instance currently running on this node, or null. */
     String instanceID;
 
+    /** ID of the job the node is currently part of. */
+    String jobID;
+
     /** Set to true if this node is suspected not to work. */
     boolean suspect = false;
 
@@ -50,10 +53,29 @@ class NodeInfo {
     }
 
     /**
-     * Sets the instanceID for this node.
+     * Sets the IDs for this node.
+     * @param jobID the jobID.
+     * @param instanceID the instanceID.
      */
-    synchronized void setID(String id) {
-        instanceID = id;
+    synchronized void setID(String jobID, String instanceID) {
+        this.jobID = jobID;
+        this.instanceID = instanceID;
+    }
+
+    /**
+     * Obtains the instanceID.
+     * @return instanceID.
+     */
+    synchronized String getInstanceID() {
+        return instanceID;
+    }
+
+    /**
+     * Obtains the jobID.
+     * @return jobID.
+     */
+    synchronized String getJobID() {
+        return jobID;
     }
 
     /**
@@ -63,6 +85,7 @@ class NodeInfo {
      */
     synchronized void release(boolean suspect) {
         instanceID = null;
+        jobID = null;
         if (suspect) {
             suspect = true;
         }

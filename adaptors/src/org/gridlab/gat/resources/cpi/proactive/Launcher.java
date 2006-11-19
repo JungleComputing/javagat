@@ -1,6 +1,7 @@
 package org.gridlab.gat.resources.cpi.proactive;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.HashMap;
 
 import org.apache.log4j.Logger;
@@ -9,6 +10,7 @@ import org.objectweb.proactive.RunActive;
 import org.objectweb.proactive.Service;
 import org.objectweb.proactive.core.node.Node;
 import org.objectweb.proactive.core.process.JVMProcessImpl;
+import org.objectweb.proactive.core.process.MessageSink;
 import org.objectweb.proactive.core.util.RemoteProcessMessageLogger;
 import org.objectweb.proactive.core.util.wrapper.StringWrapper;
 
@@ -70,6 +72,45 @@ public class Launcher implements Serializable, RunActive {
         }
     }
 
+    /** Obtains input from the jobWatcher. */
+    class InputSink implements MessageSink {
+        private ArrayList messages = new ArrayList();
+        private boolean done = false;
+
+        public synchronized String getMessage() {
+            String s = null;
+            while (messages.size() == 0 && ! done) {
+                try {
+                    wait();
+                } catch(Exception e) {
+                    // ignored
+                }
+            }
+            if (messages.size() > 0) {
+                s = (String) messages.remove(0);
+            }
+            logger.info("Delivering message " + s);
+            return s;
+        }
+
+        public synchronized boolean hasMessage() {
+            return messages.size() != 0;
+        }
+
+        public synchronized boolean isActive() {
+            return ! done;
+        }
+
+        public synchronized void setMessage(String m) {
+            if (m == null) {
+                done = true;
+            } else {
+                messages.add(m);
+            }
+            notifyAll();
+        }
+    }
+
     /**
      * Every time an application JVM is started, an accompanying thread
      * is started to keep track of its status.
@@ -89,8 +130,6 @@ public class Launcher implements Serializable, RunActive {
         public Watcher(JVMProcessImpl jvm, String jobID) {
             this.jvm = jvm;
             this.jobID = jobID;
-            setDaemon(true);
-            start();
         }
 
         /**
@@ -166,6 +205,7 @@ public class Launcher implements Serializable, RunActive {
         JVMProcessImpl jvm = new JVMProcessImpl(
                 new OutputLogger(jobID),
                 new ErrorLogger(jobID));
+        jvm.setOutputMessageSink(new InputSink());
 
         jvm.setClassname(classname);
 
@@ -182,14 +222,16 @@ public class Launcher implements Serializable, RunActive {
 
         // Try and run it, spawn watcher thread if this succeeds.
         try {
+            Watcher w = new Watcher(jvm, jobID);
+            w.setDaemon(true);
+            synchronized(jobs) {
+                jobs.put(jobID, w);
+            }
             node.getProActiveRuntime().createVM(jvm);
             //jvm.startProcess();
-            synchronized(jobs) {
-                jobs.put(jobID, jvm);
-            }
+            w.start();
 
             jobWatcher.startedJob(jobID);
-            new Watcher(jvm, jobID);
         } catch (Exception e) {
             logger.warn("Got exception during createVM:",  e);
             return new StringWrapper(null);
@@ -202,13 +244,29 @@ public class Launcher implements Serializable, RunActive {
      * @param id the job identification.
      */
     public void stopJob(String id) {
-        JVMProcessImpl jvm;
+        Watcher w;
         logger.info("Serving stopJob");
         synchronized(jobs) {
-            jvm = (JVMProcessImpl) jobs.get(id);
+            w = (Watcher) jobs.get(id);
         }
-        if (jvm != null) {
-            jvm.stopProcess();
+        if (w != null) {
+            w.jvm.stopProcess();
+        }
+    }
+
+    /**
+     * Provides a job with input.
+     * @param id the job identification.
+     * @param input the input.
+     */
+    public void provideInput(String id, String input) {
+        Watcher w;
+        logger.info("Serving provideInput to " + id + ": " + input);
+        synchronized(jobs) {
+            w = (Watcher) jobs.get(id);
+        }
+        if (w != null) {
+            w.jvm.getOutputMessageSink().setMessage(input);
         }
     }
 

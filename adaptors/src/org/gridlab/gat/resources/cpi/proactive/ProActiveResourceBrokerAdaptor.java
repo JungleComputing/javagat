@@ -311,6 +311,13 @@ public class ProActiveResourceBrokerAdaptor extends ResourceBrokerCpi
                             // ignored
                         }
                     }
+                    // Check if the nodes are still needed.
+                    // Maybe nodes became available because the job is
+                    // done ...
+                    nNodes = job.getNumNodes();
+                    if (nNodes == 0) {
+                        continue;
+                    }
                 } else {
                     while (availableNodes < nNodes) {
                         if (totalNodes < nNodes && remainingCalls == 0) {
