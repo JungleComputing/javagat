@@ -39,7 +39,12 @@ public class NQueensSolver implements MetricListener {
         }
 
         public String toString() {
-            return application + params + "(on " + nHosts + " hosts)";
+            String str = application;
+            if (params != null) {
+                str += " " + params;
+            }
+            str += " (on " + nHosts + " hosts)";
+            return str;
         }
     }
 
@@ -49,52 +54,6 @@ public class NQueensSolver implements MetricListener {
     int nJobs;
 
     int finishedJobs;
-
-    private static File[] getStageIns(String[] inputFiles) {
-        boolean hasInputs = true;
-        int i = 0;
-
-        if (inputFiles == null) hasInputs = false;
-        else if (inputFiles.length == 0) hasInputs = false;
-
-        if (!hasInputs) return null;
-
-        File[] rv = new File[inputFiles.length];
-
-        try {
-            for (i = 0; i < inputFiles.length; i++)
-                rv[i] = GAT.createFile(context, new URI("any:///"
-                            + inputFiles[i]));
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        return rv;
-    }
-
-    private static File[] getStageOuts(String[] outputFiles) {
-        int i = 0;
-
-        int noFiles = 0;
-        if (outputFiles != null) {
-            noFiles = outputFiles.length;
-        }
-
-        if (noFiles == 0) return null;
-
-        File[] rv = new File[noFiles];
-
-        try {
-            for (i = 0; i < outputFiles.length; i++) {
-                rv[i] = GAT.createFile(context, new URI("any:///"
-                            + outputFiles[i]));
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        return rv;
-    }
 
     public synchronized void processMetricEvent(MetricValue val) {
         System.err.println("SubmitJobCallback: Processing metric: "
@@ -117,7 +76,7 @@ public class NQueensSolver implements MetricListener {
                 + "-descr \"<descriptorlist>\" [-ns <nameserver>:<port>] "
                 + "[-vn <virtualNodeName>] [-cp <classpath>] "
                 + "[-out <outputFilePrefix>] [-err <errorFilePrefix>] "
-                + "[-job <javaclass> <nhosts> \"<params>\"]*");
+                + "[-job <javaclass> <nhosts> [\"<params>\" | --]]*");
     }
 
     public static String getarg(String[] args, int index) {
@@ -134,8 +93,9 @@ public class NQueensSolver implements MetricListener {
         String nameServerPort = null;
         String descriptors = null;
         String virtualNodeName = null;
-        String outPrefix = "output";
-        String errPrefix = "error";
+        String outPrefix = null;
+        String errPrefix = null;
+        String inFilename = null;
         String classPath = ":.:nqueen.jar:ibis.jar";
 
         ArrayList jobList = new ArrayList();
@@ -153,11 +113,16 @@ public class NQueensSolver implements MetricListener {
                 String application = getarg(args, ++i);
                 String nhosts = getarg(args, ++i);
                 String params = getarg(args, ++i);
+                if ("--".equals(params)) {
+                    params = null;
+                }
                 jobList.add(new RunJob(application, nhosts, params));
             } else if (args[i].equals("-vn")) {
                 virtualNodeName = getarg(args, ++i);
             } else if (args[i].equals("-out")) {
                 outPrefix = getarg(args, ++i);
+            } else if (args[i].equals("-in")) {
+                inFilename = getarg(args, ++i);
             } else if (args[i].equals("-err")) {
                 errPrefix = getarg(args, ++i);
             } else if (args[i].equals("-cp")) {
@@ -221,56 +186,60 @@ public class NQueensSolver implements MetricListener {
             if (nameServerHost != null) {
                 env.put("ibis.name_server.host", nameServerHost);
                 env.put("ibis.name_server.port", nameServerPort);
-                env.put("ibis.name_server.key", descriptors);
-                // What else?
+                env.put("ibis.name_server.key",
+                        "key_" + i + "_" + System.currentTimeMillis());
+                // What else should we put here?
             }
             sd.setEnvironment(env);
 
-            sd.setArguments(new String[] { job.params });
+            if (job.params != null) {
+                sd.setArguments(new String[] { job.params });
+            }
 
             File outFile = null;
             File errFile = null;
+            File inFile = null;
 
-            try {
-                outFile = GAT.createFile(context, prefs,
-                        new URI("any:///" + outPrefix + i));
-            } catch(Exception e) {
-                System.err.println("Could not create " + outFile
-                        + ", using stdout instead");
-                e.printStackTrace();
+            if (outPrefix != null) {
+                try {
+                    outFile = GAT.createFile(context, prefs,
+                            new URI("any:///" + outPrefix + i));
+                } catch(Exception e) {
+                    System.err.println("Could not createFile " + outFile
+                            + ", using stdout instead");
+                    e.printStackTrace();
+                }
+                if (outFile != null) {
+                    sd.setStdout(outFile);
+                }
             }
-            if (outFile != null) {
-                sd.setStdout(outFile);
+            if (errPrefix != null) {
+                try {
+                    errFile = GAT.createFile(context, prefs,
+                            new URI("any:///" + errPrefix + i));
+                } catch(Exception e) {
+                    System.err.println("Could not createFile " + errFile
+                            + ", using stderr instead");
+                    e.printStackTrace();
+                }
+                if (errFile != null) {
+                    sd.setStderr(errFile);
+                }
             }
-            try {
-                errFile = GAT.createFile(context, prefs,
-                        new URI("any:///" + errPrefix + i));
-            } catch(Exception e) {
-                System.err.println("Could not create " + errFile
-                        + ", using stderr instead");
-                e.printStackTrace();
+            if (inFilename != null) {
+                try {
+                    inFile = GAT.createFile(context, prefs,
+                            new URI("any:///" + inFilename));
+                } catch(Exception e) {
+                    System.err.println("Could not createFile " + inFilename
+                            + ", using stdin instead");
+                    e.printStackTrace();
+                }
+                if (inFile != null) {
+                    sd.setStdin(inFile);
+                }
             }
-            if (errFile != null) {
-                sd.setStderr(errFile);
-            }
-
-            /*
-            if (stdin != null) sd.setStdin(stdin);
-
-            if (stageIns != null) {
-            for(int i=0; i<stageIns.length; i++) {
-            sd.addPreStagedFile(stageIns[i]);
-            }
-            }
-
-            if (stageOuts != null) {
-            for(int i=0; i<stageOuts.length; i++) {
-            sd.addPostStagedFile(stageOuts[i]);
-            }
-            }
-
-            */
-
+ 
             Hashtable ht = new Hashtable();
             ResourceDescription rd = new HardwareResourceDescription(ht);
             JobDescription jd = new JobDescription(sd, rd);
