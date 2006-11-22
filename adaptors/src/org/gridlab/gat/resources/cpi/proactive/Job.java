@@ -115,6 +115,9 @@ public class Job extends JobCpi {
     /** Handler for standard input. */
     private InputHandler inputHandler;
 
+    /** Must be set when the application needs standard input. */
+    private boolean needsStdin = false;
+
     /** Input provider thread for job. */
     class InputHandler extends Thread {
         private boolean done = false;
@@ -126,6 +129,10 @@ public class Job extends JobCpi {
         }
 
         private String getInput() {
+            if (inputReader == null) {
+                done = true;
+                return null;
+            }
             String s = null;
             if (! done) {
                 try {
@@ -154,11 +161,10 @@ public class Job extends JobCpi {
                     done = true;
                 }
                 for (int i = 0; i < nodes.size(); i++) {
+                    // TODO: make this multithreaded?
                     NodeInfo node = (NodeInfo) nodes.get(i);
                     synchronized(node) {
                         if (jobID.equals(node.getJobID())) {
-                            System.out.println("Providing input for node "
-                                    + node.hostName + ": " + input);
                             node.launcher.provideInput(node.getInstanceID(),
                                     input);
                         }
@@ -197,6 +203,11 @@ public class Job extends JobCpi {
         }
         if (preferences.get("ResourceBroker.ProActive.stageOnAll") != null) {
             stageOnAll = true;
+        }
+        String s
+            = (String) preferences.get("ResourceBroker.ProActive.needsStdin");
+        if (s != null && ! s.equals("")) {
+            needsStdin = true;
         }
 
         SoftwareDescription soft = jobDescription.getSoftwareDescription();
@@ -252,7 +263,7 @@ public class Job extends JobCpi {
             }
         }
 
-        Reader reader;
+        Reader reader = null;
         File stdin = soft.getStdin();
         if (stdin != null) {
             try {
@@ -261,11 +272,13 @@ public class Job extends JobCpi {
                 throw new GATInvocationException(
                         "Could not open input file " + stdin, e);
             }
-        } else {
+        } else if (needsStdin) {
             reader = new InputStreamReader(System.in);
         }
+        if (reader != null) {
+            inputHandler = new InputHandler(new BufferedReader(reader));
+        }
 
-        inputHandler = new InputHandler(new BufferedReader(reader));
 
         Map environment;
         environment = soft.getEnvironment();
@@ -332,10 +345,12 @@ public class Job extends JobCpi {
 
     synchronized void stdout(String out) {
         myStdout.println(out);
+        myStdout.flush();
     }
 
     synchronized void stderr(String err) {
         myStderr.println(err);
+        myStderr.flush();
     }
 
     /**
@@ -475,7 +490,7 @@ public class Job extends JobCpi {
                     id2Node.put(id, node);
                 }
             }
-            if (start > 0 && ! inputHandler.isAlive()) {
+            if (start > 0 && inputHandler != null && ! inputHandler.isAlive()) {
                 inputHandler.start();
             }
         } else {
@@ -503,7 +518,7 @@ public class Job extends JobCpi {
                     }
                 }
             } else {
-                if (! inputHandler.isAlive()) {
+                if (inputHandler != null && ! inputHandler.isAlive()) {
                     inputHandler.start();
                 }
             }
@@ -652,7 +667,9 @@ public class Job extends JobCpi {
             infoMap.put("stoptime", new Long(System.currentTimeMillis()));
             finished();
             setState(STOPPED);
-            inputHandler.doStop();
+            if (inputHandler != null) {
+                inputHandler.doStop();
+            }
         }
 
     }

@@ -47,23 +47,28 @@ class GrabberThread extends Thread {
                     "ResourceBroker.ProActive.VirtualNodeName");
         try {
             // Get information from ProActive descriptor
-            ProActiveDescriptor pad
-                    = ProActive.getProactiveDescriptor(descriptor);
-            pad.activateMappings();
-            if (virtualNodeName != null) {
-                ProActiveResourceBrokerAdaptor.logger.info(
-                        "virtualNodeName = " + virtualNodeName);
-                VirtualNode vn = pad.getVirtualNode(virtualNodeName);
-                Node[] crtNodes = vn.getNodes();
-                for (int i = 0; i < crtNodes.length; i++) {
-                    nodes.add(crtNodes[i]);
-                }
-            } else {
-                VirtualNode[] vns = pad.getVirtualNodes();
-                for (int i = 0; i < vns.length; i++) {
-                    Node[] crtNodes = vns[i].getNodes();
-                    for (int j = 0; j < crtNodes.length; j++) {
-                        nodes.add(crtNodes[j]);
+            synchronized(this.getClass()) {
+                // Ouch, can ProActive really not deal with doing this in
+                // parallel? It seems to corrupt the node information when
+                // processing multiple ProActive descriptors simultaneously.
+                ProActiveDescriptor pad
+                        = ProActive.getProactiveDescriptor(descriptor);
+                pad.activateMappings();
+                if (virtualNodeName != null) {
+                    ProActiveResourceBrokerAdaptor.logger.info(
+                            "virtualNodeName = " + virtualNodeName);
+                    VirtualNode vn = pad.getVirtualNode(virtualNodeName);
+                    Node[] crtNodes = vn.getNodes();
+                    for (int i = 0; i < crtNodes.length; i++) {
+                        nodes.add(crtNodes[i]);
+                    }
+                } else {
+                    VirtualNode[] vns = pad.getVirtualNodes();
+                    for (int i = 0; i < vns.length; i++) {
+                        Node[] crtNodes = vns[i].getNodes();
+                        for (int j = 0; j < crtNodes.length; j++) {
+                            nodes.add(crtNodes[j]);
+                        }
                     }
                 }
             }

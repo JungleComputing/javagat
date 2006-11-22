@@ -50,6 +50,7 @@ class NodeInfo {
         this.watcher = w;
         this.broker = b;
         this.descriptor = descriptor;
+        System.out.println("Creating nodeInfo for " + node + ", hostName = " + hostName);
     }
 
     /**

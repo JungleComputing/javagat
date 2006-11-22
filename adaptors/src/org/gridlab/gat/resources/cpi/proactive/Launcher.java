@@ -21,6 +21,8 @@ import org.objectweb.proactive.core.util.wrapper.StringWrapper;
  * access it.
  */
 public class Launcher implements Serializable, RunActive {
+    static final String newline = System.getProperty("line.separator");
+
     /** Maps job id's to jvms. */
     private HashMap jobs = new HashMap();
 
@@ -35,40 +37,64 @@ public class Launcher implements Serializable, RunActive {
     final Node node;
 
     /** Collects output and passes it on to the jobWatcher. */
-    class OutputLogger implements RemoteProcessMessageLogger {
+    class OutputLogger extends Thread implements RemoteProcessMessageLogger {
+        ArrayList messages = new ArrayList();
         String jobID;
+
         OutputLogger(String jobID) {
             this.jobID = jobID;
-        }
-        public void log(String message) {
-            jobWatcher.addOutput(jobID, message);
-        }
-
-        public void log(String message, Throwable e) {
-            jobWatcher.addOutput(jobID, message + e);
+            this.setDaemon(true);
+            start();
         }
 
-        public void log(Throwable e) {
-            jobWatcher.addOutput(jobID, "" + e);
+        public synchronized void log(String message) {
+            messages.add(message);
+        }
+
+        public synchronized void log(String message, Throwable e) {
+            messages.add(message + e);
+        }
+
+        public synchronized void log(Throwable e) {
+            messages.add("" + e);
+        }
+
+        protected synchronized void sendMessages() {
+            if (messages.size() != 0) {
+                StringBuffer sb = new StringBuffer();
+                while (messages.size() != 0) {
+                    sb.append((String) messages.remove(0)).append(newline);
+                }
+                jobWatcher.addOutput(jobID, sb.toString());
+            }
+        }
+
+        public void run() {
+            for (;;) {
+                try {
+                    sleep(10000);
+                } catch(Exception e) {
+                    // ignored
+                }
+                sendMessages();
+            }
         }
     }
 
     /** Collects error output and passes it on to the jobWatcher. */
-    class ErrorLogger implements RemoteProcessMessageLogger {
-        String jobID;
+    class ErrorLogger extends OutputLogger {
         ErrorLogger(String jobID) {
-            this.jobID = jobID;
-        }
-        public void log(String message) {
-            jobWatcher.addError(jobID, message);
+            super(jobID);
         }
 
-        public void log(String message, Throwable e) {
-            jobWatcher.addError(jobID, message + e);
-        }
-
-        public void log(Throwable e) {
-            jobWatcher.addError(jobID, "" + e);
+        protected synchronized void sendMessages() {
+            if (messages.size() != 0) {
+                StringBuffer sb = new StringBuffer();
+                while (messages.size() != 0) {
+                    sb.append((String) messages.remove(0)).append(newline);
+                }
+                jobWatcher.addError(jobID, sb.toString());
+            }
         }
     }
 
@@ -122,14 +148,19 @@ public class Launcher implements Serializable, RunActive {
         /** The identification of the job. */
         String jobID;
 
+        OutputLogger stdout, stderr;
+
         /**
          * Constructor, with specified initial values for the fields.
          * @param jvm the JVM.
          * @param jobID the job identification.
          */
-        public Watcher(JVMProcessImpl jvm, String jobID) {
+        public Watcher(JVMProcessImpl jvm, String jobID, OutputLogger stdout,
+                OutputLogger stderr) {
             this.jvm = jvm;
             this.jobID = jobID;
+            this.stdout = stdout;
+            this.stderr = stderr;
         }
 
         /**
@@ -150,6 +181,8 @@ public class Launcher implements Serializable, RunActive {
                 // Is sometimes thrown, even after waitfor.
                 // We ignore it, and lose the exit status.
             }
+            stdout.sendMessages();
+            stderr.sendMessages();
             jobWatcher.finishedJob(jobID, eval);
         }
     }
@@ -201,10 +234,10 @@ public class Launcher implements Serializable, RunActive {
             String progArgs, String classpath, String jobID) {
 
         logger.info("Serving launch");
+        OutputLogger stdout = new OutputLogger(jobID);
+        ErrorLogger stderr = new ErrorLogger(jobID);
         // Create the JVM process and set its parameters.
-        JVMProcessImpl jvm = new JVMProcessImpl(
-                new OutputLogger(jobID),
-                new ErrorLogger(jobID));
+        JVMProcessImpl jvm = new JVMProcessImpl(stdout, stderr);
         jvm.setOutputMessageSink(new InputSink());
 
         jvm.setClassname(classname);
@@ -222,7 +255,7 @@ public class Launcher implements Serializable, RunActive {
 
         // Try and run it, spawn watcher thread if this succeeds.
         try {
-            Watcher w = new Watcher(jvm, jobID);
+            Watcher w = new Watcher(jvm, jobID, stdout, stderr);
             w.setDaemon(true);
             synchronized(jobs) {
                 jobs.put(jobID, w);
