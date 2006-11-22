@@ -98,6 +98,9 @@ program 8: ListMetricDefinitions
 
 bin/run_gat_app tutorial.ListMetricDefinitions
 
+grep for free mem metric, to show what kind of parameters it needs (for the next demo)
+bin/run_gat_app tutorial.ListMetricDefinitions | grep host\.mem\.free
+
 
 program 9: GetMetric
 --------------------
