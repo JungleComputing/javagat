@@ -518,6 +518,9 @@ public class Job extends JobCpi {
                     }
                 }
             } else {
+                for (int i = 0; i < newNodes.length; i++) {
+                    id2Node.put(newNodes[i].getInstanceID(), newNodes[i]);
+                }
                 if (inputHandler != null && ! inputHandler.isAlive()) {
                     inputHandler.start();
                 }
