@@ -1,5 +1,7 @@
 package org.gridlab.gat.resources.cpi.proactive;
 
+import ibis.util.TypedProperties;
+
 import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -37,7 +39,9 @@ import org.objectweb.proactive.filetransfer.FileVector;
  * @see org.gridlab.gat.resources.Job.
  */
 public class Job extends JobCpi {
-
+    static final int MAXTHREADS = TypedProperties.intProperty(
+            "JavaGat.ProActive.Launch.Parallel", 1);
+ 
     /** Counter for generating job identifications. */
     private static int jobCounter;
 
@@ -485,7 +489,7 @@ public class Job extends JobCpi {
 
         StringWrapper[] results = new StringWrapper[newNodes.length];
 
-        // Threader threader = new Threader(5);
+        Threader threader = Threader.createThreader(MAXTHREADS);
 
         for (int i = 0; i < newNodes.length; i++) {
             final NodeInfo node = newNodes[i];
@@ -493,11 +497,10 @@ public class Job extends JobCpi {
             node.watcher.addJob(id, this);
             nodes.add(node);
             node.setID(jobID, id);
-            // threader.submit(new LauncherThread(results, i, node, id));
-            new LauncherThread(results, i, node, id).run();
+            threader.submit(new LauncherThread(results, i, node, id));
         }
 
-        // threader.waitForAll();
+        threader.waitForAll();
 
         if (softHostCount) {
             // Check launch results on this batch. When the hostCount is soft,

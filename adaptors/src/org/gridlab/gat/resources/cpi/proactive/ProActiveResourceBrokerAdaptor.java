@@ -27,7 +27,8 @@ public class ProActiveResourceBrokerAdaptor extends ResourceBrokerCpi
     
     static final int MAXTHREADS = TypedProperties.intProperty(
             "JavaGat.ProActive.NewActive.Parallel", 1); // safe default
-    static final int MAXNODESPERWATCHER = 16;
+    static final int MAXNODESPERWATCHER = TypedProperties.intProperty(
+            "JavaGat.ProActive.NewActive.MaxNodesPerWatcher", 16);
 
     /** Maps a ProActive descriptor filename to a set of NodeInfo. */
     private static HashMap descr2nodeset = new HashMap();
@@ -204,7 +205,7 @@ public class ProActiveResourceBrokerAdaptor extends ResourceBrokerCpi
 
 */
 
-        Threader threader = new Threader(MAXTHREADS);
+        Threader threader = Threader.createThreader(MAXTHREADS);
         for (int i = 0; i < nodeInfo.length; i++) {
             threader.submit(new ActivateNode(nodeInfo[i], parameters[i], h));
         }
@@ -281,32 +282,46 @@ public class ProActiveResourceBrokerAdaptor extends ResourceBrokerCpi
     public static void end() {
         for (Iterator d = descr2nodeset.values().iterator(); d.hasNext();) {
             HashSet h = (HashSet) d.next();
+            Threader threader = Threader.createThreader(MAXTHREADS);
             for (Iterator i =h.iterator(); i.hasNext();) {
-                NodeInfo nodeInfo = (NodeInfo) i.next();
-                logger.info("Killing active objects on node "
-                        + nodeInfo.hostName);
-                try {
-                    nodeInfo.launcher.terminate();
-                    // nodeInfo.node.getProActiveRuntime().killRT(false);
-                } catch(Exception ex) {
-                    // ignored
-                }
+                final NodeInfo nodeInfo = (NodeInfo) i.next();
+                threader.submit(new Thread("Terminator") {
+                    public void run() {
+                        logger.info("Sending terminate to node "
+                                + nodeInfo.hostName);
+                        try {
+                            nodeInfo.launcher.terminate();
+                        } catch(Throwable ex) {
+                            // ignored
+                        }
+                    }
+                });
             }
+
+            threader.waitForAll();
+
             try {
                 Thread.sleep(5000);
             } catch(Exception e) {
                 // ignored
             }
-            for (Iterator i =h.iterator(); i.hasNext();) {
-                NodeInfo nodeInfo = (NodeInfo) i.next();
-                logger.info("Killing active objects on node "
-                        + nodeInfo.hostName);
-                try {
-                    nodeInfo.node.getProActiveRuntime().killRT(false);
-                } catch(Exception ex) {
-                    // ignored
-                }
+
+            threader = Threader.createThreader(MAXTHREADS);
+            for (Iterator i = h.iterator(); i.hasNext();) {
+                final NodeInfo nodeInfo = (NodeInfo) i.next();
+                threader.submit(new Thread("Killer") {
+                    public void run() {
+                        logger.info("Killing active objects on node "
+                                + nodeInfo.hostName);
+                        try {
+                            nodeInfo.node.getProActiveRuntime().killRT(false);
+                        } catch(Throwable ex) {
+                            // ignored
+                        }
+                    }
+                });
             }
+            threader.waitForAll();
         }
     }
 

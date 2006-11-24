@@ -40,9 +40,14 @@ public class Threader extends Thread {
         }
     }
 
-    public Threader(int maxThreads) {
+    private Threader(int maxThreads) {
         this.maxThreads = maxThreads;
-        start();
+    }
+
+    public static Threader createThreader(int maxThreads) {
+        Threader threader = new Threader(maxThreads);
+        ThreadPool.createNew(threader, "Threader");
+        return threader;
     }
     
     public synchronized void submit(Runnable r) {
