@@ -118,6 +118,34 @@ public class Job extends JobCpi {
     /** Must be set when the application needs standard input. */
     private boolean needsStdin = false;
 
+    class LauncherThread implements Runnable {
+        StringWrapper[] results;
+        int i;
+        NodeInfo node;
+        String id;
+
+        public LauncherThread(StringWrapper[] results, int i, NodeInfo node,
+                String id) {
+            this.results = results;
+            this.i = i;
+            this.node = node;
+            this.id = id;
+        }
+
+        public void run() {
+            try {
+                synchronized(node) {
+                    results[i] = node.launcher.launch(className,
+                            jvmArgs + " -Dibis.pool.cluster=" + node.descriptor,
+                            progArgs, classPath, id);
+                }
+            } catch(Exception e) {
+                // Dealt with later: results[i] stays null.
+            }
+        }
+    }
+
+
     /** Input provider thread for job. */
     class InputHandler extends Thread {
         private boolean done = false;
@@ -457,22 +485,19 @@ public class Job extends JobCpi {
 
         StringWrapper[] results = new StringWrapper[newNodes.length];
 
+        // Threader threader = new Threader(5);
+
         for (int i = 0; i < newNodes.length; i++) {
-            NodeInfo node = newNodes[i];
-            String id = getNewID();
+            final NodeInfo node = newNodes[i];
+            final String id = getNewID();
             node.watcher.addJob(id, this);
-            try {
-                synchronized(node) {
-                    results[i] = node.launcher.launch(className,
-                            jvmArgs + " -Dibis.pool.cluster=" + node.descriptor,
-                            progArgs, classPath, id);
-                }
-            } catch(Exception e) {
-                // Dealt with later: results[i] stays null.
-            }
             nodes.add(node);
             node.setID(jobID, id);
+            // threader.submit(new LauncherThread(results, i, node, id));
+            new LauncherThread(results, i, node, id).run();
         }
+
+        // threader.waitForAll();
 
         if (softHostCount) {
             // Check launch results on this batch. When the hostCount is soft,

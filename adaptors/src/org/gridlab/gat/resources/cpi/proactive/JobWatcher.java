@@ -9,8 +9,6 @@ import org.objectweb.proactive.Service;
 
 /**
  * This class keeps track of jobs submitted to a particular cluster.
- * It is an active object, all nodes of this particular cluster can make
- * calls to it.
  * This class must be public, or else the ProActive stub cannot access it.
  */
 public class JobWatcher implements java.io.Serializable, RunActive {

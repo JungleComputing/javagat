@@ -1,6 +1,6 @@
 package org.gridlab.gat.resources.cpi.proactive;
 
-import ibis.util.ThreadPool;
+import ibis.util.TypedProperties;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -24,15 +24,22 @@ import org.objectweb.proactive.core.node.Node;
  */
 public class ProActiveResourceBrokerAdaptor extends ResourceBrokerCpi
         implements Runnable {
-
-    /** Maps a ProActive descriptor filename to a JobWatcher object. */
-    private static HashMap descr2watcher = new HashMap();
-
-    /** Maps a ProActive descriptor filename to a JobWatcher stub. */
-    private static HashMap descr2watcherStub = new HashMap();
+    
+    static final int MAXTHREADS = TypedProperties.intProperty(
+            "JavaGat.ProActive.NewActive.Parallel", 1); // safe default
+    static final int MAXNODESPERWATCHER = 16;
 
     /** Maps a ProActive descriptor filename to a set of NodeInfo. */
     private static HashMap descr2nodeset = new HashMap();
+
+    /** Current watcher. */
+    JobWatcher watcher = null;
+
+    /** Current watcher stub. */
+    JobWatcher stub = null;
+
+    /** Count for current watcher. */
+    int jobWatcherCount = 0;
 
     /** List of jobs to schedule. */
     private ArrayList jobList = new ArrayList();
@@ -53,14 +60,6 @@ public class ProActiveResourceBrokerAdaptor extends ResourceBrokerCpi
     static final Logger logger
         = ibis.util.GetLogger.getLogger(ProActiveResourceBrokerAdaptor.class);
 
-    /** Mutable int object. */
-    static final class Counter {
-        int counter;
-        Counter(int c) {
-            counter = c;
-        }
-    }
-
     /**
      * A runnable for deployment, since the multithreading deployment in
      * ProActive does not work.
@@ -69,35 +68,24 @@ public class ProActiveResourceBrokerAdaptor extends ResourceBrokerCpi
         NodeInfo node;
         Object[] parameters;
         HashSet h;
-        Counter count;
 
-        public ActivateNode(NodeInfo node, Object[] params, HashSet h,
-                Counter count) {
+        public ActivateNode(NodeInfo node, Object[] params, HashSet h) {
             this.node = node;
             this.parameters = params;
             this.h = h;
-            this.count = count;
         }
 
         public void run() {
             try {
-                logger.info("Launching on " + node.hostName);
                 node.launcher = (Launcher) ProActive.newActive(
                     Launcher.class.getName(), parameters, node.node);
-                logger.info("launcher = " + node.launcher);
                 synchronized(h) {
                     h.add(node);
                 }
-                logger.info("Launched on " + node.hostName);
+                logger.info("newActive Launcher on " + node.hostName);
             } catch(Throwable e) {
-                logger.warn("newActive failed for node " + node.hostName, e);
-            } finally {
-                synchronized(count) {
-                    count.counter--;
-                    if (count.counter == 0) {
-                        count.notifyAll();
-                    }
-                }
+                logger.warn("newActive Launcher failed for node " 
+                        + node.hostName, e);
             }
         }
     }
@@ -129,18 +117,7 @@ public class ProActiveResourceBrokerAdaptor extends ResourceBrokerCpi
         remainingCalls = xmls.size();
 
         for (int i = 0; i < xmls.size(); i++) {
-            // Spawn a JobWatcher thread for each descriptor.
             String descr = (String) xmls.get(i);
-            JobWatcher watcher = new JobWatcher();
-            descr2watcher.put(descr, watcher);
-            try {
-                JobWatcher stub
-                        = (JobWatcher) ProActive.turnActive(watcher);
-                descr2watcherStub.put(descr, stub);
-            } catch(Exception e) {
-                throw new GATObjectCreationException(
-                        "Could not turn job watcher active", e);
-            }
             // Spawn a grabber thread for each descriptor.
             new GrabberThread(descr, this, preferences);
         }
@@ -160,8 +137,7 @@ public class ProActiveResourceBrokerAdaptor extends ResourceBrokerCpi
      */
     void addNodes(String descriptor, ArrayList nodes) {
         HashSet h = new HashSet();
-        JobWatcher watcher = (JobWatcher) descr2watcher.get(descriptor);
-        JobWatcher stub = (JobWatcher) descr2watcherStub.get(descriptor);
+
         logger.debug("Adding " + nodes.size() + " nodes");
 
         Node[] proActiveNodes = (Node[]) nodes.toArray(new Node[0]);
@@ -169,6 +145,35 @@ public class ProActiveResourceBrokerAdaptor extends ResourceBrokerCpi
         NodeInfo[] nodeInfo = new NodeInfo[proActiveNodes.length];
         for (int i = 0; i < proActiveNodes.length; i++) {
             System.out.println("ProActiveNode = " + proActiveNodes[i]);
+            if (watcher == null || jobWatcherCount >= MAXNODESPERWATCHER) {
+                JobWatcher newWatcher = new JobWatcher();
+                JobWatcher newStub;
+                try {
+                    newStub = (JobWatcher) ProActive.turnActive(newWatcher);
+                } catch(Exception e) {
+                    try {
+                        Thread.sleep(1000);
+                    } catch(Exception e2) {
+                        // ignored
+                    }
+                    try {
+                        newStub = (JobWatcher) ProActive.turnActive(newWatcher);
+                    } catch(Exception e3) {
+                        // Tried twice. What now??? Use old watcher/stub
+                        logger.error("Could not create stub", e3);
+                        newWatcher = watcher;
+                        newStub = stub;
+                    }
+                }
+                watcher = newWatcher;
+                stub = newStub;
+                jobWatcherCount = 0;
+                if (watcher == null) {
+                    logger.error("Could not create turnActive watcher");
+                    return;
+                }
+            }
+            jobWatcherCount++;
             nodeInfo[i] = new NodeInfo(proActiveNodes[i], watcher, descriptor,
                     this);
             parameters[i] = new Object[] { stub, proActiveNodes[i]};
@@ -199,20 +204,11 @@ public class ProActiveResourceBrokerAdaptor extends ResourceBrokerCpi
 
 */
 
-        Counter count = new Counter(nodeInfo.length);
+        Threader threader = new Threader(MAXTHREADS);
         for (int i = 0; i < nodeInfo.length; i++) {
-            ThreadPool.createNew(new ActivateNode(nodeInfo[i], parameters[i], 
-                        h, count), "ActivateThread");
+            threader.submit(new ActivateNode(nodeInfo[i], parameters[i], h));
         }
-        synchronized(count) {
-            while (count.counter != 0) {
-                try {
-                    count.wait();
-                } catch(Exception e) {
-                    // Ignored
-                }
-            }
-        }
+        threader.waitForAll();
 
         int nNodes = h.size();
 
@@ -290,14 +286,25 @@ public class ProActiveResourceBrokerAdaptor extends ResourceBrokerCpi
                 logger.info("Killing active objects on node "
                         + nodeInfo.hostName);
                 try {
-                    // nodeInfo.node.getProActiveRuntime().killAllNodes();
+                    nodeInfo.launcher.terminate();
+                    // nodeInfo.node.getProActiveRuntime().killRT(false);
+                } catch(Exception ex) {
+                    // ignored
+                }
+            }
+            try {
+                Thread.sleep(5000);
+            } catch(Exception e) {
+                // ignored
+            }
+            for (Iterator i =h.iterator(); i.hasNext();) {
+                NodeInfo nodeInfo = (NodeInfo) i.next();
+                logger.info("Killing active objects on node "
+                        + nodeInfo.hostName);
+                try {
                     nodeInfo.node.getProActiveRuntime().killRT(false);
                 } catch(Exception ex) {
-                    // logger.info("Got exception from killRT, ignored:", ex);
-                    // print removed, killRT always seems to give an
-                    // exception: EOFException, unmarshallReturnHeader,
-                    // which is understandable, because we are killing the
-                    // other side, after all.
+                    // ignored
                 }
             }
         }

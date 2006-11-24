@@ -6,6 +6,7 @@ import java.util.HashMap;
 
 import org.apache.log4j.Logger;
 import org.objectweb.proactive.Body;
+import org.objectweb.proactive.ProActive;
 import org.objectweb.proactive.RunActive;
 import org.objectweb.proactive.Service;
 import org.objectweb.proactive.core.node.Node;
@@ -40,9 +41,12 @@ public class Launcher implements Serializable, RunActive {
     class OutputLogger extends Thread implements RemoteProcessMessageLogger {
         ArrayList messages = new ArrayList();
         String jobID;
+        boolean toStderr;
+        boolean terminated = false;
 
-        OutputLogger(String jobID) {
+        OutputLogger(String jobID, boolean toStderr) {
             this.jobID = jobID;
+            this.toStderr = toStderr;
             this.setDaemon(true);
             start();
         }
@@ -65,35 +69,39 @@ public class Launcher implements Serializable, RunActive {
                 while (messages.size() != 0) {
                     sb.append((String) messages.remove(0)).append(newline);
                 }
-                jobWatcher.addOutput(jobID, sb.toString());
+                if (toStderr) {
+                    jobWatcher.addError(jobID, sb.toString());
+                } else {
+                    jobWatcher.addOutput(jobID, sb.toString());
+                }
             }
+        }
+
+        public synchronized void terminate() {
+            // Wait a while, to give ProActive the time to collect the
+            // latest output.
+            try {
+                wait(3000);
+            } catch(Exception e) {
+                // ignored
+            }
+            terminated = true;
+            notifyAll();
         }
 
         public void run() {
             for (;;) {
-                try {
-                    sleep(10000);
-                } catch(Exception e) {
-                    // ignored
+                synchronized(this) {
+                    try {
+                        wait(10000);
+                    } catch(Exception e) {
+                        // ignored
+                    }
+                    sendMessages();
+                    if (terminated) {
+                        return;
+                    }
                 }
-                sendMessages();
-            }
-        }
-    }
-
-    /** Collects error output and passes it on to the jobWatcher. */
-    class ErrorLogger extends OutputLogger {
-        ErrorLogger(String jobID) {
-            super(jobID);
-        }
-
-        protected synchronized void sendMessages() {
-            if (messages.size() != 0) {
-                StringBuffer sb = new StringBuffer();
-                while (messages.size() != 0) {
-                    sb.append((String) messages.remove(0)).append(newline);
-                }
-                jobWatcher.addError(jobID, sb.toString());
             }
         }
     }
@@ -181,9 +189,21 @@ public class Launcher implements Serializable, RunActive {
                 // Is sometimes thrown, even after waitfor.
                 // We ignore it, and lose the exit status.
             }
-            stdout.sendMessages();
-            stderr.sendMessages();
-            jobWatcher.finishedJob(jobID, eval);
+            stdout.terminate();
+            stderr.terminate();
+            for (;;) {
+                try {
+                    jobWatcher.finishedJob(jobID, eval);
+                    return;
+                } catch(Throwable e) {
+                    // sleep and try again.
+                    try {
+                        sleep(5000);
+                    } catch(Exception e2) {
+                        // ignored
+                    }
+                }
+            }
         }
     }
 
@@ -234,8 +254,8 @@ public class Launcher implements Serializable, RunActive {
             String progArgs, String classpath, String jobID) {
 
         logger.info("Serving launch");
-        OutputLogger stdout = new OutputLogger(jobID);
-        ErrorLogger stderr = new ErrorLogger(jobID);
+        OutputLogger stdout = new OutputLogger(jobID, false);
+        OutputLogger stderr = new OutputLogger(jobID, true);
         // Create the JVM process and set its parameters.
         JVMProcessImpl jvm = new JVMProcessImpl(stdout, stderr);
         jvm.setOutputMessageSink(new InputSink());
@@ -309,5 +329,16 @@ public class Launcher implements Serializable, RunActive {
      */
     public int ping() {
         return 0;
+    }
+
+    /**
+     * Termination.
+     */
+    public void terminate() {
+        try {
+            ProActive.getBodyOnThis().terminate();
+        } catch(Exception e) {
+            // ignored
+        }
     }
 }
