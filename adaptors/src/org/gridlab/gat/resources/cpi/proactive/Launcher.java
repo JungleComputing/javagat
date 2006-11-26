@@ -265,7 +265,13 @@ public class Launcher implements Serializable, RunActive {
         jvm.setLog4jFile(null);
         jvm.setPolicyFile(null);
 
+        String save1 = null;
+        String save2 = null;
         if (classpath != null) {
+            save1 = System.getProperty("proactive.classloader");
+            save2 = System.getProperty("java.system.class.loader");
+            System.setProperty("proactive.classloader", "disable");
+            System.setProperty("java.system.class.loader", "");
             jvm.setClasspath(classpath);
         }
 
@@ -283,6 +289,10 @@ public class Launcher implements Serializable, RunActive {
             node.getProActiveRuntime().createVM(jvm);
             //jvm.startProcess();
             w.start();
+            if (save1 != null) {
+                System.setProperty("proactive.classloader", save1);
+                System.setProperty("java.system.class.loader", save2);
+            }
 
             jobWatcher.startedJob(jobID);
         } catch (Exception e) {

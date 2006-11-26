@@ -42,6 +42,7 @@ class GrabberThread extends Thread {
     }
 
     public void run() {
+        ProActiveDescriptor pad = null;
         String virtualNodeName
             = (String) preferences.get(
                     "ResourceBroker.ProActive.VirtualNodeName");
@@ -51,8 +52,7 @@ class GrabberThread extends Thread {
                 // Ouch, can ProActive really not deal with doing this in
                 // parallel? It seems to corrupt the node information when
                 // processing multiple ProActive descriptors simultaneously.
-                ProActiveDescriptor pad
-                        = ProActive.getProactiveDescriptor(descriptor);
+                pad = ProActive.getProactiveDescriptor(descriptor);
                 pad.activateMappings();
                 if (virtualNodeName != null) {
                     ProActiveResourceBrokerAdaptor.logger.info(
@@ -73,7 +73,7 @@ class GrabberThread extends Thread {
                 }
             }
 
-            broker.addNodes(descriptor, nodes);
+            broker.addNodes(descriptor, nodes, pad);
 
             /*
             System.out.println("vn.getNumberOfCreatedNodesAfterDeployment() = "
@@ -86,7 +86,7 @@ class GrabberThread extends Thread {
             ProActiveResourceBrokerAdaptor.logger.error(
                     "Exception in GrabberThread:", e);
             nodes.clear();
-            broker.addNodes(descriptor, nodes);
+            broker.addNodes(descriptor, nodes, pad);
         }
     }
 }

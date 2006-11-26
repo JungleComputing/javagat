@@ -17,6 +17,7 @@ import org.gridlab.gat.resources.JobDescription;
 import org.gridlab.gat.resources.SoftwareDescription;
 import org.gridlab.gat.resources.cpi.ResourceBrokerCpi;
 import org.objectweb.proactive.ProActive;
+import org.objectweb.proactive.core.descriptor.data.ProActiveDescriptor;
 import org.objectweb.proactive.core.node.Node;
 
 /**
@@ -32,6 +33,9 @@ public class ProActiveResourceBrokerAdaptor extends ResourceBrokerCpi
 
     /** Maps a ProActive descriptor filename to a set of NodeInfo. */
     private static HashMap descr2nodeset = new HashMap();
+
+    /** List of ProActiveDescriptors. */
+    private static ArrayList pads = new ArrayList();
 
     /** Current watcher. */
     JobWatcher watcher = null;
@@ -136,7 +140,7 @@ public class ProActiveResourceBrokerAdaptor extends ResourceBrokerCpi
      * @param descriptor the ProActive descriptor URL.
      * @param nodes the list of nodes.
      */
-    void addNodes(String descriptor, ArrayList nodes) {
+    void addNodes(String descriptor, ArrayList nodes, ProActiveDescriptor pad) {
         HashSet h = new HashSet();
 
         logger.debug("Adding " + nodes.size() + " nodes");
@@ -218,6 +222,9 @@ public class ProActiveResourceBrokerAdaptor extends ResourceBrokerCpi
             descr2nodeset.put(descriptor, h);
             totalNodes += nNodes;
             availableNodes += nNodes;
+            if (pad != null) {
+                pads.add(pad);
+            }
             notifyAll();
         }
     }
@@ -306,6 +313,7 @@ public class ProActiveResourceBrokerAdaptor extends ResourceBrokerCpi
                 // ignored
             }
 
+            /*
             threader = Threader.createThreader(MAXTHREADS);
             for (Iterator i = h.iterator(); i.hasNext();) {
                 final NodeInfo nodeInfo = (NodeInfo) i.next();
@@ -322,6 +330,15 @@ public class ProActiveResourceBrokerAdaptor extends ResourceBrokerCpi
                 });
             }
             threader.waitForAll();
+            */
+            for (int i = 0; i < pads.size(); i++) {
+                ProActiveDescriptor pad = (ProActiveDescriptor) pads.get(i);
+                try {
+                    pad.killall(false);
+                } catch(Exception e) {
+                    // ignored
+                }
+            }
         }
     }
 
