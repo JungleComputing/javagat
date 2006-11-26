@@ -86,7 +86,7 @@ public class JobWatcher implements java.io.Serializable, RunActive {
         if (job != null) {
             job.stdout(out);
         } else {
-            System.out.println(out);
+            System.out.print(out);
         }
     }
 
@@ -95,7 +95,7 @@ public class JobWatcher implements java.io.Serializable, RunActive {
         if (job != null) {
             job.stderr(err);
         } else {
-            System.err.println(err);
+            System.err.print(err);
         }
     }
 }

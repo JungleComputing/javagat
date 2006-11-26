@@ -376,12 +376,12 @@ public class Job extends JobCpi {
     }
 
     synchronized void stdout(String out) {
-        myStdout.println(out);
+        myStdout.print(out);
         myStdout.flush();
     }
 
     synchronized void stderr(String err) {
-        myStderr.println(err);
+        myStderr.print(err);
         myStderr.flush();
     }
 

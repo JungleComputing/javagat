@@ -31,7 +31,10 @@ public class ProActiveResourceBrokerAdaptor extends ResourceBrokerCpi
     static final int MAXNODESPERWATCHER = TypedProperties.intProperty(
             "JavaGat.ProActive.NewActive.MaxNodesPerWatcher", 16);
 
-    /** Maps a ProActive descriptor filename to a set of NodeInfo. */
+    /** Set of available nodes. */
+    private static HashSet availableNodeSet = new HashSet();
+
+    /** Set of all nodes. */
     private static HashSet nodeSet = new HashSet();
 
     /** List of ProActiveDescriptors. */
@@ -48,9 +51,6 @@ public class ProActiveResourceBrokerAdaptor extends ResourceBrokerCpi
 
     /** List of jobs to schedule. */
     private ArrayList jobList = new ArrayList();
-
-    /** Total number of nodes, as obtained from the descriptors. */
-    private int totalNodes = 0;
 
     /**
      * Number of ProActive descriptors for which an addNodes call is
@@ -79,11 +79,11 @@ public class ProActiveResourceBrokerAdaptor extends ResourceBrokerCpi
             try {
                 node.launcher = (Launcher) ProActive.newActive(
                     Launcher.class.getName(), parameters, node.node);
-                synchronized(nodeSet) {
+                synchronized(availableNodeSet) {
+                    availableNodeSet.add(node);
                     nodeSet.add(node);
-                    totalNodes++;
                     if (jobList.size() != 0) {
-                        nodeSet.notifyAll();
+                        availableNodeSet.notifyAll();
                     }
                 }
                 logger.info("newActive Launcher on " + node.hostName);
@@ -152,10 +152,10 @@ public class ProActiveResourceBrokerAdaptor extends ResourceBrokerCpi
      * @param nodes the list of nodes.
      */
     void addNodes(String descriptor, ArrayList nodes, ProActiveDescriptor pad) {
-        synchronized(nodeSet) {
+        synchronized(availableNodeSet) {
             if (pad == null) {
                 remainingCalls--;
-                nodeSet.notifyAll();
+                availableNodeSet.notifyAll();
                 return;
             }
             pads.add(pad);
@@ -233,10 +233,10 @@ public class ProActiveResourceBrokerAdaptor extends ResourceBrokerCpi
         }
         threader.waitForAll();
 
-        synchronized(nodeSet) {
+        synchronized(availableNodeSet) {
             remainingCalls--;
             pads.add(pad);
-            nodeSet.notifyAll();
+            availableNodeSet.notifyAll();
         }
     }
 
@@ -249,11 +249,12 @@ public class ProActiveResourceBrokerAdaptor extends ResourceBrokerCpi
         NodeInfo[] nodes = new NodeInfo[n];
         HashSet h = new HashSet();
 
-        logger.debug("ObtainNodes: n = " + n + ", size = " + nodeSet.size());
+        logger.debug("ObtainNodes: n = " + n + ", size = "
+                + availableNodeSet.size());
 
-        synchronized(nodeSet) {
+        synchronized(availableNodeSet) {
             int index = 0;
-            for (Iterator i = nodeSet.iterator(); i.hasNext();) {
+            for (Iterator i = availableNodeSet.iterator(); i.hasNext();) {
                 NodeInfo nodeInfo = (NodeInfo) i.next();
                 nodes[index++] = nodeInfo;
                 h.add(nodeInfo);
@@ -261,8 +262,8 @@ public class ProActiveResourceBrokerAdaptor extends ResourceBrokerCpi
                     break;
                 }
             }
-            nodeSet.removeAll(h);
-            logger.debug("ObtainNodes: afterwards: size = " + nodeSet.size());
+            availableNodeSet.removeAll(h);
+            logger.debug("ObtainNodes: afterwards: size = " + availableNodeSet.size());
         }
         return nodes;
     }
@@ -272,17 +273,17 @@ public class ProActiveResourceBrokerAdaptor extends ResourceBrokerCpi
      * @param node the node.
      */
     void releaseNode(NodeInfo node) {
-        synchronized(nodeSet) {
+        synchronized(availableNodeSet) {
             if (node.suspect) {
                 // TODO: possibly try and rescue this node ???
                 // Restart launcher on it ???
-                totalNodes--;
+                nodeSet.remove(node);
                 logger.warn("Remove node " + node.hostName);
                 return;
             }
-            nodeSet.add(node);
+            availableNodeSet.add(node);
             if (jobList.size() != 0) {
-                nodeSet.notifyAll();
+                availableNodeSet.notifyAll();
             }
         }
     }
@@ -352,10 +353,10 @@ public class ProActiveResourceBrokerAdaptor extends ResourceBrokerCpi
 
         submittedJob = new Job(gatContext, preferences, description, this);
 
-        synchronized(nodeSet) {
+        synchronized(availableNodeSet) {
             jobList.add(submittedJob);
             if (jobList.size() == 1) {
-                nodeSet.notifyAll();
+                availableNodeSet.notifyAll();
             }
         }
 
@@ -370,11 +371,11 @@ public class ProActiveResourceBrokerAdaptor extends ResourceBrokerCpi
         for (;;) {
             NodeInfo[] nodes;
             Job job;
-            synchronized(nodeSet) {
+            synchronized(availableNodeSet) {
                 // Obtain the first job from the joblist.
                 while (jobList.size() == 0) {
                     try {
-                        nodeSet.wait();
+                        availableNodeSet.wait();
                     } catch(Exception e) {
                         // ignored
                     }
@@ -392,10 +393,10 @@ public class ProActiveResourceBrokerAdaptor extends ResourceBrokerCpi
                 logger.debug("Want " + nNodes + " nodes");
 
                 if (job.softHostCount) {
-                    while (nodeSet.size() == 0
-                            && (totalNodes != 0 || remainingCalls > 0)) {
+                    while (availableNodeSet.size() == 0
+                            && (nodeSet.size() != 0 || remainingCalls > 0)) {
                         try {
-                            nodeSet.wait();
+                            availableNodeSet.wait();
                         } catch(Exception e) {
                             // ignored
                         }
@@ -403,7 +404,7 @@ public class ProActiveResourceBrokerAdaptor extends ResourceBrokerCpi
                     // Check if the nodes are still needed.
                     // Maybe nodes became available because the job is
                     // done ...
-                    if (nodeSet.size() == 0 && totalNodes == 0) {
+                    if (availableNodeSet.size() == 0 && nodeSet.size() == 0) {
                         job.submissionError(new GATInvocationException(
                                 "No nodes available"));
                         jobList.remove(0);
@@ -414,8 +415,8 @@ public class ProActiveResourceBrokerAdaptor extends ResourceBrokerCpi
                         continue;
                     }
                 } else {
-                    while (nodeSet.size() < nNodes) {
-                        if (totalNodes < nNodes && remainingCalls == 0) {
+                    while (availableNodeSet.size() < nNodes) {
+                        if (nodeSet.size() < nNodes && remainingCalls == 0) {
                             job.submissionError(new GATInvocationException(
                                     "Not enough nodes"));
                             jobList.remove(0);
@@ -423,7 +424,7 @@ public class ProActiveResourceBrokerAdaptor extends ResourceBrokerCpi
                             break;
                         }
                         try {
-                            nodeSet.wait();
+                            availableNodeSet.wait();
                         } catch(Exception e) {
                             // ignored
                         }
@@ -433,7 +434,7 @@ public class ProActiveResourceBrokerAdaptor extends ResourceBrokerCpi
                     }
                 }
 
-                int n = nodeSet.size();
+                int n = availableNodeSet.size();
                 if (n > nNodes) {
                     n = nNodes;
                 }
@@ -447,7 +448,7 @@ public class ProActiveResourceBrokerAdaptor extends ResourceBrokerCpi
                 logger.warn("startJob threw exception: ", e);
             }
             
-            synchronized(nodeSet) {
+            synchronized(availableNodeSet) {
                 if (job.getNumNodes() == 0) {
                     jobList.remove(0);
                 }
