@@ -121,6 +121,18 @@ public class ProActiveResourceBrokerAdaptor extends ResourceBrokerCpi
 
         remainingCalls = xmls.size();
 
+        Runtime.getRuntime().addShutdownHook(
+            new Thread("Nameserver ShutdownHook") {
+                public void run() {
+                    logger.info("Shutdown hook triggered");
+                    try {
+                        end();
+                    } catch(Throwable e) {
+                        // ignored
+                    }
+                }
+            });
+
         for (int i = 0; i < xmls.size(); i++) {
             String descr = (String) xmls.get(i);
             // Spawn a grabber thread for each descriptor.
@@ -287,23 +299,27 @@ public class ProActiveResourceBrokerAdaptor extends ResourceBrokerCpi
      * Cleans up by killing all nodes.
      */
     public static void end() {
-        for (Iterator d = descr2nodeset.values().iterator(); d.hasNext();) {
-            HashSet h = (HashSet) d.next();
+        if (descr2nodeset.size() != 0) {
             Threader threader = Threader.createThreader(MAXTHREADS);
-            for (Iterator i =h.iterator(); i.hasNext();) {
-                final NodeInfo nodeInfo = (NodeInfo) i.next();
-                threader.submit(new Thread("Terminator") {
-                    public void run() {
-                        logger.info("Sending terminate to node "
-                                + nodeInfo.hostName);
-                        try {
-                            nodeInfo.launcher.terminate();
-                        } catch(Throwable ex) {
-                            // ignored
+            for (Iterator d = descr2nodeset.values().iterator(); d.hasNext();) {
+                HashSet h = (HashSet) d.next();
+                for (Iterator i =h.iterator(); i.hasNext();) {
+                    final NodeInfo nodeInfo = (NodeInfo) i.next();
+                    threader.submit(new Thread("Terminator") {
+                        public void run() {
+                            logger.info("Sending terminate to node "
+                                    + nodeInfo.hostName);
+                            try {
+                                nodeInfo.launcher.terminate();
+                            } catch(Throwable ex) {
+                                // ignored
+                            }
                         }
-                    }
-                });
+                    });
+                }
             }
+
+            descr2nodeset.clear();
 
             threader.waitForAll();
 
@@ -312,34 +328,17 @@ public class ProActiveResourceBrokerAdaptor extends ResourceBrokerCpi
             } catch(Exception e) {
                 // ignored
             }
+        }
 
-            /*
-            threader = Threader.createThreader(MAXTHREADS);
-            for (Iterator i = h.iterator(); i.hasNext();) {
-                final NodeInfo nodeInfo = (NodeInfo) i.next();
-                threader.submit(new Thread("Killer") {
-                    public void run() {
-                        logger.info("Killing active objects on node "
-                                + nodeInfo.hostName);
-                        try {
-                            nodeInfo.node.getProActiveRuntime().killRT(false);
-                        } catch(Throwable ex) {
-                            // ignored
-                        }
-                    }
-                });
-            }
-            threader.waitForAll();
-            */
-            for (int i = 0; i < pads.size(); i++) {
-                ProActiveDescriptor pad = (ProActiveDescriptor) pads.get(i);
-                try {
-                    pad.killall(false);
-                } catch(Exception e) {
-                    // ignored
-                }
+        for (int i = 0; i < pads.size(); i++) {
+            ProActiveDescriptor pad = (ProActiveDescriptor) pads.get(i);
+            try {
+                pad.killall(false);
+            } catch(Exception e) {
+                // ignored
             }
         }
+        pads.clear();
     }
 
     /**
