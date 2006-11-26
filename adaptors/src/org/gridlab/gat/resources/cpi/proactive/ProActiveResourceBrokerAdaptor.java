@@ -402,7 +402,8 @@ public class ProActiveResourceBrokerAdaptor extends ResourceBrokerCpi
                 logger.debug("Want " + nNodes + " nodes");
 
                 if (job.softHostCount) {
-                    while (availableNodes == 0) {
+                    while (availableNodes == 0
+                            && (totalNodes != 0 || remainingCalls > 0)) {
                         try {
                             wait();
                         } catch(Exception e) {
@@ -412,6 +413,12 @@ public class ProActiveResourceBrokerAdaptor extends ResourceBrokerCpi
                     // Check if the nodes are still needed.
                     // Maybe nodes became available because the job is
                     // done ...
+                    if (availableNodes == 0 && totalNodes == 0) {
+                        job.submissionError(new GATInvocationException(
+                                "No nodes available"));
+                        jobList.remove(0);
+                        continue;
+                    }
                     nNodes = job.getNumNodes();
                     if (nNodes == 0) {
                         continue;
@@ -420,7 +427,7 @@ public class ProActiveResourceBrokerAdaptor extends ResourceBrokerCpi
                     while (availableNodes < nNodes) {
                         if (totalNodes < nNodes && remainingCalls == 0) {
                             job.submissionError(new GATInvocationException(
-                                        "Not enough nodes"));
+                                    "Not enough nodes"));
                             jobList.remove(0);
                             job = null;
                             break;
