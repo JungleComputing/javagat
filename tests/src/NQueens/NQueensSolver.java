@@ -24,18 +24,84 @@ import org.gridlab.gat.resources.SoftwareDescription;
 
 public class NQueensSolver implements MetricListener {
 
-    private static class RunJob {
-        String application;
-        String nHosts;
-        String params;
+    static ArrayList jobList = new ArrayList();
 
-        public RunJob(String application, String nHosts, String params) {
+    HashMap globalEnv = new HashMap();
+    String globalClassPath = null;
+
+    private class RunJob {
+        String application;
+        String numHosts = null;
+        boolean numHostsIsSoft = false;
+        String params = null;
+        String outPrefix = null;
+        String errPrefix = null;
+        String inFilename = null;
+        String classPath = null;
+        HashMap env = new HashMap();
+
+        public RunJob(String application) {
             if (! application.startsWith("java:")) {
                 application = "java:" + application;
             }
             this.application = application;
-            this.nHosts = nHosts;
+            env = new HashMap(globalEnv);
+        }
+
+        public void setParams(String params) {
+            if (this.params != null) {
+                error("params set twice for job " + application);
+            }
             this.params = params;
+        }
+
+        public void setOutputPrefix(String outPrefix) {
+            if (this.outPrefix != null) {
+                error("outPrefix set twice for job " + application);
+            }
+            this.outPrefix = outPrefix;
+        }
+
+        public void setErrorPrefix(String errPrefix) {
+            if (this.errPrefix != null) {
+                error("errPrefix set twice for job " + application);
+            }
+            this.errPrefix = errPrefix;
+        }
+
+        public void setInput(String inFilename) {
+            if (this.inFilename != null) {
+                error("inFilename set twice for job " + application);
+            }
+            this.inFilename = inFilename;
+        }
+
+        public void setClassPath(String classPath) {
+            if (this.classPath != null) {
+                error("classPath set twice for job " + application);
+            }
+            this.classPath = classPath;
+        }
+
+        public void setNumHosts(String numHosts, boolean numHostsIsSoft) {
+            if (this.numHosts != null) {
+                error("numHosts set twice for job " + application);
+            }
+            this.numHosts = numHosts;
+            this.numHostsIsSoft = numHostsIsSoft;
+        }
+
+        public void add() {
+            if (classPath == null) {
+                classPath = globalClassPath;
+            }
+            jobList.add(this);
+            if (numHosts == null) {
+                System.err.println("Warning: numHosts not set for job "
+                        + application);
+                System.err.println("   Using default (1).");
+                numHosts = "1";
+            }
         }
 
         public String toString() {
@@ -43,11 +109,10 @@ public class NQueensSolver implements MetricListener {
             if (params != null) {
                 str += " " + params;
             }
-            str += " (on " + nHosts + " hosts)";
+            str += " (on " + numHosts + " hosts)";
             return str;
         }
     }
-
 
     static final GATContext context = new GATContext();
 
@@ -73,60 +138,91 @@ public class NQueensSolver implements MetricListener {
 
     public static void usage() {
         System.err.println("Usage: java NQueensSolver "
-                + "-descr \"<descriptorlist>\" [-ns <nameserver>:<port>] "
-                + "[-vn <virtualNodeName>] [-cp <classpath>] "
-                + "[-out <outputFilePrefix>] [-err <errorFilePrefix>] "
-                + "[-job <javaclass> <nhosts> [\"<params>\" | --]]*");
+                + "[ -descr \"<descriptorlist>\" |"
+                + " -vn <virtualNodeName> |"
+                + " -cp <globalclasspath> |"
+                + " -prop <globalprop>=<val> ]*"
+                + " [-job <javaclass> ["
+                + " -cp <classpath> |"
+                + " -param \"<params>\" |"
+                + " -nh <numHosts> |"
+                + " -softnh <numHosts> |"
+                + " -prop <prop>=<val> |"
+                + " -in <inputFile> |"
+                + " -out <outputFilePrefix> |"
+                + " -err <errorFilePrefix>]* ]*");
     }
 
     public static String getarg(String[] args, int index) {
         if (index >= args.length) {
-            System.err.println("Missing argument for " + args[index-1]);
+            error("Missing argument for " + args[index-1]);
             usage();
             System.exit(1);
         }
         return args[index];
     }
 
+    public static void error(String s) {
+        System.out.println(s);
+        usage();
+        System.exit(1);
+    }
+
     public void start(String[] args) {
-        String nameServerHost = null;
-        String nameServerPort = null;
         String descriptors = null;
         String virtualNodeName = null;
-        String outPrefix = null;
-        String errPrefix = null;
-        String inFilename = null;
-        String classPath = ":.:nqueen.jar:ibis.jar";
-
-        ArrayList jobList = new ArrayList();
+        RunJob currJob = null;
 
         for (int i = 0; i < args.length; i++) {
             if (false) {
             } else if (args[i].equals("-descr")) {
+                if (descriptors != null) {
+                    error("You can specify only one descriptor list");
+                }
                 descriptors = getarg(args, ++i);
-            } else if (args[i].equals("-ns")) {
+            } else if (args[i].equals("-vn")) {
+                if (virtualNodeName != null) {
+                    error("You can specify only one virtualNodeName");
+                }
+                virtualNodeName = getarg(args, ++i);
+            } else if (args[i].equals("-prop")) {
                 String temp = getarg(args, ++i);
-                StringTokenizer tok = new StringTokenizer(temp, ":");
-                nameServerHost = tok.nextToken();
-                nameServerPort = tok.nextToken();
+                StringTokenizer tok = new StringTokenizer(temp, "=");
+                String propname = tok.nextToken();
+                String propval = tok.nextToken();
+                globalEnv.put(propname, propval);
+            } else if (args[i].equals("-cp")) {
+                globalClassPath = getarg(args, ++i);
             } else if (args[i].equals("-job")) {
                 String application = getarg(args, ++i);
-                String nhosts = getarg(args, ++i);
-                String params = getarg(args, ++i);
-                if ("--".equals(params)) {
-                    params = null;
+                currJob = new RunJob(application);
+                for (++i; i < args.length; i++) {
+                    if (args[i].equals("-param")) {
+                        currJob.setParams(getarg(args, ++i));
+                    } else if (args[i].equals("-out")) {
+                        currJob.setOutputPrefix(getarg(args, ++i));
+                    } else if (args[i].equals("-in")) {
+                        currJob.setInput(getarg(args, ++i));
+                    } else if (args[i].equals("-err")) {
+                        currJob.setErrorPrefix(getarg(args, ++i));
+                    } else if (args[i].equals("-cp")) {
+                        currJob.setClassPath(getarg(args, ++i));
+                    } else if (args[i].equals("-nh")) {
+                        currJob.setNumHosts(getarg(args, ++i), false);
+                    } else if (args[i].equals("-softnh")) {
+                        currJob.setNumHosts(getarg(args, ++i), true);
+                    } else if (args[i].equals("-prop")) {
+                        String temp = getarg(args, ++i);
+                        StringTokenizer tok = new StringTokenizer(temp, "=");
+                        String propname = tok.nextToken();
+                        String propval = tok.nextToken();
+                        currJob.env.put(propname, propval);
+                    } else {
+                        i--;
+                        break;
+                    }
                 }
-                jobList.add(new RunJob(application, nhosts, params));
-            } else if (args[i].equals("-vn")) {
-                virtualNodeName = getarg(args, ++i);
-            } else if (args[i].equals("-out")) {
-                outPrefix = getarg(args, ++i);
-            } else if (args[i].equals("-in")) {
-                inFilename = getarg(args, ++i);
-            } else if (args[i].equals("-err")) {
-                errPrefix = getarg(args, ++i);
-            } else if (args[i].equals("-cp")) {
-                classPath = getarg(args, ++i);
+                currJob.add();
             } else {
                 System.err.println("Unrecognized option: " + args[i]);
                 usage();
@@ -135,9 +231,7 @@ public class NQueensSolver implements MetricListener {
         }
 
         if (descriptors == null) {
-            System.err.println("No ProActive descriptors provided");
-            usage();
-            System.exit(1);
+            error("No ProActive descriptors provided");
         }
 
         Preferences prefs = new Preferences();
@@ -166,9 +260,13 @@ public class NQueensSolver implements MetricListener {
             SoftwareDescription sd = new SoftwareDescription();
 
             HashMap attrib = new HashMap();
-            attrib.put("hostCount", job.nHosts);
-            attrib.put("softHostCount", "");
-            attrib.put("classpath", classPath);
+            attrib.put("hostCount", job.numHosts);
+            if (job.numHostsIsSoft) {
+                attrib.put("softHostCount", "");
+            }
+            if (job.classPath != null) {
+                attrib.put("classpath", job.classPath);
+            }
             sd.setAttributes(attrib);
 
             try {
@@ -181,16 +279,7 @@ public class NQueensSolver implements MetricListener {
                 continue;
             }
 
-            HashMap env = new HashMap();
-            env.put("ibis.pool.total_hosts", job.nHosts);
-            if (nameServerHost != null) {
-                env.put("ibis.name_server.host", nameServerHost);
-                env.put("ibis.name_server.port", nameServerPort);
-                env.put("ibis.name_server.key",
-                        "key_" + i + "_" + System.currentTimeMillis());
-                // What else should we put here?
-            }
-            sd.setEnvironment(env);
+            sd.setEnvironment(job.env);
 
             if (job.params != null) {
                 sd.setArguments(new String[] { job.params });
@@ -200,10 +289,10 @@ public class NQueensSolver implements MetricListener {
             File errFile = null;
             File inFile = null;
 
-            if (outPrefix != null) {
+            if (job.outPrefix != null) {
                 try {
                     outFile = GAT.createFile(context, prefs,
-                            new URI("any:///" + outPrefix + i));
+                            new URI("any:///" + job.outPrefix + "." + i));
                 } catch(Exception e) {
                     System.err.println("Could not createFile " + outFile
                             + ", using stdout instead");
@@ -213,10 +302,10 @@ public class NQueensSolver implements MetricListener {
                     sd.setStdout(outFile);
                 }
             }
-            if (errPrefix != null) {
+            if (job.errPrefix != null) {
                 try {
                     errFile = GAT.createFile(context, prefs,
-                            new URI("any:///" + errPrefix + i));
+                            new URI("any:///" + job.errPrefix + "." + i));
                 } catch(Exception e) {
                     System.err.println("Could not createFile " + errFile
                             + ", using stderr instead");
@@ -226,18 +315,24 @@ public class NQueensSolver implements MetricListener {
                     sd.setStderr(errFile);
                 }
             }
-            if (inFilename != null) {
-                try {
-                    inFile = GAT.createFile(context, prefs,
-                            new URI("any:///" + inFilename));
-                } catch(Exception e) {
-                    System.err.println("Could not createFile " + inFilename
-                            + ", using stdin instead");
-                    e.printStackTrace();
+            if (job.inFilename != null) {
+                if (job.inFilename.equals("-")) {
+                    prefs.put("ResourceBroker.ProActive.needsStdin", "yes");
+                } else {
+                    try {
+                        inFile = GAT.createFile(context, prefs,
+                                new URI("any:///" + job.inFilename));
+                    } catch(Exception e) {
+                        System.err.println("Could not createFile " + job.inFilename
+                                + ", using stdin instead");
+                        e.printStackTrace();
+                    }
+                    if (inFile != null) {
+                        sd.setStdin(inFile);
+                    }
                 }
-                if (inFile != null) {
-                    sd.setStdin(inFile);
-                }
+            } else {
+                prefs.put("ResourceBroker.ProActive.needsStdin", "");
             }
  
             Hashtable ht = new Hashtable();
