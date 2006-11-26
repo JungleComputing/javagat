@@ -268,10 +268,21 @@ public class Launcher implements Serializable, RunActive {
         String save1 = null;
         String save2 = null;
         if (classpath != null) {
+            // Reset some properties that make JVMProcessImpl add options
+            // to the resulting command line to set the ProActive classloader
+            // for the application. We don't want that.
             save1 = System.getProperty("proactive.classloader");
             save2 = System.getProperty("java.system.class.loader");
-            System.setProperty("proactive.classloader", "disable");
-            System.setProperty("java.system.class.loader", "");
+            if ("enable".equals(save1)) {
+                System.setProperty("proactive.classloader", "disable");
+            } else {
+                save1 = null;
+            }
+            if ("org.objectweb.proactive.core.classloader.ProActiveClassLoader".equals(save2)) {
+                System.setProperty("java.system.class.loader", "");
+            } else {
+                save2 = null;
+            }
             jvm.setClasspath(classpath);
         }
 
@@ -291,6 +302,8 @@ public class Launcher implements Serializable, RunActive {
             w.start();
             if (save1 != null) {
                 System.setProperty("proactive.classloader", save1);
+            }
+            if (save2 != null) {
                 System.setProperty("java.system.class.loader", save2);
             }
 

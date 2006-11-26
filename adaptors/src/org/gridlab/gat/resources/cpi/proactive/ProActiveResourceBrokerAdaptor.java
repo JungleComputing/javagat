@@ -32,7 +32,7 @@ public class ProActiveResourceBrokerAdaptor extends ResourceBrokerCpi
             "JavaGat.ProActive.NewActive.MaxNodesPerWatcher", 16);
 
     /** Maps a ProActive descriptor filename to a set of NodeInfo. */
-    private static HashMap descr2nodeset = new HashMap();
+    private static HashSet nodeSet = new HashSet();
 
     /** List of ProActiveDescriptors. */
     private static ArrayList pads = new ArrayList();
@@ -52,9 +52,6 @@ public class ProActiveResourceBrokerAdaptor extends ResourceBrokerCpi
     /** Total number of nodes, as obtained from the descriptors. */
     private int totalNodes = 0;
 
-    /** Number of nodes not scheduled to a job. */
-    private int availableNodes = 0;
-
     /**
      * Number of ProActive descriptors for which an addNodes call is
      * still expected.
@@ -72,20 +69,22 @@ public class ProActiveResourceBrokerAdaptor extends ResourceBrokerCpi
     private class ActivateNode implements Runnable {
         NodeInfo node;
         Object[] parameters;
-        HashSet h;
 
-        public ActivateNode(NodeInfo node, Object[] params, HashSet h) {
+        public ActivateNode(NodeInfo node, Object[] params) {
             this.node = node;
             this.parameters = params;
-            this.h = h;
         }
 
         public void run() {
             try {
                 node.launcher = (Launcher) ProActive.newActive(
                     Launcher.class.getName(), parameters, node.node);
-                synchronized(h) {
-                    h.add(node);
+                synchronized(nodeSet) {
+                    nodeSet.add(node);
+                    totalNodes++;
+                    if (jobList.size() != 0) {
+                        nodeSet.notifyAll();
+                    }
                 }
                 logger.info("newActive Launcher on " + node.hostName);
             } catch(Throwable e) {
@@ -153,7 +152,14 @@ public class ProActiveResourceBrokerAdaptor extends ResourceBrokerCpi
      * @param nodes the list of nodes.
      */
     void addNodes(String descriptor, ArrayList nodes, ProActiveDescriptor pad) {
-        HashSet h = new HashSet();
+        synchronized(nodeSet) {
+            if (pad == null) {
+                remainingCalls--;
+                nodeSet.notifyAll();
+                return;
+            }
+            pads.add(pad);
+        }
 
         logger.debug("Adding " + nodes.size() + " nodes");
 
@@ -223,21 +229,14 @@ public class ProActiveResourceBrokerAdaptor extends ResourceBrokerCpi
 
         Threader threader = Threader.createThreader(MAXTHREADS);
         for (int i = 0; i < nodeInfo.length; i++) {
-            threader.submit(new ActivateNode(nodeInfo[i], parameters[i], h));
+            threader.submit(new ActivateNode(nodeInfo[i], parameters[i]));
         }
         threader.waitForAll();
 
-        int nNodes = h.size();
-
-        synchronized(this) {
+        synchronized(nodeSet) {
             remainingCalls--;
-            descr2nodeset.put(descriptor, h);
-            totalNodes += nNodes;
-            availableNodes += nNodes;
-            if (pad != null) {
-                pads.add(pad);
-            }
-            notifyAll();
+            pads.add(pad);
+            nodeSet.notifyAll();
         }
     }
 
@@ -246,30 +245,24 @@ public class ProActiveResourceBrokerAdaptor extends ResourceBrokerCpi
      * @param n the number of nodes requested.
      * @return an array containing the nodes.
      */
-    private synchronized NodeInfo[] obtainNodes(int n) {
+    private NodeInfo[] obtainNodes(int n) {
         NodeInfo[] nodes = new NodeInfo[n];
-        int count = 0;
+        HashSet h = new HashSet();
 
-        // Should we sort the clusters here???
-        // Do a "best fit"? Or "largest cluster first"???
-        for (Iterator d = descr2nodeset.values().iterator(); d.hasNext();) {
-            HashSet h = (HashSet) d.next();
-            int index = count;
-            for (Iterator i = h.iterator(); i.hasNext();) {
+        logger.debug("ObtainNodes: n = " + n + ", size = " + nodeSet.size());
+
+        synchronized(nodeSet) {
+            int index = 0;
+            for (Iterator i = nodeSet.iterator(); i.hasNext();) {
                 NodeInfo nodeInfo = (NodeInfo) i.next();
-                nodes[count++] = nodeInfo;
-                if (count == n) {
+                nodes[index++] = nodeInfo;
+                h.add(nodeInfo);
+                if (index == n) {
                     break;
                 }
             }
-            for (int i = index; i < count; i++) {
-                h.remove(nodes[i]);
-            }
-        }
-        availableNodes -= count;
-        if (count != n) {
-            // Should not get here.
-            logger.warn("Available node count is wrong!");
+            nodeSet.removeAll(h);
+            logger.debug("ObtainNodes: afterwards: size = " + nodeSet.size());
         }
         return nodes;
     }
@@ -278,19 +271,19 @@ public class ProActiveResourceBrokerAdaptor extends ResourceBrokerCpi
      * Makes the specified node available for allocation.
      * @param node the node.
      */
-    synchronized void releaseNode(NodeInfo node) {
-        if (node.suspect) {
-            // TODO: possibly try and rescue this node ???
-            // Restart launcher on it ???
-            totalNodes--;
-            logger.warn("Remove node " + node.hostName);
-            return;
-        }
-        HashSet h = (HashSet) descr2nodeset.get(node.descriptor);
-        h.add(node);
-        availableNodes++;
-        if (jobList.size() != 0) {
-            notifyAll();
+    void releaseNode(NodeInfo node) {
+        synchronized(nodeSet) {
+            if (node.suspect) {
+                // TODO: possibly try and rescue this node ???
+                // Restart launcher on it ???
+                totalNodes--;
+                logger.warn("Remove node " + node.hostName);
+                return;
+            }
+            nodeSet.add(node);
+            if (jobList.size() != 0) {
+                nodeSet.notifyAll();
+            }
         }
     }
 
@@ -299,27 +292,24 @@ public class ProActiveResourceBrokerAdaptor extends ResourceBrokerCpi
      * Cleans up by killing all nodes.
      */
     public static void end() {
-        if (descr2nodeset.size() != 0) {
+        if (nodeSet.size() != 0) {
             Threader threader = Threader.createThreader(MAXTHREADS);
-            for (Iterator d = descr2nodeset.values().iterator(); d.hasNext();) {
-                HashSet h = (HashSet) d.next();
-                for (Iterator i =h.iterator(); i.hasNext();) {
-                    final NodeInfo nodeInfo = (NodeInfo) i.next();
-                    threader.submit(new Thread("Terminator") {
-                        public void run() {
-                            logger.info("Sending terminate to node "
-                                    + nodeInfo.hostName);
-                            try {
-                                nodeInfo.launcher.terminate();
-                            } catch(Throwable ex) {
-                                // ignored
-                            }
+            for (Iterator i = nodeSet.iterator(); i.hasNext();) {
+                final NodeInfo nodeInfo = (NodeInfo) i.next();
+                threader.submit(new Thread("Terminator") {
+                    public void run() {
+                        logger.info("Sending terminate to node "
+                                + nodeInfo.hostName);
+                        try {
+                            nodeInfo.launcher.terminate();
+                        } catch(Throwable ex) {
+                            // ignored
                         }
-                    });
-                }
+                    }
+                });
             }
 
-            descr2nodeset.clear();
+            nodeSet.clear();
 
             threader.waitForAll();
 
@@ -362,10 +352,10 @@ public class ProActiveResourceBrokerAdaptor extends ResourceBrokerCpi
 
         submittedJob = new Job(gatContext, preferences, description, this);
 
-        synchronized(this) {
+        synchronized(nodeSet) {
             jobList.add(submittedJob);
             if (jobList.size() == 1) {
-                notifyAll();
+                nodeSet.notifyAll();
             }
         }
 
@@ -380,11 +370,11 @@ public class ProActiveResourceBrokerAdaptor extends ResourceBrokerCpi
         for (;;) {
             NodeInfo[] nodes;
             Job job;
-            synchronized(this) {
+            synchronized(nodeSet) {
                 // Obtain the first job from the joblist.
                 while (jobList.size() == 0) {
                     try {
-                        wait();
+                        nodeSet.wait();
                     } catch(Exception e) {
                         // ignored
                     }
@@ -402,10 +392,10 @@ public class ProActiveResourceBrokerAdaptor extends ResourceBrokerCpi
                 logger.debug("Want " + nNodes + " nodes");
 
                 if (job.softHostCount) {
-                    while (availableNodes == 0
+                    while (nodeSet.size() == 0
                             && (totalNodes != 0 || remainingCalls > 0)) {
                         try {
-                            wait();
+                            nodeSet.wait();
                         } catch(Exception e) {
                             // ignored
                         }
@@ -413,7 +403,7 @@ public class ProActiveResourceBrokerAdaptor extends ResourceBrokerCpi
                     // Check if the nodes are still needed.
                     // Maybe nodes became available because the job is
                     // done ...
-                    if (availableNodes == 0 && totalNodes == 0) {
+                    if (nodeSet.size() == 0 && totalNodes == 0) {
                         job.submissionError(new GATInvocationException(
                                 "No nodes available"));
                         jobList.remove(0);
@@ -424,7 +414,7 @@ public class ProActiveResourceBrokerAdaptor extends ResourceBrokerCpi
                         continue;
                     }
                 } else {
-                    while (availableNodes < nNodes) {
+                    while (nodeSet.size() < nNodes) {
                         if (totalNodes < nNodes && remainingCalls == 0) {
                             job.submissionError(new GATInvocationException(
                                     "Not enough nodes"));
@@ -433,7 +423,7 @@ public class ProActiveResourceBrokerAdaptor extends ResourceBrokerCpi
                             break;
                         }
                         try {
-                            wait();
+                            nodeSet.wait();
                         } catch(Exception e) {
                             // ignored
                         }
@@ -443,7 +433,7 @@ public class ProActiveResourceBrokerAdaptor extends ResourceBrokerCpi
                     }
                 }
 
-                int n = availableNodes;
+                int n = nodeSet.size();
                 if (n > nNodes) {
                     n = nNodes;
                 }
@@ -452,11 +442,12 @@ public class ProActiveResourceBrokerAdaptor extends ResourceBrokerCpi
             }
             try {
                 job.startJob(nodes);
+                logger.info("Adding " + nodes.length + " nodes to job " + job);
             } catch(Throwable e) {
                 logger.warn("startJob threw exception: ", e);
             }
             
-            synchronized(this) {
+            synchronized(nodeSet) {
                 if (job.getNumNodes() == 0) {
                     jobList.remove(0);
                 }
