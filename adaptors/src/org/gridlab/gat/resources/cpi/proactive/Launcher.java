@@ -3,6 +3,7 @@ package org.gridlab.gat.resources.cpi.proactive;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 
 import org.apache.log4j.Logger;
 import org.objectweb.proactive.Body;
@@ -77,7 +78,7 @@ public class Launcher implements Serializable, RunActive {
             }
         }
 
-        public synchronized void terminate() {
+        public void terminate() {
             // Wait a while, to give ProActive the time to collect the
             // latest output.
             try {
@@ -191,17 +192,20 @@ public class Launcher implements Serializable, RunActive {
             }
             stdout.terminate();
             stderr.terminate();
-            for (;;) {
+            synchronized(jobs) {
+                jobs.remove(jobID);
+            }
+            for (int i = 0; i < 4; i++) {
                 try {
                     jobWatcher.finishedJob(jobID, eval);
                     return;
                 } catch(Throwable e) {
-                    // sleep and try again.
-                    try {
-                        sleep(5000);
-                    } catch(Exception e2) {
-                        // ignored
-                    }
+                    // ignored
+                }
+                try {
+                    sleep(5000);
+                } catch(Exception e2) {
+                    // ignored
                 }
             }
         }
@@ -355,13 +359,22 @@ public class Launcher implements Serializable, RunActive {
     }
 
     /**
-     * Termination.
+     * Termination. Synchronous method.
      */
-    public void terminate() {
+    public int terminate() {
+        synchronized(jobs) {
+            for (Iterator i = jobs.keySet().iterator(); i.hasNext();) {
+                Watcher w = (Watcher) jobs.get(i.next());
+                if (w != null) {
+                    w.jvm.stopProcess();
+                }
+            }
+        }
         try {
             ProActive.getBodyOnThis().terminate();
         } catch(Exception e) {
             // ignored
         }
+        return 0;
     }
 }

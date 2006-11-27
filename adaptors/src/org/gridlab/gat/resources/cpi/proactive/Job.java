@@ -41,7 +41,7 @@ import org.objectweb.proactive.filetransfer.FileVector;
 public class Job extends JobCpi {
     static final int MAXTHREADS = TypedProperties.intProperty(
             "JavaGat.ProActive.Launch.Parallel", 1);
- 
+
     /** Counter for generating job identifications. */
     private static int jobCounter;
 
@@ -119,6 +119,9 @@ public class Job extends JobCpi {
     /** Handler for standard input. */
     private InputHandler inputHandler;
 
+    /** Input handler started? */
+    private boolean inputHandlerStarted = false;
+
     /** Must be set when the application needs standard input. */
     private boolean needsStdin = false;
 
@@ -154,6 +157,9 @@ public class Job extends JobCpi {
     class InputHandler extends Thread {
         private boolean done = false;
         private BufferedReader inputReader;
+        ArrayList messages = new ArrayList();
+        NodeInfo[] currentNodes;
+        int lastSize = 0;
 
         InputHandler(BufferedReader reader) {
             inputReader = reader;
@@ -183,26 +189,43 @@ public class Job extends JobCpi {
             } catch(Exception e) {
                 // ignored
             }
-            notifyAll();
+        }
+
+        private synchronized void addMessage(String input) {
+            for (int i = 0; i < currentNodes.length; i++) {
+                // TODO: make this multithreaded?
+                NodeInfo node = currentNodes[i];
+                synchronized(node) {
+                    node.launcher.provideInput(node.getInstanceID(), input);
+                }
+            }
+            messages.add(input);
+        }
+
+        public synchronized void addedNodes() {
+            currentNodes = (NodeInfo[]) nodes.toArray(new NodeInfo[0]);
+            for (int i = lastSize; i < currentNodes.length; i++) {
+                NodeInfo node = currentNodes[i];
+                for (int j = 0; j < messages.size(); j++) {
+                    String m = (String) messages.get(j);
+                    synchronized(node) {
+                        node.launcher.provideInput(node.getInstanceID(), m);
+                    }
+                }
+            }
+            lastSize = currentNodes.length;
         }
 
         public void run() {
+            // Save all input in case nodes are added.
+            boolean newInput = false;
             for (;;) {
                 String input = getInput();
-                if (input == null) {
-                    done = true;
-                }
-                for (int i = 0; i < nodes.size(); i++) {
-                    // TODO: make this multithreaded?
-                    NodeInfo node = (NodeInfo) nodes.get(i);
-                    synchronized(node) {
-                        if (jobID.equals(node.getJobID())) {
-                            node.launcher.provideInput(node.getInstanceID(),
-                                    input);
-                        }
-                    }
-                }
                 synchronized(this) {
+                    if (input == null) {
+                        done = true;
+                    }
+                    addMessage(input);
                     if (done) {
                         return;
                     }
@@ -224,7 +247,7 @@ public class Job extends JobCpi {
     public Job(GATContext gatContext, Preferences preferences,
             JobDescription jobDescription,
             ProActiveResourceBrokerAdaptor broker)
-            throws GATInvocationException {
+        throws GATInvocationException {
 
         // No sandbox, we don't know the node(s) yet.
         super(gatContext, preferences, jobDescription, null);
@@ -253,7 +276,7 @@ public class Job extends JobCpi {
         HashMap returnDef = new HashMap();
         returnDef.put("status", String.class);
         statusMetricDefinition = new MetricDefinition("job.status",
-            MetricDefinition.DISCRETE, "String", null, null, returnDef);
+                MetricDefinition.DISCRETE, "String", null, null, returnDef);
         GATEngine.registerMetric(this, "getJobStatus", statusMetricDefinition);
         statusMetric = statusMetricDefinition.createMetric(null);
 
@@ -270,7 +293,7 @@ public class Job extends JobCpi {
         }
 
         className = executable.getSchemeSpecificPart();
- 
+
         File stdout = soft.getStdout();
         if (stdout != null) {
             try {
@@ -336,7 +359,7 @@ public class Job extends JobCpi {
         for (Iterator i = environment.entrySet().iterator(); i.hasNext();) {
             Map.Entry e = (Map.Entry) i.next();
             jvmArgs = jvmArgs + " -D" + (String) e.getKey() + "="
-                    + (String) e.getValue();
+                + (String) e.getValue();
         }
 
         Map attributes;
@@ -349,7 +372,7 @@ public class Job extends JobCpi {
                     Integer minMem = (Integer) attributes.get(key);
                     if (minMem != null) {
                         jvmArgs = jvmArgs + " -Xms" + minMem.intValue()
-                                + "M";
+                            + "M";
                     }
                 } else if (key.equalsIgnoreCase("maxMemory")) {
                     Integer maxMem = (Integer) attributes.get(key);
@@ -389,7 +412,7 @@ public class Job extends JobCpi {
      * Returns the number of nodes still required to run this job.
      * @return the number of nodes required.
      */
-    synchronized int getNumNodes() {
+    int getNumNodes() {
         if (nNodes == nodes.size()) {
             return 0;
         }
@@ -409,9 +432,9 @@ public class Job extends JobCpi {
             Map preStageFiles = soft.getPreStaged();
             if (preStageFiles != null && preStageFiles.size() != 0) {
                 java.io.File[] srcFiles
-                        = new java.io.File[preStageFiles.size()];
+                    = new java.io.File[preStageFiles.size()];
                 java.io.File[] dstFiles
-                        = new java.io.File[preStageFiles.size()];
+                    = new java.io.File[preStageFiles.size()];
                 int index = 0;
                 for (Iterator i = preStageFiles.entrySet().iterator();
                         i.hasNext();) {
@@ -425,10 +448,10 @@ public class Job extends JobCpi {
                         dstFiles[index] = new java.io.File(val);
                     }
                     index++;
-                }
+                        }
                 try {
                     FileTransfer.pushFiles(node.node, srcFiles, dstFiles)
-                            .waitForAll();
+                        .waitForAll();
                 } catch(Exception e) {
                     throw new GATInvocationException("preStage copy failed", e);
                 }
@@ -456,7 +479,7 @@ public class Job extends JobCpi {
         // Check of number of nodes makes sense.
         if (nodes.size() + newNodes.length > nNodes) {
             submissionError(
-                new GATInvocationException("Wrong number of nodes allocated"));
+                    new GATInvocationException("Wrong number of nodes allocated"));
             return;
         }
 
@@ -485,8 +508,6 @@ public class Job extends JobCpi {
 
         boolean failed = false;
 
-        int start = nodes.size();
-
         StringWrapper[] results = new StringWrapper[newNodes.length];
 
         Threader threader = Threader.createThreader(MAXTHREADS);
@@ -495,7 +516,6 @@ public class Job extends JobCpi {
             final NodeInfo node = newNodes[i];
             final String id = getNewID();
             node.watcher.addJob(id, this);
-            nodes.add(node);
             node.setID(jobID, id);
             threader.submit(new LauncherThread(results, i, node, id));
         }
@@ -507,19 +527,22 @@ public class Job extends JobCpi {
             // it does not really matter if a launch fails so the run
             // continues.
             for (int i = 0; i < newNodes.length; i++) {
+                NodeInfo node = newNodes[i];
                 String id = newNodes[i].getInstanceID();
-                NodeInfo node = (NodeInfo) nodes.get(start);
                 if (results[i].stringValue() == null) {
-                    nodes.remove(start);
                     node.watcher.removeJob(id);
                     node.release(true);
                 } else {
-                    start++;
+                    nodes.add(node);
                     id2Node.put(id, node);
                 }
             }
-            if (start > 0 && inputHandler != null && ! inputHandler.isAlive()) {
-                inputHandler.start();
+            if (nodes.size() > 0 && inputHandler != null) {
+                if (! inputHandlerStarted) {
+                    inputHandlerStarted = true;
+                    inputHandler.start();
+                }
+                inputHandler.addedNodes();
             }
         } else {
             boolean failure = false;
@@ -533,7 +556,6 @@ public class Job extends JobCpi {
                 for (int i = 0; i < newNodes.length; i++) {
                     NodeInfo node = newNodes[i];
                     String id = node.getInstanceID();
-                    nodes.remove(0);
                     node.watcher.removeJob(id);
                     if (results[i] == null
                             || results[i].stringValue() == null) {
@@ -548,9 +570,14 @@ public class Job extends JobCpi {
             } else {
                 for (int i = 0; i < newNodes.length; i++) {
                     id2Node.put(newNodes[i].getInstanceID(), newNodes[i]);
+                    nodes.add(newNodes[i]);
                 }
-                if (inputHandler != null && ! inputHandler.isAlive()) {
-                    inputHandler.start();
+                if (inputHandler != null) {
+                    if (! inputHandlerStarted) {
+                        inputHandler.start();
+                        inputHandlerStarted = true;
+                    }
+                    inputHandler.addedNodes();
                 }
             }
         }
@@ -592,17 +619,15 @@ public class Job extends JobCpi {
     public void stop() {
         for (int i = 0; i < nodes.size(); i++) {
             NodeInfo node = (NodeInfo) nodes.get(i);
-            if (jobID.equals(node.getJobID())) {
-                try {
-                    synchronized(node) {
-                        node.launcher.stopJob(node.getInstanceID());
-                    }
-                } catch(Exception e) {
-                    // Ignored, continue with other nodes.
-                    // Probably does not happen anyway, because the stopJob
-                    // method is asynchronous and void, so there is no
-                    // result.
+            try {
+                synchronized(node) {
+                    node.launcher.stopJob(node.getInstanceID());
                 }
+            } catch(Exception e) {
+                // Ignored, continue with other nodes.
+                // Probably does not happen anyway, because the stopJob
+                // method is asynchronous and void, so there is no
+                // result.
             }
         }
     }
@@ -666,7 +691,7 @@ public class Job extends JobCpi {
                         dstFiles[index] = new java.io.File(val);
                     }
                     index++;
-                }
+                        }
                 final FileVector fileVector
                     = FileTransfer.pullFiles(node.node, srcFiles, dstFiles);
                 // Spawn thread that waits for the filetransfer to complete
@@ -682,7 +707,7 @@ public class Job extends JobCpi {
                 t.start();
             } catch(Exception e) {
                 postStageException
-                        = new GATInvocationException("Failed postStage", e);
+                    = new GATInvocationException("Failed postStage", e);
             }
         }
     }

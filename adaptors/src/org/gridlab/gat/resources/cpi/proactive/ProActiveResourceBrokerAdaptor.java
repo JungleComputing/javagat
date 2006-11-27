@@ -301,10 +301,12 @@ public class ProActiveResourceBrokerAdaptor extends ResourceBrokerCpi
                     public void run() {
                         logger.info("Sending terminate to node "
                                 + nodeInfo.hostName);
-                        try {
-                            nodeInfo.launcher.terminate();
-                        } catch(Throwable ex) {
-                            // ignored
+                        synchronized(nodeInfo) {
+                            try {
+                                nodeInfo.launcher.terminate();
+                            } catch(Throwable ex) {
+                                // ignored
+                            }
                         }
                     }
                 });
