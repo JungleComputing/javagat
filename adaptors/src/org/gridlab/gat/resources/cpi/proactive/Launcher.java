@@ -77,7 +77,7 @@ public class Launcher implements Serializable, RunActive {
             }
         }
 
-        public void terminate() {
+        public synchronized void terminate() {
             // Wait a while, to give ProActive the time to collect the
             // latest output.
             try {
