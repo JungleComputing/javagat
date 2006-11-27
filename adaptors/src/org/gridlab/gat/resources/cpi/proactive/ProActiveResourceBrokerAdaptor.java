@@ -60,7 +60,7 @@ public class ProActiveResourceBrokerAdaptor extends ResourceBrokerCpi
 
     /** Logger. */
     static final Logger logger
-        = ibis.util.GetLogger.getLogger(ProActiveResourceBrokerAdaptor.class);
+        = Logger.getLogger(ProActiveResourceBrokerAdaptor.class);
 
     /**
      * A runnable for deployment, since the multithreading deployment in

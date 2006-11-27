@@ -29,8 +29,7 @@ public class Launcher implements Serializable, RunActive {
     private HashMap jobs = new HashMap();
 
     /** For debugging and error messages. */
-    private final Logger logger
-            = ibis.util.GetLogger.getLogger(Launcher.class);
+    private final Logger logger = Logger.getLogger(Launcher.class);
 
     /** For making callbacks to maintain job administration. */
     final JobWatcher jobWatcher;
