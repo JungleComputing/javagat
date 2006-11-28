@@ -53,8 +53,8 @@ class GrabberThread extends Thread {
                 // parallel? It seems to corrupt the node information when
                 // processing multiple ProActive descriptors simultaneously.
                 pad = ProActive.getProactiveDescriptor(descriptor);
-                pad.activateMappings();
                 if (virtualNodeName != null) {
+                    pad.activateMapping(virtualNodeName);
                     ProActiveResourceBrokerAdaptor.logger.info(
                             "virtualNodeName = " + virtualNodeName);
                     VirtualNode vn = pad.getVirtualNode(virtualNodeName);
@@ -63,6 +63,7 @@ class GrabberThread extends Thread {
                         nodes.add(crtNodes[i]);
                     }
                 } else {
+                    pad.activateMappings();
                     VirtualNode[] vns = pad.getVirtualNodes();
                     for (int i = 0; i < vns.length; i++) {
                         Node[] crtNodes = vns[i].getNodes();
