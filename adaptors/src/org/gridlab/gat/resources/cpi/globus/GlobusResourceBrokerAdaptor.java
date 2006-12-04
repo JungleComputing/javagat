@@ -116,7 +116,7 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
         Map env = sd.getEnvironment();
         if (env != null && !env.isEmpty()) {
             Set s = env.keySet();
-            String[] keys = (String[]) s.toArray();
+            Object[] keys = (Object[]) s.toArray();
             rsl += "(environment = ";
 
             for (int i = 0; i < keys.length; i++) {
