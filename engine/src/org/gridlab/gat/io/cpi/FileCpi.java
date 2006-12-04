@@ -113,7 +113,13 @@ public abstract class FileCpi implements FileInterface {
         copy(destination);
 
         // Step 2: Delete the original file
-        delete();
+        // We create a new File object for this, as it might need a different adaptor.
+        try {
+            File f = GAT.createFile(gatContext, preferences, location);
+            f.delete();
+        } catch (Exception e) {
+            throw new GATInvocationException("delete failed", e);
+        }
 
         // This is not correct: files are immutable. --Rob
         // Step 3: Update location
