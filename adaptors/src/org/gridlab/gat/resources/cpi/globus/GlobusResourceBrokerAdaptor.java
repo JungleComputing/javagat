@@ -121,7 +121,7 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
 
             for (int i = 0; i < keys.length; i++) {
                 String val = (String) env.get(keys[i]);
-                rsl += "(" + keys[i] + "\"" + val + "\")";
+                rsl += "(" + keys[i] + " \"" + val + "\")";
             }
             rsl += ")";
         }
