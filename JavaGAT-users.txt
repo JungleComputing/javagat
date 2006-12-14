@@ -34,5 +34,7 @@ In many cases we don't exactly know what JavaGAT is used for.
 
 - INRIA, France (Mario Leyton)
 
+- The TextGrid project: http://www.textgrid.de (Frank Knoll)
+
 - ...
 
