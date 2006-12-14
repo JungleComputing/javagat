@@ -70,7 +70,8 @@ public class Job extends JobCpi {
     private String classPath = null;
 
     /** The broker that submitted this job. */
-    private ProActiveResourceBrokerAdaptor broker;
+// unused --Rob
+    //    private ProActiveResourceBrokerAdaptor broker;
 
     /** Number of nodes on which to run. */
     private int nNodes = 1;
@@ -218,7 +219,7 @@ public class Job extends JobCpi {
 
         public void run() {
             // Save all input in case nodes are added.
-            boolean newInput = false;
+//            boolean newInput = false; // not used --Rob
             for (;;) {
                 String input = getInput();
                 synchronized(this) {
@@ -251,7 +252,7 @@ public class Job extends JobCpi {
 
         // No sandbox, we don't know the node(s) yet.
         super(gatContext, preferences, jobDescription, null);
-        this.broker = broker;
+//        this.broker = broker;
 
         if (preferences.get("ResourceBroker.ProActive.noSandbox") != null) {
             wantsSandbox = false;
@@ -506,7 +507,7 @@ public class Job extends JobCpi {
 
         // Launch jobs, asynchronously.
 
-        boolean failed = false;
+//        boolean failed = false; // not used --Rob
 
         StringWrapper[] results = new StringWrapper[newNodes.length];
 
