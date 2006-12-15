@@ -21,7 +21,7 @@
         <mkdir dir="${lib}" />
 
         <!-- Compile the java code from ${src} into ${tmp} -->
-        <javac srcdir="${src}" destdir="${tmp}" debug="on">
+        <javac source="1.4" srcdir="${src}" destdir="${tmp}" debug="on">
             <classpath refid="external_jars" />
         </javac>
 

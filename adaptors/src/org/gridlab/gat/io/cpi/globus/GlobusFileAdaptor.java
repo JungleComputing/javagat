@@ -88,6 +88,7 @@ public abstract class GlobusFileAdaptor extends FileCpi {
 
     static protected boolean isPassive(Preferences preferences) {
         boolean passive;
+
         String tmp = (String) preferences.get("ftp.connection.passive");
 
         if ((tmp != null) && tmp.equalsIgnoreCase("false")) {
@@ -141,7 +142,7 @@ public abstract class GlobusFileAdaptor extends FileCpi {
         // is a directory. This is needed, because the source might be a local
         // file, and gridftp might not be installed locally.
         // This goes wrong for local -> remote copies.
-        if(determineIsDirectory()) {
+        if (determineIsDirectory()) {
             copyDirectory(gatContext, preferences, toURI(), dest);
             return;
         }
@@ -185,7 +186,7 @@ public abstract class GlobusFileAdaptor extends FileCpi {
         FTPClient srcClient = null;
         FTPClient destClient = null;
         File tmpFile = null;
-        
+
         try {
             srcClient = createClient(gatContext, p2, src);
             destClient = createClient(gatContext, p2, dest);
@@ -205,11 +206,13 @@ public abstract class GlobusFileAdaptor extends FileCpi {
                 java.io.File tmp = null;
                 tmp = java.io.File.createTempFile("GATgridFTP", ".tmp");
                 URI u = new URI("any:///" + tmp.getPath());
-                if(GATEngine.DEBUG) {
-                	System.err.println("thirdparty copy failed, using temp file: " + u);
+                if (GATEngine.DEBUG) {
+                    System.err
+                        .println("thirdparty copy failed, using temp file: "
+                            + u);
                 }
                 tmpFile = GAT.createFile(gatContext, preferences, u);
-                
+
                 copyToLocal(src, u);
                 tmpFile.copy(dest);
             } catch (Exception e2) {
@@ -222,12 +225,12 @@ public abstract class GlobusFileAdaptor extends FileCpi {
         } finally {
             if (srcClient != null) destroyClient(srcClient, src, p2);
             if (destClient != null) destroyClient(destClient, dest, p2);
-            if(tmpFile != null) {
-            	try {
-            		tmpFile.delete();
-            	} catch (Exception e) {
-            		// ignore
-            	}
+            if (tmpFile != null) {
+                try {
+                    tmpFile.delete();
+                } catch (Exception e) {
+                    // ignore
+                }
             }
         }
     }
@@ -764,7 +767,7 @@ public abstract class GlobusFileAdaptor extends FileCpi {
         if (isPassive(preferences)) {
             if (GATEngine.DEBUG) {
                 System.err
-                    .println("gridftp: using local active / remote passive");
+                    .println("gridftp: using local active / remote PASSIVE");
             }
 
             /** Assume the local host is behind a firewall */
@@ -772,18 +775,19 @@ public abstract class GlobusFileAdaptor extends FileCpi {
                 c.setPassive();
                 c.setLocalActive();
             } catch (Exception e) {
-                throw new GATInvocationException("ftp", e);
+                throw new GATInvocationException("globus", e);
             }
         } else {
             if (GATEngine.DEBUG) {
                 System.err
-                    .println("gridftp: using local passive / remote active");
+                    .println("gridftp: using local passive / remote ACTIVE");
             }
+
             try {
                 c.setLocalPassive();
                 c.setActive();
             } catch (Exception e) {
-                throw new GATInvocationException("ftp", e);
+                throw new GATInvocationException("globus", e);
             }
         }
     }

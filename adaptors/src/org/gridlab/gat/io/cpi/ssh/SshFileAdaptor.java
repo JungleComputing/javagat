@@ -2383,7 +2383,7 @@ public class SshFileAdaptor extends FileCpi {
 
     public boolean renameTo(org.gridlab.gat.io.File arg0)
             throws GATInvocationException {
-        URI destination = arg0.toURI();
+        URI destination = arg0.toGATURI();
 
         if (GATEngine.DEBUG) {
             System.err.println("SshFileAdaptor: trying to rename " + location

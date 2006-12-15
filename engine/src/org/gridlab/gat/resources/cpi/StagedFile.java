@@ -48,7 +48,7 @@ public abstract class StagedFile {
     /** Creates a file object that points to the sandbox. */
     protected File resolve(File f, boolean useNameOnly)
         throws GATInvocationException {
-        URI uri = f.toURI();
+        URI uri = f.toGATURI();
 
         String relativeDest = null;
         String dest = "any://";

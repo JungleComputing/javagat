@@ -78,7 +78,7 @@ public class PreStagedFile extends StagedFile {
             resolvedDest.mkdirs();
         } else {
             // src is a file, dest is also a file.
-            File dir = resolvedDest.getParentFile();
+            File dir = (File) resolvedDest.getParentFile();
             if(dir != null) {
                 if(GATEngine.VERBOSE) {
                     System.err.println("creating dir: " + dir);
@@ -87,7 +87,7 @@ public class PreStagedFile extends StagedFile {
             }
         }
             
-        resolvedSrc.copy(resolvedDest.toURI());
+        resolvedSrc.copy(resolvedDest.toGATURI());
     }
 
     protected void delete(boolean onlySandbox) throws GATInvocationException {

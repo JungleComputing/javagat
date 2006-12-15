@@ -1,10 +1,11 @@
 package file;
 
+import java.io.File;
+
 import org.gridlab.gat.GAT;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.Preferences;
 import org.gridlab.gat.URI;
-import org.gridlab.gat.io.File;
 
 class ListFiles {
     public static void main(String[] args) {
