@@ -44,7 +44,8 @@ public class SubmitJobGlobus implements MetricListener {
         GATContext context = new GATContext();
         Preferences prefs = new Preferences();
         prefs.put("ResourceBroker.adaptor.name", "Globus");
-
+        prefs.put("useGramSandbox", "true");
+        
         File outFile = GAT.createFile(context, prefs,
             new URI("any:///out"));
         File errFile = GAT.createFile(context, prefs,
