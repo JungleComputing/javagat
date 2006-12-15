@@ -35,7 +35,7 @@ public class LocalFileAdaptor extends FileCpi {
 
         if (!location.refersToLocalHost()) {
             throw new AdaptorNotApplicableException(
-                "Cannot use remote files with the local file adaptor");
+                "Cannot use remote files with the local file adaptor, URI is: " + location);
         }
 
         if (!location.isCompatible("file")) {

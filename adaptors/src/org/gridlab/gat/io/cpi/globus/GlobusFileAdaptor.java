@@ -306,7 +306,7 @@ public abstract class GlobusFileAdaptor extends FileCpi {
             if (client != null) destroyClient(client, toURI(), preferences);
         }
     }
-
+    
     public boolean delete() throws GATInvocationException {
         FTPClient client = null;
 
@@ -314,6 +314,10 @@ public abstract class GlobusFileAdaptor extends FileCpi {
             String remotePath = getPath();
             client = createClient(toURI());
 
+            if(!client.exists(remotePath)) {
+                return false;
+            }
+            
             if (isDirectory()) {
                 client.deleteDir(remotePath);
             } else {
@@ -390,7 +394,8 @@ public abstract class GlobusFileAdaptor extends FileCpi {
 
     public File[] listFiles() throws GATInvocationException {
         FTPClient client = null;
-
+        String CWD = null;
+        
         try {
             if (!isDirectory()) {
                 return null;
@@ -398,6 +403,7 @@ public abstract class GlobusFileAdaptor extends FileCpi {
             String remotePath = getPath();
 
             client = createClient(toURI());
+            CWD = client.getCurrentDir();
 
             if (!remotePath.equals("")) {
                 client.changeDir(remotePath);
@@ -435,6 +441,13 @@ public abstract class GlobusFileAdaptor extends FileCpi {
             throw new GATInvocationException("gridftp", e);
         } finally {
             if (client != null) {
+                if(CWD != null) {
+                    try {
+                        client.changeDir(CWD);
+                    } catch (Exception e) {
+                        // ignore
+                    }
+                }
                 destroyClient(client, toURI(), preferences);
             }
         }
@@ -579,7 +592,13 @@ public abstract class GlobusFileAdaptor extends FileCpi {
             }
 
             // it can also be a link, so continue with slow method            
-        } catch (Exception e) {
+        } catch (GATInvocationException e) {
+            if(e.getMessage().equals("File not found")) {
+                if(GATEngine.DEBUG) {
+                    System.err.println("file not found in isDirectory");
+                }
+                throw e;
+            }
             if (GATEngine.DEBUG) {
                 System.err
                     .println("fast isDirectory failed, falling back to slower version: "

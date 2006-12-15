@@ -18,7 +18,7 @@ public class ListMetricDefinitions {
         System.err.println("found " + definitions.size() + " definitions");
 
         for (int i = 0; i < definitions.size(); i++) {
-            System.err.println(definitions.get(i));
+            System.out.println(definitions.get(i));
         }
     }
 }

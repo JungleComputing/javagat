@@ -35,15 +35,14 @@ public class PreStagedFile extends StagedFile {
 
         if (origDest != null) { // already set manually
             if (origDest.isAbsolute()) {
-                resolvedDest = origDest;
                 inSandbox = false;
             } else {
-                resolvedDest = resolve(origDest, false);
                 inSandbox = true;
             }
+            resolvedDest = resolve(origDest, false);
         } else {
-            resolvedDest = resolve(origSrc, true);
             inSandbox = true;
+            resolvedDest = resolve(origSrc, true);
         }
 
         if(inSandbox) {
@@ -70,6 +69,24 @@ public class PreStagedFile extends StagedFile {
                 + resolvedDest.toURI());
         }
 
+        // create any directories if needed.
+        if(resolvedSrc.isDirectory()) {
+            // dest is also a dir, create it.
+            if(GATEngine.VERBOSE) {
+                System.err.println("creating dir: " + resolvedDest);
+            }
+            resolvedDest.mkdirs();
+        } else {
+            // src is a file, dest is also a file.
+            File dir = (File) resolvedDest.getParentFile();
+            if(dir != null) {
+                if(GATEngine.VERBOSE) {
+                    System.err.println("creating dir: " + dir);
+                }
+                dir.mkdirs();
+            }
+        }
+            
         resolvedSrc.copy(resolvedDest.toGATURI());
     }
 
@@ -94,7 +111,6 @@ public class PreStagedFile extends StagedFile {
 
     public String toString() {
         return "PreStaged: " + resolvedSrc.toURI() + " -> " + resolvedDest.toURI()
-            + (isStdIn ? " (STDIN)" : "") + (isExecutable ? " (EXE)" : "");
+            + (isStdIn ? " (STDIN)" : "") + (isExecutable ? " (EXE)" : "") + (inSandbox ? " (IN SANDBOX)" : " (OUTSIDE SANDBOX)");
     }
-
 }

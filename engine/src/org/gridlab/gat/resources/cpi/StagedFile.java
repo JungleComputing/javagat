@@ -9,6 +9,7 @@ import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.GATObjectCreationException;
 import org.gridlab.gat.Preferences;
 import org.gridlab.gat.URI;
+import org.gridlab.gat.engine.GATEngine;
 import org.gridlab.gat.io.File;
 import org.gridlab.gat.io.FileOutputStream;
 
@@ -47,20 +48,26 @@ public abstract class StagedFile {
     /** Creates a file object that points to the sandbox. */
     protected File resolve(File f, boolean useNameOnly)
         throws GATInvocationException {
-        if (!useNameOnly && f.isAbsolute()) {
-            relativeURI = f.toGATURI();
-            return f;
-        }
-
         URI uri = f.toGATURI();
 
         String relativeDest = null;
         String dest = "any://";
         dest += (uri.getUserInfo() == null) ? "" : uri.getUserInfo();
-        dest += host;
+        
+        String origHost = f.toURI().getHost();
+        if(useNameOnly || origHost == null) {
+            dest += host;
+        } else {
+            dest += origHost;
+        }
+        
         dest += (uri.getPort() == -1) ? "" : (":" + uri.getPort());
         dest += "/";
-        dest += sandbox == null ? "" : sandbox + "/";
+        
+        if(inSandbox) {
+            dest += sandbox == null ? "" : sandbox + "/";
+        }
+        
         if (useNameOnly) {
             java.io.File tmp = new java.io.File(uri.getPath());
             dest += tmp.getName();
@@ -81,6 +88,13 @@ public abstract class StagedFile {
     }
 
     protected void wipe(File f) throws GATInvocationException {
+        if(!f.exists()) {
+            if(GATEngine.DEBUG) {
+                System.err.println("file to wipe does not exists.");
+            }
+            return;
+        }
+        
         long size = f.length();
 
         FileOutputStream out = null;

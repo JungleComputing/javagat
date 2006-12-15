@@ -151,7 +151,6 @@ public class PostStagedFileSet {
         if (exceptions.getNrChildren() != 0) {
             throw exceptions;
         }
-
     }
 
     public void delete(boolean deleteFilesInSandbox)

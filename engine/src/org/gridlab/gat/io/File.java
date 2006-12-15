@@ -244,7 +244,7 @@ public class File extends java.io.File implements Monitorable, Serializable, Adv
     }
 
     /**
-     * @return
+     * @return the parent file
      * @see java.io.File#getParentFile()
      */
     public java.io.File getParentFile() {

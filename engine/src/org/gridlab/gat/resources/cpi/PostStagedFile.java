@@ -29,14 +29,11 @@ public class PostStagedFile extends StagedFile {
      * Src cannot be null, dest can be. */
     private void resolve() throws GATInvocationException {
         if (origSrc.isAbsolute()) {
-            // ok, keep it
-            resolvedSrc = origSrc;
             inSandbox = false;
         } else {
-            // in sandbox
-            resolvedSrc = resolve(origSrc, false);
             inSandbox = true;
         }
+        resolvedSrc = resolve(origSrc, false);
 
         String dir = System.getProperty("user.dir");
         if (dir == null) {
@@ -48,9 +45,7 @@ public class PostStagedFile extends StagedFile {
             try {
                 URI resolvedDestURI =
                         new URI("any:///" + dir + "/" + origSrc.getName());
-                resolvedDest =
-                        GAT
-                            .createFile(gatContext, preferences,
+                resolvedDest = GAT.createFile(gatContext, preferences,
                                 resolvedDestURI);
             } catch (Exception e) {
                 throw new GATInvocationException("poststagedFile", e);
@@ -61,12 +56,15 @@ public class PostStagedFile extends StagedFile {
             } else {
                 // file with same name in CWD
                 try {
-                    URI resolvedDestURI =
-                            new URI("any:///" + dir + "/" + origSrc.getPath());
-                    resolvedDest =
-                            GAT
-                                .createFile(gatContext, preferences,
-                                    resolvedDestURI);
+                    String destURIString = "any://";
+                    if(origDest.toURI().getHost() == null) {
+                        destURIString += "/" + dir + "/";
+                    } else {
+                        destURIString += origDest.toURI().getHost() + "/";
+                    }
+                    
+                    destURIString += origDest.getPath();
+                    resolvedDest = GAT.createFile(gatContext, preferences, new URI(destURIString));
                 } catch (Exception e) {
                     throw new GATInvocationException("poststagedFile", e);
                 }
@@ -109,6 +107,6 @@ public class PostStagedFile extends StagedFile {
                 resolvedDest == null ? "" : resolvedDest.toURI().toString();
 
         return "PostStaged: " + srcURI + " -> " + destURI
-            + (isStdout ? " (STDOUT)" : "") + (isStderr ? " (STDERR)" : "");
+            + (isStdout ? " (STDOUT)" : "") + (isStderr ? " (STDERR)" : "") + (inSandbox ? " (IN SANDBOX)" : " (OUTSIDE SANDBOX)");
     }
 }
