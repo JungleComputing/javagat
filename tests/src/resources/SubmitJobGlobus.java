@@ -25,8 +25,15 @@ import org.gridlab.gat.resources.SoftwareDescription;
  * @author rob
  */
 public class SubmitJobGlobus implements MetricListener {
-    public static void main(String[] args) throws Exception {
-        new SubmitJobGlobus().start(args);
+    public static void main(String[] args) {
+        try {
+            new SubmitJobGlobus().start(args);
+        } catch (Exception e) {
+            System.err.println("error: " + e);
+            e.printStackTrace();
+        } finally {
+            GAT.end();
+        }
     }
 
     public synchronized void processMetricEvent(MetricValue val) {
@@ -42,12 +49,19 @@ public class SubmitJobGlobus implements MetricListener {
             new URI("any:///out"));
         File errFile = GAT.createFile(context, prefs,
             new URI("any:///err"));
+        File stageInFile = GAT.createFile(context, prefs, new URI(
+        "any:////bin/echo"));
+
+        File stageOutFile = GAT.createFile(context, prefs, new URI(
+        "echo"));
 
         SoftwareDescription sd = new SoftwareDescription();
         sd.setLocation(new URI(args[0]));
         sd.setStdout(outFile);
         sd.setStderr(errFile);
-
+        sd.addPreStagedFile(stageInFile);
+        sd.addPostStagedFile(stageOutFile);
+        
         Hashtable hardwareAttributes = new Hashtable();
         hardwareAttributes.put("machine.node", "fs0.das2.cs.vu.nl");
 
@@ -71,7 +85,5 @@ public class SubmitJobGlobus implements MetricListener {
 
         System.err.println("SubmitJobCallback: Job finished, state = "
             + job.getInfo());
-        
-        GAT.end();
     }
 }

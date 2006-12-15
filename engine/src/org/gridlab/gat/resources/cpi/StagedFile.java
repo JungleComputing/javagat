@@ -54,7 +54,7 @@ public abstract class StagedFile {
         String dest = "any://";
         dest += (uri.getUserInfo() == null) ? "" : uri.getUserInfo();
         
-        String origHost = f.toURI().getHost();
+        String origHost = f.toGATURI().getHost();
         if(useNameOnly || origHost == null) {
             dest += host;
         } else {
@@ -131,5 +131,13 @@ public abstract class StagedFile {
                 }
             }
         }
+    }
+    
+    public File getResolvedSrc() {
+        return resolvedSrc;
+    }
+    
+    public File getResolvedDest() {
+        return resolvedDest;
     }
 }

@@ -84,7 +84,7 @@ public abstract class FileCpi implements FileInterface {
 
         org.gridlab.gat.io.File file = (org.gridlab.gat.io.File) object;
 
-        return location.equals(file.toURI());
+        return location.equals(file.toGATURI());
     }
 
     /**
@@ -163,7 +163,7 @@ public abstract class FileCpi implements FileInterface {
     }
 
     public int compareTo(org.gridlab.gat.io.File other) {
-        return location.compareTo(other.toURI());
+        return location.compareTo(other.toGATURI());
     }
 
     public int compareTo(Object other) {

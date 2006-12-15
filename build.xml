@@ -9,6 +9,10 @@
 		<ant dir="adaptors"/>
 		<ant dir="engine" target="javadoc"/>
 	</target>
+
+	<target name="tests" description="build the test programs">
+		<ant dir="tests"/>
+	</target>
 	
 	<target name="gridlab" depends="build" description="build the gridlab adaptors">
 		<ant dir="gridlabAdaptors"/>

@@ -202,6 +202,14 @@ public class PostStagedFileSet {
         return null;
     }
 
+    public int size() {
+        return files.size();
+    }
+    
+    public PostStagedFile getFile(int i) {
+        return (PostStagedFile) files.get(i);
+    }
+    
     public String toString() {
         String res = "";
         res += "PostStagedFileSet:\n";
