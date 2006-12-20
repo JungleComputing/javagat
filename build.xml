@@ -7,7 +7,7 @@
 		<ant dir="engine"/>
 		<ant dir="tests"/>
 		<ant dir="adaptors"/>
-		<ant dir="engine" target="javadoc"/>
+		<!-- <ant dir="engine" target="javadoc"/> -->
 	</target>
 	
 	<target name="gridlab" depends="build" description="build the gridlab adaptors">

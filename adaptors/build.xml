@@ -101,6 +101,12 @@
 			</manifest>
 		</jar>
 
+		<jar jarfile="${lib}/GlobusAdvertServiceAdaptor.jar" basedir="${tmp}" includes="**/advert/cpi/globus/*.class">
+			<manifest>
+				<attribute name="AdvertServiceCpi-class" value="org.gridlab.gat.advert.cpi.globus.GlobusAdvertServiceAdaptor" />
+			</manifest>
+		</jar>
+
 		<jar jarfile="${lib}/SshFileAdaptor.jar" basedir="${tmp}" includes="**/Ssh*.class,**/SSHSecurityUtils.class,com/jcraft/jsch/**">
 			<manifest>
 				<attribute name="FileCpi-class" value="org.gridlab.gat.io.cpi.ssh.SshFileAdaptor" />
