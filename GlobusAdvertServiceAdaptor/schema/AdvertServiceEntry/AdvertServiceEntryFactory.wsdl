@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions name="AdvertServiceEntryFactory"
+    targetNamespace="http://www.JavaGAT.org/namespaces/AdvertServiceEntry/AdvertServiceEntryFactoryService"
+    xmlns="http://schemas.xmlsoap.org/wsdl/"
+    xmlns:tns="http://www.JavaGAT.org/namespaces/AdvertServiceEntry/AdvertServiceEntryFactoryService"
+    xmlns:wsa="http://schemas.xmlsoap.org/ws/2004/03/addressing" 
+    xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+
+
+<!--============================================================
+
+                      T Y P E S
+                      
+  ============================================================-->
+<types>
+<xsd:schema targetNamespace="http://www.JavaGAT.org/namespaces/AdvertServiceEntry/AdvertServiceEntryFactoryService"
+    xmlns:tns="http://www.JavaGAT.org/namespaces/AdvertServiceEntry/AdvertServiceEntryFactoryService"
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+
+	<xsd:import
+	    namespace="http://schemas.xmlsoap.org/ws/2004/03/addressing"
+	    schemaLocation="../ws/addressing/WS-Addressing.xsd" />
+
+
+	<!-- REQUESTS AND RESPONSES -->
+        <xsd:complexType name="MetaDataType">
+          <xsd:sequence>
+            <xsd:element name="MetaDataEntry" minOccurs="0" maxOccurs="unbounded">
+              <xsd:complexType>
+                <xsd:sequence>
+                  <xsd:element name="Key" type="xsd:string"/>
+                  <xsd:element name="Value" type="xsd:string"/>
+                </xsd:sequence>
+              </xsd:complexType>
+            </xsd:element>
+          </xsd:sequence>
+        </xsd:complexType>
+
+	<xsd:element name="addAdvertServiceEntry">
+	  <xsd:complexType>
+	    <xsd:sequence>
+    	      <xsd:element name="path" type="xsd:string"/>
+              <xsd:element name="metaData" type="tns:MetaDataType"/>
+              <xsd:element name="serializedAdvertisable" type="xsd:base64Binary"/>
+    	    </xsd:sequence>
+	  </xsd:complexType>
+	</xsd:element>
+
+	<xsd:element name="addAdvertServiceEntryResponse">
+	  <xsd:complexType>
+	    <xsd:sequence>
+              <xsd:element ref="wsa:EndpointReference"/>
+	    </xsd:sequence>
+	  </xsd:complexType>
+	</xsd:element>
+        
+</xsd:schema>
+</types>
+
+<!--============================================================
+
+                       M E S S A G E S
+                      
+  ============================================================-->
+<message name="AddAdvertServiceEntryRequest">
+	<part name="request" element="tns:addAdvertServiceEntry"/>
+</message>
+<message name="AddAdvertServiceEntryResponse">
+	<part name="response" element="tns:addAdvertServiceEntryResponse"/>
+</message>
+
+<!--============================================================
+
+                       P O R T T Y P E
+                      
+  ============================================================-->
+<portType name="AdvertServiceEntryFactoryPortType">
+
+	<operation name="addAdvertServiceEntry">
+		<input message="tns:AddAdvertServiceEntryRequest"/>
+		<output message="tns:AddAdvertServiceEntryResponse"/>
+	</operation>
+
+</portType>
+
+</definitions>

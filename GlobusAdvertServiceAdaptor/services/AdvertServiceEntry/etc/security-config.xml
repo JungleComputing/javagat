@@ -1,0 +1,14 @@
+<securityConfig xmlns="http://www.globus.org">
+
+<authz value="none"/>
+
+<!-- Default for all methods -->
+<auth-method>
+    <GSITransport>
+      <protection-level>
+        <integrity/>
+      </protection-level>
+    </GSITransport>
+</auth-method>
+
+</securityConfig>
