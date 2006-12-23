@@ -55,17 +55,29 @@ import org.w3c.dom.NodeList;
 import org.w3c.dom.Text;
 
 import org.gridlab.gat.advert.MetaData;
+import org.gridlab.gat.Preferences;
 
 class IndexService
 {
-    private static final String serviceURI = "https://127.0.0.2:8443/wsrf/services/GAT/AdvertServiceEntryFactoryService";
-    private static final String indexURI = "https://127.0.0.2:8443/wsrf/services/DefaultIndexService";
+    private String serviceURI = "https://127.0.0.2:8443/wsrf/services/GAT/AdvertServiceEntryFactoryService";
+    private String indexURI   = "https://127.0.0.2:8443/wsrf/services/DefaultIndexService";
 
     static
     {
 	Util.registerTransport();
     }
     
+    public IndexService(Preferences prefs)
+    {
+	String serviceURI = (String)prefs.get("AdvertService.globus.serviceURI");
+	if(serviceURI != null)
+	    this.serviceURI = serviceURI;
+
+	String indexURI = (String)prefs.get("AdvertService.globus.indexURI");
+	if(indexURI != null)
+	    this.indexURI = indexURI;
+    }
+
     private MetaData toMetaData(MessageElement messageElement) throws Exception
     {
 	Node metaDataNode = messageElement.getAsDOM();
@@ -98,15 +110,10 @@ class IndexService
 	return str;
     }
 
-    public Entry get(String path) throws Exception
+    private Entry toEntry(EntryType entryType) throws Exception
     {
-	String xpathQuery = "//*[local-name()='Entry'][./*/*/*[local-name()='Path']/text()='" + path + "']";
-	EntryType[] entryTypes = queryIndexService(xpathQuery);
-	if(entryTypes.length != 1)
-	    return null;
-	
-	EntryType entryType = entryTypes[0];
-	Entry entry = new Entry();
+	String path = null;
+	MetaData metaData = null;
 	AggregatorContent content = (AggregatorContent) entryType.getContent();
 	AggregatorData data = content.getAggregatorData();
 	MessageElement[] dataEntries = data.get_any();
@@ -116,9 +123,9 @@ class IndexService
 		MessageElement messageElement = dataEntries[i];
 		String name = messageElement.getName();
 		if(name.equals("Path"))
-		    entry.path = messageElement.getValue();
+		    path = messageElement.getValue();
 		else if(name.equals("MetaData"))
-		    entry.metaData = toMetaData(messageElement);
+		    metaData = toMetaData(messageElement);
 		else if(name.equals("SerializedAdvertisable"))
 		    bytes.add(new Byte(messageElement.getValue()));
 	    }
@@ -128,13 +135,22 @@ class IndexService
 	for(int i=0;i<size;i++)
 	    serializedAdvertisable[i] = ((Byte)bytes.get(i)).byteValue();
 	
-	entry.serializedAdvertisable = new String(serializedAdvertisable);
-	return entry;
+	return new Entry(path, metaData, serializedAdvertisable);
+    }
+    
+    public Entry get(String path) throws Exception
+    {
+	String xpathQuery = "//*[local-name()='Entry'][./*/*/*[local-name()='Path']/text()='" + path + "']";
+	EntryType[] entryTypes = queryIndexService(xpathQuery);
+	if(entryTypes.length != 1)
+	    return null;
+	else
+	    return toEntry(entryTypes[0]);
     }
     
     private void update(Entry entry) throws Exception
     {
-	String xpathQuery = "//*[local-name()='Entry'][./*/*/*[local-name()='Path']/text()='" + entry.path + "']";
+	String xpathQuery = "//*[local-name()='Entry'][./*/*/*[local-name()='Path']/text()='" + entry.getPath() + "']";
 	EntryType[] entryTypes = queryIndexService(xpathQuery);
 	if(entryTypes.length == 0)
 	    throw new Exception("no entry for update");
@@ -164,8 +180,8 @@ class IndexService
 
 	try
 	    {
-		advertServiceEntry.setMetaData(MetaDataUtils.toAdvertServiceEntryServiceMetaDataType(entry.metaData));
-		advertServiceEntry.setSerializedAdvertisable(entry.serializedAdvertisable.getBytes());
+		advertServiceEntry.setMetaData(MetaDataUtils.toAdvertServiceEntryServiceMetaDataType(entry.getMetaData()));
+		advertServiceEntry.setSerializedAdvertisable(entry.getBytesOfSerializedAdvertisable());
 	    }
 	catch(RemoteException e)
 	    {
@@ -177,7 +193,7 @@ class IndexService
 
     public void put(Entry entry) throws Exception
     {
-	Entry oldEntry = get(entry.path);
+	Entry oldEntry = get(entry.getPath());
 	if(oldEntry != null)
 	    {
 		update(entry);
@@ -188,13 +204,13 @@ class IndexService
 	EndpointReferenceType factoryEPR = new EndpointReferenceType();
 	try
 	    {
-		factoryEPR.setAddress(new Address(serviceURI));
+		factoryEPR.setAddress(new Address(this.serviceURI));
 	    }
 	catch(Exception e)
 	    {
-		System.err.println("ERROR: Malformed URI '" + serviceURI + "'");
+		System.err.println("ERROR: Malformed URI '" + this.serviceURI + "'");
 		e.printStackTrace();
-		throw new Exception("ERROR: Malformed URI '" + serviceURI + "'", e);
+		throw new Exception("ERROR: Malformed URI '" + this.serviceURI + "'", e);
 	    }
 	
 	// Get portType
@@ -219,9 +235,9 @@ class IndexService
 	/* Invoke addAdvertServiceEntry operation */
 
 	AddAdvertServiceEntry addAdvertServiceEntryRequest = new AddAdvertServiceEntry();
-	addAdvertServiceEntryRequest.setPath(entry.path);
-	addAdvertServiceEntryRequest.setMetaData(MetaDataUtils.toAdvertServiceEntryFactoryServiceMetaDataType(entry.metaData));
-	addAdvertServiceEntryRequest.setSerializedAdvertisable(entry.serializedAdvertisable.getBytes());
+	addAdvertServiceEntryRequest.setPath(entry.getPath());
+	addAdvertServiceEntryRequest.setMetaData(MetaDataUtils.toAdvertServiceEntryFactoryServiceMetaDataType(entry.getMetaData()));
+	addAdvertServiceEntryRequest.setSerializedAdvertisable(entry.getBytesOfSerializedAdvertisable());
 
 	// Perform invocation
 	AddAdvertServiceEntryResponse addAdvertServiceEntryResponse = null;
@@ -288,33 +304,7 @@ class IndexService
 	EntryType[] entryTypes = queryIndexService(xpathQuery);
 	Entry[] entries = new Entry[entryTypes.length];
 	for(int j=0;j<entryTypes.length;j++)
-	    {
-		EntryType entryType = entryTypes[j];
-		Entry entry = new Entry();
-		AggregatorContent content = (AggregatorContent) entryType.getContent();
-		AggregatorData data = content.getAggregatorData();
-		MessageElement[] dataEntries = data.get_any();
-		Vector bytes = new Vector();
-		for(int i=0;i<dataEntries.length;i++)
-		    {
-			MessageElement messageElement = dataEntries[i];
-			String name = messageElement.getName();
-			if(name.equals("Path"))
-			    entry.path = messageElement.getValue();
-			else if(name.equals("MetaData"))
-			    entry.metaData = toMetaData(messageElement);
-			else if(name.equals("SerializedAdvertisable"))
-			    bytes.add(new Byte(messageElement.getValue()));
-		    }
-		
-		int size = bytes.size();
-		byte[] serializedAdvertisable = new byte[size];
-		for(int i=0;i<size;i++)
-		    serializedAdvertisable[i] = ((Byte)bytes.get(i)).byteValue();
-		
-		entry.serializedAdvertisable = new String(serializedAdvertisable);
-		entries[j] = entry;
-	    }
+	    entries[j] = toEntry(entryTypes[j]);
 	
 	return entries;
     }
@@ -328,13 +318,13 @@ class IndexService
 	EndpointReferenceType indexEPR = new EndpointReferenceType();
 	try
 	    {
-		indexEPR.setAddress(new Address(indexURI));
+		indexEPR.setAddress(new Address(this.indexURI));
 	    }
 	catch(Exception e)
 	    {
-		System.err.println("ERROR: Malformed index URI '" + indexURI + "'");
+		System.err.println("ERROR: Malformed index URI '" + this.indexURI + "'");
 		e.printStackTrace();
-		throw new Exception("ERROR: Malformed index URI '" + indexURI + "'", e);
+		throw new Exception("ERROR: Malformed index URI '" + this.indexURI + "'", e);
 	    }
 	
 	// Get QueryResourceProperties portType
@@ -388,10 +378,7 @@ class IndexService
 	MessageElement[] entries = queryResponse.get_any();
 	
 	if(entries == null)
-	    {
-		System.err.println("no entries found.");
-		return new EntryType[0];
-	    }
+	    return new EntryType[0];
 
 	EntryType[] entryTypes = new EntryType[entries.length];
 	for(int i=0;i<entries.length;i++)

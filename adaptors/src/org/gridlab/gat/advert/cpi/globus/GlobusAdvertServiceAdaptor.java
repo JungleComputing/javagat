@@ -17,11 +17,12 @@ public class GlobusAdvertServiceAdaptor extends AdvertServiceCpi
 {
     private static final String SEPERATOR = "/";
     private String pwd = SEPERATOR;
-    private static IndexService indexService = new IndexService();
+    private IndexService indexService;
     
     public GlobusAdvertServiceAdaptor(GATContext gatContext, Preferences preferences) throws GATObjectCreationException
     {
         super(gatContext, preferences);
+	this.indexService = new IndexService(preferences);
     }
 
     /*
@@ -46,7 +47,7 @@ public class GlobusAdvertServiceAdaptor extends AdvertServiceCpi
             return null;
         else
 	    {
-		Advertisable advert = GATEngine.getGATEngine().unmarshalAdvertisable(gatContext, preferences, e.serializedAdvertisable);
+		Advertisable advert = GATEngine.getGATEngine().unmarshalAdvertisable(gatContext, preferences, e.getSerializedAdvertisable());
 		return advert;
 	    }
     }
@@ -62,10 +63,7 @@ public class GlobusAdvertServiceAdaptor extends AdvertServiceCpi
         path = normalizePath(path);
         try
             {
-                Entry entry = new Entry();
-                entry.serializedAdvertisable = advert.marshal();
-                entry.metaData = metaData;
-                entry.path = path;
+                Entry entry = new Entry(path, metaData, advert.marshal());
                 indexService.put(entry);
             }
         catch(Exception e)
@@ -122,8 +120,8 @@ public class GlobusAdvertServiceAdaptor extends AdvertServiceCpi
 	for(int i=0;i<entries.length;i++)
 	    {
 		Entry entry = entries[i];
-		String path = entry.path;
-		MetaData metaData = entry.metaData;
+		String path = entry.getPath();
+		MetaData metaData = entry.getMetaData();
 		
 		if(metaData.match(query))
 		    res.add(path);
@@ -157,7 +155,7 @@ public class GlobusAdvertServiceAdaptor extends AdvertServiceCpi
         if(e == null)
             return null;
         else
-            return e.metaData;
+            return e.getMetaData();
     }
     
     /*

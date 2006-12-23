@@ -233,7 +233,7 @@ public class AdvertServiceEntryResource implements PersistentResource, ResourceP
 	try
 	    {
 		/* We start by creating a temporary file */
-		tmpFile = File.createTempFile("math", ".tmp", getPersistenceHelper().getStorageDirectory());
+		tmpFile = File.createTempFile("GATAdvert", ".tmp", getPersistenceHelper().getStorageDirectory());
 		/* We open the file for writing */
 		fos = new FileOutputStream(tmpFile);
 		ObjectOutputStream oos = new ObjectOutputStream(fos);
