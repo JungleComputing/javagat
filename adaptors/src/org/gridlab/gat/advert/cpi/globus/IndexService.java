@@ -59,8 +59,8 @@ import org.gridlab.gat.Preferences;
 
 class IndexService
 {
-    private String serviceURI = "https://127.0.0.2:8443/wsrf/services/GAT/AdvertServiceEntryFactoryService";
-    private String indexURI   = "https://127.0.0.2:8443/wsrf/services/DefaultIndexService";
+    private String serviceURI; // "https://127.0.0.2:8443/wsrf/services/GAT/AdvertServiceEntryFactoryService";
+    private String indexURI = "https://127.0.0.2:8443/wsrf/services/DefaultIndexService";
 
     static
     {
@@ -69,13 +69,11 @@ class IndexService
     
     public IndexService(Preferences prefs)
     {
-	String serviceURI = (String)prefs.get("AdvertService.globus.serviceURI");
-	if(serviceURI != null)
-	    this.serviceURI = serviceURI;
-
 	String indexURI = (String)prefs.get("AdvertService.globus.indexURI");
 	if(indexURI != null)
 	    this.indexURI = indexURI;
+
+	this.serviceURI = indexURI.substring(0, indexURI.lastIndexOf("/") + 1) + "GAT/AdvertServiceEntryFactoryService";
     }
 
     private MetaData toMetaData(MessageElement messageElement) throws Exception
