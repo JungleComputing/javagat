@@ -56,24 +56,25 @@ import org.w3c.dom.Text;
 
 import org.gridlab.gat.advert.MetaData;
 import org.gridlab.gat.Preferences;
+import org.gridlab.gat.GATObjectCreationException;
 
 class IndexService
 {
-    private String serviceURI; // "https://127.0.0.2:8443/wsrf/services/GAT/AdvertServiceEntryFactoryService";
-    private String indexURI = "https://127.0.0.2:8443/wsrf/services/DefaultIndexService";
+    private String serviceURI;
+    private String indexURI;
 
     static
     {
 	Util.registerTransport();
     }
     
-    public IndexService(Preferences prefs)
+    public IndexService(Preferences prefs) throws GATObjectCreationException
     {
-	String indexURI = (String)prefs.get("AdvertService.globus.indexURI");
-	if(indexURI != null)
-	    this.indexURI = indexURI;
+	this.indexURI = (String)prefs.get("AdvertService.globus.indexURI");
+	if(this.indexURI == null)
+	    throw new GATObjectCreationException("could not get AdvertService.globus.indexURI preferences");
 
-	this.serviceURI = indexURI.substring(0, indexURI.lastIndexOf("/") + 1) + "GAT/AdvertServiceEntryFactoryService";
+	this.serviceURI = this.indexURI.substring(0, this.indexURI.lastIndexOf("/") + 1) + "GAT/AdvertServiceEntryFactoryService";
     }
 
     private MetaData toMetaData(MessageElement messageElement) throws Exception
