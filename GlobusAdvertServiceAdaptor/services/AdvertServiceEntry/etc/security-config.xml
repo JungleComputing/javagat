@@ -4,11 +4,7 @@
 
 <!-- Default for all methods -->
 <auth-method>
-    <GSITransport>
-      <protection-level>
-        <integrity/>
-      </protection-level>
-    </GSITransport>
+    <none/>
 </auth-method>
 
 </securityConfig>
