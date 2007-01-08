@@ -206,7 +206,7 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
         // if the contact string is set, ignore all other properties
         if(contact != null) {
             if (GATEngine.VERBOSE) {
-                System.err.println("Resource manager contact = " + res);
+                System.err.println("Resource manager contact = " + contact);
             }
             return contact;
         }
