@@ -25,8 +25,15 @@ import org.gridlab.gat.resources.SoftwareDescription;
  * @author rob
  */
 public class SubmitJobGlobus implements MetricListener {
-    public static void main(String[] args) throws Exception {
-        new SubmitJobGlobus().start(args);
+    public static void main(String[] args) {
+        try {
+            new SubmitJobGlobus().start(args);
+        } catch (Exception e) {
+            System.err.println("error: " + e);
+            e.printStackTrace();
+        } finally {
+            GAT.end();
+        }
     }
 
     public synchronized void processMetricEvent(MetricValue val) {
@@ -74,7 +81,5 @@ public class SubmitJobGlobus implements MetricListener {
 
         System.err.println("SubmitJobCallback: Job finished, state = "
             + job.getInfo());
-        
-        GAT.end();
     }
 }
