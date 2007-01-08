@@ -213,14 +213,14 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
         if (hostname != null) {
             res = hostname;
 
+            if(jobManagerPort != null) {
+                res += (":" + jobManagerPort);
+            }
+
             if (jobManager != null) {
                 res += ("/jobmanager-" + jobManager);
             }
 
-            if(jobManagerPort != null) {
-                res += (":" + jobManagerPort);
-            }
-            
             if (GATEngine.VERBOSE) {
                 System.err.println("Resource manager contact = " + res);
             }
