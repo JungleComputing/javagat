@@ -366,10 +366,12 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
 
     public Job submitJobNoSandbox(JobDescription description)
             throws GATInvocationException {
+        System.err.println("HOST1");
         String host = getHostname(description);
+        System.err.println("HOST2: " + host);
         String contact = getResourceManagerContact(description);
+        System.err.println("HOST_DONE: " + host);
 
-        System.err.println("HOST: " + host);
         
         URI hostUri;
         try {
