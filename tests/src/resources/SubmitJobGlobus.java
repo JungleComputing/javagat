@@ -37,6 +37,8 @@ public class SubmitJobGlobus implements MetricListener {
         GATContext context = new GATContext();
         Preferences prefs = new Preferences();
         prefs.put("ResourceBroker.adaptor.name", "Globus");
+        prefs.put("ResourceBroker.jobmanager", "pbs");
+        prefs.put("ResourceBroker.jobmanagerPort", "2119");
 
         File outFile = GAT.createFile(context, prefs,
             new URI("any:///out"));
@@ -47,9 +49,10 @@ public class SubmitJobGlobus implements MetricListener {
         sd.setLocation(new URI(args[0]));
         sd.setStdout(outFile);
         sd.setStderr(errFile);
+        sd.addAttribute("queue", args[1]);
 
         Hashtable hardwareAttributes = new Hashtable();
-        hardwareAttributes.put("machine.node", "fs0.das2.cs.vu.nl");
+        hardwareAttributes.put("machine.node", args[2]);
 
         ResourceDescription rd = new HardwareResourceDescription(
             hardwareAttributes);
