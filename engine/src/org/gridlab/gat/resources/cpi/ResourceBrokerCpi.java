@@ -46,7 +46,7 @@ public abstract class ResourceBrokerCpi implements ResourceBroker {
      *             no adaptor could be loaded
      */
     protected ResourceBrokerCpi(GATContext gatContext, Preferences preferences)
-        throws GATObjectCreationException {
+            throws GATObjectCreationException {
         this.gatContext = gatContext;
         this.preferences = preferences;
     }
@@ -57,7 +57,7 @@ public abstract class ResourceBrokerCpi implements ResourceBroker {
      * @see org.gridlab.gat.resources.ResourceBroker#findResources(org.gridlab.gat.resources.ResourceDescription)
      */
     public List findResources(ResourceDescription resourceDescription)
-        throws GATInvocationException, IOException {
+            throws GATInvocationException, IOException {
         throw new UnsupportedOperationException("Not implemented");
     }
 
@@ -68,7 +68,7 @@ public abstract class ResourceBrokerCpi implements ResourceBroker {
      *      org.gridlab.gat.util.TimePeriod)
      */
     public Reservation reserveResource(Resource resource, TimePeriod timePeriod)
-        throws GATInvocationException, IOException {
+            throws GATInvocationException, IOException {
         throw new UnsupportedOperationException("Not implemented");
     }
 
@@ -79,7 +79,7 @@ public abstract class ResourceBrokerCpi implements ResourceBroker {
      *      org.gridlab.gat.util.TimePeriod)
      */
     public Reservation reserveResource(ResourceDescription resourceDescription,
-        TimePeriod timePeriod) throws GATInvocationException, IOException {
+            TimePeriod timePeriod) throws GATInvocationException, IOException {
         throw new UnsupportedOperationException("Not implemented");
     }
 
@@ -89,25 +89,25 @@ public abstract class ResourceBrokerCpi implements ResourceBroker {
      * @see org.gridlab.gat.resources.ResourceBroker#submitJob(org.gridlab.gat.resources.JobDescription)
      */
     public Job submitJob(JobDescription description)
-        throws GATInvocationException, IOException {
+            throws GATInvocationException, IOException {
         throw new UnsupportedOperationException("Not implemented");
     }
 
     // utility methods
     protected URI getLocationURI(JobDescription description)
-        throws GATInvocationException {
+            throws GATInvocationException {
         SoftwareDescription sd = description.getSoftwareDescription();
 
         if (sd == null) {
             throw new GATInvocationException(
-                "The job description does not contain a software description");
+                    "The job description does not contain a software description");
         }
 
         URI u = sd.getLocation();
 
         if (u == null) {
             throw new GATInvocationException(
-                "The Job description does not contain a location");
+                    "The Job description does not contain a location");
         }
 
         return u;
@@ -115,7 +115,7 @@ public abstract class ResourceBrokerCpi implements ResourceBroker {
 
     // utility methods
     protected int getIntAttribute(JobDescription description, String name,
-        int defaultVal) {
+            int defaultVal) {
         SoftwareDescription sd = description.getSoftwareDescription();
 
         if (sd == null) {
@@ -125,12 +125,13 @@ public abstract class ResourceBrokerCpi implements ResourceBroker {
         Map attributes = sd.getAttributes();
         Integer val = (Integer) attributes.get(name);
 
-        if (val == null) return defaultVal;
+        if (val == null)
+            return defaultVal;
         return val.intValue();
     }
 
     protected long getLongAttribute(JobDescription description, String name,
-        long defaultVal) {
+            long defaultVal) {
         SoftwareDescription sd = description.getSoftwareDescription();
 
         if (sd == null) {
@@ -140,12 +141,29 @@ public abstract class ResourceBrokerCpi implements ResourceBroker {
         Map attributes = sd.getAttributes();
         Long val = (Long) attributes.get(name);
 
-        if (val == null) return defaultVal;
+        if (val == null)
+            return defaultVal;
         return val.longValue();
     }
 
+    protected String getStringAttribute(JobDescription description,
+            String name, String defaultVal) {
+        SoftwareDescription sd = description.getSoftwareDescription();
+
+        if (sd == null) {
+            return defaultVal;
+        }
+
+        Map attributes = sd.getAttributes();
+        String val = (String) attributes.get(name);
+
+        if (val == null)
+            return defaultVal;
+        return val;
+    }
+
     protected boolean getBooleanAttribute(JobDescription description,
-        String name, boolean defaultVal) {
+            String name, boolean defaultVal) {
         SoftwareDescription sd = description.getSoftwareDescription();
 
         if (sd == null) {
@@ -155,7 +173,8 @@ public abstract class ResourceBrokerCpi implements ResourceBroker {
         Map attributes = sd.getAttributes();
         Boolean val = (Boolean) attributes.get(name);
 
-        if (val == null) return defaultVal;
+        if (val == null)
+            return defaultVal;
         return val.booleanValue();
     }
 
@@ -168,12 +187,12 @@ public abstract class ResourceBrokerCpi implements ResourceBroker {
     }
 
     protected String getLocation(JobDescription description)
-        throws GATInvocationException {
+            throws GATInvocationException {
         URI u = getLocationURI(description);
 
         if (u == null) {
             throw new GATInvocationException(
-                "The Job description does not contain a location");
+                    "The Job description does not contain a location");
         }
 
         String location = u.toString();
@@ -182,19 +201,19 @@ public abstract class ResourceBrokerCpi implements ResourceBroker {
     }
 
     protected String[] getArgumentsArray(JobDescription description)
-        throws GATInvocationException {
+            throws GATInvocationException {
         SoftwareDescription sd = description.getSoftwareDescription();
 
         if (sd == null) {
             throw new GATInvocationException(
-                "The job description does not contain a software description");
+                    "The job description does not contain a software description");
         }
 
         return sd.getArguments();
     }
 
     protected String getArguments(JobDescription description)
-        throws GATInvocationException {
+            throws GATInvocationException {
         String[] arguments = getArgumentsArray(description);
         String argString = "";
 
@@ -210,7 +229,7 @@ public abstract class ResourceBrokerCpi implements ResourceBroker {
     }
 
     public String getHostname(JobDescription description)
-        throws GATInvocationException {
+            throws GATInvocationException {
         ResourceDescription d = description.getResourceDescription();
 
         if (d == null) {
@@ -219,7 +238,7 @@ public abstract class ResourceBrokerCpi implements ResourceBroker {
 
         if (!(d instanceof HardwareResourceDescription)) {
             throw new GATInvocationException(
-                "Currently only hardware resource descriptions are supported");
+                    "Currently only hardware resource descriptions are supported");
         }
 
         Map m = d.getDescription();
