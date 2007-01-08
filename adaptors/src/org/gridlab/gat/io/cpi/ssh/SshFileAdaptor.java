@@ -2357,37 +2357,13 @@ public class SshFileAdaptor extends FileCpi {
         return;
     }
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see org.gridlab.gat.io.File#renameTo(java.io.File)
-     */
-    public boolean renameTo(java.io.File arg0) throws GATInvocationException {
-        URI destination = new URI(arg0.toURI());
-        copy(destination);
-
-        if (!deleteByForceRecursively()) {
-            return false;
-        }
-
-        try {
-            updateLocation(destination);
-        } catch (GATObjectCreationException e) {
-            throw new GATInvocationException(
-                "internal error in SshFileAdaptor when trying to rename file "
-                    + toURI() + " to " + destination + "; error is " + e);
-        }
-
-        return true;
-    }
-
     public boolean renameTo(org.gridlab.gat.io.File arg0)
             throws GATInvocationException {
         URI destination = arg0.toGATURI();
 
         if (GATEngine.DEBUG) {
             System.err.println("SshFileAdaptor: trying to rename " + location
-                + " to " + arg0.toURI());
+                + " to " + destination);
         }
 
         copy(destination);
@@ -2401,7 +2377,7 @@ public class SshFileAdaptor extends FileCpi {
         } catch (GATObjectCreationException e) {
             throw new GATInvocationException(
                 "internal error in SshFileAdaptor when trying to rename file "
-                    + toURI() + " to " + destination + "; error is " + e);
+                    + location + " to " + destination + "; error is " + e);
         }
 
         return true;

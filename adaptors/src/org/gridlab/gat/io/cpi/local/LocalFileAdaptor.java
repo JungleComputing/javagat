@@ -226,32 +226,6 @@ public class LocalFileAdaptor extends FileCpi {
     /*
      * (non-Javadoc)
      *
-     * @see org.gridlab.gat.io.File#compareTo(gat.io.File)
-     */
-    public int compareTo(org.gridlab.gat.io.File other) {
-        return toURI().compareTo(other.toURI());
-    }
-
-    /*
-     * (non-Javadoc)
-     *
-     * @see org.gridlab.gat.io.File#compareTo(java.lang.Object)
-     */
-    public int compareTo(Object other) {
-        if(other instanceof org.gridlab.gat.io.File) {
-            org.gridlab.gat.io.File o = (org.gridlab.gat.io.File) other;
-            return toURI().compareTo(o.toURI());
-        } else if(other instanceof URI) {
-            URI u = (URI) other;
-            return toURI().compareTo(u);
-        } else {
-            throw new RuntimeException("files can only be compared to files and URIs");
-        }
-    }
-
-    /*
-     * (non-Javadoc)
-     *
      * @see org.gridlab.gat.io.File#createNewFile()
      */
     public boolean createNewFile() throws GATInvocationException {
@@ -546,8 +520,8 @@ public class LocalFileAdaptor extends FileCpi {
      *
      * @see org.gridlab.gat.io.File#renameTo(java.io.File)
      */
-    public boolean renameTo(java.io.File arg0) throws GATInvocationException {
-        File tmp = new File(arg0.toURI());
+    public boolean renameTo(org.gridlab.gat.io.File arg0) throws GATInvocationException {
+        File tmp = new File(arg0.toGATURI().toJavaURI());
 
         return f.renameTo(tmp);
     }
