@@ -65,8 +65,8 @@ public class PreStagedFile extends StagedFile {
     protected void prestage() throws GATInvocationException {
         if (GATEngine.VERBOSE) {
             System.err.println("prestage:");
-            System.err.println("  copy " + resolvedSrc.toURI() + " to "
-                + resolvedDest.toURI());
+            System.err.println("  copy " + resolvedSrc.toGATURI() + " to "
+                + resolvedDest.toGATURI());
         }
 
         // create any directories if needed.
@@ -108,9 +108,9 @@ public class PreStagedFile extends StagedFile {
             wipe(resolvedDest);
         }
     }
-
+    
     public String toString() {
-        return "PreStaged: " + resolvedSrc.toURI() + " -> " + resolvedDest.toURI()
+        return "PreStaged: " + resolvedSrc.toGATURI() + " -> " + resolvedDest.toGATURI()
             + (isStdIn ? " (STDIN)" : "") + (isExecutable ? " (EXE)" : "") + (inSandbox ? " (IN SANDBOX)" : " (OUTSIDE SANDBOX)");
     }
 }

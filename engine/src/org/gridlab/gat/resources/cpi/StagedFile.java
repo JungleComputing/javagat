@@ -132,4 +132,12 @@ public abstract class StagedFile {
             }
         }
     }
+    
+    public File getResolvedSrc() {
+        return resolvedSrc;
+    }
+    
+    public File getResolvedDest() {
+        return resolvedDest;
+    }
 }

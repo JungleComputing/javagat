@@ -5,6 +5,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.StringTokenizer;
 
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
@@ -230,13 +231,24 @@ public abstract class ResourceBrokerCpi implements ResourceBroker {
 
     public String getHostname(JobDescription description)
             throws GATInvocationException {
+        String contactHostname = null;
+        
+        String contact = (String) preferences
+        .get("ResourceBroker.jobmanagerContact");
+        if(contact != null) {
+            StringTokenizer st = new StringTokenizer(contact, ":/");
+            contactHostname = st.nextToken();
+        }
+        
         ResourceDescription d = description.getResourceDescription();
 
         if (d == null) {
-            return null;
+            return contactHostname;
         }
 
         if (!(d instanceof HardwareResourceDescription)) {
+            if(contactHostname != null) return contactHostname;
+            
             throw new GATInvocationException(
                     "Currently only hardware resource descriptions are supported");
         }
@@ -261,6 +273,6 @@ public abstract class ResourceBrokerCpi implements ResourceBroker {
             //            System.err.println("warning, ignoring key: " + key);
         }
 
-        return null;
+        return contactHostname;
     }
 }

@@ -57,10 +57,10 @@ public class PostStagedFile extends StagedFile {
                 // file with same name in CWD
                 try {
                     String destURIString = "any://";
-                    if(origDest.toURI().getHost() == null) {
+                    if(origDest.toGATURI().getHost() == null) {
                         destURIString += "/" + dir + "/";
                     } else {
-                        destURIString += origDest.toURI().getHost() + "/";
+                        destURIString += origDest.toGATURI().getHost() + "/";
                     }
                     
                     destURIString += origDest.getPath();
@@ -74,8 +74,8 @@ public class PostStagedFile extends StagedFile {
 
     protected void poststage() throws GATInvocationException {
         if (GATEngine.VERBOSE) {
-            System.err.println("  copy " + resolvedSrc.toURI() + " to "
-                + resolvedDest.toURI());
+            System.err.println("  copy " + resolvedSrc.toGATURI() + " to "
+                + resolvedDest.toGATURI());
         }
 
         resolvedSrc.copy(resolvedDest.toGATURI());
@@ -102,9 +102,9 @@ public class PostStagedFile extends StagedFile {
 
     public String toString() {
         String srcURI =
-                resolvedSrc == null ? "" : resolvedSrc.toURI().toString();
+                resolvedSrc == null ? "" : resolvedSrc.toGATURI().toString();
         String destURI =
-                resolvedDest == null ? "" : resolvedDest.toURI().toString();
+                resolvedDest == null ? "" : resolvedDest.toGATURI().toString();
 
         return "PostStaged: " + srcURI + " -> " + destURI
             + (isStdout ? " (STDOUT)" : "") + (isStderr ? " (STDERR)" : "") + (inSandbox ? " (IN SANDBOX)" : " (OUTSIDE SANDBOX)");

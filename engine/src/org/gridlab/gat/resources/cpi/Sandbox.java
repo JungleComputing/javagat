@@ -83,6 +83,7 @@ public class Sandbox {
             host, sandbox, preStageStdin);
         post = new PostStagedFileSet(gatContext, preferences, jobDescription,
             host, sandbox, postStageStdout, postStageStderr);
+        
         createSandbox();
     }
 

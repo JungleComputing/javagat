@@ -161,6 +161,14 @@ public class PreStagedFileSet {
         return null;
     }
 
+    public int size() {
+        return files.size();
+    }
+    
+    public PreStagedFile getFile(int pos) {
+        return (PreStagedFile) files.get(pos);
+    }
+    
     public String toString() {
         String res = "";
         res += "PreStagedFileSet:\n";
