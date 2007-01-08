@@ -304,11 +304,8 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
 
     public Job submitJobSandbox(JobDescription description)
             throws GATInvocationException {
-        System.err.println("HOST1");
         String host = getHostname(description);
-        System.err.println("HOST2: " + host);
         String contact = getResourceManagerContact(description);
-        System.err.println("HOST_DONE: " + host);
 
         URI hostUri;
         try {
@@ -372,12 +369,8 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
 
     public Job submitJobNoSandbox(JobDescription description)
             throws GATInvocationException {
-        System.err.println("HOST1");
         String host = getHostname(description);
-        System.err.println("HOST2: " + host);
         String contact = getResourceManagerContact(description);
-        System.err.println("HOST_DONE: " + host);
-
         
         URI hostUri;
         try {
