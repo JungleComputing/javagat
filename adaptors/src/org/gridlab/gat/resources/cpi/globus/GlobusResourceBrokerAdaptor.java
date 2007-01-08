@@ -154,12 +154,12 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
     protected String getResourceManagerContact(JobDescription description)
         throws GATInvocationException {
         String res = null;
-        String jobManager = (String) preferences
-            .get("ResourceBroker.jobmanager");
-        Integer jobManagerPort = (Integer) preferences
-        .get("ResourceBroker.jobmanagerPort");
         String contact = (String) preferences
         .get("ResourceBroker.jobmanagerContact");
+        String jobManager = (String) preferences
+            .get("ResourceBroker.jobmanager");
+        Object jobManagerPort = preferences
+        .get("ResourceBroker.jobmanagerPort");
 
         // if the contact string is set, ignore all other properties
         if(contact != null) {
