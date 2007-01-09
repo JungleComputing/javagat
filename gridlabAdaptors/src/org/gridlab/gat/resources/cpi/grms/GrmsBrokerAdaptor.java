@@ -222,7 +222,7 @@ public class GrmsBrokerAdaptor extends ResourceBrokerCpi {
     }
 
     protected String getOutURI(org.gridlab.gat.io.File f) {
-        URI u = f.toURI();
+        URI u = f.toGATURI();
         String host = u.getHost();
 
         if (host == null) {
@@ -331,7 +331,7 @@ public class GrmsBrokerAdaptor extends ResourceBrokerCpi {
                                 + " to " + destFile.toURI());
                         }
 
-                        srcFile.copy(destFile.toURI());
+                        srcFile.copy(destFile.toGATURI());
                     } catch (Exception exc) {
                         throw new GATInvocationException("resource broker cpi",
                             exc);
@@ -342,7 +342,7 @@ public class GrmsBrokerAdaptor extends ResourceBrokerCpi {
                     ai.setFile(pf);
                     a.addArgumentsItem(ai);
 
-                    URI u = srcFile.toURI();
+                    URI u = srcFile.toGATURI();
                     String path = u.getPath();
                     String fileName = pathToFilename(path);
                     pf.setName(fileName);
@@ -381,7 +381,7 @@ public class GrmsBrokerAdaptor extends ResourceBrokerCpi {
                                 + " to " + destFile.toURI());
                         }
 
-                        srcFile.copy(destFile.toURI());
+                        srcFile.copy(destFile.toGATURI());
                     } catch (Exception exc) {
                         throw new GATInvocationException("resource broker cpi",
                             exc);
@@ -392,7 +392,7 @@ public class GrmsBrokerAdaptor extends ResourceBrokerCpi {
                     ai.setFile(pf);
                     a.addArgumentsItem(ai);
 
-                    URI u = destFile.toURI();
+                    URI u = destFile.toGATURI();
                     String path = u.getPath();
                     String fileName = pathToFilename(path);
 
