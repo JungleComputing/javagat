@@ -13,7 +13,7 @@
 <wsdl:import 
     namespace=
     "http://docs.oasis-open.org/wsrf/2004/06/wsrf-WS-ResourceProperties-1.2-draft-01.wsdl"
-    location="../wsrf/properties/WS-ResourceProperties.wsdl" />
+    location="../wsrf/properties/WS-ResourceProperties.wsdl"/>
 
 <wsdl:import
     namespace=
@@ -23,40 +23,32 @@
 <types>
 <xsd:schema targetNamespace="http://www.JavaGAT.org/namespaces/AdvertServiceEntry/AdvertServiceEntryService"
     xmlns:tns="http://www.JavaGAT.org/namespaces/AdvertServiceEntry/AdvertServiceEntryService"
+    xmlns:gatns="http://www.JavaGAT.org/namespaces/GAT"
     xmlns:xsd="http://www.w3.org/2001/XMLSchema">
 
 	<xsd:import
-	    namespace="http://schemas.xmlsoap.org/ws/2004/03/addressing"                
-	    schemaLocation="../ws/addressing/WS-Addressing.xsd" />
+	    namespace="http://www.JavaGAT.org/namespaces/GAT"
+	    schemaLocation="MetaData.xsd" />
+
+	<xsd:import
+	   namespace="http://docs.oasis-open.org/wsn/2004/06/wsn-WS-BaseNotification-1.2-draft-01.xsd"
+	   schemaLocation="../wsrf/notification/WS-BaseN.xsd"/>
 
 	<!-- Requests and responses -->
 
-	<xsd:element name="setMetaData" type="tns:MetaDataType"/>
+	<xsd:element name="setMetaData" type="gatns:MetaData"/>
 	<xsd:element name="setMetaDataResponse">
 	  <xsd:complexType/>
 	</xsd:element>
 
-	<xsd:element name="setSerializedAdvertisable" type="xsd:base64Binary"/>
+	<xsd:element name="setSerializedAdvertisable" type="xsd:string"/>
 	<xsd:element name="setSerializedAdvertisableResponse">
 	  <xsd:complexType/>
 	</xsd:element>
 
 	<!-- Resource properties -->
-        <xsd:complexType name="MetaDataType">
-          <xsd:sequence>
-            <xsd:element name="MetaDataEntry" minOccurs="0" maxOccurs="unbounded">
-              <xsd:complexType>
-                <xsd:sequence>
-                  <xsd:element name="Key" type="xsd:string"/>
-                  <xsd:element name="Value" type="xsd:string"/>
-                </xsd:sequence>
-              </xsd:complexType>
-            </xsd:element>
-          </xsd:sequence>
-        </xsd:complexType>
-
 	<xsd:element name="Path" type="xsd:string"/>
-        <xsd:element name="MetaData" type="tns:MetaDataType"/>
+        <xsd:element name="MetaData" type="gatns:MetaData"/>
 	<xsd:element name="SerializedAdvertisable" type="xsd:base64Binary"/>
 
 	<xsd:element name="AdvertServiceEntryResourceProperties">

@@ -15,26 +15,33 @@ import org.apache.axis.message.addressing.EndpointReferenceType;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import stubs.AdvertServiceEntryService.MetaDataType;
-import stubs.AdvertServiceEntryService.SetMetaDataResponse;
-import stubs.AdvertServiceEntryService.SetSerializedAdvertisableResponse;
+import stubs.GAT.*;
+import stubs.AdvertServiceEntryService.*;
 
 public class AdvertServiceEntryService
 {
     /* Added for logging */
     static final Log logger = LogFactory.getLog(AdvertServiceEntryService.class);
 	
-    public SetMetaDataResponse setMetaData(MetaDataType metaData) throws RemoteException
+    public SetMetaDataResponse setMetaData(MetaData metaData) throws RemoteException
     {
 	AdvertServiceEntryResource resource = getResource();
 	resource.setMetaData(metaData);
 	return new SetMetaDataResponse();
     }
 
-    public SetSerializedAdvertisableResponse setSerializedAdvertisable(byte[] serializedAdvertisable) throws RemoteException
+    public SetSerializedAdvertisableResponse setSerializedAdvertisable(String serializedAdvertisable) throws RemoteException
     {
 	AdvertServiceEntryResource resource = getResource();
-	resource.setSerializedAdvertisable(serializedAdvertisable);
+	try
+	    {
+		resource.setSerializedAdvertisable(serializedAdvertisable);
+	    }
+	catch(Exception e)
+	    {
+		throw new RemoteException("ERROR: setSerializedAdvertisable", e);
+	    }
+
 	return new SetSerializedAdvertisableResponse();
     }
 

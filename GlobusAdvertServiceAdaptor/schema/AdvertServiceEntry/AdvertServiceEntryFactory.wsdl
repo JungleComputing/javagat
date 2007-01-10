@@ -16,33 +16,24 @@
 <types>
 <xsd:schema targetNamespace="http://www.JavaGAT.org/namespaces/AdvertServiceEntry/AdvertServiceEntryFactoryService"
     xmlns:tns="http://www.JavaGAT.org/namespaces/AdvertServiceEntry/AdvertServiceEntryFactoryService"
+    xmlns:gatns="http://www.JavaGAT.org/namespaces/GAT"
     xmlns:xsd="http://www.w3.org/2001/XMLSchema">
 
 	<xsd:import
 	    namespace="http://schemas.xmlsoap.org/ws/2004/03/addressing"
 	    schemaLocation="../ws/addressing/WS-Addressing.xsd" />
 
+	<xsd:import
+	    namespace="http://www.JavaGAT.org/namespaces/GAT"
+	    schemaLocation="MetaData.xsd" />
 
 	<!-- REQUESTS AND RESPONSES -->
-        <xsd:complexType name="MetaDataType">
-          <xsd:sequence>
-            <xsd:element name="MetaDataEntry" minOccurs="0" maxOccurs="unbounded">
-              <xsd:complexType>
-                <xsd:sequence>
-                  <xsd:element name="Key" type="xsd:string"/>
-                  <xsd:element name="Value" type="xsd:string"/>
-                </xsd:sequence>
-              </xsd:complexType>
-            </xsd:element>
-          </xsd:sequence>
-        </xsd:complexType>
-
 	<xsd:element name="addAdvertServiceEntry">
 	  <xsd:complexType>
 	    <xsd:sequence>
     	      <xsd:element name="path" type="xsd:string"/>
-              <xsd:element name="metaData" type="tns:MetaDataType"/>
-              <xsd:element name="serializedAdvertisable" type="xsd:base64Binary"/>
+              <xsd:element name="metaData" type="gatns:MetaData"/>
+              <xsd:element name="serializedAdvertisable" type="xsd:string"/>
     	    </xsd:sequence>
 	  </xsd:complexType>
 	</xsd:element>

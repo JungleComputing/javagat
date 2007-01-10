@@ -13,16 +13,60 @@ import org.gridlab.gat.advert.MetaData;
 import org.gridlab.gat.advert.cpi.AdvertServiceCpi;
 import org.gridlab.gat.engine.GATEngine;
 
+import org.apache.axis.message.addressing.Address;
+import org.apache.axis.message.addressing.EndpointReferenceType;
+import org.globus.axis.util.Util;
+
+import stubs.GAT.*;
+import stubs.IndexServiceProxyService.service.IndexServiceProxyServiceAddressingLocator;
+import stubs.IndexServiceProxyService.IndexServiceProxyServicePortType;
+//import stubs.IndexServiceProxyService.Entry;
+import stubs.IndexServiceProxyService.Entries;
+import stubs.IndexServiceProxyService.GetEntries;
+
+import javax.xml.rpc.ServiceException;
+
 public class GlobusAdvertServiceAdaptor extends AdvertServiceCpi
 {
     private static final String SEPERATOR = "/";
     private String pwd = SEPERATOR;
-    private IndexService indexService;
-    
+    private IndexServiceProxyServicePortType service;
+
     public GlobusAdvertServiceAdaptor(GATContext gatContext, Preferences preferences) throws GATObjectCreationException
     {
         super(gatContext, preferences);
-	this.indexService = new IndexService(preferences);
+
+	// Create EPR
+	String serviceURI = (String)preferences.get("AdvertService.globus.uri");
+	EndpointReferenceType epr = new EndpointReferenceType();
+	try
+	    {
+		epr.setAddress(new Address(serviceURI));
+	    }
+	catch(Exception e)
+	    {
+		System.err.println("ERROR: Malformed URI '" + serviceURI + "'");
+		e.printStackTrace();
+		throw new GATObjectCreationException("ERROR: Malformed URI '" + serviceURI + "'", e);
+	    }
+	
+	// Get portType
+	IndexServiceProxyServiceAddressingLocator locator = new IndexServiceProxyServiceAddressingLocator();
+	
+	try
+	    {
+		this.service = locator.getIndexServiceProxyServicePortTypePort(epr);
+	    }
+	catch(ServiceException e)
+	    {
+		System.err.println("ERROR: Unable to obtain portType");
+		e.printStackTrace();
+		throw new GATObjectCreationException("ERROR: Unable to obtain portType", e);
+	    }
+	
+	// Setup security options
+	//((Stub) factory)._setProperty(Constants.GSI_TRANSPORT, Constants.SIGNATURE);
+	//((Stub) factory)._setProperty(Constants.AUTHORIZATION, NoAuthorization.getInstance());	
     }
 
     /*
@@ -33,10 +77,10 @@ public class GlobusAdvertServiceAdaptor extends AdvertServiceCpi
     public Advertisable getAdvertisable(String path) throws GATInvocationException, NoSuchElementException
     {
         path = normalizePath(path);
-        Entry e = null;
+        stubs.IndexServiceProxyService.Entry e = null;
 	try
 	    {
-		e = indexService.get(path);
+		e = this.service.get(path);
 	    }
 	catch(Exception exc)
 	    {
@@ -63,8 +107,11 @@ public class GlobusAdvertServiceAdaptor extends AdvertServiceCpi
         path = normalizePath(path);
         try
             {
-                Entry entry = new Entry(path, metaData, advert.marshal());
-                indexService.put(entry);
+                stubs.IndexServiceProxyService.Entry entry = new stubs.IndexServiceProxyService.Entry();
+		entry.setPath(path);
+		entry.setMetaData(MetaDataUtils.toSoapMetaData(metaData));
+		entry.setSerializedAdvertisable(advert.marshal());
+		this.service.put(entry);
             }
         catch(Exception e)
             {
@@ -91,7 +138,7 @@ public class GlobusAdvertServiceAdaptor extends AdvertServiceCpi
         path = normalizePath(path);
 	try
 	    {
-		indexService.remove(path);
+		this.service.remove(path);
 	    }
 	catch(Exception e)
 	    {
@@ -107,21 +154,22 @@ public class GlobusAdvertServiceAdaptor extends AdvertServiceCpi
     public String[] find(MetaData query) throws GATInvocationException
     {
         Vector res = new Vector();
-        Entry[] entries = null;
+	Entries entries = null;
 	try
 	    {
-		entries = indexService.getEntries();
+		entries = this.service.getEntries(new GetEntries());
 	    }
 	catch(Exception e)
 	    {
 		throw new GATInvocationException("Error in indexService.getEntries()", e);
 	    }
 
-	for(int i=0;i<entries.length;i++)
+	stubs.IndexServiceProxyService.Entry[] entries2 = entries.getEntry();
+	for(int i=0;i<entries2.length;i++)
 	    {
-		Entry entry = entries[i];
+		stubs.IndexServiceProxyService.Entry entry = entries2[i];
 		String path = entry.getPath();
-		MetaData metaData = entry.getMetaData();
+		MetaData metaData = MetaDataUtils.toMetaData(entry.getMetaData());
 		
 		if(metaData.match(query))
 		    res.add(path);
@@ -142,10 +190,10 @@ public class GlobusAdvertServiceAdaptor extends AdvertServiceCpi
     public MetaData getMetaData(String path) throws NoSuchElementException, GATInvocationException
     {
         path = normalizePath(path);
-        Entry e = null;
+        stubs.IndexServiceProxyService.Entry e = null;
 	try
 	    {
-		e = indexService.get(path);
+		e = this.service.get(path);
 	    }
 	catch(Exception exc)
 	    {
@@ -155,7 +203,7 @@ public class GlobusAdvertServiceAdaptor extends AdvertServiceCpi
         if(e == null)
             return null;
         else
-            return e.getMetaData();
+            return MetaDataUtils.toMetaData(e.getMetaData());
     }
     
     /*
@@ -182,8 +230,8 @@ public class GlobusAdvertServiceAdaptor extends AdvertServiceCpi
     {
         try
 	    {
-		if(!path.startsWith(SEPERATOR))
-		    path = pwd + SEPERATOR + path;
+		if(!path.startsWith(this.SEPERATOR))
+		    path = this.pwd + this.SEPERATOR + path;
 		
 		URI u = new URI(path);		
 		return u.normalize().getPath();

@@ -21,7 +21,8 @@ import org.globus.wsrf.ResourceKey;
 import org.globus.wsrf.container.ServiceHost;
 import org.globus.wsrf.security.SecurityManager;
 import org.globus.wsrf.utils.AddressingUtils;
-import stubs.AdvertServiceEntryFactoryService.MetaDataType;
+
+import stubs.GAT.*;
 import stubs.AdvertServiceEntryFactoryService.AddAdvertServiceEntry;
 import stubs.AdvertServiceEntryFactoryService.AddAdvertServiceEntryResponse;
 
@@ -38,8 +39,8 @@ public class AdvertServiceEntryFactoryService implements AdvertServiceEntryConst
 	
 	// Retrieve parameters
 	String path = params.getPath();
-	MetaDataType metaData = params.getMetaData();
-	byte[] serializedAdvertisable = params.getSerializedAdvertisable();
+	MetaData metaData = params.getMetaData();
+	String serializedAdvertisable = params.getSerializedAdvertisable();
 	
 	logger.debug("addAdvertServiceEntry invoked with path=" + path + ",metaData=" + metaData + ",serializedAdvertisable=" + serializedAdvertisable);
 	
@@ -51,7 +52,7 @@ public class AdvertServiceEntryFactoryService implements AdvertServiceEntryConst
 	try
 	    {
 		home = (AdvertServiceEntryResourceHome) getInstanceResourceHome();
-		key = home.create(path, MetaDataTypeUtils.toAdvertServiceEntryServiceMetaDataType(metaData), serializedAdvertisable);
+		key = home.create(path, metaData, serializedAdvertisable);
 	    }
 	catch(Exception e)
 	    {

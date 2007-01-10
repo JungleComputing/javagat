@@ -6,7 +6,8 @@ import java.io.FileOutputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 
-import stubs.AdvertServiceEntryService.MetaDataType;
+import stubs.GAT.*;
+import stubs.AdvertServiceEntryService.*;
 
 import org.apache.axis.components.uuid.UUIDGen;
 import org.apache.axis.components.uuid.UUIDGenFactory;
@@ -49,8 +50,8 @@ public class AdvertServiceEntryResource implements PersistentResource, ResourceP
     /* Resource properties */
     private String path;
     // Map<String,String>
-    private MetaDataType metaData;
-    private byte serializedAdvertisable[];
+    private MetaData metaData;
+    private byte[] serializedAdvertisable;
 
     /* Initializes RPs and returns a unique identifier for this resource */
     public Object initialize(Object key) throws Exception
@@ -71,7 +72,7 @@ public class AdvertServiceEntryResource implements PersistentResource, ResourceP
     }
 
     /* Initializes resource and returns a unique identifier for this resource */
-    public Object initialize(String path, MetaDataType metaData, byte[] serializedAdvertisable) throws Exception
+    public Object initialize(String path, MetaData metaData, String serializedAdvertisable) throws Exception
     {
 	String key = uuidGen.nextUUID();
 	initialize(key);
@@ -93,14 +94,14 @@ public class AdvertServiceEntryResource implements PersistentResource, ResourceP
 	this.path = path;
     }
     
-    public MetaDataType getMetaData()
+    public MetaData getMetaData()
     {
 	return metaData;
     }
 
-    public synchronized void setMetaData(MetaDataType metaData) throws ResourceException
+    public synchronized void setMetaData(MetaData metaData) throws ResourceException
     {
-	if(MetaDataTypeUtils.isMap(metaData))
+	if(MetaDataUtils.isMap(metaData))
 	    this.metaData = metaData;
 	else
 	    throw new ResourceException("failed to initialize resource because of corrupt MetaData");
@@ -114,6 +115,11 @@ public class AdvertServiceEntryResource implements PersistentResource, ResourceP
     public synchronized void setSerializedAdvertisable(byte[] serializedAdvertisable)
     {
 	this.serializedAdvertisable = serializedAdvertisable;
+    }
+
+    public synchronized void setSerializedAdvertisable(String serializedAdvertisable) throws java.io.UnsupportedEncodingException
+    {
+	this.serializedAdvertisable = serializedAdvertisable.getBytes("UTF8");
     }
 
     /* Required to access the registration timer for this resource */
@@ -182,8 +188,8 @@ public class AdvertServiceEntryResource implements PersistentResource, ResourceP
 	
 	/* We will store the RPs in these variables */
 	String path;
-	MetaDataType metaData;
-	byte[] serializedAdvertisable;
+	MetaData metaData;
+	String serializedAdvertisable;
 	
 	try
 	    {
@@ -193,8 +199,8 @@ public class AdvertServiceEntryResource implements PersistentResource, ResourceP
 		
 		/* Read the RPs */
 		path = ois.readUTF();
-		metaData = (MetaDataType)ois.readObject();
-		serializedAdvertisable = (byte[])ois.readObject();
+		metaData = (MetaData)ois.readObject();
+		serializedAdvertisable = ois.readUTF();
 		
 		logger.info("Successfully loaded resource with path=" + path);
 
@@ -240,7 +246,7 @@ public class AdvertServiceEntryResource implements PersistentResource, ResourceP
 		/* We write the RPs in the file */
 		oos.writeUTF(this.path);
 		oos.writeObject(this.metaData);
-		oos.writeObject(this.serializedAdvertisable);
+		oos.writeUTF(new String(this.serializedAdvertisable, "UTF8"));
 		oos.flush();
 		logger.info("Successfully stored resource with Path=" + this.path);
 	    }

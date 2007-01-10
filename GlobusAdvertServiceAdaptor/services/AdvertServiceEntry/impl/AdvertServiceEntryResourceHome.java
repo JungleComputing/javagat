@@ -18,7 +18,7 @@ import org.globus.wsrf.impl.SimpleResourceKey;
 import org.globus.wsrf.impl.servicegroup.client.ServiceGroupRegistrationClient;
 import org.globus.wsrf.utils.AddressingUtils;
 
-import stubs.AdvertServiceEntryService.MetaDataType;
+import stubs.GAT.*;
 
 import commonj.timers.Timer;
 
@@ -27,7 +27,7 @@ public class AdvertServiceEntryResourceHome extends ResourceHomeImpl
     /* Added for logging */
     static final Log logger = LogFactory.getLog(AdvertServiceEntryResourceHome.class);
     
-    public ResourceKey create(String path, MetaDataType metaData, byte[] serializedAdvertisable) throws Exception
+    public ResourceKey create(String path, MetaData metaData, String serializedAdvertisable) throws Exception
     {
 	// Create a resource and initialize it
 	AdvertServiceEntryResource resource = (AdvertServiceEntryResource) this.createNewInstance();
