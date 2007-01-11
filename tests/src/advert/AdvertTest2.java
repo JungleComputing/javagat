@@ -28,7 +28,7 @@ public class AdvertTest2
 		Preferences prefs = new Preferences();
 		prefs.put("AdvertService.adaptor.name", "GlobusAdvertServiceAdaptor");
 		//		prefs.put("AdvertService.globus.uri", "http://127.0.0.2:8443/wsrf/services/GAT/IndexServiceProxyService");
-		prefs.put("AdvertService.globus.uri", "https://134.2.217.150:8443/wsrf/services/GAT/IndexServiceProxyService");
+		prefs.put("AdvertService.globus.uri", "http://134.2.217.150:8443/wsrf/services/GAT/IndexServiceProxyService");
 		//prefs.put("AdvertService.adaptor.name", "LocalAdvertServiceAdaptor");
 		//prefs.put("adaptors.local", "true");
 		
