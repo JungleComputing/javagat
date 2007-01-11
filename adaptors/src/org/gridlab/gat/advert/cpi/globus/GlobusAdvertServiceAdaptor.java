@@ -32,6 +32,11 @@ public class GlobusAdvertServiceAdaptor extends AdvertServiceCpi
     private String pwd = SEPERATOR;
     private IndexServiceProxyServicePortType service;
 
+    static
+    {
+	Util.registerTransport();
+    }
+    
     public GlobusAdvertServiceAdaptor(GATContext gatContext, Preferences preferences) throws GATObjectCreationException
     {
         super(gatContext, preferences);
