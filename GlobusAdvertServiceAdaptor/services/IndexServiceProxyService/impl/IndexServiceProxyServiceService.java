@@ -66,11 +66,13 @@ public class IndexServiceProxyServiceService
 {
     /* Added for logging */
     static final Log logger = LogFactory.getLog(IndexServiceProxyServiceService.class);
-    private String indexURI = "http://127.0.0.2:8443/wsrf/services/DefaultIndexService";
+    private String indexURI; // = "http://127.0.0.2:8443/wsrf/services/DefaultIndexService";
     private String serviceURI;
 	
-    public IndexServiceProxyServiceService()
+    public IndexServiceProxyServiceService() throws Exception
     {
+	IndexServiceProxyServiceConfiguration config = IndexServiceProxyServiceConfiguration.getConfObject();
+	this.indexURI = config.getIndexURI();
 	this.serviceURI = this.indexURI.substring(0, this.indexURI.lastIndexOf("/") + 1) + "GAT/AdvertServiceEntryFactoryService";
     }
 

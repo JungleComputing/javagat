@@ -12,6 +12,21 @@
 
 	</resourceParams>
 	</resource>
+
+        <resource name="configuration" type="services.IndexServiceProxyService.impl.IndexServiceProxyServiceConfiguration">
+        <resourceParams>
+
+                <parameter>
+                        <name>factory</name>
+                        <value>org.globus.wsrf.jndi.BeanFactory</value>
+                </parameter>
+
+                <parameter>
+                        <name>indexURI</name>
+                        <value>http://127.0.0.2:8443/wsrf/services/DefaultIndexService</value>
+                </parameter>
+        </resourceParams>
+        </resource>
 </service>
 
 </jndiConfig>
