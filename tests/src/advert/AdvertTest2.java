@@ -1,12 +1,12 @@
 /*
-bin/run_gat_app advert.AdvertTest2 -add /dies/ist/ein/Pfad Name.des.File
-bin/run_gat_app advert.AdvertTest2 -add /dies/ist/ein/weiterer/Pfad Name.des.File
-bin/run_gat_app advert.AdvertTest2 -add /dies/ist/ein/weiterer/neuer/Pfad Name.des.File
-bin/run_gat_app advert.AdvertTest2 -get /dies/ist/ein/Pfad
-bin/run_gat_app advert.AdvertTest2 -get /dies/ist/ein/weiterer/Pfad
-bin/run_gat_app advert.AdvertTest2 -get /dies/ist/ein/weiterer/neuer/Pfad
-bin/run_gat_app advert.AdvertTest2 -find Name.des.File
-bin/run_gat_app -Dgat.debug advert.AdvertTest2 -delete /dies/ist/ein/Pfad
+bin/run_gat_app advert.AdvertTest2 -add /this/is/a/path Name.Of.File
+bin/run_gat_app advert.AdvertTest2 -add /this/is/another/path Name.Of.File
+bin/run_gat_app advert.AdvertTest2 -add /this/is/yet/another/path Name.Of.File
+bin/run_gat_app advert.AdvertTest2 -get /this/is/a/path
+bin/run_gat_app advert.AdvertTest2 -get /this/is/another/path
+bin/run_gat_app advert.AdvertTest2 -get /this/is/yet/another/path
+bin/run_gat_app advert.AdvertTest2 -find Name.Of.File
+bin/run_gat_app -Dgat.debug advert.AdvertTest2 -delete /this/is/a/path
 */
 package advert;
 
@@ -27,8 +27,8 @@ public class AdvertTest2
 		GATContext context = new GATContext();
 		Preferences prefs = new Preferences();
 		prefs.put("AdvertService.adaptor.name", "GlobusAdvertServiceAdaptor");
-		prefs.put("AdvertService.globus.uri", "http://127.0.0.2:8443/wsrf/services/GAT/IndexServiceProxyService");
-		//prefs.put("AdvertService.globus.uri", "http://134.2.217.150:8443/wsrf/services/GAT/IndexServiceProxyService");
+		//prefs.put("AdvertService.globus.uri", "http://127.0.0.2:8443/wsrf/services/GAT/IndexServiceProxyService");
+		prefs.put("AdvertService.globus.uri", "http://134.2.217.150:8443/wsrf/services/GAT/IndexServiceProxyService");
 		//prefs.put("AdvertService.adaptor.name", "LocalAdvertServiceAdaptor");
 		//prefs.put("adaptors.local", "true");
 		
