@@ -24,3 +24,5 @@
 - resource broker adaptors should fill in ALL defined states in the getInfo call.
 - GAT_LOCATION -> JAVAGAT_HOME
 - Let RandomAccessFile extend java.io.RandomAccessFile
+
+- advert service support for brokers
