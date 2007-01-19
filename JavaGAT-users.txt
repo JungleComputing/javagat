@@ -36,5 +36,9 @@ In many cases we don't exactly know what JavaGAT is used for.
 
 - The TextGrid project: http://www.textgrid.de (Frank Knoll)
 
+- Jylab
+
+- VUMC (Keith Cover)
+
 - ...
 
