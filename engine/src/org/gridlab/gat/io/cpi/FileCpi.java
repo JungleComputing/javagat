@@ -219,8 +219,9 @@ public abstract class FileCpi implements FileInterface {
 
         String res = path.substring(0, pos);
 
-        if(GATEngine.DEBUG) {
-            System.err.println("GET PARENT: orig = " + path + " parent = " + res);
+        if (GATEngine.DEBUG) {
+            System.err.println("GET PARENT: orig = " + path + " parent = "
+                    + res);
         }
 
         return res;
@@ -238,12 +239,12 @@ public abstract class FileCpi implements FileInterface {
                             : (":" + location.getPort());
             dest += "/";
             dest += getParent();
-            
-            if(GATEngine.DEBUG) {
-            System.err.println("GET PARENTFILE: orig = " + location 
-                    + " new = " + dest);
+
+            if (GATEngine.DEBUG) {
+                System.err.println("GET PARENTFILE: orig = " + location
+                        + " new = " + dest);
             }
-            
+
             return GAT.createFile(gatContext, preferences, new URI(dest));
         } catch (Exception e) {
             throw new GATInvocationException("file cpi", e);
@@ -522,11 +523,14 @@ public abstract class FileCpi implements FileInterface {
             org.gridlab.gat.io.File destDir =
                     GAT.createFile(gatContext, preferences, dest);
 
-            if (GATEngine.DEBUG) {
-                System.err.println("copyDirectory: mkdir of " + destDir);
-            }
+            if (!destDir.exists()) {
 
-            destDir.mkdir();
+                if (GATEngine.DEBUG) {
+                    System.err.println("copyDirectory: mkdir of " + destDir);
+                }
+
+                destDir.mkdir();
+            }
         } catch (GATObjectCreationException e) {
             throw new GATInvocationException("file cpi", e);
         }
@@ -534,9 +538,12 @@ public abstract class FileCpi implements FileInterface {
         // list all the files and copy recursively.
         File[] files = (File[]) dir.listFiles();
 
-        if (files == null)
+        if (files == null) {
+            if (GATEngine.DEBUG) {
+                System.err.println("copyDirectory: no files in src directory");
+            }
             return;
-
+        }
         for (int i = 0; i < files.length; i++) {
             File f = files[i];
 
