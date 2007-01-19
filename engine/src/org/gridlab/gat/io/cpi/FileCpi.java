@@ -211,7 +211,17 @@ public abstract class FileCpi implements FileInterface {
     public String getParent() {
         String path = location.getPath();
 
-        return new java.io.File(path).getParent();
+        int pos = path.indexOf("/");
+        if(pos == -1) {
+            // no slash
+            return null;
+        }
+        
+        String res = path.substring(pos);
+        
+        System.err.println("GET PARENT: orig = " + path + " parent = " + res);
+        
+        return res;
     }
 
     public File getParentFile() throws GATInvocationException {
@@ -219,7 +229,7 @@ public abstract class FileCpi implements FileInterface {
             String uri = location.toString();
             
             System.err.println("URI="+uri + " PATH=" + location.getPath() 
-                    +"uriLen="+uri.length() + "plen="+location.getPath().length());
+                    +" uriLen="+uri.length() + " plen="+location.getPath().length());
             
             uri = uri.substring(0, uri.length() - location.getPath().length());
             uri += getParent();
