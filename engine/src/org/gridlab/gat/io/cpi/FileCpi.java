@@ -217,6 +217,10 @@ public abstract class FileCpi implements FileInterface {
     public File getParentFile() throws GATInvocationException {
         try {
             String uri = location.toString();
+            
+            System.err.println("URI="+uri + " PATH=" + location.getPath() 
+                    +"uriLen="+uri.length() + "plen="+location.getPath().length());
+            
             uri = uri.substring(0, uri.length() - location.getPath().length());
             uri += getParent();
 
