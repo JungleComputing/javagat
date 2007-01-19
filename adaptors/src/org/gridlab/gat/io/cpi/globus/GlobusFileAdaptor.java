@@ -855,8 +855,8 @@ public abstract class GlobusFileAdaptor extends FileCpi {
         // transfer done. Data is in received stream.
         // convert it to a vector.
 
-         System.err.println("result of list " + filter + " is: "
-         + received.toString());
+//         System.err.println("result of list " + filter + " is: "
+//         + received.toString());
 
          BufferedReader reader =
                 new BufferedReader(new StringReader(received.toString()));
