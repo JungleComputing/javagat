@@ -427,7 +427,6 @@ public abstract class GlobusFileAdaptor extends FileCpi {
             for (int i = 0; i < v.size(); i++) {
                 FileInfo info = ((FileInfo) v.get(i));
 
-                System.err.println("list result name = " + info.getName());
                 if(info.getName().equals(".")) continue;
                 if(info.getName().equals("..")) continue;
                 
