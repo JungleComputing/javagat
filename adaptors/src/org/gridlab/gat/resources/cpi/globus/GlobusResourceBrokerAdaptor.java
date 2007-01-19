@@ -42,6 +42,9 @@ import org.ietf.jgss.GSSException;
  * @author rob
  */
 public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
+
+    static boolean shutdownInProgress = false;
+    
     public GlobusResourceBrokerAdaptor(GATContext gatContext,
             Preferences preferences) throws GATObjectCreationException {
         super(gatContext, preferences);
@@ -288,6 +291,10 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
     public Job submitJob(JobDescription description)
             throws GATInvocationException {
 
+        if(shutdownInProgress) {
+            throw new GATInvocationException("cannot submit jobs after calling GAT.end");
+        }
+        
         boolean useGramSandbox = false;
         
         String s = (String) preferences.get("useGramSandbox");
@@ -419,9 +426,11 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
 
     public static void end() {
         if (GATEngine.DEBUG) {
-            System.err.println("globus adaptor end");
+            System.err.println("globus broker adaptor end");
         }
 
+        shutdownInProgress = true;
+        
         try {
             Gram.deactivateAllCallbackHandlers();
         } catch (Throwable t) {

@@ -17,7 +17,7 @@ import org.gridlab.gat.security.globus.GlobusSecurityUtils;
 import org.ietf.jgss.GSSCredential;
 
 public class GridFTPFileAdaptor extends GlobusFileAdaptor {
-    static final boolean USE_CLIENT_CACHING = true;
+    static boolean USE_CLIENT_CACHING = true;
 
     private static Hashtable clienttable = new Hashtable();
 
@@ -257,6 +257,8 @@ public class GridFTPFileAdaptor extends GlobusFileAdaptor {
             System.err.println("end of gridftp adaptor");
         }
 
+        USE_CLIENT_CACHING = false;
+        
         // destroy the cache
         if (clienttable == null) {
             return;
