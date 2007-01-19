@@ -211,7 +211,7 @@ public abstract class FileCpi implements FileInterface {
     public String getParent() {
         String path = location.getPath();
 
-        int pos = path.indexOf("/");
+        int pos = path.lastIndexOf("/");
         if(pos == -1) {
             // no slash
             return null;
