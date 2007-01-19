@@ -538,9 +538,12 @@ public abstract class FileCpi implements FileInterface {
         // list all the files and copy recursively.
         File[] files = (File[]) dir.listFiles();
 
-        if (files == null)
+        if (files == null) {
+            if (GATEngine.DEBUG) {
+                System.err.println("copyDirectory: no files in src directory");
+            }
             return;
-
+        }
         for (int i = 0; i < files.length; i++) {
             File f = files[i];
 
