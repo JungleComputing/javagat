@@ -26,3 +26,4 @@
 - Let RandomAccessFile extend java.io.RandomAccessFile
 
 - advert service support for brokers
+- in the engine, check if GAT.end hasn't been called before doing an operation.
