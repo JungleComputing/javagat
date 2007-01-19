@@ -234,6 +234,8 @@ public abstract class FileCpi implements FileInterface {
             uri = uri.substring(0, uri.length() - location.getPath().length());
             uri += getParent();
 
+            System.err.println("NEWURI = " + uri);
+            
             return GAT.createFile(gatContext, preferences, new URI(uri));
         } catch (Exception e) {
             throw new GATInvocationException("file cpi", e);
