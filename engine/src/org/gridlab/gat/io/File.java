@@ -47,7 +47,8 @@ import org.gridlab.gat.monitoring.Monitorable;
  * correctly? The client simply has to call a single API call and the physical
  * file is moved.
  */
-public class File extends java.io.File implements Monitorable, Serializable, Advertisable {
+public class File extends java.io.File implements Monitorable, Serializable,
+        Advertisable {
     org.gridlab.gat.io.FileInterface f;
 
     /** Do not use this constructur, it is for internal GAT use.
@@ -55,8 +56,12 @@ public class File extends java.io.File implements Monitorable, Serializable, Adv
     public File(org.gridlab.gat.io.FileInterface f) {
         super("dummy");
         this.f = f;
+        if(f == null) {
+            System.err.println("EEEK");
+            new Exception().printStackTrace();
+        }
     }
-    
+
     /**
      * This method copies the physical file represented by this File instance to
      * a physical file identified by the passed URI.
@@ -93,7 +98,7 @@ public class File extends java.io.File implements Monitorable, Serializable, Adv
      */
     public boolean canRead() {
         try {
-        return f.canRead();
+            return f.canRead();
         } catch (Exception e) {
             return false;
         }
@@ -104,7 +109,7 @@ public class File extends java.io.File implements Monitorable, Serializable, Adv
      */
     public boolean canWrite() {
         try {
-        return f.canWrite();
+            return f.canWrite();
         } catch (Exception e) {
             throw new Error(e);
         }
@@ -115,7 +120,7 @@ public class File extends java.io.File implements Monitorable, Serializable, Adv
      */
     public int compareTo(File pathname) {
         try {
-        return f.compareTo(pathname);
+            return f.compareTo(pathname);
         } catch (Exception e) {
             throw new Error(e);
         }
@@ -126,18 +131,18 @@ public class File extends java.io.File implements Monitorable, Serializable, Adv
      */
     public boolean createNewFile() throws IOException {
         try {
-        return f.createNewFile();
+            return f.createNewFile();
         } catch (GATInvocationException e) {
             throw new GATIOException(e);
         }
-   }
+    }
 
     /**
      * @see java.io.File#delete()
      */
     public boolean delete() {
         try {
-        return f.delete();
+            return f.delete();
         } catch (Exception e) {
             throw new Error(e);
         }
@@ -149,18 +154,18 @@ public class File extends java.io.File implements Monitorable, Serializable, Adv
      */
     public void deleteOnExit() {
         try {
-        f.deleteOnExit();
+            f.deleteOnExit();
         } catch (Exception e) {
             throw new Error(e);
         }
-}
+    }
 
     /**
      * @see java.io.File#equals(java.lang.Object)
      */
     public boolean equals(Object obj) {
         try {
-      return f.equals(obj);
+            return f.equals(obj);
         } catch (Exception e) {
             throw new Error(e);
         }
@@ -171,7 +176,7 @@ public class File extends java.io.File implements Monitorable, Serializable, Adv
      */
     public boolean exists() {
         try {
-   return f.exists();
+            return f.exists();
         } catch (Exception e) {
             throw new Error(e);
         }
@@ -193,7 +198,7 @@ public class File extends java.io.File implements Monitorable, Serializable, Adv
      */
     public String getAbsolutePath() {
         try {
-       return f.getAbsolutePath();
+            return f.getAbsolutePath();
         } catch (Exception e) {
             throw new Error(e);
         }
@@ -204,7 +209,7 @@ public class File extends java.io.File implements Monitorable, Serializable, Adv
      */
     public java.io.File getCanonicalFile() throws IOException {
         try {
-      return f.getCanonicalFile();
+            return f.getCanonicalFile();
         } catch (GATInvocationException e) {
             throw new GATIOException(e);
         }
@@ -215,18 +220,18 @@ public class File extends java.io.File implements Monitorable, Serializable, Adv
      */
     public String getCanonicalPath() throws IOException {
         try {
-    return f.getCanonicalPath();
+            return f.getCanonicalPath();
         } catch (GATInvocationException e) {
             throw new GATIOException(e);
         }
-   }
+    }
 
     /**
      * @see java.io.File#getName()
      */
     public String getName() {
         try {
-     return f.getName();
+            return f.getName();
         } catch (Exception e) {
             throw new Error(e);
         }
@@ -237,7 +242,7 @@ public class File extends java.io.File implements Monitorable, Serializable, Adv
      */
     public String getParent() {
         try {
-     return f.getParent();
+            return f.getParent();
         } catch (Exception e) {
             throw new Error(e);
         }
@@ -260,7 +265,7 @@ public class File extends java.io.File implements Monitorable, Serializable, Adv
      */
     public String getPath() {
         try {
-     return f.getPath();
+            return f.getPath();
         } catch (Exception e) {
             throw new Error(e);
         }
@@ -271,7 +276,7 @@ public class File extends java.io.File implements Monitorable, Serializable, Adv
      */
     public int hashCode() {
         try {
-      return f.hashCode();
+            return f.hashCode();
         } catch (Exception e) {
             throw new Error(e);
         }
@@ -282,7 +287,7 @@ public class File extends java.io.File implements Monitorable, Serializable, Adv
      */
     public boolean isAbsolute() {
         try {
-     return f.isAbsolute();
+            return f.isAbsolute();
         } catch (Exception e) {
             throw new Error(e);
         }
@@ -293,7 +298,7 @@ public class File extends java.io.File implements Monitorable, Serializable, Adv
      */
     public boolean isDirectory() {
         try {
-     return f.isDirectory();
+            return f.isDirectory();
         } catch (Exception e) {
             throw new Error(e);
         }
@@ -304,7 +309,7 @@ public class File extends java.io.File implements Monitorable, Serializable, Adv
      */
     public boolean isFile() {
         try {
-       return f.isFile();
+            return f.isFile();
         } catch (Exception e) {
             throw new Error(e);
         }
@@ -315,7 +320,7 @@ public class File extends java.io.File implements Monitorable, Serializable, Adv
      */
     public boolean isHidden() {
         try {
-     return f.isHidden();
+            return f.isHidden();
         } catch (Exception e) {
             throw new Error(e);
         }
@@ -326,7 +331,7 @@ public class File extends java.io.File implements Monitorable, Serializable, Adv
      */
     public long lastModified() {
         try {
-   return f.lastModified();
+            return f.lastModified();
         } catch (Exception e) {
             throw new Error(e);
         }
@@ -337,7 +342,7 @@ public class File extends java.io.File implements Monitorable, Serializable, Adv
      */
     public long length() {
         try {
-    return f.length();
+            return f.length();
         } catch (Exception e) {
             throw new Error(e);
         }
@@ -348,7 +353,7 @@ public class File extends java.io.File implements Monitorable, Serializable, Adv
      */
     public String[] list() {
         try {
-    return f.list();
+            return f.list();
         } catch (Exception e) {
             throw new Error(e);
         }
@@ -356,21 +361,21 @@ public class File extends java.io.File implements Monitorable, Serializable, Adv
 
     /**
      * @see java.io.File#list(java.io.FilenameFilter)
-     */ 
+     */
     public String[] list(FilenameFilter filter) {
         try {
-       return f.list(new FileNameFilterForwarder(filter));
+            return f.list(new FileNameFilterForwarder(filter));
         } catch (Exception e) {
             throw new Error(e);
         }
     }
-    
+
     /**
      * @see java.io.File#listFiles()
      */
     public java.io.File[] listFiles() {
         try {
-    return f.listFiles();
+            return f.listFiles();
         } catch (Exception e) {
             throw new Error(e);
         }
@@ -381,7 +386,7 @@ public class File extends java.io.File implements Monitorable, Serializable, Adv
      */
     public java.io.File[] listFiles(FileFilter filter) {
         try {
-      return f.listFiles(new FileFilterForwarder(filter));
+            return f.listFiles(new FileFilterForwarder(filter));
         } catch (Exception e) {
             throw new Error(e);
         }
@@ -389,22 +394,22 @@ public class File extends java.io.File implements Monitorable, Serializable, Adv
 
     /**
      * @see java.io.File#listFiles(java.io.FilenameFilter)
-     */ 
+     */
     public java.io.File[] listFiles(FilenameFilter filter) {
         try {
-            
-      return f.listFiles(new FileNameFilterForwarder(filter));
+
+            return f.listFiles(new FileNameFilterForwarder(filter));
         } catch (Exception e) {
             throw new Error(e);
         }
     }
-    
+
     /**
      * @see java.io.File#mkdir()
      */
     public boolean mkdir() {
         try {
-       return f.mkdir();
+            return f.mkdir();
         } catch (Exception e) {
             throw new Error(e);
         }
@@ -415,7 +420,7 @@ public class File extends java.io.File implements Monitorable, Serializable, Adv
      */
     public boolean mkdirs() {
         try {
-      return f.mkdirs();
+            return f.mkdirs();
         } catch (Exception e) {
             throw new Error(e);
         }
@@ -427,7 +432,7 @@ public class File extends java.io.File implements Monitorable, Serializable, Adv
     public boolean renameTo(java.io.File dest) {
         try {
             org.gridlab.gat.io.File a = (org.gridlab.gat.io.File) dest;
-       return f.renameTo(a);
+            return f.renameTo(a);
         } catch (Exception e) {
             throw new Error(e);
         }
@@ -438,7 +443,7 @@ public class File extends java.io.File implements Monitorable, Serializable, Adv
      */
     public boolean setLastModified(long time) {
         try {
-      return f.setLastModified(time);
+            return f.setLastModified(time);
         } catch (Exception e) {
             throw new Error(e);
         }
@@ -449,7 +454,7 @@ public class File extends java.io.File implements Monitorable, Serializable, Adv
      */
     public boolean setReadOnly() {
         try {
-       return f.setReadOnly();
+            return f.setReadOnly();
         } catch (Exception e) {
             throw new Error(e);
         }
@@ -460,7 +465,7 @@ public class File extends java.io.File implements Monitorable, Serializable, Adv
      */
     public String toString() {
         try {
-      return f.toString();
+            return f.toString();
         } catch (Exception e) {
             throw new Error(e);
         }
@@ -478,7 +483,7 @@ public class File extends java.io.File implements Monitorable, Serializable, Adv
      */
     public org.gridlab.gat.URI toGATURI() {
         try {
-      return f.toURI();
+            return f.toURI();
         } catch (Exception e) {
             throw new Error(e);
         }
@@ -488,7 +493,7 @@ public class File extends java.io.File implements Monitorable, Serializable, Adv
      * @see java.io.File#toURL()
      */
     public URL toURL() throws MalformedURLException {
-     return f.toURL();
+        return f.toURL();
     }
 
     /* (non-Javadoc)
@@ -501,22 +506,25 @@ public class File extends java.io.File implements Monitorable, Serializable, Adv
     /* (non-Javadoc)
      * @see org.gridlab.gat.monitoring.Monitorable#addMetricListener(org.gridlab.gat.monitoring.MetricListener, org.gridlab.gat.monitoring.Metric)
      */
-    public void addMetricListener(MetricListener metricListener, Metric metric) throws GATInvocationException {
+    public void addMetricListener(MetricListener metricListener, Metric metric)
+            throws GATInvocationException {
         f.addMetricListener(metricListener, metric);
-        
+
     }
 
     /* (non-Javadoc)
      * @see org.gridlab.gat.monitoring.Monitorable#getMeasurement(org.gridlab.gat.monitoring.Metric)
      */
-    public MetricValue getMeasurement(Metric metric) throws GATInvocationException {
+    public MetricValue getMeasurement(Metric metric)
+            throws GATInvocationException {
         return f.getMeasurement(metric);
     }
 
     /* (non-Javadoc)
      * @see org.gridlab.gat.monitoring.Monitorable#getMetricDefinitionByName(java.lang.String)
      */
-    public MetricDefinition getMetricDefinitionByName(String name) throws GATInvocationException {
+    public MetricDefinition getMetricDefinitionByName(String name)
+            throws GATInvocationException {
         return f.getMetricDefinitionByName(name);
     }
 
@@ -530,18 +538,19 @@ public class File extends java.io.File implements Monitorable, Serializable, Adv
     /* (non-Javadoc)
      * @see org.gridlab.gat.monitoring.Monitorable#removeMetricListener(org.gridlab.gat.monitoring.MetricListener, org.gridlab.gat.monitoring.Metric)
      */
-    public void removeMetricListener(MetricListener metricListener, Metric metric) throws GATInvocationException {
+    public void removeMetricListener(MetricListener metricListener,
+            Metric metric) throws GATInvocationException {
         f.removeMetricListener(metricListener, metric);
     }
 }
 
 class FileNameFilterForwarder implements org.gridlab.gat.io.cpi.FilenameFilter {
     java.io.FilenameFilter f;
-    
+
     public FileNameFilterForwarder(java.io.FilenameFilter f) {
         this.f = f;
     }
-    
+
     /* (non-Javadoc)
      * @see org.gridlab.gat.io.cpi.FilenameFilter#accept(org.gridlab.gat.io.File, java.lang.String)
      */
@@ -552,11 +561,11 @@ class FileNameFilterForwarder implements org.gridlab.gat.io.cpi.FilenameFilter {
 
 class FileFilterForwarder implements org.gridlab.gat.io.cpi.FileFilter {
     java.io.FileFilter f;
-    
+
     public FileFilterForwarder(java.io.FileFilter f) {
         this.f = f;
     }
-    
+
     /* (non-Javadoc)
      * @see org.gridlab.gat.io.cpi.FileFilter#accept(org.gridlab.gat.io.File)
      */
@@ -564,4 +573,3 @@ class FileFilterForwarder implements org.gridlab.gat.io.cpi.FileFilter {
         return f.accept(pathname);
     }
 }
-
