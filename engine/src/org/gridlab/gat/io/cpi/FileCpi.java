@@ -219,7 +219,9 @@ public abstract class FileCpi implements FileInterface {
 
         String res = path.substring(0, pos);
 
-        System.err.println("GET PARENT: orig = " + path + " parent = " + res);
+        if(GATEngine.DEBUG) {
+            System.err.println("GET PARENT: orig = " + path + " parent = " + res);
+        }
 
         return res;
     }
@@ -237,29 +239,12 @@ public abstract class FileCpi implements FileInterface {
             dest += "/";
             dest += getParent();
             
+            if(GATEngine.DEBUG) {
             System.err.println("GET PARENTFILE: orig = " + location 
                     + " new = " + dest);
+            }
             
             return GAT.createFile(gatContext, preferences, new URI(dest));
-        } catch (Exception e) {
-            throw new GATInvocationException("file cpi", e);
-        }
-    }
-
-    public File oldgetParentFile() throws GATInvocationException {
-        try {
-            String uri = location.toString();
-
-            System.err.println("URI=" + uri + " PATH=" + location.getPath()
-                    + " uriLen=" + uri.length() + " plen="
-                    + location.getPath().length());
-
-            uri = uri.substring(0, uri.length() - location.getPath().length());
-            uri += getParent();
-
-            System.err.println("NEWURI = " + uri);
-
-            return GAT.createFile(gatContext, preferences, new URI(uri));
         } catch (Exception e) {
             throw new GATInvocationException("file cpi", e);
         }
