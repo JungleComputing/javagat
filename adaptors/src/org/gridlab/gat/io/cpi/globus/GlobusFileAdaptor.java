@@ -419,8 +419,9 @@ public abstract class GlobusFileAdaptor extends FileCpi {
             // we know it is a dir, so we can use this call.
             // for some reason, on old servers the list() method returns
             // an empty list if there are many files. 
-            v = listNoMinusD(client, remotePath);
-
+//            v = listNoMinusD(client, remotePath);
+            v = client.list();
+            
             File[] res = new File[v.size()];
 
             for (int i = 0; i < v.size(); i++) {
