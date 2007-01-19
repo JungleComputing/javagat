@@ -398,6 +398,9 @@ public abstract class GlobusFileAdaptor extends FileCpi {
         
         try {
             if (!isDirectory()) {
+                if(GATEngine.DEBUG) {
+                    System.err.println("listFiles: not a directory");
+                }
                 return null;
             }
             String remotePath = getPath();
@@ -844,11 +847,10 @@ public abstract class GlobusFileAdaptor extends FileCpi {
         // transfer done. Data is in received stream.
         // convert it to a vector.
 
-        /*
          System.err.println("result of list " + filter + " is: "
          + received.toString());
-         */
-        BufferedReader reader =
+
+         BufferedReader reader =
                 new BufferedReader(new StringReader(received.toString()));
 
         Vector fileList = new Vector();
@@ -867,14 +869,6 @@ public abstract class GlobusFileAdaptor extends FileCpi {
                 System.err
                     .println("globus file adaptor: WARNING, could not create FileInfo for: "
                         + line);
-
-                /*
-                 ClientException ce = new ClientException(
-                 ClientException.UNSPECIFIED,
-                 "Could not create FileInfo");
-                 ce.setRootCause(e);
-                 throw ce;
-                 */
             }
         }
 
