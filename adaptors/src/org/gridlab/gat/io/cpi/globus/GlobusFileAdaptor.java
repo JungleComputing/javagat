@@ -421,12 +421,15 @@ public abstract class GlobusFileAdaptor extends FileCpi {
             // an empty list if there are many files. 
 //            v = listNoMinusD(client, remotePath);
             v = client.list();
-            
-            File[] res = new File[v.size()];
+
+            Vector result = new Vector();
 
             for (int i = 0; i < v.size(); i++) {
                 FileInfo info = ((FileInfo) v.get(i));
 
+                if(info.getName().equals(".")) continue;
+                if(info.getName().equals("..")) continue;
+                
                 String uri = location.toString();
                 if (!uri.endsWith("/")) {
                     uri += "/";
@@ -437,9 +440,13 @@ public abstract class GlobusFileAdaptor extends FileCpi {
                 // pass the FileInfo object via the preferences. 
                 Preferences newPrefs = (Preferences) preferences.clone();
                 newPrefs.put("GAT_INTERNAL_FILE_INFO", info);
-                res[i] = GAT.createFile(gatContext, newPrefs, new URI(uri));
+                result.add(GAT.createFile(gatContext, newPrefs, new URI(uri)));
             }
 
+            File[] res = new File[result.size()];
+            for(int i=0;i<result.size(); i++) {
+                res[i] = (File) result.get(i);
+            }
             return res;
         } catch (Exception e) {
             throw new GATInvocationException("gridftp", e);
@@ -848,8 +855,8 @@ public abstract class GlobusFileAdaptor extends FileCpi {
         // transfer done. Data is in received stream.
         // convert it to a vector.
 
-         System.err.println("result of list " + filter + " is: "
-         + received.toString());
+//         System.err.println("result of list " + filter + " is: "
+//         + received.toString());
 
          BufferedReader reader =
                 new BufferedReader(new StringReader(received.toString()));
