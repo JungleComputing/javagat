@@ -826,6 +826,10 @@ public class GAT {
     }
 
     public static void end() {
+        System.err.print("END CALLED FROM: ");
+        
+        new Exception().printStackTrace();
+        
         GATEngine.end();
     }
 
