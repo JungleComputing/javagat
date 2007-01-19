@@ -90,9 +90,16 @@ public abstract class StagedFile {
     protected void wipe(File f) throws GATInvocationException {
         if(!f.exists()) {
             if(GATEngine.DEBUG) {
-                System.err.println("file to wipe does not exists.");
+                System.err.println("file to wipe does not exists, skipping.");
             }
             return;
+        }
+        
+        if(!f.isFile()) {
+            if(GATEngine.DEBUG) {
+                System.err.println("file to wipe is not a normal file, skipping.");
+            }
+            return;            
         }
         
         long size = f.length();

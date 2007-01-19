@@ -52,7 +52,7 @@ public abstract class FileCpi implements FileInterface {
      *            the preferences to be associated with this adaptor
      */
     protected FileCpi(GATContext gatContext, Preferences preferences,
-        URI location) {
+            URI location) {
         this.gatContext = gatContext;
         this.preferences = preferences;
         this.location = location;
@@ -131,7 +131,7 @@ public abstract class FileCpi implements FileInterface {
     }
 
     public void addMetricListener(MetricListener metricListener, Metric metric)
-        throws GATInvocationException {
+            throws GATInvocationException {
         throw new UnsupportedOperationException("Not implemented");
     }
 
@@ -140,17 +140,17 @@ public abstract class FileCpi implements FileInterface {
     }
 
     public void removeMetricListener(MetricListener metricListener,
-        Metric metric) throws GATInvocationException {
+            Metric metric) throws GATInvocationException {
         throw new UnsupportedOperationException("Not implemented");
     }
 
     public MetricDefinition getMetricDefinitionByName(String name)
-        throws GATInvocationException {
+            throws GATInvocationException {
         throw new UnsupportedOperationException("Not implemented");
     }
 
     public MetricValue getMeasurement(Metric metric)
-        throws GATInvocationException {
+            throws GATInvocationException {
         throw new UnsupportedOperationException("Not implemented");
     }
 
@@ -211,16 +211,40 @@ public abstract class FileCpi implements FileInterface {
     public String getParent() {
         String path = location.getPath();
 
-        return new java.io.File(path).getParent();
+        int pos = path.lastIndexOf("/");
+        if (pos == -1) {
+            // no slash
+            return null;
+        }
+
+        String res = path.substring(0, pos);
+
+        if(GATEngine.DEBUG) {
+            System.err.println("GET PARENT: orig = " + path + " parent = " + res);
+        }
+
+        return res;
     }
 
     public File getParentFile() throws GATInvocationException {
         try {
-            String uri = location.toString();
-            uri = uri.substring(0, uri.length() - location.getPath().length());
-            uri += getParent();
-
-            return GAT.createFile(gatContext, preferences, new URI(uri));
+            String dest = location.getScheme() + "://";
+            dest +=
+                    (location.getUserInfo() == null) ? "" : location
+                            .getUserInfo();
+            dest += location.getHost();
+            dest +=
+                    (location.getPort() == -1) ? ""
+                            : (":" + location.getPort());
+            dest += "/";
+            dest += getParent();
+            
+            if(GATEngine.DEBUG) {
+            System.err.println("GET PARENTFILE: orig = " + location 
+                    + " new = " + dest);
+            }
+            
+            return GAT.createFile(gatContext, preferences, new URI(dest));
         } catch (Exception e) {
             throw new GATInvocationException("file cpi", e);
         }
@@ -323,7 +347,7 @@ public abstract class FileCpi implements FileInterface {
 
             for (int i = 0; i < l.length; i++) {
                 if (filter.accept(GAT.createFile(gatContext, new URI(location
-                    .getPath())), l[i])) {
+                        .getPath())), l[i])) {
                     v.add(l[i]);
                 }
             }
@@ -356,7 +380,7 @@ public abstract class FileCpi implements FileInterface {
 
             for (int i = 0; i < l.length; i++) {
                 if (filter.accept(GAT.createFile(gatContext, new URI(l[i]
-                    .getPath())))) {
+                        .getPath())))) {
                     v.add(l[i]);
                 }
             }
@@ -374,7 +398,7 @@ public abstract class FileCpi implements FileInterface {
     }
 
     public File[] listFiles(FilenameFilter filter)
-        throws GATInvocationException {
+            throws GATInvocationException {
         if (!isDirectory()) {
             return null;
         }
@@ -390,7 +414,7 @@ public abstract class FileCpi implements FileInterface {
 
             for (int i = 0; i < l.length; i++) {
                 if (filter.accept(GAT.createFile(gatContext, new URI(location
-                    .getPath())), l[i].getPath())) {
+                        .getPath())), l[i].getPath())) {
                     v.add(l[i]);
                 }
             }
@@ -469,7 +493,7 @@ public abstract class FileCpi implements FileInterface {
                 int index = s.indexOf(':');
 
                 return new URI(destScheme + ":"
-                    + s.substring(index + 1, s.length()));
+                        + s.substring(index + 1, s.length()));
             }
         } catch (URISyntaxException e) {
             System.err.println("internal UnsupportedOperationException: " + e);
@@ -479,8 +503,8 @@ public abstract class FileCpi implements FileInterface {
     }
 
     protected static void copyDirectory(GATContext gatContext,
-        Preferences preferences, URI dirURI, URI dest)
-        throws GATInvocationException {
+            Preferences preferences, URI dirURI, URI dest)
+            throws GATInvocationException {
         if (GATEngine.DEBUG) {
             System.err.println("copyDirectory");
         }
@@ -495,8 +519,8 @@ public abstract class FileCpi implements FileInterface {
 
         // create destination dir
         try {
-            org.gridlab.gat.io.File destDir = GAT.createFile(gatContext,
-                preferences, dest);
+            org.gridlab.gat.io.File destDir =
+                    GAT.createFile(gatContext, preferences, dest);
 
             if (GATEngine.DEBUG) {
                 System.err.println("copyDirectory: mkdir of " + destDir);
@@ -510,7 +534,8 @@ public abstract class FileCpi implements FileInterface {
         // list all the files and copy recursively.
         File[] files = (File[]) dir.listFiles();
 
-        if (files == null) return;
+        if (files == null)
+            return;
 
         for (int i = 0; i < files.length; i++) {
             File f = files[i];
@@ -543,14 +568,14 @@ public abstract class FileCpi implements FileInterface {
                 copyDirectory(gatContext, preferences, f.toGATURI(), newDest);
             } else {
                 throw new GATInvocationException(
-                    "file cpi, don't know how to handle file: " + f
-                        + " (links are not supported).");
+                        "file cpi, don't know how to handle file: " + f
+                                + " (links are not supported).");
             }
         }
     }
 
     public static void recursiveDeleteDirectory(GATContext gatContext,
-        Preferences preferences, URI dirUri) throws GATInvocationException {
+            Preferences preferences, URI dirUri) throws GATInvocationException {
         File dir;
         try {
             dir = GAT.createFile(gatContext, preferences, dirUri);
@@ -559,32 +584,32 @@ public abstract class FileCpi implements FileInterface {
         }
 
         File[] files = (File[]) dir.listFiles(new java.io.FileFilter() {
-                public boolean accept(java.io.File file) {
-                    try {
-                        return file.isDirectory();
-                    } catch (Exception e) {
-                        return false;
-                    }
+            public boolean accept(java.io.File file) {
+                try {
+                    return file.isDirectory();
+                } catch (Exception e) {
+                    return false;
                 }
-            });
+            }
+        });
 
         if (files != null) {
             for (int i = 0; i < files.length; i++) {
                 recursiveDeleteDirectory(gatContext, preferences, files[i]
-                    .toGATURI());
+                        .toGATURI());
                 files[i].delete();
             }
         }
 
-            files = (File[]) dir.listFiles(new java.io.FileFilter() {
-                public boolean accept(java.io.File file) {
-                    try {
-                        return !file.isDirectory();
-                    } catch (Exception e) {
-                        return false;
-                    }
+        files = (File[]) dir.listFiles(new java.io.FileFilter() {
+            public boolean accept(java.io.File file) {
+                try {
+                    return !file.isDirectory();
+                } catch (Exception e) {
+                    return false;
                 }
-            });
+            }
+        });
 
         if (files != null) {
             for (int i = 0; i < files.length; i++) {
@@ -603,13 +628,14 @@ public abstract class FileCpi implements FileInterface {
     }
 
     public static Advertisable unmarshal(GATContext context,
-        Preferences preferences, String s) {
-        SerializedFile f = (SerializedFile) GATEngine.defaultUnmarshal(
-            SerializedFile.class, s);
+            Preferences preferences, String s) {
+        SerializedFile f =
+                (SerializedFile) GATEngine.defaultUnmarshal(
+                        SerializedFile.class, s);
 
         try {
             return GAT.createFile(context, preferences,
-                new URI(f.getLocation()));
+                    new URI(f.getLocation()));
         } catch (Exception e) {
             throw new Error("could not create new GAT object");
         }

@@ -837,7 +837,7 @@ public class GAT {
         AdaptorList adaptors = gatEngine.getAdaptorList(cpiClass);
 
         if (adaptors == null) {
-            return null;
+            throw new GATObjectCreationException("could not find any adaptors");
         }
 
         /** Maybe we want to support a "default" context. */
