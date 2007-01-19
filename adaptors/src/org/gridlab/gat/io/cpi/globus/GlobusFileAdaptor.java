@@ -421,8 +421,8 @@ public abstract class GlobusFileAdaptor extends FileCpi {
             // an empty list if there are many files. 
 //            v = listNoMinusD(client, remotePath);
             v = client.list();
-            
-            File[] res = new File[v.size()];
+
+            Vector result = new Vector();
 
             for (int i = 0; i < v.size(); i++) {
                 FileInfo info = ((FileInfo) v.get(i));
@@ -441,9 +441,13 @@ public abstract class GlobusFileAdaptor extends FileCpi {
                 // pass the FileInfo object via the preferences. 
                 Preferences newPrefs = (Preferences) preferences.clone();
                 newPrefs.put("GAT_INTERNAL_FILE_INFO", info);
-                res[i] = GAT.createFile(gatContext, newPrefs, new URI(uri));
+                result.add(GAT.createFile(gatContext, newPrefs, new URI(uri)));
             }
 
+            File[] res = new File[result.size()];
+            for(int i=0;i<result.size(); i++) {
+                res[i] = (File) result.get(i);
+            }
             return res;
         } catch (Exception e) {
             throw new GATInvocationException("gridftp", e);
