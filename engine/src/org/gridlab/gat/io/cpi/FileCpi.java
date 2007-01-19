@@ -217,7 +217,7 @@ public abstract class FileCpi implements FileInterface {
             return null;
         }
         
-        String res = path.substring(pos);
+        String res = path.substring(0, pos);
         
         System.err.println("GET PARENT: orig = " + path + " parent = " + res);
         
