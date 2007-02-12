@@ -114,6 +114,23 @@ public abstract class ResourceBrokerCpi implements ResourceBroker {
         return u;
     }
 
+    protected boolean isJavaApplication(JobDescription description)
+            throws GATInvocationException {
+        SoftwareDescription sd = description.getSoftwareDescription();
+
+        if (sd == null) {
+            throw new GATInvocationException(
+                    "The job description does not contain a software description");
+        }
+
+        String exeScheme = getLocationURI(description).getScheme();
+        if (exeScheme != null && exeScheme.equals("java")) {
+            return true;
+        }
+        
+        return false;
+    }
+
     // utility methods
     protected int getIntAttribute(JobDescription description, String name,
             int defaultVal) {
@@ -232,14 +249,14 @@ public abstract class ResourceBrokerCpi implements ResourceBroker {
     public String getHostname(JobDescription description)
             throws GATInvocationException {
         String contactHostname = null;
-        
-        String contact = (String) preferences
-        .get("ResourceBroker.jobmanagerContact");
-        if(contact != null) {
+
+        String contact =
+                (String) preferences.get("ResourceBroker.jobmanagerContact");
+        if (contact != null) {
             StringTokenizer st = new StringTokenizer(contact, ":/");
             contactHostname = st.nextToken();
         }
-        
+
         ResourceDescription d = description.getResourceDescription();
 
         if (d == null) {
@@ -247,8 +264,9 @@ public abstract class ResourceBrokerCpi implements ResourceBroker {
         }
 
         if (!(d instanceof HardwareResourceDescription)) {
-            if(contactHostname != null) return contactHostname;
-            
+            if (contactHostname != null)
+                return contactHostname;
+
             throw new GATInvocationException(
                     "Currently only hardware resource descriptions are supported");
         }

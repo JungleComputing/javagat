@@ -44,7 +44,7 @@ import org.ietf.jgss.GSSException;
 public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
 
     static boolean shutdownInProgress = false;
-    
+
     public GlobusResourceBrokerAdaptor(GATContext gatContext,
             Preferences preferences) throws GATObjectCreationException {
         super(gatContext, preferences);
@@ -62,13 +62,58 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
 
         if (sd == null) {
             throw new GATInvocationException(
-                "The job description does not contain a software description");
+                    "The job description does not contain a software description");
         }
 
-        String exe = getLocationURI(description).getPath();
+        String rsl = "";
+        String args = "";
+
+        if (isJavaApplication(description)) {
+            URI javaHome = (URI) sd.getAttributes().get("java.home");
+            if (javaHome == null) {
+                throw new GATInvocationException("java.home not set");
+            }
+
+            rsl += "& (executable = " + javaHome.getPath() + "/bin/java)";
+
+            String javaFlags =
+                    getStringAttribute(description, "java.flags", "");
+            if (javaFlags.length() != 0) {
+                args += " \"" + javaFlags + "\"";
+            }
+
+            // classpath
+            String javaClassPath =
+                    getStringAttribute(description, "java.classpath", "");
+            if (javaClassPath.length() != 0) {
+                args += " \"-classpath\" \""+ javaClassPath + "\"";
+            } else {
+                // not set, use jar files in prestaged set
+                // @@@ TODO
+            }
+
+            // set the environment
+            Map env = sd.getEnvironment();
+            if (env != null && !env.isEmpty()) {
+                Set s = env.keySet();
+                Object[] keys = (Object[]) s.toArray();
+
+                for (int i = 0; i < keys.length; i++) {
+                    String val = (String) env.get(keys[i]);
+                    args += " \"-D" + keys[i] + "=" + val + "\"";
+                }
+            }
+
+            // main class name
+            args +=
+                    " \"" + getLocationURI(description).getSchemeSpecificPart()
+                            + "\"";
+        } else {
+            String exe = getLocationURI(description).getPath();
+            rsl += "& (executable = " + exe + ")";
+        }
 
         // parse the arguments
-        String args = "";
         String[] argsA = getArgumentsArray(description);
 
         if (argsA != null) {
@@ -76,9 +121,6 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
                 args += ("\"" + argsA[i] + "\" ");
             }
         }
-
-        String rsl = "& (executable = " + exe + ")";
-
         if (args.length() != 0) {
             rsl += (" (arguments = " + args + ")");
         }
@@ -107,32 +149,40 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
         }
 
         // stage in files with gram
-        if(pre != null) {
-            for(int i=0; i<pre.size(); i++) {
+        if (pre != null) {
+            for (int i = 0; i < pre.size(); i++) {
                 PreStagedFile f = pre.getFile(i);
-                
-                if(!f.getResolvedSrc().toGATURI().refersToLocalHost()) {
-                    throw new GATInvocationException("Currently, we cannot stage in remote files with gram");
+
+                if (!f.getResolvedSrc().toGATURI().refersToLocalHost()) {
+                    throw new GATInvocationException(
+                            "Currently, we cannot stage in remote files with gram");
                 }
-                
-                String s = "(file_stage_in = (file:///" + f.getResolvedSrc().getPath() + " " + f.getResolvedDest().getPath() + "))";
+
+                String s =
+                        "(file_stage_in = (file:///"
+                                + f.getResolvedSrc().getPath() + " "
+                                + f.getResolvedDest().getPath() + "))";
                 rsl += s;
             }
         }
 
-        if(post != null) {
-            for(int i=0; i<post.size(); i++) {
+        if (post != null) {
+            for (int i = 0; i < post.size(); i++) {
                 PostStagedFile f = post.getFile(i);
 
-                if(!f.getResolvedDest().toGATURI().refersToLocalHost()) {
-                    throw new GATInvocationException("Currently, we cannot stage out remote files with gram");
+                if (!f.getResolvedDest().toGATURI().refersToLocalHost()) {
+                    throw new GATInvocationException(
+                            "Currently, we cannot stage out remote files with gram");
                 }
 
-                String s = "(file_stage_out = (" + f.getResolvedSrc().getPath() + " gsiftp://" + IPUtils.getLocalHostName() + "/" + f.getResolvedDest().getPath() + "))";
+                String s =
+                        "(file_stage_out = (" + f.getResolvedSrc().getPath()
+                                + " gsiftp://" + IPUtils.getLocalHostName()
+                                + "/" + f.getResolvedDest().getPath() + "))";
                 rsl += s;
             }
         }
-        
+
         org.gridlab.gat.io.File stdout = sd.getStdout();
         if (stdout != null) {
             if (sandbox != null) {
@@ -157,25 +207,27 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
             }
         }
 
-        // set the environment
-        Map env = sd.getEnvironment();
-        if (env != null && !env.isEmpty()) {
-            Set s = env.keySet();
-            Object[] keys = (Object[]) s.toArray();
-            rsl += "(environment = ";
+        if (!isJavaApplication(description)) {
+            // set the environment
+            Map env = sd.getEnvironment();
+            if (env != null && !env.isEmpty()) {
+                Set s = env.keySet();
+                Object[] keys = (Object[]) s.toArray();
+                rsl += "(environment = ";
 
-            for (int i = 0; i < keys.length; i++) {
-                String val = (String) env.get(keys[i]);
-                rsl += "(" + keys[i] + " \"" + val + "\")";
+                for (int i = 0; i < keys.length; i++) {
+                    String val = (String) env.get(keys[i]);
+                    rsl += "(" + keys[i] + " \"" + val + "\")";
+                }
+                rsl += ")";
             }
-            rsl += ")";
         }
 
         String queue = getStringAttribute(description, "queue", null);
-        if(queue != null) {
-            rsl += " (queue = " + queue + ")";            
+        if (queue != null) {
+            rsl += " (queue = " + queue + ")";
         }
-        
+
         if (GATEngine.VERBOSE) {
             System.err.println("RSL: " + rsl);
         }
@@ -199,27 +251,27 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
     protected String getResourceManagerContact(JobDescription description)
             throws GATInvocationException {
         String res = null;
-        String contact = (String) preferences
-        .get("ResourceBroker.jobmanagerContact");
-        String jobManager = (String) preferences
-            .get("ResourceBroker.jobmanager");
-        Object jobManagerPort = preferences
-        .get("ResourceBroker.jobmanagerPort");
+        String contact =
+                (String) preferences.get("ResourceBroker.jobmanagerContact");
+        String jobManager =
+                (String) preferences.get("ResourceBroker.jobmanager");
+        Object jobManagerPort =
+                preferences.get("ResourceBroker.jobmanagerPort");
 
         // if the contact string is set, ignore all other properties
-        if(contact != null) {
+        if (contact != null) {
             if (GATEngine.VERBOSE) {
                 System.err.println("Resource manager contact = " + contact);
             }
             return contact;
         }
-        
+
         String hostname = getHostname(description);
 
         if (hostname != null) {
             res = hostname;
 
-            if(jobManagerPort != null) {
+            if (jobManagerPort != null) {
                 res += (":" + jobManagerPort);
             }
 
@@ -235,7 +287,7 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
         }
 
         throw new GATInvocationException(
-            "The Globus resource broker needs a hostname");
+                "The Globus resource broker needs a hostname");
     }
 
     private void runChmod(GSSCredential credential, JobDescription description,
@@ -243,18 +295,18 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
             throws GATInvocationException {
         if (GATEngine.VERBOSE) {
             System.err.println("running " + chmodLocation + " on " + host
-                + "/jobmanager-fork to set executable bit on");
+                    + "/jobmanager-fork to set executable bit on");
         }
         String chmodRsl =
                 createChmodRSL(description, host, chmodLocation, sandbox,
-                    resolvedExe.getPath());
+                        resolvedExe.getPath());
         GramJob j = new GramJob(credential, chmodRsl);
         try {
             Gram.request(host + "/jobmanager-fork", j);
         } catch (GramException e) {
             if (GATEngine.VERBOSE) {
                 System.err.println("could not run chmod on executable: "
-                    + GramError.getGramErrorString(e.getErrorCode()));
+                        + GramError.getGramErrorString(e.getErrorCode()));
             }
             // ignore
             return;
@@ -291,25 +343,26 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
     public Job submitJob(JobDescription description)
             throws GATInvocationException {
 
-        if(shutdownInProgress) {
-            throw new GATInvocationException("cannot submit jobs after calling GAT.end");
+        if (shutdownInProgress) {
+            throw new GATInvocationException(
+                    "cannot submit jobs after calling GAT.end");
         }
-        
+
         boolean useGramSandbox = false;
-        
+
         String s = (String) preferences.get("useGramSandbox");
-        if(s != null && s.equalsIgnoreCase("true")) {
+        if (s != null && s.equalsIgnoreCase("true")) {
             useGramSandbox = true;
         }
-        
+
         if (useGramSandbox) {
-            return submitJobNoSandbox(description);
+            return submitJobGramSandbox(description);
         } else {
-            return submitJobSandbox(description);
+            return submitJobGatSandbox(description);
         }
     }
 
-    public Job submitJobSandbox(JobDescription description)
+    public Job submitJobGatSandbox(JobDescription description)
             throws GATInvocationException {
         String host = getHostname(description);
         String contact = getResourceManagerContact(description);
@@ -325,8 +378,8 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
         try {
             credential =
                     GlobusSecurityUtils.getGlobusCredential(gatContext,
-                        preferences, "gram", hostUri,
-                        ResourceManagerContact.DEFAULT_PORT);
+                            preferences, "gram", hostUri,
+                            ResourceManagerContact.DEFAULT_PORT);
         } catch (CouldNotInitializeCredentialException e) {
             throw new GATInvocationException("globus", e);
         } catch (CredentialExpiredException e) {
@@ -335,7 +388,7 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
 
         Sandbox sandbox =
                 new Sandbox(gatContext, preferences, description, host, null,
-                    true, true, true, true);
+                        true, true, true, true);
 
         // If we staged in the executable, we have to do a chmod.
         // Globus loses the executable bit :-(
@@ -343,13 +396,13 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
         if (resolvedExe != null) {
             try {
                 runChmod(credential, description, host, "/bin/chmod", sandbox,
-                    resolvedExe);
+                        resolvedExe);
             } catch (Exception e) {
                 // ignore
             }
             try {
                 runChmod(credential, description, host, "/usr/bin/chmod",
-                    sandbox, resolvedExe);
+                        sandbox, resolvedExe);
             } catch (Exception e) {
                 // ignore
             }
@@ -359,7 +412,7 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
         GramJob j = new GramJob(credential, rsl);
         GlobusJob res =
                 new GlobusJob(gatContext, preferences, this, description, j,
-                    sandbox);
+                        sandbox);
         j.addListener(res);
 
         try {
@@ -368,17 +421,17 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
             throw new GATInvocationException("globus", e); // no idea what went wrong 
         } catch (GSSException e2) {
             throw new GATInvocationException("globus",
-                new CouldNotInitializeCredentialException("globus", e2));
+                    new CouldNotInitializeCredentialException("globus", e2));
         }
 
         return res;
     }
 
-    public Job submitJobNoSandbox(JobDescription description)
+    public Job submitJobGramSandbox(JobDescription description)
             throws GATInvocationException {
         String host = getHostname(description);
         String contact = getResourceManagerContact(description);
-        
+
         URI hostUri;
         try {
             hostUri = new URI(host);
@@ -390,8 +443,8 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
         try {
             credential =
                     GlobusSecurityUtils.getGlobusCredential(gatContext,
-                        preferences, "gram", hostUri,
-                        ResourceManagerContact.DEFAULT_PORT);
+                            preferences, "gram", hostUri,
+                            ResourceManagerContact.DEFAULT_PORT);
         } catch (CouldNotInitializeCredentialException e) {
             throw new GATInvocationException("globus", e);
         } catch (CredentialExpiredException e) {
@@ -400,16 +453,17 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
 
         PreStagedFileSet pre =
                 new PreStagedFileSet(gatContext, preferences, description,
-                    host, null, false);
+                        host, null, false);
 
-        PostStagedFileSet post = new PostStagedFileSet(gatContext, preferences, description,
-            host, null, false, false);
+        PostStagedFileSet post =
+                new PostStagedFileSet(gatContext, preferences, description,
+                        host, null, false, false);
 
         String rsl = createRSL(description, host, null, pre, post);
         GramJob j = new GramJob(credential, rsl);
         GlobusJob res =
                 new GlobusJob(gatContext, preferences, this, description, j,
-                    null);
+                        null);
         j.addListener(res);
 
         try {
@@ -418,7 +472,7 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
             throw new GATInvocationException("globus", e); // no idea what went wrong 
         } catch (GSSException e2) {
             throw new GATInvocationException("globus",
-                new CouldNotInitializeCredentialException("globus", e2));
+                    new CouldNotInitializeCredentialException("globus", e2));
         }
 
         return res;
@@ -430,14 +484,14 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
         }
 
         shutdownInProgress = true;
-        
+
         try {
             Gram.deactivateAllCallbackHandlers();
         } catch (Throwable t) {
             if (GATEngine.VERBOSE) {
                 System.err
-                    .println("WARNING, globus job could not deactivate callback: "
-                        + t);
+                        .println("WARNING, globus job could not deactivate callback: "
+                                + t);
             }
         }
     }

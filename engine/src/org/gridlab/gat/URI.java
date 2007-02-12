@@ -88,7 +88,12 @@ public class URI implements Serializable, Comparable {
 
     /* this is where the magic happens to fix SUNs bug.. */
     public String getPath() {
-        String path = URIEncoder.decodeUri(u.getPath());
+        String path = u.getPath();
+        if(path == null) {
+            return null;
+        }
+        
+        path = URIEncoder.decodeUri(u.getPath());
 
         if ((u.getScheme() == null) && (u.getHost() == null)) {
             return path;

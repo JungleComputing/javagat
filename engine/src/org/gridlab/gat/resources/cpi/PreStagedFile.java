@@ -46,6 +46,12 @@ public class PreStagedFile extends StagedFile {
         }
 
         if(inSandbox) {
+            if(exe.getPath() == null) {
+                // can happen with java executables
+                isExecutable = false;
+                return;
+            }
+            
             if(exe.getPath().startsWith("/")) {
                 // file is relative, exe is absolute
                 isExecutable = false;
