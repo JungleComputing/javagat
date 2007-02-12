@@ -590,21 +590,10 @@ public abstract class GlobusFileAdaptor extends FileCpi {
                 java.io.File f = new java.io.File(getPath());
                 return f.isDirectory();
             } catch (Exception e) {
-                throw new GATInvocationException("fileCPI", e);
+                throw new GATInvocationException("globus", e);
             }
         } else {
-            try {
-                return realIsDirectory();
-            } catch (Exception e) {
-                // ignore
-            }
-
-            try {
-                File f = GAT.createFile(gatContext, preferences, toURI());
-                return f.isDirectory();
-            } catch (Exception e2) {
-                throw new GATInvocationException("fileCPI", e2);
-            }
+            return realIsDirectory();
         }
     }
     

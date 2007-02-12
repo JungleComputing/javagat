@@ -590,6 +590,16 @@ public abstract class FileCpi implements FileInterface {
             throw new GATInvocationException("generic file cpi", e);
         }
 
+        recursiveDeleteDirectory(gatContext, preferences, dir);
+    }
+
+    public static void recursiveDeleteDirectory(GATContext gatContext,
+            Preferences preferences, File dir) throws GATInvocationException {
+
+        if(GATEngine.VERBOSE) {
+            System.err.println("delete dir: " + dir);
+        }
+
         File[] files = (File[]) dir.listFiles(new java.io.FileFilter() {
             public boolean accept(java.io.File file) {
                 try {
@@ -604,7 +614,6 @@ public abstract class FileCpi implements FileInterface {
             for (int i = 0; i < files.length; i++) {
                 recursiveDeleteDirectory(gatContext, preferences, files[i]
                         .toGATURI());
-                files[i].delete();
             }
         }
 
@@ -620,6 +629,9 @@ public abstract class FileCpi implements FileInterface {
 
         if (files != null) {
             for (int i = 0; i < files.length; i++) {
+                if(GATEngine.VERBOSE) {
+                    System.err.println("delete: " + files[i]);
+                }
                 files[i].delete();
             }
         }
