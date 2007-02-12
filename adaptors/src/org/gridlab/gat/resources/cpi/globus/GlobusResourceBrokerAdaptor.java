@@ -469,7 +469,7 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
         try {
             Gram.request(contact, j);
         } catch (GramException e) {
-            throw new GATInvocationException("globus", e); // no idea what went wrong 
+            throw new GATInvocationException("globus", e); // no idea what went wrong
         } catch (GSSException e2) {
             throw new GATInvocationException("globus",
                     new CouldNotInitializeCredentialException("globus", e2));
