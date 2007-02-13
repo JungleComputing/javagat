@@ -6,7 +6,6 @@ package org.gridlab.gat.io;
 import java.io.FileFilter;
 import java.io.FilenameFilter;
 import java.io.IOException;
-import java.io.Serializable;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.List;
@@ -541,6 +540,13 @@ public class File extends java.io.File implements Monitorable,
         f.removeMetricListener(metricListener, metric);
     }
     
+    /**
+     * Read a file object from a stream. We use a "default" context
+     * to create the resulting object.
+     * @param stream the stream to write to
+     * @throws IOException
+     * @throws ClassNotFoundException
+     */
     private void readObject(java.io.ObjectInputStream stream)
     throws IOException, ClassNotFoundException {
         URI u = (URI) stream.readObject();
@@ -555,6 +561,11 @@ public class File extends java.io.File implements Monitorable,
         }
     }
     
+    /**
+     * Serialize this file, by just writing the URI.
+     * @param stream the stream to write to
+     * @throws IOException
+     */
     private void writeObject(java.io.ObjectOutputStream stream)
     throws IOException {
         stream.writeObject(toGATURI());

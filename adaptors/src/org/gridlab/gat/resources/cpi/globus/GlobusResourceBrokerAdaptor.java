@@ -197,7 +197,7 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
 
         if (argsA != null) {
             for (int i = 0; i < argsA.length; i++) {
-                args += ("\"" + argsA[i] + "\" ");
+                args += (" \"" + argsA[i] + "\" ");
             }
         }
         if (args.length() != 0) {

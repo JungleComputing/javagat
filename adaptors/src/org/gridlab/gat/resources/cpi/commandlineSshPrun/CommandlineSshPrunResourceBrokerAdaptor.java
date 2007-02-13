@@ -2,7 +2,6 @@ package org.gridlab.gat.resources.cpi.commandlineSshPrun;
 
 import java.io.IOException;
 import java.io.OutputStream;
-import java.rmi.RemoteException;
 import java.util.List;
 import java.util.Map;
 

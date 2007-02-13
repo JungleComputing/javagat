@@ -393,6 +393,9 @@ public abstract class GlobusFileAdaptor extends FileCpi {
     }
 
     public File[] listFiles() throws GATInvocationException {
+ 
+        
+        System.err.println("list files of: " + location);
         FTPClient client = null;
         String CWD = null;
         

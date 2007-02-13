@@ -27,7 +27,7 @@ public class PreStageWrapperSubmitter {
         this.origPreferences = preferences;
     }
 
-    private String writeDescriptionToFile(JobDescription description)
+    private java.io.File writeDescriptionToFile(JobDescription description)
             throws GATInvocationException {
         System.err.println("writing description: " + description);
         java.io.File f = null;
@@ -41,7 +41,7 @@ public class PreStageWrapperSubmitter {
             throw new GATInvocationException("PreStageWrapperSubmitter", e);
         }
 
-        return f.getAbsolutePath();
+        return f;
     }
 
     protected Job submitWrapper(JobDescription description, String contact)
@@ -89,10 +89,11 @@ public class PreStageWrapperSubmitter {
                     new URI("engine/lib")));
             sd.addPreStagedFile(GAT.createFile(origGatContext, newPreferences,
                     new URI("adaptors/lib")));
-            String descriptorFile = writeDescriptionToFile(description);
+
+            java.io.File descriptorFile = writeDescriptionToFile(description);
             sd.addPreStagedFile(GAT.createFile(origGatContext, newPreferences,
-                    new URI(descriptorFile)));
-            sd.setArguments(new String[] { descriptorFile });
+                    new URI(descriptorFile.getAbsolutePath())));
+            sd.setArguments(new String[] { descriptorFile.getName() });
 
             JobDescription jd = new JobDescription(sd);
             ResourceBroker broker =

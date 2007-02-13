@@ -1,10 +1,11 @@
 package org.gridlab.gat.resources.cpi.prestage;
 
-import org.gridlab.gat.GAT;
+import java.io.FileInputStream;
+import java.io.ObjectInputStream;
+
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.Preferences;
-import org.gridlab.gat.URI;
-import org.gridlab.gat.io.File;
+import org.gridlab.gat.resources.JobDescription;
 
 public class PreStageWrapper {
     public static void main(String[] args) {
@@ -12,6 +13,21 @@ public class PreStageWrapper {
         GATContext context = new GATContext();
         Preferences prefs = new Preferences();
 
+        JobDescription description = null;
+        try {
+            System.err.println("opening descriptor file: " + args[0]);
+            FileInputStream tmp = new FileInputStream(args[0]);
+            ObjectInputStream in = new ObjectInputStream(tmp);
+            description = (JobDescription) in.readObject();
+            in.close();
+        } catch (Exception e) {
+            System.err.println("an error occurred: " + e);
+            System.exit(1);
+        }
+
+        System.err.println("job description: " + description);
+        
+        /*
         for (int i = 0; i < args.length; i += 2) {
             String srcName = args[i];
             String destName = args[i + 1];
@@ -33,5 +49,6 @@ public class PreStageWrapper {
             }
             System.err.println("PreStageWrapper done");
         }
+        */
     }
 }

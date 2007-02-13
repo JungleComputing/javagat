@@ -7,6 +7,7 @@ import org.globus.ftp.DataChannelAuthentication;
 import org.globus.ftp.FTPClient;
 import org.globus.ftp.GridFTPClient;
 import org.globus.ftp.GridFTPSession;
+import org.gridlab.gat.AdaptorNotApplicableException;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.GATObjectCreationException;
@@ -36,10 +37,10 @@ public class GridFTPFileAdaptor extends GlobusFileAdaptor {
         super(gatContext, preferences, location);
 
         if (!location.isCompatible("gsiftp") && !location.isCompatible("file")) {
-            throw new GATObjectCreationException("cannot handle this URI ("
+            throw new AdaptorNotApplicableException("cannot handle this URI ("
                 + location + ")");
         }
-
+        
         /* try to get the credential to see whether we need to instantiate this adaptor alltogether */
         try {
             GlobusSecurityUtils.getGlobusCredential(gatContext, preferences,
@@ -47,20 +48,6 @@ public class GridFTPFileAdaptor extends GlobusFileAdaptor {
         } catch (Exception e) {
             throw new GATObjectCreationException("gridftp", e);
         }
-
-        /* try to create a client to see if the remote site has a gridftp server */
-        /*
-         GridFTPClient c = null;
-
-         try {
-         c = doWorkCreateClient(gatContext, preferences, location);
-         } catch (GATInvocationException e) {
-         throw new GATObjectCreationException(
-         "Could not create a gridftp connection to " + location, e);
-         }
-
-         doWorkDestroyClient(c, location, preferences);
-         */
     }
 
     protected URI fixURI(URI in) {
