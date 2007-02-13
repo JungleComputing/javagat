@@ -8,8 +8,6 @@
 package org.gridlab.gat.resources.cpi.sge;
 
 // org.ggf.drmaa imports
-import java.io.IOException;
-import java.rmi.RemoteException;
 import java.util.List;
 
 import org.ggf.drmaa.DrmaaException;
@@ -63,7 +61,7 @@ public class SGEBrokerAdaptor extends ResourceBrokerCpi {
     }    
     
     public Reservation reserveResource(Resource resource, TimePeriod timePeriod)
-            throws RemoteException, IOException {
+            {
         throw new UnsupportedOperationException("Not implemented");
     }    
     

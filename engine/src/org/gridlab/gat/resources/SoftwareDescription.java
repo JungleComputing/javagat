@@ -436,4 +436,116 @@ public class SoftwareDescription implements java.io.Serializable {
     public void setWipePreStaged(boolean wipePreStaged) {
         this.wipePreStaged = wipePreStaged;
     }
+/*    
+    private void readObject(java.io.ObjectInputStream stream)
+    throws IOException, ClassNotFoundException {
+        location = (URI) stream.readObject();
+        arguments = (String[]) stream.readObject();
+        
+        environment = (HashMap) stream.readObject();
+        = stream.readObject();
+        = stream.readObject();
+        = stream.readObject();
+        = stream.readObject();
+        = stream.readObject();
+        = stream.readObject();
+        = stream.readObject();
+        
+        
+        
+        stream.writeObject(arguments);
+        stream.writeObject(environment);
+        stream.writeObject(stdin.toGATURI());
+        stream.writeObject(stdout.toGATURI());
+        stream.writeObject(stderr.toGATURI());
+        
+        stream.writeInt(preStagedFiles.size());        
+        Set s = preStagedFiles.keySet();
+        Iterator i = s.iterator();
+        while(i.hasNext()) {
+            File src = (File) i.next();
+            File dest = (File) preStagedFiles.get(src);
+            stream.writeObject(src.toGATURI());
+            stream.writeObject(dest.toGATURI());
+        }
+        
+        stream.writeInt(postStagedFiles.size());        
+        s = postStagedFiles.keySet();
+        i = s.iterator();
+        while(i.hasNext()) {
+            File src = (File) i.next();
+            File dest = (File) postStagedFiles.get(src);
+            stream.writeObject(src.toGATURI());
+            stream.writeObject(dest.toGATURI());
+        }
+
+        Object[] tmp = deletedFiles.toArray();
+        stream.writeInt(tmp.length);
+        for(int j=0; j<tmp.length; j++) {
+            stream.writeObject(((File)tmp[j]).toGATURI());
+        }
+
+        tmp = wipedFiles.toArray();
+        stream.writeInt(tmp.length);
+        for(int j=0; j<tmp.length; j++) {
+            stream.writeObject(((File)tmp[j]).toGATURI());
+        }
+
+        stream.writeObject(attributes);
+        stream.writeBoolean(deletePreStaged);
+        stream.writeBoolean(deletePostStaged);
+        stream.writeBoolean(wipePreStaged);
+        stream.writeBoolean(wipePostStaged);
+        
+    }
+    
+    private void writeObject(java.io.ObjectOutputStream stream)
+    throws IOException {
+        stream.writeObject(location);
+
+        stream.writeObject(arguments);
+        stream.writeObject(environment);
+        stream.writeObject(stdin.toGATURI());
+        stream.writeObject(stdout.toGATURI());
+        stream.writeObject(stderr.toGATURI());
+        
+        stream.writeInt(preStagedFiles.size());        
+        Set s = preStagedFiles.keySet();
+        Iterator i = s.iterator();
+        while(i.hasNext()) {
+            File src = (File) i.next();
+            File dest = (File) preStagedFiles.get(src);
+            stream.writeObject(src.toGATURI());
+            stream.writeObject(dest.toGATURI());
+        }
+        
+        stream.writeInt(postStagedFiles.size());        
+        s = postStagedFiles.keySet();
+        i = s.iterator();
+        while(i.hasNext()) {
+            File src = (File) i.next();
+            File dest = (File) postStagedFiles.get(src);
+            stream.writeObject(src.toGATURI());
+            stream.writeObject(dest.toGATURI());
+        }
+
+        Object[] tmp = deletedFiles.toArray();
+        stream.writeInt(tmp.length);
+        for(int j=0; j<tmp.length; j++) {
+            stream.writeObject(((File)tmp[j]).toGATURI());
+        }
+
+        tmp = wipedFiles.toArray();
+        stream.writeInt(tmp.length);
+        for(int j=0; j<tmp.length; j++) {
+            stream.writeObject(((File)tmp[j]).toGATURI());
+        }
+
+        stream.writeObject(attributes);
+        stream.writeBoolean(deletePreStaged);
+        stream.writeBoolean(deletePostStaged);
+        stream.writeBoolean(wipePreStaged);
+        stream.writeBoolean(wipePostStaged);
+    }
+    */
 }

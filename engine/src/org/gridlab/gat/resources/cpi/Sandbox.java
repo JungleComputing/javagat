@@ -88,6 +88,12 @@ public class Sandbox {
     }
 
     private void createSandboxDir(String host) throws GATInvocationException {
+        
+        if (host == null) {
+            throw new FilePrestageException("sandbox", new GATInvocationException(
+                "cannot create a sandbox without a host name"));
+        }
+
         for (int i = 0; i < 10; i++) {
             sandbox = getSandboxName();
 
@@ -132,11 +138,6 @@ public class Sandbox {
             }
             sandbox = sandboxRoot;
             return;
-        }
-
-        if (host == null) {
-            throw new GATInvocationException(
-                "cannot create a sandbox without a host name");
         }
 
         try {
@@ -365,5 +366,13 @@ public class Sandbox {
 
     public String getHost() {
         return host;
+    }
+    
+    public PreStagedFileSet getPrestagedFileSet() {
+        return pre;
+    }
+
+    public PostStagedFileSet getPostStagedFileSet() {
+        return post;
     }
 }

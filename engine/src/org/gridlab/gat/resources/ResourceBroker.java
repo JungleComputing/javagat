@@ -60,7 +60,7 @@ public interface ResourceBroker {
      */
     public abstract Reservation reserveResource(
             ResourceDescription resourceDescription, TimePeriod timePeriod)
-            throws GATInvocationException, IOException;
+            throws GATInvocationException;
 
     /**
      * This method attempts to reserve the specified resource for the specified
@@ -82,7 +82,7 @@ public interface ResourceBroker {
      *             a remote problem occurred
      */
     public abstract Reservation reserveResource(Resource resource,
-            TimePeriod timePeriod) throws GATInvocationException, IOException;
+            TimePeriod timePeriod) throws GATInvocationException;
 
     /**
      * This method attempts to find one or more matching hardware resources.
@@ -100,7 +100,7 @@ public interface ResourceBroker {
      *             Upon non-remote IO problem
      */
     public abstract List findResources(ResourceDescription resourceDescription)
-            throws GATInvocationException, IOException;
+            throws GATInvocationException;
 
     /**
      * This operation takes a JobDescription, and submits the specified job to
@@ -121,5 +121,5 @@ public interface ResourceBroker {
      *             a remote problem occurred
      */
     public abstract Job submitJob(JobDescription description)
-            throws GATInvocationException, IOException;
+            throws GATInvocationException;
 }

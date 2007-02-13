@@ -1,7 +1,6 @@
 package org.gridlab.gat.io;
 
 import java.io.IOException;
-import java.io.Serializable;
 import java.net.MalformedURLException;
 import java.net.URL;
 
@@ -20,7 +19,7 @@ import org.gridlab.gat.monitoring.Monitorable;
  *
  * @author rob
  */
-public interface FileInterface extends Monitorable, Serializable, Advertisable,
+public interface FileInterface extends Monitorable, Advertisable,
         Comparable {
     /**
      * This method returns the URI of this File

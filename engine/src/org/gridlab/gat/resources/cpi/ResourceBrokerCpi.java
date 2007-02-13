@@ -1,6 +1,5 @@
 package org.gridlab.gat.resources.cpi;
 
-import java.io.IOException;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -58,7 +57,7 @@ public abstract class ResourceBrokerCpi implements ResourceBroker {
      * @see org.gridlab.gat.resources.ResourceBroker#findResources(org.gridlab.gat.resources.ResourceDescription)
      */
     public List findResources(ResourceDescription resourceDescription)
-            throws GATInvocationException, IOException {
+            throws GATInvocationException {
         throw new UnsupportedOperationException("Not implemented");
     }
 
@@ -69,7 +68,7 @@ public abstract class ResourceBrokerCpi implements ResourceBroker {
      *      org.gridlab.gat.util.TimePeriod)
      */
     public Reservation reserveResource(Resource resource, TimePeriod timePeriod)
-            throws GATInvocationException, IOException {
+            throws GATInvocationException {
         throw new UnsupportedOperationException("Not implemented");
     }
 
@@ -80,7 +79,7 @@ public abstract class ResourceBrokerCpi implements ResourceBroker {
      *      org.gridlab.gat.util.TimePeriod)
      */
     public Reservation reserveResource(ResourceDescription resourceDescription,
-            TimePeriod timePeriod) throws GATInvocationException, IOException {
+            TimePeriod timePeriod) throws GATInvocationException {
         throw new UnsupportedOperationException("Not implemented");
     }
 
@@ -90,7 +89,7 @@ public abstract class ResourceBrokerCpi implements ResourceBroker {
      * @see org.gridlab.gat.resources.ResourceBroker#submitJob(org.gridlab.gat.resources.JobDescription)
      */
     public Job submitJob(JobDescription description)
-            throws GATInvocationException, IOException {
+            throws GATInvocationException {
         throw new UnsupportedOperationException("Not implemented");
     }
 
@@ -127,7 +126,7 @@ public abstract class ResourceBrokerCpi implements ResourceBroker {
         if (exeScheme != null && exeScheme.equals("java")) {
             return true;
         }
-        
+
         return false;
     }
 
@@ -189,11 +188,19 @@ public abstract class ResourceBrokerCpi implements ResourceBroker {
         }
 
         Map attributes = sd.getAttributes();
-        Boolean val = (Boolean) attributes.get(name);
-
+        
+        Object val = attributes.get(name);
+        
         if (val == null)
             return defaultVal;
-        return val.booleanValue();
+        
+        if(val instanceof Boolean) {
+            return ((Boolean)val).booleanValue();
+        } else if (val instanceof String) {
+            return ((String)val).equalsIgnoreCase("true");
+        } else {
+            throw new Error("illegal type for boolean attribute: " + name + ": " + val);
+        }
     }
 
     protected int getCPUCount(JobDescription description) {

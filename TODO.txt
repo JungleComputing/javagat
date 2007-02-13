@@ -26,3 +26,4 @@
 
 - advert service support for brokers
 - in the engine, check if GAT.end hasn't been called before doing an operation.
+- write file adaptor that implements general 3rd party copy

@@ -3,8 +3,7 @@
  */
 package resources;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.Hashtable;
 
 import org.gridlab.gat.GAT;
 import org.gridlab.gat.GATContext;
@@ -15,18 +14,20 @@ import org.gridlab.gat.monitoring.Metric;
 import org.gridlab.gat.monitoring.MetricDefinition;
 import org.gridlab.gat.monitoring.MetricListener;
 import org.gridlab.gat.monitoring.MetricValue;
+import org.gridlab.gat.resources.HardwareResourceDescription;
 import org.gridlab.gat.resources.Job;
 import org.gridlab.gat.resources.JobDescription;
 import org.gridlab.gat.resources.ResourceBroker;
+import org.gridlab.gat.resources.ResourceDescription;
 import org.gridlab.gat.resources.SoftwareDescription;
 
 /**
  * @author rob
  */
-public class SubmitJavaJob implements MetricListener {
+public class SubmitJobWithLocalFiles implements MetricListener {
     public static void main(String[] args) {
         try {
-            new SubmitJavaJob().start(args);
+            new SubmitJobWithLocalFiles().start(args);
         } catch (Exception e) {
             System.err.println("error: " + e);
             e.printStackTrace();
@@ -52,20 +53,18 @@ public class SubmitJavaJob implements MetricListener {
             new URI("any:///err"));
         sd.setStdout(outFile);
         sd.setStderr(errFile);
-        sd.setLocation(new URI("java:org.gridlab.gat.resources.cpi.prestage.PreStageWrapper"));
-
+        sd.setLocation(new URI("/bin/hostname"));
+        sd.addAttribute("useLocalDisk", "true");
         sd.addAttribute("java.home", new URI("/home/rob/contrib/jdk1.5.0_09"));
-        sd.addAttribute("java.flags", "-server");
-        sd.addAttribute("java.classpath", "lib/GAT.jar:lib/castor-0.9.6.jar:lib/commons-logging.jar:lib/log4j-1.2.13.jar:lib/xmlParserAPIs.jar"
-                + "lib/castor-0.9.6-xml.jar:lib/colobus.jar:lib/ibis-util-1.4.jar:lib/xercesImpl.jar:lib/PreStageWrapper.jar");
-        Map environment = new HashMap();
-        environment.put("gat.adaptor.path", "lib");
-        sd.setEnvironment(environment);
+                
+        sd.addPreStagedFile(GAT.createFile(context, prefs, new URI("any://fs0.das2.cs.vu.nl/testDir")));
         
-        sd.addPreStagedFile(GAT.createFile(context, prefs, new URI("engine/lib")));
-        sd.addPreStagedFile(GAT.createFile(context, prefs, new URI("adaptors/lib")));
-        
-        JobDescription jd = new JobDescription(sd);
+        Hashtable hardwareAttributes = new Hashtable();
+
+        ResourceDescription rd = new HardwareResourceDescription(
+            hardwareAttributes);
+
+        JobDescription jd = new JobDescription(sd, rd);
         ResourceBroker broker = GAT.createResourceBroker(context, prefs);
 
         Job job = broker.submitJob(jd);
