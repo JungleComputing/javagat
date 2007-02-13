@@ -5,9 +5,16 @@
     <property name="src" location="src" />
     <property name="tmp" location="tmp" />
     <property name="lib" location="lib" />
+    <property name="external" location="external" />
     <property name="gat-lib" location="../engine/lib/GAT.jar" />
     <property name="java.debug.value" value="true" />
-
+    
+    <path id="external_jars">
+        <fileset dir="${external}">
+            <include name="*.jar" />
+        </fileset>
+    </path>
+    
     <target name="compile" description="compile the source ">
         <mkdir dir="${tmp}" />
         <mkdir dir="${lib}" />
@@ -15,10 +22,16 @@
         <!-- Compile the java code from ${src} into ${tmp} -->
         <javac srcdir="${src}" destdir="${tmp}" debug="on" >
 		<classpath location="${gat-lib}" />
+		<classpath refid="external_jars" />
         </javac>
 
         <!-- Put everything in ${tmp} into the GAT.jar file -->
         <jar jarfile="${lib}/GAT-tests.jar" basedir="${tmp}" />
+
+	 <!-- Copy external libraries to lib directory -->
+        <copy todir="${lib}">
+            <fileset dir="${external}" />
+        </copy>
 
         <delete dir="${tmp}" />
     </target>

@@ -257,13 +257,20 @@
                          </manifest>
                  </jar>
 
-
 		<jar jarfile="${lib}/SocketEndpointAdaptor.jar" basedir="${tmp}" includes="**/org/gridlab/gat/io/cpi/sockets/*.class">
 			<manifest>
 				<attribute name="EndpointCpi-class" value="org.gridlab.gat.io.cpi.sockets.SocketEndpointAdaptor" />
 			</manifest>
 		</jar>
 
+		<jar jarfile="${lib}/SmbAdaptor.jar" basedir="${tmp}" includes="**/smb/Smb*.class">
+			<manifest>
+				<attribute name="FileInputStreamCpi-class" value="org.gridlab.gat.io.cpi.smb.SmbFileInputStreamAdaptor" />
+				<attribute name="FileOutputStreamCpi-class" value="org.gridlab.gat.io.cpi.smb.SmbFileOutputStreamAdaptor" />
+				<attribute name="FileCpi-class" value="org.gridlab.gat.io.cpi.smb.SmbFileAdaptor" />
+			</manifest>
+		</jar>
+		
 	    	<delete dir="${tmp}"/>
 
 		<!-- Copy external libraries to lib directory -->
