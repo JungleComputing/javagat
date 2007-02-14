@@ -80,7 +80,7 @@ public class RemoteSandboxSubmitter {
             sd
                     .addAttribute(
                             "java.classpath",
-                            "log4j.properties:lib/GAT.jar:lib/castor-0.9.6.jar:lib/commons-logging.jar:lib/log4j-1.2.13.jar:lib/xmlParserAPIs.jar"
+                            ".:lib/GAT.jar:lib/castor-0.9.6.jar:lib/commons-logging.jar:lib/log4j-1.2.13.jar:lib/xmlParserAPIs.jar"
                                     + "lib/castor-0.9.6-xml.jar:lib/colobus.jar:lib/ibis-util-1.4.jar:lib/xercesImpl.jar:lib/RemoteSandbox.jar");
             Map environment = new HashMap();
             environment.put("gat.adaptor.path", "lib");

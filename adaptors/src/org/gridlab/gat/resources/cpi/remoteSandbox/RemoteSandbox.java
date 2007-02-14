@@ -7,6 +7,8 @@ import org.gridlab.gat.GAT;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATObjectCreationException;
 import org.gridlab.gat.Preferences;
+import org.gridlab.gat.URI;
+import org.gridlab.gat.io.File;
 import org.gridlab.gat.monitoring.Metric;
 import org.gridlab.gat.monitoring.MetricDefinition;
 import org.gridlab.gat.monitoring.MetricListener;
@@ -20,9 +22,36 @@ public class RemoteSandbox implements MetricListener {
     public static void main(String[] args) {
         new RemoteSandbox().start(args);
     }
-    
+
     public synchronized void processMetricEvent(MetricValue val) {
         notifyAll();
+    }
+
+    private File rewritePostStagedFile(GATContext gatContext,
+            Preferences preferences, File orig, String destHostname) {
+        if (orig == null)
+            return null;
+
+        URI location = orig.toGATURI();
+        if (location.getHost() != null) {
+            return orig;
+        }
+
+        String newLocation = "any://" + destHostname + "/" + location.getPath();
+
+        File res = null;
+        try {
+            URI newURI = new URI(newLocation);
+
+            System.err.println("rewrite of " + orig.toGATURI() + " to " + newURI);
+            res = GAT.createFile(gatContext, preferences, newURI);
+        } catch (Exception e) {
+            System.err.println("could not rewrite poststage file" + orig + ":"
+                    + e);
+            System.exit(1);
+        }
+        return res;
+
     }
 
     public void start(String[] args) {
@@ -51,6 +80,11 @@ public class RemoteSandbox implements MetricListener {
         SoftwareDescription sd = description.getSoftwareDescription();
         sd.addAttribute("useLocalDisk", "false");
 
+        // rewrite poststage files to go directly to their original destination
+        // also stdout and stderr
+        File stderr = sd.getStderr();
+        sd.setStderr(rewritePostStagedFile(gatContext, prefs, stderr, args[1]));
+
         System.err.println("modified job description: " + description);
 
         ResourceBroker broker = null;
@@ -69,13 +103,13 @@ public class RemoteSandbox implements MetricListener {
 
             synchronized (this) {
                 while ((job.getState() != Job.STOPPED)
-                    && (job.getState() != Job.SUBMISSION_ERROR)) {
+                        && (job.getState() != Job.SUBMISSION_ERROR)) {
                     wait();
                 }
             }
 
             System.err.println("SubmitJobCallback: Job finished, state = "
-                + job.getInfo());
+                    + job.getInfo());
         } catch (Exception e) {
             System.err.println("an exception occurred: " + e);
             System.exit(1);
