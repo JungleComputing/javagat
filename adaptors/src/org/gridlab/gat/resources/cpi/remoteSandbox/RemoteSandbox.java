@@ -2,7 +2,6 @@ package org.gridlab.gat.resources.cpi.remoteSandbox;
 
 import java.io.FileInputStream;
 import java.io.ObjectInputStream;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
@@ -32,26 +31,45 @@ public class RemoteSandbox implements MetricListener {
     }
 
     private File rewritePostStagedFile(GATContext gatContext,
-            Preferences preferences, File orig, String destHostname) {
-        if (orig == null)
+            Preferences preferences, File origSrc, File origDest,
+            String destHostname) {
+        if (origSrc == null && origDest == null) {
             return null;
-
-        URI location = orig.toGATURI();
-        if (location.getHost() != null) {
-            return orig;
+        }
+        
+        if (origDest != null && origDest.toGATURI().getHost() != null) {
+            return origDest;
         }
 
-        String newLocation = "any://" + destHostname + "/" + location.getPath();
+        if (origDest == null) {
+            String newLocation =
+                    "any://" + destHostname + "/" + origSrc.getName();
+            try {
+                URI newURI = new URI(newLocation);
+
+                System.err.println("rewrite of " + origDest.toGATURI() + " to "
+                        + newURI);
+                origDest = GAT.createFile(gatContext, preferences, newURI);
+            } catch (Exception e) {
+                System.err.println("could not rewrite poststage file"
+                        + origDest + ":" + e);
+                System.exit(1);
+            }
+        }
+
+        String newLocation =
+                "any://" + destHostname + "/" + origDest.toGATURI().getPath();
 
         File res = null;
         try {
             URI newURI = new URI(newLocation);
 
-            System.err.println("rewrite of " + orig.toGATURI() + " to " + newURI);
+            System.err.println("rewrite of " + origDest.toGATURI() + " to "
+                    + newURI);
             res = GAT.createFile(gatContext, preferences, newURI);
         } catch (Exception e) {
-            System.err.println("could not rewrite poststage file" + orig + ":"
-                    + e);
+            System.err.println("could not rewrite poststage file" + origDest
+                    + ":" + e);
             System.exit(1);
         }
         return res;
@@ -86,19 +104,20 @@ public class RemoteSandbox implements MetricListener {
 
         // rewrite poststage files to go directly to their original destination
         // also stdout and stderr
-        sd.setStderr(rewritePostStagedFile(gatContext, prefs, sd.getStderr(), args[1]));
-        sd.setStdout(rewritePostStagedFile(gatContext, prefs, sd.getStdout(), args[1]));
-
+        sd.setStderr(rewritePostStagedFile(gatContext, prefs, null, sd.getStderr(),
+                args[1]));
+        sd.setStdout(rewritePostStagedFile(gatContext, prefs, null, sd.getStdout(),
+                args[1]));
 
         Map post = sd.getPostStaged();
         Set keys = post.keySet();
         Iterator i = keys.iterator();
-        while(i.hasNext()) {
+        while (i.hasNext()) {
             File src = (File) i.next();
             File dest = (File) post.get(src);
-            dest = rewritePostStagedFile(gatContext, prefs, dest, args[1]);
+            dest = rewritePostStagedFile(gatContext, prefs, src, dest, args[1]);
         }
-        
+
         System.err.println("modified job description: " + description);
 
         ResourceBroker broker = null;
