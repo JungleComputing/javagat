@@ -82,8 +82,8 @@ public class RemoteSandbox implements MetricListener {
 
         // rewrite poststage files to go directly to their original destination
         // also stdout and stderr
-        File stderr = sd.getStderr();
-        sd.setStderr(rewritePostStagedFile(gatContext, prefs, stderr, args[1]));
+        sd.setStderr(rewritePostStagedFile(gatContext, prefs, sd.getStderr(), args[1]));
+        sd.setStdout(rewritePostStagedFile(gatContext, prefs, sd.getStdout(), args[1]));
 
         System.err.println("modified job description: " + description);
 

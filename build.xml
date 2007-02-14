@@ -10,6 +10,14 @@
 		<ant dir="engine" target="javadoc"/>
 	</target>
 
+	<target name="engine" description="build the engine">
+		<ant dir="engine"/>
+	</target>
+		
+	<target name="adaptors" description="build the adaptors">
+		<ant dir="adaptors"/>
+	</target>
+		
 	<target name="tests" description="build the test programs">
 		<ant dir="tests"/>
 	</target>
