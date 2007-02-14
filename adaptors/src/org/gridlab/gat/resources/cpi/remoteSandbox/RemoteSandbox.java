@@ -47,12 +47,13 @@ public class RemoteSandbox implements MetricListener {
             try {
                 URI newURI = new URI(newLocation);
 
-                System.err.println("rewrite of " + origDest.toGATURI() + " to "
+                System.err.println("rewrite of " + origSrc.getName() + " to "
                         + newURI);
                 origDest = GAT.createFile(gatContext, preferences, newURI);
             } catch (Exception e) {
-                System.err.println("could not rewrite poststage file"
+                System.err.println("could not rewrite poststage file "
                         + origDest + ":" + e);
+                e.printStackTrace();
                 System.exit(1);
             }
         }
