@@ -2,6 +2,10 @@ package org.gridlab.gat.resources.cpi.remoteSandbox;
 
 import java.io.FileInputStream;
 import java.io.ObjectInputStream;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
 
 import org.gridlab.gat.GAT;
 import org.gridlab.gat.GATContext;
@@ -85,6 +89,16 @@ public class RemoteSandbox implements MetricListener {
         sd.setStderr(rewritePostStagedFile(gatContext, prefs, sd.getStderr(), args[1]));
         sd.setStdout(rewritePostStagedFile(gatContext, prefs, sd.getStdout(), args[1]));
 
+
+        Map post = sd.getPostStaged();
+        Set keys = post.keySet();
+        Iterator i = keys.iterator();
+        while(i.hasNext()) {
+            File src = (File) i.next();
+            File dest = (File) post.get(src);
+            dest = rewritePostStagedFile(gatContext, prefs, dest, args[1]);
+        }
+        
         System.err.println("modified job description: " + description);
 
         ResourceBroker broker = null;
