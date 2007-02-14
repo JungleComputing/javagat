@@ -37,7 +37,7 @@ public class RemoteSandbox implements MetricListener {
             return null;
         }
         
-        if (origDest != null && origDest.toGATURI().getHost() != null) {
+        if (origDest != null && origDest.toGATURI().getHost() != null && !origDest.toGATURI().getHost().equals("localhost")) {
             return origDest;
         }
 
