@@ -117,6 +117,7 @@ public class RemoteSandbox implements MetricListener {
             File src = (File) i.next();
             File dest = (File) post.get(src);
             dest = rewritePostStagedFile(gatContext, prefs, src, dest, args[1]);
+            post.put(src, dest);
         }
 
         System.err.println("modified job description: " + description);
