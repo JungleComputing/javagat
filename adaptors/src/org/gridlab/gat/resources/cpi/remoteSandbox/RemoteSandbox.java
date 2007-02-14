@@ -80,5 +80,8 @@ public class RemoteSandbox implements MetricListener {
             System.err.println("an exception occurred: " + e);
             System.exit(1);
         }
+
+        GAT.end();
+        System.exit(0);
     }
 }
