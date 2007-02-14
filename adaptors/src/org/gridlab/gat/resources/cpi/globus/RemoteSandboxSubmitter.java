@@ -1,5 +1,7 @@
 package org.gridlab.gat.resources.cpi.globus;
 
+import ibis.util.IPUtils;
+
 import java.io.FileOutputStream;
 import java.io.ObjectOutputStream;
 import java.util.HashMap;
@@ -16,13 +18,12 @@ import org.gridlab.gat.resources.JobDescription;
 import org.gridlab.gat.resources.ResourceBroker;
 import org.gridlab.gat.resources.SoftwareDescription;
 
-public class PreStageWrapperSubmitter {
+public class RemoteSandboxSubmitter {
     GATContext origGatContext;
 
     Preferences origPreferences;
 
-    public PreStageWrapperSubmitter(GATContext gatContext,
-            Preferences preferences) {
+    public RemoteSandboxSubmitter(GATContext gatContext, Preferences preferences) {
         this.origGatContext = gatContext;
         this.origPreferences = preferences;
     }
@@ -38,7 +39,7 @@ public class PreStageWrapperSubmitter {
             out.writeObject(description);
             out.close();
         } catch (Exception e) {
-            throw new GATInvocationException("PreStageWrapperSubmitter", e);
+            throw new GATInvocationException("RemoteSandboxSubmitter", e);
         }
 
         return f;
@@ -66,9 +67,8 @@ public class PreStageWrapperSubmitter {
                             "any:///wrapper.err"));
             sd.setStdout(outFile);
             sd.setStderr(errFile);
-            sd
-                    .setLocation(new URI(
-                            "java:org.gridlab.gat.resources.cpi.prestage.PreStageWrapper"));
+            sd.setLocation(new URI(
+                            "java:org.gridlab.gat.resources.cpi.remoteSandbox.RemoteSandbox"));
 
             Map attributes = origSd.getAttributes();
             Object javaHome = attributes.get("java.home");
@@ -77,14 +77,17 @@ public class PreStageWrapperSubmitter {
             }
 
             sd.addAttribute("java.home", javaHome);
-            sd.addAttribute(
+            sd
+                    .addAttribute(
                             "java.classpath",
-                            "lib/GAT.jar:lib/castor-0.9.6.jar:lib/commons-logging.jar:lib/log4j-1.2.13.jar:lib/xmlParserAPIs.jar"
-                                    + "lib/castor-0.9.6-xml.jar:lib/colobus.jar:lib/ibis-util-1.4.jar:lib/xercesImpl.jar:lib/PreStageWrapper.jar");
+                            "log4j.properties:lib/GAT.jar:lib/castor-0.9.6.jar:lib/commons-logging.jar:lib/log4j-1.2.13.jar:lib/xmlParserAPIs.jar"
+                                    + "lib/castor-0.9.6-xml.jar:lib/colobus.jar:lib/ibis-util-1.4.jar:lib/xercesImpl.jar:lib/RemoteSandbox.jar");
             Map environment = new HashMap();
             environment.put("gat.adaptor.path", "lib");
             sd.setEnvironment(environment);
 
+            sd.addPreStagedFile(GAT.createFile(origGatContext, newPreferences,
+                    new URI("log4j.properties")));
             sd.addPreStagedFile(GAT.createFile(origGatContext, newPreferences,
                     new URI("engine/lib")));
             sd.addPreStagedFile(GAT.createFile(origGatContext, newPreferences,
@@ -93,7 +96,7 @@ public class PreStageWrapperSubmitter {
             java.io.File descriptorFile = writeDescriptionToFile(description);
             sd.addPreStagedFile(GAT.createFile(origGatContext, newPreferences,
                     new URI(descriptorFile.getAbsolutePath())));
-            sd.setArguments(new String[] { descriptorFile.getName() });
+            sd.setArguments(new String[] { descriptorFile.getName(), IPUtils.getLocalHostName() });
 
             JobDescription jd = new JobDescription(sd);
             ResourceBroker broker =
@@ -101,7 +104,7 @@ public class PreStageWrapperSubmitter {
 
             return broker.submitJob(jd);
         } catch (Exception e) {
-            throw new GATInvocationException("PreStageWrapperSubmitter", e);
+            throw new GATInvocationException("RemoteSandboxSubmitter", e);
         }
     }
 }

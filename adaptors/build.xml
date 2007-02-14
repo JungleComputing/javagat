@@ -263,7 +263,7 @@
 			</manifest>
 		</jar>
 
-		<jar jarfile="${lib}/PreStageWrapper.jar" basedir="${tmp}" includes="**/org/gridlab/gat/resources/cpi/prestage/*.class"/>
+		<jar jarfile="${lib}/RemoteSandbox.jar" basedir="${tmp}" includes="**/org/gridlab/gat/resources/cpi/remoteSandbox/*.class"/>
 
         <delete dir="${tmp}"/>
 

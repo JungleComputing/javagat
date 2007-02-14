@@ -52,12 +52,12 @@ public class SubmitJavaJob implements MetricListener {
             new URI("any:///err"));
         sd.setStdout(outFile);
         sd.setStderr(errFile);
-        sd.setLocation(new URI("java:org.gridlab.gat.resources.cpi.prestage.PreStageWrapper"));
+        sd.setLocation(new URI("java:org.gridlab.gat.resources.cpi.remoteSandbox.RemoteSandbox"));
 
         sd.addAttribute("java.home", new URI("/home/rob/contrib/jdk1.5.0_09"));
         sd.addAttribute("java.flags", "-server");
         sd.addAttribute("java.classpath", "lib/GAT.jar:lib/castor-0.9.6.jar:lib/commons-logging.jar:lib/log4j-1.2.13.jar:lib/xmlParserAPIs.jar"
-                + "lib/castor-0.9.6-xml.jar:lib/colobus.jar:lib/ibis-util-1.4.jar:lib/xercesImpl.jar:lib/PreStageWrapper.jar");
+                + "lib/castor-0.9.6-xml.jar:lib/colobus.jar:lib/ibis-util-1.4.jar:lib/xercesImpl.jar:lib/RemoteSandbox.jar");
         Map environment = new HashMap();
         environment.put("gat.adaptor.path", "lib");
         sd.setEnvironment(environment);

@@ -79,10 +79,10 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
         //@@@ figure out a way of doing this automatically
         args +=
                 " \"-classpath\" \"lib/GAT.jar:lib/castor-0.9.6.jar:lib/commons-logging.jar:lib/log4j-1.2.13.jar:lib/xmlParserAPIs.jar"
-                        + "lib/castor-0.9.6-xml.jar:lib/colobus.jar:lib/ibis-util-1.4.jar:lib/xercesImpl.jar:lib/PreStageWrapper.jar\"";
+                        + "lib/castor-0.9.6-xml.jar:lib/colobus.jar:lib/ibis-util-1.4.jar:lib/xercesImpl.jar:lib/RemoteSandbox.jar\"";
 
         // main class name
-        args += " \"org.gridlab.gat.resources.cpi.prestage.PreStageWrapper\"";
+        args += " \"org.gridlab.gat.resources.cpi.remoteSandbox.RemoteSandbox\"";
 
         // @@@ does not work with gram prestage
         PreStagedFileSet myPre = sandbox.getPrestagedFileSet();
@@ -547,7 +547,7 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
             if(GATEngine.VERBOSE) {
                 System.err.println("useLocalDisk, using wrapper application");
             }
-            PreStageWrapperSubmitter s = new PreStageWrapperSubmitter(gatContext, preferences);
+            RemoteSandboxSubmitter s = new RemoteSandboxSubmitter(gatContext, preferences);
             return s.submitWrapper(description, contact);
         }
 
