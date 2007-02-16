@@ -147,7 +147,7 @@ public class RemoteSandbox implements MetricListener {
         while (i.hasNext()) {
             File src = (File) i.next();
             File dest = (File) post.get(src);
-            src = rewritePreStagedFile(gatContext, prefs, src, dest, args[1]);
+            src = rewritePostStagedFile(gatContext, prefs, src, dest, args[1]);
             post.put(src, dest);
         }
 
