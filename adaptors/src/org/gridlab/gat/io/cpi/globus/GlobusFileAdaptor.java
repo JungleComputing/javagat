@@ -585,20 +585,26 @@ public abstract class GlobusFileAdaptor extends FileCpi {
 
     public boolean isDirectory() throws GATInvocationException {
 System.err.println("isDir on " + toURI());
-        // create a seperate file object to determine whether this file
+try {
+    // create a seperate file object to determine whether this file
         // is a directory. This is needed, because the source might be a local
         // file, and some adaptors might not work locally (like gridftp).
         // This goes wrong for local -> remote copies.
         if (toURI().refersToLocalHost()) {
-            try {
+//            try {
                 java.io.File f = new java.io.File(getPath());
                 return f.isDirectory();
-            } catch (Exception e) {
-                throw new GATInvocationException("globus", e);
-            }
+//            } catch (Exception e) {
+//                throw new GATInvocationException("globus", e);
+//            }
         } else {
             return realIsDirectory();
         }
+} catch (Exception e) {
+    System.err.println("exc: " + e);
+    e.printStackTrace();
+    throw new GATInvocationException("globus", e);
+}
     }
     
     public boolean realIsDirectory() throws GATInvocationException {
