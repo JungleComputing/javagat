@@ -92,7 +92,7 @@ public class RemoteSandboxSubmitter {
                 + ":" + GATEngineLibLocation + "colobus.jar"
                 + ":" + GATEngineLibLocation + "ibis-util-1.4.jar"
                 + ":" + GATEngineLibLocation + "xercesImpl.jar"
-                + ":" + GATEngineLibLocation + "RemoteSandbox.jar";
+                + ":" + GATLocation + "/adaptors/lib/RemoteSandbox.jar";
                 
             sd.addAttribute("java.classpath", classPath);
             Map environment = new HashMap();
