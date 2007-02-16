@@ -79,19 +79,20 @@ public class RemoteSandboxSubmitter {
 
             sd.addAttribute("java.home", javaHome);
             
+            // TODO replace with local "find" in lib dirs
             String remoteGATLocation=".";
-            String remoteGATEngineLibLocation = "./lib/";
+            String remoteLibLocation = "./lib/";
             String classPath = "."
-                + ":" + remoteGATEngineLibLocation + "GAT.jar"
-                + ":" + remoteGATEngineLibLocation + "castor-0.9.6.jar"
-                + ":" + remoteGATEngineLibLocation + "commons-logging.jar"
-                + ":" + remoteGATEngineLibLocation + "log4j-1.2.13.jar"
-                + ":" + remoteGATEngineLibLocation + "xmlParserAPIs.jar"
-                + ":" + remoteGATEngineLibLocation + "castor-0.9.6-xml.jar"
-                + ":" + remoteGATEngineLibLocation + "colobus.jar"
-                + ":" + remoteGATEngineLibLocation + "ibis-util-1.4.jar"
-                + ":" + remoteGATEngineLibLocation + "xercesImpl.jar"
-                + ":" + remoteGATLocation + "/adaptors/lib/RemoteSandbox.jar";
+                + ":" + remoteLibLocation + "GAT.jar"
+                + ":" + remoteLibLocation + "castor-0.9.6.jar"
+                + ":" + remoteLibLocation + "commons-logging.jar"
+                + ":" + remoteLibLocation + "log4j-1.2.13.jar"
+                + ":" + remoteLibLocation + "xmlParserAPIs.jar"
+                + ":" + remoteLibLocation + "castor-0.9.6-xml.jar"
+                + ":" + remoteLibLocation + "colobus.jar"
+                + ":" + remoteLibLocation + "ibis-util-1.4.jar"
+                + ":" + remoteLibLocation + "xercesImpl.jar"
+                + ":" + remoteLibLocation + "RemoteSandbox.jar";
                 
             sd.addAttribute("java.classpath", classPath);
             Map environment = new HashMap();
