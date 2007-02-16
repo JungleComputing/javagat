@@ -80,7 +80,6 @@ public class RemoteSandboxSubmitter {
             sd.addAttribute("java.home", javaHome);
             
             // TODO replace with local "find" in lib dirs
-            String remoteGATLocation=".";
             String remoteLibLocation = "./lib/";
             String classPath = "."
                 + ":" + remoteLibLocation + "GAT.jar"
