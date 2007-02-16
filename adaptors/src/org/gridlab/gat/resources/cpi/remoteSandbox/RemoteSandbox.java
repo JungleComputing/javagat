@@ -141,24 +141,24 @@ public class RemoteSandbox implements MetricListener {
         sd.setStdout(rewritePostStagedFile(gatContext, prefs, null, sd
                 .getStdout(), args[1]));
 
-        Map post = sd.getPostStaged();
-        Set keys = post.keySet();
-        Iterator i = keys.iterator();
-        while (i.hasNext()) {
-            File src = (File) i.next();
-            File dest = (File) post.get(src);
-            src = rewritePostStagedFile(gatContext, prefs, src, dest, args[1]);
-            post.put(src, dest);
-        }
-
         Map pre = sd.getPreStaged();
-        keys = pre.keySet();
-        Object[] keyz = keys.toArray();        
-        for(int j=0; j<keyz.length; j++) {
-            File src = (File) keyz[j];
+        Set tmp = pre.keySet();
+        Object[] keys = tmp.toArray();        
+        for(int i=0; i<keys.length; i++) {
+            File src = (File) keys[i];
             File dest = (File) pre.get(src);
             src = rewritePostStagedFile(gatContext, prefs, dest, src, args[1]);
             pre.put(src, dest);
+        }
+
+        Map post = sd.getPostStaged();
+        tmp = post.keySet();
+        keys = tmp.toArray();
+        for(int i=0; i<keys.length; i++) {
+            File src = (File) keys[i];
+            File dest = (File) post.get(src);
+            dest = rewritePostStagedFile(gatContext, prefs, src, dest, args[1]);
+            post.put(src, dest);
         }
 
         System.err.println("modified job description: " + description);
