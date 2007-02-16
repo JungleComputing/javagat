@@ -184,9 +184,9 @@ public class GATEngine {
                 File f = new File(jarFile.getName());
 
                 if(jarFile.getName().endsWith("Adaptor.jar")) {
-                    adaptorPathURLs.add(0, f.toURL()); // add to beginning
+                    adaptorPathURLs.add(0, f.toURI().toURL()); // add to beginning
                 } else {
-                    adaptorPathURLs.add(f.toURL()); // add to end
+                    adaptorPathURLs.add(f.toURI().toURL()); // add to end
                 }
 
             } catch (Exception e) {

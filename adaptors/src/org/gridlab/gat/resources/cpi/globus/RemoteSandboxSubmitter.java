@@ -17,6 +17,7 @@ import org.gridlab.gat.resources.Job;
 import org.gridlab.gat.resources.JobDescription;
 import org.gridlab.gat.resources.ResourceBroker;
 import org.gridlab.gat.resources.SoftwareDescription;
+import org.gridlab.gat.util.Environment;
 
 public class RemoteSandboxSubmitter {
     GATContext origGatContext;
@@ -77,11 +78,24 @@ public class RemoteSandboxSubmitter {
             }
 
             sd.addAttribute("java.home", javaHome);
-            sd
-                    .addAttribute(
-                            "java.classpath",
-                            ".:lib/GAT.jar:lib/castor-0.9.6.jar:lib/commons-logging.jar:lib/log4j-1.2.13.jar:lib/xmlParserAPIs.jar"
-                                    + "lib/castor-0.9.6-xml.jar:lib/colobus.jar:lib/ibis-util-1.4.jar:lib/xercesImpl.jar:lib/RemoteSandbox.jar");
+            
+            Environment env = new Environment();
+            String GATLocation = env.getVar("GAT_LOCATION");
+            GATLocation += "/lib/";
+            
+            String classPath = "."
+                + ":" + GATLocation + "GAT.jar"
+                + ":" + GATLocation + "castor-0.9.6.jar"
+                + ":" + GATLocation + "commons-logging.jar"
+                + ":" + GATLocation + "log4j-1.2.13.jar"
+                + ":" + GATLocation + "xmlParserAPIs.jar"
+                + ":" + GATLocation + "castor-0.9.6-xml.jar"
+                + ":" + GATLocation + "colobus.jar"
+                + ":" + GATLocation + "ibis-util-1.4.jar"
+                + ":" + GATLocation + "xercesImpl.jar"
+                + ":" + GATLocation + "RemoteSandbox.jar";
+                
+            sd.addAttribute("java.classpath", classPath);
             Map environment = new HashMap();
             environment.put("gat.adaptor.path", "lib");
             sd.setEnvironment(environment);
