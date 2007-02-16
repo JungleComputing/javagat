@@ -141,16 +141,24 @@ public class RemoteSandbox implements MetricListener {
         sd.setStdout(rewritePostStagedFile(gatContext, prefs, null, sd
                 .getStdout(), args[1]));
 
+        // @@@ also do stdin
+        
         Map pre = sd.getPreStaged();
         Set tmp = pre.keySet();
-        Object[] keys = tmp.toArray();        
+        Object[] keys = tmp.toArray();
+        File[] srcs = new File[keys.length];
+        File[] dests = new File[keys.length];
         for(int i=0; i<keys.length; i++) {
             File src = (File) keys[i];
             File dest = (File) pre.get(src);
-            src = rewritePostStagedFile(gatContext, prefs, dest, src, args[1]);
-            pre.put(src, dest);
+            srcs[i] = rewritePostStagedFile(gatContext, prefs, dest, src, args[1]);
+            dests[i] = dest;
         }
-
+        pre.clear();
+        for(int i=0; i<keys.length; i++) {
+            pre.put(srcs[i], dests[i]);
+        }
+        
         Map post = sd.getPostStaged();
         tmp = post.keySet();
         keys = tmp.toArray();
