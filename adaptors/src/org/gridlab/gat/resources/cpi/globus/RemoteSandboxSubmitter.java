@@ -100,7 +100,7 @@ public class RemoteSandboxSubmitter {
             sd.setEnvironment(environment);
 
             sd.addPreStagedFile(GAT.createFile(origGatContext, newPreferences,
-                    new URI("log4j.properties")));
+                    new URI(GATLocation + "/log4j.properties")));
             sd.addPreStagedFile(GAT.createFile(origGatContext, newPreferences,
                     new URI(GATLocation + "/engine/lib")));
             sd.addPreStagedFile(GAT.createFile(origGatContext, newPreferences,
