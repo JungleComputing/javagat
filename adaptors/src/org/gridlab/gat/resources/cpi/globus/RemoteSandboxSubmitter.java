@@ -81,19 +81,18 @@ public class RemoteSandboxSubmitter {
             
             Environment env = new Environment();
             String GATLocation = env.getVar("GAT_LOCATION");
-            GATLocation += "/lib/";
-            
+            String GATEngineLibLocation = GATLocation + "/lib/";            
             String classPath = "."
-                + ":" + GATLocation + "GAT.jar"
-                + ":" + GATLocation + "castor-0.9.6.jar"
-                + ":" + GATLocation + "commons-logging.jar"
-                + ":" + GATLocation + "log4j-1.2.13.jar"
-                + ":" + GATLocation + "xmlParserAPIs.jar"
-                + ":" + GATLocation + "castor-0.9.6-xml.jar"
-                + ":" + GATLocation + "colobus.jar"
-                + ":" + GATLocation + "ibis-util-1.4.jar"
-                + ":" + GATLocation + "xercesImpl.jar"
-                + ":" + GATLocation + "RemoteSandbox.jar";
+                + ":" + GATEngineLibLocation + "GAT.jar"
+                + ":" + GATEngineLibLocation + "castor-0.9.6.jar"
+                + ":" + GATEngineLibLocation + "commons-logging.jar"
+                + ":" + GATEngineLibLocation + "log4j-1.2.13.jar"
+                + ":" + GATEngineLibLocation + "xmlParserAPIs.jar"
+                + ":" + GATEngineLibLocation + "castor-0.9.6-xml.jar"
+                + ":" + GATEngineLibLocation + "colobus.jar"
+                + ":" + GATEngineLibLocation + "ibis-util-1.4.jar"
+                + ":" + GATEngineLibLocation + "xercesImpl.jar"
+                + ":" + GATEngineLibLocation + "RemoteSandbox.jar";
                 
             sd.addAttribute("java.classpath", classPath);
             Map environment = new HashMap();
@@ -103,9 +102,9 @@ public class RemoteSandboxSubmitter {
             sd.addPreStagedFile(GAT.createFile(origGatContext, newPreferences,
                     new URI("log4j.properties")));
             sd.addPreStagedFile(GAT.createFile(origGatContext, newPreferences,
-                    new URI("engine/lib")));
+                    new URI(GATLocation + "/engine/lib")));
             sd.addPreStagedFile(GAT.createFile(origGatContext, newPreferences,
-                    new URI("adaptors/lib")));
+                    new URI(GATLocation + "/adaptors/lib")));
 
             java.io.File descriptorFile = writeDescriptionToFile(description);
             sd.addPreStagedFile(GAT.createFile(origGatContext, newPreferences,
