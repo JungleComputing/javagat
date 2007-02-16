@@ -81,7 +81,7 @@ public class RemoteSandboxSubmitter {
             
             Environment env = new Environment();
             String GATLocation = env.getVar("GAT_LOCATION");
-            String GATEngineLibLocation = GATLocation + "/lib/";            
+            String GATEngineLibLocation = GATLocation + "/engine/lib/";            
             String classPath = "."
                 + ":" + GATEngineLibLocation + "GAT.jar"
                 + ":" + GATEngineLibLocation + "castor-0.9.6.jar"
