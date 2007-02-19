@@ -78,13 +78,13 @@ public class RemoteSandboxSubmitter {
             }
 
             sd.addAttribute("java.home", javaHome);
-            
+
             // TODO replace with local "find" in lib dirs
             String remoteLibLocation = "./lib/";
             String classPath = "."
                 + ":" + remoteLibLocation + "GAT.jar"
                 + ":" + remoteLibLocation + "castor-0.9.6.jar"
-                + ":" + remoteLibLocation + "commons-logging.jar"
+                + ":" + remoteLibLocation + "commons-logging-1.1.jar"
                 + ":" + remoteLibLocation + "log4j-1.2.13.jar"
                 + ":" + remoteLibLocation + "xmlParserAPIs.jar"
                 + ":" + remoteLibLocation + "castor-0.9.6-xml.jar"
