@@ -12,6 +12,7 @@ import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.Preferences;
 import org.gridlab.gat.URI;
+import org.gridlab.gat.engine.GATEngine;
 import org.gridlab.gat.io.File;
 import org.gridlab.gat.resources.Job;
 import org.gridlab.gat.resources.JobDescription;
@@ -37,7 +38,9 @@ public class RemoteSandboxSubmitter {
 
     private java.io.File writeDescriptionToFile(JobDescription description)
             throws GATInvocationException {
-        System.err.println("writing description: " + description);
+        if(GATEngine.VERBOSE) {
+            System.err.println("writing description: " + description);
+        }
         java.io.File f = null;
         try {
             f = File.createTempFile("GAT", "jobDescription");
