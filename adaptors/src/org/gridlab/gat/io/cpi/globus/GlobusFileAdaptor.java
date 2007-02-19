@@ -523,6 +523,8 @@ public abstract class GlobusFileAdaptor extends FileCpi {
                             "Internal error: size of list is not 1 and could not find \".\", remotePath = "
                             + remotePath + ", list is: " + v);
                 }
+                
+                System.err.println("USING CACHED INFO FOR .");
             } else {
                 cachedInfo = (FileInfo) v.get(0);
             }
