@@ -972,15 +972,15 @@ public abstract class GlobusFileAdaptor extends FileCpi {
      * @param location
      * @return 1 if dir, 0 if not, -1 if unknown
      */
-    private static int isDir(URI location) {
+    private synchronized static int isDir(URI location) {
         Integer val = (Integer) isDirCache.get(location);
         if (val == null)
             return -1;
 
-//        if (GATEngine.DEBUG) {
+        if (GATEngine.DEBUG) {
             System.err.println("cached isDir of " + location + " result = "
                     + val);
-//        }
+        }
 
         if (val.intValue() == 1)
             return 1;
@@ -990,8 +990,13 @@ public abstract class GlobusFileAdaptor extends FileCpi {
         throw new Error("Internal error, illegal value in isDir");
     }
 
-    private void setIsDir(URI location, boolean isDir) {
-        System.err.println("set cached dir of " + location + " to " + isDir);
+    private synchronized static void setIsDir(URI location, boolean isDir) {
+        if (GATEngine.DEBUG) {
+            System.err.println("set cached dir of " + location + " to " + isDir);
+        }
+        if(isDirCache.size() > 5000) {
+            isDirCache.clear();
+        }
         int val = -1;
         if (isDir)
             val = 1;

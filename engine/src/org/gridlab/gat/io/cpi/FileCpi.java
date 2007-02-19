@@ -126,6 +126,15 @@ public abstract class FileCpi implements FileInterface {
         // this.location = destination;
     }
 
+    /** This method deletes a directory and everything that is in it.
+     * This method can only be called on a directory, not on a file.
+     * @throws GATInvocationException
+     */
+    public void recursivelyDeleteDirectory()
+            throws GATInvocationException {
+        recursiveDeleteDirectory(gatContext, preferences, location);
+    }
+
     public void copy(URI loc) throws GATInvocationException {
         throw new UnsupportedOperationException("Not implemented");
     }
@@ -596,9 +605,9 @@ public abstract class FileCpi implements FileInterface {
     public static void recursiveDeleteDirectory(GATContext gatContext,
             Preferences preferences, File dir) throws GATInvocationException {
 
-//        if (GATEngine.VERBOSE) {
+        if (GATEngine.VERBOSE) {
             System.err.println("recursive delete dir: " + dir);
-//        }
+        }
 
         GATInvocationException exception = new GATInvocationException();
         File[] files = (File[]) dir.listFiles();
@@ -609,9 +618,9 @@ public abstract class FileCpi implements FileInterface {
                         recursiveDeleteDirectory(gatContext, preferences,
                                 files[i].toGATURI());
                     } else {
-//                        if(GATEngine.VERBOSE) {
+                        if(GATEngine.VERBOSE) {
                             System.err.println("delete: " + files[i]);
-//                        }
+                        }
                         files[i].delete();
                     }
                 } catch (GATInvocationException e) {

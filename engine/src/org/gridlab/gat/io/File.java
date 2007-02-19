@@ -90,6 +90,15 @@ public class File extends java.io.File implements Monitorable,
         f.move(location);
     }
 
+    /** This method deletes a directory and everything that is in it.
+     * This method can only be called on a directory, not on a file.
+     * @throws GATInvocationException
+     */
+    public void recursivelyDeleteDirectory()
+            throws GATInvocationException {
+        f.recursivelyDeleteDirectory();
+    }
+
     /**
      * @see java.io.File#canRead()
      */
