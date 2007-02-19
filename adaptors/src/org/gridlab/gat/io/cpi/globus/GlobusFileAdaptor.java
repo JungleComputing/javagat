@@ -513,6 +513,7 @@ public abstract class GlobusFileAdaptor extends FileCpi {
                 for(int i=0; i<v.size(); i++) {
                     FileInfo tmp = (FileInfo) v.get(i);
                     if(tmp.getName().equals(".")) {
+                        tmp.setName(getName());
                         cachedInfo = tmp;
                         break;
                     }

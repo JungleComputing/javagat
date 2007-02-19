@@ -2,7 +2,6 @@ package org.gridlab.gat.resources.cpi.remoteSandbox;
 
 import java.io.FileInputStream;
 import java.io.ObjectInputStream;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
@@ -110,7 +109,7 @@ public class RemoteSandbox implements MetricListener {
 
     public void start(String[] args) {
         System.err.println("RemoteSandbox started, initiator: " + args[1]);
-        System.setProperty("gat.verbose", "true");
+        System.setProperty("gat.debug", "true");
         GATContext gatContext = new GATContext();
         Preferences prefs = new Preferences();
 
