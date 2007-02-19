@@ -89,10 +89,10 @@ public class URI implements Serializable, Comparable {
     /* this is where the magic happens to fix SUNs bug.. */
     public String getPath() {
         String path = u.getPath();
-        if(path == null) {
+        if (path == null) {
             return null;
         }
-        
+
         path = URIEncoder.decodeUri(u.getPath());
 
         if ((u.getScheme() == null) && (u.getHost() == null)) {
@@ -101,8 +101,10 @@ public class URI implements Serializable, Comparable {
 
         path = path.substring(1);
 
-        if (u.getHost() != null && (u.getHost().equals("localhost") || IPUtils.getLocalHostName().equals(u.getHost()))) {
-            if(!path.startsWith(File.separator)) {
+        if (u.getHost() != null
+                && (u.getHost().equals("localhost") || IPUtils
+                        .getLocalHostName().equals(u.getHost()))) {
+            if (!path.startsWith(File.separator)) {
                 // a relative path for a URI that has a hostname that is the local host 
                 // this means relative to the entry point for this machine, $HOME.
 
@@ -117,7 +119,7 @@ public class URI implements Serializable, Comparable {
                 path = home + path;
             }
         }
-        
+
         return path;
     }
 
@@ -134,23 +136,27 @@ public class URI implements Serializable, Comparable {
     }
 
     public boolean equals(Object arg0) {
-        if(arg0 == null) {
+        if (arg0 == null) {
             return false;
         }
-        
+
         if (!(arg0 instanceof URI)) {
             return false;
         }
-        
+
         URI other = (URI) arg0;
 
-        if (other.getScheme().equals("any") || getScheme().equals("any")) {
-            String tmpURIString = getScheme() + "://";
-            tmpURIString += ((other.getUserInfo() == null) ? "" : other
-                .getUserInfo());
+        if ((other.getScheme() != null && other.getScheme().equals("any"))
+                || (getScheme() != null && getScheme().equals("any"))) {
+            String tmpURIString = "file://";
+            if (getScheme() != null) {
+                tmpURIString = getScheme() + "://";
+            }
+            tmpURIString +=
+                    ((other.getUserInfo() == null) ? "" : other.getUserInfo());
             tmpURIString += ((other.getHost() == null) ? "" : other.getHost());
-            tmpURIString += ((other.getPort() == -1) ? "" : (":" + other
-                .getPort()));
+            tmpURIString +=
+                    ((other.getPort() == -1) ? "" : (":" + other.getPort()));
             tmpURIString += ("/" + other.getPath());
 
             //	        System.err.println("URI equals: created tmp URI: " + tmpURIString + ", orig was: " + other + ", compare with: " + u + ".");
@@ -333,8 +339,10 @@ public class URI implements Serializable, Comparable {
     }
 
     public void debugPrint() {
-        System.err.println("URI: scheme = " + getScheme() + ", host = "
-            + getHost() + ", port = " + getPort() + ", path = " + getPath());
+        System.err
+                .println("URI: scheme = " + getScheme() + ", host = "
+                        + getHost() + ", port = " + getPort() + ", path = "
+                        + getPath());
         System.err.println("underlying: " + u);
     }
 }
