@@ -641,6 +641,8 @@ public abstract class GlobusFileAdaptor extends FileCpi {
         // First, try the "fast" method.
         try {
             FileInfo info = getInfo();
+            
+            System.err.println("real: info = " + info);
             if (info.isDirectory()) {
                 setIsDir(location, true);
                 return true;
