@@ -135,16 +135,22 @@ public class URI implements Serializable, Comparable {
         return -1;
     }
 
-    public boolean equals(Object arg0) {
-        if (arg0 == null) {
+    public boolean equals(Object o) {
+        if (o == null) {
             return false;
         }
 
-        if (!(arg0 instanceof URI)) {
-            return false;
+        if ((o instanceof URI)) {
+            return u.equals(((URI)o).u);
         }
         
-        // I have no idea why this used to be here. It seems wrong. --Rob
+        if ((o instanceof java.net.URI)) {
+            return u.equals(o);
+        }
+        
+        return false;
+            
+            // I have no idea why this used to be here. It seems wrong. --Rob
 /*
         URI other = (URI) arg0;
 
@@ -168,7 +174,6 @@ public class URI implements Serializable, Comparable {
             return res;
         }
 */
-        return u.equals(arg0);
     }
 
     public String getAuthority() {
