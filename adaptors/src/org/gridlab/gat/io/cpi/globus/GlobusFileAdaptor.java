@@ -508,17 +508,26 @@ public abstract class GlobusFileAdaptor extends FileCpi {
 
             if (v.size() == 0) {
                 throw new GATInvocationException("File not found");
+            } else if (v.size() != 1) {
+                // just use the info for "."
+                for(int i=0; i<v.size(); i++) {
+                    FileInfo tmp = (FileInfo) v.get(i);
+                    if(tmp.getName().equals(".")) {
+                        cachedInfo = tmp;
+                        break;
+                    }
+                }
+                
+                if(cachedInfo == null) {
+                    throw new GATInvocationException(
+                            "Internal error: size of list is not 1 and could not find \".\", remotePath = "
+                            + remotePath + ", list is: " + v);
+                }
+            } else {
+                cachedInfo = (FileInfo) v.get(0);
             }
-
-            if (v.size() != 1) {
-                throw new GATInvocationException(
-                    "Internal error: size of list is not 1, remotePath = "
-                        + remotePath + ", list is: " + v);
-            }
-
-            cachedInfo = (FileInfo) v.get(0);
-
-            //			System.err.println("INFO: " + cachedInfo);
+            
+            System.err.println("INFO: " + cachedInfo);
             return cachedInfo;
         } catch (Exception e) {
             throw new GATInvocationException("gridftp", e);
@@ -629,7 +638,7 @@ try {
                 return false;
             }
 
-            // it can also be a link, so continue with slow method            
+            // it can also be a link, so continue with slow method
         } catch (GATInvocationException e) {
             if(e.getMessage().equals("File not found: " + location)) {
 //                if(GATEngine.DEBUG) {
