@@ -67,12 +67,13 @@ public class RemoteSandboxSubmitter {
             SoftwareDescription sd = new SoftwareDescription();
             Map attributes = origSd.getAttributes();
 
+            int counter = getCounter();
             File outFile =
                     GAT.createFile(origGatContext, newPreferences, new URI(
-                            "any:///wrapper." + getCounter() + ".out"));
+                            "any:///wrapper." + counter + ".out"));
             File errFile =
                     GAT.createFile(origGatContext, newPreferences, new URI(
-                            "any:///wrapper." + getCounter() + ".err"));
+                            "any:///wrapper." + counter + ".err"));
             sd.setStdout(outFile);
             sd.setStderr(errFile);
             sd
