@@ -39,6 +39,8 @@ import org.gridlab.gat.monitoring.MetricListener;
 import org.gridlab.gat.monitoring.MetricValue;
 import org.gridlab.gat.monitoring.cpi.MonitorableCpi;
 import org.gridlab.gat.resources.cpi.ResourceBrokerCpi;
+import org.gridlab.gat.steering.cpi.SteeringManagerCpi;
+
 
 /**
  * @author rob
@@ -366,6 +368,8 @@ public class GATEngine {
             AdvertServiceCpi.class);
         loadCpiClass(jarFile, manifest, attributes, "Monitorable",
             MonitorableCpi.class);
+        loadCpiClass(jarFile, manifest, attributes, "SteeringManager",
+            SteeringManagerCpi.class);
         loadCpiClass(jarFile, manifest, attributes, "File", FileCpi.class);
         loadCpiClass(jarFile, manifest, attributes, "LogicalFile",
             LogicalFileCpi.class);

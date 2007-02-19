@@ -233,6 +233,19 @@
 			</manifest>
 		</jar>
 
+        <jar jarfile="${lib}/SameGATManagerAdaptor.jar" basedir="${tmp}" includes="**/org/gridlab/gat/steering/cpi/local/SameGATSteeringManagerAdaptor.class">
+		<manifest>
+                	<attribute name="SteeringManagerCpi-class" value="org.gridlab.gat.steering.cpi.local.SameGATSteeringManagerAdaptor" />
+		</manifest>
+	</jar>
+
+        <jar jarfile="${lib}/LocalManagerAdaptor.jar" basedir="${tmp}" includes="**/org/gridlab/gat/steering/cpi/local/LocalSteeringManagerAdaptor.class">
+                <manifest>
+                        <attribute name="SteeringManagerCpi-class" value="org.gridlab.gat.steering.cpi.local.LocalSteeringManagerAdaptor" />
+                </manifest>
+        </jar>
+
+
 	    	<delete dir="${tmp}"/>
 
 		<!-- Copy external libraries to lib directory -->

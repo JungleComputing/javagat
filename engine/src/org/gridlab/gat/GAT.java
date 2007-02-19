@@ -27,6 +27,8 @@ import org.gridlab.gat.io.cpi.LogicalFileCpi;
 import org.gridlab.gat.io.cpi.RandomAccessFileCpi;
 import org.gridlab.gat.monitoring.Monitorable;
 import org.gridlab.gat.monitoring.cpi.MonitorableCpi;
+import org.gridlab.gat.steering.SteeringManager;
+import org.gridlab.gat.steering.cpi.SteeringManagerCpi;
 import org.gridlab.gat.resources.ResourceBroker;
 import org.gridlab.gat.resources.cpi.ResourceBrokerCpi;
 
@@ -569,6 +571,42 @@ public class GAT {
         return (Monitorable) getAdaptorProxy(MonitorableCpi.class,
             Monitorable.class, gatContext, preferences, null);
     }
+
+
+    /**
+     * Create a SteeringManager object
+     *
+     * @param gatContext
+     *            A GATContext object
+     * @return The SteeringManager
+     * @throws GATObjectCreationException
+     *             Thrown upon creation problems
+     */
+    public static SteeringManager createSteeringManager(GATContext gatContext)
+            throws GATObjectCreationException {
+        return createSteeringManager(gatContext, null);
+    }
+
+
+    /**
+     * Create a SteeringManager object
+     *
+     * @param gatContext
+     *            A GATContext object
+     * @param preferences
+     *            A Preferences object
+     * @return The SteeringManager
+     * @throws GATObjectCreationException
+     *             Thrown upon creation problems
+     */
+    public static SteeringManager createSteeringManager(GATContext gatContext,
+            Preferences preferences) throws GATObjectCreationException {
+        return (SteeringManager) getAdaptorProxy(SteeringManagerCpi.class,
+            SteeringManager.class, gatContext, preferences, null);
+    }
+
+
+
 
     /**
      * Constructs a RandomAccessFile instance which corresponds to the physical

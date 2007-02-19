@@ -1,0 +1,1565 @@
+MAIN: Getting SteeringManager ...
+List of GAT jar files is: 
+    /home3/aagapi/RA/steering/CVS/javagat/branches/andrei/adaptors/lib/LocalFileAdaptor.jar
+    /home3/aagapi/RA/steering/CVS/javagat/branches/andrei/adaptors/lib/LocalFileInputStreamAdaptor.jar
+    /home3/aagapi/RA/steering/CVS/javagat/branches/andrei/adaptors/lib/SftpFileInputStreamAdaptor.jar
+    /home3/aagapi/RA/steering/CVS/javagat/branches/andrei/adaptors/lib/SftpNewFileInputStreamAdaptor.jar
+    /home3/aagapi/RA/steering/CVS/javagat/branches/andrei/adaptors/lib/SftpFileOutputStreamAdaptor.jar
+    /home3/aagapi/RA/steering/CVS/javagat/branches/andrei/adaptors/lib/LocalFileOutputStreamAdaptor.jar
+    /home3/aagapi/RA/steering/CVS/javagat/branches/andrei/adaptors/lib/LocalRandomAccessFileAdaptor.jar
+    /home3/aagapi/RA/steering/CVS/javagat/branches/andrei/adaptors/lib/LocalAdvertServiceAdaptor.jar
+    /home3/aagapi/RA/steering/CVS/javagat/branches/andrei/adaptors/lib/SshFileAdaptor.jar
+    /home3/aagapi/RA/steering/CVS/javagat/branches/andrei/adaptors/lib/SftpFileAdaptor.jar
+    /home3/aagapi/RA/steering/CVS/javagat/branches/andrei/adaptors/lib/FTPFileAdaptor.jar
+    /home3/aagapi/RA/steering/CVS/javagat/branches/andrei/adaptors/lib/GridFTPFileAdaptor.jar
+    /home3/aagapi/RA/steering/CVS/javagat/branches/andrei/adaptors/lib/CommandlineSshFileAdaptor.jar
+    /home3/aagapi/RA/steering/CVS/javagat/branches/andrei/adaptors/lib/FTPFileInputStreamAdaptor.jar
+    /home3/aagapi/RA/steering/CVS/javagat/branches/andrei/adaptors/lib/GridFTPFileInputStreamAdaptor.jar
+    /home3/aagapi/RA/steering/CVS/javagat/branches/andrei/adaptors/lib/HTTPFileInputStreamAdaptor.jar
+    /home3/aagapi/RA/steering/CVS/javagat/branches/andrei/adaptors/lib/HTTPSFileInputStreamAdaptor.jar
+    /home3/aagapi/RA/steering/CVS/javagat/branches/andrei/adaptors/lib/SSHFileInputStreamAdaptor.jar
+    /home3/aagapi/RA/steering/CVS/javagat/branches/andrei/adaptors/lib/SSHFileOutputStreamAdaptor.jar
+    /home3/aagapi/RA/steering/CVS/javagat/branches/andrei/adaptors/lib/FTPFileOutputStreamAdaptor.jar
+    /home3/aagapi/RA/steering/CVS/javagat/branches/andrei/adaptors/lib/GridFTPFileOutputStreamAdaptor.jar
+    /home3/aagapi/RA/steering/CVS/javagat/branches/andrei/adaptors/lib/HTTPFileOutputStreamAdaptor.jar
+    /home3/aagapi/RA/steering/CVS/javagat/branches/andrei/adaptors/lib/HTTPSFileOutputStreamAdaptor.jar
+    /home3/aagapi/RA/steering/CVS/javagat/branches/andrei/adaptors/lib/LocalLogicalFileAdaptor.jar
+    /home3/aagapi/RA/steering/CVS/javagat/branches/andrei/adaptors/lib/LocalResourceBrokerAdaptor.jar
+    /home3/aagapi/RA/steering/CVS/javagat/branches/andrei/adaptors/lib/CommandlineSshResourceBrokerAdaptor.jar
+    /home3/aagapi/RA/steering/CVS/javagat/branches/andrei/adaptors/lib/CommandlineSshPrunResourceBrokerAdaptor.jar
+    /home3/aagapi/RA/steering/CVS/javagat/branches/andrei/adaptors/lib/SshResourceBrokerAdaptor.jar
+    /home3/aagapi/RA/steering/CVS/javagat/branches/andrei/adaptors/lib/GlobusBrokerAdaptor.jar
+    /home3/aagapi/RA/steering/CVS/javagat/branches/andrei/adaptors/lib/ProActiveBrokerAdaptor.jar
+    /home3/aagapi/RA/steering/CVS/javagat/branches/andrei/adaptors/lib/SocketEndpointAdaptor.jar
+    /home3/aagapi/RA/steering/CVS/javagat/branches/andrei/adaptors/lib/SteeringManagerLocalAdaptor.jar
+    /home3/aagapi/RA/steering/CVS/javagat/branches/andrei/adaptors/lib/jce-jdk13-120.jar
+    /home3/aagapi/RA/steering/CVS/javagat/branches/andrei/adaptors/lib/cog-jglobus-1.2-rob.jar
+    /home3/aagapi/RA/steering/CVS/javagat/branches/andrei/adaptors/lib/j2ssh-core-0.2.7-rob.jar
+    /home3/aagapi/RA/steering/CVS/javagat/branches/andrei/adaptors/lib/jsch-0.1.25.jar
+    /home3/aagapi/RA/steering/CVS/javagat/branches/andrei/adaptors/lib/ProActive.jar
+    /home3/aagapi/RA/steering/CVS/javagat/branches/andrei/gridlabAdaptors/lib/StorageBoxAdaptor.jar
+    /home3/aagapi/RA/steering/CVS/javagat/branches/andrei/gridlabAdaptors/lib/MercuryMonitorableAdaptor.jar
+    /home3/aagapi/RA/steering/CVS/javagat/branches/andrei/gridlabAdaptors/lib/DataMovementFileAdaptor.jar
+    /home3/aagapi/RA/steering/CVS/javagat/branches/andrei/gridlabAdaptors/lib/DataBrowsingFileAdaptor.jar
+    /home3/aagapi/RA/steering/CVS/javagat/branches/andrei/gridlabAdaptors/lib/GridLabLogicalFileAdaptor.jar
+    /home3/aagapi/RA/steering/CVS/javagat/branches/andrei/gridlabAdaptors/lib/GRMSBrokerAdaptor.jar
+    /home3/aagapi/RA/steering/CVS/javagat/branches/andrei/gridlabAdaptors/lib/junit.jar
+    /home3/aagapi/RA/steering/CVS/javagat/branches/andrei/gridlabAdaptors/lib/puretls.jar
+    /home3/aagapi/RA/steering/CVS/javagat/branches/andrei/gridlabAdaptors/lib/axis.jar
+    /home3/aagapi/RA/steering/CVS/javagat/branches/andrei/gridlabAdaptors/lib/jzlib-1.0.5.jar
+    /home3/aagapi/RA/steering/CVS/javagat/branches/andrei/gridlabAdaptors/lib/xmlsec.jar
+    /home3/aagapi/RA/steering/CVS/javagat/branches/andrei/gridlabAdaptors/lib/ogsa-samples.jar
+    /home3/aagapi/RA/steering/CVS/javagat/branches/andrei/gridlabAdaptors/lib/cog-jglobus-1.2-rob.jar
+    /home3/aagapi/RA/steering/CVS/javagat/branches/andrei/gridlabAdaptors/lib/ogsa.jar
+    /home3/aagapi/RA/steering/CVS/javagat/branches/andrei/gridlabAdaptors/lib/cryptix-asn1.jar
+    /home3/aagapi/RA/steering/CVS/javagat/branches/andrei/gridlabAdaptors/lib/jgss.jar
+    /home3/aagapi/RA/steering/CVS/javagat/branches/andrei/gridlabAdaptors/lib/saaj.jar
+    /home3/aagapi/RA/steering/CVS/javagat/branches/andrei/gridlabAdaptors/lib/jboss-j2ee.jar
+    /home3/aagapi/RA/steering/CVS/javagat/branches/andrei/gridlabAdaptors/lib/cryptix.jar
+    /home3/aagapi/RA/steering/CVS/javagat/branches/andrei/gridlabAdaptors/lib/jdbc-se2.0.jar
+    /home3/aagapi/RA/steering/CVS/javagat/branches/andrei/gridlabAdaptors/lib/xalan.jar
+    /home3/aagapi/RA/steering/CVS/javagat/branches/andrei/gridlabAdaptors/lib/jaxrpc.jar
+    /home3/aagapi/RA/steering/CVS/javagat/branches/andrei/gridlabAdaptors/lib/cog-axis.jar
+    /home3/aagapi/RA/steering/CVS/javagat/branches/andrei/gridlabAdaptors/lib/servlet.jar
+    /home3/aagapi/RA/steering/CVS/javagat/branches/andrei/gridlabAdaptors/lib/cryptix32.jar
+    /home3/aagapi/RA/steering/CVS/javagat/branches/andrei/gridlabAdaptors/lib/jta1.0.1.jar
+    /home3/aagapi/RA/steering/CVS/javagat/branches/andrei/gridlabAdaptors/lib/wsdl4j.jar
+    /home3/aagapi/RA/steering/CVS/javagat/branches/andrei/gridlabAdaptors/lib/wsif.jar
+    /home3/aagapi/RA/steering/CVS/javagat/branches/andrei/gridlabAdaptors/lib/commons-discovery.jar
+loading adaptors from /home3/aagapi/RA/steering/CVS/javagat/branches/andrei/adaptors/lib/LocalFileAdaptor.jar
+Trying to load adaptor for Endpoint
+Adaptor for Endpoint not found in Manifest
+Trying to load adaptor for AdvertService
+Adaptor for AdvertService not found in Manifest
+Trying to load adaptor for Monitorable
+Adaptor for Monitorable not found in Manifest
+Trying to load adaptor for SteeringManager
+Adaptor for SteeringManager not found in Manifest
+Trying to load adaptor for File
+Adaptor for File found in Manifest, loading
+Adaptor for File loaded
+Trying to load adaptor for LogicalFile
+Adaptor for LogicalFile not found in Manifest
+Trying to load adaptor for RandomAccessFile
+Adaptor for RandomAccessFile not found in Manifest
+Trying to load adaptor for FileInputStream
+Adaptor for FileInputStream not found in Manifest
+Trying to load adaptor for FileOutputStream
+Adaptor for FileOutputStream not found in Manifest
+Trying to load adaptor for ResourceBroker
+Adaptor for ResourceBroker not found in Manifest
+loading adaptors from /home3/aagapi/RA/steering/CVS/javagat/branches/andrei/adaptors/lib/LocalFileInputStreamAdaptor.jar
+Trying to load adaptor for Endpoint
+Adaptor for Endpoint not found in Manifest
+Trying to load adaptor for AdvertService
+Adaptor for AdvertService not found in Manifest
+Trying to load adaptor for Monitorable
+Adaptor for Monitorable not found in Manifest
+Trying to load adaptor for SteeringManager
+Adaptor for SteeringManager not found in Manifest
+Trying to load adaptor for File
+Adaptor for File not found in Manifest
+Trying to load adaptor for LogicalFile
+Adaptor for LogicalFile not found in Manifest
+Trying to load adaptor for RandomAccessFile
+Adaptor for RandomAccessFile not found in Manifest
+Trying to load adaptor for FileInputStream
+Adaptor for FileInputStream found in Manifest, loading
+Adaptor for FileInputStream loaded
+Trying to load adaptor for FileOutputStream
+Adaptor for FileOutputStream not found in Manifest
+Trying to load adaptor for ResourceBroker
+Adaptor for ResourceBroker not found in Manifest
+loading adaptors from /home3/aagapi/RA/steering/CVS/javagat/branches/andrei/adaptors/lib/SftpFileInputStreamAdaptor.jar
+Trying to load adaptor for Endpoint
+Adaptor for Endpoint not found in Manifest
+Trying to load adaptor for AdvertService
+Adaptor for AdvertService not found in Manifest
+Trying to load adaptor for Monitorable
+Adaptor for Monitorable not found in Manifest
+Trying to load adaptor for SteeringManager
+Adaptor for SteeringManager not found in Manifest
+Trying to load adaptor for File
+Adaptor for File not found in Manifest
+Trying to load adaptor for LogicalFile
+Adaptor for LogicalFile not found in Manifest
+Trying to load adaptor for RandomAccessFile
+Adaptor for RandomAccessFile not found in Manifest
+Trying to load adaptor for FileInputStream
+Adaptor for FileInputStream found in Manifest, loading
+Adaptor for FileInputStream loaded
+Trying to load adaptor for FileOutputStream
+Adaptor for FileOutputStream not found in Manifest
+Trying to load adaptor for ResourceBroker
+Adaptor for ResourceBroker not found in Manifest
+loading adaptors from /home3/aagapi/RA/steering/CVS/javagat/branches/andrei/adaptors/lib/SftpNewFileInputStreamAdaptor.jar
+Trying to load adaptor for Endpoint
+Adaptor for Endpoint not found in Manifest
+Trying to load adaptor for AdvertService
+Adaptor for AdvertService not found in Manifest
+Trying to load adaptor for Monitorable
+Adaptor for Monitorable not found in Manifest
+Trying to load adaptor for SteeringManager
+Adaptor for SteeringManager not found in Manifest
+Trying to load adaptor for File
+Adaptor for File not found in Manifest
+Trying to load adaptor for LogicalFile
+Adaptor for LogicalFile not found in Manifest
+Trying to load adaptor for RandomAccessFile
+Adaptor for RandomAccessFile not found in Manifest
+Trying to load adaptor for FileInputStream
+Adaptor for FileInputStream found in Manifest, loading
+Adaptor for FileInputStream loaded
+Trying to load adaptor for FileOutputStream
+Adaptor for FileOutputStream not found in Manifest
+Trying to load adaptor for ResourceBroker
+Adaptor for ResourceBroker not found in Manifest
+loading adaptors from /home3/aagapi/RA/steering/CVS/javagat/branches/andrei/adaptors/lib/SftpFileOutputStreamAdaptor.jar
+Trying to load adaptor for Endpoint
+Adaptor for Endpoint not found in Manifest
+Trying to load adaptor for AdvertService
+Adaptor for AdvertService not found in Manifest
+Trying to load adaptor for Monitorable
+Adaptor for Monitorable not found in Manifest
+Trying to load adaptor for SteeringManager
+Adaptor for SteeringManager not found in Manifest
+Trying to load adaptor for File
+Adaptor for File not found in Manifest
+Trying to load adaptor for LogicalFile
+Adaptor for LogicalFile not found in Manifest
+Trying to load adaptor for RandomAccessFile
+Adaptor for RandomAccessFile not found in Manifest
+Trying to load adaptor for FileInputStream
+Adaptor for FileInputStream not found in Manifest
+Trying to load adaptor for FileOutputStream
+Adaptor for FileOutputStream found in Manifest, loading
+Adaptor for FileOutputStream loaded
+Trying to load adaptor for ResourceBroker
+Adaptor for ResourceBroker not found in Manifest
+loading adaptors from /home3/aagapi/RA/steering/CVS/javagat/branches/andrei/adaptors/lib/LocalFileOutputStreamAdaptor.jar
+Trying to load adaptor for Endpoint
+Adaptor for Endpoint not found in Manifest
+Trying to load adaptor for AdvertService
+Adaptor for AdvertService not found in Manifest
+Trying to load adaptor for Monitorable
+Adaptor for Monitorable not found in Manifest
+Trying to load adaptor for SteeringManager
+Adaptor for SteeringManager not found in Manifest
+Trying to load adaptor for File
+Adaptor for File not found in Manifest
+Trying to load adaptor for LogicalFile
+Adaptor for LogicalFile not found in Manifest
+Trying to load adaptor for RandomAccessFile
+Adaptor for RandomAccessFile not found in Manifest
+Trying to load adaptor for FileInputStream
+Adaptor for FileInputStream not found in Manifest
+Trying to load adaptor for FileOutputStream
+Adaptor for FileOutputStream found in Manifest, loading
+Adaptor for FileOutputStream loaded
+Trying to load adaptor for ResourceBroker
+Adaptor for ResourceBroker not found in Manifest
+loading adaptors from /home3/aagapi/RA/steering/CVS/javagat/branches/andrei/adaptors/lib/LocalRandomAccessFileAdaptor.jar
+Trying to load adaptor for Endpoint
+Adaptor for Endpoint not found in Manifest
+Trying to load adaptor for AdvertService
+Adaptor for AdvertService not found in Manifest
+Trying to load adaptor for Monitorable
+Adaptor for Monitorable not found in Manifest
+Trying to load adaptor for SteeringManager
+Adaptor for SteeringManager not found in Manifest
+Trying to load adaptor for File
+Adaptor for File not found in Manifest
+Trying to load adaptor for LogicalFile
+Adaptor for LogicalFile not found in Manifest
+Trying to load adaptor for RandomAccessFile
+Adaptor for RandomAccessFile found in Manifest, loading
+Adaptor for RandomAccessFile loaded
+Trying to load adaptor for FileInputStream
+Adaptor for FileInputStream not found in Manifest
+Trying to load adaptor for FileOutputStream
+Adaptor for FileOutputStream not found in Manifest
+Trying to load adaptor for ResourceBroker
+Adaptor for ResourceBroker not found in Manifest
+loading adaptors from /home3/aagapi/RA/steering/CVS/javagat/branches/andrei/adaptors/lib/LocalAdvertServiceAdaptor.jar
+Trying to load adaptor for Endpoint
+Adaptor for Endpoint not found in Manifest
+Trying to load adaptor for AdvertService
+Adaptor for AdvertService found in Manifest, loading
+Adaptor for AdvertService loaded
+Trying to load adaptor for Monitorable
+Adaptor for Monitorable not found in Manifest
+Trying to load adaptor for SteeringManager
+Adaptor for SteeringManager not found in Manifest
+Trying to load adaptor for File
+Adaptor for File not found in Manifest
+Trying to load adaptor for LogicalFile
+Adaptor for LogicalFile not found in Manifest
+Trying to load adaptor for RandomAccessFile
+Adaptor for RandomAccessFile not found in Manifest
+Trying to load adaptor for FileInputStream
+Adaptor for FileInputStream not found in Manifest
+Trying to load adaptor for FileOutputStream
+Adaptor for FileOutputStream not found in Manifest
+Trying to load adaptor for ResourceBroker
+Adaptor for ResourceBroker not found in Manifest
+loading adaptors from /home3/aagapi/RA/steering/CVS/javagat/branches/andrei/adaptors/lib/SshFileAdaptor.jar
+Trying to load adaptor for Endpoint
+Adaptor for Endpoint not found in Manifest
+Trying to load adaptor for AdvertService
+Adaptor for AdvertService not found in Manifest
+Trying to load adaptor for Monitorable
+Adaptor for Monitorable not found in Manifest
+Trying to load adaptor for SteeringManager
+Adaptor for SteeringManager not found in Manifest
+Trying to load adaptor for File
+Adaptor for File found in Manifest, loading
+Adaptor for File loaded
+Trying to load adaptor for LogicalFile
+Adaptor for LogicalFile not found in Manifest
+Trying to load adaptor for RandomAccessFile
+Adaptor for RandomAccessFile not found in Manifest
+Trying to load adaptor for FileInputStream
+Adaptor for FileInputStream not found in Manifest
+Trying to load adaptor for FileOutputStream
+Adaptor for FileOutputStream not found in Manifest
+Trying to load adaptor for ResourceBroker
+Adaptor for ResourceBroker not found in Manifest
+loading adaptors from /home3/aagapi/RA/steering/CVS/javagat/branches/andrei/adaptors/lib/SftpFileAdaptor.jar
+Trying to load adaptor for Endpoint
+Adaptor for Endpoint not found in Manifest
+Trying to load adaptor for AdvertService
+Adaptor for AdvertService not found in Manifest
+Trying to load adaptor for Monitorable
+Adaptor for Monitorable not found in Manifest
+Trying to load adaptor for SteeringManager
+Adaptor for SteeringManager not found in Manifest
+Trying to load adaptor for File
+Adaptor for File found in Manifest, loading
+Adaptor for File loaded
+Trying to load adaptor for LogicalFile
+Adaptor for LogicalFile not found in Manifest
+Trying to load adaptor for RandomAccessFile
+Adaptor for RandomAccessFile not found in Manifest
+Trying to load adaptor for FileInputStream
+Adaptor for FileInputStream not found in Manifest
+Trying to load adaptor for FileOutputStream
+Adaptor for FileOutputStream not found in Manifest
+Trying to load adaptor for ResourceBroker
+Adaptor for ResourceBroker not found in Manifest
+loading adaptors from /home3/aagapi/RA/steering/CVS/javagat/branches/andrei/adaptors/lib/FTPFileAdaptor.jar
+Trying to load adaptor for Endpoint
+Adaptor for Endpoint not found in Manifest
+Trying to load adaptor for AdvertService
+Adaptor for AdvertService not found in Manifest
+Trying to load adaptor for Monitorable
+Adaptor for Monitorable not found in Manifest
+Trying to load adaptor for SteeringManager
+Adaptor for SteeringManager not found in Manifest
+Trying to load adaptor for File
+Adaptor for File found in Manifest, loading
+Adaptor for File loaded
+Trying to load adaptor for LogicalFile
+Adaptor for LogicalFile not found in Manifest
+Trying to load adaptor for RandomAccessFile
+Adaptor for RandomAccessFile not found in Manifest
+Trying to load adaptor for FileInputStream
+Adaptor for FileInputStream not found in Manifest
+Trying to load adaptor for FileOutputStream
+Adaptor for FileOutputStream not found in Manifest
+Trying to load adaptor for ResourceBroker
+Adaptor for ResourceBroker not found in Manifest
+loading adaptors from /home3/aagapi/RA/steering/CVS/javagat/branches/andrei/adaptors/lib/GridFTPFileAdaptor.jar
+Trying to load adaptor for Endpoint
+Adaptor for Endpoint not found in Manifest
+Trying to load adaptor for AdvertService
+Adaptor for AdvertService not found in Manifest
+Trying to load adaptor for Monitorable
+Adaptor for Monitorable not found in Manifest
+Trying to load adaptor for SteeringManager
+Adaptor for SteeringManager not found in Manifest
+Trying to load adaptor for File
+Adaptor for File found in Manifest, loading
+Adaptor for File loaded
+Trying to load adaptor for LogicalFile
+Adaptor for LogicalFile not found in Manifest
+Trying to load adaptor for RandomAccessFile
+Adaptor for RandomAccessFile not found in Manifest
+Trying to load adaptor for FileInputStream
+Adaptor for FileInputStream not found in Manifest
+Trying to load adaptor for FileOutputStream
+Adaptor for FileOutputStream not found in Manifest
+Trying to load adaptor for ResourceBroker
+Adaptor for ResourceBroker not found in Manifest
+loading adaptors from /home3/aagapi/RA/steering/CVS/javagat/branches/andrei/adaptors/lib/CommandlineSshFileAdaptor.jar
+Trying to load adaptor for Endpoint
+Adaptor for Endpoint not found in Manifest
+Trying to load adaptor for AdvertService
+Adaptor for AdvertService not found in Manifest
+Trying to load adaptor for Monitorable
+Adaptor for Monitorable not found in Manifest
+Trying to load adaptor for SteeringManager
+Adaptor for SteeringManager not found in Manifest
+Trying to load adaptor for File
+Adaptor for File found in Manifest, loading
+Adaptor for File loaded
+Trying to load adaptor for LogicalFile
+Adaptor for LogicalFile not found in Manifest
+Trying to load adaptor for RandomAccessFile
+Adaptor for RandomAccessFile not found in Manifest
+Trying to load adaptor for FileInputStream
+Adaptor for FileInputStream not found in Manifest
+Trying to load adaptor for FileOutputStream
+Adaptor for FileOutputStream not found in Manifest
+Trying to load adaptor for ResourceBroker
+Adaptor for ResourceBroker not found in Manifest
+loading adaptors from /home3/aagapi/RA/steering/CVS/javagat/branches/andrei/adaptors/lib/FTPFileInputStreamAdaptor.jar
+Trying to load adaptor for Endpoint
+Adaptor for Endpoint not found in Manifest
+Trying to load adaptor for AdvertService
+Adaptor for AdvertService not found in Manifest
+Trying to load adaptor for Monitorable
+Adaptor for Monitorable not found in Manifest
+Trying to load adaptor for SteeringManager
+Adaptor for SteeringManager not found in Manifest
+Trying to load adaptor for File
+Adaptor for File not found in Manifest
+Trying to load adaptor for LogicalFile
+Adaptor for LogicalFile not found in Manifest
+Trying to load adaptor for RandomAccessFile
+Adaptor for RandomAccessFile not found in Manifest
+Trying to load adaptor for FileInputStream
+Adaptor for FileInputStream found in Manifest, loading
+Adaptor for FileInputStream loaded
+Trying to load adaptor for FileOutputStream
+Adaptor for FileOutputStream not found in Manifest
+Trying to load adaptor for ResourceBroker
+Adaptor for ResourceBroker not found in Manifest
+loading adaptors from /home3/aagapi/RA/steering/CVS/javagat/branches/andrei/adaptors/lib/GridFTPFileInputStreamAdaptor.jar
+Trying to load adaptor for Endpoint
+Adaptor for Endpoint not found in Manifest
+Trying to load adaptor for AdvertService
+Adaptor for AdvertService not found in Manifest
+Trying to load adaptor for Monitorable
+Adaptor for Monitorable not found in Manifest
+Trying to load adaptor for SteeringManager
+Adaptor for SteeringManager not found in Manifest
+Trying to load adaptor for File
+Adaptor for File not found in Manifest
+Trying to load adaptor for LogicalFile
+Adaptor for LogicalFile not found in Manifest
+Trying to load adaptor for RandomAccessFile
+Adaptor for RandomAccessFile not found in Manifest
+Trying to load adaptor for FileInputStream
+Adaptor for FileInputStream found in Manifest, loading
+Adaptor for FileInputStream loaded
+Trying to load adaptor for FileOutputStream
+Adaptor for FileOutputStream not found in Manifest
+Trying to load adaptor for ResourceBroker
+Adaptor for ResourceBroker not found in Manifest
+loading adaptors from /home3/aagapi/RA/steering/CVS/javagat/branches/andrei/adaptors/lib/HTTPFileInputStreamAdaptor.jar
+Trying to load adaptor for Endpoint
+Adaptor for Endpoint not found in Manifest
+Trying to load adaptor for AdvertService
+Adaptor for AdvertService not found in Manifest
+Trying to load adaptor for Monitorable
+Adaptor for Monitorable not found in Manifest
+Trying to load adaptor for SteeringManager
+Adaptor for SteeringManager not found in Manifest
+Trying to load adaptor for File
+Adaptor for File not found in Manifest
+Trying to load adaptor for LogicalFile
+Adaptor for LogicalFile not found in Manifest
+Trying to load adaptor for RandomAccessFile
+Adaptor for RandomAccessFile not found in Manifest
+Trying to load adaptor for FileInputStream
+Adaptor for FileInputStream found in Manifest, loading
+Adaptor for FileInputStream loaded
+Trying to load adaptor for FileOutputStream
+Adaptor for FileOutputStream not found in Manifest
+Trying to load adaptor for ResourceBroker
+Adaptor for ResourceBroker not found in Manifest
+loading adaptors from /home3/aagapi/RA/steering/CVS/javagat/branches/andrei/adaptors/lib/HTTPSFileInputStreamAdaptor.jar
+Trying to load adaptor for Endpoint
+Adaptor for Endpoint not found in Manifest
+Trying to load adaptor for AdvertService
+Adaptor for AdvertService not found in Manifest
+Trying to load adaptor for Monitorable
+Adaptor for Monitorable not found in Manifest
+Trying to load adaptor for SteeringManager
+Adaptor for SteeringManager not found in Manifest
+Trying to load adaptor for File
+Adaptor for File not found in Manifest
+Trying to load adaptor for LogicalFile
+Adaptor for LogicalFile not found in Manifest
+Trying to load adaptor for RandomAccessFile
+Adaptor for RandomAccessFile not found in Manifest
+Trying to load adaptor for FileInputStream
+Adaptor for FileInputStream found in Manifest, loading
+Adaptor for FileInputStream loaded
+Trying to load adaptor for FileOutputStream
+Adaptor for FileOutputStream not found in Manifest
+Trying to load adaptor for ResourceBroker
+Adaptor for ResourceBroker not found in Manifest
+loading adaptors from /home3/aagapi/RA/steering/CVS/javagat/branches/andrei/adaptors/lib/SSHFileInputStreamAdaptor.jar
+Trying to load adaptor for Endpoint
+Adaptor for Endpoint not found in Manifest
+Trying to load adaptor for AdvertService
+Adaptor for AdvertService not found in Manifest
+Trying to load adaptor for Monitorable
+Adaptor for Monitorable not found in Manifest
+Trying to load adaptor for SteeringManager
+Adaptor for SteeringManager not found in Manifest
+Trying to load adaptor for File
+Adaptor for File not found in Manifest
+Trying to load adaptor for LogicalFile
+Adaptor for LogicalFile not found in Manifest
+Trying to load adaptor for RandomAccessFile
+Adaptor for RandomAccessFile not found in Manifest
+Trying to load adaptor for FileInputStream
+Adaptor for FileInputStream found in Manifest, loading
+Adaptor for FileInputStream loaded
+Trying to load adaptor for FileOutputStream
+Adaptor for FileOutputStream not found in Manifest
+Trying to load adaptor for ResourceBroker
+Adaptor for ResourceBroker not found in Manifest
+loading adaptors from /home3/aagapi/RA/steering/CVS/javagat/branches/andrei/adaptors/lib/SSHFileOutputStreamAdaptor.jar
+Trying to load adaptor for Endpoint
+Adaptor for Endpoint not found in Manifest
+Trying to load adaptor for AdvertService
+Adaptor for AdvertService not found in Manifest
+Trying to load adaptor for Monitorable
+Adaptor for Monitorable not found in Manifest
+Trying to load adaptor for SteeringManager
+Adaptor for SteeringManager not found in Manifest
+Trying to load adaptor for File
+Adaptor for File not found in Manifest
+Trying to load adaptor for LogicalFile
+Adaptor for LogicalFile not found in Manifest
+Trying to load adaptor for RandomAccessFile
+Adaptor for RandomAccessFile not found in Manifest
+Trying to load adaptor for FileInputStream
+Adaptor for FileInputStream not found in Manifest
+Trying to load adaptor for FileOutputStream
+Adaptor for FileOutputStream found in Manifest, loading
+Adaptor for FileOutputStream loaded
+Trying to load adaptor for ResourceBroker
+Adaptor for ResourceBroker not found in Manifest
+loading adaptors from /home3/aagapi/RA/steering/CVS/javagat/branches/andrei/adaptors/lib/FTPFileOutputStreamAdaptor.jar
+Trying to load adaptor for Endpoint
+Adaptor for Endpoint not found in Manifest
+Trying to load adaptor for AdvertService
+Adaptor for AdvertService not found in Manifest
+Trying to load adaptor for Monitorable
+Adaptor for Monitorable not found in Manifest
+Trying to load adaptor for SteeringManager
+Adaptor for SteeringManager not found in Manifest
+Trying to load adaptor for File
+Adaptor for File not found in Manifest
+Trying to load adaptor for LogicalFile
+Adaptor for LogicalFile not found in Manifest
+Trying to load adaptor for RandomAccessFile
+Adaptor for RandomAccessFile not found in Manifest
+Trying to load adaptor for FileInputStream
+Adaptor for FileInputStream not found in Manifest
+Trying to load adaptor for FileOutputStream
+Adaptor for FileOutputStream found in Manifest, loading
+Adaptor for FileOutputStream loaded
+Trying to load adaptor for ResourceBroker
+Adaptor for ResourceBroker not found in Manifest
+loading adaptors from /home3/aagapi/RA/steering/CVS/javagat/branches/andrei/adaptors/lib/GridFTPFileOutputStreamAdaptor.jar
+Trying to load adaptor for Endpoint
+Adaptor for Endpoint not found in Manifest
+Trying to load adaptor for AdvertService
+Adaptor for AdvertService not found in Manifest
+Trying to load adaptor for Monitorable
+Adaptor for Monitorable not found in Manifest
+Trying to load adaptor for SteeringManager
+Adaptor for SteeringManager not found in Manifest
+Trying to load adaptor for File
+Adaptor for File not found in Manifest
+Trying to load adaptor for LogicalFile
+Adaptor for LogicalFile not found in Manifest
+Trying to load adaptor for RandomAccessFile
+Adaptor for RandomAccessFile not found in Manifest
+Trying to load adaptor for FileInputStream
+Adaptor for FileInputStream not found in Manifest
+Trying to load adaptor for FileOutputStream
+Adaptor for FileOutputStream found in Manifest, loading
+Adaptor for FileOutputStream loaded
+Trying to load adaptor for ResourceBroker
+Adaptor for ResourceBroker not found in Manifest
+loading adaptors from /home3/aagapi/RA/steering/CVS/javagat/branches/andrei/adaptors/lib/HTTPFileOutputStreamAdaptor.jar
+Trying to load adaptor for Endpoint
+Adaptor for Endpoint not found in Manifest
+Trying to load adaptor for AdvertService
+Adaptor for AdvertService not found in Manifest
+Trying to load adaptor for Monitorable
+Adaptor for Monitorable not found in Manifest
+Trying to load adaptor for SteeringManager
+Adaptor for SteeringManager not found in Manifest
+Trying to load adaptor for File
+Adaptor for File not found in Manifest
+Trying to load adaptor for LogicalFile
+Adaptor for LogicalFile not found in Manifest
+Trying to load adaptor for RandomAccessFile
+Adaptor for RandomAccessFile not found in Manifest
+Trying to load adaptor for FileInputStream
+Adaptor for FileInputStream not found in Manifest
+Trying to load adaptor for FileOutputStream
+Adaptor for FileOutputStream found in Manifest, loading
+Adaptor for FileOutputStream loaded
+Trying to load adaptor for ResourceBroker
+Adaptor for ResourceBroker not found in Manifest
+loading adaptors from /home3/aagapi/RA/steering/CVS/javagat/branches/andrei/adaptors/lib/HTTPSFileOutputStreamAdaptor.jar
+Trying to load adaptor for Endpoint
+Adaptor for Endpoint not found in Manifest
+Trying to load adaptor for AdvertService
+Adaptor for AdvertService not found in Manifest
+Trying to load adaptor for Monitorable
+Adaptor for Monitorable not found in Manifest
+Trying to load adaptor for SteeringManager
+Adaptor for SteeringManager not found in Manifest
+Trying to load adaptor for File
+Adaptor for File not found in Manifest
+Trying to load adaptor for LogicalFile
+Adaptor for LogicalFile not found in Manifest
+Trying to load adaptor for RandomAccessFile
+Adaptor for RandomAccessFile not found in Manifest
+Trying to load adaptor for FileInputStream
+Adaptor for FileInputStream not found in Manifest
+Trying to load adaptor for FileOutputStream
+Adaptor for FileOutputStream found in Manifest, loading
+Adaptor for FileOutputStream loaded
+Trying to load adaptor for ResourceBroker
+Adaptor for ResourceBroker not found in Manifest
+loading adaptors from /home3/aagapi/RA/steering/CVS/javagat/branches/andrei/adaptors/lib/LocalLogicalFileAdaptor.jar
+Trying to load adaptor for Endpoint
+Adaptor for Endpoint not found in Manifest
+Trying to load adaptor for AdvertService
+Adaptor for AdvertService not found in Manifest
+Trying to load adaptor for Monitorable
+Adaptor for Monitorable not found in Manifest
+Trying to load adaptor for SteeringManager
+Adaptor for SteeringManager not found in Manifest
+Trying to load adaptor for File
+Adaptor for File not found in Manifest
+Trying to load adaptor for LogicalFile
+Adaptor for LogicalFile found in Manifest, loading
+Adaptor for LogicalFile loaded
+Trying to load adaptor for RandomAccessFile
+Adaptor for RandomAccessFile not found in Manifest
+Trying to load adaptor for FileInputStream
+Adaptor for FileInputStream not found in Manifest
+Trying to load adaptor for FileOutputStream
+Adaptor for FileOutputStream not found in Manifest
+Trying to load adaptor for ResourceBroker
+Adaptor for ResourceBroker not found in Manifest
+loading adaptors from /home3/aagapi/RA/steering/CVS/javagat/branches/andrei/adaptors/lib/LocalResourceBrokerAdaptor.jar
+Trying to load adaptor for Endpoint
+Adaptor for Endpoint not found in Manifest
+Trying to load adaptor for AdvertService
+Adaptor for AdvertService not found in Manifest
+Trying to load adaptor for Monitorable
+Adaptor for Monitorable not found in Manifest
+Trying to load adaptor for SteeringManager
+Adaptor for SteeringManager not found in Manifest
+Trying to load adaptor for File
+Adaptor for File not found in Manifest
+Trying to load adaptor for LogicalFile
+Adaptor for LogicalFile not found in Manifest
+Trying to load adaptor for RandomAccessFile
+Adaptor for RandomAccessFile not found in Manifest
+Trying to load adaptor for FileInputStream
+Adaptor for FileInputStream not found in Manifest
+Trying to load adaptor for FileOutputStream
+Adaptor for FileOutputStream not found in Manifest
+Trying to load adaptor for ResourceBroker
+Adaptor for ResourceBroker found in Manifest, loading
+Adaptor for ResourceBroker loaded
+loading adaptors from /home3/aagapi/RA/steering/CVS/javagat/branches/andrei/adaptors/lib/CommandlineSshResourceBrokerAdaptor.jar
+Trying to load adaptor for Endpoint
+Adaptor for Endpoint not found in Manifest
+Trying to load adaptor for AdvertService
+Adaptor for AdvertService not found in Manifest
+Trying to load adaptor for Monitorable
+Adaptor for Monitorable not found in Manifest
+Trying to load adaptor for SteeringManager
+Adaptor for SteeringManager not found in Manifest
+Trying to load adaptor for File
+Adaptor for File not found in Manifest
+Trying to load adaptor for LogicalFile
+Adaptor for LogicalFile not found in Manifest
+Trying to load adaptor for RandomAccessFile
+Adaptor for RandomAccessFile not found in Manifest
+Trying to load adaptor for FileInputStream
+Adaptor for FileInputStream not found in Manifest
+Trying to load adaptor for FileOutputStream
+Adaptor for FileOutputStream not found in Manifest
+Trying to load adaptor for ResourceBroker
+Adaptor for ResourceBroker found in Manifest, loading
+Adaptor for ResourceBroker loaded
+loading adaptors from /home3/aagapi/RA/steering/CVS/javagat/branches/andrei/adaptors/lib/CommandlineSshPrunResourceBrokerAdaptor.jar
+Trying to load adaptor for Endpoint
+Adaptor for Endpoint not found in Manifest
+Trying to load adaptor for AdvertService
+Adaptor for AdvertService not found in Manifest
+Trying to load adaptor for Monitorable
+Adaptor for Monitorable not found in Manifest
+Trying to load adaptor for SteeringManager
+Adaptor for SteeringManager not found in Manifest
+Trying to load adaptor for File
+Adaptor for File not found in Manifest
+Trying to load adaptor for LogicalFile
+Adaptor for LogicalFile not found in Manifest
+Trying to load adaptor for RandomAccessFile
+Adaptor for RandomAccessFile not found in Manifest
+Trying to load adaptor for FileInputStream
+Adaptor for FileInputStream not found in Manifest
+Trying to load adaptor for FileOutputStream
+Adaptor for FileOutputStream not found in Manifest
+Trying to load adaptor for ResourceBroker
+Adaptor for ResourceBroker found in Manifest, loading
+Adaptor for ResourceBroker loaded
+loading adaptors from /home3/aagapi/RA/steering/CVS/javagat/branches/andrei/adaptors/lib/SshResourceBrokerAdaptor.jar
+Trying to load adaptor for Endpoint
+Adaptor for Endpoint not found in Manifest
+Trying to load adaptor for AdvertService
+Adaptor for AdvertService not found in Manifest
+Trying to load adaptor for Monitorable
+Adaptor for Monitorable not found in Manifest
+Trying to load adaptor for SteeringManager
+Adaptor for SteeringManager not found in Manifest
+Trying to load adaptor for File
+Adaptor for File not found in Manifest
+Trying to load adaptor for LogicalFile
+Adaptor for LogicalFile not found in Manifest
+Trying to load adaptor for RandomAccessFile
+Adaptor for RandomAccessFile not found in Manifest
+Trying to load adaptor for FileInputStream
+Adaptor for FileInputStream not found in Manifest
+Trying to load adaptor for FileOutputStream
+Adaptor for FileOutputStream not found in Manifest
+Trying to load adaptor for ResourceBroker
+Adaptor for ResourceBroker found in Manifest, loading
+Adaptor for ResourceBroker loaded
+loading adaptors from /home3/aagapi/RA/steering/CVS/javagat/branches/andrei/adaptors/lib/GlobusBrokerAdaptor.jar
+Trying to load adaptor for Endpoint
+Adaptor for Endpoint not found in Manifest
+Trying to load adaptor for AdvertService
+Adaptor for AdvertService not found in Manifest
+Trying to load adaptor for Monitorable
+Adaptor for Monitorable not found in Manifest
+Trying to load adaptor for SteeringManager
+Adaptor for SteeringManager not found in Manifest
+Trying to load adaptor for File
+Adaptor for File not found in Manifest
+Trying to load adaptor for LogicalFile
+Adaptor for LogicalFile not found in Manifest
+Trying to load adaptor for RandomAccessFile
+Adaptor for RandomAccessFile not found in Manifest
+Trying to load adaptor for FileInputStream
+Adaptor for FileInputStream not found in Manifest
+Trying to load adaptor for FileOutputStream
+Adaptor for FileOutputStream not found in Manifest
+Trying to load adaptor for ResourceBroker
+Adaptor for ResourceBroker found in Manifest, loading
+Adaptor for ResourceBroker loaded
+loading adaptors from /home3/aagapi/RA/steering/CVS/javagat/branches/andrei/adaptors/lib/ProActiveBrokerAdaptor.jar
+Trying to load adaptor for Endpoint
+Adaptor for Endpoint not found in Manifest
+Trying to load adaptor for AdvertService
+Adaptor for AdvertService not found in Manifest
+Trying to load adaptor for Monitorable
+Adaptor for Monitorable not found in Manifest
+Trying to load adaptor for SteeringManager
+Adaptor for SteeringManager not found in Manifest
+Trying to load adaptor for File
+Adaptor for File not found in Manifest
+Trying to load adaptor for LogicalFile
+Adaptor for LogicalFile not found in Manifest
+Trying to load adaptor for RandomAccessFile
+Adaptor for RandomAccessFile not found in Manifest
+Trying to load adaptor for FileInputStream
+Adaptor for FileInputStream not found in Manifest
+Trying to load adaptor for FileOutputStream
+Adaptor for FileOutputStream not found in Manifest
+Trying to load adaptor for ResourceBroker
+Adaptor for ResourceBroker found in Manifest, loading
+Adaptor for ResourceBroker loaded
+loading adaptors from /home3/aagapi/RA/steering/CVS/javagat/branches/andrei/adaptors/lib/SocketEndpointAdaptor.jar
+Trying to load adaptor for Endpoint
+Adaptor for Endpoint found in Manifest, loading
+Adaptor for Endpoint loaded
+Trying to load adaptor for AdvertService
+Adaptor for AdvertService not found in Manifest
+Trying to load adaptor for Monitorable
+Adaptor for Monitorable not found in Manifest
+Trying to load adaptor for SteeringManager
+Adaptor for SteeringManager not found in Manifest
+Trying to load adaptor for File
+Adaptor for File not found in Manifest
+Trying to load adaptor for LogicalFile
+Adaptor for LogicalFile not found in Manifest
+Trying to load adaptor for RandomAccessFile
+Adaptor for RandomAccessFile not found in Manifest
+Trying to load adaptor for FileInputStream
+Adaptor for FileInputStream not found in Manifest
+Trying to load adaptor for FileOutputStream
+Adaptor for FileOutputStream not found in Manifest
+Trying to load adaptor for ResourceBroker
+Adaptor for ResourceBroker not found in Manifest
+loading adaptors from /home3/aagapi/RA/steering/CVS/javagat/branches/andrei/adaptors/lib/SteeringManagerLocalAdaptor.jar
+Trying to load adaptor for Endpoint
+Adaptor for Endpoint not found in Manifest
+Trying to load adaptor for AdvertService
+Adaptor for AdvertService not found in Manifest
+Trying to load adaptor for Monitorable
+Adaptor for Monitorable not found in Manifest
+Trying to load adaptor for SteeringManager
+Adaptor for SteeringManager found in Manifest, loading
+Adaptor for SteeringManager loaded
+Trying to load adaptor for File
+Adaptor for File not found in Manifest
+Trying to load adaptor for LogicalFile
+Adaptor for LogicalFile not found in Manifest
+Trying to load adaptor for RandomAccessFile
+Adaptor for RandomAccessFile not found in Manifest
+Trying to load adaptor for FileInputStream
+Adaptor for FileInputStream not found in Manifest
+Trying to load adaptor for FileOutputStream
+Adaptor for FileOutputStream not found in Manifest
+Trying to load adaptor for ResourceBroker
+Adaptor for ResourceBroker not found in Manifest
+loading adaptors from /home3/aagapi/RA/steering/CVS/javagat/branches/andrei/adaptors/lib/jce-jdk13-120.jar
+Trying to load adaptor for Endpoint
+Adaptor for Endpoint not found in Manifest
+Trying to load adaptor for AdvertService
+Adaptor for AdvertService not found in Manifest
+Trying to load adaptor for Monitorable
+Adaptor for Monitorable not found in Manifest
+Trying to load adaptor for SteeringManager
+Adaptor for SteeringManager not found in Manifest
+Trying to load adaptor for File
+Adaptor for File not found in Manifest
+Trying to load adaptor for LogicalFile
+Adaptor for LogicalFile not found in Manifest
+Trying to load adaptor for RandomAccessFile
+Adaptor for RandomAccessFile not found in Manifest
+Trying to load adaptor for FileInputStream
+Adaptor for FileInputStream not found in Manifest
+Trying to load adaptor for FileOutputStream
+Adaptor for FileOutputStream not found in Manifest
+Trying to load adaptor for ResourceBroker
+Adaptor for ResourceBroker not found in Manifest
+loading adaptors from /home3/aagapi/RA/steering/CVS/javagat/branches/andrei/adaptors/lib/cog-jglobus-1.2-rob.jar
+Trying to load adaptor for Endpoint
+Adaptor for Endpoint not found in Manifest
+Trying to load adaptor for AdvertService
+Adaptor for AdvertService not found in Manifest
+Trying to load adaptor for Monitorable
+Adaptor for Monitorable not found in Manifest
+Trying to load adaptor for SteeringManager
+Adaptor for SteeringManager not found in Manifest
+Trying to load adaptor for File
+Adaptor for File not found in Manifest
+Trying to load adaptor for LogicalFile
+Adaptor for LogicalFile not found in Manifest
+Trying to load adaptor for RandomAccessFile
+Adaptor for RandomAccessFile not found in Manifest
+Trying to load adaptor for FileInputStream
+Adaptor for FileInputStream not found in Manifest
+Trying to load adaptor for FileOutputStream
+Adaptor for FileOutputStream not found in Manifest
+Trying to load adaptor for ResourceBroker
+Adaptor for ResourceBroker not found in Manifest
+loading adaptors from /home3/aagapi/RA/steering/CVS/javagat/branches/andrei/adaptors/lib/j2ssh-core-0.2.7-rob.jar
+Trying to load adaptor for Endpoint
+Adaptor for Endpoint not found in Manifest
+Trying to load adaptor for AdvertService
+Adaptor for AdvertService not found in Manifest
+Trying to load adaptor for Monitorable
+Adaptor for Monitorable not found in Manifest
+Trying to load adaptor for SteeringManager
+Adaptor for SteeringManager not found in Manifest
+Trying to load adaptor for File
+Adaptor for File not found in Manifest
+Trying to load adaptor for LogicalFile
+Adaptor for LogicalFile not found in Manifest
+Trying to load adaptor for RandomAccessFile
+Adaptor for RandomAccessFile not found in Manifest
+Trying to load adaptor for FileInputStream
+Adaptor for FileInputStream not found in Manifest
+Trying to load adaptor for FileOutputStream
+Adaptor for FileOutputStream not found in Manifest
+Trying to load adaptor for ResourceBroker
+Adaptor for ResourceBroker not found in Manifest
+loading adaptors from /home3/aagapi/RA/steering/CVS/javagat/branches/andrei/adaptors/lib/jsch-0.1.25.jar
+Trying to load adaptor for Endpoint
+Adaptor for Endpoint not found in Manifest
+Trying to load adaptor for AdvertService
+Adaptor for AdvertService not found in Manifest
+Trying to load adaptor for Monitorable
+Adaptor for Monitorable not found in Manifest
+Trying to load adaptor for SteeringManager
+Adaptor for SteeringManager not found in Manifest
+Trying to load adaptor for File
+Adaptor for File not found in Manifest
+Trying to load adaptor for LogicalFile
+Adaptor for LogicalFile not found in Manifest
+Trying to load adaptor for RandomAccessFile
+Adaptor for RandomAccessFile not found in Manifest
+Trying to load adaptor for FileInputStream
+Adaptor for FileInputStream not found in Manifest
+Trying to load adaptor for FileOutputStream
+Adaptor for FileOutputStream not found in Manifest
+Trying to load adaptor for ResourceBroker
+Adaptor for ResourceBroker not found in Manifest
+loading adaptors from /home3/aagapi/RA/steering/CVS/javagat/branches/andrei/adaptors/lib/ProActive.jar
+Trying to load adaptor for Endpoint
+Adaptor for Endpoint not found in Manifest
+Trying to load adaptor for AdvertService
+Adaptor for AdvertService not found in Manifest
+Trying to load adaptor for Monitorable
+Adaptor for Monitorable not found in Manifest
+Trying to load adaptor for SteeringManager
+Adaptor for SteeringManager not found in Manifest
+Trying to load adaptor for File
+Adaptor for File not found in Manifest
+Trying to load adaptor for LogicalFile
+Adaptor for LogicalFile not found in Manifest
+Trying to load adaptor for RandomAccessFile
+Adaptor for RandomAccessFile not found in Manifest
+Trying to load adaptor for FileInputStream
+Adaptor for FileInputStream not found in Manifest
+Trying to load adaptor for FileOutputStream
+Adaptor for FileOutputStream not found in Manifest
+Trying to load adaptor for ResourceBroker
+Adaptor for ResourceBroker not found in Manifest
+loading adaptors from /home3/aagapi/RA/steering/CVS/javagat/branches/andrei/gridlabAdaptors/lib/StorageBoxAdaptor.jar
+Trying to load adaptor for Endpoint
+Adaptor for Endpoint not found in Manifest
+Trying to load adaptor for AdvertService
+Adaptor for AdvertService found in Manifest, loading
+Adaptor for AdvertService loaded
+Trying to load adaptor for Monitorable
+Adaptor for Monitorable not found in Manifest
+Trying to load adaptor for SteeringManager
+Adaptor for SteeringManager not found in Manifest
+Trying to load adaptor for File
+Adaptor for File not found in Manifest
+Trying to load adaptor for LogicalFile
+Adaptor for LogicalFile not found in Manifest
+Trying to load adaptor for RandomAccessFile
+Adaptor for RandomAccessFile not found in Manifest
+Trying to load adaptor for FileInputStream
+Adaptor for FileInputStream not found in Manifest
+Trying to load adaptor for FileOutputStream
+Adaptor for FileOutputStream not found in Manifest
+Trying to load adaptor for ResourceBroker
+Adaptor for ResourceBroker not found in Manifest
+loading adaptors from /home3/aagapi/RA/steering/CVS/javagat/branches/andrei/gridlabAdaptors/lib/MercuryMonitorableAdaptor.jar
+Trying to load adaptor for Endpoint
+Adaptor for Endpoint not found in Manifest
+Trying to load adaptor for AdvertService
+Adaptor for AdvertService not found in Manifest
+Trying to load adaptor for Monitorable
+Adaptor for Monitorable found in Manifest, loading
+Adaptor for Monitorable loaded
+Trying to load adaptor for SteeringManager
+Adaptor for SteeringManager not found in Manifest
+Trying to load adaptor for File
+Adaptor for File not found in Manifest
+Trying to load adaptor for LogicalFile
+Adaptor for LogicalFile not found in Manifest
+Trying to load adaptor for RandomAccessFile
+Adaptor for RandomAccessFile not found in Manifest
+Trying to load adaptor for FileInputStream
+Adaptor for FileInputStream not found in Manifest
+Trying to load adaptor for FileOutputStream
+Adaptor for FileOutputStream not found in Manifest
+Trying to load adaptor for ResourceBroker
+Adaptor for ResourceBroker not found in Manifest
+loading adaptors from /home3/aagapi/RA/steering/CVS/javagat/branches/andrei/gridlabAdaptors/lib/DataMovementFileAdaptor.jar
+Trying to load adaptor for Endpoint
+Adaptor for Endpoint not found in Manifest
+Trying to load adaptor for AdvertService
+Adaptor for AdvertService not found in Manifest
+Trying to load adaptor for Monitorable
+Adaptor for Monitorable not found in Manifest
+Trying to load adaptor for SteeringManager
+Adaptor for SteeringManager not found in Manifest
+Trying to load adaptor for File
+Adaptor for File found in Manifest, loading
+Adaptor for File loaded
+Trying to load adaptor for LogicalFile
+Adaptor for LogicalFile not found in Manifest
+Trying to load adaptor for RandomAccessFile
+Adaptor for RandomAccessFile not found in Manifest
+Trying to load adaptor for FileInputStream
+Adaptor for FileInputStream not found in Manifest
+Trying to load adaptor for FileOutputStream
+Adaptor for FileOutputStream not found in Manifest
+Trying to load adaptor for ResourceBroker
+Adaptor for ResourceBroker not found in Manifest
+loading adaptors from /home3/aagapi/RA/steering/CVS/javagat/branches/andrei/gridlabAdaptors/lib/DataBrowsingFileAdaptor.jar
+Trying to load adaptor for Endpoint
+Adaptor for Endpoint not found in Manifest
+Trying to load adaptor for AdvertService
+Adaptor for AdvertService not found in Manifest
+Trying to load adaptor for Monitorable
+Adaptor for Monitorable not found in Manifest
+Trying to load adaptor for SteeringManager
+Adaptor for SteeringManager not found in Manifest
+Trying to load adaptor for File
+Adaptor for File found in Manifest, loading
+Adaptor for File loaded
+Trying to load adaptor for LogicalFile
+Adaptor for LogicalFile not found in Manifest
+Trying to load adaptor for RandomAccessFile
+Adaptor for RandomAccessFile not found in Manifest
+Trying to load adaptor for FileInputStream
+Adaptor for FileInputStream not found in Manifest
+Trying to load adaptor for FileOutputStream
+Adaptor for FileOutputStream not found in Manifest
+Trying to load adaptor for ResourceBroker
+Adaptor for ResourceBroker not found in Manifest
+loading adaptors from /home3/aagapi/RA/steering/CVS/javagat/branches/andrei/gridlabAdaptors/lib/GridLabLogicalFileAdaptor.jar
+Trying to load adaptor for Endpoint
+Adaptor for Endpoint not found in Manifest
+Trying to load adaptor for AdvertService
+Adaptor for AdvertService not found in Manifest
+Trying to load adaptor for Monitorable
+Adaptor for Monitorable not found in Manifest
+Trying to load adaptor for SteeringManager
+Adaptor for SteeringManager not found in Manifest
+Trying to load adaptor for File
+Adaptor for File not found in Manifest
+Trying to load adaptor for LogicalFile
+Adaptor for LogicalFile found in Manifest, loading
+Adaptor for LogicalFile loaded
+Trying to load adaptor for RandomAccessFile
+Adaptor for RandomAccessFile not found in Manifest
+Trying to load adaptor for FileInputStream
+Adaptor for FileInputStream not found in Manifest
+Trying to load adaptor for FileOutputStream
+Adaptor for FileOutputStream not found in Manifest
+Trying to load adaptor for ResourceBroker
+Adaptor for ResourceBroker not found in Manifest
+loading adaptors from /home3/aagapi/RA/steering/CVS/javagat/branches/andrei/gridlabAdaptors/lib/GRMSBrokerAdaptor.jar
+Trying to load adaptor for Endpoint
+Adaptor for Endpoint not found in Manifest
+Trying to load adaptor for AdvertService
+Adaptor for AdvertService not found in Manifest
+Trying to load adaptor for Monitorable
+Adaptor for Monitorable not found in Manifest
+Trying to load adaptor for SteeringManager
+Adaptor for SteeringManager not found in Manifest
+Trying to load adaptor for File
+Adaptor for File not found in Manifest
+Trying to load adaptor for LogicalFile
+Adaptor for LogicalFile not found in Manifest
+Trying to load adaptor for RandomAccessFile
+Adaptor for RandomAccessFile not found in Manifest
+Trying to load adaptor for FileInputStream
+Adaptor for FileInputStream not found in Manifest
+Trying to load adaptor for FileOutputStream
+Adaptor for FileOutputStream not found in Manifest
+Trying to load adaptor for ResourceBroker
+Adaptor for ResourceBroker found in Manifest, loading
+Adaptor for ResourceBroker loaded
+loading adaptors from /home3/aagapi/RA/steering/CVS/javagat/branches/andrei/gridlabAdaptors/lib/junit.jar
+Trying to load adaptor for Endpoint
+Adaptor for Endpoint not found in Manifest
+Trying to load adaptor for AdvertService
+Adaptor for AdvertService not found in Manifest
+Trying to load adaptor for Monitorable
+Adaptor for Monitorable not found in Manifest
+Trying to load adaptor for SteeringManager
+Adaptor for SteeringManager not found in Manifest
+Trying to load adaptor for File
+Adaptor for File not found in Manifest
+Trying to load adaptor for LogicalFile
+Adaptor for LogicalFile not found in Manifest
+Trying to load adaptor for RandomAccessFile
+Adaptor for RandomAccessFile not found in Manifest
+Trying to load adaptor for FileInputStream
+Adaptor for FileInputStream not found in Manifest
+Trying to load adaptor for FileOutputStream
+Adaptor for FileOutputStream not found in Manifest
+Trying to load adaptor for ResourceBroker
+Adaptor for ResourceBroker not found in Manifest
+loading adaptors from /home3/aagapi/RA/steering/CVS/javagat/branches/andrei/gridlabAdaptors/lib/puretls.jar
+Trying to load adaptor for Endpoint
+Adaptor for Endpoint not found in Manifest
+Trying to load adaptor for AdvertService
+Adaptor for AdvertService not found in Manifest
+Trying to load adaptor for Monitorable
+Adaptor for Monitorable not found in Manifest
+Trying to load adaptor for SteeringManager
+Adaptor for SteeringManager not found in Manifest
+Trying to load adaptor for File
+Adaptor for File not found in Manifest
+Trying to load adaptor for LogicalFile
+Adaptor for LogicalFile not found in Manifest
+Trying to load adaptor for RandomAccessFile
+Adaptor for RandomAccessFile not found in Manifest
+Trying to load adaptor for FileInputStream
+Adaptor for FileInputStream not found in Manifest
+Trying to load adaptor for FileOutputStream
+Adaptor for FileOutputStream not found in Manifest
+Trying to load adaptor for ResourceBroker
+Adaptor for ResourceBroker not found in Manifest
+loading adaptors from /home3/aagapi/RA/steering/CVS/javagat/branches/andrei/gridlabAdaptors/lib/axis.jar
+Trying to load adaptor for Endpoint
+Adaptor for Endpoint not found in Manifest
+Trying to load adaptor for AdvertService
+Adaptor for AdvertService not found in Manifest
+Trying to load adaptor for Monitorable
+Adaptor for Monitorable not found in Manifest
+Trying to load adaptor for SteeringManager
+Adaptor for SteeringManager not found in Manifest
+Trying to load adaptor for File
+Adaptor for File not found in Manifest
+Trying to load adaptor for LogicalFile
+Adaptor for LogicalFile not found in Manifest
+Trying to load adaptor for RandomAccessFile
+Adaptor for RandomAccessFile not found in Manifest
+Trying to load adaptor for FileInputStream
+Adaptor for FileInputStream not found in Manifest
+Trying to load adaptor for FileOutputStream
+Adaptor for FileOutputStream not found in Manifest
+Trying to load adaptor for ResourceBroker
+Adaptor for ResourceBroker not found in Manifest
+loading adaptors from /home3/aagapi/RA/steering/CVS/javagat/branches/andrei/gridlabAdaptors/lib/jzlib-1.0.5.jar
+Trying to load adaptor for Endpoint
+Adaptor for Endpoint not found in Manifest
+Trying to load adaptor for AdvertService
+Adaptor for AdvertService not found in Manifest
+Trying to load adaptor for Monitorable
+Adaptor for Monitorable not found in Manifest
+Trying to load adaptor for SteeringManager
+Adaptor for SteeringManager not found in Manifest
+Trying to load adaptor for File
+Adaptor for File not found in Manifest
+Trying to load adaptor for LogicalFile
+Adaptor for LogicalFile not found in Manifest
+Trying to load adaptor for RandomAccessFile
+Adaptor for RandomAccessFile not found in Manifest
+Trying to load adaptor for FileInputStream
+Adaptor for FileInputStream not found in Manifest
+Trying to load adaptor for FileOutputStream
+Adaptor for FileOutputStream not found in Manifest
+Trying to load adaptor for ResourceBroker
+Adaptor for ResourceBroker not found in Manifest
+loading adaptors from /home3/aagapi/RA/steering/CVS/javagat/branches/andrei/gridlabAdaptors/lib/xmlsec.jar
+Trying to load adaptor for Endpoint
+Adaptor for Endpoint not found in Manifest
+Trying to load adaptor for AdvertService
+Adaptor for AdvertService not found in Manifest
+Trying to load adaptor for Monitorable
+Adaptor for Monitorable not found in Manifest
+Trying to load adaptor for SteeringManager
+Adaptor for SteeringManager not found in Manifest
+Trying to load adaptor for File
+Adaptor for File not found in Manifest
+Trying to load adaptor for LogicalFile
+Adaptor for LogicalFile not found in Manifest
+Trying to load adaptor for RandomAccessFile
+Adaptor for RandomAccessFile not found in Manifest
+Trying to load adaptor for FileInputStream
+Adaptor for FileInputStream not found in Manifest
+Trying to load adaptor for FileOutputStream
+Adaptor for FileOutputStream not found in Manifest
+Trying to load adaptor for ResourceBroker
+Adaptor for ResourceBroker not found in Manifest
+loading adaptors from /home3/aagapi/RA/steering/CVS/javagat/branches/andrei/gridlabAdaptors/lib/ogsa-samples.jar
+Trying to load adaptor for Endpoint
+Adaptor for Endpoint not found in Manifest
+Trying to load adaptor for AdvertService
+Adaptor for AdvertService not found in Manifest
+Trying to load adaptor for Monitorable
+Adaptor for Monitorable not found in Manifest
+Trying to load adaptor for SteeringManager
+Adaptor for SteeringManager not found in Manifest
+Trying to load adaptor for File
+Adaptor for File not found in Manifest
+Trying to load adaptor for LogicalFile
+Adaptor for LogicalFile not found in Manifest
+Trying to load adaptor for RandomAccessFile
+Adaptor for RandomAccessFile not found in Manifest
+Trying to load adaptor for FileInputStream
+Adaptor for FileInputStream not found in Manifest
+Trying to load adaptor for FileOutputStream
+Adaptor for FileOutputStream not found in Manifest
+Trying to load adaptor for ResourceBroker
+Adaptor for ResourceBroker not found in Manifest
+loading adaptors from /home3/aagapi/RA/steering/CVS/javagat/branches/andrei/gridlabAdaptors/lib/cog-jglobus-1.2-rob.jar
+Trying to load adaptor for Endpoint
+Adaptor for Endpoint not found in Manifest
+Trying to load adaptor for AdvertService
+Adaptor for AdvertService not found in Manifest
+Trying to load adaptor for Monitorable
+Adaptor for Monitorable not found in Manifest
+Trying to load adaptor for SteeringManager
+Adaptor for SteeringManager not found in Manifest
+Trying to load adaptor for File
+Adaptor for File not found in Manifest
+Trying to load adaptor for LogicalFile
+Adaptor for LogicalFile not found in Manifest
+Trying to load adaptor for RandomAccessFile
+Adaptor for RandomAccessFile not found in Manifest
+Trying to load adaptor for FileInputStream
+Adaptor for FileInputStream not found in Manifest
+Trying to load adaptor for FileOutputStream
+Adaptor for FileOutputStream not found in Manifest
+Trying to load adaptor for ResourceBroker
+Adaptor for ResourceBroker not found in Manifest
+loading adaptors from /home3/aagapi/RA/steering/CVS/javagat/branches/andrei/gridlabAdaptors/lib/ogsa.jar
+Trying to load adaptor for Endpoint
+Adaptor for Endpoint not found in Manifest
+Trying to load adaptor for AdvertService
+Adaptor for AdvertService not found in Manifest
+Trying to load adaptor for Monitorable
+Adaptor for Monitorable not found in Manifest
+Trying to load adaptor for SteeringManager
+Adaptor for SteeringManager not found in Manifest
+Trying to load adaptor for File
+Adaptor for File not found in Manifest
+Trying to load adaptor for LogicalFile
+Adaptor for LogicalFile not found in Manifest
+Trying to load adaptor for RandomAccessFile
+Adaptor for RandomAccessFile not found in Manifest
+Trying to load adaptor for FileInputStream
+Adaptor for FileInputStream not found in Manifest
+Trying to load adaptor for FileOutputStream
+Adaptor for FileOutputStream not found in Manifest
+Trying to load adaptor for ResourceBroker
+Adaptor for ResourceBroker not found in Manifest
+loading adaptors from /home3/aagapi/RA/steering/CVS/javagat/branches/andrei/gridlabAdaptors/lib/cryptix-asn1.jar
+Trying to load adaptor for Endpoint
+Adaptor for Endpoint not found in Manifest
+Trying to load adaptor for AdvertService
+Adaptor for AdvertService not found in Manifest
+Trying to load adaptor for Monitorable
+Adaptor for Monitorable not found in Manifest
+Trying to load adaptor for SteeringManager
+Adaptor for SteeringManager not found in Manifest
+Trying to load adaptor for File
+Adaptor for File not found in Manifest
+Trying to load adaptor for LogicalFile
+Adaptor for LogicalFile not found in Manifest
+Trying to load adaptor for RandomAccessFile
+Adaptor for RandomAccessFile not found in Manifest
+Trying to load adaptor for FileInputStream
+Adaptor for FileInputStream not found in Manifest
+Trying to load adaptor for FileOutputStream
+Adaptor for FileOutputStream not found in Manifest
+Trying to load adaptor for ResourceBroker
+Adaptor for ResourceBroker not found in Manifest
+loading adaptors from /home3/aagapi/RA/steering/CVS/javagat/branches/andrei/gridlabAdaptors/lib/jgss.jar
+Trying to load adaptor for Endpoint
+Adaptor for Endpoint not found in Manifest
+Trying to load adaptor for AdvertService
+Adaptor for AdvertService not found in Manifest
+Trying to load adaptor for Monitorable
+Adaptor for Monitorable not found in Manifest
+Trying to load adaptor for SteeringManager
+Adaptor for SteeringManager not found in Manifest
+Trying to load adaptor for File
+Adaptor for File not found in Manifest
+Trying to load adaptor for LogicalFile
+Adaptor for LogicalFile not found in Manifest
+Trying to load adaptor for RandomAccessFile
+Adaptor for RandomAccessFile not found in Manifest
+Trying to load adaptor for FileInputStream
+Adaptor for FileInputStream not found in Manifest
+Trying to load adaptor for FileOutputStream
+Adaptor for FileOutputStream not found in Manifest
+Trying to load adaptor for ResourceBroker
+Adaptor for ResourceBroker not found in Manifest
+loading adaptors from /home3/aagapi/RA/steering/CVS/javagat/branches/andrei/gridlabAdaptors/lib/saaj.jar
+Trying to load adaptor for Endpoint
+Adaptor for Endpoint not found in Manifest
+Trying to load adaptor for AdvertService
+Adaptor for AdvertService not found in Manifest
+Trying to load adaptor for Monitorable
+Adaptor for Monitorable not found in Manifest
+Trying to load adaptor for SteeringManager
+Adaptor for SteeringManager not found in Manifest
+Trying to load adaptor for File
+Adaptor for File not found in Manifest
+Trying to load adaptor for LogicalFile
+Adaptor for LogicalFile not found in Manifest
+Trying to load adaptor for RandomAccessFile
+Adaptor for RandomAccessFile not found in Manifest
+Trying to load adaptor for FileInputStream
+Adaptor for FileInputStream not found in Manifest
+Trying to load adaptor for FileOutputStream
+Adaptor for FileOutputStream not found in Manifest
+Trying to load adaptor for ResourceBroker
+Adaptor for ResourceBroker not found in Manifest
+loading adaptors from /home3/aagapi/RA/steering/CVS/javagat/branches/andrei/gridlabAdaptors/lib/jboss-j2ee.jar
+Trying to load adaptor for Endpoint
+Adaptor for Endpoint not found in Manifest
+Trying to load adaptor for AdvertService
+Adaptor for AdvertService not found in Manifest
+Trying to load adaptor for Monitorable
+Adaptor for Monitorable not found in Manifest
+Trying to load adaptor for SteeringManager
+Adaptor for SteeringManager not found in Manifest
+Trying to load adaptor for File
+Adaptor for File not found in Manifest
+Trying to load adaptor for LogicalFile
+Adaptor for LogicalFile not found in Manifest
+Trying to load adaptor for RandomAccessFile
+Adaptor for RandomAccessFile not found in Manifest
+Trying to load adaptor for FileInputStream
+Adaptor for FileInputStream not found in Manifest
+Trying to load adaptor for FileOutputStream
+Adaptor for FileOutputStream not found in Manifest
+Trying to load adaptor for ResourceBroker
+Adaptor for ResourceBroker not found in Manifest
+loading adaptors from /home3/aagapi/RA/steering/CVS/javagat/branches/andrei/gridlabAdaptors/lib/cryptix.jar
+Trying to load adaptor for Endpoint
+Adaptor for Endpoint not found in Manifest
+Trying to load adaptor for AdvertService
+Adaptor for AdvertService not found in Manifest
+Trying to load adaptor for Monitorable
+Adaptor for Monitorable not found in Manifest
+Trying to load adaptor for SteeringManager
+Adaptor for SteeringManager not found in Manifest
+Trying to load adaptor for File
+Adaptor for File not found in Manifest
+Trying to load adaptor for LogicalFile
+Adaptor for LogicalFile not found in Manifest
+Trying to load adaptor for RandomAccessFile
+Adaptor for RandomAccessFile not found in Manifest
+Trying to load adaptor for FileInputStream
+Adaptor for FileInputStream not found in Manifest
+Trying to load adaptor for FileOutputStream
+Adaptor for FileOutputStream not found in Manifest
+Trying to load adaptor for ResourceBroker
+Adaptor for ResourceBroker not found in Manifest
+loading adaptors from /home3/aagapi/RA/steering/CVS/javagat/branches/andrei/gridlabAdaptors/lib/jdbc-se2.0.jar
+Trying to load adaptor for Endpoint
+Adaptor for Endpoint not found in Manifest
+Trying to load adaptor for AdvertService
+Adaptor for AdvertService not found in Manifest
+Trying to load adaptor for Monitorable
+Adaptor for Monitorable not found in Manifest
+Trying to load adaptor for SteeringManager
+Adaptor for SteeringManager not found in Manifest
+Trying to load adaptor for File
+Adaptor for File not found in Manifest
+Trying to load adaptor for LogicalFile
+Adaptor for LogicalFile not found in Manifest
+Trying to load adaptor for RandomAccessFile
+Adaptor for RandomAccessFile not found in Manifest
+Trying to load adaptor for FileInputStream
+Adaptor for FileInputStream not found in Manifest
+Trying to load adaptor for FileOutputStream
+Adaptor for FileOutputStream not found in Manifest
+Trying to load adaptor for ResourceBroker
+Adaptor for ResourceBroker not found in Manifest
+loading adaptors from /home3/aagapi/RA/steering/CVS/javagat/branches/andrei/gridlabAdaptors/lib/xalan.jar
+Trying to load adaptor for Endpoint
+Adaptor for Endpoint not found in Manifest
+Trying to load adaptor for AdvertService
+Adaptor for AdvertService not found in Manifest
+Trying to load adaptor for Monitorable
+Adaptor for Monitorable not found in Manifest
+Trying to load adaptor for SteeringManager
+Adaptor for SteeringManager not found in Manifest
+Trying to load adaptor for File
+Adaptor for File not found in Manifest
+Trying to load adaptor for LogicalFile
+Adaptor for LogicalFile not found in Manifest
+Trying to load adaptor for RandomAccessFile
+Adaptor for RandomAccessFile not found in Manifest
+Trying to load adaptor for FileInputStream
+Adaptor for FileInputStream not found in Manifest
+Trying to load adaptor for FileOutputStream
+Adaptor for FileOutputStream not found in Manifest
+Trying to load adaptor for ResourceBroker
+Adaptor for ResourceBroker not found in Manifest
+loading adaptors from /home3/aagapi/RA/steering/CVS/javagat/branches/andrei/gridlabAdaptors/lib/jaxrpc.jar
+Trying to load adaptor for Endpoint
+Adaptor for Endpoint not found in Manifest
+Trying to load adaptor for AdvertService
+Adaptor for AdvertService not found in Manifest
+Trying to load adaptor for Monitorable
+Adaptor for Monitorable not found in Manifest
+Trying to load adaptor for SteeringManager
+Adaptor for SteeringManager not found in Manifest
+Trying to load adaptor for File
+Adaptor for File not found in Manifest
+Trying to load adaptor for LogicalFile
+Adaptor for LogicalFile not found in Manifest
+Trying to load adaptor for RandomAccessFile
+Adaptor for RandomAccessFile not found in Manifest
+Trying to load adaptor for FileInputStream
+Adaptor for FileInputStream not found in Manifest
+Trying to load adaptor for FileOutputStream
+Adaptor for FileOutputStream not found in Manifest
+Trying to load adaptor for ResourceBroker
+Adaptor for ResourceBroker not found in Manifest
+loading adaptors from /home3/aagapi/RA/steering/CVS/javagat/branches/andrei/gridlabAdaptors/lib/cog-axis.jar
+Trying to load adaptor for Endpoint
+Adaptor for Endpoint not found in Manifest
+Trying to load adaptor for AdvertService
+Adaptor for AdvertService not found in Manifest
+Trying to load adaptor for Monitorable
+Adaptor for Monitorable not found in Manifest
+Trying to load adaptor for SteeringManager
+Adaptor for SteeringManager not found in Manifest
+Trying to load adaptor for File
+Adaptor for File not found in Manifest
+Trying to load adaptor for LogicalFile
+Adaptor for LogicalFile not found in Manifest
+Trying to load adaptor for RandomAccessFile
+Adaptor for RandomAccessFile not found in Manifest
+Trying to load adaptor for FileInputStream
+Adaptor for FileInputStream not found in Manifest
+Trying to load adaptor for FileOutputStream
+Adaptor for FileOutputStream not found in Manifest
+Trying to load adaptor for ResourceBroker
+Adaptor for ResourceBroker not found in Manifest
+loading adaptors from /home3/aagapi/RA/steering/CVS/javagat/branches/andrei/gridlabAdaptors/lib/servlet.jar
+Trying to load adaptor for Endpoint
+Adaptor for Endpoint not found in Manifest
+Trying to load adaptor for AdvertService
+Adaptor for AdvertService not found in Manifest
+Trying to load adaptor for Monitorable
+Adaptor for Monitorable not found in Manifest
+Trying to load adaptor for SteeringManager
+Adaptor for SteeringManager not found in Manifest
+Trying to load adaptor for File
+Adaptor for File not found in Manifest
+Trying to load adaptor for LogicalFile
+Adaptor for LogicalFile not found in Manifest
+Trying to load adaptor for RandomAccessFile
+Adaptor for RandomAccessFile not found in Manifest
+Trying to load adaptor for FileInputStream
+Adaptor for FileInputStream not found in Manifest
+Trying to load adaptor for FileOutputStream
+Adaptor for FileOutputStream not found in Manifest
+Trying to load adaptor for ResourceBroker
+Adaptor for ResourceBroker not found in Manifest
+loading adaptors from /home3/aagapi/RA/steering/CVS/javagat/branches/andrei/gridlabAdaptors/lib/cryptix32.jar
+Trying to load adaptor for Endpoint
+Adaptor for Endpoint not found in Manifest
+Trying to load adaptor for AdvertService
+Adaptor for AdvertService not found in Manifest
+Trying to load adaptor for Monitorable
+Adaptor for Monitorable not found in Manifest
+Trying to load adaptor for SteeringManager
+Adaptor for SteeringManager not found in Manifest
+Trying to load adaptor for File
+Adaptor for File not found in Manifest
+Trying to load adaptor for LogicalFile
+Adaptor for LogicalFile not found in Manifest
+Trying to load adaptor for RandomAccessFile
+Adaptor for RandomAccessFile not found in Manifest
+Trying to load adaptor for FileInputStream
+Adaptor for FileInputStream not found in Manifest
+Trying to load adaptor for FileOutputStream
+Adaptor for FileOutputStream not found in Manifest
+Trying to load adaptor for ResourceBroker
+Adaptor for ResourceBroker not found in Manifest
+loading adaptors from /home3/aagapi/RA/steering/CVS/javagat/branches/andrei/gridlabAdaptors/lib/jta1.0.1.jar
+Trying to load adaptor for Endpoint
+Adaptor for Endpoint not found in Manifest
+Trying to load adaptor for AdvertService
+Adaptor for AdvertService not found in Manifest
+Trying to load adaptor for Monitorable
+Adaptor for Monitorable not found in Manifest
+Trying to load adaptor for SteeringManager
+Adaptor for SteeringManager not found in Manifest
+Trying to load adaptor for File
+Adaptor for File not found in Manifest
+Trying to load adaptor for LogicalFile
+Adaptor for LogicalFile not found in Manifest
+Trying to load adaptor for RandomAccessFile
+Adaptor for RandomAccessFile not found in Manifest
+Trying to load adaptor for FileInputStream
+Adaptor for FileInputStream not found in Manifest
+Trying to load adaptor for FileOutputStream
+Adaptor for FileOutputStream not found in Manifest
+Trying to load adaptor for ResourceBroker
+Adaptor for ResourceBroker not found in Manifest
+loading adaptors from /home3/aagapi/RA/steering/CVS/javagat/branches/andrei/gridlabAdaptors/lib/wsdl4j.jar
+Trying to load adaptor for Endpoint
+Adaptor for Endpoint not found in Manifest
+Trying to load adaptor for AdvertService
+Adaptor for AdvertService not found in Manifest
+Trying to load adaptor for Monitorable
+Adaptor for Monitorable not found in Manifest
+Trying to load adaptor for SteeringManager
+Adaptor for SteeringManager not found in Manifest
+Trying to load adaptor for File
+Adaptor for File not found in Manifest
+Trying to load adaptor for LogicalFile
+Adaptor for LogicalFile not found in Manifest
+Trying to load adaptor for RandomAccessFile
+Adaptor for RandomAccessFile not found in Manifest
+Trying to load adaptor for FileInputStream
+Adaptor for FileInputStream not found in Manifest
+Trying to load adaptor for FileOutputStream
+Adaptor for FileOutputStream not found in Manifest
+Trying to load adaptor for ResourceBroker
+Adaptor for ResourceBroker not found in Manifest
+loading adaptors from /home3/aagapi/RA/steering/CVS/javagat/branches/andrei/gridlabAdaptors/lib/wsif.jar
+Trying to load adaptor for Endpoint
+Adaptor for Endpoint not found in Manifest
+Trying to load adaptor for AdvertService
+Adaptor for AdvertService not found in Manifest
+Trying to load adaptor for Monitorable
+Adaptor for Monitorable not found in Manifest
+Trying to load adaptor for SteeringManager
+Adaptor for SteeringManager not found in Manifest
+Trying to load adaptor for File
+Adaptor for File not found in Manifest
+Trying to load adaptor for LogicalFile
+Adaptor for LogicalFile not found in Manifest
+Trying to load adaptor for RandomAccessFile
+Adaptor for RandomAccessFile not found in Manifest
+Trying to load adaptor for FileInputStream
+Adaptor for FileInputStream not found in Manifest
+Trying to load adaptor for FileOutputStream
+Adaptor for FileOutputStream not found in Manifest
+Trying to load adaptor for ResourceBroker
+Adaptor for ResourceBroker not found in Manifest
+loading adaptors from /home3/aagapi/RA/steering/CVS/javagat/branches/andrei/gridlabAdaptors/lib/commons-discovery.jar
+Trying to load adaptor for Endpoint
+Adaptor for Endpoint not found in Manifest
+Trying to load adaptor for AdvertService
+Adaptor for AdvertService not found in Manifest
+Trying to load adaptor for Monitorable
+Adaptor for Monitorable not found in Manifest
+Trying to load adaptor for SteeringManager
+Adaptor for SteeringManager not found in Manifest
+Trying to load adaptor for File
+Adaptor for File not found in Manifest
+Trying to load adaptor for LogicalFile
+Adaptor for LogicalFile not found in Manifest
+Trying to load adaptor for RandomAccessFile
+Adaptor for RandomAccessFile not found in Manifest
+Trying to load adaptor for FileInputStream
+Adaptor for FileInputStream not found in Manifest
+Trying to load adaptor for FileOutputStream
+Adaptor for FileOutputStream not found in Manifest
+Trying to load adaptor for ResourceBroker
+Adaptor for ResourceBroker not found in Manifest
+using default adaptor ordering policy
+WARNING, unknown GAT type in DefaultAdaptorOrderPolicy
+------------LOADED ADAPTORS------------
+Adaptor type: org.gridlab.gat.io.cpi.FileCpi:
+    org.gridlab.gat.io.cpi.local.LocalFileAdaptor
+    org.gridlab.gat.io.cpi.globus.GridFTPFileAdaptor
+    org.gridlab.gat.io.cpi.commandlineSsh.CommandlineSshFileAdaptor
+    org.gridlab.gat.io.cpi.ssh.SshFileAdaptor
+    org.gridlab.gat.io.cpi.sftp.SftpFileAdaptor
+    org.gridlab.gat.io.cpi.globus.FTPFileAdaptor
+    org.gridlab.gat.io.cpi.fileBrowsing.DataFileBrowsingAdaptor
+    org.gridlab.gat.io.cpi.dataMovement.DataMovementFileAdaptor
+
+Adaptor type: org.gridlab.gat.io.cpi.FileInputStreamCpi:
+    org.gridlab.gat.io.cpi.local.LocalFileInputStreamAdaptor
+    org.gridlab.gat.io.cpi.globus.GridFTPFileInputStreamAdaptor
+    org.gridlab.gat.io.cpi.ssh.SshFileInputStreamAdaptor
+    org.gridlab.gat.io.cpi.sftp.SftpFileInputStreamAdaptor
+    org.gridlab.gat.io.cpi.sftpnew.SftpNewFileInputStreamAdaptor
+    org.gridlab.gat.io.cpi.globus.FTPFileInputStreamAdaptor
+    org.gridlab.gat.io.cpi.globus.HTTPFileInputStreamAdaptor
+    org.gridlab.gat.io.cpi.globus.HTTPSFileInputStreamAdaptor
+
+Adaptor type: org.gridlab.gat.io.cpi.FileOutputStreamCpi:
+    org.gridlab.gat.io.cpi.local.LocalFileOutputStreamAdaptor
+    org.gridlab.gat.io.cpi.globus.GridFTPFileOutputStreamAdaptor
+    org.gridlab.gat.io.cpi.ssh.SshFileOutputStreamAdaptor
+    org.gridlab.gat.io.cpi.sftp.SftpFileOutputStreamAdaptor
+    org.gridlab.gat.io.cpi.globus.FTPFileOutputStreamAdaptor
+    org.gridlab.gat.io.cpi.globus.HTTPFileOutputStreamAdaptor
+    org.gridlab.gat.io.cpi.globus.HTTPSFileOutputStreamAdaptor
+
+Adaptor type: org.gridlab.gat.io.cpi.RandomAccessFileCpi:
+    org.gridlab.gat.io.cpi.local.LocalRandomAccessFileAdaptor
+
+Adaptor type: org.gridlab.gat.advert.cpi.AdvertServiceCpi:
+    org.gridlab.gat.advert.cpi.local.LocalAdvertServiceAdaptor
+    org.gridlab.gat.advert.cpi.storagebox.StorageBoxAdvertAdaptor
+
+Adaptor type: org.gridlab.gat.io.cpi.LogicalFileCpi:
+    org.gridlab.gat.io.cpi.local.LocalLogicalFileAdaptor
+    org.gridlab.gat.io.cpi.replicaService.ReplicaServiceAdaptor
+
+Adaptor type: org.gridlab.gat.resources.cpi.ResourceBrokerCpi:
+    org.gridlab.gat.resources.cpi.local.LocalResourceBrokerAdaptor
+    org.gridlab.gat.resources.cpi.globus.GlobusBrokerAdaptor
+    org.gridlab.gat.resources.cpi.ssh.SshBrokerAdaptor
+    org.gridlab.gat.resources.cpi.commandlineSsh.CommandlineSshResourceBrokerAdaptor
+    org.gridlab.gat.resources.cpi.commandlineSshPrun.CommandlineSshPrunResourceBrokerAdaptor
+    org.gridlab.gat.resources.cpi.proactive.ProActiveBrokerAdaptor
+    org.gridlab.gat.resources.cpi.grms.GrmsBrokerAdaptor
+
+Adaptor type: org.gridlab.gat.io.cpi.EndpointCpi:
+    org.gridlab.gat.io.cpi.sockets.SocketEndpointAdaptor
+
+Adaptor type: org.gridlab.gat.steering.cpi.SteeringManagerCpi:
+    org.gridlab.gat.steering.cpi.local.SteeringManagerLocalAdaptor
+
+Adaptor type: org.gridlab.gat.monitoring.cpi.MonitorableCpi:
+    org.gridlab.gat.monitoring.cpi.mercury.MercuryMonitorableAdaptor
+
+---------------------------------------
+MAIN: Done.
+invoke: No adaptor could be invoked.
+--- START OF NESTED EXCEPTION STACK TRACE ---
+*** stack trace of org.gridlab.gat.steering.cpi.local.SteeringManagerLocalAdaptor
+org.gridlab.gat.GATInvocationException: adaptor has not been selected by the user
+	at org.gridlab.gat.engine.AdaptorInvocationHandler.initAdaptor(AdaptorInvocationHandler.java:234)
+	at org.gridlab.gat.engine.AdaptorInvocationHandler.invoke(AdaptorInvocationHandler.java:107)
+	at $Proxy0.registerSteered(Unknown Source)
+	at steeringExamples.SteeredObject.<init>(SteeredObject.java:64)
+	at steeringExamples.SteeringExampleMain.main(SteeringExampleMain.java:33)
+--- END OF NESTED EXCEPTION STACK TRACE ---
