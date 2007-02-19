@@ -1,4 +1,3 @@
-// TODO static cache of all dirs.
 package org.gridlab.gat.io.cpi.globus;
 
 import java.io.BufferedReader;
@@ -46,8 +45,8 @@ public abstract class GlobusFileAdaptor extends FileCpi {
     static final int NO_SUCH_FILE_OR_DIRECTORY = 550;
 
     // cache dir info, getting it can be an expensive operation, especially on old servers.
-    private static HashMap isDirCache = new HashMap(); 
-    
+    private static HashMap isDirCache = new HashMap();
+
     private FileInfo cachedInfo = null;
 
     /**
@@ -634,8 +633,10 @@ public abstract class GlobusFileAdaptor extends FileCpi {
     }
 
     private boolean realIsDirectory() throws GATInvocationException {
-        System.err.println("real isDir on " + toURI());
-        
+        if (GATEngine.DEBUG) {
+            System.err.println("real isDir on " + toURI());
+        }
+
         // First, try the "fast" method.
         try {
             FileInfo info = getInfo();
@@ -653,17 +654,17 @@ public abstract class GlobusFileAdaptor extends FileCpi {
             // it can also be a link, so continue with slow method
         } catch (GATInvocationException e) {
             if (e.getMessage().equals("File not found: " + location)) {
-                //                if(GATEngine.DEBUG) {
-                System.err
-                        .println("file not found in isDirectory: " + location);
-                //                }
+                if (GATEngine.DEBUG) {
+                    System.err.println("file not found in isDirectory: "
+                            + location);
+                }
                 return false;
             }
-            //            if (GATEngine.DEBUG) {
-            System.err
-                    .println("fast isDirectory failed, falling back to slower version: "
-                            + e);
-            //            }
+            if (GATEngine.DEBUG) {
+                System.err
+                        .println("fast isDirectory failed, falling back to slower version: "
+                                + e);
+            }
         }
 
         return isDirectorySlow();
@@ -962,7 +963,7 @@ public abstract class GlobusFileAdaptor extends FileCpi {
 
         return res;
     }
-    
+
     /**
      * 
      * @param location
@@ -970,21 +971,29 @@ public abstract class GlobusFileAdaptor extends FileCpi {
      */
     private static int isDir(URI location) {
         Integer val = (Integer) isDirCache.get(location);
-        if(val == null) return -1;
+        if (val == null)
+            return -1;
 
-        System.err.println("cached isDir of " + location + " result = " + val);
-        
-        if(val.intValue() == 1) return 1;
-        if(val.intValue() == 0) return 0;
-        
+        if (GATEngine.DEBUG) {
+            System.err.println("cached isDir of " + location + " result = "
+                    + val);
+        }
+
+        if (val.intValue() == 1)
+            return 1;
+        if (val.intValue() == 0)
+            return 0;
+
         throw new Error("Internal error, illegal value in isDir");
     }
-    
+
     private void setIsDir(URI location, boolean isDir) {
         int val = -1;
-        if(isDir) val = 1;
-        else val = 0;
-        
+        if (isDir)
+            val = 1;
+        else
+            val = 0;
+
         isDirCache.put(location, new Integer(val));
     }
 }

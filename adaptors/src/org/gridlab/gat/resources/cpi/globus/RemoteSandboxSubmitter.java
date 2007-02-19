@@ -24,6 +24,12 @@ public class RemoteSandboxSubmitter {
 
     Preferences origPreferences;
 
+    static int wrapperCounter = 0;
+
+    synchronized static int getCounter() {
+        return wrapperCounter++;
+    }
+
     public RemoteSandboxSubmitter(GATContext gatContext, Preferences preferences) {
         this.origGatContext = gatContext;
         this.origPreferences = preferences;
@@ -59,19 +65,20 @@ public class RemoteSandboxSubmitter {
             }
 
             SoftwareDescription sd = new SoftwareDescription();
+            Map attributes = origSd.getAttributes();
 
             File outFile =
                     GAT.createFile(origGatContext, newPreferences, new URI(
-                            "any:///wrapper.out"));
+                            "any:///wrapper." + getCounter() + ".out"));
             File errFile =
                     GAT.createFile(origGatContext, newPreferences, new URI(
-                            "any:///wrapper.err"));
+                            "any:///wrapper." + getCounter() + ".err"));
             sd.setStdout(outFile);
             sd.setStderr(errFile);
-            sd.setLocation(new URI(
+            sd
+                    .setLocation(new URI(
                             "java:org.gridlab.gat.resources.cpi.remoteSandbox.RemoteSandbox"));
 
-            Map attributes = origSd.getAttributes();
             Object javaHome = attributes.get("java.home");
             if (javaHome == null) {
                 throw new GATInvocationException("java.home not set");
@@ -79,27 +86,27 @@ public class RemoteSandboxSubmitter {
 
             sd.addAttribute("java.home", javaHome);
 
-            // TODO replace with local "find" in lib dirs
+            // TODO replace with local "find" in engine lib dir
             String remoteLibLocation = "./lib/";
-            String classPath = "."
-                + ":" + remoteLibLocation + "GAT.jar"
-                + ":" + remoteLibLocation + "castor-0.9.6.jar"
-                + ":" + remoteLibLocation + "commons-logging-1.1.jar"
-                + ":" + remoteLibLocation + "log4j-1.2.13.jar"
-                + ":" + remoteLibLocation + "xmlParserAPIs.jar"
-                + ":" + remoteLibLocation + "castor-0.9.6-xml.jar"
-                + ":" + remoteLibLocation + "colobus.jar"
-                + ":" + remoteLibLocation + "ibis-util-1.4.jar"
-                + ":" + remoteLibLocation + "xercesImpl.jar"
-                + ":" + remoteLibLocation + "RemoteSandbox.jar";
-                
+            String classPath =
+                    "." + ":" + remoteLibLocation + "GAT.jar" + ":"
+                            + remoteLibLocation + "castor-0.9.6.jar" + ":"
+                            + remoteLibLocation + "commons-logging-1.1.jar"
+                            + ":" + remoteLibLocation + "log4j-1.2.13.jar"
+                            + ":" + remoteLibLocation + "xmlParserAPIs.jar"
+                            + ":" + remoteLibLocation + "castor-0.9.6-xml.jar"
+                            + ":" + remoteLibLocation + "colobus.jar" + ":"
+                            + remoteLibLocation + "ibis-util-1.4.jar" + ":"
+                            + remoteLibLocation + "xercesImpl.jar" + ":"
+                            + remoteLibLocation + "RemoteSandbox.jar";
+
             sd.addAttribute("java.classpath", classPath);
             Map environment = new HashMap();
             environment.put("gat.adaptor.path", "lib");
             sd.setEnvironment(environment);
 
-          Environment env = new Environment();
-          String localGATLocation = env.getVar("GAT_LOCATION");
+            Environment env = new Environment();
+            String localGATLocation = env.getVar("GAT_LOCATION");
 
             sd.addPreStagedFile(GAT.createFile(origGatContext, newPreferences,
                     new URI(localGATLocation + "/log4j.properties")));
@@ -111,7 +118,8 @@ public class RemoteSandboxSubmitter {
             java.io.File descriptorFile = writeDescriptionToFile(description);
             sd.addPreStagedFile(GAT.createFile(origGatContext, newPreferences,
                     new URI(descriptorFile.getAbsolutePath())));
-            sd.setArguments(new String[] { descriptorFile.getName(), IPUtils.getLocalHostName() });
+            sd.setArguments(new String[] { descriptorFile.getName(),
+                    IPUtils.getLocalHostName() });
 
             JobDescription jd = new JobDescription(sd);
             ResourceBroker broker =
