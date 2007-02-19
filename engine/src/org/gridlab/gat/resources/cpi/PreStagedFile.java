@@ -96,29 +96,30 @@ public class PreStagedFile extends StagedFile {
         resolvedSrc.copy(resolvedDest.toGATURI());
     }
 
-    protected void delete(boolean onlySandbox) throws GATInvocationException {
-        if (!onlySandbox || (onlySandbox && inSandbox)) {
-            if (resolvedDest.isDirectory()) {
-                if (GATEngine.VERBOSE) {
-                    System.err.println("DELETE_DIR:" + resolvedDest);
-                }
-                FileCpi.recursiveDeleteDirectory(gatContext, preferences, resolvedDest);
-            } else {
-                if (GATEngine.VERBOSE) {
-                    System.err.println("DELETE_FILE:" + resolvedDest);
-                }
-                resolvedDest.delete();
+    protected void delete() throws GATInvocationException {
+        if (inSandbox) {
+            return;
+        }
+        
+        if (resolvedDest.isDirectory()) {
+            if (GATEngine.VERBOSE) {
+                System.err.println("DELETE_DIR:" + resolvedDest);
             }
+            FileCpi.recursiveDeleteDirectory(gatContext, preferences,
+                    resolvedDest);
+        } else {
+            if (GATEngine.VERBOSE) {
+                System.err.println("DELETE_FILE:" + resolvedDest);
+            }
+            resolvedDest.delete();
         }
     }
 
-    protected void wipe(boolean onlySandbox) throws GATInvocationException {
-        if (!onlySandbox || (onlySandbox && inSandbox)) {
-            if (GATEngine.VERBOSE) {
-                System.err.println("WIPE_FILE:" + resolvedDest);
-            }
-            wipe(resolvedDest);
+    protected void wipe() throws GATInvocationException {
+        if (GATEngine.VERBOSE) {
+            System.err.println("WIPE_FILE:" + resolvedDest);
         }
+        wipe(resolvedDest);
     }
 
     public String toString() {

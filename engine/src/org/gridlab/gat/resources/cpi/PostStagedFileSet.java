@@ -153,12 +153,12 @@ public class PostStagedFileSet {
         }
     }
 
-    public void delete(boolean deleteFilesInSandbox)
+    public void delete()
             throws GATInvocationException {
         GATInvocationException e = new GATInvocationException();
         for (int i = 0; i < files.size(); i++) {
             try {
-                ((PostStagedFile) files.get(i)).delete(deleteFilesInSandbox);
+                ((PostStagedFile) files.get(i)).delete();
             } catch (Exception x) {
                 e.add("resource broker", x);
             }
@@ -167,11 +167,11 @@ public class PostStagedFileSet {
         if (e.getNrChildren() != 0) throw e;
     }
 
-    public void wipe(boolean onlySandbox) throws GATInvocationException {
+    public void wipe() throws GATInvocationException {
         GATInvocationException e = new GATInvocationException();
         for (int i = 0; i < files.size(); i++) {
             try {
-                ((PostStagedFile) files.get(i)).wipe(onlySandbox);
+                ((PostStagedFile) files.get(i)).wipe();
             } catch (Exception x) {
                 e.add("resource broker", x);
             }

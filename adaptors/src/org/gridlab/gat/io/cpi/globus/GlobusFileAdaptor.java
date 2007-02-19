@@ -532,12 +532,12 @@ public abstract class GlobusFileAdaptor extends FileCpi {
                                     + remotePath + ", list is: " + v);
                 }
 
-                System.err.println("USING CACHED INFO FOR .");
+//                System.err.println("USING CACHED INFO FOR .");
             } else {
                 cachedInfo = (FileInfo) v.get(0);
             }
 
-            System.err.println("INFO: " + cachedInfo);
+//            System.err.println("INFO: " + cachedInfo);
             return cachedInfo;
         } catch (Exception e) {
             throw new GATInvocationException("gridftp", e);

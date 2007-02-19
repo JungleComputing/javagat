@@ -70,10 +70,10 @@ public class RemoteSandboxSubmitter {
             int counter = getCounter();
             File outFile =
                     GAT.createFile(origGatContext, newPreferences, new URI(
-                            "any:///wrapper." + counter + ".out"));
+                            "any:///remoteSandbox." + counter + ".out"));
             File errFile =
                     GAT.createFile(origGatContext, newPreferences, new URI(
-                            "any:///wrapper." + counter + ".err"));
+                            "any:///remoteSandbox." + counter + ".err"));
             sd.setStdout(outFile);
             sd.setStderr(errFile);
             sd
