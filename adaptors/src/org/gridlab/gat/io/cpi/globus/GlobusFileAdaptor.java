@@ -991,6 +991,7 @@ public abstract class GlobusFileAdaptor extends FileCpi {
     }
 
     private void setIsDir(URI location, boolean isDir) {
+        System.err.println("set cached dir of " + location + " to " + isDir);
         int val = -1;
         if (isDir)
             val = 1;
