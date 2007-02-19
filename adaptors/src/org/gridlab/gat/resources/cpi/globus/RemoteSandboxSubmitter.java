@@ -67,17 +67,21 @@ public class RemoteSandboxSubmitter {
             SoftwareDescription sd = new SoftwareDescription();
             Map attributes = origSd.getAttributes();
 
-            int counter = getCounter();
-            File outFile =
-                    GAT.createFile(origGatContext, newPreferences, new URI(
-                            "any:///remoteSandbox." + counter + ".out"));
-            File errFile =
-                    GAT.createFile(origGatContext, newPreferences, new URI(
-                            "any:///remoteSandbox." + counter + ".err"));
-            sd.setStdout(outFile);
-            sd.setStderr(errFile);
-            sd
-                    .setLocation(new URI(
+            String remoteVerbose =
+                    (String) attributes.get("getRemoteSandboxOutput");
+            if (remoteVerbose != null && remoteVerbose.equalsIgnoreCase("true")) {
+                int counter = getCounter();
+                File outFile =
+                        GAT.createFile(origGatContext, newPreferences, new URI(
+                                "any:///remoteSandbox." + counter + ".out"));
+                File errFile =
+                        GAT.createFile(origGatContext, newPreferences, new URI(
+                                "any:///remoteSandbox." + counter + ".err"));
+                sd.setStdout(outFile);
+                sd.setStderr(errFile);
+            }
+
+            sd.setLocation(new URI(
                             "java:org.gridlab.gat.resources.cpi.remoteSandbox.RemoteSandbox"));
 
             Object javaHome = attributes.get("java.home");
