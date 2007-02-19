@@ -159,7 +159,7 @@ public class URI implements Serializable, Comparable {
                     ((other.getPort() == -1) ? "" : (":" + other.getPort()));
             tmpURIString += ("/" + other.getPath());
 
-            //	        System.err.println("URI equals: created tmp URI: " + tmpURIString + ", orig was: " + other + ", compare with: " + u + ".");
+ 	        System.err.println("URI equals: created tmp URI: " + tmpURIString + ", orig was: " + other + ", compare with: " + u + ".");
             boolean res = u.toString().equals(tmpURIString);
 
             //	        System.err.println("result of URI equals = " + res);

@@ -634,15 +634,13 @@ public abstract class GlobusFileAdaptor extends FileCpi {
     }
 
     private boolean realIsDirectory() throws GATInvocationException {
-//        if (GATEngine.DEBUG) {
+        if (GATEngine.DEBUG) {
             System.err.println("real isDir on " + toURI());
-//        }
+        }
 
         // First, try the "fast" method.
         try {
             FileInfo info = getInfo();
-            
-            System.err.println("real: info = " + info);
             if (info.isDirectory()) {
                 setIsDir(location, true);
                 return true;
