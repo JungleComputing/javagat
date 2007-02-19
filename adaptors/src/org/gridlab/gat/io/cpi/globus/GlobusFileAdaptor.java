@@ -634,9 +634,9 @@ public abstract class GlobusFileAdaptor extends FileCpi {
     }
 
     private boolean realIsDirectory() throws GATInvocationException {
-        if (GATEngine.DEBUG) {
+//        if (GATEngine.DEBUG) {
             System.err.println("real isDir on " + toURI());
-        }
+//        }
 
         // First, try the "fast" method.
         try {
@@ -975,10 +975,10 @@ public abstract class GlobusFileAdaptor extends FileCpi {
         if (val == null)
             return -1;
 
-        if (GATEngine.DEBUG) {
+//        if (GATEngine.DEBUG) {
             System.err.println("cached isDir of " + location + " result = "
                     + val);
-        }
+//        }
 
         if (val.intValue() == 1)
             return 1;
