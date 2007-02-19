@@ -108,13 +108,13 @@ public class RemoteSandbox implements MetricListener {
 
         Map attrs = sd.getAttributes();
         String verboseString = (String) attrs.get("verboseRemoteSandbox");
-        if(verboseString.equalsIgnoreCase("true")) {
+        if(verboseString != null && verboseString.equalsIgnoreCase("true")) {
             System.setProperty("gat.verbose", "true");            
             verbose = true;
         }
         
         String debugString = (String) attrs.get("debugRemoteSandbox");
-        if(debugString.equalsIgnoreCase("true")) {
+        if(debugString != null && debugString.equalsIgnoreCase("true")) {
             System.setProperty("gat.verbose", "true");            
             System.setProperty("gat.debug", "true");
             verbose = true;
