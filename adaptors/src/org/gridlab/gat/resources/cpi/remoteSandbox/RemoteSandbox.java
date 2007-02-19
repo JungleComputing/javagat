@@ -86,9 +86,6 @@ public class RemoteSandbox implements MetricListener {
 
     public void start(String[] args) {
 //        System.err.println("RemoteSandbox started, initiator: " + args[1]);
-        GATContext gatContext = new GATContext();
-        Preferences prefs = new Preferences();
-        prefs.put("ResourceBroker.adaptor.name", "local");
 
         JobDescription description = null;
         try {
@@ -125,6 +122,10 @@ public class RemoteSandbox implements MetricListener {
             System.err.println("RemoteSandbox started, initiator: " + args[1]);
             System.err.println("read job description: " + description);
         }
+
+        GATContext gatContext = new GATContext();
+        Preferences prefs = new Preferences();
+        prefs.put("ResourceBroker.adaptor.name", "local");
         
         // rewrite poststage files to go directly to their original destination
         // also stdout and stderr
