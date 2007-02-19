@@ -143,7 +143,9 @@ public class URI implements Serializable, Comparable {
         if (!(arg0 instanceof URI)) {
             return false;
         }
-
+        
+        // I have no idea why this used to be here. It seems wrong. --Rob
+/*
         URI other = (URI) arg0;
 
         if ((other.getScheme() != null && other.getScheme().equals("any"))
@@ -165,7 +167,7 @@ public class URI implements Serializable, Comparable {
             //	        System.err.println("result of URI equals = " + res);
             return res;
         }
-
+*/
         return u.equals(arg0);
     }
 
@@ -318,24 +320,30 @@ public class URI implements Serializable, Comparable {
         return u;
     }
 
-    /** Checks whether this URI is "compatible" with the given scheme
+    /** Checks whether this URI is "compatible" with the given scheme.
      * If this URI has the same scheme, it is compatible.
-     * When this URI has "any" as scheme, or no scheme at all, it is also
-     * compatible.
+     * When this URI has "any" as scheme, it is also
+     * compatible. If the scheme paramter is "any", this method always returns
+     * true.
+     *  No scheme is interpreted as a "file" scheme.
      *
      * @param scheme the scheme to compare to
      * @return true: the URIs are compatible
      */
     public boolean isCompatible(String scheme) {
-        if ((getScheme() == null) || getScheme().equals("any")) {
+        if(scheme.equals("any")) {
+            return true;
+        }
+        
+        if(getScheme() == null) {
+            return scheme.equals("file");
+        }
+            
+        if (getScheme().equals("any")) {
             return true;
         }
 
-        if (getScheme().equals(scheme)) {
-            return true;
-        }
-
-        return false;
+        return getScheme().equals(scheme);
     }
 
     public void debugPrint() {
