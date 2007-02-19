@@ -632,16 +632,16 @@ try {
             // it can also be a link, so continue with slow method            
         } catch (GATInvocationException e) {
             if(e.getMessage().equals("File not found: " + location)) {
-                if(GATEngine.DEBUG) {
+//                if(GATEngine.DEBUG) {
                     System.err.println("file not found in isDirectory: " + location);
-                }
+//                }
                 return false;
             }
-            if (GATEngine.DEBUG) {
+//            if (GATEngine.DEBUG) {
                 System.err
                     .println("fast isDirectory failed, falling back to slower version: "
                         + e);
-            }
+//            }
         }
 
         return isDirectorySlow();
