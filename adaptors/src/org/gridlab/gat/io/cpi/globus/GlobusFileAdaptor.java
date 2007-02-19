@@ -1,9 +1,11 @@
+// TODO static cache of all dirs.
 package org.gridlab.gat.io.cpi.globus;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.StringReader;
+import java.util.HashMap;
 import java.util.StringTokenizer;
 import java.util.Vector;
 
@@ -43,10 +45,10 @@ public abstract class GlobusFileAdaptor extends FileCpi {
 
     static final int NO_SUCH_FILE_OR_DIRECTORY = 550;
 
-    private FileInfo cachedInfo = null;
-
     // cache dir info, getting it can be an expensive operation, especially on old servers.
-    private int isDir = -1; // < 0 means don't know yet, 0 means no, 1 means yes.
+    private static HashMap isDirCache = new HashMap(); 
+    
+    private FileInfo cachedInfo = null;
 
     /**
      * Constructs a LocalFileAdaptor instance which corresponds to the physical
@@ -548,9 +550,10 @@ public abstract class GlobusFileAdaptor extends FileCpi {
 
     private boolean isDirectorySlow() throws GATInvocationException {
         // return cached value if we know it.
-        if (isDir == 0) {
+        int isDirVal = isDir(location);
+        if (isDirVal == 0) {
             return false;
-        } else if (isDir == 1) {
+        } else if (isDirVal == 1) {
             return true;
         }
         // don't know yet... Try the slow method now
@@ -597,21 +600,17 @@ public abstract class GlobusFileAdaptor extends FileCpi {
         if (client != null)
             destroyClient(client, toURI(), preferences);
 
-        if (dir) {
-            isDir = 1;
-        } else {
-            isDir = 0;
-        }
+        setIsDir(location, dir);
         return dir;
     }
 
     public boolean isDirectory() throws GATInvocationException {
-        System.err.println("isDir on " + toURI());
 
         // return cached value if we know it.
-        if (isDir == 0) {
+        int isDirVal = isDir(location);
+        if (isDirVal == 0) {
             return false;
-        } else if (isDir == 1) {
+        } else if (isDirVal == 1) {
             return true;
         }
         // don't know yet...
@@ -624,12 +623,7 @@ public abstract class GlobusFileAdaptor extends FileCpi {
             try {
                 java.io.File f = new java.io.File(getPath());
                 boolean res = f.isDirectory();
-                if (res) {
-                    isDir = 1;
-                } else {
-                    isDir = 0;
-                }
-
+                setIsDir(location, res);
                 return res;
             } catch (Exception e) {
                 throw new GATInvocationException("globus", e);
@@ -640,17 +634,19 @@ public abstract class GlobusFileAdaptor extends FileCpi {
     }
 
     private boolean realIsDirectory() throws GATInvocationException {
+        System.err.println("real isDir on " + toURI());
+        
         // First, try the "fast" method.
         try {
             FileInfo info = getInfo();
             if (info.isDirectory()) {
-                isDir = 1;
+                setIsDir(location, true);
                 return true;
             } else if (info.isDevice()) {
-                isDir = 0;
+                setIsDir(location, false);
                 return false;
             } else if (info.isFile()) {
-                isDir = 0;
+                setIsDir(location, false);
                 return false;
             }
 
@@ -965,5 +961,30 @@ public abstract class GlobusFileAdaptor extends FileCpi {
         }
 
         return res;
+    }
+    
+    /**
+     * 
+     * @param location
+     * @return 1 if dir, 0 if not, -1 if unknown
+     */
+    private static int isDir(URI location) {
+        Integer val = (Integer) isDirCache.get(location);
+        if(val == null) return -1;
+
+        System.err.println("cached isDir of " + location + " result = " + val);
+        
+        if(val.intValue() == 1) return 1;
+        if(val.intValue() == 0) return 0;
+        
+        throw new Error("Internal error, illegal value in isDir");
+    }
+    
+    private void setIsDir(URI location, boolean isDir) {
+        int val = -1;
+        if(isDir) val = 1;
+        else val = 0;
+        
+        isDirCache.put(location, new Integer(val));
     }
 }
