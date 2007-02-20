@@ -7,10 +7,16 @@ import org.gridlab.gat.GATObjectCreationException;
 import org.gridlab.gat.Preferences;
 import org.gridlab.gat.URI;
 import org.gridlab.gat.AdaptorNotApplicableException;
+import org.gridlab.gat.security.PasswordSecurityContext;
+import org.gridlab.gat.security.cpi.SecurityContextUtils;
 
 import java.io.IOException;
+import java.util.List;
 
 import jcifs.smb.SmbFileInputStream;
+import jcifs.smb.SmbFile;
+import jcifs.smb.NtlmPasswordAuthentication;
+import jcifs.smb.SmbException;
 
 public class SmbFileInputStreamAdaptor extends FileInputStreamCpi {
     SmbFileInputStream in;
@@ -23,14 +29,52 @@ public class SmbFileInputStreamAdaptor extends FileInputStreamCpi {
 	if( !location.isCompatible("smb" ) ) {
 	    throw new AdaptorNotApplicableException("cannot handle this URI");
 	}
-	in =  new SmbFileInputStream(location.toString());
+	try {
+	    in =  createStream();
+	} catch(Exception e) {
+	    throw new GATObjectCreationException("SmbFileInputStream: "+e);
+	}
     }
     
+    protected SmbFileInputStream createStream() throws GATInvocationException {
+	SmbFileInputStream is = null;
+	List l = 
+	    SecurityContextUtils.getValidSecurityContextsByType(
+               gatContext, preferences,
+	       "org.gridlab.gat.security.PasswordSecurityContext", 
+	       "smb", location.getHost(), 
+	       location.getPort(SmbFile.DEFAULT_PORT));
+	if((l==null) || (l.size() == 0)) {
+	    try {
+		is = new SmbFileInputStream(location.toString());
+		return is;
+	    } catch(Exception e) {
+		throw new GATInvocationException("SmbFileInputStream: "+e);
+	    }
+	}
+	
+	PasswordSecurityContext c = (PasswordSecurityContext) l.get(0);
+        String user = c.getUsername();
+        String password = c.getPassword();
+
+        String host = location.getHost();
+        String path = location.getPath();
+	NtlmPasswordAuthentication auth =  
+	    new NtlmPasswordAuthentication( host, user, password );
+	try {
+	    SmbFile smbf = new SmbFile( location.toString(), auth );
+	    is = new SmbFileInputStream(smbf);
+	    return is;
+	} catch(Exception e) {
+	    throw new GATInvocationException("SmbFileInputStream: "+e);
+	}
+    }
+	
     public int available() throws GATInvocationException {
 	try {
             return in.available();
         } catch (IOException e) {
-            throw new GATInvocationException("DefaultFileInputStream", e);
+            throw new GATInvocationException("SmbFileInputStream", e);
         }
     }
 
@@ -38,7 +82,7 @@ public class SmbFileInputStreamAdaptor extends FileInputStreamCpi {
         try {
             in.close();
         } catch (IOException e) {
-            throw new GATInvocationException("DefaultFileInputStream", e);
+            throw new GATInvocationException("SmbFileInputStream", e);
         }
     }
 
@@ -54,7 +98,7 @@ public class SmbFileInputStreamAdaptor extends FileInputStreamCpi {
         try {
             return in.read();
         } catch (IOException e) {
-            throw new GATInvocationException("DefaultFileInputStream", e);
+            throw new GATInvocationException("SmbFileInputStream", e);
         }
     }
     
@@ -63,7 +107,7 @@ public class SmbFileInputStreamAdaptor extends FileInputStreamCpi {
         try {
             return in.read(b, offset, len);
         } catch (IOException e) {
-            throw new GATInvocationException("DefaultFileInputStream", e);
+            throw new GATInvocationException("SmbFileInputStream", e);
         }
     }
     
@@ -71,7 +115,7 @@ public class SmbFileInputStreamAdaptor extends FileInputStreamCpi {
         try {
             return in.read(arg0);
         } catch (IOException e) {
-            throw new GATInvocationException("DefaultFileInputStream", e);
+            throw new GATInvocationException("SmbFileInputStream", e);
         }
     }
     
@@ -79,7 +123,7 @@ public class SmbFileInputStreamAdaptor extends FileInputStreamCpi {
         try {
             in.reset();
         } catch (IOException e) {
-            throw new GATInvocationException("DefaultFileInputStream", e);
+            throw new GATInvocationException("SmbFileInputStream", e);
         }
     }
     
@@ -87,7 +131,7 @@ public class SmbFileInputStreamAdaptor extends FileInputStreamCpi {
         try {
             return in.skip(arg0);
         } catch (IOException e) {
-            throw new GATInvocationException("DefaultFileInputStream", e);
+            throw new GATInvocationException("SmbFileInputStream", e);
         }
     }
 }

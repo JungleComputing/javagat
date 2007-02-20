@@ -3,6 +3,7 @@ package org.gridlab.gat.io.cpi.smb;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.Iterator;
+import java.util.List;
 
 import org.gridlab.gat.CouldNotInitializeCredentialException;
 import org.gridlab.gat.CredentialExpiredException;
@@ -13,10 +14,14 @@ import org.gridlab.gat.Preferences;
 import org.gridlab.gat.URI;
 import org.gridlab.gat.engine.GATEngine;
 import org.gridlab.gat.io.cpi.FileCpi;
+import org.gridlab.gat.security.PasswordSecurityContext;
+import org.gridlab.gat.security.cpi.SecurityContextUtils;
 
-import jcifs.smb.SmbFile;
 import jcifs.smb.SmbException;
-
+import jcifs.smb.SmbFile;
+import jcifs.smb.SmbFileInputStream;
+import jcifs.smb.SmbFileOutputStream;
+import jcifs.smb.NtlmPasswordAuthentication;
 
 public class SmbFileAdaptor extends FileCpi {
     SmbFile smbf;
@@ -29,9 +34,46 @@ public class SmbFileAdaptor extends FileCpi {
         if (!location.isCompatible("smb") ) {
             throw new GATObjectCreationException("cannot handle this URI");
         }
-	smbf = new SmbFile(location.toString());
+	try {
+	    smbf = createFile();
+	} catch(Exception e) {
+	    throw new GATObjectCreationException("SmbFile: "+e);
+	}
     }
     
+    protected SmbFile createFile() throws GATInvocationException {
+	SmbFile f = null;
+	List l = 
+	    SecurityContextUtils.getValidSecurityContextsByType(
+               gatContext, preferences,
+	       "org.gridlab.gat.security.PasswordSecurityContext", 
+	       "smb", location.getHost(), 
+	       location.getPort(SmbFile.DEFAULT_PORT));
+	if((l==null) || (l.size() == 0)) {
+	    try {
+		f = new SmbFile(location.toString());
+		return f;
+	    } catch(Exception e) {
+		throw new GATInvocationException("SmbFile: "+e);
+	    }
+	}
+	
+	PasswordSecurityContext c = (PasswordSecurityContext) l.get(0);
+        String user = c.getUsername();
+        String password = c.getPassword();
+
+        String host = location.getHost();
+        String path = location.getPath();
+	NtlmPasswordAuthentication auth =  
+	    new NtlmPasswordAuthentication( host, user, password );
+	try {
+	    f = new SmbFile( location.toString(), auth );
+	    return f;
+	} catch(Exception e) {
+	    throw new GATInvocationException("SmbFile: "+e);
+	}
+    }
+	
     public String[] list() throws GATInvocationException {
 	String[] res;
 	try {
@@ -157,5 +199,98 @@ public class SmbFileAdaptor extends FileCpi {
 	} 
 	return res;
     }
+    
+    public void copy(URI dest) throws GATInvocationException {
+	/*if (dest.refersToLocalHost() && (toURI().refersToLocalHost())) {
+            throw new GATInvocationException("smb cannot copy local files");
+	    }*/
+	if(determineIsDirectory()) {
+	    copyDirectory(gatContext, preferences, toURI(), dest);
+            return;
+        }
+	
+	if (dest.refersToLocalHost()) {
+	    if(GATEngine.DEBUG) {
+		System.err.println("smb file: copy remote to local");
+            }
+	    copyToRemote(toURI(),dest);
+	    return;
+	}
+	
+	if (toURI().refersToLocalHost()) {
+            if (GATEngine.DEBUG) {
+                System.err.println("smb file: copy local to remote");
+            }
+            copyToRemote(toURI(), dest);
+            return;
+        }
+	
+	if( dest.isCompatible("smb") ) {
+	    if(GATEngine.DEBUG) {
+		System.err.println("smb file: copy remote to remote with smbfile");
+	    }
+	    copySmbRemote(dest);
+	    return;
+	}
+	else {
+	    throw new GATInvocationException("smb cannot copy file");
+	}
+    }
+    
+    protected void copySmbRemote( URI dest ) throws GATInvocationException {
+	try {
+	    SmbFile smbdest =  new SmbFile( dest.toString() );
+	    smbf.copyTo(smbdest);
+	} catch( Exception e ) {
+	    throw new GATInvocationException();
+	} 
+    }
+    
+    protected void copyToLocal(URI src, URI dest)
+	throws GATInvocationException {
+	try {
+	    SmbFileInputStream fis  = new SmbFileInputStream(src.getPath());
+	    java.io.FileOutputStream fos = new java.io.FileOutputStream(dest.getPath());
+	    byte[] buf = new byte[1024];
+	    int i = 0;
+	    while((i=fis.read(buf))!=-1) {
+		fos.write(buf, 0, i);
+	    }
+	    fis.close();
+	    fos.close();
+	} catch( Exception e ) {
+	    System.err.println("smb file: copyToLocal failed");
+	    throw new GATInvocationException();
+	}   
+	     
+    }
 
+    protected void copyToRemote(URI src, URI dest)
+	throws GATInvocationException {
+	try {
+	    java.io.FileInputStream fis = new java.io.FileInputStream(src.getPath());
+	    SmbFileOutputStream fos = new SmbFileOutputStream(dest.getPath());
+	    byte[] buf = new byte[1024];
+	    int i = 0;
+	    while((i=fis.read(buf))!=-1) {
+		fos.write(buf, 0, i);
+	    }
+	    fis.close();
+	    fos.close();
+	} catch( Exception e ) {
+	    System.err.println("smb file: copyToRemote failed");
+	    throw new GATInvocationException();
+	}   
+    }
+
+    /*protected void copyThirdParty(URI src, URI dest)
+	throws GATInvocationException {
+	java.io.File tmp = null;
+	try {
+	    tmp = java.io.File.CreateTempFile("GAT_SMB_",".tmp");
+	    URI tmpURI = new URI(tmp.getCanonicalPath() );
+	    copyToLocal(src, tmpURI);
+	    
+    }
+    */
 }
