@@ -213,7 +213,7 @@ public class SmbFileAdaptor extends FileCpi {
 	    if(GATEngine.DEBUG) {
 		System.err.println("smb file: copy remote to local");
             }
-	    copyToRemote(toURI(),dest);
+	    copyToLocal(toURI(),dest);
 	    return;
 	}
 	
@@ -249,7 +249,7 @@ public class SmbFileAdaptor extends FileCpi {
     protected void copyToLocal(URI src, URI dest)
 	throws GATInvocationException {
 	try {
-	    SmbFileInputStream fis  = new SmbFileInputStream(src.getPath());
+	    SmbFileInputStream fis  = new SmbFileInputStream(smbf);
 	    java.io.FileOutputStream fos = new java.io.FileOutputStream(dest.getPath());
 	    byte[] buf = new byte[1024];
 	    int i = 0;
@@ -269,7 +269,7 @@ public class SmbFileAdaptor extends FileCpi {
 	throws GATInvocationException {
 	try {
 	    java.io.FileInputStream fis = new java.io.FileInputStream(src.getPath());
-	    SmbFileOutputStream fos = new SmbFileOutputStream(dest.getPath());
+	    SmbFileOutputStream fos = new SmbFileOutputStream(smbf);
 	    byte[] buf = new byte[1024];
 	    int i = 0;
 	    while((i=fis.read(buf))!=-1) {
