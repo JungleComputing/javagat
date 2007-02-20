@@ -126,8 +126,13 @@ public class RemoteSandboxSubmitter {
             java.io.File descriptorFile = writeDescriptionToFile(description);
             sd.addPreStagedFile(GAT.createFile(origGatContext, newPreferences,
                     new URI(descriptorFile.getAbsolutePath())));
-            sd.setArguments(new String[] { descriptorFile.getName(),
-                    IPUtils.getLocalHostName() });
+
+            sd.setArguments(new String[] { 
+                    descriptorFile.getName(),
+                    IPUtils.getLocalHostName(), 
+                    "" + origSd.getBooleanAttribute("verboseRemoteSandbox", GATEngine.VERBOSE), 
+                    "" + origSd.getBooleanAttribute("debugRemoteSandbox", GATEngine.DEBUG),
+                    "" + origSd.getBooleanAttribute("timeRemoteSandbox", GATEngine.TIMING)});
 
             JobDescription jd = new JobDescription(sd);
             ResourceBroker broker =

@@ -23,6 +23,7 @@ import org.gridlab.gat.resources.SoftwareDescription;
 public class RemoteSandbox implements MetricListener {
     boolean verbose = false;
     boolean debug = false;
+    boolean timing = false;
     
     public static void main(String[] args) {
         new RemoteSandbox().start(args);
@@ -85,12 +86,32 @@ public class RemoteSandbox implements MetricListener {
     }
 
     public void start(String[] args) {
-//        System.err.println("RemoteSandbox started, initiator: " + args[1]);
+        final String descriptorFile = args[0];
+        final String initiator = args[1];
+        verbose = args[2].equalsIgnoreCase("true");  
+        debug = args[3].equalsIgnoreCase("true");  
+        timing = args[4].equalsIgnoreCase("true");  
+
+        if(verbose) {
+            System.setProperty("gat.verbose", "true");
+        }
+        if(debug) {
+            System.setProperty("gat.debug", "true");           
+        }
+        if(timing) {
+            System.setProperty("gat.timing", "true");
+        }
+        
+        if(verbose) {
+            System.err.println("RemoteSandbox started, initiator: " + initiator);
+        }
 
         JobDescription description = null;
         try {
-//            System.err.println("opening descriptor file: " + args[0]);
-            FileInputStream tmp = new FileInputStream(args[0]);
+            if(verbose) {
+                System.err.println("opening descriptor file: " + descriptorFile);
+            }
+            FileInputStream tmp = new FileInputStream(descriptorFile);
             ObjectInputStream in = new ObjectInputStream(tmp);
             description = (JobDescription) in.readObject();
             in.close();
@@ -103,23 +124,7 @@ public class RemoteSandbox implements MetricListener {
         SoftwareDescription sd = description.getSoftwareDescription();
         sd.addAttribute("useLocalDisk", "false");
 
-        Map attrs = sd.getAttributes();
-        String verboseString = (String) attrs.get("verboseRemoteSandbox");
-        if(verboseString != null && verboseString.equalsIgnoreCase("true")) {
-            System.setProperty("gat.verbose", "true");            
-            verbose = true;
-        }
-        
-        String debugString = (String) attrs.get("debugRemoteSandbox");
-        if(debugString != null && debugString.equalsIgnoreCase("true")) {
-            System.setProperty("gat.verbose", "true");            
-            System.setProperty("gat.debug", "true");
-            verbose = true;
-            debug = true;
-        }
-
         if(verbose) {
-            System.err.println("RemoteSandbox started, initiator: " + args[1]);
             System.err.println("read job description: " + description);
         }
 

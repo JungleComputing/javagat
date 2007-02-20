@@ -139,12 +139,7 @@ public abstract class ResourceBrokerCpi implements ResourceBroker {
             return defaultVal;
         }
 
-        Map attributes = sd.getAttributes();
-        Integer val = (Integer) attributes.get(name);
-
-        if (val == null)
-            return defaultVal;
-        return val.intValue();
+        return sd.getIntAttribute(name, defaultVal);
     }
 
     protected long getLongAttribute(JobDescription description, String name,
@@ -154,13 +149,7 @@ public abstract class ResourceBrokerCpi implements ResourceBroker {
         if (sd == null) {
             return defaultVal;
         }
-
-        Map attributes = sd.getAttributes();
-        Long val = (Long) attributes.get(name);
-
-        if (val == null)
-            return defaultVal;
-        return val.longValue();
+        return sd.getLongAttribute(name, defaultVal);
     }
 
     protected String getStringAttribute(JobDescription description,
@@ -170,13 +159,7 @@ public abstract class ResourceBrokerCpi implements ResourceBroker {
         if (sd == null) {
             return defaultVal;
         }
-
-        Map attributes = sd.getAttributes();
-        String val = (String) attributes.get(name);
-
-        if (val == null)
-            return defaultVal;
-        return val;
+        return sd.getStringAttribute(name, defaultVal);
     }
 
     protected boolean getBooleanAttribute(JobDescription description,
@@ -186,21 +169,7 @@ public abstract class ResourceBrokerCpi implements ResourceBroker {
         if (sd == null) {
             return defaultVal;
         }
-
-        Map attributes = sd.getAttributes();
-        
-        Object val = attributes.get(name);
-        
-        if (val == null)
-            return defaultVal;
-        
-        if(val instanceof Boolean) {
-            return ((Boolean)val).booleanValue();
-        } else if (val instanceof String) {
-            return ((String)val).equalsIgnoreCase("true");
-        } else {
-            throw new Error("illegal type for boolean attribute: " + name + ": " + val);
-        }
+        return sd.getBooleanAttribute(name, defaultVal);
     }
 
     protected int getCPUCount(JobDescription description) {
