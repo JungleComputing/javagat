@@ -32,6 +32,7 @@ public class LocalJob extends JobCpi {
         public void run() {
             try {
                 int exitValue = p.waitFor();
+                runTime = System.currentTimeMillis() - runTime;
                 
                 // Wait for the output forwarders to finish!
                 // You may lose output if you don't -- Jason
@@ -50,31 +51,36 @@ public class LocalJob extends JobCpi {
         }
     }
 
-    LocalResourceBrokerAdaptor broker;
+//    private LocalResourceBrokerAdaptor broker;
 
-    int jobID;
+    private int jobID;
 
-    Process p;
+    private Process p;
 
-    int exitVal = 0;
+    private int exitVal = 0;
 
-    MetricDefinition statusMetricDefinition;
+    private MetricDefinition statusMetricDefinition;
 
-    Metric statusMetric;
+    private Metric statusMetric;
 
-    OutputForwarder out;
+    private OutputForwarder out;
 
-    OutputForwarder err;
+    private OutputForwarder err;
     
+    private long startTime;
+    private long runTime;
+  
     LocalJob(GATContext gatContext, Preferences preferences, LocalResourceBrokerAdaptor broker, JobDescription description,
-            Process p, String host, Sandbox sandbox, OutputForwarder out, OutputForwarder err) {
+            Process p, String host, Sandbox sandbox, OutputForwarder out, OutputForwarder err, long startTime, long startRun) {
         super(gatContext, preferences, description, sandbox);
-        this.broker = broker;
+//        this.broker = broker;
         jobID = allocJobID();
         state = RUNNING;
         this.p = p;
         this.out = out;
         this.err = err;
+        this.startTime = startTime;
+        this.runTime = startRun;
         
         // Tell the engine that we provide job.status events
         HashMap returnDef = new HashMap();
@@ -161,6 +167,17 @@ public class LocalJob extends JobCpi {
         }
         GATEngine.fireMetric(this, v);
         finished();
+
+        if(GATEngine.TIMING) {
+            System.err.println("TIMING: job " + jobID + ":" 
+                    + " preStage: " + sandbox.getPreStageTime()
+                    + " run: " + runTime
+                    + " postStage: " + sandbox.getPostStageTime()
+                    + " wipe: " + sandbox.getWipeTime()
+                    + " delete: " + sandbox.getDeleteTime()
+                    + " total: " + (System.currentTimeMillis() - startTime)
+            );
+        }
     }
 
     public void stop() throws GATInvocationException {

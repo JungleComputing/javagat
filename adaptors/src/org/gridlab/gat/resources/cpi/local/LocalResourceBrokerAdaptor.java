@@ -116,6 +116,7 @@ public class LocalResourceBrokerAdaptor extends ResourceBrokerCpi {
      */
     public Job submitJob(JobDescription description)
             throws GATInvocationException {
+        long start = System.currentTimeMillis();
         SoftwareDescription sd = description.getSoftwareDescription();
 
         if (sd == null) {
@@ -185,6 +186,7 @@ public class LocalResourceBrokerAdaptor extends ResourceBrokerCpi {
         }
 
         Process p = null;
+        long startRun = System.currentTimeMillis();
         try {
             p = Runtime.getRuntime().exec(command.toString(), environment, f);
         } catch (IOException e) {
@@ -240,7 +242,7 @@ public class LocalResourceBrokerAdaptor extends ResourceBrokerCpi {
             }
         }
 
-        return new LocalJob(gatContext, preferences, this, description, p, host, sandbox,  outForwarder, errForwarder);
+        return new LocalJob(gatContext, preferences, this, description, p, host, sandbox,  outForwarder, errForwarder, start, startRun);
     }
 
     /*
