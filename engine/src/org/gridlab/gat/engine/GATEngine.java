@@ -47,6 +47,8 @@ import org.gridlab.gat.resources.cpi.ResourceBrokerCpi;
  * This class make the various GAT adaptors available to GAT
  */
 public class GATEngine {
+    public static final boolean TIMING = propertySet("gat.timing");
+
     public static final boolean DEBUG = propertySet("gat.debug");
 
     public static final boolean VERBOSE = propertySet("gat.debug")

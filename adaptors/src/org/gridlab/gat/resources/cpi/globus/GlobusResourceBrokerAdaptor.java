@@ -488,6 +488,7 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
 
     public Job submitJobGramSandbox(JobDescription description)
             throws GATInvocationException {
+        long start = System.currentTimeMillis();
         String host = getHostname(description);
         String contact = getResourceManagerContact(description);
 
@@ -522,7 +523,7 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
         GramJob j = new GramJob(credential, rsl);
         GlobusJob res =
                 new GlobusJob(gatContext, preferences, this, description, j,
-                        null);
+                        null, start);
         j.addListener(res);
 
         try {
@@ -539,6 +540,8 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
 
     public Job submitJobGatSandbox(JobDescription description)
             throws GATInvocationException {
+        long start = System.currentTimeMillis();
+
         String host = getHostname(description);
         String contact = getResourceManagerContact(description);
         GSSCredential credential = getCredential(host);
@@ -563,7 +566,7 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
         GramJob j = new GramJob(credential, rsl);
         GlobusJob res =
                 new GlobusJob(gatContext, preferences, this, description, j,
-                        sandbox);
+                        sandbox, start);
         j.addListener(res);
 
         try {

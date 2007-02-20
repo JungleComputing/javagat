@@ -19,24 +19,26 @@ import org.gridlab.gat.resources.JobDescription;
 import org.gridlab.gat.resources.SoftwareDescription;
 
 public class Sandbox {
-    GATContext gatContext;
+    private GATContext gatContext;
 
-    Preferences preferences;
+    private Preferences preferences;
 
-    JobDescription jobDescription;
+    private JobDescription jobDescription;
 
-    String host;
+    private String host;
 
-    String sandbox;
+    private String sandbox;
 
-    PreStagedFileSet pre;
+    private PreStagedFileSet pre;
 
-    PostStagedFileSet post;
+    private PostStagedFileSet post;
 
-    String sandboxRoot;
+    private String sandboxRoot;
 
-    boolean createSandboxDir;
+    private boolean createSandboxDir;
 
+    private long preStageTime, postStageTime, wipeTime, deleteTime;
+    
     public Sandbox(GATContext gatContext, Preferences preferences,
             JobDescription jobDescription, String host, String sandboxRoot,
             boolean createSandboxDir, boolean preStageStdin,
@@ -176,6 +178,7 @@ public class Sandbox {
         if (GATEngine.VERBOSE) {
             System.err.println("pre stage starting");
         }
+        long start = System.currentTimeMillis();
         try {
             pre.prestage();
         } catch (Exception e) {
@@ -185,6 +188,8 @@ public class Sandbox {
             // remove / wipe files we already prestaged.
             retrieveAndCleanup(null);
             throw new FilePrestageException("sandbox", e);
+        } finally {
+            preStageTime = System.currentTimeMillis() - start;
         }
         if (GATEngine.VERBOSE) {
             System.err.println("pre stage done (SUCCESS)");
@@ -199,6 +204,7 @@ public class Sandbox {
         if (GATEngine.VERBOSE) {
             System.err.println("wipe starting");
         }
+        long start = System.currentTimeMillis();
 
         try {
             if (sd.wipePreStaged()) {
@@ -230,6 +236,8 @@ public class Sandbox {
                     + (wipeException.getNrChildren() == 0 ? "(SUCCESS)"
                             : "(FAILURE)"));
         }
+        
+        wipeTime = System.currentTimeMillis() - start;
 
         if (wipeException.getNrChildren() != 0) {
             throw wipeException;
@@ -245,6 +253,8 @@ public class Sandbox {
         if (GATEngine.VERBOSE) {
             System.err.println("delete starting");
         }
+
+        long start = System.currentTimeMillis();
 
         if (sd.deletePreStaged()) {
             try {
@@ -277,6 +287,8 @@ public class Sandbox {
                             : "(FAILURE)"));
         }
 
+        deleteTime = System.currentTimeMillis() - start;
+
         if (deleteException.getNrChildren() != 0) {
             throw deleteException;
         }
@@ -291,6 +303,9 @@ public class Sandbox {
         if (GATEngine.VERBOSE) {
             System.err.println("post stage starting");
         }
+        
+        long start = System.currentTimeMillis();
+
         try {
             post.poststage();
         } catch (GATInvocationException e) {
@@ -300,6 +315,8 @@ public class Sandbox {
             System.err.println("post stage done "
                     + (poststageException == null ? "(SUCCESS)" : "(FAILURE)"));
         }
+        
+        postStageTime = System.currentTimeMillis() - start;
 
         try {
             wipe();
@@ -401,5 +418,21 @@ public class Sandbox {
 
     public PostStagedFileSet getPostStagedFileSet() {
         return post;
+    }
+
+    public long getDeleteTime() {
+        return deleteTime;
+    }
+
+    public long getPostStageTime() {
+        return postStageTime;
+    }
+
+    public long getPreStageTime() {
+        return preStageTime;
+    }
+
+    public long getWipeTime() {
+        return wipeTime;
     }
 }
