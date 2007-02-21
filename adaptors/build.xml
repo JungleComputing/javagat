@@ -263,8 +263,6 @@
 			</manifest>
 		</jar>
 
-		<jar jarfile="${lib}/RemoteSandbox.jar" basedir="${tmp}" includes="**/org/gridlab/gat/resources/cpi/remoteSandbox/*.class"/>
-
         <delete dir="${tmp}"/>
 
 		<!-- Copy external libraries to lib directory -->

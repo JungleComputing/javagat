@@ -1,4 +1,4 @@
-package org.gridlab.gat.resources.cpi.remoteSandbox;
+package org.gridlab.gat.resources.cpi;
 
 import java.io.FileInputStream;
 import java.io.ObjectInputStream;

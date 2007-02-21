@@ -88,9 +88,8 @@ public class RemoteSandboxSubmitter {
                 sd.setStderr(errFile);
             }
 
-            sd
-                    .setLocation(new URI(
-                            "java:org.gridlab.gat.resources.cpi.remoteSandbox.RemoteSandbox"));
+            sd.setLocation(new URI(
+                            "java:org.gridlab.gat.resources.cpi.RemoteSandbox"));
 
             Object javaHome = attributes.get("java.home");
             if (javaHome == null) {
@@ -122,8 +121,7 @@ public class RemoteSandboxSubmitter {
                             + ":" + remoteEngineLibLocation + "colobus.jar"
                             + ":" + remoteEngineLibLocation
                             + "ibis-util-1.4.jar" + ":"
-                            + remoteEngineLibLocation + "xercesImpl.jar" + ":"
-                            + remoteEngineLibLocation + "RemoteSandbox.jar";
+                            + remoteEngineLibLocation + "xercesImpl.jar";
 
             sd.addAttribute("java.classpath", classPath);
 
