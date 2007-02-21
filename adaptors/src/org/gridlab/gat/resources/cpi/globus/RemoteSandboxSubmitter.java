@@ -105,7 +105,7 @@ public class RemoteSandboxSubmitter {
             String remoteGatLocation =
                     (String) attributes.get("remoteGatLocation");
             if (remoteGatLocation != null) {
-                remoteEngineLibLocation = remoteGatLocation + "/engine/lib";
+                remoteEngineLibLocation = remoteGatLocation + "/engine/lib/";
                 remoteIsGatEnabled = true;
             }
 
