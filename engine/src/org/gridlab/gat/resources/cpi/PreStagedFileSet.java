@@ -113,11 +113,11 @@ public class PreStagedFileSet {
         }
     }
 
-    public void delete(boolean onlySandbox) throws GATInvocationException {
+    public void delete() throws GATInvocationException {
         GATInvocationException e = new GATInvocationException();
         for (int i = 0; i < files.size(); i++) {
             try {
-                ((PreStagedFile) files.get(i)).delete(onlySandbox);
+                ((PreStagedFile) files.get(i)).delete();
             } catch (Exception x) {
                 e.add("resource broker", x);
             }
@@ -126,11 +126,11 @@ public class PreStagedFileSet {
         if (e.getNrChildren() != 0) throw e;
     }
 
-    public void wipe(boolean onlySandbox) throws GATInvocationException {
+    public void wipe() throws GATInvocationException {
         GATInvocationException e = new GATInvocationException();
         for (int i = 0; i < files.size(); i++) {
             try {
-                ((PreStagedFile) files.get(i)).wipe(onlySandbox);
+                ((PreStagedFile) files.get(i)).wipe();
             } catch (Exception x) {
                 e.add("resource broker", x);
             }

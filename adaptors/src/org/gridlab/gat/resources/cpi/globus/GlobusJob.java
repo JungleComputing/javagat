@@ -72,31 +72,36 @@ class JobPoller extends Thread {
 public class GlobusJob extends JobCpi implements GramJobListener,
         org.globus.gram.internal.GRAMConstants {
 
-    static final int GRAM_JOBMANAGER_CONNECTION_FAILURE = 79;
+    private static final int GRAM_JOBMANAGER_CONNECTION_FAILURE = 79;
 
-    static int jobsAlive = 0;
+    private static int jobsAlive = 0;
 
-    GlobusResourceBrokerAdaptor broker;
+//    private GlobusResourceBrokerAdaptor broker;
 
-    GramJob j;
+    private GramJob j;
 
-    MetricDefinition statusMetricDefinition;
+    private MetricDefinition statusMetricDefinition;
 
-    Metric statusMetric;
+    private Metric statusMetric;
 
-    boolean postStageFinished = false;
+    private boolean postStageFinished = false;
 
-    boolean postStageStarted = false;
+    private boolean postStageStarted = false;
 
-    String jobID;
+    private String jobID;
 
-    JobPoller poller;
+    private JobPoller poller;
 
+    private long queueTime;
+    private long runTime;
+    private long startTime;
+    
     public GlobusJob(GATContext gatContext, Preferences preferences,
             GlobusResourceBrokerAdaptor broker, JobDescription jobDescription,
-            GramJob j, Sandbox sandbox) {
+            GramJob j, Sandbox sandbox, long startTime) {
         super(gatContext, preferences, jobDescription, sandbox);
-        this.broker = broker;
+        this.startTime = startTime;
+//        this.broker = broker;
         this.j = j;
         jobID = j.getIDAsString();
         state = SCHEDULED;
@@ -348,7 +353,7 @@ public class GlobusJob extends JobCpi implements GramJobListener,
         jobID = j.getIDAsString();
         String stateString = null;
         int globusState = newJob.getStatus();
-
+        
         if (newJob.getError() == GRAM_JOBMANAGER_CONNECTION_FAILURE) {
             globusState = STATUS_DONE;
         }
@@ -365,7 +370,16 @@ public class GlobusJob extends JobCpi implements GramJobListener,
             setState();
             stateString = getStateString(state);
 
+            if(state == SCHEDULED) {
+                queueTime = System.currentTimeMillis(); 
+            }
+            if(state == RUNNING) {
+                runTime = System.currentTimeMillis();
+                queueTime = runTime - queueTime;  
+            }
+            
             if ((globusState == STATUS_DONE) || (globusState == STATUS_FAILED)) {
+                runTime = System.currentTimeMillis() - runTime;
                 stopHandlers();
                 poller.die();
                 postStageStarted = true;
@@ -408,6 +422,18 @@ public class GlobusJob extends JobCpi implements GramJobListener,
 
             GATEngine.fireMetric(this, v2);
             finished();
+            
+            if(GATEngine.TIMING) {
+                System.err.println("TIMING: job " + jobID + ":" 
+                        + " preStage: " + sandbox.getPreStageTime()
+                        + " queue: " + queueTime
+                        + " run: " + runTime
+                        + " postStage: " + sandbox.getPostStageTime()
+                        + " wipe: " + sandbox.getWipeTime()
+                        + " delete: " + sandbox.getDeleteTime()
+                        + " total: " + (System.currentTimeMillis() - startTime)
+                );
+            }
         }
     }
 }

@@ -3,25 +3,37 @@
  * --Rob
  * 
  */
-
 /*
-This file is licensed under the terms of the Globus Toolkit Public
-License, found at http://www.globus.org/toolkit/download/license.html.
-*/
+ * Copyright 1999-2006 University of Chicago
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.globus.ftp.vanilla;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.net.Socket;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.InputStreamReader;
+import java.io.BufferedReader;
 
-import org.apache.log4j.Logger;
-import org.globus.ftp.exception.FTPReplyParseException;
+import org.globus.net.SocketFactory;
 import org.globus.ftp.exception.ServerException;
 import org.globus.ftp.exception.UnexpectedReplyCodeException;
+import org.globus.ftp.exception.FTPReplyParseException;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 /**
  * <p>
@@ -32,321 +44,322 @@ import org.globus.ftp.exception.UnexpectedReplyCodeException;
  */
 public class FTPControlChannel extends BasicClientControlChannel {
 
-	private static Logger logger =
-		Logger.getLogger(FTPControlChannel.class.getName());
+    private static Log logger =
+        LogFactory.getLog(FTPControlChannel.class.getName());
 
-	public static final String CRLF = "\r\n";
+    public static final String CRLF = "\r\n";
 
-	// used in blocking waitForReply()
-	private static final int WAIT_FOREVER = -1;
+    // used in blocking waitForReply()
+    private static final int WAIT_FOREVER = -1;
+    
+    protected Socket socket;
+    //input stream
+    protected BufferedReader ftpIn;
+    //raw stream underlying ftpIn
+    protected InputStream rawFtpIn;
+        //output stream
+    protected OutputStream ftpOut;
+    protected String host;
+    protected int port;
+    //true if connection has already been opened.
+    protected boolean hasBeenOpened = false;
+    private boolean ipv6 = false;
 
-	protected Socket socket;
-	//input stream
-	protected BufferedReader ftpIn;
-	//raw stream underlying ftpIn
-	protected InputStream rawFtpIn;
-	//output stream
-	protected OutputStream ftpOut;
-	protected String host;
-	protected int port;
-	//true if connection has already been opened.
-	protected boolean hasBeenOpened = false;
+    public FTPControlChannel(String host, int port) {
+        this.host = host;
+        this.port = port;
+        this.ipv6 = (this.host.indexOf(':') != -1);
+    }
 
-	public FTPControlChannel(String host, int port) {
-		this.host = host;
-		this.port = port;
-	}
+    /** 
+     * Using this constructor, you can initialize an instance that does not 
+     * talk directly to the socket. If you use this constructor using streams
+     * that belong to an active connection, there's no need to call open()
+     * afterwards.
+     **/
+    public FTPControlChannel(InputStream in, OutputStream out) {
+        setInputStream(in);
+        setOutputStream(out);
+    }
+    
+    public String getHost() {
+        return this.host;
+    }
 
-	/** 
-	Using this constructor, you can initialize an instance that does not 
-	talk directly to the socket. If you use this constructor using streams
-	that belong to an active connection, there's no need to call open() afterwards.
-	**/
-	public FTPControlChannel(InputStream in, OutputStream out) {
-		setInputStream(in);
-		setOutputStream(out);
-	}
+    public int getPort() {
+        return this.port;
+    }
 
-	public String getHost() {
-		return this.host;
-	}
+    public boolean isIPv6() {
+        return this.ipv6;
+    }
 
-	public int getPort() {
-		return this.port;
-	}
+    protected BufferedReader getBufferedReader() {
+        return ftpIn;
+    }
+    
+    protected OutputStream getOutputStream() {
+        return ftpOut;
+    }
 
-	protected BufferedReader getBufferedReader() {
-		return ftpIn;
-	}
+    // not intended to be public. you can set streams in the constructor.
+    protected void setInputStream(InputStream in) {
+        rawFtpIn = in;
+        ftpIn = new BufferedReader(new InputStreamReader(rawFtpIn));
+    }
 
-	protected OutputStream getOutputStream() {
-		return ftpOut;
-	}
+    protected void setOutputStream(OutputStream out) {
+        ftpOut = out;
+    }
 
-	// not intended to be public. you can set streams in the constructor.
-	protected void setInputStream(InputStream in) {
-		rawFtpIn = in;
-		ftpIn = new BufferedReader(new InputStreamReader(rawFtpIn));
-	}
-	protected void setOutputStream(OutputStream out) {
-		ftpOut = out;
-	}
+    /**
+     * opens the connection and returns after it is ready for communication.
+     * Before returning, it intercepts the initial server reply(-ies),
+     * and not positive, throws UnexpectedReplyCodeException.
+     * After returning, there should be no more queued replies on the line.
+     *
+     * Here's the sequence for connection establishment (rfc959):
+     * <PRE>
+     *     120
+     *         220
+     *     220
+     *     421
+     *</PRE>
+     * @throws IOException on I/O error
+     * @throws ServerException on negative or faulty server reply 
+     **/
+    public void open() throws IOException, ServerException {
 
-	/**
-	 * opens the connection and returns after it is ready for communication.
-	 * Before returning, it intercepts the initial server reply(-ies),
-	 * and not positive, throws UnexpectedReplyCodeException.
-	 * After returning, there should be no more queued replies on the line.
-	 *
-	 * Here's the sequence for connection establishment (rfc959):
-	 * <PRE>
-	 *	   120
-	 *         220
-	 *	   220
-	 *     421
-	 *</PRE>
-	 * @throws IOException on I/O error
-	 * @throws ServerException on negative or faulty server reply 
-	 **/
-	public void open() throws IOException, ServerException {
-
-		if (hasBeenOpened()) {
-			throw new IOException("Attempt to open an already opened connection");
-		}
-
-		//depending on constructor used, we may already have streams
-		if (!haveStreams()) {
-			logger.debug("opening control channel to " + host + " : " + port);
-//			socket = new Socket(host, port);
-
-                       // Use a timeout here. --Rob
-                       socket = new Socket();
-                       socket.connect(new InetSocketAddress(host, port), 5 * 1000); // 5 seconds timeout
+        if (hasBeenOpened()) {
+            throw new IOException("Attempt to open an already opened connection");
+        }
+        
+        //depending on constructor used, we may already have streams
+        if (!haveStreams()) {
+            logger.debug("opening control channel to " + host + " : " + port);
+            SocketFactory factory = SocketFactory.getDefault();
+            socket = factory.createSocket(host, port);
             
-			setInputStream(socket.getInputStream());
-			setOutputStream(socket.getOutputStream());
-		}
+            // Use a timeout here. --Rob
+            socket = new Socket();
+            socket.connect(new InetSocketAddress(host, port), 5 * 1000); // 5 seconds timeout
 
-		readInitialReplies();
+            setInputStream(socket.getInputStream());
+            setOutputStream(socket.getOutputStream());
+        }
 
-		hasBeenOpened = true;
-	}
+        readInitialReplies();
 
-	//intercepts the initial replies 
-	//(that the server sends after opening control ch.)
-	protected void readInitialReplies() throws IOException, ServerException {
-		Reply reply = null;
+        hasBeenOpened = true;
+    }
 
-		try {
+    //intercepts the initial replies 
+    //(that the server sends after opening control ch.)
+    protected void readInitialReplies() throws IOException, ServerException {
+        Reply reply = null;
 
-			reply = read();
+        try {
+            reply = read();
+        } catch (FTPReplyParseException rpe) {
+            throw ServerException.embedFTPReplyParseException(
+                                rpe,
+                                "Received faulty initial reply");
+        }
 
-		} catch (FTPReplyParseException rpe) {
-			throw ServerException.embedFTPReplyParseException(
-				rpe,
-				"Received faulty initial reply");
-		}
+        if (Reply.isPositivePreliminary(reply)) {
+            try {
+                reply = read();
+            } catch (FTPReplyParseException rpe) {
+                throw ServerException.embedFTPReplyParseException(
+                                        rpe,
+                                        "Received faulty second reply");
+            }
+        }
 
-		if (Reply.isPositivePreliminary(reply)) {
-			try {
-				reply = read();
-			} catch (FTPReplyParseException rpe) {
-				throw ServerException.embedFTPReplyParseException(
-					rpe,
-					"Received faulty second reply");
-			}
-		}
+        if (!Reply.isPositiveCompletion(reply)) {
+            close();
+            throw ServerException.embedUnexpectedReplyCodeException(
+                                new UnexpectedReplyCodeException(reply),
+                                "Server refused connection.");
+        }
+    }
 
-		if (!Reply.isPositiveCompletion(reply)) {
-			close();
-			throw ServerException.embedUnexpectedReplyCodeException(
-				new UnexpectedReplyCodeException(reply),
-				"Server refused connection.");
-		}
-	}
+    /**
+     * Closes the control channel
+     */
+    public void close() throws IOException {
+        logger.debug("ftp socket closed");
+        if (ftpIn != null)
+            ftpIn.close();
+        if (ftpOut != null)
+            ftpOut.close();
+        if (socket != null)
+            socket.close();
+        
+        hasBeenOpened = false;
+    }
 
-	/**
-	 * Closes the control channel
-	 */
-	public void close() throws IOException {
-		logger.debug("ftp socket closed");
-		if (ftpIn != null)
-			ftpIn.close();
-		if (ftpOut != null)
-			ftpOut.close();
-		if (socket != null)
-			socket.close();
+    /**
+       Block until one of the conditions are true:
+       <ol>
+       <li> a reply is available in the control channel,
+       <li> timeout (maxWait) expired
+       <li> aborted flag changes to true.
+       </ol>
+       If maxWait == WAIT_FOREVER, never timeout
+       and only check conditions (1) and (3).
+       @param maxWait timeout in miliseconds
+       @param ioDelay frequency of polling the control channel
+       and checking the conditions
+       @param aborted flag indicating wait aborted.
+    **/
+    public void waitFor(Flag aborted, int ioDelay, int maxWait)
+        throws ServerException, IOException, InterruptedException {
+        int i = 0;
+        logger.debug("checking input stream");
+        while (!ftpIn.ready()) {
+            if (aborted.flag)
+                throw new InterruptedException();
+            logger.debug("slept " + i);
+            Thread.sleep(ioDelay);
+            i += ioDelay;
+            if (maxWait != WAIT_FOREVER && i >= maxWait) {
+                logger.debug("timeout");
+                throw new ServerException(ServerException.REPLY_TIMEOUT);
+            }
+        }
 
-		hasBeenOpened = false;
-	}
+        /*
+          A bug in the server causes it to append \0 to each reply.
+          As the result, we receive this \0 before the next reply.
+          The code below handles this case.
+          
+        */
+        ftpIn.mark(2);
+        int c = ftpIn.read();
+        if (c != 0) {
+            ftpIn.reset();
+            // if we're here, the server is healthy
+            // and the reply is waiting in the buffer
+            return;
+        }
 
-	/**
-	   Block until one of the conditions are true:
-	   <ol>
-	   <li> a reply is available in the control channel,
-	   <li> timeout (maxWait) expired
-	   <li> aborted flag changes to true.
-	   </ol>
-	   If maxWait == WAIT_FOREVER, never timeout
-	   and only check conditions (1) and (3).
-	   @param maxWait timeout in miliseconds
-	   @param ioDelay frequency of polling the control channel
-	   and checking the conditions
-	   @param aborted flag indicating wait aborted.
-	 **/
-	public void waitFor(Flag aborted, int ioDelay, int maxWait)
-		throws ServerException, IOException, InterruptedException {
-		int i = 0;
-		logger.debug("checking input stream");
-		while (!ftpIn.ready()) {
-			if (aborted.flag)
-				throw new InterruptedException();
-			logger.debug("slept " + i);
-			Thread.sleep(ioDelay);
-			i += ioDelay;
-			if (maxWait != WAIT_FOREVER && i >= maxWait) {
-				logger.debug("timeout");
-				throw new ServerException(ServerException.REPLY_TIMEOUT);
-			}
-		}
+        // if we're here, we deal with the buggy server.
+        // we discarded the \0 and now resume wait.
+        
+        logger.debug("Server sent \\0; resume wait");
+        while (!ftpIn.ready()) {
+            if (aborted.flag)
+                throw new InterruptedException();
+            logger.debug("sleep " + i);
+            Thread.sleep(ioDelay);
+            i += ioDelay;
+            if (maxWait != WAIT_FOREVER && i >= maxWait) {
+                logger.debug("timeout");
+                throw new ServerException(ServerException.REPLY_TIMEOUT);
+            }
+        }
+    }
+    
+    /**
+     * Block until a reply is available in the control channel.
+     * @return the first unread reply from the control channel.
+     * @throws IOException on I/O error
+     * @throws FTPReplyParseException on malformatted server reply
+     **/
+    public Reply read()
+        throws ServerException, IOException, FTPReplyParseException {
+        Reply reply = new Reply(ftpIn);
+        if (logger.isDebugEnabled()) {
+            logger.debug("Control channel received: " + reply);
+        }
+        return reply;
+    }
 
-		/*
-		  A bug in the server causes it to append \0 to each reply.
-		  As the result, we receive this \0 before the next reply.
-		  The code below handles this case.
-		
-		 */
-		ftpIn.mark(2);
-		int c = ftpIn.read();
-		if (c != 0) {
-			ftpIn.reset();
-			// if we're here, the server is healthy
-			// and the reply is waiting in the buffer
-			return;
-		}
-
-		// if we're here, we deal with the buggy server.
-		// we discarded the \0 and now resume wait.
-
-		logger.debug("Server sent \\0; resume wait");
-		while (!ftpIn.ready()) {
-			if (aborted.flag)
-				throw new InterruptedException();
-			logger.debug("sleep " + i);
-			Thread.sleep(ioDelay);
-			i += ioDelay;
-			if (maxWait != WAIT_FOREVER && i >= maxWait) {
-				logger.debug("timeout");
-				throw new ServerException(ServerException.REPLY_TIMEOUT);
-			}
-		}
-	}
-
-	/**
-	 * Block until a reply is available in the control channel.
-	 * @return the first unread reply from the control channel.
-	 * @throws IOException on I/O error
-	 * @throws FTPReplyParseException on malformatted server reply
-	 **/
-	public Reply read()
-		throws ServerException, IOException, FTPReplyParseException {
-		Reply reply = new Reply(ftpIn);
-		if (logger.isInfoEnabled()) {
-			logger.info("Control channel received: " + reply);
-		}
-		return reply;
-	}
-
-	/**
-	 * Sends the command over the control channel.
-	 * Do not wait for reply.
-	 * @throws java.io.IOException on I/O error
-	 * @param cmd FTP command
-	 */
-	public void write(Command cmd)
-		throws IOException, IllegalArgumentException {
-
-		if (cmd == null) {
-			throw new IllegalArgumentException("null argument: cmd");
-		}
-		if (logger.isInfoEnabled()) {
-			logger.info("Control channel sending: " + cmd);
-		}
-		writeStr(cmd.toString());
-	}
-
-	/**
-	   Write the command to the control channel,
-	   block until reply arrives and return the reply. 
-	   Before calling this method make sure that no old replies are
-	   waiting on the control channel. Otherwise the reply returned
-	   may not be the reply to this command.
-	 * @throws java.io.IOException on I/O error
-	 * @throws FTPReplyParseException on bad reply format
-	 * @param cmd FTP command
-	 * @return the first reply that waits in the control channel
-	 **/
-	public Reply exchange(Command cmd)
-		throws ServerException, IOException, FTPReplyParseException {
-		// send the command
-		write(cmd);
-		// get the reply
-		return read();
-	}
-
-	/**
-	   Write the command to the control channel,
-	   block until reply arrives and check if the command
-	   completed successfully (reply code 200). 
-	   If so, return the reply, otherwise throw exception.
-	   Before calling this method make sure that no old replies are
-	   waiting on the control channel. Otherwise the reply returned
-	   may not be the reply to this command.
-	 * @throws java.io.IOException on I/O error
-	 * @throws FTPReplyParseException on bad reply format
-	 * @throws UnexpectedReplyCodeException if reply is not a positive
-	 completion reply (code 200)
-	 * @param cmd FTP command
-	 * @return the first reply that waits in the control channel
-	 **/
-	public Reply execute(Command cmd)
-		throws
-			ServerException,
-			IOException,
-			FTPReplyParseException,
-			UnexpectedReplyCodeException {
-
-		Reply reply = exchange(cmd);
-		// check for positive reply
-		if (!Reply.isPositiveCompletion(reply)) {
-			throw new UnexpectedReplyCodeException(reply);
-		}
-		return reply;
-	}
-
-	// local utils
-	protected void finalize() {
-		try {
-			close();
-		} catch (IOException e) {
-		}
-	}
-
-	protected void writeln(String msg) throws IOException {
-		writeStr(msg + CRLF);
-	}
-
-	protected void writeStr(String msg) throws IOException {
-		ftpOut.write(msg.getBytes());
-		ftpOut.flush();
-	}
-
-	protected boolean hasBeenOpened() {
-		return hasBeenOpened;
-	}
-
-	protected boolean haveStreams() {
-		return (ftpIn != null && ftpOut != null);
-	}
-
+    public void abortTransfer() {
+    }
+    
+    /**
+     * Sends the command over the control channel.
+     * Do not wait for reply.
+     * @throws java.io.IOException on I/O error
+     * @param cmd FTP command
+     */
+    public void write(Command cmd)
+        throws IOException, IllegalArgumentException {
+        if (cmd == null) {
+            throw new IllegalArgumentException("null argument: cmd");
+        }
+        if (logger.isDebugEnabled()) {
+            logger.debug("Control channel sending: " + cmd);
+        }
+        writeStr(cmd.toString());
+    }
+    
+    /**
+     * Write the command to the control channel,
+     * block until reply arrives and return the reply. 
+     * Before calling this method make sure that no old replies are
+     * waiting on the control channel. Otherwise the reply returned
+     * may not be the reply to this command.
+     * @throws java.io.IOException on I/O error
+     * @throws FTPReplyParseException on bad reply format
+     * @param cmd FTP command
+     * @return the first reply that waits in the control channel
+     **/
+    public Reply exchange(Command cmd)
+        throws ServerException, IOException, FTPReplyParseException {
+        // send the command
+        write(cmd);
+        // get the reply
+        return read();
+    }
+    
+    /**
+     * Write the command to the control channel,
+     * block until reply arrives and check if the command
+     * completed successfully (reply code 200). 
+     * If so, return the reply, otherwise throw exception.
+     * Before calling this method make sure that no old replies are
+     * waiting on the control channel. Otherwise the reply returned
+     * may not be the reply to this command.
+     * @throws java.io.IOException on I/O error
+     * @throws FTPReplyParseException on bad reply format
+     * @throws UnexpectedReplyCodeException if reply is not a positive
+     *         completion reply (code 200)
+     * @param cmd FTP command
+     * @return the first reply that waits in the control channel
+     **/
+    public Reply execute(Command cmd)
+        throws
+            ServerException,
+            IOException,
+            FTPReplyParseException,
+            UnexpectedReplyCodeException {
+        
+        Reply reply = exchange(cmd);
+        // check for positive reply
+        if (!Reply.isPositiveCompletion(reply)) {
+            throw new UnexpectedReplyCodeException(reply);
+        }
+        return reply;
+    }
+    
+    protected void writeln(String msg) throws IOException {
+        writeStr(msg + CRLF);
+    }
+    
+    protected void writeStr(String msg) throws IOException {
+        ftpOut.write(msg.getBytes());
+        ftpOut.flush();
+    }
+    
+    protected boolean hasBeenOpened() {
+        return hasBeenOpened;
+    }
+    
+    protected boolean haveStreams() {
+        return (ftpIn != null && ftpOut != null);
+    }
+    
 } // end StandardPI

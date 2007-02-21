@@ -54,7 +54,6 @@ class GlobusContextCreator implements SecurityContextCreator {
             URI keyURI = c.getKeyfile();
 
             if (keyURI == null) { // no key file specified, use default location
-
                 GSSCredential cred =
                         GlobusSecurityUtils.getDefaultCredential(gatContext,
                             preferences);

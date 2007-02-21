@@ -41,6 +41,24 @@ import org.gridlab.gat.io.File;
  * <li> saveState (Boolean/String): keep job data persistent for restart.
  * <li> restart=ID (String): restart job with given ID.
  * </ul>
+ *
+ * Several JavaGAT adaptors also have support for running Java programs.
+ * This works as follows: 
+ * The "location" (the executable) can be set to
+ * "java:my.ClassName", where my.Classname is the fully qualified name
+ * of your class that contains main.
+ * You can put the classpath in the attributes, with as key 
+ * "java.classpath", and as value the litteral string you would use as arument to 
+ * the -classpath option to the JVM.
+ * If you do not set a classpath, JavaGAT will set it to all files in your 
+ * prestaged file set that have a .jar extension.
+ * Furthermore, all variables in the environment will be passed to the JVM 
+ * as -D options. JavaGAT also has to know which JVM to use, you can set this 
+ * by providing a "java.home" key in the attributes. The value of java.home must
+ * be a URI.
+ * Finally, you can specify a "java.flags" attribute to pass options to the 
+ * JVM itself, like "-server" or "-Xmx800M".
+ *
  */
 public class SoftwareDescription implements java.io.Serializable {
     private URI location;
@@ -417,5 +435,46 @@ public class SoftwareDescription implements java.io.Serializable {
 
     public void setWipePreStaged(boolean wipePreStaged) {
         this.wipePreStaged = wipePreStaged;
+    }
+    
+    public int getIntAttribute(String name,
+            int defaultVal) {
+        Integer val = (Integer) attributes.get(name);
+
+        if (val == null)
+            return defaultVal;
+        return val.intValue();
+    }
+
+    public long getLongAttribute(String name,
+            long defaultVal) {
+        Long val = (Long) attributes.get(name);
+
+        if (val == null)
+            return defaultVal;
+        return val.longValue();
+    }
+
+    public String getStringAttribute(String name, String defaultVal) {
+        String val = (String) attributes.get(name);
+
+        if (val == null)
+            return defaultVal;
+        return val;
+    }
+
+    public boolean getBooleanAttribute(String name, boolean defaultVal) {
+        Object val = attributes.get(name);
+        
+        if (val == null)
+            return defaultVal;
+        
+        if(val instanceof Boolean) {
+            return ((Boolean)val).booleanValue();
+        } else if (val instanceof String) {
+            return ((String)val).equalsIgnoreCase("true");
+        } else {
+            throw new Error("illegal type for boolean attribute: " + name + ": " + val);
+        }
     }
 }

@@ -40,5 +40,8 @@ In many cases we don't exactly know what JavaGAT is used for.
 
 - VUMC (Keith Cover)
 
+- The Integrade Project (http://www.integrade.org.br)
+	Integrade adaptor set (an object oriented grid middleware layer), an Eclipse based IDE
+
 - ...
 

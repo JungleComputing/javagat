@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.StringReader;
+import java.util.HashMap;
 import java.util.StringTokenizer;
 import java.util.Vector;
 
@@ -43,10 +44,10 @@ public abstract class GlobusFileAdaptor extends FileCpi {
 
     static final int NO_SUCH_FILE_OR_DIRECTORY = 550;
 
-    private FileInfo cachedInfo = null;
-
     // cache dir info, getting it can be an expensive operation, especially on old servers.
-    private int isDir = -1; // < 0 means don't know yet, 0 means no, 1 means yes.
+    private static HashMap isDirCache = new HashMap();
+
+    private FileInfo cachedInfo = null;
 
     /**
      * Constructs a LocalFileAdaptor instance which corresponds to the physical
@@ -199,7 +200,7 @@ public abstract class GlobusFileAdaptor extends FileCpi {
             String remoteDestFile = dest.getPath();
 
             srcClient.transfer(remoteSrcFile, destClient, remoteDestFile,
-                append, null);
+                    append, null);
         } catch (Exception e) {
             try {
                 // use a local tmp file.
@@ -208,8 +209,8 @@ public abstract class GlobusFileAdaptor extends FileCpi {
                 URI u = new URI("any:///" + tmp.getPath());
                 if (GATEngine.DEBUG) {
                     System.err
-                        .println("thirdparty copy failed, using temp file: "
-                            + u);
+                            .println("thirdparty copy failed, using temp file: "
+                                    + u);
                 }
                 tmpFile = GAT.createFile(gatContext, preferences, u);
 
@@ -223,8 +224,10 @@ public abstract class GlobusFileAdaptor extends FileCpi {
                 throw oops;
             }
         } finally {
-            if (srcClient != null) destroyClient(srcClient, src, p2);
-            if (destClient != null) destroyClient(destClient, dest, p2);
+            if (srcClient != null)
+                destroyClient(srcClient, src, p2);
+            if (destClient != null)
+                destroyClient(destClient, dest, p2);
             if (tmpFile != null) {
                 try {
                     tmpFile.delete();
@@ -247,7 +250,7 @@ public abstract class GlobusFileAdaptor extends FileCpi {
 
             if (GATEngine.DEBUG) {
                 System.err.println("copying from " + localPath + " to "
-                    + remotePath);
+                        + remotePath);
             }
 
             client = createClient(dest);
@@ -279,7 +282,7 @@ public abstract class GlobusFileAdaptor extends FileCpi {
 
             if (GATEngine.DEBUG) {
                 System.err.println("copying from " + remotePath + " to "
-                    + localPath);
+                        + localPath);
             }
 
             client = createClient(src);
@@ -290,7 +293,8 @@ public abstract class GlobusFileAdaptor extends FileCpi {
         } catch (Exception e) {
             throw new GATInvocationException("gridftp", e);
         } finally {
-            if (client != null) destroyClient(client, src, preferences);
+            if (client != null)
+                destroyClient(client, src, preferences);
         }
     }
 
@@ -303,10 +307,11 @@ public abstract class GlobusFileAdaptor extends FileCpi {
         } catch (Exception e) {
             throw new GATInvocationException("gridftp", e);
         } finally {
-            if (client != null) destroyClient(client, toURI(), preferences);
+            if (client != null)
+                destroyClient(client, toURI(), preferences);
         }
     }
-    
+
     public boolean delete() throws GATInvocationException {
         FTPClient client = null;
 
@@ -314,10 +319,10 @@ public abstract class GlobusFileAdaptor extends FileCpi {
             String remotePath = getPath();
             client = createClient(toURI());
 
-            if(!client.exists(remotePath)) {
+            if (!client.exists(remotePath)) {
                 return false;
             }
-            
+
             if (isDirectory()) {
                 client.deleteDir(remotePath);
             } else {
@@ -332,7 +337,8 @@ public abstract class GlobusFileAdaptor extends FileCpi {
         } catch (Exception e) {
             throw new GATInvocationException("gridftp", e);
         } finally {
-            if (client != null) destroyClient(client, toURI(), preferences);
+            if (client != null)
+                destroyClient(client, toURI(), preferences);
         }
 
         return true;
@@ -393,12 +399,15 @@ public abstract class GlobusFileAdaptor extends FileCpi {
     }
 
     public File[] listFiles() throws GATInvocationException {
+        if(GATEngine.VERBOSE) {
+            System.err.println("list files of: " + location);
+        }
         FTPClient client = null;
         String CWD = null;
-        
+
         try {
             if (!isDirectory()) {
-                if(GATEngine.DEBUG) {
+                if (GATEngine.DEBUG) {
                     System.err.println("listFiles: not a directory");
                 }
                 return null;
@@ -419,7 +428,7 @@ public abstract class GlobusFileAdaptor extends FileCpi {
             // we know it is a dir, so we can use this call.
             // for some reason, on old servers the list() method returns
             // an empty list if there are many files. 
-//            v = listNoMinusD(client, remotePath);
+            //            v = listNoMinusD(client, remotePath);
             v = client.list();
 
             Vector result = new Vector();
@@ -427,9 +436,11 @@ public abstract class GlobusFileAdaptor extends FileCpi {
             for (int i = 0; i < v.size(); i++) {
                 FileInfo info = ((FileInfo) v.get(i));
 
-                if(info.getName().equals(".")) continue;
-                if(info.getName().equals("..")) continue;
-                
+                if (info.getName().equals("."))
+                    continue;
+                if (info.getName().equals(".."))
+                    continue;
+
                 String uri = location.toString();
                 if (!uri.endsWith("/")) {
                     uri += "/";
@@ -444,7 +455,7 @@ public abstract class GlobusFileAdaptor extends FileCpi {
             }
 
             File[] res = new File[result.size()];
-            for(int i=0;i<result.size(); i++) {
+            for (int i = 0; i < result.size(); i++) {
                 res[i] = (File) result.get(i);
             }
             return res;
@@ -452,7 +463,7 @@ public abstract class GlobusFileAdaptor extends FileCpi {
             throw new GATInvocationException("gridftp", e);
         } finally {
             if (client != null) {
-                if(CWD != null) {
+                if (CWD != null) {
                     try {
                         client.changeDir(CWD);
                     } catch (Exception e) {
@@ -472,9 +483,9 @@ public abstract class GlobusFileAdaptor extends FileCpi {
         if (isOldServer(preferences)) {
             if (isDirectorySlow()) {
                 throw new GATInvocationException(
-                    "an old server cannot get info for a directory because it does not "
-                        + "support the \"list -d\" command\n"
-                        + "If you need this functionality, please upgrade your server.");
+                        "an old server cannot get info for a directory because it does not "
+                                + "support the \"list -d\" command\n"
+                                + "If you need this functionality, please upgrade your server.");
             }
         }
         FTPClient client = null;
@@ -484,7 +495,7 @@ public abstract class GlobusFileAdaptor extends FileCpi {
 
             if (GATEngine.DEBUG) {
                 System.err.println("getINFO: remotePath = " + remotePath
-                    + ", creating client to: " + toURI());
+                        + ", creating client to: " + toURI());
             }
 
             client = createClient(toURI());
@@ -505,30 +516,44 @@ public abstract class GlobusFileAdaptor extends FileCpi {
 
             if (v.size() == 0) {
                 throw new GATInvocationException("File not found");
+            } else if (v.size() != 1) {
+                // just use the info for "."
+                for (int i = 0; i < v.size(); i++) {
+                    FileInfo tmp = (FileInfo) v.get(i);
+                    if (tmp.getName().equals(".")) {
+                        tmp.setName(getName());
+                        cachedInfo = tmp;
+                        break;
+                    }
+                }
+
+                if (cachedInfo == null) {
+                    throw new GATInvocationException(
+                            "Internal error: size of list is not 1 and could not find \".\", remotePath = "
+                                    + remotePath + ", list is: " + v);
+                }
+
+//                System.err.println("USING CACHED INFO FOR .");
+            } else {
+                cachedInfo = (FileInfo) v.get(0);
             }
 
-            if (v.size() != 1) {
-                throw new GATInvocationException(
-                    "Internal error: size of list is not 1, remotePath = "
-                        + remotePath + ", list is: " + v);
-            }
-
-            cachedInfo = (FileInfo) v.get(0);
-
-            //			System.err.println("INFO: " + cachedInfo);
+//            System.err.println("INFO: " + cachedInfo);
             return cachedInfo;
         } catch (Exception e) {
             throw new GATInvocationException("gridftp", e);
         } finally {
-            if (client != null) destroyClient(client, toURI(), preferences);
+            if (client != null)
+                destroyClient(client, toURI(), preferences);
         }
     }
 
     private boolean isDirectorySlow() throws GATInvocationException {
         // return cached value if we know it.
-        if (isDir == 0) {
+        int isDirVal = isDir(location);
+        if (isDirVal == 0) {
             return false;
-        } else if (isDir == 1) {
+        } else if (isDirVal == 1) {
             return true;
         }
         // don't know yet... Try the slow method now
@@ -538,7 +563,7 @@ public abstract class GlobusFileAdaptor extends FileCpi {
 
         if (GATEngine.DEBUG) {
             System.err.println("getINFO: remotePath = " + remotePath
-                + ", creating client to: " + toURI());
+                    + ", creating client to: " + toURI());
         }
 
         FTPClient client = createClient(toURI());
@@ -552,7 +577,8 @@ public abstract class GlobusFileAdaptor extends FileCpi {
         try {
             cwd = client.getCurrentDir();
         } catch (Exception e) {
-            if (client != null) destroyClient(client, toURI(), preferences);
+            if (client != null)
+                destroyClient(client, toURI(), preferences);
             throw new GATInvocationException("gridftp", e);
         }
 
@@ -566,21 +592,29 @@ public abstract class GlobusFileAdaptor extends FileCpi {
         try {
             client.changeDir(cwd);
         } catch (Exception e) {
-            if (client != null) destroyClient(client, toURI(), preferences);
+            if (client != null)
+                destroyClient(client, toURI(), preferences);
             throw new GATInvocationException("gridftp", e);
         }
 
-        if (client != null) destroyClient(client, toURI(), preferences);
+        if (client != null)
+            destroyClient(client, toURI(), preferences);
 
-        if (dir) {
-            isDir = 1;
-        } else {
-            isDir = 0;
-        }
+        setIsDir(location, dir);
         return dir;
     }
 
     public boolean isDirectory() throws GATInvocationException {
+
+        // return cached value if we know it.
+        int isDirVal = isDir(location);
+        if (isDirVal == 0) {
+            return false;
+        } else if (isDirVal == 1) {
+            return true;
+        }
+        // don't know yet...
+
         // create a seperate file object to determine whether this file
         // is a directory. This is needed, because the source might be a local
         // file, and some adaptors might not work locally (like gridftp).
@@ -588,60 +622,49 @@ public abstract class GlobusFileAdaptor extends FileCpi {
         if (toURI().refersToLocalHost()) {
             try {
                 java.io.File f = new java.io.File(getPath());
-                return f.isDirectory();
+                boolean res = f.isDirectory();
+                setIsDir(location, res);
+                return res;
             } catch (Exception e) {
-                throw new GATInvocationException("fileCPI", e);
+                throw new GATInvocationException("globus", e);
             }
         } else {
-            try {
-                return realIsDirectory();
-            } catch (Exception e) {
-                // ignore
-            }
-
-            try {
-                File f = GAT.createFile(gatContext, preferences, toURI());
-                return f.isDirectory();
-            } catch (Exception e2) {
-                throw new GATInvocationException("fileCPI", e2);
-            }
+            return realIsDirectory();
         }
     }
-    
-    public boolean realIsDirectory() throws GATInvocationException {
-        // return cached value if we know it.
-        if (isDir == 0) {
-            return false;
-        } else if (isDir == 1) {
-            return true;
-        }
-        // don't know yet... Try the fast method now
 
+    private boolean realIsDirectory() throws GATInvocationException {
+        if (GATEngine.DEBUG) {
+            System.err.println("real isDir on " + toURI());
+        }
+
+        // First, try the "fast" method.
         try {
             FileInfo info = getInfo();
             if (info.isDirectory()) {
-                isDir = 1;
+                setIsDir(location, true);
                 return true;
             } else if (info.isDevice()) {
-                isDir = 0;
+                setIsDir(location, false);
                 return false;
             } else if (info.isFile()) {
-                isDir = 0;
+                setIsDir(location, false);
                 return false;
             }
 
-            // it can also be a link, so continue with slow method            
+            // it can also be a link, so continue with slow method
         } catch (GATInvocationException e) {
-            if(e.getMessage().equals("File not found")) {
-                if(GATEngine.DEBUG) {
-                    System.err.println("file not found in isDirectory");
+            if (e.getMessage().equals("File not found: " + location)) {
+                if (GATEngine.DEBUG) {
+                    System.err.println("file not found in isDirectory: "
+                            + location);
                 }
-                throw e;
+                return false;
             }
             if (GATEngine.DEBUG) {
                 System.err
-                    .println("fast isDirectory failed, falling back to slower version: "
-                        + e);
+                        .println("fast isDirectory failed, falling back to slower version: "
+                                + e);
             }
         }
 
@@ -664,7 +687,8 @@ public abstract class GlobusFileAdaptor extends FileCpi {
 
     public long length() throws GATInvocationException {
         try {
-            if (isDirectory()) return 0;
+            if (isDirectory())
+                return 0;
         } catch (Exception e) {
             // Hmm, that did not work.
             // let's assume it is a file, and continue.
@@ -690,7 +714,8 @@ public abstract class GlobusFileAdaptor extends FileCpi {
         } catch (Exception e) {
             throw new GATInvocationException("gridftp", e);
         } finally {
-            if (client != null) destroyClient(client, toURI(), preferences);
+            if (client != null)
+                destroyClient(client, toURI(), preferences);
         }
 
         return true;
@@ -718,7 +743,7 @@ public abstract class GlobusFileAdaptor extends FileCpi {
 
             if (GATEngine.DEBUG) {
                 System.err.println("getINFO: remotePath = " + remotePath
-                    + ", creating client to: " + toURI());
+                        + ", creating client to: " + toURI());
             }
 
             client = createClient(toURI());
@@ -731,7 +756,8 @@ public abstract class GlobusFileAdaptor extends FileCpi {
         } catch (Exception e) {
             throw new GATInvocationException("gridftp", e);
         } finally {
-            if (client != null) destroyClient(client, toURI(), preferences);
+            if (client != null)
+                destroyClient(client, toURI(), preferences);
         }
     }
 
@@ -751,7 +777,8 @@ public abstract class GlobusFileAdaptor extends FileCpi {
         } catch (Exception e) {
             throw new GATInvocationException("gridftp", e);
         } finally {
-            if (client != null) destroyClient(client, toURI(), preferences);
+            if (client != null)
+                destroyClient(client, toURI(), preferences);
         }
     }
 
@@ -806,7 +833,7 @@ public abstract class GlobusFileAdaptor extends FileCpi {
         if (isPassive(preferences)) {
             if (GATEngine.DEBUG) {
                 System.err
-                    .println("gridftp: using local active / remote PASSIVE");
+                        .println("gridftp: using local active / remote PASSIVE");
             }
 
             /** Assume the local host is behind a firewall */
@@ -819,7 +846,7 @@ public abstract class GlobusFileAdaptor extends FileCpi {
         } else {
             if (GATEngine.DEBUG) {
                 System.err
-                    .println("gridftp: using local passive / remote ACTIVE");
+                        .println("gridftp: using local passive / remote ACTIVE");
             }
 
             try {
@@ -855,10 +882,10 @@ public abstract class GlobusFileAdaptor extends FileCpi {
         // transfer done. Data is in received stream.
         // convert it to a vector.
 
-//         System.err.println("result of list " + filter + " is: "
-//         + received.toString());
+        //         System.err.println("result of list " + filter + " is: "
+        //         + received.toString());
 
-         BufferedReader reader =
+        BufferedReader reader =
                 new BufferedReader(new StringReader(received.toString()));
 
         Vector fileList = new Vector();
@@ -875,8 +902,8 @@ public abstract class GlobusFileAdaptor extends FileCpi {
                 fileList.addElement(fileInfo);
             } catch (org.globus.ftp.exception.FTPException e) {
                 System.err
-                    .println("globus file adaptor: WARNING, could not create FileInfo for: "
-                        + line);
+                        .println("globus file adaptor: WARNING, could not create FileInfo for: "
+                                + line);
             }
         }
 
@@ -900,7 +927,7 @@ public abstract class GlobusFileAdaptor extends FileCpi {
 
         if (GATEngine.DEBUG) {
             System.err.println("fixing old ftp server list reply: " + reply
-                + "#tokens = " + tokens.countTokens());
+                    + "#tokens = " + tokens.countTokens());
         }
 
         if (tokens.countTokens() < 10) {
@@ -909,7 +936,7 @@ public abstract class GlobusFileAdaptor extends FileCpi {
 
         if (GATEngine.DEBUG) {
             System.err
-                .println("COG workaround parsing old ftp server list reply.");
+                    .println("COG workaround parsing old ftp server list reply.");
         }
 
         String res = "";
@@ -936,5 +963,44 @@ public abstract class GlobusFileAdaptor extends FileCpi {
         }
 
         return res;
+    }
+
+    /**
+     * 
+     * @param location
+     * @return 1 if dir, 0 if not, -1 if unknown
+     */
+    private synchronized static int isDir(URI location) {
+        Integer val = (Integer) isDirCache.get(location);
+        if (val == null)
+            return -1;
+
+        if (GATEngine.DEBUG) {
+            System.err.println("cached isDir of " + location + " result = "
+                    + val);
+        }
+
+        if (val.intValue() == 1)
+            return 1;
+        if (val.intValue() == 0)
+            return 0;
+
+        throw new Error("Internal error, illegal value in isDir");
+    }
+
+    private synchronized static void setIsDir(URI location, boolean isDir) {
+        if (GATEngine.DEBUG) {
+            System.err.println("set cached dir of " + location + " to " + isDir);
+        }
+        if(isDirCache.size() > 5000) {
+            isDirCache.clear();
+        }
+        int val = -1;
+        if (isDir)
+            val = 1;
+        else
+            val = 0;
+
+        isDirCache.put(location, new Integer(val));
     }
 }

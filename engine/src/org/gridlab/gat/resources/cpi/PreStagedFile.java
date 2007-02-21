@@ -9,6 +9,7 @@ import org.gridlab.gat.Preferences;
 import org.gridlab.gat.URI;
 import org.gridlab.gat.engine.GATEngine;
 import org.gridlab.gat.io.File;
+import org.gridlab.gat.io.cpi.FileCpi;
 
 public class PreStagedFile extends StagedFile {
     boolean isExecutable;
@@ -16,16 +17,15 @@ public class PreStagedFile extends StagedFile {
     boolean isStdIn;
 
     URI exe;
-    
 
     public PreStagedFile(GATContext context, Preferences preferences, File src,
-        File dest, String host, String sandbox, boolean isStdIn,
-        URI exe) throws GATInvocationException {
+            File dest, String host, String sandbox, boolean isStdIn, URI exe)
+            throws GATInvocationException {
         super(context, preferences, src, dest, host, sandbox);
 
         this.isStdIn = isStdIn;
         this.exe = exe;
-        
+
         resolve();
     }
 
@@ -45,18 +45,24 @@ public class PreStagedFile extends StagedFile {
             resolvedDest = resolve(origSrc, true);
         }
 
-        if(inSandbox) {
-            if(exe.getPath().startsWith("/")) {
+        if (inSandbox) {
+            if (exe.getPath() == null) {
+                // can happen with java executables
+                isExecutable = false;
+                return;
+            }
+
+            if (exe.getPath().startsWith("/")) {
                 // file is relative, exe is absolute
                 isExecutable = false;
                 return;
             }
-        
-            if(relativeURI.getPath().equals(exe.getPath())) {
+
+            if (relativeURI.getPath().equals(exe.getPath())) {
                 isExecutable = true;
             }
         } else {
-            if(resolvedDest.getPath().equals(exe.getPath())) {
+            if (resolvedDest.getPath().equals(exe.getPath())) {
                 isExecutable = true;
             }
         }
@@ -66,33 +72,42 @@ public class PreStagedFile extends StagedFile {
         if (GATEngine.VERBOSE) {
             System.err.println("prestage:");
             System.err.println("  copy " + resolvedSrc.toGATURI() + " to "
-                + resolvedDest.toGATURI());
+                    + resolvedDest.toGATURI());
         }
 
         // create any directories if needed.
-        if(resolvedSrc.isDirectory()) {
+        if (resolvedSrc.isDirectory()) {
             // dest is also a dir, create it.
-            if(GATEngine.VERBOSE) {
+            if (GATEngine.VERBOSE) {
                 System.err.println("creating dir: " + resolvedDest);
             }
             resolvedDest.mkdirs();
         } else {
             // src is a file, dest is also a file.
             File dir = (File) resolvedDest.getParentFile();
-            if(dir != null) {
-                if(GATEngine.VERBOSE) {
+            if (dir != null) {
+                if (GATEngine.VERBOSE) {
                     System.err.println("creating dir: " + dir);
                 }
                 dir.mkdirs();
             }
         }
-            
+
         resolvedSrc.copy(resolvedDest.toGATURI());
     }
 
-    protected void delete(boolean onlySandbox) throws GATInvocationException {
-        if (!onlySandbox || (onlySandbox && inSandbox)) {
-
+    protected void delete() throws GATInvocationException {
+        if (inSandbox) {
+            return;
+        }
+        
+        if (resolvedDest.isDirectory()) {
+            if (GATEngine.VERBOSE) {
+                System.err.println("DELETE_DIR:" + resolvedDest);
+            }
+            FileCpi.recursiveDeleteDirectory(gatContext, preferences,
+                    resolvedDest);
+        } else {
             if (GATEngine.VERBOSE) {
                 System.err.println("DELETE_FILE:" + resolvedDest);
             }
@@ -100,17 +115,17 @@ public class PreStagedFile extends StagedFile {
         }
     }
 
-    protected void wipe(boolean onlySandbox) throws GATInvocationException {
-        if (!onlySandbox || (onlySandbox && inSandbox)) {
-            if (GATEngine.VERBOSE) {
-                System.err.println("WIPE_FILE:" + resolvedDest);
-            }
-            wipe(resolvedDest);
+    protected void wipe() throws GATInvocationException {
+        if (GATEngine.VERBOSE) {
+            System.err.println("WIPE_FILE:" + resolvedDest);
         }
+        wipe(resolvedDest);
     }
-    
+
     public String toString() {
-        return "PreStaged: " + resolvedSrc.toGATURI() + " -> " + resolvedDest.toGATURI()
-            + (isStdIn ? " (STDIN)" : "") + (isExecutable ? " (EXE)" : "") + (inSandbox ? " (IN SANDBOX)" : " (OUTSIDE SANDBOX)");
+        return "PreStaged: " + resolvedSrc.toGATURI() + " -> "
+                + resolvedDest.toGATURI() + (isStdIn ? " (STDIN)" : "")
+                + (isExecutable ? " (EXE)" : "")
+                + (inSandbox ? " (IN SANDBOX)" : " (OUTSIDE SANDBOX)");
     }
 }

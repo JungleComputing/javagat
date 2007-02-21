@@ -2,7 +2,6 @@ package org.gridlab.gat.resources.cpi.commandlineSshPrun;
 
 import java.io.IOException;
 import java.io.OutputStream;
-import java.rmi.RemoteException;
 import java.util.List;
 import java.util.Map;
 
@@ -285,7 +284,7 @@ public class CommandlineSshPrunResourceBrokerAdaptor extends ResourceBrokerCpi {
      *      org.gridlab.gat.util.TimePeriod)
      */
     public Reservation reserveResource(Resource resource, TimePeriod timePeriod)
-            throws RemoteException, IOException {
+             {
         throw new UnsupportedOperationException("Not implemented");
     }
 }

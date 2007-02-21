@@ -37,7 +37,8 @@ public class PostStagedFile extends StagedFile {
 
         String dir = System.getProperty("user.dir");
         if (dir == null) {
-            throw new GATInvocationException("cannot get current working directory");
+            throw new GATInvocationException(
+                    "cannot get current working directory");
         }
 
         if (origDest == null) {
@@ -45,8 +46,10 @@ public class PostStagedFile extends StagedFile {
             try {
                 URI resolvedDestURI =
                         new URI("any:///" + dir + "/" + origSrc.getName());
-                resolvedDest = GAT.createFile(gatContext, preferences,
-                                resolvedDestURI);
+                resolvedDest =
+                        GAT
+                                .createFile(gatContext, preferences,
+                                        resolvedDestURI);
             } catch (Exception e) {
                 throw new GATInvocationException("poststagedFile", e);
             }
@@ -57,14 +60,16 @@ public class PostStagedFile extends StagedFile {
                 // file with same name in CWD
                 try {
                     String destURIString = "any://";
-                    if(origDest.toGATURI().getHost() == null) {
+                    if (origDest.toGATURI().getHost() == null) {
                         destURIString += "/" + dir + "/";
                     } else {
                         destURIString += origDest.toGATURI().getHost() + "/";
                     }
-                    
+
                     destURIString += origDest.getPath();
-                    resolvedDest = GAT.createFile(gatContext, preferences, new URI(destURIString));
+                    resolvedDest =
+                            GAT.createFile(gatContext, preferences, new URI(
+                                    destURIString));
                 } catch (Exception e) {
                     throw new GATInvocationException("poststagedFile", e);
                 }
@@ -75,29 +80,28 @@ public class PostStagedFile extends StagedFile {
     protected void poststage() throws GATInvocationException {
         if (GATEngine.VERBOSE) {
             System.err.println("  copy " + resolvedSrc.toGATURI() + " to "
-                + resolvedDest.toGATURI());
+                    + resolvedDest.toGATURI());
         }
 
         resolvedSrc.copy(resolvedDest.toGATURI());
     }
 
-    protected void delete(boolean deleteFilesInSandbox)
-            throws GATInvocationException {
-        if (deleteFilesInSandbox || !inSandbox) {
-            if (GATEngine.VERBOSE) {
-                System.err.println("DELETE_FILE:" + resolvedSrc);
-            }
-            resolvedSrc.delete();
+    protected void delete() throws GATInvocationException {
+        if (inSandbox) {
+            return;
         }
+
+        if (GATEngine.VERBOSE) {
+            System.err.println("DELETE_FILE:" + resolvedSrc);
+        }
+        resolvedSrc.delete();
     }
 
-    protected void wipe(boolean onlySandbox) throws GATInvocationException {
-        if (!onlySandbox || (onlySandbox && inSandbox)) {
-            if (GATEngine.VERBOSE) {
-                System.err.println("WIPE_FILE:" + resolvedSrc);
-            }
-            wipe(resolvedSrc);
+    protected void wipe() throws GATInvocationException {
+        if (GATEngine.VERBOSE) {
+            System.err.println("WIPE_FILE:" + resolvedSrc);
         }
+        wipe(resolvedSrc);
     }
 
     public String toString() {
@@ -107,6 +111,7 @@ public class PostStagedFile extends StagedFile {
                 resolvedDest == null ? "" : resolvedDest.toGATURI().toString();
 
         return "PostStaged: " + srcURI + " -> " + destURI
-            + (isStdout ? " (STDOUT)" : "") + (isStderr ? " (STDERR)" : "") + (inSandbox ? " (IN SANDBOX)" : " (OUTSIDE SANDBOX)");
+                + (isStdout ? " (STDOUT)" : "") + (isStderr ? " (STDERR)" : "")
+                + (inSandbox ? " (IN SANDBOX)" : " (OUTSIDE SANDBOX)");
     }
 }

@@ -88,7 +88,12 @@ public class URI implements Serializable, Comparable {
 
     /* this is where the magic happens to fix SUNs bug.. */
     public String getPath() {
-        String path = URIEncoder.decodeUri(u.getPath());
+        String path = u.getPath();
+        if (path == null) {
+            return null;
+        }
+
+        path = URIEncoder.decodeUri(u.getPath());
 
         if ((u.getScheme() == null) && (u.getHost() == null)) {
             return path;
@@ -96,8 +101,10 @@ public class URI implements Serializable, Comparable {
 
         path = path.substring(1);
 
-        if (u.getHost() != null && (u.getHost().equals("localhost") || IPUtils.getLocalHostName().equals(u.getHost()))) {
-            if(!path.startsWith(File.separator)) {
+        if (u.getHost() != null
+                && (u.getHost().equals("localhost") || IPUtils
+                        .getLocalHostName().equals(u.getHost()))) {
+            if (!path.startsWith(File.separator)) {
                 // a relative path for a URI that has a hostname that is the local host 
                 // this means relative to the entry point for this machine, $HOME.
 
@@ -112,7 +119,7 @@ public class URI implements Serializable, Comparable {
                 path = home + path;
             }
         }
-        
+
         return path;
     }
 
@@ -128,34 +135,45 @@ public class URI implements Serializable, Comparable {
         return -1;
     }
 
-    public boolean equals(Object arg0) {
-        if(arg0 == null) {
+    public boolean equals(Object o) {
+        if (o == null) {
             return false;
         }
-        
-        if (!(arg0 instanceof URI)) {
-            return false;
+
+        if ((o instanceof URI)) {
+            return u.equals(((URI)o).u);
         }
         
+        if ((o instanceof java.net.URI)) {
+            return u.equals(o);
+        }
+        
+        return false;
+            
+            // I have no idea why this used to be here. It seems wrong. --Rob
+/*
         URI other = (URI) arg0;
 
-        if (other.getScheme().equals("any") || getScheme().equals("any")) {
-            String tmpURIString = getScheme() + "://";
-            tmpURIString += ((other.getUserInfo() == null) ? "" : other
-                .getUserInfo());
+        if ((other.getScheme() != null && other.getScheme().equals("any"))
+                || (getScheme() != null && getScheme().equals("any"))) {
+            String tmpURIString = "file://";
+            if (getScheme() != null) {
+                tmpURIString = getScheme() + "://";
+            }
+            tmpURIString +=
+                    ((other.getUserInfo() == null) ? "" : other.getUserInfo());
             tmpURIString += ((other.getHost() == null) ? "" : other.getHost());
-            tmpURIString += ((other.getPort() == -1) ? "" : (":" + other
-                .getPort()));
+            tmpURIString +=
+                    ((other.getPort() == -1) ? "" : (":" + other.getPort()));
             tmpURIString += ("/" + other.getPath());
 
-            //	        System.err.println("URI equals: created tmp URI: " + tmpURIString + ", orig was: " + other + ", compare with: " + u + ".");
+ 	        System.err.println("URI equals: created tmp URI: " + tmpURIString + ", orig was: " + other + ", compare with: " + u + ".");
             boolean res = u.toString().equals(tmpURIString);
 
             //	        System.err.println("result of URI equals = " + res);
             return res;
         }
-
-        return u.equals(arg0);
+*/
     }
 
     public String getAuthority() {
@@ -307,29 +325,37 @@ public class URI implements Serializable, Comparable {
         return u;
     }
 
-    /** Checks whether this URI is "compatible" with the given scheme
+    /** Checks whether this URI is "compatible" with the given scheme.
      * If this URI has the same scheme, it is compatible.
-     * When this URI has "any" as scheme, or no scheme at all, it is also
-     * compatible.
+     * When this URI has "any" as scheme, it is also
+     * compatible. If the scheme paramter is "any", this method always returns
+     * true.
+     *  No scheme is interpreted as a "file" scheme.
      *
      * @param scheme the scheme to compare to
      * @return true: the URIs are compatible
      */
     public boolean isCompatible(String scheme) {
-        if ((getScheme() == null) || getScheme().equals("any")) {
+        if(scheme.equals("any")) {
+            return true;
+        }
+        
+        if(getScheme() == null) {
+            return scheme.equals("file");
+        }
+            
+        if (getScheme().equals("any")) {
             return true;
         }
 
-        if (getScheme().equals(scheme)) {
-            return true;
-        }
-
-        return false;
+        return getScheme().equals(scheme);
     }
 
     public void debugPrint() {
-        System.err.println("URI: scheme = " + getScheme() + ", host = "
-            + getHost() + ", port = " + getPort() + ", path = " + getPath());
+        System.err
+                .println("URI: scheme = " + getScheme() + ", host = "
+                        + getHost() + ", port = " + getPort() + ", path = "
+                        + getPath());
         System.err.println("underlying: " + u);
     }
 }

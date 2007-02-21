@@ -1,9 +1,7 @@
 package org.gridlab.gat.resources.cpi.ssh;
 
-import java.io.IOException;
 import java.io.OutputStream;
 import java.net.URISyntaxException;
-import java.rmi.RemoteException;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -101,8 +99,8 @@ public class SshResourceBrokerAdaptor extends ResourceBrokerCpi {
      * 
      * @see org.gridlab.gat.resources.ResourceBroker#submitJob(org.gridlab.gat.resources.JobDescription)
      */
-    public Job submitJob(JobDescription description)
-        throws GATInvocationException, IOException {
+    public Job submitJob(JobDescription description) throws GATInvocationException {
+        try {
         SoftwareDescription sd = description.getSoftwareDescription();
         if (sd == null) {
             throw new GATInvocationException(
@@ -278,6 +276,9 @@ public class SshResourceBrokerAdaptor extends ResourceBrokerCpi {
 
         Job j = new SshJob(gatContext, preferences, this, description, session, channel, sandbox);
         return j;
+        } catch (Exception e) {
+            throw new GATInvocationException("ssh", e);
+        }
     }
 
     /*
@@ -287,7 +288,7 @@ public class SshResourceBrokerAdaptor extends ResourceBrokerCpi {
      *      org.gridlab.gat.util.TimePeriod)
      */
     public Reservation reserveResource(Resource resource, TimePeriod timePeriod)
-        throws RemoteException, IOException {
+        {
         throw new UnsupportedOperationException("Not implemented");
     }
 

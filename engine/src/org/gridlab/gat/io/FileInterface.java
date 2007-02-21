@@ -1,7 +1,6 @@
 package org.gridlab.gat.io;
 
 import java.io.IOException;
-import java.io.Serializable;
 import java.net.MalformedURLException;
 import java.net.URL;
 
@@ -20,8 +19,7 @@ import org.gridlab.gat.monitoring.Monitorable;
  *
  * @author rob
  */
-public interface FileInterface extends Monitorable, Serializable, Advertisable,
-        Comparable {
+public interface FileInterface extends Monitorable, Advertisable, Comparable {
     /**
      * This method returns the URI of this File
      *
@@ -55,6 +53,13 @@ public interface FileInterface extends Monitorable, Serializable, Advertisable,
      *             Upon non-remote IO problem
      */
     public void move(URI location) throws GATInvocationException;
+
+    /** This method deletes a directory and everything that is in it.
+     * This method can only be called on a directory, not on a file.
+     * @throws GATInvocationException
+     */
+    public void recursivelyDeleteDirectory()
+            throws GATInvocationException;
 
     /**
      * Tests this File for equality with the passed Object.

@@ -4,7 +4,6 @@ import ibis.util.IPUtils;
 
 import java.io.IOException;
 import java.io.OutputStream;
-import java.rmi.RemoteException;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -117,6 +116,7 @@ public class LocalResourceBrokerAdaptor extends ResourceBrokerCpi {
      */
     public Job submitJob(JobDescription description)
             throws GATInvocationException {
+        long start = System.currentTimeMillis();
         SoftwareDescription sd = description.getSoftwareDescription();
 
         if (sd == null) {
@@ -186,6 +186,7 @@ public class LocalResourceBrokerAdaptor extends ResourceBrokerCpi {
         }
 
         Process p = null;
+        long startRun = System.currentTimeMillis();
         try {
             p = Runtime.getRuntime().exec(command.toString(), environment, f);
         } catch (IOException e) {
@@ -241,7 +242,7 @@ public class LocalResourceBrokerAdaptor extends ResourceBrokerCpi {
             }
         }
 
-        return new LocalJob(gatContext, preferences, this, description, p, host, sandbox,  outForwarder, errForwarder);
+        return new LocalJob(gatContext, preferences, this, description, p, host, sandbox,  outForwarder, errForwarder, start, startRun);
     }
 
     /*
@@ -251,7 +252,7 @@ public class LocalResourceBrokerAdaptor extends ResourceBrokerCpi {
      *      org.gridlab.gat.util.TimePeriod)
      */
     public Reservation reserveResource(Resource resource, TimePeriod timePeriod)
-            throws RemoteException, IOException {
+             {
         throw new UnsupportedOperationException("Not implemented");
     }
 }

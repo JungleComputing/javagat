@@ -6,11 +6,12 @@ package org.gridlab.gat.io;
 import java.io.FileFilter;
 import java.io.FilenameFilter;
 import java.io.IOException;
-import java.io.Serializable;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.List;
 
+import org.gridlab.gat.GAT;
+import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.URI;
 import org.gridlab.gat.advert.Advertisable;
@@ -47,19 +48,15 @@ import org.gridlab.gat.monitoring.Monitorable;
  * correctly? The client simply has to call a single API call and the physical
  * file is moved.
  */
-public class File extends java.io.File implements Monitorable, Serializable,
+public class File extends java.io.File implements Monitorable,
         Advertisable {
     org.gridlab.gat.io.FileInterface f;
 
-    /** Do not use this constructur, it is for internal GAT use.
+    /** Do not use this constructor, it is for internal GAT use.
      */
     public File(org.gridlab.gat.io.FileInterface f) {
         super("dummy");
         this.f = f;
-        if(f == null) {
-            System.err.println("EEEK");
-            new Exception().printStackTrace();
-        }
     }
 
     /**
@@ -91,6 +88,15 @@ public class File extends java.io.File implements Monitorable, Serializable,
      */
     public void move(URI location) throws GATInvocationException {
         f.move(location);
+    }
+
+    /** This method deletes a directory and everything that is in it.
+     * This method can only be called on a directory, not on a file.
+     * @throws GATInvocationException
+     */
+    public void recursivelyDeleteDirectory()
+            throws GATInvocationException {
+        f.recursivelyDeleteDirectory();
     }
 
     /**
@@ -541,6 +547,37 @@ public class File extends java.io.File implements Monitorable, Serializable,
     public void removeMetricListener(MetricListener metricListener,
             Metric metric) throws GATInvocationException {
         f.removeMetricListener(metricListener, metric);
+    }
+    
+    /**
+     * Read a file object from a stream. We use a "default" context
+     * to create the resulting object.
+     * @param stream the stream to write to
+     * @throws IOException
+     * @throws ClassNotFoundException
+     */
+    private void readObject(java.io.ObjectInputStream stream)
+    throws IOException, ClassNotFoundException {
+        URI u = (URI) stream.readObject();
+        
+        GATContext c = new GATContext();
+        
+        try {
+            File newFile = GAT.createFile(c, u);
+            f = newFile.f;
+        } catch (Exception e) {
+            throw new Error("Could not create File object");
+        }
+    }
+    
+    /**
+     * Serialize this file, by just writing the URI.
+     * @param stream the stream to write to
+     * @throws IOException
+     */
+    private void writeObject(java.io.ObjectOutputStream stream)
+    throws IOException {
+        stream.writeObject(toGATURI());
     }
 }
 

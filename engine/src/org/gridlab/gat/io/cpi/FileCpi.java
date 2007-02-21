@@ -126,6 +126,15 @@ public abstract class FileCpi implements FileInterface {
         // this.location = destination;
     }
 
+    /** This method deletes a directory and everything that is in it.
+     * This method can only be called on a directory, not on a file.
+     * @throws GATInvocationException
+     */
+    public void recursivelyDeleteDirectory()
+            throws GATInvocationException {
+        recursiveDeleteDirectory(gatContext, preferences, location);
+    }
+
     public void copy(URI loc) throws GATInvocationException {
         throw new UnsupportedOperationException("Not implemented");
     }
@@ -590,41 +599,45 @@ public abstract class FileCpi implements FileInterface {
             throw new GATInvocationException("generic file cpi", e);
         }
 
-        File[] files = (File[]) dir.listFiles(new java.io.FileFilter() {
-            public boolean accept(java.io.File file) {
-                try {
-                    return file.isDirectory();
-                } catch (Exception e) {
-                    return false;
-                }
-            }
-        });
+        recursiveDeleteDirectory(gatContext, preferences, dir);
+    }
 
+    public static void recursiveDeleteDirectory(GATContext gatContext,
+            Preferences preferences, File dir) throws GATInvocationException {
+
+        if (GATEngine.VERBOSE) {
+            System.err.println("recursive delete dir: " + dir);
+        }
+
+        GATInvocationException exception = new GATInvocationException();
+        File[] files = (File[]) dir.listFiles();
         if (files != null) {
             for (int i = 0; i < files.length; i++) {
-                recursiveDeleteDirectory(gatContext, preferences, files[i]
-                        .toGATURI());
-                files[i].delete();
+                try {
+                    if (files[i].isDirectory()) {
+                        recursiveDeleteDirectory(gatContext, preferences,
+                                files[i].toGATURI());
+                    } else {
+                        if(GATEngine.VERBOSE) {
+                            System.err.println("delete: " + files[i]);
+                        }
+                        files[i].delete();
+                    }
+                } catch (GATInvocationException e) {
+                    exception.add("file cpi", e);
+                }
             }
         }
 
-        files = (File[]) dir.listFiles(new java.io.FileFilter() {
-            public boolean accept(java.io.File file) {
-                try {
-                    return !file.isDirectory();
-                } catch (Exception e) {
-                    return false;
-                }
-            }
-        });
-
-        if (files != null) {
-            for (int i = 0; i < files.length; i++) {
-                files[i].delete();
-            }
+        try {
+            dir.delete();
+        } catch (Exception e) {
+            exception.add("file cpi", e);
         }
 
-        dir.delete();
+        if (exception.getNrChildren() != 0) {
+            throw exception;
+        }
     }
 
     public String marshal() {
