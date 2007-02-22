@@ -381,13 +381,22 @@ public abstract class GlobusFileAdaptor extends FileCpi {
             // an empty list if there are many files. 
             v = listNoMinusD(client, remotePath);
 
-            String[] res = new String[v.size()];
+            Vector result = new Vector();
 
             for (int i = 0; i < v.size(); i++) {
                 FileInfo info = ((FileInfo) v.get(i));
-                res[i] = getName(info);
+                if (info.getName().equals("."))
+                    continue;
+                if (info.getName().equals(".."))
+                    continue;
+
+                result.add(getName(info));
             }
 
+            String[] res = new String[result.size()];
+            for (int i = 0; i < result.size(); i++) {
+                res[i] = (String) result.get(i);
+            }
             return res;
         } catch (Exception e) {
             throw new GATInvocationException("gridftp", e);

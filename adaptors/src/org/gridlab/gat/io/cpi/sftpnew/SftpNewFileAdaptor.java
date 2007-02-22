@@ -501,11 +501,16 @@ public class SftpNewFileAdaptor extends FileCpi {
         try {
             Vector ls = c.channel.ls(location.getPath());
 
-            String[] res = new String[ls.size()];
-            for (int i = 0; i < res.length; i++) {
-                res[i] = ((LsEntry) ls.get(i)).getFilename();
+            Vector result = new Vector();
+            for (int i = 0; i < ls.size(); i++) {
+                if(((LsEntry) ls.get(i)).getFilename().equals(".")) continue;
+                if(((LsEntry) ls.get(i)).getFilename().equals("..")) continue;
+                result.add(((LsEntry) ls.get(i)).getFilename());
             }
-
+            String[] res = new String[result.size()];
+            for(int i=0; i<result.size(); i++) {
+                res[i] = (String) result.get(i);
+            }
             return res;
         } catch (Exception e) {
             throw new GATInvocationException("sftp", e);

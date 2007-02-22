@@ -38,7 +38,7 @@ public class RemoteSandboxSubmitter {
 
     private java.io.File writeDescriptionToFile(JobDescription description)
             throws GATInvocationException {
-        if(GATEngine.VERBOSE) {
+        if (GATEngine.VERBOSE) {
             System.err.println("writing description: " + description);
         }
         java.io.File f = null;
@@ -69,10 +69,14 @@ public class RemoteSandboxSubmitter {
 
             SoftwareDescription sd = new SoftwareDescription();
             Map attributes = origSd.getAttributes();
+            Map environment = new HashMap();
+            Environment localEnv = new Environment();
+            String localGATLocation = localEnv.getVar("GAT_LOCATION");
 
-            String remoteVerbose =
+            String getRemoteOutput =
                     (String) attributes.get("getRemoteSandboxOutput");
-            if (remoteVerbose != null && remoteVerbose.equalsIgnoreCase("true")) {
+            if (getRemoteOutput != null
+                    && getRemoteOutput.equalsIgnoreCase("true")) {
                 int counter = getCounter();
                 File outFile =
                         GAT.createFile(origGatContext, newPreferences, new URI(
@@ -85,7 +89,7 @@ public class RemoteSandboxSubmitter {
             }
 
             sd.setLocation(new URI(
-                            "java:org.gridlab.gat.resources.cpi.remoteSandbox.RemoteSandbox"));
+                            "java:org.gridlab.gat.resources.cpi.RemoteSandbox"));
 
             Object javaHome = attributes.get("java.home");
             if (javaHome == null) {
@@ -94,45 +98,70 @@ public class RemoteSandboxSubmitter {
 
             sd.addAttribute("java.home", javaHome);
 
+            boolean remoteIsGatEnabled = false;
+            String remoteEngineLibLocation = "./lib/";
+
+            String remoteGatLocation =
+                    (String) attributes.get("remoteGatLocation");
+            if (remoteGatLocation != null) {
+                remoteEngineLibLocation = remoteGatLocation + "/engine/lib/";
+                remoteIsGatEnabled = true;
+            }
+
             // TODO replace with local "find" in engine lib dir
-            String remoteLibLocation = "./lib/";
             String classPath =
-                    "." + ":" + remoteLibLocation + "GAT.jar" + ":"
-                            + remoteLibLocation + "castor-0.9.6.jar" + ":"
-                            + remoteLibLocation + "commons-logging-1.1.jar"
-                            + ":" + remoteLibLocation + "log4j-1.2.13.jar"
-                            + ":" + remoteLibLocation + "xmlParserAPIs.jar"
-                            + ":" + remoteLibLocation + "castor-0.9.6-xml.jar"
-                            + ":" + remoteLibLocation + "colobus.jar" + ":"
-                            + remoteLibLocation + "ibis-util-1.4.jar" + ":"
-                            + remoteLibLocation + "xercesImpl.jar" + ":"
-                            + remoteLibLocation + "RemoteSandbox.jar";
+                    "." + ":" + remoteEngineLibLocation + "GAT.jar" + ":"
+                            + remoteEngineLibLocation + "castor-0.9.6.jar"
+                            + ":" + remoteEngineLibLocation
+                            + "commons-logging-1.1.jar" + ":"
+                            + remoteEngineLibLocation + "log4j-1.2.13.jar"
+                            + ":" + remoteEngineLibLocation
+                            + "xmlParserAPIs.jar" + ":"
+                            + remoteEngineLibLocation + "castor-0.9.6-xml.jar"
+                            + ":" + remoteEngineLibLocation + "colobus.jar"
+                            + ":" + remoteEngineLibLocation
+                            + "ibis-util-1.4.jar" + ":"
+                            + remoteEngineLibLocation + "xercesImpl.jar";
 
             sd.addAttribute("java.classpath", classPath);
-            Map environment = new HashMap();
-            environment.put("gat.adaptor.path", "lib");
+
+            if (remoteIsGatEnabled) {
+                environment.put("gat.adaptor.path", remoteGatLocation
+                        + "/adaptors/lib");
+            } else {
+                environment.put("gat.adaptor.path", "lib");
+            }
             sd.setEnvironment(environment);
 
-            Environment env = new Environment();
-            String localGATLocation = env.getVar("GAT_LOCATION");
-
-            sd.addPreStagedFile(GAT.createFile(origGatContext, newPreferences,
-                    new URI(localGATLocation + "/log4j.properties")));
-            sd.addPreStagedFile(GAT.createFile(origGatContext, newPreferences,
-                    new URI(localGATLocation + "/engine/lib")));
-            sd.addPreStagedFile(GAT.createFile(origGatContext, newPreferences,
-                    new URI(localGATLocation + "/adaptors/lib")));
+            if (!remoteIsGatEnabled) {
+                // prestage the gat itself
+                sd.addPreStagedFile(GAT.createFile(origGatContext,
+                        newPreferences, new URI(localGATLocation
+                                + "/log4j.properties")));
+                sd.addPreStagedFile(GAT.createFile(origGatContext,
+                        newPreferences, new URI(localGATLocation
+                                + "/engine/lib")));
+                sd.addPreStagedFile(GAT.createFile(origGatContext,
+                        newPreferences, new URI(localGATLocation
+                                + "/adaptors/lib")));
+            }
 
             java.io.File descriptorFile = writeDescriptionToFile(description);
             sd.addPreStagedFile(GAT.createFile(origGatContext, newPreferences,
                     new URI(descriptorFile.getAbsolutePath())));
 
-            sd.setArguments(new String[] { 
+            sd.setArguments(new String[] {
                     descriptorFile.getName(),
-                    IPUtils.getLocalHostName(), 
-                    "" + origSd.getBooleanAttribute("verboseRemoteSandbox", GATEngine.VERBOSE), 
-                    "" + origSd.getBooleanAttribute("debugRemoteSandbox", GATEngine.DEBUG),
-                    "" + origSd.getBooleanAttribute("timeRemoteSandbox", GATEngine.TIMING)});
+                    IPUtils.getLocalHostName(),
+                    ""
+                            + origSd.getBooleanAttribute(
+                                    "verboseRemoteSandbox", GATEngine.VERBOSE),
+                    ""
+                            + origSd.getBooleanAttribute("debugRemoteSandbox",
+                                    GATEngine.DEBUG),
+                    ""
+                            + origSd.getBooleanAttribute("timeRemoteSandbox",
+                                    GATEngine.TIMING) });
 
             JobDescription jd = new JobDescription(sd);
             ResourceBroker broker =

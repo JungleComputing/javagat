@@ -33,8 +33,10 @@ public abstract class JobCpi extends Job {
 
     protected int state = INITIAL;
 
-    static ArrayList jobList = new ArrayList();
+    protected static ArrayList jobList = new ArrayList();
 
+    protected static boolean shutdownInProgress = false;
+    
     static {
         Runtime.getRuntime().addShutdownHook(new JobShutdownHook());
     }
@@ -51,7 +53,12 @@ public abstract class JobCpi extends Job {
         
         String pref = (String) preferences.get("killJobsOnExit");
         if(pref == null || pref.equalsIgnoreCase("true")) {
-            jobList.add(this);
+            synchronized (JobCpi.class) {
+                if(shutdownInProgress) {
+                    throw new Error("jobCpi: cannot create new jobs when shutdown is in progress");
+                }
+                jobList.add(this);
+            }
         }
     }
 
@@ -78,7 +85,9 @@ public abstract class JobCpi extends Job {
     
     static class JobShutdownHook extends Thread {
         public void run() {
-
+            synchronized (JobCpi.class) {
+                shutdownInProgress = true;
+            }
             while (true) {
                 if (jobList.size() == 0) break;
                 Job j;
