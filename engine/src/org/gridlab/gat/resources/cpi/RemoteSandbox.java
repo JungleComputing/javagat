@@ -189,7 +189,7 @@ public class RemoteSandbox implements MetricListener {
         try {
             Job job = broker.submitJob(description);
 
-            if (sd.getBooleanAttribute("waitForPrestage", false)) {
+            if (sd.getBooleanAttribute("waitForPreStage", false)) {
                 if (verbose) {
                     System.err.println("writing prestageDoneFile at "
                             + preStageDoneLocation);
