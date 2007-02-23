@@ -206,6 +206,10 @@ public class RemoteSandbox implements MetricListener {
                     System.err.println("writing prestageDoneFile at "
                             + preStageDoneLocation + " DONE");
                 }
+            } else {
+                if (verbose) {
+                    System.err.println("not waiting for preStage");
+                }                
             }
 
             MetricDefinition md = job.getMetricDefinitionByName("job.status");

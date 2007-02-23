@@ -174,12 +174,16 @@ public class RemoteSandboxSubmitter {
             descriptorFile.delete();
             
             if(origSd.getBooleanAttribute("waitForPreStage", false)) {
+                if(GATEngine.VERBOSE) {
+                    System.err.println("waiting for prestage to complete");
+                }
                 java.io.File f = new java.io.File("/tmp/.JavaGATPrestageDone." + counter);
                 while(true) {
+                    int state = j.getState();
                     try {
-                        if(j.getState() == Job.POST_STAGING 
-                                || j.getState() == Job.STOPPED 
-                                || j.getState() == Job.SUBMISSION_ERROR 
+                        if(state == Job.POST_STAGING 
+                                || state == Job.STOPPED 
+                                || state == Job.SUBMISSION_ERROR 
                                 || f.exists()) {
                             try {
                                 f.delete();
@@ -188,6 +192,9 @@ public class RemoteSandboxSubmitter {
                                     System.err.println("warning delete failed: " + e);
                                 }
                                 // ignore
+                            }
+                            if(GATEngine.VERBOSE) {
+                                System.err.println("prestage completed, job state = " + state);
                             }
                             return j;
                         }
