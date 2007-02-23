@@ -22,9 +22,11 @@ import org.gridlab.gat.resources.SoftwareDescription;
 
 public class RemoteSandbox implements MetricListener {
     boolean verbose = false;
+
     boolean debug = false;
+
     boolean timing = false;
-    
+
     public static void main(String[] args) {
         new RemoteSandbox().start(args);
     }
@@ -51,9 +53,9 @@ public class RemoteSandbox implements MetricListener {
             try {
                 URI newURI = new URI(newLocation);
 
-                if(verbose) {
-                System.err.println("rewrite of " + origSrc.getName() + " to "
-                        + newURI);
+                if (verbose) {
+                    System.err.println("rewrite of " + origSrc.getName()
+                            + " to " + newURI);
                 }
                 origDest = GAT.createFile(gatContext, preferences, newURI);
             } catch (Exception e) {
@@ -71,9 +73,9 @@ public class RemoteSandbox implements MetricListener {
         try {
             URI newURI = new URI(newLocation);
 
-            if(verbose) {
-            System.err.println("rewrite of " + origDest.toGATURI() + " to "
-                    + newURI);
+            if (verbose) {
+                System.err.println("rewrite of " + origDest.toGATURI() + " to "
+                        + newURI);
             }
             res = GAT.createFile(gatContext, preferences, newURI);
         } catch (Exception e) {
@@ -88,28 +90,30 @@ public class RemoteSandbox implements MetricListener {
     public void start(String[] args) {
         final String descriptorFile = args[0];
         final String initiator = args[1];
-        verbose = args[2].equalsIgnoreCase("true");  
-        debug = args[3].equalsIgnoreCase("true");  
-        timing = args[4].equalsIgnoreCase("true");  
+        verbose = args[2].equalsIgnoreCase("true");
+        debug = args[3].equalsIgnoreCase("true");
+        timing = args[4].equalsIgnoreCase("true");
 
-        if(verbose) {
+        if (verbose) {
             System.setProperty("gat.verbose", "true");
         }
-        if(debug) {
-            System.setProperty("gat.debug", "true");           
+        if (debug) {
+            System.setProperty("gat.debug", "true");
         }
-        if(timing) {
+        if (timing) {
             System.setProperty("gat.timing", "true");
         }
-        
-        if(verbose) {
-            System.err.println("RemoteSandbox started, initiator: " + initiator);
+
+        if (verbose) {
+            System.err
+                    .println("RemoteSandbox started, initiator: " + initiator);
         }
 
         JobDescription description = null;
         try {
-            if(verbose) {
-                System.err.println("opening descriptor file: " + descriptorFile);
+            if (verbose) {
+                System.err
+                        .println("opening descriptor file: " + descriptorFile);
             }
             FileInputStream tmp = new FileInputStream(descriptorFile);
             ObjectInputStream in = new ObjectInputStream(tmp);
@@ -124,14 +128,14 @@ public class RemoteSandbox implements MetricListener {
         SoftwareDescription sd = description.getSoftwareDescription();
         sd.addAttribute("useLocalDisk", "false");
 
-        if(verbose) {
+        if (verbose) {
             System.err.println("read job description: " + description);
         }
 
         GATContext gatContext = new GATContext();
         Preferences prefs = new Preferences();
         prefs.put("ResourceBroker.adaptor.name", "local");
-        
+
         // rewrite poststage files to go directly to their original destination
         // also stdout and stderr
         sd.setStderr(rewritePostStagedFile(gatContext, prefs, null, sd
@@ -139,36 +143,37 @@ public class RemoteSandbox implements MetricListener {
         sd.setStdout(rewritePostStagedFile(gatContext, prefs, null, sd
                 .getStdout(), args[1]));
 
-        sd.setStdin(rewritePostStagedFile(gatContext, prefs, sd
-                .getStdin(), null, args[1]));
-        
+        sd.setStdin(rewritePostStagedFile(gatContext, prefs, sd.getStdin(),
+                null, args[1]));
+
         Map pre = sd.getPreStaged();
         Set tmp = pre.keySet();
         Object[] keys = tmp.toArray();
         File[] srcs = new File[keys.length];
         File[] dests = new File[keys.length];
-        for(int i=0; i<keys.length; i++) {
+        for (int i = 0; i < keys.length; i++) {
             File src = (File) keys[i];
             File dest = (File) pre.get(src);
-            srcs[i] = rewritePostStagedFile(gatContext, prefs, dest, src, args[1]);
+            srcs[i] =
+                    rewritePostStagedFile(gatContext, prefs, dest, src, args[1]);
             dests[i] = dest;
         }
         pre.clear();
-        for(int i=0; i<keys.length; i++) {
+        for (int i = 0; i < keys.length; i++) {
             pre.put(srcs[i], dests[i]);
         }
-        
+
         Map post = sd.getPostStaged();
         tmp = post.keySet();
         keys = tmp.toArray();
-        for(int i=0; i<keys.length; i++) {
+        for (int i = 0; i < keys.length; i++) {
             File src = (File) keys[i];
             File dest = (File) post.get(src);
             dest = rewritePostStagedFile(gatContext, prefs, src, dest, args[1]);
             post.put(src, dest);
         }
 
-        if(verbose) {
+        if (verbose) {
             System.err.println("modified job description: " + description);
         }
 
@@ -183,18 +188,26 @@ public class RemoteSandbox implements MetricListener {
         try {
             Job job = broker.submitJob(description);
 
-            if(sd.getBooleanAttribute("waitForPrestage", false)) {
-                File preStageDoneFile = (File) sd.getObjectAttribute("preStagedDoneFile");
-                    try {
-                        if(!preStageDoneFile.createNewFile()) {
-                            System.err.println("could not create preStageDone file");
-                            System.exit(1);                    
-                        }
-                    } catch (Exception e) {
-                        System.err.println("could not create preStageDone file: " + e);
-                        System.exit(1);                    
-                    }
-            }            
+            if (sd.getBooleanAttribute("waitForPrestage", false)) {
+                String preStageDoneLocation =
+                        sd.getStringAttribute("preStagedDoneFile", null);
+                if (verbose) {
+                    System.err.println("writing prestageDoneFile at "
+                            + preStageDoneLocation);
+                }
+
+                File preStageDoneFile =
+                        GAT.createFile(gatContext, prefs, preStageDoneLocation);
+
+                if (!preStageDoneFile.createNewFile()) {
+                    System.err.println("could not create preStageDone file");
+                    System.exit(1);
+                }
+                if (verbose) {
+                    System.err.println("writing prestageDoneFile at "
+                            + preStageDoneLocation + " DONE");
+                }
+            }
 
             MetricDefinition md = job.getMetricDefinitionByName("job.status");
             Metric m = md.createMetric(null);
@@ -207,9 +220,9 @@ public class RemoteSandbox implements MetricListener {
                 }
             }
 
-            if(verbose) {
-            System.err.println("SubmitJobCallback: Job finished, state = "
-                    + job.getInfo());
+            if (verbose) {
+                System.err.println("SubmitJobCallback: Job finished, state = "
+                        + job.getInfo());
             }
         } catch (Exception e) {
             System.err.println("an exception occurred: " + e);

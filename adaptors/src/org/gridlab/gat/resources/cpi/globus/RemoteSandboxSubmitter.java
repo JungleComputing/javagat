@@ -86,11 +86,9 @@ public class RemoteSandboxSubmitter {
                 sd.setStderr(errFile);
             }
 
-            File preStageDoneFile = null;
             if(origSd.getBooleanAttribute("waitForPrestage", false)) {
-                preStageDoneFile = GAT.createFile(origGatContext, "any://" + IPUtils.getLocalHostName() +
+                sd.addAttribute("preStagedDoneFile", "any://" + IPUtils.getLocalHostName() +
                         "//tmp/.JavaGATPrestageDone." + counter);
-                sd.addAttribute("preStagedDoneFile", preStageDoneFile);
             }
 
             sd.setLocation(new URI(
@@ -177,11 +175,15 @@ public class RemoteSandboxSubmitter {
             descriptorFile.delete();
             
             if(origSd.getBooleanAttribute("waitForPrestage", false)) {
+                java.io.File f = new java.io.File("/tmp/.JavaGATPrestageDone." + counter);
                 while(true) {
                     try {
-                        if(preStageDoneFile.exists()) {
+                        if(j.getState() == Job.POST_STAGING 
+                                || j.getState() == Job.STOPPED 
+                                || j.getState() == Job.SUBMISSION_ERROR 
+                                || f.exists()) {
                             try {
-                                preStageDoneFile.delete();
+                                f.delete();
                             } catch (Exception e) {
                                 if(GATEngine.DEBUG) {
                                     System.err.println("warning delete failed: " + e);
