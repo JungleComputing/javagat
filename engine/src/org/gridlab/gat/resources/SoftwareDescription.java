@@ -465,8 +465,7 @@ public class SoftwareDescription implements java.io.Serializable {
 
     /** returns the associated object, or null if it is not set **/
     public Object getObjectAttribute(String name) {
-        String val = (String) attributes.get(name);
-        return val;
+        return attributes.get(name);
     }
 
     public boolean getBooleanAttribute(String name, boolean defaultVal) {
