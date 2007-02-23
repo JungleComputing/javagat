@@ -182,6 +182,20 @@ public class RemoteSandbox implements MetricListener {
 
         try {
             Job job = broker.submitJob(description);
+
+            if(sd.getBooleanAttribute("waitForPrestage", false)) {
+                File preStageDoneFile = (File) sd.getObjectAttribute("preStagedDoneFile");
+                    try {
+                        if(!preStageDoneFile.createNewFile()) {
+                            System.err.println("could not create preStageDone file");
+                            System.exit(1);                    
+                        }
+                    } catch (Exception e) {
+                        System.err.println("could not create preStageDone file: " + e);
+                        System.exit(1);                    
+                    }
+            }            
+
             MetricDefinition md = job.getMetricDefinitionByName("job.status");
             Metric m = md.createMetric(null);
             job.addMetricListener(this, m);

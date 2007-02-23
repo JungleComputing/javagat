@@ -1,5 +1,6 @@
 package org.gridlab.gat.io.cpi;
 
+import java.io.OutputStream;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -180,7 +181,13 @@ public abstract class FileCpi implements FileInterface {
     }
 
     public boolean createNewFile() throws GATInvocationException {
-        throw new UnsupportedOperationException("Not implemented");
+        try {
+            OutputStream o = GAT.createFileOutputStream(gatContext, location);
+            o.close();
+            return true;
+        } catch (Exception e) {
+            throw new GATInvocationException("file cpi", e);
+        }
     }
 
     public boolean delete() throws GATInvocationException {
