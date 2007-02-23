@@ -111,7 +111,7 @@ public class RemoteSandboxSubmitter {
             // TODO replace with local "find" in engine lib dir
             String classPath =
                     "." + ":" 
-                            + remoteEngineLibLocation + "../log4j.properties:"
+                            + remoteEngineLibLocation + "../../log4j.properties:"
                             + remoteEngineLibLocation + "GAT.jar" + ":"
                             + remoteEngineLibLocation + "castor-0.9.6.jar"
                             + ":" + remoteEngineLibLocation
