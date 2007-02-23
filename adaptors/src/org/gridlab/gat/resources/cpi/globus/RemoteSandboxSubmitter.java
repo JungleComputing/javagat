@@ -86,13 +86,9 @@ public class RemoteSandboxSubmitter {
                 sd.setStderr(errFile);
             }
 
-            if(origSd.getBooleanAttribute("waitForPreStage", false)) {
-                System.err.println("WAIT FOR PRESTAGE");
-                sd.addAttribute("preStagedDoneFile", "any://" + IPUtils.getLocalHostName() +
-                        "//tmp/.JavaGATPrestageDone." + counter);
-                System.err.println("WAIT FOR PRESTAGE, SD is: " + sd);
-            }
-
+            String preStageDoneFileLocation = "any://" + IPUtils.getLocalHostName() +
+            "//tmp/.JavaGATPrestageDone." + counter;
+            
             sd.setLocation(new URI(
                             "java:org.gridlab.gat.resources.cpi.RemoteSandbox"));
 
@@ -157,6 +153,7 @@ public class RemoteSandboxSubmitter {
             sd.setArguments(new String[] {
                     descriptorFile.getName(),
                     IPUtils.getLocalHostName(),
+                    preStageDoneFileLocation,
                     ""
                             + origSd.getBooleanAttribute(
                                     "verboseRemoteSandbox", GATEngine.VERBOSE),

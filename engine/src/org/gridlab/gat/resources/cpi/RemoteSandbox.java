@@ -90,9 +90,10 @@ public class RemoteSandbox implements MetricListener {
     public void start(String[] args) {
         final String descriptorFile = args[0];
         final String initiator = args[1];
-        verbose = args[2].equalsIgnoreCase("true");
-        debug = args[3].equalsIgnoreCase("true");
-        timing = args[4].equalsIgnoreCase("true");
+        final String preStageDoneLocation = args[2];
+        verbose = args[3].equalsIgnoreCase("true");
+        debug = args[4].equalsIgnoreCase("true");
+        timing = args[5].equalsIgnoreCase("true");
 
         if (verbose) {
             System.setProperty("gat.verbose", "true");
@@ -189,8 +190,6 @@ public class RemoteSandbox implements MetricListener {
             Job job = broker.submitJob(description);
 
             if (sd.getBooleanAttribute("waitForPrestage", false)) {
-                String preStageDoneLocation =
-                        sd.getStringAttribute("preStagedDoneFile", null);
                 if (verbose) {
                     System.err.println("writing prestageDoneFile at "
                             + preStageDoneLocation);
