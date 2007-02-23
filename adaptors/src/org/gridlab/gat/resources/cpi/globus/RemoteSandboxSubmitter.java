@@ -97,7 +97,7 @@ public class RemoteSandboxSubmitter {
                             "java:org.gridlab.gat.resources.cpi.RemoteSandbox"));
 
             
-            String javaHome = origSd.getStringAttribute("java.home", null);
+            Object javaHome = origSd.getObjectAttribute("java.home");
             if (javaHome == null) {
                 throw new GATInvocationException("java.home not set");
             }
