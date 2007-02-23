@@ -86,9 +86,11 @@ public class RemoteSandboxSubmitter {
                 sd.setStderr(errFile);
             }
 
-            if(origSd.getBooleanAttribute("waitForPrestage", false)) {
+            if(origSd.getBooleanAttribute("waitForPreStage", false)) {
+                System.err.println("WAIT FOR PRESTAGE");
                 sd.addAttribute("preStagedDoneFile", "any://" + IPUtils.getLocalHostName() +
                         "//tmp/.JavaGATPrestageDone." + counter);
+                System.err.println("WAIT FOR PRESTAGE, SD is: " + sd);
             }
 
             sd.setLocation(new URI(
@@ -174,7 +176,7 @@ public class RemoteSandboxSubmitter {
             // we can now safely delete the descriptor file, it has been prestaged.
             descriptorFile.delete();
             
-            if(origSd.getBooleanAttribute("waitForPrestage", false)) {
+            if(origSd.getBooleanAttribute("waitForPreStage", false)) {
                 java.io.File f = new java.io.File("/tmp/.JavaGATPrestageDone." + counter);
                 while(true) {
                     try {
