@@ -23,6 +23,12 @@ import jcifs.smb.SmbFileInputStream;
 import jcifs.smb.SmbFileOutputStream;
 import jcifs.smb.NtlmPasswordAuthentication;
 
+/**
+ * File adaptor for Samba filesystem.
+ * @author      Balazs
+ * @version     %I%, %G%
+ * @since       1.0
+ */
 public class SmbFileAdaptor extends FileCpi {
     SmbFile smbf;
     public SmbFileAdaptor(GATContext gatContext, 
@@ -201,14 +207,20 @@ public class SmbFileAdaptor extends FileCpi {
     }
     
     public void copy(URI dest) throws GATInvocationException {
-	/*if (dest.refersToLocalHost() && (toURI().refersToLocalHost())) {
-            throw new GATInvocationException("smb cannot copy local files");
-	    }*/
+	if( dest.getScheme()!=null &&
+	    dest.getScheme().compareToIgnoreCase("smb") == 0 ) {
+	    if(GATEngine.DEBUG) {
+		System.err.println("smb file: copy remote to remote with smbfile");
+	    }
+	    copySmbRemote(dest);
+	    return;
+	}
+
 	if(determineIsDirectory()) {
 	    copyDirectory(gatContext, preferences, toURI(), dest);
             return;
         }
-	
+
 	if (dest.refersToLocalHost()) {
 	    if(GATEngine.DEBUG) {
 		System.err.println("smb file: copy remote to local");
@@ -223,16 +235,7 @@ public class SmbFileAdaptor extends FileCpi {
             }
             copyToRemote(toURI(), dest);
             return;
-        }
-	
-	if( dest.isCompatible("smb") ) {
-	    if(GATEngine.DEBUG) {
-		System.err.println("smb file: copy remote to remote with smbfile");
-	    }
-	    copySmbRemote(dest);
-	    return;
-	}
-	else {
+        } else {
 	    throw new GATInvocationException("smb cannot copy file");
 	}
     }
@@ -242,6 +245,7 @@ public class SmbFileAdaptor extends FileCpi {
 	    SmbFile smbdest =  new SmbFile( dest.toString() );
 	    smbf.copyTo(smbdest);
 	} catch( Exception e ) {
+	    System.err.println("smb file: copySmbRemote failed");
 	    throw new GATInvocationException();
 	} 
     }
@@ -282,15 +286,4 @@ public class SmbFileAdaptor extends FileCpi {
 	    throw new GATInvocationException();
 	}   
     }
-
-    /*protected void copyThirdParty(URI src, URI dest)
-	throws GATInvocationException {
-	java.io.File tmp = null;
-	try {
-	    tmp = java.io.File.CreateTempFile("GAT_SMB_",".tmp");
-	    URI tmpURI = new URI(tmp.getCanonicalPath() );
-	    copyToLocal(src, tmpURI);
-	    
-    }
-    */
 }

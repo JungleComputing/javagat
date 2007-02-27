@@ -19,14 +19,11 @@ public class SmbFileCopy {
 		loc1 = URI.create(argv[0]);
 		loc2 = URI.create(argv[1]);
 	    } else {
-		System.out.println("Usage: location1 [username1 password1]"+
-				   "location2 [username2 password2]");
+		System.out.println("Usage: location1 location2");
 		return;
 	    }
-	 
 	} catch( Exception e ) {
-	    System.out.println("Usage: location1 [username1 password1]"+
-			       "location2 [username2 password2]");
+	    System.out.println("Usage: location1 location2");
 	    System.err.println("Parameters: "+e);
 	    throw e;
 	}
