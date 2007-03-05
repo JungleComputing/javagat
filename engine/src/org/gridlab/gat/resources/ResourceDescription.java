@@ -216,7 +216,7 @@ public abstract class ResourceDescription implements java.io.Serializable {
     public String toString() {
         String res = "ResourceDescription(";
 
-        res += ", attributes: " + (attributes == null ? "null" : attributes.toString());
+        res += "attributes: " + (attributes == null ? "null" : attributes.toString());
         res += ", resourceDescriptions: " + (resourceDescriptions == null ? "null" : resourceDescriptions.toString());
 
         res += ")";
