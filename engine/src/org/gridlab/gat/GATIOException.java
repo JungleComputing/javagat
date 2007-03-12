@@ -1,11 +1,10 @@
 /*
  * Created on May 14, 2004
  */
-package org.gridlab.gat.engine;
+package org.gridlab.gat;
 
 import java.io.IOException;
 
-import org.gridlab.gat.GATInvocationException;
 
 /**
  * @author rob
