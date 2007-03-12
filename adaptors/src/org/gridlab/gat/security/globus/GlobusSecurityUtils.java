@@ -17,12 +17,12 @@ import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.Preferences;
 import org.gridlab.gat.URI;
 import org.gridlab.gat.engine.GATEngine;
+import org.gridlab.gat.engine.util.Environment;
 import org.gridlab.gat.security.CertificateSecurityContext;
 import org.gridlab.gat.security.MyProxyServerCredentialSecurityContext;
 import org.gridlab.gat.security.SecurityContext;
 import org.gridlab.gat.security.cpi.SecurityContextCreator;
 import org.gridlab.gat.security.cpi.SecurityContextUtils;
-import org.gridlab.gat.util.Environment;
 import org.ietf.jgss.GSSCredential;
 import org.ietf.jgss.GSSException;
 

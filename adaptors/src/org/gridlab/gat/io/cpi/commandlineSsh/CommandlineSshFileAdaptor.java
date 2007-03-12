@@ -11,12 +11,12 @@ import org.gridlab.gat.GATObjectCreationException;
 import org.gridlab.gat.Preferences;
 import org.gridlab.gat.URI;
 import org.gridlab.gat.engine.GATEngine;
+import org.gridlab.gat.engine.util.OutputForwarder;
 import org.gridlab.gat.io.File;
 import org.gridlab.gat.io.cpi.FileCpi;
 import org.gridlab.gat.io.cpi.ssh.SSHSecurityUtils;
 import org.gridlab.gat.io.cpi.ssh.SshFileAdaptor;
 import org.gridlab.gat.io.cpi.ssh.SshUserInfo;
-import org.gridlab.gat.util.OutputForwarder;
 
 public class CommandlineSshFileAdaptor extends FileCpi {
 	public static final int SSH_PORT = 22;

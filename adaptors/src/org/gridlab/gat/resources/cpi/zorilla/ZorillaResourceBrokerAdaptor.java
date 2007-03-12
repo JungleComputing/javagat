@@ -152,7 +152,7 @@ public class ZorillaResourceBrokerAdaptor extends ResourceBrokerCpi {
      * (non-Javadoc)
      * 
      * @see org.gridlab.gat.resources.ResourceBroker#reserveResource(org.gridlab.gat.resources.Resource,
-     *      org.gridlab.gat.util.TimePeriod)
+     *      org.gridlab.gat.engine.util.TimePeriod)
      */
     public Reservation reserveResource(Resource resource, TimePeriod timePeriod) {
         throw new UnsupportedOperationException("Not implemented");

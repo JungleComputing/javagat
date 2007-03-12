@@ -18,6 +18,8 @@ import org.gridlab.gat.Preferences;
 import org.gridlab.gat.TimePeriod;
 import org.gridlab.gat.URI;
 import org.gridlab.gat.engine.GATEngine;
+import org.gridlab.gat.engine.util.InputForwarder;
+import org.gridlab.gat.engine.util.OutputForwarder;
 import org.gridlab.gat.resources.Job;
 import org.gridlab.gat.resources.JobDescription;
 import org.gridlab.gat.resources.Reservation;
@@ -26,8 +28,6 @@ import org.gridlab.gat.resources.ResourceDescription;
 import org.gridlab.gat.resources.SoftwareDescription;
 import org.gridlab.gat.resources.cpi.ResourceBrokerCpi;
 import org.gridlab.gat.resources.cpi.Sandbox;
-import org.gridlab.gat.util.InputForwarder;
-import org.gridlab.gat.util.OutputForwarder;
 
 /**
  * An instance of this class is used to reserve resources.
@@ -249,7 +249,7 @@ public class LocalResourceBrokerAdaptor extends ResourceBrokerCpi {
      * (non-Javadoc)
      *
      * @see org.gridlab.gat.resources.ResourceBroker#reserveResource(org.gridlab.gat.resources.Resource,
-     *      org.gridlab.gat.util.TimePeriod)
+     *      org.gridlab.gat.engine.util.TimePeriod)
      */
     public Reservation reserveResource(Resource resource, TimePeriod timePeriod)
              {
