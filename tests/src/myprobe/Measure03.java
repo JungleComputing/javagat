@@ -1,3 +1,6 @@
+/**
+ * Copy local file to samba location (using username, password)
+ */
 package myprobe;
 
 import jcifs.smb.SmbFileInputStream;

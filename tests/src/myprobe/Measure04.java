@@ -1,3 +1,7 @@
+/**
+ * Copy samba file (optionally using username, password) to the
+ * local machine (localfile_loc).
+ */
 package myprobe;
 
 import jcifs.smb.SmbFileOutputStream;
@@ -24,11 +28,11 @@ class Measure04 {
 		String username = argv[1];
 		String password = argv[2];
 		loc2 = argv[3];
-		String host = URI.create(loc2).getHost();
+		String host = URI.create(loc1).getHost();
 		NtlmPasswordAuthentication auth =  
 		    new NtlmPasswordAuthentication( host, username, password );
-		SmbFile smbf = new SmbFile(loc2, auth);
-		fis = new FileInputStream(loc1);
+		SmbFile smbf = new SmbFile(loc1, auth);
+		fis = new FileInputStream(loc2);
 		fos = new SmbFileOutputStream(smbf);
 	    } else {
 		System.out.println(usage);

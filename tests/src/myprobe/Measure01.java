@@ -1,3 +1,8 @@
+/**
+ * Copy GAT file from location1 (using username, password) to 
+ * location2 that is found on local machine.
+ */
+
 package myprobe;
 
 import org.gridlab.gat.GAT;
