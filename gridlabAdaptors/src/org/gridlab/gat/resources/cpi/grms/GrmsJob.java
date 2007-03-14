@@ -5,36 +5,34 @@ import grms_pkg.GrmsResponse;
 import grms_pkg.JobHistory;
 import grms_pkg.JobInformation;
 import grms_pkg.JobStatusType;
-
 import grms_pkg.holders.JobInformationHolder;
 
-import org.gridlab.gat.GATInvocationException;
-import org.gridlab.gat.advert.Advertisable;
-import org.gridlab.gat.resources.Job;
-import org.gridlab.gat.resources.JobDescription;
-
-import java.io.IOException;
-
 import java.rmi.RemoteException;
-
 import java.util.Calendar;
 import java.util.Map;
 import java.util.TreeMap;
 
+import org.gridlab.gat.GATContext;
+import org.gridlab.gat.GATInvocationException;
+import org.gridlab.gat.Preferences;
+import org.gridlab.gat.advert.Advertisable;
+import org.gridlab.gat.resources.JobDescription;
+import org.gridlab.gat.resources.cpi.JobCpi;
+import org.gridlab.gat.resources.cpi.Sandbox;
+
 /**
  * @author rob
  */
-public class GrmsJob extends Job {
+public class GrmsJob extends JobCpi {
     GrmsBrokerAdaptor broker;
 
     String jobId;
 
     Grms grms;
 
-    JobDescription jobDescription;
-
-    public GrmsJob(GrmsBrokerAdaptor broker, JobDescription jobDescription,
-            String jobId) {
+    public GrmsJob(GATContext gatContext, Preferences preferences, GrmsBrokerAdaptor broker, JobDescription jobDescription,
+        String jobId, Sandbox sandbox) {
+        super(gatContext, preferences, jobDescription, sandbox);
         this.broker = broker;
         this.jobId = jobId;
         this.jobDescription = jobDescription;
@@ -42,48 +40,26 @@ public class GrmsJob extends Job {
         state = SCHEDULED;
     }
 
-    public JobDescription getJobDescription() {
-        return jobDescription;
-    }
-
-    /*
-     * (non-Javadoc)
-     *
-     * @see org.gridlab.gat.resources.Job#unSchedule()
-     */
-    public void unSchedule() throws GATInvocationException, RemoteException,
-            IOException {
-        if (getState() != SCHEDULED) {
-            throw new GATInvocationException("Job is not in SHCEDULED state");
-        }
-
-        GrmsResponse res = grms.cancelJob(jobId);
-
-        if (res.getErrorCode() != 0) {
-            throw new GATInvocationException(res.getErrorMessage());
-        }
-
-        state = INITIAL;
-    }
-
     /*
      * (non-Javadoc)
      *
      * @see org.gridlab.gat.resources.Job#stop()
      */
-    public void stop() throws GATInvocationException, RemoteException,
-            IOException {
+    public void stop() throws GATInvocationException {
         if (getState() != RUNNING) {
             throw new GATInvocationException("Job is not running");
         }
 
-        GrmsResponse res = grms.cancelJob(jobId);
+        try {
+            GrmsResponse res = grms.cancelJob(jobId);
+            if (res.getErrorCode() != 0) {
+                throw new GATInvocationException(res.getErrorMessage());
+            }
 
-        if (res.getErrorCode() != 0) {
-            throw new GATInvocationException(res.getErrorMessage());
+            state = INITIAL;
+        } catch (RemoteException e) {
+            throw new GATInvocationException("grms", e);
         }
-
-        state = INITIAL;
     }
 
     /*
@@ -91,12 +67,15 @@ public class GrmsJob extends Job {
      *
      * @see org.gridlab.gat.resources.Job#getState()
      */
-    public int getState() throws GATInvocationException, RemoteException,
-            IOException {
-        // get info, this will update the state.
-        getInfo();
+    public int getState() {
+        try {
+            // get info, this will update the state.
+            getInfo();
 
-        return state;
+            return state;
+        } catch (GATInvocationException e) {
+            return UNKNOWN;
+        }
     }
 
     private Map createInfoMap(JobInformation jobInfo) {
@@ -195,19 +174,23 @@ public class GrmsJob extends Job {
      *
      * @see org.gridlab.gat.resources.Job#getInfo()
      */
-    public Map getInfo() throws GATInvocationException, RemoteException,
-            IOException {
-        grms_pkg.holders.JobInformationHolder jobInfoH = new JobInformationHolder();
-        GrmsResponse res = grms.getJobInfo(jobId, jobInfoH);
+    public Map getInfo() throws GATInvocationException {
+        try {
+            grms_pkg.holders.JobInformationHolder jobInfoH = new JobInformationHolder();
+            GrmsResponse res = grms.getJobInfo(jobId, jobInfoH);
 
-        if (res.getErrorCode() != 0) {
-            throw new GATInvocationException(res.getErrorMessage());
+            if (res.getErrorCode() != 0) {
+                throw new GATInvocationException(res.getErrorMessage());
+            }
+
+            JobInformation jobInfo = jobInfoH.value;
+            Map m = createInfoMap(jobInfo);
+
+            return m;
+        } catch (RemoteException e) {
+            throw new GATInvocationException("grms", e);
         }
 
-        JobInformation jobInfo = jobInfoH.value;
-        Map m = createInfoMap(jobInfo);
-
-        return m;
     }
 
     /*
@@ -215,8 +198,7 @@ public class GrmsJob extends Job {
      *
      * @see org.gridlab.gat.resources.Job#getJobID()
      */
-    public String getJobID() throws GATInvocationException, RemoteException,
-            IOException {
+    public String getJobID() {
         return jobId;
     }
 
@@ -225,13 +207,17 @@ public class GrmsJob extends Job {
      *
      * @see org.gridlab.gat.resources.Job#migrate()
      */
-    public void migrate() throws GATInvocationException, RemoteException,
-            IOException {
-        GrmsResponse res = grms.migrateJob(jobId);
+    public void migrate() throws GATInvocationException {
+        try {
+            GrmsResponse res = grms.migrateJob(jobId);
 
-        if (res.getErrorCode() != 0) {
-            throw new GATInvocationException(res.getErrorMessage());
+            if (res.getErrorCode() != 0) {
+                throw new GATInvocationException(res.getErrorMessage());
+            }
+        } catch (RemoteException e) {
+            throw new GATInvocationException("grms", e);
         }
+
     }
 
     /*

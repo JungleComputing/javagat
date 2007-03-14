@@ -4,7 +4,6 @@
 - document preferences
 - implement GATSelf
 - Allow adaptor.name preference to be a list
-- fix release page: mention that there are no external deps, list adaptors
 - GAT factory: create versions that don't need a context? 
   Use a default context when none is provided? --Ask Andre what he thinks
 - Think about the case where an adaptor throws an exception because there is an irrecoverable
@@ -23,3 +22,8 @@
 
 - resource broker adaptors should fill in ALL defined states in the getInfo call.
 - GAT_LOCATION -> JAVAGAT_HOME
+- Let RandomAccessFile extend java.io.RandomAccessFile
+
+- advert service support for brokers
+- in the engine, check if GAT.end hasn't been called before doing an operation.
+- write file adaptor that implements general 3rd party copy

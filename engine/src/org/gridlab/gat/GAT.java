@@ -15,6 +15,7 @@ import org.gridlab.gat.io.Endpoint;
 import org.gridlab.gat.io.File;
 import org.gridlab.gat.io.FileInputStream;
 import org.gridlab.gat.io.FileInputStreamInterface;
+import org.gridlab.gat.io.FileInterface;
 import org.gridlab.gat.io.FileOutputStream;
 import org.gridlab.gat.io.FileOutputStreamInterface;
 import org.gridlab.gat.io.LogicalFile;
@@ -51,7 +52,7 @@ public class GAT {
      * @throws GATObjectCreationException
      *             Thrown upon creation problems
      */
-    public static File createFile(GATContext gatContext, URI location)
+    public static org.gridlab.gat.io.File createFile(GATContext gatContext, URI location)
         throws GATObjectCreationException {
         return createFile(gatContext, null, location);
     }
@@ -71,7 +72,7 @@ public class GAT {
      * @throws GATObjectCreationException
      *             Thrown upon creation problems
      */
-    public static File createFile(GATContext gatContext, String location)
+    public static org.gridlab.gat.io.File createFile(GATContext gatContext, String location)
         throws GATObjectCreationException {
         try {
             return createFile(gatContext, null, new URI(location));
@@ -98,7 +99,7 @@ public class GAT {
      * @throws GATObjectCreationException
      *             Thrown upon creation problems
      */
-    public static File createFile(GATContext gatContext,
+    public static org.gridlab.gat.io.File createFile(GATContext gatContext,
         Preferences preferences, String location)
         throws GATObjectCreationException {
         try {
@@ -126,14 +127,14 @@ public class GAT {
      * @throws GATObjectCreationException
      *             Thrown upon creation problems
      */
-    public static File createFile(GATContext gatContext,
+    public static org.gridlab.gat.io.File createFile(GATContext gatContext,
         Preferences preferences, URI location)
         throws GATObjectCreationException {
         Object[] array = { location };
-        File f = (File) getAdaptorProxy(FileCpi.class, File.class, gatContext,
+        FileInterface f = (FileInterface) getAdaptorProxy(FileCpi.class, FileInterface.class, gatContext,
             preferences, array);
 
-        return f;
+        return new org.gridlab.gat.io.File(f);
     }
 
     /**
@@ -241,7 +242,7 @@ public class GAT {
      */
     public static FileInputStream createFileInputStream(GATContext gatContext,
         File file) throws GATObjectCreationException {
-        return createFileInputStream(gatContext, null, file.toURI());
+        return createFileInputStream(gatContext, null, file.toGATURI());
     }
 
     /**
@@ -262,7 +263,7 @@ public class GAT {
      */
     public static FileInputStream createFileInputStream(GATContext gatContext,
         Preferences preferences, File file) throws GATObjectCreationException {
-        return createFileInputStream(gatContext, preferences, file.toURI());
+        return createFileInputStream(gatContext, preferences, file.toGATURI());
     }
 
     /**
@@ -437,7 +438,7 @@ public class GAT {
      */
     public static FileOutputStream createFileOutputStream(
         GATContext gatContext, File file) throws GATObjectCreationException {
-        return createFileOutputStream(gatContext, null, file.toURI(), false);
+        return createFileOutputStream(gatContext, null, file.toGATURI(), false);
     }
 
     /**
@@ -457,7 +458,7 @@ public class GAT {
     public static FileOutputStream createFileOutputStream(
         GATContext gatContext, Preferences preferences, File file)
         throws GATObjectCreationException {
-        return createFileOutputStream(gatContext, preferences, file.toURI(),
+        return createFileOutputStream(gatContext, preferences, file.toGATURI(),
             false);
     }
 
@@ -478,7 +479,7 @@ public class GAT {
     public static FileOutputStream createFileOutputStream(
         GATContext gatContext, File file, boolean append)
         throws GATObjectCreationException {
-        return createFileOutputStream(gatContext, null, file.toURI(), append);
+        return createFileOutputStream(gatContext, null, file.toGATURI(), append);
     }
 
     /**
@@ -501,7 +502,7 @@ public class GAT {
     public static FileOutputStream createFileOutputStream(
         GATContext gatContext, Preferences preferences, File file,
         boolean append) throws GATObjectCreationException {
-        return createFileOutputStream(gatContext, preferences, file.toURI(),
+        return createFileOutputStream(gatContext, preferences, file.toGATURI(),
             append);
     }
 
@@ -836,10 +837,10 @@ public class GAT {
         AdaptorList adaptors = gatEngine.getAdaptorList(cpiClass);
 
         if (adaptors == null) {
-            return null;
+            throw new GATObjectCreationException("could not find any adaptors");
         }
 
-        /** @@@ maybe we want to support a "default" context. */
+        /** Maybe we want to support a "default" context. */
         if (gatContext == null) {
             gatContext = new GATContext(); // get default context here, not a new one
         }

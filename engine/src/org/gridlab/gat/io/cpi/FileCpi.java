@@ -15,6 +15,7 @@ import org.gridlab.gat.URI;
 import org.gridlab.gat.advert.Advertisable;
 import org.gridlab.gat.engine.GATEngine;
 import org.gridlab.gat.io.File;
+import org.gridlab.gat.io.FileInterface;
 import org.gridlab.gat.monitoring.Metric;
 import org.gridlab.gat.monitoring.MetricDefinition;
 import org.gridlab.gat.monitoring.MetricListener;
@@ -29,7 +30,7 @@ import org.gridlab.gat.monitoring.MetricValue;
  * this File class and will be used to implement the corresponding method in the
  * File class at runtime.
  */
-public abstract class FileCpi implements File {
+public abstract class FileCpi implements FileInterface {
     protected GATContext gatContext;
 
     protected Preferences preferences;
@@ -56,7 +57,7 @@ public abstract class FileCpi implements File {
         this.preferences = preferences;
         this.location = location;
 
-        if(GATEngine.DEBUG) {
+        if (GATEngine.DEBUG) {
             System.err.println("FileCpi: created file with URI " + location);
         }
     }
@@ -83,7 +84,7 @@ public abstract class FileCpi implements File {
 
         org.gridlab.gat.io.File file = (org.gridlab.gat.io.File) object;
 
-        return location.equals(file.toURI());
+        return location.equals(file.toGATURI());
     }
 
     /**
@@ -112,10 +113,26 @@ public abstract class FileCpi implements File {
         copy(destination);
 
         // Step 2: Delete the original file
-        delete();
+        // We create a new File object for this, as it might need a different adaptor.
+        try {
+            File f = GAT.createFile(gatContext, preferences, location);
+            f.delete();
+        } catch (Exception e) {
+            throw new GATInvocationException("delete failed", e);
+        }
 
+        // This is not correct: files are immutable. --Rob
         // Step 3: Update location
-        this.location = destination;
+        // this.location = destination;
+    }
+
+    /** This method deletes a directory and everything that is in it.
+     * This method can only be called on a directory, not on a file.
+     * @throws GATInvocationException
+     */
+    public void recursivelyDeleteDirectory()
+            throws GATInvocationException {
+        recursiveDeleteDirectory(gatContext, preferences, location);
     }
 
     public void copy(URI loc) throws GATInvocationException {
@@ -155,7 +172,7 @@ public abstract class FileCpi implements File {
     }
 
     public int compareTo(org.gridlab.gat.io.File other) {
-        return location.compareTo(other.toURI());
+        return location.compareTo(other.toGATURI());
     }
 
     public int compareTo(Object other) {
@@ -203,16 +220,41 @@ public abstract class FileCpi implements File {
     public String getParent() {
         String path = location.getPath();
 
-        return new java.io.File(path).getParent();
+        int pos = path.lastIndexOf("/");
+        if (pos == -1) {
+            // no slash
+            return null;
+        }
+
+        String res = path.substring(0, pos);
+
+        if (GATEngine.DEBUG) {
+            System.err.println("GET PARENT: orig = " + path + " parent = "
+                    + res);
+        }
+
+        return res;
     }
 
     public File getParentFile() throws GATInvocationException {
         try {
-            String uri = location.toString();
-            uri = uri.substring(0, uri.length() - location.getPath().length());
-            uri += getParent();
+            String dest = location.getScheme() + "://";
+            dest +=
+                    (location.getUserInfo() == null) ? "" : location
+                            .getUserInfo();
+            dest += location.getHost();
+            dest +=
+                    (location.getPort() == -1) ? ""
+                            : (":" + location.getPort());
+            dest += "/";
+            dest += getParent();
 
-            return GAT.createFile(gatContext, preferences, new URI(uri));
+            if (GATEngine.DEBUG) {
+                System.err.println("GET PARENTFILE: orig = " + location
+                        + " new = " + dest);
+            }
+
+            return GAT.createFile(gatContext, preferences, new URI(dest));
         } catch (Exception e) {
             throw new GATInvocationException("file cpi", e);
         }
@@ -315,7 +357,7 @@ public abstract class FileCpi implements File {
 
             for (int i = 0; i < l.length; i++) {
                 if (filter.accept(GAT.createFile(gatContext, new URI(location
-                    .getPath())), l[i])) {
+                        .getPath())), l[i])) {
                     v.add(l[i]);
                 }
             }
@@ -348,7 +390,7 @@ public abstract class FileCpi implements File {
 
             for (int i = 0; i < l.length; i++) {
                 if (filter.accept(GAT.createFile(gatContext, new URI(l[i]
-                    .getPath())))) {
+                        .getPath())))) {
                     v.add(l[i]);
                 }
             }
@@ -382,7 +424,7 @@ public abstract class FileCpi implements File {
 
             for (int i = 0; i < l.length; i++) {
                 if (filter.accept(GAT.createFile(gatContext, new URI(location
-                    .getPath())), l[i].getPath())) {
+                        .getPath())), l[i].getPath())) {
                     v.add(l[i]);
                 }
             }
@@ -404,7 +446,27 @@ public abstract class FileCpi implements File {
     }
 
     public boolean mkdirs() throws GATInvocationException {
-        throw new UnsupportedOperationException("Not implemented");
+        if (exists()) {
+            return false;
+        }
+        if (mkdir()) {
+            return true;
+        }
+
+        File canonFile = null;
+        try {
+            canonFile = getCanonicalFile();
+        } catch (Exception e) {
+            return false;
+        }
+
+        File parent = (File) canonFile.getParentFile();
+
+        if (parent == null) {
+            return false;
+        }
+
+        return parent.mkdirs() && canonFile.mkdir();
     }
 
     public boolean renameTo(File arg0) throws GATInvocationException {
@@ -441,7 +503,7 @@ public abstract class FileCpi implements File {
                 int index = s.indexOf(':');
 
                 return new URI(destScheme + ":"
-                    + s.substring(index + 1, s.length()));
+                        + s.substring(index + 1, s.length()));
             }
         } catch (URISyntaxException e) {
             System.err.println("internal UnsupportedOperationException: " + e);
@@ -467,23 +529,30 @@ public abstract class FileCpi implements File {
 
         // create destination dir
         try {
-            org.gridlab.gat.io.File destDir = GAT.createFile(gatContext,
-                preferences, dest);
+            org.gridlab.gat.io.File destDir =
+                    GAT.createFile(gatContext, preferences, dest);
 
-            if (GATEngine.DEBUG) {
-                System.err.println("copyDirectory: mkdir of " + destDir);
+            if (!destDir.exists()) {
+
+                if (GATEngine.DEBUG) {
+                    System.err.println("copyDirectory: mkdir of " + destDir);
+                }
+
+                destDir.mkdir();
             }
-
-            destDir.mkdir();
         } catch (GATObjectCreationException e) {
             throw new GATInvocationException("file cpi", e);
         }
 
         // list all the files and copy recursively.
-        File[] files = dir.listFiles();
+        File[] files = (File[]) dir.listFiles();
 
-        if(files == null) return;
-        
+        if (files == null) {
+            if (GATEngine.DEBUG) {
+                System.err.println("copyDirectory: no files in src directory");
+            }
+            return;
+        }
         for (int i = 0; i < files.length; i++) {
             File f = files[i];
 
@@ -512,16 +581,16 @@ public abstract class FileCpi implements File {
                     System.err.println("copyDirectory: copying dir " + f);
                 }
 
-                copyDirectory(gatContext, preferences, f.toURI(), newDest);
+                copyDirectory(gatContext, preferences, f.toGATURI(), newDest);
             } else {
                 throw new GATInvocationException(
-                    "file cpi, don't know how to handle file: " + f
-                        + " (links are not supported).");
+                        "file cpi, don't know how to handle file: " + f
+                                + " (links are not supported).");
             }
         }
     }
 
-    protected static void deleteDirectory(GATContext gatContext,
+    public static void recursiveDeleteDirectory(GATContext gatContext,
             Preferences preferences, URI dirUri) throws GATInvocationException {
         File dir;
         try {
@@ -529,43 +598,48 @@ public abstract class FileCpi implements File {
         } catch (GATObjectCreationException e) {
             throw new GATInvocationException("generic file cpi", e);
         }
-        
-        File[] files = dir.listFiles(new FileFilter() {
-                    public boolean accept(File file) {
-                        try {
-                            return file.isDirectory();
-                        } catch (Exception e) {
-                            return false;
-                        }
-                    }
-                });
 
-        if (files == null) {
-            return; // Directory could not be read
-        }
-
-        for (int i = 0; i < files.length; i++) {
-            deleteDirectory(gatContext, preferences, files[i].toURI());
-            files[i].delete();
-        }
-
-        files = dir.listFiles(new FileFilter() {
-                    public boolean accept(File file) {
-                        try {
-                            return !file.isDirectory();
-                        } catch (Exception e) {
-                            return false;
-                        }
-                    }
-                });
-
-        for (int i = 0; i < files.length; i++) {
-            files[i].delete();
-        }
-
-        dir.delete();
+        recursiveDeleteDirectory(gatContext, preferences, dir);
     }
-    
+
+    public static void recursiveDeleteDirectory(GATContext gatContext,
+            Preferences preferences, File dir) throws GATInvocationException {
+
+        if (GATEngine.VERBOSE) {
+            System.err.println("recursive delete dir: " + dir);
+        }
+
+        GATInvocationException exception = new GATInvocationException();
+        File[] files = (File[]) dir.listFiles();
+        if (files != null) {
+            for (int i = 0; i < files.length; i++) {
+                try {
+                    if (files[i].isDirectory()) {
+                        recursiveDeleteDirectory(gatContext, preferences,
+                                files[i].toGATURI());
+                    } else {
+                        if(GATEngine.VERBOSE) {
+                            System.err.println("delete: " + files[i]);
+                        }
+                        files[i].delete();
+                    }
+                } catch (GATInvocationException e) {
+                    exception.add("file cpi", e);
+                }
+            }
+        }
+
+        try {
+            dir.delete();
+        } catch (Exception e) {
+            exception.add("file cpi", e);
+        }
+
+        if (exception.getNrChildren() != 0) {
+            throw exception;
+        }
+    }
+
     public String marshal() {
         SerializedFile f = new SerializedFile();
         f.setLocation(location.toString());
@@ -575,23 +649,46 @@ public abstract class FileCpi implements File {
 
     public static Advertisable unmarshal(GATContext context,
             Preferences preferences, String s) {
-        SerializedFile f = (SerializedFile) GATEngine.defaultUnmarshal(
-            SerializedFile.class, s);
+        SerializedFile f =
+                (SerializedFile) GATEngine.defaultUnmarshal(
+                        SerializedFile.class, s);
 
         try {
             return GAT.createFile(context, preferences,
-                new URI(f.getLocation()));
+                    new URI(f.getLocation()));
         } catch (Exception e) {
             throw new Error("could not create new GAT object");
         }
     }
 
-    /*
-     static {
-     // we must tell the gat engine that we can unmarshal files.
-     GATEngine.registerAdvertisable(FileCpi.class);
-     }
-     */
+    protected boolean determineIsDirectory() throws GATInvocationException {
+        // create a seperate file object to determine whether this file
+        // is a directory. This is needed, because the source might be a local
+        // file, and some adaptors might not work locally (like gridftp).
+        // This goes wrong for local -> remote copies.
+        if (toURI().refersToLocalHost()) {
+            try {
+                java.io.File f = new java.io.File(getPath());
+                return f.isDirectory();
+            } catch (Exception e) {
+                throw new GATInvocationException("fileCPI", e);
+            }
+        } else {
+            try {
+                return isDirectory();
+            } catch (Exception e) {
+                // ignore
+            }
+
+            try {
+                File f = GAT.createFile(gatContext, preferences, toURI());
+                return f.isDirectory();
+            } catch (Exception e2) {
+                throw new GATInvocationException("fileCPI", e2);
+            }
+        }
+    }
+
     private static class DeleteHook extends Thread {
         FileCpi f;
 

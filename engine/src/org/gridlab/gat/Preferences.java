@@ -8,7 +8,7 @@ import java.util.Map;
  */
 public class Preferences extends Hashtable {
     /**
-     * Constructs a new Preferences no mappings.
+     * Constructs a new Preferences with no mappings.
      */
     public Preferences() {
         super();

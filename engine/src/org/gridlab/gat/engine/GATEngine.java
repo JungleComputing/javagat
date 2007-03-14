@@ -47,6 +47,8 @@ import org.gridlab.gat.resources.cpi.ResourceBrokerCpi;
  * This class make the various GAT adaptors available to GAT
  */
 public class GATEngine {
+    public static final boolean TIMING = propertySet("gat.timing");
+
     public static final boolean DEBUG = propertySet("gat.debug");
 
     public static final boolean VERBOSE = propertySet("gat.debug")
@@ -184,9 +186,9 @@ public class GATEngine {
                 File f = new File(jarFile.getName());
 
                 if(jarFile.getName().endsWith("Adaptor.jar")) {
-                    adaptorPathURLs.add(0, f.toURL()); // add to beginning
+                    adaptorPathURLs.add(0, f.toURI().toURL()); // add to beginning
                 } else {
-                    adaptorPathURLs.add(f.toURL()); // add to end
+                    adaptorPathURLs.add(f.toURI().toURL()); // add to end
                 }
 
             } catch (Exception e) {

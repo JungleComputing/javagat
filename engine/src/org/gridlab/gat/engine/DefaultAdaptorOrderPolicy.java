@@ -73,15 +73,15 @@ public class DefaultAdaptorOrderPolicy implements AdaptorOrderPolicy {
             "org.gridlab.gat.io.cpi.local.LocalFileInputStreamAdaptor");
         insertPos = l.placeAdaptor(insertPos,
             "org.gridlab.gat.io.cpi.globus.GridFTPFileInputStreamAdaptor");
-        insertPos = l
-            .placeAdaptor(insertPos,
-                "org.gridlab.gat.io.cpi.copyingFileInputStream.CopyingFileInputStreamAdaptor");
         insertPos = l.placeAdaptor(insertPos,
             "org.gridlab.gat.io.cpi.sftpnew.SftpNewFileInputStreamAdaptor");
         insertPos = l.placeAdaptor(insertPos,
             "org.gridlab.gat.io.cpi.ssh.SshFileInputStreamAdaptor");
         insertPos = l.placeAdaptor(insertPos,
             "org.gridlab.gat.io.cpi.sftp.SftpFileInputStreamAdaptor");
+        insertPos = l
+        .placeAdaptor(insertPos,
+            "org.gridlab.gat.io.cpi.copyingFileInputStream.CopyingFileInputStreamAdaptor");
 
         // rest in random order
     }

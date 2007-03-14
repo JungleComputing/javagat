@@ -15,7 +15,7 @@ In many cases we don't exactly know what JavaGAT is used for.
   The FTMS dataset can be streamed to compute resources with the JavaGAT, with ssh, sftp 
   and gridftp.
 
-- The JavaGAT is currently developed as a part of the Dutch Virtual Labs for E-sciense 
+- The JavaGAT is currently developed as a part of the Dutch Virtual Labs for E-science 
   project (Vl-e) middleware.
 
 - The workflow system Triana (University of Cardiff) can use GAT to start jobs on the grid 
@@ -33,6 +33,15 @@ In many cases we don't exactly know what JavaGAT is used for.
 - Zuse Institute Berlin, Germany (Artur Andrzejak)
 
 - INRIA, France (Mario Leyton)
+
+- The TextGrid project: http://www.textgrid.de (Frank Knoll)
+
+- Jylab
+
+- VUMC (Keith Cover)
+
+- The Integrade Project (http://www.integrade.org.br)
+	Integrade adaptor set (an object oriented grid middleware layer), an Eclipse based IDE
 
 - ...
 

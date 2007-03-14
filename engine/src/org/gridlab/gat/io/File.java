@@ -1,21 +1,31 @@
+/*
+ * Created on Nov 3, 2006
+ */
 package org.gridlab.gat.io;
 
+import java.io.FileFilter;
+import java.io.FilenameFilter;
 import java.io.IOException;
-import java.io.Serializable;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.List;
 
+import org.gridlab.gat.GAT;
+import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.URI;
 import org.gridlab.gat.advert.Advertisable;
-import org.gridlab.gat.io.cpi.FileFilter;
-import org.gridlab.gat.io.cpi.FilenameFilter;
+import org.gridlab.gat.engine.GATIOException;
+import org.gridlab.gat.monitoring.Metric;
+import org.gridlab.gat.monitoring.MetricDefinition;
+import org.gridlab.gat.monitoring.MetricListener;
+import org.gridlab.gat.monitoring.MetricValue;
 import org.gridlab.gat.monitoring.Monitorable;
 
 /**
  * @author rob
  */
-/** An abstract representation of a physical file.
+/** An abstract representation of a physical file. (See java.io.file)
  * <p>
  * An instance of this class presents an abstract, system-independent view of a
  * physical file. User interfaces and operating systems use system-dependent
@@ -38,14 +48,16 @@ import org.gridlab.gat.monitoring.Monitorable;
  * correctly? The client simply has to call a single API call and the physical
  * file is moved.
  */
-public interface File extends Monitorable, Serializable, Advertisable,
-        Comparable {
-    /**
-     * This method returns the URI of this File
-     *
-     * @return The URI of this File
+public class File extends java.io.File implements Monitorable,
+        Advertisable {
+    org.gridlab.gat.io.FileInterface f;
+
+    /** Do not use this constructor, it is for internal GAT use.
      */
-    public URI toURI();
+    public File(org.gridlab.gat.io.FileInterface f) {
+        super("dummy");
+        this.f = f;
+    }
 
     /**
      * This method copies the physical file represented by this File instance to
@@ -58,7 +70,9 @@ public interface File extends Monitorable, Serializable, Advertisable,
      * @throws java.io.IOException
      *             Upon non-remote IO problem
      */
-    public void copy(URI loc) throws GATInvocationException;
+    public void copy(URI loc) throws GATInvocationException {
+        f.copy(loc);
+    }
 
     /**
      * This method moves the physical file represented by this File instance to
@@ -72,127 +86,527 @@ public interface File extends Monitorable, Serializable, Advertisable,
      * @throws IOException
      *             Upon non-remote IO problem
      */
-    public void move(URI location) throws GATInvocationException;
+    public void move(URI location) throws GATInvocationException {
+        f.move(location);
+    }
+
+    /** This method deletes a directory and everything that is in it.
+     * This method can only be called on a directory, not on a file.
+     * @throws GATInvocationException
+     */
+    public void recursivelyDeleteDirectory()
+            throws GATInvocationException {
+        f.recursivelyDeleteDirectory();
+    }
 
     /**
-     * Tests this File for equality with the passed Object.
-     * <p>
-     * If the given object is not a File, then this method immediately returns
-     * false.
-     * <p>
-     * If the given object is a File, then it is deemed equal to this instance
-     * if a URI object constructed from this File's location and a URI object
-     * constructed from the passed File's URI are equal as determined by the
-     * Equals method of URI.
-     *
-     * @param object
-     *            The Object to test for equality
-     * @return A boolean indicating equality
+     * @see java.io.File#canRead()
      */
-    public boolean equals(Object object);
+    public boolean canRead() {
+        try {
+            return f.canRead();
+        } catch (Exception e) {
+            return false;
+        }
+    }
 
-    /** See {@link java.io.File#canRead}. */
-    public boolean canRead() throws GATInvocationException;
+    /**
+     * @see java.io.File#canWrite()
+     */
+    public boolean canWrite() {
+        try {
+            return f.canWrite();
+        } catch (Exception e) {
+            throw new Error(e);
+        }
+    }
 
-    /** See {@link java.io.File#canWrite}. */
-    public boolean canWrite() throws GATInvocationException;
+    /**
+     * @see java.io.File#compareTo(java.io.File)
+     */
+    public int compareTo(File pathname) {
+        try {
+            return f.compareTo(pathname);
+        } catch (Exception e) {
+            throw new Error(e);
+        }
+    }
 
-    /** See {@link java.io.File#compareTo(java.io.File)}. */
-    public int compareTo(org.gridlab.gat.io.File arg0);
+    /**
+     * @see java.io.File#createNewFile()
+     */
+    public boolean createNewFile() throws IOException {
+        try {
+            return f.createNewFile();
+        } catch (GATInvocationException e) {
+            throw new GATIOException(e);
+        }
+    }
 
-    /** See {@link java.io.File#compareTo(Object)}. */
-    public int compareTo(Object arg0);
+    /**
+     * @see java.io.File#delete()
+     */
+    public boolean delete() {
+        try {
+            return f.delete();
+        } catch (Exception e) {
+            throw new Error(e);
+        }
+    }
 
-    /** See {@link java.io.File#createNewFile}. */
-    public boolean createNewFile() throws GATInvocationException;
+    /**
+     * 
+     * @see java.io.File#deleteOnExit()
+     */
+    public void deleteOnExit() {
+        try {
+            f.deleteOnExit();
+        } catch (Exception e) {
+            throw new Error(e);
+        }
+    }
 
-    /** See {@link java.io.File#delete()}. */
-    public boolean delete() throws GATInvocationException;
+    /**
+     * @see java.io.File#equals(java.lang.Object)
+     */
+    public boolean equals(Object obj) {
+        try {
+            return f.equals(obj);
+        } catch (Exception e) {
+            throw new Error(e);
+        }
+    }
 
-    /** See {@link java.io.File#deleteOnExit()}. */
-    public void deleteOnExit() throws GATInvocationException;
+    /**
+     * @see java.io.File#exists()
+     */
+    public boolean exists() {
+        try {
+            return f.exists();
+        } catch (Exception e) {
+            throw new Error(e);
+        }
+    }
 
-    /** See {@link java.io.File#exists()}. */
-    public boolean exists() throws GATInvocationException;
+    /**
+     * @see java.io.File#getAbsoluteFile()
+     */
+    public java.io.File getAbsoluteFile() {
+        try {
+            return f.getAbsoluteFile();
+        } catch (Exception e) {
+            throw new Error(e);
+        }
+    }
 
-    /** See {@link java.io.File#getAbsoluteFile()}. */
-    public File getAbsoluteFile() throws GATInvocationException;
+    /**
+     * @see java.io.File#getAbsolutePath()
+     */
+    public String getAbsolutePath() {
+        try {
+            return f.getAbsolutePath();
+        } catch (Exception e) {
+            throw new Error(e);
+        }
+    }
 
-    /** See {@link java.io.File#getAbsolutePath()}. */
-    public String getAbsolutePath() throws GATInvocationException;
+    /**
+     * @see java.io.File#getCanonicalFile()
+     */
+    public java.io.File getCanonicalFile() throws IOException {
+        try {
+            return f.getCanonicalFile();
+        } catch (GATInvocationException e) {
+            throw new GATIOException(e);
+        }
+    }
 
-    /** See {@link java.io.File#getCanonicalFile()}. */
-    public File getCanonicalFile() throws GATInvocationException;
+    /**
+     * @see java.io.File#getCanonicalPath()
+     */
+    public String getCanonicalPath() throws IOException {
+        try {
+            return f.getCanonicalPath();
+        } catch (GATInvocationException e) {
+            throw new GATIOException(e);
+        }
+    }
 
-    /** See {@link java.io.File#getCanonicalPath()}. */
-    public String getCanonicalPath() throws GATInvocationException;
+    /**
+     * @see java.io.File#getName()
+     */
+    public String getName() {
+        try {
+            return f.getName();
+        } catch (Exception e) {
+            throw new Error(e);
+        }
+    }
 
-    /** See {@link java.io.File#getName()}. */
-    public String getName() throws GATInvocationException;
+    /**
+     * @see java.io.File#getParent()
+     */
+    public String getParent() {
+        try {
+            return f.getParent();
+        } catch (Exception e) {
+            throw new Error(e);
+        }
+    }
 
-    /** See {@link java.io.File#getParent()}. */
-    public String getParent() throws GATInvocationException;
+    /**
+     * @return the parent file
+     * @see java.io.File#getParentFile()
+     */
+    public java.io.File getParentFile() {
+        try {
+            return f.getParentFile();
+        } catch (Exception e) {
+            throw new Error(e);
+        }
+    }
 
-    /** See {@link java.io.File#getParentFile()}. */
-    public File getParentFile() throws GATInvocationException;
+    /**
+     * @see java.io.File#getPath()
+     */
+    public String getPath() {
+        try {
+            return f.getPath();
+        } catch (Exception e) {
+            throw new Error(e);
+        }
+    }
 
-    /** See {@link java.io.File#getPath()}. */
-    public String getPath() throws GATInvocationException;
+    /**
+     * @see java.io.File#hashCode()
+     */
+    public int hashCode() {
+        try {
+            return f.hashCode();
+        } catch (Exception e) {
+            throw new Error(e);
+        }
+    }
 
-    /** See {@link java.io.File#hashCode()}. */
-    public int hashCode();
+    /**
+     * @see java.io.File#isAbsolute()
+     */
+    public boolean isAbsolute() {
+        try {
+            return f.isAbsolute();
+        } catch (Exception e) {
+            throw new Error(e);
+        }
+    }
 
-    /** See {@link java.io.File#isAbsolute()}. */
-    public boolean isAbsolute() throws GATInvocationException;
+    /**
+     * @see java.io.File#isDirectory()
+     */
+    public boolean isDirectory() {
+        try {
+            return f.isDirectory();
+        } catch (Exception e) {
+            throw new Error(e);
+        }
+    }
 
-    /** See {@link java.io.File#isDirectory()}. */
-    public boolean isDirectory() throws GATInvocationException;
+    /**
+     * @see java.io.File#isFile()
+     */
+    public boolean isFile() {
+        try {
+            return f.isFile();
+        } catch (Exception e) {
+            throw new Error(e);
+        }
+    }
 
-    /** See {@link java.io.File#isFile()}. */
-    public boolean isFile() throws GATInvocationException;
+    /**
+     * @see java.io.File#isHidden()
+     */
+    public boolean isHidden() {
+        try {
+            return f.isHidden();
+        } catch (Exception e) {
+            throw new Error(e);
+        }
+    }
 
-    /** See {@link java.io.File#isHidden()}. */
-    public boolean isHidden() throws GATInvocationException;
+    /**
+     * @see java.io.File#lastModified()
+     */
+    public long lastModified() {
+        try {
+            return f.lastModified();
+        } catch (Exception e) {
+            throw new Error(e);
+        }
+    }
 
-    /** See {@link java.io.File#lastModified()}. */
-    public long lastModified() throws GATInvocationException;
+    /**
+     * @see java.io.File#length()
+     */
+    public long length() {
+        try {
+            return f.length();
+        } catch (Exception e) {
+            throw new Error(e);
+        }
+    }
 
-    /** See {@link java.io.File#length()}. */
-    public long length() throws GATInvocationException;
+    /**
+     * @see java.io.File#list()
+     */
+    public String[] list() {
+        try {
+            return f.list();
+        } catch (Exception e) {
+            throw new Error(e);
+        }
+    }
 
-    /** See {@link java.io.File#list()}. */
-    public String[] list() throws GATInvocationException;
+    /**
+     * @see java.io.File#list(java.io.FilenameFilter)
+     */
+    public String[] list(FilenameFilter filter) {
+        try {
+            return f.list(new FileNameFilterForwarder(filter));
+        } catch (Exception e) {
+            throw new Error(e);
+        }
+    }
 
-    /** See {@link java.io.File#list(java.io.FilenameFilter)}. */
-    public String[] list(FilenameFilter arg0) throws GATInvocationException;
+    /**
+     * @see java.io.File#listFiles()
+     */
+    public java.io.File[] listFiles() {
+        try {
+            return f.listFiles();
+        } catch (Exception e) {
+            throw new Error(e);
+        }
+    }
 
-    /** See {@link java.io.File#listFiles()}. */
-    public File[] listFiles() throws GATInvocationException;
+    /**
+     * @see java.io.File#listFiles(java.io.FileFilter)
+     */
+    public java.io.File[] listFiles(FileFilter filter) {
+        try {
+            return f.listFiles(new FileFilterForwarder(filter));
+        } catch (Exception e) {
+            throw new Error(e);
+        }
+    }
 
-    /** See {@link java.io.File#listFiles(java.io.FileFilter)}. */
-    public File[] listFiles(FileFilter arg0) throws GATInvocationException;
+    /**
+     * @see java.io.File#listFiles(java.io.FilenameFilter)
+     */
+    public java.io.File[] listFiles(FilenameFilter filter) {
+        try {
 
-    /** See {@link java.io.File#listFiles(java.io.FilenameFilter)}. */
-    public File[] listFiles(FilenameFilter arg0) throws GATInvocationException;
+            return f.listFiles(new FileNameFilterForwarder(filter));
+        } catch (Exception e) {
+            throw new Error(e);
+        }
+    }
 
-    /** See {@link java.io.File#mkdir()}. */
-    public boolean mkdir() throws GATInvocationException;
+    /**
+     * @see java.io.File#mkdir()
+     */
+    public boolean mkdir() {
+        try {
+            return f.mkdir();
+        } catch (Exception e) {
+            throw new Error(e);
+        }
+    }
 
-    /** See {@link java.io.File#mkdirs()}. */
-    public boolean mkdirs() throws GATInvocationException;
+    /**
+     * @see java.io.File#mkdirs()
+     */
+    public boolean mkdirs() {
+        try {
+            return f.mkdirs();
+        } catch (Exception e) {
+            throw new Error(e);
+        }
+    }
 
-    /** See {@link java.io.File#renameTo(java.io.File)}. */
-    public boolean renameTo(File arg0) throws GATInvocationException;
+    /**
+     * @see java.io.File#renameTo(java.io.File)
+     */
+    public boolean renameTo(java.io.File dest) {
+        try {
+            org.gridlab.gat.io.File a = (org.gridlab.gat.io.File) dest;
+            return f.renameTo(a);
+        } catch (Exception e) {
+            throw new Error(e);
+        }
+    }
 
-    /** See {@link java.io.File#setLastModified(long)}. */
-    public boolean setLastModified(long arg0) throws GATInvocationException;
+    /**
+     * @see java.io.File#setLastModified(long)
+     */
+    public boolean setLastModified(long time) {
+        try {
+            return f.setLastModified(time);
+        } catch (Exception e) {
+            throw new Error(e);
+        }
+    }
 
-    /** See {@link java.io.File#setReadOnly()}. */
-    public boolean setReadOnly() throws GATInvocationException;
+    /**
+     * @see java.io.File#setReadOnly()
+     */
+    public boolean setReadOnly() {
+        try {
+            return f.setReadOnly();
+        } catch (Exception e) {
+            throw new Error(e);
+        }
+    }
 
-    /** See {@link java.io.File#toString()}. */
-    public String toString();
+    /**
+     * @see java.io.File#toString()
+     */
+    public String toString() {
+        try {
+            return f.toString();
+        } catch (Exception e) {
+            throw new Error(e);
+        }
+    }
 
-    /** See {@link java.io.File#toURL()}. */
-    public URL toURL() throws MalformedURLException;
+    /**
+     * @see java.io.File#toURI()
+     */
+    public java.net.URI toURI() {
+        throw new Error("please use toGATURI to retreive a file's URI.");
+    }
+
+    /**
+     * @see java.io.File#toURI()
+     */
+    public org.gridlab.gat.URI toGATURI() {
+        try {
+            return f.toURI();
+        } catch (Exception e) {
+            throw new Error(e);
+        }
+    }
+
+    /**
+     * @see java.io.File#toURL()
+     */
+    public URL toURL() throws MalformedURLException {
+        return f.toURL();
+    }
+
+    /* (non-Javadoc)
+     * @see org.gridlab.gat.advert.Advertisable#marshal()
+     */
+    public String marshal() {
+        return f.marshal();
+    }
+
+    /* (non-Javadoc)
+     * @see org.gridlab.gat.monitoring.Monitorable#addMetricListener(org.gridlab.gat.monitoring.MetricListener, org.gridlab.gat.monitoring.Metric)
+     */
+    public void addMetricListener(MetricListener metricListener, Metric metric)
+            throws GATInvocationException {
+        f.addMetricListener(metricListener, metric);
+
+    }
+
+    /* (non-Javadoc)
+     * @see org.gridlab.gat.monitoring.Monitorable#getMeasurement(org.gridlab.gat.monitoring.Metric)
+     */
+    public MetricValue getMeasurement(Metric metric)
+            throws GATInvocationException {
+        return f.getMeasurement(metric);
+    }
+
+    /* (non-Javadoc)
+     * @see org.gridlab.gat.monitoring.Monitorable#getMetricDefinitionByName(java.lang.String)
+     */
+    public MetricDefinition getMetricDefinitionByName(String name)
+            throws GATInvocationException {
+        return f.getMetricDefinitionByName(name);
+    }
+
+    /* (non-Javadoc)
+     * @see org.gridlab.gat.monitoring.Monitorable#getMetricDefinitions()
+     */
+    public List getMetricDefinitions() throws GATInvocationException {
+        return f.getMetricDefinitions();
+    }
+
+    /* (non-Javadoc)
+     * @see org.gridlab.gat.monitoring.Monitorable#removeMetricListener(org.gridlab.gat.monitoring.MetricListener, org.gridlab.gat.monitoring.Metric)
+     */
+    public void removeMetricListener(MetricListener metricListener,
+            Metric metric) throws GATInvocationException {
+        f.removeMetricListener(metricListener, metric);
+    }
+    
+    /**
+     * Read a file object from a stream. We use a "default" context
+     * to create the resulting object.
+     * @param stream the stream to write to
+     * @throws IOException
+     * @throws ClassNotFoundException
+     */
+    private void readObject(java.io.ObjectInputStream stream)
+    throws IOException, ClassNotFoundException {
+        URI u = (URI) stream.readObject();
+        
+        GATContext c = new GATContext();
+        
+        try {
+            File newFile = GAT.createFile(c, u);
+            f = newFile.f;
+        } catch (Exception e) {
+            throw new Error("Could not create File object");
+        }
+    }
+    
+    /**
+     * Serialize this file, by just writing the URI.
+     * @param stream the stream to write to
+     * @throws IOException
+     */
+    private void writeObject(java.io.ObjectOutputStream stream)
+    throws IOException {
+        stream.writeObject(toGATURI());
+    }
+}
+
+class FileNameFilterForwarder implements org.gridlab.gat.io.cpi.FilenameFilter {
+    java.io.FilenameFilter f;
+
+    public FileNameFilterForwarder(java.io.FilenameFilter f) {
+        this.f = f;
+    }
+
+    /* (non-Javadoc)
+     * @see org.gridlab.gat.io.cpi.FilenameFilter#accept(org.gridlab.gat.io.File, java.lang.String)
+     */
+    public boolean accept(File dir, String name) {
+        return f.accept(dir, name);
+    }
+}
+
+class FileFilterForwarder implements org.gridlab.gat.io.cpi.FileFilter {
+    java.io.FileFilter f;
+
+    public FileFilterForwarder(java.io.FileFilter f) {
+        this.f = f;
+    }
+
+    /* (non-Javadoc)
+     * @see org.gridlab.gat.io.cpi.FileFilter#accept(org.gridlab.gat.io.File)
+     */
+    public boolean accept(File pathname) {
+        return f.accept(pathname);
+    }
 }

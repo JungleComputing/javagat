@@ -51,7 +51,6 @@ import org.gridlab.gat.GATObjectCreationException;
 import org.gridlab.gat.Preferences;
 import org.gridlab.gat.URI;
 import org.gridlab.gat.engine.GATEngine;
-import org.gridlab.gat.engine.IPUtils;
 import org.gridlab.gat.resources.HardwareResourceDescription;
 import org.gridlab.gat.resources.Job;
 import org.gridlab.gat.resources.JobDescription;
@@ -60,6 +59,8 @@ import org.gridlab.gat.resources.SoftwareDescription;
 import org.gridlab.gat.resources.cpi.ResourceBrokerCpi;
 
 import org.ietf.jgss.GSSCredential;
+
+import ibis.util.IPUtils;
 
 import java.io.IOException;
 import java.io.StringWriter;
@@ -221,7 +222,7 @@ public class GrmsBrokerAdaptor extends ResourceBrokerCpi {
     }
 
     protected String getOutURI(org.gridlab.gat.io.File f) {
-        URI u = f.toURI();
+        URI u = f.toGATURI();
         String host = u.getHost();
 
         if (host == null) {
@@ -250,7 +251,7 @@ public class GrmsBrokerAdaptor extends ResourceBrokerCpi {
         // we do not support environment yet
         Map myEnv = sd.getEnvironment();
         if(myEnv == null || myEnv.isEmpty()) {
-            throw new AdaptorNotApplicableException("cannot handle environment");
+            throw new GATInvocationException("grms", new AdaptorNotApplicableException("cannot handle environment"));
         }
 
         // @@@ for now we only do simple Jobs.
@@ -330,7 +331,7 @@ public class GrmsBrokerAdaptor extends ResourceBrokerCpi {
                                 + " to " + destFile.toURI());
                         }
 
-                        srcFile.copy(destFile.toURI());
+                        srcFile.copy(destFile.toGATURI());
                     } catch (Exception exc) {
                         throw new GATInvocationException("resource broker cpi",
                             exc);
@@ -341,7 +342,7 @@ public class GrmsBrokerAdaptor extends ResourceBrokerCpi {
                     ai.setFile(pf);
                     a.addArgumentsItem(ai);
 
-                    URI u = srcFile.toURI();
+                    URI u = srcFile.toGATURI();
                     String path = u.getPath();
                     String fileName = pathToFilename(path);
                     pf.setName(fileName);
@@ -380,7 +381,7 @@ public class GrmsBrokerAdaptor extends ResourceBrokerCpi {
                                 + " to " + destFile.toURI());
                         }
 
-                        srcFile.copy(destFile.toURI());
+                        srcFile.copy(destFile.toGATURI());
                     } catch (Exception exc) {
                         throw new GATInvocationException("resource broker cpi",
                             exc);
@@ -391,7 +392,7 @@ public class GrmsBrokerAdaptor extends ResourceBrokerCpi {
                     ai.setFile(pf);
                     a.addArgumentsItem(ai);
 
-                    URI u = destFile.toURI();
+                    URI u = destFile.toGATURI();
                     String path = u.getPath();
                     String fileName = pathToFilename(path);
 
@@ -502,7 +503,7 @@ public class GrmsBrokerAdaptor extends ResourceBrokerCpi {
             throw new GATInvocationException(res.getErrorMessage());
         }
 
-        return new GrmsJob(this, description, jobId.value);
+        return new GrmsJob(gatContext, preferences, this, description, jobId.value, null);
     }
 
     Grms getGrms() {
