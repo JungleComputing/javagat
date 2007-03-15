@@ -1,7 +1,6 @@
 package org.gridlab.gat.resources;
 
-import java.io.IOException;
-import java.rmi.RemoteException;
+import org.gridlab.gat.GATInvocationException;
 
 /**
  * @author rob
@@ -13,12 +12,8 @@ public interface Reservation {
      * This method upon successfully completing cancels the reservation
      * corresponding to the associated Reservation instance.
      *
-     * @throws java.rmi.RemoteException
-     *             Thrown upon problems accessing the remote instance
-     * @throws java.io.IOException
-     *             Upon non-remote IO problem
      */
-    public void cancel() throws RemoteException, IOException;
+    public void cancel() throws GATInvocationException;
 
     /**
      * This operation returns the GATResource corresponding to this

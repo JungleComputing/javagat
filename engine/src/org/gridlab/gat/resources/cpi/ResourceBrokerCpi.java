@@ -1,22 +1,17 @@
 package org.gridlab.gat.resources.cpi;
 
-import java.io.IOException;
-import java.net.URISyntaxException;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.StringTokenizer;
 
-import org.gridlab.gat.GAT;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.GATObjectCreationException;
 import org.gridlab.gat.Preferences;
 import org.gridlab.gat.TimePeriod;
 import org.gridlab.gat.URI;
-import org.gridlab.gat.engine.GATEngine;
-import org.gridlab.gat.io.File;
 import org.gridlab.gat.resources.HardwareResourceDescription;
 import org.gridlab.gat.resources.Job;
 import org.gridlab.gat.resources.JobDescription;
@@ -62,7 +57,7 @@ public abstract class ResourceBrokerCpi implements ResourceBroker {
      * @see org.gridlab.gat.resources.ResourceBroker#findResources(org.gridlab.gat.resources.ResourceDescription)
      */
     public List findResources(ResourceDescription resourceDescription)
-            throws GATInvocationException, IOException {
+            throws GATInvocationException {
         throw new UnsupportedOperationException("Not implemented");
     }
 
@@ -73,7 +68,7 @@ public abstract class ResourceBrokerCpi implements ResourceBroker {
      *      org.gridlab.gat.util.TimePeriod)
      */
     public Reservation reserveResource(Resource resource, TimePeriod timePeriod)
-            throws GATInvocationException, IOException {
+            throws GATInvocationException {
         throw new UnsupportedOperationException("Not implemented");
     }
 
@@ -84,7 +79,7 @@ public abstract class ResourceBrokerCpi implements ResourceBroker {
      *      org.gridlab.gat.util.TimePeriod)
      */
     public Reservation reserveResource(ResourceDescription resourceDescription,
-            TimePeriod timePeriod) throws GATInvocationException, IOException {
+            TimePeriod timePeriod) throws GATInvocationException {
         throw new UnsupportedOperationException("Not implemented");
     }
 
@@ -94,7 +89,7 @@ public abstract class ResourceBrokerCpi implements ResourceBroker {
      * @see org.gridlab.gat.resources.ResourceBroker#submitJob(org.gridlab.gat.resources.JobDescription)
      */
     public Job submitJob(JobDescription description)
-            throws GATInvocationException, IOException {
+            throws GATInvocationException {
         throw new UnsupportedOperationException("Not implemented");
     }
 
@@ -105,42 +100,84 @@ public abstract class ResourceBrokerCpi implements ResourceBroker {
 
         if (sd == null) {
             throw new GATInvocationException(
-                "The job description does not contain a software description");
+                    "The job description does not contain a software description");
         }
 
         URI u = sd.getLocation();
 
         if (u == null) {
             throw new GATInvocationException(
-                "The Job description does not contain a location");
+                    "The Job description does not contain a location");
         }
 
         return u;
     }
 
-    // utility methods
-    protected int getCPUCount(JobDescription description)
+    protected boolean isJavaApplication(JobDescription description)
             throws GATInvocationException {
-        ResourceDescription rd = description.getResourceDescription();
+        SoftwareDescription sd = description.getSoftwareDescription();
 
-        if (rd == null) {
+        if (sd == null) {
             throw new GATInvocationException(
-                "The job description does not contain a resource description");
+                    "The job description does not contain a software description");
         }
 
-        if(!(rd instanceof HardwareResourceDescription)) {
-            throw new GATInvocationException("The resource description is not a hardware resource description");
+        String exeScheme = getLocationURI(description).getScheme();
+        if (exeScheme != null && exeScheme.equals("java")) {
+            return true;
         }
 
-        Object a = ((HardwareResourceDescription) rd).getResourceAttribute("cpu.count");
+        return false;
+    }
 
-        if(a == null) return 1;
-        
-        if(!(a instanceof String)) {
-            throw new GATInvocationException("the cpu count must be a string");
+    // utility methods
+    protected int getIntAttribute(JobDescription description, String name,
+            int defaultVal) {
+        SoftwareDescription sd = description.getSoftwareDescription();
+
+        if (sd == null) {
+            return defaultVal;
         }
-        
-        return Integer.parseInt((String) a);
+
+        return sd.getIntAttribute(name, defaultVal);
+    }
+
+    protected long getLongAttribute(JobDescription description, String name,
+            long defaultVal) {
+        SoftwareDescription sd = description.getSoftwareDescription();
+
+        if (sd == null) {
+            return defaultVal;
+        }
+        return sd.getLongAttribute(name, defaultVal);
+    }
+
+    protected String getStringAttribute(JobDescription description,
+            String name, String defaultVal) {
+        SoftwareDescription sd = description.getSoftwareDescription();
+
+        if (sd == null) {
+            return defaultVal;
+        }
+        return sd.getStringAttribute(name, defaultVal);
+    }
+
+    protected boolean getBooleanAttribute(JobDescription description,
+            String name, boolean defaultVal) {
+        SoftwareDescription sd = description.getSoftwareDescription();
+
+        if (sd == null) {
+            return defaultVal;
+        }
+        return sd.getBooleanAttribute(name, defaultVal);
+    }
+
+    protected int getCPUCount(JobDescription description) {
+        return getIntAttribute(description, "count", 1);
+    }
+
+    protected int getHostCount(JobDescription description) {
+        return getIntAttribute(description, "hostCount", 1);
     }
 
     protected String getLocation(JobDescription description)
@@ -149,7 +186,7 @@ public abstract class ResourceBrokerCpi implements ResourceBroker {
 
         if (u == null) {
             throw new GATInvocationException(
-                "The Job description does not contain a location");
+                    "The Job description does not contain a location");
         }
 
         String location = u.toString();
@@ -163,7 +200,7 @@ public abstract class ResourceBrokerCpi implements ResourceBroker {
 
         if (sd == null) {
             throw new GATInvocationException(
-                "The job description does not contain a software description");
+                    "The job description does not contain a software description");
         }
 
         return sd.getArguments();
@@ -185,281 +222,29 @@ public abstract class ResourceBrokerCpi implements ResourceBroker {
         return argString;
     }
 
-    /* Creates a file object for the destination of the preStaged src file */
-    protected File resolvePreStagedFile(File srcFile, String host)
-            throws GATInvocationException {
-        URI src = srcFile.toURI();
-        String path = new java.io.File(src.getPath()).getName();
-
-        String dest = "any://";
-        dest += ((src.getUserInfo() == null) ? "" : src.getUserInfo());
-        dest += host;
-        dest += ((src.getPort() == -1) ? "" : (":" + src.getPort()));
-        dest += ("/" + path);
-
-        try {
-            URI destURI = new URI(dest);
-
-            return GAT.createFile(gatContext, preferences, destURI);
-        } catch (Exception e) {
-            throw new GATInvocationException(
-                "Resource broker generic preStage", e);
-        }
-    }
-
-    /* also adds stdin to set of files to preStage */
-    protected Map resolvePreStagedFiles(JobDescription description, String host)
-            throws GATInvocationException {
-        SoftwareDescription sd = description.getSoftwareDescription();
-
-        if (sd == null) {
-            throw new GATInvocationException(
-                "The job description does not contain a software description");
-        }
-
-        Map result = new HashMap();
-        Map pre = sd.getPreStaged();
-
-        if (pre != null) {
-            Set keys = pre.keySet();
-            Iterator i = keys.iterator();
-
-            while (i.hasNext()) {
-                File srcFile = (File) i.next();
-                File destFile = (File) pre.get(srcFile);
-
-                if (destFile != null) { // already set manually
-                    result.put(srcFile, destFile);
-                } else {
-                    result.put(srcFile, resolvePreStagedFile(srcFile, host));
-                }
-            }
-        }
-
-        File stdin = sd.getStdin();
-
-        if (stdin != null) {
-            result.put(stdin, resolvePreStagedFile(stdin, host));
-        }
-
-        return result;
-    }
-
-    protected void preStageFiles(JobDescription description, String host)
-            throws GATInvocationException {
-        SoftwareDescription sd = description.getSoftwareDescription();
-
-        if (sd == null) {
-            throw new GATInvocationException(
-                "The job description does not contain a software description");
-        }
-
-        Map files = resolvePreStagedFiles(description, host);
-        Set keys = files.keySet();
-        Iterator i = keys.iterator();
-
-        while (i.hasNext()) {
-            File srcFile = (File) i.next();
-            File destFile = (File) files.get(srcFile);
-
-            try {
-                if (GATEngine.VERBOSE) {
-                    System.err.println("resource broker cpi prestage:");
-                    System.err.println("  copy " + srcFile.toURI() + " to "
-                        + destFile.toURI());
-                }
-
-                srcFile.copy(destFile.toURI());
-            } catch (Throwable e) {
-                throw new GATInvocationException("resource broker cpi", e);
-            }
-        }
-    }
-
-    protected File resolvePostStagedFile(File f, String host)
-            throws GATInvocationException {
-        File res = null;
-
-        URI src = f.toURI();
-
-        if (host == null) {
-            host = "";
-        }
-
-        String dest = "any://";
-        dest += ((src.getUserInfo() == null) ? "" : src.getUserInfo());
-        dest += host;
-        dest += ((src.getPort() == -1) ? "" : (":" + src.getPort()));
-        dest += ("/" + f.getPath());
-
-        URI destURI = null;
-
-        try {
-            destURI = new URI(dest);
-        } catch (URISyntaxException e) {
-            throw new GATInvocationException("resource broker cpi", e);
-        }
-
-        try {
-            res = GAT.createFile(gatContext, preferences, destURI);
-        } catch (GATObjectCreationException e) {
-            throw new GATInvocationException("resource broker cpi", e);
-        }
-
-        return res;
-    }
-
-    protected Map resolvePostStagedFiles(JobDescription description, String host)
-            throws GATInvocationException {
-        SoftwareDescription sd = description.getSoftwareDescription();
-
-        if (sd == null) {
-            throw new GATInvocationException(
-                "The job description does not contain a software description");
-        }
-
-        Map result = new HashMap();
-        Map post = sd.getPostStaged();
-
-        if (post != null) {
-            Set keys = post.keySet();
-            Iterator i = keys.iterator();
-
-            while (i.hasNext()) {
-                File srcFile = (File) i.next();
-                File destFile = (File) post.get(srcFile);
-                
-                if(destFile == null) {
-                    try {
-                        destFile = GAT.createFile(gatContext, preferences, srcFile.getName());
-                    } catch (GATObjectCreationException e) {
-                        throw new GATInvocationException("resourcebroker cpi", e);
-                    }
-                }
-                
-                result.put(resolvePostStagedFile(srcFile, host), destFile);
-            }
-        }
-
-        File stdout = sd.getStdout();
-        if (stdout != null) {
-            try {
-                File destFile = GAT.createFile(gatContext, preferences, stdout.getName());
-                result.put(resolvePostStagedFile(stdout, host), destFile);
-            } catch (GATObjectCreationException e) {
-                throw new GATInvocationException("resourcebroker cpi", e);
-            }
-        }
-
-        File stderr = sd.getStderr();
-        if (stderr != null) {
-            try {
-                File destFile = GAT.createFile(gatContext, preferences, stderr.getName());
-                result.put(resolvePostStagedFile(stderr, host), destFile);
-            } catch (GATObjectCreationException e) {
-                throw new GATInvocationException("resourcebroker cpi", e);
-            }
-        }
-
-        if(GATEngine.VERBOSE) {
-            System.err.println("RESOLVE_POST: ");
-            Set keys = result.keySet();
-            Iterator i = keys.iterator();
-
-            while (i.hasNext()) {
-                File srcFile = (File) i.next();
-                File destFile = (File) result.get(srcFile);
-                System.err.println("    " + srcFile.toURI() + " -> " + destFile.toURI());
-            }
-        }
-        
-        return result;
-    }
-
-    public void postStageFiles(JobDescription description, String host)
-            throws GATInvocationException {
-        SoftwareDescription sd = description.getSoftwareDescription();
-
-        if (sd == null) {
-            throw new GATInvocationException(
-                "The job description does not contain a software description");
-        }
-
-        Map files = resolvePostStagedFiles(description, host);
-        Set keys = files.keySet();
-        Iterator i = keys.iterator();
-
-        GATInvocationException exceptions = new GATInvocationException();
-        while (i.hasNext()) {
-            File srcFile = (File) i.next();
-            File destFile = (File) files.get(srcFile);
-
-            try {
-                if (!destFile.equals(srcFile)) {
-                    if (GATEngine.VERBOSE) {
-                        System.err.println("POSTSTAGE: " + srcFile.toURI() + " to "
-                            + destFile.toURI());
-                    }
-
-                    srcFile.copy(destFile.toURI());
-                }
-            } catch (Exception e) {
-                exceptions.add("resource broker cpi", e);
-            }
-        }
-
-        if(exceptions.getNrChildren() != 0) {
-            throw exceptions;
-        }
-    }
-
-    public void removePostStagedFiles(JobDescription description, String host)
-            throws GATInvocationException {
-        SoftwareDescription sd = description.getSoftwareDescription();
-
-        if (sd == null) {
-            throw new GATInvocationException(
-                "The job description does not contain a software description");
-        }
-
-        Map files = resolvePostStagedFiles(description, host);        
-        Set keys = files.keySet();
-        Iterator i = keys.iterator();
-
-        GATInvocationException exceptions = new GATInvocationException();
-        
-        while (i.hasNext()) {
-            File srcFile = (File) i.next();
-
-            try {
-                    if (GATEngine.VERBOSE) {
-                        System.err.println("REMOVE POSTSTAGED: " + srcFile.toURI());
-                    }
-
-                    // Just try to delete it, even though it might not exists.
-                    // We catch the exception and continue anyway.
-                    srcFile.delete();
-            } catch (Exception e) {
-                exceptions.add("resource broker cpi", e);
-            }
-        }
-        
-        if(exceptions.getNrChildren() != 0) {
-            throw exceptions;
-        }
-    }
-
     public String getHostname(JobDescription description)
             throws GATInvocationException {
+        String contactHostname = null;
+
+        String contact =
+                (String) preferences.get("ResourceBroker.jobmanagerContact");
+        if (contact != null) {
+            StringTokenizer st = new StringTokenizer(contact, ":/");
+            contactHostname = st.nextToken();
+        }
+
         ResourceDescription d = description.getResourceDescription();
 
         if (d == null) {
-            return null;
+            return contactHostname;
         }
 
         if (!(d instanceof HardwareResourceDescription)) {
+            if (contactHostname != null)
+                return contactHostname;
+
             throw new GATInvocationException(
-                "Currently only hardware resource descriptions are supported");
+                    "Currently only hardware resource descriptions are supported");
         }
 
         Map m = d.getDescription();
@@ -475,7 +260,6 @@ public abstract class ResourceBrokerCpi implements ResourceBroker {
                     return (String) val;
                 } else {
                     String[] hostList = (String[]) val;
-
                     return hostList[0];
                 }
             }
@@ -483,6 +267,6 @@ public abstract class ResourceBrokerCpi implements ResourceBroker {
             //            System.err.println("warning, ignoring key: " + key);
         }
 
-        return null;
+        return contactHostname;
     }
 }

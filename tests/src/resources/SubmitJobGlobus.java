@@ -25,8 +25,15 @@ import org.gridlab.gat.resources.SoftwareDescription;
  * @author rob
  */
 public class SubmitJobGlobus implements MetricListener {
-    public static void main(String[] args) throws Exception {
-        new SubmitJobGlobus().start(args);
+    public static void main(String[] args) {
+        try {
+            new SubmitJobGlobus().start(args);
+        } catch (Exception e) {
+            System.err.println("error: " + e);
+            e.printStackTrace();
+        } finally {
+            GAT.end();
+        }
     }
 
     public synchronized void processMetricEvent(MetricValue val) {
@@ -37,6 +44,7 @@ public class SubmitJobGlobus implements MetricListener {
         GATContext context = new GATContext();
         Preferences prefs = new Preferences();
         prefs.put("ResourceBroker.adaptor.name", "Globus");
+        prefs.put("ResourceBroker.jobmanagerContact", args[1]);
 
         File outFile = GAT.createFile(context, prefs,
             new URI("any:///out"));
@@ -47,9 +55,11 @@ public class SubmitJobGlobus implements MetricListener {
         sd.setLocation(new URI(args[0]));
         sd.setStdout(outFile);
         sd.setStderr(errFile);
+        if(args.length == 3) {
+            sd.addAttribute("queue", args[2]);
+        }
 
         Hashtable hardwareAttributes = new Hashtable();
-        hardwareAttributes.put("machine.node", "fs0.das2.cs.vu.nl");
 
         ResourceDescription rd = new HardwareResourceDescription(
             hardwareAttributes);
@@ -71,7 +81,5 @@ public class SubmitJobGlobus implements MetricListener {
 
         System.err.println("SubmitJobCallback: Job finished, state = "
             + job.getInfo());
-        
-        GAT.end();
     }
 }

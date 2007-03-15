@@ -6,7 +6,7 @@ package org.gridlab.gat.io.cpi.local;
 import java.io.FileNotFoundException;
 import java.io.RandomAccessFile;
 
-import org.gridlab.gat.AdaptorNotSelectedException;
+import org.gridlab.gat.AdaptorNotApplicableException;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.GATObjectCreationException;
@@ -26,12 +26,12 @@ public class LocalRandomAccessFileAdaptor extends RandomAccessFileCpi {
         super(gatContext, preferences, location, mode);
 
         if (!location.refersToLocalHost()) {
-            throw new AdaptorNotSelectedException(
+            throw new AdaptorNotApplicableException(
                 "Cannot use remote files with the local file adaptor");
         }
 
         if (!location.isCompatible("file")) {
-            throw new AdaptorNotSelectedException("cannot handle this URI");
+            throw new AdaptorNotApplicableException("cannot handle this URI");
         }
 
         try {

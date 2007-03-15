@@ -8,33 +8,32 @@
 package org.gridlab.gat.resources.cpi.sge;
 
 // org.ggf.drmaa imports
-import java.lang.String;
-import java.util.Collection;
-import java.util.Map;
 import java.util.HashMap;
 import java.util.Hashtable;
-import java.util.Set;
-import org.ggf.drmaa.*;
+import java.util.Map;
+
+import org.ggf.drmaa.DrmaaException;
+import org.ggf.drmaa.ExitTimeoutException;
 import org.ggf.drmaa.JobInfo;
-
-import org.gridlab.gat.engine.GATEngine;
-import org.gridlab.gat.monitoring.Metric;
-import org.gridlab.gat.monitoring.MetricDefinition;
-import org.gridlab.gat.monitoring.MetricValue;
+import org.ggf.drmaa.Session;
+import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
-
-import org.gridlab.gat.resources.Job;
+import org.gridlab.gat.Preferences;
+import org.gridlab.gat.engine.GATEngine;
+import org.gridlab.gat.monitoring.MetricDefinition;
 import org.gridlab.gat.resources.JobDescription;
+import org.gridlab.gat.resources.cpi.JobCpi;
+import org.gridlab.gat.resources.cpi.Sandbox;
 
 /**
  *
  * @author ole.weidner
  */
-public class SGEJob extends Job{
+public class SGEJob extends JobCpi {
     
     private String jobID;
     private MetricDefinition statusMetricDefinition;
-    private Metric statusMetric;
+//    private Metric statusMetric;
     private JobDescription jobDescription;
     private Session session;
     private Hashtable time;
@@ -60,7 +59,6 @@ public class SGEJob extends Job{
         }
         
         public void run() {
-            Thread thisThread = Thread.currentThread();
             while (state != Session.RUNNING) {
                 try {
                     state = session.getJobProgramStatus(jobID);
@@ -70,9 +68,9 @@ public class SGEJob extends Job{
                     else if( state == Session.DONE ) {
                         //TODO
                     }
-                    thisThread.sleep(SLEEP);
+                    Thread.sleep(SLEEP);
                 }
-                catch (DrmaaException e) {
+                catch (DrmaaException e) {e.printStackTrace();
                     //TODO
                 }
                 catch (InterruptedException e) {
@@ -109,20 +107,74 @@ public class SGEJob extends Job{
         }
         
         public void run() {
-            Thread thisThread = Thread.currentThread();
             while (state != Session.DONE) {
                 try {
                     state = session.getJobProgramStatus(jobID);
+                    
+                    switch (state)
+                    {
+                    case Session.FAILED: 	                
+                    	System.out.println("Job failed");
+                    	break;
+                    case Session.HOLD: 	                    
+                    	System.out.println("Job hold");
+                    	break;
+                    case Session.QUEUED_ACTIVE:             
+                    	System.out.println("Job queued active");
+                    	break;
+                    case Session.RELEASE:                   
+                    	System.out.println("Job released");
+                    	break;
+                    case Session.RESUME:                    
+                    	System.out.println("Job resumed");
+                    	break;
+                    case Session.RUNNING:                   
+                    	System.out.println("Job running");
+                    	break;
+//                    case Session.SUSPEND:                   System.out.println("Job suspended");
+                    case Session.SYSTEM_ON_HOLD:            
+                    	System.out.println("Job system on hold");
+                    	break;
+                    case Session.SYSTEM_SUSPENDED:          
+                    	System.out.println("Job system suspended");
+                    	break;
+                    case Session.TERMINATE:                 
+                    	System.out.println("Job terminate");
+                    	break;
+                    case Session.UNDETERMINED:              
+                    	System.out.println("Job undetermined");
+                    	break;
+                    case Session.USER_ON_HOLD:              
+                    	System.out.println("Job user on hold");
+                    	break;
+                    case Session.USER_SUSPENDED:            
+                    	System.out.println("Job user suspended");
+                    	break;
+                    case Session.USER_SYSTEM_ON_HOLD:       
+                    	System.out.println("Job user system on hold");
+                    	break;
+                    case Session.USER_SYSTEM_SUSPENDED:     
+                    	System.out.println("Job user system suspended");
+                    	break;
+                    	
+                    default: 		System.out.println("job: state " + state + "not found in drmaa");
+                    }
+                    
+                    System.out.println("state: " + state + " Session.UNDETERMINED: " + Session.UNDETERMINED);
                     if( state == Session.FAILED) {
                         //TODO
                     }
-                    thisThread.sleep(SLEEP);
+                    Thread.sleep(SLEEP);
                 }
-                catch (DrmaaException e) {
+                catch (DrmaaException e) 
+                {
+                	e.printStackTrace();
+                	break;
                     //TODO
                 }
-                catch (InterruptedException e) {
-                    //TODO
+                catch (InterruptedException e) 
+                {
+                    break;
                 }
             }            
             // Now we're in STOPPED state - set the time and exit
@@ -130,8 +182,9 @@ public class SGEJob extends Job{
         }
     }
     
-    public SGEJob(SGEBrokerAdaptor broker, JobDescription jobDescription,
-            Session session, String id) {
+    public SGEJob(GATContext gatContext, Preferences preferences, SGEBrokerAdaptor broker, JobDescription jobDescription,
+            Session session, String id, Sandbox sandbox) {
+        super(gatContext, preferences, jobDescription, sandbox);
         
         jobID = id;
         this.jobDescription = jobDescription;
@@ -144,16 +197,12 @@ public class SGEJob extends Job{
                 MetricDefinition.DISCRETE, "String", null, null, returnDef);
         
         GATEngine.registerMetric(this, "getJobStatus", statusMetricDefinition);
-        statusMetric = statusMetricDefinition.createMetric(null);
+//        statusMetric = statusMetricDefinition.createMetric(null);
         
         time = new Hashtable();
         
         jobStartListener jsl = new jobStartListener(this.session, this.jobID, time);
         new Thread(jsl).start();
-    }
-    
-    public JobDescription getJobDescription() {
-        return jobDescription;
     }
     
     public String getJobID() {
@@ -222,6 +271,7 @@ public class SGEJob extends Job{
             System.err.println("-- SGEJob EXCEPTION --");
             System.err.println("Got an exception while retrieving resource manager status:");
             System.err.println(e);
+            e.printStackTrace();
         }
     }
     
@@ -247,6 +297,7 @@ public class SGEJob extends Job{
             System.err.println("-- SGEJob EXCEPTION --");
             System.err.println("Got an exception while retrieving resource manager status:");
             System.err.println(e);
+            e.printStackTrace();
         }
         
         return m;
@@ -267,6 +318,7 @@ public class SGEJob extends Job{
             System.err.println("-- SGEJob EXCEPTION --");
             System.err.println("Got an exception while retrieving JobInfo:");
             System.err.println(e);
+            e.printStackTrace();
         }
         
         if( info != null ) {
@@ -291,6 +343,7 @@ public class SGEJob extends Job{
                 System.err.println("-- SGEJob EXCEPTION --");
                 System.err.println("Got an exception while trying to TERMINATE job:");
                 System.err.println(e);
+                e.printStackTrace();
             }
         }
     }

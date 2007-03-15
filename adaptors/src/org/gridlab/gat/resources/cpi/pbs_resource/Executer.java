@@ -20,7 +20,7 @@ import org.gridlab.gat.util.Environment;
  */
 public class Executer implements IParameter {
     private static final Map ARCH_TYPES = new HashMap();
-    private static final String sPbsBin;
+//    private static final String sPbsBin;
     private static String[] sExport;
 
     static {
@@ -35,7 +35,7 @@ public class Executer implements IParameter {
         exp.add(PATH + "=" + appPath);
         exp.add("LD_LIBRARY_PATH=" + pbsExec + "/lib/");
         setExport(exp);
-        sPbsBin = pbsExec + "/bin/";
+//        sPbsBin = pbsExec + "/bin/";
         ARCH_TYPES.put(IUname.OS_LINUX, IResources.PBS_LINUX);
         ARCH_TYPES.put(IUname.OS_SOLARIS + "." + IUname.TYPE_SPARC, IResources.PBS_SOLARIS5);
         ARCH_TYPES.put(IUname.OS_SOLARIS + "." + IUname.TYPE_AMD64, IResources.PBS_SOLARIS7);

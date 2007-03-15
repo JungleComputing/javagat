@@ -1,12 +1,9 @@
 package org.gridlab.gat.resources;
 
-import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
-import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
-import org.gridlab.gat.Preferences;
 import org.gridlab.gat.advert.Advertisable;
 import org.gridlab.gat.engine.GATEngine;
 import org.gridlab.gat.monitoring.Metric;
@@ -56,12 +53,6 @@ public abstract class Job implements Monitorable, Advertisable {
     
     /** The job state is unkown for some reason. May be a network problem. */
     public static final int UNKNOWN = 8;
-    
-    protected int state = INITIAL;
-
-    protected GATContext gatContext;
-
-    protected Preferences preferences;
 
     public static String getStateString(int state) {
         switch (state) {
@@ -88,9 +79,7 @@ public abstract class Job implements Monitorable, Advertisable {
         }
     }
 
-    public JobDescription getJobDescription() {
-        throw new RuntimeException("Not implemented");
-    }
+    public abstract JobDescription getJobDescription();
 
     /**
      * Stops the associated physical job. Upon a successful call to this method
@@ -104,10 +93,8 @@ public abstract class Job implements Monitorable, Advertisable {
      * 
      * @throws GATInvocationException
      *             Thrown upon problems accessing the remote instance
-     * @throws java.io.IOException
-     *             Upon non-remote IO problem
      */
-    public final void unSchedule() throws GATInvocationException, IOException {
+    public final void unSchedule() throws GATInvocationException {
         stop();
     }
 
@@ -118,28 +105,20 @@ public abstract class Job implements Monitorable, Advertisable {
      *
      * @throws GATInvocationException
      *             Thrown upon problems accessing the remote instance
-     * @throws java.io.IOException
-     *             Upon non-remote IO problem
      */
-    public void stop() throws GATInvocationException, IOException {
+    public void stop() throws GATInvocationException {
         throw new RuntimeException("Not implemented");
     }
 
     /**
      * This method returns the state of the associated . This is one of the
      * associated public member variables INITIAL, SCHEDULED,
-     * RUNNING, STOPPED, or SUBMISSSION_ERROR.
+     * RUNNING, STOPPED, UNKNOWN or SUBMISSSION_ERROR.
      *
      * @return This method returns the state of the associated , one of the
      *         associated member variables
-     * @throws GATInvocationException
-     *             Thrown upon problems accessing the remote instance
-     * @throws java.io.IOException
-     *             Upon non-remote IO problem
      */
-    public int getState() throws GATInvocationException, IOException {
-        throw new RuntimeException("Not implemented");
-    }
+    public abstract int getState();
 
     /**
      * This method returns an instance of the class java.util.Map which contains
@@ -157,33 +136,34 @@ public abstract class Job implements Monitorable, Advertisable {
      * </ul>
      * <p>
      * <em>state</em> The key state corresponds to a java.lang.String
-     * value which is the name of the state the job is in. The sate strings are literally
-     * the same as the name of the constants used, e.g., "RUNNING", or "STOPPED".
+     * value which is the name of the state the job is in. The state strings
+     * are literally the same as the name of the constants used,
+     * e.g., "RUNNING", or "STOPPED".
      * <p>
      * <em>hostname</em> The key hostname corresponds to a java.lang.String
      * value which is the name of the host on which the physical job is running,
-     * if is in the Running state. If the associated is not in the Running
-     * state, the value is null.
+     * if the job is in the Running state. If the associated job is not in the
+     * Running state, the value is null.
      * <p>
      * <em>submissiontime</em> The key submissiontime corresponds to a long
      * value which is the number of milliseconds after January 1, 1970, 00:00:00
      * GMT when the associated physical job was submitted. This value is null
-     * for a in the Constructed state otherwise it is not null.
+     * for a job in the Constructed state otherwise it is not null.
      * <p>
      * <em>starttime</em> The key starttime corresponds to a long value which
      * is the number of milliseconds after January 1, 1970, 00:00:00 GMT when
-     * the associated physical job was started. This value is null for a in the
-     * Submitted or Constructed states otherwise it is not null.
+     * the associated physical job was started. This value is null for a job in
+     * the Submitted or Constructed states otherwise it is not null.
      * <p>
-     * <em>stoptime<em>
+     * <em>stoptime</em>
      * The key stoptime corresponds to a long value which is the
      * number of milliseconds after January 1, 1970, 00:00:00 GMT when the
      * associated physical job stopped. This value is not null for a
-     *  in the Stopped state otherwise it is null.
+     * job in the Stopped state otherwise it is null.
      * <p>
-     * <em>postStageError<em>
-     * This key is present in the map if the application did run, but one or more files 
-     * could not be post staged.
+     * <em>postStageError</em>
+     * This key is present in the map if the application did run, but one or
+     * more files could not be post staged.
      * The data value attached to this key is the exception that occurred while 
      * poststageing.
      *
@@ -191,12 +171,11 @@ public abstract class Job implements Monitorable, Advertisable {
      * pairs returned in this java.util.Map as the need develops.
      *
      * @return An instance of the class java.util.Map which presents
-     * information about the associated .
+     * information about the associated job.
      * @throws GATInvocationException Thrown upon problems
      * accessing the remote instance
-     * @throws java.io.IOException Upon non-remote IO problem
      */
-    public Map getInfo() throws GATInvocationException, IOException {
+    public Map getInfo() throws GATInvocationException {
         throw new RuntimeException("Not implemented");
     }
 
@@ -210,10 +189,8 @@ public abstract class Job implements Monitorable, Advertisable {
      *         job ID
      * @throws GATInvocationException
      *             Thrown upon problems accessing the remote instance
-     * @throws java.io.IOException
-     *             Upon non-remote IO problem
      */
-    public String getJobID() throws GATInvocationException, IOException {
+    public String getJobID() throws GATInvocationException {
         throw new RuntimeException("Not implemented");
     }
 
@@ -235,10 +212,8 @@ public abstract class Job implements Monitorable, Advertisable {
      *
      * @throws GATInvocationException
      *             Thrown upon problems accessing the remote instance
-     * @throws java.io.IOException
-     *             Upon non-remote IO problem
      */
-    public void checkpoint() throws GATInvocationException, IOException {
+    public void checkpoint() throws GATInvocationException {
         throw new RuntimeException("Not implemented");
     }
 
@@ -251,7 +226,7 @@ public abstract class Job implements Monitorable, Advertisable {
      * @throws java.io.IOException
      *             Upon non-remote IO problem
      */
-    public void migrate() throws GATInvocationException, IOException {
+    public void migrate() throws GATInvocationException {
         throw new RuntimeException("Not implemented");
     }
 
@@ -276,11 +251,9 @@ public abstract class Job implements Monitorable, Advertisable {
      *            HardwareResourceDescription
      * @throws GATInvocationException
      *             Thrown upon problems accessing the remote instance
-     * @throws java.io.IOException
-     *             Upon non-remote IO problem
      */
     public void migrate(HardwareResourceDescription hardwareResourceDescription)
-            throws GATInvocationException, IOException {
+            throws GATInvocationException {
         throw new RuntimeException("Not implemented");
     }
 
@@ -319,14 +292,14 @@ public abstract class Job implements Monitorable, Advertisable {
     /** Put a job on hold, pause it.
      * This can be called in SCHEDULED or RUNNING state.
      */
-    public void hold() throws GATInvocationException, IOException {
+    public void hold() throws GATInvocationException {
         throw new RuntimeException("Not implemented");
     }
     
     /** Resume a job that was paused with the "hold" method.
      * This can be called only in the ON_HOLD state. 
      */
-    public void resume() throws GATInvocationException, IOException {
+    public void resume() throws GATInvocationException {
         throw new RuntimeException("Not implemented");
     }
     
@@ -364,4 +337,21 @@ public abstract class Job implements Monitorable, Advertisable {
             Metric metric) throws GATInvocationException {
         GATEngine.removeMetricListener(this, metricListener, metric);
     }
+    
+    public String toString() {
+        String res = "gat job";
+
+        String id = null;
+        try {
+            id = getJobID();
+        } catch (Exception e) {
+            // ignore
+        }
+        if(id != null) res += ", id is " + id;
+        else {
+            res += ", " + "not initialized";
+        }
+
+        return res;
+    }    
 }

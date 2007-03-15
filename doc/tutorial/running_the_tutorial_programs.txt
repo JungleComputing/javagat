@@ -1,7 +1,7 @@
 The tutorial programs don't do any parameter checking or error handling.
 This is intentional, the goals is to have simple and understandable demo's
 
-The source for the programs lives in JavaGATEngine/test/tutorial.
+The source for the programs lives in tests/tutorial.
 -----------------------------------------------------------------
 
 program 1: RemoteCopy
@@ -17,7 +17,8 @@ remote to local with ssh
 bin/run_gat_app tutorial.RemoteCopy ssh://mars.cs.vu.nl//bin/echo foo
 
 remote to local with gsiftp
-bin/run_gat_app tutorial.RemoteCopy gsiftp://eltoro.pcz.pl//bin/echo foo
+bin/run_gat_app tutorial.RemoteCopy gsiftp://fs1.das2.liacs.nl//bin/echo foo
+
 
 remote to local with any protocol (try -Dgat.verbose to find out which is used)
 bin/run_gat_app tutorial.RemoteCopy \
@@ -25,18 +26,20 @@ bin/run_gat_app tutorial.RemoteCopy \
   foo
 
 error in the URI, to show GAT error reporting
-bin/run_gat_app tutorial.RemoteCopy ssj://fs0.das2.cs.vu.nl//bin/echo foo
+bin/run_gat_app tutorial.RemoteCopy ssj://mars.cs.vu.nl//bin/echo foo
 
 bin/run_gat_app tutorial.RemoteCopy \
-  foo \
+  /bin/echo \
   any://mars.cs.vu.nl/foo
 
-bin/run_gat_app tutorial.RemoteCopy \
-  any://flits.cs.vu.nl//bin/echo \
-  any://mars.cs.vu.nl/hiha.dat
 
-Note that any://flits.cs.vu.nl//bin/echo is an absolute path, while
-any://mars.cs.vu.nl/hiha.dat is a relative path.
+bin/run_gat_app tutorial.RemoteCopy \
+  any://fs1.das2.liacs.nl//bin/echo \
+  any://fs2.das2.nikhef.nl/hiha.dat
+
+(Login to fs2 to show that the file actually ended up there.) 
+Note that any://fs1.das2.liacs.nl//bin/echo is an absolute path, while
+any://fs2.das2.nikhef.nl/hiha.dat is a relative path.
 
 
 
@@ -60,7 +63,7 @@ program 4: SubmitRemoteJob
 bin/run_gat_app tutorial.SubmitRemoteJob fs0.das2.cs.vu.nl
 cat hostname.txt
 
-bin/run_gat_app tutorial.SubmitRemoteJob skirit.ics.muni.cz
+bin/run_gat_app tutorial.SubmitRemoteJob fs1.das2.liacs.nl
 cat hostname.txt
 
 
@@ -95,6 +98,9 @@ program 8: ListMetricDefinitions
 
 bin/run_gat_app tutorial.ListMetricDefinitions
 
+grep for free mem metric, to show what kind of parameters it needs (for the next demo)
+bin/run_gat_app tutorial.ListMetricDefinitions | grep host\.mem\.free
+
 
 program 9: GetMetric
 --------------------
@@ -107,5 +113,5 @@ bin/run_gat_app tutorial.GetMetric node001.das2.cs.vu.nl
 program 10: SubmitJobCallback
 ----------------------------
 
-gsissh -p 2222 eltoro.pcz.pl rm -rf testDir
-bin/run_gat_app tutorial.SubmitJobCallback eltoro.pcz.pl 
+ssh fs1.das2.liacs.nl rm -rf testDir
+bin/run_gat_app tutorial.SubmitJobCallback fs1.das2.liacs.nl

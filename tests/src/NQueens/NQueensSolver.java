@@ -1,6 +1,9 @@
 package NQueens;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Hashtable;
+import java.util.Map;
 import java.util.StringTokenizer;
 
 import org.gridlab.gat.GAT;
@@ -8,176 +11,236 @@ import org.gridlab.gat.GATContext;
 import org.gridlab.gat.Preferences;
 import org.gridlab.gat.URI;
 import org.gridlab.gat.io.File;
+import org.gridlab.gat.monitoring.Metric;
+import org.gridlab.gat.monitoring.MetricDefinition;
+import org.gridlab.gat.monitoring.MetricListener;
+import org.gridlab.gat.monitoring.MetricValue;
 import org.gridlab.gat.resources.HardwareResourceDescription;
+import org.gridlab.gat.resources.Job;
 import org.gridlab.gat.resources.JobDescription;
 import org.gridlab.gat.resources.ResourceBroker;
 import org.gridlab.gat.resources.ResourceDescription;
 import org.gridlab.gat.resources.SoftwareDescription;
 
-public class NQueensSolver {
-    static GATContext context = new GATContext();
+public class NQueensSolver implements MetricListener {
 
-    private static File[] getStageIns(Task t)
+    static ArrayList jobList = new ArrayList();
 
-    {
-        boolean hasStdin = true, hasJars = true, hasInputs = true;
-        int i = 0;
+    HashMap globalEnv = new HashMap();
+    String globalClassPath = null;
 
-        if (t.stdinFile == null) hasStdin = false;
-        else if (t.stdinFile == "") hasStdin = false;
+    private class RunJob {
+        String application;
+        String numHosts = null;
+        boolean numHostsIsSoft = false;
+        String params = null;
+        String outPrefix = null;
+        String errPrefix = null;
+        String inFilename = null;
+        String classPath = null;
+        HashMap env = new HashMap();
 
-        if (t.jars == null) hasJars = false;
-        else if (t.jars.length == 0) hasJars = false;
-
-        if (t.inputFiles == null) hasInputs = false;
-        else if (t.inputFiles.length == 0) hasInputs = false;
-
-        if (!hasStdin && !hasJars && !hasInputs) return null;
-
-        File[] rv = new File[((hasInputs) ? t.inputFiles.length : 0)
-            + ((hasJars) ? t.jars.length : 0) + ((hasStdin) ? 1 : 0)];
-
-        try {
-            for (i = 0; i < t.inputFiles.length; i++)
-                rv[i] = GAT.createFile(context, new URI("any:///"
-                    + t.inputFiles[i]));
-
-            for (; i < t.inputFiles.length + t.jars.length; i++)
-                rv[i] = GAT.createFile(context, new URI("any:///"
-                    + t.jars[i - t.inputFiles.length]));
-
-            if (hasStdin)
-                rv[i] = GAT.createFile(context,
-                    new URI("any:///" + t.stdinFile));
-        } catch (Exception e) {
-            e.printStackTrace();
+        public RunJob(String application) {
+            if (! application.startsWith("java:")) {
+                application = "java:" + application;
+            }
+            this.application = application;
+            env = new HashMap(globalEnv);
         }
 
-        return rv;
-    }
-
-    private static File[] getStageOuts(Task t) {
-        boolean hasStdout = true, hasStderr = true;
-        int i = 0;
-
-        if (t.stdoutFile == null) hasStdout = false;
-        else if (t.stdoutFile == "") hasStdout = false;
-
-        if (t.stderrFile == null) hasStderr = false;
-        else if (t.stderrFile == "") hasStderr = false;
-
-        int noFiles = 0;
-        if (hasStdout) noFiles++;
-        if (hasStderr) noFiles++;
-        if (t.outputFiles != null) noFiles += t.outputFiles.length;
-
-        if (noFiles == 0) return null;
-
-        File[] rv = new File[noFiles];
-
-        try {
-            for (i = 0; i < t.outputFiles.length; i++) {
-                rv[i] = GAT.createFile(context, new URI("any:///"
-                    + t.outputFiles[i]));
+        public void setParams(String params) {
+            if (this.params != null) {
+                error("params set twice for job " + application);
             }
-            int index = i;
-
-            if (hasStdout) {
-                rv[index] = GAT.createFile(context, new URI("any:///"
-                    + t.stdoutFile));
-                ;
-                index++;
-            }
-
-            if (hasStderr) {
-                rv[index] = GAT.createFile(context, new URI("any:///"
-                    + t.stderrFile));
-                ;
-                index++;
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
+            this.params = params;
         }
 
-        return rv;
+        public void setOutputPrefix(String outPrefix) {
+            if (this.outPrefix != null) {
+                error("outPrefix set twice for job " + application);
+            }
+            this.outPrefix = outPrefix;
+        }
+
+        public void setErrorPrefix(String errPrefix) {
+            if (this.errPrefix != null) {
+                error("errPrefix set twice for job " + application);
+            }
+            this.errPrefix = errPrefix;
+        }
+
+        public void setInput(String inFilename) {
+            if (this.inFilename != null) {
+                error("inFilename set twice for job " + application);
+            }
+            this.inFilename = inFilename;
+        }
+
+        public void setClassPath(String classPath) {
+            if (this.classPath != null) {
+                error("classPath set twice for job " + application);
+            }
+            this.classPath = classPath;
+        }
+
+        public void setNumHosts(String numHosts, boolean numHostsIsSoft) {
+            if (this.numHosts != null) {
+                error("numHosts set twice for job " + application);
+            }
+            this.numHosts = numHosts;
+            this.numHostsIsSoft = numHostsIsSoft;
+        }
+
+        public void add() {
+            if (classPath == null) {
+                classPath = globalClassPath;
+            }
+            jobList.add(this);
+            if (numHosts == null) {
+                System.err.println("Warning: numHosts not set for job "
+                        + application);
+                System.err.println("   Using default (1).");
+                numHosts = "1";
+            }
+        }
+
+        public String toString() {
+            String str = application;
+            if (params != null) {
+                str += " " + params;
+            }
+            str += " (on " + numHosts + " hosts)";
+            return str;
+        }
     }
 
-    private static String getJarList(String[] jars) {
-        if (jars == null) return null;
-        if (jars.length == 0) return null;
+    static final GATContext context = new GATContext();
 
-        String rv = "";
+    int nJobs;
 
-        for (int i = 0; i < jars.length; i++)
-            rv = rv + jars[i] + ":";
+    int finishedJobs;
 
-        rv += ".";
-
-        return rv;
+    public synchronized void processMetricEvent(MetricValue val) {
+        System.err.println("SubmitJobCallback: Processing metric: "
+                + val.getMetric() + ", value is " + val.getValue());
+        String state = (String) val.getValue();
+        if (state.equals("STOPPED") || state.equals("SUBMISSION_ERROR")) {
+            finishedJobs++;
+            if (finishedJobs == nJobs) {
+                notifyAll();
+            }
+        }
     }
-
-    private static void enqueueStringList(String[] dest, String[] src,
-        int startIndex) {
-        for (int i = 0; i < src.length; i++)
-            dest[startIndex + i] = src[i];
-    }
-
-    /*
-     private static String printTask(Task t)
-     {
-     String rv="T("+t.taskNumber+", "+t.className+", "+t.stdoutFile+", "+t.stderrFile+", "+t.stdinFile+", ";
-
-     for(int i=0;i<t.parameters.length;i++)
-     rv+=t.parameters[i]+"; ";
-
-     rv+=", ";
-
-     for(int i=0;i<t.jars.length;i++)
-     rv+=t.jars[i]+"; ";
-
-     rv+=", ";
-
-     for(int i=0;i<t.inputFiles.length;i++)
-     rv+=t.inputFiles[i]+"; ";
-
-     rv+=", ";
-
-     for(int i=0;i<t.outputFiles.length;i++)
-     rv+=t.outputFiles[i]+"; ";
-
-     rv+=")";
-
-     return rv;
-     }
-     */
 
     public static void main(String[] args) {
-        String javaLocation = "/usr/local/sun-java/j2sdk1.4.2/j2sdk1.4.2/bin/java";
-        String[] inputParams = new String[4];
-        int jobIDNo = 0;
-        String nameServerHost = "fs0.das2.cs.vu.nl";
-        String nameServerPort = "32000";
+        new NQueensSolver().start(args);
+    }
 
-        String extJobID = args[args.length - 4];
-        String nameserver = args[args.length - 3];
-        String descriptors = args[args.length - 2];
-        //String registry = args[args.length-2];
-        int maxHosts = Integer.parseInt(args[args.length - 1]);
+    public static void usage() {
+        System.err.println("Usage: java NQueensSolver "
+                + "[ -descr \"<descriptorlist>\" |"
+                + " -vn <virtualNodeName> |"
+                + " -cp <globalclasspath> |"
+                + " -prop <globalprop>=<val> ]*"
+                + " [-job <javaclass> ["
+                + " -cp <classpath> |"
+                + " -param \"<params>\" |"
+                + " -nh <numHosts> |"
+                + " -softnh <numHosts> |"
+                + " -prop <prop>=<val> |"
+                + " -in <inputFile> |"
+                + " -out <outputFilePrefix> |"
+                + " -err <errorFilePrefix>]* ]*");
+    }
 
-        String jobID = extJobID + "_" + jobIDNo;
-        StringTokenizer tok = new StringTokenizer(nameserver, ":");
-        nameServerHost = tok.nextToken();
-        nameServerPort = tok.nextToken();
+    public static String getarg(String[] args, int index) {
+        if (index >= args.length) {
+            error("Missing argument for " + args[index-1]);
+            usage();
+            System.exit(1);
+        }
+        return args[index];
+    }
+
+    public static void error(String s) {
+        System.out.println(s);
+        usage();
+        System.exit(1);
+    }
+
+    public void start(String[] args) {
+        String descriptors = null;
+        String virtualNodeName = null;
+        RunJob currJob = null;
+
+        for (int i = 0; i < args.length; i++) {
+            if (false) {
+            } else if (args[i].equals("-descr")) {
+                if (descriptors != null) {
+                    error("You can specify only one descriptor list");
+                }
+                descriptors = getarg(args, ++i);
+            } else if (args[i].equals("-vn")) {
+                if (virtualNodeName != null) {
+                    error("You can specify only one virtualNodeName");
+                }
+                virtualNodeName = getarg(args, ++i);
+            } else if (args[i].equals("-prop")) {
+                String temp = getarg(args, ++i);
+                StringTokenizer tok = new StringTokenizer(temp, "=");
+                String propname = tok.nextToken();
+                String propval = tok.nextToken();
+                globalEnv.put(propname, propval);
+            } else if (args[i].equals("-cp")) {
+                globalClassPath = getarg(args, ++i);
+            } else if (args[i].equals("-job")) {
+                String application = getarg(args, ++i);
+                currJob = new RunJob(application);
+                for (++i; i < args.length; i++) {
+                    if (args[i].equals("-param")) {
+                        currJob.setParams(getarg(args, ++i));
+                    } else if (args[i].equals("-out")) {
+                        currJob.setOutputPrefix(getarg(args, ++i));
+                    } else if (args[i].equals("-in")) {
+                        currJob.setInput(getarg(args, ++i));
+                    } else if (args[i].equals("-err")) {
+                        currJob.setErrorPrefix(getarg(args, ++i));
+                    } else if (args[i].equals("-cp")) {
+                        currJob.setClassPath(getarg(args, ++i));
+                    } else if (args[i].equals("-nh")) {
+                        currJob.setNumHosts(getarg(args, ++i), false);
+                    } else if (args[i].equals("-softnh")) {
+                        currJob.setNumHosts(getarg(args, ++i), true);
+                    } else if (args[i].equals("-prop")) {
+                        String temp = getarg(args, ++i);
+                        StringTokenizer tok = new StringTokenizer(temp, "=");
+                        String propname = tok.nextToken();
+                        String propval = tok.nextToken();
+                        currJob.env.put(propname, propval);
+                    } else {
+                        i--;
+                        break;
+                    }
+                }
+                currJob.add();
+            } else {
+                System.err.println("Unrecognized option: " + args[i]);
+                usage();
+                System.exit(1);
+            }
+        }
+
+        if (descriptors == null) {
+            error("No ProActive descriptors provided");
+        }
 
         Preferences prefs = new Preferences();
-        prefs.put("ResourceBroker.adaptor.name", "proActive");
-
-        prefs.put("ResourceBroker.proActive.ibis.nameserver.jobID", jobID);
-        prefs.put("ResourceBroker.proActive.ibis.nameserver.host",
-            nameServerHost);
-        prefs.put("ResourceBroker.proActive.ibis.nameserver.port",
-            nameServerPort);
-        prefs.put("ResourceBroker.proActive.descriptors", descriptors);
+        prefs.put("ResourceBroker.adaptor.name", "ProActive");
+        prefs.put("ResourceBroker.ProActive.Descriptors", descriptors);
+        if (virtualNodeName != null) {
+            prefs.put("ResourceBroker.ProActive.VirtualNodeName",
+                    virtualNodeName);
+        }
 
         ResourceBroker broker = null;
 
@@ -188,123 +251,151 @@ public class NQueensSolver {
             System.exit(1);
         }
 
-        for (int hostID = 0; hostID < maxHosts; hostID++) {
-            inputParams[0] = args[0];
-            inputParams[1] = args[1];
-            inputParams[2] = "stdout_" + jobID;
-            inputParams[3] = "-satin-detailed-stats";
+        Job[] jobs = new Job[jobList.size()];
+
+        nJobs = jobs.length;
+        for (int i = 0; i < jobs.length; i++) {
+            RunJob job = (RunJob) jobList.get(i);
+
+            SoftwareDescription sd = new SoftwareDescription();
+
+            HashMap attrib = new HashMap();
+            attrib.put("hostCount", job.numHosts);
+            if (job.numHostsIsSoft) {
+                attrib.put("softHostCount", "");
+            }
+            if (job.classPath != null) {
+                attrib.put("classpath", job.classPath);
+            }
+            sd.setAttributes(attrib);
+
             try {
-                String className = "MyNQueens";
-                String protocol = "any";
-                String stdoutFile = null;
-                String stderrFile = "stderr_" + jobID;
-                String stdinFile = null;
-                // de trecut la linia de comanda ne-closed world
-                String[] JVMParameters = new String[8];
-                //String[] jars = new String[5];
-                String[] jars = new String[1];
-                String[] inputFiles = new String[0];
-                String[] outputFiles = new String[1];
-
-                outputFiles[0] = "stdout_" + jobID;
-
-                // de vazut cu log4j
-                JVMParameters[0] = "-Dibis.pool.total_hosts=" + maxHosts;
-                JVMParameters[1] = "-Dibis.name_server.host=" + nameServerHost;
-                JVMParameters[2] = "-Dibis.name_server.port=" + nameServerPort;
-                JVMParameters[3] = "-Dibis.name_server.key=jobID_" + jobID;
-                JVMParameters[4] = "-Dibis.pool.host_number=" + hostID;
-                JVMParameters[5] = "-Dsatin.ft=true";
-                JVMParameters[6] = "-Dibis.connect.control_links=RoutedMessages";
-                JVMParameters[7] = "-Dibis.connect.data_links=AnyTCP";
-
-                /*
-                 jars[0]="ibis-rob.jar";
-                 jars[1]="myNQueens-rob.jar";
-                 jars[2]="ibis-connect.jar";
-                 jars[3]="ibis-util.jar";
-                 jars[4]="colobus.jar";
-                 */
-
-                jars[0] = "nqueen.jar";
-
-                Task currentTask = new Task(className, stdoutFile, stderrFile,
-                    stdinFile, inputParams, JVMParameters, jars, inputFiles,
-                    outputFiles);
-
-                /* File mainClass = */GAT.createFile(context, new URI(protocol
-                    + ":///" + currentTask.className));
-
-                File stdout = null, stderr = null, stdin = null;
-
-                if (currentTask.stdoutFile != null)
-                    if (currentTask.stdoutFile != "")
-                        stdout = GAT.createFile(context, new URI(protocol
-                            + ":///" + currentTask.stdoutFile));
-
-                if (currentTask.stderrFile != null)
-                    if (currentTask.stderrFile != "")
-                        stderr = GAT.createFile(context, new URI(protocol
-                            + ":///" + currentTask.stderrFile));
-
-                if (currentTask.stdinFile != null)
-                    if (currentTask.stdinFile != "")
-                        stdin = GAT.createFile(context, new URI(protocol
-                            + ":///" + currentTask.stdinFile));
-
-                File[] stageIns = null;
-                File[] stageOuts = null;
-
-                stageIns = getStageIns(currentTask);
-                stageOuts = getStageOuts(currentTask);
-
-                String jarList = getJarList(currentTask.jars);
-
-                String[] arguments = null;
-                if (jarList != null) {
-                    arguments = new String[currentTask.parameters.length
-                        + currentTask.JVMParameters.length + 3];
-                    arguments[0] = "-cp";
-                    arguments[1] = jarList;
-                    enqueueStringList(arguments, currentTask.JVMParameters, 2);
-                    arguments[currentTask.JVMParameters.length + 2] = currentTask.className;
-                    enqueueStringList(arguments, currentTask.parameters,
-                        currentTask.JVMParameters.length + 3);
-                } else {
-                    arguments = new String[currentTask.parameters.length
-                        + currentTask.JVMParameters.length + 1];
-                    enqueueStringList(arguments, currentTask.JVMParameters, 0);
-                    arguments[currentTask.JVMParameters.length] = currentTask.className;
-                    enqueueStringList(arguments, currentTask.parameters,
-                        currentTask.JVMParameters.length + 1);
-                }
-
-                SoftwareDescription sd = new SoftwareDescription();
-
-                sd.setLocation(new URI("file:///" + javaLocation));
-
-                if (stdout != null) sd.setStdout(stdout);
-                if (stderr != null) sd.setStderr(stderr);
-                if (stdin != null) sd.setStdin(stdin);
-
-                if (stageIns != null) sd.setPreStaged(stageIns);
-
-                if (stageOuts != null) sd.setPostStaged(stageOuts);
-
-                sd.setArguments(arguments);
-
-                Hashtable ht = new Hashtable();
-
-                ResourceDescription rd = new HardwareResourceDescription(ht);
-
-                JobDescription jd = new JobDescription(sd, rd);
-
-                /* Job j= */broker.submitJob(jd);
-
-            } catch (Exception e) {
+                sd.setLocation(new URI(job.application));
+            } catch(Exception e) {
+                System.err.println("Error in URI " + job.application
+                        + ", job skipped");
                 e.printStackTrace();
+                nJobs--;
+                continue;
+            }
+
+            sd.setEnvironment(job.env);
+
+            if (job.params != null) {
+                sd.setArguments(new String[] { job.params });
+            }
+
+            File outFile = null;
+            File errFile = null;
+            File inFile = null;
+
+            if (job.outPrefix != null) {
+                try {
+                    outFile = GAT.createFile(context, prefs,
+                            new URI("any:///" + job.outPrefix + "." + i));
+                } catch(Exception e) {
+                    System.err.println("Could not createFile " + outFile
+                            + ", using stdout instead");
+                    e.printStackTrace();
+                }
+                if (outFile != null) {
+                    sd.setStdout(outFile);
+                }
+            }
+            if (job.errPrefix != null) {
+                try {
+                    errFile = GAT.createFile(context, prefs,
+                            new URI("any:///" + job.errPrefix + "." + i));
+                } catch(Exception e) {
+                    System.err.println("Could not createFile " + errFile
+                            + ", using stderr instead");
+                    e.printStackTrace();
+                }
+                if (errFile != null) {
+                    sd.setStderr(errFile);
+                }
+            }
+            if (job.inFilename != null) {
+                if (job.inFilename.equals("-")) {
+                    prefs.put("ResourceBroker.ProActive.needsStdin", "yes");
+                } else {
+                    try {
+                        inFile = GAT.createFile(context, prefs,
+                                new URI("any:///" + job.inFilename));
+                    } catch(Exception e) {
+                        System.err.println("Could not createFile " + job.inFilename
+                                + ", using stdin instead");
+                        e.printStackTrace();
+                    }
+                    if (inFile != null) {
+                        sd.setStdin(inFile);
+                    }
+                }
+            } else {
+                prefs.put("ResourceBroker.ProActive.needsStdin", "");
+            }
+ 
+            Hashtable ht = new Hashtable();
+            ResourceDescription rd = new HardwareResourceDescription(ht);
+            JobDescription jd = new JobDescription(sd, rd);
+            try {
+                jobs[i] = broker.submitJob(jd);
+            } catch(Exception e) {
+                System.err.println("submitJob of job \"" + job
+                        + "\" failed");
+                e.printStackTrace();
+                nJobs--;
+                continue;
+            }
+            try {
+                MetricDefinition md
+                        = jobs[i].getMetricDefinitionByName("job.status");
+                Metric m = md.createMetric(null);
+                jobs[i].addMetricListener(this, m); // register callback.
+            } catch(Exception e) {
+                System.err.println("Callback registration for job \"" + job
+                        + "\" failed, stopping job");
+                try {
+                    jobs[i].stop();
+                } catch(Exception e2) {
+                    // Ignored, what can we do here?
+                }
+                nJobs--;
+                continue;
             }
         }
-        //System.exit(0);
+
+        synchronized(this) {
+            while (finishedJobs < nJobs) {
+                try {
+                    wait();
+                } catch(Exception e) {
+                    // Ignored
+                }
+            }
+        }
+
+        for (int i = 0; i < jobs.length; i++) {
+            if (jobs[i] != null) {
+                Map info;
+                try {
+                    info = jobs[i].getInfo();
+                } catch(Exception e) {
+                    continue;
+                }
+                String state = (String) info.get("state");
+                if ("SUBMISSION_ERROR".equals(state)) {
+                    Throwable e = (Throwable) info.get("submissionError");
+                    if (e != null) {
+                        System.err.println("Exception for job "
+                                + jobList.get(i));
+                        e.printStackTrace();
+                    }
+                }
+            }
+        }
+
+        GAT.end();
+        System.exit(0); // Needed to end some ProActive threads ...
     }
 }

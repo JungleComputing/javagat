@@ -4,23 +4,20 @@ import ibis.util.IPUtils;
 
 import java.io.IOException;
 import java.io.OutputStream;
-import java.rmi.RemoteException;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
-import org.gridlab.gat.AdaptorNotApplicableException;
 import org.gridlab.gat.CommandNotFoundException;
-import org.gridlab.gat.FilePrestageException;
-import org.gridlab.gat.GAT;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.GATObjectCreationException;
+import org.gridlab.gat.MethodNotApplicableException;
 import org.gridlab.gat.Preferences;
 import org.gridlab.gat.TimePeriod;
 import org.gridlab.gat.URI;
 import org.gridlab.gat.engine.GATEngine;
-import org.gridlab.gat.io.FileInputStream;
-import org.gridlab.gat.io.FileOutputStream;
 import org.gridlab.gat.resources.Job;
 import org.gridlab.gat.resources.JobDescription;
 import org.gridlab.gat.resources.Reservation;
@@ -28,6 +25,7 @@ import org.gridlab.gat.resources.Resource;
 import org.gridlab.gat.resources.ResourceDescription;
 import org.gridlab.gat.resources.SoftwareDescription;
 import org.gridlab.gat.resources.cpi.ResourceBrokerCpi;
+import org.gridlab.gat.resources.cpi.Sandbox;
 import org.gridlab.gat.util.InputForwarder;
 import org.gridlab.gat.util.OutputForwarder;
 
@@ -118,6 +116,7 @@ public class LocalResourceBrokerAdaptor extends ResourceBrokerCpi {
      */
     public Job submitJob(JobDescription description)
             throws GATInvocationException {
+        long start = System.currentTimeMillis();
         SoftwareDescription sd = description.getSoftwareDescription();
 
         if (sd == null) {
@@ -125,10 +124,20 @@ public class LocalResourceBrokerAdaptor extends ResourceBrokerCpi {
                 "The job description does not contain a software description");
         }
 
-        // we do not support environment yet
+        // fill in the environment
+        String[] environment = null;
         Map env = sd.getEnvironment();
-        if(env != null && !env.isEmpty()) {
-            throw new AdaptorNotApplicableException("cannot handle environment");
+        int index = 0;
+        if (env != null) {
+            environment = new String[env.size()];
+            Set keys = env.keySet();
+            Iterator i = keys.iterator();
+            while (i.hasNext()) {
+                String key = (String) i.next();
+                String val = (String) env.get(key);
+                environment[index] = key + "=" + val;
+                index++;
+            }
         }
 
         URI location = getLocationURI(description);
@@ -137,40 +146,56 @@ public class LocalResourceBrokerAdaptor extends ResourceBrokerCpi {
         if (location.refersToLocalHost()) {
             path = location.getPath();
         } else {
-            throw new AdaptorNotApplicableException("not a local file: " + location);
+            throw new MethodNotApplicableException("not a local file: "
+                + location);
         }
 
         String host = getHostname(description);
         if (host != null) {
             if (!host.equals("localhost")
                 && !host.equals(IPUtils.getLocalHostName())) {
-                throw new AdaptorNotApplicableException(
+                throw new MethodNotApplicableException(
                     "cannot run jobs on remote machines with the local adaptor");
             }
         }
 
-        try {
-            preStageFiles(description, "localhost");
-        } catch (GATInvocationException e) {
-            throw new FilePrestageException("local broker", e);
+        String home = System.getProperty("user.home");
+        if(home == null) {
+            throw new GATInvocationException("local broker could not get user home dir");
         }
 
+        Sandbox sandbox = new Sandbox(gatContext, preferences, description, "localhost", home, true, true, true, true);
+        
         String command = path + " " + getArguments(description);
+
+        java.io.File f = new java.io.File(sandbox.getSandbox());
 
         if (GATEngine.VERBOSE) {
             System.err.println("running command: " + command);
+
+            if (environment != null) {
+                System.err.println("  environment:");
+                for (int i = 0; i < environment.length; i++) {
+                    System.err.println("    " + environment[i]);
+                }
+            }
+            
+            if (home != null) {
+                System.err.println("working dir is: " + f.getPath());
+            }
         }
 
         Process p = null;
+        long startRun = System.currentTimeMillis();
         try {
-            p = Runtime.getRuntime().exec(command.toString());
+            p = Runtime.getRuntime().exec(command.toString(), environment, f);
         } catch (IOException e) {
             throw new CommandNotFoundException("local broker", e);
         }
 
-        org.gridlab.gat.io.File stdin =  sd.getStdin();
-        org.gridlab.gat.io.File stdout = sd.getStdout();
-        org.gridlab.gat.io.File stderr = sd.getStderr();
+        org.gridlab.gat.io.File stdin  = sandbox.getResolvedStdin();
+        org.gridlab.gat.io.File stdout = sandbox.getResolvedStdout();
+        org.gridlab.gat.io.File stderr = sandbox.getResolvedStderr();
 
         if (stdin == null) {
             // close stdin.
@@ -181,48 +206,43 @@ public class LocalResourceBrokerAdaptor extends ResourceBrokerCpi {
             }
         } else {
             try {
-                FileInputStream fin = GAT.createFileInputStream(gatContext,
-                    preferences, stdin.toURI());
+                java.io.FileInputStream fin = new java.io.FileInputStream(stdin.getAbsolutePath());
                 OutputStream out = p.getOutputStream();
                 new InputForwarder(out, fin);
-            } catch (GATObjectCreationException e) {
+            } catch (Exception e) {
                 throw new GATInvocationException("local broker", e);
             }
         }
 
         OutputForwarder outForwarder = null;
-        
+
         // we must always read the output and error streams to avoid deadlocks
         if (stdout == null) {
             new OutputForwarder(p.getInputStream(), false); // throw away output
         } else {
-            stdout = resolvePostStagedFile(stdout, "localhost");
             try {
-                FileOutputStream out = GAT.createFileOutputStream(gatContext,
-                    preferences, stdout.toURI());
+                java.io.FileOutputStream out = new java.io.FileOutputStream(stdout.getAbsolutePath());
                 outForwarder = new OutputForwarder(p.getInputStream(), out);
-            } catch (GATObjectCreationException e) {
-                throw new GATInvocationException("local broker", e);
-            }
-        }
-        
-        OutputForwarder errForwarder = null;
-        
-        // we must always read the output and error streams to avoid deadlocks
-        if (stderr == null) {
-            new OutputForwarder(p.getErrorStream(), false); // throw away output
-        } else {
-            stderr = resolvePostStagedFile(stderr, "localhost");
-            try {
-                FileOutputStream out = GAT.createFileOutputStream(gatContext,
-                    preferences, stderr.toURI());
-                errForwarder = new OutputForwarder(p.getErrorStream(), out);
-            } catch (GATObjectCreationException e) {
+            } catch (Exception e) {
                 throw new GATInvocationException("local broker", e);
             }
         }
 
-        return new LocalJob(this, description, p, outForwarder, errForwarder);
+        OutputForwarder errForwarder = null;
+
+        // we must always read the output and error streams to avoid deadlocks
+        if (stderr == null) {
+            new OutputForwarder(p.getErrorStream(), false); // throw away output
+        } else {
+            try {
+                java.io.FileOutputStream out = new java.io.FileOutputStream(stderr.getAbsolutePath());
+                errForwarder = new OutputForwarder(p.getErrorStream(), out);
+            } catch (Exception e) {
+                throw new GATInvocationException("local broker", e);
+            }
+        }
+
+        return new LocalJob(gatContext, preferences, this, description, p, host, sandbox,  outForwarder, errForwarder, start, startRun);
     }
 
     /*
@@ -232,7 +252,7 @@ public class LocalResourceBrokerAdaptor extends ResourceBrokerCpi {
      *      org.gridlab.gat.util.TimePeriod)
      */
     public Reservation reserveResource(Resource resource, TimePeriod timePeriod)
-            throws RemoteException, IOException {
+             {
         throw new UnsupportedOperationException("Not implemented");
     }
 }

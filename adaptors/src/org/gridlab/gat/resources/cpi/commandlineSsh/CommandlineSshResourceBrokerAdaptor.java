@@ -2,17 +2,15 @@ package org.gridlab.gat.resources.cpi.commandlineSsh;
 
 import java.io.IOException;
 import java.io.OutputStream;
-import java.rmi.RemoteException;
 import java.util.List;
 import java.util.Map;
 
-import org.gridlab.gat.AdaptorNotApplicableException;
 import org.gridlab.gat.CommandNotFoundException;
-import org.gridlab.gat.FilePrestageException;
 import org.gridlab.gat.GAT;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.GATObjectCreationException;
+import org.gridlab.gat.MethodNotApplicableException;
 import org.gridlab.gat.Preferences;
 import org.gridlab.gat.TimePeriod;
 import org.gridlab.gat.URI;
@@ -28,6 +26,7 @@ import org.gridlab.gat.resources.Resource;
 import org.gridlab.gat.resources.ResourceDescription;
 import org.gridlab.gat.resources.SoftwareDescription;
 import org.gridlab.gat.resources.cpi.ResourceBrokerCpi;
+import org.gridlab.gat.resources.cpi.Sandbox;
 import org.gridlab.gat.util.InputForwarder;
 import org.gridlab.gat.util.OutputForwarder;
 
@@ -138,7 +137,7 @@ public class CommandlineSshResourceBrokerAdaptor extends ResourceBrokerCpi {
         // we do not support environment yet
         Map env = sd.getEnvironment();
         if(env != null && !env.isEmpty()) {
-            throw new AdaptorNotApplicableException("cannot handle environment");
+            throw new MethodNotApplicableException("cannot handle environment");
         }
 
         URI location = getLocationURI(description);
@@ -187,11 +186,7 @@ public class CommandlineSshResourceBrokerAdaptor extends ResourceBrokerCpi {
                 + " with username: " + sui.username + "; host: " + host);
         }
 
-        try {
-            preStageFiles(description, host);
-        } catch (GATInvocationException e) {
-            throw new FilePrestageException("local broker", e);
-        }
+        Sandbox sandbox = new Sandbox(gatContext, preferences, description, host, null, true, false, false, false);
 
         String command = null;
         if (windows) {
@@ -238,7 +233,7 @@ public class CommandlineSshResourceBrokerAdaptor extends ResourceBrokerCpi {
         } else {
             try {
                 FileInputStream fin = GAT.createFileInputStream(gatContext,
-                    preferences, stdin.toURI());
+                    preferences, stdin.toGATURI());
                 OutputStream out = p.getOutputStream();
                 new InputForwarder(out, fin);
             } catch (GATObjectCreationException e) {
@@ -252,10 +247,10 @@ public class CommandlineSshResourceBrokerAdaptor extends ResourceBrokerCpi {
         if (stdout == null) {
             new OutputForwarder(p.getInputStream(), false); // throw away output
         } else {
-            stdout = resolvePostStagedFile(stdout, host);
+            stdout = sandbox.getResolvedStdout();
             try {
                 FileOutputStream out = GAT.createFileOutputStream(gatContext,
-                    preferences, stdout.toURI());
+                    preferences, stdout.toGATURI());
                 outForwarder = new OutputForwarder(p.getInputStream(), out);
             } catch (GATObjectCreationException e) {
                 throw new GATInvocationException("commandlineSsh broker", e);
@@ -268,18 +263,17 @@ public class CommandlineSshResourceBrokerAdaptor extends ResourceBrokerCpi {
         if (stderr == null) {
             new OutputForwarder(p.getErrorStream(), false); // throw away output
         } else {
-            stderr = resolvePostStagedFile(stderr, host);
+            stderr = sandbox.getResolvedStderr();
             try {
                 FileOutputStream out = GAT.createFileOutputStream(gatContext,
-                    preferences, stderr.toURI());
+                    preferences, stderr.toGATURI());
                 errForwarder = new OutputForwarder(p.getErrorStream(), out);
             } catch (GATObjectCreationException e) {
                 throw new GATInvocationException("commandlineSsh broker", e);
             }
         }
 
-        return new CommandlineSshJob(this, description, p, outForwarder,
-            errForwarder);
+        return new CommandlineSshJob(gatContext, preferences, this, description, p, sandbox, outForwarder, errForwarder);
     }
 
     /*
@@ -289,7 +283,7 @@ public class CommandlineSshResourceBrokerAdaptor extends ResourceBrokerCpi {
      *      org.gridlab.gat.util.TimePeriod)
      */
     public Reservation reserveResource(Resource resource, TimePeriod timePeriod)
-            throws RemoteException, IOException {
+             {
         throw new UnsupportedOperationException("Not implemented");
     }
 }

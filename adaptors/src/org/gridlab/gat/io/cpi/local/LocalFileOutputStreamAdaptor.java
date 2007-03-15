@@ -3,7 +3,7 @@ package org.gridlab.gat.io.cpi.local;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
-import org.gridlab.gat.AdaptorNotSelectedException;
+import org.gridlab.gat.AdaptorNotApplicableException;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.GATObjectCreationException;
@@ -20,12 +20,12 @@ public class LocalFileOutputStreamAdaptor extends FileOutputStreamCpi {
         super(gatContext, preferences, location, append);
 
         if (!location.refersToLocalHost()) {
-            throw new AdaptorNotSelectedException(
+            throw new AdaptorNotApplicableException(
                 "Cannot use remote files with the local file output stream adaptor");
         }
 
         if (!location.isCompatible("file")) {
-            throw new AdaptorNotSelectedException("cannot handle this URI");
+            throw new AdaptorNotApplicableException("cannot handle this URI");
         }
 
         String path = location.getPath();

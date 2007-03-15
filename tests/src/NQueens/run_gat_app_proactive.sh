@@ -3,25 +3,23 @@
 # you should modify these to variables to point to the 
 # correct locations of your gat engine and adaptors
 
-GAT_ENGINE_LOCATION=/home/team2/team2/GAT
-GAT_ADAPTOR_LOCATION=/home/team2/team2/Adaptors
+GAT_ENGINE_LOCATION=/var/scratch/ceriel/javagat/engine
+GAT_ADAPTOR_LOCATION=/var/scratch/ceriel/javagat/adaptors
+GAT_TEST_LOCATION=/var/scratch/ceriel/javagat/tests
+PROACTIVE=/home2/ceriel/ProActive
 
 
 # ---- do not touch anything below this line ----
 
 add_to_classpath () {
-	DIRLIBS=${1}/*.jar
+	DIRLIBS=`cd "$1" && ls *.jar 2>/dev/null`
 	for i in ${DIRLIBS}
 	do
-		 # if the directory is empty, then it will return the input string
-		 # this is stupid, so case for it
-		 if [ "$i" != "${DIRLIBS}" ] ; then
-			if [ -z "$GAT_CLASSPATH" ] ; then
-		GAT_CLASSPATH=$i
-			else
-		GAT_CLASSPATH="$i":$GAT_CLASSPATH
-			fi
-		 fi
+	    if [ -z "$GAT_CLASSPATH" ] ; then
+		GAT_CLASSPATH="$1/$i"
+	    else
+		GAT_CLASSPATH="$GAT_CLASSPATH:$1/$i"
+	     fi
 	done
 }
 
@@ -32,19 +30,15 @@ GAT_ADAPTORS=$GAT_ADAPTOR_LOCATION/lib
 GAT_ADAPTOR_EXTERNAL_JARS=$GAT_ADAPTOR_LOCATION/external
 
 add_to_classpath $GAT_ENGINE_EXTERNAL_JARS
+add_to_classpath $GAT_TEST_LOCATION/lib
 
 #ProActive related
 workingDir=`dirname $0`
 . $workingDir/env.sh
 
-OUR_CP=$GAT_ENGINE_JAR:$GAT_CLASSPATH:$GAT_ENGINE_LOCATION/tmp:.:$CLASSPATH
+GAT_CLASSPATH="$GAT_ENGINE_JAR:$GAT_CLASSPATH:$GAT_ADAPTORS/ProActiveBrokerAdaptor.jar"
+OUR_CP="$GAT_CLASSPATH:.:$CLASSPATH"
 
-OUR_CP=.:$GAT_ADAPTORS/ProActiveBrokerAdaptor.jar:$OUR_CP
+export CLASSPATH="$OUR_CP"
 
-OUR_CP=nqueen.jar:$OUR_CP
-
-echo $OUR_CP
-
-export CLASSPATH=$OUR_CP
-
-java -Dgat.adaptor.path=$GAT_ADAPTORS:$GAT_ADAPTOR_EXTERNAL_JARS -Djava.security.manager -Djava.security.policy=$PROACTIVE/scripts/proactive.java.policy -Dproactive.configuration=/home/team2/ProActiveConfiguration_team2.xml -Dproactive.useIPaddress=true $*
+$JAVACMD -Dproactive.useIPaddress=true -Dgat.adaptor.path=$GAT_ADAPTORS:$GAT_ADAPTOR_EXTERNAL_JARS test.NQueens ....

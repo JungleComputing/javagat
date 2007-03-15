@@ -49,7 +49,7 @@ public class SubmitJobLocalDemo implements MetricListener {
         sd.setLocation(new URI("file:////bin/date"));
         sd.setStdout(outFile);
         sd.setStderr(errFile);
-        sd.setPreStaged(stageInFile);
+        sd.addPreStagedFile(stageInFile);
 
         Hashtable hardwareAttributes = new Hashtable();
         ResourceDescription rd = new HardwareResourceDescription(

@@ -17,7 +17,7 @@ set GAT_ADAPTORS=%GAT_ADAPTOR_LOCATION%\lib;%GAT_GRIDLAB_ADAPTOR_LOCATION%\lib
 :: Create the path with the JAR files
 SET GAT_CLASSPATH=
 
-FOR %%i IN ("%GAT_ENGINE_LIBS%\*.jar") DO CALL "%GAT_ENGINE_LOCATION%\bin\AddToGATClassPath.bat" %%i
-FOR %%i IN ("%GAT_TESTS_LIB%\*.jar") DO CALL "%GAT_ENGINE_LOCATION%\bin\AddToGATClassPath.bat" %%i
+FOR %%i IN ("%GAT_ENGINE_LIBS%\*.jar") DO CALL "%GAT_LOCATION%\bin\AddToGATClassPath.bat" %%i
+FOR %%i IN ("%GAT_TESTS_LIB%\*.jar") DO CALL "%GAT_LOCATION%\bin\AddToGATClassPath.bat" %%i
 
-java -cp %CLASSPATH%;%GAT_CLASSPATH% -Dlog4j.configuration=file:%GAT_LOCATION%\log4j.properties -Dgat.adaptor.path=%GAT_ADAPTORS% %*
+java -cp "%CLASSPATH%";"%GAT_CLASSPATH%" -Dlog4j.configuration=file:"%GAT_LOCATION%"\log4j.properties -Dgat.adaptor.path="%GAT_ADAPTORS%" %*

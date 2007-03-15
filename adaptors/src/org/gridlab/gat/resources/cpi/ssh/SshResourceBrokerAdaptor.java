@@ -1,20 +1,18 @@
 package org.gridlab.gat.resources.cpi.ssh;
 
-import java.io.IOException;
 import java.io.OutputStream;
 import java.net.URISyntaxException;
-import java.rmi.RemoteException;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.gridlab.gat.AdaptorNotApplicableException;
 import org.gridlab.gat.GAT;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.GATObjectCreationException;
+import org.gridlab.gat.MethodNotApplicableException;
 import org.gridlab.gat.Preferences;
 import org.gridlab.gat.TimePeriod;
 import org.gridlab.gat.URI;
@@ -31,6 +29,7 @@ import org.gridlab.gat.resources.Resource;
 import org.gridlab.gat.resources.ResourceDescription;
 import org.gridlab.gat.resources.SoftwareDescription;
 import org.gridlab.gat.resources.cpi.ResourceBrokerCpi;
+import org.gridlab.gat.resources.cpi.Sandbox;
 import org.gridlab.gat.util.InputForwarder;
 import org.gridlab.gat.util.OutputForwarder;
 
@@ -100,8 +99,8 @@ public class SshResourceBrokerAdaptor extends ResourceBrokerCpi {
      * 
      * @see org.gridlab.gat.resources.ResourceBroker#submitJob(org.gridlab.gat.resources.JobDescription)
      */
-    public Job submitJob(JobDescription description)
-        throws GATInvocationException, IOException {
+    public Job submitJob(JobDescription description) throws GATInvocationException {
+        try {
         SoftwareDescription sd = description.getSoftwareDescription();
         if (sd == null) {
             throw new GATInvocationException(
@@ -111,7 +110,7 @@ public class SshResourceBrokerAdaptor extends ResourceBrokerCpi {
         // we do not support environment yet
         Map env = sd.getEnvironment();
         if(env != null && !env.isEmpty()) {
-            throw new AdaptorNotApplicableException("cannot handle environment");
+            throw new MethodNotApplicableException("cannot handle environment");
         }
 
         URI location = getLocationURI(description);
@@ -156,7 +155,7 @@ public class SshResourceBrokerAdaptor extends ResourceBrokerCpi {
         }
 
         int retry = 0;
-        Channel channel;
+        Channel channel = null;
         while (true) {
             try {
                 session.connect();
@@ -172,9 +171,10 @@ public class SshResourceBrokerAdaptor extends ResourceBrokerCpi {
                 // unauthenticated connections. Just retry a couple of times.
                 if (e.getMessage().equals("invalid server's version string")) {
                     retry++;
-                    if (retry > 5) {
+                    if (retry > 3) {
+                        session.disconnect();
                         throw new GATInvocationException(
-                            "could not open a SSH channel (after 5 retries): "
+                            "could not open a SSH channel (after 3 retries): "
                                 + e);
                     }
 
@@ -187,6 +187,7 @@ public class SshResourceBrokerAdaptor extends ResourceBrokerCpi {
                         System.err.println("retry SSH connect");
                     }
                 } else {
+                    session.disconnect();
                     throw new GATInvocationException(
                         "could not open a SSH channel: " + e);
                 }
@@ -211,7 +212,7 @@ public class SshResourceBrokerAdaptor extends ResourceBrokerCpi {
         } else {
             try {
                 FileInputStream fin = GAT.createFileInputStream(gatContext,
-                    preferences, stdin.toURI());
+                    preferences, stdin.toGATURI());
 
                 OutputStream out = channel.getOutputStream();
                 new InputForwarder(out, fin);
@@ -232,7 +233,7 @@ public class SshResourceBrokerAdaptor extends ResourceBrokerCpi {
         } else {
             try {
                 FileOutputStream out = GAT.createFileOutputStream(gatContext,
-                    preferences, stdout.toURI());
+                    preferences, stdout.toGATURI());
 
                 new OutputForwarder(channel.getInputStream(), out);
 
@@ -251,7 +252,7 @@ public class SshResourceBrokerAdaptor extends ResourceBrokerCpi {
         } else {
             try {
                 FileOutputStream out = GAT.createFileOutputStream(gatContext,
-                    preferences, stderr.toURI());
+                    preferences, stderr.toGATURI());
 
                 new OutputForwarder(((ChannelExec) channel).getErrStream(), out);
 
@@ -264,7 +265,7 @@ public class SshResourceBrokerAdaptor extends ResourceBrokerCpi {
             System.err.println("finished setting stderr");
         }
 
-        preStageFiles(description, host);
+        Sandbox sandbox = new Sandbox(gatContext, preferences, description, host, null, true, false, false, false);
 
         try {
             channel.connect();
@@ -273,8 +274,11 @@ public class SshResourceBrokerAdaptor extends ResourceBrokerCpi {
                 "Ssh broker: could not connect on " + "channel using SSH", e);
         }
 
-        Job j = new SshJob(this, description, session, channel, host);
+        Job j = new SshJob(gatContext, preferences, this, description, session, channel, sandbox);
         return j;
+        } catch (Exception e) {
+            throw new GATInvocationException("ssh", e);
+        }
     }
 
     /*
@@ -284,7 +288,7 @@ public class SshResourceBrokerAdaptor extends ResourceBrokerCpi {
      *      org.gridlab.gat.util.TimePeriod)
      */
     public Reservation reserveResource(Resource resource, TimePeriod timePeriod)
-        throws RemoteException, IOException {
+        {
         throw new UnsupportedOperationException("Not implemented");
     }
 
@@ -414,7 +418,7 @@ public class SshResourceBrokerAdaptor extends ResourceBrokerCpi {
     /* should be protected in the ResourceBrokerCpi class*/
     protected File resolvePreStagedFile(File srcFile, String host)
         throws GATInvocationException {
-        URI src = srcFile.toURI();
+        URI src = srcFile.toGATURI();
         String path = new java.io.File(src.getPath()).getName();
 
         String dest = "any://";
@@ -436,7 +440,7 @@ public class SshResourceBrokerAdaptor extends ResourceBrokerCpi {
         throws GATInvocationException {
         File res = null;
 
-        URI src = f.toURI();
+        URI src = f.toGATURI();
 
         if (host == null) host = "";
 

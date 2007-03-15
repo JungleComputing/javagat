@@ -17,8 +17,6 @@ import org.gridlab.gat.resources.ResourceDescription;
 import org.gridlab.gat.resources.SoftwareDescription;
 
 public class SubmitJobCallback implements MetricListener {
-    boolean exit = false;
-
     public static void main(String[] args) throws Exception {
         try {
             new SubmitJobCallback().start(args);
@@ -39,7 +37,6 @@ public class SubmitJobCallback implements MetricListener {
             + val.getMetric() + ", value is " + state);
 
         if (state.equals("STOPPED") || state.equals("SUBMISSION_ERROR")) {
-            exit = true;
             notifyAll();
         }
     }
@@ -51,7 +48,7 @@ public class SubmitJobCallback implements MetricListener {
         SoftwareDescription sd = new SoftwareDescription();
         sd.setLocation("any://" + hostname + "//bin/hostname");
         sd.setStdout(outFile);
-        sd.setPreStaged(stageInDir);
+        sd.addPreStagedFile(stageInDir);
 
         Hashtable attributes = new Hashtable();
         attributes.put("machine.node", hostname);
@@ -76,8 +73,10 @@ public class SubmitJobCallback implements MetricListener {
 
         // wait until job is done
         synchronized (this) {
-            while (!exit)
+            while ((job.getState() != Job.STOPPED)
+                    && (job.getState() != Job.SUBMISSION_ERROR)) {
                 wait();
+            }
         }
     }
 }

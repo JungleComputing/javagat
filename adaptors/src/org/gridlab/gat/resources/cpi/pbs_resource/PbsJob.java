@@ -9,32 +9,33 @@ import java.io.IOException;
 import java.util.Iterator;
 import java.util.Map;
 
+import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
-import org.gridlab.gat.resources.Job;
+import org.gridlab.gat.Preferences;
 import org.gridlab.gat.resources.JobDescription;
+import org.gridlab.gat.resources.cpi.JobCpi;
+import org.gridlab.gat.resources.cpi.Sandbox;
 
 /**
  * @author  doerl
  */
-public class PbsJob extends Job {
+public class PbsJob extends JobCpi {
     private static final long serialVersionUID = -5229286816606473700L;
 
     private PbsBrokerAdaptor mBroker;
-
-    private JobDescription mDescription;
 
     private String mId;
 
     //	private Metric mMetric;
 
-    public PbsJob(PbsBrokerAdaptor broker, JobDescription description, String id) {
+    public PbsJob(GATContext gatContext, Preferences preferences, PbsBrokerAdaptor broker, JobDescription description, String id, Sandbox sandbox) {
+        super(gatContext, preferences, description, sandbox);
         mBroker = broker;
-        mDescription = description;
         mId = id;
         state = INITIAL;
     }
 
-    public Map getInfo() throws GATInvocationException, IOException {
+    public Map getInfo() throws GATInvocationException {
         Map result = mBroker.getInfo(mId);
         result.put("state", getStateString(getState()));
         for (Iterator i = result.keySet().iterator(); i.hasNext();) {
@@ -69,17 +70,17 @@ public class PbsJob extends Job {
         return result;
     }
 
-    public JobDescription getJobDescription() {
-        return mDescription;
-    }
-
-    public String getJobID() throws GATInvocationException, IOException {
+    public String getJobID() throws GATInvocationException {
         return mId;
     }
 
-    public int getState() throws GATInvocationException, IOException {
+    public int getState() {
         synchronized (this) {
-            state = mBroker.getState(mId);
+            try {
+                state = mBroker.getState(mId);
+            } catch (IOException e) {
+                state = UNKNOWN;
+            }
         }
         return state;
     }
@@ -88,7 +89,7 @@ public class PbsJob extends Job {
         throw new Error("Not implemented");
     }
 
-    public void stop() throws GATInvocationException, IOException {
+    public void stop() throws GATInvocationException {
         if (getState() == SCHEDULED) {
             PbsMessage res = mBroker.unScheduleJob(mId);
             if (!res.isDeleted()) {
@@ -110,7 +111,7 @@ public class PbsJob extends Job {
         throw new GATInvocationException("Job is not running or scheduled");
     }
 
-    public void hold() throws GATInvocationException, IOException {
+    public void hold() throws GATInvocationException {
         if (getState() != RUNNING) {
             throw new GATInvocationException("Job is not running");
         }
@@ -121,7 +122,7 @@ public class PbsJob extends Job {
         state = INITIAL;
     }
 
-    public void release() throws GATInvocationException, IOException {
+    public void release() throws GATInvocationException {
         if (getState() != RUNNING) {
             throw new GATInvocationException("Job is not running");
         }

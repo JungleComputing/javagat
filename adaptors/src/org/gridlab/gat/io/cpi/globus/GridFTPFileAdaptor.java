@@ -7,6 +7,7 @@ import org.globus.ftp.DataChannelAuthentication;
 import org.globus.ftp.FTPClient;
 import org.globus.ftp.GridFTPClient;
 import org.globus.ftp.GridFTPSession;
+import org.gridlab.gat.AdaptorNotApplicableException;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.GATObjectCreationException;
@@ -17,7 +18,7 @@ import org.gridlab.gat.security.globus.GlobusSecurityUtils;
 import org.ietf.jgss.GSSCredential;
 
 public class GridFTPFileAdaptor extends GlobusFileAdaptor {
-    static final boolean USE_CLIENT_CACHING = true;
+    static boolean USE_CLIENT_CACHING = true;
 
     private static Hashtable clienttable = new Hashtable();
 
@@ -32,14 +33,14 @@ public class GridFTPFileAdaptor extends GlobusFileAdaptor {
      *                   this LocalFileAdaptor.
      */
     public GridFTPFileAdaptor(GATContext gatContext, Preferences preferences,
-            URI location) throws GATObjectCreationException {
+        URI location) throws GATObjectCreationException {
         super(gatContext, preferences, location);
 
         if (!location.isCompatible("gsiftp") && !location.isCompatible("file")) {
-            throw new GATObjectCreationException("cannot handle this URI ("
+            throw new AdaptorNotApplicableException("cannot handle this URI ("
                 + location + ")");
         }
-
+        
         /* try to get the credential to see whether we need to instantiate this adaptor alltogether */
         try {
             GlobusSecurityUtils.getGlobusCredential(gatContext, preferences,
@@ -47,20 +48,6 @@ public class GridFTPFileAdaptor extends GlobusFileAdaptor {
         } catch (Exception e) {
             throw new GATObjectCreationException("gridftp", e);
         }
-
-        /* try to create a client to see if the remote site has a gridftp server */
-        /*
-        GridFTPClient c = null;
-
-        try {
-            c = doWorkCreateClient(gatContext, preferences, location);
-        } catch (GATInvocationException e) {
-            throw new GATObjectCreationException(
-                "Could not create a gridftp connection to " + location, e);
-        }
-
-        doWorkDestroyClient(c, location, preferences);
-        */
     }
 
     protected URI fixURI(URI in) {
@@ -68,7 +55,7 @@ public class GridFTPFileAdaptor extends GlobusFileAdaptor {
     }
 
     private static void setConnectionOptions(GridFTPClient c,
-            Preferences preferences) throws Exception {
+        Preferences preferences) throws Exception {
         c.setType(GridFTPSession.TYPE_IMAGE);
 
         //        c.setMode(GridFTPSession.MODE_BLOCK);
@@ -81,7 +68,7 @@ public class GridFTPFileAdaptor extends GlobusFileAdaptor {
      * by default.
      */
     private static void setSecurityOptions(GridFTPClient c,
-            Preferences preferences) throws Exception {
+        Preferences preferences) throws Exception {
         if (isOldServer(preferences)) {
             if (GATEngine.DEBUG) {
                 System.err
@@ -124,7 +111,7 @@ public class GridFTPFileAdaptor extends GlobusFileAdaptor {
      * @param hostURI the uri of the FTP host
      */
     protected FTPClient createClient(GATContext gatContext,
-            Preferences preferences, URI hostURI) throws GATInvocationException {
+        Preferences preferences, URI hostURI) throws GATInvocationException {
         return doWorkCreateClient(gatContext, preferences, hostURI);
     }
 
@@ -133,8 +120,24 @@ public class GridFTPFileAdaptor extends GlobusFileAdaptor {
             + hostURI.getPort(DEFAULT_GRIDFTP_PORT) + preferences; // include preferences in key
     }
 
+    private static synchronized GridFTPClient getFromCache(String key) {
+        GridFTPClient client = null;
+        if (clienttable.containsKey(key)) {
+            client = (GridFTPClient) clienttable.remove(key);
+        }
+        return client;
+    }
+
+    private static synchronized boolean putInCache(String key, FTPClient c) {
+        if (!clienttable.containsKey(key)) {
+            clienttable.put(key, c);
+            return true;
+        }
+        return false;
+    }
+
     protected static GridFTPClient doWorkCreateClient(GATContext gatContext,
-            Preferences preferences, URI hostURI) throws GATInvocationException {
+        Preferences preferences, URI hostURI) throws GATInvocationException {
         try {
             GSSCredential credential = GlobusSecurityUtils.getGlobusCredential(
                 gatContext, preferences, "gridftp", hostURI,
@@ -157,9 +160,8 @@ public class GridFTPFileAdaptor extends GlobusFileAdaptor {
             String key = getClientKey(hostURI, preferences);
 
             if (USE_CLIENT_CACHING) {
-                if (clienttable.containsKey(key)) {
-                    client = (GridFTPClient) clienttable.remove(key);
-
+                client = getFromCache(key);
+                if (client != null) {
                     try {
                         // test if the client is still alive
                         client.getCurrentDir();
@@ -210,17 +212,15 @@ public class GridFTPFileAdaptor extends GlobusFileAdaptor {
     }
 
     protected void destroyClient(FTPClient c, URI hostURI,
-            Preferences preferences) {
+        Preferences preferences) {
         doWorkDestroyClient(c, hostURI, preferences);
     }
 
     protected static void doWorkDestroyClient(FTPClient c, URI hostURI,
-            Preferences preferences) {
+        Preferences preferences) {
         String key = getClientKey(hostURI, preferences);
 
-        if (USE_CLIENT_CACHING && !clienttable.containsKey(key)) {
-            clienttable.put(key, c);
-        } else {
+        if (!USE_CLIENT_CACHING || !putInCache(key, c)) {
             try {
                 if (GATEngine.DEBUG) {
                     System.err.println("closing gridftp client");
@@ -244,6 +244,8 @@ public class GridFTPFileAdaptor extends GlobusFileAdaptor {
             System.err.println("end of gridftp adaptor");
         }
 
+        USE_CLIENT_CACHING = false;
+        
         // destroy the cache
         if (clienttable == null) {
             return;

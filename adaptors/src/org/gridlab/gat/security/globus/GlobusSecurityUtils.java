@@ -28,11 +28,13 @@ import org.ietf.jgss.GSSException;
 
 class GlobusContextCreator implements SecurityContextCreator {
     public SecurityContext createDefaultSecurityContext(GATContext gatContext,
-        Preferences preferences, URI location)
-        throws CouldNotInitializeCredentialException, CredentialExpiredException {
+            Preferences preferences, URI location)
+            throws CouldNotInitializeCredentialException,
+            CredentialExpiredException {
         // automatically try and insert the default credential if it was not there.
-        GSSCredential cred = GlobusSecurityUtils.getDefaultCredential(
-            gatContext, preferences);
+        GSSCredential cred =
+                GlobusSecurityUtils.getDefaultCredential(gatContext,
+                    preferences);
         CertificateSecurityContext c = new CertificateSecurityContext();
         c.putDataObject("globus", cred);
 
@@ -40,19 +42,21 @@ class GlobusContextCreator implements SecurityContextCreator {
     }
 
     public Object createUserData(GATContext gatContext,
-        Preferences preferences, URI location, SecurityContext inContext)
-        throws CouldNotInitializeCredentialException, CredentialExpiredException {
+            Preferences preferences, URI location, SecurityContext inContext)
+            throws CouldNotInitializeCredentialException,
+            CredentialExpiredException {
         // we need to try to create the credential given the securityContext
         // if it fails, just try the next one on the list.
         if (inContext instanceof CertificateSecurityContext) {
-            CertificateSecurityContext c = (CertificateSecurityContext) inContext;
+            CertificateSecurityContext c =
+                    (CertificateSecurityContext) inContext;
 
             URI keyURI = c.getKeyfile();
 
             if (keyURI == null) { // no key file specified, use default location
-
-                GSSCredential cred = GlobusSecurityUtils.getDefaultCredential(
-                    gatContext, preferences);
+                GSSCredential cred =
+                        GlobusSecurityUtils.getDefaultCredential(gatContext,
+                            preferences);
 
                 return cred;
             } else if (!keyURI.refersToLocalHost()) {
@@ -65,17 +69,19 @@ class GlobusContextCreator implements SecurityContextCreator {
                             + keyURI.getPath());
                 }
 
-                GSSCredential cred = GlobusSecurityUtils.getCredential(keyURI
-                    .getPath());
+                GSSCredential cred =
+                        GlobusSecurityUtils.getCredential(keyURI.getPath());
 
                 return cred;
             }
         } else if (inContext instanceof MyProxyServerCredentialSecurityContext) {
-            MyProxyServerCredentialSecurityContext c = (MyProxyServerCredentialSecurityContext) inContext;
+            MyProxyServerCredentialSecurityContext c =
+                    (MyProxyServerCredentialSecurityContext) inContext;
 
-            GSSCredential cred = GlobusSecurityUtils
-                .getCredentialFromMyProxyServer(c.getHost(), c.getPort(), c
-                    .getUsername(), c.getPassword());
+            GSSCredential cred =
+                    GlobusSecurityUtils.getCredentialFromMyProxyServer(c
+                        .getHost(), c.getPort(), c.getUsername(), c
+                        .getPassword());
 
             return cred;
         }
@@ -100,12 +106,13 @@ public class GlobusSecurityUtils {
      * @throws GATInvocationException
      */
     public static GSSCredential getGlobusCredential(GATContext context,
-        Preferences preferences, String adaptorName, URI location,
-        int defaultPort) throws CouldNotInitializeCredentialException,
-        CredentialExpiredException {
-        Object data = SecurityContextUtils.getSecurityUserData(context,
-            preferences, adaptorName, "globus", location, defaultPort,
-            new GlobusContextCreator());
+            Preferences preferences, String adaptorName, URI location,
+            int defaultPort) throws CouldNotInitializeCredentialException,
+            CredentialExpiredException {
+        Object data =
+                SecurityContextUtils.getSecurityUserData(context, preferences,
+                    adaptorName, "globus", location, defaultPort,
+                    new GlobusContextCreator());
 
         GSSCredential c = (GSSCredential) data;
 
@@ -134,8 +141,9 @@ public class GlobusSecurityUtils {
      * <P> Next, it tries to get the default proxy from the default location.
      */
     protected static GSSCredential getDefaultCredential(GATContext gatContext,
-        Preferences preferences) throws CouldNotInitializeCredentialException,
-        CredentialExpiredException {
+            Preferences preferences)
+            throws CouldNotInitializeCredentialException,
+            CredentialExpiredException {
         GSSCredential credential = null;
 
         // First check the gat preferences for a valid credential explicitly
@@ -177,12 +185,12 @@ public class GlobusSecurityUtils {
 
         try {
             // Get the user credential
-            ExtendedGSSManager manager = (ExtendedGSSManager) ExtendedGSSManager
-                .getInstance();
+            ExtendedGSSManager manager =
+                    (ExtendedGSSManager) ExtendedGSSManager.getInstance();
 
             // try to get default user proxy certificate from file in /tmp
-            credential = manager
-                .createCredential(GSSCredential.INITIATE_AND_ACCEPT);
+            credential =
+                    manager.createCredential(GSSCredential.INITIATE_AND_ACCEPT);
         } catch (GSSException x) {
             if (GATEngine.DEBUG) {
                 System.err.println("default credential failed: " + x);
@@ -204,8 +212,9 @@ public class GlobusSecurityUtils {
 
         try {
             GlobusCredential globusCred = new GlobusCredential(file);
-            credential = new GlobusGSSCredentialImpl(globusCred,
-                GSSCredential.INITIATE_AND_ACCEPT);
+            credential =
+                    new GlobusGSSCredentialImpl(globusCred,
+                        GSSCredential.INITIATE_AND_ACCEPT);
         } catch (Exception x) {
             if (GATEngine.DEBUG) {
                 System.err.println("loading credential from file " + file
@@ -224,8 +233,8 @@ public class GlobusSecurityUtils {
 
     // try to get user credential from MyProxyServer
     public static GSSCredential getCredentialFromMyProxyServer(String host,
-        int port, String user, String password)
-        throws CouldNotInitializeCredentialException {
+            int port, String user, String password)
+            throws CouldNotInitializeCredentialException {
         if (GATEngine.DEBUG) {
             System.err.println("trying to get credential from MyProxyServer");
         }
@@ -254,18 +263,22 @@ public class GlobusSecurityUtils {
 
     // try to get the credential passed in through the gat preferences
     public static GSSCredential getCredentialFromPreferences(
-        GATContext context, Preferences preferences) {
+            GATContext context, Preferences preferences) {
         GSSCredential credential = null;
 
         try {
-            GlobusCredential globusCred = new GlobusCredential(
-                new ByteArrayInputStream(((String) preferences
-                    .get("globusCert")).getBytes("UTF-8")));
+            String val = (String) preferences.get("globusCert");
+            if (val == null) return null;
+            GlobusCredential globusCred =
+                    new GlobusCredential(new ByteArrayInputStream(val
+                        .getBytes("UTF-8")));
+
             if (GATEngine.DEBUG)
                 System.err.println("Found proxy.  Good for "
                     + globusCred.getTimeLeft());
-            credential = new GlobusGSSCredentialImpl(globusCred,
-                GSSCredential.INITIATE_AND_ACCEPT);
+            credential =
+                    new GlobusGSSCredentialImpl(globusCred,
+                        GSSCredential.INITIATE_AND_ACCEPT);
         } catch (Exception x) {
             if (GATEngine.DEBUG) {
                 System.err

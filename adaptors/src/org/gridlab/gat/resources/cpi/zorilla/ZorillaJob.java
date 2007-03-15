@@ -3,16 +3,22 @@
  */
 package org.gridlab.gat.resources.cpi.zorilla;
 
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+
 import nl.vu.zorilla.zoni.JobInfo;
 import nl.vu.zorilla.zoni.ZoniConnection;
 import nl.vu.zorilla.zoni.ZoniException;
 import nl.vu.zorilla.zoni.ZoniProtocol;
 
 import org.apache.log4j.Logger;
+import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
+import org.gridlab.gat.Preferences;
 import org.gridlab.gat.URI;
 import org.gridlab.gat.engine.GATEngine;
-
 import org.gridlab.gat.io.File;
 import org.gridlab.gat.monitoring.Metric;
 import org.gridlab.gat.monitoring.MetricDefinition;
@@ -20,16 +26,12 @@ import org.gridlab.gat.monitoring.MetricValue;
 import org.gridlab.gat.resources.Job;
 import org.gridlab.gat.resources.JobDescription;
 import org.gridlab.gat.resources.SoftwareDescription;
-
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
+import org.gridlab.gat.resources.cpi.JobCpi;
 
 /**
- * @author rob
+ * @author ndrost
  */
-public class ZorillaJob extends Job implements Runnable {
+public class ZorillaJob extends JobCpi implements Runnable {
 
     private static final Logger logger = Logger.getLogger(ZorillaJob.class);
 
@@ -61,7 +63,7 @@ public class ZorillaJob extends Job implements Runnable {
             return null;
         }
 
-        if (!file.toURI().isLocal()) {
+        if (!file.toGATURI().isLocal()) {
             throw new GATInvocationException(
                     "zorilla can only handle local files");
         }
@@ -97,8 +99,9 @@ public class ZorillaJob extends Job implements Runnable {
         return result;
     }
 
-    ZorillaJob(ZorillaResourceBrokerAdaptor broker, JobDescription description)
+    ZorillaJob(GATContext gatContext, Preferences preferences, ZorillaResourceBrokerAdaptor broker, JobDescription description)
             throws GATInvocationException {
+        super(gatContext, preferences, description, null);
         this.broker = broker;
         this.description = description;
 
@@ -213,15 +216,6 @@ public class ZorillaJob extends Job implements Runnable {
     /*
      * (non-Javadoc)
      * 
-     * @see org.gridlab.gat.resources.Job#getJobDescription()
-     */
-    public JobDescription getJobDescription() {
-        return description;
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
      * @see org.gridlab.gat.resources.Job#getJobID()
      */
     public synchronized String getJobID() {
@@ -273,18 +267,12 @@ public class ZorillaJob extends Job implements Runnable {
         throw new GATInvocationException("unknown Zorilla phase: " + phase);
     }
 
-    public synchronized int getState() throws GATInvocationException {
-        return state(info.getPhase());
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.gridlab.gat.advert.Advertisable#marshal()
-     */
-    public String marshal() {
-        // FIXME: Auto-generated method stub
-        return null;
+    public synchronized int getState() {
+        try {
+            return state(info.getPhase());
+        } catch (Exception e) {
+            return UNKNOWN;
+        }
     }
 
     private void doCallBack() throws GATInvocationException {
@@ -297,6 +285,7 @@ public class ZorillaJob extends Job implements Runnable {
                 // no need to do callback, no significant change
                 return;
             }
+            lastState = state;
             v = new MetricValue(this, getStateString(state), statusMetric,
                     System.currentTimeMillis());
         }

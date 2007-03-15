@@ -5,23 +5,25 @@ package org.gridlab.gat.resources.cpi.local;
 
 import ibis.util.IPUtils;
 
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
+import org.gridlab.gat.Preferences;
 import org.gridlab.gat.engine.GATEngine;
 import org.gridlab.gat.monitoring.Metric;
 import org.gridlab.gat.monitoring.MetricDefinition;
 import org.gridlab.gat.monitoring.MetricValue;
-import org.gridlab.gat.resources.Job;
 import org.gridlab.gat.resources.JobDescription;
+import org.gridlab.gat.resources.cpi.JobCpi;
+import org.gridlab.gat.resources.cpi.Sandbox;
 import org.gridlab.gat.util.OutputForwarder;
 
 /**
  * @author rob
  */
-public class LocalJob extends Job {
+public class LocalJob extends JobCpi {
     class ProcessWaiter extends Thread {
         ProcessWaiter() {
             start();
@@ -30,6 +32,7 @@ public class LocalJob extends Job {
         public void run() {
             try {
                 int exitValue = p.waitFor();
+                runTime = System.currentTimeMillis() - runTime;
                 
                 // Wait for the output forwarders to finish!
                 // You may lose output if you don't -- Jason
@@ -48,37 +51,36 @@ public class LocalJob extends Job {
         }
     }
 
-    static int globalJobID = 0;
+//    private LocalResourceBrokerAdaptor broker;
 
-    LocalResourceBrokerAdaptor broker;
+    private int jobID;
 
-    GATInvocationException postStageException = null;
+    private Process p;
 
-    JobDescription description;
+    private int exitVal = 0;
 
-    int jobID;
+    private MetricDefinition statusMetricDefinition;
 
-    Process p;
+    private Metric statusMetric;
 
-    int exitVal = 0;
+    private OutputForwarder out;
 
-    MetricDefinition statusMetricDefinition;
-
-    Metric statusMetric;
-
-    OutputForwarder out;
-
-    OutputForwarder err;
+    private OutputForwarder err;
     
-    LocalJob(LocalResourceBrokerAdaptor broker, JobDescription description,
-            Process p, OutputForwarder out, OutputForwarder err) {
-        this.broker = broker;
-        this.description = description;
+    private long startTime;
+    private long runTime;
+  
+    LocalJob(GATContext gatContext, Preferences preferences, LocalResourceBrokerAdaptor broker, JobDescription description,
+            Process p, String host, Sandbox sandbox, OutputForwarder out, OutputForwarder err, long startTime, long startRun) {
+        super(gatContext, preferences, description, sandbox);
+//        this.broker = broker;
         jobID = allocJobID();
         state = RUNNING;
         this.p = p;
         this.out = out;
         this.err = err;
+        this.startTime = startTime;
+        this.runTime = startRun;
         
         // Tell the engine that we provide job.status events
         HashMap returnDef = new HashMap();
@@ -91,16 +93,12 @@ public class LocalJob extends Job {
         new ProcessWaiter();
     }
 
-    static synchronized int allocJobID() {
-        return globalJobID++;
-    }
-
     /*
      * (non-Javadoc)
      *
      * @see org.gridlab.gat.resources.Job#getInfo()
      */
-    public synchronized Map getInfo() {
+    public synchronized Map getInfo() throws GATInvocationException {
         HashMap m = new HashMap();
 
         // update state
@@ -114,6 +112,12 @@ public class LocalJob extends Job {
 
         if (postStageException != null) {
             m.put("postStageError", postStageException);
+        }
+        if (deleteException != null) {
+            m.put("deleteError", deleteException);
+        }
+        if (wipeException != null) {
+            m.put("wipeError", wipeException);
         }
 
         return m;
@@ -130,38 +134,10 @@ public class LocalJob extends Job {
     /*
      * (non-Javadoc)
      *
-     * @see org.gridlab.gat.resources.Job#getJobDescription()
-     */
-    public JobDescription getJobDescription() {
-        return description;
-    }
-
-    /*
-     * (non-Javadoc)
-     *
      * @see org.gridlab.gat.resources.Job#getJobID()
      */
-    public String getJobID() throws GATInvocationException, IOException {
+    public String getJobID() throws GATInvocationException {
         return "" + jobID;
-    }
-
-    /*
-     * (non-Javadoc)
-     *
-     * @see org.gridlab.gat.resources.Job#getState()
-     */
-    public synchronized int getState() {
-        return state;
-    }
-
-    /*
-     * (non-Javadoc)
-     *
-     * @see org.gridlab.gat.advert.Advertisable#marshal()
-     */
-    public String marshal() {
-        // TODO Auto-generated method stub
-        return null;
     }
 
     void finished(int exitValue) {
@@ -178,15 +154,9 @@ public class LocalJob extends Job {
         }
         GATEngine.fireMetric(this, v);
 
-        GATInvocationException tmpExc = null;
-        try {
-            broker.postStageFiles(description, "localhost");
-        } catch (GATInvocationException e) {
-            tmpExc = e;
-        }
-
+        sandbox.retrieveAndCleanup(this);
+        
         synchronized (this) {
-            postStageException = tmpExc;
             state = STOPPED;
             v = new MetricValue(this, getStateString(state), statusMetric, System
                 .currentTimeMillis());
@@ -196,22 +166,47 @@ public class LocalJob extends Job {
             }
         }
         GATEngine.fireMetric(this, v);
+        finished();
+
+        if(GATEngine.TIMING) {
+            System.err.println("TIMING: job " + jobID + ":" 
+                    + " preStage: " + sandbox.getPreStageTime()
+                    + " run: " + runTime
+                    + " postStage: " + sandbox.getPostStageTime()
+                    + " wipe: " + sandbox.getWipeTime()
+                    + " delete: " + sandbox.getDeleteTime()
+                    + " total: " + (System.currentTimeMillis() - startTime)
+            );
+        }
     }
 
-    public void stop() throws GATInvocationException, IOException {
-        MetricValue v;
-        
+    public void stop() throws GATInvocationException {
+        MetricValue v = null;
+
         synchronized (this) {
             if (p!= null) p.destroy();
+            state = POST_STAGING;
+            v = new MetricValue(this, getStateString(state), statusMetric, System
+                .currentTimeMillis());
+            if (GATEngine.DEBUG) {
+                System.err.println("default job callback: firing event: " + v);
+            }
+        }
+        GATEngine.fireMetric(this, v);
+
+        sandbox.retrieveAndCleanup(this);
+        
+        synchronized (this) {
             state = STOPPED;
             v = new MetricValue(this, getStateString(state), statusMetric, System
                 .currentTimeMillis());
         }
-
+        
         if (GATEngine.DEBUG) {
             System.err.println("default job callback: firing event: " + v);
         }
 
         GATEngine.fireMetric(this, v);
+        finished();
     }
 }

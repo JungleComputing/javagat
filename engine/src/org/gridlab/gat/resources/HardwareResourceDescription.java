@@ -36,7 +36,7 @@ import java.util.Map;
  * describe a hardware resource.</li>
  * <li>A list of SoftwareResourceDescription instances each of which describes
  * a software resource upon which the parent hardware resource depends.</li>
- * <i>A list of HardwareResourceDescription instances each of which describes a
+ * <li>A list of HardwareResourceDescription instances each of which describes a
  * hardware resource upon which the parent hardware resource depends.</li>
  * </ul>
  * The GAT-API defines a minimum set of supported name/value pairs which can be

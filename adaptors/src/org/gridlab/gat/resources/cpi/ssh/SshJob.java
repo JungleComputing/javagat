@@ -3,17 +3,19 @@
  */
 package org.gridlab.gat.resources.cpi.ssh;
 
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
+import org.gridlab.gat.Preferences;
 import org.gridlab.gat.engine.GATEngine;
 import org.gridlab.gat.monitoring.Metric;
 import org.gridlab.gat.monitoring.MetricDefinition;
 import org.gridlab.gat.monitoring.MetricValue;
-import org.gridlab.gat.resources.Job;
 import org.gridlab.gat.resources.JobDescription;
+import org.gridlab.gat.resources.cpi.JobCpi;
+import org.gridlab.gat.resources.cpi.Sandbox;
 
 import com.jcraft.jsch.Channel;
 import com.jcraft.jsch.Session;
@@ -21,10 +23,12 @@ import com.jcraft.jsch.Session;
 /**
  * @author rob
  */
-public class SshJob extends Job {
+public class SshJob extends JobCpi {
     class ProcessWaiter extends Thread {
 
         ProcessWaiter() {
+            setName("ssh resourceBroker adaptor waiter");
+            setDaemon(true);
             start();
         }
 
@@ -49,17 +53,11 @@ public class SshJob extends Job {
 
     GATInvocationException postStageException = null;
 
-    JobDescription description;
-
     int jobID;
 
     Channel channel;
 
     Session session;
-
-    String host;
-
-    static int globalJobID = 0;
 
     int exitVal = 0;
 
@@ -67,20 +65,15 @@ public class SshJob extends Job {
 
     Metric statusMetric;
 
-    static synchronized int allocJobID() {
-        return globalJobID++;
-    }
-
-    SshJob(SshResourceBrokerAdaptor broker, JobDescription description,
-        Session session, Channel channel, String host)
+    SshJob(GATContext gatContext, Preferences preferences, SshResourceBrokerAdaptor broker, JobDescription description,
+        Session session, Channel channel, Sandbox sandbox)
         throws GATInvocationException {
+        super(gatContext, preferences, description, sandbox);
         this.broker = broker;
-        this.description = description;
         jobID = allocJobID();
         state = RUNNING;
         this.session = session;
         this.channel = channel;
-        this.host = host;
 
         // Tell the engine that we provide job.status events
         HashMap returnDef = new HashMap();
@@ -98,15 +91,14 @@ public class SshJob extends Job {
      * 
      * @see org.gridlab.gat.resources.Job#getInfo()
      */
-    public synchronized Map getInfo() throws GATInvocationException,
-        IOException {
+    public synchronized Map getInfo() {
         HashMap m = new HashMap();
         // update state
         getState();
 
         m.put("state", getStateString(state));
         m.put("exitValue", "" + exitVal);
-        m.put("hostname", host);
+        m.put("hostname", sandbox.getHost());
 
         if (postStageException != null) {
             m.put("postStageError", postStageException);
@@ -118,39 +110,10 @@ public class SshJob extends Job {
     /*
      * (non-Javadoc)
      * 
-     * @see org.gridlab.gat.resources.Job#getJobDescription()
-     */
-    public JobDescription getJobDescription() {
-        return description;
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
      * @see org.gridlab.gat.resources.Job#getJobID()
      */
-    public String getJobID() throws GATInvocationException, IOException {
+    public String getJobID() {
         return "" + jobID;
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.gridlab.gat.resources.Job#getState()
-     */
-    public synchronized int getState() throws GATInvocationException,
-        IOException {
-        return state;
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.gridlab.gat.advert.Advertisable#marshal()
-     */
-    public String marshal() {
-        // TODO Auto-generated method stub
-        return null;
     }
 
     /* (non-Javadoc)
@@ -162,7 +125,6 @@ public class SshJob extends Job {
     }
 
     void finished(int exitValue) {
-        GATInvocationException tmpExc = null;
         MetricValue v = null;
 
         synchronized (this) {
@@ -176,14 +138,9 @@ public class SshJob extends Job {
         }
         GATEngine.fireMetric(this, v);
 
-        try {
-            broker.postStageFiles(description, host);
-        } catch (GATInvocationException e) {
-            tmpExc = e;
-        }
+        sandbox.retrieveAndCleanup(this);
 
         synchronized (this) {
-            postStageException = tmpExc;
             state = STOPPED;
             v = new MetricValue(this, getStateString(state), statusMetric, System
                 .currentTimeMillis());
@@ -192,9 +149,11 @@ public class SshJob extends Job {
             }
         }
         GATEngine.fireMetric(this, v);
+        finished();
     }
 
-    public void stop() throws GATInvocationException, IOException {
+    public void stop() throws GATInvocationException {
+        MetricValue v = null;
         if (channel != null) {
             try {
                 channel.sendSignal("TERM");
@@ -214,7 +173,24 @@ public class SshJob extends Job {
         }
         
         synchronized (this) {
-            state = STOPPED;
+            state = POST_STAGING;
+            v = new MetricValue(this, getStateString(state), statusMetric, System
+                .currentTimeMillis());
+            if (GATEngine.DEBUG) {
+                System.err.println("default job callback: firing event: " + v);
+            }
         }
+        GATEngine.fireMetric(this, v);
+        
+        synchronized (this) {
+            state = STOPPED;
+            v = new MetricValue(this, getStateString(state), statusMetric, System
+                .currentTimeMillis());
+            if (GATEngine.DEBUG) {
+                System.err.println("default job callback: firing event: " + v);
+            }
+        }
+        GATEngine.fireMetric(this, v);
+        finished();
     }
 }

@@ -1,5 +1,10 @@
 package org.gridlab.gat.resources.cpi.zorilla;
 
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.net.UnknownHostException;
+import java.util.List;
+
 import nl.vu.zorilla.zoni.ZoniProtocol;
 
 import org.gridlab.gat.GATContext;
@@ -14,45 +19,10 @@ import org.gridlab.gat.resources.ResourceDescription;
 import org.gridlab.gat.resources.SoftwareDescription;
 import org.gridlab.gat.resources.cpi.ResourceBrokerCpi;
 
-import java.net.InetAddress;
-import java.net.InetSocketAddress;
-import java.net.UnknownHostException;
-
-import java.util.List;
-
 /**
- * An instance of this class is used to reserve resources.
- * <p>
- * A resource can either be a hardware resource or a software resource. A
- * software resource is simply an executable it makes little sense to reserve
- * such. Thus an instance of this class can currently only reserve a hardware
- * resource.
- * <p>
- * If one wishes to reserve a hardware resource, one must first describe the
- * hardware resource that one wishes to reserve. This is accomplished by
- * creating an instance of the class HardwareResourceDescription which describes
- * the hardware resource that one wishes to reserve. After creating such an
- * instance of the class HardwareResourceDescription that describes the hardware
- * resource one wishes to reserve, one must specify the time period for which
- * one wishes to reserve the hardware resource. This is accomplished by creating
- * an instance of the class TimePeriod which specifies the time period for which
- * one wishes to reserve the hardware resource. Finally, one must obtain a
- * reservation for the desired hardware resource for the desired time period.
- * This is accomplished by calling the method ReserveHardwareResource() on an
- * instance of the class LocalResourceBrokerAdaptor with the appropriate
- * instance of HardwareResourceDescription and the appropriate instance of
- * TimePeriod.
- * <p>
- * In addition an instance of this class can be used to find hardware resources.
- * This is accomplished using the method FindHardwareResources(). This is
- * accomplished by creating an instance of the class HardwareResourceDescription
- * which describes the hardware resource that one wishes to find. After creating
- * such an instance of the class HardwareResourceDescription that describes the
- * hardware resource one wishes to find, one must find the corresponding
- * hardware resource. This is accomplished by calling the method
- * FindHardwareResources() on an instance of the class
- * LocalResourceBrokerAdaptor with the appropriate instance of
- * HardwareResourceDescription.
+ * 
+ * @author ndrost
+ *
  */
 public class ZorillaResourceBrokerAdaptor extends ResourceBrokerCpi {
 
@@ -175,7 +145,7 @@ public class ZorillaResourceBrokerAdaptor extends ResourceBrokerCpi {
                 "cannot specify host with the Zorilla adaptor");
         }
 
-        return new ZorillaJob(this, description);
+        return new ZorillaJob(gatContext, preferences, this, description);
     }
 
     /*

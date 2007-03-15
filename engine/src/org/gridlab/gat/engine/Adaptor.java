@@ -90,7 +90,6 @@ class Adaptor {
                 throw new GATObjectCreationException(
                     "Parameters array is null (internal error)");
             }
-
             return ctor.newInstance(parameters);
         } catch (InvocationTargetException e) {
             if (GATEngine.DEBUG) {
