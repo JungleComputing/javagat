@@ -1,0 +1,10 @@
+#!/bin/bash
+
+#set -vx
+
+SDIR=`dirname $0`
+
+
+#java -jar -classpath $GAT_TEST/dist/lib/ -Dgat.debug -Dgat.adaptor.path=$GAT_LOCATION/adaptors/lib $SDIR/../dist/GATJobRun.jar $@
+#java -jar -classpath $GAT_TEST/dist/lib/:$GAT_LOCATION/adaptors/external/drmaa.jar -Dgat.debug -Dorg.ggf.drmaa.SessionFactory=com.sun.grid.drmaa.SessionFactoryImpl -Dgat.adaptor.path=$GAT_LOCATION/adaptors/lib $SDIR/../dist/GATJobRun.jar $@
+java -jar -Dgat.debug -Dorg.ggf.drmaa.SessionFactory=com.sun.grid.drmaa.SessionFactoryImpl -Dgat.adaptor.path=$GAT_LOCATION/adaptors/lib $SDIR/../dist/GATJobRun.jar $@

@@ -62,19 +62,26 @@ public class SGEJob extends JobCpi {
             while (state != Session.RUNNING) {
                 try {
                     state = session.getJobProgramStatus(jobID);
-                    if( state == Session.FAILED) {
-                        //TODO
+                    if( state == Session.FAILED) 
+                    {
+                        System.out.println("drmaa.Session got the state FAILED");
+                        break;
                     }
-                    else if( state == Session.DONE ) {
-                        //TODO
+                    else if( state == Session.DONE ) 
+                    {
+                        break;
                     }
                     Thread.sleep(SLEEP);
                 }
-                catch (DrmaaException e) {e.printStackTrace();
-                    //TODO
+                catch (DrmaaException e) 
+                {
+                	e.printStackTrace();
+                    break;
                 }
-                catch (InterruptedException e) {
-                    //TODO
+                catch (InterruptedException e) 
+                {
+                    e.printStackTrace();
+                    break;
                 }
             }
             // Now we're in RUNNING state - set the time and start the
@@ -161,8 +168,10 @@ public class SGEJob extends JobCpi {
                     }
                     
                     System.out.println("state: " + state + " Session.UNDETERMINED: " + Session.UNDETERMINED);
-                    if( state == Session.FAILED) {
-                        //TODO
+                    if( state == Session.FAILED) 
+                    {
+                       System.out.println("state has the value failed");
+                       break;
                     }
                     Thread.sleep(SLEEP);
                 }
