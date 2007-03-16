@@ -51,9 +51,13 @@
         unless  = "gat_adaptors_dir" />
 
 
-  <property name = "srcdir"   location = "${currdir}/src/fileops" />
+<!--  <property name = "srcdir"   location = "${currdir}/src/fileops" />
   <property name = "builddir" location = "${currdir}/build/classes" />
-  <property name = "distdir"  location = "${currdir}/dist" />
+  <property name = "distdir"  location = "${currdir}/dist" /> -->
+
+  <property name = "srcdir"   location = "src" />
+  <property name = "builddir" location = "build/classes" />
+  <property name = "distdir"  location = "dist" />
 
   <path id = "gat_engine_jars_path">
     <fileset id  = "gat_engine_jars"
