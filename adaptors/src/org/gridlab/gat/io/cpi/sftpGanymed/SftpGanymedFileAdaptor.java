@@ -132,7 +132,7 @@ public class SftpGanymedFileAdaptor extends FileCpi {
             SFTPv3FileAttributes attr = c.sftpClient.stat(getPath());
             return attr.isDirectory();
         } catch (IOException e) {
-            return false;
+            throw new GATInvocationException("sftp", e);
         } finally {
             closeConnection(c);
         }
@@ -201,6 +201,36 @@ public class SftpGanymedFileAdaptor extends FileCpi {
                 res[i] = (String) newRes.get(i);
             }
             return res;
+        } catch (IOException e) {
+            throw new GATInvocationException("sftp", e);
+        } finally {
+            closeConnection(c);
+        }
+    }
+
+    /* (non-Javadoc)
+     * @see org.gridlab.gat.io.cpi.FileCpi#isFile()
+     */
+    public boolean isFile() throws GATInvocationException {
+        SftpGanymedConnection c = openConnection(gatContext, preferences, location);
+        try {
+            SFTPv3FileAttributes attr = c.sftpClient.stat(getPath());
+            return attr.isRegularFile();
+        } catch (IOException e) {
+            throw new GATInvocationException("sftp", e);
+        } finally {
+            closeConnection(c);
+        }
+    }
+
+    /* (non-Javadoc)
+     * @see org.gridlab.gat.io.cpi.FileCpi#length()
+     */
+    public long length() throws GATInvocationException {
+        SftpGanymedConnection c = openConnection(gatContext, preferences, location);
+        try {
+            SFTPv3FileAttributes attr = c.sftpClient.stat(getPath());
+            return attr.size.longValue();
         } catch (IOException e) {
             throw new GATInvocationException("sftp", e);
         } finally {
