@@ -4,6 +4,7 @@
 package org.gridlab.gat.io.cpi.sftpGanymed;
 
 import java.io.IOException;
+import java.util.Vector;
 
 import org.gridlab.gat.CouldNotInitializeCredentialException;
 import org.gridlab.gat.CredentialExpiredException;
@@ -16,6 +17,7 @@ import org.gridlab.gat.io.cpi.FileCpi;
 
 import ch.ethz.ssh2.Connection;
 import ch.ethz.ssh2.SFTPv3Client;
+import ch.ethz.ssh2.SFTPv3DirectoryEntry;
 import ch.ethz.ssh2.SFTPv3FileAttributes;
 
 public class SftpGanymedFileAdaptor extends FileCpi {
@@ -131,6 +133,76 @@ public class SftpGanymedFileAdaptor extends FileCpi {
             return attr.isDirectory();
         } catch (IOException e) {
             return false;
+        } finally {
+            closeConnection(c);
+        }
+    }
+
+    /* (non-Javadoc)
+     * @see org.gridlab.gat.io.cpi.FileCpi#delete()
+     */
+    public boolean delete() throws GATInvocationException {
+        SftpGanymedConnection c = openConnection(gatContext, preferences, location);
+
+        try {
+            SFTPv3FileAttributes attr = c.sftpClient.stat(getPath());
+            if(attr.isDirectory()) {
+                c.sftpClient.rmdir(getPath());
+            } else {
+                c.sftpClient.rm(getPath());
+            }
+        } catch (IOException e) {
+            return false;
+        } finally {
+            closeConnection(c);
+        }
+
+        return true;
+    }
+
+    /* (non-Javadoc)
+     * @see org.gridlab.gat.io.cpi.FileCpi#exists()
+     */
+    public boolean exists() throws GATInvocationException {
+        SftpGanymedConnection c = openConnection(gatContext, preferences, location);
+        try {
+            c.sftpClient.stat(getPath());
+        } catch (IOException e) {
+            System.err.println("exists: " + e);
+            return false;
+        } finally {
+            closeConnection(c);
+        }
+        return true;
+    }
+
+    /* (non-Javadoc)
+     * @see org.gridlab.gat.io.cpi.FileCpi#list()
+     */
+    public String[] list() throws GATInvocationException {
+        SftpGanymedConnection c = openConnection(gatContext, preferences, location);
+        try {
+            SFTPv3FileAttributes attr = c.sftpClient.stat(getPath());
+            if(!attr.isDirectory()) {
+                return null;
+            }
+            
+            Vector result = c.sftpClient.ls(getPath());
+            Vector newRes = new Vector();
+            for(int i=0; i<result.size(); i++) {
+                SFTPv3DirectoryEntry entry =  (SFTPv3DirectoryEntry) result.get(i);
+                if(!entry.filename.equals(".") && !entry.filename.equals("..")) {
+                    newRes.add(entry.filename);
+                }
+            }
+            
+            String[] res = new String[newRes.size()];
+            for(int i=0; i<newRes.size(); i++) {
+                res[i] = (String) newRes.get(i);
+            }
+            return res;
+        } catch (IOException e) {
+            throw new GATInvocationException("sftp", e);
         } finally {
             closeConnection(c);
         }
