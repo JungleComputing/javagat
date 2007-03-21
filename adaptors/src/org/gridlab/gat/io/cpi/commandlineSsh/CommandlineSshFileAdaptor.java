@@ -14,8 +14,8 @@ import org.gridlab.gat.engine.GATEngine;
 import org.gridlab.gat.engine.util.OutputForwarder;
 import org.gridlab.gat.io.File;
 import org.gridlab.gat.io.cpi.FileCpi;
+import org.gridlab.gat.io.cpi.sftpGanymed.SftpGanymedFileAdaptor;
 import org.gridlab.gat.io.cpi.ssh.SSHSecurityUtils;
-import org.gridlab.gat.io.cpi.ssh.SshFileAdaptor;
 import org.gridlab.gat.io.cpi.ssh.SshUserInfo;
 
 public class CommandlineSshFileAdaptor extends FileCpi {
@@ -28,7 +28,7 @@ public class CommandlineSshFileAdaptor extends FileCpi {
 	 * way, because the auto optimizing of adaptor ordering by the engine does
 	 * not select this adaptor anymore if another call is done before the copy.
 	 */
-	private SshFileAdaptor sshAdaptor;
+	private SftpGanymedFileAdaptor sftpAdaptor;
 
 	/**
 	 * @param gatContext
@@ -49,7 +49,7 @@ public class CommandlineSshFileAdaptor extends FileCpi {
 		if (osname.startsWith("Windows"))
 			windows = true;
 
-		sshAdaptor = new SshFileAdaptor(gatContext, preferences, location);
+		sftpAdaptor = new SftpGanymedFileAdaptor(gatContext, preferences, location);
 	}
 
 	/**
@@ -318,46 +318,46 @@ public class CommandlineSshFileAdaptor extends FileCpi {
 	}
 
 	public boolean canRead() throws GATInvocationException {
-		return sshAdaptor.canRead();
+		return sftpAdaptor.canRead();
 	}
 
 	public boolean canWrite() throws GATInvocationException {
-		return sshAdaptor.canWrite();
+		return sftpAdaptor.canWrite();
 	}
 
 	public boolean delete() throws GATInvocationException {
-		return sshAdaptor.delete();
+		return sftpAdaptor.delete();
 	}
 
 	public boolean exists() throws GATInvocationException {
-		return sshAdaptor.exists();
+		return sftpAdaptor.exists();
 	}
 
 	public boolean isDirectory() throws GATInvocationException {
-		return sshAdaptor.isDirectory();
+		return sftpAdaptor.isDirectory();
 	}
 
 	public boolean isFile() throws GATInvocationException {
-		return sshAdaptor.isFile();
+		return sftpAdaptor.isFile();
 	}
 
 	public long lastModified() throws GATInvocationException {
-		return sshAdaptor.lastModified();
+		return sftpAdaptor.lastModified();
 	}
 
 	public long length() throws GATInvocationException {
-		return sshAdaptor.length();
+		return sftpAdaptor.length();
 	}
 
 	public String[] list() throws GATInvocationException {
-		return sshAdaptor.list();
+		return sftpAdaptor.list();
 	}
 
 	public boolean mkdir() throws GATInvocationException {
-		return sshAdaptor.mkdir();
+		return sftpAdaptor.mkdir();
 	}
 
 	public boolean mkdirs() throws GATInvocationException {
-		return sshAdaptor.mkdirs();
+		return sftpAdaptor.mkdirs();
 	}
 }
