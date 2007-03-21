@@ -4,7 +4,6 @@ import java.io.IOException;
 
 import org.gridlab.gat.AdaptorNotApplicableException;
 import org.gridlab.gat.CommandNotFoundException;
-import org.gridlab.gat.GAT;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.GATObjectCreationException;
@@ -12,7 +11,6 @@ import org.gridlab.gat.Preferences;
 import org.gridlab.gat.URI;
 import org.gridlab.gat.engine.GATEngine;
 import org.gridlab.gat.engine.util.OutputForwarder;
-import org.gridlab.gat.io.File;
 import org.gridlab.gat.io.cpi.FileCpi;
 import org.gridlab.gat.io.cpi.sftpGanymed.SftpGanymedFileAdaptor;
 import org.gridlab.gat.io.cpi.ssh.SSHSecurityUtils;
@@ -95,38 +93,7 @@ public class CommandlineSshFileAdaptor extends FileCpi {
 		}
 
 		// source is remote, dest is remote.
-		if (GATEngine.DEBUG) {
-			System.err.println("commandlineSsh file: copy remote to remote");
-		}
-
-		copyThirdParty(fixURI(toURI(), "commandlineSsh"), fixURI(dest,
-				"commandlineSsh"));
-	}
-
-	protected void copyThirdParty(URI src, URI dest)
-			throws GATInvocationException {
-		File tmpFile = null;
-
-		try {
-			// use a local tmp file.
-			java.io.File tmp = null;
-			tmp = java.io.File.createTempFile("GATgridFTP", ".tmp");
-			URI u = new URI("any:///" + tmp.getPath());
-			tmpFile = GAT.createFile(gatContext, preferences, u);
-
-			copyToLocal(src, u);
-			tmpFile.copy(dest);
-		} catch (Exception e) {
-			throw new GATInvocationException("commandline ssh", e);
-		} finally {
-			if (tmpFile != null) {
-				try {
-					tmpFile.delete();
-				} catch (Exception e) {
-					// ignore
-				}
-			}
-		}
+		throw new GATInvocationException("commandlineSsh: cannot do third party copy");
 	}
 
 	protected void copyToLocal(URI src, URI dest) throws GATInvocationException {

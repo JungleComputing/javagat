@@ -489,7 +489,9 @@ public class SshFileAdaptor extends FileCpi {
     }
 
     protected void thirdPartyTransfer(URI loc) throws GATInvocationException {
-        /*first try to execute it remotely*/
+        
+        // first try to execute it remotely
+        
         try {
             String isRecursive = "";
 
@@ -534,19 +536,19 @@ public class SshFileAdaptor extends FileCpi {
 
                     scpFromRemoteToLocal(new URI(tmp.getPath()));
 
-                    /*now pretend this is a local file*/
-                    /*assume same credential*/
+                    //now pretend this is a local file
+                    //assume same credential
                     f = tmp;
                     isLocalFile = true;
                     scpFromLocalToRemote(loc);
 
-                    /*stop pretending local file*/
+                    // stop pretending local file
                     f = null;
                     isLocalFile = false;
 
-                    /*as scpFromLocalToRemote opens a session on remote destination
-                     * the original session needs to be restored.
-                     */
+                    // as scpFromLocalToRemote opens a session on remote destination
+                    // the original session needs to be restored.
+                    
                     prepareSession(location);
                 } catch (Exception e) {
                     throw new GATInvocationException("ssh", e);
