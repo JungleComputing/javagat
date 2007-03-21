@@ -46,7 +46,7 @@ public class SftpGanymedFileAdaptor extends FileCpi {
 
         try {
             res.userInfo = SftpGanymedSecurityUtils.getSftpCredential(
-                gatContext, preferences, "sftp", location, SSH_PORT);
+                gatContext, preferences, "sftpGanymed", location, SSH_PORT);
         } catch (CouldNotInitializeCredentialException e) {
             throw new GATInvocationException("sftp", e);
         } catch (CredentialExpiredException e2) {

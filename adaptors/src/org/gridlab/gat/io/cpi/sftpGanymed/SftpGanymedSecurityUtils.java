@@ -27,7 +27,7 @@ class SftpGanymedContextCreator implements SecurityContextCreator {
         SftpGanymedUserInfo cred = SftpGanymedSecurityUtils.getDefaultUserInfo(gatContext,
             preferences, location);
         CertificateSecurityContext c = new CertificateSecurityContext();
-        c.putDataObject("sftp", cred);
+        c.putDataObject("sftpGanymed", cred);
 
         return c;
     }
@@ -80,7 +80,7 @@ public class SftpGanymedSecurityUtils {
             Preferences preferences, String adaptorName, URI location,
             int defaultPort) throws CouldNotInitializeCredentialException, CredentialExpiredException {
         Object data = SecurityContextUtils.getSecurityUserData(context,
-            preferences, adaptorName, "sftp", location, defaultPort,
+            preferences, adaptorName, "sftpGanymed", location, defaultPort,
             new SftpGanymedContextCreator());
 
         return (SftpGanymedUserInfo) data;
