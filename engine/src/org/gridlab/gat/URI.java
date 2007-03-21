@@ -11,7 +11,7 @@ import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
 
-import org.gridlab.gat.util.URIEncoder;
+import org.gridlab.gat.engine.util.URIEncoder;
 
 /**
  * @author rob

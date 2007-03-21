@@ -13,12 +13,12 @@ import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.Preferences;
 import org.gridlab.gat.URI;
 import org.gridlab.gat.engine.GATEngine;
+import org.gridlab.gat.engine.util.Environment;
 import org.gridlab.gat.io.File;
 import org.gridlab.gat.resources.Job;
 import org.gridlab.gat.resources.JobDescription;
 import org.gridlab.gat.resources.ResourceBroker;
 import org.gridlab.gat.resources.SoftwareDescription;
-import org.gridlab.gat.util.Environment;
 
 public class RemoteSandboxSubmitter {
     GATContext origGatContext;

@@ -13,7 +13,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Vector;
 
-import org.gridlab.gat.util.Environment;
+import org.gridlab.gat.engine.util.Environment;
 
 /**
  * @author  doerl

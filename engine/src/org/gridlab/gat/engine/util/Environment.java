@@ -1,7 +1,7 @@
 /*
  * Created on Jul 5, 2005 by rob
  */
-package org.gridlab.gat.util;
+package org.gridlab.gat.engine.util;
 
 import java.io.IOException;
 import java.util.HashMap;

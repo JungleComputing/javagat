@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.gridlab.gat.util;
+package org.gridlab.gat.engine.util;
 
 /**
  * A utility class that encodes/decodes Strings into a valid URI format.
