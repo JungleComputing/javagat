@@ -1,0 +1,138 @@
+/*
+ * Created on Mar 21, 2007 by rob
+ */
+package org.gridlab.gat.io.cpi.sftpGanymed;
+
+import java.io.IOException;
+
+import org.gridlab.gat.CouldNotInitializeCredentialException;
+import org.gridlab.gat.CredentialExpiredException;
+import org.gridlab.gat.GATContext;
+import org.gridlab.gat.GATInvocationException;
+import org.gridlab.gat.GATObjectCreationException;
+import org.gridlab.gat.Preferences;
+import org.gridlab.gat.URI;
+import org.gridlab.gat.io.cpi.FileCpi;
+
+import ch.ethz.ssh2.Connection;
+import ch.ethz.ssh2.SFTPv3Client;
+import ch.ethz.ssh2.SFTPv3FileAttributes;
+
+public class SftpGanymedFileAdaptor extends FileCpi {
+    static final int SSH_PORT = 22;
+
+    public SftpGanymedFileAdaptor(GATContext gatContext,
+        Preferences preferences, URI location)
+        throws GATObjectCreationException {
+        super(gatContext, preferences, location);
+
+        if (!location.isCompatible("sftp") && !location.isCompatible("file")) {
+            throw new GATObjectCreationException("cannot handle this URI");
+        }
+    }
+
+    private SftpGanymedConnection openConnection(
+        GATContext gatContext, Preferences preferences, URI location)
+    throws GATInvocationException {
+        return doWorkcreateConnection(gatContext, preferences, location);
+    }
+    
+    private static SftpGanymedConnection doWorkcreateConnection(
+        GATContext gatContext, Preferences preferences, URI location)
+        throws GATInvocationException {
+        SftpGanymedConnection res = new SftpGanymedConnection();
+
+        try {
+            res.userInfo = SftpGanymedSecurityUtils.getSftpCredential(
+                gatContext, preferences, "sftp", location, SSH_PORT);
+        } catch (CouldNotInitializeCredentialException e) {
+            throw new GATInvocationException("sftp", e);
+        } catch (CredentialExpiredException e2) {
+            throw new GATInvocationException("sftp", e2);
+        }
+
+        int port = location.getPort();
+        if (port == -1) {
+            port = SSH_PORT;
+        }
+
+        res.connection = new Connection(location.getHost(), port);
+
+        try {
+            res.connection.connect();
+        } catch (IOException e) {
+            throw new GATInvocationException("sftp", e);
+        }
+
+        boolean authenticated = false;
+        try {
+            if (res.userInfo.password != null
+                && res.connection.isAuthMethodAvailable(res.userInfo.username,
+                    "password")) {
+                authenticated = res.connection.authenticateWithPassword(
+                    res.userInfo.username, res.userInfo.password);
+            }
+        } catch (IOException e) {
+            res.connection.close();
+            throw new GATInvocationException("sftp", e);
+        }
+
+        if (!authenticated) {
+            // try key-based authentication
+            try {
+                authenticated = res.connection.authenticateWithPublicKey(
+                    res.userInfo.username, res.userInfo.privateKey,
+                    res.userInfo.password);
+            } catch (IOException e) {
+                res.connection.close();
+                throw new GATInvocationException("sftp", e);
+            }
+        }
+        
+        if(!authenticated) throw new GATInvocationException("Unable to authenticate");
+
+        try {
+            res.sftpClient = new SFTPv3Client(res.connection);
+        } catch (IOException e) {
+            res.connection.close();
+            throw new GATInvocationException("sftp", e);
+        }
+        
+        return res;
+    }
+
+    public static void closeConnection(SftpGanymedConnection c) {
+        c.sftpClient.close();
+        c.sftpClient = null;
+        c.connection.close();
+        c.connection = null;
+    }
+    
+    public boolean mkdir() throws GATInvocationException {
+        SftpGanymedConnection c = openConnection(gatContext, preferences, location);
+        try {
+            c.sftpClient.mkdir(getPath(), 0700);
+        } catch (IOException e) {
+            return false;
+        } finally {
+            closeConnection(c);
+        }
+
+        return true;
+    }
+
+    /* (non-Javadoc)
+     * @see org.gridlab.gat.io.cpi.FileCpi#isDirectory()
+     */
+    public boolean isDirectory() throws GATInvocationException {
+        SftpGanymedConnection c = openConnection(gatContext, preferences, location);
+        try {
+            SFTPv3FileAttributes attr = c.sftpClient.stat(getPath());
+            return attr.isDirectory();
+        } catch (IOException e) {
+            return false;
+        } finally {
+            closeConnection(c);
+        }
+    }
+}
