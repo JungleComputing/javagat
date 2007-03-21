@@ -38,7 +38,7 @@ public class AdaptorInvocationHandler implements InvocationHandler {
 
     private Preferences preferences;
 
-    private Object[] parameters;
+    private Object[] constructorParameters;
 
     /**
      * the available adaptors, keyed by class name
@@ -53,17 +53,16 @@ public class AdaptorInvocationHandler implements InvocationHandler {
             this.preferences = (Preferences) preferences.clone();
         }
 
+        // @@@ this is not 100% correct! if the user changes the content
+        // of the params after the create call, constructors that are called later might see it. 
         if (params != null) {
-            this.parameters = new Object[params.length];
-            System.arraycopy(params, 0, this.parameters, 0, params.length);
+            this.constructorParameters = new Object[params.length];
+            System.arraycopy(params, 0, this.constructorParameters, 0, params.length);
         }
 
-        Adaptor adaptor;
-        String adaptorname;
-
         for (int count = 0; count < adaptors.size(); count++) {
-            adaptor = adaptors.get(count);
-            adaptorname = adaptor.getName();
+            Adaptor adaptor = adaptors.get(count);
+            String adaptorname = adaptor.getName();
 
             this.adaptors.put(adaptorname, adaptor);
 
@@ -110,7 +109,7 @@ public class AdaptorInvocationHandler implements InvocationHandler {
                     if (adaptor instanceof Adaptor) {
                         adaptor =
                                 initAdaptor((Adaptor) adaptor, context,
-                                        preferences, parameters);
+                                        preferences, constructorParameters);
                         adaptors.put(adaptornames[i], adaptor);
                     }
 
@@ -198,18 +197,18 @@ public class AdaptorInvocationHandler implements InvocationHandler {
 
     /**
      * Returns an instance of the specified XXXCpi class consistent with the
-     * passed XXXCpi class name, preferences, and parameters
+     * passed XXXCpi class name, preferences, and constructorParameters
      *
      * @param adaptor     The adaptor to initialize
      * @param preferences The Preferences used to construct the Cpi class.
-     * @param parameters  The Parameters for the Cpi Constructor null means no
-     *                    parameters.
+     * @param constructorParameters  The Parameters for the Cpi Constructor null means no
+     *                    constructorParameters.
      * @param gatContext  the context
      * @return The specified Cpi class or null if no such adaptor exists
      * @throws org.gridlab.gat.GATObjectCreationException
      *          creation of the adaptor failed
      */
-    public Object initAdaptor(Adaptor adaptor, GATContext gatContext,
+    private Object initAdaptor(Adaptor adaptor, GATContext gatContext,
             Preferences preferences, Object[] parameters)
             throws GATObjectCreationException {
         if (preferences == null) { // No preferences.
@@ -220,7 +219,7 @@ public class AdaptorInvocationHandler implements InvocationHandler {
             parameters = new Object[0];
         }
 
-        // Add the context and the preferences as parameters
+        // Add the context and the preferences as constructorParameters
         Object[] newParameters = new Object[parameters.length + 2];
         newParameters[0] = gatContext;
         newParameters[1] = preferences;
