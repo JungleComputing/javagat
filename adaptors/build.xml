@@ -143,6 +143,12 @@
 			</manifest>
 		</jar>
 
+                <jar jarfile="${lib}/ThirdPartyCopyFileAdaptor.jar" basedir="${tmp}" includes="**/thirdPartyCopy/*.class">
+			<manifest>
+				<attribute name="FileCpi-class" value="org.gridlab.gat.io.cpi.thirdPartyCopy.ThirdPartyCopyFileAdaptor" />
+			</manifest>
+		</jar>
+
 		<jar jarfile="${lib}/FTPFileInputStreamAdaptor.jar" basedir="${tmp}" includes="org/gridlab/gat/io/cpi/globus/**,org/globus/ftp/vanilla/**">
 			<manifest>
 				<attribute name="FileInputStreamCpi-class" value="org.gridlab.gat.io.cpi.globus.FTPFileInputStreamAdaptor" />

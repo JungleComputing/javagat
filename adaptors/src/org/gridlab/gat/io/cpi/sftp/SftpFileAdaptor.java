@@ -279,11 +279,7 @@ public class SftpFileAdaptor extends FileCpi {
         }
 
         // source is remote, dest is remote.
-        if (GATEngine.DEBUG) {
-            System.err.println("sftp file: copy remote to remote");
-        }
-
-        copyThirdParty(toURI(), dest);
+        throw new GATInvocationException("sftp: cannot do third party copy");
     }
 
     protected void copyToLocal(URI src, URI dest) throws GATInvocationException {
@@ -304,30 +300,6 @@ public class SftpFileAdaptor extends FileCpi {
             throw new GATInvocationException("sftp", e);
         } finally {
             closeConnection(c);
-        }
-    }
-
-    // Try copying using temp file.
-    protected void copyThirdParty(URI src, URI dest)
-            throws GATInvocationException {
-        java.io.File tmp = null;
-        SftpConnection tmpCon = null;
-
-        try {
-            // use a local tmp file.
-            tmp = java.io.File.createTempFile("GAT_SFTP_", ".tmp");
-
-            URI tmpURI = new URI(tmp.getCanonicalPath()); // convert to GAT URI
-
-            copyToLocal(src, tmpURI);
-
-            tmpCon = openConnection(gatContext, preferences, dest);
-            tmpCon.sftp.put(tmpURI.getPath(), dest.getPath());
-        } catch (Exception e2) {
-            throw new GATInvocationException("sftp", e2);
-        } finally {
-            tmp.delete();
-            if (tmpCon != null) closeConnection(tmpCon);
         }
     }
 
