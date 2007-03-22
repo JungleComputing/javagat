@@ -57,7 +57,7 @@ public class SshFileOutputStreamAdaptor extends FileOutputStreamCpi {
 
     protected void prepareToWriteStream() throws GATInvocationException {
         try {
-            String host = location.getHost();
+            String host = location.resolveHost();
             JSch jsch = new JSch();
             java.util.Hashtable configJsch = new java.util.Hashtable(0);
             configJsch.put("StrictHostKeyChecking", "no");

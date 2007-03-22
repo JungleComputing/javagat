@@ -120,7 +120,7 @@ public class SftpGanymedFileAdaptor extends FileCpi {
             port = SSH_PORT;
         }
 
-        res.connection = new Connection(location.getHost(), port);
+        res.connection = new Connection(location.resolveHost(), port);
 
         try {
             res.connection.connect();

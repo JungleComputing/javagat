@@ -55,7 +55,7 @@ public class LocalFileAdaptor extends FileCpi {
             String dest = location.getScheme() + "://";
             dest += (location.getUserInfo() == null) ? "" : location
                 .getUserInfo();
-            dest += location.getHost();
+            dest += location.resolveHost();
             dest += (location.getPort() == -1) ? ""
                 : (":" + location.getPort());
             dest += "/";

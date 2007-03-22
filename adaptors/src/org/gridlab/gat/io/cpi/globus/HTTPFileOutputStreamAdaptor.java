@@ -28,7 +28,7 @@ public class HTTPFileOutputStreamAdaptor extends GlobusFileOutputStreamAdaptor {
     }
 
     protected OutputStream createStream() throws GATInvocationException {
-        String host = location.getHost();
+        String host = location.resolveHost();
         String path = location.getPath();
 
         try {

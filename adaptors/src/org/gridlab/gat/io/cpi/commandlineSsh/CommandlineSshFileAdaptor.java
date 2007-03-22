@@ -140,7 +140,7 @@ public class CommandlineSshFileAdaptor extends FileCpi {
 		if (GATEngine.DEBUG) {
 			System.err.println("CommandlineSsh: Prepared session for location "
 					+ src + " with username: " + sui.username + "; host: "
-					+ src.getHost());
+					+ src.resolveHost());
 		}
 
 		String command = null;
@@ -157,12 +157,12 @@ public class CommandlineSshFileAdaptor extends FileCpi {
 				command += " -pw=" + sui.getPassword();
 			}
 
-			command += sui.username + "@" + src.getHost() + ":" + src.getPath()
+			command += sui.username + "@" + src.resolveHost() + ":" + src.getPath()
 					+ " " + dest.getPath();
 		} else {
 			command = "scp "
 					+ "-o BatchMode=yes -o StrictHostKeyChecking=yes "
-					+ sui.username + "@" + src.getHost() + ":" + src.getPath()
+					+ sui.username + "@" + src.resolveHost() + ":" + src.getPath()
 					+ " " + dest.getPath();
 		}
 
@@ -215,7 +215,7 @@ public class CommandlineSshFileAdaptor extends FileCpi {
 		if (GATEngine.DEBUG) {
 			System.err.println("CommandlineSsh: Prepared session for location "
 					+ dest + " with username: " + sui.username + "; host: "
-					+ dest.getHost());
+					+ dest.resolveHost());
 		}
 
 		String command = null;
@@ -233,11 +233,11 @@ public class CommandlineSshFileAdaptor extends FileCpi {
 			}
 
 			command += src.getPath() + " " + sui.username + "@"
-					+ dest.getHost() + ":" + dest.getPath();
+					+ dest.resolveHost() + ":" + dest.getPath();
 		} else {
 			command = "scp "
 					+ "-o BatchMode=yes -o StrictHostKeyChecking=yes "
-					+ src.getPath() + " " + sui.username + "@" + dest.getHost()
+					+ src.getPath() + " " + sui.username + "@" + dest.resolveHost()
 					+ ":" + dest.getPath();
 		}
 

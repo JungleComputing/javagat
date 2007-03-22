@@ -31,7 +31,7 @@ public class HTTPSFileInputStreamAdaptor extends GlobusFileInputStreamAdaptor {
     }
 
     protected InputStream createStream() throws GATInvocationException {
-        String host = location.getHost();
+        String host = location.resolveHost();
         String path = location.getPath();
 
         try {

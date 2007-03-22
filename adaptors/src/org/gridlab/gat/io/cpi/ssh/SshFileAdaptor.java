@@ -103,13 +103,13 @@ public class SshFileAdaptor extends FileCpi {
 
         if (GATEngine.DEBUG) {
             System.err.println("SshFileAdaptor: started session with "
-                + location.getHost() + " using username: " + sui.username
+                + location.resolveHost() + " using username: " + sui.username
                 + " on port: " + port + " for file: " + location.getPath());
         }
     }
 
     protected void prepareSession(URI loc) throws GATObjectCreationException {
-        String host = loc.getHost();
+        String host = loc.resolveHost();
 
         /*it will be changed for the Security Context*/
         /*
@@ -405,7 +405,7 @@ public class SshFileAdaptor extends FileCpi {
             destUserName = dui.username;
         }
 
-        if (location.getHost().equals(loc.getHost())) {
+        if (location.resolveHost().equals(loc.resolveHost())) {
             /*as both location and loc are not local, destUserName has to be not null*/
             if (destUserName.equals(sui.username)) {
                 if (loc.getPath().equals(location.getPath())) {
@@ -441,9 +441,9 @@ public class SshFileAdaptor extends FileCpi {
 
                     if (GATEngine.DEBUG) {
                         System.err.println("failed remote copy, source: user "
-                            + sui.username + " host " + location.getHost()
+                            + sui.username + " host " + location.resolveHost()
                             + " dest: user " + destUserName + " host "
-                            + loc.getHost());
+                            + loc.resolveHost());
                         e.printStackTrace();
                     }
                 }
@@ -469,9 +469,9 @@ public class SshFileAdaptor extends FileCpi {
                 /*third party transfer:*/
                 if (GATEngine.VERBOSE) {
                     System.err.println("remote copy, source: user "
-                        + sui.username + " host " + location.getHost()
+                        + sui.username + " host " + location.resolveHost()
                         + " dest: user " + destUserName + " host "
-                        + loc.getHost());
+                        + loc.resolveHost());
                 }
 
                 thirdPartyTransfer(loc);
@@ -510,9 +510,9 @@ public class SshFileAdaptor extends FileCpi {
             }
 
             String command = "scp " + isRecursive + " " + getPath() + " "
-                + remoteUser + "@" + loc.getHost() + ":" + loc.getPath();
+                + remoteUser + "@" + loc.resolveHost() + ":" + loc.getPath();
 
-            session = jsch.getSession(sui.username, location.getHost(), port);
+            session = jsch.getSession(sui.username, location.resolveHost(), port);
             session.setUserInfo(sui);
             session.connect();
             channel = session.openChannel("exec");
@@ -615,7 +615,7 @@ public class SshFileAdaptor extends FileCpi {
 
             if (GATEngine.DEBUG) {
                 System.err.println("remote user: " + sui.username
-                    + " remote host: " + loc.getHost());
+                    + " remote host: " + loc.resolveHost());
             }
 
             session.connect();
@@ -925,7 +925,7 @@ public class SshFileAdaptor extends FileCpi {
         command += getPath();
 
         try {
-            session = jsch.getSession(sui.username, location.getHost(), port);
+            session = jsch.getSession(sui.username, location.resolveHost(), port);
             session.setUserInfo(sui);
             session.connect();
             channel = session.openChannel("exec");
@@ -990,7 +990,7 @@ public class SshFileAdaptor extends FileCpi {
                 isDirectory();
             }
 
-            session = jsch.getSession(sui.username, location.getHost(), port);
+            session = jsch.getSession(sui.username, location.resolveHost(), port);
             session.setUserInfo(sui);
             session.connect();
 
@@ -1113,7 +1113,7 @@ public class SshFileAdaptor extends FileCpi {
         }
 
         try {
-            session = jsch.getSession(sui.username, location.getHost(), port);
+            session = jsch.getSession(sui.username, location.resolveHost(), port);
             session.setUserInfo(sui);
             session.connect();
 
@@ -1173,7 +1173,7 @@ public class SshFileAdaptor extends FileCpi {
         }
 
         try {
-            session = jsch.getSession(sui.username, location.getHost(), port);
+            session = jsch.getSession(sui.username, location.resolveHost(), port);
             session.setUserInfo(sui);
             session.connect();
 
@@ -1251,7 +1251,7 @@ public class SshFileAdaptor extends FileCpi {
         }
 
         try {
-            session = jsch.getSession(sui.username, location.getHost(), port);
+            session = jsch.getSession(sui.username, location.resolveHost(), port);
             session.setUserInfo(sui);
             session.connect();
 
@@ -1323,7 +1323,7 @@ public class SshFileAdaptor extends FileCpi {
                 isDirectory();
             }
 
-            session = jsch.getSession(sui.username, location.getHost(), port);
+            session = jsch.getSession(sui.username, location.resolveHost(), port);
             session.setUserInfo(sui);
             session.connect();
 
@@ -1424,7 +1424,7 @@ public class SshFileAdaptor extends FileCpi {
                 isDirectory();
             }
 
-            session = jsch.getSession(sui.username, location.getHost(), port);
+            session = jsch.getSession(sui.username, location.resolveHost(), port);
             session.setUserInfo(sui);
             session.connect();
 
@@ -1506,7 +1506,7 @@ public class SshFileAdaptor extends FileCpi {
         }
 
         try {
-            session = jsch.getSession(sui.username, location.getHost(), port);
+            session = jsch.getSession(sui.username, location.resolveHost(), port);
             session.setUserInfo(sui);
             session.connect();
 
@@ -1609,7 +1609,7 @@ public class SshFileAdaptor extends FileCpi {
         }
 
         //		String uriString = location.toString();		
-        String absUri = "//" + sui.username + "@" + location.getHost() + ":"
+        String absUri = "//" + sui.username + "@" + location.resolveHost() + ":"
             + port + "/" + getAbsolutePath();
 
         try {
@@ -1632,7 +1632,7 @@ public class SshFileAdaptor extends FileCpi {
         }
 
         try {
-            session = jsch.getSession(sui.username, location.getHost(), port);
+            session = jsch.getSession(sui.username, location.resolveHost(), port);
             session.setUserInfo(sui);
             session.connect();
 
@@ -1800,7 +1800,7 @@ public class SshFileAdaptor extends FileCpi {
                 throw new Error("Unknown remote OS type");
             }
 
-            session = jsch.getSession(sui.username, location.getHost(), port);
+            session = jsch.getSession(sui.username, location.resolveHost(), port);
             session.setUserInfo(sui);
             session.connect();
 
@@ -1906,7 +1906,7 @@ public class SshFileAdaptor extends FileCpi {
                 return 0L;
             }
 
-            session = jsch.getSession(sui.username, location.getHost(), port);
+            session = jsch.getSession(sui.username, location.resolveHost(), port);
             session.setUserInfo(sui);
             session.connect();
 
@@ -2004,7 +2004,7 @@ public class SshFileAdaptor extends FileCpi {
                 return null;
             }
 
-            session = jsch.getSession(sui.username, location.getHost(), port);
+            session = jsch.getSession(sui.username, location.resolveHost(), port);
             session.setUserInfo(sui);
             session.connect();
 
@@ -2222,7 +2222,7 @@ public class SshFileAdaptor extends FileCpi {
         }
 
         try {
-            session = jsch.getSession(sui.username, location.getHost(), port);
+            session = jsch.getSession(sui.username, location.resolveHost(), port);
             session.setUserInfo(sui);
             session.connect();
 
@@ -2273,7 +2273,7 @@ public class SshFileAdaptor extends FileCpi {
         }
 
         try {
-            session = jsch.getSession(sui.username, location.getHost(), port);
+            session = jsch.getSession(sui.username, location.resolveHost(), port);
             session.setUserInfo(sui);
             session.connect();
 
@@ -2406,7 +2406,7 @@ public class SshFileAdaptor extends FileCpi {
 
         if (GATEngine.DEBUG) {
             System.err.println("SshFileAdaptor: started session with "
-                + location.getHost() + " using username: " + sui.username
+                + location.resolveHost() + " using username: " + sui.username
                 + " on port: " + port + " for file: " + location.getPath());
         }
 
@@ -2428,7 +2428,7 @@ public class SshFileAdaptor extends FileCpi {
         try {
             InputStream err;
 
-            session = jsch.getSession(sui.username, location.getHost(), port);
+            session = jsch.getSession(sui.username, location.resolveHost(), port);
             session.setUserInfo(sui);
             session.connect();
 
@@ -2526,7 +2526,7 @@ public class SshFileAdaptor extends FileCpi {
         try {
             InputStream err;
 
-            session = jsch.getSession(sui.username, location.getHost(), port);
+            session = jsch.getSession(sui.username, location.resolveHost(), port);
             session.setUserInfo(sui);
             session.connect();
 
