@@ -66,7 +66,7 @@ public class SftpFileAdaptor extends FileCpi {
         }
 
         SshConnectionProperties connectionProp = new SshConnectionProperties();
-        connectionProp.setHost(location.getHost());
+        connectionProp.setHost(location.resolveHost());
 
         int port = location.getPort();
 

@@ -34,7 +34,7 @@ public class FTPFileOutputStreamAdaptor extends GlobusFileOutputStreamAdaptor {
         List l = SecurityContextUtils.getValidSecurityContextsByType(
             gatContext, preferences,
             "org.gridlab.gat.security.PasswordSecurityContext", "ftp", location
-                .getHost(), location
+                .resolveHost(), location
                 .getPort(GlobusFileAdaptor.DEFAULT_FTP_PORT));
 
         if ((l == null) || (l.size() == 0)) {
@@ -48,7 +48,7 @@ public class FTPFileOutputStreamAdaptor extends GlobusFileOutputStreamAdaptor {
         String user = c.getUsername();
         String password = c.getPassword();
 
-        String host = location.getHost();
+        String host = location.resolveHost();
         String path = location.getPath();
 
         int port = location.getPort(GlobusFileAdaptor.DEFAULT_FTP_PORT);

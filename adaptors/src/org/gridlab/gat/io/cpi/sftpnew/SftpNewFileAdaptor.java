@@ -107,7 +107,7 @@ public class SftpNewFileAdaptor extends FileCpi {
 
         if (GATEngine.DEBUG) {
             System.err.println("sftpnew: creating client to "
-                + location.getHost());
+                + location.resolveHost());
         }
 
         JSch jsch = new JSch();
@@ -139,7 +139,7 @@ public class SftpNewFileAdaptor extends FileCpi {
                 sui.username = location.getUserInfo();
             }
 
-            Session session = jsch.getSession(sui.username, location.getHost(),
+            Session session = jsch.getSession(sui.username, location.resolveHost(),
                 location.getPort(SSH_PORT));
             session.setUserInfo(sui);
             session.connect();

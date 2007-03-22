@@ -139,7 +139,7 @@ public class SshResourceBrokerAdaptor extends ResourceBrokerCpi {
                 + "/"));
             else {
                 session = prepareSession(location);
-                host = location.getHost();
+                host = location.resolveHost();
             }
         } catch (Exception e) {
             throw new GATInvocationException(
@@ -295,7 +295,7 @@ public class SshResourceBrokerAdaptor extends ResourceBrokerCpi {
     protected Session prepareSession(URI loc) throws GATInvocationException {
         JSch jsch;
         Session session;
-        String host = loc.getHost();
+        String host = loc.resolveHost();
         int port;
 
         //opens a ssh connection (using jsch)
