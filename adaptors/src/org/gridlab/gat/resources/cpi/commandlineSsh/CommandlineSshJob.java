@@ -3,8 +3,6 @@
  */
 package org.gridlab.gat.resources.cpi.commandlineSsh;
 
-import ibis.util.IPUtils;
-
 import java.util.HashMap;
 import java.util.Map;
 
@@ -77,9 +75,14 @@ public class CommandlineSshJob extends JobCpi {
 
         m.put("state", getStateString(state));
         m.put("resManState", getStateString(state));
-        m.put("resManName", "Local");
+        m.put("resManName", "CommandlineSsh");
         m.put("exitValue", "" + exitVal);
-        m.put("hostname", IPUtils.getLocalHostName());
+        
+        try {
+            m.put("hostname", broker.getHostname(description));
+        } catch (GATInvocationException e) {
+            m.put("hostname", "unknown");
+        }
 
         if (postStageException != null) {
             m.put("postStageError", postStageException);

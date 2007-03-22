@@ -67,9 +67,15 @@ public class CommandlineSshFileAdaptor extends FileCpi {
 					"commandlineSsh cannot copy local files");
 		}
 
-		// we don't have to check if the URI is a file or a directory, we always
-		// copy with the "-r" flag.
-
+                // create a seperate file object to determine whether the source
+                // is a directory. This is needed, because the source might be a local
+                // file, and gridftp might not be installed locally.
+                // This goes wrong for local -> remote copies.
+                if (determineIsDirectory()) {
+                    copyDirectory(gatContext, preferences, toURI(), dest);
+                    return;
+                }
+                
 		if (dest.refersToLocalHost()) {
 			if (GATEngine.DEBUG) {
 				System.err.println("commandlineSsh file: copy remote to local");
@@ -154,7 +160,7 @@ public class CommandlineSshFileAdaptor extends FileCpi {
 			command += sui.username + "@" + src.getHost() + ":" + src.getPath()
 					+ " " + dest.getPath();
 		} else {
-			command = "scp -r "
+			command = "scp "
 					+ "-o BatchMode=yes -o StrictHostKeyChecking=yes "
 					+ sui.username + "@" + src.getHost() + ":" + src.getPath()
 					+ " " + dest.getPath();
@@ -229,7 +235,7 @@ public class CommandlineSshFileAdaptor extends FileCpi {
 			command += src.getPath() + " " + sui.username + "@"
 					+ dest.getHost() + ":" + dest.getPath();
 		} else {
-			command = "scp -r "
+			command = "scp "
 					+ "-o BatchMode=yes -o StrictHostKeyChecking=yes "
 					+ src.getPath() + " " + sui.username + "@" + dest.getHost()
 					+ ":" + dest.getPath();

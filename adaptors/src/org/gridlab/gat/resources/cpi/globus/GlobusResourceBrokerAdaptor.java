@@ -208,6 +208,11 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
 
         rsl += " (hostCount = " + getHostCount(description) + ")";
 
+        String jobType = getStringAttribute(description, "jobType", null);
+        if(jobType != null) {
+            rsl += " (jobType = " + jobType + ")";
+        }
+        
         if (sandbox != null) {
             rsl += " (directory = " + sandbox.getSandbox() + ")";
         }
