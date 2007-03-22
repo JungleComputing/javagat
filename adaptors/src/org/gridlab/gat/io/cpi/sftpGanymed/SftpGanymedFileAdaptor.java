@@ -30,8 +30,8 @@ public class SftpGanymedFileAdaptor extends FileCpi {
     private static Hashtable clienttable = new Hashtable();
 
     public SftpGanymedFileAdaptor(GATContext gatContext,
-        Preferences preferences, URI location)
-        throws GATObjectCreationException {
+            Preferences preferences, URI location)
+            throws GATObjectCreationException {
         super(gatContext, preferences, location);
 
         if (!location.isCompatible("sftp") && !location.isCompatible("file")) {
@@ -41,7 +41,7 @@ public class SftpGanymedFileAdaptor extends FileCpi {
 
     private static String getClientKey(URI hostURI, Preferences preferences) {
         return hostURI.resolveHost() + ":" + hostURI.getPort(SSH_PORT)
-            + preferences; // include preferences in key
+                + preferences; // include preferences in key
     }
 
     private static synchronized SftpGanymedConnection getFromCache(String key) {
@@ -52,7 +52,8 @@ public class SftpGanymedFileAdaptor extends FileCpi {
         return client;
     }
 
-    private static synchronized boolean putInCache(String key, SftpGanymedConnection c) {
+    private static synchronized boolean putInCache(String key,
+            SftpGanymedConnection c) {
         if (!clienttable.containsKey(key)) {
             clienttable.put(key, c);
             return true;
@@ -60,52 +61,54 @@ public class SftpGanymedFileAdaptor extends FileCpi {
         return false;
     }
 
-    private SftpGanymedConnection openConnection(
-            GATContext gatContext, Preferences preferences, URI location)
-        throws GATInvocationException {
-            if (!USE_CLIENT_CACHING) {
-                return doWorkcreateConnection(gatContext, preferences, location);
-            }
-
-            SftpGanymedConnection c = null;
-
-            String key = getClientKey(location, preferences);
-            c = getFromCache(key);
-            
-            if (c != null) {
-                try {
-                    // test if the client is still alive
-                    c.sftpClient.stat(".");
-
-                    if (GATEngine.DEBUG) {
-                        System.err.println("using cached client");
-                    }
-                } catch (Exception except) {
-                    if (GATEngine.DEBUG) {
-                        System.err.println("could not reuse cached client: "
-                            + except);
-                        except.printStackTrace();
-                    }
-
-                    c = null;
-                }
-            }
-
-            if (c == null) {
-                c = doWorkcreateConnection(gatContext, preferences, location);
-            }
-
-            return c;
+    private SftpGanymedConnection openConnection(GATContext gatContext,
+            Preferences preferences, URI location)
+            throws GATInvocationException {
+        if (!USE_CLIENT_CACHING) {
+            return doWorkcreateConnection(gatContext, preferences, location);
         }
 
-    private static SftpGanymedConnection doWorkcreateConnection(
-        GATContext gatContext, Preferences preferences, URI location)
-        throws GATInvocationException {
-        SftpGanymedConnection res = new SftpGanymedConnection();
+        SftpGanymedConnection c = null;
 
+        String key = getClientKey(location, preferences);
+        c = getFromCache(key);
+
+        if (c != null) {
+            try {
+                // test if the client is still alive
+                c.sftpClient.stat(".");
+
+                if (GATEngine.DEBUG) {
+                    System.err.println("using cached client");
+                }
+            } catch (Exception except) {
+                if (GATEngine.DEBUG) {
+                    System.err.println("could not reuse cached client: "
+                            + except);
+                    except.printStackTrace();
+                }
+
+                c = null;
+            }
+        }
+
+        if (c == null) {
+            c = doWorkcreateConnection(gatContext, preferences, location);
+        }
+
+        return c;
+    }
+
+    private static SftpGanymedConnection doWorkcreateConnection(
+            GATContext gatContext, Preferences preferences, URI location)
+            throws GATInvocationException {
+        SftpGanymedConnection res = new SftpGanymedConnection();
+        res.remoteMachine = location;
+        
         try {
-            res.userInfo = SftpGanymedSecurityUtils.getSftpCredential(
-                gatContext, preferences, "sftpGanymed", location, SSH_PORT);
+            res.userInfo =
+                    SftpGanymedSecurityUtils.getSftpCredential(gatContext,
+                            preferences, "sftpGanymed", location, SSH_PORT);
         } catch (CouldNotInitializeCredentialException e) {
             throw new GATInvocationException("sftpGanymed", e);
         } catch (CredentialExpiredException e2) {
@@ -128,10 +131,11 @@ public class SftpGanymedFileAdaptor extends FileCpi {
         boolean authenticated = false;
         try {
             if (res.userInfo.password != null
-                && res.connection.isAuthMethodAvailable(res.userInfo.username,
-                    "password")) {
-                authenticated = res.connection.authenticateWithPassword(
-                    res.userInfo.username, res.userInfo.password);
+                    && res.connection.isAuthMethodAvailable(
+                            res.userInfo.username, "password")) {
+                authenticated =
+                        res.connection.authenticateWithPassword(
+                                res.userInfo.username, res.userInfo.password);
             }
         } catch (IOException e) {
             res.connection.close();
@@ -141,16 +145,18 @@ public class SftpGanymedFileAdaptor extends FileCpi {
         if (!authenticated) {
             // try key-based authentication
             try {
-                authenticated = res.connection.authenticateWithPublicKey(
-                    res.userInfo.username, res.userInfo.privateKey,
-                    res.userInfo.password);
+                authenticated =
+                        res.connection.authenticateWithPublicKey(
+                                res.userInfo.username, res.userInfo.privateKey,
+                                res.userInfo.password);
             } catch (IOException e) {
                 res.connection.close();
                 throw new GATInvocationException("sftpGanymed", e);
             }
         }
-        
-        if(!authenticated) throw new GATInvocationException("Unable to authenticate");
+
+        if (!authenticated)
+            throw new GATInvocationException("Unable to authenticate");
 
         try {
             res.sftpClient = new SFTPv3Client(res.connection);
@@ -158,46 +164,48 @@ public class SftpGanymedFileAdaptor extends FileCpi {
             res.connection.close();
             throw new GATInvocationException("sftpGanymed", e);
         }
-        
+
         return res;
     }
 
     public static void closeConnection(SftpGanymedConnection c)
-    throws GATInvocationException {
-    if (!USE_CLIENT_CACHING) {
-        doWorkCloseConnection(c);
-        return;
-    }
-
-    String key = getClientKey(c.remoteMachine, c.preferences);
-
-    if (!putInCache(key, c)) {
-        try {
-            if (GATEngine.DEBUG) {
-                System.err.println("closing client");
-            }
-
+            throws GATInvocationException {
+        if (!USE_CLIENT_CACHING) {
             doWorkCloseConnection(c);
-        } catch (Exception e) {
-            if (GATEngine.DEBUG) {
-                System.err
-                    .println("end of sftpGanymed adaptor, closing client, got exception (ignoring): "
-                        + e);
-            }
+            return;
+        }
 
-            // ignore
+        String key = getClientKey(c.remoteMachine, c.preferences);
+
+        if (!putInCache(key, c)) {
+            try {
+                if (GATEngine.DEBUG) {
+                    System.err.println("closing client");
+                }
+
+                doWorkCloseConnection(c);
+            } catch (Exception e) {
+                if (GATEngine.DEBUG) {
+                    System.err
+                            .println("end of sftpGanymed adaptor, closing client, got exception (ignoring): "
+                                    + e);
+                }
+
+                // ignore
+            }
         }
     }
-}
+
     public static void doWorkCloseConnection(SftpGanymedConnection c) {
         c.sftpClient.close();
         c.sftpClient = null;
         c.connection.close();
         c.connection = null;
     }
-    
+
     public boolean mkdir() throws GATInvocationException {
-        SftpGanymedConnection c = openConnection(gatContext, preferences, location);
+        SftpGanymedConnection c =
+                openConnection(gatContext, preferences, location);
         try {
             c.sftpClient.mkdir(getPath(), 0700);
         } catch (IOException e) {
@@ -213,7 +221,8 @@ public class SftpGanymedFileAdaptor extends FileCpi {
      * @see org.gridlab.gat.io.cpi.FileCpi#isDirectory()
      */
     public boolean isDirectory() throws GATInvocationException {
-        SftpGanymedConnection c = openConnection(gatContext, preferences, location);
+        SftpGanymedConnection c =
+                openConnection(gatContext, preferences, location);
         try {
             SFTPv3FileAttributes attr = c.sftpClient.stat(getPath());
             return attr.isDirectory();
@@ -228,11 +237,12 @@ public class SftpGanymedFileAdaptor extends FileCpi {
      * @see org.gridlab.gat.io.cpi.FileCpi#delete()
      */
     public boolean delete() throws GATInvocationException {
-        SftpGanymedConnection c = openConnection(gatContext, preferences, location);
+        SftpGanymedConnection c =
+                openConnection(gatContext, preferences, location);
 
         try {
             SFTPv3FileAttributes attr = c.sftpClient.stat(getPath());
-            if(attr.isDirectory()) {
+            if (attr.isDirectory()) {
                 c.sftpClient.rmdir(getPath());
             } else {
                 c.sftpClient.rm(getPath());
@@ -250,7 +260,8 @@ public class SftpGanymedFileAdaptor extends FileCpi {
      * @see org.gridlab.gat.io.cpi.FileCpi#exists()
      */
     public boolean exists() throws GATInvocationException {
-        SftpGanymedConnection c = openConnection(gatContext, preferences, location);
+        SftpGanymedConnection c =
+                openConnection(gatContext, preferences, location);
         try {
             c.sftpClient.stat(getPath());
         } catch (IOException e) {
@@ -266,24 +277,26 @@ public class SftpGanymedFileAdaptor extends FileCpi {
      * @see org.gridlab.gat.io.cpi.FileCpi#list()
      */
     public String[] list() throws GATInvocationException {
-        SftpGanymedConnection c = openConnection(gatContext, preferences, location);
+        SftpGanymedConnection c =
+                openConnection(gatContext, preferences, location);
         try {
             SFTPv3FileAttributes attr = c.sftpClient.stat(getPath());
-            if(!attr.isDirectory()) {
+            if (!attr.isDirectory()) {
                 return null;
             }
-            
+
             Vector result = c.sftpClient.ls(getPath());
             Vector newRes = new Vector();
-            for(int i=0; i<result.size(); i++) {
-                SFTPv3DirectoryEntry entry =  (SFTPv3DirectoryEntry) result.get(i);
-                if(!entry.filename.equals(".") && !entry.filename.equals("..")) {
+            for (int i = 0; i < result.size(); i++) {
+                SFTPv3DirectoryEntry entry =
+                        (SFTPv3DirectoryEntry) result.get(i);
+                if (!entry.filename.equals(".") && !entry.filename.equals("..")) {
                     newRes.add(entry.filename);
                 }
             }
-            
+
             String[] res = new String[newRes.size()];
-            for(int i=0; i<newRes.size(); i++) {
+            for (int i = 0; i < newRes.size(); i++) {
                 res[i] = (String) newRes.get(i);
             }
             return res;
@@ -298,7 +311,8 @@ public class SftpGanymedFileAdaptor extends FileCpi {
      * @see org.gridlab.gat.io.cpi.FileCpi#isFile()
      */
     public boolean isFile() throws GATInvocationException {
-        SftpGanymedConnection c = openConnection(gatContext, preferences, location);
+        SftpGanymedConnection c =
+                openConnection(gatContext, preferences, location);
         try {
             SFTPv3FileAttributes attr = c.sftpClient.stat(getPath());
             return attr.isRegularFile();
@@ -313,7 +327,8 @@ public class SftpGanymedFileAdaptor extends FileCpi {
      * @see org.gridlab.gat.io.cpi.FileCpi#length()
      */
     public long length() throws GATInvocationException {
-        SftpGanymedConnection c = openConnection(gatContext, preferences, location);
+        SftpGanymedConnection c =
+                openConnection(gatContext, preferences, location);
         try {
             SFTPv3FileAttributes attr = c.sftpClient.stat(getPath());
             return attr.size.longValue();
