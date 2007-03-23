@@ -2,7 +2,6 @@ package org.gridlab.gat.io.cpi.commandlineSsh;
 
 import java.io.IOException;
 
-import org.gridlab.gat.AdaptorNotApplicableException;
 import org.gridlab.gat.CommandNotFoundException;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
@@ -12,7 +11,6 @@ import org.gridlab.gat.URI;
 import org.gridlab.gat.engine.GATEngine;
 import org.gridlab.gat.engine.util.OutputForwarder;
 import org.gridlab.gat.io.cpi.FileCpi;
-import org.gridlab.gat.io.cpi.sftpGanymed.SftpGanymedFileAdaptor;
 import org.gridlab.gat.io.cpi.ssh.SSHSecurityUtils;
 import org.gridlab.gat.io.cpi.ssh.SshUserInfo;
 
@@ -20,13 +18,6 @@ public class CommandlineSshFileAdaptor extends FileCpi {
 	public static final int SSH_PORT = 22;
 
 	private boolean windows = false;
-
-	/**
-	 * We use an ssh adaptor for all operations, except copy. This is done this
-	 * way, because the auto optimizing of adaptor ordering by the engine does
-	 * not select this adaptor anymore if another call is done before the copy.
-	 */
-	private SftpGanymedFileAdaptor sftpAdaptor;
 
 	/**
 	 * @param gatContext
@@ -38,16 +29,13 @@ public class CommandlineSshFileAdaptor extends FileCpi {
 			throws GATObjectCreationException {
 		super(gatContext, preferences, location);
 
-		if (!location.isCompatible("ssh")) {
-			throw new AdaptorNotApplicableException("cannot handle this URI: "
-					+ location);
-		}
-
+                if (!location.isCompatible("ssh") && !location.isCompatible("file")) {
+                    throw new GATObjectCreationException("cannot handle this URI: " + location);
+                }
+                
 		String osname = System.getProperty("os.name");
 		if (osname.startsWith("Windows"))
 			windows = true;
-
-		sftpAdaptor = new SftpGanymedFileAdaptor(gatContext, preferences, location);
 	}
 
 	/**
@@ -288,49 +276,5 @@ public class CommandlineSshFileAdaptor extends FileCpi {
 			// Cannot happen
 			return 1;
 		}
-	}
-
-	public boolean canRead() throws GATInvocationException {
-		return sftpAdaptor.canRead();
-	}
-
-	public boolean canWrite() throws GATInvocationException {
-		return sftpAdaptor.canWrite();
-	}
-
-	public boolean delete() throws GATInvocationException {
-		return sftpAdaptor.delete();
-	}
-
-	public boolean exists() throws GATInvocationException {
-		return sftpAdaptor.exists();
-	}
-
-	public boolean isDirectory() throws GATInvocationException {
-		return sftpAdaptor.isDirectory();
-	}
-
-	public boolean isFile() throws GATInvocationException {
-		return sftpAdaptor.isFile();
-	}
-
-	public long lastModified() throws GATInvocationException {
-		return sftpAdaptor.lastModified();
-	}
-
-	public long length() throws GATInvocationException {
-		return sftpAdaptor.length();
-	}
-
-	public String[] list() throws GATInvocationException {
-		return sftpAdaptor.list();
-	}
-
-	public boolean mkdir() throws GATInvocationException {
-		return sftpAdaptor.mkdir();
-	}
-
-	public boolean mkdirs() throws GATInvocationException {
-		return sftpAdaptor.mkdirs();
 	}
 }

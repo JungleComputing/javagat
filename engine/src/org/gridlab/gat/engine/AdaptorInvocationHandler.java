@@ -6,6 +6,8 @@ package org.gridlab.gat.engine;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.LinkedList;
 
@@ -24,16 +26,70 @@ import colobus.Colobus;
  */
 public class AdaptorInvocationHandler implements InvocationHandler {
 
+    static class AdaptorSorter {
+
+        /**
+         * list of adaptor class names (Strings) in order of successful execution
+         */
+        private LinkedList adaptorlist = new LinkedList();
+        
+        /**
+         * list of adaptor class names (Strings) in order of successful execution per method
+         * <methodName, LinkedList>
+         */
+        private HashMap adaptorMethodList = new HashMap();
+        
+        synchronized void add(String adaptorName) {
+            if (!adaptorlist.contains(adaptorName)) {
+                adaptorlist.add(adaptorName);
+            }
+        }
+
+        synchronized String[] getOrdering(Method method) {
+            ArrayList res = new ArrayList();
+            ArrayList l = (ArrayList) adaptorMethodList.get(method);
+            
+            if(l==null) {
+                return (String[]) adaptorlist.toArray(new String[adaptorlist.size()]);
+            }
+            
+            // We have a list for this particular method. Use that order
+            // first, and append the other adaptors at the end (in order).
+            for(int i=0; i<l.size(); i++) {
+                res.add(l.get(i)); // append
+            }
+            
+            for(int i=0; i<adaptorlist.size(); i++) {
+                String s = (String) adaptorlist.get(i);
+                if(!res.contains(s)) {
+                    res.add(s);
+                }
+            }
+
+            return (String[]) res.toArray(new String[res.size()]);
+        }
+        
+        synchronized void success(String adaptorName, Method method) {
+            ArrayList l = (ArrayList) adaptorMethodList.get(method);
+            
+            if(l==null) {
+                l = new ArrayList();
+                adaptorMethodList.put(method, l);
+            } else {
+                l.remove(adaptorName);                
+            }
+
+            l.add(0, adaptorName);
+        }
+    }
+    
     static final boolean OPTIMIZE_ADAPTOR_POLICY = true;
 
     private static final Colobus colobus =
             Colobus.getColobus(AdaptorInvocationHandler.class.getName());
 
-    /**
-     * static list of adaptor class names in order of successful execution
-     */
-    private static LinkedList adaptorlist = new LinkedList();
-
+    private static AdaptorSorter adaptorSorter = new AdaptorSorter();
+    
     private GATContext context;
 
     private Preferences preferences;
@@ -48,7 +104,7 @@ public class AdaptorInvocationHandler implements InvocationHandler {
     public AdaptorInvocationHandler(AdaptorList adaptors, GATContext context,
             Preferences preferences, Object[] params) {
         this.context = context;
-
+        
         if (preferences != null) {
             this.preferences = (Preferences) preferences.clone();
         }
@@ -66,11 +122,7 @@ public class AdaptorInvocationHandler implements InvocationHandler {
 
             this.adaptors.put(adaptorname, adaptor);
 
-            synchronized (adaptorlist) {
-                if (!adaptorlist.contains(adaptorname)) {
-                    adaptorlist.add(adaptorname);
-                }
-            }
+            adaptorSorter.add(adaptorname);
         }
     }
 
@@ -92,11 +144,7 @@ public class AdaptorInvocationHandler implements InvocationHandler {
         String[] adaptornames;
         Object adaptor;
 
-        synchronized (adaptorlist) {
-            adaptornames =
-                    (String[]) adaptorlist.toArray(new String[adaptorlist
-                            .size()]);
-        }
+        adaptornames = adaptorSorter.getOrdering(m);
 
         // try adaptors in order of success
         for (int i = 0; i < adaptornames.length; i++) {
@@ -148,10 +196,7 @@ public class AdaptorInvocationHandler implements InvocationHandler {
 
                     if (OPTIMIZE_ADAPTOR_POLICY && i != 0) {
                         // move successful adaptor to start of list
-                        synchronized (adaptorlist) {
-                            adaptorlist.remove(adaptornames[i]);
-                            adaptorlist.add(0, adaptornames[i]);
-                        }
+                        adaptorSorter.success(adaptornames[i], m);
                     }
 
                     return res; // return on first successful adaptor
