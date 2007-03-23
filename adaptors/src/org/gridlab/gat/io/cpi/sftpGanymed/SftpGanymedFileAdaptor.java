@@ -3,6 +3,11 @@
  */
 package org.gridlab.gat.io.cpi.sftpGanymed;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Hashtable;
 import java.util.Vector;
@@ -22,6 +27,7 @@ import ch.ethz.ssh2.SFTPException;
 import ch.ethz.ssh2.SFTPv3Client;
 import ch.ethz.ssh2.SFTPv3DirectoryEntry;
 import ch.ethz.ssh2.SFTPv3FileAttributes;
+import ch.ethz.ssh2.SFTPv3FileHandle;
 import ch.ethz.ssh2.sftp.ErrorCodes;
 
 public class SftpGanymedFileAdaptor extends FileCpi {
@@ -106,7 +112,7 @@ public class SftpGanymedFileAdaptor extends FileCpi {
             throws GATInvocationException {
         SftpGanymedConnection res = new SftpGanymedConnection();
         res.remoteMachine = location;
-        
+
         try {
             res.userInfo =
                     SftpGanymedSecurityUtils.getSftpCredential(gatContext,
@@ -267,7 +273,7 @@ public class SftpGanymedFileAdaptor extends FileCpi {
         try {
             c.sftpClient.stat(getPath());
         } catch (SFTPException x) {
-            if(x.getServerErrorCode() == ErrorCodes.SSH_FX_NO_SUCH_FILE) {
+            if (x.getServerErrorCode() == ErrorCodes.SSH_FX_NO_SUCH_FILE) {
                 return false;
             } else {
                 throw new GATInvocationException("sftpGanymed", x);
@@ -345,4 +351,159 @@ public class SftpGanymedFileAdaptor extends FileCpi {
             closeConnection(c);
         }
     }
+
+    /*
+     * (non-Javadoc)
+     *
+     * @see org.gridlab.gat.io.File#copy(java.net.URI)
+     */
+    public void copy(URI dest) throws GATInvocationException {
+        // We don't have to handle the local case, the GAT engine will select
+        // the local adaptor.
+        if (dest.refersToLocalHost() && (toURI().refersToLocalHost())) {
+            throw new GATInvocationException(
+                    "sftpGanymed cannot copy local files");
+        }
+
+        // create a seperate file object to determine whether the source
+        // is a directory. This is needed, because the source might be a local
+        // file, and sftp might not be installed locally.
+        // This goes wrong for local -> remote copies.
+        if (determineIsDirectory()) {
+            copyDirectory(gatContext, preferences, toURI(), dest);
+            return;
+        }
+
+        if (dest.refersToLocalHost()) {
+            if (GATEngine.DEBUG) {
+                System.err.println("sftpGanymed file: copy remote to local");
+            }
+
+            copyToLocal(toURI(), dest);
+
+            return;
+        }
+
+        if (toURI().refersToLocalHost()) {
+            if (GATEngine.DEBUG) {
+                System.err.println("sftpGanymed file: copy local to remote");
+            }
+
+            copyToRemote(toURI(), dest);
+
+            return;
+        }
+
+        // source is remote, dest is remote.
+        throw new GATInvocationException("sftpNew: cannot do third party copy");
+    }
+
+    protected void copyToLocal(URI src, URI dest) throws GATInvocationException {
+        BufferedOutputStream outBuf = null;
+        SFTPv3FileHandle handle = null;
+        SftpGanymedConnection c = null;
+        
+        // copy from a remote machine to the local machine
+        try {
+            // Create destination file
+            File destinationFile = new File(dest.getPath());
+
+            if (GATEngine.DEBUG) {
+                System.err.println("creating local file " + destinationFile);
+            }
+            destinationFile.createNewFile();
+            FileOutputStream out = new FileOutputStream(destinationFile);
+            outBuf = new BufferedOutputStream(out);
+
+            long length = length();
+            c = openConnection(gatContext, preferences, location);
+            handle = c.sftpClient.openFileRO(src.getPath());
+
+            long bytesWritten = 0;
+            byte[] buf = new byte[32000];
+
+            while (bytesWritten != length) {
+                int len =
+                        c.sftpClient.read(handle, bytesWritten, buf, 0,
+                                buf.length);
+                outBuf.write(buf, 0, len);
+                bytesWritten += len;
+            }
+        } catch (IOException e) {
+            throw new GATInvocationException("sftpGanymed", e);
+        } finally {
+            try {
+                if (outBuf != null) {
+                    outBuf.close();
+                }
+            } catch (IOException e) {
+                throw new GATInvocationException("sftpGanymed", e);
+            }
+
+            try {
+                if(handle != null && c != null) {
+                    c.sftpClient.closeFile(handle);
+                }
+            } catch (IOException e) {
+                throw new GATInvocationException("sftpGanymed", e);
+            }
+
+            if(c != null) {
+                closeConnection(c);
+            }
+        }
+    }
+
+    protected void copyToRemote(URI src, URI dest)
+            throws GATInvocationException {
+
+        SFTPv3FileHandle handle = null;
+        BufferedInputStream inBuf = null;
+        
+        SftpGanymedConnection c = null;
+
+        // copy from the local machine to a remote machine.
+        try {
+            FileInputStream in = new FileInputStream(src.getPath());
+            inBuf = new BufferedInputStream(in);
+            long length = new java.io.File(src.getPath()).length();
+            
+            c = openConnection(gatContext, preferences, location);
+            handle = c.sftpClient.createFileTruncate(dest.getPath());
+
+            long bytesWritten = 0;
+            byte[] buf = new byte[32000];
+
+            while (bytesWritten != length) {
+                int len = inBuf.read(buf, 0, buf.length);
+                    
+                c.sftpClient.write(handle, bytesWritten, buf, 0,
+                                len);
+                bytesWritten += len;
+            }
+        } catch (Exception e) {
+            throw new GATInvocationException("sftpGanymed", e);
+        } finally {
+            try {
+                if (inBuf != null) {
+                    inBuf.close();
+                }
+            } catch (IOException e) {
+                throw new GATInvocationException("sftpGanymed", e);
+            }
+
+            try {
+                if(handle != null && c != null) {
+                    c.sftpClient.closeFile(handle);
+                }
+            } catch (IOException e) {
+                throw new GATInvocationException("sftpGanymed", e);
+            }
+
+            if (c != null) {
+                closeConnection(c);
+            }
+        }
+    }
+
 }
