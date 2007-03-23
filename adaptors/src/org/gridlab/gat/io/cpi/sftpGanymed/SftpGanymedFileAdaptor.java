@@ -18,9 +18,11 @@ import org.gridlab.gat.engine.GATEngine;
 import org.gridlab.gat.io.cpi.FileCpi;
 
 import ch.ethz.ssh2.Connection;
+import ch.ethz.ssh2.SFTPException;
 import ch.ethz.ssh2.SFTPv3Client;
 import ch.ethz.ssh2.SFTPv3DirectoryEntry;
 import ch.ethz.ssh2.SFTPv3FileAttributes;
+import ch.ethz.ssh2.sftp.ErrorCodes;
 
 public class SftpGanymedFileAdaptor extends FileCpi {
     static final int SSH_PORT = 22;
@@ -264,9 +266,14 @@ public class SftpGanymedFileAdaptor extends FileCpi {
                 openConnection(gatContext, preferences, location);
         try {
             c.sftpClient.stat(getPath());
+        } catch (SFTPException x) {
+            if(x.getServerErrorCode() == ErrorCodes.SSH_FX_NO_SUCH_FILE) {
+                return false;
+            } else {
+                throw new GATInvocationException("sftpGanymed", x);
+            }
         } catch (IOException e) {
-            System.err.println("exists: " + e);
-            return false;
+            throw new GATInvocationException("sftpGanymed", e);
         } finally {
             closeConnection(c);
         }
