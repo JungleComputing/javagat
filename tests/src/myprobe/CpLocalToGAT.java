@@ -9,11 +9,12 @@ import org.gridlab.gat.GAT;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.URI;
 import org.gridlab.gat.io.FileOutputStream;
-import org.gridlab.gat.io.FileInputStream;
 import org.gridlab.gat.security.PasswordSecurityContext;
 import org.gridlab.gat.security.SecurityContext;
 
-class Measure02 {
+import java.io.FileInputStream;
+
+class CpLocalToGAT {
     public static void main(String argv[]) throws Exception {
 	URI loc1 =  null;
 	URI loc2 =  null;
@@ -45,17 +46,17 @@ class Measure02 {
 	    throw e;
 	}
 
-	FileInputStream fis = GAT.createFileInputStream(context, loc1);
+	FileInputStream fis = new FileInputStream(loc1.toString());
 	FileOutputStream fos = GAT.createFileOutputStream(context, loc2);
 	long start = System.currentTimeMillis();
-	byte[] buf = new byte[1024];
+	byte[] buf = new byte[1048576];
 	int i = 0;
 	while((i=fis.read(buf))!=-1) {
 	    fos.write(buf, 0, i);
 	}
 	long stop = System.currentTimeMillis();
 	long time = stop-start;
-	System.out.println("File copy took "+time+" seconds");
+	System.out.println("File copy took "+time+" millisec");
 	fis.close();
 	fos.close();
     }
