@@ -215,6 +215,7 @@ public class SftpGanymedFileAdaptor extends FileCpi {
         SftpGanymedConnection c =
                 openConnection(gatContext, preferences, location);
         try {
+            System.err.println("ganymed mkdir of: " + getPath());
             c.sftpClient.mkdir(getPath(), 0700);
         } catch (IOException e) {
             return false;

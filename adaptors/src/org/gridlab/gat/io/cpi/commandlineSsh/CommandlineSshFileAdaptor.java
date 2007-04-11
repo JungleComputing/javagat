@@ -3,6 +3,7 @@ package org.gridlab.gat.io.cpi.commandlineSsh;
 import java.io.IOException;
 
 import org.gridlab.gat.CommandNotFoundException;
+import org.gridlab.gat.GAT;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.GATObjectCreationException;
@@ -10,6 +11,7 @@ import org.gridlab.gat.Preferences;
 import org.gridlab.gat.URI;
 import org.gridlab.gat.engine.GATEngine;
 import org.gridlab.gat.engine.util.OutputForwarder;
+import org.gridlab.gat.io.File;
 import org.gridlab.gat.io.cpi.FileCpi;
 import org.gridlab.gat.io.cpi.ssh.SSHSecurityUtils;
 import org.gridlab.gat.io.cpi.ssh.SshUserInfo;
@@ -55,6 +57,8 @@ public class CommandlineSshFileAdaptor extends FileCpi {
 					"commandlineSsh cannot copy local files");
 		}
 
+                // @@@ if we find a solution for the "scp -r" problem, this code should
+                // be commented out
                 // create a seperate file object to determine whether the source
                 // is a directory. This is needed, because the source might be a local
                 // file, and gridftp might not be installed locally.
@@ -69,9 +73,7 @@ public class CommandlineSshFileAdaptor extends FileCpi {
 				System.err.println("commandlineSsh file: copy remote to local");
 			}
 
-			copyToLocal(fixURI(toURI(), "commandlineSsh"), fixURI(dest,
-					"commandlineSsh"));
-
+			copyToLocal(location, dest);
 			return;
 		}
 
@@ -80,9 +82,7 @@ public class CommandlineSshFileAdaptor extends FileCpi {
 				System.err.println("commandlineSsh file: copy local to remote");
 			}
 
-			copyToRemote(fixURI(toURI(), "commandlineSsh"), fixURI(dest,
-					"commandlineSsh"));
-
+			copyToRemote(location, dest);
 			return;
 		}
 
@@ -137,7 +137,7 @@ public class CommandlineSshFileAdaptor extends FileCpi {
 			if (sui.getPassword() == null) { // public/private key
 				int slot = sui.getPrivateKeySlot();
 				if (slot == -1) { // not set by the user, assume he only has
-									// one key
+                                                  // one key
 					slot = 0;
 				}
 				command += " -pk=" + slot;
@@ -148,10 +148,46 @@ public class CommandlineSshFileAdaptor extends FileCpi {
 			command += sui.username + "@" + src.resolveHost() + ":" + src.getPath()
 					+ " " + dest.getPath();
 		} else {
-			command = "scp "
+
+                    
+                    
+                    File remote = null;
+                    boolean dir = false;
+                    try {
+                        remote = GAT.createFile(gatContext, preferences, src);
+                    } catch (GATObjectCreationException e) {
+                        throw new GATInvocationException("commandlineSsh", e);
+                    }
+                    if(remote.exists()) {
+                        if(remote.isDirectory()) {
+                            dir = true;
+                        }
+                    } else {
+                        throw new GATInvocationException("the remote file does not exist.");
+                    }
+
+                    if(dir) {
+                        java.io.File local = new java.io.File(dest.getPath());
+                        if(local.exists()) {
+                            if(!local.isDirectory()) {
+                                throw new GATInvocationException("local destination already exists, and it is not a directory");
+                            }
+                        } else {
+                            if(!local.mkdir()) {
+                                throw new GATInvocationException("could not create local dir");
+                            }
+                        }
+                        
+                        command = "scp -r "
+                                + "-o BatchMode=yes -o StrictHostKeyChecking=yes "
+                                + sui.username + "@" + src.resolveHost() + ":" + src.getPath()
+                                + "/* " + dest.getPath();
+                    } else {
+                        command = "scp "
 					+ "-o BatchMode=yes -o StrictHostKeyChecking=yes "
 					+ sui.username + "@" + src.resolveHost() + ":" + src.getPath()
 					+ " " + dest.getPath();
+                    }
 		}
 
 		if (GATEngine.VERBOSE) {
@@ -223,12 +259,37 @@ public class CommandlineSshFileAdaptor extends FileCpi {
 			command += src.getPath() + " " + sui.username + "@"
 					+ dest.resolveHost() + ":" + dest.getPath();
 		} else {
+                    if(determineIsDirectory()) {
+                        File remote = null;
+                        try {
+                            remote = GAT.createFile(gatContext, preferences, dest);
+                        } catch (GATObjectCreationException e) {
+                            throw new GATInvocationException("commandlineSsh", e);
+                        }
+                        if(remote.exists()) {
+                            if(!remote.isDirectory()) {
+                                throw new GATInvocationException("remote destination already exists, and it is not a directory");
+                            }
+                        } else {
+                            if(!remote.mkdir()) {
+                                throw new GATInvocationException("could not create remote dir");
+                            }
+                        }
+                        
+                        command = "scp -r "
+                                + "-o BatchMode=yes -o StrictHostKeyChecking=yes "
+                                + src.getPath() + "/* " + sui.username + "@" + dest.resolveHost()
+                                + ":" + dest.getPath();                        
+                    } else {
 			command = "scp "
 					+ "-o BatchMode=yes -o StrictHostKeyChecking=yes "
 					+ src.getPath() + " " + sui.username + "@" + dest.resolveHost()
 					+ ":" + dest.getPath();
+                    }
 		}
 
+                
+//                @@@ this does not work because the * is not understood by scp
 		if (GATEngine.VERBOSE) {
 			System.err.println("CommandlineSsh: running command: " + command);
 		}
@@ -256,10 +317,10 @@ public class CommandlineSshFileAdaptor extends FileCpi {
 		}
 
 		// we must always read the output and error streams to avoid deadlocks
-		OutputForwarder out = new OutputForwarder(p.getInputStream(), false); // throw
+		OutputForwarder out = new OutputForwarder(p.getInputStream(), true); // throw
 																				// away
 																				// output
-		OutputForwarder err = new OutputForwarder(p.getErrorStream(), false); // throw
+		OutputForwarder err = new OutputForwarder(p.getErrorStream(), true); // throw
 																				// away
 																				// output
 
@@ -271,6 +332,9 @@ public class CommandlineSshFileAdaptor extends FileCpi {
 			out.waitUntilFinished();
 			err.waitUntilFinished();
 
+                        System.err.println("OUT: " + out.getResult());
+                        System.err.println("ERR: " + err.getResult());
+                        
 			return exitValue;
 		} catch (InterruptedException e) {
 			// Cannot happen
