@@ -332,8 +332,10 @@ public class CommandlineSshFileAdaptor extends FileCpi {
 			out.waitUntilFinished();
 			err.waitUntilFinished();
 
-                        System.err.println("OUT: " + out.getResult());
-                        System.err.println("ERR: " + err.getResult());
+                        if(GATEngine.DEBUG) {
+                            System.err.println("commandlineSSH out: " + out.getResult());
+                            System.err.println("commandlineSSH err: " + err.getResult());
+                        }
                         
 			return exitValue;
 		} catch (InterruptedException e) {
