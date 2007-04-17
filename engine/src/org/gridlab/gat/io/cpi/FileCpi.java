@@ -177,7 +177,11 @@ public abstract class FileCpi implements FileInterface {
     }
 
     public int compareTo(Object other) {
-        return location.compareTo(((FileCpi) other).location);
+        if(other instanceof FileCpi) {
+            return location.compareTo(((FileCpi) other).location);
+        } else {
+            throw new Error("illegal compareTo operation");
+        }
     }
 
     public boolean createNewFile() throws GATInvocationException {
@@ -219,13 +223,13 @@ public abstract class FileCpi implements FileInterface {
     }
 
     public final String getName() {
-        String path = location.getPath();
+        String path = getPath();
 
         return new java.io.File(path).getName();
     }
 
     public String getParent() {
-        String path = location.getPath();
+        String path = getPath();
 
         int pos = path.lastIndexOf("/");
         if (pos == -1) {
@@ -268,7 +272,11 @@ public abstract class FileCpi implements FileInterface {
     }
 
     public final String getPath() {
-        return location.getPath();
+        String res = location.getPath();
+        if(res == null) {
+            throw new Error("path not specified correctly in URI: " + location);
+        }
+        return res;
     }
 
     public final int hashCode() {

@@ -13,33 +13,33 @@ with the examples below.
 local to local
 bin/run_gat_app tutorial.RemoteCopy /bin/echo foo
 
-remote to local with ssh
-bin/run_gat_app tutorial.RemoteCopy ssh://mars.cs.vu.nl//bin/echo foo
+remote to local with sftp
+bin/run_gat_app tutorial.RemoteCopy sftp://kits.cs.vu.nl//bin/echo foo
 
 remote to local with gsiftp
-bin/run_gat_app tutorial.RemoteCopy gsiftp://fs1.das2.liacs.nl//bin/echo foo
+bin/run_gat_app tutorial.RemoteCopy gsiftp://fs1.das3.liacs.nl//bin/echo foo
 
 
 remote to local with any protocol (try -Dgat.verbose to find out which is used)
 bin/run_gat_app tutorial.RemoteCopy \
-  any://mars.cs.vu.nl//bin/echo \
+  any://kits.cs.vu.nl//bin/echo \
   foo
 
 error in the URI, to show GAT error reporting
-bin/run_gat_app tutorial.RemoteCopy ssj://mars.cs.vu.nl//bin/echo foo
+bin/run_gat_app tutorial.RemoteCopy ssj://kits.cs.vu.nl//bin/echo foo
 
 bin/run_gat_app tutorial.RemoteCopy \
   /bin/echo \
-  any://mars.cs.vu.nl/foo
+  any://kits.cs.vu.nl/foo
 
 
 bin/run_gat_app tutorial.RemoteCopy \
-  any://fs1.das2.liacs.nl//bin/echo \
-  any://fs2.das2.nikhef.nl/hiha.dat
+  any://fs1.das3.liacs.nl//bin/echo \
+  any://fs2.das3.science.uva.nl/hiha.dat
 
 (Login to fs2 to show that the file actually ended up there.) 
-Note that any://fs1.das2.liacs.nl//bin/echo is an absolute path, while
-any://fs2.das2.nikhef.nl/hiha.dat is a relative path.
+Note that any://fs1.das3.liacs.nl//bin/echo is an absolute path, while
+any://fs2.das3.science.uva.nl/hiha.dat is a relative path.
 
 
 
@@ -48,7 +48,7 @@ program 2: RemoteCat
 
 bin/run_gat_app tutorial.RemoteCat http://www.cs.vu.nl/~rob/hello.txt
 
-bin/run_gat_app tutorial.RemoteCat any://mars.cs.vu.nl/.bashrc
+bin/run_gat_app tutorial.RemoteCat any://kits.cs.vu.nl/.bashrc
 
 
 program 3: SubmitLocalJob
@@ -60,10 +60,10 @@ cat hostname.txt
 
 program 4: SubmitRemoteJob
 --------------------------
-bin/run_gat_app tutorial.SubmitRemoteJob fs0.das2.cs.vu.nl
+bin/run_gat_app tutorial.SubmitRemoteJob fs0.das3.cs.vu.nl
 cat hostname.txt
 
-bin/run_gat_app tutorial.SubmitRemoteJob fs1.das2.liacs.nl
+bin/run_gat_app tutorial.SubmitRemoteJob fs1.das3.liacs.nl
 cat hostname.txt
 
 
@@ -105,13 +105,13 @@ bin/run_gat_app tutorial.ListMetricDefinitions | grep host\.mem\.free
 program 9: GetMetric
 --------------------
 
-bin/run_gat_app tutorial.GetMetric fs0.das2.cs.vu.nl
+bin/run_gat_app tutorial.GetMetric fs0.das3.cs.vu.nl
 
-bin/run_gat_app tutorial.GetMetric node001.das2.cs.vu.nl
+bin/run_gat_app tutorial.GetMetric node001.das3.cs.vu.nl
 
 
 program 10: SubmitJobCallback
 ----------------------------
 
-ssh fs1.das2.liacs.nl rm -rf testDir
-bin/run_gat_app tutorial.SubmitJobCallback fs1.das2.liacs.nl
+ssh fs1.das3.liacs.nl rm -rf testDir
+bin/run_gat_app tutorial.SubmitJobCallback fs1.das3.liacs.nl

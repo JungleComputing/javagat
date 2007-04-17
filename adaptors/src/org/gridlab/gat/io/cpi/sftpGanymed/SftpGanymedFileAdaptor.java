@@ -215,6 +215,7 @@ public class SftpGanymedFileAdaptor extends FileCpi {
         SftpGanymedConnection c =
                 openConnection(gatContext, preferences, location);
         try {
+            System.err.println("ganymed mkdir of: " + getPath());
             c.sftpClient.mkdir(getPath(), 0700);
         } catch (IOException e) {
             return false;
@@ -467,8 +468,8 @@ public class SftpGanymedFileAdaptor extends FileCpi {
             FileInputStream in = new FileInputStream(src.getPath());
             inBuf = new BufferedInputStream(in);
             long length = new java.io.File(src.getPath()).length();
-            
-            c = openConnection(gatContext, preferences, location);
+
+            c = openConnection(gatContext, preferences, dest);
             handle = c.sftpClient.createFileTruncate(dest.getPath());
 
             long bytesWritten = 0;
@@ -476,9 +477,7 @@ public class SftpGanymedFileAdaptor extends FileCpi {
 
             while (bytesWritten != length) {
                 int len = inBuf.read(buf, 0, buf.length);
-                    
-                c.sftpClient.write(handle, bytesWritten, buf, 0,
-                                len);
+                c.sftpClient.write(handle, bytesWritten, buf, 0, len);
                 bytesWritten += len;
             }
         } catch (Exception e) {
@@ -505,5 +504,4 @@ public class SftpGanymedFileAdaptor extends FileCpi {
             }
         }
     }
-
 }

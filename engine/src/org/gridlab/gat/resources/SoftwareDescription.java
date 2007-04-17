@@ -26,7 +26,6 @@ import org.gridlab.gat.io.File;
  * 
  * <ul>
  * <li> directory (String): working directory.
- * <li> executable String): executable location.
  * <li> count (Integer/String): number of executables to run.
  * <li> hostCount (Integer/String): number of hosts to distribute on.
  * <li> maxTime (Long/String): maximal time in minutes.
