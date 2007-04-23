@@ -18,6 +18,7 @@ import org.gridlab.gat.Preferences;
 import org.gridlab.gat.TimePeriod;
 import org.gridlab.gat.URI;
 import org.gridlab.gat.engine.GATEngine;
+import org.gridlab.gat.engine.util.CommandRunner;
 import org.gridlab.gat.engine.util.InputForwarder;
 import org.gridlab.gat.engine.util.OutputForwarder;
 import org.gridlab.gat.resources.Job;
@@ -150,6 +151,10 @@ public class LocalResourceBrokerAdaptor extends ResourceBrokerCpi {
                 + location);
         }
 
+        // try to set the executable bit, it might be lost
+        new CommandRunner("/bin/chmod +x " + path);
+        new CommandRunner("/usr/bin/chmod +x " + path);
+        
         String host = getHostname(description);
         if (host != null) {
             if (!host.equals("localhost")

@@ -1,8 +1,5 @@
 package org.gridlab.gat.io.cpi.commandlineSsh;
 
-import java.io.IOException;
-
-import org.gridlab.gat.CommandNotFoundException;
 import org.gridlab.gat.GAT;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
@@ -10,7 +7,7 @@ import org.gridlab.gat.GATObjectCreationException;
 import org.gridlab.gat.Preferences;
 import org.gridlab.gat.URI;
 import org.gridlab.gat.engine.GATEngine;
-import org.gridlab.gat.engine.util.OutputForwarder;
+import org.gridlab.gat.engine.util.CommandRunner;
 import org.gridlab.gat.io.File;
 import org.gridlab.gat.io.cpi.FileCpi;
 import org.gridlab.gat.io.cpi.ssh.SSHSecurityUtils;
@@ -194,7 +191,7 @@ public class CommandlineSshFileAdaptor extends FileCpi {
 			System.err.println("CommandlineSsh: running command: " + command);
 		}
 
-		int exitValue = runCommand(command.toString());
+		int exitValue = new CommandRunner(command.toString()).getExitCode();
 		if (exitValue != 0) {
 			throw new GATInvocationException("CommandlineSsh command failed");
 		}
@@ -294,53 +291,10 @@ public class CommandlineSshFileAdaptor extends FileCpi {
 			System.err.println("CommandlineSsh: running command: " + command);
 		}
 
-		int exitValue = runCommand(command.toString());
+                int exitValue = new CommandRunner(command.toString()).getExitCode();
 		if (exitValue != 0) {
 			throw new GATInvocationException("CommandlineSsh command failed");
 		}
 	}
 
-	/** run a command, discard output. Exit code is returned */
-	protected int runCommand(String command) throws GATInvocationException {
-		Process p = null;
-		try {
-			p = Runtime.getRuntime().exec(command.toString());
-		} catch (IOException e) {
-			throw new CommandNotFoundException("commandlineSsh file", e);
-		}
-
-		// close stdin.
-		try {
-			p.getOutputStream().close();
-		} catch (Throwable e) {
-			// ignore
-		}
-
-		// we must always read the output and error streams to avoid deadlocks
-		OutputForwarder out = new OutputForwarder(p.getInputStream(), true); // throw
-																				// away
-																				// output
-		OutputForwarder err = new OutputForwarder(p.getErrorStream(), true); // throw
-																				// away
-																				// output
-
-		try {
-			int exitValue = p.waitFor();
-
-			// Wait for the output forwarders to finish!
-			// You may lose output if you don't -- Jason
-			out.waitUntilFinished();
-			err.waitUntilFinished();
-
-                        if(GATEngine.DEBUG) {
-                            System.err.println("commandlineSSH out: " + out.getResult());
-                            System.err.println("commandlineSSH err: " + err.getResult());
-                        }
-                        
-			return exitValue;
-		} catch (InterruptedException e) {
-			// Cannot happen
-			return 1;
-		}
-	}
 }
