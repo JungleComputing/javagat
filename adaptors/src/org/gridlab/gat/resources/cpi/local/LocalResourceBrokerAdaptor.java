@@ -142,19 +142,11 @@ public class LocalResourceBrokerAdaptor extends ResourceBrokerCpi {
         }
 
         URI location = getLocationURI(description);
-        String path = null;
-
-        if (location.refersToLocalHost()) {
-            path = location.getPath();
-        } else {
+        if (!location.refersToLocalHost()) {
             throw new MethodNotApplicableException("not a local file: "
                 + location);
         }
 
-        // try to set the executable bit, it might be lost
-        new CommandRunner("/bin/chmod +x " + path);
-        new CommandRunner("/usr/bin/chmod +x " + path);
-        
         String host = getHostname(description);
         if (host != null) {
             if (!host.equals("localhost")
@@ -170,8 +162,24 @@ public class LocalResourceBrokerAdaptor extends ResourceBrokerCpi {
         }
 
         Sandbox sandbox = new Sandbox(gatContext, preferences, description, "localhost", home, true, true, true, true);
+
+        System.err.println("resolvedEXE: " + sandbox.getResolvedExecutable());
+
+        String exe = sandbox.getResolvedExecutable().getPath();
         
-        String command = path + " " + getArguments(description);
+        // try to set the executable bit, it might be lost
+        try {
+            new CommandRunner("/bin/chmod +x " + exe);
+        } catch (Throwable t) {
+            // ignore
+        }
+        try {
+            new CommandRunner("/usr/bin/chmod +x " + exe);
+        } catch (Throwable t) {
+            // ignore
+        }
+        
+        String command = exe + " " + getArguments(description);
 
         java.io.File f = new java.io.File(sandbox.getSandbox());
 
@@ -193,7 +201,7 @@ public class LocalResourceBrokerAdaptor extends ResourceBrokerCpi {
         Process p = null;
         long startRun = System.currentTimeMillis();
         try {
-            p = Runtime.getRuntime().exec(command.toString(), environment, f);
+            p = Runtime.getRuntime().exec(command, environment, f);
         } catch (IOException e) {
             throw new CommandNotFoundException("local broker", e);
         }

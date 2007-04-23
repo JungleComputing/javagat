@@ -33,11 +33,14 @@ public class CommandRunner {
 
     /** run a command. Exit code is returned */
     private int runCommand(String command) throws GATInvocationException {
+        if (GATEngine.DEBUG) {
+            System.err.println("CommandRunner running: " + command);
+        }
         Process p = null;
         try {
             p = Runtime.getRuntime().exec(command.toString());
         } catch (IOException e) {
-            throw new CommandNotFoundException("commandlineSsh file", e);
+            throw new CommandNotFoundException("CommandRunner", e);
         }
 
         // close stdin.
