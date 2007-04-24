@@ -400,7 +400,13 @@ public class LocalFileAdaptor extends FileCpi {
      * @see org.gridlab.gat.io.File#listFiles()
      */
     public org.gridlab.gat.io.File[] listFiles() throws GATInvocationException {
+        if(!isDirectory()) {
+            throw new GATInvocationException("this is not a directory: " + location);
+        }
         File[] r = f.listFiles();
+        if(r == null) {
+            throw new GATInvocationException("IO error in local file adaptor");
+        }
         org.gridlab.gat.io.File[] res = new org.gridlab.gat.io.File[r.length];
 
         for (int i = 0; i < r.length; i++) {
