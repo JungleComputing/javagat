@@ -72,8 +72,6 @@ class JobPoller extends Thread {
 public class GlobusJob extends JobCpi implements GramJobListener,
         org.globus.gram.internal.GRAMConstants {
 
-    private static final int GRAM_JOBMANAGER_CONNECTION_FAILURE = 79;
-
     private static int jobsAlive = 0;
 
 //    private GlobusResourceBrokerAdaptor broker;
@@ -188,7 +186,7 @@ public class GlobusJob extends JobCpi implements GramJobListener,
     }
 
     protected synchronized void setState() {
-        if (j.getError() == GRAM_JOBMANAGER_CONNECTION_FAILURE) {
+        if (j.getError() == GramError.GRAM_JOBMANAGER_CONNECTION_FAILURE) {
             // assume the job was done, and gram exited
             if (postStageFinished) {
                 state = STOPPED;
@@ -246,6 +244,7 @@ public class GlobusJob extends JobCpi implements GramJobListener,
     }
 
     public void stop() throws GATInvocationException {
+        GATInvocationException x = null;
         try {
             if (j != null) j.cancel();
         } catch (Exception e) {
@@ -263,10 +262,9 @@ public class GlobusJob extends JobCpi implements GramJobListener,
                             + e2);
                 }
 
-                GATInvocationException x = new GATInvocationException();
+                x = new GATInvocationException();
                 x.add("globus job", e);
                 x.add("globus job", e2);
-                throw x;
             }
         }
 
@@ -280,6 +278,8 @@ public class GlobusJob extends JobCpi implements GramJobListener,
 
         state = INITIAL;
         finished();
+
+        if(x != null) throw x;
     }
 
     protected void stopHandlers() {
@@ -328,7 +328,7 @@ public class GlobusJob extends JobCpi implements GramJobListener,
                     .println("WARNING, could not get state of globus job: " + e);
             }
 
-            if (j.getError() == GRAM_JOBMANAGER_CONNECTION_FAILURE) {
+            if (j.getError() == GramError.GRAM_JOBMANAGER_CONNECTION_FAILURE) {
                 // this means we could not contact the job manager, assume the job has been finished.
                 // report that the status has changed
                 handleStatusChange(j);
@@ -354,7 +354,7 @@ public class GlobusJob extends JobCpi implements GramJobListener,
         String stateString = null;
         int globusState = newJob.getStatus();
         
-        if (newJob.getError() == GRAM_JOBMANAGER_CONNECTION_FAILURE) {
+        if (newJob.getError() == GramError.GRAM_JOBMANAGER_CONNECTION_FAILURE) {
             globusState = STATUS_DONE;
         }
 
