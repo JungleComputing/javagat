@@ -274,12 +274,15 @@ public class GlobusJob extends JobCpi implements GramJobListener,
             System.err.println("globus job stop: delete/wipe starting");
         }
 
-        sandbox.retrieveAndCleanup(this);
+        // do not cleanup, callback handler does this
+//      sandbox.retrieveAndCleanup(this);
 
-        state = INITIAL;
-        finished();
+//      state = INITIAL;
+//      finished();
 
-        if(x != null) throw x;
+        if(x != null) {
+            throw x;
+        }
     }
 
     protected void stopHandlers() {
