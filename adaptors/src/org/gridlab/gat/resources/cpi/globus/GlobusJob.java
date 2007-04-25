@@ -250,12 +250,12 @@ public class GlobusJob extends JobCpi implements GramJobListener,
     }
 
     public void stop() throws GATInvocationException {
-        stopHandlers();
-
         synchronized (this) {
             // we don't want to postStage twice (can happen with jobpoller)
             if (postStageStarted) return;
+            postStageStarted = true;
         }
+        stopHandlers();
 
         GATInvocationException x = null;
         try {
@@ -286,10 +286,20 @@ public class GlobusJob extends JobCpi implements GramJobListener,
             System.err.println("globus job stop: delete/wipe starting");
         }
 
-        // do cleanup, callback handler has been uninstalled does this
+        // do cleanup, callback handler has been uninstalled
         sandbox.retrieveAndCleanup(this);
 
-        state = INITIAL;
+        synchronized (this) {
+            postStageFinished = true;
+
+            if (GATEngine.VERBOSE) {
+                System.err
+                        .println("globus job stop: post stage finished");
+            }
+
+            state = STOPPED;
+        }
+
         finished();
 
         if (x != null) {
