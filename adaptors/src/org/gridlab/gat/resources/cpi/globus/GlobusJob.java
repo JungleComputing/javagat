@@ -250,12 +250,27 @@ public class GlobusJob extends JobCpi implements GramJobListener,
     }
 
     public void stop() throws GATInvocationException {
+        String stateString = null;
         synchronized (this) {
             // we don't want to postStage twice (can happen with jobpoller)
-            if (postStageStarted) return;
+            if (postStageStarted) {
+                return;
+            }
             postStageStarted = true;
+            state = POST_STAGING;
+            stateString = getStateString(state);
         }
         stopHandlers();
+
+        MetricValue v =
+                new MetricValue(this, stateString, statusMetric, System
+                        .currentTimeMillis());
+
+        if (GATEngine.DEBUG) {
+            System.err.println("globus job stop: firing event: " + v);
+        }
+
+        GATEngine.fireMetric(this, v);
 
         GATInvocationException x = null;
         try {
@@ -293,18 +308,29 @@ public class GlobusJob extends JobCpi implements GramJobListener,
             postStageFinished = true;
 
             if (GATEngine.VERBOSE) {
-                System.err
-                        .println("globus job stop: post stage finished");
+                System.err.println("globus job stop: post stage finished");
             }
 
             state = STOPPED;
+            stateString = getStateString(state);
         }
 
-        finished();
+        MetricValue v2 =
+                new MetricValue(this, stateString, statusMetric, System
+                        .currentTimeMillis());
 
+        if (GATEngine.DEBUG) {
+            System.err.println("globus job stop: firing event: " + v2);
+        }
+
+        GATEngine.fireMetric(this, v2);
+
+        finished();
+/*
         if (x != null) {
             throw x;
         }
+*/
     }
 
     protected void stopHandlers() {
