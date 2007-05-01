@@ -321,6 +321,9 @@ public class AdaptorInvocationHandler implements InvocationHandler {
                     System.err.println("initAdaptor: Couldn't create " + adaptor.getShortAdaptorClassName()
                             + ": " + t.getMessage());
                 }
+                if(GATEngine.DEBUG) {
+                    t.printStackTrace();
+                }
             }
             
             throw exc;
