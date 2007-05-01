@@ -38,11 +38,15 @@ class JobPoller extends Thread {
 
     public void run() {
         while (true) {
-            if (j.getState() == Job.STOPPED) return;
-            if (j.getState() == Job.SUBMISSION_ERROR) return;
+            if (j.getState() == Job.STOPPED)
+                return;
+            if (j.getState() == Job.SUBMISSION_ERROR)
+                return;
             j.getStateActive();
-            if (j.getState() == Job.STOPPED) return;
-            if (j.getState() == Job.SUBMISSION_ERROR) return;
+            if (j.getState() == Job.STOPPED)
+                return;
+            if (j.getState() == Job.SUBMISSION_ERROR)
+                return;
 
             synchronized (this) {
                 try {
@@ -72,11 +76,9 @@ class JobPoller extends Thread {
 public class GlobusJob extends JobCpi implements GramJobListener,
         org.globus.gram.internal.GRAMConstants {
 
-    private static final int GRAM_JOBMANAGER_CONNECTION_FAILURE = 79;
-
     private static int jobsAlive = 0;
 
-//    private GlobusResourceBrokerAdaptor broker;
+    //    private GlobusResourceBrokerAdaptor broker;
 
     private GramJob j;
 
@@ -93,15 +95,17 @@ public class GlobusJob extends JobCpi implements GramJobListener,
     private JobPoller poller;
 
     private long queueTime;
+
     private long runTime;
+
     private long startTime;
-    
+
     public GlobusJob(GATContext gatContext, Preferences preferences,
             GlobusResourceBrokerAdaptor broker, JobDescription jobDescription,
             GramJob j, Sandbox sandbox, long startTime) {
         super(gatContext, preferences, jobDescription, sandbox);
         this.startTime = startTime;
-//        this.broker = broker;
+        //        this.broker = broker;
         this.j = j;
         jobID = j.getIDAsString();
         state = SCHEDULED;
@@ -112,7 +116,7 @@ public class GlobusJob extends JobCpi implements GramJobListener,
         returnDef.put("status", String.class);
         statusMetricDefinition =
                 new MetricDefinition("job.status", MetricDefinition.DISCRETE,
-                    "String", null, null, returnDef);
+                        "String", null, null, returnDef);
         GATEngine.registerMetric(this, "getJobStatus", statusMetricDefinition);
         statusMetric = statusMetricDefinition.createMetric(null);
 
@@ -188,7 +192,7 @@ public class GlobusJob extends JobCpi implements GramJobListener,
     }
 
     protected synchronized void setState() {
-        if (j.getError() == GRAM_JOBMANAGER_CONNECTION_FAILURE) {
+        if (j.getError() == GramError.GRAM_JOBMANAGER_CONNECTION_FAILURE) {
             // assume the job was done, and gram exited
             if (postStageFinished) {
                 state = STOPPED;
@@ -200,9 +204,9 @@ public class GlobusJob extends JobCpi implements GramJobListener,
 
         switch (j.getStatus()) {
         case STATUS_ACTIVE:
-            if(postStageFinished) {
+            if (postStageFinished) {
                 state = STOPPED;
-            } else if(postStageStarted) {
+            } else if (postStageStarted) {
                 state = POST_STAGING;
             } else {
                 state = RUNNING;
@@ -241,17 +245,41 @@ public class GlobusJob extends JobCpi implements GramJobListener,
             break;
         default:
             System.err.println("WARNING: Globus job: unknown state: "
-                + j.getStatus() + " (" + j.getStatusAsString() + ")");
+                    + j.getStatus() + " (" + j.getStatusAsString() + ")");
         }
     }
 
     public void stop() throws GATInvocationException {
+        String stateString = null;
+        synchronized (this) {
+            // we don't want to postStage twice (can happen with jobpoller)
+            if (postStageStarted) {
+                return;
+            }
+            postStageStarted = true;
+            state = POST_STAGING;
+            stateString = getStateString(state);
+        }
+        stopHandlers();
+
+        MetricValue v =
+                new MetricValue(this, stateString, statusMetric, System
+                        .currentTimeMillis());
+
+        if (GATEngine.DEBUG) {
+            System.err.println("globus job stop: firing event: " + v);
+        }
+
+        GATEngine.fireMetric(this, v);
+
+        GATInvocationException x = null;
         try {
-            if (j != null) j.cancel();
+            if (j != null)
+                j.cancel();
         } catch (Exception e) {
             if (GATEngine.VERBOSE) {
                 System.err.println("got an exception while cancelling job: "
-                    + e);
+                        + e);
             }
 
             try {
@@ -259,27 +287,50 @@ public class GlobusJob extends JobCpi implements GramJobListener,
             } catch (Exception e2) {
                 if (GATEngine.VERBOSE) {
                     System.err
-                        .println("got an exception while sending signal to job: "
-                            + e2);
+                            .println("got an exception while sending signal to job: "
+                                    + e2);
                 }
 
-                GATInvocationException x = new GATInvocationException();
+                x = new GATInvocationException();
                 x.add("globus job", e);
                 x.add("globus job", e2);
-                throw x;
             }
         }
-
-        stopHandlers();
 
         if (GATEngine.VERBOSE) {
             System.err.println("globus job stop: delete/wipe starting");
         }
 
+        // do cleanup, callback handler has been uninstalled
         sandbox.retrieveAndCleanup(this);
 
-        state = INITIAL;
+        synchronized (this) {
+            postStageFinished = true;
+
+            if (GATEngine.VERBOSE) {
+                System.err.println("globus job stop: post stage finished");
+            }
+
+            state = STOPPED;
+            stateString = getStateString(state);
+        }
+
+        MetricValue v2 =
+                new MetricValue(this, stateString, statusMetric, System
+                        .currentTimeMillis());
+
+        if (GATEngine.DEBUG) {
+            System.err.println("globus job stop: firing event: " + v2);
+        }
+
+        GATEngine.fireMetric(this, v2);
+
         finished();
+/*
+        if (x != null) {
+            throw x;
+        }
+*/
     }
 
     protected void stopHandlers() {
@@ -288,7 +339,7 @@ public class GlobusJob extends JobCpi implements GramJobListener,
         } catch (Throwable t) {
             if (GATEngine.VERBOSE) {
                 System.err
-                    .println("WARNING, globus job could not unbind: " + t);
+                        .println("WARNING, globus job could not unbind: " + t);
             }
         }
 
@@ -300,8 +351,8 @@ public class GlobusJob extends JobCpi implements GramJobListener,
             } catch (Throwable t) {
                 if (GATEngine.VERBOSE) {
                     System.err
-                        .println("WARNING, globus job could not deactivate callback: "
-                            + t);
+                            .println("WARNING, globus job could not deactivate callback: "
+                                    + t);
                 }
             }
         }
@@ -325,10 +376,11 @@ public class GlobusJob extends JobCpi implements GramJobListener,
         } catch (Exception e) {
             if (GATEngine.DEBUG) {
                 System.err
-                    .println("WARNING, could not get state of globus job: " + e);
+                        .println("WARNING, could not get state of globus job: "
+                                + e);
             }
 
-            if (j.getError() == GRAM_JOBMANAGER_CONNECTION_FAILURE) {
+            if (j.getError() == GramError.GRAM_JOBMANAGER_CONNECTION_FAILURE) {
                 // this means we could not contact the job manager, assume the job has been finished.
                 // report that the status has changed
                 handleStatusChange(j);
@@ -344,40 +396,41 @@ public class GlobusJob extends JobCpi implements GramJobListener,
         // If we ever receive a gram callback, we can kill the job poller thread; we are not 
         // behind a firewall.
         // OOPS, this is not possible, the poll also generates this callback!
-//        poller.die();
+        //        poller.die();
 
         handleStatusChange(newJob);
     }
-    
+
     private void handleStatusChange(GramJob newJob) {
         jobID = j.getIDAsString();
         String stateString = null;
         int globusState = newJob.getStatus();
-        
-        if (newJob.getError() == GRAM_JOBMANAGER_CONNECTION_FAILURE) {
+
+        if (newJob.getError() == GramError.GRAM_JOBMANAGER_CONNECTION_FAILURE) {
             globusState = STATUS_DONE;
         }
 
         synchronized (this) {
-            if (postStageStarted) return; // we don't want to postStage twice (can happen with jobpoller)
+            if (postStageStarted)
+                return; // we don't want to postStage twice (can happen with jobpoller)
             if (GATEngine.VERBOSE) {
                 System.err.println("globus job callback: new Job id: "
-                    + newJob.getIDAsString() + ", state = "
-                    + newJob.getStatusAsString() + " error = "
-                    + GramError.getGramErrorString(newJob.getError()));
+                        + newJob.getIDAsString() + ", state = "
+                        + newJob.getStatusAsString() + " error = "
+                        + GramError.getGramErrorString(newJob.getError()));
             }
 
             setState();
             stateString = getStateString(state);
 
-            if(state == SCHEDULED) {
-                queueTime = System.currentTimeMillis(); 
+            if (state == SCHEDULED) {
+                queueTime = System.currentTimeMillis();
             }
-            if(state == RUNNING) {
+            if (state == RUNNING) {
                 runTime = System.currentTimeMillis();
-                queueTime = runTime - queueTime;  
+                queueTime = runTime - queueTime;
             }
-            
+
             if ((globusState == STATUS_DONE) || (globusState == STATUS_FAILED)) {
                 runTime = System.currentTimeMillis() - runTime;
                 stopHandlers();
@@ -388,7 +441,7 @@ public class GlobusJob extends JobCpi implements GramJobListener,
 
         MetricValue v =
                 new MetricValue(this, stateString, statusMetric, System
-                    .currentTimeMillis());
+                        .currentTimeMillis());
 
         if (GATEngine.DEBUG) {
             System.err.println("globus job callback: firing event: " + v);
@@ -396,7 +449,7 @@ public class GlobusJob extends JobCpi implements GramJobListener,
         GATEngine.fireMetric(this, v);
 
         if (globusState == STATUS_DONE || globusState == STATUS_FAILED) {
-            if(sandbox != null) {
+            if (sandbox != null) {
                 sandbox.retrieveAndCleanup(this);
             }
 
@@ -405,7 +458,7 @@ public class GlobusJob extends JobCpi implements GramJobListener,
 
                 if (GATEngine.VERBOSE) {
                     System.err
-                        .println("globus job callback: post stage finished");
+                            .println("globus job callback: post stage finished");
                 }
 
                 setState();
@@ -414,7 +467,7 @@ public class GlobusJob extends JobCpi implements GramJobListener,
 
             MetricValue v2 =
                     new MetricValue(this, stateString, statusMetric, System
-                        .currentTimeMillis());
+                            .currentTimeMillis());
 
             if (GATEngine.DEBUG) {
                 System.err.println("globus job callback: firing event: " + v2);
@@ -422,17 +475,15 @@ public class GlobusJob extends JobCpi implements GramJobListener,
 
             GATEngine.fireMetric(this, v2);
             finished();
-            
-            if(GATEngine.TIMING) {
-                System.err.println("TIMING: job " + jobID + ":" 
-                        + " preStage: " + sandbox.getPreStageTime()
-                        + " queue: " + queueTime
-                        + " run: " + runTime
-                        + " postStage: " + sandbox.getPostStageTime()
-                        + " wipe: " + sandbox.getWipeTime()
-                        + " delete: " + sandbox.getDeleteTime()
-                        + " total: " + (System.currentTimeMillis() - startTime)
-                );
+
+            if (GATEngine.TIMING) {
+                System.err.println("TIMING: job " + jobID + ":" + " preStage: "
+                        + sandbox.getPreStageTime() + " queue: " + queueTime
+                        + " run: " + runTime + " postStage: "
+                        + sandbox.getPostStageTime() + " wipe: "
+                        + sandbox.getWipeTime() + " delete: "
+                        + sandbox.getDeleteTime() + " total: "
+                        + (System.currentTimeMillis() - startTime));
             }
         }
     }

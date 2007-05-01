@@ -82,7 +82,8 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
                         + "lib/castor-0.9.6-xml.jar:lib/colobus.jar:lib/ibis-util-1.4.jar:lib/xercesImpl.jar:lib/RemoteSandbox.jar\"";
 
         // main class name
-        args += " \"org.gridlab.gat.resources.cpi.remoteSandbox.RemoteSandbox\"";
+        args +=
+                " \"org.gridlab.gat.resources.cpi.remoteSandbox.RemoteSandbox\"";
 
         // @@@ does not work with gram prestage
         PreStagedFileSet myPre = sandbox.getPrestagedFileSet();
@@ -209,10 +210,10 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
         rsl += " (hostCount = " + getHostCount(description) + ")";
 
         String jobType = getStringAttribute(description, "jobType", null);
-        if(jobType != null) {
+        if (jobType != null) {
             rsl += " (jobType = " + jobType + ")";
         }
-        
+
         if (sandbox != null) {
             rsl += " (directory = " + sandbox.getSandbox() + ")";
         }
@@ -384,25 +385,35 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
                 System.err.println("could not run job: "
                         + GramError.getGramErrorString(e.getErrorCode()));
             }
-            // ignore
+
             return;
         } catch (GSSException e2) {
             throw new CouldNotInitializeCredentialException("globus", e2);
         }
 
-        while (true) {
+        int errorCount = 0;
+        while (errorCount <= 3) {
             try {
                 Gram.jobStatus(j);
+                int status = j.getStatus();
+                if (GATEngine.DEBUG) {
+                    System.err.println("job status = " + status);
+                }
+                if (status == GRAMConstants.STATUS_DONE
+                        || status == GRAMConstants.STATUS_FAILED) {
+                    return;
+                }
             } catch (Exception e) {
-                // ignore
-            }
-            int status = j.getStatus();
-            if (GATEngine.DEBUG) {
-                System.err.println("job status = " + status);
-            }
-            if (status == GRAMConstants.STATUS_DONE
-                    || status == GRAMConstants.STATUS_FAILED) {
-                return;
+                if (j.getError() == GramError.GRAM_JOBMANAGER_CONNECTION_FAILURE) {
+                    return;
+                }
+
+                if (GATEngine.DEBUG) {
+                    System.err.println("got exception: " + e);
+                }
+
+                // ignore other errors
+                errorCount++;
             }
 
             try {
@@ -417,14 +428,17 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
             JobDescription description, String host, String chmodLocation,
             Sandbox sandbox, File resolvedExe) throws GATInvocationException {
         if (GATEngine.VERBOSE) {
-            System.err.println("running " + chmodLocation + " on " + host
-                    + "/jobmanager-fork to set executable bit on");
+            System.err.print("running " + chmodLocation + " on " + host
+                    + "/jobmanager-fork to set executable bit on ");
         }
         String chmodRsl =
                 createChmodRSL(description, host, chmodLocation, sandbox,
                         resolvedExe.getPath());
 
         runGramJobPolling(credential, chmodRsl, host + "/jobmanager-fork");
+        if (GATEngine.VERBOSE) {
+            System.err.println("done");
+        }
     }
 
     public Job submitJob(JobDescription description)
@@ -551,11 +565,12 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
         String contact = getResourceManagerContact(description);
         GSSCredential credential = getCredential(host);
 
-        if(getBooleanAttribute(description, "useLocalDisk", false)) {
-            if(GATEngine.VERBOSE) {
+        if (getBooleanAttribute(description, "useLocalDisk", false)) {
+            if (GATEngine.VERBOSE) {
                 System.err.println("useLocalDisk, using wrapper application");
             }
-            RemoteSandboxSubmitter s = new RemoteSandboxSubmitter(gatContext, preferences);
+            RemoteSandboxSubmitter s =
+                    new RemoteSandboxSubmitter(gatContext, preferences);
             return s.submitWrapper(description, contact);
         }
 

@@ -58,11 +58,11 @@ public class PreStagedFile extends StagedFile {
                 return;
             }
 
-            if (relativeURI.getPath().equals(exe.getPath())) {
+            if (resolvedSrc.isFile() && relativeURI.getPath().equals(exe.getPath())) {
                 isExecutable = true;
             }
         } else {
-            if (resolvedDest.getPath().equals(exe.getPath())) {
+            if (resolvedSrc.isFile() && resolvedDest.getPath().equals(exe.getPath())) {
                 isExecutable = true;
             }
         }
