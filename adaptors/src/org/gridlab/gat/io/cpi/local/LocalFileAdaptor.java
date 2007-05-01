@@ -37,7 +37,7 @@ public class LocalFileAdaptor extends FileCpi {
         super(gatContext, preferences, location);
 
         String res = (String) preferences.get("ignoreHiddenFiles");
-        if (res.equalsIgnoreCase("true")) {
+        if (res != null && res.equalsIgnoreCase("true")) {
             ignoreHiddenFiles = true;
         }
 
