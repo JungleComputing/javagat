@@ -113,7 +113,7 @@ public class Sandbox {
             }
         }
 
-        throw new GATInvocationException("could not create a sandbox");
+        throw new GATInvocationException("could not create a sandbox directory");
     }
 
     private void removeSandboxDir() throws GATInvocationException {
