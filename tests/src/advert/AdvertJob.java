@@ -1,36 +1,52 @@
+/*
+ * Created on Aug 16, 2004
+ */
 package advert;
 
 import org.gridlab.gat.GAT;
 import org.gridlab.gat.GATContext;
+import org.gridlab.gat.Preferences;
 import org.gridlab.gat.advert.AdvertService;
 import org.gridlab.gat.advert.MetaData;
-import org.gridlab.gat.io.Endpoint;
 import org.gridlab.gat.io.File;
+import org.gridlab.gat.resources.HardwareResourceDescription;
+import org.gridlab.gat.resources.Job;
+import org.gridlab.gat.resources.JobDescription;
+import org.gridlab.gat.resources.ResourceBroker;
+import org.gridlab.gat.resources.ResourceDescription;
+import org.gridlab.gat.resources.SoftwareDescription;
 
+/**
+ * @author rob
+ */
 public class AdvertJob {
     public static void main(String[] args) throws Exception {
-        GATContext context = new GATContext();
+        GATContext c = new GATContext();
+        Preferences prefs = new Preferences();
+        prefs.put("AdvertService.adaptor.name", "local");
+        prefs.put("ResourceBroker.adaptor.name", "globus");
+        prefs.put("killJobsOnExit", "false");
+        c.addPreferences(prefs);
+        
+        SoftwareDescription sd = new SoftwareDescription();
+        sd.setLocation("any://" + args[0] + "//bin/hostname");
 
-        AdvertService advert = GAT.createAdvertService(context);
+        File stdout = GAT.createFile(c, "hostname.txt");
+        sd.setStdout(stdout);
 
-        // Create the object to be published.
-        File file = GAT.createFile(context, "foo");
+        ResourceDescription rd = new HardwareResourceDescription();
+        rd.addResourceAttribute("machine.node", args[0]);
 
-        // Create MetaData object and fill it with a key-value pair.
-        MetaData meta = new MetaData();
-        meta.put("name", "myTestFile");
-        meta.put("purpose", "tutorial");
+        JobDescription jd = new JobDescription(sd, rd);
+        ResourceBroker broker = GAT.createResourceBroker(c);
+        Job job = broker.submitJob(jd);
 
-        // Publish the object to the advert service. 
-        advert.add(file, meta, "/home/rob/tutorialFile");
+        AdvertService a = GAT.createAdvertService(c);
+        MetaData m = new MetaData();
+        m.put("name", "testJob");
+        a.add(job, m, "/rob/testJob");
 
-        // Create an Endpoint
-        Endpoint endpoint = GAT.createEndpoint(context);
-        meta = new MetaData();
-        meta.put("name", "myTestEndpoint");
-        meta.put("purpose", "tutorial");
-
-        // Publish the object to the advert service. 
-        advert.add(endpoint, meta, "/home/rob/tutorialEndpoint");
+        GAT.end();
+        System.exit(0);
     }
 }

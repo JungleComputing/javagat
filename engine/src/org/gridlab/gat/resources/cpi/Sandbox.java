@@ -33,11 +33,27 @@ public class Sandbox {
 
     private PostStagedFileSet post;
 
+    private PostStagedFileSet toWipe;
+    
+    private boolean wipePreStaged;
+    
+    private boolean wipePostStaged;
+
+    private PostStagedFileSet toDelete;    
+
+    private boolean deletePreStaged;
+    
+    private boolean deletePostStaged;
+    
     private String sandboxRoot;
 
     private boolean createSandboxDir;
 
     private long preStageTime, postStageTime, wipeTime, deleteTime;
+    
+    public Sandbox() {
+        // constructor needed for castor marshalling, do *not* use
+    }
     
     public Sandbox(GATContext gatContext, Preferences preferences,
             JobDescription jobDescription, String host, String sandboxRoot,
@@ -81,12 +97,20 @@ public class Sandbox {
 
         initSandbox();
 
-        pre =
-                new PreStagedFileSet(gatContext, preferences, jobDescription,
+        pre = new PreStagedFileSet(gatContext, preferences, jobDescription,
                         host, sandbox, preStageStdin);
-        post =
-                new PostStagedFileSet(gatContext, preferences, jobDescription,
+        post = new PostStagedFileSet(gatContext, preferences, jobDescription,
                         host, sandbox, postStageStdout, postStageStderr);
+
+        wipePreStaged = sd.wipePreStaged();
+        wipePostStaged = sd.wipePostStaged();
+        toWipe = new PostStagedFileSet(gatContext, preferences, sd
+                    .getWipedFiles(), host, sandbox);
+
+        deletePreStaged = sd.deletePreStaged();
+        deletePostStaged = sd.deletePostStaged();
+        toDelete = new PostStagedFileSet(gatContext, preferences, sd
+                    .getDeletedFiles(), host, sandbox);
 
         createSandbox();
     }
@@ -198,7 +222,6 @@ public class Sandbox {
 
     // we always wipe everything, also files that are in the sandbox
     private void wipe() throws GATInvocationException {
-        SoftwareDescription sd = jobDescription.getSoftwareDescription();
         GATInvocationException wipeException = new GATInvocationException();
 
         if (GATEngine.VERBOSE) {
@@ -207,7 +230,7 @@ public class Sandbox {
         long start = System.currentTimeMillis();
 
         try {
-            if (sd.wipePreStaged()) {
+            if (wipePreStaged) {
                 pre.wipe();
             }
         } catch (GATInvocationException e) {
@@ -215,7 +238,7 @@ public class Sandbox {
         }
 
         try {
-            if (sd.wipePostStaged()) {
+            if (wipePostStaged) {
                 post.wipe();
             }
         } catch (GATInvocationException e) {
@@ -223,9 +246,6 @@ public class Sandbox {
         }
 
         try {
-            PostStagedFileSet toWipe =
-                    new PostStagedFileSet(gatContext, preferences, sd
-                            .getWipedFiles(), host, sandbox);
             toWipe.wipe();
         } catch (GATInvocationException e) {
             wipeException.add("sandbox", e);
@@ -247,7 +267,6 @@ public class Sandbox {
     // there is no need to delete files inside the sandbox, they will be
     // deleted when the sandbox is cleaned up
     private void delete() throws GATInvocationException {
-        SoftwareDescription sd = jobDescription.getSoftwareDescription();
         GATInvocationException deleteException = new GATInvocationException();
 
         if (GATEngine.VERBOSE) {
@@ -256,7 +275,7 @@ public class Sandbox {
 
         long start = System.currentTimeMillis();
 
-        if (sd.deletePreStaged()) {
+        if (deletePreStaged) {
             try {
                 pre.delete();
             } catch (GATInvocationException e) {
@@ -264,7 +283,7 @@ public class Sandbox {
             }
         }
 
-        if (sd.deletePostStaged()) {
+        if (deletePostStaged) {
             try {
                 post.delete();
             } catch (GATInvocationException e) {
@@ -273,10 +292,7 @@ public class Sandbox {
         }
 
         try {
-            PostStagedFileSet del =
-                    new PostStagedFileSet(gatContext, preferences, sd
-                            .getDeletedFiles(), host, sandbox);
-            del.delete();
+            toDelete.delete();
         } catch (GATInvocationException e) {
             deleteException.add("delete", e);
         }
@@ -360,28 +376,28 @@ public class Sandbox {
         PreStagedFile f = pre.getExecutable();
         if (f == null)
             return null;
-        return f.resolvedDest;
+        return f.getResolvedDest();
     }
 
     public File getResolvedStdin() {
         PreStagedFile f = pre.getStdin();
         if (f == null)
             return null;
-        return f.resolvedDest;
+        return f.getResolvedDest();
     }
 
     public File getResolvedStdout() {
         PostStagedFile f = post.getStdout();
         if (f == null)
             return null;
-        return f.resolvedSrc;
+        return f.getResolvedSrc();
     }
 
     public File getResolvedStderr() {
         PostStagedFile f = post.getStderr();
         if (f == null)
             return null;
-        return f.resolvedSrc;
+        return f.getResolvedSrc();
     }
 
     /** returns the URI relative to the sandbox, or an absolute path if it was absolute. */
@@ -434,5 +450,187 @@ public class Sandbox {
 
     public long getWipeTime() {
         return wipeTime;
+    }
+
+    /**
+     * @return the createSandboxDir
+     */
+    public boolean isCreateSandboxDir() {
+        return createSandboxDir;
+    }
+
+    /**
+     * @param createSandboxDir the createSandboxDir to set
+     */
+    public void setCreateSandboxDir(boolean createSandboxDir) {
+        this.createSandboxDir = createSandboxDir;
+    }
+
+    /**
+     * @return the post
+     */
+    public PostStagedFileSet getPost() {
+        return post;
+    }
+
+    /**
+     * @param post the post to set
+     */
+    public void setPost(PostStagedFileSet post) {
+        this.post = post;
+    }
+
+    /**
+     * @return the pre
+     */
+    public PreStagedFileSet getPre() {
+        return pre;
+    }
+
+    /**
+     * @param pre the pre to set
+     */
+    public void setPre(PreStagedFileSet pre) {
+        this.pre = pre;
+    }
+
+    /**
+     * @return the sandboxRoot
+     */
+    public String getSandboxRoot() {
+        return sandboxRoot;
+    }
+
+    /**
+     * @param sandboxRoot the sandboxRoot to set
+     */
+    public void setSandboxRoot(String sandboxRoot) {
+        this.sandboxRoot = sandboxRoot;
+    }
+
+    /**
+     * @param deleteTime the deleteTime to set
+     */
+    public void setDeleteTime(long deleteTime) {
+        this.deleteTime = deleteTime;
+    }
+
+    /**
+     * @param host the host to set
+     */
+    public void setHost(String host) {
+        this.host = host;
+    }
+
+    /**
+     * @param postStageTime the postStageTime to set
+     */
+    public void setPostStageTime(long postStageTime) {
+        this.postStageTime = postStageTime;
+    }
+
+    /**
+     * @param preStageTime the preStageTime to set
+     */
+    public void setPreStageTime(long preStageTime) {
+        this.preStageTime = preStageTime;
+    }
+
+    /**
+     * @param sandbox the sandbox to set
+     */
+    public void setSandbox(String sandbox) {
+        this.sandbox = sandbox;
+    }
+
+    /**
+     * @param wipeTime the wipeTime to set
+     */
+    public void setWipeTime(long wipeTime) {
+        this.wipeTime = wipeTime;
+    }
+
+    /**
+     * @return the deletePostStaged
+     */
+    public boolean isDeletePostStaged() {
+        return deletePostStaged;
+    }
+
+    /**
+     * @param deletePostStaged the deletePostStaged to set
+     */
+    public void setDeletePostStaged(boolean deletePostStaged) {
+        this.deletePostStaged = deletePostStaged;
+    }
+
+    /**
+     * @return the deletePreStaged
+     */
+    public boolean isDeletePreStaged() {
+        return deletePreStaged;
+    }
+
+    /**
+     * @param deletePreStaged the deletePreStaged to set
+     */
+    public void setDeletePreStaged(boolean deletePreStaged) {
+        this.deletePreStaged = deletePreStaged;
+    }
+
+    /**
+     * @return the toDelete
+     */
+    public PostStagedFileSet getToDelete() {
+        return toDelete;
+    }
+
+    /**
+     * @param toDelete the toDelete to set
+     */
+    public void setToDelete(PostStagedFileSet toDelete) {
+        this.toDelete = toDelete;
+    }
+
+    /**
+     * @return the toWipe
+     */
+    public PostStagedFileSet getToWipe() {
+        return toWipe;
+    }
+
+    /**
+     * @param toWipe the toWipe to set
+     */
+    public void setToWipe(PostStagedFileSet toWipe) {
+        this.toWipe = toWipe;
+    }
+
+    /**
+     * @return the wipePostStaged
+     */
+    public boolean isWipePostStaged() {
+        return wipePostStaged;
+    }
+
+    /**
+     * @param wipePostStaged the wipePostStaged to set
+     */
+    public void setWipePostStaged(boolean wipePostStaged) {
+        this.wipePostStaged = wipePostStaged;
+    }
+
+    /**
+     * @return the wipePreStaged
+     */
+    public boolean isWipePreStaged() {
+        return wipePreStaged;
+    }
+
+    /**
+     * @param wipePreStaged the wipePreStaged to set
+     */
+    public void setWipePreStaged(boolean wipePreStaged) {
+        this.wipePreStaged = wipePreStaged;
     }
 }

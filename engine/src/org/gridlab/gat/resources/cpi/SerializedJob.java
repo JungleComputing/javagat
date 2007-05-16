@@ -12,7 +12,7 @@ public class SerializedJob implements Serializable, Advertisable {
 
     private boolean postStageFinished;
 
-    private String jobID;
+    private String jobId;
 
     private long queueTime;
 
@@ -23,29 +23,37 @@ public class SerializedJob implements Serializable, Advertisable {
     // we need this constructor for castor
     public SerializedJob() {
     }
-    
+
     public SerializedJob(JobDescription jobDescription, Sandbox sandbox,
-            boolean postStageFinished, String jobID, long queueTime,
-            long runTime, long startTime) {
+        boolean postStageFinished, String jobId, long queueTime, long runTime,
+        long startTime) {
         this.jobDescription = jobDescription;
         this.sandbox = sandbox;
         this.postStageFinished = postStageFinished;
-        this.jobID = jobID;
+        this.jobId = jobId;
         this.queueTime = queueTime;
         this.runTime = runTime;
         this.startTime = startTime;
+        
+        System.err.println("created serialized job: " + this);
     }
 
     public String marshal() {
         throw new Error("Should not be called");
     }
 
-    public String getJobID() {
-        return jobID;
+    /**
+     * @return the jobId
+     */
+    public String getJobId() {
+        return jobId;
     }
 
-    public void setJobID(String jobID) {
-        this.jobID = jobID;
+    /**
+     * @param jobId the jobId to set
+     */
+    public void setJobId(String jobId) {
+        this.jobId = jobId;
     }
 
     public boolean isPostStageFinished() {
@@ -94,5 +102,19 @@ public class SerializedJob implements Serializable, Advertisable {
 
     public void setSandbox(Sandbox sandbox) {
         this.sandbox = sandbox;
+    }
+
+    public String toString() {
+        String res = "";
+
+        res += "descr = " + jobDescription;
+        res += " sandbox = " + sandbox;
+        res += " postStagedFinished: " + postStageFinished;
+        res += " jobId: " + jobId;
+        res += " queueTime: " + queueTime;
+        res += " runTime: " + runTime;
+        res += " startTime: " + startTime;
+
+        return res;
     }
 }
