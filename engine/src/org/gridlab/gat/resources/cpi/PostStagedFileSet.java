@@ -19,21 +19,25 @@ import org.gridlab.gat.resources.JobDescription;
 import org.gridlab.gat.resources.SoftwareDescription;
 
 public class PostStagedFileSet {
-    GATContext gatContext;
+    private GATContext gatContext;
 
-    Preferences preferences;
+    private Preferences preferences;
 
-    JobDescription description;
+    private JobDescription description;
 
-    String host;
+    private String host;
 
-    String sandbox;
+    private String sandbox;
 
-    boolean postStageStdout;
+    private boolean postStageStdout;
 
-    boolean postStageStderr;
+    private boolean postStageStderr;
 
-    ArrayList files = new ArrayList(); // elements are of type PostStageFile.
+    private PostStagedFile[] files = new PostStagedFile[0];
+
+    public PostStagedFileSet() {
+        // constructor needed for castor marshalling, do *not* use
+    }
 
     public PostStagedFileSet(GATContext gatContext, Preferences preferences,
             JobDescription description, String host, String sandbox,
@@ -76,6 +80,8 @@ public class PostStagedFileSet {
 
         Map post = sd.getPostStaged();
 
+        ArrayList tmp = new ArrayList();
+        
         if (post != null) {
             Set keys = post.keySet();
             Iterator i = keys.iterator();
@@ -84,7 +90,7 @@ public class PostStagedFileSet {
                 File srcFile = (File) i.next();
                 File destFile = (File) post.get(srcFile);
 
-                files.add(new PostStagedFile(gatContext, preferences, srcFile,
+                tmp.add(new PostStagedFile(gatContext, preferences, srcFile,
                     destFile, host, sandbox, false, false));
             }
         }
@@ -96,7 +102,7 @@ public class PostStagedFileSet {
                     File f =
                             GAT.createFile(gatContext, preferences, new URI(
                                 "any:///" + stdout.getName()));
-                    files.add(new PostStagedFile(gatContext, preferences, f,
+                    tmp.add(new PostStagedFile(gatContext, preferences, f,
                         stdout, host, sandbox, true, false));
                 } catch (Exception e) {
                     throw new GATInvocationException("postStagedFileSet", e);
@@ -111,39 +117,44 @@ public class PostStagedFileSet {
                     File f =
                             GAT.createFile(gatContext, preferences, new URI(
                                 "any:///" + stderr.getName()));
-                    files.add(new PostStagedFile(gatContext, preferences, f,
+                    tmp.add(new PostStagedFile(gatContext, preferences, f,
                         stderr, host, sandbox, false, true));
                 } catch (Exception e) {
                     throw new GATInvocationException("postStagedFileSet", e);
                 }
             }
         }
+        
+        files = (PostStagedFile[]) tmp.toArray(new PostStagedFile[] {});
     }
 
     private void resolveFiles(ArrayList f) throws GATInvocationException {
         if (f == null) return;
 
+        int startPos = 0;
+        if(files == null) {
+            files = new PostStagedFile[f.size()];
+        } else {
+            PostStagedFile[] tmp = new PostStagedFile[files.length + f.size()];
+            for(int i=0; i<files.length; i++) {
+                tmp[i] = files[i];
+            }
+            files = tmp;
+            startPos = files.length;
+        }
+        
         for (int i = 0; i < f.size(); i++) {
             File srcFile = (File) f.get(i);
-            files.add(new PostStagedFile(gatContext, preferences, srcFile,
-                null, host, sandbox, false, false));
+            files[startPos + i] = new PostStagedFile(gatContext, preferences, srcFile,
+                null, host, sandbox, false, false);
         }
     }
 
     protected void poststage() throws GATInvocationException {
-        SoftwareDescription sd = description.getSoftwareDescription();
-
-        if (sd == null) {
-            throw new GATInvocationException(
-                "The job description does not contain a software description");
-        }
-
         GATInvocationException exceptions = new GATInvocationException();
-        for (int i = 0; i < files.size(); i++) {
-            PostStagedFile f = (PostStagedFile) files.get(i);
-
+        for (int i = 0; i < files.length; i++) {
             try {
-                f.poststage();
+                files[i].poststage();
             } catch (Throwable e) {
                 exceptions.add("resource broker cpi", e);
             }
@@ -156,9 +167,9 @@ public class PostStagedFileSet {
     public void delete()
             throws GATInvocationException {
         GATInvocationException e = new GATInvocationException();
-        for (int i = 0; i < files.size(); i++) {
+        for (int i = 0; i < files.length; i++) {
             try {
-                ((PostStagedFile) files.get(i)).delete();
+                files[i].delete();
             } catch (Exception x) {
                 e.add("resource broker", x);
             }
@@ -169,9 +180,9 @@ public class PostStagedFileSet {
 
     public void wipe() throws GATInvocationException {
         GATInvocationException e = new GATInvocationException();
-        for (int i = 0; i < files.size(); i++) {
+        for (int i = 0; i < files.length; i++) {
             try {
-                ((PostStagedFile) files.get(i)).wipe();
+                files[i].wipe();
             } catch (Exception x) {
                 e.add("resource broker", x);
             }
@@ -181,10 +192,9 @@ public class PostStagedFileSet {
     }
 
     PostStagedFile getStdout() {
-        for (int i = 0; i < files.size(); i++) {
-            PostStagedFile f = (PostStagedFile) files.get(i);
-            if (f.isStdout) {
-                return f;
+        for (int i = 0; i < files.length; i++) {
+            if (files[i].isStdout()) {
+                return files[i];
             }
         }
 
@@ -192,10 +202,9 @@ public class PostStagedFileSet {
     }
 
     PostStagedFile getStderr() {
-        for (int i = 0; i < files.size(); i++) {
-            PostStagedFile f = (PostStagedFile) files.get(i);
-            if (f.isStderr) {
-                return f;
+        for (int i = 0; i < files.length; i++) {
+            if (files[i].isStderr()) {
+                return files[i];
             }
         }
 
@@ -203,19 +212,61 @@ public class PostStagedFileSet {
     }
 
     public int size() {
-        return files.size();
+        return files.length;
     }
     
     public PostStagedFile getFile(int i) {
-        return (PostStagedFile) files.get(i);
+        return files[i];
     }
     
     public String toString() {
         String res = "";
         res += "PostStagedFileSet:\n";
-        for (int i = 0; i < files.size(); i++) {
-            res += files.get(i) + "\n";
+        for (int i = 0; i < files.length; i++) {
+            res += files[i] + "\n";
         }
         return res;
+    }
+
+    /**
+     * @return the files
+     */
+    public PostStagedFile[] getFiles() {
+        return files;
+    }
+
+    /**
+     * @param files the files to set
+     */
+    public void setFiles(PostStagedFile[] files) {
+        this.files = files;
+    }
+
+    /**
+     * @return the postStageStderr
+     */
+    public boolean isPostStageStderr() {
+        return postStageStderr;
+    }
+
+    /**
+     * @param postStageStderr the postStageStderr to set
+     */
+    public void setPostStageStderr(boolean postStageStderr) {
+        this.postStageStderr = postStageStderr;
+    }
+
+    /**
+     * @return the postStageStdout
+     */
+    public boolean isPostStageStdout() {
+        return postStageStdout;
+    }
+
+    /**
+     * @param postStageStdout the postStageStdout to set
+     */
+    public void setPostStageStdout(boolean postStageStdout) {
+        this.postStageStdout = postStageStdout;
     }
 }

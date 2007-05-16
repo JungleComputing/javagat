@@ -27,13 +27,6 @@ import org.gridlab.gat.io.cpi.EndpointCpi;
  * @author rob
  */
 public class SocketEndpointAdaptor extends EndpointCpi implements Serializable {
-    /*
-     static {
-     // we must tell the gat engine that we can unmarshal endpoints.
-     GATEngine.registerAdvertisable(SocketEndpointAdaptor.class);
-     System.err.println("REGISTER SOCKET ENDPOINT, class = " + SocketEndpointAdaptor.class);
-     }
-     */
     int localPort; // filled in locally
 
     InetAddress localAddress; // filled in locally

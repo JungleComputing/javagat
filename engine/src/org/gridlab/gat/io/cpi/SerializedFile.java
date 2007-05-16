@@ -14,6 +14,7 @@ import org.gridlab.gat.advert.Advertisable;
 public class SerializedFile implements Serializable, Advertisable {
     String location;
 
+    // we need this constructor for castor
     public SerializedFile() {
     }
 

@@ -281,6 +281,13 @@ public class GATEngine {
         return jarFiles;
     }
 
+    public static void registerUnmarshaller(Class clazz) {
+        if(DEBUG) {
+            System.err.println("register marshaller for: " + clazz);
+        }
+        unmarshallers.add(clazz);
+    }
+
     protected void loadCpiClass(JarFile jarFile, Manifest manifest,
             Attributes attributes, String className, Class cpiClazz) {
         if (DEBUG) {
@@ -322,9 +329,17 @@ public class GATEngine {
         }
 
         if (containsUnmarshaller(clazz)) {
+            if (DEBUG) {
+                System.err.println("Adaptor " + clazzString + " contains unmarshaller");
+            }
+            
             unmarshallers.add(clazz);
         }
 
+        if(containsInitializer(clazz)) {
+            callInitializer(clazz);
+        }
+        
         if (DEBUG) {
             System.err.println("Adaptor for " + className + " loaded");
         }
@@ -484,11 +499,9 @@ public class GATEngine {
          */
     }
 
-    public static boolean containsUnmarshaller(Class clazz) {
-        // test for marshal and unmarshall methods.
+    private static boolean containsUnmarshaller(Class clazz) {
+        // test for marshal and unmarshal methods.
         try {
-            //          Method m = marshaller.getMethod("marshal", new Class[]
-            // {Advertisable.class});
             clazz.getMethod("unmarshal", new Class[] { GATContext.class,
                 Preferences.class, String.class });
 
@@ -498,6 +511,27 @@ public class GATEngine {
         }
     }
 
+    private static boolean containsInitializer(Class clazz) {
+        // test for marshal and unmarshal methods.
+        try {
+            clazz.getMethod("init", null);
+            return true;
+        } catch (Throwable t) {
+            return false;
+        }
+    }
+    
+    private void callInitializer(Class clazz) {
+        try {
+            Method m = clazz.getMethod("init", null);
+            m.invoke((Object) null, (Object[]) null);
+        } catch (Throwable t) {
+            if(VERBOSE) {
+                System.err.println("initialization of " + clazz + " failed: " + t);
+            }
+        }
+    }
+    
     public static String defaultMarshal(Object o) {
         StringWriter sw = new StringWriter();
 

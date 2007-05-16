@@ -443,7 +443,7 @@ public class LocalFileAdaptor extends FileCpi {
 
         ArrayList l = new ArrayList();
         for (int i = 0; i < r.length; i++) {
-            if (ignoreHiddenFiles && !r[i].isHidden())
+            if (!(ignoreHiddenFiles && r[i].isHidden()))
                 l.add(r[i]);
         }
 
@@ -473,7 +473,7 @@ public class LocalFileAdaptor extends FileCpi {
 
         ArrayList l = new ArrayList();
         for (int i = 0; i < r.length; i++) {
-            if (ignoreHiddenFiles && !r[i].isHidden())
+            if (!(ignoreHiddenFiles && r[i].isHidden()))
                 l.add(r[i]);
         }
 
@@ -503,7 +503,7 @@ public class LocalFileAdaptor extends FileCpi {
 
         ArrayList l = new ArrayList();
         for (int i = 0; i < r.length; i++) {
-            if (ignoreHiddenFiles && !r[i].isHidden())
+            if (!(ignoreHiddenFiles && r[i].isHidden()))
                 l.add(r[i]);
         }
 

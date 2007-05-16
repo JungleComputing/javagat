@@ -45,6 +45,10 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
 
     static boolean shutdownInProgress = false;
 
+    public static void init() {
+        GATEngine.registerUnmarshaller(GlobusJob.class);
+    }
+
     public GlobusResourceBrokerAdaptor(GATContext gatContext,
             Preferences preferences) throws GATObjectCreationException {
         super(gatContext, preferences);

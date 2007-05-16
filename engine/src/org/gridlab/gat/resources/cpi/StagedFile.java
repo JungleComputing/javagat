@@ -14,25 +14,32 @@ import org.gridlab.gat.io.File;
 import org.gridlab.gat.io.FileOutputStream;
 
 public abstract class StagedFile {
-    GATContext gatContext;
+    protected GATContext gatContext;
 
-    Preferences preferences;
+    protected Preferences preferences;
 
-    File origSrc;
+    protected File origSrc;
 
-    File origDest;
+    protected File origDest;
 
-    File resolvedSrc;
+    private File resolvedSrc;
 
-    File resolvedDest;
+    private File resolvedDest;
 
-    String host;
+    private String resolvedSrcURIString;
+    private String resolvedDestURIString;
+    
+    protected String host;
 
-    String sandbox;
+    protected String sandbox;
 
-    boolean inSandbox;
+    protected boolean inSandbox;
 
-    URI relativeURI;
+    protected URI relativeURI;
+
+    public StagedFile() {
+        // constructor needed for castor marshalling, do *not* use
+    }
 
     public StagedFile(GATContext context, Preferences preferences,
         File origSrc, File origDest, String host, String sandbox) {
@@ -140,11 +147,79 @@ public abstract class StagedFile {
         }
     }
     
+    /**
+     * @return the inSandbox
+     */
+    public boolean isInSandbox() {
+        return inSandbox;
+    }
+
+    /**
+     * @param inSandbox the inSandbox to set
+     */
+    public void setInSandbox(boolean inSandbox) {
+        this.inSandbox = inSandbox;
+    }
+
+    protected void setResolvedSrc(File resolvedSrc) {
+        this.resolvedSrc = resolvedSrc;
+        resolvedSrcURIString = resolvedSrc.toGATURI().toString();
+    }
+
     public File getResolvedSrc() {
+        // if this sandbox object was retrieved from the advert service, we have to recreate the file object
+        if(resolvedSrc == null && resolvedSrcURIString != null) {
+            try {
+                resolvedSrc = GAT.createFile(gatContext, preferences, resolvedSrcURIString);
+            } catch (Exception e) {
+                throw new Error(e);
+            }
+        }
         return resolvedSrc;
     }
-    
+
+    /**
+     * @return the resolvedDestURIString
+     */
+    public String getResolvedDestURIString() {
+        return resolvedDestURIString;
+    }
+
+    /**
+     * @param resolvedDestURIString the resolvedDestURIString to set
+     */
+    public void setResolvedDestURIString(String resolvedDestURIString) {
+        this.resolvedDestURIString = resolvedDestURIString;
+    }
+
+    protected void setResolvedDest(File resolvedDest) {
+        this.resolvedDest = resolvedDest;
+        resolvedDestURIString = resolvedDest.toGATURI().toString();
+    }
+
     public File getResolvedDest() {
+        // if this sandbox object was retrieved from the advert service, we have to recreate the file object
+        if(resolvedDest == null && resolvedDestURIString != null) {
+            try {
+                resolvedDest = GAT.createFile(gatContext, preferences, resolvedDestURIString);
+            } catch (Exception e) {
+                throw new Error(e);
+            }
+        }
         return resolvedDest;
+    }
+
+    /**
+     * @return the resolvedSrcURIString
+     */
+    public String getResolvedSrcURIString() {
+        return resolvedSrcURIString;
+    }
+
+    /**
+     * @param resolvedSrcURIString the resolvedSrcURIString to set
+     */
+    public void setResolvedSrcURIString(String resolvedSrcURIString) {
+        this.resolvedSrcURIString = resolvedSrcURIString;
     }
 }
