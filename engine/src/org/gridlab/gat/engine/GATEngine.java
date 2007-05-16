@@ -281,6 +281,13 @@ public class GATEngine {
         return jarFiles;
     }
 
+    public static void registerUnmarshaller(Class clazz) {
+        if(DEBUG) {
+            System.err.println("register marshaller for: " + clazz);
+        }
+        unmarshallers.add(clazz);
+    }
+
     protected void loadCpiClass(JarFile jarFile, Manifest manifest,
             Attributes attributes, String className, Class cpiClazz) {
         if (DEBUG) {
@@ -322,6 +329,10 @@ public class GATEngine {
         }
 
         if (containsUnmarshaller(clazz)) {
+            if (DEBUG) {
+                System.err.println("Adaptor " + clazzString + " contains unmarshaller");
+            }
+            
             unmarshallers.add(clazz);
         }
 

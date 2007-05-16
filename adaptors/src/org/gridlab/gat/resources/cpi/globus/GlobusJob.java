@@ -19,6 +19,7 @@ import org.gridlab.gat.resources.Job;
 import org.gridlab.gat.resources.JobDescription;
 import org.gridlab.gat.resources.cpi.JobCpi;
 import org.gridlab.gat.resources.cpi.Sandbox;
+import org.gridlab.gat.resources.cpi.SerializedJob;
 
 /**
  * This thread actively polls the globus state of a job. this is needed in case of firewalls.
@@ -76,9 +77,11 @@ class JobPoller extends Thread {
 public class GlobusJob extends JobCpi implements GramJobListener,
         org.globus.gram.internal.GRAMConstants {
 
-    private static int jobsAlive = 0;
+    static {
+        GATEngine.registerUnmarshaller(GlobusJob.class);
+    }
 
-    //    private GlobusResourceBrokerAdaptor broker;
+    private static int jobsAlive = 0;
 
     private GramJob j;
 
@@ -105,7 +108,6 @@ public class GlobusJob extends JobCpi implements GramJobListener,
             GramJob j, Sandbox sandbox, long startTime) {
         super(gatContext, preferences, jobDescription, sandbox);
         this.startTime = startTime;
-        //        this.broker = broker;
         this.j = j;
         jobID = j.getIDAsString();
         state = SCHEDULED;
@@ -124,7 +126,15 @@ public class GlobusJob extends JobCpi implements GramJobListener,
         poller.start();
     }
 
-    /* (non-Javadoc)
+    /** constructor for unmarshalled jobs
+     */
+    public GlobusJob(GATContext gatContext, Preferences preferences, SerializedJob sj) {
+        super(gatContext, preferences, sj.getJobDescription(), sj.getSandbox());
+            
+        // @@@
+    }
+    
+        /* (non-Javadoc)
      * @see org.gridlab.gat.resources.Job#getExitStatus()
      */
     public synchronized int getExitStatus() throws GATInvocationException {
@@ -171,24 +181,6 @@ public class GlobusJob extends JobCpi implements GramJobListener,
 
     public String getJobID() {
         return jobID;
-    }
-
-    /*
-     * (non-Javadoc)
-     *
-     * @see org.gridlab.gat.advert.Advertisable#marshal()
-     */
-    public String marshal() {
-        throw new Error("Not implemented");
-    }
-
-    /*
-     * (non-Javadoc)
-     *
-     * @see org.gridlab.gat.advert.Advertisable#unmarshal(java.lang.String)
-     */
-    public Advertisable unmarshal(String input) {
-        throw new Error("Not implemented");
     }
 
     protected synchronized void setState() {
@@ -486,5 +478,29 @@ public class GlobusJob extends JobCpi implements GramJobListener,
                         + (System.currentTimeMillis() - startTime));
             }
         }
+    }
+
+    /*
+     * @see org.gridlab.gat.advert.Advertisable#marshal()
+     */
+    public String marshal() {
+        SerializedJob sj;
+        synchronized (this) {
+            if(postStageStarted && !postStageFinished) {
+                throw new Error("cannot marshal a job during the poststage process");
+            }
+            sj = new SerializedJob(jobDescription, sandbox, 
+                    postStageFinished, jobID, queueTime, runTime, startTime); 
+        }
+        return GATEngine.defaultMarshal(sj);            
+    }
+
+    public static Advertisable unmarshal(GATContext context,
+            Preferences preferences, String s) {
+        SerializedJob sj =
+            (SerializedJob) GATEngine.defaultUnmarshal(
+                    SerializedJob.class, s);
+
+        return new GlobusJob(context, preferences, sj);
     }
 }

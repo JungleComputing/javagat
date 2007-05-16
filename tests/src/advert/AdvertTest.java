@@ -8,30 +8,53 @@ import org.gridlab.gat.GATContext;
 import org.gridlab.gat.Preferences;
 import org.gridlab.gat.advert.AdvertService;
 import org.gridlab.gat.advert.MetaData;
-import org.gridlab.gat.io.Endpoint;
+import org.gridlab.gat.io.File;
+import org.gridlab.gat.resources.HardwareResourceDescription;
+import org.gridlab.gat.resources.Job;
+import org.gridlab.gat.resources.JobDescription;
+import org.gridlab.gat.resources.ResourceBroker;
+import org.gridlab.gat.resources.ResourceDescription;
+import org.gridlab.gat.resources.SoftwareDescription;
 
 /**
  * @author rob
  */
 public class AdvertTest {
-    public static void main(String[] args) {
+    public static void main(String[] args) throws Exception {
         GATContext c = new GATContext();
         Preferences prefs = new Preferences();
-        prefs.put("advert.adaptor.name", "storagebox");
+        prefs.put("AdvertService.adaptor.name", "local");
+        prefs.put("ResourceBroker.adaptor.name", "globus");
 
-        try {
-            Endpoint e = GAT.createEndpoint(c);
-            AdvertService a = GAT.createAdvertService(c, prefs);
-            MetaData m = new MetaData();
-            m.put("name", "testEndpoint");
-            a.add(e, m, "/rob/testadvert");
+        SoftwareDescription sd = new SoftwareDescription();
+        sd.setLocation("any://" + args[0] + "//bin/hostname");
 
-            Endpoint other = (Endpoint) a.getAdvertisable("/rob/testadvert");
+        File stdout = GAT.createFile(c, "hostname.txt");
+        sd.setStdout(stdout);
 
-            System.err.println("got endpoint back: " + other);
-        } catch (Exception x) {
-            System.err.println("error: " + x);
-            x.printStackTrace();
+        ResourceDescription rd = new HardwareResourceDescription();
+        rd.addResourceAttribute("machine.node", args[0]);
+
+        JobDescription jd = new JobDescription(sd, rd);
+        ResourceBroker broker = GAT.createResourceBroker(c);
+        Job job = broker.submitJob(jd);
+
+        AdvertService a = GAT.createAdvertService(c, prefs);
+        MetaData m = new MetaData();
+        m.put("name", "testJob");
+        a.add(job, m, "/rob/testJob");
+
+        Job other = (Job) a.getAdvertisable("/rob/testJob");
+
+        System.err.println("got job back: " + other);
+
+        while ((job.getState() != Job.STOPPED)
+                && (job.getState() != Job.SUBMISSION_ERROR)) {
+            System.err.println("job state = " + job.getInfo());
+            Thread.sleep(1000);
         }
+
+        System.err.println("job DONE, state = " + job.getInfo());
+        GAT.end();
     }
 }

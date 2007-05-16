@@ -28,12 +28,13 @@ import org.gridlab.gat.io.File;
  * <li> directory (String): working directory.
  * <li> count (Integer/String): number of executables to run.
  * <li> hostCount (Integer/String): number of hosts to distribute on.
- * <li> maxTime (Long/String): maximal time in minutes.
+ * <li> maxTime (Long/String):  The maximum walltime or cputime for a single 
+            execution of the executable.  The units is in minutes.
  * <li> maxWallTime (Long/String): maximal WALL time in minutes.
  * <li> maxCPUTime (Long/String): maximal CPU time in minutes.
  * <li> jobType (String): single|multiple|mpi|condor|...
  * <li> queue (String): target queue name.
- * <li> project (String): project account to use.
+ * <li> project (String): project to use, for accounting purposes.
  * <li> dryRun (Boolean/String): if set, dont submit but return success.
  * <li> minMemory (Integer/String): minimal required memory in MB.
  * <li> maxMemory (Integer/String): maximal required memory in MB.
