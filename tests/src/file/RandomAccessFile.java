@@ -14,7 +14,7 @@ class RandomAccessFile {
             URI src = new URI("file:////bin/echo");
             org.gridlab.gat.io.RandomAccessFile rf = GAT.createRandomAccessFile(context, prefs, src, "r");
             System.err.println("len = " + rf.length());
-            System.err.println("-----REMOTE-FILE COPY TEST-OK---------");
+            System.err.println("-----RANDOM ACCESS FILE TEST-OK---------");
         } catch (Exception e) {
             System.err.println("STACK TRACE:");
             e.printStackTrace();

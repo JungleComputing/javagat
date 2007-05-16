@@ -20,6 +20,7 @@ import org.gridlab.gat.io.FileOutputStream;
 import org.gridlab.gat.io.FileOutputStreamInterface;
 import org.gridlab.gat.io.LogicalFile;
 import org.gridlab.gat.io.RandomAccessFile;
+import org.gridlab.gat.io.RandomAccessFileInterface;
 import org.gridlab.gat.io.cpi.EndpointCpi;
 import org.gridlab.gat.io.cpi.FileCpi;
 import org.gridlab.gat.io.cpi.FileInputStreamCpi;
@@ -836,8 +837,13 @@ public class GAT {
         throws GATObjectCreationException {
         Object[] array = { location, mode };
 
-        return (RandomAccessFile) getAdaptorProxy(RandomAccessFileCpi.class,
-            RandomAccessFile.class, gatContext, preferences, array);
+        RandomAccessFileInterface f = (RandomAccessFileInterface) getAdaptorProxy(RandomAccessFileCpi.class,
+            RandomAccessFileInterface.class, gatContext, preferences, array);
+        try {
+            return new RandomAccessFile(f);
+        } catch (Exception e) {
+            throw new GATObjectCreationException("GAT", e);
+        }
     }
 
     public static ResourceBroker createResourceBroker(GATContext gatContext)
