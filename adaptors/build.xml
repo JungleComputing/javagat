@@ -12,6 +12,7 @@
 	-->
 	<property name="env.GAT_LOCATION" location=".." /> 
         <property name="engine_path" location="${env.GAT_LOCATION}/engine" />
+        <property name="javacog_path" location="${env.GAT_LOCATION}/cog-4_1_4" />
 
 	<property name="src" location="src" />
 	<property name="tmp" location="tmp" />
@@ -30,6 +31,9 @@
 		<fileset dir="${engine_path}/lib">
 			<include name="GAT.jar" />
 		</fileset>
+                <fileset dir="${javacog_path}/lib">
+                        <include name="*.jar" />
+                </fileset>
 	</path>
 
 	<target name="javadoc" description="make javadoc">
@@ -269,6 +273,20 @@
 				<attribute name="FileOutputStreamCpi-class" value="org.gridlab.gat.io.cpi.smb.SmbFileOutputStreamAdaptor" />
 				<attribute name="FileCpi-class" value="org.gridlab.gat.io.cpi.smb.SmbFileAdaptor" />
                                 <attribute name="RandomAccessFileCpi-class" value="org.gridlab.gat.io.cpi.smb.SmbRandomAccessFileAdaptor" />
+			</manifest>
+		</jar>
+
+                <jar jarfile="${lib}/GT4Adaptor.jar" basedir="${tmp}" includes="**/gt4/GT4*.class">
+	                <manifest>
+				<attribute name="FileInputStreamCpi-class" value="org.gridlab.gat.io.cpi.gt4.GT4FileInputStreamAdaptor" />
+                                <attribute name="FileCpi-class" value="org.gridlab.gat.io.cpi.gt4.GT4GridFTPFileAdaptor" />
+                                <attribute name="ResourceBrokerCpi-class" value="org.gridlab.gat.resources.cpi.gt4.GT4ResourceBrokerAdaptor" />
+			</manifest>
+		</jar>
+
+                <jar jarfile="${lib}/GT4Impl2Adaptor.jar" basedir="${tmp}" includes="**/gt4impl2/GT4Impl2*.class">
+	                <manifest>
+                                <attribute name="FileCpi-class" value="org.gridlab.gat.io.cpi.gt4impl2.GT4Impl2FileAdaptor" />
 			</manifest>
 		</jar>
 		

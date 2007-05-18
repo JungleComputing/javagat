@@ -8,9 +8,13 @@
     <property name="external" location="external" />
     <property name="gat-lib" location="../engine/lib/GAT.jar" />
     <property name="java.debug.value" value="true" />
-    
+    <property name="javacog_path" location="../cog-4_1_4/lib" />
+
     <path id="external_jars">
         <fileset dir="${external}">
+            <include name="*.jar" />
+        </fileset>
+        <fileset dir="${javacog_path}">
             <include name="*.jar" />
         </fileset>
     </path>

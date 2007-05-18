@@ -49,10 +49,15 @@ public class DefaultAdaptorOrderPolicy implements AdaptorOrderPolicy {
         }
     }
 
+    /**
+     * Here I changed the order, put my GridFile (Balazs)
+     **/
     protected void orderFileList(AdaptorList l) {
         int insertPos = 0;
         insertPos = l.placeAdaptor(insertPos,
             "org.gridlab.gat.io.cpi.local.LocalFileAdaptor");
+	insertPos = l.placeAdaptor(insertPos,
+				   "org.gridlab.gat.io.cpi.gt4.GT4FileAdaptor");
         insertPos = l.placeAdaptor(insertPos,
             "org.gridlab.gat.io.cpi.globus.GridFTPFileAdaptor");
         insertPos = l.placeAdaptor(insertPos,
