@@ -269,6 +269,12 @@
             </manifest>
         </jar>
 
+		<jar jarfile="${lib}/gLiteResourceBrokerAdaptor.jar" basedir="${tmp}" includes="**/org/gridlab/gat/resources/cpi/glite/*.class">
+			<manifest>
+				<attribute name="ResourceBrokerCpi-class" value="org.gridlab.gat.resources.cpi.glite.gLiteResourceBrokerAdaptor" />
+			</manifest>
+		</jar>
+		
 		<jar jarfile="${lib}/SocketEndpointAdaptor.jar" basedir="${tmp}" includes="**/org/gridlab/gat/io/cpi/sockets/*.class">
 			<manifest>
 				<attribute name="EndpointCpi-class" value="org.gridlab.gat.io.cpi.sockets.SocketEndpointAdaptor" />
