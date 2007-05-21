@@ -518,7 +518,7 @@ public class GATEngine {
     private static boolean containsInitializer(Class clazz) {
         // test for marshal and unmarshal methods.
         try {
-            clazz.getMethod("init", null);
+            clazz.getMethod("init", (Class[]) null);
             return true;
         } catch (Throwable t) {
             return false;
@@ -527,7 +527,7 @@ public class GATEngine {
     
     private void callInitializer(Class clazz) {
         try {
-            Method m = clazz.getMethod("init", null);
+            Method m = clazz.getMethod("init", (Class[]) null);
             m.invoke((Object) null, (Object[]) null);
         } catch (Throwable t) {
             if(VERBOSE) {

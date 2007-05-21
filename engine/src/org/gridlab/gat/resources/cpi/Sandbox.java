@@ -23,7 +23,7 @@ public class Sandbox {
 
     private Preferences preferences;
 
-    private JobDescription jobDescription;
+//    private JobDescription jobDescription;
 
     private String host;
 
@@ -60,7 +60,7 @@ public class Sandbox {
             boolean createSandboxDir, boolean preStageStdin,
             boolean postStageStdout, boolean postStageStderr)
             throws GATInvocationException {
-        this.jobDescription = jobDescription;
+//        this.jobDescription = jobDescription;
         this.gatContext = gatContext;
         this.preferences = preferences;
         this.host = host;
