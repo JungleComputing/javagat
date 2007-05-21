@@ -6,6 +6,7 @@ package org.gridlab.gat.resources.cpi.glite;
 import java.util.List;
 
 import org.gridlab.gat.GATInvocationException;
+import org.gridlab.gat.resources.Job;
 import org.gridlab.gat.resources.JobDescription;
 import org.gridlab.gat.resources.ResourceDescription;
 import org.gridlab.gat.resources.cpi.ResourceBrokerCpi;
