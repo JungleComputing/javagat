@@ -6,6 +6,7 @@ import java.io.StringReader;
 import java.io.StringWriter;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.lang.reflect.Proxy;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
@@ -815,5 +816,31 @@ public class GATEngine {
         }
 
         return true;
+    }
+
+    public static Object createAdaptorProxy(String cpiClassName,
+        Class interfaceClass, GATContext gatContext, Preferences preferences,
+        Object[] tmpParams) throws GATObjectCreationException {
+        
+        Class cpiClass;
+        try {
+            cpiClass = Class.forName(cpiClassName);
+        } catch (ClassNotFoundException e) {
+            throw new Error(e);
+        }
+        
+        GATEngine gatEngine = GATEngine.getGATEngine();
+
+        AdaptorList adaptors = gatEngine.getAdaptorList(cpiClass);
+        if (adaptors == null) {
+            throw new GATObjectCreationException("could not find any adaptors");
+        }
+        AdaptorInvocationHandler handler = new AdaptorInvocationHandler(
+            adaptors, gatContext, preferences, tmpParams);
+
+        Object proxy = Proxy.newProxyInstance(interfaceClass.getClassLoader(),
+            new Class[] { interfaceClass }, handler);
+
+        return proxy;
     }
 }
