@@ -8,6 +8,7 @@ fi
 
 # ---- do not touch anything below this line ----
 
+GAT_API_LOCATION=$GAT_LOCATION/api
 GAT_ENGINE_LOCATION=$GAT_LOCATION/engine
 GAT_ADAPTOR_LOCATION=$GAT_LOCATION/adaptors
 GAT_GRIDLAB_ADAPTOR_LOCATION=$GAT_LOCATION/gridlabAdaptors
@@ -29,6 +30,7 @@ add_to_gat_classpath () {
 	done
 }
 
+add_to_gat_classpath $GAT_API_LOCATION/lib
 add_to_gat_classpath $GAT_ENGINE_LOCATION/lib
 add_to_gat_classpath $GAT_TESTS_LOCATION/lib
 
