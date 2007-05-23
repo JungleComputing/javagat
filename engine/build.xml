@@ -12,12 +12,11 @@
          default to ../JavaGATEngine.
 	-->
     <property name="env.GAT_LOCATION" location=".." />
-    <property name="api_path" location="${env.GAT_LOCATION}/api" />
+    <property name="api" location="${env.GAT_LOCATION}/lib/GAT-API.jar" />
 
     <property name="src" location="src" />
     <property name="tmp" location="tmp" />
-    <property name="lib" location="lib" />
-    <property name="doc" location="../doc/javadoc" />
+    <property name="lib" location="../lib" />
     <property name="java.debug.value" value="true" />
     <property name="external" location="external" />
 
@@ -25,8 +24,7 @@
         <fileset dir="${external}">
             <include name="*.jar" />
         </fileset>
-        <fileset dir="${api_path}/lib">
-            <include name="GAT-API.jar" />
+        <fileset file="${api}">
         </fileset>
     </path>
 
@@ -40,7 +38,7 @@
         </javac>
 
         <!-- Put everything in ${tmp} into the GAT.jar file -->
-        <jar jarfile="${lib}/GAT.jar" basedir="${tmp}" />
+        <jar jarfile="${lib}/GAT-engine.jar" basedir="${tmp}" />
 
         <!-- Copy external libraries to lib directory -->
         <copy todir="${lib}">
@@ -52,32 +50,7 @@
 
     <target name="build" description="build everything" depends="clean,compile" />
 
-    <target name="javadoc" description="generate javadoc for gat users">
-        <delete dir="${doc}" />
-        <javadoc destdir="${doc}" access="public" use="true" notree="false" nonavbar="false" noindex="false" splitindex="true" version="true" nodeprecatedlist="false" nodeprecated="false" verbose="false" classpath="${lib}/GAT.jar">
-            <link href="http://java.sun.com/j2se/1.4.2/docs/api/" />
-            <classpath refid="external_jars" />
-
-            <fileset dir="${src}">
-                <include name="**/*.java" />
-                <exclude name="**/cpi/*" />
-                <exclude name="**/engine/*" />
-                <exclude name="org/gridlab/gat/util/*" />
-                <exclude name="**/FileInputStreamInterface.java" />
-                <exclude name="**/FileOutputStreamInterface.java" />
-            </fileset>
-        </javadoc>
-    </target>
-
-    <target name="javadoc-devel" description="generate all javadocs">
-        <javadoc destdir="${doc}" access="public" packagenames="org.gridlab.*" sourcepath="${src}" overview="src/overview.html">
-            <link href="http://java.sun.com/j2se/1.4.2/docs/api/" />
-        </javadoc>
-    </target>
-
     <target name="clean" description="clean up">
         <delete dir="${tmp}" />
-        <delete dir="${lib}" />
-        <delete dir="${doc}" />
     </target>
 </project>

@@ -11,7 +11,7 @@
          default to ../JavaGATEngine.
 	-->
     <property name="env.GAT_LOCATION" location=".." />
-    <property name="api_path" location="${env.GAT_LOCATION}/api" />
+    <property name="api" location="${env.GAT_LOCATION}/lib/GAT-API.jar" />
 
     <property name="src" location="src" />
     <property name="tmp" location="tmp" />
@@ -25,7 +25,7 @@
 
         <!-- Compile the java code from ${src} into ${tmp} -->
         <javac srcdir="${src}" destdir="${tmp}" debug="on">
-            <classpath location="${api_path}/lib/GAT-API.jar" />
+            <classpath location="${api}" />
         </javac>
 
         <!-- Put everything in ${tmp} into the GAT.jar file -->
@@ -38,6 +38,5 @@
 
     <target name="clean" description="clean up">
         <delete dir="${tmp}" />
-        <delete dir="${lib}" />
     </target>
 </project>

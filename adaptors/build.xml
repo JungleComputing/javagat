@@ -11,13 +11,11 @@
              default to ../JavaGATEngine.
 	-->
     <property name="env.GAT_LOCATION" location=".." />
-    <property name="engine_path" location="${env.GAT_LOCATION}/engine" />
-    <property name="api_path" location="${env.GAT_LOCATION}/api" />
+    <property name="engine_path" location="${env.GAT_LOCATION}/lib" />
 
     <property name="src" location="src" />
     <property name="tmp" location="tmp" />
-    <property name="lib" location="lib" />
-    <property name="doc" location="doc" />
+    <property name="lib" location="../lib/adaptors" />
     <property name="external" location="external" />
     <property name="java.debug.value" value="true" />
 
@@ -25,21 +23,10 @@
         <fileset dir="${external}">
             <include name="*.jar" />
         </fileset>
-        <fileset dir="${engine_path}/external">
+        <fileset dir="${engine_path}">
             <include name="*.jar" />
         </fileset>
-        <fileset dir="${api_path}/lib">
-            <include name="GAT-API.jar" />
-        </fileset>
-        <fileset dir="${engine_path}/lib">
-            <include name="GAT.jar" />
-        </fileset>
     </path>
-
-    <target name="javadoc" description="make javadoc">
-        <!-- Compile the java doc from ${src} into ${doc}/html/javadoc -->
-        <javadoc destdir="doc/html/javadoc" verbose="false" access="public" use="true" notree="false" nonavbar="false" noindex="false" splitindex="true" author="true" version="true" nodeprecatedlist="false" nodeprecated="false" packagenames="org.gridlab.gat.resources.cpi.local,org.gridlab.gat.io.cpi.sockets,org.gridlab.gat.advert.cpi.storagebox,org.gridlab.gat.io.cpi.dataMovement,org.gridlab.gat.generic,org.gridlab.gat.advert.cpi.local,org.gridlab.gat.io.cpi.globus,org.gridlab.gat.io.cpi.local,org.gridlab.gat.resources.cpi.grms,org.gridlab.gat.io.cpi.fileBrowsing,org.gridlab.gat.resources.cpi.globus" sourcepath="src:../JavaGATEngine" classpath="../JavaGATEngine/tmp:external/jboss-j2ee.jar:external/commons-discovery.jar:external/axis.jar:tmp:external/jaxrpc.jar:external/cryptix.jar:external/servlet.jar:external/ogsa.jar:external/xercesImpl.jar:external/saaj.jar:external/cog-tomcat.jar:external/xmlParserAPIs.jar:external/wsif.jar:external/castor-0.9.5.3-xml.jar:external/castor-0.9.5.3.jar:external/ogsa-samples.jar:external/cryptix32.jar:external/jgss.jar:external/xalan.jar:external/xmlsec.jar:external/log4j-core.jar:external/cog-jglobus.jar:external/cog-axis.jar:external/cryptix-asn1.jar:external/wsdl4j.jar:external/jta1.0.1.jar:external/jdbc-se2.0.jar:external/commons-logging.jar:external/puretls.jar:external/jce-jdk13-117.jar" />
-    </target>
 
     <target name="build" depends="clean" description="build the JARs and documentation">
         <!-- Create the distribution end tmp directory -->
@@ -290,8 +277,6 @@
 
     <target name="clean" description="clean up">
         <delete dir="${tmp}" />
-        <delete dir="${lib}" />
-        <delete dir="${doc}/html/javadoc" />
     </target>
 
 </project>

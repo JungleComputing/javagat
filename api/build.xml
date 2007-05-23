@@ -5,7 +5,7 @@
     <!-- Global properties for GAT API-->
     <property name="src" location="src" />
     <property name="tmp" location="tmp" />
-    <property name="lib" location="lib" />
+    <property name="lib" location="../lib" />
     <property name="doc" location="../doc/javadoc" />
     <property name="java.debug.value" value="true" />
 
@@ -41,7 +41,5 @@
 
     <target name="clean" description="clean up">
         <delete dir="${tmp}" />
-        <delete dir="${lib}" />
-        <delete dir="${doc}" />
     </target>
 </project>
