@@ -2,7 +2,18 @@
     <description>
       Build file for GAT
     </description>
+
     <!-- Global properties for GAT -->
+    <property environment="env" />
+
+    <!-- Global properties for GAT -->
+
+    <!-- Get the path to the engine. If GAT_LOCATION is set, use it. Otherwise,
+         default to ../JavaGATEngine.
+	-->
+    <property name="env.GAT_LOCATION" location=".." />
+    <property name="api_path" location="${env.GAT_LOCATION}/api" />
+
     <property name="src" location="src" />
     <property name="tmp" location="tmp" />
     <property name="lib" location="lib" />
@@ -13,6 +24,9 @@
     <path id="external_jars">
         <fileset dir="${external}">
             <include name="*.jar" />
+        </fileset>
+        <fileset dir="${api_path}/lib">
+            <include name="GAT-API.jar" />
         </fileset>
     </path>
 

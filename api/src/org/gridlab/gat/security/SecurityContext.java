@@ -3,8 +3,6 @@ package org.gridlab.gat.security;
 import java.util.HashMap;
 import java.util.StringTokenizer;
 
-import org.gridlab.gat.engine.GATEngine;
-
 /** A container for security Information.
  *
  * Each context has a data object
@@ -147,13 +145,14 @@ public abstract class SecurityContext implements Cloneable {
         }
 
         if (!allowed) {
-            if (GATEngine.DEBUG) {
+/*            if (GATEngine.DEBUG) {
                 System.err
                     .println("securityContext is not allowed for adaptor "
                         + adaptorName + " for host " + host + " and port "
                         + port);
+                        
             }
-
+*/
             return false; // it was limited, and the adaptor calling this
 
             // method was not on the list.
@@ -192,12 +191,13 @@ public abstract class SecurityContext implements Cloneable {
         }
 
         if (!allowed) {
-            if (GATEngine.DEBUG) {
+/*            if (GATEngine.DEBUG) {
                 System.err
                     .println("securityContext is not allowed for adaptor "
                         + adaptorName + " for host " + host + " and port "
                         + port);
             }
+*/
         }
 
         return allowed;

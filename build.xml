@@ -1,35 +1,40 @@
 <project name="JavaGAT" default="build" basedir=".">
-	<description>
+    <description>
 	      Build file for the Java GAT
     	</description>
-	
-	<target name="build" description="build everything">
-		<ant dir="engine"/>
-		<ant dir="tests"/>
-		<ant dir="adaptors"/>
-		<ant dir="engine" target="javadoc"/>
-	</target>
 
-	<target name="engine" description="build the engine">
-		<ant dir="engine"/>
-	</target>
-		
-	<target name="adaptors" description="build the adaptors">
-		<ant dir="adaptors"/>
-	</target>
-		
-	<target name="tests" description="build the test programs">
-		<ant dir="tests"/>
-	</target>
-	
-	<target name="gridlab" depends="build" description="build the gridlab adaptors">
-		<ant dir="gridlabAdaptors"/>
-	</target>
+    <target name="build" description="build everything">
+        <ant dir="api" />
+        <ant dir="engine" />
+        <ant dir="tests" />
+        <ant dir="adaptors" />
+        <ant dir="api" target="javadoc" />
+    </target>
 
-	<target name="clean" description="clean up">
-		<ant dir="engine" target="clean"/>
-		<ant dir="tests" target="clean"/>
-		<ant dir="adaptors" target="clean"/>
-		<ant dir="gridlabAdaptors" target="clean"/>
-	</target>
+    <target name="api" description="build the engine">
+        <ant dir="api" />
+    </target>
+
+    <target name="engine" description="build the engine">
+        <ant dir="engine" />
+    </target>
+
+    <target name="adaptors" description="build the adaptors">
+        <ant dir="adaptors" />
+    </target>
+
+    <target name="tests" description="build the test programs">
+        <ant dir="tests" />
+    </target>
+
+    <target name="gridlab" depends="build" description="build the gridlab adaptors">
+        <ant dir="gridlabAdaptors" />
+    </target>
+
+    <target name="clean" description="clean up">
+        <ant dir="engine" target="clean" />
+        <ant dir="tests" target="clean" />
+        <ant dir="adaptors" target="clean" />
+        <ant dir="gridlabAdaptors" target="clean" />
+    </target>
 </project>
