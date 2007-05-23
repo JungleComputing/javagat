@@ -15,8 +15,7 @@
 
     <property name="src" location="src" />
     <property name="tmp" location="tmp" />
-    <property name="lib" location="lib" />
-    <property name="gat-lib" location="../engine/lib/GAT.jar" />
+    <property name="lib" location="../lib" />
     <property name="java.debug.value" value="true" />
 
     <target name="compile" description="compile the source ">
