@@ -49,27 +49,69 @@ import org.globus.cog.abstraction.impl.common.task.InvalidServiceContactExceptio
 import org.globus.cog.abstraction.impl.common.task.InvalidSecurityContextException;
 import org.globus.cog.abstraction.impl.common.task.InvalidProviderException;
 import org.globus.cog.abstraction.impl.common.ProviderMethodException;
-
+/**
+ * Implements the <code>ResourceBrokerCpi</code> abstract class.
+ * @author Balazs Bokodi
+ * @version 1.0
+ * @since 1.0
+ */
 public class GT4ResourceBrokerAdaptor extends ResourceBrokerCpi {
+    static final int DEFAULT_GRIDFTP_PORT=2811;
     public GT4ResourceBrokerAdaptor(GATContext gatContext,
 				       Preferences preferences) 
 	throws GATObjectCreationException {
         super(gatContext, preferences);
     }
-    
+
+    /**
+     * Returns a <code>SecurityContext</code> object.
+     * The <code>GlobusSecurityUtils</code> is used to get the
+     * credential. If the credential is null, then the <code>SecurityContext</code>
+     * tries the default globus credential.
+     * @param jobDescription the hostname is extracted from <code>jobDescription</code>.
+     * The hostname used by the <code>GlobusSecurityUtils</code>.
+     * @throws GATInvocationException
+     */
+    protected SecurityContext getSecurityContext(JobDescription jobDescription) 
+	throws GATInvocationException {
+	SecurityContext securityContext = null;
+	try {
+	    securityContext = AbstractionFactory.newSecurityContext("gt4");
+	} catch(Exception e) {
+	    throw new GATInvocationException("GT4ResourceBrokerAdaptor: cannot create SecurityContext: "+e);
+	}
+	GSSCredential cred = null;
+	URI location = null;
+	try {
+	    location = new URI(getHostname(jobDescription));
+	} catch(Exception e) {
+	    throw new GATInvocationException("GT4ResourceBrokerAdaptor: getSecurityContext, initialization of location failed, "+e);
+	}
+	try {
+	    cred = GlobusSecurityUtils.getGlobusCredential(gatContext, preferences,
+							   "gt4gridftp", location, 
+							   DEFAULT_GRIDFTP_PORT);
+	} catch(Exception e) {
+	    throw new GATInvocationException("GT4GridFTPFileAdaptor: could not initialize credentials, " + e);
+	}
+	securityContext.setCredentials(cred);
+	return securityContext;
+    }
+    /**
+     * Creates the job subbmission service.
+     * The factory contact string is taken from
+     * the variable <code>jd</code>.
+     * @param jd the factory contact string is extracted 
+     * from the <code>JobDescription</code> with the
+     * <code>getHostname</code> method.
+     */
     protected Service createService(JobDescription jd)
     throws GATInvocationException {
 	Service service = new ServiceImpl(Service.JOB_SUBMISSION);
 	service.setProvider("GT4.0.0");
 	SecurityContext securityContext = null;
-	try {
-	    securityContext = AbstractionFactory.newSecurityContext("GT4.0.0");
-	} catch(InvalidProviderException e) {
-	    throw new GATInvocationException("GT4ResourceBrokerAdaptor: " + e);
-	} catch(ProviderMethodException e) {
-	    throw new GATInvocationException("GT4ResourceBrokerAdaptor: " + e);
-	}
-	securityContext.setCredentials(null);
+	securityContext = getSecurityContext(jd);
+
 	service.setSecurityContext(securityContext);
 
 	ServiceContact serviceContact = new ServiceContactImpl(getHostname(jd));
@@ -77,6 +119,19 @@ public class GT4ResourceBrokerAdaptor extends ResourceBrokerCpi {
 	return service;
     }
 
+    /**
+     * Creates a <code>JobSpecification</code> object.
+     * The specifications are get out from the 
+     * variable <code>jd</code> and are passed to
+     * variable <code>spec</code>, which is a
+     * member of JavaCog <code>JobSpecification</code> 
+     * class.
+     * The <code>JobSpecification</code> is initialized
+     * with the relative pathes of sandbox (standard input, output,
+     * error, directory), and the enviroment variables are passed also.
+     * @param jd
+     * @param sandbox initialized with the proper path.
+     */
     protected JobSpecification createJobSpecification(JobDescription jd, 
 						      Sandbox sandbox) 
 	throws GATInvocationException {
@@ -95,21 +150,17 @@ public class GT4ResourceBrokerAdaptor extends ResourceBrokerCpi {
 	    }
 	}
 	spec.setDirectory(sandbox.getSandbox());
-	System.out.println(sandbox.getSandbox());
-// 	Check the return value is null if is not set:
-// 	String fn = sandbox.getRelativeStdout().getPath();
 	if(sandbox.getRelativeStdin()!=null) {
 	    spec.setStdInput(sandbox.getRelativeStdin().getPath());
 	}
 	if(sandbox.getRelativeStdout()!=null) {
 	    spec.setStdOutput(sandbox.getRelativeStdout().getPath());
-	    System.out.println(sandbox.getRelativeStdout().getPath());
 	}
 	if(sandbox.getRelativeStderr()!=null) {
 	    spec.setStdError(sandbox.getRelativeStderr().getPath());
 	}
-	Map env = sd.getEnvironment();
 
+	Map env = sd.getEnvironment();
         if (env != null && !env.isEmpty()) {
             Set s = env.keySet();
             Object[] keys = (Object[]) s.toArray();
@@ -121,6 +172,16 @@ public class GT4ResourceBrokerAdaptor extends ResourceBrokerCpi {
 
 	return spec;
     }
+
+    /**
+     * Creates a new <code>GT4Job</code> and submits to globus.
+     * Creates the <code>sandbox</code> object also, that is used
+     * to isolate job current directory.
+     * @param description contains the properies of the job
+     * @throws GATInvocationException
+     * @throws IOException is not thrown
+     * @return GT4Job reference
+     */
     public Job submitJob(JobDescription description)
         throws GATInvocationException, IOException {
 	String host = getHostname(description);
@@ -134,6 +195,4 @@ public class GT4ResourceBrokerAdaptor extends ResourceBrokerCpi {
 
 	return new GT4Job(gatContext, preferences, description, sandbox, spec, service);
     }
-    
-
 }

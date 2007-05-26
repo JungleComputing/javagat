@@ -34,14 +34,32 @@ import org.globus.cog.abstraction.interfaces.Task;
 import org.globus.cog.abstraction.interfaces.StatusListener;
 import org.globus.cog.abstraction.impl.common.StatusEvent;
 import org.globus.cog.abstraction.interfaces.Status;
-
+/**
+ * Implements the JavaCog <code>StatusListener</code> interface.
+ * It listens a submitted job, and is notified at status changes.
+ * @author Balazs Bokodi
+ * @version 1.0
+ * @since 1.0
+ */
 class GT4StatusListener implements StatusListener {
     Task task;
     GT4Job job;
-    public GT4StatusListener(Task t, GT4Job j) {
-	task = t;
+    /**
+     * Initializes the <code>GT4StatusListener</code> object.
+     * @param j a <code>GT4Job</code> object. The state of the job
+     * changes every time when the submitted job state is changed.
+     */
+    public GT4StatusListener(GT4Job j) {
 	job = j;
     }
+
+    /**
+     * This callback method is invoked when the submitted job's state is
+     * changed. The matches between the JavaCog states and JavaGAT states are
+     * arbitrary.
+     * @param event the passed <code>StatusEvent</code> has the <code>State</code>
+     * object.
+     */
     public void statusChanged(StatusEvent event) {
 	Status status = event.getStatus();
 	switch(status.getStatusCode()) {
@@ -77,9 +95,19 @@ class GT4StatusListener implements StatusListener {
     }
 }
 
+/**
+ * Implements JobCpi abstract class. Wrappers a JavaCog task.
+ * @author Balazs Bokodi
+ * @version 1.0
+ * @since 1.0
+ */
 public class GT4Job extends JobCpi {
     GT4ResourceBrokerAdaptor broker;
     Task task;
+    /**
+     * Initializes a job. Creates a task, sets up the listener
+     * and submits it.
+     */
     public GT4Job(GATContext gatContext, Preferences preferences,
 		  JobDescription jobDescription,
 		  Sandbox sandbox,
@@ -93,7 +121,7 @@ public class GT4Job extends JobCpi {
 	task.setSpecification(spec);
 	task.setService(Service.JOB_SUBMISSION_SERVICE, service);
 	TaskHandler handler = new ExecutionTaskHandler();
-	GT4StatusListener listener = new GT4StatusListener(task, this);
+	GT4StatusListener listener = new GT4StatusListener(this);
 	task.addStatusListener(listener);
 	try {
 	    handler.submit(task);
@@ -101,8 +129,13 @@ public class GT4Job extends JobCpi {
 	    throw new GATInvocationException("GT4Job: " + e);
 	}
     }
-    protected synchronized void setState(int s) {
-	state = s;
+    /**
+     * The <code>GT4StatusListener</code> calls this function to set the
+     * state of the job.
+     * @param state
+     */
+    protected synchronized void setState(int state) {
+	this.state = state;
     }
 }
 

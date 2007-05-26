@@ -1,0 +1,2 @@
+./bin/run_gat_app bbgt4tests.TestResourceBroker --prefkey ResourceBroker.adaptor.name --prefvalue GT4ResourceBrokerAdaptor
+./bin/debug_gat_app bbgt4tests.TestFileAdaptor gsiftp://fs2.das3.science.uva.nl//home0/bbokodi/tmp/zero50mb --prefkey File.adaptor.name --prefvalue GT4GridFTPFileAdaptor --copy any://fs3.das3.tudelft.nl//home0/bbokodi/tmp/copyofzeros

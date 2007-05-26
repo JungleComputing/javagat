@@ -32,6 +32,8 @@ import org.gridlab.gat.Preferences;
 import org.gridlab.gat.URI;
 import org.gridlab.gat.engine.GATEngine;
 import org.gridlab.gat.io.cpi.FileCpi;
+import org.gridlab.gat.security.globus.GlobusSecurityUtils;
+import org.ietf.jgss.GSSCredential;
 
 import java.text.SimpleDateFormat;
 import java.text.ParseException;
@@ -49,31 +51,25 @@ public class GT4GridFTPFileAdaptor extends GT4FileAdaptor {
     public GT4GridFTPFileAdaptor(GATContext gatContext, Preferences preferences,
 			  URI location) throws GATObjectCreationException {
         super(gatContext, preferences, location, "gsiftp");
-	String provider=null;
-	if( location.isCompatible("gsiftp") ) {
-	    provider=new String("gsiftp");
-	}
-	else {
-            throw new AdaptorNotApplicableException("cannot handle this URI");
-        }
-	try {
-	    resource = AbstractionFactory.newFileResource(provider);
-	} catch(Exception e) {
-	    throw new AdaptorNotApplicableException("cannot create FileResource: "+e);
-	}
+    }
+
+    protected SecurityContext getSecurityContext() 
+	throws AdaptorNotApplicableException, GATInvocationException {
 	SecurityContext securityContext = null;
 	try {
-	    securityContext = AbstractionFactory.newSecurityContext("gridftp");
+	    securityContext = AbstractionFactory.newSecurityContext(srcProvider);
 	} catch(Exception e) {
-	    throw new AdaptorNotApplicableException("cannot create SecurityContext: "+e);
+	    throw new AdaptorNotApplicableException("GT4GridFTPFileAdaptor: cannot create SecurityContext: "+e);
 	}
-	ServiceContact serviceContact = new ServiceContactImpl(location.getHost(), location.getPort());
-	resource.setServiceContact(serviceContact);
+	GSSCredential cred = null;
 	try {
-	    resource.start();
+	    cred = GlobusSecurityUtils.getGlobusCredential(gatContext, preferences,
+							   "gt4gridftp", location, 
+							   DEFAULT_GRIDFTP_PORT);
 	} catch(Exception e) {
-	    throw new AdaptorNotApplicableException("cannot invoke start() method of FileResource: "+e);
+	    throw new GATInvocationException("GT4GridFTPFileAdaptor: could not initialize credentials, " + e);
 	}
-	
+	securityContext.setCredentials(cred);
+	return securityContext;
     }
 }

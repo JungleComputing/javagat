@@ -12,7 +12,7 @@ import jargs.gnu.CmdLineParser;
 
 public class TestFileAdaptor {
     static void printUsage() {
-	System.err.println("Usage: ...");
+	System.err.println("Usage: ");
     }
 
     public static void main(String[] args) throws Exception {
