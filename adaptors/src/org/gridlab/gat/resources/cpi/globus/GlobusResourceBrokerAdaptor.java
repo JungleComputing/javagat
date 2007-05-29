@@ -59,6 +59,7 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
         }
     }
 
+    // @@@ also take run time from description, count, etc
     protected String createPreStageWrapperRSL(JobDescription description,
             String host, Sandbox sandbox, PreStagedFileSet pre,
             PostStagedFileSet post) throws GATInvocationException {
