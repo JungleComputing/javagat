@@ -3,8 +3,6 @@
  */
 package org.gridlab.gat.io.cpi.sockets;
 
-import ibis.util.IPUtils;
-
 import java.io.IOException;
 import java.io.Serializable;
 import java.io.StringWriter;
@@ -57,7 +55,7 @@ public class SocketEndpointAdaptor extends EndpointCpi implements Serializable {
         super(gatContext, preferences);
 
         try {
-            localAddress = IPUtils.getLocalHostAddress();
+            localAddress = GATEngine.getLocalHostAddress();
             serverSocket = new ServerSocket(0, 0, localAddress); // bind to any
 
             // free port

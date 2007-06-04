@@ -3,8 +3,6 @@
  */
 package org.gridlab.gat.resources.cpi.globus;
 
-import ibis.util.IPUtils;
-
 import java.util.Map;
 import java.util.Set;
 
@@ -267,7 +265,7 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
 
                 String s =
                         "(file_stage_out = (" + f.getResolvedSrc().getPath()
-                                + " gsiftp://" + IPUtils.getLocalHostName()
+                                + " gsiftp://" + GATEngine.getLocalHostName()
                                 + "/" + f.getResolvedDest().getPath() + "))";
                 rsl += s;
             }

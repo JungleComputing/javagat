@@ -1,7 +1,5 @@
 package org.gridlab.gat.resources.cpi.proactive;
 
-import ibis.util.TypedProperties;
-
 import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.FileOutputStream;
@@ -38,9 +36,6 @@ import org.objectweb.proactive.filetransfer.FileVector;
  * @see org.gridlab.gat.resources.Job.
  */
 public class Job extends JobCpi {
-    static final int MAXTHREADS = TypedProperties.intProperty(
-            "JavaGat.ProActive.Launch.Parallel", 1);
-
     /** Counter for generating job identifications. */
     private static int jobCounter;
 
@@ -510,7 +505,12 @@ public class Job extends JobCpi {
 
         StringWrapper[] results = new StringWrapper[newNodes.length];
 
-        Threader threader = Threader.createThreader(MAXTHREADS);
+        int maxThreads = 1;
+        String tmp = (String) preferences.get("launch.parallel");
+        if(tmp != null) {
+            maxThreads = Integer.parseInt(tmp);
+        }
+        Threader threader = Threader.createThreader(maxThreads);
 
         for (int i = 0; i < newNodes.length; i++) {
             final NodeInfo node = newNodes[i];

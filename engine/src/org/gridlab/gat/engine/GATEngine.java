@@ -7,6 +7,7 @@ import java.io.StringWriter;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
+import java.net.InetAddress;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
@@ -842,5 +843,27 @@ public class GATEngine {
             new Class[] { interfaceClass }, handler);
 
         return proxy;
+    }
+    
+    public static String getLocalHostName() {
+        try {
+            InetAddress a = InetAddress.getLocalHost();
+            if (a != null) {
+                return a.getHostName();
+            }
+        } catch(IOException e) {
+            // ignore
+        }
+        return "localhost";
+    }
+
+    public static InetAddress getLocalHostAddress() {
+        try {
+            InetAddress a = InetAddress.getLocalHost();
+            return a;
+        } catch(IOException e) {
+            // ignore
+        }
+        return null;
     }
 }
