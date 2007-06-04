@@ -1,5 +1,7 @@
 package org.gridlab.gat.io.cpi;
 
+import java.io.FileFilter;
+import java.io.FilenameFilter;
 import java.io.OutputStream;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;

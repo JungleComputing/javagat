@@ -370,7 +370,7 @@ public class File extends java.io.File implements Monitorable,
      */
     public String[] list(FilenameFilter filter) {
         try {
-            return f.list(new FileNameFilterForwarder(filter));
+            return f.list(filter);
         } catch (Exception e) {
             throw new Error(e);
         }
@@ -392,7 +392,7 @@ public class File extends java.io.File implements Monitorable,
      */
     public java.io.File[] listFiles(FileFilter filter) {
         try {
-            return f.listFiles(new FileFilterForwarder(filter));
+            return f.listFiles(filter);
         } catch (Exception e) {
             throw new Error(e);
         }
@@ -404,7 +404,7 @@ public class File extends java.io.File implements Monitorable,
     public java.io.File[] listFiles(FilenameFilter filter) {
         try {
 
-            return f.listFiles(new FileNameFilterForwarder(filter));
+            return f.listFiles(filter);
         } catch (Exception e) {
             throw new Error(e);
         }
@@ -581,32 +581,3 @@ public class File extends java.io.File implements Monitorable,
     }
 }
 
-class FileNameFilterForwarder implements org.gridlab.gat.io.cpi.FilenameFilter {
-    java.io.FilenameFilter f;
-
-    public FileNameFilterForwarder(java.io.FilenameFilter f) {
-        this.f = f;
-    }
-
-    /* (non-Javadoc)
-     * @see org.gridlab.gat.io.cpi.FilenameFilter#accept(org.gridlab.gat.io.File, java.lang.String)
-     */
-    public boolean accept(File dir, String name) {
-        return f.accept(dir, name);
-    }
-}
-
-class FileFilterForwarder implements org.gridlab.gat.io.cpi.FileFilter {
-    java.io.FileFilter f;
-
-    public FileFilterForwarder(java.io.FileFilter f) {
-        this.f = f;
-    }
-
-    /* (non-Javadoc)
-     * @see org.gridlab.gat.io.cpi.FileFilter#accept(org.gridlab.gat.io.File)
-     */
-    public boolean accept(File pathname) {
-        return f.accept(pathname);
-    }
-}

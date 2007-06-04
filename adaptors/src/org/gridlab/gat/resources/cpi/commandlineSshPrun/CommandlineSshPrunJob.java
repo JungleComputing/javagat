@@ -3,8 +3,6 @@
  */
 package org.gridlab.gat.resources.cpi.commandlineSshPrun;
 
-import ibis.util.IPUtils;
-
 import java.util.HashMap;
 import java.util.Map;
 
@@ -88,7 +86,7 @@ public class CommandlineSshPrunJob extends JobCpi {
         m.put("resManState", getStateString(state));
         m.put("resManName", "Local");
         m.put("exitValue", "" + exitVal);
-        m.put("hostname", IPUtils.getLocalHostName());
+        m.put("hostname", GATEngine.getLocalHostName());
 
         if (postStageException != null) {
             m.put("postStageError", postStageException);

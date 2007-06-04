@@ -1,7 +1,5 @@
 package org.gridlab.gat.resources.cpi.globus;
 
-import ibis.util.IPUtils;
-
 import java.io.FileOutputStream;
 import java.io.ObjectOutputStream;
 import java.util.HashMap;
@@ -86,7 +84,7 @@ public class RemoteSandboxSubmitter {
                 sd.setStderr(errFile);
             }
 
-            String preStageDoneFileLocation = "any://" + IPUtils.getLocalHostName() +
+            String preStageDoneFileLocation = "any://" + GATEngine.getLocalHostName() +
             "//tmp/.JavaGATPrestageDone." + counter;
             
             sd.setLocation(new URI(
@@ -154,7 +152,7 @@ public class RemoteSandboxSubmitter {
 
             sd.setArguments(new String[] {
                     descriptorFile.getName(),
-                    IPUtils.getLocalHostName(),
+                    GATEngine.getLocalHostName(),
                     preStageDoneFileLocation,
                     ""
                             + origSd.getBooleanAttribute(

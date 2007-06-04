@@ -5,7 +5,6 @@ import java.util.Map;
 
 import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.advert.Advertisable;
-import org.gridlab.gat.engine.GATEngine;
 import org.gridlab.gat.monitoring.Metric;
 import org.gridlab.gat.monitoring.MetricDefinition;
 import org.gridlab.gat.monitoring.MetricListener;
@@ -312,31 +311,23 @@ public abstract class Job implements Monitorable, Advertisable {
     
     public MetricValue getMeasurement(Metric metric)
             throws GATInvocationException {
-        if (metric.getDefinition().getMeasurementType() == MetricDefinition.DISCRETE) {
-            return GATEngine.getMeasurement(this, metric);
-        }
-
         throw new RuntimeException("Not implemented");
     }
 
-    public final List getMetricDefinitions() throws GATInvocationException {
-        return GATEngine.getMetricDefinitions(this);
-    }
+    public List getMetricDefinitions() throws GATInvocationException {
+        throw new RuntimeException("Not implemented");    }
 
-    public final MetricDefinition getMetricDefinitionByName(String name)
+    public MetricDefinition getMetricDefinitionByName(String name)
             throws GATInvocationException {
-        return GATEngine.getMetricDefinitionByName(this, name);
-    }
+        throw new RuntimeException("Not implemented");    }
 
-    public final void addMetricListener(MetricListener metricListener,
+    public void addMetricListener(MetricListener metricListener,
             Metric metric) throws GATInvocationException {
-        GATEngine.addMetricListener(this, metricListener, metric);
-    }
+        throw new RuntimeException("Not implemented");    }
 
-    public final void removeMetricListener(MetricListener metricListener,
+    public void removeMetricListener(MetricListener metricListener,
             Metric metric) throws GATInvocationException {
-        GATEngine.removeMetricListener(this, metricListener, metric);
-    }
+        throw new RuntimeException("Not implemented");    }
     
     public String toString() {
         String res = "gat job";

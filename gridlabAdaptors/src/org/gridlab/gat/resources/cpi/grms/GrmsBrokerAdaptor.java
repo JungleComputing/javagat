@@ -490,19 +490,23 @@ public class GrmsBrokerAdaptor extends ResourceBrokerCpi {
      * @see org.gridlab.gat.resources.ResourceBroker#submitJob(org.gridlab.gat.resources.JobDescription)
      */
     public Job submitJob(JobDescription description)
-            throws GATInvocationException, IOException {
+            throws GATInvocationException {
         String jobDescription = createGrmsJobDescription(description);
 
         // Return Value: - GrmsResponse.errorCode
         // 0 - success >0 - error code
         // Also returns jobId in jobId field.
         StringHolder jobId = new StringHolder();
+
+        try {
         GrmsResponse res = grms.submitJob(jobDescription, jobId);
 
         if (res.getErrorCode() != 0) {
             throw new GATInvocationException(res.getErrorMessage());
         }
-
+        } catch (IOException e) {
+            throw new GATInvocationException("grms", e);
+        }
         return new GrmsJob(gatContext, preferences, this, description, jobId.value, null);
     }
 

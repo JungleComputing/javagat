@@ -2,10 +2,20 @@
     <description>
       Build file for GAT tests
     </description>
+
+    <property environment="env" />
+
+    <!-- Global properties for GAT -->
+
+    <!-- Get the path to the engine. If GAT_LOCATION is set, use it. Otherwise,
+         default to ../JavaGATEngine.
+	-->
+    <property name="env.GAT_LOCATION" location=".." />
+    <property name="api" location="${env.GAT_LOCATION}/lib/GAT-API.jar" />
+
     <property name="src" location="src" />
     <property name="tmp" location="tmp" />
-    <property name="lib" location="lib" />
-    <property name="gat-lib" location="../engine/lib/GAT.jar" />
+    <property name="lib" location="../lib" />
     <property name="java.debug.value" value="true" />
 
     <target name="compile" description="compile the source ">
@@ -13,8 +23,8 @@
         <mkdir dir="${lib}" />
 
         <!-- Compile the java code from ${src} into ${tmp} -->
-        <javac srcdir="${src}" destdir="${tmp}" debug="on" >
-		<classpath location="${gat-lib}" />
+        <javac srcdir="${src}" destdir="${tmp}" debug="on">
+            <classpath location="${api}" />
         </javac>
 
         <!-- Put everything in ${tmp} into the GAT.jar file -->
@@ -27,6 +37,5 @@
 
     <target name="clean" description="clean up">
         <delete dir="${tmp}" />
-        <delete dir="${lib}" />
     </target>
 </project>

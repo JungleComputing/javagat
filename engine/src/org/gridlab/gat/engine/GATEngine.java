@@ -6,6 +6,8 @@ import java.io.StringReader;
 import java.io.StringWriter;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.lang.reflect.Proxy;
+import java.net.InetAddress;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
@@ -39,6 +41,8 @@ import org.gridlab.gat.monitoring.MetricListener;
 import org.gridlab.gat.monitoring.MetricValue;
 import org.gridlab.gat.monitoring.cpi.MonitorableCpi;
 import org.gridlab.gat.resources.cpi.ResourceBrokerCpi;
+import org.gridlab.gat.steering.cpi.SteeringManagerCpi;
+
 
 /**
  * @author rob
@@ -386,6 +390,8 @@ public class GATEngine {
             AdvertServiceCpi.class);
         loadCpiClass(jarFile, manifest, attributes, "Monitorable",
             MonitorableCpi.class);
+        loadCpiClass(jarFile, manifest, attributes, "SteeringManager",
+            SteeringManagerCpi.class);
         loadCpiClass(jarFile, manifest, attributes, "File", FileCpi.class);
         loadCpiClass(jarFile, manifest, attributes, "LogicalFile",
             LogicalFileCpi.class);
@@ -514,7 +520,7 @@ public class GATEngine {
     private static boolean containsInitializer(Class clazz) {
         // test for marshal and unmarshal methods.
         try {
-            clazz.getMethod("init", null);
+            clazz.getMethod("init", (Class[]) null);
             return true;
         } catch (Throwable t) {
             return false;
@@ -523,7 +529,7 @@ public class GATEngine {
     
     private void callInitializer(Class clazz) {
         try {
-            Method m = clazz.getMethod("init", null);
+            Method m = clazz.getMethod("init", (Class[]) null);
             m.invoke((Object) null, (Object[]) null);
         } catch (Throwable t) {
             if(VERBOSE) {
@@ -811,5 +817,53 @@ public class GATEngine {
         }
 
         return true;
+    }
+
+    public static Object createAdaptorProxy(String cpiClassName,
+        Class interfaceClass, GATContext gatContext, Preferences preferences,
+        Object[] tmpParams) throws GATObjectCreationException {
+        
+        Class cpiClass;
+        try {
+            cpiClass = Class.forName(cpiClassName);
+        } catch (ClassNotFoundException e) {
+            throw new Error(e);
+        }
+        
+        GATEngine gatEngine = GATEngine.getGATEngine();
+
+        AdaptorList adaptors = gatEngine.getAdaptorList(cpiClass);
+        if (adaptors == null) {
+            throw new GATObjectCreationException("could not find any adaptors");
+        }
+        AdaptorInvocationHandler handler = new AdaptorInvocationHandler(
+            adaptors, gatContext, preferences, tmpParams);
+
+        Object proxy = Proxy.newProxyInstance(interfaceClass.getClassLoader(),
+            new Class[] { interfaceClass }, handler);
+
+        return proxy;
+    }
+    
+    public static String getLocalHostName() {
+        try {
+            InetAddress a = InetAddress.getLocalHost();
+            if (a != null) {
+                return a.getHostName();
+            }
+        } catch(IOException e) {
+            // ignore
+        }
+        return "localhost";
+    }
+
+    public static InetAddress getLocalHostAddress() {
+        try {
+            InetAddress a = InetAddress.getLocalHost();
+            return a;
+        } catch(IOException e) {
+            // ignore
+        }
+        return null;
     }
 }

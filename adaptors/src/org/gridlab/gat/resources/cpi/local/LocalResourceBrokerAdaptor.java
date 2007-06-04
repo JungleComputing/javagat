@@ -1,7 +1,5 @@
 package org.gridlab.gat.resources.cpi.local;
 
-import ibis.util.IPUtils;
-
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Iterator;
@@ -150,7 +148,7 @@ public class LocalResourceBrokerAdaptor extends ResourceBrokerCpi {
         String host = getHostname(description);
         if (host != null) {
             if (!host.equals("localhost")
-                && !host.equals(IPUtils.getLocalHostName())) {
+                && !host.equals(GATEngine.getLocalHostName())) {
                 throw new MethodNotApplicableException(
                     "cannot run jobs on remote machines with the local adaptor");
             }

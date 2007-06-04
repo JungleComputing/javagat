@@ -5,12 +5,15 @@ import org.gridlab.gat.URI;
 import org.gridlab.gat.monitoring.Monitorable;
 
 /**
- * This class is used for random access to local and remote files.
+ * This interface is used for random access to local and remote files.
  * <p>
  * An instance of this class presents an abstract, system-independent view of a
  * physical file.
  */
-public interface RandomAccessFile extends Monitorable, java.io.Serializable {
+public interface RandomAccessFileInterface extends Monitorable, java.io.Serializable {
+    
+    public URI toURI();
+    
     /**
      * Tests this RandomAccessFile for equality with the passed Object.
      * <p>
@@ -29,8 +32,6 @@ public interface RandomAccessFile extends Monitorable, java.io.Serializable {
     public boolean equals(Object object);
 
 
-    public URI toURI();
-    
     /** See {@link java.io.RandomAccessFile#close}. */
     public void close() throws GATInvocationException;
 
