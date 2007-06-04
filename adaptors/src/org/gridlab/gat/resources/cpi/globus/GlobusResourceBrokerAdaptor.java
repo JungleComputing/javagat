@@ -164,7 +164,6 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
                     getStringAttribute(description, "java.flags", "");
             if (javaFlags.length() != 0) {
                 StringTokenizer t = new StringTokenizer(javaFlags);
-                System.err.println("tokens: " + t.countTokens());
                 while(t.hasMoreTokens()) {
                     args += " \"" + t.nextToken() + "\"";
                 }
