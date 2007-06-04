@@ -5,6 +5,7 @@ package org.gridlab.gat.resources.cpi.globus;
 
 import java.util.Map;
 import java.util.Set;
+import java.util.StringTokenizer;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
@@ -162,7 +163,10 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
             String javaFlags =
                     getStringAttribute(description, "java.flags", "");
             if (javaFlags.length() != 0) {
-                args += " \"" + javaFlags + "\"";
+                StringTokenizer t = new StringTokenizer(javaFlags);
+                while(t.hasMoreTokens()) {
+                    args += " \"" + t.nextToken() + "\"";
+                }
             }
 
             // classpath
