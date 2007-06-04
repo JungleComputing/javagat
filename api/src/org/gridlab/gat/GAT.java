@@ -864,7 +864,7 @@ public class GAT {
      */
     public static ResourceBroker createResourceBroker(GATContext gatContext,
         Preferences preferences) throws GATObjectCreationException {
-        return (ResourceBroker) getAdaptorProxy("org.gridlab.gat.resources.cpiResourceBrokerCpi",
+        return (ResourceBroker) getAdaptorProxy("org.gridlab.gat.resources.cpi.ResourceBrokerCpi",
             ResourceBroker.class, gatContext, preferences, null);
     }
 
