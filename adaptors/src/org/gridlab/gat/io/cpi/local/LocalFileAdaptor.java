@@ -38,6 +38,9 @@ public class LocalFileAdaptor extends FileCpi {
 
         String res = (String) preferences.get("ignoreHiddenFiles");
         if (res != null && res.equalsIgnoreCase("true")) {
+//@@@            if(GATEngine.DEBUG) {
+                System.err.println("local file adaptor is ignoring hidden files");
+//            }
             ignoreHiddenFiles = true;
         }
 
