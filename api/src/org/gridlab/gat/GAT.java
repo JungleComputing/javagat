@@ -42,6 +42,7 @@ public class GAT {
             throw new Error(e);
         }
     }
+    
     /**
      * Constructs a File instance which corresponds to the physical file
      * identified by the passed URI and whose access rights are determined by
@@ -893,7 +894,7 @@ public class GAT {
         }
 
         try {
-            return createProxyMethod.invoke(null, new Object[] {cpiClassName, interfaceClass, gatContext, preferences, tmpParams});
+            return createProxyMethod.invoke(null, new Object[] {cpiClassName, interfaceClass, gatContext, prefs, tmpParams});
         } catch (Exception e) {
             throw new Error(e);
         }
