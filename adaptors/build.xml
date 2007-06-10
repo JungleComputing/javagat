@@ -14,6 +14,7 @@
         <property name="engine_path" location="${env.GAT_LOCATION}/engine" />
         <property name="javacog_path" location="${env.GAT_LOCATION}/cog-4_1_4" />
         <property name="bbdoc" location="${env.GAT_LOCATION}/doc/doc.balazs/javadoc" />
+        <property name="globus_lib" location="${env.GLOBUS_LOCATION}/lib" />
 
 	<property name="src" location="src" />
 	<property name="tmp" location="tmp" />
@@ -32,6 +33,9 @@
 		<fileset dir="${engine_path}/lib">
 			<include name="GAT.jar" />
 		</fileset>
+                <fileset dir="${globus_lib}">
+                        <include name="*.jar" />
+                </fileset>
                 <fileset dir="${javacog_path}/lib">
                         <include name="*.jar" />
                 </fileset>
@@ -287,13 +291,30 @@
 			</manifest>
 		</jar>
 
+                <jar jarfile="${lib}/GT4GridFTPFileAdaptor.jar" basedir="${tmp}" includes="**gt4/GT4*.class">
+                        <manifest>
+                                <attribute name="FileCpi-class" value="org.gridlab.gat.io.cpi.gt4.GT4GridFTPFileAdaptor" />
+                        </manifest>
+                </jar>
+
+                <jar jarfile="${lib}/GT4LocalFileAdaptor.jar" basedir="${tmp}" includes="**gt4/GT4*.class">
+                        <manifest>
+                                <attribute name="FileCpi-class" value="org.gridlab.gat.io.cpi.gt4.GT4LocalFileAdaptor" />
+                        </manifest>
+                </jar>
+                      
                 <jar jarfile="${lib}/GT4CogAdaptor.jar" basedir="${tmp}" includes="**/gt4/GT4*.class">
 	                <manifest>
 				<attribute name="FileInputStreamCpi-class" value="org.gridlab.gat.io.cpi.gt4.GT4FileInputStreamAdaptor" />
-                                <attribute name="FileCpi-class" value="org.gridlab.gat.io.cpi.gt4.GT4GridFTPFileAdaptor" />
                                 <attribute name="ResourceBrokerCpi-class" value="org.gridlab.gat.resources.cpi.gt4.GT4ResourceBrokerAdaptor" />
 			</manifest>
 		</jar>
+
+                <jar jarfile="${lib}/WSGT4ResourceBroker.jar" basedir="${tmp}" includes="**/wsgt4/WSGT4*.class">
+                        <manifest>
+                                <attribute name="ResourceBrokerCpi-class" value="org.gridlab.gat.resources.cpi.wsgt4.WSGT4ResourceBrokerAdaptor" />
+                        </manifest>
+                </jar>
 
                 <jar jarfile="${lib}/GT4Impl2Adaptor.jar" basedir="${tmp}" includes="**/gt4impl2/GT4Impl2*.class">
 	                <manifest>

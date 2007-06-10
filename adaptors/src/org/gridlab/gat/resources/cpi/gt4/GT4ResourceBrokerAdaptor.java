@@ -58,11 +58,16 @@ import org.globus.cog.abstraction.impl.common.ProviderMethodException;
 public class GT4ResourceBrokerAdaptor extends ResourceBrokerCpi {
     static final int DEFAULT_GRIDFTP_PORT=2811;
     public GT4ResourceBrokerAdaptor(GATContext gatContext,
-				       Preferences preferences) 
+				    Preferences preferences) 
 	throws GATObjectCreationException {
         super(gatContext, preferences);
+	//Logger logger = Logger.getLogger(NoAuthorization.class.getName());
+	//logger.setLevel(Level.OFF);
+	if(!GATEngine.VERBOSE) {
+	    System.out.println("gt4resourcebroker");
+	}
     }
-
+    
     /**
      * Returns a <code>SecurityContext</code> object.
      * The <code>GlobusSecurityUtils</code> is used to get the
@@ -188,7 +193,7 @@ public class GT4ResourceBrokerAdaptor extends ResourceBrokerCpi {
 	SoftwareDescription sd = description.getSoftwareDescription();
 	if(sd == null) {
 	    throw new GATInvocationException("GT4ResorceBroker: the job description does not contain a software description");
-        }
+      }
 	Sandbox sandbox = new Sandbox(gatContext, preferences, description, host, null, true, true, true, true);
 	JobSpecification spec = createJobSpecification(description, sandbox);
 	Service service = createService(description);

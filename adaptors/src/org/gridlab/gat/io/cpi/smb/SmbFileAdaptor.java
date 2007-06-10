@@ -245,7 +245,6 @@ public class SmbFileAdaptor extends FileCpi {
 	    SmbFile smbdest =  new SmbFile( dest.toString() );
 	    smbf.copyTo(smbdest);
 	} catch( Exception e ) {
-	    System.err.println("smb file: copySmbRemote failed");
 	    throw new GATInvocationException();
 	} 
     }
@@ -263,7 +262,6 @@ public class SmbFileAdaptor extends FileCpi {
 	    fis.close();
 	    fos.close();
 	} catch( Exception e ) {
-	    System.err.println("smb file: copyToLocal failed");
 	    throw new GATInvocationException();
 	}   
 	     
@@ -282,7 +280,6 @@ public class SmbFileAdaptor extends FileCpi {
 	    fis.close();
 	    fos.close();
 	} catch( Exception e ) {
-	    System.err.println("smb file: copyToRemote failed");
 	    throw new GATInvocationException();
 	}   
     }

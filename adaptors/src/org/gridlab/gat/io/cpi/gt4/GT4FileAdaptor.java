@@ -156,7 +156,7 @@ abstract public class GT4FileAdaptor extends FileCpi {
 	catch( Exception e ) {
 	    throw new GATInvocationException(e.getMessage());
 	}
-	sourceSecurityContext.setCredentials(null);
+	//sourceSecurityContext.setCredentials(null);
 	sourceService.setSecurityContext(sourceSecurityContext);
 	ServiceContact sourceServiceContact =
 	    new ServiceContactImpl();
@@ -218,7 +218,6 @@ abstract public class GT4FileAdaptor extends FileCpi {
 	} catch(GeneralException e) {
 	    throw new GATInvocationException(e.getMessage());
 	}
-	    
     }
     
     /**
@@ -234,6 +233,7 @@ abstract public class GT4FileAdaptor extends FileCpi {
      *
      */
     public void copy(URI dest) throws GATInvocationException {
+	System.out.println("gt4 copy " + location + " -> " + dest);
 	if(determineIsDirectory()) {
 	    copyDirectory(gatContext, preferences, toURI(), dest);
 	    return;

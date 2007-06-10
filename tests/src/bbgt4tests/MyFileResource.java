@@ -19,12 +19,12 @@ class MyFileResource {
 	}
 	SecurityContext securityContext = null;
 	try {
-	    securityContext = AbstractionFactory.newSecurityContext("gridftp");
+	    securityContext = AbstractionFactory.newSecurityContext("local");
 	} catch(Exception e) {
 	    System.err.println("some trouble: " + e);
 	    System.exit(1);
 	}
-	ServiceContact serviceContact =  new ServiceContactImpl("fs0.das3.cs.vu.nl");
+	ServiceContact serviceContact =  new ServiceContactImpl();
 	resource.setServiceContact(serviceContact);
 	try { 
 	    resource.start();
