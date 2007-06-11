@@ -88,7 +88,11 @@ public class SoftwareDescription implements java.io.Serializable {
     private boolean wipePreStaged;
     private boolean wipePostStaged;
     
-    
+    /**
+     * Create a software description, which describes the application you
+     * want to run.
+     *
+     */
     public SoftwareDescription() {
         attributes = new HashMap();
         preStagedFiles = new HashMap();
@@ -97,6 +101,12 @@ public class SoftwareDescription implements java.io.Serializable {
         wipedFiles = new ArrayList();
     }
 
+    /**
+     * Create a software description, which describes the application you
+     * want to run.
+     * 
+     * @param attributes See the comment above for a list of known attributes.
+     */
     public SoftwareDescription(Map attributes) {
         this.attributes = new HashMap(attributes);
 
@@ -182,12 +192,17 @@ public class SoftwareDescription implements java.io.Serializable {
 
     /**
      * @param attributes
-     *            The attributes to set.
+     *            The attributes to set. See the comment above for a list of known attributes.
      */
     public void setAttributes(Map attributes) {
         this.attributes = new HashMap(attributes);
     }
 
+    /**
+     * Add an attribute to the attribute set. See the comment above for a list of known attributes.
+     * @param key
+     * @param value
+     */
     public void addAttribute(String key, Object value) {
         attributes.put(key, value);
     }
