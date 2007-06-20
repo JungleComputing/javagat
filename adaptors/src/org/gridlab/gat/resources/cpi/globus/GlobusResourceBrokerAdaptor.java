@@ -23,7 +23,6 @@ import org.gridlab.gat.GATObjectCreationException;
 import org.gridlab.gat.Preferences;
 import org.gridlab.gat.URI;
 import org.gridlab.gat.engine.GATEngine;
-import org.gridlab.gat.io.File;
 import org.gridlab.gat.resources.Job;
 import org.gridlab.gat.resources.JobDescription;
 import org.gridlab.gat.resources.SoftwareDescription;
@@ -164,7 +163,7 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
                     getStringAttribute(description, "java.flags", "");
             if (javaFlags.length() != 0) {
                 StringTokenizer t = new StringTokenizer(javaFlags);
-                while(t.hasMoreTokens()) {
+                while (t.hasMoreTokens()) {
                     args += " \"" + t.nextToken() + "\"";
                 }
             }
@@ -433,14 +432,13 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
 
     private void submitChmodJob(GSSCredential credential,
             JobDescription description, String host, String chmodLocation,
-            Sandbox sandbox, File resolvedExe) throws GATInvocationException {
+            Sandbox sandbox, String path) throws GATInvocationException {
         if (GATEngine.VERBOSE) {
             System.err.print("running " + chmodLocation + " on " + host
                     + "/jobmanager-fork to set executable bit on ");
         }
         String chmodRsl =
-                createChmodRSL(description, host, chmodLocation, sandbox,
-                        resolvedExe.getPath());
+                createChmodRSL(description, host, chmodLocation, sandbox, path);
 
         runGramJobPolling(credential, chmodRsl, host + "/jobmanager-fork");
         if (GATEngine.VERBOSE) {
@@ -495,20 +493,26 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
 
     private void runChmod(GSSCredential credential, JobDescription description,
             String host, Sandbox sandbox) {
-        File resolvedExe = sandbox.getResolvedExecutable();
-        if (resolvedExe != null) {
-            try {
-                submitChmodJob(credential, description, host, "/bin/chmod",
-                        sandbox, resolvedExe);
-            } catch (Exception e) {
-                // ignore
-            }
-            try {
-                submitChmodJob(credential, description, host, "/usr/bin/chmod",
-                        sandbox, resolvedExe);
-            } catch (Exception e) {
-                // ignore
-            }
+
+        String exe = null;
+
+        try {
+            exe = getLocationURI(description).getPath();
+        } catch (Exception e) {
+            return;
+        }
+
+        try {
+            submitChmodJob(credential, description, host, "/bin/chmod",
+                    sandbox, exe);
+        } catch (Exception e) {
+            // ignore
+        }
+        try {
+            submitChmodJob(credential, description, host, "/usr/bin/chmod",
+                    sandbox, exe);
+        } catch (Exception e) {
+            // ignore
         }
     }
 
