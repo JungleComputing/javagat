@@ -42,6 +42,7 @@ public class GAT {
             throw new Error(e);
         }
     }
+    
     /**
      * Constructs a File instance which corresponds to the physical file
      * identified by the passed URI and whose access rights are determined by
@@ -864,7 +865,7 @@ public class GAT {
      */
     public static ResourceBroker createResourceBroker(GATContext gatContext,
         Preferences preferences) throws GATObjectCreationException {
-        return (ResourceBroker) getAdaptorProxy("org.gridlab.gat.resources.cpiResourceBrokerCpi",
+        return (ResourceBroker) getAdaptorProxy("org.gridlab.gat.resources.cpi.ResourceBrokerCpi",
             ResourceBroker.class, gatContext, preferences, null);
     }
 
@@ -893,7 +894,7 @@ public class GAT {
         }
 
         try {
-            return createProxyMethod.invoke(null, new Object[] {cpiClassName, interfaceClass, gatContext, preferences, tmpParams});
+            return createProxyMethod.invoke(null, new Object[] {cpiClassName, interfaceClass, gatContext, prefs, tmpParams});
         } catch (Exception e) {
             throw new Error(e);
         }
