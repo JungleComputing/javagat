@@ -330,6 +330,10 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
             String chmodLocation, Sandbox sandbox, String executable) {
         String rsl = "& (executable = " + chmodLocation + ")";
 
+        if (sandbox != null) {
+            rsl += " (directory = " + sandbox.getSandbox() + ")";
+        }
+
         rsl += " (arguments = \"+x\" \"" + executable + "\")";
 
         if (GATEngine.DEBUG) {
