@@ -45,7 +45,7 @@ import org.globus.exec.generated.JobDescriptionType;
 public class WSGT4ResourceBrokerAdaptor extends ResourceBrokerCpi {
     static final int DEFAULT_GRIDFTP_PORT=2811;
     protected GSSCredential getCred(JobDescription jobDescription) 
-    throws GATInvocationException {
+	throws GATInvocationException {
 	GSSCredential cred = null;
 	URI location = null;
 	try {

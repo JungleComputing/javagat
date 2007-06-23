@@ -33,12 +33,15 @@ import org.gridlab.gat.URI;
 import org.gridlab.gat.engine.GATEngine;
 import org.gridlab.gat.io.cpi.FileCpi;
 import org.gridlab.gat.security.globus.GlobusSecurityUtils;
-
+import org.gridlab.gat.io.File;
+import java.net.URISyntaxException;
 import java.text.SimpleDateFormat;
 import java.text.ParseException;
 import java.util.Date;
 import java.util.Collection;
 import java.util.Iterator;
+
+import org.ietf.jgss.GSSCredential;
 
 /**
  * This abstract class implementes the 
@@ -90,7 +93,8 @@ abstract public class GT4FileAdaptor extends FileCpi {
 	}
 	SecurityContext securityContext = null;
 	try {
-	    securityContext = getSecurityContext();
+	    securityContext = AbstractionFactory.newSecurityContext(srcProvider);
+	    securityContext.setCredentials(getCredential(srcProvider, location));
 	} catch(Exception e) {
 	    throw new AdaptorNotApplicableException("GT4FileAdaptor: getSecurityContext failed, " + e);
 	}
@@ -110,8 +114,25 @@ abstract public class GT4FileAdaptor extends FileCpi {
      * a proper <code>SecurityContext</code> object. This object
      * is used by the FileResource (in our case) or by services.
      */
-    abstract protected SecurityContext getSecurityContext()
-	throws AdaptorNotApplicableException, GATInvocationException;
+    protected GSSCredential getCredential(String provider, URI loc) 
+	throws GATInvocationException {
+	GSSCredential cred = null;
+	if(provider.equalsIgnoreCase("local") ||
+	   provider.equalsIgnoreCase("condor") ||
+	   provider.equalsIgnoreCase("ssh") ||
+	   provider.equalsIgnoreCase("ftp") ||
+	   provider.equalsIgnoreCase("webdav")) {
+	    return cred;
+	}
+	try {
+	    cred = GlobusSecurityUtils.getGlobusCredential(gatContext, preferences,
+							   "gt4gridftp", loc, 
+							   DEFAULT_GRIDFTP_PORT);
+	} catch(Exception e) {
+	    throw new GATInvocationException("GT4GridFTPFileAdaptor: could not initialize credentials, " + e);
+	}
+	return cred;
+    }
 
     /**
      * This method copies the physical file represented by this File instance to
@@ -129,7 +150,7 @@ abstract public class GT4FileAdaptor extends FileCpi {
      * security context uses the specified provider.
      * @throws GatInvocationException
      */
-    protected void copyThirdParty(URI dest, String destProvider)
+    synchronized protected void copyThirdParty(URI dest, String destProvider)
 	throws GATInvocationException {
 	if(GATEngine.DEBUG) {
 	    System.err.println("GT4FileAdaptor file: start file copy with destination provider "+ destProvider);
@@ -138,12 +159,12 @@ abstract public class GT4FileAdaptor extends FileCpi {
 	FileTransferSpecification spec = new FileTransferSpecificationImpl();
 	spec.setSource(location.getPath());
 	spec.setDestination(dest.getPath());
-	if(!dest.refersToLocalHost() && !location.refersToLocalHost()) {
+	/*if(!dest.refersToLocalHost() && !location.refersToLocalHost()) {
 	    if(GATEngine.DEBUG) {
 		System.err.println("GT4FileAdaptor file: set thirdparty");
-	    } 
-	    spec.setThirdParty(true);
-	}
+		} */
+	spec.setThirdParty(true);
+	/*}*/
 	task.setSpecification(spec);
 	
 	Service sourceService = new ServiceImpl(Service.FILE_TRANSFER);
@@ -151,13 +172,14 @@ abstract public class GT4FileAdaptor extends FileCpi {
 	SecurityContext sourceSecurityContext = null;
 	try {
 	    sourceSecurityContext =
-		getSecurityContext();
+		AbstractionFactory.newSecurityContext(srcProvider);
 	}
 	catch( Exception e ) {
 	    throw new GATInvocationException(e.getMessage());
 	}
-	//sourceSecurityContext.setCredentials(null);
+	sourceSecurityContext.setCredentials(getCredential(destProvider, dest));
 	sourceService.setSecurityContext(sourceSecurityContext);
+	
 	ServiceContact sourceServiceContact =
 	    new ServiceContactImpl();
 	sourceServiceContact.setHost(location.getHost());
@@ -169,12 +191,13 @@ abstract public class GT4FileAdaptor extends FileCpi {
 	destinationService.setProvider(destProvider);
  	SecurityContext destinationSecurityContext = null;
 	try {
-	    destinationSecurityContext = AbstractionFactory.newSecurityContext(destProvider);
+	    destinationSecurityContext = 
+		AbstractionFactory.newSecurityContext(destProvider);
 	}
 	catch( Exception e ) {
 	    throw new GATInvocationException(e.getMessage());
 	}
- 	destinationSecurityContext.setCredentials(null);
+ 	destinationSecurityContext.setCredentials(getCredential(destProvider, dest));
  	destinationService.setSecurityContext(destinationSecurityContext);
  	ServiceContact destinationServiceContact =
 	    new ServiceContactImpl();
@@ -183,14 +206,13 @@ abstract public class GT4FileAdaptor extends FileCpi {
  	destinationService.setServiceContact(destinationServiceContact);
 	task.setService(Service.FILE_TRANSFER_DESTINATION_SERVICE, destinationService);
 	FileTransferTaskHandler handler = new FileTransferTaskHandler();
-
+	
 	try {
 	    handler.submit(task);
 	}
 	catch( Exception e ) {
 	    throw new GATInvocationException(e.getMessage());
 	}
-
 	try { 
 	    task.waitFor();
 	} catch(InterruptedException e) {
@@ -199,6 +221,7 @@ abstract public class GT4FileAdaptor extends FileCpi {
 	if(!task.isCompleted()) {
 	    throw new GATInvocationException("GT4FileAdaptor: copy is failed.");
 	}
+	System.out.println("bye4" + destProvider);
 	if(GATEngine.VERBOSE) {
 	    System.out.println("GT4FileAdaptor: third party copy done.");
 	}
@@ -233,10 +256,38 @@ abstract public class GT4FileAdaptor extends FileCpi {
      *
      */
     public void copy(URI dest) throws GATInvocationException {
-	System.out.println("gt4 copy " + location + " -> " + dest);
+	System.out.println("gt4 copy: " + location + " -> " + dest);
 	if(determineIsDirectory()) {
 	    copyDirectory(gatContext, preferences, toURI(), dest);
 	    return;
+	}
+	//determinate dest is a directory, and pass the filename if it is, otherwise it will fail
+	File destinationFile = null;
+	try { 
+	    destinationFile = GAT.createFile(gatContext, preferences, dest);
+	} catch(GATObjectCreationException e) {
+	    //throw new GATInvocationException("GT4FileAdaptor: copy, " + e);
+	    //give a try anyway
+	}
+
+	//fix the filename, if the destination is a directory
+	try {
+	    if(destinationFile.isDirectory() && 
+	       isFile()) {
+		String destStr;
+		if(dest.toString().endsWith("/")) {
+		    destStr = dest.toString()+getName();
+		} else {
+		    destStr = dest.toString()+"/"+getName();
+		}
+		try {
+		    dest = new URI(destStr);
+		} catch(URISyntaxException e) {
+		    throw new GATInvocationException("GT4FileAdaptor: copy, " + e);
+		}
+	    }
+	} catch(GATInvocationException e) {
+	    //leave everything as it is
 	}
 	if(dest.isLocal()) {
 	    if(GATEngine.DEBUG) {
@@ -566,7 +617,6 @@ abstract public class GT4FileAdaptor extends FileCpi {
      * @see org.gridlab.gat.io.File#setReadOnly()
      */
     public boolean setReadOnly() throws GATInvocationException {
-	//That setReadOnly does not seems like to work
 	GridFile gf = null;
 	try {
 	    gf = resource.getGridFile(location.getPath());

@@ -193,11 +193,10 @@ public class GT4ResourceBrokerAdaptor extends ResourceBrokerCpi {
 	SoftwareDescription sd = description.getSoftwareDescription();
 	if(sd == null) {
 	    throw new GATInvocationException("GT4ResorceBroker: the job description does not contain a software description");
-      }
+	}
 	Sandbox sandbox = new Sandbox(gatContext, preferences, description, host, null, true, true, true, true);
 	JobSpecification spec = createJobSpecification(description, sandbox);
 	Service service = createService(description);
-
 	return new GT4Job(gatContext, preferences, description, sandbox, spec, service);
     }
 }

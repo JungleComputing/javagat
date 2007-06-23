@@ -581,12 +581,24 @@ public class WSGT4Job extends JobCpi {
 	if(gstate.equals(StateEnumeration.Pending)) {
 	    setState(this.SCHEDULED);
 	}
-	if(gstate.equals(StateEnumeration.Done)
-	   || gstate.equals(StateEnumeration.Suspended) ) {
+	if(gstate.equals(StateEnumeration.Done)) {
+	    setState(this.STOPPED);
+	    try {
+		stop();
+	    } catch(GATInvocationException e) {
+		//fix it
+	    }
+	}
+	if(gstate.equals(StateEnumeration.Suspended) ) {
 	    setState(this.STOPPED);
 	}
 	if(gstate.equals(StateEnumeration.Failed)) {
 	    setState(this.SUBMISSION_ERROR);
+	    try {
+		stop();
+	    } catch(GATInvocationException e) {
+		//fix it
+	    }
 	}
 	if(gstate.equals(StateEnumeration.CleanUp)) {
 	    setState(this.UNKNOWN);
@@ -779,11 +791,25 @@ public class WSGT4Job extends JobCpi {
             }
 
             //set delegated credential endpoint for clean up
-            if (cleanUp != null) {
-                cleanUp.setTransferCredentialEndpoint(transferCredentialEndpoint);
+            if (cleanUp != null) {                
+		cleanUp.setTransferCredentialEndpoint(transferCredentialEndpoint);
             }
         }
     }
     
+    public void stop() throws GATInvocationException {
+	sandbox.retrieveAndCleanup(this);
+    }
+
+    public synchronized int getExitStatus() throws GATInvocationException {
+        if (state != STOPPED)
+            throw new GATInvocationException("not in RUNNING state");
+        return 0; // We have to assume that the job ran correctly. Globus does not return the exit code.
+    }
+    
+    public synchronized Map getInfo() throws GATInvocationException {
+        HashMap m = new HashMap();
+        return m;
+    }
 }
 

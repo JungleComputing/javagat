@@ -291,13 +291,24 @@
 			</manifest>
 		</jar>
 
-                <jar jarfile="${lib}/GT4GridFTPFileAdaptor.jar" basedir="${tmp}" includes="**gt4/GT4*.class">
+                <jar jarfile="${lib}/GT4HTTPFileAdaptor.jar" basedir="${tmp}" includes="**/gt4/GT4*.class">
+                        <manifest>
+                                <attribute name="FileCpi-class" value="org.gridlab.gat.io.cpi.gt4.GT4HTTPFileAdaptor" />
+                        </manifest>
+                </jar>
+                <jar jarfile="${lib}/GT4GridFTPFileAdaptor.jar" basedir="${tmp}" includes="**/gt4/GT4*.class">
                         <manifest>
                                 <attribute name="FileCpi-class" value="org.gridlab.gat.io.cpi.gt4.GT4GridFTPFileAdaptor" />
                         </manifest>
                 </jar>
+                
+                <jar jarfile="${lib}/RFTGT4FileAdaptor.jar" basedir="${tmp}" includes="**/rftgt4/RFTGT4*.class">
+                        <manifest>
+                                <attribute name="FileCpi-class" value="org.gridlab.gat.io.cpi.rftgt4.RFTGT4FileAdaptor" />
+                        </manifest>
+                </jar>
 
-                <jar jarfile="${lib}/GT4LocalFileAdaptor.jar" basedir="${tmp}" includes="**gt4/GT4*.class">
+                <jar jarfile="${lib}/GT4LocalFileAdaptor.jar" basedir="${tmp}" includes="**/gt4/GT4*.class">
                         <manifest>
                                 <attribute name="FileCpi-class" value="org.gridlab.gat.io.cpi.gt4.GT4LocalFileAdaptor" />
                         </manifest>

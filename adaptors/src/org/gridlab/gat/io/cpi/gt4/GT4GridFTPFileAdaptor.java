@@ -52,24 +52,4 @@ public class GT4GridFTPFileAdaptor extends GT4FileAdaptor {
 			  URI location) throws GATObjectCreationException {
         super(gatContext, preferences, location, "gsiftp");
     }
-
-    protected SecurityContext getSecurityContext() 
-	throws AdaptorNotApplicableException, GATInvocationException {
-	SecurityContext securityContext = null;
-	try {
-	    securityContext = AbstractionFactory.newSecurityContext(srcProvider);
-	} catch(Exception e) {
-	    throw new AdaptorNotApplicableException("GT4GridFTPFileAdaptor: cannot create SecurityContext: "+e);
-	}
-	GSSCredential cred = null;
-	try {
-	    cred = GlobusSecurityUtils.getGlobusCredential(gatContext, preferences,
-							   "gt4gridftp", location, 
-							   DEFAULT_GRIDFTP_PORT);
-	} catch(Exception e) {
-	    throw new GATInvocationException("GT4GridFTPFileAdaptor: could not initialize credentials, " + e);
-	}
-	securityContext.setCredentials(cred);
-	return securityContext;
-    }
 }

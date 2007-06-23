@@ -70,6 +70,11 @@ class GT4StatusListener implements StatusListener {
 	    job.setState(job.STOPPED);
 	    break;
 	case Status.COMPLETED:
+	    try {
+		job.stop();
+	    } catch(GATInvocationException e) {
+		//fix it
+	    }
 	    job.setState(job.STOPPED);
 	case Status.FAILED:
 	    job.setState(job.SUBMISSION_ERROR);
@@ -115,7 +120,7 @@ public class GT4Job extends JobCpi {
 		  Service service) 
 	throws GATInvocationException {
         super(gatContext, preferences, jobDescription, sandbox);
-	task = new TaskImpl("gatgt4job", Task.JOB_SUBMISSION);
+	task = new TaskImpl("gatgt4jobtest", Task.JOB_SUBMISSION);
 	// Maybe setProvider is not necessary
 	task.setProvider("GT4.0.0");
 	task.setSpecification(spec);
@@ -125,15 +130,27 @@ public class GT4Job extends JobCpi {
 	task.addStatusListener(listener);
 	try {
 	    handler.submit(task);
-	} catch(Exception e) {
-	    throw new GATInvocationException("GT4Job: " + e);
+	} catch(IllegalSpecException e) {
+	    throw new GATInvocationException("GT4Job illegal spec: " + e);
+	} catch(InvalidSecurityContextException e) {
+	    throw new GATInvocationException("GT4Job invalid security: " + e);
+	} catch(InvalidServiceContactException e) {
+	    throw new GATInvocationException("GT4Job invalid service: " + e);
+	} catch(TaskSubmissionException e) {
+	    throw new GATInvocationException("GT4Job task submission: " + e);
 	}
+
     }
     /**
      * The <code>GT4StatusListener</code> calls this function to set the
      * state of the job.
      * @param state
      */
+    
+    public void stop() throws GATInvocationException {
+	sandbox.retrieveAndCleanup(this);
+    }
+
     protected synchronized void setState(int state) {
 	this.state = state;
     }
