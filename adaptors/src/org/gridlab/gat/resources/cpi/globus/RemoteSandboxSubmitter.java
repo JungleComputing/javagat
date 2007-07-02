@@ -176,17 +176,17 @@ public class RemoteSandboxSubmitter {
 
             long maxTime = origSd.getLongAttribute("maxTime", -1);
             if (maxTime > 0) {
-                sd.addAttribute("maxTime", maxTime);
+                sd.addAttribute("maxTime", new Long(maxTime));
             }
 
             long maxWallTime = origSd.getLongAttribute("maxWallTime", -1);
             if (maxWallTime > 0) {
-                sd.addAttribute("maxWallTime", maxWallTime);
+                sd.addAttribute("maxWallTime", new Long(maxWallTime));
             }
 
             long maxCPUTime = origSd.getLongAttribute("maxCPUTime", -1);
             if (maxCPUTime > 0) {
-                sd.addAttribute("maxCPUTime", maxCPUTime) ;
+                sd.addAttribute("maxCPUTime", new Long(maxCPUTime));
             }
 
             JobDescription jd = new JobDescription(sd);
