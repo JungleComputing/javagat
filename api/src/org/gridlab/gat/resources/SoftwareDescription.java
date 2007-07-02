@@ -461,13 +461,22 @@ public class SoftwareDescription implements java.io.Serializable {
         return val.intValue();
     }
 
+    // @@@ TODO: also fix other typed versions
     public long getLongAttribute(String name,
             long defaultVal) {
-        Long val = (Long) attributes.get(name);
-
+        Object val = attributes.get(name);
         if (val == null)
             return defaultVal;
-        return val.longValue();
+        
+        if(val instanceof Long) {
+            Long lval = (Long) val;
+            return lval.longValue();
+        } else if (val instanceof String) {
+            return Long.parseLong((String) val);
+        } else {
+            throw new Error("illegal long value: " + val);
+        }
+      
     }
 
     public String getStringAttribute(String name, String defaultVal) {

@@ -385,6 +385,17 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
                 "The Globus resource broker needs a hostname");
     }
 
+    private void stopHandler(GramJob j) {
+        try {
+            Gram.unregisterListener(j);
+        } catch (Throwable t) {
+            if (GATEngine.VERBOSE) {
+                System.err
+                        .println("WARNING, globus job could not unbind: " + t);
+            }
+        }
+    }
+
     private void runGramJobPolling(GSSCredential credential, String rsl,
             String contact) throws GATInvocationException {
         GramJob j = new GramJob(credential, rsl);
@@ -396,8 +407,10 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
                         + GramError.getGramErrorString(e.getErrorCode()));
             }
 
+            stopHandler(j);
             return;
         } catch (GSSException e2) {
+            stopHandler(j);
             throw new CouldNotInitializeCredentialException("globus", e2);
         }
 
@@ -411,10 +424,12 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
                 }
                 if (status == GRAMConstants.STATUS_DONE
                         || status == GRAMConstants.STATUS_FAILED) {
+                    stopHandler(j);
                     return;
                 }
             } catch (Exception e) {
                 if (j.getError() == GramError.GRAM_JOBMANAGER_CONNECTION_FAILURE) {
+                    stopHandler(j);
                     return;
                 }
 
