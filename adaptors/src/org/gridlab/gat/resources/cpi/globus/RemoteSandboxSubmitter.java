@@ -66,6 +66,11 @@ public class RemoteSandboxSubmitter {
             }
 
             SoftwareDescription sd = new SoftwareDescription();
+            
+            // start with all old attributes.
+            // incorrect ones will be overwritten below
+            sd.setAttributes(origSd.getAttributes());
+            
             Map environment = new HashMap();
             Environment localEnv = new Environment();
             String localGATLocation = localEnv.getVar("GAT_LOCATION");
@@ -163,6 +168,26 @@ public class RemoteSandboxSubmitter {
                     ""
                             + origSd.getBooleanAttribute("timeRemoteSandbox",
                                     GATEngine.TIMING) });
+
+            String queue = origSd.getStringAttribute("queue", null);
+            if (queue != null) {
+                sd.addAttribute("queue", queue);
+            }
+
+            long maxTime = origSd.getLongAttribute("maxTime", -1);
+            if (maxTime > 0) {
+                sd.addAttribute("maxTime", maxTime);
+            }
+
+            long maxWallTime = origSd.getLongAttribute("maxWallTime", -1);
+            if (maxWallTime > 0) {
+                sd.addAttribute("maxWallTime", maxWallTime);
+            }
+
+            long maxCPUTime = origSd.getLongAttribute("maxCPUTime", -1);
+            if (maxCPUTime > 0) {
+                sd.addAttribute("maxCPUTime", maxCPUTime) ;
+            }
 
             JobDescription jd = new JobDescription(sd);
             ResourceBroker broker =
