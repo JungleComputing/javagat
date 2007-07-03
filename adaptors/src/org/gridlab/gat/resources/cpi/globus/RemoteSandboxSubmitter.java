@@ -107,14 +107,14 @@ public class RemoteSandboxSubmitter {
 
             String remoteGatLocation = origSd.getStringAttribute("remoteGatLocation", null);
             if (remoteGatLocation != null) {
-                remoteEngineLibLocation = remoteGatLocation + "/engine/lib/";
+                remoteEngineLibLocation = remoteGatLocation + "/lib/";
                 remoteIsGatEnabled = true;
             }
 
             // TODO replace with local "find" in engine lib dir
             String classPath =
                     "." + ":" 
-                            + remoteEngineLibLocation + "../..:" // for log4j.properties
+                            + remoteEngineLibLocation + "..:" // for log4j.properties
                             + remoteEngineLibLocation + "GAT.jar" + ":"
                             + remoteEngineLibLocation + "castor-0.9.6.jar"
                             + ":" + remoteEngineLibLocation
