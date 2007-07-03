@@ -8,7 +8,16 @@ import jargs.gnu.CmdLineParser;
 
 public class TestApplication {
     static void printUsage() {
-	System.err.println("Usage: TestApplication ");
+	System.err.println("Usage: TestApplication node [arguments] \n" + 
+			   "The node is a hostname of the " +
+			   "jobsubmission machine. \n" +
+			   "The possible arguments: \n" +
+			   "  --prefkey key --prefvaule value\t" +
+			   "passes preferences to the GAT\n" +
+			   "  --input directory\t" +
+			   "the directory with the input files\n" +
+			   "  --output file\t" +
+			   "the output file name\n");
     }
     public static void main(String[] args) throws Exception {
 	CmdLineParser parser = new CmdLineParser();
@@ -66,8 +75,8 @@ public class TestApplication {
 	
 	sd.setArguments(new String[] {"-r", "inputFiles.zip", "inputFiles"});
 	
-	sd.addPreStagedFile(GAT.createFile(context, "gsiftp://fs0.das3.cs.vu.nl//home0/bbokodi/inputFiles"));
-	sd.addPostStagedFile(GAT.createFile(context, "inputFiles.zip"));
+	sd.addPreStagedFile(GAT.createFile(context, inputFiles));
+	sd.addPostStagedFile(GAT.createFile(context, outputFile));
 	
 	
 	ResourceDescription rd = new HardwareResourceDescription();
