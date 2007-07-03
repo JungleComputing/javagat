@@ -161,10 +161,10 @@ public class LocalResourceBrokerAdaptor extends ResourceBrokerCpi {
 
         Sandbox sandbox = new Sandbox(gatContext, preferences, description, "localhost", home, true, true, true, true);
 
-        System.err.println("resolvedEXE: " + sandbox.getResolvedExecutable());
-
-        String exe = sandbox.getResolvedExecutable().getPath();
-        if(exe == null) {
+        String exe;
+        if(sandbox.getResolvedExecutable() != null) {
+            exe = sandbox.getResolvedExecutable().getPath();
+        } else {
             exe = location.getPath();
         }
         
