@@ -2,7 +2,6 @@ package org.gridlab.gat.resources.cpi;
 
 import java.io.FileInputStream;
 import java.io.ObjectInputStream;
-import java.net.URISyntaxException;
 import java.util.Map;
 import java.util.Set;
 
@@ -49,50 +48,33 @@ public class RemoteSandbox implements MetricListener {
             return origDest;
         }
 
-        URI origDestURI = null;
-        
+        String newPath = null;
         if (origDest == null) {
-            String origSrcName = origSrc.getName();
-            
-            // if it is a relative path, and no hostname is given, the URI is
-            // relative to the CWD, not the host entry point.
-            if(origSrc.toGATURI().getHost() == null && !origSrc.isAbsolute()) {
-                origSrcName = remoteCWD + "/" + origSrcName;
-            }
-            
-            String newLocation =
-                    "any://" + destHostname + "/" + origSrcName;
-            try {
-                origDestURI = new URI(newLocation);
-
-                if (verbose) {
-                    System.err.println("rewrite of " + origSrc.getName()
-                            + " to " + origDestURI);
-                }
-            } catch (URISyntaxException e) {
-                System.err.println("could not rewrite poststage file "
-                        + newLocation + ":" + e);
-                e.printStackTrace();
-                System.exit(1);
-            }
+            newPath = origSrc.getName();
         } else {
-            origDestURI = origDest.toGATURI();
-        }
+            newPath = origDest.toGATURI().getPath();
 
+            // if we have a relative path without a hostname in the URI,
+            // it means that the file is relative to CWD.
+            if(origDest.toGATURI().getHost() == null && !origDest.isAbsolute()) {
+                    newPath = remoteCWD + "/" + newPath;
+            }
+        }
+        
         String newLocation =
-                "any://" + destHostname + "/" + origDestURI.getPath();
+                "any://" + destHostname + "/" + newPath;
 
         File res = null;
         try {
             URI newURI = new URI(newLocation);
 
             if (verbose) {
-                System.err.println("rewrite of " + origDestURI + " to "
+                System.err.println("rewrite of " + newPath + " to "
                         + newURI);
             }
             res = GAT.createFile(gatContext, preferences, newURI);
         } catch (Exception e) {
-            System.err.println("could not rewrite poststage file" + origDestURI
+            System.err.println("could not rewrite poststage file" + newPath
                     + ":" + e);
             System.exit(1);
         }
