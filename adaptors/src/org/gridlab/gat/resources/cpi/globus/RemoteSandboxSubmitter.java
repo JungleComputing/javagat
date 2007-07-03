@@ -111,7 +111,7 @@ public class RemoteSandboxSubmitter {
                 remoteIsGatEnabled = true;
             }
 
-            java.io.File engineDir = new java.io.File(localGATLocation);
+            java.io.File engineDir = new java.io.File(localGATLocation + "/lib");
             String[] files = engineDir.list();
             String classPath = ".";
             for(int i=0; i<files.length; i++) {
