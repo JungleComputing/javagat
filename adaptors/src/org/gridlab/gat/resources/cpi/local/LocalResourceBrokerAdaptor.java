@@ -164,6 +164,9 @@ public class LocalResourceBrokerAdaptor extends ResourceBrokerCpi {
         System.err.println("resolvedEXE: " + sandbox.getResolvedExecutable());
 
         String exe = sandbox.getResolvedExecutable().getPath();
+        if(exe == null) {
+            exe = location.getPath();
+        }
         
         // try to set the executable bit, it might be lost
         try {
