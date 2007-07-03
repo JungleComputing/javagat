@@ -66,10 +66,10 @@ public class RemoteSandboxSubmitter {
             }
 
             SoftwareDescription sd = new SoftwareDescription();
-            
+
             // start with all old attributes.
             // incorrect ones will be overwritten below
-            sd.setAttributes(origSd.getAttributes());
+//            sd.setAttributes(origSd.getAttributes());
             
             Map environment = new HashMap();
             Environment localEnv = new Environment();
@@ -155,10 +155,13 @@ public class RemoteSandboxSubmitter {
             sd.addPreStagedFile(GAT.createFile(origGatContext, newPreferences,
                     new URI(descriptorFile.getAbsolutePath())));
 
+            String cwd = System.getProperty("user.dir");
+            
             sd.setArguments(new String[] {
                     descriptorFile.getName(),
                     GATEngine.getLocalHostName(),
                     preStageDoneFileLocation,
+                    cwd,
                     ""
                             + origSd.getBooleanAttribute(
                                     "verboseRemoteSandbox", GATEngine.VERBOSE),

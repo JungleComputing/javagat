@@ -2,6 +2,7 @@ package org.gridlab.gat.resources.cpi;
 
 import java.io.FileInputStream;
 import java.io.ObjectInputStream;
+import java.net.URISyntaxException;
 import java.util.Map;
 import java.util.Set;
 
@@ -35,51 +36,63 @@ public class RemoteSandbox implements MetricListener {
         notifyAll();
     }
 
-    private File rewritePostStagedFile(GATContext gatContext,
+    private File rewriteStagedFile(GATContext gatContext,
             Preferences preferences, File origSrc, File origDest,
-            String destHostname) {
+            String destHostname, String remoteCWD) {
         if (origSrc == null && origDest == null) {
             return null;
         }
 
+        // leave remote files untouched
         if (origDest != null && origDest.toGATURI().getHost() != null
                 && !origDest.toGATURI().getHost().equals("localhost")) {
             return origDest;
         }
 
+        URI origDestURI = null;
+        
         if (origDest == null) {
+            String origSrcName = origSrc.getName();
+            
+            // if it is a relative path, and no hostname is given, the URI is
+            // relative to the CWD, not the host entry point.
+            if(origSrc.toGATURI().getHost() == null && !origSrc.isAbsolute()) {
+                origSrcName = remoteCWD + "/" + origSrcName;
+            }
+            
             String newLocation =
-                    "any://" + destHostname + "/" + origSrc.getName();
+                    "any://" + destHostname + "/" + origSrcName;
             try {
-                URI newURI = new URI(newLocation);
+                origDestURI = new URI(newLocation);
 
                 if (verbose) {
                     System.err.println("rewrite of " + origSrc.getName()
-                            + " to " + newURI);
+                            + " to " + origDestURI);
                 }
-                origDest = GAT.createFile(gatContext, preferences, newURI);
-            } catch (Exception e) {
+            } catch (URISyntaxException e) {
                 System.err.println("could not rewrite poststage file "
-                        + origDest + ":" + e);
+                        + newLocation + ":" + e);
                 e.printStackTrace();
                 System.exit(1);
             }
+        } else {
+            origDestURI = origDest.toGATURI();
         }
 
         String newLocation =
-                "any://" + destHostname + "/" + origDest.toGATURI().getPath();
+                "any://" + destHostname + "/" + origDestURI.getPath();
 
         File res = null;
         try {
             URI newURI = new URI(newLocation);
 
             if (verbose) {
-                System.err.println("rewrite of " + origDest.toGATURI() + " to "
+                System.err.println("rewrite of " + origDestURI + " to "
                         + newURI);
             }
             res = GAT.createFile(gatContext, preferences, newURI);
         } catch (Exception e) {
-            System.err.println("could not rewrite poststage file" + origDest
+            System.err.println("could not rewrite poststage file" + origDestURI
                     + ":" + e);
             System.exit(1);
         }
@@ -91,9 +104,10 @@ public class RemoteSandbox implements MetricListener {
         final String descriptorFile = args[0];
         final String initiator = args[1];
         final String preStageDoneLocation = args[2];
-        verbose = args[3].equalsIgnoreCase("true");
-        debug = args[4].equalsIgnoreCase("true");
-        timing = args[5].equalsIgnoreCase("true");
+        final String remoteCWD = args[3];
+        verbose = args[4].equalsIgnoreCase("true");
+        debug = args[5].equalsIgnoreCase("true");
+        timing = args[6].equalsIgnoreCase("true");
 
         if (verbose) {
             System.setProperty("gat.verbose", "true");
@@ -139,13 +153,13 @@ public class RemoteSandbox implements MetricListener {
 
         // rewrite poststage files to go directly to their original destination
         // also stdout and stderr
-        sd.setStderr(rewritePostStagedFile(gatContext, prefs, null, sd
-                .getStderr(), args[1]));
-        sd.setStdout(rewritePostStagedFile(gatContext, prefs, null, sd
-                .getStdout(), args[1]));
+        sd.setStderr(rewriteStagedFile(gatContext, prefs, null, sd
+                .getStderr(), initiator, remoteCWD));
+        sd.setStdout(rewriteStagedFile(gatContext, prefs, null, sd
+                .getStdout(), initiator, remoteCWD));
 
-        sd.setStdin(rewritePostStagedFile(gatContext, prefs, sd.getStdin(),
-                null, args[1]));
+        sd.setStdin(rewriteStagedFile(gatContext, prefs, sd.getStdin(),
+                null, initiator, remoteCWD));
 
         Map pre = sd.getPreStaged();
         Set tmp = pre.keySet();
@@ -156,7 +170,7 @@ public class RemoteSandbox implements MetricListener {
             File src = (File) keys[i];
             File dest = (File) pre.get(src);
             srcs[i] =
-                    rewritePostStagedFile(gatContext, prefs, dest, src, args[1]);
+                    rewriteStagedFile(gatContext, prefs, dest, src, initiator, remoteCWD);
             dests[i] = dest;
         }
         pre.clear();
@@ -170,7 +184,7 @@ public class RemoteSandbox implements MetricListener {
         for (int i = 0; i < keys.length; i++) {
             File src = (File) keys[i];
             File dest = (File) post.get(src);
-            dest = rewritePostStagedFile(gatContext, prefs, src, dest, args[1]);
+            dest = rewriteStagedFile(gatContext, prefs, src, dest, initiator, remoteCWD);
             post.put(src, dest);
         }
 
