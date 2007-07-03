@@ -111,25 +111,16 @@ public class RemoteSandboxSubmitter {
                 remoteIsGatEnabled = true;
             }
 
-            // TODO replace with local "find" in engine lib dir
-            String classPath =
-                    "." + ":" 
-                            + remoteEngineLibLocation + "..:" // for log4j.properties
-                            + remoteEngineLibLocation + "GAT.jar" + ":"
-                            + remoteEngineLibLocation + "castor-0.9.6.jar"
-                            + ":" + remoteEngineLibLocation
-                            + "commons-logging-1.1.jar" + ":"
-                            + remoteEngineLibLocation + "log4j-1.2.13.jar"
-                            + ":" + remoteEngineLibLocation
-                            + "xmlParserAPIs.jar" + ":"
-                            + remoteEngineLibLocation + "castor-0.9.6-xml.jar"
-                            + ":" + remoteEngineLibLocation + "colobus.jar"
-                            + ":" + remoteEngineLibLocation
-                            + "ibis-util-1.4.jar" + ":"
-                            + remoteEngineLibLocation + "xercesImpl.jar";
-
+            java.io.File engineDir = new java.io.File(localGATLocation);
+            String[] files = engineDir.list();
+            String classPath = ".";
+            for(int i=0; i<files.length; i++) {
+                classPath += ":" + remoteEngineLibLocation + files[i];
+            }
             sd.addAttribute("java.classpath", classPath);
 
+            System.err.println("REMOTE CLASSPATH: " + classPath);
+            
             if (remoteIsGatEnabled) {
                 environment.put("gat.adaptor.path", remoteGatLocation
                         + "/lib/adaptors");
