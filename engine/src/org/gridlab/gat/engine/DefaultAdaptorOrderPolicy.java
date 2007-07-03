@@ -57,7 +57,9 @@ public class DefaultAdaptorOrderPolicy implements AdaptorOrderPolicy {
         insertPos = l.placeAdaptor(insertPos,
             "org.gridlab.gat.io.cpi.local.LocalFileAdaptor");
 	insertPos = l.placeAdaptor(insertPos,
-				   "org.gridlab.gat.io.cpi.gt4.GT4FileAdaptor");
+				   "org.gridlab.gat.io.cpi.gt4.GT4GridFTPFileAdaptor");
+	insertPos = l.placeAdaptor(insertPos,
+				   "org.gridlab.gat.io.cpi.gt4.GT4LocalFileAdaptor");
         insertPos = l.placeAdaptor(insertPos,
             "org.gridlab.gat.io.cpi.globus.GridFTPFileAdaptor");
         insertPos = l.placeAdaptor(insertPos,

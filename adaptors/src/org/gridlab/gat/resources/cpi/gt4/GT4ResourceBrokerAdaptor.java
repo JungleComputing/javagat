@@ -81,7 +81,7 @@ public class GT4ResourceBrokerAdaptor extends ResourceBrokerCpi {
 	throws GATInvocationException {
 	SecurityContext securityContext = null;
 	try {
-	    securityContext = AbstractionFactory.newSecurityContext("gt4");
+	    securityContext = AbstractionFactory.newSecurityContext("GT4.0.0");
 	} catch(Exception e) {
 	    throw new GATInvocationException("GT4ResourceBrokerAdaptor: cannot create SecurityContext: "+e);
 	}

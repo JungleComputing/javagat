@@ -148,6 +148,7 @@ public class GT4Job extends JobCpi {
      */
     
     public void stop() throws GATInvocationException {
+	System.out.println("done");
 	sandbox.retrieveAndCleanup(this);
     }
 

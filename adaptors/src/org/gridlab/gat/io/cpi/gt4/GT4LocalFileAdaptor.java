@@ -55,12 +55,12 @@ public class GT4LocalFileAdaptor extends GT4FileAdaptor {
         super(gatContext, preferences, location, "local");
     }
     
-        synchronized protected void copyThirdParty(URI dest, String destProvider)
+    synchronized protected void copyThirdParty(URI dest, String destProvider)
 	throws GATInvocationException {
 	if(GATEngine.DEBUG) {
-	    System.err.println("GT4FileAdaptor file: start file copy with destination provider "+ destProvider);
+	    System.err.println("GT4LocalFileAdaptor file: start file copy with destination provider "+ destProvider);
 	} 
-	Task task = new TaskImpl("my3rdpartycopy", Task.FILE_TRANSFER);
+	Task task = new TaskImpl("my3rdpartycopy" + Math.random(), Task.FILE_TRANSFER);
 	FileTransferSpecification spec = new FileTransferSpecificationImpl();
 	spec.setSource(location.getPath());
 	spec.setDestination(dest.getPath());
@@ -124,11 +124,11 @@ public class GT4LocalFileAdaptor extends GT4FileAdaptor {
 	    throw new GATInvocationException(e.getMessage());
 	}
 	if(!task.isCompleted()) {
-	    throw new GATInvocationException("GT4FileAdaptor: copy is failed.");
+	    throw new GATInvocationException("GT4LocalFileAdaptor: copy is failed.");
 	}
-	System.out.println("bye4" + destProvider);
+	System.out.println("GT4LocalFileAdaptor: third party copy done.");
 	if(GATEngine.VERBOSE) {
-	    System.out.println("GT4FileAdaptor: third party copy done.");
+	    System.out.println("GT4LocalFileAdaptor: third party copy done.");
 	}
     }
 
@@ -146,6 +146,10 @@ public class GT4LocalFileAdaptor extends GT4FileAdaptor {
 	} catch(GeneralException e) {
 	    throw new GATInvocationException(e.getMessage());
 	}
+	System.out.println("GT4LocalFileAdaptor: copy done.");
+	if(GATEngine.VERBOSE) {
+	    System.out.println("GT4LocalFileAdaptor: copy done.");
+	}
     }
     
     /**
@@ -161,42 +165,58 @@ public class GT4LocalFileAdaptor extends GT4FileAdaptor {
      *
      */
     public void copy(URI dest) throws GATInvocationException {
-	System.out.println("gt4 copy: " + location + " -> " + dest);
-	if(determineIsDirectory()) {
-	    copyDirectory(gatContext, preferences, toURI(), dest);
-	    return;
-	}
+	System.out.println("gt4 local copy: " + srcProvider + " "
+			   + location + " -> " + dest);
 	//determinate dest is a directory, and pass the filename if it is, otherwise it will fail
+	if(determineIsDirectory()) {
+	    String destStr = null;
+	    if(!dest.toString().endsWith("/")) {
+		destStr = dest.toString()+"/";
+		try {
+		    dest = new URI(destStr);
+		} catch(URISyntaxException e) {
+		    throw new GATInvocationException("GT4LocalFileAdaptor: copy, " + e);
+		}
+	    }
+	}
+
 	File destinationFile = null;
 	try { 
 	    destinationFile = GAT.createFile(gatContext, preferences, dest);
 	} catch(GATObjectCreationException e) {
 	    //throw new GATInvocationException("GT4FileAdaptor: copy, " + e);
 	    //give a try anyway
+	    destinationFile = null;
 	}
 
 	//fix the filename, if the destination is a directory
-	try {
-	    if(destinationFile.isDirectory() && 
-	       isFile()) {
-		String destStr;
-		if(dest.toString().endsWith("/")) {
-		    destStr = dest.toString()+getName();
-		} else {
-		    destStr = dest.toString()+"/"+getName();
+	if(destinationFile != null) {
+	    try {
+		if(destinationFile.isDirectory()) {
+ 		    String destStr;
+		    if(dest.toString().endsWith("/")) {
+			destStr = dest.toString()+getName();
+		    } else {
+			destStr = dest.toString()+"/"+getName();
+		    }
+		    try {
+			dest = new URI(destStr);
+		    } catch(URISyntaxException e) {
+			throw new GATInvocationException("GT4LocalFileAdaptor: copy, " + e);
+		    }
 		}
-		try {
-		    dest = new URI(destStr);
-		} catch(URISyntaxException e) {
-		    throw new GATInvocationException("GT4FileAdaptor: copy, " + e);
-		}
+	    } catch(GATInvocationException e) {
+		//leave everything as it is
 	    }
-	} catch(GATInvocationException e) {
-	    //leave everything as it is
+	}
+
+	if(determineIsDirectory()) {
+	    copyDirectory(gatContext, preferences, toURI(), dest);
+	    return;
 	}
 	if(dest.isLocal()) {
 	    if(GATEngine.DEBUG) {
-		System.err.println("GT4FileAdaptor: copy remote to local");
+		System.err.println("GT4LocalFileAdaptor: copy remote to local");
 	    }
 	    copyToLocal(dest);
 	    return;
@@ -214,6 +234,6 @@ public class GT4LocalFileAdaptor extends GT4FileAdaptor {
 	    copyThirdParty(dest, dest.getScheme());
 	    return;
 	}
-	throw new GATInvocationException("GT4GridFTP file: thirdparty copy failed.");
+	throw new GATInvocationException("GT4LocalFileAdaptor: thirdparty copy failed.");
     }
 }
