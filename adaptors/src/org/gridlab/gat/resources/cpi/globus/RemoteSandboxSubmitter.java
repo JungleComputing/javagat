@@ -118,8 +118,6 @@ public class RemoteSandboxSubmitter {
                 classPath += ":" + remoteEngineLibLocation + files[i];
             }
             sd.addAttribute("java.classpath", classPath);
-
-            System.err.println("REMOTE CLASSPATH: " + classPath);
             
             if (remoteIsGatEnabled) {
                 environment.put("gat.adaptor.path", remoteGatLocation
