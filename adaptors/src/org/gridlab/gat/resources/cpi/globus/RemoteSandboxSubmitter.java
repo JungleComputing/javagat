@@ -132,7 +132,7 @@ public class RemoteSandboxSubmitter {
 
             if (remoteIsGatEnabled) {
                 environment.put("gat.adaptor.path", remoteGatLocation
-                        + "/adaptors/lib");
+                        + "/lib/adaptors");
             } else {
                 environment.put("gat.adaptor.path", "lib");
             }
@@ -145,10 +145,7 @@ public class RemoteSandboxSubmitter {
                                 + "/log4j.properties")));
                 sd.addPreStagedFile(GAT.createFile(origGatContext,
                         newPreferences, new URI(localGATLocation
-                                + "/engine/lib")));
-                sd.addPreStagedFile(GAT.createFile(origGatContext,
-                        newPreferences, new URI(localGATLocation
-                                + "/adaptors/lib")));
+                                + "/lib")));
             }
 
             java.io.File descriptorFile = writeDescriptionToFile(description);
