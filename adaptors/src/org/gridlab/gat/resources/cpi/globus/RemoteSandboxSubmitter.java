@@ -125,7 +125,7 @@ public class RemoteSandboxSubmitter {
                 environment.put("gat.adaptor.path", remoteGatLocation
                         + "/lib/adaptors");
             } else {
-                environment.put("gat.adaptor.path", "lib");
+                environment.put("gat.adaptor.path", "lib/adaptors");
             }
             sd.setEnvironment(environment);
 
