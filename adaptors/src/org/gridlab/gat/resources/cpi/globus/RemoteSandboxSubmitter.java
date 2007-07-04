@@ -66,10 +66,10 @@ public class RemoteSandboxSubmitter {
             }
 
             SoftwareDescription sd = new SoftwareDescription();
-            
+
             // start with all old attributes.
             // incorrect ones will be overwritten below
-            sd.setAttributes(origSd.getAttributes());
+//            sd.setAttributes(origSd.getAttributes());
             
             Map environment = new HashMap();
             Environment localEnv = new Environment();
@@ -107,34 +107,23 @@ public class RemoteSandboxSubmitter {
 
             String remoteGatLocation = origSd.getStringAttribute("remoteGatLocation", null);
             if (remoteGatLocation != null) {
-                remoteEngineLibLocation = remoteGatLocation + "/engine/lib/";
+                remoteEngineLibLocation = remoteGatLocation + "/lib/";
                 remoteIsGatEnabled = true;
             }
 
-            // TODO replace with local "find" in engine lib dir
-            String classPath =
-                    "." + ":" 
-                            + remoteEngineLibLocation + "../..:" // for log4j.properties
-                            + remoteEngineLibLocation + "GAT.jar" + ":"
-                            + remoteEngineLibLocation + "castor-0.9.6.jar"
-                            + ":" + remoteEngineLibLocation
-                            + "commons-logging-1.1.jar" + ":"
-                            + remoteEngineLibLocation + "log4j-1.2.13.jar"
-                            + ":" + remoteEngineLibLocation
-                            + "xmlParserAPIs.jar" + ":"
-                            + remoteEngineLibLocation + "castor-0.9.6-xml.jar"
-                            + ":" + remoteEngineLibLocation + "colobus.jar"
-                            + ":" + remoteEngineLibLocation
-                            + "ibis-util-1.4.jar" + ":"
-                            + remoteEngineLibLocation + "xercesImpl.jar";
-
+            java.io.File engineDir = new java.io.File(localGATLocation + "/lib");
+            String[] files = engineDir.list();
+            String classPath = ".";
+            for(int i=0; i<files.length; i++) {
+                classPath += ":" + remoteEngineLibLocation + files[i];
+            }
             sd.addAttribute("java.classpath", classPath);
-
+            
             if (remoteIsGatEnabled) {
                 environment.put("gat.adaptor.path", remoteGatLocation
-                        + "/adaptors/lib");
+                        + "/lib/adaptors");
             } else {
-                environment.put("gat.adaptor.path", "lib");
+                environment.put("gat.adaptor.path", "lib/adaptors");
             }
             sd.setEnvironment(environment);
 
@@ -145,20 +134,20 @@ public class RemoteSandboxSubmitter {
                                 + "/log4j.properties")));
                 sd.addPreStagedFile(GAT.createFile(origGatContext,
                         newPreferences, new URI(localGATLocation
-                                + "/engine/lib")));
-                sd.addPreStagedFile(GAT.createFile(origGatContext,
-                        newPreferences, new URI(localGATLocation
-                                + "/adaptors/lib")));
+                                + "/lib")));
             }
 
             java.io.File descriptorFile = writeDescriptionToFile(description);
             sd.addPreStagedFile(GAT.createFile(origGatContext, newPreferences,
                     new URI(descriptorFile.getAbsolutePath())));
 
+            String cwd = System.getProperty("user.dir");
+            
             sd.setArguments(new String[] {
                     descriptorFile.getName(),
                     GATEngine.getLocalHostName(),
                     preStageDoneFileLocation,
+                    cwd,
                     ""
                             + origSd.getBooleanAttribute(
                                     "verboseRemoteSandbox", GATEngine.VERBOSE),
