@@ -150,6 +150,10 @@ public class SshFileAdaptor extends FileCpi {
                 sui.username = loc.getUserInfo();
             }
 
+            if(sui.username == null) {
+                sui.username = System.getProperty("user.name");
+            }
+            
             //no passphrase		
             /*allow port override*/
             port = loc.getPort();
@@ -169,7 +173,7 @@ public class SshFileAdaptor extends FileCpi {
             session.setUserInfo(sui);
         } catch (JSchException jsche) {
             throw new GATObjectCreationException(
-                "internal error in SshFileAdaptor: " + jsche);
+                "internal error in SshFileAdaptor: " + jsche, jsche);
         }
     }
 

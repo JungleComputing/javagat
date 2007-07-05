@@ -465,6 +465,7 @@ public class GATEngine {
                 if (DEBUG) {
                     System.err.println("unmarshaller for " + c.getName()
                         + " failed:" + e1.getTargetException());
+                    e1.getTargetException().printStackTrace();
                 }
 
                 // ignore and try next unmarshaller                
@@ -472,6 +473,7 @@ public class GATEngine {
                 if (DEBUG) {
                     System.err.println("unmarshaller for " + c.getName()
                         + " failed:" + e);
+                    e.printStackTrace();
                 }
 
                 // ignore and try next unmarshaller
