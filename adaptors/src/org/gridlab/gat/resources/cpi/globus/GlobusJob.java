@@ -84,7 +84,9 @@ public class GlobusJob extends JobCpi implements GramJobListener,
         SerializedJob sj) throws GATObjectCreationException {
         super(gatContext, preferences, sj.getJobDescription(), sj.getSandbox());
 
-        System.err.println("reconstructing globusjob: " + sj);
+        if(GATEngine.DEBUG) {
+            System.err.println("reconstructing globusjob: " + sj);
+        }
 
         this.postStageFinished = sj.isPostStageFinished();
         this.jobID = sj.getJobId();
@@ -131,6 +133,8 @@ public class GlobusJob extends JobCpi implements GramJobListener,
 
         j.setCredentials(credential);
 
+        getStateActive();
+        
         poller = new JobPoller(this);
         poller.start();
     }
@@ -422,7 +426,7 @@ public class GlobusJob extends JobCpi implements GramJobListener,
             if ((globusState == STATUS_DONE) || (globusState == STATUS_FAILED)) {
                 runTime = System.currentTimeMillis() - runTime;
                 stopHandlers();
-                poller.die();
+                if(poller != null) poller.die();
                 postStageStarted = true;
             }
 
@@ -502,17 +506,21 @@ public class GlobusJob extends JobCpi implements GramJobListener,
                 jobID, queueTime, runTime, startTime);
         }
         String res = GATEngine.defaultMarshal(sj);
-        System.err.println("marshalled seralized job: " + res);
+        if(GATEngine.DEBUG) {
+            System.err.println("marshalled seralized job: " + res);
+        }
         return res;
     }
 
     public static Advertisable unmarshal(GATContext context,
         Preferences preferences, String s) throws GATObjectCreationException {
-        System.err.println("unmarshalled seralized job: " + s);
-
+        if(GATEngine.DEBUG) {
+            System.err.println("unmarshalled seralized job: " + s);
+        }
+        
         SerializedJob sj = (SerializedJob) GATEngine.defaultUnmarshal(
             SerializedJob.class, s);
-        
+
         // if this job was created within this JVM, just return a reference to the job
         synchronized (JobCpi.class) {
             for (int i = 0; i < jobList.size(); i++) {
@@ -520,7 +528,9 @@ public class GlobusJob extends JobCpi implements GramJobListener,
                 if(j instanceof GlobusJob) {
                     GlobusJob gj = (GlobusJob) j;
                     if(gj.jobID.equals(sj.getJobId())) {
-                        System.err.println("returning existing job: " + gj);
+                        if(GATEngine.DEBUG) {
+                            System.err.println("returning existing job: " + gj);
+                        }
                         return gj;
                     }
                 }

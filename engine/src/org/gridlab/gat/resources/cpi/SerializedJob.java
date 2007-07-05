@@ -3,6 +3,7 @@ package org.gridlab.gat.resources.cpi;
 import java.io.Serializable;
 
 import org.gridlab.gat.advert.Advertisable;
+import org.gridlab.gat.engine.GATEngine;
 import org.gridlab.gat.resources.JobDescription;
 
 public class SerializedJob implements Serializable, Advertisable {
@@ -35,7 +36,9 @@ public class SerializedJob implements Serializable, Advertisable {
         this.runTime = runTime;
         this.startTime = startTime;
         
-        System.err.println("created serialized job: " + this);
+        if(GATEngine.DEBUG) {
+            System.err.println("created serialized job: " + this);
+        }
     }
 
     public String marshal() {

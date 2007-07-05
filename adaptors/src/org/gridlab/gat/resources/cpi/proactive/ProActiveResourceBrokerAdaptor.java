@@ -113,7 +113,7 @@ public class ProActiveResourceBrokerAdaptor extends ResourceBrokerCpi
         // First, obtain ProActiver descriptors. */
         String descriptors = (String) preferences
                 .get("ResourceBroker.ProActive.Descriptors");
-        if (preferences == null) {
+        if (descriptors == null) {
             throw new GATObjectCreationException("No descriptors provided. Set"
                     + " the ResourceBroker.ProActive.Descriptors preference to "
                     + " a comma-separated list of ProActive descriptor xmls.");
