@@ -114,7 +114,7 @@ public abstract class StagedFile {
         FileOutputStream out = null;
 
         try {
-            out = GAT.createFileOutputStream(gatContext, f);
+            out = GAT.createFileOutputStream(gatContext, preferences, f);
         } catch (GATObjectCreationException e) {
             throw new GATInvocationException("resource broker", e);
         }
