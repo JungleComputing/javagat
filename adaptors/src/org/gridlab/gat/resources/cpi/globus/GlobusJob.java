@@ -489,6 +489,8 @@ public class GlobusJob extends JobCpi implements GramJobListener,
         SerializedJob sj;
         synchronized (this) {
 
+            // we have to wait until the job is in a safe state
+            // we cannot marshal it if it is halfway during the poststage process
             while (true) {
                 if (jobID != null) {
                     if (!postStageStarted) break;
