@@ -128,7 +128,7 @@ public class Sandbox {
 
             try {
                 URI location = new URI("any://" + host + "/" + sandbox);
-                File f = GAT.createFile(gatContext, location);
+                File f = GAT.createFile(gatContext, preferences, location);
                 if (f.mkdir()) {
                     return;
                 }
