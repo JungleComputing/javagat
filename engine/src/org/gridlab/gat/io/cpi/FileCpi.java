@@ -188,7 +188,7 @@ public abstract class FileCpi implements FileInterface {
 
     public boolean createNewFile() throws GATInvocationException {
         try {
-            OutputStream o = GAT.createFileOutputStream(gatContext, location);
+            OutputStream o = GAT.createFileOutputStream(gatContext, preferences, location);
             o.close();
             return true;
         } catch (Exception e) {
@@ -373,7 +373,7 @@ public abstract class FileCpi implements FileInterface {
             Vector v = new Vector();
 
             for (int i = 0; i < l.length; i++) {
-                if (filter.accept(GAT.createFile(gatContext, new URI(location
+                if (filter.accept(GAT.createFile(gatContext, preferences, new URI(location
                         .getPath())), l[i])) {
                     v.add(l[i]);
                 }
@@ -406,7 +406,7 @@ public abstract class FileCpi implements FileInterface {
             Vector v = new Vector();
 
             for (int i = 0; i < l.length; i++) {
-                if (filter.accept(GAT.createFile(gatContext, new URI(l[i]
+                if (filter.accept(GAT.createFile(gatContext, preferences, new URI(l[i]
                         .getPath())))) {
                     v.add(l[i]);
                 }
@@ -440,7 +440,7 @@ public abstract class FileCpi implements FileInterface {
             Vector v = new Vector();
 
             for (int i = 0; i < l.length; i++) {
-                if (filter.accept(GAT.createFile(gatContext, new URI(location
+                if (filter.accept(GAT.createFile(gatContext, preferences, new URI(location
                         .getPath())), l[i].getPath())) {
                     v.add(l[i]);
                 }
