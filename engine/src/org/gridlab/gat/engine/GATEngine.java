@@ -541,6 +541,10 @@ public class GATEngine {
     }
     
     public static String defaultMarshal(Object o) {
+        if(o == null) {
+            throw new Error("cannot marshal a null object");
+        }
+        
         StringWriter sw = new StringWriter();
 
         try {
@@ -553,6 +557,10 @@ public class GATEngine {
     }
 
     public static Advertisable defaultUnmarshal(Class type, String s) {
+        if(s == null) {
+            throw new Error("cannot unmarshal a null object");
+        }
+        
         StringReader sr = new StringReader(s);
 
         try {
@@ -568,6 +576,10 @@ public class GATEngine {
 
             Advertisable res = (Advertisable) unmarshaller.unmarshal(sr);
 
+            if(res == null) {
+                throw new Error("cannot unmarshal this object");
+            }
+            
             if (DEBUG) {
                 System.err.println("default unmarshaller returning " + res);
             }
