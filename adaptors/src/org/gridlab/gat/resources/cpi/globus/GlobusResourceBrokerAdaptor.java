@@ -3,10 +3,9 @@
  */
 package org.gridlab.gat.resources.cpi.globus;
 
-import ibis.util.IPUtils;
-
 import java.util.Map;
 import java.util.Set;
+import java.util.StringTokenizer;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
@@ -24,7 +23,6 @@ import org.gridlab.gat.GATObjectCreationException;
 import org.gridlab.gat.Preferences;
 import org.gridlab.gat.URI;
 import org.gridlab.gat.engine.GATEngine;
-import org.gridlab.gat.io.File;
 import org.gridlab.gat.resources.Job;
 import org.gridlab.gat.resources.JobDescription;
 import org.gridlab.gat.resources.SoftwareDescription;
@@ -45,6 +43,10 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
 
     static boolean shutdownInProgress = false;
 
+    public static void init() {
+        GATEngine.registerUnmarshaller(GlobusJob.class);
+    }
+
     public GlobusResourceBrokerAdaptor(GATContext gatContext,
             Preferences preferences) throws GATObjectCreationException {
         super(gatContext, preferences);
@@ -55,6 +57,7 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
         }
     }
 
+    // @@@ also take run time from description, count, etc
     protected String createPreStageWrapperRSL(JobDescription description,
             String host, Sandbox sandbox, PreStagedFileSet pre,
             PostStagedFileSet post) throws GATInvocationException {
@@ -82,7 +85,8 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
                         + "lib/castor-0.9.6-xml.jar:lib/colobus.jar:lib/ibis-util-1.4.jar:lib/xercesImpl.jar:lib/RemoteSandbox.jar\"";
 
         // main class name
-        args += " \"org.gridlab.gat.resources.cpi.remoteSandbox.RemoteSandbox\"";
+        args +=
+                " \"org.gridlab.gat.resources.cpi.remoteSandbox.RemoteSandbox\"";
 
         // @@@ does not work with gram prestage
         PreStagedFileSet myPre = sandbox.getPrestagedFileSet();
@@ -158,7 +162,10 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
             String javaFlags =
                     getStringAttribute(description, "java.flags", "");
             if (javaFlags.length() != 0) {
-                args += " \"" + javaFlags + "\"";
+                StringTokenizer t = new StringTokenizer(javaFlags);
+                while (t.hasMoreTokens()) {
+                    args += " \"" + t.nextToken() + "\"";
+                }
             }
 
             // classpath
@@ -208,6 +215,11 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
 
         rsl += " (hostCount = " + getHostCount(description) + ")";
 
+        String jobType = getStringAttribute(description, "jobType", null);
+        if (jobType != null) {
+            rsl += " (jobType = " + jobType + ")";
+        }
+
         if (sandbox != null) {
             rsl += " (directory = " + sandbox.getSandbox() + ")";
         }
@@ -256,7 +268,7 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
 
                 String s =
                         "(file_stage_out = (" + f.getResolvedSrc().getPath()
-                                + " gsiftp://" + IPUtils.getLocalHostName()
+                                + " gsiftp://" + GATEngine.getLocalHostName()
                                 + "/" + f.getResolvedDest().getPath() + "))";
                 rsl += s;
             }
@@ -317,6 +329,10 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
     protected String createChmodRSL(JobDescription description, String host,
             String chmodLocation, Sandbox sandbox, String executable) {
         String rsl = "& (executable = " + chmodLocation + ")";
+
+        if (sandbox != null) {
+            rsl += " (directory = " + sandbox.getSandbox() + ")";
+        }
 
         rsl += " (arguments = \"+x\" \"" + executable + "\")";
 
@@ -379,25 +395,35 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
                 System.err.println("could not run job: "
                         + GramError.getGramErrorString(e.getErrorCode()));
             }
-            // ignore
+
             return;
         } catch (GSSException e2) {
             throw new CouldNotInitializeCredentialException("globus", e2);
         }
 
-        while (true) {
+        int errorCount = 0;
+        while (errorCount <= 3) {
             try {
                 Gram.jobStatus(j);
+                int status = j.getStatus();
+                if (GATEngine.DEBUG) {
+                    System.err.println("job status = " + status);
+                }
+                if (status == GRAMConstants.STATUS_DONE
+                        || status == GRAMConstants.STATUS_FAILED) {
+                    return;
+                }
             } catch (Exception e) {
-                // ignore
-            }
-            int status = j.getStatus();
-            if (GATEngine.DEBUG) {
-                System.err.println("job status = " + status);
-            }
-            if (status == GRAMConstants.STATUS_DONE
-                    || status == GRAMConstants.STATUS_FAILED) {
-                return;
+                if (j.getError() == GramError.GRAM_JOBMANAGER_CONNECTION_FAILURE) {
+                    return;
+                }
+
+                if (GATEngine.DEBUG) {
+                    System.err.println("got exception: " + e);
+                }
+
+                // ignore other errors
+                errorCount++;
             }
 
             try {
@@ -410,16 +436,18 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
 
     private void submitChmodJob(GSSCredential credential,
             JobDescription description, String host, String chmodLocation,
-            Sandbox sandbox, File resolvedExe) throws GATInvocationException {
+            Sandbox sandbox, String path) throws GATInvocationException {
         if (GATEngine.VERBOSE) {
-            System.err.println("running " + chmodLocation + " on " + host
-                    + "/jobmanager-fork to set executable bit on");
+            System.err.print("running " + chmodLocation + " on " + host
+                    + "/jobmanager-fork to set executable bit on ");
         }
         String chmodRsl =
-                createChmodRSL(description, host, chmodLocation, sandbox,
-                        resolvedExe.getPath());
+                createChmodRSL(description, host, chmodLocation, sandbox, path);
 
         runGramJobPolling(credential, chmodRsl, host + "/jobmanager-fork");
+        if (GATEngine.VERBOSE) {
+            System.err.println("done");
+        }
     }
 
     public Job submitJob(JobDescription description)
@@ -469,20 +497,26 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
 
     private void runChmod(GSSCredential credential, JobDescription description,
             String host, Sandbox sandbox) {
-        File resolvedExe = sandbox.getResolvedExecutable();
-        if (resolvedExe != null) {
-            try {
-                submitChmodJob(credential, description, host, "/bin/chmod",
-                        sandbox, resolvedExe);
-            } catch (Exception e) {
-                // ignore
-            }
-            try {
-                submitChmodJob(credential, description, host, "/usr/bin/chmod",
-                        sandbox, resolvedExe);
-            } catch (Exception e) {
-                // ignore
-            }
+
+        String exe = null;
+
+        try {
+            exe = getLocationURI(description).getPath();
+        } catch (Exception e) {
+            return;
+        }
+
+        try {
+            submitChmodJob(credential, description, host, "/bin/chmod",
+                    sandbox, exe);
+        } catch (Exception e) {
+            // ignore
+        }
+        try {
+            submitChmodJob(credential, description, host, "/usr/bin/chmod",
+                    sandbox, exe);
+        } catch (Exception e) {
+            // ignore
         }
     }
 
@@ -546,11 +580,12 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
         String contact = getResourceManagerContact(description);
         GSSCredential credential = getCredential(host);
 
-        if(getBooleanAttribute(description, "useLocalDisk", false)) {
-            if(GATEngine.VERBOSE) {
+        if (getBooleanAttribute(description, "useLocalDisk", false)) {
+            if (GATEngine.VERBOSE) {
                 System.err.println("useLocalDisk, using wrapper application");
             }
-            RemoteSandboxSubmitter s = new RemoteSandboxSubmitter(gatContext, preferences);
+            RemoteSandboxSubmitter s =
+                    new RemoteSandboxSubmitter(gatContext, preferences);
             return s.submitWrapper(description, contact);
         }
 

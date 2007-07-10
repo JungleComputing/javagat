@@ -17,6 +17,8 @@ import org.gridlab.gat.Preferences;
 import org.gridlab.gat.TimePeriod;
 import org.gridlab.gat.URI;
 import org.gridlab.gat.engine.GATEngine;
+import org.gridlab.gat.engine.util.InputForwarder;
+import org.gridlab.gat.engine.util.OutputForwarder;
 import org.gridlab.gat.io.File;
 import org.gridlab.gat.io.FileInputStream;
 import org.gridlab.gat.io.FileOutputStream;
@@ -30,8 +32,6 @@ import org.gridlab.gat.resources.ResourceDescription;
 import org.gridlab.gat.resources.SoftwareDescription;
 import org.gridlab.gat.resources.cpi.ResourceBrokerCpi;
 import org.gridlab.gat.resources.cpi.Sandbox;
-import org.gridlab.gat.util.InputForwarder;
-import org.gridlab.gat.util.OutputForwarder;
 
 import com.jcraft.jsch.Channel;
 import com.jcraft.jsch.ChannelExec;
@@ -139,7 +139,7 @@ public class SshResourceBrokerAdaptor extends ResourceBrokerCpi {
                 + "/"));
             else {
                 session = prepareSession(location);
-                host = location.getHost();
+                host = location.resolveHost();
             }
         } catch (Exception e) {
             throw new GATInvocationException(
@@ -285,7 +285,7 @@ public class SshResourceBrokerAdaptor extends ResourceBrokerCpi {
      * (non-Javadoc)
      * 
      * @see org.gridlab.gat.resources.ResourceBroker#reserveResource(org.gridlab.gat.resources.Resource,
-     *      org.gridlab.gat.util.TimePeriod)
+     *      org.gridlab.gat.engine.util.TimePeriod)
      */
     public Reservation reserveResource(Resource resource, TimePeriod timePeriod)
         {
@@ -295,7 +295,7 @@ public class SshResourceBrokerAdaptor extends ResourceBrokerCpi {
     protected Session prepareSession(URI loc) throws GATInvocationException {
         JSch jsch;
         Session session;
-        String host = loc.getHost();
+        String host = loc.resolveHost();
         int port;
 
         //opens a ssh connection (using jsch)

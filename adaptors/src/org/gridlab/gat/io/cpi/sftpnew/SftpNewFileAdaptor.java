@@ -107,7 +107,7 @@ public class SftpNewFileAdaptor extends FileCpi {
 
         if (GATEngine.DEBUG) {
             System.err.println("sftpnew: creating client to "
-                + location.getHost());
+                + location.resolveHost());
         }
 
         JSch jsch = new JSch();
@@ -139,7 +139,7 @@ public class SftpNewFileAdaptor extends FileCpi {
                 sui.username = location.getUserInfo();
             }
 
-            Session session = jsch.getSession(sui.username, location.getHost(),
+            Session session = jsch.getSession(sui.username, location.resolveHost(),
                 location.getPort(SSH_PORT));
             session.setUserInfo(sui);
             session.connect();
@@ -249,11 +249,7 @@ public class SftpNewFileAdaptor extends FileCpi {
         }
 
         // source is remote, dest is remote.
-        if (GATEngine.DEBUG) {
-            System.err.println("sftpnew file: copy remote to remote");
-        }
-
-        copyThirdParty(toURI(), dest);
+        throw new GATInvocationException("sftpNew: cannot do third party copy");
     }
 
     protected void copyToLocal(URI src, URI dest) throws GATInvocationException {
@@ -275,30 +271,6 @@ public class SftpNewFileAdaptor extends FileCpi {
             throw new GATInvocationException("sftpnew", e);
         } finally {
             closeChannel(c);
-        }
-    }
-
-    // Try copying using temp file.
-    protected void copyThirdParty(URI src, URI dest)
-        throws GATInvocationException {
-        java.io.File tmp = null;
-        SftpNewConnection tmpCon = null;
-
-        try {
-            // use a local tmp file.
-            tmp = java.io.File.createTempFile("GAT_SFTP_", ".tmp");
-
-            URI tmpURI = new URI(tmp.getCanonicalPath()); // convert to GAT URI
-
-            copyToLocal(src, tmpURI);
-
-            tmpCon = createChannel(gatContext, preferences, dest);
-            tmpCon.channel.put(tmpURI.getPath(), dest.getPath());
-        } catch (Exception e2) {
-            throw new GATInvocationException("sftpnew", e2);
-        } finally {
-            tmp.delete();
-            if (tmpCon != null) closeChannel(tmpCon);
         }
     }
 

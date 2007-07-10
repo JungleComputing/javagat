@@ -791,6 +791,25 @@ public abstract class GlobusFileAdaptor extends FileCpi {
         }
     }
 
+    /* (non-Javadoc)
+     * @see org.gridlab.gat.io.cpi.FileCpi#renameTo(org.gridlab.gat.io.File)
+     */
+    public boolean renameTo(File dest) throws GATInvocationException {
+        FTPClient client = null;
+
+        try {
+            client = createClient(location);
+            client.rename(getPath(), dest.getPath());
+        } catch (Exception e) {
+            throw new GATInvocationException("gridftp", e);
+        } finally {
+            if (client != null)
+                destroyClient(client, toURI(), preferences);
+        }
+
+        return true;       
+    }
+
     static protected int getProtectionMode(Preferences preferences) {
         String mode = (String) preferences.get("ftp.connection.protection");
 
@@ -951,20 +970,23 @@ public abstract class GlobusFileAdaptor extends FileCpi {
         String res = "";
 
         res += tokens.nextToken(); // permissions
-        res += (" " + tokens.nextToken()); // ???
-        res += (" " + tokens.nextToken()); // owner
+        res += " " + tokens.nextToken(); // ???
+        res += " " + tokens.nextToken(); // owner
         tokens.nextToken(); // skip 
         tokens.nextToken(); // skip
-        res += (" " + tokens.nextToken()); // group 
-        res += (" " + tokens.nextToken()); // size
-        res += (" " + tokens.nextToken()); // month
-        res += (" " + tokens.nextToken()); // day
-        res += (" " + tokens.nextToken()); // time
-        res += (" " + tokens.nextToken()); // filename
 
+        /*
+        res += " " + tokens.nextToken(); // group 
+        res += " " + tokens.nextToken(); // size
+        res += " " + tokens.nextToken(); // month
+        res += " " + tokens.nextToken(); // day
+        res += " " + tokens.nextToken(); // time
+        res += " " + tokens.nextToken(); // filename
+        */
+        
         // if there are more tokens, just add them
         while (tokens.hasMoreTokens()) {
-            res += (" " + tokens.nextToken());
+            res += " " + tokens.nextToken();
         }
 
         if (GATEngine.DEBUG) {

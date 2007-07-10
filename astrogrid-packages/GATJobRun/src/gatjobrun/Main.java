@@ -46,6 +46,11 @@ public class Main {
         parameterList.put("-stderr","");
         parameterList.put("-prestage","");
         parameterList.put("-poststage","");
+        
+        parameterList.put("-Walltime","");
+        parameterList.put("-CPUTime","");
+        parameterList.put("-Memsize","");
+        parameterList.put("-Nodes","");
          
         parameterList.put("-RB.adaptor","");
         parameterList.put("-RB.jobmanager","");
@@ -62,6 +67,9 @@ public class Main {
         System.out.println("  -stderr        [FILE]       path to error output file\n");
         System.out.println("  -prestage      [FILE],...   path to prestage file(s) - comma separated");
         System.out.println("  -poststage     [FILE],...   path to poststage file(s) - comma spearated\n");
+        System.out.println("  -Walltime      [STRING]     Walltime limit for thids job in seconds\n");
+        System.out.println("  -CPUTime       [STRING]     CPU time limit for this job in seconds\n");
+        System.out.println("  -Memsize       [STRING]     Memory needed for this job\n");
         System.out.println("  -RB.adaptor    [STRING]     force the use of a specific Resource Broker adaptor");        
         System.out.println("  -RB.jobmanager [STRING]     force the use of a specific Resource Broker jobmanager\n");      
     }

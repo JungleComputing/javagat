@@ -3,8 +3,6 @@
  */
 package org.gridlab.gat.resources.cpi.local;
 
-import ibis.util.IPUtils;
-
 import java.util.HashMap;
 import java.util.Map;
 
@@ -12,13 +10,13 @@ import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.Preferences;
 import org.gridlab.gat.engine.GATEngine;
+import org.gridlab.gat.engine.util.OutputForwarder;
 import org.gridlab.gat.monitoring.Metric;
 import org.gridlab.gat.monitoring.MetricDefinition;
 import org.gridlab.gat.monitoring.MetricValue;
 import org.gridlab.gat.resources.JobDescription;
 import org.gridlab.gat.resources.cpi.JobCpi;
 import org.gridlab.gat.resources.cpi.Sandbox;
-import org.gridlab.gat.util.OutputForwarder;
 
 /**
  * @author rob
@@ -108,7 +106,7 @@ public class LocalJob extends JobCpi {
         m.put("resManState", getStateString(state));
         m.put("resManName", "Local");
         m.put("exitValue", "" + exitVal);
-        m.put("hostname", IPUtils.getLocalHostName());
+        m.put("hostname", GATEngine.getLocalHostName());
 
         if (postStageException != null) {
             m.put("postStageError", postStageException);

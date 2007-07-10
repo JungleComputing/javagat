@@ -1,7 +1,5 @@
 package org.gridlab.gat.resources.cpi.proactive;
 
-import ibis.util.TypedProperties;
-
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -25,11 +23,10 @@ import org.objectweb.proactive.core.node.Node;
 public class ProActiveResourceBrokerAdaptor extends ResourceBrokerCpi
         implements Runnable {
     
-    static final int MAXTHREADS = TypedProperties.intProperty(
-            "JavaGat.ProActive.NewActive.Parallel", 1); // safe default
-    static final int MAXNODESPERWATCHER = TypedProperties.intProperty(
-            "JavaGat.ProActive.NewActive.MaxNodesPerWatcher", 16);
-
+    private int maxThreads = 1;
+    
+    private int maxNodesPerWatcher = 16;
+    
     /** Set of available nodes. */
     private static HashSet availableNodeSet = new HashSet();
 
@@ -103,10 +100,20 @@ public class ProActiveResourceBrokerAdaptor extends ResourceBrokerCpi
 
         super(gatContext, preferences);
 
+        String tmp = (String) preferences.get("newActive.parallel");
+        if(tmp != null) {
+            maxThreads = Integer.parseInt(tmp);
+        }
+        
+        tmp = (String) preferences.get("newActive.maxNodesPerWatcher");
+        if(tmp != null) {
+            maxNodesPerWatcher = Integer.parseInt(tmp);
+        }
+        
         // First, obtain ProActiver descriptors. */
         String descriptors = (String) preferences
                 .get("ResourceBroker.ProActive.Descriptors");
-        if (preferences == null) {
+        if (descriptors == null) {
             throw new GATObjectCreationException("No descriptors provided. Set"
                     + " the ResourceBroker.ProActive.Descriptors preference to "
                     + " a comma-separated list of ProActive descriptor xmls.");
@@ -167,7 +174,7 @@ public class ProActiveResourceBrokerAdaptor extends ResourceBrokerCpi
         NodeInfo[] nodeInfo = new NodeInfo[proActiveNodes.length];
         for (int i = 0; i < proActiveNodes.length; i++) {
             System.out.println("ProActiveNode = " + proActiveNodes[i]);
-            if (watcher == null || jobWatcherCount >= MAXNODESPERWATCHER) {
+            if (watcher == null || jobWatcherCount >= maxNodesPerWatcher) {
                 JobWatcher newWatcher = new JobWatcher();
                 JobWatcher newStub;
                 try {
@@ -226,7 +233,7 @@ public class ProActiveResourceBrokerAdaptor extends ResourceBrokerCpi
 
 */
 
-        Threader threader = Threader.createThreader(MAXTHREADS);
+        Threader threader = Threader.createThreader(maxThreads);
         for (int i = 0; i < nodeInfo.length; i++) {
             threader.submit(new ActivateNode(nodeInfo[i], parameters[i]));
         }
@@ -293,7 +300,7 @@ public class ProActiveResourceBrokerAdaptor extends ResourceBrokerCpi
      */
     public static void end() {
         if (nodeSet.size() != 0) {
-            Threader threader = Threader.createThreader(MAXTHREADS);
+            Threader threader = Threader.createThreader(1);
             for (Iterator i = nodeSet.iterator(); i.hasNext();) {
                 final NodeInfo nodeInfo = (NodeInfo) i.next();
                 threader.submit(new Thread("Terminator") {

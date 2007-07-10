@@ -3,8 +3,6 @@
  */
 package org.gridlab.gat.io.cpi.sockets;
 
-import ibis.util.IPUtils;
-
 import java.io.IOException;
 import java.io.Serializable;
 import java.io.StringWriter;
@@ -27,13 +25,6 @@ import org.gridlab.gat.io.cpi.EndpointCpi;
  * @author rob
  */
 public class SocketEndpointAdaptor extends EndpointCpi implements Serializable {
-    /*
-     static {
-     // we must tell the gat engine that we can unmarshal endpoints.
-     GATEngine.registerAdvertisable(SocketEndpointAdaptor.class);
-     System.err.println("REGISTER SOCKET ENDPOINT, class = " + SocketEndpointAdaptor.class);
-     }
-     */
     int localPort; // filled in locally
 
     InetAddress localAddress; // filled in locally
@@ -64,7 +55,7 @@ public class SocketEndpointAdaptor extends EndpointCpi implements Serializable {
         super(gatContext, preferences);
 
         try {
-            localAddress = IPUtils.getLocalHostAddress();
+            localAddress = GATEngine.getLocalHostAddress();
             serverSocket = new ServerSocket(0, 0, localAddress); // bind to any
 
             // free port

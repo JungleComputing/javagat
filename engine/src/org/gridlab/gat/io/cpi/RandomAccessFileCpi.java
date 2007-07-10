@@ -7,7 +7,7 @@ import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.Preferences;
 import org.gridlab.gat.URI;
-import org.gridlab.gat.io.RandomAccessFile;
+import org.gridlab.gat.io.RandomAccessFileInterface;
 import org.gridlab.gat.monitoring.Metric;
 import org.gridlab.gat.monitoring.MetricDefinition;
 import org.gridlab.gat.monitoring.MetricListener;
@@ -22,7 +22,7 @@ import org.gridlab.gat.monitoring.MetricValue;
  * this File class and will be used to implement the corresponding method in the
  * File class at runtime.
  */
-public abstract class RandomAccessFileCpi implements RandomAccessFile {
+public abstract class RandomAccessFileCpi implements RandomAccessFileInterface {
     protected GATContext gatContext;
 
     protected Preferences preferences;
@@ -64,10 +64,17 @@ public abstract class RandomAccessFileCpi implements RandomAccessFile {
         return location.equals(rf.toURI());
     }
 
+    /* (non-Javadoc)
+     * @see org.gridlab.gat.io.RandomAccessFileInterface#toURI()
+     */
+    public URI toURI() {
+        return location;
+    }
+
     public int hashCode() {
         return location.hashCode();
     }
-
+    
     public org.gridlab.gat.io.File getFile() throws GATInvocationException {
         try {
             return GAT.createFile(gatContext, preferences, location);

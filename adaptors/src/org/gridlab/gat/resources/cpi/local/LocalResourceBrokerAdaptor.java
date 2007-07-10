@@ -1,7 +1,5 @@
 package org.gridlab.gat.resources.cpi.local;
 
-import ibis.util.IPUtils;
-
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Iterator;
@@ -18,6 +16,9 @@ import org.gridlab.gat.Preferences;
 import org.gridlab.gat.TimePeriod;
 import org.gridlab.gat.URI;
 import org.gridlab.gat.engine.GATEngine;
+import org.gridlab.gat.engine.util.CommandRunner;
+import org.gridlab.gat.engine.util.InputForwarder;
+import org.gridlab.gat.engine.util.OutputForwarder;
 import org.gridlab.gat.resources.Job;
 import org.gridlab.gat.resources.JobDescription;
 import org.gridlab.gat.resources.Reservation;
@@ -26,8 +27,6 @@ import org.gridlab.gat.resources.ResourceDescription;
 import org.gridlab.gat.resources.SoftwareDescription;
 import org.gridlab.gat.resources.cpi.ResourceBrokerCpi;
 import org.gridlab.gat.resources.cpi.Sandbox;
-import org.gridlab.gat.util.InputForwarder;
-import org.gridlab.gat.util.OutputForwarder;
 
 /**
  * An instance of this class is used to reserve resources.
@@ -141,11 +140,7 @@ public class LocalResourceBrokerAdaptor extends ResourceBrokerCpi {
         }
 
         URI location = getLocationURI(description);
-        String path = null;
-
-        if (location.refersToLocalHost()) {
-            path = location.getPath();
-        } else {
+        if (!location.refersToLocalHost()) {
             throw new MethodNotApplicableException("not a local file: "
                 + location);
         }
@@ -153,7 +148,7 @@ public class LocalResourceBrokerAdaptor extends ResourceBrokerCpi {
         String host = getHostname(description);
         if (host != null) {
             if (!host.equals("localhost")
-                && !host.equals(IPUtils.getLocalHostName())) {
+                && !host.equals(GATEngine.getLocalHostName())) {
                 throw new MethodNotApplicableException(
                     "cannot run jobs on remote machines with the local adaptor");
             }
@@ -165,8 +160,27 @@ public class LocalResourceBrokerAdaptor extends ResourceBrokerCpi {
         }
 
         Sandbox sandbox = new Sandbox(gatContext, preferences, description, "localhost", home, true, true, true, true);
+
+        String exe;
+        if(sandbox.getResolvedExecutable() != null) {
+            exe = sandbox.getResolvedExecutable().getPath();
+        } else {
+            exe = location.getPath();
+        }
         
-        String command = path + " " + getArguments(description);
+        // try to set the executable bit, it might be lost
+        try {
+            new CommandRunner("/bin/chmod +x " + exe);
+        } catch (Throwable t) {
+            // ignore
+        }
+        try {
+            new CommandRunner("/usr/bin/chmod +x " + exe);
+        } catch (Throwable t) {
+            // ignore
+        }
+        
+        String command = exe + " " + getArguments(description);
 
         java.io.File f = new java.io.File(sandbox.getSandbox());
 
@@ -188,7 +202,7 @@ public class LocalResourceBrokerAdaptor extends ResourceBrokerCpi {
         Process p = null;
         long startRun = System.currentTimeMillis();
         try {
-            p = Runtime.getRuntime().exec(command.toString(), environment, f);
+            p = Runtime.getRuntime().exec(command, environment, f);
         } catch (IOException e) {
             throw new CommandNotFoundException("local broker", e);
         }
@@ -249,7 +263,7 @@ public class LocalResourceBrokerAdaptor extends ResourceBrokerCpi {
      * (non-Javadoc)
      *
      * @see org.gridlab.gat.resources.ResourceBroker#reserveResource(org.gridlab.gat.resources.Resource,
-     *      org.gridlab.gat.util.TimePeriod)
+     *      org.gridlab.gat.engine.util.TimePeriod)
      */
     public Reservation reserveResource(Resource resource, TimePeriod timePeriod)
              {

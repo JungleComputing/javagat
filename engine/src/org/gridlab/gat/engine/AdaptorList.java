@@ -70,4 +70,11 @@ public class AdaptorList {
 
         return destPos;
     }
+    
+    public String toString() {
+        String res = "Adaptor list for " + cpi;
+        
+        res += ", adaptors = " + adaptors;
+        return res;
+    }
 }

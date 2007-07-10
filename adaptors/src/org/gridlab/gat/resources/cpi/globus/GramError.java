@@ -6,6 +6,8 @@ package org.gridlab.gat.resources.cpi.globus;
 import java.util.ArrayList;
 
 public class GramError {
+    public static final int GRAM_JOBMANAGER_CONNECTION_FAILURE = 79;
+
     static class Descriptor {
         String shortDescription;
         String longDescription;

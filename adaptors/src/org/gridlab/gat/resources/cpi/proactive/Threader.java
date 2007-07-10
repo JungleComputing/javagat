@@ -1,7 +1,5 @@
 package org.gridlab.gat.resources.cpi.proactive;
 
-import ibis.util.ThreadPool;
-
 import java.util.ArrayList;
 
 /**
@@ -46,7 +44,8 @@ public class Threader extends Thread {
 
     public static Threader createThreader(int maxThreads) {
         Threader threader = new Threader(maxThreads);
-        ThreadPool.createNew(threader, "Threader");
+        threader.setName("Threader");
+        threader.start();
         return threader;
     }
     
@@ -100,7 +99,10 @@ public class Threader extends Thread {
             }
             Runnable job = (Runnable) jobs.remove(0);
             running++;
-            ThreadPool.createNew(new Encaps(job, this), "Threader");
+            Encaps e = new Encaps(job, this);
+            Thread t = new Thread(e);
+            t.setName("Encaps");
+            t.start();
         }
     }
 }

@@ -2,7 +2,6 @@ package org.gridlab.gat.resources.cpi.commandlineSsh;
 
 import java.io.IOException;
 import java.io.OutputStream;
-import java.util.List;
 import java.util.Map;
 
 import org.gridlab.gat.CommandNotFoundException;
@@ -12,23 +11,19 @@ import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.GATObjectCreationException;
 import org.gridlab.gat.MethodNotApplicableException;
 import org.gridlab.gat.Preferences;
-import org.gridlab.gat.TimePeriod;
 import org.gridlab.gat.URI;
 import org.gridlab.gat.engine.GATEngine;
+import org.gridlab.gat.engine.util.InputForwarder;
+import org.gridlab.gat.engine.util.OutputForwarder;
 import org.gridlab.gat.io.FileInputStream;
 import org.gridlab.gat.io.FileOutputStream;
 import org.gridlab.gat.io.cpi.ssh.SSHSecurityUtils;
 import org.gridlab.gat.io.cpi.ssh.SshUserInfo;
 import org.gridlab.gat.resources.Job;
 import org.gridlab.gat.resources.JobDescription;
-import org.gridlab.gat.resources.Reservation;
-import org.gridlab.gat.resources.Resource;
-import org.gridlab.gat.resources.ResourceDescription;
 import org.gridlab.gat.resources.SoftwareDescription;
 import org.gridlab.gat.resources.cpi.ResourceBrokerCpi;
 import org.gridlab.gat.resources.cpi.Sandbox;
-import org.gridlab.gat.util.InputForwarder;
-import org.gridlab.gat.util.OutputForwarder;
 
 /**
  * An instance of this class is used to reserve resources.
@@ -85,39 +80,6 @@ public class CommandlineSshResourceBrokerAdaptor extends ResourceBrokerCpi {
 
         String osname = System.getProperty("os.name");
         if (osname.startsWith("Windows")) windows = true;
-    }
-
-    /**
-     * This method attempts to reserve the specified hardware resource for the
-     * specified time period. Upon reserving the specified hardware resource
-     * this method returns a Reservation. Upon failing to reserve the specified
-     * hardware resource this method returns an error.
-     *
-     * @param resourceDescription
-     *            A description, a HardwareResourceDescription, of the hardware
-     *            resource to reserve
-     * @param timePeriod
-     *            The time period, a TimePeriod , for which to reserve the
-     *            hardware resource
-     */
-    public Reservation reserveResource(ResourceDescription resourceDescription,
-            TimePeriod timePeriod) {
-        throw new UnsupportedOperationException("Not implemented");
-    }
-
-    /**
-     * This method attempts to find one or more matching hardware resources.
-     * Upon finding the specified hardware resource(s) this method returns a
-     * java.util.List of HardwareResource instances. Upon failing to find the
-     * specified hardware resource this method returns an error.
-     *
-     * @param resourceDescription
-     *            A description, a HardwareResoucreDescription, of the hardware
-     *            resource(s) to find
-     * @return java.util.List of HardwareResources upon success
-     */
-    public List findResources(ResourceDescription resourceDescription) {
-        throw new UnsupportedOperationException("Not implemented");
     }
 
     /*
@@ -247,7 +209,6 @@ public class CommandlineSshResourceBrokerAdaptor extends ResourceBrokerCpi {
         if (stdout == null) {
             new OutputForwarder(p.getInputStream(), false); // throw away output
         } else {
-            stdout = sandbox.getResolvedStdout();
             try {
                 FileOutputStream out = GAT.createFileOutputStream(gatContext,
                     preferences, stdout.toGATURI());
@@ -263,7 +224,6 @@ public class CommandlineSshResourceBrokerAdaptor extends ResourceBrokerCpi {
         if (stderr == null) {
             new OutputForwarder(p.getErrorStream(), false); // throw away output
         } else {
-            stderr = sandbox.getResolvedStderr();
             try {
                 FileOutputStream out = GAT.createFileOutputStream(gatContext,
                     preferences, stderr.toGATURI());
@@ -274,16 +234,5 @@ public class CommandlineSshResourceBrokerAdaptor extends ResourceBrokerCpi {
         }
 
         return new CommandlineSshJob(gatContext, preferences, this, description, p, sandbox, outForwarder, errForwarder);
-    }
-
-    /*
-     * (non-Javadoc)
-     *
-     * @see org.gridlab.gat.resources.ResourceBroker#reserveResource(org.gridlab.gat.resources.Resource,
-     *      org.gridlab.gat.util.TimePeriod)
-     */
-    public Reservation reserveResource(Resource resource, TimePeriod timePeriod)
-             {
-        throw new UnsupportedOperationException("Not implemented");
     }
 }

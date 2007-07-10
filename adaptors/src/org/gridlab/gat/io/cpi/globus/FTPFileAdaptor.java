@@ -39,7 +39,7 @@ public class FTPFileAdaptor extends GlobusFileAdaptor {
         List l = SecurityContextUtils.getValidSecurityContextsByType(
             gatContext, preferences,
             "org.gridlab.gat.security.PasswordSecurityContext", "ftp", location
-                .getHost(), location.getPort(DEFAULT_FTP_PORT));
+                .resolveHost(), location.getPort(DEFAULT_FTP_PORT));
 
         if ((l == null) || (l.size() == 0)) {
             throw new GATObjectCreationException(
@@ -68,7 +68,7 @@ public class FTPFileAdaptor extends GlobusFileAdaptor {
      */
     protected FTPClient createClient(GATContext gatContext,
             Preferences preferences, URI hostURI) throws GATInvocationException {
-        String host = hostURI.getHost();
+        String host = hostURI.resolveHost();
 
         int port = hostURI.getPort(DEFAULT_FTP_PORT);
 

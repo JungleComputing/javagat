@@ -90,24 +90,12 @@ class Adaptor {
                 throw new GATObjectCreationException(
                     "Parameters array is null (internal error)");
             }
+
             return ctor.newInstance(parameters);
         } catch (InvocationTargetException e) {
-            if (GATEngine.DEBUG) {
-                System.err.println("Adaptor constructor threw exception: "
-                    + e.getTargetException());
-                e.getTargetException().printStackTrace();
-            }
-
             // rethrow original exception
             t = e.getTargetException();
         } catch (Throwable e) {
-            if (GATEngine.DEBUG) {
-                System.err
-                    .println("Could not construct adaptor object instance: "
-                        + e + ": " + e.getMessage());
-                e.printStackTrace();
-            }
-
             t = e;
         }
 

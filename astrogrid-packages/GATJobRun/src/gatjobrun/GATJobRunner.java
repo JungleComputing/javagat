@@ -21,6 +21,8 @@ import org.gridlab.gat.GAT;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATObjectCreationException;
 import org.gridlab.gat.Preferences;
+import org.gridlab.gat.advert.AdvertService;
+import org.gridlab.gat.advert.MetaData;
 import org.gridlab.gat.URI;
 import org.gridlab.gat.io.File;
 import org.gridlab.gat.io.FileInputStream;
@@ -126,6 +128,7 @@ public class GATJobRunner {
 
     public void setRBAdaptor(String adaptorname) {
         globalPrefs.put("ResourceBroker.adaptor.name", adaptorname);
+//        globalPrefs.put("File.adaptor.name", "Local");
                 		
     }
     
@@ -172,6 +175,8 @@ public class GATJobRunner {
         if (Submit)
             {
                 globalPrefs.put("killJobsOnExit","false");
+                globalPrefs.put("AdvertService.adaptor.name","local");
+                globalContext.addPreferences(globalPrefs);
             }
         
         try {
@@ -198,8 +203,7 @@ public class GATJobRunner {
             // hardwareAttributes.put("memory.size","64");
             rd = new HardwareResourceDescription(hardwareAttributes);
         } else {
-            System.err.println(
-                               "Error creating ResourceDescription: no execution host specified.");
+            System.err.println("Error creating ResourceDescription: no execution host specified.");
             System.exit(1);
         }
     }
@@ -293,17 +297,19 @@ public class GATJobRunner {
             return(-1);
         }
 
-        System.out.println();
+        String J_String = theJob.toString();
+        System.out.println("string representation of Job: '" + J_String + "'");
         
         /**
-         * If called with the option OnlySubmit true,
-         * immediately return after job submission with 
-         * the job ID as rc. Otherwise return the exit status
-         * of the executable.
+         * If called with SubmitOnly=true, write the job description to the 
+         * advert service. A later job can call this advertservice to get the 
+         * connection to the job again. The name of the advert service is 
+         * triggered via the job ID.
          */
         
         if (Submit)
             {
+
                 try
                     {
                         while (1>0)
@@ -315,10 +321,22 @@ public class GATJobRunner {
                                     }
                                 else
                                     {
+                                        /**
+                                           here's the part with the AdvertService
+                                        */
+                                        
+                                        AdvertService AdvService = GAT.createAdvertService(globalContext);
+                                        MetaData mData = new MetaData();
+                                        
+                                        mData.put("name",JobID);
+                                        AdvService.add(theJob,mData,"/tmp/" + JobID);
+
                                         System.out.println(JobID);
                                         break;
                                     }
                             }
+
+                        
                         GAT.end();
                         return(0);
                     }

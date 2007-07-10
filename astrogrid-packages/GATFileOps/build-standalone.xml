@@ -3,7 +3,7 @@
          basedir = ".">
 
   <description>
-    Builds the project GATJobRun.
+    Builds the project GATFileOps.
   </description>
 
   <!-- Get the path to the JavaGAT engine libraries.
@@ -23,32 +23,22 @@
   </fail>
 
   <!-- Check that it really points to a JavaGAT installation -->
-  <available file     = "${env.GAT_LOCATION}/engine"
+  <available file     = "${env.GAT_LOCATION}"
              type     = "dir"
-             property = "gat_engine_dir"
-             value    = "${env.GAT_LOCATION}/engine" />
-  <!-- Check for an older JavaGAT distribution also -->
-  <available file     = "${env.GAT_LOCATION}/JavaGATEngine"
-             type     = "dir"
-             property = "gat_engine_dir"
-             value    = "${env.GAT_LOCATION}/JavaGATEngine" />
+             property = "gat_dir"
+             value    = "${env.GAT_LOCATION}" />
 
   <fail message = "Environment variable ${GAT_LOCATION} doesn't seem to point to a JavaGAT installation !"
-        unless  = "gat_engine_dir" />
+        unless  = "gat_dir" />
 
-  <!-- Check that it really points to a JavaGAT adaptor installation -->
-  <available file     = "${env.GAT_LOCATION}/adaptors"
+  <!-- Check path to external jars -->
+  <available file     = "${env.GAT_LOCATION}/adaptors/external"
              type     = "dir"
-             property = "gat_adaptors_dir"
-             value    = "${env.GAT_LOCATION}/adaptors" />
-  <!-- Check for an older JavaGAT adaptor distribution also -->
-  <available file     = "${env.GAT_LOCATION}/JavaGATAdaptors"
-             type     = "dir"
-             property = "gat_adaptors_dir"
-             value    = "${env.GAT_LOCATION}/JavaGATAdaptors" />
+             property = "gat_adaptors_external_dir"
+             value    = "${env.GAT_LOCATION}/adaptors/external" />
 
-  <fail message = "Environment variable ${GAT_LOCATION} doesn't contain JavaGAT adaptors directory !"
-        unless  = "gat_adaptors_dir" />
+  <fail message = "External jars for the build not found !"
+        unless  = "gat_adaptors_external_dir" />
 
 
 <!--  <property name = "srcdir"   location = "${currdir}/src/fileops" />
@@ -61,41 +51,59 @@
 
   <path id = "gat_engine_jars_path">
     <fileset id  = "gat_engine_jars"
-             dir = "${gat_engine_dir}">
-      <include name = "lib/GAT.jar" />
+             dir = "${gat_dir}">
+      <include name = "lib/GAT-API.jar" />
+      <include name = "lib/GAT-engine.jar" />
       <include name = "lib/colobus.jar" />
+      <include name = "lib/commons-logging-1.1.jar" />
       <include name = "lib/log4j-1.2.13.jar" />
       <include name = "lib/ibis-util-1.4.jar" />
-      <include name = "lib/commons-logging.jar" />
+      <include name = "lib/castor-1.1.1-xml.jar" />
+      <include name = "lib/xercesImpl.jar" />
+      <include name = "lib/xmlParserAPIs.jar" />
+      <include name = "lib/drmaa.jar" />
     </fileset>
-    <fileset id  = "gat_supplements_jars"
-             dir = "${gat_adaptors_dir}/external">
-      <include name = "commons-cli-1.0.jar" />
+    <fileset dir = "${gat_adaptors_external_dir}">
+        <include name = "commons-cli-1.0.jar" />
     </fileset>
   </path>
+
+<!--  <path id = "gat_adaptors_external_jars_path">
+    <fileset id  = "gat_supplements_jars"
+             dir = "${gat_adaptors_external_dir}">
+      <include name = "commons-cli-1.0.jar" />
+    </fileset>
+  </path>-->
 
   <target name        = "build"
           depends     = "clean"
           description = "build the JARs">
     <!-- Create the target directory -->
     <mkdir dir = "${builddir}" />
-
-    <!-- Compile the java code from ${srcdir} into ${builddir} -->
-    <javac srcdir  = "${srcdir}"
-           destdir = "${builddir}"
-           debug   = "on" >
-      <classpath refid = "gat_engine_jars_path" />
-    </javac>
-
-    <!-- Create the distribution directory
+ 
+   <!-- Create the distribution directory
          and copy external libraries into it -->
     <mkdir dir = "${distdir}" />
     <copy todir="${distdir}">
       <fileset refid="gat_engine_jars" />
     </copy>
-    <copy todir = "${distdir}/lib">
+<!--    <copy todir = "${distdir}/lib">
        <fileset refid="gat_supplements_jars" />
-   </copy>
+   </copy>-->
+
+  <path id="GATFileOps.classpath">
+     <pathelement path="${java.class.path}/"/>
+     <pathelement path="${distdir}/lib/" />
+  </path>
+    
+
+    <!-- Compile the java code from ${srcdir} into ${builddir} -->
+    <javac srcdir  = "${srcdir}"
+           destdir = "${builddir}"
+           debug   = "on" >
+       <classpath refid = "gat_engine_jars_path" />
+    </javac>
+
 
     <!-- Create the JAR from ${builddir} classes -->
     <jar jarfile = "${distdir}/GATFileOps.jar">
@@ -105,7 +113,7 @@
      <attribute name  = "Main-Class"
                    value = "fileops.FileOpsMain" /> 
         <attribute name  = "Class-Path"
-                   value = "${currdir}/dist/lib/GAT.jar ${currdir}/dist/lib/colobus.jar ${currdir}/dist/lib/log4j-1.2.13.jar ${currdir}/dist/lib/ibis-util-1.4.jar ${currdir}/dist/lib/commons-cli-1.0.jar ${currdir}/dist/lib/commons-logging.jar" />
+                   value = "${currdir}/dist/lib/GAT-API.jar ${currdir}/dist/lib/GAT-engine.jar ${currdir}/dist/lib/colobus.jar ${currdir}/dist/lib/commons-logging-1.1.jar ${currdir}/dist/lib/log4j-1.2.13.jar ${currdir}/dist/lib/castor-1.1.1-xml.jar ${currdir}/dist/lib/xercesImpl.jar ${currdir}/dist/lib/xmlParserAPIs.jar ${currdir}/dist/lib/drmaa.jar ${currdir}/dist/lib/ibis-util-1.4.jar ${currdir}/dist/lib/commons-cli-1.0.jar" />
       </manifest>
     </jar>
 

@@ -4,11 +4,16 @@
 package org.gridlab.gat.resources.cpi;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.Preferences;
 import org.gridlab.gat.engine.GATEngine;
+import org.gridlab.gat.monitoring.Metric;
+import org.gridlab.gat.monitoring.MetricDefinition;
+import org.gridlab.gat.monitoring.MetricListener;
+import org.gridlab.gat.monitoring.MetricValue;
 import org.gridlab.gat.resources.Job;
 import org.gridlab.gat.resources.JobDescription;
 
@@ -36,26 +41,28 @@ public abstract class JobCpi extends Job {
     protected static ArrayList jobList = new ArrayList();
 
     protected static boolean shutdownInProgress = false;
-    
+
     static {
         Runtime.getRuntime().addShutdownHook(new JobShutdownHook());
     }
-    
+
     protected static synchronized int allocJobID() {
         return globalJobID++;
     }
 
-    protected JobCpi(GATContext gatContext, Preferences preferences, JobDescription jobDescription, Sandbox sandbox) {
+    protected JobCpi(GATContext gatContext, Preferences preferences,
+        JobDescription jobDescription, Sandbox sandbox) {
         this.gatContext = gatContext;
         this.preferences = preferences;
         this.jobDescription = jobDescription;
         this.sandbox = sandbox;
-        
+
         String pref = (String) preferences.get("killJobsOnExit");
-        if(pref == null || pref.equalsIgnoreCase("true")) {
+        if (pref == null || pref.equalsIgnoreCase("true")) {
             synchronized (JobCpi.class) {
-                if(shutdownInProgress) {
-                    throw new Error("jobCpi: cannot create new jobs when shutdown is in progress");
+                if (shutdownInProgress) {
+                    throw new Error(
+                        "jobCpi: cannot create new jobs when shutdown is in progress");
                 }
                 jobList.add(this);
             }
@@ -80,9 +87,9 @@ public abstract class JobCpi extends Job {
     }
 
     protected void finished() {
-        jobList.remove(this); 
+        jobList.remove(this);
     }
-    
+
     static class JobShutdownHook extends Thread {
         public void run() {
             synchronized (JobCpi.class) {
@@ -93,8 +100,8 @@ public abstract class JobCpi extends Job {
                 Job j;
                 try {
                     j = (Job) jobList.remove(0);
-                    if(GATEngine.VERBOSE) {
-                        System.err.println("stopping job: " + j); 
+                    if (GATEngine.VERBOSE) {
+                        System.err.println("stopping job: " + j);
                     }
                     j.stop();
                 } catch (Exception e) {
@@ -103,4 +110,33 @@ public abstract class JobCpi extends Job {
             }
         }
     }
+
+    public MetricValue getMeasurement(Metric metric)
+        throws GATInvocationException {
+        if (metric.getDefinition().getMeasurementType() == MetricDefinition.DISCRETE) {
+            return GATEngine.getMeasurement(this, metric);
+        }
+
+        throw new RuntimeException("Not implemented");
+    }
+
+    public final List getMetricDefinitions() throws GATInvocationException {
+        return GATEngine.getMetricDefinitions(this);
+    }
+
+    public final MetricDefinition getMetricDefinitionByName(String name)
+        throws GATInvocationException {
+        return GATEngine.getMetricDefinitionByName(this, name);
+    }
+
+    public final void addMetricListener(MetricListener metricListener,
+        Metric metric) throws GATInvocationException {
+        GATEngine.addMetricListener(this, metricListener, metric);
+    }
+
+    public final void removeMetricListener(MetricListener metricListener,
+        Metric metric) throws GATInvocationException {
+        GATEngine.removeMetricListener(this, metricListener, metric);
+    }
+
 }

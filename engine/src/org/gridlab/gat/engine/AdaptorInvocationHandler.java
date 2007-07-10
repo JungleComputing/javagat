@@ -6,6 +6,8 @@ package org.gridlab.gat.engine;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.LinkedList;
 
@@ -24,54 +26,108 @@ import colobus.Colobus;
  */
 public class AdaptorInvocationHandler implements InvocationHandler {
 
+    static class AdaptorSorter {
+
+        /**
+         * list of adaptor class names (Strings) in order of successful execution
+         */
+        private LinkedList adaptorlist = new LinkedList();
+        
+        /**
+         * list of adaptor class names (Strings) in order of successful execution per method
+         * <methodName, LinkedList>
+         */
+        private HashMap adaptorMethodList = new HashMap();
+        
+        synchronized void add(String adaptorName) {
+            if (!adaptorlist.contains(adaptorName)) {
+                adaptorlist.add(adaptorName);
+            }
+        }
+
+        synchronized String[] getOrdering(Method method) {
+            ArrayList res = new ArrayList();
+            ArrayList l = (ArrayList) adaptorMethodList.get(method);
+            
+            if(l==null) {
+                return (String[]) adaptorlist.toArray(new String[adaptorlist.size()]);
+            }
+            
+            // We have a list for this particular method. Use that order
+            // first, and append the other adaptorInstantiations at the end (in order).
+            for(int i=0; i<l.size(); i++) {
+                res.add(l.get(i)); // append
+            }
+            
+            for(int i=0; i<adaptorlist.size(); i++) {
+                String s = (String) adaptorlist.get(i);
+                if(!res.contains(s)) {
+                    res.add(s);
+                }
+            }
+
+            return (String[]) res.toArray(new String[res.size()]);
+        }
+        
+        synchronized void success(String adaptorName, Method method) {
+            ArrayList l = (ArrayList) adaptorMethodList.get(method);
+            
+            if(l==null) {
+                l = new ArrayList();
+                adaptorMethodList.put(method, l);
+            } else {
+                l.remove(adaptorName);                
+            }
+
+            l.add(0, adaptorName);
+        }
+    }
+    
     static final boolean OPTIMIZE_ADAPTOR_POLICY = true;
 
     private static final Colobus colobus =
             Colobus.getColobus(AdaptorInvocationHandler.class.getName());
 
+    private static AdaptorSorter adaptorSorter = new AdaptorSorter();
+    
     /**
-     * static list of adaptor class names in order of successful execution
+     * the available adaptorInstantiations, keyed by class name
+     * the elements are of type object (the real adaptor)
      */
-    private static LinkedList adaptorlist = new LinkedList();
-
-    private GATContext context;
-
-    private Preferences preferences;
-
-    private Object[] parameters;
+    private Hashtable adaptorInstantiations = new Hashtable();
 
     /**
      * the available adaptors, keyed by class name
+     * the elements are of type Adaptor
      */
     private Hashtable adaptors = new Hashtable();
 
     public AdaptorInvocationHandler(AdaptorList adaptors, GATContext context,
-            Preferences preferences, Object[] params) {
-        this.context = context;
+            Preferences preferences, Object[] params) throws GATObjectCreationException {
 
-        if (preferences != null) {
-            this.preferences = (Preferences) preferences.clone();
+        if(adaptors.size() == 0) {
+            throw new GATObjectCreationException("no adaptorInstantiations could be loaded for this object");
         }
-
-        if (params != null) {
-            this.parameters = new Object[params.length];
-            System.arraycopy(params, 0, this.parameters, 0, params.length);
-        }
-
-        Adaptor adaptor;
-        String adaptorname;
-
+        
+        GATInvocationException e = new GATInvocationException();
+        
         for (int count = 0; count < adaptors.size(); count++) {
-            adaptor = adaptors.get(count);
-            adaptorname = adaptor.getName();
+            Adaptor adaptor = adaptors.get(count);
+            String adaptorname = adaptor.getName();
 
-            this.adaptors.put(adaptorname, adaptor);
-
-            synchronized (adaptorlist) {
-                if (!adaptorlist.contains(adaptorname)) {
-                    adaptorlist.add(adaptorname);
-                }
+            try {
+                Object adaptorCpi = initAdaptor(adaptor, context, 
+                        preferences, params);
+                adaptorInstantiations.put(adaptorname, adaptorCpi);
+                this.adaptors.put(adaptorname, adaptor);
+                adaptorSorter.add(adaptorname);
+            } catch (Throwable t) {
+                e.add(adaptorname, t);
             }
+        }
+        
+        if(adaptors.size() == 0) {
+            throw new GATObjectCreationException("no adaptorInstantiations could be successfully instantiated", e);
         }
     }
 
@@ -85,35 +141,25 @@ public class AdaptorInvocationHandler implements InvocationHandler {
             throws Throwable {
         GATInvocationException e = new GATInvocationException();
 
-        if (adaptors == null) {
+        if (adaptorInstantiations == null) {
             throw new GATInvocationException("no adaptor available for method "
                     + m);
         }
 
         String[] adaptornames;
-        Object adaptor;
+        Object adaptorInstantiation;
+        Adaptor adaptor;
+        
+        adaptornames = adaptorSorter.getOrdering(m);
 
-        synchronized (adaptorlist) {
-            adaptornames =
-                    (String[]) adaptorlist.toArray(new String[adaptorlist
-                            .size()]);
-        }
-
-        // try adaptors in order of success
+        // try adaptorInstantiations in order of success
         for (int i = 0; i < adaptornames.length; i++) {
-            // only try adaptors available for this handler
-            if (adaptors.containsKey(adaptornames[i])) {
-                adaptor = adaptors.get(adaptornames[i]);
-
+            // only try adaptorInstantiations available for this handler
+            if (adaptorInstantiations.containsKey(adaptornames[i])) {
+                adaptorInstantiation = adaptorInstantiations.get(adaptornames[i]);
+                adaptor = (Adaptor) adaptors.get(adaptornames[i]);
+                
                 try {
-                    // initialize the adaptor if not already initialized
-                    if (adaptor instanceof Adaptor) {
-                        adaptor =
-                                initAdaptor((Adaptor) adaptor, context,
-                                        preferences, parameters);
-                        adaptors.put(adaptornames[i], adaptor);
-                    }
-
                     String paramString = "";
 
                     if (params != null) {
@@ -126,8 +172,8 @@ public class AdaptorInvocationHandler implements InvocationHandler {
                     }
 
                     if (GATEngine.DEBUG) {
-                        System.err.println("invocation of method " + m
-                                + " on adaptor " + adaptornames[i] + " START");
+                        System.err.println("invocation of method " + m.getName()
+                                + " on " + adaptor.getShortAdaptorClassName() + " START");
                     }
 
                     long startHandle =
@@ -136,23 +182,20 @@ public class AdaptorInvocationHandler implements InvocationHandler {
                                     + " params: " + paramString);
 
                     // now invoke the method on the adaptor
-                    Object res = m.invoke(adaptor, params);
+                    Object res = m.invoke(adaptorInstantiation, params);
 
                     colobus.fireStopEvent(startHandle, "invocation of method "
                             + m + " on adaptor " + adaptornames[i] + "result: "
                             + res);
 
                     if (GATEngine.DEBUG) {
-                        System.err.println("invocation of method " + m
-                                + " on adaptor " + adaptornames[i] + " DONE");
+                        System.err.println("invocation of method " + m.getName()
+                                + " on " + adaptor.getShortAdaptorClassName() + " DONE");
                     }
 
                     if (OPTIMIZE_ADAPTOR_POLICY && i != 0) {
                         // move successful adaptor to start of list
-                        synchronized (adaptorlist) {
-                            adaptorlist.remove(adaptornames[i]);
-                            adaptorlist.add(0, adaptornames[i]);
-                        }
+                        adaptorSorter.success(adaptornames[i], m);
                     }
 
                     return res; // return on first successful adaptor
@@ -164,22 +207,20 @@ public class AdaptorInvocationHandler implements InvocationHandler {
                     }
 
                     if (t instanceof GATObjectCreationException) {
-                        e.add(((Adaptor) adaptor).getName(), t);
+                        e.add(((Adaptor) adaptorInstantiation).getName(), t);
                     } else if (t instanceof MethodNotApplicableException) {
                         e.add(adaptornames[i], t);
                         if (GATEngine.DEBUG) {
-                            System.err.print("Method " + m.getName()
-                                    + " on adaptor " + adaptornames[i]
-                                    + " is not applicable: ");
-                            System.err.println(t);
+                            System.err.println("Method " + m.getName()
+                                    + " on " + adaptor.getShortAdaptorClassName()
+                                    + " is not applicable: " + t);
                         }
                     } else {
                         e.add(adaptornames[i], t);
                         if (GATEngine.VERBOSE) {
-                            System.err.print("Method " + m.getName()
-                                    + " on adaptor " + adaptornames[i]
-                                    + " failed: ");
-                            System.err.println(t);
+                            System.err.println("Method " + m.getName()
+                                    + " on " + adaptor.getShortAdaptorClassName()
+                                    + " failed: " + t);
                             if (GATEngine.DEBUG) {
                                 t.printStackTrace();
                             }
@@ -198,18 +239,18 @@ public class AdaptorInvocationHandler implements InvocationHandler {
 
     /**
      * Returns an instance of the specified XXXCpi class consistent with the
-     * passed XXXCpi class name, preferences, and parameters
+     * passed XXXCpi class name, preferences, and constructorParameters
      *
      * @param adaptor     The adaptor to initialize
      * @param preferences The Preferences used to construct the Cpi class.
-     * @param parameters  The Parameters for the Cpi Constructor null means no
-     *                    parameters.
+     * @param constructorParameters  The Parameters for the Cpi Constructor null means no
+     *                    constructorParameters.
      * @param gatContext  the context
      * @return The specified Cpi class or null if no such adaptor exists
      * @throws org.gridlab.gat.GATObjectCreationException
      *          creation of the adaptor failed
      */
-    public Object initAdaptor(Adaptor adaptor, GATContext gatContext,
+    private Object initAdaptor(Adaptor adaptor, GATContext gatContext,
             Preferences preferences, Object[] parameters)
             throws GATObjectCreationException {
         if (preferences == null) { // No preferences.
@@ -220,7 +261,7 @@ public class AdaptorInvocationHandler implements InvocationHandler {
             parameters = new Object[0];
         }
 
-        // Add the context and the preferences as parameters
+        // Add the context and the preferences as constructorParameters
         Object[] newParameters = new Object[parameters.length + 2];
         newParameters[0] = gatContext;
         newParameters[1] = preferences;
@@ -256,8 +297,8 @@ public class AdaptorInvocationHandler implements InvocationHandler {
         Object result;
         if (GATEngine.DEBUG) {
             System.err.println("initAdaptor: trying to instantiate "
-                    + adaptor.getName() + " adaptor for type "
-                    + adaptor.getCpi());
+                    + adaptor.getShortAdaptorClassName() + " for type "
+                    + adaptor.getShortCpiName());
         }
         try {
             result = adaptor.newInstance(parameterTypes, newParameters);
@@ -272,13 +313,16 @@ public class AdaptorInvocationHandler implements InvocationHandler {
 
             if (t instanceof AdaptorNotApplicableException) {
                 if (GATEngine.DEBUG) {
-                    System.err.println("Adaptor " + adaptor.getName()
+                    System.err.println("initAdaptor: " + adaptor.getShortCpiName()
                             + " is not applicable: " + t.getMessage());
                 }
             } else {
                 if (GATEngine.VERBOSE) {
-                    System.err.println("Couldn't create " + adaptor.getName()
+                    System.err.println("initAdaptor: Couldn't create " + adaptor.getShortAdaptorClassName()
                             + ": " + t.getMessage());
+                }
+                if(GATEngine.DEBUG) {
+                    t.printStackTrace();
                 }
             }
             
@@ -286,8 +330,9 @@ public class AdaptorInvocationHandler implements InvocationHandler {
         }
 
         if (GATEngine.VERBOSE) {
-            System.err.println("initAdaptor: instantiated " + adaptor.getName()
-                    + " adaptor for type " + adaptor.getCpi());
+            System.err.println("initAdaptor: instantiated "
+                    + adaptor.getShortAdaptorClassName() + " for type "
+                    + adaptor.getShortCpiName());
         }
 
         return result;

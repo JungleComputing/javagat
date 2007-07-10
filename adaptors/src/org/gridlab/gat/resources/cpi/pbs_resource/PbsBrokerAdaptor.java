@@ -383,7 +383,7 @@ public class PbsBrokerAdaptor extends ResourceBrokerCpi implements IParameter {
 
     private String getOutURI(File file) {
         URI uri = file.toGATURI();
-        String host = uri.getHost();
+        String host = uri.resolveHost();
         if (host == null) {
             host = "localhost";
         }

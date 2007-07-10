@@ -14,6 +14,7 @@ import java.io.RandomAccessFile;
 import java.io.Serializable;
 import java.net.URI;
 import java.nio.channels.FileChannel;
+import java.nio.channels.FileLock;
 import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.NoSuchElementException;
@@ -45,7 +46,7 @@ public class LocalAdvertServiceAdaptor extends AdvertServiceCpi {
      * @param preferences
      */
     public LocalAdvertServiceAdaptor(GATContext gatContext,
-            Preferences preferences) throws GATObjectCreationException {
+        Preferences preferences) throws GATObjectCreationException {
         super(gatContext, preferences);
 
         String home = System.getProperty("user.home");
@@ -64,7 +65,7 @@ public class LocalAdvertServiceAdaptor extends AdvertServiceCpi {
      * @see org.gridlab.gat.advert.AdvertService#getAdvertisable(java.lang.String).
      */
     public Advertisable getAdvertisable(String path)
-            throws GATInvocationException, NoSuchElementException {
+        throws GATInvocationException, NoSuchElementException {
         path = normalizePath(path);
         load();
 
@@ -87,7 +88,7 @@ public class LocalAdvertServiceAdaptor extends AdvertServiceCpi {
      *      java.util.Map, java.lang.String)
      */
     public void add(Advertisable advert, MetaData metaData, String path)
-            throws GATInvocationException {
+        throws GATInvocationException {
         path = normalizePath(path);
 
         try {
@@ -118,7 +119,7 @@ public class LocalAdvertServiceAdaptor extends AdvertServiceCpi {
      * @see org.gridlab.gat.advert.AdvertService#delete(java.lang.String)
      */
     public void delete(String path) throws NoSuchElementException,
-            GATInvocationException {
+        GATInvocationException {
         path = normalizePath(path);
 
         load();
@@ -164,7 +165,7 @@ public class LocalAdvertServiceAdaptor extends AdvertServiceCpi {
      * @see org.gridlab.gat.advert.AdvertService#getMetaData(java.lang.String)
      */
     public MetaData getMetaData(String path) throws NoSuchElementException,
-            GATInvocationException {
+        GATInvocationException {
         path = normalizePath(path);
 
         load();
@@ -192,13 +193,14 @@ public class LocalAdvertServiceAdaptor extends AdvertServiceCpi {
         pwd = path;
     }
 
-    private void save() throws GATInvocationException {
+    private synchronized void save() throws GATInvocationException {
         ObjectOutputStream out = null;
+        FileLock lock = null;
 
         try {
             FileOutputStream fout = new FileOutputStream(f);
             FileChannel fc = fout.getChannel();
-            fc.lock();
+            lock = fc.lock();
 
             BufferedOutputStream bout = new BufferedOutputStream(fout);
             out = new ObjectOutputStream(bout);
@@ -207,27 +209,35 @@ public class LocalAdvertServiceAdaptor extends AdvertServiceCpi {
         } catch (Exception e) {
             throw new GATInvocationException("local advert", e);
         } finally {
-            try {
-                if (out != null) {
-                    out.close();
+            if (lock != null) {
+                try {
+                    lock.release();
+                } catch (Exception e) {
+                    // Ignore.
                 }
-            } catch (Exception e) {
-                // Ignore.
+            }
+            if (out != null) {
+                try {
+                    out.close();
+                } catch (Exception e) {
+                    // Ignore.
+                }
             }
         }
     }
 
-    private void load() throws GATInvocationException {
+    private synchronized void load() throws GATInvocationException {
         if (!f.exists()) {
             return;
         }
 
         ObjectInputStream in = null;
+        FileLock lock = null;
 
         try {
             RandomAccessFile rf = new RandomAccessFile(f, "rw");
             FileChannel fc = rf.getChannel();
-            fc.lock();
+            lock = fc.lock();
 
             FileInputStream fin = new FileInputStream(rf.getFD());
             BufferedInputStream bin = new BufferedInputStream(fin);
@@ -237,12 +247,19 @@ public class LocalAdvertServiceAdaptor extends AdvertServiceCpi {
         } catch (Exception e) {
             throw new GATInvocationException("local advert", e);
         } finally {
-            try {
-                if (in != null) {
-                    in.close();
+            if (lock != null) {
+                try {
+                    lock.release();
+                } catch (Exception e) {
+                    // Ignore.
                 }
-            } catch (Exception e) {
-                // Ignore.
+            }
+            if (in != null) {
+                try {
+                    in.close();
+                } catch (Exception e) {
+                    // Ignore.
+                }
             }
         }
     }

@@ -12,9 +12,13 @@ import org.gridlab.gat.engine.GATEngine;
 import org.gridlab.gat.io.File;
 
 public class PostStagedFile extends StagedFile {
-    boolean isStdout;
+    private boolean isStdout;
 
-    boolean isStderr;
+    private boolean isStderr;
+
+    public PostStagedFile() {
+        // constructor needed for castor marshalling, do *not* use
+    }
 
     public PostStagedFile(GATContext context, Preferences preferences,
             File origSrc, File origDest, String host, String sandbox,
@@ -33,7 +37,7 @@ public class PostStagedFile extends StagedFile {
         } else {
             inSandbox = true;
         }
-        resolvedSrc = resolve(origSrc, false);
+        setResolvedSrc(resolve(origSrc, false));
 
         String dir = System.getProperty("user.dir");
         if (dir == null) {
@@ -46,16 +50,15 @@ public class PostStagedFile extends StagedFile {
             try {
                 URI resolvedDestURI =
                         new URI("any:///" + dir + "/" + origSrc.getName());
-                resolvedDest =
-                        GAT
-                                .createFile(gatContext, preferences,
-                                        resolvedDestURI);
+                setResolvedDest(GAT
+                        .createFile(gatContext, preferences,
+                                resolvedDestURI));
             } catch (Exception e) {
                 throw new GATInvocationException("poststagedFile", e);
             }
         } else {
             if (origDest.isAbsolute()) {
-                resolvedDest = origDest;
+                setResolvedDest(origDest);
             } else {
                 // file with same name in CWD
                 try {
@@ -67,9 +70,8 @@ public class PostStagedFile extends StagedFile {
                     }
 
                     destURIString += origDest.getPath();
-                    resolvedDest =
-                            GAT.createFile(gatContext, preferences, new URI(
-                                    destURIString));
+                    setResolvedDest(GAT.createFile(gatContext, preferences, new URI(
+                            destURIString)));
                 } catch (Exception e) {
                     throw new GATInvocationException("poststagedFile", e);
                 }
@@ -79,11 +81,11 @@ public class PostStagedFile extends StagedFile {
 
     protected void poststage() throws GATInvocationException {
         if (GATEngine.VERBOSE) {
-            System.err.println("  copy " + resolvedSrc.toGATURI() + " to "
-                    + resolvedDest.toGATURI());
+            System.err.println("  copy " + getResolvedSrc().toGATURI() + " to "
+                    + getResolvedDest().toGATURI());
         }
 
-        resolvedSrc.copy(resolvedDest.toGATURI());
+        getResolvedSrc().copy(getResolvedDest().toGATURI());
     }
 
     protected void delete() throws GATInvocationException {
@@ -92,26 +94,54 @@ public class PostStagedFile extends StagedFile {
         }
 
         if (GATEngine.VERBOSE) {
-            System.err.println("DELETE_FILE:" + resolvedSrc);
+            System.err.println("DELETE_FILE:" + getResolvedSrc());
         }
-        resolvedSrc.delete();
+        getResolvedSrc().delete();
     }
 
     protected void wipe() throws GATInvocationException {
         if (GATEngine.VERBOSE) {
-            System.err.println("WIPE_FILE:" + resolvedSrc);
+            System.err.println("WIPE_FILE:" + getResolvedSrc());
         }
-        wipe(resolvedSrc);
+        wipe(getResolvedSrc());
     }
 
     public String toString() {
         String srcURI =
-                resolvedSrc == null ? "" : resolvedSrc.toGATURI().toString();
+                getResolvedSrc() == null ? "" : getResolvedSrc().toGATURI().toString();
         String destURI =
-                resolvedDest == null ? "" : resolvedDest.toGATURI().toString();
+                getResolvedDest() == null ? "" : getResolvedDest().toGATURI().toString();
 
         return "PostStaged: " + srcURI + " -> " + destURI
                 + (isStdout ? " (STDOUT)" : "") + (isStderr ? " (STDERR)" : "")
                 + (inSandbox ? " (IN SANDBOX)" : " (OUTSIDE SANDBOX)");
+    }
+
+    /**
+     * @return the isStderr
+     */
+    public boolean isStderr() {
+        return isStderr;
+    }
+
+    /**
+     * @param isStderr the isStderr to set
+     */
+    public void setStderr(boolean isStderr) {
+        this.isStderr = isStderr;
+    }
+
+    /**
+     * @return the isStdout
+     */
+    public boolean isStdout() {
+        return isStdout;
+    }
+
+    /**
+     * @param isStdout the isStdout to set
+     */
+    public void setStdout(boolean isStdout) {
+        this.isStdout = isStdout;
     }
 }

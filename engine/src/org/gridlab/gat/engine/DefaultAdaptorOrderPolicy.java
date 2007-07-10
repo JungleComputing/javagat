@@ -56,7 +56,9 @@ public class DefaultAdaptorOrderPolicy implements AdaptorOrderPolicy {
         insertPos = l.placeAdaptor(insertPos,
             "org.gridlab.gat.io.cpi.globus.GridFTPFileAdaptor");
         insertPos = l.placeAdaptor(insertPos,
-            "org.gridlab.gat.io.cpi.commandlineSsh.CommandlineSshFileAdaptor");
+        "org.gridlab.gat.io.cpi.sftpGanymed.SftpGanymedFileAdaptor");
+        insertPos = l.placeAdaptor(insertPos,
+        "org.gridlab.gat.io.cpi.commandlineSsh.CommandlineSshFileAdaptor");
         insertPos = l.placeAdaptor(insertPos,
             "org.gridlab.gat.io.cpi.sftpnew.SftpNewFileAdaptor");
         insertPos = l.placeAdaptor(insertPos,
@@ -106,6 +108,8 @@ public class DefaultAdaptorOrderPolicy implements AdaptorOrderPolicy {
             "org.gridlab.gat.resources.cpi.local.LocalResourceBrokerAdaptor");
         insertPos = l.placeAdaptor(insertPos,
             "org.gridlab.gat.resources.cpi.globus.GlobusResourceBrokerAdaptor");
+        insertPos = l.placeAdaptor(insertPos,
+            "org.gridlab.gat.resources.cpi.commandlineSsh.CommandlineSshResourceBrokerAdaptor");
         insertPos = l.placeAdaptor(insertPos,
             "org.gridlab.gat.resources.cpi.ssh.SshResourceBrokerAdaptor");
 

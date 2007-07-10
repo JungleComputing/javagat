@@ -27,29 +27,19 @@
   </fail>
 
   <!-- Check that it really points to a JavaGAT installation -->
-  <available file     = "${env.GAT_LOCATION}/engine"
+  <available file     = "${env.GAT_LOCATION}"
              type     = "dir"
-             property = "gat_engine_dir"
-             value    = "${env.GAT_LOCATION}/engine" />
-  <!-- Check for an older JavaGAT distribution also -->
-  <available file     = "${env.GAT_LOCATION}/JavaGATEngine"
-             type     = "dir"
-             property = "gat_engine_dir"
-             value    = "${env.GAT_LOCATION}/JavaGATEngine" />
+             property = "gat_dir"
+             value    = "${env.GAT_LOCATION}" />
 
   <fail message = "Environment variable ${GAT_LOCATION} doesn't seem to point to a JavaGAT installation !"
-        unless  = "gat_engine_dir" />
+        unless  = "gat_dir" />
 
   <!-- Check path to external jars -->
   <available file     = "${env.GAT_LOCATION}/adaptors/external"
              type     = "dir"
              property = "gat_adaptors_external_dir"
              value    = "${env.GAT_LOCATION}/adaptors/external" />
-  <!-- Check for an older JavaGAT distribution also -->
-  <available file     = "${env.GAT_LOCATION}/JavaGATAdaptors/external"
-             type     = "dir"
-             property = "gat_adaptors_external_dir"
-             value    = "${env.GAT_LOCATION}/JavaGATAdaptors/external" />
 
   <fail message = "External jars for the build not found !"
         unless  = "gat_adaptors_external_dir" />
@@ -65,11 +55,16 @@
 
   <path id = "gat_engine_jars_path">
     <fileset id  = "gat_engine_jars"
-             dir = "${gat_engine_dir}">
-      <include name = "lib/GAT.jar" />
+             dir = "${gat_dir}">
+      <include name = "lib/GAT-API.jar" />
+      <include name = "lib/GAT-engine.jar" />
       <include name = "lib/colobus.jar" />
+      <include name = "lib/commons-logging-1.1.jar" />
       <include name = "lib/log4j-1.2.13.jar" />
       <include name = "lib/ibis-util-1.4.jar" />
+      <include name = "lib/castor-1.1.1-xml.jar" />
+      <include name = "lib/xercesImpl.jar" />
+      <include name = "lib/xmlParserAPIs.jar" />
       <include name = "lib/drmaa.jar" />
     </fileset>
   </path>
@@ -112,7 +107,21 @@
         <attribute name  = "Main-Class"
                    value = "gatjobrun.Main" />
         <attribute name  = "Class-Path"
-                   value = "${currdir}/dist/lib/GAT.jar ${currdir}/dist/lib/colobus.jar ${currdir}/dist/lib/log4j-1.2.13.jar ${currdir}/dist/lib/drmaa.jar ${currdir}/dist/lib/ibis-util-1.4.jar ${sgeroot}"  />
+                   value = "${currdir}/dist/lib/GAT-API.jar
+${currdir}/dist/lib/GAT-engine.jar ${currdir}/dist/lib/colobus.jar ${currdir}/dist/lib/commons-logging-1.1.jar ${currdir}/dist/lib/log4j-1.2.13.jar ${currdir}/dist/lib/castor-1.1.1-xml.jar ${currdir}/dist/lib/xercesImpl.jar ${currdir}/dist/lib/xmlParserAPIs.jar ${currdir}/dist/lib/drmaa.jar ${currdir}/dist/lib/ibis-util-1.4.jar ${sgeroot}"  />
+      </manifest>
+    </jar>
+
+    <!-- Create the JAR for GATJobOperation from ${builddir} classes -->
+    <jar jarfile = "${distdir}/GATJobOperation.jar">
+      <fileset dir = "${builddir}" />
+      <fileset file = "log4j.properties" />
+      <manifest>
+        <attribute name  = "Main-Class"
+                   value = "gatjobstatus.JobStateMain" />
+        <attribute name  = "Class-Path"
+                   value = "${currdir}/dist/lib/GAT-API.jar
+${currdir}/dist/lib/GAT-engine.jar ${currdir}/dist/lib/colobus.jar ${currdir}/dist/lib/commons-logging-1.1.jar ${currdir}/dist/lib/log4j-1.2.13.jar ${currdir}/dist/lib/castor-1.1.1-xml.jar ${currdir}/dist/lib/xercesImpl.jar ${currdir}/dist/lib/xmlParserAPIs.jar ${currdir}/dist/lib/drmaa.jar ${currdir}/dist/lib/ibis-util-1.4.jar ${sgeroot}"  />
       </manifest>
     </jar>
 

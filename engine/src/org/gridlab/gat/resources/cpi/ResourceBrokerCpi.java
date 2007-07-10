@@ -65,7 +65,7 @@ public abstract class ResourceBrokerCpi implements ResourceBroker {
      * (non-Javadoc)
      *
      * @see org.gridlab.gat.resources.ResourceBroker#reserveResource(org.gridlab.gat.resources.Resource,
-     *      org.gridlab.gat.util.TimePeriod)
+     *      org.gridlab.gat.engine.util.TimePeriod)
      */
     public Reservation reserveResource(Resource resource, TimePeriod timePeriod)
             throws GATInvocationException {
@@ -76,7 +76,7 @@ public abstract class ResourceBrokerCpi implements ResourceBroker {
      * (non-Javadoc)
      *
      * @see org.gridlab.gat.resources.ResourceBroker#reserveResource(org.gridlab.gat.resources.ResourceDescription,
-     *      org.gridlab.gat.util.TimePeriod)
+     *      org.gridlab.gat.engine.util.TimePeriod)
      */
     public Reservation reserveResource(ResourceDescription resourceDescription,
             TimePeriod timePeriod) throws GATInvocationException {

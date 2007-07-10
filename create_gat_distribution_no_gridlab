@@ -5,11 +5,13 @@ if [ -z "$1" ] ; then
 	exit 1
 fi
 
+cd api; ant clean; rm -rf tmp_eclipse*; cd -
 cd engine; ant clean; rm -rf tmp_eclipse*; cd -
 cd adaptors; ant clean; rm -rf tmp_eclipse*; cd -
 cd tests; ant clean; rm -rf tmp_eclipse*; cd -
 rm -rf JavaGAT-$1
 mkdir JavaGAT-$1
+cp -R api JavaGAT-$1
 cp -R engine JavaGAT-$1
 cp -R adaptors JavaGAT-$1
 cp -R tests JavaGAT-$1
