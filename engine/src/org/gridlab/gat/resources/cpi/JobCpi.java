@@ -51,7 +51,7 @@ public abstract class JobCpi extends Job {
     }
 
     protected JobCpi(GATContext gatContext, Preferences preferences,
-        JobDescription jobDescription, Sandbox sandbox) {
+            JobDescription jobDescription, Sandbox sandbox) {
         this.gatContext = gatContext;
         this.preferences = preferences;
         this.jobDescription = jobDescription;
@@ -62,7 +62,7 @@ public abstract class JobCpi extends Job {
             synchronized (JobCpi.class) {
                 if (shutdownInProgress) {
                     throw new Error(
-                        "jobCpi: cannot create new jobs when shutdown is in progress");
+                            "jobCpi: cannot create new jobs when shutdown is in progress");
                 }
                 jobList.add(this);
             }
@@ -83,11 +83,16 @@ public abstract class JobCpi extends Job {
      * @see org.gridlab.gat.advert.Advertisable#marshal()
      */
     public String marshal() {
-        throw new Error("marshalling of this object is not supported by this adaptor");
+        throw new Error(
+                "marshalling of this object is not supported by this adaptor");
     }
 
     protected void finished() {
-        jobList.remove(this);
+        synchronized (JobCpi.class) {
+            if (jobList.contains(this)) {
+                jobList.remove(this);
+            }
+        }
     }
 
     static class JobShutdownHook extends Thread {
@@ -96,13 +101,16 @@ public abstract class JobCpi extends Job {
                 shutdownInProgress = true;
             }
             while (true) {
-                if (jobList.size() == 0) break;
                 Job j;
-                try {
+                synchronized (JobCpi.class) {
+                    if (jobList.size() == 0)
+                        break;
                     j = (Job) jobList.remove(0);
-                    if (GATEngine.VERBOSE) {
-                        System.err.println("stopping job: " + j);
-                    }
+                }
+                if (GATEngine.VERBOSE) {
+                    System.err.println("stopping job: " + j);
+                }
+                try {
                     j.stop();
                 } catch (Exception e) {
                     // ignore
@@ -112,7 +120,7 @@ public abstract class JobCpi extends Job {
     }
 
     public MetricValue getMeasurement(Metric metric)
-        throws GATInvocationException {
+            throws GATInvocationException {
         if (metric.getDefinition().getMeasurementType() == MetricDefinition.DISCRETE) {
             return GATEngine.getMeasurement(this, metric);
         }
@@ -125,17 +133,17 @@ public abstract class JobCpi extends Job {
     }
 
     public final MetricDefinition getMetricDefinitionByName(String name)
-        throws GATInvocationException {
+            throws GATInvocationException {
         return GATEngine.getMetricDefinitionByName(this, name);
     }
 
     public final void addMetricListener(MetricListener metricListener,
-        Metric metric) throws GATInvocationException {
+            Metric metric) throws GATInvocationException {
         GATEngine.addMetricListener(this, metricListener, metric);
     }
 
     public final void removeMetricListener(MetricListener metricListener,
-        Metric metric) throws GATInvocationException {
+            Metric metric) throws GATInvocationException {
         GATEngine.removeMetricListener(this, metricListener, metric);
     }
 
