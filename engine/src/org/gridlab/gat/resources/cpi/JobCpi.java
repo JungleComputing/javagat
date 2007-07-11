@@ -83,7 +83,7 @@ public abstract class JobCpi extends Job {
      * @see org.gridlab.gat.advert.Advertisable#marshal()
      */
     public String marshal() {
-        return null;
+        throw new Error("marshalling of this object is not supported by this adaptor");
     }
 
     protected void finished() {

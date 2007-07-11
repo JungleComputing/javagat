@@ -74,6 +74,10 @@ public class LocalAdvertServiceAdaptor extends AdvertServiceCpi {
         if (e == null) {
             return null;
         }
+        
+        if(e.a == null) {
+            return null;
+        }
 
         Advertisable advert = GATEngine.getGATEngine().unmarshalAdvertisable(
             gatContext, preferences, e.a);
@@ -92,7 +96,13 @@ public class LocalAdvertServiceAdaptor extends AdvertServiceCpi {
         path = normalizePath(path);
 
         try {
-            String advertString = advert.marshal();
+            String advertString = null;
+            if(advert != null) {
+                advertString = advert.marshal();
+                if(advertString == null) {
+                    throw new GATInvocationException("could not marshal object");
+                }
+            }
             Entry e = new Entry();
             e.a = advertString;
             e.m = metaData;

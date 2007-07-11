@@ -236,6 +236,7 @@ public class GATJobRunner {
                 }
 
             sd = new SoftwareDescription();
+//            sd.setLocation("any://" + ExecutionHost + "/" + Executable);
             sd.setLocation(Executable);
             sd.setStdin(FileStdin);
             sd.setStdout(FileStdout);
