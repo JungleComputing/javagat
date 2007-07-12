@@ -3,6 +3,7 @@ package org.gridlab.gat.io.cpi.globus;
 import java.util.List;
 
 import org.globus.ftp.FTPClient;
+import org.gridlab.gat.AdaptorNotApplicableException;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.GATObjectCreationException;
@@ -33,7 +34,7 @@ public class FTPFileAdaptor extends GlobusFileAdaptor {
         super(gatContext, preferences, location);
 
         if (!location.isCompatible("ftp") && !location.isCompatible("file")) {
-            throw new GATObjectCreationException("cannot handle this URI");
+            throw new AdaptorNotApplicableException("cannot handle this URI");
         }
 
         List l = SecurityContextUtils.getValidSecurityContextsByType(

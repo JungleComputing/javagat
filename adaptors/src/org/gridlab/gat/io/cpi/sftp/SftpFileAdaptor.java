@@ -6,6 +6,7 @@ package org.gridlab.gat.io.cpi.sftp;
 import java.io.IOException;
 import java.util.Iterator;
 
+import org.gridlab.gat.AdaptorNotApplicableException;
 import org.gridlab.gat.CouldNotInitializeCredentialException;
 import org.gridlab.gat.CredentialExpiredException;
 import org.gridlab.gat.GATContext;
@@ -37,7 +38,7 @@ public class SftpFileAdaptor extends FileCpi {
         super(gatContext, preferences, location);
 
         if (!location.isCompatible("sftp") && !location.isCompatible("file")) {
-            throw new GATObjectCreationException("cannot handle this URI");
+            throw new AdaptorNotApplicableException("cannot handle this URI");
         }
     }
 

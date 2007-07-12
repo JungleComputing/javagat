@@ -38,16 +38,6 @@ local file adaptor
 "ignoreHiddenFiles" 
 
 
-sftp and sftp ganymed file
-"defaultIdentityFile"                                                                         Location of the default identity file to use. 
-                                                                                              By default, identity, id_rsa and id_dsa are already tried, 
-                                                                                              both in the .ssh and the ssh directories int the user's home dir.
-
-
-ssh
-"privateKeySlot"                                                                              Sets the private key slot to use (normally not needed).
-
-
 ProActive
 "ResourceBroker.ProActive.VirtualNodeName"  
 "ResourceBroker.ProActive.noSandbox"

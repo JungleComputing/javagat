@@ -12,6 +12,7 @@ import java.io.IOException;
 import java.util.Hashtable;
 import java.util.Vector;
 
+import org.gridlab.gat.AdaptorNotApplicableException;
 import org.gridlab.gat.CouldNotInitializeCredentialException;
 import org.gridlab.gat.CredentialExpiredException;
 import org.gridlab.gat.GATContext;
@@ -43,7 +44,7 @@ public class SftpGanymedFileAdaptor extends FileCpi {
         super(gatContext, preferences, location);
 
         if (!location.isCompatible("sftp") && !location.isCompatible("file")) {
-            throw new GATObjectCreationException("cannot handle this URI");
+            throw new AdaptorNotApplicableException("cannot handle this URI");
         }
     }
 

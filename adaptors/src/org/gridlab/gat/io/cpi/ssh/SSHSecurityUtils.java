@@ -94,14 +94,6 @@ public class SSHSecurityUtils {
             Preferences preferences) {
         String keyfile = null;
 
-        if (preferences != null) {
-            keyfile = (String) preferences.get("defaultIdentityFile");
-        }
-
-        if (keyfile != null) {
-            return keyfile;
-        }
-
         // no key file given, try id_dsa and id_rsa
         String home = System.getProperty("user.home");
         String fileSep = System.getProperty("file.separator");

@@ -1,7 +1,6 @@
 package org.gridlab.gat;
 
 import java.util.Hashtable;
-import java.util.Map;
 import java.util.Set;
 
 /**
@@ -17,18 +16,8 @@ public class Preferences {
     public Preferences() {
     }
 
-    /**
-     * Constructs a new Preferences with the same mappings as the given Map.
-     *
-     * @param map
-     *            the map to copy the initial preferences from
-     */
-    public Preferences(Map map) {
-        t.putAll(map);
-    }
-
     public Preferences(Preferences p) {
-        t.putAll(p.t);
+        putAll(p);
     }
 
     /**
@@ -59,11 +48,11 @@ public class Preferences {
      *             the specified key or value is <tt>null</tt>.
      */
     public Object put(String key, Object value) {
-        return t.put(key, value);
+        return t.put(key.toLowerCase(), value);
     }
 
     public Object get(String key) {
-        return t.get(key);
+        return t.get(key.toLowerCase());
     }
     
     public void putAll(Preferences p) {
@@ -71,15 +60,17 @@ public class Preferences {
     }
     
     public Object clone() {
-        return new Preferences(t);
+        Preferences res = new Preferences();
+        res.t = (Hashtable) t.clone();
+        return res;
     }
     
     public Object remove(String key) {
-        return t.remove(key);
+        return t.remove(key.toLowerCase());
     }
     
     public boolean containsKey(String key) {
-        return t.containsKey(key);
+        return t.containsKey(key.toLowerCase());
     }
     
     public Set keySet() {

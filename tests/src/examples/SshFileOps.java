@@ -8,9 +8,9 @@ import org.gridlab.gat.io.File;
 
 public class SshFileOps {
     public static void main(String[] args) {
-        if (args.length != 4) {
+        if (args.length != 3) {
             System.out
-                .println("\tUsage: run_gat_app examples.SshFileOps <file1> <file2> <file3> <identityFile>\n\n"
+                .println("\tUsage: run_gat_app examples.SshFileOps <file1> <file2> <file3>\n\n"
                     + "\tprogram does:\n"
                     + "\t\tcp <file1> <file2>\n"
                     + "\t\trm <file1>\n" + "\t\tmv <file2> <file3>\n");
@@ -26,8 +26,6 @@ public class SshFileOps {
             URI src3 = null;
 
             try {
-                preferences.put("defaultIdentityFile", args[3]);
-
                 src1 = new URI(args[0]);
                 src2 = new URI(args[1]);
                 src3 = new URI(args[2]);

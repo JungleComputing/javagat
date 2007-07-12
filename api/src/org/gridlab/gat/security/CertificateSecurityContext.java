@@ -34,7 +34,7 @@ public class CertificateSecurityContext extends SecurityContext {
      * information about the location of keyfile in the
      * context.
      *
-     * @param newKeyfile
+     * @param keyfile
      *            The URI of keyfile
      */
     public CertificateSecurityContext(URI keyfile) {
