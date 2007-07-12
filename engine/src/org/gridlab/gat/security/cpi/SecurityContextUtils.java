@@ -34,7 +34,7 @@ public class SecurityContextUtils {
      * @return the list of security contexts that is valid for this adaptor
      */
     public static List getValidSecurityContexts(GATContext context,
-            Preferences preferences, String adaptorName, String host, int port) {
+        Preferences preferences, String adaptorName, String host, int port) {
         return getValidSecurityContextsByType(context, preferences,
             null /* no type */, adaptorName, host, port);
     }
@@ -53,8 +53,8 @@ public class SecurityContextUtils {
      * @return the list of security contexts that is valid for this adaptor
      */
     public static List getValidSecurityContextsByType(GATContext context,
-            Preferences preferences, String type, String adaptorName,
-            String host, int port) {
+        Preferences preferences, String type, String adaptorName, String host,
+        int port) {
         ArrayList result = new ArrayList();
 
         List l;
@@ -99,8 +99,10 @@ public class SecurityContextUtils {
      * @throws GATInvocationException
      */
     public static Object getSecurityUserData(GATContext context,
-            Preferences preferences, String adaptorName, String dataObjectKey,
-            URI location, int defaultPort, SecurityContextCreator creator) throws CouldNotInitializeCredentialException, CredentialExpiredException {
+        Preferences preferences, String adaptorName, String dataObjectKey,
+        URI location, int defaultPort, SecurityContextCreator creator)
+        throws CouldNotInitializeCredentialException,
+        CredentialExpiredException {
         // get the list of securityContext that might be valid for this adaptor
         List l = SecurityContextUtils.getValidSecurityContexts(context,
             preferences, adaptorName, location.resolveHost(), location
@@ -155,5 +157,25 @@ public class SecurityContextUtils {
         Object userData = c.getDataObject(dataObjectKey);
 
         return userData;
+    }
+
+    public static String getUser(GATContext context, Preferences preferences,
+        SecurityContext securityContext, URI location)
+        throws CouldNotInitializeCredentialException,
+        CredentialExpiredException {
+
+        String user = location.getUserInfo();
+        if (user != null) return user;
+
+        if (securityContext != null) {
+            user = securityContext.getUsername();
+            if (user != null) return user;
+        }
+
+        user = System.getProperty("user.name");
+        if (user != null) return user;
+
+        throw new CouldNotInitializeCredentialException(
+            "Could not get user name");
     }
 }

@@ -40,17 +40,15 @@ class SftpGanymedContextCreator implements SecurityContextCreator {
         if (inContext instanceof CertificateSecurityContext) {
             CertificateSecurityContext c = (CertificateSecurityContext) inContext;
 
-            URI keyURI = c.getKeyfile();
-
-            if (keyURI == null) { // must be a password (is possible, default info may be stored like that)
+            if (c.getKeyfile() == null) { // must be a password (is possible, default info may be stored like that)
                 info = new SftpGanymedUserInfo();
-                info.username = c.getUsername();
-                info.password = c.getPassphrase();
+                info.username = SecurityContextUtils.getUser(gatContext, preferences, inContext, location);
+                info.password = c.getPassword();
 
                 return info;
             } else { // public / private key
 
-                if (!keyURI.refersToLocalHost()) {
+                if (!c.getKeyfile().refersToLocalHost()) {
                     System.err
                         .println("WARNING: URI for key file does not refer to local host, skipping this security context");
                 } else {
@@ -65,7 +63,7 @@ class SftpGanymedContextCreator implements SecurityContextCreator {
         } else if (inContext instanceof PasswordSecurityContext) {
             PasswordSecurityContext c = (PasswordSecurityContext) inContext;
             info = new SftpGanymedUserInfo();
-            info.username = c.getUsername();
+            info.username = SecurityContextUtils.getUser(gatContext, preferences, inContext, location);
             info.password = c.getPassword();
 
             return info;
@@ -91,12 +89,7 @@ public class SftpGanymedSecurityUtils {
             throws CouldNotInitializeCredentialException, CredentialExpiredException {
         SftpGanymedUserInfo info = new SftpGanymedUserInfo();
         info.privateKey = getDefaultPrivateKey(gatContext, preferences);
-        info.username = getUser(gatContext, preferences, location);
-
-        if (preferences != null) {
-            info.password = (String) preferences.get("password");
-        }
-
+        info.username = SecurityContextUtils.getUser(gatContext, preferences, null, location);
         return info;
     }
 
@@ -184,24 +177,5 @@ public class SftpGanymedSecurityUtils {
         }
 
         return keyf;
-    }
-
-    private static String getUser(GATContext context, Preferences preferences,
-            URI location) throws CouldNotInitializeCredentialException, CredentialExpiredException {
-        String user = location.getUserInfo();
-
-        if (user == null) {
-            user = (String) preferences.get("user");
-
-            if (user == null) {
-                user = System.getProperty("user.name");
-            }
-        }
-
-        if (user == null) {
-            throw new CouldNotInitializeCredentialException("Could not get user name");
-        }
-
-        return user;
     }
 }

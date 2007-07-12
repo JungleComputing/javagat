@@ -11,15 +11,6 @@ package org.gridlab.gat.security;
  *
  */
 public class MyProxyServerCredentialSecurityContext extends SecurityContext {
-    /**
-     * This member variables holds the username of the myproxy server
-     */
-    protected String username;
-
-    /**
-     * This member variables holds the password of the myproxy server
-     */
-    protected String password;
 
     /**
      * The hostname of the server
@@ -41,8 +32,7 @@ public class MyProxyServerCredentialSecurityContext extends SecurityContext {
      */
     public MyProxyServerCredentialSecurityContext(String host, int port,
             String username, String password) {
-        this.username = username;
-        this.password = password;
+        super(username, password);
         this.host = host;
         this.port = port;
     }
@@ -72,28 +62,12 @@ public class MyProxyServerCredentialSecurityContext extends SecurityContext {
         this.host = host;
     }
 
-    public String getPassword() {
-        return password;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
-    }
-
     public int getPort() {
         return port;
     }
 
     public void setPort(int port) {
         this.port = port;
-    }
-
-    public String getUsername() {
-        return username;
-    }
-
-    public void setUsername(String username) {
-        this.username = username;
     }
 
     public int hashCode() {

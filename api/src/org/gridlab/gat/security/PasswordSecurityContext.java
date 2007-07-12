@@ -4,19 +4,9 @@ package org.gridlab.gat.security;
  * A security context based upon password information.
  */
 public class PasswordSecurityContext extends SecurityContext {
-    /**
-     * This member variables holds the username of the SecurityContext
-     */
-    private String username = null;
-
-    /**
-     * This member variables holds the password of the SecurityContext
-     */
-    private String password = null;
 
     public PasswordSecurityContext(String username, String password) {
-        this.username = username;
-        this.password = password;
+        super(username, password);
     }
 
     /**
@@ -44,14 +34,6 @@ public class PasswordSecurityContext extends SecurityContext {
      */
     public Object clone() throws CloneNotSupportedException {
         return new PasswordSecurityContext(username, password);
-    }
-
-    public String getPassword() {
-        return password;
-    }
-
-    public String getUsername() {
-        return username;
     }
 
     public int hashCode() {
