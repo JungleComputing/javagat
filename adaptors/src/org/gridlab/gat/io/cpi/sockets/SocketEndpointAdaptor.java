@@ -9,6 +9,7 @@ import java.io.StringWriter;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.List;
 
 import org.exolab.castor.xml.Marshaller;
 import org.gridlab.gat.GATContext;
@@ -206,4 +207,10 @@ public class SocketEndpointAdaptor extends EndpointCpi implements Serializable {
             + localAddress + ", remotePort = " + remotePort + ", remoteAddr = "
             + remoteAddress;
     }
+    
+    // For some reason, we need this for castor serialization
+    public List getMetricDefinitions() throws GATInvocationException {
+        return null;
+    }
+
 }
