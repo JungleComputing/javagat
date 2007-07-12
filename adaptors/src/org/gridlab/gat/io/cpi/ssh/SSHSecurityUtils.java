@@ -42,6 +42,9 @@ class SshContextCreator implements SecurityContextCreator {
             if (keyURI == null) { // must be a password (is possible, default info may be stored like that)
                 info = new SshUserInfo();
                 info.username = c.getUsername();
+                if(info.username == null) {
+                    info.username = SSHSecurityUtils.getUser(gatContext, preferences, location);
+                }
                 info.password = c.getPassphrase();
                 info.privateKeySlot = c.getPrivateKeySlot();
                 
@@ -54,6 +57,9 @@ class SshContextCreator implements SecurityContextCreator {
                 } else {
                     info = new SshUserInfo();
                     info.username = c.getUsername();
+                    if(info.username == null) {
+                        info.username = SSHSecurityUtils.getUser(gatContext, preferences, location);
+                    }
                     info.privateKeyfile = c.getKeyfile().getPath();
                     info.privateKeySlot = c.getPrivateKeySlot();
 
@@ -64,6 +70,9 @@ class SshContextCreator implements SecurityContextCreator {
             PasswordSecurityContext c = (PasswordSecurityContext) inContext;
             info = new SshUserInfo();
             info.username = c.getUsername();
+            if(info.username == null) {
+                info.username = SSHSecurityUtils.getUser(gatContext, preferences, location);
+            }
             info.password = c.getPassword();
 
             return info;
@@ -160,18 +169,12 @@ public class SSHSecurityUtils {
         return keyfile;
     }
 
-    private static String getUser(GATContext context, Preferences preferences,
+    static String getUser(GATContext context, Preferences preferences,
             URI location) throws CouldNotInitializeCredentialException, CredentialExpiredException {
         String user = location.getUserInfo();
 
         if (user == null) {
-            if (preferences != null) {
-                user = (String) preferences.get("user");
-            }
-
-            if (user == null) {
-                user = System.getProperty("user.name");
-            }
+            user = System.getProperty("user.name");
         }
 
         if (user == null) {

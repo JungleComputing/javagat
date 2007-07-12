@@ -57,87 +57,6 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
         }
     }
 
-    // @@@ also take run time from description, count, etc
-    protected String createPreStageWrapperRSL(JobDescription description,
-            String host, Sandbox sandbox, PreStagedFileSet pre,
-            PostStagedFileSet post) throws GATInvocationException {
-        SoftwareDescription sd = description.getSoftwareDescription();
-
-        if (sd == null) {
-            throw new GATInvocationException(
-                    "The job description does not contain a software description");
-        }
-
-        URI javaHome = (URI) sd.getAttributes().get("java.home");
-        if (javaHome == null) {
-            throw new GATInvocationException("java.home not set");
-        }
-
-        String args = "";
-        String rsl = "";
-
-        rsl += "& (executable = " + javaHome.getPath() + "/bin/java)";
-
-        // setup the classpath
-        //@@@ figure out a way of doing this automatically
-        args +=
-                " \"-classpath\" \"lib/GAT.jar:lib/castor-0.9.6.jar:lib/commons-logging.jar:lib/log4j-1.2.13.jar:lib/xmlParserAPIs.jar"
-                        + "lib/castor-0.9.6-xml.jar:lib/colobus.jar:lib/ibis-util-1.4.jar:lib/xercesImpl.jar:lib/RemoteSandbox.jar\"";
-
-        // main class name
-        args +=
-                " \"org.gridlab.gat.resources.cpi.remoteSandbox.RemoteSandbox\"";
-
-        // @@@ does not work with gram prestage
-        PreStagedFileSet myPre = sandbox.getPrestagedFileSet();
-        for (int i = 0; i < myPre.size(); i++) {
-            PreStagedFile f = myPre.getFile(i);
-            args += "\"" + f.getResolvedSrc() + "\"";
-            args += " \"" + f.getResolvedDest() + "\"";
-        }
-
-        if (args.length() != 0) {
-            rsl += (" (arguments = " + args + ")");
-        }
-
-        if (sandbox != null) {
-            rsl += " (directory = " + sandbox.getSandbox() + ")";
-        }
-
-        org.gridlab.gat.io.File stdout = sd.getStdout();
-        if (stdout != null) {
-            if (sandbox != null) {
-                rsl +=
-                        (" (stdout = " + sandbox.getRelativeStdout().getPath() + ".wrapper)");
-            }
-        }
-
-        org.gridlab.gat.io.File stderr = sd.getStderr();
-        if (stderr != null) {
-            if (sandbox != null) {
-                rsl +=
-                        (" (stderr = " + sandbox.getRelativeStderr().getPath() + ".wrapper)");
-            }
-        }
-
-        org.gridlab.gat.io.File stdin = sd.getStdin();
-        if (stdin != null) {
-            if (sandbox != null) {
-                rsl +=
-                        (" (stdin = " + sandbox.getRelativeStdin().getPath() + ".wrapper)");
-            }
-        }
-
-        // set the environment
-        rsl += "(environment = (gat.adaptor.path \"lib\"))";
-
-        if (GATEngine.VERBOSE) {
-            System.err.println("WRAPPER RSL: " + rsl);
-        }
-
-        return rsl;
-    }
-
     protected String createRSL(JobDescription description, String host,
             Sandbox sandbox, PreStagedFileSet pre, PostStagedFileSet post)
             throws GATInvocationException {
@@ -174,8 +93,7 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
             if (javaClassPath.length() != 0) {
                 args += " \"-classpath\" \"" + javaClassPath + "\"";
             } else {
-                // not set, use jar files in prestaged set
-                // @@@ TODO
+                // TODO if not set, use jar files in prestaged set
             }
 
             // set the environment

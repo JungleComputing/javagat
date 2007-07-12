@@ -49,6 +49,9 @@ class SftpContextCreator implements SecurityContextCreator {
             if (keyURI == null) { // must be a password (is possible, default info may be stored like that)
                 info = new SftpUserInfo();
                 info.username = c.getUsername();
+                if(info.username == null) {
+                    info.username = SftpSecurityUtils.getUser(gatContext, preferences, location);
+                }
                 info.password = c.getPassphrase();
 
                 return info;
@@ -60,6 +63,9 @@ class SftpContextCreator implements SecurityContextCreator {
                 } else {
                     info = new SftpUserInfo();
                     info.username = c.getUsername();
+                    if(info.username == null) {
+                        info.username = SftpSecurityUtils.getUser(gatContext, preferences, location);
+                    }
                     info.privateKey = SftpSecurityUtils.loadKey(c.getKeyfile()
                         .getPath());
 
@@ -70,6 +76,9 @@ class SftpContextCreator implements SecurityContextCreator {
             PasswordSecurityContext c = (PasswordSecurityContext) inContext;
             info = new SftpUserInfo();
             info.username = c.getUsername();
+            if(info.username == null) {
+                info.username = SftpSecurityUtils.getUser(gatContext, preferences, location);
+            }
             info.password = c.getPassword();
 
             return info;
@@ -197,17 +206,12 @@ public class SftpSecurityUtils {
         }
     }
 
-    private static String getUser(GATContext context, Preferences preferences,
+    static String getUser(GATContext context, Preferences preferences,
             URI location) throws CouldNotInitializeCredentialException, CredentialExpiredException {
         String user = location.getUserInfo();
 
-        // @@@ this is a bug, use securitycontext!
         if (user == null) {
-            user = (String) preferences.get("user");
-
-            if (user == null) {
                 user = System.getProperty("user.name");
-            }
         }
 
         if (user == null) {

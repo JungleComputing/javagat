@@ -29,7 +29,7 @@ import org.gridlab.gat.io.File;
  * <li> count (Integer/String): number of executables to run.
  * <li> hostCount (Integer/String): number of hosts to distribute on.
  * <li> maxTime (Long/String):  The maximum walltime or cputime for a single 
-            execution of the executable.  The units is in minutes.
+ execution of the executable.  The units is in minutes.
  * <li> maxWallTime (Long/String): maximal WALL time in minutes.
  * <li> maxCPUTime (Long/String): maximal CPU time in minutes.
  * <li> jobType (String): single|multiple|mpi|condor|...
@@ -78,16 +78,19 @@ public class SoftwareDescription implements java.io.Serializable {
     private HashMap postStagedFiles; // contains (src, dest) tuples
 
     private ArrayList deletedFiles; // contains Files, filenames of files to be removed after the run.
-    
+
     private ArrayList wipedFiles; // contains Files, filenames of files to be wiped and removed after the run.
 
     private HashMap attributes;
 
     private boolean deletePreStaged;
+
     private boolean deletePostStaged;
+
     private boolean wipePreStaged;
+
     private boolean wipePostStaged;
-    
+
     /**
      * Create a software description, which describes the application you
      * want to run.
@@ -253,12 +256,12 @@ public class SoftwareDescription implements java.io.Serializable {
     }
 
     public void setPreStaged(File[] files) {
-    	preStagedFiles = new HashMap();
-    	for(int i=0; i<files.length; i++) {
-    		addPreStagedFile(files[i]);
-    	}
+        preStagedFiles = new HashMap();
+        for (int i = 0; i < files.length; i++) {
+            addPreStagedFile(files[i]);
+        }
     }
-    
+
     /** Add a prestaged file. The file will have the same name in the CWD at the remote machine. */
     public void addPreStagedFile(File src) {
         addPreStagedFile(src, null);
@@ -282,10 +285,10 @@ public class SoftwareDescription implements java.io.Serializable {
     }
 
     public void setPostStaged(File[] files) {
-    	postStagedFiles = new HashMap();
-    	for(int i=0; i<files.length; i++) {
-    		addPostStagedFile(files[i]);
-    	}
+        postStagedFiles = new HashMap();
+        for (int i = 0; i < files.length; i++) {
+            addPostStagedFile(files[i]);
+        }
     }
 
     /** Add a file to poststage. 
@@ -320,7 +323,7 @@ public class SoftwareDescription implements java.io.Serializable {
     public void addDeletedFile(File f) {
         deletedFiles.add(f);
     }
-    
+
     /** 
      * @return the list of files to be wiped (overwritten) and deleted after the run.
      * elements are of type File.
@@ -336,7 +339,7 @@ public class SoftwareDescription implements java.io.Serializable {
     public void addWipedFile(File f) {
         wipedFiles.add(f);
     }
-    
+
     /**
      * @return Returns the stderr file.
      */
@@ -400,20 +403,14 @@ public class SoftwareDescription implements java.io.Serializable {
         res += ", stdout: " + (stdout == null ? "null" : stdout.toString());
         res += ", stderr: " + (stderr == null ? "null" : stderr.toString());
 
-        res +=
-                ", environment: "
-                    + (environment == null ? "null" : environment.toString());
-        res +=
-                ", preStaged: "
-                    + (preStagedFiles == null ? "null" : preStagedFiles
-                        .toString());
-        res +=
-                ", postStaged: "
-                    + (postStagedFiles == null ? "null" : postStagedFiles
-                        .toString());
-        res +=
-                ", attributes: "
-                    + (attributes == null ? "null" : attributes.toString());
+        res += ", environment: "
+            + (environment == null ? "null" : environment.toString());
+        res += ", preStaged: "
+            + (preStagedFiles == null ? "null" : preStagedFiles.toString());
+        res += ", postStaged: "
+            + (postStagedFiles == null ? "null" : postStagedFiles.toString());
+        res += ", attributes: "
+            + (attributes == null ? "null" : attributes.toString());
 
         res += ")";
 
@@ -451,24 +448,26 @@ public class SoftwareDescription implements java.io.Serializable {
     public void setWipePreStaged(boolean wipePreStaged) {
         this.wipePreStaged = wipePreStaged;
     }
-    
-    public int getIntAttribute(String name,
-            int defaultVal) {
-        Integer val = (Integer) attributes.get(name);
 
-        if (val == null)
-            return defaultVal;
-        return val.intValue();
+    public int getIntAttribute(String name, int defaultVal) {
+        Object val = (Integer) attributes.get(name);
+        if (val == null) return defaultVal;
+
+        if (val instanceof Integer) {
+            Integer ival = (Integer) val;
+            return ival.intValue();
+        } else if (val instanceof String) {
+            return Integer.parseInt((String) val);
+        } else {
+            throw new Error("illegal int value: " + val);
+        }
     }
 
-    // @@@ TODO: also fix other typed versions
-    public long getLongAttribute(String name,
-            long defaultVal) {
+    public long getLongAttribute(String name, long defaultVal) {
         Object val = attributes.get(name);
-        if (val == null)
-            return defaultVal;
-        
-        if(val instanceof Long) {
+        if (val == null) return defaultVal;
+
+        if (val instanceof Long) {
             Long lval = (Long) val;
             return lval.longValue();
         } else if (val instanceof String) {
@@ -476,14 +475,11 @@ public class SoftwareDescription implements java.io.Serializable {
         } else {
             throw new Error("illegal long value: " + val);
         }
-      
     }
 
     public String getStringAttribute(String name, String defaultVal) {
         String val = (String) attributes.get(name);
-
-        if (val == null)
-            return defaultVal;
+        if (val == null) return defaultVal;
         return val;
     }
 
@@ -494,16 +490,16 @@ public class SoftwareDescription implements java.io.Serializable {
 
     public boolean getBooleanAttribute(String name, boolean defaultVal) {
         Object val = attributes.get(name);
-        
-        if (val == null)
-            return defaultVal;
-        
-        if(val instanceof Boolean) {
-            return ((Boolean)val).booleanValue();
+
+        if (val == null) return defaultVal;
+
+        if (val instanceof Boolean) {
+            return ((Boolean) val).booleanValue();
         } else if (val instanceof String) {
-            return ((String)val).equalsIgnoreCase("true");
+            return ((String) val).equalsIgnoreCase("true");
         } else {
-            throw new Error("illegal type for boolean attribute: " + name + ": " + val);
+            throw new Error("illegal type for boolean attribute: " + name
+                + ": " + val);
         }
     }
 }
