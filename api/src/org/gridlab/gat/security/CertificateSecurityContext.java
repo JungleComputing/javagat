@@ -8,10 +8,6 @@ import org.gridlab.gat.URI;
  * contexts containing opaque data objects, e.g. GSSAPI credentials.
  */
 public class CertificateSecurityContext extends SecurityContext {
-    /**
-     * This member variables holds the passphrase of the SecurityContext
-     */
-    private String passphrase = null;
 
     /**
      * This member variables holds the URI of the keyfile of the SecurityContext
@@ -19,27 +15,18 @@ public class CertificateSecurityContext extends SecurityContext {
     private URI keyfile = null;
 
     /**
-     * Some protocols need a username and a private key (e.g. sftp)
-     */
-    private String username = null;
-
-    /**
      * Some ssh implementations on windows (tunnelier) use a private key slot
      */
     private int privateKeySlot = -1;
-    
-    public CertificateSecurityContext() {
-    }
 
     /**
-     * @param passphrase
+     * @param password
      * @param keyfile
      */
     public CertificateSecurityContext(URI keyfile, String username,
-            String passphrase) {
-        this.passphrase = passphrase;
+        String password) {
+        super(username, password);
         this.keyfile = keyfile;
-        this.username = username;
     }
 
     /**
@@ -47,11 +34,16 @@ public class CertificateSecurityContext extends SecurityContext {
      * information about the location of keyfile in the
      * context.
      *
-     * @param newKeyfile
+     * @param keyfile
      *            The URI of keyfile
      */
-    public CertificateSecurityContext(URI newKeyfile) {
-        this.keyfile = newKeyfile;
+    public CertificateSecurityContext(URI keyfile) {
+        super(null, null);
+        this.keyfile = keyfile;
+    }
+
+    public CertificateSecurityContext() {
+        super(null, null);
     }
 
     /**
@@ -68,7 +60,7 @@ public class CertificateSecurityContext extends SecurityContext {
 
         CertificateSecurityContext other = (CertificateSecurityContext) obj;
 
-        return other.passphrase.equals(passphrase)
+        return other.password.equals(password)
             && other.keyfile.equals(keyfile) && other.username.equals(username);
     }
 
@@ -78,7 +70,7 @@ public class CertificateSecurityContext extends SecurityContext {
      * @return the clone of this security context (but not the associated adaptor data)
      */
     public Object clone() throws CloneNotSupportedException {
-        return new CertificateSecurityContext(keyfile, username, passphrase);
+        return new CertificateSecurityContext(keyfile, username, password);
     }
 
     /**
@@ -90,24 +82,8 @@ public class CertificateSecurityContext extends SecurityContext {
         return keyfile;
     }
 
-    public String getUsername() {
-        return username;
-    }
-
-    public void setUsername(String username) {
-        this.username = username;
-    }
-
     public void setKeyfile(URI keyfile) {
         this.keyfile = keyfile;
-    }
-
-    public void setPassphrase(String passphrase) {
-        this.passphrase = passphrase;
-    }
-
-    public String getPassphrase() {
-        return passphrase;
     }
 
     public int hashCode() {
@@ -121,11 +97,11 @@ public class CertificateSecurityContext extends SecurityContext {
             + ")";
     }
 
-	public int getPrivateKeySlot() {
-		return privateKeySlot;
-	}
+    public int getPrivateKeySlot() {
+        return privateKeySlot;
+    }
 
-	public void setPrivateKeySlot(int privateKeySlot) {
-		this.privateKeySlot = privateKeySlot;
-	}
+    public void setPrivateKeySlot(int privateKeySlot) {
+        this.privateKeySlot = privateKeySlot;
+    }
 }

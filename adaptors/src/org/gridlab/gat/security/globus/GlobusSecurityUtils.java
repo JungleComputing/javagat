@@ -124,7 +124,7 @@ public class GlobusSecurityUtils {
         }
 
         if (remaining == 0) {
-            throw new CredentialExpiredException("gridftp credential expired");
+            throw new CredentialExpiredException("globus credential expired");
         }
 
         return (GSSCredential) data;

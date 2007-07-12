@@ -16,17 +16,9 @@ public class SshUserInfo implements UserInfo {
     public String privateKeyfile;
 
     public int privateKeySlot = -1;
-    
-    /*
-     public String getPassword() {
-     return password;
-     }
-     */
+
     public String getPassword() {
-        if (password != null)
-            return password;
-        else
-            return null;
+        return password;
     }
 
     public String getPrivateKeyfile() {
@@ -37,11 +29,6 @@ public class SshUserInfo implements UserInfo {
         return true;
     }
 
-    /*
-     public String getPassphrase() {
-     return null;
-     }
-     */
     public String getPassphrase() {
         return null;
     }
@@ -70,12 +57,12 @@ public class SshUserInfo implements UserInfo {
         return true;
     }
 
-	public int getPrivateKeySlot() {
-		return privateKeySlot;
-	}
+    public int getPrivateKeySlot() {
+        return privateKeySlot;
+    }
 
-	public void setPrivateKeySlot(int privateKeySlot) {
-		this.privateKeySlot = privateKeySlot;
-	}
+    public void setPrivateKeySlot(int privateKeySlot) {
+        this.privateKeySlot = privateKeySlot;
+    }
 
 }

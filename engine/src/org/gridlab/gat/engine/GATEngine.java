@@ -816,7 +816,7 @@ public class GATEngine {
             }
         }
 
-        String selected = (String) preferences.get(adaptorType
+        String selected = (String) preferences.get(adaptorType.toLowerCase()
             + ".adaptor.name");
         if (selected != null) {
             if (selected.equalsIgnoreCase(adaptorName)) {

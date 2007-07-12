@@ -100,7 +100,7 @@ public class GATContext implements Cloneable {
      * between adaptors if the constructor of an object is not called with a
      * Preferences object.
      */
-    public void addPreference(Object key, Object value) {
+    public void addPreference(String key, Object value) {
         preferences.put(key, value);
     }
 

@@ -4,7 +4,6 @@ import java.io.OutputStream;
 import java.net.URISyntaxException;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -14,7 +13,6 @@ import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.GATObjectCreationException;
 import org.gridlab.gat.MethodNotApplicableException;
 import org.gridlab.gat.Preferences;
-import org.gridlab.gat.TimePeriod;
 import org.gridlab.gat.URI;
 import org.gridlab.gat.engine.GATEngine;
 import org.gridlab.gat.engine.util.InputForwarder;
@@ -26,8 +24,6 @@ import org.gridlab.gat.io.cpi.ssh.SSHSecurityUtils;
 import org.gridlab.gat.io.cpi.ssh.SshUserInfo;
 import org.gridlab.gat.resources.Job;
 import org.gridlab.gat.resources.JobDescription;
-import org.gridlab.gat.resources.Reservation;
-import org.gridlab.gat.resources.Resource;
 import org.gridlab.gat.resources.ResourceDescription;
 import org.gridlab.gat.resources.SoftwareDescription;
 import org.gridlab.gat.resources.cpi.ResourceBrokerCpi;
@@ -59,39 +55,6 @@ public class SshResourceBrokerAdaptor extends ResourceBrokerCpi {
     public SshResourceBrokerAdaptor(GATContext gatContext, Preferences preferences)
         throws Exception {
         super(gatContext, preferences);
-    }
-
-    /**
-     * This method attempts to reserve the specified hardware resource for the
-     * specified time period. Upon reserving the specified hardware resource
-     * this method returns a Reservation. Upon failing to reserve the specified
-     * hardware resource this method returns an error.
-     * 
-     * @param resourceDescription
-     *            A description, a HardwareResourceDescription, of the hardware
-     *            resource to reserve
-     * @param timePeriod
-     *            The time period, a TimePeriod , for which to reserve the
-     *            hardware resource
-     */
-    public Reservation reserveResource(ResourceDescription resourceDescription,
-        TimePeriod timePeriod) {
-        throw new UnsupportedOperationException("Not implemented");
-    }
-
-    /**
-     * This method attempts to find one or more matching hardware resources.
-     * Upon finding the specified hardware resource(s) this method returns a
-     * java.util.List of HardwareResource instances. Upon failing to find the
-     * specified hardware resource this method returns an error.
-     * 
-     * @param resourceDescription
-     *            A description, a HardwareResoucreDescription, of the hardware
-     *            resource(s) to find
-     * @return java.util.List of HardwareResources upon success
-     */
-    public List findResources(ResourceDescription resourceDescription) {
-        throw new UnsupportedOperationException("Not implemented");
     }
 
     /*
@@ -279,17 +242,6 @@ public class SshResourceBrokerAdaptor extends ResourceBrokerCpi {
         } catch (Exception e) {
             throw new GATInvocationException("ssh", e);
         }
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.gridlab.gat.resources.ResourceBroker#reserveResource(org.gridlab.gat.resources.Resource,
-     *      org.gridlab.gat.engine.util.TimePeriod)
-     */
-    public Reservation reserveResource(Resource resource, TimePeriod timePeriod)
-        {
-        throw new UnsupportedOperationException("Not implemented");
     }
 
     protected Session prepareSession(URI loc) throws GATInvocationException {

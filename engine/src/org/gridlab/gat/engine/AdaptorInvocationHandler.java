@@ -254,7 +254,7 @@ public class AdaptorInvocationHandler implements InvocationHandler {
             Preferences preferences, Object[] parameters)
             throws GATObjectCreationException {
         if (preferences == null) { // No preferences.
-            preferences = new Preferences(new Hashtable());
+            preferences = new Preferences();
         }
 
         if (parameters == null) {
