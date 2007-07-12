@@ -52,7 +52,7 @@ class Adaptor {
         Iterator i = p.keySet().iterator();
 
         while (i.hasNext()) {
-            Object key = i.next();
+            String key = (String) i.next();
             Object requestedValue = p.get(key);
 
             if (this.preferences.containsKey(key)) {

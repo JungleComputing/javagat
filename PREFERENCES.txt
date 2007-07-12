@@ -1,0 +1,64 @@
+Generic preferences:
+
+preference key                              possible value(s)         default value           meaning
+-----------------------------------------------------------------------------------------------------
+"adaptors.local"                            "true", "false"           false                   Use only local adaptors.
+"killJobsOnExit"                            "true", "false"           true                    Kill submitted jobs when exiting.
+"XXX.adaptor.name"                          adaptor name              n.a.                    Use adaptor with the specified name for type XXX.
+                                                                                              For example, you can set "ResourceBroker.adaptor.name" to "globus" to force
+                                                                                              the use of the globus adaptor. The adaptor name is the class name of 
+                                                                                              the adaptor, minus the type and the word "Adaptor".
+                                                                                              So, for the GlobusResourceAdaptor class, the adaptor name will be "Globus".
+                                                                                              For the SftpFileInputStreamAdaptor class, the name is "Sftp"
+                                                                                              Names are not case sensitive, so you can also use "globus" and "sftp" or "SFTP".
+
+globus generic
+"globusCert",                                                                                 A string that contains the globus certificate in UTF-8 format. 
+                                                                                              You can use this if your application already initialized your credential 
+                                                                                              (normally not needed).
+
+globus file
+"ftp.connection.passive"
+"ftp.connection.protection"                 "clear", "confidential",   
+                                            "private", "safe"         Use globus default      Set the protection mode for gridFTP.
+"ftp.server.old"                            "true", "false"           false                   Compatibility mode for old (broken) gridftp servers. 
+                                                                                              Sets LocalNoDataChannelAuthentication, and does not use the "list -d" command.
+"ftp.server.noauthentication"               "true", "false"           false                   Sets data channel authentication to none.
+
+
+globus broker
+"ResourceBroker.jobmanagerContact"                                    none                    Set the jobmanager contact string.
+"ResourceBroker.jobmanager"                 "sge", "pbs", 
+                                            "condor", "fork", ...     none                    Set the jobmanager type for Globus.
+"ResourceBroker.jobmanagerPort"                                       none                    Set the port for the jobmanager.
+"useGramSandbox"                            "true", "false",          "false"                 Do not use the GAT sandbox, just use gram instead.
+
+
+local file adaptor
+"ignoreHiddenFiles" 
+
+
+sftp and sftp ganymed file
+"defaultIdentityFile"                                                                         Location of the default identity file to use. 
+                                                                                              By default, identity, id_rsa and id_dsa are already tried, 
+                                                                                              both in the .ssh and the ssh directories int the user's home dir.
+
+
+ssh
+"privateKeySlot"                                                                              Sets the private key slot to use (normally not needed).
+
+
+ProActive
+"ResourceBroker.ProActive.VirtualNodeName"  
+"ResourceBroker.ProActive.noSandbox"
+"ResourceBroker.ProActive.stageOnAll"
+"ResourceBroker.ProActive.needsStdin"
+"launch.parallel"
+"newActive.parallel"
+"newActive.maxNodesPerWatcher"
+"ResourceBroker.ProActive.Descriptors"
+
+
+zorilla
+"zorilla.node.address"                      a socket address                                  Set the address of the node to connect to. If not specified, we use the default port of the local machine.
+

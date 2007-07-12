@@ -201,6 +201,7 @@ public class SftpSecurityUtils {
             URI location) throws CouldNotInitializeCredentialException, CredentialExpiredException {
         String user = location.getUserInfo();
 
+        // @@@ this is a bug, use securitycontext!
         if (user == null) {
             user = (String) preferences.get("user");
 

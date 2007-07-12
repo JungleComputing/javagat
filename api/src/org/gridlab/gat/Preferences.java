@@ -2,16 +2,19 @@ package org.gridlab.gat;
 
 import java.util.Hashtable;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * An instance of this class represents user preferences for selecting adaptors.
  */
-public class Preferences extends Hashtable {
+public class Preferences {
+    
+    Hashtable t = new Hashtable();
+    
     /**
      * Constructs a new Preferences with no mappings.
      */
     public Preferences() {
-        super();
     }
 
     /**
@@ -21,7 +24,11 @@ public class Preferences extends Hashtable {
      *            the map to copy the initial preferences from
      */
     public Preferences(Map map) {
-        super(map);
+        t.putAll(map);
+    }
+
+    public Preferences(Preferences p) {
+        t.putAll(p.t);
     }
 
     /**
@@ -51,7 +58,31 @@ public class Preferences extends Hashtable {
      *             this map does not permit <tt>null</tt> keys or values, and
      *             the specified key or value is <tt>null</tt>.
      */
-    public Object put(Object key, Object value) {
-        return super.put(key, value);
+    public Object put(String key, Object value) {
+        return t.put(key, value);
+    }
+
+    public Object get(String key) {
+        return t.get(key);
+    }
+    
+    public void putAll(Preferences p) {
+        t.putAll(p.t);
+    }
+    
+    public Object clone() {
+        return new Preferences(t);
+    }
+    
+    public Object remove(String key) {
+        return t.remove(key);
+    }
+    
+    public boolean containsKey(String key) {
+        return t.containsKey(key);
+    }
+    
+    public Set keySet() {
+        return t.keySet();
     }
 }
