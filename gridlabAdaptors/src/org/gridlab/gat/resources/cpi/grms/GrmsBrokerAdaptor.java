@@ -60,8 +60,6 @@ import org.gridlab.gat.resources.cpi.ResourceBrokerCpi;
 
 import org.ietf.jgss.GSSCredential;
 
-import ibis.util.IPUtils;
-
 import java.io.IOException;
 import java.io.StringWriter;
 
@@ -226,7 +224,7 @@ public class GrmsBrokerAdaptor extends ResourceBrokerCpi {
         String host = u.getHost();
 
         if (host == null) {
-            host = IPUtils.getLocalHostName();
+            host = GATEngine.getLocalHostName();
         }
 
         String protocol = u.getScheme();
