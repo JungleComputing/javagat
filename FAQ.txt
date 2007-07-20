@@ -184,6 +184,40 @@ A: Right, I understand this is a bug in some combinations of linux and Java.
      file.RemoteCopyPerformanceTest any://fs0.das2.cs.vu.nl/testfile2m any:///testfile
 
 
+Q: SSH offers a lot of possibilities to access a remote machine. To make the 
+thing with ssh really sure, it is convenient in the meanwhile to have a 
+seperate key for every host, and then to invoke ssh via
+
+ssh -i <identity file> user@host
+
+Offers the ssh adaptor in java-GAT the option "-i"?
+
+A: Yes, you can create a PasswordSecurityContext for username/password logins,
+   or a CertificateSecurityContext if you want to use a specific public/private key pair.
+
+Q: Which identity file is the ssh-adaptor using if you don't give him any? That's 
+   not a trivial task, because the SSH manpage says here:
+   The default is 
+     ~/.ssh/identity for protocol version 1, and ~/.ssh/id_rsa and 
+     ~/.ssh/id_dsa for protocol version 2. 
+
+A: JavaGAT tries all three of the above.
+
+
+Q: what are the difference between:
+   CommandlineSshPrunResourceBrokerAdaptor, 
+   CommandlineSshResourceBrokerAdaptor,
+   and the SshResourceBrokerAdaptor?
+
+A: - The CommandlineSshPrunResourceBrokerAdaptor is for internal use on the DAS-2 and DAS-3
+     systems. On other platforms, you cannot use it. (prun is our local resource broker)
+   - The CommandlineSshResourceBrokerAdaptor is an adaptor that uses a locally installed commandline
+     ssh client. So, it just builds a commandline ssh command, and does a System.exec of it.
+     On unix/linux, most SSH installations should work (e.g., open SSH).
+     On Windows, we support only the free Bitvise Tunnelier client at this moment.
+   - The SshResourceBrokerAdaptor uses a Java SSH library and is much more portable than the
+     commandline implementation. However, it is typically a bit slower.
+   
 Have Fun,
 
 Rob
