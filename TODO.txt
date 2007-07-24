@@ -21,3 +21,8 @@
 - GAT_LOCATION -> JAVAGAT_HOME
 
 - in the engine, check if GAT.end hasn't been called before doing an operation.
+
+%% things to fix in GAT:
+%% - add InvalidUsernameOrPasswordException
+%% - add feature to disable intelligent dispatching for certain API types (streams)
+%% - and/or let streams save file pointer
