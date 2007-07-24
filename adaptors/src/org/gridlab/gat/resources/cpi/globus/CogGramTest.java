@@ -40,7 +40,7 @@ public class CogGramTest implements GramJobListener, org.globus.gram.internal.GR
         }
 
         long start = System.currentTimeMillis();
-        submitGramJob(credential, "", "fs0.das3.cs.vu.nl/jobmanager-sge");
+        submitGramJob(credential, "&(executable=/bin/hostname)", "fs0.das3.cs.vu.nl/jobmanager-sge");
         
         synchronized (this) {
             while(!exit) {
