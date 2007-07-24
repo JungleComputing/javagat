@@ -67,6 +67,7 @@ public class SubmitJobGlobus implements MetricListener {
         JobDescription jd = new JobDescription(sd, rd);
         ResourceBroker broker = GAT.createResourceBroker(context, prefs);
 
+        long start = System.currentTimeMillis();
         Job job = broker.submitJob(jd);
         MetricDefinition md = job.getMetricDefinitionByName("job.status");
         Metric m = md.createMetric(null);
@@ -78,6 +79,8 @@ public class SubmitJobGlobus implements MetricListener {
                 wait();
             }
         }
+        long end = System.currentTimeMillis();
+        System.err.println("job took " + (end - start) + " ms");
 
         System.err.println("SubmitJobCallback: Job finished, state = "
             + job.getInfo());
