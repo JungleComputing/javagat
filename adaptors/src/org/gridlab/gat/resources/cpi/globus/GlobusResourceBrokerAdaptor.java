@@ -513,7 +513,9 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
 
         // If we staged in the executable, we have to do a chmod.
         // Globus loses the executable bit :-(
-        runChmod(credential, description, host, sandbox);
+        if(sandbox.getResolvedExecutable() != null) {
+            runChmod(credential, description, host, sandbox);
+        }
 
         String rsl = createRSL(description, host, sandbox, null, null);
         GramJob j = new GramJob(credential, rsl);
