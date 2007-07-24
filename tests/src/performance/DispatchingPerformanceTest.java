@@ -21,7 +21,7 @@ public class DispatchingPerformanceTest {
         prefs.put("File.adaptor.name", "dummy");
 
         System.err.println("test with all file adaptors");
-        runTest(context, null, ALL_COUNT);
+        runTest(context, null, ALL_COUNT*10);
         
         System.err.println("test with no file adaptors");
         runTest(context, prefs, DUMMY_COUNT);
