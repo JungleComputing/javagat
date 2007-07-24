@@ -44,6 +44,7 @@ public class SubmitJobGlobus implements MetricListener {
         GATContext context = new GATContext();
         Preferences prefs = new Preferences();
         prefs.put("ResourceBroker.adaptor.name", "Globus");
+        prefs.put("File.adaptor.name", "GridFTP");
         prefs.put("ResourceBroker.jobmanagerContact", args[1]);
 
         File outFile = GAT.createFile(context, prefs,
