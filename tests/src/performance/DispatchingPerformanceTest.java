@@ -11,9 +11,9 @@ import org.gridlab.gat.URI;
 import org.gridlab.gat.io.File;
 
 public class DispatchingPerformanceTest {
-    static final int DUMMY_COUNT = 10000000;
+    static final int DUMMY_COUNT = 1000000;
 
-    static final int ALL_COUNT = 100000;
+    static final int ALL_COUNT = 1000;
 
     public static void main(String[] args) throws Exception {
         GATContext context = new GATContext();
