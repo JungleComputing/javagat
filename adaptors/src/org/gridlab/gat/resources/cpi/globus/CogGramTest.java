@@ -73,6 +73,7 @@ public class CogGramTest implements GramJobListener, org.globus.gram.internal.GR
     }
 
     public void statusChanged(GramJob newJob) {
+        System.err.println("status change, newJob = " + newJob);
         int globusState = newJob.getStatus();
         if ((globusState == STATUS_DONE) || (globusState == STATUS_FAILED)) {
             synchronized (this) {
