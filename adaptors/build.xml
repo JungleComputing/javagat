@@ -269,9 +269,9 @@
             </manifest>
         </jar>
 
-		<jar jarfile="${lib}/gLiteResourceBrokerAdaptor.jar" basedir="${tmp}" includes="**/org/gridlab/gat/resources/cpi/glite/*.class">
+		<jar jarfile="${lib}/GLiteResourceBrokerAdaptor.jar" basedir="${tmp}" includes="**/org/gridlab/gat/resources/cpi/glite/*.class">
 			<manifest>
-				<attribute name="ResourceBrokerCpi-class" value="org.gridlab.gat.resources.cpi.glite.gLiteResourceBrokerAdaptor" />
+				<attribute name="ResourceBrokerCpi-class" value="org.gridlab.gat.resources.cpi.glite.GLiteResourceBrokerAdaptor" />
 			</manifest>
 		</jar>
 		
