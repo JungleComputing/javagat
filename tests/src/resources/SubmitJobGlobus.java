@@ -9,7 +9,6 @@ import org.gridlab.gat.GAT;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.Preferences;
 import org.gridlab.gat.URI;
-import org.gridlab.gat.io.File;
 import org.gridlab.gat.monitoring.Metric;
 import org.gridlab.gat.monitoring.MetricDefinition;
 import org.gridlab.gat.monitoring.MetricListener;
@@ -44,17 +43,18 @@ public class SubmitJobGlobus implements MetricListener {
         GATContext context = new GATContext();
         Preferences prefs = new Preferences();
         prefs.put("ResourceBroker.adaptor.name", "Globus");
+        prefs.put("File.adaptor.name", "GridFTP");
         prefs.put("ResourceBroker.jobmanagerContact", args[1]);
-
+/*
         File outFile = GAT.createFile(context, prefs,
             new URI("any:///out"));
         File errFile = GAT.createFile(context, prefs,
             new URI("any:///err"));
-
+*/
         SoftwareDescription sd = new SoftwareDescription();
         sd.setLocation(new URI(args[0]));
-        sd.setStdout(outFile);
-        sd.setStderr(errFile);
+//        sd.setStdout(outFile);
+//        sd.setStderr(errFile);
         if(args.length == 3) {
             sd.addAttribute("queue", args[2]);
         }
@@ -67,6 +67,7 @@ public class SubmitJobGlobus implements MetricListener {
         JobDescription jd = new JobDescription(sd, rd);
         ResourceBroker broker = GAT.createResourceBroker(context, prefs);
 
+        long start = System.currentTimeMillis();
         Job job = broker.submitJob(jd);
         MetricDefinition md = job.getMetricDefinitionByName("job.status");
         Metric m = md.createMetric(null);
@@ -78,6 +79,8 @@ public class SubmitJobGlobus implements MetricListener {
                 wait();
             }
         }
+        long end = System.currentTimeMillis();
+        System.err.println("job took " + (end - start) + " ms");
 
         System.err.println("SubmitJobCallback: Job finished, state = "
             + job.getInfo());

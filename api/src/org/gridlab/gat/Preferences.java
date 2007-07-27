@@ -76,4 +76,8 @@ public class Preferences {
     public Set keySet() {
         return t.keySet();
     }
+    
+    public boolean containsValue(Object value) {
+        return t.containsValue(value);
+    }
 }
