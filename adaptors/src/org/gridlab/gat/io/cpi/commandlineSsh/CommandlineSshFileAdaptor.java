@@ -1,5 +1,6 @@
 package org.gridlab.gat.io.cpi.commandlineSsh;
 
+import org.gridlab.gat.AdaptorNotApplicableException;
 import org.gridlab.gat.GAT;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
@@ -29,7 +30,7 @@ public class CommandlineSshFileAdaptor extends FileCpi {
 		super(gatContext, preferences, location);
 
                 if (!location.isCompatible("ssh") && !location.isCompatible("file")) {
-                    throw new GATObjectCreationException("cannot handle this URI: " + location);
+                    throw new AdaptorNotApplicableException("cannot handle this URI");
                 }
                 
 		String osname = System.getProperty("os.name");
@@ -110,11 +111,6 @@ public class CommandlineSshFileAdaptor extends FileCpi {
 			}
 		}
 
-		// to be modified, this part goes inside the SSHSecurityUtils
-		if (src.getUserInfo() != null) {
-			sui.username = src.getUserInfo();
-		}
-
 		/* allow port override */
 		int port = src.getPort();
 		/* it will always return -1 for user@host:path */
@@ -145,9 +141,6 @@ public class CommandlineSshFileAdaptor extends FileCpi {
 			command += sui.username + "@" + src.resolveHost() + ":" + src.getPath()
 					+ " " + dest.getPath();
 		} else {
-
-                    
-                    
                     File remote = null;
                     boolean dir = false;
                     try {

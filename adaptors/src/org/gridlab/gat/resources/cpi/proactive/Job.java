@@ -784,12 +784,4 @@ public class Job extends JobCpi {
         throw new GATInvocationException("getJobID called in state "
                 + getStateString(state));
     }
-
-    /**
-     * @see org.gridlab.gat.advert.Advertisable#marshal()
-     */
-    public String marshal() {
-        // FIXME: Auto-generated method stub
-        return null;
-    }
 }

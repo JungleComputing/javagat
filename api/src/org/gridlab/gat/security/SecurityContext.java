@@ -16,6 +16,15 @@ import java.util.StringTokenizer;
  *
  */
 public abstract class SecurityContext implements Cloneable {
+
+    /** the user name to use for this context */
+    protected String username;
+
+    /**
+     * This member variables holds the passphrase of the SecurityContext
+     */
+    protected String password = null;
+
     /**
      * The data objects are used to store adaptor-specific information in
      * the security context. They are transparent for GAT users, and should
@@ -29,6 +38,11 @@ public abstract class SecurityContext implements Cloneable {
 
     public abstract int hashCode();
 
+    protected SecurityContext(String username, String password) {
+        this.username = username;
+        this.password = password;
+    }
+    
     /**
      * Returns a clone of this context.
      *
@@ -201,5 +215,33 @@ public abstract class SecurityContext implements Cloneable {
         }
 
         return allowed;
+    }
+
+    /**
+     * @return the username
+     */
+    public String getUsername() {
+        return username;
+    }
+
+    /**
+     * @param username the username to set
+     */
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    /**
+     * @return the password
+     */
+    public String getPassword() {
+        return password;
+    }
+
+    /**
+     * @param password the password to set
+     */
+    public void setPassword(String password) {
+        this.password = password;
     }
 }

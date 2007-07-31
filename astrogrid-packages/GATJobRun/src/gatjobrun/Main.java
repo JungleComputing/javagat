@@ -40,10 +40,14 @@ public class Main {
         parameterList.put("-username","");
         parameterList.put("-password","");
         parameterList.put("-SubmitOnly","false");
+        parameterList.put("-JobName","");
+        parameterList.put("-MailOptions","");
+        parameterList.put("-MailUser","");
          
         parameterList.put("-stdout","");
         parameterList.put("-stdin","");
         parameterList.put("-stderr","");
+        parameterList.put("-join","");
         parameterList.put("-prestage","");
         parameterList.put("-poststage","");
         
@@ -51,7 +55,7 @@ public class Main {
         parameterList.put("-CPUTime","");
         parameterList.put("-Memsize","");
         parameterList.put("-Nodes","");
-         
+     //   RB.jobmanager
         parameterList.put("-RB.adaptor","");
         parameterList.put("-RB.jobmanager","");
     }    
@@ -62,9 +66,13 @@ public class Main {
         System.out.println("  -username      [STRING]     username for security context");
         System.out.println("  -password      [STRING]     password for security context\n");
         System.out.println("  -SubmitOnly    [true/false] submit only (true) or poll still exit\n");
+        System.out.println("  -JobName       [STRING]     name of the job");
+        System.out.println("  -MailOptions   [STRING]     options for sending Emails (SGE)");
+        System.out.println("  -MailUser      [STRING]     recipient of the mails");
         System.out.println("  -stdin         [FILE]       path to input file");
         System.out.println("  -stdout        [FILE]       path to output file");
         System.out.println("  -stderr        [FILE]       path to error output file\n");
+        System.out.println("  -join          [STRING]    how to join stdout and stderr");
         System.out.println("  -prestage      [FILE],...   path to prestage file(s) - comma separated");
         System.out.println("  -poststage     [FILE],...   path to poststage file(s) - comma spearated\n");
         System.out.println("  -Walltime      [STRING]     Walltime limit for thids job in seconds\n");
@@ -169,6 +177,14 @@ public class Main {
         		gat_job_run.Submit = false;
         	}
         }
+        
+        
+        if( ((java.lang.String)parameterList.get("-JobName")).length() > 0 )
+            gat_job_run.SetJobName((java.lang.String)parameterList.get("-JobName"));
+        if( ((java.lang.String)parameterList.get("-MailOptions")).length() > 0 )
+            gat_job_run.SetMailOptions((java.lang.String)parameterList.get("-MailOptions"));
+        if( ((java.lang.String)parameterList.get("-MailUser")).length() > 0 )
+            gat_job_run.SetMailUser((java.lang.String)parameterList.get("-MailUser"));
             
         if( ((java.lang.String)parameterList.get("-stdin")).length() > 0 )
             gat_job_run.setStdin((java.lang.String)parameterList.get("-stdin"));

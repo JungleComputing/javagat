@@ -68,6 +68,9 @@ public class GATJobRunner {
     private String              Password;
     private BufferedReader      StdoutReader;
     private String              Username;
+    private String              Jobname;
+    private String              MailOptions;
+    private String              MailUser;
     private ResourceBroker      broker;
     public boolean              Submit;
     
@@ -108,6 +111,10 @@ public class GATJobRunner {
         FileStdin      = null;
         FileStderr     = null;
         StdoutReader   = null;
+        Username       = null;
+        Jobname        = null;
+        MailOptions    = null;
+        MailUser       = null;
         prestageFiles  = new ArrayList(); // WARNING:
         poststageFiles = new ArrayList(); // ArrayList has an initial capacity of 10
         execArguments  = new ArrayList(); // this may not fit in some cases...
@@ -458,6 +465,21 @@ public class GATJobRunner {
     }
 
     //~--- set methods --------------------------------------------------------
+
+    public void SetJobName(String name)
+    {
+        Jobname = name;
+    }
+
+    public void SetMailOptions(String opts)
+    {
+        MailOptions = opts; 
+    }
+
+    public void SetMailUser(String name)
+    {
+        MailUser = name; 
+    }
 
     public void setExecutable(String exe) {
         try {

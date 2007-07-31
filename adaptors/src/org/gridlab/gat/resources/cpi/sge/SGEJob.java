@@ -11,6 +11,7 @@ package org.gridlab.gat.resources.cpi.sge;
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Map;
+import java.net.URL;
 
 import org.ggf.drmaa.DrmaaException;
 import org.ggf.drmaa.ExitTimeoutException;
@@ -24,6 +25,7 @@ import org.gridlab.gat.monitoring.MetricDefinition;
 import org.gridlab.gat.resources.JobDescription;
 import org.gridlab.gat.resources.cpi.JobCpi;
 import org.gridlab.gat.resources.cpi.Sandbox;
+import org.gridlab.gat.resources.cpi.SerializedJob;
 
 /**
  *
@@ -37,6 +39,13 @@ public class SGEJob extends JobCpi {
     private JobDescription jobDescription;
     private Session session;
     private Hashtable time;
+
+    private boolean postStageFinished = false;
+    private boolean postStageStarted = false;
+
+    private long queueTime;
+    private long runTime;
+    private long startTime;
     
     /**
      * The jobStartListener runs in a thread and checks the job's state.
@@ -223,10 +232,51 @@ public class SGEJob extends JobCpi {
         return state;
     }
     
-    public String marshal() {
-        throw new Error("Not implemented");
+
+    /*
+     * @see org.gridlab.gat.advert.Advertisable#marshal()
+     */
+    public String marshal() 
+    {
+        SerializedJob sj;
+        synchronized (this) 
+            {
+
+                // we have to wait until the job is in a safe state
+                // we cannot marshal it if it is halfway during the poststage process
+                while (true) {
+                    if (jobID != null) {
+                        if (!postStageStarted)
+                            break;
+                        if (postStageFinished)
+                            break;
+                    }
+                    
+                    try 
+                        {
+                            wait();
+                        } 
+                    catch (Exception e) 
+                        {
+                            e.printStackTrace();
+                        }
+                }
+                
+                sj =
+                    new SerializedJob(jobDescription, sandbox,
+                                      postStageFinished, jobID, queueTime, runTime,
+                                      startTime);
+            }
+        String res = GATEngine.defaultMarshal(sj);
+        if (GATEngine.DEBUG) 
+            {
+                System.err.println("marshalled seralized job: " + res);
+            }
+        return res;
     }
-    
+
+
+
     protected void setState() {
         try {
             int status = session.getJobProgramStatus(jobID);

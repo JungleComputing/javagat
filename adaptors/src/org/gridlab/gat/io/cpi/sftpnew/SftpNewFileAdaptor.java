@@ -4,6 +4,7 @@ import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Vector;
 
+import org.gridlab.gat.AdaptorNotApplicableException;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.GATObjectCreationException;
@@ -40,7 +41,7 @@ public class SftpNewFileAdaptor extends FileCpi {
         super(gatContext, preferences, location);
 
         if (!location.isCompatible("sftp") && !location.isCompatible("file")) {
-            throw new GATObjectCreationException("cannot handle this URI");
+            throw new AdaptorNotApplicableException("cannot handle this URI");
         }
     }
 

@@ -135,9 +135,12 @@ public abstract class GlobusFileAdaptor extends FileCpi {
     public void copy(URI dest) throws GATInvocationException {
         // We don't have to handle the local case, the GAT engine will select
         // the local adaptor.
-        if (dest.refersToLocalHost() && (toURI().refersToLocalHost())) {
-            throw new GATInvocationException("gridftp cannot copy local files");
-        }
+        // Maybe it is better to just allow this.
+        // especially fot the case where the user enforces the use of
+        // this adaptor
+//        if (dest.refersToLocalHost() && (toURI().refersToLocalHost())) {
+//            throw new GATInvocationException("gridftp cannot copy local files");
+//        }
 
         // create a seperate file object to determine whether the source
         // is a directory. This is needed, because the source might be a local
