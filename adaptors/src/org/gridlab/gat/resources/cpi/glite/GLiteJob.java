@@ -106,18 +106,19 @@ public class GLiteJob extends JobCpi {
 		this.startTime = startTime;
 		this.jobStruct = jobStruct;
 		this.jobID = jobStruct.getId();
-		// it is not yet possible to acquire job state
+		// it is not yet possible to retrieve job state
 		// we just check if we can already copy output files
+		// so I use now 3 states: UNKNOWN, POST_STAGING and STOPPED
 		state = Job.UNKNOWN;
 		// Tell the engine that we provide job.status events
-		/*
+		
 		HashMap returnDef = new HashMap();
 		returnDef.put("status", String.class);
 		statusMetricDefinition = new MetricDefinition("job.status",
 				MetricDefinition.DISCRETE, "String", null, null, returnDef);
 		GATEngine.registerMetric(this, "getJobStatus", statusMetricDefinition);
 		statusMetric = statusMetricDefinition.createMetric(null);
-		*/
+		
 		poller = new GLiteJobPoller(this);
 		poller.start();
 	}
