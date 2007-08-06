@@ -80,4 +80,8 @@ public class Preferences {
     public boolean containsValue(Object value) {
         return t.containsValue(value);
     }
+    
+    public String toString() {
+        return t.toString();
+    }
 }
