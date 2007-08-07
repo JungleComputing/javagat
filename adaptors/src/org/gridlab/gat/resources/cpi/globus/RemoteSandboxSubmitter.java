@@ -133,10 +133,6 @@ public class RemoteSandboxSubmitter {
                 environment.put("gat.adaptor.path", "lib/adaptors");
             }
 
-//            environment.put("java.security.egd", "file:/dev/./urandom");
-//            environment.put("securerandom.source", "file:/dev/./urandom");
-            environment.put("java.security.egd", "file:///dev/./zero");
-            environment.put("securerandom.source", "file:///dev/./zero");
             sd.setEnvironment(environment);
 
             if (!remoteIsGatEnabled) {
