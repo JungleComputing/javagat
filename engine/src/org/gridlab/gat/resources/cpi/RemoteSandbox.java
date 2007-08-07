@@ -187,19 +187,19 @@ public class RemoteSandbox implements MetricListener {
 
             if (sd.getBooleanAttribute("waitForPreStage", false)) {
                 if (verbose) {
-                    System.err.println("writing prestageDoneFile at "
+                    System.err.println("deleting prestageDoneFile at "
                             + preStageDoneLocation);
                 }
 
                 File preStageDoneFile =
                         GAT.createFile(gatContext, prefs, preStageDoneLocation);
 
-                if (!preStageDoneFile.createNewFile()) {
-                    System.err.println("could not create preStageDone file");
+                if (!preStageDoneFile.delete()) {
+                    System.err.println("could not delete preStageDone file");
                     System.exit(1);
                 }
                 if (verbose) {
-                    System.err.println("writing prestageDoneFile at "
+                    System.err.println("deleting prestageDoneFile at "
                             + preStageDoneLocation + " DONE");
                 }
             } else {

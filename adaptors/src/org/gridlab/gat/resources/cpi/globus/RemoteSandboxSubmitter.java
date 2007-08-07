@@ -35,7 +35,7 @@ public class RemoteSandboxSubmitter {
     }
 
     private java.io.File writeDescriptionToFile(JobDescription description)
-            throws GATInvocationException {
+        throws GATInvocationException {
         if (GATEngine.VERBOSE) {
             System.err.println("writing description: " + description);
         }
@@ -54,7 +54,7 @@ public class RemoteSandboxSubmitter {
     }
 
     protected Job submitWrapper(JobDescription description, String contact)
-            throws GATInvocationException {
+        throws GATInvocationException {
         try {
             Preferences newPreferences = new Preferences(origPreferences);
             newPreferences.put("useLocalDisk", "false");
@@ -62,40 +62,46 @@ public class RemoteSandboxSubmitter {
             SoftwareDescription origSd = description.getSoftwareDescription();
             if (origSd == null) {
                 throw new GATInvocationException(
-                        "The job description does not contain a software description");
+                    "The job description does not contain a software description");
             }
 
             SoftwareDescription sd = new SoftwareDescription();
 
             // start with all old attributes.
             // incorrect ones will be overwritten below
-//            sd.setAttributes(origSd.getAttributes());
-            
+            //            sd.setAttributes(origSd.getAttributes());
+
             Map environment = new HashMap();
             Environment localEnv = new Environment();
             String localGATLocation = localEnv.getVar("GAT_LOCATION");
             int counter = getCounter();
 
-            String getRemoteOutput = origSd.getStringAttribute("getRemoteSandboxOutput", null);
+            String getRemoteOutput = origSd.getStringAttribute(
+                "getRemoteSandboxOutput", null);
             if (getRemoteOutput != null
-                    && getRemoteOutput.equalsIgnoreCase("true")) {
-                File outFile =
-                        GAT.createFile(origGatContext, newPreferences, new URI(
-                                "any:///remoteSandbox." + counter + ".out"));
-                File errFile =
-                        GAT.createFile(origGatContext, newPreferences, new URI(
-                                "any:///remoteSandbox." + counter + ".err"));
+                && getRemoteOutput.equalsIgnoreCase("true")) {
+                File outFile = GAT.createFile(origGatContext, newPreferences,
+                    new URI("any:///remoteSandbox." + counter + ".out"));
+                File errFile = GAT.createFile(origGatContext, newPreferences,
+                    new URI("any:///remoteSandbox." + counter + ".err"));
                 sd.setStdout(outFile);
                 sd.setStderr(errFile);
             }
 
-            String preStageDoneFileLocation = "any://" + GATEngine.getLocalHostName() +
-            "//tmp/.JavaGATPrestageDone." + counter;
-            
-            sd.setLocation(new URI(
-                            "java:org.gridlab.gat.resources.cpi.RemoteSandbox"));
+            java.io.File preStageDoneFile = null;
+            String preStageDoneFileLocation = "none";
+            if (origSd.getBooleanAttribute("waitForPreStage", false)) {
+                preStageDoneFile = java.io.File.createTempFile(
+                    "JavaGATPrestageDone", "tmp");
+                preStageDoneFile.deleteOnExit();
+                preStageDoneFileLocation = "any://"
+                    + GATEngine.getLocalHostName() + "/"
+                    + preStageDoneFile.getCanonicalPath();
+            }
 
-            
+            sd.setLocation(new URI(
+                "java:org.gridlab.gat.resources.cpi.RemoteSandbox"));
+
             Object javaHome = origSd.getObjectAttribute("java.home");
             if (javaHome == null) {
                 throw new GATInvocationException("java.home not set");
@@ -105,7 +111,8 @@ public class RemoteSandboxSubmitter {
             boolean remoteIsGatEnabled = false;
             String remoteEngineLibLocation = "./lib/";
 
-            String remoteGatLocation = origSd.getStringAttribute("remoteGatLocation", null);
+            String remoteGatLocation = origSd.getStringAttribute(
+                "remoteGatLocation", null);
             if (remoteGatLocation != null) {
                 remoteEngineLibLocation = remoteGatLocation + "/lib/";
                 remoteIsGatEnabled = true;
@@ -114,49 +121,49 @@ public class RemoteSandboxSubmitter {
             java.io.File engineDir = new java.io.File(localGATLocation + "/lib");
             String[] files = engineDir.list();
             String classPath = ".";
-            for(int i=0; i<files.length; i++) {
+            for (int i = 0; i < files.length; i++) {
                 classPath += ":" + remoteEngineLibLocation + files[i];
             }
             sd.addAttribute("java.classpath", classPath);
-            
+
             if (remoteIsGatEnabled) {
                 environment.put("gat.adaptor.path", remoteGatLocation
-                        + "/lib/adaptors");
+                    + "/lib/adaptors");
             } else {
                 environment.put("gat.adaptor.path", "lib/adaptors");
             }
+
             sd.setEnvironment(environment);
 
             if (!remoteIsGatEnabled) {
                 // prestage the gat itself
                 sd.addPreStagedFile(GAT.createFile(origGatContext,
-                        newPreferences, new URI(localGATLocation
-                                + "/log4j.properties")));
+                    newPreferences, new URI(localGATLocation
+                        + "/log4j.properties")));
                 sd.addPreStagedFile(GAT.createFile(origGatContext,
-                        newPreferences, new URI(localGATLocation
-                                + "/lib")));
+                    newPreferences, new URI(localGATLocation + "/lib")));
             }
 
             java.io.File descriptorFile = writeDescriptionToFile(description);
             sd.addPreStagedFile(GAT.createFile(origGatContext, newPreferences,
-                    new URI(descriptorFile.getAbsolutePath())));
+                new URI(descriptorFile.getAbsolutePath())));
 
             String cwd = System.getProperty("user.dir");
-            
+
             sd.setArguments(new String[] {
-                    descriptorFile.getName(),
-                    GATEngine.getLocalHostName(),
-                    preStageDoneFileLocation,
-                    cwd,
-                    ""
-                            + origSd.getBooleanAttribute(
-                                    "verboseRemoteSandbox", GATEngine.VERBOSE),
-                    ""
-                            + origSd.getBooleanAttribute("debugRemoteSandbox",
-                                    GATEngine.DEBUG),
-                    ""
-                            + origSd.getBooleanAttribute("timeRemoteSandbox",
-                                    GATEngine.TIMING) });
+                descriptorFile.getName(),
+                GATEngine.getLocalHostName(),
+                preStageDoneFileLocation,
+                cwd,
+                ""
+                    + origSd.getBooleanAttribute("verboseRemoteSandbox",
+                        GATEngine.VERBOSE),
+                ""
+                    + origSd.getBooleanAttribute("debugRemoteSandbox",
+                        GATEngine.DEBUG),
+                ""
+                    + origSd.getBooleanAttribute("timeRemoteSandbox",
+                        GATEngine.TIMING) });
 
             String queue = origSd.getStringAttribute("queue", null);
             if (queue != null) {
@@ -179,49 +186,42 @@ public class RemoteSandboxSubmitter {
             }
 
             JobDescription jd = new JobDescription(sd);
-            ResourceBroker broker =
-                    GAT.createResourceBroker(origGatContext, newPreferences);
+            ResourceBroker broker = GAT.createResourceBroker(origGatContext,
+                newPreferences);
 
             Job j = broker.submitJob(jd);
-            
+
             // we can now safely delete the descriptor file, it has been prestaged.
             descriptorFile.delete();
-            
-            if(origSd.getBooleanAttribute("waitForPreStage", false)) {
-                if(GATEngine.VERBOSE) {
+
+            if (origSd.getBooleanAttribute("waitForPreStage", false)) {
+                if (GATEngine.VERBOSE) {
                     System.err.println("waiting for prestage to complete");
                 }
-                java.io.File f = new java.io.File("/tmp/.JavaGATPrestageDone." + counter);
-                while(true) {
+
+                while (true) {
                     int state = j.getState();
                     try {
-                        if(state == Job.POST_STAGING 
-                                || state == Job.STOPPED 
-                                || state == Job.SUBMISSION_ERROR 
-                                || f.exists()) {
-                            try {
-                                f.delete();
-                            } catch (Exception e) {
-                                if(GATEngine.DEBUG) {
-                                    System.err.println("warning delete failed: " + e);
-                                }
-                                // ignore
-                            }
-                            if(GATEngine.VERBOSE) {
-                                System.err.println("prestage completed, job state = " + state);
+                        if (state == Job.POST_STAGING || state == Job.STOPPED
+                            || state == Job.SUBMISSION_ERROR
+                            || !preStageDoneFile.exists()) {
+                            if (GATEngine.VERBOSE) {
+                                System.err
+                                    .println("prestage completed, job state = "
+                                        + state);
                             }
                             return j;
                         }
                     } catch (Exception e) {
-                        if(GATEngine.DEBUG) {
+                        if (GATEngine.DEBUG) {
                             System.err.println("warning exists failed: " + e);
                         }
                         // ignore
                     }
                     Thread.sleep(1000);
                 }
-            }        
-            
+            }
+
             return j;
         } catch (Exception e) {
             throw new GATInvocationException("RemoteSandboxSubmitter", e);
