@@ -10,9 +10,9 @@ import java.io.IOException;
  * @author rob
  */
 public class GATIOException extends IOException {
-    GATInvocationException cause;
+    Exception cause;
 
-    public GATIOException(GATInvocationException e) {
+    public GATIOException(Exception e) {
         super();
         cause = e;
     }

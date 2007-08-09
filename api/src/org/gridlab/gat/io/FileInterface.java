@@ -97,7 +97,7 @@ public interface FileInterface extends Monitorable, Advertisable, Comparable {
     public boolean delete() throws GATInvocationException;
 
     /** See {@link java.io.File#deleteOnExit()}. */
-    public void deleteOnExit() throws GATInvocationException;
+    public void deleteOnExit();
 
     /** See {@link java.io.File#exists()}. */
     public boolean exists() throws GATInvocationException;
@@ -130,7 +130,7 @@ public interface FileInterface extends Monitorable, Advertisable, Comparable {
     public int hashCode();
 
     /** See {@link java.io.File#isAbsolute()}. */
-    public boolean isAbsolute() throws GATInvocationException;
+    public boolean isAbsolute();
 
     /** See {@link java.io.File#isDirectory()}. */
     public boolean isDirectory() throws GATInvocationException;
