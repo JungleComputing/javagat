@@ -6,6 +6,7 @@ package org.gridlab.gat.io;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 
+import org.gridlab.gat.GATIOException;
 import org.gridlab.gat.URI;
 
 /**
@@ -48,7 +49,7 @@ public class RandomAccessFile extends java.io.RandomAccessFile {
         try {
             f.close();
         } catch (Exception e) {
-            throw new Error(e);
+            throw new GATIOException(e);
         }
     }
 
@@ -59,7 +60,7 @@ public class RandomAccessFile extends java.io.RandomAccessFile {
         try {
             return f.getFilePointer();
         } catch (Exception e) {
-            throw new Error(e);
+            throw new GATIOException(e);
         }
     }
 
@@ -70,7 +71,7 @@ public class RandomAccessFile extends java.io.RandomAccessFile {
         try {
             return f.length();
         } catch (Exception e) {
-            throw new Error(e);
+            throw new GATIOException(e);
         }
     }
 
@@ -81,7 +82,7 @@ public class RandomAccessFile extends java.io.RandomAccessFile {
         try {
             return f.read();
         } catch (Exception e) {
-            throw new Error(e);
+            throw new GATIOException(e);
         }
     }
 
@@ -92,7 +93,7 @@ public class RandomAccessFile extends java.io.RandomAccessFile {
         try {
             return f.read(b, off, len);
         } catch (Exception e) {
-            throw new Error(e);
+            throw new GATIOException(e);
         }
     }
 
@@ -103,7 +104,7 @@ public class RandomAccessFile extends java.io.RandomAccessFile {
         try {
             return f.read(b);
         } catch (Exception e) {
-            throw new Error(e);
+            throw new GATIOException(e);
         }
     }
 
@@ -114,7 +115,7 @@ public class RandomAccessFile extends java.io.RandomAccessFile {
         try {
             f.seek(pos);
         } catch (Exception e) {
-            throw new Error(e);
+            throw new GATIOException(e);
         }
     }
 
@@ -125,7 +126,7 @@ public class RandomAccessFile extends java.io.RandomAccessFile {
         try {
             f.setLength(newLength);
         } catch (Exception e) {
-            throw new Error(e);
+            throw new GATIOException(e);
         }
     }
 
@@ -136,7 +137,7 @@ public class RandomAccessFile extends java.io.RandomAccessFile {
         try {
             return f.skipBytes(n);
         } catch (Exception e) {
-            throw new Error(e);
+            throw new GATIOException(e);
         }
     }
 
@@ -147,7 +148,7 @@ public class RandomAccessFile extends java.io.RandomAccessFile {
         try {
             f.write(b, off, len);
         } catch (Exception e) {
-            throw new Error(e);
+            throw new GATIOException(e);
         }
     }
 
@@ -158,7 +159,7 @@ public class RandomAccessFile extends java.io.RandomAccessFile {
         try {
             f.write(b);
         } catch (Exception e) {
-            throw new Error(e);
+            throw new GATIOException(e);
         }
     }
 
@@ -169,7 +170,7 @@ public class RandomAccessFile extends java.io.RandomAccessFile {
         try {
             f.write(b);
         } catch (Exception e) {
-            throw new Error(e);
+            throw new GATIOException(e);
         }
     }
 }

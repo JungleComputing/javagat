@@ -200,7 +200,7 @@ public abstract class FileCpi implements FileInterface {
         throw new UnsupportedOperationException("Not implemented");
     }
 
-    public void deleteOnExit() throws GATInvocationException {
+    public void deleteOnExit() {
         Runtime.getRuntime().addShutdownHook(new DeleteHook(this));
     }
 
@@ -285,7 +285,7 @@ public abstract class FileCpi implements FileInterface {
         return location.hashCode();
     }
 
-    public final boolean isAbsolute() throws GATInvocationException {
+    public final boolean isAbsolute() {
         return new java.io.File(location.getPath()).isAbsolute();
     }
 

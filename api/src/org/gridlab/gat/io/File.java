@@ -117,7 +117,7 @@ public class File extends java.io.File implements Monitorable,
         try {
             return f.canWrite();
         } catch (Exception e) {
-            throw new Error(e);
+            return false;
         }
     }
 
@@ -125,11 +125,7 @@ public class File extends java.io.File implements Monitorable,
      * @see java.io.File#compareTo(java.io.File)
      */
     public int compareTo(File pathname) {
-        try {
-            return f.compareTo(pathname);
-        } catch (Exception e) {
-            throw new Error(e);
-        }
+        return f.compareTo(pathname);
     }
 
     /**
@@ -150,7 +146,7 @@ public class File extends java.io.File implements Monitorable,
         try {
             return f.delete();
         } catch (Exception e) {
-            throw new Error(e);
+            return false;
         }
     }
 
@@ -159,22 +155,14 @@ public class File extends java.io.File implements Monitorable,
      * @see java.io.File#deleteOnExit()
      */
     public void deleteOnExit() {
-        try {
-            f.deleteOnExit();
-        } catch (Exception e) {
-            throw new Error(e);
-        }
+        f.deleteOnExit();
     }
 
     /**
      * @see java.io.File#equals(java.lang.Object)
      */
     public boolean equals(Object obj) {
-        try {
-            return f.equals(obj);
-        } catch (Exception e) {
-            throw new Error(e);
-        }
+        return f.equals(obj);
     }
 
     /**
@@ -184,8 +172,7 @@ public class File extends java.io.File implements Monitorable,
         try {
             return f.exists();
         } catch (Exception e) {
-            throw new Error(e);
-        }
+            return false;        }
     }
 
     /**
@@ -195,7 +182,7 @@ public class File extends java.io.File implements Monitorable,
         try {
             return f.getAbsoluteFile();
         } catch (Exception e) {
-            throw new Error(e);
+            return null;
         }
     }
 
@@ -206,7 +193,7 @@ public class File extends java.io.File implements Monitorable,
         try {
             return f.getAbsolutePath();
         } catch (Exception e) {
-            throw new Error(e);
+            return null;
         }
     }
 
@@ -239,7 +226,7 @@ public class File extends java.io.File implements Monitorable,
         try {
             return f.getName();
         } catch (Exception e) {
-            throw new Error(e);
+            return null;
         }
     }
 
@@ -250,7 +237,7 @@ public class File extends java.io.File implements Monitorable,
         try {
             return f.getParent();
         } catch (Exception e) {
-            throw new Error(e);
+            return null;
         }
     }
 
@@ -262,7 +249,7 @@ public class File extends java.io.File implements Monitorable,
         try {
             return f.getParentFile();
         } catch (Exception e) {
-            throw new Error(e);
+            return null;
         }
     }
 
@@ -273,7 +260,7 @@ public class File extends java.io.File implements Monitorable,
         try {
             return f.getPath();
         } catch (Exception e) {
-            throw new Error(e);
+            return null;
         }
     }
 
@@ -284,7 +271,7 @@ public class File extends java.io.File implements Monitorable,
         try {
             return f.hashCode();
         } catch (Exception e) {
-            throw new Error(e);
+            return 0;
         }
     }
 
@@ -292,11 +279,7 @@ public class File extends java.io.File implements Monitorable,
      * @see java.io.File#isAbsolute()
      */
     public boolean isAbsolute() {
-        try {
-            return f.isAbsolute();
-        } catch (Exception e) {
-            throw new Error(e);
-        }
+        return f.isAbsolute();
     }
 
     /**
@@ -306,7 +289,7 @@ public class File extends java.io.File implements Monitorable,
         try {
             return f.isDirectory();
         } catch (Exception e) {
-            throw new Error(e);
+            return false;
         }
     }
 
@@ -317,7 +300,7 @@ public class File extends java.io.File implements Monitorable,
         try {
             return f.isFile();
         } catch (Exception e) {
-            throw new Error(e);
+            return false;
         }
     }
 
@@ -328,7 +311,7 @@ public class File extends java.io.File implements Monitorable,
         try {
             return f.isHidden();
         } catch (Exception e) {
-            throw new Error(e);
+            return false;
         }
     }
 
@@ -339,7 +322,7 @@ public class File extends java.io.File implements Monitorable,
         try {
             return f.lastModified();
         } catch (Exception e) {
-            throw new Error(e);
+            return 0;
         }
     }
 
@@ -350,7 +333,7 @@ public class File extends java.io.File implements Monitorable,
         try {
             return f.length();
         } catch (Exception e) {
-            throw new Error(e);
+            return -1;
         }
     }
 
@@ -361,7 +344,7 @@ public class File extends java.io.File implements Monitorable,
         try {
             return f.list();
         } catch (Exception e) {
-            throw new Error(e);
+            return null;
         }
     }
 
@@ -372,7 +355,7 @@ public class File extends java.io.File implements Monitorable,
         try {
             return f.list(filter);
         } catch (Exception e) {
-            throw new Error(e);
+            return null;
         }
     }
 
@@ -383,7 +366,7 @@ public class File extends java.io.File implements Monitorable,
         try {
             return f.listFiles();
         } catch (Exception e) {
-            throw new Error(e);
+            return null;
         }
     }
 
@@ -394,7 +377,7 @@ public class File extends java.io.File implements Monitorable,
         try {
             return f.listFiles(filter);
         } catch (Exception e) {
-            throw new Error(e);
+            return null;
         }
     }
 
@@ -406,7 +389,7 @@ public class File extends java.io.File implements Monitorable,
 
             return f.listFiles(filter);
         } catch (Exception e) {
-            throw new Error(e);
+            return null;
         }
     }
 
@@ -417,7 +400,7 @@ public class File extends java.io.File implements Monitorable,
         try {
             return f.mkdir();
         } catch (Exception e) {
-            throw new Error(e);
+            return false;
         }
     }
 
@@ -428,7 +411,7 @@ public class File extends java.io.File implements Monitorable,
         try {
             return f.mkdirs();
         } catch (Exception e) {
-            throw new Error(e);
+            return false;
         }
     }
 
@@ -440,7 +423,7 @@ public class File extends java.io.File implements Monitorable,
             org.gridlab.gat.io.File a = (org.gridlab.gat.io.File) dest;
             return f.renameTo(a);
         } catch (Exception e) {
-            throw new Error(e);
+            return false;
         }
     }
 
@@ -451,7 +434,7 @@ public class File extends java.io.File implements Monitorable,
         try {
             return f.setLastModified(time);
         } catch (Exception e) {
-            throw new Error(e);
+            return false;
         }
     }
 
@@ -462,7 +445,7 @@ public class File extends java.io.File implements Monitorable,
         try {
             return f.setReadOnly();
         } catch (Exception e) {
-            throw new Error(e);
+            return false;
         }
     }
 
@@ -470,11 +453,7 @@ public class File extends java.io.File implements Monitorable,
      * @see java.io.File#toString()
      */
     public String toString() {
-        try {
-            return f.toString();
-        } catch (Exception e) {
-            throw new Error(e);
-        }
+        return f.toString();
     }
 
     /**
@@ -488,11 +467,7 @@ public class File extends java.io.File implements Monitorable,
      * @see java.io.File#toURI()
      */
     public org.gridlab.gat.URI toGATURI() {
-        try {
-            return f.toURI();
-        } catch (Exception e) {
-            throw new Error(e);
-        }
+        return f.toURI();
     }
 
     /**
@@ -580,4 +555,3 @@ public class File extends java.io.File implements Monitorable,
         stream.writeObject(toGATURI());
     }
 }
-
