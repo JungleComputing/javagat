@@ -21,6 +21,7 @@ import org.gridlab.gat.Preferences;
 import org.gridlab.gat.engine.GATEngine;
 import org.gridlab.gat.monitoring.Metric;
 import org.gridlab.gat.monitoring.MetricDefinition;
+import org.gridlab.gat.monitoring.MetricValue;
 import org.gridlab.gat.resources.Job;
 import org.gridlab.gat.resources.JobDescription;
 import org.gridlab.gat.resources.cpi.JobCpi;
@@ -97,11 +98,17 @@ public class GLiteJob extends JobCpi {
 
 	private GLiteJobPoller poller;
 
+	// accessed only in synchronized block!!! (just like state)
+	private boolean postStageStarted = false;
+	private boolean postStageFinished = false;
+
+	private String outputStorage = null;
+	
 	public GLiteJob(GATContext gatContext, Preferences preferences,
-			JobDescription jobDescription, WMProxyAPI client,
+			JobDescription jobDescription, Sandbox sandbox, WMProxyAPI client,
 			long startTime, JobIdStructType jobStruct) {
-		// TODO: there should be sandbox instead of null!!!
-		super(gatContext, preferences, jobDescription, null);
+
+		super(gatContext, preferences, jobDescription, sandbox);
 		this.client = client;
 		this.startTime = startTime;
 		this.jobStruct = jobStruct;
@@ -111,14 +118,14 @@ public class GLiteJob extends JobCpi {
 		// so I use now 3 states: UNKNOWN, POST_STAGING and STOPPED
 		state = Job.UNKNOWN;
 		// Tell the engine that we provide job.status events
-		
+
 		HashMap returnDef = new HashMap();
 		returnDef.put("status", String.class);
 		statusMetricDefinition = new MetricDefinition("job.status",
 				MetricDefinition.DISCRETE, "String", null, null, returnDef);
 		GATEngine.registerMetric(this, "getJobStatus", statusMetricDefinition);
 		statusMetric = statusMetricDefinition.createMetric(null);
-		
+
 		poller = new GLiteJobPoller(this);
 		poller.start();
 	}
@@ -129,6 +136,8 @@ public class GLiteJob extends JobCpi {
 
 	/* we use this method to check if the job has already ended */
 	void tryGetOutputFiles() {
+		// TODO: code this
+		// careful synchronization with stop() method!!!
 		try {
 			StringAndLongList list = client.getOutputFileList(jobID);
 			setState(POST_STAGING);
@@ -160,38 +169,99 @@ public class GLiteJob extends JobCpi {
 		}
 	}
 
-	// TODO: synchronization with tryGetOutputFiles needed!!!
+	public boolean 
+	
 	public void stop() throws GATInvocationException {
+		String stateString = null;
+		synchronized (this) {
+			// we don't want to postStage twice (can happen with jobpoller)
+			if (postStageStarted)
+				return;
+			postStageStarted = true;
+			state = POST_STAGING;
+			stateString = getStateString(state);
+		}
+		MetricValue v = new MetricValue(this, stateString, statusMetric, System
+				.currentTimeMillis());
+		if (GATEngine.DEBUG) {
+			System.err.println("glite job stop: firing event: " + v);
+		}
+		GATEngine.fireMetric(this, v);
+
+		GATInvocationException exception = null;
+		try {
+            if (job != null)
+                cancelGLiteJob();
+        } catch (GATInvocationException e) {
+        	// shouldn't we do something more when an exception occurs?
+            if (GATEngine.VERBOSE) {
+                System.err.println("got an exception while cancelling job: "
+                        + e);
+            }
+            exception = e;
+        }
+
+        if (GATEngine.VERBOSE) {
+            System.err.println("glite job stop: delete/wipe starting");
+        }
+
+        // do cleanup, callback handler has been uninstalled
+        // TODO: it was copied from GLobusJob - check it!!!
+        if (sandbox != null)
+        	sandbox.retrieveAndCleanup(this);
+
+        synchronized (this) {
+            postStageFinished = true;
+
+            if (GATEngine.VERBOSE) {
+                System.err.println("glite job stop: post stage finished");
+            }
+
+            state = STOPPED;
+            stateString = getStateString(state);
+        }
+
+        MetricValue v2 =
+                new MetricValue(this, stateString, statusMetric, System
+                        .currentTimeMillis());
+        if (GATEngine.DEBUG) {
+            System.err.println("glite job stop: firing event: " + v2);
+        }
+        GATEngine.fireMetric(this, v2);
+
+        finished();
+	}
+
+	private boolean cancelGLiteJob() throws GATInvocationException {
 		try {
 			client.jobCancel(jobID);
-			setState(STOPPED);
+			return true;
 		} catch (AuthorizationFaultException afe) {
 			throw new GATInvocationException(
-					"The client is not authorized to perform this operation",
+					"gLite job stop: The client is not authorized to perform this operation",
 					afe);
 		} catch (AuthenticationFaultException aufe) {
 			throw new GATInvocationException(
-					"A generic authentication problem occurred", aufe);
+					"gLite job stop: A generic authentication problem occurred", aufe);
 		} catch (JobUnknownFaultException jufe) {
 			throw new GATInvocationException(
-					"The given job has not been registered to the system", jufe);
+					"gLite job stop: The given job has not been registered to the system", jufe);
 		} catch (InvalidArgumentFaultException iafe) {
-			throw new GATInvocationException("The given job Id is not valid "
+			throw new GATInvocationException("gLite job stop: The given job Id is not valid "
 					+ jobID, iafe);
 		} catch (OperationNotAllowedFaultException onafe) {
 			throw new GATInvocationException(
-					"The current job status does not allow requested operation",
+					"gLite job stop: The current job status does not allow requested operation",
 					onafe);
 		} catch (ServiceException se) {
 			throw new GATInvocationException(
-					"Unknown error occured during the execution of the remote method call to the WMProxy server",
+					"gLite job stop: Unknown error occured during the execution of the remote method call to the WMProxy server",
 					se);
 		} catch (Exception e) {
 			throw new GATInvocationException(
-					"Unknown error occured during the execution of the remote method call to the WMProxy server",
+					"gLite job stop: Unknown error occured during the execution of the remote method call to the WMProxy server",
 					e);
 		}
-
 	}
 
 	protected synchronized void setState(int newState) {

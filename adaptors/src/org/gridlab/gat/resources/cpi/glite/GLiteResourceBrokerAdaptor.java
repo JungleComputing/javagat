@@ -321,7 +321,8 @@ public class GLiteResourceBrokerAdaptor extends ResourceBrokerCpi {
 		} catch (Exception e) {
 			throw new GATInvocationException("Exception at job subbmission", e);
 		}
-		GLiteJob job = new GLiteJob(gatContext, preferences, description,
+		// TODO: create sandbox!!!
+		GLiteJob job = new GLiteJob(gatContext, preferences, description, null,
 				client, startTime, jobId);
 		return job;
 	}
