@@ -28,6 +28,11 @@ public class CertificateSecurityContext extends SecurityContext {
      */
     private int privateKeySlot = -1;
     
+    /**
+     * the name of the Virtual Organisation the user belongs to
+     */
+    private String voName = null;
+    
     public CertificateSecurityContext() {
     }
 
@@ -42,6 +47,14 @@ public class CertificateSecurityContext extends SecurityContext {
         this.username = username;
     }
 
+    public CertificateSecurityContext(URI keyfile, String username,
+            String passphrase, String voName) {
+    	this.passphrase = passphrase;
+        this.keyfile = keyfile;
+        this.username = username;
+        this.voName = voName;
+    }
+    
     /**
      * Makes this a "Certificate" type security context and stores the
      * information about the location of keyfile in the
@@ -69,7 +82,8 @@ public class CertificateSecurityContext extends SecurityContext {
         CertificateSecurityContext other = (CertificateSecurityContext) obj;
 
         return other.passphrase.equals(passphrase)
-            && other.keyfile.equals(keyfile) && other.username.equals(username);
+            && other.keyfile.equals(keyfile) && other.username.equals(username) 
+            && other.voName.equals(voName);
     }
 
     /**
@@ -78,7 +92,7 @@ public class CertificateSecurityContext extends SecurityContext {
      * @return the clone of this security context (but not the associated adaptor data)
      */
     public Object clone() throws CloneNotSupportedException {
-        return new CertificateSecurityContext(keyfile, username, passphrase);
+        return new CertificateSecurityContext(keyfile, username, passphrase, voName);
     }
 
     /**
@@ -128,4 +142,13 @@ public class CertificateSecurityContext extends SecurityContext {
 	public void setPrivateKeySlot(int privateKeySlot) {
 		this.privateKeySlot = privateKeySlot;
 	}
+	
+	public String getVoName() {
+		return voName;
+	}
+	
+	public void setVoName(String voName) {
+		this.voName = voName;
+	}
+	
 }
