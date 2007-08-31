@@ -261,16 +261,22 @@ public class GATJobRunner {
             }
 
             /* Prestage files */
-            if (prestageFiles.size() > 0) {
-                File[] files = new File[prestageFiles.size()];
+             if (prestageFiles.size() > 0) {
+                 File[] files = new File[prestageFiles.size()];
 
-                for (int i = 0; i < prestageFiles.size(); i++) {
-                    files[i] = (org.gridlab.gat.io.File)prestageFiles.get(i);
-                }
+                 for (int i = 0; i < prestageFiles.size(); i++) {
+                     files[i] = (org.gridlab.gat.io.File)prestageFiles.get(i);
+                 }
 
-                sd.setPreStaged(files);
-            }
+                 sd.setPreStaged(files);
+             }
 
+ /*           try
+    		{
+                    sd.addPreStagedFile(GAT.createFile(globalContext, "date_script.sh"),
+                                       GAT.createFile(globalContext,"/tmp/date_script.sh"));
+                } catch (GATObjectCreationException e) {e.printStackTrace();}
+*/
             /* Poststage files */
             if (poststageFiles.size() > 0) {
                 File[] files = new File[poststageFiles.size()];

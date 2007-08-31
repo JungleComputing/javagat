@@ -63,7 +63,8 @@
       <include name = "lib/xmlParserAPIs.jar" />
       <include name = "lib/drmaa.jar" />
     </fileset>
-    <fileset dir = "${gat_adaptors_external_dir}">
+    <fileset id = "gat_external_jars"
+             dir = "${gat_adaptors_external_dir}">
         <include name = "commons-cli-1.0.jar" />
     </fileset>
   </path>
@@ -87,6 +88,11 @@
     <copy todir="${distdir}">
       <fileset refid="gat_engine_jars" />
     </copy>
+
+   <copy todir="${distdir}/lib">
+      <fileset refid="gat_external_jars" />
+    </copy>
+
 <!--    <copy todir = "${distdir}/lib">
        <fileset refid="gat_supplements_jars" />
    </copy>-->

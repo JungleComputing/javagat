@@ -27,7 +27,7 @@ import gatjobstatus.GATJobOperations;
  * by the job submit command of a previous Broker.Submit of Java-GAT.
  *
  * @param The argument list of the call:
- *        -RB.Adaptor <adaptor> ... name of the ResourceBrokerAdaptor used prevously.
+ *        -RB.adaptor <adaptor> ... name of the ResourceBrokerAdaptor used prevously.
  *        -JobID <job ID> ... ID of the jobs previously submitted (as a string).
  *        -operation <operation> ... Operation for the job. This can be "status", 
  *                                   and "kill" right now in version 0.1.
@@ -57,7 +57,7 @@ public class JobStateMain
 
     private void buildEmptyParameterList()
     {
-        parameterList.put("-RB.Adaptor","");
+        parameterList.put("-RB.adaptor","");
         parameterList.put("-JobID","");
         parameterList.put("-operation","");
     }
@@ -77,7 +77,7 @@ public class JobStateMain
     {
         System.out.println("\nUsage: gat-job-operation [OPTIONS]");
         System.out.println("\nOPTIONS:\n");
-        System.out.println("  -RB.Adaptor    [STRING]   adaptor invoked for the job submit\n");
+        System.out.println("  -RB.adaptor    [STRING]   adaptor invoked for the job submit\n");
         System.out.println("  -JobID         [STRING]   Job ID of the job submitted\n");
         System.out.println("  -operation     [STRING]   which operation? Available operations: status, kill\n");
     }
@@ -151,8 +151,8 @@ public class JobStateMain
         */
 
         String ArgValue = null;
-        ArgValue = (String) parameterList.get("-RB.Adaptor");
-        if (ArgValue==null) {System.err.println("\n missing value for -RB.Adaptor\n"); printUsage();  System.exit(1);}
+        ArgValue = (String) parameterList.get("-RB.adaptor");
+        if (ArgValue==null) {System.err.println("\n missing value for -RB.adaptor\n"); printUsage();  System.exit(1);}
 
         ArgValue  = null;
         ArgValue = (String) parameterList.get("-JobID");
@@ -180,7 +180,7 @@ public class JobStateMain
     {
         int GAT_RC;
 
-        /*        String Adaptor   = (String) parameterList.get("-RB.Adaptor");
+        /*        String Adaptor   = (String) parameterList.get("-RB.adaptor");
                   String JobID     = (String) parameterList.get("-JobID");
                   String Operation = (String) parameterList.get("-operation");*/
 
@@ -193,7 +193,7 @@ public class JobStateMain
            here.
         */
         
-       gat_job_stat.SetAdaptor((String)   parameterList.get("-RB.Adaptor"));
+       gat_job_stat.SetAdaptor((String)   parameterList.get("-RB.adaptor"));
        gat_job_stat.SetJobID((String)     parameterList.get("-JobID"));
        gat_job_stat.SetOperation((String) parameterList.get("-operation"));
        
