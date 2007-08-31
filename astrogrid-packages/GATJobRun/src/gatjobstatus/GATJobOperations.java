@@ -109,7 +109,7 @@ public class GATJobOperations /** creates new instance of GatJobOperations */
     public void SetAdaptor(String adaptorname)
     {
         Adaptor = adaptorname;
-        System.out.println("selected adaptor for Adaptor: " + Adaptor);
+        //        System.out.println("selected adaptor for Adaptor: " + Adaptor);
         //        globalPrefs.put("ResourceBroker.adaptor.name", adaptorname);
     }
 
@@ -170,7 +170,7 @@ public class GATJobOperations /** creates new instance of GatJobOperations */
         globalPrefs.put("AdvertService.adaptor.name","local");
         globalPrefs.put("killJobsOnExit","false");
         globalPrefs.put("ResourceBroker.adaptor.name",Adaptor);
-        System.out.println("selected ResourceBrokerAdaptor: " + Adaptor);
+        //        System.out.println("selected ResourceBrokerAdaptor: " + Adaptor);
 
         globalContext.addPreferences(globalPrefs);
 
@@ -209,10 +209,20 @@ public class GATJobOperations /** creates new instance of GatJobOperations */
                 try
                     {
                         state=theJob.getState();
-                        System.out.println();
-                        System.out.println("JOB SUMMARY");
-                        System.out.println("================================================");
-                        System.out.println("Job ID: " + theJob.getJobID() + "; Job State: " + theJob.getStateString(state));
+                        theJob.getJobID();
+                        /*                        System.out.println();
+                                                  System.out.println("JOB SUMMARY");
+                                                  System.out.println("================================================");
+                                                  System.out.println("Job ID: " + theJob.getJobID() + "; Job State: " + theJob.getStateString(state));*/
+                        String StateString = theJob.getStateString(state);
+                        if (StateString=="STOPPED")
+                            {
+                                System.out.println("DONE");
+                            }
+                        else
+                            {
+                                System.out.println(theJob.getStateString(state));
+                            }
                     } catch (org.gridlab.gat.GATInvocationException e)  {System.err.println("stop job failed."); e.printStackTrace(); return(-1);}
 
                 /**
@@ -237,7 +247,7 @@ public class GATJobOperations /** creates new instance of GatJobOperations */
                     }
                 else if (state==theJob.RUNNING)
                     {
-                        System.out.println("Job " + JobID + " in RUNNING state; int value of state: " + state);
+                        // System.out.println("Job " + JobID + " in RUNNING state; int value of state: " + state);
                     }
                 else if (state==theJob.SCHEDULED)
                     {
@@ -245,7 +255,7 @@ public class GATJobOperations /** creates new instance of GatJobOperations */
                     }
                 else if (state==theJob.STOPPED)
                     {
-                        System.out.println("Job " + JobID + " in STOPPED state; int value of state: " + state);
+                        // System.out.println("Job " + JobID + " in STOPPED state; int value of state: " + state);
                     }
                 else if (state==theJob.SUBMISSION_ERROR)
                     {
@@ -265,15 +275,15 @@ public class GATJobOperations /** creates new instance of GatJobOperations */
                    some special handling for case finished...
                 */
 
-                if (state == theJob.STOPPED)
-                    {
-                        try
-                            {
-                                System.out.println("Exit value: " + theJob.getExitStatus());
-                            } catch (org.gridlab.gat.GATInvocationException e)  {System.err.println("Job.getExitStatus() failed."); e.printStackTrace(); return(-1);}
-                    }
+                /*                if (state == theJob.STOPPED)
+                                  {
+                                  try
+                                  {
+                                  System.out.println("Exit value: " + theJob.getExitStatus());
+                                  } catch (org.gridlab.gat.GATInvocationException e)  {System.err.println("Job.getExitStatus() failed."); e.printStackTrace(); return(-1);}
+                                  }*/
 
-                System.out.println("================================================");
+                //System.out.println("================================================");
             }
         return(state);
     }

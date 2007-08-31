@@ -312,7 +312,7 @@ public class GATJobRunner {
         }
 
         String J_String = theJob.toString();
-        System.out.println("string representation of Job: '" + J_String + "'");
+        //        System.out.println("string representation of Job: '" + J_String + "'");
         
         /**
          * If called with SubmitOnly=true, write the job description to the 
@@ -364,7 +364,7 @@ public class GATJobRunner {
             }
 	else
             {
-                System.out.println("Submit was set to false");
+                //                System.out.println("Submit was set to false");
             }
         
         while (true) 

@@ -198,7 +198,7 @@ public class JobStateMain
        gat_job_stat.SetOperation((String) parameterList.get("-operation"));
        
        GAT_RC  = gat_job_stat.JobOp();
-       System.out.println("JobOperation() exited with the rc " + GAT_RC);
+       //       System.out.println("JobOperation() exited with the rc " + GAT_RC);
     }
 
     /**

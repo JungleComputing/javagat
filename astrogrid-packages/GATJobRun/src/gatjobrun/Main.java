@@ -225,7 +225,7 @@ public class Main {
         }        
         
         GAT_RC=gat_job_run.runJob();
-        System.out.println("runJob() exited with rc " + GAT_RC);
+        //        System.out.println("runJob() exited with rc " + GAT_RC);
     }
     
     /**
