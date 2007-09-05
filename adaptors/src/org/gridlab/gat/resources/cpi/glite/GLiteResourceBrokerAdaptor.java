@@ -12,6 +12,7 @@ import org.glite.jdl.JobAd;
 import org.glite.jdl.JobAdException;
 import org.glite.wms.wmproxy.AuthorizationFaultException;
 import org.glite.wms.wmproxy.AuthenticationFaultException;
+import org.glite.wms.wmproxy.BaseException;
 import org.glite.wms.wmproxy.InvalidArgumentFaultException;
 import org.glite.wms.wmproxy.JobIdStructType;
 import org.glite.wms.wmproxy.NoSuitableResourcesFaultException;
@@ -25,6 +26,8 @@ import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.GATObjectCreationException;
 import org.gridlab.gat.Preferences;
 import org.gridlab.gat.URI;
+import org.gridlab.gat.engine.GATEngine;
+import org.gridlab.gat.engine.util.Environment;
 import org.gridlab.gat.io.File;
 import org.gridlab.gat.resources.Job;
 import org.gridlab.gat.resources.JobDescription;
@@ -51,22 +54,77 @@ public class GLiteResourceBrokerAdaptor extends ResourceBrokerCpi {
 		return delegationId;
 	}
 
+	protected String getResourceManagerContact(JobDescription description)
+			throws GATInvocationException {
+		String res = null;
+		// example of glite contact string:
+		// "https://mu12.matrix.sara.nl:7443/glite_wms_wmproxy_server"
+		String contact = (String) preferences
+				.get("ResourceBroker.jobmanagerContact");
+		// example of glite jobManager string
+		// "glite_wms_wmproxy_server"
+		String jobManager = (String) preferences
+				.get("ResourceBroker.jobmanager");
+		Object jobManagerPort = preferences
+				.get("ResourceBroker.jobmanagerPort");
+
+		// if the contact string is set, ignore all other properties
+		if (contact != null) {
+			if (GATEngine.VERBOSE) {
+				System.err.println("Resource manager contact = " + contact);
+			}
+			return contact;
+		}
+
+		String hostname = getHostname(description);
+
+		if (hostname != null) {
+			res = hostname;
+			if (jobManagerPort != null) {
+				res += (":" + jobManagerPort);
+			} else { // use default port
+				res += (":" + "7443");
+			}
+			if (jobManager != null) {
+				res += ("/" + jobManager);
+			} else { // use default server name
+				res += ("/" + "glite_wms_wmproxy_server");
+			}
+			if (GATEngine.VERBOSE) {
+				System.err.println("Resource manager contact = " + res);
+			}
+			return res;
+		}
+
+		throw new GATInvocationException(
+				"The gLite resource broker needs a hostname");
+	}
+
+	// write now it's the simplest method for finding proxy location
+	// maybe in the future it will be more elaborate
+	private String getProxyLocation() throws GATInvocationException {
+		Environment e = new Environment();
+        String proxyLocation = e.getVar("X509_USER_PROXY");
+
+        if (proxyLocation == null) {
+        	throw new GATInvocationException("No proxy location under X509_USER_PROXY");
+        } else {
+            return proxyLocation;
+        }
+	}
+	
 	/* connect to WMProxy */
-	private WMProxyAPI connectToWMProxy(String delegationId)
+	private WMProxyAPI connectToWMProxy(String delegationId, JobDescription description)
 			throws GATInvocationException {
 		WMProxyAPI client = null;
 		try {
-			// TODO: where to find host, port and proxy file?
-			String host = "mu12.matrix.sara.nl";
-			String port = "7443";
-			String proxyFile = "/tmp/x509up_u1380";
-
-			client = new WMProxyAPI("https://" + host + ":" + port
-					+ "/glite_wms_wmproxy_server", proxyFile);
+			String clientContact = getResourceManagerContact(description);
+			String proxyLocation = getProxyLocation();
+			client = new WMProxyAPI(clientContact, proxyLocation);
 			// delegation of user credentials
 			String proxy = client.grstGetProxyReq(delegationId);
 			client.grstPutProxy(delegationId, proxy);
-		} catch (Exception e) {
+		} catch (BaseException e) {
 			throw new GATInvocationException(
 					"Unable to connect to WMProxy service", e);
 		}
@@ -206,6 +264,12 @@ public class GLiteResourceBrokerAdaptor extends ResourceBrokerCpi {
 			// data persistent for restart.
 			// TODO: (check if possible) restart=ID (String): restart job with
 			// given ID.
+			
+			// required by gLite: 
+			// TODO: remove constant VirtualOrganisation
+			jobAd.setAttribute("VirtualOrganisation", "pvier");
+			// the default rank
+			jobAd.setAttribute("Rank", 0);
 		} catch (Exception e) {
 			throw new GATInvocationException(
 					"Exception while parsing softwareDescription", e);
@@ -230,7 +294,8 @@ public class GLiteResourceBrokerAdaptor extends ResourceBrokerCpi {
 	public List findResources(ResourceDescription resourceDescription)
 			throws GATInvocationException {
 		// throw new UnsupportedOperationException("Not implemented");
-		WMProxyAPI client = connectToWMProxy(delegationId);
+		// TODO: remove null from here!!!
+		WMProxyAPI client = connectToWMProxy(delegationId, null);
 		ArrayList resources = null;
 		JobAd jobAd = createJobDescription(resourceDescription);
 		String jdlString = jobAd.toString();
@@ -273,7 +338,8 @@ public class GLiteResourceBrokerAdaptor extends ResourceBrokerCpi {
 		return resources;
 	}
 
-	public boolean isDryRun(JobDescription description) throws GATInvocationException {
+	public boolean isDryRun(JobDescription description)
+			throws GATInvocationException {
 		SoftwareDescription sd = description.getSoftwareDescription();
 		if (sd == null)
 			throw new GATInvocationException(
@@ -298,12 +364,13 @@ public class GLiteResourceBrokerAdaptor extends ResourceBrokerCpi {
 		// throw new UnsupportedOperationException("Not implemented");
 		boolean hasPrestageFiles = false;
 		String delegationId = getDelegationId();
-		WMProxyAPI client = connectToWMProxy(delegationId);
+		WMProxyAPI client = connectToWMProxy(delegationId, description);
 		JobAd jobAd = createJobDescription(description);
 		long startTime = System.currentTimeMillis();
+		//TODO: remove nulls!!!
 		if (isDryRun(description)) {
 			GLiteJob job = new GLiteJob(gatContext, preferences, description,
-					client, startTime, null);
+					null, client, startTime, null);
 			job.setState(Job.STOPPED);
 			return job;
 		}

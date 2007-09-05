@@ -168,8 +168,6 @@ public class GLiteJob extends JobCpi {
 			setState(UNKNOWN);
 		}
 	}
-
-	public boolean 
 	
 	public void stop() throws GATInvocationException {
 		String stateString = null;
@@ -190,7 +188,7 @@ public class GLiteJob extends JobCpi {
 
 		GATInvocationException exception = null;
 		try {
-            if (job != null)
+            if (jobID != null)
                 cancelGLiteJob();
         } catch (GATInvocationException e) {
         	// shouldn't we do something more when an exception occurs?
