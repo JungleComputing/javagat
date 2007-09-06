@@ -3,6 +3,7 @@
  */
 package org.gridlab.gat.resources.cpi.local;
 
+import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -73,6 +74,17 @@ public class LocalJob extends JobCpi {
         super(gatContext, preferences, description, sandbox);
 //        this.broker = broker;
         jobID = allocJobID();
+		Field f = null;
+		try {
+			f = p.getClass().getDeclaredField("pid");
+			f.setAccessible(true);
+			jobID = Integer.parseInt(f.get(p).toString()); // toString
+		// ignore exceptions													// necessary?
+		} catch (SecurityException e) {
+		} catch (NoSuchFieldException e) {
+		} catch (IllegalAccessException e) {
+		}
+		
         state = RUNNING;
         this.p = p;
         this.out = out;
