@@ -9,22 +9,25 @@ import org.gridlab.gat.resources.ResourceBroker;
 import org.gridlab.gat.resources.SoftwareDescription;
 
 public class SubmitLocalJob {
-    public static void main(String[] args) throws Exception {
-        GATContext context = new GATContext();
+	public static void main(String[] args) throws Exception {
+		GATContext context = new GATContext();
 
-        //        context.addPreference("ResourceBroker.adaptor.name", "local");
-        SoftwareDescription sd = new SoftwareDescription();
-        sd.setLocation("file:////bin/hostname");
+		// context.addPreference("ResourceBroker.adaptor.name", "local");
+		SoftwareDescription sd = new SoftwareDescription();
+		sd.setLocation("file:////bin/hostname");
 
-        File stdout = GAT.createFile(context, "hostname.txt");
-        sd.setStdout(stdout);
+		File stdout = GAT.createFile(context, "hostname.txt");
+		sd.setStdout(stdout);
 
-        JobDescription jd = new JobDescription(sd);
-        ResourceBroker broker = GAT.createResourceBroker(context);
-        Job job = broker.submitJob(jd);
+		JobDescription jd = new JobDescription(sd);
+		ResourceBroker broker = GAT.createResourceBroker(context);
+		Job job = broker.submitJob(jd);
 
-        while ((job.getState() != Job.STOPPED)
-            && (job.getState() != Job.SUBMISSION_ERROR))
-            Thread.sleep(1000);
-    }
+		while ((job.getState() != Job.STOPPED)
+				&& (job.getState() != Job.SUBMISSION_ERROR)) {
+			Thread.sleep(1000);
+		}
+
+		GAT.end();
+	}
 }
