@@ -185,46 +185,7 @@ ionHandler.java:84)
 
 ---------------------------------------------------------------------------------------
 
-List of bugs Alaxander
-
----------------------------------------------------------------------------------------
-right now the LocalResourceBrokerAdaptor returns a 0 as JobID. That's because 
-the method getJobID is constructed as follows:
-
-####################cut here##########################
-    public String getJobID() throws GATInvocationException {
-        return "" + jobID;
-    }
-####################cut here##########################
-
-and jobID is finally mapped to the globalJobID in the JobCpi class. So usually 
-this JobID will be zero.
-
-I like to suggest to return the jobID of the process itself, which is executed 
-by Java-GAT, and which process ID can also be seen by suing the ps command. 
-This ID can be retrieved by the following code:
-
-#########################cut here#######################
-		p = Runtime.getRuntime().exec(program);
-		Field f = null;
-		try {
-			f = p.getClass().getDeclaredField("pid");
-		} catch (SecurityException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (NoSuchFieldException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		f.setAccessible(true);
-
-		System.out.println("here is the process..." + f.get(p).toString());
-#########################cut here#######################
-
-The reason why I am making this point is, that I would get a better 
-identification of my Job from the system side.
-
-How do you think about that?
+List of bugs Alexander
 
 ---------------------------------------------------------------------------------------
 
