@@ -5,6 +5,8 @@ import java.util.Set;
 
 /**
  * An instance of this class represents user preferences for selecting adaptors.
+ * For an overview of the generic preferences used by JavaGAT and well known adaptors
+ * see: <a href="../../../../preferences.html">generic preferences</a>.
  */
 public class Preferences {
     

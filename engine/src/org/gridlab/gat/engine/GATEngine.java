@@ -43,7 +43,6 @@ import org.gridlab.gat.monitoring.cpi.MonitorableCpi;
 import org.gridlab.gat.resources.cpi.ResourceBrokerCpi;
 import org.gridlab.gat.steering.cpi.SteeringManagerCpi;
 
-
 /**
  * @author rob
  */
@@ -51,833 +50,903 @@ import org.gridlab.gat.steering.cpi.SteeringManagerCpi;
  * This class make the various GAT adaptors available to GAT
  */
 public class GATEngine {
-    public static final boolean TIMING = propertySet("gat.timing");
-
-    public static final boolean DEBUG = propertySet("gat.debug");
-
-    public static final boolean VERBOSE = propertySet("gat.debug")
-        || propertySet("gat.verbose");
-
-    /**
-     * This member variable holds reference to the single GATEngine
-     */
-    private static GATEngine gatEngine = null;
-
-    /** A list of methods that have been registered as unmarshallers for GAT
-     * advertizable objects. Elements are of type Class */
-    private static Vector unmarshallers = new Vector();
-
-    private boolean ended = false;
-
-    /** Keys are cpiClass names, elements are AdaptorLists. */
-    private AdaptorSet adaptors;
-
-    /** elements are of type MetricListenerNode */
-    private Vector metricListeners = new Vector();
-
-    /** elements are of type MetricNode */
-    private Vector metricTable = new Vector();
-
-    URLClassLoader gatClassLoader = null;
-
-    /**
-     * Constructs a default GATEngine instance
-     */
-    protected GATEngine() {
-        if (ended) {
-            throw new Error("Getting gat engine while end was already called");
-        }
-
-        adaptors = new AdaptorSet();
-        readJarFiles();
-
-        if (adaptors.size() == 0) {
-            throw new Error("GAT: No adaptors could be loaded");
-        }
-
-        adaptors.order();
-
-        if (VERBOSE) {
-            adaptors.printAdaptorList();
-        }
-
-        // Don't add a shutdown hook, the application might add one that depends on GAT 
-        //        Runtime.getRuntime().addShutdownHook(new EndHook());
-    }
-
-    static boolean propertySet(String name) {
-        Properties p = System.getProperties();
-
-        if (p != null) {
-            String s = p.getProperty(name);
-
-            if (s != null) {
-                if (!s.equals("false")) {
-                    return true;
-                }
-            }
-        }
-
-        return false;
-    }
-
-    /**
-     * Singleton method to construct a GATEngine
-     *
-     * @return A GATEngine instance
-     */
-    public static synchronized GATEngine getGATEngine() {
-        if (gatEngine == null) {
-            gatEngine = new GATEngine();
-        }
-
-        return gatEngine;
-    }
-
-    /**
-     * Returns a list of adaptors for the specified cpiClass
-     *
-     * @param cpiClass the cpi class for which to look
-     * @return the list of adaptors
-     */
-    public AdaptorList getAdaptorList(Class cpiClass)
-            throws GATObjectCreationException {
-        if (adaptors.getAdaptorList(cpiClass.getName()) == null) {
-            // no adaptors for this type loaded.
-            if (VERBOSE) {
-                System.err
-                    .println("getAdaptorList: No adaptors loaded for type "
-                        + cpiClass.getName());
-            }
-
-            throw new GATObjectCreationException(
-                "getAdaptorList: No adaptors loaded for type "
-                    + cpiClass.getName());
-        } else {
-            return adaptors.getAdaptorList(cpiClass.getName());
-        }
-    }
-
-    /**
-     * This method periodically populates the Map returned from a call to the
-     * method getCpiClasses().
-     */
-    protected void readJarFiles() {
-        List adaptorPathList = new ArrayList();
-
-        String adaptorPath = System.getProperty("gat.adaptor.path");
-
-        if (adaptorPath != null) {
-            StringTokenizer st = new StringTokenizer(adaptorPath,
-                File.pathSeparator);
-
-            while (st.hasMoreTokens()) {
-                String dir = st.nextToken();
-                List l = getJarFiles(dir);
-                adaptorPathList.addAll(l);
-            }
-        }
-        
-        ArrayList adaptorPathURLs = new ArrayList();
-
-        // Sort jar files: put adaptors first.
-        // Adaptors might override classes in the external jars,
-        // to fix bugs in globus for instance.
-        for (int i = 0; i < adaptorPathList.size(); i++) {
-            JarFile jarFile = (JarFile) adaptorPathList.get(i);
-
-            try {
-                File f = new File(jarFile.getName());
-
-                if(jarFile.getName().endsWith("Adaptor.jar")) {
-                    adaptorPathURLs.add(0, f.toURI().toURL()); // add to beginning
-                } else {
-                    adaptorPathURLs.add(f.toURI().toURL()); // add to end
-                }
-
-            } catch (Exception e) {
-                throw new Error(e);
-            }
-        }
-
-        URL[] urls = new URL[adaptorPathURLs.size()];
-
-        for (int i = 0; i < adaptorPathURLs.size(); i++) {
-            urls[i] = (URL) adaptorPathURLs.get(i);
-        }
-
-        if (DEBUG) {
-            System.err.println("List of GAT jar files is: ");
-            printJars(urls);
-        }
-
-        gatClassLoader = new URLClassLoader(urls, this.getClass().getClassLoader());
-
-        // Populate cpiClasses
-        loadJarFiles(adaptorPathList);
-    }
-
-    protected void printJars(URL[] urls) {
-        for (int i = 0; i < urls.length; i++) {
-            System.err.println("    " + urls[i].getFile());
-        }
-    }
-
-    /**
-     * Obtains File's in the optional directory.
-     *
-     * @param f
-     *            a directory to list
-     * @return a list of files in the passed directory
-     */
-    protected List getFiles(File f) {
-        Vector vector = new Vector();
-        File[] files = f.listFiles();
-
-        if (files == null) {
-            // IO error or dir does not exist
-            return vector;
-        }
-
-        for (int count = 0; count < files.length; count++)
-            vector.add(files[count]);
-
-        return vector;
-    }
-
-    /**
-     * Obtains JarFile's in the optional directory that are GAT jar's
-     *
-     * @param dir
-     *            the directory to get the jar files from
-     * @return a list of JarFile objects
-     */
-    protected List getJarFiles(String dir) {
-        File nextFile = null;
-        JarFile jarFile = null;
-        Manifest manifest = null;
-
-        // Obtain files in the optional directory.
-        List files = getFiles(new File(dir));
-
-        Iterator iterator = files.iterator();
-
-        Vector jarFiles = new Vector();
-
-        while (iterator.hasNext()) {
-            nextFile = (File) iterator.next();
-
-            if (nextFile.isFile()) {
-                try {
-                    jarFile = new JarFile(nextFile, true);
-                    manifest = jarFile.getManifest();
-
-                    if (null != manifest) {
-                        manifest.getMainAttributes();
-                        jarFiles.add(jarFile);
-                    }
-                } catch (IOException ioException) {
-                    // Ignore IOException
-                }
-            }
-        }
-
-        return jarFiles;
-    }
-
-    public static void registerUnmarshaller(Class clazz) {
-        if(DEBUG) {
-            System.err.println("register marshaller for: " + clazz);
-        }
-        unmarshallers.add(clazz);
-    }
-
-    protected void loadCpiClass(JarFile jarFile, Manifest manifest,
-            Attributes attributes, String className, Class cpiClazz) {
-        if (DEBUG) {
-            System.err.println("Trying to load adaptor for " + className);
-        }
-
-        // Get info for the adaptor
-        String attributeName = className + "Cpi-class";
-        String clazzString = attributes.getValue(attributeName);
-
-        if (clazzString == null) {
-            if (DEBUG) {
-                System.err.println("Adaptor for " + className
-                    + " not found in Manifest");
-            }
-
-            return;
-        }
-
-        if (DEBUG) {
-            System.err.println("Adaptor for " + className
-                + " found in Manifest, loading");
-        }
-
-        Class clazz = null;
-
-        /* use a URL classloader to load the adaptors.
-         * This way, they don't have to be in the classpath */
-        try {
-            clazz = gatClassLoader.loadClass(clazzString);
-        } catch (Exception e) {
-            if (DEBUG) {
-                System.err.println("Could not load Adaptor for " + className
-                    + ": " + e);
-                e.printStackTrace();
-            }
-
-            return;
-        }
-
-        if (containsUnmarshaller(clazz)) {
-            if (DEBUG) {
-                System.err.println("Adaptor " + clazzString + " contains unmarshaller");
-            }
-            
-            unmarshallers.add(clazz);
-        }
-
-        if(containsInitializer(clazz)) {
-            callInitializer(clazz);
-        }
-        
-        if (DEBUG) {
-            System.err.println("Adaptor for " + className + " loaded");
-        }
-
-        ///////////////
-        Preferences preferences = new Preferences();
-
-        Iterator i = attributes.keySet().iterator();
-
-        while (i.hasNext()) {
-            Object key = i.next();
-            Object value = attributes.get(key);
-            preferences.put(key.toString(), value.toString());
-        }
-
-        ///////////////
-        Adaptor a = new Adaptor(cpiClazz, clazz, preferences);
-        AdaptorList s = adaptors.getAdaptorList(cpiClazz.getName());
-
-        if (s == null) {
-            s = new AdaptorList(cpiClazz);
-            adaptors.add(cpiClazz.getName(), s);
-        }
-
-        s.addAdaptor(a);
-    }
-
-    protected void loadCPIClassesFromJar(JarFile jarFile) {
-        Manifest manifest = null;
-        Attributes attributes = null;
-
-        // Get info for all adaptors
-        try {
-            manifest = jarFile.getManifest();
-        } catch (IOException e) {
-            return;
-        }
-
-        attributes = manifest.getMainAttributes();
-
-        loadCpiClass(jarFile, manifest, attributes, "Endpoint",
-            EndpointCpi.class);
-        loadCpiClass(jarFile, manifest, attributes, "AdvertService",
-            AdvertServiceCpi.class);
-        loadCpiClass(jarFile, manifest, attributes, "Monitorable",
-            MonitorableCpi.class);
-        loadCpiClass(jarFile, manifest, attributes, "SteeringManager",
-            SteeringManagerCpi.class);
-        loadCpiClass(jarFile, manifest, attributes, "File", FileCpi.class);
-        loadCpiClass(jarFile, manifest, attributes, "LogicalFile",
-            LogicalFileCpi.class);
-        loadCpiClass(jarFile, manifest, attributes, "RandomAccessFile",
-            RandomAccessFileCpi.class);
-        loadCpiClass(jarFile, manifest, attributes, "FileInputStream",
-            FileInputStreamCpi.class);
-        loadCpiClass(jarFile, manifest, attributes, "FileOutputStream",
-            FileOutputStreamCpi.class);
-        loadCpiClass(jarFile, manifest, attributes, "ResourceBroker",
-            ResourceBrokerCpi.class);
-    }
-
-    /**
-     * load jar files in the list, looking for CPI classes
-     *
-     * @param jarFiles
-     *            the list of JarFile objects to load
-     */
-    protected void loadJarFiles(List jarFiles) {
-        JarFile jarFile = null;
-
-        Iterator iterator = jarFiles.iterator();
-
-        // Iterate over JarFiles
-        while (iterator.hasNext()) {
-            jarFile = (JarFile) iterator.next();
-
-            if (DEBUG) {
-                System.err
-                    .println("loading adaptors from " + jarFile.getName());
-            }
-
-            loadCPIClassesFromJar(jarFile);
-        }
-    }
-
-    /**
-     * This method unmarshals an advertizable GAT object.
-     * The unmarshal method must be registered first
-     * @param input
-     * @return
-     * @throws GATInvocationException
-     */
-    public Advertisable unmarshalAdvertisable(GATContext gatContext,
-            Preferences preferences, String input)
-            throws GATInvocationException {
-        if (input == null) {
-            throw new NullPointerException("cannot unmarshal null String");
-        }
-
-        for (int i = 0; i < unmarshallers.size(); i++) {
-            Class c = (Class) unmarshallers.get(i);
-
-            try {
-                Method m = c.getMethod("unmarshal", new Class[] {
-                    GATContext.class, Preferences.class, String.class });
-                Advertisable res = (Advertisable) m.invoke(null, new Object[] {
-                    gatContext, preferences, input });
-
-                if (res != null) {
-                    if (DEBUG) {
-                        System.err
-                            .println("unmarshalAdvert: returning: " + res);
-                    }
-
-                    // success!
-                    return res;
-                }
-            } catch (InvocationTargetException e1) {
-                if (DEBUG) {
-                    System.err.println("unmarshaller for " + c.getName()
-                        + " failed:" + e1.getTargetException());
-                    e1.getTargetException().printStackTrace();
-                }
-
-                // ignore and try next unmarshaller                
-            } catch (Exception e) {
-                if (DEBUG) {
-                    System.err.println("unmarshaller for " + c.getName()
-                        + " failed:" + e);
-                    e.printStackTrace();
-                }
-
-                // ignore and try next unmarshaller
-            }
-        }
-
-        throw new GATInvocationException("could not find suitable unmarshaller");
-    }
-
-    public String marshalAdvertisable(Advertisable advert) {
-        if (advert == null) {
-            throw new NullPointerException("cannot marshal null Advertisable");
-        }
-
-        String res = advert.marshal();
-
-        return res;
-
-        /*
-         * for(int i=0; i <marshallers.size(); i++) { Class c = (Class)
-         * marshallers.get(i);
-         *
-         * try { Method m = c.getMethod("marshal", new Class[]
-         * {Advertisable.class}); String res = (String) m.invoke(null, new
-         * Object[] {advert}); if(res != null) { // success! return res; } }
-         * catch (Exception e) { throw new GATInvocationException("could not
-         * find or execute marshal method: " + e); } }
-         *
-         * throw new GATInvocationException("could not find suitable
-         * marshaller");
-         */
-    }
-
-    private static boolean containsUnmarshaller(Class clazz) {
-        // test for marshal and unmarshal methods.
-        try {
-            clazz.getMethod("unmarshal", new Class[] { GATContext.class,
-                Preferences.class, String.class });
-
-            return true;
-        } catch (Throwable t) {
-            return false;
-        }
-    }
-
-    private static boolean containsInitializer(Class clazz) {
-        // test for marshal and unmarshal methods.
-        try {
-            clazz.getMethod("init", (Class[]) null);
-            return true;
-        } catch (Throwable t) {
-            return false;
-        }
-    }
-    
-    private void callInitializer(Class clazz) {
-        try {
-            Method m = clazz.getMethod("init", (Class[]) null);
-            m.invoke((Object) null, (Object[]) null);
-        } catch (Throwable t) {
-            if(VERBOSE) {
-                System.err.println("initialization of " + clazz + " failed: " + t);
-            }
-        }
-    }
-    
-    public static String defaultMarshal(Object o) {
-        if(o == null) {
-            throw new Error("cannot marshal a null object");
-        }
-        
-        StringWriter sw = new StringWriter();
-
-        try {
-            Marshaller.marshal(o, sw);
-        } catch (Throwable e) {
-            throw new Error("could not marshal object: ", e);
-        }
-
-        return sw.toString();
-    }
-
-    public static Advertisable defaultUnmarshal(Class type, String s) {
-        if(s == null) {
-            throw new Error("cannot unmarshal a null object");
-        }
-        
-        StringReader sr = new StringReader(s);
-
-        try {
-            if (DEBUG) {
-                System.err.println("default unmarshaller start, type = " + type
-                    + " string = " + s);
-            }
-
-            Unmarshaller unmarshaller = new Unmarshaller(type);
-            unmarshaller.setIgnoreExtraAttributes(false);
-            unmarshaller.setIgnoreExtraElements(false);
-            unmarshaller.setValidation(true);
-
-            Advertisable res = (Advertisable) unmarshaller.unmarshal(sr);
-
-            if(res == null) {
-                throw new Error("cannot unmarshal this object");
-            }
-            
-            if (DEBUG) {
-                System.err.println("default unmarshaller returning " + res);
-            }
-
-            return res;
-        } catch (Exception e) {
-            throw new Error("could not unmarshal object: " + e);
-        }
-    }
-
-    public static void addMetricListener(Object adaptor,
-            MetricListener metricListener, Metric metric)
-            throws GATInvocationException {
-        GATEngine e = getGATEngine();
-
-        synchronized (e) {
-            // check whether the adaptor actually registered this metric
-            boolean found = false;
-
-            for (int i = 0; i < e.metricTable.size(); i++) {
-                MetricNode n = (MetricNode) e.metricTable.get(i);
-
-                if (n.adaptor == adaptor) {
-                    if (n.definition.equals(metric.getDefinition())) {
-                        found = true;
-
-                        break;
-                    }
-                }
-            }
-
-            if (!found) {
-                throw new GATInvocationException();
-            }
-
-            e.metricListeners.add(new MetricListenerNode(adaptor,
-                metricListener, metric));
-        }
-    }
-
-    public static void removeMetricListener(Object adaptor,
-            MetricListener metricListener, Metric metric)
-            throws NoSuchElementException {
-        GATEngine e = getGATEngine();
-
-        synchronized (e) {
-            if (!e.metricListeners.remove(new MetricListenerNode(adaptor,
-                metricListener, metric))) {
-                throw new NoSuchElementException();
-            }
-        }
-    }
-
-    public static void registerMetric(Object adaptor, String methodName,
-            MetricDefinition definition) {
-        GATEngine e = getGATEngine();
-
-        synchronized (e) {
-            e.metricTable.add(new MetricNode(adaptor, methodName, definition));
-        }
-    }
-
-    public static List getMetricDefinitions(Object adaptor) {
-        GATEngine e = getGATEngine();
-
-        synchronized (e) {
-            Vector res = new Vector();
-
-            for (int i = 0; i < e.metricTable.size(); i++) {
-                MetricNode n = (MetricNode) e.metricTable.get(i);
-
-                if (n.adaptor == adaptor) {
-                    res.add(n.definition);
-                }
-            }
-
-            return res;
-        }
-    }
-
-    public static MetricDefinition getMetricDefinitionByName(Object adaptor,
-            String name) throws GATInvocationException {
-        GATEngine e = getGATEngine();
-
-        synchronized (e) {
-            for (int i = 0; i < e.metricTable.size(); i++) {
-                MetricNode n = (MetricNode) e.metricTable.get(i);
-
-                if ((n.adaptor == adaptor)
-                    && name.equals(n.definition.getMetricName())) {
-                    return n.definition;
-                }
-            }
-
-            throw new GATInvocationException("the metric name is incorrect");
-        }
-    }
-
-    public static void fireMetric(Object adaptor, MetricValue v) {
-        // look for all callbacks that were installed for this metric, call
-        // them.
-        GATEngine e = getGATEngine();
-
-        for (int i = 0; i < e.metricListeners.size(); i++) {
-            MetricListenerNode n = (MetricListenerNode) e.metricListeners
-                .get(i);
-
-            if (n.adaptor == adaptor) {
-                if (n.metric.equals(v.getMetric())) {
-                    // hiha, right adaptor and metric
-                    // call the handler
-                    try {
-                        n.metricListener.processMetricEvent(v);
-                    } catch (Throwable t) {
-                        System.err
-                            .println("WARNING, user callback threw exception: "
-                                + t);
-                        t.printStackTrace();
-                    }
-                }
-            }
-        }
-
-        // now, also store the last value, a user might poll for it with the
-        // getMeasurement call.
-        for (int i = 0; i < e.metricTable.size(); i++) {
-            MetricNode n = (MetricNode) e.metricTable.get(i);
-
-            if (n.adaptor == adaptor) {
-                if (n.definition.equals(v.getMetric().getDefinition())) {
-                    n.setLastValue(v);
-
-                    return;
-                }
-            }
-        }
-
-        throw new Error("Internal error: event fired for non-registered metric");
-    }
-
-    public static MetricValue getMeasurement(Object adaptor, Metric metric)
-            throws GATInvocationException {
-        if (metric.getDefinition().getMeasurementType() != MetricDefinition.DISCRETE) {
-            throw new GATInvocationException(
-                "internal adaptor error: GATEngine.getMeasurement can only handle discrete metrics");
-        }
-
-        GATEngine e = getGATEngine();
-
-        for (int i = 0; i < e.metricTable.size(); i++) {
-            MetricNode n = (MetricNode) e.metricTable.get(i);
-
-            if (n.adaptor == adaptor) {
-                if (n.definition.equals(metric.getDefinition())) {
-                    if (n.lastValue == null) {
-                        throw new GATInvocationException(
-                            "No data available for this metric");
-                    }
-
-                    return n.lastValue;
-                }
-            }
-        }
-
-        throw new GATInvocationException("No data available for this metric");
-    }
-
-    /** This method should not be called by the user, it is called by the GAT class. Use GAT.end() instead. */
-    public static void end() {
-        GATEngine engine = getGATEngine();
-
-        synchronized (engine) {
-            if (engine.ended) {
-                return;
-            }
-
-            engine.ended = true;
-        }
-
-        if (GATEngine.DEBUG) {
-            System.err.println("shutting down GAT");
-        }
-
-        for (int i = 0; i < engine.adaptors.size(); i++) {
-            AdaptorList l = engine.adaptors.getAdaptorList(i);
-
-            for (int j = 0; j < l.size(); j++) {
-                Adaptor a = l.get(j);
-                Class c = a.adaptorClass;
-
-                // invoke the "end" static method of the class
-                try {
-                    Method m = c.getMethod("end", (Class[]) null);
-                    m.invoke((Object) null, (Object[]) null);
-                } catch (Throwable t) {
-                    // ignore
-                }
-            }
-        }
-
-        if (GATEngine.DEBUG) {
-            System.err.println("shutting down GAT DONE");
-        }
-    }
-
-    /**
-     * This method checks the preferences to see if the adaptor given in
-     * adaptorName can be used. Maybe the user only wants local adaptors, or
-     * maybe a specific  adaptor only.
-     * @param preferences the preferences object
-     * @param adaptorType the type of the adaptor (e.g., File or RecourceBroker)
-     * @param adaptorName the name of the adaptor
-     * @throws GATObjectCreationException
-     */
-    public static boolean isAdaptorSelected(Preferences preferences, Adaptor adaptor)
-            throws GATObjectCreationException {
-        String adaptorType = adaptor.getShortCpiName();
-        String adaptorName = adaptor.getShortAdaptorClassName();
-        String postfix = adaptorType + "Adaptor";
-        String prefix = null;
-
-        // The prefix is the class name of the adaptor, with the TypeAdaptor part stripped of:
-        // So, "SshFileAdaptor" becomes "Ssh".
-        if (adaptorName.length() > postfix.length()) {
-            prefix = adaptorName.substring(0, adaptorName.length()
-                - postfix.length());
-        }
-
-        // If we only want local adaptors, the prefix must be "Local"
-        String local = (String) preferences.get("adaptors.local");
-        if ((local != null) && local.equalsIgnoreCase("true")) {
-            if (prefix == null || !prefix.equalsIgnoreCase("local")) {
-                return false;
-            }
-        }
-
-        String selected = (String) preferences.get(adaptorType.toLowerCase()
-            + ".adaptor.name");
-        if (selected != null) {
-            if (selected.equalsIgnoreCase(adaptorName)) {
-                return true;
-            }
-
-            if (prefix != null && selected.equalsIgnoreCase(prefix)) {
-                return true;
-            }
-
-            return false;
-        }
-
-        return true;
-    }
-
-    public static Object createAdaptorProxy(String cpiClassName,
-        Class interfaceClass, GATContext gatContext, Preferences preferences,
-        Object[] tmpParams) throws GATObjectCreationException {
-        
-        Class cpiClass;
-        try {
-            cpiClass = Class.forName(cpiClassName);
-        } catch (ClassNotFoundException e) {
-            throw new Error(e);
-        }
-        
-        GATEngine gatEngine = GATEngine.getGATEngine();
-
-        AdaptorList adaptors = gatEngine.getAdaptorList(cpiClass);
-        if (adaptors == null) {
-            throw new GATObjectCreationException("could not find any adaptors");
-        }
-        AdaptorInvocationHandler handler = new AdaptorInvocationHandler(
-            adaptors, gatContext, preferences, tmpParams);
-
-        Object proxy = Proxy.newProxyInstance(interfaceClass.getClassLoader(),
-            new Class[] { interfaceClass }, handler);
-
-        return proxy;
-    }
-    
-    public static String getLocalHostName() {
-        try {
-            InetAddress a = InetAddress.getLocalHost();
-            if (a != null) {
-                return a.getHostName();
-            }
-        } catch(IOException e) {
-            // ignore
-        }
-        return "localhost";
-    }
-
-    public static InetAddress getLocalHostAddress() {
-        try {
-            InetAddress a = InetAddress.getLocalHost();
-            return a;
-        } catch(IOException e) {
-            // ignore
-        }
-        return null;
-    }
+	public static final boolean TIMING = propertySet("gat.timing");
+
+	public static final boolean DEBUG = propertySet("gat.debug");
+
+	public static final boolean VERBOSE = propertySet("gat.debug")
+			|| propertySet("gat.verbose");
+
+	/**
+	 * This member variable holds reference to the single GATEngine
+	 */
+	private static GATEngine gatEngine = null;
+
+	/**
+	 * A list of methods that have been registered as unmarshallers for GAT
+	 * advertizable objects. Elements are of type Class
+	 */
+	private static Vector unmarshallers = new Vector();
+
+	private boolean ended = false;
+
+	/** Keys are cpiClass names, elements are AdaptorLists. */
+	private AdaptorSet adaptors;
+
+	/** elements are of type MetricListenerNode */
+	private Vector metricListeners = new Vector();
+
+	/** elements are of type MetricNode */
+	private Vector metricTable = new Vector();
+
+	URLClassLoader gatClassLoader = null;
+
+	/**
+	 * Constructs a default GATEngine instance
+	 */
+	protected GATEngine() {
+		if (ended) {
+			throw new Error("Getting gat engine while end was already called");
+		}
+
+		adaptors = new AdaptorSet();
+		readJarFiles();
+
+		if (adaptors.size() == 0) {
+			throw new Error("GAT: No adaptors could be loaded");
+		}
+
+		adaptors.order();
+
+		if (VERBOSE) {
+			adaptors.printAdaptorList();
+		}
+
+		// Don't add a shutdown hook, the application might add one that depends
+		// on GAT
+		// Runtime.getRuntime().addShutdownHook(new EndHook());
+	}
+
+	static boolean propertySet(String name) {
+		Properties p = System.getProperties();
+
+		if (p != null) {
+			String s = p.getProperty(name);
+
+			if (s != null) {
+				if (!s.equals("false")) {
+					return true;
+				}
+			}
+		}
+
+		return false;
+	}
+
+	/**
+	 * Singleton method to construct a GATEngine
+	 * 
+	 * @return A GATEngine instance
+	 */
+	public static synchronized GATEngine getGATEngine() {
+		if (gatEngine == null) {
+			gatEngine = new GATEngine();
+		}
+
+		return gatEngine;
+	}
+
+	/**
+	 * Returns a list of adaptors for the specified cpiClass
+	 * 
+	 * @param cpiClass
+	 *            the cpi class for which to look
+	 * @return the list of adaptors
+	 */
+	public AdaptorList getAdaptorList(Class cpiClass)
+			throws GATObjectCreationException {
+		if (adaptors.getAdaptorList(cpiClass.getName()) == null) {
+			// no adaptors for this type loaded.
+			if (VERBOSE) {
+				System.err
+						.println("getAdaptorList: No adaptors loaded for type "
+								+ cpiClass.getName());
+			}
+
+			throw new GATObjectCreationException(
+					"getAdaptorList: No adaptors loaded for type "
+							+ cpiClass.getName());
+		} else {
+			return adaptors.getAdaptorList(cpiClass.getName());
+		}
+	}
+
+	/**
+	 * This method periodically populates the Map returned from a call to the
+	 * method getCpiClasses().
+	 */
+	protected void readJarFiles() {
+		List adaptorPathList = new ArrayList();
+
+		String adaptorPath = System.getProperty("gat.adaptor.path");
+
+		if (adaptorPath != null) {
+			StringTokenizer st = new StringTokenizer(adaptorPath,
+					File.pathSeparator);
+
+			while (st.hasMoreTokens()) {
+				String dir = st.nextToken();
+				List l = getJarFiles(dir);
+				adaptorPathList.addAll(l);
+			}
+		}
+
+		ArrayList adaptorPathURLs = new ArrayList();
+
+		// Sort jar files: put adaptors first.
+		// Adaptors might override classes in the external jars,
+		// to fix bugs in globus for instance.
+		for (int i = 0; i < adaptorPathList.size(); i++) {
+			JarFile jarFile = (JarFile) adaptorPathList.get(i);
+
+			try {
+				File f = new File(jarFile.getName());
+
+				if (jarFile.getName().endsWith("Adaptor.jar")) {
+					adaptorPathURLs.add(0, f.toURI().toURL()); // add to
+					// beginning
+				} else {
+					adaptorPathURLs.add(f.toURI().toURL()); // add to end
+				}
+
+			} catch (Exception e) {
+				throw new Error(e);
+			}
+		}
+
+		URL[] urls = new URL[adaptorPathURLs.size()];
+
+		for (int i = 0; i < adaptorPathURLs.size(); i++) {
+			urls[i] = (URL) adaptorPathURLs.get(i);
+		}
+
+		if (DEBUG) {
+			System.err.println("List of GAT jar files is: ");
+			printJars(urls);
+		}
+
+		gatClassLoader = new URLClassLoader(urls, this.getClass()
+				.getClassLoader());
+
+		// Populate cpiClasses
+		loadJarFiles(adaptorPathList);
+	}
+
+	protected void printJars(URL[] urls) {
+		for (int i = 0; i < urls.length; i++) {
+			System.err.println("    " + urls[i].getFile());
+		}
+	}
+
+	/**
+	 * Obtains File's in the optional directory.
+	 * 
+	 * @param f
+	 *            a directory to list
+	 * @return a list of files in the passed directory
+	 */
+	protected List getFiles(File f) {
+		Vector vector = new Vector();
+		File[] files = f.listFiles();
+
+		if (files == null) {
+			// IO error or dir does not exist
+			return vector;
+		}
+
+		for (int count = 0; count < files.length; count++)
+			vector.add(files[count]);
+
+		return vector;
+	}
+
+	/**
+	 * Obtains JarFile's in the optional directory that are GAT jar's
+	 * 
+	 * @param dir
+	 *            the directory to get the jar files from
+	 * @return a list of JarFile objects
+	 */
+	protected List getJarFiles(String dir) {
+		File nextFile = null;
+		JarFile jarFile = null;
+		Manifest manifest = null;
+
+		// Obtain files in the optional directory.
+		List files = getFiles(new File(dir));
+
+		Iterator iterator = files.iterator();
+
+		Vector jarFiles = new Vector();
+
+		while (iterator.hasNext()) {
+			nextFile = (File) iterator.next();
+
+			if (nextFile.isFile()) {
+				try {
+					jarFile = new JarFile(nextFile, true);
+					manifest = jarFile.getManifest();
+
+					if (null != manifest) {
+						manifest.getMainAttributes();
+						jarFiles.add(jarFile);
+					}
+				} catch (IOException ioException) {
+					// Ignore IOException
+				}
+			}
+		}
+
+		return jarFiles;
+	}
+
+	public static void registerUnmarshaller(Class clazz) {
+		if (DEBUG) {
+			System.err.println("register marshaller for: " + clazz);
+		}
+		unmarshallers.add(clazz);
+	}
+
+	protected void loadCpiClass(JarFile jarFile, Manifest manifest,
+			Attributes attributes, String className, Class cpiClazz) {
+		if (DEBUG) {
+			System.err.println("Trying to load adaptor for " + className);
+		}
+
+		// Get info for the adaptor
+		String attributeName = className + "Cpi-class";
+		String clazzString = attributes.getValue(attributeName);
+
+		if (clazzString == null) {
+			if (DEBUG) {
+				System.err.println("Adaptor for " + className
+						+ " not found in Manifest");
+			}
+
+			return;
+		}
+
+		if (DEBUG) {
+			System.err.println("Adaptor for " + className
+					+ " found in Manifest, loading");
+		}
+
+		Class clazz = null;
+
+		/*
+		 * use a URL classloader to load the adaptors. This way, they don't have
+		 * to be in the classpath
+		 */
+		try {
+			clazz = gatClassLoader.loadClass(clazzString);
+		} catch (Exception e) {
+			if (DEBUG) {
+				System.err.println("Could not load Adaptor for " + className
+						+ ": " + e);
+				e.printStackTrace();
+			}
+
+			return;
+		}
+
+		if (containsUnmarshaller(clazz)) {
+			if (DEBUG) {
+				System.err.println("Adaptor " + clazzString
+						+ " contains unmarshaller");
+			}
+
+			unmarshallers.add(clazz);
+		}
+
+		if (containsInitializer(clazz)) {
+			callInitializer(clazz);
+		}
+
+		if (DEBUG) {
+			System.err.println("Adaptor for " + className + " loaded");
+		}
+
+		// /////////////
+		Preferences preferences = new Preferences();
+
+		Iterator i = attributes.keySet().iterator();
+
+		while (i.hasNext()) {
+			Object key = i.next();
+			Object value = attributes.get(key);
+			preferences.put(key.toString(), value.toString());
+		}
+
+		// /////////////
+		Adaptor a = new Adaptor(cpiClazz, clazz, preferences);
+		AdaptorList s = adaptors.getAdaptorList(cpiClazz.getName());
+
+		if (s == null) {
+			s = new AdaptorList(cpiClazz);
+			adaptors.add(cpiClazz.getName(), s);
+		}
+
+		s.addAdaptor(a);
+	}
+
+	protected void loadCPIClassesFromJar(JarFile jarFile) {
+		Manifest manifest = null;
+		Attributes attributes = null;
+
+		// Get info for all adaptors
+		try {
+			manifest = jarFile.getManifest();
+		} catch (IOException e) {
+			return;
+		}
+
+		attributes = manifest.getMainAttributes();
+
+		loadCpiClass(jarFile, manifest, attributes, "Endpoint",
+				EndpointCpi.class);
+		loadCpiClass(jarFile, manifest, attributes, "AdvertService",
+				AdvertServiceCpi.class);
+		loadCpiClass(jarFile, manifest, attributes, "Monitorable",
+				MonitorableCpi.class);
+		loadCpiClass(jarFile, manifest, attributes, "SteeringManager",
+				SteeringManagerCpi.class);
+		loadCpiClass(jarFile, manifest, attributes, "File", FileCpi.class);
+		loadCpiClass(jarFile, manifest, attributes, "LogicalFile",
+				LogicalFileCpi.class);
+		loadCpiClass(jarFile, manifest, attributes, "RandomAccessFile",
+				RandomAccessFileCpi.class);
+		loadCpiClass(jarFile, manifest, attributes, "FileInputStream",
+				FileInputStreamCpi.class);
+		loadCpiClass(jarFile, manifest, attributes, "FileOutputStream",
+				FileOutputStreamCpi.class);
+		loadCpiClass(jarFile, manifest, attributes, "ResourceBroker",
+				ResourceBrokerCpi.class);
+	}
+
+	/**
+	 * load jar files in the list, looking for CPI classes
+	 * 
+	 * @param jarFiles
+	 *            the list of JarFile objects to load
+	 */
+	protected void loadJarFiles(List jarFiles) {
+		JarFile jarFile = null;
+
+		Iterator iterator = jarFiles.iterator();
+
+		// Iterate over JarFiles
+		while (iterator.hasNext()) {
+			jarFile = (JarFile) iterator.next();
+
+			if (DEBUG) {
+				System.err
+						.println("loading adaptors from " + jarFile.getName());
+			}
+
+			loadCPIClassesFromJar(jarFile);
+		}
+	}
+
+	/**
+	 * This method unmarshals an advertizable GAT object. The unmarshal method
+	 * must be registered first
+	 * 
+	 * @param input
+	 * @return
+	 * @throws GATInvocationException
+	 */
+	public Advertisable unmarshalAdvertisable(GATContext gatContext,
+			Preferences preferences, String input)
+			throws GATInvocationException {
+		if (input == null) {
+			throw new NullPointerException("cannot unmarshal null String");
+		}
+
+		for (int i = 0; i < unmarshallers.size(); i++) {
+			Class c = (Class) unmarshallers.get(i);
+
+			try {
+				Method m = c.getMethod("unmarshal", new Class[] {
+						GATContext.class, Preferences.class, String.class });
+				Advertisable res = (Advertisable) m.invoke(null, new Object[] {
+						gatContext, preferences, input });
+
+				if (res != null) {
+					if (DEBUG) {
+						System.err
+								.println("unmarshalAdvert: returning: " + res);
+					}
+
+					// success!
+					return res;
+				}
+			} catch (InvocationTargetException e1) {
+				if (DEBUG) {
+					System.err.println("unmarshaller for " + c.getName()
+							+ " failed:" + e1.getTargetException());
+					e1.getTargetException().printStackTrace();
+				}
+
+				// ignore and try next unmarshaller
+			} catch (Exception e) {
+				if (DEBUG) {
+					System.err.println("unmarshaller for " + c.getName()
+							+ " failed:" + e);
+					e.printStackTrace();
+				}
+
+				// ignore and try next unmarshaller
+			}
+		}
+
+		throw new GATInvocationException("could not find suitable unmarshaller");
+	}
+
+	public String marshalAdvertisable(Advertisable advert) {
+		if (advert == null) {
+			throw new NullPointerException("cannot marshal null Advertisable");
+		}
+
+		String res = advert.marshal();
+
+		return res;
+
+		/*
+		 * for(int i=0; i <marshallers.size(); i++) { Class c = (Class)
+		 * marshallers.get(i);
+		 * 
+		 * try { Method m = c.getMethod("marshal", new Class[]
+		 * {Advertisable.class}); String res = (String) m.invoke(null, new
+		 * Object[] {advert}); if(res != null) { // success! return res; } }
+		 * catch (Exception e) { throw new GATInvocationException("could not
+		 * find or execute marshal method: " + e); } }
+		 * 
+		 * throw new GATInvocationException("could not find suitable
+		 * marshaller");
+		 */
+	}
+
+	private static boolean containsUnmarshaller(Class clazz) {
+		// test for marshal and unmarshal methods.
+		try {
+			clazz.getMethod("unmarshal", new Class[] { GATContext.class,
+					Preferences.class, String.class });
+
+			return true;
+		} catch (Throwable t) {
+			return false;
+		}
+	}
+
+	private static boolean containsInitializer(Class clazz) {
+		// test for marshal and unmarshal methods.
+		try {
+			clazz.getMethod("init", (Class[]) null);
+			return true;
+		} catch (Throwable t) {
+			return false;
+		}
+	}
+
+	private void callInitializer(Class clazz) {
+		try {
+			Method m = clazz.getMethod("init", (Class[]) null);
+			m.invoke((Object) null, (Object[]) null);
+		} catch (Throwable t) {
+			if (VERBOSE) {
+				System.err.println("initialization of " + clazz + " failed: "
+						+ t);
+			}
+		}
+	}
+
+	public static String defaultMarshal(Object o) {
+		if (o == null) {
+			throw new Error("cannot marshal a null object");
+		}
+
+		StringWriter sw = new StringWriter();
+
+		try {
+			Marshaller.marshal(o, sw);
+		} catch (Throwable e) {
+			throw new Error("could not marshal object: ", e);
+		}
+
+		return sw.toString();
+	}
+
+	public static Advertisable defaultUnmarshal(Class type, String s) {
+		if (s == null) {
+			throw new Error("cannot unmarshal a null object");
+		}
+
+		StringReader sr = new StringReader(s);
+
+		try {
+			if (DEBUG) {
+				System.err.println("default unmarshaller start, type = " + type
+						+ " string = " + s);
+			}
+
+			Unmarshaller unmarshaller = new Unmarshaller(type);
+			unmarshaller.setIgnoreExtraAttributes(false);
+			unmarshaller.setIgnoreExtraElements(false);
+			unmarshaller.setValidation(true);
+
+			Advertisable res = (Advertisable) unmarshaller.unmarshal(sr);
+
+			if (res == null) {
+				throw new Error("cannot unmarshal this object");
+			}
+
+			if (DEBUG) {
+				System.err.println("default unmarshaller returning " + res);
+			}
+
+			return res;
+		} catch (Exception e) {
+			throw new Error("could not unmarshal object: " + e);
+		}
+	}
+
+	public static void addMetricListener(Object adaptor,
+			MetricListener metricListener, Metric metric)
+			throws GATInvocationException {
+		GATEngine e = getGATEngine();
+
+		synchronized (e) {
+			// check whether the adaptor actually registered this metric
+			boolean found = false;
+
+			for (int i = 0; i < e.metricTable.size(); i++) {
+				MetricNode n = (MetricNode) e.metricTable.get(i);
+
+				if (n.adaptor == adaptor) {
+					if (n.definition.equals(metric.getDefinition())) {
+						found = true;
+
+						break;
+					}
+				}
+			}
+
+			if (!found) {
+				throw new GATInvocationException();
+			}
+
+			e.metricListeners.add(new MetricListenerNode(adaptor,
+					metricListener, metric));
+		}
+	}
+
+	public static void removeMetricListener(Object adaptor,
+			MetricListener metricListener, Metric metric)
+			throws NoSuchElementException {
+		GATEngine e = getGATEngine();
+
+		synchronized (e) {
+			if (!e.metricListeners.remove(new MetricListenerNode(adaptor,
+					metricListener, metric))) {
+				throw new NoSuchElementException();
+			}
+		}
+	}
+
+	public static void registerMetric(Object adaptor, String methodName,
+			MetricDefinition definition) {
+		GATEngine e = getGATEngine();
+
+		synchronized (e) {
+			e.metricTable.add(new MetricNode(adaptor, methodName, definition));
+		}
+	}
+
+	public static List getMetricDefinitions(Object adaptor) {
+		GATEngine e = getGATEngine();
+
+		synchronized (e) {
+			Vector res = new Vector();
+
+			for (int i = 0; i < e.metricTable.size(); i++) {
+				MetricNode n = (MetricNode) e.metricTable.get(i);
+
+				if (n.adaptor == adaptor) {
+					res.add(n.definition);
+				}
+			}
+
+			return res;
+		}
+	}
+
+	public static MetricDefinition getMetricDefinitionByName(Object adaptor,
+			String name) throws GATInvocationException {
+		GATEngine e = getGATEngine();
+
+		synchronized (e) {
+			for (int i = 0; i < e.metricTable.size(); i++) {
+				MetricNode n = (MetricNode) e.metricTable.get(i);
+
+				if ((n.adaptor == adaptor)
+						&& name.equals(n.definition.getMetricName())) {
+					return n.definition;
+				}
+			}
+
+			throw new GATInvocationException("the metric name is incorrect");
+		}
+	}
+
+	public static void fireMetric(Object adaptor, MetricValue v) {
+		// look for all callbacks that were installed for this metric, call
+		// them.
+		GATEngine e = getGATEngine();
+
+		for (int i = 0; i < e.metricListeners.size(); i++) {
+			MetricListenerNode n = (MetricListenerNode) e.metricListeners
+					.get(i);
+
+			if (n.adaptor == adaptor) {
+				if (n.metric.equals(v.getMetric())) {
+					// hiha, right adaptor and metric
+					// call the handler
+					try {
+						n.metricListener.processMetricEvent(v);
+					} catch (Throwable t) {
+						System.err
+								.println("WARNING, user callback threw exception: "
+										+ t);
+						t.printStackTrace();
+					}
+				}
+			}
+		}
+
+		// now, also store the last value, a user might poll for it with the
+		// getMeasurement call.
+		for (int i = 0; i < e.metricTable.size(); i++) {
+			MetricNode n = (MetricNode) e.metricTable.get(i);
+
+			if (n.adaptor == adaptor) {
+				if (n.definition.equals(v.getMetric().getDefinition())) {
+					n.setLastValue(v);
+
+					return;
+				}
+			}
+		}
+
+		throw new Error("Internal error: event fired for non-registered metric");
+	}
+
+	public static MetricValue getMeasurement(Object adaptor, Metric metric)
+			throws GATInvocationException {
+		if (metric.getDefinition().getMeasurementType() != MetricDefinition.DISCRETE) {
+			throw new GATInvocationException(
+					"internal adaptor error: GATEngine.getMeasurement can only handle discrete metrics");
+		}
+
+		GATEngine e = getGATEngine();
+
+		for (int i = 0; i < e.metricTable.size(); i++) {
+			MetricNode n = (MetricNode) e.metricTable.get(i);
+
+			if (n.adaptor == adaptor) {
+				if (n.definition.equals(metric.getDefinition())) {
+					if (n.lastValue == null) {
+						throw new GATInvocationException(
+								"No data available for this metric");
+					}
+
+					return n.lastValue;
+				}
+			}
+		}
+
+		throw new GATInvocationException("No data available for this metric");
+	}
+
+	/**
+	 * This method should not be called by the user, it is called by the GAT
+	 * class. Use GAT.end() instead.
+	 */
+	public static void end() {
+		GATEngine engine = getGATEngine();
+
+		synchronized (engine) {
+			if (engine.ended) {
+				return;
+			}
+
+			engine.ended = true;
+		}
+
+		if (GATEngine.DEBUG) {
+			System.err.println("shutting down GAT");
+		}
+
+		for (int i = 0; i < engine.adaptors.size(); i++) {
+			AdaptorList l = engine.adaptors.getAdaptorList(i);
+
+			for (int j = 0; j < l.size(); j++) {
+				Adaptor a = l.get(j);
+				Class c = a.adaptorClass;
+
+				// invoke the "end" static method of the class
+				try {
+					Method m = c.getMethod("end", (Class[]) null);
+					m.invoke((Object) null, (Object[]) null);
+				} catch (Throwable t) {
+					// ignore
+				}
+			}
+		}
+
+		if (GATEngine.DEBUG) {
+			System.err.println("shutting down GAT DONE");
+		}
+	}
+
+	public static Object createAdaptorProxy(String cpiClassName,
+			Class interfaceClass, GATContext gatContext,
+			Preferences preferences, Object[] tmpParams)
+			throws GATObjectCreationException {
+
+		Class cpiClass;
+		try {
+			cpiClass = Class.forName(cpiClassName);
+		} catch (ClassNotFoundException e) {
+			throw new Error(e);
+		}
+
+		GATEngine gatEngine = GATEngine.getGATEngine();
+
+		AdaptorList adaptors = gatEngine.getAdaptorList(cpiClass);
+		if (adaptors == null) {
+			throw new GATObjectCreationException("could not find any adaptors");
+		}
+
+		String adaptorType = cpiClass.getSimpleName().replace("Cpi", "");
+		if (preferences.containsKey(adaptorType + ".adaptor.name")) {
+			adaptors = reorderAdaptorList(adaptors, cpiClass, preferences);
+		}
+
+		System.out.println("<--:\n" + adaptors.toString() + "\n-->\n");
+
+		AdaptorInvocationHandler handler = new AdaptorInvocationHandler(
+				adaptors, gatContext, preferences, tmpParams);
+
+		Object proxy = Proxy.newProxyInstance(interfaceClass.getClassLoader(),
+				new Class[] { interfaceClass }, handler);
+
+		return proxy;
+	}
+
+	private static AdaptorList reorderAdaptorList(AdaptorList adaptors,
+			Class cpiClass, Preferences preferences) {
+		// parse the orderingString
+		// all adaptor names are separated by a ',' and adaptors that should
+		// not be used are prefixed with a '!'
+		// the case of the adaptor's name doesn't matter
+		int insertPosition = 0;
+		// make a new result adaptor list and fill it according to the global
+		// adaptorlist (to which adaptors refers)
+		AdaptorList result = new AdaptorList(cpiClass);
+		for (int i = 0; i < adaptors.size(); i++) {
+			result.addAdaptor(i, adaptors.get(i));
+		}
+		// retrieve the adaptor type from the cpiClass
+		String adaptorType = cpiClass.getSimpleName().replace("Cpi", "");
+		String nameString;
+		// the adaptors.local preference overrides the xxx.adaptor.name
+		// preference
+		String local = (String) preferences.get("adaptors.local");
+		if ((local != null) && local.equalsIgnoreCase("true")) {
+			nameString = "local";
+		} else {
+			nameString = (String) preferences
+					.get(adaptorType + ".adaptor.name");
+		}
+		// split the nameString into individual names
+		String[] names = nameString.split(",");
+		for (int i = 0; i < names.length; i++) {
+			names[i] = names[i].trim(); // remove the whitespace
+			// names of adaptors that should not be used start with a '!'
+			if (names[i].startsWith("!")) {
+				names[i] = names[i].substring(1); // remove the '!'
+				int pos = result.getPos(getFullAdaptorName(names[i], adaptors));
+				// if the adaptor is found, remove it from the list
+				if (pos >= 0) {
+					result.remove(pos);
+					// the insert position changes when an adaptor before
+					// this position is removed, so adjust the insertPosition
+					// administration.
+					if (pos < insertPosition)
+						insertPosition--;
+				} else {
+					// do something if a non-existing adaptor name is provided?
+				}
+			} else if (names[i].equals("")) {
+				// which means there is an empty name string. All the remaining
+				// adaptors can be added in random order, so just return the
+				// result
+				return result;
+			} else {
+				// when the current position is before the insert position, it
+				// means that the adaptor is already inserted, so don't insert
+				// it again
+				if (result.getPos(getFullAdaptorName(names[i], adaptors)) >= insertPosition) {
+					// try to place the adaptor on the proper position
+					if (result.placeAdaptor(insertPosition, getFullAdaptorName(
+							names[i], adaptors)) >= 0)
+						// adjust the insert position only when the replacing
+						// succeeded
+						insertPosition++;
+				}
+			}
+		}
+		// when at least one adaptor has been replaced properly (without being
+		// removed) the other adaptors are removed from the list unless, the
+		// namestring ends with a ','
+		if (insertPosition > 0 && !nameString.trim().endsWith(",")) {
+			int endPosition = result.size();
+			for (int i = insertPosition; i < endPosition; i++) {
+				result.remove(insertPosition);
+			}
+		}
+		return result;
+	}
+	
+	private static String getFullAdaptorName(String shortName, AdaptorList adaptors) {
+		for (int i = 0; i < adaptors.size(); i++) {
+			Adaptor adaptor = adaptors.get(i);
+			String adaptorType = adaptor.getShortCpiName();
+			String adaptorName = adaptor.getShortAdaptorClassName();
+			String postfix = adaptorType + "Adaptor";
+			String prefix = null;
+
+			// The prefix is the class name of the adaptor, with the TypeAdaptor
+			// part stripped of:
+			// So, "SshFileAdaptor" becomes "Ssh".
+			if (adaptorName.length() > postfix.length()) {
+				prefix = adaptorName.substring(0, adaptorName.length()
+						- postfix.length());
+			}
+			if (prefix.equalsIgnoreCase(shortName)) return adaptor.getName();
+		}
+		return null;
+	}
+
+	public static String getLocalHostName() {
+		try {
+			InetAddress a = InetAddress.getLocalHost();
+			if (a != null) {
+				return a.getHostName();
+			}
+		} catch (IOException e) {
+			// ignore
+		}
+		return "localhost";
+	}
+
+	public static InetAddress getLocalHostAddress() {
+		try {
+			InetAddress a = InetAddress.getLocalHost();
+			return a;
+		} catch (IOException e) {
+			// ignore
+		}
+		return null;
+	}
 }
