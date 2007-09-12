@@ -285,12 +285,6 @@ public class AdaptorInvocationHandler implements InvocationHandler {
             throw (exc);
         }
 
-        // check if the adaptor has been excluded in the preferences
-        if (!GATEngine.isAdaptorSelected(preferences, adaptor)) {
-            throw new AdaptorNotSelectedException(
-                    "adaptor has not been selected by the user");
-        }
-
         long startHandle =
                 colobus.fireStartEvent("creating adaptor " + adaptor.getName());
 
