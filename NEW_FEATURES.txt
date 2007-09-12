@@ -1,0 +1,1 @@
+- added Preference: xxx.adaptor.name to be a list (see, ...)

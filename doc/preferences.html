@@ -20,7 +20,7 @@
 <tr><td>"ResourceBroker.jobmanagerPort"</td><td>port</td><td>none</td><td>Set the port for the jobmanager</td></tr>
 <tr><td>"useGramSandbox"</td><td>"true", "false"</td><td>false</td><td>Do not use the GAT sandbox, just use gram instead</td></tr>
 <tr><td>"ResourceBroker.jobmanagerContact"</td><td>contact string</td><td>none</td><td>Set the jobmanager contact string</td></tr>
-<tr><td>"ignoreHiddenFiles"</td><td>"true", "false"</td><td>"false"</td><td>Ignore hidden files</td></tr>
+<tr><td>"ignoreHiddenFiles"</td><td>"true", "false"</td><td>false</td><td>Ignore hidden files</td></tr>
 <tr><td>"ResourceBroker.ProActive.VirtualNodeName"</td><td>?</td><td>?</td><td>?</td></tr>
 <tr><td>"ResourceBroker.ProActive.noSandbox"</td><td>?</td><td>?</td><td>?</td></tr>
 <tr><td>"ResourceBroker.ProActive.stageOnAll"</td><td>?</td><td>?</td><td>?</td></tr>
@@ -36,7 +36,7 @@
 When a particular adaptor should be excluded, you have to provide a '!' before its name. An empty adaptor name means that the remaining adaptors follow in random order. Below are a few examples that explain the usage.
 They all operate on the example set of adaptors: "ssh", "ftp", "sftp", "local", "gridftp"</p>
 <table border=1>
-<tr><td>string</td><td>result</td><td>description</td></tr>
+<tr><td>string</td><td>result ordering</td><td>description</td></tr>
 <tr><td>"ssh"</td><td>1. ssh</td><td>use only ssh adaptors</td></tr>
 <tr><td>"non-existing-adaptor"</td><td>1. ssh<br/>2. ftp<br/>3. sftp<br/>4. local<br/>5. gridftp</td><td>just use the existing adaptors</td></tr>
 <tr><td>"!ssh"</td><td>1. ftp<br/>2. sftp<br/>3. local<br/>4. gridftp</td><td>use all adaptors except ssh</td></tr>

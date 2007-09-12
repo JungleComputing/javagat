@@ -900,7 +900,7 @@ public class GATEngine {
 		// removed) the other adaptors are removed from the list unless, the
 		// namestring ends with a ','
 		if (insertPosition > 0 && !nameString.trim().endsWith(",")) {
-			int endPosition = adaptors.size();
+			int endPosition = result.size();
 			for (int i = insertPosition; i < endPosition; i++) {
 				result.remove(insertPosition);
 			}
