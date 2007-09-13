@@ -86,21 +86,22 @@ public class AdaptorSet {
         adaptorOrderPolicy.order(this);
     }
 
-    protected void printAdaptorList() {
-        System.err.println("------------LOADED ADAPTORS------------");
-
+   
+    public String toString() {
+        String result = "------------LOADED ADAPTORS------------\n";
         for (int i = 0; i < size(); i++) {
-            System.err.println("Adaptor type: " + getAdaptorTypeName(i) + ":");
+            result += "Adaptor type: " + getAdaptorTypeName(i) + ":\n";
 
             AdaptorList l = getAdaptorList(i);
 
             for (int j = 0; j < l.size(); j++) {
-                System.err.println("    " + l.get(j));
+                result += "    " + l.get(j) + "\n";
             }
 
-            System.err.println();
+            result += "\n";
         }
 
-        System.err.println("---------------------------------------");
+        result += "---------------------------------------";
+        return result;
     }
 }

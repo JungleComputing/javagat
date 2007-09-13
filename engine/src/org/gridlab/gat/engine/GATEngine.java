@@ -21,6 +21,7 @@ import java.util.jar.Attributes;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
 
+import org.apache.log4j.Logger;
 import org.exolab.castor.xml.Marshaller;
 import org.exolab.castor.xml.Unmarshaller;
 import org.gridlab.gat.GATContext;
@@ -81,6 +82,8 @@ public class GATEngine {
 
 	URLClassLoader gatClassLoader = null;
 
+	protected static Logger logger = Logger.getLogger(GATEngine.class);
+
 	/**
 	 * Constructs a default GATEngine instance
 	 */
@@ -98,8 +101,8 @@ public class GATEngine {
 
 		adaptors.order();
 
-		if (VERBOSE) {
-			adaptors.printAdaptorList();
+		if (logger.isInfoEnabled()) {
+			logger.info("\n" + adaptors.toString());
 		}
 
 		// Don't add a shutdown hook, the application might add one that depends
@@ -147,10 +150,9 @@ public class GATEngine {
 			throws GATObjectCreationException {
 		if (adaptors.getAdaptorList(cpiClass.getName()) == null) {
 			// no adaptors for this type loaded.
-			if (VERBOSE) {
-				System.err
-						.println("getAdaptorList: No adaptors loaded for type "
-								+ cpiClass.getName());
+			if (logger.isInfoEnabled()) {
+				logger.info("getAdaptorList: No adaptors loaded for type "
+						+ cpiClass.getName() + "\n");
 			}
 
 			throw new GATObjectCreationException(
@@ -210,9 +212,9 @@ public class GATEngine {
 			urls[i] = (URL) adaptorPathURLs.get(i);
 		}
 
-		if (DEBUG) {
-			System.err.println("List of GAT jar files is: ");
-			printJars(urls);
+		if (logger.isDebugEnabled()) {
+			logger.debug("List of GAT jar files is: " + getJarsAsString(urls)
+					+ "\n");
 		}
 
 		gatClassLoader = new URLClassLoader(urls, this.getClass()
@@ -222,10 +224,12 @@ public class GATEngine {
 		loadJarFiles(adaptorPathList);
 	}
 
-	protected void printJars(URL[] urls) {
+	protected String getJarsAsString(URL[] urls) {
+		String result = "";
 		for (int i = 0; i < urls.length; i++) {
-			System.err.println("    " + urls[i].getFile());
+			result += "    " + urls[i].getFile() + "\n";
 		}
+		return result;
 	}
 
 	/**
@@ -291,16 +295,16 @@ public class GATEngine {
 	}
 
 	public static void registerUnmarshaller(Class clazz) {
-		if (DEBUG) {
-			System.err.println("register marshaller for: " + clazz);
+		if (logger.isDebugEnabled()) {
+			logger.debug("register marshaller for: " + clazz + "\n");
 		}
 		unmarshallers.add(clazz);
 	}
 
 	protected void loadCpiClass(JarFile jarFile, Manifest manifest,
 			Attributes attributes, String className, Class cpiClazz) {
-		if (DEBUG) {
-			System.err.println("Trying to load adaptor for " + className);
+		if (logger.isDebugEnabled()) {
+			logger.debug("Trying to load adaptor for " + className + "\n");
 		}
 
 		// Get info for the adaptor
@@ -308,17 +312,15 @@ public class GATEngine {
 		String clazzString = attributes.getValue(attributeName);
 
 		if (clazzString == null) {
-			if (DEBUG) {
-				System.err.println("Adaptor for " + className
-						+ " not found in Manifest");
+			if (logger.isDebugEnabled()) {
+				logger.debug("Adaptor for " + className
+						+ " not found in Manifest" + "\n");
 			}
-
 			return;
 		}
-
-		if (DEBUG) {
-			System.err.println("Adaptor for " + className
-					+ " found in Manifest, loading");
+		if (logger.isDebugEnabled()) {
+			logger.debug("Adaptor for " + className
+					+ " found in Manifest, loading" + "\n");
 		}
 
 		Class clazz = null;
@@ -330,19 +332,17 @@ public class GATEngine {
 		try {
 			clazz = gatClassLoader.loadClass(clazzString);
 		} catch (Exception e) {
-			if (DEBUG) {
-				System.err.println("Could not load Adaptor for " + className
-						+ ": " + e);
-				e.printStackTrace();
+			if (logger.isDebugEnabled()) {
+				logger.debug("Could not load Adaptor for " + className + ": "
+						+ e + "\n" + e.getStackTrace().toString() + "\n");
 			}
-
 			return;
 		}
 
 		if (containsUnmarshaller(clazz)) {
-			if (DEBUG) {
-				System.err.println("Adaptor " + clazzString
-						+ " contains unmarshaller");
+			if (logger.isDebugEnabled()) {
+				logger.debug("Adaptor " + clazzString
+						+ " contains unmarshaller" + "\n");
 			}
 
 			unmarshallers.add(clazz);
@@ -352,8 +352,8 @@ public class GATEngine {
 			callInitializer(clazz);
 		}
 
-		if (DEBUG) {
-			System.err.println("Adaptor for " + className + " loaded");
+		if (logger.isDebugEnabled()) {
+			logger.debug("Adaptor for " + className + " loaded" + "\n");
 		}
 
 		// /////////////
@@ -428,9 +428,9 @@ public class GATEngine {
 		while (iterator.hasNext()) {
 			jarFile = (JarFile) iterator.next();
 
-			if (DEBUG) {
-				System.err
-						.println("loading adaptors from " + jarFile.getName());
+			if (logger.isDebugEnabled()) {
+				logger.debug("loading adaptors from " + jarFile.getName()
+						+ "\n");
 			}
 
 			loadCPIClassesFromJar(jarFile);
@@ -462,29 +462,27 @@ public class GATEngine {
 						gatContext, preferences, input });
 
 				if (res != null) {
-					if (DEBUG) {
-						System.err
-								.println("unmarshalAdvert: returning: " + res);
+					if (logger.isDebugEnabled()) {
+						logger.debug("unmarshalAdvert: returning: " + res
+								+ "\n");
 					}
 
 					// success!
 					return res;
 				}
 			} catch (InvocationTargetException e1) {
-				if (DEBUG) {
-					System.err.println("unmarshaller for " + c.getName()
-							+ " failed:" + e1.getTargetException());
-					e1.getTargetException().printStackTrace();
+				if (logger.isDebugEnabled()) {
+					logger.debug("unmarshaller for " + c.getName() + " failed:"
+							+ e1.getTargetException() + "\n"
+							+ e1.getTargetException().getStackTrace().toString());
 				}
-
 				// ignore and try next unmarshaller
 			} catch (Exception e) {
-				if (DEBUG) {
-					System.err.println("unmarshaller for " + c.getName()
-							+ " failed:" + e);
-					e.printStackTrace();
+				if (logger.isDebugEnabled()) {
+					logger.debug("unmarshaller for " + c.getName()
+							+ " failed:" + e + "\n"
+							+ e.getStackTrace().toString());
 				}
-
 				// ignore and try next unmarshaller
 			}
 		}
@@ -543,9 +541,9 @@ public class GATEngine {
 			Method m = clazz.getMethod("init", (Class[]) null);
 			m.invoke((Object) null, (Object[]) null);
 		} catch (Throwable t) {
-			if (VERBOSE) {
-				System.err.println("initialization of " + clazz + " failed: "
-						+ t);
+			if (logger.isInfoEnabled()) {
+				logger.info("initialization of " + clazz + " failed: "
+						+ t + "\n");
 			}
 		}
 	}
@@ -574,9 +572,9 @@ public class GATEngine {
 		StringReader sr = new StringReader(s);
 
 		try {
-			if (DEBUG) {
-				System.err.println("default unmarshaller start, type = " + type
-						+ " string = " + s);
+			if (logger.isDebugEnabled()) {
+				logger.debug("default unmarshaller start, type = " + type
+						+ " string = " + s + "\n");
 			}
 
 			Unmarshaller unmarshaller = new Unmarshaller(type);
@@ -589,9 +587,9 @@ public class GATEngine {
 			if (res == null) {
 				throw new Error("cannot unmarshal this object");
 			}
-
-			if (DEBUG) {
-				System.err.println("default unmarshaller returning " + res);
+			
+			if (logger.isDebugEnabled()) {
+				logger.debug("default unmarshaller returning " + res + "\n");
 			}
 
 			return res;
@@ -704,10 +702,8 @@ public class GATEngine {
 					try {
 						n.metricListener.processMetricEvent(v);
 					} catch (Throwable t) {
-						System.err
-								.println("WARNING, user callback threw exception: "
-										+ t);
-						t.printStackTrace();
+						logger.warn("WARNING, user callback threw exception: "
+								+ t + "\n" + t.getStackTrace().toString() + "\n");
 					}
 				}
 			}
@@ -771,9 +767,9 @@ public class GATEngine {
 
 			engine.ended = true;
 		}
-
-		if (GATEngine.DEBUG) {
-			System.err.println("shutting down GAT");
+		
+		if (logger.isDebugEnabled()) {
+			logger.debug("shutting down GAT");
 		}
 
 		for (int i = 0; i < engine.adaptors.size(); i++) {
@@ -793,8 +789,8 @@ public class GATEngine {
 			}
 		}
 
-		if (GATEngine.DEBUG) {
-			System.err.println("shutting down GAT DONE");
+		if (logger.isDebugEnabled()) {
+			logger.debug("shutting down GAT DONE");
 		}
 	}
 
@@ -819,10 +815,14 @@ public class GATEngine {
 
 		String adaptorType = cpiClass.getSimpleName().replace("Cpi", "");
 		if (preferences.containsKey(adaptorType + ".adaptor.name")) {
+			if (logger.isInfoEnabled()) {
+				logger.info("old adaptor order: \n" + adaptors.toString());
+			}
 			adaptors = reorderAdaptorList(adaptors, cpiClass, preferences);
+			if (logger.isInfoEnabled()) {
+				logger.info("new adaptor order: \n" + adaptors.toString());
+			}
 		}
-
-		System.out.println("<--:\n" + adaptors.toString() + "\n-->\n");
 
 		AdaptorInvocationHandler handler = new AdaptorInvocationHandler(
 				adaptors, gatContext, preferences, tmpParams);
@@ -875,7 +875,9 @@ public class GATEngine {
 					if (pos < insertPosition)
 						insertPosition--;
 				} else {
-					// do something if a non-existing adaptor name is provided?
+					if (logger.isInfoEnabled()) {
+						logger.info("Found non existing adaptor in " + adaptorType + ".adaptor.name preference: " + names[i] + "\n");
+					}
 				}
 			} else if (names[i].equals("")) {
 				// which means there is an empty name string. All the remaining
@@ -889,10 +891,16 @@ public class GATEngine {
 				if (result.getPos(getFullAdaptorName(names[i], adaptors)) >= insertPosition) {
 					// try to place the adaptor on the proper position
 					if (result.placeAdaptor(insertPosition, getFullAdaptorName(
-							names[i], adaptors)) >= 0)
+							names[i], adaptors)) >= 0) {
 						// adjust the insert position only when the replacing
 						// succeeded
 						insertPosition++;
+					} else {
+						if (logger.isInfoEnabled()) {
+							logger.info("Found non existing adaptor in " + adaptorType + ".adaptor.name preference: " + names[i] + "\n");
+						}
+					}
+				
 				}
 			}
 		}
@@ -907,8 +915,9 @@ public class GATEngine {
 		}
 		return result;
 	}
-	
-	private static String getFullAdaptorName(String shortName, AdaptorList adaptors) {
+
+	private static String getFullAdaptorName(String shortName,
+			AdaptorList adaptors) {
 		for (int i = 0; i < adaptors.size(); i++) {
 			Adaptor adaptor = adaptors.get(i);
 			String adaptorType = adaptor.getShortCpiName();
@@ -923,7 +932,8 @@ public class GATEngine {
 				prefix = adaptorName.substring(0, adaptorName.length()
 						- postfix.length());
 			}
-			if (prefix.equalsIgnoreCase(shortName)) return adaptor.getName();
+			if (prefix.equalsIgnoreCase(shortName))
+				return adaptor.getName();
 		}
 		return null;
 	}
