@@ -3,6 +3,7 @@
  */
 package org.gridlab.gat.resources.cpi;
 
+import org.apache.log4j.Logger;
 import org.gridlab.gat.GAT;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
@@ -14,212 +15,222 @@ import org.gridlab.gat.io.File;
 import org.gridlab.gat.io.FileOutputStream;
 
 public abstract class StagedFile {
-    protected GATContext gatContext;
 
-    protected Preferences preferences;
+	protected static Logger logger = Logger.getLogger(StagedFile.class);
 
-    protected File origSrc;
+	protected GATContext gatContext;
 
-    protected File origDest;
+	protected Preferences preferences;
 
-    private File resolvedSrc;
+	protected File origSrc;
 
-    private File resolvedDest;
+	protected File origDest;
 
-    private String resolvedSrcURIString;
-    private String resolvedDestURIString;
-    
-    protected String host;
+	private File resolvedSrc;
 
-    protected String sandbox;
+	private File resolvedDest;
 
-    protected boolean inSandbox;
+	private String resolvedSrcURIString;
+	private String resolvedDestURIString;
 
-    protected URI relativeURI;
+	protected String host;
 
-    public StagedFile() {
-        // constructor needed for castor marshalling, do *not* use
-    }
+	protected String sandbox;
 
-    public StagedFile(GATContext context, Preferences preferences,
-        File origSrc, File origDest, String host, String sandbox) {
-        super();
-        this.gatContext = context;
-        this.preferences = preferences;
-        this.origSrc = origSrc;
-        this.origDest = origDest;
-        this.host = host;
-        this.sandbox = sandbox;
-    }
+	protected boolean inSandbox;
 
-    /** Creates a file object that points to the sandbox. */
-    protected File resolve(File f, boolean useNameOnly)
-        throws GATInvocationException {
-        URI uri = f.toGATURI();
+	protected URI relativeURI;
 
-        String relativeDest = null;
-        String dest = "any://";
-        dest += (uri.getUserInfo() == null) ? "" : uri.getUserInfo();
-        
-        String origHost = f.toGATURI().getHost();
-        if(useNameOnly || origHost == null) {
-            dest += host;
-        } else {
-            dest += origHost;
-        }
-        
-        dest += (uri.getPort() == -1) ? "" : (":" + uri.getPort());
-        dest += "/";
-        
-        if(inSandbox) {
-            dest += sandbox == null ? "" : sandbox + "/";
-        }
-        
-        if (useNameOnly) {
-            java.io.File tmp = new java.io.File(uri.getPath());
-            dest += tmp.getName();
-            relativeDest = tmp.getName();
-        } else {
-            dest += uri.getPath();
-            relativeDest = uri.getPath();
-        }
+	public StagedFile() {
+		// constructor needed for castor marshalling, do *not* use
+	}
 
-        try {
-            URI destURI = new URI(dest);
-            relativeURI = new URI(relativeDest);
+	public StagedFile(GATContext context, Preferences preferences,
+			File origSrc, File origDest, String host, String sandbox) {
+		super();
+		this.gatContext = context;
+		this.preferences = preferences;
+		this.origSrc = origSrc;
+		this.origDest = origDest;
+		this.host = host;
+		this.sandbox = sandbox;
+	}
 
-            return GAT.createFile(gatContext, preferences, destURI);
-        } catch (Exception e) {
-            throw new GATInvocationException("StageFile", e);
-        }
-    }
+	/** Creates a file object that points to the sandbox. */
+	protected File resolve(File f, boolean useNameOnly)
+			throws GATInvocationException {
+		URI uri = f.toGATURI();
 
-    protected void wipe(File f) throws GATInvocationException {
-        if(!f.exists()) {
-            if(GATEngine.DEBUG) {
-                System.err.println("file to wipe does not exists, skipping.");
-            }
-            return;
-        }
-        
-        if(!f.isFile()) {
-            if(GATEngine.DEBUG) {
-                System.err.println("file to wipe is not a normal file, skipping.");
-            }
-            return;            
-        }
-        
-        long size = f.length();
+		String relativeDest = null;
+		String dest = "any://";
+		dest += (uri.getUserInfo() == null) ? "" : uri.getUserInfo();
 
-        FileOutputStream out = null;
+		String origHost = f.toGATURI().getHost();
+		if (useNameOnly || origHost == null) {
+			dest += host;
+		} else {
+			dest += origHost;
+		}
 
-        try {
-            out = GAT.createFileOutputStream(gatContext, preferences, f);
-        } catch (GATObjectCreationException e) {
-            throw new GATInvocationException("resource broker", e);
-        }
+		dest += (uri.getPort() == -1) ? "" : (":" + uri.getPort());
+		dest += "/";
 
-        try {
-            int bufSize = 64 * 1024;
-            byte[] buf = new byte[bufSize];
-            long wiped = 0;
-            while (wiped != size) {
-                int toWipe;
-                if (size - wiped < bufSize) {
-                    toWipe = (int) (size - wiped);
-                } else {
-                    toWipe = bufSize;
-                }
+		if (inSandbox) {
+			dest += sandbox == null ? "" : sandbox + "/";
+		}
 
-                out.write(buf, 0, toWipe);
-                wiped += toWipe;
-            }
-        } catch (Exception e) {
-            throw new GATInvocationException("resource broker", e);
-        } finally {
-            if(out != null) {
-                try {
-                    out.close();
-                } catch (Exception e) {
-                    // ignore
-                }
-            }
-        }
-    }
-    
-    /**
-     * @return the inSandbox
-     */
-    public boolean isInSandbox() {
-        return inSandbox;
-    }
+		if (useNameOnly) {
+			java.io.File tmp = new java.io.File(uri.getPath());
+			dest += tmp.getName();
+			relativeDest = tmp.getName();
+		} else {
+			dest += uri.getPath();
+			relativeDest = uri.getPath();
+		}
 
-    /**
-     * @param inSandbox the inSandbox to set
-     */
-    public void setInSandbox(boolean inSandbox) {
-        this.inSandbox = inSandbox;
-    }
+		try {
+			URI destURI = new URI(dest);
+			relativeURI = new URI(relativeDest);
 
-    protected void setResolvedSrc(File resolvedSrc) {
-        this.resolvedSrc = resolvedSrc;
-        resolvedSrcURIString = resolvedSrc.toGATURI().toString();
-    }
+			return GAT.createFile(gatContext, preferences, destURI);
+		} catch (Exception e) {
+			throw new GATInvocationException("StageFile", e);
+		}
+	}
 
-    public File getResolvedSrc() {
-        // if this sandbox object was retrieved from the advert service, we have to recreate the file object
-        if(resolvedSrc == null && resolvedSrcURIString != null) {
-            try {
-                resolvedSrc = GAT.createFile(gatContext, preferences, resolvedSrcURIString);
-            } catch (Exception e) {
-                throw new Error(e);
-            }
-        }
-        return resolvedSrc;
-    }
+	protected void wipe(File f) throws GATInvocationException {
+		if (!f.exists()) {
+			if (logger.isDebugEnabled()) {
+				logger.debug("file to wipe does not exists, skipping.");
+			}
+			return;
+		}
 
-    /**
-     * @return the resolvedDestURIString
-     */
-    public String getResolvedDestURIString() {
-        return resolvedDestURIString;
-    }
+		if (!f.isFile()) {
+			if (logger.isDebugEnabled()) {
+				logger.debug("file to wipe is not a normal file, skipping.");
+			}
+			return;
+		}
 
-    /**
-     * @param resolvedDestURIString the resolvedDestURIString to set
-     */
-    public void setResolvedDestURIString(String resolvedDestURIString) {
-        this.resolvedDestURIString = resolvedDestURIString;
-    }
+		long size = f.length();
 
-    protected void setResolvedDest(File resolvedDest) {
-        this.resolvedDest = resolvedDest;
-        resolvedDestURIString = resolvedDest.toGATURI().toString();
-    }
+		FileOutputStream out = null;
 
-    public File getResolvedDest() {
-        // if this sandbox object was retrieved from the advert service, we have to recreate the file object
-        if(resolvedDest == null && resolvedDestURIString != null) {
-            try {
-                resolvedDest = GAT.createFile(gatContext, preferences, resolvedDestURIString);
-            } catch (Exception e) {
-                throw new Error(e);
-            }
-        }
-        return resolvedDest;
-    }
+		try {
+			out = GAT.createFileOutputStream(gatContext, preferences, f);
+		} catch (GATObjectCreationException e) {
+			throw new GATInvocationException("resource broker", e);
+		}
 
-    /**
-     * @return the resolvedSrcURIString
-     */
-    public String getResolvedSrcURIString() {
-        return resolvedSrcURIString;
-    }
+		try {
+			int bufSize = 64 * 1024;
+			byte[] buf = new byte[bufSize];
+			long wiped = 0;
+			while (wiped != size) {
+				int toWipe;
+				if (size - wiped < bufSize) {
+					toWipe = (int) (size - wiped);
+				} else {
+					toWipe = bufSize;
+				}
 
-    /**
-     * @param resolvedSrcURIString the resolvedSrcURIString to set
-     */
-    public void setResolvedSrcURIString(String resolvedSrcURIString) {
-        this.resolvedSrcURIString = resolvedSrcURIString;
-    }
+				out.write(buf, 0, toWipe);
+				wiped += toWipe;
+			}
+		} catch (Exception e) {
+			throw new GATInvocationException("resource broker", e);
+		} finally {
+			if (out != null) {
+				try {
+					out.close();
+				} catch (Exception e) {
+					// ignore
+				}
+			}
+		}
+	}
+
+	/**
+	 * @return the inSandbox
+	 */
+	public boolean isInSandbox() {
+		return inSandbox;
+	}
+
+	/**
+	 * @param inSandbox
+	 *            the inSandbox to set
+	 */
+	public void setInSandbox(boolean inSandbox) {
+		this.inSandbox = inSandbox;
+	}
+
+	protected void setResolvedSrc(File resolvedSrc) {
+		this.resolvedSrc = resolvedSrc;
+		resolvedSrcURIString = resolvedSrc.toGATURI().toString();
+	}
+
+	public File getResolvedSrc() {
+		// if this sandbox object was retrieved from the advert service, we have
+		// to recreate the file object
+		if (resolvedSrc == null && resolvedSrcURIString != null) {
+			try {
+				resolvedSrc = GAT.createFile(gatContext, preferences,
+						resolvedSrcURIString);
+			} catch (Exception e) {
+				throw new Error(e);
+			}
+		}
+		return resolvedSrc;
+	}
+
+	/**
+	 * @return the resolvedDestURIString
+	 */
+	public String getResolvedDestURIString() {
+		return resolvedDestURIString;
+	}
+
+	/**
+	 * @param resolvedDestURIString
+	 *            the resolvedDestURIString to set
+	 */
+	public void setResolvedDestURIString(String resolvedDestURIString) {
+		this.resolvedDestURIString = resolvedDestURIString;
+	}
+
+	protected void setResolvedDest(File resolvedDest) {
+		this.resolvedDest = resolvedDest;
+		resolvedDestURIString = resolvedDest.toGATURI().toString();
+	}
+
+	public File getResolvedDest() {
+		// if this sandbox object was retrieved from the advert service, we have
+		// to recreate the file object
+		if (resolvedDest == null && resolvedDestURIString != null) {
+			try {
+				resolvedDest = GAT.createFile(gatContext, preferences,
+						resolvedDestURIString);
+			} catch (Exception e) {
+				throw new Error(e);
+			}
+		}
+		return resolvedDest;
+	}
+
+	/**
+	 * @return the resolvedSrcURIString
+	 */
+	public String getResolvedSrcURIString() {
+		return resolvedSrcURIString;
+	}
+
+	/**
+	 * @param resolvedSrcURIString
+	 *            the resolvedSrcURIString to set
+	 */
+	public void setResolvedSrcURIString(String resolvedSrcURIString) {
+		this.resolvedSrcURIString = resolvedSrcURIString;
+	}
 }

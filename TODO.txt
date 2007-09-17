@@ -1,12 +1,26 @@
+My todo:
+- document preferences (javadoc + HTML)
+- upgrade code to java1.5+
+- create streamingFileAdaptor (remember the build.xml)
+- log4j (see ibis)
+
+
 - format TODOs and readmes in HTML (to avoid linebreak problems windows/linux)
 - fix firing of metrics: store unsubscribe / subscribe until a good moment, 
   don't handle them in the upcall itself
+  --> ??
 - document preferences
+  --> seems to be done... (update the adaptor.name)
 - implement GATSelf
+  --> ??
 - Allow adaptor.name preference to be a list
+  --> done
 - Think about the case where an adaptor throws an exception because there is an irrecoverable
-  error (file does not extist). In this case, there is no need to try the other adaptors.
-- brokering: also allow output to be printed on the sceen, when no output files are given.
+  error (file does not exists). In this case, there is no need to try the other adaptors.
+  --> Throw a non-nested exception (new class)
+- add feature to disable intelligent dispatching for certain API types (streams)
+  and/or let streams save file pointer
+- brokering: also allow output to be printed on the screen, when no output files are given.
   maybe use special property for this? Not all middlewares can do this.
 
   SSH: - If the executable does not exist, we get no error.
@@ -18,11 +32,185 @@
        - support environment vars in ssh broker.
 
 - resource broker adaptors should fill in ALL defined states in the getInfo call.
-- GAT_LOCATION -> JAVAGAT_HOME
+- GAT_LOCATION -> JAVAGAT_HOME ?
 
 - in the engine, check if GAT.end hasn't been called before doing an operation.
 
-%% things to fix in GAT:
-%% - add InvalidUsernameOrPasswordException
-%% - add feature to disable intelligent dispatching for certain API types (streams)
-%% - and/or let streams save file pointer
+- add InvalidUsernameOrPasswordException
+
+- remoteSandboxOutput -> write to a specified place.
+- upload prestage wrapper once (static) per cluster / per gat lifetime
+  avoid diskspace problems with big runs
+- fix: CTRL-C during poststage stops it.
+- store VO in SecurityContext
+- integrate GT4 adaptors from Balasz
+- integrate GT4 adaptors from Frank Knoll
+
+List of bugs from Frank Seinstra:
+---------------------------------------------------------------------------------------
+
+PROBLEM 1: IS KNOWN, DUE TO ssh LIBRARY...
+----------
+grun tutorial.RemoteCat any://www.cs.vu.nl/~rob/hello.txt
+                        ^^^
+warning, could not identify remote protocol version, assuming ssh2
+[Transport protocol 1] ERROR transport.TransportProtocolCommon  - The Transport
+Protocol thread failed
+java.io.IOException: The socket is EOF
+        at com.sshtools.j2ssh.transport.TransportProtocolInputStream.readBuffere
+dData(Unknown Source)
+        at com.sshtools.j2ssh.transport.TransportProtocolInputStream.readMessage
+(Unknown Source)
+        at com.sshtools.j2ssh.transport.TransportProtocolCommon.processMessages(
+TransportProtocolCommon.java:1355)
+        at com.sshtools.j2ssh.transport.TransportProtocolCommon.startBinaryPacke
+tProtocol(TransportProtocolCommon.java:975)
+        at com.sshtools.j2ssh.transport.TransportProtocolCommon.run(TransportPro
+tocolCommon.java:378)
+        at java.lang.Thread.run(Unknown Source)
+
+---------------------------------------------------------------------------------------
+
+PROBLEM 2: SEEMS TO BE A REAL BUG!!!
+----------
+Lastigheidje met URIs ( onder Windows, met file 'score.icme' in C:\ ):
+
+grun tutorial.RemoteCat file://localhost//score.icme -----------> FOUT
+grun tutorial.RemoteCat file://localhost/\score.icme -----------> OK
+
+grun tutorial.RemoteCat file:////score.icme --------------------> OK
+grun tutorial.RemoteCat file:///\score.icme --------------------> OK
+
+NOTE: default root dir voor file:// protocol is c:\WINNT\profiles\frank\
+
+---------------------------------------------------------------------------------------
+
+PROBLEM 3:
+----------
+Hoe weet ik bij bijv. een simpele file-copy van cluster 1 naar cluster 2, dat de data
+via het snelste netwerk worden verstuurd, met behulp van het snelste protocol (of het
+meest secure protocol, of...).
+En kan ik (run-time) achterhalen welke optie in feite gekozen is (i.e. welke binding
+we exact gebruiken)?
+
+---------------------------------------------------------------------------------------
+
+PROBLEM 4:
+----------
+GAT: public static void end()
+NOT DOCUMENTED, or actually, documentation is empty...!
+Er staat niet eens dat ik deze method MOET uitvoeren aan het eind van mijn GAT proggie.
+
+---------------------------------------------------------------------------------------
+
+PROBLEM 5: IS NO LONGER LIKE THIS...
+----------
+Waarom is 'File' een interface, en 'FileInputStream' een class (niet eens 'abstract')?
+
+---------------------------------------------------------------------------------------
+
+PROBLEM 6: TO BE CHECKED...
+----------
+IS THIS OK (in documentation, constructors) ??? :
+- FileInputStream(org.gridlab.gat.io.FileInputStreamInterface in) 
+- FileOutputStream(org.gridlab.gat.io.FileOutputStreamInterface out)
+
+---------------------------------------------------------------------------------------
+
+PROBLEM 7:
+----------
+DIT ZOU TOCH BEST MOETEN KUNNEN (?) :
+
+grun tutorial.RemoteCopy http://www.science.uva.nl/~fjseins/index.html file:////testout.txt
+
+Exception in thread "main"
+--- START OF NESTED EXCEPTION ---
+*** LocalFileAdaptor failed: Cannot use remote files with the local file adaptor
+, URI is: http://www.science.uva.nl/~fjseins/index.html
+*** GridFTPFileAdaptor failed: cannot handle this URI (http://www.science.uva.nl
+/~fjseins/index.html)
+*** CommandlineSshFileAdaptor failed: cannot handle this URI: http://www.science
+.uva.nl/~fjseins/index.html
+*** SftpNewFileAdaptor failed: cannot handle this URI
+*** SshFileAdaptor failed: cannot handle this URI
+*** SftpFileAdaptor failed: cannot handle this URI
+*** FTPFileAdaptor failed: cannot handle this URI
+--- END OF NESTED EXCEPTION ---
+
+        at org.gridlab.gat.engine.AdaptorInvocationHandler.invoke(AdaptorInvocat
+ionHandler.java:84)
+        at $Proxy0.copy(Unknown Source)
+        at tutorial.RemoteCopy.main(RemoteCopy.java:18)
+
+---------------------------------------------------------------------------------------
+
+PROBLEM 8:
+----------
+createFile documentation issues
+
+public static File createFile(GATContext gatContext,
+                              Preferences preferences,
+                              String location)
+                       throws GATObjectCreationException
+
+    Constructs a File instance which corresponds to the physical file identified by the
+    passed URI and...
+    ^^^^^^^^^^
+
+ALSO FOR: createFile(GATContext gatContext, String location) !!!!
+ALSO FOR: createLogicalFile(GATContext gatContext, Preferences preferences, String name, int mode)
+
+NOTE: elsewhere you say URI (in String format)
+
+---------------------------------------------------------------------------------------
+
+PROBLEM 9: ROB REAL BUG!!! TO DO ... en een beetje rap graag!
+----------
+Is there an concise overview of all definable 'Attributes' and 'Preferences'???
+
+---------------------------------------------------------------------------------------
+
+PROBLEM 10: TO BE FOUND???
+-----------
+grun lib.MySubmitLocalJob
+
+Exception in thread "main"
+--- START OF NESTED EXCEPTION ---
+*** sandbox failed: could not create a sandbox
+*** GlobusResourceBrokerAdaptor failed: The Globus resource broker needs a hostn
+ame
+*** SshResourceBrokerAdaptor failed: not a remote file, scheme is: file
+*** sandbox failed: could not create a sandbox
+*** sandbox failed: could not create a sandbox
+*** PbsBrokerAdaptor failed: The job description does not contain a hardware res
+ource description
+*** ProActiveResourceBrokerAdaptor failed: java.lang.NullPointerException
+*** SGEBrokerAdaptor failed: Provider for org.ggf.drmaa.SessionFactory cannot be
+ found
+*** cannot submit job to zorilla node failed: Connection refused: connect
+--- END OF NESTED EXCEPTION ---
+
+        at org.gridlab.gat.engine.AdaptorInvocationHandler.invoke(AdaptorInvocat
+ionHandler.java:84)
+        at $Proxy0.submitJob(Unknown Source)
+        at lib.MySubmitLocalJob.main(MySubmitLocalJob.java:32)
+
+---------------------------------------------------------------------------------------
+
+List of bugs Alexander
+
+---------------------------------------------------------------------------------------
+
+if I create a softwaredescription object in JavaGAT, I have methods as 
+setStdin or setStdout, which alllows me to add the name of ths stdin and 
+stdout, and also the stderr to a softwaredescription.
+
+What is missing in this context is the possiblity to yank stderr and stdout 
+into one file, as possible with SGE or PBS. I have to put this to a 
+HardwareResourceDescription object, even though it might fit better to a 
+softwaredescription object.
+
+ROB: not possible with many middlewares
+
+---------------------------------------------------------------------------------------
+

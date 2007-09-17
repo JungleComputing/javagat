@@ -290,8 +290,8 @@ public class ZorillaJob extends JobCpi implements Runnable {
                     System.currentTimeMillis());
         }
 
-        if (GATEngine.DEBUG) {
-            System.err.println("default job callback: firing event: " + v);
+        if (logger.isDebugEnabled()) {
+            logger.debug("default job callback: firing event: " + v);
         }
 
         GATEngine.fireMetric(this, v);

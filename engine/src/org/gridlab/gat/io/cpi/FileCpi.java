@@ -9,6 +9,7 @@ import java.net.URL;
 import java.util.List;
 import java.util.Vector;
 
+import org.apache.log4j.Logger;
 import org.gridlab.gat.GAT;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
@@ -17,6 +18,7 @@ import org.gridlab.gat.Preferences;
 import org.gridlab.gat.URI;
 import org.gridlab.gat.advert.Advertisable;
 import org.gridlab.gat.engine.GATEngine;
+import org.gridlab.gat.engine.util.CommandRunner;
 import org.gridlab.gat.io.File;
 import org.gridlab.gat.io.FileInterface;
 import org.gridlab.gat.monitoring.Metric;
@@ -34,7 +36,9 @@ import org.gridlab.gat.monitoring.MetricValue;
  * File class at runtime.
  */
 public abstract class FileCpi implements FileInterface {
-    protected GATContext gatContext;
+	protected static Logger logger = Logger.getLogger(FileCpi.class);
+	
+	protected GATContext gatContext;
 
     protected Preferences preferences;
 
@@ -60,8 +64,8 @@ public abstract class FileCpi implements FileInterface {
         this.preferences = preferences;
         this.location = location;
 
-        if (GATEngine.DEBUG) {
-            System.err.println("FileCpi: created file with URI " + location);
+        if (logger.isDebugEnabled()) {
+            logger.debug("FileCpi: created file with URI " + location);
         }
     }
 
@@ -241,8 +245,8 @@ public abstract class FileCpi implements FileInterface {
 
         String res = path.substring(0, pos);
 
-        if (GATEngine.DEBUG) {
-            System.err.println("GET PARENT: orig = " + path + " parent = "
+        if (logger.isDebugEnabled()) {
+            logger.debug("GET PARENT: orig = " + path + " parent = "
                     + res);
         }
 
@@ -262,8 +266,8 @@ public abstract class FileCpi implements FileInterface {
             dest += "/";
             dest += getParent();
 
-            if (GATEngine.DEBUG) {
-                System.err.println("GET PARENTFILE: orig = " + location
+            if (logger.isDebugEnabled()) {
+                logger.debug("GET PARENTFILE: orig = " + location
                         + " new = " + dest);
             }
 
@@ -532,8 +536,8 @@ public abstract class FileCpi implements FileInterface {
     protected static void copyDirectory(GATContext gatContext,
             Preferences preferences, URI dirURI, URI dest)
             throws GATInvocationException {
-        if (GATEngine.DEBUG) {
-            System.err.println("copyDirectory");
+        if (logger.isDebugEnabled()) {
+            logger.debug("copyDirectory");
         }
 
         org.gridlab.gat.io.File dir = null;
@@ -551,8 +555,8 @@ public abstract class FileCpi implements FileInterface {
 
             if (!destDir.exists()) {
 
-                if (GATEngine.DEBUG) {
-                    System.err.println("copyDirectory: mkdir of " + destDir);
+                if (logger.isDebugEnabled()) {
+                    logger.debug("copyDirectory: mkdir of " + destDir);
                 }
 
                 destDir.mkdir();
@@ -565,16 +569,16 @@ public abstract class FileCpi implements FileInterface {
         File[] files = (File[]) dir.listFiles();
 
         if (files == null) {
-            if (GATEngine.DEBUG) {
-                System.err.println("copyDirectory: no files in src directory");
+            if (logger.isDebugEnabled()) {
+                logger.debug("copyDirectory: no files in src directory");
             }
             return;
         }
         for (int i = 0; i < files.length; i++) {
             File f = files[i];
 
-            if (GATEngine.DEBUG) {
-                System.err.println("copyDirectory: file to copy = " + f);
+            if (logger.isDebugEnabled()) {
+                logger.debug("copyDirectory: file to copy = " + f);
             }
 
             URI newDest = null;
@@ -588,14 +592,14 @@ public abstract class FileCpi implements FileInterface {
             }
 
             if (f.isFile()) {
-                if (GATEngine.DEBUG) {
-                    System.err.println("copyDirectory: copying " + f);
+                if (logger.isDebugEnabled()) {
+                    logger.debug("copyDirectory: copying " + f);
                 }
 
                 f.copy(newDest);
             } else if (f.isDirectory()) {
-                if (GATEngine.DEBUG) {
-                    System.err.println("copyDirectory: copying dir " + f);
+                if (logger.isDebugEnabled()) {
+                    logger.debug("copyDirectory: copying dir " + f);
                 }
 
                 copyDirectory(gatContext, preferences, f.toGATURI(), newDest);
@@ -622,8 +626,8 @@ public abstract class FileCpi implements FileInterface {
     public static void recursiveDeleteDirectory(GATContext gatContext,
             Preferences preferences, File dir) throws GATInvocationException {
 
-        if (GATEngine.VERBOSE) {
-            System.err.println("recursive delete dir: " + dir);
+        if (logger.isInfoEnabled()) {
+            logger.info("recursive delete dir: " + dir);
         }
 
         GATInvocationException exception = new GATInvocationException();
@@ -635,8 +639,8 @@ public abstract class FileCpi implements FileInterface {
                         recursiveDeleteDirectory(gatContext, preferences,
                                 files[i].toGATURI());
                     } else {
-                        if(GATEngine.VERBOSE) {
-                            System.err.println("delete: " + files[i]);
+                        if(logger.isInfoEnabled()) {
+                            logger.info("delete: " + files[i]);
                         }
                         files[i].delete();
                     }

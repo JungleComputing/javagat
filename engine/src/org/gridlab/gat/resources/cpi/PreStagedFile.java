@@ -3,6 +3,7 @@
  */
 package org.gridlab.gat.resources.cpi;
 
+import org.apache.log4j.Logger;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.Preferences;
@@ -12,6 +13,9 @@ import org.gridlab.gat.io.File;
 import org.gridlab.gat.io.cpi.FileCpi;
 
 public class PreStagedFile extends StagedFile {
+	
+	protected static Logger logger = Logger.getLogger(PreStagedFile.class);
+	
     private boolean isExecutable;
 
     private boolean isStdIn;
@@ -116,25 +120,24 @@ public class PreStagedFile extends StagedFile {
     }
 
     protected void prestage() throws GATInvocationException {
-        if (GATEngine.VERBOSE) {
-            System.err.println("prestage:");
-            System.err.println("  copy " + getResolvedSrc().toGATURI() + " to "
+        if (logger.isInfoEnabled()) {
+            logger.info("prestage:\n  copy " + getResolvedSrc().toGATURI() + " to "
                     + getResolvedDest().toGATURI());
         }
 
         // create any directories if needed.
         if (getResolvedSrc().isDirectory()) {
             // dest is also a dir, create it.
-            if (GATEngine.VERBOSE) {
-                System.err.println("creating dir: " + getResolvedDest());
+            if (logger.isInfoEnabled()) {
+                logger.info("creating dir: " + getResolvedDest());
             }
             getResolvedDest().mkdirs();
         } else {
             // src is a file, dest is also a file.
             File dir = (File) getResolvedDest().getParentFile();
             if (dir != null) {
-                if (GATEngine.VERBOSE) {
-                    System.err.println("creating dir: " + dir);
+                if (logger.isInfoEnabled()) {
+                    logger.info("creating dir: " + dir);
                 }
                 dir.mkdirs();
             }
@@ -149,22 +152,22 @@ public class PreStagedFile extends StagedFile {
         }
         
         if (getResolvedDest().isDirectory()) {
-            if (GATEngine.VERBOSE) {
-                System.err.println("DELETE_DIR:" + getResolvedDest());
+            if (logger.isInfoEnabled()) {
+                logger.info("DELETE_DIR:" + getResolvedDest());
             }
             FileCpi.recursiveDeleteDirectory(gatContext, preferences,
                     getResolvedDest());
         } else {
-            if (GATEngine.VERBOSE) {
-                System.err.println("DELETE_FILE:" + getResolvedDest());
+            if (logger.isInfoEnabled()) {
+                logger.info("DELETE_FILE:" + getResolvedDest());
             }
             getResolvedDest().delete();
         }
     }
 
     protected void wipe() throws GATInvocationException {
-        if (GATEngine.VERBOSE) {
-            System.err.println("WIPE_FILE:" + getResolvedDest());
+        if (logger.isInfoEnabled()) {
+            logger.info("WIPE_FILE:" + getResolvedDest());
         }
         wipe(getResolvedDest());
     }

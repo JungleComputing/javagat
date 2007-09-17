@@ -2,6 +2,7 @@ package org.gridlab.gat.engine;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.lang.reflect.InvocationTargetException;
@@ -21,6 +22,7 @@ import java.util.jar.Attributes;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
 
+import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.exolab.castor.xml.Marshaller;
 import org.exolab.castor.xml.Unmarshaller;
@@ -51,12 +53,13 @@ import org.gridlab.gat.steering.cpi.SteeringManagerCpi;
  * This class make the various GAT adaptors available to GAT
  */
 public class GATEngine {
-	public static final boolean TIMING = propertySet("gat.timing");
 
 	public static final boolean DEBUG = propertySet("gat.debug");
 
 	public static final boolean VERBOSE = propertySet("gat.debug")
 			|| propertySet("gat.verbose");
+
+	public static final boolean TIMING = propertySet("gat.timing");
 
 	/**
 	 * This member variable holds reference to the single GATEngine
@@ -88,6 +91,14 @@ public class GATEngine {
 	 * Constructs a default GATEngine instance
 	 */
 	protected GATEngine() {
+		// the commandline parameters -Dgat.debug and -Dgat.verbose override the
+		// settings in log4j.properties, so change the level of the parent
+		// logger
+		if (VERBOSE)
+			logger.getParent().setLevel(Level.INFO);
+		if (DEBUG)
+			logger.getParent().setLevel(Level.DEBUG);
+
 		if (ended) {
 			throw new Error("Getting gat engine while end was already called");
 		}
@@ -152,7 +163,7 @@ public class GATEngine {
 			// no adaptors for this type loaded.
 			if (logger.isInfoEnabled()) {
 				logger.info("getAdaptorList: No adaptors loaded for type "
-						+ cpiClass.getName() + "\n");
+						+ cpiClass.getName());
 			}
 
 			throw new GATObjectCreationException(
@@ -213,8 +224,7 @@ public class GATEngine {
 		}
 
 		if (logger.isDebugEnabled()) {
-			logger.debug("List of GAT jar files is: " + getJarsAsString(urls)
-					+ "\n");
+			logger.debug("List of GAT jar files is: " + getJarsAsString(urls));
 		}
 
 		gatClassLoader = new URLClassLoader(urls, this.getClass()
@@ -227,7 +237,7 @@ public class GATEngine {
 	protected String getJarsAsString(URL[] urls) {
 		String result = "";
 		for (int i = 0; i < urls.length; i++) {
-			result += "    " + urls[i].getFile() + "\n";
+			result += "    " + urls[i].getFile();
 		}
 		return result;
 	}
@@ -296,7 +306,7 @@ public class GATEngine {
 
 	public static void registerUnmarshaller(Class clazz) {
 		if (logger.isDebugEnabled()) {
-			logger.debug("register marshaller for: " + clazz + "\n");
+			logger.debug("register marshaller for: " + clazz);
 		}
 		unmarshallers.add(clazz);
 	}
@@ -304,7 +314,7 @@ public class GATEngine {
 	protected void loadCpiClass(JarFile jarFile, Manifest manifest,
 			Attributes attributes, String className, Class cpiClazz) {
 		if (logger.isDebugEnabled()) {
-			logger.debug("Trying to load adaptor for " + className + "\n");
+			logger.debug("Trying to load adaptor for " + className);
 		}
 
 		// Get info for the adaptor
@@ -314,13 +324,13 @@ public class GATEngine {
 		if (clazzString == null) {
 			if (logger.isDebugEnabled()) {
 				logger.debug("Adaptor for " + className
-						+ " not found in Manifest" + "\n");
+						+ " not found in Manifest");
 			}
 			return;
 		}
 		if (logger.isDebugEnabled()) {
 			logger.debug("Adaptor for " + className
-					+ " found in Manifest, loading" + "\n");
+					+ " found in Manifest, loading");
 		}
 
 		Class clazz = null;
@@ -333,8 +343,10 @@ public class GATEngine {
 			clazz = gatClassLoader.loadClass(clazzString);
 		} catch (Exception e) {
 			if (logger.isDebugEnabled()) {
+				StringWriter writer = new StringWriter();
+				e.printStackTrace(new PrintWriter(writer));
 				logger.debug("Could not load Adaptor for " + className + ": "
-						+ e + "\n" + e.getStackTrace().toString() + "\n");
+						+ e + "\n" + writer.toString());
 			}
 			return;
 		}
@@ -342,7 +354,7 @@ public class GATEngine {
 		if (containsUnmarshaller(clazz)) {
 			if (logger.isDebugEnabled()) {
 				logger.debug("Adaptor " + clazzString
-						+ " contains unmarshaller" + "\n");
+						+ " contains unmarshaller");
 			}
 
 			unmarshallers.add(clazz);
@@ -353,7 +365,7 @@ public class GATEngine {
 		}
 
 		if (logger.isDebugEnabled()) {
-			logger.debug("Adaptor for " + className + " loaded" + "\n");
+			logger.debug("Adaptor for " + className + " loaded");
 		}
 
 		// /////////////
@@ -429,8 +441,7 @@ public class GATEngine {
 			jarFile = (JarFile) iterator.next();
 
 			if (logger.isDebugEnabled()) {
-				logger.debug("loading adaptors from " + jarFile.getName()
-						+ "\n");
+				logger.debug("loading adaptors from " + jarFile.getName());
 			}
 
 			loadCPIClassesFromJar(jarFile);
@@ -463,8 +474,7 @@ public class GATEngine {
 
 				if (res != null) {
 					if (logger.isDebugEnabled()) {
-						logger.debug("unmarshalAdvert: returning: " + res
-								+ "\n");
+						logger.debug("unmarshalAdvert: returning: " + res);
 					}
 
 					// success!
@@ -472,16 +482,21 @@ public class GATEngine {
 				}
 			} catch (InvocationTargetException e1) {
 				if (logger.isDebugEnabled()) {
-					logger.debug("unmarshaller for " + c.getName() + " failed:"
-							+ e1.getTargetException() + "\n"
-							+ e1.getTargetException().getStackTrace().toString());
+					logger.debug("unmarshaller for "
+							+ c.getName()
+							+ " failed:"
+							+ e1.getTargetException()
+							+ "\n"
+							+ e1.getTargetException().getStackTrace()
+									.toString());
 				}
 				// ignore and try next unmarshaller
 			} catch (Exception e) {
 				if (logger.isDebugEnabled()) {
-					logger.debug("unmarshaller for " + c.getName()
-							+ " failed:" + e + "\n"
-							+ e.getStackTrace().toString());
+					StringWriter writer = new StringWriter();
+					e.printStackTrace(new PrintWriter(writer));
+					logger.debug("unmarshaller for " + c.getName() + " failed:"
+							+ e + "\n" + writer.toString());
 				}
 				// ignore and try next unmarshaller
 			}
@@ -542,8 +557,7 @@ public class GATEngine {
 			m.invoke((Object) null, (Object[]) null);
 		} catch (Throwable t) {
 			if (logger.isInfoEnabled()) {
-				logger.info("initialization of " + clazz + " failed: "
-						+ t + "\n");
+				logger.info("initialization of " + clazz + " failed: " + t);
 			}
 		}
 	}
@@ -574,7 +588,7 @@ public class GATEngine {
 		try {
 			if (logger.isDebugEnabled()) {
 				logger.debug("default unmarshaller start, type = " + type
-						+ " string = " + s + "\n");
+						+ " string = " + s);
 			}
 
 			Unmarshaller unmarshaller = new Unmarshaller(type);
@@ -587,9 +601,9 @@ public class GATEngine {
 			if (res == null) {
 				throw new Error("cannot unmarshal this object");
 			}
-			
+
 			if (logger.isDebugEnabled()) {
-				logger.debug("default unmarshaller returning " + res + "\n");
+				logger.debug("default unmarshaller returning " + res);
 			}
 
 			return res;
@@ -702,8 +716,10 @@ public class GATEngine {
 					try {
 						n.metricListener.processMetricEvent(v);
 					} catch (Throwable t) {
+						StringWriter writer = new StringWriter();
+						t.printStackTrace(new PrintWriter(writer));
 						logger.warn("WARNING, user callback threw exception: "
-								+ t + "\n" + t.getStackTrace().toString() + "\n");
+								+ t + "\n" + writer.toString());
 					}
 				}
 			}
@@ -767,7 +783,7 @@ public class GATEngine {
 
 			engine.ended = true;
 		}
-		
+
 		if (logger.isDebugEnabled()) {
 			logger.debug("shutting down GAT");
 		}
@@ -876,7 +892,9 @@ public class GATEngine {
 						insertPosition--;
 				} else {
 					if (logger.isInfoEnabled()) {
-						logger.info("Found non existing adaptor in " + adaptorType + ".adaptor.name preference: " + names[i] + "\n");
+						logger.info("Found non existing adaptor in "
+								+ adaptorType + ".adaptor.name preference: "
+								+ names[i]);
 					}
 				}
 			} else if (names[i].equals("")) {
@@ -897,10 +915,12 @@ public class GATEngine {
 						insertPosition++;
 					} else {
 						if (logger.isInfoEnabled()) {
-							logger.info("Found non existing adaptor in " + adaptorType + ".adaptor.name preference: " + names[i] + "\n");
+							logger.info("Found non existing adaptor in "
+									+ adaptorType
+									+ ".adaptor.name preference: " + names[i]);
 						}
 					}
-				
+
 				}
 			}
 		}

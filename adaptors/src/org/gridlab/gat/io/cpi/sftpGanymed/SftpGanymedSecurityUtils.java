@@ -5,12 +5,12 @@ package org.gridlab.gat.io.cpi.sftpGanymed;
 
 import java.io.File;
 
+import org.apache.log4j.Logger;
 import org.gridlab.gat.CouldNotInitializeCredentialException;
 import org.gridlab.gat.CredentialExpiredException;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.Preferences;
 import org.gridlab.gat.URI;
-import org.gridlab.gat.engine.GATEngine;
 import org.gridlab.gat.security.CertificateSecurityContext;
 import org.gridlab.gat.security.PasswordSecurityContext;
 import org.gridlab.gat.security.SecurityContext;
@@ -74,6 +74,9 @@ class SftpGanymedContextCreator implements SecurityContextCreator {
 }
 
 public class SftpGanymedSecurityUtils {
+	
+	protected static Logger logger = Logger.getLogger(SftpGanymedSecurityUtils.class);
+	
     protected static SftpGanymedUserInfo getSftpCredential(GATContext context,
             Preferences preferences, String adaptorName, URI location,
             int defaultPort) throws CouldNotInitializeCredentialException, CredentialExpiredException {
@@ -159,8 +162,8 @@ public class SftpGanymedSecurityUtils {
 
     protected static File loadKey(String keyfile)
             throws CouldNotInitializeCredentialException, CredentialExpiredException {
-        if (GATEngine.DEBUG) {
-            System.err.println("trying to load ssh key from: " + keyfile);
+        if (logger.isDebugEnabled()) {
+            logger.debug("trying to load ssh key from: " + keyfile);
         }
 
         java.io.File keyf = new java.io.File(keyfile);

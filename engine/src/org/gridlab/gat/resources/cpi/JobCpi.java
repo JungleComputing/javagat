@@ -6,6 +6,7 @@ package org.gridlab.gat.resources.cpi;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.log4j.Logger;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.Preferences;
@@ -18,6 +19,9 @@ import org.gridlab.gat.resources.Job;
 import org.gridlab.gat.resources.JobDescription;
 
 public abstract class JobCpi extends Job {
+	
+	protected static Logger logger = Logger.getLogger(JobCpi.class);
+	
     protected JobDescription jobDescription;
 
     protected Sandbox sandbox;
@@ -107,8 +111,8 @@ public abstract class JobCpi extends Job {
                         break;
                     j = (Job) jobList.remove(0);
                 }
-                if (GATEngine.VERBOSE) {
-                    System.err.println("stopping job: " + j);
+                if (logger.isInfoEnabled()) {
+                    logger.info("stopping job: " + j);
                 }
                 try {
                     j.stop();

@@ -3,6 +3,7 @@
  */
 package org.gridlab.gat.resources.cpi;
 
+import org.apache.log4j.Logger;
 import org.gridlab.gat.GAT;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
@@ -12,6 +13,9 @@ import org.gridlab.gat.engine.GATEngine;
 import org.gridlab.gat.io.File;
 
 public class PostStagedFile extends StagedFile {
+	
+	protected static Logger logger = Logger.getLogger(PostStagedFile.class);
+	
     private boolean isStdout;
 
     private boolean isStderr;
@@ -80,8 +84,8 @@ public class PostStagedFile extends StagedFile {
     }
 
     protected void poststage() throws GATInvocationException {
-        if (GATEngine.VERBOSE) {
-            System.err.println("  copy " + getResolvedSrc().toGATURI() + " to "
+        if (logger.isInfoEnabled()) {
+            logger.info("  copy " + getResolvedSrc().toGATURI() + " to "
                     + getResolvedDest().toGATURI());
         }
 
@@ -93,15 +97,15 @@ public class PostStagedFile extends StagedFile {
             return;
         }
 
-        if (GATEngine.VERBOSE) {
-            System.err.println("DELETE_FILE:" + getResolvedSrc());
+        if (logger.isInfoEnabled()) {
+            logger.info("DELETE_FILE:" + getResolvedSrc());
         }
         getResolvedSrc().delete();
     }
 
     protected void wipe() throws GATInvocationException {
-        if (GATEngine.VERBOSE) {
-            System.err.println("WIPE_FILE:" + getResolvedSrc());
+        if (logger.isInfoEnabled()) {
+            logger.info("WIPE_FILE:" + getResolvedSrc());
         }
         wipe(getResolvedSrc());
     }

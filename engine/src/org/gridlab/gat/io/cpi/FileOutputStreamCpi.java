@@ -2,6 +2,7 @@ package org.gridlab.gat.io.cpi;
 
 import java.util.List;
 
+import org.apache.log4j.Logger;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.Preferences;
@@ -23,7 +24,10 @@ import org.gridlab.gat.monitoring.MetricValue;
  * corresponding method in the FileStream class at runtime.
  */
 public abstract class FileOutputStreamCpi implements FileOutputStreamInterface {
-    protected GATContext gatContext;
+    
+	protected static Logger logger = Logger.getLogger(FileOutputStreamCpi.class);
+	
+	protected GATContext gatContext;
 
     protected Preferences preferences;
 
@@ -52,8 +56,8 @@ public abstract class FileOutputStreamCpi implements FileOutputStreamInterface {
         this.location = location;
         this.append = append.booleanValue();
 
-        if(GATEngine.DEBUG) {
-            System.err.println("FileOutputStreamCpi: created stream with URI " + location);
+        if(logger.isDebugEnabled()) {
+            logger.debug("FileOutputStreamCpi: created stream with URI " + location);
         }
     }
 

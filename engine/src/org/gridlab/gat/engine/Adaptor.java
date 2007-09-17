@@ -83,7 +83,7 @@ class Adaptor {
 
             if (ctor == null) {
                 throw new GATObjectCreationException(
-                    "No correct contructor extists in adaptor");
+                    "No correct contructor exists in adaptor");
             }
 
             if (parameters == null) {

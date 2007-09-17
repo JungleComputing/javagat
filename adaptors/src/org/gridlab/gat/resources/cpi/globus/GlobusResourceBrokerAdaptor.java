@@ -32,6 +32,7 @@ import org.gridlab.gat.resources.cpi.PreStagedFile;
 import org.gridlab.gat.resources.cpi.PreStagedFileSet;
 import org.gridlab.gat.resources.cpi.ResourceBrokerCpi;
 import org.gridlab.gat.resources.cpi.Sandbox;
+import org.gridlab.gat.resources.cpi.commandlineSshPrun.CommandlineSshPrunResourceBrokerAdaptor;
 import org.gridlab.gat.security.globus.GlobusSecurityUtils;
 import org.ietf.jgss.GSSCredential;
 import org.ietf.jgss.GSSException;
@@ -40,6 +41,9 @@ import org.ietf.jgss.GSSException;
  * @author rob
  */
 public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
+	
+	protected static Logger logger = Logger
+	.getLogger(GlobusResourceBrokerAdaptor.class);
 
     static boolean shutdownInProgress = false;
 
@@ -50,11 +54,6 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
     public GlobusResourceBrokerAdaptor(GATContext gatContext,
             Preferences preferences) throws GATObjectCreationException {
         super(gatContext, preferences);
-        // turn off all annoying cog prints
-        if (!GATEngine.DEBUG) {
-            Logger logger = Logger.getLogger(NoAuthorization.class.getName());
-            logger.setLevel(Level.OFF);
-        }
     }
 
     protected String createRSL(JobDescription description, String host,
@@ -237,8 +236,8 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
             rsl += " (queue = " + queue + ")";
         }
 
-        if (GATEngine.VERBOSE) {
-            System.err.println("RSL: " + rsl);
+        if (logger.isDebugEnabled()) {
+            logger.debug("RSL: " + rsl);
         }
 
         return rsl;
@@ -254,8 +253,8 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
 
         rsl += " (arguments = \"+x\" \"" + executable + "\")";
 
-        if (GATEngine.DEBUG) {
-            System.err.println("CHMOD RSL: " + rsl);
+        if (logger.isDebugEnabled()) {
+            logger.debug("CHMOD RSL: " + rsl);
         }
 
         return rsl;
@@ -273,8 +272,8 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
 
         // if the contact string is set, ignore all other properties
         if (contact != null) {
-            if (GATEngine.VERBOSE) {
-                System.err.println("Resource manager contact = " + contact);
+            if (logger.isDebugEnabled()) {
+                logger.debug("Resource manager contact = " + contact);
             }
             return contact;
         }
@@ -292,8 +291,8 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
                 res += ("/jobmanager-" + jobManager);
             }
 
-            if (GATEngine.VERBOSE) {
-                System.err.println("Resource manager contact = " + res);
+            if (logger.isDebugEnabled()) {
+                logger.debug("Resource manager contact = " + res);
             }
 
             return res;
@@ -309,8 +308,8 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
         try {
             Gram.request(contact, j);
         } catch (GramException e) {
-            if (GATEngine.VERBOSE) {
-                System.err.println("could not run job: "
+            if (logger.isDebugEnabled()) {
+                logger.debug("could not run job: "
                         + GramError.getGramErrorString(e.getErrorCode()));
             }
 
@@ -324,8 +323,8 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
             try {
                 Gram.jobStatus(j);
                 int status = j.getStatus();
-                if (GATEngine.DEBUG) {
-                    System.err.println("job status = " + status);
+                if (logger.isDebugEnabled()) {
+                    logger.debug("job status = " + status);
                 }
                 if (status == GRAMConstants.STATUS_DONE
                         || status == GRAMConstants.STATUS_FAILED) {
@@ -336,8 +335,8 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
                     return;
                 }
 
-                if (GATEngine.DEBUG) {
-                    System.err.println("got exception: " + e);
+                if (logger.isDebugEnabled()) {
+                    logger.debug("got exception: " + e);
                 }
 
                 // ignore other errors
@@ -355,16 +354,16 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
     private void submitChmodJob(GSSCredential credential,
             JobDescription description, String host, String chmodLocation,
             Sandbox sandbox, String path) throws GATInvocationException {
-        if (GATEngine.VERBOSE) {
-            System.err.print("running " + chmodLocation + " on " + host
+        if (logger.isDebugEnabled()) {
+            logger.debug("running " + chmodLocation + " on " + host
                     + "/jobmanager-fork to set executable bit on ");
         }
         String chmodRsl =
                 createChmodRSL(description, host, chmodLocation, sandbox, path);
 
         runGramJobPolling(credential, chmodRsl, host + "/jobmanager-fork");
-        if (GATEngine.VERBOSE) {
-            System.err.println("done");
+        if (logger.isDebugEnabled()) {
+            logger.debug("done");
         }
     }
 
@@ -499,8 +498,8 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
         GSSCredential credential = getCredential(host);
 
         if (getBooleanAttribute(description, "useLocalDisk", false)) {
-            if (GATEngine.VERBOSE) {
-                System.err.println("useLocalDisk, using wrapper application");
+            if (logger.isDebugEnabled()) {
+                logger.debug("useLocalDisk, using wrapper application");
             }
             RemoteSandboxSubmitter s =
                     new RemoteSandboxSubmitter(gatContext, preferences);
@@ -537,8 +536,8 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
     }
 
     public static void end() {
-        if (GATEngine.DEBUG) {
-            System.err.println("globus broker adaptor end");
+        if (logger.isDebugEnabled()) {
+            logger.debug("globus broker adaptor end");
         }
 
         shutdownInProgress = true;
@@ -546,9 +545,8 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
         try {
             Gram.deactivateAllCallbackHandlers();
         } catch (Throwable t) {
-            if (GATEngine.VERBOSE) {
-                System.err
-                        .println("WARNING, globus job could not deactivate callback: "
+            if (logger.isDebugEnabled()) {
+                logger.debug("WARNING, globus job could not deactivate callback: "
                                 + t);
             }
         }
