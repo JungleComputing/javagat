@@ -34,7 +34,7 @@
         <mkdir dir="${tmp}" />
 
         <!-- Compile the java code from ${src} into ${tmp} -->
-        <javac source="1.4" srcdir="${src}" destdir="${tmp}" debug="on">
+        <javac source="1.5" srcdir="${src}" destdir="${tmp}" debug="on">
             <classpath refid="external_jars" />
         </javac>
 
