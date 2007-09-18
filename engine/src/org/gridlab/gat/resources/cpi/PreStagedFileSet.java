@@ -13,7 +13,6 @@ import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.Preferences;
 import org.gridlab.gat.URI;
-import org.gridlab.gat.engine.GATEngine;
 import org.gridlab.gat.io.File;
 import org.gridlab.gat.resources.JobDescription;
 import org.gridlab.gat.resources.SoftwareDescription;
@@ -87,12 +86,12 @@ public class PreStagedFileSet {
 					"The job description does not contain an executable location");
 		}
 
-		ArrayList tmp = new ArrayList();
-		Map pre = sd.getPreStaged();
+		ArrayList<PreStagedFile> tmp = new ArrayList<PreStagedFile>();
+		Map<File, File> pre = sd.getPreStaged();
 
 		if (pre != null) {
-			Set keys = pre.keySet();
-			Iterator i = keys.iterator();
+			Set<File> keys = pre.keySet();
+			Iterator<File> i = keys.iterator();
 
 			while (i.hasNext()) {
 				File srcFile = (File) i.next();

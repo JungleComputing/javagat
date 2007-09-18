@@ -11,10 +11,11 @@ import org.objectweb.proactive.Service;
  * This class keeps track of jobs submitted to a particular cluster.
  * This class must be public, or else the ProActive stub cannot access it.
  */
+@SuppressWarnings("serial")
 public class JobWatcher implements java.io.Serializable, RunActive {
 
     /** Maps job id's to Jobs. */
-    private HashMap jobs = new HashMap();
+    private HashMap<String, Job> jobs = new HashMap<String, Job>();
 
     /** Public noargs constructor, required by ProActive. */
     public JobWatcher() {

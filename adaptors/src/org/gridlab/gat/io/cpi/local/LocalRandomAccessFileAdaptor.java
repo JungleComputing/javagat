@@ -17,6 +17,7 @@ import org.gridlab.gat.io.cpi.RandomAccessFileCpi;
 /**
  * @author rob
  */
+@SuppressWarnings("serial")
 public class LocalRandomAccessFileAdaptor extends RandomAccessFileCpi {
     RandomAccessFile rf;
 

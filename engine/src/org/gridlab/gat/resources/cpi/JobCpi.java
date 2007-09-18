@@ -42,7 +42,7 @@ public abstract class JobCpi extends Job {
 
     protected int state = INITIAL;
 
-    protected static ArrayList jobList = new ArrayList();
+    protected static ArrayList<Job> jobList = new ArrayList<Job>();
 
     protected static boolean shutdownInProgress = false;
 
@@ -132,7 +132,7 @@ public abstract class JobCpi extends Job {
         throw new RuntimeException("Not implemented");
     }
 
-    public final List getMetricDefinitions() throws GATInvocationException {
+    public final List<MetricDefinition> getMetricDefinitions() throws GATInvocationException {
         return GATEngine.getMetricDefinitions(this);
     }
 

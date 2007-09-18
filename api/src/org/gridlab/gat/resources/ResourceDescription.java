@@ -41,21 +41,21 @@ public abstract class ResourceDescription implements java.io.Serializable {
      * This member variable holds the Map which describes this resource".
      *
      */
-    private HashMap attributes = null;
+    private HashMap<String, Object> attributes = null;
 
     /**
      * This member variable holds a List of ResourceDescriptions that also
      * are required
      *
      */
-    private List resourceDescriptions = null;
+    private List<ResourceDescription> resourceDescriptions = null;
 
     /**
      * Constructs a ResourceDescription associated without attributes and
      * dependencies.
      */
     protected ResourceDescription() {
-        this.attributes = new HashMap();
+        this.attributes = new HashMap<String, Object>();
     }
 
     /**
@@ -65,8 +65,8 @@ public abstract class ResourceDescription implements java.io.Serializable {
      * @param attributes A java.util.Map, which describes the attributes of this
      * resource
      */
-    protected ResourceDescription(Map attributes) {
-        this.attributes = new HashMap(attributes);
+    protected ResourceDescription(Map<String, Object> attributes) {
+        this.attributes = new HashMap<String, Object>(attributes);
     }
 
     /**
@@ -80,9 +80,9 @@ public abstract class ResourceDescription implements java.io.Serializable {
      * resourceDescriptions each of which describes a software component upon
      * which this software component depends.
      */
-    protected ResourceDescription(Map attributes, List resourceDescriptions) {
-        this.attributes = new HashMap(attributes);
-        this.resourceDescriptions = new ArrayList(resourceDescriptions);
+    protected ResourceDescription(Map<String, Object> attributes, List<ResourceDescription> resourceDescriptions) {
+        this.attributes = new HashMap<String, Object>(attributes);
+        this.resourceDescriptions = new ArrayList<ResourceDescription>(resourceDescriptions);
     }
 
     /**
@@ -131,7 +131,7 @@ public abstract class ResourceDescription implements java.io.Serializable {
      * @return A java.util.Map, the SoftwareResourceDescription associated with
      *         this instance
      */
-    public Map getDescription() {
+    public Map<String, Object> getDescription() {
         return attributes;
     }
 
@@ -143,8 +143,8 @@ public abstract class ResourceDescription implements java.io.Serializable {
      *            The new java.util.Map, the SoftwareResourceDescription
      *            associated with this instance
      */
-    public void setDescription(Map attributes) {
-        this.attributes = new HashMap(attributes);
+    public void setDescription(Map<String, Object> attributes) {
+        this.attributes = new HashMap<String, Object>(attributes);
     }
 
     /**

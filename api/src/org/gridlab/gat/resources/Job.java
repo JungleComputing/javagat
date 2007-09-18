@@ -174,7 +174,7 @@ public abstract class Job implements Monitorable, Advertisable {
      * @throws GATInvocationException Thrown upon problems
      * accessing the remote instance
      */
-    public Map getInfo() throws GATInvocationException {
+    public Map<String, Object> getInfo() throws GATInvocationException {
         throw new RuntimeException("Not implemented");
     }
 
@@ -314,7 +314,7 @@ public abstract class Job implements Monitorable, Advertisable {
         throw new RuntimeException("Not implemented");
     }
 
-    public List getMetricDefinitions() throws GATInvocationException {
+    public List<MetricDefinition> getMetricDefinitions() throws GATInvocationException {
         throw new RuntimeException("Not implemented");    }
 
     public MetricDefinition getMetricDefinitionByName(String name)

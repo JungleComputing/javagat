@@ -53,7 +53,8 @@ import java.net.URL;
  * hostname for your local machine.
  * 
  */
-public class URI implements Serializable, Comparable {
+@SuppressWarnings("serial")
+public class URI implements Serializable, Comparable<Object> {
 	java.net.URI u;
 
 	public URI(String s) throws URISyntaxException {
@@ -132,6 +133,7 @@ public class URI implements Serializable, Comparable {
 
 		return path;
 	}
+
 
 	public int compareTo(Object other) {
 		if (other instanceof java.net.URI) {

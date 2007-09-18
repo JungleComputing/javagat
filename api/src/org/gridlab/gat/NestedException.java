@@ -19,10 +19,11 @@ import java.util.ArrayList;
  * seperate adaptor. The methods getMessage and printStrackTrace will reflect
  * this hierarchy.
  */
+@SuppressWarnings("serial")
 class NestedException extends Exception {
-    ArrayList throwables = new ArrayList();
+    ArrayList<Throwable> throwables = new ArrayList<Throwable>();
 
-    ArrayList adaptorNames = new ArrayList();
+    ArrayList<String> adaptorNames = new ArrayList<String>();
 
     public NestedException(String s) {
         super(s);

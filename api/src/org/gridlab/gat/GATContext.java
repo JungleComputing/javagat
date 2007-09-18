@@ -18,7 +18,7 @@ public class GATContext implements Cloneable {
     /**
      * This member variable holds the SecurityContext's for this GATcontext
      */
-    private Vector securityContexts = new Vector();
+    private Vector<SecurityContext> securityContexts = new Vector<SecurityContext>();
 
     /**
      * This no arguments constructor creates an instance of a GATContext.
@@ -52,7 +52,7 @@ public class GATContext implements Cloneable {
      *
      * @return java.util.List of SecurityContexts.
      */
-    public List getSecurityContexts() {
+    public List<SecurityContext> getSecurityContexts() {
         return securityContexts;
     }
 
@@ -65,11 +65,11 @@ public class GATContext implements Cloneable {
      *            org.gridlab.gat.security.PasswordSecurityContext;
      * @return java.util.List of SecurityContexts.
      */
-    public List getSecurityContextsByType(String type) {
+    public List<SecurityContext> getSecurityContextsByType(String type) {
         SecurityContext nextSecurityContext;
-        Vector typedSecurityContexts = new Vector();
+        Vector<SecurityContext> typedSecurityContexts = new Vector<SecurityContext>();
 
-        Enumeration enumeration = securityContexts.elements();
+        Enumeration<SecurityContext> enumeration = securityContexts.elements();
 
         while (enumeration.hasMoreElements()) {
             nextSecurityContext = (SecurityContext) enumeration.nextElement();
@@ -130,7 +130,7 @@ public class GATContext implements Cloneable {
 
         GATContext c = new GATContext();
         c.preferences = (Preferences) preferences.clone();
-        c.securityContexts = (Vector) securityContexts.clone();
+        c.securityContexts = new Vector<SecurityContext>(securityContexts);
 
         return c;
     }

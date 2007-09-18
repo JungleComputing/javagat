@@ -30,6 +30,7 @@ import com.sshtools.j2ssh.transport.publickey.SshPublicKey;
 /**
  * @author rob
  */
+@SuppressWarnings("serial")
 public class SftpFileAdaptor extends FileCpi {
     
 	protected static Logger logger = Logger.getLogger(SftpFileAdaptor.class);
@@ -125,12 +126,12 @@ public class SftpFileAdaptor extends FileCpi {
         try {
             c.sftp.cd(location.getPath());
 
-            java.util.List dirList = c.sftp.ls();
+            java.util.List<?> dirList = c.sftp.ls();
 
             String[] children = new String[dirList.size()];
             int index = 0;
 
-            for (Iterator i = dirList.iterator(); i.hasNext();) {
+            for (Iterator<?> i = dirList.iterator(); i.hasNext();) {
                 children[index] = ((SftpFile) i.next()).getFilename();
                 index++;
             }

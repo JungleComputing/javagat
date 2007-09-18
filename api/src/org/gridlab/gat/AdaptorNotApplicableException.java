@@ -11,6 +11,7 @@ package org.gridlab.gat;
  * @author rob
  *
  */
+@SuppressWarnings("serial")
 public class AdaptorNotApplicableException extends GATObjectCreationException {
     public AdaptorNotApplicableException(String s) {
         super(s);

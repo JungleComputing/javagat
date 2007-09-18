@@ -8,7 +8,6 @@ import java.util.HashMap;
 import java.util.StringTokenizer;
 import java.util.Vector;
 
-import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.globus.ftp.Buffer;
 import org.globus.ftp.DataSink;
@@ -19,17 +18,12 @@ import org.globus.ftp.HostPort;
 import org.globus.ftp.exception.ClientException;
 import org.globus.ftp.exception.FTPException;
 import org.globus.ftp.exception.ServerException;
-import org.globus.ftp.vanilla.FTPControlChannel;
-import org.globus.gsi.gssapi.GlobusGSSManagerImpl;
-import org.globus.gsi.gssapi.auth.HostAuthorization;
-import org.globus.gsi.gssapi.auth.SelfAuthorization;
 import org.gridlab.gat.GAT;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.GATObjectCreationException;
 import org.gridlab.gat.Preferences;
 import org.gridlab.gat.URI;
-import org.gridlab.gat.engine.GATEngine;
 import org.gridlab.gat.io.File;
 import org.gridlab.gat.io.cpi.FileCpi;
 
@@ -49,7 +43,7 @@ public abstract class GlobusFileAdaptor extends FileCpi {
 
 	// cache dir info, getting it can be an expensive operation, especially on
 	// old servers.
-	private static HashMap isDirCache = new HashMap();
+	private static HashMap<URI, Integer> isDirCache = new HashMap<URI, Integer>();
 
 	private FileInfo cachedInfo = null;
 
@@ -365,14 +359,14 @@ public abstract class GlobusFileAdaptor extends FileCpi {
 
 			setActiveOrPassive(client, preferences);
 
-			Vector v = null;
+			Vector<FileInfo> v = null;
 
 			// we know it is a dir, so we can use this call.
 			// for some reason, on old servers the list() method returns
 			// an empty list if there are many files.
 			v = listNoMinusD(client, remotePath);
 
-			Vector result = new Vector();
+			Vector<String> result = new Vector<String>();
 
 			for (int i = 0; i < v.size(); i++) {
 				FileInfo info = ((FileInfo) v.get(i));
@@ -423,7 +417,7 @@ public abstract class GlobusFileAdaptor extends FileCpi {
 
 			setActiveOrPassive(client, preferences);
 
-			Vector v = null;
+			Vector<?> v = null;
 
 			// we know it is a dir, so we can use this call.
 			// for some reason, on old servers the list() method returns
@@ -431,7 +425,7 @@ public abstract class GlobusFileAdaptor extends FileCpi {
 			// v = listNoMinusD(client, remotePath);
 			v = client.list();
 
-			Vector result = new Vector();
+			Vector<File> result = new Vector<File>();
 
 			for (int i = 0; i < v.size(); i++) {
 				FileInfo info = ((FileInfo) v.get(i));
@@ -506,7 +500,7 @@ public abstract class GlobusFileAdaptor extends FileCpi {
 
 			setActiveOrPassive(client, preferences);
 
-			Vector v = null;
+			Vector<?> v = null;
 
 			if (isOldServer(preferences)) {
 				v = listNoMinusD(client, remotePath);
@@ -881,7 +875,7 @@ public abstract class GlobusFileAdaptor extends FileCpi {
 	 * command. The problem is that is does not work for directories, only for
 	 * files.
 	 */
-	private Vector listNoMinusD(FTPClient c, String filter)
+	private Vector<FileInfo> listNoMinusD(FTPClient c, String filter)
 			throws ServerException, ClientException, IOException {
 		final ByteArrayOutputStream received = new ByteArrayOutputStream(1000);
 
@@ -907,7 +901,7 @@ public abstract class GlobusFileAdaptor extends FileCpi {
 		BufferedReader reader = new BufferedReader(new StringReader(received
 				.toString()));
 
-		Vector fileList = new Vector();
+		Vector<FileInfo> fileList = new Vector<FileInfo>();
 		FileInfo fileInfo = null;
 		String line = null;
 

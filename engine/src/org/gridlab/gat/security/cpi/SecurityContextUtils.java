@@ -45,7 +45,7 @@ public class SecurityContextUtils {
 	 *            the port to connect to
 	 * @return the list of security contexts that is valid for this adaptor
 	 */
-	public static List getValidSecurityContexts(GATContext context,
+	public static List<SecurityContext> getValidSecurityContexts(GATContext context,
 			Preferences preferences, String adaptorName, String host, int port) {
 		return getValidSecurityContextsByType(context, preferences,
 				null /* no type */, adaptorName, host, port);
@@ -72,12 +72,12 @@ public class SecurityContextUtils {
 	 *            the port to connect to
 	 * @return the list of security contexts that is valid for this adaptor
 	 */
-	public static List getValidSecurityContextsByType(GATContext context,
+	public static List<SecurityContext> getValidSecurityContextsByType(GATContext context,
 			Preferences preferences, String type, String adaptorName,
 			String host, int port) {
-		ArrayList result = new ArrayList();
+		ArrayList<SecurityContext> result = new ArrayList<SecurityContext>();
 
-		List l;
+		List<SecurityContext> l;
 
 		if (type != null) {
 			l = context.getSecurityContextsByType(type);
@@ -133,7 +133,7 @@ public class SecurityContextUtils {
 			throws CouldNotInitializeCredentialException,
 			CredentialExpiredException {
 		// get the list of securityContext that might be valid for this adaptor
-		List l = SecurityContextUtils.getValidSecurityContexts(context,
+		List<SecurityContext> l = SecurityContextUtils.getValidSecurityContexts(context,
 				preferences, adaptorName, location.resolveHost(), location
 						.getPort(defaultPort));
 

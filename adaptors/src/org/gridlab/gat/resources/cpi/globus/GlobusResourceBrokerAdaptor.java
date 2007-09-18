@@ -7,14 +7,12 @@ import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
 
-import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.globus.common.ResourceManagerContact;
 import org.globus.gram.Gram;
 import org.globus.gram.GramException;
 import org.globus.gram.GramJob;
 import org.globus.gram.internal.GRAMConstants;
-import org.globus.gsi.gssapi.auth.NoAuthorization;
 import org.gridlab.gat.CouldNotInitializeCredentialException;
 import org.gridlab.gat.CredentialExpiredException;
 import org.gridlab.gat.GATContext;
@@ -32,7 +30,6 @@ import org.gridlab.gat.resources.cpi.PreStagedFile;
 import org.gridlab.gat.resources.cpi.PreStagedFileSet;
 import org.gridlab.gat.resources.cpi.ResourceBrokerCpi;
 import org.gridlab.gat.resources.cpi.Sandbox;
-import org.gridlab.gat.resources.cpi.commandlineSshPrun.CommandlineSshPrunResourceBrokerAdaptor;
 import org.gridlab.gat.security.globus.GlobusSecurityUtils;
 import org.ietf.jgss.GSSCredential;
 import org.ietf.jgss.GSSException;
@@ -96,9 +93,9 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
             }
 
             // set the environment
-            Map env = sd.getEnvironment();
+            Map<String, Object> env = sd.getEnvironment();
             if (env != null && !env.isEmpty()) {
-                Set s = env.keySet();
+                Set<String> s = env.keySet();
                 Object[] keys = (Object[]) s.toArray();
 
                 for (int i = 0; i < keys.length; i++) {
@@ -217,9 +214,9 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
 
         if (!isJavaApplication(description)) {
             // set the environment
-            Map env = sd.getEnvironment();
+            Map<String, Object> env = sd.getEnvironment();
             if (env != null && !env.isEmpty()) {
-                Set s = env.keySet();
+                Set<String> s = env.keySet();
                 Object[] keys = (Object[]) s.toArray();
                 rsl += "(environment = ";
 

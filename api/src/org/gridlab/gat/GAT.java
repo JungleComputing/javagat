@@ -28,7 +28,7 @@ import org.gridlab.gat.steering.SteeringManager;
  */
 public class GAT {
 
-    static Class engineClass;
+    static Class<?> engineClass;
     static Method createProxyMethod;
     
     static {
@@ -871,15 +871,15 @@ public class GAT {
 
     public static void end() {
         try {
-            Method m = engineClass.getMethod("end", null);
-            m.invoke(null, null);
+            Method m = engineClass.getMethod("end", (Class<?>[]) null);
+            m.invoke(null, (Object[]) null);
         } catch (Exception e) {
             throw new Error(e);
         }
     }
 
     protected static Object getAdaptorProxy(String cpiClassName,
-        Class interfaceClass, GATContext gatContext, Preferences preferences,
+        Class<?> interfaceClass, GATContext gatContext, Preferences preferences,
         Object[] tmpParams) throws GATObjectCreationException {
 
         /** Maybe we want to support a "default" context. */

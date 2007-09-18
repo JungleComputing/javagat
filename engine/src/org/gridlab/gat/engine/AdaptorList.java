@@ -13,19 +13,19 @@ public class AdaptorList {
     String cpi;
 
     /** The api class all adaptors in this set implement. */
-    Class cpiClass;
+    Class<?> cpiClass;
 
     /** A list of the adaptors. The type of the elements is "Adaptor" */
-    ArrayList adaptors;
+    ArrayList<Adaptor> adaptors;
 
     /**
      * @param cpiClass
      *            The api class all adaptors in this set implement.
      */
-    AdaptorList(Class cpiClass) {
+    AdaptorList(Class<?> cpiClass) {
         this.cpi = cpiClass.getName();
         this.cpiClass = cpiClass;
-        adaptors = new ArrayList();
+        adaptors = new ArrayList<Adaptor>();
     }
 
     void addAdaptor(Adaptor a) {

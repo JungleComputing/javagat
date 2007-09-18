@@ -21,7 +21,6 @@ import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.GATObjectCreationException;
 import org.gridlab.gat.Preferences;
 import org.gridlab.gat.URI;
-import org.gridlab.gat.engine.GATEngine;
 import org.gridlab.gat.io.cpi.FileCpi;
 
 import ch.ethz.ssh2.Connection;
@@ -32,6 +31,7 @@ import ch.ethz.ssh2.SFTPv3FileAttributes;
 import ch.ethz.ssh2.SFTPv3FileHandle;
 import ch.ethz.ssh2.sftp.ErrorCodes;
 
+@SuppressWarnings("serial")
 public class SftpGanymedFileAdaptor extends FileCpi {
 
 	protected static Logger logger = Logger
@@ -41,7 +41,7 @@ public class SftpGanymedFileAdaptor extends FileCpi {
 
 	static final boolean USE_CLIENT_CACHING = true;
 
-	private static Hashtable clienttable = new Hashtable();
+	private static Hashtable<String, SftpGanymedConnection> clienttable = new Hashtable<String, SftpGanymedConnection>();
 
 	public SftpGanymedFileAdaptor(GATContext gatContext,
 			Preferences preferences, URI location)
@@ -308,8 +308,8 @@ public class SftpGanymedFileAdaptor extends FileCpi {
 				return null;
 			}
 
-			Vector result = c.sftpClient.ls(getPath());
-			Vector newRes = new Vector();
+			Vector<?> result = c.sftpClient.ls(getPath());
+			Vector<String> newRes = new Vector<String>();
 			for (int i = 0; i < result.size(); i++) {
 				SFTPv3DirectoryEntry entry = (SFTPv3DirectoryEntry) result
 						.get(i);

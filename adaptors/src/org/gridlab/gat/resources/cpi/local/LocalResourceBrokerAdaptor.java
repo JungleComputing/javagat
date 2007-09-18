@@ -20,6 +20,7 @@ import org.gridlab.gat.engine.GATEngine;
 import org.gridlab.gat.engine.util.CommandRunner;
 import org.gridlab.gat.engine.util.InputForwarder;
 import org.gridlab.gat.engine.util.OutputForwarder;
+import org.gridlab.gat.resources.HardwareResource;
 import org.gridlab.gat.resources.Job;
 import org.gridlab.gat.resources.JobDescription;
 import org.gridlab.gat.resources.Reservation;
@@ -28,7 +29,6 @@ import org.gridlab.gat.resources.ResourceDescription;
 import org.gridlab.gat.resources.SoftwareDescription;
 import org.gridlab.gat.resources.cpi.ResourceBrokerCpi;
 import org.gridlab.gat.resources.cpi.Sandbox;
-import org.gridlab.gat.resources.cpi.commandlineSshPrun.CommandlineSshPrunResourceBrokerAdaptor;
 
 /**
  * An instance of this class is used to reserve resources.
@@ -110,7 +110,7 @@ public class LocalResourceBrokerAdaptor extends ResourceBrokerCpi {
 	 *            resource(s) to find
 	 * @return java.util.List of HardwareResources upon success
 	 */
-	public List findResources(ResourceDescription resourceDescription) {
+	public List<HardwareResource> findResources(ResourceDescription resourceDescription) {
 		throw new UnsupportedOperationException("Not implemented");
 	}
 
@@ -131,12 +131,12 @@ public class LocalResourceBrokerAdaptor extends ResourceBrokerCpi {
 
 		// fill in the environment
 		String[] environment = null;
-		Map env = sd.getEnvironment();
+		Map<String, Object> env = sd.getEnvironment();
 		int index = 0;
 		if (env != null) {
 			environment = new String[env.size()];
-			Set keys = env.keySet();
-			Iterator i = keys.iterator();
+			Set<String> keys = env.keySet();
+			Iterator<String> i = keys.iterator();
 			while (i.hasNext()) {
 				String key = (String) i.next();
 				String val = (String) env.get(key);

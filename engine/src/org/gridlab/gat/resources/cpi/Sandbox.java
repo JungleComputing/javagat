@@ -13,7 +13,6 @@ import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.Preferences;
 import org.gridlab.gat.URI;
-import org.gridlab.gat.engine.GATEngine;
 import org.gridlab.gat.io.File;
 import org.gridlab.gat.io.cpi.FileCpi;
 import org.gridlab.gat.resources.JobDescription;
@@ -75,7 +74,7 @@ public class Sandbox {
 		String sandboxDisabledPref = null;
 		SoftwareDescription sd = jobDescription.getSoftwareDescription();
 		if (sd != null) {
-			Map attr = sd.getAttributes();
+			Map<String, Object> attr = sd.getAttributes();
 			if (attr != null) {
 				sandboxRootPref = (String) attr.get("sandboxRoot");
 				sandboxDisabledPref = (String) attr.get("disableSandbox");

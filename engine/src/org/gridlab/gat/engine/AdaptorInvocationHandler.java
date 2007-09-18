@@ -37,13 +37,13 @@ public class AdaptorInvocationHandler implements InvocationHandler {
 		 * list of adaptor class names (Strings) in order of successful
 		 * execution
 		 */
-		private LinkedList adaptorlist = new LinkedList();
+		private LinkedList<String> adaptorlist = new LinkedList<String>();
 
 		/**
 		 * list of adaptor class names (Strings) in order of successful
 		 * execution per method <methodName, LinkedList>
 		 */
-		private HashMap adaptorMethodList = new HashMap();
+		private HashMap<Method, ArrayList<String>> adaptorMethodList = new HashMap<Method, ArrayList<String>>();
 
 		synchronized void add(String adaptorName) {
 			if (!adaptorlist.contains(adaptorName)) {
@@ -52,8 +52,8 @@ public class AdaptorInvocationHandler implements InvocationHandler {
 		}
 
 		synchronized String[] getOrdering(Method method) {
-			ArrayList res = new ArrayList();
-			ArrayList l = (ArrayList) adaptorMethodList.get(method);
+			ArrayList<String> res = new ArrayList<String>();
+			ArrayList<String> l = (ArrayList<String>) adaptorMethodList.get(method);
 
 			if (l == null) {
 				return (String[]) adaptorlist.toArray(new String[adaptorlist
@@ -78,10 +78,10 @@ public class AdaptorInvocationHandler implements InvocationHandler {
 		}
 
 		synchronized void success(String adaptorName, Method method) {
-			ArrayList l = (ArrayList) adaptorMethodList.get(method);
+			ArrayList<String> l = (ArrayList<String>) adaptorMethodList.get(method);
 
 			if (l == null) {
-				l = new ArrayList();
+				l = new ArrayList<String>();
 				adaptorMethodList.put(method, l);
 			} else {
 				l.remove(adaptorName);
@@ -102,13 +102,13 @@ public class AdaptorInvocationHandler implements InvocationHandler {
 	 * the available adaptorInstantiations, keyed by class name the elements are
 	 * of type object (the real adaptor)
 	 */
-	private Hashtable adaptorInstantiations = new Hashtable();
+	private Hashtable<String, Object> adaptorInstantiations = new Hashtable<String, Object>();
 
 	/**
 	 * the available adaptors, keyed by class name the elements are of type
 	 * Adaptor
 	 */
-	private Hashtable adaptors = new Hashtable();
+	private Hashtable<String, Adaptor> adaptors = new Hashtable<String, Adaptor>();
 
 	public AdaptorInvocationHandler(AdaptorList adaptors, GATContext context,
 			Preferences preferences, Object[] params)
@@ -288,7 +288,7 @@ public class AdaptorInvocationHandler implements InvocationHandler {
 		}
 
 		// Create an array with the parameter types
-		Class[] parameterTypes = new Class[newParameters.length];
+		Class<?>[] parameterTypes = new Class[newParameters.length];
 
 		for (int count = 0; count < parameterTypes.length; count++) {
 			parameterTypes[count] = newParameters[count].getClass();

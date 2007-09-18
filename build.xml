@@ -1,15 +1,19 @@
 <project name="JavaGAT" default="build" basedir=".">
-    <description>
+	
+		<description>
 	      Build file for the Java GAT
     	</description>
 
-    <target name="build" description="build everything">
+    
+	<target name="build" description="build everything">
+		
         <ant dir="api" />
         <ant dir="tests" />
         <ant dir="engine" />
         <ant dir="adaptors" />
         <ant dir="api" target="javadoc" />
     </target>
+	
 
     <target name="api" description="build the api">
         <ant dir="api" />
@@ -39,4 +43,5 @@
         <delete dir="lib" />
         <delete dir="doc/javadoc" />
     </target>
+	
 </project>

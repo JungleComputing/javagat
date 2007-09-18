@@ -14,17 +14,17 @@ import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.GATObjectCreationException;
 import org.gridlab.gat.Preferences;
 import org.gridlab.gat.URI;
-import org.gridlab.gat.engine.GATEngine;
 import org.gridlab.gat.security.globus.GlobusSecurityUtils;
 import org.ietf.jgss.GSSCredential;
 
+@SuppressWarnings("serial")
 public class GridFTPFileAdaptor extends GlobusFileAdaptor {
 
 	protected static Logger logger = Logger.getLogger(GlobusFileAdaptor.class);
 
 	static boolean USE_CLIENT_CACHING = true;
 
-	private static Hashtable clienttable = new Hashtable();
+	private static Hashtable<String, FTPClient> clienttable = new Hashtable<String, FTPClient>();
 
 	/**
 	 * Constructs a LocalFileAdaptor instance which corresponds to the physical
@@ -261,7 +261,7 @@ public class GridFTPFileAdaptor extends GlobusFileAdaptor {
 			return;
 		}
 
-		Enumeration e = clienttable.elements();
+		Enumeration<FTPClient> e = clienttable.elements();
 
 		while (e.hasMoreElements()) {
 			GridFTPClient c = (GridFTPClient) e.nextElement();

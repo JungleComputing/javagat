@@ -79,13 +79,13 @@ public class ZorillaJob extends JobCpi implements Runnable {
     }
 
     // private Map<String, String(URI)> toStringMap(Map<File, File>);
-    private static Map toStringMap(Map fileMap) throws GATInvocationException {
-        Map result = new HashMap();
+    private static Map<String, String> toStringMap(Map<File, File> fileMap) throws GATInvocationException {
+        Map<String, String> result = new HashMap<String, String>();
 
-        Iterator iterator = fileMap.entrySet().iterator();
+        Iterator<Map.Entry<File, File>> iterator = fileMap.entrySet().iterator();
 
         while (iterator.hasNext()) {
-            Map.Entry entry = (Map.Entry) iterator.next();
+            Map.Entry<File, File> entry = (Map.Entry<File, File>) iterator.next();
 
             File key = (File) entry.getKey();
             File value = (File) entry.getValue();
@@ -108,7 +108,7 @@ public class ZorillaJob extends JobCpi implements Runnable {
         logger.debug("creating zorilla job");
 
         // Tell the engine that we provide job.status events
-        HashMap returnDef = new HashMap();
+        HashMap<String, Object> returnDef = new HashMap<String, Object>();
         returnDef.put("status", String.class);
         statusMetricDefinition = new MetricDefinition("job.status",
                 MetricDefinition.DISCRETE, "String", null, null, returnDef);
@@ -118,11 +118,11 @@ public class ZorillaJob extends JobCpi implements Runnable {
         // data needed to submit a job
         URI executable;
         String[] arguments;
-        Map attributes; // Map<String, String>
-        Map environment; // Map<String, String>
-        Map preStageFiles; // Map<String, String> (virtual file path, physical
+        Map<String, Object> attributes; // Map<String, String>
+        Map<String, Object> environment; // Map<String, String>
+        Map<String, String> preStageFiles; // Map<String, String> (virtual file path, physical
         // file path)
-        Map postStageFiles; // Map<String, String> (file path, physical file
+        Map<String, String> postStageFiles; // Map<String, String> (file path, physical file
         // path)
         String stdout;
         String stdin;
@@ -133,7 +133,7 @@ public class ZorillaJob extends JobCpi implements Runnable {
         executable = soft.getLocation();
         environment = soft.getEnvironment();
         if (environment == null) {
-            environment = new HashMap();
+            environment = new HashMap<String, Object>();
         }
 
         preStageFiles = toStringMap(soft.getPreStaged());
@@ -150,7 +150,7 @@ public class ZorillaJob extends JobCpi implements Runnable {
 
         attributes = soft.getAttributes();
         if (attributes == null) {
-            attributes = new HashMap();
+            attributes = new HashMap<String, Object>();
         }
 
         try {
@@ -181,11 +181,12 @@ public class ZorillaJob extends JobCpi implements Runnable {
      * 
      * @see org.gridlab.gat.resources.Job#getInfo()
      */
-    public synchronized Map getInfo() throws GATInvocationException {
-        HashMap result = new HashMap();
+    @SuppressWarnings("unchecked")
+	public synchronized Map<String, Object> getInfo() throws GATInvocationException {
+        HashMap<String, Object> result = new HashMap<String, Object>();
 
         // stuff from zorilla node
-        result.putAll(info.getStatus());
+        result.putAll((Map<String, Object>) info.getStatus());
 
         result.put("state", getStateString(getState()));
         result.put("resManState", result.get("phase"));
@@ -198,10 +199,10 @@ public class ZorillaJob extends JobCpi implements Runnable {
         result.put("executable", info.getExecutable());
 
         // attributes map as a string
-        Iterator iterator = info.getAttributes().entrySet().iterator();
+        Iterator<Map.Entry<String, Object>> iterator = (Iterator<Map.Entry<String, Object>>) info.getAttributes().entrySet().iterator();
         String attributeString = "";
         while (iterator.hasNext()) {
-            Map.Entry entry = (Map.Entry) iterator.next();
+            Map.Entry<String, Object> entry = (Map.Entry<String, Object>) iterator.next();
             attributeString += entry.getKey() + "=" + entry.getValue() + "&";
         }
         if (attributeString.length() > 1) {

@@ -18,7 +18,6 @@ import org.gridlab.gat.resources.Job;
 import org.gridlab.gat.resources.JobDescription;
 import org.gridlab.gat.resources.ResourceBroker;
 import org.gridlab.gat.resources.SoftwareDescription;
-import org.gridlab.gat.resources.cpi.commandlineSshPrun.CommandlineSshPrunResourceBrokerAdaptor;
 
 public class RemoteSandboxSubmitter {
 
@@ -77,7 +76,7 @@ public class RemoteSandboxSubmitter {
 			// incorrect ones will be overwritten below
 			// sd.setAttributes(origSd.getAttributes());
 
-			Map environment = new HashMap();
+			Map<String, Object> environment = new HashMap<String, Object>();
 			Environment localEnv = new Environment();
 			String localGATLocation = localEnv.getVar("GAT_LOCATION");
 			int counter = getCounter();

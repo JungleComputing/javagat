@@ -93,9 +93,14 @@ meest secure protocol, of...).
 En kan ik (run-time) achterhalen welke optie in feite gekozen is (i.e. welke binding
 we exact gebruiken)?
 
+SOLUTION:
+1. provide adaptor list preference (you have to specify yourself which ordering is the 
+fastest/most secure/...)
+2. use log4j to retrieve what options are chosen
+
 ---------------------------------------------------------------------------------------
 
-PROBLEM 4:
+PROBLEM 4: 
 ----------
 GAT: public static void end()
 NOT DOCUMENTED, or actually, documentation is empty...!
@@ -103,7 +108,7 @@ Er staat niet eens dat ik deze method MOET uitvoeren aan het eind van mijn GAT p
 
 ---------------------------------------------------------------------------------------
 
-PROBLEM 5: IS NO LONGER LIKE THIS...
+PROBLEM 5: IS NO LONGER LIKE THIS... seems to be fixed
 ----------
 Waarom is 'File' een interface, en 'FileInputStream' een class (niet eens 'abstract')?
 
@@ -119,7 +124,8 @@ IS THIS OK (in documentation, constructors) ??? :
 
 PROBLEM 7:
 ----------
-DIT ZOU TOCH BEST MOETEN KUNNEN (?) :
+DIT ZOU TOCH BEST MOETEN KUNNEN (?) : (use streaming file adaptor! and for this 
+particular example, make sure to have permission to write to the specified location)
 
 grun tutorial.RemoteCopy http://www.science.uva.nl/~fjseins/index.html file:////testout.txt
 

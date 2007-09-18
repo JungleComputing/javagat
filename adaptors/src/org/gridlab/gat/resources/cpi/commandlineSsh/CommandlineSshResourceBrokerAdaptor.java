@@ -13,13 +13,11 @@ import org.gridlab.gat.GATObjectCreationException;
 import org.gridlab.gat.MethodNotApplicableException;
 import org.gridlab.gat.Preferences;
 import org.gridlab.gat.URI;
-import org.gridlab.gat.engine.GATEngine;
 import org.gridlab.gat.engine.util.InputForwarder;
 import org.gridlab.gat.engine.util.OutputForwarder;
 import org.gridlab.gat.io.FileInputStream;
 import org.gridlab.gat.io.FileOutputStream;
 import org.gridlab.gat.io.cpi.ssh.SSHSecurityUtils;
-import org.gridlab.gat.io.cpi.ssh.SshFileAdaptor;
 import org.gridlab.gat.io.cpi.ssh.SshUserInfo;
 import org.gridlab.gat.resources.Job;
 import org.gridlab.gat.resources.JobDescription;
@@ -69,7 +67,7 @@ public class CommandlineSshResourceBrokerAdaptor extends ResourceBrokerCpi {
 		}
 
 		// we do not support environment yet
-		Map env = sd.getEnvironment();
+		Map<String, Object> env = sd.getEnvironment();
 		if (env != null && !env.isEmpty()) {
 			throw new MethodNotApplicableException("cannot handle environment");
 		}

@@ -61,7 +61,7 @@ public class SubmitJobToHost {
         sd.setStderr(errFile);
         sd.addPreStagedFile(pre1, pre1Dest);
 
-        Hashtable hardwareAttributes = new Hashtable();
+        Hashtable<String, Object> hardwareAttributes = new Hashtable<String, Object>();
 
         hardwareAttributes.put("machine.node", "fs0.das2.cs.vu.nl");
 
@@ -91,7 +91,7 @@ public class SubmitJobToHost {
 
         while (true) {
             try {
-                Map info = job.getInfo();
+                Map<String, Object> info = job.getInfo();
                 System.err.print("job info: ");
                 System.err.println(info);
 

@@ -23,6 +23,7 @@ import org.gridlab.gat.resources.cpi.Sandbox;
 /**
  * @author rob
  */
+@SuppressWarnings("serial")
 public class LocalJob extends JobCpi {
 
 	protected static Logger logger = Logger.getLogger(LocalJob.class);
@@ -99,7 +100,7 @@ public class LocalJob extends JobCpi {
 		this.runTime = startRun;
 
 		// Tell the engine that we provide job.status events
-		HashMap returnDef = new HashMap();
+		HashMap<String, Object> returnDef = new HashMap<String, Object>();
 		returnDef.put("status", String.class);
 		statusMetricDefinition = new MetricDefinition("job.status",
 				MetricDefinition.DISCRETE, "String", null, null, returnDef);
@@ -114,8 +115,8 @@ public class LocalJob extends JobCpi {
 	 * 
 	 * @see org.gridlab.gat.resources.Job#getInfo()
 	 */
-	public synchronized Map getInfo() throws GATInvocationException {
-		HashMap m = new HashMap();
+	public synchronized Map<String, Object> getInfo() throws GATInvocationException {
+		HashMap<String, Object> m = new HashMap<String, Object>();
 
 		// update state
 		getState();

@@ -61,7 +61,7 @@ public class SubmitJobWithLocalFiles implements MetricListener {
         sd.addPreStagedFile(GAT.createFile(context, prefs, new URI("any://fs0.das2.cs.vu.nl/testDir")));
         sd.addPostStagedFile(GAT.createFile(context, prefs, new URI("any:////proc/cpuinfo")));
         
-        Hashtable hardwareAttributes = new Hashtable();
+        Hashtable<String, Object> hardwareAttributes = new Hashtable<String, Object>();
 
         ResourceDescription rd = new HardwareResourceDescription(
             hardwareAttributes);

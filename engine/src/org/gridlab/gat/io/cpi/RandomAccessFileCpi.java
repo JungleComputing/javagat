@@ -212,7 +212,7 @@ public abstract class RandomAccessFileCpi implements RandomAccessFileInterface {
      *
      * @see org.gridlab.gat.monitoring.Monitorable#getMetrics()
      */
-    public List getMetricDefinitions() throws GATInvocationException {
+    public List<MetricDefinition> getMetricDefinitions() throws GATInvocationException {
         throw new UnsupportedOperationException("Not implemented");
     }
 

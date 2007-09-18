@@ -13,7 +13,6 @@ import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.GATObjectCreationException;
 import org.gridlab.gat.Preferences;
 import org.gridlab.gat.URI;
-import org.gridlab.gat.engine.GATEngine;
 import org.gridlab.gat.io.cpi.FileInputStreamCpi;
 
 import com.jcraft.jsch.Channel;
@@ -68,7 +67,7 @@ public class SshFileInputStreamAdaptor extends FileInputStreamCpi {
         try {
             String host = location.resolveHost();
             JSch jsch = new JSch();
-            java.util.Hashtable configJsch = new java.util.Hashtable(0);
+            java.util.Hashtable<String, String> configJsch = new java.util.Hashtable<String, String>();
             configJsch.put("StrictHostKeyChecking", "no");
             JSch.setConfig(configJsch);
 

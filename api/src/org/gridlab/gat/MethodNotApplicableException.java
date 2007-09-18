@@ -10,6 +10,7 @@ package org.gridlab.gat;
  * @author rob
  *
  */
+@SuppressWarnings("serial")
 public class MethodNotApplicableException extends GATInvocationException {
     public MethodNotApplicableException(String s) {
         super(s);

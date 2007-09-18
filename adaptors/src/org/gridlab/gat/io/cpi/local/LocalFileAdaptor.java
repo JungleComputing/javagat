@@ -20,9 +20,9 @@ import org.gridlab.gat.GATObjectCreationException;
 import org.gridlab.gat.MethodNotApplicableException;
 import org.gridlab.gat.Preferences;
 import org.gridlab.gat.URI;
-import org.gridlab.gat.engine.GATEngine;
 import org.gridlab.gat.io.cpi.FileCpi;
 
+@SuppressWarnings("serial")
 public class LocalFileAdaptor extends FileCpi {
 
 	protected static Logger logger = Logger.getLogger(LocalFileAdaptor.class);
@@ -400,7 +400,7 @@ public class LocalFileAdaptor extends FileCpi {
 		if (!ignoreHiddenFiles)
 			return res;
 
-		ArrayList l = new ArrayList();
+		ArrayList<String> l = new ArrayList<String>();
 		for (int i = 0; i < res.length; i++) {
 			if (!res[i].startsWith(".")) {
 				l.add(res[i]);
@@ -420,7 +420,7 @@ public class LocalFileAdaptor extends FileCpi {
 		if (!ignoreHiddenFiles)
 			return res;
 
-		ArrayList l = new ArrayList();
+		ArrayList<String> l = new ArrayList<String>();
 		for (int i = 0; i < res.length; i++) {
 			if (!res[i].startsWith(".")) {
 				l.add(res[i]);
@@ -445,7 +445,7 @@ public class LocalFileAdaptor extends FileCpi {
 			throw new GATInvocationException("IO error in local file adaptor");
 		}
 
-		ArrayList l = new ArrayList();
+		ArrayList<File> l = new ArrayList<File>();
 		for (int i = 0; i < r.length; i++) {
 			if (!(ignoreHiddenFiles && r[i].isHidden()))
 				l.add(r[i]);
@@ -474,7 +474,7 @@ public class LocalFileAdaptor extends FileCpi {
 			throws GATInvocationException {
 		File[] r = f.listFiles(arg0);
 
-		ArrayList l = new ArrayList();
+		ArrayList<File> l = new ArrayList<File>();
 		for (int i = 0; i < r.length; i++) {
 			if (!(ignoreHiddenFiles && r[i].isHidden()))
 				l.add(r[i]);
@@ -503,7 +503,7 @@ public class LocalFileAdaptor extends FileCpi {
 			throws GATInvocationException {
 		File[] r = f.listFiles(arg0);
 
-		ArrayList l = new ArrayList();
+		ArrayList<File> l = new ArrayList<File>();
 		for (int i = 0; i < r.length; i++) {
 			if (!(ignoreHiddenFiles && r[i].isHidden()))
 				l.add(r[i]);

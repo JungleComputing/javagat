@@ -12,7 +12,6 @@ import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.Preferences;
 import org.gridlab.gat.engine.GATEngine;
 import org.gridlab.gat.engine.util.OutputForwarder;
-import org.gridlab.gat.io.cpi.ssh.SshFileAdaptor;
 import org.gridlab.gat.monitoring.Metric;
 import org.gridlab.gat.monitoring.MetricDefinition;
 import org.gridlab.gat.monitoring.MetricValue;
@@ -23,6 +22,7 @@ import org.gridlab.gat.resources.cpi.Sandbox;
 /**
  * @author rob
  */
+@SuppressWarnings("serial")
 public class CommandlineSshJob extends JobCpi {
 
 	protected static Logger logger = Logger.getLogger(CommandlineSshJob.class);
@@ -59,7 +59,7 @@ public class CommandlineSshJob extends JobCpi {
 		this.err = err;
 
 		// Tell the engine that we provide job.status events
-		HashMap returnDef = new HashMap();
+		HashMap<String, Object> returnDef = new HashMap<String, Object>();
 		returnDef.put("status", String.class);
 		statusMetricDefinition = new MetricDefinition("job.status",
 				MetricDefinition.DISCRETE, "String", null, null, returnDef);
@@ -74,8 +74,8 @@ public class CommandlineSshJob extends JobCpi {
 	 * 
 	 * @see org.gridlab.gat.resources.Job#getInfo()
 	 */
-	public synchronized Map getInfo() {
-		HashMap m = new HashMap();
+	public synchronized Map<String, Object> getInfo() {
+		HashMap<String, Object> m = new HashMap<String, Object>();
 
 		// update state
 		getState();

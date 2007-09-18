@@ -4,9 +4,7 @@
 package org.gridlab.gat.resources.cpi.globus;
 
 import org.apache.log4j.Logger;
-import org.gridlab.gat.engine.GATEngine;
 import org.gridlab.gat.resources.Job;
-import org.gridlab.gat.resources.cpi.commandlineSshPrun.CommandlineSshPrunResourceBrokerAdaptor;
 
 /**
  * This thread actively polls the globus state of a job. this is needed in case

@@ -37,7 +37,7 @@ public class LocalAdvertServiceAdaptor extends AdvertServiceCpi {
 
     String pwd = SEPERATOR;
 
-    Hashtable hash = new Hashtable();
+    Hashtable<String, Entry> hash = new Hashtable<String, Entry>();
 
     File f;
 
@@ -145,10 +145,10 @@ public class LocalAdvertServiceAdaptor extends AdvertServiceCpi {
     public String[] find(MetaData query) throws GATInvocationException {
         load();
 
-        Vector res = new Vector();
+        Vector<String> res = new Vector<String>();
 
-        Enumeration keys = hash.keys();
-        Enumeration data = hash.elements();
+        Enumeration<String> keys = hash.keys();
+        Enumeration<Entry> data = hash.elements();
 
         while (data.hasMoreElements()) {
             Entry e = (Entry) data.nextElement();
@@ -236,7 +236,8 @@ public class LocalAdvertServiceAdaptor extends AdvertServiceCpi {
         }
     }
 
-    private synchronized void load() throws GATInvocationException {
+    @SuppressWarnings("unchecked")
+	private synchronized void load() throws GATInvocationException {
         if (!f.exists()) {
             return;
         }
@@ -253,7 +254,7 @@ public class LocalAdvertServiceAdaptor extends AdvertServiceCpi {
             BufferedInputStream bin = new BufferedInputStream(fin);
             in = new ObjectInputStream(bin);
 
-            hash = (Hashtable) in.readObject();
+            hash = (Hashtable<String, Entry>) in.readObject();
         } catch (Exception e) {
             throw new GATInvocationException("local advert", e);
         } finally {
@@ -288,7 +289,8 @@ public class LocalAdvertServiceAdaptor extends AdvertServiceCpi {
         }
     }
 
-    static class Entry implements Serializable {
+    @SuppressWarnings("serial")
+	static class Entry implements Serializable {
         String a;
 
         MetaData m;

@@ -35,10 +35,10 @@ public class PbsJob extends JobCpi {
         state = INITIAL;
     }
 
-    public Map getInfo() throws GATInvocationException {
-        Map result = mBroker.getInfo(mId);
+    public Map<String, Object> getInfo() throws GATInvocationException {
+        Map<String, Object> result = mBroker.getInfo(mId);
         result.put("state", getStateString(getState()));
-        for (Iterator i = result.keySet().iterator(); i.hasNext();) {
+        for (Iterator<String> i = result.keySet().iterator(); i.hasNext();) {
             Object key = i.next();
             try {
                 if (((String) key).startsWith("PBS_O_")) {
@@ -47,25 +47,25 @@ public class PbsJob extends JobCpi {
             } catch (ClassCastException ex) {
             }
         }
-        Object obj = result.remove("submission_time");
-        if (obj != null) {
-            result.put("submissiontime", obj);
+        Object object = result.remove("submission_time");
+        if (object != null) {
+            result.put("submissiontime", object);
         }
-        obj = result.remove("qsub_time");
-        if (obj != null) {
-            result.put("submissiontime", obj);
+        object = result.remove("qsub_time");
+        if (object != null) {
+            result.put("submissiontime", object);
         }
-        obj = result.remove("start_time");
-        if (obj != null) {
-            result.put("starttime", obj);
+        object = result.remove("start_time");
+        if (object != null) {
+            result.put("starttime", object);
         }
-        obj = result.remove("end_time");
-        if (obj != null) {
-            result.put("stoptime", obj);
+        object = result.remove("end_time");
+        if (object != null) {
+            result.put("stoptime", object);
         }
-        obj = result.remove("exit_status");
-        if (obj != null) {
-            result.put("exitValue", obj);
+        object = result.remove("exit_status");
+        if (object != null) {
+            result.put("exitValue", object);
         }
         return result;
     }

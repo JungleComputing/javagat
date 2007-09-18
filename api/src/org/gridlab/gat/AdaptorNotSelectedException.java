@@ -9,6 +9,7 @@ package org.gridlab.gat;
  *
  * Thrown when the adaptor was excluded by the user's preferences. 
  */
+@SuppressWarnings("serial")
 public class AdaptorNotSelectedException extends GATObjectCreationException {
     public AdaptorNotSelectedException(String s) {
         super(s);

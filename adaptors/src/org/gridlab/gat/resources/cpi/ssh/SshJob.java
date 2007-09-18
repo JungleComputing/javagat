@@ -17,7 +17,6 @@ import org.gridlab.gat.monitoring.MetricValue;
 import org.gridlab.gat.resources.JobDescription;
 import org.gridlab.gat.resources.cpi.JobCpi;
 import org.gridlab.gat.resources.cpi.Sandbox;
-import org.gridlab.gat.resources.cpi.commandlineSshPrun.CommandlineSshPrunResourceBrokerAdaptor;
 
 import com.jcraft.jsch.Channel;
 import com.jcraft.jsch.Session;
@@ -25,6 +24,7 @@ import com.jcraft.jsch.Session;
 /**
  * @author rob
  */
+@SuppressWarnings("serial")
 public class SshJob extends JobCpi {
 
 	protected static Logger logger = Logger.getLogger(SshJob.class);
@@ -84,7 +84,7 @@ public class SshJob extends JobCpi {
 		this.channel = channel;
 
 		// Tell the engine that we provide job.status events
-		HashMap returnDef = new HashMap();
+		HashMap<String, Object> returnDef = new HashMap<String, Object>();
 		returnDef.put("status", String.class);
 		statusMetricDefinition = new MetricDefinition("job.status",
 				MetricDefinition.DISCRETE, "String", null, null, returnDef);
@@ -99,8 +99,8 @@ public class SshJob extends JobCpi {
 	 * 
 	 * @see org.gridlab.gat.resources.Job#getInfo()
 	 */
-	public synchronized Map getInfo() {
-		HashMap m = new HashMap();
+	public synchronized Map<String, Object> getInfo() {
+		HashMap<String, Object> m = new HashMap<String, Object>();
 		// update state
 		getState();
 

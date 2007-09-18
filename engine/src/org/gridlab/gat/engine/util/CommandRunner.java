@@ -5,7 +5,6 @@ import java.io.IOException;
 import org.apache.log4j.Logger;
 import org.gridlab.gat.CommandNotFoundException;
 import org.gridlab.gat.GATInvocationException;
-import org.gridlab.gat.engine.GATEngine;
 
 public class CommandRunner {
 

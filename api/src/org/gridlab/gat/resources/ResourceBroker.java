@@ -99,7 +99,7 @@ public interface ResourceBroker {
      * @throws java.io.IOException
      *             Upon non-remote IO problem
      */
-    public abstract List findResources(ResourceDescription resourceDescription)
+    public abstract List<HardwareResource> findResources(ResourceDescription resourceDescription)
             throws GATInvocationException;
 
     /**

@@ -18,6 +18,7 @@ import org.gridlab.gat.io.FileInputStream;
 import org.gridlab.gat.io.FileOutputStream;
 import org.gridlab.gat.io.cpi.FileCpi;
 
+@SuppressWarnings("serial")
 public class StreamingFileAdaptor extends FileCpi {
     
 	public StreamingFileAdaptor(GATContext gatContext,

@@ -11,7 +11,7 @@ import java.util.ArrayList;
 public class Threader extends Thread {
 
     /** The job queue. */
-    private ArrayList jobs = new ArrayList();
+    private ArrayList<Runnable> jobs = new ArrayList<Runnable>();
 
     /** Maximum amount of parallellism. */
     private int maxThreads;

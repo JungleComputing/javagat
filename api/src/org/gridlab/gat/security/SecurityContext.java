@@ -30,9 +30,9 @@ public abstract class SecurityContext implements Cloneable {
      * the security context. They are transparent for GAT users, and should
      * not be touched.
      */
-    protected HashMap dataObjects = new HashMap();
+    protected HashMap<String, Object> dataObjects = new HashMap<String, Object>();
 
-    protected HashMap notes = new HashMap();
+    protected HashMap<String, String> notes = new HashMap<String, String>();
 
     public abstract boolean equals(Object obj);
 

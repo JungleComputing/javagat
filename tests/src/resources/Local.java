@@ -26,7 +26,7 @@ public class Local {
         sd.setStdout(stdout);
         sd.setStderr(stderr);
 
-        Hashtable ht = new Hashtable();
+        Hashtable<String, Object> ht = new Hashtable<String, Object>();
         ResourceDescription rd = new HardwareResourceDescription(ht);
 
         JobDescription jd = new JobDescription(sd, rd);

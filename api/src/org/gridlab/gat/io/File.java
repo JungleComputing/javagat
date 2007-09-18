@@ -48,6 +48,7 @@ import org.gridlab.gat.monitoring.Monitorable;
  * correctly? The client simply has to call a single API call and the physical
  * file is moved.
  */
+@SuppressWarnings("serial")
 public class File extends java.io.File implements Monitorable,
         Advertisable {
     org.gridlab.gat.io.FileInterface f;
@@ -512,7 +513,7 @@ public class File extends java.io.File implements Monitorable,
     /* (non-Javadoc)
      * @see org.gridlab.gat.monitoring.Monitorable#getMetricDefinitions()
      */
-    public List getMetricDefinitions() throws GATInvocationException {
+    public List<MetricDefinition> getMetricDefinitions() throws GATInvocationException {
         return f.getMetricDefinitions();
     }
 

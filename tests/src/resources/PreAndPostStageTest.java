@@ -124,7 +124,7 @@ public class PreAndPostStageTest implements MetricListener {
             System.exit(1);
         }
 
-        Hashtable hardwareAttributes = new Hashtable();
+        Hashtable<String, Object> hardwareAttributes = new Hashtable<String, Object>();
         hardwareAttributes.put("machine.node", args[0]);
 
         ResourceDescription rd = new HardwareResourceDescription(

@@ -12,6 +12,7 @@ import org.gridlab.gat.advert.Advertisable;
  * @author rob
  *
  */
+@SuppressWarnings("serial")
 public class SerializedLogicalFile implements Serializable, Advertisable {
     protected String name;
 
@@ -20,16 +21,16 @@ public class SerializedLogicalFile implements Serializable, Advertisable {
     /**
      * Files in the LogicalFile. elements are URI Strings.
      */
-    protected Vector files;
+    protected Vector<String> files;
 
     public SerializedLogicalFile() {
     }
 
-    public Vector getFiles() {
+    public Vector<String> getFiles() {
         return files;
     }
 
-    public void setFiles(Vector files) {
+    public void setFiles(Vector<String> files) {
         this.files = files;
     }
 

@@ -22,12 +22,12 @@ public class SimpleTest1 {
             Monitorable m = GAT.createMonitorable(c, prefs);
 
             // query Monitorable object:
-            List metricDefinitions = m.getMetricDefinitions();
+            List<MetricDefinition> metricDefinitions = m.getMetricDefinitions();
 
             System.out.println("metricDefinitions.size() = "
                 + metricDefinitions.size());
 
-            Map params = new HashMap();
+            Map<String, Object> params = new HashMap<String, Object>();
 
             params.put("host", "fs0.das2.cs.vu.nl");
 

@@ -4,9 +4,9 @@ import java.io.Serializable;
 
 import org.apache.log4j.Logger;
 import org.gridlab.gat.advert.Advertisable;
-import org.gridlab.gat.engine.GATEngine;
 import org.gridlab.gat.resources.JobDescription;
 
+@SuppressWarnings("serial")
 public class SerializedJob implements Serializable, Advertisable {
 
 	protected static Logger logger = Logger.getLogger(SerializedJob.class);

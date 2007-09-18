@@ -7,7 +7,6 @@ import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.Preferences;
 import org.gridlab.gat.URI;
-import org.gridlab.gat.engine.GATEngine;
 import org.gridlab.gat.io.FileInputStreamInterface;
 import org.gridlab.gat.monitoring.Metric;
 import org.gridlab.gat.monitoring.MetricDefinition;
@@ -95,7 +94,7 @@ public abstract class FileInputStreamCpi implements FileInputStreamInterface {
      *
      * @see org.gridlab.gat.monitoring.Monitorable#getMetrics()
      */
-    public List getMetricDefinitions() throws GATInvocationException {
+    public List<MetricDefinition> getMetricDefinitions() throws GATInvocationException {
         throw new UnsupportedOperationException("Not implemented");
     }
 

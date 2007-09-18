@@ -18,7 +18,6 @@ import org.gridlab.gat.Preferences;
 import org.gridlab.gat.URI;
 import org.gridlab.gat.advert.Advertisable;
 import org.gridlab.gat.engine.GATEngine;
-import org.gridlab.gat.engine.util.CommandRunner;
 import org.gridlab.gat.io.File;
 import org.gridlab.gat.io.FileInterface;
 import org.gridlab.gat.monitoring.Metric;
@@ -151,7 +150,7 @@ public abstract class FileCpi implements FileInterface {
         throw new UnsupportedOperationException("Not implemented");
     }
 
-    public List getMetricDefinitions() throws GATInvocationException {
+    public List<MetricDefinition> getMetricDefinitions() throws GATInvocationException {
         throw new UnsupportedOperationException("Not implemented");
     }
 
@@ -374,7 +373,7 @@ public abstract class FileCpi implements FileInterface {
                 return l;
             }
 
-            Vector v = new Vector();
+            Vector<String> v = new Vector<String>();
 
             for (int i = 0; i < l.length; i++) {
                 if (filter.accept(GAT.createFile(gatContext, preferences, new URI(location
@@ -407,7 +406,7 @@ public abstract class FileCpi implements FileInterface {
                 return l;
             }
 
-            Vector v = new Vector();
+            Vector<File> v = new Vector<File>();
 
             for (int i = 0; i < l.length; i++) {
                 if (filter.accept(GAT.createFile(gatContext, preferences, new URI(l[i]
@@ -441,7 +440,7 @@ public abstract class FileCpi implements FileInterface {
                 return l;
             }
 
-            Vector v = new Vector();
+            Vector<File> v = new Vector<File>();
 
             for (int i = 0; i < l.length; i++) {
                 if (filter.accept(GAT.createFile(gatContext, preferences, new URI(location

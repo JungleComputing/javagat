@@ -15,9 +15,9 @@ public class AdaptorSet {
 	protected static Logger logger = Logger.getLogger(AdaptorSet.class);
 	
 	/** Keys are cpiClass names, elements are AdaptorLists. */
-    ArrayList adaptorLists = new ArrayList();
+    ArrayList<AdaptorList> adaptorLists = new ArrayList<AdaptorList>();
 
-    ArrayList adaptorTypes = new ArrayList();
+    ArrayList<String> adaptorTypes = new ArrayList<String>();
     
 
     public int size() {
@@ -62,7 +62,7 @@ public class AdaptorSet {
         String policy = System.getProperty("adaptor.order.policy");
 
         if (policy != null) {
-            Class c;
+            Class<?> c;
 
             try {
                 c = Class.forName(policy);

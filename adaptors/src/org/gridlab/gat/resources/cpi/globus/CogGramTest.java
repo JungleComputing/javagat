@@ -11,9 +11,6 @@ import org.globus.gram.GramJobListener;
 import org.gridforum.jgss.ExtendedGSSManager;
 import org.gridlab.gat.CouldNotInitializeCredentialException;
 import org.gridlab.gat.GATInvocationException;
-import org.gridlab.gat.engine.GATEngine;
-import org.gridlab.gat.io.cpi.ssh.SshFileAdaptor;
-import org.gridlab.gat.resources.cpi.globus.GramError;
 import org.ietf.jgss.GSSCredential;
 import org.ietf.jgss.GSSException;
 

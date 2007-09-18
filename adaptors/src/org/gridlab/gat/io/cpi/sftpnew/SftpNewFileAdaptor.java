@@ -26,6 +26,7 @@ import com.jcraft.jsch.SftpATTRS;
 import com.jcraft.jsch.SftpException;
 import com.jcraft.jsch.ChannelSftp.LsEntry;
 
+@SuppressWarnings("serial")
 public class SftpNewFileAdaptor extends FileCpi {
 
 	protected static Logger logger = Logger.getLogger(SftpNewFileAdaptor.class);
@@ -34,7 +35,7 @@ public class SftpNewFileAdaptor extends FileCpi {
 
 	static final boolean USE_CLIENT_CACHING = true;
 
-	private static Hashtable clienttable = new Hashtable();
+	private static Hashtable<String, SftpNewConnection> clienttable = new Hashtable<String, SftpNewConnection>();
 
 	/**
 	 * @param gatContext
@@ -121,7 +122,7 @@ public class SftpNewFileAdaptor extends FileCpi {
 		}
 
 		JSch jsch = new JSch();
-		Hashtable configJsch = new Hashtable();
+		Hashtable<String, String> configJsch = new Hashtable<String, String>();
 		configJsch.put("StrictHostKeyChecking", "no");
 		JSch.setConfig(configJsch);
 
@@ -484,9 +485,9 @@ public class SftpNewFileAdaptor extends FileCpi {
 		SftpNewConnection c = createChannel(gatContext, preferences, location);
 
 		try {
-			Vector ls = c.channel.ls(location.getPath());
+			Vector<?> ls = c.channel.ls(location.getPath());
 
-			Vector result = new Vector();
+			Vector<String> result = new Vector<String>();
 			for (int i = 0; i < ls.size(); i++) {
 				if (((LsEntry) ls.get(i)).getFilename().equals("."))
 					continue;
@@ -516,7 +517,7 @@ public class SftpNewFileAdaptor extends FileCpi {
 			return;
 		}
 
-		Enumeration e = clienttable.elements();
+		Enumeration<SftpNewConnection> e = clienttable.elements();
 
 		while (e.hasMoreElements()) {
 			SftpNewConnection c = (SftpNewConnection) e.nextElement();

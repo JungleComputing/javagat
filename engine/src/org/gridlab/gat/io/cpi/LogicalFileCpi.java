@@ -41,7 +41,7 @@ public abstract class LogicalFileCpi implements LogicalFile, Monitorable {
     /**
      * Files in the LogicalFile. elements are URIs.
      */
-    protected Vector files;
+    protected Vector<URI> files;
 
     /*
      static {
@@ -65,7 +65,7 @@ public abstract class LogicalFileCpi implements LogicalFile, Monitorable {
             String name, Integer mode) throws GATObjectCreationException {
         this.gatContext = gatContext;
         this.preferences = preferences;
-        files = new Vector();
+        files = new Vector<URI>();
         this.mode = mode.intValue();
 
         switch (this.mode) {
@@ -175,8 +175,8 @@ public abstract class LogicalFileCpi implements LogicalFile, Monitorable {
      *
      * @return The java.util.List of URIs
      */
-    public List getURIs() throws GATInvocationException {
-        return (List) files.clone();
+    public List<URI> getURIs() throws GATInvocationException {
+        return new Vector<URI>(files);
     }
 
     /**
@@ -185,10 +185,10 @@ public abstract class LogicalFileCpi implements LogicalFile, Monitorable {
      *
      * @return The java.util.List of Files
      */
-    public List getFiles() throws GATInvocationException {
-        Vector res = new Vector();
+    public List<File> getFiles() throws GATInvocationException {
+        Vector<File> res = new Vector<File>();
 
-        List uris = getURIs();
+        List<URI> uris = getURIs();
 
         for (int i = 0; i < uris.size(); i++) {
             try {
@@ -244,7 +244,7 @@ public abstract class LogicalFileCpi implements LogicalFile, Monitorable {
      *         this java.util.List is a Metric which can be monitored on this
      *         instance.
      */
-    public List getMetricDefinitions() {
+    public List<MetricDefinition> getMetricDefinitions() {
         throw new UnsupportedOperationException("Not implemented");
     }
 
@@ -258,7 +258,7 @@ public abstract class LogicalFileCpi implements LogicalFile, Monitorable {
         f.setMode(mode);
         f.setName(name);
 
-        Vector fileStrings = new Vector();
+        Vector<String> fileStrings = new Vector<String>();
 
         for (int i = 0; i < files.size(); i++) {
             fileStrings.add(files.get(i).toString());

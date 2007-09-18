@@ -32,6 +32,7 @@ import org.ietf.jgss.GSSCredential;
 /**
  * @author rob
  */
+@SuppressWarnings("serial")
 public class GlobusJob extends JobCpi implements GramJobListener,
         org.globus.gram.internal.GRAMConstants {
 
@@ -70,7 +71,7 @@ public class GlobusJob extends JobCpi implements GramJobListener,
         jobsAlive++;
 
         // Tell the engine that we provide job.status events
-        HashMap returnDef = new HashMap();
+        HashMap<String, Object> returnDef = new HashMap<String, Object>();
         returnDef.put("status", String.class);
         statusMetricDefinition =
                 new MetricDefinition("job.status", MetricDefinition.DISCRETE,
@@ -101,7 +102,7 @@ public class GlobusJob extends JobCpi implements GramJobListener,
         jobsAlive++;
 
         // Tell the engine that we provide job.status events
-        HashMap returnDef = new HashMap();
+        HashMap<String, Object> returnDef = new HashMap<String, Object>();
         returnDef.put("status", String.class);
         statusMetricDefinition =
                 new MetricDefinition("job.status", MetricDefinition.DISCRETE,
@@ -163,8 +164,8 @@ public class GlobusJob extends JobCpi implements GramJobListener,
         return j.getStatusAsString();
     }
 
-    public synchronized Map getInfo() throws GATInvocationException {
-        HashMap m = new HashMap();
+    public synchronized Map<String, Object> getInfo() throws GATInvocationException {
+        HashMap<String, Object> m = new HashMap<String, Object>();
         setState(); // update the state
         m.put("state", getStateString(state));
         m.put("resManState", getGlobusState());

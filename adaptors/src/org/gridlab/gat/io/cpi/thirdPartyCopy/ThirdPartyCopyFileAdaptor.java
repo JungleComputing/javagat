@@ -11,6 +11,7 @@ import org.gridlab.gat.URI;
 import org.gridlab.gat.io.File;
 import org.gridlab.gat.io.cpi.FileCpi;
 
+@SuppressWarnings("serial")
 public class ThirdPartyCopyFileAdaptor extends FileCpi {
     public ThirdPartyCopyFileAdaptor(GATContext gatContext,
         Preferences preferences, URI location) {

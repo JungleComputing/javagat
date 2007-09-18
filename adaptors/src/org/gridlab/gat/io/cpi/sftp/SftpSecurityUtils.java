@@ -12,7 +12,6 @@ import org.gridlab.gat.CredentialExpiredException;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.Preferences;
 import org.gridlab.gat.URI;
-import org.gridlab.gat.engine.GATEngine;
 import org.gridlab.gat.security.CertificateSecurityContext;
 import org.gridlab.gat.security.PasswordSecurityContext;
 import org.gridlab.gat.security.SecurityContext;

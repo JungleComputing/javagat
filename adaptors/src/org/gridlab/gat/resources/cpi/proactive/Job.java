@@ -35,6 +35,7 @@ import org.objectweb.proactive.filetransfer.FileVector;
  *
  * @see org.gridlab.gat.resources.Job.
  */
+@SuppressWarnings("serial")
 public class Job extends JobCpi {
     /** Counter for generating job identifications. */
     private static int jobCounter;
@@ -46,7 +47,7 @@ public class Job extends JobCpi {
     private Metric statusMetric;
 
     /** Map for supplying the result of the getInfo() method. */
-    private HashMap infoMap = new HashMap();
+    private HashMap<String, Object> infoMap = new HashMap<String, Object>();
 
     /** Exit status of this job. */
     private int exitStatus = 0;
@@ -77,7 +78,7 @@ public class Job extends JobCpi {
     private boolean wantsSandbox = true;
 
     /** List of nodes on which the job instances are run. */
-    private ArrayList nodes = new ArrayList();
+    private ArrayList<NodeInfo> nodes = new ArrayList<NodeInfo>();
 
     /** Identification of this Gatjob. */
     private String jobID = null;
@@ -97,7 +98,7 @@ public class Job extends JobCpi {
     private NodeInfo stageNode = null;
 
     /** Maps instance ids to nodes. */
-    private HashMap id2Node = new HashMap();
+    private HashMap<String, NodeInfo> id2Node = new HashMap<String, NodeInfo>();
 
     /** Set if preStage is needed. */
     private boolean needsPreStage;
@@ -152,7 +153,7 @@ public class Job extends JobCpi {
     class InputHandler extends Thread {
         private boolean done = false;
         private BufferedReader inputReader;
-        ArrayList messages = new ArrayList();
+        ArrayList<String> messages = new ArrayList<String>();
         NodeInfo[] currentNodes;
         int lastSize = 0;
 
@@ -261,14 +262,14 @@ public class Job extends JobCpi {
         }
 
         SoftwareDescription soft = jobDescription.getSoftwareDescription();
-        Map preStageFiles = soft.getPreStaged();
-        Map postStageFiles = soft.getPostStaged();
+        Map<File, File> preStageFiles = soft.getPreStaged();
+        Map<File, File> postStageFiles = soft.getPostStaged();
 
         needsPreStage = preStageFiles != null && preStageFiles.size() != 0;
         needsPostStage = postStageFiles != null && postStageFiles.size() != 0;
 
         // Tell the engine that we provide job.status events
-        HashMap returnDef = new HashMap();
+        HashMap<String, Object> returnDef = new HashMap<String, Object>();
         returnDef.put("status", String.class);
         statusMetricDefinition = new MetricDefinition("job.status",
                 MetricDefinition.DISCRETE, "String", null, null, returnDef);
@@ -330,10 +331,10 @@ public class Job extends JobCpi {
         }
 
 
-        Map environment;
+        Map<String, Object> environment;
         environment = soft.getEnvironment();
         if (environment == null) {
-            environment = new HashMap();
+            environment = new HashMap<String, Object>();
         }
 
         // Get program arguments as a string.
@@ -351,17 +352,17 @@ public class Job extends JobCpi {
 
         // Get JVM arguments.
         jvmArgs = "-server";
-        for (Iterator i = environment.entrySet().iterator(); i.hasNext();) {
-            Map.Entry e = (Map.Entry) i.next();
+        for (Iterator<Map.Entry<String, Object>> i = environment.entrySet().iterator(); i.hasNext();) {
+            Map.Entry<String, Object> e = (Map.Entry<String, Object>) i.next();
             jvmArgs = jvmArgs + " -D" + (String) e.getKey() + "="
                 + (String) e.getValue();
         }
 
-        Map attributes;
+        Map<String, Object> attributes;
         attributes = soft.getAttributes();
         if (attributes != null) {
             // Get more JVM arguments.
-            for (Iterator i = attributes.keySet().iterator(); i.hasNext();) {
+            for (Iterator<String> i = attributes.keySet().iterator(); i.hasNext();) {
                 String key = (String) i.next();
                 if (key.equalsIgnoreCase("minMemory")) {
                     Integer minMem = (Integer) attributes.get(key);
@@ -424,16 +425,16 @@ public class Job extends JobCpi {
                     node.hostName, null, true, false, false, false);
         } else {
             SoftwareDescription soft = jobDescription.getSoftwareDescription();
-            Map preStageFiles = soft.getPreStaged();
+            Map<File, File> preStageFiles = soft.getPreStaged();
             if (preStageFiles != null && preStageFiles.size() != 0) {
                 java.io.File[] srcFiles
                     = new java.io.File[preStageFiles.size()];
                 java.io.File[] dstFiles
                     = new java.io.File[preStageFiles.size()];
                 int index = 0;
-                for (Iterator i = preStageFiles.entrySet().iterator();
+                for (Iterator<Map.Entry<File, File>> i = preStageFiles.entrySet().iterator();
                         i.hasNext();) {
-                    Map.Entry e = (Map.Entry) i.next();
+                    Map.Entry<File, File> e = (Map.Entry<File, File>) i.next();
                     String key = ((File) e.getKey()).getPath();
                     srcFiles[index] = new java.io.File(key);
                     if (e.getValue() == null) {
@@ -672,16 +673,16 @@ public class Job extends JobCpi {
         }
 
         SoftwareDescription soft = jobDescription.getSoftwareDescription();
-        Map postStageFiles = soft.getPostStaged();
+        Map<File, File> postStageFiles = soft.getPostStaged();
 
         if (postStageFiles != null && postStageFiles.size() != 0) {
             java.io.File[] srcFiles = new java.io.File[postStageFiles.size()];
             java.io.File[] dstFiles = new java.io.File[postStageFiles.size()];
             int index = 0;
             try {
-                for (Iterator i = postStageFiles.entrySet().iterator();
+                for (Iterator<Map.Entry<File, File>> i = postStageFiles.entrySet().iterator();
                         i.hasNext();) {
-                    Map.Entry e = (Map.Entry) i.next();
+                    Map.Entry<File, File> e = (Map.Entry<File, File>) i.next();
                     String key = ((File) e.getKey()).getPath();
                     srcFiles[index] = new java.io.File(key);
                     if (e.getValue() == null) {
@@ -734,7 +735,7 @@ public class Job extends JobCpi {
      * Gat user entry point: obtains a map with some job information.
      * @return job information.
      */
-    public synchronized Map getInfo() throws GATInvocationException {
+    public synchronized Map<String, Object> getInfo() throws GATInvocationException {
         infoMap.put("state", getStateString(state));
         if (jobID != null) {
             infoMap.put("id", jobID);

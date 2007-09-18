@@ -69,7 +69,7 @@ public class StopJobTest {
         
         while (true) {
             try {
-                Map info = job.getInfo();
+                Map<String, Object> info = job.getInfo();
                 System.err.print("job info: ");
                 System.err.println(info);
 

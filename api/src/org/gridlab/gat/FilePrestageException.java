@@ -3,6 +3,7 @@
  */
 package org.gridlab.gat;
 
+@SuppressWarnings("serial")
 public class FilePrestageException extends GATInvocationException {
 
     public FilePrestageException() {

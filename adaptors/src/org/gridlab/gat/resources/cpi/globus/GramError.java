@@ -18,7 +18,7 @@ public class GramError {
         }
     }
     
-    private static ArrayList errors = new ArrayList();
+    private static ArrayList<Descriptor> errors = new ArrayList<Descriptor>();
     
     static {
         init();

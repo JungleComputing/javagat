@@ -1,5 +1,3 @@
-// 2577
-
 package org.gridlab.gat.io.cpi.ssh;
 
 import java.io.ByteArrayOutputStream;
@@ -35,6 +33,7 @@ import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.Session;
 
+@SuppressWarnings("serial")
 public class SshFileAdaptor extends FileCpi {
 
 	protected static Logger logger = Logger.getLogger(SshFileAdaptor.class);
@@ -128,9 +127,7 @@ public class SshFileAdaptor extends FileCpi {
 		// opens a ssh connection (using jsch)
 		jsch = new JSch();
 
-		// Hashtable<String, String> configJsch = new Hashtable<String,
-		// String>(0);
-		Hashtable configJsch = new Hashtable();
+		Hashtable<String, String> configJsch = new Hashtable<String, String>();
 		configJsch.put("StrictHostKeyChecking", "no");
 		JSch.setConfig(configJsch);
 
@@ -1567,8 +1564,8 @@ public class SshFileAdaptor extends FileCpi {
 
 		String[] fileList = list();
 		java.io.File dir = new java.io.File(getPath());
-		// List<String> resultList = new ArrayList<String>();
-		List resultList = new ArrayList();
+		List<String> resultList = new ArrayList<String>();
+		//List resultList = new ArrayList();
 
 		for (int i = 0; i < fileList.length; i++) {
 			if (filter.accept(dir, fileList[i])) {

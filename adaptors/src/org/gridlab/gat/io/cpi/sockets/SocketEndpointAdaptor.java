@@ -21,10 +21,12 @@ import org.gridlab.gat.engine.GATEngine;
 import org.gridlab.gat.io.Pipe;
 import org.gridlab.gat.io.PipeListener;
 import org.gridlab.gat.io.cpi.EndpointCpi;
+import org.gridlab.gat.monitoring.MetricDefinition;
 
 /**
  * @author rob
  */
+@SuppressWarnings("serial")
 public class SocketEndpointAdaptor extends EndpointCpi implements Serializable {
     int localPort; // filled in locally
 
@@ -209,7 +211,7 @@ public class SocketEndpointAdaptor extends EndpointCpi implements Serializable {
     }
     
     // For some reason, we need this for castor serialization
-    public List getMetricDefinitions() throws GATInvocationException {
+    public List<MetricDefinition> getMetricDefinitions() throws GATInvocationException {
         return null;
     }
 

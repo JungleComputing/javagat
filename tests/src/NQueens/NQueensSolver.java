@@ -24,9 +24,9 @@ import org.gridlab.gat.resources.SoftwareDescription;
 
 public class NQueensSolver implements MetricListener {
 
-    static ArrayList jobList = new ArrayList();
+    static ArrayList<RunJob> jobList = new ArrayList<RunJob>();
 
-    HashMap globalEnv = new HashMap();
+    HashMap<String, Object> globalEnv = new HashMap<String, Object>();
     String globalClassPath = null;
 
     private class RunJob {
@@ -38,14 +38,14 @@ public class NQueensSolver implements MetricListener {
         String errPrefix = null;
         String inFilename = null;
         String classPath = null;
-        HashMap env = new HashMap();
+        HashMap<String, Object> env = new HashMap<String, Object>();
 
         public RunJob(String application) {
             if (! application.startsWith("java:")) {
                 application = "java:" + application;
             }
             this.application = application;
-            env = new HashMap(globalEnv);
+            env = new HashMap<String, Object>(globalEnv);
         }
 
         public void setParams(String params) {
@@ -259,7 +259,7 @@ public class NQueensSolver implements MetricListener {
 
             SoftwareDescription sd = new SoftwareDescription();
 
-            HashMap attrib = new HashMap();
+            HashMap<String, Object> attrib = new HashMap<String, Object>();
             attrib.put("hostCount", job.numHosts);
             if (job.numHostsIsSoft) {
                 attrib.put("softHostCount", "");
@@ -335,7 +335,7 @@ public class NQueensSolver implements MetricListener {
                 prefs.put("ResourceBroker.ProActive.needsStdin", "");
             }
  
-            Hashtable ht = new Hashtable();
+            Hashtable<String, Object> ht = new Hashtable<String, Object>();
             ResourceDescription rd = new HardwareResourceDescription(ht);
             JobDescription jd = new JobDescription(sd, rd);
             try {
@@ -377,7 +377,7 @@ public class NQueensSolver implements MetricListener {
 
         for (int i = 0; i < jobs.length; i++) {
             if (jobs[i] != null) {
-                Map info;
+                Map<String, Object> info;
                 try {
                     info = jobs[i].getInfo();
                 } catch(Exception e) {

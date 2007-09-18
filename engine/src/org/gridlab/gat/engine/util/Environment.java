@@ -12,7 +12,7 @@ import java.util.StringTokenizer;
  * @author rob
  */
 public class Environment {
-    private HashMap env = new HashMap();
+    private HashMap<String, String> env = new HashMap<String, String>();
 
     public Environment() {
         String command = "env";

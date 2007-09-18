@@ -15,14 +15,13 @@ import org.gridlab.gat.MethodNotApplicableException;
 import org.gridlab.gat.Preferences;
 import org.gridlab.gat.TimePeriod;
 import org.gridlab.gat.URI;
-import org.gridlab.gat.engine.GATEngine;
 import org.gridlab.gat.engine.util.InputForwarder;
 import org.gridlab.gat.engine.util.OutputForwarder;
 import org.gridlab.gat.io.FileInputStream;
 import org.gridlab.gat.io.FileOutputStream;
 import org.gridlab.gat.io.cpi.ssh.SSHSecurityUtils;
-import org.gridlab.gat.io.cpi.ssh.SshFileAdaptor;
 import org.gridlab.gat.io.cpi.ssh.SshUserInfo;
+import org.gridlab.gat.resources.HardwareResource;
 import org.gridlab.gat.resources.Job;
 import org.gridlab.gat.resources.JobDescription;
 import org.gridlab.gat.resources.Reservation;
@@ -122,7 +121,7 @@ public class CommandlineSshPrunResourceBrokerAdaptor extends ResourceBrokerCpi {
 	 *            resource(s) to find
 	 * @return java.util.List of HardwareResources upon success
 	 */
-	public List findResources(ResourceDescription resourceDescription) {
+	public List<HardwareResource> findResources(ResourceDescription resourceDescription) {
 		throw new UnsupportedOperationException("Not implemented");
 	}
 
@@ -141,7 +140,7 @@ public class CommandlineSshPrunResourceBrokerAdaptor extends ResourceBrokerCpi {
 		}
 
 		// we do not support environment yet
-		Map env = sd.getEnvironment();
+		Map<String, Object> env = sd.getEnvironment();
 		if (env != null && !env.isEmpty()) {
 			throw new MethodNotApplicableException("cannot handle environment");
 		}

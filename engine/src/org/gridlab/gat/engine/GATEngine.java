@@ -70,7 +70,7 @@ public class GATEngine {
 	 * A list of methods that have been registered as unmarshallers for GAT
 	 * advertizable objects. Elements are of type Class
 	 */
-	private static Vector unmarshallers = new Vector();
+	private static Vector<Class<?>> unmarshallers = new Vector<Class<?>>();
 
 	private boolean ended = false;
 
@@ -78,10 +78,10 @@ public class GATEngine {
 	private AdaptorSet adaptors;
 
 	/** elements are of type MetricListenerNode */
-	private Vector metricListeners = new Vector();
+	private Vector<MetricListenerNode> metricListeners = new Vector<MetricListenerNode>();
 
 	/** elements are of type MetricNode */
-	private Vector metricTable = new Vector();
+	private Vector<MetricNode> metricTable = new Vector<MetricNode>();
 
 	URLClassLoader gatClassLoader = null;
 
@@ -157,7 +157,7 @@ public class GATEngine {
 	 *            the cpi class for which to look
 	 * @return the list of adaptors
 	 */
-	public AdaptorList getAdaptorList(Class cpiClass)
+	public AdaptorList getAdaptorList(Class<?> cpiClass)
 			throws GATObjectCreationException {
 		if (adaptors.getAdaptorList(cpiClass.getName()) == null) {
 			// no adaptors for this type loaded.
@@ -179,7 +179,7 @@ public class GATEngine {
 	 * method getCpiClasses().
 	 */
 	protected void readJarFiles() {
-		List adaptorPathList = new ArrayList();
+		List<JarFile> adaptorPathList = new ArrayList<JarFile>();
 
 		String adaptorPath = System.getProperty("gat.adaptor.path");
 
@@ -189,12 +189,12 @@ public class GATEngine {
 
 			while (st.hasMoreTokens()) {
 				String dir = st.nextToken();
-				List l = getJarFiles(dir);
+				List<JarFile> l = getJarFiles(dir);
 				adaptorPathList.addAll(l);
 			}
 		}
 
-		ArrayList adaptorPathURLs = new ArrayList();
+		ArrayList<URL> adaptorPathURLs = new ArrayList<URL>();
 
 		// Sort jar files: put adaptors first.
 		// Adaptors might override classes in the external jars,
@@ -249,8 +249,8 @@ public class GATEngine {
 	 *            a directory to list
 	 * @return a list of files in the passed directory
 	 */
-	protected List getFiles(File f) {
-		Vector vector = new Vector();
+	protected List<File> getFiles(File f) {
+		Vector<File> vector = new Vector<File>();
 		File[] files = f.listFiles();
 
 		if (files == null) {
@@ -271,17 +271,17 @@ public class GATEngine {
 	 *            the directory to get the jar files from
 	 * @return a list of JarFile objects
 	 */
-	protected List getJarFiles(String dir) {
+	protected List<JarFile> getJarFiles(String dir) {
 		File nextFile = null;
 		JarFile jarFile = null;
 		Manifest manifest = null;
 
 		// Obtain files in the optional directory.
-		List files = getFiles(new File(dir));
+		List<File> files = getFiles(new File(dir));
 
-		Iterator iterator = files.iterator();
+		Iterator<File> iterator = files.iterator();
 
-		Vector jarFiles = new Vector();
+		Vector<JarFile> jarFiles = new Vector<JarFile>();
 
 		while (iterator.hasNext()) {
 			nextFile = (File) iterator.next();
@@ -304,7 +304,7 @@ public class GATEngine {
 		return jarFiles;
 	}
 
-	public static void registerUnmarshaller(Class clazz) {
+	public static void registerUnmarshaller(Class<?> clazz) {
 		if (logger.isDebugEnabled()) {
 			logger.debug("register marshaller for: " + clazz);
 		}
@@ -312,7 +312,7 @@ public class GATEngine {
 	}
 
 	protected void loadCpiClass(JarFile jarFile, Manifest manifest,
-			Attributes attributes, String className, Class cpiClazz) {
+			Attributes attributes, String className, Class<?> cpiClazz) {
 		if (logger.isDebugEnabled()) {
 			logger.debug("Trying to load adaptor for " + className);
 		}
@@ -320,7 +320,6 @@ public class GATEngine {
 		// Get info for the adaptor
 		String attributeName = className + "Cpi-class";
 		String clazzString = attributes.getValue(attributeName);
-
 		if (clazzString == null) {
 			if (logger.isDebugEnabled()) {
 				logger.debug("Adaptor for " + className
@@ -333,7 +332,7 @@ public class GATEngine {
 					+ " found in Manifest, loading");
 		}
 
-		Class clazz = null;
+		Class<?> clazz = null;
 
 		/*
 		 * use a URL classloader to load the adaptors. This way, they don't have
@@ -371,7 +370,7 @@ public class GATEngine {
 		// /////////////
 		Preferences preferences = new Preferences();
 
-		Iterator i = attributes.keySet().iterator();
+		Iterator<Object> i = attributes.keySet().iterator();
 
 		while (i.hasNext()) {
 			Object key = i.next();
@@ -431,10 +430,10 @@ public class GATEngine {
 	 * @param jarFiles
 	 *            the list of JarFile objects to load
 	 */
-	protected void loadJarFiles(List jarFiles) {
+	protected void loadJarFiles(List<JarFile> jarFiles) {
 		JarFile jarFile = null;
 
-		Iterator iterator = jarFiles.iterator();
+		Iterator<JarFile> iterator = jarFiles.iterator();
 
 		// Iterate over JarFiles
 		while (iterator.hasNext()) {
@@ -464,7 +463,7 @@ public class GATEngine {
 		}
 
 		for (int i = 0; i < unmarshallers.size(); i++) {
-			Class c = (Class) unmarshallers.get(i);
+			Class<?> c = (Class<?>) unmarshallers.get(i);
 
 			try {
 				Method m = c.getMethod("unmarshal", new Class[] {
@@ -529,7 +528,7 @@ public class GATEngine {
 		 */
 	}
 
-	private static boolean containsUnmarshaller(Class clazz) {
+	private static boolean containsUnmarshaller(Class<?> clazz) {
 		// test for marshal and unmarshal methods.
 		try {
 			clazz.getMethod("unmarshal", new Class[] { GATContext.class,
@@ -541,7 +540,7 @@ public class GATEngine {
 		}
 	}
 
-	private static boolean containsInitializer(Class clazz) {
+	private static boolean containsInitializer(Class<?> clazz) {
 		// test for marshal and unmarshal methods.
 		try {
 			clazz.getMethod("init", (Class[]) null);
@@ -551,7 +550,7 @@ public class GATEngine {
 		}
 	}
 
-	private void callInitializer(Class clazz) {
+	private void callInitializer(Class<?> clazz) {
 		try {
 			Method m = clazz.getMethod("init", (Class[]) null);
 			m.invoke((Object) null, (Object[]) null);
@@ -578,7 +577,7 @@ public class GATEngine {
 		return sw.toString();
 	}
 
-	public static Advertisable defaultUnmarshal(Class type, String s) {
+	public static Advertisable defaultUnmarshal(Class<?> type, String s) {
 		if (s == null) {
 			throw new Error("cannot unmarshal a null object");
 		}
@@ -664,11 +663,11 @@ public class GATEngine {
 		}
 	}
 
-	public static List getMetricDefinitions(Object adaptor) {
+	public static List<MetricDefinition> getMetricDefinitions(Object adaptor) {
 		GATEngine e = getGATEngine();
 
 		synchronized (e) {
-			Vector res = new Vector();
+			Vector<MetricDefinition> res = new Vector<MetricDefinition>();
 
 			for (int i = 0; i < e.metricTable.size(); i++) {
 				MetricNode n = (MetricNode) e.metricTable.get(i);
@@ -793,7 +792,7 @@ public class GATEngine {
 
 			for (int j = 0; j < l.size(); j++) {
 				Adaptor a = l.get(j);
-				Class c = a.adaptorClass;
+				Class<?> c = a.adaptorClass;
 
 				// invoke the "end" static method of the class
 				try {
@@ -811,11 +810,11 @@ public class GATEngine {
 	}
 
 	public static Object createAdaptorProxy(String cpiClassName,
-			Class interfaceClass, GATContext gatContext,
+			Class<?> interfaceClass, GATContext gatContext,
 			Preferences preferences, Object[] tmpParams)
 			throws GATObjectCreationException {
 
-		Class cpiClass;
+		Class<?> cpiClass;
 		try {
 			cpiClass = Class.forName(cpiClassName);
 		} catch (ClassNotFoundException e) {
@@ -850,7 +849,7 @@ public class GATEngine {
 	}
 
 	private static AdaptorList reorderAdaptorList(AdaptorList adaptors,
-			Class cpiClass, Preferences preferences) {
+			Class<?> cpiClass, Preferences preferences) {
 		// parse the orderingString
 		// all adaptor names are separated by a ',' and adaptors that should
 		// not be used are prefixed with a '!'

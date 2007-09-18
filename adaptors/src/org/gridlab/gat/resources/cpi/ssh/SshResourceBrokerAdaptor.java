@@ -15,7 +15,6 @@ import org.gridlab.gat.GATObjectCreationException;
 import org.gridlab.gat.MethodNotApplicableException;
 import org.gridlab.gat.Preferences;
 import org.gridlab.gat.URI;
-import org.gridlab.gat.engine.GATEngine;
 import org.gridlab.gat.engine.util.InputForwarder;
 import org.gridlab.gat.engine.util.OutputForwarder;
 import org.gridlab.gat.io.File;
@@ -29,7 +28,6 @@ import org.gridlab.gat.resources.ResourceDescription;
 import org.gridlab.gat.resources.SoftwareDescription;
 import org.gridlab.gat.resources.cpi.ResourceBrokerCpi;
 import org.gridlab.gat.resources.cpi.Sandbox;
-import org.gridlab.gat.resources.cpi.commandlineSshPrun.CommandlineSshPrunResourceBrokerAdaptor;
 
 import com.jcraft.jsch.Channel;
 import com.jcraft.jsch.ChannelExec;
@@ -77,7 +75,7 @@ public class SshResourceBrokerAdaptor extends ResourceBrokerCpi {
 			}
 
 			// we do not support environment yet
-			Map env = sd.getEnvironment();
+			Map<String, Object> env = sd.getEnvironment();
 			if (env != null && !env.isEmpty()) {
 				throw new MethodNotApplicableException(
 						"cannot handle environment");
@@ -273,7 +271,7 @@ public class SshResourceBrokerAdaptor extends ResourceBrokerCpi {
 
 		// opens a ssh connection (using jsch)
 		jsch = new JSch();
-		java.util.Hashtable configJsch = new java.util.Hashtable(0);
+		java.util.Hashtable<String, String> configJsch = new java.util.Hashtable<String, String>();
 		configJsch.put("StrictHostKeyChecking", "no");
 		JSch.setConfig(configJsch);
 
@@ -332,7 +330,7 @@ public class SshResourceBrokerAdaptor extends ResourceBrokerCpi {
 	}
 
 	/* does not add stdin to set of files to preStage */
-	protected Map resolvePreStagedFiles(JobDescription description, String host)
+	protected Map<File, File> resolvePreStagedFiles(JobDescription description, String host)
 			throws GATInvocationException {
 		SoftwareDescription sd = description.getSoftwareDescription();
 		if (sd == null) {
@@ -340,11 +338,11 @@ public class SshResourceBrokerAdaptor extends ResourceBrokerCpi {
 					"The job description does not contain a software description");
 		}
 
-		Map result = new HashMap();
-		Map pre = sd.getPreStaged();
+		Map<File, File> result = new HashMap<File, File>();
+		Map<File, File> pre = sd.getPreStaged();
 		if (pre != null) {
-			Set keys = pre.keySet();
-			Iterator i = keys.iterator();
+			Set<File> keys = pre.keySet();
+			Iterator<File> i = keys.iterator();
 			while (i.hasNext()) {
 				File srcFile = (File) i.next();
 				File destFile = (File) pre.get(srcFile);
@@ -360,7 +358,7 @@ public class SshResourceBrokerAdaptor extends ResourceBrokerCpi {
 		return result;
 	}
 
-	protected Map resolvePostStagedFiles(JobDescription description, String host)
+	protected Map<File, File> resolvePostStagedFiles(JobDescription description, String host)
 			throws GATInvocationException {
 		SoftwareDescription sd = description.getSoftwareDescription();
 		if (sd == null) {
@@ -368,12 +366,12 @@ public class SshResourceBrokerAdaptor extends ResourceBrokerCpi {
 					"The job description does not contain a software description");
 		}
 
-		Map result = new HashMap();
-		Map post = sd.getPostStaged();
+		Map<File, File> result = new HashMap<File, File>();
+		Map<File, File> post = sd.getPostStaged();
 		if (post != null) {
 
-			Set keys = post.keySet();
-			Iterator i = keys.iterator();
+			Set<File> keys = post.keySet();
+			Iterator<File> i = keys.iterator();
 			while (i.hasNext()) {
 				File destFile = (File) i.next();
 				File srcFile = (File) post.get(destFile);
