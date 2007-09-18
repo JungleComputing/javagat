@@ -18,6 +18,7 @@ import org.gridlab.gat.io.FileInputStream;
 import org.gridlab.gat.io.FileOutputStream;
 import org.gridlab.gat.io.cpi.FileCpi;
 
+@SuppressWarnings("serial")
 public class StreamingFileAdaptor extends FileCpi {
     
 	public StreamingFileAdaptor(GATContext gatContext,
@@ -34,7 +35,6 @@ public class StreamingFileAdaptor extends FileCpi {
             InputStreamReader reader = new InputStreamReader(in);
             BufferedReader inBuffer = new BufferedReader(reader);
         	File dstFile = GAT.createFile(gatContext, dest);
-            dstFile.setWritable(true);
             FileOutputStream out = GAT.createFileOutputStream(gatContext, dstFile);
             OutputStreamWriter writer = new OutputStreamWriter(out);
             BufferedWriter outBuffer = new BufferedWriter(writer);
