@@ -66,7 +66,7 @@ abstract public class GT4FileAdaptor extends FileCpi {
 	public GT4FileAdaptor(GATContext gatContext, Preferences preferences,
 			URI location, String prov) throws GATObjectCreationException {
 		super(gatContext, preferences, location);
-		System.out.println("gt4 fileadaptor: " + location);
+		//System.out.println("gt4 fileadaptor: " + location);
 		srcProvider = prov;
 		try {
 			resource = AbstractionFactory.newFileResource(srcProvider);

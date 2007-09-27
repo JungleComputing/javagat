@@ -56,10 +56,10 @@ public class DefaultAdaptorOrderPolicy implements AdaptorOrderPolicy {
 		int insertPos = 0;
 		insertPos = l.placeAdaptor(insertPos,
 				"org.gridlab.gat.io.cpi.local.LocalFileAdaptor");
-		insertPos = l.placeAdaptor(insertPos,
+		/*insertPos = l.placeAdaptor(insertPos,
 				"org.gridlab.gat.io.cpi.gt4.GT4GridFTPFileAdaptor");
 		insertPos = l.placeAdaptor(insertPos,
-				"org.gridlab.gat.io.cpi.gt4.GT4LocalFileAdaptor");
+				"org.gridlab.gat.io.cpi.gt4.GT4LocalFileAdaptor");*/
 		insertPos = l.placeAdaptor(insertPos,
 				"org.gridlab.gat.io.cpi.globus.GridFTPFileAdaptor");
 		insertPos = l.placeAdaptor(insertPos,
@@ -112,11 +112,11 @@ public class DefaultAdaptorOrderPolicy implements AdaptorOrderPolicy {
 
 	protected void orderResourceList(AdaptorList l) {
 		int insertPos = 0;
-		insertPos = l.placeAdaptor(insertPos,
+		/*insertPos = l.placeAdaptor(insertPos,
 				"org.gridlab.gat.resources.cpi.gt4.GT4ResourceBrokerAdaptor");
 		insertPos = l
 				.placeAdaptor(insertPos,
-						"org.gridlab.gat.resources.cpi.wsgt4.WSGT4ResourceBrokerAdaptor");
+						"org.gridlab.gat.resources.cpi.wsgt4.WSGT4ResourceBrokerAdaptor");*/
 		insertPos = l
 				.placeAdaptor(insertPos,
 						"org.gridlab.gat.resources.cpi.local.LocalResourceBrokerAdaptor");

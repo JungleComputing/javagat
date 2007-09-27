@@ -465,8 +465,7 @@ public class GlobusJob extends JobCpi implements GramJobListener,
                 postStageFinished = true;
 
                 if (logger.isInfoEnabled()) {
-                    System.err
-                            .println("globus job callback: post stage finished");
+                    logger.info("globus job callback: post stage finished");
                 }
 
                 setState();

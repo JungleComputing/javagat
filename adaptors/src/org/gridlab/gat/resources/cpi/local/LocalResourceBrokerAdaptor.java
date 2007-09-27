@@ -68,7 +68,7 @@ public class LocalResourceBrokerAdaptor extends ResourceBrokerCpi {
 
 	protected static Logger logger = Logger
 			.getLogger(LocalResourceBrokerAdaptor.class);
-
+	
 	/**
 	 * This method constructs a LocalResourceBrokerAdaptor instance
 	 * corresponding to the passed GATContext.
@@ -112,6 +112,10 @@ public class LocalResourceBrokerAdaptor extends ResourceBrokerCpi {
 	 */
 	public List<HardwareResource> findResources(ResourceDescription resourceDescription) {
 		throw new UnsupportedOperationException("Not implemented");
+	}
+	
+	public Job submitJob(JobDescription[] descriptions) {
+		return null;
 	}
 
 	/*

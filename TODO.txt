@@ -29,7 +29,7 @@ My todo:
        - use a cache to save on connection setup time(also for sftp)
        - remote streaming seems to hang
        - cache connections for ssh adaptor (Ana?)
-       - support environment vars in ssh broker.
+       - support environmremote streaming seems to hang ent vars in ssh broker.
 
 - resource broker adaptors should fill in ALL defined states in the getInfo call.
 - GAT_LOCATION -> JAVAGAT_HOME ?

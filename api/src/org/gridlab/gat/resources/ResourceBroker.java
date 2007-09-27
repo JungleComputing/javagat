@@ -122,4 +122,11 @@ public interface ResourceBroker {
      */
     public abstract Job submitJob(JobDescription description)
             throws GATInvocationException;
+    
+    public abstract void beginMultiCoreJob();
+    
+    public abstract Job endMultiCoreJob() throws GATInvocationException;
+
 }
+
+

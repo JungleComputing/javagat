@@ -7,3 +7,17 @@
   should be configured using the log4j.properties file in the $GAT_LOCATION dir.
   logging using the commandline parameters (-Dgat.verbose and -Dgat.debug) is still
   possible and overrides the configuration of the log4j.properties file.
+- added multicore support for RemoteSandbox jobs.
+  use:
+  broker.beginMultiCoreJob();
+    broker.submitJob(jobDescription1);
+    broker.submitJob(jobDescription2);
+    ...
+    broker.submitJob(jobDescriptionN);
+  Job multicoreJob = broker.endMultiCoreJob();
+  NOTE: broker.submitJob(JobDescription) will return null in MultiCore mode
+- added single upload of the GAT for RemoteSandbox jobs. Use the Preference 
+  "singleRemoteGAT", "true" to enable this. The GlobusResourceBroker uploads
+  the GAT to a (internally) well known place (.tempGAT) and all jobs can use
+  this GAT to start the RemoteSandbox. Upon GAT.end() the remote GAT will be
+  deleted.

@@ -1,22 +1,30 @@
-package org.gridlab.gat.resources.cpi.globus;
+package org.gridlab.gat.resources.cpi;
 
 import java.io.FileOutputStream;
 import java.io.ObjectOutputStream;
+import java.net.URISyntaxException;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Map;
+import java.util.Set;
+import java.util.StringTokenizer;
 
 import org.apache.log4j.Logger;
 import org.gridlab.gat.GAT;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
+import org.gridlab.gat.GATObjectCreationException;
 import org.gridlab.gat.Preferences;
 import org.gridlab.gat.URI;
 import org.gridlab.gat.engine.GATEngine;
 import org.gridlab.gat.engine.util.Environment;
 import org.gridlab.gat.io.File;
+import org.gridlab.gat.resources.HardwareResourceDescription;
 import org.gridlab.gat.resources.Job;
 import org.gridlab.gat.resources.JobDescription;
 import org.gridlab.gat.resources.ResourceBroker;
+import org.gridlab.gat.resources.ResourceDescription;
 import org.gridlab.gat.resources.SoftwareDescription;
 
 public class RemoteSandboxSubmitter {
@@ -24,9 +32,15 @@ public class RemoteSandboxSubmitter {
 	protected static Logger logger = Logger
 			.getLogger(RemoteSandboxSubmitter.class);
 
+	private static final String WELL_KNOWN_REMOTE_GAT_LOCATION = ".tempGAT";
+
+	private static HashSet<String> hostsWithRemoteGAT = new HashSet<String>();
+
 	GATContext origGatContext;
 
 	Preferences origPreferences;
+	
+	JobDescription[] origDescriptions;
 
 	static int wrapperCounter = 0;
 
@@ -34,22 +48,81 @@ public class RemoteSandboxSubmitter {
 		return wrapperCounter++;
 	}
 
-	public RemoteSandboxSubmitter(GATContext gatContext, Preferences preferences) {
+	public RemoteSandboxSubmitter(GATContext gatContext,
+			Preferences preferences, JobDescription[] descriptions) {
 		this.origGatContext = gatContext;
 		this.origPreferences = preferences;
+		this.origDescriptions = descriptions;
+
+		JobDescription mainDescription = descriptions[0];
+		String host;
+		try {
+			host = getHostname(mainDescription);
+		} catch (GATInvocationException e) {
+			if (logger.isDebugEnabled()) {
+				logger.debug("" + e);
+			}
+			return;
+		}
+		String singleRemoteGAT = (String) preferences.get("singleRemoteGAT");
+		if (singleRemoteGAT != null && singleRemoteGAT.equalsIgnoreCase("true")) {
+			SoftwareDescription sd = mainDescription.getSoftwareDescription();
+			String remoteGATLocation = sd.getStringAttribute(
+					"remoteGatLocation", null);
+			if (remoteGATLocation == null) {
+				if (!hostsWithRemoteGAT.contains(host)) {
+					// copy the gat
+					Environment localEnv = new Environment();
+					String localGATLocation = localEnv.getVar("GAT_LOCATION");
+					try {
+						File gatDir = GAT.createFile(gatContext,
+								localGATLocation + "/lib");
+						File log4jFile = GAT.createFile(gatContext,
+								localGATLocation + "/log4j.properties");
+						File destDir = GAT.createFile(gatContext, "any://"
+								+ host + "/" + WELL_KNOWN_REMOTE_GAT_LOCATION);
+						if (!destDir.exists()) {
+							destDir.mkdir();
+						}
+						gatDir.copy(new URI("any://" + host + "/"
+								+ WELL_KNOWN_REMOTE_GAT_LOCATION + "/lib"));
+						log4jFile.copy(new URI("any://" + host + "/"
+								+ WELL_KNOWN_REMOTE_GAT_LOCATION
+								+ "/log4j.properties"));
+					} catch (GATObjectCreationException e) {
+						if (logger.isDebugEnabled()) {
+							logger.debug("Failed to create remote file:" + e);
+						}
+					} catch (URISyntaxException e) {
+						if (logger.isDebugEnabled()) {
+							logger.debug("Wrong URI:" + e);
+						}
+					} catch (GATInvocationException e) {
+						if (logger.isDebugEnabled()) {
+							logger.debug(e);
+						}
+					}
+					hostsWithRemoteGAT.add(host);
+				}
+				sd.addAttribute("remoteGatLocation", "../"
+						+ WELL_KNOWN_REMOTE_GAT_LOCATION);
+				mainDescription.setSoftwareDescription(sd);
+			}
+		}
+
 	}
 
-	private java.io.File writeDescriptionToFile(JobDescription description)
+	private java.io.File writeDescriptionToFile(JobDescription[] descriptions)
 			throws GATInvocationException {
 		if (logger.isInfoEnabled()) {
-			logger.info("writing description: " + description);
+			logger.info("writing description: " + descriptions);
 		}
 		java.io.File f = null;
 		try {
 			f = File.createTempFile("GAT", "jobDescription");
 			FileOutputStream tmp = new FileOutputStream(f);
 			ObjectOutputStream out = new ObjectOutputStream(tmp);
-			out.writeObject(description);
+			out.writeObject(descriptions);
 			out.close();
 		} catch (Exception e) {
 			throw new GATInvocationException("RemoteSandboxSubmitter", e);
@@ -58,13 +131,14 @@ public class RemoteSandboxSubmitter {
 		return f;
 	}
 
-	protected Job submitWrapper(JobDescription description, String contact)
+	public Job submitWrapper()
 			throws GATInvocationException {
 		try {
 			Preferences newPreferences = new Preferences(origPreferences);
 			newPreferences.put("useLocalDisk", "false");
 
-			SoftwareDescription origSd = description.getSoftwareDescription();
+			SoftwareDescription origSd = origDescriptions[0]
+					.getSoftwareDescription();
 			if (origSd == null) {
 				throw new GATInvocationException(
 						"The job description does not contain a software description");
@@ -151,7 +225,7 @@ public class RemoteSandboxSubmitter {
 						newPreferences, new URI(localGATLocation + "/lib")));
 			}
 
-			java.io.File descriptorFile = writeDescriptionToFile(description);
+			java.io.File descriptorFile = writeDescriptionToFile(origDescriptions);
 			sd.addPreStagedFile(GAT.createFile(origGatContext, newPreferences,
 					new URI(descriptorFile.getAbsolutePath())));
 
@@ -232,6 +306,92 @@ public class RemoteSandboxSubmitter {
 			return j;
 		} catch (Exception e) {
 			throw new GATInvocationException("RemoteSandboxSubmitter", e);
+		}
+	}
+
+	public String getHostname(JobDescription description)
+			throws GATInvocationException {
+		String contactHostname = null;
+
+		String contact = (String) origPreferences
+				.get("ResourceBroker.jobmanagerContact");
+		if (contact != null) {
+			StringTokenizer st = new StringTokenizer(contact, ":/");
+			contactHostname = st.nextToken();
+		}
+
+		ResourceDescription d = description.getResourceDescription();
+
+		if (d == null) {
+			return contactHostname;
+		}
+
+		if (!(d instanceof HardwareResourceDescription)) {
+			if (contactHostname != null)
+				return contactHostname;
+
+			throw new GATInvocationException(
+					"Currently only hardware resource descriptions are supported");
+		}
+
+		Map<String, Object> m = d.getDescription();
+		Set<String> keys = m.keySet();
+		Iterator<String> i = keys.iterator();
+
+		while (i.hasNext()) {
+			String key = (String) i.next();
+			Object val = m.get(key);
+
+			if (key.equals("machine.node")) {
+				if (val instanceof String) {
+					return (String) val;
+				} else {
+					String[] hostList = (String[]) val;
+					return hostList[0];
+				}
+			}
+
+			// System.err.println("warning, ignoring key: " + key);
+		}
+
+		return contactHostname;
+	}
+
+	public static void end() {
+		Iterator<String> it = hostsWithRemoteGAT.iterator();
+		GATContext context = new GATContext();
+		while (it.hasNext()) {
+			String host = (String) it.next();
+			File dir;
+			try {
+				dir = GAT.createFile(context, "any://" + host + "/"
+						+ WELL_KNOWN_REMOTE_GAT_LOCATION);
+				dir.recursivelyDeleteDirectory();
+			} catch (GATObjectCreationException e) {
+				if (logger.isInfoEnabled()) {
+					logger
+							.info("Unable to remove temporarly remote GAT directory:"
+									+ "any://"
+									+ host
+									+ "/"
+									+ WELL_KNOWN_REMOTE_GAT_LOCATION
+									+ " ("
+									+ e
+									+ ")");
+				}
+			} catch (GATInvocationException e) {
+				if (logger.isInfoEnabled()) {
+					logger
+							.info("Unable to remove temporarly remote GAT directory:"
+									+ "any://"
+									+ host
+									+ "/"
+									+ WELL_KNOWN_REMOTE_GAT_LOCATION
+									+ " ("
+									+ e
+									+ ")");
+				}
+			}
 		}
 	}
 }
