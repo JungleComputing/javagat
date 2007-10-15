@@ -16,6 +16,8 @@
 	<property name="src" location="src" />
 	<property name="tmp" location="tmp" />
 	<property name="lib" location="../lib/adaptors" />
+	<property name="gt4lib-src" location="external/lib-gt4_0_0" />
+	<property name="gt4lib-dst" location="../lib/lib-gt4_0_0" />
 	<property name="external" location="external" />
 	<property name="java.debug.value" value="true" />
 
@@ -297,13 +299,18 @@
 			</manifest>
 		</jar>
 
-		<jar jarfile="${lib}/GT4CogAdaptor.jar" basedir="${tmp}" includes="**/gt4/GT4*.class">
+		<jar jarfile="${lib}/GT4FileInputStreamAdaptor.jar" basedir="${tmp}" includes="**/gt4/GT4*.class">
 			<manifest>
 				<attribute name="FileInputStreamCpi-class" value="org.gridlab.gat.io.cpi.gt4.GT4FileInputStreamAdaptor" />
+			</manifest>
+		</jar>
+		
+		<jar jarfile="${lib}/GT4ResourceBrokerAdaptor.jar" basedir="${tmp}" includes="**/gt4/GT4*.class,**org/globus/cog/abstraction/**,**org/ietf/**">
+			<manifest>
 				<attribute name="ResourceBrokerCpi-class" value="org.gridlab.gat.resources.cpi.gt4.GT4ResourceBrokerAdaptor" />
 			</manifest>
 		</jar>
-
+				
 		<jar jarfile="${lib}/WSGT4ResourceBroker.jar" basedir="${tmp}" includes="**/wsgt4/WSGT4*.class">
 			<manifest>
 				<attribute name="ResourceBrokerCpi-class" value="org.gridlab.gat.resources.cpi.wsgt4.WSGT4ResourceBrokerAdaptor" />
@@ -322,6 +329,11 @@
 		<!-- Copy external libraries to lib directory -->
 		<copy todir="${lib}">
 			<fileset dir="${external}">
+			</fileset>
+		</copy>
+		
+		<copy todir="${gt4lib-dst}">
+			<fileset dir="${gt4lib-src}">
 			</fileset>
 		</copy>
 	</target>

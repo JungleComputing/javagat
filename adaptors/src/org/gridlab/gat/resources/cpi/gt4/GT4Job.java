@@ -54,6 +54,7 @@ class GT4StatusListener implements StatusListener {
 	 */
 	public void statusChanged(StatusEvent event) {
 		Status status = event.getStatus();
+		System.out.println("gt4 job statusChanged: " + status.getStatusString());
 		switch (status.getStatusCode()) {
 		case Status.ACTIVE:
 			job.setState(GT4Job.RUNNING);
@@ -63,11 +64,12 @@ class GT4StatusListener implements StatusListener {
 			break;
 		case Status.COMPLETED:
 			try {
-				job.stop();
-			} catch (GATInvocationException e) {
-				// fix it
+				Thread.sleep(20000);
+			} catch (Exception e) {
+				// TODO: handle exception
 			}
 			job.setState(GT4Job.STOPPED);
+			break;
 		case Status.FAILED:
 			job.setState(GT4Job.SUBMISSION_ERROR);
 			break;
@@ -128,8 +130,7 @@ public class GT4Job extends JobCpi {
 			throw new GATInvocationException("GT4Job invalid service: " + e);
 		} catch (TaskSubmissionException e) {
 			throw new GATInvocationException("GT4Job task submission: " + e);
-		}
-
+		} 
 	}
 
 	/**
@@ -140,7 +141,6 @@ public class GT4Job extends JobCpi {
 	 */
 
 	public void stop() throws GATInvocationException {
-		System.out.println("done");
 		sandbox.retrieveAndCleanup(this);
 	}
 

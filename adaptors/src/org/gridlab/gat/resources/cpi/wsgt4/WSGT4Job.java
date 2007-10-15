@@ -217,7 +217,10 @@ public class WSGT4Job extends JobCpi {
 		this.contactString = contactString;
 		factoryEndpoint = null;
 		submissionID = null;
-		factoryType = ManagedJobFactoryConstants.DEFAULT_FACTORY_TYPE;
+		factoryType = (String) preferences.get("ResourceBroker.jobmanager");
+		if (factoryType == null) {
+			factoryType = ManagedJobFactoryConstants.DEFAULT_FACTORY_TYPE;
+		}
 		jobDescriptionType = gjobDescription;
 		securityType = null;
 		calendar = Calendar.getInstance();
@@ -242,8 +245,7 @@ public class WSGT4Job extends JobCpi {
 		} catch (MalformedURLException e) {
 			throw new GATInvocationException("WSGT4Job: " + e);
 		}
-		// factoryType = ManagedJobFactoryConstants.FACTORY_TYPE.FORK;
-		factoryType = ManagedJobFactoryConstants.DEFAULT_FACTORY_TYPE;
+
 		try {
 			factoryEndpoint = ManagedJobFactoryClientHelper.getFactoryEndpoint(
 					factoryURL, factoryType);
@@ -265,6 +267,7 @@ public class WSGT4Job extends JobCpi {
 		try {
 			this.jobEndpointReference = createJobEndpoint(factoryPort);
 		} catch (Exception e) {
+			e.printStackTrace();
 			throw new GATInvocationException("WSGT4Job: " + e);
 		}
 	}
@@ -320,7 +323,6 @@ public class WSGT4Job extends JobCpi {
 			EndpointReferenceType pfactoryEndpoint)
 			throws GATInvocationException {
 		EndpointReferenceType[] delegationFactoryEndpoints = fetchDelegationFactoryEndpoints(pfactoryEndpoint);
-
 		EndpointReferenceType delegationEndpoint = delegate(
 				delegationFactoryEndpoints[0], this.limitedDelegation
 						.booleanValue());
@@ -347,14 +349,12 @@ public class WSGT4Job extends JobCpi {
 				.setResourceProperty(new QName[] {
 						ManagedJobFactoryConstants.RP_DELEGATION_FACTORY_ENDPOINT,
 						ManagedJobFactoryConstants.RP_STAGING_DELEGATION_FACTORY_ENDPOINT });
-
 		GetMultipleResourcePropertiesResponse response;
 		try {
 			response = factoryPort.getMultipleResourceProperties(request);
 		} catch (RemoteException e) {
 			throw new GATInvocationException("WSGT4Job: " + e);
-		}
-
+		} 
 		SOAPElement[] any = response.get_any();
 		EndpointReferenceType epr1 = null;
 		EndpointReferenceType epr2 = null;
@@ -419,11 +419,10 @@ public class WSGT4Job extends JobCpi {
 		// ((org.apache.axis.client.Stub)
 		// factoryPort).setTimeout(this.axisStubTimeOut);
 		CreateManagedJobInputType jobInput = new CreateManagedJobInputType();
-
+ 
 		jobInput.setInitialTerminationTime(calendar);
 		jobInput.setJobID(new AttributedURI(this.submissionID));
 		jobInput.setJob(this.jobDescriptionType);
-
 		Map<Object, Object> properties = new HashMap<Object, Object>();
 		properties.put(ServiceContainer.CLASS,
 				"org.globus.wsrf.container.GSIServiceContainer");
@@ -441,7 +440,6 @@ public class WSGT4Job extends JobCpi {
 		try {
 			List<Object> topicPath = new LinkedList<Object>();
 			topicPath.add(ManagedJobConstants.RP_STATE);
-
 			ResourceSecurityDescriptor securityDescriptor = new ResourceSecurityDescriptor();
 			String authz = null;
 			if (authorization == null) {
@@ -481,14 +479,12 @@ public class WSGT4Job extends JobCpi {
 			subscriptionRequest.setTopicExpression(topicExpression);
 			jobInput.setSubscribe(subscriptionRequest);
 		} catch (Exception e) {
-			System.err.println(e);
 			throw e;
 			// throw sg
 			/*
 			 * try { unbind(); } catch (Exception unbindEx) { throw sg }
 			 */
 		}
-
 		CreateManagedJobOutputType response = factoryPort
 				.createManagedJob(jobInput);
 		EndpointReferenceType jobEPR = response.getManagedJobEndpoint();
@@ -503,7 +499,6 @@ public class WSGT4Job extends JobCpi {
 	void setState(StateEnumeration gstate, boolean holding) {
 		this.gstate = gstate;
 		this.holding = holding;
-		System.out.println("stopped: " + gstate);
 		if (gstate.equals(StateEnumeration.CleanUp)
 				|| gstate.equals(StateEnumeration.StageOut)) {
 			setState(WSGT4Job.POST_STAGING);
@@ -519,22 +514,22 @@ public class WSGT4Job extends JobCpi {
 		}
 		if (gstate.equals(StateEnumeration.Done)) {
 			setState(WSGT4Job.STOPPED);
-			try {
+			/*try {
 				stop();
 			} catch (GATInvocationException e) {
-				// fix it
-			}
+				logger.info("stop() failed: " + e);
+			}*/
 		}
 		if (gstate.equals(StateEnumeration.Suspended)) {
 			setState(WSGT4Job.STOPPED);
 		}
 		if (gstate.equals(StateEnumeration.Failed)) {
 			setState(WSGT4Job.SUBMISSION_ERROR);
-			try {
+			/*try {
 				stop();
 			} catch (GATInvocationException e) {
-				// fix it
-			}
+				logger.info("stop() failed: " + e);
+			}*/
 		}
 		if (gstate.equals(StateEnumeration.CleanUp)) {
 			setState(WSGT4Job.UNKNOWN);

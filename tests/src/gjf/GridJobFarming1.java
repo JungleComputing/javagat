@@ -35,10 +35,82 @@ public class GridJobFarming1 implements MetricListener {
 	// Name of the output directory
 	String outputDirGlobal;
 
-	// The resource broker
-	ResourceBroker broker;
-
 	public synchronized void processMetricEvent(MetricValue val) {
+
+		try {
+
+			Job job = (Job) val.getSource();
+
+			// Find job index and name
+			int jobEventIdx = -1;
+			for (int jobIdx = 0; jobIdx < jobList.length; jobIdx++) {
+				if (jobList[jobIdx] == job)
+					jobEventIdx = jobIdx;
+			}
+			if (jobEventIdx == -1) {
+				System.out.println("SERIOUS ERROR: unknown job");
+				System.out.flush();
+			}
+			final String jobName = jobParams[jobEventIdx][0];
+
+			// Flag running jobs
+			if (val.getValue().toString().equals("RUNNING")) {
+
+				// Delete submitted file now that the job is running
+				final File jobSubmittedFile = new File(outputDirGlobal + "/"
+						+ jobName + ".sbmt");
+				if (jobSubmittedFile.exists())
+					jobSubmittedFile.delete();
+
+				// Flag that the job is running
+				final File jobRunningFile = new File(outputDirGlobal + "/"
+						+ jobName + ".runn");
+				if (jobRunningFile.exists())
+					jobRunningFile.delete();
+				jobRunningFile.createNewFile();
+			}
+
+			// Stopped jobs: count and flag
+			if (val.getValue().toString().equals("STOPPED")
+					|| val.getValue().toString().equals("SUBMISSION_ERROR")) {
+
+				jobsStopped++;
+
+				// Delete submitted files that may have been missed before
+				final File jobSubmittedFile = new File(outputDirGlobal + "/"
+						+ jobName + ".sbmt");
+				if (jobSubmittedFile.exists())
+					jobSubmittedFile.delete();
+
+				// Delete that the job is running
+				final File jobRunningFile = new File(outputDirGlobal + "/"
+						+ jobName + ".runn");
+				if (jobRunningFile.exists())
+					jobRunningFile.delete();
+
+				// Flag that the job is stopped
+				final File jobStopFile = new File(outputDirGlobal + "/"
+						+ jobName + ".stop");
+				if (jobStopFile.exists())
+					jobStopFile.delete();
+				jobStopFile.createNewFile();
+			}
+
+			System.out.printf("%4d %-20s  %4d %4d  %-15s  %-15s\n",
+					jobEventIdx, jobName, jobsSubmitted, jobsStopped, val
+							.getValue(), val.getSource());
+
+		} catch (Exception e) {
+			System.err.println("an exception occurred: " + e);
+			e.printStackTrace();
+		} finally {
+			// cannot call GAT.end in this finally. A finally clause is always
+			// executed, also if no exception
+			// occurred. Therefore, the gat is shutdown after the first callback
+			// is done.
+			// GAT.end();
+		}
+
 		notifyAll();
 	}
 
@@ -70,10 +142,6 @@ public class GridJobFarming1 implements MetricListener {
 		sd.addAttribute("waitForPreStage", "true");
 		sd.addAttribute("getRemoteSandboxOutput", "true");
 		sd.addAttribute("sandboxRoot", nodeDiskPath);
-		// sd.addAttribute("remoteGatLocation", "../tempGAT");
-		sd.addAttribute("getRemoteSandboxOutputURI",
-				"any://fs0.das2.cs.vu.nl/GAT/out/gjf");
-
 		if (remoteGatLocation != null) {
 			sd.addAttribute("remoteGatLocation", remoteGatLocation);
 		}
@@ -119,15 +187,22 @@ public class GridJobFarming1 implements MetricListener {
 				context, outputDir));
 
 		// Standard in and out
-		sd.setStdout(GAT.createFile(context, "any://fs0.das2.cs.vu.nl/" + outputDir + "/" + jobName
+		sd.setStdout(GAT.createFile(context, outputDir + "/" + jobName
 				+ ".stdout"));
 		sd.setStderr(GAT.createFile(context, outputDir + "/" + jobName
 				+ ".stderr"));
 		sd.setWipePostStaged(true);
 		sd.setWipePreStaged(true);
+
 		JobDescription jd = new JobDescription(sd);
+		ResourceBroker broker = GAT.createResourceBroker(context);
 		Job job = broker.submitJob(jd);
 		jobsSubmitted++;
+
+		MetricDefinition md = job.getMetricDefinitionByName("job.status");
+		Metric m = md.createMetric(null);
+		job.addMetricListener(this, m); // register my callback for job.status
+										// events
 
 		return job;
 	}
@@ -270,8 +345,6 @@ public class GridJobFarming1 implements MetricListener {
 			context.addPreference("File.adaptor.name", "GridFTP");
 			context.addPreference("FileOutputStream.adaptor.name", "GridFTP");
 			context.addPreference("FileInputStream.adaptor.name", "GridFTP");
-			context.addPreference("singleRemoteGAT", "true");
-			
 
 			{
 				final Preferences prefs = new Preferences();
@@ -371,9 +444,6 @@ public class GridJobFarming1 implements MetricListener {
 			// Submit one job for each data set core name
 			jobList = new Job[jobNum];
 			int jobsSubmittedCnt = 0;
-			broker = GAT.createResourceBroker(context);
-
-			broker.beginMultiCoreJob();			
 			for (int jobIdx = 0; jobIdx < jobNum; jobIdx++) {
 
 				// Wait to avoid exceeding maxJobsAtOnce before submitting the
@@ -412,14 +482,6 @@ public class GridJobFarming1 implements MetricListener {
 				}
 			}
 
-			Job job = broker.endMultiCoreJob();
-			MetricDefinition md = job.getMetricDefinitionByName("job.status");
-			Metric m = md.createMetric(null);
-			job.addMetricListener(this, m); // register my callback for
-											// job.status
-											// events
-
-
 			if (jobsSubmittedCnt > 0) {
 				synchronized (this) {
 					// Wait until all jobs stopped or get submission error
@@ -427,17 +489,13 @@ public class GridJobFarming1 implements MetricListener {
 					while (jobsStopped) {
 						wait();
 						jobsStopped = false;
-						if (job != null) {
-							jobsStopped = jobsStopped || (job.getState() != Job.STOPPED && job.getState() != Job.SUBMISSION_ERROR);
-							
-						}
-						/*for (int jobIdx = 0; jobIdx < jobNum; jobIdx++) {
+						for (int jobIdx = 0; jobIdx < jobNum; jobIdx++) {
 							if (jobList[jobIdx] != null) {
 								jobsStopped = jobsStopped
 										|| (jobList[jobIdx].getState() != Job.STOPPED && jobList[jobIdx]
 												.getState() != Job.SUBMISSION_ERROR);
 							}
-						}*/
+						}
 					}
 				}
 			}
@@ -445,7 +503,7 @@ public class GridJobFarming1 implements MetricListener {
 			// Print out the job information
 			System.out.println();
 			System.out.println("All jobs done");
-			/*for (int jobIdx = 0; jobIdx < jobNum; jobIdx++) {
+			for (int jobIdx = 0; jobIdx < jobNum; jobIdx++) {
 				final String jobName = jobParams[jobIdx][0];
 				if (jobList[jobIdx] == null)
 					System.out.printf("%4d  %-20s  %s ", jobIdx, jobName,
@@ -454,7 +512,7 @@ public class GridJobFarming1 implements MetricListener {
 					System.out.printf("%4d  %-20s  %s ", jobIdx, jobName,
 							jobList[jobIdx].getInfo() + "\n");
 			}
-			System.out.println();*/
+			System.out.println();
 
 		} catch (Exception e) {
 			System.err.println("an exception occurred: " + e);

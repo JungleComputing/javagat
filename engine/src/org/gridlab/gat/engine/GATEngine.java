@@ -339,6 +339,7 @@ public class GATEngine {
 		 * to be in the classpath
 		 */
 		try {
+			//TODO parent.loadClass??
 			clazz = gatClassLoader.loadClass(clazzString);
 		} catch (Exception e) {
 			if (logger.isDebugEnabled()) {
@@ -703,17 +704,15 @@ public class GATEngine {
 		// look for all callbacks that were installed for this metric, call
 		// them.
 		GATEngine e = getGATEngine();
-
-		for (int i = 0; i < e.metricListeners.size(); i++) {
-			MetricListenerNode n = (MetricListenerNode) e.metricListeners
-					.get(i);
-
-			if (n.adaptor == adaptor) {
-				if (n.metric.equals(v.getMetric())) {
+		MetricListenerNode[] listenerNodes = (MetricListenerNode[]) e.metricListeners.toArray(new MetricListenerNode[e.metricListeners.size()]);
+		
+		for (int i = 0; i < listenerNodes.length; i++) {
+			if (listenerNodes[i].adaptor == adaptor) {
+				if (listenerNodes[i].metric.equals(v.getMetric())) {
 					// hiha, right adaptor and metric
 					// call the handler
 					try {
-						n.metricListener.processMetricEvent(v);
+						listenerNodes[i].metricListener.processMetricEvent(v);
 					} catch (Throwable t) {
 						StringWriter writer = new StringWriter();
 						t.printStackTrace(new PrintWriter(writer));
@@ -841,10 +840,8 @@ public class GATEngine {
 
 		AdaptorInvocationHandler handler = new AdaptorInvocationHandler(
 				adaptors, gatContext, preferences, tmpParams);
-
 		Object proxy = Proxy.newProxyInstance(interfaceClass.getClassLoader(),
 				new Class[] { interfaceClass }, handler);
-
 		return proxy;
 	}
 

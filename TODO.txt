@@ -1,25 +1,17 @@
 My todo:
-- document preferences (javadoc + HTML)
-- upgrade code to java1.5+
-- create streamingFileAdaptor (remember the build.xml)
-- log4j (see ibis)
-
-
 - format TODOs and readmes in HTML (to avoid linebreak problems windows/linux)
+max 80
 - fix firing of metrics: store unsubscribe / subscribe until a good moment, 
   don't handle them in the upcall itself
   --> ??
-- document preferences
-  --> seems to be done... (update the adaptor.name)
 - implement GATSelf
   --> ??
-- Allow adaptor.name preference to be a list
-  --> done
 - Think about the case where an adaptor throws an exception because there is an irrecoverable
   error (file does not exists). In this case, there is no need to try the other adaptors.
-  --> Throw a non-nested exception (new class)
+
 - add feature to disable intelligent dispatching for certain API types (streams)
   and/or let streams save file pointer
+
 - brokering: also allow output to be printed on the screen, when no output files are given.
   maybe use special property for this? Not all middlewares can do this.
 
@@ -32,6 +24,7 @@ My todo:
        - support environmremote streaming seems to hang ent vars in ssh broker.
 
 - resource broker adaptors should fill in ALL defined states in the getInfo call.
+
 - GAT_LOCATION -> JAVAGAT_HOME ?
 
 - in the engine, check if GAT.end hasn't been called before doing an operation.
@@ -49,28 +42,6 @@ My todo:
 List of bugs from Frank Seinstra:
 ---------------------------------------------------------------------------------------
 
-PROBLEM 1: IS KNOWN, DUE TO ssh LIBRARY...
-----------
-grun tutorial.RemoteCat any://www.cs.vu.nl/~rob/hello.txt
-                        ^^^
-warning, could not identify remote protocol version, assuming ssh2
-[Transport protocol 1] ERROR transport.TransportProtocolCommon  - The Transport
-Protocol thread failed
-java.io.IOException: The socket is EOF
-        at com.sshtools.j2ssh.transport.TransportProtocolInputStream.readBuffere
-dData(Unknown Source)
-        at com.sshtools.j2ssh.transport.TransportProtocolInputStream.readMessage
-(Unknown Source)
-        at com.sshtools.j2ssh.transport.TransportProtocolCommon.processMessages(
-TransportProtocolCommon.java:1355)
-        at com.sshtools.j2ssh.transport.TransportProtocolCommon.startBinaryPacke
-tProtocol(TransportProtocolCommon.java:975)
-        at com.sshtools.j2ssh.transport.TransportProtocolCommon.run(TransportPro
-tocolCommon.java:378)
-        at java.lang.Thread.run(Unknown Source)
-
----------------------------------------------------------------------------------------
-
 PROBLEM 2: SEEMS TO BE A REAL BUG!!!
 ----------
 Lastigheidje met URIs ( onder Windows, met file 'score.icme' in C:\ ):
@@ -85,34 +56,12 @@ NOTE: default root dir voor file:// protocol is c:\WINNT\profiles\frank\
 
 ---------------------------------------------------------------------------------------
 
-PROBLEM 3:
-----------
-Hoe weet ik bij bijv. een simpele file-copy van cluster 1 naar cluster 2, dat de data
-via het snelste netwerk worden verstuurd, met behulp van het snelste protocol (of het
-meest secure protocol, of...).
-En kan ik (run-time) achterhalen welke optie in feite gekozen is (i.e. welke binding
-we exact gebruiken)?
-
-SOLUTION:
-1. provide adaptor list preference (you have to specify yourself which ordering is the 
-fastest/most secure/...)
-2. use log4j to retrieve what options are chosen
-
----------------------------------------------------------------------------------------
-
 PROBLEM 4: 
 ----------
 GAT: public static void end()
 NOT DOCUMENTED, or actually, documentation is empty...!
 Er staat niet eens dat ik deze method MOET uitvoeren aan het eind van mijn GAT proggie.
 
----------------------------------------------------------------------------------------
-
-PROBLEM 5: IS NO LONGER LIKE THIS... seems to be fixed
-----------
-Waarom is 'File' een interface, en 'FileInputStream' een class (niet eens 'abstract')?
-
----------------------------------------------------------------------------------------
 
 PROBLEM 6: TO BE CHECKED...
 ----------
@@ -122,33 +71,6 @@ IS THIS OK (in documentation, constructors) ??? :
 
 ---------------------------------------------------------------------------------------
 
-PROBLEM 7:
-----------
-DIT ZOU TOCH BEST MOETEN KUNNEN (?) : (use streaming file adaptor! and for this 
-particular example, make sure to have permission to write to the specified location)
-
-grun tutorial.RemoteCopy http://www.science.uva.nl/~fjseins/index.html file:////testout.txt
-
-Exception in thread "main"
---- START OF NESTED EXCEPTION ---
-*** LocalFileAdaptor failed: Cannot use remote files with the local file adaptor
-, URI is: http://www.science.uva.nl/~fjseins/index.html
-*** GridFTPFileAdaptor failed: cannot handle this URI (http://www.science.uva.nl
-/~fjseins/index.html)
-*** CommandlineSshFileAdaptor failed: cannot handle this URI: http://www.science
-.uva.nl/~fjseins/index.html
-*** SftpNewFileAdaptor failed: cannot handle this URI
-*** SshFileAdaptor failed: cannot handle this URI
-*** SftpFileAdaptor failed: cannot handle this URI
-*** FTPFileAdaptor failed: cannot handle this URI
---- END OF NESTED EXCEPTION ---
-
-        at org.gridlab.gat.engine.AdaptorInvocationHandler.invoke(AdaptorInvocat
-ionHandler.java:84)
-        at $Proxy0.copy(Unknown Source)
-        at tutorial.RemoteCopy.main(RemoteCopy.java:18)
-
----------------------------------------------------------------------------------------
 
 PROBLEM 8:
 ----------

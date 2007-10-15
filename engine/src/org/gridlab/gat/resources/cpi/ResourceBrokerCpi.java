@@ -57,7 +57,7 @@ public abstract class ResourceBrokerCpi implements ResourceBroker {
      *
      * @see org.gridlab.gat.resources.ResourceBroker#beginMultiCoreJob()
      */
-    public void beginMultiCoreJob(){
+    public void beginMultiCoreJob() throws GATInvocationException{
     	throw new UnsupportedOperationException("Not implemented");
     }
     
@@ -66,7 +66,7 @@ public abstract class ResourceBrokerCpi implements ResourceBroker {
      *
      * @see org.gridlab.gat.resources.ResourceBroker#endMultiCoreJob()
      */
-    public Job endMultiCoreJob() throws GATInvocationException{
+    public void endMultiCoreJob() throws GATInvocationException{
     	throw new UnsupportedOperationException("Not implemented");
     }
 

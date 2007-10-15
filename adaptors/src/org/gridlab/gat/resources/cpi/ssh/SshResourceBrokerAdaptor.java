@@ -26,6 +26,7 @@ import org.gridlab.gat.resources.Job;
 import org.gridlab.gat.resources.JobDescription;
 import org.gridlab.gat.resources.ResourceDescription;
 import org.gridlab.gat.resources.SoftwareDescription;
+import org.gridlab.gat.resources.cpi.RemoteSandboxSubmitter;
 import org.gridlab.gat.resources.cpi.ResourceBrokerCpi;
 import org.gridlab.gat.resources.cpi.Sandbox;
 
@@ -47,6 +48,7 @@ public class SshResourceBrokerAdaptor extends ResourceBrokerCpi {
 	public static final int SSH_PORT = 22;
 
 	private SshUserInfo sui;
+	private RemoteSandboxSubmitter submitter;
 
 	/**
 	 * This method constructs a SshResourceBrokerAdaptor instance corresponding
@@ -58,6 +60,15 @@ public class SshResourceBrokerAdaptor extends ResourceBrokerCpi {
 	public SshResourceBrokerAdaptor(GATContext gatContext,
 			Preferences preferences) throws Exception {
 		super(gatContext, preferences);
+	}
+	
+	public void beginMultiCoreJob() {
+		submitter = new RemoteSandboxSubmitter(gatContext, preferences, true);
+	}
+
+	public void endMultiCoreJob() throws GATInvocationException {
+		submitter.flushJobSubmission();
+		submitter = null;
 	}
 
 	/*
@@ -72,6 +83,16 @@ public class SshResourceBrokerAdaptor extends ResourceBrokerCpi {
 			if (sd == null) {
 				throw new GATInvocationException(
 						"The job description does not contain a software description");
+			}
+			
+			if (getBooleanAttribute(description, "useLocalDisk", false)) {
+				if (logger.isDebugEnabled()) {
+					logger.debug("useLocalDisk, using wrapper application");
+				}
+				if (submitter == null) {
+					submitter = new RemoteSandboxSubmitter(gatContext, preferences, false);
+				}
+				return submitter.submitJob(description);
 			}
 
 			// we do not support environment yet

@@ -3,8 +3,6 @@
  */
 package org.gridlab.gat.resources.cpi.globus;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
@@ -47,8 +45,7 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
 
 	static boolean shutdownInProgress = false;
 
-	private boolean multicoreEnabled = false;
-	private List<JobDescription> multicoreJobs = new ArrayList<JobDescription>();
+	private RemoteSandboxSubmitter submitter;
 
 	public static void init() {
 		GATEngine.registerUnmarshaller(GlobusJob.class);
@@ -59,28 +56,20 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
 		super(gatContext, preferences);
 	}
 
-	public void beginMultiCoreJob() {
-		multicoreEnabled = true;
-	}
-
-	public Job endMultiCoreJob() throws GATInvocationException {
-		multicoreEnabled = false;
-		return submitJobs((JobDescription[]) multicoreJobs
-					.toArray(new JobDescription[multicoreJobs.size()]));
-	}
-
-	protected String createRSL(JobDescription[] descriptions, String host,
-			Sandbox sandbox, PreStagedFileSet pre, PostStagedFileSet post)
-			throws GATInvocationException {
-		if (descriptions.length == 1)
-			return createRSL(descriptions[0], host, sandbox, pre, post);
-		String result = "+ ";
-		for (int i = 0; i < descriptions.length; i++) {
-			result += "( "
-					+ createRSL(descriptions[i], host, sandbox, pre, post)
-					+ " )";
+	public void beginMultiCoreJob() throws GATInvocationException {
+		if (submitter != null && submitter.isMulticore()) {
+			throw new GATInvocationException("MultiCore job started twice!");
 		}
-		return result;
+		submitter = new RemoteSandboxSubmitter(gatContext, preferences, true);
+	}
+
+	public void endMultiCoreJob() throws GATInvocationException {
+		if (submitter == null) {
+			throw new GATInvocationException(
+					"MultiCore job ended, without being started!");
+		}
+		submitter.flushJobSubmission();
+		submitter = null;
 	}
 
 	protected String createRSL(JobDescription description, String host,
@@ -389,21 +378,6 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
 
 	public Job submitJob(JobDescription description)
 			throws GATInvocationException {
-		if (shutdownInProgress) {
-			throw new GATInvocationException(
-					"cannot submit jobs after calling GAT.end");
-		}
-		if (multicoreEnabled) {
-			multicoreJobs.add(description);
-			return null;
-		}
-		JobDescription[] descriptions = new JobDescription[1];
-		descriptions[0] = description;
-		return submitJobs(descriptions);
-	}
-
-	public Job submitJobs(JobDescription[] descriptions)
-			throws GATInvocationException {
 		boolean useGramSandbox = false;
 		String s = (String) preferences.get("useGramSandbox");
 		if (s != null && s.equalsIgnoreCase("true")) {
@@ -411,9 +385,9 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
 		}
 
 		if (useGramSandbox) {
-			return submitJobsGramSandbox(descriptions);
+			return submitJobGramSandbox(description);
 		} else {
-			return submitJobsGatSandbox(descriptions);
+			return submitJobGatSandbox(description);
 		}
 	}
 
@@ -464,10 +438,9 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
 		}
 	}
 
-	public Job submitJobsGramSandbox(JobDescription[] descriptions)
+	public Job submitJobGramSandbox(JobDescription description)
 			throws GATInvocationException {
 		long start = System.currentTimeMillis();
-		JobDescription description = descriptions[0];
 		String host = getHostname(description);
 		String contact = getResourceManagerContact(description);
 
@@ -514,25 +487,24 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
 		return res;
 	}
 
-	public Job submitJobsGatSandbox(JobDescription[] descriptions)
+	public Job submitJobGatSandbox(JobDescription description)
 			throws GATInvocationException {
-		long start = System.currentTimeMillis();
-		// choose the first of the set descriptions to retrieve the hostname
-		// etc.
-		JobDescription description = descriptions[0];
-
-		String host = getHostname(description);
-		String contact = getResourceManagerContact(description);
-		GSSCredential credential = getCredential(host);
-
 		if (getBooleanAttribute(description, "useLocalDisk", false)) {
 			if (logger.isDebugEnabled()) {
 				logger.debug("useLocalDisk, using wrapper application");
 			}
-			RemoteSandboxSubmitter s = new RemoteSandboxSubmitter(gatContext,
-					preferences, descriptions);
-			return s.submitWrapper();
+			if (submitter == null) {
+				submitter = new RemoteSandboxSubmitter(gatContext, preferences,
+						false);
+			}
+			return submitter.submitJob(description);
 		}
+		long start = System.currentTimeMillis();
+		// choose the first of the set descriptions to retrieve the hostname
+		// etc.
+		String host = getHostname(description);
+		String contact = getResourceManagerContact(description);
+		GSSCredential credential = getCredential(host);
 
 		Sandbox sandbox = new Sandbox(gatContext, preferences, description,
 				host, null, true, true, true, true);
@@ -543,7 +515,7 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
 			runChmod(credential, description, host, sandbox);
 		}
 
-		String rsl = createRSL(descriptions, host, sandbox, null, null);
+		String rsl = createRSL(description, host, sandbox, null, null);
 		GramJob j = new GramJob(credential, rsl);
 		GlobusJob res = new GlobusJob(gatContext, preferences, this,
 				description, j, sandbox, start);

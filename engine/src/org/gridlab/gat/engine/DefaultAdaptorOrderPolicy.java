@@ -113,10 +113,10 @@ public class DefaultAdaptorOrderPolicy implements AdaptorOrderPolicy {
 	protected void orderResourceList(AdaptorList l) {
 		int insertPos = 0;
 		/*insertPos = l.placeAdaptor(insertPos,
-				"org.gridlab.gat.resources.cpi.gt4.GT4ResourceBrokerAdaptor");
+				"org.gridlab.gat.resources.cpi.gt4.GT4ResourceBrokerAdaptor");*/
 		insertPos = l
 				.placeAdaptor(insertPos,
-						"org.gridlab.gat.resources.cpi.wsgt4.WSGT4ResourceBrokerAdaptor");*/
+						"org.gridlab.gat.resources.cpi.wsgt4.WSGT4ResourceBrokerAdaptor");
 		insertPos = l
 				.placeAdaptor(insertPos,
 						"org.gridlab.gat.resources.cpi.local.LocalResourceBrokerAdaptor");

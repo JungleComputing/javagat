@@ -62,12 +62,15 @@ import org.globus.wsrf.impl.security.descriptor.GSITransportAuthMethod;
 import org.globus.wsrf.impl.security.descriptor.ResourceSecurityDescriptor;
 import org.globus.wsrf.impl.security.descriptor.SecurityDescriptorException;
 import org.globus.wsrf.security.SecurityManager;
+import org.gridlab.gat.CouldNotInitializeCredentialException;
+import org.gridlab.gat.CredentialExpiredException;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.GATObjectCreationException;
 import org.gridlab.gat.Preferences;
 import org.gridlab.gat.URI;
 import org.gridlab.gat.io.cpi.FileCpi;
+import org.gridlab.gat.security.globus.GlobusSecurityUtils;
 import org.ietf.jgss.GSSCredential;
 import org.ietf.jgss.GSSException;
 import org.oasis.wsn.Subscribe;
@@ -153,6 +156,7 @@ public class RFTGT4FileAdaptor extends FileCpi {
 	public static final int DEFAULT_DURATION_HOURS = 24;
 	public static final Integer DEFAULT_MSG_PROTECTION = Constants.SIGNATURE;
 	public static final String DEFAULT_FACTORY_PORT = "8443";
+	private static final int DEFAULT_GRIDFTP_PORT = 2811;
 	NotificationConsumerManager notificationConsumerManager;
 	EndpointReferenceType notificationConsumerEPR;
 	EndpointReferenceType notificationProducerEPR;
@@ -194,6 +198,18 @@ public class RFTGT4FileAdaptor extends FileCpi {
 		this.securityType = Constants.GSI_SEC_MSG;
 		this.authorization = null;
 		this.proxy = null;
+
+		try {
+			proxy = GlobusSecurityUtils.getGlobusCredential(gatContext,
+					preferences, "globus", location, DEFAULT_GRIDFTP_PORT);
+		} catch (CouldNotInitializeCredentialException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (CredentialExpiredException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
 		this.notificationConsumerManager = null;
 		this.notificationConsumerEPR = null;
 		this.notificationProducerEPR = null;
@@ -254,7 +270,6 @@ public class RFTGT4FileAdaptor extends FileCpi {
 	}
 
 	public void copy(URI dest) throws GATInvocationException {
-		System.out.println("rftgt4 copy " + location + " -> " + dest);
 		String destUrl = setLocationStr(dest);
 		if (!copy2(destUrl)) {
 			throw new GATInvocationException(
@@ -563,6 +578,7 @@ public class RFTGT4FileAdaptor extends FileCpi {
 	public EndpointReferenceType[] fetchDelegationFactoryEndpoints(
 			ReliableFileTransferFactoryPortType factoryPort)
 			throws GATInvocationException {
+	
 		GetMultipleResourceProperties_Element request = new GetMultipleResourceProperties_Element();
 		request
 				.setResourceProperty(new QName[] { RFTConstants.DELEGATION_ENDPOINT_FACTORY });
@@ -570,6 +586,7 @@ public class RFTGT4FileAdaptor extends FileCpi {
 		try {
 			response = factoryPort.getMultipleResourceProperties(request);
 		} catch (RemoteException e) {
+			e.printStackTrace();
 			throw new GATInvocationException(
 					"RFTGT4FileAdaptor: getMultipleResourceProperties, " + e);
 		}

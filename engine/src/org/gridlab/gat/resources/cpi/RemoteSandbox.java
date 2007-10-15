@@ -1,10 +1,17 @@
 package org.gridlab.gat.resources.cpi;
 
-import java.io.FileInputStream;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.net.URISyntaxException;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
 import org.gridlab.gat.GAT;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
@@ -22,17 +29,52 @@ import org.gridlab.gat.resources.ResourceBroker;
 import org.gridlab.gat.resources.SoftwareDescription;
 
 public class RemoteSandbox implements MetricListener {
+	protected static Logger logger = Logger.getLogger(RemoteSandbox.class);
+
 	boolean verbose = false;
 
 	boolean debug = false;
 
 	boolean timing = false;
 
+	private String initiator;
+
+	private Map<Job, String> jobMap = new HashMap<Job, String>();
+
 	public static void main(String[] args) {
 		new RemoteSandbox().start(args);
 	}
 
 	public synchronized void processMetricEvent(MetricValue val) {
+		Job job = (Job) val.getSource();
+		GATContext gatContext = new GATContext();
+		try {
+			URI local = new URI(".JavaGATstatus" + jobMap.get(job));
+			URI dest = new URI("any://" + initiator + "/.JavaGATstatus"
+					+ jobMap.get(job));
+			File localFile = GAT.createFile(gatContext, local);
+			if (localFile.exists()) {
+				localFile.delete();
+			}
+			localFile.createNewFile();
+			FileWriter writer = new FileWriter(localFile);
+			writer.write(job.getState());
+			writer.flush();
+			writer.close();
+			localFile.copy(dest);
+		} catch (GATObjectCreationException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (URISyntaxException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (GATInvocationException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		notifyAll();
 	}
 
@@ -68,13 +110,15 @@ public class RemoteSandbox implements MetricListener {
 		try {
 			URI newURI = new URI(newLocation);
 
-			if (verbose) {
-				System.err.println("rewrite of " + newPath + " to " + newURI);
+			if (logger.isInfoEnabled()) {
+				logger.info("rewrite of " + newPath + " to " + newURI);
 			}
 			res = GAT.createFile(gatContext, preferences, newURI);
 		} catch (Exception e) {
-			System.err.println("could not rewrite poststage file" + newPath
-					+ ":" + e);
+			if (logger.isInfoEnabled()) {
+				logger.info("could not rewrite poststage file" + newPath + ":"
+						+ e);
+			}
 			System.exit(1);
 		}
 
@@ -86,48 +130,57 @@ public class RemoteSandbox implements MetricListener {
 		final String initiator = args[1];
 		final String preStageDoneLocation = args[2];
 		final String remoteCWD = args[3];
+		this.initiator = initiator;
 		verbose = args[4].equalsIgnoreCase("true");
 		debug = args[5].equalsIgnoreCase("true");
 		timing = args[6].equalsIgnoreCase("true");
+		String jobIDsString = args[7];
 
 		if (verbose) {
 			System.setProperty("gat.verbose", "true");
+			logger.setLevel(Level.INFO);
 		}
 		if (debug) {
 			System.setProperty("gat.debug", "true");
+			logger.setLevel(Level.DEBUG);
 		}
 		if (timing) {
 			System.setProperty("gat.timing", "true");
 		}
 
-		if (verbose) {
-			System.err
-					.println("RemoteSandbox started, initiator: " + initiator);
+		if (logger.isInfoEnabled()) {
+			logger.info("RemoteSandbox started, initiator: " + initiator);
 		}
 
 		JobDescription descriptions[] = null;
 		try {
-			if (verbose) {
-				System.err
-						.println("opening descriptor file: " + descriptorFile);
+			if (logger.isInfoEnabled()) {
+				logger.info("opening descriptor file: " + descriptorFile);
 			}
-			FileInputStream tmp = new FileInputStream(descriptorFile);
+			java.io.FileInputStream tmp = new java.io.FileInputStream(
+					descriptorFile);
 			ObjectInputStream in = new ObjectInputStream(tmp);
 			descriptions = (JobDescription[]) in.readObject();
 			in.close();
 		} catch (Exception e) {
-			System.err.println("an error occurred: " + e);
+			if (logger.isDebugEnabled()) {
+				logger.debug("an error occurred: " + e);
+				StringWriter writer = new StringWriter();
+				e.printStackTrace(new PrintWriter(writer));
+				logger.debug(e.toString());
+			}
 			System.exit(1);
 		}
 		Job[] jobs = new Job[descriptions.length];
+		String[] jobIDs = jobIDsString.split(",");
 		for (int currentDescription = 0; currentDescription < descriptions.length; currentDescription++) {
 			// modify the description to run it locally
 			SoftwareDescription sd = descriptions[currentDescription]
 					.getSoftwareDescription();
 			sd.addAttribute("useLocalDisk", "false");
 
-			if (verbose) {
-				System.err.println("read job description: "
+			if (logger.isInfoEnabled()) {
+				logger.info("read job description: "
 						+ descriptions[currentDescription]);
 			}
 
@@ -174,8 +227,8 @@ public class RemoteSandbox implements MetricListener {
 				post.put(src, dest);
 			}
 
-			if (verbose) {
-				System.err.println("modified job description: "
+			if (logger.isInfoEnabled()) {
+				logger.info("modified job description: "
 						+ descriptions[currentDescription]);
 			}
 
@@ -183,16 +236,19 @@ public class RemoteSandbox implements MetricListener {
 			try {
 				broker = GAT.createResourceBroker(gatContext, prefs);
 			} catch (GATObjectCreationException e) {
-				System.err.println("could not create broker: " + e);
+				if (logger.isDebugEnabled()) {
+					logger.debug("could not create broker: " + e);
+				}
 				System.exit(1);
 			}
 
 			try {
 				Job job = broker.submitJob(descriptions[currentDescription]);
+				jobMap.put(job, jobIDs[currentDescription]);
 
 				if (sd.getBooleanAttribute("waitForPreStage", false)) {
-					if (verbose) {
-						System.err.println("deleting prestageDoneFile at "
+					if (logger.isDebugEnabled()) {
+						logger.debug("deleting prestageDoneFile at "
 								+ preStageDoneLocation);
 					}
 
@@ -200,17 +256,18 @@ public class RemoteSandbox implements MetricListener {
 							preStageDoneLocation);
 
 					if (!preStageDoneFile.delete()) {
-						System.err
-								.println("could not delete preStageDone file");
+						if (logger.isInfoEnabled()) {
+							logger.info("could not delete preStageDone file");
+						}
 						System.exit(1);
 					}
-					if (verbose) {
-						System.err.println("deleting prestageDoneFile at "
+					if (logger.isInfoEnabled()) {
+						logger.info("deleting prestageDoneFile at "
 								+ preStageDoneLocation + " DONE");
 					}
 				} else {
-					if (verbose) {
-						System.err.println("not waiting for preStage");
+					if (logger.isInfoEnabled()) {
+						logger.info("not waiting for preStage");
 					}
 				}
 				jobs[currentDescription] = job;
@@ -220,7 +277,9 @@ public class RemoteSandbox implements MetricListener {
 				Metric m = md.createMetric(null);
 				job.addMetricListener(this, m);
 			} catch (Exception e) {
-				System.err.println("an exception occurred: " + e);
+				if (logger.isDebugEnabled()) {
+					logger.debug("an exception occurred: " + e);
+				}
 				System.exit(1);
 			}
 		}
@@ -231,20 +290,23 @@ public class RemoteSandbox implements MetricListener {
 					try {
 						wait();
 					} catch (InterruptedException e) {
-						System.err.println("an exception occurred: " + e);
+						if (logger.isDebugEnabled()) {
+							logger.debug("an exception occurred: " + e);
+						}
 						System.exit(1);
 					}
 				}
 			}
 		}
-		if (verbose) {
+		if (logger.isInfoEnabled()) {
 			for (int i = 0; i < jobs.length; i++) {
 				try {
-					System.err
-							.println("SubmitJobCallback: Job finished, state = "
-									+ jobs[i].getInfo());
+					logger.info("SubmitJobCallback: Job finished, state = "
+							+ jobs[i].getInfo());
 				} catch (GATInvocationException e) {
-					System.err.println("an exception occurred: " + e);
+					if (logger.isDebugEnabled()) {
+						logger.debug("an exception occurred: " + e);
+					}
 					System.exit(1);
 				}
 			}

@@ -336,6 +336,7 @@ public class Sandbox {
 		if (logger.isInfoEnabled()) {
 			logger.info("post stage done "
 					+ (poststageException == null ? "(SUCCESS)" : "(FAILURE)"));
+			logger.info("poststage exception:" + poststageException);
 		}
 
 		postStageTime = System.currentTimeMillis() - start;

@@ -58,7 +58,7 @@ public interface ResourceBroker {
      * @throws GATInvocationException
      *             a remote problem occurred
      */
-    public abstract Reservation reserveResource(
+    public Reservation reserveResource(
             ResourceDescription resourceDescription, TimePeriod timePeriod)
             throws GATInvocationException;
 
@@ -120,12 +120,12 @@ public interface ResourceBroker {
      * @throws GATInvocationException
      *             a remote problem occurred
      */
-    public abstract Job submitJob(JobDescription description)
+    public Job submitJob(JobDescription description)
             throws GATInvocationException;
     
-    public abstract void beginMultiCoreJob();
+    public void beginMultiCoreJob() throws GATInvocationException;
     
-    public abstract Job endMultiCoreJob() throws GATInvocationException;
+    public void endMultiCoreJob() throws GATInvocationException;
 
 }
 

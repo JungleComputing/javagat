@@ -526,8 +526,9 @@ public abstract class FileCpi implements FileInterface {
                         + s.substring(index + 1, s.length()));
             }
         } catch (URISyntaxException e) {
-            System.err.println("internal UnsupportedOperationException: " + e);
-
+            if (logger.isDebugEnabled()) {
+        		logger.debug("internal UnsupportedOperationException: " + e);
+        	}
             return in;
         }
     }

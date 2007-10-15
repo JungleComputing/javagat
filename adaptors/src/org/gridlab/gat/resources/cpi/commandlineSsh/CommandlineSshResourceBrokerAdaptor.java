@@ -86,8 +86,10 @@ public class CommandlineSshResourceBrokerAdaptor extends ResourceBrokerCpi {
 			sui = SSHSecurityUtils.getSshCredential(gatContext, preferences,
 					"ssh", location, SSH_PORT);
 		} catch (Exception e) {
-			System.out.println("SshFileAdaptor: failed to retrieve credentials"
-					+ e);
+			if (logger.isDebugEnabled()) {
+				logger.debug("SshFileAdaptor: failed to retrieve credentials"
+						+ e);
+			}
 		}
 
 		if (sui == null) {
@@ -128,7 +130,7 @@ public class CommandlineSshResourceBrokerAdaptor extends ResourceBrokerCpi {
 			if (sui.getPassword() == null) { // public/private key
 				int slot = sui.getPrivateKeySlot();
 				if (slot == -1) { // not set by the user, assume he only has
-									// one key
+					// one key
 					slot = 0;
 				}
 				command += " -pk=" + slot;

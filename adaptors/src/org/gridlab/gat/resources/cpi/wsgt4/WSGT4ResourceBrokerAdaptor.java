@@ -22,144 +22,138 @@ import org.ietf.jgss.GSSCredential;
 
 /**
  * Implements the <code>ResourceBrokerCpi</code> abstract class.
+ * 
  * @author Balazs Bokodi
  * @version 1.0
  * @since 1.0
  */
 public class WSGT4ResourceBrokerAdaptor extends ResourceBrokerCpi {
-    static final int DEFAULT_GRIDFTP_PORT=2811;
-    protected GSSCredential getCred(JobDescription jobDescription) 
-	throws GATInvocationException {
-	GSSCredential cred = null;
-	URI location = null;
-	try {
-	    location = new URI(getHostname(jobDescription));
-	} catch(Exception e) {
-	    throw new GATInvocationException("WSGT4Job: getSecurityContext, initialization of location failed, " + e);
+	static final int DEFAULT_GRIDFTP_PORT = 2811;
+
+	protected GSSCredential getCred(JobDescription jobDescription)
+			throws GATInvocationException {
+		GSSCredential cred = null;
+		URI location = null;
+		try {
+			location = new URI(getHostname(jobDescription));
+		} catch (Exception e) {
+			throw new GATInvocationException(
+					"WSGT4Job: getSecurityContext, initialization of location failed, "
+							+ e);
+		}
+		try {
+			cred = GlobusSecurityUtils.getGlobusCredential(gatContext,
+					preferences, "globus", location, DEFAULT_GRIDFTP_PORT);
+		} catch (Exception e) {
+			throw new GATInvocationException(
+					"WSGT4Job: could not initialize credentials, " + e);
+		}
+		return cred;
 	}
-	try {
-	    cred = 
-		GlobusSecurityUtils.getGlobusCredential(gatContext, 
-							preferences,
-							"gt4gridftp", 
-							location, 
-							DEFAULT_GRIDFTP_PORT);
-	} catch(Exception e) {
-	    throw new GATInvocationException("WSGT4Job: could not initialize credentials, " + e);
+
+	public WSGT4ResourceBrokerAdaptor(GATContext gatContext,
+			Preferences preferences) throws GATObjectCreationException {
+		super(gatContext, preferences);
 	}
-	return cred;
-    }
 
-    public WSGT4ResourceBrokerAdaptor(GATContext gatContext,
-				    Preferences preferences) 
-	throws GATObjectCreationException {
-        super(gatContext, preferences);
-	if(!GATEngine.VERBOSE) {
-	    System.out.println("wsgt4resourcebroker");
+	protected String createRSL(JobDescription description, Sandbox sandbox)
+			throws GATInvocationException {
+		String rsl = new String("<job>");
+		SoftwareDescription sd = description.getSoftwareDescription();
+
+		if (sd == null) {
+			throw new GATInvocationException(
+					"The job description does not contain a software description");
+		}
+
+		getLocationURI(description).getPath();
+
+		rsl += "<executable>";
+		rsl += getLocationURI(description).getPath();
+		rsl += "</executable>";
+
+		String[] argsA = getArgumentsArray(description);
+
+		if (argsA != null) {
+			for (int i = 0; i < argsA.length; i++) {
+				rsl += "<argument>";
+				rsl += argsA[i];
+				rsl += "</argument>";
+			}
+		}
+
+		// set the environment
+		Map<String, Object> env = sd.getEnvironment();
+		if (env != null && !env.isEmpty()) {
+			Set<String> s = env.keySet();
+			Object[] keys = (Object[]) s.toArray();
+
+			for (int i = 0; i < keys.length; i++) {
+				String val = (String) env.get(keys[i]);
+				rsl += "<environment>";
+				rsl += "<name>" + keys[i] + "</name>";
+				rsl += "<value>" + val + "</value>";
+				rsl += "</environment>";
+			}
+		}
+
+		rsl += "<count>";
+		rsl += getCPUCount(description);
+		rsl += "</count>";
+		rsl += "<directory>";
+		rsl += sandbox.getSandbox();
+		rsl += "</directory>";
+
+		org.gridlab.gat.io.File stdout = sd.getStdout();
+		if (stdout != null) {
+			rsl += "<stdout>";
+			rsl += sandbox.getRelativeStdout().getPath();
+			rsl += "</stdout>";
+		}
+
+		org.gridlab.gat.io.File stderr = sd.getStderr();
+		if (stderr != null) {
+			rsl += "<stderr>";
+			rsl += sandbox.getRelativeStderr().getPath();
+			rsl += "</stderr>";
+		}
+
+		org.gridlab.gat.io.File stdin = sd.getStdin();
+		if (stdin != null) {
+			rsl += "<stdin>";
+			rsl += sandbox.getRelativeStdin().getPath();
+			rsl += "</stdin>";
+		}
+
+		if (GATEngine.VERBOSE) {
+			System.err.println("RSL: " + rsl);
+		}
+
+		rsl += "</job>";
+		return rsl;
 	}
-    }
 
-    protected String createRSL(JobDescription description, Sandbox sandbox) 
-	throws GATInvocationException {
-	String rsl =  new String("<job>");
-	SoftwareDescription sd = description.getSoftwareDescription();
+	public Job submitJob(JobDescription description)
+			throws GATInvocationException {
+		String host = getHostname(description);
+		SoftwareDescription sd = description.getSoftwareDescription();
+		if (sd == null) {
+			throw new GATInvocationException(
+					"WSGT4ResourceBroker: the job description does not contain a software description");
+		}
+		Sandbox sandbox = new Sandbox(gatContext, preferences, description,
+				host, null, true, true, true, true);
 
-        if (sd == null) {
-            throw new GATInvocationException("The job description does not contain a software description");
-        }
-
-	
-        getLocationURI(description).getPath();
-	
-	rsl += "<executable>";
-	rsl += getLocationURI(description).getPath();
-	rsl += "</executable>";
-	
-        String[] argsA = getArgumentsArray(description);
-
-        if (argsA != null) {
-            for (int i = 0; i < argsA.length; i++) {
-                rsl += "<argument>";
-		rsl += argsA[i];
-		rsl += "</argument>";
-            }
-        }
-
-        // set the environment
-        Map<String, Object> env = sd.getEnvironment();
-        if (env != null && !env.isEmpty()) {
-            Set<String> s = env.keySet();
-            Object[] keys = (Object[]) s.toArray();
-
-            for (int i = 0; i < keys.length; i++) {
-                String val = (String) env.get(keys[i]);
-		rsl += "<environment>";
-		rsl += "<name>" + keys[i] + "</name>";
-                rsl += "<value>" + val + "</value>";
-		rsl += "</environment>";
-            }
-        }
-	
-	rsl += "<count>";
-	rsl += getCPUCount(description);
-	rsl += "</count>";
-	rsl += "<directory>";
-        rsl += sandbox.getSandbox();
-	rsl += "</directory>";
-
-        org.gridlab.gat.io.File stdout = sd.getStdout();
-        if (stdout != null) {
-	    rsl += "<stdout>";
-            rsl += sandbox.getRelativeStdout().getPath();
-	    rsl += "</stdout>";
-        }
-
-        org.gridlab.gat.io.File stderr = sd.getStderr();
-        if (stderr != null) {
-            rsl += "<stderr>";
-            rsl += sandbox.getRelativeStderr().getPath();
-	    rsl += "</stderr>";
-        }
-
-        org.gridlab.gat.io.File stdin = sd.getStdin();
-        if (stdin != null) {
-	    rsl += "<stdin>";
-            rsl += sandbox.getRelativeStdin().getPath();
-	    rsl += "</stdin>";
-        }
-
-        if (GATEngine.VERBOSE) {
-            System.err.println("RSL: " + rsl);
-        }
-
-	rsl += "</job>";
-        return rsl;
-    }
-
-    public Job submitJob(JobDescription description)
-        throws GATInvocationException {
-	String host = getHostname(description);
-	SoftwareDescription sd = description.getSoftwareDescription();
-	if(sd == null) {
-	    throw new GATInvocationException("WSGT4ResorceBroker: the job description does not contain a software description");
-        }
-	Sandbox sandbox = new Sandbox(gatContext, preferences, description, host, null, true, true, true, true);
-	
-	String rsl = createRSL(description, sandbox);
-	JobDescriptionType gjobDescription = null;
-	System.out.println(rsl);
-	try {
-	    gjobDescription = RSLHelper.readRSL(rsl);
-	} catch(RSLParseException e) {
-	    throw new GATInvocationException("WSGT4ResourceBroker: " + e);
+		String rsl = createRSL(description, sandbox);
+		JobDescriptionType gjobDescription = null;
+		try {
+			gjobDescription = RSLHelper.readRSL(rsl);
+		} catch (RSLParseException e) {
+			throw new GATInvocationException("WSGT4ResourceBroker: " + e);
+		}
+		GSSCredential cred = getCred(description);
+		
+		return new WSGT4Job(gatContext, preferences, description, sandbox,
+				gjobDescription, getHostname(description), cred);
 	}
-	GSSCredential cred = getCred(description);
-	return new WSGT4Job(gatContext, 
-			    preferences, 
-			    description, 
-			    sandbox, 
-			    gjobDescription,
-			    getHostname(description),
-			    cred);
-    }
 }

@@ -22,13 +22,13 @@ import org.gridlab.gat.resources.cpi.Sandbox;
 public class PbsJob extends JobCpi {
     private static final long serialVersionUID = -5229286816606473700L;
 
-    private PbsBrokerAdaptor mBroker;
+    private PbsResourceBrokerAdaptor mBroker;
 
     private String mId;
 
     //	private Metric mMetric;
 
-    public PbsJob(GATContext gatContext, Preferences preferences, PbsBrokerAdaptor broker, JobDescription description, String id, Sandbox sandbox) {
+    public PbsJob(GATContext gatContext, Preferences preferences, PbsResourceBrokerAdaptor broker, JobDescription description, String id, Sandbox sandbox) {
         super(gatContext, preferences, description, sandbox);
         mBroker = broker;
         mId = id;

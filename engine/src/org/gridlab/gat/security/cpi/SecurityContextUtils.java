@@ -45,8 +45,9 @@ public class SecurityContextUtils {
 	 *            the port to connect to
 	 * @return the list of security contexts that is valid for this adaptor
 	 */
-	public static List<SecurityContext> getValidSecurityContexts(GATContext context,
-			Preferences preferences, String adaptorName, String host, int port) {
+	public static List<SecurityContext> getValidSecurityContexts(
+			GATContext context, Preferences preferences, String adaptorName,
+			String host, int port) {
 		return getValidSecurityContextsByType(context, preferences,
 				null /* no type */, adaptorName, host, port);
 	}
@@ -72,9 +73,9 @@ public class SecurityContextUtils {
 	 *            the port to connect to
 	 * @return the list of security contexts that is valid for this adaptor
 	 */
-	public static List<SecurityContext> getValidSecurityContextsByType(GATContext context,
-			Preferences preferences, String type, String adaptorName,
-			String host, int port) {
+	public static List<SecurityContext> getValidSecurityContextsByType(
+			GATContext context, Preferences preferences, String type,
+			String adaptorName, String host, int port) {
 		ArrayList<SecurityContext> result = new ArrayList<SecurityContext>();
 
 		List<SecurityContext> l;
@@ -117,7 +118,7 @@ public class SecurityContextUtils {
 	 *            the key used to store the adaptor-specific data in the
 	 *            security context
 	 * @param location
-	 *            destionation machine/port used for the security data
+	 *            destination machine/port used for the security data
 	 * @param defaultPort
 	 *            the default port for the protocol used by the adaptor
 	 * @param creator
@@ -133,9 +134,9 @@ public class SecurityContextUtils {
 			throws CouldNotInitializeCredentialException,
 			CredentialExpiredException {
 		// get the list of securityContext that might be valid for this adaptor
-		List<SecurityContext> l = SecurityContextUtils.getValidSecurityContexts(context,
-				preferences, adaptorName, location.resolveHost(), location
-						.getPort(defaultPort));
+		List<SecurityContext> l = SecurityContextUtils
+				.getValidSecurityContexts(context, preferences, adaptorName,
+						location.resolveHost(), location.getPort(defaultPort));
 
 		if (l != null) {
 			// ok, we found a valid certificate context in the list
@@ -165,7 +166,6 @@ public class SecurityContextUtils {
 
 					if (userData != null) {
 						c.putDataObject(dataObjectKey, userData);
-
 						return userData;
 					}
 				}
@@ -182,7 +182,7 @@ public class SecurityContextUtils {
 		SecurityContext c = creator.createDefaultSecurityContext(context,
 				preferences, location);
 		c.addNote("adaptors", adaptorName); // limit the context to this adaptor
-											// only
+		// only
 		context.addSecurityContext(c);
 
 		Object userData = c.getDataObject(dataObjectKey);

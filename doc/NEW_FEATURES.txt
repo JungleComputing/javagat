@@ -1,0 +1,49 @@
+- added Preference: xxx.adaptor.name to be a list (see javadoc of Preferences for
+  more information about the syntax)
+  
+- added attribute "getRemoteSandboxOutputURI" for SoftwareDescription. 
+  The standard out and standard error will be written to the given URI appended
+  by ".X.out" and ".X.err" where X is a counter
+  
+- logging uses log4j (see: http://logging.apache.org/log4j/) the logging properties
+  should be configured using the log4j.properties file in the $GAT_LOCATION dir.
+  logging using the commandline parameters (-Dgat.verbose and -Dgat.debug) is still
+  possible and overrides the configuration of the log4j.properties file.
+  
+- upgraded code to java 1.5
+
+- added multicore support for RemoteSandbox jobs.
+  to use the multicore functionality of a resourcebroker use the methods
+  broker.beginMultiCoreJob();
+  job = broker.submitJob(jobDescription);
+  ...
+  job_n = broker.submitJob(jobDescription_n);
+  broker.endMultiCoreJob();
+  The submitJob returns a (local) RemoteSandboxJob, a job that has 1 to 1 relation 
+  with the (remote) sandbox job. The RemoteSandboxJob monitors the status of the 
+  sandbox job by means of reading a status file (any://localhost/.status_<jobID>_<random>)
+  
+- moved the RemoteSandboxSubmitter to the engine, may also be used with other adaptors
+
+- created extra security context: CredentialSecurityContext, to store for instance
+  GSScredentials.
+  
+- modified the CertificateSecurityContext to hold also a certfile (in addition to
+  the keyfile)
+
+- removed the preference "userCert" --> use CredentialSecurityContext instead
+
+- changed the GlobusSecurityUtils. To retrieve a GSSCredential:
+  1. check the securitycontexts
+  1.1 check the credentialsecuritycontexts (GssCredential or proxy-cert in byte[] or String)
+  1.2 check the certificatesecuritycontexts (Passphrase + certfilelocation + keyfilelocation)
+  2. check the environment variable
+  3. check the default location 
+  Using 1.2 the JavaGAT can submit a globus job from a local machine with only the JavaGAT
+  (and the including CoG) installed and without having Globus installed. 
+  The following files (described by their default location) should be available 
+  at the local machine:
+  .globus/userkey.pem
+  .globus/usercert.pem
+  .globus/certificates (dir) or /etc/grid-security/certificates (also dir)
+  

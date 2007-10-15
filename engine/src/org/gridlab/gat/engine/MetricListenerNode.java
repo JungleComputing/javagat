@@ -29,7 +29,6 @@ class MetricListenerNode {
         }
 
         MetricListenerNode other = (MetricListenerNode) o;
-
         return (other.adaptor == adaptor) && other.metric.equals(metric)
             && other.metricListener.equals(metricListener);
     }

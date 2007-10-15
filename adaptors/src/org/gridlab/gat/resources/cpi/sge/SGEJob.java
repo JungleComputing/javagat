@@ -128,7 +128,7 @@ public class SGEJob extends JobCpi {
         }
     }
     
-    public SGEJob(GATContext gatContext, Preferences preferences, SGEBrokerAdaptor broker, JobDescription jobDescription,
+    public SGEJob(GATContext gatContext, Preferences preferences, SGEResourceBrokerAdaptor broker, JobDescription jobDescription,
             Session session, String id, Sandbox sandbox) {
         super(gatContext, preferences, jobDescription, sandbox);
         

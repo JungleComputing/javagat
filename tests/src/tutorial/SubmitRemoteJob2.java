@@ -10,7 +10,8 @@ import org.gridlab.gat.resources.ResourceBroker;
 import org.gridlab.gat.resources.SoftwareDescription;
 
 public class SubmitRemoteJob2 {
-    public static void main(String[] args) throws Exception {
+	
+	public static void main(String[] args) throws Exception {
         GATContext context = new GATContext();
         context.addPreference("ResourceBroker.adaptor.name", "globus");
         context.addPreference("ResourceBroker.jobmanagerContact", "fs0.das3.cs.vu.nl/jobmanager-sge");
@@ -18,7 +19,8 @@ public class SubmitRemoteJob2 {
         
         SoftwareDescription sd1 = new SoftwareDescription();
         sd1.addAttribute("getRemoteSandboxOutput", "true");
-        sd1.addAttribute("getRemoteSandboxOutputURI", "any://fs0.das2.cs.vu.nl/GAT/output1");
+        sd1.addAttribute("getRemoteSandboxOutputURI", "any://fs0.das2.cs.vu.nl/GAT/output");
+        sd1.addAttribute("remoteGatLocation", "../GAT");
         sd1.setLocation("/bin/sh");
         sd1.setArguments(new String[]{"/home0/rkemp/script.sh"});
         sd1.addAttribute("useLocalDisk", "true");
@@ -38,7 +40,8 @@ public class SubmitRemoteJob2 {
         
         SoftwareDescription sd3 = new SoftwareDescription();
         sd3.addAttribute("getRemoteSandboxOutput", "true");
-        sd3.addAttribute("getRemoteSandboxOutputURI", "any://fs0.das2.cs.vu.nl/GAT/output1");
+        sd3.addAttribute("getRemoteSandboxOutputURI", "any://fs0.das2.cs.vu.nl/GAT/output");
+        sd3.addAttribute("remoteGatLocation", "../GAT");
         sd3.setLocation("/bin/sh");
         sd3.setArguments(new String[]{"/home0/rkemp/script.sh"});
         sd3.addAttribute("useLocalDisk", "true");
@@ -50,34 +53,32 @@ public class SubmitRemoteJob2 {
 
         ResourceBroker broker = GAT.createResourceBroker(context);
         broker.beginMultiCoreJob();
-        broker.submitJob(jd1);
-        broker.submitJob(jd2);
-        Job job = broker.endMultiCoreJob();
+        Job job1 = broker.submitJob(jd1);
+        Job job2 = broker.submitJob(jd2);
+        broker.endMultiCoreJob();
         Job job3 = broker.submitJob(jd3);
         
 
-        /*while ((job1.getState() != Job.STOPPED)
+        while ((job1.getState() != Job.STOPPED)
             && (job1.getState() != Job.SUBMISSION_ERROR)) {
-            System.err.println("job state = " + job1.getInfo());
-            Thread.sleep(10000);
+            Thread.sleep(1000);
         }
         while ((job2.getState() != Job.STOPPED)
                 && (job2.getState() != Job.SUBMISSION_ERROR)) {
-                System.err.println("job state = " + job2.getInfo());
-                Thread.sleep(10000);
-       }*/
-       while ((job.getState() != Job.STOPPED)
+                Thread.sleep(1000);
+        }
+       /*while ((job.getState() != Job.STOPPED)
                 && (job.getState() != Job.SUBMISSION_ERROR)) {
                 System.err.println("job state = " + job.getInfo());
                 Thread.sleep(10000);
-       }
+       }*/
        while ((job3.getState() != Job.STOPPED)
                && (job3.getState() != Job.SUBMISSION_ERROR)) {
-               System.err.println("job state = " + job.getInfo());
-               Thread.sleep(10000);
+               Thread.sleep(1000);
        }
        /*System.err.println("job DONE, state = " + job1.getInfo());
        System.err.println("job DONE, state = " + job2.getInfo());*/
        GAT.end();
+       System.out.println("jobs DONE!");       
     }
 }

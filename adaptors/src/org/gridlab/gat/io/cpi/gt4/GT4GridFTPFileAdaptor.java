@@ -40,7 +40,7 @@ public class GT4GridFTPFileAdaptor extends GT4FileAdaptor {
 
 	/**
 	 * This method copies the physical file represented by this File instance to
-	 * a physical file identified by the passed URI. This method uesd by the
+	 * a physical file identified by the passed URI. This method used by the
 	 * <code>copy</code> method. Tries to do 3rd party copy, if it is
 	 * supported. The destination
 	 * 
@@ -129,7 +129,6 @@ public class GT4GridFTPFileAdaptor extends GT4FileAdaptor {
 			throw new GATInvocationException(
 					"GT4GridFTPFileAdaptor: copy is failed.");
 		}
-		System.out.println("GT4GridFTPFileAdaptor: copy1 done.");
 		if (GATEngine.VERBOSE) {
 			System.out.println("GT4GriFTPFileAdaptor: copy1 done.");
 		}
@@ -151,7 +150,6 @@ public class GT4GridFTPFileAdaptor extends GT4FileAdaptor {
 		} catch (GeneralException e) {
 			throw new GATInvocationException(e.getMessage());
 		}
-		System.out.println("GT4GridFTPFileAdaptor: copy2 done.");
 		if (GATEngine.VERBOSE) {
 			System.out.println("GT4GriFTPFileAdaptor: copy2 done.");
 		}
@@ -170,8 +168,6 @@ public class GT4GridFTPFileAdaptor extends GT4FileAdaptor {
 	 * 
 	 */
 	public void copy(URI dest) throws GATInvocationException {
-		System.out.println("gt4 gridftp copy: " + srcProvider + " " + location
-				+ " -> " + dest);
 		// determinate dest is a directory, and pass the filename if it is,
 		// otherwise it will fail
 		File destinationFile = null;
