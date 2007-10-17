@@ -12,6 +12,7 @@ import org.gridlab.gat.steering.Steerable;
 import org.gridlab.gat.steering.SteeredIDExistsException;
 import org.gridlab.gat.steering.SteeredIDUnknownException;
 import org.gridlab.gat.steering.SteeringControl;
+import org.gridlab.gat.steering.SteeringControlDefinition;
 import org.gridlab.gat.steering.SteeringManager;
 
 /**
@@ -54,16 +55,16 @@ public class SteeringManagerCpi implements SteeringManager {
         throw new UnsupportedOperationException("Not implemented");
     }
 
-    public List getSteeredObjectsIDs() throws GATInvocationException {
+    public List<String> getSteeredObjectsIDs() throws GATInvocationException {
         throw new UnsupportedOperationException("Not implemented");
     }
 
-    public List getControlDefinitions(String steeredObjectID)
+    public List<SteeringControlDefinition> getControlDefinitions(String steeredObjectID)
         throws SteeredIDUnknownException, GATInvocationException {
         throw new UnsupportedOperationException("Not implemented");
     }
 
-    public Map executeControl(String steeredObjectID, SteeringControl sc)
+    public Map<String, Object> executeControl(String steeredObjectID, SteeringControl sc)
         throws SteeredIDUnknownException, NoSuchControlException,
         GATInvocationException {
         throw new UnsupportedOperationException("Not implemented");

@@ -6,6 +6,7 @@ import org.gridlab.gat.GATContext;
 import org.gridlab.gat.Preferences;
 import org.gridlab.gat.io.cpi.LogicalFileCpi;
 
+@SuppressWarnings("serial")
 public class LocalLogicalFileAdaptor extends LogicalFileCpi {
     /**
      * This constructor creates a LocalLogicalFileAdaptor corresponding to the

@@ -15,12 +15,12 @@ public interface SteeringManager {
     public void unregisterSteered(String steeredObjectID)
         throws SteeredIDUnknownException, GATInvocationException;
 
-    public List getSteeredObjectsIDs() throws GATInvocationException;
+    public List<String> getSteeredObjectsIDs() throws GATInvocationException;
 
-    public List getControlDefinitions(String steeredObjectID)
+    public List<SteeringControlDefinition> getControlDefinitions(String steeredObjectID)
         throws SteeredIDUnknownException, GATInvocationException;
 
-    public Map executeControl(String steeredObjectID, SteeringControl sc)
+    public Map<String, Object> executeControl(String steeredObjectID, SteeringControl sc)
         throws SteeredIDUnknownException, NoSuchControlException,
         GATInvocationException;
 }

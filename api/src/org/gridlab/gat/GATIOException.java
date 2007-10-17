@@ -9,6 +9,7 @@ import java.io.IOException;
 /**
  * @author rob
  */
+@SuppressWarnings("serial")
 public class GATIOException extends IOException {
     Exception cause;
 

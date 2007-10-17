@@ -14,6 +14,7 @@ package org.gridlab.gat.resources;
  * as either a ResourceDescription, or as a specific Resource; only one of
  * these may be specified.
  */
+@SuppressWarnings("serial")
 public class JobDescription implements java.io.Serializable {
     SoftwareDescription softwareDescription;
 

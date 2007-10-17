@@ -17,14 +17,14 @@ class SteeringMaster extends Thread {
 
     public void run() {
         try {
-            List steerables = sm.getSteeredObjectsIDs();
+            List<String> steerables = sm.getSteeredObjectsIDs();
             if (!steerables.contains("MY_STEERABLE_COMPONENT")) {
                 System.out
                     .println("MASTER: Steerable object MY_STEERABLE_COMPONENT not found. Exiting ...");
                 System.exit(1);
             }
 
-            List controls = null;
+            List<SteeringControlDefinition> controls = null;
 
             System.out.println("MASTER: Querying controls available ...");
 
@@ -68,7 +68,7 @@ class SteeringMaster extends Thread {
                 startDefinition, null));
             System.out.println("MASTER: Command successfully sent.");
 
-            Map actualParameters1 = null, actualParameters2 = null, actualParameters3 = null;
+            Map<String, Object> actualParameters1 = null, actualParameters2 = null, actualParameters3 = null;
 
             for (int i = 0; i < 10; i++) {
                 // Wait for 3 seconds ...
@@ -76,7 +76,7 @@ class SteeringMaster extends Thread {
 
                 // Set value of first steered int variable to i:
 
-                actualParameters1 = new HashMap();
+                actualParameters1 = new HashMap<String, Object>();
                 actualParameters1.put("var.name", "MY_STEERED_INT_1");
                 actualParameters1.put("var.type", "Integer");
                 actualParameters1.put("var.value", new Integer(i));
@@ -90,7 +90,7 @@ class SteeringMaster extends Thread {
 
                 // Set value of second steered int variable to 2*i:
 
-                actualParameters2 = new HashMap();
+                actualParameters2 = new HashMap<String, Object>();
                 actualParameters2.put("var.name", "MY_STEERED_INT_2");
                 actualParameters2.put("var.type", "Integer");
                 actualParameters2.put("var.value", new Integer(2 * i));
@@ -104,7 +104,7 @@ class SteeringMaster extends Thread {
 
                 // Set value of the steered double variable to 10.0/i:
 
-                actualParameters3 = new HashMap();
+                actualParameters3 = new HashMap<String, Object>();
                 actualParameters3.put("var.name", "MY_STEERED_DOUBLE");
                 actualParameters3.put("var.type", "Double");
                 actualParameters3.put("var.value", new Double(10.0 / i));

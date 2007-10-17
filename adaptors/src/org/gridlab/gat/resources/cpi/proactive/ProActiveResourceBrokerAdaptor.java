@@ -28,13 +28,13 @@ public class ProActiveResourceBrokerAdaptor extends ResourceBrokerCpi
     private int maxNodesPerWatcher = 16;
     
     /** Set of available nodes. */
-    private static HashSet availableNodeSet = new HashSet();
+    private static HashSet<NodeInfo> availableNodeSet = new HashSet<NodeInfo>();
 
     /** Set of all nodes. */
-    private static HashSet nodeSet = new HashSet();
+    private static HashSet<NodeInfo> nodeSet = new HashSet<NodeInfo>();
 
     /** List of ProActiveDescriptors. */
-    private static ArrayList pads = new ArrayList();
+    private static ArrayList<ProActiveDescriptor> pads = new ArrayList<ProActiveDescriptor>();
 
     /** Current watcher. */
     JobWatcher watcher = null;
@@ -46,7 +46,7 @@ public class ProActiveResourceBrokerAdaptor extends ResourceBrokerCpi
     int jobWatcherCount = 0;
 
     /** List of jobs to schedule. */
-    private ArrayList jobList = new ArrayList();
+    private ArrayList<Job> jobList = new ArrayList<Job>();
 
     /**
      * Number of ProActive descriptors for which an addNodes call is
@@ -119,7 +119,7 @@ public class ProActiveResourceBrokerAdaptor extends ResourceBrokerCpi
                     + " a comma-separated list of ProActive descriptor xmls.");
         }
         StringTokenizer tok = new StringTokenizer(descriptors, ",");
-        ArrayList xmls = new ArrayList();
+        ArrayList<String> xmls = new ArrayList<String>();
         while (tok.hasMoreTokens()) {
             xmls.add(tok.nextToken());
         }
@@ -157,7 +157,7 @@ public class ProActiveResourceBrokerAdaptor extends ResourceBrokerCpi
      * @param descriptor the ProActive descriptor URL.
      * @param nodes the list of nodes.
      */
-    void addNodes(String descriptor, ArrayList nodes, ProActiveDescriptor pad) {
+    void addNodes(String descriptor, ArrayList<Node> nodes, ProActiveDescriptor pad) {
         synchronized(availableNodeSet) {
             if (pad == null) {
                 remainingCalls--;
@@ -253,14 +253,14 @@ public class ProActiveResourceBrokerAdaptor extends ResourceBrokerCpi
      */
     private NodeInfo[] obtainNodes(int n) {
         NodeInfo[] nodes = new NodeInfo[n];
-        HashSet h = new HashSet();
+        HashSet<NodeInfo> h = new HashSet<NodeInfo>();
 
         logger.debug("ObtainNodes: n = " + n + ", size = "
                 + availableNodeSet.size());
 
         synchronized(availableNodeSet) {
             int index = 0;
-            for (Iterator i = availableNodeSet.iterator(); i.hasNext();) {
+            for (Iterator<NodeInfo> i = availableNodeSet.iterator(); i.hasNext();) {
                 NodeInfo nodeInfo = (NodeInfo) i.next();
                 nodes[index++] = nodeInfo;
                 h.add(nodeInfo);
@@ -301,7 +301,7 @@ public class ProActiveResourceBrokerAdaptor extends ResourceBrokerCpi
     public static void end() {
         if (nodeSet.size() != 0) {
             Threader threader = Threader.createThreader(1);
-            for (Iterator i = nodeSet.iterator(); i.hasNext();) {
+            for (Iterator<NodeInfo> i = nodeSet.iterator(); i.hasNext();) {
                 final NodeInfo nodeInfo = (NodeInfo) i.next();
                 threader.submit(new Thread("Terminator") {
                     public void run() {

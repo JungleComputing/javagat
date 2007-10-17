@@ -8,17 +8,20 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.log4j.Logger;
 import org.gridlab.gat.GAT;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.Preferences;
 import org.gridlab.gat.URI;
-import org.gridlab.gat.engine.GATEngine;
 import org.gridlab.gat.io.File;
 import org.gridlab.gat.resources.JobDescription;
 import org.gridlab.gat.resources.SoftwareDescription;
 
 public class PostStagedFileSet {
+	
+	protected static Logger logger = Logger.getLogger(PostStagedFileSet.class);
+	
     private GATContext gatContext;
 
     private Preferences preferences;
@@ -53,13 +56,13 @@ public class PostStagedFileSet {
 
         resolve();
 
-        if (GATEngine.VERBOSE) {
-            System.err.println(this);
+        if (logger.isInfoEnabled()) {
+            logger.info(this);
         }
     }
 
     public PostStagedFileSet(GATContext gatContext, Preferences preferences,
-            ArrayList files, String host, String sandbox)
+            ArrayList<File> files, String host, String sandbox)
             throws GATInvocationException {
         this.gatContext = gatContext;
         this.preferences = preferences;
@@ -78,13 +81,13 @@ public class PostStagedFileSet {
                 "The job description does not contain a software description");
         }
 
-        Map post = sd.getPostStaged();
+        Map<File, File> post = sd.getPostStaged();
 
-        ArrayList tmp = new ArrayList();
+        ArrayList<PostStagedFile> tmp = new ArrayList<PostStagedFile>();
         
         if (post != null) {
-            Set keys = post.keySet();
-            Iterator i = keys.iterator();
+            Set<File> keys = post.keySet();
+            Iterator<File> i = keys.iterator();
 
             while (i.hasNext()) {
                 File srcFile = (File) i.next();
@@ -128,7 +131,7 @@ public class PostStagedFileSet {
         files = (PostStagedFile[]) tmp.toArray(new PostStagedFile[] {});
     }
 
-    private void resolveFiles(ArrayList f) throws GATInvocationException {
+    private void resolveFiles(ArrayList<File> f) throws GATInvocationException {
         if (f == null) return;
 
         int startPos = 0;

@@ -36,7 +36,7 @@ public class MetricListenerTest implements MetricListener {
             //new Thread(new Server()).start();
             // query Monitorable object:
             //List metricDefinitions = m.getMetricDefinitions();
-            Map params = new HashMap();
+            Map<String, Object> params = new HashMap<String, Object>();
 
             params.put("jobid", "1000");
 

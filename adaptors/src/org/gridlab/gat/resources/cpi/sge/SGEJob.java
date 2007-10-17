@@ -29,6 +29,7 @@ import org.gridlab.gat.resources.cpi.Sandbox;
  *
  * @author ole.weidner
  */
+@SuppressWarnings("serial")
 public class SGEJob extends JobCpi {
     
     private String jobID;
@@ -36,7 +37,7 @@ public class SGEJob extends JobCpi {
 //    private Metric statusMetric;
     private JobDescription jobDescription;
     private Session session;
-    private Hashtable time;
+    private Hashtable<String, Long> time;
     
     /**
      * The jobStartListener runs in a thread and checks the job's state.
@@ -50,9 +51,9 @@ public class SGEJob extends JobCpi {
         
         Session session = null;
         String jobID    = null;
-        Hashtable time  = null;
+        Hashtable<String, Long> time  = null;
 
-        public jobStartListener(Session session, String jobID, Hashtable time) {
+        public jobStartListener(Session session, String jobID, Hashtable<String, Long> time) {
             this.session = session;
             this.jobID = jobID;
             this.time = time;
@@ -98,9 +99,9 @@ public class SGEJob extends JobCpi {
         
         Session session = null;
         String jobID    = null;
-        Hashtable time  = null;
+        Hashtable<String, Long> time  = null;
 
-        public jobStopListener(Session session, String jobID, Hashtable time) {
+        public jobStopListener(Session session, String jobID, Hashtable<String, Long> time) {
             this.session = session;
             this.jobID = jobID;
             this.time = time;
@@ -136,7 +137,7 @@ public class SGEJob extends JobCpi {
         this.session = session;
         state = INITIAL;
         
-        HashMap returnDef = new HashMap();
+        HashMap<String, Object> returnDef = new HashMap<String, Object>();
         returnDef.put("status", String.class);
         statusMetricDefinition = new MetricDefinition("job.status",
                 MetricDefinition.DISCRETE, "String", null, null, returnDef);
@@ -144,7 +145,7 @@ public class SGEJob extends JobCpi {
         GATEngine.registerMetric(this, "getJobStatus", statusMetricDefinition);
 //        statusMetric = statusMetricDefinition.createMetric(null);
         
-        time = new Hashtable();
+        time = new Hashtable<String, Long>();
         
         jobStartListener jsl = new jobStartListener(this.session, this.jobID, time);
         new Thread(jsl).start();
@@ -219,9 +220,9 @@ public class SGEJob extends JobCpi {
         }
     }
     
-    public Map getInfo() {
+    public Map<String, Object> getInfo() {
         
-        HashMap m = new HashMap();
+        HashMap<String, Object> m = new HashMap<String, Object>();
         setState();
         
         try {

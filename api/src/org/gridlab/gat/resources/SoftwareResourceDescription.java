@@ -70,6 +70,7 @@ import java.util.Map;
  * <TD>The os release as returned from uname -r
  * <TR></TBODY> </TABLE>
  */
+@SuppressWarnings("serial")
 public class SoftwareResourceDescription extends ResourceDescription {
     /**
      * Constructs a SoftwareResourceDescription associated without attributes and
@@ -86,7 +87,7 @@ public class SoftwareResourceDescription extends ResourceDescription {
      * @param attributes A java.util.Map, which describes the attributes of this
      * resource
      */
-    public SoftwareResourceDescription(Map attributes) {
+    public SoftwareResourceDescription(Map<String, Object> attributes) {
         super(attributes);
     }
 
@@ -101,7 +102,7 @@ public class SoftwareResourceDescription extends ResourceDescription {
      * resourceDescriptions each of which describes a software component upon
      * which this software component depends.
      */
-    public SoftwareResourceDescription(Map attributes, List resourceDescriptions) {
+    public SoftwareResourceDescription(Map<String, Object> attributes, List<ResourceDescription> resourceDescriptions) {
         super(attributes, resourceDescriptions);
     }
 }

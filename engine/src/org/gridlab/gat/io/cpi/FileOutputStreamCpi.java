@@ -2,11 +2,11 @@ package org.gridlab.gat.io.cpi;
 
 import java.util.List;
 
+import org.apache.log4j.Logger;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.Preferences;
 import org.gridlab.gat.URI;
-import org.gridlab.gat.engine.GATEngine;
 import org.gridlab.gat.io.FileOutputStreamInterface;
 import org.gridlab.gat.monitoring.Metric;
 import org.gridlab.gat.monitoring.MetricDefinition;
@@ -23,7 +23,10 @@ import org.gridlab.gat.monitoring.MetricValue;
  * corresponding method in the FileStream class at runtime.
  */
 public abstract class FileOutputStreamCpi implements FileOutputStreamInterface {
-    protected GATContext gatContext;
+    
+	protected static Logger logger = Logger.getLogger(FileOutputStreamCpi.class);
+	
+	protected GATContext gatContext;
 
     protected Preferences preferences;
 
@@ -52,8 +55,8 @@ public abstract class FileOutputStreamCpi implements FileOutputStreamInterface {
         this.location = location;
         this.append = append.booleanValue();
 
-        if(GATEngine.DEBUG) {
-            System.err.println("FileOutputStreamCpi: created stream with URI " + location);
+        if(logger.isDebugEnabled()) {
+            logger.debug("FileOutputStreamCpi: created stream with URI " + location);
         }
     }
 
@@ -149,7 +152,7 @@ public abstract class FileOutputStreamCpi implements FileOutputStreamInterface {
      *
      * @see org.gridlab.gat.monitoring.Monitorable#getMetrics()
      */
-    public List getMetricDefinitions() throws GATInvocationException {
+    public List<MetricDefinition> getMetricDefinitions() throws GATInvocationException {
         throw new UnsupportedOperationException("Not implemented");
     }
 

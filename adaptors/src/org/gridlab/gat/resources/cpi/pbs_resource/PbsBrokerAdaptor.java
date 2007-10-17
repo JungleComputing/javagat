@@ -84,7 +84,7 @@ public class PbsBrokerAdaptor extends ResourceBrokerCpi implements IParameter {
             String HwArg = null;
 
             ResourceDescription rdJob = null;
-            HashMap rdJob_attr = null;
+            HashMap<String, Object> rdJob_attr = null;
 
             Sandbox sandbox = null;
 
@@ -109,8 +109,7 @@ public class PbsBrokerAdaptor extends ResourceBrokerCpi implements IParameter {
              load the resource attributes into a new hashtable.
              */
 
-            rdJob_attr = new HashMap();
-            rdJob_attr = (HashMap) rdJob.getDescription();
+            rdJob_attr = (HashMap<String, Object>) rdJob.getDescription();
 
             String host = getHostname(description);
             if (host != null) {
@@ -290,11 +289,11 @@ public class PbsBrokerAdaptor extends ResourceBrokerCpi implements IParameter {
         }
     }
 
-    Map getInfo(String id) throws GATInvocationException {
+    Map<String, Object> getInfo(String id) throws GATInvocationException {
         try {
-            Vector params = Executer.allResults("qstat -f " + id);
+            Vector<String> params = Executer.allResults("qstat -f " + id);
             if (params.isEmpty()) {
-                return new HashMap();
+                return new HashMap<String, Object>();
             }
             params.remove(0);
             return Executer.getPropertiesForm(params, '=');
@@ -368,10 +367,10 @@ public class PbsBrokerAdaptor extends ResourceBrokerCpi implements IParameter {
     //	}
     //
     private PbsResponse getJob(String id) throws IOException {
-        Vector jobs = Executer.allResults("qstat");
+        Vector<String> jobs = Executer.allResults("qstat");
         PbsResponse result = null;
         for (int i = 2; i < jobs.size(); ++i) {
-            String elem = (String) jobs.get(i);
+            String elem = jobs.get(i);
             PbsResponse temp = PbsResponse.parseJobLine(elem);
             if (id.startsWith(temp.getId())) {
                 result = temp;

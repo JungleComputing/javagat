@@ -53,7 +53,7 @@ public interface Monitorable {
      * @throws GATInvocationException
      *             An error occurred while getting the list of metrics
      */
-    public List getMetricDefinitions() throws GATInvocationException;
+    public List<MetricDefinition> getMetricDefinitions() throws GATInvocationException;
 
     /**
      * Gets the MetricDefinition using its name.

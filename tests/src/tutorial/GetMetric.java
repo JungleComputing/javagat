@@ -19,7 +19,7 @@ public class GetMetric {
 
         MetricDefinition def = m.getMetricDefinitionByName("host.mem.free");
 
-        HashMap params = new HashMap();
+        HashMap<String, Object> params = new HashMap<String, Object>();
         params.put("host", args[0]);
 
         Metric metric = def.createMetric(params);

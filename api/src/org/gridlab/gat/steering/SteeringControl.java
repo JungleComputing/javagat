@@ -6,9 +6,9 @@ public class SteeringControl {
 
     SteeringControlDefinition scd = null;
 
-    Map actualParameters = null;
+    Map<String, Object> actualParameters = null;
 
-    public SteeringControl(SteeringControlDefinition scd, Map actualParameters) {
+    public SteeringControl(SteeringControlDefinition scd, Map<String, Object> actualParameters) {
         this.scd = scd;
         this.actualParameters = actualParameters;
     }
@@ -17,7 +17,7 @@ public class SteeringControl {
         return scd;
     }
 
-    public Map getParameters() {
+    public Map<String, Object> getParameters() {
         return actualParameters;
     }
 

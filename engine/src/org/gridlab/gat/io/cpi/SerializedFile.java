@@ -11,6 +11,7 @@ import org.gridlab.gat.advert.Advertisable;
  * @author rob
  *
  */
+@SuppressWarnings("serial")
 public class SerializedFile implements Serializable, Advertisable {
     String location;
 

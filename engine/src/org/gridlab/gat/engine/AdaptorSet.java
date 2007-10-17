@@ -5,15 +5,20 @@ package org.gridlab.gat.engine;
 
 import java.util.ArrayList;
 
+import org.apache.log4j.Logger;
+
 /** Represents the set of all loaded adaptors for all types.
  *
  * @author rob
  */
 public class AdaptorSet {
-    /** Keys are cpiClass names, elements are AdaptorLists. */
-    ArrayList adaptorLists = new ArrayList();
+	protected static Logger logger = Logger.getLogger(AdaptorSet.class);
+	
+	/** Keys are cpiClass names, elements are AdaptorLists. */
+    ArrayList<AdaptorList> adaptorLists = new ArrayList<AdaptorList>();
 
-    ArrayList adaptorTypes = new ArrayList();
+    ArrayList<String> adaptorTypes = new ArrayList<String>();
+    
 
     public int size() {
         return adaptorLists.size();
@@ -57,7 +62,7 @@ public class AdaptorSet {
         String policy = System.getProperty("adaptor.order.policy");
 
         if (policy != null) {
-            Class c;
+            Class<?> c;
 
             try {
                 c = Class.forName(policy);
@@ -71,15 +76,14 @@ public class AdaptorSet {
                 throw new Error("adaptor policy " + policy
                     + " could not be instantiated: " + e);
             }
-
-            if (GATEngine.VERBOSE) {
-                System.err.println("using adaptor ordering policy: " + policy);
+            if (logger.isInfoEnabled()) {
+            	logger.info("using adaptor ordering policy: " + policy);
             }
         } else {
             adaptorOrderPolicy = new DefaultAdaptorOrderPolicy();
 
-            if (GATEngine.VERBOSE) {
-                System.err.println("using default adaptor ordering policy");
+            if (logger.isInfoEnabled()) {
+            	logger.info("using default adaptor ordering policy");
             }
         }
 

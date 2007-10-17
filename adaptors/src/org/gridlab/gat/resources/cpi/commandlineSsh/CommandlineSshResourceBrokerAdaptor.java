@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Map;
 
+import org.apache.log4j.Logger;
 import org.gridlab.gat.CommandNotFoundException;
 import org.gridlab.gat.GAT;
 import org.gridlab.gat.GATContext;
@@ -12,7 +13,6 @@ import org.gridlab.gat.GATObjectCreationException;
 import org.gridlab.gat.MethodNotApplicableException;
 import org.gridlab.gat.Preferences;
 import org.gridlab.gat.URI;
-import org.gridlab.gat.engine.GATEngine;
 import org.gridlab.gat.engine.util.InputForwarder;
 import org.gridlab.gat.engine.util.OutputForwarder;
 import org.gridlab.gat.io.FileInputStream;
@@ -27,178 +27,185 @@ import org.gridlab.gat.resources.cpi.Sandbox;
 
 public class CommandlineSshResourceBrokerAdaptor extends ResourceBrokerCpi {
 
-    public static final int SSH_PORT = 22;
+	protected static Logger logger = Logger
+			.getLogger(CommandlineSshResourceBrokerAdaptor.class);
 
-    private SshUserInfo sui;
+	public static final int SSH_PORT = 22;
 
-    private boolean windows = false;
+	private SshUserInfo sui;
 
-    /**
-     * This method constructs a CommandlineSshResourceBrokerAdaptor instance
-     * corresponding to the passed GATContext.
-     *
-     * @param gatContext
-     *            A GATContext which will be used to broker resources
-     */
-    public CommandlineSshResourceBrokerAdaptor(GATContext gatContext,
-            Preferences preferences) throws GATObjectCreationException {
-        super(gatContext, preferences);
+	private boolean windows = false;
 
-        String osname = System.getProperty("os.name");
-        if (osname.startsWith("Windows")) windows = true;
-    }
+	/**
+	 * This method constructs a CommandlineSshResourceBrokerAdaptor instance
+	 * corresponding to the passed GATContext.
+	 * 
+	 * @param gatContext
+	 *            A GATContext which will be used to broker resources
+	 */
+	public CommandlineSshResourceBrokerAdaptor(GATContext gatContext,
+			Preferences preferences) throws GATObjectCreationException {
+		super(gatContext, preferences);
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see org.gridlab.gat.resources.ResourceBroker#submitJob(org.gridlab.gat.resources.JobDescription)
-     */
-    public Job submitJob(JobDescription description)
-            throws GATInvocationException {
-        SoftwareDescription sd = description.getSoftwareDescription();
+		String osname = System.getProperty("os.name");
+		if (osname.startsWith("Windows"))
+			windows = true;
+	}
 
-        if (sd == null) {
-            throw new GATInvocationException(
-                "The job description does not contain a software description");
-        }
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.gridlab.gat.resources.ResourceBroker#submitJob(org.gridlab.gat.resources.JobDescription)
+	 */
+	public Job submitJob(JobDescription description)
+			throws GATInvocationException {
+		SoftwareDescription sd = description.getSoftwareDescription();
 
-        // we do not support environment yet
-        Map env = sd.getEnvironment();
-        if(env != null && !env.isEmpty()) {
-            throw new MethodNotApplicableException("cannot handle environment");
-        }
+		if (sd == null) {
+			throw new GATInvocationException(
+					"The job description does not contain a software description");
+		}
 
-        URI location = getLocationURI(description);
-        String path = null;
+		// we do not support environment yet
+		Map<String, Object> env = sd.getEnvironment();
+		if (env != null && !env.isEmpty()) {
+			throw new MethodNotApplicableException("cannot handle environment");
+		}
 
-        path = location.getPath();
+		URI location = getLocationURI(description);
+		String path = null;
 
-        String host = getHostname(description);
-        if (host == null) {
-            host = "localhost";
-        }
+		path = location.getPath();
 
-        try {
-            sui = SSHSecurityUtils.getSshCredential(gatContext, preferences,
-                "ssh", location, SSH_PORT);
-        } catch (Exception e) {
-            System.out.println("SshFileAdaptor: failed to retrieve credentials"
-                + e);
-        }
+		String host = getHostname(description);
+		if (host == null) {
+			host = "localhost";
+		}
 
-        if (sui == null) {
-            throw new GATInvocationException(
-                "Unable to retrieve user info for authentication");
-        }
+		try {
+			sui = SSHSecurityUtils.getSshCredential(gatContext, preferences,
+					"ssh", location, SSH_PORT);
+		} catch (Exception e) {
+			System.out.println("SshFileAdaptor: failed to retrieve credentials"
+					+ e);
+		}
 
-        if (sui.privateKeyfile != null) {
-            if(GATEngine.DEBUG) {
-                System.err.println("key file argument not supported yet");
-            }
-        }
+		if (sui == null) {
+			throw new GATInvocationException(
+					"Unable to retrieve user info for authentication");
+		}
 
-        //to be modified, this part goes inside the SSHSecurityUtils
-        if (location.getUserInfo() != null) {
-            sui.username = location.getUserInfo();
-        }
+		if (sui.privateKeyfile != null) {
+			if (logger.isDebugEnabled()) {
+				logger.debug("key file argument not supported yet");
+			}
+		}
 
-        /*allow port override*/
-        int port = location.getPort();
-        /*it will always return -1 for user@host:path*/
-        if (port == -1) {
-            port = SSH_PORT;
-        }
+		// to be modified, this part goes inside the SSHSecurityUtils
+		if (location.getUserInfo() != null) {
+			sui.username = location.getUserInfo();
+		}
 
-        if (GATEngine.DEBUG) {
-            System.err.println("Prepared session for location " + location
-                + " with username: " + sui.username + "; host: " + host);
-        }
+		/* allow port override */
+		int port = location.getPort();
+		/* it will always return -1 for user@host:path */
+		if (port == -1) {
+			port = SSH_PORT;
+		}
 
-        Sandbox sandbox = new Sandbox(gatContext, preferences, description, host, null, true, false, false, false);
+		if (logger.isDebugEnabled()) {
+			logger.debug("Prepared session for location " + location
+					+ " with username: " + sui.username + "; host: " + host);
+		}
 
-        String command = null;
-        if (windows) {
-            command = "sexec " + sui.username + "@" + host + " -unat=yes -cmd="
-                + path + " " + getArguments(description);
-            if (sui.getPassword() == null) { // public/private key
-                int slot = sui.getPrivateKeySlot();
-                if (slot == -1) { // not set by the user, assume he only has one key
-                    slot = 0;
-                }
-                command += " -pk=" + slot;
-            } else { // password
-                command += " -pw=" + sui.getPassword();
-            }
-        } else {
-            // we must use the -t option to ssh (allocates pseudo TTY).
-            // If we don't, there is no way to kill the remote process.
-            command = "ssh -o BatchMode=yes -o StrictHostKeyChecking=yes -t -t " + host + " " + path + " "
-                + getArguments(description);
-        }
+		Sandbox sandbox = new Sandbox(gatContext, preferences, description,
+				host, null, true, false, false, false);
 
-        if (GATEngine.VERBOSE) {
-            System.err.println("running command: " + command);
-        }
+		String command = null;
+		if (windows) {
+			command = "sexec " + sui.username + "@" + host + " -unat=yes -cmd="
+					+ path + " " + getArguments(description);
+			if (sui.getPassword() == null) { // public/private key
+				int slot = sui.getPrivateKeySlot();
+				if (slot == -1) { // not set by the user, assume he only has
+									// one key
+					slot = 0;
+				}
+				command += " -pk=" + slot;
+			} else { // password
+				command += " -pw=" + sui.getPassword();
+			}
+		} else {
+			// we must use the -t option to ssh (allocates pseudo TTY).
+			// If we don't, there is no way to kill the remote process.
+			command = "ssh -o BatchMode=yes -o StrictHostKeyChecking=yes -t -t "
+					+ host + " " + path + " " + getArguments(description);
+		}
 
-        Process p = null;
-        try {
-            p = Runtime.getRuntime().exec(command.toString());
-        } catch (IOException e) {
-            throw new CommandNotFoundException("commandlineSsh broker", e);
-        }
+		if (logger.isInfoEnabled()) {
+			logger.info("running command: " + command);
+		}
 
-        org.gridlab.gat.io.File stdin = sd.getStdin();
-        org.gridlab.gat.io.File stdout = sd.getStdout();
-        org.gridlab.gat.io.File stderr = sd.getStderr();
+		Process p = null;
+		try {
+			p = Runtime.getRuntime().exec(command.toString());
+		} catch (IOException e) {
+			throw new CommandNotFoundException("commandlineSsh broker", e);
+		}
 
-        if (stdin == null) {
-            // close stdin.
-            try {
-                p.getOutputStream().close();
-            } catch (Throwable e) {
-                // ignore
-            }
-        } else {
-            try {
-                FileInputStream fin = GAT.createFileInputStream(gatContext,
-                    preferences, stdin.toGATURI());
-                OutputStream out = p.getOutputStream();
-                new InputForwarder(out, fin);
-            } catch (GATObjectCreationException e) {
-                throw new GATInvocationException("commandlineSsh broker", e);
-            }
-        }
+		org.gridlab.gat.io.File stdin = sd.getStdin();
+		org.gridlab.gat.io.File stdout = sd.getStdout();
+		org.gridlab.gat.io.File stderr = sd.getStderr();
 
-        OutputForwarder outForwarder = null;
+		if (stdin == null) {
+			// close stdin.
+			try {
+				p.getOutputStream().close();
+			} catch (Throwable e) {
+				// ignore
+			}
+		} else {
+			try {
+				FileInputStream fin = GAT.createFileInputStream(gatContext,
+						preferences, stdin.toGATURI());
+				OutputStream out = p.getOutputStream();
+				new InputForwarder(out, fin);
+			} catch (GATObjectCreationException e) {
+				throw new GATInvocationException("commandlineSsh broker", e);
+			}
+		}
 
-        // we must always read the output and error streams to avoid deadlocks
-        if (stdout == null) {
-            new OutputForwarder(p.getInputStream(), false); // throw away output
-        } else {
-            try {
-                FileOutputStream out = GAT.createFileOutputStream(gatContext,
-                    preferences, stdout.toGATURI());
-                outForwarder = new OutputForwarder(p.getInputStream(), out);
-            } catch (GATObjectCreationException e) {
-                throw new GATInvocationException("commandlineSsh broker", e);
-            }
-        }
+		OutputForwarder outForwarder = null;
 
-        OutputForwarder errForwarder = null;
+		// we must always read the output and error streams to avoid deadlocks
+		if (stdout == null) {
+			new OutputForwarder(p.getInputStream(), false); // throw away output
+		} else {
+			try {
+				FileOutputStream out = GAT.createFileOutputStream(gatContext,
+						preferences, stdout.toGATURI());
+				outForwarder = new OutputForwarder(p.getInputStream(), out);
+			} catch (GATObjectCreationException e) {
+				throw new GATInvocationException("commandlineSsh broker", e);
+			}
+		}
 
-        // we must always read the output and error streams to avoid deadlocks
-        if (stderr == null) {
-            new OutputForwarder(p.getErrorStream(), false); // throw away output
-        } else {
-            try {
-                FileOutputStream out = GAT.createFileOutputStream(gatContext,
-                    preferences, stderr.toGATURI());
-                errForwarder = new OutputForwarder(p.getErrorStream(), out);
-            } catch (GATObjectCreationException e) {
-                throw new GATInvocationException("commandlineSsh broker", e);
-            }
-        }
+		OutputForwarder errForwarder = null;
 
-        return new CommandlineSshJob(gatContext, preferences, this, description, p, sandbox, outForwarder, errForwarder);
-    }
+		// we must always read the output and error streams to avoid deadlocks
+		if (stderr == null) {
+			new OutputForwarder(p.getErrorStream(), false); // throw away output
+		} else {
+			try {
+				FileOutputStream out = GAT.createFileOutputStream(gatContext,
+						preferences, stderr.toGATURI());
+				errForwarder = new OutputForwarder(p.getErrorStream(), out);
+			} catch (GATObjectCreationException e) {
+				throw new GATInvocationException("commandlineSsh broker", e);
+			}
+		}
+
+		return new CommandlineSshJob(gatContext, preferences, this,
+				description, p, sandbox, outForwarder, errForwarder);
+	}
 }

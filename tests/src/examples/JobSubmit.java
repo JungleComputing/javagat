@@ -68,7 +68,7 @@ public class JobSubmit {
             swDescription.setArguments(argsList);
 
             // Create the HardwareDescription.
-            Hashtable hardwareAttributes = new Hashtable();
+            Hashtable<String, Object> hardwareAttributes = new Hashtable<String, Object>();
             hwrDescription = new HardwareResourceDescription(hardwareAttributes);
 
             // Describe the job using the software- and the hardwaredescription.
@@ -89,7 +89,7 @@ public class JobSubmit {
 
         while (true) {
             try {
-                Map info = job.getInfo();
+                Map<String, Object> info = job.getInfo();
                 System.err.print("job info: ");
                 System.err.println(info);
 

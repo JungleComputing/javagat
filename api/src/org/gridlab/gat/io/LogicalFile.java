@@ -118,7 +118,7 @@ public interface LogicalFile extends Monitorable, Serializable, Advertisable {
      * @throws IOException
      *             if an IO operation fails
      */
-    public List getURIs() throws GATInvocationException, IOException;
+    public List<URI> getURIs() throws GATInvocationException, IOException;
 
     /**
      * Returns a java.util.List of File instances each of which is a File
@@ -130,5 +130,5 @@ public interface LogicalFile extends Monitorable, Serializable, Advertisable {
      * @throws IOException
      *             if an IO operation fails
      */
-    public List getFiles() throws GATInvocationException, IOException;
+    public List<File> getFiles() throws GATInvocationException, IOException;
 }

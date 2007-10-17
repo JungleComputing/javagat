@@ -51,7 +51,7 @@ public class SubmitJobLocalDemo implements MetricListener {
         sd.setStderr(errFile);
         sd.addPreStagedFile(stageInFile);
 
-        Hashtable hardwareAttributes = new Hashtable();
+        Hashtable<String, Object> hardwareAttributes = new Hashtable<String, Object>();
         ResourceDescription rd = new HardwareResourceDescription(
             hardwareAttributes);
 

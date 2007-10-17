@@ -7,6 +7,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.log4j.Logger;
 import org.gridlab.gat.GAT;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
@@ -14,7 +15,6 @@ import org.gridlab.gat.GATObjectCreationException;
 import org.gridlab.gat.MethodNotApplicableException;
 import org.gridlab.gat.Preferences;
 import org.gridlab.gat.URI;
-import org.gridlab.gat.engine.GATEngine;
 import org.gridlab.gat.engine.util.InputForwarder;
 import org.gridlab.gat.engine.util.OutputForwarder;
 import org.gridlab.gat.io.File;
@@ -36,385 +36,407 @@ import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.Session;
 
 /**
- * An instance of this class is used to execute remote jobs. 
+ * An instance of this class is used to execute remote jobs.
  */
 
 public class SshResourceBrokerAdaptor extends ResourceBrokerCpi {
 
-    public static final int SSH_PORT = 22;
+	protected static Logger logger = Logger
+			.getLogger(SshResourceBrokerAdaptor.class);
 
-    private SshUserInfo sui;
+	public static final int SSH_PORT = 22;
 
-    /**
-     * This method constructs a SshResourceBrokerAdaptor instance
-     * corresponding to the passed GATContext.
-     * 
-     * @param gatContext
-     *            A GATContext which will be used to execute remote jobs
-     */
-    public SshResourceBrokerAdaptor(GATContext gatContext, Preferences preferences)
-        throws Exception {
-        super(gatContext, preferences);
-    }
+	private SshUserInfo sui;
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.gridlab.gat.resources.ResourceBroker#submitJob(org.gridlab.gat.resources.JobDescription)
-     */
-    public Job submitJob(JobDescription description) throws GATInvocationException {
-        try {
-        SoftwareDescription sd = description.getSoftwareDescription();
-        if (sd == null) {
-            throw new GATInvocationException(
-                "The job description does not contain a software description");
-        }
+	/**
+	 * This method constructs a SshResourceBrokerAdaptor instance corresponding
+	 * to the passed GATContext.
+	 * 
+	 * @param gatContext
+	 *            A GATContext which will be used to execute remote jobs
+	 */
+	public SshResourceBrokerAdaptor(GATContext gatContext,
+			Preferences preferences) throws Exception {
+		super(gatContext, preferences);
+	}
 
-        // we do not support environment yet
-        Map env = sd.getEnvironment();
-        if(env != null && !env.isEmpty()) {
-            throw new MethodNotApplicableException("cannot handle environment");
-        }
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.gridlab.gat.resources.ResourceBroker#submitJob(org.gridlab.gat.resources.JobDescription)
+	 */
+	public Job submitJob(JobDescription description)
+			throws GATInvocationException {
+		try {
+			SoftwareDescription sd = description.getSoftwareDescription();
+			if (sd == null) {
+				throw new GATInvocationException(
+						"The job description does not contain a software description");
+			}
 
-        URI location = getLocationURI(description);
-        ResourceDescription rd = description.getResourceDescription();
-        String host = null;
+			// we do not support environment yet
+			Map<String, Object> env = sd.getEnvironment();
+			if (env != null && !env.isEmpty()) {
+				throw new MethodNotApplicableException(
+						"cannot handle environment");
+			}
 
-        if (rd != null) {
-            Object res = rd.getDescription().get("machine.node");
-            if (res instanceof String) {
-                host = (String) res;
-            } else if (res instanceof String[]) {
-                host = ((String[]) res)[0];
-            }
-        }
+			URI location = getLocationURI(description);
+			ResourceDescription rd = description.getResourceDescription();
+			String host = null;
 
-        if (!location.isCompatible("ssh")
-            || (location.refersToLocalHost() && (host == null))) {
-            throw new GATInvocationException("not a remote file, scheme is: "
-                + location.getScheme());
-        }
+			if (rd != null) {
+				Object res = rd.getDescription().get("machine.node");
+				if (res instanceof String) {
+					host = (String) res;
+				} else if (res instanceof String[]) {
+					host = ((String[]) res)[0];
+				}
+			}
 
-        Session session;
-        /*decide where to run*/
-        try {
-            if (host != null) session = prepareSession(new URI("any://" + host
-                + "/"));
-            else {
-                session = prepareSession(location);
-                host = location.resolveHost();
-            }
-        } catch (Exception e) {
-            throw new GATInvocationException(
-                "could not prepare a SSH session: " + e);
-        }
+			if (!location.isCompatible("ssh")
+					|| (location.refersToLocalHost() && (host == null))) {
+				throw new GATInvocationException(
+						"not a remote file, scheme is: " + location.getScheme());
+			}
 
-        String path = null;
-        path = location.getPath();
-        String command = path + " " + getArguments(description);
+			Session session;
+			/* decide where to run */
+			try {
+				if (host != null)
+					session = prepareSession(new URI("any://" + host + "/"));
+				else {
+					session = prepareSession(location);
+					host = location.resolveHost();
+				}
+			} catch (Exception e) {
+				throw new GATInvocationException(
+						"could not prepare a SSH session: " + e);
+			}
 
-        if (GATEngine.VERBOSE) {
-            System.err.println("running command: " + command);
-        }
+			String path = null;
+			path = location.getPath();
+			String command = path + " " + getArguments(description);
 
-        int retry = 0;
-        Channel channel = null;
-        while (true) {
-            try {
-                session.connect();
-                channel = session.openChannel("exec");
-                ((ChannelExec) channel).setCommand(command);
-                
-                // ok, no exception, all is well
-                break;
-            } catch (Exception e) {
-                // due to a bug in the jsch lib, it can sometimes throw an exveption
-                // that the version string is invalid, while this is not the case.
-                // The real problem is that the ssh daemon has reached the maximum number of
-                // unauthenticated connections. Just retry a couple of times.
-                if (e.getMessage().equals("invalid server's version string")) {
-                    retry++;
-                    if (retry > 3) {
-                        session.disconnect();
-                        throw new GATInvocationException(
-                            "could not open a SSH channel (after 3 retries): "
-                                + e);
-                    }
+			if (logger.isInfoEnabled()) {
+				logger.info("running command: " + command);
+			}
 
-                    try {
-                        Thread.sleep(1000);
-                    } catch (Exception x) { 
-                        //Ignore
-                    }
-                    if(GATEngine.VERBOSE) {
-                        System.err.println("retry SSH connect");
-                    }
-                } else {
-                    session.disconnect();
-                    throw new GATInvocationException(
-                        "could not open a SSH channel: " + e);
-                }
-            }
-        }
+			int retry = 0;
+			Channel channel = null;
+			while (true) {
+				try {
+					session.connect();
+					channel = session.openChannel("exec");
+					((ChannelExec) channel).setCommand(command);
 
-        org.gridlab.gat.io.File stdin = sd.getStdin();
-        org.gridlab.gat.io.File stdout = sd.getStdout();
-        org.gridlab.gat.io.File stderr = sd.getStderr();
+					// ok, no exception, all is well
+					break;
+				} catch (Exception e) {
+					// due to a bug in the jsch lib, it can sometimes throw an
+					// exveption
+					// that the version string is invalid, while this is not the
+					// case.
+					// The real problem is that the ssh daemon has reached the
+					// maximum number of
+					// unauthenticated connections. Just retry a couple of
+					// times.
+					if (e.getMessage()
+							.equals("invalid server's version string")) {
+						retry++;
+						if (retry > 3) {
+							session.disconnect();
+							throw new GATInvocationException(
+									"could not open a SSH channel (after 3 retries): "
+											+ e);
+						}
 
-        if (GATEngine.VERBOSE) {
-            System.err.println("start setting stdin");
-        }
+						try {
+							Thread.sleep(1000);
+						} catch (Exception x) {
+							// Ignore
+						}
+						if (logger.isInfoEnabled()) {
+							logger.info("retry SSH connect");
+						}
+					} else {
+						session.disconnect();
+						throw new GATInvocationException(
+								"could not open a SSH channel: " + e);
+					}
+				}
+			}
 
-        if (stdin == null) {
-            // close stdin.
-            try {
-                channel.getOutputStream().close();
-            } catch (Throwable e) {
-                System.err.println("Error trying to close stdin");
-            }
-        } else {
-            try {
-                FileInputStream fin = GAT.createFileInputStream(gatContext,
-                    preferences, stdin.toGATURI());
+			org.gridlab.gat.io.File stdin = sd.getStdin();
+			org.gridlab.gat.io.File stdout = sd.getStdout();
+			org.gridlab.gat.io.File stderr = sd.getStderr();
 
-                OutputStream out = channel.getOutputStream();
-                new InputForwarder(out, fin);
+			if (logger.isInfoEnabled()) {
+				logger.info("start setting stdin");
+			}
 
-                //channel.setInputStream(fin);
-            } catch (GATObjectCreationException e) {
-                throw new GATInvocationException("Ssh broker", e);
-            }
-        }
+			if (stdin == null) {
+				// close stdin.
+				try {
+					channel.getOutputStream().close();
+				} catch (Throwable e) {
+					System.err.println("Error trying to close stdin");
+				}
+			} else {
+				try {
+					FileInputStream fin = GAT.createFileInputStream(gatContext,
+							preferences, stdin.toGATURI());
 
-        if (GATEngine.VERBOSE) {
-            System.err.println("finished setting stdin");
-        }
+					OutputStream out = channel.getOutputStream();
+					new InputForwarder(out, fin);
 
-        // we must always read the output and error streams to avoid deadlocks
-        if (stdout == null) {
-            new OutputForwarder(channel.getInputStream(), false); // throw away output
-        } else {
-            try {
-                FileOutputStream out = GAT.createFileOutputStream(gatContext,
-                    preferences, stdout.toGATURI());
+					// channel.setInputStream(fin);
+				} catch (GATObjectCreationException e) {
+					throw new GATInvocationException("Ssh broker", e);
+				}
+			}
 
-                new OutputForwarder(channel.getInputStream(), out);
+			if (logger.isInfoEnabled()) {
+				logger.info("finished setting stdin");
+			}
 
-            } catch (GATObjectCreationException e) {
-                throw new GATInvocationException("Ssh broker", e);
-            }
-        }
+			// we must always read the output and error streams to avoid
+			// deadlocks
+			if (stdout == null) {
+				new OutputForwarder(channel.getInputStream(), false); // throw
+				// away
+				// output
+			} else {
+				try {
+					FileOutputStream out = GAT.createFileOutputStream(
+							gatContext, preferences, stdout.toGATURI());
 
-        if (GATEngine.VERBOSE) {
-            System.err.println("finished setting stdout");
-        }
+					new OutputForwarder(channel.getInputStream(), out);
 
-        // we must always read the output and error streams to avoid deadlocks
-        if (stderr == null) {
-            new OutputForwarder(((ChannelExec) channel).getErrStream(), false); // throw away output
-        } else {
-            try {
-                FileOutputStream out = GAT.createFileOutputStream(gatContext,
-                    preferences, stderr.toGATURI());
+				} catch (GATObjectCreationException e) {
+					throw new GATInvocationException("Ssh broker", e);
+				}
+			}
 
-                new OutputForwarder(((ChannelExec) channel).getErrStream(), out);
+			if (logger.isInfoEnabled()) {
+				logger.info("finished setting stdout");
+			}
 
-            } catch (GATObjectCreationException e) {
-                throw new GATInvocationException("Ssh broker", e);
-            }
-        }
+			// we must always read the output and error streams to avoid
+			// deadlocks
+			if (stderr == null) {
+				new OutputForwarder(((ChannelExec) channel).getErrStream(),
+						false); // throw away output
+			} else {
+				try {
+					FileOutputStream out = GAT.createFileOutputStream(
+							gatContext, preferences, stderr.toGATURI());
 
-        if (GATEngine.VERBOSE) {
-            System.err.println("finished setting stderr");
-        }
+					new OutputForwarder(((ChannelExec) channel).getErrStream(),
+							out);
 
-        Sandbox sandbox = new Sandbox(gatContext, preferences, description, host, null, true, false, false, false);
+				} catch (GATObjectCreationException e) {
+					throw new GATInvocationException("Ssh broker", e);
+				}
+			}
 
-        try {
-            channel.connect();
-        } catch (Exception e) {
-            throw new GATInvocationException(
-                "Ssh broker: could not connect on " + "channel using SSH", e);
-        }
+			if (logger.isInfoEnabled()) {
+				logger.info("finished setting stderr");
+			}
 
-        Job j = new SshJob(gatContext, preferences, this, description, session, channel, sandbox);
-        return j;
-        } catch (Exception e) {
-            throw new GATInvocationException("ssh", e);
-        }
-    }
+			Sandbox sandbox = new Sandbox(gatContext, preferences, description,
+					host, null, true, false, false, false);
 
-    protected Session prepareSession(URI loc) throws GATInvocationException {
-        JSch jsch;
-        Session session;
-        String host = loc.resolveHost();
-        int port;
+			try {
+				channel.connect();
+			} catch (Exception e) {
+				throw new GATInvocationException(
+						"Ssh broker: could not connect on "
+								+ "channel using SSH", e);
+			}
 
-        //opens a ssh connection (using jsch)
-        jsch = new JSch();
-        java.util.Hashtable configJsch = new java.util.Hashtable(0);
-        configJsch.put("StrictHostKeyChecking", "no");
-        JSch.setConfig(configJsch);
+			Job j = new SshJob(gatContext, preferences, this, description,
+					session, channel, sandbox);
+			return j;
+		} catch (Exception e) {
+			throw new GATInvocationException("ssh", e);
+		}
+	}
 
-        sui = null;
+	protected Session prepareSession(URI loc) throws GATInvocationException {
+		JSch jsch;
+		Session session;
+		String host = loc.resolveHost();
+		int port;
 
-        try {
-            sui = SSHSecurityUtils.getSshCredential(gatContext, preferences,
-                "ssh", loc, SSH_PORT);
-        } catch (Exception e) {
-            System.out.println("SshFileAdaptor: failed to retrieve credentials"
-                + e);
-        }
+		// opens a ssh connection (using jsch)
+		jsch = new JSch();
+		java.util.Hashtable<String, String> configJsch = new java.util.Hashtable<String, String>();
+		configJsch.put("StrictHostKeyChecking", "no");
+		JSch.setConfig(configJsch);
 
-        if (sui == null) {
-            throw new GATInvocationException(
-                "Unable to retrieve user info for authentication");
-        }
+		sui = null;
 
-        try {
-            if (sui.privateKeyfile != null) {
-                jsch.addIdentity(sui.privateKeyfile);
-            }
+		try {
+			sui = SSHSecurityUtils.getSshCredential(gatContext, preferences,
+					"ssh", loc, SSH_PORT);
+		} catch (Exception e) {
+			System.out.println("SshFileAdaptor: failed to retrieve credentials"
+					+ e);
+		}
 
-            //to be modified, this part goes inside the SSHSecurityUtils
-            if (loc.getUserInfo() != null) {
-                sui.username = loc.getUserInfo();
-            }
+		if (sui == null) {
+			throw new GATInvocationException(
+					"Unable to retrieve user info for authentication");
+		}
 
-            //no passphrase		
-            /*allow port override*/
-            port = loc.getPort();
-            /*it will always return -1 for user@host:path*/
-            if (port == -1) {
-                port = SSH_PORT;
-            }
+		try {
+			if (sui.privateKeyfile != null) {
+				jsch.addIdentity(sui.privateKeyfile);
+			}
 
-            if (GATEngine.DEBUG) {
-                System.err.println("Prepared session for location " + loc
-                    + " with username: " + sui.username + "; host: " + host);
-            }
+			// to be modified, this part goes inside the SSHSecurityUtils
+			if (loc.getUserInfo() != null) {
+				sui.username = loc.getUserInfo();
+			}
 
-            session = jsch.getSession(sui.username, host, port);
-            session.setUserInfo(sui);
-            return session;
+			// no passphrase
+			/* allow port override */
+			port = loc.getPort();
+			/* it will always return -1 for user@host:path */
+			if (port == -1) {
+				port = SSH_PORT;
+			}
 
-        } catch (JSchException jsche) {
-            throw new GATInvocationException(
-                "internal error in SshResourceBrokerAdaptor: " + jsche);
-        }
-    }
+			if (logger.isDebugEnabled()) {
+				logger
+						.debug("Prepared session for location " + loc
+								+ " with username: " + sui.username
+								+ "; host: " + host);
+			}
 
-    protected void setUserInfo(Session session) {
-        session.setUserInfo(new SshUserInfo());
-    }
+			session = jsch.getSession(sui.username, host, port);
+			session.setUserInfo(sui);
+			return session;
 
-    /* does not add stdin to set of files to preStage */
-    protected Map resolvePreStagedFiles(JobDescription description, String host)
-        throws GATInvocationException {
-        SoftwareDescription sd = description.getSoftwareDescription();
-        if (sd == null) {
-            throw new GATInvocationException(
-                "The job description does not contain a software description");
-        }
+		} catch (JSchException jsche) {
+			throw new GATInvocationException(
+					"internal error in SshResourceBrokerAdaptor: " + jsche);
+		}
+	}
 
-        Map result = new HashMap();
-        Map pre = sd.getPreStaged();
-        if (pre != null) {
-            Set keys = pre.keySet();
-            Iterator i = keys.iterator();
-            while (i.hasNext()) {
-                File srcFile = (File) i.next();
-                File destFile = (File) pre.get(srcFile);
-                if (destFile != null) { // already set manually
-                    result.put(srcFile, destFile);
-                    continue;
-                }
+	protected void setUserInfo(Session session) {
+		session.setUserInfo(new SshUserInfo());
+	}
 
-                result.put(srcFile, resolvePreStagedFile(srcFile, host));
-            }
-        }
+	/* does not add stdin to set of files to preStage */
+	protected Map<File, File> resolvePreStagedFiles(JobDescription description, String host)
+			throws GATInvocationException {
+		SoftwareDescription sd = description.getSoftwareDescription();
+		if (sd == null) {
+			throw new GATInvocationException(
+					"The job description does not contain a software description");
+		}
 
-        return result;
-    }
+		Map<File, File> result = new HashMap<File, File>();
+		Map<File, File> pre = sd.getPreStaged();
+		if (pre != null) {
+			Set<File> keys = pre.keySet();
+			Iterator<File> i = keys.iterator();
+			while (i.hasNext()) {
+				File srcFile = (File) i.next();
+				File destFile = (File) pre.get(srcFile);
+				if (destFile != null) { // already set manually
+					result.put(srcFile, destFile);
+					continue;
+				}
 
-    protected Map resolvePostStagedFiles(JobDescription description, String host)
-        throws GATInvocationException {
-        SoftwareDescription sd = description.getSoftwareDescription();
-        if (sd == null) {
-            throw new GATInvocationException(
-                "The job description does not contain a software description");
-        }
+				result.put(srcFile, resolvePreStagedFile(srcFile, host));
+			}
+		}
 
-        Map result = new HashMap();
-        Map post = sd.getPostStaged();
-        if (post != null) {
+		return result;
+	}
 
-            Set keys = post.keySet();
-            Iterator i = keys.iterator();
-            while (i.hasNext()) {
-                File destFile = (File) i.next();
-                File srcFile = (File) post.get(destFile);
-                if (srcFile != null) { // already set manually
-                    result.put(destFile, srcFile);
-                    continue;
-                }
+	protected Map<File, File> resolvePostStagedFiles(JobDescription description, String host)
+			throws GATInvocationException {
+		SoftwareDescription sd = description.getSoftwareDescription();
+		if (sd == null) {
+			throw new GATInvocationException(
+					"The job description does not contain a software description");
+		}
 
-                result.put(destFile, resolvePostStagedFile(destFile, host));
-            }
-        }
+		Map<File, File> result = new HashMap<File, File>();
+		Map<File, File> post = sd.getPostStaged();
+		if (post != null) {
 
-        return result;
-    }
+			Set<File> keys = post.keySet();
+			Iterator<File> i = keys.iterator();
+			while (i.hasNext()) {
+				File destFile = (File) i.next();
+				File srcFile = (File) post.get(destFile);
+				if (srcFile != null) { // already set manually
+					result.put(destFile, srcFile);
+					continue;
+				}
 
-    /* Creates a file object for the destination of the preStaged src file */
-    /* should be protected in the ResourceBrokerCpi class*/
-    protected File resolvePreStagedFile(File srcFile, String host)
-        throws GATInvocationException {
-        URI src = srcFile.toGATURI();
-        String path = new java.io.File(src.getPath()).getName();
+				result.put(destFile, resolvePostStagedFile(destFile, host));
+			}
+		}
 
-        String dest = "any://";
-        dest += (src.getUserInfo() == null ? sui.username : src.getUserInfo());
-        dest += host;
-        dest += (src.getPort() == -1 ? ":" + SSH_PORT : ":" + src.getPort());
-        dest += "/" + path;
+		return result;
+	}
 
-        try {
-            URI destURI = new URI(dest);
-            return GAT.createFile(gatContext, preferences, destURI);
-        } catch (Exception e) {
-            throw new GATInvocationException(
-                "Resource broker generic preStage", e);
-        }
-    }
+	/* Creates a file object for the destination of the preStaged src file */
+	/* should be protected in the ResourceBrokerCpi class */
+	protected File resolvePreStagedFile(File srcFile, String host)
+			throws GATInvocationException {
+		URI src = srcFile.toGATURI();
+		String path = new java.io.File(src.getPath()).getName();
 
-    protected File resolvePostStagedFile(File f, String host)
-        throws GATInvocationException {
-        File res = null;
+		String dest = "any://";
+		dest += (src.getUserInfo() == null ? sui.username : src.getUserInfo());
+		dest += host;
+		dest += (src.getPort() == -1 ? ":" + SSH_PORT : ":" + src.getPort());
+		dest += "/" + path;
 
-        URI src = f.toGATURI();
+		try {
+			URI destURI = new URI(dest);
+			return GAT.createFile(gatContext, preferences, destURI);
+		} catch (Exception e) {
+			throw new GATInvocationException(
+					"Resource broker generic preStage", e);
+		}
+	}
 
-        if (host == null) host = "";
+	protected File resolvePostStagedFile(File f, String host)
+			throws GATInvocationException {
+		File res = null;
 
-        String dest = "any://";
-        dest += (src.getUserInfo() == null ? sui.username : src.getUserInfo());
-        dest += host;
-        dest += (src.getPort() == -1 ? ":" + SSH_PORT : ":" + src.getPort());
-        dest += "/" + f.getName();
+		URI src = f.toGATURI();
 
-        URI destURI = null;
-        try {
-            destURI = new URI(dest);
-        } catch (URISyntaxException e) {
-            throw new GATInvocationException("resource broker cpi", e);
-        }
+		if (host == null)
+			host = "";
 
-        try {
-            res = GAT.createFile(gatContext, preferences, destURI);
-        } catch (GATObjectCreationException e) {
-            throw new GATInvocationException("resource broker cpi", e);
-        }
+		String dest = "any://";
+		dest += (src.getUserInfo() == null ? sui.username : src.getUserInfo());
+		dest += host;
+		dest += (src.getPort() == -1 ? ":" + SSH_PORT : ":" + src.getPort());
+		dest += "/" + f.getName();
 
-        return res;
-    }
+		URI destURI = null;
+		try {
+			destURI = new URI(dest);
+		} catch (URISyntaxException e) {
+			throw new GATInvocationException("resource broker cpi", e);
+		}
+
+		try {
+			res = GAT.createFile(gatContext, preferences, destURI);
+		} catch (GATObjectCreationException e) {
+			throw new GATInvocationException("resource broker cpi", e);
+		}
+
+		return res;
+	}
 }

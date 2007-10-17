@@ -10,7 +10,7 @@ import java.util.Set;
  */
 public class Preferences {
     
-    Hashtable t = new Hashtable();
+    Hashtable<String, Object> t = new Hashtable<String, Object>();
     
     /**
      * Constructs a new Preferences with no mappings.
@@ -63,7 +63,7 @@ public class Preferences {
     
     public Object clone() {
         Preferences res = new Preferences();
-        res.t = (Hashtable) t.clone();
+        res.t = new Hashtable<String, Object>(t);
         return res;
     }
     
@@ -75,7 +75,7 @@ public class Preferences {
         return t.containsKey(key.toLowerCase());
     }
     
-    public Set keySet() {
+    public Set<String> keySet() {
         return t.keySet();
     }
     

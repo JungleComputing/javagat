@@ -65,7 +65,7 @@ public class FileOutputStream extends OutputStream implements Monitorable {
     }
 
     /** {@inheritDoc} */
-    public List getMetricDefinitions() throws GATInvocationException {
+    public List<MetricDefinition> getMetricDefinitions() throws GATInvocationException {
         return out.getMetricDefinitions();
     }
 

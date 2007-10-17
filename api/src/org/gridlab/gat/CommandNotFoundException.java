@@ -3,6 +3,7 @@
  */
 package org.gridlab.gat;
 
+@SuppressWarnings("serial")
 public class CommandNotFoundException extends GATInvocationException {
 
     public CommandNotFoundException() {

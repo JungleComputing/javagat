@@ -19,7 +19,7 @@ import org.gridlab.gat.monitoring.Monitorable;
  *
  * @author rob
  */
-public interface FileInterface extends Monitorable, Advertisable, Comparable {
+public interface FileInterface extends Monitorable, Advertisable, Comparable<Object> {
     /**
      * This method returns the URI of this File
      *

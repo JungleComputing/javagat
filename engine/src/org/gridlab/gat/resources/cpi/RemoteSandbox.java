@@ -143,8 +143,8 @@ public class RemoteSandbox implements MetricListener {
         sd.setStdin(rewriteStagedFile(gatContext, prefs, sd.getStdin(),
                 null, initiator, remoteCWD));
 
-        Map pre = sd.getPreStaged();
-        Set tmp = pre.keySet();
+        Map<File, File> pre = sd.getPreStaged();
+        Set<File> tmp = pre.keySet();
         Object[] keys = tmp.toArray();
         File[] srcs = new File[keys.length];
         File[] dests = new File[keys.length];
@@ -160,7 +160,7 @@ public class RemoteSandbox implements MetricListener {
             pre.put(srcs[i], dests[i]);
         }
 
-        Map post = sd.getPostStaged();
+        Map<File, File> post = sd.getPostStaged();
         tmp = post.keySet();
         keys = tmp.toArray();
         for (int i = 0; i < keys.length; i++) {

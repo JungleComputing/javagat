@@ -3,6 +3,7 @@ package org.gridlab.gat;
 /**
  * An instance of this class represents a time period.
  */
+@SuppressWarnings("serial")
 public class TimePeriod implements java.io.Serializable {
     /**
      * This member variable represents the start time of this TimePeriod

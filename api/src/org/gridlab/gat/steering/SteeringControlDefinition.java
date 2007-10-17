@@ -5,18 +5,18 @@ import java.util.Map;
 public class SteeringControlDefinition {
     String name = null;
 
-    Map formalParameters = null;
+    Map<String, Object> formalParameters = null;
 
-    Map returnDefinition = null;
+    Map<String, Object> returnDefinition = null;
 
-    public SteeringControlDefinition(String name, Map formalParameters,
-        Map returnDefinition) {
+    public SteeringControlDefinition(String name, Map<String, Object> formalParameters,
+        Map<String, Object> returnDefinition) {
         this.name = name;
         this.formalParameters = formalParameters;
         this.returnDefinition = returnDefinition;
     }
 
-    public SteeringControl createSteeringControl(Map actualParameters) {
+    public SteeringControl createSteeringControl(Map<String, Object> actualParameters) {
         // perform "type safety" check
 
         return new SteeringControl(this, actualParameters);
@@ -26,11 +26,11 @@ public class SteeringControlDefinition {
         return name;
     }
 
-    public Map getParameterDefinitions() {
+    public Map<String, Object> getParameterDefinitions() {
         return formalParameters;
     }
 
-    public Map getReturnDefinition() {
+    public Map<String, Object> getReturnDefinition() {
         return returnDefinition;
     }
 

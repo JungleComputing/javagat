@@ -60,12 +60,13 @@ import org.gridlab.gat.io.File;
  * JVM itself, like "-server" or "-Xmx800M".
  *
  */
+@SuppressWarnings("serial")
 public class SoftwareDescription implements java.io.Serializable {
     private URI location;
 
     private String[] arguments;
 
-    private HashMap environment;
+    private HashMap<String, Object> environment;
 
     private File stdin;
 
@@ -73,15 +74,15 @@ public class SoftwareDescription implements java.io.Serializable {
 
     private File stderr;
 
-    private HashMap preStagedFiles; // contains (src, dest) tuples
+    private HashMap<File, File> preStagedFiles; // contains (src, dest) tuples
 
-    private HashMap postStagedFiles; // contains (src, dest) tuples
+    private HashMap<File, File> postStagedFiles; // contains (src, dest) tuples
 
-    private ArrayList deletedFiles; // contains Files, filenames of files to be removed after the run.
+    private ArrayList<File> deletedFiles; // contains Files, filenames of files to be removed after the run.
 
-    private ArrayList wipedFiles; // contains Files, filenames of files to be wiped and removed after the run.
+    private ArrayList<File> wipedFiles; // contains Files, filenames of files to be wiped and removed after the run.
 
-    private HashMap attributes;
+    private HashMap<String, Object> attributes;
 
     private boolean deletePreStaged;
 
@@ -97,11 +98,11 @@ public class SoftwareDescription implements java.io.Serializable {
      *
      */
     public SoftwareDescription() {
-        attributes = new HashMap();
-        preStagedFiles = new HashMap();
-        postStagedFiles = new HashMap();
-        deletedFiles = new ArrayList();
-        wipedFiles = new ArrayList();
+        attributes = new HashMap<String, Object>();
+        preStagedFiles = new HashMap<File, File>();
+        postStagedFiles = new HashMap<File, File>();
+        deletedFiles = new ArrayList<File>();
+        wipedFiles = new ArrayList<File>();
     }
 
     /**
@@ -110,12 +111,13 @@ public class SoftwareDescription implements java.io.Serializable {
      * 
      * @param attributes See the comment above for a list of known attributes.
      */
-    public SoftwareDescription(Map attributes) {
-        this.attributes = new HashMap(attributes);
+    @SuppressWarnings("unchecked")
+	public SoftwareDescription(Map<String, Object> attributes) {
+        this.attributes = new HashMap<String, Object>(attributes);
 
         location = (URI) attributes.get("location");
         arguments = (String[]) attributes.get("arguments");
-        environment = new HashMap((Map) attributes.get("environment"));
+        environment = new HashMap<String, Object>((Map<String, Object>) attributes.get("environment"));
         stdin = (File) attributes.get("stdin");
         stdout = (File) attributes.get("stdout");
         stderr = (File) attributes.get("stderr");
@@ -160,10 +162,10 @@ public class SoftwareDescription implements java.io.Serializable {
     /**
      * @return Returns the attributes.
      */
-    public Map getAttributes() {
+    public Map<String, Object> getAttributes() {
         // For known keys, resolve value strings to the correct type. 
-        Set s = attributes.keySet();
-        Iterator i = s.iterator();
+        Set<String> s = attributes.keySet();
+        Iterator<String> i = s.iterator();
         while (i.hasNext()) {
             String key = (String) i.next();
             Object tmp = attributes.get(key);
@@ -197,8 +199,8 @@ public class SoftwareDescription implements java.io.Serializable {
      * @param attributes
      *            The attributes to set. See the comment above for a list of known attributes.
      */
-    public void setAttributes(Map attributes) {
-        this.attributes = new HashMap(attributes);
+    public void setAttributes(Map<String, Object> attributes) {
+        this.attributes = new HashMap<String, Object>(attributes);
     }
 
     /**
@@ -213,7 +215,7 @@ public class SoftwareDescription implements java.io.Serializable {
     /**
      * @return Returns the environment.
      */
-    public Map getEnvironment() {
+    public Map<String, Object> getEnvironment() {
         return environment;
     }
 
@@ -221,8 +223,8 @@ public class SoftwareDescription implements java.io.Serializable {
      * @param environment
      *            The environment to set.
      */
-    public void setEnvironment(Map environment) {
-        this.environment = new HashMap(environment);
+    public void setEnvironment(Map<String, Object> environment) {
+        this.environment = new HashMap<String, Object>(environment);
     }
 
     /**
@@ -251,12 +253,12 @@ public class SoftwareDescription implements java.io.Serializable {
     /**
      * @return Returns the pre staged files.
      */
-    public Map getPreStaged() {
+    public Map<File, File> getPreStaged() {
         return preStagedFiles;
     }
 
     public void setPreStaged(File[] files) {
-        preStagedFiles = new HashMap();
+        preStagedFiles = new HashMap<File, File>();
         for (int i = 0; i < files.length; i++) {
             addPreStagedFile(files[i]);
         }
@@ -280,12 +282,12 @@ public class SoftwareDescription implements java.io.Serializable {
     /**
      * @return Returns the postStaged files. the order inside a tuple in this map is (src, dest)
      */
-    public Map getPostStaged() {
+    public Map<File, File> getPostStaged() {
         return postStagedFiles;
     }
 
     public void setPostStaged(File[] files) {
-        postStagedFiles = new HashMap();
+        postStagedFiles = new HashMap<File, File>();
         for (int i = 0; i < files.length; i++) {
             addPostStagedFile(files[i]);
         }
@@ -312,7 +314,7 @@ public class SoftwareDescription implements java.io.Serializable {
      * @return the list of files to be deleted after the run.
      * elements are of type File.
      */
-    public ArrayList getDeletedFiles() {
+    public ArrayList<File> getDeletedFiles() {
         return deletedFiles;
     }
 
@@ -328,7 +330,7 @@ public class SoftwareDescription implements java.io.Serializable {
      * @return the list of files to be wiped (overwritten) and deleted after the run.
      * elements are of type File.
      */
-    public ArrayList getWipedFiles() {
+    public ArrayList<File> getWipedFiles() {
         return wipedFiles;
     }
 

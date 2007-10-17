@@ -132,10 +132,10 @@ public abstract class TransportProtocolCommon implements TransportProtocol,
 
     /**  */
     protected byte[] signature = null;
-    private Vector eventHandlers = new Vector();
+    private Vector<Object> eventHandlers = new Vector<Object>();
 
     // Storage of messages whilst in key exchange
-    private List messageStack = new ArrayList();
+    private List<SshMessage> messageStack = new ArrayList<SshMessage>();
 
     // Message notification registry
     private Map messageNotifications = new HashMap();
@@ -912,7 +912,7 @@ public abstract class TransportProtocolCommon implements TransportProtocol,
      *
      * @return
      */
-    protected List getEventHandlers() {
+    protected List<Object> getEventHandlers() {
         return eventHandlers;
     }
 
@@ -1021,7 +1021,7 @@ public abstract class TransportProtocolCommon implements TransportProtocol,
     protected final void stop() {
         onDisconnect();
 
-        Iterator it = eventHandlers.iterator();
+        Iterator<Object> it = eventHandlers.iterator();
         TransportProtocolEventHandler eventHandler;
 
         while (it.hasNext()) {
@@ -1357,7 +1357,7 @@ public abstract class TransportProtocolCommon implements TransportProtocol,
                 } catch (InterruptedIOException ex /*SocketTimeoutException ex*/) {
                     log.info("Possible timeout on transport inputstream");
 
-                    Iterator it = eventHandlers.iterator();
+                    Iterator<?> it = eventHandlers.iterator();
                     TransportProtocolEventHandler eventHandler;
 
                     while (it.hasNext()) {

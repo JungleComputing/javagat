@@ -11,6 +11,7 @@ import java.util.EventObject;
  * becoming available. The various events are defined by the various sensors.
  * This topic is covered in more detail in the Metric documentation.
  */
+@SuppressWarnings("serial")
 public class MetricValue extends EventObject {
     /**
      * This member variable holds the event time of this MetricEvent

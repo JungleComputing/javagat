@@ -10,8 +10,10 @@ import org.gridlab.gat.GATObjectCreationException;
 import org.gridlab.gat.Preferences;
 import org.gridlab.gat.URI;
 import org.gridlab.gat.security.PasswordSecurityContext;
+import org.gridlab.gat.security.SecurityContext;
 import org.gridlab.gat.security.cpi.SecurityContextUtils;
 
+@SuppressWarnings("serial")
 public class FTPFileAdaptor extends GlobusFileAdaptor {
     String user;
 
@@ -37,7 +39,7 @@ public class FTPFileAdaptor extends GlobusFileAdaptor {
             throw new AdaptorNotApplicableException("cannot handle this URI");
         }
 
-        List l = SecurityContextUtils.getValidSecurityContextsByType(
+        List<SecurityContext> l = SecurityContextUtils.getValidSecurityContextsByType(
             gatContext, preferences,
             "org.gridlab.gat.security.PasswordSecurityContext", "ftp", location
                 .resolveHost(), location.getPort(DEFAULT_FTP_PORT));

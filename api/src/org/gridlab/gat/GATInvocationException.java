@@ -10,6 +10,7 @@ package org.gridlab.gat;
 /**
  * This exception is thrown when an invocation on a gat object failes.
  */
+@SuppressWarnings("serial")
 public class GATInvocationException extends NestedException {
     public GATInvocationException(String s) {
         super(s);

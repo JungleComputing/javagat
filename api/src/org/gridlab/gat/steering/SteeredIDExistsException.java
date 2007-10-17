@@ -2,6 +2,7 @@ package org.gridlab.gat.steering;
 
 import org.gridlab.gat.GATInvocationException;
 
+@SuppressWarnings("serial")
 public class SteeredIDExistsException extends GATInvocationException {
 
     public SteeredIDExistsException() {

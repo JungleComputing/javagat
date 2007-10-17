@@ -19,7 +19,7 @@ import org.gridlab.gat.engine.util.Environment;
  * @author  doerl
  */
 public class Executer implements IParameter {
-    private static final Map ARCH_TYPES = new HashMap();
+    private static final Map<String, String> ARCH_TYPES = new HashMap<String, String>();
 //    private static final String sPbsBin;
     private static String[] sExport;
 
@@ -29,7 +29,7 @@ public class Executer implements IParameter {
             : "/bin:/usr/bin:/usr/X11R6/bin";
         String pbsExec = (env.getVar(PBS_EXEC) != null) ? env.getVar(PBS_EXEC) : "/usr/local/pbs";
         String pbsHome = (env.getVar(PBS_HOME) != null) ? env.getVar(PBS_HOME) : "/var/spool/pbs";
-        Vector exp = new Vector();
+        Vector<String> exp = new Vector<String>();
         exp.add(PBS_EXEC + "=" + pbsExec);
         exp.add(PBS_HOME + "=" + pbsHome);
         exp.add(PATH + "=" + appPath);
@@ -43,8 +43,8 @@ public class Executer implements IParameter {
         ARCH_TYPES.put(IUname.OS_HP_UX, IResources.PBS_HP);
     }
 
-    public static Vector allResults(String command) throws IOException {
-        Vector result = new Vector();
+    public static Vector<String> allResults(String command) throws IOException {
+        Vector<String> result = new Vector<String>();
         BufferedReader br = null;
         try {
 //             Process proc = Runtime.getRuntime().exec(sPbsBin + command, sExport);
@@ -63,7 +63,7 @@ public class Executer implements IParameter {
         return result;
     }
 
-    public static Object getArch(Map res) {
+    public static Object getArch(Map<String, String> res) {
         Object arch = null;
         Object osName = res.get("os.name");
         Object osType = res.get("os.type");
@@ -76,9 +76,9 @@ public class Executer implements IParameter {
         return arch;
     }
 
-    public static Map getProperties(Vector lines, int ch) {
-        HashMap result = new HashMap();
-        for (Enumeration elem = lines.elements(); elem.hasMoreElements();) {
+    public static Map<String, String> getProperties(Vector<String> lines, int ch) {
+        HashMap<String, String> result = new HashMap<String, String>();
+        for (Enumeration<String> elem = lines.elements(); elem.hasMoreElements();) {
             String line = (String) elem.nextElement();
             int pos = line.indexOf(ch);
             if (pos >= 0) {
@@ -88,10 +88,10 @@ public class Executer implements IParameter {
         return result;
     }
 
-    public static Map getPropertiesForm(Vector lines, int ch) {
-        HashMap result = new HashMap();
+    public static Map<String, Object> getPropertiesForm(Vector<String> lines, int ch) {
+        HashMap<String, Object> result = new HashMap<String, Object>();
         String lastKey = null;
-        for (Enumeration elem = lines.elements(); elem.hasMoreElements();) {
+        for (Enumeration<String> elem = lines.elements(); elem.hasMoreElements();) {
             String line = (String) elem.nextElement();
             if (line.length() == 0) {
                 continue;
@@ -111,7 +111,7 @@ public class Executer implements IParameter {
         return result;
     }
 
-    public static void setExport(Vector export) {
+    public static void setExport(Vector<String> export) {
         if (export.size() > 0) {
             sExport = (String[]) export.toArray(new String[export.size()]);
         }

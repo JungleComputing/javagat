@@ -42,13 +42,14 @@ import java.util.Map;
  * parameters can be used to distinguish between these different metric
  * instances.
  */
+@SuppressWarnings("serial")
 public class Metric implements Serializable {
     private MetricDefinition definition;
 
     /**
      * This member variable holds the Metric parameters
      */
-    private Hashtable metricParameters;
+    private Hashtable<String, Object> metricParameters;
 
     private long frequency;
 
@@ -71,13 +72,13 @@ public class Metric implements Serializable {
      *            The Metric parameters, a java.util.Map, for the desired Metric
      *            definition
      */
-    public Metric(MetricDefinition definition, Map metricParameters) {
+    public Metric(MetricDefinition definition, Map<String, Object> metricParameters) {
         this.definition = definition;
 
         if (metricParameters == null) {
-            this.metricParameters = new Hashtable();
+            this.metricParameters = new Hashtable<String, Object>();
         } else {
-            this.metricParameters = new Hashtable(metricParameters);
+            this.metricParameters = new Hashtable<String, Object>(metricParameters);
         }
     }
 
@@ -101,15 +102,15 @@ public class Metric implements Serializable {
      * @param frequency
      *            The measuring frequency.
      */
-    public Metric(MetricDefinition definition, Map metricParameters,
+    public Metric(MetricDefinition definition, Map<String, Object> metricParameters,
             long frequency) {
         this.definition = definition;
         this.frequency = frequency;
 
         if (metricParameters == null) {
-            this.metricParameters = new Hashtable();
+            this.metricParameters = new Hashtable<String, Object>();
         } else {
-            this.metricParameters = new Hashtable(metricParameters);
+            this.metricParameters = new Hashtable<String, Object>(metricParameters);
         }
     }
 
@@ -144,7 +145,7 @@ public class Metric implements Serializable {
      *
      * @return The Metric parameters, a java.util.Map
      */
-    public Map getMetricParameters() {
+    public Map<String, Object> getMetricParameters() {
         return metricParameters;
     }
 

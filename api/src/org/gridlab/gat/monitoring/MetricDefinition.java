@@ -72,6 +72,7 @@ import org.gridlab.gat.GATInvocationException;
  * latter case it means the unit of all elements of the java.util.List.
  * <p>
  */
+@SuppressWarnings("serial")
 public class MetricDefinition implements Serializable {
     public static final int CONTINUOUS = 1;
 
@@ -89,9 +90,9 @@ public class MetricDefinition implements Serializable {
 
     private String unit;
 
-    private Map parameterDefinitions;
+    private Map<String, Object> parameterDefinitions;
 
-    private Map returnDefinition;
+    private Map<String, Object> returnDefinition;
 
     /**
      * @param metricName
@@ -100,8 +101,8 @@ public class MetricDefinition implements Serializable {
      * @param unit
      */
     public MetricDefinition(String metricName, int measurementType,
-            String dataType, String unit, Map parameterDefinitions,
-            Map returnDefinition) {
+            String dataType, String unit, Map<String, Object> parameterDefinitions,
+            Map<String, Object> returnDefinition) {
         this.metricName = metricName;
         this.measurementType = measurementType;
         this.dataType = dataType;
@@ -114,13 +115,13 @@ public class MetricDefinition implements Serializable {
         this.parameterDefinitions = parameterDefinitions;
 
         if (this.parameterDefinitions == null) {
-            this.parameterDefinitions = new HashMap();
+            this.parameterDefinitions = new HashMap<String, Object>();
         }
 
         this.returnDefinition = returnDefinition;
 
         if (this.returnDefinition == null) {
-            this.returnDefinition = new HashMap();
+            this.returnDefinition = new HashMap<String, Object>();
         }
     }
 
@@ -148,7 +149,7 @@ public class MetricDefinition implements Serializable {
      *            pass null
      * @return the new Netric
      */
-    public Metric createMetric(Map parameters) {
+    public Metric createMetric(Map<String, Object> parameters) {
         return new Metric(this, parameters);
     }
 
@@ -163,7 +164,7 @@ public class MetricDefinition implements Serializable {
      *            pass null
      * @return the new Netric
      */
-    public Metric createMetric(Map parameters, long frequency) {
+    public Metric createMetric(Map<String, Object> parameters, long frequency) {
         return new Metric(this, parameters, frequency);
     }
 
@@ -213,7 +214,7 @@ public class MetricDefinition implements Serializable {
      *
      * @return the map
      */
-    public Map getParamterDefinitions() {
+    public Map<String, Object> getParamterDefinitions() {
         return parameterDefinitions;
     }
 
@@ -232,7 +233,7 @@ public class MetricDefinition implements Serializable {
      *
      * @return the map
      */
-    public Map getReturnDefinition() {
+    public Map<String, Object> getReturnDefinition() {
         return returnDefinition;
     }
 }

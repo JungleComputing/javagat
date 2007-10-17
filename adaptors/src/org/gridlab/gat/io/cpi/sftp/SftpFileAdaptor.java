@@ -6,6 +6,7 @@ package org.gridlab.gat.io.cpi.sftp;
 import java.io.IOException;
 import java.util.Iterator;
 
+import org.apache.log4j.Logger;
 import org.gridlab.gat.AdaptorNotApplicableException;
 import org.gridlab.gat.CouldNotInitializeCredentialException;
 import org.gridlab.gat.CredentialExpiredException;
@@ -14,7 +15,6 @@ import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.GATObjectCreationException;
 import org.gridlab.gat.Preferences;
 import org.gridlab.gat.URI;
-import org.gridlab.gat.engine.GATEngine;
 import org.gridlab.gat.io.cpi.FileCpi;
 
 import com.sshtools.j2ssh.SshClient;
@@ -30,8 +30,12 @@ import com.sshtools.j2ssh.transport.publickey.SshPublicKey;
 /**
  * @author rob
  */
+@SuppressWarnings("serial")
 public class SftpFileAdaptor extends FileCpi {
-    public static final int SSH_PORT = 22;
+    
+	protected static Logger logger = Logger.getLogger(SftpFileAdaptor.class);
+	
+	public static final int SSH_PORT = 22;
 
     public SftpFileAdaptor(GATContext gatContext, Preferences preferences,
             URI location) throws GATObjectCreationException {
@@ -79,7 +83,6 @@ public class SftpFileAdaptor extends FileCpi {
 
         try {
             res.ssh.connect(connectionProp, hkv);
-
             if (info.password != null) {
                 PasswordAuthenticationClient pwd = new PasswordAuthenticationClient();
                 pwd.setUsername(info.username);
@@ -104,7 +107,7 @@ public class SftpFileAdaptor extends FileCpi {
             }
 
             res.sftp = res.ssh.openSftpClient();
-        } catch (IOException e) {
+        } catch (Exception e) {
             throw new GATInvocationException("sftp", e);
         }
 
@@ -123,12 +126,12 @@ public class SftpFileAdaptor extends FileCpi {
         try {
             c.sftp.cd(location.getPath());
 
-            java.util.List dirList = c.sftp.ls();
+            java.util.List<?> dirList = c.sftp.ls();
 
             String[] children = new String[dirList.size()];
             int index = 0;
 
-            for (Iterator i = dirList.iterator(); i.hasNext();) {
+            for (Iterator<?> i = dirList.iterator(); i.hasNext();) {
                 children[index] = ((SftpFile) i.next()).getFilename();
                 index++;
             }
@@ -260,8 +263,8 @@ public class SftpFileAdaptor extends FileCpi {
         }
 
         if (dest.refersToLocalHost()) {
-            if (GATEngine.DEBUG) {
-                System.err.println("sftp file: copy remote to local");
+            if (logger.isDebugEnabled()) {
+                logger.debug("sftp file: copy remote to local");
             }
 
             copyToLocal(toURI(), dest);
@@ -270,8 +273,8 @@ public class SftpFileAdaptor extends FileCpi {
         }
 
         if (toURI().refersToLocalHost()) {
-            if (GATEngine.DEBUG) {
-                System.err.println("sftp file: copy local to remote");
+            if (logger.isDebugEnabled()) {
+                logger.debug("sftp file: copy local to remote");
             }
 
             copyToRemote(toURI(), dest);

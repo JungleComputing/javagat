@@ -74,7 +74,7 @@ public class LogicalFileOps {
 
             try {
                 // Getting all Files associated with a LogicalFile.
-                List listFiles = logFile.getFiles();
+                List<File> listFiles = logFile.getFiles();
 
                 // Printing the List.
                 int nSize = listFiles.size();
@@ -101,7 +101,7 @@ public class LogicalFileOps {
                 logFile.removeURI(srcURI);
 
                 // Printing all the Files again.
-                List listFiles = logFile.getFiles();
+                List<File> listFiles = logFile.getFiles();
                 int nSize = listFiles.size();
                 System.out.println("size: " + nSize);
 

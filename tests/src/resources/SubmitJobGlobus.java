@@ -59,7 +59,7 @@ public class SubmitJobGlobus implements MetricListener {
             sd.addAttribute("queue", args[2]);
         }
 
-        Hashtable hardwareAttributes = new Hashtable();
+        Hashtable<String, Object> hardwareAttributes = new Hashtable<String, Object>();
 
         ResourceDescription rd = new HardwareResourceDescription(
             hardwareAttributes);

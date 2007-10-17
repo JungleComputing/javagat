@@ -11,6 +11,7 @@ import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.Preferences;
 import org.gridlab.gat.TimePeriod;
+import org.gridlab.gat.resources.HardwareResource;
 import org.gridlab.gat.resources.Job;
 import org.gridlab.gat.resources.JobDescription;
 import org.gridlab.gat.resources.Reservation;
@@ -120,7 +121,7 @@ public class ZorillaResourceBrokerAdaptor extends ResourceBrokerCpi {
      *            resource(s) to find
      * @return java.util.List of HardwareResources upon success
      */
-    public List findResources(ResourceDescription resourceDescription) {
+    public List<HardwareResource> findResources(ResourceDescription resourceDescription) {
         throw new UnsupportedOperationException("Not implemented");
     }
 

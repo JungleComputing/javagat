@@ -2,122 +2,127 @@ package org.gridlab.gat.resources.cpi;
 
 import java.io.Serializable;
 
+import org.apache.log4j.Logger;
 import org.gridlab.gat.advert.Advertisable;
-import org.gridlab.gat.engine.GATEngine;
 import org.gridlab.gat.resources.JobDescription;
 
+@SuppressWarnings("serial")
 public class SerializedJob implements Serializable, Advertisable {
-    private JobDescription jobDescription;
 
-    private Sandbox sandbox;
+	protected static Logger logger = Logger.getLogger(SerializedJob.class);
 
-    private boolean postStageFinished;
+	private JobDescription jobDescription;
 
-    private String jobId;
+	private Sandbox sandbox;
 
-    private long queueTime;
+	private boolean postStageFinished;
 
-    private long runTime;
+	private String jobId;
 
-    private long startTime;
+	private long queueTime;
 
-    // we need this constructor for castor
-    public SerializedJob() {
-    }
+	private long runTime;
 
-    public SerializedJob(JobDescription jobDescription, Sandbox sandbox,
-        boolean postStageFinished, String jobId, long queueTime, long runTime,
-        long startTime) {
-        this.jobDescription = jobDescription;
-        this.sandbox = sandbox;
-        this.postStageFinished = postStageFinished;
-        this.jobId = jobId;
-        this.queueTime = queueTime;
-        this.runTime = runTime;
-        this.startTime = startTime;
-        
-        if(GATEngine.DEBUG) {
-            System.err.println("created serialized job: " + this);
-        }
-    }
+	private long startTime;
 
-    public String marshal() {
-        throw new Error("Should not be called");
-    }
+	// we need this constructor for castor
+	public SerializedJob() {
+	}
 
-    /**
-     * @return the jobId
-     */
-    public String getJobId() {
-        return jobId;
-    }
+	public SerializedJob(JobDescription jobDescription, Sandbox sandbox,
+			boolean postStageFinished, String jobId, long queueTime,
+			long runTime, long startTime) {
+		this.jobDescription = jobDescription;
+		this.sandbox = sandbox;
+		this.postStageFinished = postStageFinished;
+		this.jobId = jobId;
+		this.queueTime = queueTime;
+		this.runTime = runTime;
+		this.startTime = startTime;
 
-    /**
-     * @param jobId the jobId to set
-     */
-    public void setJobId(String jobId) {
-        this.jobId = jobId;
-    }
+		if (logger.isDebugEnabled()) {
+			logger.debug("created serialized job: " + this);
+		}
+	}
 
-    public boolean isPostStageFinished() {
-        return postStageFinished;
-    }
+	public String marshal() {
+		throw new Error("Should not be called");
+	}
 
-    public void setPostStageFinished(boolean postStageFinished) {
-        this.postStageFinished = postStageFinished;
-    }
+	/**
+	 * @return the jobId
+	 */
+	public String getJobId() {
+		return jobId;
+	}
 
-    public long getQueueTime() {
-        return queueTime;
-    }
+	/**
+	 * @param jobId
+	 *            the jobId to set
+	 */
+	public void setJobId(String jobId) {
+		this.jobId = jobId;
+	}
 
-    public void setQueueTime(long queueTime) {
-        this.queueTime = queueTime;
-    }
+	public boolean isPostStageFinished() {
+		return postStageFinished;
+	}
 
-    public long getRunTime() {
-        return runTime;
-    }
+	public void setPostStageFinished(boolean postStageFinished) {
+		this.postStageFinished = postStageFinished;
+	}
 
-    public void setRunTime(long runTime) {
-        this.runTime = runTime;
-    }
+	public long getQueueTime() {
+		return queueTime;
+	}
 
-    public long getStartTime() {
-        return startTime;
-    }
+	public void setQueueTime(long queueTime) {
+		this.queueTime = queueTime;
+	}
 
-    public void setStartTime(long startTime) {
-        this.startTime = startTime;
-    }
+	public long getRunTime() {
+		return runTime;
+	}
 
-    public JobDescription getJobDescription() {
-        return jobDescription;
-    }
+	public void setRunTime(long runTime) {
+		this.runTime = runTime;
+	}
 
-    public void setJobDescription(JobDescription jobDescription) {
-        this.jobDescription = jobDescription;
-    }
+	public long getStartTime() {
+		return startTime;
+	}
 
-    public Sandbox getSandbox() {
-        return sandbox;
-    }
+	public void setStartTime(long startTime) {
+		this.startTime = startTime;
+	}
 
-    public void setSandbox(Sandbox sandbox) {
-        this.sandbox = sandbox;
-    }
+	public JobDescription getJobDescription() {
+		return jobDescription;
+	}
 
-    public String toString() {
-        String res = "";
+	public void setJobDescription(JobDescription jobDescription) {
+		this.jobDescription = jobDescription;
+	}
 
-        res += "descr = " + jobDescription;
-        res += " sandbox = " + sandbox;
-        res += " postStagedFinished: " + postStageFinished;
-        res += " jobId: " + jobId;
-        res += " queueTime: " + queueTime;
-        res += " runTime: " + runTime;
-        res += " startTime: " + startTime;
+	public Sandbox getSandbox() {
+		return sandbox;
+	}
 
-        return res;
-    }
+	public void setSandbox(Sandbox sandbox) {
+		this.sandbox = sandbox;
+	}
+
+	public String toString() {
+		String res = "";
+
+		res += "descr = " + jobDescription;
+		res += " sandbox = " + sandbox;
+		res += " postStagedFinished: " + postStageFinished;
+		res += " jobId: " + jobId;
+		res += " queueTime: " + queueTime;
+		res += " runTime: " + runTime;
+		res += " startTime: " + startTime;
+
+		return res;
+	}
 }

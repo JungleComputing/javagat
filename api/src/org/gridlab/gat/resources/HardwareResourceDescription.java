@@ -100,6 +100,7 @@ import java.util.Map;
  * <TD>java.lang.Float
  * <TD>The minimum sustained transfer rate in MB/s. </TBODY></TABLE>
  */
+@SuppressWarnings("serial")
 public class HardwareResourceDescription extends ResourceDescription {
     /**
      * Constructs a HardwareResourceDescription associated without attributes and
@@ -116,7 +117,7 @@ public class HardwareResourceDescription extends ResourceDescription {
      * @param attributes A java.util.Map, which describes the attributes of this
      * resource
      */
-    public HardwareResourceDescription(Map attributes) {
+    public HardwareResourceDescription(Map<String, Object> attributes) {
         super(attributes);
     }
 
@@ -131,7 +132,7 @@ public class HardwareResourceDescription extends ResourceDescription {
      * resourceDescriptions each of which describes a software component upon
      * which this software component depends.
      */
-    public HardwareResourceDescription(Map attributes, List resourceDescriptions) {
+    public HardwareResourceDescription(Map<String, Object> attributes, List<ResourceDescription> resourceDescriptions) {
         super(attributes, resourceDescriptions);
     }
 }

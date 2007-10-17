@@ -39,7 +39,7 @@ public class SimpleTest {
             //new Thread(new Server()).start();
             // query Monitorable object:
             //List metricDefinitions = m.getMetricDefinitions();
-            Map params = new HashMap();
+            Map<String, Object> params = new HashMap<String, Object>();
 
             params.put("host", "fs0.das2.cs.vu.nl");
 

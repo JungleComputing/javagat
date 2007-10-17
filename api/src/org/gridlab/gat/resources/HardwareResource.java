@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.monitoring.Metric;
+import org.gridlab.gat.monitoring.MetricDefinition;
 import org.gridlab.gat.monitoring.MetricListener;
 import org.gridlab.gat.monitoring.MetricValue;
 
@@ -33,7 +34,7 @@ public abstract class HardwareResource implements Resource {
      *
      * @see org.gridlab.gat.monitoring.Monitorable#getMetrics()
      */
-    public List getMetricDefinitions() throws GATInvocationException {
+    public List<MetricDefinition> getMetricDefinitions() throws GATInvocationException {
         throw new Error("Not implemented");
     }
 

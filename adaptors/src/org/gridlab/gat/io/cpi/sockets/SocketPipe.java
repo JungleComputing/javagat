@@ -91,7 +91,7 @@ public class SocketPipe implements Pipe {
      *
      * @see org.gridlab.gat.monitoring.Monitorable#getMetrics()
      */
-    public List getMetricDefinitions() throws GATInvocationException {
+    public List<MetricDefinition> getMetricDefinitions() throws GATInvocationException {
         throw new Error("Not implemented");
     }
 

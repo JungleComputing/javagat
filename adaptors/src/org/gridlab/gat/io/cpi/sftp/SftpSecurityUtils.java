@@ -6,12 +6,12 @@ package org.gridlab.gat.io.cpi.sftp;
 import java.io.File;
 import java.io.IOException;
 
+import org.apache.log4j.Logger;
 import org.gridlab.gat.CouldNotInitializeCredentialException;
 import org.gridlab.gat.CredentialExpiredException;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.Preferences;
 import org.gridlab.gat.URI;
-import org.gridlab.gat.engine.GATEngine;
 import org.gridlab.gat.security.CertificateSecurityContext;
 import org.gridlab.gat.security.PasswordSecurityContext;
 import org.gridlab.gat.security.SecurityContext;
@@ -25,7 +25,8 @@ import com.sshtools.j2ssh.transport.publickey.SshPrivateKeyFile;
  * @author rob
  */
 class SftpContextCreator implements SecurityContextCreator {
-    public SecurityContext createDefaultSecurityContext(GATContext gatContext,
+
+	public SecurityContext createDefaultSecurityContext(GATContext gatContext,
             Preferences preferences, URI location)
             throws CouldNotInitializeCredentialException, CredentialExpiredException {
         SftpUserInfo cred = SftpSecurityUtils.getDefaultUserInfo(gatContext,
@@ -80,6 +81,9 @@ class SftpContextCreator implements SecurityContextCreator {
 }
 
 public class SftpSecurityUtils {
+	
+	protected static Logger logger = Logger.getLogger(SftpSecurityUtils.class);
+	
     protected static SftpUserInfo getSftpCredential(GATContext context,
             Preferences preferences, String adaptorName, URI location,
             int defaultPort) throws CouldNotInitializeCredentialException, CredentialExpiredException {
@@ -165,8 +169,8 @@ public class SftpSecurityUtils {
 
     protected static SshPrivateKey loadKey(String keyfile)
             throws CouldNotInitializeCredentialException, CredentialExpiredException {
-        if (GATEngine.DEBUG) {
-            System.err.println("trying to load ssh key from: " + keyfile);
+        if (logger.isDebugEnabled()) {
+            logger.debug("trying to load ssh key from: " + keyfile);
         }
 
         java.io.File keyf = new java.io.File(keyfile);

@@ -56,7 +56,7 @@ public class SubmitJob {
 		sd.setStdout(outFile);
 		sd.setStderr(errFile);
 
-		Hashtable hardwareAttributes = new Hashtable();
+		Hashtable<String, Object> hardwareAttributes = new Hashtable<String, Object>();
 
 		hardwareAttributes.put("machine.node", "fs0.das2.cs.vu.nl");
 
@@ -86,7 +86,7 @@ public class SubmitJob {
 
 		while (true) {
 			try {
-				Map info = job.getInfo();
+				Map<String, Object> info = job.getInfo();
 				System.err.print("job info: ");
 				System.err.println(info);
 

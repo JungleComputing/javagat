@@ -14,8 +14,9 @@ import java.util.Map;
 /** This class describes meta data that can be attached to an Advertizable object.
  * MetaData consists of a number of key value tuples, where both the keys and the values are strings.
  */
+@SuppressWarnings("serial")
 public class MetaData implements Serializable {
-    private Hashtable data = new Hashtable();
+    private Hashtable<String, String> data = new Hashtable<String, String>();
 
     public MetaData() {
         // do nothing
@@ -37,8 +38,9 @@ public class MetaData implements Serializable {
         return (String) data.keySet().toArray()[i];
     }
 
-    public String getData(int i) {
-        return (String) ((Map.Entry) data.entrySet().toArray()[i]).getValue();
+    @SuppressWarnings("unchecked")
+	public String getData(int i) {
+        return (String) ((Map.Entry<String, String>) (data.entrySet()).toArray()[i]).getValue();
     }
 
     public int size() {
@@ -50,10 +52,10 @@ public class MetaData implements Serializable {
      * @return true: the two objects match.
      */
     public boolean match(MetaData query) {
-        Enumeration e = query.data.keys();
+        Enumeration<String> e = query.data.keys();
 
         while (e.hasMoreElements()) {
-            String key = (String) e.nextElement();
+            String key = e.nextElement();
 
             String myData = get(key);
 

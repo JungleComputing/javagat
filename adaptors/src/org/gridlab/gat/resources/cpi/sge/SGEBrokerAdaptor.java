@@ -20,6 +20,7 @@ import org.gridlab.gat.GATObjectCreationException;
 import org.gridlab.gat.Preferences;
 import org.gridlab.gat.TimePeriod;
 import org.gridlab.gat.URI;
+import org.gridlab.gat.resources.HardwareResource;
 import org.gridlab.gat.resources.Job;
 import org.gridlab.gat.resources.JobDescription;
 import org.gridlab.gat.resources.Reservation;
@@ -65,7 +66,7 @@ public class SGEBrokerAdaptor extends ResourceBrokerCpi {
         throw new UnsupportedOperationException("Not implemented");
     }    
     
-    public List findResources(ResourceDescription resourceDescription) {
+    public List<HardwareResource> findResources(ResourceDescription resourceDescription) {
         throw new UnsupportedOperationException("Not implemented");
     }
     

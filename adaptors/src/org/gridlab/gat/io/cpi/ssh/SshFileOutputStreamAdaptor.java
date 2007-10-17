@@ -59,7 +59,7 @@ public class SshFileOutputStreamAdaptor extends FileOutputStreamCpi {
         try {
             String host = location.resolveHost();
             JSch jsch = new JSch();
-            java.util.Hashtable configJsch = new java.util.Hashtable(0);
+            java.util.Hashtable<String, String> configJsch = new java.util.Hashtable<String, String>();
             configJsch.put("StrictHostKeyChecking", "no");
             JSch.setConfig(configJsch);
 

@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.gridlab.gat.GAT;
 import org.gridlab.gat.GATContext;
+import org.gridlab.gat.monitoring.MetricDefinition;
 import org.gridlab.gat.monitoring.Monitorable;
 
 public class ListMetricDefinitions {
@@ -13,7 +14,7 @@ public class ListMetricDefinitions {
 
         Monitorable m = GAT.createMonitorable(c);
 
-        List definitions = m.getMetricDefinitions();
+        List<MetricDefinition> definitions = m.getMetricDefinitions();
 
         System.err.println("found " + definitions.size() + " definitions");
 

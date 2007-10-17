@@ -52,7 +52,7 @@ public class SubmitJobDemo implements MetricListener {
         sd.setStderr(errFile);
         sd.addPreStagedFile(stageInFile);
 
-        Hashtable hardwareAttributes = new Hashtable();
+        Hashtable<String, Object> hardwareAttributes = new Hashtable<String, Object>();
         hardwareAttributes.put("machine.node", "skirit.ics.muni.cz");
 
         ResourceDescription rd = new HardwareResourceDescription(

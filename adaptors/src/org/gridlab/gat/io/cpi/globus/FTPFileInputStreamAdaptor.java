@@ -10,6 +10,7 @@ import org.gridlab.gat.GATObjectCreationException;
 import org.gridlab.gat.Preferences;
 import org.gridlab.gat.URI;
 import org.gridlab.gat.security.PasswordSecurityContext;
+import org.gridlab.gat.security.SecurityContext;
 import org.gridlab.gat.security.cpi.SecurityContextUtils;
 
 /**
@@ -45,7 +46,7 @@ public class FTPFileInputStreamAdaptor extends GlobusFileInputStreamAdaptor {
     }
 
     protected InputStream createStream() throws GATInvocationException {
-        List l = SecurityContextUtils.getValidSecurityContextsByType(
+        List<SecurityContext> l = SecurityContextUtils.getValidSecurityContextsByType(
             gatContext, preferences,
             "org.gridlab.gat.security.PasswordSecurityContext", "ftp", location
                 .resolveHost(), location

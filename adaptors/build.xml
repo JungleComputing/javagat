@@ -140,7 +140,13 @@
             </manifest>
         </jar>
 
-        <jar jarfile="${lib}/FTPFileInputStreamAdaptor.jar" basedir="${tmp}" includes="org/gridlab/gat/io/cpi/globus/**,org/globus/ftp/vanilla/**">
+        <jar jarfile="${lib}/StreamingFileAdaptor.jar" basedir="${tmp}" includes="**/streaming/*.class">
+            <manifest>
+                <attribute name="FileCpi-class" value="org.gridlab.gat.io.cpi.streaming.StreamingFileAdaptor" />
+            </manifest>
+        </jar>
+    	
+    	<jar jarfile="${lib}/FTPFileInputStreamAdaptor.jar" basedir="${tmp}" includes="org/gridlab/gat/io/cpi/globus/**,org/globus/ftp/vanilla/**">
             <manifest>
                 <attribute name="FileInputStreamCpi-class" value="org.gridlab.gat.io.cpi.globus.FTPFileInputStreamAdaptor" />
             </manifest>

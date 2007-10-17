@@ -18,13 +18,13 @@ class Adaptor {
     String cpi;
 
     /** The class of the api this adaptor implements. */
-    Class cpiClass;
+    Class<?> cpiClass;
 
     /** The fully qualified class name of this adaptor. */
     String adaptorName;
 
     /** The actual class of this adaptor, must be a subclass of cpiClass. */
-    Class adaptorClass;
+    Class<?> adaptorClass;
 
     /** Preferences associated with this adaptor. */
     Preferences preferences;
@@ -38,7 +38,7 @@ class Adaptor {
      * @param preferences
      *            Preferences associated with this adaptor.
      */
-    public Adaptor(Class cpiClass, Class adaptorClass, Preferences preferences) {
+    public Adaptor(Class<?> cpiClass, Class<?> adaptorClass, Preferences preferences) {
         this.cpi = cpiClass.getName();
         this.cpiClass = cpiClass;
         this.adaptorName = adaptorClass.getName();
@@ -49,7 +49,7 @@ class Adaptor {
     boolean satisfies(Preferences p) {
         boolean retVal = true;
 
-        Iterator i = p.keySet().iterator();
+        Iterator<String> i = p.keySet().iterator();
 
         while (i.hasNext()) {
             String key = (String) i.next();
@@ -74,16 +74,16 @@ class Adaptor {
         return retVal;
     }
 
-    Object newInstance(Class[] parameterTypes, Object[] parameters)
+    Object newInstance(Class<?>[] parameterTypes, Object[] parameters)
             throws Throwable {
         Throwable t = null;
 
         try {
-            Constructor ctor = adaptorClass.getConstructor(parameterTypes);
+            Constructor<?> ctor = adaptorClass.getConstructor(parameterTypes);
 
             if (ctor == null) {
                 throw new GATObjectCreationException(
-                    "No correct contructor extists in adaptor");
+                    "No correct contructor exists in adaptor");
             }
 
             if (parameters == null) {
@@ -106,7 +106,7 @@ class Adaptor {
         return cpi;
     }
 
-    Class getCpiClass() {
+    Class<?> getCpiClass() {
         return cpiClass;
     }
 
@@ -114,7 +114,7 @@ class Adaptor {
         return adaptorName;
     }
 
-    Class getAdaptorClass() {
+    Class<?> getAdaptorClass() {
         return adaptorClass;
     }
     

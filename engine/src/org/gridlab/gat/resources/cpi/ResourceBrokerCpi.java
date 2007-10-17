@@ -12,6 +12,7 @@ import org.gridlab.gat.GATObjectCreationException;
 import org.gridlab.gat.Preferences;
 import org.gridlab.gat.TimePeriod;
 import org.gridlab.gat.URI;
+import org.gridlab.gat.resources.HardwareResource;
 import org.gridlab.gat.resources.HardwareResourceDescription;
 import org.gridlab.gat.resources.Job;
 import org.gridlab.gat.resources.JobDescription;
@@ -56,7 +57,7 @@ public abstract class ResourceBrokerCpi implements ResourceBroker {
      *
      * @see org.gridlab.gat.resources.ResourceBroker#findResources(org.gridlab.gat.resources.ResourceDescription)
      */
-    public List findResources(ResourceDescription resourceDescription)
+    public List<HardwareResource> findResources(ResourceDescription resourceDescription)
             throws GATInvocationException {
         throw new UnsupportedOperationException("Not implemented");
     }
@@ -247,9 +248,9 @@ public abstract class ResourceBrokerCpi implements ResourceBroker {
                     "Currently only hardware resource descriptions are supported");
         }
 
-        Map m = d.getDescription();
-        Set keys = m.keySet();
-        Iterator i = keys.iterator();
+        Map<String, Object> m = d.getDescription();
+        Set<String> keys = m.keySet();
+        Iterator<String> i = keys.iterator();
 
         while (i.hasNext()) {
             String key = (String) i.next();

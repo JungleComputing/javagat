@@ -23,7 +23,7 @@ class GrabberThread extends Thread {
     private Preferences preferences;
 
     /** List of nodes from this cluster. */
-    private ArrayList nodes = new ArrayList();
+    private ArrayList<Node> nodes = new ArrayList<Node>();
 
     /**
      * Constructor, initializes the fields with the specified parameters

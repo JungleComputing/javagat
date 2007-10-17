@@ -50,7 +50,7 @@ public class SubmitJobCallback implements MetricListener {
         sd.setStdout(outFile);
         sd.addPreStagedFile(stageInDir);
 
-        Hashtable attributes = new Hashtable();
+        Hashtable<String, Object> attributes = new Hashtable<String, Object>();
         attributes.put("machine.node", hostname);
 
         ResourceDescription rd = new HardwareResourceDescription(attributes);

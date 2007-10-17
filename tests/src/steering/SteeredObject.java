@@ -14,7 +14,7 @@ import org.gridlab.gat.steering.SteeringManager;
 public class SteeredObject extends Thread implements Steerable {
     SteeringManager sm;
 
-    Vector controls;
+    Vector<SteeringControlDefinition> controls;
 
     String state = "INIT";
 
@@ -31,7 +31,7 @@ public class SteeredObject extends Thread implements Steerable {
 
         // build list of available SteeringControlDefinitions
 
-        controls = new Vector();
+        controls = new Vector<SteeringControlDefinition>();
 
         // control that starts the simulation:
         controls.add(new SteeringControlDefinition("startSimulation", null,
@@ -43,7 +43,7 @@ public class SteeredObject extends Thread implements Steerable {
 
         // control that allows a integer variable to be steered:
 
-        Map formalParameters = new HashMap();
+        Map<String, Object> formalParameters = new HashMap<String, Object>();
         formalParameters.put("var.name", "String");
         formalParameters.put("var.type", "Integer");
         formalParameters.put("var.value", new Integer(0));
@@ -52,7 +52,7 @@ public class SteeredObject extends Thread implements Steerable {
 
         // control that allows a double variable to be steered:
 
-        Map formalParameters2 = new HashMap();
+        Map<String, Object> formalParameters2 = new HashMap<String, Object>();
         formalParameters2.put("var.name", "String");
         formalParameters2.put("var.type", "Double");
         formalParameters2.put("var.value", new Double(0.0));
@@ -72,7 +72,7 @@ public class SteeredObject extends Thread implements Steerable {
         }
     }
 
-    public Map executeControl(SteeringControl c) throws NoSuchControlException {
+    public Map<String, Object> executeControl(SteeringControl c) throws NoSuchControlException {
         if (!controls.contains(c.getDefinition()))
             throw new NoSuchControlException();
 
@@ -119,7 +119,7 @@ public class SteeredObject extends Thread implements Steerable {
         return null;
     }
 
-    public List getControlDefinitions() {
+    public List<SteeringControlDefinition> getControlDefinitions() {
         return controls;
     }
 

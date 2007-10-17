@@ -44,7 +44,7 @@ public class MonitorableCpi implements Monitorable {
         throw new UnsupportedOperationException("Not implemented");
     }
 
-    public List getMetricDefinitions() throws GATInvocationException {
+    public List<MetricDefinition> getMetricDefinitions() throws GATInvocationException {
         throw new UnsupportedOperationException("Not implemented");
     }
 

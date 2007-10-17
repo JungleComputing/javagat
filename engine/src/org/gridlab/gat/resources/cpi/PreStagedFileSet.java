@@ -8,190 +8,196 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.log4j.Logger;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.Preferences;
 import org.gridlab.gat.URI;
-import org.gridlab.gat.engine.GATEngine;
 import org.gridlab.gat.io.File;
 import org.gridlab.gat.resources.JobDescription;
 import org.gridlab.gat.resources.SoftwareDescription;
 
 public class PreStagedFileSet {
-    private GATContext gatContext;
 
-    private Preferences preferences;
+	protected static Logger logger = Logger.getLogger(PreStagedFileSet.class);
 
-    private JobDescription description;
+	private GATContext gatContext;
 
-    private String host;
+	private Preferences preferences;
 
-    private String sandbox;
+	private JobDescription description;
 
-    private boolean preStageStdin;
+	private String host;
 
-    private PreStagedFile[] files = new PreStagedFile[0];
+	private String sandbox;
 
-    public PreStagedFileSet() {
-        // constructor needed for castor marshalling, do *not* use
-    }
-    
-    /**
-     * @return the files
-     */
-    public PreStagedFile[] getFiles() {
-        return files;
-    }
+	private boolean preStageStdin;
 
-    /**
-     * @param files the files to set
-     */
-    public void setFiles(PreStagedFile[] files) {
-        this.files = files;
-    }
+	private PreStagedFile[] files = new PreStagedFile[0];
 
-    public PreStagedFileSet(GATContext gatContext, Preferences preferences,
-        JobDescription description, String host, String sandbox,
-        boolean preStageStdin) throws GATInvocationException {
-        this.gatContext = gatContext;
-        this.preferences = preferences;
-        this.description = description;
-        this.host = host;
-        this.sandbox = sandbox;
-        this.preStageStdin = preStageStdin;
+	public PreStagedFileSet() {
+		// constructor needed for castor marshalling, do *not* use
+	}
 
-        resolve();
+	/**
+	 * @return the files
+	 */
+	public PreStagedFile[] getFiles() {
+		return files;
+	}
 
-        if (GATEngine.VERBOSE) {
-            System.err.println(this);
-        }
-    }
+	/**
+	 * @param files
+	 *            the files to set
+	 */
+	public void setFiles(PreStagedFile[] files) {
+		this.files = files;
+	}
 
-    /** Also adds stdin to set of files to preStage if needed */
-    private void resolve() throws GATInvocationException {
-        SoftwareDescription sd = description.getSoftwareDescription();
+	public PreStagedFileSet(GATContext gatContext, Preferences preferences,
+			JobDescription description, String host, String sandbox,
+			boolean preStageStdin) throws GATInvocationException {
+		this.gatContext = gatContext;
+		this.preferences = preferences;
+		this.description = description;
+		this.host = host;
+		this.sandbox = sandbox;
+		this.preStageStdin = preStageStdin;
 
-        if (sd == null) {
-            throw new GATInvocationException(
-                "The job description does not contain a software description");
-        }
+		resolve();
 
-        URI exe = sd.getLocation();
-        if(exe == null) {
-            throw new GATInvocationException(
-            "The job description does not contain an executable location");    
-        }
-        
-        ArrayList tmp = new ArrayList();
-        Map pre = sd.getPreStaged();
+		if (logger.isInfoEnabled()) {
+			logger.info(this);
+		}
+	}
 
-        if (pre != null) {
-            Set keys = pre.keySet();
-            Iterator i = keys.iterator();
+	/** Also adds stdin to set of files to preStage if needed */
+	private void resolve() throws GATInvocationException {
+		SoftwareDescription sd = description.getSoftwareDescription();
 
-            while (i.hasNext()) {
-                File srcFile = (File) i.next();
-                File destFile = (File) pre.get(srcFile);
-                tmp.add(new PreStagedFile(gatContext, preferences, srcFile,
-                    destFile, host, sandbox, false, exe)); 
-            }
-        }
+		if (sd == null) {
+			throw new GATInvocationException(
+					"The job description does not contain a software description");
+		}
 
-        if (preStageStdin) {
-            File stdin = sd.getStdin();
+		URI exe = sd.getLocation();
+		if (exe == null) {
+			throw new GATInvocationException(
+					"The job description does not contain an executable location");
+		}
 
-            if (stdin != null) {
-                tmp.add(new PreStagedFile(gatContext, preferences, stdin,
-                    null, host, sandbox, true, exe));
-            }
-        }
-        
-        files = (PreStagedFile[]) tmp.toArray(new PreStagedFile[] {});
-    }
+		ArrayList<PreStagedFile> tmp = new ArrayList<PreStagedFile>();
+		Map<File, File> pre = sd.getPreStaged();
 
-    protected void prestage() throws GATInvocationException {
-        SoftwareDescription sd = description.getSoftwareDescription();
+		if (pre != null) {
+			Set<File> keys = pre.keySet();
+			Iterator<File> i = keys.iterator();
 
-        if (sd == null) {
-            throw new GATInvocationException(
-                "The job description does not contain a software description");
-        }
+			while (i.hasNext()) {
+				File srcFile = (File) i.next();
+				File destFile = (File) pre.get(srcFile);
+				tmp.add(new PreStagedFile(gatContext, preferences, srcFile,
+						destFile, host, sandbox, false, exe));
+			}
+		}
 
-        for (int i = 0; i < files.length; i++) {
-            try {
-                files[i].prestage();
-            } catch (Throwable e) {
-                if (GATEngine.VERBOSE) {
-                    System.err
-                        .println("prestage failed, removing already staged files.");
-                }
+		if (preStageStdin) {
+			File stdin = sd.getStdin();
 
-                throw new GATInvocationException("resource broker cpi", e);
-            }
-        }
-    }
+			if (stdin != null) {
+				tmp.add(new PreStagedFile(gatContext, preferences, stdin, null,
+						host, sandbox, true, exe));
+			}
+		}
 
-    public void delete() throws GATInvocationException {
-        GATInvocationException e = new GATInvocationException();
-        for (int i = 0; i < files.length; i++) {
-            try {
-                files[i].delete();
-            } catch (Exception x) {
-                e.add("resource broker", x);
-            }
-        }
+		files = (PreStagedFile[]) tmp.toArray(new PreStagedFile[] {});
+	}
 
-        if (e.getNrChildren() != 0) throw e;
-    }
+	protected void prestage() throws GATInvocationException {
+		SoftwareDescription sd = description.getSoftwareDescription();
 
-    public void wipe() throws GATInvocationException {
-        GATInvocationException e = new GATInvocationException();
-        for (int i = 0; i < files.length; i++) {
-            try {
-                files[i].wipe();
-            } catch (Exception x) {
-                e.add("resource broker", x);
-            }
-        }
+		if (sd == null) {
+			throw new GATInvocationException(
+					"The job description does not contain a software description");
+		}
 
-        if (e.getNrChildren() != 0) throw e;
-    }
+		for (int i = 0; i < files.length; i++) {
+			try {
+				files[i].prestage();
+			} catch (Throwable e) {
+				if (logger.isInfoEnabled()) {
+					logger
+							.info("prestage failed, removing already staged files.");
+				}
 
-    PreStagedFile getStdin() {
-        for (int i = 0; i < files.length; i++) {
-            if (files[i].isStdIn()) {
-                return files[i];
-            }
-        }
+				throw new GATInvocationException("resource broker cpi", e);
+			}
+		}
+	}
 
-        return null;
-    }
+	public void delete() throws GATInvocationException {
+		GATInvocationException e = new GATInvocationException();
+		for (int i = 0; i < files.length; i++) {
+			try {
+				files[i].delete();
+			} catch (Exception x) {
+				e.add("resource broker", x);
+			}
+		}
 
-    PreStagedFile getExecutable() {
-        for (int i = 0; i < files.length; i++) {
-            
-            if (files[i].isExecutable()) {
-                return files[i];
-            }
-        }
+		if (e.getNrChildren() != 0)
+			throw e;
+	}
 
-        return null;
-    }
+	public void wipe() throws GATInvocationException {
+		GATInvocationException e = new GATInvocationException();
+		for (int i = 0; i < files.length; i++) {
+			try {
+				files[i].wipe();
+			} catch (Exception x) {
+				e.add("resource broker", x);
+			}
+		}
 
-    public int size() {
-        return files.length;
-    }
-    
-    public PreStagedFile getFile(int pos) {
-        return files[pos];
-    }
-    
-    public String toString() {
-        String res = "";
-        res += "PreStagedFileSet:\n";
-        for (int i = 0; i < files.length; i++) {
-            res += files[i] + "\n";
-        }
-        return res;
-    }
+		if (e.getNrChildren() != 0)
+			throw e;
+	}
+
+	PreStagedFile getStdin() {
+		for (int i = 0; i < files.length; i++) {
+			if (files[i].isStdIn()) {
+				return files[i];
+			}
+		}
+
+		return null;
+	}
+
+	PreStagedFile getExecutable() {
+		for (int i = 0; i < files.length; i++) {
+
+			if (files[i].isExecutable()) {
+				return files[i];
+			}
+		}
+
+		return null;
+	}
+
+	public int size() {
+		return files.length;
+	}
+
+	public PreStagedFile getFile(int pos) {
+		return files[pos];
+	}
+
+	public String toString() {
+		String res = "";
+		res += "PreStagedFileSet:\n";
+		for (int i = 0; i < files.length; i++) {
+			res += files[i] + "\n";
+		}
+		return res;
+	}
 }

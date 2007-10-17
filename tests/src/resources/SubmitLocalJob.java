@@ -51,7 +51,7 @@ public class SubmitLocalJob {
             System.err.println("could not create stdout file");
         }
 
-        Hashtable hardwareAttributes = new Hashtable();
+        Hashtable<String, Object> hardwareAttributes = new Hashtable<String, Object>();
 
         ResourceDescription rd = new HardwareResourceDescription(
             hardwareAttributes);
@@ -79,7 +79,7 @@ public class SubmitLocalJob {
 
         while (true) {
             try {
-                Map info = job.getInfo();
+                Map<String, Object> info = job.getInfo();
                 System.err.print("job info: ");
                 System.err.println(info);
 

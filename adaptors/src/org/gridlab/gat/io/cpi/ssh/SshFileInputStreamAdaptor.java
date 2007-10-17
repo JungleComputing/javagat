@@ -7,12 +7,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
+import org.apache.log4j.Logger;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.GATObjectCreationException;
 import org.gridlab.gat.Preferences;
 import org.gridlab.gat.URI;
-import org.gridlab.gat.engine.GATEngine;
 import org.gridlab.gat.io.cpi.FileInputStreamCpi;
 
 import com.jcraft.jsch.Channel;
@@ -24,6 +24,9 @@ import com.jcraft.jsch.Session;
  * @author rob
  */
 public class SshFileInputStreamAdaptor extends FileInputStreamCpi {
+	
+	protected static Logger logger = Logger.getLogger(SshFileInputStreamAdaptor.class);
+	
     InputStream inputStream;
 
     OutputStream outputStream;
@@ -64,7 +67,7 @@ public class SshFileInputStreamAdaptor extends FileInputStreamCpi {
         try {
             String host = location.resolveHost();
             JSch jsch = new JSch();
-            java.util.Hashtable configJsch = new java.util.Hashtable(0);
+            java.util.Hashtable<String, String> configJsch = new java.util.Hashtable<String, String>();
             configJsch.put("StrictHostKeyChecking", "no");
             JSch.setConfig(configJsch);
 
@@ -130,8 +133,8 @@ public class SshFileInputStreamAdaptor extends FileInputStreamCpi {
 
     protected void removeInputStreamHeader(InputStream in, OutputStream out)
             throws IOException {
-        if (GATEngine.DEBUG) {
-            System.err.println("SshFileInputStream: removeInputStreamHeader");
+        if (logger.isDebugEnabled()) {
+            logger.debug("SshFileInputStream: removeInputStreamHeader");
         }
 
         while (true) {
@@ -157,9 +160,8 @@ public class SshFileInputStreamAdaptor extends FileInputStreamCpi {
             String serverResponse = stream.toString("UTF-8");
 
             if (serverResponse.charAt(0) == 'C') {
-                if (GATEngine.DEBUG) {
-                    System.err
-                        .println("SshFileInputStream: remote response is file");
+                if (logger.isDebugEnabled()) {
+                    logger.debug("SshFileInputStream: remote response is file");
                 }
                 int start = 0;
                 int end = serverResponse.indexOf(" ", start + 1);
@@ -170,17 +172,15 @@ public class SshFileInputStreamAdaptor extends FileInputStreamCpi {
                 available = filesize;
                 return;
             } else if (serverResponse.charAt(0) == 'D') {
-                if (GATEngine.DEBUG) {
-                    System.err
-                        .println("SshFileInputStream: remote response is dir");
+                if (logger.isDebugEnabled()) {
+                    logger.debug("SshFileInputStream: remote response is dir");
                 }
 
                 throw new IOException("File " + location
                     + ": Not a regular file");
             } else if (serverResponse.charAt(0) == 'E') {
-                if (GATEngine.DEBUG) {
-                    System.err
-                        .println("scpFromRemoteToLocal: remote response is E");
+                if (logger.isDebugEnabled()) {
+                    logger.debug("scpFromRemoteToLocal: remote response is E");
                 }
 
                 throw new IOException("File " + location
@@ -190,9 +190,8 @@ public class SshFileInputStreamAdaptor extends FileInputStreamCpi {
                 // this indicates an error.
                 throw new IOException(serverResponse.substring(1));
             } else {
-                if (GATEngine.DEBUG) {
-                    System.err
-                        .println("remoteCpProtocol: read byte is none of the expected values");
+                if (logger.isDebugEnabled()) {
+                    logger.debug("remoteCpProtocol: read byte is none of the expected values");
                 }
             }
         }
