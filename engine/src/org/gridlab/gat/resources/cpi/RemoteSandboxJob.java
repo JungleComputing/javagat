@@ -31,13 +31,14 @@ public class RemoteSandboxJob extends JobCpi implements MetricListener {
 	private MetricDefinition statusMetricDefinition;
 	private Metric statusMetric;
 	private JobStateMonitor monitor;
-	
+
 	private synchronized static int getID() {
 		return id++;
 	}
-	
+
 	public RemoteSandboxJob(GATContext gatContext, Preferences preferences,
-			JobDescription jobDescription, MetricListener listener, Metric metric) {
+			JobDescription jobDescription, MetricListener listener,
+			Metric metric) {
 		super(gatContext, preferences, jobDescription, null, listener, metric);
 
 		// Tell the engine that we provide job.status events
@@ -94,7 +95,7 @@ public class RemoteSandboxJob extends JobCpi implements MetricListener {
 	public String getJobID() throws GATInvocationException {
 		// "RSJ" -> Remote Sandbox Job
 		if (jobString == null) {
-			jobString = "RSJ" + jobID + "_" + Math.random(); 
+			jobString = "RSJ" + jobID + "_" + Math.random();
 		}
 		return jobString;
 	}
@@ -116,60 +117,50 @@ public class RemoteSandboxJob extends JobCpi implements MetricListener {
 		}
 
 		public void run() {
-			File monitorFile = null;
-			try {
-				monitorFile = GAT.createFile(gatContext,
-						"any://localhost/.JavaGATstatus" + getJobID());
-			} catch (GATObjectCreationException e) {
-				if (logger.isInfoEnabled()) {
-					logger.info(e);
-				}
-			} catch (GATInvocationException e) {
-				if (logger.isInfoEnabled()) {
-					logger.info(e);
-				}
-			}
+
 			int oldState = state;
 			do {
 				FileInputStream in = null;
 				try {
-					in = GAT.createFileInputStream(gatContext, monitorFile);
+					in = GAT.createFileInputStream(gatContext,
+							"any://localhost/.JavaGATstatus" + getJobID());
 					state = in.read();
-					in.close();
-					if (state == -1) {
-						// nothing read, revert state to old state, try again...
-						state = oldState;
-						try {
-							Thread.sleep(1000);
-						} catch (InterruptedException e) {
-							if (logger.isInfoEnabled()) {
-								logger.info(e);
-							}
-						}
-						continue;
-					}
-					monitorFile.delete();
-				} catch (GATObjectCreationException e) {
+				} catch (Exception e) {
 					if (logger.isInfoEnabled()) {
 						logger.info(e);
 					}
-				} catch (IOException e) {
+				}
+				if (in != null) {
 					try {
-						if (in != null) {
-							in.close();
-						}
-					} catch (IOException e1) {
+						in.close();
+					} catch (IOException e) {
 						if (logger.isInfoEnabled()) {
-							logger.info(e1);
+							logger.info(e);
 						}
 					}
-					if (logger.isInfoEnabled()) {
-						logger.info(e);
+				}
+				if (state == -1) {
+					// nothing read, revert state to old state, try again...
+					state = oldState;
+				} else {
+					File monitorFile;
+					try {
+						monitorFile = GAT.createFile(gatContext,
+								"any://localhost/.JavaGATstatus" + getJobID());
+						monitorFile.delete();
+					} catch (GATObjectCreationException e) {
+						if (logger.isInfoEnabled()) {
+							logger.info(e);
+						}
+					} catch (GATInvocationException e) {
+						if (logger.isInfoEnabled()) {
+							logger.info(e);
+						}
 					}
-				} 
-				if (state != oldState) {
-					fireStateMetric(state);
-					oldState = state;
+					if (state != oldState) {
+						fireStateMetric(state);
+						oldState = state;
+					}
 				}
 				try {
 					Thread.sleep(1000);
