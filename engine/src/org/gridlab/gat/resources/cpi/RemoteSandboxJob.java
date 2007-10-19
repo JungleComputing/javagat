@@ -117,17 +117,18 @@ public class RemoteSandboxJob extends JobCpi implements MetricListener {
 		public void run() {
 			String statusFileName = null;
 
-			statusFileName = System.getProperty("user.home") + File.separator + ".JavaGATstatus"
-					+ getJobID();
+			statusFileName = System.getProperty("user.home") + File.separator
+					+ ".JavaGATstatus" + getJobID();
 
 			logger.warn("job status file = " + statusFileName);
-			
-			int oldState = state;
+
+			int newstate = -666;
+
 			do {
 				FileInputStream in = null;
 				try {
 					in = new FileInputStream(statusFileName);
-					state = in.read();
+					newstate = in.read();
 				} catch (Exception e) {
 					if (logger.isInfoEnabled()) {
 						logger.info(e);
@@ -142,20 +143,16 @@ public class RemoteSandboxJob extends JobCpi implements MetricListener {
 						}
 					}
 				}
-				if (state == -1) {
-					// nothing read, revert state to old state, try again...
-					state = oldState;
-				} else {
+				if (newstate >= 0) {
 					File monitorFile = new File(statusFileName);
 					if (!monitorFile.delete()) {
-						logger.warn("Could not delete job status file!");
+						logger.fatal("Could not delete job status file!");
 					}
 
-					if (state != oldState) {
-						fireStateMetric(state);
-						oldState = state;
-					}
+					state = newstate;
+					fireStateMetric(state);
 				}
+
 				try {
 					Thread.sleep(1000);
 				} catch (InterruptedException e) {
