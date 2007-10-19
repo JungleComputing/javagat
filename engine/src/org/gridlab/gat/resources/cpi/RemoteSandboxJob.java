@@ -131,7 +131,7 @@ public class RemoteSandboxJob extends JobCpi implements MetricListener {
 			}
 			int oldState = state;
 			do {
-				FileInputStream in;
+				FileInputStream in = null;
 				try {
 					in = GAT.createFileInputStream(gatContext, monitorFile);
 					state = in.read();
@@ -139,6 +139,13 @@ public class RemoteSandboxJob extends JobCpi implements MetricListener {
 					if (state == -1) {
 						// nothing read, revert state to old state, try again...
 						state = oldState;
+						try {
+							Thread.sleep(1000);
+						} catch (InterruptedException e) {
+							if (logger.isInfoEnabled()) {
+								logger.info(e);
+							}
+						}
 						continue;
 					}
 					monitorFile.delete();
@@ -147,10 +154,19 @@ public class RemoteSandboxJob extends JobCpi implements MetricListener {
 						logger.info(e);
 					}
 				} catch (IOException e) {
+					try {
+						if (in != null) {
+							in.close();
+						}
+					} catch (IOException e1) {
+						if (logger.isInfoEnabled()) {
+							logger.info(e1);
+						}
+					}
 					if (logger.isInfoEnabled()) {
 						logger.info(e);
 					}
-				}
+				} 
 				if (state != oldState) {
 					fireStateMetric(state);
 					oldState = state;
