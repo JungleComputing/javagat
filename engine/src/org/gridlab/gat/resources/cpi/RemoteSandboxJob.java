@@ -26,6 +26,7 @@ public class RemoteSandboxJob extends JobCpi implements MetricListener {
 
 	private Job sandboxJob;
 	private int jobID;
+	private String jobString;
 
 	private MetricDefinition statusMetricDefinition;
 	private Metric statusMetric;
@@ -36,8 +37,8 @@ public class RemoteSandboxJob extends JobCpi implements MetricListener {
 	}
 	
 	public RemoteSandboxJob(GATContext gatContext, Preferences preferences,
-			JobDescription jobDescription) {
-		super(gatContext, preferences, jobDescription, null);
+			JobDescription jobDescription, MetricListener listener, Metric metric) {
+		super(gatContext, preferences, jobDescription, null, listener, metric);
 
 		// Tell the engine that we provide job.status events
 		HashMap<String, Object> returnDef = new HashMap<String, Object>();
@@ -75,12 +76,12 @@ public class RemoteSandboxJob extends JobCpi implements MetricListener {
 		// RemoteSandboxJob.
 		if (sandboxJob.getState() == Job.STOPPED
 				|| sandboxJob.getState() == Job.SUBMISSION_ERROR) {
-			fireStateMetric(sandboxJob.getState());
 			try {
 				MetricDefinition md = sandboxJob
 						.getMetricDefinitionByName("job.status");
 				sandboxJob.removeMetricListener(this, md.createMetric());
 				sandboxJob.stop();
+				fireStateMetric(sandboxJob.getState());
 				finished();
 			} catch (GATInvocationException e) {
 				if (logger.isInfoEnabled()) {
@@ -92,7 +93,10 @@ public class RemoteSandboxJob extends JobCpi implements MetricListener {
 
 	public String getJobID() throws GATInvocationException {
 		// "RSJ" -> Remote Sandbox Job
-		return "RSJ" + jobID + "_" + Math.random();
+		if (jobString == null) {
+			jobString = "RSJ" + jobID + "_" + Math.random(); 
+		}
+		return jobString;
 	}
 
 	private void fireStateMetric(int state) {

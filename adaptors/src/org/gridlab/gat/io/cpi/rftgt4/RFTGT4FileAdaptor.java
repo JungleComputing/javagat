@@ -194,6 +194,14 @@ public class RFTGT4FileAdaptor extends FileCpi {
 				&& !location.isCompatible("gridftp")) {
 			throw new GATObjectCreationException("cannot handle this URI");
 		}
+
+		String globusLocation = System.getenv("GLOBUS_LOCATION");
+		if (globusLocation == null) {
+			throw new GATObjectCreationException("$GLOBUS_LOCATION is not set");
+		}
+		System.setProperty("GLOBUS_LOCATION", globusLocation);
+		System.setProperty("axis.ClientConfigFile", globusLocation
+				+ "/client-config.wsdd");
 		this.host = location.getHost();
 		this.securityType = Constants.GSI_SEC_MSG;
 		this.authorization = null;
@@ -209,7 +217,7 @@ public class RFTGT4FileAdaptor extends FileCpi {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		
+
 		this.notificationConsumerManager = null;
 		this.notificationConsumerEPR = null;
 		this.notificationProducerEPR = null;
@@ -578,7 +586,7 @@ public class RFTGT4FileAdaptor extends FileCpi {
 	public EndpointReferenceType[] fetchDelegationFactoryEndpoints(
 			ReliableFileTransferFactoryPortType factoryPort)
 			throws GATInvocationException {
-	
+
 		GetMultipleResourceProperties_Element request = new GetMultipleResourceProperties_Element();
 		request
 				.setResourceProperty(new QName[] { RFTConstants.DELEGATION_ENDPOINT_FACTORY });
@@ -658,34 +666,31 @@ public class RFTGT4FileAdaptor extends FileCpi {
 		return (transfersDone() && transfersFailed() == 0 && transfersCancelled() == 0);
 	}
 
-/*	private BaseFaultType getFaultFromRP(RFTFaultResourcePropertyType fault) {
-		if (fault == null) {
-			return null;
-		}
+	/*
+	 * private BaseFaultType getFaultFromRP(RFTFaultResourcePropertyType fault) {
+	 * if (fault == null) { return null; }
+	 * 
+	 * if (fault.getRftTransferFaultType() != null) { return
+	 * fault.getRftTransferFaultType(); } else if
+	 * (fault.getDelegationEPRMissingFaultType() != null) { return
+	 * fault.getDelegationEPRMissingFaultType(); } else if
+	 * (fault.getRftAuthenticationFaultType() != null) { return
+	 * fault.getRftAuthenticationFaultType(); } else if
+	 * (fault.getRftAuthorizationFaultType() != null) { return
+	 * fault.getRftAuthorizationFaultType(); } else if
+	 * (fault.getRftDatabaseFaultType() != null) { return
+	 * fault.getRftDatabaseFaultType(); } else if
+	 * (fault.getRftRepeatedlyStartedFaultType() != null) { return
+	 * fault.getRftRepeatedlyStartedFaultType(); } else if
+	 * (fault.getTransferTransientFaultType() != null) { return
+	 * fault.getTransferTransientFaultType(); } else { return null; } }
+	 */
 
-		if (fault.getRftTransferFaultType() != null) {
-			return fault.getRftTransferFaultType();
-		} else if (fault.getDelegationEPRMissingFaultType() != null) {
-			return fault.getDelegationEPRMissingFaultType();
-		} else if (fault.getRftAuthenticationFaultType() != null) {
-			return fault.getRftAuthenticationFaultType();
-		} else if (fault.getRftAuthorizationFaultType() != null) {
-			return fault.getRftAuthorizationFaultType();
-		} else if (fault.getRftDatabaseFaultType() != null) {
-			return fault.getRftDatabaseFaultType();
-		} else if (fault.getRftRepeatedlyStartedFaultType() != null) {
-			return fault.getRftRepeatedlyStartedFaultType();
-		} else if (fault.getTransferTransientFaultType() != null) {
-			return fault.getTransferTransientFaultType();
-		} else {
-			return null;
-		}
-	}*/
-
-	/*private BaseFaultType deserializeFaultRP(SOAPElement any) throws Exception {
-		return getFaultFromRP((RFTFaultResourcePropertyType) ObjectDeserializer
-				.toObject(any, RFTFaultResourcePropertyType.class));
-	}*/
+	/*
+	 * private BaseFaultType deserializeFaultRP(SOAPElement any) throws
+	 * Exception { return getFaultFromRP((RFTFaultResourcePropertyType)
+	 * ObjectDeserializer .toObject(any, RFTFaultResourcePropertyType.class)); }
+	 */
 
 	void setFault(BaseFaultType fault) {
 		this.fault = fault;

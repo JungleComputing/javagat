@@ -1,5 +1,7 @@
 package org.gridlab.gat.resources.cpi.gt4;
 
+import java.util.HashMap;
+
 import org.globus.cog.abstraction.impl.common.StatusEvent;
 import org.globus.cog.abstraction.impl.common.task.ExecutionTaskHandler;
 import org.globus.cog.abstraction.impl.common.task.IllegalSpecException;
@@ -16,6 +18,11 @@ import org.globus.cog.abstraction.interfaces.TaskHandler;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.Preferences;
+import org.gridlab.gat.engine.GATEngine;
+import org.gridlab.gat.monitoring.Metric;
+import org.gridlab.gat.monitoring.MetricDefinition;
+import org.gridlab.gat.monitoring.MetricListener;
+import org.gridlab.gat.monitoring.MetricValue;
 import org.gridlab.gat.resources.JobDescription;
 import org.gridlab.gat.resources.cpi.JobCpi;
 import org.gridlab.gat.resources.cpi.Sandbox;
@@ -53,44 +60,7 @@ class GT4StatusListener implements StatusListener {
 	 *            <code>State</code> object.
 	 */
 	public void statusChanged(StatusEvent event) {
-		Status status = event.getStatus();
-		System.out.println("gt4 job statusChanged: " + status.getStatusString());
-		switch (status.getStatusCode()) {
-		case Status.ACTIVE:
-			job.setState(GT4Job.RUNNING);
-			break;
-		case Status.CANCELED:
-			job.setState(GT4Job.STOPPED);
-			break;
-		case Status.COMPLETED:
-			try {
-				Thread.sleep(20000);
-			} catch (Exception e) {
-				// TODO: handle exception
-			}
-			job.setState(GT4Job.STOPPED);
-			break;
-		case Status.FAILED:
-			job.setState(GT4Job.SUBMISSION_ERROR);
-			break;
-		case Status.RESUMED:
-			job.setState(GT4Job.RUNNING);
-			break;
-		case Status.SUBMITTED:
-			job.setState(GT4Job.SCHEDULED);
-			break;
-		case Status.SUSPENDED:
-			job.setState(GT4Job.ON_HOLD);
-			break;
-		case Status.UNKNOWN:
-			job.setState(GT4Job.UNKNOWN);
-			break;
-		case Status.UNSUBMITTED:
-			job.setState(GT4Job.UNKNOWN);
-			break;
-		default:
-			job.setState(GT4Job.UNKNOWN);
-		}
+		job.setState(event.getStatus());
 	}
 }
 
@@ -105,21 +75,46 @@ class GT4StatusListener implements StatusListener {
 public class GT4Job extends JobCpi {
 	GT4ResourceBrokerAdaptor broker;
 	Task task;
+	
+	private GT4StatusListener statusListener;
+	protected GT4JobPoller poller;
+
+	private MetricDefinition statusMetricDefinition;
+
+	private Metric statusMetric;
+
+	private boolean postStageStarted = false;
+	
 
 	/**
 	 * Initializes a job. Creates a task, sets up the listener and submits it.
 	 */
 	public GT4Job(GATContext gatContext, Preferences preferences,
 			JobDescription jobDescription, Sandbox sandbox,
-			JobSpecification spec, Service service)
-			throws GATInvocationException {
-		super(gatContext, preferences, jobDescription, sandbox);
+			JobSpecification spec, Service service, MetricListener listener,
+			Metric metric) throws GATInvocationException {
+		super(gatContext, preferences, jobDescription, sandbox, listener,
+				metric);
+
+		// Tell the engine that we provide job.status events
+		
+		HashMap<String, Object> returnDef = new HashMap<String, Object>();
+		returnDef.put("status", String.class);
+		statusMetricDefinition = new MetricDefinition("job.status",
+				MetricDefinition.DISCRETE, "String", null, null, returnDef);
+		GATEngine.registerMetric(this, "getJobStatus", statusMetricDefinition);
+		statusMetric = statusMetricDefinition.createMetric(null);
+		
 		task = new TaskImpl("gatgt4jobtest", Task.JOB_SUBMISSION);
 		task.setSpecification(spec);
 		task.setService(Service.JOB_SUBMISSION_SERVICE, service);
 		TaskHandler handler = new ExecutionTaskHandler();
-		GT4StatusListener listener = new GT4StatusListener(this);
-		task.addStatusListener(listener);
+		statusListener = new GT4StatusListener(this);
+		task.addStatusListener(statusListener);
+		
+		poller = new GT4JobPoller(this);
+		poller.start();
+
 		try {
 			handler.submit(task);
 		} catch (IllegalSpecException e) {
@@ -130,7 +125,8 @@ public class GT4Job extends JobCpi {
 			throw new GATInvocationException("GT4Job invalid service: " + e);
 		} catch (TaskSubmissionException e) {
 			throw new GATInvocationException("GT4Job task submission: " + e);
-		} 
+		}
+
 	}
 
 	/**
@@ -141,10 +137,110 @@ public class GT4Job extends JobCpi {
 	 */
 
 	public void stop() throws GATInvocationException {
+		String stateString = null;
+		synchronized (this) {
+			// we don't want to postStage twice (can happen with jobpoller)
+			if (postStageStarted) {
+				return;
+			}
+			postStageStarted = true;
+			state = POST_STAGING;
+			stateString = getStateString(state);
+		}
+		task.removeStatusListener(statusListener);
+		
+		MetricValue v = new MetricValue(this, stateString, statusMetric, System
+				.currentTimeMillis());
+
+		if (logger.isDebugEnabled()) {
+			logger.debug("gt4 job stop: firing event: " + v);
+		}
+
+		GATEngine.fireMetric(this, v);
+
+		if (logger.isInfoEnabled()) {
+			logger.info("gt4 job stop: delete/wipe starting");
+		}
+
+		// do cleanup, callback handler has been uninstalled
 		sandbox.retrieveAndCleanup(this);
+
+		synchronized (this) {
+
+			if (logger.isInfoEnabled()) {
+				logger.info("globus job stop: post stage finished");
+			}
+
+			state = STOPPED;
+			stateString = getStateString(state);
+		}
+
+		MetricValue v2 = new MetricValue(this, stateString, statusMetric,
+				System.currentTimeMillis());
+
+		if (logger.isDebugEnabled()) {
+			logger.debug("globus job stop: firing event: " + v2);
+		}
+
+		GATEngine.fireMetric(this, v2);
+
+		finished();
+		
+		if (poller != null) {
+			poller.die();
+		}
 	}
 
 	protected synchronized void setState(int state) {
 		this.state = state;
+		
+		MetricValue v = new MetricValue(this, getStateString(state), statusMetric, System
+				.currentTimeMillis());
+		GATEngine.fireMetric(this, v);
+	}
+	
+	protected synchronized void setState(Status status) {
+		switch (status.getStatusCode()) {
+		case Status.ACTIVE:
+			setState(GT4Job.RUNNING);
+			break;
+		case Status.CANCELED:
+			setState(GT4Job.STOPPED);
+			break;
+		case Status.COMPLETED:
+			setState(GT4Job.STOPPED);
+			break;
+		case Status.FAILED:
+			setState(GT4Job.SUBMISSION_ERROR);
+			break;
+		case Status.RESUMED:
+			setState(GT4Job.RUNNING);
+			break;
+		case Status.SUBMITTED:
+			setState(GT4Job.SCHEDULED);
+			break;
+		case Status.SUSPENDED:
+			setState(GT4Job.ON_HOLD);
+			break;
+		case Status.UNKNOWN:
+			setState(GT4Job.UNKNOWN);
+			break;
+		case Status.UNSUBMITTED:
+			setState(GT4Job.UNKNOWN);
+			break;
+		default:
+			setState(GT4Job.UNKNOWN);
+		}
+	}
+
+	protected void getStateActive() {
+		if (logger.isDebugEnabled()) {
+			logger.debug("polling state of globus job");
+		}
+		if (task != null) {
+			Status status = task.getStatus();
+			setState(status);
+		}
+
 	}
 }

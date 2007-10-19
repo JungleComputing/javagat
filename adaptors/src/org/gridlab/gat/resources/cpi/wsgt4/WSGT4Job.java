@@ -12,10 +12,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Vector;
 
+import javax.naming.Context;
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
 import javax.xml.namespace.QName;
 import javax.xml.rpc.Stub;
 import javax.xml.soap.SOAPElement;
 
+import org.apache.axis.components.uuid.UUIDGenFactory;
 import org.apache.axis.message.addressing.AttributedURI;
 import org.apache.axis.message.addressing.EndpointReferenceType;
 import org.apache.log4j.Logger;
@@ -67,6 +71,10 @@ import org.gridforum.jgss.ExtendedGSSManager;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.Preferences;
+import org.gridlab.gat.engine.GATEngine;
+import org.gridlab.gat.monitoring.Metric;
+import org.gridlab.gat.monitoring.MetricDefinition;
+import org.gridlab.gat.monitoring.MetricListener;
 import org.gridlab.gat.resources.JobDescription;
 import org.gridlab.gat.resources.cpi.JobCpi;
 import org.gridlab.gat.resources.cpi.Sandbox;
@@ -92,9 +100,9 @@ import org.w3c.dom.Element;
  * method is called, when the gstate of the job changed.
  */
 class WSGT4NotifyCallback implements NotifyCallback {
-	
+
 	protected static Logger logger = Logger.getLogger(WSGT4Job.class);
-	
+
 	WSGT4Job job;
 
 	public WSGT4NotifyCallback(WSGT4Job job) {
@@ -179,6 +187,12 @@ public class WSGT4Job extends JobCpi {
 	/**
 	 * Initializes a job. Creates a task, sets up the listener and submits it.
 	 */
+
+	private MetricDefinition statusMetricDefinition;
+
+	private Metric statusMetric;
+	
+
 	NotificationConsumerManager notificationConsumerManager;
 	GSSCredential proxy;
 	StateEnumeration gstate;
@@ -200,7 +214,8 @@ public class WSGT4Job extends JobCpi {
 	int exitCode;
 	public static final Authorization DEFAULT_AUTHZ = HostAuthorization
 			.getInstance();
-	//private static final String DEFAULT_SECURITY_TYPE = Constants.GSI_TRANSPORT;
+	// private static final String DEFAULT_SECURITY_TYPE =
+	// Constants.GSI_TRANSPORT;
 	public static final Integer DEFAULT_MSG_PROTECTION = Constants.SIGNATURE;
 	private static final String BASE_SERVICE_PATH = "/wsrf/services/";
 	public static final int DEFAULT_DURATION_HOURS = 24;
@@ -208,8 +223,18 @@ public class WSGT4Job extends JobCpi {
 	public WSGT4Job(GATContext gatContext, Preferences preferences,
 			JobDescription jobDescription, Sandbox sandbox,
 			JobDescriptionType gjobDescription, String contactString,
-			GSSCredential cred) throws GATInvocationException {
-		super(gatContext, preferences, jobDescription, sandbox);
+			GSSCredential cred, MetricListener listener, Metric metric)
+			throws GATInvocationException {
+		super(gatContext, preferences, jobDescription, sandbox, listener,
+				metric);
+
+		HashMap<String, Object> returnDef = new HashMap<String, Object>();
+		returnDef.put("status", String.class);
+		statusMetricDefinition = new MetricDefinition("job.status",
+				MetricDefinition.DISCRETE, "String", null, null, returnDef);
+		GATEngine.registerMetric(this, "getJobStatus", statusMetricDefinition);
+		statusMetric = statusMetricDefinition.createMetric(null);
+
 		this.gstate = null;
 		this.authorization = null;
 		this.proxy = cred;
@@ -252,9 +277,7 @@ public class WSGT4Job extends JobCpi {
 		} catch (Exception e) {
 			throw new GATInvocationException("WSGT4Job: " + e);
 		}
-		submissionID = "uuid:"
-				+ org.apache.axis.components.uuid.UUIDGenFactory.getUUIDGen()
-						.nextUUID();
+		submissionID = "uuid:" + UUIDGenFactory.getUUIDGen().nextUUID();
 		setSecurityTypeFromEndpoint(factoryEndpoint);
 		populateJobDescriptionEndpoints(factoryEndpoint);
 
@@ -354,7 +377,7 @@ public class WSGT4Job extends JobCpi {
 			response = factoryPort.getMultipleResourceProperties(request);
 		} catch (RemoteException e) {
 			throw new GATInvocationException("WSGT4Job: " + e);
-		} 
+		}
 		SOAPElement[] any = response.get_any();
 		EndpointReferenceType epr1 = null;
 		EndpointReferenceType epr2 = null;
@@ -419,7 +442,7 @@ public class WSGT4Job extends JobCpi {
 		// ((org.apache.axis.client.Stub)
 		// factoryPort).setTimeout(this.axisStubTimeOut);
 		CreateManagedJobInputType jobInput = new CreateManagedJobInputType();
- 
+
 		jobInput.setInitialTerminationTime(calendar);
 		jobInput.setJobID(new AttributedURI(this.submissionID));
 		jobInput.setJob(this.jobDescriptionType);
@@ -435,7 +458,10 @@ public class WSGT4Job extends JobCpi {
 		}
 		this.notificationConsumerManager = NotificationConsumerManager
 				.getInstance(properties);
+		
+		System.out.println("hier");
 		this.notificationConsumerManager.startListening();
+		System.out.println("hier");
 
 		try {
 			List<Object> topicPath = new LinkedList<Object>();
@@ -479,6 +505,7 @@ public class WSGT4Job extends JobCpi {
 			subscriptionRequest.setTopicExpression(topicExpression);
 			jobInput.setSubscribe(subscriptionRequest);
 		} catch (Exception e) {
+			e.printStackTrace();
 			throw e;
 			// throw sg
 			/*
@@ -514,22 +541,20 @@ public class WSGT4Job extends JobCpi {
 		}
 		if (gstate.equals(StateEnumeration.Done)) {
 			setState(WSGT4Job.STOPPED);
-			/*try {
-				stop();
-			} catch (GATInvocationException e) {
-				logger.info("stop() failed: " + e);
-			}*/
+			/*
+			 * try { stop(); } catch (GATInvocationException e) {
+			 * logger.info("stop() failed: " + e); }
+			 */
 		}
 		if (gstate.equals(StateEnumeration.Suspended)) {
 			setState(WSGT4Job.STOPPED);
 		}
 		if (gstate.equals(StateEnumeration.Failed)) {
 			setState(WSGT4Job.SUBMISSION_ERROR);
-			/*try {
-				stop();
-			} catch (GATInvocationException e) {
-				logger.info("stop() failed: " + e);
-			}*/
+			/*
+			 * try { stop(); } catch (GATInvocationException e) {
+			 * logger.info("stop() failed: " + e); }
+			 */
 		}
 		if (gstate.equals(StateEnumeration.CleanUp)) {
 			setState(WSGT4Job.UNKNOWN);
@@ -727,10 +752,11 @@ public class WSGT4Job extends JobCpi {
 		if (state != STOPPED)
 			throw new GATInvocationException("not in RUNNING state");
 		return 0; // We have to assume that the job ran correctly. Globus does
-					// not return the exit code.
+		// not return the exit code.
 	}
 
-	public synchronized Map<String, Object> getInfo() throws GATInvocationException {
+	public synchronized Map<String, Object> getInfo()
+			throws GATInvocationException {
 		HashMap<String, Object> m = new HashMap<String, Object>();
 		return m;
 	}

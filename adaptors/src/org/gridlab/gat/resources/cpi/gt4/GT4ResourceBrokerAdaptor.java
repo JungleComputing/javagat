@@ -3,6 +3,7 @@ package org.gridlab.gat.resources.cpi.gt4;
 import java.io.IOException;
 import java.util.Map;
 import java.util.Set;
+import java.util.StringTokenizer;
 
 import org.apache.log4j.Logger;
 import org.globus.cog.abstraction.impl.common.AbstractionFactory;
@@ -19,6 +20,8 @@ import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.GATObjectCreationException;
 import org.gridlab.gat.Preferences;
 import org.gridlab.gat.URI;
+import org.gridlab.gat.monitoring.Metric;
+import org.gridlab.gat.monitoring.MetricListener;
 import org.gridlab.gat.resources.Job;
 import org.gridlab.gat.resources.JobDescription;
 import org.gridlab.gat.resources.SoftwareDescription;
@@ -117,9 +120,11 @@ public class GT4ResourceBrokerAdaptor extends ResourceBrokerCpi {
 
 		service.setSecurityContext(securityContext);
 
-//		ServiceContact serviceContact = new ServiceContactImpl("https://" + getHostname(jd) + ":8443/wsrf/services/ManagedJobFactoryService");
+		// ServiceContact serviceContact = new ServiceContactImpl("https://" +
+		// getHostname(jd) + ":8443/wsrf/services/ManagedJobFactoryService");
 		ServiceContact serviceContact = new ServiceContactImpl(getHostname(jd));
-		String factoryType = (String) preferences.get("ResourceBroker.jobmanager");
+		String factoryType = (String) preferences
+				.get("ResourceBroker.jobmanager");
 		if (factoryType == null) {
 			factoryType = ExecutionService.FORK_JOBMANAGER;
 		}
@@ -148,7 +153,58 @@ public class GT4ResourceBrokerAdaptor extends ResourceBrokerCpi {
 			throw new GATInvocationException(
 					"GT4ResourceBrokerAdaptor: software description is missing");
 		}
-		String exe = getLocationURI(jd).getPath();
+		String exe = "";
+		if (isJavaApplication(jd)) {
+			URI javaHome = (URI) sd.getAttributes().get("java.home");
+			if (javaHome == null) {
+				throw new GATInvocationException("java.home not set");
+			}
+
+			exe += javaHome.getPath() + "/bin/java";
+
+			String javaFlags = getStringAttribute(jd, "java.flags", "");
+			if (javaFlags.length() != 0) {
+				StringTokenizer t = new StringTokenizer(javaFlags);
+				while (t.hasMoreTokens()) {
+					spec.addArgument(t.nextToken());
+				}
+			}
+
+			// classpath
+			String javaClassPath = getStringAttribute(jd, "java.classpath", "");
+			if (javaClassPath.length() != 0) {
+				spec.addArgument("-classpath");
+				spec.addArgument(javaClassPath);
+			} else {
+				// TODO if not set, use jar files in prestaged set
+			}
+
+			// set the environment
+			Map<String, Object> env = sd.getEnvironment();
+			if (env != null && !env.isEmpty()) {
+				Set<String> s = env.keySet();
+				Object[] keys = (Object[]) s.toArray();
+
+				for (int i = 0; i < keys.length; i++) {
+					String val = (String) env.get(keys[i]);
+					spec.addArgument("-D" + keys[i] + "=" + val);
+				}
+			}
+
+			// main class name
+			spec.addArgument(getLocationURI(jd).getSchemeSpecificPart());
+		} else {
+			exe = getLocationURI(jd).getPath();
+			Map<String, Object> env = sd.getEnvironment();
+			if (env != null && !env.isEmpty()) {
+				Set<String> s = env.keySet();
+				Object[] keys = (Object[]) s.toArray();
+				for (int i = 0; i < keys.length; i++) {
+					String val = (String) env.get(keys[i]);
+					spec.addEnvironmentVariable((String) keys[i], val);
+				}
+			}
+		}
 		spec.setExecutable(exe);
 		spec.setBatchJob(true);
 		String args[] = getArgumentsArray(jd);
@@ -167,16 +223,6 @@ public class GT4ResourceBrokerAdaptor extends ResourceBrokerCpi {
 		if (sandbox.getRelativeStderr() != null) {
 			spec.setStdError(sandbox.getRelativeStderr().getPath());
 		}
-
-		Map<String, Object> env = sd.getEnvironment();
-		if (env != null && !env.isEmpty()) {
-			Set<String> s = env.keySet();
-			Object[] keys = (Object[]) s.toArray();
-			for (int i = 0; i < keys.length; i++) {
-				String val = (String) env.get(keys[i]);
-				spec.addEnvironmentVariable((String) keys[i], val);
-			}
-		}
 		return spec;
 	}
 
@@ -192,8 +238,8 @@ public class GT4ResourceBrokerAdaptor extends ResourceBrokerCpi {
 	 *             is not thrown
 	 * @return GT4Job reference
 	 */
-	public Job submitJob(JobDescription description)
-			throws GATInvocationException {
+	public Job submitJob(JobDescription description, MetricListener listener,
+			Metric metric) throws GATInvocationException {
 		if (getBooleanAttribute(description, "useLocalDisk", false)) {
 			if (logger.isDebugEnabled()) {
 				logger.debug("useLocalDisk, using wrapper application");
@@ -202,7 +248,7 @@ public class GT4ResourceBrokerAdaptor extends ResourceBrokerCpi {
 				submitter = new RemoteSandboxSubmitter(gatContext, preferences,
 						false);
 			}
-			return submitter.submitJob(description);
+			return submitter.submitJob(description, listener, metric);
 		}
 		String host = getHostname(description);
 		SoftwareDescription sd = description.getSoftwareDescription();
@@ -215,6 +261,6 @@ public class GT4ResourceBrokerAdaptor extends ResourceBrokerCpi {
 		JobSpecification spec = createJobSpecification(description, sandbox);
 		Service service = createService(description);
 		return new GT4Job(gatContext, preferences, description, sandbox, spec,
-				service);
+				service, listener, metric);
 	}
 }

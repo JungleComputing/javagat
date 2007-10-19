@@ -20,6 +20,8 @@ import org.gridlab.gat.engine.GATEngine;
 import org.gridlab.gat.engine.util.CommandRunner;
 import org.gridlab.gat.engine.util.InputForwarder;
 import org.gridlab.gat.engine.util.OutputForwarder;
+import org.gridlab.gat.monitoring.Metric;
+import org.gridlab.gat.monitoring.MetricListener;
 import org.gridlab.gat.resources.HardwareResource;
 import org.gridlab.gat.resources.Job;
 import org.gridlab.gat.resources.JobDescription;
@@ -114,16 +116,12 @@ public class LocalResourceBrokerAdaptor extends ResourceBrokerCpi {
 		throw new UnsupportedOperationException("Not implemented");
 	}
 	
-	public Job submitJob(JobDescription[] descriptions) {
-		return null;
-	}
-
 	/*
 	 * (non-Javadoc)
 	 * 
 	 * @see org.gridlab.gat.resources.ResourceBroker#submitJob(org.gridlab.gat.resources.JobDescription)
 	 */
-	public Job submitJob(JobDescription description)
+	public Job submitJob(JobDescription description, MetricListener listener, Metric metric)
 			throws GATInvocationException {
 		long start = System.currentTimeMillis();
 		SoftwareDescription sd = description.getSoftwareDescription();
@@ -272,7 +270,7 @@ public class LocalResourceBrokerAdaptor extends ResourceBrokerCpi {
 		}
 
 		return new LocalJob(gatContext, preferences, this, description, p,
-				host, sandbox, outForwarder, errForwarder, start, startRun);
+				host, sandbox, outForwarder, errForwarder, start, startRun, listener, metric);
 	}
 
 	/*

@@ -15,6 +15,7 @@ import org.gridlab.gat.engine.GATEngine;
 import org.gridlab.gat.engine.util.OutputForwarder;
 import org.gridlab.gat.monitoring.Metric;
 import org.gridlab.gat.monitoring.MetricDefinition;
+import org.gridlab.gat.monitoring.MetricListener;
 import org.gridlab.gat.monitoring.MetricValue;
 import org.gridlab.gat.resources.JobDescription;
 import org.gridlab.gat.resources.cpi.JobCpi;
@@ -77,8 +78,9 @@ public class LocalJob extends JobCpi {
 	LocalJob(GATContext gatContext, Preferences preferences,
 			LocalResourceBrokerAdaptor broker, JobDescription description,
 			Process p, String host, Sandbox sandbox, OutputForwarder out,
-			OutputForwarder err, long startTime, long startRun) {
-		super(gatContext, preferences, description, sandbox);
+			OutputForwarder err, long startTime, long startRun,
+			MetricListener listener, Metric metric) {
+		super(gatContext, preferences, description, sandbox, listener, metric);
 		// this.broker = broker;
 		jobID = allocJobID();
 		Field f = null;
@@ -115,7 +117,8 @@ public class LocalJob extends JobCpi {
 	 * 
 	 * @see org.gridlab.gat.resources.Job#getInfo()
 	 */
-	public synchronized Map<String, Object> getInfo() throws GATInvocationException {
+	public synchronized Map<String, Object> getInfo()
+			throws GATInvocationException {
 		HashMap<String, Object> m = new HashMap<String, Object>();
 
 		// update state

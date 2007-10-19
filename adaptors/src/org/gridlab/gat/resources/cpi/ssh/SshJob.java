@@ -13,6 +13,7 @@ import org.gridlab.gat.Preferences;
 import org.gridlab.gat.engine.GATEngine;
 import org.gridlab.gat.monitoring.Metric;
 import org.gridlab.gat.monitoring.MetricDefinition;
+import org.gridlab.gat.monitoring.MetricListener;
 import org.gridlab.gat.monitoring.MetricValue;
 import org.gridlab.gat.resources.JobDescription;
 import org.gridlab.gat.resources.cpi.JobCpi;
@@ -74,9 +75,9 @@ public class SshJob extends JobCpi {
 
 	SshJob(GATContext gatContext, Preferences preferences,
 			SshResourceBrokerAdaptor broker, JobDescription description,
-			Session session, Channel channel, Sandbox sandbox)
+			Session session, Channel channel, Sandbox sandbox, MetricListener listener, Metric metric)
 			throws GATInvocationException {
-		super(gatContext, preferences, description, sandbox);
+		super(gatContext, preferences, description, sandbox, listener, metric);
 		this.broker = broker;
 		jobID = allocJobID();
 		state = RUNNING;

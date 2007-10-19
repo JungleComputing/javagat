@@ -13,14 +13,19 @@ public class SubmitRemoteJob2 {
 	
 	public static void main(String[] args) throws Exception {
         GATContext context = new GATContext();
-        context.addPreference("ResourceBroker.adaptor.name", "globus");
+        if (args.length == 0) {
+        	args = new String[]{"globus"};
+        }
+        context.addPreference("ResourceBroker.adaptor.name", args[0]);
         context.addPreference("ResourceBroker.jobmanagerContact", "fs0.das3.cs.vu.nl/jobmanager-sge");
+        //context.addPreference("ResourceBroker.jobmanagerContact", "fs0.das3.cs.vu.nl");
+        context.addPreference("ResourceBroker.jobmanager", args[1]);
         context.addPreference("singleRemoteGAT", "true");
         
         SoftwareDescription sd1 = new SoftwareDescription();
         sd1.addAttribute("getRemoteSandboxOutput", "true");
-        sd1.addAttribute("getRemoteSandboxOutputURI", "any://fs0.das2.cs.vu.nl/GAT/output");
-        sd1.addAttribute("remoteGatLocation", "../GAT");
+        sd1.addAttribute("getRemoteSandboxOutputURI", "any://fs1.das3.liacs.nl/outp");
+        sd1.addAttribute("remoteGatLocation", "../.tempGAT");
         sd1.setLocation("/bin/sh");
         sd1.setArguments(new String[]{"/home0/rkemp/script.sh"});
         sd1.addAttribute("useLocalDisk", "true");
@@ -40,8 +45,8 @@ public class SubmitRemoteJob2 {
         
         SoftwareDescription sd3 = new SoftwareDescription();
         sd3.addAttribute("getRemoteSandboxOutput", "true");
-        sd3.addAttribute("getRemoteSandboxOutputURI", "any://fs0.das2.cs.vu.nl/GAT/output");
-        sd3.addAttribute("remoteGatLocation", "../GAT");
+        sd3.addAttribute("getRemoteSandboxOutputURI", "any://fs1.das3.liacs.nl/outp");
+        sd3.addAttribute("remoteGatLocation", "../.tempGAT");
         sd3.setLocation("/bin/sh");
         sd3.setArguments(new String[]{"/home0/rkemp/script.sh"});
         sd3.addAttribute("useLocalDisk", "true");
@@ -56,7 +61,7 @@ public class SubmitRemoteJob2 {
         Job job1 = broker.submitJob(jd1);
         Job job2 = broker.submitJob(jd2);
         broker.endMultiCoreJob();
-        Job job3 = broker.submitJob(jd3);
+        //Job job3 = broker.submitJob(jd3);
         
 
         while ((job1.getState() != Job.STOPPED)
@@ -72,7 +77,7 @@ public class SubmitRemoteJob2 {
                 System.err.println("job state = " + job.getInfo());
                 Thread.sleep(10000);
        }*/
-       while ((job3.getState() != Job.STOPPED)
+       /*while ((job3.getState() != Job.STOPPED)
                && (job3.getState() != Job.SUBMISSION_ERROR)) {
                Thread.sleep(1000);
        }

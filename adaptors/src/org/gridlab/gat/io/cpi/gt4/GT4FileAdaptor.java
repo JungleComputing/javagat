@@ -1,5 +1,6 @@
 package org.gridlab.gat.io.cpi.gt4;
 
+import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Collection;
@@ -10,7 +11,7 @@ import org.globus.cog.abstraction.impl.common.AbstractionFactory;
 import org.globus.cog.abstraction.impl.common.task.ServiceContactImpl;
 import org.globus.cog.abstraction.impl.file.DirectoryNotFoundException;
 import org.globus.cog.abstraction.impl.file.FileNotFoundException;
-import org.globus.cog.abstraction.impl.file.GeneralException;
+import org.globus.cog.abstraction.impl.file.FileResourceException;
 import org.globus.cog.abstraction.interfaces.FileResource;
 import org.globus.cog.abstraction.interfaces.GridFile;
 import org.globus.cog.abstraction.interfaces.Permissions;
@@ -66,7 +67,6 @@ abstract public class GT4FileAdaptor extends FileCpi {
 	public GT4FileAdaptor(GATContext gatContext, Preferences preferences,
 			URI location, String prov) throws GATObjectCreationException {
 		super(gatContext, preferences, location);
-		//System.out.println("gt4 fileadaptor: " + location);
 		srcProvider = prov;
 		try {
 			resource = AbstractionFactory.newFileResource(srcProvider);
@@ -135,7 +135,9 @@ abstract public class GT4FileAdaptor extends FileCpi {
 			return gf.userCanRead();
 		} catch (FileNotFoundException e) {
 			throw new GATInvocationException();
-		} catch (GeneralException e) {
+		} catch (IOException e) {
+			throw new GATInvocationException();
+		} catch (FileResourceException e) {
 			throw new GATInvocationException();
 		}
 	}
@@ -151,7 +153,9 @@ abstract public class GT4FileAdaptor extends FileCpi {
 			gf = resource.getGridFile(location.getPath());
 		} catch (FileNotFoundException e) {
 			throw new GATInvocationException();
-		} catch (GeneralException e) {
+		} catch (FileResourceException e) {
+			throw new GATInvocationException();
+		} catch (IOException e) {
 			throw new GATInvocationException();
 		}
 		return gf.userCanWrite();
@@ -177,8 +181,10 @@ abstract public class GT4FileAdaptor extends FileCpi {
 				resource.deleteDirectory(location.getPath(), true);
 			} catch (DirectoryNotFoundException e) {
 				return false;
-			} catch (GeneralException e) {
-				return false;
+			} catch (IOException e) {
+				throw new GATInvocationException();
+			} catch (FileResourceException e) {
+				throw new GATInvocationException();
 			}
 		} else {
 			try {
@@ -198,16 +204,19 @@ abstract public class GT4FileAdaptor extends FileCpi {
 	public boolean exists() {
 		try {
 			return resource.exists(location.getPath());
-		} catch (FileNotFoundException e) {
-			return false;
-		} catch (GeneralException e) {
-			if (GATEngine.VERBOSE) {
-				System.err
-						.println("GT4FileAdaptor caught a GeneralException in method exists(): "
-								+ e);
+		} catch (IOException e) {
+			if (logger.isDebugEnabled()) {
+				logger.debug("GT4FileAdaptor caught a GeneralException in method exists(): "
+					+ e);
 			}
-			return false;
+		} catch (FileResourceException e) {
+			if (logger.isDebugEnabled()) {
+				logger.debug("GT4FileAdaptor caught a GeneralException in method exists(): "
+					+ e);
+			}
 		}
+		return false;
+
 	}
 
 	/*
@@ -240,9 +249,11 @@ abstract public class GT4FileAdaptor extends FileCpi {
 			return gf.getAbsolutePathName();
 		} catch (FileNotFoundException e) {
 			throw new GATInvocationException();
-		} catch (GeneralException e) {
+		} catch (FileResourceException e) {
 			throw new GATInvocationException();
-		}
+		} catch (IOException e) {
+			throw new GATInvocationException();
+		} 
 	}
 
 	/*
@@ -285,10 +296,11 @@ abstract public class GT4FileAdaptor extends FileCpi {
 		} catch (FileNotFoundException e) {
 			return false;
 			// throw new GATInvocationException();
-		} catch (GeneralException e) {
+		} catch (FileResourceException e) {
 			return false;
-			// throw new GATInvocationException();
-		}
+		} catch (IOException e) {
+			return false;
+		} 
 	}
 
 	/*
@@ -303,9 +315,11 @@ abstract public class GT4FileAdaptor extends FileCpi {
 			return gf.isFile();
 		} catch (FileNotFoundException e) {
 			throw new GATInvocationException();
-		} catch (GeneralException e) {
-			throw new GATInvocationException();
-		}
+		} catch (FileResourceException e) {
+			throw new GATInvocationException(e.getMessage());
+		} catch (IOException e) {
+			throw new GATInvocationException(e.getMessage());
+		} 
 	}
 
 	/*
@@ -335,9 +349,11 @@ abstract public class GT4FileAdaptor extends FileCpi {
 			return d.getTime();
 		} catch (FileNotFoundException e) {
 			throw new GATInvocationException(e.getMessage());
-		} catch (GeneralException e) {
+		}  catch (ParseException e) {
 			throw new GATInvocationException(e.getMessage());
-		} catch (ParseException e) {
+		} catch (FileResourceException e) {
+			throw new GATInvocationException(e.getMessage());
+		} catch (IOException e) {
 			throw new GATInvocationException(e.getMessage());
 		}
 	}
@@ -354,9 +370,11 @@ abstract public class GT4FileAdaptor extends FileCpi {
 			return gf.getSize();
 		} catch (FileNotFoundException e) {
 			throw new GATInvocationException(e.getMessage());
-		} catch (GeneralException e) {
+		} catch (FileResourceException e) {
 			throw new GATInvocationException(e.getMessage());
-		}
+		} catch (IOException e) {
+			throw new GATInvocationException(e.getMessage());
+		} 
 	}
 
 	/*
@@ -371,9 +389,11 @@ abstract public class GT4FileAdaptor extends FileCpi {
 		}
 		try {
 			c = resource.list(location.getPath());
-		} catch (GeneralException e) {
+		}  catch (DirectoryNotFoundException e) {
 			throw new GATInvocationException(e.getMessage());
-		} catch (DirectoryNotFoundException e) {
+		} catch (IOException e) {
+			throw new GATInvocationException(e.getMessage());
+		} catch (FileResourceException e) {
 			throw new GATInvocationException(e.getMessage());
 		}
 		String[] res = new String[c.size() - 2];
@@ -381,7 +401,6 @@ abstract public class GT4FileAdaptor extends FileCpi {
 		int i = 0;
 		while (iterator.hasNext()) {
 			GridFile element = (GridFile) iterator.next();
-			// System.out.println(element.getName());
 			if (!element.getName().equalsIgnoreCase(".")
 					&& !element.getName().equalsIgnoreCase("..")) {
 				res[i] = element.getName();
@@ -397,12 +416,16 @@ abstract public class GT4FileAdaptor extends FileCpi {
 	 * @see org.gridlab.gat.io.File#mkdir()
 	 */
 	public boolean mkdir() throws GATInvocationException {
-		System.out.println("gt4 mkdir: " + location.getPath());
 		try {
 			resource.createDirectory(location.getPath());
-		} catch (GeneralException e) {
-			if (GATEngine.VERBOSE) {
-				System.out.println(e);
+		} catch (IOException e) {
+			if (logger.isDebugEnabled()) {
+				logger.debug(e);
+			}
+			return false;
+		} catch (FileResourceException e) {
+			if (logger.isDebugEnabled()) {
+				logger.debug(e);
 			}
 			return false;
 		}
@@ -429,12 +452,11 @@ abstract public class GT4FileAdaptor extends FileCpi {
 		Date d = new Date(arg0);
 		try {
 			gf = resource.getGridFile(location.getPath());
-		} catch (FileNotFoundException e) {
+		} catch (FileResourceException e) {
 			throw new GATInvocationException(e.getMessage());
-		} catch (GeneralException e) {
+		} catch (IOException e) {
 			throw new GATInvocationException(e.getMessage());
 		}
-		System.out.println(sdf.format(d));
 		gf.setLastModified(sdf.format(d));
 		return true;
 	}
@@ -450,9 +472,11 @@ abstract public class GT4FileAdaptor extends FileCpi {
 			gf = resource.getGridFile(location.getPath());
 		} catch (FileNotFoundException e) {
 			throw new GATInvocationException(e.getMessage());
-		} catch (GeneralException e) {
+		} catch (FileResourceException e) {
 			throw new GATInvocationException(e.getMessage());
-		}
+		} catch (IOException e) {
+			throw new GATInvocationException(e.getMessage());
+		} 
 		Permissions perm = gf.getUserPermissions();
 		perm.setWrite(false);
 		gf.setUserPermissions(perm);

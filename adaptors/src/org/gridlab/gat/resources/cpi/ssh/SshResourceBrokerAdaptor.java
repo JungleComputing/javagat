@@ -22,6 +22,8 @@ import org.gridlab.gat.io.FileInputStream;
 import org.gridlab.gat.io.FileOutputStream;
 import org.gridlab.gat.io.cpi.ssh.SSHSecurityUtils;
 import org.gridlab.gat.io.cpi.ssh.SshUserInfo;
+import org.gridlab.gat.monitoring.Metric;
+import org.gridlab.gat.monitoring.MetricListener;
 import org.gridlab.gat.resources.Job;
 import org.gridlab.gat.resources.JobDescription;
 import org.gridlab.gat.resources.ResourceDescription;
@@ -76,7 +78,7 @@ public class SshResourceBrokerAdaptor extends ResourceBrokerCpi {
 	 * 
 	 * @see org.gridlab.gat.resources.ResourceBroker#submitJob(org.gridlab.gat.resources.JobDescription)
 	 */
-	public Job submitJob(JobDescription description)
+	public Job submitJob(JobDescription description, MetricListener listener, Metric metric)
 			throws GATInvocationException {
 		try {
 			SoftwareDescription sd = description.getSoftwareDescription();
@@ -92,7 +94,7 @@ public class SshResourceBrokerAdaptor extends ResourceBrokerCpi {
 				if (submitter == null) {
 					submitter = new RemoteSandboxSubmitter(gatContext, preferences, false);
 				}
-				return submitter.submitJob(description);
+				return submitter.submitJob(description, listener, metric);
 			}
 
 			// we do not support environment yet
@@ -277,7 +279,7 @@ public class SshResourceBrokerAdaptor extends ResourceBrokerCpi {
 			}
 
 			Job j = new SshJob(gatContext, preferences, this, description,
-					session, channel, sandbox);
+					session, channel, sandbox, listener, metric);
 			return j;
 		} catch (Exception e) {
 			throw new GATInvocationException("ssh", e);

@@ -2,7 +2,9 @@ package org.gridlab.gat.resources.cpi.wsgt4;
 
 import java.util.Map;
 import java.util.Set;
+import java.util.StringTokenizer;
 
+import org.apache.log4j.Logger;
 import org.globus.exec.generated.JobDescriptionType;
 import org.globus.exec.utils.rsl.RSLHelper;
 import org.globus.exec.utils.rsl.RSLParseException;
@@ -11,10 +13,12 @@ import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.GATObjectCreationException;
 import org.gridlab.gat.Preferences;
 import org.gridlab.gat.URI;
-import org.gridlab.gat.engine.GATEngine;
+import org.gridlab.gat.monitoring.Metric;
+import org.gridlab.gat.monitoring.MetricListener;
 import org.gridlab.gat.resources.Job;
 import org.gridlab.gat.resources.JobDescription;
 import org.gridlab.gat.resources.SoftwareDescription;
+import org.gridlab.gat.resources.cpi.RemoteSandboxSubmitter;
 import org.gridlab.gat.resources.cpi.ResourceBrokerCpi;
 import org.gridlab.gat.resources.cpi.Sandbox;
 import org.gridlab.gat.security.globus.GlobusSecurityUtils;
@@ -28,6 +32,10 @@ import org.ietf.jgss.GSSCredential;
  * @since 1.0
  */
 public class WSGT4ResourceBrokerAdaptor extends ResourceBrokerCpi {
+	protected static Logger logger = Logger
+			.getLogger(WSGT4ResourceBrokerAdaptor.class);
+
+	private RemoteSandboxSubmitter submitter;
 	static final int DEFAULT_GRIDFTP_PORT = 2811;
 
 	protected GSSCredential getCred(JobDescription jobDescription)
@@ -54,6 +62,13 @@ public class WSGT4ResourceBrokerAdaptor extends ResourceBrokerCpi {
 	public WSGT4ResourceBrokerAdaptor(GATContext gatContext,
 			Preferences preferences) throws GATObjectCreationException {
 		super(gatContext, preferences);
+		String globusLocation = System.getenv("GLOBUS_LOCATION");
+		if (globusLocation == null) {
+			throw new GATObjectCreationException("$GLOBUS_LOCATION is not set");
+		}
+		System.setProperty("GLOBUS_LOCATION", globusLocation);
+		System.setProperty("axis.ClientConfigFile", globusLocation
+				+ "/client-config.wsdd");
 	}
 
 	protected String createRSL(JobDescription description, Sandbox sandbox)
@@ -66,12 +81,66 @@ public class WSGT4ResourceBrokerAdaptor extends ResourceBrokerCpi {
 					"The job description does not contain a software description");
 		}
 
-		getLocationURI(description).getPath();
+		if (isJavaApplication(description)) {
+			URI javaHome = (URI) sd.getAttributes().get("java.home");
+			if (javaHome == null) {
+				throw new GATInvocationException("java.home not set");
+			}
 
-		rsl += "<executable>";
-		rsl += getLocationURI(description).getPath();
-		rsl += "</executable>";
+			rsl += "<executable>" + javaHome.getPath() + "/bin/java</executable>";
 
+			String javaFlags = getStringAttribute(description, "java.flags", "");
+			if (javaFlags.length() != 0) {
+				StringTokenizer t = new StringTokenizer(javaFlags);
+				while (t.hasMoreTokens()) {
+					rsl += "<argument>" + t.nextToken() + "</argument>";
+				}
+			}
+
+			// classpath
+			String javaClassPath = getStringAttribute(description,
+					"java.classpath", "");
+			if (javaClassPath.length() != 0) {
+				rsl += "<argument>-classpath</argument>";
+				rsl += "<argument>" + javaClassPath + "</argument>";
+			} else {
+				// TODO if not set, use jar files in prestaged set
+			}
+
+			// set the environment
+			Map<String, Object> env = sd.getEnvironment();
+			if (env != null && !env.isEmpty()) {
+				Set<String> s = env.keySet();
+				Object[] keys = (Object[]) s.toArray();
+
+				for (int i = 0; i < keys.length; i++) {
+					String val = (String) env.get(keys[i]);
+					rsl += "<argument>-D" + keys[i] + "=" + val + "</argument>";
+				}
+			}
+
+			// main class name
+			rsl += "<argument>" + getLocationURI(description).getSchemeSpecificPart()
+					+ "</argument>";
+		} else {
+			rsl += "<executable>";
+			rsl += getLocationURI(description).getPath();
+			rsl += "</executable>";
+			Map<String, Object> env = sd.getEnvironment();
+			if (env != null && !env.isEmpty()) {
+				Set<String> s = env.keySet();
+				Object[] keys = (Object[]) s.toArray();
+
+				for (int i = 0; i < keys.length; i++) {
+					String val = (String) env.get(keys[i]);
+					rsl += "<environment>";
+					rsl += "<name>" + keys[i] + "</name>";
+					rsl += "<value>" + val + "</value>";
+					rsl += "</environment>";
+				}
+			}
+		}
+		
 		String[] argsA = getArgumentsArray(description);
 
 		if (argsA != null) {
@@ -83,20 +152,6 @@ public class WSGT4ResourceBrokerAdaptor extends ResourceBrokerCpi {
 		}
 
 		// set the environment
-		Map<String, Object> env = sd.getEnvironment();
-		if (env != null && !env.isEmpty()) {
-			Set<String> s = env.keySet();
-			Object[] keys = (Object[]) s.toArray();
-
-			for (int i = 0; i < keys.length; i++) {
-				String val = (String) env.get(keys[i]);
-				rsl += "<environment>";
-				rsl += "<name>" + keys[i] + "</name>";
-				rsl += "<value>" + val + "</value>";
-				rsl += "</environment>";
-			}
-		}
-
 		rsl += "<count>";
 		rsl += getCPUCount(description);
 		rsl += "</count>";
@@ -125,16 +180,35 @@ public class WSGT4ResourceBrokerAdaptor extends ResourceBrokerCpi {
 			rsl += "</stdin>";
 		}
 
-		if (GATEngine.VERBOSE) {
-			System.err.println("RSL: " + rsl);
+		if (logger.isInfoEnabled()) {
+			logger.info("RSL: " + rsl);
 		}
 
 		rsl += "</job>";
 		return rsl;
 	}
 
-	public Job submitJob(JobDescription description)
-			throws GATInvocationException {
+	public void beginMultiCoreJob() {
+		submitter = new RemoteSandboxSubmitter(gatContext, preferences, true);
+	}
+
+	public void endMultiCoreJob() throws GATInvocationException {
+		submitter.flushJobSubmission();
+		submitter = null;
+	}
+
+	public Job submitJob(JobDescription description, MetricListener listener,
+			Metric metric) throws GATInvocationException {
+		if (getBooleanAttribute(description, "useLocalDisk", false)) {
+			if (logger.isDebugEnabled()) {
+				logger.debug("useLocalDisk, using wrapper application");
+			}
+			if (submitter == null) {
+				submitter = new RemoteSandboxSubmitter(gatContext, preferences,
+						false);
+			}
+			return submitter.submitJob(description, listener, metric);
+		}
 		String host = getHostname(description);
 		SoftwareDescription sd = description.getSoftwareDescription();
 		if (sd == null) {
@@ -152,8 +226,9 @@ public class WSGT4ResourceBrokerAdaptor extends ResourceBrokerCpi {
 			throw new GATInvocationException("WSGT4ResourceBroker: " + e);
 		}
 		GSSCredential cred = getCred(description);
-		
+
 		return new WSGT4Job(gatContext, preferences, description, sandbox,
-				gjobDescription, getHostname(description), cred);
+				gjobDescription, getHostname(description), cred, listener,
+				metric);
 	}
 }

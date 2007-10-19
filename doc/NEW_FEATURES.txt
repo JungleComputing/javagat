@@ -47,3 +47,9 @@
   .globus/usercert.pem
   .globus/certificates (dir) or /etc/grid-security/certificates (also dir)
   
+ - updated to cog 4.1.5
+ 
+ - removed colobus stuff
+ 
+ - added ResourceBroker.submitJob(JobDescription, MetricListener, Metric) in addition to
+   the ResourceBroker.submitJob(JobDescription) 

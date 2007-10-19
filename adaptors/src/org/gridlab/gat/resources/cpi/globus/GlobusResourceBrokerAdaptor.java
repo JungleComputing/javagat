@@ -21,6 +21,8 @@ import org.gridlab.gat.GATObjectCreationException;
 import org.gridlab.gat.Preferences;
 import org.gridlab.gat.URI;
 import org.gridlab.gat.engine.GATEngine;
+import org.gridlab.gat.monitoring.Metric;
+import org.gridlab.gat.monitoring.MetricListener;
 import org.gridlab.gat.resources.Job;
 import org.gridlab.gat.resources.JobDescription;
 import org.gridlab.gat.resources.SoftwareDescription;
@@ -376,8 +378,8 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
 		}
 	}
 
-	public Job submitJob(JobDescription description)
-			throws GATInvocationException {
+	public Job submitJob(JobDescription description, MetricListener listener,
+			Metric metric) throws GATInvocationException {
 		boolean useGramSandbox = false;
 		String s = (String) preferences.get("useGramSandbox");
 		if (s != null && s.equalsIgnoreCase("true")) {
@@ -385,9 +387,9 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
 		}
 
 		if (useGramSandbox) {
-			return submitJobGramSandbox(description);
+			return submitJobGramSandbox(description, listener, metric);
 		} else {
-			return submitJobGatSandbox(description);
+			return submitJobGatSandbox(description, listener, metric);
 		}
 	}
 
@@ -438,7 +440,8 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
 		}
 	}
 
-	public Job submitJobGramSandbox(JobDescription description)
+	public Job submitJobGramSandbox(JobDescription description, MetricListener listener,
+			Metric metric)
 			throws GATInvocationException {
 		long start = System.currentTimeMillis();
 		String host = getHostname(description);
@@ -471,7 +474,7 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
 		String rsl = createRSL(description, host, null, pre, post);
 		GramJob j = new GramJob(credential, rsl);
 		GlobusJob res = new GlobusJob(gatContext, preferences, this,
-				description, j, null, start);
+				description, j, null, start, listener, metric);
 		j.addListener(res);
 
 		try {
@@ -487,7 +490,8 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
 		return res;
 	}
 
-	public Job submitJobGatSandbox(JobDescription description)
+	public Job submitJobGatSandbox(JobDescription description, MetricListener listener,
+			Metric metric)
 			throws GATInvocationException {
 		if (getBooleanAttribute(description, "useLocalDisk", false)) {
 			if (logger.isDebugEnabled()) {
@@ -497,7 +501,7 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
 				submitter = new RemoteSandboxSubmitter(gatContext, preferences,
 						false);
 			}
-			return submitter.submitJob(description);
+			return submitter.submitJob(description, listener, metric);
 		}
 		long start = System.currentTimeMillis();
 		// choose the first of the set descriptions to retrieve the hostname
@@ -518,7 +522,7 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
 		String rsl = createRSL(description, host, sandbox, null, null);
 		GramJob j = new GramJob(credential, rsl);
 		GlobusJob res = new GlobusJob(gatContext, preferences, this,
-				description, j, sandbox, start);
+				description, j, sandbox, start, listener, metric);
 		j.addListener(res);
 
 		try {

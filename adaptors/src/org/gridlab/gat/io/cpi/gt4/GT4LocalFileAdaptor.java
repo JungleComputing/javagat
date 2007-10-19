@@ -1,5 +1,6 @@
 package org.gridlab.gat.io.cpi.gt4;
 
+import java.io.IOException;
 import java.net.URISyntaxException;
 
 import org.globus.cog.abstraction.impl.common.AbstractionFactory;
@@ -9,7 +10,7 @@ import org.globus.cog.abstraction.impl.common.task.ServiceContactImpl;
 import org.globus.cog.abstraction.impl.common.task.ServiceImpl;
 import org.globus.cog.abstraction.impl.common.task.TaskImpl;
 import org.globus.cog.abstraction.impl.file.FileNotFoundException;
-import org.globus.cog.abstraction.impl.file.GeneralException;
+import org.globus.cog.abstraction.impl.file.FileResourceException;
 import org.globus.cog.abstraction.interfaces.FileTransferSpecification;
 import org.globus.cog.abstraction.interfaces.SecurityContext;
 import org.globus.cog.abstraction.interfaces.Service;
@@ -110,10 +111,6 @@ public class GT4LocalFileAdaptor extends GT4FileAdaptor {
 			throw new GATInvocationException(
 					"GT4LocalFileAdaptor: copy is failed.");
 		}
-		System.out.println("GT4LocalFileAdaptor: third party copy done.");
-		if (GATEngine.VERBOSE) {
-			System.out.println("GT4LocalFileAdaptor: third party copy done.");
-		}
 	}
 
 	/**
@@ -129,12 +126,13 @@ public class GT4LocalFileAdaptor extends GT4FileAdaptor {
 			resource.getFile(location.getPath(), dest.getPath());
 		} catch (FileNotFoundException e) {
 			throw new GATInvocationException(e.getMessage());
-		} catch (GeneralException e) {
+		} catch (IOException e) {
 			throw new GATInvocationException(e.getMessage());
-		}
-		System.out.println("GT4LocalFileAdaptor: copy done.");
-		if (GATEngine.VERBOSE) {
-			System.out.println("GT4LocalFileAdaptor: copy done.");
+		} catch (FileResourceException e) {
+			throw new GATInvocationException(e.getMessage());
+		} 
+		if (logger.isInfoEnabled()) {
+			logger.info("GT4LocalFileAdaptor: copy done.");
 		}
 	}
 
@@ -151,8 +149,6 @@ public class GT4LocalFileAdaptor extends GT4FileAdaptor {
 	 * 
 	 */
 	public void copy(URI dest) throws GATInvocationException {
-		System.out.println("gt4 local copy: " + srcProvider + " " + location
-				+ " -> " + dest);
 		// determinate dest is a directory, and pass the filename if it is,
 		// otherwise it will fail
 		if (determineIsDirectory()) {

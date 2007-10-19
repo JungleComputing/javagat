@@ -75,16 +75,16 @@ public class MonitorConsumer extends Thread {
     private int channelId;
 
     /** List of registered metric listeners. */
-    private ArrayList metricListeners;
+    private ArrayList<MetricListener> metricListeners;
 
     /** Collection of the pending commands. */
-    private TreeMap pendingCommands;
+    private TreeMap<Integer, CommandResult> pendingCommands;
 
     /** This is the buffer used for decoding the metric values. */
     private Buffer buf;
 
     /** Collection of cached metric definitions. */
-    private TreeMap defCache;
+    private TreeMap<Integer, MetricDefinition> defCache;
 
     /** Holds the exception that caused the listener thread to terminate. */
     private Exception pendingException;
@@ -108,9 +108,9 @@ public class MonitorConsumer extends Thread {
     public MonitorConsumer(String url) {
         super("Monitor Consumer <uninitialized>");
 
-        metricListeners = new ArrayList();
-        pendingCommands = new TreeMap();
-        defCache = new TreeMap();
+        metricListeners = new ArrayList<MetricListener>();
+        pendingCommands = new TreeMap<Integer, CommandResult>();
+        defCache = new TreeMap<Integer, MetricDefinition>();
         connect(url);
         setName("Monitor Consumer #" + Integer.toString(monHandle) + ": " + url);
         setDaemon(true);
@@ -129,9 +129,9 @@ public class MonitorConsumer extends Thread {
     public MonitorConsumer(ThreadGroup group, String url) {
         super(group, "Monitor Consumer <uninitialized>");
 
-        metricListeners = new ArrayList();
-        pendingCommands = new TreeMap();
-        defCache = new TreeMap();
+        metricListeners = new ArrayList<MetricListener>();
+        pendingCommands = new TreeMap<Integer, CommandResult>();
+        defCache = new TreeMap<Integer, MetricDefinition>();
         connect(url);
         setName("Monitor Consumer #" + Integer.toString(monHandle) + ": " + url);
         setDaemon(true);
@@ -174,7 +174,8 @@ public class MonitorConsumer extends Thread {
      * @param timestamp        the timestamp of the metric value.
      * @param value                the encoded metric value.
      */
-    private void metricCallback(int mid, long timestamp, byte[] value) {
+    @SuppressWarnings("unused")
+	private void metricCallback(int mid, long timestamp, byte[] value) {
         MetricDefinition def;
 
         try {
@@ -193,7 +194,7 @@ public class MonitorConsumer extends Thread {
         MetricValue mv = new MetricValue(this, mid, buf.decode(def.getType()),
             new Date(timestamp), def);
 
-        Iterator i = metricListeners.iterator();
+        Iterator<MetricListener> i = metricListeners.iterator();
 
         while (i.hasNext()) {
             MetricListener l = (MetricListener) i.next();
@@ -217,7 +218,8 @@ public class MonitorConsumer extends Thread {
      * @param result        the result object to notify when the command
      *                        completes.
      */
-    private void addCommandResult(CommandResult result) {
+    @SuppressWarnings("unused")
+	private void addCommandResult(CommandResult result) {
         pendingCommands.put(new Integer(result.getSeq()), result);
     }
 
@@ -232,7 +234,8 @@ public class MonitorConsumer extends Thread {
      * @param status        the command's result.
      * @param dataId        the (optional) ID returned by the command.
      */
-    private void commandCallback(int commandId, int status, int dataId) {
+    @SuppressWarnings("unused")
+	private void commandCallback(int commandId, int status, int dataId) {
         Integer id = new Integer(commandId);
         CommandResult res = (CommandResult) pendingCommands.get(id);
 
@@ -251,10 +254,10 @@ public class MonitorConsumer extends Thread {
      * blocked in {@link CommandResult#waitResult waitResult}.
      */
     private void wakeupAll() {
-        Iterator i = pendingCommands.values().iterator();
+        Iterator<CommandResult> i = pendingCommands.values().iterator();
 
         while (i.hasNext()) {
-            Object cmd = i.next();
+            CommandResult cmd = i.next();
 
             synchronized (cmd) {
                 cmd.notifyAll();
@@ -308,7 +311,7 @@ public class MonitorConsumer extends Thread {
             }
 
             /* Propagate the error to all registered listeners */
-            Iterator i = metricListeners.iterator();
+            Iterator<MetricListener> i = metricListeners.iterator();
 
             while (i.hasNext()) {
                 MetricListener l = (MetricListener) i.next();

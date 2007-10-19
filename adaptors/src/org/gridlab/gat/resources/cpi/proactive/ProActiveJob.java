@@ -21,6 +21,7 @@ import org.gridlab.gat.engine.GATEngine;
 import org.gridlab.gat.io.File;
 import org.gridlab.gat.monitoring.Metric;
 import org.gridlab.gat.monitoring.MetricDefinition;
+import org.gridlab.gat.monitoring.MetricListener;
 import org.gridlab.gat.monitoring.MetricValue;
 import org.gridlab.gat.resources.JobDescription;
 import org.gridlab.gat.resources.SoftwareDescription;
@@ -36,7 +37,7 @@ import org.objectweb.proactive.filetransfer.FileVector;
  * @see org.gridlab.gat.resources.Job.
  */
 @SuppressWarnings("serial")
-public class Job extends JobCpi {
+public class ProActiveJob extends JobCpi {
     /** Counter for generating job identifications. */
     private static int jobCounter;
 
@@ -240,13 +241,13 @@ public class Job extends JobCpi {
      * @param broker the resource broker that initiated this job.
      * @exception GATInvocationException when something goes wrong.
      */
-    public Job(GATContext gatContext, Preferences preferences,
+    public ProActiveJob(GATContext gatContext, Preferences preferences,
             JobDescription jobDescription,
-            ProActiveResourceBrokerAdaptor broker)
+            ProActiveResourceBrokerAdaptor broker, MetricListener listener, Metric metric)
         throws GATInvocationException {
 
         // No sandbox, we don't know the node(s) yet.
-        super(gatContext, preferences, jobDescription, null);
+        super(gatContext, preferences, jobDescription, null, listener, metric);
 //        this.broker = broker;
 
         if (preferences.get("ResourceBroker.ProActive.noSandbox") != null) {

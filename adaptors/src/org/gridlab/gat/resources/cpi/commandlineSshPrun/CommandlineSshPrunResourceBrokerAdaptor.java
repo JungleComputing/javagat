@@ -21,6 +21,8 @@ import org.gridlab.gat.io.FileInputStream;
 import org.gridlab.gat.io.FileOutputStream;
 import org.gridlab.gat.io.cpi.ssh.SSHSecurityUtils;
 import org.gridlab.gat.io.cpi.ssh.SshUserInfo;
+import org.gridlab.gat.monitoring.Metric;
+import org.gridlab.gat.monitoring.MetricListener;
 import org.gridlab.gat.resources.HardwareResource;
 import org.gridlab.gat.resources.Job;
 import org.gridlab.gat.resources.JobDescription;
@@ -125,13 +127,8 @@ public class CommandlineSshPrunResourceBrokerAdaptor extends ResourceBrokerCpi {
 		throw new UnsupportedOperationException("Not implemented");
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.gridlab.gat.resources.ResourceBroker#submitJob(org.gridlab.gat.resources.JobDescription)
-	 */
-	public Job submitJob(JobDescription description)
-			throws GATInvocationException {
+	public Job submitJob(JobDescription description, MetricListener listener,
+			Metric metric) throws GATInvocationException {
 		SoftwareDescription sd = description.getSoftwareDescription();
 
 		if (sd == null) {
@@ -287,9 +284,10 @@ public class CommandlineSshPrunResourceBrokerAdaptor extends ResourceBrokerCpi {
 		}
 
 		return new CommandlineSshPrunJob(gatContext, preferences, this,
-				description, p, sandbox, outForwarder, errForwarder);
+				description, p, sandbox, outForwarder, errForwarder, listener, metric);		
 	}
-
+	
+	
 	/*
 	 * (non-Javadoc)
 	 * 

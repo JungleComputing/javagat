@@ -22,6 +22,8 @@ import org.gridlab.gat.URI;
 import org.gridlab.gat.engine.GATEngine;
 import org.gridlab.gat.engine.util.Environment;
 import org.gridlab.gat.io.File;
+import org.gridlab.gat.monitoring.Metric;
+import org.gridlab.gat.monitoring.MetricListener;
 import org.gridlab.gat.resources.HardwareResourceDescription;
 import org.gridlab.gat.resources.Job;
 import org.gridlab.gat.resources.JobDescription;
@@ -57,14 +59,14 @@ public class RemoteSandboxSubmitter {
 		this.preferences = preferences;
 	}
 
-	public Job submitJob(JobDescription description)
-			throws GATInvocationException {
+	public Job submitJob(JobDescription description, MetricListener listener,
+			Metric metric) throws GATInvocationException {
 		RemoteSandboxJob result = new RemoteSandboxJob(gatContext, preferences,
-				description);
+				description, listener, metric);
 		descriptions.add(description);
 		jobs.add(result);
 		if (!multicore) {
-			flushJobSubmission();
+			flushJobSubmission(); // in a new thread ?
 		}
 		return result;
 	}
@@ -212,7 +214,7 @@ public class RemoteSandboxSubmitter {
 									GATEngine.DEBUG),
 					""
 							+ origSd.getBooleanAttribute("timeRemoteSandbox",
-									GATEngine.TIMING), jobIDs});
+									GATEngine.TIMING), jobIDs });
 
 			String queue = origSd.getStringAttribute("queue", null);
 			if (queue != null) {
@@ -237,7 +239,6 @@ public class RemoteSandboxSubmitter {
 			JobDescription jd = new JobDescription(sd);
 			ResourceBroker broker = GAT.createResourceBroker(gatContext,
 					newPreferences);
-
 			Job j = broker.submitJob(jd);
 			Iterator<RemoteSandboxJob> it = jobs.iterator();
 			while (it.hasNext()) {
@@ -249,7 +250,7 @@ public class RemoteSandboxSubmitter {
 			// prestaged.
 			descriptorFile.delete();
 
-			if (origSd.getBooleanAttribute("waitForPreStage", false)) {
+			/*if (origSd.getBooleanAttribute("waitForPreStage", false)) {
 				if (logger.isInfoEnabled()) {
 					logger.info("waiting for prestage to complete");
 				}
@@ -265,6 +266,7 @@ public class RemoteSandboxSubmitter {
 										+ state);
 							}
 						}
+						
 						return;
 					} catch (Exception e) {
 						if (logger.isDebugEnabled()) {
@@ -274,7 +276,7 @@ public class RemoteSandboxSubmitter {
 					}
 					Thread.sleep(1000);
 				}
-			}
+			}*/
 		} catch (Exception e) {
 			throw new GATInvocationException("RemoteSandboxSubmitter", e);
 		}

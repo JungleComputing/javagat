@@ -31,7 +31,8 @@ public final class Logger {
     }
 
     /** Used by the native code to map the object to a prod_gridlog_handle */
-    private int nativeHandle;
+    @SuppressWarnings("unused")
+	private int nativeHandle;
 
     /**
      * Creates a new <code>Logger</code> object using the specified serivice
