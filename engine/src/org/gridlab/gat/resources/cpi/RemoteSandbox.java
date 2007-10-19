@@ -48,25 +48,39 @@ public class RemoteSandbox implements MetricListener {
 	public synchronized void processMetricEvent(MetricValue val) {
 		Job job = (Job) val.getSource();
 		GATContext gatContext = new GATContext();
+		FileWriter writer = null;
 		try {
 			URI local = new URI(".JavaGATstatus" + jobMap.get(job));
 			URI dest = new URI("any://" + initiator + "/.JavaGATstatus"
 					+ jobMap.get(job));
 			File localFile = GAT.createFile(gatContext, local);
-			if (localFile.exists()) {
-				localFile.delete();
-			}
+			File remoteFile = GAT.createFile(gatContext, dest);
 			localFile.createNewFile();
-			FileWriter writer = new FileWriter(localFile);
+			writer = new FileWriter(localFile);
 			writer.write(job.getState());
 			writer.flush();
 			writer.close();
+			while (remoteFile.exists()) {
+				try {
+					Thread.sleep(1000);
+				} catch (InterruptedException e) {
+					// ignore
+				}
+			}
 			localFile.copy(dest);
+			localFile.delete();
 		} catch (GATObjectCreationException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
+			if (writer != null) {
+				try {
+					writer.close();
+				} catch (IOException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+			}
 			e.printStackTrace();
 		} catch (URISyntaxException e) {
 			// TODO Auto-generated catch block
