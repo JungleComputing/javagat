@@ -1,5 +1,7 @@
 package org.gridlab.gat.resources.cpi;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.HashMap;
 
@@ -9,8 +11,6 @@ import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.GATObjectCreationException;
 import org.gridlab.gat.Preferences;
 import org.gridlab.gat.engine.GATEngine;
-import org.gridlab.gat.io.File;
-import org.gridlab.gat.io.FileInputStream;
 import org.gridlab.gat.monitoring.Metric;
 import org.gridlab.gat.monitoring.MetricDefinition;
 import org.gridlab.gat.monitoring.MetricListener;
@@ -122,8 +122,8 @@ public class RemoteSandboxJob extends JobCpi implements MetricListener {
 			do {
 				FileInputStream in = null;
 				try {
-					in = GAT.createFileInputStream(gatContext,
-							"any://localhost/.JavaGATstatus" + getJobID());
+					in = new FileInputStream(System.getProperty("user.home")
+							+ ".JavaGATstatus" + getJobID());
 					state = in.read();
 				} catch (Exception e) {
 					if (logger.isInfoEnabled()) {
@@ -145,13 +145,9 @@ public class RemoteSandboxJob extends JobCpi implements MetricListener {
 				} else {
 					File monitorFile;
 					try {
-						monitorFile = GAT.createFile(gatContext,
-								"any://localhost/.JavaGATstatus" + getJobID());
+						monitorFile = new File(System.getProperty("user.home")
+								+ ".JavaGATstatus" + getJobID());
 						monitorFile.delete();
-					} catch (GATObjectCreationException e) {
-						if (logger.isInfoEnabled()) {
-							logger.info(e);
-						}
 					} catch (GATInvocationException e) {
 						if (logger.isInfoEnabled()) {
 							logger.info(e);
