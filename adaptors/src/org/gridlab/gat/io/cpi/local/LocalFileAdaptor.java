@@ -177,7 +177,7 @@ public class LocalFileAdaptor extends FileCpi {
 		if (logger.isDebugEnabled()) {
 			logger.debug("creating local file " + destinationFile);
 		}
-
+		//TODO close Files in all cases
 		BufferedInputStream inBuf;
 		BufferedOutputStream outBuf;
 

@@ -90,7 +90,7 @@ public class RemoteSandboxJob extends JobCpi implements MetricListener {
 		}
 	}
 
-	public String getJobID() throws GATInvocationException {
+	public String getJobID() {
 		// "RSJ" -> Remote Sandbox Job
 		if (jobString == null) {
 			jobString = "RSJ" + jobID + "_" + Math.random();
@@ -115,13 +115,18 @@ public class RemoteSandboxJob extends JobCpi implements MetricListener {
 		}
 
 		public void run() {
+			String statusFileName = null;
 
+			statusFileName = System.getProperty("user.home") + File.separator + ".JavaGATstatus"
+					+ getJobID();
+
+			logger.warn("job status file = " + statusFileName);
+			
 			int oldState = state;
 			do {
 				FileInputStream in = null;
 				try {
-					in = new FileInputStream(System.getProperty("user.home")
-							+ ".JavaGATstatus" + getJobID());
+					in = new FileInputStream(statusFileName);
 					state = in.read();
 				} catch (Exception e) {
 					if (logger.isInfoEnabled()) {
@@ -141,16 +146,11 @@ public class RemoteSandboxJob extends JobCpi implements MetricListener {
 					// nothing read, revert state to old state, try again...
 					state = oldState;
 				} else {
-					File monitorFile;
-					try {
-						monitorFile = new File(System.getProperty("user.home")
-								+ ".JavaGATstatus" + getJobID());
-						monitorFile.delete();
-					} catch (GATInvocationException e) {
-						if (logger.isInfoEnabled()) {
-							logger.info(e);
-						}
+					File monitorFile = new File(statusFileName);
+					if (!monitorFile.delete()) {
+						logger.warn("Could not delete job status file!");
 					}
+
 					if (state != oldState) {
 						fireStateMetric(state);
 						oldState = state;
