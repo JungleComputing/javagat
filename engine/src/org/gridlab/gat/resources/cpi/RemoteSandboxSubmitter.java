@@ -103,7 +103,7 @@ public class RemoteSandboxSubmitter {
 	private void doSubmitJob() throws GATInvocationException {
 		try {
 			Preferences newPreferences = new Preferences(preferences);
-			newPreferences.put("UseRemoteSandbox", "false");
+			newPreferences.put("useRemoteSandbox", "false");
 			SoftwareDescription origSd = descriptions.get(0)
 					.getSoftwareDescription();
 			if (origSd == null) {
@@ -241,42 +241,43 @@ public class RemoteSandboxSubmitter {
 					newPreferences);
 			Job j = broker.submitJob(jd);
 			Iterator<RemoteSandboxJob> it = jobs.iterator();
-			while (it.hasNext()) {
-				RemoteSandboxJob job = (RemoteSandboxJob) it.next();
-				job.setSandboxJob(j);
-			}
-
 			// we can now safely delete the descriptor file, it has been
 			// prestaged.
 			descriptorFile.delete();
-
-			/*if (origSd.getBooleanAttribute("waitForPreStage", false)) {
-				if (logger.isInfoEnabled()) {
-					logger.info("waiting for prestage to complete");
-				}
-
-				while (true) {
-					int state = j.getState();
-					try {
-						if (state == Job.POST_STAGING || state == Job.STOPPED
-								|| state == Job.SUBMISSION_ERROR
-								|| !preStageDoneFile.exists()) {
-							if (logger.isInfoEnabled()) {
-								logger.info("prestage completed, job state = "
-										+ state);
-							}
-						}
-						
-						return;
-					} catch (Exception e) {
-						if (logger.isDebugEnabled()) {
-							logger.debug("warning exists failed: " + e);
-						}
-						// ignore
+			while (it.hasNext()) {
+				RemoteSandboxJob job = (RemoteSandboxJob) it.next();
+				job.setSandboxJob(j);
+				
+				if (origSd.getBooleanAttribute("waitForPreStage", false)) {
+					if (logger.isInfoEnabled()) {
+						logger.info("waiting for prestage to complete");
 					}
-					Thread.sleep(1000);
+
+					while (true) {
+						int state = j.getState();
+						try {
+							if (state == Job.POST_STAGING
+									|| state == Job.STOPPED
+									|| state == Job.SUBMISSION_ERROR
+									|| !preStageDoneFile.exists()) {
+								if (logger.isInfoEnabled()) {
+									logger
+											.info("prestage completed, job state = "
+													+ state);
+								}
+							}
+
+							return;
+						} catch (Exception e) {
+							if (logger.isDebugEnabled()) {
+								logger.debug("warning exists failed: " + e);
+							}
+							// ignore
+						}
+						Thread.sleep(1000);
+					}
 				}
-			}*/
+			}
 		} catch (Exception e) {
 			throw new GATInvocationException("RemoteSandboxSubmitter", e);
 		}

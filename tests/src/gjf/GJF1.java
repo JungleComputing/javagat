@@ -1,26 +1,29 @@
 package gjf;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.util.HashMap;
-
 import org.gridlab.gat.GAT;
-import org.gridlab.gat.GATContext;
-import org.gridlab.gat.Preferences;
 import org.gridlab.gat.URI;
-import org.gridlab.gat.monitoring.Metric;
-import org.gridlab.gat.monitoring.MetricDefinition;
-import org.gridlab.gat.monitoring.MetricListener;
-import org.gridlab.gat.monitoring.MetricValue;
+import org.gridlab.gat.GATContext; //  import org.gridlab.gat.io.File;
+import org.gridlab.gat.resources.HardwareResourceDescription;
 import org.gridlab.gat.resources.Job;
 import org.gridlab.gat.resources.JobDescription;
 import org.gridlab.gat.resources.ResourceBroker;
+import org.gridlab.gat.resources.ResourceDescription;
 import org.gridlab.gat.resources.SoftwareDescription;
+import org.gridlab.gat.Preferences;
+import org.gridlab.gat.monitoring.MetricListener;
+import org.gridlab.gat.monitoring.MetricValue;
+import org.gridlab.gat.monitoring.Metric;
+import org.gridlab.gat.monitoring.MetricDefinition;
 
-public class GridJobFarming1 implements MetricListener {
+import java.io.File;
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.util.HashMap;
 
-	final static String version = "$Id: GridJobFarming1.java,v 1.26 2007/01/23 14:40:23 kscover Exp kscover $";
+public class GJF1 implements MetricListener {
+
+	final static String version = "$Id: GJF1.java,v 1.3 2007/10/19 09:17:54 kscover Exp kscover $";
+	final static int JOBS_PER_NODE = 4;
 
 	// Count of nodes started and finished
 	int jobsSubmitted = 0;
@@ -34,6 +37,9 @@ public class GridJobFarming1 implements MetricListener {
 
 	// Name of the output directory
 	String outputDirGlobal;
+
+	// Shared Resourcebroker
+	ResourceBroker broker;
 
 	public synchronized void processMetricEvent(MetricValue val) {
 
@@ -52,6 +58,11 @@ public class GridJobFarming1 implements MetricListener {
 				System.out.flush();
 			}
 			final String jobName = jobParams[jobEventIdx][0];
+
+			// Print a record of the event
+			System.out.printf("%4d %-20s  %4d %4d  %-15s  %-15s\n",
+					jobEventIdx, jobName, jobsSubmitted, jobsStopped, val
+							.getValue(), val.getSource());
 
 			// Flag running jobs
 			if (val.getValue().toString().equals("RUNNING")) {
@@ -96,10 +107,6 @@ public class GridJobFarming1 implements MetricListener {
 				jobStopFile.createNewFile();
 			}
 
-			System.out.printf("%4d %-20s  %4d %4d  %-15s  %-15s\n",
-					jobEventIdx, jobName, jobsSubmitted, jobsStopped, val
-							.getValue(), val.getSource());
-
 		} catch (Exception e) {
 			System.err.println("an exception occurred: " + e);
 			e.printStackTrace();
@@ -118,12 +125,12 @@ public class GridJobFarming1 implements MetricListener {
 	// Submit a job to the queue for execution
 	Job submitJob(final GATContext context, final String jobManagerContact,
 			final String globusQueueName, final String nodeDiskPath,
-			final String shPath, final String javaPath,
+			final String shPath, final String javaHome,
 			final String remoteGatLocation, final String jobName,
 			final String scriptFileName, final String[] arguments,
 			final String prestageDir, final String inputDir,
 			final String outputDir, final HashMap environmentMap,
-			final int maxExecTime) throws Exception {
+			final String maxExecTime) throws Exception {
 
 		SoftwareDescription sd = new SoftwareDescription();
 		sd.setLocation("any:///" + shPath);
@@ -132,15 +139,22 @@ public class GridJobFarming1 implements MetricListener {
 		// Prestage
 		sd.addPreStagedFile(GAT.createFile(context, scriptFileName));
 		sd.setEnvironment(environmentMap);
-		sd.addAttribute("maxWallTime", "" + maxExecTime);
+
+		// Set the maximum execution time if requested
+		if (!maxExecTime.equals("-")) {
+			sd.addAttribute("maxWallTime", maxExecTime);
+			sd.addAttribute("maxTime", maxExecTime);
+			sd.addAttribute("maxCPUTime", maxExecTime);
+		}
 
 		// put the files on the local disk of the node
-		sd.addAttribute("java.home", new URI(javaPath.substring(0, javaPath
-				.length()
-				- "/bin/java".length())));
-		sd.addAttribute("useLocalDisk", "true");
-		sd.addAttribute("waitForPreStage", "true");
+		// sd.addAttribute("java.home", new URI(javaPath.substring(0,
+		// javaPath.length() - "/bin/java".length())));
+		sd.addAttribute("java.home", new URI(javaHome));
+		sd.addAttribute("useRemoteSandbox", "true");
+		// sd.addAttribute("waitForPreStage", "true");
 		sd.addAttribute("getRemoteSandboxOutput", "true");
+		sd.addAttribute("getRemoteSandboxOutputURI", "any:///customoutput");
 		sd.addAttribute("sandboxRoot", nodeDiskPath);
 		if (remoteGatLocation != null) {
 			sd.addAttribute("remoteGatLocation", remoteGatLocation);
@@ -195,14 +209,13 @@ public class GridJobFarming1 implements MetricListener {
 		sd.setWipePreStaged(true);
 
 		JobDescription jd = new JobDescription(sd);
-		ResourceBroker broker = GAT.createResourceBroker(context);
 		Job job = broker.submitJob(jd);
 		jobsSubmitted++;
 
 		MetricDefinition md = job.getMetricDefinitionByName("job.status");
 		Metric m = md.createMetric(null);
 		job.addMetricListener(this, m); // register my callback for job.status
-										// events
+		// events
 
 		return job;
 	}
@@ -235,17 +248,21 @@ public class GridJobFarming1 implements MetricListener {
 			System.out
 					.println("                Das2Fs0: fs0 nodes of the DAS2 cluster (fs0.das2.cs.vu.nl)");
 			System.out
-					.println("                Das2Fs1: fs1 nodes of the DAS2 cluster (fs1.das2.liacs.nl)");
-			System.out
-					.println("                Das2Fs2: fs2 nodes of the DAS2 cluster (fs2.das2.nikhef.nl)");
-			System.out
 					.println("                Das3Fs0: fs0 nodes of the DAS3 cluster (fs0.das3.cs.vu.nl)");
 			System.out
-					.println("                Matrix:  nodes of the Matrix cluster (ui.matrix.sara.nl)");
+					.println("                Matrix4hrs:  Matrix cluster 4 hours queue (ui.matrix.sara.nl)");
 			System.out
-					.println("                Nikhef:  nodes of the Nikhef cluster (nikhef.nl)");
+					.println("                Matrix33hrs: Matrix cluster 33 hours queue (ui.matrix.sara.nl)");
+			System.out
+					.println("                Matrix72hrs: Matrix cluster 72 hours queue (ui.matrix.sara.nl)");
+			System.out
+					.println("                Nikhef4hrs:  Nikhef cluster 4 hour queue (nikhef.nl)");
+			System.out
+					.println("                Nikhef24hrs: Nikhef cluster 24 hour queue (nikhef.nl)");
 			System.out
 					.println("   maxExecTime: maximum time (in minutes) a job has to execute");
+			System.out
+					.println("                if \"-\" then the maximum time is set to the default for the queue");
 			System.out
 					.println(" maxJobsAtOnce: maximum number of jobs to run at one time");
 			System.out.println();
@@ -273,7 +290,7 @@ public class GridJobFarming1 implements MetricListener {
 		final String scriptFileName = args[3];
 		final String paramFileName = args[4];
 		final String clusterName = args[5];
-		final int maxExecTime = Integer.valueOf(args[6]).intValue();
+		final String maxExecTime = args[6];
 		final int maxJobsAtOnce = Integer.valueOf(args[7]).intValue();
 
 		System.out.println("     prestageDir: " + prestageDir);
@@ -329,50 +346,32 @@ public class GridJobFarming1 implements MetricListener {
 			}
 			System.out.println();
 
-			// SELECT THE CLUSTERS FOR THE NODES
+			// SELECT THE CLUSTER AND QUEUE FOR SUBMISSION
 
 			// Select the cluster for the nodes
 			final String jobManagerContact;
 			final String globusQueueName;
 			final String javaPath;
+			final String javaHome;
 			final String shPath;
 			final String nodeDiskPath;
 			final String remoteGatLocation;
 			final GATContext context = new GATContext();
-
-			// Force the use of the globus middleware for file access. No other
-			// middleware will be tried.
-			context.addPreference("File.adaptor.name", "GridFTP");
-			context.addPreference("FileOutputStream.adaptor.name", "GridFTP");
-			context.addPreference("FileInputStream.adaptor.name", "GridFTP");
-
 			{
 				final Preferences prefs = new Preferences();
 				if (clusterName.equals("Das2Fs0")) {
 					jobManagerContact = "fs0.das2.cs.vu.nl";
 					globusQueueName = null;
 					javaPath = "/usr/local/sun-java/jdk1.5/bin/java";
+					javaHome = "/usr/local/sun-java/jdk1.5";
 					shPath = "/bin/sh";
 					nodeDiskPath = "/var/tmp";
-					remoteGatLocation = "/usr/local/VU/JavaGAT/JavaGAT-1.6.4";
-				} else if (clusterName.equals("Das2Fs1")) {
-					jobManagerContact = "fs1.das2.liacs.nl";
-					globusQueueName = null;
-					javaPath = "/usr/local/sun-java/jdk1.5/bin/java";
-					shPath = "/bin/sh";
-					nodeDiskPath = "/tmp";
-					remoteGatLocation = "/usr/local/VU/JavaGAT/JavaGAT-1.6.4";
-				} else if (clusterName.equals("Das2Fs2")) {
-					jobManagerContact = "fs2.das2.nikhef.nl";
-					globusQueueName = null;
-					javaPath = "/usr/local/sun-java/jdk1.5/bin/java";
-					shPath = "/bin/sh";
-					nodeDiskPath = "/tmp";
 					remoteGatLocation = "/usr/local/VU/JavaGAT/JavaGAT-1.6.4";
 				} else if (clusterName.equals("Das3Fs0")) {
 					jobManagerContact = "fs0.das3.cs.vu.nl/jobmanager-sge";
 					globusQueueName = null;
 					javaPath = "/usr/local/package/jdk1.5/bin/java";
+					javaHome = "/usr/local/package/jdk1.5";
 					shPath = "/bin/sh";
 					nodeDiskPath = "/local";
 					remoteGatLocation = null;
@@ -380,6 +379,7 @@ public class GridJobFarming1 implements MetricListener {
 					jobManagerContact = "mu6.matrix.sara.nl/jobmanager-pbs";
 					globusQueueName = "short";
 					javaPath = "/usr/java/j2sdk1.4.2_12/bin/java";
+					javaHome = "/usr/java/j2sdk1.4.2_12";
 					shPath = "/bin/sh";
 					nodeDiskPath = "/tmp";
 					remoteGatLocation = null;
@@ -387,6 +387,7 @@ public class GridJobFarming1 implements MetricListener {
 					jobManagerContact = "mu6.matrix.sara.nl/jobmanager-pbs";
 					globusQueueName = "medium";
 					javaPath = "/usr/java/j2sdk1.4.2_12/bin/java";
+					javaHome = "/usr/java/j2sdk1.4.2_12";
 					shPath = "/bin/sh";
 					nodeDiskPath = "/tmp";
 					remoteGatLocation = null;
@@ -394,39 +395,43 @@ public class GridJobFarming1 implements MetricListener {
 					jobManagerContact = "mu6.matrix.sara.nl/jobmanager-pbs";
 					globusQueueName = "long";
 					javaPath = "/usr/java/j2sdk1.4.2_12/bin/java";
+					javaHome = "/usr/java/j2sdk1.4.2_12";
 					shPath = "/bin/sh";
 					nodeDiskPath = "/tmp";
 					remoteGatLocation = null;
 				} else if (clusterName.equals("Nikhef4hrs")) {
 					jobManagerContact = "tbn20.nikhef.nl:2119/jobmanager-pbs";
 					globusQueueName = "qshort";
+
 					javaPath = "/usr/java/jdk1.5.0_11/bin/java";
+					javaHome = "/usr/java/jdk1.5.0_11";
 					shPath = "/bin/sh";
 					nodeDiskPath = "/tmp";
 					remoteGatLocation = null;
-				} else if (clusterName.equals("Nikhef60hrs")) {
+				} else if (clusterName.equals("Nikhef24hrs")) {
 					jobManagerContact = "tbn20.nikhef.nl:2119/jobmanager-pbs";
 					globusQueueName = "qlong";
 					javaPath = "/usr/java/jdk1.5.0_11/bin/java";
+					javaHome = "/usr/java/jdk1.5.0_11";
 					shPath = "/bin/sh";
 					nodeDiskPath = "/tmp";
 					remoteGatLocation = null;
 				} else {
 					throw new Exception("Unknown cluster name: " + clusterName);
 				}
-				prefs
-						.put("ResourceBroker.jobmanagerContact",
-								jobManagerContact);
+				prefs.put("ResourceBroker.jobmanagerContact", jobManagerContact);
 				prefs.put("ResourceBroker.adaptor.name", "globus");
+				prefs.put("File.adaptor.name", "local, gridFTP");
+				// the line below makes the GAT prestage itself only once
+				prefs.put("singleRemoteGAT", "true");
 				context.addPreferences(prefs);
 			}
 
 			// Setup queue and cluster dependent environment variables for the
 			// sh script
 			HashMap environmentMap = new HashMap();
-			environmentMap.put("JG_JAVA_PATH", javaPath);
-			environmentMap.put("JG_SH_PATH", shPath);
-			environmentMap.put("JG_NODE_DISK_PATH", nodeDiskPath);
+			environmentMap.put("JAVA_HOME", javaHome);
+			environmentMap.put("USER", "GJF1_USER");
 
 			// Print out queue and cluster information
 			System.out.println("jobManagerContact: " + jobManagerContact);
@@ -444,7 +449,10 @@ public class GridJobFarming1 implements MetricListener {
 			// Submit one job for each data set core name
 			jobList = new Job[jobNum];
 			int jobsSubmittedCnt = 0;
+			broker = GAT.createResourceBroker(context);
 			for (int jobIdx = 0; jobIdx < jobNum; jobIdx++) {
+				if (jobsSubmittedCnt % JOBS_PER_NODE == 0)
+					broker.beginMultiCoreJob();
 
 				// Wait to avoid exceeding maxJobsAtOnce before submitting the
 				// next job
@@ -466,7 +474,7 @@ public class GridJobFarming1 implements MetricListener {
 					jobList[jobIdx] = null;
 				} else {
 					jobList[jobIdx] = submitJob(context, jobManagerContact,
-							globusQueueName, nodeDiskPath, shPath, javaPath,
+							globusQueueName, nodeDiskPath, shPath, javaHome,
 							remoteGatLocation, jobName, scriptFileName,
 							arguments, prestageDir, inputDir, outputDir,
 							environmentMap, maxExecTime);
@@ -480,6 +488,9 @@ public class GridJobFarming1 implements MetricListener {
 
 					jobsSubmittedCnt++;
 				}
+				if (jobsSubmittedCnt % JOBS_PER_NODE == 0
+						|| jobIdx + 1 == jobNum)
+					broker.endMultiCoreJob();
 			}
 
 			if (jobsSubmittedCnt > 0) {
@@ -508,9 +519,9 @@ public class GridJobFarming1 implements MetricListener {
 				if (jobList[jobIdx] == null)
 					System.out.printf("%4d  %-20s  %s ", jobIdx, jobName,
 							"Already done" + "\n");
-				else
-					System.out.printf("%4d  %-20s  %s ", jobIdx, jobName,
-							jobList[jobIdx].getInfo() + "\n");
+				// else
+				// System.out.printf("%4d %-20s %s ", jobIdx, jobName,
+				// jobList[jobIdx].getInfo() + "\n");
 			}
 			System.out.println();
 
@@ -523,7 +534,7 @@ public class GridJobFarming1 implements MetricListener {
 	}
 
 	public static void main(String[] args) {
-		GridJobFarming1 a = new GridJobFarming1();
+		GJF1 a = new GJF1();
 		a.start(args);
 	}
 }

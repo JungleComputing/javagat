@@ -493,9 +493,9 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
 	public Job submitJobGatSandbox(JobDescription description, MetricListener listener,
 			Metric metric)
 			throws GATInvocationException {
-		if (getBooleanAttribute(description, "useLocalDisk", false)) {
+		if (getBooleanAttribute(description, "useRemoteSandbox", false)) {
 			if (logger.isDebugEnabled()) {
-				logger.debug("useLocalDisk, using wrapper application");
+				logger.debug("useRemoteSandbox, using wrapper application");
 			}
 			if (submitter == null) {
 				submitter = new RemoteSandboxSubmitter(gatContext, preferences,

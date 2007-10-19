@@ -73,6 +73,9 @@ public class RemoteSandboxJob extends JobCpi implements MetricListener {
 		// the state of the RemoteSandboxJob according to the state of the
 		// sandboxJob and fire a metric to the application that listens to the
 		// RemoteSandboxJob.
+		if (state == STOPPED || state == SUBMISSION_ERROR) {
+			return;
+		}
 		if (sandboxJob.getState() == Job.STOPPED
 				|| sandboxJob.getState() == Job.SUBMISSION_ERROR) {
 			try {
@@ -122,9 +125,8 @@ public class RemoteSandboxJob extends JobCpi implements MetricListener {
 
 			logger.warn("job status file = " + statusFileName);
 
-			int newstate = -666;
-
 			do {
+				int newstate = -666;
 				FileInputStream in = null;
 				try {
 					in = new FileInputStream(statusFileName);

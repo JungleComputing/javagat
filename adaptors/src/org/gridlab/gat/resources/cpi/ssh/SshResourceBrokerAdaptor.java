@@ -87,9 +87,9 @@ public class SshResourceBrokerAdaptor extends ResourceBrokerCpi {
 						"The job description does not contain a software description");
 			}
 			
-			if (getBooleanAttribute(description, "useLocalDisk", false)) {
+			if (getBooleanAttribute(description, "useRemoteSandbox", false)) {
 				if (logger.isDebugEnabled()) {
-					logger.debug("useLocalDisk, using wrapper application");
+					logger.debug("useRemoteSandbox, using wrapper application");
 				}
 				if (submitter == null) {
 					submitter = new RemoteSandboxSubmitter(gatContext, preferences, false);

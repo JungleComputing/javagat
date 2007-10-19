@@ -28,7 +28,7 @@ public class SubmitRemoteJob2 {
         sd1.addAttribute("remoteGatLocation", "../.tempGAT");
         sd1.setLocation("/bin/sh");
         sd1.setArguments(new String[]{"/home0/rkemp/script.sh"});
-        sd1.addAttribute("useLocalDisk", "true");
+        sd1.addAttribute("useRemoteSandbox", "true");
         sd1.addAttribute("java.home", new URI("/usr/local/package/jdk1.5"));
         File stdout1 = GAT.createFile(context, "1");
         sd1.setStdout(stdout1);
@@ -37,7 +37,7 @@ public class SubmitRemoteJob2 {
         SoftwareDescription sd2 = new SoftwareDescription();
         sd2.setLocation("/bin/sh");
         sd2.setArguments(new String[]{"/home0/rkemp/script.sh"});
-        sd2.addAttribute("useLocalDisk", "true");
+        sd2.addAttribute("useRemoteSandbox", "true");
         sd2.addAttribute("java.home", new URI("/usr/local/package/jdk1.5"));
         File stdout2 = GAT.createFile(context, "2");
         sd2.setStdout(stdout2);
@@ -49,7 +49,7 @@ public class SubmitRemoteJob2 {
         sd3.addAttribute("remoteGatLocation", "../.tempGAT");
         sd3.setLocation("/bin/sh");
         sd3.setArguments(new String[]{"/home0/rkemp/script.sh"});
-        sd3.addAttribute("useLocalDisk", "true");
+        sd3.addAttribute("useRemoteSandbox", "true");
         sd3.addAttribute("java.home", new URI("/usr/local/package/jdk1.5"));
         File stdout3 = GAT.createFile(context, "3");
         sd3.setStdout(stdout3);

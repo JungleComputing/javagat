@@ -240,9 +240,9 @@ public class GT4ResourceBrokerAdaptor extends ResourceBrokerCpi {
 	 */
 	public Job submitJob(JobDescription description, MetricListener listener,
 			Metric metric) throws GATInvocationException {
-		if (getBooleanAttribute(description, "useLocalDisk", false)) {
+		if (getBooleanAttribute(description, "useRemoteSandbox", false)) {
 			if (logger.isDebugEnabled()) {
-				logger.debug("useLocalDisk, using wrapper application");
+				logger.debug("useRemoteSandbox, using wrapper application");
 			}
 			if (submitter == null) {
 				submitter = new RemoteSandboxSubmitter(gatContext, preferences,
@@ -254,7 +254,7 @@ public class GT4ResourceBrokerAdaptor extends ResourceBrokerCpi {
 		SoftwareDescription sd = description.getSoftwareDescription();
 		if (sd == null) {
 			throw new GATInvocationException(
-					"GT4ResorceBroker: the job description does not contain a software description");
+					"GT4ResourceBroker: the job description does not contain a software description");
 		}
 		Sandbox sandbox = new Sandbox(gatContext, preferences, description,
 				host, null, true, true, true, true);

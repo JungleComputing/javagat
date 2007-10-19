@@ -195,7 +195,7 @@ public class RemoteSandbox implements MetricListener {
 			// modify the description to run it locally
 			SoftwareDescription sd = descriptions[currentDescription]
 					.getSoftwareDescription();
-			sd.addAttribute("useLocalDisk", "false");
+			sd.addAttribute("useRemoteSandbox", "false");
 
 			if (logger.isInfoEnabled()) {
 				logger.info("read job description: "
