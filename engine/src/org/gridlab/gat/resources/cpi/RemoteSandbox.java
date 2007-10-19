@@ -47,6 +47,7 @@ public class RemoteSandbox implements MetricListener {
 
 	public synchronized void processMetricEvent(MetricValue val) {
 		Job job = (Job) val.getSource();
+		System.err.println("metric received" + Job.getStateString(job.getState()));
 		GATContext gatContext = new GATContext();
 		FileWriter writer = null;
 		try {
@@ -60,7 +61,9 @@ public class RemoteSandbox implements MetricListener {
 			writer.write(job.getState());
 			writer.flush();
 			writer.close();
+			System.err.println("local file created");
 			while (remoteFile.exists()) {
+				System.err.println("remote file exists");
 				try {
 					Thread.sleep(1000);
 				} catch (InterruptedException e) {
@@ -68,6 +71,7 @@ public class RemoteSandbox implements MetricListener {
 				}
 			}
 			localFile.copy(dest);
+			System.err.println("file copied");
 			localFile.delete();
 		} catch (GATObjectCreationException e) {
 			// TODO Auto-generated catch block
@@ -258,6 +262,7 @@ public class RemoteSandbox implements MetricListener {
 
 			try {
 				Job job = broker.submitJob(descriptions[currentDescription]);
+				System.err.println("job submitted");
 				jobMap.put(job, jobIDs[currentDescription]);
 
 				if (sd.getBooleanAttribute("waitForPreStage", false)) {
@@ -302,7 +307,9 @@ public class RemoteSandbox implements MetricListener {
 				while ((jobs[i].getState() != Job.STOPPED)
 						&& (jobs[i].getState() != Job.SUBMISSION_ERROR)) {
 					try {
+						System.err.println("waiting");
 						wait();
+						System.err.println("stopped waiting");
 					} catch (InterruptedException e) {
 						if (logger.isDebugEnabled()) {
 							logger.debug("an exception occurred: " + e);
