@@ -5,10 +5,8 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.HashMap;
 
-import org.gridlab.gat.GAT;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
-import org.gridlab.gat.GATObjectCreationException;
 import org.gridlab.gat.Preferences;
 import org.gridlab.gat.engine.GATEngine;
 import org.gridlab.gat.monitoring.Metric;
