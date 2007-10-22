@@ -1,0 +1,50 @@
+
+Using the steering package (with the RMI adaptor):
+
+@ Andrei AGAPI
+
+1) A steered object has to:
+	- implement org.gridlab.gat.steering.cpi.rmi.SteerableRMI
+	  (which in its turn extends org.gridlab.gat.steering.Steerable
+	   and java.rmi.Remote)
+	- extend java.rmi.server.UnicastRemoteObject
+	- implement the executeControl() and getControlDefinitions()
+	  functions, as required by SteerableRMI
+
+2) A SteeringManager can be obtained from GAT by calling:
+	- GAT.createSteeringManager(GATContext c, Preferences prefs);
+	- prefs can include:
+		- ("SteeringManager.adaptor.name", "RMI")
+		- ("RMI_LOCAL_REGISTRY_PORT", java.lang.Integer port)
+		    = port on which the local rmiregistry where the object resides runs
+		- ("RMI_STEERING_SERVER_LOCATION", "//host:port/name")
+		    = location of a running org.gridlab.gat.steering.cpi.rmi.SteeringRMIServer, in charge of advertising steered objects and callback forwarding
+
+3) A steered object can/should register/unregister itself with the local SteeringManager, using calls: registerSteered(ID, steerableObj) and unregisterSteered(ID, steerableObj). A typical registration call is:
+	- steeringManager.registerSteered("//"+localHost+":"+localPort+"/"+"MY_STEERABLE_COMPONENT", this);
+
+4) A steering master can get a reference to its local Steering Manager in the same way as a steerable object. It can then issue the following calls:
+	- getSteeredObjectsIDs() = get a list of available steered objs IDs
+	- getControlDefinitions(steeredObjectID) = get the list of definitions
+		of steering controls implemented by a certain steered object
+	- executeControl(steeredObjectID, SteeringControl sc) = trigger a
+		specified control sc, including actual parameters, to be
+		executed on a certain steered object
+
+5) Local steering managers use the (currently centralized, RMI implemented)
+Steering Server for advertising and forwarding steering callbacks.
+
+
+6) A simple example using the package can be run from the engine/test/steering floder:
+
+- a rmiregistry should be started on port 20000 on 2 test machines, making sure that the engine/lib/GAT-tests.jar and adaptors/lib/RMISteeringManagerAdaptor.jar are in the codebase (for instance by including them in the CLASSPATH). These are needed for interface definitions, e.g. SteeredRMI
+
+- start example Steered object on 1 machine: ./bin/run_gat_app steering.SteeringExampleRMISteeredMain; this will additionally start a Steering Server on the local machine and register it with the local rmiregistry
+
+- start example Master object on the other machine, giving as argument the hostname of the machine where the Steered object was started: ./bin/run_gat_app steering.SteeringExampleRMIMasterMain SteeredObjectHostname
+
+- the Master will send steering commands to the Steered, such as START, set values of various integer and double variables and STOP, after a while. The current values of steered variables are being dispayed by the Steered object, in a loop.
+
+7) as can be noted, for steered objects and masters to communicate, the local steering managers on all machines should know the same location of the running Steering Server, which can be given in the Preferences object at startup (the "RMI_STEERING_SERVER_LOCATION" attribute).
+
+
