@@ -7,7 +7,7 @@ import java.util.List;
 
 public interface Steerable
 {
-        public Map executeControl(SteeringControl c) throws NoSuchControlException; // exectutes c, returns a status Map object
+        public Map executeControl(SteeringControl c) throws NoSuchControlException, Exception; // exectutes c, returns a status Map object
 
-        public List getControlDefinitions(); // gets a list of available control definitions
+        public List getControlDefinitions() throws Exception; // gets a list of available control definitions
 }

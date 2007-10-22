@@ -47,7 +47,7 @@ public class SteeringManagerCpi implements SteeringManager {
         throw new UnsupportedOperationException("Not implemented");
     }
 
-    public void unregisterSteered(String steeredObjectID) throws SteeredIDUnknownException, GATInvocationException {
+    public void unregisterSteered(String steeredObjectID, Steerable s) throws SteeredIDUnknownException, GATInvocationException {
         throw new UnsupportedOperationException("Not implemented");
     }
 

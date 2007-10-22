@@ -3,8 +3,10 @@ package org.gridlab.gat.steering;
 
 import java.util.Map;
 
+import java.io.Serializable;
 
-public class SteeringControl
+
+public class SteeringControl implements Serializable
 {
 
 	  SteeringControlDefinition scd = null;

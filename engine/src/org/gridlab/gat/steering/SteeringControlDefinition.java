@@ -2,8 +2,10 @@ package org.gridlab.gat.steering;
 
 import java.util.Map;
 
+import java.io.Serializable;
 
-public class SteeringControlDefinition
+
+public class SteeringControlDefinition implements Serializable
 {
 	  String name = null;
 	  Map formalParameters = null;
@@ -88,3 +90,4 @@ public class SteeringControlDefinition
 		return "Name:" + this.name + "; Formal Parameters: " + this.formalParameters + "; Return Definition: " + this.returnDefinition;
 	  }
 }
+

@@ -13,7 +13,7 @@ public interface SteeringManager
 	public void registerSteered(String steeredObjectID, Steerable s, boolean
  multicastGroup) throws SteeredIDExistsException, GATInvocationException;
 
-	public void unregisterSteered(String steeredObjectID) throws SteeredIDUnknownException, GATInvocationException;
+	public void unregisterSteered(String steeredObjectID, Steerable s) throws SteeredIDUnknownException, GATInvocationException;
 
 	public List getSteeredObjectsIDs() throws GATInvocationException;
 
