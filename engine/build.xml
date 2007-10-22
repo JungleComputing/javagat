@@ -22,7 +22,7 @@
 		<mkdir dir="${lib}" />
 
 		<!-- Compile the java code from ${src} into ${tmp} -->
-		<javac srcdir="${src}" destdir="${tmp}" debug="on" >
+		<javac srcdir="${src}" destdir="${tmp}" debug="on" source="1.4" target="1.4" >
 			<classpath refid="external_jars" />
         <!-- <compilerarg value="-Xlint:unchecked"/> -->
 		</javac>
@@ -47,7 +47,8 @@
 		<mkdir dir="${tmp}" />
 
 		<!-- Compile the java code from ${test} into ${tmp} -->
-		<javac srcdir="${test}" destdir="${tmp}" debug="on" classpath="${lib}/GAT.jar" />
+		<javac srcdir="${test}" destdir="${tmp}" debug="on" classpath="${lib}/GAT.jar:../adaptors/lib/RMISteeringManagerAdaptor.jar:${external}/RMISteeringManagerAdaptor.jar" source="1.4" target="1.4" />
+		<rmic base="${tmp}" classpath="${lib}/GAT.jar:../adaptors/lib/RMISteeringManagerAdaptor.jar:${external}/RMISteeringManagerAdaptor.jar" includes="**/*Impl.class **/SteeredObjectRMI.class"/>
 
 		<!-- Put everything in ${tmp} into the GAT.jar file -->
 		<jar jarfile="${lib}/GAT-tests.jar" basedir="${tmp}" />
