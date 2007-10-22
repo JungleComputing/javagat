@@ -43,9 +43,11 @@
 		<mkdir dir="${tmp}" />
 
 		<!-- Compile the java code from ${src} into ${tmp} -->
-		<javac source="1.4" srcdir="${src}" destdir="${tmp}" debug="on" >
+		<javac source="1.4" target="1.4" srcdir="${src}" destdir="${tmp}" debug="on" >
 			<classpath refid="external_jars" />
 		</javac>
+
+		<rmic base="${tmp}" includes="org/gridlab/gat/steering/cpi/rmi/SteeringRMIServerImpl.class"/>
 
 		<jar jarfile="${lib}/LocalFileAdaptor.jar" basedir="${tmp}" includes="**/LocalFileAdaptor.class,**/SerializedFile.class">
 			<manifest>
@@ -242,6 +244,12 @@
         <jar jarfile="${lib}/LocalManagerAdaptor.jar" basedir="${tmp}" includes="**/org/gridlab/gat/steering/cpi/local/LocalSteeringManagerAdaptor.class">
                 <manifest>
                         <attribute name="SteeringManagerCpi-class" value="org.gridlab.gat.steering.cpi.local.LocalSteeringManagerAdaptor" />
+                </manifest>
+        </jar>
+
+        <jar jarfile="${lib}/RMISteeringManagerAdaptor.jar" basedir="${tmp}" includes="**/org/gridlab/gat/steering/cpi/rmi/*.class">
+                <manifest>
+                        <attribute name="SteeringManagerCpi-class" value="org.gridlab.gat.steering.cpi.rmi.RMISteeringManagerAdaptor" />
                 </manifest>
         </jar>
 
