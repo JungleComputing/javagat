@@ -452,7 +452,7 @@ public class GJF1 implements MetricListener {
 			broker = GAT.createResourceBroker(context);
 			for (int jobIdx = 0; jobIdx < jobNum; jobIdx++) {
 				if (jobsSubmittedCnt % JOBS_PER_NODE == 0)
-					broker.beginMultiCoreJob();
+					broker.beginMultiJob();
 
 				// Wait to avoid exceeding maxJobsAtOnce before submitting the
 				// next job
@@ -490,7 +490,7 @@ public class GJF1 implements MetricListener {
 				}
 				if (jobsSubmittedCnt % JOBS_PER_NODE == 0
 						|| jobIdx + 1 == jobNum)
-					broker.endMultiCoreJob();
+					broker.endMultiJob();
 			}
 
 			if (jobsSubmittedCnt > 0) {

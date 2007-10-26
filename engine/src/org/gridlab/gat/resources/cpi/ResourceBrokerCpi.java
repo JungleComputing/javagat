@@ -59,7 +59,7 @@ public abstract class ResourceBrokerCpi implements ResourceBroker {
 	 * 
 	 * @see org.gridlab.gat.resources.ResourceBroker#beginMultiCoreJob()
 	 */
-	public void beginMultiCoreJob() throws GATInvocationException {
+	public void beginMultiJob() throws GATInvocationException {
 		throw new UnsupportedOperationException("Not implemented");
 	}
 
@@ -68,7 +68,7 @@ public abstract class ResourceBrokerCpi implements ResourceBroker {
 	 * 
 	 * @see org.gridlab.gat.resources.ResourceBroker#endMultiCoreJob()
 	 */
-	public void endMultiCoreJob() throws GATInvocationException {
+	public Job endMultiJob() throws GATInvocationException {
 		throw new UnsupportedOperationException("Not implemented");
 	}
 
@@ -291,7 +291,6 @@ public abstract class ResourceBrokerCpi implements ResourceBroker {
 				}
 			}
 
-			// System.err.println("warning, ignoring key: " + key);
 		}
 
 		return contactHostname;

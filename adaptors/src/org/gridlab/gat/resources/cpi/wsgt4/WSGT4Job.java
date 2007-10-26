@@ -321,7 +321,9 @@ public class WSGT4Job extends JobCpi {
 					GSSCredential.INITIATE_AND_ACCEPT);
 			setCredentials(proxy);
 		} catch (Exception e) {
-			System.err.println("WGT4Job: getProxyFromPath failed");
+			if (logger.isInfoEnabled()) {
+				logger.info("WGT4Job: getProxyFromPath failed");
+			}
 		}
 	}
 

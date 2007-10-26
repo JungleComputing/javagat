@@ -8,8 +8,12 @@ import java.util.Set;
  * For an overview of the generic preferences used by JavaGAT and well known
  * adaptors see: <a href="../../../../preferences.html">generic preferences</a>.
  */
-public class Preferences {
+public class Preferences implements java.io.Serializable {
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 	Hashtable<String, Object> t = new Hashtable<String, Object>();
 
 	/**

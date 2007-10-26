@@ -123,8 +123,6 @@ public class RemoteSandboxJob extends JobCpi implements MetricListener {
 			statusFileName = System.getProperty("user.home") + File.separator
 					+ ".JavaGATstatus" + getJobID();
 
-			logger.warn("job status file = " + statusFileName);
-
 			do {
 				int newstate = -666;
 				FileInputStream in = null;

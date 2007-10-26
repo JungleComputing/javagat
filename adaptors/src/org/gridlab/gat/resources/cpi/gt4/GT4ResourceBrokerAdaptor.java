@@ -51,13 +51,14 @@ public class GT4ResourceBrokerAdaptor extends ResourceBrokerCpi {
 		super(gatContext, preferences);
 	}
 
-	public void beginMultiCoreJob() {
+	public void beginMultiJob() {
 		submitter = new RemoteSandboxSubmitter(gatContext, preferences, true);
 	}
 
-	public void endMultiCoreJob() throws GATInvocationException {
-		submitter.flushJobSubmission();
+	public Job endMultiJob() throws GATInvocationException {
+		Job job = submitter.flushJobSubmission();
 		submitter = null;
+		return job;
 	}
 
 	/**

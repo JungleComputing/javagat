@@ -51,6 +51,7 @@ public class RemoteSandboxSubmitter {
 	private Preferences preferences;
 	private List<JobDescription> descriptions = new ArrayList<JobDescription>();
 	private List<RemoteSandboxJob> jobs = new ArrayList<RemoteSandboxJob>();
+	private String[] preStageDoneLocations;
 
 	public RemoteSandboxSubmitter(GATContext gatContext,
 			Preferences preferences, boolean multicore) {
@@ -71,7 +72,10 @@ public class RemoteSandboxSubmitter {
 		return result;
 	}
 
-	public void flushJobSubmission() throws GATInvocationException {
+	public Job flushJobSubmission() throws GATInvocationException {
+		if (descriptions.size() == 0) {
+			throw new GATInvocationException("no jobs to submit!");
+		}
 		JobDescription mainDescription = descriptions.get(0);
 		String host;
 		try {
@@ -80,7 +84,7 @@ public class RemoteSandboxSubmitter {
 			if (logger.isDebugEnabled()) {
 				logger.debug("" + e);
 			}
-			return;
+			return null;
 		}
 		String singleRemoteGAT = (String) preferences.get("singleRemoteGAT");
 		if (singleRemoteGAT != null && singleRemoteGAT.equalsIgnoreCase("true")) {
@@ -97,10 +101,10 @@ public class RemoteSandboxSubmitter {
 				mainDescription.setSoftwareDescription(sd);
 			}
 		}
-		doSubmitJob();
+		return doSubmitJob();
 	}
 
-	private void doSubmitJob() throws GATInvocationException {
+	private Job doSubmitJob() throws GATInvocationException {
 		try {
 			Preferences newPreferences = new Preferences(preferences);
 			newPreferences.put("useRemoteSandbox", "false");
@@ -135,17 +139,13 @@ public class RemoteSandboxSubmitter {
 				sd.setStderr(errFile);
 			}
 
-			java.io.File preStageDoneFile = null;
-			String preStageDoneFileLocation = "none";
-			if (origSd.getBooleanAttribute("waitForPreStage", false)) {
-				preStageDoneFile = java.io.File.createTempFile(
-						"JavaGATPrestageDone", "tmp");
-				preStageDoneFile.deleteOnExit();
-				preStageDoneFileLocation = "any://"
-						+ GATEngine.getLocalHostName() + "/"
-						+ preStageDoneFile.getCanonicalPath();
+			preStageDoneLocations = new String[descriptions.size()];
+			for (int i = 0; i < preStageDoneLocations.length; i++) {
+				if (descriptions.get(i).getSoftwareDescription().getBooleanAttribute("waitForPreStage", false)) {
+					preStageDoneLocations[i] = PreStageSequencer.createPreStageMonitor();
+				}	
 			}
-
+			
 			sd.setLocation(new URI(
 					"java:org.gridlab.gat.resources.cpi.RemoteSandbox"));
 
@@ -167,7 +167,7 @@ public class RemoteSandboxSubmitter {
 			String localGATLocation = localEnv.getVar("GAT_LOCATION");
 			java.io.File engineDir = new java.io.File(localGATLocation + "/lib");
 			String[] files = engineDir.list();
-			String classPath = ".";
+			String classPath = ".:" + remoteGatLocation;
 			for (int i = 0; i < files.length; i++) {
 				classPath += ":" + remoteEngineLibLocation + files[i];
 			}
@@ -204,7 +204,6 @@ public class RemoteSandboxSubmitter {
 			sd.setArguments(new String[] {
 					descriptorFile.getName(),
 					GATEngine.getLocalHostName(),
-					preStageDoneFileLocation,
 					cwd,
 					""
 							+ origSd.getBooleanAttribute(
@@ -240,44 +239,16 @@ public class RemoteSandboxSubmitter {
 			ResourceBroker broker = GAT.createResourceBroker(gatContext,
 					newPreferences);
 			Job j = broker.submitJob(jd);
+			descriptorFile.delete();
 			Iterator<RemoteSandboxJob> it = jobs.iterator();
 			// we can now safely delete the descriptor file, it has been
 			// prestaged.
-			descriptorFile.delete();
+			
 			while (it.hasNext()) {
 				RemoteSandboxJob job = (RemoteSandboxJob) it.next();
 				job.setSandboxJob(j);
-				
-				if (origSd.getBooleanAttribute("waitForPreStage", false)) {
-					if (logger.isInfoEnabled()) {
-						logger.info("waiting for prestage to complete");
-					}
-
-					while (true) {
-						int state = j.getState();
-						try {
-							if (state == Job.POST_STAGING
-									|| state == Job.STOPPED
-									|| state == Job.SUBMISSION_ERROR
-									|| !preStageDoneFile.exists()) {
-								if (logger.isInfoEnabled()) {
-									logger
-											.info("prestage completed, job state = "
-													+ state);
-								}
-							}
-
-							return;
-						} catch (Exception e) {
-							if (logger.isDebugEnabled()) {
-								logger.debug("warning exists failed: " + e);
-							}
-							// ignore
-						}
-						Thread.sleep(1000);
-					}
-				}
 			}
+			return j;
 		} catch (Exception e) {
 			throw new GATInvocationException("RemoteSandboxSubmitter", e);
 		}
@@ -327,6 +298,8 @@ public class RemoteSandboxSubmitter {
 			ObjectOutputStream out = new ObjectOutputStream(tmp);
 			out.writeObject((JobDescription[]) descriptions
 					.toArray(new JobDescription[descriptions.size()]));
+			out.writeObject(preferences);
+			out.writeObject(preStageDoneLocations);
 			out.close();
 		} catch (Exception e) {
 			throw new GATInvocationException("RemoteSandboxSubmitter", e);
@@ -376,8 +349,6 @@ public class RemoteSandboxSubmitter {
 					return hostList[0];
 				}
 			}
-
-			// System.err.println("warning, ignoring key: " + key);
 		}
 
 		return contactHostname;

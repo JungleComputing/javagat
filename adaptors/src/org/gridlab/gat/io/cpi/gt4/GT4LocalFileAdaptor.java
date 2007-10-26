@@ -52,7 +52,7 @@ public class GT4LocalFileAdaptor extends GT4FileAdaptor {
 		spec.setDestination(dest.getPath());
 		/*
 		 * if(!dest.refersToLocalHost() && !location.refersToLocalHost()) {
-		 * if(GATEngine.DEBUG) { System.err.println("GT4FileAdaptor file: set
+		 * if(GATEngine.DEBUG) { System.er r.println("GT4FileAdaptor file: set
 		 * thirdparty"); }
 		 */
 		// spec.setThirdParty(true);
@@ -200,8 +200,8 @@ public class GT4LocalFileAdaptor extends GT4FileAdaptor {
 			return;
 		}
 		if (dest.isLocal()) {
-			if (GATEngine.DEBUG) {
-				System.err.println("GT4LocalFileAdaptor: copy remote to local");
+			if (logger.isDebugEnabled()) {
+				logger.debug("GT4LocalFileAdaptor: copy remote to local");
 			}
 			copyToLocal(dest);
 			return;

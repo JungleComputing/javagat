@@ -343,8 +343,8 @@ abstract public class GT4FileAdaptor extends FileCpi {
 		try {
 			gf = resource.getGridFile(location.getPath());
 			d = sdf.parse(gf.getLastModified());
-			if (GATEngine.VERBOSE) {
-				System.err.println("Last modified: " + gf.getLastModified());
+			if (logger.isInfoEnabled()) {
+				logger.info("Last modified: " + gf.getLastModified());
 			}
 			return d.getTime();
 		} catch (FileNotFoundException e) {

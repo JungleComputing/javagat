@@ -58,20 +58,21 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
 		super(gatContext, preferences);
 	}
 
-	public void beginMultiCoreJob() throws GATInvocationException {
+	public void beginMultiJob() throws GATInvocationException {
 		if (submitter != null && submitter.isMulticore()) {
 			throw new GATInvocationException("MultiCore job started twice!");
 		}
 		submitter = new RemoteSandboxSubmitter(gatContext, preferences, true);
 	}
 
-	public void endMultiCoreJob() throws GATInvocationException {
+	public Job endMultiJob() throws GATInvocationException {
 		if (submitter == null) {
 			throw new GATInvocationException(
 					"MultiCore job ended, without being started!");
 		}
-		submitter.flushJobSubmission();
+		Job job = submitter.flushJobSubmission();
 		submitter = null;
+		return job;
 	}
 
 	protected String createRSL(JobDescription description, String host,

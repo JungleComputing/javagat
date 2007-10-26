@@ -166,7 +166,7 @@ public interface ResourceBroker {
 	 * @throws GATInvocationException
 	 *             a remote problem occurred
 	 */
-	public void beginMultiCoreJob() throws GATInvocationException;
+	public void beginMultiJob() throws GATInvocationException;
 
 	
 	/**
@@ -180,6 +180,6 @@ public interface ResourceBroker {
 	 * @throws GATInvocationException
 	 *             a remote problem occurred
 	 */
-	public void endMultiCoreJob() throws GATInvocationException;
+	public Job endMultiJob() throws GATInvocationException;
 
 }

@@ -64,13 +64,14 @@ public class SshResourceBrokerAdaptor extends ResourceBrokerCpi {
 		super(gatContext, preferences);
 	}
 	
-	public void beginMultiCoreJob() {
+	public void beginMultiJob() {
 		submitter = new RemoteSandboxSubmitter(gatContext, preferences, true);
 	}
 
-	public void endMultiCoreJob() throws GATInvocationException {
-		submitter.flushJobSubmission();
+	public Job endMultiJob() throws GATInvocationException {
+		Job job = submitter.flushJobSubmission();
 		submitter = null;
+		return job;
 	}
 
 	/*
@@ -203,7 +204,7 @@ public class SshResourceBrokerAdaptor extends ResourceBrokerCpi {
 				try {
 					channel.getOutputStream().close();
 				} catch (Throwable e) {
-					System.err.println("Error trying to close stdin");
+					logger.error("Error trying to close stdin");
 				}
 			} else {
 				try {

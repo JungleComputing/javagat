@@ -71,7 +71,7 @@ public class GT4GridFTPFileAdaptor extends GT4FileAdaptor {
 		spec.setDestination(dest.getPath());
 		/*
 		 * if(!dest.refersToLocalHost() && !location.refersToLocalHost()) {
-		 * if(GATEngine.DEBUG) { System.err.println("GT4FileAdaptor file: set
+		 * if(GATEngine.DEBUG) { System.er r.println("GT4FileAdaptor file: set
 		 * thirdparty"); }
 		 */
 		spec.setThirdParty(true);

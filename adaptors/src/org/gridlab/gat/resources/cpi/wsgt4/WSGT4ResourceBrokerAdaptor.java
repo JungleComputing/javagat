@@ -188,13 +188,14 @@ public class WSGT4ResourceBrokerAdaptor extends ResourceBrokerCpi {
 		return rsl;
 	}
 
-	public void beginMultiCoreJob() {
+	public void beginMultiJob() {
 		submitter = new RemoteSandboxSubmitter(gatContext, preferences, true);
 	}
 
-	public void endMultiCoreJob() throws GATInvocationException {
-		submitter.flushJobSubmission();
+	public Job endMultiJob() throws GATInvocationException {
+		Job job = submitter.flushJobSubmission();
 		submitter = null;
+		return job;
 	}
 
 	public Job submitJob(JobDescription description, MetricListener listener,
