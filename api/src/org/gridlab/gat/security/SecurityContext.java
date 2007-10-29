@@ -64,7 +64,7 @@ public abstract class SecurityContext implements Cloneable {
      * associated with this context.
      *
      * @param key the key that should be used to store the data
-     * @param data the data object that has to be asociated with the context
+     * @param data the data object that has to be associated with the context
      */
     public synchronized void putDataObject(String key, Object data) {
         dataObjects.put(key, data);

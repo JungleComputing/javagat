@@ -846,6 +846,16 @@ public class GAT {
         }
     }
 
+    /**
+     * This method constructs a ResourceBroker instance corresponding to the
+     * passed GATContext.
+     *
+     * @param gatContext
+     *            A GATContext which will be used to broker resources
+     * @return The resource broker object
+     * @throws GATObjectCreationException
+     *             Thrown upon creation problems
+     */
     public static ResourceBroker createResourceBroker(GATContext gatContext)
         throws GATObjectCreationException {
         return createResourceBroker(gatContext, null);
@@ -869,6 +879,11 @@ public class GAT {
             ResourceBroker.class, gatContext, preferences, null);
     }
 
+    /**
+     * This method shuts down the GAT properly and will stop all threads
+     * of external libraries used by the GAT. This method should be invoked
+     * at the end of a program that uses JavaGAT.
+     */
     public static void end() {
         try {
             Method m = engineClass.getMethod("end", (Class<?>[]) null);

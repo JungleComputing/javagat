@@ -19,14 +19,24 @@ public class CertificateSecurityContext extends SecurityContext {
      */
     private int privateKeySlot = -1;
 
-    /**
+	private URI certfile = null;
+
+    public CertificateSecurityContext(URI keyfile, URI certfile, String username, String password) {
+    	super(username, password);
+    	this.keyfile = keyfile;
+    	this.certfile = certfile;
+    }
+	
+    public CertificateSecurityContext(URI keyfile, URI certfile, String password) {
+    	this(keyfile, certfile, null, password);
+    }	
+	/**
      * @param password
      * @param keyfile
      */
     public CertificateSecurityContext(URI keyfile, String username,
         String password) {
-        super(username, password);
-        this.keyfile = keyfile;
+        this(keyfile, null, username, password);
     }
 
     /**
@@ -38,15 +48,18 @@ public class CertificateSecurityContext extends SecurityContext {
      *            The URI of keyfile
      */
     public CertificateSecurityContext(URI keyfile) {
-        super(null, null);
-        this.keyfile = keyfile;
+        this(keyfile, null, null, null);
     }
 
     public CertificateSecurityContext() {
         super(null, null);
     }
 
-    /**
+    public CertificateSecurityContext(URI keyfile, String password) {
+    	this(keyfile, null, null, password);
+    }
+
+	/**
      * Check two SecurityContexts for equality.
      *
      * @param obj
@@ -104,4 +117,12 @@ public class CertificateSecurityContext extends SecurityContext {
     public void setPrivateKeySlot(int privateKeySlot) {
         this.privateKeySlot = privateKeySlot;
     }
+
+	public URI getCertfile() {
+		return certfile ;
+	}
+	
+	public void setCertfile(URI certfile) {
+		this.certfile = certfile;
+	}
 }

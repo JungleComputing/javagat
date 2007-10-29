@@ -12,6 +12,8 @@ import org.gridlab.gat.GATObjectCreationException;
 import org.gridlab.gat.Preferences;
 import org.gridlab.gat.TimePeriod;
 import org.gridlab.gat.URI;
+import org.gridlab.gat.monitoring.Metric;
+import org.gridlab.gat.monitoring.MetricListener;
 import org.gridlab.gat.resources.HardwareResource;
 import org.gridlab.gat.resources.HardwareResourceDescription;
 import org.gridlab.gat.resources.Job;
@@ -31,243 +33,266 @@ import org.gridlab.gat.resources.SoftwareDescription;
  * method in the ResourceBroker class at runtime.
  */
 public abstract class ResourceBrokerCpi implements ResourceBroker {
-    protected GATContext gatContext;
+	protected GATContext gatContext;
 
-    protected Preferences preferences;
+	protected Preferences preferences;
 
-    /**
-     * This method constructs a ResourceBrokerCpi instance corresponding to the
-     * passed GATContext.
-     *
-     * @param gatContext
-     *            A GATContext which will be used to broker resources
-     * @param preferences
-     *            the preferences to be associated with this resource broker
-     * @throws GATObjectCreationException
-     *             no adaptor could be loaded
-     */
-    protected ResourceBrokerCpi(GATContext gatContext, Preferences preferences)
-            throws GATObjectCreationException {
-        this.gatContext = gatContext;
-        this.preferences = preferences;
-    }
+	/**
+	 * This method constructs a ResourceBrokerCpi instance corresponding to the
+	 * passed GATContext.
+	 * 
+	 * @param gatContext
+	 *            A GATContext which will be used to broker resources
+	 * @param preferences
+	 *            the preferences to be associated with this resource broker
+	 * @throws GATObjectCreationException
+	 *             no adaptor could be loaded
+	 */
+	protected ResourceBrokerCpi(GATContext gatContext, Preferences preferences)
+			throws GATObjectCreationException {
+		this.gatContext = gatContext;
+		this.preferences = preferences;
+	}
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see org.gridlab.gat.resources.ResourceBroker#findResources(org.gridlab.gat.resources.ResourceDescription)
-     */
-    public List<HardwareResource> findResources(ResourceDescription resourceDescription)
-            throws GATInvocationException {
-        throw new UnsupportedOperationException("Not implemented");
-    }
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.gridlab.gat.resources.ResourceBroker#beginMultiCoreJob()
+	 */
+	public void beginMultiJob() throws GATInvocationException {
+		throw new UnsupportedOperationException("Not implemented");
+	}
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see org.gridlab.gat.resources.ResourceBroker#reserveResource(org.gridlab.gat.resources.Resource,
-     *      org.gridlab.gat.engine.util.TimePeriod)
-     */
-    public Reservation reserveResource(Resource resource, TimePeriod timePeriod)
-            throws GATInvocationException {
-        throw new UnsupportedOperationException("Not implemented");
-    }
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.gridlab.gat.resources.ResourceBroker#endMultiCoreJob()
+	 */
+	public Job endMultiJob() throws GATInvocationException {
+		throw new UnsupportedOperationException("Not implemented");
+	}
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see org.gridlab.gat.resources.ResourceBroker#reserveResource(org.gridlab.gat.resources.ResourceDescription,
-     *      org.gridlab.gat.engine.util.TimePeriod)
-     */
-    public Reservation reserveResource(ResourceDescription resourceDescription,
-            TimePeriod timePeriod) throws GATInvocationException {
-        throw new UnsupportedOperationException("Not implemented");
-    }
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.gridlab.gat.resources.ResourceBroker#findResources(org.gridlab.gat.resources.ResourceDescription)
+	 */
+	public List<HardwareResource> findResources(
+			ResourceDescription resourceDescription)
+			throws GATInvocationException {
+		throw new UnsupportedOperationException("Not implemented");
+	}
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see org.gridlab.gat.resources.ResourceBroker#submitJob(org.gridlab.gat.resources.JobDescription)
-     */
-    public Job submitJob(JobDescription description)
-            throws GATInvocationException {
-        throw new UnsupportedOperationException("Not implemented");
-    }
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.gridlab.gat.resources.ResourceBroker#reserveResource(org.gridlab.gat.resources.Resource,
+	 *      org.gridlab.gat.engine.util.TimePeriod)
+	 */
+	public Reservation reserveResource(Resource resource, TimePeriod timePeriod)
+			throws GATInvocationException {
+		throw new UnsupportedOperationException("Not implemented");
+	}
 
-    // utility methods
-    protected URI getLocationURI(JobDescription description)
-            throws GATInvocationException {
-        SoftwareDescription sd = description.getSoftwareDescription();
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.gridlab.gat.resources.ResourceBroker#reserveResource(org.gridlab.gat.resources.ResourceDescription,
+	 *      org.gridlab.gat.engine.util.TimePeriod)
+	 */
+	public Reservation reserveResource(ResourceDescription resourceDescription,
+			TimePeriod timePeriod) throws GATInvocationException {
+		throw new UnsupportedOperationException("Not implemented");
+	}
 
-        if (sd == null) {
-            throw new GATInvocationException(
-                    "The job description does not contain a software description");
-        }
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.gridlab.gat.resources.ResourceBroker#submitJob(org.gridlab.gat.resources.JobDescription)
+	 */
+	public Job submitJob(JobDescription description)
+			throws GATInvocationException {
+		return submitJob(description, null, null);
+	}
 
-        URI u = sd.getLocation();
+	public Job submitJob(JobDescription description, MetricListener listener,
+			Metric metric) throws GATInvocationException {
+		throw new UnsupportedOperationException("Not implemented");
+	}
 
-        if (u == null) {
-            throw new GATInvocationException(
-                    "The Job description does not contain a location");
-        }
+	// utility methods
+	protected URI getLocationURI(JobDescription description)
+			throws GATInvocationException {
+		SoftwareDescription sd = description.getSoftwareDescription();
 
-        return u;
-    }
+		if (sd == null) {
+			throw new GATInvocationException(
+					"The job description does not contain a software description");
+		}
 
-    protected boolean isJavaApplication(JobDescription description)
-            throws GATInvocationException {
-        SoftwareDescription sd = description.getSoftwareDescription();
+		URI u = sd.getLocation();
 
-        if (sd == null) {
-            throw new GATInvocationException(
-                    "The job description does not contain a software description");
-        }
+		if (u == null) {
+			throw new GATInvocationException(
+					"The Job description does not contain a location");
+		}
 
-        String exeScheme = getLocationURI(description).getScheme();
-        if (exeScheme != null && exeScheme.equals("java")) {
-            return true;
-        }
+		return u;
+	}
 
-        return false;
-    }
+	protected boolean isJavaApplication(JobDescription description)
+			throws GATInvocationException {
+		SoftwareDescription sd = description.getSoftwareDescription();
 
-    // utility methods
-    protected int getIntAttribute(JobDescription description, String name,
-            int defaultVal) {
-        SoftwareDescription sd = description.getSoftwareDescription();
+		if (sd == null) {
+			throw new GATInvocationException(
+					"The job description does not contain a software description");
+		}
 
-        if (sd == null) {
-            return defaultVal;
-        }
+		String exeScheme = getLocationURI(description).getScheme();
+		if (exeScheme != null && exeScheme.equals("java")) {
+			return true;
+		}
 
-        return sd.getIntAttribute(name, defaultVal);
-    }
+		return false;
+	}
 
-    protected long getLongAttribute(JobDescription description, String name,
-            long defaultVal) {
-        SoftwareDescription sd = description.getSoftwareDescription();
+	// utility methods
+	protected int getIntAttribute(JobDescription description, String name,
+			int defaultVal) {
+		SoftwareDescription sd = description.getSoftwareDescription();
 
-        if (sd == null) {
-            return defaultVal;
-        }
-        return sd.getLongAttribute(name, defaultVal);
-    }
+		if (sd == null) {
+			return defaultVal;
+		}
 
-    protected String getStringAttribute(JobDescription description,
-            String name, String defaultVal) {
-        SoftwareDescription sd = description.getSoftwareDescription();
+		return sd.getIntAttribute(name, defaultVal);
+	}
 
-        if (sd == null) {
-            return defaultVal;
-        }
-        return sd.getStringAttribute(name, defaultVal);
-    }
+	protected long getLongAttribute(JobDescription description, String name,
+			long defaultVal) {
+		SoftwareDescription sd = description.getSoftwareDescription();
 
-    protected boolean getBooleanAttribute(JobDescription description,
-            String name, boolean defaultVal) {
-        SoftwareDescription sd = description.getSoftwareDescription();
+		if (sd == null) {
+			return defaultVal;
+		}
+		return sd.getLongAttribute(name, defaultVal);
+	}
 
-        if (sd == null) {
-            return defaultVal;
-        }
-        return sd.getBooleanAttribute(name, defaultVal);
-    }
+	protected String getStringAttribute(JobDescription description,
+			String name, String defaultVal) {
+		SoftwareDescription sd = description.getSoftwareDescription();
 
-    protected int getCPUCount(JobDescription description) {
-        return getIntAttribute(description, "count", 1);
-    }
+		if (sd == null) {
+			return defaultVal;
+		}
+		return sd.getStringAttribute(name, defaultVal);
+	}
 
-    protected int getHostCount(JobDescription description) {
-        return getIntAttribute(description, "hostCount", 1);
-    }
+	protected boolean getBooleanAttribute(JobDescription description,
+			String name, boolean defaultVal) {
+		SoftwareDescription sd = description.getSoftwareDescription();
 
-    protected String getLocation(JobDescription description)
-            throws GATInvocationException {
-        URI u = getLocationURI(description);
+		if (sd == null) {
+			return defaultVal;
+		}
+		return sd.getBooleanAttribute(name, defaultVal);
+	}
 
-        if (u == null) {
-            throw new GATInvocationException(
-                    "The Job description does not contain a location");
-        }
+	protected int getCPUCount(JobDescription description) {
+		return getIntAttribute(description, "count", 1);
+	}
 
-        String location = u.toString();
+	protected int getHostCount(JobDescription description) {
+		return getIntAttribute(description, "hostCount", 1);
+	}
 
-        return location;
-    }
+	protected String getLocation(JobDescription description)
+			throws GATInvocationException {
+		URI u = getLocationURI(description);
 
-    protected String[] getArgumentsArray(JobDescription description)
-            throws GATInvocationException {
-        SoftwareDescription sd = description.getSoftwareDescription();
+		if (u == null) {
+			throw new GATInvocationException(
+					"The Job description does not contain a location");
+		}
 
-        if (sd == null) {
-            throw new GATInvocationException(
-                    "The job description does not contain a software description");
-        }
+		String location = u.toString();
 
-        return sd.getArguments();
-    }
+		return location;
+	}
 
-    protected String getArguments(JobDescription description)
-            throws GATInvocationException {
-        String[] arguments = getArgumentsArray(description);
-        String argString = "";
+	protected String[] getArgumentsArray(JobDescription description)
+			throws GATInvocationException {
+		SoftwareDescription sd = description.getSoftwareDescription();
 
-        if (arguments == null) {
-            return "";
-        }
+		if (sd == null) {
+			throw new GATInvocationException(
+					"The job description does not contain a software description");
+		}
 
-        for (int i = 0; i < arguments.length; i++) {
-            argString += (" " + arguments[i]);
-        }
+		return sd.getArguments();
+	}
 
-        return argString;
-    }
+	protected String getArguments(JobDescription description)
+			throws GATInvocationException {
+		String[] arguments = getArgumentsArray(description);
+		String argString = "";
 
-    public String getHostname(JobDescription description)
-            throws GATInvocationException {
-        String contactHostname = null;
+		if (arguments == null) {
+			return "";
+		}
 
-        String contact =
-                (String) preferences.get("ResourceBroker.jobmanagerContact");
-        if (contact != null) {
-            StringTokenizer st = new StringTokenizer(contact, ":/");
-            contactHostname = st.nextToken();
-        }
+		for (int i = 0; i < arguments.length; i++) {
+			argString += (" " + arguments[i]);
+		}
 
-        ResourceDescription d = description.getResourceDescription();
+		return argString;
+	}
 
-        if (d == null) {
-            return contactHostname;
-        }
+	public String getHostname(JobDescription description)
+			throws GATInvocationException {
+		String contactHostname = null;
 
-        if (!(d instanceof HardwareResourceDescription)) {
-            if (contactHostname != null)
-                return contactHostname;
+		String contact = (String) preferences
+				.get("ResourceBroker.jobmanagerContact");
+		if (contact != null) {
+			StringTokenizer st = new StringTokenizer(contact, ":/");
+			contactHostname = st.nextToken();
+		}
 
-            throw new GATInvocationException(
-                    "Currently only hardware resource descriptions are supported");
-        }
+		ResourceDescription d = description.getResourceDescription();
 
-        Map<String, Object> m = d.getDescription();
-        Set<String> keys = m.keySet();
-        Iterator<String> i = keys.iterator();
+		if (d == null) {
+			return contactHostname;
+		}
 
-        while (i.hasNext()) {
-            String key = (String) i.next();
-            Object val = m.get(key);
+		if (!(d instanceof HardwareResourceDescription)) {
+			if (contactHostname != null)
+				return contactHostname;
 
-            if (key.equals("machine.node")) {
-                if (val instanceof String) {
-                    return (String) val;
-                } else {
-                    String[] hostList = (String[]) val;
-                    return hostList[0];
-                }
-            }
+			throw new GATInvocationException(
+					"Currently only hardware resource descriptions are supported");
+		}
 
-            //            System.err.println("warning, ignoring key: " + key);
-        }
+		Map<String, Object> m = d.getDescription();
+		Set<String> keys = m.keySet();
+		Iterator<String> i = keys.iterator();
 
-        return contactHostname;
-    }
+		while (i.hasNext()) {
+			String key = (String) i.next();
+			Object val = m.get(key);
+
+			if (key.equals("machine.node")) {
+				if (val instanceof String) {
+					return (String) val;
+				} else {
+					String[] hostList = (String[]) val;
+					return hostList[0];
+				}
+			}
+
+		}
+
+		return contactHostname;
+	}
 }

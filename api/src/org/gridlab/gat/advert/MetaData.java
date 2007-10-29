@@ -60,14 +60,12 @@ public class MetaData implements Serializable {
             String myData = get(key);
 
             if (myData == null) {
-                //				System.err.println("match: key " + key + " not present");
                 return false;
             }
 
             String queryData = query.get(key);
 
             if (!myData.matches(queryData)) {
-                //				System.err.println("not equal: " + myData + " and " + queryData);
                 return false;
             }
         }

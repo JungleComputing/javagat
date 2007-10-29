@@ -20,7 +20,9 @@ import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.Preferences;
 import org.gridlab.gat.engine.GATEngine;
+import org.gridlab.gat.monitoring.Metric;
 import org.gridlab.gat.monitoring.MetricDefinition;
+import org.gridlab.gat.monitoring.MetricListener;
 import org.gridlab.gat.resources.JobDescription;
 import org.gridlab.gat.resources.cpi.JobCpi;
 import org.gridlab.gat.resources.cpi.Sandbox;
@@ -128,9 +130,9 @@ public class SGEJob extends JobCpi {
         }
     }
     
-    public SGEJob(GATContext gatContext, Preferences preferences, SGEBrokerAdaptor broker, JobDescription jobDescription,
-            Session session, String id, Sandbox sandbox) {
-        super(gatContext, preferences, jobDescription, sandbox);
+    public SGEJob(GATContext gatContext, Preferences preferences, SGEResourceBrokerAdaptor broker, JobDescription jobDescription,
+            Session session, String id, Sandbox sandbox, MetricListener listener, Metric metric) {
+        super(gatContext, preferences, jobDescription, sandbox, listener, metric);
         
         jobID = id;
         this.jobDescription = jobDescription;

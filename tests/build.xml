@@ -12,19 +12,30 @@
 	-->
     <property name="env.GAT_LOCATION" location=".." />
     <property name="api" location="${env.GAT_LOCATION}/lib/GAT-API.jar" />
-
+	<property name="external" location="external" />
     <property name="src" location="src" />
     <property name="tmp" location="tmp" />
     <property name="lib" location="../lib" />
     <property name="java.debug.value" value="true" />
+	<property name="engine_path" location="${env.GAT_LOCATION}/lib" />
+	
+	<path id="external_jars">
+		<fileset dir="${external}">
+			<include name="*.jar" />
+		</fileset>
+		<fileset dir="../adaptors/external">
+			<include name="*.jar" />
+		</fileset>
+	</path>
 
-    <target name="compile" description="compile the source ">
+	<target name="compile" description="compile the source ">
         <mkdir dir="${tmp}" />
         <mkdir dir="${lib}" />
 
         <!-- Compile the java code from ${src} into ${tmp} -->
         <javac srcdir="${src}" destdir="${tmp}" debug="on">
             <classpath location="${api}" />
+        	<classpath refid="external_jars" />
         </javac>
 
         <!-- Put everything in ${tmp} into the GAT.jar file -->

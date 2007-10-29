@@ -19,6 +19,8 @@ import org.gridlab.gat.io.FileInputStream;
 import org.gridlab.gat.io.FileOutputStream;
 import org.gridlab.gat.io.cpi.ssh.SSHSecurityUtils;
 import org.gridlab.gat.io.cpi.ssh.SshUserInfo;
+import org.gridlab.gat.monitoring.Metric;
+import org.gridlab.gat.monitoring.MetricListener;
 import org.gridlab.gat.resources.Job;
 import org.gridlab.gat.resources.JobDescription;
 import org.gridlab.gat.resources.SoftwareDescription;
@@ -52,13 +54,9 @@ public class CommandlineSshResourceBrokerAdaptor extends ResourceBrokerCpi {
 			windows = true;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.gridlab.gat.resources.ResourceBroker#submitJob(org.gridlab.gat.resources.JobDescription)
-	 */
-	public Job submitJob(JobDescription description)
-			throws GATInvocationException {
+	
+	public Job submitJob(JobDescription description, MetricListener listener,
+			Metric metric) throws GATInvocationException {
 		SoftwareDescription sd = description.getSoftwareDescription();
 
 		if (sd == null) {
@@ -86,8 +84,10 @@ public class CommandlineSshResourceBrokerAdaptor extends ResourceBrokerCpi {
 			sui = SSHSecurityUtils.getSshCredential(gatContext, preferences,
 					"ssh", location, SSH_PORT);
 		} catch (Exception e) {
-			System.out.println("SshFileAdaptor: failed to retrieve credentials"
-					+ e);
+			if (logger.isDebugEnabled()) {
+				logger.debug("SshFileAdaptor: failed to retrieve credentials"
+						+ e);
+			}
 		}
 
 		if (sui == null) {
@@ -128,7 +128,7 @@ public class CommandlineSshResourceBrokerAdaptor extends ResourceBrokerCpi {
 			if (sui.getPassword() == null) { // public/private key
 				int slot = sui.getPrivateKeySlot();
 				if (slot == -1) { // not set by the user, assume he only has
-									// one key
+					// one key
 					slot = 0;
 				}
 				command += " -pk=" + slot;
@@ -206,6 +206,7 @@ public class CommandlineSshResourceBrokerAdaptor extends ResourceBrokerCpi {
 		}
 
 		return new CommandlineSshJob(gatContext, preferences, this,
-				description, p, sandbox, outForwarder, errForwarder);
+				description, p, sandbox, outForwarder, errForwarder, listener, metric);
 	}
+	
 }

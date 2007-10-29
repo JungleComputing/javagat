@@ -21,8 +21,6 @@ import org.gridlab.gat.GATObjectCreationException;
 import org.gridlab.gat.MethodNotApplicableException;
 import org.gridlab.gat.Preferences;
 
-import colobus.Colobus;
-
 /**
  * @author rob
  */
@@ -92,9 +90,6 @@ public class AdaptorInvocationHandler implements InvocationHandler {
 	}
 
 	static final boolean OPTIMIZE_ADAPTOR_POLICY = true;
-
-	private static final Colobus colobus = Colobus
-			.getColobus(AdaptorInvocationHandler.class.getName());
 
 	private static AdaptorSorter adaptorSorter = new AdaptorSorter();
 
@@ -187,17 +182,8 @@ public class AdaptorInvocationHandler implements InvocationHandler {
 								+ " START");
 					}
 
-					long startHandle = colobus
-							.fireStartEvent("invocation of method " + m
-									+ " on adaptor " + adaptornames[i]
-									+ " params: " + paramString);
-
 					// now invoke the method on the adaptor
 					Object res = m.invoke(adaptorInstantiation, params);
-
-					colobus.fireStopEvent(startHandle, "invocation of method "
-							+ m + " on adaptor " + adaptornames[i] + "result: "
-							+ res);
 
 					if (logger.isDebugEnabled()) {
 						logger.debug("invocation of method " + m.getName()
@@ -302,9 +288,6 @@ public class AdaptorInvocationHandler implements InvocationHandler {
 			throw (exc);
 		}
 
-		long startHandle = colobus.fireStartEvent("creating adaptor "
-				+ adaptor.getName());
-
 		Object result;
 		if (logger.isDebugEnabled()) {
 			logger.debug("initAdaptor: trying to instantiate "
@@ -313,11 +296,7 @@ public class AdaptorInvocationHandler implements InvocationHandler {
 		}
 		try {
 			result = adaptor.newInstance(parameterTypes, newParameters);
-			colobus.fireStopEvent(startHandle, "creating adaptor "
-					+ adaptor.getName() + " (success)");
 		} catch (Throwable t) {
-			colobus.fireStopEvent(startHandle, "creating adaptor "
-					+ adaptor.getName() + " (failed)");
 
 			GATObjectCreationException exc = new GATObjectCreationException();
 			exc.add(adaptor.toString(), t);

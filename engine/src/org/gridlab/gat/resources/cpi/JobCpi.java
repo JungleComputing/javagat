@@ -19,136 +19,147 @@ import org.gridlab.gat.resources.Job;
 import org.gridlab.gat.resources.JobDescription;
 
 public abstract class JobCpi extends Job {
-	
+
 	protected static Logger logger = Logger.getLogger(JobCpi.class);
-	
-    protected JobDescription jobDescription;
 
-    protected Sandbox sandbox;
+	protected JobDescription jobDescription;
 
-    protected GATInvocationException postStageException = null;
+	protected Sandbox sandbox;
 
-    protected GATInvocationException deleteException = null;
+	protected GATInvocationException postStageException = null;
 
-    protected GATInvocationException wipeException = null;
+	protected GATInvocationException deleteException = null;
 
-    protected GATInvocationException removeSandboxException = null;
+	protected GATInvocationException wipeException = null;
 
-    protected static int globalJobID = 0;
+	protected GATInvocationException removeSandboxException = null;
 
-    protected GATContext gatContext;
+	protected static int globalJobID = 0;
 
-    protected Preferences preferences;
+	protected GATContext gatContext;
 
-    protected int state = INITIAL;
+	protected Preferences preferences;
 
-    protected static ArrayList<Job> jobList = new ArrayList<Job>();
+	protected int state = INITIAL;
 
-    protected static boolean shutdownInProgress = false;
+	protected static ArrayList<Job> jobList = new ArrayList<Job>();
 
-    static {
-        Runtime.getRuntime().addShutdownHook(new JobShutdownHook());
-    }
+	protected static boolean shutdownInProgress = false;
 
-    protected static synchronized int allocJobID() {
-        return globalJobID++;
-    }
+	static {
+		Runtime.getRuntime().addShutdownHook(new JobShutdownHook());
+	}
 
-    protected JobCpi(GATContext gatContext, Preferences preferences,
-            JobDescription jobDescription, Sandbox sandbox) {
-        this.gatContext = gatContext;
-        this.preferences = preferences;
-        this.jobDescription = jobDescription;
-        this.sandbox = sandbox;
+	protected static synchronized int allocJobID() {
+		return globalJobID++;
+	}
 
-        String pref = (String) preferences.get("killJobsOnExit");
-        if (pref == null || pref.equalsIgnoreCase("true")) {
-            synchronized (JobCpi.class) {
-                if (shutdownInProgress) {
-                    throw new Error(
-                            "jobCpi: cannot create new jobs when shutdown is in progress");
-                }
-                jobList.add(this);
-            }
-        }
-    }
+	protected JobCpi(GATContext gatContext, Preferences preferences,
+			JobDescription jobDescription, Sandbox sandbox,
+			MetricListener listener, Metric metric) {
+		this.gatContext = gatContext;
+		this.preferences = preferences;
+		this.jobDescription = jobDescription;
+		this.sandbox = sandbox;
+		if (listener != null && metric != null) {
+			try {
+				addMetricListener(listener, metric);
+			} catch (GATInvocationException e) {
+				if (logger.isDebugEnabled()) {
+					logger.debug("Failed to add metric listener to Job:" + e);
+				}
+			}
+		}
 
-    public final JobDescription getJobDescription() {
-        return jobDescription;
-    }
+		String pref = (String) preferences.get("killJobsOnExit");
+		if (pref == null || pref.equalsIgnoreCase("true")) {
+			synchronized (JobCpi.class) {
+				if (shutdownInProgress) {
+					throw new Error(
+							"jobCpi: cannot create new jobs when shutdown is in progress");
+				}
+				jobList.add(this);
+			}
+		}
+	}
 
-    public synchronized int getState() {
-        return state;
-    }
+	public final JobDescription getJobDescription() {
+		return jobDescription;
+	}
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see org.gridlab.gat.advert.Advertisable#marshal()
-     */
-    public String marshal() {
-        throw new Error(
-                "marshalling of this object is not supported by this adaptor");
-    }
+	public synchronized int getState() {
+		return state;
+	}
 
-    protected void finished() {
-        synchronized (JobCpi.class) {
-            if (jobList.contains(this)) {
-                jobList.remove(this);
-            }
-        }
-    }
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.gridlab.gat.advert.Advertisable#marshal()
+	 */
+	public String marshal() {
+		throw new Error(
+				"marshalling of this object is not supported by this adaptor");
+	}
 
-    static class JobShutdownHook extends Thread {
-        public void run() {
-            synchronized (JobCpi.class) {
-                shutdownInProgress = true;
-            }
-            while (true) {
-                Job j;
-                synchronized (JobCpi.class) {
-                    if (jobList.size() == 0)
-                        break;
-                    j = (Job) jobList.remove(0);
-                }
-                if (logger.isInfoEnabled()) {
-                    logger.info("stopping job: " + j);
-                }
-                try {
-                    j.stop();
-                } catch (Exception e) {
-                    // ignore
-                }
-            }
-        }
-    }
+	protected void finished() {
+		synchronized (JobCpi.class) {
+			if (jobList.contains(this)) {
+				jobList.remove(this);
+			}
+		}
+	}
 
-    public MetricValue getMeasurement(Metric metric)
-            throws GATInvocationException {
-        if (metric.getDefinition().getMeasurementType() == MetricDefinition.DISCRETE) {
-            return GATEngine.getMeasurement(this, metric);
-        }
+	static class JobShutdownHook extends Thread {
+		public void run() {
+			synchronized (JobCpi.class) {
+				shutdownInProgress = true;
+			}
+			while (true) {
+				Job j;
+				synchronized (JobCpi.class) {
+					if (jobList.size() == 0)
+						break;
+					j = (Job) jobList.remove(0);
+				}
+				if (logger.isInfoEnabled()) {
+					logger.info("stopping job: " + j);
+				}
+				try {
+					j.stop();
+				} catch (Exception e) {
+					// ignore
+				}
+			}
+		}
+	}
 
-        throw new RuntimeException("Not implemented");
-    }
+	public MetricValue getMeasurement(Metric metric)
+			throws GATInvocationException {
+		if (metric.getDefinition().getMeasurementType() == MetricDefinition.DISCRETE) {
+			return GATEngine.getMeasurement(this, metric);
+		}
 
-    public final List<MetricDefinition> getMetricDefinitions() throws GATInvocationException {
-        return GATEngine.getMetricDefinitions(this);
-    }
+		throw new RuntimeException("Not implemented");
+	}
 
-    public final MetricDefinition getMetricDefinitionByName(String name)
-            throws GATInvocationException {
-        return GATEngine.getMetricDefinitionByName(this, name);
-    }
+	public final List<MetricDefinition> getMetricDefinitions()
+			throws GATInvocationException {
+		return GATEngine.getMetricDefinitions(this);
+	}
 
-    public final void addMetricListener(MetricListener metricListener,
-            Metric metric) throws GATInvocationException {
-        GATEngine.addMetricListener(this, metricListener, metric);
-    }
+	public final MetricDefinition getMetricDefinitionByName(String name)
+			throws GATInvocationException {
+		return GATEngine.getMetricDefinitionByName(this, name);
+	}
 
-    public final void removeMetricListener(MetricListener metricListener,
-            Metric metric) throws GATInvocationException {
-        GATEngine.removeMetricListener(this, metricListener, metric);
-    }
+	public final void addMetricListener(MetricListener metricListener,
+			Metric metric) throws GATInvocationException {
+		GATEngine.addMetricListener(this, metricListener, metric);
+	}
+
+	public final void removeMetricListener(MetricListener metricListener,
+			Metric metric) throws GATInvocationException {
+		GATEngine.removeMetricListener(this, metricListener, metric);
+	}
 
 }

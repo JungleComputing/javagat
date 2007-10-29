@@ -10,6 +10,8 @@ import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.GATObjectCreationException;
 import org.gridlab.gat.Preferences;
+import org.gridlab.gat.monitoring.Metric;
+import org.gridlab.gat.monitoring.MetricListener;
 import org.gridlab.gat.resources.JobDescription;
 import org.gridlab.gat.resources.SoftwareDescription;
 import org.gridlab.gat.resources.cpi.ResourceBrokerCpi;
@@ -46,7 +48,7 @@ public class ProActiveResourceBrokerAdaptor extends ResourceBrokerCpi
     int jobWatcherCount = 0;
 
     /** List of jobs to schedule. */
-    private ArrayList<Job> jobList = new ArrayList<Job>();
+    private ArrayList<ProActiveJob> jobList = new ArrayList<ProActiveJob>();
 
     /**
      * Number of ProActive descriptors for which an addNodes call is
@@ -347,10 +349,10 @@ public class ProActiveResourceBrokerAdaptor extends ResourceBrokerCpi
      * @return the job.
      * @exception GATInvocationException when something goes wrong.
      */
-    public org.gridlab.gat.resources.Job submitJob(JobDescription description)
+    public org.gridlab.gat.resources.Job submitJob(JobDescription description, MetricListener listener, Metric metric)
         throws GATInvocationException {
 
-        Job submittedJob;
+        ProActiveJob submittedJob;
 
         SoftwareDescription sd = description.getSoftwareDescription();
 
@@ -359,7 +361,7 @@ public class ProActiveResourceBrokerAdaptor extends ResourceBrokerCpi
                     "Job description does not contain a software description");
         }
 
-        submittedJob = new Job(gatContext, preferences, description, this);
+        submittedJob = new ProActiveJob(gatContext, preferences, description, this, listener, metric);
 
         synchronized(availableNodeSet) {
             jobList.add(submittedJob);
@@ -378,7 +380,7 @@ public class ProActiveResourceBrokerAdaptor extends ResourceBrokerCpi
     public void run() {
         for (;;) {
             NodeInfo[] nodes;
-            Job job;
+            ProActiveJob job;
             synchronized(availableNodeSet) {
                 // Obtain the first job from the joblist.
                 while (jobList.size() == 0) {
@@ -389,7 +391,7 @@ public class ProActiveResourceBrokerAdaptor extends ResourceBrokerCpi
                     }
                 }
                 logger.debug("Got job to schedule");
-                job = (Job) jobList.get(0);
+                job = (ProActiveJob) jobList.get(0);
 
                 int nNodes = job.getNumNodes();
 

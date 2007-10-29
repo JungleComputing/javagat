@@ -15,7 +15,7 @@ import org.objectweb.proactive.Service;
 public class JobWatcher implements java.io.Serializable, RunActive {
 
     /** Maps job id's to Jobs. */
-    private HashMap<String, Job> jobs = new HashMap<String, Job>();
+    private HashMap<String, ProActiveJob> jobs = new HashMap<String, ProActiveJob>();
 
     /** Public noargs constructor, required by ProActive. */
     public JobWatcher() {
@@ -28,7 +28,7 @@ public class JobWatcher implements java.io.Serializable, RunActive {
      * @param instanceID identification of the job instance.
      * @param job the Job that spawned this instance.
      */
-    synchronized void addJob(String instanceID, Job job) {
+    synchronized void addJob(String instanceID, ProActiveJob job) {
         jobs.put(instanceID, job);
     }
 
@@ -59,10 +59,10 @@ public class JobWatcher implements java.io.Serializable, RunActive {
      * @param exitStatus its exit status.
      */
     public void finishedJob(String instanceID, int exitStatus) {
-        Job job;
+        ProActiveJob job;
 
         synchronized(this) {
-            job = (Job) jobs.get(instanceID);
+            job = (ProActiveJob) jobs.get(instanceID);
             jobs.remove(instanceID);
         }
 
@@ -76,14 +76,14 @@ public class JobWatcher implements java.io.Serializable, RunActive {
      * @param instanceID identification of the job.
      */
     public void startedJob(String instanceID) {
-        Job job = (Job) jobs.get(instanceID);
+        ProActiveJob job = (ProActiveJob) jobs.get(instanceID);
         if (job != null) {
             job.setStarted();
         }
     }
 
     public void addOutput(String instanceID, String out) {
-        Job job = (Job) jobs.get(instanceID);
+        ProActiveJob job = (ProActiveJob) jobs.get(instanceID);
         if (job != null) {
             job.stdout(out);
         } else {
@@ -92,7 +92,7 @@ public class JobWatcher implements java.io.Serializable, RunActive {
     }
 
     public void addError(String instanceID, String err) {
-        Job job = (Job) jobs.get(instanceID);
+        ProActiveJob job = (ProActiveJob) jobs.get(instanceID);
         if (job != null) {
             job.stderr(err);
         } else {

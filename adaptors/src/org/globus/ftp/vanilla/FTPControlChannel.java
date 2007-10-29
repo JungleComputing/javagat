@@ -85,6 +85,12 @@ public class FTPControlChannel extends BasicClientControlChannel {
     public String getHost() {
         return this.host;
     }
+//    /**
+//     * This abstract method was not implemented, and with my
+//     * cog-jglobus-1.2-060418.jar it could not be compiled.
+//     */
+//    public void abortTransfer() {
+//    }
 
     public int getPort() {
         return this.port;
