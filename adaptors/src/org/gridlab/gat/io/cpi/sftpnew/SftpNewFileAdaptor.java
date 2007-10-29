@@ -132,8 +132,10 @@ public class SftpNewFileAdaptor extends FileCpi {
 			sui = SSHSecurityUtils.getSshCredential(gatContext, preferences,
 					"ssh", location, SSH_PORT);
 		} catch (Exception e) {
-			System.out.println("SshFileAdaptor: failed to retrieve credentials"
+			if (logger.isDebugEnabled()) {
+				logger.debug("SshFileAdaptor: failed to retrieve credentials"
 					+ e);
+			}
 		}
 
 		if (sui == null) {

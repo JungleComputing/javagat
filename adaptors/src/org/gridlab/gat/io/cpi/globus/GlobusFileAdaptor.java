@@ -527,12 +527,10 @@ public abstract class GlobusFileAdaptor extends FileCpi {
 									+ remotePath + ", list is: " + v);
 				}
 
-				// System.err.println("USING CACHED INFO FOR .");
 			} else {
 				cachedInfo = (FileInfo) v.get(0);
 			}
 
-			// System.err.println("INFO: " + cachedInfo);
 			return cachedInfo;
 		} catch (Exception e) {
 			throw new GATInvocationException("gridftp", e);
@@ -894,9 +892,6 @@ public abstract class GlobusFileAdaptor extends FileCpi {
 
 		// transfer done. Data is in received stream.
 		// convert it to a vector.
-
-		// System.err.println("result of list " + filter + " is: "
-		// + received.toString());
 
 		BufferedReader reader = new BufferedReader(new StringReader(received
 				.toString()));

@@ -226,9 +226,9 @@ public class GATEngine {
 		if (logger.isDebugEnabled()) {
 			logger.debug("List of GAT jar files is: " + getJarsAsString(urls));
 		}
-
-		gatClassLoader = new URLClassLoader(urls, this.getClass()
-				.getClassLoader());
+		gatClassLoader = new URLClassLoader(urls, 
+				this.getClass().getClassLoader()
+		);
 
 		// Populate cpiClasses
 		loadJarFiles(adaptorPathList);
@@ -688,14 +688,13 @@ public class GATEngine {
 		synchronized (e) {
 			for (int i = 0; i < e.metricTable.size(); i++) {
 				MetricNode n = (MetricNode) e.metricTable.get(i);
-
 				if ((n.adaptor == adaptor)
 						&& name.equals(n.definition.getMetricName())) {
 					return n.definition;
 				}
 			}
 
-			throw new GATInvocationException("the metric name is incorrect");
+			throw new GATInvocationException("the metric name is incorrect: " + name);
 		}
 	}
 
