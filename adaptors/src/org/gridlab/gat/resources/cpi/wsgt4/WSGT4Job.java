@@ -12,9 +12,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Vector;
 
-import javax.naming.Context;
-import javax.naming.InitialContext;
-import javax.naming.NamingException;
 import javax.xml.namespace.QName;
 import javax.xml.rpc.Stub;
 import javax.xml.soap.SOAPElement;
@@ -190,9 +187,6 @@ public class WSGT4Job extends JobCpi {
 
 	private MetricDefinition statusMetricDefinition;
 
-	private Metric statusMetric;
-	
-
 	NotificationConsumerManager notificationConsumerManager;
 	GSSCredential proxy;
 	StateEnumeration gstate;
@@ -233,7 +227,7 @@ public class WSGT4Job extends JobCpi {
 		statusMetricDefinition = new MetricDefinition("job.status",
 				MetricDefinition.DISCRETE, "String", null, null, returnDef);
 		GATEngine.registerMetric(this, "getJobStatus", statusMetricDefinition);
-		statusMetric = statusMetricDefinition.createMetric(null);
+		statusMetricDefinition.createMetric(null);
 
 		this.gstate = null;
 		this.authorization = null;

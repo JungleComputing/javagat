@@ -69,7 +69,7 @@ public class SubmitRemoteJob2 {
 		broker.beginMultiJob();
 		Job job1 = broker.submitJob(jd1);
 		Job job2 = broker.submitJob(jd2);
-		Job job = broker.endMultiJob();
+		broker.endMultiJob();
 		Job job3 = broker.submitJob(jd3);
 
 		while ((job1.getState() != Job.STOPPED)
