@@ -283,7 +283,7 @@ public class GlobusJob extends JobCpi implements GramJobListener,
                 j.cancel();
         } catch (Exception e) {
             if (logger.isInfoEnabled()) {
-                logger.info("got an exception while cancelling job: "
+                logger.warn("got an exception while cancelling job: "
                         + e);
             }
 
@@ -291,8 +291,7 @@ public class GlobusJob extends JobCpi implements GramJobListener,
                 j.signal(GRAMConstants.SIGNAL_CANCEL);
             } catch (Exception e2) {
                 if (logger.isInfoEnabled()) {
-                    System.err
-                            .println("got an exception while sending signal to job: "
+                    logger.warn("got an exception while sending signal to job: "
                                     + e2);
                 }
 
