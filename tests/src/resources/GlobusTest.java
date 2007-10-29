@@ -51,13 +51,13 @@ public class GlobusTest implements MetricListener {
         JobDescription jd = new JobDescription(sd);
         ResourceBroker broker = GAT.createResourceBroker(context, prefs);
 
-        for (int i = 0; i < 25; i++) {
+        for (int i = 0; i < 50; i++) {
             Job job = broker.submitJob(jd);
             MetricDefinition md = job.getMetricDefinitionByName("job.status");
             Metric m = md.createMetric(null);
             job.addMetricListener(this, m);
             
-            Thread.sleep(5000);
+            Thread.sleep(1000);
             job.stop(); // cancel the job
         }
     }
