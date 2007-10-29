@@ -1,12 +1,20 @@
 package org.gridlab.gat.resources.cpi;
 
-import java.io.FileInputStream;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.net.URISyntaxException;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
 import org.gridlab.gat.GAT;
 import org.gridlab.gat.GATContext;
+import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.GATObjectCreationException;
 import org.gridlab.gat.Preferences;
 import org.gridlab.gat.URI;
@@ -21,214 +29,321 @@ import org.gridlab.gat.resources.ResourceBroker;
 import org.gridlab.gat.resources.SoftwareDescription;
 
 public class RemoteSandbox implements MetricListener {
-    boolean verbose = false;
+	protected static Logger logger = Logger.getLogger(RemoteSandbox.class);
 
-    boolean debug = false;
+	boolean verbose = false;
 
-    boolean timing = false;
+	boolean debug = false;
 
-    public static void main(String[] args) {
-        new RemoteSandbox().start(args);
-    }
+	boolean timing = false;
 
-    public synchronized void processMetricEvent(MetricValue val) {
-        notifyAll();
-    }
+	private String initiator;
 
-    private File rewriteStagedFile(GATContext gatContext,
-            Preferences preferences, File origSrc, File origDest,
-            String destHostname, String remoteCWD) {
-        if (origSrc == null && origDest == null) {
-            return null;
-        }
+	private Map<Job, String> jobMap = new HashMap<Job, String>();
 
-        // leave remote files untouched
-        if (origDest != null && origDest.toGATURI().getHost() != null
-                && !origDest.toGATURI().getHost().equals("localhost")) {
-            return origDest;
-        }
+	public static void main(String[] args) {
+		new RemoteSandbox().start(args);
+	}
 
-        String newPath = null;
-        if (origDest == null) {
-            newPath = origSrc.getName();
-        } else {
-            newPath = origDest.toGATURI().getPath();
+	public synchronized void processMetricEvent(MetricValue val) {
+		Job job = (Job) val.getSource();
+		GATContext gatContext = new GATContext();
+		FileWriter writer = null;
+		try {
+			URI local = new URI(".JavaGATstatus" + jobMap.get(job));
+			URI dest = new URI("any://" + initiator + "/.JavaGATstatus"
+					+ jobMap.get(job));
+			File localFile = GAT.createFile(gatContext, local);
+			File remoteFile = GAT.createFile(gatContext, dest);
+			localFile.createNewFile();
+			writer = new FileWriter(localFile);
+			writer.write(job.getState());
+			writer.flush();
+			writer.close();
+			while (remoteFile.exists()) {
+				try {
+					Thread.sleep(1000);
+				} catch (InterruptedException e) {
+					// ignore
+				}
+			}
+			localFile.copy(dest);
+			localFile.delete();
+		} catch (GATObjectCreationException e) {
+			if (logger.isDebugEnabled()) {
+				logger.debug(e);
+			}
+		} catch (IOException e) {
+			if (writer != null) {
+				try {
+					writer.close();
+				} catch (IOException e1) {
+					if (logger.isDebugEnabled()) {
+						logger.debug(e1);
+					}
+				}
+			}
+			if (logger.isDebugEnabled()) {
+				logger.debug(e);
+			}
+		} catch (URISyntaxException e) {
+			if (logger.isDebugEnabled()) {
+				logger.debug(e);
+			}
+		} catch (GATInvocationException e) {
+			if (logger.isDebugEnabled()) {
+				logger.debug(e);
+			}
+		}
+		notifyAll();
+	}
 
-            // if we have a relative path without a hostname in the URI,
-            // it means that the file is relative to CWD.
-            if(origDest.toGATURI().getHost() == null && !origDest.isAbsolute()) {
-                    newPath = remoteCWD + "/" + newPath;
-            }
-        }
-        
-        String newLocation =
-                "any://" + destHostname + "/" + newPath;
+	private File rewriteStagedFile(GATContext gatContext,
+			Preferences preferences, File origSrc, File origDest,
+			String destHostname, String remoteCWD) {
+		if (origSrc == null && origDest == null) {
+			return null;
+		}
 
-        File res = null;
-        try {
-            URI newURI = new URI(newLocation);
+		// leave remote files untouched
+		if (origDest != null && origDest.toGATURI().getHost() != null
+				&& !origDest.toGATURI().getHost().equals("localhost")) {
+			return origDest;
+		}
 
-            if (verbose) {
-                System.err.println("rewrite of " + newPath + " to "
-                        + newURI);
-            }
-            res = GAT.createFile(gatContext, preferences, newURI);
-        } catch (Exception e) {
-            System.err.println("could not rewrite poststage file" + newPath
-                    + ":" + e);
-            System.exit(1);
-        }
+		String newPath = null;
+		if (origDest == null) {
+			newPath = origSrc.getName();
+		} else {
+			newPath = origDest.toGATURI().getPath();
 
-        return res;
-    }
+			// if we have a relative path without a hostname in the URI,
+			// it means that the file is relative to CWD.
+			if (origDest.toGATURI().getHost() == null && !origDest.isAbsolute()) {
+				newPath = remoteCWD + "/" + newPath;
+			}
+		}
 
-    public void start(String[] args) {
-        final String descriptorFile = args[0];
-        final String initiator = args[1];
-        final String preStageDoneLocation = args[2];
-        final String remoteCWD = args[3];
-        verbose = args[4].equalsIgnoreCase("true");
-        debug = args[5].equalsIgnoreCase("true");
-        timing = args[6].equalsIgnoreCase("true");
+		String newLocation = "any://" + destHostname + "/" + newPath;
 
-        if (verbose) {
-            System.setProperty("gat.verbose", "true");
-        }
-        if (debug) {
-            System.setProperty("gat.debug", "true");
-        }
-        if (timing) {
-            System.setProperty("gat.timing", "true");
-        }
+		File res = null;
+		try {
+			URI newURI = new URI(newLocation);
 
-        if (verbose) {
-            System.err
-                    .println("RemoteSandbox started, initiator: " + initiator);
-        }
+			if (logger.isInfoEnabled()) {
+				logger.info("rewrite of " + newPath + " to " + newURI);
+			}
+			res = GAT.createFile(gatContext, preferences, newURI);
+		} catch (Exception e) {
+			if (logger.isInfoEnabled()) {
+				logger.info("could not rewrite poststage file" + newPath + ":"
+						+ e);
+			}
+			System.exit(1);
+		}
 
-        JobDescription description = null;
-        try {
-            if (verbose) {
-                System.err
-                        .println("opening descriptor file: " + descriptorFile);
-            }
-            FileInputStream tmp = new FileInputStream(descriptorFile);
-            ObjectInputStream in = new ObjectInputStream(tmp);
-            description = (JobDescription) in.readObject();
-            in.close();
-        } catch (Exception e) {
-            System.err.println("an error occurred: " + e);
-            System.exit(1);
-        }
+		return res;
+	}
 
-        // modify the description to run it locally
-        SoftwareDescription sd = description.getSoftwareDescription();
-        sd.addAttribute("useLocalDisk", "false");
+	public void start(String[] args) {
+		final String descriptorFile = args[0];
+		final String initiator = args[1];
+		final String remoteCWD = args[2];
+		this.initiator = initiator;
+		verbose = args[3].equalsIgnoreCase("true");
+		debug = args[4].equalsIgnoreCase("true");
+		timing = args[5].equalsIgnoreCase("true");
+		String jobIDsString = args[6];
 
-        if (verbose) {
-            System.err.println("read job description: " + description);
-        }
+		if (verbose) {
+			System.setProperty("gat.verbose", "true");
+			logger.setLevel(Level.INFO);
+		}
+		if (debug) {
+			System.setProperty("gat.debug", "true");
+			logger.setLevel(Level.DEBUG);
+		}
+		if (timing) {
+			System.setProperty("gat.timing", "true");
+		}
 
-        GATContext gatContext = new GATContext();
-        Preferences prefs = new Preferences();
-        prefs.put("ResourceBroker.adaptor.name", "local");
+		if (logger.isInfoEnabled()) {
+			logger.info("RemoteSandbox started, initiator: " + initiator);
+		}
 
-        // rewrite poststage files to go directly to their original destination
-        // also stdout and stderr
-        sd.setStderr(rewriteStagedFile(gatContext, prefs, null, sd
-                .getStderr(), initiator, remoteCWD));
-        sd.setStdout(rewriteStagedFile(gatContext, prefs, null, sd
-                .getStdout(), initiator, remoteCWD));
+		JobDescription[] descriptions = null;
+		Preferences preferences = null;
+		String[] preStageDoneLocations = null;
+		try {
+			if (logger.isInfoEnabled()) {
+				logger.info("opening descriptor file: " + descriptorFile);
+			}
+			java.io.FileInputStream tmp = new java.io.FileInputStream(
+					descriptorFile);
+			ObjectInputStream in = new ObjectInputStream(tmp);
+			descriptions = (JobDescription[]) in.readObject();
+			preferences = (Preferences) in.readObject();
+			preferences.remove("ResourceBroker.jobmanagerContact");
+			preStageDoneLocations = (String[]) in.readObject();
+			in.close();
+		} catch (Exception e) {
+			if (logger.isDebugEnabled()) {
+				logger.debug("an error occurred: " + e);
+				StringWriter writer = new StringWriter();
+				e.printStackTrace(new PrintWriter(writer));
+				logger.debug(e.toString());
+			}
+			System.exit(1);
+		}
+		Job[] jobs = new Job[descriptions.length];
+		String[] jobIDs = jobIDsString.split(",");
+		for (int currentDescription = 0; currentDescription < descriptions.length; currentDescription++) {
+			// modify the description to run it locally
+			SoftwareDescription sd = descriptions[currentDescription]
+					.getSoftwareDescription();
+			sd.addAttribute("useRemoteSandbox", "false");
 
-        sd.setStdin(rewriteStagedFile(gatContext, prefs, sd.getStdin(),
-                null, initiator, remoteCWD));
+			if (logger.isInfoEnabled()) {
+				logger.info("read job description: "
+						+ descriptions[currentDescription]);
+			}
 
-        Map<File, File> pre = sd.getPreStaged();
-        Set<File> tmp = pre.keySet();
-        Object[] keys = tmp.toArray();
-        File[] srcs = new File[keys.length];
-        File[] dests = new File[keys.length];
-        for (int i = 0; i < keys.length; i++) {
-            File src = (File) keys[i];
-            File dest = (File) pre.get(src);
-            srcs[i] =
-                    rewriteStagedFile(gatContext, prefs, dest, src, initiator, remoteCWD);
-            dests[i] = dest;
-        }
-        pre.clear();
-        for (int i = 0; i < keys.length; i++) {
-            pre.put(srcs[i], dests[i]);
-        }
+			GATContext gatContext = new GATContext();
+			preferences.put("ResourceBroker.adaptor.name", "local");
 
-        Map<File, File> post = sd.getPostStaged();
-        tmp = post.keySet();
-        keys = tmp.toArray();
-        for (int i = 0; i < keys.length; i++) {
-            File src = (File) keys[i];
-            File dest = (File) post.get(src);
-            dest = rewriteStagedFile(gatContext, prefs, src, dest, initiator, remoteCWD);
-            post.put(src, dest);
-        }
+			// rewrite poststage files to go directly to their original
+			// destination
+			// also stdout and stderr
+			sd.setStderr(rewriteStagedFile(gatContext, preferences, null, sd
+					.getStderr(), initiator, remoteCWD));
+			sd.setStdout(rewriteStagedFile(gatContext, preferences, null, sd
+					.getStdout(), initiator, remoteCWD));
+			sd.setStdin(rewriteStagedFile(gatContext, preferences, sd
+					.getStdin(), null, initiator, remoteCWD));
 
-        if (verbose) {
-            System.err.println("modified job description: " + description);
-        }
+			Map<File, File> pre = sd.getPreStaged();
+			Set<File> tmp = pre.keySet();
+			Object[] keys = tmp.toArray();
+			File[] srcs = new File[keys.length];
+			File[] dests = new File[keys.length];
+			for (int i = 0; i < keys.length; i++) {
+				File src = (File) keys[i];
+				File dest = (File) pre.get(src);
+				srcs[i] = rewriteStagedFile(gatContext, preferences, dest, src,
+						initiator, remoteCWD);
+				dests[i] = dest;
+			}
+			pre.clear();
+			for (int i = 0; i < keys.length; i++) {
+				pre.put(srcs[i], dests[i]);
+			}
 
-        ResourceBroker broker = null;
-        try {
-            broker = GAT.createResourceBroker(gatContext, prefs);
-        } catch (GATObjectCreationException e) {
-            System.err.println("could not create broker: " + e);
-            System.exit(1);
-        }
+			Map<File, File> post = sd.getPostStaged();
+			tmp = post.keySet();
+			keys = tmp.toArray();
+			for (int i = 0; i < keys.length; i++) {
+				File src = (File) keys[i];
+				File dest = (File) post.get(src);
+				dest = rewriteStagedFile(gatContext, preferences, src, dest,
+						initiator, remoteCWD);
+				post.put(src, dest);
+			}
 
-        try {
-            Job job = broker.submitJob(description);
+			if (logger.isInfoEnabled()) {
+				logger.info("modified job description: "
+						+ descriptions[currentDescription]);
+			}
 
-            if (sd.getBooleanAttribute("waitForPreStage", false)) {
-                if (verbose) {
-                    System.err.println("deleting prestageDoneFile at "
-                            + preStageDoneLocation);
-                }
+			ResourceBroker broker = null;
+			try {
+				broker = GAT.createResourceBroker(gatContext, preferences);
+			} catch (GATObjectCreationException e) {
+				if (logger.isDebugEnabled()) {
+					logger.debug("could not create broker: " + e);
+				}
+				System.exit(1);
+			}
+			Job job;
+			try {
+				if (sd.getBooleanAttribute("waitForPreStage", false)) {
+					File preStageDoneFile = GAT.createFile(gatContext,
+							preferences, "any://" + initiator + "/"
+									+ preStageDoneLocations[currentDescription]);
+					while (!preStageDoneFile.exists()) {
+						Thread.sleep(500);
+					}
+					job = broker.submitJob(descriptions[currentDescription]);
+					jobMap.put(job, jobIDs[currentDescription]);
 
-                File preStageDoneFile =
-                        GAT.createFile(gatContext, prefs, preStageDoneLocation);
+					// sandbox is created and prestagedfiles are prestaged,
+					// during
+					// the submitJob method
 
-                if (!preStageDoneFile.delete()) {
-                    System.err.println("could not delete preStageDone file");
-                    System.exit(1);
-                }
-                if (verbose) {
-                    System.err.println("deleting prestageDoneFile at "
-                            + preStageDoneLocation + " DONE");
-                }
-            } else {
-                if (verbose) {
-                    System.err.println("not waiting for preStage");
-                }                
-            }
+					if (logger.isDebugEnabled()) {
+						logger.debug("deleting prestageDoneFile at "
+								+ preStageDoneLocations[currentDescription]);
+					}
 
-            MetricDefinition md = job.getMetricDefinitionByName("job.status");
-            Metric m = md.createMetric(null);
-            job.addMetricListener(this, m);
+					if (!preStageDoneFile.delete()) {
+						if (logger.isInfoEnabled()) {
+							logger.info("could not delete preStageDone file");
+						}
+						System.exit(1);
+					}
+					if (logger.isInfoEnabled()) {
+						logger.info("deleting prestageDoneFile at "
+								+ preStageDoneLocations[currentDescription] + " DONE");
+					}
+				} else {
+					if (logger.isInfoEnabled()) {
+						logger.info("not waiting for preStage");
+					}
+					job = broker.submitJob(descriptions[currentDescription]);
+					jobMap.put(job, jobIDs[currentDescription]);
 
-            synchronized (this) {
-                while ((job.getState() != Job.STOPPED)
-                        && (job.getState() != Job.SUBMISSION_ERROR)) {
-                    wait();
-                }
-            }
+				}
+				jobs[currentDescription] = job;
 
-            if (verbose) {
-                System.err.println("SubmitJobCallback: Job finished, state = "
-                        + job.getInfo());
-            }
-        } catch (Exception e) {
-            System.err.println("an exception occurred: " + e);
-            System.exit(1);
-        }
-
-        GAT.end();
-        System.exit(0);
-    }
+				MetricDefinition md = job
+						.getMetricDefinitionByName("job.status");
+				Metric m = md.createMetric(null);
+				job.addMetricListener(this, m);
+			} catch (Exception e) {
+				if (logger.isDebugEnabled()) {
+					logger.debug("an exception occurred: " + e);
+				}
+				System.exit(1);
+			}
+		}
+		synchronized (this) {
+			for (int i = 0; i < jobs.length; i++) {
+				while ((jobs[i].getState() != Job.STOPPED)
+						&& (jobs[i].getState() != Job.SUBMISSION_ERROR)) {
+					try {
+						wait();
+					} catch (InterruptedException e) {
+						if (logger.isDebugEnabled()) {
+							logger.debug("an exception occurred: " + e);
+						}
+						System.exit(1);
+					}
+				}
+			}
+		}
+		if (logger.isInfoEnabled()) {
+			for (int i = 0; i < jobs.length; i++) {
+				try {
+					logger.info("SubmitJobCallback: Job finished, state = "
+							+ jobs[i].getInfo());
+				} catch (GATInvocationException e) {
+					if (logger.isDebugEnabled()) {
+						logger.debug("an exception occurred: " + e);
+					}
+					System.exit(1);
+				}
+			}
+		}
+		GAT.end();
+		System.exit(0);
+	}
 }
