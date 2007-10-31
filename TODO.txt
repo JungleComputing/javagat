@@ -22,6 +22,11 @@ JavaGAT 2.0
 - MultiJobs: number of jobs/machine to run concurrently
 - Check events: globus adaptor should throw all events (PRE_STAGING, SUBMITTED,
   RUNNING, POST_STAGING, STOPPED).
+- Fix race in globus adaptor: access to shutdownInProgress should be 
+  synchronized
+- Fix leaking connections with globus. Enric reported that if a 
+  GLOBUS_TCP_PORT_RANGE is set, globus job submission failes after a while
+
 -------------------------------------------------------------------------------
   
 JavaGAT 2.1
@@ -38,6 +43,7 @@ JavaGAT 2.1
   are given.
   maybe use special property for this? Not all middlewares can do this.
 - merge stdout and stderr into one file
+- Integrate Koala adaptor
 
 
 
