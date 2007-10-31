@@ -1,6 +1,7 @@
 JavaGAT 2.0
 -----------
 
+- Document new securityContext features
 - Complete GT4 adaptor set
   * test it
   * integrate Frank Knoll's advert service adaptors
