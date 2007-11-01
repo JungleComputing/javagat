@@ -37,9 +37,6 @@ public class GT4LocalFileAdaptor extends GT4FileAdaptor {
     public GT4LocalFileAdaptor(GATContext gatContext, Preferences preferences,
             URI location) throws GATObjectCreationException {
         super(gatContext, preferences, location, "local");
-        if (!location.isCompatible("file")) {
-            throw new AdaptorNotApplicableException("cannot handle this URI");
-        }
     }
 
     synchronized protected void copyThirdParty(URI dest, String destProvider)
