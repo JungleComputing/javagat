@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 
+import org.gridlab.gat.AdaptorNotApplicableException;
 import org.gridlab.gat.GAT;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
@@ -61,15 +62,20 @@ public class StreamingFileAdaptor extends FileCpi {
     }
 
     // this method does *not* work for empty files
-    public boolean exists() {
-        try {
-            FileInputStream in = GAT
-                    .createFileInputStream(gatContext, location);
-            return (in.read() != -1);
-        } catch (GATObjectCreationException e) {
-            return false;
-        } catch (IOException e) {
-            return false;
+    public boolean exists() throws GATInvocationException {
+        if (!location.isCompatible("http")) {
+            throw new UnsupportedOperationException("Not implemented");
+        } else {
+            try {
+                FileInputStream in = GAT.createFileInputStream(gatContext,
+                        location);
+                return (in.read() != -1);
+            } catch (GATObjectCreationException e) {
+                return false;
+            } catch (IOException e) {
+                return false;
+            }
         }
+
     }
 }
