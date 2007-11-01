@@ -27,7 +27,7 @@ JavaGAT 2.0
   synchronized
 - Fix leaking connections with globus. Enric reported that if a 
   GLOBUS_TCP_PORT_RANGE is set, globus job submission failes after a while
-
+- Task model?
 -------------------------------------------------------------------------------
   
 JavaGAT 2.1
