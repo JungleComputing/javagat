@@ -253,6 +253,9 @@ public abstract class FileCpi implements FileInterface {
     }
 
     public File getParentFile() throws GATInvocationException {
+        if (getParent() == null) {
+            return null;
+        }
         try {
             String dest = location.getScheme() + "://";
             dest +=
