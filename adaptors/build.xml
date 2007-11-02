@@ -250,9 +250,9 @@
 			</manifest>
 		</jar>
 
-		<jar jarfile="${lib}/SGEBrokerAdaptor.jar" basedir="${tmp}" includes="**/org/gridlab/gat/resources/cpi/sge/*.class">
+		<jar jarfile="${lib}/SGEResourceBrokerAdaptor.jar" basedir="${tmp}" includes="**/org/gridlab/gat/resources/cpi/sge/*.class">
 			<manifest>
-				<attribute name="ResourceBrokerCpi-class" value="org.gridlab.gat.resources.cpi.sge.SGEBrokerAdaptor" />
+				<attribute name="ResourceBrokerCpi-class" value="org.gridlab.gat.resources.cpi.sge.SGEResourceBrokerAdaptor" />
 			</manifest>
 		</jar>
 
@@ -262,9 +262,9 @@
 			</manifest>
 		</jar>
 
-		<jar jarfile="${lib}/PbsBrokerAdaptor.jar" basedir="${tmp}" includes="**/org/gridlab/gat/resources/cpi/pbs_resource/*.class">
+		<jar jarfile="${lib}/PbsResourceBrokerAdaptor.jar" basedir="${tmp}" includes="**/org/gridlab/gat/resources/cpi/pbs_resource/*.class">
 			<manifest>
-				<attribute name="ResourceBrokerCpi-class" value="org.gridlab.gat.resources.cpi.pbs_resource.PbsBrokerAdaptor" />
+				<attribute name="ResourceBrokerCpi-class" value="org.gridlab.gat.resources.cpi.pbs_resource.PbsResourceBrokerAdaptor" />
 			</manifest>
 		</jar>
 
