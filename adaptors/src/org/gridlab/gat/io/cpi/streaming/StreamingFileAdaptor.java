@@ -62,7 +62,8 @@ public class StreamingFileAdaptor extends FileCpi {
 
     // this method does *not* work for empty files
     public boolean exists() throws GATInvocationException {
-        if (!location.isCompatible("http")) {
+        if (!(location.isCompatible("http") || location.isCompatible("https") || location
+                .isCompatible("ftp"))) {
             throw new UnsupportedOperationException("Not implemented");
         } else {
             try {
