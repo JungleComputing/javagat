@@ -55,7 +55,7 @@ public class TransportProtocolClient extends TransportProtocolCommon {
     /**  */
     protected SshPublicKey pk;
     private HostKeyVerification hosts;
-    private Map services = new HashMap();
+    private Map<String, Service> services = new HashMap<String, Service>();
     private SshMessageStore ms = new SshMessageStore();
 
     /**
@@ -145,11 +145,11 @@ public class TransportProtocolClient extends TransportProtocolCommon {
      *
      */
     protected void onDisconnect() {
-        Iterator it = services.entrySet().iterator();
-        Map.Entry entry;
+        Iterator<Map.Entry<String, Service>> it = services.entrySet().iterator();
+        Map.Entry<String, Service> entry;
 
         while (it.hasNext()) {
-            entry = (Map.Entry) it.next();
+            entry = it.next();
             ((Service) entry.getValue()).stop();
         }
 
@@ -163,6 +163,7 @@ public class TransportProtocolClient extends TransportProtocolCommon {
      *
      * @throws AlgorithmNotAgreedException
      */
+    @SuppressWarnings("unchecked")
     protected String getDecryptionAlgorithm()
         throws AlgorithmNotAgreedException {
         return determineAlgorithm(clientKexInit.getSupportedSCEncryption(),
@@ -176,6 +177,7 @@ public class TransportProtocolClient extends TransportProtocolCommon {
      *
      * @throws AlgorithmNotAgreedException
      */
+    @SuppressWarnings("unchecked")
     protected String getEncryptionAlgorithm()
         throws AlgorithmNotAgreedException {
         return determineAlgorithm(clientKexInit.getSupportedCSEncryption(),
@@ -189,6 +191,7 @@ public class TransportProtocolClient extends TransportProtocolCommon {
      *
      * @throws AlgorithmNotAgreedException
      */
+    @SuppressWarnings("unchecked")
     protected String getInputStreamCompAlgortihm()
         throws AlgorithmNotAgreedException {
         return determineAlgorithm(clientKexInit.getSupportedSCComp(),
@@ -202,6 +205,7 @@ public class TransportProtocolClient extends TransportProtocolCommon {
      *
      * @throws AlgorithmNotAgreedException
      */
+    @SuppressWarnings("unchecked")
     protected String getInputStreamMacAlgorithm()
         throws AlgorithmNotAgreedException {
         return determineAlgorithm(clientKexInit.getSupportedSCMac(),
@@ -251,6 +255,7 @@ public class TransportProtocolClient extends TransportProtocolCommon {
      *
      * @throws AlgorithmNotAgreedException
      */
+    @SuppressWarnings("unchecked")
     protected String getOutputStreamCompAlgorithm()
         throws AlgorithmNotAgreedException {
         return determineAlgorithm(clientKexInit.getSupportedCSComp(),
@@ -264,6 +269,7 @@ public class TransportProtocolClient extends TransportProtocolCommon {
      *
      * @throws AlgorithmNotAgreedException
      */
+    @SuppressWarnings("unchecked")
     protected String getOutputStreamMacAlgorithm()
         throws AlgorithmNotAgreedException {
         return determineAlgorithm(clientKexInit.getSupportedCSMac(),
@@ -417,6 +423,7 @@ public class TransportProtocolClient extends TransportProtocolCommon {
      *
      * @throws TransportProtocolException
      */
+    @SuppressWarnings("unchecked")
     protected boolean verifyHostKey(byte[] key, byte[] sig, byte[] sigdata)
         throws TransportProtocolException {
         // Determine the public key algorithm and obtain an instance
