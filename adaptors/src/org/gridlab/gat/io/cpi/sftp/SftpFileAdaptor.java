@@ -50,17 +50,13 @@ public class SftpFileAdaptor extends FileCpi {
             Preferences preferences, URI location)
             throws GATInvocationException {
         SftpConnection res = new SftpConnection();
-
         res.ssh = new SshClient();
-
         HostKeyVerification hkv = new HostKeyVerification() {
             public boolean verifyHost(String name, SshPublicKey key) {
                 return true;
             }
         };
-
         SftpUserInfo info;
-
         try {
             info = SftpSecurityUtils.getSftpCredential(context, preferences,
                 "sftp", location, SSH_PORT);
@@ -69,7 +65,6 @@ public class SftpFileAdaptor extends FileCpi {
         } catch (CredentialExpiredException e2) {
             throw new GATInvocationException("sftp", e2);
         }
-
         SshConnectionProperties connectionProp = new SshConnectionProperties();
         connectionProp.setHost(location.resolveHost());
 
@@ -80,7 +75,6 @@ public class SftpFileAdaptor extends FileCpi {
         }
 
         connectionProp.setPort(port);
-
         try {
             res.ssh.connect(connectionProp, hkv);
             if (info.password != null) {
@@ -105,7 +99,6 @@ public class SftpFileAdaptor extends FileCpi {
                     throw new GATInvocationException("Unable to authenticate");
                 }
             }
-
             res.sftp = res.ssh.openSftpClient();
         } catch (Exception e) {
             throw new GATInvocationException("sftp", e);
@@ -169,6 +162,20 @@ public class SftpFileAdaptor extends FileCpi {
         }
     }
 
+    public boolean isFile() throws GATInvocationException {
+        SftpConnection c = openConnection(gatContext, preferences, location);
+        try {
+            FileAttributes attr = c.sftp.stat(location.getPath());
+
+            return attr.isFile();
+        } catch (IOException e) {
+            throw new GATInvocationException("sftp", e);
+        } finally {
+            closeConnection(c);
+        }
+    }
+    
+    
     public long length() throws GATInvocationException {
         SftpConnection c = openConnection(gatContext, preferences, location);
         try {
