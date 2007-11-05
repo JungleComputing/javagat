@@ -1,6 +1,7 @@
 JavaGAT 2.0
 -----------
 
+- gt4 file adaptor does not check URI. (it accepts aap://xyz)
 - Document new securityContext features
 - Complete GT4 adaptor set
   * test it
