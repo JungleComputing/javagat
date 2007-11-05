@@ -25,7 +25,8 @@ import org.gridlab.gat.monitoring.Monitorable;
 /**
  * @author rob
  */
-/** An abstract representation of a physical file. (See java.io.file)
+/**
+ * An abstract representation of a physical file. (See java.io.file)
  * <p>
  * An instance of this class presents an abstract, system-independent view of a
  * physical file. User interfaces and operating systems use system-dependent
@@ -49,11 +50,11 @@ import org.gridlab.gat.monitoring.Monitorable;
  * file is moved.
  */
 @SuppressWarnings("serial")
-public class File extends java.io.File implements Monitorable,
-        Advertisable {
+public class File extends java.io.File implements Monitorable, Advertisable {
     org.gridlab.gat.io.FileInterface f;
 
-    /** Do not use this constructor, it is for internal GAT use.
+    /**
+     * Do not use this constructor, it is for internal GAT use.
      */
     public File(org.gridlab.gat.io.FileInterface f) {
         super("dummy");
@@ -63,40 +64,51 @@ public class File extends java.io.File implements Monitorable,
     /**
      * This method copies the physical file represented by this File instance to
      * a physical file identified by the passed URI.
-     *
+     * 
      * @param loc
-     *            The new location
+     *                The new location
      * @throws GATInvocationException
-     *             Thrown upon problems accessing the remote instance
+     *                 Thrown upon problems accessing the remote instance
      * @throws java.io.IOException
-     *             Upon non-remote IO problem
+     *                 Upon non-remote IO problem
      */
     public void copy(URI loc) throws GATInvocationException {
         f.copy(loc);
     }
 
     /**
+     * This method return the FileInterface associated with this File
+     *
+     * @return the FileInterface
+     */
+    public org.gridlab.gat.io.FileInterface getFileInterface() {
+        return f;
+    }
+    
+    
+    /**
      * This method moves the physical file represented by this File instance to
      * a physical file identified by the passed URI.
-     *
+     * 
      * @param location
-     *            The URI to which to move the physical file corresponding to
-     *            this File instance
+     *                The URI to which to move the physical file corresponding
+     *                to this File instance
      * @throws GATInvocationException
-     *             Thrown upon problems accessing the remote instance
+     *                 Thrown upon problems accessing the remote instance
      * @throws IOException
-     *             Upon non-remote IO problem
+     *                 Upon non-remote IO problem
      */
     public void move(URI location) throws GATInvocationException {
         f.move(location);
     }
 
-    /** This method deletes a directory and everything that is in it.
-     * This method can only be called on a directory, not on a file.
+    /**
+     * This method deletes a directory and everything that is in it. This method
+     * can only be called on a directory, not on a file.
+     * 
      * @throws GATInvocationException
      */
-    public void recursivelyDeleteDirectory()
-            throws GATInvocationException {
+    public void recursivelyDeleteDirectory() throws GATInvocationException {
         f.recursivelyDeleteDirectory();
     }
 
@@ -173,7 +185,8 @@ public class File extends java.io.File implements Monitorable,
         try {
             return f.exists();
         } catch (Exception e) {
-            return false;        }
+            return false;
+        }
     }
 
     /**
@@ -478,15 +491,20 @@ public class File extends java.io.File implements Monitorable,
         return f.toURL();
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see org.gridlab.gat.advert.Advertisable#marshal()
      */
     public String marshal() {
         return f.marshal();
     }
 
-    /* (non-Javadoc)
-     * @see org.gridlab.gat.monitoring.Monitorable#addMetricListener(org.gridlab.gat.monitoring.MetricListener, org.gridlab.gat.monitoring.Metric)
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.gridlab.gat.monitoring.Monitorable#addMetricListener(org.gridlab.gat.monitoring.MetricListener,
+     *      org.gridlab.gat.monitoring.Metric)
      */
     public void addMetricListener(MetricListener metricListener, Metric metric)
             throws GATInvocationException {
@@ -494,7 +512,9 @@ public class File extends java.io.File implements Monitorable,
 
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see org.gridlab.gat.monitoring.Monitorable#getMeasurement(org.gridlab.gat.monitoring.Metric)
      */
     public MetricValue getMeasurement(Metric metric)
@@ -502,7 +522,9 @@ public class File extends java.io.File implements Monitorable,
         return f.getMeasurement(metric);
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see org.gridlab.gat.monitoring.Monitorable#getMetricDefinitionByName(java.lang.String)
      */
     public MetricDefinition getMetricDefinitionByName(String name)
@@ -510,34 +532,42 @@ public class File extends java.io.File implements Monitorable,
         return f.getMetricDefinitionByName(name);
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see org.gridlab.gat.monitoring.Monitorable#getMetricDefinitions()
      */
-    public List<MetricDefinition> getMetricDefinitions() throws GATInvocationException {
+    public List<MetricDefinition> getMetricDefinitions()
+            throws GATInvocationException {
         return f.getMetricDefinitions();
     }
 
-    /* (non-Javadoc)
-     * @see org.gridlab.gat.monitoring.Monitorable#removeMetricListener(org.gridlab.gat.monitoring.MetricListener, org.gridlab.gat.monitoring.Metric)
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.gridlab.gat.monitoring.Monitorable#removeMetricListener(org.gridlab.gat.monitoring.MetricListener,
+     *      org.gridlab.gat.monitoring.Metric)
      */
     public void removeMetricListener(MetricListener metricListener,
             Metric metric) throws GATInvocationException {
         f.removeMetricListener(metricListener, metric);
     }
-    
+
     /**
-     * Read a file object from a stream. We use a "default" context
-     * to create the resulting object.
-     * @param stream the stream to write to
+     * Read a file object from a stream. We use a "default" context to create
+     * the resulting object.
+     * 
+     * @param stream
+     *                the stream to write to
      * @throws IOException
      * @throws ClassNotFoundException
      */
     private void readObject(java.io.ObjectInputStream stream)
-    throws IOException, ClassNotFoundException {
+            throws IOException, ClassNotFoundException {
         URI u = (URI) stream.readObject();
-        
+
         GATContext c = new GATContext();
-        
+
         try {
             File newFile = GAT.createFile(c, u);
             f = newFile.f;
@@ -545,14 +575,16 @@ public class File extends java.io.File implements Monitorable,
             throw new Error("Could not create File object");
         }
     }
-    
+
     /**
      * Serialize this file, by just writing the URI.
-     * @param stream the stream to write to
+     * 
+     * @param stream
+     *                the stream to write to
      * @throws IOException
      */
     private void writeObject(java.io.ObjectOutputStream stream)
-    throws IOException {
+            throws IOException {
         stream.writeObject(toGATURI());
     }
 }
