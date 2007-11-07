@@ -1365,8 +1365,10 @@ public class SshFileAdaptor extends FileCpi {
         if (path.endsWith("/")) {
             parentPath = path.substring(0, path.lastIndexOf('/',
                     path.length() - 2));
+        } else if (path.lastIndexOf('/') >= 0) {
+                parentPath = path.substring(0, path.lastIndexOf('/'));
         } else {
-            parentPath = path.substring(0, path.lastIndexOf('/'));
+            return null;
         }
 
         if (parentPath.length() == 0) {
