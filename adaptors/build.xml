@@ -317,6 +317,7 @@
 		<!-- Copy external libraries to lib directory -->
 		<copy todir="${lib}">
 			<fileset dir="${external}">
+				<include name="*.jar"/>
 			</fileset>
 		</copy>
 		
