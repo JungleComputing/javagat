@@ -1387,7 +1387,9 @@ public class SshFileAdaptor extends FileCpi {
             throw new Error(
                     "SshFileAdaptor for local files: only copy to remote machine");
         }
-
+        if (getParent() == null) {
+            return null;
+        }
         String uriString = location.toString();
         String parentUri = uriString.split(":")[0] + ":" + getParent();
 
