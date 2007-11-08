@@ -70,7 +70,12 @@ abstract public class GT4FileAdaptor extends FileCpi {
             if (!location.isCompatible("file")) {
                 throw new AdaptorNotApplicableException(
                         "cannot handle this URI");
-            } 
+            }
+        } else if (prov.equals("gsiftp")) {
+            if (!location.isCompatible("gridftp")) {
+                throw new AdaptorNotApplicableException(
+                        "cannot handle this URI");
+            }
         }
         srcProvider = prov;
         try {

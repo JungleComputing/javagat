@@ -3,11 +3,9 @@
  */
 package org.gridlab.gat.io.cpi.streaming;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
 
 import org.gridlab.gat.GAT;
 import org.gridlab.gat.GATContext;
@@ -37,24 +35,22 @@ public class StreamingFileAdaptor extends FileCpi {
         try {
             FileInputStream in = GAT
                     .createFileInputStream(gatContext, location);
-            InputStreamReader reader = new InputStreamReader(in);
-            BufferedReader inBuffer = new BufferedReader(reader);
+            DataInputStream dataIn = new DataInputStream(in);
             File dstFile = GAT.createFile(gatContext, dest);
             FileOutputStream out = GAT.createFileOutputStream(gatContext,
                     dstFile);
-            OutputStreamWriter writer = new OutputStreamWriter(out);
-            BufferedWriter outBuffer = new BufferedWriter(writer);
+            DataOutputStream dataOut = new DataOutputStream(out);
+            byte[] buffer = new byte[1024];
             while (true) {
-                String line = inBuffer.readLine();
-                if (line == null) {
+                int len = dataIn.read(buffer);
+                if (len == -1) {
                     break;
                 }
-                outBuffer.write(line);
-                outBuffer.newLine();
+                dataOut.write(buffer, 0, len);
             }
-            in.close();
-            outBuffer.flush();
-            out.close();
+            dataIn.close();
+            dataOut.flush();
+            dataOut.close();
         } catch (Exception e) {
             throw new GATInvocationException("streaming copy", e);
         }
@@ -69,7 +65,9 @@ public class StreamingFileAdaptor extends FileCpi {
             try {
                 FileInputStream in = GAT.createFileInputStream(gatContext,
                         location);
-                return (in.read() != -1);
+                boolean result = (in.read() != -1);
+                in.close();
+                return result;
             } catch (GATObjectCreationException e) {
                 return false;
             } catch (IOException e) {
