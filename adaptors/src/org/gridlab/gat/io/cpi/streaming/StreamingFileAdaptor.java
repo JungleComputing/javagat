@@ -65,13 +65,17 @@ public class StreamingFileAdaptor extends FileCpi {
             try {
                 FileInputStream in = GAT.createFileInputStream(gatContext,
                         location);
-                boolean result = (in.read() != -1);
-                in.close();
-                return result;
+                int res = in.read();
+                try {
+                    in.close();
+                } catch (IOException e) {
+                    logger.info("closing failed: " + e);
+                }
+                return res != -1;
             } catch (GATObjectCreationException e) {
-                return false;
+                throw new GATInvocationException("exists failed" + e);
             } catch (IOException e) {
-                return false;
+                throw new GATInvocationException("exists failed" + e);
             }
         }
 
