@@ -1,17 +1,21 @@
 package org.gridlab.gat.io.cpi.globus;
 
 import java.util.List;
+import java.util.Vector;
 
 import org.globus.ftp.FTPClient;
+import org.globus.ftp.exception.ServerException;
 import org.gridlab.gat.AdaptorNotApplicableException;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.GATObjectCreationException;
+import org.gridlab.gat.InvalidUsernameOrPasswordException;
 import org.gridlab.gat.Preferences;
 import org.gridlab.gat.URI;
 import org.gridlab.gat.security.PasswordSecurityContext;
 import org.gridlab.gat.security.SecurityContext;
 import org.gridlab.gat.security.cpi.SecurityContextUtils;
+
 
 @SuppressWarnings("serial")
 public class FTPFileAdaptor extends GlobusFileAdaptor {
@@ -85,6 +89,13 @@ public class FTPFileAdaptor extends GlobusFileAdaptor {
 
             return client;
         } catch (Exception e) {
+            if (e instanceof ServerException) {
+                if (((ServerException) e).getCode() == ServerException.SERVER_REFUSED) {
+                    if (e.getMessage().startsWith("Server refused performing the request. Custom message: Bad password.")) {
+                        throw new GATInvocationException("ftp" , new InvalidUsernameOrPasswordException(e));
+                    }
+                }
+            }
             // ouch, both failed.
             throw new GATInvocationException("ftp", e);
         }
@@ -97,5 +108,41 @@ public class FTPFileAdaptor extends GlobusFileAdaptor {
         } catch (Exception e) {
             // Ignore
         }
+    }
+    
+    public boolean exists() throws GATInvocationException {
+        FTPClient client = null;
+
+        try {
+            String remotePath = getPath();
+
+            if (logger.isDebugEnabled()) {
+                logger.debug("getINFO: remotePath = " + remotePath
+                        + ", creating client to: " + toURI());
+            }
+
+            client = createClient(toURI());
+
+            if (logger.isDebugEnabled()) {
+                logger.debug("getINFO: client created");
+            }
+
+            setActiveOrPassive(client, preferences);
+
+            Vector<?> v = null;
+
+            if (isOldServer(preferences)) {
+                v = listNoMinusD(client, remotePath);
+            } else {
+                v = client.list(remotePath);
+            }
+            return !(v.size() == 0);
+        } catch (Exception e) {
+            throw new GATInvocationException("ftp", e);
+        } finally {
+            if (client != null)
+                destroyClient(client, toURI(), preferences);
+        }
+            
     }
 }
