@@ -5,7 +5,7 @@ import org.gridlab.gat.monitoring.Monitorable;
 
 /**
  * This interface is for internal GAT use only. It has to be public for
- * techinical reasons.
+ * technical reasons.
  *
  * All GAT users should use org.gridlab.gat.io.FileInputStream
  *

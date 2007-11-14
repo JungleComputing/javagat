@@ -10,9 +10,8 @@ import java.util.ArrayList;
  * @author rob
  */
 /**
- * This class defines an exception that can have multiple causes.
- * The causes can again be nested exceptions.
- * This exception is used by the GAT engine. If a
+ * This class defines an exception that can have multiple causes. The causes can
+ * again be nested exceptions. This exception is used by the GAT engine. If a
  * file.copy method is invoked, for instance, the gat engine will try all loaded
  * file adaptors until one succeeds. If none of the adaptors can copy the file,
  * a NestedException is thrown, containing the exceptions thrown by each
@@ -54,10 +53,10 @@ class NestedException extends Exception {
 
         String shortName = null;
         int pos = adaptor.lastIndexOf(".");
-        if(pos < 0) {
+        if (pos < 0) {
             shortName = adaptor;
         } else {
-            shortName = adaptor.substring(pos+1);
+            shortName = adaptor.substring(pos + 1);
         }
 
         throwables.add(t);
@@ -65,6 +64,10 @@ class NestedException extends Exception {
     }
 
     public String getMessage() {
+        return getMessage("");
+    }
+    
+    public String getMessage(String indent) {
         String res = "";
 
         if (throwables.size() == 0) {
@@ -72,58 +75,75 @@ class NestedException extends Exception {
         }
 
         if (throwables.size() > 1) {
-            res = "\n--- START OF NESTED EXCEPTION ---\n";
+            res = "\n" + indent +"--- START OF NESTED EXCEPTION ---\n";
         }
 
         for (int i = 0; i < throwables.size(); i++) {
             String msg = ((Throwable) throwables.get(i)).getMessage();
 
             if (msg == null) {
-                msg = ((Throwable) throwables.get(i)).toString();
+                if (throwables.get(i) instanceof NestedException) {
+                    msg = ((NestedException) throwables.get(i)).toString(indent + "    ");
+                } else {
+                    msg = ((Throwable) throwables.get(i)).toString();
+                }
             }
-
+            res += indent + "*** ";
             res += msg;
 
             if (throwables.size() > 1) {
                 res += "\n";
             }
         }
-
+        res.replaceAll("\n", "\n" + indent);
         if (throwables.size() > 1) {
-            res += "--- END OF NESTED EXCEPTION ---\n";
+            res += indent + "--- END OF NESTED EXCEPTION ---";
         }
 
         return res;
     }
 
     public String toString() {
+        return toString("");
+    }
+    
+    public String getSuperMessage() {
+        return super.getMessage();
+    }
+    
+    public String toString(String indent) {
         String res = "";
-
         if (throwables.size() == 0) {
-            return super.toString();
+            return super.getMessage();
         }
-
-        res = "\n--- START OF NESTED EXCEPTION ---\n";
+        res = "\n" + indent + "--- START OF NESTED EXCEPTION ---\n";
 
         for (int i = 0; i < throwables.size(); i++) {
             if (adaptorNames.get(i) != null) {
-                res += ("*** " + adaptorNames.get(i) + " failed: ");
+                if (adaptorNames.get(i).equals("")) {
+                    res += (indent + "*** ("
+                            + throwables.get(i).getClass().getSimpleName() + "): " + ((NestedException) throwables.get(i)).getSuperMessage());
+                } else {
+                    res += (indent + "*** " + adaptorNames.get(i) + " failed ("
+                        + throwables.get(i).getClass().getSimpleName() + "): ");
+                }
             }
 
-            String msg = ((Throwable) throwables.get(i)).getMessage();
-
-            if (msg == null) {
-                msg = ((Throwable) throwables.get(i)).toString();
+            String msg; 
+            if (throwables.get(i) instanceof NestedException) {
+                msg = ((NestedException) throwables.get(i)).toString(indent + "    ");
+            } else {
+                msg = throwables.get(i).getMessage();
             }
-
             res += msg;
             res += "\n";
         }
-
-        res += "--- END OF NESTED EXCEPTION ---\n";
+        res.replaceAll("\n", "\n" + indent);
+        res += indent + "--- END OF NESTED EXCEPTION ---";
 
         return res;
     }
+        
 
     public void printStackTrace() {
         if (throwables.size() == 0) {
@@ -144,7 +164,7 @@ class NestedException extends Exception {
 
         System.err.println("--- END OF NESTED EXCEPTION STACK TRACE ---");
     }
-    
+
     public Throwable[] getExceptions() {
         return (Throwable[]) throwables.toArray();
     }
@@ -152,7 +172,7 @@ class NestedException extends Exception {
     public String[] getAdaptors() {
         return (String[]) adaptorNames.toArray();
     }
-    
+
     public int getNrChildren() {
         return throwables.size();
     }

@@ -911,7 +911,7 @@ public class GAT {
         try {
             return createProxyMethod.invoke(null, new Object[] {cpiClassName, interfaceClass, gatContext, prefs, tmpParams});
         } catch (Exception e) {
-            throw new Error(e);
+            throw new GATObjectCreationException("", e);
         }
     }
 }

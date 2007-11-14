@@ -11,6 +11,7 @@ import org.gridlab.gat.CouldNotInitializeCredentialException;
 import org.gridlab.gat.CredentialExpiredException;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
+import org.gridlab.gat.InvalidUsernameOrPasswordException;
 import org.gridlab.gat.Preferences;
 import org.gridlab.gat.URI;
 import org.gridlab.gat.security.SecurityContext;
@@ -132,7 +133,7 @@ public class SecurityContextUtils {
 			Preferences preferences, String adaptorName, String dataObjectKey,
 			URI location, int defaultPort, SecurityContextCreator creator)
 			throws CouldNotInitializeCredentialException,
-			CredentialExpiredException {
+			CredentialExpiredException, InvalidUsernameOrPasswordException {
 		// get the list of securityContext that might be valid for this adaptor
 		List<SecurityContext> l = SecurityContextUtils
 				.getValidSecurityContexts(context, preferences, adaptorName,
@@ -193,7 +194,7 @@ public class SecurityContextUtils {
 	public static String getUser(GATContext context, Preferences preferences,
 			SecurityContext securityContext, URI location)
 			throws CouldNotInitializeCredentialException,
-			CredentialExpiredException {
+			CredentialExpiredException, InvalidUsernameOrPasswordException {
 
 		String user = location.getUserInfo();
 		if (user != null)

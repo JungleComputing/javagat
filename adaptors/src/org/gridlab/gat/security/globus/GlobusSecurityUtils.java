@@ -17,6 +17,7 @@ import org.gridlab.gat.CouldNotInitializeCredentialException;
 import org.gridlab.gat.CredentialExpiredException;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
+import org.gridlab.gat.InvalidUsernameOrPasswordException;
 import org.gridlab.gat.Preferences;
 import org.gridlab.gat.URI;
 import org.gridlab.gat.engine.util.Environment;
@@ -37,7 +38,7 @@ class GlobusContextCreator implements SecurityContextCreator {
 	public SecurityContext createDefaultSecurityContext(GATContext gatContext,
 			Preferences preferences, URI location)
 			throws CouldNotInitializeCredentialException,
-			CredentialExpiredException {
+			CredentialExpiredException, InvalidUsernameOrPasswordException {
 		// automatically try and insert the default credential if it was not
 		// there.
 		GSSCredential cred = GlobusSecurityUtils.getDefaultCredential(
@@ -50,7 +51,7 @@ class GlobusContextCreator implements SecurityContextCreator {
 	public Object createUserData(GATContext gatContext,
 			Preferences preferences, URI location, SecurityContext inContext)
 			throws CouldNotInitializeCredentialException,
-			CredentialExpiredException {
+			CredentialExpiredException, InvalidUsernameOrPasswordException {
 		// we need to try to create the credential given the securityContext
 		// if it fails, just try the next one on the list.
 		if (inContext instanceof CredentialSecurityContext) {
@@ -156,7 +157,7 @@ public class GlobusSecurityUtils {
 	public static GSSCredential getGlobusCredential(GATContext context,
 			Preferences preferences, String adaptorName, URI location,
 			int defaultPort) throws CouldNotInitializeCredentialException,
-			CredentialExpiredException {
+			CredentialExpiredException, InvalidUsernameOrPasswordException {
 		Object data = SecurityContextUtils.getSecurityUserData(context,
 				preferences, adaptorName, "globus", location, defaultPort,
 				new GlobusContextCreator());
@@ -242,8 +243,8 @@ public class GlobusSecurityUtils {
 		}
 
 		if (credential == null) {
-			throw new CouldNotInitializeCredentialException(
-					"can't get proxy credential (did you do a grid-proxy-init?)");
+			throw new CouldNotInitializeCredentialException("globus", new CouldNotInitializeCredentialException(
+					"can't get proxy credential (did you do a grid-proxy-init?)"));
 		}
 
 		return credential;

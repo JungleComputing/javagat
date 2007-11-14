@@ -43,7 +43,6 @@ public class CopyingFileInputStreamAdaptor extends FileInputStreamCpi {
 
         // See if we can read the file, and get the size.
         long size = 0;
-
         CommandlineSshFileAdaptor f = null;
         try {
             f = new CommandlineSshFileAdaptor(gatContext, preferences, location);

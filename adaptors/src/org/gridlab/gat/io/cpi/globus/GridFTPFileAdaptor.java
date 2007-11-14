@@ -12,6 +12,7 @@ import org.gridlab.gat.AdaptorNotApplicableException;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.GATObjectCreationException;
+import org.gridlab.gat.InvalidUsernameOrPasswordException;
 import org.gridlab.gat.Preferences;
 import org.gridlab.gat.URI;
 import org.gridlab.gat.security.globus.GlobusSecurityUtils;
@@ -120,7 +121,7 @@ public class GridFTPFileAdaptor extends GlobusFileAdaptor {
 	 *            the uri of the FTP host
 	 */
 	protected FTPClient createClient(GATContext gatContext,
-			Preferences preferences, URI hostURI) throws GATInvocationException {
+			Preferences preferences, URI hostURI) throws GATInvocationException, InvalidUsernameOrPasswordException {
 		return doWorkCreateClient(gatContext, preferences, hostURI);
 	}
 
@@ -149,7 +150,7 @@ public class GridFTPFileAdaptor extends GlobusFileAdaptor {
 	}
 
 	protected static GridFTPClient doWorkCreateClient(GATContext gatContext,
-			Preferences preferences, URI hostURI) throws GATInvocationException {
+			Preferences preferences, URI hostURI) throws GATInvocationException, InvalidUsernameOrPasswordException {
 		try {
 			GSSCredential credential = GlobusSecurityUtils.getGlobusCredential(
 					gatContext, preferences, "gridftp", hostURI,
