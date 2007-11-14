@@ -99,7 +99,7 @@ public class LocalFileAdaptor extends FileCpi {
 	// If the URI does not have a scheme part, just consider it a local
 	// file.
 	// The ctor of java.io.file does not accept this.
-	protected URI correctURI(URI in) {
+	protected static URI correctURI(URI in) {
 		if (in.getScheme() == null) {
 			try {
 				return new URI("file:///" + in.getPath());
