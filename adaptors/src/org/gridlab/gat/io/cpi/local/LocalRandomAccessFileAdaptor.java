@@ -35,10 +35,15 @@ public class LocalRandomAccessFileAdaptor extends RandomAccessFileCpi {
             throw new AdaptorNotApplicableException("cannot handle this URI");
         }
 
-        location = LocalFileAdaptor.correctURI(location);
+        java.io.File f;
+
+        if (location.getScheme() != null) {
+            f = new java.io.File(location.toJavaURI());
+        } else {
+            f = new java.io.File(location.getPath());
+        }
 
         try {
-            java.io.File f = new java.io.File(location.toJavaURI());
             rf = new RandomAccessFile(f, mode);
         } catch (FileNotFoundException e) {
             throw new GATObjectCreationException("local randomaccess file", e);
