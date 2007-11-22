@@ -13,7 +13,6 @@ import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.GATObjectCreationException;
 import org.gridlab.gat.Preferences;
 import org.gridlab.gat.URI;
-import org.gridlab.gat.monitoring.Metric;
 import org.gridlab.gat.monitoring.MetricListener;
 import org.gridlab.gat.resources.Job;
 import org.gridlab.gat.resources.JobDescription;
@@ -199,7 +198,7 @@ public class WSGT4ResourceBrokerAdaptor extends ResourceBrokerCpi {
 	}
 
 	public Job submitJob(JobDescription description, MetricListener listener,
-			Metric metric) throws GATInvocationException {
+			String metricDefinitionName) throws GATInvocationException {
 		if (getBooleanAttribute(description, "useRemoteSandbox", false)) {
 			if (logger.isDebugEnabled()) {
 				logger.debug("useRemoteSandbox, using wrapper application");
@@ -208,7 +207,7 @@ public class WSGT4ResourceBrokerAdaptor extends ResourceBrokerCpi {
 				submitter = new RemoteSandboxSubmitter(gatContext, preferences,
 						false);
 			}
-			return submitter.submitJob(description, listener, metric);
+			return submitter.submitJob(description);
 		}
 		String host = getHostname(description);
 		SoftwareDescription sd = description.getSoftwareDescription();
@@ -229,7 +228,6 @@ public class WSGT4ResourceBrokerAdaptor extends ResourceBrokerCpi {
 		GSSCredential cred = getCred(description);
 
 		return new WSGT4Job(gatContext, preferences, description, sandbox,
-				gjobDescription, getHostname(description), cred, listener,
-				metric);
+				gjobDescription, getHostname(description), cred);
 	}
 }

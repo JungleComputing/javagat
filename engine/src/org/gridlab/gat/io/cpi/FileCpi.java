@@ -233,7 +233,7 @@ public abstract class FileCpi implements FileInterface {
         return new java.io.File(path).getName();
     }
 
-    public String getParent() {
+    public String getParent() throws GATInvocationException {
         String path = getPath();
 
         int pos = path.lastIndexOf("/");
@@ -706,7 +706,7 @@ public abstract class FileCpi implements FileInterface {
 
             try {
                 File f = GAT.createFile(gatContext, preferences, toURI());
-                return f.isDirectory();
+                return f.getFileInterface().isDirectory();
             } catch (Exception e2) {
                 throw new GATInvocationException("fileCPI", e2);
             }

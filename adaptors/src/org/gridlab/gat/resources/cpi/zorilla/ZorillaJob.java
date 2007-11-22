@@ -22,7 +22,6 @@ import org.gridlab.gat.engine.GATEngine;
 import org.gridlab.gat.io.File;
 import org.gridlab.gat.monitoring.Metric;
 import org.gridlab.gat.monitoring.MetricDefinition;
-import org.gridlab.gat.monitoring.MetricListener;
 import org.gridlab.gat.monitoring.MetricValue;
 import org.gridlab.gat.resources.Job;
 import org.gridlab.gat.resources.JobDescription;
@@ -104,10 +103,10 @@ public class ZorillaJob extends JobCpi implements Runnable {
 	}
 
 	ZorillaJob(GATContext gatContext, Preferences preferences,
-			ZorillaResourceBrokerAdaptor broker, JobDescription description,
-			MetricListener listener, Metric metric)
+			ZorillaResourceBrokerAdaptor broker, JobDescription description
+			)
 			throws GATInvocationException {
-		super(gatContext, preferences, description, null, listener, metric);
+		super(gatContext, preferences, description, null);
 		this.broker = broker;
 		this.description = description;
 

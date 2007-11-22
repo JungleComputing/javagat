@@ -6,6 +6,7 @@ package org.gridlab.gat.io.cpi.ssh;
 import org.gridlab.gat.CouldNotInitializeCredentialException;
 import org.gridlab.gat.CredentialExpiredException;
 import org.gridlab.gat.GATContext;
+import org.gridlab.gat.InvalidUsernameOrPasswordException;
 import org.gridlab.gat.Preferences;
 import org.gridlab.gat.URI;
 import org.gridlab.gat.security.CertificateSecurityContext;
@@ -20,9 +21,10 @@ import org.gridlab.gat.security.cpi.SecurityContextUtils;
 class SshContextCreator implements SecurityContextCreator {
     public SecurityContext createDefaultSecurityContext(GATContext gatContext,
             Preferences preferences, URI location)
-            throws CouldNotInitializeCredentialException, CredentialExpiredException {
+            throws CouldNotInitializeCredentialException,
+            CredentialExpiredException, InvalidUsernameOrPasswordException {
         SshUserInfo cred = SSHSecurityUtils.getDefaultUserInfo(gatContext,
-            preferences, location);
+                preferences, location);
         CertificateSecurityContext c = new CertificateSecurityContext();
         c.putDataObject("ssh", cred);
 
@@ -31,26 +33,31 @@ class SshContextCreator implements SecurityContextCreator {
 
     public Object createUserData(GATContext gatContext,
             Preferences preferences, URI location, SecurityContext inContext)
-            throws CouldNotInitializeCredentialException, CredentialExpiredException {
+            throws CouldNotInitializeCredentialException,
+            CredentialExpiredException, InvalidUsernameOrPasswordException {
         SshUserInfo info;
 
         if (inContext instanceof CertificateSecurityContext) {
             CertificateSecurityContext c = (CertificateSecurityContext) inContext;
 
-            if (c.getKeyfile() == null) { // must be a password (is possible, default info may be stored like that)
+            if (c.getKeyfile() == null) { // must be a password (is possible,
+                // default info may be stored like
+                // that)
                 info = new SshUserInfo();
-                info.username = SecurityContextUtils.getUser(gatContext, preferences, inContext, location);
+                info.username = SecurityContextUtils.getUser(gatContext,
+                        preferences, inContext, location);
                 info.password = c.getPassword();
                 info.privateKeySlot = c.getPrivateKeySlot();
-                
+
                 return info;
             } else { // public / private key
                 if (!c.getKeyfile().refersToLocalHost()) {
                     System.err
-                        .println("WARNING: URI for key file does not refer to local host, skipping this security context");
+                            .println("WARNING: URI for key file does not refer to local host, skipping this security context");
                 } else {
                     info = new SshUserInfo();
-                    info.username = SecurityContextUtils.getUser(gatContext, preferences, inContext, location);
+                    info.username = SecurityContextUtils.getUser(gatContext,
+                            preferences, inContext, location);
                     info.privateKeyfile = c.getKeyfile().getPath();
                     info.privateKeySlot = c.getPrivateKeySlot();
 
@@ -60,7 +67,8 @@ class SshContextCreator implements SecurityContextCreator {
         } else if (inContext instanceof PasswordSecurityContext) {
             PasswordSecurityContext c = (PasswordSecurityContext) inContext;
             info = new SshUserInfo();
-            info.username = SecurityContextUtils.getUser(gatContext, preferences, inContext, location);
+            info.username = SecurityContextUtils.getUser(gatContext,
+                    preferences, inContext, location);
             info.password = c.getPassword();
 
             return info;
@@ -73,20 +81,23 @@ class SshContextCreator implements SecurityContextCreator {
 public class SSHSecurityUtils {
     public static SshUserInfo getSshCredential(GATContext context,
             Preferences preferences, String adaptorName, URI location,
-            int defaultPort) throws CouldNotInitializeCredentialException, CredentialExpiredException {
+            int defaultPort) throws CouldNotInitializeCredentialException,
+            CredentialExpiredException, InvalidUsernameOrPasswordException {
         Object data = SecurityContextUtils.getSecurityUserData(context,
-            preferences, adaptorName, "ssh", location, defaultPort,
-            new SshContextCreator());
+                preferences, adaptorName, "ssh", location, defaultPort,
+                new SshContextCreator());
 
         return (SshUserInfo) data;
     }
 
     protected static SshUserInfo getDefaultUserInfo(GATContext gatContext,
             Preferences preferences, URI location)
-            throws CouldNotInitializeCredentialException, CredentialExpiredException {
+            throws CouldNotInitializeCredentialException,
+            CredentialExpiredException, InvalidUsernameOrPasswordException {
         SshUserInfo info = new SshUserInfo();
         info.privateKeyfile = getDefaultPrivateKeyfile(gatContext, preferences);
-        info.username = SecurityContextUtils.getUser(gatContext, preferences, null, location);
+        info.username = SecurityContextUtils.getUser(gatContext, preferences,
+                null, location);
         return info;
     }
 

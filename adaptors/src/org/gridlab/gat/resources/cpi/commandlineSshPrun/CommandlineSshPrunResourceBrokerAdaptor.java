@@ -21,7 +21,6 @@ import org.gridlab.gat.io.FileInputStream;
 import org.gridlab.gat.io.FileOutputStream;
 import org.gridlab.gat.io.cpi.ssh.SSHSecurityUtils;
 import org.gridlab.gat.io.cpi.ssh.SshUserInfo;
-import org.gridlab.gat.monitoring.Metric;
 import org.gridlab.gat.monitoring.MetricListener;
 import org.gridlab.gat.resources.HardwareResource;
 import org.gridlab.gat.resources.Job;
@@ -128,7 +127,7 @@ public class CommandlineSshPrunResourceBrokerAdaptor extends ResourceBrokerCpi {
 	}
 
 	public Job submitJob(JobDescription description, MetricListener listener,
-			Metric metric) throws GATInvocationException {
+			String metricDefinitionName) throws GATInvocationException {
 		SoftwareDescription sd = description.getSoftwareDescription();
 
 		if (sd == null) {
@@ -226,7 +225,7 @@ public class CommandlineSshPrunResourceBrokerAdaptor extends ResourceBrokerCpi {
 		try {
 			p = Runtime.getRuntime().exec(command.toString());
 		} catch (IOException e) {
-			throw new CommandNotFoundException("commandlineSshPrun broker", e);
+			throw new CommandNotFoundException("CommandlineSshPrunResourceBrokerAdaptor", e);
 		}
 
 		org.gridlab.gat.io.File stdin = sd.getStdin();
@@ -284,7 +283,7 @@ public class CommandlineSshPrunResourceBrokerAdaptor extends ResourceBrokerCpi {
 		}
 
 		return new CommandlineSshPrunJob(gatContext, preferences, this,
-				description, p, sandbox, outForwarder, errForwarder, listener, metric);		
+				description, p, sandbox, outForwarder, errForwarder);		
 	}
 	
 	

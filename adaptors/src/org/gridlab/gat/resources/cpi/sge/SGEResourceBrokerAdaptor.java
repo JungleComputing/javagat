@@ -20,7 +20,6 @@ import org.gridlab.gat.GATObjectCreationException;
 import org.gridlab.gat.Preferences;
 import org.gridlab.gat.TimePeriod;
 import org.gridlab.gat.URI;
-import org.gridlab.gat.monitoring.Metric;
 import org.gridlab.gat.monitoring.MetricListener;
 import org.gridlab.gat.resources.HardwareResource;
 import org.gridlab.gat.resources.Job;
@@ -75,7 +74,7 @@ public class SGEResourceBrokerAdaptor extends ResourceBrokerCpi {
         throw new UnsupportedOperationException("Not implemented");
     }
     
-    public Job submitJob(JobDescription description, MetricListener listener, Metric metric)
+    public Job submitJob(JobDescription description, MetricListener listener, String metricDefinitionName)
             throws GATInvocationException {
         
        SoftwareDescription sd = description.getSoftwareDescription();  
@@ -119,7 +118,7 @@ public class SGEResourceBrokerAdaptor extends ResourceBrokerCpi {
         
             SGEsession.deleteJobTemplate(jt);
         
-            sgejob = new SGEJob(gatContext, preferences, this, description,SGEsession, id, sandbox, listener, metric);
+            sgejob = new SGEJob(gatContext, preferences, this, description,SGEsession, id, sandbox);
         
 
             

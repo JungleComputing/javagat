@@ -3,6 +3,12 @@
  */
 package org.gridlab.gat;
 
+/**
+ * Thrown when something goes wrong during the poststaging
+ * 
+ * @author rob
+ */
+
 @SuppressWarnings("serial")
 public class FilePoststageException extends GATInvocationException {
 

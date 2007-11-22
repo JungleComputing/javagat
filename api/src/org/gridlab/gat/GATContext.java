@@ -99,6 +99,11 @@ public class GATContext implements Cloneable {
      * Adds a single preference to the GATContext which will be used to choose
      * between adaptors if the constructor of an object is not called with a
      * Preferences object.
+     * 
+     * @param key
+     *          The key of the single preference
+     * @param value
+     *          The value that belongs to the key of the single preference
      */
     public void addPreference(String key, Object value) {
         preferences.put(key, value);

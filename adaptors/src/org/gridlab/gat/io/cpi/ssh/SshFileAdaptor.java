@@ -19,10 +19,12 @@ import java.util.Hashtable;
 import java.util.List;
 
 import org.apache.log4j.Logger;
+import org.gridlab.gat.AdaptorNotApplicableException;
 import org.gridlab.gat.GAT;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.GATObjectCreationException;
+import org.gridlab.gat.InvalidUsernameOrPasswordException;
 import org.gridlab.gat.Preferences;
 import org.gridlab.gat.URI;
 import org.gridlab.gat.io.cpi.FileCpi;
@@ -38,7 +40,7 @@ public class SshFileAdaptor extends FileCpi {
 
     protected static Logger logger = Logger.getLogger(SshFileAdaptor.class);
 
-    private static final int TIMEOUT = 2000; // millis
+    private static final int TIMEOUT = 5000; // millis
 
     private static final int XOS = 1;
 
@@ -82,13 +84,14 @@ public class SshFileAdaptor extends FileCpi {
      * @param gatContext
      * @param preferences
      * @param location
+     * @throws GATInvocationException
      */
     public SshFileAdaptor(GATContext gatContext, Preferences preferences,
-            URI location) throws GATObjectCreationException {
+            URI location) throws GATObjectCreationException,
+            GATInvocationException {
         super(gatContext, preferences, location);
-
         if (!location.isCompatible("ssh")) {
-            throw new GATObjectCreationException("cannot handle this URI");
+            throw new AdaptorNotApplicableException("cannot handle this URI");
         }
 
         if (location.refersToLocalHost()) {
@@ -117,7 +120,8 @@ public class SshFileAdaptor extends FileCpi {
         }
     }
 
-    protected void prepareSession(URI loc) throws GATObjectCreationException {
+    protected void prepareSession(URI loc) throws GATObjectCreationException,
+            GATInvocationException {
         String host = loc.resolveHost();
 
         /* it will be changed for the Security Context */
@@ -180,12 +184,10 @@ public class SshFileAdaptor extends FileCpi {
                                 + " with username: " + sui.username
                                 + "; host: " + host);
             }
-
             session = jsch.getSession(sui.username, host, port);
             session.setUserInfo(sui);
-        } catch (JSchException jsche) {
-            throw new GATObjectCreationException(
-                    "internal error in SshFileAdaptor: " + jsche, jsche);
+        } catch (Exception e) {
+            doException(e);
         }
     }
 
@@ -198,12 +200,12 @@ public class SshFileAdaptor extends FileCpi {
         }
     }
 
-    private void waitForEOF() {
+    private void waitForEOF() throws GATInvocationException {
         long start = System.currentTimeMillis();
         while (true) {
             long time = System.currentTimeMillis() - start;
             if (time > TIMEOUT) {
-                throw new Error("timeout waiting for EOF");
+                throw new GATInvocationException("timeout waiting for EOF");
             }
             if (channel.isEOF()) {
                 return;
@@ -216,7 +218,7 @@ public class SshFileAdaptor extends FileCpi {
         }
     }
 
-    protected int determineRemoteOS() {
+    protected int determineRemoteOS() throws InvalidUsernameOrPasswordException {
         try {
             Object[] streams = execCommand("ls");
             if (((InputStream) streams[ERR]).available() != 0) {
@@ -241,6 +243,11 @@ public class SshFileAdaptor extends FileCpi {
             return XOS;
         } catch (Exception e) {
             cleanSession(session, channel);
+            if (e instanceof JSchException) {
+                if (e.getMessage().equals("Auth fail")) {
+                    throw new InvalidUsernameOrPasswordException(e);
+                }
+            }
             if (logger.isDebugEnabled()) {
                 logger
                         .debug("SshFileAdaptor: could not determine remote OS for "
@@ -252,12 +259,12 @@ public class SshFileAdaptor extends FileCpi {
     }
 
     // Make life a bit easier for the programmer:
-    protected URI correctURI(URI in) {
+    protected URI correctURI(URI in) throws GATInvocationException {
         if (in.getScheme() == null) {
             try {
                 return new URI("ssh:" + in.toString());
             } catch (URISyntaxException e) {
-                throw new Error("internal error in SshFile: " + e);
+                throw new GATInvocationException("ssh", e);
             }
         }
 
@@ -285,10 +292,12 @@ public class SshFileAdaptor extends FileCpi {
         if (isLocalFile) {
             if (loc.refersToLocalHost()) {
                 throw new GATInvocationException(
-                        "SshFileAdaptor:the source file is local ("
-                                + getPath()
-                                + "), then the destination file must be remote, path = "
-                                + loc.getPath());
+                        "ssh",
+                        new Exception(
+                                "SshFileAdaptor:the source file is local ("
+                                        + getPath()
+                                        + "), then the destination file must be remote, path = "
+                                        + loc.getPath()));
             }
 
             if (!localFile.exists()) {
@@ -348,15 +357,15 @@ public class SshFileAdaptor extends FileCpi {
             if (destUserName.equals(sui.username)) {
                 if (loc.getPath().equals(location.getPath())) {
                     if (logger.isDebugEnabled()) {
-                        System.err
-                                .println("remote copy, source is the same file as dest.");
+                        logger
+                                .debug("remote copy, source is the same file as dest.");
                     }
 
                     return;
                 } else {
                     if (logger.isDebugEnabled()) {
-                        System.err
-                                .println("remote copy, source is on the same host and of same user as dest.");
+                        logger
+                                .debug("remote copy, source is on the same host and of same user as dest.");
                     }
 
                     /*
@@ -567,9 +576,7 @@ public class SshFileAdaptor extends FileCpi {
                         ((OutputStream) streams[OUT]));
             } catch (IOException ioe) {
                 cleanSession(session, channel);
-                throw new GATInvocationException(
-                        "SshFileAdaptor:doSingleUpload " + localFile.getPath()
-                                + " to " + loc + " failed; reason: " + ioe);
+                doException(ioe);
             }
 
             cleanSession(session, channel);
@@ -577,9 +584,7 @@ public class SshFileAdaptor extends FileCpi {
             return;
         } catch (Exception e) {
             cleanSession(session, channel);
-            throw new GATInvocationException("SshFileAdaptor: internal error: "
-                    + e + " in doSingleUpload " + localFile.getPath() + " to "
-                    + loc);
+            doException(e);
         }
     }
 
@@ -643,9 +648,7 @@ public class SshFileAdaptor extends FileCpi {
                         ((OutputStream) streams[OUT]));
             } catch (IOException ioe) {
                 cleanSession(session, channel);
-                throw new GATInvocationException(
-                        "SshFileAdaptor:doMultipleUpload " + getPath() + " to "
-                                + loc + " failed; reason: " + ioe);
+                doException(ioe);
             }
 
             cleanSession(session, channel);
@@ -653,9 +656,7 @@ public class SshFileAdaptor extends FileCpi {
             return;
         } catch (Exception e) {
             cleanSession(session, channel);
-            throw new GATInvocationException("SshFileAdaptor: internal error: "
-                    + e + " in doMultipleUpload " + localFile.getPath()
-                    + " to " + loc);
+            doException(e);
         }
     }
 
@@ -678,10 +679,7 @@ public class SshFileAdaptor extends FileCpi {
                 logger.debug("SshFileAdaptor: for location " + location
                         + " throws error " + e + "\n" + writer.toString());
             }
-
-            throw new GATInvocationException("SshFileAdaptor: internal error: "
-                    + e + " in scpFromLocalToRemote " + localFile.getPath()
-                    + " to " + loc);
+            doException(e);
         }
     }
 
@@ -716,9 +714,8 @@ public class SshFileAdaptor extends FileCpi {
             fos.close();
 
             if (logger.isDebugEnabled()) {
-                System.err
-                        .println("scpFromRemoteToLocal: finished writing file"
-                                + localFile.getPath());
+                logger.debug("scpFromRemoteToLocal: finished writing file"
+                        + localFile.getPath());
             }
         }
     }
@@ -795,8 +792,8 @@ public class SshFileAdaptor extends FileCpi {
 
             if (serverResponse.charAt(0) == 'C') {
                 if (logger.isDebugEnabled()) {
-                    System.err
-                            .println("scpFromRemoteToLocal: remote response is file");
+                    logger
+                            .debug("scpFromRemoteToLocal: remote response is file");
                 }
 
                 parseAndFetchFile(serverResponse, startFile, out, in);
@@ -804,8 +801,8 @@ public class SshFileAdaptor extends FileCpi {
                 startFile = parseAndCreateDirectory(serverResponse, startFile);
 
                 if (logger.isDebugEnabled()) {
-                    System.err
-                            .println("scpFromRemoteToLocal: remote response is dir");
+                    logger
+                            .debug("scpFromRemoteToLocal: remote response is dir");
                 }
 
                 if (startFile != null) {
@@ -818,8 +815,7 @@ public class SshFileAdaptor extends FileCpi {
                 startFile = startFile.getParentFile();
 
                 if (logger.isDebugEnabled()) {
-                    System.err
-                            .println("scpFromRemoteToLocal: remote response is E");
+                    logger.debug("scpFromRemoteToLocal: remote response is E");
                 }
 
                 sendAck(out);
@@ -829,8 +825,8 @@ public class SshFileAdaptor extends FileCpi {
                 throw new IOException(serverResponse.substring(1));
             } else {
                 if (logger.isDebugEnabled()) {
-                    System.err
-                            .println("remoteCpProtocol: read byte is none of the expected values");
+                    logger
+                            .debug("remoteCpProtocol: read byte is none of the expected values");
                 }
             }
         }
@@ -857,9 +853,7 @@ public class SshFileAdaptor extends FileCpi {
             }
 
             cleanSession(session, channel);
-            throw new GATInvocationException("SshFileAdaptor: internal error: "
-                    + e + " in scpFromRemoteToLocal " + getPath() + " to "
-                    + loc);
+            doException(e);
         }
     }
 
@@ -888,9 +882,7 @@ public class SshFileAdaptor extends FileCpi {
                 logger.debug("SshFileAdaptor: for location " + location
                         + " throws error " + e + "\n" + writer.toString());
             }
-
-            throw new GATInvocationException("SshFileAdaptor: internal error: "
-                    + " in scpFromRemoteToLocal " + getPath() + " to " + loc, e);
+            doException(e);
         }
     }
 
@@ -910,7 +902,9 @@ public class SshFileAdaptor extends FileCpi {
                 if (((InputStream) streams[ERR]).available() != 0) {
                     cleanSession(session, channel);
                     throw new GATInvocationException(
-                            "cannot copy remote file to another file on the same machine");
+                            "ssh",
+                            new Exception(
+                                    "cannot copy remote file to another file on the same machine"));
                 }
                 cleanSession(session, channel);
                 return;
@@ -925,7 +919,9 @@ public class SshFileAdaptor extends FileCpi {
                 if (((InputStream) streams[ERR]).available() != 0) {
                     cleanSession(session, channel);
                     throw new GATInvocationException(
-                            "cannot copy remote file to another file on the same machine");
+                            "ssh",
+                            new Exception(
+                                    "cannot copy remote file to another file on the same machine"));
                 }
                 cleanSession(session, channel);
                 return;
@@ -941,8 +937,7 @@ public class SshFileAdaptor extends FileCpi {
             }
 
             cleanSession(session, channel);
-            throw new GATInvocationException("SshFileAdaptor: internal error: "
-                    + e + " in copyOnSameHost " + getPath() + " to " + path);
+            doException(e);
         }
     }
 
@@ -982,7 +977,7 @@ public class SshFileAdaptor extends FileCpi {
         return b;
     }
 
-    private boolean canReadOrWrite(char flag) {
+    private boolean canReadOrWrite(char flag) throws GATInvocationException {
         if (isLocalFile) {
             throw new Error(
                     "SshFileAdaptor for local files: only copy to remote machine");
@@ -1000,11 +995,12 @@ public class SshFileAdaptor extends FileCpi {
                 cleanSession(session, channel);
                 return false;
             } else {
-                throw new Error("Unknown remote OS type");
+                throw new GATInvocationException("Unknown remote OS type");
             }
         } catch (Exception e) {
             cleanSession(session, channel);
-            throw new Error("internal error in SshFile: " + e);
+            doException(e);
+            return false; // never executed
         }
     }
 
@@ -1013,7 +1009,7 @@ public class SshFileAdaptor extends FileCpi {
      * 
      * @see org.gridlab.gat.io.File#canRead()
      */
-    public boolean canRead() {
+    public boolean canRead() throws GATInvocationException {
         return canReadOrWrite('r');
     }
 
@@ -1022,7 +1018,7 @@ public class SshFileAdaptor extends FileCpi {
      * 
      * @see org.gridlab.gat.io.File#canWrite()
      */
-    public boolean canWrite() {
+    public boolean canWrite() throws GATInvocationException {
         return canReadOrWrite('w');
     }
 
@@ -1050,10 +1046,7 @@ public class SshFileAdaptor extends FileCpi {
      * @see org.gridlab.gat.io.File#createNewFile()
      */
     public boolean createNewFile() throws GATInvocationException {
-        if (isLocalFile) {
-            throw new Error(
-                    "SshFileAdaptor for local files: only copy to remote machine");
-        }
+        isLocalFile();
 
         try {
             if (getOsType() == XOS) {
@@ -1070,11 +1063,12 @@ public class SshFileAdaptor extends FileCpi {
                 cleanSession(session, channel);
                 return result;
             } else {
-                throw new Error("Unknown remote OS type");
+                throw new GATInvocationException("Unknown remote OS type");
             }
         } catch (Exception e) {
             cleanSession(session, channel);
-            throw new GATInvocationException("ssh file", e);
+            doException(e);
+            return false; // never executed
         }
     }
 
@@ -1083,11 +1077,8 @@ public class SshFileAdaptor extends FileCpi {
      * 
      * @see org.gridlab.gat.io.File#delete()
      */
-    public boolean delete() {
-        if (isLocalFile) {
-            throw new Error("SshFileAdaptor cannot delete local files");
-        }
-
+    public boolean delete() throws GATInvocationException {
+        isLocalFile();
         try {
             if (isDir == UNKNOWN) {
                 isDirectory();
@@ -1115,11 +1106,12 @@ public class SshFileAdaptor extends FileCpi {
                 cleanSession(session, channel);
                 return itExists == TRUE;
             } else {
-                throw new Error("Unknown remote OS type");
+                throw new GATInvocationException("Unknown remote OS type");
             }
         } catch (Exception e) {
             cleanSession(session, channel);
-            throw new Error("internal error in SshFile: " + e);
+            doException(e);
+            return false; // never executed
         }
     }
 
@@ -1144,7 +1136,7 @@ public class SshFileAdaptor extends FileCpi {
         return result;
     }
 
-    private boolean deleteByForceRecursively() {
+    private boolean deleteByForceRecursively() throws GATInvocationException {
         if (localFile != null) {
             return deleteLocalRecursively(localFile);
         }
@@ -1190,10 +1182,11 @@ public class SshFileAdaptor extends FileCpi {
                 return true;
             }
             cleanSession(session, channel);
-            throw new Error("Unknown remote OS type");
+            throw new GATInvocationException("Unknown remote OS type");
         } catch (Exception e) {
             cleanSession(session, channel);
-            throw new Error("internal error in SshFile: " + e);
+            doException(e);
+            return false; // never executed
         }
     }
 
@@ -1203,10 +1196,7 @@ public class SshFileAdaptor extends FileCpi {
      * @see org.gridlab.gat.io.File#exists()
      */
     public boolean exists() throws GATInvocationException {
-        if (isLocalFile) {
-            throw new GATInvocationException(
-                    "SshFileAdaptor for local files: only copy to remote machine");
-        }
+        isLocalFile();
         Object[] streams = null;
         try {
             if (getOsType() == XOS) {
@@ -1224,7 +1214,7 @@ public class SshFileAdaptor extends FileCpi {
                         + " throws error " + e + "\n" + writer.toString());
             }
             cleanSession(session, channel);
-            throw new GATInvocationException("internal error in SshFile: " + e);
+            doException(e);
         }
         try {
             itExists = (((InputStream) streams[ERR]).available() != 0) ? FALSE
@@ -1237,7 +1227,7 @@ public class SshFileAdaptor extends FileCpi {
                         + " throws error " + e + "\n" + writer.toString());
             }
             cleanSession(session, channel);
-            throw new GATInvocationException("internal error in SshFile: " + e);
+            doException(e);
         }
         if (logger.isDebugEnabled()) {
             logger.debug("SshFileAdaptor: for location " + location
@@ -1258,10 +1248,7 @@ public class SshFileAdaptor extends FileCpi {
      */
     public org.gridlab.gat.io.File getAbsoluteFile()
             throws GATInvocationException {
-        if (isLocalFile) {
-            throw new GATInvocationException(
-                    "SshFileAdaptor for local files: only copy to remote machine");
-        }
+        isLocalFile();
 
         // String uriString = location.toString();
         String absUri = "//" + sui.username + "@" + location.resolveHost()
@@ -1270,8 +1257,8 @@ public class SshFileAdaptor extends FileCpi {
         try {
             return GAT.createFile(gatContext, preferences, new URI(absUri));
         } catch (Exception e) {
-            throw new GATInvocationException(
-                    "SshFileAdaptor: getAbsoluteFile: " + e);
+            doException(e);
+            return null; // never executed
         }
     }
 
@@ -1281,11 +1268,7 @@ public class SshFileAdaptor extends FileCpi {
      * @see org.gridlab.gat.io.File#getAbsolutePath()
      */
     public String getAbsolutePath() throws GATInvocationException {
-        if (isLocalFile) {
-            throw new GATInvocationException(
-                    "SshFileAdaptor for local files: only copy to remote machine");
-        }
-
+        isLocalFile();
         try {
             if (getOsType() == XOS) {
                 if (getPath().startsWith("/")) {
@@ -1315,37 +1298,16 @@ public class SshFileAdaptor extends FileCpi {
             }
         } catch (Exception e) {
             cleanSession(session, channel);
-            throw new GATInvocationException("internal error in SshFile: " + e);
+            doException(e);
+            return null; // never executed
         }
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.gridlab.gat.io.File#getCanonicalFile()
-     */
-    public org.gridlab.gat.io.File getCanonicalFile()
-            throws GATInvocationException {
+    private void isLocalFile() throws GATInvocationException {
         if (isLocalFile) {
-            throw new Error(
-                    "SshFileAdaptor for local files: only copy to remote machine");
+            throw new GATInvocationException(
+                    "SshFileAdaptor for local files: only for remote machine");
         }
-
-        throw new Error("Not implemented");
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.gridlab.gat.io.File#getCanonicalPath()
-     */
-    public String getCanonicalPath() throws GATInvocationException {
-        if (isLocalFile) {
-            throw new Error(
-                    "SshFileAdaptor for local files: only copy to remote machine");
-        }
-
-        throw new Error("Not implemented");
     }
 
     /*
@@ -1353,11 +1315,8 @@ public class SshFileAdaptor extends FileCpi {
      * 
      * @see org.gridlab.gat.io.File#getParent()
      */
-    public String getParent() {
-        if (isLocalFile) {
-            throw new Error(
-                    "SshFileAdaptor for local files: only copy to remote machine");
-        }
+    public String getParent() throws GATInvocationException {
+        isLocalFile();
 
         String path = getPath();
         String parentPath;
@@ -1366,7 +1325,7 @@ public class SshFileAdaptor extends FileCpi {
             parentPath = path.substring(0, path.lastIndexOf('/',
                     path.length() - 2));
         } else if (path.lastIndexOf('/') >= 0) {
-                parentPath = path.substring(0, path.lastIndexOf('/'));
+            parentPath = path.substring(0, path.lastIndexOf('/'));
         } else {
             return null;
         }
@@ -1385,10 +1344,8 @@ public class SshFileAdaptor extends FileCpi {
      */
     public org.gridlab.gat.io.File getParentFile()
             throws GATInvocationException {
-        if (isLocalFile) {
-            throw new Error(
-                    "SshFileAdaptor for local files: only copy to remote machine");
-        }
+        isLocalFile();
+
         if (getParent() == null) {
             return null;
         }
@@ -1398,8 +1355,7 @@ public class SshFileAdaptor extends FileCpi {
         try {
             return GAT.createFile(gatContext, preferences, new URI(parentUri));
         } catch (Exception e) {
-            throw new GATInvocationException(
-                    "SshFileAdaptor: getAbsoluteFile: " + e);
+            throw new GATInvocationException("getAbsoluteFile: " + e);
         }
     }
 
@@ -1408,11 +1364,8 @@ public class SshFileAdaptor extends FileCpi {
      * 
      * @see org.gridlab.gat.io.File#isDirectory()
      */
-    public boolean isDirectory() {
-        if (isLocalFile) {
-            throw new Error(
-                    "SshFileAdaptor for local files: only copy to remote machine");
-        }
+    public boolean isDirectory() throws GATInvocationException {
+        isLocalFile();
 
         try {
             if (getOsType() == XOS) {
@@ -1433,7 +1386,18 @@ public class SshFileAdaptor extends FileCpi {
             }
         } catch (Exception e) {
             cleanSession(session, channel);
-            throw new Error("internal error in SshFile: " + e);
+            doException(e);
+            return false; // will not happen doException throws exception
+        }
+    }
+
+    private void doException(Exception e) throws GATInvocationException {
+        if (e instanceof JSchException) {
+            if (e.getMessage().equals("Auth fail")) {
+                throw new InvalidUsernameOrPasswordException(e);
+            }
+        } else {
+            throw new GATInvocationException("SshFileAdaptor", e);
         }
     }
 
@@ -1442,13 +1406,9 @@ public class SshFileAdaptor extends FileCpi {
      * 
      * @see org.gridlab.gat.io.File#isFile()
      */
-    public boolean isFile() {
+    public boolean isFile() throws GATInvocationException {
         /* at least for now */
-        if (isLocalFile) {
-            throw new Error(
-                    "SshFileAdaptor for local files: only copy to remote machine");
-        }
-
+        isLocalFile();
         return (!isDirectory());
     }
 
@@ -1457,12 +1417,8 @@ public class SshFileAdaptor extends FileCpi {
      * 
      * @see org.gridlab.gat.io.File#isHidden()
      */
-    public boolean isHidden() {
-        if (isLocalFile) {
-            throw new Error(
-                    "SshFileAdaptor for local files: only copy to remote machine");
-        }
-
+    public boolean isHidden() throws GATInvocationException {
+        isLocalFile();
         switch (getOsType()) {
         /* assume name of the file is not . or .. */
         case XOS:
@@ -1474,19 +1430,10 @@ public class SshFileAdaptor extends FileCpi {
             }
 
         case WOS:
-            throw new Error("Not implemented");
+            throw new GATInvocationException("Not implemented");
         }
 
-        throw new Error("Unknown remote OS type");
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.gridlab.gat.io.File#lastModified()
-     */
-    public long lastModified() throws GATInvocationException {
-        throw new Error("Not implemented");
+        throw new GATInvocationException("Unknown remote OS type");
     }
 
     /*
@@ -1495,10 +1442,7 @@ public class SshFileAdaptor extends FileCpi {
      * @see org.gridlab.gat.io.File#length()
      */
     public long length() throws GATInvocationException {
-        if (isLocalFile) {
-            throw new Error(
-                    "SshFileAdaptor for local files: only copy to remote machine");
-        }
+        isLocalFile();
         if (itExists == UNKNOWN)
             exists();
         if (itExists == FALSE)
@@ -1513,12 +1457,13 @@ public class SshFileAdaptor extends FileCpi {
             }
         } catch (Exception e) {
             cleanSession(session, channel);
-            throw new Error("internal error in SshFile: " + e);
+            doException(e);
+            return 0L; // will not happen doException throws exception
         }
     }
 
     private long executeLengthCommand(String command) throws JSchException,
-            IOException {
+            IOException, GATInvocationException {
         Object[] streams = execCommand(command);
         if (((InputStream) streams[ERR]).available() != 0) {
             cleanSession(session, channel);
@@ -1540,10 +1485,7 @@ public class SshFileAdaptor extends FileCpi {
      * @see org.gridlab.gat.io.File#list()
      */
     public String[] list() throws GATInvocationException {
-        if (isLocalFile) {
-            throw new Error(
-                    "SshFileAdaptor for local files: only copy to remote machine");
-        }
+        isLocalFile();
         if (isDir == UNKNOWN)
             isDirectory();
         if (isDir == FALSE)
@@ -1558,12 +1500,13 @@ public class SshFileAdaptor extends FileCpi {
             }
         } catch (Exception e) {
             cleanSession(session, channel);
-            throw new Error("internal error in SshFile: " + e);
+            doException(e);
+            return null; // will not happen doException throws exception;
         }
     }
 
     private String[] executeListCommand(String command) throws JSchException,
-            IOException {
+            IOException, GATInvocationException {
         Object[] streams = execCommand(command);
         if (((InputStream) streams[ERR]).available() != 0) {
             cleanSession(session, channel);
@@ -1587,10 +1530,7 @@ public class SshFileAdaptor extends FileCpi {
      * @see org.gridlab.gat.io.File#list(java.io.FilenameFilter)
      */
     public String[] list(FilenameFilter filter) throws GATInvocationException {
-        if (isLocalFile) {
-            throw new Error(
-                    "SshFileAdaptor for local files: only copy to remote machine");
-        }
+        isLocalFile();
 
         if (filter == null) {
             return list();
@@ -1615,11 +1555,7 @@ public class SshFileAdaptor extends FileCpi {
      * @see org.gridlab.gat.io.File#listFiles()
      */
     public org.gridlab.gat.io.File[] listFiles() throws GATInvocationException {
-        if (isLocalFile) {
-            throw new Error(
-                    "SshFileAdaptor for local files: only copy to remote machine");
-        }
-
+        isLocalFile();
         String[] r = list();
         org.gridlab.gat.io.File[] res = new org.gridlab.gat.io.File[r.length];
         String uri = location.toString();
@@ -1633,7 +1569,7 @@ public class SshFileAdaptor extends FileCpi {
                 res[i] = GAT.createFile(gatContext, preferences, new URI(uri
                         + r[i]));
             } catch (Exception e) {
-                throw new GATInvocationException("default file", e);
+                doException(e);
             }
         }
 
@@ -1647,11 +1583,7 @@ public class SshFileAdaptor extends FileCpi {
      */
     public org.gridlab.gat.io.File[] listFiles(FileFilter arg0)
             throws GATInvocationException {
-        if (isLocalFile) {
-            throw new Error(
-                    "SshFileAdaptor for local files: only copy to remote machine");
-        }
-
+        isLocalFile();
         String[] r = list();
         org.gridlab.gat.io.File[] res = new org.gridlab.gat.io.File[r.length];
         String dir = getPath();
@@ -1669,7 +1601,7 @@ public class SshFileAdaptor extends FileCpi {
                             uri + r[i]));
                 }
             } catch (Exception e) {
-                throw new GATInvocationException("default file", e);
+                doException(e);
             }
         }
 
@@ -1683,11 +1615,7 @@ public class SshFileAdaptor extends FileCpi {
      */
     public org.gridlab.gat.io.File[] listFiles(FilenameFilter arg0)
             throws GATInvocationException {
-        if (isLocalFile) {
-            throw new Error(
-                    "SshFileAdaptor for local files: only copy to remote machine");
-        }
-
+        isLocalFile();
         String[] r = list(arg0);
         org.gridlab.gat.io.File[] res = new org.gridlab.gat.io.File[r.length];
         String uri = location.toString();
@@ -1701,7 +1629,7 @@ public class SshFileAdaptor extends FileCpi {
                 res[i] = GAT.createFile(gatContext, preferences, new URI(uri
                         + r[i]));
             } catch (Exception e) {
-                throw new GATInvocationException("default file", e);
+                doException(e);
             }
         }
 
@@ -1714,11 +1642,7 @@ public class SshFileAdaptor extends FileCpi {
      * @see org.gridlab.gat.io.File#mkdir()
      */
     public boolean mkdir() throws GATInvocationException {
-        if (isLocalFile) {
-            throw new Error(
-                    "SshFileAdaptor for local files: only copy to remote machine");
-        }
-
+        isLocalFile();
         try {
             if (getOsType() == XOS) {
                 Object[] streams = execCommand("mkdir " + getPath());
@@ -1732,7 +1656,8 @@ public class SshFileAdaptor extends FileCpi {
             }
         } catch (Exception e) {
             cleanSession(session, channel);
-            throw new Error("internal error in SshFile: " + e);
+            doException(e);
+            return false; // will not happen doException throws exception
         }
     }
 
@@ -1741,11 +1666,8 @@ public class SshFileAdaptor extends FileCpi {
      * 
      * @see org.gridlab.gat.io.File#mkdirs()
      */
-    public boolean mkdirs() {
-        if (isLocalFile) {
-            throw new Error(
-                    "SshFileAdaptor for local files: only copy to remote machine");
-        }
+    public boolean mkdirs() throws GATInvocationException {
+        isLocalFile();
 
         try {
             if (getOsType() == XOS) {
@@ -1765,7 +1687,8 @@ public class SshFileAdaptor extends FileCpi {
             }
         } catch (Exception e) {
             cleanSession(session, channel);
-            throw new Error("internal error in SshFile: " + e);
+            doException(e);
+            return false; // will not happen doException throws exception
         }
     }
 
@@ -1791,10 +1714,7 @@ public class SshFileAdaptor extends FileCpi {
         try {
             updateLocation(destination);
         } catch (GATObjectCreationException e) {
-            throw new GATInvocationException(
-                    "internal error in SshFileAdaptor when trying to rename file "
-                            + toURI() + " to " + destination + "; error is "
-                            + e);
+            throw new GATInvocationException("ssh", e);
         }
 
         return;
@@ -1802,7 +1722,6 @@ public class SshFileAdaptor extends FileCpi {
 
     public void renameTo(URI destination) throws GATInvocationException {
         move(destination);
-
         return;
     }
 
@@ -1824,16 +1743,14 @@ public class SshFileAdaptor extends FileCpi {
         try {
             updateLocation(destination);
         } catch (GATObjectCreationException e) {
-            throw new GATInvocationException(
-                    "internal error in SshFileAdaptor when trying to rename file "
-                            + location + " to " + destination + "; error is "
-                            + e);
+            throw new GATInvocationException("ssh", e);
         }
 
         return true;
     }
 
-    private void updateLocation(URI dest) throws GATObjectCreationException {
+    private void updateLocation(URI dest) throws GATObjectCreationException,
+            GATInvocationException {
         if (isLocalFile) {
             isLocalFile = false;
             localFile = null;
@@ -1868,11 +1785,9 @@ public class SshFileAdaptor extends FileCpi {
      * 
      * @see org.gridlab.gat.io.File#setLastModified(long)
      */
-    public boolean setLastModified(long lastModified) {
-        if (isLocalFile) {
-            throw new Error(
-                    "SshFileAdaptor for local files: only copy to remote machine");
-        }
+    public boolean setLastModified(long lastModified)
+            throws GATInvocationException {
+        isLocalFile();
 
         try {
             if (getOsType() == XOS) {
@@ -1888,7 +1803,8 @@ public class SshFileAdaptor extends FileCpi {
             }
         } catch (Exception e) {
             cleanSession(session, channel);
-            throw new Error("internal error in SshFile: " + e);
+            doException(e);
+            return false; // will not happen doException throws exception
         }
     }
 
@@ -1904,12 +1820,8 @@ public class SshFileAdaptor extends FileCpi {
      * 
      * @see org.gridlab.gat.io.File#setReadOnly()
      */
-    public boolean setReadOnly() {
-        if (isLocalFile) {
-            throw new Error(
-                    "SshFileAdaptor for local files: only copy to remote machine");
-        }
-
+    public boolean setReadOnly() throws GATInvocationException {
+        isLocalFile();
         try {
             if (getOsType() == XOS) {
                 Object[] streams = execCommand("chmod a-w " + getPath());
@@ -1923,11 +1835,12 @@ public class SshFileAdaptor extends FileCpi {
             }
         } catch (Exception e) {
             cleanSession(session, channel);
-            throw new Error("internal error in SshFile: " + e);
+            doException(e);
+            return false; // will not happen doException throws exception
         }
     }
 
-    private int getOsType() {
+    private int getOsType() throws InvalidUsernameOrPasswordException {
         if (osType == UNKNOWN) {
             osType = determineRemoteOS();
         }
@@ -1935,8 +1848,8 @@ public class SshFileAdaptor extends FileCpi {
     }
 
     private Object[] execCommand(String command) throws JSchException,
-            IOException {
-        Object[] result = new Object[2];
+            IOException, GATInvocationException {
+        Object[] result = new Object[3];
         session = jsch.getSession(sui.username, location.getHost(), port);
         session.setUserInfo(sui);
         session.connect();
@@ -1944,10 +1857,11 @@ public class SshFileAdaptor extends FileCpi {
         ((ChannelExec) channel).setCommand(command);
         result[IN] = ((ChannelExec) channel).getInputStream();
         result[ERR] = ((ChannelExec) channel).getErrStream();
-        /*
-         * try { result[OUT] = ((ChannelExec) channel).getOutputStream(); }
-         * catch (Exception e) { result[OUT] = null; }
-         */
+        try {
+            result[OUT] = ((ChannelExec) channel).getOutputStream();
+        } catch (Exception e) {
+            result[OUT] = null;
+        }
         channel.connect();
         waitForEOF();
         return result;

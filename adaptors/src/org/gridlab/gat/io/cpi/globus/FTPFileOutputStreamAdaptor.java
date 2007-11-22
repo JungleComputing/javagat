@@ -3,10 +3,12 @@ package org.gridlab.gat.io.cpi.globus;
 import java.io.OutputStream;
 import java.util.List;
 
+import org.globus.ftp.exception.ServerException;
 import org.globus.io.streams.FTPOutputStream;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.GATObjectCreationException;
+import org.gridlab.gat.InvalidUsernameOrPasswordException;
 import org.gridlab.gat.Preferences;
 import org.gridlab.gat.URI;
 import org.gridlab.gat.security.PasswordSecurityContext;
@@ -60,6 +62,13 @@ public class FTPFileOutputStreamAdaptor extends GlobusFileOutputStreamAdaptor {
 
             return output;
         } catch (Exception e) {
+            if (e instanceof ServerException) {
+                if (((ServerException) e).getCode() == ServerException.SERVER_REFUSED) {
+                    if (e.getMessage().startsWith("Server refused performing the request. Custom message: Bad password.")) {
+                        throw new GATInvocationException("ftp" , new InvalidUsernameOrPasswordException(e));
+                    }
+                }
+            }
             throw new GATInvocationException("ftp", e);
         }
     }

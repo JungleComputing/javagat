@@ -21,7 +21,6 @@ import org.gridlab.gat.engine.GATEngine;
 import org.gridlab.gat.io.File;
 import org.gridlab.gat.monitoring.Metric;
 import org.gridlab.gat.monitoring.MetricDefinition;
-import org.gridlab.gat.monitoring.MetricListener;
 import org.gridlab.gat.monitoring.MetricValue;
 import org.gridlab.gat.resources.JobDescription;
 import org.gridlab.gat.resources.SoftwareDescription;
@@ -33,7 +32,7 @@ import org.objectweb.proactive.filetransfer.FileVector;
 
 /**
  * Internal representation of a job submitted to the JavaGAT.
- *
+ * 
  * @see org.gridlab.gat.resources.Job.
  */
 @SuppressWarnings("serial")
@@ -66,9 +65,8 @@ public class ProActiveJob extends JobCpi {
     private String classPath = null;
 
     /** The broker that submitted this job. */
-// unused --Rob
-    //    private ProActiveResourceBrokerAdaptor broker;
-
+    // unused --Rob
+    // private ProActiveResourceBrokerAdaptor broker;
     /** Number of nodes on which to run. */
     private int nNodes = 1;
 
@@ -93,8 +91,9 @@ public class ProActiveJob extends JobCpi {
     /** Set when staging must be done on all nodes. */
     private boolean stageOnAll = false;
 
-    /** 
-     * Node on which staging is done, in case <code>stageOnAll</code> is false.
+    /**
+     * Node on which staging is done, in case <code>stageOnAll</code> is
+     * false.
      */
     private NodeInfo stageNode = null;
 
@@ -138,17 +137,16 @@ public class ProActiveJob extends JobCpi {
 
         public void run() {
             try {
-                synchronized(node) {
-                    results[i] = node.launcher.launch(className,
-                            jvmArgs + " -Dibis.pool.cluster=" + node.descriptor,
+                synchronized (node) {
+                    results[i] = node.launcher.launch(className, jvmArgs
+                            + " -Dibis.pool.cluster=" + node.descriptor,
                             progArgs, classPath, id);
                 }
-            } catch(Exception e) {
+            } catch (Exception e) {
                 // Dealt with later: results[i] stays null.
             }
         }
     }
-
 
     /** Input provider thread for job. */
     class InputHandler extends Thread {
@@ -169,10 +167,10 @@ public class ProActiveJob extends JobCpi {
                 return null;
             }
             String s = null;
-            if (! done) {
+            if (!done) {
                 try {
                     s = inputReader.readLine();
-                } catch(Exception e) {
+                } catch (Exception e) {
                     done = true;
                 }
             }
@@ -183,7 +181,7 @@ public class ProActiveJob extends JobCpi {
             done = true;
             try {
                 inputReader.close();
-            } catch(Exception e) {
+            } catch (Exception e) {
                 // ignored
             }
         }
@@ -192,7 +190,7 @@ public class ProActiveJob extends JobCpi {
             for (int i = 0; i < currentNodes.length; i++) {
                 // TODO: make this multithreaded?
                 NodeInfo node = currentNodes[i];
-                synchronized(node) {
+                synchronized (node) {
                     node.launcher.provideInput(node.getInstanceID(), input);
                 }
             }
@@ -205,7 +203,7 @@ public class ProActiveJob extends JobCpi {
                 NodeInfo node = currentNodes[i];
                 for (int j = 0; j < messages.size(); j++) {
                     String m = (String) messages.get(j);
-                    synchronized(node) {
+                    synchronized (node) {
                         node.launcher.provideInput(node.getInstanceID(), m);
                     }
                 }
@@ -215,10 +213,10 @@ public class ProActiveJob extends JobCpi {
 
         public void run() {
             // Save all input in case nodes are added.
-//            boolean newInput = false; // not used --Rob
+            // boolean newInput = false; // not used --Rob
             for (;;) {
                 String input = getInput();
-                synchronized(this) {
+                synchronized (this) {
                     if (input == null) {
                         done = true;
                     }
@@ -232,23 +230,28 @@ public class ProActiveJob extends JobCpi {
     }
 
     /**
-     * Constructor. There is no Sandbox here, because at this point
-     * it is not known on which node(s) the job will be run. The sandbox
-     * will be created when the job is actually scheduled.
-     * @param gatContext the GAT context.
-     * @param preferences the preferences.
-     * @param jobDescription the job description.
-     * @param broker the resource broker that initiated this job.
-     * @exception GATInvocationException when something goes wrong.
+     * Constructor. There is no Sandbox here, because at this point it is not
+     * known on which node(s) the job will be run. The sandbox will be created
+     * when the job is actually scheduled.
+     * 
+     * @param gatContext
+     *                the GAT context.
+     * @param preferences
+     *                the preferences.
+     * @param jobDescription
+     *                the job description.
+     * @param broker
+     *                the resource broker that initiated this job.
+     * @exception GATInvocationException
+     *                    when something goes wrong.
      */
     public ProActiveJob(GATContext gatContext, Preferences preferences,
             JobDescription jobDescription,
-            ProActiveResourceBrokerAdaptor broker, MetricListener listener, Metric metric)
-        throws GATInvocationException {
+            ProActiveResourceBrokerAdaptor broker) throws GATInvocationException {
 
         // No sandbox, we don't know the node(s) yet.
-        super(gatContext, preferences, jobDescription, null, listener, metric);
-//        this.broker = broker;
+        super(gatContext, preferences, jobDescription, null);
+        // this.broker = broker;
 
         if (preferences.get("ResourceBroker.ProActive.noSandbox") != null) {
             wantsSandbox = false;
@@ -256,9 +259,9 @@ public class ProActiveJob extends JobCpi {
         if (preferences.get("ResourceBroker.ProActive.stageOnAll") != null) {
             stageOnAll = true;
         }
-        String s
-            = (String) preferences.get("ResourceBroker.ProActive.needsStdin");
-        if (s != null && ! s.equals("")) {
+        String s = (String) preferences
+                .get("ResourceBroker.ProActive.needsStdin");
+        if (s != null && !s.equals("")) {
             needsStdin = true;
         }
 
@@ -284,7 +287,7 @@ public class ProActiveJob extends JobCpi {
         // Get everything we need from the job description.
         URI executable = soft.getLocation();
         String scheme = executable.getScheme();
-        if (! "java".equalsIgnoreCase(scheme)) {
+        if (!"java".equalsIgnoreCase(scheme)) {
             throw new GATInvocationException(
                     "Executable should be \"java:<classname>\"");
         }
@@ -294,24 +297,24 @@ public class ProActiveJob extends JobCpi {
         File stdout = soft.getStdout();
         if (stdout != null) {
             try {
-                OutputStream o = new BufferedOutputStream(
-                        new FileOutputStream(stdout.getPath()));
+                OutputStream o = new BufferedOutputStream(new FileOutputStream(
+                        stdout.getPath()));
                 myStdout = new PrintStream(o, true);
-            } catch(Exception e) {
-                throw new GATInvocationException(
-                        "Could not create file " + stdout, e);
+            } catch (Exception e) {
+                throw new GATInvocationException("Could not create file "
+                        + stdout, e);
             }
         }
 
         File stderr = soft.getStderr();
         if (stderr != null) {
             try {
-                OutputStream o = new BufferedOutputStream(
-                        new FileOutputStream(stderr.getPath()));
+                OutputStream o = new BufferedOutputStream(new FileOutputStream(
+                        stderr.getPath()));
                 myStderr = new PrintStream(o, true);
-            } catch(Exception e) {
-                throw new GATInvocationException(
-                        "Could not create file " + stderr, e);
+            } catch (Exception e) {
+                throw new GATInvocationException("Could not create file "
+                        + stderr, e);
             }
         }
 
@@ -320,9 +323,9 @@ public class ProActiveJob extends JobCpi {
         if (stdin != null) {
             try {
                 reader = new FileReader(stdin.getPath());
-            } catch(Exception e) {
-                throw new GATInvocationException(
-                        "Could not open input file " + stdin, e);
+            } catch (Exception e) {
+                throw new GATInvocationException("Could not open input file "
+                        + stdin, e);
             }
         } else if (needsStdin) {
             reader = new InputStreamReader(System.in);
@@ -330,7 +333,6 @@ public class ProActiveJob extends JobCpi {
         if (reader != null) {
             inputHandler = new InputHandler(new BufferedReader(reader));
         }
-
 
         Map<String, Object> environment;
         environment = soft.getEnvironment();
@@ -345,7 +347,7 @@ public class ProActiveJob extends JobCpi {
         if (arguments != null) {
             for (int i = 0; i < arguments.length; i++) {
                 progArgs = progArgs + arguments[i];
-                if (i < arguments.length-1) {
+                if (i < arguments.length - 1) {
                     progArgs = progArgs + " ";
                 }
             }
@@ -353,23 +355,24 @@ public class ProActiveJob extends JobCpi {
 
         // Get JVM arguments.
         jvmArgs = "-server";
-        for (Iterator<Map.Entry<String, Object>> i = environment.entrySet().iterator(); i.hasNext();) {
+        for (Iterator<Map.Entry<String, Object>> i = environment.entrySet()
+                .iterator(); i.hasNext();) {
             Map.Entry<String, Object> e = (Map.Entry<String, Object>) i.next();
             jvmArgs = jvmArgs + " -D" + (String) e.getKey() + "="
-                + (String) e.getValue();
+                    + (String) e.getValue();
         }
 
         Map<String, Object> attributes;
         attributes = soft.getAttributes();
         if (attributes != null) {
             // Get more JVM arguments.
-            for (Iterator<String> i = attributes.keySet().iterator(); i.hasNext();) {
+            for (Iterator<String> i = attributes.keySet().iterator(); i
+                    .hasNext();) {
                 String key = (String) i.next();
                 if (key.equalsIgnoreCase("minMemory")) {
                     Integer minMem = (Integer) attributes.get(key);
                     if (minMem != null) {
-                        jvmArgs = jvmArgs + " -Xms" + minMem.intValue()
-                            + "M";
+                        jvmArgs = jvmArgs + " -Xms" + minMem.intValue() + "M";
                     }
                 } else if (key.equalsIgnoreCase("maxMemory")) {
                     Integer maxMem = (Integer) attributes.get(key);
@@ -383,7 +386,8 @@ public class ProActiveJob extends JobCpi {
                     if (hostCount != null) {
                         nNodes = hostCount.intValue();
                         if (nNodes <= 0) {
-                            throw new GATInvocationException("Illegal hostCount");
+                            throw new GATInvocationException(
+                                    "Illegal hostCount");
                         }
                     }
                 } else if (key.equalsIgnoreCase("softHostCount")) {
@@ -407,6 +411,7 @@ public class ProActiveJob extends JobCpi {
 
     /**
      * Returns the number of nodes still required to run this job.
+     * 
      * @return the number of nodes required.
      */
     int getNumNodes() {
@@ -428,13 +433,11 @@ public class ProActiveJob extends JobCpi {
             SoftwareDescription soft = jobDescription.getSoftwareDescription();
             Map<File, File> preStageFiles = soft.getPreStaged();
             if (preStageFiles != null && preStageFiles.size() != 0) {
-                java.io.File[] srcFiles
-                    = new java.io.File[preStageFiles.size()];
-                java.io.File[] dstFiles
-                    = new java.io.File[preStageFiles.size()];
+                java.io.File[] srcFiles = new java.io.File[preStageFiles.size()];
+                java.io.File[] dstFiles = new java.io.File[preStageFiles.size()];
                 int index = 0;
-                for (Iterator<Map.Entry<File, File>> i = preStageFiles.entrySet().iterator();
-                        i.hasNext();) {
+                for (Iterator<Map.Entry<File, File>> i = preStageFiles
+                        .entrySet().iterator(); i.hasNext();) {
                     Map.Entry<File, File> e = (Map.Entry<File, File>) i.next();
                     String key = ((File) e.getKey()).getPath();
                     srcFiles[index] = new java.io.File(key);
@@ -445,11 +448,11 @@ public class ProActiveJob extends JobCpi {
                         dstFiles[index] = new java.io.File(val);
                     }
                     index++;
-                        }
+                }
                 try {
                     FileTransfer.pushFiles(node.node, srcFiles, dstFiles)
-                        .waitForAll();
-                } catch(Exception e) {
+                            .waitForAll();
+                } catch (Exception e) {
                     throw new GATInvocationException("preStage copy failed", e);
                 }
             }
@@ -457,9 +460,11 @@ public class ProActiveJob extends JobCpi {
     }
 
     /**
-     * Sets the SUBMISSION_ERROR state for this job, with the exception
-     * that was the cause of this.
-     * @param e the exception.
+     * Sets the SUBMISSION_ERROR state for this job, with the exception that was
+     * the cause of this.
+     * 
+     * @param e
+     *                the exception.
      */
     void submissionError(GATInvocationException e) {
         setState(SUBMISSION_ERROR);
@@ -468,15 +473,18 @@ public class ProActiveJob extends JobCpi {
 
     /**
      * Called by the resource broker to run this job on the specified nodes.
-     * @param newNodes the nodes to start the job on.
-     * @exception GATInvocationException is thrown when something goes wrong.
+     * 
+     * @param newNodes
+     *                the nodes to start the job on.
+     * @exception GATInvocationException
+     *                    is thrown when something goes wrong.
      * @return the number of nodes on which launching succeeded.
      */
     void startJob(NodeInfo[] newNodes) throws GATInvocationException {
         // Check of number of nodes makes sense.
         if (nodes.size() + newNodes.length > nNodes) {
-            submissionError(
-                    new GATInvocationException("Wrong number of nodes allocated"));
+            submissionError(new GATInvocationException(
+                    "Wrong number of nodes allocated"));
             return;
         }
 
@@ -503,13 +511,13 @@ public class ProActiveJob extends JobCpi {
 
         // Launch jobs, asynchronously.
 
-//        boolean failed = false; // not used --Rob
+        // boolean failed = false; // not used --Rob
 
         StringWrapper[] results = new StringWrapper[newNodes.length];
 
         int maxThreads = 1;
         String tmp = (String) preferences.get("launch.parallel");
-        if(tmp != null) {
+        if (tmp != null) {
             maxThreads = Integer.parseInt(tmp);
         }
         Threader threader = Threader.createThreader(maxThreads);
@@ -540,7 +548,7 @@ public class ProActiveJob extends JobCpi {
                 }
             }
             if (nodes.size() > 0 && inputHandler != null) {
-                if (! inputHandlerStarted) {
+                if (!inputHandlerStarted) {
                     inputHandlerStarted = true;
                     inputHandler.start();
                 }
@@ -559,11 +567,10 @@ public class ProActiveJob extends JobCpi {
                     NodeInfo node = newNodes[i];
                     String id = node.getInstanceID();
                     node.watcher.removeJob(id);
-                    if (results[i] == null
-                            || results[i].stringValue() == null) {
+                    if (results[i] == null || results[i].stringValue() == null) {
                         node.release(true);
                     } else {
-                        synchronized(node) {
+                        synchronized (node) {
                             node.launcher.stopJob(id);
                         }
                         node.release(false);
@@ -575,7 +582,7 @@ public class ProActiveJob extends JobCpi {
                     nodes.add(newNodes[i]);
                 }
                 if (inputHandler != null) {
-                    if (! inputHandlerStarted) {
+                    if (!inputHandlerStarted) {
                         inputHandler.start();
                         inputHandlerStarted = true;
                     }
@@ -587,7 +594,7 @@ public class ProActiveJob extends JobCpi {
 
     /** Notifies that the job is actually running. */
     synchronized void setStarted() {
-        if (! started) {
+        if (!started) {
             infoMap.put("starttime", new Long(System.currentTimeMillis()));
             setState(RUNNING);
             started = true;
@@ -598,12 +605,14 @@ public class ProActiveJob extends JobCpi {
 
     /**
      * Notifies a state change.
-     * @param newState the new state.
+     * 
+     * @param newState
+     *                the new state.
      */
     private void setState(int newState) {
         MetricValue v = null;
 
-        synchronized(this) {
+        synchronized (this) {
             state = newState;
             v = new MetricValue(this, getStateString(state), statusMetric,
                     System.currentTimeMillis());
@@ -622,10 +631,10 @@ public class ProActiveJob extends JobCpi {
         for (int i = 0; i < nodes.size(); i++) {
             NodeInfo node = (NodeInfo) nodes.get(i);
             try {
-                synchronized(node) {
+                synchronized (node) {
                     node.launcher.stopJob(node.getInstanceID());
                 }
-            } catch(Exception e) {
+            } catch (Exception e) {
                 // Ignored, continue with other nodes.
                 // Probably does not happen anyway, because the stopJob
                 // method is asynchronous and void, so there is no
@@ -635,10 +644,13 @@ public class ProActiveJob extends JobCpi {
     }
 
     /**
-     * This method is invoked by a JobWatcher when it detects that an
-     * instance has finished. The exit status is supplied.
-     * @param id the instance id that is finished.
-     * @param exitStatus the exit status of the instance.
+     * This method is invoked by a JobWatcher when it detects that an instance
+     * has finished. The exit status is supplied.
+     * 
+     * @param id
+     *                the instance id that is finished.
+     * @param exitStatus
+     *                the exit status of the instance.
      */
     synchronized void finish(String id, int exitStatus) {
         if (exitStatus != 0 && this.exitStatus == 0) {
@@ -653,7 +665,7 @@ public class ProActiveJob extends JobCpi {
             node.release(false);
             if (finished == nodes.size()) {
                 // All are done.
-                if (state != STOPPED && needsPostStage && ! stageOnAll) {
+                if (state != STOPPED && needsPostStage && !stageOnAll) {
                     postStage(stageNode);
                 }
                 setStopped();
@@ -663,8 +675,11 @@ public class ProActiveJob extends JobCpi {
 
     /**
      * Runs the post-staging phase from the specified node.
-     * @param node the source node.
-     * @exception GATInvocationException is thrown when something goes wrong.
+     * 
+     * @param node
+     *                the source node.
+     * @exception GATInvocationException
+     *                    is thrown when something goes wrong.
      */
     private void postStage(NodeInfo node) {
         setState(POST_STAGING);
@@ -681,8 +696,8 @@ public class ProActiveJob extends JobCpi {
             java.io.File[] dstFiles = new java.io.File[postStageFiles.size()];
             int index = 0;
             try {
-                for (Iterator<Map.Entry<File, File>> i = postStageFiles.entrySet().iterator();
-                        i.hasNext();) {
+                for (Iterator<Map.Entry<File, File>> i = postStageFiles
+                        .entrySet().iterator(); i.hasNext();) {
                     Map.Entry<File, File> e = (Map.Entry<File, File>) i.next();
                     String key = ((File) e.getKey()).getPath();
                     srcFiles[index] = new java.io.File(key);
@@ -693,9 +708,9 @@ public class ProActiveJob extends JobCpi {
                         dstFiles[index] = new java.io.File(val);
                     }
                     index++;
-                        }
-                final FileVector fileVector
-                    = FileTransfer.pullFiles(node.node, srcFiles, dstFiles);
+                }
+                final FileVector fileVector = FileTransfer.pullFiles(node.node,
+                        srcFiles, dstFiles);
                 // Spawn thread that waits for the filetransfer to complete
                 // and sets the status accordingly.
                 Thread t = new Thread("FileTransfer waiter") {
@@ -707,17 +722,16 @@ public class ProActiveJob extends JobCpi {
                 };
                 t.setDaemon(true);
                 t.start();
-            } catch(Exception e) {
-                postStageException
-                    = new GATInvocationException("Failed postStage", e);
+            } catch (Exception e) {
+                postStageException = new GATInvocationException(
+                        "Failed postStage", e);
             }
         }
     }
 
     /**
-     * Notifies that the Job is done.
-     * This method can be called several times when dealing with "soft"
-     * host counts.
+     * Notifies that the Job is done. This method can be called several times
+     * when dealing with "soft" host counts.
      */
     private synchronized void setStopped() {
         if (state != STOPPED) {
@@ -734,9 +748,11 @@ public class ProActiveJob extends JobCpi {
 
     /**
      * Gat user entry point: obtains a map with some job information.
+     * 
      * @return job information.
      */
-    public synchronized Map<String, Object> getInfo() throws GATInvocationException {
+    public synchronized Map<String, Object> getInfo()
+            throws GATInvocationException {
         infoMap.put("state", getStateString(state));
         if (jobID != null) {
             infoMap.put("id", jobID);
@@ -748,12 +764,13 @@ public class ProActiveJob extends JobCpi {
     }
 
     /**
-     * Returns the exit status of the job.
-     * Actually, it returns one of the exit statusses of the instances.
-     * The first non-zero exit status is remembered.
+     * Returns the exit status of the job. Actually, it returns one of the exit
+     * statusses of the instances. The first non-zero exit status is remembered.
+     * 
      * @return the exit status.
-     * @exception GATInvocationException is thrown if this method is called
-     *   when it should not be.
+     * @exception GATInvocationException
+     *                    is thrown if this method is called when it should not
+     *                    be.
      */
     public int getExitStatus() throws GATInvocationException {
         if (state != STOPPED) {
@@ -765,6 +782,7 @@ public class ProActiveJob extends JobCpi {
 
     /**
      * Obtains and returns a new job id.
+     * 
      * @return the new job id.
      */
     private String getNewID() {
@@ -775,9 +793,11 @@ public class ProActiveJob extends JobCpi {
 
     /**
      * Returns the Job identification.
+     * 
      * @return the job identification.
-     * @exception GATInvocationException is thrown if this method is called
-     *   when it should not be.
+     * @exception GATInvocationException
+     *                    is thrown if this method is called when it should not
+     *                    be.
      */
     public synchronized String getJobID() throws GATInvocationException {
         if (jobID != null) {

@@ -4,11 +4,8 @@
 package org.gridlab.gat;
 
 /**
- *
+ * This exception is thrown when the GAT engine cannot instantiate a gat object.
  * @author rob
- */
-/**
- * This exception is throw when the GAT engine cannot instantiate a gat object.
  */
 @SuppressWarnings("serial")
 public class GATObjectCreationException extends NestedException {

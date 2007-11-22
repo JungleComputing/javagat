@@ -24,6 +24,10 @@ public class FileOutputStream extends OutputStream implements Monitorable {
     public FileOutputStream(FileOutputStreamInterface out) {
         this.out = out;
     }
+    
+    public org.gridlab.gat.io.FileOutputStreamInterface getFileOutputStreamInterface() {
+        return out;
+    }
 
     /** {@inheritDoc} */
     public void addMetricListener(MetricListener metricListener, Metric metric)

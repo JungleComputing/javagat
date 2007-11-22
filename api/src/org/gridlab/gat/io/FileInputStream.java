@@ -31,6 +31,10 @@ public class FileInputStream extends InputStream implements Monitorable {
     public FileInputStream(FileInputStreamInterface in) {
         this.in = in;
     }
+    
+    public org.gridlab.gat.io.FileInputStreamInterface getFileInputStreamInterface() {
+        return in;
+    }
 
     public MetricValue getMeasurement(Metric metric)
             throws GATInvocationException {

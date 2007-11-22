@@ -1,12 +1,15 @@
 package org.gridlab.gat.io.cpi.globus;
 
 import java.util.List;
+import java.util.Vector;
 
 import org.globus.ftp.FTPClient;
+import org.globus.ftp.exception.ServerException;
 import org.gridlab.gat.AdaptorNotApplicableException;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.GATObjectCreationException;
+import org.gridlab.gat.InvalidUsernameOrPasswordException;
 import org.gridlab.gat.Preferences;
 import org.gridlab.gat.URI;
 import org.gridlab.gat.security.PasswordSecurityContext;
@@ -23,13 +26,13 @@ public class FTPFileAdaptor extends GlobusFileAdaptor {
      * Constructs a LocalFileAdaptor instance which corresponds to the physical
      * file identified by the passed URI and whose access rights are determined
      * by the passed GATContext.
-     *
+     * 
      * @param location
-     *            A URI which represents the URI corresponding to the physical
-     *            file.
+     *                A URI which represents the URI corresponding to the
+     *                physical file.
      * @param gatContext
-     *            A GATContext which is used to determine the access rights for
-     *            this LocalFileAdaptor.
+     *                A GATContext which is used to determine the access rights
+     *                for this LocalFileAdaptor.
      */
     public FTPFileAdaptor(GATContext gatContext, Preferences preferences,
             URI location) throws GATObjectCreationException {
@@ -39,15 +42,16 @@ public class FTPFileAdaptor extends GlobusFileAdaptor {
             throw new AdaptorNotApplicableException("cannot handle this URI");
         }
 
-        List<SecurityContext> l = SecurityContextUtils.getValidSecurityContextsByType(
-            gatContext, preferences,
-            "org.gridlab.gat.security.PasswordSecurityContext", "ftp", location
-                .resolveHost(), location.getPort(DEFAULT_FTP_PORT));
+        List<SecurityContext> l = SecurityContextUtils
+                .getValidSecurityContextsByType(gatContext, preferences,
+                        "org.gridlab.gat.security.PasswordSecurityContext",
+                        "ftp", location.resolveHost(), location
+                                .getPort(DEFAULT_FTP_PORT));
 
         if ((l == null) || (l.size() == 0)) {
             throw new GATObjectCreationException(
-                "Could not find a valid security context for this " + ""
-                    + "adaptor to use for the specified host/port");
+                    "Could not find a valid security context for this " + ""
+                            + "adaptor to use for the specified host/port");
         }
 
         // for now, just take the first one from the list that matches
@@ -66,8 +70,9 @@ public class FTPFileAdaptor extends GlobusFileAdaptor {
 
     /**
      * Create an FTP Client
-     *
-     * @param hostURI the uri of the FTP host
+     * 
+     * @param hostURI
+     *                the uri of the FTP host
      */
     protected FTPClient createClient(GATContext gatContext,
             Preferences preferences, URI hostURI) throws GATInvocationException {
@@ -85,8 +90,22 @@ public class FTPFileAdaptor extends GlobusFileAdaptor {
 
             return client;
         } catch (Exception e) {
+            if (e instanceof ServerException) {
+                if (((ServerException) e).getCode() == ServerException.SERVER_REFUSED) {
+                    if (e
+                            .getMessage()
+                            .startsWith(
+                                    "Server refused performing the request. Custom message: Bad password.")
+                            || e
+                                    .getMessage()
+                                    .startsWith(
+                                            "Server refused performing the request. Custom message: Bad user.")) {
+                        throw new InvalidUsernameOrPasswordException(e);
+                    }
+                }
+            }
             // ouch, both failed.
-            throw new GATInvocationException("ftp", e);
+            throw new GATInvocationException("FTPFileAdaptor", e);
         }
     }
 
@@ -97,5 +116,44 @@ public class FTPFileAdaptor extends GlobusFileAdaptor {
         } catch (Exception e) {
             // Ignore
         }
+    }
+
+    public boolean exists() throws GATInvocationException {
+        FTPClient client = null;
+
+        try {
+            String remotePath = getPath();
+
+            if (logger.isDebugEnabled()) {
+                logger.debug("getINFO: remotePath = " + remotePath
+                        + ", creating client to: " + toURI());
+            }
+
+            client = createClient(toURI());
+
+            if (logger.isDebugEnabled()) {
+                logger.debug("getINFO: client created");
+            }
+
+            setActiveOrPassive(client, preferences);
+
+            Vector<?> v = null;
+
+            if (isOldServer(preferences)) {
+                v = listNoMinusD(client, remotePath);
+            } else {
+                v = client.list(remotePath);
+            }
+            return !(v.size() == 0);
+        } catch (Exception e) {
+            if (e instanceof GATInvocationException) {
+                throw (GATInvocationException) e;
+            }
+            throw new GATInvocationException("FTPFileAdaptor", e);
+        } finally {
+            if (client != null)
+                destroyClient(client, toURI(), preferences);
+        }
+
     }
 }

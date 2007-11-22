@@ -55,22 +55,11 @@ public abstract class JobCpi extends Job {
 	}
 
 	protected JobCpi(GATContext gatContext, Preferences preferences,
-			JobDescription jobDescription, Sandbox sandbox,
-			MetricListener listener, Metric metric) {
+			JobDescription jobDescription, Sandbox sandbox) {
 		this.gatContext = gatContext;
 		this.preferences = preferences;
 		this.jobDescription = jobDescription;
 		this.sandbox = sandbox;
-		if (listener != null && metric != null) {
-			try {
-				addMetricListener(listener, metric);
-			} catch (GATInvocationException e) {
-				if (logger.isDebugEnabled()) {
-					logger.debug("Failed to add metric listener to Job:" + e);
-				}
-			}
-		}
-
 		String pref = (String) preferences.get("killJobsOnExit");
 		if (pref == null || pref.equalsIgnoreCase("true")) {
 			synchronized (JobCpi.class) {

@@ -3,6 +3,11 @@
  */
 package org.gridlab.gat;
 
+/**
+ * Thrown when a local command is executed that doesn't exist
+ * 
+ * @author rob
+ */
 @SuppressWarnings("serial")
 public class CommandNotFoundException extends GATInvocationException {
 

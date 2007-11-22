@@ -3,10 +3,12 @@ package org.gridlab.gat.io.cpi.globus;
 import java.io.InputStream;
 import java.util.List;
 
+import org.globus.ftp.exception.ServerException;
 import org.globus.io.streams.FTPInputStream;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.GATObjectCreationException;
+import org.gridlab.gat.InvalidUsernameOrPasswordException;
 import org.gridlab.gat.Preferences;
 import org.gridlab.gat.URI;
 import org.gridlab.gat.security.PasswordSecurityContext;
@@ -41,21 +43,21 @@ public class FTPFileInputStreamAdaptor extends GlobusFileInputStreamAdaptor {
         try {
             in = createStream();
         } catch (GATInvocationException e) {
-            throw new GATObjectCreationException("ftp file inputstream", e);
+            throw new GATObjectCreationException("FTPFileInputStreamAdaptor", e);
         }
     }
 
     protected InputStream createStream() throws GATInvocationException {
-        List<SecurityContext> l = SecurityContextUtils.getValidSecurityContextsByType(
-            gatContext, preferences,
-            "org.gridlab.gat.security.PasswordSecurityContext", "ftp", location
-                .resolveHost(), location
-                .getPort(GlobusFileAdaptor.DEFAULT_FTP_PORT));
+        List<SecurityContext> l = SecurityContextUtils
+                .getValidSecurityContextsByType(gatContext, preferences,
+                        "org.gridlab.gat.security.PasswordSecurityContext",
+                        "ftp", location.resolveHost(), location
+                                .getPort(GlobusFileAdaptor.DEFAULT_FTP_PORT));
 
         if ((l == null) || (l.size() == 0)) {
             throw new GATInvocationException(
-                "Could not find a valid security context for this " + ""
-                    + "adaptor to use for the specified host/port");
+                    "Could not find a valid security context for this " + ""
+                            + "adaptor to use for the specified host/port");
         }
 
         // for now, just take the first one from the list that matches
@@ -75,12 +77,26 @@ public class FTPFileInputStreamAdaptor extends GlobusFileInputStreamAdaptor {
 
         try {
             FTPInputStream input = new FTPInputStream(host, port, user,
-                password, path);
+                    password, path);
 
             return input;
         } catch (Exception e) {
+            if (e instanceof ServerException) {
+                if (((ServerException) e).getCode() == ServerException.SERVER_REFUSED) {
+                    if (e
+                            .getMessage()
+                            .startsWith(
+                                    "Server refused performing the request. Custom message: Bad password.")
+                            || e
+                                    .getMessage()
+                                    .startsWith(
+                                            "Server refused performing the request. Custom message: Bad user.")) {
+                        throw new InvalidUsernameOrPasswordException(e);
+                    }
+                }
+            }
             // ouch, both failed.
-            throw new GATInvocationException("ftp", e);
+            throw new GATInvocationException("FTPFileInputStreamAdaptor", e);
         }
     }
 }
