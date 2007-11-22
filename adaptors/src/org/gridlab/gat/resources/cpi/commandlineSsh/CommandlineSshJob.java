@@ -14,7 +14,6 @@ import org.gridlab.gat.engine.GATEngine;
 import org.gridlab.gat.engine.util.OutputForwarder;
 import org.gridlab.gat.monitoring.Metric;
 import org.gridlab.gat.monitoring.MetricDefinition;
-import org.gridlab.gat.monitoring.MetricListener;
 import org.gridlab.gat.monitoring.MetricValue;
 import org.gridlab.gat.resources.JobDescription;
 import org.gridlab.gat.resources.cpi.JobCpi;
@@ -49,8 +48,8 @@ public class CommandlineSshJob extends JobCpi {
 	CommandlineSshJob(GATContext gatContext, Preferences preferences,
 			CommandlineSshResourceBrokerAdaptor broker,
 			JobDescription description, Process p, Sandbox sandbox,
-			OutputForwarder out, OutputForwarder err, MetricListener listener, Metric metric) {
-		super(gatContext, preferences, description, sandbox, listener, metric);
+			OutputForwarder out, OutputForwarder err) {
+		super(gatContext, preferences, description, sandbox);
 		this.broker = broker;
 		this.description = description;
 		jobID = allocJobID();

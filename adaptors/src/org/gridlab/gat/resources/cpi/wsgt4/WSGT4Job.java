@@ -69,9 +69,7 @@ import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.Preferences;
 import org.gridlab.gat.engine.GATEngine;
-import org.gridlab.gat.monitoring.Metric;
 import org.gridlab.gat.monitoring.MetricDefinition;
-import org.gridlab.gat.monitoring.MetricListener;
 import org.gridlab.gat.resources.JobDescription;
 import org.gridlab.gat.resources.cpi.JobCpi;
 import org.gridlab.gat.resources.cpi.Sandbox;
@@ -217,10 +215,9 @@ public class WSGT4Job extends JobCpi {
 	public WSGT4Job(GATContext gatContext, Preferences preferences,
 			JobDescription jobDescription, Sandbox sandbox,
 			JobDescriptionType gjobDescription, String contactString,
-			GSSCredential cred, MetricListener listener, Metric metric)
+			GSSCredential cred)
 			throws GATInvocationException {
-		super(gatContext, preferences, jobDescription, sandbox, listener,
-				metric);
+		super(gatContext, preferences, jobDescription, sandbox);
 
 		HashMap<String, Object> returnDef = new HashMap<String, Object>();
 		returnDef.put("status", String.class);

@@ -10,7 +10,6 @@ import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.GATObjectCreationException;
 import org.gridlab.gat.Preferences;
-import org.gridlab.gat.monitoring.Metric;
 import org.gridlab.gat.monitoring.MetricListener;
 import org.gridlab.gat.resources.JobDescription;
 import org.gridlab.gat.resources.SoftwareDescription;
@@ -349,7 +348,7 @@ public class ProActiveResourceBrokerAdaptor extends ResourceBrokerCpi
      * @return the job.
      * @exception GATInvocationException when something goes wrong.
      */
-    public org.gridlab.gat.resources.Job submitJob(JobDescription description, MetricListener listener, Metric metric)
+    public org.gridlab.gat.resources.Job submitJob(JobDescription description, MetricListener listener, String metricDefinitionName)
         throws GATInvocationException {
 
         ProActiveJob submittedJob;
@@ -361,7 +360,7 @@ public class ProActiveResourceBrokerAdaptor extends ResourceBrokerCpi
                     "Job description does not contain a software description");
         }
 
-        submittedJob = new ProActiveJob(gatContext, preferences, description, this, listener, metric);
+        submittedJob = new ProActiveJob(gatContext, preferences, description, this);
 
         synchronized(availableNodeSet) {
             jobList.add(submittedJob);

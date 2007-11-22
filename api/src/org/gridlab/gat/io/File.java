@@ -26,7 +26,7 @@ import org.gridlab.gat.monitoring.Monitorable;
  * @author rob
  */
 /**
- * An abstract representation of a physical file. (See java.io.file)
+ * An abstract representation of a physical file. See {@link java.io.File}.
  * <p>
  * An instance of this class presents an abstract, system-independent view of a
  * physical file. User interfaces and operating systems use system-dependent
@@ -77,15 +77,16 @@ public class File extends java.io.File implements Monitorable, Advertisable {
     }
 
     /**
-     * This method return the FileInterface associated with this File
-     *
+     * This method return the FileInterface associated with this File. Use the
+     * FileInterface instead of the File if you care about the exceptions that
+     * could occur during operations on the file.
+     * 
      * @return the FileInterface
      */
     public org.gridlab.gat.io.FileInterface getFileInterface() {
         return f;
     }
-    
-    
+
     /**
      * This method moves the physical file represented by this File instance to
      * a physical file identified by the passed URI.

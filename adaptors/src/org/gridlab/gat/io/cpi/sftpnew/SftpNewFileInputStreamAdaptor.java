@@ -45,7 +45,7 @@ public class SftpNewFileInputStreamAdaptor extends FileInputStreamCpi {
         try {
             in = createStream();
         } catch (GATInvocationException e) {
-            throw new GATObjectCreationException("grid ftp inputstream", e);
+            throw new GATObjectCreationException("SftpNewFileInputStream", e);
         }
     }
 
@@ -61,7 +61,7 @@ public class SftpNewFileInputStreamAdaptor extends FileInputStreamCpi {
 
             return connection.channel.get(path);
         } catch (Exception e) {
-            throw new GATInvocationException("sftp file inputstream", e);
+            throw new GATInvocationException("SftpNewFileInputStream", e);
         }
     }
 

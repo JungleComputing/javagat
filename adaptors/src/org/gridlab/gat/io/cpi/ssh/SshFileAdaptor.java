@@ -84,12 +84,12 @@ public class SshFileAdaptor extends FileCpi {
      * @param gatContext
      * @param preferences
      * @param location
-     * @throws GATInvocationException 
+     * @throws GATInvocationException
      */
     public SshFileAdaptor(GATContext gatContext, Preferences preferences,
-            URI location) throws GATObjectCreationException, GATInvocationException {
+            URI location) throws GATObjectCreationException,
+            GATInvocationException {
         super(gatContext, preferences, location);
-
         if (!location.isCompatible("ssh")) {
             throw new AdaptorNotApplicableException("cannot handle this URI");
         }
@@ -150,8 +150,8 @@ public class SshFileAdaptor extends FileCpi {
         }
 
         if (sui == null) {
-            throw new GATObjectCreationException("ssh", new Exception(
-                    "Unable to retrieve user info for authentication"));
+            throw new GATObjectCreationException(
+                    "Unable to retrieve user info for authentication");
         }
 
         try {
@@ -184,7 +184,6 @@ public class SshFileAdaptor extends FileCpi {
                                 + " with username: " + sui.username
                                 + "; host: " + host);
             }
-
             session = jsch.getSession(sui.username, host, port);
             session.setUserInfo(sui);
         } catch (Exception e) {
@@ -206,8 +205,7 @@ public class SshFileAdaptor extends FileCpi {
         while (true) {
             long time = System.currentTimeMillis() - start;
             if (time > TIMEOUT) {
-                throw new GATInvocationException("ssh", new Exception(
-                        "timeout waiting for EOF"));
+                throw new GATInvocationException("timeout waiting for EOF");
             }
             if (channel.isEOF()) {
                 return;
@@ -220,7 +218,7 @@ public class SshFileAdaptor extends FileCpi {
         }
     }
 
-    protected int determineRemoteOS() {
+    protected int determineRemoteOS() throws InvalidUsernameOrPasswordException {
         try {
             Object[] streams = execCommand("ls");
             if (((InputStream) streams[ERR]).available() != 0) {
@@ -245,6 +243,11 @@ public class SshFileAdaptor extends FileCpi {
             return XOS;
         } catch (Exception e) {
             cleanSession(session, channel);
+            if (e instanceof JSchException) {
+                if (e.getMessage().equals("Auth fail")) {
+                    throw new InvalidUsernameOrPasswordException(e);
+                }
+            }
             if (logger.isDebugEnabled()) {
                 logger
                         .debug("SshFileAdaptor: could not determine remote OS for "
@@ -298,9 +301,9 @@ public class SshFileAdaptor extends FileCpi {
             }
 
             if (!localFile.exists()) {
-                throw new GATInvocationException("ssh", new Exception(
+                throw new GATInvocationException(
                         "SshFileAdaptor:the local source file does not exist, path = "
-                                + getPath()));
+                                + getPath());
             }
 
             scpFromLocalToRemote(loc);
@@ -312,8 +315,8 @@ public class SshFileAdaptor extends FileCpi {
         }
 
         if (itExists == FALSE) {
-            throw new GATInvocationException("ssh", new Exception(
-                    "the remote source file does not exist, path = " + toURI()));
+            throw new GATInvocationException(
+                    "the remote source file does not exist, path = " + toURI());
         }
 
         /* get destination user info if destination is not on local machine */
@@ -339,8 +342,8 @@ public class SshFileAdaptor extends FileCpi {
             }
 
             if (dui == null) {
-                throw new GATInvocationException("ssh", new Exception(
-                        "Unable to retrieve user info for authentication"));
+                throw new GATInvocationException(
+                        "Unable to retrieve user info for authentication");
             }
 
             destUserName = dui.username;
@@ -561,10 +564,10 @@ public class SshFileAdaptor extends FileCpi {
 
             if (checkAck(((InputStream) streams[IN])) != 0) {
                 cleanSession(session, channel);
-                throw new GATInvocationException("ssh", new Exception(
+                throw new GATInvocationException(
                         "SshFileAdaptor: failed checkAck after sending scp command"
                                 + " in doSingleUpload " + localFile.getPath()
-                                + " to " + loc));
+                                + " to " + loc);
             }
 
             try {
@@ -634,10 +637,10 @@ public class SshFileAdaptor extends FileCpi {
             Object[] streams = execCommand("scp -p -r -t " + loc.getPath());
             if (checkAck(((InputStream) streams[IN])) != 0) {
                 cleanSession(session, channel);
-                throw new GATInvocationException("ssh", new Exception(
+                throw new GATInvocationException(
                         "SshFileAdaptor: failed checkAck after sending scp command"
                                 + " in doMultipleUpload " + getPath() + " to "
-                                + loc));
+                                + loc);
             }
 
             try {
@@ -924,8 +927,7 @@ public class SshFileAdaptor extends FileCpi {
                 return;
             }
             cleanSession(session, channel);
-            throw new GATInvocationException("ssh", new Exception(
-                    "Unknown remote OS type"));
+            throw new GATInvocationException("Unknown remote OS type");
         } catch (Exception e) {
             if (logger.isDebugEnabled()) {
                 StringWriter writer = new StringWriter();
@@ -993,8 +995,7 @@ public class SshFileAdaptor extends FileCpi {
                 cleanSession(session, channel);
                 return false;
             } else {
-                throw new GATInvocationException("ssh", new Exception(
-                        "Unknown remote OS type"));
+                throw new GATInvocationException("Unknown remote OS type");
             }
         } catch (Exception e) {
             cleanSession(session, channel);
@@ -1062,8 +1063,7 @@ public class SshFileAdaptor extends FileCpi {
                 cleanSession(session, channel);
                 return result;
             } else {
-                throw new GATInvocationException("ssh", new Exception(
-                        "Unknown remote OS type"));
+                throw new GATInvocationException("Unknown remote OS type");
             }
         } catch (Exception e) {
             cleanSession(session, channel);
@@ -1106,8 +1106,7 @@ public class SshFileAdaptor extends FileCpi {
                 cleanSession(session, channel);
                 return itExists == TRUE;
             } else {
-                throw new GATInvocationException("ssh", new Exception(
-                        "Unknown remote OS type"));
+                throw new GATInvocationException("Unknown remote OS type");
             }
         } catch (Exception e) {
             cleanSession(session, channel);
@@ -1183,8 +1182,7 @@ public class SshFileAdaptor extends FileCpi {
                 return true;
             }
             cleanSession(session, channel);
-            throw new GATInvocationException("ssh", new Exception(
-                    "Unknown remote OS type"));
+            throw new GATInvocationException("Unknown remote OS type");
         } catch (Exception e) {
             cleanSession(session, channel);
             doException(e);
@@ -1206,8 +1204,7 @@ public class SshFileAdaptor extends FileCpi {
             } else if (getOsType() == WOS) {
                 streams = execCommand("dir /B" + toMW(getPath()));
             } else {
-                throw new GATInvocationException("ssh", new Exception(
-                        "Unknown remote OS type"));
+                throw new GATInvocationException("Unknown remote OS type");
             }
         } catch (Exception e) {
             if (logger.isDebugEnabled()) {
@@ -1308,8 +1305,8 @@ public class SshFileAdaptor extends FileCpi {
 
     private void isLocalFile() throws GATInvocationException {
         if (isLocalFile) {
-            throw new GATInvocationException("ssh", new Exception(
-                    "SshFileAdaptor for local files: only for remote machine"));
+            throw new GATInvocationException(
+                    "SshFileAdaptor for local files: only for remote machine");
         }
     }
 
@@ -1358,8 +1355,7 @@ public class SshFileAdaptor extends FileCpi {
         try {
             return GAT.createFile(gatContext, preferences, new URI(parentUri));
         } catch (Exception e) {
-            throw new GATInvocationException("ssh", new Exception(
-                    "getAbsoluteFile: " + e));
+            throw new GATInvocationException("getAbsoluteFile: " + e);
         }
     }
 
@@ -1386,8 +1382,7 @@ public class SshFileAdaptor extends FileCpi {
                 return isDir == TRUE;
             } else {
                 cleanSession(session, channel);
-                throw new GATInvocationException("ssh", new Exception(
-                        "Unknown remote OS type"));
+                throw new GATInvocationException("Unknown remote OS type");
             }
         } catch (Exception e) {
             cleanSession(session, channel);
@@ -1402,7 +1397,7 @@ public class SshFileAdaptor extends FileCpi {
                 throw new InvalidUsernameOrPasswordException(e);
             }
         } else {
-            throw new GATInvocationException("ssh", e);
+            throw new GATInvocationException("SshFileAdaptor", e);
         }
     }
 
@@ -1435,12 +1430,10 @@ public class SshFileAdaptor extends FileCpi {
             }
 
         case WOS:
-            throw new GATInvocationException("ssh", new Exception(
-                    "Not implemented"));
+            throw new GATInvocationException("Not implemented");
         }
 
-        throw new GATInvocationException("ssh", new Exception(
-                "Unknown remote OS type"));
+        throw new GATInvocationException("Unknown remote OS type");
     }
 
     /*
@@ -1847,7 +1840,7 @@ public class SshFileAdaptor extends FileCpi {
         }
     }
 
-    private int getOsType() {
+    private int getOsType() throws InvalidUsernameOrPasswordException {
         if (osType == UNKNOWN) {
             osType = determineRemoteOS();
         }
@@ -1856,7 +1849,7 @@ public class SshFileAdaptor extends FileCpi {
 
     private Object[] execCommand(String command) throws JSchException,
             IOException, GATInvocationException {
-        Object[] result = new Object[2];
+        Object[] result = new Object[3];
         session = jsch.getSession(sui.username, location.getHost(), port);
         session.setUserInfo(sui);
         session.connect();
@@ -1864,10 +1857,11 @@ public class SshFileAdaptor extends FileCpi {
         ((ChannelExec) channel).setCommand(command);
         result[IN] = ((ChannelExec) channel).getInputStream();
         result[ERR] = ((ChannelExec) channel).getErrStream();
-        /*
-         * try { result[OUT] = ((ChannelExec) channel).getOutputStream(); }
-         * catch (Exception e) { result[OUT] = null; }
-         */
+        try {
+            result[OUT] = ((ChannelExec) channel).getOutputStream();
+        } catch (Exception e) {
+            result[OUT] = null;
+        }
         channel.connect();
         waitForEOF();
         return result;

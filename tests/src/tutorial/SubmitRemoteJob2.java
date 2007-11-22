@@ -18,22 +18,24 @@ public class SubmitRemoteJob2 {
 		}
 		context.addPreference("ResourceBroker.adaptor.name", args[0]);
 		context.addPreference("ResourceBroker.jobmanagerContact",
-				"fs0.das3.cs.vu.nl/jobmanager-sge");
+				"fs1.das3.liacs.nl/jobmanager-sge");
 		context.addPreference("ResourceBroker.jobmanager", args[1]);
 		context.addPreference("singleRemoteGAT", "true");
 		context.addPreference("File.adaptor.name", "local, gridftp, !ssh,");
+		context.addPreference("FileOutputStream.adaptor.name", "!sftp");
+		context.addPreference("FileInputStream.adaptor.name", "!sftp");
 
 		SoftwareDescription sd1 = new SoftwareDescription();
 		sd1.addAttribute("getRemoteSandboxOutput", "true");
 		sd1.addAttribute("getRemoteSandboxOutputURI",
 				"any://fs1.das3.liacs.nl/rsout");
-		sd1.addAttribute("remoteGatLocation", "../.tempGAT");
-		sd1.addAttribute("waitForPreStage", "true");
+		sd1.addAttribute("remoteGatLocation", "../GAT");
+		//sd1.addAttribute("waitForPreStage", "true");
 		sd1.setLocation("/bin/sh");
 		sd1.setArguments(new String[] { "/home0/rkemp/script.sh" });
 		sd1.addAttribute("useRemoteSandbox", "true");
 		sd1.addAttribute("java.home", new URI("/usr/local/package/jdk1.5"));
-		sd1.addPreStagedFile(GAT.createFile(context, "bigfile"));
+		//sd1.addPreStagedFile(GAT.createFile(context, "bigfile"));
 		
 		File stdout1 = GAT.createFile(context, "1");
 		sd1.setStdout(stdout1);
@@ -43,9 +45,9 @@ public class SubmitRemoteJob2 {
 		sd2.setLocation("/bin/sh");
 		sd2.setArguments(new String[] { "/home0/rkemp/script.sh" });
 		sd2.addAttribute("useRemoteSandbox", "true");
-		sd2.addAttribute("waitForPreStage", "true");
+		//sd2.addAttribute("waitForPreStage", "true");
 		sd2.addAttribute("java.home", new URI("/usr/local/package/jdk1.5"));
-		sd2.addPreStagedFile(GAT.createFile(context, "bigfile"));
+		//sd2.addPreStagedFile(GAT.createFile(context, "bigfile"));
 		File stdout2 = GAT.createFile(context, "2");
 		sd2.setStdout(stdout2);
 		JobDescription jd2 = new JobDescription(sd2);
@@ -54,13 +56,13 @@ public class SubmitRemoteJob2 {
 		sd3.addAttribute("getRemoteSandboxOutput", "true");
 		sd3.addAttribute("getRemoteSandboxOutputURI",
 				"any://fs1.das3.liacs.nl/rsout");
-		sd3.addAttribute("remoteGatLocation", "../.tempGAT");
-		sd3.addAttribute("waitForPreStage", "true");
+		sd3.addAttribute("remoteGatLocation", "../GAT");
+		//sd3.addAttribute("waitForPreStage", "true");
 		sd3.setLocation("/bin/sh");
 		sd3.setArguments(new String[] { "/home0/rkemp/script.sh" });
 		sd3.addAttribute("useRemoteSandbox", "true");
 		sd3.addAttribute("java.home", new URI("/usr/local/package/jdk1.5"));
-		sd3.addPreStagedFile(GAT.createFile(context, "bigfile"));
+		//sd3.addPreStagedFile(GAT.createFile(context, "bigfile"));
 		File stdout3 = GAT.createFile(context, "3");
 		sd3.setStdout(stdout3);
 		JobDescription jd3 = new JobDescription(sd3);

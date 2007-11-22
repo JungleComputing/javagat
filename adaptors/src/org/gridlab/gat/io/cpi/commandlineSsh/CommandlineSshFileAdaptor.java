@@ -198,11 +198,13 @@ public class CommandlineSshFileAdaptor extends FileCpi {
             logger.info("CommandlineSsh: running command: " + command);
         }
         CommandRunner runner = new CommandRunner(command.toString());
-        System.out.println("qzx: " + runner.getStderr() + "\nqqq: "
+        if (logger.isInfoEnabled()) {
+            logger.info("\nstderr: " + runner.getStderr() + "\nstdout: "
                 + runner.getStdout());
+        }
         int exitValue = runner.getExitCode();
         if (exitValue != 0) {
-            throw new GATInvocationException("CommandlineSsh command failed");
+            throw new GATInvocationException("CommandlineSsh command failed: " + runner.getStderr());
         }
     }
 
@@ -301,9 +303,14 @@ public class CommandlineSshFileAdaptor extends FileCpi {
             logger.info("CommandlineSsh: running command: " + command);
         }
 
-        int exitValue = new CommandRunner(command.toString()).getExitCode();
+        CommandRunner runner = new CommandRunner(command.toString());
+        if (logger.isInfoEnabled()) {
+            logger.info("\nstderr: " + runner.getStderr() + "\nstdout: "
+                + runner.getStdout());
+        }
+        int exitValue = runner.getExitCode();
         if (exitValue != 0) {
-            throw new GATInvocationException("CommandlineSsh command failed");
+            throw new GATInvocationException("CommandlineSsh command failed: " + runner.getStderr());
         }
     }
 

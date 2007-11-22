@@ -22,6 +22,10 @@ import org.gridlab.gat.security.cpi.SecurityContextUtils;
  * @author rob
  */
 class SftpGanymedContextCreator implements SecurityContextCreator {
+    
+    protected static Logger logger = Logger
+    .getLogger(SftpGanymedContextCreator.class);
+
     public SecurityContext createDefaultSecurityContext(GATContext gatContext,
             Preferences preferences, URI location)
             throws CouldNotInitializeCredentialException,
@@ -55,8 +59,7 @@ class SftpGanymedContextCreator implements SecurityContextCreator {
             } else { // public / private key
 
                 if (!c.getKeyfile().refersToLocalHost()) {
-                    System.err
-                            .println("WARNING: URI for key file does not refer to local host, skipping this security context");
+                    logger.info("WARNING: URI for key file does not refer to local host, skipping this security context");
                 } else {
                     info = new SftpGanymedUserInfo();
                     info.username = c.getUsername();

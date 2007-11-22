@@ -1,144 +1,81 @@
-My todo:
-- format TODOs and readmes in HTML (to avoid linebreak problems windows/linux)
-max 80
+JavaGAT 2.0
+-----------
+
+	- gt4 file adaptor does not check URI. (it accepts aap://xyz)
+	DONE
+	- Document new securityContext features
+- Complete GT4 adaptor set
+* test it
+* integrate Frank Knoll's advert service adaptors
+	- Document all preferences and attributes
+	  DONE (attributes.html and preferences.html in doc)
+- Make a pass over all javadocs
+	- Document GAT.end()
+	  Seems to be done
+	- Check: sandbox CTRL-C during poststage stops it?
+	What do you mean? create a job with some poststaging file and press CTRL+C
+	during the poststaging? What should happen? Shutdownhooks etc? Now the sandbox
+	dir isn't deleted and the poststaging is stopped. (SubmitRemoteJob6)
+	- Create and use InvalidUsernameOrPasswordException
+	DONE
+- Store VO (virtual organisation) in SecurityContext
+	- Cleanup SSH adaptors:
+	  * If the executable does not exist, we get no error.
+	  CommandlineSsh --> error
+	  other adaptors don't depend on executable
+	  * Broker does not work to fs3
+	  DONE
+	  * remove retry code for job submit
+	  DONE
+      * use a cache to save on connection setup time(also for sftp) --> what about env? unset?
+      DONE for sftp, tested with ssh but no improvement (JSch probably caches internally)
+	  * support environment vars in ssh broker.
+	  DONE
+	  * remove old ssh/sftp adaptors?
+	  CopyingFileInputStream? It is useless because internally it uses the
+	  CommandLineSshFileAdaptor and invokes the length method which is not 
+	  implemented
+- URI file://localhost//score.icme is not handled correctly on windows?
+- Look into file permissions for Keith (gridftp)
+	- MultiJobs: number of jobs/machine to run concurrently
+	DONE
+	- Check events: globus adaptor should throw all events (PRE_STAGING, SUBMITTED,
+	  RUNNING, POST_STAGING, STOPPED).
+	Sent a mail to Gregor von Laszewski
+- Fix race in globus adaptor: access to shutdownInProgress should be 
+  synchronized
+- Fix leaking connections with globus. Enric reported that if a 
+  GLOBUS_TCP_PORT_RANGE is set, globus job submission fails after a while
+- Task model?
+-------------------------------------------------------------------------------
+  
+JavaGAT 2.1
+-----------
+- Sandbox: seperate prestaging and sandbox creation (so we can do 
+  asynchronous prestaging)
+- complete glite adaptor set: Integrate Anna's and Atul's adaptors
+- rewrite connection caching: make one framework for all adaptors
+- An API for multi-cluster jobs (co-scheduling)
+- JSDL interface
+- resource broker adaptors should fill in ALL defined states in getInfo call.
+- in the engine, check if GAT.end hasn't been called before doing an operation.
+- brokering: also allow output to be printed on the screen, when no output files
+  are given.
+  maybe use special property for this? Not all middlewares can do this.
+- merge stdout and stderr into one file
+- Integrate Koala adaptor
+
+
+
+Long term
+---------
+
 - fix firing of metrics: store unsubscribe / subscribe until a good moment, 
   don't handle them in the upcall itself
-  --> ??
 - implement GATSelf
-  --> ??
-- Think about the case where an adaptor throws an exception because there is an irrecoverable
-  error (file does not exists). In this case, there is no need to try the other adaptors.
-
-- add feature to disable intelligent dispatching for certain API types (streams)
+- Think about the case where an adaptor throws an exception because there is an
+  irrecoverable
+  error (file does not exists). In this case, there is no need to try the other
+  adaptors.
+- feature to disable intelligent dispatching for certain API types (streams)
   and/or let streams save file pointer
-
-- brokering: also allow output to be printed on the screen, when no output files are given.
-  maybe use special property for this? Not all middlewares can do this.
-
-  SSH: - If the executable does not exist, we get no error.
-       - Broker does not work to fs3
-       - Also add retry code for file stransfers (already done for job submit)
-       - use a cache to save on connection setup time(also for sftp)
-       - remote streaming seems to hang
-       - cache connections for ssh adaptor (Ana?)
-       - support environmremote streaming seems to hang ent vars in ssh broker.
-
-- resource broker adaptors should fill in ALL defined states in the getInfo call.
-
-- GAT_LOCATION -> JAVAGAT_HOME ?
-
-- in the engine, check if GAT.end hasn't been called before doing an operation.
-
-- add InvalidUsernameOrPasswordException
-
-- remoteSandboxOutput -> write to a specified place.
-- upload prestage wrapper once (static) per cluster / per gat lifetime
-  avoid diskspace problems with big runs
-- fix: CTRL-C during poststage stops it.
-- store VO in SecurityContext
-- integrate GT4 adaptors from Balasz
-- integrate GT4 adaptors from Frank Knoll
-
-List of bugs from Frank Seinstra:
----------------------------------------------------------------------------------------
-
-PROBLEM 2: SEEMS TO BE A REAL BUG!!!
-----------
-Lastigheidje met URIs ( onder Windows, met file 'score.icme' in C:\ ):
-
-grun tutorial.RemoteCat file://localhost//score.icme -----------> FOUT
-grun tutorial.RemoteCat file://localhost/\score.icme -----------> OK
-
-grun tutorial.RemoteCat file:////score.icme --------------------> OK
-grun tutorial.RemoteCat file:///\score.icme --------------------> OK
-
-NOTE: default root dir voor file:// protocol is c:\WINNT\profiles\frank\
-
----------------------------------------------------------------------------------------
-
-PROBLEM 4: 
-----------
-GAT: public static void end()
-NOT DOCUMENTED, or actually, documentation is empty...!
-Er staat niet eens dat ik deze method MOET uitvoeren aan het eind van mijn GAT proggie.
-
-
-PROBLEM 6: TO BE CHECKED...
-----------
-IS THIS OK (in documentation, constructors) ??? :
-- FileInputStream(org.gridlab.gat.io.FileInputStreamInterface in) 
-- FileOutputStream(org.gridlab.gat.io.FileOutputStreamInterface out)
-
----------------------------------------------------------------------------------------
-
-
-PROBLEM 8:
-----------
-createFile documentation issues
-
-public static File createFile(GATContext gatContext,
-                              Preferences preferences,
-                              String location)
-                       throws GATObjectCreationException
-
-    Constructs a File instance which corresponds to the physical file identified by the
-    passed URI and...
-    ^^^^^^^^^^
-
-ALSO FOR: createFile(GATContext gatContext, String location) !!!!
-ALSO FOR: createLogicalFile(GATContext gatContext, Preferences preferences, String name, int mode)
-
-NOTE: elsewhere you say URI (in String format)
-
----------------------------------------------------------------------------------------
-
-PROBLEM 9: ROB REAL BUG!!! TO DO ... en een beetje rap graag!
-----------
-Is there an concise overview of all definable 'Attributes' and 'Preferences'???
-
----------------------------------------------------------------------------------------
-
-PROBLEM 10: TO BE FOUND???
------------
-grun lib.MySubmitLocalJob
-
-Exception in thread "main"
---- START OF NESTED EXCEPTION ---
-*** sandbox failed: could not create a sandbox
-*** GlobusResourceBrokerAdaptor failed: The Globus resource broker needs a hostn
-ame
-*** SshResourceBrokerAdaptor failed: not a remote file, scheme is: file
-*** sandbox failed: could not create a sandbox
-*** sandbox failed: could not create a sandbox
-*** PbsBrokerAdaptor failed: The job description does not contain a hardware res
-ource description
-*** ProActiveResourceBrokerAdaptor failed: java.lang.NullPointerException
-*** SGEBrokerAdaptor failed: Provider for org.ggf.drmaa.SessionFactory cannot be
- found
-*** cannot submit job to zorilla node failed: Connection refused: connect
---- END OF NESTED EXCEPTION ---
-
-        at org.gridlab.gat.engine.AdaptorInvocationHandler.invoke(AdaptorInvocat
-ionHandler.java:84)
-        at $Proxy0.submitJob(Unknown Source)
-        at lib.MySubmitLocalJob.main(MySubmitLocalJob.java:32)
-
----------------------------------------------------------------------------------------
-
-List of bugs Alexander
-
----------------------------------------------------------------------------------------
-
-if I create a softwaredescription object in JavaGAT, I have methods as 
-setStdin or setStdout, which alllows me to add the name of ths stdin and 
-stdout, and also the stderr to a softwaredescription.
-
-What is missing in this context is the possiblity to yank stderr and stdout 
-into one file, as possible with SGE or PBS. I have to put this to a 
-HardwareResourceDescription object, even though it might fit better to a 
-softwaredescription object.
-
-ROB: not possible with many middlewares
-
----------------------------------------------------------------------------------------
-

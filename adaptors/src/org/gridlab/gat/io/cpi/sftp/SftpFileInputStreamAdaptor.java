@@ -49,7 +49,7 @@ public class SftpFileInputStreamAdaptor extends FileInputStreamCpi {
         try {
             in = createStream();
         } catch (GATInvocationException e) {
-            throw new GATObjectCreationException("grid ftp inputstream", e);
+            throw new GATObjectCreationException("SftpFileInputStreamAdaptor", e);
         }
     }
 
@@ -70,7 +70,10 @@ public class SftpFileInputStreamAdaptor extends FileInputStreamCpi {
             return sfis;
 
         } catch (Exception e) {
-            throw new GATInvocationException("sftp file inputstream", e);
+            if (e instanceof GATInvocationException) {
+                throw (GATInvocationException) e;
+            }
+            throw new GATInvocationException("SftpFileInputStreamAdaptor", e);
         }
     }
 
@@ -92,7 +95,7 @@ public class SftpFileInputStreamAdaptor extends FileInputStreamCpi {
         try {
             in.close();
         } catch (IOException e) {
-            throw new GATInvocationException("SftpFileInputStream", e);
+            throw new GATInvocationException("SftpFileInputStreamAdaptor", e);
         }
         
         SftpFileAdaptor.closeConnection(c);
@@ -118,7 +121,7 @@ public class SftpFileInputStreamAdaptor extends FileInputStreamCpi {
             if (res >= 0) available--;
             return res;
         } catch (IOException e) {
-            throw new GATInvocationException("SftpFileInputStream", e);
+            throw new GATInvocationException("SftpFileInputStreamAdaptor", e);
         }
     }
 
@@ -134,7 +137,7 @@ public class SftpFileInputStreamAdaptor extends FileInputStreamCpi {
             if (res >= 0) available -= res;
             return res;
         } catch (IOException e) {
-            throw new GATInvocationException("SftpFileInputStream", e);
+            throw new GATInvocationException("SftpFileInputStreamAdaptor", e);
         }
     }
 
@@ -149,7 +152,7 @@ public class SftpFileInputStreamAdaptor extends FileInputStreamCpi {
             if (res >= 0) available -= res;
             return res;
         } catch (IOException e) {
-            throw new GATInvocationException("SftpFileInputStream", e);
+            throw new GATInvocationException("SftpFileInputStreamAdaptor", e);
         }
     }
 
@@ -164,7 +167,7 @@ public class SftpFileInputStreamAdaptor extends FileInputStreamCpi {
             available -= res;
             return res;
         } catch (IOException e) {
-            throw new GATInvocationException("SftpFileInputStream", e);
+            throw new GATInvocationException("SftpFileInputStreamAdaptor", e);
         }
     }
 }

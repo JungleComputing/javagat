@@ -22,7 +22,6 @@ import org.gridlab.gat.advert.Advertisable;
 import org.gridlab.gat.engine.GATEngine;
 import org.gridlab.gat.monitoring.Metric;
 import org.gridlab.gat.monitoring.MetricDefinition;
-import org.gridlab.gat.monitoring.MetricListener;
 import org.gridlab.gat.monitoring.MetricValue;
 import org.gridlab.gat.resources.JobDescription;
 import org.gridlab.gat.resources.cpi.JobCpi;
@@ -64,10 +63,8 @@ public class GlobusJob extends JobCpi implements GramJobListener,
 
     public GlobusJob(GATContext gatContext, Preferences preferences,
             GlobusResourceBrokerAdaptor broker, JobDescription jobDescription,
-            GramJob j, Sandbox sandbox, long startTime,
-            MetricListener listener, Metric metric) {
-        super(gatContext, preferences, jobDescription, sandbox, listener,
-                metric);
+            GramJob j, Sandbox sandbox, long startTime) {
+        super(gatContext, preferences, jobDescription, sandbox);
         this.startTime = startTime;
         this.j = j;
         jobID = j.getIDAsString();
@@ -90,10 +87,8 @@ public class GlobusJob extends JobCpi implements GramJobListener,
      * constructor for unmarshalled jobs
      */
     public GlobusJob(GATContext gatContext, Preferences preferences,
-            SerializedJob sj, MetricListener listener, Metric metric)
-            throws GATObjectCreationException {
-        super(gatContext, preferences, sj.getJobDescription(), sj.getSandbox(),
-                listener, metric);
+            SerializedJob sj) throws GATObjectCreationException {
+        super(gatContext, preferences, sj.getJobDescription(), sj.getSandbox());
 
         if (logger.isDebugEnabled()) {
             logger.debug("reconstructing globusjob: " + sj);
@@ -216,7 +211,6 @@ public class GlobusJob extends JobCpi implements GramJobListener,
             }
             return;
         }
-
         switch (j.getStatus()) {
         case STATUS_ACTIVE:
             if (postStageFinished) {
@@ -412,7 +406,7 @@ public class GlobusJob extends JobCpi implements GramJobListener,
         // behind a firewall.
         // OOPS, this is not possible, the poll also generates this callback!
         // poller.die();
-
+        System.out.println("GRAM: " + newJob.getStatus());
         handleStatusChange(newJob);
     }
 
@@ -542,8 +536,8 @@ public class GlobusJob extends JobCpi implements GramJobListener,
     }
 
     public static Advertisable unmarshal(GATContext context,
-            Preferences preferences, String s, MetricListener listener,
-            Metric metric) throws GATObjectCreationException {
+            Preferences preferences, String s)
+            throws GATObjectCreationException {
         if (logger.isDebugEnabled()) {
             logger.debug("unmarshalled seralized job: " + s);
         }
@@ -568,6 +562,6 @@ public class GlobusJob extends JobCpi implements GramJobListener,
             }
         }
 
-        return new GlobusJob(context, preferences, sj, listener, metric);
+        return new GlobusJob(context, preferences, sj);
     }
 }

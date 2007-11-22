@@ -18,11 +18,11 @@ import java.net.URL;
  * This class implements URIs. It is API compatible with java.net.URI. However,
  * the standard Java class has a bug. The Java URI class does not work correctly
  * if you omit the hostname in a URI. For example: <BR>
- * file:// <hostname>/ <path><BR>
+ * file://&lt;hostname&gt;/<path><BR>
  * and <BR>
- * <hostname>== not set (empty string) <BR>
+ * &lt;hostname&gt;== not set (empty string) <BR>
  * and <BR>
- * <path>== /bin/date <BR>
+ * &lt;path&gt;== /bin/date <BR>
  * then the correct URI is <BR>
  * file:////bin/date <BR>
  * So four slashes in total after the "file:" <BR>

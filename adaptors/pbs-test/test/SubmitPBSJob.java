@@ -148,7 +148,7 @@ public class SubmitPBSJob {
             GATContext context = new GATContext();
         
             Preferences prefs = new Preferences();
-            prefs.put("ResourceBroker.adaptor.name", "PbsBrokerAdaptor");
+            prefs.put("ResourceBroker.adaptor.name", "PbsBroker");
             ResourceBroker broker = GAT.createResourceBroker(context, prefs);
 
             /**

@@ -43,7 +43,7 @@ public class FTPFileInputStreamAdaptor extends GlobusFileInputStreamAdaptor {
         try {
             in = createStream();
         } catch (GATInvocationException e) {
-            throw new GATObjectCreationException("ftp file inputstream", e);
+            throw new GATObjectCreationException("FTPFileInputStreamAdaptor", e);
         }
     }
 
@@ -83,13 +83,20 @@ public class FTPFileInputStreamAdaptor extends GlobusFileInputStreamAdaptor {
         } catch (Exception e) {
             if (e instanceof ServerException) {
                 if (((ServerException) e).getCode() == ServerException.SERVER_REFUSED) {
-                    if (e.getMessage().startsWith("Server refused performing the request. Custom message: Bad password.")) {
-                        throw new GATInvocationException("ftp" , new InvalidUsernameOrPasswordException(e));
+                    if (e
+                            .getMessage()
+                            .startsWith(
+                                    "Server refused performing the request. Custom message: Bad password.")
+                            || e
+                                    .getMessage()
+                                    .startsWith(
+                                            "Server refused performing the request. Custom message: Bad user.")) {
+                        throw new InvalidUsernameOrPasswordException(e);
                     }
                 }
             }
             // ouch, both failed.
-            throw new GATInvocationException("ftp", e);
+            throw new GATInvocationException("FTPFileInputStreamAdaptor", e);
         }
     }
 }

@@ -7,9 +7,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
+import org.apache.log4j.Logger;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.GATObjectCreationException;
+import org.gridlab.gat.InvalidUsernameOrPasswordException;
 import org.gridlab.gat.Preferences;
 import org.gridlab.gat.URI;
 import org.gridlab.gat.io.cpi.FileOutputStreamCpi;
@@ -17,12 +19,17 @@ import org.gridlab.gat.io.cpi.FileOutputStreamCpi;
 import com.jcraft.jsch.Channel;
 import com.jcraft.jsch.ChannelExec;
 import com.jcraft.jsch.JSch;
+import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.Session;
 
 /**
  * @author rob
  */
 public class SshFileOutputStreamAdaptor extends FileOutputStreamCpi {
+
+    protected static Logger logger = Logger
+            .getLogger(SshFileOutputStreamAdaptor.class);
+
     private OutputStream outputStream;
 
     private InputStream inputStream;
@@ -44,14 +51,13 @@ public class SshFileOutputStreamAdaptor extends FileOutputStreamCpi {
         // the local adaptor.
         if (location.getHost() == null) {
             throw new GATObjectCreationException(
-                "this adaptor cannot handle local files");
+                    "this adaptor cannot handle local files");
         }
 
         try {
             prepareToWriteStream();
-        } catch (Exception e) {
-            throw new GATObjectCreationException("could not prepare stream: "
-                + e);
+        } catch (GATInvocationException e) {
+            throw new GATObjectCreationException("SshFileOutputStream", e);
         }
     }
 
@@ -67,22 +73,22 @@ public class SshFileOutputStreamAdaptor extends FileOutputStreamCpi {
 
             try {
                 sui = SSHSecurityUtils.getSshCredential(gatContext,
-                    preferences, "ssh", location, SshFileAdaptor.SSH_PORT);
+                        preferences, "ssh", location, SshFileAdaptor.SSH_PORT);
             } catch (Exception e) {
-                System.out.println("SshFileOutputStream: "
-                    + "failed to retrieve credentials" + e);
+                logger.info("SshFileOutputStream: "
+                        + "failed to retrieve credentials" + e);
             }
 
             if (sui == null) {
                 throw new GATObjectCreationException(
-                    "Unable to retrieve user info for authentication");
+                        "Unable to retrieve user info for authentication");
             }
 
             if (sui.privateKeyfile != null) {
                 jsch.addIdentity(sui.privateKeyfile);
             }
 
-            //to be modified, this part goes inside the SSHSecurityUtils
+            // to be modified, this part goes inside the SSHSecurityUtils
             if (location.getUserInfo() != null) {
                 sui.username = location.getUserInfo();
             }
@@ -114,39 +120,41 @@ public class SshFileOutputStreamAdaptor extends FileOutputStreamCpi {
             channel.connect();
 
             /*
-             if (SshFileAdaptor.checkAck(in) != 0) {
-             SshFileAdaptor.cleanSession(session, channel);
-             throw new GATInvocationException("SshFileOutputStreamAdaptor: "
-             + "failed checkAck after sending scp command for "
-             + "stream to " + location);
-             }
-
+             * if (SshFileAdaptor.checkAck(in) != 0) {
+             * SshFileAdaptor.cleanSession(session, channel); throw new
+             * GATInvocationException("SshFileOutputStreamAdaptor: " + "failed
+             * checkAck after sending scp command for " + "stream to " +
+             * location); }
+             * 
              */
-            /*try to cheat, as we don't know the filesize in advance*/
-            /*        long filesize = 1;
-             command = "C0644 " + filesize + " ";
-             command += new java.io.File(location.getPath()).getName();
-             command += "\n";
-             out.write(command.getBytes());
-             out.flush();
-
-             if (SshFileAdaptor.checkAck(in) != 0) {
-             throw new IOException("failed to receive ack after sending header"
-             + " for transfer file to remote machine");
-             }
-
-             outputStream = new ByteArrayOutputStream();
-             channel.setOutputStream(outputStream);
-
+            /* try to cheat, as we don't know the filesize in advance */
+            /*
+             * long filesize = 1; command = "C0644 " + filesize + " "; command +=
+             * new java.io.File(location.getPath()).getName(); command += "\n";
+             * out.write(command.getBytes()); out.flush();
+             * 
+             * if (SshFileAdaptor.checkAck(in) != 0) { throw new
+             * IOException("failed to receive ack after sending header" + " for
+             * transfer file to remote machine"); }
+             * 
+             * outputStream = new ByteArrayOutputStream();
+             * channel.setOutputStream(outputStream);
+             * 
              */
         } catch (Exception e) {
-            throw new GATInvocationException("SshFileOutputStream", e);
+            if (e instanceof JSchException) {
+                if (e.getMessage().equals("Auth fail")) {
+                    throw new InvalidUsernameOrPasswordException(e);
+                }
+            } else {
+                throw new GATInvocationException("SshFileOutputStream", e);
+            }
         }
     }
 
     /*
      * (non-Javadoc)
-     *
+     * 
      * @see java.io.OutputStream#close()
      */
     public void close() throws GATInvocationException {
@@ -162,7 +170,7 @@ public class SshFileOutputStreamAdaptor extends FileOutputStreamCpi {
 
     /*
      * (non-Javadoc)
-     *
+     * 
      * @see java.io.OutputStream#flush()
      */
     public void flush() throws GATInvocationException {
@@ -176,7 +184,7 @@ public class SshFileOutputStreamAdaptor extends FileOutputStreamCpi {
 
     /*
      * (non-Javadoc)
-     *
+     * 
      * @see java.io.OutputStream#write(byte[], int, int)
      */
     public void write(byte[] b, int offset, int len)
@@ -190,7 +198,7 @@ public class SshFileOutputStreamAdaptor extends FileOutputStreamCpi {
 
     /*
      * (non-Javadoc)
-     *
+     * 
      * @see java.io.OutputStream#write(byte[])
      */
     public void write(byte[] arg0) throws GATInvocationException {
@@ -203,7 +211,7 @@ public class SshFileOutputStreamAdaptor extends FileOutputStreamCpi {
 
     /*
      * (non-Javadoc)
-     *
+     * 
      * @see java.io.OutputStream#write(int)
      */
     public void write(int arg0) throws GATInvocationException {

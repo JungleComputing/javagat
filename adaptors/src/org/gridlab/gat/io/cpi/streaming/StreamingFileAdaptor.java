@@ -52,7 +52,10 @@ public class StreamingFileAdaptor extends FileCpi {
             dataOut.flush();
             dataOut.close();
         } catch (Exception e) {
-            throw new GATInvocationException("streaming copy", e);
+            if (e instanceof GATInvocationException) {
+                throw (GATInvocationException) e;
+            }
+            throw new GATInvocationException("StreamingFileAdaptor", e);
         }
     }
 
@@ -73,9 +76,9 @@ public class StreamingFileAdaptor extends FileCpi {
                 }
                 return res != -1;
             } catch (GATObjectCreationException e) {
-                throw new GATInvocationException("exists failed" + e);
+                throw new GATInvocationException("StreamingFileAdaptor" + e.toString("    "));
             } catch (IOException e) {
-                throw new GATInvocationException("exists failed" + e);
+                throw new GATInvocationException("StreamingFileAdaptor" + e);
             }
         }
 

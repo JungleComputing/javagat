@@ -3,6 +3,11 @@
  */
 package org.gridlab.gat;
 
+/**
+ * Thrown when a credential could not be initialized
+ * 
+ * @author rob
+ */
 @SuppressWarnings("serial")
 public class CouldNotInitializeCredentialException extends GATInvocationException {
     public CouldNotInitializeCredentialException() {

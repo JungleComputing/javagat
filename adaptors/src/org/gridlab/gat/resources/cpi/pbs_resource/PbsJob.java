@@ -12,8 +12,6 @@ import java.util.Map;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.Preferences;
-import org.gridlab.gat.monitoring.Metric;
-import org.gridlab.gat.monitoring.MetricListener;
 import org.gridlab.gat.resources.JobDescription;
 import org.gridlab.gat.resources.cpi.JobCpi;
 import org.gridlab.gat.resources.cpi.Sandbox;
@@ -32,17 +30,8 @@ public class PbsJob extends JobCpi {
 
 	public PbsJob(GATContext gatContext, Preferences preferences,
 			PbsResourceBrokerAdaptor broker, JobDescription description,
-			String id, Sandbox sandbox, MetricListener listener, Metric metric) {
-		super(gatContext, preferences, description, sandbox, listener, metric);
-		if (listener != null && metric != null) {
-			try {
-				addMetricListener(listener, metric);
-			} catch (GATInvocationException e) {
-				if (logger.isDebugEnabled()) {
-					logger.debug("Failed to add metric listener to pbs Job:" + e);
-				}
-			}
-		}
+			String id, Sandbox sandbox) {
+		super(gatContext, preferences, description, sandbox);
 		mBroker = broker;
 		mId = id;
 		state = INITIAL;

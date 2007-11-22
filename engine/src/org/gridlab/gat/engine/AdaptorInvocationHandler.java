@@ -296,10 +296,13 @@ public class AdaptorInvocationHandler implements InvocationHandler {
         try {
             result = adaptor.newInstance(parameterTypes, newParameters);
         } catch (Throwable t) {
-
-            GATObjectCreationException exc = new GATObjectCreationException();
-            exc.add(adaptor.toString(), t);
-
+            GATObjectCreationException exc;
+            if (t instanceof GATObjectCreationException) {
+                exc = (GATObjectCreationException) t;
+            } else {
+                exc = new GATObjectCreationException();
+                exc.add(adaptor.toString(), t);
+            }
             if (t instanceof AdaptorNotApplicableException) {
                 if (logger.isDebugEnabled()) {
                     logger.debug("initAdaptor: " + adaptor.getShortCpiName()

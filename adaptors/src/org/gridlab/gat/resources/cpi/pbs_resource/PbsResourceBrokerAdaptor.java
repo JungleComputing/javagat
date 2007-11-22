@@ -18,7 +18,6 @@ import org.gridlab.gat.GATObjectCreationException;
 import org.gridlab.gat.Preferences;
 import org.gridlab.gat.URI;
 import org.gridlab.gat.io.File;
-import org.gridlab.gat.monitoring.Metric;
 import org.gridlab.gat.monitoring.MetricListener;
 import org.gridlab.gat.resources.HardwareResourceDescription;
 import org.gridlab.gat.resources.Job;
@@ -67,7 +66,7 @@ public class PbsResourceBrokerAdaptor extends ResourceBrokerCpi implements IPara
      * @date 15-05-2006, extended for storing rc of the application to $HOME/.rc.JobID
      */
 
-    public Job submitJob(JobDescription description, MetricListener listener, Metric metric)
+    public Job submitJob(JobDescription description, MetricListener listener, String metricDefinitionName)
             throws GATInvocationException {
         try {
             /**
@@ -277,7 +276,7 @@ public class PbsResourceBrokerAdaptor extends ResourceBrokerCpi implements IPara
                 }
             }
             return new PbsJob(gatContext, preferences, this, description, id,
-                    sandbox, listener, metric);
+                    sandbox);
         } catch (IOException e) {
             throw new GATInvocationException("pbs", e);
         }
