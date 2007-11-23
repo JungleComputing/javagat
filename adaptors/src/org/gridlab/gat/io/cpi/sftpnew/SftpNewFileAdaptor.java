@@ -322,26 +322,24 @@ public class SftpNewFileAdaptor extends FileCpi {
         SftpNewConnection c = createChannel(gatContext, preferences, location);
         try {
             SftpATTRS attr = c.channel.lstat(location.getPath());
-
+            closeChannel(c);
             return attr.getSize();
         } catch (Exception e) {
-            throw new GATInvocationException("sftpnew", e);
-        } finally {
             closeChannel(c);
-        }
+            throw new GATInvocationException("sftpnew", e);
+        } 
     }
 
     public boolean isDirectory() throws GATInvocationException {
         SftpNewConnection c = createChannel(gatContext, preferences, location);
         try {
             SftpATTRS attr = c.channel.lstat(location.getPath());
-
+            closeChannel(c);
             return attr.isDir();
         } catch (Exception e) {
-            throw new GATInvocationException("sftpnew", e);
-        } finally {
             closeChannel(c);
-        }
+            throw new GATInvocationException("sftpnew", e);
+        } 
     }
 
     public boolean canRead() throws GATInvocationException {
@@ -350,11 +348,11 @@ public class SftpNewFileAdaptor extends FileCpi {
             SftpATTRS attr = c.channel.lstat(location.getPath());
 
             String permissions = attr.getPermissionsString();
+            closeChannel(c);
             return permissions.charAt(1) == 'r';
         } catch (Exception e) {
-            throw new GATInvocationException("sftpnew", e);
-        } finally {
             closeChannel(c);
+            throw new GATInvocationException("sftpnew", e);
         }
     }
 
@@ -364,43 +362,44 @@ public class SftpNewFileAdaptor extends FileCpi {
             SftpATTRS attr = c.channel.lstat(location.getPath());
 
             String permissions = attr.getPermissionsString();
+            closeChannel(c);
             return permissions.charAt(2) == 'w';
         } catch (Exception e) {
-            throw new GATInvocationException("sftpnew", e);
-        } finally {
             closeChannel(c);
-        }
+            throw new GATInvocationException("sftpnew", e);
+        } 
     }
 
     public long lastModified() throws GATInvocationException {
         SftpNewConnection c = createChannel(gatContext, preferences, location);
         try {
             SftpATTRS attr = c.channel.lstat(location.getPath());
+            closeChannel(c);
             return (long) attr.getMTime() * 1000;
         } catch (Exception e) {
-            throw new GATInvocationException("sftpnew", e);
-        } finally {
             closeChannel(c);
-        }
+            throw new GATInvocationException("sftpnew", e);
+        } 
     }
 
     public boolean isFile() throws GATInvocationException {
-        return !isDirectory();
+        return !isDirectory() && exists();
     }
 
     public boolean exists() throws GATInvocationException {
         SftpNewConnection c = createChannel(gatContext, preferences, location);
         try {
             c.channel.lstat(location.getPath());
+            closeChannel(c);
             return true;
         } catch (SftpException e) {
             if (e.id == ChannelSftp.SSH_FX_NO_SUCH_FILE) {
+                closeChannel(c);
                 return false;
             }
-            throw new GATInvocationException("sftpnew", e);
-        } finally {
             closeChannel(c);
-        }
+            throw new GATInvocationException("sftpnew", e);
+        } 
     }
 
     public boolean delete() throws GATInvocationException {
@@ -410,41 +409,44 @@ public class SftpNewFileAdaptor extends FileCpi {
             isFile = isFile();
         } catch (GATInvocationException e) {
             if (e.getMessage().equals("No such file")) {
+                closeChannel(c);
                 return false;
             }
+            closeChannel(c);
             throw e;
         }
-
         try {
             if (isFile) {
                 c.channel.rm(location.getPath());
             } else {
                 c.channel.rmdir(location.getPath());
             }
+            closeChannel(c);
             return true;
         } catch (SftpException e) {
             if (e.id == ChannelSftp.SSH_FX_NO_SUCH_FILE) {
+                closeChannel(c);
                 return false;
             }
-            throw new GATInvocationException("sftpnew", e);
-        } finally {
             closeChannel(c);
-        }
+            throw new GATInvocationException("sftpnew", e);
+        } 
     }
 
     public boolean mkdir() throws GATInvocationException {
         SftpNewConnection c = createChannel(gatContext, preferences, location);
         try {
             c.channel.mkdir(location.getPath());
+            closeChannel(c);
             return true;
         } catch (SftpException e) {
             if (e.id == ChannelSftp.SSH_FX_FAILURE) {
+                closeChannel(c);
                 return false;
             }
-            throw new GATInvocationException("sftpnew", e);
-        } finally {
             closeChannel(c);
-        }
+            throw new GATInvocationException("sftpnew", e);
+        } 
     }
 
     public boolean mkdirs() throws GATInvocationException {
@@ -460,7 +462,6 @@ public class SftpNewFileAdaptor extends FileCpi {
                 c.channel.lstat(path);
             } catch (SftpException ex) {
                 if (ex.id == ChannelSftp.SSH_FX_NO_SUCH_FILE) {
-
                     /*
                      * The directory does not exist, we create it.
                      */
@@ -474,15 +475,13 @@ public class SftpNewFileAdaptor extends FileCpi {
                         throw new GATInvocationException("sftpnew", ex2);
                     }
                 } else {
+                    closeChannel(c);
                     throw new GATInvocationException("sftpnew", ex);
                 }
             }
-
             path += "/";
         }
-
         closeChannel(c);
-
         return true;
     }
 
@@ -505,12 +504,12 @@ public class SftpNewFileAdaptor extends FileCpi {
             for (int i = 0; i < result.size(); i++) {
                 res[i] = (String) result.get(i);
             }
+            closeChannel(c);
             return res;
         } catch (Exception e) {
-            throw new GATInvocationException("sftp", e);
-        } finally {
             closeChannel(c);
-        }
+            throw new GATInvocationException("sftp", e);
+        } 
     }
 
     public static void end() {
