@@ -166,7 +166,7 @@ public class ZorillaJob extends JobCpi implements Runnable {
 
 			jobID = connection.submitJob(executable.toString(), arguments,
 					environment, attributes, preStageFiles, postStageFiles,
-					stdout, stdin, stderr);
+					stdin, stdout, stderr);
 			connection.close();
 		} catch (IOException e) {
 			throw new GATInvocationException(
