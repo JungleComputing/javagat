@@ -147,7 +147,11 @@ public class SshResourceBrokerAdaptor extends ResourceBrokerCpi {
 
             String path = null;
             path = location.getPath();
-            String command = "";
+            
+            Sandbox sandbox = new Sandbox(gatContext, preferences, description,
+                    host, null, true, false, false, false);
+            
+            String command = "cd " + sandbox.getSandbox() + " && ";
             Map<String, Object> env = sd.getEnvironment();
             if (env != null && !env.isEmpty()) {
                 Set<String> s = env.keySet();
@@ -163,7 +167,7 @@ public class SshResourceBrokerAdaptor extends ResourceBrokerCpi {
             if (logger.isInfoEnabled()) {
                 logger.info("running command: " + command);
             }
-
+            System.out.println("SSH: "+ command);
             Object[] streams = execCommand(command);
 
             org.gridlab.gat.io.File stdin = sd.getStdin();
@@ -244,9 +248,6 @@ public class SshResourceBrokerAdaptor extends ResourceBrokerCpi {
             if (logger.isInfoEnabled()) {
                 logger.info("finished setting stderr");
             }
-
-            Sandbox sandbox = new Sandbox(gatContext, preferences, description,
-                    host, null, true, false, false, false);
 
             Job j = new SshJob(gatContext, preferences, this, description,
                     session, channel, sandbox);
