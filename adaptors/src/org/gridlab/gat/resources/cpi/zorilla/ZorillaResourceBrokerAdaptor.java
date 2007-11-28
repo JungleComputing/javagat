@@ -3,10 +3,17 @@ package org.gridlab.gat.resources.cpi.zorilla;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
-import nl.vu.zorilla.zoni.ZoniProtocol;
+import ibis.zorilla.zoni.Callback;
+import ibis.zorilla.zoni.CallbackReceiver;
+import ibis.zorilla.zoni.JobInfo;
+import ibis.zorilla.zoni.ZoniConnection;
+import ibis.zorilla.zoni.ZoniProtocol;
 
+import org.apache.log4j.Logger;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.Preferences;
@@ -26,9 +33,25 @@ import org.gridlab.gat.resources.cpi.ResourceBrokerCpi;
  * @author ndrost
  * 
  */
-public class ZorillaResourceBrokerAdaptor extends ResourceBrokerCpi {
+public class ZorillaResourceBrokerAdaptor extends ResourceBrokerCpi implements
+        Callback, Runnable {
 
-    private final InetSocketAddress nodeSocketAddress;
+    // update status of each job every minute
+    public static final int TIMEOUT = 60000;
+
+    private static final Logger logger =
+        Logger.getLogger(ZorillaResourceBrokerAdaptor.class);
+
+    private static boolean ended = false;
+
+    private static synchronized boolean hasEnded() {
+        return ended;
+    }
+
+    // called by the gat engine
+    public static synchronized void end() {
+        ended = true;
+    }
 
     private static int parsePort(String string) throws GATInvocationException {
         int port;
@@ -70,12 +93,19 @@ public class ZorillaResourceBrokerAdaptor extends ResourceBrokerCpi {
         return new InetSocketAddress(address, port);
     }
 
+    private final InetSocketAddress nodeSocketAddress;
+
+    private final Map<String, ZorillaJob> jobs;
+    
+    //receives callbacks from the zorilla node.
+    private final CallbackReceiver callbackReceiver;
+
     /**
-     * This method constructs a LocalResourceBrokerAdaptor instance
-     * corresponding to the passed GATContext.
+     * Constructs a LocalResourceBrokerAdaptor instance corresponding to the
+     * passed GATContext.
      * 
      * @param gatContext
-     *                A GATContext which will be used to broker resources
+     *            A GATContext which will be used to broker resources
      */
     public ZorillaResourceBrokerAdaptor(GATContext gatContext,
             Preferences preferences) throws Exception {
@@ -85,12 +115,22 @@ public class ZorillaResourceBrokerAdaptor extends ResourceBrokerCpi {
 
         if (addressString == null) {
             // localhost address on default port
-            nodeSocketAddress = new InetSocketAddress(InetAddress
-                    .getByName(null), ZoniProtocol.DEFAULT_PORT);
+            nodeSocketAddress =
+                new InetSocketAddress(InetAddress.getByName(null),
+                        ZoniProtocol.DEFAULT_PORT);
         } else {
             nodeSocketAddress = parseSocketAddress(addressString);
         }
 
+        jobs = new HashMap<String, ZorillaJob>();
+        
+        callbackReceiver = new CallbackReceiver(this);
+        
+        // start a thread to monitor jobs
+        Thread thread = new Thread(this);
+        thread.setDaemon(true);
+        thread.setName("zorilla job monitor");
+        thread.start();
     }
 
     /**
@@ -100,11 +140,11 @@ public class ZorillaResourceBrokerAdaptor extends ResourceBrokerCpi {
      * hardware resource this method returns an error.
      * 
      * @param resourceDescription
-     *                A description, a HardwareResourceDescription, of the
-     *                hardware resource to reserve
+     *            A description, a HardwareResourceDescription, of the hardware
+     *            resource to reserve
      * @param timePeriod
-     *                The time period, a TimePeriod , for which to reserve the
-     *                hardware resource
+     *            The time period, a TimePeriod , for which to reserve the
+     *            hardware resource
      */
     public Reservation reserveResource(ResourceDescription resourceDescription,
             TimePeriod timePeriod) {
@@ -118,8 +158,8 @@ public class ZorillaResourceBrokerAdaptor extends ResourceBrokerCpi {
      * specified hardware resource this method returns an error.
      * 
      * @param resourceDescription
-     *                A description, a HardwareResoucreDescription, of the
-     *                hardware resource(s) to find
+     *            A description, a HardwareResoucreDescription, of the hardware
+     *            resource(s) to find
      * @return java.util.List of HardwareResources upon success
      */
     public List<HardwareResource> findResources(
@@ -148,7 +188,14 @@ public class ZorillaResourceBrokerAdaptor extends ResourceBrokerCpi {
                     "cannot specify host with the Zorilla adaptor");
         }
 
-        return new ZorillaJob(gatContext, preferences, this, description);
+        ZorillaJob result =
+            new ZorillaJob(gatContext, preferences, this, description);
+
+        synchronized (this) {
+            jobs.put(result.getJobID(), result);
+        }
+
+        return result;
     }
 
     /*
@@ -164,4 +211,84 @@ public class ZorillaResourceBrokerAdaptor extends ResourceBrokerCpi {
     InetSocketAddress getNodeSocketAddress() {
         return nodeSocketAddress;
     }
+
+    // zoni callback with update of job info
+    public synchronized void callback(JobInfo info) {
+        if (logger.isDebugEnabled()) {
+            logger.debug("got new job info: " + info);
+        }
+        
+        ZorillaJob job = jobs.get(info.getJobID());
+
+        if (job == null) {
+            logger.warn("could not update job info: job not in active list: "
+                    + info);
+            return;
+        }
+
+        job.setInfo(info);
+    }
+
+    private synchronized ZorillaJob[] getJobs() {
+        return jobs.values().toArray(new ZorillaJob[0]);
+    }
+
+    private synchronized void removeJob(String jobID) {
+        jobs.remove(jobID);
+    }
+
+    private void updateJobInfos() {
+        logger.debug("updating job info for all jobs");
+        ZoniConnection connection = null;
+
+        for (ZorillaJob job : getJobs()) {
+            if (connection == null) {
+                try {
+                    connection =
+                        new ZoniConnection(getNodeSocketAddress(), null,
+                                ZoniProtocol.TYPE_CLIENT);
+                } catch (Exception e) {
+                    logger.error("could not connect to zorilla node to"
+                            + " update node info: ", e);
+                    return;
+                }
+            }
+
+            try {
+                JobInfo info = connection.getJobInfo(job.getJobID());
+                
+                if (logger.isDebugEnabled()) {
+                    logger.debug("retrieved new info: " + info);
+                }
+                
+                job.setInfo(info);
+                
+                if (job.hasEnded()) {
+                    //no need to update info any longer
+                    removeJob(job.getJobID());
+                }
+            } catch (Exception e) {
+                logger.error("could not update state for " + job, e);
+                connection = null;
+            }
+        }
+    }
+
+    public void run() {
+        while (!hasEnded()) {
+            updateJobInfos();
+
+            try {
+                Thread.sleep(TIMEOUT);
+            } catch (InterruptedException e) {
+                //IGNORE
+            }
+        }
+
+    }
+
+    public CallbackReceiver getCallbackReceiver() {
+        return callbackReceiver;
+    }
+
 }
