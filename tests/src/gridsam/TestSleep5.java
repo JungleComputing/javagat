@@ -1,14 +1,18 @@
 package gridsam;
 
-import org.apache.log4j.Logger;
+import java.io.IOException;
+import java.util.List;
 
-import org.icenigrid.gridsam.client.common.ClientSideJobManager;
-import org.icenigrid.gridsam.core.*;
-import org.icenigrid.gridsam.core.jsdl.JSDLSupport;
-import org.icenigrid.schema.jsdl.y2005.m11.*;
+import org.apache.log4j.Logger;
 import org.apache.xmlbeans.XmlException;
-import java.io.*;
-import java.util.*;
+import org.icenigrid.gridsam.client.common.ClientSideJobManager;
+import org.icenigrid.gridsam.core.JobInstance;
+import org.icenigrid.gridsam.core.JobManagerException;
+import org.icenigrid.gridsam.core.JobStage;
+import org.icenigrid.gridsam.core.SubmissionException;
+import org.icenigrid.gridsam.core.UnknownJobException;
+import org.icenigrid.gridsam.core.UnsupportedFeatureException;
+import org.icenigrid.schema.jsdl.y2005.m11.JobDefinitionDocument;
 
 public class TestSleep5 {
 

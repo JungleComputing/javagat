@@ -1,6 +1,5 @@
 package org.gridlab.gat.resources.cpi.gridsam;
 
-import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -16,6 +15,7 @@ import org.gridlab.gat.monitoring.MetricValue;
 import org.gridlab.gat.resources.JobDescription;
 import org.gridlab.gat.resources.cpi.JobCpi;
 import org.gridlab.gat.resources.cpi.Sandbox;
+import org.icenigrid.gridsam.core.JobInstance;
 
 public class GridSAMJob extends JobCpi {
 
@@ -68,37 +68,9 @@ public class GridSAMJob extends JobCpi {
     private long startTime;
     private long runTime;
 
-    GridSAMJob(GATContext gatContext, Preferences preferences, GridSAMResourceBrokerAdaptor broker, JobDescription description, Process p, String host,
-            Sandbox sandbox, OutputForwarder out, OutputForwarder err, long startTime, long startRun) {
-        super(gatContext, preferences, description, sandbox);
-        // this.broker = broker;
-        jobID = allocJobID();
-        Field f = null;
-        try {
-            f = p.getClass().getDeclaredField("pid");
-            f.setAccessible(true);
-            jobID = Integer.parseInt(f.get(p).toString()); // toString
-            // ignore exceptions // necessary?
-        } catch (SecurityException e) {
-        } catch (NoSuchFieldException e) {
-        } catch (IllegalAccessException e) {
-        }
 
-        state = RUNNING;
-        this.p = p;
-        this.out = out;
-        this.err = err;
-        this.startTime = startTime;
-        this.runTime = startRun;
-
-        // Tell the engine that we provide job.status events
-        HashMap<String, Object> returnDef = new HashMap<String, Object>();
-        returnDef.put("status", String.class);
-        statusMetricDefinition = new MetricDefinition("job.status", MetricDefinition.DISCRETE, "String", null, null, returnDef);
-        statusMetric = statusMetricDefinition.createMetric(null);
-        GATEngine.registerMetric(this, "getJobStatus", statusMetricDefinition);
-
-        new ProcessWaiter();
+    public GridSAMJob(GATContext gatContext, Preferences preferences, JobDescription jobDescription, Sandbox sandbox, GridSAMResourceBrokerAdaptor gridSAMResourceBrokerAdaptor, JobInstance jobInstance) {
+        super(gatContext, preferences, jobDescription, sandbox);
     }
 
     /*

@@ -1,5 +1,6 @@
 package org.gridlab.gat.resources.cpi.gridsam;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Iterator;
@@ -8,6 +9,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
+import org.apache.xmlbeans.XmlException;
 import org.gridlab.gat.CommandNotFoundException;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
@@ -30,9 +32,15 @@ import org.gridlab.gat.resources.ResourceDescription;
 import org.gridlab.gat.resources.SoftwareDescription;
 import org.gridlab.gat.resources.cpi.ResourceBrokerCpi;
 import org.gridlab.gat.resources.cpi.Sandbox;
+import org.icenigrid.gridsam.client.common.ClientSideJobManager;
+import org.icenigrid.gridsam.core.ConfigurationException;
+import org.icenigrid.gridsam.core.JobInstance;
+import org.icenigrid.gridsam.core.JobManagerException;
+import org.icenigrid.gridsam.core.SubmissionException;
+import org.icenigrid.gridsam.core.UnsupportedFeatureException;
+import org.icenigrid.schema.jsdl.y2005.m11.JobDefinitionDocument;
 
 public class GridSAMResourceBrokerAdaptor extends ResourceBrokerCpi {
-
 
     private Logger logger = Logger.getLogger(GridSAMResourceBrokerAdaptor.class);
 
@@ -41,10 +49,9 @@ public class GridSAMResourceBrokerAdaptor extends ResourceBrokerCpi {
      * corresponding to the passed GATContext.
      * 
      * @param gatContext
-     *                A GATContext which will be used to broker resources
+     *            A GATContext which will be used to broker resources
      */
-    public GridSAMResourceBrokerAdaptor(GATContext gatContext,
-            Preferences preferences) throws GATObjectCreationException {
+    public GridSAMResourceBrokerAdaptor(GATContext gatContext, Preferences preferences) throws GATObjectCreationException {
         super(gatContext, preferences);
         System.out.println("gridsam starting...");
     }
@@ -56,14 +63,13 @@ public class GridSAMResourceBrokerAdaptor extends ResourceBrokerCpi {
      * hardware resource this method returns an error.
      * 
      * @param resourceDescription
-     *                A description, a HardwareResourceDescription, of the
-     *                hardware resource to reserve
+     *            A description, a HardwareResourceDescription, of the hardware
+     *            resource to reserve
      * @param timePeriod
-     *                The time period, a TimePeriod , for which to reserve the
-     *                hardware resource
+     *            The time period, a TimePeriod , for which to reserve the
+     *            hardware resource
      */
-    public Reservation reserveResource(ResourceDescription resourceDescription,
-            TimePeriod timePeriod) {
+    public Reservation reserveResource(ResourceDescription resourceDescription, TimePeriod timePeriod) {
         throw new UnsupportedOperationException("Not implemented");
     }
 
@@ -74,12 +80,11 @@ public class GridSAMResourceBrokerAdaptor extends ResourceBrokerCpi {
      * specified hardware resource this method returns an error.
      * 
      * @param resourceDescription
-     *                A description, a HardwareResoucreDescription, of the
-     *                hardware resource(s) to find
+     *            A description, a HardwareResoucreDescription, of the hardware
+     *            resource(s) to find
      * @return java.util.List of HardwareResources upon success
      */
-    public List<HardwareResource> findResources(
-            ResourceDescription resourceDescription) {
+    public List<HardwareResource> findResources(ResourceDescription resourceDescription) {
         throw new UnsupportedOperationException("Not implemented");
     }
 
@@ -88,156 +93,47 @@ public class GridSAMResourceBrokerAdaptor extends ResourceBrokerCpi {
      * 
      * @see org.gridlab.gat.resources.ResourceBroker#submitJob(org.gridlab.gat.resources.JobDescription)
      */
-    public Job submitJob(JobDescription description, MetricListener listener,
-            String metricDefinitionName) throws GATInvocationException {
+    public Job submitJob(JobDescription description, MetricListener listener, String metricDefinitionName) throws GATInvocationException {
         long start = System.currentTimeMillis();
         SoftwareDescription sd = description.getSoftwareDescription();
 
+        logger.info("starting job submit...");
+
         if (sd == null) {
-            throw new GATInvocationException(
-                    "The job description does not contain a software description");
+            throw new GATInvocationException("The job description does not contain a software description");
         }
 
-        // fill in the environment
-        String[] environment = null;
-        Map<String, Object> env = sd.getEnvironment();
-        int index = 0;
-        if (env != null) {
-            environment = new String[env.size()];
-            Set<String> keys = env.keySet();
-            Iterator<String> i = keys.iterator();
-            while (i.hasNext()) {
-                String key = (String) i.next();
-                String val = (String) env.get(key);
-                environment[index] = key + "=" + val;
-                index++;
-            }
-        }
+        Map<String, Object> attributes = sd.getAttributes();
 
-        URI location = getLocationURI(description);
-        if (!location.refersToLocalHost()) {
-            throw new MethodNotApplicableException("not a local file: "
-                    + location);
-        }
-
-        String host = getHostname(description);
-        if (host != null) {
-            if (!host.equals("localhost")
-                    && !host.equals(GATEngine.getLocalHostName())) {
-                throw new MethodNotApplicableException(
-                        "cannot run jobs on remote machines with the local adaptor");
-            }
-        }
-
-        String home = System.getProperty("user.home");
-        if (home == null) {
-            throw new GATInvocationException(
-                    "local broker could not get user home dir");
-        }
-
-        Sandbox sandbox = new Sandbox(gatContext, preferences, description,
-                "localhost", home, true, true, true, true);
-
-        String exe;
-        if (sandbox.getResolvedExecutable() != null) {
-            exe = sandbox.getResolvedExecutable().getPath();
-        } else {
-            exe = location.getPath();
-        }
-
-        // try to set the executable bit, it might be lost
+        // TODO using attributes for this might be hardcore but for no I find it
+        // OK - just want something running
+        logger.info("got attributes");
+        ClientSideJobManager jobManager = null;
+        logger.info("got clientManager");
+        JobInstance jobInstance = null;
+        logger.info("got jobInstance");
         try {
-            new CommandRunner("/bin/chmod +x " + exe);
-        } catch (Throwable t) {
-            // ignore
+            jobManager = new ClientSideJobManager(new String[] { "-s", "https://localhost:18443/gridsam/services/gridsam?wsdl" }, ClientSideJobManager
+                    .getStandardOptions());
+
+            String jsdlFileName = (String) attributes.get("gridsam.jsdl.file");
+            // TODO something usefull
+            jsdlFileName = "/home/wojciech/client/gridsam/data/examples/sleep.jsdl";
+            JobDefinitionDocument jobDefinitionDocument = JobDefinitionDocument.Factory.parse(new File(jsdlFileName));
+
+            jobInstance = jobManager.submitJob(jobDefinitionDocument);
+
+            String jobID = jobInstance.getID();
+            logger.info("jobID = " + jobID);
+
+        } catch (Exception e1) {
+            // TODO Auto-generated catch block
+            e1.printStackTrace();
         }
-        try {
-            new CommandRunner("/usr/bin/chmod +x " + exe);
-        } catch (Throwable t) {
-            // ignore
-        }
+        // return new GridSAMJob(gatContext, preferences, this, description, p,
+        // host, sandbox, outForwarder, errForwarder, start, startRun);
 
-        String command = exe + " " + getArguments(description);
-
-        java.io.File f = new java.io.File(sandbox.getSandbox());
-
-        if (logger.isInfoEnabled()) {
-            logger.info("running command: " + command);
-
-            if (environment != null) {
-                logger.info("  environment:");
-                for (int i = 0; i < environment.length; i++) {
-                    logger.info("    " + environment[i]);
-                }
-            }
-
-            if (home != null) {
-                logger.info("working dir is: " + f.getPath());
-            }
-        }
-
-        Process p = null;
-        long startRun = System.currentTimeMillis();
-        try {
-            p = Runtime.getRuntime().exec(command, environment, f);
-        } catch (IOException e) {
-            throw new CommandNotFoundException("LocalResourceBrokerAdaptor", e);
-        }
-
-        org.gridlab.gat.io.File stdin = sandbox.getResolvedStdin();
-        org.gridlab.gat.io.File stdout = sandbox.getResolvedStdout();
-        org.gridlab.gat.io.File stderr = sandbox.getResolvedStderr();
-
-        if (stdin == null) {
-            // close stdin.
-            try {
-                p.getOutputStream().close();
-            } catch (Throwable e) {
-                // ignore
-            }
-        } else {
-            try {
-                java.io.FileInputStream fin = new java.io.FileInputStream(stdin
-                        .getAbsolutePath());
-                OutputStream out = p.getOutputStream();
-                new InputForwarder(out, fin);
-            } catch (Exception e) {
-                throw new GATInvocationException("local broker", e);
-            }
-        }
-
-        OutputForwarder outForwarder = null;
-
-        // we must always read the output and error streams to avoid deadlocks
-        if (stdout == null) {
-            new OutputForwarder(p.getInputStream(), false); // throw away output
-        } else {
-            try {
-                java.io.FileOutputStream out = new java.io.FileOutputStream(
-                        stdout.getAbsolutePath());
-                outForwarder = new OutputForwarder(p.getInputStream(), out);
-            } catch (Exception e) {
-                throw new GATInvocationException("local broker", e);
-            }
-        }
-
-        OutputForwarder errForwarder = null;
-
-        // we must always read the output and error streams to avoid deadlocks
-        if (stderr == null) {
-            new OutputForwarder(p.getErrorStream(), false); // throw away output
-        } else {
-            try {
-                java.io.FileOutputStream out = new java.io.FileOutputStream(
-                        stderr.getAbsolutePath());
-                errForwarder = new OutputForwarder(p.getErrorStream(), out);
-            } catch (Exception e) {
-                throw new GATInvocationException("local broker", e);
-            }
-        }
-
-        return new GridSAMJob(gatContext, preferences, this, description, p,
-                host, sandbox, outForwarder, errForwarder, start, startRun);
+        return new GridSAMJob(gatContext, preferences, description, null, this, jobInstance);
     }
 
     /*
