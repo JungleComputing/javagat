@@ -30,13 +30,11 @@ import org.gridlab.gat.resources.ResourceDescription;
 import org.gridlab.gat.resources.SoftwareDescription;
 import org.gridlab.gat.resources.cpi.ResourceBrokerCpi;
 import org.gridlab.gat.resources.cpi.Sandbox;
-import org.gridlab.gat.resources.cpi.local.LocalResourceBrokerAdaptor;
 
 public class GridSAMResourceBrokerAdaptor extends ResourceBrokerCpi {
 
 
-    protected static Logger logger = Logger
-            .getLogger(LocalResourceBrokerAdaptor.class);
+    private Logger logger = Logger.getLogger(GridSAMResourceBrokerAdaptor.class);
 
     /**
      * This method constructs a LocalResourceBrokerAdaptor instance
@@ -48,6 +46,7 @@ public class GridSAMResourceBrokerAdaptor extends ResourceBrokerCpi {
     public GridSAMResourceBrokerAdaptor(GATContext gatContext,
             Preferences preferences) throws GATObjectCreationException {
         super(gatContext, preferences);
+        System.out.println("gridsam starting...");
     }
 
     /**
