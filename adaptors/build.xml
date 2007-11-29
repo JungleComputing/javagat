@@ -250,6 +250,12 @@
 			</manifest>
 		</jar>
 
+		<jar jarfile="${lib}/GridSAMResourceBrokerAdaptor.jar" basedir="${tmp}" includes="**/org/gridlab/gat/resources/cpi/gridsam/*.class">
+			<manifest>
+				<attribute name="ResourceBrokerCpi-class" value="org.gridlab.gat.resources.cpi.globus.GridSAMResourceBrokerAdaptor" />
+			</manifest>
+		</jar>
+
 		<jar jarfile="${lib}/SGEResourceBrokerAdaptor.jar" basedir="${tmp}" includes="**/org/gridlab/gat/resources/cpi/sge/*.class">
 			<manifest>
 				<attribute name="ResourceBrokerCpi-class" value="org.gridlab.gat.resources.cpi.sge.SGEResourceBrokerAdaptor" />
