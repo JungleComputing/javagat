@@ -1,6 +1,7 @@
 package org.gridlab.gat.resources.cpi.gridsam;
 
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
@@ -89,6 +90,16 @@ public class GridSAMJob extends JobCpi {
     public synchronized int getExitStatus() throws GATInvocationException {
         if (state != STOPPED)
             throw new GATInvocationException("not in RUNNING state");
+        String code = (String) jobInstance.getProperties().get("urn:gridsam:exitcode");
+        if (code == null) {
+            throw new GATInvocationException("No exit status code from gridsam available");
+        }
+        try {
+            exitVal = Integer.parseInt(code);
+        } catch (NumberFormatException e) {
+            logger.error("exit code from gridsam not int, code=" + code);
+            throw new GATInvocationException("No exit status code from gridsam available", e);
+        }
         return exitVal;
     }
     
@@ -113,6 +124,14 @@ public class GridSAMJob extends JobCpi {
 
         if (logger.isDebugEnabled()) {
             logger.debug("jobState=" + jobState.toString());
+            StringBuilder props = new StringBuilder();
+            Map properties = jobInstance.getProperties();
+            Iterator iterator = properties.keySet().iterator();
+            while (iterator.hasNext()) {
+                Object next = iterator.next();
+                props.append("\n    ").append(next).append("=").append(properties.get(next));
+            }
+            logger.debug("properties=" + props.toString());
         }
         
         // TODO [wojciech] - verify that those states are correct and that they should be here
@@ -149,7 +168,7 @@ public class GridSAMJob extends JobCpi {
      * @see org.gridlab.gat.resources.Job#getJobID()
      */
     public String getJobID() throws GATInvocationException {
-        return "" + jobID;
+        return jobID;
     }
 
     void finished(int exitValue) {

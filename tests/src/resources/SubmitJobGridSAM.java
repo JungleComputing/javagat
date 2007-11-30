@@ -36,17 +36,16 @@ public class SubmitJobGridSAM {
         Job job = broker.submitJob(jd);
         
         while (true) {
-            job.getState();
-            Thread.sleep(1000);
-            if (1 == 0) {
+            int state = job.getState();
+            if (state == Job.STOPPED) {
+                logger.info("job done, exit code=" + job.getExitStatus());
+                break;
+            } else if (state == Job.SUBMISSION_ERROR) {
+                logger.info("job error, breaking");
                 break;
             }
+            Thread.sleep(1000);           
         }
-//        
-//        while ((job.getState() != Job.STOPPED)
-//                && (job.getState() != Job.SUBMISSION_ERROR)) {
-//            Thread.sleep(1000);
-//        }
         
         GAT.end();
     }
