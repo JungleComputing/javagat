@@ -198,6 +198,7 @@ public class GT4Job extends JobCpi {
     }
 
     protected synchronized void setState(Status status) {
+        System.out.println(status.getStatusString());
         switch (status.getStatusCode()) {
         case Status.ACTIVE:
             setState(GT4Job.RUNNING);

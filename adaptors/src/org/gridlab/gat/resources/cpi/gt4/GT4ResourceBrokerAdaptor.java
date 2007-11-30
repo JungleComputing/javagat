@@ -206,7 +206,7 @@ public class GT4ResourceBrokerAdaptor extends ResourceBrokerCpi {
             }
         }
         spec.setExecutable(exe);
-        spec.setBatchJob(true);
+        spec.setBatchJob(false);
         String args[] = getArgumentsArray(jd);
         if (args != null) {
             for (int i = 0; i < args.length; i++) {

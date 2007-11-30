@@ -60,7 +60,10 @@ public class SshFileAdaptor extends FileCpi {
 
     public static final int IN = 0, ERR = 1, OUT = 2;
 
-    File localFile; /* used only if this org.gat.gridlab.io.File is local */
+    java.io.File localFile; /*
+                             * used only if this org.gat.gridlab.io.File is
+                             * local
+                             */
 
     private JSch jsch;
 
@@ -90,7 +93,7 @@ public class SshFileAdaptor extends FileCpi {
             URI location) throws GATObjectCreationException,
             GATInvocationException {
         super(gatContext, preferences, location);
-        if (!location.isCompatible("ssh")) {
+        if (!location.isCompatible("ssh") && !location.isCompatible("file")) {
             throw new AdaptorNotApplicableException("cannot handle this URI");
         }
 
@@ -288,7 +291,6 @@ public class SshFileAdaptor extends FileCpi {
          * remoteSource to local (ScpFrom) else not implemented yet if auth
          * succeeded scp remoteSource to remoteDestination else fail
          */
-
         if (isLocalFile) {
             if (loc.refersToLocalHost()) {
                 throw new GATInvocationException(
@@ -552,28 +554,22 @@ public class SshFileAdaptor extends FileCpi {
     /* copies local file to remote loc file */
     protected void doSingleUpload(URI loc) throws GATInvocationException {
         try {
-            /* prepare Session for remote location of destination file */
             prepareSession(loc);
-
-            if (logger.isDebugEnabled()) {
-                logger.debug("remote user: " + sui.username + " remote host: "
-                        + loc.resolveHost());
-            }
-            // exec 'scp -t rfile' remotely
-            Object[] streams = execCommand("scp -p -t " + loc.getPath());
-
+            startSession(loc);
+            Object[] streams = execSessionCommand("scp -p -r -t "
+                    + loc.getPath());
             if (checkAck(((InputStream) streams[IN])) != 0) {
                 cleanSession(session, channel);
                 throw new GATInvocationException(
                         "SshFileAdaptor: failed checkAck after sending scp command"
-                                + " in doSingleUpload " + localFile.getPath()
-                                + " to " + loc);
+                                + " in doMultipleUpload " + getPath() + " to "
+                                + loc);
             }
 
             try {
-                /* f is this local file, is a an attribute of this object */
                 sendFileToRemote(localFile, ((InputStream) streams[IN]),
                         ((OutputStream) streams[OUT]));
+                ((OutputStream) streams[OUT]).write("E\n".getBytes());
             } catch (IOException ioe) {
                 cleanSession(session, channel);
                 doException(ioe);
@@ -583,17 +579,19 @@ public class SshFileAdaptor extends FileCpi {
 
             return;
         } catch (Exception e) {
+            e.printStackTrace();
             cleanSession(session, channel);
             doException(e);
         }
+
     }
 
     protected void sendDirectoryToRemote(File dir, InputStream in,
             OutputStream out) throws IOException {
+        
         String command = "D0755 0 ";
         command += dir.getName();
         command += "\n";
-
         out.write(command.getBytes());
         out.flush();
 
@@ -628,13 +626,10 @@ public class SshFileAdaptor extends FileCpi {
 
     protected void doMultipleUpload(URI loc) throws GATInvocationException {
         try {
-            /* prepare Session for remote location of destination file */
             prepareSession(loc);
-
-            session.connect();
-
-            /* -p -> preserve time, -t -> target, -r -> recursive */
-            Object[] streams = execCommand("scp -p -r -t " + loc.getPath());
+            startSession(loc);
+            Object[] streams = execSessionCommand("scp -p -r -t "
+                    + loc.getPath());
             if (checkAck(((InputStream) streams[IN])) != 0) {
                 cleanSession(session, channel);
                 throw new GATInvocationException(
@@ -644,8 +639,9 @@ public class SshFileAdaptor extends FileCpi {
             }
 
             try {
-                sendDirectoryToRemote(localFile, ((InputStream) streams[IN]),
+                sendDirectory(localFile, ((InputStream) streams[IN]),
                         ((OutputStream) streams[OUT]));
+                ((OutputStream) streams[OUT]).write("E\n".getBytes());
             } catch (IOException ioe) {
                 cleanSession(session, channel);
                 doException(ioe);
@@ -655,6 +651,7 @@ public class SshFileAdaptor extends FileCpi {
 
             return;
         } catch (Exception e) {
+            e.printStackTrace();
             cleanSession(session, channel);
             doException(e);
         }
@@ -966,11 +963,15 @@ public class SshFileAdaptor extends FileCpi {
             } while (c != '\n');
 
             if (b == 1) { // error
-                System.out.print(sb.toString());
+                if (logger.isInfoEnabled()) {
+                    logger.info("error: " + sb.toString());
+                }
             }
 
             if (b == 2) { // fatal error
-                System.out.print(sb.toString());
+                if (logger.isInfoEnabled()) {
+                    logger.info("fatal error: " + sb.toString());
+                }
             }
         }
 
@@ -986,8 +987,8 @@ public class SshFileAdaptor extends FileCpi {
             if (getOsType() == WOS) {
                 throw new Error("Not yet implemented");
             } else if (getOsType() == XOS) {
-                Object[] streams = execCommand("test -" + flag + getPath()
-                        + " && echo 0");
+                Object[] streams = execCommand("test -" + flag + " "
+                        + getPath() + " && echo 0");
                 if (((InputStream) streams[IN]).available() != 0) {
                     cleanSession(session, channel);
                     return true;
@@ -1088,10 +1089,10 @@ public class SshFileAdaptor extends FileCpi {
                 if (isDir == TRUE) {
                     streams = execCommand("rmdir " + getPath());
                 } else {
-                    streams = execCommand("rm -f " + getPath());
+                    streams = execCommand("rm " + getPath());
                 }
-                itExists = (((InputStream) streams[ERR]).available() == 0) ? FALSE
-                        : TRUE;
+                itExists = (((InputStream) streams[ERR]).available() == 0) ? TRUE
+                        : FALSE;
                 cleanSession(session, channel);
                 return itExists == TRUE;
             } else if (getOsType() == WOS) {
@@ -1349,8 +1350,14 @@ public class SshFileAdaptor extends FileCpi {
         if (getParent() == null) {
             return null;
         }
-        String uriString = location.toString();
-        String parentUri = uriString.split(":")[0] + ":" + getParent();
+        String parentUri = "";
+        if (location.getScheme() != null) {
+            parentUri += location.getScheme() + "://";
+        }
+        if (location.getHost() != null) {
+            parentUri += location.getHost() + "/";
+        }
+        parentUri += getParent();
 
         try {
             return GAT.createFile(gatContext, preferences, new URI(parentUri));
@@ -1520,6 +1527,9 @@ public class SshFileAdaptor extends FileCpi {
         cleanSession(session, channel);
         if (logger.isDebugEnabled()) {
             logger.debug("result read from channel");
+        }
+        if (buffer.toString().equals("")) {
+            return null;
         }
         return buffer.toString().split("\n");
     }
@@ -1849,10 +1859,28 @@ public class SshFileAdaptor extends FileCpi {
 
     private Object[] execCommand(String command) throws JSchException,
             IOException, GATInvocationException {
-        Object[] result = new Object[3];
+        startSession();
+        Object[] result =execSessionCommand(command); 
+        waitForEOF();
+        return  result;
+    }
+
+    private void startSession(URI location) throws JSchException {
         session = jsch.getSession(sui.username, location.getHost(), port);
         session.setUserInfo(sui);
         session.connect();
+    }
+
+    private void startSession() throws JSchException {
+        startSession(location);
+    }
+
+    private Object[] execSessionCommand(String command) throws JSchException,
+            IOException, GATInvocationException {
+        Object[] result = new Object[3];
+        if (logger.isInfoEnabled()) {
+            logger.info("SSH COMMAND: " + command);
+        }
         channel = session.openChannel("exec");
         ((ChannelExec) channel).setCommand(command);
         result[IN] = ((ChannelExec) channel).getInputStream();
@@ -1863,8 +1891,6 @@ public class SshFileAdaptor extends FileCpi {
             result[OUT] = null;
         }
         channel.connect();
-        waitForEOF();
         return result;
     }
-
 }

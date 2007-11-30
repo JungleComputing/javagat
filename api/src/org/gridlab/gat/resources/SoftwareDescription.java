@@ -275,7 +275,6 @@ public class SoftwareDescription implements java.io.Serializable {
             throw new NullPointerException(
                 "the source file cannot be null when adding a preStaged file");
         }
-
         preStagedFiles.put(src, dest);
     }
 

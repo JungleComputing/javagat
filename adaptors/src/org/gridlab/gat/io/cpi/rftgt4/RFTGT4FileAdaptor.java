@@ -200,6 +200,10 @@ public class RFTGT4FileAdaptor extends FileCpi {
         if (globusLocation == null) {
             throw new GATObjectCreationException("$GLOBUS_LOCATION is not set");
         }
+        // System.setProperty("java.naming.factory.initial",
+        // "org.globus.wsrf.jndi.javaURLContextFactory");
+        System.out.println("java.naming.factory.initial: "
+                + System.getProperty("java.naming.factory.initial"));
         System.setProperty("GLOBUS_LOCATION", globusLocation);
         System.setProperty("axis.ClientConfigFile", globusLocation
                 + "/client-config.wsdd");
@@ -258,7 +262,6 @@ public class RFTGT4FileAdaptor extends FileCpi {
         transferArray[0] = new TransferType();
         transferArray[0].setSourceUrl(locationStr);
         transferArray[0].setDestinationUrl(destStr);
-
         RFTOptionsType rftOptions = new RFTOptionsType();
         rftOptions.setBinary(Boolean.TRUE);
         // rftOptions.setIgnoreFilePermErr(false);
@@ -308,6 +311,9 @@ public class RFTGT4FileAdaptor extends FileCpi {
         this.notificationConsumerManager = NotificationConsumerManager
                 .getInstance(properties);
         try {
+            // TODO: This goes wrong for some reason (has to do with
+            // containers). It goes right when all the jars from the adaptors
+            // are copied to the lib dir.
             this.notificationConsumerManager.startListening();
         } catch (ContainerException e) {
             throw new GATInvocationException(
@@ -407,7 +413,6 @@ public class RFTGT4FileAdaptor extends FileCpi {
         } else {
             input.setDeleteRequest((DeleteRequestType) request);
         }
-
         Calendar termTimeDel = Calendar.getInstance();
         termTimeDel.add(Calendar.MINUTE, TERM_TIME);
         input.setInitialTerminationTime(termTimeDel);
@@ -587,7 +592,6 @@ public class RFTGT4FileAdaptor extends FileCpi {
     public EndpointReferenceType[] fetchDelegationFactoryEndpoints(
             ReliableFileTransferFactoryPortType factoryPort)
             throws GATInvocationException {
-
         GetMultipleResourceProperties_Element request = new GetMultipleResourceProperties_Element();
         request
                 .setResourceProperty(new QName[] { RFTConstants.DELEGATION_ENDPOINT_FACTORY });

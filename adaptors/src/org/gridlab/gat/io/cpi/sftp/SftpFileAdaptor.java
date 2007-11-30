@@ -5,7 +5,7 @@ package org.gridlab.gat.io.cpi.sftp;
 
 import java.io.IOException;
 import java.util.Hashtable;
-import java.util.Iterator;
+import java.util.Vector;
 
 import org.apache.log4j.Logger;
 import org.gridlab.gat.AdaptorNotApplicableException;
@@ -38,7 +38,7 @@ public class SftpFileAdaptor extends FileCpi {
     protected static Logger logger = Logger.getLogger(SftpFileAdaptor.class);
 
     public static final int SSH_PORT = 22;
-    
+
     static boolean USE_CLIENT_CACHING = true;
 
     private static Hashtable<String, SftpConnection> clienttable = new Hashtable<String, SftpConnection>();
@@ -50,15 +50,15 @@ public class SftpFileAdaptor extends FileCpi {
         if (!location.isCompatible("sftp") && !location.isCompatible("file")) {
             throw new AdaptorNotApplicableException("cannot handle this URI");
         }
-        
+
         USE_CLIENT_CACHING = preferences.containsKey("caching");
         logger.info("caching: " + USE_CLIENT_CACHING);
     }
-    
+
     private static String getClientKey(URI hostURI) {
         return hostURI.resolveHost();
-    }    
-    
+    }
+
     private static synchronized SftpConnection getFromCache(String key) {
         SftpConnection client = null;
         if (clienttable.containsKey(key)) {
@@ -67,17 +67,17 @@ public class SftpFileAdaptor extends FileCpi {
         return client;
     }
 
-    private static synchronized boolean putInCache(String key,
-            SftpConnection c) {
+    private static synchronized boolean putInCache(String key, SftpConnection c) {
         if (!clienttable.containsKey(key)) {
             clienttable.put(key, c);
             return true;
-        } 
+        }
         return false;
     }
-    
-    protected static SftpConnection openConnection(GATContext context, Preferences
-            preferences, URI location) throws GATInvocationException {
+
+    protected static SftpConnection openConnection(GATContext context,
+            Preferences preferences, URI location)
+            throws GATInvocationException {
         logger.info("open connection, caching: " + USE_CLIENT_CACHING);
         if (!USE_CLIENT_CACHING) {
             return doWorkcreateConnection(context, preferences, location);
@@ -109,12 +109,12 @@ public class SftpFileAdaptor extends FileCpi {
         if (c == null) {
             c = doWorkcreateConnection(context, preferences, location);
             if (putInCache(location.toString(), c)) {
-                logger.info("put sftp connection to " + location.toString() + " in cache!");
+                logger.info("put sftp connection to " + location.toString()
+                        + " in cache!");
             }
         }
         return c;
     }
-    
 
     protected static SftpConnection doWorkcreateConnection(GATContext context,
             Preferences preferences, URI location)
@@ -156,9 +156,11 @@ public class SftpFileAdaptor extends FileCpi {
 
                 if (result != AuthenticationProtocolState.COMPLETE) {
                     if (result == AuthenticationProtocolState.FAILED) {
-                        throw new InvalidUsernameOrPasswordException("Invalid username or password");
+                        throw new InvalidUsernameOrPasswordException(
+                                "Invalid username or password");
                     } else {
-                        throw new GATInvocationException("Unable to authenticate");
+                        throw new GATInvocationException(
+                                "Unable to authenticate");
                     }
                 }
             } else { // no password, try key-based authentication
@@ -194,16 +196,20 @@ public class SftpFileAdaptor extends FileCpi {
             c.sftp.cd(location.getPath());
 
             java.util.List<?> dirList = c.sftp.ls();
-
-            String[] children = new String[dirList.size()];
-            int index = 0;
-
-            for (Iterator<?> i = dirList.iterator(); i.hasNext();) {
-                children[index] = ((SftpFile) i.next()).getFilename();
-                index++;
+            Vector<String> newRes = new Vector<String>();
+            for (int i = 0; i < dirList.size(); i++) {
+                SftpFile entry = (SftpFile) dirList.get(i);
+                if (!entry.getFilename().equals(".")
+                        && !entry.getFilename().equals("..")) {
+                    newRes.add(entry.getFilename());
+                }
             }
 
-            return children;
+            String[] res = new String[newRes.size()];
+            for (int i = 0; i < newRes.size(); i++) {
+                res[i] = (String) newRes.get(i);
+            }
+            return res;
         } catch (IOException e) {
             throw new GATInvocationException("SftpFileAdaptor", e);
         } finally {

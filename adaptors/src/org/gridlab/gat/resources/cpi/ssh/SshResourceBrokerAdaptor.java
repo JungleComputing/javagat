@@ -53,8 +53,6 @@ public class SshResourceBrokerAdaptor extends ResourceBrokerCpi {
 
     public static final int SSH_PORT = 22;
 
-    private static final int TIMEOUT = 5000; // millis
-
     private String host = null;
 
     private JSch jsch;
@@ -132,7 +130,6 @@ public class SshResourceBrokerAdaptor extends ResourceBrokerCpi {
                 throw new GATInvocationException(
                         "not a remote file, scheme is: " + location.getScheme());
             }
-
             /* decide where to run */
             try {
                 if (host != null)
@@ -144,13 +141,11 @@ public class SshResourceBrokerAdaptor extends ResourceBrokerCpi {
             } catch (Exception e) {
                 throw new GATInvocationException("SshResourceBrokerAdaptor" + e);
             }
-
             String path = null;
             path = location.getPath();
-            
+
             Sandbox sandbox = new Sandbox(gatContext, preferences, description,
                     host, null, true, false, false, false);
-            
             String command = "cd " + sandbox.getSandbox() + " && ";
             Map<String, Object> env = sd.getEnvironment();
             if (env != null && !env.isEmpty()) {
@@ -167,7 +162,6 @@ public class SshResourceBrokerAdaptor extends ResourceBrokerCpi {
             if (logger.isInfoEnabled()) {
                 logger.info("running command: " + command);
             }
-            System.out.println("SSH: "+ command);
             Object[] streams = execCommand(command);
 
             org.gridlab.gat.io.File stdin = sd.getStdin();
@@ -248,7 +242,6 @@ public class SshResourceBrokerAdaptor extends ResourceBrokerCpi {
             if (logger.isInfoEnabled()) {
                 logger.info("finished setting stderr");
             }
-
             Job j = new SshJob(gatContext, preferences, this, description,
                     session, channel, sandbox);
             return j;
@@ -455,33 +448,10 @@ public class SshResourceBrokerAdaptor extends ResourceBrokerCpi {
         ((ChannelExec) channel).setCommand(command);
         result[IN] = ((ChannelExec) channel).getInputStream();
         result[ERR] = ((ChannelExec) channel).getErrStream();
-        try {
-            result[OUT] = ((ChannelExec) channel).getOutputStream();
-        } catch (Throwable t) {
-            logger.info(t);
-            result[OUT] = null;
-        }
+        result[OUT] = ((ChannelExec) channel).getOutputStream();
 
         channel.connect();
-        waitForEOF();
         return result;
     }
 
-    private void waitForEOF() throws GATInvocationException {
-        long start = System.currentTimeMillis();
-        while (true) {
-            long time = System.currentTimeMillis() - start;
-            if (time > TIMEOUT) {
-                throw new GATInvocationException("timeout waiting for EOF");
-            }
-            if (channel.isEOF()) {
-                return;
-            }
-            try {
-                Thread.sleep(100);
-            } catch (Exception e) {
-                // ignore
-            }
-        }
-    }
 }
