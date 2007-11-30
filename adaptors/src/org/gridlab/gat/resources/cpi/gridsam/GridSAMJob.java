@@ -21,6 +21,11 @@ import org.icenigrid.gridsam.core.JobStage;
 import org.icenigrid.gridsam.core.JobState;
 import org.icenigrid.gridsam.core.UnknownJobException;
 
+/* TODO
+ * 
+ * exitVal - probably gridSAM does not support it
+ */
+
 public class GridSAMJob extends JobCpi {
 
     private Logger logger = Logger.getLogger(GridSAMJob.class);
@@ -110,10 +115,32 @@ public class GridSAMJob extends JobCpi {
             logger.debug("jobState=" + jobState.toString());
         }
         
+        // TODO [wojciech] - verify that those states are correct and that they should be here
         if (jobState == JobState.ACTIVE) {
-            return RUNNING;
+            state = RUNNING;
+        } else if (jobState == JobState.DONE) {
+            state = STOPPED;
+        } else if (jobState == JobState.EXECUTED) {
+            state = STOPPED;
+        } else if (jobState == JobState.FAILED) {
+            state = SUBMISSION_ERROR;
+        } else if (jobState == JobState.PENDING) {
+            state = RUNNING;
+        } else if (jobState == JobState.STAGED_IN || jobState == JobState.STAGING_IN) {
+            state = PRE_STAGING;
+        } else if (jobState == JobState.STAGED_OUT || jobState == JobState.STAGING_OUT) {
+            state = POST_STAGING;
+        } else if (jobState == JobState.TERMINATED) {
+            state = STOPPED;
+        } else if (jobState == JobState.UNDEFINED) {
+            state = UNKNOWN;
+        } else {
+            logger.warn("unknown job state: " + jobState.toString());
+            state = UNKNOWN;
         }
-        return UNKNOWN;
+        
+        return state;
+        
     }
 
     /*
