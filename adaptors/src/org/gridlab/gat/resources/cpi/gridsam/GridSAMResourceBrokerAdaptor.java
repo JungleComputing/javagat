@@ -121,12 +121,20 @@ public class GridSAMResourceBrokerAdaptor extends ResourceBrokerCpi {
             jsdlFileName = "/home/wojciech/client/gridsam/data/examples/sleep.jsdl";
             JobDefinitionDocument jobDefinitionDocument = JobDefinitionDocument.Factory.parse(new File(jsdlFileName));
 
+            if (logger.isDebugEnabled()) {
+                logger.debug("jobDefinitionDocument = " + jobDefinitionDocument.toString());
+            }
+            
             jobInstance = jobManager.submitJob(jobDefinitionDocument);
 
             String jobID = jobInstance.getID();
             logger.info("jobID = " + jobID);
 
-        } catch (Exception e1) {
+        } catch (SubmissionException e){
+            logger.error("Got submission exception: ", e);
+            throw new GATInvocationException("Unable to submit job to GridSAM server", e);
+        }
+            catch (Exception e1) {
             // TODO Auto-generated catch block
             e1.printStackTrace();
         }
