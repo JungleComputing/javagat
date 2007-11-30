@@ -108,7 +108,7 @@ public class AdaptorInvocationHandler implements InvocationHandler {
     private Hashtable<String, Adaptor> adaptors = new Hashtable<String, Adaptor>();
 
     public AdaptorInvocationHandler(AdaptorList adaptors, GATContext context,
-            Preferences preferences, Object[] params)
+            Preferences preferences, Class[] parameterTypes, Object[] params)
             throws GATObjectCreationException {
 
         if (adaptors.size() == 0) {
@@ -124,7 +124,7 @@ public class AdaptorInvocationHandler implements InvocationHandler {
 
             try {
                 Object adaptorCpi = initAdaptor(adaptor, context, preferences,
-                        params);
+                        parameterTypes, params);
                 adaptorInstantiations.put(adaptorname, adaptorCpi);
                 this.adaptors.put(adaptorname, adaptor);
                 adaptorSorter.add(adaptorname);
@@ -253,7 +253,7 @@ public class AdaptorInvocationHandler implements InvocationHandler {
      *                 creation of the adaptor failed
      */
     private Object initAdaptor(Adaptor adaptor, GATContext gatContext,
-            Preferences preferences, Object[] parameters)
+            Preferences preferences, Class[] parameterTypes, Object[] parameters)
             throws GATObjectCreationException {
         if (preferences == null) { // No preferences.
             preferences = new Preferences();
@@ -265,20 +265,18 @@ public class AdaptorInvocationHandler implements InvocationHandler {
 
         // Add the context and the preferences as constructorParameters
         Object[] newParameters = new Object[parameters.length + 2];
+        Class<?>[] newParameterTypes = new Class[newParameters.length];
+        
         newParameters[0] = gatContext;
+        newParameterTypes[0] = GATContext.class;
         newParameters[1] = preferences;
+        newParameterTypes[1] = Preferences.class;
 
         for (int i = 0; i < parameters.length; i++) {
             newParameters[i + 2] = parameters[i];
+            newParameterTypes[i+2] = parameterTypes[i];           
         }
-
-        // Create an array with the parameter types
-        Class<?>[] parameterTypes = new Class[newParameters.length];
-
-        for (int count = 0; count < parameterTypes.length; count++) {
-            parameterTypes[count] = newParameters[count].getClass();
-        }
-
+        
         if (!adaptor.satisfies(preferences)) {
             // it does not satisfy prefs.
             GATObjectCreationException exc = new GATObjectCreationException();
@@ -294,7 +292,7 @@ public class AdaptorInvocationHandler implements InvocationHandler {
                     + adaptor.getShortCpiName());
         }
         try {
-            result = adaptor.newInstance(parameterTypes, newParameters);
+            result = adaptor.newInstance(newParameterTypes, newParameters);
         } catch (Throwable t) {
             GATObjectCreationException exc;
             if (t instanceof GATObjectCreationException) {
