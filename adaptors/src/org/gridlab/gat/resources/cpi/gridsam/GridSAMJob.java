@@ -16,42 +16,16 @@ import org.gridlab.gat.resources.JobDescription;
 import org.gridlab.gat.resources.cpi.JobCpi;
 import org.gridlab.gat.resources.cpi.Sandbox;
 import org.icenigrid.gridsam.core.JobInstance;
+import org.icenigrid.gridsam.core.JobManagerException;
+import org.icenigrid.gridsam.core.JobStage;
+import org.icenigrid.gridsam.core.JobState;
+import org.icenigrid.gridsam.core.UnknownJobException;
 
 public class GridSAMJob extends JobCpi {
 
     private Logger logger = Logger.getLogger(GridSAMJob.class);
 
-    class ProcessWaiter extends Thread {
-        ProcessWaiter() {
-            start();
-        }
-        
-
-        public void run() {
-            try {
-                int exitValue = p.waitFor();
-                runTime = System.currentTimeMillis() - runTime;
-
-                // Wait for the output forwarders to finish!
-                // You may lose output if you don't -- Jason
-                if (out != null) {
-                    out.waitUntilFinished();
-                }
-
-                if (err != null) {
-                    err.waitUntilFinished();
-                }
-
-                finished(exitValue);
-            } catch (InterruptedException e) {
-                // Cannot happen
-            }
-        }
-    }
-
     // private LocalResourceBrokerAdaptor broker;
-
-    private int jobID;
 
     private Process p;
 
@@ -60,10 +34,16 @@ public class GridSAMJob extends JobCpi {
     private MetricDefinition statusMetricDefinition;
 
     private Metric statusMetric;
+    
+    private JobInstance jobInstance;
+    
+    private String jobID;
 
     private OutputForwarder out;
 
     private OutputForwarder err;
+    
+    private GridSAMResourceBrokerAdaptor adaptor;
 
     private long startTime;
     private long runTime;
@@ -71,6 +51,18 @@ public class GridSAMJob extends JobCpi {
 
     public GridSAMJob(GATContext gatContext, Preferences preferences, JobDescription jobDescription, Sandbox sandbox, GridSAMResourceBrokerAdaptor gridSAMResourceBrokerAdaptor, JobInstance jobInstance) {
         super(gatContext, preferences, jobDescription, sandbox);
+        
+        this.jobInstance = jobInstance;
+        this.jobID = jobInstance.getID();
+        this.adaptor = gridSAMResourceBrokerAdaptor;
+        
+        // Tell the engine that we provide job.status events
+        HashMap<String, Object> returnDef = new HashMap<String, Object>();
+        returnDef.put("status", String.class);
+        statusMetricDefinition = new MetricDefinition("job.status",
+                MetricDefinition.DISCRETE, "String", null, null, returnDef);
+        statusMetric = statusMetricDefinition.createMetric(null);
+        GATEngine.registerMetric(this, "getJobStatus", statusMetricDefinition);
     }
 
     /*
@@ -80,25 +72,6 @@ public class GridSAMJob extends JobCpi {
      */
     public synchronized Map<String, Object> getInfo() throws GATInvocationException {
         HashMap<String, Object> m = new HashMap<String, Object>();
-
-        // update state
-        getState();
-
-        m.put("state", getStateString(state));
-        m.put("resManState", getStateString(state));
-        m.put("resManName", "Local");
-        m.put("exitValue", "" + exitVal);
-        m.put("hostname", GATEngine.getLocalHostName());
-
-        if (postStageException != null) {
-            m.put("postStageError", postStageException);
-        }
-        if (deleteException != null) {
-            m.put("deleteError", deleteException);
-        }
-        if (wipeException != null) {
-            m.put("wipeError", wipeException);
-        }
 
         return m;
     }
@@ -112,6 +85,35 @@ public class GridSAMJob extends JobCpi {
         if (state != STOPPED)
             throw new GATInvocationException("not in RUNNING state");
         return exitVal;
+    }
+    
+    @Override
+    public synchronized int getState() {
+        
+        // update the manager state of the job
+        try {
+            jobInstance = adaptor.getJobManager().findJobInstance(jobID);
+        } catch (JobManagerException e) {
+            logger.error("caught exception", e);
+            // TODO
+            throw new RuntimeException(e);
+        } catch (UnknownJobException e) {
+            logger.error("caught exception", e);
+            // TODO
+            throw new RuntimeException(e);
+        }
+        
+        JobStage stage = jobInstance.getLastKnownStage();
+        JobState jobState = stage.getState();
+
+        if (logger.isDebugEnabled()) {
+            logger.debug("jobState=" + jobState.toString());
+        }
+        
+        if (jobState == JobState.ACTIVE) {
+            return RUNNING;
+        }
+        return UNKNOWN;
     }
 
     /*

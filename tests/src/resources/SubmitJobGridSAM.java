@@ -26,8 +26,6 @@ public class SubmitJobGridSAM {
 //        sd.setLocation("https://" + args[0] + "/gridsam/services/gridsam?wsdl");
         
         
-
-        
         sd.setLocation("file:////bin/hostname");
 //        
         File stdout = GAT.createFile(context, "hostname.txt");
@@ -36,6 +34,14 @@ public class SubmitJobGridSAM {
         JobDescription jd = new JobDescription(sd);
         ResourceBroker broker = GAT.createResourceBroker(context, prefs);
         Job job = broker.submitJob(jd);
+        
+        while (true) {
+            job.getState();
+            Thread.sleep(1000);
+            if (1 == 0) {
+                break;
+            }
+        }
 //        
 //        while ((job.getState() != Job.STOPPED)
 //                && (job.getState() != Job.SUBMISSION_ERROR)) {

@@ -43,6 +43,7 @@ import org.icenigrid.schema.jsdl.y2005.m11.JobDefinitionDocument;
 public class GridSAMResourceBrokerAdaptor extends ResourceBrokerCpi {
 
     private Logger logger = Logger.getLogger(GridSAMResourceBrokerAdaptor.class);
+    private ClientSideJobManager jobManager;
 
     /**
      * This method constructs a LocalResourceBrokerAdaptor instance
@@ -88,6 +89,13 @@ public class GridSAMResourceBrokerAdaptor extends ResourceBrokerCpi {
         throw new UnsupportedOperationException("Not implemented");
     }
 
+    public ClientSideJobManager getJobManager() throws ConfigurationException {
+        if (jobManager == null) {
+            jobManager = new ClientSideJobManager(new String[] { "-s", "https://localhost:18443/gridsam/services/gridsam?wsdl" }, ClientSideJobManager.getStandardOptions());
+        }
+        return jobManager;
+    }
+
     /*
      * (non-Javadoc)
      * 
@@ -113,8 +121,7 @@ public class GridSAMResourceBrokerAdaptor extends ResourceBrokerCpi {
         JobInstance jobInstance = null;
         logger.info("got jobInstance");
         try {
-            jobManager = new ClientSideJobManager(new String[] { "-s", "https://localhost:18443/gridsam/services/gridsam?wsdl" }, ClientSideJobManager
-                    .getStandardOptions());
+            jobManager = getJobManager();
 
             String jsdlFileName = (String) attributes.get("gridsam.jsdl.file");
             // TODO something usefull
