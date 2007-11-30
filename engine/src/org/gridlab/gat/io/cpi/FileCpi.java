@@ -2,7 +2,6 @@ package org.gridlab.gat.io.cpi;
 
 import java.io.FileFilter;
 import java.io.FilenameFilter;
-import java.io.OutputStream;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -35,9 +34,9 @@ import org.gridlab.gat.monitoring.MetricValue;
  * File class at runtime.
  */
 public abstract class FileCpi implements FileInterface {
-	protected static Logger logger = Logger.getLogger(FileCpi.class);
-	
-	protected GATContext gatContext;
+    protected static Logger logger = Logger.getLogger(FileCpi.class);
+
+    protected GATContext gatContext;
 
     protected Preferences preferences;
 
@@ -47,15 +46,15 @@ public abstract class FileCpi implements FileInterface {
      * Constructs a FileCpi instance which corresponds to the physical file
      * identified by the passed Location and whose access rights are determined
      * by the passed GATContext.
-     *
+     * 
      * @param location
-     *            A Location which represents the URI corresponding to the
-     *            physical file.
+     *                A Location which represents the URI corresponding to the
+     *                physical file.
      * @param gatContext
-     *            A GATContext which is used to determine the access rights for
-     *            this FileCpi.
+     *                A GATContext which is used to determine the access rights
+     *                for this FileCpi.
      * @param preferences
-     *            the preferences to be associated with this adaptor
+     *                the preferences to be associated with this adaptor
      */
     protected FileCpi(GATContext gatContext, Preferences preferences,
             URI location) {
@@ -78,9 +77,9 @@ public abstract class FileCpi implements FileInterface {
      * if a URI object constructed from this File's location and a URI object
      * constructed from the passed File's URI are equal as determined by the
      * Equals method of URI.
-     *
+     * 
      * @param object
-     *            The Object to test for equality
+     *                The Object to test for equality
      * @return A boolean indicating equality
      */
     public final boolean equals(Object object) {
@@ -95,7 +94,7 @@ public abstract class FileCpi implements FileInterface {
 
     /**
      * This method returns the URI of this File
-     *
+     * 
      * @return The URI of this File
      */
     public final URI toURI() {
@@ -105,21 +104,22 @@ public abstract class FileCpi implements FileInterface {
     /**
      * This method moves the physical file represented by this File instance to
      * a physical file identified by the passed URI.
-     *
+     * 
      * @param destination
-     *            The URI to which to move the physical file corresponding to
-     *            this File instance
+     *                The URI to which to move the physical file corresponding
+     *                to this File instance
      * @throws GATInvocationException
-     *             Thrown upon problems accessing the remote instance
+     *                 Thrown upon problems accessing the remote instance
      * @throws java.io.IOException
-     *             Upon non-remote IO problem
+     *                 Upon non-remote IO problem
      */
     public void move(URI destination) throws GATInvocationException {
         // Step 1: Copy the original file
         copy(destination);
 
         // Step 2: Delete the original file
-        // We create a new File object for this, as it might need a different adaptor.
+        // We create a new File object for this, as it might need a different
+        // adaptor.
         try {
             File f = GAT.createFile(gatContext, preferences, location);
             f.delete();
@@ -132,12 +132,13 @@ public abstract class FileCpi implements FileInterface {
         // this.location = destination;
     }
 
-    /** This method deletes a directory and everything that is in it.
-     * This method can only be called on a directory, not on a file.
+    /**
+     * This method deletes a directory and everything that is in it. This method
+     * can only be called on a directory, not on a file.
+     * 
      * @throws GATInvocationException
      */
-    public void recursivelyDeleteDirectory()
-            throws GATInvocationException {
+    public void recursivelyDeleteDirectory() throws GATInvocationException {
         recursiveDeleteDirectory(gatContext, preferences, location);
     }
 
@@ -150,7 +151,8 @@ public abstract class FileCpi implements FileInterface {
         throw new UnsupportedOperationException("Not implemented");
     }
 
-    public List<MetricDefinition> getMetricDefinitions() throws GATInvocationException {
+    public List<MetricDefinition> getMetricDefinitions()
+            throws GATInvocationException {
         throw new UnsupportedOperationException("Not implemented");
     }
 
@@ -182,7 +184,7 @@ public abstract class FileCpi implements FileInterface {
     }
 
     public int compareTo(Object other) {
-        if(other instanceof FileCpi) {
+        if (other instanceof FileCpi) {
             return location.compareTo(((FileCpi) other).location);
         } else {
             throw new Error("illegal compareTo operation");
@@ -190,13 +192,15 @@ public abstract class FileCpi implements FileInterface {
     }
 
     public boolean createNewFile() throws GATInvocationException {
-        try {
-            OutputStream o = GAT.createFileOutputStream(gatContext, preferences, location);
-            o.close();
-            return true;
-        } catch (Exception e) {
-            throw new GATInvocationException("file cpi", e);
-        }
+        // try {
+        // OutputStream o = GAT.createFileOutputStream(gatContext, preferences,
+        // location);
+        // o.close();
+        // return true;
+        // } catch (Exception e) {
+        // throw new GATInvocationException("file cpi", e);
+        // }
+        throw new UnsupportedOperationException("Not implemented");
     }
 
     public boolean delete() throws GATInvocationException {
@@ -245,8 +249,7 @@ public abstract class FileCpi implements FileInterface {
         String res = path.substring(0, pos);
 
         if (logger.isDebugEnabled()) {
-            logger.debug("GET PARENT: orig = " + path + " parent = "
-                    + res);
+            logger.debug("GET PARENT: orig = " + path + " parent = " + res);
         }
 
         return res;
@@ -258,19 +261,17 @@ public abstract class FileCpi implements FileInterface {
         }
         try {
             String dest = location.getScheme() + "://";
-            dest +=
-                    (location.getUserInfo() == null) ? "" : location
-                            .getUserInfo();
+            dest += (location.getUserInfo() == null) ? "" : location
+                    .getUserInfo();
             dest += location.getHost();
-            dest +=
-                    (location.getPort() == -1) ? ""
-                            : (":" + location.getPort());
+            dest += (location.getPort() == -1) ? ""
+                    : (":" + location.getPort());
             dest += "/";
             dest += getParent();
 
             if (logger.isDebugEnabled()) {
-                logger.debug("GET PARENTFILE: orig = " + location
-                        + " new = " + dest);
+                logger.debug("GET PARENTFILE: orig = " + location + " new = "
+                        + dest);
             }
 
             return GAT.createFile(gatContext, preferences, new URI(dest));
@@ -281,7 +282,7 @@ public abstract class FileCpi implements FileInterface {
 
     public final String getPath() {
         String res = location.getPath();
-        if(res == null) {
+        if (res == null) {
             throw new Error("path not specified correctly in URI: " + location);
         }
         return res;
@@ -379,8 +380,8 @@ public abstract class FileCpi implements FileInterface {
             Vector<String> v = new Vector<String>();
 
             for (int i = 0; i < l.length; i++) {
-                if (filter.accept(GAT.createFile(gatContext, preferences, new URI(location
-                        .getPath())), l[i])) {
+                if (filter.accept(GAT.createFile(gatContext, preferences,
+                        new URI(location.getPath())), l[i])) {
                     v.add(l[i]);
                 }
             }
@@ -412,8 +413,8 @@ public abstract class FileCpi implements FileInterface {
             Vector<File> v = new Vector<File>();
 
             for (int i = 0; i < l.length; i++) {
-                if (filter.accept(GAT.createFile(gatContext, preferences, new URI(l[i]
-                        .getPath())))) {
+                if (filter.accept(GAT.createFile(gatContext, preferences,
+                        new URI(l[i].getPath())))) {
                     v.add(l[i]);
                 }
             }
@@ -446,8 +447,8 @@ public abstract class FileCpi implements FileInterface {
             Vector<File> v = new Vector<File>();
 
             for (int i = 0; i < l.length; i++) {
-                if (filter.accept(GAT.createFile(gatContext, preferences, new URI(location
-                        .getPath())), l[i].getPath())) {
+                if (filter.accept(GAT.createFile(gatContext, preferences,
+                        new URI(location.getPath())), l[i].getPath())) {
                     v.add(l[i]);
                 }
             }
@@ -518,7 +519,7 @@ public abstract class FileCpi implements FileInterface {
             String s = in.toString();
 
             if (scheme == null) {
-                // three slashes because of empty hostname 
+                // three slashes because of empty hostname
                 return new URI(destScheme + ":///" + s);
             } else if (scheme.equals(destScheme)) {
                 return in;
@@ -530,8 +531,8 @@ public abstract class FileCpi implements FileInterface {
             }
         } catch (URISyntaxException e) {
             if (logger.isDebugEnabled()) {
-        		logger.debug("internal UnsupportedOperationException: " + e);
-        	}
+                logger.debug("internal UnsupportedOperationException: " + e);
+            }
             return in;
         }
     }
@@ -543,18 +544,10 @@ public abstract class FileCpi implements FileInterface {
             logger.debug("copyDirectory");
         }
 
-        org.gridlab.gat.io.File dir = null;
-
-        try {
-            dir = GAT.createFile(gatContext, preferences, dirURI);
-        } catch (GATObjectCreationException e) {
-            throw new GATInvocationException("file cpi", e);
-        }
-
         // create destination dir
         try {
-            org.gridlab.gat.io.File destDir =
-                    GAT.createFile(gatContext, preferences, dest);
+            FileInterface destDir = GAT.createFile(gatContext, preferences,
+                    dest).getFileInterface();
 
             if (!destDir.exists()) {
 
@@ -567,10 +560,16 @@ public abstract class FileCpi implements FileInterface {
         } catch (GATObjectCreationException e) {
             throw new GATInvocationException("file cpi", e);
         }
+        FileInterface dir = null;
 
+        try {
+            dir = GAT.createFile(gatContext, preferences, dirURI)
+                    .getFileInterface();
+        } catch (GATObjectCreationException e) {
+            throw new GATInvocationException("file cpi", e);
+        }
         // list all the files and copy recursively.
         File[] files = (File[]) dir.listFiles();
-
         if (files == null) {
             if (logger.isDebugEnabled()) {
                 logger.debug("copyDirectory: no files in src directory");
@@ -642,7 +641,7 @@ public abstract class FileCpi implements FileInterface {
                         recursiveDeleteDirectory(gatContext, preferences,
                                 files[i].toGATURI());
                     } else {
-                        if(logger.isInfoEnabled()) {
+                        if (logger.isInfoEnabled()) {
                             logger.info("delete: " + files[i]);
                         }
                         files[i].delete();
@@ -673,9 +672,8 @@ public abstract class FileCpi implements FileInterface {
 
     public static Advertisable unmarshal(GATContext context,
             Preferences preferences, String s) {
-        SerializedFile f =
-                (SerializedFile) GATEngine.defaultUnmarshal(
-                        SerializedFile.class, s);
+        SerializedFile f = (SerializedFile) GATEngine.defaultUnmarshal(
+                SerializedFile.class, s);
 
         try {
             return GAT.createFile(context, preferences,

@@ -406,7 +406,6 @@ public class GlobusJob extends JobCpi implements GramJobListener,
         // behind a firewall.
         // OOPS, this is not possible, the poll also generates this callback!
         // poller.die();
-        System.out.println("GRAM: " + newJob.getStatus());
         handleStatusChange(newJob);
     }
 

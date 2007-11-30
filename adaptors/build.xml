@@ -311,7 +311,12 @@
             </manifest>
         </jar>
 
-
+        <jar jarfile="${lib}/GliteResourceBrokerAdaptor.jar" basedir="${tmp}" includes="**/glite/Glite*.class">
+            <manifest>
+                <attribute name="ResourceBrokerCpi-class" value="org.gridlab.gat.resources.cpi.glite.GliteResourceBrokerAdaptor" />
+            </manifest>
+        </jar>
+		
 		<delete dir="${tmp}" />
 
 		<!-- Copy external libraries to lib directory -->
