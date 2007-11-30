@@ -1,5 +1,10 @@
 #!/bin/sh
 
+#added by wojciech to make things easier, don't marge it into trunk!!!
+if [ -f "$HOME/.javagatrc" ]; then
+	. $HOME/.javagatrc
+fi
+
 if [ -z "$GAT_LOCATION" ] ; then
 #        echo GAT_LOCATION variable not set, using $PWD
 	GAT_LOCATION=$PWD
