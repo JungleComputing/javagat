@@ -1,4 +1,4 @@
-package org.gridlab.gat.io.cpi.gridsamjsdl;
+package org.gridlab.gat.resources.cpi.gridsam;
 
 import org.apache.log4j.Logger;
 import org.gridlab.gat.resources.SoftwareDescription;
