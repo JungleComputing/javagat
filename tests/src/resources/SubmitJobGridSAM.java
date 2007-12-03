@@ -14,8 +14,6 @@ public class SubmitJobGridSAM {
     
     private Logger logger = Logger.getLogger(SubmitJobGridSAM.class);
     
-    private String gridsamServer = "localhost:18443"; 
-    
     public void start(String[] args) throws Exception {
         GATContext context = new GATContext();
         
@@ -23,13 +21,14 @@ public class SubmitJobGridSAM {
         
         prefs.put("ResourceBroker.adaptor.name", "GridSAM");
         SoftwareDescription sd = new SoftwareDescription();
-//        sd.setLocation("https://" + args[0] + "/gridsam/services/gridsam?wsdl");
+//        sd.setLocation("https://" + args[0] + "/gridsam/services/gridsam");
         
         
-        sd.setLocation("file:////bin/hostname");
+        sd.setLocation("file:////bin/sleep");
+        sd.setArguments(new String[] {"15"});
 //        
-        File stdout = GAT.createFile(context, "hostname.txt");
-        sd.setStdout(stdout);
+//        File stdout = GAT.createFile(context, "hostname.txt");
+//        sd.setStdout(stdout);
 //        
         JobDescription jd = new JobDescription(sd);
         ResourceBroker broker = GAT.createResourceBroker(context, prefs);
