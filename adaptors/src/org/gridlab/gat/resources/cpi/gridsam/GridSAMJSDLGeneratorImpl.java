@@ -12,7 +12,7 @@ public class GridSAMJSDLGeneratorImpl implements GridSAMJSDLGenerator {
         addBegin(builder);
         addApplication(builder, sd);
         addEnd(builder);
-        return null;
+        return builder.toString();
     }
     
     private StringBuilder addBegin(StringBuilder builder) {
@@ -36,7 +36,7 @@ public class GridSAMJSDLGeneratorImpl implements GridSAMJSDLGenerator {
         
         builder.append("<Executable>").append(sd.getLocation().getPath()).append("</Executable>");
         if (logger.isDebugEnabled()) {
-            logger.debug("executable location=" + sd.getLocation());
+            logger.debug("executable location=" + sd.getLocation() + ", path=" + sd.getLocation().getPath());
             logger.debug("arguments count=" + sd.getArguments().length);
         }
         if (sd.getArguments().length > 0) {

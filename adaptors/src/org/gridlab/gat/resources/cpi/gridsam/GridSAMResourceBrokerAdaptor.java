@@ -104,6 +104,8 @@ public class GridSAMResourceBrokerAdaptor extends ResourceBrokerCpi {
     public Job submitJob(JobDescription description, MetricListener listener, String metricDefinitionName) throws GATInvocationException {
         long start = System.currentTimeMillis();
         SoftwareDescription sd = description.getSoftwareDescription();
+        
+        GridSAMJSDLGenerator jsdlGenerator = new GridSAMJSDLGeneratorImpl(); 
 
         logger.info("starting job submit...");
 
@@ -125,8 +127,9 @@ public class GridSAMResourceBrokerAdaptor extends ResourceBrokerCpi {
 
             String jsdlFileName = (String) attributes.get("gridsam.jsdl.file");
             // TODO something usefull
-            jsdlFileName = "/home/wojciech/client/gridsam/data/examples/sleep.jsdl";
-            JobDefinitionDocument jobDefinitionDocument = JobDefinitionDocument.Factory.parse(new File(jsdlFileName));
+//            jsdlFileName = "/home/wojciech/client/gridsam/data/examples/sleep.jsdl";
+            String jsdl = jsdlGenerator.generate(sd);
+            JobDefinitionDocument jobDefinitionDocument = JobDefinitionDocument.Factory.parse(jsdl);
 
             if (logger.isDebugEnabled()) {
                 logger.debug("jobDefinitionDocument = " + jobDefinitionDocument.toString());

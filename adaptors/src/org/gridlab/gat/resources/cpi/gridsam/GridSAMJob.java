@@ -31,8 +31,6 @@ public class GridSAMJob extends JobCpi {
 
     private Logger logger = Logger.getLogger(GridSAMJob.class);
 
-    // private LocalResourceBrokerAdaptor broker;
-
     private Process p;
 
     private int exitVal = 0;
@@ -79,6 +77,10 @@ public class GridSAMJob extends JobCpi {
     public synchronized Map<String, Object> getInfo() throws GATInvocationException {
         HashMap<String, Object> m = new HashMap<String, Object>();
 
+        getState();
+        m.put("state", state);
+        m.put("", null);
+        
         return m;
     }
 
