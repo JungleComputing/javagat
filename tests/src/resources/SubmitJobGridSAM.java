@@ -1,5 +1,8 @@
 package resources;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.apache.log4j.Logger;
 import org.gridlab.gat.GAT;
 import org.gridlab.gat.GATContext;
@@ -21,16 +24,24 @@ public class SubmitJobGridSAM {
         System.getProperties().setProperty("user.name", "mwi300");
         
         prefs.put("ResourceBroker.adaptor.name", "GridSAM");
-        prefs.put("File.adaptor.name", "Ssh");
+        prefs.put("File.adaptor.name", "Ssh,CommandlineSsh");
         SoftwareDescription sd = new SoftwareDescription();
 //        sd.setLocation("https://" + args[0] + "/gridsam/services/gridsam");
         
         
-        sd.setLocation("file:////bin/sleep");
-        sd.setArguments(new String[] {"5"});
+        sd.setLocation("file:////home0/mwi300/sh/ec.sh");
+        sd.setArguments(new String[] {"/etc/passwd", "/etc/passwd"});
+        Map<String, Object> attributes = new HashMap<String, Object>();
+        attributes.put("stdout", "in/outputFile");
+        sd.setAttributes(attributes );
         
-        File f = GAT.createFile(context, "/crypted_disk/home/wojciech/crypt/vu/RA/input");
+        File f = GAT.createFile(context, "/crypted_disk/home/wojciech/crypt/vu/RA/in");
+        File f2 = GAT.createFile(context, "/etc/passwd");
+        File outputFile = GAT.createFile(context, "in/outputFile");
+        File outputFileOut = GAT.createFile(context, "outputFile");
         sd.addPreStagedFile(f);
+        sd.addPreStagedFile(f2);
+        sd.addPostStagedFile(outputFile, outputFileOut);
 
         JobDescription jd = new JobDescription(sd);
         ResourceBroker broker = GAT.createResourceBroker(context, prefs);

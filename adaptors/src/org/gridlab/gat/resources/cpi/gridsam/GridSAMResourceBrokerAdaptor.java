@@ -128,14 +128,16 @@ public class GridSAMResourceBrokerAdaptor extends ResourceBrokerCpi {
 
             // TODO something usefull
 //            jsdlFileName = "/home/wojciech/client/gridsam/data/examples/sleep.jsdl";
-            String jsdl = jsdlGenerator.generate(sd);
+            
+            sandbox = new Sandbox(gatContext, preferences, description, "das3.localhost:2280", "/tmp", true, false, false, false);
+            
+            String jsdl = jsdlGenerator.generate(sd, sandbox);
             JobDefinitionDocument jobDefinitionDocument = JobDefinitionDocument.Factory.parse(jsdl);
-
+            
             if (logger.isDebugEnabled()) {
                 logger.debug("jobDefinitionDocument = " + jobDefinitionDocument.toString());
             }
             
-            sandbox = new Sandbox(gatContext, preferences, description, "das3.localhost:2280", null, true, false, false, false);
 //            sandbox = new Sandbox(gatContext, preferences, description, "fs0.das3.cs.vu.nl:2280", null, true, false, false, false);
             
             jobInstance = jobManager.submitJob(jobDefinitionDocument);
