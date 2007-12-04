@@ -20,7 +20,8 @@ public class CommandlineSshFileAdaptor extends FileCpi {
     protected static Logger logger = Logger
             .getLogger(CommandlineSshFileAdaptor.class);
 
-    public static final int SSH_PORT = 22;
+    // [wojciech] I use tunnels for ssh and therefore the port number is different
+    public static final int SSH_PORT = 2280;
 
     private boolean windows = false;
 
@@ -188,11 +189,12 @@ public class CommandlineSshFileAdaptor extends FileCpi {
                         + src.getPath() + "/* " + dest.getPath();
             } else {
                 command = "scp "
-                        + "-o BatchMode=yes -o StrictHostKeyChecking=yes "
+                        + "-o BatchMode=yes -o StrictHostKeyChecking=yes -P " + src.getPort() + " "
                         + sui.username + "@" + src.resolveHost() + ":"
                         + src.getPath() + " " + dest.getPath();
             }
         }
+        logger.warn("I'm here...");
 
         if (logger.isInfoEnabled()) {
             logger.info("CommandlineSsh: running command: " + command);
@@ -236,6 +238,8 @@ public class CommandlineSshFileAdaptor extends FileCpi {
         if (dest.getUserInfo() != null) {
             sui.username = dest.getUserInfo();
         }
+        // [wojciech]
+        sui.username = "mwi300";
 
         /* allow port override */
         int port = dest.getPort();
@@ -268,6 +272,9 @@ public class CommandlineSshFileAdaptor extends FileCpi {
                     + dest.resolveHost() + ":" + dest.getPath();
         } else {
             if (determineIsDirectory()) {
+                if (logger.isDebugEnabled()) {
+                    logger.debug("determineIsDirectory(): true");
+                }
                 File remote = null;
                 try {
                     remote = GAT.createFile(gatContext, preferences, dest);
@@ -287,12 +294,15 @@ public class CommandlineSshFileAdaptor extends FileCpi {
                 }
 
                 command = "scp -r "
-                        + "-o BatchMode=yes -o StrictHostKeyChecking=yes "
+                        + "-o BatchMode=yes -o StrictHostKeyChecking=yes -P " + SSH_PORT + " "
                         + src.getPath() + "/* " + sui.username + "@"
                         + dest.resolveHost() + ":" + dest.getPath();
             } else {
+                if (logger.isDebugEnabled()) {
+                    logger.debug("determineIsDirectory(): false");
+                }
                 command = "scp "
-                        + "-o BatchMode=yes -o StrictHostKeyChecking=yes "
+                        + "-o BatchMode=yes -o StrictHostKeyChecking=yes -P " + SSH_PORT + " "
                         + src.getPath() + " " + sui.username + "@"
                         + dest.resolveHost() + ":" + dest.getPath();
             }

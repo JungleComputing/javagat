@@ -18,18 +18,20 @@ public class SubmitJobGridSAM {
         GATContext context = new GATContext();
         
         Preferences prefs = new Preferences();
+        System.getProperties().setProperty("user.name", "mwi300");
         
         prefs.put("ResourceBroker.adaptor.name", "GridSAM");
+        prefs.put("File.adaptor.name", "Ssh");
         SoftwareDescription sd = new SoftwareDescription();
 //        sd.setLocation("https://" + args[0] + "/gridsam/services/gridsam");
         
         
         sd.setLocation("file:////bin/sleep");
-        sd.setArguments(new String[] {"15"});
-//        
-//        File stdout = GAT.createFile(context, "hostname.txt");
-//        sd.setStdout(stdout);
-//        
+        sd.setArguments(new String[] {"5"});
+        
+        File f = GAT.createFile(context, "/crypted_disk/home/wojciech/crypt/vu/RA/input");
+        sd.addPreStagedFile(f);
+
         JobDescription jd = new JobDescription(sd);
         ResourceBroker broker = GAT.createResourceBroker(context, prefs);
         Job job = broker.submitJob(jd);

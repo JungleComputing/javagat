@@ -91,7 +91,7 @@ public class GridSAMResourceBrokerAdaptor extends ResourceBrokerCpi {
 
     public ClientSideJobManager getJobManager() throws ConfigurationException {
         if (jobManager == null) {
-            jobManager = new ClientSideJobManager(new String[] { "-s", "https://localhost:18443/gridsam/services/gridsam?wsdl" }, ClientSideJobManager.getStandardOptions());
+            jobManager = new ClientSideJobManager(new String[] { "-s", "https://localhost:18443/gridsam/services/gridsam" }, ClientSideJobManager.getStandardOptions());
         }
         return jobManager;
     }
@@ -122,10 +122,10 @@ public class GridSAMResourceBrokerAdaptor extends ResourceBrokerCpi {
         logger.info("got clientManager");
         JobInstance jobInstance = null;
         logger.info("got jobInstance");
+        Sandbox sandbox = null;
         try {
             jobManager = getJobManager();
 
-            String jsdlFileName = (String) attributes.get("gridsam.jsdl.file");
             // TODO something usefull
 //            jsdlFileName = "/home/wojciech/client/gridsam/data/examples/sleep.jsdl";
             String jsdl = jsdlGenerator.generate(sd);
@@ -134,6 +134,9 @@ public class GridSAMResourceBrokerAdaptor extends ResourceBrokerCpi {
             if (logger.isDebugEnabled()) {
                 logger.debug("jobDefinitionDocument = " + jobDefinitionDocument.toString());
             }
+            
+            sandbox = new Sandbox(gatContext, preferences, description, "das3.localhost:2280", null, true, false, false, false);
+//            sandbox = new Sandbox(gatContext, preferences, description, "fs0.das3.cs.vu.nl:2280", null, true, false, false, false);
             
             jobInstance = jobManager.submitJob(jobDefinitionDocument);
 
@@ -151,7 +154,7 @@ public class GridSAMResourceBrokerAdaptor extends ResourceBrokerCpi {
         // return new GridSAMJob(gatContext, preferences, this, description, p,
         // host, sandbox, outForwarder, errForwarder, start, startRun);
 
-        return new GridSAMJob(gatContext, preferences, description, null, this, jobInstance);
+        return new GridSAMJob(gatContext, preferences, description, sandbox, this, jobInstance);
     }
 
     /*

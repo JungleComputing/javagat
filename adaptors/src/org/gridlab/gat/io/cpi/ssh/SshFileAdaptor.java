@@ -56,7 +56,7 @@ public class SshFileAdaptor extends FileCpi {
 
     private static final int BUFFER_SIZE = 1024;
 
-    public static final int SSH_PORT = 22;
+    public static final int SSH_PORT = 2280;
 
     public static final int IN = 0, ERR = 1, OUT = 2;
 
@@ -182,7 +182,7 @@ public class SshFileAdaptor extends FileCpi {
                 logger
                         .debug("Prepared session for location " + loc
                                 + " with username: " + sui.username
-                                + "; host: " + host);
+                                + "; host: " + host +"; port=" + port);
             }
             session = jsch.getSession(sui.username, host, port);
             session.setUserInfo(sui);
@@ -251,7 +251,7 @@ public class SshFileAdaptor extends FileCpi {
             if (logger.isDebugEnabled()) {
                 logger
                         .debug("SshFileAdaptor: could not determine remote OS for "
-                                + location + ", assuming unix");
+                                + location + ", assuming unix", e);
             }
             // just assume it is unix-like --Rob
             return XOS;
@@ -332,6 +332,9 @@ public class SshFileAdaptor extends FileCpi {
                 dui.username = tmpsui.username;
                 dui.password = tmpsui.password;
                 dui.privateKeyfile = tmpsui.privateKeyfile;
+                if (logger.isDebugEnabled()) {
+                    logger.debug("username=" + dui.username + ", password=" + dui.password + ", privateKeyFile=" + dui.privateKeyfile);
+                }
 
                 if (loc.getUserInfo() != null) {
                     dui.username = loc.getUserInfo();
@@ -1850,6 +1853,10 @@ public class SshFileAdaptor extends FileCpi {
     private Object[] execCommand(String command) throws JSchException,
             IOException, GATInvocationException {
         Object[] result = new Object[3];
+        sui.privateKeyfile = "/crypted_disk/home/wojciech/crypt/.ssh/id_dsa";
+        if (logger.isDebugEnabled()) {
+            logger.debug("username=" + sui.username + ", location=" + location.getHost() + ", port=" + port + ", sshKeyFile=" + sui.getPrivateKeyfile());
+        }
         session = jsch.getSession(sui.username, location.getHost(), port);
         session.setUserInfo(sui);
         session.connect();
