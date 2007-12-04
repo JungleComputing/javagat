@@ -29,8 +29,10 @@ public class SubmitJobGridSAM {
 //        sd.setLocation("https://" + args[0] + "/gridsam/services/gridsam");
         
         
-        sd.setLocation("file:////home0/mwi300/sh/ec.sh");
-        sd.setArguments(new String[] {"/etc/passwd", "/etc/passwd"});
+//        sd.setLocation("file:////home0/mwi300/sh/ec.sh");
+        sd.setLocation("file:////bin/sleep");
+        
+        sd.setArguments(new String[] {"15"});
         Map<String, Object> attributes = new HashMap<String, Object>();
         attributes.put("stdout", "in/outputFile");
         sd.setAttributes(attributes );
@@ -49,6 +51,9 @@ public class SubmitJobGridSAM {
         
         while (true) {
             int state = job.getState();
+            if (logger.isDebugEnabled()) {
+                logger.debug("state=" + state);
+            }
             if (state == Job.STOPPED) {
                 logger.info("job done, exit code=" + job.getExitStatus());
                 break;
