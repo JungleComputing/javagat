@@ -11,7 +11,8 @@
         <ant dir="tests" />
         <ant dir="engine" />
         <ant dir="adaptors" />
-        <ant dir="api" target="javadoc" />
+        <!-- don't merge this into trunk!!! -->
+        <!--<ant dir="api" target="javadoc" />-->
     </target>
 	
 
