@@ -28,6 +28,94 @@ import org.icenigrid.gridsam.core.UnknownJobException;
  */
 
 public class GridSAMJob extends JobCpi {
+    
+    
+    private class PollingThread extends Thread {
+        private Logger logger = Logger.getLogger(PollingThread.class);
+
+        private GridSAMJob parent;
+        
+        public PollingThread(GridSAMJob parent) {
+            this.parent = parent;
+        }
+        
+        private void setState(int state) {
+            synchronized (this.parent) {
+                parent.state = state;
+            }
+        }
+        
+        public void run() {
+            while (true) {
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException e1) {
+                    if (logger.isDebugEnabled()) {
+                        logger.debug("sleeping interrupted");
+                    }
+                }
+                
+                // update the manager state of the job
+                try {
+                    jobInstance = adaptor.getJobManager().findJobInstance(jobID);
+                } catch (JobManagerException e) {
+                    logger.error("caught exception", e);
+                    // TODO
+                    throw new RuntimeException(e);
+                } catch (UnknownJobException e) {
+                    logger.error("caught exception", e);
+                    // TODO
+                    throw new RuntimeException(e);
+                }
+                
+                JobStage stage = jobInstance.getLastKnownStage();
+                JobState jobState = stage.getState();
+
+                if (logger.isDebugEnabled()) {
+                    logger.debug("jobState=" + jobState.toString());
+                    StringBuilder props = new StringBuilder();
+                    Map properties = jobInstance.getProperties();
+                    Iterator iterator = properties.keySet().iterator();
+                    while (iterator.hasNext()) {
+                        Object next = iterator.next();
+                        props.append("\n    ").append(next).append("=").append(properties.get(next));
+                    }
+                    logger.debug("properties=" + props.toString());
+                }
+                
+                if (jobState == JobState.ACTIVE) {
+                    setState(RUNNING);
+                } else if (jobState == JobState.DONE) {
+                    setState(STOPPED);
+                    break;
+                } else if (jobState == JobState.EXECUTED) {
+                    setState(STOPPED);
+                    break;
+                } else if (jobState == JobState.FAILED) {
+                    setState(SUBMISSION_ERROR);
+                    break;
+                } else if (jobState == JobState.PENDING) {
+                    setState(RUNNING);
+                } else if (jobState == JobState.STAGED_IN || jobState == JobState.STAGING_IN) {
+                    setState(PRE_STAGING);
+                } else if (jobState == JobState.STAGED_OUT || jobState == JobState.STAGING_OUT) {
+                    setState(POST_STAGING);
+                } else if (jobState == JobState.TERMINATED) {
+                    setState(STOPPED);
+                    break;
+                } else if (jobState == JobState.UNDEFINED) {
+                    setState(UNKNOWN);
+                } else {
+                    logger.warn("unknown job state: " + jobState.toString());
+                    setState(UNKNOWN);
+                }
+                
+            }
+            if (logger.isDebugEnabled()) {
+                logger.debug("polling thread exiting, job's finished");
+            }
+        }
+    }
 
     private Logger logger = Logger.getLogger(GridSAMJob.class);
 
@@ -52,6 +140,7 @@ public class GridSAMJob extends JobCpi {
     private long startTime;
     private long runTime;
 
+    private PollingThread pollingThread;
 
     public GridSAMJob(GATContext gatContext, Preferences preferences, JobDescription jobDescription, Sandbox sandbox, GridSAMResourceBrokerAdaptor gridSAMResourceBrokerAdaptor, JobInstance jobInstance) {
         super(gatContext, preferences, jobDescription, sandbox);
@@ -67,6 +156,10 @@ public class GridSAMJob extends JobCpi {
                 MetricDefinition.DISCRETE, "String", null, null, returnDef);
         statusMetric = statusMetricDefinition.createMetric(null);
         GATEngine.registerMetric(this, "getJobStatus", statusMetricDefinition);
+        
+        pollingThread = new PollingThread(this);
+        pollingThread.setDaemon(true);
+        pollingThread.start();
     }
 
     /*
@@ -105,65 +198,6 @@ public class GridSAMJob extends JobCpi {
         return exitVal;
     }
     
-    @Override
-    public synchronized int getState() {
-        
-        // update the manager state of the job
-        try {
-            jobInstance = adaptor.getJobManager().findJobInstance(jobID);
-        } catch (JobManagerException e) {
-            logger.error("caught exception", e);
-            // TODO
-            throw new RuntimeException(e);
-        } catch (UnknownJobException e) {
-            logger.error("caught exception", e);
-            // TODO
-            throw new RuntimeException(e);
-        }
-        
-        JobStage stage = jobInstance.getLastKnownStage();
-        JobState jobState = stage.getState();
-
-        if (logger.isDebugEnabled()) {
-            logger.debug("jobState=" + jobState.toString());
-            StringBuilder props = new StringBuilder();
-            Map properties = jobInstance.getProperties();
-            Iterator iterator = properties.keySet().iterator();
-            while (iterator.hasNext()) {
-                Object next = iterator.next();
-                props.append("\n    ").append(next).append("=").append(properties.get(next));
-            }
-            logger.debug("properties=" + props.toString());
-        }
-        
-        // TODO [wojciech] - verify that those states are correct and that they should be here
-        if (jobState == JobState.ACTIVE) {
-            state = RUNNING;
-        } else if (jobState == JobState.DONE) {
-            state = STOPPED;
-        } else if (jobState == JobState.EXECUTED) {
-            state = STOPPED;
-        } else if (jobState == JobState.FAILED) {
-            state = SUBMISSION_ERROR;
-        } else if (jobState == JobState.PENDING) {
-            state = RUNNING;
-        } else if (jobState == JobState.STAGED_IN || jobState == JobState.STAGING_IN) {
-            state = PRE_STAGING;
-        } else if (jobState == JobState.STAGED_OUT || jobState == JobState.STAGING_OUT) {
-            state = POST_STAGING;
-        } else if (jobState == JobState.TERMINATED) {
-            state = STOPPED;
-        } else if (jobState == JobState.UNDEFINED) {
-            state = UNKNOWN;
-        } else {
-            logger.warn("unknown job state: " + jobState.toString());
-            state = UNKNOWN;
-        }
-        
-        return state;
-        
-    }
-
     /*
      * (non-Javadoc)
      * 
