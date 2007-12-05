@@ -194,7 +194,6 @@ public class CommandlineSshFileAdaptor extends FileCpi {
                         + src.getPath() + " " + dest.getPath();
             }
         }
-        logger.warn("I'm here...");
 
         if (logger.isInfoEnabled()) {
             logger.info("CommandlineSsh: running command: " + command);
