@@ -1,0 +1,362 @@
+d: /home/wojciech/workspace/JavaGAT/lib/*.jar
+d: /home/wojciech/client/lib/*.jar
+[main] INFO  engine.AdaptorSet (line 86)  - using default adaptor ordering policy
+[main] INFO  engine.GATEngine (line 116)  - 
+------------LOADED ADAPTORS------------
+Adaptor type: org.gridlab.gat.io.cpi.FileCpi:
+    org.gridlab.gat.io.cpi.local.LocalFileAdaptor
+    org.gridlab.gat.io.cpi.globus.GridFTPFileAdaptor
+    org.gridlab.gat.io.cpi.sftpGanymed.SftpGanymedFileAdaptor
+    org.gridlab.gat.io.cpi.commandlineSsh.CommandlineSshFileAdaptor
+    org.gridlab.gat.io.cpi.sftpnew.SftpNewFileAdaptor
+    org.gridlab.gat.io.cpi.ssh.SshFileAdaptor
+    org.gridlab.gat.io.cpi.sftp.SftpFileAdaptor
+    org.gridlab.gat.io.cpi.gt4.GT4LocalFileAdaptor
+    org.gridlab.gat.io.cpi.streaming.StreamingFileAdaptor
+    org.gridlab.gat.io.cpi.thirdPartyCopy.ThirdPartyCopyFileAdaptor
+    org.gridlab.gat.io.cpi.gt4.GT4GridFTPFileAdaptor
+    org.gridlab.gat.io.cpi.rftgt4.RFTGT4FileAdaptor
+    org.gridlab.gat.io.cpi.globus.FTPFileAdaptor
+
+Adaptor type: org.gridlab.gat.io.cpi.FileOutputStreamCpi:
+    org.gridlab.gat.io.cpi.local.LocalFileOutputStreamAdaptor
+    org.gridlab.gat.io.cpi.globus.GridFTPFileOutputStreamAdaptor
+    org.gridlab.gat.io.cpi.ssh.SshFileOutputStreamAdaptor
+    org.gridlab.gat.io.cpi.sftp.SftpFileOutputStreamAdaptor
+    org.gridlab.gat.io.cpi.globus.HTTPSFileOutputStreamAdaptor
+    org.gridlab.gat.io.cpi.globus.FTPFileOutputStreamAdaptor
+    org.gridlab.gat.io.cpi.globus.HTTPFileOutputStreamAdaptor
+
+Adaptor type: org.gridlab.gat.monitoring.cpi.MonitorableCpi:
+    org.gridlab.gat.monitoring.cpi.mercury.MercuryMonitorableAdaptor
+
+Adaptor type: org.gridlab.gat.io.cpi.FileInputStreamCpi:
+    org.gridlab.gat.io.cpi.local.LocalFileInputStreamAdaptor
+    org.gridlab.gat.io.cpi.globus.GridFTPFileInputStreamAdaptor
+    org.gridlab.gat.io.cpi.sftpnew.SftpNewFileInputStreamAdaptor
+    org.gridlab.gat.io.cpi.ssh.SshFileInputStreamAdaptor
+    org.gridlab.gat.io.cpi.sftp.SftpFileInputStreamAdaptor
+    org.gridlab.gat.io.cpi.copyingFileInputStream.CopyingFileInputStreamAdaptor
+    org.gridlab.gat.io.cpi.globus.HTTPSFileInputStreamAdaptor
+    org.gridlab.gat.io.cpi.globus.FTPFileInputStreamAdaptor
+    org.gridlab.gat.io.cpi.globus.HTTPFileInputStreamAdaptor
+
+Adaptor type: org.gridlab.gat.resources.cpi.ResourceBrokerCpi:
+    org.gridlab.gat.resources.cpi.wsgt4.WSGT4ResourceBrokerAdaptor
+    org.gridlab.gat.resources.cpi.local.LocalResourceBrokerAdaptor
+    org.gridlab.gat.resources.cpi.globus.GlobusResourceBrokerAdaptor
+    org.gridlab.gat.resources.cpi.commandlineSsh.CommandlineSshResourceBrokerAdaptor
+    org.gridlab.gat.resources.cpi.ssh.SshResourceBrokerAdaptor
+    org.gridlab.gat.resources.cpi.commandlineSshPrun.CommandlineSshPrunResourceBrokerAdaptor
+    org.gridlab.gat.resources.cpi.gridsam.GridSAMResourceBrokerAdaptor
+    org.gridlab.gat.resources.cpi.proactive.ProActiveResourceBrokerAdaptor
+    org.gridlab.gat.resources.cpi.sge.SGEResourceBrokerAdaptor
+    org.gridlab.gat.resources.cpi.gt4.GT4ResourceBrokerAdaptor
+    org.gridlab.gat.resources.cpi.pbs_resource.PbsResourceBrokerAdaptor
+    org.gridlab.gat.resources.cpi.zorilla.ZorillaResourceBrokerAdaptor
+
+Adaptor type: org.gridlab.gat.io.cpi.EndpointCpi:
+    org.gridlab.gat.io.cpi.sockets.SocketEndpointAdaptor
+
+Adaptor type: org.gridlab.gat.io.cpi.LogicalFileCpi:
+    org.gridlab.gat.io.cpi.local.LocalLogicalFileAdaptor
+
+Adaptor type: org.gridlab.gat.advert.cpi.AdvertServiceCpi:
+    org.gridlab.gat.advert.cpi.local.LocalAdvertServiceAdaptor
+
+Adaptor type: org.gridlab.gat.io.cpi.RandomAccessFileCpi:
+    org.gridlab.gat.io.cpi.local.LocalRandomAccessFileAdaptor
+
+---------------------------------------
+[main] INFO  engine.AdaptorInvocationHandler (line 327)  - initAdaptor: instantiated LocalFileAdaptor for type File
+[main] INFO  engine.AdaptorInvocationHandler (line 313)  - initAdaptor: Couldn't create GridFTPFileAdaptor: *** *** can't get proxy credential (did you do a grid-proxy-init?)
+[main] INFO  engine.AdaptorInvocationHandler (line 327)  - initAdaptor: instantiated SftpGanymedFileAdaptor for type File
+[main] INFO  engine.AdaptorInvocationHandler (line 327)  - initAdaptor: instantiated CommandlineSshFileAdaptor for type File
+[main] INFO  engine.AdaptorInvocationHandler (line 327)  - initAdaptor: instantiated SftpNewFileAdaptor for type File
+[main] INFO  sftp.SftpFileAdaptor (line 55)  - caching: false
+[main] INFO  engine.AdaptorInvocationHandler (line 327)  - initAdaptor: instantiated SftpFileAdaptor for type File
+[main] INFO  engine.AdaptorInvocationHandler (line 327)  - initAdaptor: instantiated GT4LocalFileAdaptor for type File
+[main] INFO  engine.AdaptorInvocationHandler (line 327)  - initAdaptor: instantiated StreamingFileAdaptor for type File
+[main] INFO  engine.AdaptorInvocationHandler (line 327)  - initAdaptor: instantiated ThirdPartyCopyFileAdaptor for type File
+[main] INFO  engine.AdaptorInvocationHandler (line 313)  - initAdaptor: Couldn't create RFTGT4FileAdaptor: cannot handle this URI
+[main] INFO  engine.AdaptorInvocationHandler (line 313)  - initAdaptor: Couldn't create FTPFileAdaptor: Could not find a valid security context for this adaptor to use for the specified host/port
+[main] INFO  engine.AdaptorInvocationHandler (line 327)  - initAdaptor: instantiated LocalFileAdaptor for type File
+[main] INFO  engine.AdaptorInvocationHandler (line 313)  - initAdaptor: Couldn't create GridFTPFileAdaptor: *** *** can't get proxy credential (did you do a grid-proxy-init?)
+[main] INFO  engine.AdaptorInvocationHandler (line 327)  - initAdaptor: instantiated SftpGanymedFileAdaptor for type File
+[main] INFO  engine.AdaptorInvocationHandler (line 327)  - initAdaptor: instantiated CommandlineSshFileAdaptor for type File
+[main] INFO  engine.AdaptorInvocationHandler (line 327)  - initAdaptor: instantiated SftpNewFileAdaptor for type File
+[main] INFO  sftp.SftpFileAdaptor (line 55)  - caching: false
+[main] INFO  engine.AdaptorInvocationHandler (line 327)  - initAdaptor: instantiated SftpFileAdaptor for type File
+[main] INFO  engine.AdaptorInvocationHandler (line 327)  - initAdaptor: instantiated GT4LocalFileAdaptor for type File
+[main] INFO  engine.AdaptorInvocationHandler (line 327)  - initAdaptor: instantiated StreamingFileAdaptor for type File
+[main] INFO  engine.AdaptorInvocationHandler (line 327)  - initAdaptor: instantiated ThirdPartyCopyFileAdaptor for type File
+[main] INFO  engine.AdaptorInvocationHandler (line 313)  - initAdaptor: Couldn't create RFTGT4FileAdaptor: cannot handle this URI
+[main] INFO  engine.AdaptorInvocationHandler (line 313)  - initAdaptor: Couldn't create FTPFileAdaptor: Could not find a valid security context for this adaptor to use for the specified host/port
+[main] INFO  engine.AdaptorInvocationHandler (line 327)  - initAdaptor: instantiated LocalFileAdaptor for type File
+[main] INFO  engine.AdaptorInvocationHandler (line 313)  - initAdaptor: Couldn't create GridFTPFileAdaptor: *** *** can't get proxy credential (did you do a grid-proxy-init?)
+[main] INFO  engine.AdaptorInvocationHandler (line 327)  - initAdaptor: instantiated SftpGanymedFileAdaptor for type File
+[main] INFO  engine.AdaptorInvocationHandler (line 327)  - initAdaptor: instantiated CommandlineSshFileAdaptor for type File
+[main] INFO  engine.AdaptorInvocationHandler (line 327)  - initAdaptor: instantiated SftpNewFileAdaptor for type File
+[main] INFO  sftp.SftpFileAdaptor (line 55)  - caching: false
+[main] INFO  engine.AdaptorInvocationHandler (line 327)  - initAdaptor: instantiated SftpFileAdaptor for type File
+[main] INFO  engine.AdaptorInvocationHandler (line 327)  - initAdaptor: instantiated GT4LocalFileAdaptor for type File
+[main] INFO  engine.AdaptorInvocationHandler (line 327)  - initAdaptor: instantiated StreamingFileAdaptor for type File
+[main] INFO  engine.AdaptorInvocationHandler (line 327)  - initAdaptor: instantiated ThirdPartyCopyFileAdaptor for type File
+[main] INFO  engine.AdaptorInvocationHandler (line 313)  - initAdaptor: Couldn't create RFTGT4FileAdaptor: cannot handle this URI
+[main] INFO  engine.AdaptorInvocationHandler (line 313)  - initAdaptor: Couldn't create FTPFileAdaptor: Could not find a valid security context for this adaptor to use for the specified host/port
+[main] INFO  engine.AdaptorInvocationHandler (line 327)  - initAdaptor: instantiated LocalFileAdaptor for type File
+[main] INFO  engine.AdaptorInvocationHandler (line 313)  - initAdaptor: Couldn't create GridFTPFileAdaptor: *** *** can't get proxy credential (did you do a grid-proxy-init?)
+[main] INFO  engine.AdaptorInvocationHandler (line 327)  - initAdaptor: instantiated SftpGanymedFileAdaptor for type File
+[main] INFO  engine.AdaptorInvocationHandler (line 327)  - initAdaptor: instantiated CommandlineSshFileAdaptor for type File
+[main] INFO  engine.AdaptorInvocationHandler (line 327)  - initAdaptor: instantiated SftpNewFileAdaptor for type File
+[main] INFO  sftp.SftpFileAdaptor (line 55)  - caching: false
+[main] INFO  engine.AdaptorInvocationHandler (line 327)  - initAdaptor: instantiated SftpFileAdaptor for type File
+[main] INFO  engine.AdaptorInvocationHandler (line 327)  - initAdaptor: instantiated GT4LocalFileAdaptor for type File
+[main] INFO  engine.AdaptorInvocationHandler (line 327)  - initAdaptor: instantiated StreamingFileAdaptor for type File
+[main] INFO  engine.AdaptorInvocationHandler (line 327)  - initAdaptor: instantiated ThirdPartyCopyFileAdaptor for type File
+[main] INFO  engine.AdaptorInvocationHandler (line 313)  - initAdaptor: Couldn't create RFTGT4FileAdaptor: cannot handle this URI
+[main] INFO  engine.AdaptorInvocationHandler (line 313)  - initAdaptor: Couldn't create FTPFileAdaptor: Could not find a valid security context for this adaptor to use for the specified host/port
+[main] INFO  engine.GATEngine (line 832)  - old adaptor order: 
+Adaptor list for org.gridlab.gat.resources.cpi.ResourceBrokerCpi, adaptors = [org.gridlab.gat.resources.cpi.wsgt4.WSGT4ResourceBrokerAdaptor, org.gridlab.gat.resources.cpi.local.LocalResourceBrokerAdaptor, org.gridlab.gat.resources.cpi.globus.GlobusResourceBrokerAdaptor, org.gridlab.gat.resources.cpi.commandlineSsh.CommandlineSshResourceBrokerAdaptor, org.gridlab.gat.resources.cpi.ssh.SshResourceBrokerAdaptor, org.gridlab.gat.resources.cpi.commandlineSshPrun.CommandlineSshPrunResourceBrokerAdaptor, org.gridlab.gat.resources.cpi.gridsam.GridSAMResourceBrokerAdaptor, org.gridlab.gat.resources.cpi.proactive.ProActiveResourceBrokerAdaptor, org.gridlab.gat.resources.cpi.sge.SGEResourceBrokerAdaptor, org.gridlab.gat.resources.cpi.gt4.GT4ResourceBrokerAdaptor, org.gridlab.gat.resources.cpi.pbs_resource.PbsResourceBrokerAdaptor, org.gridlab.gat.resources.cpi.zorilla.ZorillaResourceBrokerAdaptor]
+[main] INFO  engine.GATEngine (line 836)  - new adaptor order: 
+Adaptor list for org.gridlab.gat.resources.cpi.ResourceBrokerCpi, adaptors = [org.gridlab.gat.resources.cpi.gridsam.GridSAMResourceBrokerAdaptor]
+gridsam starting...
+[main] INFO  engine.AdaptorInvocationHandler (line 327)  - initAdaptor: instantiated GridSAMResourceBrokerAdaptor for type ResourceBroker
+[main] INFO  gridsam.GridSAMResourceBrokerAdaptor (line 97)  - starting job submit...
+[main] INFO  engine.GATEngine (line 832)  - old adaptor order: 
+Adaptor list for org.gridlab.gat.io.cpi.FileCpi, adaptors = [org.gridlab.gat.io.cpi.local.LocalFileAdaptor, org.gridlab.gat.io.cpi.globus.GridFTPFileAdaptor, org.gridlab.gat.io.cpi.sftpGanymed.SftpGanymedFileAdaptor, org.gridlab.gat.io.cpi.commandlineSsh.CommandlineSshFileAdaptor, org.gridlab.gat.io.cpi.sftpnew.SftpNewFileAdaptor, org.gridlab.gat.io.cpi.ssh.SshFileAdaptor, org.gridlab.gat.io.cpi.sftp.SftpFileAdaptor, org.gridlab.gat.io.cpi.gt4.GT4LocalFileAdaptor, org.gridlab.gat.io.cpi.streaming.StreamingFileAdaptor, org.gridlab.gat.io.cpi.thirdPartyCopy.ThirdPartyCopyFileAdaptor, org.gridlab.gat.io.cpi.gt4.GT4GridFTPFileAdaptor, org.gridlab.gat.io.cpi.rftgt4.RFTGT4FileAdaptor, org.gridlab.gat.io.cpi.globus.FTPFileAdaptor]
+[main] INFO  engine.GATEngine (line 836)  - new adaptor order: 
+Adaptor list for org.gridlab.gat.io.cpi.FileCpi, adaptors = [org.gridlab.gat.io.cpi.ssh.SshFileAdaptor, org.gridlab.gat.io.cpi.commandlineSsh.CommandlineSshFileAdaptor]
+[main] INFO  engine.AdaptorInvocationHandler (line 327)  - initAdaptor: instantiated SshFileAdaptor for type File
+[main] INFO  engine.AdaptorInvocationHandler (line 327)  - initAdaptor: instantiated CommandlineSshFileAdaptor for type File
+[main] INFO  engine.AdaptorInvocationHandler (line 217)  - Method mkdir on CommandlineSshFileAdaptor failed: java.lang.UnsupportedOperationException: Not implemented
+[main] INFO  cpi.Sandbox (line 183)  - sandbox: /tmp/.JavaGAT_SANDBOX_0.7718400723476093
+[main] INFO  engine.GATEngine (line 832)  - old adaptor order: 
+Adaptor list for org.gridlab.gat.io.cpi.FileCpi, adaptors = [org.gridlab.gat.io.cpi.local.LocalFileAdaptor, org.gridlab.gat.io.cpi.globus.GridFTPFileAdaptor, org.gridlab.gat.io.cpi.sftpGanymed.SftpGanymedFileAdaptor, org.gridlab.gat.io.cpi.commandlineSsh.CommandlineSshFileAdaptor, org.gridlab.gat.io.cpi.sftpnew.SftpNewFileAdaptor, org.gridlab.gat.io.cpi.ssh.SshFileAdaptor, org.gridlab.gat.io.cpi.sftp.SftpFileAdaptor, org.gridlab.gat.io.cpi.gt4.GT4LocalFileAdaptor, org.gridlab.gat.io.cpi.streaming.StreamingFileAdaptor, org.gridlab.gat.io.cpi.thirdPartyCopy.ThirdPartyCopyFileAdaptor, org.gridlab.gat.io.cpi.gt4.GT4GridFTPFileAdaptor, org.gridlab.gat.io.cpi.rftgt4.RFTGT4FileAdaptor, org.gridlab.gat.io.cpi.globus.FTPFileAdaptor]
+[main] INFO  engine.GATEngine (line 836)  - new adaptor order: 
+Adaptor list for org.gridlab.gat.io.cpi.FileCpi, adaptors = [org.gridlab.gat.io.cpi.ssh.SshFileAdaptor, org.gridlab.gat.io.cpi.commandlineSsh.CommandlineSshFileAdaptor]
+[main] INFO  engine.AdaptorInvocationHandler (line 327)  - initAdaptor: instantiated SshFileAdaptor for type File
+[main] INFO  engine.AdaptorInvocationHandler (line 327)  - initAdaptor: instantiated CommandlineSshFileAdaptor for type File
+[main] INFO  engine.GATEngine (line 832)  - old adaptor order: 
+Adaptor list for org.gridlab.gat.io.cpi.FileCpi, adaptors = [org.gridlab.gat.io.cpi.local.LocalFileAdaptor, org.gridlab.gat.io.cpi.globus.GridFTPFileAdaptor, org.gridlab.gat.io.cpi.sftpGanymed.SftpGanymedFileAdaptor, org.gridlab.gat.io.cpi.commandlineSsh.CommandlineSshFileAdaptor, org.gridlab.gat.io.cpi.sftpnew.SftpNewFileAdaptor, org.gridlab.gat.io.cpi.ssh.SshFileAdaptor, org.gridlab.gat.io.cpi.sftp.SftpFileAdaptor, org.gridlab.gat.io.cpi.gt4.GT4LocalFileAdaptor, org.gridlab.gat.io.cpi.streaming.StreamingFileAdaptor, org.gridlab.gat.io.cpi.thirdPartyCopy.ThirdPartyCopyFileAdaptor, org.gridlab.gat.io.cpi.gt4.GT4GridFTPFileAdaptor, org.gridlab.gat.io.cpi.rftgt4.RFTGT4FileAdaptor, org.gridlab.gat.io.cpi.globus.FTPFileAdaptor]
+[main] INFO  engine.GATEngine (line 836)  - new adaptor order: 
+Adaptor list for org.gridlab.gat.io.cpi.FileCpi, adaptors = [org.gridlab.gat.io.cpi.ssh.SshFileAdaptor, org.gridlab.gat.io.cpi.commandlineSsh.CommandlineSshFileAdaptor]
+[main] INFO  engine.AdaptorInvocationHandler (line 327)  - initAdaptor: instantiated SshFileAdaptor for type File
+[main] INFO  engine.AdaptorInvocationHandler (line 327)  - initAdaptor: instantiated CommandlineSshFileAdaptor for type File
+[main] INFO  cpi.PreStagedFileSet (line 70)  - PreStagedFileSet:
+PreStaged: /etc/passwd -> any://das3.localhost:2280//tmp/.JavaGAT_SANDBOX_0.7718400723476093/passwd (IN SANDBOX)
+PreStaged: /crypted_disk/home/wojciech/crypt/vu/RA/in -> any://das3.localhost:2280//tmp/.JavaGAT_SANDBOX_0.7718400723476093/in (IN SANDBOX)
+
+[main] INFO  engine.GATEngine (line 832)  - old adaptor order: 
+Adaptor list for org.gridlab.gat.io.cpi.FileCpi, adaptors = [org.gridlab.gat.io.cpi.local.LocalFileAdaptor, org.gridlab.gat.io.cpi.globus.GridFTPFileAdaptor, org.gridlab.gat.io.cpi.sftpGanymed.SftpGanymedFileAdaptor, org.gridlab.gat.io.cpi.commandlineSsh.CommandlineSshFileAdaptor, org.gridlab.gat.io.cpi.sftpnew.SftpNewFileAdaptor, org.gridlab.gat.io.cpi.ssh.SshFileAdaptor, org.gridlab.gat.io.cpi.sftp.SftpFileAdaptor, org.gridlab.gat.io.cpi.gt4.GT4LocalFileAdaptor, org.gridlab.gat.io.cpi.streaming.StreamingFileAdaptor, org.gridlab.gat.io.cpi.thirdPartyCopy.ThirdPartyCopyFileAdaptor, org.gridlab.gat.io.cpi.gt4.GT4GridFTPFileAdaptor, org.gridlab.gat.io.cpi.rftgt4.RFTGT4FileAdaptor, org.gridlab.gat.io.cpi.globus.FTPFileAdaptor]
+[main] INFO  engine.GATEngine (line 836)  - new adaptor order: 
+Adaptor list for org.gridlab.gat.io.cpi.FileCpi, adaptors = [org.gridlab.gat.io.cpi.ssh.SshFileAdaptor, org.gridlab.gat.io.cpi.commandlineSsh.CommandlineSshFileAdaptor]
+[main] INFO  engine.AdaptorInvocationHandler (line 327)  - initAdaptor: instantiated SshFileAdaptor for type File
+[main] INFO  engine.AdaptorInvocationHandler (line 327)  - initAdaptor: instantiated CommandlineSshFileAdaptor for type File
+[main] INFO  engine.GATEngine (line 832)  - old adaptor order: 
+Adaptor list for org.gridlab.gat.io.cpi.FileCpi, adaptors = [org.gridlab.gat.io.cpi.local.LocalFileAdaptor, org.gridlab.gat.io.cpi.globus.GridFTPFileAdaptor, org.gridlab.gat.io.cpi.sftpGanymed.SftpGanymedFileAdaptor, org.gridlab.gat.io.cpi.commandlineSsh.CommandlineSshFileAdaptor, org.gridlab.gat.io.cpi.sftpnew.SftpNewFileAdaptor, org.gridlab.gat.io.cpi.ssh.SshFileAdaptor, org.gridlab.gat.io.cpi.sftp.SftpFileAdaptor, org.gridlab.gat.io.cpi.gt4.GT4LocalFileAdaptor, org.gridlab.gat.io.cpi.streaming.StreamingFileAdaptor, org.gridlab.gat.io.cpi.thirdPartyCopy.ThirdPartyCopyFileAdaptor, org.gridlab.gat.io.cpi.gt4.GT4GridFTPFileAdaptor, org.gridlab.gat.io.cpi.rftgt4.RFTGT4FileAdaptor, org.gridlab.gat.io.cpi.globus.FTPFileAdaptor]
+[main] INFO  engine.GATEngine (line 836)  - new adaptor order: 
+Adaptor list for org.gridlab.gat.io.cpi.FileCpi, adaptors = [org.gridlab.gat.io.cpi.ssh.SshFileAdaptor, org.gridlab.gat.io.cpi.commandlineSsh.CommandlineSshFileAdaptor]
+[main] INFO  engine.AdaptorInvocationHandler (line 327)  - initAdaptor: instantiated SshFileAdaptor for type File
+[main] INFO  engine.AdaptorInvocationHandler (line 327)  - initAdaptor: instantiated CommandlineSshFileAdaptor for type File
+[main] INFO  cpi.PostStagedFileSet (line 60)  - PostStagedFileSet:
+PostStaged: any://das3.localhost:2280//tmp/.JavaGAT_SANDBOX_0.7718400723476093/in/outputFile -> any:////crypted_disk/home/wojciech/crypt/vu/RA/workspace/JavaGAT/outputFile (IN SANDBOX)
+
+[main] INFO  cpi.Sandbox (line 193)  - deleting post stage files outside sandbox
+[main] INFO  cpi.Sandbox (line 205)  - deleting post stage files outside sandbox done
+[main] INFO  cpi.Sandbox (line 209)  - pre stage starting
+[main] INFO  cpi.PreStagedFile (line 123)  - prestage:
+  copy /etc/passwd to any://das3.localhost:2280//tmp/.JavaGAT_SANDBOX_0.7718400723476093/passwd
+[main] INFO  engine.GATEngine (line 832)  - old adaptor order: 
+Adaptor list for org.gridlab.gat.io.cpi.FileCpi, adaptors = [org.gridlab.gat.io.cpi.local.LocalFileAdaptor, org.gridlab.gat.io.cpi.globus.GridFTPFileAdaptor, org.gridlab.gat.io.cpi.sftpGanymed.SftpGanymedFileAdaptor, org.gridlab.gat.io.cpi.commandlineSsh.CommandlineSshFileAdaptor, org.gridlab.gat.io.cpi.sftpnew.SftpNewFileAdaptor, org.gridlab.gat.io.cpi.ssh.SshFileAdaptor, org.gridlab.gat.io.cpi.sftp.SftpFileAdaptor, org.gridlab.gat.io.cpi.gt4.GT4LocalFileAdaptor, org.gridlab.gat.io.cpi.streaming.StreamingFileAdaptor, org.gridlab.gat.io.cpi.thirdPartyCopy.ThirdPartyCopyFileAdaptor, org.gridlab.gat.io.cpi.gt4.GT4GridFTPFileAdaptor, org.gridlab.gat.io.cpi.rftgt4.RFTGT4FileAdaptor, org.gridlab.gat.io.cpi.globus.FTPFileAdaptor]
+[main] INFO  engine.GATEngine (line 836)  - new adaptor order: 
+Adaptor list for org.gridlab.gat.io.cpi.FileCpi, adaptors = [org.gridlab.gat.io.cpi.ssh.SshFileAdaptor, org.gridlab.gat.io.cpi.commandlineSsh.CommandlineSshFileAdaptor]
+[main] INFO  engine.AdaptorInvocationHandler (line 327)  - initAdaptor: instantiated SshFileAdaptor for type File
+[main] INFO  engine.AdaptorInvocationHandler (line 327)  - initAdaptor: instantiated CommandlineSshFileAdaptor for type File
+[main] INFO  cpi.PreStagedFile (line 139)  - creating dir: GAT file: any://das3.localhost:2280//tmp/.JavaGAT_SANDBOX_0.7718400723476093
+[main] INFO  engine.AdaptorInvocationHandler (line 217)  - Method mkdirs on CommandlineSshFileAdaptor failed: java.lang.UnsupportedOperationException: Not implemented
+[main] INFO  engine.AdaptorInvocationHandler (line 217)  - Method copy on SftpGanymedFileAdaptor failed: 
+--- START OF NESTED EXCEPTION ---
+*** sftpGanymed failed (GATInvocationException): Unable to authenticate
+--- END OF NESTED EXCEPTION ---
+[main] DEBUG commandlineSsh.CommandlineSshFileAdaptor (line 91)  - commandlineSsh file: copy local to remote
+[main] DEBUG commandlineSsh.CommandlineSshFileAdaptor (line 232)  - key file argument not supported yet
+[main] DEBUG commandlineSsh.CommandlineSshFileAdaptor (line 251)  - CommandlineSsh: Prepared session for location any://das3.localhost:2280//tmp/.JavaGAT_SANDBOX_0.7718400723476093/passwd with username: mwi300; host: das3.localhost
+[main] DEBUG commandlineSsh.CommandlineSshFileAdaptor (line 301)  - determineIsDirectory(): false
+[main] INFO  commandlineSsh.CommandlineSshFileAdaptor (line 312)  - CommandlineSsh: running command: scp -o BatchMode=yes -o StrictHostKeyChecking=yes -P 2280 /etc/passwd mwi300@das3.localhost:/tmp/.JavaGAT_SANDBOX_0.7718400723476093/passwd
+[main] INFO  commandlineSsh.CommandlineSshFileAdaptor (line 317)  - 
+stderr: 
+stdout: 
+[main] INFO  cpi.PreStagedFile (line 123)  - prestage:
+  copy /crypted_disk/home/wojciech/crypt/vu/RA/in to any://das3.localhost:2280//tmp/.JavaGAT_SANDBOX_0.7718400723476093/in
+[main] INFO  cpi.PreStagedFile (line 131)  - creating dir: GAT file: any://das3.localhost:2280//tmp/.JavaGAT_SANDBOX_0.7718400723476093/in
+[main] INFO  engine.AdaptorInvocationHandler (line 327)  - initAdaptor: instantiated LocalFileAdaptor for type File
+[main] INFO  engine.AdaptorInvocationHandler (line 313)  - initAdaptor: Couldn't create GridFTPFileAdaptor: *** *** can't get proxy credential (did you do a grid-proxy-init?)
+[main] INFO  engine.AdaptorInvocationHandler (line 327)  - initAdaptor: instantiated SftpGanymedFileAdaptor for type File
+[main] INFO  engine.AdaptorInvocationHandler (line 327)  - initAdaptor: instantiated CommandlineSshFileAdaptor for type File
+[main] INFO  engine.AdaptorInvocationHandler (line 327)  - initAdaptor: instantiated SftpNewFileAdaptor for type File
+[main] INFO  sftp.SftpFileAdaptor (line 55)  - caching: false
+[main] INFO  engine.AdaptorInvocationHandler (line 327)  - initAdaptor: instantiated SftpFileAdaptor for type File
+[main] INFO  engine.AdaptorInvocationHandler (line 327)  - initAdaptor: instantiated GT4LocalFileAdaptor for type File
+[main] INFO  engine.AdaptorInvocationHandler (line 327)  - initAdaptor: instantiated StreamingFileAdaptor for type File
+[main] INFO  engine.AdaptorInvocationHandler (line 327)  - initAdaptor: instantiated ThirdPartyCopyFileAdaptor for type File
+[main] INFO  engine.AdaptorInvocationHandler (line 313)  - initAdaptor: Couldn't create RFTGT4FileAdaptor: cannot handle this URI
+[main] INFO  engine.AdaptorInvocationHandler (line 313)  - initAdaptor: Couldn't create FTPFileAdaptor: Could not find a valid security context for this adaptor to use for the specified host/port
+[main] INFO  engine.AdaptorInvocationHandler (line 313)  - initAdaptor: Couldn't create GridFTPFileAdaptor: *** *** can't get proxy credential (did you do a grid-proxy-init?)
+[main] INFO  engine.AdaptorInvocationHandler (line 327)  - initAdaptor: instantiated SftpGanymedFileAdaptor for type File
+[main] INFO  engine.AdaptorInvocationHandler (line 327)  - initAdaptor: instantiated CommandlineSshFileAdaptor for type File
+[main] INFO  engine.AdaptorInvocationHandler (line 327)  - initAdaptor: instantiated SftpNewFileAdaptor for type File
+[main] INFO  engine.AdaptorInvocationHandler (line 327)  - initAdaptor: instantiated SshFileAdaptor for type File
+[main] INFO  sftp.SftpFileAdaptor (line 55)  - caching: false
+[main] INFO  engine.AdaptorInvocationHandler (line 327)  - initAdaptor: instantiated SftpFileAdaptor for type File
+[main] INFO  engine.AdaptorInvocationHandler (line 327)  - initAdaptor: instantiated GT4LocalFileAdaptor for type File
+[main] INFO  engine.AdaptorInvocationHandler (line 327)  - initAdaptor: instantiated StreamingFileAdaptor for type File
+[main] INFO  engine.AdaptorInvocationHandler (line 327)  - initAdaptor: instantiated ThirdPartyCopyFileAdaptor for type File
+[main] INFO  engine.AdaptorInvocationHandler (line 313)  - initAdaptor: Couldn't create RFTGT4FileAdaptor: $GLOBUS_LOCATION is not set
+[main] INFO  engine.AdaptorInvocationHandler (line 313)  - initAdaptor: Couldn't create FTPFileAdaptor: Could not find a valid security context for this adaptor to use for the specified host/port
+[main] INFO  engine.AdaptorInvocationHandler (line 217)  - Method exists on SftpGanymedFileAdaptor failed: Unable to authenticate
+[main] INFO  engine.AdaptorInvocationHandler (line 217)  - Method exists on CommandlineSshFileAdaptor failed: java.lang.UnsupportedOperationException: Not implemented
+[main] INFO  engine.AdaptorInvocationHandler (line 327)  - initAdaptor: instantiated LocalFileAdaptor for type File
+[main] INFO  engine.AdaptorInvocationHandler (line 313)  - initAdaptor: Couldn't create GridFTPFileAdaptor: *** *** can't get proxy credential (did you do a grid-proxy-init?)
+[main] INFO  engine.AdaptorInvocationHandler (line 327)  - initAdaptor: instantiated SftpGanymedFileAdaptor for type File
+[main] INFO  engine.AdaptorInvocationHandler (line 327)  - initAdaptor: instantiated CommandlineSshFileAdaptor for type File
+[main] INFO  engine.AdaptorInvocationHandler (line 327)  - initAdaptor: instantiated SftpNewFileAdaptor for type File
+[main] INFO  sftp.SftpFileAdaptor (line 55)  - caching: false
+[main] INFO  engine.AdaptorInvocationHandler (line 327)  - initAdaptor: instantiated SftpFileAdaptor for type File
+[main] INFO  engine.AdaptorInvocationHandler (line 327)  - initAdaptor: instantiated GT4LocalFileAdaptor for type File
+[main] INFO  engine.AdaptorInvocationHandler (line 327)  - initAdaptor: instantiated StreamingFileAdaptor for type File
+[main] INFO  engine.AdaptorInvocationHandler (line 327)  - initAdaptor: instantiated ThirdPartyCopyFileAdaptor for type File
+[main] INFO  engine.AdaptorInvocationHandler (line 313)  - initAdaptor: Couldn't create RFTGT4FileAdaptor: cannot handle this URI
+[main] INFO  engine.AdaptorInvocationHandler (line 313)  - initAdaptor: Couldn't create FTPFileAdaptor: Could not find a valid security context for this adaptor to use for the specified host/port
+[main] DEBUG commandlineSsh.CommandlineSshFileAdaptor (line 91)  - commandlineSsh file: copy local to remote
+[main] DEBUG commandlineSsh.CommandlineSshFileAdaptor (line 232)  - key file argument not supported yet
+[main] DEBUG commandlineSsh.CommandlineSshFileAdaptor (line 251)  - CommandlineSsh: Prepared session for location any://das3.localhost:2280//tmp/.JavaGAT_SANDBOX_0.7718400723476093/in/passwd with username: mwi300; host: das3.localhost
+[main] DEBUG commandlineSsh.CommandlineSshFileAdaptor (line 301)  - determineIsDirectory(): false
+[main] INFO  commandlineSsh.CommandlineSshFileAdaptor (line 312)  - CommandlineSsh: running command: scp -o BatchMode=yes -o StrictHostKeyChecking=yes -P 2280 /crypted_disk/home/wojciech/crypt/vu/RA/in/passwd mwi300@das3.localhost:/tmp/.JavaGAT_SANDBOX_0.7718400723476093/in/passwd
+[main] INFO  commandlineSsh.CommandlineSshFileAdaptor (line 317)  - 
+stderr: 
+stdout: 
+[main] INFO  cpi.Sandbox (line 225)  - pre stage done (SUCCESS)
+[main] DEBUG gridsam.GridSAMJSDLGeneratorImpl (line 41)  - executable location=file:////home0/mwi300/sh/ec.sh, path=/home0/mwi300/sh/ec.sh
+[main] DEBUG gridsam.GridSAMJSDLGeneratorImpl (line 42)  - arguments count=1
+[main] DEBUG gridsam.GridSAMJSDLGeneratorImpl (line 49)  - argument=15
+[main] DEBUG gridsam.GridSAMResourceBrokerAdaptor (line 123)  - jobDefinitionDocument = <JobDefinition xmlns="http://schemas.ggf.org/jsdl/2005/11/jsdl">
+  <JobDescription>
+    <JobIdentification>
+      <JobProject>gridsam</JobProject>
+    </JobIdentification>
+    <Application>
+      <POSIXApplication xmlns="http://schemas.ggf.org/jsdl/2005/11/jsdl-posix">
+        <Executable>/home0/mwi300/sh/ec.sh</Executable>
+        <Argument>15</Argument>
+        <Output>in/outputFile</Output>
+        <WorkingDirectory>/home0/mwi300</WorkingDirectory>
+      </POSIXApplication>
+    </Application>
+    <DataStaging>
+      <FileName>.</FileName>
+      <CreationFlag>overwrite</CreationFlag>
+      <DeleteOnTermination>true</DeleteOnTermination>
+      <Source>
+        <URI>/tmp/.JavaGAT_SANDBOX_0.7718400723476093</URI>
+      </Source>
+    </DataStaging>
+    <DataStaging>
+      <FileName>in/outputFile</FileName>
+      <CreationFlag>overwrite</CreationFlag>
+      <DeleteOnTermination>false</DeleteOnTermination>
+      <Target>
+        <URI>/tmp/.JavaGAT_SANDBOX_0.7718400723476093/in/outputFile</URI>
+      </Target>
+    </DataStaging>
+  </JobDescription>
+</JobDefinition>
+[main] INFO  gridsam.GridSAMResourceBrokerAdaptor (line 132)  - jobID = urn:gridsam:02a54582169054580116ac5378de02c3
+[main] DEBUG resources.SubmitJobGridSAM (line 66)  - state=0
+[Thread-12] DEBUG gridsam.GridSAMJob$PollingThread (line 75)  - jobState=done
+[Thread-12] DEBUG gridsam.GridSAMJob$PollingThread (line 83)  - properties=
+    urn:gridsam:principal=OU=FEW, O=VU, EMAILADDRESS=mwi300@few.vu.nl, C=NL, ST=NH, CN=fs0.das3.cs.vu.nl
+    urn:gridsam:exitcode=0
+[Thread-12] INFO  resources.SubmitJobGridSAM (line 25)  - got process event, val=MetricValue(time = 1196892060264, val =STOPPED, metric =Metric(def = MetricDefinition(job.status, type = DISCRETE, datatype = String, unit = none, params = {}), params = {}, freq = 0)
+[Thread-12] DEBUG gridsam.GridSAMJob$PollingThread (line 48)  - firing event, event=MetricValue(time = 1196892060264, val =STOPPED, metric =Metric(def = MetricDefinition(job.status, type = DISCRETE, datatype = String, unit = none, params = {}), params = {}, freq = 0)
+[Thread-12] DEBUG gridsam.GridSAMJob$PollingThread (line 124)  - polling thread exiting, job's finished
+[main] DEBUG resources.SubmitJobGridSAM (line 66)  - state=3
+[main] INFO  resources.SubmitJobGridSAM (line 69)  - job done, exit code=0
+[Thread-11] INFO  cpi.JobCpi (line 114)  - stopping job: gat job, id is urn:gridsam:02a54582169054580116ac5378de02c3
+[Thread-11] DEBUG gridsam.GridSAMJob (line 226)  - default job callback: firing event: MetricValue(time = 1196892060599, val =POST_STAGING, metric =Metric(def = MetricDefinition(job.status, type = DISCRETE, datatype = String, unit = none, params = {}), params = {}, freq = 0)
+[Thread-11] INFO  resources.SubmitJobGridSAM (line 25)  - got process event, val=MetricValue(time = 1196892060599, val =POST_STAGING, metric =Metric(def = MetricDefinition(job.status, type = DISCRETE, datatype = String, unit = none, params = {}), params = {}, freq = 0)
+[Thread-11] INFO  cpi.Sandbox (line 326)  - post stage starting
+[Thread-11] INFO  cpi.PostStagedFile (line 87)  -   copy any://das3.localhost:2280//tmp/.JavaGAT_SANDBOX_0.7718400723476093/in/outputFile to any:////crypted_disk/home/wojciech/crypt/vu/RA/workspace/JavaGAT/outputFile
+[Thread-11] INFO  engine.GATEngine (line 832)  - old adaptor order: 
+Adaptor list for org.gridlab.gat.io.cpi.FileCpi, adaptors = [org.gridlab.gat.io.cpi.local.LocalFileAdaptor, org.gridlab.gat.io.cpi.globus.GridFTPFileAdaptor, org.gridlab.gat.io.cpi.sftpGanymed.SftpGanymedFileAdaptor, org.gridlab.gat.io.cpi.commandlineSsh.CommandlineSshFileAdaptor, org.gridlab.gat.io.cpi.sftpnew.SftpNewFileAdaptor, org.gridlab.gat.io.cpi.ssh.SshFileAdaptor, org.gridlab.gat.io.cpi.sftp.SftpFileAdaptor, org.gridlab.gat.io.cpi.gt4.GT4LocalFileAdaptor, org.gridlab.gat.io.cpi.streaming.StreamingFileAdaptor, org.gridlab.gat.io.cpi.thirdPartyCopy.ThirdPartyCopyFileAdaptor, org.gridlab.gat.io.cpi.gt4.GT4GridFTPFileAdaptor, org.gridlab.gat.io.cpi.rftgt4.RFTGT4FileAdaptor, org.gridlab.gat.io.cpi.globus.FTPFileAdaptor]
+[Thread-11] INFO  engine.GATEngine (line 836)  - new adaptor order: 
+Adaptor list for org.gridlab.gat.io.cpi.FileCpi, adaptors = [org.gridlab.gat.io.cpi.ssh.SshFileAdaptor, org.gridlab.gat.io.cpi.commandlineSsh.CommandlineSshFileAdaptor]
+[Thread-11] INFO  engine.AdaptorInvocationHandler (line 327)  - initAdaptor: instantiated SshFileAdaptor for type File
+[Thread-11] INFO  engine.AdaptorInvocationHandler (line 327)  - initAdaptor: instantiated CommandlineSshFileAdaptor for type File
+[Thread-11] INFO  engine.AdaptorInvocationHandler (line 217)  - Method isDirectory on CommandlineSshFileAdaptor failed: java.lang.UnsupportedOperationException: Not implemented
+[Thread-11] DEBUG commandlineSsh.CommandlineSshFileAdaptor (line 82)  - commandlineSsh file: copy remote to local
+[Thread-11] DEBUG commandlineSsh.CommandlineSshFileAdaptor (line 122)  - key file argument not supported yet
+[Thread-11] DEBUG commandlineSsh.CommandlineSshFileAdaptor (line 134)  - CommandlineSsh: Prepared session for location any://das3.localhost:2280//tmp/.JavaGAT_SANDBOX_0.7718400723476093/in/outputFile with username: mwi300; host: das3.localhost
+[Thread-11] INFO  engine.GATEngine (line 832)  - old adaptor order: 
+Adaptor list for org.gridlab.gat.io.cpi.FileCpi, adaptors = [org.gridlab.gat.io.cpi.local.LocalFileAdaptor, org.gridlab.gat.io.cpi.globus.GridFTPFileAdaptor, org.gridlab.gat.io.cpi.sftpGanymed.SftpGanymedFileAdaptor, org.gridlab.gat.io.cpi.commandlineSsh.CommandlineSshFileAdaptor, org.gridlab.gat.io.cpi.sftpnew.SftpNewFileAdaptor, org.gridlab.gat.io.cpi.ssh.SshFileAdaptor, org.gridlab.gat.io.cpi.sftp.SftpFileAdaptor, org.gridlab.gat.io.cpi.gt4.GT4LocalFileAdaptor, org.gridlab.gat.io.cpi.streaming.StreamingFileAdaptor, org.gridlab.gat.io.cpi.thirdPartyCopy.ThirdPartyCopyFileAdaptor, org.gridlab.gat.io.cpi.gt4.GT4GridFTPFileAdaptor, org.gridlab.gat.io.cpi.rftgt4.RFTGT4FileAdaptor, org.gridlab.gat.io.cpi.globus.FTPFileAdaptor]
+[Thread-11] INFO  engine.GATEngine (line 836)  - new adaptor order: 
+Adaptor list for org.gridlab.gat.io.cpi.FileCpi, adaptors = [org.gridlab.gat.io.cpi.ssh.SshFileAdaptor, org.gridlab.gat.io.cpi.commandlineSsh.CommandlineSshFileAdaptor]
+[Thread-11] INFO  engine.AdaptorInvocationHandler (line 327)  - initAdaptor: instantiated SshFileAdaptor for type File
+[Thread-11] INFO  engine.AdaptorInvocationHandler (line 327)  - initAdaptor: instantiated CommandlineSshFileAdaptor for type File
+[Thread-11] INFO  engine.AdaptorInvocationHandler (line 217)  - Method exists on CommandlineSshFileAdaptor failed: java.lang.UnsupportedOperationException: Not implemented
+[Thread-11] INFO  commandlineSsh.CommandlineSshFileAdaptor (line 199)  - CommandlineSsh: running command: scp -o BatchMode=yes -o StrictHostKeyChecking=yes -P 2280 mwi300@das3.localhost:/tmp/.JavaGAT_SANDBOX_0.7718400723476093/in/outputFile /crypted_disk/home/wojciech/crypt/vu/RA/workspace/JavaGAT/outputFile
+[Thread-11] INFO  commandlineSsh.CommandlineSshFileAdaptor (line 203)  - 
+stderr: 
+stdout: 
+[Thread-11] INFO  cpi.Sandbox (line 337)  - post stage done (SUCCESS)
+[Thread-11] INFO  cpi.Sandbox (line 234)  - wipe starting
+[Thread-11] INFO  cpi.Sandbox (line 261)  - wipe done (SUCCESS)
+[Thread-11] INFO  cpi.Sandbox (line 279)  - delete starting
+[Thread-11] INFO  cpi.Sandbox (line 307)  - delete done (SUCCESS)
+[Thread-11] INFO  cpi.Sandbox (line 356)  - removing sandbox dir
+[Thread-11] INFO  engine.GATEngine (line 832)  - old adaptor order: 
+Adaptor list for org.gridlab.gat.io.cpi.FileCpi, adaptors = [org.gridlab.gat.io.cpi.local.LocalFileAdaptor, org.gridlab.gat.io.cpi.globus.GridFTPFileAdaptor, org.gridlab.gat.io.cpi.sftpGanymed.SftpGanymedFileAdaptor, org.gridlab.gat.io.cpi.commandlineSsh.CommandlineSshFileAdaptor, org.gridlab.gat.io.cpi.sftpnew.SftpNewFileAdaptor, org.gridlab.gat.io.cpi.ssh.SshFileAdaptor, org.gridlab.gat.io.cpi.sftp.SftpFileAdaptor, org.gridlab.gat.io.cpi.gt4.GT4LocalFileAdaptor, org.gridlab.gat.io.cpi.streaming.StreamingFileAdaptor, org.gridlab.gat.io.cpi.thirdPartyCopy.ThirdPartyCopyFileAdaptor, org.gridlab.gat.io.cpi.gt4.GT4GridFTPFileAdaptor, org.gridlab.gat.io.cpi.rftgt4.RFTGT4FileAdaptor, org.gridlab.gat.io.cpi.globus.FTPFileAdaptor]
+[Thread-11] INFO  engine.GATEngine (line 836)  - new adaptor order: 
+Adaptor list for org.gridlab.gat.io.cpi.FileCpi, adaptors = [org.gridlab.gat.io.cpi.ssh.SshFileAdaptor, org.gridlab.gat.io.cpi.commandlineSsh.CommandlineSshFileAdaptor]
+[Thread-11] INFO  engine.AdaptorInvocationHandler (line 327)  - initAdaptor: instantiated SshFileAdaptor for type File
+[Thread-11] INFO  engine.AdaptorInvocationHandler (line 327)  - initAdaptor: instantiated CommandlineSshFileAdaptor for type File
+[Thread-11] INFO  cpi.FileCpi (line 633)  - recursive delete dir: GAT file: any://das3.localhost:2280//tmp/.JavaGAT_SANDBOX_0.7718400723476093
+[Thread-11] INFO  engine.AdaptorInvocationHandler (line 217)  - Method listFiles on CommandlineSshFileAdaptor failed: java.lang.UnsupportedOperationException: Not implemented
+[Thread-11] INFO  engine.GATEngine (line 832)  - old adaptor order: 
+Adaptor list for org.gridlab.gat.io.cpi.FileCpi, adaptors = [org.gridlab.gat.io.cpi.local.LocalFileAdaptor, org.gridlab.gat.io.cpi.globus.GridFTPFileAdaptor, org.gridlab.gat.io.cpi.sftpGanymed.SftpGanymedFileAdaptor, org.gridlab.gat.io.cpi.commandlineSsh.CommandlineSshFileAdaptor, org.gridlab.gat.io.cpi.sftpnew.SftpNewFileAdaptor, org.gridlab.gat.io.cpi.ssh.SshFileAdaptor, org.gridlab.gat.io.cpi.sftp.SftpFileAdaptor, org.gridlab.gat.io.cpi.gt4.GT4LocalFileAdaptor, org.gridlab.gat.io.cpi.streaming.StreamingFileAdaptor, org.gridlab.gat.io.cpi.thirdPartyCopy.ThirdPartyCopyFileAdaptor, org.gridlab.gat.io.cpi.gt4.GT4GridFTPFileAdaptor, org.gridlab.gat.io.cpi.rftgt4.RFTGT4FileAdaptor, org.gridlab.gat.io.cpi.globus.FTPFileAdaptor]
+[Thread-11] INFO  engine.GATEngine (line 836)  - new adaptor order: 
+Adaptor list for org.gridlab.gat.io.cpi.FileCpi, adaptors = [org.gridlab.gat.io.cpi.ssh.SshFileAdaptor, org.gridlab.gat.io.cpi.commandlineSsh.CommandlineSshFileAdaptor]
+[Thread-11] INFO  engine.AdaptorInvocationHandler (line 327)  - initAdaptor: instantiated SshFileAdaptor for type File
+[Thread-11] INFO  engine.AdaptorInvocationHandler (line 327)  - initAdaptor: instantiated CommandlineSshFileAdaptor for type File
+[Thread-11] INFO  engine.GATEngine (line 832)  - old adaptor order: 
+Adaptor list for org.gridlab.gat.io.cpi.FileCpi, adaptors = [org.gridlab.gat.io.cpi.local.LocalFileAdaptor, org.gridlab.gat.io.cpi.globus.GridFTPFileAdaptor, org.gridlab.gat.io.cpi.sftpGanymed.SftpGanymedFileAdaptor, org.gridlab.gat.io.cpi.commandlineSsh.CommandlineSshFileAdaptor, org.gridlab.gat.io.cpi.sftpnew.SftpNewFileAdaptor, org.gridlab.gat.io.cpi.ssh.SshFileAdaptor, org.gridlab.gat.io.cpi.sftp.SftpFileAdaptor, org.gridlab.gat.io.cpi.gt4.GT4LocalFileAdaptor, org.gridlab.gat.io.cpi.streaming.StreamingFileAdaptor, org.gridlab.gat.io.cpi.thirdPartyCopy.ThirdPartyCopyFileAdaptor, org.gridlab.gat.io.cpi.gt4.GT4GridFTPFileAdaptor, org.gridlab.gat.io.cpi.rftgt4.RFTGT4FileAdaptor, org.gridlab.gat.io.cpi.globus.FTPFileAdaptor]
+[Thread-11] INFO  engine.GATEngine (line 836)  - new adaptor order: 
+Adaptor list for org.gridlab.gat.io.cpi.FileCpi, adaptors = [org.gridlab.gat.io.cpi.ssh.SshFileAdaptor, org.gridlab.gat.io.cpi.commandlineSsh.CommandlineSshFileAdaptor]
+[Thread-11] INFO  engine.AdaptorInvocationHandler (line 327)  - initAdaptor: instantiated SshFileAdaptor for type File
+[Thread-11] INFO  engine.AdaptorInvocationHandler (line 327)  - initAdaptor: instantiated CommandlineSshFileAdaptor for type File
+[Thread-11] INFO  engine.GATEngine (line 832)  - old adaptor order: 
+Adaptor list for org.gridlab.gat.io.cpi.FileCpi, adaptors = [org.gridlab.gat.io.cpi.local.LocalFileAdaptor, org.gridlab.gat.io.cpi.globus.GridFTPFileAdaptor, org.gridlab.gat.io.cpi.sftpGanymed.SftpGanymedFileAdaptor, org.gridlab.gat.io.cpi.commandlineSsh.CommandlineSshFileAdaptor, org.gridlab.gat.io.cpi.sftpnew.SftpNewFileAdaptor, org.gridlab.gat.io.cpi.ssh.SshFileAdaptor, org.gridlab.gat.io.cpi.sftp.SftpFileAdaptor, org.gridlab.gat.io.cpi.gt4.GT4LocalFileAdaptor, org.gridlab.gat.io.cpi.streaming.StreamingFileAdaptor, org.gridlab.gat.io.cpi.thirdPartyCopy.ThirdPartyCopyFileAdaptor, org.gridlab.gat.io.cpi.gt4.GT4GridFTPFileAdaptor, org.gridlab.gat.io.cpi.rftgt4.RFTGT4FileAdaptor, org.gridlab.gat.io.cpi.globus.FTPFileAdaptor]
+[Thread-11] INFO  engine.GATEngine (line 836)  - new adaptor order: 
+Adaptor list for org.gridlab.gat.io.cpi.FileCpi, adaptors = [org.gridlab.gat.io.cpi.ssh.SshFileAdaptor, org.gridlab.gat.io.cpi.commandlineSsh.CommandlineSshFileAdaptor]
+[Thread-11] INFO  engine.AdaptorInvocationHandler (line 327)  - initAdaptor: instantiated SshFileAdaptor for type File
+[Thread-11] INFO  engine.AdaptorInvocationHandler (line 327)  - initAdaptor: instantiated CommandlineSshFileAdaptor for type File
+[Thread-11] INFO  cpi.FileCpi (line 633)  - recursive delete dir: GAT file: any://das3.localhost:2280//tmp/.JavaGAT_SANDBOX_0.7718400723476093/in
+[Thread-11] INFO  engine.GATEngine (line 832)  - old adaptor order: 
+Adaptor list for org.gridlab.gat.io.cpi.FileCpi, adaptors = [org.gridlab.gat.io.cpi.local.LocalFileAdaptor, org.gridlab.gat.io.cpi.globus.GridFTPFileAdaptor, org.gridlab.gat.io.cpi.sftpGanymed.SftpGanymedFileAdaptor, org.gridlab.gat.io.cpi.commandlineSsh.CommandlineSshFileAdaptor, org.gridlab.gat.io.cpi.sftpnew.SftpNewFileAdaptor, org.gridlab.gat.io.cpi.ssh.SshFileAdaptor, org.gridlab.gat.io.cpi.sftp.SftpFileAdaptor, org.gridlab.gat.io.cpi.gt4.GT4LocalFileAdaptor, org.gridlab.gat.io.cpi.streaming.StreamingFileAdaptor, org.gridlab.gat.io.cpi.thirdPartyCopy.ThirdPartyCopyFileAdaptor, org.gridlab.gat.io.cpi.gt4.GT4GridFTPFileAdaptor, org.gridlab.gat.io.cpi.rftgt4.RFTGT4FileAdaptor, org.gridlab.gat.io.cpi.globus.FTPFileAdaptor]
+[Thread-11] INFO  engine.GATEngine (line 836)  - new adaptor order: 
+Adaptor list for org.gridlab.gat.io.cpi.FileCpi, adaptors = [org.gridlab.gat.io.cpi.ssh.SshFileAdaptor, org.gridlab.gat.io.cpi.commandlineSsh.CommandlineSshFileAdaptor]
+[Thread-11] INFO  engine.AdaptorInvocationHandler (line 327)  - initAdaptor: instantiated SshFileAdaptor for type File
+[Thread-11] INFO  engine.AdaptorInvocationHandler (line 327)  - initAdaptor: instantiated CommandlineSshFileAdaptor for type File
+[Thread-11] INFO  engine.GATEngine (line 832)  - old adaptor order: 
+Adaptor list for org.gridlab.gat.io.cpi.FileCpi, adaptors = [org.gridlab.gat.io.cpi.local.LocalFileAdaptor, org.gridlab.gat.io.cpi.globus.GridFTPFileAdaptor, org.gridlab.gat.io.cpi.sftpGanymed.SftpGanymedFileAdaptor, org.gridlab.gat.io.cpi.commandlineSsh.CommandlineSshFileAdaptor, org.gridlab.gat.io.cpi.sftpnew.SftpNewFileAdaptor, org.gridlab.gat.io.cpi.ssh.SshFileAdaptor, org.gridlab.gat.io.cpi.sftp.SftpFileAdaptor, org.gridlab.gat.io.cpi.gt4.GT4LocalFileAdaptor, org.gridlab.gat.io.cpi.streaming.StreamingFileAdaptor, org.gridlab.gat.io.cpi.thirdPartyCopy.ThirdPartyCopyFileAdaptor, org.gridlab.gat.io.cpi.gt4.GT4GridFTPFileAdaptor, org.gridlab.gat.io.cpi.rftgt4.RFTGT4FileAdaptor, org.gridlab.gat.io.cpi.globus.FTPFileAdaptor]
+[Thread-11] INFO  engine.GATEngine (line 836)  - new adaptor order: 
+Adaptor list for org.gridlab.gat.io.cpi.FileCpi, adaptors = [org.gridlab.gat.io.cpi.ssh.SshFileAdaptor, org.gridlab.gat.io.cpi.commandlineSsh.CommandlineSshFileAdaptor]
+[Thread-11] INFO  engine.AdaptorInvocationHandler (line 327)  - initAdaptor: instantiated SshFileAdaptor for type File
+[Thread-11] INFO  engine.AdaptorInvocationHandler (line 327)  - initAdaptor: instantiated CommandlineSshFileAdaptor for type File
+[Thread-11] INFO  cpi.FileCpi (line 646)  - delete: GAT file: any://das3.localhost:2280//tmp/.JavaGAT_SANDBOX_0.7718400723476093/in/outputFile
+[Thread-11] INFO  engine.AdaptorInvocationHandler (line 217)  - Method delete on CommandlineSshFileAdaptor failed: java.lang.UnsupportedOperationException: Not implemented
+[Thread-11] INFO  cpi.FileCpi (line 646)  - delete: GAT file: any://das3.localhost:2280//tmp/.JavaGAT_SANDBOX_0.7718400723476093/in/passwd
+[Thread-11] INFO  cpi.FileCpi (line 646)  - delete: GAT file: any://das3.localhost:2280//tmp/.JavaGAT_SANDBOX_0.7718400723476093/passwd
+[Thread-11] INFO  cpi.Sandbox (line 364)  - removing sandbox dir done (SUCCESS)
+[Thread-11] DEBUG gridsam.GridSAMJob (line 238)  - default job callback: firing event: MetricValue(time = 1196892082254, val =STOPPED, metric =Metric(def = MetricDefinition(job.status, type = DISCRETE, datatype = String, unit = none, params = {}), params = {}, freq = 0)
+[Thread-11] INFO  resources.SubmitJobGridSAM (line 25)  - got process event, val=MetricValue(time = 1196892082254, val =STOPPED, metric =Metric(def = MetricDefinition(job.status, type = DISCRETE, datatype = String, unit = none, params = {}), params = {}, freq = 0)
