@@ -22,13 +22,7 @@ import org.icenigrid.gridsam.core.JobStage;
 import org.icenigrid.gridsam.core.JobState;
 import org.icenigrid.gridsam.core.UnknownJobException;
 
-/* TODO
- * 
- * exitVal - probably gridSAM does not support it
- */
-
 public class GridSAMJob extends JobCpi {
-    
     
     private class PollingThread extends Thread {
         private Logger logger = Logger.getLogger(PollingThread.class);
@@ -39,12 +33,20 @@ public class GridSAMJob extends JobCpi {
             this.parent = parent;
         }
         
+        /**
+         * sets new job state and fires an event if the state is different than the previous one
+         * 
+         * @param state
+         */
         private void setState(int state) {
             synchronized (this.parent) {
                 if (state != parent.state) {
                     MetricValue v = new MetricValue(this, getStateString(state), statusMetric,
                             System.currentTimeMillis());
                     GATEngine.fireMetric(parent, v);
+                    if (logger.isDebugEnabled()) {
+                        logger.debug("firing event, event=" + v.toString());
+                    }
                 }
                 parent.state = state;
             }
@@ -125,8 +127,6 @@ public class GridSAMJob extends JobCpi {
     }
 
     private Logger logger = Logger.getLogger(GridSAMJob.class);
-
-    private Process p;
 
     private int exitVal = 0;
 
@@ -214,50 +214,16 @@ public class GridSAMJob extends JobCpi {
         return jobID;
     }
 
-    void finished(int exitValue) {
-        MetricValue v = null;
-
-        synchronized (this) {
-            exitVal = exitValue;
-            state = POST_STAGING;
-            v = new MetricValue(this, getStateString(state), statusMetric, System.currentTimeMillis());
-            if (logger.isDebugEnabled()) {
-                logger.debug("default job callback: firing event: " + v);
-            }
-        }
-        GATEngine.fireMetric(this, v);
-
-        sandbox.retrieveAndCleanup(this);
-
-        synchronized (this) {
-            state = STOPPED;
-            v = new MetricValue(this, getStateString(state), statusMetric, System.currentTimeMillis());
-
-            if (logger.isDebugEnabled()) {
-                logger.debug("default job callback: firing event: " + v);
-            }
-        }
-        GATEngine.fireMetric(this, v);
-        finished();
-
-        if (GATEngine.TIMING) {
-            System.err.println("TIMING: job " + jobID + ":" + " preStage: " + sandbox.getPreStageTime() + " run: " + runTime + " postStage: "
-                    + sandbox.getPostStageTime() + " wipe: " + sandbox.getWipeTime() + " delete: " + sandbox.getDeleteTime() + " total: "
-                    + (System.currentTimeMillis() - startTime));
-        }
-    }
-
     public void stop() throws GATInvocationException {
         MetricValue v = null;
 
         synchronized (this) {
-            if (p != null)
-                p.destroy();
             state = POST_STAGING;
             v = new MetricValue(this, getStateString(state), statusMetric, System.currentTimeMillis());
-            if (logger.isDebugEnabled()) {
-                logger.debug("default job callback: firing event: " + v);
-            }
+        }
+        
+        if (logger.isDebugEnabled()) {
+            logger.debug("default job callback: firing event: " + v);
         }
         GATEngine.fireMetric(this, v);
 
