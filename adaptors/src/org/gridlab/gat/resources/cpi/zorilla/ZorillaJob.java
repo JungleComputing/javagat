@@ -67,111 +67,33 @@ public class ZorillaJob extends JobCpi {
             throw new GATInvocationException(
                     "zorilla can only handle local files");
         }
-        
+
+        String uriString = file.getPath();
         try {
-            return new java.net.URI("file:" + file.getAbsolutePath());
+            return new java.net.URI(uriString);
         } catch (URISyntaxException e) {
-            throw new GATInvocationException("could not create uri for: " + file, e);
+            throw new GATInvocationException("could not create uri: "
+                    + uriString);
         }
-    }
-    
-    private static void addPreStageFile(File src, String dstPath, Map<java.net.URI, String> result) throws GATInvocationException {
-
-        //TODO: implement
-//        if (src.isDirectory()) {
-//            for (File child: src.listFiles()) {
-//                addPreStageFile(child, dstPath + "/" + child.getName(), result);
-//            }
-//        }
-        
-        //src of a pre-stage file must be an actual local file
-        java.net.URI srcURI = toURI(src);
-        
-        result.put(srcURI, dstPath);
-    }        
-
-    /**
-     * Creates a string map from a file map for pre stage files. SRC (key) in
-     * the file map is a "real" file, DST (value) in this map is a file in the
-     * "zorilla virtual file system"
-     */
-    private static Map<java.net.URI, String> createPreStageMap(Map<File, File> fileMap)
-            throws GATInvocationException {
-        Map<java.net.URI, String> result = new HashMap<java.net.URI, String>();
-
-        for (Map.Entry<File, File> entry : fileMap.entrySet()) {
-            File src = entry.getKey();
-            File dst = entry.getValue();
-
-            String dstPath;
-
-            if (dst == null) {
-                // default for destination is simply the filename
-                // (root of sandbox)
-                dstPath = src.getName();
-            } else if (dst.toGATURI().getScheme() != null
-                    || dst.toGATURI().getHost() != null) {
-                throw new GATInvocationException(
-                        "no scheme or hostname allowed in pre-stage destination: "
-                                + dst);
-            } else {
-                dstPath = dst.getPath();
-            }
-            
-            addPreStageFile(src, dstPath, result);
-
-        }
-
-        return result;
     }
 
     /**
-     * Creates a string map from a file map for pre stage files. SRC (key) in
-     * the file map is a "virtual" file, DST (value) in this map is a "real"
-     * file
+     * Creates a URI map from a File map
      */
-    private static Map<String, java.net.URI> createPostStageMap(
+    private static Map<java.net.URI, java.net.URI> createURIMap(
             Map<File, File> fileMap) throws GATInvocationException {
-        Map<String, java.net.URI> result = new HashMap<String, java.net.URI>();
+        Map<java.net.URI, java.net.URI> result =
+            new HashMap<java.net.URI, java.net.URI>();
+
+        if (fileMap == null) {
+            return result;
+        }
 
         for (Map.Entry<File, File> entry : fileMap.entrySet()) {
             File src = entry.getKey();
             File dst = entry.getValue();
 
-            // src of a post-stage file must be a relative path
-            String srcPath;
-            if (src.toGATURI().getScheme() != null
-                    || src.toGATURI().getHost() != null) {
-                throw new GATInvocationException(
-                        "no scheme or hostname allowed in post-stage source: "
-                                + src);
-            } else {
-                srcPath = src.getPath();
-            }
-
-            java.net.URI dstURI;
-            if (dst == null) {
-                // default for destination is a file in CWD with the
-                // filename of the source
-                String userDir = System.getProperty("user.dir");
-
-                if (userDir == null) {
-                    throw new GATInvocationException(
-                            "could not get current working directory");
-                }
-
-                String string = null;
-                try {
-                    string = "file"  + userDir + File.separator + src.getName();
-                    dstURI = new java.net.URI(string);
-                } catch (URISyntaxException e) {
-                    throw new GATInvocationException("could not create URI from: " + string, e);
-                }
-            } else {
-                dstURI = toURI(dst);
-            }
-
-            result.put(srcPath, dstURI);
+            result.put(toURI(src), toURI(dst));
         }
 
         return result;
@@ -181,7 +103,7 @@ public class ZorillaJob extends JobCpi {
      * Convert a <String, Object> map to a <String, String> map by calling
      * toString() on all the values
      */
-    private static Map<String, String> objectMapToStringMap(
+    private static Map<String, String> createStringMap(
             Map<String, Object> objectMap) {
         Map<String, String> result = new HashMap<String, String>();
 
@@ -223,19 +145,27 @@ public class ZorillaJob extends JobCpi {
         String[] arguments;
         Map<String, String> attributes;
         Map<String, String> environment;
-        Map<java.net.URI, String> preStageFiles;
-        Map<String, java.net.URI> postStageFiles;
+        Map<java.net.URI, java.net.URI> preStageFiles;
+        Map<java.net.URI, java.net.URI> postStageFiles;
         java.net.URI stdout;
         java.net.URI stdin;
         java.net.URI stderr;
 
         SoftwareDescription soft = description.getSoftwareDescription();
 
-        executable = soft.getLocation().toJavaURI();
-        environment = objectMapToStringMap(soft.getEnvironment());
+        try {
+            executable = new java.net.URI(soft.getLocation().getPath());
+        } catch (URISyntaxException e1) {
+            throw new GATInvocationException(
+                    "coult not create uri for executable: "
+                            + "soft.getLocation().getPath()", e1);
 
-        preStageFiles = createPreStageMap(soft.getPreStaged());
-        postStageFiles = createPostStageMap(soft.getPostStaged());
+        }
+        environment = createStringMap(soft.getEnvironment());
+
+        preStageFiles = createURIMap(soft.getPreStaged());
+
+        postStageFiles = createURIMap(soft.getPostStaged());
 
         stdout = toURI(soft.getStdout());
         stdin = toURI(soft.getStdin());
@@ -246,7 +176,7 @@ public class ZorillaJob extends JobCpi {
             arguments = new String[0];
         }
 
-        attributes = objectMapToStringMap(soft.getAttributes());
+        attributes = createStringMap(soft.getAttributes());
 
         try {
             ZoniConnection connection =
@@ -254,9 +184,9 @@ public class ZorillaJob extends JobCpi {
                         ZoniProtocol.TYPE_CLIENT);
 
             jobID =
-                connection.submitJob(executable, arguments,
-                    environment, attributes, preStageFiles, postStageFiles,
-                    stdin, stdout, stderr, broker.getCallbackReceiver());
+                connection.submitJob(executable, arguments, environment,
+                    attributes, preStageFiles, postStageFiles, stdin, stdout,
+                    stderr, broker.getCallbackReceiver());
             connection.close();
         } catch (IOException e) {
             throw new GATInvocationException(
@@ -292,7 +222,6 @@ public class ZorillaJob extends JobCpi {
         if (error != null) {
             result.put("resManError", error.getMessage());
         }
-
 
         return result;
     }
@@ -371,6 +300,10 @@ public class ZorillaJob extends JobCpi {
     }
 
     public void stop() {
+        if (jobID == null) {
+            return;
+        }
+        
         try {
             ZoniConnection connection =
                 new ZoniConnection(broker.getNodeSocketAddress(), null,
