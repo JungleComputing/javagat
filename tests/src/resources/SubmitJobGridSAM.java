@@ -8,6 +8,8 @@ import org.gridlab.gat.GAT;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.Preferences;
 import org.gridlab.gat.io.File;
+import org.gridlab.gat.monitoring.MetricListener;
+import org.gridlab.gat.monitoring.MetricValue;
 import org.gridlab.gat.resources.Job;
 import org.gridlab.gat.resources.JobDescription;
 import org.gridlab.gat.resources.ResourceBroker;
@@ -16,6 +18,14 @@ import org.gridlab.gat.resources.SoftwareDescription;
 public class SubmitJobGridSAM {
     
     private Logger logger = Logger.getLogger(SubmitJobGridSAM.class);
+    
+    private class GridSAMMetricListener implements MetricListener {
+
+        public void processMetricEvent(MetricValue val) {
+            logger.info("got process event, val=" + val);
+        }
+        
+    }
     
     public void start(String[] args) throws Exception {
         GATContext context = new GATContext();
@@ -29,8 +39,8 @@ public class SubmitJobGridSAM {
 //        sd.setLocation("https://" + args[0] + "/gridsam/services/gridsam");
         
         
-//        sd.setLocation("file:////home0/mwi300/sh/ec.sh");
-        sd.setLocation("file:////bin/sleep");
+        sd.setLocation("file:////home0/mwi300/sh/ec.sh");
+//        sd.setLocation("file:////bin/sleep");
         
         sd.setArguments(new String[] {"15"});
         Map<String, Object> attributes = new HashMap<String, Object>();
@@ -47,7 +57,8 @@ public class SubmitJobGridSAM {
 
         JobDescription jd = new JobDescription(sd);
         ResourceBroker broker = GAT.createResourceBroker(context, prefs);
-        Job job = broker.submitJob(jd);
+//        Job job = broker.submitJob(jd);
+        Job job = broker.submitJob(jd, new GridSAMMetricListener(), "job.status");
         
         while (true) {
             int state = job.getState();

@@ -1,27 +1,15 @@
 package org.gridlab.gat.resources.cpi.gridsam;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.apache.log4j.Logger;
-import org.apache.xmlbeans.XmlException;
-import org.gridlab.gat.CommandNotFoundException;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.GATObjectCreationException;
-import org.gridlab.gat.MethodNotApplicableException;
 import org.gridlab.gat.Preferences;
 import org.gridlab.gat.TimePeriod;
-import org.gridlab.gat.URI;
-import org.gridlab.gat.engine.GATEngine;
-import org.gridlab.gat.engine.util.CommandRunner;
-import org.gridlab.gat.engine.util.InputForwarder;
-import org.gridlab.gat.engine.util.OutputForwarder;
+import org.gridlab.gat.monitoring.Metric;
 import org.gridlab.gat.monitoring.MetricListener;
 import org.gridlab.gat.resources.HardwareResource;
 import org.gridlab.gat.resources.Job;
@@ -35,9 +23,7 @@ import org.gridlab.gat.resources.cpi.Sandbox;
 import org.icenigrid.gridsam.client.common.ClientSideJobManager;
 import org.icenigrid.gridsam.core.ConfigurationException;
 import org.icenigrid.gridsam.core.JobInstance;
-import org.icenigrid.gridsam.core.JobManagerException;
 import org.icenigrid.gridsam.core.SubmissionException;
-import org.icenigrid.gridsam.core.UnsupportedFeatureException;
 import org.icenigrid.schema.jsdl.y2005.m11.JobDefinitionDocument;
 
 public class GridSAMResourceBrokerAdaptor extends ResourceBrokerCpi {
@@ -91,7 +77,8 @@ public class GridSAMResourceBrokerAdaptor extends ResourceBrokerCpi {
 
     public ClientSideJobManager getJobManager() throws ConfigurationException {
         if (jobManager == null) {
-            jobManager = new ClientSideJobManager(new String[] { "-s", "https://localhost:18443/gridsam/services/gridsam" }, ClientSideJobManager.getStandardOptions());
+            jobManager = new ClientSideJobManager(new String[] { "-s", "https://localhost:18443/gridsam/services/gridsam" }, ClientSideJobManager
+                    .getStandardOptions());
         }
         return jobManager;
     }
@@ -104,8 +91,8 @@ public class GridSAMResourceBrokerAdaptor extends ResourceBrokerCpi {
     public Job submitJob(JobDescription description, MetricListener listener, String metricDefinitionName) throws GATInvocationException {
         long start = System.currentTimeMillis();
         SoftwareDescription sd = description.getSoftwareDescription();
-        
-        GridSAMJSDLGenerator jsdlGenerator = new GridSAMJSDLGeneratorImpl(); 
+
+        GridSAMJSDLGenerator jsdlGenerator = new GridSAMJSDLGeneratorImpl();
 
         logger.info("starting job submit...");
 
@@ -117,46 +104,50 @@ public class GridSAMResourceBrokerAdaptor extends ResourceBrokerCpi {
 
         // TODO using attributes for this might be hardcore but for no I find it
         // OK - just want something running
-        logger.info("got attributes");
         ClientSideJobManager jobManager = null;
-        logger.info("got clientManager");
         JobInstance jobInstance = null;
-        logger.info("got jobInstance");
         Sandbox sandbox = null;
         try {
             jobManager = getJobManager();
 
             // TODO something usefull
-//            jsdlFileName = "/home/wojciech/client/gridsam/data/examples/sleep.jsdl";
-            
+            // jsdlFileName =
+            // "/home/wojciech/client/gridsam/data/examples/sleep.jsdl";
+
             sandbox = new Sandbox(gatContext, preferences, description, "das3.localhost:2280", "/tmp", true, false, false, false);
-            
+
             String jsdl = jsdlGenerator.generate(sd, sandbox);
             JobDefinitionDocument jobDefinitionDocument = JobDefinitionDocument.Factory.parse(jsdl);
-            
+
             if (logger.isDebugEnabled()) {
                 logger.debug("jobDefinitionDocument = " + jobDefinitionDocument.toString());
             }
-            
-//            sandbox = new Sandbox(gatContext, preferences, description, "fs0.das3.cs.vu.nl:2280", null, true, false, false, false);
-            
+
+            // sandbox = new Sandbox(gatContext, preferences, description,
+            // "fs0.das3.cs.vu.nl:2280", null, true, false, false, false);
+
             jobInstance = jobManager.submitJob(jobDefinitionDocument);
 
             String jobID = jobInstance.getID();
             logger.info("jobID = " + jobID);
 
-        } catch (SubmissionException e){
+        } catch (SubmissionException e) {
             logger.error("Got submission exception: ", e);
             throw new GATInvocationException("Unable to submit job to GridSAM server", e);
-        }
-            catch (Exception e1) {
+        } catch (Exception e1) {
             // TODO Auto-generated catch block
             e1.printStackTrace();
         }
         // return new GridSAMJob(gatContext, preferences, this, description, p,
         // host, sandbox, outForwarder, errForwarder, start, startRun);
 
-        return new GridSAMJob(gatContext, preferences, description, sandbox, this, jobInstance);
+        GridSAMJob job = new GridSAMJob(gatContext, preferences, description, sandbox, this, jobInstance);
+        if (listener != null && metricDefinitionName != null) {
+            Metric metric = job.getMetricDefinitionByName(metricDefinitionName).createMetric(null);
+            job.addMetricListener(listener, metric);
+        }
+
+        return job;
     }
 
     /*
