@@ -117,17 +117,22 @@ public class SocketEndpointAdaptor extends EndpointCpi implements Serializable {
     }
 
     public Pipe listen() throws GATInvocationException {
+        return listen(0);
+    }
+    
+    public Pipe listen(int timeout) throws GATInvocationException {
         if (!localEndpoint) {
             throw new GATInvocationException("cannot listen to local endpoint");
         }
 
         try {
+            serverSocket.setSoTimeout(timeout);
             Socket s = serverSocket.accept();
 
             return new SocketPipe(gatContext, preferences, s);
         } catch (IOException e) {
             throw new GATInvocationException("socketPipe", e);
-        }
+        }        
     }
 
     public void listen(PipeListener pipeListener) throws GATInvocationException {

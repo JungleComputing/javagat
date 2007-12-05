@@ -31,12 +31,12 @@ public abstract class EndpointCpi implements Endpoint {
      * Constructs a EndPointCpi instance which corresponds to the physical
      * EndPoint identified by the passed Location and whose access rights are
      * determined by the passed GATContext.
-     *
+     * 
      * @param gatContext
-     *            A GATContext which is used to determine the access rights for
-     *            this EndPointCpi.
+     *                A GATContext which is used to determine the access rights
+     *                for this EndPointCpi.
      * @param preferences
-     *            the preferences to be associated with this adaptor
+     *                the preferences to be associated with this adaptor
      */
     protected EndpointCpi(GATContext gatContext, Preferences preferences) {
         this.gatContext = gatContext;
@@ -59,7 +59,16 @@ public abstract class EndpointCpi implements Endpoint {
         throw new UnsupportedOperationException("Not implemented");
     }
 
+    public Pipe listen(int timeout) throws GATInvocationException {
+        throw new UnsupportedOperationException("Not implemented");
+    }
+
     public void listen(PipeListener pipeListener) throws GATInvocationException {
+        throw new UnsupportedOperationException("Not implemented");
+    }
+
+    public void listen(PipeListener pipeListener, int timeout)
+            throws GATInvocationException {
         throw new UnsupportedOperationException("Not implemented");
     }
 
@@ -70,7 +79,7 @@ public abstract class EndpointCpi implements Endpoint {
 
     /*
      * (non-Javadoc)
-     *
+     * 
      * @see org.gridlab.gat.monitoring.Monitorable#addMetricListener(org.gridlab.gat.monitoring.MetricListener,
      *      org.gridlab.gat.monitoring.Metric)
      */
@@ -81,16 +90,17 @@ public abstract class EndpointCpi implements Endpoint {
 
     /*
      * (non-Javadoc)
-     *
+     * 
      * @see org.gridlab.gat.monitoring.Monitorable#getMetrics()
      */
-    public List<MetricDefinition> getMetricDefinitions() throws GATInvocationException {
+    public List<MetricDefinition> getMetricDefinitions()
+            throws GATInvocationException {
         throw new UnsupportedOperationException("Not implemented");
     }
 
     /*
      * (non-Javadoc)
-     *
+     * 
      * @see org.gridlab.gat.monitoring.Monitorable#removeMetricListener(org.gridlab.gat.monitoring.MetricListener,
      *      org.gridlab.gat.monitoring.Metric)
      */
@@ -106,7 +116,7 @@ public abstract class EndpointCpi implements Endpoint {
 
     /*
      * (non-Javadoc)
-     *
+     * 
      * @see org.gridlab.gat.advert.Advertisable#marshal()
      */
     public String marshal() {
