@@ -34,7 +34,7 @@ public class SubmitJobGridSAM {
         System.getProperties().setProperty("user.name", "mwi300");
         
         prefs.put("ResourceBroker.adaptor.name", "GridSAM");
-        prefs.put("File.adaptor.name", "Ssh,CommandlineSsh");
+        prefs.put("File.adaptor.name", "Ssh, CommandlineSsh");
         SoftwareDescription sd = new SoftwareDescription();
 //        sd.setLocation("https://" + args[0] + "/gridsam/services/gridsam");
         
