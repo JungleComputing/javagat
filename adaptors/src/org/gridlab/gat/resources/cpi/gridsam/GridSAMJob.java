@@ -41,19 +41,17 @@ public class GridSAMJob extends JobCpi {
         
         private void setState(int state) {
             synchronized (this.parent) {
+                if (state != parent.state) {
+                    MetricValue v = new MetricValue(this, getStateString(state), statusMetric,
+                            System.currentTimeMillis());
+                    GATEngine.fireMetric(parent, v);
+                }
                 parent.state = state;
             }
         }
         
         public void run() {
             while (true) {
-                try {
-                    Thread.sleep(1000);
-                } catch (InterruptedException e1) {
-                    if (logger.isDebugEnabled()) {
-                        logger.debug("sleeping interrupted");
-                    }
-                }
                 
                 // update the manager state of the job
                 try {
@@ -109,6 +107,15 @@ public class GridSAMJob extends JobCpi {
                     logger.warn("unknown job state: " + jobState.toString());
                     setState(UNKNOWN);
                 }
+
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException e1) {
+                    if (logger.isDebugEnabled()) {
+                        logger.debug("sleeping interrupted");
+                    }
+                }
+     
                 
             }
             if (logger.isDebugEnabled()) {
