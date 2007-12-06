@@ -5,9 +5,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import javax.print.attribute.standard.PrinterURI;
-
-import org.apache.commons.collections.ListUtils;
 import org.apache.log4j.Logger;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
