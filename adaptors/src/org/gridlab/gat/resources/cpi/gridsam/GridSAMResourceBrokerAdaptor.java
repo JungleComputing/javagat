@@ -2,8 +2,10 @@ package org.gridlab.gat.resources.cpi.gridsam;
 
 import java.util.List;
 import java.util.Map;
+import java.util.ResourceBundle;
 
 import org.apache.log4j.Logger;
+import org.apache.xmlbeans.XmlException;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.GATObjectCreationException;
@@ -23,7 +25,9 @@ import org.gridlab.gat.resources.cpi.Sandbox;
 import org.icenigrid.gridsam.client.common.ClientSideJobManager;
 import org.icenigrid.gridsam.core.ConfigurationException;
 import org.icenigrid.gridsam.core.JobInstance;
+import org.icenigrid.gridsam.core.JobManagerException;
 import org.icenigrid.gridsam.core.SubmissionException;
+import org.icenigrid.gridsam.core.UnsupportedFeatureException;
 import org.icenigrid.schema.jsdl.y2005.m11.JobDefinitionDocument;
 
 public class GridSAMResourceBrokerAdaptor extends ResourceBrokerCpi {
@@ -132,14 +136,18 @@ public class GridSAMResourceBrokerAdaptor extends ResourceBrokerCpi {
             logger.info("jobID = " + jobID);
 
         } catch (SubmissionException e) {
-            logger.error("Got submission exception: ", e);
+            logger.error("Got submission exception", e);
             throw new GATInvocationException("Unable to submit job to GridSAM server", e);
-        } catch (Exception e1) {
-            // TODO Auto-generated catch block
-            e1.printStackTrace();
+        } catch (JobManagerException e) {
+            logger.error("gridSAM exception caught", e);
+            throw new GATInvocationException("gridSAM exception caught", e);
+        } catch (UnsupportedFeatureException e) {
+            logger.error("gridSAM exception caught", e);
+            throw new GATInvocationException("gridSAM exception caught", e);
+        } catch (XmlException e) {
+            logger.error("unable to parse jsdl", e);
+            throw new GATInvocationException("unable to parse jsdl", e);
         }
-        // return new GridSAMJob(gatContext, preferences, this, description, p,
-        // host, sandbox, outForwarder, errForwarder, start, startRun);
 
         GridSAMJob job = new GridSAMJob(gatContext, preferences, description, sandbox, this, jobInstance);
         if (listener != null && metricDefinitionName != null) {

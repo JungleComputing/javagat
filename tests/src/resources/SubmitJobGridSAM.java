@@ -39,21 +39,20 @@ public class SubmitJobGridSAM {
 //        sd.setLocation("https://" + args[0] + "/gridsam/services/gridsam");
         
         
-        sd.setLocation("file:////home0/mwi300/sh/ec.sh");
-//        sd.setLocation("file:////bin/sleep");
+//        sd.setLocation("file:////home0/mwi300/sh/ec.sh");
+        sd.setLocation("file:////bin/sleep");
         
         sd.setArguments(new String[] {"15"});
         Map<String, Object> attributes = new HashMap<String, Object>();
-        attributes.put("stdout", "in/outputFile");
+//        attributes.put("stdout", "in/outputFile");
+        File outputFile = GAT.createFile(context, "in/outputFile");
+//        sd.setStdout(outputFile);
         sd.setAttributes(attributes );
-        
+
         File f = GAT.createFile(context, "/crypted_disk/home/wojciech/crypt/vu/RA/in");
         File f2 = GAT.createFile(context, "/etc/passwd");
-        File outputFile = GAT.createFile(context, "in/outputFile");
-        File outputFileOut = GAT.createFile(context, "outputFile");
         sd.addPreStagedFile(f);
         sd.addPreStagedFile(f2);
-        sd.addPostStagedFile(outputFile, outputFileOut);
 
         JobDescription jd = new JobDescription(sd);
         ResourceBroker broker = GAT.createResourceBroker(context, prefs);

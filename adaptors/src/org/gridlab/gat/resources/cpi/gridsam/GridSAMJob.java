@@ -2,8 +2,12 @@ package org.gridlab.gat.resources.cpi.gridsam;
 
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
+import javax.print.attribute.standard.PrinterURI;
+
+import org.apache.commons.collections.ListUtils;
 import org.apache.log4j.Logger;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
@@ -29,8 +33,20 @@ public class GridSAMJob extends JobCpi {
 
         private GridSAMJob parent;
         
+        // how many events have we fired already ?
+        private int firedEventCount = 0;
+        
         public PollingThread(GridSAMJob parent) {
             this.parent = parent;
+        }
+        
+        private void fireEvent(int state) {
+            MetricValue v = new MetricValue(this, getStateString(state), statusMetric,
+                    System.currentTimeMillis());
+            GATEngine.fireMetric(parent, v);
+            if (logger.isDebugEnabled()) {
+                logger.debug("firing event, event=" + v.toString());
+            }
         }
         
         /**
@@ -40,14 +56,6 @@ public class GridSAMJob extends JobCpi {
          */
         private void setState(int state) {
             synchronized (this.parent) {
-                if (state != parent.state) {
-                    MetricValue v = new MetricValue(this, getStateString(state), statusMetric,
-                            System.currentTimeMillis());
-                    GATEngine.fireMetric(parent, v);
-                    if (logger.isDebugEnabled()) {
-                        logger.debug("firing event, event=" + v.toString());
-                    }
-                }
                 parent.state = state;
             }
         }
@@ -68,11 +76,7 @@ public class GridSAMJob extends JobCpi {
                     throw new RuntimeException(e);
                 }
                 
-                JobStage stage = jobInstance.getLastKnownStage();
-                JobState jobState = stage.getState();
-
                 if (logger.isDebugEnabled()) {
-                    logger.debug("jobState=" + jobState.toString());
                     StringBuilder props = new StringBuilder();
                     Map properties = jobInstance.getProperties();
                     Iterator iterator = properties.keySet().iterator();
@@ -80,34 +84,36 @@ public class GridSAMJob extends JobCpi {
                         Object next = iterator.next();
                         props.append("\n    ").append(next).append("=").append(properties.get(next));
                     }
-                    logger.debug("properties=" + props.toString());
+                    logger.debug("job properties (from GridSAM)=" + props.toString());
                 }
                 
-                if (jobState == JobState.ACTIVE) {
-                    setState(RUNNING);
-                } else if (jobState == JobState.DONE) {
-                    setState(STOPPED);
-                    break;
-                } else if (jobState == JobState.EXECUTED) {
-                    setState(STOPPED);
-                    break;
-                } else if (jobState == JobState.FAILED) {
-                    setState(SUBMISSION_ERROR);
-                    break;
-                } else if (jobState == JobState.PENDING) {
-                    setState(RUNNING);
-                } else if (jobState == JobState.STAGED_IN || jobState == JobState.STAGING_IN) {
-                    setState(PRE_STAGING);
-                } else if (jobState == JobState.STAGED_OUT || jobState == JobState.STAGING_OUT) {
-                    setState(POST_STAGING);
-                } else if (jobState == JobState.TERMINATED) {
-                    setState(STOPPED);
-                    break;
-                } else if (jobState == JobState.UNDEFINED) {
-                    setState(UNKNOWN);
-                } else {
-                    logger.warn("unknown job state: " + jobState.toString());
-                    setState(UNKNOWN);
+                List stages = jobInstance.getJobStages();
+                if (stages.size() > firedEventCount) {
+                    // there are some event that were not fired (and we don't know about)
+                    // lets get that knowledge :)
+                    
+                    // first we set the new current state - the sooner the better
+                    int currentState = translateState(jobInstance.getLastKnownStage().getState());
+                    setState(currentState);
+                    
+                    
+
+                    /* and now we fire the event for each of the states we have found
+                    * we can get ith element because:
+                        * 1. this list is not big
+                        * 2. GridSAM actually uses ArrayList for this
+                        */ 
+                    for (int i = firedEventCount; i < stages.size(); i++) {
+                        fireEvent(translateState(((JobStage) stages.get(i)).getState()));
+                    }
+                    
+                    // finally we set that we have fired every event
+                    firedEventCount = stages.size();
+                    
+                    if (currentState == STOPPED || currentState == SUBMISSION_ERROR) {
+                        break;
+                    }
+                    
                 }
 
                 try {
@@ -167,6 +173,31 @@ public class GridSAMJob extends JobCpi {
         pollingThread = new PollingThread(this);
         pollingThread.setDaemon(true);
         pollingThread.start();
+    }
+    
+    private int translateState(JobState jobState) {
+        if (jobState == JobState.ACTIVE) {
+            return RUNNING;
+        } else if (jobState == JobState.DONE) {
+            return STOPPED;
+        } else if (jobState == JobState.EXECUTED) {
+            return STOPPED;
+        } else if (jobState == JobState.FAILED) {
+            return SUBMISSION_ERROR;
+        } else if (jobState == JobState.PENDING) {
+            return RUNNING;
+        } else if (jobState == JobState.STAGED_IN || jobState == JobState.STAGING_IN) {
+            return PRE_STAGING;
+        } else if (jobState == JobState.STAGED_OUT || jobState == JobState.STAGING_OUT) {
+            return POST_STAGING;
+        } else if (jobState == JobState.TERMINATED) {
+            return STOPPED;
+        } else if (jobState == JobState.UNDEFINED) {
+            return UNKNOWN;
+        } else {
+            logger.warn("unknown job state: " + jobState.toString());
+            return UNKNOWN;
+        }
     }
 
     /*
