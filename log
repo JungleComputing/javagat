@@ -108,10 +108,11 @@ Adaptor list for org.gridlab.gat.resources.cpi.ResourceBrokerCpi, adaptors = [or
 Adaptor list for org.gridlab.gat.resources.cpi.ResourceBrokerCpi, adaptors = [org.gridlab.gat.resources.cpi.gridsam.GridSAMResourceBrokerAdaptor]
 gridsam starting...
 [main] INFO  engine.AdaptorInvocationHandler (line 327)  - initAdaptor: instantiated GridSAMResourceBrokerAdaptor for type ResourceBroker
-[main] INFO  gridsam.GridSAMResourceBrokerAdaptor (line 100)  - starting job submit...
-[main] DEBUG gridsam.GridSAMResourceBrokerAdaptor (line 108)  - prefs: {resourcebroker.jobmanagercontact=https://localhost:18443/gridsam/services/gridsam, resourcebroker.adaptor.name=GridSAM, file.adaptor.name=Ssh, CommandlineSsh}
-[main] INFO  gridsam.GridSAMResourceBrokerAdaptor (line 117)  - using web services url 'https://localhost:18443/gridsam/services/gridsam'
+[main] INFO  gridsam.GridSAMResourceBrokerAdaptor (line 102)  - starting job submit...
+[main] DEBUG gridsam.GridSAMResourceBrokerAdaptor (line 110)  - prefs: {resourcebroker.jobmanagercontact=https://localhost:18443/gridsam/services/gridsam, resourcebroker.adaptor.name=GridSAM, file.adaptor.name=Ssh, CommandlineSsh}
+[main] INFO  gridsam.GridSAMResourceBrokerAdaptor (line 119)  - using web services url 'https://localhost:18443/gridsam/services/gridsam'
 [main] WARN  common.GridSAMClientSupport (line 92)  - resource bundle 'HTTP-proxy' is missing. HTTP Proxy configuration is not performed - Can't find bundle for base name HTTP-proxy, locale de_DE
+[main] DEBUG gridsam.GridSAMResourceBrokerAdaptor (line 185)  - got sandboxRoot: /tmp
 [main] INFO  engine.GATEngine (line 832)  - old adaptor order: 
 Adaptor list for org.gridlab.gat.io.cpi.FileCpi, adaptors = [org.gridlab.gat.io.cpi.local.LocalFileAdaptor, org.gridlab.gat.io.cpi.globus.GridFTPFileAdaptor, org.gridlab.gat.io.cpi.sftpGanymed.SftpGanymedFileAdaptor, org.gridlab.gat.io.cpi.commandlineSsh.CommandlineSshFileAdaptor, org.gridlab.gat.io.cpi.sftpnew.SftpNewFileAdaptor, org.gridlab.gat.io.cpi.ssh.SshFileAdaptor, org.gridlab.gat.io.cpi.sftp.SftpFileAdaptor, org.gridlab.gat.io.cpi.gt4.GT4LocalFileAdaptor, org.gridlab.gat.io.cpi.streaming.StreamingFileAdaptor, org.gridlab.gat.io.cpi.thirdPartyCopy.ThirdPartyCopyFileAdaptor, org.gridlab.gat.io.cpi.gt4.GT4GridFTPFileAdaptor, org.gridlab.gat.io.cpi.rftgt4.RFTGT4FileAdaptor, org.gridlab.gat.io.cpi.globus.FTPFileAdaptor]
 [main] INFO  engine.GATEngine (line 836)  - new adaptor order: 
@@ -119,7 +120,7 @@ Adaptor list for org.gridlab.gat.io.cpi.FileCpi, adaptors = [org.gridlab.gat.io.
 [main] INFO  engine.AdaptorInvocationHandler (line 327)  - initAdaptor: instantiated SshFileAdaptor for type File
 [main] INFO  engine.AdaptorInvocationHandler (line 327)  - initAdaptor: instantiated CommandlineSshFileAdaptor for type File
 [main] INFO  engine.AdaptorInvocationHandler (line 217)  - Method mkdir on CommandlineSshFileAdaptor failed: java.lang.UnsupportedOperationException: Not implemented
-[main] INFO  cpi.Sandbox (line 183)  - sandbox: /tmp/.JavaGAT_SANDBOX_0.9350529814069001
+[main] INFO  cpi.Sandbox (line 183)  - sandbox: /tmp/.JavaGAT_SANDBOX_0.29514012769824194
 [main] INFO  engine.GATEngine (line 832)  - old adaptor order: 
 Adaptor list for org.gridlab.gat.io.cpi.FileCpi, adaptors = [org.gridlab.gat.io.cpi.local.LocalFileAdaptor, org.gridlab.gat.io.cpi.globus.GridFTPFileAdaptor, org.gridlab.gat.io.cpi.sftpGanymed.SftpGanymedFileAdaptor, org.gridlab.gat.io.cpi.commandlineSsh.CommandlineSshFileAdaptor, org.gridlab.gat.io.cpi.sftpnew.SftpNewFileAdaptor, org.gridlab.gat.io.cpi.ssh.SshFileAdaptor, org.gridlab.gat.io.cpi.sftp.SftpFileAdaptor, org.gridlab.gat.io.cpi.gt4.GT4LocalFileAdaptor, org.gridlab.gat.io.cpi.streaming.StreamingFileAdaptor, org.gridlab.gat.io.cpi.thirdPartyCopy.ThirdPartyCopyFileAdaptor, org.gridlab.gat.io.cpi.gt4.GT4GridFTPFileAdaptor, org.gridlab.gat.io.cpi.rftgt4.RFTGT4FileAdaptor, org.gridlab.gat.io.cpi.globus.FTPFileAdaptor]
 [main] INFO  engine.GATEngine (line 836)  - new adaptor order: 
@@ -133,8 +134,8 @@ Adaptor list for org.gridlab.gat.io.cpi.FileCpi, adaptors = [org.gridlab.gat.io.
 [main] INFO  engine.AdaptorInvocationHandler (line 327)  - initAdaptor: instantiated SshFileAdaptor for type File
 [main] INFO  engine.AdaptorInvocationHandler (line 327)  - initAdaptor: instantiated CommandlineSshFileAdaptor for type File
 [main] INFO  cpi.PreStagedFileSet (line 70)  - PreStagedFileSet:
-PreStaged: /etc/passwd -> any://das3.localhost:2280//tmp/.JavaGAT_SANDBOX_0.9350529814069001/passwd (IN SANDBOX)
-PreStaged: /crypted_disk/home/wojciech/crypt/vu/RA/in -> any://das3.localhost:2280//tmp/.JavaGAT_SANDBOX_0.9350529814069001/in (IN SANDBOX)
+PreStaged: /etc/passwd -> any://das3.localhost:2280//tmp/.JavaGAT_SANDBOX_0.29514012769824194/passwd (IN SANDBOX)
+PreStaged: /crypted_disk/home/wojciech/crypt/vu/RA/in -> any://das3.localhost:2280//tmp/.JavaGAT_SANDBOX_0.29514012769824194/in (IN SANDBOX)
 
 [main] INFO  cpi.PostStagedFileSet (line 60)  - PostStagedFileSet:
 
@@ -142,14 +143,14 @@ PreStaged: /crypted_disk/home/wojciech/crypt/vu/RA/in -> any://das3.localhost:22
 [main] INFO  cpi.Sandbox (line 205)  - deleting post stage files outside sandbox done
 [main] INFO  cpi.Sandbox (line 209)  - pre stage starting
 [main] INFO  cpi.PreStagedFile (line 123)  - prestage:
-  copy /etc/passwd to any://das3.localhost:2280//tmp/.JavaGAT_SANDBOX_0.9350529814069001/passwd
+  copy /etc/passwd to any://das3.localhost:2280//tmp/.JavaGAT_SANDBOX_0.29514012769824194/passwd
 [main] INFO  engine.GATEngine (line 832)  - old adaptor order: 
 Adaptor list for org.gridlab.gat.io.cpi.FileCpi, adaptors = [org.gridlab.gat.io.cpi.local.LocalFileAdaptor, org.gridlab.gat.io.cpi.globus.GridFTPFileAdaptor, org.gridlab.gat.io.cpi.sftpGanymed.SftpGanymedFileAdaptor, org.gridlab.gat.io.cpi.commandlineSsh.CommandlineSshFileAdaptor, org.gridlab.gat.io.cpi.sftpnew.SftpNewFileAdaptor, org.gridlab.gat.io.cpi.ssh.SshFileAdaptor, org.gridlab.gat.io.cpi.sftp.SftpFileAdaptor, org.gridlab.gat.io.cpi.gt4.GT4LocalFileAdaptor, org.gridlab.gat.io.cpi.streaming.StreamingFileAdaptor, org.gridlab.gat.io.cpi.thirdPartyCopy.ThirdPartyCopyFileAdaptor, org.gridlab.gat.io.cpi.gt4.GT4GridFTPFileAdaptor, org.gridlab.gat.io.cpi.rftgt4.RFTGT4FileAdaptor, org.gridlab.gat.io.cpi.globus.FTPFileAdaptor]
 [main] INFO  engine.GATEngine (line 836)  - new adaptor order: 
 Adaptor list for org.gridlab.gat.io.cpi.FileCpi, adaptors = [org.gridlab.gat.io.cpi.ssh.SshFileAdaptor, org.gridlab.gat.io.cpi.commandlineSsh.CommandlineSshFileAdaptor]
 [main] INFO  engine.AdaptorInvocationHandler (line 327)  - initAdaptor: instantiated SshFileAdaptor for type File
 [main] INFO  engine.AdaptorInvocationHandler (line 327)  - initAdaptor: instantiated CommandlineSshFileAdaptor for type File
-[main] INFO  cpi.PreStagedFile (line 139)  - creating dir: GAT file: any://das3.localhost:2280//tmp/.JavaGAT_SANDBOX_0.9350529814069001
+[main] INFO  cpi.PreStagedFile (line 139)  - creating dir: GAT file: any://das3.localhost:2280//tmp/.JavaGAT_SANDBOX_0.29514012769824194
 [main] INFO  engine.AdaptorInvocationHandler (line 217)  - Method mkdirs on CommandlineSshFileAdaptor failed: java.lang.UnsupportedOperationException: Not implemented
 [main] INFO  engine.AdaptorInvocationHandler (line 217)  - Method copy on SftpGanymedFileAdaptor failed: 
 --- START OF NESTED EXCEPTION ---
@@ -157,15 +158,15 @@ Adaptor list for org.gridlab.gat.io.cpi.FileCpi, adaptors = [org.gridlab.gat.io.
 --- END OF NESTED EXCEPTION ---
 [main] DEBUG commandlineSsh.CommandlineSshFileAdaptor (line 91)  - commandlineSsh file: copy local to remote
 [main] DEBUG commandlineSsh.CommandlineSshFileAdaptor (line 232)  - key file argument not supported yet
-[main] DEBUG commandlineSsh.CommandlineSshFileAdaptor (line 251)  - CommandlineSsh: Prepared session for location any://das3.localhost:2280//tmp/.JavaGAT_SANDBOX_0.9350529814069001/passwd with username: mwi300; host: das3.localhost
+[main] DEBUG commandlineSsh.CommandlineSshFileAdaptor (line 251)  - CommandlineSsh: Prepared session for location any://das3.localhost:2280//tmp/.JavaGAT_SANDBOX_0.29514012769824194/passwd with username: mwi300; host: das3.localhost
 [main] DEBUG commandlineSsh.CommandlineSshFileAdaptor (line 301)  - determineIsDirectory(): false
-[main] INFO  commandlineSsh.CommandlineSshFileAdaptor (line 312)  - CommandlineSsh: running command: scp -o BatchMode=yes -o StrictHostKeyChecking=yes -P 2280 /etc/passwd mwi300@das3.localhost:/tmp/.JavaGAT_SANDBOX_0.9350529814069001/passwd
+[main] INFO  commandlineSsh.CommandlineSshFileAdaptor (line 312)  - CommandlineSsh: running command: scp -o BatchMode=yes -o StrictHostKeyChecking=yes -P 2280 /etc/passwd mwi300@das3.localhost:/tmp/.JavaGAT_SANDBOX_0.29514012769824194/passwd
 [main] INFO  commandlineSsh.CommandlineSshFileAdaptor (line 317)  - 
 stderr: 
 stdout: 
 [main] INFO  cpi.PreStagedFile (line 123)  - prestage:
-  copy /crypted_disk/home/wojciech/crypt/vu/RA/in to any://das3.localhost:2280//tmp/.JavaGAT_SANDBOX_0.9350529814069001/in
-[main] INFO  cpi.PreStagedFile (line 131)  - creating dir: GAT file: any://das3.localhost:2280//tmp/.JavaGAT_SANDBOX_0.9350529814069001/in
+  copy /crypted_disk/home/wojciech/crypt/vu/RA/in to any://das3.localhost:2280//tmp/.JavaGAT_SANDBOX_0.29514012769824194/in
+[main] INFO  cpi.PreStagedFile (line 131)  - creating dir: GAT file: any://das3.localhost:2280//tmp/.JavaGAT_SANDBOX_0.29514012769824194/in
 [main] INFO  engine.AdaptorInvocationHandler (line 327)  - initAdaptor: instantiated LocalFileAdaptor for type File
 [main] INFO  engine.AdaptorInvocationHandler (line 313)  - initAdaptor: Couldn't create GridFTPFileAdaptor: *** *** can't get proxy credential (did you do a grid-proxy-init?)
 [main] INFO  engine.AdaptorInvocationHandler (line 327)  - initAdaptor: instantiated SftpGanymedFileAdaptor for type File
@@ -206,9 +207,9 @@ stdout:
 [main] INFO  engine.AdaptorInvocationHandler (line 313)  - initAdaptor: Couldn't create FTPFileAdaptor: Could not find a valid security context for this adaptor to use for the specified host/port
 [main] DEBUG commandlineSsh.CommandlineSshFileAdaptor (line 91)  - commandlineSsh file: copy local to remote
 [main] DEBUG commandlineSsh.CommandlineSshFileAdaptor (line 232)  - key file argument not supported yet
-[main] DEBUG commandlineSsh.CommandlineSshFileAdaptor (line 251)  - CommandlineSsh: Prepared session for location any://das3.localhost:2280//tmp/.JavaGAT_SANDBOX_0.9350529814069001/in/passwd with username: mwi300; host: das3.localhost
+[main] DEBUG commandlineSsh.CommandlineSshFileAdaptor (line 251)  - CommandlineSsh: Prepared session for location any://das3.localhost:2280//tmp/.JavaGAT_SANDBOX_0.29514012769824194/in/passwd with username: mwi300; host: das3.localhost
 [main] DEBUG commandlineSsh.CommandlineSshFileAdaptor (line 301)  - determineIsDirectory(): false
-[main] INFO  commandlineSsh.CommandlineSshFileAdaptor (line 312)  - CommandlineSsh: running command: scp -o BatchMode=yes -o StrictHostKeyChecking=yes -P 2280 /crypted_disk/home/wojciech/crypt/vu/RA/in/passwd mwi300@das3.localhost:/tmp/.JavaGAT_SANDBOX_0.9350529814069001/in/passwd
+[main] INFO  commandlineSsh.CommandlineSshFileAdaptor (line 312)  - CommandlineSsh: running command: scp -o BatchMode=yes -o StrictHostKeyChecking=yes -P 2280 /crypted_disk/home/wojciech/crypt/vu/RA/in/passwd mwi300@das3.localhost:/tmp/.JavaGAT_SANDBOX_0.29514012769824194/in/passwd
 [main] INFO  commandlineSsh.CommandlineSshFileAdaptor (line 317)  - 
 stderr: 
 stdout: 
@@ -216,7 +217,7 @@ stdout:
 [main] DEBUG gridsam.GridSAMJSDLGeneratorImpl (line 41)  - executable location=file:////bin/sleep, path=/bin/sleep
 [main] DEBUG gridsam.GridSAMJSDLGeneratorImpl (line 42)  - arguments count=1
 [main] DEBUG gridsam.GridSAMJSDLGeneratorImpl (line 49)  - argument=15
-[main] DEBUG gridsam.GridSAMResourceBrokerAdaptor (line 137)  - jobDefinitionDocument = <JobDefinition xmlns="http://schemas.ggf.org/jsdl/2005/11/jsdl">
+[main] DEBUG gridsam.GridSAMResourceBrokerAdaptor (line 139)  - jobDefinitionDocument = <JobDefinition xmlns="http://schemas.ggf.org/jsdl/2005/11/jsdl">
   <JobDescription>
     <JobIdentification>
       <JobProject>gridsam</JobProject>
@@ -235,25 +236,25 @@ stdout:
       <CreationFlag>overwrite</CreationFlag>
       <DeleteOnTermination>true</DeleteOnTermination>
       <Source>
-        <URI>/tmp/.JavaGAT_SANDBOX_0.9350529814069001</URI>
+        <URI>/tmp/.JavaGAT_SANDBOX_0.29514012769824194</URI>
       </Source>
     </DataStaging>
   </JobDescription>
 </JobDefinition>
-[main] INFO  gridsam.GridSAMResourceBrokerAdaptor (line 146)  - jobID = urn:gridsam:02a54582169054580116b571448e035f
-[main] DEBUG resources.SubmitJobGridSAM (line 68)  - state=0
+[main] INFO  gridsam.GridSAMResourceBrokerAdaptor (line 148)  - jobID = urn:gridsam:02a54582169054580116b57e080e0365
+[main] DEBUG resources.SubmitJobGridSAM (line 69)  - state=0
 [Thread-12] DEBUG gridsam.GridSAMJob$PollingThread (line 84)  - job properties (from GridSAM)=
     urn:gridsam:principal=OU=FEW, O=VU, EMAILADDRESS=mwi300@few.vu.nl, C=NL, ST=NH, CN=fs0.das3.cs.vu.nl
-[Thread-12] INFO  resources.SubmitJobGridSAM (line 25)  - got process event, val=MetricValue(time = 1197045008330, val =RUNNING, metric =Metric(def = MetricDefinition(job.status, type = DISCRETE, datatype = String, unit = none, params = {}), params = {}, freq = 0)
-[Thread-12] DEBUG gridsam.GridSAMJob$PollingThread (line 45)  - firing event, event=MetricValue(time = 1197045008330, val =RUNNING, metric =Metric(def = MetricDefinition(job.status, type = DISCRETE, datatype = String, unit = none, params = {}), params = {}, freq = 0)
-[Thread-12] INFO  resources.SubmitJobGridSAM (line 25)  - got process event, val=MetricValue(time = 1197045008332, val =SUBMISSION_ERROR, metric =Metric(def = MetricDefinition(job.status, type = DISCRETE, datatype = String, unit = none, params = {}), params = {}, freq = 0)
-[Thread-12] DEBUG gridsam.GridSAMJob$PollingThread (line 45)  - firing event, event=MetricValue(time = 1197045008332, val =SUBMISSION_ERROR, metric =Metric(def = MetricDefinition(job.status, type = DISCRETE, datatype = String, unit = none, params = {}), params = {}, freq = 0)
+[Thread-12] INFO  resources.SubmitJobGridSAM (line 25)  - got process event, val=MetricValue(time = 1197045844508, val =RUNNING, metric =Metric(def = MetricDefinition(job.status, type = DISCRETE, datatype = String, unit = none, params = {}), params = {}, freq = 0)
+[Thread-12] DEBUG gridsam.GridSAMJob$PollingThread (line 45)  - firing event, event=MetricValue(time = 1197045844508, val =RUNNING, metric =Metric(def = MetricDefinition(job.status, type = DISCRETE, datatype = String, unit = none, params = {}), params = {}, freq = 0)
+[Thread-12] INFO  resources.SubmitJobGridSAM (line 25)  - got process event, val=MetricValue(time = 1197045844508, val =SUBMISSION_ERROR, metric =Metric(def = MetricDefinition(job.status, type = DISCRETE, datatype = String, unit = none, params = {}), params = {}, freq = 0)
+[Thread-12] DEBUG gridsam.GridSAMJob$PollingThread (line 45)  - firing event, event=MetricValue(time = 1197045844508, val =SUBMISSION_ERROR, metric =Metric(def = MetricDefinition(job.status, type = DISCRETE, datatype = String, unit = none, params = {}), params = {}, freq = 0)
 [Thread-12] DEBUG gridsam.GridSAMJob$PollingThread (line 127)  - polling thread exiting, job's finished
-[main] DEBUG resources.SubmitJobGridSAM (line 68)  - state=4
-[main] INFO  resources.SubmitJobGridSAM (line 74)  - job error, breaking
-[Thread-11] INFO  cpi.JobCpi (line 114)  - stopping job: gat job, id is urn:gridsam:02a54582169054580116b571448e035f
-[Thread-11] DEBUG gridsam.GridSAMJob (line 254)  - default job callback: firing event: MetricValue(time = 1197045008659, val =POST_STAGING, metric =Metric(def = MetricDefinition(job.status, type = DISCRETE, datatype = String, unit = none, params = {}), params = {}, freq = 0)
-[Thread-11] INFO  resources.SubmitJobGridSAM (line 25)  - got process event, val=MetricValue(time = 1197045008659, val =POST_STAGING, metric =Metric(def = MetricDefinition(job.status, type = DISCRETE, datatype = String, unit = none, params = {}), params = {}, freq = 0)
+[main] DEBUG resources.SubmitJobGridSAM (line 69)  - state=4
+[main] INFO  resources.SubmitJobGridSAM (line 75)  - job error, breaking
+[Thread-11] INFO  cpi.JobCpi (line 114)  - stopping job: gat job, id is urn:gridsam:02a54582169054580116b57e080e0365
+[Thread-11] DEBUG gridsam.GridSAMJob (line 254)  - default job callback: firing event: MetricValue(time = 1197045844939, val =POST_STAGING, metric =Metric(def = MetricDefinition(job.status, type = DISCRETE, datatype = String, unit = none, params = {}), params = {}, freq = 0)
+[Thread-11] INFO  resources.SubmitJobGridSAM (line 25)  - got process event, val=MetricValue(time = 1197045844939, val =POST_STAGING, metric =Metric(def = MetricDefinition(job.status, type = DISCRETE, datatype = String, unit = none, params = {}), params = {}, freq = 0)
 [Thread-11] INFO  cpi.Sandbox (line 326)  - post stage starting
 [Thread-11] INFO  cpi.Sandbox (line 337)  - post stage done (SUCCESS)
 [Thread-11] INFO  cpi.Sandbox (line 234)  - wipe starting
@@ -267,11 +268,11 @@ Adaptor list for org.gridlab.gat.io.cpi.FileCpi, adaptors = [org.gridlab.gat.io.
 Adaptor list for org.gridlab.gat.io.cpi.FileCpi, adaptors = [org.gridlab.gat.io.cpi.ssh.SshFileAdaptor, org.gridlab.gat.io.cpi.commandlineSsh.CommandlineSshFileAdaptor]
 [Thread-11] INFO  engine.AdaptorInvocationHandler (line 327)  - initAdaptor: instantiated SshFileAdaptor for type File
 [Thread-11] INFO  engine.AdaptorInvocationHandler (line 327)  - initAdaptor: instantiated CommandlineSshFileAdaptor for type File
-[Thread-11] INFO  cpi.FileCpi (line 633)  - recursive delete dir: GAT file: any://das3.localhost:2280//tmp/.JavaGAT_SANDBOX_0.9350529814069001
+[Thread-11] INFO  cpi.FileCpi (line 633)  - recursive delete dir: GAT file: any://das3.localhost:2280//tmp/.JavaGAT_SANDBOX_0.29514012769824194
 [Thread-11] INFO  engine.AdaptorInvocationHandler (line 217)  - Method listFiles on CommandlineSshFileAdaptor failed: java.lang.UnsupportedOperationException: Not implemented
 [Thread-11] INFO  engine.AdaptorInvocationHandler (line 217)  - Method listFiles on SshFileAdaptor failed: java.lang.NullPointerException
 [Thread-11] INFO  engine.AdaptorInvocationHandler (line 232)  - invoke: No adaptor could be invoked.
 [Thread-11] INFO  engine.AdaptorInvocationHandler (line 217)  - Method delete on CommandlineSshFileAdaptor failed: java.lang.UnsupportedOperationException: Not implemented
 [Thread-11] INFO  cpi.Sandbox (line 364)  - removing sandbox dir done (SUCCESS)
-[Thread-11] DEBUG gridsam.GridSAMJob (line 266)  - default job callback: firing event: MetricValue(time = 1197045011164, val =STOPPED, metric =Metric(def = MetricDefinition(job.status, type = DISCRETE, datatype = String, unit = none, params = {}), params = {}, freq = 0)
-[Thread-11] INFO  resources.SubmitJobGridSAM (line 25)  - got process event, val=MetricValue(time = 1197045011164, val =STOPPED, metric =Metric(def = MetricDefinition(job.status, type = DISCRETE, datatype = String, unit = none, params = {}), params = {}, freq = 0)
+[Thread-11] DEBUG gridsam.GridSAMJob (line 266)  - default job callback: firing event: MetricValue(time = 1197045846786, val =STOPPED, metric =Metric(def = MetricDefinition(job.status, type = DISCRETE, datatype = String, unit = none, params = {}), params = {}, freq = 0)
+[Thread-11] INFO  resources.SubmitJobGridSAM (line 25)  - got process event, val=MetricValue(time = 1197045846786, val =STOPPED, metric =Metric(def = MetricDefinition(job.status, type = DISCRETE, datatype = String, unit = none, params = {}), params = {}, freq = 0)

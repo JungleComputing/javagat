@@ -1,5 +1,6 @@
 package org.gridlab.gat.resources.cpi.gridsam;
 
+import java.io.File;
 import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
@@ -32,6 +33,7 @@ import org.icenigrid.schema.jsdl.y2005.m11.JobDefinitionDocument;
 
 public class GridSAMResourceBrokerAdaptor extends ResourceBrokerCpi {
 
+    private static final String SANDBOX_ROOT = "sandboxRoot";
     private Logger logger = Logger.getLogger(GridSAMResourceBrokerAdaptor.class);
     private ClientSideJobManager jobManager;
 
@@ -127,8 +129,8 @@ public class GridSAMResourceBrokerAdaptor extends ResourceBrokerCpi {
             // TODO something usefull
             // jsdlFileName =
             // "/home/wojciech/client/gridsam/data/examples/sleep.jsdl";
-
-            sandbox = new Sandbox(gatContext, preferences, description, "das3.localhost:2280", "/tmp", true, false, false, false);
+;
+            sandbox = new Sandbox(gatContext, preferences, description, "das3.localhost:2280", getSandboxRoot(attributes), true, false, false, false);
 
             String jsdl = jsdlGenerator.generate(sd, sandbox);
             JobDefinitionDocument jobDefinitionDocument = JobDefinitionDocument.Factory.parse(jsdl);
@@ -166,6 +168,23 @@ public class GridSAMResourceBrokerAdaptor extends ResourceBrokerCpi {
         }
 
         return job;
+    }
+
+    private String getSandboxRoot(Map<String, Object> attributes) throws GATInvocationException {
+        Object tmp = attributes.get(SANDBOX_ROOT);
+        if (tmp == null) {
+            logger.info("unable to get sandbox root directory");
+            throw new GATInvocationException("unable to get sandbox root directory");
+        }
+        File fTmp = new File(tmp.toString());
+        if (! fTmp.isAbsolute()) {
+            logger.info("sandboxRoot has to be an absolute path");
+            throw new GATInvocationException("sandboxRoot has to be an absolute path");
+        }
+        if (logger.isDebugEnabled()) {
+            logger.debug("got sandboxRoot: " + tmp.toString());
+        }
+        return tmp.toString();
     }
 
     /*
