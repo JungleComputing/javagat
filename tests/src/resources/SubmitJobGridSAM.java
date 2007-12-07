@@ -44,6 +44,8 @@ public class SubmitJobGridSAM {
         
         sd.setArguments(new String[] {"15"});
         Map<String, Object> attributes = new HashMap<String, Object>();
+        attributes.put("maxCPUTime", "60");
+        attributes.put("maxMemory", "90");
 //        attributes.put("stdout", "in/outputFile");
         File outputFile = GAT.createFile(context, "in/outputFile");
 //        sd.setStdout(outputFile);

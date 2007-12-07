@@ -80,6 +80,8 @@ public class GridSAMJSDLGeneratorImpl implements GridSAMJSDLGenerator {
                 builder.append("<Environment>").append(env.get(key)).append("</Environment>");
             }
         }
+        
+        addLimitsInfo(builder, sd);
 
         builder.append("</POSIXApplication></Application>");
         
@@ -102,11 +104,34 @@ public class GridSAMJSDLGeneratorImpl implements GridSAMJSDLGenerator {
                 continue;
             }
             builder.append("<DataStaging>");
-            builder.append("<FileName>").append(file.getPath()).append("</FileName>");
+            addTag(builder, "FileName", file.getPath());
+//            builder.append("<FileName>").append(file.getPath()).append("</FileName>");
             builder.append("<CreationFlag>overwrite</CreationFlag><DeleteOnTermination>false</DeleteOnTermination>");
             builder.append("<Target><URI>").append(sandbox.getSandbox() + "/" + file.getPath()).append("</URI></Target>");
             builder.append("</DataStaging>");
         }
+        return builder;
+    }
+
+    /**
+     * Appends XML info about maximum CPU time, memory limits and so on.
+     * 
+     * @param builder
+     * @param sd
+     */
+    private void addLimitsInfo(StringBuilder builder, SoftwareDescription sd) {
+        Map<String, Object> attrs = sd.getAttributes();
+        
+        if (attrs.get("maxCPUTime") != null) {
+            addTag(builder,"CPUTimeLimit", attrs.get("maxCPUTime"));
+        }
+        if (attrs.get("maxMemory") != null) {
+            addTag(builder, "MemoryLimit", attrs.get("maxMemory"));
+        }
+    }
+    
+    private StringBuilder addTag(StringBuilder builder, String tagName, Object tagValue) {
+        builder.append("<").append(tagName).append(">").append(tagValue.toString()).append("</").append(tagName).append(">");
         return builder;
     }
 
