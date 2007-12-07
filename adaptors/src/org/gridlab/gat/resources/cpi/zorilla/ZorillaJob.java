@@ -267,15 +267,18 @@ public class ZorillaJob extends JobCpi {
         }
     }
 
-    synchronized void setInfo(JobInfo info) {
-        this.info = info;
+    void setInfo(JobInfo info) {
+        synchronized(this) {
+            this.info = info;
+        }
+        fireStatusMetric();
     }
 
     synchronized boolean hasEnded() {
         return info.getPhase() >= ZoniProtocol.PHASE_COMPLETED;
     }
 
-    void fireStatusMetric() throws GATInvocationException {
+    private void fireStatusMetric() {
         MetricValue v = null;
 
         synchronized (this) {
