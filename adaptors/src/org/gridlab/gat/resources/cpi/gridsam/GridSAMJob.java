@@ -57,6 +57,7 @@ public class GridSAMJob extends JobCpi {
             }
         }
         
+        @SuppressWarnings("unchecked")
         public void run() {
             while (true) {
                 
@@ -65,11 +66,9 @@ public class GridSAMJob extends JobCpi {
                     jobInstance = adaptor.getJobManager().findJobInstance(jobID);
                 } catch (JobManagerException e) {
                     logger.error("caught exception", e);
-                    // TODO
                     throw new RuntimeException(e);
                 } catch (UnknownJobException e) {
                     logger.error("caught exception", e);
-                    // TODO
                     throw new RuntimeException(e);
                 }
                 
@@ -141,14 +140,12 @@ public class GridSAMJob extends JobCpi {
     
     private String jobID;
 
+    // TODO [wojciech] do sth about those forwarders...
     private OutputForwarder out;
 
     private OutputForwarder err;
     
     private GridSAMResourceBrokerAdaptor adaptor;
-
-    private long startTime;
-    private long runTime;
 
     private PollingThread pollingThread;
 

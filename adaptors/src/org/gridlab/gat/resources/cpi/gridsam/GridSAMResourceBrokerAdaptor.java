@@ -3,7 +3,6 @@ package org.gridlab.gat.resources.cpi.gridsam;
 import java.io.File;
 import java.util.List;
 import java.util.Map;
-import java.util.ResourceBundle;
 
 import org.apache.log4j.Logger;
 import org.apache.xmlbeans.XmlException;
@@ -106,9 +105,6 @@ public class GridSAMResourceBrokerAdaptor extends ResourceBrokerCpi {
         }
 
         Map<String, Object> attributes = sd.getAttributes();
-        if (logger.isDebugEnabled()) {
-            logger.debug("prefs: " + preferences.toString());
-        }
         Object tmp = preferences.get("ResourceBroker.jobmanagerContact");
         if (tmp == null) {
             logger.info("no url to gridsam web service set");
@@ -126,10 +122,6 @@ public class GridSAMResourceBrokerAdaptor extends ResourceBrokerCpi {
         try {
             jobManager = new ClientSideJobManager(new String[] {"-s", gridSAMWebServiceURL}, ClientSideJobManager.getStandardOptions());
 
-            // TODO something usefull
-            // jsdlFileName =
-            // "/home/wojciech/client/gridsam/data/examples/sleep.jsdl";
-;
             sandbox = new Sandbox(gatContext, preferences, description, "das3.localhost:2280", getSandboxRoot(attributes), true, false, false, false);
 
             String jsdl = jsdlGenerator.generate(sd, sandbox);
@@ -139,13 +131,12 @@ public class GridSAMResourceBrokerAdaptor extends ResourceBrokerCpi {
                 logger.debug("jobDefinitionDocument = " + jobDefinitionDocument.toString());
             }
 
-            // sandbox = new Sandbox(gatContext, preferences, description,
-            // "fs0.das3.cs.vu.nl:2280", null, true, false, false, false);
-
             jobInstance = jobManager.submitJob(jobDefinitionDocument);
 
             String jobID = jobInstance.getID();
-            logger.info("jobID = " + jobID);
+            if (logger.isInfoEnabled()) {
+                logger.info("jobID = " + jobID);
+            }
 
         } catch (SubmissionException e) {
             logger.info("Got submission exception", e);

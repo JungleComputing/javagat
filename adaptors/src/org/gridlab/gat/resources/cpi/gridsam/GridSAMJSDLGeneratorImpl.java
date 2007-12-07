@@ -1,7 +1,6 @@
 package org.gridlab.gat.resources.cpi.gridsam;
 
 import java.util.Map;
-import java.util.Map.Entry;
 
 import org.apache.log4j.Logger;
 import org.gridlab.gat.io.File;
@@ -32,6 +31,7 @@ public class GridSAMJSDLGeneratorImpl implements GridSAMJSDLGenerator {
 
     }
 
+    @SuppressWarnings("unchecked")
     private StringBuilder addApplication(StringBuilder builder, SoftwareDescription sd, Sandbox sandbox) {
         builder.append("<Application>").append("<POSIXApplication xmlns=\"http://schemas.ggf.org/jsdl/2005/11/jsdl-posix\">");
 
