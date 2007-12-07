@@ -81,8 +81,7 @@ public class GridSAMResourceBrokerAdaptor extends ResourceBrokerCpi {
 
     public ClientSideJobManager getJobManager() throws ConfigurationException {
         if (jobManager == null) {
-            jobManager = new ClientSideJobManager(new String[] { "-s", "https://localhost:18443/gridsam/services/gridsam" }, ClientSideJobManager
-                    .getStandardOptions());
+            throw new RuntimeException("no jobManager found");
         }
         return jobManager;
     }
@@ -105,14 +104,25 @@ public class GridSAMResourceBrokerAdaptor extends ResourceBrokerCpi {
         }
 
         Map<String, Object> attributes = sd.getAttributes();
+        if (logger.isDebugEnabled()) {
+            logger.debug("prefs: " + preferences.toString());
+        }
+        Object tmp = preferences.get("ResourceBroker.jobmanagerContact");
+        if (tmp == null) {
+            logger.info("no url to gridsam web service set");
+            throw new GATInvocationException("no url to gridsam web service set");
+        }
+        String gridSAMWebServiceURL = (String) tmp;
+        if (logger.isInfoEnabled()) {
+            logger.info("using web services url '" + gridSAMWebServiceURL + "'");
+        }
 
         // TODO using attributes for this might be hardcore but for no I find it
         // OK - just want something running
-        ClientSideJobManager jobManager = null;
         JobInstance jobInstance = null;
         Sandbox sandbox = null;
         try {
-            jobManager = getJobManager();
+            jobManager = new ClientSideJobManager(new String[] {"-s", gridSAMWebServiceURL}, ClientSideJobManager.getStandardOptions());
 
             // TODO something usefull
             // jsdlFileName =
@@ -136,7 +146,7 @@ public class GridSAMResourceBrokerAdaptor extends ResourceBrokerCpi {
             logger.info("jobID = " + jobID);
 
         } catch (SubmissionException e) {
-            logger.error("Got submission exception", e);
+            logger.info("Got submission exception", e);
             throw new GATInvocationException("Unable to submit job to GridSAM server", e);
         } catch (JobManagerException e) {
             logger.error("gridSAM exception caught", e);
