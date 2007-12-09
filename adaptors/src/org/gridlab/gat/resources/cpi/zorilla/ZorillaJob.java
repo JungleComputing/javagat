@@ -266,6 +266,11 @@ public class ZorillaJob extends JobCpi {
             return UNKNOWN;
         }
     }
+    
+    @Override
+    public synchronized int getExitStatus() throws GATInvocationException {
+        return info.getExitStatus();
+    }
 
     void setInfo(JobInfo info) {
         synchronized(this) {
@@ -285,7 +290,7 @@ public class ZorillaJob extends JobCpi {
             int state = getState();
 
             if (state == lastState) {
-                // no need to do callback, no significant change
+                logger.debug("no need to do callback, no significant change");
                 return;
             }
             lastState = state;
