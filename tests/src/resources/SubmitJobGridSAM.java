@@ -2,6 +2,7 @@ package resources;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.ResourceBundle;
 
 import org.apache.log4j.Logger;
 import org.gridlab.gat.GAT;
@@ -10,9 +11,11 @@ import org.gridlab.gat.Preferences;
 import org.gridlab.gat.io.File;
 import org.gridlab.gat.monitoring.MetricListener;
 import org.gridlab.gat.monitoring.MetricValue;
+import org.gridlab.gat.resources.HardwareResourceDescription;
 import org.gridlab.gat.resources.Job;
 import org.gridlab.gat.resources.JobDescription;
 import org.gridlab.gat.resources.ResourceBroker;
+import org.gridlab.gat.resources.ResourceDescription;
 import org.gridlab.gat.resources.SoftwareDescription;
 
 public class SubmitJobGridSAM {
@@ -34,31 +37,38 @@ public class SubmitJobGridSAM {
         System.getProperties().setProperty("user.name", "mwi300");
         
         prefs.put("ResourceBroker.adaptor.name", "GridSAM");
-        prefs.put("File.adaptor.name", "Ssh, CommandlineSsh");
+        prefs.put("File.adaptor.name", "commandlinessh");
         prefs.put("ResourceBroker.jobmanagerContact", "https://localhost:18443/gridsam/services/gridsam");
         SoftwareDescription sd = new SoftwareDescription();
 //        sd.setLocation("https://" + args[0] + "/gridsam/services/gridsam");
         
         
-//        sd.setLocation("file:////home0/mwi300/sh/ec.sh");
-        sd.setLocation("file:////bin/sleep");
+        sd.setLocation("file:////home0/mwi300/sh/ec.sh");
+//        sd.setLocation("file:////bin/sleep");
         
-        sd.setArguments(new String[] {"15"});
+        sd.setArguments(new String[] {"3"});
         Map<String, Object> attributes = new HashMap<String, Object>();
-        attributes.put("maxCPUTime", "60");
-        attributes.put("maxMemory", "90");
+//        attributes.put("maxCPUTime", "60");
+//        attributes.put("maxMemory", "90");
         attributes.put("sandboxRoot", "/tmp");
 //        attributes.put("stdout", "in/outputFile");
-        File outputFile = GAT.createFile(context, "in/outputFile");
-//        sd.setStdout(outputFile);
-        sd.setAttributes(attributes );
+        File outputFile = GAT.createFile(context, prefs, "any:///outputFile");
+        File stdin = GAT.createFile(context, prefs, "any:///standardInput");
+//        File f3 = GAT.createFile(context, prefs, "/tmp/outputFile");
+        sd.setStdout(outputFile);
+        sd.setStdin(stdin);
+        sd.setAttributes(attributes);
 
-        File f = GAT.createFile(context, "/crypted_disk/home/wojciech/crypt/vu/RA/in");
-        File f2 = GAT.createFile(context, "/etc/passwd");
+        File f = GAT.createFile(context, prefs, "any:////crypted_disk/home/wojciech/crypt/vu/RA/inputFile");
+//        File f2 = GAT.createFile(context, prefs, "/etc/passwd");
         sd.addPreStagedFile(f);
-        sd.addPreStagedFile(f2);
+//        sd.addPreStagedFile(f2);
+//        sd.addPostStagedFile(outputFile);
+        
+        ResourceDescription rd = new HardwareResourceDescription();
+        rd.addResourceAttribute("machine.node", "fsBogus.das3.cs.vu.nl");
 
-        JobDescription jd = new JobDescription(sd);
+        JobDescription jd = new JobDescription(sd, rd);
         ResourceBroker broker = GAT.createResourceBroker(context, prefs);
 //        Job job = broker.submitJob(jd);
         Job job = broker.submitJob(jd, new GridSAMMetricListener(), "job.status");

@@ -6,6 +6,7 @@ import java.util.Map;
 
 import org.apache.log4j.Logger;
 import org.apache.xmlbeans.XmlException;
+import org.gridlab.gat.GAT;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.GATObjectCreationException;
@@ -35,6 +36,7 @@ public class GridSAMResourceBrokerAdaptor extends ResourceBrokerCpi {
     private static final String SANDBOX_ROOT = "sandboxRoot";
     private Logger logger = Logger.getLogger(GridSAMResourceBrokerAdaptor.class);
     private ClientSideJobManager jobManager;
+    private GridSAMConf gridSAMConf = new GridSAMConf();
 
     /**
      * This method constructs a LocalResourceBrokerAdaptor instance
@@ -93,10 +95,10 @@ public class GridSAMResourceBrokerAdaptor extends ResourceBrokerCpi {
      * @see org.gridlab.gat.resources.ResourceBroker#submitJob(org.gridlab.gat.resources.JobDescription)
      */
     public Job submitJob(JobDescription description, MetricListener listener, String metricDefinitionName) throws GATInvocationException {
-        long start = System.currentTimeMillis();
+//        long start = System.currentTimeMillis();
         SoftwareDescription sd = description.getSoftwareDescription();
 
-        GridSAMJSDLGenerator jsdlGenerator = new GridSAMJSDLGeneratorImpl();
+        GridSAMJSDLGenerator jsdlGenerator = new GridSAMJSDLGeneratorImpl(gridSAMConf);
 
         logger.info("starting job submit...");
 
@@ -104,27 +106,24 @@ public class GridSAMResourceBrokerAdaptor extends ResourceBrokerCpi {
             throw new GATInvocationException("The job description does not contain a software description");
         }
 
-        Map<String, Object> attributes = sd.getAttributes();
-        Object tmp = preferences.get("ResourceBroker.jobmanagerContact");
-        if (tmp == null) {
-            logger.info("no url to gridsam web service set");
-            throw new GATInvocationException("no url to gridsam web service set");
-        }
-        String gridSAMWebServiceURL = (String) tmp;
+        String gridSAMWebServiceURL = getGridSAMWebServiceURL(description);
+        String sandboxRoot = getSandboxRoot(description);
+        
         if (logger.isInfoEnabled()) {
-            logger.info("using web services url '" + gridSAMWebServiceURL + "'");
+            logger.info("url='" + gridSAMWebServiceURL + "'; sandboxRoot=" + sandboxRoot);
         }
 
-        // TODO using attributes for this might be hardcore but for no I find it
-        // OK - just want something running
         JobInstance jobInstance = null;
         Sandbox sandbox = null;
         try {
             jobManager = new ClientSideJobManager(new String[] {"-s", gridSAMWebServiceURL}, ClientSideJobManager.getStandardOptions());
+            
+            // we have to add stdin/stderr/stdout to staged files
+            addIOFiles(description);
 
-            sandbox = new Sandbox(gatContext, preferences, description, "das3.localhost:2280", getSandboxRoot(attributes), true, false, false, false);
-
-            String jsdl = jsdlGenerator.generate(sd, sandbox);
+            sandbox = new Sandbox(gatContext, preferences, description, "das3.localhost:2280", sandboxRoot, true, false, false, false);
+            
+            String jsdl = jsdlGenerator.generate(description, sandbox);
             JobDefinitionDocument jobDefinitionDocument = JobDefinitionDocument.Factory.parse(jsdl);
 
             if (logger.isDebugEnabled()) {
@@ -150,6 +149,8 @@ public class GridSAMResourceBrokerAdaptor extends ResourceBrokerCpi {
         } catch (XmlException e) {
             logger.error("unable to parse jsdl", e);
             throw new GATInvocationException("unable to parse jsdl", e);
+        } catch (GATObjectCreationException e) {
+            throw new GATInvocationException("unable to create IO files", e);
         }
 
         GridSAMJob job = new GridSAMJob(gatContext, preferences, description, sandbox, this, jobInstance);
@@ -161,9 +162,41 @@ public class GridSAMResourceBrokerAdaptor extends ResourceBrokerCpi {
         return job;
     }
 
-    private String getSandboxRoot(Map<String, Object> attributes) throws GATInvocationException {
-        Object tmp = attributes.get(SANDBOX_ROOT);
-        if (tmp == null) {
+    private void addIOFiles(JobDescription description) throws GATObjectCreationException {
+        SoftwareDescription sd = description.getSoftwareDescription();
+        if (sd.getStdin() != null) {
+            org.gridlab.gat.io.File stdin = GAT.createFile(gatContext, gridSAMConf.getJavaGATStdin());
+            sd.addPreStagedFile(sd.getStdin(), stdin);
+            sd.getAttributes().put("stdin", gridSAMConf.getJavaGATStdin());
+        }
+        
+        if (sd.getStdout() != null) {
+            org.gridlab.gat.io.File stdout = GAT.createFile(gatContext, gridSAMConf.getJavaGATStdout());
+            sd.addPostStagedFile(stdout, sd.getStdout());
+            sd.getAttributes().put("stdout", gridSAMConf.getJavaGATStdout());
+        }
+        
+        if (sd.getStderr() != null) {
+            org.gridlab.gat.io.File stderr = GAT.createFile(gatContext, gridSAMConf.getJavaGATStderr());
+            sd.addPostStagedFile(stderr, sd.getStderr());
+            sd.getAttributes().put("stderr", gridSAMConf.getJavaGATStderr());
+        }
+        
+    }
+
+    private String getGridSAMWebServiceURL(JobDescription description) throws GATInvocationException {
+        Map<String, Object> attributes = description.getSoftwareDescription().getAttributes();
+        Object url = preferences.get("ResourceBroker.jobmanagerContact");
+        if (url == null || ! (url instanceof String)) {
+            logger.info("no url to gridsam web service set");
+            throw new GATInvocationException("no url to gridsam web service set");
+        }
+        return (String) url;
+    }
+
+    private String getSandboxRoot(JobDescription description) throws GATInvocationException {
+        Object tmp = getAttribute(description, SANDBOX_ROOT);
+        if (tmp == null || ! (tmp instanceof String)) {
             logger.info("unable to get sandbox root directory");
             throw new GATInvocationException("unable to get sandbox root directory");
         }
@@ -172,10 +205,14 @@ public class GridSAMResourceBrokerAdaptor extends ResourceBrokerCpi {
             logger.info("sandboxRoot has to be an absolute path");
             throw new GATInvocationException("sandboxRoot has to be an absolute path");
         }
-        if (logger.isDebugEnabled()) {
-            logger.debug("got sandboxRoot: " + tmp.toString());
-        }
         return tmp.toString();
+    }
+
+    private Object getAttribute(JobDescription description, String name) {
+        if (description.getSoftwareDescription().getAttributes() == null) {
+            return null;
+        }
+        return description.getSoftwareDescription().getAttributes().get(name);
     }
 
     /*

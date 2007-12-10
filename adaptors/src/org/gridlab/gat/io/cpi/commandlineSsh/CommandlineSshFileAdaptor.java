@@ -360,9 +360,6 @@ public class CommandlineSshFileAdaptor extends FileCpi {
                         + src.getPath() + "/* " + sui.username + "@"
                         + dest.resolveHost() + ":" + dest.getPath();
             } else {
-                if (logger.isDebugEnabled()) {
-                    logger.debug("determineIsDirectory(): false");
-                }
                 command = "scp "
                         + "-o BatchMode=yes -o StrictHostKeyChecking=yes -P " + SSH_PORT + " "
                         + src.getPath() + " " + sui.username + "@"

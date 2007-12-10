@@ -130,7 +130,7 @@ public class GridSAMJob extends JobCpi {
 
     private Logger logger = Logger.getLogger(GridSAMJob.class);
 
-    private int exitVal = 0;
+    private int exitVal = -1;
 
     private MetricDefinition statusMetricDefinition;
 
@@ -149,8 +149,13 @@ public class GridSAMJob extends JobCpi {
 
     private PollingThread pollingThread;
 
+    private long startTime;
+    private long stopTime;
+    
+
     public GridSAMJob(GATContext gatContext, Preferences preferences, JobDescription jobDescription, Sandbox sandbox, GridSAMResourceBrokerAdaptor gridSAMResourceBrokerAdaptor, JobInstance jobInstance) {
         super(gatContext, preferences, jobDescription, sandbox);
+        startTime = System.currentTimeMillis();
         
         this.jobInstance = jobInstance;
         this.jobID = jobInstance.getID();
@@ -200,11 +205,18 @@ public class GridSAMJob extends JobCpi {
      * @see org.gridlab.gat.resources.Job#getInfo()
      */
     public synchronized Map<String, Object> getInfo() throws GATInvocationException {
+        getState();
         HashMap<String, Object> m = new HashMap<String, Object>();
 
         getState();
         m.put("state", state);
-        m.put("", null);
+        m.put("starttime", Long.toString(startTime));
+        if (stopTime > 0) {
+            m.put("stopTime", Long.toString(stopTime));
+        }
+        if (exitVal != -1) {
+            m.put("exitValue", Integer.toString(exitVal));
+        }
         
         return m;
     }

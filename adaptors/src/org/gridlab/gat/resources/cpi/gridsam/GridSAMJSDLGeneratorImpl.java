@@ -3,20 +3,105 @@ package org.gridlab.gat.resources.cpi.gridsam;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
+import org.globus.cas.types.AddTrustAnchor;
 import org.gridlab.gat.io.File;
+import org.gridlab.gat.resources.JobDescription;
+import org.gridlab.gat.resources.ResourceDescription;
 import org.gridlab.gat.resources.SoftwareDescription;
 import org.gridlab.gat.resources.cpi.Sandbox;
 
+import ch.ethz.ssh2.crypto.cipher.DES;
+
 public class GridSAMJSDLGeneratorImpl implements GridSAMJSDLGenerator {
 
+    private static final String MAX_MEMORY_ATTRIBUTE = "maxMemory";
+    private static final String MAX_CPU_TIME_ATTRIBUTE = "maxCPUTime";
+    private static final String STDIN_ATTRIBUTE = "stdin";
+    private static final String SLASH = "/";
+    private static final String STDERR_ATTRIBUTE = "stderr";
+    private static final String STDOUT_ATTRIBUTE = "stdout";
+    
+    private String javaGatStdin;
+    private String javaGatStdout;
+    private String javaGatStderr;
+
+    private enum DataStageType {
+        SOURCE("Source"),
+        TARGET("Target");
+        
+        private String name;
+        
+        DataStageType(String name) {
+            this.name = name;
+        }
+        
+        public String toString() {
+            return name;
+        }
+        
+    }
+    
+    public GridSAMJSDLGeneratorImpl(GridSAMConf conf) {
+        javaGatStdin = conf.getJavaGATStdin();
+        javaGatStdout = conf.getJavaGATStdout();
+        javaGatStderr = conf.getJavaGATStderr();
+    }
+    
     private Logger logger = Logger.getLogger(GridSAMJSDLGeneratorImpl.class);
 
-    public String generate(SoftwareDescription sd, Sandbox sandbox) {
+    public String generate(JobDescription description, Sandbox sandbox) {
+        SoftwareDescription sd = description.getSoftwareDescription();
         StringBuilder builder = new StringBuilder();
         addBegin(builder);
         addApplication(builder, sd, sandbox);
+        addResource(builder, description, sandbox);
+        addDataStaging(builder, sd, sandbox);
         addEnd(builder);
+        
         return builder.toString();
+    }
+
+    private StringBuilder addResource(StringBuilder builder, JobDescription description, Sandbox sandbox) {
+
+        ResourceDescription rd = description.getResourceDescription();
+        if (rd == null) {
+            if (logger.isDebugEnabled()) {
+                logger.debug("resourceDescription is null, not adding <Resources> tag");
+            }
+            return builder;
+        }
+        StringBuilder tmp = new StringBuilder();
+        
+        Object res = rd.getResourceAttribute("machine.node"); 
+        if (res != null) {
+            String hosts[] = null;
+            if (res instanceof String) {
+                hosts = new String[] {(String) res};
+            } else if (res instanceof String[]) {
+                hosts = (String[]) res;
+            } else {
+                logger.warn("unknown machine.node type...");
+                return builder;
+            }
+            
+            for (String host: hosts) {
+                addSimpleTag(tmp, "HostName", host);
+            }
+        }
+        
+        // we have added something, so we have to add Resource tag
+        if (tmp.length() > 0) {
+            builder.append("<Resources><CandidateHosts>");
+            builder.append(tmp);
+            builder.append("</CandidateHosts></Resources>");
+        } else {
+            if (logger.isDebugEnabled()) {
+                logger.debug("did not found any properties to use, not adding <Resources> tag");
+            }
+        }
+        
+        return builder;
+        
     }
 
     private StringBuilder addBegin(StringBuilder builder) {
@@ -51,26 +136,25 @@ public class GridSAMJSDLGeneratorImpl implements GridSAMJSDLGenerator {
                 builder.append("<Argument>").append(argument).append("</Argument>");
             }
         }
-
         Map<String, Object> attrs = sd.getAttributes();
-        // add output
-        String tmp = (String) attrs.get("stdout");
+        
+        // add error output
+        String tmp = (String) attrs.get(STDERR_ATTRIBUTE);
         if (tmp != null) {
-            builder.append("<Output>").append(tmp).append("</Output>");
+            addSimpleTag(builder, "Error", javaGatStderr);
         }
         
-        builder.append("<WorkingDirectory>").append("/home0/mwi300").append("</WorkingDirectory>");
-
         // add input
-        tmp = (String) attrs.get("stdin");
+        tmp = (String) attrs.get(STDIN_ATTRIBUTE);
         if (tmp != null) {
-            builder.append("<Input>").append(tmp).append("</Input>");
+            addSimpleTag(builder, "Input", javaGatStdin);
+            
         }
 
-        // add error output
-        tmp = (String) attrs.get("stderr");
+        // add output
+        tmp = (String) attrs.get(STDOUT_ATTRIBUTE);
         if (tmp != null) {
-            builder.append("<Error>").append(tmp).append("</Error>");
+            addSimpleTag(builder, "Output", javaGatStdout);
         }
 
         Map env = (Map) attrs.get("environment");
@@ -85,17 +169,23 @@ public class GridSAMJSDLGeneratorImpl implements GridSAMJSDLGenerator {
 
         builder.append("</POSIXApplication></Application>");
         
-        
-        // this is really wired!!!
-        Map<File, File> preStaged = sd.getPreStaged();
-        if (preStaged != null && preStaged.size() > 0) {
-                builder.append("<DataStaging>");
-                builder.append("<FileName>").append(".").append("</FileName>");
-                builder.append("<CreationFlag>overwrite</CreationFlag><DeleteOnTermination>true</DeleteOnTermination>");
-                builder.append("<Source><URI>").append(sandbox.getSandbox()).append("</URI></Source>");
-                builder.append("</DataStaging>");
-        }
+        return builder;
+    }
+    
+    private StringBuilder addDataStage(StringBuilder builder, String fileName, DataStageType type, String uri, boolean deleteOnTermination) {
+        builder.append("<DataStaging>");
+        builder.append("<FileName>").append(fileName).append("</FileName>");
+        builder.append("<CreationFlag>overwrite</CreationFlag><DeleteOnTermination>").append(deleteOnTermination ? "true" : "false").append("</DeleteOnTermination>");
+        builder.append("<").append(type).append("><URI>").append(uri).append("</URI></").append(type).append(">");
+        builder.append("</DataStaging>");
+        return builder;
+    }
 
+    private StringBuilder addDataStaging(StringBuilder builder, SoftwareDescription sd, Sandbox sandbox) {
+        
+        // copy whole sandbox
+        addDataStage(builder, ".", DataStageType.SOURCE, sandbox.getSandbox(), true);
+        
         // we have to copy all the files back by ourselves
         Map<File, File> postStaged = sd.getPostStaged();
         for (File file: postStaged.keySet()) {
@@ -103,12 +193,7 @@ public class GridSAMJSDLGeneratorImpl implements GridSAMJSDLGenerator {
                 // we don't have to move absolute files
                 continue;
             }
-            builder.append("<DataStaging>");
-            addTag(builder, "FileName", file.getPath());
-//            builder.append("<FileName>").append(file.getPath()).append("</FileName>");
-            builder.append("<CreationFlag>overwrite</CreationFlag><DeleteOnTermination>false</DeleteOnTermination>");
-            builder.append("<Target><URI>").append(sandbox.getSandbox() + "/" + file.getPath()).append("</URI></Target>");
-            builder.append("</DataStaging>");
+            addDataStage(builder, file.getPath(), DataStageType.TARGET, sandbox.getSandbox() + SLASH + file.getPath(), true);
         }
         return builder;
     }
@@ -122,15 +207,15 @@ public class GridSAMJSDLGeneratorImpl implements GridSAMJSDLGenerator {
     private void addLimitsInfo(StringBuilder builder, SoftwareDescription sd) {
         Map<String, Object> attrs = sd.getAttributes();
         
-        if (attrs.get("maxCPUTime") != null) {
-            addTag(builder,"CPUTimeLimit", attrs.get("maxCPUTime"));
+        if (attrs.get(MAX_CPU_TIME_ATTRIBUTE) != null) {
+            addSimpleTag(builder,"CPUTimeLimit", attrs.get(MAX_CPU_TIME_ATTRIBUTE));
         }
-        if (attrs.get("maxMemory") != null) {
-            addTag(builder, "MemoryLimit", attrs.get("maxMemory"));
+        if (attrs.get(MAX_MEMORY_ATTRIBUTE) != null) {
+            addSimpleTag(builder, "MemoryLimit", attrs.get(MAX_MEMORY_ATTRIBUTE));
         }
     }
     
-    private StringBuilder addTag(StringBuilder builder, String tagName, Object tagValue) {
+    private StringBuilder addSimpleTag(StringBuilder builder, String tagName, Object tagValue) {
         builder.append("<").append(tagName).append(">").append(tagValue.toString()).append("</").append(tagName).append(">");
         return builder;
     }
