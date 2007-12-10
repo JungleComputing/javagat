@@ -43,6 +43,69 @@ public class CommandlineSshFileAdaptor extends FileCpi {
         if (osname.startsWith("Windows"))
             windows = true;
     }
+    
+    private boolean runSshCommand(String params) throws GATInvocationException {
+        return runSshCommand(params, false);
+    }
+    
+    /* if second parameter is true than stderr will be written to log4j (it is for commands where
+     * we think that failing is an error (like mkdir)
+    */ 
+    private boolean runSshCommand(String params, boolean writeError) throws GATInvocationException {
+        String command = getSshCommand() + params;
+        CommandRunner runner = new CommandRunner(command.toString());
+        if (logger.isDebugEnabled()) {
+            logger.debug("running command = " + command);
+        }
+        int exitVal = runner.getExitCode();
+        if (logger.isDebugEnabled()) {
+            logger.debug("exitCode=" + exitVal);
+        }
+        if (exitVal > 1) {
+            // bigger than 1 means ssh error and not false as command response
+            throw new GATInvocationException("invocation error");
+        }
+        if (exitVal == 1 && writeError) {
+            if (logger.isInfoEnabled()) {
+                logger.info("command failed, error=" + runner.getStderr());
+            }
+        }
+        return exitVal == 0;
+    }
+    
+
+    /* [wojciech]
+     * 
+     * Those four methods work for *nix system on the other side
+     * 
+     * Merge into trunk only if you really want to :).
+     */
+    
+
+    @Override
+    public boolean mkdir() throws GATInvocationException {
+        return runSshCommand("/bin/mkdir " + getPath(), true);
+    }
+
+    @Override
+    public boolean delete() throws GATInvocationException {
+        return runSshCommand("rm -rf " + getPath(), true);
+    }
+    
+    @Override
+    public boolean isDirectory() throws GATInvocationException {
+        return runSshCommand("find -type d " + getPath());
+    }
+    
+    @Override
+    public boolean exists() throws GATInvocationException {
+        return runSshCommand("find " + getPath());
+    }
+
+// TODO [wojciech] add some sense here
+    private String getSshCommand() throws GATInvocationException {
+        return "ssh das3 ";
+    }
 
     /**
      * This method copies the physical file represented by this File instance to
