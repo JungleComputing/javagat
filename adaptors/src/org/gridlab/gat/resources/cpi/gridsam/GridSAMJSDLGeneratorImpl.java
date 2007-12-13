@@ -3,14 +3,11 @@ package org.gridlab.gat.resources.cpi.gridsam;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
-import org.globus.cas.types.AddTrustAnchor;
 import org.gridlab.gat.io.File;
 import org.gridlab.gat.resources.JobDescription;
 import org.gridlab.gat.resources.ResourceDescription;
 import org.gridlab.gat.resources.SoftwareDescription;
 import org.gridlab.gat.resources.cpi.Sandbox;
-
-import ch.ethz.ssh2.crypto.cipher.DES;
 
 public class GridSAMJSDLGeneratorImpl implements GridSAMJSDLGenerator {
 
