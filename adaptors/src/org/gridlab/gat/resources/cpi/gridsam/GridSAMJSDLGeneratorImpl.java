@@ -207,11 +207,11 @@ public class GridSAMJSDLGeneratorImpl implements GridSAMJSDLGenerator {
     private void addLimitsInfo(StringBuilder builder, SoftwareDescription sd) {
         Map<String, Object> attrs = sd.getAttributes();
         
-        if (attrs.get(MAX_CPU_TIME_ATTRIBUTE) != null) {
-            addSimpleTag(builder,"CPUTimeLimit", attrs.get(MAX_CPU_TIME_ATTRIBUTE));
-        }
         if (attrs.get(MAX_MEMORY_ATTRIBUTE) != null) {
             addSimpleTag(builder, "MemoryLimit", attrs.get(MAX_MEMORY_ATTRIBUTE));
+        }
+        if (attrs.get(MAX_CPU_TIME_ATTRIBUTE) != null) {
+            addSimpleTag(builder,"CPUTimeLimit", attrs.get(MAX_CPU_TIME_ATTRIBUTE));
         }
     }
     
