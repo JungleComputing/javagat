@@ -157,8 +157,7 @@ public class GridSAMJSDLGeneratorImpl implements GridSAMJSDLGenerator {
         Map env = (Map) attrs.get("environment");
         if (env != null) {
             for (Object eo : env.keySet()) {
-                String key = (String) eo;
-                builder.append("<Environment>").append(env.get(key)).append("</Environment>");
+                builder.append("<Environment name=\"").append(eo.toString()).append("\">").append(env.get(eo).toString()).append("</Environment>");
             }
         }
         

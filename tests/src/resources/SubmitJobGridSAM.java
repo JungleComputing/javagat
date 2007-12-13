@@ -2,12 +2,12 @@ package resources;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.ResourceBundle;
 
 import org.apache.log4j.Logger;
 import org.gridlab.gat.GAT;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.Preferences;
+import org.gridlab.gat.URI;
 import org.gridlab.gat.io.File;
 import org.gridlab.gat.monitoring.MetricListener;
 import org.gridlab.gat.monitoring.MetricValue;
@@ -38,6 +38,7 @@ public class SubmitJobGridSAM {
         
         prefs.put("ResourceBroker.adaptor.name", "GridSAM");
         prefs.put("File.adaptor.name", "commandlinessh");
+//        prefs.put("File.adaptor.name", "ssh");
         prefs.put("ResourceBroker.jobmanagerContact", "https://localhost:18443/gridsam/services/gridsam");
         SoftwareDescription sd = new SoftwareDescription();
 //        sd.setLocation("https://" + args[0] + "/gridsam/services/gridsam");
@@ -48,18 +49,24 @@ public class SubmitJobGridSAM {
         
         sd.setArguments(new String[] {"3"});
         Map<String, Object> attributes = new HashMap<String, Object>();
-//        attributes.put("maxCPUTime", "60");
-//        attributes.put("maxMemory", "90");
+        attributes.put("maxCPUTime", "60");
+        attributes.put("maxMemory", "90");
         attributes.put("sandboxRoot", "/tmp");
+        
+        Map<String, Object> env = new HashMap<String, Object>();
+        env.put("ENV1", "env1val");
+        env.put("GRIDSAMISCOOL", "no");
+        env.put("ENV2", 12);
+        attributes.put("environment", env);
 //        attributes.put("stdout", "in/outputFile");
-        File outputFile = GAT.createFile(context, prefs, "any:///outputFile");
-        File stdin = GAT.createFile(context, prefs, "any:///standardInput");
+        File outputFile = GAT.createFile(context, new URI("any:///outputFile"));
+        File stdin = GAT.createFile(context, new URI("any:///standardInput"));
 //        File f3 = GAT.createFile(context, prefs, "/tmp/outputFile");
         sd.setStdout(outputFile);
         sd.setStdin(stdin);
         sd.setAttributes(attributes);
 
-        File f = GAT.createFile(context, prefs, "any:////crypted_disk/home/wojciech/crypt/vu/RA/inputFile");
+        File f = GAT.createFile(context, new URI("any:////crypted_disk/home/wojciech/crypt/vu/RA/inputFile"));
 //        File f2 = GAT.createFile(context, prefs, "/etc/passwd");
         sd.addPreStagedFile(f);
 //        sd.addPreStagedFile(f2);
