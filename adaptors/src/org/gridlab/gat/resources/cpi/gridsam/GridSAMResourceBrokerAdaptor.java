@@ -121,7 +121,7 @@ public class GridSAMResourceBrokerAdaptor extends ResourceBrokerCpi {
             // we have to add stdin/stderr/stdout to staged files
             addIOFiles(description);
 
-            sandbox = new Sandbox(gatContext, preferences, description, "das3.localhost:2280", sandboxRoot, true, false, false, false);
+            sandbox = new Sandbox(gatContext, preferences, description, "das3", sandboxRoot, true, false, false, false);
             
             String jsdl = jsdlGenerator.generate(description, sandbox);
             JobDefinitionDocument jobDefinitionDocument = JobDefinitionDocument.Factory.parse(jsdl);

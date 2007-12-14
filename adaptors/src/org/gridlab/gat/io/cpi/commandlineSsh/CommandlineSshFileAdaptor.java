@@ -49,7 +49,7 @@ public class CommandlineSshFileAdaptor extends FileCpi {
     }
     
     /* if second parameter is true than stderr will be written to log4j (it is for commands where
-     * we think that failing is an error (like mkdir)
+     * we think that failing is an error (like mkdir))
     */ 
     private boolean runSshCommand(String params, boolean writeError) throws GATInvocationException {
         String command = getSshCommand() + params;
@@ -84,27 +84,57 @@ public class CommandlineSshFileAdaptor extends FileCpi {
 
     @Override
     public boolean mkdir() throws GATInvocationException {
+        if (location.refersToLocalHost()) {
+            if (logger.isDebugEnabled()) {
+                logger.debug("location=" + location + " refers to local in mkdir");
+            }
+            return new java.io.File(location.getPath()).mkdir();
+        }
         return runSshCommand("/bin/mkdir " + getPath(), true);
     }
 
     @Override
     public boolean delete() throws GATInvocationException {
+        if (location.refersToLocalHost()) {
+            if (logger.isDebugEnabled()) {
+                logger.debug("location=" + location + " refers to local in delete");
+            }
+            return new java.io.File(location.getPath()).delete();
+        }
         return runSshCommand("rm -rf " + getPath(), true);
     }
     
     @Override
     public boolean isDirectory() throws GATInvocationException {
-        return runSshCommand("find -type d " + getPath());
+        if (1 < 2) {
+            return false;
+        }
+        if (logger.isDebugEnabled()) {
+            logger.debug("isDirectory() called");
+        }
+        if (location.refersToLocalHost()) {
+            if (logger.isDebugEnabled()) {
+                logger.debug("location=" + location + " refers to local in isDirectory");
+            }
+            return new java.io.File(location.getPath()).isDirectory();
+        }
+        return runSshCommand("find " + getPath() + " -type d");
     }
     
     @Override
     public boolean exists() throws GATInvocationException {
+        if (location.refersToLocalHost()) {
+            if (logger.isDebugEnabled()) {
+                logger.debug("location=" + location + " refers to local in exists");
+            }
+            return new java.io.File(location.getPath()).exists();
+        }
         return runSshCommand("find " + getPath());
     }
 
 // TODO [wojciech] add some sense here
     private String getSshCommand() throws GATInvocationException {
-        return "ssh das3 ";
+        return "ssh " + location.resolveHost() + " ";
     }
 
     /**
@@ -252,7 +282,7 @@ public class CommandlineSshFileAdaptor extends FileCpi {
                         + src.getPath() + "/* " + dest.getPath();
             } else {
                 command = "scp "
-                        + "-o BatchMode=yes -o StrictHostKeyChecking=yes -P " + src.getPort() + " "
+                        + "-o BatchMode=yes -o StrictHostKeyChecking=yes "
                         + sui.username + "@" + src.resolveHost() + ":"
                         + src.getPath() + " " + dest.getPath();
             }
@@ -356,12 +386,12 @@ public class CommandlineSshFileAdaptor extends FileCpi {
                 }
 
                 command = "scp -r "
-                        + "-o BatchMode=yes -o StrictHostKeyChecking=yes -P " + SSH_PORT + " "
+                        + "-o BatchMode=yes -o StrictHostKeyChecking=yes "
                         + src.getPath() + "/* " + sui.username + "@"
                         + dest.resolveHost() + ":" + dest.getPath();
             } else {
                 command = "scp "
-                        + "-o BatchMode=yes -o StrictHostKeyChecking=yes -P " + SSH_PORT + " "
+                        + "-o BatchMode=yes -o StrictHostKeyChecking=yes "
                         + src.getPath() + " " + sui.username + "@"
                         + dest.resolveHost() + ":" + dest.getPath();
             }

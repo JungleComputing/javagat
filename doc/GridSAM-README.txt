@@ -4,6 +4,9 @@ Index:
 	2. Parameters outside javagat
 	3. Double sandbox
 	4. GridSAM and OMII version tested to work with the adapter:
+	5. Required/supported properties/preferences
+	6. How to run?
+	7. What does not work
 
 
 1. Prerequisites
@@ -56,7 +59,17 @@ Supported:
 		maybe other attributes are easy to translate as well - support for them needs to be added to org.gridlab.gat.resources.cpi.gridsam.GridSAMJSDLGeneratorImpl class
 
 
+6. How to run?
+The best start is to run the resources.SubmitJobGridSAM class through JavaGAT. It connects with GridSAM server installed on fs0.das3.cs.vu.nl:18443 but through a tunnel so it might be advisable to change the address.
+The output is saved in outputFile in the directory where the file was run.
+IMPORTANT: For now hostname for sandbox is hardcoded. Please change it in GridSAMResourceBroker in line 124 (sandbox creation where "das3" is hardcoded). 
+
+
+7. What does not work
+- ssh and sftp file adapter
+- errors in commandlineSshFileAdapter - isDirectory returns false because it didn't work...
+
 
 TODO:
-- test: job stopping; don't fire STOPPED before files are staged out
 - find the cause of ssh file adapter problem (hard) - try getting to an earlier revision - maybe it worked
+- take a look at GridSAM change listener - maybe we can use it for metric measurements (without separate thread)
