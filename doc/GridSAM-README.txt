@@ -63,7 +63,6 @@ Supported:
 6. How to run (having OMII client already installed)?
 The best start is to run the resources.SubmitJobGridSAM class through JavaGAT. It connects with GridSAM server installed on fs0.das3.cs.vu.nl:18443 but through a tunnel so it might be advisable to change the address.
 The output is saved in outputFile in the directory where the file was run.
-IMPORTANT: For now hostname for sandbox is hardcoded. Please change it in GridSAMResourceBroker in line 124 (sandbox creation where "das3" is hardcoded).
 
 OMII server is installed on mwi300@fs0.das3.cs.vu.nl - feel free to change things there.  
 
