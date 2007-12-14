@@ -59,4 +59,4 @@ Supported:
 
 TODO:
 - test: job stopping; don't fire STOPPED before files are staged out
-- find the cause of ssh file adapter problem (hard)
+- find the cause of ssh file adapter problem (hard) - try getting to an earlier revision - maybe it worked
