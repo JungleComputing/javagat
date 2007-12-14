@@ -14,10 +14,14 @@ import org.gridlab.gat.engine.util.OutputForwarder;
 import org.gridlab.gat.monitoring.Metric;
 import org.gridlab.gat.monitoring.MetricDefinition;
 import org.gridlab.gat.monitoring.MetricValue;
+import org.gridlab.gat.resources.Job;
 import org.gridlab.gat.resources.JobDescription;
 import org.gridlab.gat.resources.cpi.JobCpi;
 import org.gridlab.gat.resources.cpi.Sandbox;
+import org.icenigrid.gridsam.core.ConfigurationException;
+import org.icenigrid.gridsam.core.ControlException;
 import org.icenigrid.gridsam.core.JobInstance;
+import org.icenigrid.gridsam.core.JobManager;
 import org.icenigrid.gridsam.core.JobManagerException;
 import org.icenigrid.gridsam.core.JobStage;
 import org.icenigrid.gridsam.core.JobState;
@@ -29,6 +33,8 @@ public class GridSAMJob extends JobCpi {
         private Logger logger = Logger.getLogger(PollingThread.class);
 
         private GridSAMJob parent;
+        
+        JobState currentGridSAMJobState = null;
         
         // how many events have we fired already ?
         private int firedEventCount = 0;
@@ -84,15 +90,14 @@ public class GridSAMJob extends JobCpi {
                 }
                 
                 List stages = jobInstance.getJobStages();
-                if (stages.size() > firedEventCount) {
+                if (! isStopped && stages.size() > firedEventCount) {
                     // there are some event that were not fired (and we don't know about)
                     // lets get that knowledge :)
                     
                     // first we set the new current state - the sooner the better
-                    int currentState = translateState(jobInstance.getLastKnownStage().getState());
-                    setState(currentState);
-                    
-                    
+                    currentGridSAMJobState = jobInstance.getLastKnownStage().getState();
+                    int currentJavaGATJobState = translateState(currentGridSAMJobState);
+                    setState(currentJavaGATJobState);
 
                     /* and now we fire the event for each of the states we have found
                     * we can get ith element because:
@@ -106,11 +111,14 @@ public class GridSAMJob extends JobCpi {
                     // finally we set that we have fired every event
                     firedEventCount = stages.size();
                     
-                    if (currentState == STOPPED || currentState == SUBMISSION_ERROR) {
+                    if (isFinishedState(currentGridSAMJobState)) {
                         break;
                     }
-                    
                 }
+                if (isStopped) {
+                    break;
+                }
+                
 
                 try {
                     Thread.sleep(1000);
@@ -122,8 +130,11 @@ public class GridSAMJob extends JobCpi {
      
                 
             }
-            if (logger.isDebugEnabled()) {
-                logger.debug("polling thread exiting, job's finished");
+            if (isFinishedState(currentGridSAMJobState)) {
+                if (logger.isDebugEnabled()) {
+                    logger.debug("polling thread exiting, gridsam job is finished");
+                }
+                setFinished();
             }
         }
     }
@@ -139,12 +150,9 @@ public class GridSAMJob extends JobCpi {
     private JobInstance jobInstance;
     
     private String jobID;
-
-    // TODO [wojciech] do sth about those forwarders...
-    private OutputForwarder out;
-
-    private OutputForwarder err;
     
+    private volatile boolean isStopped = false;
+
     private GridSAMResourceBrokerAdaptor adaptor;
 
     private PollingThread pollingThread;
@@ -174,13 +182,17 @@ public class GridSAMJob extends JobCpi {
         pollingThread.start();
     }
     
+    private boolean isFinishedState(JobState jobState) {
+        return jobState == JobState.DONE || jobState == JobState.TERMINATED || jobState == JobState.FAILED;
+    }
+    
     private int translateState(JobState jobState) {
         if (jobState == JobState.ACTIVE) {
             return RUNNING;
         } else if (jobState == JobState.DONE) {
-            return STOPPED;
+            return POST_STAGING;
         } else if (jobState == JobState.EXECUTED) {
-            return STOPPED;
+            return POST_STAGING;
         } else if (jobState == JobState.FAILED) {
             return SUBMISSION_ERROR;
         } else if (jobState == JobState.PENDING) {
@@ -190,7 +202,7 @@ public class GridSAMJob extends JobCpi {
         } else if (jobState == JobState.STAGED_OUT || jobState == JobState.STAGING_OUT) {
             return POST_STAGING;
         } else if (jobState == JobState.TERMINATED) {
-            return STOPPED;
+            return POST_STAGING;
         } else if (jobState == JobState.UNDEFINED) {
             return UNKNOWN;
         } else {
@@ -250,8 +262,12 @@ public class GridSAMJob extends JobCpi {
     public String getJobID() throws GATInvocationException {
         return jobID;
     }
-
-    public void stop() throws GATInvocationException {
+    
+    private boolean isStillRunning() {
+        return false;
+    }
+    
+    void setFinished() {
         MetricValue v = null;
 
         synchronized (this) {
@@ -265,14 +281,66 @@ public class GridSAMJob extends JobCpi {
         GATEngine.fireMetric(this, v);
 
         sandbox.retrieveAndCleanup(this);
+        isStopped = true;
 
         synchronized (this) {
             state = STOPPED;
             v = new MetricValue(this, getStateString(state), statusMetric, System.currentTimeMillis());
         }
 
+        GATEngine.fireMetric(this, v);
+        finished();
+    }
+
+    public void stop() throws GATInvocationException {
+
+        if (isStillRunning()) {
+            if (logger.isDebugEnabled()) {
+                logger.debug("job is still running, trying to terminate it");
+            }
+            
+            JobManager jobManager = null;
+            try {
+                jobManager = adaptor.getJobManager();
+            } catch (ConfigurationException e) {
+                logger.error("unable to get jobManager. Shouldn't have happened");
+                throw new GATInvocationException("unable to get jobManager. Shouldn't have happened");
+            }
+            try {
+                jobManager.terminateJob(jobID);
+            } catch (JobManagerException e) {
+                logger.error("unable to terminate job with id=" + jobID, e);
+                throw new GATInvocationException("unable to terminate job with id=" + jobID, e);
+            } catch (ControlException e) {
+                logger.error("unable to terminate job with id=" + jobID, e);
+                throw new GATInvocationException("unable to terminate job with id=" + jobID, e);
+            } catch (UnknownJobException e) {
+                logger.error("unable to terminate job with id=" + jobID, e);
+                throw new GATInvocationException("unable to terminate job with id=" + jobID, e);
+            }
+            if (logger.isDebugEnabled()) {
+                logger.debug("job with id=" + jobID + " successfully terminated");
+            }
+        }
+        
+        MetricValue v = null;
+
+        synchronized (this) {
+            state = POST_STAGING;
+            v = new MetricValue(this, getStateString(state), statusMetric, System.currentTimeMillis());
+        }
+        
         if (logger.isDebugEnabled()) {
             logger.debug("default job callback: firing event: " + v);
+        }
+        GATEngine.fireMetric(this, v);
+
+        sandbox.retrieveAndCleanup(this);
+        isStopped = true;
+
+        synchronized (this) {
+            state = STOPPED;
+            v = new MetricValue(this, getStateString(state), statusMetric, System.currentTimeMillis());
         }
 
         GATEngine.fireMetric(this, v);
