@@ -1,6 +1,8 @@
 package org.gridlab.gat.resources.cpi.gridsam;
 
 import java.io.File;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.List;
 import java.util.Map;
 
@@ -121,7 +123,12 @@ public class GridSAMResourceBrokerAdaptor extends ResourceBrokerCpi {
             // we have to add stdin/stderr/stdout to staged files
             addIOFiles(description);
 
-            sandbox = new Sandbox(gatContext, preferences, description, "das3", sandboxRoot, true, false, false, false);
+            // standard getHostname(JobDescription description) method failse for URLs with port number in it...
+            String sandboxHostname = getHostname(gridSAMWebServiceURL);
+            if (logger.isDebugEnabled()) {
+                logger.debug("host used for file staging is " + sandboxHostname);
+            }
+            sandbox = new Sandbox(gatContext, preferences, description, sandboxHostname, sandboxRoot, true, false, false, false);
             
             String jsdl = jsdlGenerator.generate(description, sandbox);
             JobDefinitionDocument jobDefinitionDocument = JobDefinitionDocument.Factory.parse(jsdl);
@@ -160,6 +167,22 @@ public class GridSAMResourceBrokerAdaptor extends ResourceBrokerCpi {
         }
 
         return job;
+    }
+
+    private String getHostname(String gridSAMWebServiceURL) throws GATInvocationException {
+        try {
+            URI u = new URI(gridSAMWebServiceURL);
+            String host = u.getHost();
+            if (host == null || host.length() == 0) {
+                logger.error("unable to get hostname from url, url=" + gridSAMWebServiceURL);
+                throw new GATInvocationException("unable to get hostname from url, url=" + gridSAMWebServiceURL);
+            }
+            return host;
+        } catch (URISyntaxException e) {
+            logger.error("unable to get hostname from url, url=" + gridSAMWebServiceURL, e);
+            throw new GATInvocationException("unable to get hostname from url, url=" + gridSAMWebServiceURL, e);
+        }
+        
     }
 
     private void addIOFiles(JobDescription description) throws GATObjectCreationException {
