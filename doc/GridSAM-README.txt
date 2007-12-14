@@ -14,6 +14,7 @@ Index:
 - run sample gridsam application (without file staging - sleep.jsdl is enough) from tutorial
 - check that gridsam-status application is working for the sleep task
 
+Please remember that GridSAM client does not work with java 1.6.
 
 2. Parameters outside javagat
 GridSAM needs property file (called crypto.properties) to run. Without this file gridsam is unable to use ssl and will fail. If you want to use gridsam adapter with JavaGAT make sure that crypto.properties file is included in JavaGAT running classpath. This file contains information about OMII keys and can be found in $OMII/conf/ directory.
@@ -59,16 +60,17 @@ Supported:
 		maybe other attributes are easy to translate as well - support for them needs to be added to org.gridlab.gat.resources.cpi.gridsam.GridSAMJSDLGeneratorImpl class
 
 
-6. How to run?
+6. How to run (having OMII client already installed)?
 The best start is to run the resources.SubmitJobGridSAM class through JavaGAT. It connects with GridSAM server installed on fs0.das3.cs.vu.nl:18443 but through a tunnel so it might be advisable to change the address.
 The output is saved in outputFile in the directory where the file was run.
-IMPORTANT: For now hostname for sandbox is hardcoded. Please change it in GridSAMResourceBroker in line 124 (sandbox creation where "das3" is hardcoded). 
+IMPORTANT: For now hostname for sandbox is hardcoded. Please change it in GridSAMResourceBroker in line 124 (sandbox creation where "das3" is hardcoded).
+
+OMII server is installed on mwi300@fs0.das3.cs.vu.nl - feel free to change things there.  
 
 
 7. What does not work
 - ssh and sftp file adapter
 - errors in commandlineSshFileAdapter - isDirectory returns false because it didn't work...
-
 
 TODO:
 - find the cause of ssh file adapter problem (hard) - try getting to an earlier revision - maybe it worked
