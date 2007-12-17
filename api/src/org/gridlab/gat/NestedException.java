@@ -219,7 +219,7 @@ class NestedException extends Exception {
      * @return an array of throwables containing the exceptions
      */
     public Throwable[] getExceptions() {
-        return (Throwable[]) throwables.toArray();
+        return throwables.toArray(new Throwable[throwables.size()]);
     }
 
     /**
@@ -229,7 +229,7 @@ class NestedException extends Exception {
      * @return an array of adaptors that caused the exceptions
      */
     public String[] getAdaptors() {
-        return (String[]) adaptorNames.toArray();
+        return adaptorNames.toArray(new String[adaptorNames.size()]);
     }
 
     /**
