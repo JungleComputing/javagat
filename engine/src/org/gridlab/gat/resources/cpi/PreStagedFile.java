@@ -155,7 +155,7 @@ public class PreStagedFile extends StagedFile {
                 logger.info("DELETE_DIR:" + getResolvedDest());
             }
             FileCpi.recursiveDeleteDirectory(gatContext, preferences,
-                    getResolvedDest());
+                    getResolvedDest().getFileInterface());
         } else {
             if (logger.isInfoEnabled()) {
                 logger.info("DELETE_FILE:" + getResolvedDest());

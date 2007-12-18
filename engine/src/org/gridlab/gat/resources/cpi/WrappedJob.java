@@ -16,13 +16,37 @@ import org.gridlab.gat.monitoring.MetricValue;
 import org.gridlab.gat.resources.Job;
 import org.gridlab.gat.resources.JobDescription;
 
-@SuppressWarnings("serial")
-public class RemoteSandboxJob extends JobCpi implements MetricListener {
+/**
+ * A Job object of a job that is submitted by a Wrapper.
+ * 
+ * To use a Wrapper to submit a (regular) job, the preference "useWrapper" must
+ * have the value "true". JavaGAT then creates a (wrapper) job that executes a
+ * Wrapper at the location where the (regular) job should execute. The Wrapper
+ * executes and submits locally one or more (regular) jobs. The submission of a
+ * (regular) job will return a job object of the type WrappedJob.
+ * 
+ * The WrappedJob has some special methods besides the standard Job
+ * functionality. It is possible to retrieve the Job of the Wrapper, which may
+ * come in handy if you use multi jobs and you want to know when the WrapperJob
+ * is finished (i.e. when all WrappedJobs are finished). You can also add a
+ * MetricListener to the WrapperJob.
+ * 
+ * The WrappedJob listens to its status by monitoring (polling) a status file.
+ * The Wrapper, which listens to the local (regular) job, writes the state
+ * changes to this status file as a way to communicate with the WrappedJob
+ * object. The status files typically are located at $HOME and look like:
+ * ".JavaGATstatus" + jobID
+ * 
+ * @author rkemp
+ */
 
-    // this class variable is used to give each RemoteSandboxJob a unique ID
+@SuppressWarnings("serial")
+public class WrappedJob extends JobCpi implements MetricListener {
+
+    // this class variable is used to give each WrappedJob a unique ID
     private static int id = 0;
 
-    private Job sandboxJob;
+    private Job wrapperJob;
     private int jobID;
     private String jobString;
 
@@ -34,7 +58,16 @@ public class RemoteSandboxJob extends JobCpi implements MetricListener {
         return id++;
     }
 
-    public RemoteSandboxJob(GATContext gatContext, Preferences preferences,
+    /**
+     * Creates a new WrappedJob.
+     * 
+     * This constructor is used by the WrapperSubmitter.
+     * 
+     * @param gatContext
+     * @param preferences
+     * @param jobDescription
+     */
+    protected WrappedJob(GATContext gatContext, Preferences preferences,
             JobDescription jobDescription) {
         super(gatContext, preferences, jobDescription, null);
 
@@ -54,45 +87,65 @@ public class RemoteSandboxJob extends JobCpi implements MetricListener {
         monitor.start();
     }
 
-    public void setSandboxJob(Job j) throws GATInvocationException {
-        // each RemoteSandboxJob belongs to exactly one SandboxJob, but a
-        // SandboxJob may be linked to more RemoteSandboxJobs. The
-        // RemoteSandboxJob listens to the SandboxJob, because when it ends
-        // abruptly, the RemoteSandboxJob should also end
-        this.sandboxJob = j;
-        MetricDefinition md = sandboxJob
+    /**
+     * Associates the specified WrapperJob to this WrappedJob
+     * 
+     * @param j
+     *                the WrapperJob
+     * @throws GATInvocationException
+     */
+    protected void setWrapperJob(Job j) throws GATInvocationException {
+        // each WrappedJob belongs to exactly one WrapperJob, but a
+        // WrapperJob may be linked to more WrappedJobs. The
+        // WrappedJob listens to the WrapperJob, because when it ends
+        // abruptly, the WrapperJob should also end
+        this.wrapperJob = j;
+        MetricDefinition md = wrapperJob
                 .getMetricDefinitionByName("job.status");
-        sandboxJob.addMetricListener(this, md.createMetric());
-    }
-    
-    public Job getSandboxJob() {
-        return sandboxJob;
+        wrapperJob.addMetricListener(this, md.createMetric());
     }
 
-    public final void addMetricListenerToSandboxJob(
+    /**
+     * gets the WrapperJob
+     * 
+     * @return the WrapperJob
+     */
+    public Job getWrapperJob() {
+        return wrapperJob;
+    }
+
+    /**
+     * add a MetricListener to the WrapperJob
+     * 
+     * @param metricListener
+     * @param metric
+     * @throws GATInvocationException
+     */
+    public final void addMetricListenerToWrapperJob(
             MetricListener metricListener, Metric metric)
             throws GATInvocationException {
-        // if you want to listen explicit to the remoteSandbox
-        sandboxJob.addMetricListener(metricListener, metric);
+        // if you want to listen explicit to the wrapper job
+        wrapperJob.addMetricListener(metricListener, metric);
     }
 
+    /**
+     * process the incoming metrics from the WrapperJob. Only do something if
+     * the WrapperJob is stopped or if there's a submission error. Change the
+     * state of the WrappedJob according to the state of the WrapperJob and fire
+     * a metric to the application that listens to the WrappedJob.
+     */
     public void processMetricEvent(MetricValue val) {
-        // process the incoming metrics from the sandboxJob. Only do something
-        // if the sandboxJob is stopped or if there's a submission error. Change
-        // the state of the RemoteSandboxJob according to the state of the
-        // sandboxJob and fire a metric to the application that listens to the
-        // RemoteSandboxJob.
         if (state == STOPPED || state == SUBMISSION_ERROR) {
             return;
         }
-        if (sandboxJob.getState() == Job.STOPPED
-                || sandboxJob.getState() == Job.SUBMISSION_ERROR) {
+        if (wrapperJob.getState() == Job.STOPPED
+                || wrapperJob.getState() == Job.SUBMISSION_ERROR) {
             try {
-                MetricDefinition md = sandboxJob
+                MetricDefinition md = wrapperJob
                         .getMetricDefinitionByName("job.status");
-                sandboxJob.removeMetricListener(this, md.createMetric());
-                sandboxJob.stop();
-                fireStateMetric(sandboxJob.getState());
+                wrapperJob.removeMetricListener(this, md.createMetric());
+                wrapperJob.stop();
+                fireStateMetric(wrapperJob.getState());
                 finished();
             } catch (GATInvocationException e) {
                 if (logger.isInfoEnabled()) {
@@ -102,10 +155,14 @@ public class RemoteSandboxJob extends JobCpi implements MetricListener {
         }
     }
 
+    /**
+     * gets the JobID of this Job
+     * 
+     * @return the JobID
+     */
     public String getJobID() {
-        // "RSJ" -> Remote Sandbox Job
         if (jobString == null) {
-            jobString = "RSJ" + jobID + "_" + Math.random();
+            jobString = "WrapperJob" + jobID + "_" + Math.random();
         }
         return jobString;
     }

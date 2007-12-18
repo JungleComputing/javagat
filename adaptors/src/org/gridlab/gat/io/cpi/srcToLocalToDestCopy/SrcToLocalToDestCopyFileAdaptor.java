@@ -1,7 +1,7 @@
 /*
  * Created on Mar 21, 2007 by rob
  */
-package org.gridlab.gat.io.cpi.thirdPartyCopy;
+package org.gridlab.gat.io.cpi.srcToLocalToDestCopy;
 
 import org.gridlab.gat.GAT;
 import org.gridlab.gat.GATContext;
@@ -12,8 +12,8 @@ import org.gridlab.gat.io.File;
 import org.gridlab.gat.io.cpi.FileCpi;
 
 @SuppressWarnings("serial")
-public class ThirdPartyCopyFileAdaptor extends FileCpi {
-    public ThirdPartyCopyFileAdaptor(GATContext gatContext,
+public class SrcToLocalToDestCopyFileAdaptor extends FileCpi {
+    public SrcToLocalToDestCopyFileAdaptor (GATContext gatContext,
         Preferences preferences, URI location) {
         super(gatContext, preferences, location);
     }
@@ -24,19 +24,14 @@ public class ThirdPartyCopyFileAdaptor extends FileCpi {
     public void copy(URI dest) throws GATInvocationException {
         // We don't have to handle the local case, the GAT engine will select
         // the local adaptor.
-        if (dest.refersToLocalHost() && (toURI().refersToLocalHost())) {
-            throw new GATInvocationException(
-                "ThirdPartyCopyFileAdaptor can only do third party copies");
-        }
-
         if (dest.refersToLocalHost()) {
             throw new GATInvocationException(
-                "ThirdPartyCopyFileAdaptor can only do third party copies");
+                "SrcToLocalToDestCopyFileAdaptor destination refers to localhost");
         }
 
         if (toURI().refersToLocalHost()) {
             throw new GATInvocationException(
-                "ThirdPartyCopyFileAdaptor can only do third party copies");
+                "SrcToLocalToDestCopyFileAdaptor source refers to localhost");
         }
 
         File tmpFile = null;
@@ -53,7 +48,7 @@ public class ThirdPartyCopyFileAdaptor extends FileCpi {
             tmpFile = GAT.createFile(gatContext, preferences, tmpFileURI);
             tmpFile.copy(dest);
         } catch (Exception e) {
-            throw new GATInvocationException("third party copy", e);
+            throw new GATInvocationException("SrcToLocalToDestCopyFileAdaptor", e);
         } finally {
             if (tmpFile != null) {
                 try {

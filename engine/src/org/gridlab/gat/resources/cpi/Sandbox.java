@@ -14,6 +14,7 @@ import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.Preferences;
 import org.gridlab.gat.URI;
 import org.gridlab.gat.io.File;
+import org.gridlab.gat.io.FileInterface;
 import org.gridlab.gat.io.cpi.FileCpi;
 import org.gridlab.gat.resources.JobDescription;
 import org.gridlab.gat.resources.SoftwareDescription;
@@ -116,7 +117,7 @@ public class Sandbox {
         toDelete = new PostStagedFileSet(gatContext, preferences, sd
                 .getDeletedFiles(), host, sandbox);
 
-        createSandbox();
+        //createSandbox();
     }
 
     private void createSandboxDir(String host) throws GATInvocationException {
@@ -132,7 +133,8 @@ public class Sandbox {
 
             try {
                 URI location = new URI("any://" + host + "/" + sandbox);
-                File f = GAT.createFile(gatContext, preferences, location);
+                FileInterface f = GAT.createFile(gatContext, preferences,
+                        location).getFileInterface();
                 if (f.mkdir()) {
                     return;
                 }
@@ -188,7 +190,7 @@ public class Sandbox {
      * Creates a complete sandbox directory. This requires prestaging of the
      * requested files.
      */
-    private void createSandbox() throws GATInvocationException {
+    private void doPrestage() throws GATInvocationException {
         if (logger.isInfoEnabled()) {
             logger.info("deleting post stage files outside sandbox");
         }
@@ -315,6 +317,10 @@ public class Sandbox {
             throw deleteException;
         }
     }
+    
+    public void prestage() throws GATInvocationException {
+        doPrestage();
+    }
 
     public void retrieveAndCleanup(JobCpi j) {
         GATInvocationException poststageException = null;
@@ -336,7 +342,7 @@ public class Sandbox {
         if (logger.isInfoEnabled()) {
             logger.info("post stage done "
                     + (poststageException == null ? "(SUCCESS)" : "(FAILURE)"));
-            logger.info("poststage exception:" + poststageException);
+            logger.info("poststage exception: " + poststageException);
         }
 
         postStageTime = System.currentTimeMillis() - start;

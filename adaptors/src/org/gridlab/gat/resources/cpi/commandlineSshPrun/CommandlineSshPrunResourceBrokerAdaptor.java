@@ -21,6 +21,7 @@ import org.gridlab.gat.io.FileInputStream;
 import org.gridlab.gat.io.FileOutputStream;
 import org.gridlab.gat.io.cpi.ssh.SSHSecurityUtils;
 import org.gridlab.gat.io.cpi.ssh.SshUserInfo;
+import org.gridlab.gat.monitoring.Metric;
 import org.gridlab.gat.monitoring.MetricListener;
 import org.gridlab.gat.resources.HardwareResource;
 import org.gridlab.gat.resources.Job;
@@ -191,6 +192,14 @@ public class CommandlineSshPrunResourceBrokerAdaptor extends ResourceBrokerCpi {
 
         Sandbox sandbox = new Sandbox(gatContext, preferences, description,
                 host, null, true, false, false, false);
+        CommandlineSshPrunJob job = new CommandlineSshPrunJob(gatContext, preferences, description, sandbox);
+        if (listener != null && metricDefinitionName != null) {
+            Metric metric = job.getMetricDefinitionByName(
+                    metricDefinitionName).createMetric(null);
+            job.addMetricListener(listener, metric);
+        }
+        job.setState(Job.PRE_STAGING);
+        sandbox.prestage();
 
         String command = null;
         if (windows) {
@@ -225,6 +234,7 @@ public class CommandlineSshPrunResourceBrokerAdaptor extends ResourceBrokerCpi {
         Process p = null;
         try {
             p = Runtime.getRuntime().exec(command.toString());
+            job.setProcess(p);
         } catch (IOException e) {
             throw new CommandNotFoundException(
                     "CommandlineSshPrunResourceBrokerAdaptor", e);
@@ -267,6 +277,7 @@ public class CommandlineSshPrunResourceBrokerAdaptor extends ResourceBrokerCpi {
                 throw new GATInvocationException("commandlineSshPrun broker", e);
             }
         }
+        job.setOutputForwarder(outForwarder);
 
         OutputForwarder errForwarder = null;
 
@@ -283,9 +294,9 @@ public class CommandlineSshPrunResourceBrokerAdaptor extends ResourceBrokerCpi {
                 throw new GATInvocationException("commandlineSshPrun broker", e);
             }
         }
-
-        return new CommandlineSshPrunJob(gatContext, preferences, this,
-                description, p, sandbox, outForwarder, errForwarder);
+        job.setErrorForwarder(errForwarder);
+        job.startProcessWaiter();        
+        return job;
     }
 
     /*

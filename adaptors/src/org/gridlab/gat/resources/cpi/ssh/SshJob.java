@@ -50,8 +50,10 @@ public class SshJob extends JobCpi {
                     }
                 }
             } catch (Exception e) {
-                System.out.println("SshJob: while waiting for EOF of channel,"
-                        + " an error occurred: " + e);
+                if (logger.isDebugEnabled()) {
+                    logger.debug("SshJob: while waiting for EOF of channel,"
+                            + " an error occurred: " + e);
+                }
             }
         }
     }
@@ -72,16 +74,11 @@ public class SshJob extends JobCpi {
 
     Metric statusMetric;
 
-    SshJob(GATContext gatContext, Preferences preferences,
-            SshResourceBrokerAdaptor broker, JobDescription description,
-            Session session, Channel channel, Sandbox sandbox)
-            throws GATInvocationException {
+    protected SshJob(GATContext gatContext, Preferences preferences,
+            JobDescription description, Sandbox sandbox) {
         super(gatContext, preferences, description, sandbox);
-        this.broker = broker;
+
         jobID = allocJobID();
-        state = RUNNING;
-        this.session = session;
-        this.channel = channel;
 
         // Tell the engine that we provide job.status events
         HashMap<String, Object> returnDef = new HashMap<String, Object>();
@@ -90,8 +87,25 @@ public class SshJob extends JobCpi {
                 MetricDefinition.DISCRETE, "String", null, null, returnDef);
         statusMetric = statusMetricDefinition.createMetric(null);
         GATEngine.registerMetric(this, "getJobStatus", statusMetricDefinition);
+    }
 
+    protected void startProcessWaiter() {
         new ProcessWaiter();
+    }
+
+    protected void setSession(Session session) {
+        this.session = session;
+    }
+
+    protected void setChannel(Channel channel) {
+        this.channel = channel;
+    }
+
+    protected synchronized void setState(int state) {
+        this.state = state;
+        MetricValue v = new MetricValue(this, getStateString(state),
+                statusMetric, System.currentTimeMillis());
+        GATEngine.fireMetric(this, v);
     }
 
     /*
@@ -167,6 +181,13 @@ public class SshJob extends JobCpi {
         MetricValue v = null;
         if (channel != null) {
             try {
+                /*
+                 * KNOWN BUG: The sshjob sends a "SIGTERM" using the ssh
+                 * protocol (which supports signals). Unfortunately _no_ ssh
+                 * server or client supports these signals. The
+                 * CommandlineSshAdaptor does support signals because it uses an
+                 * ssh "pseudo terminal".
+                 */
                 channel.sendSignal("TERM");
                 Thread.sleep(1000); // give the process some time to cleanup
             } catch (Exception e) {
@@ -192,6 +213,8 @@ public class SshJob extends JobCpi {
             }
         }
         GATEngine.fireMetric(this, v);
+
+        sandbox.retrieveAndCleanup(this);
 
         synchronized (this) {
             state = STOPPED;

@@ -85,14 +85,11 @@ public class GT4Job extends JobCpi {
 
     private boolean postStageStarted = false;
 
-    /**
-     * Initializes a job. Creates a task, sets up the listener and submits it.
-     */
     public GT4Job(GATContext gatContext, Preferences preferences,
-            JobDescription jobDescription, Sandbox sandbox,
-            JobSpecification spec, Service service)
-            throws GATInvocationException {
+            JobDescription jobDescription, Sandbox sandbox) {
         super(gatContext, preferences, jobDescription, sandbox);
+        
+        
 
         // Tell the engine that we provide job.status events
 
@@ -102,17 +99,23 @@ public class GT4Job extends JobCpi {
                 MetricDefinition.DISCRETE, "String", null, null, returnDef);
         GATEngine.registerMetric(this, "getJobStatus", statusMetricDefinition);
         statusMetric = statusMetricDefinition.createMetric(null);
-
-        task = new TaskImpl("gatgt4jobtest", Task.JOB_SUBMISSION);
+    }
+    
+    protected void createTask(JobSpecification spec, Service service) {
+        task = new TaskImpl("GT4Job", Task.JOB_SUBMISSION);
         task.setSpecification(spec);
         task.setService(Service.JOB_SUBMISSION_SERVICE, service);
-        TaskHandler handler = new ExecutionTaskHandler();
         statusListener = new GT4StatusListener(this);
         task.addStatusListener(statusListener);
-
+    }
+    
+    protected void startPoller() {
         poller = new GT4JobPoller(this);
         poller.start();
-
+    }
+    
+    protected void startTask() throws GATInvocationException {
+        TaskHandler handler = new ExecutionTaskHandler();
         try {
             handler.submit(task);
         } catch (IllegalSpecException e) {
@@ -124,10 +127,9 @@ public class GT4Job extends JobCpi {
         } catch (TaskSubmissionException e) {
             throw new GATInvocationException("GT4Job task submission: " + e);
         }
-
     }
-
-    /**
+    
+     /**
      * The <code>GT4StatusListener</code> calls this function to set the state
      * of the job.
      * 

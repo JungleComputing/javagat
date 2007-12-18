@@ -1,0 +1,10 @@
+<securityConfig xmlns="http://www.globus.org">
+
+<authz value="none"/>
+
+<!-- Default for all methods -->
+<auth-method>
+    <none/>
+</auth-method>
+
+</securityConfig>

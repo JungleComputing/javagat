@@ -30,9 +30,9 @@ import org.gridlab.gat.resources.cpi.PostStagedFile;
 import org.gridlab.gat.resources.cpi.PostStagedFileSet;
 import org.gridlab.gat.resources.cpi.PreStagedFile;
 import org.gridlab.gat.resources.cpi.PreStagedFileSet;
-import org.gridlab.gat.resources.cpi.RemoteSandboxSubmitter;
 import org.gridlab.gat.resources.cpi.ResourceBrokerCpi;
 import org.gridlab.gat.resources.cpi.Sandbox;
+import org.gridlab.gat.resources.cpi.WrapperSubmitter;
 import org.gridlab.gat.security.globus.GlobusSecurityUtils;
 import org.ietf.jgss.GSSCredential;
 import org.ietf.jgss.GSSException;
@@ -47,7 +47,7 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
 
     static boolean shutdownInProgress = false;
 
-    private RemoteSandboxSubmitter submitter;
+    private WrapperSubmitter submitter;
 
     public static void init() {
         GATEngine.registerUnmarshaller(GlobusJob.class);
@@ -62,7 +62,7 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
         if (submitter != null && submitter.isMultiJob()) {
             throw new GATInvocationException("MultiCore job started twice!");
         }
-        submitter = new RemoteSandboxSubmitter(gatContext, preferences, true);
+        submitter = new WrapperSubmitter(gatContext, preferences, true);
     }
 
     public Job endMultiJob() throws GATInvocationException {
@@ -388,9 +388,11 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
         }
 
         if (useGramSandbox) {
-            return submitJobGramSandbox(description, listener, metricDefinitionName);
+            return submitJobGramSandbox(description, listener,
+                    metricDefinitionName);
         } else {
-            return submitJobGatSandbox(description, listener, metricDefinitionName);
+            return submitJobGatSandbox(description, listener,
+                    metricDefinitionName);
         }
     }
 
@@ -454,7 +456,13 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
         } catch (Exception e) {
             throw new GATInvocationException("globus broker", e);
         }
-
+        GlobusJob job = new GlobusJob(gatContext, preferences, description, null);
+        if (listener != null && metricDefinitionName != null) {
+            Metric metric = job.getMetricDefinitionByName(metricDefinitionName)
+                    .createMetric(null);
+            job.addMetricListener(listener, metric);
+        }
+        job.setState(Job.PRE_STAGING);
         GSSCredential credential = null;
         try {
             credential = GlobusSecurityUtils.getGlobusCredential(gatContext,
@@ -474,10 +482,8 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
 
         String rsl = createRSL(description, host, null, pre, post);
         GramJob j = new GramJob(credential, rsl);
-        GlobusJob res = new GlobusJob(gatContext, preferences, this,
-                description, j, null, start);
-        j.addListener(res);
-
+        job.setGramJob(j);
+        j.addListener(job);
         try {
             Gram.request(contact, j);
         } catch (GramException e) {
@@ -487,8 +493,8 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
             throw new GATInvocationException("globus",
                     new CouldNotInitializeCredentialException("globus", e2));
         }
-
-        return res;
+        job.startPoller();
+        return job;
     }
 
     public Job submitJobGatSandbox(JobDescription description,
@@ -499,8 +505,7 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
                 logger.debug("useRemoteSandbox, using wrapper application");
             }
             if (submitter == null) {
-                submitter = new RemoteSandboxSubmitter(gatContext, preferences,
-                        false);
+                submitter = new WrapperSubmitter(gatContext, preferences, false);
             }
             return submitter.submitJob(description);
         }
@@ -513,7 +518,16 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
 
         Sandbox sandbox = new Sandbox(gatContext, preferences, description,
                 host, null, true, true, true, true);
+        GlobusJob job = new GlobusJob(gatContext, preferences, description,
+                sandbox);
+        if (listener != null && metricDefinitionName != null) {
+            Metric metric = job.getMetricDefinitionByName(metricDefinitionName)
+                    .createMetric(null);
+            job.addMetricListener(listener, metric);
+        }
 
+        job.setState(Job.PRE_STAGING);
+        sandbox.prestage();
         // If we staged in the executable, we have to do a chmod.
         // Globus loses the executable bit :-(
         if (sandbox.getResolvedExecutable() != null) {
@@ -522,18 +536,12 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
 
         String rsl = createRSL(description, host, sandbox, null, null);
         GramJob j = new GramJob(credential, rsl);
-        GlobusJob res = new GlobusJob(gatContext, preferences, this,
-                description, j, sandbox, start);
-        j.addListener(res);
-        if (listener != null && metricDefinitionName != null) {
-            Metric metric = res.getMetricDefinitionByName(metricDefinitionName).createMetric(
-                    null);
-            res.addMetricListener(listener, metric);
-        }
-
+        job.setGramJob(j);
+        j.addListener(job);
+        job.startPoller();
         try {
             j.request(contact);
-            //Gram.request(contact, j);
+            // Gram.request(contact, j);
         } catch (GramException e) {
             throw new GATInvocationException("globus", e); // no idea what went
             // wrong
@@ -541,8 +549,7 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
             throw new GATInvocationException("globus",
                     new CouldNotInitializeCredentialException("globus", e2));
         }
-
-        return res;
+        return job;
     }
 
     public static void end() {
@@ -561,6 +568,6 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
                                 + t);
             }
         }
-        RemoteSandboxSubmitter.end();
+        WrapperSubmitter.end();
     }
 }

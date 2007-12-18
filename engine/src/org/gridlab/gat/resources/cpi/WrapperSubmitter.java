@@ -29,10 +29,9 @@ import org.gridlab.gat.resources.ResourceBroker;
 import org.gridlab.gat.resources.ResourceDescription;
 import org.gridlab.gat.resources.SoftwareDescription;
 
-public class RemoteSandboxSubmitter {
+public class WrapperSubmitter {
 
-    protected static Logger logger = Logger
-            .getLogger(RemoteSandboxSubmitter.class);
+    protected static Logger logger = Logger.getLogger(WrapperSubmitter.class);
 
     private static final String WELL_KNOWN_REMOTE_GAT_LOCATION = ".tempGAT";
 
@@ -48,19 +47,19 @@ public class RemoteSandboxSubmitter {
     private GATContext gatContext;
     private Preferences preferences;
     private List<JobDescription> descriptions = new ArrayList<JobDescription>();
-    private List<RemoteSandboxJob> jobs = new ArrayList<RemoteSandboxJob>();
+    private List<WrappedJob> jobs = new ArrayList<WrappedJob>();
     private String[] preStageDoneLocations;
 
-    public RemoteSandboxSubmitter(GATContext gatContext,
-            Preferences preferences, boolean multiJob) {
+    public WrapperSubmitter(GATContext gatContext, Preferences preferences,
+            boolean multiJob) {
         this.multiJob = multiJob;
         this.gatContext = gatContext;
         this.preferences = preferences;
     }
 
-    public Job submitJob(JobDescription description) throws GATInvocationException {
-        RemoteSandboxJob result = new RemoteSandboxJob(gatContext, preferences,
-                description);
+    public Job submitJob(JobDescription description)
+            throws GATInvocationException {
+        WrappedJob result = new WrappedJob(gatContext, preferences, description);
         descriptions.add(description);
         jobs.add(result);
         if (!multiJob) {
@@ -104,7 +103,7 @@ public class RemoteSandboxSubmitter {
     private Job doSubmitJob() throws GATInvocationException {
         try {
             Preferences newPreferences = new Preferences(preferences);
-            newPreferences.put("useRemoteSandbox", "false");
+            newPreferences.put("useWrapper", "false");
             SoftwareDescription origSd = descriptions.get(0)
                     .getSoftwareDescription();
             if (origSd == null) {
@@ -123,11 +122,11 @@ public class RemoteSandboxSubmitter {
             int counter = getCounter();
 
             String getRemoteOutput = origSd.getStringAttribute(
-                    "getRemoteSandboxOutput", null);
+                    "getWrapperOutput", null);
             if (getRemoteOutput != null
                     && getRemoteOutput.equalsIgnoreCase("true")) {
                 String remoteOutputURI = origSd.getStringAttribute(
-                        "getRemoteSandboxOutputURI", "any:///remoteSandbox");
+                        "WrapperURI", "any:///wrapper");
                 File outFile = GAT.createFile(gatContext, newPreferences,
                         new URI(remoteOutputURI + "." + counter + ".out"));
                 File errFile = GAT.createFile(gatContext, newPreferences,
@@ -145,8 +144,9 @@ public class RemoteSandboxSubmitter {
                 }
             }
 
-            sd.setLocation(new URI(
-                    "java:org.gridlab.gat.resources.cpi.RemoteSandbox"));
+            sd
+                    .setLocation(new URI(
+                            "java:org.gridlab.gat.resources.cpi.Wrapper"));
 
             Object javaHome = origSd.getObjectAttribute("java.home");
             if (javaHome == null) {
@@ -205,13 +205,13 @@ public class RemoteSandboxSubmitter {
                     GATEngine.getLocalHostName(),
                     cwd,
                     ""
-                            + origSd.getBooleanAttribute(
-                                    "verboseRemoteSandbox", GATEngine.VERBOSE),
+                            + origSd.getBooleanAttribute("verboseWrapper",
+                                    GATEngine.VERBOSE),
                     ""
-                            + origSd.getBooleanAttribute("debugRemoteSandbox",
+                            + origSd.getBooleanAttribute("debugWrapper",
                                     GATEngine.DEBUG),
                     ""
-                            + origSd.getBooleanAttribute("timeRemoteSandbox",
+                            + origSd.getBooleanAttribute("timeWrapper",
                                     GATEngine.TIMING), jobIDs });
 
             String queue = origSd.getStringAttribute("queue", null);
@@ -239,17 +239,17 @@ public class RemoteSandboxSubmitter {
                     newPreferences);
             Job j = broker.submitJob(jd);
             descriptorFile.delete();
-            Iterator<RemoteSandboxJob> it = jobs.iterator();
+            Iterator<WrappedJob> it = jobs.iterator();
             // we can now safely delete the descriptor file, it has been
             // prestaged.
 
             while (it.hasNext()) {
-                RemoteSandboxJob job = (RemoteSandboxJob) it.next();
-                job.setSandboxJob(j);
+                WrappedJob job = (WrappedJob) it.next();
+                job.setWrapperJob(j);
             }
             return j;
         } catch (Exception e) {
-            throw new GATInvocationException("RemoteSandboxSubmitter", e);
+            throw new GATInvocationException("WrapperSubmitter", e);
         }
     }
 
@@ -301,7 +301,7 @@ public class RemoteSandboxSubmitter {
             out.writeObject(preStageDoneLocations);
             out.close();
         } catch (Exception e) {
-            throw new GATInvocationException("RemoteSandboxSubmitter", e);
+            throw new GATInvocationException("WrapperSubmitter", e);
         }
 
         return f;

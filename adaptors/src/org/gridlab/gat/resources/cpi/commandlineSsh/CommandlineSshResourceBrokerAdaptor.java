@@ -19,6 +19,7 @@ import org.gridlab.gat.io.FileInputStream;
 import org.gridlab.gat.io.FileOutputStream;
 import org.gridlab.gat.io.cpi.ssh.SSHSecurityUtils;
 import org.gridlab.gat.io.cpi.ssh.SshUserInfo;
+import org.gridlab.gat.monitoring.Metric;
 import org.gridlab.gat.monitoring.MetricListener;
 import org.gridlab.gat.resources.Job;
 import org.gridlab.gat.resources.JobDescription;
@@ -116,8 +117,23 @@ public class CommandlineSshResourceBrokerAdaptor extends ResourceBrokerCpi {
                     + " with username: " + sui.username + "; host: " + host);
         }
 
+        // create the sandbox
         Sandbox sandbox = new Sandbox(gatContext, preferences, description,
                 host, null, true, false, false, false);
+        // create the job
+        CommandlineSshJob job = new CommandlineSshJob(gatContext, preferences,
+                description, sandbox);
+        // now the job is created, immediately add the listener to it, so that
+        // it will receive each state
+        if (listener != null && metricDefinitionName != null) {
+            Metric metric = job.getMetricDefinitionByName(metricDefinitionName)
+                    .createMetric(null);
+            job.addMetricListener(listener, metric);
+        }
+        // set the state to prestaging
+        job.setState(Job.PRE_STAGING);
+        // and let the sandbox prestage the files!
+        sandbox.prestage();
 
         String command = null;
         if (windows) {
@@ -157,6 +173,8 @@ public class CommandlineSshResourceBrokerAdaptor extends ResourceBrokerCpi {
             throw new CommandNotFoundException(
                     "CommandlineSshResourceBrokerAdaptor", e);
         }
+        job.setState(Job.RUNNING);
+        job.setProcess(p);
 
         org.gridlab.gat.io.File stdin = sd.getStdin();
         org.gridlab.gat.io.File stdout = sd.getStdout();
@@ -194,6 +212,7 @@ public class CommandlineSshResourceBrokerAdaptor extends ResourceBrokerCpi {
                 throw new GATInvocationException("commandlineSsh broker", e);
             }
         }
+        job.setOutputForwarder(outForwarder);
 
         OutputForwarder errForwarder = null;
 
@@ -209,9 +228,14 @@ public class CommandlineSshResourceBrokerAdaptor extends ResourceBrokerCpi {
                 throw new GATInvocationException("commandlineSsh broker", e);
             }
         }
+        job.setErrorForwarder(errForwarder);
 
-        return new CommandlineSshJob(gatContext, preferences, this,
-                description, p, sandbox, outForwarder, errForwarder);
+        // now we have set the process, the output and error forwarder, we start
+        // the process waiter, which waits until the process finishes and stores
+        // all the output and error
+        job.startProcessWaiter();
+
+        return job;
     }
 
 }

@@ -18,6 +18,7 @@ import org.gridlab.gat.GATObjectCreationException;
 import org.gridlab.gat.Preferences;
 import org.gridlab.gat.URI;
 import org.gridlab.gat.io.File;
+import org.gridlab.gat.monitoring.Metric;
 import org.gridlab.gat.monitoring.MetricListener;
 import org.gridlab.gat.resources.HardwareResourceDescription;
 import org.gridlab.gat.resources.Job;
@@ -28,15 +29,16 @@ import org.gridlab.gat.resources.cpi.ResourceBrokerCpi;
 import org.gridlab.gat.resources.cpi.Sandbox;
 
 /**
- * @author  doerl
+ * @author doerl
  */
-public class PbsResourceBrokerAdaptor extends ResourceBrokerCpi implements IParameter {
+public class PbsResourceBrokerAdaptor extends ResourceBrokerCpi implements
+        IParameter {
     private static final String PREFIX = "#PBS";
 
     public PbsResourceBrokerAdaptor(GATContext context, Preferences pref)
             throws GATObjectCreationException {
         super(context, pref);
-        //        System.out.println("constructor: PbsBrokerAdaptor");
+        // System.out.println("constructor: PbsBrokerAdaptor");
     }
 
     public PbsMessage cancelJob(String id) throws GATInvocationException {
@@ -47,30 +49,34 @@ public class PbsResourceBrokerAdaptor extends ResourceBrokerCpi implements IPara
         }
     }
 
-    /*************************************************************************************************/
+    /** ********************************************************************************************** */
 
-    /** @fn public Job submitJob(JobDescription description) 
+    /**
+     * @fn public Job submitJob(JobDescription description)
      * @brief submit a job to PBS.
-     *
-     * @param JobDescription description: The GAT JobDescription class. It contains the 
-     *                                    HardwareResourceDescription and the SoftwareDescription
-     *                                    class. Those are necessary, to create the PBS script
-     *                                    for qsub.
-     *
+     * 
+     * @param JobDescription
+     *                description: The GAT JobDescription class. It contains the
+     *                HardwareResourceDescription and the SoftwareDescription
+     *                class. Those are necessary, to create the PBS script for
+     *                qsub.
+     * 
      * @retval A GatJob class.
-     *
+     * 
      * @author doerl (created).
-     * @author A. Beck-Ratzka, AEI Potsdam, Germany (extended for usage of HardwareResourceDescription)
+     * @author A. Beck-Ratzka, AEI Potsdam, Germany (extended for usage of
+     *         HardwareResourceDescription)
      * @version 1.0
      * @date 10-05-2006, extended for usage of HardwareResourceDescription.
-     * @date 15-05-2006, extended for storing rc of the application to $HOME/.rc.JobID
+     * @date 15-05-2006, extended for storing rc of the application to
+     *       $HOME/.rc.JobID
      */
 
-    public Job submitJob(JobDescription description, MetricListener listener, String metricDefinitionName)
-            throws GATInvocationException {
+    public Job submitJob(JobDescription description, MetricListener listener,
+            String metricDefinitionName) throws GATInvocationException {
         try {
             /**
-             declarations
+             * declarations
              */
 
             String id = null;
@@ -90,7 +96,7 @@ public class PbsResourceBrokerAdaptor extends ResourceBrokerCpi implements IPara
             Sandbox sandbox = null;
 
             /**
-             get the descriptions
+             * get the descriptions
              */
 
             SoftwareDescription sd = description.getSoftwareDescription();
@@ -107,18 +113,27 @@ public class PbsResourceBrokerAdaptor extends ResourceBrokerCpi implements IPara
             }
 
             /**
-             load the resource attributes into a new hashtable.
+             * load the resource attributes into a new hashtable.
              */
 
             rdJob_attr = (HashMap<String, Object>) rdJob.getDescription();
 
             String host = getHostname(description);
             if (host != null) {
-                //			removePostStagedFiles(description, host);
-                sandbox =
-                        new Sandbox(gatContext, preferences, description, host,
-                                null, false, true, true, true);
+                // removePostStagedFiles(description, host);
+                sandbox = new Sandbox(gatContext, preferences, description,
+                        host, null, false, true, true, true);
             }
+            PbsJob pbsJob = new PbsJob(gatContext, preferences, description,
+                    sandbox);
+            if (listener != null && metricDefinitionName != null) {
+                Metric metric = pbsJob.getMetricDefinitionByName(
+                        metricDefinitionName).createMetric(null);
+                pbsJob.addMetricListener(listener, metric);
+            }
+            pbsJob.setState(Job.PRE_STAGING);
+            sandbox.prestage();
+
             java.io.File temp = java.io.File.createTempFile("pbs", null);
             try {
                 String tmpname = temp.getName();
@@ -126,33 +141,32 @@ public class PbsResourceBrokerAdaptor extends ResourceBrokerCpi implements IPara
                 if (pos > 0) {
                     tmpname = tmpname.substring(0, pos);
                 }
-                /* this peace of code is unused, and gives warnings --Rob
-                 String retName = null;
-                 try {
-                 retName = (String) sd.getAttributes().get(IArgument.SHDIR);
-                 }
-                 catch (ClassCastException ex1) {
-                 }
+                /*
+                 * this peace of code is unused, and gives warnings --Rob String
+                 * retName = null; try { retName = (String)
+                 * sd.getAttributes().get(IArgument.SHDIR); } catch
+                 * (ClassCastException ex1) { }
                  */
-                //			try {
-                //				File retFile = GAT.createFile(gatContext, retName);
-                //				sd.addPostStagedFile(retFile, resolvePostStagedFile(retFile, host));
-                //			}
-                //			catch (Exception ex) {
-                //				throw new GATInvocationException("PbsBrokerAdaptor generic postStage", ex);
-                //			}
+                // try {
+                // File retFile = GAT.createFile(gatContext, retName);
+                // sd.addPostStagedFile(retFile, resolvePostStagedFile(retFile,
+                // host));
+                // }
+                // catch (Exception ex) {
+                // throw new GATInvocationException("PbsBrokerAdaptor generic
+                // postStage", ex);
+                // }
                 ParamWriter job = null;
                 try {
-                    job =
-                            new ParamWriter(new BufferedWriter(new FileWriter(
-                                    temp)), PREFIX);
+                    job = new ParamWriter(new BufferedWriter(new FileWriter(
+                            temp)), PREFIX);
                     job.println("#!/bin/sh");
                     job
                             .println("# qsub script automatically generated by scheduler");
 
                     /**
-                     The hardware resources. In the first realization same
-                     args as in C-GAT PBS adaptor.
+                     * The hardware resources. In the first realization same
+                     * args as in C-GAT PBS adaptor.
                      */
 
                     Queue = (String) rdJob_attr.get("machine.queue");
@@ -182,15 +196,13 @@ public class PbsResourceBrokerAdaptor extends ResourceBrokerCpi implements IPara
                         Nodes = new String("1");
                     }
                     if (Queue.length() == 0) {
-                        LString =
-                                new String("walltime=" + Time + ",file="
-                                        + Filesize + ",mem=" + Memsize
-                                        + ",nodes=" + Nodes);
+                        LString = new String("walltime=" + Time + ",file="
+                                + Filesize + ",mem=" + Memsize + ",nodes="
+                                + Nodes);
                     } else {
-                        LString =
-                                new String("walltime=" + Time + ",file="
-                                        + Filesize + ",mem=" + Memsize
-                                        + ",nodes=" + Nodes + ":" + Queue);
+                        LString = new String("walltime=" + Time + ",file="
+                                + Filesize + ",mem=" + Memsize + ",nodes="
+                                + Nodes + ":" + Queue);
                     }
                     if (LString == null) {
                         throw new GATInvocationException(
@@ -214,12 +226,13 @@ public class PbsResourceBrokerAdaptor extends ResourceBrokerCpi implements IPara
                         HwArg = null;
                     }
 
-                    //				if (host != null) {
-                    //					job.addString("W", "stageout=" + retName + "@" + host + ":" + retName);
-                    //				}
-                    //				if (sd.getStdin() != null) {
-                    //					job.addString("i", getInURI(sd.getStdin()));
-                    //				}
+                    // if (host != null) {
+                    // job.addString("W", "stageout=" + retName + "@" + host +
+                    // ":" + retName);
+                    // }
+                    // if (sd.getStdin() != null) {
+                    // job.addString("i", getInURI(sd.getStdin()));
+                    // }
                     if (sd.getStdout() != null) {
                         job.addString("o", getOutURI(sd.getStdout()));
                     }
@@ -244,21 +257,26 @@ public class PbsResourceBrokerAdaptor extends ResourceBrokerCpi implements IPara
                     job.println("  echo \"retvalue = ${RETVALUE}\" >"
                             + " ${HOME}" + ".rc." + "${PBS_JOBID}");
 
-                    //                 if (retName != null) {
-                    //                     int last = retName.lastIndexOf(java.io.File.separatorChar);
-                    //                     job.println("RETVALUE=$?");
-                    //                     if (last > 0) {
-                    //                         String path = retName.substring(0, last);
-                    //                         job.println("if test -d \"" + path + "\"; then");
-                    //                     }
-                    //                     job.println("  echo \"retvalue = ${RETVALUE}\" >" + retName);
-                    //                     job.println("  echo \"queue = ${PBS_QUEUE}\" >>" + retName);
-                    //                     job.println("  echo \"jobid = ${PBS_JOBID}\" >>" + retName);
-                    //                     job.println("  echo \"jobname = ${PBS_JOBNAME}\" >>" + retName);
-                    //                     if (last > 0) {
-                    //                         job.println("fi");
-                    //                     }
-                    //                 }
+                    // if (retName != null) {
+                    // int last =
+                    // retName.lastIndexOf(java.io.File.separatorChar);
+                    // job.println("RETVALUE=$?");
+                    // if (last > 0) {
+                    // String path = retName.substring(0, last);
+                    // job.println("if test -d \"" + path + "\"; then");
+                    // }
+                    // job.println(" echo \"retvalue = ${RETVALUE}\" >" +
+                    // retName);
+                    // job.println(" echo \"queue = ${PBS_QUEUE}\" >>" +
+                    // retName);
+                    // job.println(" echo \"jobid = ${PBS_JOBID}\" >>" +
+                    // retName);
+                    // job.println(" echo \"jobname = ${PBS_JOBNAME}\" >>" +
+                    // retName);
+                    // if (last > 0) {
+                    // job.println("fi");
+                    // }
+                    // }
                 } finally {
                     if (job != null) {
                         job.close();
@@ -269,14 +287,15 @@ public class PbsResourceBrokerAdaptor extends ResourceBrokerCpi implements IPara
                     throw new GATInvocationException(
                             "The job can not submit to the PBS");
                 }
+                pbsJob.setJobID(id);
+                pbsJob.setResourceBroker(this);
             } finally {
                 Object param = sd.getAttributes().get(IArgument.NOT_DELETE);
                 if ((param == null) || !((Boolean) param).booleanValue()) {
                     temp.delete();
                 }
             }
-            return new PbsJob(gatContext, preferences, this, description, id,
-                    sandbox);
+            return pbsJob;
         } catch (IOException e) {
             throw new GATInvocationException("pbs", e);
         }
@@ -311,61 +330,38 @@ public class PbsResourceBrokerAdaptor extends ResourceBrokerCpi implements IPara
         return job.getState();
     }
 
-    /* unused, gives warnings --Rob
-     private static void addResource(StringBuffer sb, String key, Object val) {
-     if (val != null) {
-     if (sb.length() > 0) {
-     sb.append(",");
-     }
-     sb.append(key);
-     sb.append("=");
-     sb.append(val);
-     }
-     }
-
-     private static String getResource(ResourceDescription rd) {
-     StringBuffer sb = new StringBuffer();
-     Map res = rd.getDescription();
-     addResource(sb, IResources.ARCH, Executer.getArch(res));
-     addResource(sb, IResources.MEM, res.get("memory.size"));
-     addResource(sb, IResources.CPUT, res.get("cpu.maxtime"));
-     addResource(sb, IResources.NCPUS, res.get("cpu.count"));
-     addResource(sb, IResources.FILE, res.get("disk.size"));
-     return sb.toString();
-     }
-
-     private String getEnvironment(Map env) {
-     if (env == null) {
-     return null;
-     }
-     StringBuffer sb = new StringBuffer();
-     for (Iterator i = env.entrySet().iterator(); i.hasNext();) {
-     Object key = i.next();
-     Object val = env.get(key);
-     if (sb.length() > 0) {
-     sb.append(",");
-     }
-     sb.append(key);
-     if (val != null) {
-     sb.append("=");
-     sb.append(val);
-     }
-     }
-     return sb.toString();
-     }
+    /*
+     * unused, gives warnings --Rob private static void addResource(StringBuffer
+     * sb, String key, Object val) { if (val != null) { if (sb.length() > 0) {
+     * sb.append(","); } sb.append(key); sb.append("="); sb.append(val); } }
+     * 
+     * private static String getResource(ResourceDescription rd) { StringBuffer
+     * sb = new StringBuffer(); Map res = rd.getDescription(); addResource(sb,
+     * IResources.ARCH, Executer.getArch(res)); addResource(sb, IResources.MEM,
+     * res.get("memory.size")); addResource(sb, IResources.CPUT,
+     * res.get("cpu.maxtime")); addResource(sb, IResources.NCPUS,
+     * res.get("cpu.count")); addResource(sb, IResources.FILE,
+     * res.get("disk.size")); return sb.toString(); }
+     * 
+     * private String getEnvironment(Map env) { if (env == null) { return null; }
+     * StringBuffer sb = new StringBuffer(); for (Iterator i =
+     * env.entrySet().iterator(); i.hasNext();) { Object key = i.next(); Object
+     * val = env.get(key); if (sb.length() > 0) { sb.append(","); }
+     * sb.append(key); if (val != null) { sb.append("="); sb.append(val); } }
+     * return sb.toString(); }
      */
-    //	private String getInURI(File file) {
-    //		URI uri = file.toURI();
-    //		String host = uri.getHost();
-    //		if (host == null) {
-    //			host = "localhost";
-    //		}
-    //		String path = uri.getPath();
-    //		if (path.startsWith("//")) {
-    //			path = path.substring(1);
-    //		}
-    //		return host + ":" + path;
-    //	}
+    // private String getInURI(File file) {
+    // URI uri = file.toURI();
+    // String host = uri.getHost();
+    // if (host == null) {
+    // host = "localhost";
+    // }
+    // String path = uri.getPath();
+    // if (path.startsWith("//")) {
+    // path = path.substring(1);
+    // }
+    // return host + ":" + path;
+    // }
     //
     private PbsResponse getJob(String id) throws IOException {
         Vector<String> jobs = Executer.allResults("qstat");

@@ -3,10 +3,12 @@
       Build file for GAT
     </description>
     <!-- Global properties for GAT API-->
-    <property name="src" location="src" />
+    
+	<property name="gat.location" location=".." />
+	<property name="src" location="src" />
     <property name="tmp" location="tmp" />
-    <property name="lib" location="../lib" />
-    <property name="doc" location="../doc/javadoc" />
+    <property name="lib" location="${gat.location}/lib" />
+    <property name="doc" location="${gat.location}/doc/javadoc" />
     <property name="java.debug.value" value="true" />
 
     <target name="compile" description="compile the source ">
@@ -27,7 +29,7 @@
     <target name="javadoc" description="generate javadoc for gat users">
         <delete dir="${doc}" />
         <javadoc destdir="${doc}" access="public" use="true" notree="false" nonavbar="false" noindex="false" splitindex="true" version="true" nodeprecatedlist="false" nodeprecated="false" verbose="false" classpath="${lib}/GAT-API.jar">
-            <link href="http://java.sun.com/j2se/1.4.2/docs/api/" />
+            <link href="http://java.sun.com/j2se/1.5/docs/api/" />
 
             <fileset dir="${src}">
                 <include name="**/*.java" />

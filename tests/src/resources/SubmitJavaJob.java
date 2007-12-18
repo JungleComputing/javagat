@@ -52,7 +52,7 @@ public class SubmitJavaJob implements MetricListener {
             new URI("any:///err"));
         sd.setStdout(outFile);
         sd.setStderr(errFile);
-        sd.setLocation(new URI("java:org.gridlab.gat.resources.cpi.remoteSandbox.RemoteSandbox"));
+        sd.setLocation(new URI("java:org.gridlab.gat.resources.cpi.wrapper.Wrapper"));
 
         sd.addAttribute("java.home", new URI("/home/rob/contrib/jdk1.5.0_09"));
         sd.addAttribute("java.flags", "-server");

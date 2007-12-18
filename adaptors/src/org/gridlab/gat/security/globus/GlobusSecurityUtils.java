@@ -210,6 +210,7 @@ public class GlobusSecurityUtils {
                     .debug("trying to get credential from location specified in environment");
         }
 
+        
         Environment e = new Environment();
         String proxyLocation = e.getVar("X509_USER_PROXY");
 
@@ -262,10 +263,10 @@ public class GlobusSecurityUtils {
             GlobusCredential globusCred = new GlobusCredential(file);
             credential = new GlobusGSSCredentialImpl(globusCred,
                     GSSCredential.INITIATE_AND_ACCEPT);
-        } catch (Exception x) {
+        } catch (Throwable t) {
             if (logger.isDebugEnabled()) {
                 logger.debug("loading credential from file " + file
-                        + " failed: " + x);
+                        + " failed: " + t);
             }
 
             return null;

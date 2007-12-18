@@ -3,15 +3,19 @@
  */
 package org.gridlab.gat.resources.cpi.glite;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.ArrayList;
+import java.util.Map;
 
+import javax.naming.directory.InvalidAttributeValueException;
+
+import org.apache.log4j.Logger;
 import org.glite.jdl.JobAd;
 import org.glite.jdl.JobAdException;
-import org.glite.wms.wmproxy.AuthorizationFaultException;
 import org.glite.wms.wmproxy.AuthenticationFaultException;
+import org.glite.wms.wmproxy.AuthorizationFaultException;
 import org.glite.wms.wmproxy.BaseException;
 import org.glite.wms.wmproxy.InvalidArgumentFaultException;
 import org.glite.wms.wmproxy.JobIdStructType;
@@ -20,7 +24,6 @@ import org.glite.wms.wmproxy.ServiceException;
 import org.glite.wms.wmproxy.StringAndLongList;
 import org.glite.wms.wmproxy.StringAndLongType;
 import org.glite.wms.wmproxy.WMProxyAPI;
-
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.GATObjectCreationException;
@@ -29,17 +32,24 @@ import org.gridlab.gat.URI;
 import org.gridlab.gat.engine.GATEngine;
 import org.gridlab.gat.engine.util.Environment;
 import org.gridlab.gat.io.File;
+import org.gridlab.gat.monitoring.Metric;
+import org.gridlab.gat.monitoring.MetricListener;
+import org.gridlab.gat.resources.HardwareResource;
 import org.gridlab.gat.resources.Job;
 import org.gridlab.gat.resources.JobDescription;
 import org.gridlab.gat.resources.ResourceDescription;
 import org.gridlab.gat.resources.SoftwareDescription;
 import org.gridlab.gat.resources.cpi.ResourceBrokerCpi;
+import org.gridlab.gat.resources.cpi.Sandbox;
 
 /**
  * @author anna
  */
 
 public class GliteResourceBrokerAdaptor extends ResourceBrokerCpi {
+
+    protected static Logger logger = Logger
+            .getLogger(GliteResourceBrokerAdaptor.class);
 
     private String delegationId;
 
@@ -121,8 +131,10 @@ public class GliteResourceBrokerAdaptor extends ResourceBrokerCpi {
         try {
             String clientContact = getResourceManagerContact(description);
             String proxyLocation = getProxyLocation();
-            System.out.println("client-contact: " + clientContact);
-            System.out.println("proxy-location: " + proxyLocation);
+            if (logger.isInfoEnabled()) {
+                logger.info("client-contact: " + clientContact);
+                logger.info("proxy-location: " + proxyLocation);
+            }
             client = new WMProxyAPI(clientContact, proxyLocation);
             // delegation of user credentials
             String proxy = client.grstGetProxyReq(delegationId);
@@ -162,10 +174,11 @@ public class GliteResourceBrokerAdaptor extends ResourceBrokerCpi {
 
     private void setEnvironment(JobAd jobAd, SoftwareDescription sd)
             throws Exception {
-        HashMap environment = (HashMap) sd.getEnvironment();
+        HashMap<String, Object> environment = (HashMap<String, Object>) sd
+                .getEnvironment();
         if (environment == null)
             return;
-        Iterator it = environment.keySet().iterator();
+        Iterator<String> it = environment.keySet().iterator();
         while (it.hasNext()) {
             String name = (String) it.next();
             String value = (String) environment.get(name);
@@ -176,30 +189,36 @@ public class GliteResourceBrokerAdaptor extends ResourceBrokerCpi {
     private void setStdInputOutputError(JobAd jobAd, SoftwareDescription sd)
             throws Exception {
         File stdin = sd.getStdin();
-        File stdout = sd.getStdin();
-        File stderr = sd.getStdin();
-        // i have some doubts whether to use getName or getPath here
-        if (stdin != null)
+        File stdout = sd.getStdout();
+        File stderr = sd.getStderr();
+        if (stdin != null) {
             jobAd.setAttribute("StdInput", stdin.getPath());
-        if (stdout != null)
+            jobAd.addAttribute("InputSandbox", stdin.getPath());
+        }
+        if (stdout != null) {
             jobAd.setAttribute("StdOutput", stdout.getPath());
-        if (stderr != null)
+            jobAd.addAttribute("OutputSandbox", stdout.getPath());
+        }
+        if (stderr != null) {
             jobAd.setAttribute("StdError", stderr.getPath());
+            jobAd.addAttribute("OutputSandbox", stderr.getPath());
+        }
     }
 
     private void setInputSandbox(JobAd jobAd, SoftwareDescription sd)
             throws Exception {
-        HashMap files = (HashMap) sd.getPreStaged();
+        HashMap<File, File> files = (HashMap<File, File>) sd.getPreStaged();
         if (files == null)
             return;
-        Iterator it = files.keySet().iterator();
+        Iterator<File> it = files.keySet().iterator();
         while (it.hasNext()) {
             File src = (File) it.next();
             File dest = (File) files.get(src);
-            if (dest == null)
-                jobAd.addAttribute("InputSandbox", src.getPath());
-            else
+            if (dest == null) {
+                jobAd.addAttribute("InputSandbox", src.getName());
+            } else {
                 jobAd.addAttribute("InputSandbox", dest.getName());
+            }
         }
         // all files are put into one directory (without tree structure)
         // maybe names are enough?
@@ -207,14 +226,25 @@ public class GliteResourceBrokerAdaptor extends ResourceBrokerCpi {
 
     private void setOutputSandbox(JobAd jobAd, SoftwareDescription sd)
             throws Exception {
-        HashMap files = (HashMap) sd.getPostStaged();
+        HashMap<File, File> files = (HashMap<File, File>) sd.getPostStaged();
         if (files == null)
             return;
-        Iterator it = files.keySet().iterator();
+        Iterator<File> it = files.keySet().iterator();
         while (it.hasNext()) {
             File src = (File) it.next();
             jobAd.addAttribute("OutputSandbox", src.getPath());
         }
+    }
+
+    private void setVirtualOrganisation(JobAd jobAd, SoftwareDescription sd)
+            throws GATInvocationException, IllegalArgumentException,
+            InvalidAttributeValueException {
+        String vo = sd.getVirtualOrganisation();
+        if (vo == null || vo.equals("")) {
+            throw new GATInvocationException(
+                    "no virtual organisation specified: " + vo);
+        }
+        jobAd.setAttribute("VirtualOrganisation", vo);
     }
 
     /* create jdl description of the job */
@@ -249,6 +279,9 @@ public class GliteResourceBrokerAdaptor extends ResourceBrokerCpi {
             setInputSandbox(jobAd, sd);
             // OutputSandbox
             setOutputSandbox(jobAd, sd);
+            // Virtual Organisation
+            setVirtualOrganisation(jobAd, sd);
+
             // parsing
             // directory (String): working directory - not supported
             // count (Integer/String): number of executables to run. - not
@@ -268,11 +301,11 @@ public class GliteResourceBrokerAdaptor extends ResourceBrokerCpi {
             // TODO: (check if possible) restart=ID (String): restart job with
             // given ID.
 
-            // required by gLite:
-            // TODO: remove constant VirtualOrganisation
-            jobAd.setAttribute("VirtualOrganisation", "pvier");
             // the default rank
             jobAd.setAttribute("Rank", 0);
+            jobAd.setAttributeExpr("requirements",
+                    "other.GlueCEStateStatus==\"Production\"");
+            jobAd.setAttribute("RetryCount", 3);
         } catch (Exception e) {
             throw new GATInvocationException(
                     "Exception while parsing softwareDescription", e);
@@ -294,12 +327,12 @@ public class GliteResourceBrokerAdaptor extends ResourceBrokerCpi {
      * 
      * @see org.gridlab.gat.resources.ResourceBroker#findResources(org.gridlab.gat.resources.ResourceDescription)
      */
-    public List findResources(ResourceDescription resourceDescription)
+    public List<HardwareResource> findResources(
+            ResourceDescription resourceDescription)
             throws GATInvocationException {
-        // throw new UnsupportedOperationException("Not implemented");
-        // TODO: remove null from here!!!
-        WMProxyAPI client = connectToWMProxy(delegationId, null);
-        ArrayList resources = null;
+        JobDescription jd = new JobDescription(null, resourceDescription);
+        WMProxyAPI client = connectToWMProxy(delegationId, jd);
+        ArrayList<HardwareResource> resources = null;
         JobAd jobAd = createJobDescription(resourceDescription);
         String jdlString = jobAd.toString();
         // CE Ids satisfying the job Requirements specified in the JDL, ordered
@@ -330,11 +363,13 @@ public class GliteResourceBrokerAdaptor extends ResourceBrokerCpi {
                     e);
         }
         if (matchingResources != null) {
-            resources = new ArrayList();
+            resources = new ArrayList<HardwareResource>();
             StringAndLongType[] matchingResourcesList = matchingResources
                     .getFile();
             for (int i = 0; i < matchingResourcesList.length; i++) {
-                resources.add(matchingResourcesList[i].getName());
+                System.out.println(matchingResourcesList[i].getName());
+                // TODO make a HardwareResource subclass
+                // resources.add(matchingResourcesList[i].getName());
             }
         }
         // CE Ids satisfying the job Requirements specified in the JDL
@@ -347,7 +382,8 @@ public class GliteResourceBrokerAdaptor extends ResourceBrokerCpi {
         if (sd == null)
             throw new GATInvocationException(
                     "The job description does not contain a software description");
-        HashMap attributes = (HashMap) sd.getAttributes();
+        HashMap<String, Object> attributes = (HashMap<String, Object>) sd
+                .getAttributes();
         if (attributes == null)
             return false;
         Boolean dryRun = (Boolean) attributes.get("dryRun");
@@ -362,39 +398,92 @@ public class GliteResourceBrokerAdaptor extends ResourceBrokerCpi {
      * 
      * @see org.gridlab.gat.resources.ResourceBroker#submitJob(org.gridlab.gat.resources.JobDescription)
      */
-    public Job submitJob(JobDescription description)
-            throws GATInvocationException {
-        // throw new UnsupportedOperationException("Not implemented");
-        boolean hasPrestageFiles = false;
+    public Job submitJob(JobDescription description, MetricListener listener,
+            String metricDefinitionName) throws GATInvocationException {
         String delegationId = getDelegationId();
         WMProxyAPI client = connectToWMProxy(delegationId, description);
         JobAd jobAd = createJobDescription(description);
-        long startTime = System.currentTimeMillis();
-        // TODO: remove nulls!!!
         if (isDryRun(description)) {
             GliteJob job = new GliteJob(gatContext, preferences, description,
-                    null, client, startTime, null);
+                    null);
+            job.setClient(client);
             job.setState(Job.STOPPED);
             return job;
         }
         String jdlString = jobAd.toString();
-
+        if (logger.isInfoEnabled()) {
+            logger.info(jdlString);
+        }
         JobIdStructType jobId = null;
+        SoftwareDescription sd = description.getSoftwareDescription();
+        if (sd == null) {
+            throw new GATInvocationException(
+                    "The job description does not contain a software description");
+        }
+        Map<File, File> preStageFiles = sd.getPreStaged();
+        File[] srcFiles = preStageFiles.keySet().toArray(
+                new File[preStageFiles.size()]);
+        for (File srcFile : srcFiles) {
+            if (preStageFiles.get(srcFile) != null) {
+                throw new GATInvocationException(
+                        "Glite cannot handle pre staged files with a non-null destination.");
+            }
+        }
+        GliteJob job = null;
         try {
-            if (hasPrestageFiles) {
+            if (preStageFiles.size() > 0) {
                 jobId = client.jobRegister(jdlString, delegationId);
-                // TODO: copying files to CE WN
-                client.jobStart(jobId.getId());
+                // TODO: optimization, provide the protocol to the
+                // getSandboxDestURI
+                String[] sandboxURIs = client.getSandboxDestURI(jobId.getId())
+                        .getItem();
+                boolean prestaged = false;
+                GATInvocationException exception = new GATInvocationException(
+                        "Unable to prestage!");
+                for (String sandboxURI : sandboxURIs) {
+                    // one sandbox has to succeed
+                    URI uri = new URI(sandboxURI);
+                    try {
+                        // use the sandbox to prestage the prestage files.
+                        Sandbox sandbox = new Sandbox(gatContext, preferences,
+                                description, uri.getHost(),
+                                "/" + uri.getPath(), false, false, false, false);
+                        job = new GliteJob(gatContext, preferences,
+                                description, sandbox);
+                        // now the job is created, immediately add the listener
+                        // to it, so that it will receive each state
+                        if (listener != null && metricDefinitionName != null) {
+                            Metric metric = job.getMetricDefinitionByName(
+                                    metricDefinitionName).createMetric(null);
+                            job.addMetricListener(listener, metric);
+                        }
+                        job.setClient(client);
+                        job.setState(Job.PRE_STAGING);
+                        sandbox.prestage();
+                        prestaged = true;
+                        break;
+                    } catch (Exception e) {
+                        exception.add("Sandbox", e);
+                    }
+                }
+                // if prestaged was successful start the job, else cancel the
+                // job and throw the appropriate exception
+                if (prestaged) {
+                    client.jobStart(jobId.getId());
+                } else {
+                    client.jobCancel(jobId.getId());
+                    throw exception;
+                }
             } else {
+                job = new GliteJob(gatContext, preferences, description, null);
+                job.setClient(client);
                 jobId = client.jobSubmit(jdlString, delegationId);
             }
         } catch (Exception e) {
             throw new GATInvocationException("Exception at job submission", e);
         }
-        // TODO: create sandbox!!!
-        GliteJob job = new GliteJob(gatContext, preferences, description, null,
-                client, startTime, jobId);
+        job.setJobID(jobId);
+        job.startPoller();
         return job;
     }
-
 }

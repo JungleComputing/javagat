@@ -60,16 +60,30 @@ public class GlobusJob extends JobCpi implements GramJobListener,
     private long runTime;
 
     private long startTime;
-
-    public GlobusJob(GATContext gatContext, Preferences preferences,
-            GlobusResourceBrokerAdaptor broker, JobDescription jobDescription,
-            GramJob j, Sandbox sandbox, long startTime) {
-        super(gatContext, preferences, jobDescription, sandbox);
-        this.startTime = startTime;
+    
+    protected void setGramJob(GramJob j) {
         this.j = j;
         jobID = j.getIDAsString();
+        j.addListener(this);
+    }
+    
+    protected void startPoller() {
+        poller = new JobPoller(this);
+        poller.start();
+    }
+    
+    protected synchronized void setState(int state) {
+        this.state = state;
+        MetricValue v = new MetricValue(this, getStateString(state), statusMetric, System
+                .currentTimeMillis());
+        GATEngine.fireMetric(this, v);
+    }
+    
+    protected GlobusJob(GATContext gatContext, Preferences preferences, JobDescription jobDescription, Sandbox sandbox) {
+        super(gatContext, preferences, jobDescription, sandbox);
         state = SCHEDULED;
         jobsAlive++;
+        
 
         // Tell the engine that we provide job.status events
         HashMap<String, Object> returnDef = new HashMap<String, Object>();
@@ -77,10 +91,7 @@ public class GlobusJob extends JobCpi implements GramJobListener,
         statusMetricDefinition = new MetricDefinition("job.status",
                 MetricDefinition.DISCRETE, "String", null, null, returnDef);
         GATEngine.registerMetric(this, "getJobStatus", statusMetricDefinition);
-        statusMetric = statusMetricDefinition.createMetric(null);
-
-        poller = new JobPoller(this);
-        poller.start();
+        statusMetric = statusMetricDefinition.createMetric(null);        
     }
 
     /**

@@ -28,8 +28,37 @@ import org.gridlab.gat.resources.JobDescription;
 import org.gridlab.gat.resources.ResourceBroker;
 import org.gridlab.gat.resources.SoftwareDescription;
 
-public class RemoteSandbox implements MetricListener {
-    protected static Logger logger = Logger.getLogger(RemoteSandbox.class);
+/**
+ * A Wrapper can be started at a remote location, where it starts local jobs.
+ * 
+ * If you want to execute a job on a grid that processes on files, you add those
+ * files as so called pre stage files to the software description of the job
+ * description. The JavaGAT uses the job description to start up the job on the
+ * grid and also takes care of copying the pre stage files to the grid. The pre
+ * stage files will be located on the front-node, but are accessible from
+ * worker-nodes (to which the job will be scheduled).
+ * 
+ * There might be some situations in which you might want the pre stage files on
+ * the local node instead of the front node, for example: a. the performance of
+ * the local disk is better than the front disk (nfs) b. the disk size of the
+ * front node is too small c. pre staging can be done in parallel
+ * 
+ * JavaGAT supports the use of the local disk using a Wrapper. A Wrapper is in
+ * fact a special job that is started using JavaGAT instead of the normal job.
+ * The wrapper job is scheduled to a worker node and then executes. It gets the
+ * pre stage files directly to the local node where it is scheduled and then
+ * starts the normal job. The files will directly be copied from the submission
+ * machine to the worker node.
+ * 
+ * Wrappers can also support multicore jobs. Multicore jobs operate in separate
+ * sandboxes on the same node. If a node has multiple cores, those cores will be
+ * used.
+ * 
+ * @author rkemp
+ */
+
+public class Wrapper implements MetricListener {
+    protected static Logger logger = Logger.getLogger(Wrapper.class);
 
     boolean verbose = false;
 
@@ -43,16 +72,32 @@ public class RemoteSandbox implements MetricListener {
 
     private Map<Job, String> jobMap = new HashMap<Job, String>();
 
+    /**
+     * Starts a wrapper with given arguments
+     * 
+     * @param args
+     */
     public static void main(String[] args) {
-        new RemoteSandbox().start(args);
+        new Wrapper().start(args);
     }
 
+    /**
+     * Processes the incoming metrics of the jobs the wrapper submitted.
+     * 
+     * @param val
+     *                The MetricValue received from the job
+     */
     public synchronized void processMetricEvent(MetricValue val) {
         Job job = (Job) val.getSource();
-        System.err.println("metric: " + Job.getStateString(job.getState()));
         GATContext gatContext = new GATContext();
         FileWriter writer = null;
         try {
+            // create a new file and write the state to it. This file is copied
+            // to the location of the submitter of the wrapper. It is monitored
+            // by the submitter application (WrapperJob), which will delete the
+            // file once the state is read. Therefore this method waits as long
+            // as the file exists, once the state is read, the new state can be
+            // written.
             URI local = new URI(".JavaGATstatus" + jobMap.get(job));
             URI dest = new URI("any://" + initiator + "/.JavaGATstatus"
                     + jobMap.get(job));
@@ -98,17 +143,16 @@ public class RemoteSandbox implements MetricListener {
                 logger.debug(e);
             }
         }
+        // if the metric indicates that a job has stopped, increment the
+        // jobsstopped.
         if (job.getState() == Job.STOPPED
                 || job.getState() == Job.SUBMISSION_ERROR) {
-            incJobsStopped();
+            jobsStopped++;
         }
         notifyAll();
     }
 
-    private void incJobsStopped() {
-        jobsStopped++;
-    }
-
+    // returns the number of stopped jobs.
     private synchronized int getJobsStopped() {
         return jobsStopped;
     }
@@ -182,7 +226,7 @@ public class RemoteSandbox implements MetricListener {
         }
 
         if (logger.isInfoEnabled()) {
-            logger.info("RemoteSandbox started, initiator: " + initiator);
+            logger.info("Wrapper started, initiator: " + initiator);
         }
 
         JobDescription[] descriptions = null;
@@ -242,20 +286,16 @@ public class RemoteSandbox implements MetricListener {
             }
             if (descriptions[submitted].getSoftwareDescription()
                     .getBooleanAttribute("waitForPreStage", false)) {
-                submitJob(broker, descriptions[submitted],
-                        gatContext, preferences, jobIDs[submitted],
+                submitJob(broker, descriptions[submitted], gatContext,
+                        preferences, jobIDs[submitted],
                         preStageDoneLocations[submitted]);
             } else {
-                submitJob(broker, descriptions[submitted],
-                        jobIDs[submitted]);
+                submitJob(broker, descriptions[submitted], jobIDs[submitted]);
             }
             submitted++;
-            System.err.println("submitted: " + submitted + ", stopped: " + getJobsStopped());
             while (submitted - getJobsStopped() == concurrentJobsPerNode) {
                 try {
-                    System.err.println("waiting...");
                     wait();
-                    System.err.println("finished!");
                 } catch (InterruptedException e) {
                     if (logger.isDebugEnabled()) {
                         logger.debug("an exception occurred: " + e);
@@ -266,9 +306,7 @@ public class RemoteSandbox implements MetricListener {
         }
         while (getJobsStopped() != descriptions.length) {
             try {
-                System.err.println("waiting...");
                 wait();
-                System.err.println("finished!");
             } catch (InterruptedException e) {
                 if (logger.isDebugEnabled()) {
                     logger.debug("an exception occurred: " + e);
@@ -276,7 +314,6 @@ public class RemoteSandbox implements MetricListener {
                 System.exit(1);
             }
         }
-        System.err.println("done");
         GAT.end();
         System.exit(0);
     }
@@ -284,7 +321,7 @@ public class RemoteSandbox implements MetricListener {
     private void modifyJobDescription(JobDescription jd, GATContext gatContext,
             Preferences preferences, String remoteCWD) {
         SoftwareDescription sd = jd.getSoftwareDescription();
-        sd.addAttribute("useRemoteSandbox", "false");
+        sd.addAttribute("useWrapper", "false");
         preferences.put("ResourceBroker.adaptor.name", "local");
 
         // rewrite poststage files to go directly to their original
@@ -326,7 +363,8 @@ public class RemoteSandbox implements MetricListener {
         }
     }
 
-    private void submitJob(ResourceBroker broker, JobDescription jd, String jobID) {
+    private void submitJob(ResourceBroker broker, JobDescription jd,
+            String jobID) {
         if (logger.isInfoEnabled()) {
             logger.info("not waiting for preStage");
         }
@@ -365,7 +403,7 @@ public class RemoteSandbox implements MetricListener {
             job = broker.submitJob(jd);
             jobMap.put(job, jobID);
 
-            // sandbox is created and prestagedfiles are prestaged,
+            // wrapper is created and prestagedfiles are prestaged,
             // during
             // the submitJob method
 

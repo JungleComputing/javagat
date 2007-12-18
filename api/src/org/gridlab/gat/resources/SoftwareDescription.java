@@ -92,6 +92,8 @@ public class SoftwareDescription implements java.io.Serializable {
 
     private boolean wipePostStaged;
 
+    private String virtualOrganisation;
+
     /**
      * Create a software description, which describes the application you
      * want to run.
@@ -502,5 +504,13 @@ public class SoftwareDescription implements java.io.Serializable {
             throw new Error("illegal type for boolean attribute: " + name
                 + ": " + val);
         }
+    }
+    
+    public void setVirtualOrganisation(String vo) {
+        this.virtualOrganisation = vo;
+    }
+    
+    public String getVirtualOrganisation() {
+        return virtualOrganisation;
     }
 }

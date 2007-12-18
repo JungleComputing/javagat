@@ -25,12 +25,13 @@ import org.gridlab.gat.io.FileInputStream;
 import org.gridlab.gat.io.FileOutputStream;
 import org.gridlab.gat.io.cpi.ssh.SSHSecurityUtils;
 import org.gridlab.gat.io.cpi.ssh.SshUserInfo;
+import org.gridlab.gat.monitoring.Metric;
 import org.gridlab.gat.monitoring.MetricListener;
 import org.gridlab.gat.resources.Job;
 import org.gridlab.gat.resources.JobDescription;
 import org.gridlab.gat.resources.ResourceDescription;
 import org.gridlab.gat.resources.SoftwareDescription;
-import org.gridlab.gat.resources.cpi.RemoteSandboxSubmitter;
+import org.gridlab.gat.resources.cpi.WrapperSubmitter;
 import org.gridlab.gat.resources.cpi.ResourceBrokerCpi;
 import org.gridlab.gat.resources.cpi.Sandbox;
 
@@ -65,7 +66,7 @@ public class SshResourceBrokerAdaptor extends ResourceBrokerCpi {
 
     private int port;
 
-    private RemoteSandboxSubmitter submitter;
+    private WrapperSubmitter submitter;
 
     /**
      * This method constructs a SshResourceBrokerAdaptor instance corresponding
@@ -80,7 +81,7 @@ public class SshResourceBrokerAdaptor extends ResourceBrokerCpi {
     }
 
     public void beginMultiJob() {
-        submitter = new RemoteSandboxSubmitter(gatContext, preferences, true);
+        submitter = new WrapperSubmitter(gatContext, preferences, true);
     }
 
     public Job endMultiJob() throws GATInvocationException {
@@ -103,13 +104,13 @@ public class SshResourceBrokerAdaptor extends ResourceBrokerCpi {
                         "The job description does not contain a software description");
             }
 
-            if (getBooleanAttribute(description, "useRemoteSandbox", false)) {
+            if (getBooleanAttribute(description, "useWrapper", false)) {
                 if (logger.isDebugEnabled()) {
-                    logger.debug("useRemoteSandbox, using wrapper application");
+                    logger.debug("useWrapper, using wrapper application");
                 }
                 if (submitter == null) {
-                    submitter = new RemoteSandboxSubmitter(gatContext,
-                            preferences, false);
+                    submitter = new WrapperSubmitter(gatContext, preferences,
+                            false);
                 }
                 return submitter.submitJob(description);
             }
@@ -146,6 +147,15 @@ public class SshResourceBrokerAdaptor extends ResourceBrokerCpi {
 
             Sandbox sandbox = new Sandbox(gatContext, preferences, description,
                     host, null, true, false, false, false);
+            SshJob job = new SshJob(gatContext, preferences, description,
+                    sandbox);
+            if (listener != null && metricDefinitionName != null) {
+                Metric metric = job.getMetricDefinitionByName(
+                        metricDefinitionName).createMetric(null);
+                job.addMetricListener(listener, metric);
+            }
+            job.setState(Job.PRE_STAGING);
+            sandbox.prestage();
             String command = "cd " + sandbox.getSandbox() + " && ";
             Map<String, Object> env = sd.getEnvironment();
             if (env != null && !env.isEmpty()) {
@@ -157,12 +167,13 @@ public class SshResourceBrokerAdaptor extends ResourceBrokerCpi {
                     command += "export " + keys[i] + "=" + val + " && ";
                 }
             }
-            command += path + " " + getArguments(description);
+            command += "exec " + path + " " + getArguments(description);
 
             if (logger.isInfoEnabled()) {
                 logger.info("running command: " + command);
             }
             Object[] streams = execCommand(command);
+            job.setState(Job.RUNNING);
 
             org.gridlab.gat.io.File stdin = sd.getStdin();
             org.gridlab.gat.io.File stdout = sd.getStdout();
@@ -242,9 +253,10 @@ public class SshResourceBrokerAdaptor extends ResourceBrokerCpi {
             if (logger.isInfoEnabled()) {
                 logger.info("finished setting stderr");
             }
-            Job j = new SshJob(gatContext, preferences, this, description,
-                    session, channel, sandbox);
-            return j;
+            job.setChannel(channel);
+            job.setSession(session);
+            job.startProcessWaiter();
+            return job;
         } catch (Exception e) {
             throw new GATInvocationException("SshResourceBrokerAdaptor", e);
         }

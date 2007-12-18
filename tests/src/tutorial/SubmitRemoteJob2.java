@@ -33,7 +33,7 @@ public class SubmitRemoteJob2 {
 		//sd1.addAttribute("waitForPreStage", "true");
 		sd1.setLocation("/bin/sh");
 		sd1.setArguments(new String[] { "/home0/rkemp/script.sh" });
-		sd1.addAttribute("useRemoteSandbox", "true");
+		sd1.addAttribute("useWrapper", "true");
 		sd1.addAttribute("java.home", new URI("/usr/local/package/jdk1.5"));
 		//sd1.addPreStagedFile(GAT.createFile(context, "bigfile"));
 		
@@ -44,7 +44,7 @@ public class SubmitRemoteJob2 {
 		SoftwareDescription sd2 = new SoftwareDescription();
 		sd2.setLocation("/bin/sh");
 		sd2.setArguments(new String[] { "/home0/rkemp/script.sh" });
-		sd2.addAttribute("useRemoteSandbox", "true");
+		sd2.addAttribute("useWrapper", "true");
 		//sd2.addAttribute("waitForPreStage", "true");
 		sd2.addAttribute("java.home", new URI("/usr/local/package/jdk1.5"));
 		//sd2.addPreStagedFile(GAT.createFile(context, "bigfile"));
@@ -60,7 +60,7 @@ public class SubmitRemoteJob2 {
 		//sd3.addAttribute("waitForPreStage", "true");
 		sd3.setLocation("/bin/sh");
 		sd3.setArguments(new String[] { "/home0/rkemp/script.sh" });
-		sd3.addAttribute("useRemoteSandbox", "true");
+		sd3.addAttribute("useWrapper", "true");
 		sd3.addAttribute("java.home", new URI("/usr/local/package/jdk1.5"));
 		//sd3.addPreStagedFile(GAT.createFile(context, "bigfile"));
 		File stdout3 = GAT.createFile(context, "3");

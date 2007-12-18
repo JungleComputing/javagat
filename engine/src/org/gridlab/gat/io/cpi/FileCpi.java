@@ -121,7 +121,8 @@ public abstract class FileCpi implements FileInterface {
         // We create a new File object for this, as it might need a different
         // adaptor.
         try {
-            File f = GAT.createFile(gatContext, preferences, location);
+            FileInterface f = GAT.createFile(gatContext, preferences, location)
+                    .getFileInterface();
             f.delete();
         } catch (Exception e) {
             throw new GATInvocationException("delete failed", e);
@@ -615,9 +616,10 @@ public abstract class FileCpi implements FileInterface {
 
     public static void recursiveDeleteDirectory(GATContext gatContext,
             Preferences preferences, URI dirUri) throws GATInvocationException {
-        File dir;
+        FileInterface dir;
         try {
-            dir = GAT.createFile(gatContext, preferences, dirUri);
+            dir = GAT.createFile(gatContext, preferences, dirUri)
+                    .getFileInterface();
         } catch (GATObjectCreationException e) {
             throw new GATInvocationException("generic file cpi", e);
         }
@@ -626,7 +628,8 @@ public abstract class FileCpi implements FileInterface {
     }
 
     public static void recursiveDeleteDirectory(GATContext gatContext,
-            Preferences preferences, File dir) throws GATInvocationException {
+            Preferences preferences, FileInterface dir)
+            throws GATInvocationException {
 
         if (logger.isInfoEnabled()) {
             logger.info("recursive delete dir: " + dir);
@@ -637,14 +640,14 @@ public abstract class FileCpi implements FileInterface {
         if (files != null) {
             for (int i = 0; i < files.length; i++) {
                 try {
-                    if (files[i].isDirectory()) {
+                    if (files[i].getFileInterface().isDirectory()) {
                         recursiveDeleteDirectory(gatContext, preferences,
                                 files[i].toGATURI());
                     } else {
                         if (logger.isInfoEnabled()) {
                             logger.info("delete: " + files[i]);
                         }
-                        files[i].delete();
+                        files[i].getFileInterface().delete();
                     }
                 } catch (GATInvocationException e) {
                     exception.add("file cpi", e);

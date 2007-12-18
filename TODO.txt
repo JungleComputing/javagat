@@ -18,7 +18,7 @@ JavaGAT 2.0
 	dir isn't deleted and the poststaging is stopped. (SubmitRemoteJob6)
 	- Create and use InvalidUsernameOrPasswordException
 	DONE
-- Store VO (virtual organisation) in SecurityContext
+- Store VO (virtual organisation) in SecurityContext (--roelof or in SoftwareDescription?)
 	- Cleanup SSH adaptors:
 	  * If the executable does not exist, we get no error.
 	  CommandlineSsh --> error

@@ -20,11 +20,12 @@ import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.GATObjectCreationException;
 import org.gridlab.gat.Preferences;
 import org.gridlab.gat.URI;
+import org.gridlab.gat.monitoring.Metric;
 import org.gridlab.gat.monitoring.MetricListener;
 import org.gridlab.gat.resources.Job;
 import org.gridlab.gat.resources.JobDescription;
 import org.gridlab.gat.resources.SoftwareDescription;
-import org.gridlab.gat.resources.cpi.RemoteSandboxSubmitter;
+import org.gridlab.gat.resources.cpi.WrapperSubmitter;
 import org.gridlab.gat.resources.cpi.ResourceBrokerCpi;
 import org.gridlab.gat.resources.cpi.Sandbox;
 import org.gridlab.gat.security.globus.GlobusSecurityUtils;
@@ -43,7 +44,7 @@ public class GT4ResourceBrokerAdaptor extends ResourceBrokerCpi {
 
     static final int DEFAULT_GRIDFTP_PORT = 2811;
 
-    private RemoteSandboxSubmitter submitter;
+    private WrapperSubmitter submitter;
 
     public GT4ResourceBrokerAdaptor(GATContext gatContext,
             Preferences preferences) throws GATObjectCreationException {
@@ -51,7 +52,7 @@ public class GT4ResourceBrokerAdaptor extends ResourceBrokerCpi {
     }
 
     public void beginMultiJob() {
-        submitter = new RemoteSandboxSubmitter(gatContext, preferences, true);
+        submitter = new WrapperSubmitter(gatContext, preferences, true);
     }
 
     public Job endMultiJob() throws GATInvocationException {
@@ -240,13 +241,12 @@ public class GT4ResourceBrokerAdaptor extends ResourceBrokerCpi {
      */
     public Job submitJob(JobDescription description, MetricListener listener,
             String metricDefinitionName) throws GATInvocationException {
-        if (getBooleanAttribute(description, "useRemoteSandbox", false)) {
+        if (getBooleanAttribute(description, "useWrapper", false)) {
             if (logger.isDebugEnabled()) {
-                logger.debug("useRemoteSandbox, using wrapper application");
+                logger.debug("useWrapper, using wrapper application");
             }
             if (submitter == null) {
-                submitter = new RemoteSandboxSubmitter(gatContext, preferences,
-                        false);
+                submitter = new WrapperSubmitter(gatContext, preferences, false);
             }
             return submitter.submitJob(description);
         }
@@ -256,11 +256,21 @@ public class GT4ResourceBrokerAdaptor extends ResourceBrokerCpi {
             throw new GATInvocationException(
                     "GT4ResourceBroker: the job description does not contain a software description");
         }
+
         Sandbox sandbox = new Sandbox(gatContext, preferences, description,
                 host, null, true, true, true, true);
-        JobSpecification spec = createJobSpecification(description, sandbox);
-        Service service = createService(description);
-        return new GT4Job(gatContext, preferences, description, sandbox, spec,
-                service);
+        GT4Job job = new GT4Job(gatContext, preferences, description, sandbox);
+        if (listener != null && metricDefinitionName != null) {
+            Metric metric = job.getMetricDefinitionByName(metricDefinitionName)
+                    .createMetric(null);
+            job.addMetricListener(listener, metric);
+        }
+        job.setState(Job.PRE_STAGING);
+        sandbox.prestage();
+        job.createTask(createJobSpecification(description, sandbox),
+                createService(description));
+        job.startPoller();
+        job.startTask();
+        return job;
     }
 }

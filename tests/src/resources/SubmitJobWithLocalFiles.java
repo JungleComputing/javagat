@@ -54,7 +54,7 @@ public class SubmitJobWithLocalFiles implements MetricListener {
         sd.setStdout(outFile);
         sd.setStderr(errFile);
         sd.setLocation(new URI("/bin/hostname"));
-        sd.addAttribute("useRemoteSandbox", "true");
+        sd.addAttribute("useWrapper", "true");
         sd.addAttribute("java.home", new URI("/usr/local/sun-java/jdk1.5"));
         sd.addAttribute("sandboxRoot", "/tmp");
         
