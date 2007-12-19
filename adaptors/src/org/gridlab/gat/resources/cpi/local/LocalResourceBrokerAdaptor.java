@@ -21,6 +21,7 @@ import org.gridlab.gat.engine.util.CommandRunner;
 import org.gridlab.gat.engine.util.InputForwarder;
 import org.gridlab.gat.engine.util.OutputForwarder;
 import org.gridlab.gat.monitoring.MetricListener;
+import org.gridlab.gat.monitoring.Metric;
 import org.gridlab.gat.resources.HardwareResource;
 import org.gridlab.gat.resources.Job;
 import org.gridlab.gat.resources.JobDescription;
@@ -269,8 +270,16 @@ public class LocalResourceBrokerAdaptor extends ResourceBrokerCpi {
             }
         }
 
-        return new LocalJob(gatContext, preferences, this, description, p,
-                host, sandbox, outForwarder, errForwarder, start, startRun);
+        LocalJob job = new LocalJob(gatContext, preferences, this,
+                description, p, host, sandbox, outForwarder, errForwarder,
+                start, startRun);
+        if (listener != null && metricDefinitionName != null) {
+            Metric metric = job.getMetricDefinitionByName(metricDefinitionName)
+                    .createMetric(null);
+            job.addMetricListener(listener, metric);
+        }
+
+        return job;
     }
 
     /*
