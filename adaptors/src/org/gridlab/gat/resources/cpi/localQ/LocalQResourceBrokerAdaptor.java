@@ -89,19 +89,19 @@ public class LocalQResourceBrokerAdaptor extends ResourceBrokerCpi implements
 
         queue = new PriorityQueue<LocalQJob>();
 
-        Integer processors = (Integer) preferences.get("processors");
+        Integer maxConcurrentJobs = (Integer) preferences.get("maxConcurrentJobs");
 
-        if (processors == null) {
-            processors = Runtime.getRuntime().availableProcessors() + 1;
+        if (maxConcurrentJobs == null) {
+            maxConcurrentJobs = Runtime.getRuntime().availableProcessors() + 1;
         }
 
-        if (processors <= 0) {
+        if (maxConcurrentJobs <= 0) {
             throw new GATObjectCreationException(
-                    "cannot create local Q resource broker with " + processors
-                            + " processors");
+                    "cannot create local Q resource broker with " + maxConcurrentJobs
+                            + " concurrent jobs");
         }
 
-        for (int i = 0; i < processors; i++) {
+        for (int i = 0; i < maxConcurrentJobs; i++) {
             Thread thread = new Thread(this);
             thread.setDaemon(true);
             thread.start();
