@@ -220,6 +220,13 @@
 			</manifest>
 		</jar>
 
+		<jar jarfile="${lib}/LocalQResourceBrokerAdaptor.jar" basedir="${tmp}" includes="org/gridlab/gat/resources/cpi/localQ/*.class">
+			<manifest>
+				<attribute name="ResourceBrokerCpi-class" value="org.gridlab.gat.resources.cpi.localQ.LocalQResourceBrokerAdaptor" />
+			</manifest>
+		</jar>
+
+
 		<jar jarfile="${lib}/ZorillaResourceBrokerAdaptor.jar" basedir="${tmp}" includes="org/gridlab/gat/resources/cpi/zorilla/*.class">
 			<manifest>
 				<attribute name="ResourceBrokerCpi-class" value="org.gridlab.gat.resources.cpi.zorilla.ZorillaResourceBrokerAdaptor" />
