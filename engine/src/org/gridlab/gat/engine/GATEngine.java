@@ -845,7 +845,7 @@ public class GATEngine {
 	}
 
 	private static AdaptorList reorderAdaptorList(AdaptorList adaptors,
-			Class<?> cpiClass, Preferences preferences) {
+			Class<?> cpiClass, Preferences preferences) throws GATObjectCreationException {
 		// parse the orderingString
 		// all adaptor names are separated by a ',' and adaptors that should
 		// not be used are prefixed with a '!'
@@ -927,7 +927,9 @@ public class GATEngine {
 			for (int i = insertPosition; i < endPosition; i++) {
 				result.remove(insertPosition);
 			}
-		}
+                } else if (insertPosition == 0) {
+                    throw new GATObjectCreationException("no adaptors available for preference: \"" + adaptorType + ".adaptor.name\", \"" + nameString + "\"");
+                }
 		return result;
 	}
 
