@@ -446,7 +446,7 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
     public Job submitJobGramSandbox(JobDescription description,
             MetricListener listener, String metricDefinitionName)
             throws GATInvocationException {
-        long start = System.currentTimeMillis();
+        //long start = System.currentTimeMillis();
         String host = getHostname(description);
         String contact = getResourceManagerContact(description);
 
@@ -509,7 +509,7 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
             }
             return submitter.submitJob(description);
         }
-        long start = System.currentTimeMillis();
+        //long start = System.currentTimeMillis();
         // choose the first of the set descriptions to retrieve the hostname
         // etc.
         String host = getHostname(description);
