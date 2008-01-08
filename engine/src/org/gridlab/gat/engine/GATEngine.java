@@ -809,7 +809,7 @@ public class GATEngine {
 
 	public static Object createAdaptorProxy(String cpiClassName,
 			Class<?> interfaceClass, GATContext gatContext,
-			Preferences preferences, Object[] tmpParams)
+			Preferences preferences, Class<?>[] parameterTypes, Object[] tmpParams)
 			throws GATObjectCreationException {
 
 		Class<?> cpiClass;
@@ -838,7 +838,7 @@ public class GATEngine {
 		}
 
 		AdaptorInvocationHandler handler = new AdaptorInvocationHandler(
-				adaptors, gatContext, preferences, tmpParams);
+				adaptors, gatContext, preferences, parameterTypes, tmpParams);
 		Object proxy = Proxy.newProxyInstance(interfaceClass.getClassLoader(),
 				new Class[] { interfaceClass }, handler);
 		return proxy;
