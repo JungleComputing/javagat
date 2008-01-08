@@ -15,6 +15,7 @@ import org.gridlab.gat.monitoring.MetricListener;
 import org.gridlab.gat.monitoring.MetricValue;
 import org.gridlab.gat.resources.Job;
 import org.gridlab.gat.resources.JobDescription;
+import org.gridlab.gat.resources.WrappedJob;
 
 /**
  * A Job object of a job that is submitted by a Wrapper.
@@ -41,7 +42,7 @@ import org.gridlab.gat.resources.JobDescription;
  */
 
 @SuppressWarnings("serial")
-public class WrappedJob extends JobCpi implements MetricListener {
+public class WrappedJobImpl extends JobCpi implements MetricListener, WrappedJob {
 
     // this class variable is used to give each WrappedJob a unique ID
     private static int id = 0;
@@ -67,7 +68,7 @@ public class WrappedJob extends JobCpi implements MetricListener {
      * @param preferences
      * @param jobDescription
      */
-    protected WrappedJob(GATContext gatContext, Preferences preferences,
+    protected WrappedJobImpl(GATContext gatContext, Preferences preferences,
             JobDescription jobDescription) {
         super(gatContext, preferences, jobDescription, null);
 

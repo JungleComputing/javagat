@@ -47,7 +47,7 @@ public class WrapperSubmitter {
     private GATContext gatContext;
     private Preferences preferences;
     private List<JobDescription> descriptions = new ArrayList<JobDescription>();
-    private List<WrappedJob> jobs = new ArrayList<WrappedJob>();
+    private List<WrappedJobImpl> jobs = new ArrayList<WrappedJobImpl>();
     private String[] preStageDoneLocations;
 
     public WrapperSubmitter(GATContext gatContext, Preferences preferences,
@@ -59,7 +59,7 @@ public class WrapperSubmitter {
 
     public Job submitJob(JobDescription description)
             throws GATInvocationException {
-        WrappedJob result = new WrappedJob(gatContext, preferences, description);
+        WrappedJobImpl result = new WrappedJobImpl(gatContext, preferences, description);
         descriptions.add(description);
         jobs.add(result);
         if (!multiJob) {
@@ -239,12 +239,12 @@ public class WrapperSubmitter {
                     newPreferences);
             Job j = broker.submitJob(jd);
             descriptorFile.delete();
-            Iterator<WrappedJob> it = jobs.iterator();
+            Iterator<WrappedJobImpl> it = jobs.iterator();
             // we can now safely delete the descriptor file, it has been
             // prestaged.
 
             while (it.hasNext()) {
-                WrappedJob job = (WrappedJob) it.next();
+                WrappedJobImpl job = (WrappedJobImpl) it.next();
                 job.setWrapperJob(j);
             }
             return j;
