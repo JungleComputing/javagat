@@ -29,7 +29,6 @@ import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.GATObjectCreationException;
 import org.gridlab.gat.Preferences;
 import org.gridlab.gat.URI;
-import org.gridlab.gat.engine.GATEngine;
 import org.gridlab.gat.engine.util.Environment;
 import org.gridlab.gat.io.File;
 import org.gridlab.gat.monitoring.Metric;
@@ -54,8 +53,8 @@ public class GliteResourceBrokerAdaptor extends ResourceBrokerCpi {
     private String delegationId;
 
     public GliteResourceBrokerAdaptor(GATContext gatContext,
-            Preferences preferences) throws GATObjectCreationException {
-        super(gatContext, preferences);
+            Preferences preferences, URI brokerURI) throws GATObjectCreationException {
+        super(gatContext, preferences, brokerURI);
     }
 
     private String getDelegationId() {
@@ -66,48 +65,10 @@ public class GliteResourceBrokerAdaptor extends ResourceBrokerCpi {
 
     protected String getResourceManagerContact(JobDescription description)
             throws GATInvocationException {
-        String res = null;
-        // example of glite contact string:
-        // "https://mu12.matrix.sara.nl:7443/glite_wms_wmproxy_server"
-        String contact = (String) preferences
-                .get("ResourceBroker.jobmanagerContact");
-        // example of glite jobManager string
-        // "glite_wms_wmproxy_server"
-        String jobManager = (String) preferences
-                .get("ResourceBroker.jobmanager");
-        Object jobManagerPort = preferences
-                .get("ResourceBroker.jobmanagerPort");
-
-        // if the contact string is set, ignore all other properties
-        if (contact != null) {
-            if (GATEngine.VERBOSE) {
-                System.err.println("Resource manager contact = " + contact);
-            }
-            return contact;
+        if (brokerURI.getPath() == null || brokerURI.getPath().equals("")) {
+            return brokerURI.toString() + "glite_wms_wmproxy_server";
         }
-
-        String hostname = getHostname(description);
-
-        if (hostname != null) {
-            res = hostname;
-            if (jobManagerPort != null) {
-                res += (":" + jobManagerPort);
-            } else { // use default port
-                res += (":" + "7443");
-            }
-            if (jobManager != null) {
-                res += ("/" + jobManager);
-            } else { // use default server name
-                res += ("/" + "glite_wms_wmproxy_server");
-            }
-            if (GATEngine.VERBOSE) {
-                System.err.println("Resource manager contact = " + res);
-            }
-            return res;
-        }
-
-        throw new GATInvocationException(
-                "The gLite resource broker needs a hostname");
+        return brokerURI.toString();
     }
 
     // right now it's the simplest method for finding proxy location
@@ -164,12 +125,6 @@ public class GliteResourceBrokerAdaptor extends ResourceBrokerCpi {
         // now only "Normal" type of job is supported
         String jobType = "Normal";
         return jobType;
-    }
-
-    private String getExecutable(JobDescription description)
-            throws GATInvocationException {
-        URI location = getLocationURI(description);
-        return location.getPath();
     }
 
     private void setEnvironment(JobAd jobAd, SoftwareDescription sd)

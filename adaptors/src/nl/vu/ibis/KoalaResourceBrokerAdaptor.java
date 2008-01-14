@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.Map;
 import java.util.Set;
-import java.util.StringTokenizer;
 
 import org.apache.log4j.PropertyConfigurator;
 import org.gridlab.gat.GATContext;
@@ -22,7 +21,6 @@ import org.gridlab.gat.resources.cpi.PreStagedFile;
 import org.gridlab.gat.resources.cpi.PreStagedFileSet;
 import org.gridlab.gat.resources.cpi.ResourceBrokerCpi;
 import org.gridlab.gat.resources.cpi.Sandbox;
-
 import org.koala.common.Assist;
 
 public class KoalaResourceBrokerAdaptor extends ResourceBrokerCpi {
@@ -66,8 +64,8 @@ public class KoalaResourceBrokerAdaptor extends ResourceBrokerCpi {
     }
     
     public KoalaResourceBrokerAdaptor(GATContext context, 
-            Preferences preferences) throws GATObjectCreationException {
-        super(context, preferences);
+            Preferences preferences, URI brokerURI) throws GATObjectCreationException {
+        super(context, preferences, brokerURI);
 
         // Prevent recursively using this resourcebroker by checking for a 
         // magic preference.
@@ -103,51 +101,51 @@ public class KoalaResourceBrokerAdaptor extends ResourceBrokerCpi {
         String rsl = "";
         String args = "";
 
-        if (isJavaApplication(description)) {
-            URI javaHome = (URI) sd.getAttributes().get("java.home");
-            if (javaHome == null) {
-                throw new GATInvocationException("java.home not set");
-            }
-
-            rsl += "& (executable = " + javaHome.getPath() + "/bin/java)";
-
-            String javaFlags =
-                    getStringAttribute(description, "java.flags", "");
-            if (javaFlags.length() != 0) {
-                StringTokenizer t = new StringTokenizer(javaFlags);
-                while (t.hasMoreTokens()) {
-                    args += " \"" + t.nextToken() + "\"";
-                }
-            }
-
-            // classpath
-            String javaClassPath =
-                    getStringAttribute(description, "java.classpath", "");
-            if (javaClassPath.length() != 0) {
-                args += " \"-classpath\" \"" + javaClassPath + "\"";
-            } else {
-                // TODO if not set, use jar files in prestaged set
-            }
-
-            // set the environment
-            Map<String, Object> env = sd.getEnvironment();
-            if (env != null && !env.isEmpty()) {
-                Set<String> s = env.keySet();
-                Object[] keys = (Object[]) s.toArray();
-
-                for (int i = 0; i < keys.length; i++) {
-                    String val = (String) env.get(keys[i]);
-                    args += " \"-D" + keys[i] + "=" + val + "\"";
-                }
-            }
-
-            // main class name
-            args += " \"" + getLocationURI(description).getSchemeSpecificPart()
-                            + "\"";
-        } else {
-            String exe = getLocationURI(description).getPath();
+//        if (isJavaApplication(description)) {
+//            URI javaHome = (URI) sd.getAttributes().get("java.home");
+//            if (javaHome == null) {
+//                throw new GATInvocationException("java.home not set");
+//            }
+//
+//            rsl += "& (executable = " + javaHome.getPath() + "/bin/java)";
+//
+//            String javaFlags =
+//                    getStringAttribute(description, "java.flags", "");
+//            if (javaFlags.length() != 0) {
+//                StringTokenizer t = new StringTokenizer(javaFlags);
+//                while (t.hasMoreTokens()) {
+//                    args += " \"" + t.nextToken() + "\"";
+//                }
+//            }
+//
+//            // classpath
+//            String javaClassPath =
+//                    getStringAttribute(description, "java.classpath", "");
+//            if (javaClassPath.length() != 0) {
+//                args += " \"-classpath\" \"" + javaClassPath + "\"";
+//            } else {
+//                // TODO if not set, use jar files in prestaged set
+//            }
+//
+//            // set the environment
+//            Map<String, Object> env = sd.getEnvironment();
+//            if (env != null && !env.isEmpty()) {
+//                Set<String> s = env.keySet();
+//                Object[] keys = (Object[]) s.toArray();
+//
+//                for (int i = 0; i < keys.length; i++) {
+//                    String val = (String) env.get(keys[i]);
+//                    args += " \"-D" + keys[i] + "=" + val + "\"";
+//                }
+//            }
+//
+//            // main class name
+//            args += " \"" + getLocationURI(description).getSchemeSpecificPart()
+//                            + "\"";
+//        } else {
+            String exe = getExecutable(description);
             rsl += "& (executable = " + exe + ")";
-        }
+//        }
 
         // parse the arguments
         String[] argsA = getArgumentsArray(description);
@@ -254,7 +252,7 @@ public class KoalaResourceBrokerAdaptor extends ResourceBrokerCpi {
             }
         }
 
-        if (!isJavaApplication(description)) {
+//        if (!isJavaApplication(description)) {
             // set the environment
             Map<String, Object> env = sd.getEnvironment();
             if (env != null && !env.isEmpty()) {
@@ -268,7 +266,7 @@ public class KoalaResourceBrokerAdaptor extends ResourceBrokerCpi {
                 }
                 rsl += ")";
             }
-        }
+//        }
 
         String queue = getStringAttribute(description, "queue", null);
         if (queue != null) {

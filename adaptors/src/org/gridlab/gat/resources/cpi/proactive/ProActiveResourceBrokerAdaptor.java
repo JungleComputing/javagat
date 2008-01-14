@@ -10,6 +10,7 @@ import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.GATObjectCreationException;
 import org.gridlab.gat.Preferences;
+import org.gridlab.gat.URI;
 import org.gridlab.gat.monitoring.MetricListener;
 import org.gridlab.gat.resources.JobDescription;
 import org.gridlab.gat.resources.SoftwareDescription;
@@ -97,9 +98,9 @@ public class ProActiveResourceBrokerAdaptor extends ResourceBrokerCpi
      * @param preferences the preferences.
      */
     public ProActiveResourceBrokerAdaptor(GATContext gatContext,
-            Preferences preferences) throws GATObjectCreationException {
+            Preferences preferences, URI brokerURI) throws GATObjectCreationException {
 
-        super(gatContext, preferences);
+        super(gatContext, preferences, brokerURI);
 
         String tmp = (String) preferences.get("newActive.parallel");
         if(tmp != null) {

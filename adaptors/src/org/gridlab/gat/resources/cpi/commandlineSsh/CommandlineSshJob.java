@@ -49,7 +49,7 @@ public class CommandlineSshJob extends JobCpi {
             JobDescription description, Sandbox sandbox) {
         super(gatContext, preferences, description, sandbox);
         jobID = allocJobID();
-        
+
         HashMap<String, Object> returnDef = new HashMap<String, Object>();
         returnDef.put("status", String.class);
         statusMetricDefinition = new MetricDefinition("job.status",
@@ -57,30 +57,29 @@ public class CommandlineSshJob extends JobCpi {
         statusMetric = statusMetricDefinition.createMetric(null);
         GATEngine.registerMetric(this, "getJobStatus", statusMetricDefinition);
     }
-    
+
     protected void setProcess(Process p) {
         this.p = p;
     }
-    
+
     protected synchronized void setState(int state) {
         this.state = state;
-        MetricValue v = new MetricValue(this, getStateString(state), statusMetric, System
-                .currentTimeMillis());
+        MetricValue v = new MetricValue(this, getStateString(state),
+                statusMetric, System.currentTimeMillis());
         GATEngine.fireMetric(this, v);
     }
-    
+
     protected void setOutputForwarder(OutputForwarder out) {
         this.out = out;
     }
-    
+
     protected void setErrorForwarder(OutputForwarder err) {
         this.err = err;
     }
-    
+
     protected void startProcessWaiter() {
         new ProcessWaiter();
     }
-    
 
     /*
      * (non-Javadoc)
@@ -97,12 +96,7 @@ public class CommandlineSshJob extends JobCpi {
         m.put("resManState", getStateString(state));
         m.put("resManName", "CommandlineSsh");
         m.put("exitValue", "" + exitVal);
-
-        try {
-            m.put("hostname", broker.getHostname(description));
-        } catch (GATInvocationException e) {
-            m.put("hostname", "unknown");
-        }
+        m.put("hostname", broker.getHostname());
 
         if (postStageException != null) {
             m.put("postStageError", postStageException);

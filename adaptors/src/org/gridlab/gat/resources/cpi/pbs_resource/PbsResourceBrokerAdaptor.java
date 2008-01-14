@@ -35,9 +35,9 @@ public class PbsResourceBrokerAdaptor extends ResourceBrokerCpi implements
         IParameter {
     private static final String PREFIX = "#PBS";
 
-    public PbsResourceBrokerAdaptor(GATContext context, Preferences pref)
+    public PbsResourceBrokerAdaptor(GATContext context, Preferences pref, URI brokerURI)
             throws GATObjectCreationException {
-        super(context, pref);
+        super(context, pref, brokerURI);
         // System.out.println("constructor: PbsBrokerAdaptor");
     }
 
@@ -118,7 +118,7 @@ public class PbsResourceBrokerAdaptor extends ResourceBrokerCpi implements
 
             rdJob_attr = (HashMap<String, Object>) rdJob.getDescription();
 
-            String host = getHostname(description);
+            String host = getHostname();
             if (host != null) {
                 // removePostStagedFiles(description, host);
                 sandbox = new Sandbox(gatContext, preferences, description,
@@ -245,7 +245,7 @@ public class PbsResourceBrokerAdaptor extends ResourceBrokerCpi implements
                                 + sd.getAttributes().get(IArgument.SWD));
                     }
                     StringBuffer cmd = new StringBuffer();
-                    cmd.append(getLocationURI(description).getPath());
+                    cmd.append(getExecutable(description));
                     if (sd.getArguments() != null) {
                         String[] args = sd.getArguments();
                         for (int i = 0; i < args.length; ++i) {

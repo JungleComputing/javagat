@@ -4,6 +4,7 @@ import org.gridlab.gat.GAT;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.Preferences;
+import org.gridlab.gat.URI;
 import org.gridlab.gat.monitoring.Metric;
 import org.gridlab.gat.monitoring.MetricDefinition;
 import org.gridlab.gat.monitoring.MetricListener;
@@ -187,7 +188,7 @@ public class Component implements MetricListener {
             tmp.put("postKoala", true);
 
             // Create a new broker that allows us to perform the real submission.
-            ResourceBroker broker = GAT.createResourceBroker(context, tmp);
+            ResourceBroker broker = GAT.createResourceBroker(context, tmp, new URI(site));
         
             // Submit the job 
             job = broker.submitJob(description);

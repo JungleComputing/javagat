@@ -34,9 +34,9 @@ import org.gridlab.gat.resources.cpi.Sandbox;
 public class SGEJob extends JobCpi {
 
     private String jobID;
+    private String hostname;
     private MetricDefinition statusMetricDefinition;
     Metric statusMetric;
-    private JobDescription jobDescription;
     private Session session;
     private Hashtable<String, Long> time;
 
@@ -227,6 +227,10 @@ public class SGEJob extends JobCpi {
             System.err.println(e);
         }
     }
+    
+    protected void setHostname(String hostname) {
+        this.hostname = hostname;
+    }
 
     public Map<String, Object> getInfo() {
 
@@ -234,8 +238,7 @@ public class SGEJob extends JobCpi {
         setState();
 
         try {
-            m.put("hostname", jobDescription.getSoftwareDescription()
-                    .getLocation().toASCIIString());
+            m.put("hostname", hostname);
             m.put("checkpointable", "0");
             m.put("scheduletime", null);
             m.put("resManName", "Sun Grid Engine");

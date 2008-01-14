@@ -49,8 +49,9 @@ public class SGEResourceBrokerAdaptor extends ResourceBrokerCpi {
     private Session SGEsession;
 
     public SGEResourceBrokerAdaptor(GATContext gatContext,
-            Preferences preferences) throws GATObjectCreationException {
-        super(gatContext, preferences);
+            Preferences preferences, URI brokerURI)
+            throws GATObjectCreationException {
+        super(gatContext, preferences, brokerURI);
 
         SessionFactory factory = SessionFactory.getFactory();
         SGEsession = factory.getSession();
@@ -78,7 +79,7 @@ public class SGEResourceBrokerAdaptor extends ResourceBrokerCpi {
             String metricDefinitionName) throws GATInvocationException {
 
         SoftwareDescription sd = description.getSoftwareDescription();
-        String host = getHostname(description);
+        String host = getHostname();
 
         URI hostURI;
         Sandbox sandbox = null;
@@ -100,6 +101,7 @@ public class SGEResourceBrokerAdaptor extends ResourceBrokerCpi {
                     .createMetric(null);
             job.addMetricListener(listener, metric);
         }
+        job.setHostname(getHostname());
         job.setState(Job.PRE_STAGING);
         job.setSession(SGEsession);
         sandbox.prestage();
@@ -114,9 +116,8 @@ public class SGEResourceBrokerAdaptor extends ResourceBrokerCpi {
             SGEsession.init(hostURI.toString());
             JobTemplate jt = SGEsession.createJobTemplate();
 
-            if (sd.getLocation() != null) {
-                jt.setRemoteCommand(sd.getLocation().getPath());
-            }
+            jt.setRemoteCommand(getExecutable(description));
+
             if (logger.isInfoEnabled()) {
                 logger.info("Remote command: " + jt.getRemoteCommand());
             }

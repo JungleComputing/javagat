@@ -118,9 +118,9 @@ public class GridSAMJSDLGeneratorImpl implements GridSAMJSDLGenerator {
         builder.append("<Application>").append("<POSIXApplication xmlns=\"http://schemas.ggf.org/jsdl/2005/11/jsdl-posix\">");
 
         // add executable
-        builder.append("<Executable>").append(sd.getLocation().getPath()).append("</Executable>");
+        builder.append("<Executable>").append(sd.getExecutable()).append("</Executable>");
         if (logger.isDebugEnabled()) {
-            logger.debug("executable location=" + sd.getLocation() + ", path=" + sd.getLocation().getPath());
+            logger.debug("executable =" + sd.getExecutable());
             logger.debug("arguments count=" + sd.getArguments().length);
         }
 

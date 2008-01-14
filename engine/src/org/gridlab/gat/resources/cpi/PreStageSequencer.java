@@ -34,7 +34,7 @@ public class PreStageSequencer {
 					// TODO Auto-generated catch block
 					e1.printStackTrace();
 				}
-				java.io.File file = new java.io.File("../" + fileName);
+				java.io.File file = new java.io.File(fileName);
 				try {
 					file.createNewFile();
 				} catch (IOException e1) {

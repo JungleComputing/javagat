@@ -573,7 +573,7 @@ public class File extends java.io.File implements Monitorable, Advertisable {
             File newFile = GAT.createFile(c, u);
             f = newFile.f;
         } catch (Exception e) {
-            throw new Error("Could not create File object");
+            throw new Error("Could not create File object: " + u);
         }
     }
 

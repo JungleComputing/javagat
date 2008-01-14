@@ -3,7 +3,6 @@
  */
 package resources;
 
-import java.net.URISyntaxException;
 import java.util.Map;
 
 import org.gridlab.gat.GAT;
@@ -25,18 +24,11 @@ public class StopJobTest {
         GATContext context = new GATContext();
         Preferences prefs = new Preferences();
 
-        URI exe = null;
-
-        try {
-            exe = new URI("any://mars.cs.vu.nl//bin/sleep");
-        } catch (URISyntaxException e) {
-            System.err.println("syntax error in URI");
-            System.exit(1);
-        }
+        String exe = "/bin/sleep";
 
         SoftwareDescription sd = new SoftwareDescription();
-        sd.setLocation(exe);
-        sd.setArguments(new String[] {"100000"});
+        sd.setExecutable(exe);
+        sd.setArguments(new String[] { "100000" });
 
         JobDescription jd = null;
         ResourceBroker broker = null;
@@ -46,7 +38,8 @@ public class StopJobTest {
 
         try {
             jd = new JobDescription(sd, rd);
-            broker = GAT.createResourceBroker(context, prefs);
+            broker = GAT.createResourceBroker(context, prefs, new URI(
+                    "any://mars.cs.vu.nl"));
         } catch (Exception e) {
             System.err.println("Could not create Job description: " + e);
             System.exit(1);
@@ -58,7 +51,7 @@ public class StopJobTest {
             job = broker.submitJob(jd);
 
             Thread.sleep(1000);
-            
+
             job.stop();
         } catch (Exception e) {
             System.err.println("submission failed: " + e);
@@ -66,7 +59,6 @@ public class StopJobTest {
             System.exit(1);
         }
 
-        
         while (true) {
             try {
                 Map<String, Object> info = job.getInfo();
@@ -76,7 +68,7 @@ public class StopJobTest {
                 String state = (String) info.get("state");
 
                 if ((state == null) || state.equals("STOPPED")
-                    || state.equals("SUBMISSION_ERROR")) {
+                        || state.equals("SUBMISSION_ERROR")) {
                     break;
                 }
 

@@ -2,7 +2,6 @@ package org.gridlab.gat.resources.cpi.wsgt4;
 
 import java.util.Map;
 import java.util.Set;
-import java.util.StringTokenizer;
 
 import org.apache.log4j.Logger;
 import org.globus.exec.generated.JobDescriptionType;
@@ -18,9 +17,9 @@ import org.gridlab.gat.monitoring.MetricListener;
 import org.gridlab.gat.resources.Job;
 import org.gridlab.gat.resources.JobDescription;
 import org.gridlab.gat.resources.SoftwareDescription;
-import org.gridlab.gat.resources.cpi.WrapperSubmitter;
 import org.gridlab.gat.resources.cpi.ResourceBrokerCpi;
 import org.gridlab.gat.resources.cpi.Sandbox;
+import org.gridlab.gat.resources.cpi.WrapperSubmitter;
 import org.gridlab.gat.security.globus.GlobusSecurityUtils;
 import org.ietf.jgss.GSSCredential;
 
@@ -43,7 +42,7 @@ public class WSGT4ResourceBrokerAdaptor extends ResourceBrokerCpi {
         GSSCredential cred = null;
         URI location = null;
         try {
-            location = new URI(getHostname(jobDescription));
+            location = new URI(getHostname());
         } catch (Exception e) {
             throw new GATInvocationException(
                     "WSGT4Job: getSecurityContext, initialization of location failed, "
@@ -60,8 +59,9 @@ public class WSGT4ResourceBrokerAdaptor extends ResourceBrokerCpi {
     }
 
     public WSGT4ResourceBrokerAdaptor(GATContext gatContext,
-            Preferences preferences) throws GATObjectCreationException {
-        super(gatContext, preferences);
+            Preferences preferences, URI brokerURI)
+            throws GATObjectCreationException {
+        super(gatContext, preferences, brokerURI);
         String globusLocation = System.getenv("GLOBUS_LOCATION");
         if (globusLocation == null) {
             throw new GATObjectCreationException("$GLOBUS_LOCATION is not set");
@@ -81,67 +81,67 @@ public class WSGT4ResourceBrokerAdaptor extends ResourceBrokerCpi {
                     "The job description does not contain a software description");
         }
 
-        if (isJavaApplication(description)) {
-            URI javaHome = (URI) sd.getAttributes().get("java.home");
-            if (javaHome == null) {
-                throw new GATInvocationException("java.home not set");
-            }
+        // if (isJavaApplication(description)) {
+        // URI javaHome = (URI) sd.getAttributes().get("java.home");
+        // if (javaHome == null) {
+        // throw new GATInvocationException("java.home not set");
+        // }
+        //
+        // rsl += "<executable>" + javaHome.getPath()
+        // + "/bin/java</executable>";
+        //
+        // String javaFlags = getStringAttribute(description, "java.flags", "");
+        // if (javaFlags.length() != 0) {
+        // StringTokenizer t = new StringTokenizer(javaFlags);
+        // while (t.hasMoreTokens()) {
+        // rsl += "<argument>" + t.nextToken() + "</argument>";
+        // }
+        // }
+        //
+        // // classpath
+        // String javaClassPath = getStringAttribute(description,
+        // "java.classpath", "");
+        // if (javaClassPath.length() != 0) {
+        // rsl += "<argument>-classpath</argument>";
+        // rsl += "<argument>" + javaClassPath + "</argument>";
+        // } else {
+        // // TODO if not set, use jar files in prestaged set
+        // }
+        //
+        // // set the environment
+        // Map<String, Object> env = sd.getEnvironment();
+        // if (env != null && !env.isEmpty()) {
+        // Set<String> s = env.keySet();
+        // Object[] keys = (Object[]) s.toArray();
+        //
+        // for (int i = 0; i < keys.length; i++) {
+        // String val = (String) env.get(keys[i]);
+        // rsl += "<argument>-D" + keys[i] + "=" + val + "</argument>";
+        // }
+        // }
+        //
+        // // main class name
+        // rsl += "<argument>"
+        // + getLocationURI(description).getSchemeSpecificPart()
+        // + "</argument>";
+        // } else {
+        rsl += "<executable>";
+        rsl += getExecutable(description);
+        rsl += "</executable>";
+        Map<String, Object> env = sd.getEnvironment();
+        if (env != null && !env.isEmpty()) {
+            Set<String> s = env.keySet();
+            Object[] keys = (Object[]) s.toArray();
 
-            rsl += "<executable>" + javaHome.getPath()
-                    + "/bin/java</executable>";
-
-            String javaFlags = getStringAttribute(description, "java.flags", "");
-            if (javaFlags.length() != 0) {
-                StringTokenizer t = new StringTokenizer(javaFlags);
-                while (t.hasMoreTokens()) {
-                    rsl += "<argument>" + t.nextToken() + "</argument>";
-                }
-            }
-
-            // classpath
-            String javaClassPath = getStringAttribute(description,
-                    "java.classpath", "");
-            if (javaClassPath.length() != 0) {
-                rsl += "<argument>-classpath</argument>";
-                rsl += "<argument>" + javaClassPath + "</argument>";
-            } else {
-                // TODO if not set, use jar files in prestaged set
-            }
-
-            // set the environment
-            Map<String, Object> env = sd.getEnvironment();
-            if (env != null && !env.isEmpty()) {
-                Set<String> s = env.keySet();
-                Object[] keys = (Object[]) s.toArray();
-
-                for (int i = 0; i < keys.length; i++) {
-                    String val = (String) env.get(keys[i]);
-                    rsl += "<argument>-D" + keys[i] + "=" + val + "</argument>";
-                }
-            }
-
-            // main class name
-            rsl += "<argument>"
-                    + getLocationURI(description).getSchemeSpecificPart()
-                    + "</argument>";
-        } else {
-            rsl += "<executable>";
-            rsl += getLocationURI(description).getPath();
-            rsl += "</executable>";
-            Map<String, Object> env = sd.getEnvironment();
-            if (env != null && !env.isEmpty()) {
-                Set<String> s = env.keySet();
-                Object[] keys = (Object[]) s.toArray();
-
-                for (int i = 0; i < keys.length; i++) {
-                    String val = (String) env.get(keys[i]);
-                    rsl += "<environment>";
-                    rsl += "<name>" + keys[i] + "</name>";
-                    rsl += "<value>" + val + "</value>";
-                    rsl += "</environment>";
-                }
+            for (int i = 0; i < keys.length; i++) {
+                String val = (String) env.get(keys[i]);
+                rsl += "<environment>";
+                rsl += "<name>" + keys[i] + "</name>";
+                rsl += "<value>" + val + "</value>";
+                rsl += "</environment>";
             }
         }
+        // }
 
         String[] argsA = getArgumentsArray(description);
 
@@ -191,7 +191,8 @@ public class WSGT4ResourceBrokerAdaptor extends ResourceBrokerCpi {
     }
 
     public void beginMultiJob() {
-        submitter = new WrapperSubmitter(gatContext, preferences, true);
+        submitter = new WrapperSubmitter(gatContext, preferences, brokerURI,
+                true);
     }
 
     public Job endMultiJob() throws GATInvocationException {
@@ -207,11 +208,12 @@ public class WSGT4ResourceBrokerAdaptor extends ResourceBrokerCpi {
                 logger.debug("useWrapper, using wrapper application");
             }
             if (submitter == null) {
-                submitter = new WrapperSubmitter(gatContext, preferences, false);
+                submitter = new WrapperSubmitter(gatContext, preferences,
+                        brokerURI, false);
             }
             return submitter.submitJob(description);
         }
-        String host = getHostname(description);
+        String host = getHostname();
         SoftwareDescription sd = description.getSoftwareDescription();
         if (sd == null) {
             throw new GATInvocationException(
@@ -222,13 +224,13 @@ public class WSGT4ResourceBrokerAdaptor extends ResourceBrokerCpi {
         WSGT4Job job = new WSGT4Job(gatContext, preferences, description,
                 sandbox);
         if (listener != null && metricDefinitionName != null) {
-            Metric metric = job.getMetricDefinitionByName(
-                    metricDefinitionName).createMetric(null);
+            Metric metric = job.getMetricDefinitionByName(metricDefinitionName)
+                    .createMetric(null);
             job.addMetricListener(listener, metric);
         }
         job.setState(Job.PRE_STAGING);
         sandbox.prestage();
-        job.setContactString(getHostname(description));
+        job.setContactString(getHostname());
 
         String rsl = createRSL(description, sandbox);
         JobDescriptionType gjobDescription = null;

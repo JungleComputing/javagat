@@ -65,7 +65,7 @@ public class SubmitJobGlite implements MetricListener {
         env.put("KEY_4", "value4");
         SoftwareDescription sd = new SoftwareDescription();
         sd.setEnvironment(env);
-        sd.setLocation(new URI(args[0]));
+        sd.setExecutable(args[0]);
         sd.setStdout(outFile);
         sd.setStderr(errFile);
         sd.setVirtualOrganisation("pvier");
@@ -81,7 +81,8 @@ public class SubmitJobGlite implements MetricListener {
                 hardwareAttributes);
 
         JobDescription jd = new JobDescription(sd, rd);
-        ResourceBroker broker = GAT.createResourceBroker(context, prefs);
+        ResourceBroker broker = GAT.createResourceBroker(context, prefs,
+                new URI(jobmanager));
 
         Job job = broker.submitJob(jd);
         MetricDefinition md = job.getMetricDefinitionByName("job.status");

@@ -46,12 +46,20 @@ public class CommandlineSshResourceBrokerAdaptor extends ResourceBrokerCpi {
      *                A GATContext which will be used to broker resources
      */
     public CommandlineSshResourceBrokerAdaptor(GATContext gatContext,
-            Preferences preferences) throws GATObjectCreationException {
-        super(gatContext, preferences);
+            Preferences preferences, URI brokerURI)
+            throws GATObjectCreationException {
+        super(gatContext, preferences, brokerURI);
+
+        if (!brokerURI.isCompatible("ssh") && brokerURI.getScheme() != null
+                || (brokerURI.refersToLocalHost() && (brokerURI == null))) {
+            throw new GATObjectCreationException(
+                    "cannot handle the scheme, scheme is: " + brokerURI.getScheme());
+        }
 
         String osname = System.getProperty("os.name");
-        if (osname.startsWith("Windows"))
+        if (osname.startsWith("Windows")) {
             windows = true;
+        }
     }
 
     public Job submitJob(JobDescription description, MetricListener listener,
@@ -69,19 +77,15 @@ public class CommandlineSshResourceBrokerAdaptor extends ResourceBrokerCpi {
             throw new MethodNotApplicableException("cannot handle environment");
         }
 
-        URI location = getLocationURI(description);
-        String path = null;
-
-        path = location.getPath();
-
-        String host = getHostname(description);
+        String path = getExecutable(description);
+        String host = getHostname();
         if (host == null) {
             host = "localhost";
         }
 
         try {
             sui = SSHSecurityUtils.getSshCredential(gatContext, preferences,
-                    "ssh", location, SSH_PORT);
+                    "ssh", brokerURI, SSH_PORT);
         } catch (Exception e) {
             if (logger.isDebugEnabled()) {
                 logger.debug("SshFileAdaptor: failed to retrieve credentials"
@@ -101,19 +105,19 @@ public class CommandlineSshResourceBrokerAdaptor extends ResourceBrokerCpi {
         }
 
         // to be modified, this part goes inside the SSHSecurityUtils
-        if (location.getUserInfo() != null) {
-            sui.username = location.getUserInfo();
+        if (brokerURI.getUserInfo() != null) {
+            sui.username = brokerURI.getUserInfo();
         }
 
         /* allow port override */
-        int port = location.getPort();
+        int port = brokerURI.getPort();
         /* it will always return -1 for user@host:path */
         if (port == -1) {
             port = SSH_PORT;
         }
 
         if (logger.isDebugEnabled()) {
-            logger.debug("Prepared session for location " + location
+            logger.debug("Prepared session for location " + brokerURI
                     + " with username: " + sui.username + "; host: " + host);
         }
 

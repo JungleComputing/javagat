@@ -8,6 +8,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.io.Reader;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -285,7 +286,14 @@ public class ProActiveJob extends JobCpi {
         infoMap.put("submissiontime", new Long(System.currentTimeMillis()));
 
         // Get everything we need from the job description.
-        URI executable = soft.getLocation();
+        //TODO changes lines below
+        URI executable = null;
+        try {
+            executable = new URI("");//soft.getLocation();
+        } catch (URISyntaxException e1) {
+            // TODO Auto-generated catch block
+            e1.printStackTrace();
+        }
         String scheme = executable.getScheme();
         if (!"java".equalsIgnoreCase(scheme)) {
             throw new GATInvocationException(

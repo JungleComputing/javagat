@@ -29,11 +29,10 @@ import org.gridlab.gat.monitoring.Metric;
 import org.gridlab.gat.monitoring.MetricListener;
 import org.gridlab.gat.resources.Job;
 import org.gridlab.gat.resources.JobDescription;
-import org.gridlab.gat.resources.ResourceDescription;
 import org.gridlab.gat.resources.SoftwareDescription;
-import org.gridlab.gat.resources.cpi.WrapperSubmitter;
 import org.gridlab.gat.resources.cpi.ResourceBrokerCpi;
 import org.gridlab.gat.resources.cpi.Sandbox;
+import org.gridlab.gat.resources.cpi.WrapperSubmitter;
 
 import com.jcraft.jsch.Channel;
 import com.jcraft.jsch.ChannelExec;
@@ -76,12 +75,20 @@ public class SshResourceBrokerAdaptor extends ResourceBrokerCpi {
      *                A GATContext which will be used to execute remote jobs
      */
     public SshResourceBrokerAdaptor(GATContext gatContext,
-            Preferences preferences) throws Exception {
-        super(gatContext, preferences);
+            Preferences preferences, URI brokerURI) throws Exception {
+        super(gatContext, preferences, brokerURI);
+
+        if (!brokerURI.isCompatible("ssh") && brokerURI.getScheme() != null
+                || (brokerURI.refersToLocalHost() && (brokerURI == null))) {
+            throw new GATObjectCreationException(
+                    "cannot handle the scheme, scheme is: "
+                            + brokerURI.getScheme());
+        }
     }
 
     public void beginMultiJob() {
-        submitter = new WrapperSubmitter(gatContext, preferences, true);
+        submitter = new WrapperSubmitter(gatContext, preferences, brokerURI,
+                true);
     }
 
     public Job endMultiJob() throws GATInvocationException {
@@ -110,40 +117,20 @@ public class SshResourceBrokerAdaptor extends ResourceBrokerCpi {
                 }
                 if (submitter == null) {
                     submitter = new WrapperSubmitter(gatContext, preferences,
-                            false);
+                            brokerURI, false);
                 }
                 return submitter.submitJob(description);
             }
 
-            URI location = getLocationURI(description);
-            ResourceDescription rd = description.getResourceDescription();
-
-            if (rd != null) {
-                Object res = rd.getDescription().get("machine.node");
-                if (res instanceof String) {
-                    host = (String) res;
-                } else if (res instanceof String[]) {
-                    host = ((String[]) res)[0];
-                }
-            }
-            if (!location.isCompatible("ssh") && location.getScheme() != null
-                    || (location.refersToLocalHost() && (host == null))) {
-                throw new GATInvocationException(
-                        "not a remote file, scheme is: " + location.getScheme());
-            }
             /* decide where to run */
             try {
-                if (host != null)
-                    prepareSession(new URI("any://" + host + "/"));
-                else {
-                    prepareSession(location);
-                    host = location.resolveHost();
-                }
+                prepareSession(brokerURI);
+                host = brokerURI.resolveHost();
             } catch (Exception e) {
                 throw new GATInvocationException("SshResourceBrokerAdaptor" + e);
             }
             String path = null;
-            path = location.getPath();
+            path = getExecutable(description);
 
             Sandbox sandbox = new Sandbox(gatContext, preferences, description,
                     host, null, true, false, false, false);

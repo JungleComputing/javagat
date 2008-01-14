@@ -1,19 +1,16 @@
 package tutorial;
 
-import java.util.Hashtable;
-
 import org.gridlab.gat.GAT;
 import org.gridlab.gat.GATContext;
+import org.gridlab.gat.URI;
 import org.gridlab.gat.io.File;
 import org.gridlab.gat.monitoring.Metric;
 import org.gridlab.gat.monitoring.MetricDefinition;
 import org.gridlab.gat.monitoring.MetricListener;
 import org.gridlab.gat.monitoring.MetricValue;
-import org.gridlab.gat.resources.HardwareResourceDescription;
 import org.gridlab.gat.resources.Job;
 import org.gridlab.gat.resources.JobDescription;
 import org.gridlab.gat.resources.ResourceBroker;
-import org.gridlab.gat.resources.ResourceDescription;
 import org.gridlab.gat.resources.SoftwareDescription;
 
 public class SubmitJobCallback implements MetricListener {
@@ -34,7 +31,7 @@ public class SubmitJobCallback implements MetricListener {
         String state = (String) val.getValue();
 
         System.err.println("SubmitJobCallback: Processing metric: "
-            + val.getMetric() + ", value is " + state);
+                + val.getMetric() + ", value is " + state);
 
         if (state.equals("STOPPED") || state.equals("SUBMISSION_ERROR")) {
             notifyAll();
@@ -46,17 +43,13 @@ public class SubmitJobCallback implements MetricListener {
         File stageInDir = GAT.createFile(context, "any:////home/rob/testDir");
 
         SoftwareDescription sd = new SoftwareDescription();
-        sd.setLocation("any://" + hostname + "//bin/hostname");
+        sd.setExecutable("/bin/hostname");
         sd.setStdout(outFile);
         sd.addPreStagedFile(stageInDir);
 
-        Hashtable<String, Object> attributes = new Hashtable<String, Object>();
-        attributes.put("machine.node", hostname);
-
-        ResourceDescription rd = new HardwareResourceDescription(attributes);
-
-        JobDescription jd = new JobDescription(sd, rd);
-        ResourceBroker broker = GAT.createResourceBroker(context);
+        JobDescription jd = new JobDescription(sd);
+        ResourceBroker broker = GAT.createResourceBroker(context, new URI(
+                "any://" + hostname + "/"));
         Job job = broker.submitJob(jd);
 
         return job;

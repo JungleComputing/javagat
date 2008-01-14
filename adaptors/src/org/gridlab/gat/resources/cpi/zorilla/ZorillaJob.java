@@ -164,7 +164,7 @@ public class ZorillaJob extends JobCpi {
         SoftwareDescription soft = description.getSoftwareDescription();
 
         try {
-            executable = new java.net.URI(soft.getLocation().getPath());
+            executable = new java.net.URI(soft.getExecutable());
         } catch (URISyntaxException e1) {
             throw new GATInvocationException(
                     "coult not create uri for executable: "

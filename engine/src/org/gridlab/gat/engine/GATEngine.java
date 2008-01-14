@@ -224,7 +224,8 @@ public class GATEngine {
 		}
 
 		if (logger.isDebugEnabled()) {
-			logger.debug("List of GAT jar files is: " + getJarsAsString(urls));
+		    logger.debug("List of GAT jar files is: " + getJarsAsString(urls));
+
 		}
 		gatClassLoader = new URLClassLoader(urls, 
 				this.getClass().getClassLoader()

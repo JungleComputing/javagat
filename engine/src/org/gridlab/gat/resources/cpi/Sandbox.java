@@ -121,6 +121,7 @@ public class Sandbox {
     }
 
     private void createSandboxDir(String host) throws GATInvocationException {
+        System.out.println("host:" + host);
 
         if (host == null) {
             throw new FilePrestageException("Sandbox",
@@ -130,9 +131,14 @@ public class Sandbox {
 
         for (int i = 0; i < 10; i++) {
             sandbox = getSandboxName();
+            System.out.println("sandbox:" + sandbox);
 
             try {
                 URI location = new URI("any://" + host + "/" + sandbox);
+                if (logger.isDebugEnabled()) {
+                    logger.debug("sandbox dir: " + location);
+                }
+                System.out.println("location:" + location);
                 FileInterface f = GAT.createFile(gatContext, preferences,
                         location).getFileInterface();
                 if (f.mkdir()) {
@@ -360,7 +366,7 @@ public class Sandbox {
         }
 
         if (logger.isInfoEnabled()) {
-            logger.info("removing sandbox dir");
+            logger.info("removing sandbox dir: " + "any://" + host + "/" + sandbox);
         }
         try {
             removeSandboxDir();

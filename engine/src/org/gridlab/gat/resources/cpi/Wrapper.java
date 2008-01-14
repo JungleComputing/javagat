@@ -235,12 +235,16 @@ public class Wrapper implements MetricListener {
         try {
             if (logger.isInfoEnabled()) {
                 logger.info("opening descriptor file: " + descriptorFile);
+                logger.info(descriptorFile + " exists: " + new java.io.File(descriptorFile).exists());
             }
+            
             java.io.FileInputStream tmp = new java.io.FileInputStream(
                     descriptorFile);
             ObjectInputStream in = new ObjectInputStream(tmp);
-            descriptions = (JobDescription[]) in.readObject();
+            logger.info("reading preferences");
             preferences = (Preferences) in.readObject();
+            logger.info("reading jobdescriptions");
+            descriptions = (JobDescription[]) in.readObject();
             preferences.remove("ResourceBroker.jobmanagerContact");
             preStageDoneLocations = (String[]) in.readObject();
             in.close();
@@ -249,7 +253,7 @@ public class Wrapper implements MetricListener {
                 logger.debug("an error occurred: " + e);
                 StringWriter writer = new StringWriter();
                 e.printStackTrace(new PrintWriter(writer));
-                logger.debug(e.toString());
+                logger.debug(writer.toString());
             }
             System.exit(1);
         }
@@ -277,12 +281,14 @@ public class Wrapper implements MetricListener {
                     preferences, remoteCWD);
             ResourceBroker broker = null;
             try {
-                broker = GAT.createResourceBroker(gatContext, preferences);
+                broker = GAT.createResourceBroker(gatContext, preferences, new URI("any://localhost"));
             } catch (GATObjectCreationException e) {
                 if (logger.isDebugEnabled()) {
                     logger.debug("could not create broker: " + e);
                 }
                 System.exit(1);
+            } catch (URISyntaxException e) {
+                // should not happen, since the URI is hardcoded
             }
             if (descriptions[submitted].getSoftwareDescription()
                     .getBooleanAttribute("waitForPreStage", false)) {

@@ -2,6 +2,7 @@
  * Created on Nov 8, 2006 by rob
  */
 package resources;
+
 import java.util.Hashtable;
 
 import org.gridlab.gat.GAT;
@@ -31,7 +32,7 @@ public class PreAndPostStageTest implements MetricListener {
 
     public synchronized void processMetricEvent(MetricValue val) {
         System.err.println("SubmitJobCallback: Processing metric: "
-            + val.getMetric() + ", value is " + val.getValue());
+                + val.getMetric() + ", value is " + val.getValue());
 
         String state = (String) val.getValue();
 
@@ -50,73 +51,108 @@ public class PreAndPostStageTest implements MetricListener {
         SoftwareDescription sd = new SoftwareDescription();
 
         try {
-            sd.setLocation(new URI("file:////bin/date"));
-        
-            sd.setStdout(GAT.createFile(context, prefs, new URI("any:///date.out")));
-            sd.setStderr(GAT.createFile(context, prefs, new URI("any:///date.err")));
+            sd.setExecutable("/bin/date");
+
+            sd.setStdout(GAT.createFile(context, prefs, new URI(
+                    "any:///date.out")));
+            sd.setStderr(GAT.createFile(context, prefs, new URI(
+                    "any:///date.err")));
 
             // Different combinations of pre staged files.
 
             // only src given, local file
-            sd.addPreStagedFile(GAT.createFile(context, prefs, new URI("any:////bin/echo")));
-            
+            sd.addPreStagedFile(GAT.createFile(context, prefs, new URI(
+                    "any:////bin/echo")));
+
             // src and dest given, local file into sandbox
-            sd.addPreStagedFile(GAT.createFile(context, prefs, new URI("any:////bin/bash")), 
-                GAT.createFile(context, prefs, new URI("any:///local_bash_in_sandbox")));
+            sd.addPreStagedFile(GAT.createFile(context, prefs, new URI(
+                    "any:////bin/bash")), GAT.createFile(context, prefs,
+                    new URI("any:///local_bash_in_sandbox")));
 
             // src and dest given, local file into sandbox subdir
-            sd.addPreStagedFile(GAT.createFile(context, prefs, new URI("any:////bin/sh")), 
-                GAT.createFile(context, prefs, new URI("any:///local_test_dir/local_sh_in_sandbox_in_subdir")));
+            sd.addPreStagedFile(GAT.createFile(context, prefs, new URI(
+                    "any:////bin/sh")), GAT.createFile(context, prefs, new URI(
+                    "any:///local_test_dir/local_sh_in_sandbox_in_subdir")));
 
             // src and dest given, local file to remote dir outside sandbox
-            sd.addPreStagedFile(GAT.createFile(context, prefs, new URI("any:////bin/cat")), 
-                GAT.createFile(context, prefs, new URI("any:////tmp/local_cat_outside_sandbox")));
+            sd.addPreStagedFile(GAT.createFile(context, prefs, new URI(
+                    "any:////bin/cat")), GAT.createFile(context, prefs,
+                    new URI("any:////tmp/local_cat_outside_sandbox")));
 
             // src and dest given, local file to remote dir outside sandbox
-            sd.addPreStagedFile(GAT.createFile(context, prefs, new URI("any:////bin/cp")), 
-                GAT.createFile(context, prefs, new URI("any:////tmp/test_dir/local_cp_outside_sandbox_in_subdir")));
-            
+            sd
+                    .addPreStagedFile(
+                            GAT.createFile(context, prefs, new URI(
+                                    "any:////bin/cp")),
+                            GAT
+                                    .createFile(
+                                            context,
+                                            prefs,
+                                            new URI(
+                                                    "any:////tmp/test_dir/local_cp_outside_sandbox_in_subdir")));
+
             // only src given, remote file
-            sd.addPreStagedFile(GAT.createFile(context, prefs, new URI("any://fs1.das2.liacs.nl//bin/cat")));
-            
+            sd.addPreStagedFile(GAT.createFile(context, prefs, new URI(
+                    "any://fs1.das2.liacs.nl//bin/cat")));
+
             // src and dest given, remote file into sandbox
-            sd.addPreStagedFile(GAT.createFile(context, prefs, new URI("any://fs1.das2.liacs.nl//bin/cp")), 
-                GAT.createFile(context, prefs, new URI("any:///cp_in_sandbox")));
+            sd.addPreStagedFile(GAT.createFile(context, prefs, new URI(
+                    "any://fs1.das2.liacs.nl//bin/cp")), GAT.createFile(
+                    context, prefs, new URI("any:///cp_in_sandbox")));
 
             // src and dest given, remote file into sandbox subdir
-            sd.addPreStagedFile(GAT.createFile(context, prefs, new URI("any://fs1.das2.liacs.nl//bin/date")), 
-                GAT.createFile(context, prefs, new URI("any:///test_dir/date_in_sandbox_subdir")));
+            sd.addPreStagedFile(GAT.createFile(context, prefs, new URI(
+                    "any://fs1.das2.liacs.nl//bin/date")), GAT.createFile(
+                    context, prefs, new URI(
+                            "any:///test_dir/date_in_sandbox_subdir")));
 
             // src and dest given, remote file to remote file outside sandbox
-            sd.addPreStagedFile(GAT.createFile(context, prefs, new URI("any://fs1.das2.liacs.nl//bin/echo")), 
-                GAT.createFile(context, prefs, new URI("any:////tmp/echo_outside_sandbox")));
+            sd.addPreStagedFile(GAT.createFile(context, prefs, new URI(
+                    "any://fs1.das2.liacs.nl//bin/echo")), GAT
+                    .createFile(context, prefs, new URI(
+                            "any:////tmp/echo_outside_sandbox")));
 
             // src and dest given, remote file to remote dir outside sandbox
-            sd.addPreStagedFile(GAT.createFile(context, prefs, new URI("any://fs1.das2.liacs.nl//bin/sh")), 
-                GAT.createFile(context, prefs, new URI("any:////tmp/remote_test_dir/sh_outside_sandbox_in_subdir")));
-            
+            sd
+                    .addPreStagedFile(
+                            GAT.createFile(context, prefs, new URI(
+                                    "any://fs1.das2.liacs.nl//bin/sh")),
+                            GAT
+                                    .createFile(
+                                            context,
+                                            prefs,
+                                            new URI(
+                                                    "any:////tmp/remote_test_dir/sh_outside_sandbox_in_subdir")));
+
             // @@@ staging a directory (both in and out)
 
-            
             // and now poststage some files
-            
-            // a file from the sandbox to the local dir, only specifing the source
-            sd.addPostStagedFile(GAT.createFile(context, prefs, new URI("echo")));
-            
+
+            // a file from the sandbox to the local dir, only specifing the
+            // source
+            sd.addPostStagedFile(GAT
+                    .createFile(context, prefs, new URI("echo")));
+
             // a file from the sandbox to a local dir
-            sd.addPostStagedFile(GAT.createFile(context, prefs, new URI("local_bash_in_sandbox")), 
-                GAT.createFile(context, prefs, new URI("any:///local_bash_in_sandbox")));
-            
+            sd.addPostStagedFile(GAT.createFile(context, prefs, new URI(
+                    "local_bash_in_sandbox")), GAT.createFile(context, prefs,
+                    new URI("any:///local_bash_in_sandbox")));
+
             // a file from the sandbox to a thirdparty machine
-            sd.addPostStagedFile(GAT.createFile(context, prefs, new URI("cat")), 
-                GAT.createFile(context, prefs, new URI("any://fs1.das2.liacs.nl/local_bash_in_sandbox")));
+            sd.addPostStagedFile(
+                    GAT.createFile(context, prefs, new URI("cat")),
+                    GAT.createFile(context, prefs, new URI(
+                            "any://fs1.das2.liacs.nl/local_bash_in_sandbox")));
 
             // a file from outside the sandbox to a local dir
-            sd.addPostStagedFile(GAT.createFile(context, prefs, new URI("/tmp/remote_test_dir/sh_outside_sandbox_in_subdir")));
+            sd.addPostStagedFile(GAT.createFile(context, prefs, new URI(
+                    "/tmp/remote_test_dir/sh_outside_sandbox_in_subdir")));
 
             // a file from outside the sandbox to a third party machine
-            sd.addPostStagedFile(GAT.createFile(context, prefs, new URI("/tmp/echo_outside_sandbox")),
-                GAT.createFile(context, prefs, new URI("any://fs1.das2.liacs.nl/echo_outside_sandbox")));
+            sd.addPostStagedFile(GAT.createFile(context, prefs, new URI(
+                    "/tmp/echo_outside_sandbox")), GAT.createFile(context,
+                    prefs, new URI(
+                            "any://fs1.das2.liacs.nl/echo_outside_sandbox")));
 
         } catch (Exception e) {
             System.err.println("error creating file: " + e);
@@ -128,13 +164,14 @@ public class PreAndPostStageTest implements MetricListener {
         hardwareAttributes.put("machine.node", args[0]);
 
         ResourceDescription rd = new HardwareResourceDescription(
-            hardwareAttributes);
+                hardwareAttributes);
         JobDescription jd = new JobDescription(sd, rd);
 
         ResourceBroker broker = null;
 
         try {
-            broker = GAT.createResourceBroker(context, prefs);
+            broker = GAT.createResourceBroker(context, prefs, new URI(
+                    "any://localhost"));
         } catch (Exception e) {
             System.err.println("Could not create broker: " + e);
             GAT.end();

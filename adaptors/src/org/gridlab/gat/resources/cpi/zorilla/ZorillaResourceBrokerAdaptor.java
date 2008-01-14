@@ -1,5 +1,11 @@
 package org.gridlab.gat.resources.cpi.zorilla;
 
+import ibis.zorilla.zoni.Callback;
+import ibis.zorilla.zoni.CallbackReceiver;
+import ibis.zorilla.zoni.JobInfo;
+import ibis.zorilla.zoni.ZoniConnection;
+import ibis.zorilla.zoni.ZoniProtocol;
+
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
@@ -7,17 +13,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import ibis.zorilla.zoni.Callback;
-import ibis.zorilla.zoni.CallbackReceiver;
-import ibis.zorilla.zoni.JobInfo;
-import ibis.zorilla.zoni.ZoniConnection;
-import ibis.zorilla.zoni.ZoniProtocol;
-
 import org.apache.log4j.Logger;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.Preferences;
 import org.gridlab.gat.TimePeriod;
+import org.gridlab.gat.URI;
 import org.gridlab.gat.monitoring.Metric;
 import org.gridlab.gat.monitoring.MetricListener;
 import org.gridlab.gat.resources.HardwareResource;
@@ -109,8 +110,8 @@ public class ZorillaResourceBrokerAdaptor extends ResourceBrokerCpi implements
      *            A GATContext which will be used to broker resources
      */
     public ZorillaResourceBrokerAdaptor(GATContext gatContext,
-            Preferences preferences) throws Exception {
-        super(gatContext, preferences);
+            Preferences preferences, URI brokerURI) throws Exception {
+        super(gatContext, preferences, brokerURI);
 
         String addressString = (String) preferences.get("zorilla.node.address");
 
@@ -182,7 +183,7 @@ public class ZorillaResourceBrokerAdaptor extends ResourceBrokerCpi implements
                     "The job description does not contain a software description");
         }
 
-        String host = getHostname(description);
+        String host = getHostname();
 
         if (host != null) {
             throw new GATInvocationException(

@@ -5,12 +5,11 @@ import jargs.gnu.CmdLineParser;
 import org.gridlab.gat.GAT;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.Preferences;
+import org.gridlab.gat.URI;
 import org.gridlab.gat.io.File;
-import org.gridlab.gat.resources.HardwareResourceDescription;
 import org.gridlab.gat.resources.Job;
 import org.gridlab.gat.resources.JobDescription;
 import org.gridlab.gat.resources.ResourceBroker;
-import org.gridlab.gat.resources.ResourceDescription;
 import org.gridlab.gat.resources.SoftwareDescription;
 
 public class TestResourceBroker {
@@ -51,7 +50,7 @@ public class TestResourceBroker {
 	    printUsage();
 	    System.exit(0);
 	}
-	String node = rargs[0];
+	URI node = new URI(rargs[0]);
 
 
 	Preferences prefs = new Preferences();
@@ -76,10 +75,10 @@ public class TestResourceBroker {
 
 
 	GATContext context = new GATContext();
-	ResourceDescription rd = new HardwareResourceDescription();
-	rd.addResourceAttribute("machine.node", node);
+	
+	
 	SoftwareDescription sd = new SoftwareDescription();
-	sd.setLocation(exeName);
+	sd.setExecutable(exeName);
 	if(stdoutName != null) {
 	    File stdout = GAT.createFile(context, stdoutName);
 	    sd.setStdout(stdout);
@@ -92,10 +91,10 @@ public class TestResourceBroker {
 	    File stderr = GAT.createFile(context, stderrName);
 	    sd.setStderr(stderr);
 	}
-	JobDescription jd = new JobDescription(sd, rd);
+	JobDescription jd = new JobDescription(sd);
 
 	long start = System.currentTimeMillis();
-	ResourceBroker broker = GAT.createResourceBroker(context, prefs);
+	ResourceBroker broker = GAT.createResourceBroker(context, prefs, node);
 	Job job = broker.submitJob(jd);
 	while (job.getState() != Job.STOPPED &&
 	       job.getState() != Job.SUBMISSION_ERROR) Thread.sleep(1000);
