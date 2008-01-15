@@ -960,7 +960,7 @@ public class GATEngine {
 		try {
 			InetAddress a = InetAddress.getLocalHost();
 			if (a != null) {
-				return a.getHostName();
+				return a.getCanonicalHostName();
 			}
 		} catch (IOException e) {
 			// ignore

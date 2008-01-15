@@ -95,10 +95,7 @@ public class WrapperSubmitter {
         try {
             Preferences newPreferences = new Preferences(preferences);
             newPreferences.put("useWrapper", "false");
-            if (newPreferences.containsKey("wrappedSandboxRoot")) {
-                newPreferences.put("sandboxRoot", newPreferences.get("wrappedSandboxRoot"));
-                newPreferences.remove("wrappedSandboxRoot");
-            }
+
             SoftwareDescription origSd = descriptions.get(0)
                     .getSoftwareDescription();
             if (origSd == null) {
@@ -232,6 +229,10 @@ public class WrapperSubmitter {
             long maxCPUTime = origSd.getLongAttribute("maxCPUTime", -1);
             if (maxCPUTime > 0) {
                 sd.addAttribute("maxCPUTime", new Long(maxCPUTime));
+            }
+            
+            if (origSd.getAttributes().containsKey("sandboxRootForWrapper")) {
+                sd.addAttribute("sandboxRoot", origSd.getAttributes().get("sandboxRootForWrapper"));
             }
 
             JobDescription jd = new JobDescription(sd);

@@ -121,8 +121,6 @@ public class Sandbox {
     }
 
     private void createSandboxDir(String host) throws GATInvocationException {
-        System.out.println("host:" + host);
-
         if (host == null) {
             throw new FilePrestageException("Sandbox",
                     new GATInvocationException(
@@ -131,14 +129,11 @@ public class Sandbox {
 
         for (int i = 0; i < 10; i++) {
             sandbox = getSandboxName();
-            System.out.println("sandbox:" + sandbox);
-
             try {
                 URI location = new URI("any://" + host + "/" + sandbox);
                 if (logger.isDebugEnabled()) {
                     logger.debug("sandbox dir: " + location);
                 }
-                System.out.println("location:" + location);
                 FileInterface f = GAT.createFile(gatContext, preferences,
                         location).getFileInterface();
                 if (f.mkdir()) {
@@ -365,18 +360,24 @@ public class Sandbox {
             deleteException = e;
         }
 
-        if (logger.isInfoEnabled()) {
-            logger.info("removing sandbox dir: " + "any://" + host + "/" + sandbox);
-        }
-        try {
-            removeSandboxDir();
-        } catch (GATInvocationException e) {
-            removeSandboxException = e;
-        }
-        if (logger.isInfoEnabled()) {
-            logger.info("removing sandbox dir done "
-                    + (removeSandboxException == null ? "(SUCCESS)"
-                            : "(FAILURE)"));
+        if (createSandboxDir) {
+            if (logger.isInfoEnabled()) {
+                logger.info("removing sandbox dir: " + "any://" + host + "/" + sandbox);
+            }
+            try {
+                removeSandboxDir();
+            } catch (GATInvocationException e) {
+                removeSandboxException = e;
+            }
+            if (logger.isInfoEnabled()) {
+                logger.info("removing sandbox dir done "
+                        + (removeSandboxException == null ? "(SUCCESS)"
+                                : "(FAILURE)"));
+            }
+        } else {
+            if (logger.isInfoEnabled()) {
+                logger.info("sandbox won't be removed, since it isn't created!");
+            }
         }
 
         if (j != null) {
