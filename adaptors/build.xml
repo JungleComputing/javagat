@@ -264,7 +264,7 @@
 
 		<jar jarfile="${lib}/GridsamResourceBrokerAdaptor.jar" basedir="${tmp}" includes="**/org/gridlab/gat/resources/cpi/gridsam/*.class">
 			<manifest>
-				<attribute name="ResourceBrokerCpi-class" value="org.gridlab.gat.resources.cpi.proactive.GridsamResourceBrokerAdaptor" />
+				<attribute name="ResourceBrokerCpi-class" value="org.gridlab.gat.resources.cpi.gridsam.GridSAMResourceBrokerAdaptor" />
 			</manifest>
 		</jar>
 
