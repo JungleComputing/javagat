@@ -53,15 +53,16 @@ public class JobSubmit {
         GATContext context = new GATContext();
 
         try {
-            // Create the ResourceBroker.
-            broker = GAT.createResourceBroker(context);
-
             // Convert the first args to an URI, create the SoftwareDescription,
             // sets its location to the URI to be submit as job,
             // and sets its arguments as given in the commandline.
             binaryFile = new URI(args[0]);
             swDescription = new SoftwareDescription();
-            swDescription.setLocation(binaryFile);
+            swDescription.setExecutable(binaryFile.getPath());
+            
+            // Create the ResourceBroker.
+            broker = GAT.createResourceBroker(context, binaryFile);
+
 
             String[] argsList = new String[args.length - 1];
             System.arraycopy(args, 1, argsList, 0, args.length - 1);

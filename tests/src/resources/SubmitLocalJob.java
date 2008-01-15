@@ -3,7 +3,6 @@
  */
 package resources;
 
-import java.net.URISyntaxException;
 import java.util.Hashtable;
 import java.util.Map;
 
@@ -28,17 +27,10 @@ public class SubmitLocalJob {
         Preferences prefs = new Preferences();
         prefs.put("ResourceBroker.adaptor.name", "local");
 
-        URI exe = null;
-
-        try {
-            exe = new URI("file:////bin/date");
-        } catch (URISyntaxException e) {
-            System.err.println("syntax error in URI");
-            System.exit(1);
-        }
+        String exe = "/bin/date";
 
         SoftwareDescription sd = new SoftwareDescription();
-        sd.setLocation(exe);
+        sd.setExecutable(exe);
 
         try {
             File stdout = GAT.createFile(context, new URI(
@@ -61,7 +53,7 @@ public class SubmitLocalJob {
 
         try {
             jd = new JobDescription(sd, rd);
-            broker = GAT.createResourceBroker(context, prefs);
+            broker = GAT.createResourceBroker(context, prefs, new URI("any:///"));
         } catch (Exception e) {
             System.err.println("Could not create Job description: " + e);
             System.exit(1);

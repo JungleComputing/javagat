@@ -7,7 +7,6 @@ import org.apache.log4j.Logger;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.Preferences;
-import org.gridlab.gat.URI;
 import org.gridlab.gat.io.File;
 import org.gridlab.gat.io.cpi.FileCpi;
 
@@ -19,7 +18,7 @@ public class PreStagedFile extends StagedFile {
 
     private boolean isStdIn;
 
-    private URI exe;
+    private String exe;
 
 
     public PreStagedFile() {
@@ -27,7 +26,7 @@ public class PreStagedFile extends StagedFile {
     }
 
     public PreStagedFile(GATContext context, Preferences preferences, File src,
-            File dest, String host, String sandbox, boolean isStdIn, URI exe)
+            File dest, String host, String sandbox, boolean isStdIn, String exe)
             throws GATInvocationException {
         super(context, preferences, src, dest, host, sandbox);
 
@@ -40,14 +39,14 @@ public class PreStagedFile extends StagedFile {
     /**
      * @return the exe
      */
-    public URI getExe() {
+    public String getExe() {
         return exe;
     }
 
     /**
      * @param exe the exe to set
      */
-    public void setExe(URI exe) {
+    public void setExe(String exe) {
         this.exe = exe;
     }
 
@@ -96,23 +95,23 @@ public class PreStagedFile extends StagedFile {
         }
 
         if (inSandbox) {
-            if (exe.getPath() == null) {
+            if (exe == null) {
                 // can happen with java executables
                 isExecutable = false;
                 return;
             }
 
-            if (exe.getPath().startsWith("/")) {
+            if (exe.startsWith("/")) {
                 // file is relative, exe is absolute
                 isExecutable = false;
                 return;
             }
 
-            if (getResolvedSrc().isFile() && relativeURI.getPath().equals(exe.getPath())) {
+            if (getResolvedSrc().isFile() && relativeURI.getPath().equals(exe)) {
                 isExecutable = true;
             }
         } else {
-            if (getResolvedSrc().isFile() && getResolvedDest().getPath().equals(exe.getPath())) {
+            if (getResolvedSrc().isFile() && getResolvedDest().getPath().equals(exe)) {
                 isExecutable = true;
             }
         }
@@ -155,7 +154,7 @@ public class PreStagedFile extends StagedFile {
                 logger.info("DELETE_DIR:" + getResolvedDest());
             }
             FileCpi.recursiveDeleteDirectory(gatContext, preferences,
-                    getResolvedDest());
+                    getResolvedDest().getFileInterface());
         } else {
             if (logger.isInfoEnabled()) {
                 logger.info("DELETE_FILE:" + getResolvedDest());

@@ -4,14 +4,12 @@
  */
 package org.gridlab.gat.resources;
 
-import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
-import org.gridlab.gat.URI;
 import org.gridlab.gat.io.File;
 
 /**
@@ -62,8 +60,9 @@ import org.gridlab.gat.io.File;
  */
 @SuppressWarnings("serial")
 public class SoftwareDescription implements java.io.Serializable {
-    private URI location;
 
+    private String executable;
+    
     private String[] arguments;
 
     private HashMap<String, Object> environment;
@@ -92,6 +91,8 @@ public class SoftwareDescription implements java.io.Serializable {
 
     private boolean wipePostStaged;
 
+    private String virtualOrganisation;
+
     /**
      * Create a software description, which describes the application you
      * want to run.
@@ -115,7 +116,7 @@ public class SoftwareDescription implements java.io.Serializable {
 	public SoftwareDescription(Map<String, Object> attributes) {
         this.attributes = new HashMap<String, Object>(attributes);
 
-        location = (URI) attributes.get("location");
+        executable = (String) attributes.get("executable");
         arguments = (String[]) attributes.get("arguments");
         environment = new HashMap<String, Object>((Map<String, Object>) attributes.get("environment"));
         stdin = (File) attributes.get("stdin");
@@ -228,28 +229,21 @@ public class SoftwareDescription implements java.io.Serializable {
     }
 
     /**
-     * @return Returns the location of the executable.
+     * @return Returns the path to the executable.
      */
-    public URI getLocation() {
-        return location;
+    public String getExecutable() {
+        return executable;
     }
-
+    
     /**
-     * @param location
-     *            The location of the executable.
+     * @param executable
+     *            The path to the executable.
      */
-    public void setLocation(URI location) {
-        this.location = location;
+    public void setExecutable(String executable) {
+        this.executable = executable;
     }
-
-    /**
-     * @param location
-     *            The location of the executable.
-     */
-    public void setLocation(String location) throws URISyntaxException {
-        this.location = new URI(location);
-    }
-
+    
+    
     /**
      * @return Returns the pre staged files.
      */
@@ -388,8 +382,9 @@ public class SoftwareDescription implements java.io.Serializable {
 
     public String toString() {
         String res = "SoftwareDescription(";
-        res += "location: " + (location == null ? "null" : location.toString());
-
+        //res += "location: " + (location == null ? "null" : location.toString());
+        res += "executable: " +  executable;
+        
         res += ", arguments: ";
         if (arguments != null) {
             for (int i = 0; i < arguments.length; i++) {
@@ -502,5 +497,13 @@ public class SoftwareDescription implements java.io.Serializable {
             throw new Error("illegal type for boolean attribute: " + name
                 + ": " + val);
         }
+    }
+    
+    public void setVirtualOrganisation(String vo) {
+        this.virtualOrganisation = vo;
+    }
+    
+    public String getVirtualOrganisation() {
+        return virtualOrganisation;
     }
 }

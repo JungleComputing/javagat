@@ -12,16 +12,14 @@ import org.gridlab.gat.CommandNotFoundException;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.GATObjectCreationException;
-import org.gridlab.gat.MethodNotApplicableException;
 import org.gridlab.gat.Preferences;
 import org.gridlab.gat.TimePeriod;
 import org.gridlab.gat.URI;
-import org.gridlab.gat.engine.GATEngine;
 import org.gridlab.gat.engine.util.CommandRunner;
 import org.gridlab.gat.engine.util.InputForwarder;
 import org.gridlab.gat.engine.util.OutputForwarder;
-import org.gridlab.gat.monitoring.MetricListener;
 import org.gridlab.gat.monitoring.Metric;
+import org.gridlab.gat.monitoring.MetricListener;
 import org.gridlab.gat.resources.HardwareResource;
 import org.gridlab.gat.resources.Job;
 import org.gridlab.gat.resources.JobDescription;
@@ -79,8 +77,16 @@ public class LocalResourceBrokerAdaptor extends ResourceBrokerCpi {
      *                A GATContext which will be used to broker resources
      */
     public LocalResourceBrokerAdaptor(GATContext gatContext,
-            Preferences preferences) throws GATObjectCreationException {
-        super(gatContext, preferences);
+            Preferences preferences, URI brokerURI)
+            throws GATObjectCreationException {
+        super(gatContext, preferences, brokerURI);
+
+        // the brokerURI should point to the local host else throw exception
+        if (!brokerURI.refersToLocalHost()) {
+            throw new GATObjectCreationException(
+                    "The LocalResourceBrokerAdaptor doesn't refer to localhost, but to a remote host: "
+                            + brokerURI.toString());
+        }
     }
 
     /**
@@ -124,7 +130,6 @@ public class LocalResourceBrokerAdaptor extends ResourceBrokerCpi {
      */
     public Job submitJob(JobDescription description, MetricListener listener,
             String metricDefinitionName) throws GATInvocationException {
-        long start = System.currentTimeMillis();
         SoftwareDescription sd = description.getSoftwareDescription();
 
         if (sd == null) {
@@ -148,21 +153,6 @@ public class LocalResourceBrokerAdaptor extends ResourceBrokerCpi {
             }
         }
 
-        URI location = getLocationURI(description);
-        if (!location.refersToLocalHost()) {
-            throw new MethodNotApplicableException("not a local file: "
-                    + location);
-        }
-
-        String host = getHostname(description);
-        if (host != null) {
-            if (!host.equals("localhost")
-                    && !host.equals(GATEngine.getLocalHostName())) {
-                throw new MethodNotApplicableException(
-                        "cannot run jobs on remote machines with the local adaptor");
-            }
-        }
-
         String home = System.getProperty("user.home");
         if (home == null) {
             throw new GATInvocationException(
@@ -172,11 +162,21 @@ public class LocalResourceBrokerAdaptor extends ResourceBrokerCpi {
         Sandbox sandbox = new Sandbox(gatContext, preferences, description,
                 "localhost", home, true, true, true, true);
 
+        LocalJob job = new LocalJob(gatContext, preferences, description,
+                sandbox);
+        if (listener != null && metricDefinitionName != null) {
+            Metric metric = job.getMetricDefinitionByName(metricDefinitionName)
+                    .createMetric(null);
+            job.addMetricListener(listener, metric);
+        }
+        job.setState(Job.PRE_STAGING);
+        sandbox.prestage();
+
         String exe;
         if (sandbox.getResolvedExecutable() != null) {
             exe = sandbox.getResolvedExecutable().getPath();
         } else {
-            exe = location.getPath();
+            exe = getExecutable(description);
         }
 
         // try to set the executable bit, it might be lost
@@ -211,13 +211,16 @@ public class LocalResourceBrokerAdaptor extends ResourceBrokerCpi {
         }
 
         Process p = null;
-        long startRun = System.currentTimeMillis();
         try {
             p = Runtime.getRuntime().exec(command, environment, f);
+            job.setState(Job.RUNNING);
+            job.setProcess(p);
         } catch (IOException e) {
             throw new CommandNotFoundException("LocalResourceBrokerAdaptor", e);
         }
-
+        job.setState(Job.RUNNING);
+        job.setProcess(p);
+        
         org.gridlab.gat.io.File stdin = sandbox.getResolvedStdin();
         org.gridlab.gat.io.File stdout = sandbox.getResolvedStdout();
         org.gridlab.gat.io.File stderr = sandbox.getResolvedStderr();
@@ -254,6 +257,7 @@ public class LocalResourceBrokerAdaptor extends ResourceBrokerCpi {
                 throw new GATInvocationException("local broker", e);
             }
         }
+        job.setOutputForwarder(outForwarder);
 
         OutputForwarder errForwarder = null;
 
@@ -269,15 +273,8 @@ public class LocalResourceBrokerAdaptor extends ResourceBrokerCpi {
                 throw new GATInvocationException("local broker", e);
             }
         }
-
-        LocalJob job = new LocalJob(gatContext, preferences, this,
-                description, p, host, sandbox, outForwarder, errForwarder,
-                start, startRun);
-        if (listener != null && metricDefinitionName != null) {
-            Metric metric = job.getMetricDefinitionByName(metricDefinitionName)
-                    .createMetric(null);
-            job.addMetricListener(listener, metric);
-        }
+        job.setErrorForwarder(errForwarder);
+        job.startProcessWaiter();
 
         return job;
     }

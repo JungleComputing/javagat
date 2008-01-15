@@ -74,13 +74,22 @@ public class LocalJob extends JobCpi {
     private long startTime;
     private long runTime;
 
-    LocalJob(GATContext gatContext, Preferences preferences,
-            LocalResourceBrokerAdaptor broker, JobDescription description,
-            Process p, String host, Sandbox sandbox, OutputForwarder out,
-            OutputForwarder err, long startTime, long startRun) {
+    protected LocalJob(GATContext gatContext, Preferences preferences,
+            JobDescription description, Sandbox sandbox) {
         super(gatContext, preferences, description, sandbox);
-        // this.broker = broker;
         jobID = allocJobID();
+        
+        // Tell the engine that we provide job.status events
+        HashMap<String, Object> returnDef = new HashMap<String, Object>();
+        returnDef.put("status", String.class);
+        statusMetricDefinition = new MetricDefinition("job.status",
+                MetricDefinition.DISCRETE, "String", null, null, returnDef);
+        statusMetric = statusMetricDefinition.createMetric(null);
+        GATEngine.registerMetric(this, "getJobStatus", statusMetricDefinition);
+    }
+    
+    protected void setProcess(Process p) {
+        this.p = p;
         Field f = null;
         try {
             f = p.getClass().getDeclaredField("pid");
@@ -91,23 +100,25 @@ public class LocalJob extends JobCpi {
         } catch (NoSuchFieldException e) {
         } catch (IllegalAccessException e) {
         }
-
-        state = RUNNING;
-        this.p = p;
+    }
+    
+    protected void setOutputForwarder(OutputForwarder out) {
         this.out = out;
+    }
+    
+    protected void setErrorForwarder(OutputForwarder err) {
         this.err = err;
-        this.startTime = startTime;
-        this.runTime = startRun;
-
-        // Tell the engine that we provide job.status events
-        HashMap<String, Object> returnDef = new HashMap<String, Object>();
-        returnDef.put("status", String.class);
-        statusMetricDefinition = new MetricDefinition("job.status",
-                MetricDefinition.DISCRETE, "String", null, null, returnDef);
-        statusMetric = statusMetricDefinition.createMetric(null);
-        GATEngine.registerMetric(this, "getJobStatus", statusMetricDefinition);
-
+    }
+    
+    protected void startProcessWaiter() {
         new ProcessWaiter();
+    }
+    
+    protected void setState(int state) {
+        this.state = state;
+        MetricValue v = new MetricValue(this, getStateString(state),
+                statusMetric, System.currentTimeMillis());
+        GATEngine.fireMetric(this, v);
     }
 
     /*

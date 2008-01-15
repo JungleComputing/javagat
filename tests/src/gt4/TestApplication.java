@@ -5,6 +5,7 @@ import jargs.gnu.CmdLineParser;
 import org.gridlab.gat.GAT;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.Preferences;
+import org.gridlab.gat.URI;
 import org.gridlab.gat.io.File;
 import org.gridlab.gat.resources.HardwareResourceDescription;
 import org.gridlab.gat.resources.Job;
@@ -47,7 +48,7 @@ public class TestApplication {
 	    printUsage();
 	    System.exit(0);
 	}
-	String submissionNode = rargs[0];
+	URI submissionNode = new URI(rargs[0]);
 
 	Preferences prefs = new Preferences();
 	String prefKey = (String) parser.getOptionValue(cmdPrefKey);
@@ -71,7 +72,7 @@ public class TestApplication {
 	GATContext context = new GATContext();
 	
 	SoftwareDescription sd = new SoftwareDescription();
-	sd.setLocation("/usr/bin/zip");
+	sd.setExecutable("/usr/bin/zip");
 	
 	File stdout = GAT.createFile(context, "zip.out");
 	sd.setStdout(stdout);
@@ -86,10 +87,10 @@ public class TestApplication {
 	
 	
 	ResourceDescription rd = new HardwareResourceDescription();
-	rd.addResourceAttribute("machine.node", submissionNode);
+	//rd.addResourceAttribute("machine.node", submissionNode); obsolete
 	
 	JobDescription jd = new JobDescription(sd, rd);
-	ResourceBroker broker = GAT.createResourceBroker(context, prefs);
+	ResourceBroker broker = GAT.createResourceBroker(context, prefs, submissionNode);
 	Job job = broker.submitJob(jd);
 	
 	while ((job.getState() != Job.STOPPED)

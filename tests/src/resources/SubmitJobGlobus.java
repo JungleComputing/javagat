@@ -44,7 +44,6 @@ public class SubmitJobGlobus implements MetricListener {
         Preferences prefs = new Preferences();
         prefs.put("ResourceBroker.adaptor.name", "Globus");
         prefs.put("File.adaptor.name", "GridFTP");
-        prefs.put("ResourceBroker.jobmanagerContact", args[1]);
 /*
         File outFile = GAT.createFile(context, prefs,
             new URI("any:///out"));
@@ -52,7 +51,7 @@ public class SubmitJobGlobus implements MetricListener {
             new URI("any:///err"));
 */
         SoftwareDescription sd = new SoftwareDescription();
-        sd.setLocation(new URI(args[0]));
+        sd.setExecutable(args[0]);
 //        sd.setStdout(outFile);
 //        sd.setStderr(errFile);
         if(args.length == 3) {
@@ -65,7 +64,7 @@ public class SubmitJobGlobus implements MetricListener {
             hardwareAttributes);
 
         JobDescription jd = new JobDescription(sd, rd);
-        ResourceBroker broker = GAT.createResourceBroker(context, prefs);
+        ResourceBroker broker = GAT.createResourceBroker(context, prefs, new URI(args[1]));
 
         long start = System.currentTimeMillis();
         Job job = broker.submitJob(jd);

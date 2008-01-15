@@ -77,27 +77,28 @@ class GlobusContextCreator implements SecurityContextCreator {
                             return null;
                         }
                     }
-                }
-                if (logger.isDebugEnabled()) {
-                    logger
-                            .debug("CredentialSecurityContext credential is instance of byte[]");
-                }
-                try {
-                    GlobusCredential globusCred = new GlobusCredential(
-                            new ByteArrayInputStream((byte[]) credentialObject));
-                    GSSCredential result = new GlobusGSSCredentialImpl(
-                            globusCred, GSSCredential.INITIATE_AND_ACCEPT);
-                    return result;
-                } catch (GlobusCredentialException e) {
                     if (logger.isDebugEnabled()) {
-                        logger.debug(e);
+                        logger
+                                .debug("CredentialSecurityContext credential is instance of byte[]");
                     }
-                    return null;
-                } catch (GSSException e) {
-                    if (logger.isDebugEnabled()) {
-                        logger.debug(e);
+                    try {
+                        GlobusCredential globusCred = new GlobusCredential(
+                                new ByteArrayInputStream(
+                                        (byte[]) credentialObject));
+                        GSSCredential result = new GlobusGSSCredentialImpl(
+                                globusCred, GSSCredential.INITIATE_AND_ACCEPT);
+                        return result;
+                    } catch (GlobusCredentialException e) {
+                        if (logger.isDebugEnabled()) {
+                            logger.debug(e);
+                        }
+                        return null;
+                    } catch (GSSException e) {
+                        if (logger.isDebugEnabled()) {
+                            logger.debug(e);
+                        }
+                        return null;
                     }
-                    return null;
                 }
             }
         }
@@ -210,6 +211,7 @@ public class GlobusSecurityUtils {
                     .debug("trying to get credential from location specified in environment");
         }
 
+        
         Environment e = new Environment();
         String proxyLocation = e.getVar("X509_USER_PROXY");
 
@@ -262,10 +264,10 @@ public class GlobusSecurityUtils {
             GlobusCredential globusCred = new GlobusCredential(file);
             credential = new GlobusGSSCredentialImpl(globusCred,
                     GSSCredential.INITIATE_AND_ACCEPT);
-        } catch (Exception x) {
+        } catch (Throwable t) {
             if (logger.isDebugEnabled()) {
                 logger.debug("loading credential from file " + file
-                        + " failed: " + x);
+                        + " failed: " + t);
             }
 
             return null;

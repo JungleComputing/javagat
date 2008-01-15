@@ -3,21 +3,14 @@
         Build file for Java GAT Adaptors.
         </description>
 
-	<property environment="env" />
-
-	<!-- Global properties for GAT -->
-
-	<!-- Get the path to the engine. If GAT_LOCATION is set, use it. Otherwise,
-             default to ../JavaGATEngine.
-	-->
-	<property name="env.GAT_LOCATION" location=".." />
-	<property name="engine_path" location="${env.GAT_LOCATION}/lib" />
+	<property name="gat.location" location=".." />
+	<property name="engine_path" location="${gat.location}/lib" />
 
 	<property name="src" location="src" />
 	<property name="tmp" location="tmp" />
-	<property name="lib" location="../lib/adaptors" />
+	<property name="lib" location="${gat.location}/lib/adaptors" />
 	<property name="gt4lib-src" location="external/lib-gt4_0_0" />
-	<property name="gt4lib-dst" location="../lib/lib-gt4_0_0" />
+	<property name="gt4lib-dst" location="${gat.location}/lib/lib-gt4_0_0" />
 	<property name="external" location="external" />
 	<property name="java.debug.value" value="true" />
 
@@ -94,6 +87,12 @@
 			</manifest>
 		</jar>
 
+		<jar jarfile="${lib}/GlobusAdvertServiceAdaptor.jar" basedir="${tmp}" includes="**/advert/cpi/globus/*.class">
+			<manifest>
+				<attribute name="AdvertServiceCpi-class" value="org.gridlab.gat.advert.cpi.globus.GlobusAdvertServiceAdaptor" />
+			</manifest>
+		</jar>
+
 		<jar jarfile="${lib}/SshFileAdaptor.jar" basedir="${tmp}" includes="**/Ssh*.class,**/SSHSecurityUtils.class,com/jcraft/jsch/**">
 			<manifest>
 				<attribute name="FileCpi-class" value="org.gridlab.gat.io.cpi.ssh.SshFileAdaptor" />
@@ -136,9 +135,9 @@
 			</manifest>
 		</jar>
 
-		<jar jarfile="${lib}/ThirdPartyCopyFileAdaptor.jar" basedir="${tmp}" includes="**/thirdPartyCopy/*.class">
+		<jar jarfile="${lib}/SrcToLocalToDestCopyFileAdaptor.jar" basedir="${tmp}" includes="**/srcToLocalToDestCopy/*.class">
 			<manifest>
-				<attribute name="FileCpi-class" value="org.gridlab.gat.io.cpi.thirdPartyCopy.ThirdPartyCopyFileAdaptor" />
+				<attribute name="FileCpi-class" value="org.gridlab.gat.io.cpi.thirdPartyCopy.SrcToLocalToDestCopyFileAdaptor" />
 			</manifest>
 		</jar>
 
@@ -239,12 +238,6 @@
 			</manifest>
 		</jar>
 
-		<jar jarfile="${lib}/CommandlineSshPrunResourceBrokerAdaptor.jar" basedir="${tmp}" includes="org/gridlab/gat/resources/cpi/commandlineSshPrun/*.class,com/jcraft/jsch/**">
-			<manifest>
-				<attribute name="ResourceBrokerCpi-class" value="org.gridlab.gat.resources.cpi.commandlineSshPrun.CommandlineSshPrunResourceBrokerAdaptor" />
-			</manifest>
-		</jar>
-
 		<jar jarfile="${lib}/SshResourceBrokerAdaptor.jar" basedir="${tmp}" includes="org/gridlab/gat/resources/cpi/ssh/*.class,com/jcraft/jsch/**">
 			<manifest>
 				<attribute name="ResourceBrokerCpi-class" value="org.gridlab.gat.resources.cpi.ssh.SshResourceBrokerAdaptor" />
@@ -263,9 +256,21 @@
 			</manifest>
 		</jar>
 
-		<jar jarfile="${lib}/ProActiveBrokerAdaptor.jar" basedir="${tmp}" includes="**/org/gridlab/gat/resources/cpi/proactive/*.class,**/org/objectweb/proactive/GATAdaptor/*.class">
+		<jar jarfile="${lib}/ProActiveResourceBrokerAdaptor.jar" basedir="${tmp}" includes="**/org/gridlab/gat/resources/cpi/proactive/*.class,**/org/objectweb/proactive/GATAdaptor/*.class">
 			<manifest>
 				<attribute name="ResourceBrokerCpi-class" value="org.gridlab.gat.resources.cpi.proactive.ProActiveResourceBrokerAdaptor" />
+			</manifest>
+		</jar>
+
+		<jar jarfile="${lib}/GridsamResourceBrokerAdaptor.jar" basedir="${tmp}" includes="**/org/gridlab/gat/resources/cpi/gridsam/*.class">
+			<manifest>
+				<attribute name="ResourceBrokerCpi-class" value="org.gridlab.gat.resources.cpi.proactive.GridsamResourceBrokerAdaptor" />
+			</manifest>
+		</jar>
+
+		<jar jarfile="${lib}/KoalaResourceBrokerAdaptor.jar" basedir="${tmp}" includes="**/nl/vu/ibis/*.class">
+			<manifest>
+				<attribute name="ResourceBrokerCpi-class" value="nl.vu.ibis.KoalaResourceBrokerAdaptor" />
 			</manifest>
 		</jar>
 
@@ -281,7 +286,7 @@
 			</manifest>
 		</jar>
 
-		
+
 		<jar jarfile="${lib}/GT4GridFTPFileAdaptor.jar" basedir="${tmp}" includes="**/gt4/GT4*.class">
 			<manifest>
 				<attribute name="FileCpi-class" value="org.gridlab.gat.io.cpi.gt4.GT4GridFTPFileAdaptor" />
@@ -305,34 +310,34 @@
 				<attribute name="ResourceBrokerCpi-class" value="org.gridlab.gat.resources.cpi.gt4.GT4ResourceBrokerAdaptor" />
 			</manifest>
 		</jar>
-				
+
 		<jar jarfile="${lib}/WSGT4ResourceBroker.jar" basedir="${tmp}" includes="**/wsgt4/WSGT4*.class">
 			<manifest>
 				<attribute name="ResourceBrokerCpi-class" value="org.gridlab.gat.resources.cpi.wsgt4.WSGT4ResourceBrokerAdaptor" />
 			</manifest>
 		</jar>
 
-        <jar jarfile="${lib}/MercuryMonitorableAdaptor.jar" basedir="${tmp}" includes="**/MercuryMonitorableAdaptor.class,**/LocalMetricListener.class,**/MonitorizedMetric.class,**/MeasurementTrigger.class,**/Measuree.class,hu/sztaki/lpds/monitor/*.class,hu/sztaki/lpds/monitor/producer/*.class">
-            <manifest>
-                <attribute name="MonitorableCpi-class" value="org.gridlab.gat.monitoring.cpi.mercury.MercuryMonitorableAdaptor" />
-            </manifest>
-        </jar>
+		<jar jarfile="${lib}/MercuryMonitorableAdaptor.jar" basedir="${tmp}" includes="**/MercuryMonitorableAdaptor.class,**/LocalMetricListener.class,**/MonitorizedMetric.class,**/MeasurementTrigger.class,**/Measuree.class,hu/sztaki/lpds/monitor/*.class,hu/sztaki/lpds/monitor/producer/*.class">
+			<manifest>
+				<attribute name="MonitorableCpi-class" value="org.gridlab.gat.monitoring.cpi.mercury.MercuryMonitorableAdaptor" />
+			</manifest>
+		</jar>
 
-        <jar jarfile="${lib}/GliteResourceBrokerAdaptor.jar" basedir="${tmp}" includes="**/glite/Glite*.class">
-            <manifest>
-                <attribute name="ResourceBrokerCpi-class" value="org.gridlab.gat.resources.cpi.glite.GliteResourceBrokerAdaptor" />
-            </manifest>
-        </jar>
-		
+		<jar jarfile="${lib}/GliteResourceBrokerAdaptor.jar" basedir="${tmp}" includes="**/glite/Glite*.class">
+			<manifest>
+				<attribute name="ResourceBrokerCpi-class" value="org.gridlab.gat.resources.cpi.glite.GliteResourceBrokerAdaptor" />
+			</manifest>
+		</jar>
+
 		<delete dir="${tmp}" />
 
 		<!-- Copy external libraries to lib directory -->
 		<copy todir="${lib}">
 			<fileset dir="${external}">
-				<include name="*.jar"/>
+				<include name="*.jar" />
 			</fileset>
 		</copy>
-		
+
 		<copy todir="${gt4lib-dst}">
 			<fileset dir="${gt4lib-src}">
 			</fileset>

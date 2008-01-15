@@ -245,7 +245,7 @@ public class NQueensSolver implements MetricListener {
         ResourceBroker broker = null;
 
         try {
-            broker = GAT.createResourceBroker(context, prefs);
+            broker = GAT.createResourceBroker(context, prefs, new URI(virtualNodeName));
         } catch (Exception e) {
             e.printStackTrace();
             System.exit(1);
@@ -270,7 +270,7 @@ public class NQueensSolver implements MetricListener {
             sd.setAttributes(attrib);
 
             try {
-                sd.setLocation(new URI(job.application));
+                sd.setExecutable(job.application);
             } catch(Exception e) {
                 System.err.println("Error in URI " + job.application
                         + ", job skipped");

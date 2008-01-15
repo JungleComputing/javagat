@@ -12,7 +12,6 @@ import org.apache.log4j.Logger;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.Preferences;
-import org.gridlab.gat.URI;
 import org.gridlab.gat.io.File;
 import org.gridlab.gat.resources.JobDescription;
 import org.gridlab.gat.resources.SoftwareDescription;
@@ -80,7 +79,7 @@ public class PreStagedFileSet {
                     "The job description does not contain a software description");
         }
 
-        URI exe = sd.getLocation();
+        String exe = sd.getExecutable();
         if (exe == null) {
             throw new GATInvocationException(
                     "The job description does not contain an executable location");

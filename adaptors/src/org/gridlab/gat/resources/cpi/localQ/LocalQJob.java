@@ -49,7 +49,7 @@ public class LocalQJob extends JobCpi implements Runnable,
 
     private boolean stopped = false;
 
-    private Process p = null;;
+    private Process p = null;
 
     LocalQJob(GATContext gatContext, Preferences preferences,
             LocalQResourceBrokerAdaptor broker, JobDescription description,
@@ -178,7 +178,7 @@ public class LocalQJob extends JobCpi implements Runnable,
         if (sandbox.getResolvedExecutable() != null) {
             exe = sandbox.getResolvedExecutable().getPath();
         } else {
-            exe = description.getLocation().getPath();
+            exe = description.getExecutable();
         }
 
         // try to set the executable bit, it might be lost
@@ -209,7 +209,7 @@ public class LocalQJob extends JobCpi implements Runnable,
             }
         }
 
-        long startRun = System.currentTimeMillis();
+        //long startRun = System.currentTimeMillis();
 
         Process p;
         synchronized (this) {

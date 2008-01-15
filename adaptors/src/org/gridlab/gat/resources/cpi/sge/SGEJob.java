@@ -20,6 +20,7 @@ import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.Preferences;
 import org.gridlab.gat.engine.GATEngine;
+import org.gridlab.gat.monitoring.Metric;
 import org.gridlab.gat.monitoring.MetricDefinition;
 import org.gridlab.gat.resources.JobDescription;
 import org.gridlab.gat.resources.cpi.JobCpi;
@@ -33,9 +34,9 @@ import org.gridlab.gat.resources.cpi.Sandbox;
 public class SGEJob extends JobCpi {
 
     private String jobID;
+    private String hostname;
     private MetricDefinition statusMetricDefinition;
-    // private Metric statusMetric;
-    private JobDescription jobDescription;
+    Metric statusMetric;
     private Session session;
     private Hashtable<String, Long> time;
 
@@ -124,31 +125,38 @@ public class SGEJob extends JobCpi {
             time.put("stop_time", new Long(System.currentTimeMillis()));
         }
     }
-
-    public SGEJob(GATContext gatContext, Preferences preferences,
-            SGEResourceBrokerAdaptor broker, JobDescription jobDescription,
-            Session session, String id, Sandbox sandbox) {
+    
+    protected SGEJob(GATContext gatContext, Preferences preferences, JobDescription jobDescription, Sandbox sandbox) {
         super(gatContext, preferences, jobDescription, sandbox);
-
-        jobID = id;
-        this.jobDescription = jobDescription;
-        this.session = session;
+        
         state = INITIAL;
-
+        
         HashMap<String, Object> returnDef = new HashMap<String, Object>();
         returnDef.put("status", String.class);
         statusMetricDefinition = new MetricDefinition("job.status",
                 MetricDefinition.DISCRETE, "String", null, null, returnDef);
-
+        statusMetric = statusMetricDefinition.createMetric(null);
         GATEngine.registerMetric(this, "getJobStatus", statusMetricDefinition);
-        // statusMetric = statusMetricDefinition.createMetric(null);
-
-        time = new Hashtable<String, Long>();
-
+    }
+    
+    protected void setSession(Session session) {
+        this.session = session;
+    }
+    
+    protected void setJobID(String jobID) {
+        this.jobID = jobID;
+    }
+    
+    protected void startListener() {
         jobStartListener jsl = new jobStartListener(this.session, this.jobID,
                 time);
         new Thread(jsl).start();
     }
+    
+    protected void setState(int state) {
+        this.state = state;
+    }
+    
 
     public String getJobID() {
         return jobID;
@@ -219,6 +227,10 @@ public class SGEJob extends JobCpi {
             System.err.println(e);
         }
     }
+    
+    protected void setHostname(String hostname) {
+        this.hostname = hostname;
+    }
 
     public Map<String, Object> getInfo() {
 
@@ -226,8 +238,7 @@ public class SGEJob extends JobCpi {
         setState();
 
         try {
-            m.put("hostname", jobDescription.getSoftwareDescription()
-                    .getLocation().toASCIIString());
+            m.put("hostname", hostname);
             m.put("checkpointable", "0");
             m.put("scheduletime", null);
             m.put("resManName", "Sun Grid Engine");

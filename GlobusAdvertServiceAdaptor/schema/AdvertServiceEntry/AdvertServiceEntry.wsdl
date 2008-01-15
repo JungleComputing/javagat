@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions name="AdvertServiceEntryService"
+    targetNamespace="http://www.JavaGAT.org/namespaces/AdvertServiceEntry/AdvertServiceEntryService"
+    xmlns="http://schemas.xmlsoap.org/wsdl/"
+    xmlns:tns="http://www.JavaGAT.org/namespaces/AdvertServiceEntry/AdvertServiceEntryService"
+    xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
+    xmlns:wsrlw="http://docs.oasis-open.org/wsrf/2004/06/wsrf-WS-ResourceLifetime-1.2-draft-01.wsdl"
+    xmlns:wsrp="http://docs.oasis-open.org/wsrf/2004/06/wsrf-WS-ResourceProperties-1.2-draft-01.xsd"
+    xmlns:wsrpw="http://docs.oasis-open.org/wsrf/2004/06/wsrf-WS-ResourceProperties-1.2-draft-01.wsdl"
+    xmlns:wsdlpp="http://www.globus.org/namespaces/2004/10/WSDLPreprocessor"
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+
+<wsdl:import 
+    namespace=
+    "http://docs.oasis-open.org/wsrf/2004/06/wsrf-WS-ResourceProperties-1.2-draft-01.wsdl"
+    location="../wsrf/properties/WS-ResourceProperties.wsdl"/>
+
+<wsdl:import
+    namespace=
+    "http://docs.oasis-open.org/wsrf/2004/06/wsrf-WS-ResourceLifetime-1.2-draft-01.wsdl"
+    location="../wsrf/lifetime/WS-ResourceLifetime.wsdl" />
+
+<types>
+<xsd:schema targetNamespace="http://www.JavaGAT.org/namespaces/AdvertServiceEntry/AdvertServiceEntryService"
+    xmlns:tns="http://www.JavaGAT.org/namespaces/AdvertServiceEntry/AdvertServiceEntryService"
+    xmlns:gatns="http://www.JavaGAT.org/namespaces/GAT"
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+
+	<xsd:import
+	    namespace="http://www.JavaGAT.org/namespaces/GAT"
+	    schemaLocation="MetaData.xsd" />
+
+	<xsd:import
+	   namespace="http://docs.oasis-open.org/wsn/2004/06/wsn-WS-BaseNotification-1.2-draft-01.xsd"
+	   schemaLocation="../wsrf/notification/WS-BaseN.xsd"/>
+
+	<!-- Requests and responses -->
+
+	<xsd:element name="setMetaData" type="gatns:MetaData"/>
+	<xsd:element name="setMetaDataResponse">
+	  <xsd:complexType/>
+	</xsd:element>
+
+	<xsd:element name="setSerializedAdvertisable" type="xsd:string"/>
+	<xsd:element name="setSerializedAdvertisableResponse">
+	  <xsd:complexType/>
+	</xsd:element>
+
+	<!-- Resource properties -->
+	<xsd:element name="Path" type="xsd:string"/>
+        <xsd:element name="MetaData" type="gatns:MetaData"/>
+	<xsd:element name="SerializedAdvertisable" type="xsd:base64Binary"/>
+
+	<xsd:element name="AdvertServiceEntryResourceProperties">
+	  <xsd:complexType>
+	    <xsd:sequence>
+              <xsd:element ref="tns:Path" minOccurs="1" maxOccurs="1"/>
+              <xsd:element ref="tns:MetaData" minOccurs="1" maxOccurs="1"/>
+              <xsd:element ref="tns:SerializedAdvertisable" minOccurs="1" maxOccurs="1"/>
+            </xsd:sequence>
+	  </xsd:complexType>
+	</xsd:element>
+        
+</xsd:schema>
+</types>
+
+<message name="SetMetaDataInputMessage">
+	<part name="parameters" element="tns:setMetaData"/>
+</message>
+<message name="SetMetaDataOutputMessage">
+	<part name="parameters" element="tns:setMetaDataResponse"/>
+</message>
+
+<message name="SetSerializedAdvertisableInputMessage">
+	<part name="parameters" element="tns:setSerializedAdvertisable"/>
+</message>
+<message name="SetSerializedAdvertisableOutputMessage">
+	<part name="parameters" element="tns:setSerializedAdvertisableResponse"/>
+</message>
+
+<portType name="AdvertServiceEntryPortType" 
+    wsdlpp:extends="wsrpw:GetResourceProperty wsrpw:GetMultipleResourceProperties wsrlw:ImmediateResourceTermination"
+    wsrp:ResourceProperties="tns:AdvertServiceEntryResourceProperties">
+
+	<operation name="setMetaData">
+		<input message="tns:SetMetaDataInputMessage"/>
+		<output message="tns:SetMetaDataOutputMessage"/>
+	</operation>
+
+	<operation name="setSerializedAdvertisable">
+		<input message="tns:SetSerializedAdvertisableInputMessage"/>
+		<output message="tns:SetSerializedAdvertisableOutputMessage"/>
+	</operation>
+
+</portType>
+
+</definitions>

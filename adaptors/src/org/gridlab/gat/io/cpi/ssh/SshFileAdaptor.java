@@ -1567,6 +1567,9 @@ public class SshFileAdaptor extends FileCpi {
     public org.gridlab.gat.io.File[] listFiles() throws GATInvocationException {
         isLocalFile();
         String[] r = list();
+        if (r == null) {
+            return null;
+        }
         org.gridlab.gat.io.File[] res = new org.gridlab.gat.io.File[r.length];
         String uri = location.toString();
 

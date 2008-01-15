@@ -72,11 +72,11 @@ public class LocalAdvertServiceAdaptor extends AdvertServiceCpi {
         Entry e = (Entry) hash.get(path);
 
         if (e == null) {
-            return null;
+            throw new NoSuchElementException("No such element: " + path);
         }
         
         if(e.a == null) {
-            return null;
+            throw new NoSuchElementException("No such element: " + path);
         }
 
         Advertisable advert = GATEngine.getGATEngine().unmarshalAdvertisable(

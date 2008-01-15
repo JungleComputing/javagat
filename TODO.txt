@@ -11,7 +11,7 @@ JavaGAT 2.0
 - Document GAT.end()
 - Check: sandbox CTRL-C during poststage stops it?
 - Create and use InvalidUsernameOrPasswordException
-- Store VO (virtual organisation) in SecurityContext
+- Store VO (virtual organisation) in SecurityContext (--roelof or in SoftwareDescription?)
 - Cleanup SSH adaptors:
   * If the executable does not exist, we get no error.
   * Broker does not work to fs3

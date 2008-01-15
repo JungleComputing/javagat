@@ -43,30 +43,33 @@ public class SubmitJavaJob implements MetricListener {
         GATContext context = new GATContext();
         Preferences prefs = new Preferences();
         prefs.put("ResourceBroker.adaptor.name", "Globus");
-        prefs.put("ResourceBroker.jobmanagerContact", args[0]);
         SoftwareDescription sd = new SoftwareDescription();
 
-        File outFile = GAT.createFile(context, prefs,
-            new URI("any:///out"));
-        File errFile = GAT.createFile(context, prefs,
-            new URI("any:///err"));
+        File outFile = GAT.createFile(context, prefs, new URI("any:///out"));
+        File errFile = GAT.createFile(context, prefs, new URI("any:///err"));
         sd.setStdout(outFile);
         sd.setStderr(errFile);
-        sd.setLocation(new URI("java:org.gridlab.gat.resources.cpi.remoteSandbox.RemoteSandbox"));
+        sd.setExecutable("java:org.gridlab.gat.resources.cpi.wrapper.Wrapper");
 
         sd.addAttribute("java.home", new URI("/home/rob/contrib/jdk1.5.0_09"));
         sd.addAttribute("java.flags", "-server");
-        sd.addAttribute("java.classpath", "lib/GAT.jar:lib/castor-0.9.6.jar:lib/commons-logging.jar:lib/log4j-1.2.13.jar:lib/xmlParserAPIs.jar"
-                + "lib/castor-0.9.6-xml.jar:lib/ibis-util-1.4.jar:lib/xercesImpl.jar:lib/RemoteSandbox.jar");
+        sd
+                .addAttribute(
+                        "java.classpath",
+                        "lib/GAT.jar:lib/castor-0.9.6.jar:lib/commons-logging.jar:lib/log4j-1.2.13.jar:lib/xmlParserAPIs.jar"
+                                + "lib/castor-0.9.6-xml.jar:lib/ibis-util-1.4.jar:lib/xercesImpl.jar:lib/RemoteSandbox.jar");
         Map<String, Object> environment = new HashMap<String, Object>();
         environment.put("gat.adaptor.path", "lib");
         sd.setEnvironment(environment);
-        
-        sd.addPreStagedFile(GAT.createFile(context, prefs, new URI("engine/lib")));
-        sd.addPreStagedFile(GAT.createFile(context, prefs, new URI("adaptors/lib")));
-        
+
+        sd.addPreStagedFile(GAT.createFile(context, prefs,
+                new URI("engine/lib")));
+        sd.addPreStagedFile(GAT.createFile(context, prefs, new URI(
+                "adaptors/lib")));
+
         JobDescription jd = new JobDescription(sd);
-        ResourceBroker broker = GAT.createResourceBroker(context, prefs);
+        ResourceBroker broker = GAT.createResourceBroker(context, prefs,
+                new URI(args[0]));
 
         Job job = broker.submitJob(jd);
         MetricDefinition md = job.getMetricDefinitionByName("job.status");
@@ -75,12 +78,12 @@ public class SubmitJavaJob implements MetricListener {
 
         synchronized (this) {
             while ((job.getState() != Job.STOPPED)
-                && (job.getState() != Job.SUBMISSION_ERROR)) {
+                    && (job.getState() != Job.SUBMISSION_ERROR)) {
                 wait();
             }
         }
 
         System.err.println("SubmitJobCallback: Job finished, state = "
-            + job.getInfo());
+                + job.getInfo());
     }
 }

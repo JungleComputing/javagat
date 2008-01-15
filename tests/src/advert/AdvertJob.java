@@ -6,6 +6,7 @@ package advert;
 import org.gridlab.gat.GAT;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.Preferences;
+import org.gridlab.gat.URI;
 import org.gridlab.gat.advert.AdvertService;
 import org.gridlab.gat.advert.MetaData;
 import org.gridlab.gat.io.File;
@@ -27,9 +28,9 @@ public class AdvertJob {
         prefs.put("ResourceBroker.adaptor.name", "globus");
         prefs.put("killJobsOnExit", "false");
         c.addPreferences(prefs);
-        
+
         SoftwareDescription sd = new SoftwareDescription();
-        sd.setLocation("any://" + args[0] + "//bin/hostname");
+        sd.setExecutable("/bin/hostname");
 
         File stdout = GAT.createFile(c, "hostname.txt");
         sd.setStdout(stdout);
@@ -38,7 +39,8 @@ public class AdvertJob {
         rd.addResourceAttribute("machine.node", args[0]);
 
         JobDescription jd = new JobDescription(sd, rd);
-        ResourceBroker broker = GAT.createResourceBroker(c);
+        ResourceBroker broker = GAT.createResourceBroker(c, new URI("any://"
+                + args[0] + "/"));
         Job job = broker.submitJob(jd);
 
         AdvertService a = GAT.createAdvertService(c);

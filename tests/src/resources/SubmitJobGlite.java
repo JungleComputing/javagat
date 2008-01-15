@@ -3,6 +3,7 @@
  */
 package resources;
 
+import java.util.HashMap;
 import java.util.Hashtable;
 
 import org.gridlab.gat.GAT;
@@ -45,32 +46,43 @@ public class SubmitJobGlite implements MetricListener {
         GATContext context = new GATContext();
         Preferences prefs = new Preferences();
         prefs.put("ResourceBroker.adaptor.name", "GLite");
+        prefs.put("File.adaptor.name", "gridftp, local");
         String jobmanager;
         if (args.length > 1) {
             jobmanager = args[1];
         } else {
             jobmanager = "https://kop.nikhef.nl:7443/glite_wms_wmproxy_server";
         }
-        
+
         prefs.put("ResourceBroker.jobmanagerContact", jobmanager);
-
-        File outFile = GAT.createFile(context, prefs,
-            new URI("std.out"));
-        File errFile = GAT.createFile(context, prefs,
-            new URI("std.err"));
-
+        context.addPreferences(prefs);
+        File outFile = GAT.createFile(context, prefs, new URI("std.out"));
+        File errFile = GAT.createFile(context, prefs, new URI("std.err"));
+        HashMap<String, Object> env = new HashMap<String, Object>();
+        env.put("KEY_1", "value1");
+        env.put("KEY_2", "value2");
+        env.put("KEY_3", "value3");
+        env.put("KEY_4", "value4");
         SoftwareDescription sd = new SoftwareDescription();
-        sd.setLocation(new URI(args[0]));
+        sd.setEnvironment(env);
+        sd.setExecutable(args[0]);
         sd.setStdout(outFile);
         sd.setStderr(errFile);
-        
-        Hashtable hardwareAttributes = new Hashtable();
+        sd.setVirtualOrganisation("pvier");
+        sd.setArguments(new String[] { "*" });
+        sd.addPreStagedFile(GAT.createFile(context, "test/stagein"), GAT
+                .createFile(context, "test/stagein"));
+        // sd.addPreStagedFile(GAT.createFile(context, "stagein2")); //,
+        // GAT.createFile(context, "dir/stagein"));
+
+        Hashtable<String, Object> hardwareAttributes = new Hashtable<String, Object>();
 
         ResourceDescription rd = new HardwareResourceDescription(
-            hardwareAttributes);
+                hardwareAttributes);
 
         JobDescription jd = new JobDescription(sd, rd);
-        ResourceBroker broker = GAT.createResourceBroker(context, prefs);
+        ResourceBroker broker = GAT.createResourceBroker(context, prefs,
+                new URI(jobmanager));
 
         Job job = broker.submitJob(jd);
         MetricDefinition md = job.getMetricDefinitionByName("job.status");
@@ -79,13 +91,16 @@ public class SubmitJobGlite implements MetricListener {
 
         synchronized (this) {
             while ((job.getState() != Job.STOPPED)
-                && (job.getState() != Job.SUBMISSION_ERROR)) {
-                wait();
+                    && (job.getState() != Job.SUBMISSION_ERROR)) {
+                System.out.println("job state: "
+                        + Job.getStateString(job.getState()));
+                Thread.sleep(5000);
+
             }
         }
 
         System.err.println("SubmitJobCallback: Job finished, state = "
-            + job.getInfo());
+                + job.getState());
     }
-        
+
 }

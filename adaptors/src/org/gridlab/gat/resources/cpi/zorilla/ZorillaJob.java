@@ -3,15 +3,17 @@
  */
 package org.gridlab.gat.resources.cpi.zorilla;
 
-import java.io.IOException;
-import java.net.URISyntaxException;
-import java.util.HashMap;
-import java.util.Map;
-
+import ibis.zorilla.zoni.CallbackReceiver;
 import ibis.zorilla.zoni.JobInfo;
 import ibis.zorilla.zoni.ZoniConnection;
 import ibis.zorilla.zoni.ZoniException;
 import ibis.zorilla.zoni.ZoniProtocol;
+
+import java.io.IOException;
+import java.net.InetSocketAddress;
+import java.net.URISyntaxException;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.apache.log4j.Logger;
 import org.gridlab.gat.GATContext;
@@ -26,6 +28,7 @@ import org.gridlab.gat.resources.Job;
 import org.gridlab.gat.resources.JobDescription;
 import org.gridlab.gat.resources.SoftwareDescription;
 import org.gridlab.gat.resources.cpi.JobCpi;
+import org.gridlab.gat.resources.cpi.Sandbox;
 
 /**
  * @author ndrost
@@ -82,8 +85,7 @@ public class ZorillaJob extends JobCpi {
      */
     private static Map<java.net.URI, java.net.URI> createURIMap(
             Map<File, File> fileMap) throws GATInvocationException {
-        Map<java.net.URI, java.net.URI> result =
-            new HashMap<java.net.URI, java.net.URI>();
+        Map<java.net.URI, java.net.URI> result = new HashMap<java.net.URI, java.net.URI>();
 
         if (fileMap == null) {
             return result;
@@ -122,24 +124,32 @@ public class ZorillaJob extends JobCpi {
         return result;
     }
 
-    ZorillaJob(GATContext gatContext, Preferences preferences,
-            ZorillaResourceBrokerAdaptor broker, JobDescription description)
-            throws GATInvocationException {
-        super(gatContext, preferences, description, null);
-        this.broker = broker;
-        this.description = description;
+    protected ZorillaJob(GATContext gatContext, Preferences preferences,
+            JobDescription description, Sandbox sandbox) {
+        super(gatContext, preferences, description, sandbox);
 
-        logger.debug("creating zorilla job");
+        if (logger.isDebugEnabled()) {
+            logger.debug("creating zorilla job");
+        }
 
         // Tell the engine that we provide job.status events
         HashMap<String, Object> returnDef = new HashMap<String, Object>();
         returnDef.put("status", String.class);
-        statusMetricDefinition =
-            new MetricDefinition("job.status", MetricDefinition.DISCRETE,
-                    "String", null, null, returnDef);
+        statusMetricDefinition = new MetricDefinition("job.status",
+                MetricDefinition.DISCRETE, "String", null, null, returnDef);
         statusMetric = statusMetricDefinition.createMetric(null);
         GATEngine.registerMetric(this, "getJobStatus", statusMetricDefinition);
+        
+        if (logger.isDebugEnabled()) {
+            logger.debug("done creating zorilla job");
+        }
+    }
 
+    protected void startJob(InetSocketAddress address, CallbackReceiver receiver)
+            throws GATInvocationException {
+        if (logger.isDebugEnabled()) {
+            logger.debug("starting zorilla job");
+        }
         // data needed to submit a job
         java.net.URI executable;
         String[] arguments;
@@ -154,7 +164,7 @@ public class ZorillaJob extends JobCpi {
         SoftwareDescription soft = description.getSoftwareDescription();
 
         try {
-            executable = new java.net.URI(soft.getLocation().getPath());
+            executable = new java.net.URI(soft.getExecutable());
         } catch (URISyntaxException e1) {
             throw new GATInvocationException(
                     "coult not create uri for executable: "
@@ -162,11 +172,8 @@ public class ZorillaJob extends JobCpi {
 
         }
         environment = createStringMap(soft.getEnvironment());
-
         preStageFiles = createURIMap(soft.getPreStaged());
-
         postStageFiles = createURIMap(soft.getPostStaged());
-
         stdout = toURI(soft.getStdout());
         stdin = toURI(soft.getStdin());
         stderr = toURI(soft.getStderr());
@@ -179,14 +186,12 @@ public class ZorillaJob extends JobCpi {
         attributes = createStringMap(soft.getAttributes());
 
         try {
-            ZoniConnection connection =
-                new ZoniConnection(broker.getNodeSocketAddress(), null,
-                        ZoniProtocol.TYPE_CLIENT);
+            ZoniConnection connection = new ZoniConnection(address, null,
+                    ZoniProtocol.TYPE_CLIENT);
 
-            jobID =
-                connection.submitJob(executable, arguments, environment,
+            jobID = connection.submitJob(executable, arguments, environment,
                     attributes, preStageFiles, postStageFiles, stdin, stdout,
-                    stderr, broker.getCallbackReceiver());
+                    stderr, receiver);
             connection.close();
         } catch (IOException e) {
             throw new GATInvocationException(
@@ -195,9 +200,11 @@ public class ZorillaJob extends JobCpi {
             throw new GATInvocationException(
                     "cannot submit job to zorilla node", e);
         }
-
-        logger.debug("done creating job");
+        if (logger.isDebugEnabled()) {
+            logger.debug("done starting zorilla job");
+        }
     }
+
 
     /*
      * (non-Javadoc)
@@ -266,14 +273,14 @@ public class ZorillaJob extends JobCpi {
             return UNKNOWN;
         }
     }
-    
+
     @Override
     public synchronized int getExitStatus() throws GATInvocationException {
         return info.getExitStatus();
     }
 
     void setInfo(JobInfo info) {
-        synchronized(this) {
+        synchronized (this) {
             this.info = info;
         }
         fireStatusMetric();
@@ -294,9 +301,8 @@ public class ZorillaJob extends JobCpi {
                 return;
             }
             lastState = state;
-            v =
-                new MetricValue(this, getStateString(state), statusMetric,
-                        System.currentTimeMillis());
+            v = new MetricValue(this, getStateString(state), statusMetric,
+                    System.currentTimeMillis());
         }
 
         if (logger.isDebugEnabled()) {
@@ -311,11 +317,10 @@ public class ZorillaJob extends JobCpi {
         if (jobID == null) {
             return;
         }
-        
+
         try {
-            ZoniConnection connection =
-                new ZoniConnection(broker.getNodeSocketAddress(), null,
-                        ZoniProtocol.TYPE_CLIENT);
+            ZoniConnection connection = new ZoniConnection(broker
+                    .getNodeSocketAddress(), null, ZoniProtocol.TYPE_CLIENT);
 
             connection.cancelJob(jobID);
         } catch (Exception e) {

@@ -45,18 +45,18 @@ public class SubmitRemoteJob4 {
 						"/home/rkemp/.globus/usercert.pem"), passphrase);
 		context.addSecurityContext(securityContext);
 		if (args.length == 0) {
-			args = new String[] { "fs0.das3.cs.vu.nl/jobmanager-sge" };
+			args = new String[] { "fs1.das3.liacs.nl/jobmanager-sge" };
 		}
 		context.addPreference("ResourceBroker.jobmanagerContact", args[0]);
 
 		SoftwareDescription sd1 = new SoftwareDescription();
-		sd1.setLocation("/bin/sh");
+		sd1.setExecutable("/bin/sh");
 		sd1.setArguments(new String[] { "../script.sh" });
 		File stdout1 = GAT.createFile(context, "stdout");
 		sd1.setStdout(stdout1);
 		JobDescription jd1 = new JobDescription(sd1);
 
-		ResourceBroker broker = GAT.createResourceBroker(context);
+		ResourceBroker broker = GAT.createResourceBroker(context, new URI("any://fs1.das3.liacs.nl/jobmanager-sge"));
 		Job job1 = broker.submitJob(jd1);
 		System.out.println("job submitted!");
 

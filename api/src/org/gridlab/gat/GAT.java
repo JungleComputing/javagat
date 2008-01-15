@@ -39,7 +39,10 @@ public class GAT {
                     new Class[] { String.class, Class.class, GATContext.class,
                             Preferences.class, Class[].class, Object[].class });
         } catch (Exception e) {
+            System.out.println(e);
             throw new Error(e);
+            
+            //logger.fatal()
         }
     }
 
@@ -875,6 +878,21 @@ public class GAT {
         }
     }
 
+//    /**
+//     * This method constructs a ResourceBroker instance corresponding to the
+//     * passed GATContext.
+//     * 
+//     * @param gatContext
+//     *                A GATContext which will be used to broker resources
+//     * @return The resource broker object
+//     * @throws GATObjectCreationException
+//     *                 Thrown upon creation problems
+//     */
+//    public static ResourceBroker createResourceBroker(GATContext gatContext)
+//            throws GATObjectCreationException {
+//        return createResourceBroker(gatContext, null);
+//    }
+    
     /**
      * This method constructs a ResourceBroker instance corresponding to the
      * passed GATContext.
@@ -885,9 +903,9 @@ public class GAT {
      * @throws GATObjectCreationException
      *                 Thrown upon creation problems
      */
-    public static ResourceBroker createResourceBroker(GATContext gatContext)
+    public static ResourceBroker createResourceBroker(GATContext gatContext, URI brokerURI)
             throws GATObjectCreationException {
-        return createResourceBroker(gatContext, null);
+        return createResourceBroker(gatContext, null, brokerURI);
     }
 
     /**
@@ -903,11 +921,12 @@ public class GAT {
      *                 Thrown upon creation problems
      */
     public static ResourceBroker createResourceBroker(GATContext gatContext,
-            Preferences preferences) throws GATObjectCreationException {
+            Preferences preferences, URI brokerURI) throws GATObjectCreationException {
+        Object[] array = { brokerURI };
         return (ResourceBroker) getAdaptorProxy(
                 "org.gridlab.gat.resources.cpi.ResourceBrokerCpi",
                 ResourceBroker.class, gatContext, preferences,
-                null, null);
+                new Class[] {URI.class}, array);
     }
 
     /**

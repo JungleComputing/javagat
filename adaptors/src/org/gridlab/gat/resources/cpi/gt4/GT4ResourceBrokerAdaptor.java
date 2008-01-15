@@ -3,7 +3,6 @@ package org.gridlab.gat.resources.cpi.gt4;
 import java.io.IOException;
 import java.util.Map;
 import java.util.Set;
-import java.util.StringTokenizer;
 
 import org.apache.log4j.Logger;
 import org.globus.cog.abstraction.impl.common.AbstractionFactory;
@@ -20,13 +19,14 @@ import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.GATObjectCreationException;
 import org.gridlab.gat.Preferences;
 import org.gridlab.gat.URI;
+import org.gridlab.gat.monitoring.Metric;
 import org.gridlab.gat.monitoring.MetricListener;
 import org.gridlab.gat.resources.Job;
 import org.gridlab.gat.resources.JobDescription;
 import org.gridlab.gat.resources.SoftwareDescription;
-import org.gridlab.gat.resources.cpi.RemoteSandboxSubmitter;
 import org.gridlab.gat.resources.cpi.ResourceBrokerCpi;
 import org.gridlab.gat.resources.cpi.Sandbox;
+import org.gridlab.gat.resources.cpi.WrapperSubmitter;
 import org.gridlab.gat.security.globus.GlobusSecurityUtils;
 import org.ietf.jgss.GSSCredential;
 
@@ -43,15 +43,17 @@ public class GT4ResourceBrokerAdaptor extends ResourceBrokerCpi {
 
     static final int DEFAULT_GRIDFTP_PORT = 2811;
 
-    private RemoteSandboxSubmitter submitter;
+    private WrapperSubmitter submitter;
 
     public GT4ResourceBrokerAdaptor(GATContext gatContext,
-            Preferences preferences) throws GATObjectCreationException {
-        super(gatContext, preferences);
+            Preferences preferences, URI brokerURI)
+            throws GATObjectCreationException {
+        super(gatContext, preferences, brokerURI);
     }
 
     public void beginMultiJob() {
-        submitter = new RemoteSandboxSubmitter(gatContext, preferences, true);
+        submitter = new WrapperSubmitter(gatContext, preferences, brokerURI,
+                true);
     }
 
     public Job endMultiJob() throws GATInvocationException {
@@ -84,7 +86,7 @@ public class GT4ResourceBrokerAdaptor extends ResourceBrokerCpi {
         GSSCredential cred = null;
         URI location = null;
         try {
-            location = new URI(getHostname(jobDescription));
+            location = new URI(getHostname());
         } catch (Exception e) {
             throw new GATInvocationException(
                     "GT4ResourceBrokerAdaptor: getSecurityContext, initialization of location failed, "
@@ -122,7 +124,7 @@ public class GT4ResourceBrokerAdaptor extends ResourceBrokerCpi {
 
         // ServiceContact serviceContact = new ServiceContactImpl("https://" +
         // getHostname(jd) + ":8443/wsrf/services/ManagedJobFactoryService");
-        ServiceContact serviceContact = new ServiceContactImpl(getHostname(jd));
+        ServiceContact serviceContact = new ServiceContactImpl(getHostname());
         String factoryType = (String) preferences
                 .get("ResourceBroker.jobmanager");
         if (factoryType == null) {
@@ -154,56 +156,56 @@ public class GT4ResourceBrokerAdaptor extends ResourceBrokerCpi {
                     "GT4ResourceBrokerAdaptor: software description is missing");
         }
         String exe = "";
-        if (isJavaApplication(jd)) {
-            URI javaHome = (URI) sd.getAttributes().get("java.home");
-            if (javaHome == null) {
-                throw new GATInvocationException("java.home not set");
+        // if (isJavaApplication(jd)) {
+        // URI javaHome = (URI) sd.getAttributes().get("java.home");
+        // if (javaHome == null) {
+        // throw new GATInvocationException("java.home not set");
+        // }
+        //
+        // exe += javaHome.getPath() + "/bin/java";
+        //
+        // String javaFlags = getStringAttribute(jd, "java.flags", "");
+        // if (javaFlags.length() != 0) {
+        // StringTokenizer t = new StringTokenizer(javaFlags);
+        // while (t.hasMoreTokens()) {
+        // spec.addArgument(t.nextToken());
+        // }
+        // }
+        //
+        // // classpath
+        // String javaClassPath = getStringAttribute(jd, "java.classpath", "");
+        // if (javaClassPath.length() != 0) {
+        // spec.addArgument("-classpath");
+        // spec.addArgument(javaClassPath);
+        // } else {
+        // // TODO if not set, use jar files in prestaged set
+        // }
+        //
+        // // set the environment
+        // Map<String, Object> env = sd.getEnvironment();
+        // if (env != null && !env.isEmpty()) {
+        // Set<String> s = env.keySet();
+        // Object[] keys = (Object[]) s.toArray();
+        //
+        // for (int i = 0; i < keys.length; i++) {
+        // String val = (String) env.get(keys[i]);
+        // spec.addArgument("-D" + keys[i] + "=" + val);
+        // }
+        // }
+        //
+        // // main class name
+        // spec.addArgument(getLocationURI(jd).getSchemeSpecificPart());
+        // } else {
+        exe = getExecutable(jd);
+        Map<String, Object> env = sd.getEnvironment();
+        if (env != null && !env.isEmpty()) {
+            Set<String> s = env.keySet();
+            Object[] keys = (Object[]) s.toArray();
+            for (int i = 0; i < keys.length; i++) {
+                String val = (String) env.get(keys[i]);
+                spec.addEnvironmentVariable((String) keys[i], val);
             }
-
-            exe += javaHome.getPath() + "/bin/java";
-
-            String javaFlags = getStringAttribute(jd, "java.flags", "");
-            if (javaFlags.length() != 0) {
-                StringTokenizer t = new StringTokenizer(javaFlags);
-                while (t.hasMoreTokens()) {
-                    spec.addArgument(t.nextToken());
-                }
-            }
-
-            // classpath
-            String javaClassPath = getStringAttribute(jd, "java.classpath", "");
-            if (javaClassPath.length() != 0) {
-                spec.addArgument("-classpath");
-                spec.addArgument(javaClassPath);
-            } else {
-                // TODO if not set, use jar files in prestaged set
-            }
-
-            // set the environment
-            Map<String, Object> env = sd.getEnvironment();
-            if (env != null && !env.isEmpty()) {
-                Set<String> s = env.keySet();
-                Object[] keys = (Object[]) s.toArray();
-
-                for (int i = 0; i < keys.length; i++) {
-                    String val = (String) env.get(keys[i]);
-                    spec.addArgument("-D" + keys[i] + "=" + val);
-                }
-            }
-
-            // main class name
-            spec.addArgument(getLocationURI(jd).getSchemeSpecificPart());
-        } else {
-            exe = getLocationURI(jd).getPath();
-            Map<String, Object> env = sd.getEnvironment();
-            if (env != null && !env.isEmpty()) {
-                Set<String> s = env.keySet();
-                Object[] keys = (Object[]) s.toArray();
-                for (int i = 0; i < keys.length; i++) {
-                    String val = (String) env.get(keys[i]);
-                    spec.addEnvironmentVariable((String) keys[i], val);
-                }
-            }
+            // }
         }
         spec.setExecutable(exe);
         spec.setBatchJob(false);
@@ -240,27 +242,37 @@ public class GT4ResourceBrokerAdaptor extends ResourceBrokerCpi {
      */
     public Job submitJob(JobDescription description, MetricListener listener,
             String metricDefinitionName) throws GATInvocationException {
-        if (getBooleanAttribute(description, "useRemoteSandbox", false)) {
+        if (getBooleanAttribute(description, "useWrapper", false)) {
             if (logger.isDebugEnabled()) {
-                logger.debug("useRemoteSandbox, using wrapper application");
+                logger.debug("useWrapper, using wrapper application");
             }
             if (submitter == null) {
-                submitter = new RemoteSandboxSubmitter(gatContext, preferences,
-                        false);
+                submitter = new WrapperSubmitter(gatContext, preferences,
+                        brokerURI, false);
             }
             return submitter.submitJob(description);
         }
-        String host = getHostname(description);
+        String host = getHostname();
         SoftwareDescription sd = description.getSoftwareDescription();
         if (sd == null) {
             throw new GATInvocationException(
                     "GT4ResourceBroker: the job description does not contain a software description");
         }
+
         Sandbox sandbox = new Sandbox(gatContext, preferences, description,
                 host, null, true, true, true, true);
-        JobSpecification spec = createJobSpecification(description, sandbox);
-        Service service = createService(description);
-        return new GT4Job(gatContext, preferences, description, sandbox, spec,
-                service);
+        GT4Job job = new GT4Job(gatContext, preferences, description, sandbox);
+        if (listener != null && metricDefinitionName != null) {
+            Metric metric = job.getMetricDefinitionByName(metricDefinitionName)
+                    .createMetric(null);
+            job.addMetricListener(listener, metric);
+        }
+        job.setState(Job.PRE_STAGING);
+        sandbox.prestage();
+        job.createTask(createJobSpecification(description, sandbox),
+                createService(description));
+        job.startPoller();
+        job.startTask();
+        return job;
     }
 }

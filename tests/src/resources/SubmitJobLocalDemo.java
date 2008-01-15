@@ -39,24 +39,25 @@ public class SubmitJobLocalDemo implements MetricListener {
         prefs.put("adaptors.local", "true");
 
         File outFile = GAT.createFile(context, prefs, new URI(
-            "file:///date.out"));
+                "file:///date.out"));
         File errFile = GAT.createFile(context, prefs, new URI(
-            "file:///date.err"));
+                "file:///date.err"));
         File stageInFile = GAT.createFile(context, prefs, new URI(
-            "file:////home/rob/testDir"));
+                "file:////home/rob/testDir"));
 
         SoftwareDescription sd = new SoftwareDescription();
-        sd.setLocation(new URI("file:////bin/date"));
+        sd.setExecutable("/bin/date");
         sd.setStdout(outFile);
         sd.setStderr(errFile);
         sd.addPreStagedFile(stageInFile);
 
         Hashtable<String, Object> hardwareAttributes = new Hashtable<String, Object>();
         ResourceDescription rd = new HardwareResourceDescription(
-            hardwareAttributes);
+                hardwareAttributes);
 
         JobDescription jd = new JobDescription(sd, rd);
-        ResourceBroker broker = GAT.createResourceBroker(context, prefs);
+        ResourceBroker broker = GAT.createResourceBroker(context, prefs,
+                new URI("any:///"));
 
         Job job = broker.submitJob(jd);
         MetricDefinition md = job.getMetricDefinitionByName("job.status");
@@ -65,12 +66,12 @@ public class SubmitJobLocalDemo implements MetricListener {
 
         synchronized (this) {
             while ((job.getState() != Job.STOPPED)
-                && (job.getState() != Job.SUBMISSION_ERROR)) {
+                    && (job.getState() != Job.SUBMISSION_ERROR)) {
                 wait();
             }
         }
 
         System.err.println("SubmitJobCallback: Job finished, state = "
-            + job.getInfo());
+                + job.getInfo());
     }
 }

@@ -3,10 +3,6 @@
  */
 package org.gridlab.gat.resources.cpi.globus;
 
-import java.util.Map;
-import java.util.Set;
-import java.util.StringTokenizer;
-
 import org.apache.log4j.Logger;
 import org.globus.common.ResourceManagerContact;
 import org.globus.gram.Gram;
@@ -30,9 +26,9 @@ import org.gridlab.gat.resources.cpi.PostStagedFile;
 import org.gridlab.gat.resources.cpi.PostStagedFileSet;
 import org.gridlab.gat.resources.cpi.PreStagedFile;
 import org.gridlab.gat.resources.cpi.PreStagedFileSet;
-import org.gridlab.gat.resources.cpi.RemoteSandboxSubmitter;
 import org.gridlab.gat.resources.cpi.ResourceBrokerCpi;
 import org.gridlab.gat.resources.cpi.Sandbox;
+import org.gridlab.gat.resources.cpi.WrapperSubmitter;
 import org.gridlab.gat.security.globus.GlobusSecurityUtils;
 import org.ietf.jgss.GSSCredential;
 import org.ietf.jgss.GSSException;
@@ -47,22 +43,24 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
 
     static boolean shutdownInProgress = false;
 
-    private RemoteSandboxSubmitter submitter;
+    private WrapperSubmitter submitter;
 
     public static void init() {
         GATEngine.registerUnmarshaller(GlobusJob.class);
     }
 
     public GlobusResourceBrokerAdaptor(GATContext gatContext,
-            Preferences preferences) throws GATObjectCreationException {
-        super(gatContext, preferences);
+            Preferences preferences, URI brokerURI)
+            throws GATObjectCreationException {
+        super(gatContext, preferences, brokerURI);
     }
 
     public void beginMultiJob() throws GATInvocationException {
         if (submitter != null && submitter.isMultiJob()) {
             throw new GATInvocationException("MultiCore job started twice!");
         }
-        submitter = new RemoteSandboxSubmitter(gatContext, preferences, true);
+        submitter = new WrapperSubmitter(gatContext, preferences, brokerURI,
+                true);
     }
 
     public Job endMultiJob() throws GATInvocationException {
@@ -88,50 +86,50 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
         String rsl = "";
         String args = "";
 
-        if (isJavaApplication(description)) {
-            URI javaHome = (URI) sd.getAttributes().get("java.home");
-            if (javaHome == null) {
-                throw new GATInvocationException("java.home not set");
-            }
-
-            rsl += "& (executable = " + javaHome.getPath() + "/bin/java)";
-
-            String javaFlags = getStringAttribute(description, "java.flags", "");
-            if (javaFlags.length() != 0) {
-                StringTokenizer t = new StringTokenizer(javaFlags);
-                while (t.hasMoreTokens()) {
-                    args += " \"" + t.nextToken() + "\"";
-                }
-            }
-
-            // classpath
-            String javaClassPath = getStringAttribute(description,
-                    "java.classpath", "");
-            if (javaClassPath.length() != 0) {
-                args += " \"-classpath\" \"" + javaClassPath + "\"";
-            } else {
-                // TODO if not set, use jar files in prestaged set
-            }
-
-            // set the environment
-            Map<String, Object> env = sd.getEnvironment();
-            if (env != null && !env.isEmpty()) {
-                Set<String> s = env.keySet();
-                Object[] keys = (Object[]) s.toArray();
-
-                for (int i = 0; i < keys.length; i++) {
-                    String val = (String) env.get(keys[i]);
-                    args += " \"-D" + keys[i] + "=" + val + "\"";
-                }
-            }
-
-            // main class name
-            args += " \"" + getLocationURI(description).getSchemeSpecificPart()
-                    + "\"";
-        } else {
-            String exe = getLocationURI(description).getPath();
-            rsl += "& (executable = " + exe + ")";
-        }
+        // if (isJavaApplication(description)) {
+        // URI javaHome = (URI) sd.getAttributes().get("java.home");
+        // if (javaHome == null) {
+        // throw new GATInvocationException("java.home not set");
+        // }
+        //
+        // rsl += "& (executable = " + javaHome.getPath() + "/bin/java)";
+        //
+        // String javaFlags = getStringAttribute(description, "java.flags", "");
+        // if (javaFlags.length() != 0) {
+        // StringTokenizer t = new StringTokenizer(javaFlags);
+        // while (t.hasMoreTokens()) {
+        // args += " \"" + t.nextToken() + "\"";
+        // }
+        // }
+        //
+        // // classpath
+        // String javaClassPath = getStringAttribute(description,
+        // "java.classpath", "");
+        // if (javaClassPath.length() != 0) {
+        // args += " \"-classpath\" \"" + javaClassPath + "\"";
+        // } else {
+        // // TODO if not set, use jar files in prestaged set
+        // }
+        //
+        // // set the environment
+        // Map<String, Object> env = sd.getEnvironment();
+        // if (env != null && !env.isEmpty()) {
+        // Set<String> s = env.keySet();
+        // Object[] keys = (Object[]) s.toArray();
+        //
+        // for (int i = 0; i < keys.length; i++) {
+        // String val = (String) env.get(keys[i]);
+        // args += " \"-D" + keys[i] + "=" + val + "\"";
+        // }
+        // }
+        //
+        // // main class name
+        // args += " \"" + getLocationURI(description).getSchemeSpecificPart()
+        // + "\"";
+        // } else {
+        // String exe = getLocationURI(description).getPath();
+        rsl += "& (executable = " + getExecutable(description) + ")";
+        // }
 
         // parse the arguments
         String[] argsA = getArgumentsArray(description);
@@ -227,21 +225,21 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
             }
         }
 
-        if (!isJavaApplication(description)) {
-            // set the environment
-            Map<String, Object> env = sd.getEnvironment();
-            if (env != null && !env.isEmpty()) {
-                Set<String> s = env.keySet();
-                Object[] keys = (Object[]) s.toArray();
-                rsl += "(environment = ";
-
-                for (int i = 0; i < keys.length; i++) {
-                    String val = (String) env.get(keys[i]);
-                    rsl += "(" + keys[i] + " \"" + val + "\")";
-                }
-                rsl += ")";
-            }
-        }
+        // if (!isJavaApplication(description)) {
+        // // set the environment
+        // Map<String, Object> env = sd.getEnvironment();
+        // if (env != null && !env.isEmpty()) {
+        // Set<String> s = env.keySet();
+        // Object[] keys = (Object[]) s.toArray();
+        // rsl += "(environment = ";
+        //
+        // for (int i = 0; i < keys.length; i++) {
+        // String val = (String) env.get(keys[i]);
+        // rsl += "(" + keys[i] + " \"" + val + "\")";
+        // }
+        // rsl += ")";
+        // }
+        // }
 
         String queue = getStringAttribute(description, "queue", null);
         if (queue != null) {
@@ -290,7 +288,7 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
             return contact;
         }
 
-        String hostname = getHostname(description);
+        String hostname = getHostname();
 
         if (hostname != null) {
             res = hostname;
@@ -388,9 +386,11 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
         }
 
         if (useGramSandbox) {
-            return submitJobGramSandbox(description, listener, metricDefinitionName);
+            return submitJobGramSandbox(description, listener,
+                    metricDefinitionName);
         } else {
-            return submitJobGatSandbox(description, listener, metricDefinitionName);
+            return submitJobGatSandbox(description, listener,
+                    metricDefinitionName);
         }
     }
 
@@ -419,23 +419,15 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
     private void runChmod(GSSCredential credential, JobDescription description,
             String host, Sandbox sandbox) {
 
-        String exe = null;
-
-        try {
-            exe = getLocationURI(description).getPath();
-        } catch (Exception e) {
-            return;
-        }
-
         try {
             submitChmodJob(credential, description, host, "/bin/chmod",
-                    sandbox, exe);
+                    sandbox, getExecutable(description));
         } catch (Exception e) {
             // ignore
         }
         try {
             submitChmodJob(credential, description, host, "/usr/bin/chmod",
-                    sandbox, exe);
+                    sandbox, getExecutable(description));
         } catch (Exception e) {
             // ignore
         }
@@ -444,8 +436,8 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
     public Job submitJobGramSandbox(JobDescription description,
             MetricListener listener, String metricDefinitionName)
             throws GATInvocationException {
-        long start = System.currentTimeMillis();
-        String host = getHostname(description);
+        // long start = System.currentTimeMillis();
+        String host = getHostname();
         String contact = getResourceManagerContact(description);
 
         URI hostUri;
@@ -454,7 +446,14 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
         } catch (Exception e) {
             throw new GATInvocationException("globus broker", e);
         }
-
+        GlobusJob job = new GlobusJob(gatContext, preferences, description,
+                null);
+        if (listener != null && metricDefinitionName != null) {
+            Metric metric = job.getMetricDefinitionByName(metricDefinitionName)
+                    .createMetric(null);
+            job.addMetricListener(listener, metric);
+        }
+        job.setState(Job.PRE_STAGING);
         GSSCredential credential = null;
         try {
             credential = GlobusSecurityUtils.getGlobusCredential(gatContext,
@@ -474,10 +473,8 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
 
         String rsl = createRSL(description, host, null, pre, post);
         GramJob j = new GramJob(credential, rsl);
-        GlobusJob res = new GlobusJob(gatContext, preferences, this,
-                description, j, null, start);
-        j.addListener(res);
-
+        job.setGramJob(j);
+        j.addListener(job);
         try {
             Gram.request(contact, j);
         } catch (GramException e) {
@@ -487,33 +484,42 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
             throw new GATInvocationException("globus",
                     new CouldNotInitializeCredentialException("globus", e2));
         }
-
-        return res;
+        job.startPoller();
+        return job;
     }
 
     public Job submitJobGatSandbox(JobDescription description,
             MetricListener listener, String metricDefinitionName)
             throws GATInvocationException {
-        if (getBooleanAttribute(description, "useRemoteSandbox", false)) {
+        if (getBooleanAttribute(description, "useWrapper", false)) {
             if (logger.isDebugEnabled()) {
-                logger.debug("useRemoteSandbox, using wrapper application");
+                logger.debug("useWrapper, using wrapper application");
             }
             if (submitter == null) {
-                submitter = new RemoteSandboxSubmitter(gatContext, preferences,
-                        false);
+                submitter = new WrapperSubmitter(gatContext, preferences,
+                        brokerURI, false);
             }
             return submitter.submitJob(description);
         }
-        long start = System.currentTimeMillis();
+        // long start = System.currentTimeMillis();
         // choose the first of the set descriptions to retrieve the hostname
         // etc.
-        String host = getHostname(description);
+        String host = getHostname();
         String contact = getResourceManagerContact(description);
         GSSCredential credential = getCredential(host);
 
         Sandbox sandbox = new Sandbox(gatContext, preferences, description,
                 host, null, true, true, true, true);
+        GlobusJob job = new GlobusJob(gatContext, preferences, description,
+                sandbox);
+        if (listener != null && metricDefinitionName != null) {
+            Metric metric = job.getMetricDefinitionByName(metricDefinitionName)
+                    .createMetric(null);
+            job.addMetricListener(listener, metric);
+        }
 
+        job.setState(Job.PRE_STAGING);
+        sandbox.prestage();
         // If we staged in the executable, we have to do a chmod.
         // Globus loses the executable bit :-(
         if (sandbox.getResolvedExecutable() != null) {
@@ -522,18 +528,12 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
 
         String rsl = createRSL(description, host, sandbox, null, null);
         GramJob j = new GramJob(credential, rsl);
-        GlobusJob res = new GlobusJob(gatContext, preferences, this,
-                description, j, sandbox, start);
-        j.addListener(res);
-        if (listener != null && metricDefinitionName != null) {
-            Metric metric = res.getMetricDefinitionByName(metricDefinitionName).createMetric(
-                    null);
-            res.addMetricListener(listener, metric);
-        }
-
+        job.setGramJob(j);
+        j.addListener(job);
+        job.startPoller();
         try {
             j.request(contact);
-            //Gram.request(contact, j);
+            // Gram.request(contact, j);
         } catch (GramException e) {
             throw new GATInvocationException("globus", e); // no idea what went
             // wrong
@@ -541,8 +541,7 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
             throw new GATInvocationException("globus",
                     new CouldNotInitializeCredentialException("globus", e2));
         }
-
-        return res;
+        return job;
     }
 
     public static void end() {
@@ -561,6 +560,6 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
                                 + t);
             }
         }
-        RemoteSandboxSubmitter.end();
+        WrapperSubmitter.end();
     }
 }

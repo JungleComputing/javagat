@@ -84,8 +84,8 @@ public class LocalQResourceBrokerAdaptor extends ResourceBrokerCpi implements
      *            A GATContext which will be used to broker resources
      */
     public LocalQResourceBrokerAdaptor(GATContext gatContext,
-            Preferences preferences) throws GATObjectCreationException {
-        super(gatContext, preferences);
+            Preferences preferences, URI brokerURI) throws GATObjectCreationException {
+        super(gatContext, preferences, brokerURI);
 
         queue = new PriorityQueue<LocalQJob>();
 
@@ -157,13 +157,7 @@ public class LocalQResourceBrokerAdaptor extends ResourceBrokerCpi implements
                     "The job description does not contain a software description");
         }
 
-        URI location = getLocationURI(description);
-        if (!location.refersToLocalHost()) {
-            throw new MethodNotApplicableException("not a local file: "
-                    + location);
-        }
-
-        String host = getHostname(description);
+        String host = getHostname();
         if (host != null) {
             if (!host.equals("localhost")
                     && !host.equals(GATEngine.getLocalHostName())) {

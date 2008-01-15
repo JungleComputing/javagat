@@ -37,16 +37,18 @@ public class SubmitZorillaJob implements MetricListener {
         prefs.put("FileOutputStream.adaptor.name", "local");
         prefs.put("File.adaptor.name", "local");
 
-        URI exe = null, out = null, err = null, input = null, output = null;
+        String exe = null;
+        URI out = null, err = null, input = null, output = null;
 
         File exeFile = null;
         File outFile = null;
         File errFile = null;
         File inputFile = null;
         File outputFile = null;
+        
+        exe = "sort_script";
 
         try {
-            exe = new URI("sort_script");
             out = new URI("any:///sort.out");
             err = new URI("any:///sort.err");
             input = new URI("any:///sort.input");
@@ -68,7 +70,7 @@ public class SubmitZorillaJob implements MetricListener {
         }
 
         SoftwareDescription sd = new SoftwareDescription();
-        sd.setLocation(exe);
+        sd.setExecutable(exe);
         sd.setStdout(outFile);
         sd.setStderr(errFile);
         sd.addPreStagedFile(exeFile);
@@ -89,7 +91,7 @@ public class SubmitZorillaJob implements MetricListener {
 
         try {
             jd = new JobDescription(sd, rd);
-            broker = GAT.createResourceBroker(context, prefs);
+            broker = GAT.createResourceBroker(context, prefs, null);
         } catch (Exception e) {
             System.err.println("Could not create Job description: " + e);
             System.exit(1);

@@ -44,30 +44,30 @@ public class SubmitJobWithLocalFiles implements MetricListener {
         GATContext context = new GATContext();
         Preferences prefs = new Preferences();
         prefs.put("ResourceBroker.adaptor.name", "Globus");
-        prefs.put("ResourceBroker.jobmanagerContact", args[0]);
         SoftwareDescription sd = new SoftwareDescription();
 
-        File outFile = GAT.createFile(context, prefs,
-            new URI("any:///out"));
-        File errFile = GAT.createFile(context, prefs,
-            new URI("any:///err"));
+        File outFile = GAT.createFile(context, prefs, new URI("any:///out"));
+        File errFile = GAT.createFile(context, prefs, new URI("any:///err"));
         sd.setStdout(outFile);
         sd.setStderr(errFile);
-        sd.setLocation(new URI("/bin/hostname"));
-        sd.addAttribute("useRemoteSandbox", "true");
+        sd.setExecutable("/bin/hostname");
+        sd.addAttribute("useWrapper", "true");
         sd.addAttribute("java.home", new URI("/usr/local/sun-java/jdk1.5"));
         sd.addAttribute("sandboxRoot", "/tmp");
-        
-        sd.addPreStagedFile(GAT.createFile(context, prefs, new URI("any://fs0.das2.cs.vu.nl/testDir")));
-        sd.addPostStagedFile(GAT.createFile(context, prefs, new URI("any:////proc/cpuinfo")));
-        
+
+        sd.addPreStagedFile(GAT.createFile(context, prefs, new URI(
+                "any://fs0.das2.cs.vu.nl/testDir")));
+        sd.addPostStagedFile(GAT.createFile(context, prefs, new URI(
+                "any:////proc/cpuinfo")));
+
         Hashtable<String, Object> hardwareAttributes = new Hashtable<String, Object>();
 
         ResourceDescription rd = new HardwareResourceDescription(
-            hardwareAttributes);
+                hardwareAttributes);
 
         JobDescription jd = new JobDescription(sd, rd);
-        ResourceBroker broker = GAT.createResourceBroker(context, prefs);
+        ResourceBroker broker = GAT.createResourceBroker(context, prefs,
+                new URI(args[0]));
 
         Job job = broker.submitJob(jd);
         MetricDefinition md = job.getMetricDefinitionByName("job.status");
@@ -76,12 +76,12 @@ public class SubmitJobWithLocalFiles implements MetricListener {
 
         synchronized (this) {
             while ((job.getState() != Job.STOPPED)
-                && (job.getState() != Job.SUBMISSION_ERROR)) {
+                    && (job.getState() != Job.SUBMISSION_ERROR)) {
                 wait();
             }
         }
 
         System.err.println("SubmitJobCallback: Job finished, state = "
-            + job.getInfo());
+                + job.getInfo());
     }
 }

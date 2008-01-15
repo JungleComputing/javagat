@@ -21,7 +21,7 @@ public class Local {
         File stderr = GAT.createFile(context, new URI("file:///stderr"));
 
         SoftwareDescription sd = new SoftwareDescription();
-        sd.setLocation(new URI("file:////bin/date"));
+        sd.setExecutable("/bin/date");
 
         sd.setStdout(stdout);
         sd.setStderr(stderr);
@@ -31,7 +31,7 @@ public class Local {
 
         JobDescription jd = new JobDescription(sd, rd);
 
-        ResourceBroker broker = GAT.createResourceBroker(context);
+        ResourceBroker broker = GAT.createResourceBroker(context, new URI("any://localhost"));
 
         Job job = broker.submitJob(jd);
 

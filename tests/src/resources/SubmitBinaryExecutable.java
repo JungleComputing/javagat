@@ -39,15 +39,15 @@ public class SubmitBinaryExecutable implements MetricListener {
             Preferences prefs = new Preferences();
             prefs.put("ResourceBroker.adaptor.name", "globus");
 
-            File outFile =
-                    GAT.createFile(context, prefs, new URI("any:///date.out"));
-            File errFile =
-                    GAT.createFile(context, prefs, new URI("any:///date.err"));
-            File stageInFile =
-                    GAT.createFile(context, prefs, new URI("any:////bin/date"));
+            File outFile = GAT.createFile(context, prefs, new URI(
+                    "any:///date.out"));
+            File errFile = GAT.createFile(context, prefs, new URI(
+                    "any:///date.err"));
+            File stageInFile = GAT.createFile(context, prefs, new URI(
+                    "any:////bin/date"));
 
             SoftwareDescription sd = new SoftwareDescription();
-            sd.setLocation(new URI("any:///date"));
+            sd.setExecutable("/date");
             sd.setStdout(outFile);
             sd.setStderr(errFile);
             sd.addPreStagedFile(stageInFile);
@@ -55,11 +55,12 @@ public class SubmitBinaryExecutable implements MetricListener {
             Hashtable<String, Object> hardwareAttributes = new Hashtable<String, Object>();
             hardwareAttributes.put("machine.node", args[0]);
 
-            ResourceDescription rd =
-                    new HardwareResourceDescription(hardwareAttributes);
+            ResourceDescription rd = new HardwareResourceDescription(
+                    hardwareAttributes);
 
             JobDescription jd = new JobDescription(sd, rd);
-            ResourceBroker broker = GAT.createResourceBroker(context, prefs);
+            ResourceBroker broker = GAT.createResourceBroker(context, prefs,
+                    new URI("any:///"));
 
             Job job = broker.submitJob(jd);
             MetricDefinition md = job.getMetricDefinitionByName("job.status");
@@ -68,13 +69,13 @@ public class SubmitBinaryExecutable implements MetricListener {
 
             synchronized (this) {
                 while ((job.getState() != Job.STOPPED)
-                    && (job.getState() != Job.SUBMISSION_ERROR)) {
+                        && (job.getState() != Job.SUBMISSION_ERROR)) {
                     wait();
                 }
             }
 
             System.err.println("SubmitJobCallback: Job finished, state = "
-                + job.getInfo());
+                    + job.getInfo());
         } catch (Exception e) {
             System.err.println("an error occurred: " + e);
             e.printStackTrace();

@@ -108,7 +108,7 @@ public class AdaptorInvocationHandler implements InvocationHandler {
     private Hashtable<String, Adaptor> adaptors = new Hashtable<String, Adaptor>();
 
     public AdaptorInvocationHandler(AdaptorList adaptors, GATContext context,
-            Preferences preferences, Class[] parameterTypes, Object[] params)
+            Preferences preferences, Class<?>[] parameterTypes, Object[] params)
             throws GATObjectCreationException {
 
         if (adaptors.size() == 0) {
@@ -253,7 +253,7 @@ public class AdaptorInvocationHandler implements InvocationHandler {
      *                 creation of the adaptor failed
      */
     private Object initAdaptor(Adaptor adaptor, GATContext gatContext,
-            Preferences preferences, Class[] parameterTypes, Object[] parameters)
+            Preferences preferences, Class<?>[] parameterTypes, Object[] parameters)
             throws GATObjectCreationException {
         if (preferences == null) { // No preferences.
             preferences = new Preferences();

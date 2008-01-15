@@ -41,15 +41,13 @@ public class GlobusTest implements MetricListener {
         Preferences prefs = new Preferences();
         prefs.put("ResourceBroker.adaptor.name", "Globus");
         prefs.put("File.adaptor.name", "GridFTP");
-        prefs.put("ResourceBroker.jobmanagerContact",
-            "fs0.das3.cs.vu.nl/jobmanager-sge");
 
         SoftwareDescription sd = new SoftwareDescription();
-        sd.setLocation(new URI("/bin/sleep"));
+        sd.setExecutable("/bin/sleep");
         sd.setArguments(new String[] { "1000" });
 
         JobDescription jd = new JobDescription(sd);
-        ResourceBroker broker = GAT.createResourceBroker(context, prefs);
+        ResourceBroker broker = GAT.createResourceBroker(context, prefs, new URI("any://fs0.das3.cs.vu.nl/jobmanager-sge"));
 
         for (int i = 0; i < 50; i++) {
             Job job = broker.submitJob(jd);
