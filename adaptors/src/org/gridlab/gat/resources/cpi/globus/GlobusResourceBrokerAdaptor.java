@@ -3,6 +3,9 @@
  */
 package org.gridlab.gat.resources.cpi.globus;
 
+import java.util.Map;
+import java.util.Set;
+
 import org.apache.log4j.Logger;
 import org.globus.common.ResourceManagerContact;
 import org.globus.gram.Gram;
@@ -86,50 +89,7 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
         String rsl = "";
         String args = "";
 
-        // if (isJavaApplication(description)) {
-        // URI javaHome = (URI) sd.getAttributes().get("java.home");
-        // if (javaHome == null) {
-        // throw new GATInvocationException("java.home not set");
-        // }
-        //
-        // rsl += "& (executable = " + javaHome.getPath() + "/bin/java)";
-        //
-        // String javaFlags = getStringAttribute(description, "java.flags", "");
-        // if (javaFlags.length() != 0) {
-        // StringTokenizer t = new StringTokenizer(javaFlags);
-        // while (t.hasMoreTokens()) {
-        // args += " \"" + t.nextToken() + "\"";
-        // }
-        // }
-        //
-        // // classpath
-        // String javaClassPath = getStringAttribute(description,
-        // "java.classpath", "");
-        // if (javaClassPath.length() != 0) {
-        // args += " \"-classpath\" \"" + javaClassPath + "\"";
-        // } else {
-        // // TODO if not set, use jar files in prestaged set
-        // }
-        //
-        // // set the environment
-        // Map<String, Object> env = sd.getEnvironment();
-        // if (env != null && !env.isEmpty()) {
-        // Set<String> s = env.keySet();
-        // Object[] keys = (Object[]) s.toArray();
-        //
-        // for (int i = 0; i < keys.length; i++) {
-        // String val = (String) env.get(keys[i]);
-        // args += " \"-D" + keys[i] + "=" + val + "\"";
-        // }
-        // }
-        //
-        // // main class name
-        // args += " \"" + getLocationURI(description).getSchemeSpecificPart()
-        // + "\"";
-        // } else {
-        // String exe = getLocationURI(description).getPath();
         rsl += "& (executable = " + getExecutable(description) + ")";
-        // }
 
         // parse the arguments
         String[] argsA = getArgumentsArray(description);
@@ -225,21 +185,19 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
             }
         }
 
-        // if (!isJavaApplication(description)) {
-        // // set the environment
-        // Map<String, Object> env = sd.getEnvironment();
-        // if (env != null && !env.isEmpty()) {
-        // Set<String> s = env.keySet();
-        // Object[] keys = (Object[]) s.toArray();
-        // rsl += "(environment = ";
-        //
-        // for (int i = 0; i < keys.length; i++) {
-        // String val = (String) env.get(keys[i]);
-        // rsl += "(" + keys[i] + " \"" + val + "\")";
-        // }
-        // rsl += ")";
-        // }
-        // }
+        // set the environment
+        Map<String, Object> env = sd.getEnvironment();
+        if (env != null && !env.isEmpty()) {
+            Set<String> s = env.keySet();
+            Object[] keys = (Object[]) s.toArray();
+            rsl += "(environment = ";
+
+            for (int i = 0; i < keys.length; i++) {
+                String val = (String) env.get(keys[i]);
+                rsl += "(" + keys[i] + " \"" + val + "\")";
+            }
+            rsl += ")";
+        }
 
         String queue = getStringAttribute(description, "queue", null);
         if (queue != null) {

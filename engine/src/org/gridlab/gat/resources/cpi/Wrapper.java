@@ -245,7 +245,6 @@ public class Wrapper implements MetricListener {
             preferences = (Preferences) in.readObject();
             logger.info("reading jobdescriptions");
             descriptions = (JobDescription[]) in.readObject();
-            preferences.remove("ResourceBroker.jobmanagerContact");
             preStageDoneLocations = (String[]) in.readObject();
             in.close();
         } catch (Exception e) {
@@ -259,20 +258,20 @@ public class Wrapper implements MetricListener {
         }
         String[] jobIDs = jobIDsString.split(",");
 
-        int concurrentJobsPerNode = 0;
+        int maxConcurrentJobs = 0;
         String concurrentJobsPerNodeString = (String) preferences
-                .get("concurrentJobsPerNode");
+                .get("wrapper.concurrentjobs.max");
         if (concurrentJobsPerNodeString != null) {
             try {
-                concurrentJobsPerNode = Integer
+                maxConcurrentJobs = Integer
                         .parseInt(concurrentJobsPerNodeString);
             } catch (NumberFormatException n) {
                 // not a number -> default value
             }
         }
         // default value
-        if (concurrentJobsPerNode <= 0) {
-            concurrentJobsPerNode = Runtime.getRuntime().availableProcessors();
+        if (maxConcurrentJobs <= 0) {
+            maxConcurrentJobs = Runtime.getRuntime().availableProcessors();
         }
         int submitted = 0;
         while (submitted < descriptions.length) {
@@ -299,7 +298,7 @@ public class Wrapper implements MetricListener {
                 submitJob(broker, descriptions[submitted], jobIDs[submitted]);
             }
             submitted++;
-            while (submitted - getJobsStopped() == concurrentJobsPerNode) {
+            while (submitted - getJobsStopped() == maxConcurrentJobs) {
                 try {
                     wait();
                 } catch (InterruptedException e) {

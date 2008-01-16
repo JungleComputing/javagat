@@ -155,48 +155,7 @@ public class GT4ResourceBrokerAdaptor extends ResourceBrokerCpi {
             throw new GATInvocationException(
                     "GT4ResourceBrokerAdaptor: software description is missing");
         }
-        String exe = "";
-        // if (isJavaApplication(jd)) {
-        // URI javaHome = (URI) sd.getAttributes().get("java.home");
-        // if (javaHome == null) {
-        // throw new GATInvocationException("java.home not set");
-        // }
-        //
-        // exe += javaHome.getPath() + "/bin/java";
-        //
-        // String javaFlags = getStringAttribute(jd, "java.flags", "");
-        // if (javaFlags.length() != 0) {
-        // StringTokenizer t = new StringTokenizer(javaFlags);
-        // while (t.hasMoreTokens()) {
-        // spec.addArgument(t.nextToken());
-        // }
-        // }
-        //
-        // // classpath
-        // String javaClassPath = getStringAttribute(jd, "java.classpath", "");
-        // if (javaClassPath.length() != 0) {
-        // spec.addArgument("-classpath");
-        // spec.addArgument(javaClassPath);
-        // } else {
-        // // TODO if not set, use jar files in prestaged set
-        // }
-        //
-        // // set the environment
-        // Map<String, Object> env = sd.getEnvironment();
-        // if (env != null && !env.isEmpty()) {
-        // Set<String> s = env.keySet();
-        // Object[] keys = (Object[]) s.toArray();
-        //
-        // for (int i = 0; i < keys.length; i++) {
-        // String val = (String) env.get(keys[i]);
-        // spec.addArgument("-D" + keys[i] + "=" + val);
-        // }
-        // }
-        //
-        // // main class name
-        // spec.addArgument(getLocationURI(jd).getSchemeSpecificPart());
-        // } else {
-        exe = getExecutable(jd);
+        String exe = getExecutable(jd);
         Map<String, Object> env = sd.getEnvironment();
         if (env != null && !env.isEmpty()) {
             Set<String> s = env.keySet();
@@ -205,7 +164,6 @@ public class GT4ResourceBrokerAdaptor extends ResourceBrokerCpi {
                 String val = (String) env.get(keys[i]);
                 spec.addEnvironmentVariable((String) keys[i], val);
             }
-            // }
         }
         spec.setExecutable(exe);
         spec.setBatchJob(false);
