@@ -143,7 +143,7 @@ public class SshFileAdaptor extends FileCpi {
         sui = null;
 
         try {
-            sui = SSHSecurityUtils.getSshCredential(gatContext, preferences,
+            sui = SshSecurityUtils.getSshCredential(gatContext, preferences,
                     "ssh", loc, SSH_PORT);
         } catch (Exception e) {
             if (logger.isInfoEnabled()) {
@@ -328,7 +328,7 @@ public class SshFileAdaptor extends FileCpi {
         if (!loc.refersToLocalHost()) {
             try {
                 // has to be modified after proper modified SSHSecurityUtils
-                SshUserInfo tmpsui = SSHSecurityUtils.getSshCredential(
+                SshUserInfo tmpsui = SshSecurityUtils.getSshCredential(
                         gatContext, preferences, "ssh", loc, SSH_PORT);
                 dui = new SshUserInfo();
                 dui.username = tmpsui.username;

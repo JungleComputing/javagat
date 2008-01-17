@@ -23,7 +23,7 @@ class SshContextCreator implements SecurityContextCreator {
             Preferences preferences, URI location)
             throws CouldNotInitializeCredentialException,
             CredentialExpiredException, InvalidUsernameOrPasswordException {
-        SshUserInfo cred = SSHSecurityUtils.getDefaultUserInfo(gatContext,
+        SshUserInfo cred = SshSecurityUtils.getDefaultUserInfo(gatContext,
                 preferences, location);
         CertificateSecurityContext c = new CertificateSecurityContext();
         c.putDataObject("ssh", cred);
@@ -78,7 +78,7 @@ class SshContextCreator implements SecurityContextCreator {
     }
 }
 
-public class SSHSecurityUtils {
+public class SshSecurityUtils {
     public static SshUserInfo getSshCredential(GATContext context,
             Preferences preferences, String adaptorName, URI location,
             int defaultPort) throws CouldNotInitializeCredentialException,

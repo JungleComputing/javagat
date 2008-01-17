@@ -11,7 +11,7 @@ import org.gridlab.gat.URI;
 import org.gridlab.gat.engine.util.CommandRunner;
 import org.gridlab.gat.io.File;
 import org.gridlab.gat.io.cpi.FileCpi;
-import org.gridlab.gat.io.cpi.ssh.SSHSecurityUtils;
+import org.gridlab.gat.io.cpi.ssh.SshSecurityUtils;
 import org.gridlab.gat.io.cpi.ssh.SshUserInfo;
 
 @SuppressWarnings("serial")
@@ -196,7 +196,7 @@ public class CommandlineSshFileAdaptor extends FileCpi {
         SshUserInfo sui = null;
 
         try {
-            sui = SSHSecurityUtils.getSshCredential(gatContext, preferences,
+            sui = SshSecurityUtils.getSshCredential(gatContext, preferences,
                     "ssh", src, SSH_PORT);
         } catch (Exception e) {
             logger
@@ -306,7 +306,7 @@ public class CommandlineSshFileAdaptor extends FileCpi {
         SshUserInfo sui = null;
 
         try {
-            sui = SSHSecurityUtils.getSshCredential(gatContext, preferences,
+            sui = SshSecurityUtils.getSshCredential(gatContext, preferences,
                     "ssh", dest, SSH_PORT);
         } catch (Exception e) {
             logger
