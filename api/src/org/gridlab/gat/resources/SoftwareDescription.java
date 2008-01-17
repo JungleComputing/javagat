@@ -25,37 +25,21 @@ import org.gridlab.gat.io.File;
  * <ul>
  * <li> directory (String): working directory.
  * <li> count (Integer/String): number of executables to run.
- * <li> hostCount (Integer/String): number of hosts to distribute on.
- * <li> maxTime (Long/String):  The maximum walltime or cputime for a single 
+ * <li> host.count (Integer/String): number of hosts to distribute on.
+ * <li> time.max (Long/String):  The maximum walltime or cputime for a single 
  execution of the executable.  The units is in minutes.
- * <li> maxWallTime (Long/String): maximal WALL time in minutes.
- * <li> maxCPUTime (Long/String): maximal CPU time in minutes.
- * <li> jobType (String): single|multiple|mpi|condor|...
- * <li> queue (String): target queue name.
+ * <li> walltime.max (Long/String): maximal WALL time in minutes.
+ * <li> cputime.max (Long/String): maximal CPU time in minutes.
+ * <li> job.type (String): single|multiple|mpi|condor|...
+ * <li> globus.queue (String): target queue name.
  * <li> project (String): project to use, for accounting purposes.
- * <li> dryRun (Boolean/String): if set, dont submit but return success.
- * <li> minMemory (Integer/String): minimal required memory in MB.
- * <li> maxMemory (Integer/String): maximal required memory in MB.
- * <li> saveState (Boolean/String): keep job data persistent for restart.
+ * <li> dryrun (Boolean/String): if set, dont submit but return success.
+ * <li> memory.min (Integer/String): minimal required memory in MB.
+ * <li> memory.max (Integer/String): maximal required memory in MB.
+ * <li> savestate (Boolean/String): keep job data persistent for restart.
  * <li> restart=ID (String): restart job with given ID.
  * </ul>
  *
- * Several JavaGAT adaptors also have support for running Java programs.
- * This works as follows: 
- * The "location" (the executable) can be set to
- * "java:my.ClassName", where my.Classname is the fully qualified name
- * of your class that contains main.
- * You can put the classpath in the attributes, with as key 
- * "java.classpath", and as value the litteral string you would use as arument to 
- * the -classpath option to the JVM.
- * If you do not set a classpath, JavaGAT will set it to all files in your 
- * prestaged file set that have a .jar extension.
- * Furthermore, all variables in the environment will be passed to the JVM 
- * as -D options. JavaGAT also has to know which JVM to use, you can set this 
- * by providing a "java.home" key in the attributes. The value of java.home must
- * be a URI.
- * Finally, you can specify a "java.flags" attribute to pass options to the 
- * JVM itself, like "-server" or "-Xmx800M".
  *
  */
 @SuppressWarnings("serial")
@@ -174,21 +158,21 @@ public class SoftwareDescription implements java.io.Serializable {
             String val = (String) tmp;
             if (key.equalsIgnoreCase("count")) {
                 attributes.put(key, new Integer(val));
-            } else if (key.equalsIgnoreCase("hostCount")) {
+            } else if (key.equalsIgnoreCase("host.count")) {
                 attributes.put(key, new Integer(val));
-            } else if (key.equalsIgnoreCase("maxTime")) {
+            } else if (key.equalsIgnoreCase("time.max")) {
                 attributes.put(key, new Long(val));
-            } else if (key.equalsIgnoreCase("maxWallTime")) {
+            } else if (key.equalsIgnoreCase("walltime.max")) {
                 attributes.put(key, new Long(val));
-            } else if (key.equalsIgnoreCase("maxCPUTime")) {
+            } else if (key.equalsIgnoreCase("cputime.max")) {
                 attributes.put(key, new Long(val));
-            } else if (key.equalsIgnoreCase("dryRun")) {
+            } else if (key.equalsIgnoreCase("dryrun")) {
                 attributes.put(key, new Boolean(val));
-            } else if (key.equalsIgnoreCase("minMemory")) {
+            } else if (key.equalsIgnoreCase("memory.min")) {
                 attributes.put(key, new Integer(val));
-            } else if (key.equalsIgnoreCase("maxMemory")) {
+            } else if (key.equalsIgnoreCase("memory.max")) {
                 attributes.put(key, new Integer(val));
-            } else if (key.equalsIgnoreCase("saveState")) {
+            } else if (key.equalsIgnoreCase("savestate")) {
                 attributes.put(key, new Boolean(val));
             }
         }

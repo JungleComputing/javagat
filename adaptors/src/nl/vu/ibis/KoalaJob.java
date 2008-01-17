@@ -125,20 +125,20 @@ public class KoalaJob extends JobCpi implements Runnable {
         // Set the priority of the job. Default is 1.         
         int priority = 1;
 
-        if (attributes.containsKey("priority")) {
+        if (attributes.containsKey("koala.priority")) {
             try {
-                priority = (Integer) attributes.get("priority");
+                priority = (Integer) attributes.get("koala.priority");
             } catch (Exception e) {
-                logger.warn("Illegal \"priority\" setting!");
+                logger.warn("Illegal \"koala.priority\" setting!");
             }
         }
 
         buffer.append("-j#" + priority + "#");
 
         // Check if the job is flexible (i.e., the size can be varied).
-        if (attributes.containsKey("flexible")) {
+        if (attributes.containsKey("koala.flexible")) {
             try {
-                int minimalSize = (Integer) attributes.get("flexible");
+                int minimalSize = (Integer) attributes.get("koala.flexible");
 
                 minimalSize = Math.max(1, minimalSize);
 
@@ -149,21 +149,21 @@ public class KoalaJob extends JobCpi implements Runnable {
                 schedulingPolicy = "FWF";
 
             } catch (Exception e) {
-                logger.warn("Illegal \"flexible\" setting!");
+                logger.warn("Illegal \"koala.flexible\" setting!");
             }
         }
 
         // Should we optimize the file transfertime ? 
-        if (attributes.containsKey("optimizeTransfer")) {
+        if (attributes.containsKey("koala.optimize.transfer")) {
             try {
                 boolean optTransfer = (Boolean) attributes
-                        .get("optimizeTransfer");
+                        .get("koala.optimize.transfer");
 
                 if (optTransfer) {
                     schedulingPolicy = "BWF";
                 }
             } catch (Exception e) {
-                logger.warn("Illegal \"optimizeTransfer\" setting!");
+                logger.warn("Illegal \"koala.optimize.transfer\" setting!");
             }
 
         }

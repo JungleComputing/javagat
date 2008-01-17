@@ -137,23 +137,6 @@ public abstract class ResourceBrokerCpi implements ResourceBroker {
         return path;
     }
 
-    // protected boolean isJavaApplication(JobDescription description)
-    // throws GATInvocationException {
-    // SoftwareDescription sd = description.getSoftwareDescription();
-    //
-    // if (sd == null) {
-    // throw new GATInvocationException(
-    // "The job description does not contain a software description");
-    // }
-    //
-    // String exeScheme = getLocationURI(description).getScheme();
-    // if (exeScheme != null && exeScheme.equals("java")) {
-    // return true;
-    // }
-    //
-    // return false;
-    // }
-
     // utility methods
     protected int getIntAttribute(JobDescription description, String name,
             int defaultVal) {
@@ -201,7 +184,7 @@ public abstract class ResourceBrokerCpi implements ResourceBroker {
     }
 
     protected int getHostCount(JobDescription description) {
-        return getIntAttribute(description, "hostCount", 1);
+        return getIntAttribute(description, "host.count", 1);
     }
 
     protected String[] getArgumentsArray(JobDescription description)

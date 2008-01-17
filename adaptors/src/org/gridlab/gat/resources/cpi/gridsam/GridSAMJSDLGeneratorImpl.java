@@ -11,8 +11,8 @@ import org.gridlab.gat.resources.cpi.Sandbox;
 
 public class GridSAMJSDLGeneratorImpl implements GridSAMJSDLGenerator {
 
-    private static final String MAX_MEMORY_ATTRIBUTE = "maxMemory";
-    private static final String MAX_CPU_TIME_ATTRIBUTE = "maxCPUTime";
+    private static final String MAX_MEMORY_ATTRIBUTE = "memory.max";
+    private static final String MAX_CPU_TIME_ATTRIBUTE = "cputime.max";
     private static final String STDIN_ATTRIBUTE = "stdin";
     private static final String SLASH = "/";
     private static final String STDERR_ATTRIBUTE = "stderr";

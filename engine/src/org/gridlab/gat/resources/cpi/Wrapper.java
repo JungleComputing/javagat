@@ -291,7 +291,7 @@ public class Wrapper implements MetricListener {
                 // should not happen, since the URI is hardcoded
             }
             if (descriptions[submitted].getSoftwareDescription()
-                    .getBooleanAttribute("waitForPreStage", false)) {
+                    .getBooleanAttribute("wrapper.prestage", false)) {
                 submitJob(broker, descriptions[submitted], gatContext,
                         preferences, jobIDs[submitted],
                         preStageDoneLocations[submitted]);
@@ -327,7 +327,7 @@ public class Wrapper implements MetricListener {
     private void modifyJobDescription(JobDescription jd, GATContext gatContext,
             Preferences preferences, String remoteCWD) {
         SoftwareDescription sd = jd.getSoftwareDescription();
-        sd.addAttribute("useWrapper", "false");
+        sd.addAttribute("wrapper.enable", "false");
         preferences.put("ResourceBroker.adaptor.name", "local");
 
         // rewrite poststage files to go directly to their original

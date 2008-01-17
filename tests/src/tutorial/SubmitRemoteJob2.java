@@ -24,15 +24,15 @@ public class SubmitRemoteJob2 {
         context.addPreference("concurrentJobsPerNode", "2");
 
         SoftwareDescription sd1 = new SoftwareDescription();
-        sd1.addAttribute("getWrapperOutput", "true");
-        sd1.addAttribute("getWrapperOutputURI",
+        sd1.addAttribute("wrapper.output", "true");
+        sd1.addAttribute("wrapper.output.location",
                 "any://fs1.das3.liacs.nl/rsout");
         // sd1.addAttribute("remoteGatLocation", "../GAT");
         // sd1.addAttribute("waitForPreStage", "true");
         sd1.setExecutable("/bin/sh");
         sd1.setArguments(new String[] { "/home0/rkemp/script.sh" });
-        sd1.addAttribute("useWrapper", "true");
-        sd1.addAttribute("java.home", new URI("/usr/local/package/jdk1.5"));
+        sd1.addAttribute("wrapper.enable", "true");
+        sd1.addAttribute("wrapper.java.home", new URI("/usr/local/package/jdk1.5"));
         // sd1.addPreStagedFile(GAT.createFile(context, "bigfile"));
         File stdout1 = GAT.createFile(context, "1");
         sd1.setStdout(stdout1);
@@ -41,9 +41,9 @@ public class SubmitRemoteJob2 {
         SoftwareDescription sd2 = new SoftwareDescription();
         sd2.setExecutable("/bin/sh");
         sd2.setArguments(new String[] { "/home0/rkemp/script.sh" });
-        sd2.addAttribute("useWrapper", "true");
+        sd2.addAttribute("wrapper.enable", "true");
         // sd2.addAttribute("waitForPreStage", "true");
-        sd2.addAttribute("java.home", new URI("/usr/local/package/jdk1.5"));
+        sd2.addAttribute("wrapper.java.home", new URI("/usr/local/package/jdk1.5"));
         // sd2.addPreStagedFile(GAT.createFile(context, "bigfile"));
         File stdout2 = GAT.createFile(context, "2");
         sd2.setStdout(stdout2);
@@ -52,9 +52,9 @@ public class SubmitRemoteJob2 {
         SoftwareDescription sd3 = new SoftwareDescription();
         sd3.setExecutable("/bin/sh");
         sd3.setArguments(new String[] { "/home0/rkemp/script.sh" });
-        sd3.addAttribute("useWrapper", "true");
+        sd3.addAttribute("wrapper.enable", "true");
         // sd2.addAttribute("waitForPreStage", "true");
-        sd3.addAttribute("java.home", new URI("/usr/local/package/jdk1.5"));
+        sd3.addAttribute("wrapper.java.home", new URI("/usr/local/package/jdk1.5"));
         // sd2.addPreStagedFile(GAT.createFile(context, "bigfile"));
         File stdout3 = GAT.createFile(context, "3");
         sd3.setStdout(stdout3);
@@ -63,24 +63,24 @@ public class SubmitRemoteJob2 {
         SoftwareDescription sd4 = new SoftwareDescription();
         sd4.setExecutable("/bin/sh");
         sd4.setArguments(new String[] { "/home0/rkemp/script.sh" });
-        sd4.addAttribute("useWrapper", "true");
+        sd4.addAttribute("wrapper.enable", "true");
         // sd2.addAttribute("waitForPreStage", "true");
-        sd4.addAttribute("java.home", new URI("/usr/local/package/jdk1.5"));
+        sd4.addAttribute("wrapper.java.home", new URI("/usr/local/package/jdk1.5"));
         // sd2.addPreStagedFile(GAT.createFile(context, "bigfile"));
         File stdout4 = GAT.createFile(context, "4");
         sd4.setStdout(stdout4);
         JobDescription jd4 = new JobDescription(sd4);        
 
         SoftwareDescription sd5 = new SoftwareDescription();
-        sd5.addAttribute("getWrapperOutput", "true");
-        sd5.addAttribute("getWrapperOutputURI",
+        sd5.addAttribute("wrapper.output", "true");
+        sd5.addAttribute("wrapper.output.location",
                 "any://fs1.das3.liacs.nl/rsout");
         // sd5.addAttribute("remoteGatLocation", "../GAT");
         // sd3.addAttribute("waitForPreStage", "true");
         sd5.setExecutable("/bin/sh");
         sd5.setArguments(new String[] { "/home0/rkemp/script.sh" });
-        sd5.addAttribute("useWrapper", "true");
-        sd5.addAttribute("java.home", new URI("/usr/local/package/jdk1.5"));
+        sd5.addAttribute("wrapper.enable", "true");
+        sd5.addAttribute("wrapper.java.home", new URI("/usr/local/package/jdk1.5"));
         // sd3.addPreStagedFile(GAT.createFile(context, "bigfile"));
         File stdout5 = GAT.createFile(context, "5");
         sd5.setStdout(stdout5);

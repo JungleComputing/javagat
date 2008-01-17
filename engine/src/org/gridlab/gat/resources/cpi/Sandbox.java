@@ -77,8 +77,8 @@ public class Sandbox {
         if (sd != null) {
             Map<String, Object> attr = sd.getAttributes();
             if (attr != null) {
-                sandboxRootPref = (String) attr.get("sandboxRoot");
-                sandboxDisabledPref = (String) attr.get("disableSandbox");
+                sandboxRootPref = (String) attr.get("sandbox.root");
+                sandboxDisabledPref = (String) attr.get("sandbox.disable");
             }
         }
         if (sandboxRootPref != null) {

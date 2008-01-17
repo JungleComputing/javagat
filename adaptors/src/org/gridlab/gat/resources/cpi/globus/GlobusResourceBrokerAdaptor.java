@@ -86,50 +86,7 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
         String rsl = "";
         String args = "";
 
-        // if (isJavaApplication(description)) {
-        // URI javaHome = (URI) sd.getAttributes().get("java.home");
-        // if (javaHome == null) {
-        // throw new GATInvocationException("java.home not set");
-        // }
-        //
-        // rsl += "& (executable = " + javaHome.getPath() + "/bin/java)";
-        //
-        // String javaFlags = getStringAttribute(description, "java.flags", "");
-        // if (javaFlags.length() != 0) {
-        // StringTokenizer t = new StringTokenizer(javaFlags);
-        // while (t.hasMoreTokens()) {
-        // args += " \"" + t.nextToken() + "\"";
-        // }
-        // }
-        //
-        // // classpath
-        // String javaClassPath = getStringAttribute(description,
-        // "java.classpath", "");
-        // if (javaClassPath.length() != 0) {
-        // args += " \"-classpath\" \"" + javaClassPath + "\"";
-        // } else {
-        // // TODO if not set, use jar files in prestaged set
-        // }
-        //
-        // // set the environment
-        // Map<String, Object> env = sd.getEnvironment();
-        // if (env != null && !env.isEmpty()) {
-        // Set<String> s = env.keySet();
-        // Object[] keys = (Object[]) s.toArray();
-        //
-        // for (int i = 0; i < keys.length; i++) {
-        // String val = (String) env.get(keys[i]);
-        // args += " \"-D" + keys[i] + "=" + val + "\"";
-        // }
-        // }
-        //
-        // // main class name
-        // args += " \"" + getLocationURI(description).getSchemeSpecificPart()
-        // + "\"";
-        // } else {
-        // String exe = getLocationURI(description).getPath();
         rsl += "& (executable = " + getExecutable(description) + ")";
-        // }
 
         // parse the arguments
         String[] argsA = getArgumentsArray(description);
@@ -147,7 +104,7 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
 
         rsl += " (hostCount = " + getHostCount(description) + ")";
 
-        String jobType = getStringAttribute(description, "jobType", null);
+        String jobType = getStringAttribute(description, "job.type", null);
         if (jobType != null) {
             rsl += " (jobType = " + jobType + ")";
         }
@@ -156,17 +113,17 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
             rsl += " (directory = " + sandbox.getSandbox() + ")";
         }
 
-        long maxTime = getLongAttribute(description, "maxTime", -1);
+        long maxTime = getLongAttribute(description, "time.max", -1);
         if (maxTime > 0) {
             rsl += " (maxTime = " + maxTime + ")";
         }
 
-        long maxWallTime = getLongAttribute(description, "maxWallTime", -1);
+        long maxWallTime = getLongAttribute(description, "walltime.max", -1);
         if (maxWallTime > 0) {
             rsl += " (maxWallTime = " + maxWallTime + ")";
         }
 
-        long maxCPUTime = getLongAttribute(description, "maxCPUTime", -1);
+        long maxCPUTime = getLongAttribute(description, "cputime.max", -1);
         if (maxCPUTime > 0) {
             rsl += " (maxCPUTime = " + maxCPUTime + ")";
         }
@@ -241,7 +198,7 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
         // }
         // }
 
-        String queue = getStringAttribute(description, "queue", null);
+        String queue = getStringAttribute(description, "globus.queue", null);
         if (queue != null) {
             rsl += " (queue = " + queue + ")";
         }
@@ -491,9 +448,9 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
     public Job submitJobGatSandbox(JobDescription description,
             MetricListener listener, String metricDefinitionName)
             throws GATInvocationException {
-        if (getBooleanAttribute(description, "useWrapper", false)) {
+        if (getBooleanAttribute(description, "wrapper.enable", false)) {
             if (logger.isDebugEnabled()) {
-                logger.debug("useWrapper, using wrapper application");
+                logger.debug("wrapper enabled, using wrapper application");
             }
             if (submitter == null) {
                 submitter = new WrapperSubmitter(gatContext, preferences,

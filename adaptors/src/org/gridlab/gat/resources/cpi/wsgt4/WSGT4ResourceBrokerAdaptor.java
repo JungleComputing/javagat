@@ -81,50 +81,6 @@ public class WSGT4ResourceBrokerAdaptor extends ResourceBrokerCpi {
                     "The job description does not contain a software description");
         }
 
-        // if (isJavaApplication(description)) {
-        // URI javaHome = (URI) sd.getAttributes().get("java.home");
-        // if (javaHome == null) {
-        // throw new GATInvocationException("java.home not set");
-        // }
-        //
-        // rsl += "<executable>" + javaHome.getPath()
-        // + "/bin/java</executable>";
-        //
-        // String javaFlags = getStringAttribute(description, "java.flags", "");
-        // if (javaFlags.length() != 0) {
-        // StringTokenizer t = new StringTokenizer(javaFlags);
-        // while (t.hasMoreTokens()) {
-        // rsl += "<argument>" + t.nextToken() + "</argument>";
-        // }
-        // }
-        //
-        // // classpath
-        // String javaClassPath = getStringAttribute(description,
-        // "java.classpath", "");
-        // if (javaClassPath.length() != 0) {
-        // rsl += "<argument>-classpath</argument>";
-        // rsl += "<argument>" + javaClassPath + "</argument>";
-        // } else {
-        // // TODO if not set, use jar files in prestaged set
-        // }
-        //
-        // // set the environment
-        // Map<String, Object> env = sd.getEnvironment();
-        // if (env != null && !env.isEmpty()) {
-        // Set<String> s = env.keySet();
-        // Object[] keys = (Object[]) s.toArray();
-        //
-        // for (int i = 0; i < keys.length; i++) {
-        // String val = (String) env.get(keys[i]);
-        // rsl += "<argument>-D" + keys[i] + "=" + val + "</argument>";
-        // }
-        // }
-        //
-        // // main class name
-        // rsl += "<argument>"
-        // + getLocationURI(description).getSchemeSpecificPart()
-        // + "</argument>";
-        // } else {
         rsl += "<executable>";
         rsl += getExecutable(description);
         rsl += "</executable>";
@@ -141,7 +97,6 @@ public class WSGT4ResourceBrokerAdaptor extends ResourceBrokerCpi {
                 rsl += "</environment>";
             }
         }
-        // }
 
         String[] argsA = getArgumentsArray(description);
 
@@ -203,7 +158,7 @@ public class WSGT4ResourceBrokerAdaptor extends ResourceBrokerCpi {
 
     public Job submitJob(JobDescription description, MetricListener listener,
             String metricDefinitionName) throws GATInvocationException {
-        if (getBooleanAttribute(description, "useWrapper", false)) {
+        if (getBooleanAttribute(description, "wrapper.enable", false)) {
             if (logger.isDebugEnabled()) {
                 logger.debug("useWrapper, using wrapper application");
             }
