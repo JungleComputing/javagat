@@ -51,21 +51,18 @@
 			</manifest>
 		</jar>
 
-		<jar jarfile="${lib}/SftpFileInputStreamAdaptor.jar" basedir="${tmp}" includes="**/sftp/*.class,**/j2ssh/**">
+		<jar jarfile="${lib}/SftpFileAdaptor.jar" basedir="${tmp}" includes="**/sftp/*.class,**/j2ssh/**">
 			<manifest>
+				<attribute name="FileCpi-class" value="org.gridlab.gat.io.cpi.sftp.SftpFileAdaptor" />
+				<attribute name="FileOutputStreamCpi-class" value="org.gridlab.gat.io.cpi.sftp.SftpFileOutputStreamAdaptor" />
 				<attribute name="FileInputStreamCpi-class" value="org.gridlab.gat.io.cpi.sftp.SftpFileInputStreamAdaptor" />
 			</manifest>
 		</jar>
 
-		<jar jarfile="${lib}/SftpNewFileInputStreamAdaptor.jar" basedir="${tmp}" includes="**/sftpnew/*.class,org/gridlab/gat/io/cpi/ssh/**,com/jcraft/jsch/**">
+		<jar jarfile="${lib}/SftpNewFileAdaptor.jar" basedir="${tmp}" includes="**/sftpnew/*.class,org/gridlab/gat/io/cpi/ssh/**,com/jcraft/jsch/**">
 			<manifest>
+				<attribute name="FileCpi-class" value="org.gridlab.gat.io.cpi.sftpnew.SftpNewFileAdaptor" />
 				<attribute name="FileInputStreamCpi-class" value="org.gridlab.gat.io.cpi.sftpnew.SftpNewFileInputStreamAdaptor" />
-			</manifest>
-		</jar>
-
-		<jar jarfile="${lib}/SftpFileOutputStreamAdaptor.jar" basedir="${tmp}" includes="**/sftp/*.class,**/j2ssh/**">
-			<manifest>
-				<attribute name="FileOutputStreamCpi-class" value="org.gridlab.gat.io.cpi.sftp.SftpFileOutputStreamAdaptor" />
 			</manifest>
 		</jar>
 
@@ -99,35 +96,12 @@
 			</manifest>
 		</jar>
 
-		<jar jarfile="${lib}/SftpFileAdaptor.jar" basedir="${tmp}" includes="**/sftp/*.class,**/j2ssh/**">
-			<manifest>
-				<attribute name="FileCpi-class" value="org.gridlab.gat.io.cpi.sftp.SftpFileAdaptor" />
-			</manifest>
-		</jar>
-
 		<jar jarfile="${lib}/SftpGanymedFileAdaptor.jar" basedir="${tmp}" includes="**/sftpGanymed/*.class">
 			<manifest>
 				<attribute name="FileCpi-class" value="org.gridlab.gat.io.cpi.sftpGanymed.SftpGanymedFileAdaptor" />
 			</manifest>
 		</jar>
 
-		<jar jarfile="${lib}/SftpNewFileAdaptor.jar" basedir="${tmp}" includes="**/sftpnew/*.class,org/gridlab/gat/io/cpi/ssh/**,com/jcraft/jsch/**">
-			<manifest>
-				<attribute name="FileCpi-class" value="org.gridlab.gat.io.cpi.sftpnew.SftpNewFileAdaptor" />
-			</manifest>
-		</jar>
-
-		<jar jarfile="${lib}/FTPFileAdaptor.jar" basedir="${tmp}" includes="org/gridlab/gat/io/cpi/globus/**,org/globus/ftp/vanilla/**">
-			<manifest>
-				<attribute name="FileCpi-class" value="org.gridlab.gat.io.cpi.globus.FTPFileAdaptor" />
-			</manifest>
-		</jar>
-
-		<jar jarfile="${lib}/GridFTPFileAdaptor.jar" basedir="${tmp}" includes="org/gridlab/gat/io/cpi/globus/**,org/gridlab/gat/security/**,org/globus/ftp/vanilla/**">
-			<manifest>
-				<attribute name="FileCpi-class" value="org.gridlab.gat.io.cpi.globus.GridFTPFileAdaptor" />
-			</manifest>
-		</jar>
 
 		<jar jarfile="${lib}/CommandlineSshFileAdaptor.jar" basedir="${tmp}" includes="org/gridlab/gat/io/cpi/commandlineSsh/*.class,com/jcraft/jsch/**">
 			<manifest>
@@ -147,63 +121,40 @@
 			</manifest>
 		</jar>
 
-		<jar jarfile="${lib}/FTPFileInputStreamAdaptor.jar" basedir="${tmp}" includes="org/gridlab/gat/io/cpi/globus/**,org/globus/ftp/vanilla/**">
+		<jar jarfile="${lib}/FTPFileAdaptor.jar" basedir="${tmp}" includes="org/gridlab/gat/io/cpi/globus/**,org/globus/ftp/vanilla/**">
 			<manifest>
+				<attribute name="FileCpi-class" value="org.gridlab.gat.io.cpi.globus.FTPFileAdaptor" />
 				<attribute name="FileInputStreamCpi-class" value="org.gridlab.gat.io.cpi.globus.FTPFileInputStreamAdaptor" />
-			</manifest>
-		</jar>
-
-		<jar jarfile="${lib}/GridFTPFileInputStreamAdaptor.jar" basedir="${tmp}" includes="org/gridlab/gat/io/cpi/globus/**,org/gridlab/gat/security/**,org/globus/ftp/vanilla/**">
-			<manifest>
-				<attribute name="FileInputStreamCpi-class" value="org.gridlab.gat.io.cpi.globus.GridFTPFileInputStreamAdaptor" />
-			</manifest>
-		</jar>
-
-		<jar jarfile="${lib}/HTTPFileInputStreamAdaptor.jar" basedir="${tmp}" includes="org/gridlab/gat/io/cpi/globus/**,org/globus/ftp/vanilla/**">
-			<manifest>
-				<attribute name="FileInputStreamCpi-class" value="org.gridlab.gat.io.cpi.globus.HTTPFileInputStreamAdaptor" />
-			</manifest>
-		</jar>
-
-		<jar jarfile="${lib}/HTTPSFileInputStreamAdaptor.jar" basedir="${tmp}" includes="org/gridlab/gat/io/cpi/globus/**,org/globus/ftp/vanilla/**">
-			<manifest>
-				<attribute name="FileInputStreamCpi-class" value="org.gridlab.gat.io.cpi.globus.HTTPSFileInputStreamAdaptor" />
-			</manifest>
-		</jar>
-
-		<jar jarfile="${lib}/SSHFileInputStreamAdaptor.jar" basedir="${tmp}" includes="org/gridlab/gat/io/cpi/ssh/**,com/jcraft/jsch/**">
-			<manifest>
-				<attribute name="FileInputStreamCpi-class" value="org.gridlab.gat.io.cpi.ssh.SshFileInputStreamAdaptor" />
-			</manifest>
-		</jar>
-
-		<jar jarfile="${lib}/SSHFileOutputStreamAdaptor.jar" basedir="${tmp}" includes="org/gridlab/gat/io/cpi/ssh/**,com/jcraft/jsch/**">
-			<manifest>
-				<attribute name="FileOutputStreamCpi-class" value="org.gridlab.gat.io.cpi.ssh.SshFileOutputStreamAdaptor" />
-			</manifest>
-		</jar>
-
-		<jar jarfile="${lib}/FTPFileOutputStreamAdaptor.jar" basedir="${tmp}" includes="org/gridlab/gat/io/cpi/globus/**,org/globus/ftp/vanilla/**">
-			<manifest>
 				<attribute name="FileOutputStreamCpi-class" value="org.gridlab.gat.io.cpi.globus.FTPFileOutputStreamAdaptor" />
 			</manifest>
 		</jar>
 
-		<jar jarfile="${lib}/GridFTPFileOutputStreamAdaptor.jar" basedir="${tmp}" includes="org/gridlab/gat/io/cpi/globus/**,org/gridlab/gat/security/**,org/globus/ftp/vanilla/**">
+		<jar jarfile="${lib}/GridFTPFileAdaptor.jar" basedir="${tmp}" includes="org/gridlab/gat/io/cpi/globus/**,org/gridlab/gat/security/**,org/globus/ftp/vanilla/**">
 			<manifest>
+				<attribute name="FileCpi-class" value="org.gridlab.gat.io.cpi.globus.GridFTPFileAdaptor" />
+				<attribute name="FileInputStreamCpi-class" value="org.gridlab.gat.io.cpi.globus.GridFTPFileInputStreamAdaptor" />
 				<attribute name="FileOutputStreamCpi-class" value="org.gridlab.gat.io.cpi.globus.GridFTPFileOutputStreamAdaptor" />
 			</manifest>
 		</jar>
 
-		<jar jarfile="${lib}/HTTPFileOutputStreamAdaptor.jar" basedir="${tmp}" includes="org/gridlab/gat/io/cpi/globus/**,org/globus/ftp/vanilla/**">
+		<jar jarfile="${lib}/HTTPFileStreamAdaptor.jar" basedir="${tmp}" includes="org/gridlab/gat/io/cpi/globus/**,org/globus/ftp/vanilla/**">
 			<manifest>
+				<attribute name="FileInputStreamCpi-class" value="org.gridlab.gat.io.cpi.globus.HTTPFileInputStreamAdaptor" />
 				<attribute name="FileOutputStreamCpi-class" value="org.gridlab.gat.io.cpi.globus.HTTPFileOutputStreamAdaptor" />
 			</manifest>
 		</jar>
 
-		<jar jarfile="${lib}/HTTPSFileOutputStreamAdaptor.jar" basedir="${tmp}" includes="org/gridlab/gat/io/cpi/globus/**,org/globus/ftp/vanilla/**">
+		<jar jarfile="${lib}/HTTPSFileStreamAdaptor.jar" basedir="${tmp}" includes="org/gridlab/gat/io/cpi/globus/**,org/globus/ftp/vanilla/**">
 			<manifest>
+				<attribute name="FileInputStreamCpi-class" value="org.gridlab.gat.io.cpi.globus.HTTPSFileInputStreamAdaptor" />
 				<attribute name="FileOutputStreamCpi-class" value="org.gridlab.gat.io.cpi.globus.HTTPSFileOutputStreamAdaptor" />
+			</manifest>
+		</jar>
+
+		<jar jarfile="${lib}/SSHFileStreamAdaptor.jar" basedir="${tmp}" includes="org/gridlab/gat/io/cpi/ssh/**,com/jcraft/jsch/**">
+			<manifest>
+				<attribute name="FileInputStreamCpi-class" value="org.gridlab.gat.io.cpi.ssh.SshFileInputStreamAdaptor" />
+				<attribute name="FileOutputStreamCpi-class" value="org.gridlab.gat.io.cpi.ssh.SshFileOutputStreamAdaptor" />
 			</manifest>
 		</jar>
 
