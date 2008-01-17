@@ -27,8 +27,6 @@ public class Sandbox {
 
     private Preferences preferences;
 
-    // private JobDescription jobDescription;
-
     private String host;
 
     private String sandbox;
@@ -51,7 +49,7 @@ public class Sandbox {
 
     private String sandboxRoot;
 
-    private boolean createSandboxDir;
+    private boolean createSandboxDir, deleteSandboxDir;
 
     private long preStageTime, postStageTime, wipeTime, deleteTime;
 
@@ -64,7 +62,6 @@ public class Sandbox {
             boolean createSandboxDir, boolean preStageStdin,
             boolean postStageStdout, boolean postStageStderr)
             throws GATInvocationException {
-        // this.jobDescription = jobDescription;
         this.gatContext = gatContext;
         this.preferences = preferences;
         this.host = host;
@@ -73,12 +70,14 @@ public class Sandbox {
         // adaptor.
         String sandboxRootPref = null;
         String sandboxDisabledPref = null;
+        String sandboxDeletePref = null;
         SoftwareDescription sd = jobDescription.getSoftwareDescription();
         if (sd != null) {
             Map<String, Object> attr = sd.getAttributes();
             if (attr != null) {
-                sandboxRootPref = (String) attr.get("sandboxRoot");
-                sandboxDisabledPref = (String) attr.get("disableSandbox");
+                sandboxRootPref = (String) attr.get("sandbox.root");
+                sandboxDisabledPref = (String) attr.get("sandbox.disable");
+                sandboxDeletePref = (String) attr.get("sandbox.delete");
             }
         }
         if (sandboxRootPref != null) {
@@ -93,11 +92,22 @@ public class Sandbox {
         if (sandboxDisabledPref != null) {
             if (sandboxDisabledPref.equalsIgnoreCase("true")) {
                 this.createSandboxDir = false;
+                this.deleteSandboxDir = true;
             } else {
                 this.createSandboxDir = createSandboxDir;
             }
         } else {
             this.createSandboxDir = createSandboxDir;
+        }
+        
+        if (sandboxDeletePref != null) {
+            if (sandboxDeletePref.equalsIgnoreCase("true")) {
+                this.deleteSandboxDir = true;
+            } else {
+                this.deleteSandboxDir = false;
+            }
+        } else {
+            this.deleteSandboxDir = false;
         }
 
         initSandbox();
@@ -360,7 +370,7 @@ public class Sandbox {
             deleteException = e;
         }
 
-        if (createSandboxDir) {
+        if (deleteSandboxDir) {
             if (logger.isInfoEnabled()) {
                 logger.info("removing sandbox dir: " + "any://" + host + "/" + sandbox);
             }
@@ -376,7 +386,7 @@ public class Sandbox {
             }
         } else {
             if (logger.isInfoEnabled()) {
-                logger.info("sandbox won't be removed, since it isn't created!");
+                logger.info("sandbox persists at: " + "any://" + host + "/" + sandbox);
             }
         }
 

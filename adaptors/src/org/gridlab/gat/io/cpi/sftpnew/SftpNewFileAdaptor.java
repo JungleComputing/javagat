@@ -15,7 +15,7 @@ import org.gridlab.gat.InvalidUsernameOrPasswordException;
 import org.gridlab.gat.Preferences;
 import org.gridlab.gat.URI;
 import org.gridlab.gat.io.cpi.FileCpi;
-import org.gridlab.gat.io.cpi.ssh.SSHSecurityUtils;
+import org.gridlab.gat.io.cpi.ssh.SshSecurityUtils;
 import org.gridlab.gat.io.cpi.ssh.SshUserInfo;
 
 import com.jcraft.jsch.Channel;
@@ -130,7 +130,7 @@ public class SftpNewFileAdaptor extends FileCpi {
         SshUserInfo sui = null;
 
         try {
-            sui = SSHSecurityUtils.getSshCredential(gatContext, preferences,
+            sui = SshSecurityUtils.getSshCredential(gatContext, preferences,
                     "ssh", location, SSH_PORT);
         } catch (Exception e) {
             if (logger.isDebugEnabled()) {

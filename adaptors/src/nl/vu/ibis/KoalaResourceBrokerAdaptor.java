@@ -25,21 +25,21 @@ import org.koala.common.Assist;
 
 public class KoalaResourceBrokerAdaptor extends ResourceBrokerCpi {
 
-    // The location of the Koala scheduler. 
-    private static InetSocketAddress schedulerAddress;    
-    
-    // The default scheduling policy. 
+    // The location of the Koala scheduler.
+    private static InetSocketAddress schedulerAddress;
+
+    // The default scheduling policy.
     private static String policy;
-   
+
     // Is the configuration loaded ?
-    private static boolean loadedConfiguration = false; 
-    
+    private static boolean loadedConfiguration = false;
+
     private static boolean readKoalaConfiguration() {
-        
-        if (loadedConfiguration) { 
+
+        if (loadedConfiguration) {
             return true;
         }
-        
+
         try {
             if (!Assist.readConfigFile("KOALA_STATUS").equals("STATUS_OK")) {
                 return false;
@@ -48,49 +48,50 @@ public class KoalaResourceBrokerAdaptor extends ResourceBrokerCpi {
             PropertyConfigurator.configure(org.koala.common.Globals.KOALA_DIR
                     + "/etc/koala.log4j.properties");
 
-            schedulerAddress = new InetSocketAddress(
-                  Assist.readConfigFile("SCHEDULER_SITE"), 
-                  Integer.parseInt(Assist.readConfigFile("SCHED_PORT_LISTEN")));
+            schedulerAddress = new InetSocketAddress(Assist
+                    .readConfigFile("SCHEDULER_SITE"), Integer.parseInt(Assist
+                    .readConfigFile("SCHED_PORT_LISTEN")));
 
             policy = Assist.readConfigFile("DPLACEMENT_POLICY");
-            
+
         } catch (IOException e) {
             return false;
         }
-        
+
         loadedConfiguration = true;
 
         return true;
     }
-    
-    public KoalaResourceBrokerAdaptor(GATContext context, 
-            Preferences preferences, URI brokerURI) throws GATObjectCreationException {
+
+    public KoalaResourceBrokerAdaptor(GATContext context,
+            Preferences preferences, URI brokerURI)
+            throws GATObjectCreationException {
         super(context, preferences, brokerURI);
 
-        // Prevent recursively using this resourcebroker by checking for a 
+        // Prevent recursively using this resourcebroker by checking for a
         // magic preference.
-        if (preferences.containsKey("postKoala")) { 
-            throw new GATObjectCreationException("Preventing recursive call " +
-                    "into the KoalaResourceBroker");
+        if (preferences.containsKey("postKoala")) {
+            throw new GATObjectCreationException("Preventing recursive call "
+                    + "into the KoalaResourceBroker");
         }
-        
+
         // Attempt to read the system wide Koala configuration.
-        if (!readKoalaConfiguration()) { 
-            throw new GATObjectCreationException("Failed to load " +
-                    "koala configuration!");
+        if (!readKoalaConfiguration()) {
+            throw new GATObjectCreationException("Failed to load "
+                    + "koala configuration!");
         }
     }
-    
+
     // NOTE: This is based on the globus resource broker. The main difference is
-    //       that koala needs some annotations in the RSL which indicate the 
-    //       file size. The sandbox support has also been removed, since we 
-    //       don't actually submit this RSL anyway.   
+    // that koala needs some annotations in the RSL which indicate the
+    // file size. The sandbox support has also been removed, since we
+    // don't actually submit this RSL anyway.
     //
-    //       TODO: Support jobs consisting of multiple components
+    // TODO: Support jobs consisting of multiple components
     protected String createRSL(JobDescription description, String host,
             Sandbox sandbox, PreStagedFileSet pre, PostStagedFileSet post)
             throws GATInvocationException {
-        
+
         SoftwareDescription sd = description.getSoftwareDescription();
 
         if (sd == null) {
@@ -101,51 +102,8 @@ public class KoalaResourceBrokerAdaptor extends ResourceBrokerCpi {
         String rsl = "";
         String args = "";
 
-//        if (isJavaApplication(description)) {
-//            URI javaHome = (URI) sd.getAttributes().get("java.home");
-//            if (javaHome == null) {
-//                throw new GATInvocationException("java.home not set");
-//            }
-//
-//            rsl += "& (executable = " + javaHome.getPath() + "/bin/java)";
-//
-//            String javaFlags =
-//                    getStringAttribute(description, "java.flags", "");
-//            if (javaFlags.length() != 0) {
-//                StringTokenizer t = new StringTokenizer(javaFlags);
-//                while (t.hasMoreTokens()) {
-//                    args += " \"" + t.nextToken() + "\"";
-//                }
-//            }
-//
-//            // classpath
-//            String javaClassPath =
-//                    getStringAttribute(description, "java.classpath", "");
-//            if (javaClassPath.length() != 0) {
-//                args += " \"-classpath\" \"" + javaClassPath + "\"";
-//            } else {
-//                // TODO if not set, use jar files in prestaged set
-//            }
-//
-//            // set the environment
-//            Map<String, Object> env = sd.getEnvironment();
-//            if (env != null && !env.isEmpty()) {
-//                Set<String> s = env.keySet();
-//                Object[] keys = (Object[]) s.toArray();
-//
-//                for (int i = 0; i < keys.length; i++) {
-//                    String val = (String) env.get(keys[i]);
-//                    args += " \"-D" + keys[i] + "=" + val + "\"";
-//                }
-//            }
-//
-//            // main class name
-//            args += " \"" + getLocationURI(description).getSchemeSpecificPart()
-//                            + "\"";
-//        } else {
-            String exe = getExecutable(description);
-            rsl += "& (executable = " + exe + ")";
-//        }
+        String exe = getExecutable(description);
+        rsl += "& (executable = " + exe + ")";
 
         // parse the arguments
         String[] argsA = getArgumentsArray(description);
@@ -197,16 +155,15 @@ public class KoalaResourceBrokerAdaptor extends ResourceBrokerCpi {
                             "Currently, we cannot stage in remote files with gram");
                 }
 
-              /*  String s =
-                        "(file_stage_in = (file:///"
-                                + f.getResolvedSrc().getPath() + " "
-                                + f.getResolvedDest().getPath() + "))";
-                */
-                
+                /*
+                 * String s = "(file_stage_in = (file:///" +
+                 * f.getResolvedSrc().getPath() + " " +
+                 * f.getResolvedDest().getPath() + "))";
+                 */
+
                 // Add file size here ....
-                String s =
-                    "(file_stage_in = (file:///"
-                            + f.getResolvedSrc().getPath() + ":1))";
+                String s = "(file_stage_in = (file:///"
+                        + f.getResolvedSrc().getPath() + ":1))";
                 rsl += s;
             }
         }
@@ -220,10 +177,9 @@ public class KoalaResourceBrokerAdaptor extends ResourceBrokerCpi {
                             "Currently, we cannot stage out remote files with gram");
                 }
 
-                String s =
-                        "(file_stage_out = (" + f.getResolvedSrc().getPath()
-                                + " gsiftp://" + GATEngine.getLocalHostName()
-                                + "/" + f.getResolvedDest().getPath() + "))";
+                String s = "(file_stage_out = (" + f.getResolvedSrc().getPath()
+                        + " gsiftp://" + GATEngine.getLocalHostName() + "/"
+                        + f.getResolvedDest().getPath() + "))";
                 rsl += s;
             }
         }
@@ -231,42 +187,37 @@ public class KoalaResourceBrokerAdaptor extends ResourceBrokerCpi {
         org.gridlab.gat.io.File stdout = sd.getStdout();
         if (stdout != null) {
             if (sandbox != null) {
-                rsl +=
-                        (" (stdout = " + sandbox.getRelativeStdout().getPath() + ")");
+                rsl += (" (stdout = " + sandbox.getRelativeStdout().getPath() + ")");
             }
         }
 
         org.gridlab.gat.io.File stderr = sd.getStderr();
         if (stderr != null) {
             if (sandbox != null) {
-                rsl +=
-                        (" (stderr = " + sandbox.getRelativeStderr().getPath() + ")");
+                rsl += (" (stderr = " + sandbox.getRelativeStderr().getPath() + ")");
             }
         }
 
         org.gridlab.gat.io.File stdin = sd.getStdin();
         if (stdin != null) {
             if (sandbox != null) {
-                rsl +=
-                        (" (stdin = " + sandbox.getRelativeStdin().getPath() + ")");
+                rsl += (" (stdin = " + sandbox.getRelativeStdin().getPath() + ")");
             }
         }
 
-//        if (!isJavaApplication(description)) {
-            // set the environment
-            Map<String, Object> env = sd.getEnvironment();
-            if (env != null && !env.isEmpty()) {
-                Set<String> s = env.keySet();
-                Object[] keys = (Object[]) s.toArray();
-                rsl += "(environment = ";
+        // set the environment
+        Map<String, Object> env = sd.getEnvironment();
+        if (env != null && !env.isEmpty()) {
+            Set<String> s = env.keySet();
+            Object[] keys = (Object[]) s.toArray();
+            rsl += "(environment = ";
 
-                for (int i = 0; i < keys.length; i++) {
-                    String val = (String) env.get(keys[i]);
-                    rsl += "(" + keys[i] + " \"" + val + "\")";
-                }
-                rsl += ")";
+            for (int i = 0; i < keys.length; i++) {
+                String val = (String) env.get(keys[i]);
+                rsl += "(" + keys[i] + " \"" + val + "\")";
             }
-//        }
+            rsl += ")";
+        }
 
         String queue = getStringAttribute(description, "queue", null);
         if (queue != null) {
@@ -279,44 +230,40 @@ public class KoalaResourceBrokerAdaptor extends ResourceBrokerCpi {
 
         return rsl;
     }
-    
-    
+
     public Job submitJob(JobDescription description)
-        throws GATInvocationException {
-        
-        System.err.println("@@@ in koala.submit job");        
+            throws GATInvocationException {
+
+        System.err.println("@@@ in koala.submit job");
         System.err.println("@@@ creating prestaged");
 
-        PreStagedFileSet pre =
-            new PreStagedFileSet(gatContext, preferences, description,
-                    null, null, false);
+        PreStagedFileSet pre = new PreStagedFileSet(gatContext, preferences,
+                description, null, null, false);
 
         System.err.println("@@@ creating poststaged");
 
-        PostStagedFileSet post =
-            new PostStagedFileSet(gatContext, preferences, description,
-                    null, null, false, false);
+        PostStagedFileSet post = new PostStagedFileSet(gatContext, preferences,
+                description, null, null, false, false);
 
         System.err.println("@@@ creating rsl");
-        
+
         String rsl = createRSL(description, null, null, pre, post);
 
         System.err.println("@@@ Generated KOALA RSL:\n" + rsl);
-        
-        KoalaJob job = new KoalaJob(gatContext, preferences, description,  
+
+        KoalaJob job = new KoalaJob(gatContext, preferences, description,
                 schedulerAddress, policy, rsl);
-        
+
         System.err.println("@@@ submit to scheduler!");
-        
+
         try {
             job.submitToScheduler();
         } catch (IOException e) {
-            throw new GATInvocationException("Failed to submit to Koala " +
-                    "scheduler!", e);
+            throw new GATInvocationException("Failed to submit to Koala "
+                    + "scheduler!", e);
         }
-        
+
         return job;
     }
-    
-    
+
 }

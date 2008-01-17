@@ -47,8 +47,8 @@ public class WrapperSubmitter {
     private List<WrappedJobImpl> jobs = new ArrayList<WrappedJobImpl>();
     private String[] preStageDoneLocations;
 
-    public WrapperSubmitter(GATContext gatContext, Preferences preferences, URI brokerURI,
-            boolean multiJob) {
+    public WrapperSubmitter(GATContext gatContext, Preferences preferences,
+            URI brokerURI, boolean multiJob) {
         this.multiJob = multiJob;
         this.gatContext = gatContext;
         this.preferences = preferences;
@@ -94,7 +94,7 @@ public class WrapperSubmitter {
     private Job doSubmitJob() throws GATInvocationException {
         try {
             Preferences newPreferences = new Preferences(preferences);
-            newPreferences.put("useWrapper", "false");
+            newPreferences.put("wrapper.enable", "false");
 
             SoftwareDescription origSd = descriptions.get(0)
                     .getSoftwareDescription();
@@ -114,11 +114,11 @@ public class WrapperSubmitter {
             int counter = getCounter();
 
             String getRemoteOutput = origSd.getStringAttribute(
-                    "getWrapperOutput", null);
+                    "wrapper.output", null);
             if (getRemoteOutput != null
                     && getRemoteOutput.equalsIgnoreCase("true")) {
                 String remoteOutputURI = origSd.getStringAttribute(
-                        "WrapperURI", "any:///wrapper");
+                        "wrapper.output.location", "any:///wrapper");
                 File outFile = GAT.createFile(gatContext, newPreferences,
                         new URI(remoteOutputURI + "." + counter + ".out"));
                 File errFile = GAT.createFile(gatContext, newPreferences,
@@ -129,16 +129,17 @@ public class WrapperSubmitter {
 
             preStageDoneLocations = new String[descriptions.size()];
             for (int i = 0; i < preStageDoneLocations.length; i++) {
-                if (descriptions.get(i).getSoftwareDescription()
-                        .getBooleanAttribute("waitForPreStage", false)) {
+                String sequentialPreStaging = descriptions.get(i)
+                        .getSoftwareDescription().getStringAttribute(
+                                "wrapper.prestage", "parallel");
+
+                if (sequentialPreStaging.equalsIgnoreCase("sequential")) {
                     preStageDoneLocations[i] = PreStageSequencer
                             .createPreStageMonitor();
                 }
             }
 
-            
-            
-            //sd.setExecutable("java:org.gridlab.gat.resources.cpi.Wrapper");
+            // sd.setExecutable("java:org.gridlab.gat.resources.cpi.Wrapper");
 
             Object javaHome = origSd.getObjectAttribute("java.home");
             if (javaHome == null) {
@@ -146,7 +147,6 @@ public class WrapperSubmitter {
             }
             sd.addAttribute("java.home", javaHome);
             sd.setExecutable(javaHome + "/bin/java");
-            
 
             boolean remoteIsGatEnabled = false;
             String remoteEngineLibLocation = "./lib/";
@@ -194,22 +194,27 @@ public class WrapperSubmitter {
                 jobIDs += jobs.get(i).getJobID() + ",";
             }
 
-            sd.setArguments(new String[] {
-                    "-cp", classPath,
-                    "-Dgat.adaptor.path=" + environment.get("gat.adaptor.path"),
-                    "org.gridlab.gat.resources.cpi.Wrapper",
-                    descriptorFile.getName(),
-                    GATEngine.getLocalHostName(),
-                    cwd,
-                    ""
-                            + origSd.getBooleanAttribute("verboseWrapper",
-                                    GATEngine.VERBOSE),
-                    ""
-                            + origSd.getBooleanAttribute("debugWrapper",
-                                    GATEngine.DEBUG),
-                    ""
-                            + origSd.getBooleanAttribute("timeWrapper",
-                                    GATEngine.TIMING), jobIDs });
+            sd
+                    .setArguments(new String[] {
+                            "-cp",
+                            classPath,
+                            "-Dgat.adaptor.path="
+                                    + environment.get("gat.adaptor.path"),
+                            "org.gridlab.gat.resources.cpi.Wrapper",
+                            descriptorFile.getName(),
+                            GATEngine.getLocalHostName(),
+                            cwd,
+                            ""
+                                    + origSd
+                                            .getBooleanAttribute(
+                                                    "verboseWrapper",
+                                                    GATEngine.VERBOSE),
+                            ""
+                                    + origSd.getBooleanAttribute(
+                                            "debugWrapper", GATEngine.DEBUG),
+                            ""
+                                    + origSd.getBooleanAttribute("timeWrapper",
+                                            GATEngine.TIMING), jobIDs });
 
             String queue = origSd.getStringAttribute("queue", null);
             if (queue != null) {
@@ -230,9 +235,10 @@ public class WrapperSubmitter {
             if (maxCPUTime > 0) {
                 sd.addAttribute("maxCPUTime", new Long(maxCPUTime));
             }
-            
-            if (origSd.getAttributes().containsKey("sandboxRootForWrapper")) {
-                sd.addAttribute("sandboxRoot", origSd.getAttributes().get("sandboxRootForWrapper"));
+
+            if (origSd.getAttributes().containsKey("wrapper.sandbox.root")) {
+                sd.addAttribute("sandbox.root", origSd.getAttributes().get(
+                        "wrapper.sandbox.root"));
             }
 
             JobDescription jd = new JobDescription(sd);
@@ -308,51 +314,51 @@ public class WrapperSubmitter {
         return f;
     }
 
-//    public String getHostname(JobDescription description)
-//            throws GATInvocationException {
-//        String contactHostname = null;
-//
-//        String contact = (String) preferences
-//                .get("ResourceBroker.jobmanagerContact");
-//        if (contact != null) {
-//            StringTokenizer st = new StringTokenizer(contact, ":/");
-//            contactHostname = st.nextToken();
-//        }
-//
-//        ResourceDescription d = description.getResourceDescription();
-//
-//        if (d == null) {
-//            return contactHostname;
-//        }
-//
-//        if (!(d instanceof HardwareResourceDescription)) {
-//            if (contactHostname != null)
-//                return contactHostname;
-//
-//            throw new GATInvocationException(
-//                    "Currently only hardware resource descriptions are supported");
-//        }
-//
-//        Map<String, Object> m = d.getDescription();
-//        Set<String> keys = m.keySet();
-//        Iterator<String> i = keys.iterator();
-//
-//        while (i.hasNext()) {
-//            String key = (String) i.next();
-//            Object val = m.get(key);
-//
-//            if (key.equals("machine.node")) {
-//                if (val instanceof String) {
-//                    return (String) val;
-//                } else {
-//                    String[] hostList = (String[]) val;
-//                    return hostList[0];
-//                }
-//            }
-//        }
-//
-//        return contactHostname;
-//    }
+    // public String getHostname(JobDescription description)
+    // throws GATInvocationException {
+    // String contactHostname = null;
+    //
+    // String contact = (String) preferences
+    // .get("ResourceBroker.jobmanagerContact");
+    // if (contact != null) {
+    // StringTokenizer st = new StringTokenizer(contact, ":/");
+    // contactHostname = st.nextToken();
+    // }
+    //
+    // ResourceDescription d = description.getResourceDescription();
+    //
+    // if (d == null) {
+    // return contactHostname;
+    // }
+    //
+    // if (!(d instanceof HardwareResourceDescription)) {
+    // if (contactHostname != null)
+    // return contactHostname;
+    //
+    // throw new GATInvocationException(
+    // "Currently only hardware resource descriptions are supported");
+    // }
+    //
+    // Map<String, Object> m = d.getDescription();
+    // Set<String> keys = m.keySet();
+    // Iterator<String> i = keys.iterator();
+    //
+    // while (i.hasNext()) {
+    // String key = (String) i.next();
+    // Object val = m.get(key);
+    //
+    // if (key.equals("machine.node")) {
+    // if (val instanceof String) {
+    // return (String) val;
+    // } else {
+    // String[] hostList = (String[]) val;
+    // return hostList[0];
+    // }
+    // }
+    // }
+    //
+    // return contactHostname;
+    // }
 
     public static void end() {
         Iterator<String> it = hostsWithRemoteGAT.iterator();

@@ -72,7 +72,7 @@ public class SshFileOutputStreamAdaptor extends FileOutputStreamCpi {
             SshUserInfo sui = null;
 
             try {
-                sui = SSHSecurityUtils.getSshCredential(gatContext,
+                sui = SshSecurityUtils.getSshCredential(gatContext,
                         preferences, "ssh", location, SshFileAdaptor.SSH_PORT);
             } catch (Exception e) {
                 logger.info("SshFileOutputStream: "

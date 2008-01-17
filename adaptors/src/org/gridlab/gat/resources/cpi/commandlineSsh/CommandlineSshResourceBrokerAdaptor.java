@@ -17,7 +17,7 @@ import org.gridlab.gat.engine.util.InputForwarder;
 import org.gridlab.gat.engine.util.OutputForwarder;
 import org.gridlab.gat.io.FileInputStream;
 import org.gridlab.gat.io.FileOutputStream;
-import org.gridlab.gat.io.cpi.ssh.SSHSecurityUtils;
+import org.gridlab.gat.io.cpi.ssh.SshSecurityUtils;
 import org.gridlab.gat.io.cpi.ssh.SshUserInfo;
 import org.gridlab.gat.monitoring.Metric;
 import org.gridlab.gat.monitoring.MetricListener;
@@ -84,7 +84,7 @@ public class CommandlineSshResourceBrokerAdaptor extends ResourceBrokerCpi {
         }
 
         try {
-            sui = SSHSecurityUtils.getSshCredential(gatContext, preferences,
+            sui = SshSecurityUtils.getSshCredential(gatContext, preferences,
                     "ssh", brokerURI, SSH_PORT);
         } catch (Exception e) {
             if (logger.isDebugEnabled()) {

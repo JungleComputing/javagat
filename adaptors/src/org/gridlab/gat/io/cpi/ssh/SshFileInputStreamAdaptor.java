@@ -74,7 +74,7 @@ public class SshFileInputStreamAdaptor extends FileInputStreamCpi {
             SshUserInfo sui = null;
 
             try {
-                sui = SSHSecurityUtils.getSshCredential(gatContext,
+                sui = SshSecurityUtils.getSshCredential(gatContext,
                     preferences, "ssh", location, SshFileAdaptor.SSH_PORT);
             } catch (Exception e) {
                 logger.info("SshFileAdaptor: failed to retrieve credentials"
