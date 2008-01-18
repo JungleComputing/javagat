@@ -111,7 +111,7 @@
 
 		<jar jarfile="${lib}/SrcToLocalToDestCopyFileAdaptor.jar" basedir="${tmp}" includes="**/srcToLocalToDestCopy/*.class">
 			<manifest>
-				<attribute name="FileCpi-class" value="org.gridlab.gat.io.cpi.thirdPartyCopy.SrcToLocalToDestCopyFileAdaptor" />
+				<attribute name="FileCpi-class" value="org.gridlab.gat.io.cpi.srcToLocalToDestCopy.SrcToLocalToDestCopyFileAdaptor" />
 			</manifest>
 		</jar>
 
