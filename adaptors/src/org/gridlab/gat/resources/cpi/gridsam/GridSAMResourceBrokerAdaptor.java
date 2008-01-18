@@ -1,8 +1,6 @@
 package org.gridlab.gat.resources.cpi.gridsam;
 
 import java.io.File;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.List;
 
 import org.apache.log4j.Logger;
@@ -213,19 +211,6 @@ public class GridSAMResourceBrokerAdaptor extends ResourceBrokerCpi {
             sd.getAttributes().put("stderr", gridSAMConf.getJavaGATStderr());
         }
 
-    }
-
-    private String getGridSAMWebServiceURL(JobDescription description)
-            throws GATInvocationException {
-        // Map<String, Object> attributes =
-        // description.getSoftwareDescription().getAttributes();
-        Object url = preferences.get("ResourceBroker.jobmanagerContact");
-        if (url == null || !(url instanceof String)) {
-            logger.info("no url to gridsam web service set");
-            throw new GATInvocationException(
-                    "no url to gridsam web service set");
-        }
-        return (String) url;
     }
 
     private String getSandboxRoot(JobDescription description)
