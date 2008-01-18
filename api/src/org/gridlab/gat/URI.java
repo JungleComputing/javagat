@@ -77,11 +77,17 @@ public class URI implements Serializable, Comparable<Object> {
     /**
      * Check whether URI refers to the local machine. The difference between
      * this call and isLocal is that this call also checks if the host in the
-     * URI is equal to the hostname of the local mahince or "localhost"
+     * URI is equal to the hostname of the local mahince or "localhost".
+     * Another exception is when the URI specifies a port number. Then,
+     * this is assumed to be a tunnel.
      */
     public boolean refersToLocalHost() {
         if (u.getHost() == null) {
             return true;
+        }
+        
+        if (u.getPort() != -1) {
+            return false;
         }
 
         if (u.getHost().equals("localhost")) {
