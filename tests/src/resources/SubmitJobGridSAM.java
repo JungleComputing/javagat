@@ -39,7 +39,6 @@ public class SubmitJobGridSAM {
         prefs.put("ResourceBroker.adaptor.name", "GridSAM");
 //        prefs.put("File.adaptor.name", "commandlinessh");
 //        prefs.put("File.adaptor.name", "ssh");
-        prefs.put("ResourceBroker.jobmanagerContact", "https://localhost:18443/gridsam/services/gridsam");
         SoftwareDescription sd = new SoftwareDescription();
 
         sd.setExecutable("/usr/bin/printenv");
