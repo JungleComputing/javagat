@@ -115,7 +115,7 @@ public class GridSAMResourceBrokerAdaptor extends ResourceBrokerCpi {
                     "The job description does not contain a software description");
         }
 
-        String gridSAMWebServiceURL = getGridSAMWebServiceURL(description);
+        String gridSAMWebServiceURL = brokerURI.toString();
         String sandboxRoot = getSandboxRoot(description);
 
         if (logger.isInfoEnabled()) {
@@ -133,9 +133,10 @@ public class GridSAMResourceBrokerAdaptor extends ResourceBrokerCpi {
             // we have to add stdin/stderr/stdout to staged files
             addIOFiles(description);
 
-            // standard getHostname(JobDescription description) method failse
-            // for URLs with port number in it...
-            String sandboxHostname = getHostname(gridSAMWebServiceURL);
+            String sandboxHostname = getHostname();
+            if (sandboxHostname == null || sandboxHostname.equals("")) {
+                throw new GATInvocationException("Could not get a hostname from " + gridSAMWebServiceURL);
+            }
             if (logger.isDebugEnabled()) {
                 logger
                         .debug("host used for file staging is "
@@ -186,29 +187,6 @@ public class GridSAMResourceBrokerAdaptor extends ResourceBrokerCpi {
         }
 
         return job;
-    }
-
-    private String getHostname(String gridSAMWebServiceURL)
-            throws GATInvocationException {
-        try {
-            URI u = new URI(gridSAMWebServiceURL);
-            String host = u.getHost();
-            if (host == null || host.length() == 0) {
-                logger.error("unable to get hostname from url, url="
-                        + gridSAMWebServiceURL);
-                throw new GATInvocationException(
-                        "unable to get hostname from url, url="
-                                + gridSAMWebServiceURL);
-            }
-            return host;
-        } catch (URISyntaxException e) {
-            logger.error("unable to get hostname from url, url="
-                    + gridSAMWebServiceURL, e);
-            throw new GATInvocationException(
-                    "unable to get hostname from url, url="
-                            + gridSAMWebServiceURL, e);
-        }
-
     }
 
     private void addIOFiles(JobDescription description)

@@ -243,7 +243,7 @@ public class GridSAMJob extends JobCpi {
      */
     public synchronized int getExitStatus() throws GATInvocationException {
         if (state != STOPPED)
-            throw new GATInvocationException("not in RUNNING state");
+            throw new GATInvocationException("not in STOPPED state");
         String code = (String) jobInstance.getProperties().get("urn:gridsam:exitcode");
         if (code == null) {
             throw new GATInvocationException("No exit status code from gridsam available");
