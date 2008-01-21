@@ -91,7 +91,7 @@ public class CommandlineSshFileAdaptor extends FileCpi {
             }
             return new java.io.File(location.getPath()).mkdir();
         }
-        return runSshCommand("/bin/mkdir " + getPath(), true);
+        return runSshCommand("mkdir " + getPath(), true);
     }
 
     @Override

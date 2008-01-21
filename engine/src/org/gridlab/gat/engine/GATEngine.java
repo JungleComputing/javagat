@@ -12,6 +12,8 @@ import java.net.InetAddress;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -53,6 +55,12 @@ import org.gridlab.gat.steering.cpi.SteeringManagerCpi;
  * This class make the various GAT adaptors available to GAT
  */
 public class GATEngine {
+
+    private static class FileComparator implements Comparator<File> {
+        public int compare(File f1, File f2) {
+            return f1.getName().compareTo(f2.getName());
+        }
+    }
 
 	public static final boolean DEBUG = propertySet("gat.debug");
 
@@ -253,6 +261,14 @@ public class GATEngine {
 	protected List<File> getFiles(File f) {
 		Vector<File> vector = new Vector<File>();
 		File[] files = f.listFiles();
+
+                // Sort the list of files so that the classloader always sees the jar files
+                // in the same order. Then, at least, it is deterministic which version of
+                // a class is loaded. It could still be the wrong one for a specific adaptor,
+                // though, especially when different adaptors depend on different versions
+                // of a jar. I don't know what to do about that. Different classloader for
+                // each adaptor? --Ceriel
+                Arrays.sort(files, new FileComparator());
 
 		if (files == null) {
 			// IO error or dir does not exist

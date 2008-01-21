@@ -156,7 +156,7 @@ public class JavaSoftwareDescription extends SoftwareDescription {
      * the system properties, the main and the java arguments of this
      * SoftwareDescription.
      * 
-     * @returns the command line arguments
+     * @return the command line arguments
      */
     public String[] getArguments() {
         String result[] = new String[options.length + systemProperties.length
