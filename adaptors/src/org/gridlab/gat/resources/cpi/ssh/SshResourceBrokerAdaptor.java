@@ -111,7 +111,7 @@ public class SshResourceBrokerAdaptor extends ResourceBrokerCpi {
                         "The job description does not contain a software description");
             }
 
-            if (getBooleanAttribute(description, "useWrapper", false)) {
+            if (getBooleanAttribute(description, "wrapper.enable", false)) {
                 if (logger.isDebugEnabled()) {
                     logger.debug("useWrapper, using wrapper application");
                 }

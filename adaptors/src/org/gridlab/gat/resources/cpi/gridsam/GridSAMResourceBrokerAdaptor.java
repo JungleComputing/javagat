@@ -32,7 +32,7 @@ import org.icenigrid.schema.jsdl.y2005.m11.JobDefinitionDocument;
 
 public class GridSAMResourceBrokerAdaptor extends ResourceBrokerCpi {
 
-    private static final String SANDBOX_ROOT = "sandboxRoot";
+    private static final String SANDBOX_ROOT = "sandbox.root";
     private Logger logger = Logger
             .getLogger(GridSAMResourceBrokerAdaptor.class);
     private ClientSideJobManager jobManager;

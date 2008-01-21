@@ -55,8 +55,6 @@ public class LocalJob extends JobCpi {
         }
     }
 
-    // private LocalResourceBrokerAdaptor broker;
-
     private int jobID;
 
     private Process p;

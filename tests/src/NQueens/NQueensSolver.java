@@ -260,12 +260,12 @@ public class NQueensSolver implements MetricListener {
             SoftwareDescription sd = new SoftwareDescription();
 
             HashMap<String, Object> attrib = new HashMap<String, Object>();
-            attrib.put("hostCount", job.numHosts);
+            attrib.put("host.count", job.numHosts);
             if (job.numHostsIsSoft) {
-                attrib.put("softHostCount", "");
+                attrib.put("proactive.host.count.soft", "");
             }
             if (job.classPath != null) {
-                attrib.put("classpath", job.classPath);
+                attrib.put("proactive.classpath", job.classPath);
             }
             sd.setAttributes(attrib);
 

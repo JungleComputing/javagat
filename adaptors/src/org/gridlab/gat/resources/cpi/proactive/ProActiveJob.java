@@ -377,17 +377,17 @@ public class ProActiveJob extends JobCpi {
             for (Iterator<String> i = attributes.keySet().iterator(); i
                     .hasNext();) {
                 String key = (String) i.next();
-                if (key.equalsIgnoreCase("minMemory")) {
+                if (key.equalsIgnoreCase("memory.min")) {
                     Integer minMem = (Integer) attributes.get(key);
                     if (minMem != null) {
                         jvmArgs = jvmArgs + " -Xms" + minMem.intValue() + "M";
                     }
-                } else if (key.equalsIgnoreCase("maxMemory")) {
+                } else if (key.equalsIgnoreCase("memory.max")) {
                     Integer maxMem = (Integer) attributes.get(key);
                     if (maxMem != null) {
                         jvmArgs = jvmArgs + " -Xmx" + maxMem.intValue() + "M";
                     }
-                } else if (key.equalsIgnoreCase("hostCount")) {
+                } else if (key.equalsIgnoreCase("host.count")) {
                     // Number of hosts. If not specified, you get the number
                     // of instances.
                     Integer hostCount = (Integer) attributes.get(key);
@@ -395,12 +395,12 @@ public class ProActiveJob extends JobCpi {
                         nNodes = hostCount.intValue();
                         if (nNodes <= 0) {
                             throw new GATInvocationException(
-                                    "Illegal hostCount");
+                                    "Illegal host.count");
                         }
                     }
-                } else if (key.equalsIgnoreCase("softHostCount")) {
+                } else if (key.equalsIgnoreCase("proactive.host.count.soft")) {
                     softHostCount = true;
-                } else if (key.equalsIgnoreCase("classpath")) {
+                } else if (key.equalsIgnoreCase("proactive.classpath")) {
                     classPath = (String) attributes.get(key);
                 }
             }

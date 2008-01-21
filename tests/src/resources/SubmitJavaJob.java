@@ -51,11 +51,11 @@ public class SubmitJavaJob implements MetricListener {
         sd.setStderr(errFile);
         sd.setExecutable("java:org.gridlab.gat.resources.cpi.wrapper.Wrapper");
 
-        sd.addAttribute("java.home", new URI("/home/rob/contrib/jdk1.5.0_09"));
-        sd.addAttribute("java.flags", "-server");
+        sd.addAttribute("wrapper.java.home", new URI("/home/rob/contrib/jdk1.5.0_09"));
+        sd.addAttribute("wrapper.java.flags", "-server");
         sd
                 .addAttribute(
-                        "java.classpath",
+                        "wrapper.java.classpath",
                         "lib/GAT.jar:lib/castor-0.9.6.jar:lib/commons-logging.jar:lib/log4j-1.2.13.jar:lib/xmlParserAPIs.jar"
                                 + "lib/castor-0.9.6-xml.jar:lib/ibis-util-1.4.jar:lib/xercesImpl.jar:lib/RemoteSandbox.jar");
         Map<String, Object> environment = new HashMap<String, Object>();
