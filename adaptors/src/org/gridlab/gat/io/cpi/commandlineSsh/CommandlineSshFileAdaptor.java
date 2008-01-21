@@ -42,15 +42,17 @@ public class CommandlineSshFileAdaptor extends FileCpi {
         if (osname.startsWith("Windows"))
             windows = true;
     }
-    
+
     private boolean runSshCommand(String params) throws GATInvocationException {
         return runSshCommand(params, false);
     }
-    
-    /* if second parameter is true than stderr will be written to log4j (it is for commands where
-     * we think that failing is an error (like mkdir))
-    */ 
-    private boolean runSshCommand(String params, boolean writeError) throws GATInvocationException {
+
+    /*
+     * if second parameter is true than stderr will be written to log4j (it is
+     * for commands where we think that failing is an error (like mkdir))
+     */
+    private boolean runSshCommand(String params, boolean writeError)
+            throws GATInvocationException {
         String command = getSshCommand() + params;
         CommandRunner runner = new CommandRunner(command.toString());
         if (logger.isDebugEnabled()) {
@@ -71,21 +73,21 @@ public class CommandlineSshFileAdaptor extends FileCpi {
         }
         return exitVal == 0;
     }
-    
 
-    /* [wojciech]
+    /*
+     * [wojciech]
      * 
      * Those four methods work for *nix system on the other side
      * 
      * Merge into trunk only if you really want to :).
      */
-    
 
     @Override
     public boolean mkdir() throws GATInvocationException {
         if (location.refersToLocalHost()) {
             if (logger.isDebugEnabled()) {
-                logger.debug("location=" + location + " refers to local in mkdir");
+                logger.debug("location=" + location
+                        + " refers to local in mkdir");
             }
             return new java.io.File(location.getPath()).mkdir();
         }
@@ -96,13 +98,14 @@ public class CommandlineSshFileAdaptor extends FileCpi {
     public boolean delete() throws GATInvocationException {
         if (location.refersToLocalHost()) {
             if (logger.isDebugEnabled()) {
-                logger.debug("location=" + location + " refers to local in delete");
+                logger.debug("location=" + location
+                        + " refers to local in delete");
             }
             return new java.io.File(location.getPath()).delete();
         }
         return runSshCommand("rm -rf " + getPath(), true);
     }
-    
+
     @Override
     public boolean isDirectory() throws GATInvocationException {
         if (1 < 2) {
@@ -113,25 +116,27 @@ public class CommandlineSshFileAdaptor extends FileCpi {
         }
         if (location.refersToLocalHost()) {
             if (logger.isDebugEnabled()) {
-                logger.debug("location=" + location + " refers to local in isDirectory");
+                logger.debug("location=" + location
+                        + " refers to local in isDirectory");
             }
             return new java.io.File(location.getPath()).isDirectory();
         }
         return runSshCommand("find " + getPath() + " -type d");
     }
-    
+
     @Override
     public boolean exists() throws GATInvocationException {
         if (location.refersToLocalHost()) {
             if (logger.isDebugEnabled()) {
-                logger.debug("location=" + location + " refers to local in exists");
+                logger.debug("location=" + location
+                        + " refers to local in exists");
             }
             return new java.io.File(location.getPath()).exists();
         }
         return runSshCommand("find " + getPath());
     }
 
-// TODO [wojciech] add some sense here
+    // TODO [wojciech] add some sense here
     private String getSshCommand() throws GATInvocationException {
         return "ssh " + location.resolveHost() + " ";
     }
@@ -230,7 +235,7 @@ public class CommandlineSshFileAdaptor extends FileCpi {
 
         String command = null;
         if (windows) {
-            command = "scp -unat=yes ";
+            command = "scp -unat=yes " + "-P " + port + " ";
             if (sui.getPassword() == null) { // public/private key
                 int slot = sui.getPrivateKeySlot();
                 if (slot == -1) { // not set by the user, assume he only has
@@ -275,12 +280,12 @@ public class CommandlineSshFileAdaptor extends FileCpi {
                     }
                 }
 
-                command = "scp -r "
+                command = "scp -r " + "-P " + port + " "
                         + "-o BatchMode=yes -o StrictHostKeyChecking=yes "
                         + sui.username + "@" + src.resolveHost() + ":"
                         + src.getPath() + "/* " + dest.getPath();
             } else {
-                command = "scp "
+                command = "scp " + "-P " + port + " "
                         + "-o BatchMode=yes -o StrictHostKeyChecking=yes "
                         + sui.username + "@" + src.resolveHost() + ":"
                         + src.getPath() + " " + dest.getPath();
@@ -293,11 +298,12 @@ public class CommandlineSshFileAdaptor extends FileCpi {
         CommandRunner runner = new CommandRunner(command.toString());
         if (logger.isInfoEnabled()) {
             logger.info("\nstderr: " + runner.getStderr() + "\nstdout: "
-                + runner.getStdout());
+                    + runner.getStdout());
         }
         int exitValue = runner.getExitCode();
         if (exitValue != 0) {
-            throw new GATInvocationException("CommandlineSsh command failed: " + runner.getStderr());
+            throw new GATInvocationException("CommandlineSsh command failed: "
+                    + runner.getStderr());
         }
     }
 
@@ -345,7 +351,7 @@ public class CommandlineSshFileAdaptor extends FileCpi {
 
         String command = null;
         if (windows) {
-            command = "scp -unat=yes ";
+            command = "scp -unat=yes " + "-P " + port + " ";
             if (sui.getPassword() == null) { // public/private key
                 int slot = sui.getPrivateKeySlot();
                 if (slot == -1) { // not set by the user, assume he only has
@@ -379,12 +385,12 @@ public class CommandlineSshFileAdaptor extends FileCpi {
                     }
                 }
 
-                command = "scp -r "
+                command = "scp -r " + "-P " + port + " "
                         + "-o BatchMode=yes -o StrictHostKeyChecking=yes "
                         + src.getPath() + "/* " + sui.username + "@"
                         + dest.resolveHost() + ":" + dest.getPath();
             } else {
-                command = "scp "
+                command = "scp " + "-P " + port + " "
                         + "-o BatchMode=yes -o StrictHostKeyChecking=yes "
                         + src.getPath() + " " + sui.username + "@"
                         + dest.resolveHost() + ":" + dest.getPath();
@@ -399,11 +405,12 @@ public class CommandlineSshFileAdaptor extends FileCpi {
         CommandRunner runner = new CommandRunner(command.toString());
         if (logger.isInfoEnabled()) {
             logger.info("\nstderr: " + runner.getStderr() + "\nstdout: "
-                + runner.getStdout());
+                    + runner.getStdout());
         }
         int exitValue = runner.getExitCode();
         if (exitValue != 0) {
-            throw new GATInvocationException("CommandlineSsh command failed: " + runner.getStderr());
+            throw new GATInvocationException("CommandlineSsh command failed: "
+                    + runner.getStderr());
         }
     }
 
