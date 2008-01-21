@@ -20,6 +20,7 @@ import org.gridlab.gat.URI;
 import org.gridlab.gat.engine.GATEngine;
 import org.gridlab.gat.engine.util.Environment;
 import org.gridlab.gat.io.File;
+import org.gridlab.gat.resources.JavaSoftwareDescription;
 import org.gridlab.gat.resources.Job;
 import org.gridlab.gat.resources.JobDescription;
 import org.gridlab.gat.resources.ResourceBroker;
@@ -103,7 +104,7 @@ public class WrapperSubmitter {
                         "The job description does not contain a software description");
             }
 
-            SoftwareDescription sd = new SoftwareDescription();
+            JavaSoftwareDescription sd = new JavaSoftwareDescription();
 
             // start with all old attributes.
             // incorrect ones will be overwritten below
@@ -113,10 +114,7 @@ public class WrapperSubmitter {
             Environment localEnv = new Environment();
             int counter = getCounter();
 
-            String getRemoteOutput = origSd.getStringAttribute(
-                    "wrapper.output", null);
-            if (getRemoteOutput != null
-                    && getRemoteOutput.equalsIgnoreCase("true")) {
+            if (origSd.getBooleanAttribute("wrapper.output", false)) {
                 String remoteOutputURI = origSd.getStringAttribute(
                         "wrapper.output.location", "any:///wrapper");
                 File outFile = GAT.createFile(gatContext, newPreferences,
@@ -164,7 +162,6 @@ public class WrapperSubmitter {
             for (int i = 0; i < files.length; i++) {
                 classPath += ":" + remoteEngineLibLocation + files[i];
             }
-            sd.addAttribute("wrapper.java.classpath", classPath);
 
             if (remoteIsGatEnabled) {
                 environment.put("gat.adaptor.path", remoteGatLocation
@@ -194,27 +191,23 @@ public class WrapperSubmitter {
                 jobIDs += jobs.get(i).getJobID() + ",";
             }
 
-            sd
-                    .setArguments(new String[] {
-                            "-cp",
-                            classPath,
-                            "-Dgat.adaptor.path="
-                                    + environment.get("gat.adaptor.path"),
-                            "org.gridlab.gat.resources.cpi.Wrapper",
-                            descriptorFile.getName(),
-                            GATEngine.getLocalHostName(),
-                            cwd,
-                            ""
-                                    + origSd
-                                            .getBooleanAttribute(
-                                                    "verboseWrapper",
-                                                    GATEngine.VERBOSE),
-                            ""
-                                    + origSd.getBooleanAttribute(
-                                            "debugWrapper", GATEngine.DEBUG),
-                            ""
-                                    + origSd.getBooleanAttribute("timeWrapper",
-                                            GATEngine.TIMING), jobIDs });
+            sd.setOptions(new String[] { "-classpath", classPath });
+            sd.setSystemProperties(new String[] { "-Dgat.adaptor.path="
+                    + environment.get("gat.adaptor.path") });
+            sd.setMain("org.gridlab.gat.resources.cpi.Wrapper");
+            sd.setJavaArguments(new String[] {
+                    descriptorFile.getName(),
+                    GATEngine.getLocalHostName(),
+                    cwd,
+                    ""
+                            + origSd.getBooleanAttribute("wrapper.verbose",
+                                    GATEngine.VERBOSE),
+                    ""
+                            + origSd.getBooleanAttribute("wrapper.debug",
+                                    GATEngine.DEBUG),
+                    ""
+                            + origSd.getBooleanAttribute("wrapper.timing",
+                                    GATEngine.TIMING), jobIDs });
 
             String queue = origSd.getStringAttribute("globus.queue", null);
             if (queue != null) {
