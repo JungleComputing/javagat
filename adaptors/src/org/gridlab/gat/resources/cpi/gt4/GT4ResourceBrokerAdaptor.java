@@ -200,7 +200,7 @@ public class GT4ResourceBrokerAdaptor extends ResourceBrokerCpi {
      */
     public Job submitJob(JobDescription description, MetricListener listener,
             String metricDefinitionName) throws GATInvocationException {
-        if (getBooleanAttribute(description, "useWrapper", false)) {
+        if (getBooleanAttribute(description, "wrapper.enable", false)) {
             if (logger.isDebugEnabled()) {
                 logger.debug("useWrapper, using wrapper application");
             }

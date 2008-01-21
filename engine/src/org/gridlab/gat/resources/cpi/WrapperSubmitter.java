@@ -77,13 +77,13 @@ public class WrapperSubmitter {
         if (singleRemoteGAT != null && singleRemoteGAT.equalsIgnoreCase("true")) {
             SoftwareDescription sd = mainDescription.getSoftwareDescription();
             String remoteGATLocation = sd.getStringAttribute(
-                    "remoteGatLocation", null);
+                    "wrapper.remotegat.location", null);
             if (remoteGATLocation == null) {
                 if (!hostsWithRemoteGAT.contains(host)) {
                     // copy the gat
                     copyGAT(host);
                 }
-                sd.addAttribute("remoteGatLocation", "../"
+                sd.addAttribute("wrapper.remotegat.location", "../"
                         + WELL_KNOWN_REMOTE_GAT_LOCATION);
                 mainDescription.setSoftwareDescription(sd);
             }
@@ -141,18 +141,18 @@ public class WrapperSubmitter {
 
             // sd.setExecutable("java:org.gridlab.gat.resources.cpi.Wrapper");
 
-            Object javaHome = origSd.getObjectAttribute("java.home");
+            Object javaHome = origSd.getObjectAttribute("wrapper.java.home");
             if (javaHome == null) {
-                throw new GATInvocationException("java.home not set");
+                throw new GATInvocationException("wrapper.java.home not set");
             }
-            sd.addAttribute("java.home", javaHome);
+            sd.addAttribute("wrapper.java.home", javaHome);
             sd.setExecutable(javaHome + "/bin/java");
 
             boolean remoteIsGatEnabled = false;
             String remoteEngineLibLocation = "./lib/";
 
             String remoteGatLocation = origSd.getStringAttribute(
-                    "remoteGatLocation", null);
+                    "wrapper.remotegat.location", null);
             if (remoteGatLocation != null) {
                 remoteEngineLibLocation = remoteGatLocation + "/lib/";
                 remoteIsGatEnabled = true;
@@ -164,7 +164,7 @@ public class WrapperSubmitter {
             for (int i = 0; i < files.length; i++) {
                 classPath += ":" + remoteEngineLibLocation + files[i];
             }
-            sd.addAttribute("java.classpath", classPath);
+            sd.addAttribute("wrapper.java.classpath", classPath);
 
             if (remoteIsGatEnabled) {
                 environment.put("gat.adaptor.path", remoteGatLocation
@@ -216,24 +216,24 @@ public class WrapperSubmitter {
                                     + origSd.getBooleanAttribute("timeWrapper",
                                             GATEngine.TIMING), jobIDs });
 
-            String queue = origSd.getStringAttribute("queue", null);
+            String queue = origSd.getStringAttribute("globus.queue", null);
             if (queue != null) {
-                sd.addAttribute("queue", queue);
+                sd.addAttribute("globus.queue", queue);
             }
 
-            long maxTime = origSd.getLongAttribute("maxTime", -1);
+            long maxTime = origSd.getLongAttribute("time.max", -1);
             if (maxTime > 0) {
-                sd.addAttribute("maxTime", new Long(maxTime));
+                sd.addAttribute("time.max", new Long(maxTime));
             }
 
-            long maxWallTime = origSd.getLongAttribute("maxWallTime", -1);
+            long maxWallTime = origSd.getLongAttribute("walltime.max", -1);
             if (maxWallTime > 0) {
-                sd.addAttribute("maxWallTime", new Long(maxWallTime));
+                sd.addAttribute("walltime.max", new Long(maxWallTime));
             }
 
-            long maxCPUTime = origSd.getLongAttribute("maxCPUTime", -1);
+            long maxCPUTime = origSd.getLongAttribute("cputime.max", -1);
             if (maxCPUTime > 0) {
-                sd.addAttribute("maxCPUTime", new Long(maxCPUTime));
+                sd.addAttribute("cputime.max", new Long(maxCPUTime));
             }
 
             if (origSd.getAttributes().containsKey("wrapper.sandbox.root")) {

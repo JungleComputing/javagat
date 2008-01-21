@@ -184,7 +184,7 @@ public abstract class ResourceBrokerCpi implements ResourceBroker {
     }
 
     protected int getHostCount(JobDescription description) {
-        return getIntAttribute(description, "hostCount", 1);
+        return getIntAttribute(description, "host.count", 1);
     }
 
     protected String[] getArgumentsArray(JobDescription description)

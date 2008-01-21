@@ -61,7 +61,7 @@ public class LocalQJob extends JobCpi implements Runnable,
 
         priority =
             description.getSoftwareDescription().getIntAttribute(
-                "job.priority", 0);
+                "localq.job.priority", 0);
 
         // Tell the engine that we provide job.status events
         HashMap<String, Object> returnDef = new HashMap<String, Object>();

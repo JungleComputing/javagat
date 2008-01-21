@@ -55,7 +55,7 @@ public class SubmitJobGlobus implements MetricListener {
 //        sd.setStdout(outFile);
 //        sd.setStderr(errFile);
         if(args.length == 3) {
-            sd.addAttribute("queue", args[2]);
+            sd.addAttribute("globus.queue", args[2]);
         }
 
         Hashtable<String, Object> hardwareAttributes = new Hashtable<String, Object>();

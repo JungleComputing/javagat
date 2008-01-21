@@ -289,8 +289,9 @@ public class Wrapper implements MetricListener {
             } catch (URISyntaxException e) {
                 // should not happen, since the URI is hardcoded
             }
-            if (descriptions[submitted].getSoftwareDescription()
-                    .getBooleanAttribute("waitForPreStage", false)) {
+            String prestageType = descriptions[submitted].getSoftwareDescription()
+            .getStringAttribute("wrapper.prestage", "parallel");
+            if (prestageType.equalsIgnoreCase("sequential")) {
                 submitJob(broker, descriptions[submitted], gatContext,
                         preferences, jobIDs[submitted],
                         preStageDoneLocations[submitted]);
@@ -326,8 +327,8 @@ public class Wrapper implements MetricListener {
     private void modifyJobDescription(JobDescription jd, GATContext gatContext,
             Preferences preferences, String remoteCWD) {
         SoftwareDescription sd = jd.getSoftwareDescription();
-        sd.addAttribute("useWrapper", "false");
-        preferences.put("ResourceBroker.adaptor.name", "local");
+        sd.addAttribute("wrapper.enable", "false");
+        preferences.put("resourcebroker.adaptor.name", "local");
 
         // rewrite poststage files to go directly to their original
         // destination

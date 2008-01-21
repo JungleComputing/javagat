@@ -3,6 +3,7 @@
  */
 package org.gridlab.gat.resources.cpi.globus;
 
+import java.net.URISyntaxException;
 import java.util.Map;
 import java.util.Set;
 
@@ -56,11 +57,24 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
             Preferences preferences, URI brokerURI)
             throws GATObjectCreationException {
         super(gatContext, preferences, brokerURI);
+        if (brokerURI == null) {
+            throw new GATObjectCreationException("brokerURI is null");
+        }
+
+        if (brokerURI.getPath() == null) {
+            try {
+                this.brokerURI = new URI(brokerURI.getAuthority()
+                        + "/jobmanager-sge");
+            } catch (URISyntaxException e) {
+                throw new GATObjectCreationException(
+                        "cannot create default brokerURI", e);
+            }
+        }
     }
 
     public void beginMultiJob() throws GATInvocationException {
         if (submitter != null && submitter.isMultiJob()) {
-            throw new GATInvocationException("MultiCore job started twice!");
+            throw new GATInvocationException("Multi job started twice!");
         }
         submitter = new WrapperSubmitter(gatContext, preferences, brokerURI,
                 true);
@@ -69,7 +83,7 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
     public Job endMultiJob() throws GATInvocationException {
         if (submitter == null) {
             throw new GATInvocationException(
-                    "MultiCore job ended, without being started!");
+                    "Multi job ended, without being started!");
         }
         Job job = submitter.flushJobSubmission();
         submitter = null;
@@ -107,7 +121,7 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
 
         rsl += " (hostCount = " + getHostCount(description) + ")";
 
-        String jobType = getStringAttribute(description, "jobType", null);
+        String jobType = getStringAttribute(description, "job.type", null);
         if (jobType != null) {
             rsl += " (jobType = " + jobType + ")";
         }
@@ -116,22 +130,24 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
             rsl += " (directory = " + sandbox.getSandbox() + ")";
         }
 
-        long maxTime = getLongAttribute(description, "maxTime", -1);
+        long maxTime = getLongAttribute(description, "time.max", -1);
         if (maxTime > 0) {
             rsl += " (maxTime = " + maxTime + ")";
         }
 
-        long maxWallTime = getLongAttribute(description, "maxWallTime", -1);
+        long maxWallTime = getLongAttribute(description, "walltime.max", -1);
         if (maxWallTime > 0) {
             rsl += " (maxWallTime = " + maxWallTime + ")";
         }
 
-        long maxCPUTime = getLongAttribute(description, "maxCPUTime", -1);
+        long maxCPUTime = getLongAttribute(description, "cputime.max", -1);
         if (maxCPUTime > 0) {
             rsl += " (maxCPUTime = " + maxCPUTime + ")";
         }
 
         // stage in files with gram
+        // if the files are staged using gat, pre and post in this method are
+        // null
         if (pre != null) {
             for (int i = 0; i < pre.size(); i++) {
                 PreStagedFile f = pre.getFile(i);
@@ -199,7 +215,7 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
             rsl += ")";
         }
 
-        String queue = getStringAttribute(description, "queue", null);
+        String queue = getStringAttribute(description, "globus.queue", null);
         if (queue != null) {
             rsl += " (queue = " + queue + ")";
         }
@@ -226,48 +242,6 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
         }
 
         return rsl;
-    }
-
-    protected String getResourceManagerContact(JobDescription description)
-            throws GATInvocationException {
-        String res = null;
-        String contact = (String) preferences
-                .get("ResourceBroker.jobmanagerContact");
-        String jobManager = (String) preferences
-                .get("ResourceBroker.jobmanager");
-        Object jobManagerPort = preferences
-                .get("ResourceBroker.jobmanagerPort");
-
-        // if the contact string is set, ignore all other properties
-        if (contact != null) {
-            if (logger.isDebugEnabled()) {
-                logger.debug("Resource manager contact = " + contact);
-            }
-            return contact;
-        }
-
-        String hostname = getHostname();
-
-        if (hostname != null) {
-            res = hostname;
-
-            if (jobManagerPort != null) {
-                res += (":" + jobManagerPort);
-            }
-
-            if (jobManager != null) {
-                res += ("/jobmanager-" + jobManager);
-            }
-
-            if (logger.isDebugEnabled()) {
-                logger.debug("Resource manager contact = " + res);
-            }
-
-            return res;
-        }
-
-        throw new GATInvocationException(
-                "The Globus resource broker needs a hostname");
     }
 
     private void runGramJobPolling(GSSCredential credential, String rsl,
@@ -338,7 +312,7 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
     public Job submitJob(JobDescription description, MetricListener listener,
             String metricDefinitionName) throws GATInvocationException {
         boolean useGramSandbox = false;
-        String s = (String) preferences.get("useGramSandbox");
+        String s = (String) preferences.get("globus.sandbox.gram");
         if (s != null && s.equalsIgnoreCase("true")) {
             useGramSandbox = true;
         }
@@ -396,7 +370,7 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
             throws GATInvocationException {
         // long start = System.currentTimeMillis();
         String host = getHostname();
-        String contact = getResourceManagerContact(description);
+        String contact = brokerURI.getAuthority() + brokerURI.getPath();
 
         URI hostUri;
         try {
@@ -449,9 +423,9 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
     public Job submitJobGatSandbox(JobDescription description,
             MetricListener listener, String metricDefinitionName)
             throws GATInvocationException {
-        if (getBooleanAttribute(description, "useWrapper", false)) {
+        if (getBooleanAttribute(description, "wrapper.enable", false)) {
             if (logger.isDebugEnabled()) {
-                logger.debug("useWrapper, using wrapper application");
+                logger.debug("wrapper enabled: using wrapper application.");
             }
             if (submitter == null) {
                 submitter = new WrapperSubmitter(gatContext, preferences,
@@ -463,7 +437,7 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
         // choose the first of the set descriptions to retrieve the hostname
         // etc.
         String host = getHostname();
-        String contact = getResourceManagerContact(description);
+        String contact = brokerURI.getAuthority() + brokerURI.getPath();
         GSSCredential credential = getCredential(host);
 
         Sandbox sandbox = new Sandbox(gatContext, preferences, description,
