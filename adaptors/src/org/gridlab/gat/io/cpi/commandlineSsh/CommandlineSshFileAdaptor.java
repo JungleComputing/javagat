@@ -24,6 +24,8 @@ public class CommandlineSshFileAdaptor extends FileCpi {
 
     private boolean windows = false;
 
+    private final int ssh_port;
+
     /**
      * @param gatContext
      * @param preferences
@@ -41,6 +43,15 @@ public class CommandlineSshFileAdaptor extends FileCpi {
         String osname = System.getProperty("os.name");
         if (osname.startsWith("Windows"))
             windows = true;
+        
+        // Allow different port, so that this adaptor can be used over an
+        // ssh tunnel. --Ceriel
+        String port = (String) preferences.get("CommandlineSshFile.ssh.port");
+        if (port != null) {
+            ssh_port = Integer.parseInt(port);
+        } else {
+            ssh_port = SSH_PORT;
+        }
     }
 
     private boolean runSshCommand(String params) throws GATInvocationException {
@@ -202,7 +213,7 @@ public class CommandlineSshFileAdaptor extends FileCpi {
 
         try {
             sui = SshSecurityUtils.getSshCredential(gatContext, preferences,
-                    "ssh", src, SSH_PORT);
+                    "ssh", src, ssh_port);
         } catch (Exception e) {
             logger
                     .info("CommandlineSshFileAdaptor: failed to retrieve credentials"
@@ -224,7 +235,7 @@ public class CommandlineSshFileAdaptor extends FileCpi {
         int port = src.getPort();
         /* it will always return -1 for user@host:path */
         if (port == -1) {
-            port = SSH_PORT;
+            port = ssh_port;
         }
 
         if (logger.isDebugEnabled()) {
@@ -313,7 +324,7 @@ public class CommandlineSshFileAdaptor extends FileCpi {
 
         try {
             sui = SshSecurityUtils.getSshCredential(gatContext, preferences,
-                    "ssh", dest, SSH_PORT);
+                    "ssh", dest, ssh_port);
         } catch (Exception e) {
             logger
                     .info("CommandlineSshFileAdaptor: failed to retrieve credentials"
@@ -340,7 +351,7 @@ public class CommandlineSshFileAdaptor extends FileCpi {
         int port = dest.getPort();
         /* it will always return -1 for user@host:path */
         if (port == -1) {
-            port = SSH_PORT;
+            port = ssh_port;
         }
 
         if (logger.isDebugEnabled()) {
