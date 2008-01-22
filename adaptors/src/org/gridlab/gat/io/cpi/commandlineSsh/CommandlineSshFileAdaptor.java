@@ -149,7 +149,12 @@ public class CommandlineSshFileAdaptor extends FileCpi {
 
     // TODO [wojciech] add some sense here
     private String getSshCommand() throws GATInvocationException {
-        return "ssh " + location.resolveHost() + " ";
+        int p = location.getPort();
+        String portString = "" + ssh_port;
+        if (p != -1) {
+            portString = "" + p;
+        }
+        return "ssh -p " + portString + " " + location.resolveHost() + " ";
     }
 
     /**
