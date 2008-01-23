@@ -9,6 +9,7 @@ package org.gridlab.gat.resources.cpi.sge;
 
 // org.ggf.drmaa imports
 import java.util.List;
+import java.util.Properties;
 
 import org.apache.log4j.Logger;
 import org.ggf.drmaa.DrmaaException;
@@ -41,14 +42,14 @@ import org.gridlab.gat.resources.cpi.Sandbox;
  * with JavaGAT naming
  */
 
-public class SGEResourceBrokerAdaptor extends ResourceBrokerCpi {
+public class SgeResourceBrokerAdaptor extends ResourceBrokerCpi {
 
     protected static Logger logger = Logger
-            .getLogger(SGEResourceBrokerAdaptor.class);
+            .getLogger(SgeResourceBrokerAdaptor.class);
 
     private Session SGEsession;
 
-    public SGEResourceBrokerAdaptor(GATContext gatContext,
+    public SgeResourceBrokerAdaptor(GATContext gatContext,
             Preferences preferences, URI brokerURI)
             throws GATObjectCreationException {
         super(gatContext, preferences, brokerURI);
@@ -56,8 +57,6 @@ public class SGEResourceBrokerAdaptor extends ResourceBrokerCpi {
         SessionFactory factory = SessionFactory.getFactory();
         SGEsession = factory.getSession();
 
-        // Properties props = System.getProperties();
-        // props.setProperty("org.ggf.drmaa.SessionFactory","NONE");
 
     }
 
@@ -81,21 +80,14 @@ public class SGEResourceBrokerAdaptor extends ResourceBrokerCpi {
         SoftwareDescription sd = description.getSoftwareDescription();
         String host = getHostname();
 
-        URI hostURI;
         Sandbox sandbox = null;
-
-        try {
-            hostURI = new URI(host);
-        } catch (Exception e) {
-            throw new GATInvocationException("SGEResourceBrokerAdaptor", e);
-        }
 
         /* Handle pre-/poststaging */
         if (host != null) {
             sandbox = new Sandbox(gatContext, preferences, description, host,
                     null, false, true, true, true);
         }
-        SGEJob job = new SGEJob(gatContext, preferences, description, sandbox);
+        SgeJob job = new SgeJob(gatContext, preferences, description, sandbox);
         if (listener != null && metricDefinitionName != null) {
             Metric metric = job.getMetricDefinitionByName(metricDefinitionName)
                     .createMetric(null);
@@ -113,7 +105,7 @@ public class SGEResourceBrokerAdaptor extends ResourceBrokerCpi {
 
         try {
 
-            SGEsession.init(hostURI.toString());
+            SGEsession.init(brokerURI.toString());
             JobTemplate jt = SGEsession.createJobTemplate();
 
             jt.setRemoteCommand(getExecutable(description));
@@ -137,10 +129,6 @@ public class SGEResourceBrokerAdaptor extends ResourceBrokerCpi {
             SGEsession.deleteJobTemplate(jt);
             return job;
         } catch (DrmaaException e) {
-            if (logger.isDebugEnabled()) {
-                logger.debug("exception in SGEResourceBrokerAdaptor");
-                logger.debug(e);
-            }
             throw new GATInvocationException("SGEResourceBrokerAdaptor", e);
         }
     }

@@ -61,7 +61,7 @@ public class GridFTPFileAdaptor extends GlobusFileAdaptor {
     }
 
     protected URI fixURI(URI in) {
-        return fixURI(in, "gridftp");
+        return fixURI(in, "gsiftp");
     }
 
     private static void setConnectionOptions(GridFTPClient c,

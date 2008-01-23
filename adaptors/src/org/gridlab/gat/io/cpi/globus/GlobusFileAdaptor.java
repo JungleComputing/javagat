@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.StringReader;
+import java.net.URISyntaxException;
 import java.util.HashMap;
 import java.util.StringTokenizer;
 import java.util.Vector;
@@ -26,6 +27,7 @@ import org.gridlab.gat.InvalidUsernameOrPasswordException;
 import org.gridlab.gat.Preferences;
 import org.gridlab.gat.URI;
 import org.gridlab.gat.io.File;
+import org.gridlab.gat.io.FileInterface;
 import org.gridlab.gat.io.cpi.FileCpi;
 
 public abstract class GlobusFileAdaptor extends FileCpi {
@@ -123,7 +125,7 @@ public abstract class GlobusFileAdaptor extends FileCpi {
         // We don't have to handle the local case, the GAT engine will select
         // the local adaptor.
         // Maybe it is better to just allow this.
-        // especially fot the case where the user enforces the use of
+        // especially for the case where the user enforces the use of
         // this adaptor
         // if (dest.refersToLocalHost() && (toURI().refersToLocalHost())) {
         // throw new GATInvocationException("gridftp cannot copy local files");
@@ -229,22 +231,58 @@ public abstract class GlobusFileAdaptor extends FileCpi {
 
     protected void copyToRemote(URI src, URI dest)
             throws GATInvocationException {
+        // src points to a file
+
         // copy from the local machine to a remote machine.
         FTPClient client = null;
 
         try {
-            String remotePath = dest.getPath();
             String localPath = src.getPath();
             java.io.File localFile = new java.io.File(localPath);
 
             if (logger.isDebugEnabled()) {
-                logger.debug("copying from " + localPath + " to " + remotePath);
+                logger.debug("copying from " + localPath + " to "
+                        + dest.getPath());
             }
 
+            FileInterface destFile = GAT.createFile(gatContext, preferences,
+                    dest).getFileInterface();
+
+            if (destFile.isDirectory()
+                    || (dest.toString().endsWith(File.separator))) {
+                String sourcePath = src.getPath();
+                if (sourcePath.endsWith(File.separator)) {
+                    sourcePath = sourcePath.substring(0,
+                            sourcePath.length() - 1);
+                }
+                if (sourcePath.length() > 0) {
+                    int start = sourcePath.lastIndexOf(File.separator) + 1;
+                    String separator = "";
+                    if (!dest.toString().endsWith(File.separator)) {
+                        separator = File.separator;
+                    }
+                    try {
+                        dest = new URI(dest.toString() + separator
+                                + sourcePath.substring(start));
+                    } catch (URISyntaxException e) {
+                        // should not happen
+                    }
+                }
+            }
+            if (preferences.containsKey("file.create")) {
+                if (((String) preferences.get("file.create"))
+                        .equalsIgnoreCase("true")) {
+                    destFile = GAT.createFile(gatContext, preferences, dest)
+                            .getFileInterface();
+                    FileInterface destParentFile = destFile.getParentFile()
+                            .getFileInterface();
+                    destParentFile.mkdirs();
+                }
+            }
             client = createClient(dest);
             client.getCurrentDir(); // to ensure a command has been executed
             setActiveOrPassive(client, preferences);
-            client.put(localFile, remotePath, false); // overwrite
+            client.put(localFile, dest.getPath(), false); // overwrite
         } catch (Exception e) {
             throw new GATInvocationException("gridftp", e);
         } finally {
@@ -600,7 +638,7 @@ public abstract class GlobusFileAdaptor extends FileCpi {
     }
 
     public boolean isDirectory() throws GATInvocationException {
-
+        logger.debug("Globus isDirectory()");
         // return cached value if we know it.
         int isDirVal = isDir(location);
         if (isDirVal == 0) {
@@ -706,13 +744,38 @@ public abstract class GlobusFileAdaptor extends FileCpi {
 
             client.makeDir(remotePath);
         } catch (Exception e) {
+            if (exists()) {
+                return false;
+            }
             throw new GATInvocationException("gridftp", e);
         } finally {
-            if (client != null)
+            if (client != null) {
                 destroyClient(client, toURI(), preferences);
+            }
         }
 
         return true;
+    }
+
+    public boolean mkdirs() throws GATInvocationException {
+        try {
+            FileInterface child = GAT.createFile(gatContext, preferences,
+                    location).getFileInterface();
+            if (child.getParentFile() == null) {
+                return child.mkdir();
+            }
+            FileInterface parent = child.getParentFile().getFileInterface();
+            if (parent.exists()) {
+                return child.mkdir();
+            } else {
+                if (!parent.mkdirs()) {
+                    return false;
+                }
+                return child.mkdir();
+            }
+        } catch (GATObjectCreationException e) {
+            throw new GATInvocationException("GlobusFileAdaptor", e);
+        }
     }
 
     public boolean canWrite() throws GATInvocationException {
