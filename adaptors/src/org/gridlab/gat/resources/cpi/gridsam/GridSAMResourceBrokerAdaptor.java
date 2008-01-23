@@ -49,6 +49,7 @@ public class GridSAMResourceBrokerAdaptor extends ResourceBrokerCpi {
             Preferences preferences, org.gridlab.gat.URI brokerURI)
             throws GATObjectCreationException {
         super(gatContext, preferences, brokerURI);
+        System.out.println("gridsam starting...");
     }
 
     /**
@@ -130,9 +131,15 @@ public class GridSAMResourceBrokerAdaptor extends ResourceBrokerCpi {
             // we have to add stdin/stderr/stdout to staged files
             addIOFiles(description);
 
-            String sandboxHostname = getHostname();
-            if (sandboxHostname == null || sandboxHostname.equals("")) {
-                throw new GATInvocationException("Could not get a hostname from " + gridSAMWebServiceURL);
+            // sandbox host can be set explicitly. This allows us to
+            // use ssh tunnels. For instance: localhost:4567
+            // Fortunately, the sandbox code works with this.
+            String sandboxHostname = (String) preferences.get("ResourceBroker.sandbox.host");
+            if (sandboxHostname == null) {
+                sandboxHostname = getHostname();
+                if (sandboxHostname == null || sandboxHostname.equals("")) {
+                    throw new GATInvocationException("Could not get a hostname from " + gridSAMWebServiceURL);
+                }
             }
             if (logger.isDebugEnabled()) {
                 logger
