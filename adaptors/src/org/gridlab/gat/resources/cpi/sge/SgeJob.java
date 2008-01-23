@@ -31,7 +31,7 @@ import org.gridlab.gat.resources.cpi.Sandbox;
  * @author ole.weidner
  */
 @SuppressWarnings("serial")
-public class SGEJob extends JobCpi {
+public class SgeJob extends JobCpi {
 
     private String jobID;
     private String hostname;
@@ -125,12 +125,13 @@ public class SGEJob extends JobCpi {
             time.put("stop_time", new Long(System.currentTimeMillis()));
         }
     }
-    
-    protected SGEJob(GATContext gatContext, Preferences preferences, JobDescription jobDescription, Sandbox sandbox) {
+
+    protected SgeJob(GATContext gatContext, Preferences preferences,
+            JobDescription jobDescription, Sandbox sandbox) {
         super(gatContext, preferences, jobDescription, sandbox);
-        
+
         state = INITIAL;
-        
+
         HashMap<String, Object> returnDef = new HashMap<String, Object>();
         returnDef.put("status", String.class);
         statusMetricDefinition = new MetricDefinition("job.status",
@@ -138,25 +139,24 @@ public class SGEJob extends JobCpi {
         statusMetric = statusMetricDefinition.createMetric(null);
         GATEngine.registerMetric(this, "getJobStatus", statusMetricDefinition);
     }
-    
+
     protected void setSession(Session session) {
         this.session = session;
     }
-    
+
     protected void setJobID(String jobID) {
         this.jobID = jobID;
     }
-    
+
     protected void startListener() {
         jobStartListener jsl = new jobStartListener(this.session, this.jobID,
                 time);
         new Thread(jsl).start();
     }
-    
+
     protected void setState(int state) {
         this.state = state;
     }
-    
 
     public String getJobID() {
         return jobID;
@@ -216,18 +216,21 @@ public class SGEJob extends JobCpi {
                 state = ON_HOLD;
                 break;
             default:
-                System.err.println("WARNING: SGE Job: unknown DRMAA state: "
-                        + status);
+                if (logger.isDebugEnabled()) {
+                    logger.debug("WARNING: SGE Job: unknown DRMAA state: "
+                            + status);
+                }
             }
-
         } catch (DrmaaException e) {
-            System.err.println("-- SGEJob EXCEPTION --");
-            System.err
-                    .println("Got an exception while retrieving resource manager status:");
-            System.err.println(e);
+            if (logger.isDebugEnabled()) {
+                logger.debug("-- SGEJob EXCEPTION --");
+                logger
+                        .debug("Got an exception while retrieving resource manager status:");
+                logger.debug(e);
+            }
         }
     }
-    
+
     protected void setHostname(String hostname) {
         this.hostname = hostname;
     }
@@ -250,20 +253,19 @@ public class SGEJob extends JobCpi {
             m.put("stoptime", time.get("stop_time"));
 
         } catch (DrmaaException e) {
-            System.err.println("-- SGEJob EXCEPTION --");
-            System.err
-                    .println("Got an exception while retrieving resource manager status:");
-            System.err.println(e);
+            if (logger.isDebugEnabled()) {
+                logger.debug("-- SGEJob EXCEPTION --");
+                logger
+                        .debug("Got an exception while retrieving resource manager status:");
+                logger.debug(e);
+            }
         }
-
         return m;
     }
 
     public int getExitStatus() {
-
         JobInfo info = null;
         int retVal = -255;
-
         try {
             info = session.wait(jobID, Session.TIMEOUT_NO_WAIT);
         } catch (ExitTimeoutException ete) {
@@ -273,11 +275,12 @@ public class SGEJob extends JobCpi {
              */
         } catch (DrmaaException e) {
             /* This kind of exception is NOT OK - something ugly happened... */
-            System.err.println("-- SGEJob EXCEPTION --");
-            System.err.println("Got an exception while retrieving JobInfo:");
-            System.err.println(e);
+            if (logger.isDebugEnabled()) {
+                logger.debug("-- SGEJob EXCEPTION --");
+                logger.debug("Got an exception while retrieving JobInfo:");
+                logger.debug(e);
+            }
         }
-
         if (info != null) {
             if (info.hasExited()) {
                 retVal = info.getExitStatus();
@@ -285,7 +288,6 @@ public class SGEJob extends JobCpi {
                 retVal = -255;
             }
         }
-
         return retVal;
     }
 
@@ -299,10 +301,12 @@ public class SGEJob extends JobCpi {
                 session.control(jobID, Session.TERMINATE);
                 state = INITIAL;
             } catch (DrmaaException e) {
-                System.err.println("-- SGEJob EXCEPTION --");
-                System.err
-                        .println("Got an exception while trying to TERMINATE job:");
-                System.err.println(e);
+                if (logger.isDebugEnabled()) {
+                    logger.debug("-- SGEJob EXCEPTION --");
+                    logger
+                            .debug("Got an exception while trying to TERMINATE job:");
+                    logger.debug(e);
+                }
             }
         }
     }

@@ -20,6 +20,7 @@ import org.gridlab.gat.GATObjectCreationException;
 import org.gridlab.gat.MethodNotApplicableException;
 import org.gridlab.gat.Preferences;
 import org.gridlab.gat.URI;
+import org.gridlab.gat.io.FileInterface;
 import org.gridlab.gat.io.cpi.FileCpi;
 
 @SuppressWarnings("serial")
@@ -135,7 +136,6 @@ public class LocalFileAdaptor extends FileCpi {
             if (logger.isInfoEnabled()) {
                 logger.info("local copy, source is the same file as dest.");
             }
-
             return;
         }
 
@@ -156,6 +156,24 @@ public class LocalFileAdaptor extends FileCpi {
 
         if (logger.isDebugEnabled()) {
             logger.debug("local copy, it is a file");
+        }
+
+        if (preferences.containsKey("file.create")) {
+            if (((String) preferences.get("file.create"))
+                    .equalsIgnoreCase("true")) {
+                try {
+                    FileInterface destFile = GAT.createFile(gatContext,
+                            preferences, destination).getFileInterface();
+                    FileInterface destParentFile = destFile.getParentFile()
+                            .getFileInterface();
+                    boolean result = destParentFile.mkdirs();
+                    if (logger.isDebugEnabled()) {
+                        logger.debug("new dirs created: " + result);
+                    }
+                } catch (GATObjectCreationException e) {
+                    throw new GATInvocationException("LocalFileAdaptor", e);
+                }
+            }
         }
 
         File tmp = new File(correctURI(destination).getPath());

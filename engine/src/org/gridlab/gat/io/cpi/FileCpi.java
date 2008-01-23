@@ -298,6 +298,9 @@ public abstract class FileCpi implements FileInterface {
     }
 
     public boolean isDirectory() throws GATInvocationException {
+        if (location.getPath().endsWith(File.separator)) {
+            return true;
+        }
         throw new UnsupportedOperationException("Not implemented");
     }
 
@@ -544,19 +547,54 @@ public abstract class FileCpi implements FileInterface {
         if (logger.isDebugEnabled()) {
             logger.debug("copyDirectory");
         }
+        FileInterface destFile = null;
+        boolean existingFile = false;
+        try {
+            destFile = GAT.createFile(gatContext, preferences, dest)
+                    .getFileInterface();
+            if (destFile.exists() && !destFile.isDirectory()) {
+                existingFile = true;
+            }
+        } catch (GATObjectCreationException e) {
+            throw new GATInvocationException("file cpi", e);
+        } catch (GATInvocationException e) {
+            if (logger.isDebugEnabled()) {
+                logger.debug("copyDirectory not able to check if '"
+                        + dest.toString() + "' is existing file");
+            }
+        }
+        if (existingFile) {
+            throw new GATInvocationException("cannot overwrite non-directory '"
+                    + dest.toString() + "' with directory '"
+                    + dirURI.toString() + "'!");
+        }
 
+        String sourcePath = dirURI.getPath();
+        if (sourcePath.endsWith(File.separator)) {
+            sourcePath = sourcePath.substring(0, sourcePath.length() - 1);
+        }
+        if (sourcePath.length() > 0) {
+            int start = sourcePath.lastIndexOf(File.separator) + 1;
+            String separator = "";
+            if (!dest.toString().endsWith(File.separator)) {
+                separator = File.separator;
+            }
+            try {
+                dest = new URI(dest.toString() + separator
+                        + sourcePath.substring(start));
+            } catch (URISyntaxException e) {
+                // should not happen
+            }
+        }
         // create destination dir
         try {
-            FileInterface destDir = GAT.createFile(gatContext, preferences,
-                    dest).getFileInterface();
-
-            if (!destDir.exists()) {
-
-                if (logger.isDebugEnabled()) {
-                    logger.debug("copyDirectory: mkdir of " + destDir);
+            if (preferences.containsKey("file.create")) {
+                if (((String) preferences.get("file.create"))
+                        .equalsIgnoreCase("true")) {
+                    destFile = GAT.createFile(gatContext, preferences, dest)
+                            .getFileInterface();
+                    destFile.mkdirs();
                 }
-
-                destDir.mkdir();
             }
         } catch (GATObjectCreationException e) {
             throw new GATInvocationException("file cpi", e);
@@ -578,7 +616,7 @@ public abstract class FileCpi implements FileInterface {
             return;
         }
         for (int i = 0; i < files.length; i++) {
-            File f = files[i];
+            FileInterface f = files[i].getFileInterface();
 
             if (logger.isDebugEnabled()) {
                 logger.debug("copyDirectory: file to copy = " + f);
@@ -593,6 +631,7 @@ public abstract class FileCpi implements FileInterface {
             } catch (URISyntaxException e) {
                 throw new GATInvocationException("file cpi", e);
             }
+            logger.debug("new dest: " + newDest.toString());
 
             if (f.isFile()) {
                 if (logger.isDebugEnabled()) {
@@ -605,7 +644,7 @@ public abstract class FileCpi implements FileInterface {
                     logger.debug("copyDirectory: copying dir " + f);
                 }
 
-                copyDirectory(gatContext, preferences, f.toGATURI(), newDest);
+                copyDirectory(gatContext, preferences, f.toURI(), newDest);
             } else {
                 throw new GATInvocationException(
                         "file cpi, don't know how to handle file: " + f
