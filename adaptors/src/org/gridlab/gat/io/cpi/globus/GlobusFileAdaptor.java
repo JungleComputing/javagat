@@ -789,6 +789,7 @@ public abstract class GlobusFileAdaptor extends FileCpi {
             client = createClient(toURI());
 
             client.makeDir(remotePath);
+            setIsDir(toURI(), true);
         } catch (Exception e) {
             if (logger.isDebugEnabled()) {
                 logger.debug("gridftp", e);
