@@ -261,20 +261,11 @@ public abstract class FileCpi implements FileInterface {
             return null;
         }
         try {
-            String dest = location.getScheme() + "://";
-            dest += (location.getUserInfo() == null) ? "" : location
-                    .getUserInfo();
-            dest += location.getHost();
-            dest += (location.getPort() == -1) ? ""
-                    : (":" + location.getPort());
-            dest += "/";
-            dest += getParent();
-
+            String dest = location.toString().replace(getPath(), getParent());
             if (logger.isDebugEnabled()) {
-                logger.debug("GET PARENTFILE: orig = " + location + " new = "
+                logger.debug("GET PARENTFILE: orig = " + location + " new* = "
                         + dest);
             }
-
             return GAT.createFile(gatContext, preferences, new URI(dest));
         } catch (Exception e) {
             throw new GATInvocationException("file cpi", e);
@@ -320,32 +311,14 @@ public abstract class FileCpi implements FileInterface {
         throw new UnsupportedOperationException("Not implemented");
     }
 
-    /**
-     * The Adaptor writer MUST implement either list() or listFiles(). The rest
-     * is built on top of that.
-     */
     public String[] list() throws GATInvocationException {
-        if (!isDirectory()) {
-            return null;
-        }
-
-        File[] f = listFiles();
-        String[] res = new String[f.length];
-
-        for (int i = 0; i < f.length; i++) {
-            res[i] = f[i].getPath();
-        }
-
-        return res;
+        throw new UnsupportedOperationException("Not implemented");
     }
 
-    /**
-     * The Adaptor writer MUST implement either list() or listFiles(). The rest
-     * is built on top of that.
-     */
     public File[] listFiles() throws GATInvocationException {
         if (!isDirectory()) {
-            return null;
+            throw new GATInvocationException("this is not a directory: "
+                    + location);
         }
 
         try {
@@ -474,6 +447,7 @@ public abstract class FileCpi implements FileInterface {
     }
 
     public boolean mkdirs() throws GATInvocationException {
+        logger.debug("cpi: mkdirs " + location.toString());
         if (exists()) {
             return false;
         }
@@ -481,20 +455,13 @@ public abstract class FileCpi implements FileInterface {
             return true;
         }
 
-        File canonFile = null;
-        try {
-            canonFile = getCanonicalFile();
-        } catch (Exception e) {
-            return false;
-        }
-
-        File parent = (File) canonFile.getParentFile();
+        FileInterface parent = getParentFile().getFileInterface();
 
         if (parent == null) {
             return false;
         }
 
-        return parent.mkdirs() && canonFile.mkdir();
+        return parent.mkdirs() && mkdir();
     }
 
     public boolean renameTo(File arg0) throws GATInvocationException {
@@ -518,27 +485,32 @@ public abstract class FileCpi implements FileInterface {
     }
 
     protected static URI fixURI(URI in, String destScheme) {
-        try {
-            String scheme = in.getScheme();
-            String s = in.toString();
-
-            if (scheme == null) {
-                // three slashes because of empty hostname
-                return new URI(destScheme + ":///" + s);
-            } else if (scheme.equals(destScheme)) {
-                return in;
+        // if destscheme != null replaces or adds destscheme to in
+        // if local relative file, add "user.dir" in front of it
+        String uriString = in.toString();
+        if (destScheme != null) {
+            if (in.getScheme() != null) {
+                uriString.replaceFirst(in.getScheme(), destScheme);
             } else {
-                int index = s.indexOf(':');
-
-                return new URI(destScheme + ":"
-                        + s.substring(index + 1, s.length()));
+                if (in.getAuthority() == null) {
+                    uriString = destScheme + ":///" + uriString;
+                } else {
+                    uriString = destScheme + "://" + uriString;
+                }
             }
+        }
+        if (in.refersToLocalHost() && !in.isAbsolute()) {
+            uriString = uriString.replace(in.getPath(), System.getProperty("user.dir") + File.separator + in.getPath());
+        }
+        URI fixedURI = null;
+        try {
+            fixedURI = new URI(uriString);
         } catch (URISyntaxException e) {
             if (logger.isDebugEnabled()) {
                 logger.debug("internal UnsupportedOperationException: " + e);
             }
-            return in;
         }
+        return fixedURI;
     }
 
     protected static void copyDirectory(GATContext gatContext,
@@ -611,7 +583,8 @@ public abstract class FileCpi implements FileInterface {
         File[] files = (File[]) dir.listFiles();
         if (files == null) {
             if (logger.isDebugEnabled()) {
-                logger.debug("copyDirectory: no files in src directory");
+                logger.debug("copyDirectory: no files in src directory: "
+                        + dirURI.toString());
             }
             return;
         }

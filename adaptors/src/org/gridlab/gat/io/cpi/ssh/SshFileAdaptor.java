@@ -27,6 +27,7 @@ import org.gridlab.gat.GATObjectCreationException;
 import org.gridlab.gat.InvalidUsernameOrPasswordException;
 import org.gridlab.gat.Preferences;
 import org.gridlab.gat.URI;
+import org.gridlab.gat.io.FileInterface;
 import org.gridlab.gat.io.cpi.FileCpi;
 
 import com.jcraft.jsch.Channel;
@@ -105,6 +106,7 @@ public class SshFileAdaptor extends FileCpi {
                 logger.debug("SshFileAdaptor: local file LOCATION = "
                         + location);
             }
+            prepareSession(location);
 
             return;
         }
@@ -291,16 +293,46 @@ public class SshFileAdaptor extends FileCpi {
          * remoteSource to local (ScpFrom) else not implemented yet if auth
          * succeeded scp remoteSource to remoteDestination else fail
          */
-        if (isLocalFile) {
-            if (loc.refersToLocalHost()) {
-                throw new GATInvocationException(
-                        "ssh",
-                        new Exception(
-                                "SshFileAdaptor:the source file is local ("
-                                        + getPath()
-                                        + "), then the destination file must be remote, path = "
-                                        + loc.getPath()));
+
+        FileInterface target = null;
+        try {
+            target = GAT.createFile(gatContext, preferences, loc)
+                    .getFileInterface();
+        } catch (GATObjectCreationException e) {
+            throw new GATInvocationException("SshFileAdaptor", e);
+        }
+
+        if (isDirectory() && target.isFile() && target.exists()) {
+            throw new GATInvocationException("cannot overwrite non-directory '"
+                    + loc + "' with directory '" + location + "'!");
+
+        }
+
+        if (preferences.containsKey("file.create")) {
+            if (((String) preferences.get("file.create"))
+                    .equalsIgnoreCase("true")) {
+                try {
+                    FileInterface destFile = GAT.createFile(gatContext,
+                            preferences, loc).getFileInterface();
+                    FileInterface destParentFile = destFile.getParentFile()
+                            .getFileInterface();
+                    destParentFile.mkdirs();
+                } catch (GATObjectCreationException e) {
+                    throw new GATInvocationException("SshFileAdaptor", e);
+                }
             }
+        }
+
+        if (isLocalFile) {
+            // if (loc.refersToLocalHost()) {
+            // throw new GATInvocationException(
+            // "ssh",
+            // new Exception(
+            // "SshFileAdaptor:the source file is local ("
+            // + getPath()
+            // + "), then the destination file must be remote, path = "
+            // + loc.getPath()));
+            // }
 
             if (!localFile.exists()) {
                 throw new GATInvocationException(
@@ -374,7 +406,7 @@ public class SshFileAdaptor extends FileCpi {
                      * same user name, will be a simple copy on the same remote
                      * machine and same remote account
                      */
-                    copyOnSameHost(loc.getPath());
+                    copyOnSameHost(fixURI(loc, null).getPath());
 
                     return;
                 }
@@ -386,7 +418,7 @@ public class SshFileAdaptor extends FileCpi {
                  */
                 try {
                     org.gridlab.gat.io.File dest = GAT.createFile(gatContext,
-                            preferences, loc);
+                            preferences, fixURI(loc, null));
                     copyOnSameHost(dest.getAbsolutePath());
                 } catch (Exception e) {
                     thirdPartyTransfer(loc);
@@ -464,8 +496,8 @@ public class SshFileAdaptor extends FileCpi {
             }
 
             Object[] streams = execCommand("scp " + isRecursive + " "
-                    + getPath() + " " + remoteUser + "@" + loc.resolveHost()
-                    + ":" + loc.getPath());
+                    + fixURI(location, null).getPath() + " " + remoteUser + "@"
+                    + loc.resolveHost() + ":" + fixURI(loc, null).getPath());
             if (((InputStream) streams[ERR]).available() == 0) {
                 cleanSession(session, channel);
                 return;
@@ -557,13 +589,14 @@ public class SshFileAdaptor extends FileCpi {
             prepareSession(loc);
             startSession(loc);
             Object[] streams = execSessionCommand("scp -p -r -t "
-                    + loc.getPath());
+                    + fixURI(loc, null).getPath());
             if (checkAck(((InputStream) streams[IN])) != 0) {
                 cleanSession(session, channel);
                 throw new GATInvocationException(
                         "SshFileAdaptor: failed checkAck after sending scp command"
-                                + " in doMultipleUpload " + getPath() + " to "
-                                + loc);
+                                + " in doSingleUpload "
+                                + fixURI(location, null).getPath() + " to "
+                                + fixURI(loc, null));
             }
 
             try {
@@ -588,7 +621,7 @@ public class SshFileAdaptor extends FileCpi {
 
     protected void sendDirectoryToRemote(File dir, InputStream in,
             OutputStream out) throws IOException {
-        
+
         String command = "D0755 0 ";
         command += dir.getName();
         command += "\n";
@@ -628,14 +661,15 @@ public class SshFileAdaptor extends FileCpi {
         try {
             prepareSession(loc);
             startSession(loc);
-            Object[] streams = execSessionCommand("scp -p -r -t "
-                    + loc.getPath());
+            Object[] streams = execSessionCommand("scp -p -r "
+                    + fixURI(loc, null).getPath());
             if (checkAck(((InputStream) streams[IN])) != 0) {
                 cleanSession(session, channel);
                 throw new GATInvocationException(
                         "SshFileAdaptor: failed checkAck after sending scp command"
-                                + " in doMultipleUpload " + getPath() + " to "
-                                + loc);
+                                + " in doMultipleUpload "
+                                + fixURI(location, null).getPath() + " to "
+                                + fixURI(loc, null));
             }
 
             try {
@@ -835,7 +869,8 @@ public class SshFileAdaptor extends FileCpi {
         }
         /*-f from fetch*/
         try {
-            Object[] streams = execCommand("scp -f " + isRec + getPath());
+            Object[] streams = execCommand("scp " + isRec
+                    + fixURI(location, null).getPath());
             sendAck(((OutputStream) streams[OUT]));
             File localFile = new File(loc.getPath());
             startRemoteCpProtocol(((InputStream) streams[IN]),
@@ -845,8 +880,9 @@ public class SshFileAdaptor extends FileCpi {
             if (logger.isDebugEnabled()) {
                 StringWriter writer = new StringWriter();
                 e.printStackTrace(new PrintWriter(writer));
-                logger.debug("SshFileAdaptor: for location " + location
-                        + " throws error " + e + "\n" + writer.toString());
+                logger.debug("SshFileAdaptor: for location "
+                        + fixURI(location, null) + " throws error " + e + "\n"
+                        + writer.toString());
             }
 
             cleanSession(session, channel);
@@ -892,9 +928,11 @@ public class SshFileAdaptor extends FileCpi {
             switch (getOsType()) {
             case XOS:
                 if (isDir == TRUE) {
-                    streams = execCommand("cp -r " + getPath() + " " + path);
+                    streams = execCommand("cp -r "
+                            + fixURI(location, null).getPath() + " " + path);
                 } else {
-                    streams = execCommand("cp " + getPath() + " " + path);
+                    streams = execCommand("cp "
+                            + fixURI(location, null).getPath() + " " + path);
                 }
                 if (((InputStream) streams[ERR]).available() != 0) {
                     cleanSession(session, channel);
@@ -1047,19 +1085,20 @@ public class SshFileAdaptor extends FileCpi {
      * @see org.gridlab.gat.io.File#createNewFile()
      */
     public boolean createNewFile() throws GATInvocationException {
-        isLocalFile();
-
         try {
             if (getOsType() == XOS) {
-                Object[] streams = execCommand("test ! -d " + getPath()
-                        + " && test ! -f " + getPath() + " && touch "
-                        + getPath());
+                Object[] streams = execCommand("test ! -d "
+                        + fixURI(location, null).getPath() + " && test ! -f "
+                        + fixURI(location, null).getPath() + " && touch "
+                        + fixURI(location, null).getPath());
                 boolean result = (((InputStream) streams[ERR]).available() == 0);
                 cleanSession(session, channel);
                 return result;
             } else if (getOsType() == WOS) {
-                Object[] streams = execCommand("dir " + toMW(getPath())
-                        + " || cd . > " + toMW(getPath()));
+                Object[] streams = execCommand("dir "
+                        + toMW(fixURI(location, null).getPath())
+                        + " || cd . > "
+                        + toMW(fixURI(location, null).getPath()));
                 boolean result = (((InputStream) streams[ERR]).available() == 0);
                 cleanSession(session, channel);
                 return result;
@@ -1079,7 +1118,6 @@ public class SshFileAdaptor extends FileCpi {
      * @see org.gridlab.gat.io.File#delete()
      */
     public boolean delete() throws GATInvocationException {
-        isLocalFile();
         try {
             if (isDir == UNKNOWN) {
                 isDirectory();
@@ -1087,9 +1125,11 @@ public class SshFileAdaptor extends FileCpi {
             if (getOsType() == XOS) {
                 Object[] streams;
                 if (isDir == TRUE) {
-                    streams = execCommand("rmdir " + getPath());
+                    streams = execCommand("rmdir "
+                            + fixURI(location, null).getPath());
                 } else {
-                    streams = execCommand("rm " + getPath());
+                    streams = execCommand("rm "
+                            + fixURI(location, null).getPath());
                 }
                 itExists = (((InputStream) streams[ERR]).available() == 0) ? TRUE
                         : FALSE;
@@ -1098,9 +1138,11 @@ public class SshFileAdaptor extends FileCpi {
             } else if (getOsType() == WOS) {
                 Object[] streams;
                 if (isDir == TRUE) {
-                    streams = execCommand("rmdir " + toMW(getPath()));
+                    streams = execCommand("rmdir "
+                            + toMW(fixURI(location, null).getPath()));
                 } else {
-                    streams = execCommand("del /q" + toMW(getPath()));
+                    streams = execCommand("del /q"
+                            + toMW(fixURI(location, null).getPath()));
                 }
                 itExists = (((InputStream) streams[ERR]).available() == 0) ? FALSE
                         : TRUE;
@@ -1197,13 +1239,14 @@ public class SshFileAdaptor extends FileCpi {
      * @see org.gridlab.gat.io.File#exists()
      */
     public boolean exists() throws GATInvocationException {
-        isLocalFile();
         Object[] streams = null;
         try {
             if (getOsType() == XOS) {
-                streams = execCommand("ls -log " + getPath());
+                streams = execCommand("ls -log "
+                        + fixURI(location, null).getPath());
             } else if (getOsType() == WOS) {
-                streams = execCommand("dir /B" + toMW(getPath()));
+                streams = execCommand("dir /B"
+                        + toMW(fixURI(location, null).getPath()));
             } else {
                 throw new GATInvocationException("Unknown remote OS type");
             }
@@ -1211,8 +1254,9 @@ public class SshFileAdaptor extends FileCpi {
             if (logger.isDebugEnabled()) {
                 StringWriter writer = new StringWriter();
                 e.printStackTrace(new PrintWriter(writer));
-                logger.debug("SshFileAdaptor: for location " + location
-                        + " throws error " + e + "\n" + writer.toString());
+                logger.debug("SshFileAdaptor: for location "
+                        + fixURI(location, null) + " throws error " + e + "\n"
+                        + writer.toString());
             }
             cleanSession(session, channel);
             doException(e);
@@ -1224,15 +1268,16 @@ public class SshFileAdaptor extends FileCpi {
             if (logger.isDebugEnabled()) {
                 StringWriter writer = new StringWriter();
                 e.printStackTrace(new PrintWriter(writer));
-                logger.debug("SshFileAdaptor: for location " + location
-                        + " throws error " + e + "\n" + writer.toString());
+                logger.debug("SshFileAdaptor: for location "
+                        + fixURI(location, null) + " throws error " + e + "\n"
+                        + writer.toString());
             }
             cleanSession(session, channel);
             doException(e);
         }
         if (logger.isDebugEnabled()) {
-            logger.debug("SshFileAdaptor: for location " + location
-                    + " file does exist=" + itExists);
+            logger.debug("SshFileAdaptor: for location "
+                    + fixURI(location, null) + " file does exist=" + itExists);
         }
         cleanSession(session, channel);
         return itExists == TRUE;
@@ -1249,12 +1294,8 @@ public class SshFileAdaptor extends FileCpi {
      */
     public org.gridlab.gat.io.File getAbsoluteFile()
             throws GATInvocationException {
-        isLocalFile();
-
-        // String uriString = location.toString();
-        String absUri = "//" + sui.username + "@" + location.resolveHost()
-                + ":" + port + "/" + getAbsolutePath();
-
+        String absUri = location.toString().replace(location.getPath(),
+                getAbsolutePath());
         try {
             return GAT.createFile(gatContext, preferences, new URI(absUri));
         } catch (Exception e) {
@@ -1269,11 +1310,10 @@ public class SshFileAdaptor extends FileCpi {
      * @see org.gridlab.gat.io.File#getAbsolutePath()
      */
     public String getAbsolutePath() throws GATInvocationException {
-        isLocalFile();
         try {
             if (getOsType() == XOS) {
                 if (getPath().startsWith("/")) {
-                    return getPath();
+                    return fixURI(location, null).getPath();
                 }
                 Object[] streams = execCommand("echo ~" + sui.username);
                 if (((InputStream) streams[ERR]).available() != 0) {
@@ -1304,85 +1344,23 @@ public class SshFileAdaptor extends FileCpi {
         }
     }
 
-    private void isLocalFile() throws GATInvocationException {
-        if (isLocalFile) {
-            throw new GATInvocationException(
-                    "SshFileAdaptor for local files: only for remote machine");
-        }
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.gridlab.gat.io.File#getParent()
-     */
-    public String getParent() throws GATInvocationException {
-        isLocalFile();
-
-        String path = getPath();
-        String parentPath;
-
-        if (path.endsWith("/")) {
-            parentPath = path.substring(0, path.lastIndexOf('/',
-                    path.length() - 2));
-        } else if (path.lastIndexOf('/') >= 0) {
-            parentPath = path.substring(0, path.lastIndexOf('/'));
-        } else {
-            return null;
-        }
-
-        if (parentPath.length() == 0) {
-            return null;
-        }
-
-        return parentPath;
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.gridlab.gat.io.File#getParentFile()
-     */
-    public org.gridlab.gat.io.File getParentFile()
-            throws GATInvocationException {
-        isLocalFile();
-
-        if (getParent() == null) {
-            return null;
-        }
-        String parentUri = "";
-        if (location.getScheme() != null) {
-            parentUri += location.getScheme() + "://";
-        }
-        if (location.getHost() != null) {
-            parentUri += location.getHost() + "/";
-        }
-        parentUri += getParent();
-
-        try {
-            return GAT.createFile(gatContext, preferences, new URI(parentUri));
-        } catch (Exception e) {
-            throw new GATInvocationException("getAbsoluteFile: " + e);
-        }
-    }
-
     /*
      * (non-Javadoc)
      * 
      * @see org.gridlab.gat.io.File#isDirectory()
      */
     public boolean isDirectory() throws GATInvocationException {
-        isLocalFile();
-
         try {
             if (getOsType() == XOS) {
-                Object[] streams = execCommand("cd " + getPath());
+                Object[] streams = execCommand("cd "
+                        + fixURI(location, null).getPath());
                 isDir = (((InputStream) streams[ERR]).available() == 0) ? TRUE
                         : FALSE;
                 cleanSession(session, channel);
                 return isDir == TRUE;
             } else if (getOsType() == WOS) {
-                Object[] streams = execCommand("cd " + toMW(getPath()));
+                Object[] streams = execCommand("cd "
+                        + toMW(fixURI(location, null).getPath()));
                 isDir = (((InputStream) streams[ERR]).available() == 0) ? TRUE
                         : FALSE;
                 cleanSession(session, channel);
@@ -1415,7 +1393,6 @@ public class SshFileAdaptor extends FileCpi {
      */
     public boolean isFile() throws GATInvocationException {
         /* at least for now */
-        isLocalFile();
         return (!isDirectory());
     }
 
@@ -1425,7 +1402,6 @@ public class SshFileAdaptor extends FileCpi {
      * @see org.gridlab.gat.io.File#isHidden()
      */
     public boolean isHidden() throws GATInvocationException {
-        isLocalFile();
         switch (getOsType()) {
         /* assume name of the file is not . or .. */
         case XOS:
@@ -1449,16 +1425,17 @@ public class SshFileAdaptor extends FileCpi {
      * @see org.gridlab.gat.io.File#length()
      */
     public long length() throws GATInvocationException {
-        isLocalFile();
         if (itExists == UNKNOWN)
             exists();
         if (itExists == FALSE)
             return -1L;
         try {
             if (getOsType() == XOS) {
-                return executeLengthCommand("wc -c < " + getPath());
+                return executeLengthCommand("wc -c < "
+                        + fixURI(location, null).getPath());
             } else if (getOsType() == WOS) {
-                return executeLengthCommand("dir /-C " + toMW(getPath()));
+                return executeLengthCommand("dir /-C "
+                        + toMW(fixURI(location, null).getPath()));
             } else {
                 throw new GATInvocationException("Unknown remote OS type");
             }
@@ -1492,16 +1469,17 @@ public class SshFileAdaptor extends FileCpi {
      * @see org.gridlab.gat.io.File#list()
      */
     public String[] list() throws GATInvocationException {
-        isLocalFile();
         if (isDir == UNKNOWN)
             isDirectory();
         if (isDir == FALSE)
             return null;
         try {
             if (getOsType() == XOS) {
-                return executeListCommand("ls -1 " + getPath());
+                return executeListCommand("ls -1 "
+                        + fixURI(location, null).getPath());
             } else if (getOsType() == WOS) {
-                return executeListCommand("dir /-C " + toMW(getPath()));
+                return executeListCommand("dir /-C "
+                        + toMW(fixURI(location, null).getPath()));
             } else {
                 throw new GATInvocationException("Unknown remote OS type");
             }
@@ -1540,7 +1518,6 @@ public class SshFileAdaptor extends FileCpi {
      * @see org.gridlab.gat.io.File#list(java.io.FilenameFilter)
      */
     public String[] list(FilenameFilter filter) throws GATInvocationException {
-        isLocalFile();
 
         if (filter == null) {
             return list();
@@ -1565,7 +1542,6 @@ public class SshFileAdaptor extends FileCpi {
      * @see org.gridlab.gat.io.File#listFiles()
      */
     public org.gridlab.gat.io.File[] listFiles() throws GATInvocationException {
-        isLocalFile();
         String[] r = list();
         if (r == null) {
             return null;
@@ -1596,7 +1572,6 @@ public class SshFileAdaptor extends FileCpi {
      */
     public org.gridlab.gat.io.File[] listFiles(FileFilter arg0)
             throws GATInvocationException {
-        isLocalFile();
         String[] r = list();
         org.gridlab.gat.io.File[] res = new org.gridlab.gat.io.File[r.length];
         String dir = getPath();
@@ -1628,7 +1603,6 @@ public class SshFileAdaptor extends FileCpi {
      */
     public org.gridlab.gat.io.File[] listFiles(FilenameFilter arg0)
             throws GATInvocationException {
-        isLocalFile();
         String[] r = list(arg0);
         org.gridlab.gat.io.File[] res = new org.gridlab.gat.io.File[r.length];
         String uri = location.toString();
@@ -1655,10 +1629,10 @@ public class SshFileAdaptor extends FileCpi {
      * @see org.gridlab.gat.io.File#mkdir()
      */
     public boolean mkdir() throws GATInvocationException {
-        isLocalFile();
         try {
             if (getOsType() == XOS) {
-                Object[] streams = execCommand("mkdir " + getPath());
+                Object[] streams = execCommand("mkdir "
+                        + fixURI(location, null).getPath());
                 boolean result = (((InputStream) streams[ERR]).available() == 0);
                 cleanSession(session, channel);
                 return result;
@@ -1680,17 +1654,18 @@ public class SshFileAdaptor extends FileCpi {
      * @see org.gridlab.gat.io.File#mkdirs()
      */
     public boolean mkdirs() throws GATInvocationException {
-        isLocalFile();
 
         try {
             if (getOsType() == XOS) {
-                Object[] streams = execCommand("mkdir -p " + getPath());
+                Object[] streams = execCommand("mkdir -p "
+                        + fixURI(location, null).getPath());
                 isDir = (((InputStream) streams[ERR]).available() == 0) ? TRUE
                         : FALSE;
                 cleanSession(session, channel);
                 return isDir == TRUE;
             } else if (getOsType() == WOS) {
-                Object[] streams = execCommand("mkdir " + toMW(getPath()));
+                Object[] streams = execCommand("mkdir "
+                        + toMW(fixURI(location, null).getPath()));
                 isDir = (((InputStream) streams[ERR]).available() == 0) ? TRUE
                         : FALSE;
                 cleanSession(session, channel);
@@ -1786,7 +1761,7 @@ public class SshFileAdaptor extends FileCpi {
             logger.debug("SshFileAdaptor: started session with "
                     + location.resolveHost() + " using username: "
                     + sui.username + " on port: " + port + " for file: "
-                    + location.getPath());
+                    + fixURI(location, null).getPath());
         }
 
         osType = UNKNOWN;
@@ -1800,12 +1775,12 @@ public class SshFileAdaptor extends FileCpi {
      */
     public boolean setLastModified(long lastModified)
             throws GATInvocationException {
-        isLocalFile();
 
         try {
             if (getOsType() == XOS) {
                 Object[] streams = execCommand("touch -t "
-                        + toTouchDateFormat(lastModified) + " " + getPath());
+                        + toTouchDateFormat(lastModified) + " "
+                        + fixURI(location, null).getPath());
                 boolean result = (((InputStream) streams[ERR]).available() == 0);
                 cleanSession(session, channel);
                 return result;
@@ -1834,10 +1809,10 @@ public class SshFileAdaptor extends FileCpi {
      * @see org.gridlab.gat.io.File#setReadOnly()
      */
     public boolean setReadOnly() throws GATInvocationException {
-        isLocalFile();
         try {
             if (getOsType() == XOS) {
-                Object[] streams = execCommand("chmod a-w " + getPath());
+                Object[] streams = execCommand("chmod a-w "
+                        + fixURI(location, null).getPath());
                 boolean result = (((InputStream) streams[ERR]).available() == 0);
                 cleanSession(session, channel);
                 return result;
@@ -1863,13 +1838,14 @@ public class SshFileAdaptor extends FileCpi {
     private Object[] execCommand(String command) throws JSchException,
             IOException, GATInvocationException {
         startSession();
-        Object[] result =execSessionCommand(command); 
+        Object[] result = execSessionCommand(command);
         waitForEOF();
-        return  result;
+        return result;
     }
 
     private void startSession(URI location) throws JSchException {
-        session = jsch.getSession(sui.username, location.getHost(), port);
+        String host = location.resolveHost();
+        session = jsch.getSession(sui.username, host, port);
         session.setUserInfo(sui);
         session.connect();
     }

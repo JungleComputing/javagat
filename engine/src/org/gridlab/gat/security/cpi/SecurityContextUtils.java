@@ -208,8 +208,9 @@ public class SecurityContextUtils {
         }
 
         user = System.getProperty("user.name");
-        if (user != null)
+        if (user != null) {
             return user;
+        }
 
         throw new CouldNotInitializeCredentialException(
                 "Could not get user name");
