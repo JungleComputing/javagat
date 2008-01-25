@@ -36,6 +36,8 @@ public class SubmitJobGridSAM {
         // System.getProperties().setProperty("user.name", "mwi300");
         
         prefs.put("ResourceBroker.adaptor.name", "GridSAM");
+
+        prefs.put("ResourceBroker.sandbox.host", "localhost:4567");
 //        prefs.put("File.adaptor.name", "commandlinessh");
 //        prefs.put("File.adaptor.name", "ssh");
         SoftwareDescription sd = new SoftwareDescription();
