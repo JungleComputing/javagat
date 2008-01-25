@@ -3,7 +3,6 @@
  */
 package org.gridlab.gat.resources.cpi.globus;
 
-import java.net.URISyntaxException;
 import java.util.Map;
 import java.util.Set;
 
@@ -59,16 +58,6 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
         super(gatContext, preferences, brokerURI);
         if (brokerURI == null) {
             throw new GATObjectCreationException("brokerURI is null");
-        }
-
-        if (brokerURI.getPath() == null) {
-            try {
-                this.brokerURI = new URI(brokerURI.getAuthority()
-                        + "/jobmanager-sge");
-            } catch (URISyntaxException e) {
-                throw new GATObjectCreationException(
-                        "cannot create default brokerURI", e);
-            }
         }
     }
 
@@ -370,7 +359,10 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
             throws GATInvocationException {
         // long start = System.currentTimeMillis();
         String host = getHostname();
-        String contact = brokerURI.getAuthority() + brokerURI.getPath();
+        String contact = brokerURI.getAuthority();
+        if (brokerURI.getPath() != null) {
+            contact += "/" + brokerURI.getPath();
+        }
 
         URI hostUri;
         try {
@@ -437,7 +429,10 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
         // choose the first of the set descriptions to retrieve the hostname
         // etc.
         String host = getHostname();
-        String contact = brokerURI.getAuthority() + "/" + brokerURI.getPath();
+        String contact = brokerURI.getAuthority();
+        if (brokerURI.getPath() != null) {
+            contact += "/" + brokerURI.getPath();
+        }
         GSSCredential credential = getCredential(host);
 
         Sandbox sandbox = new Sandbox(gatContext, preferences, description,
