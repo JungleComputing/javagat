@@ -48,7 +48,7 @@ public class SubmitJobGridSAM {
         Map<String, Object> attributes = new HashMap<String, Object>();
         attributes.put("maxCPUTime", "60");
         attributes.put("maxMemory", "90");
-        attributes.put("sandboxRoot", "/tmp");
+        attributes.put("sandbox.root", "/tmp");
         
         Map<String, Object> env = new HashMap<String, Object>();
         env.put("ENV1", "env1val");
@@ -56,6 +56,7 @@ public class SubmitJobGridSAM {
         env.put("ENV2", 12);
         attributes.put("environment", env);
         sd.setAttributes(attributes);
+        sd.setStdout(GAT.createFile(context, prefs, new URI("printenv.out")));
 
         ResourceDescription rd = new HardwareResourceDescription();
         rd.addResourceAttribute("machine.node", "fs0.das3.cs.vu.nl");
