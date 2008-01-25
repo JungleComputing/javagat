@@ -437,7 +437,7 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
         // choose the first of the set descriptions to retrieve the hostname
         // etc.
         String host = getHostname();
-        String contact = brokerURI.getAuthority() + brokerURI.getPath();
+        String contact = brokerURI.getAuthority() + "/" + brokerURI.getPath();
         GSSCredential credential = getCredential(host);
 
         Sandbox sandbox = new Sandbox(gatContext, preferences, description,
