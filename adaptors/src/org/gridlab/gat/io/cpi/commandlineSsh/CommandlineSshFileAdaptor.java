@@ -114,11 +114,11 @@ public class CommandlineSshFileAdaptor extends FileCpi {
     }
 
     public boolean isDirectory() throws GATInvocationException {
-        return runSshCommand("find " + getPathFixed() + " -type d", true, true);
+        return runSshCommand("test -d " + getPathFixed(), true);
     }
 
     public boolean exists() throws GATInvocationException {
-        return runSshCommand("find " + getPathFixed(), true, true);
+        return runSshCommand("test -e " + getPathFixed(), true);
     }
 
     private String getSshCommand() throws GATInvocationException {
