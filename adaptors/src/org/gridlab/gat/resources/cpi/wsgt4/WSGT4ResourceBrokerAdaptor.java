@@ -1,5 +1,7 @@
 package org.gridlab.gat.resources.cpi.wsgt4;
 
+import java.net.MalformedURLException;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
@@ -12,6 +14,7 @@ import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.GATObjectCreationException;
 import org.gridlab.gat.Preferences;
 import org.gridlab.gat.URI;
+import org.gridlab.gat.io.File;
 import org.gridlab.gat.monitoring.Metric;
 import org.gridlab.gat.monitoring.MetricListener;
 import org.gridlab.gat.resources.Job;
@@ -71,7 +74,7 @@ public class WSGT4ResourceBrokerAdaptor extends ResourceBrokerCpi {
                 + "/client-config.wsdd");
     }
 
-    protected String createRSL(JobDescription description, Sandbox sandbox)
+    protected String createRSL(JobDescription description, Sandbox sandbox, boolean useGramSandbox)
             throws GATInvocationException {
         String rsl = new String("<job>");
         SoftwareDescription sd = description.getSoftwareDescription();
@@ -113,28 +116,88 @@ public class WSGT4ResourceBrokerAdaptor extends ResourceBrokerCpi {
         rsl += getCPUCount(description);
         rsl += "</count>";
         rsl += "<directory>";
-        rsl += sandbox.getSandbox();
+        if (sandbox.getSandbox().startsWith(File.separator)) {
+        		rsl += sandbox.getSandbox();
+        } else {
+        		rsl += "${GLOBUS_USER_HOME}/";
+        }
         rsl += "</directory>";
 
-        org.gridlab.gat.io.File stdout = sd.getStdout();
+        File stdout = sd.getStdout();
         if (stdout != null) {
             rsl += "<stdout>";
             rsl += sandbox.getRelativeStdout().getPath();
             rsl += "</stdout>";
         }
 
-        org.gridlab.gat.io.File stderr = sd.getStderr();
+        File stderr = sd.getStderr();
         if (stderr != null) {
             rsl += "<stderr>";
             rsl += sandbox.getRelativeStderr().getPath();
             rsl += "</stderr>";
         }
 
-        org.gridlab.gat.io.File stdin = sd.getStdin();
+        File stdin = sd.getStdin();
         if (stdin != null) {
             rsl += "<stdin>";
             rsl += sandbox.getRelativeStdin().getPath();
             rsl += "</stdin>";
+        }
+        
+        if (useGramSandbox) {
+	        Map<File, File> preStaged = sd.getPreStaged();
+	        if (preStaged != null) {
+	            Set<File> keys = preStaged.keySet();
+	            Iterator<File> i = keys.iterator();
+	            rsl += "<fileStageIn>";
+	            while (i.hasNext()) {
+	                File srcFile = (File) i.next();
+	                File destFile = (File) preStaged.get(srcFile);
+	                if (destFile == null) {
+	                		logger.debug("ignoring prestaged file, no destination set!");
+	                		continue;
+	                }
+	                rsl += "<transfer>";
+	                try {
+						rsl += "<sourceUrl>" + srcFile.toURL() + "</sourceUrl>";
+						String destUrlString = null;
+						if (destFile.isAbsolute()) {
+							destUrlString = destFile.toURL().toString();
+						} else {
+							destUrlString = destFile.toURL().toString().replace(destFile.getPath(), "${GLOBUS_USER_HOME}/" + destFile.getPath());
+						}
+						rsl += "<destinationUrl>" + destUrlString + "</destinationUrl>";
+					} catch (MalformedURLException e) {
+						throw new GATInvocationException("WSGT4ResourceBrokerAdaptor", e);
+					}
+					rsl += "</transfer>";
+	            }
+	            rsl += "</fileStageIn>";
+	        }
+	
+	        Map<File, File> postStaged = sd.getPostStaged();
+	        if (preStaged != null) {
+	            Set<File> keys = postStaged.keySet();
+	            Iterator<File> i = keys.iterator();
+	            rsl += "<fileStageOut>";
+	            while (i.hasNext()) {
+	                File srcFile = (File) i.next();
+	                File destFile = (File) postStaged.get(srcFile);
+	                if (destFile == null) {
+	                		logger.debug("ignoring poststaged file, no destination set!");
+	                		continue;
+	                }
+	                rsl += "<transfer>";
+	                try {
+						rsl += "<sourceUrl>" + srcFile.toURL() + "</sourceUrl>";
+						rsl += "<destinationUrl>" + destFile.toURL() + "</destinationUrl>"; //TODO: Add ${GLOBUS_USER_HOME}
+					} catch (MalformedURLException e) {
+						throw new GATInvocationException("WSGT4ResourceBrokerAdaptor", e);
+					}
+					rsl += "</transfer>";
+	            }
+	            rsl += "</fileStageOut>";
+	        }
         }
 
         rsl += "</job>";
@@ -176,8 +239,13 @@ public class WSGT4ResourceBrokerAdaptor extends ResourceBrokerCpi {
             throw new GATInvocationException(
                     "WSGT4ResourceBroker: the job description does not contain a software description");
         }
-        Sandbox sandbox = new Sandbox(gatContext, preferences, description,
-                host, null, true, true, true, true);
+        String s = (String) preferences.get("wsgt4.sandbox.gram");
+        boolean useGramSandbox = (s != null && s.equalsIgnoreCase("true"));
+        Sandbox sandbox = null;
+        if (!useGramSandbox) {
+	        sandbox = new Sandbox(gatContext, preferences, description,
+	                host, null, true, true, true, true);
+        } 
         WSGT4Job job = new WSGT4Job(gatContext, preferences, description,
                 sandbox);
         if (listener != null && metricDefinitionName != null) {
@@ -185,11 +253,13 @@ public class WSGT4ResourceBrokerAdaptor extends ResourceBrokerCpi {
                     .createMetric(null);
             job.addMetricListener(listener, metric);
         }
-        job.setState(Job.PRE_STAGING);
-        sandbox.prestage();
+        if (!useGramSandbox) {
+	        job.setState(Job.PRE_STAGING);
+	        sandbox.prestage();
+        }
         job.setContactString(getHostname());
 
-        String rsl = createRSL(description, sandbox);
+        String rsl = createRSL(description, sandbox, useGramSandbox);
         JobDescriptionType gjobDescription = null;
         try {
             gjobDescription = RSLHelper.readRSL(rsl);

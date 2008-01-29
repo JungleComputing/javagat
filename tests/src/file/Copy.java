@@ -8,6 +8,8 @@ import org.gridlab.gat.io.File;
 class Copy {
     public static void main(String[] args) {
         GATContext context = new GATContext();
+        context.addPreference("file.create", "true");
+        context.addPreference("File.adaptor.name", "gridftp");
         System.err.println("------------FILE COPY TEST------------");
 
         URI src = null;
@@ -16,9 +18,9 @@ class Copy {
 
         try {
             src = new URI(
-                "/home/rob/contrib/eclipse/workspace/JavaGATEngine/test/file/test_input.dat");
+                "/afs/mpa/home/roelof/test");
             dest = new URI(
-                "/home/rob/contrib/eclipse/workspace/JavaGATEngine/test/file/test_input_copy.dat");
+                "any://fs0.das3.cs.vu.nl/test");
             file = GAT.createFile(context, src);
         } catch (Exception e) {
             System.err.println("File creation failed: " + e);
