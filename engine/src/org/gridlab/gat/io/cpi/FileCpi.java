@@ -287,6 +287,10 @@ public abstract class FileCpi implements FileInterface {
     public final boolean isAbsolute() {
         return new java.io.File(location.getPath()).isAbsolute();
     }
+    
+    public static final boolean isAbsolute(URI location) {
+        return new java.io.File(location.getPath()).isAbsolute();
+    }
 
     public boolean isDirectory() throws GATInvocationException {
         if (location.getPath().endsWith(File.separator)) {
@@ -499,7 +503,7 @@ public abstract class FileCpi implements FileInterface {
                 }
             }
         }
-        if (in.refersToLocalHost() && !in.isAbsolute()) {
+        if (in.refersToLocalHost() && !isAbsolute(in)) {
             uriString = uriString.replace(in.getPath(), System.getProperty("user.dir") + File.separator + in.getPath());
         }
         URI fixedURI = null;

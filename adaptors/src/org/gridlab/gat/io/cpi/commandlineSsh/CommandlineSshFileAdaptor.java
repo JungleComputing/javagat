@@ -103,7 +103,7 @@ public class CommandlineSshFileAdaptor extends FileCpi {
     // relative, any ssh command would be relative to the ssh entry point
     // ($HOME), but we want it to be relative to the cwd of the user. --roelof
     private String getPathFixed() {
-        if (location.isAbsolute() || !location.refersToLocalHost()) {
+        if (isAbsolute() || !location.refersToLocalHost()) {
             return getPath();
         }
         return System.getProperty("user.dir") + File.separator + getPath();

@@ -52,12 +52,12 @@ public class GridFTPFileAdaptor extends GlobusFileAdaptor {
          * try to get the credential to see whether we need to instantiate this
          * adaptor alltogether
          */
-        try {
-            GlobusSecurityUtils.getGlobusCredential(gatContext, preferences,
-                    "gridftp", location, DEFAULT_GRIDFTP_PORT);
-        } catch (Exception e) {
-            throw new GATObjectCreationException("gridftp", e);
-        }
+//        try {
+//            GlobusSecurityUtils.getGlobusCredential(gatContext, preferences,
+//                    "gridftp", location, DEFAULT_GRIDFTP_PORT);
+//        } catch (Exception e) {
+//            throw new GATObjectCreationException("gridftp", e);
+//        }
     }
 
     protected URI fixURI(URI in) {
