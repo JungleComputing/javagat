@@ -119,7 +119,7 @@ public class WSGT4ResourceBrokerAdaptor extends ResourceBrokerCpi {
         if (sandbox.getSandbox().startsWith(File.separator)) {
         		rsl += sandbox.getSandbox();
         } else {
-        		rsl += "${GLOBUS_USER_HOME}/";
+        		rsl += "${GLOBUS_USER_HOME}/" + sandbox.getSandbox();
         }
         rsl += "</directory>";
 
