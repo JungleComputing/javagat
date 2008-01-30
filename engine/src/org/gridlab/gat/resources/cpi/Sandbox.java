@@ -66,6 +66,10 @@ public class Sandbox {
         this.preferences = preferences;
         this.host = host;
 
+        createSandboxDir = true; // default value
+        deleteSandboxDir = true; // default value
+        this.sandboxRoot = sandboxRoot; // default value;
+        
         // The user preference sandboxRoot overwrites the one specified by the
         // adaptor.
         String sandboxRootPref = null;
@@ -80,35 +84,30 @@ public class Sandbox {
                 sandboxDeletePref = (String) attr.get("sandbox.delete");
             }
         }
+        
         if (sandboxRootPref != null) {
             this.sandboxRoot = sandboxRootPref;
             if (logger.isDebugEnabled()) {
                 logger.debug("set sandboxRoot to " + sandboxRootPref);
             }
-        } else {
-            this.sandboxRoot = sandboxRoot;
-        }
+        } 
 
         if (sandboxDisabledPref != null) {
             if (sandboxDisabledPref.equalsIgnoreCase("true")) {
                 this.createSandboxDir = false;
-                this.deleteSandboxDir = true;
-            } else {
-                this.createSandboxDir = createSandboxDir;
-            }
-        } else {
-            this.createSandboxDir = createSandboxDir;
-        }
+                // change the default, if no sandbox is created, no sandbox will be deleted, unless you overwrite it using the 'sandbox.delete' preference.
+                this.deleteSandboxDir = false;
+            } 
+        } 
         
         if (sandboxDeletePref != null) {
-            if (sandboxDeletePref.equalsIgnoreCase("true")) {
-                this.deleteSandboxDir = true;
-            } else {
+            if (sandboxDeletePref.equalsIgnoreCase("false")) {
                 this.deleteSandboxDir = false;
+            } else if (sandboxDeletePref.equalsIgnoreCase("true")) {
+            		this.deleteSandboxDir = true;
             }
-        } else {
-            this.deleteSandboxDir = false;
-        }
+        } 
+
 
         initSandbox();
 
