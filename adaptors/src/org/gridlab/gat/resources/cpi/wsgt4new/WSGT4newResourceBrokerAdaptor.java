@@ -289,6 +289,7 @@ public class WSGT4newResourceBrokerAdaptor extends ResourceBrokerCpi {
 		try {
 			epr = getFactoryEPR(host, ManagedJobFactoryConstants.FACTORY_TYPE.FORK);
 			System.out.println("Endpoint reference type created to: '" + host + "', factory type: '" + ManagedJobFactoryConstants.FACTORY_TYPE.FORK + "'");
+			System.out.println("EPR: " + epr);
 		} catch (Exception e) {
 			throw new GATInvocationException("WSGT4newResourceBrokerAdaptor", e);
 		}
