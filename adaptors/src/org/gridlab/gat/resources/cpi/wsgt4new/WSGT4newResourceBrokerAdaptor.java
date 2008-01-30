@@ -288,15 +288,20 @@ public class WSGT4newResourceBrokerAdaptor extends ResourceBrokerCpi {
 		EndpointReferenceType epr;
 		try {
 			epr = getFactoryEPR(host, ManagedJobFactoryConstants.FACTORY_TYPE.FORK);
+			System.out.println("Endpoint reference type created to: '" + host + "', factory type: '" + ManagedJobFactoryConstants.FACTORY_TYPE.FORK + "'");
 		} catch (Exception e) {
 			throw new GATInvocationException("WSGT4newResourceBrokerAdaptor", e);
 		}
 		
 		UUIDGen uuidgen 	= UUIDGenFactory.getUUIDGen();
 		String submissionID = "uuid:" + uuidgen.nextUUID();
+		System.out.println("UUID created: " + submissionID);
 
 		try {
+			System.out.println("before job.submit");
 			job.submit(epr, false, false, submissionID);
+			System.out.println("after job.submit");
+			wsgt4job.setState(Job.RUNNING);
 		} catch (Exception e) {
 			throw new GATInvocationException("WSGT4newResourceBrokerAdaptor", e);
 		} 
