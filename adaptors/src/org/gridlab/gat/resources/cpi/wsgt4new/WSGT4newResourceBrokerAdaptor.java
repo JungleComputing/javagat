@@ -8,7 +8,13 @@ import java.util.Set;
 
 import org.apache.axis.components.uuid.UUIDGen;
 import org.apache.axis.components.uuid.UUIDGenFactory;
+import org.apache.axis.message.addressing.AttributedQName;
+import org.apache.axis.message.addressing.AttributedURI;
 import org.apache.axis.message.addressing.EndpointReferenceType;
+import org.apache.axis.message.addressing.ReferenceParametersType;
+import org.apache.axis.message.addressing.ReferencePropertiesType;
+import org.apache.axis.message.addressing.ServiceNameType;
+import org.apache.axis.types.URI.MalformedURIException;
 import org.apache.log4j.Logger;
 import org.globus.exec.client.GramJob;
 import org.globus.exec.utils.ManagedJobFactoryConstants;
@@ -289,7 +295,6 @@ public class WSGT4newResourceBrokerAdaptor extends ResourceBrokerCpi {
 		try {
 			epr = getFactoryEPR(host, ManagedJobFactoryConstants.FACTORY_TYPE.FORK);
 			System.out.println("Endpoint reference type created to: '" + host + "', factory type: '" + ManagedJobFactoryConstants.FACTORY_TYPE.FORK + "'");
-			System.out.println("EPR: " + epr);
 		} catch (Exception e) {
 			throw new GATInvocationException("WSGT4newResourceBrokerAdaptor", e);
 		}
@@ -298,6 +303,18 @@ public class WSGT4newResourceBrokerAdaptor extends ResourceBrokerCpi {
 		String submissionID = "uuid:" + uuidgen.nextUUID();
 		System.out.println("UUID created: " + submissionID);
 
+		epr.setServiceName(new ServiceNameType("arg1", "arg2"));
+		try {
+			epr.setAddress(new AttributedURI(host));
+		} catch (MalformedURIException e) {
+			throw new GATInvocationException("WSGT4newResourceBrokerAdaptor", e);
+		}
+		epr.setPortType(new AttributedQName("Fork", "dummy"));
+		epr.setProperties(new ReferencePropertiesType("propertystring"));
+		epr.setParameters(new ReferenceParametersType("parameterstring"));
+		
+		System.out.println("EPR: " + epr);
+		
 		try {
 			System.out.println("before job.submit");
 			job.submit(epr, false, false, submissionID);
