@@ -257,7 +257,7 @@ public class WSGT4ResourceBrokerAdaptor extends ResourceBrokerCpi {
 	        job.setState(Job.PRE_STAGING);
 	        sandbox.prestage();
         }
-        job.setContactString(getHostname());
+        
 
         String rsl = createRSL(description, sandbox, useGramSandbox);
         JobDescriptionType gjobDescription = null;
@@ -267,6 +267,7 @@ public class WSGT4ResourceBrokerAdaptor extends ResourceBrokerCpi {
         } catch (RSLParseException e) {
             throw new GATInvocationException("WSGT4ResourceBroker: " + e);
         }
+        job.setContactString(getHostname());
         job.setCredential(getCred(description));
         return job;
     }
