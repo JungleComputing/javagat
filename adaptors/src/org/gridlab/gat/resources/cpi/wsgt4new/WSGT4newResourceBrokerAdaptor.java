@@ -303,22 +303,15 @@ public class WSGT4newResourceBrokerAdaptor extends ResourceBrokerCpi {
 		String submissionID = "uuid:" + uuidgen.nextUUID();
 		System.out.println("UUID created: " + submissionID);
 
-		epr.setServiceName(new ServiceNameType("arg1", "arg2"));
-		try {
-			epr.setAddress(new AttributedURI(host));
-		} catch (MalformedURIException e) {
-			throw new GATInvocationException("WSGT4newResourceBrokerAdaptor", e);
-		}
-		epr.setPortType(new AttributedQName("Fork", "dummy"));
-		epr.setProperties(new ReferencePropertiesType("propertystring"));
-		epr.setParameters(new ReferenceParametersType("parameterstring"));
-		
 		System.out.println("EPR: " + epr);
 		
 		try {
 			System.out.println("before job.submit");
 			job.submit(epr, false, false, submissionID);
 			System.out.println("after job.submit");
+			System.out.println(job.getFault());
+			System.out.println(job.getError());
+			System.out.println(GramJob.getJobs(epr));
 			wsgt4job.setState(Job.RUNNING);
 		} catch (Exception e) {
 			throw new GATInvocationException("WSGT4newResourceBrokerAdaptor", e);
