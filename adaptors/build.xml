@@ -267,6 +267,13 @@
 				<attribute name="ResourceBrokerCpi-class" value="org.gridlab.gat.resources.cpi.wsgt4.WSGT4ResourceBrokerAdaptor" />
 			</manifest>
 		</jar>
+		
+		<jar jarfile="${lib}/WSGT4newResourceBroker.jar" basedir="${tmp}" includes="**/wsgt4new/WSGT4new*.class">
+			<manifest>
+				<attribute name="ResourceBrokerCpi-class" value="org.gridlab.gat.resources.cpi.wsgt4new.WSGT4newResourceBrokerAdaptor" />
+			</manifest>
+		</jar>
+
 
 		<jar jarfile="${lib}/MercuryMonitorableAdaptor.jar" basedir="${tmp}" includes="**/MercuryMonitorableAdaptor.class,**/LocalMetricListener.class,**/MonitorizedMetric.class,**/MeasurementTrigger.class,**/Measuree.class,hu/sztaki/lpds/monitor/*.class,hu/sztaki/lpds/monitor/producer/*.class">
 			<manifest>
