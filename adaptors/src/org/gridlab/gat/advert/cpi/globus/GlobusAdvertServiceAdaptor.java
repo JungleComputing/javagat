@@ -43,8 +43,8 @@ public class GlobusAdvertServiceAdaptor extends AdvertServiceCpi {
         try {
             epr.setAddress(new Address(serviceURI));
         } catch (Exception e) {
-            System.err.println("ERROR: Malformed URI '" + serviceURI + "'");
-            e.printStackTrace();
+            // System.err.println("ERROR: Malformed URI '" + serviceURI + "'");
+            // e.printStackTrace();
             throw new GATObjectCreationException("ERROR: Malformed URI '"
                     + serviceURI + "'", e);
         }
@@ -55,8 +55,8 @@ public class GlobusAdvertServiceAdaptor extends AdvertServiceCpi {
         try {
             this.service = locator.getIndexServiceProxyServicePortTypePort(epr);
         } catch (ServiceException e) {
-            System.err.println("ERROR: Unable to obtain portType");
-            e.printStackTrace();
+            // System.err.println("ERROR: Unable to obtain portType");
+            // e.printStackTrace();
             throw new GATObjectCreationException(
                     "ERROR: Unable to obtain portType", e);
         }
