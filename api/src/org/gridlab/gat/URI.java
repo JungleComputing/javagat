@@ -122,10 +122,10 @@ public class URI implements Serializable, Comparable<Object> {
     /* this is where the magic happens to fix SUNs bug.. */
     public String getPath() {
         String path = u.getPath();
-        if (path == null) {
+        if (path == null || path.equals("")) {
             return null;
         }
-
+        
         path = new URIEncoder().decodeUri(u.getPath());
 
         if ((u.getScheme() == null) && (u.getHost() == null)) {
