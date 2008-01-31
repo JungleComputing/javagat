@@ -140,16 +140,19 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
         if (pre != null) {
             for (int i = 0; i < pre.size(); i++) {
                 PreStagedFile f = pre.getFile(i);
+                
+                
 
                 if (!f.getResolvedSrc().toGATURI().refersToLocalHost()) {
-                    throw new GATInvocationException(
-                            "Currently, we cannot stage in remote files with gram");
-                }
+                		rsl += " (file_stage_in = (gsiftp://" + f.getResolvedSrc().toGATURI().getHost() + "/" + f.getResolvedSrc().getPath() 
+	                		+ " "
+	                		+ f.getResolvedDest().getPath() + "))";
+                } else {
 
-                String s = "(file_stage_in = (file:///"
-                        + f.getResolvedSrc().getPath() + " "
-                        + f.getResolvedDest().getPath() + "))";
-                rsl += s;
+	                rsl += " (file_stage_in = (file:///"
+	                        + f.getResolvedSrc().getPath() + " "
+	                        + f.getResolvedDest().getPath() + "))";
+                }
             }
         }
 
@@ -157,15 +160,18 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
             for (int i = 0; i < post.size(); i++) {
                 PostStagedFile f = post.getFile(i);
 
-                if (!f.getResolvedDest().toGATURI().refersToLocalHost()) {
-                    throw new GATInvocationException(
-                            "Currently, we cannot stage out remote files with gram");
-                }
-
-                String s = "(file_stage_out = (" + f.getResolvedSrc().getPath()
+                if (!f.getResolvedSrc().toGATURI().refersToLocalHost()) {
+	            		rsl += " (file_stage_out = (" + f.getResolvedDest().getPath()
+		            		+ " "
+		            		+ "gsiftp://" + f.getResolvedSrc().toGATURI().getHost() 
+		            		+ "/"
+		            		+ f.getResolvedSrc().getPath()
+		            		+ "))";
+	            } else {
+	                rsl += " (file_stage_out = (" + f.getResolvedDest().getPath()
                         + " gsiftp://" + GATEngine.getLocalHostName() + "/"
-                        + f.getResolvedDest().getPath() + "))";
-                rsl += s;
+                        + f.getResolvedSrc().getPath() + "))";
+	            }
             }
         }
 
@@ -378,6 +384,17 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
             job.addMetricListener(listener, metric);
         }
         job.setState(Job.PRE_STAGING);
+        PreStagedFileSet pre = new PreStagedFileSet(gatContext, preferences,
+                description, host, null, false);
+
+        PostStagedFileSet post = new PostStagedFileSet(gatContext, preferences,
+                description, host, null, false, false);
+
+        String rsl = createRSL(description, host, null, pre, post);
+        if (logger.isInfoEnabled()) {
+        		logger.info("RSL: " + rsl);
+        }
+        
         GSSCredential credential = null;
         try {
             credential = GlobusSecurityUtils.getGlobusCredential(gatContext,
@@ -389,13 +406,6 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
             throw new GATInvocationException("globus", e);
         }
 
-        PreStagedFileSet pre = new PreStagedFileSet(gatContext, preferences,
-                description, host, null, false);
-
-        PostStagedFileSet post = new PostStagedFileSet(gatContext, preferences,
-                description, host, null, false, false);
-
-        String rsl = createRSL(description, host, null, pre, post);
         GramJob j = new GramJob(credential, rsl);
         job.setGramJob(j);
         j.addListener(job);
