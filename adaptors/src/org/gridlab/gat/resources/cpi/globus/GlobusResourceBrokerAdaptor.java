@@ -78,6 +78,7 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
         submitter = null;
         return job;
     }
+    
 
     protected String createRSL(JobDescription description, String host,
             Sandbox sandbox, PreStagedFileSet pre, PostStagedFileSet post)

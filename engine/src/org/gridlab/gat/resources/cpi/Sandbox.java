@@ -66,10 +66,11 @@ public class Sandbox {
         this.preferences = preferences;
         this.host = host;
 
-        createSandboxDir = true; // default value
-        deleteSandboxDir = true; // default value
-        this.sandboxRoot = sandboxRoot; // default value;
-        
+        this.createSandboxDir = createSandboxDir; // default value taken from
+                                                    // adaptor
+        this.deleteSandboxDir = true; // default value
+        this.sandboxRoot = sandboxRoot; // default value taken from adaptor
+
         // The user preference sandboxRoot overwrites the one specified by the
         // adaptor.
         String sandboxRootPref = null;
@@ -84,30 +85,31 @@ public class Sandbox {
                 sandboxDeletePref = (String) attr.get("sandbox.delete");
             }
         }
-        
+
         if (sandboxRootPref != null) {
             this.sandboxRoot = sandboxRootPref;
             if (logger.isDebugEnabled()) {
                 logger.debug("set sandboxRoot to " + sandboxRootPref);
             }
-        } 
+        }
 
         if (sandboxDisabledPref != null) {
             if (sandboxDisabledPref.equalsIgnoreCase("true")) {
                 this.createSandboxDir = false;
-                // change the default, if no sandbox is created, no sandbox will be deleted, unless you overwrite it using the 'sandbox.delete' preference.
+                // change the default, if no sandbox is created, no sandbox will
+                // be deleted, unless you overwrite it using the
+                // 'sandbox.delete' preference.
                 this.deleteSandboxDir = false;
-            } 
-        } 
-        
+            }
+        }
+
         if (sandboxDeletePref != null) {
             if (sandboxDeletePref.equalsIgnoreCase("false")) {
                 this.deleteSandboxDir = false;
             } else if (sandboxDeletePref.equalsIgnoreCase("true")) {
-            		this.deleteSandboxDir = true;
+                this.deleteSandboxDir = true;
             }
-        } 
-
+        }
 
         initSandbox();
 
@@ -126,7 +128,7 @@ public class Sandbox {
         toDelete = new PostStagedFileSet(gatContext, preferences, sd
                 .getDeletedFiles(), host, sandbox);
 
-        //createSandbox();
+        // createSandbox();
     }
 
     private void createSandboxDir(String host) throws GATInvocationException {
@@ -327,7 +329,7 @@ public class Sandbox {
             throw deleteException;
         }
     }
-    
+
     public void prestage() throws GATInvocationException {
         doPrestage();
     }
@@ -371,7 +373,8 @@ public class Sandbox {
 
         if (deleteSandboxDir) {
             if (logger.isInfoEnabled()) {
-                logger.info("removing sandbox dir: " + "any://" + host + "/" + sandbox);
+                logger.info("removing sandbox dir: " + "any://" + host + "/"
+                        + sandbox);
             }
             try {
                 removeSandboxDir();
@@ -385,7 +388,8 @@ public class Sandbox {
             }
         } else {
             if (logger.isInfoEnabled()) {
-                logger.info("sandbox persists at: " + "any://" + host + "/" + sandbox);
+                logger.info("sandbox persists at: " + "any://" + host + "/"
+                        + sandbox);
             }
         }
 
