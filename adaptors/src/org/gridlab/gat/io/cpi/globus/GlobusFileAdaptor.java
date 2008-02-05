@@ -270,7 +270,8 @@ public abstract class GlobusFileAdaptor extends FileCpi {
                 }
             }
             client = createClient(dest);
-            client.getCurrentDir(); // to ensure a command has been executed
+            // removed line below, seems to make the copy fail...
+            //client.getCurrentDir(); // to ensure a command has been executed
             setActiveOrPassive(client, preferences);
             client.put(sourceFile, dest.getPath(), false); // overwrite
         } catch (Exception e) {
