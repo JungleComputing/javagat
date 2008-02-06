@@ -1,5 +1,9 @@
 package org.gridlab.gat.resources.cpi.globus;
 
+import java.io.BufferedReader;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
@@ -60,30 +64,36 @@ public class GlobusJob extends JobCpi implements GramJobListener,
     private long runTime;
 
     private long startTime;
-    
+
+    private boolean exitStatusEnabled = false;
+
+    private String exitStatusFile;
+
+    private int exitStatusFromFile;
+
     protected void setGramJob(GramJob j) {
         this.j = j;
         jobID = j.getIDAsString();
         j.addListener(this);
     }
-    
+
     protected void startPoller() {
         poller = new JobPoller(this);
         poller.start();
     }
-    
+
     protected synchronized void setState(int state) {
         this.state = state;
-        MetricValue v = new MetricValue(this, getStateString(state), statusMetric, System
-                .currentTimeMillis());
+        MetricValue v = new MetricValue(this, getStateString(state),
+                statusMetric, System.currentTimeMillis());
         GATEngine.fireMetric(this, v);
     }
-    
-    protected GlobusJob(GATContext gatContext, Preferences preferences, JobDescription jobDescription, Sandbox sandbox) {
+
+    protected GlobusJob(GATContext gatContext, Preferences preferences,
+            JobDescription jobDescription, Sandbox sandbox) {
         super(gatContext, preferences, jobDescription, sandbox);
         state = SCHEDULED;
         jobsAlive++;
-        
 
         // Tell the engine that we provide job.status events
         HashMap<String, Object> returnDef = new HashMap<String, Object>();
@@ -91,7 +101,7 @@ public class GlobusJob extends JobCpi implements GramJobListener,
         statusMetricDefinition = new MetricDefinition("job.status",
                 MetricDefinition.DISCRETE, "String", null, null, returnDef);
         GATEngine.registerMetric(this, "getJobStatus", statusMetricDefinition);
-        statusMetric = statusMetricDefinition.createMetric(null);        
+        statusMetric = statusMetricDefinition.createMetric(null);
     }
 
     /**
@@ -165,9 +175,15 @@ public class GlobusJob extends JobCpi implements GramJobListener,
      * @see org.gridlab.gat.resources.Job#getExitStatus()
      */
     public synchronized int getExitStatus() throws GATInvocationException {
-        if (state != STOPPED)
-            throw new GATInvocationException("not in RUNNING state");
-        return 0; // We have to assume that the job ran correctly. Globus does
+        if (!(state == STOPPED || state == SUBMISSION_ERROR)) {
+            throw new GATInvocationException("not in STOPPED state");
+        }
+        if (exitStatusEnabled) {
+            return exitStatusFromFile;
+        } else {
+            return 0;
+        }
+        // We have to assume that the job ran correctly. Globus does
         // not return the exit code.
     }
 
@@ -329,6 +345,10 @@ public class GlobusJob extends JobCpi implements GramJobListener,
                 logger.info("globus job stop: post stage finished");
             }
 
+            if (exitStatusEnabled) {
+                readExitStatus();
+            }
+
             state = STOPPED;
             stateString = getStateString(state);
         }
@@ -346,6 +366,27 @@ public class GlobusJob extends JobCpi implements GramJobListener,
         /*
          * if (x != null) { throw x; }
          */
+    }
+
+    private void readExitStatus() throws GATInvocationException {
+        java.io.File file = new java.io.File(exitStatusFile);
+        BufferedReader bufferedReader;
+        try {
+            bufferedReader = new BufferedReader(new FileReader(exitStatusFile));
+        } catch (FileNotFoundException e) {
+            throw new GATInvocationException("GlobusJob", e);
+        }
+        try {
+            exitStatusFromFile = Integer.parseInt(bufferedReader.readLine());
+        } catch (NumberFormatException e) {
+            throw new GATInvocationException("GlobusJob", e);
+        } catch (IOException e) {
+            throw new GATInvocationException("GlobusJob", e);
+        }
+        if (!file.delete()) {
+            logger.info("file '" + exitStatusFile
+                    + "' holding the exit value, could not be deleted.");
+        }
     }
 
     protected void stopHandlers() {
@@ -481,6 +522,14 @@ public class GlobusJob extends JobCpi implements GramJobListener,
                 if (logger.isInfoEnabled()) {
                     logger.info("globus job callback: post stage finished");
                 }
+                
+                if (exitStatusEnabled) {
+                    try {
+                        readExitStatus();
+                    } catch (GATInvocationException e) {
+                        logger.info("reading the exit status from file failed: ", e);
+                    }
+                }
 
                 setState();
                 stateString = getStateString(state);
@@ -573,5 +622,11 @@ public class GlobusJob extends JobCpi implements GramJobListener,
         }
 
         return new GlobusJob(context, preferences, sj);
+    }
+
+    public void setExitValueEnabled(boolean exitValueEnabled,
+            String exitValueFile) {
+        this.exitStatusEnabled = exitValueEnabled;
+        this.exitStatusFile = exitValueFile;
     }
 }

@@ -78,7 +78,6 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
         submitter = null;
         return job;
     }
-    
 
     protected String createRSL(JobDescription description, String host,
             Sandbox sandbox, PreStagedFileSet pre, PostStagedFileSet post)
@@ -141,18 +140,17 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
         if (pre != null) {
             for (int i = 0; i < pre.size(); i++) {
                 PreStagedFile f = pre.getFile(i);
-                
-                
 
                 if (!f.getResolvedSrc().toGATURI().refersToLocalHost()) {
-                		rsl += " (file_stage_in = (gsiftp://" + f.getResolvedSrc().toGATURI().getHost() + "/" + f.getResolvedSrc().getPath() 
-	                		+ " "
-	                		+ f.getResolvedDest().getPath() + "))";
+                    rsl += " (file_stage_in = (gsiftp://"
+                            + f.getResolvedSrc().toGATURI().getHost() + "/"
+                            + f.getResolvedSrc().getPath() + " "
+                            + f.getResolvedDest().getPath() + "))";
                 } else {
 
-	                rsl += " (file_stage_in = (file:///"
-	                        + f.getResolvedSrc().getPath() + " "
-	                        + f.getResolvedDest().getPath() + "))";
+                    rsl += " (file_stage_in = (file:///"
+                            + f.getResolvedSrc().getPath() + " "
+                            + f.getResolvedDest().getPath() + "))";
                 }
             }
         }
@@ -162,17 +160,16 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
                 PostStagedFile f = post.getFile(i);
 
                 if (!f.getResolvedSrc().toGATURI().refersToLocalHost()) {
-	            		rsl += " (file_stage_out = (" + f.getResolvedDest().getPath()
-		            		+ " "
-		            		+ "gsiftp://" + f.getResolvedSrc().toGATURI().getHost() 
-		            		+ "/"
-		            		+ f.getResolvedSrc().getPath()
-		            		+ "))";
-	            } else {
-	                rsl += " (file_stage_out = (" + f.getResolvedDest().getPath()
-                        + " gsiftp://" + GATEngine.getLocalHostName() + "/"
-                        + f.getResolvedSrc().getPath() + "))";
-	            }
+                    rsl += " (file_stage_out = ("
+                            + f.getResolvedDest().getPath() + " " + "gsiftp://"
+                            + f.getResolvedSrc().toGATURI().getHost() + "/"
+                            + f.getResolvedSrc().getPath() + "))";
+                } else {
+                    rsl += " (file_stage_out = ("
+                            + f.getResolvedDest().getPath() + " gsiftp://"
+                            + GATEngine.getLocalHostName() + "/"
+                            + f.getResolvedSrc().getPath() + "))";
+                }
             }
         }
 
@@ -312,7 +309,6 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
         if (s != null && s.equalsIgnoreCase("true")) {
             useGramSandbox = true;
         }
-
         if (useGramSandbox) {
             return submitJobGramSandbox(description, listener,
                     metricDefinitionName);
@@ -320,6 +316,20 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
             return submitJobGatSandbox(description, listener,
                     metricDefinitionName);
         }
+    }
+
+    private boolean isExitValueEnabled(JobDescription description) {
+        SoftwareDescription sd = description.getSoftwareDescription();
+        if (sd == null) {
+            return false;
+        }
+        if (sd.getAttributes().containsKey("globus.exitvalue.enable")) {
+            if (((String) sd.getAttributes().get("globus.exitvalue.enable"))
+                    .equalsIgnoreCase("true")) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private GSSCredential getCredential(String host)
@@ -379,6 +389,18 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
         }
         GlobusJob job = new GlobusJob(gatContext, preferences, description,
                 null);
+
+        // if special preference "globus.exitvalue.enable" is set to true,
+        // modify the softwaredescription
+        String random = "" + Math.random();
+        if (isExitValueEnabled(description)) {
+            description.getSoftwareDescription().toWrapper(gatContext,
+                    preferences, ".JavaGAT-wrapper-script-" + random,
+                    ".JavaGAT-exit-value-" + random);
+            job.setExitValueEnabled(isExitValueEnabled(description),
+                    ".JavaGAT-exit-value-" + random);
+        }
+
         if (listener != null && metricDefinitionName != null) {
             Metric metric = job.getMetricDefinitionByName(metricDefinitionName)
                     .createMetric(null);
@@ -393,9 +415,9 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
 
         String rsl = createRSL(description, host, null, pre, post);
         if (logger.isInfoEnabled()) {
-        		logger.info("RSL: " + rsl);
+            logger.info("RSL: " + rsl);
         }
-        
+
         GSSCredential credential = null;
         try {
             credential = GlobusSecurityUtils.getGlobusCredential(gatContext,
@@ -412,6 +434,10 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
         j.addListener(job);
         try {
             Gram.request(contact, j);
+            if (!new java.io.File(".JavaGAT-wrapper-script-" + random).delete()) {
+                logger.info("failed to delete the wrapper script: '"
+                        + ".JavaGAT-wrapper-script-" + random + "'.");
+            }
         } catch (GramException e) {
             throw new GATInvocationException("globus", e); // no idea what went
             // wrong
@@ -446,10 +472,22 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
         }
         GSSCredential credential = getCredential(host);
 
+        String random = "" + Math.random();
+        // if special preference "globus.exitvalue.enable" is set to true,
+        // modify the softwaredescription
+        if (isExitValueEnabled(description)) {
+            description.getSoftwareDescription().toWrapper(gatContext,
+                    preferences, ".JavaGAT-wrapper-script-" + random,
+                    ".JavaGAT-exit-value-" + random);
+        }
         Sandbox sandbox = new Sandbox(gatContext, preferences, description,
                 host, null, true, true, true, true);
         GlobusJob job = new GlobusJob(gatContext, preferences, description,
                 sandbox);
+        if (isExitValueEnabled(description)) {
+            job.setExitValueEnabled(isExitValueEnabled(description),
+                    ".JavaGAT-exit-value-" + random);
+        }
         if (listener != null && metricDefinitionName != null) {
             Metric metric = job.getMetricDefinitionByName(metricDefinitionName)
                     .createMetric(null);
@@ -458,6 +496,21 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
 
         job.setState(Job.PRE_STAGING);
         sandbox.prestage();
+        // after the prestaging we can safely delete the wrapper script if we
+        // did create it
+        if (isExitValueEnabled(description)) {
+            logger.info("deleting '" + ".JavaGAT-wrapper-script-" + random
+                    + "'");
+            logger.info("file exists: "
+                    + new java.io.File(".JavaGAT-wrapper-script-" + random)
+                            .exists());
+            if (!(new java.io.File(".JavaGAT-wrapper-script-" + random)
+                    .delete())) {
+                logger.info("failed to delete the wrapper script: '"
+                        + ".JavaGAT-wrapper-script-" + random + "'.");
+            }
+        }
+
         // If we staged in the executable, we have to do a chmod.
         // Globus loses the executable bit :-(
         if (sandbox.getResolvedExecutable() != null) {
