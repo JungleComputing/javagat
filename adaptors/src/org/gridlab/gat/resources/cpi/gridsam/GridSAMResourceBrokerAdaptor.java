@@ -32,7 +32,6 @@ import org.icenigrid.schema.jsdl.y2005.m11.JobDefinitionDocument;
 
 public class GridSAMResourceBrokerAdaptor extends ResourceBrokerCpi {
 
-    private static final String SANDBOX_ROOT = "sandbox.root";
     private Logger logger = Logger
             .getLogger(GridSAMResourceBrokerAdaptor.class);
     private ClientSideJobManager jobManager;
@@ -114,7 +113,7 @@ public class GridSAMResourceBrokerAdaptor extends ResourceBrokerCpi {
         }
 
         String gridSAMWebServiceURL = brokerURI.toString();
-        String sandboxRoot = getSandboxRoot(description);
+        String sandboxRoot = getSandboxRoot(preferences);
 
         if (logger.isInfoEnabled()) {
             logger.info("url='" + gridSAMWebServiceURL + "'; sandboxRoot="
@@ -146,6 +145,7 @@ public class GridSAMResourceBrokerAdaptor extends ResourceBrokerCpi {
                         .debug("host used for file staging is "
                                 + sandboxHostname);
             }
+
             sandbox = new Sandbox(gatContext, preferences, description,
                     sandboxHostname, sandboxRoot, true, false, false, false);
 
@@ -219,9 +219,9 @@ public class GridSAMResourceBrokerAdaptor extends ResourceBrokerCpi {
 
     }
 
-    private String getSandboxRoot(JobDescription description)
+    private String getSandboxRoot(Preferences prefs)
             throws GATInvocationException {
-        Object tmp = getAttribute(description, SANDBOX_ROOT);
+        Object tmp = prefs.get("ResourceBroker.sandbox.root");
         if (tmp == null || !(tmp instanceof String)) {
             logger.info("unable to get sandbox root directory");
             throw new GATInvocationException(
@@ -234,13 +234,6 @@ public class GridSAMResourceBrokerAdaptor extends ResourceBrokerCpi {
                     "sandboxRoot has to be an absolute path");
         }
         return tmp.toString();
-    }
-
-    private Object getAttribute(JobDescription description, String name) {
-        if (description.getSoftwareDescription().getAttributes() == null) {
-            return null;
-        }
-        return description.getSoftwareDescription().getAttributes().get(name);
     }
 
     /*
