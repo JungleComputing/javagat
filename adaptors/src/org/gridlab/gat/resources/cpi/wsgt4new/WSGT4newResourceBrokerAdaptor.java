@@ -1,25 +1,24 @@
 package org.gridlab.gat.resources.cpi.wsgt4new;
 
 import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
 import org.apache.axis.components.uuid.UUIDGen;
 import org.apache.axis.components.uuid.UUIDGenFactory;
-import org.apache.axis.message.addressing.AttributedQName;
-import org.apache.axis.message.addressing.AttributedURI;
+import org.apache.axis.message.addressing.Address;
 import org.apache.axis.message.addressing.EndpointReferenceType;
-import org.apache.axis.message.addressing.ReferenceParametersType;
 import org.apache.axis.message.addressing.ReferencePropertiesType;
-import org.apache.axis.message.addressing.ServiceNameType;
 import org.apache.axis.types.URI.MalformedURIException;
 import org.apache.log4j.Logger;
+import org.globus.common.ResourceManagerContact;
 import org.globus.exec.client.GramJob;
+import org.globus.exec.utils.ManagedJobConstants;
 import org.globus.exec.utils.ManagedJobFactoryConstants;
-import org.globus.exec.utils.client.ManagedJobFactoryClientHelper;
-import org.globus.exec.utils.rsl.RSLHelper;
+import org.globus.exec.utils.rsl.RSLParseException;
+import org.globus.wsrf.encoding.SerializationException;
+import org.globus.wsrf.impl.SimpleResourceKey;
 import org.globus.wsrf.impl.security.authentication.Constants;
 import org.globus.wsrf.impl.security.authorization.HostAuthorization;
 import org.gridlab.gat.GATContext;
@@ -51,10 +50,8 @@ public class WSGT4newResourceBrokerAdaptor extends ResourceBrokerCpi {
             .getLogger(WSGT4newResourceBrokerAdaptor.class);
 
     private WrapperSubmitter submitter;
-    static final int DEFAULT_GRIDFTP_PORT = 2811;
 
-    protected GSSCredential getCred()
-            throws GATInvocationException {
+    protected GSSCredential getCred() throws GATInvocationException {
         GSSCredential cred = null;
         URI location = null;
         try {
@@ -66,7 +63,8 @@ public class WSGT4newResourceBrokerAdaptor extends ResourceBrokerCpi {
         }
         try {
             cred = GlobusSecurityUtils.getGlobusCredential(gatContext,
-                    preferences, "globus", location, DEFAULT_GRIDFTP_PORT);
+                    preferences, "ws-gram", location,
+                    ResourceManagerContact.DEFAULT_PORT);
         } catch (Exception e) {
             throw new GATInvocationException(
                     "WSGT4Job: could not initialize credentials, " + e);
@@ -87,8 +85,8 @@ public class WSGT4newResourceBrokerAdaptor extends ResourceBrokerCpi {
                 + "/client-config.wsdd");
     }
 
-    protected String createRSL(JobDescription description, Sandbox sandbox, boolean useGramSandbox)
-            throws GATInvocationException {
+    protected String createRSL(JobDescription description, Sandbox sandbox,
+            boolean useGramSandbox) throws GATInvocationException {
         String rsl = new String("<job>");
         SoftwareDescription sd = description.getSoftwareDescription();
 
@@ -130,9 +128,9 @@ public class WSGT4newResourceBrokerAdaptor extends ResourceBrokerCpi {
         rsl += "</count>";
         rsl += "<directory>";
         if (sandbox.getSandbox().startsWith(File.separator)) {
-        		rsl += sandbox.getSandbox();
+            rsl += sandbox.getSandbox();
         } else {
-        		rsl += "${GLOBUS_USER_HOME}/" + sandbox.getSandbox();
+            rsl += "${GLOBUS_USER_HOME}/" + sandbox.getSandbox();
         }
         rsl += "</directory>";
 
@@ -156,70 +154,78 @@ public class WSGT4newResourceBrokerAdaptor extends ResourceBrokerCpi {
             rsl += sandbox.getRelativeStdin().getPath();
             rsl += "</stdin>";
         }
-        
-        if (useGramSandbox) {
-	        Map<File, File> preStaged = sd.getPreStaged();
-	        if (preStaged != null) {
-	            Set<File> keys = preStaged.keySet();
-	            Iterator<File> i = keys.iterator();
-	            rsl += "<fileStageIn>";
-	            while (i.hasNext()) {
-	                File srcFile = (File) i.next();
-	                File destFile = (File) preStaged.get(srcFile);
-	                if (destFile == null) {
-	                		logger.debug("ignoring prestaged file, no destination set!");
-	                		continue;
-	                }
-	                rsl += "<transfer>";
-	                try {
-						rsl += "<sourceUrl>" + srcFile.toURL() + "</sourceUrl>";
-						String destUrlString = null;
-						if (destFile.isAbsolute()) {
-							destUrlString = destFile.toURL().toString();
-						} else {
-							destUrlString = destFile.toURL().toString().replace(destFile.getPath(), "${GLOBUS_USER_HOME}/" + destFile.getPath());
-						}
-						rsl += "<destinationUrl>" + destUrlString + "</destinationUrl>";
-					} catch (MalformedURLException e) {
-						throw new GATInvocationException("WSGT4ResourceBrokerAdaptor", e);
-					}
-					rsl += "</transfer>";
-	            }
-	            rsl += "</fileStageIn>";
-	        }
-	
-	        Map<File, File> postStaged = sd.getPostStaged();
-	        if (preStaged != null) {
-	            Set<File> keys = postStaged.keySet();
-	            Iterator<File> i = keys.iterator();
-	            rsl += "<fileStageOut>";
-	            while (i.hasNext()) {
-	                File srcFile = (File) i.next();
-	                File destFile = (File) postStaged.get(srcFile);
-	                if (destFile == null) {
-	                		logger.debug("ignoring poststaged file, no destination set!");
-	                		continue;
-	                }
-	                rsl += "<transfer>";
-	                try {
-						rsl += "<sourceUrl>" + srcFile.toURL() + "</sourceUrl>";
-						rsl += "<destinationUrl>" + destFile.toURL() + "</destinationUrl>"; //TODO: Add ${GLOBUS_USER_HOME}
-					} catch (MalformedURLException e) {
-						throw new GATInvocationException("WSGT4ResourceBrokerAdaptor", e);
-					}
-					rsl += "</transfer>";
-	            }
-	            rsl += "</fileStageOut>";
-	        }
-        }
 
+        if (useGramSandbox) {
+            Map<File, File> preStaged = sd.getPreStaged();
+            if (preStaged != null) {
+                Set<File> keys = preStaged.keySet();
+                Iterator<File> i = keys.iterator();
+                rsl += "<fileStageIn>";
+                while (i.hasNext()) {
+                    File srcFile = (File) i.next();
+                    File destFile = (File) preStaged.get(srcFile);
+                    if (destFile == null) {
+                        logger
+                                .debug("ignoring prestaged file, no destination set!");
+                        continue;
+                    }
+                    rsl += "<transfer>";
+                    try {
+                        rsl += "<sourceUrl>" + srcFile.toURL() + "</sourceUrl>";
+                        String destUrlString = null;
+                        if (destFile.isAbsolute()) {
+                            destUrlString = destFile.toURL().toString();
+                        } else {
+                            destUrlString = destFile.toURL().toString()
+                                    .replace(
+                                            destFile.getPath(),
+                                            "${GLOBUS_USER_HOME}/"
+                                                    + destFile.getPath());
+                        }
+                        rsl += "<destinationUrl>" + destUrlString
+                                + "</destinationUrl>";
+                    } catch (MalformedURLException e) {
+                        throw new GATInvocationException(
+                                "WSGT4ResourceBrokerAdaptor", e);
+                    }
+                    rsl += "</transfer>";
+                }
+                rsl += "</fileStageIn>";
+            }
+
+            Map<File, File> postStaged = sd.getPostStaged();
+            if (preStaged != null) {
+                Set<File> keys = postStaged.keySet();
+                Iterator<File> i = keys.iterator();
+                rsl += "<fileStageOut>";
+                while (i.hasNext()) {
+                    File srcFile = (File) i.next();
+                    File destFile = (File) postStaged.get(srcFile);
+                    if (destFile == null) {
+                        logger
+                                .debug("ignoring poststaged file, no destination set!");
+                        continue;
+                    }
+                    rsl += "<transfer>";
+                    try {
+                        rsl += "<sourceUrl>" + srcFile.toURL() + "</sourceUrl>";
+                        rsl += "<destinationUrl>" + destFile.toURL()
+                                + "</destinationUrl>"; // TODO: Add ${GLOBUS_USER_HOME}
+                    } catch (MalformedURLException e) {
+                        throw new GATInvocationException(
+                                "WSGT4ResourceBrokerAdaptor", e);
+                    }
+                    rsl += "</transfer>";
+                }
+                rsl += "</fileStageOut>";
+            }
+        }
         rsl += "</job>";
 
         if (logger.isInfoEnabled()) {
             logger.info("RSL: " + rsl);
         }
 
-        
         return rsl;
     }
 
@@ -233,16 +239,11 @@ public class WSGT4newResourceBrokerAdaptor extends ResourceBrokerCpi {
         submitter = null;
         return job;
     }
-    
-    private EndpointReferenceType getFactoryEPR (String contact, String factoryType)
-	throws Exception {
-    		URL factoryUrl = ManagedJobFactoryClientHelper.getServiceURL(contact).getURL();
-    		logger.debug("Factory Url: " + factoryUrl);
-    		return ManagedJobFactoryClientHelper.getFactoryEndpoint(factoryUrl, factoryType);
-}
 
     public Job submitJob(JobDescription description, MetricListener listener,
             String metricDefinitionName) throws GATInvocationException {
+
+        // if wrapper is enabled, do the wrapper stuff
         if (getBooleanAttribute(description, "wrapper.enable", false)) {
             if (logger.isDebugEnabled()) {
                 logger.debug("useWrapper, using wrapper application");
@@ -259,66 +260,90 @@ public class WSGT4newResourceBrokerAdaptor extends ResourceBrokerCpi {
             throw new GATInvocationException(
                     "WSGT4ResourceBroker: the job description does not contain a software description");
         }
+
+        // create an endpoint reference type
+        EndpointReferenceType endpoint = new EndpointReferenceType();
+        try {
+            endpoint.setAddress(new Address(brokerURI.toString()));
+        } catch (MalformedURIException e) {
+            throw new GATInvocationException("WSGT4newResourceBrokerAdaptor", e);
+        }
+
+        // test whether gram sandbox should be used
         String s = (String) preferences.get("wsgt4.sandbox.gram");
         boolean useGramSandbox = (s != null && s.equalsIgnoreCase("true"));
         Sandbox sandbox = null;
         if (!useGramSandbox) {
-	        sandbox = new Sandbox(gatContext, preferences, description,
-	                host, null, true, true, true, true);
+            sandbox = new Sandbox(gatContext, preferences, description, host,
+                    null, true, true, true, true);
+        } else {
+            if (logger.isDebugEnabled()) {
+                logger.debug("using gram sandbox");
+            }
         }
-        WSGT4newJob wsgt4job = new WSGT4newJob(gatContext, preferences, description,
-                sandbox);
+        WSGT4newJob wsgt4job = new WSGT4newJob(gatContext, preferences,
+                description, sandbox);
         if (listener != null && metricDefinitionName != null) {
-            Metric metric = wsgt4job.getMetricDefinitionByName(metricDefinitionName)
-                    .createMetric(null);
+            Metric metric = wsgt4job.getMetricDefinitionByName(
+                    metricDefinitionName).createMetric(null);
             wsgt4job.addMetricListener(listener, metric);
         }
         if (!useGramSandbox) {
-        		wsgt4job.setState(Job.PRE_STAGING);
-	        sandbox.prestage();
-        }        
-        
-        GramJob job = new GramJob(RSLHelper
-				.makeSimpleJob(createRSL(description, sandbox, useGramSandbox)));
-        wsgt4job.setGramJob(job);
-        job.setTimeOut(GramJob.DEFAULT_TIMEOUT);
-		job.setAuthorization(HostAuthorization.getInstance());
-		job.setMessageProtectionType(Constants.ENCRYPTION);
-		job.setDelegationEnabled(true);
-		job.setDuration(null);
-		job.setTerminationTime(null);
-		job.setCredentials(getCred());
-		job.addListener(wsgt4job);
-		
-		//TODO make the factory type flexible.
-		EndpointReferenceType epr;
-		try {
-			epr = getFactoryEPR(host, ManagedJobFactoryConstants.FACTORY_TYPE.FORK);
-			System.out.println("Endpoint reference type created to: '" + host + "', factory type: '" + ManagedJobFactoryConstants.FACTORY_TYPE.FORK + "'");
-		} catch (Exception e) {
-			throw new GATInvocationException("WSGT4newResourceBrokerAdaptor", e);
-		}
-		
-		UUIDGen uuidgen 	= UUIDGenFactory.getUUIDGen();
-		String submissionID = "uuid:" + uuidgen.nextUUID();
-		System.out.println("UUID created: " + submissionID);
+            wsgt4job.setState(Job.PRE_STAGING);
+            sandbox.prestage();
+        }
 
-		System.out.println("EPR: " + epr);
-		
-		try {
-			System.out.println("before job.submit");
-			job.submit(epr, false, false, submissionID);
-			System.out.println("after job.submit");
-			System.out.println(job.getFault());
-			System.out.println(job.getError());
-			System.out.println(GramJob.getJobs(epr));
-			wsgt4job.setState(Job.RUNNING);
-		} catch (Exception e) {
-			throw new GATInvocationException("WSGT4newResourceBrokerAdaptor", e);
-		} 
-		// second parameter is batch, should be set to false.
-		// third parameter is limitedDelegation, currently hardcoded to false
-		
-		return wsgt4job;
+        // create a gramjob according to the jobdescription
+        GramJob job = null;
+        try {
+            job = new GramJob(createRSL(description, sandbox, useGramSandbox));
+        } catch (RSLParseException e) {
+            throw new GATInvocationException("WSGT4newResourceBrokerAdaptor", e);
+        }
+
+        // inform the wsgt4 job of which gram job is related to it.
+        wsgt4job.setGramJob(job);
+
+        job.setAuthorization(HostAuthorization.getInstance());
+        job.setMessageProtectionType(Constants.ENCRYPTION);
+        job.setDelegationEnabled(true);
+
+        // wsgt4 job object listens to the gram job
+        job.addListener(wsgt4job);
+
+        String factoryType = (String) preferences.get("wsgt4.factory.type");
+        if (factoryType == null || factoryType.equals("")) {
+            factoryType = ManagedJobFactoryConstants.FACTORY_TYPE.FORK;
+            if (logger.isDebugEnabled()) {
+                logger.debug("no factory type supplied, using default: "
+                        + ManagedJobFactoryConstants.FACTORY_TYPE.FORK);
+            }
+        }
+
+        ReferencePropertiesType props = new ReferencePropertiesType();
+        SimpleResourceKey key = new SimpleResourceKey(
+                ManagedJobConstants.RESOURCE_KEY_QNAME, factoryType);
+        try {
+            props.add(key.toSOAPElement());
+        } catch (SerializationException e) {
+            throw new GATInvocationException("WSGT4newResourceBrokerAdaptor", e);
+        }
+        endpoint.setProperties(props);
+
+        UUIDGen uuidgen = UUIDGenFactory.getUUIDGen();
+        String submissionID = "uuid:" + uuidgen.nextUUID();
+
+        if (logger.isDebugEnabled()) {
+            logger.debug("submission id for job: " + submissionID);
+        }
+        try {
+            job.submit(endpoint, false, false, submissionID);
+        } catch (Exception e) {
+            throw new GATInvocationException("WSGT4newResourceBrokerAdaptor", e);
+        }
+
+        // second parameter is batch, should be set to false.
+        // third parameter is limitedDelegation, currently hardcoded to false
+        return wsgt4job;
     }
 }

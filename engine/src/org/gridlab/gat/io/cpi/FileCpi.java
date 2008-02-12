@@ -287,7 +287,7 @@ public abstract class FileCpi implements FileInterface {
     public final boolean isAbsolute() {
         return new java.io.File(location.getPath()).isAbsolute();
     }
-    
+
     public static final boolean isAbsolute(URI location) {
         return new java.io.File(location.getPath()).isAbsolute();
     }
@@ -451,7 +451,6 @@ public abstract class FileCpi implements FileInterface {
     }
 
     public boolean mkdirs() throws GATInvocationException {
-        logger.debug("cpi: mkdirs " + location.toString());
         if (exists()) {
             return false;
         }
@@ -504,7 +503,9 @@ public abstract class FileCpi implements FileInterface {
             }
         }
         if (in.refersToLocalHost() && !isAbsolute(in)) {
-            uriString = uriString.replace(in.getPath(), System.getProperty("user.dir") + File.separator + in.getPath());
+            uriString = uriString.replace(in.getPath(), System
+                    .getProperty("user.dir")
+                    + File.separator + in.getPath());
         }
         URI fixedURI = null;
         try {
@@ -562,14 +563,25 @@ public abstract class FileCpi implements FileInterface {
                 // should not happen
             }
         }
+        if (logger.isDebugEnabled()) {
+            logger.debug("dest=" + dest);
+        }
         // create destination dir
         try {
-            if (preferences.containsKey("file.create")) {
-                if (((String) preferences.get("file.create"))
-                        .equalsIgnoreCase("true")) {
-                    destFile = GAT.createFile(gatContext, preferences, dest)
-                            .getFileInterface();
-                    destFile.mkdirs();
+            destFile = GAT.createFile(gatContext, preferences, dest)
+                    .getFileInterface();
+            if (preferences.containsKey("file.create")
+                    && ((String) preferences.get("file.create"))
+                            .equalsIgnoreCase("true")) {
+                destFile.mkdirs();
+            } else {
+                // if source is a dir 'dir1' and dest is a dir 'dir2' then the
+                // result of dir1.copy(dir2) will be dir2/dir1/.. so even if the
+                // 'file.create' flag isn't set, create the dir1 in dir2 before
+                // copying the files.
+                boolean mkdir = destFile.mkdir();
+                if (logger.isDebugEnabled()) {
+                    logger.debug("mkdir: " + mkdir);
                 }
             }
         } catch (GATObjectCreationException e) {

@@ -9,7 +9,8 @@ class CopyFileCreate {
     public static void main(String[] args) {
         GATContext context = new GATContext();
         context.addPreference("File.adaptor.name", args[0]);
-        context.addPreference("file.create", "true");
+        context.addPreference("file.create", args[1]);
+
         System.err.println("------------FILE COPY TEST------------");
 
         String[] sources = new String[] { "local/src/file", "local/src/dir",
@@ -36,7 +37,7 @@ class CopyFileCreate {
                     file = GAT.createFile(context, src);
                 } catch (Exception e) {
                     System.err.println(e);
-                    System.exit(1);
+                    break;
                 }
                 try {
                     System.out.print(sources[i] + "->" + destination + ": ");

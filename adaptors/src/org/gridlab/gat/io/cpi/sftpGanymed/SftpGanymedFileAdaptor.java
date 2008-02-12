@@ -16,12 +16,14 @@ import org.apache.log4j.Logger;
 import org.gridlab.gat.AdaptorNotApplicableException;
 import org.gridlab.gat.CouldNotInitializeCredentialException;
 import org.gridlab.gat.CredentialExpiredException;
+import org.gridlab.gat.GAT;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.GATObjectCreationException;
 import org.gridlab.gat.InvalidUsernameOrPasswordException;
 import org.gridlab.gat.Preferences;
 import org.gridlab.gat.URI;
+import org.gridlab.gat.io.FileInterface;
 import org.gridlab.gat.io.cpi.FileCpi;
 
 import ch.ethz.ssh2.Connection;
@@ -146,7 +148,8 @@ public class SftpGanymedFileAdaptor extends FileCpi {
                 authenticated = res.connection.authenticateWithPassword(
                         res.userInfo.username, res.userInfo.password);
                 if (!authenticated) {
-                    throw new InvalidUsernameOrPasswordException("Invalid username or password");
+                    throw new InvalidUsernameOrPasswordException(
+                            "Invalid username or password");
                 }
             }
         } catch (IOException e) {
@@ -213,16 +216,21 @@ public class SftpGanymedFileAdaptor extends FileCpi {
     }
 
     public boolean mkdir() throws GATInvocationException {
+        // if mkdir is invoked on an already existing dir, it will cause an
+        // exception and return false, therefore check beforehand for this
+        // situation and return true
+        if (exists() && isDirectory()) {
+            return true;
+        }
         SftpGanymedConnection c = openConnection(gatContext, preferences,
                 location);
         try {
-            c.sftpClient.mkdir(getPath(), 0700);
+            c.sftpClient.mkdir(fixURI(location, null).getPath(), 0700);
         } catch (IOException e) {
-            throw new GATInvocationException("sftpGanymed", e);
+            return false;
         } finally {
             closeConnection(c);
         }
-
         return true;
     }
 
@@ -235,7 +243,8 @@ public class SftpGanymedFileAdaptor extends FileCpi {
         SftpGanymedConnection c = openConnection(gatContext, preferences,
                 location);
         try {
-            SFTPv3FileAttributes attr = c.sftpClient.stat(getPath());
+            SFTPv3FileAttributes attr = c.sftpClient
+                    .stat(fixURI(location, null).getPath());
             return attr.isDirectory();
         } catch (IOException e) {
             throw new GATInvocationException("sftpGanymed", e);
@@ -254,11 +263,12 @@ public class SftpGanymedFileAdaptor extends FileCpi {
                 location);
 
         try {
-            SFTPv3FileAttributes attr = c.sftpClient.stat(getPath());
+            SFTPv3FileAttributes attr = c.sftpClient
+                    .stat(fixURI(location, null).getPath());
             if (attr.isDirectory()) {
-                c.sftpClient.rmdir(getPath());
+                c.sftpClient.rmdir(fixURI(location, null).getPath());
             } else {
-                c.sftpClient.rm(getPath());
+                c.sftpClient.rm(fixURI(location, null).getPath());
             }
         } catch (IOException e) {
             throw new GATInvocationException("sftpGanymed", e);
@@ -278,7 +288,7 @@ public class SftpGanymedFileAdaptor extends FileCpi {
         SftpGanymedConnection c = openConnection(gatContext, preferences,
                 location);
         try {
-            c.sftpClient.stat(getPath());
+            c.sftpClient.stat(fixURI(location, null).getPath());
         } catch (SFTPException x) {
             if (x.getServerErrorCode() == ErrorCodes.SSH_FX_NO_SUCH_FILE) {
                 return false;
@@ -302,12 +312,14 @@ public class SftpGanymedFileAdaptor extends FileCpi {
         SftpGanymedConnection c = openConnection(gatContext, preferences,
                 location);
         try {
-            SFTPv3FileAttributes attr = c.sftpClient.stat(getPath());
+            SFTPv3FileAttributes attr = c.sftpClient
+                    .stat(fixURI(location, null).getPath());
             if (!attr.isDirectory()) {
                 return null;
             }
 
-            Vector<?> result = c.sftpClient.ls(getPath());
+            Vector<?> result = c.sftpClient
+                    .ls(fixURI(location, null).getPath());
             Vector<String> newRes = new Vector<String>();
             for (int i = 0; i < result.size(); i++) {
                 SFTPv3DirectoryEntry entry = (SFTPv3DirectoryEntry) result
@@ -338,7 +350,8 @@ public class SftpGanymedFileAdaptor extends FileCpi {
         SftpGanymedConnection c = openConnection(gatContext, preferences,
                 location);
         try {
-            SFTPv3FileAttributes attr = c.sftpClient.stat(getPath());
+            SFTPv3FileAttributes attr = c.sftpClient
+                    .stat(fixURI(location, null).getPath());
             return attr.isRegularFile();
         } catch (IOException e) {
             throw new GATInvocationException("sftpGanymed", e);
@@ -356,7 +369,8 @@ public class SftpGanymedFileAdaptor extends FileCpi {
         SftpGanymedConnection c = openConnection(gatContext, preferences,
                 location);
         try {
-            SFTPv3FileAttributes attr = c.sftpClient.stat(getPath());
+            SFTPv3FileAttributes attr = c.sftpClient
+                    .stat(fixURI(location, null).getPath());
             return attr.size.longValue();
         } catch (IOException e) {
             throw new GATInvocationException("sftpGanymed", e);
@@ -392,7 +406,7 @@ public class SftpGanymedFileAdaptor extends FileCpi {
                 logger.debug("sftpGanymed file: copy remote to local");
             }
 
-            copyToLocal(toURI(), dest);
+            copyToLocal(fixURI(toURI(), null), fixURI(dest, null));
 
             return;
         }
@@ -402,7 +416,7 @@ public class SftpGanymedFileAdaptor extends FileCpi {
                 logger.debug("sftpGanymed file: copy local to remote");
             }
 
-            copyToRemote(toURI(), dest);
+            copyToRemote(fixURI(toURI(), null), fixURI(dest, null));
 
             return;
         }
@@ -419,7 +433,32 @@ public class SftpGanymedFileAdaptor extends FileCpi {
         // copy from a remote machine to the local machine
         try {
             // Create destination file
-            File destinationFile = new File(dest.getPath());
+            String destPath = dest.getPath();
+            if (new java.io.File(destPath).isDirectory()
+                    || (destPath.endsWith(File.separator))) {
+                String sourcePath = src.getPath();
+                if (sourcePath.endsWith(File.separator)) {
+                    sourcePath = sourcePath.substring(0,
+                            sourcePath.length() - 1);
+                }
+                if (sourcePath.length() > 0) {
+                    int start = sourcePath.lastIndexOf(File.separator) + 1;
+                    String separator = "";
+                    if (!destPath.endsWith(File.separator)) {
+                        separator = File.separator;
+                    }
+                    destPath = destPath + separator
+                            + sourcePath.substring(start);
+                }
+            }
+            java.io.File destinationFile = new java.io.File(destPath);
+            
+            if (preferences.containsKey("file.create")) {
+                if (((String) preferences.get("file.create"))
+                        .equalsIgnoreCase("true")) {
+                    destinationFile.getParentFile().mkdirs();
+                }
+            }
 
             if (logger.isDebugEnabled()) {
                 logger.debug("creating local file " + destinationFile);
@@ -479,9 +518,41 @@ public class SftpGanymedFileAdaptor extends FileCpi {
             FileInputStream in = new FileInputStream(src.getPath());
             inBuf = new BufferedInputStream(in);
             long length = new java.io.File(src.getPath()).length();
-
             c = openConnection(gatContext, preferences, dest);
-            handle = c.sftpClient.createFileTruncate(dest.getPath());
+            String destPath = dest.getPath();
+            FileInterface destFile = GAT.createFile(gatContext, preferences,
+                    dest).getFileInterface();
+            if ((destFile.exists() && destFile.isDirectory())
+                    || (destPath.endsWith(File.separator))) {
+                String sourcePath = src.getPath();
+                if (sourcePath.endsWith(File.separator)) {
+                    sourcePath = sourcePath.substring(0,
+                            sourcePath.length() - 1);
+                }
+                if (sourcePath.length() > 0) {
+                    int start = sourcePath.lastIndexOf(File.separator) + 1;
+                    String separator = "";
+                    if (!destPath.endsWith(File.separator)) {
+                        separator = File.separator;
+                    }
+                    destPath = destPath + separator
+                            + sourcePath.substring(start);
+                }
+            }
+
+            if (preferences.containsKey("file.create")) {
+                if (((String) preferences.get("file.create"))
+                        .equalsIgnoreCase("true")) {
+                    destFile = GAT.createFile(gatContext, preferences,
+                            dest.toString().replace(dest.getPath(), destPath))
+                            .getFileInterface();
+                    FileInterface destParentFile = destFile.getParentFile()
+                            .getFileInterface();
+                    destParentFile.mkdirs();
+                }
+            }
+
+            handle = c.sftpClient.createFileTruncate(destPath);
 
             long bytesWritten = 0;
             byte[] buf = new byte[32000];

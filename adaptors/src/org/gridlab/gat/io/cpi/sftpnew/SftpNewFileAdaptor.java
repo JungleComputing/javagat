@@ -8,12 +8,15 @@ import java.util.Vector;
 
 import org.apache.log4j.Logger;
 import org.gridlab.gat.AdaptorNotApplicableException;
+import org.gridlab.gat.GAT;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.GATObjectCreationException;
 import org.gridlab.gat.InvalidUsernameOrPasswordException;
 import org.gridlab.gat.Preferences;
 import org.gridlab.gat.URI;
+import org.gridlab.gat.io.File;
+import org.gridlab.gat.io.FileInterface;
 import org.gridlab.gat.io.cpi.FileCpi;
 import org.gridlab.gat.io.cpi.ssh.SshSecurityUtils;
 import org.gridlab.gat.io.cpi.ssh.SshUserInfo;
@@ -250,7 +253,7 @@ public class SftpNewFileAdaptor extends FileCpi {
                 logger.debug("sftpnew file: copy remote to local");
             }
 
-            copyToLocal(toURI(), dest);
+            copyToLocal(fixURI(toURI(), null), fixURI(dest, null));
 
             return;
         }
@@ -260,7 +263,7 @@ public class SftpNewFileAdaptor extends FileCpi {
                 logger.debug("sftpnew file: copy local to remote");
             }
 
-            copyToRemote(toURI(), dest);
+            copyToRemote(fixURI(toURI(), null), fixURI(dest, null));
 
             return;
         }
@@ -272,6 +275,7 @@ public class SftpNewFileAdaptor extends FileCpi {
     protected void copyToLocal(URI src, URI dest) throws GATInvocationException {
         SftpNewConnection c = createChannel(gatContext, preferences, src);
         // copy from a remote machine to the local machine
+
         try {
             // if it is a relative path, we must make it an absolute path.
             // the sftp library uses paths relative to the user's home dir.
@@ -281,11 +285,36 @@ public class SftpNewFileAdaptor extends FileCpi {
                 java.io.File f = new java.io.File(destPath);
                 destPath = f.getCanonicalPath();
             }
+            if (new java.io.File(destPath).isDirectory()
+                    || (destPath.endsWith(File.separator))) {
+                String sourcePath = src.getPath();
+                if (sourcePath.endsWith(File.separator)) {
+                    sourcePath = sourcePath.substring(0,
+                            sourcePath.length() - 1);
+                }
+                if (sourcePath.length() > 0) {
+                    int start = sourcePath.lastIndexOf(File.separator) + 1;
+                    String separator = "";
+                    if (!destPath.endsWith(File.separator)) {
+                        separator = File.separator;
+                    }
+                    destPath = destPath + separator
+                            + sourcePath.substring(start);
+                }
+            }
 
+            java.io.File destinationFile = new java.io.File(destPath);
+
+            if (preferences.containsKey("file.create")) {
+                if (((String) preferences.get("file.create"))
+                        .equalsIgnoreCase("true")) {
+                    destinationFile.getParentFile().mkdirs();
+                }
+            }
             c.channel.get(src.getPath(), destPath);
 
         } catch (Exception e) {
-            throw new GATInvocationException("sftpnew", e);
+            throw new GATInvocationException("SftpNewFileAdaptor", e);
         } finally {
             closeChannel(c);
         }
@@ -307,11 +336,22 @@ public class SftpNewFileAdaptor extends FileCpi {
                 srcPath = f.getCanonicalPath();
             }
 
+            if (preferences.containsKey("file.create")) {
+                if (((String) preferences.get("file.create"))
+                        .equalsIgnoreCase("true")) {
+                    FileInterface destFile = GAT.createFile(gatContext,
+                            preferences, dest).getFileInterface();
+                    FileInterface destParentFile = destFile.getParentFile()
+                            .getFileInterface();
+                    destParentFile.mkdirs();
+                }
+            }
+
             tmpCon = createChannel(gatContext, preferences, dest);
             tmpCon.channel.put(srcPath, dest.getPath());
 
         } catch (Exception e) {
-            throw new GATInvocationException("sftpnew", e);
+            throw new GATInvocationException("copy to remote sftpnew", e);
         } finally {
             if (tmpCon != null)
                 closeChannel(tmpCon);
@@ -321,65 +361,65 @@ public class SftpNewFileAdaptor extends FileCpi {
     public long length() throws GATInvocationException {
         SftpNewConnection c = createChannel(gatContext, preferences, location);
         try {
-            SftpATTRS attr = c.channel.lstat(location.getPath());
+            SftpATTRS attr = c.channel.lstat(fixURI(location, null).getPath());
             closeChannel(c);
             return attr.getSize();
         } catch (Exception e) {
             closeChannel(c);
-            throw new GATInvocationException("sftpnew", e);
-        } 
+            throw new GATInvocationException("SftpNewFileAdaptor", e);
+        }
     }
 
     public boolean isDirectory() throws GATInvocationException {
         SftpNewConnection c = createChannel(gatContext, preferences, location);
         try {
-            SftpATTRS attr = c.channel.lstat(location.getPath());
+            SftpATTRS attr = c.channel.lstat(fixURI(location, null).getPath());
             closeChannel(c);
             return attr.isDir();
         } catch (Exception e) {
             closeChannel(c);
-            throw new GATInvocationException("sftpnew", e);
-        } 
+            throw new GATInvocationException("SftpNewFileAdaptor", e);
+        }
     }
 
     public boolean canRead() throws GATInvocationException {
         SftpNewConnection c = createChannel(gatContext, preferences, location);
         try {
-            SftpATTRS attr = c.channel.lstat(location.getPath());
+            SftpATTRS attr = c.channel.lstat(fixURI(location, null).getPath());
 
             String permissions = attr.getPermissionsString();
             closeChannel(c);
             return permissions.charAt(1) == 'r';
         } catch (Exception e) {
             closeChannel(c);
-            throw new GATInvocationException("sftpnew", e);
+            throw new GATInvocationException("SftpNewFileAdaptor", e);
         }
     }
 
     public boolean canWrite() throws GATInvocationException {
         SftpNewConnection c = createChannel(gatContext, preferences, location);
         try {
-            SftpATTRS attr = c.channel.lstat(location.getPath());
+            SftpATTRS attr = c.channel.lstat(fixURI(location, null).getPath());
 
             String permissions = attr.getPermissionsString();
             closeChannel(c);
             return permissions.charAt(2) == 'w';
         } catch (Exception e) {
             closeChannel(c);
-            throw new GATInvocationException("sftpnew", e);
-        } 
+            throw new GATInvocationException("SftpNewFileAdaptor", e);
+        }
     }
 
     public long lastModified() throws GATInvocationException {
         SftpNewConnection c = createChannel(gatContext, preferences, location);
         try {
-            SftpATTRS attr = c.channel.lstat(location.getPath());
+            SftpATTRS attr = c.channel.lstat(fixURI(location, null).getPath());
             closeChannel(c);
             return (long) attr.getMTime() * 1000;
         } catch (Exception e) {
             closeChannel(c);
-            throw new GATInvocationException("sftpnew", e);
-        } 
+            throw new GATInvocationException("SftpNewFileAdaptor", e);
+        }
     }
 
     public boolean isFile() throws GATInvocationException {
@@ -389,7 +429,7 @@ public class SftpNewFileAdaptor extends FileCpi {
     public boolean exists() throws GATInvocationException {
         SftpNewConnection c = createChannel(gatContext, preferences, location);
         try {
-            c.channel.lstat(location.getPath());
+            c.channel.lstat(fixURI(location, null).getPath());
             closeChannel(c);
             return true;
         } catch (SftpException e) {
@@ -398,8 +438,8 @@ public class SftpNewFileAdaptor extends FileCpi {
                 return false;
             }
             closeChannel(c);
-            throw new GATInvocationException("sftpnew", e);
-        } 
+            throw new GATInvocationException("SftpNewFileAdaptor", e);
+        }
     }
 
     public boolean delete() throws GATInvocationException {
@@ -417,9 +457,9 @@ public class SftpNewFileAdaptor extends FileCpi {
         }
         try {
             if (isFile) {
-                c.channel.rm(location.getPath());
+                c.channel.rm(fixURI(location, null).getPath());
             } else {
-                c.channel.rmdir(location.getPath());
+                c.channel.rmdir(fixURI(location, null).getPath());
             }
             closeChannel(c);
             return true;
@@ -429,60 +469,25 @@ public class SftpNewFileAdaptor extends FileCpi {
                 return false;
             }
             closeChannel(c);
-            throw new GATInvocationException("sftpnew", e);
-        } 
+            throw new GATInvocationException("SftpNewFileAdaptor", e);
+        }
     }
 
     public boolean mkdir() throws GATInvocationException {
         SftpNewConnection c = createChannel(gatContext, preferences, location);
         try {
-            c.channel.mkdir(location.getPath());
+            c.channel.mkdir(fixURI(location, null).getPath());
             closeChannel(c);
             return true;
         } catch (SftpException e) {
-            if (e.id == ChannelSftp.SSH_FX_FAILURE) {
+            if (e.id == ChannelSftp.SSH_FX_FAILURE
+                    || e.id == ChannelSftp.SSH_FX_NO_SUCH_FILE) {
                 closeChannel(c);
                 return false;
             }
             closeChannel(c);
-            throw new GATInvocationException("sftpnew", e);
-        } 
-    }
-
-    public boolean mkdirs() throws GATInvocationException {
-        SftpNewConnection c = createChannel(gatContext, preferences, location);
-        String dir = getPath();
-        java.util.StringTokenizer tokens = new java.util.StringTokenizer(dir,
-                "/");
-        String path = dir.startsWith("/") ? "/" : "";
-
-        while (tokens.hasMoreElements()) {
-            path += (String) tokens.nextElement();
-            try {
-                c.channel.lstat(path);
-            } catch (SftpException ex) {
-                if (ex.id == ChannelSftp.SSH_FX_NO_SUCH_FILE) {
-                    /*
-                     * The directory does not exist, we create it.
-                     */
-                    try {
-                        c.channel.mkdir(path);
-                    } catch (Exception ex2) {
-                        /*
-                         * we can't create it
-                         */
-                        closeChannel(c);
-                        throw new GATInvocationException("sftpnew", ex2);
-                    }
-                } else {
-                    closeChannel(c);
-                    throw new GATInvocationException("sftpnew", ex);
-                }
-            }
-            path += "/";
+            throw new GATInvocationException("SftpNewFileAdaptor", e);
         }
-        closeChannel(c);
-        return true;
     }
 
     public String[] list() throws GATInvocationException {
@@ -490,7 +495,7 @@ public class SftpNewFileAdaptor extends FileCpi {
         SftpNewConnection c = createChannel(gatContext, preferences, location);
 
         try {
-            Vector<?> ls = c.channel.ls(location.getPath());
+            Vector<?> ls = c.channel.ls(fixURI(location, null).getPath());
 
             Vector<String> result = new Vector<String>();
             for (int i = 0; i < ls.size(); i++) {
@@ -509,7 +514,7 @@ public class SftpNewFileAdaptor extends FileCpi {
         } catch (Exception e) {
             closeChannel(c);
             throw new GATInvocationException("sftp", e);
-        } 
+        }
     }
 
     public static void end() {
@@ -539,7 +544,6 @@ public class SftpNewFileAdaptor extends FileCpi {
                             .debug("end of gridftp adaptor, closing client, got exception (ignoring): "
                                     + x);
                 }
-
                 // ignore
             }
         }

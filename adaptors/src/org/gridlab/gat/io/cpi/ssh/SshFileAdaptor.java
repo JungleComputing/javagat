@@ -269,7 +269,7 @@ public class SshFileAdaptor extends FileCpi {
             try {
                 return new URI("ssh:" + in.toString());
             } catch (URISyntaxException e) {
-                throw new GATInvocationException("ssh", e);
+                throw new GATInvocationException("SshFileAdaptor", e);
             }
         }
 
@@ -525,11 +525,11 @@ public class SshFileAdaptor extends FileCpi {
 
                     prepareSession(location);
                 } catch (Exception e) {
-                    throw new GATInvocationException("ssh", e);
+                    throw new GATInvocationException("SshFileAdaptor", e);
                 }
             }
         } catch (Exception e1) {
-            throw new GATInvocationException("ssh", e1);
+            throw new GATInvocationException("SshFileAdaptor", e1);
         }
     }
 
@@ -612,7 +612,6 @@ public class SshFileAdaptor extends FileCpi {
 
             return;
         } catch (Exception e) {
-            e.printStackTrace();
             cleanSession(session, channel);
             doException(e);
         }
@@ -659,9 +658,37 @@ public class SshFileAdaptor extends FileCpi {
 
     protected void doMultipleUpload(URI loc) throws GATInvocationException {
         try {
+            FileInterface target = GAT.createFile(gatContext, preferences, loc)
+                    .getFileInterface();
+            if (target.isDirectory()) {
+                String sourcePath = location.getPath();
+                if (sourcePath.endsWith(File.separator)) {
+                    sourcePath = sourcePath.substring(0,
+                            sourcePath.length() - 1);
+                }
+                if (sourcePath.length() > 0) {
+                    int start = sourcePath.lastIndexOf(File.separator) + 1;
+                    String separator = "";
+                    if (!loc.toString().endsWith(File.separator)) {
+                        separator = File.separator;
+                    }
+                    try {
+                        loc = new URI(loc.toString() + separator
+                                + sourcePath.substring(start));
+                    } catch (URISyntaxException e) {
+                        // should not happen
+                    }
+                }
+                target = GAT.createFile(gatContext, preferences, loc)
+                        .getFileInterface();
+                target.mkdir();
+            }  else {
+                throw new GATInvocationException("cannot overwrite non-directory '"
+                        + loc + "' with directory '" + location + "'!");
+            }
             prepareSession(loc);
             startSession(loc);
-            Object[] streams = execSessionCommand("scp -p -r "
+            Object[] streams = execSessionCommand("scp -p -r -t "
                     + fixURI(loc, null).getPath());
             if (checkAck(((InputStream) streams[IN])) != 0) {
                 cleanSession(session, channel);
@@ -685,7 +712,6 @@ public class SshFileAdaptor extends FileCpi {
 
             return;
         } catch (Exception e) {
-            e.printStackTrace();
             cleanSession(session, channel);
             doException(e);
         }
@@ -865,11 +891,12 @@ public class SshFileAdaptor extends FileCpi {
 
     protected void scp(URI loc, String isRec) throws GATInvocationException {
         if (logger.isDebugEnabled()) {
-            logger.debug("scpFromRemoteToLocal: scp " + isRec);
+            logger.debug("scpFromRemoteToLocal: scp -f " + isRec);
         }
         /*-f from fetch*/
         try {
-            Object[] streams = execCommand("scp " + isRec
+            startSession();
+            Object[] streams = execSessionCommand("scp -f " + isRec
                     + fixURI(location, null).getPath());
             sendAck(((OutputStream) streams[OUT]));
             File localFile = new File(loc.getPath());
@@ -937,9 +964,7 @@ public class SshFileAdaptor extends FileCpi {
                 if (((InputStream) streams[ERR]).available() != 0) {
                     cleanSession(session, channel);
                     throw new GATInvocationException(
-                            "ssh",
-                            new Exception(
-                                    "cannot copy remote file to another file on the same machine"));
+                            "copy remote file to another file on the same machine failed.");
                 }
                 cleanSession(session, channel);
                 return;
@@ -954,9 +979,7 @@ public class SshFileAdaptor extends FileCpi {
                 if (((InputStream) streams[ERR]).available() != 0) {
                     cleanSession(session, channel);
                     throw new GATInvocationException(
-                            "ssh",
-                            new Exception(
-                                    "cannot copy remote file to another file on the same machine"));
+                            "cannot copy remote file to another file on the same machine");
                 }
                 cleanSession(session, channel);
                 return;
@@ -1382,6 +1405,9 @@ public class SshFileAdaptor extends FileCpi {
                 throw new InvalidUsernameOrPasswordException(e);
             }
         } else {
+            if (e instanceof GATInvocationException) {
+                throw (GATInvocationException) e;
+            }
             throw new GATInvocationException("SshFileAdaptor", e);
         }
     }
@@ -1702,7 +1728,7 @@ public class SshFileAdaptor extends FileCpi {
         try {
             updateLocation(destination);
         } catch (GATObjectCreationException e) {
-            throw new GATInvocationException("ssh", e);
+            throw new GATInvocationException("SshFileAdaptor", e);
         }
 
         return;
@@ -1731,7 +1757,7 @@ public class SshFileAdaptor extends FileCpi {
         try {
             updateLocation(destination);
         } catch (GATObjectCreationException e) {
-            throw new GATInvocationException("ssh", e);
+            throw new GATInvocationException("SshFileAdaptor", e);
         }
 
         return true;
@@ -1754,7 +1780,7 @@ public class SshFileAdaptor extends FileCpi {
         try {
             session.connect();
         } catch (Exception e) {
-            throw new GATObjectCreationException("ssh", e);
+            throw new GATObjectCreationException("SshFileAdaptor", e);
         }
 
         if (logger.isDebugEnabled()) {

@@ -238,6 +238,9 @@ public class GATEngine {
 		gatClassLoader = new URLClassLoader(urls, 
 				this.getClass().getClassLoader()
 		);
+		// <experimental code>
+		Thread.currentThread().setContextClassLoader(gatClassLoader);
+		// </experimental code>
 
 		// Populate cpiClasses
 		loadJarFiles(adaptorPathList);
