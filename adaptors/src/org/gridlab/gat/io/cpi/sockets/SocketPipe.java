@@ -41,8 +41,6 @@ public class SocketPipe implements Pipe {
      */
     public InputStream getInputStream() throws GATInvocationException {
         try {
-            System.err.println("returning: " + s.getInputStream());
-
             return s.getInputStream();
         } catch (IOException e) {
             throw new GATInvocationException("socketpipe", e);
