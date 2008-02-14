@@ -41,7 +41,7 @@ public class NQueensSolver implements MetricListener {
         HashMap<String, Object> env = new HashMap<String, Object>();
 
         public RunJob(String application) {
-            if (! application.startsWith("java:")) {
+            if (!application.startsWith("java:")) {
                 application = "java:" + application;
             }
             this.application = application;
@@ -137,25 +137,22 @@ public class NQueensSolver implements MetricListener {
     }
 
     public static void usage() {
-        System.err.println("Usage: java NQueensSolver "
-                + "[ -descr \"<descriptorlist>\" |"
-                + " -vn <virtualNodeName> |"
-                + " -cp <globalclasspath> |"
-                + " -prop <globalprop>=<val> ]*"
-                + " [-job <javaclass> ["
-                + " -cp <classpath> |"
-                + " -param \"<params>\" |"
-                + " -nh <numHosts> |"
-                + " -softnh <numHosts> |"
-                + " -prop <prop>=<val> |"
-                + " -in <inputFile> |"
-                + " -out <outputFilePrefix> |"
-                + " -err <errorFilePrefix>]* ]*");
+        System.err
+                .println("Usage: java NQueensSolver "
+                        + "[ -descr \"<descriptorlist>\" |"
+                        + " -vn <virtualNodeName> |"
+                        + " -cp <globalclasspath> |"
+                        + " -prop <globalprop>=<val> ]*"
+                        + " [-job <javaclass> [" + " -cp <classpath> |"
+                        + " -param \"<params>\" |" + " -nh <numHosts> |"
+                        + " -softnh <numHosts> |" + " -prop <prop>=<val> |"
+                        + " -in <inputFile> |" + " -out <outputFilePrefix> |"
+                        + " -err <errorFilePrefix>]* ]*");
     }
 
     public static String getarg(String[] args, int index) {
         if (index >= args.length) {
-            error("Missing argument for " + args[index-1]);
+            error("Missing argument for " + args[index - 1]);
             usage();
             System.exit(1);
         }
@@ -236,16 +233,16 @@ public class NQueensSolver implements MetricListener {
 
         Preferences prefs = new Preferences();
         prefs.put("ResourceBroker.adaptor.name", "ProActive");
-        prefs.put("ResourceBroker.ProActive.Descriptors", descriptors);
+        prefs.put("proactive.descriptor.list", descriptors);
         if (virtualNodeName != null) {
-            prefs.put("ResourceBroker.ProActive.VirtualNodeName",
-                    virtualNodeName);
+            prefs.put("proactive.virtualnodename", virtualNodeName);
         }
 
         ResourceBroker broker = null;
 
         try {
-            broker = GAT.createResourceBroker(context, prefs, new URI(virtualNodeName));
+            broker = GAT.createResourceBroker(context, prefs, new URI(
+                    virtualNodeName));
         } catch (Exception e) {
             e.printStackTrace();
             System.exit(1);
@@ -271,7 +268,7 @@ public class NQueensSolver implements MetricListener {
 
             try {
                 sd.setExecutable(job.application);
-            } catch(Exception e) {
+            } catch (Exception e) {
                 System.err.println("Error in URI " + job.application
                         + ", job skipped");
                 e.printStackTrace();
@@ -291,9 +288,9 @@ public class NQueensSolver implements MetricListener {
 
             if (job.outPrefix != null) {
                 try {
-                    outFile = GAT.createFile(context, prefs,
-                            new URI("any:///" + job.outPrefix + "." + i));
-                } catch(Exception e) {
+                    outFile = GAT.createFile(context, prefs, new URI("any:///"
+                            + job.outPrefix + "." + i));
+                } catch (Exception e) {
                     System.err.println("Could not createFile " + outFile
                             + ", using stdout instead");
                     e.printStackTrace();
@@ -304,9 +301,9 @@ public class NQueensSolver implements MetricListener {
             }
             if (job.errPrefix != null) {
                 try {
-                    errFile = GAT.createFile(context, prefs,
-                            new URI("any:///" + job.errPrefix + "." + i));
-                } catch(Exception e) {
+                    errFile = GAT.createFile(context, prefs, new URI("any:///"
+                            + job.errPrefix + "." + i));
+                } catch (Exception e) {
                     System.err.println("Could not createFile " + errFile
                             + ", using stderr instead");
                     e.printStackTrace();
@@ -320,11 +317,11 @@ public class NQueensSolver implements MetricListener {
                     prefs.put("ResourceBroker.ProActive.needsStdin", "yes");
                 } else {
                     try {
-                        inFile = GAT.createFile(context, prefs,
-                                new URI("any:///" + job.inFilename));
-                    } catch(Exception e) {
-                        System.err.println("Could not createFile " + job.inFilename
-                                + ", using stdin instead");
+                        inFile = GAT.createFile(context, prefs, new URI(
+                                "any:///" + job.inFilename));
+                    } catch (Exception e) {
+                        System.err.println("Could not createFile "
+                                + job.inFilename + ", using stdin instead");
                         e.printStackTrace();
                     }
                     if (inFile != null) {
@@ -334,30 +331,29 @@ public class NQueensSolver implements MetricListener {
             } else {
                 prefs.put("ResourceBroker.ProActive.needsStdin", "");
             }
- 
+
             Hashtable<String, Object> ht = new Hashtable<String, Object>();
             ResourceDescription rd = new HardwareResourceDescription(ht);
             JobDescription jd = new JobDescription(sd, rd);
             try {
                 jobs[i] = broker.submitJob(jd);
-            } catch(Exception e) {
-                System.err.println("submitJob of job \"" + job
-                        + "\" failed");
+            } catch (Exception e) {
+                System.err.println("submitJob of job \"" + job + "\" failed");
                 e.printStackTrace();
                 nJobs--;
                 continue;
             }
             try {
-                MetricDefinition md
-                        = jobs[i].getMetricDefinitionByName("job.status");
+                MetricDefinition md = jobs[i]
+                        .getMetricDefinitionByName("job.status");
                 Metric m = md.createMetric(null);
                 jobs[i].addMetricListener(this, m); // register callback.
-            } catch(Exception e) {
+            } catch (Exception e) {
                 System.err.println("Callback registration for job \"" + job
                         + "\" failed, stopping job");
                 try {
                     jobs[i].stop();
-                } catch(Exception e2) {
+                } catch (Exception e2) {
                     // Ignored, what can we do here?
                 }
                 nJobs--;
@@ -365,11 +361,11 @@ public class NQueensSolver implements MetricListener {
             }
         }
 
-        synchronized(this) {
+        synchronized (this) {
             while (finishedJobs < nJobs) {
                 try {
                     wait();
-                } catch(Exception e) {
+                } catch (Exception e) {
                     // Ignored
                 }
             }
@@ -380,7 +376,7 @@ public class NQueensSolver implements MetricListener {
                 Map<String, Object> info;
                 try {
                     info = jobs[i].getInfo();
-                } catch(Exception e) {
+                } catch (Exception e) {
                     continue;
                 }
                 String state = (String) info.get("state");

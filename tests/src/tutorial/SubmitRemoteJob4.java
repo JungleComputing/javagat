@@ -44,10 +44,6 @@ public class SubmitRemoteJob4 {
 				new URI("/home/rkemp/.globus/userkey.pem"), new URI(
 						"/home/rkemp/.globus/usercert.pem"), passphrase);
 		context.addSecurityContext(securityContext);
-		if (args.length == 0) {
-			args = new String[] { "fs1.das3.liacs.nl/jobmanager-sge" };
-		}
-		context.addPreference("ResourceBroker.jobmanagerContact", args[0]);
 
 		SoftwareDescription sd1 = new SoftwareDescription();
 		sd1.setExecutable("/bin/sh");

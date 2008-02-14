@@ -126,7 +126,7 @@ public class GT4ResourceBrokerAdaptor extends ResourceBrokerCpi {
         // getHostname(jd) + ":8443/wsrf/services/ManagedJobFactoryService");
         ServiceContact serviceContact = new ServiceContactImpl(getHostname());
         String factoryType = (String) preferences
-                .get("ResourceBroker.jobmanager");
+                .get("resourcebroker.jobmanager");
         if (factoryType == null) {
             factoryType = ExecutionService.FORK_JOBMANAGER;
         }

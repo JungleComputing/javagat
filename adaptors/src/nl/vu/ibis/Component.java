@@ -15,56 +15,56 @@ import org.gridlab.gat.resources.ResourceBroker;
 
 public class Component implements MetricListener {
 
-    // The compontents structure this component belongs to  
+    // The compontents structure this component belongs to
     private final Components owner;
 
-    // A description of the job. 
+    // A description of the job.
     private final JobDescription description;
-    
+
     // The GAT context (used when executing jobs).
     private final GATContext context;
-   
+
     // The preferences (used when executing jobs).
     private final Preferences preferences;
-    
-    // The job number (assigned by the Koala scheduler). 
+
+    // The job number (assigned by the Koala scheduler).
     private final int jobNumber;
-    
-    // The component number (identifying a 'part' of the job). 
+
+    // The component number (identifying a 'part' of the job).
     private final int componentNumber;
-    
+
     // The identifier koala uses for this component.
     private final String identifier;
-    
+
     // The execution site as provided by koala.
     private String site;
-    
-    // The job rsl as provided by koala. 
+
+    // The job rsl as provided by koala.
     private String rsl;
 
-    // The delegated job. 
+    // The delegated job.
     private Job job;
-    
+
     // Is the job started ?
     private boolean start = false;
-    
+
     // A metric object used to monitor the status of the job.
-    private Metric metric; 
-    
+    private Metric metric;
+
     // The current state of the job.
-    private int state; 
-    
-    public Component(Components owner, GATContext context, 
-            JobDescription description, Preferences preferences, 
-            int jobNumber, int componentNumber) {
-        
+    private int state;
+
+    public Component(Components owner, GATContext context,
+            JobDescription description, Preferences preferences, int jobNumber,
+            int componentNumber) {
+
         this.owner = owner;
         this.context = context;
         this.description = description;
         this.jobNumber = jobNumber;
         this.componentNumber = componentNumber;
         this.identifier = jobNumber + "&" + componentNumber;
-        
+
         this.preferences = new Preferences(preferences);
         this.preferences.put("postKoala", true);
     }
@@ -91,7 +91,8 @@ public class Component implements MetricListener {
     }
 
     /**
-     * @param job the job to set
+     * @param job
+     *                the job to set
      */
     public synchronized void setJob(Job job) {
         this.job = job;
@@ -112,19 +113,20 @@ public class Component implements MetricListener {
     }
 
     /**
-     * @param rsl the rsl to set
+     * @param rsl
+     *                the rsl to set
      */
     public void setRsl(String rsl) {
-        
+
         synchronized (this) {
-            if (this.rsl != null) { 
+            if (this.rsl != null) {
                 System.err.println("EEK: multiple rsl calls to component!");
                 return;
             }
-        
+
             this.rsl = rsl;
         }
-        
+
         submitComponent();
     }
 
@@ -136,77 +138,85 @@ public class Component implements MetricListener {
     }
 
     /**
-     * @param site the site to set
+     * @param site
+     *                the site to set
      */
     public void setSite(String site) {
-        
-        synchronized (this) { 
-            if (this.site != null) { 
+
+        synchronized (this) {
+            if (this.site != null) {
                 System.err.println("EEK: multiple site calls to component!");
                 return;
             }
-        
+
             this.site = site;
         }
-        
+
         submitComponent();
     }
 
-    private void submitComponent() { 
-        
+    private void submitComponent() {
+
         synchronized (this) {
-            
+
             if (start) {
                 System.err.println("EEK: multiple startComponent calls!");
                 return;
             }
-        
-            if (site == null || rsl == null) { 
+
+            if (site == null || rsl == null) {
                 System.err.println("Component " + identifier + " not ready");
                 return;
             }
-            
+
             start = true;
         }
-        
-        try { 
+
+        try {
             System.err.println("Start of component: " + identifier);
 
             // Create a copy of preferences used to select the next broker.
             Preferences tmp = new Preferences(preferences);
 
-            // Remove the explicit adaptor name. This is either not set, or set 
-            // to the Koala adaptor. Either way, it won't be set after this call.
+            // Remove the explicit adaptor name. This is either not set, or set
+            // to the Koala adaptor. Either way, it won't be set after this
+            // call.
             // tmp.remove("ResourceBroker.adaptor.name");
 
-            // Set the target for the submission. 
-            // TODO: don't like that this explicity selects globus!!!
-            tmp.put("ResourceBroker.adaptor.name", "globus");
-            tmp.put("ResourceBroker.jobmanagerContact", site);
-            
+            // Set the target for the submission.
+            String brokers = (String) preferences
+                    .get("resourcebroker.adaptor.name");
+            if (brokers == null) {
+                brokers = "";
+            }
+            // don't use koala the next time
+            tmp.put("resourcebroker.adaptor.name", "!koala," + brokers);
+
             // Add magic preference to prevent recursive calls to Koala broker.
             tmp.put("postKoala", true);
 
-            // Create a new broker that allows us to perform the real submission.
-            ResourceBroker broker = GAT.createResourceBroker(context, tmp, new URI(site));
-        
-            // Submit the job 
+            // Create a new broker that allows us to perform the real
+            // submission.
+            ResourceBroker broker = GAT.createResourceBroker(context, tmp,
+                    new URI(site));
+
+            // Submit the job
             job = broker.submitJob(description);
-            
+
             // Register a state listner
             MetricDefinition md = job.getMetricDefinitionByName("job.status");
             metric = md.createMetric(null);
             job.addMetricListener(this, metric);
 
-            // Fire the state change manually (since there is a race condition 
-            // in GAT.  
+            // Fire the state change manually (since there is a race condition
+            // in GAT.
             stateChange("INITIAL");
-            
+
         } catch (Exception e) {
             System.err.println("Failed to start component: " + identifier);
         }
     }
-    
+
     /**
      * @return the description
      */
@@ -219,73 +229,73 @@ public class Component implements MetricListener {
     }
 
     public void stop() {
-        System.err.println("Stopping component: " + identifier);      
-        
+        System.err.println("Stopping component: " + identifier);
+
         boolean mustStop = false;
-        
+
         synchronized (this) {
             mustStop = (start && job != null);
             start = false;
         }
-        
+
         if (mustStop) {
             try {
                 job.stop();
             } catch (GATInvocationException e) {
-                System.err.println("Failed to stop component: " + identifier);      
+                System.err.println("Failed to stop component: " + identifier);
             }
         }
     }
 
     public synchronized int getState() {
         return state;
-        
+
         /*
-        if (job == null) { 
-            return Job.UNKNOWN;
-        }
-        
-        return job.getState();*/
+         * if (job == null) { return Job.UNKNOWN; }
+         * 
+         * return job.getState();
+         */
     }
-    
-    private int parseState(String state) { 
-        
-        if (state.equals("INITIAL")) { 
+
+    private int parseState(String state) {
+
+        if (state.equals("INITIAL")) {
             return Job.INITIAL;
-        } else if (state.equals("SCHEDULED")) { 
+        } else if (state.equals("SCHEDULED")) {
             return Job.SCHEDULED;
-        } else if (state.equals("RUNNING")) { 
+        } else if (state.equals("RUNNING")) {
             return Job.RUNNING;
-        } else if (state.equals("STOPPED")) { 
+        } else if (state.equals("STOPPED")) {
             return Job.STOPPED;
-        } else if (state.equals("SUBMISSION_ERROR")) { 
+        } else if (state.equals("SUBMISSION_ERROR")) {
             return Job.SUBMISSION_ERROR;
-        } else if (state.equals("ON_HOLD")) { 
+        } else if (state.equals("ON_HOLD")) {
             return Job.ON_HOLD;
-        } else if (state.equals("PRE_STAGING")) { 
+        } else if (state.equals("PRE_STAGING")) {
             return Job.PRE_STAGING;
-        } else if (state.equals("POST_STAGING")) { 
+        } else if (state.equals("POST_STAGING")) {
             return Job.POST_STAGING;
-        } else if (state.equals("UNKNOWN")) { 
+        } else if (state.equals("UNKNOWN")) {
             return Job.UNKNOWN;
-        } else { 
+        } else {
             return Job.UNKNOWN;
-        } 
-    }
-    
-    private void stateChange(String state) {
-        
-        System.out.println("Component " + identifier + " changed state to " + state);
-        
-        int newState = parseState(state);
-        
-        synchronized (this) {
-            this.state = newState; 
         }
-        
+    }
+
+    private void stateChange(String state) {
+
+        System.out.println("Component " + identifier + " changed state to "
+                + state);
+
+        int newState = parseState(state);
+
+        synchronized (this) {
+            this.state = newState;
+        }
+
         owner.stateChange(this, this.state);
     }
-    
+
     public void processMetricEvent(MetricValue value) {
         stateChange((String) value.getValue());
     }

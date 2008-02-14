@@ -247,21 +247,20 @@ public class ProActiveJob extends JobCpi {
      *                    when something goes wrong.
      */
     public ProActiveJob(GATContext gatContext, Preferences preferences,
-            JobDescription jobDescription,
-            ProActiveResourceBrokerAdaptor broker) throws GATInvocationException {
+            JobDescription jobDescription, ProActiveResourceBrokerAdaptor broker)
+            throws GATInvocationException {
 
         // No sandbox, we don't know the node(s) yet.
         super(gatContext, preferences, jobDescription, null);
         // this.broker = broker;
 
-        if (preferences.get("ResourceBroker.ProActive.noSandbox") != null) {
+        if (preferences.get("proactive.nosandbox") != null) {
             wantsSandbox = false;
         }
-        if (preferences.get("ResourceBroker.ProActive.stageOnAll") != null) {
+        if (preferences.get("proactive.stageonall") != null) {
             stageOnAll = true;
         }
-        String s = (String) preferences
-                .get("ResourceBroker.ProActive.needsStdin");
+        String s = (String) preferences.get("proactive.needs.stdin");
         if (s != null && !s.equals("")) {
             needsStdin = true;
         }
@@ -286,10 +285,10 @@ public class ProActiveJob extends JobCpi {
         infoMap.put("submissiontime", new Long(System.currentTimeMillis()));
 
         // Get everything we need from the job description.
-        //TODO changes lines below
+        // TODO changes lines below
         URI executable = null;
         try {
-            executable = new URI("");//soft.getLocation();
+            executable = new URI("");// soft.getLocation();
         } catch (URISyntaxException e1) {
             // TODO Auto-generated catch block
             e1.printStackTrace();
@@ -524,7 +523,7 @@ public class ProActiveJob extends JobCpi {
         StringWrapper[] results = new StringWrapper[newNodes.length];
 
         int maxThreads = 1;
-        String tmp = (String) preferences.get("launch.parallel");
+        String tmp = (String) preferences.get("proactive.launch.parallel");
         if (tmp != null) {
             maxThreads = Integer.parseInt(tmp);
         }

@@ -54,7 +54,6 @@ public class SubmitJobGlite implements MetricListener {
             jobmanager = "https://kop.nikhef.nl:7443/glite_wms_wmproxy_server";
         }
 
-        prefs.put("ResourceBroker.jobmanagerContact", jobmanager);
         context.addPreferences(prefs);
         File outFile = GAT.createFile(context, prefs, new URI("std.out"));
         File errFile = GAT.createFile(context, prefs, new URI("std.err"));

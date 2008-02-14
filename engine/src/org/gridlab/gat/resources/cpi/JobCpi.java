@@ -60,7 +60,7 @@ public abstract class JobCpi extends Job {
         this.preferences = preferences;
         this.jobDescription = jobDescription;
         this.sandbox = sandbox;
-        String pref = (String) preferences.get("killJobsOnExit");
+        String pref = (String) preferences.get("jobs.killonexit");
         if (pref == null || pref.equalsIgnoreCase("true")) {
             synchronized (JobCpi.class) {
                 if (shutdownInProgress) {

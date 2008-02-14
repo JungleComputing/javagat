@@ -1,6 +1,8 @@
 package org.gridlab.gat.io.cpi.rftgt4;
 
+import java.net.InetAddress;
 import java.net.MalformedURLException;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.rmi.RemoteException;
 import java.security.cert.X509Certificate;
@@ -18,6 +20,7 @@ import javax.xml.soap.SOAPElement;
 
 import org.apache.axis.message.addressing.EndpointReferenceType;
 import org.apache.axis.types.URI.MalformedURIException;
+import org.apache.log4j.Logger;
 import org.globus.axis.util.Util;
 import org.globus.delegation.DelegationConstants;
 import org.globus.delegation.DelegationException;
@@ -31,11 +34,11 @@ import org.globus.rft.generated.CreateReliableFileTransferInputType;
 import org.globus.rft.generated.CreateReliableFileTransferOutputType;
 import org.globus.rft.generated.DeleteRequestType;
 import org.globus.rft.generated.DeleteType;
-import org.globus.rft.generated.OverallStatus;
-import org.globus.rft.generated.RFTFaultResourcePropertyType;
 import org.globus.rft.generated.RFTOptionsType;
 import org.globus.rft.generated.ReliableFileTransferFactoryPortType;
 import org.globus.rft.generated.ReliableFileTransferPortType;
+import org.globus.rft.generated.RequestStatusType;
+import org.globus.rft.generated.RequestStatusTypeEnumeration;
 import org.globus.rft.generated.Start;
 import org.globus.rft.generated.TransferRequestType;
 import org.globus.rft.generated.TransferType;
@@ -70,6 +73,7 @@ import org.gridlab.gat.GATObjectCreationException;
 import org.gridlab.gat.InvalidUsernameOrPasswordException;
 import org.gridlab.gat.Preferences;
 import org.gridlab.gat.URI;
+import org.gridlab.gat.io.File;
 import org.gridlab.gat.io.cpi.FileCpi;
 import org.gridlab.gat.security.globus.GlobusSecurityUtils;
 import org.ietf.jgss.GSSCredential;
@@ -83,13 +87,14 @@ import org.oasis.wsrf.properties.GetMultipleResourceProperties_Element;
 import org.oasis.wsrf.properties.ResourcePropertyValueChangeNotificationType;
 
 class RFTGT4NotifyCallback implements NotifyCallback {
+    protected static Logger logger = Logger
+            .getLogger(RFTGT4NotifyCallback.class);
+
     RFTGT4FileAdaptor transfer;
-    OverallStatus status;
 
     public RFTGT4NotifyCallback(RFTGT4FileAdaptor transfer) {
         super();
         this.transfer = transfer;
-        this.status = null;
     }
 
     @SuppressWarnings("unchecked")
@@ -98,45 +103,28 @@ class RFTGT4NotifyCallback implements NotifyCallback {
         try {
             ResourcePropertyValueChangeNotificationType message = ((ResourcePropertyValueChangeNotificationElementType) messageWrapper)
                     .getResourcePropertyValueChangeNotification();
-            this.status = (OverallStatus) message.getNewValue().get_any()[0]
-                    .getValueAsType(RFTConstants.OVERALL_STATUS_RESOURCE,
-                            OverallStatus.class);
-            if (status.getFault() != null) {
-                transfer.setFault(getFaultFromRP(status.getFault()));
+            RequestStatusType status = (RequestStatusType) message
+                    .getNewValue().get_any()[0].getValueAsType(
+                    RFTConstants.REQUEST_STATUS_RESOURCE,
+                    RequestStatusType.class);
+            if (logger.isDebugEnabled()) {
+                logger.debug("received status: " + status.getRequestStatus());
             }
-            // RunQueue.getInstance().add(this.resourceKey);
+            if (status.getRequestStatus().equals(
+                    RequestStatusTypeEnumeration.Failed)) {
+                logger.debug("fault: " + status.getFault());
+            }
+            transfer.setStatus(status.getRequestStatus());
         } catch (Exception e) {
-        }
-        transfer.setStatus(status);
-    }
-
-    private BaseFaultType getFaultFromRP(RFTFaultResourcePropertyType fault) {
-        if (fault == null) {
-            return null;
-        }
-
-        if (fault.getDelegationEPRMissingFaultType() != null) {
-            return fault.getDelegationEPRMissingFaultType();
-        } else if (fault.getRftAuthenticationFaultType() != null) {
-            return fault.getRftAuthenticationFaultType();
-        } else if (fault.getRftAuthorizationFaultType() != null) {
-            return fault.getRftAuthorizationFaultType();
-        } else if (fault.getRftDatabaseFaultType() != null) {
-            return fault.getRftDatabaseFaultType();
-        } else if (fault.getRftRepeatedlyStartedFaultType() != null) {
-            return fault.getRftRepeatedlyStartedFaultType();
-        } else if (fault.getTransferTransientFaultType() != null) {
-            return fault.getTransferTransientFaultType();
-        } else if (fault.getRftTransferFaultType() != null) {
-            return fault.getRftTransferFaultType();
-        } else {
-            return null;
+            if (logger.isDebugEnabled()) {
+                logger.debug("status update failed: " + e);
+            }
         }
     }
 }
 
 /**
- * This abstract class implementes the
+ * This abstract class implements the
  * {@link org.gridlab.gat.io.cpi.FileCpi FileCpi} class. Represents an Globus
  * file. That implementation uses the JavaCog abstraction layer. The subclasses
  * represent different File adaptors, using different JavaCog abstraction layer
@@ -166,7 +154,7 @@ public class RFTGT4FileAdaptor extends FileCpi {
     GSSCredential proxy;
     Authorization authorization;
     String host;
-    OverallStatus status;
+    RequestStatusTypeEnumeration status;
     BaseFaultType fault;
     String locationStr;
     ReliableFileTransferFactoryPortType factoryPort;
@@ -192,22 +180,23 @@ public class RFTGT4FileAdaptor extends FileCpi {
             URI location) throws GATObjectCreationException {
         super(gatContext, preferences, location);
         if (!location.isCompatible("gsiftp")
-                && !location.isCompatible("gridftp")) {
-            throw new GATObjectCreationException("cannot handle this URI");
+                && !location.isCompatible("gridftp")
+                && !location.isCompatible("file")) {
+            throw new GATObjectCreationException("cannot handle this URI: "
+                    + location);
         }
 
         String globusLocation = System.getenv("GLOBUS_LOCATION");
         if (globusLocation == null) {
             throw new GATObjectCreationException("$GLOBUS_LOCATION is not set");
         }
-        // System.setProperty("java.naming.factory.initial",
-        // "org.globus.wsrf.jndi.javaURLContextFactory");
-        System.out.println("java.naming.factory.initial: "
-                + System.getProperty("java.naming.factory.initial"));
         System.setProperty("GLOBUS_LOCATION", globusLocation);
         System.setProperty("axis.ClientConfigFile", globusLocation
                 + "/client-config.wsdd");
         this.host = location.getHost();
+        if (this.host == null) {
+            this.host = getLocalHost();
+        }
         this.securityType = Constants.GSI_SEC_MSG;
         this.authorization = null;
         this.proxy = null;
@@ -231,16 +220,7 @@ public class RFTGT4FileAdaptor extends FileCpi {
         factoryPort = null;
         this.factoryUrl = PROTOCOL + "://" + host + ":" + DEFAULT_FACTORY_PORT
                 + BASE_SERVICE_PATH + RFTConstants.FACTORY_NAME;
-        locationStr = setLocationStr(location);
-    }
-
-    String setLocationStr(URI location) {
-        if (location.getScheme().equals("any")) {
-            return "gsiftp://" + location.getHost() + ":" + location.getPort()
-                    + "/" + location.getPath();
-        } else {
-            return location.toString();
-        }
+        locationStr = URItoRFTGT4String(location);
     }
 
     /**
@@ -255,7 +235,8 @@ public class RFTGT4FileAdaptor extends FileCpi {
      * @throws GATInvocationException
      * 
      */
-    protected boolean copy2(String destStr) throws GATInvocationException {
+    protected synchronized boolean copy2(String destStr)
+            throws GATInvocationException {
         EndpointReferenceType credentialEndpoint = getCredentialEPR();
 
         TransferType[] transferArray = new TransferType[1];
@@ -271,19 +252,51 @@ public class RFTGT4FileAdaptor extends FileCpi {
         request.setTransferCredentialEndpoint(credentialEndpoint);
         setRequest(request);
 
-        while (!transfersDone()) {
+        while (status == null
+                || !(status.equals(RequestStatusTypeEnumeration.Done) || status
+                        .equals(RequestStatusTypeEnumeration.Failed))) {
             try {
-                Thread.sleep(1000);
+                wait();
             } catch (InterruptedException e) {
                 throw new GATInvocationException("RFTGT4FileAdaptor: " + e);
             }
         }
-        return transfersSucc();
+        return status.equals(RequestStatusTypeEnumeration.Done);
+    }
+
+    public String URItoRFTGT4String(URI in) {
+        String rftgt4String = fixURI(in, "gsiftp").toString();
+        if (in.getHost() == null) {
+            rftgt4String = rftgt4String.replace("gsiftp://", "gsiftp://"
+                    + getLocalHost());
+        }
+        
+        // Uncomment this code if the ${GLOBUS_USER_HOME} will work
+//        try {
+//            URI fixedURI = new URI(rftgt4String); 
+//            if (fixedURI.getPath() != null) {
+//                if (!(fixedURI.getPath().startsWith(File.separator))) {
+//                    rftgt4String = rftgt4String.replace(fixedURI.getPath(), "${GLOBUS_USER_HOME}/"
+//                            + fixedURI.getPath());
+//                }
+//            }
+//        } catch (URISyntaxException e) {
+//            // ignore
+//        }
+        System.out.println("stringetje: " + rftgt4String);
+        return rftgt4String;
+    }
+
+    private String getLocalHost() {
+        try {
+            return InetAddress.getLocalHost().getCanonicalHostName();
+        } catch (Exception e) {
+            return "localhost";
+        }
     }
 
     public void copy(URI dest) throws GATInvocationException {
-        String destUrl = setLocationStr(dest);
-        if (!copy2(destUrl)) {
+        if (!copy2(URItoRFTGT4String(dest))) {
             throw new GATInvocationException(
                     "RFTGT4FileAdaptor: file copy failed");
         }
@@ -311,9 +324,6 @@ public class RFTGT4FileAdaptor extends FileCpi {
         this.notificationConsumerManager = NotificationConsumerManager
                 .getInstance(properties);
         try {
-            // TODO: This goes wrong for some reason (has to do with
-            // containers). It goes right when all the jars from the adaptors
-            // are copied to the lib dir.
             this.notificationConsumerManager.startListening();
         } catch (ContainerException e) {
             throw new GATInvocationException(
@@ -321,7 +331,8 @@ public class RFTGT4FileAdaptor extends FileCpi {
                             + e);
         }
         List<Object> topicPath = new LinkedList<Object>();
-        topicPath.add(RFTConstants.OVERALL_STATUS_RESOURCE);
+        topicPath.add(RFTConstants.REQUEST_STATUS_RESOURCE);
+
         ResourceSecurityDescriptor securityDescriptor = new ResourceSecurityDescriptor();
         String authz = null;
         if (authorization == null) {
@@ -369,7 +380,7 @@ public class RFTGT4FileAdaptor extends FileCpi {
         try {
             topicExpression = new TopicExpressionType(
                     WSNConstants.SIMPLE_TOPIC_DIALECT,
-                    RFTConstants.OVERALL_STATUS_RESOURCE);
+                    RFTConstants.REQUEST_STATUS_RESOURCE);
         } catch (MalformedURIException e) {
             throw new GATInvocationException(
                     "RFTGT4FileAdaptor: create TopicExpressionType failed, "
@@ -467,14 +478,16 @@ public class RFTGT4FileAdaptor extends FileCpi {
         request.setTransferCredentialEndpoint(credentialEndpoint);
 
         setRequest(request);
-        while (!transfersDone()) {
+        while (status == null
+                || !(status.equals(RequestStatusTypeEnumeration.Done) || status
+                        .equals(RequestStatusTypeEnumeration.Failed))) {
             try {
-                Thread.sleep(1000);
+                wait();
             } catch (InterruptedException e) {
                 throw new GATInvocationException("RFTGT4FileAdaptor: " + e);
             }
         }
-        return transfersSucc();
+        return status.equals(RequestStatusTypeEnumeration.Done);
     }
 
     public boolean delete() throws GATInvocationException {
@@ -617,58 +630,9 @@ public class RFTGT4FileAdaptor extends FileCpi {
         return endpoints;
     }
 
-    synchronized void setStatus(OverallStatus status) {
+    synchronized void setStatus(RequestStatusTypeEnumeration status) {
         this.status = status;
-    }
-
-    public int transfersActive() {
-        if (status == null) {
-            return 1;
-        }
-        return status.getTransfersActive();
-    }
-
-    public int transfersFinished() {
-        if (status == null) {
-            return 0;
-        }
-        return status.getTransfersFinished();
-    }
-
-    public int transfersCancelled() {
-        if (status == null) {
-            return 0;
-        }
-        return status.getTransfersCancelled();
-    }
-
-    public int transfersFailed() {
-        if (status == null) {
-            return 0;
-        }
-        return status.getTransfersFailed();
-    }
-
-    public int transfersPending() {
-        if (status == null) {
-            return 1;
-        }
-        return status.getTransfersPending();
-    }
-
-    public int transfersRestarted() {
-        if (status == null) {
-            return 0;
-        }
-        return status.getTransfersRestarted();
-    }
-
-    public boolean transfersDone() {
-        return (transfersActive() == 0 && transfersPending() == 0 && transfersRestarted() == 0);
-    }
-
-    public boolean transfersSucc() {
-        return (transfersDone() && transfersFailed() == 0 && transfersCancelled() == 0);
+        notifyAll();
     }
 
     /*

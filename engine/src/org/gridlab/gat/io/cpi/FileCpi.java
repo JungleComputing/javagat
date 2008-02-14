@@ -493,7 +493,7 @@ public abstract class FileCpi implements FileInterface {
         String uriString = in.toString();
         if (destScheme != null) {
             if (in.getScheme() != null) {
-                uriString.replaceFirst(in.getScheme(), destScheme);
+                uriString = uriString.replaceFirst(in.getScheme(), destScheme);
             } else {
                 if (in.getAuthority() == null) {
                     uriString = destScheme + ":///" + uriString;

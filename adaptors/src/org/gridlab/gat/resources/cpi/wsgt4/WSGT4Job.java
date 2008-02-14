@@ -222,7 +222,7 @@ public class WSGT4Job extends JobCpi {
 
         factoryEndpoint = null;
         submissionID = null;
-        factoryType = (String) preferences.get("ResourceBroker.jobmanager");
+        factoryType = (String) preferences.get("resourcebroker.jobmanager");
         if (factoryType == null) {
             factoryType = ManagedJobFactoryConstants.DEFAULT_FACTORY_TYPE;
         }

@@ -108,7 +108,7 @@ public interface ResourceBroker {
      * GATJob instance is returned, which represents the job. Upon failing to
      * submit the job, an error is issued.
      * 
-     * Some resource broker adaptors will check the "ResourceBroker.jobmanager"
+     * Some resource broker adaptors will check the "resourcebroker.jobmanager"
      * property to see to which jobmanager (e.g., fork, pbs, condor) should be
      * used.
      * 
@@ -129,7 +129,7 @@ public interface ResourceBroker {
      * GATJob instance is returned, which represents the job. Upon failing to
      * submit the job, an error is issued.
      * 
-     * Some resource broker adaptors will check the "ResourceBroker.jobmanager"
+     * Some resource broker adaptors will check the "resourcebroker.jobmanager"
      * property to see to which jobmanager (e.g., fork, pbs, condor) should be
      * used.
      * 

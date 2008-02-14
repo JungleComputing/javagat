@@ -259,12 +259,12 @@ public class Wrapper implements MetricListener {
         String[] jobIDs = jobIDsString.split(",");
 
         int maxConcurrentJobs = 0;
-        String concurrentJobsPerNodeString = (String) preferences
+        String concurrentJobsPerWrapperString = (String) preferences
                 .get("wrapper.concurrentjobs.max");
-        if (concurrentJobsPerNodeString != null) {
+        if (concurrentJobsPerWrapperString != null) {
             try {
                 maxConcurrentJobs = Integer
-                        .parseInt(concurrentJobsPerNodeString);
+                        .parseInt(concurrentJobsPerWrapperString);
             } catch (NumberFormatException n) {
                 // not a number -> default value
             }

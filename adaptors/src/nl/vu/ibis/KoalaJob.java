@@ -125,20 +125,20 @@ public class KoalaJob extends JobCpi implements Runnable {
         // Set the priority of the job. Default is 1.         
         int priority = 1;
 
-        if (attributes.containsKey("koala.priority")) {
+        if (attributes.containsKey("koala.job.priority")) {
             try {
-                priority = (Integer) attributes.get("koala.priority");
+                priority = (Integer) attributes.get("koala.job.priority");
             } catch (Exception e) {
-                logger.warn("Illegal \"koala.priority\" setting!");
+                logger.warn("Illegal \"koala.job.priority\" setting!");
             }
         }
 
         buffer.append("-j#" + priority + "#");
 
         // Check if the job is flexible (i.e., the size can be varied).
-        if (attributes.containsKey("koala.flexible")) {
+        if (attributes.containsKey("koala.minimalsize")) {
             try {
-                int minimalSize = (Integer) attributes.get("koala.flexible");
+                int minimalSize = (Integer) attributes.get("koala.minimalsize");
 
                 minimalSize = Math.max(1, minimalSize);
 
@@ -149,7 +149,7 @@ public class KoalaJob extends JobCpi implements Runnable {
                 schedulingPolicy = "FWF";
 
             } catch (Exception e) {
-                logger.warn("Illegal \"koala.flexible\" setting!");
+                logger.warn("Illegal \"koala.minimalsize\" setting!");
             }
         }
 

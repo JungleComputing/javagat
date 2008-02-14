@@ -22,13 +22,13 @@ import org.objectweb.proactive.core.node.Node;
 /**
  * This class implements the JavaGat resource broker for ProActive.
  */
-public class ProActiveResourceBrokerAdaptor extends ResourceBrokerCpi
-        implements Runnable {
-    
+public class ProActiveResourceBrokerAdaptor extends ResourceBrokerCpi implements
+        Runnable {
+
     private int maxThreads = 1;
-    
+
     private int maxNodesPerWatcher = 16;
-    
+
     /** Set of available nodes. */
     private static HashSet<NodeInfo> availableNodeSet = new HashSet<NodeInfo>();
 
@@ -51,14 +51,14 @@ public class ProActiveResourceBrokerAdaptor extends ResourceBrokerCpi
     private ArrayList<ProActiveJob> jobList = new ArrayList<ProActiveJob>();
 
     /**
-     * Number of ProActive descriptors for which an addNodes call is
-     * still expected.
+     * Number of ProActive descriptors for which an addNodes call is still
+     * expected.
      */
     private int remainingCalls;
 
     /** Logger. */
-    static final Logger logger
-        = Logger.getLogger(ProActiveResourceBrokerAdaptor.class);
+    static final Logger logger = Logger
+            .getLogger(ProActiveResourceBrokerAdaptor.class);
 
     /**
      * A runnable for deployment, since the multithreading deployment in
@@ -75,9 +75,9 @@ public class ProActiveResourceBrokerAdaptor extends ResourceBrokerCpi
 
         public void run() {
             try {
-                node.launcher = (Launcher) ProActive.newActive(
-                    Launcher.class.getName(), parameters, node.node);
-                synchronized(availableNodeSet) {
+                node.launcher = (Launcher) ProActive.newActive(Launcher.class
+                        .getName(), parameters, node.node);
+                synchronized (availableNodeSet) {
                     availableNodeSet.add(node);
                     nodeSet.add(node);
                     if (jobList.size() != 0) {
@@ -85,8 +85,8 @@ public class ProActiveResourceBrokerAdaptor extends ResourceBrokerCpi
                     }
                 }
                 logger.info("newActive Launcher on " + node.hostName);
-            } catch(Throwable e) {
-                logger.warn("newActive Launcher failed for node " 
+            } catch (Throwable e) {
+                logger.warn("newActive Launcher failed for node "
                         + node.hostName, e);
             }
         }
@@ -94,30 +94,35 @@ public class ProActiveResourceBrokerAdaptor extends ResourceBrokerCpi
 
     /**
      * Constructs a ResourceBroker for ProActive.
-     * @param gatContext the JavaGat context.
-     * @param preferences the preferences.
+     * 
+     * @param gatContext
+     *                the JavaGat context.
+     * @param preferences
+     *                the preferences.
      */
     public ProActiveResourceBrokerAdaptor(GATContext gatContext,
-            Preferences preferences, URI brokerURI) throws GATObjectCreationException {
+            Preferences preferences, URI brokerURI)
+            throws GATObjectCreationException {
 
         super(gatContext, preferences, brokerURI);
 
-        String tmp = (String) preferences.get("newActive.parallel");
-        if(tmp != null) {
+        String tmp = (String) preferences.get("proactive.newactive.parallel");
+        if (tmp != null) {
             maxThreads = Integer.parseInt(tmp);
         }
-        
-        tmp = (String) preferences.get("newActive.maxNodesPerWatcher");
-        if(tmp != null) {
+
+        tmp = (String) preferences
+                .get("proactive.newactive.nodesperwatcher.max");
+        if (tmp != null) {
             maxNodesPerWatcher = Integer.parseInt(tmp);
         }
-        
+
         // First, obtain ProActiver descriptors. */
         String descriptors = (String) preferences
-                .get("ResourceBroker.ProActive.Descriptors");
+                .get("proactive.descriptor.list");
         if (descriptors == null) {
             throw new GATObjectCreationException("No descriptors provided. Set"
-                    + " the ResourceBroker.ProActive.Descriptors preference to "
+                    + " the proactive.descriptor.list preference to "
                     + " a comma-separated list of ProActive descriptor xmls.");
         }
         StringTokenizer tok = new StringTokenizer(descriptors, ",");
@@ -129,16 +134,16 @@ public class ProActiveResourceBrokerAdaptor extends ResourceBrokerCpi
         remainingCalls = xmls.size();
 
         Runtime.getRuntime().addShutdownHook(
-            new Thread("Nameserver ShutdownHook") {
-                public void run() {
-                    logger.info("Shutdown hook triggered");
-                    try {
-                        end();
-                    } catch(Throwable e) {
-                        // ignored
+                new Thread("Nameserver ShutdownHook") {
+                    public void run() {
+                        logger.info("Shutdown hook triggered");
+                        try {
+                            end();
+                        } catch (Throwable e) {
+                            // ignored
+                        }
                     }
-                }
-            });
+                });
 
         for (int i = 0; i < xmls.size(); i++) {
             String descr = (String) xmls.get(i);
@@ -153,14 +158,17 @@ public class ProActiveResourceBrokerAdaptor extends ResourceBrokerCpi
     }
 
     /**
-     * Adds the specified nodes, that were found on the specified descriptor,
-     * to the available nodes, provided that a launcher could be started
-     * on them.
-     * @param descriptor the ProActive descriptor URL.
-     * @param nodes the list of nodes.
+     * Adds the specified nodes, that were found on the specified descriptor, to
+     * the available nodes, provided that a launcher could be started on them.
+     * 
+     * @param descriptor
+     *                the ProActive descriptor URL.
+     * @param nodes
+     *                the list of nodes.
      */
-    void addNodes(String descriptor, ArrayList<Node> nodes, ProActiveDescriptor pad) {
-        synchronized(availableNodeSet) {
+    void addNodes(String descriptor, ArrayList<Node> nodes,
+            ProActiveDescriptor pad) {
+        synchronized (availableNodeSet) {
             if (pad == null) {
                 remainingCalls--;
                 availableNodeSet.notifyAll();
@@ -181,15 +189,15 @@ public class ProActiveResourceBrokerAdaptor extends ResourceBrokerCpi
                 JobWatcher newStub;
                 try {
                     newStub = (JobWatcher) ProActive.turnActive(newWatcher);
-                } catch(Exception e) {
+                } catch (Exception e) {
                     try {
                         Thread.sleep(1000);
-                    } catch(Exception e2) {
+                    } catch (Exception e2) {
                         // ignored
                     }
                     try {
                         newStub = (JobWatcher) ProActive.turnActive(newWatcher);
-                    } catch(Exception e3) {
+                    } catch (Exception e3) {
                         // Tried twice. What now??? Use old watcher/stub
                         logger.error("Could not create stub", e3);
                         newWatcher = watcher;
@@ -207,33 +215,25 @@ public class ProActiveResourceBrokerAdaptor extends ResourceBrokerCpi
             jobWatcherCount++;
             nodeInfo[i] = new NodeInfo(proActiveNodes[i], watcher, descriptor,
                     this);
-            parameters[i] = new Object[] { stub, proActiveNodes[i]};
+            parameters[i] = new Object[] { stub, proActiveNodes[i] };
         }
 
-/*
-        // Create launchers in parallel.
-        Object[] launchers;
-        try {
-            launchers = ProActive.newActiveInParallel(
-                    Launcher.class.getName(), parameters, proActiveNodes);
-        } catch(Throwable e) {
-            logger.error("Internal error, launch creation failed ...", e);
-            return;
-        }
-
-        // Process result of launcher creation.
-        for (int i = 0; i < nodeInfo.length; i++) {
-            nodeInfo[i].launcher = (Launcher) launchers[i];
-        }
-
-
-        int nNodes = proActiveNodes.length;
-
-        // Here, we should somehow figure out how many CPUs each node
-        // represents. Then, we can increment nNodes with the surplus
-        // CPUs and create NodeInfo structures for them ...
-
-*/
+        /*
+         * // Create launchers in parallel. Object[] launchers; try { launchers =
+         * ProActive.newActiveInParallel( Launcher.class.getName(), parameters,
+         * proActiveNodes); } catch(Throwable e) { logger.error("Internal error,
+         * launch creation failed ...", e); return; }
+         *  // Process result of launcher creation. for (int i = 0; i <
+         * nodeInfo.length; i++) { nodeInfo[i].launcher = (Launcher)
+         * launchers[i]; }
+         * 
+         * 
+         * int nNodes = proActiveNodes.length;
+         *  // Here, we should somehow figure out how many CPUs each node //
+         * represents. Then, we can increment nNodes with the surplus // CPUs
+         * and create NodeInfo structures for them ...
+         * 
+         */
 
         Threader threader = Threader.createThreader(maxThreads);
         for (int i = 0; i < nodeInfo.length; i++) {
@@ -241,7 +241,7 @@ public class ProActiveResourceBrokerAdaptor extends ResourceBrokerCpi
         }
         threader.waitForAll();
 
-        synchronized(availableNodeSet) {
+        synchronized (availableNodeSet) {
             remainingCalls--;
             pads.add(pad);
             availableNodeSet.notifyAll();
@@ -250,7 +250,9 @@ public class ProActiveResourceBrokerAdaptor extends ResourceBrokerCpi
 
     /**
      * Reserves and returns the specified number of nodes.
-     * @param n the number of nodes requested.
+     * 
+     * @param n
+     *                the number of nodes requested.
      * @return an array containing the nodes.
      */
     private NodeInfo[] obtainNodes(int n) {
@@ -260,9 +262,10 @@ public class ProActiveResourceBrokerAdaptor extends ResourceBrokerCpi
         logger.debug("ObtainNodes: n = " + n + ", size = "
                 + availableNodeSet.size());
 
-        synchronized(availableNodeSet) {
+        synchronized (availableNodeSet) {
             int index = 0;
-            for (Iterator<NodeInfo> i = availableNodeSet.iterator(); i.hasNext();) {
+            for (Iterator<NodeInfo> i = availableNodeSet.iterator(); i
+                    .hasNext();) {
                 NodeInfo nodeInfo = (NodeInfo) i.next();
                 nodes[index++] = nodeInfo;
                 h.add(nodeInfo);
@@ -271,17 +274,20 @@ public class ProActiveResourceBrokerAdaptor extends ResourceBrokerCpi
                 }
             }
             availableNodeSet.removeAll(h);
-            logger.debug("ObtainNodes: afterwards: size = " + availableNodeSet.size());
+            logger.debug("ObtainNodes: afterwards: size = "
+                    + availableNodeSet.size());
         }
         return nodes;
     }
 
     /**
      * Makes the specified node available for allocation.
-     * @param node the node.
+     * 
+     * @param node
+     *                the node.
      */
     void releaseNode(NodeInfo node) {
-        synchronized(availableNodeSet) {
+        synchronized (availableNodeSet) {
             if (node.suspect) {
                 // TODO: possibly try and rescue this node ???
                 // Restart launcher on it ???
@@ -297,8 +303,8 @@ public class ProActiveResourceBrokerAdaptor extends ResourceBrokerCpi
     }
 
     /**
-     * Invoked by the JavaGat when the user calls GAT.end().
-     * Cleans up by killing all nodes.
+     * Invoked by the JavaGat when the user calls GAT.end(). Cleans up by
+     * killing all nodes.
      */
     public static void end() {
         if (nodeSet.size() != 0) {
@@ -309,10 +315,10 @@ public class ProActiveResourceBrokerAdaptor extends ResourceBrokerCpi
                     public void run() {
                         logger.info("Sending terminate to node "
                                 + nodeInfo.hostName);
-                        synchronized(nodeInfo) {
+                        synchronized (nodeInfo) {
                             try {
                                 nodeInfo.launcher.terminate();
-                            } catch(Throwable ex) {
+                            } catch (Throwable ex) {
                                 // ignored
                             }
                         }
@@ -326,7 +332,7 @@ public class ProActiveResourceBrokerAdaptor extends ResourceBrokerCpi
 
             try {
                 Thread.sleep(5000);
-            } catch(Exception e) {
+            } catch (Exception e) {
                 // ignored
             }
         }
@@ -335,7 +341,7 @@ public class ProActiveResourceBrokerAdaptor extends ResourceBrokerCpi
             ProActiveDescriptor pad = (ProActiveDescriptor) pads.get(i);
             try {
                 pad.killall(false);
-            } catch(Exception e) {
+            } catch (Exception e) {
                 // ignored
             }
         }
@@ -343,14 +349,18 @@ public class ProActiveResourceBrokerAdaptor extends ResourceBrokerCpi
     }
 
     /**
-     * Submits a job described by the specified description to the job
-     * queue and returns it.
-     * @param description the job description.
+     * Submits a job described by the specified description to the job queue and
+     * returns it.
+     * 
+     * @param description
+     *                the job description.
      * @return the job.
-     * @exception GATInvocationException when something goes wrong.
+     * @exception GATInvocationException
+     *                    when something goes wrong.
      */
-    public org.gridlab.gat.resources.Job submitJob(JobDescription description, MetricListener listener, String metricDefinitionName)
-        throws GATInvocationException {
+    public org.gridlab.gat.resources.Job submitJob(JobDescription description,
+            MetricListener listener, String metricDefinitionName)
+            throws GATInvocationException {
 
         ProActiveJob submittedJob;
 
@@ -361,9 +371,10 @@ public class ProActiveResourceBrokerAdaptor extends ResourceBrokerCpi
                     "Job description does not contain a software description");
         }
 
-        submittedJob = new ProActiveJob(gatContext, preferences, description, this);
+        submittedJob = new ProActiveJob(gatContext, preferences, description,
+                this);
 
-        synchronized(availableNodeSet) {
+        synchronized (availableNodeSet) {
             jobList.add(submittedJob);
             if (jobList.size() == 1) {
                 availableNodeSet.notifyAll();
@@ -374,19 +385,19 @@ public class ProActiveResourceBrokerAdaptor extends ResourceBrokerCpi
     }
 
     /**
-     * Very simple-minded scheduling thread. It tries to schedule jobs
-     * first-in, first-out (FIFO).
+     * Very simple-minded scheduling thread. It tries to schedule jobs first-in,
+     * first-out (FIFO).
      */
     public void run() {
         for (;;) {
             NodeInfo[] nodes;
             ProActiveJob job;
-            synchronized(availableNodeSet) {
+            synchronized (availableNodeSet) {
                 // Obtain the first job from the joblist.
                 while (jobList.size() == 0) {
                     try {
                         availableNodeSet.wait();
-                    } catch(Exception e) {
+                    } catch (Exception e) {
                         // ignored
                     }
                 }
@@ -407,7 +418,7 @@ public class ProActiveResourceBrokerAdaptor extends ResourceBrokerCpi
                             && (nodeSet.size() != 0 || remainingCalls > 0)) {
                         try {
                             availableNodeSet.wait();
-                        } catch(Exception e) {
+                        } catch (Exception e) {
                             // ignored
                         }
                     }
@@ -435,7 +446,7 @@ public class ProActiveResourceBrokerAdaptor extends ResourceBrokerCpi
                         }
                         try {
                             availableNodeSet.wait();
-                        } catch(Exception e) {
+                        } catch (Exception e) {
                             // ignored
                         }
                     }
@@ -454,11 +465,11 @@ public class ProActiveResourceBrokerAdaptor extends ResourceBrokerCpi
             try {
                 job.startJob(nodes);
                 logger.info("Adding " + nodes.length + " nodes to job " + job);
-            } catch(Throwable e) {
+            } catch (Throwable e) {
                 logger.warn("startJob threw exception: ", e);
             }
-            
-            synchronized(availableNodeSet) {
+
+            synchronized (availableNodeSet) {
                 if (job.getNumNodes() == 0) {
                     jobList.remove(0);
                 }

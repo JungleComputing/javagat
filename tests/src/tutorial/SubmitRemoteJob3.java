@@ -39,7 +39,7 @@ public class SubmitRemoteJob3 implements MetricListener {
         }
         context.addPreference("ResourceBroker.adaptor.name", args[0]);
         context.addPreference("File.adaptor.name", "ssh, local");
-        context.addPreference("ResourceBroker.jobmanager", args[1]);
+        context.addPreference("resourcebroker.jobmanager", args[1]);
 
         SoftwareDescription sd1 = new SoftwareDescription();
         sd1.setExecutable("/bin/hostname");

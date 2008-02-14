@@ -74,14 +74,14 @@ public class Sandbox {
         // The user preference sandboxRoot overwrites the one specified by the
         // adaptor.
         String sandboxRootPref = null;
-        String sandboxDisabledPref = null;
+        String sandboxUseRootPref = null;
         String sandboxDeletePref = null;
         SoftwareDescription sd = jobDescription.getSoftwareDescription();
         if (sd != null) {
             Map<String, Object> attr = sd.getAttributes();
             if (attr != null) {
                 sandboxRootPref = (String) attr.get("sandbox.root");
-                sandboxDisabledPref = (String) attr.get("sandbox.disable");
+                sandboxUseRootPref = (String) attr.get("sandbox.useroot");
                 sandboxDeletePref = (String) attr.get("sandbox.delete");
             }
         }
@@ -93,8 +93,8 @@ public class Sandbox {
             }
         }
 
-        if (sandboxDisabledPref != null) {
-            if (sandboxDisabledPref.equalsIgnoreCase("true")) {
+        if (sandboxUseRootPref != null) {
+            if (sandboxUseRootPref.equalsIgnoreCase("true")) {
                 this.createSandboxDir = false;
                 // change the default, if no sandbox is created, no sandbox will
                 // be deleted, unless you overwrite it using the

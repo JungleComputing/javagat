@@ -41,7 +41,7 @@ public class LocalFileAdaptor extends FileCpi {
             URI location) throws GATObjectCreationException {
         super(gatContext, preferences, location);
 
-        String res = (String) preferences.get("ignoreHiddenFiles");
+        String res = (String) preferences.get("file.hiddenfiles.ignore");
         if (res != null && res.equalsIgnoreCase("true")) {
             if (logger.isDebugEnabled()) {
                 logger.debug("local file adaptor is ignoring hidden files");

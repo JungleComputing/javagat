@@ -74,7 +74,7 @@ public class WrapperSubmitter {
         }
         JobDescription mainDescription = descriptions.get(0);
         String host = brokerURI.getHost();
-        String singleRemoteGAT = (String) preferences.get("singleRemoteGAT");
+        String singleRemoteGAT = (String) preferences.get("wrapper.remotegat.single");
         if (singleRemoteGAT != null && singleRemoteGAT.equalsIgnoreCase("true")) {
             SoftwareDescription sd = mainDescription.getSoftwareDescription();
             String remoteGATLocation = sd.getStringAttribute(
@@ -141,10 +141,11 @@ public class WrapperSubmitter {
 
             Object javaHome = origSd.getObjectAttribute("wrapper.java.home");
             if (javaHome == null) {
-                throw new GATInvocationException("wrapper.java.home not set");
+                sd.setExecutable("java");
+            } else {
+                sd.addAttribute("wrapper.java.home", javaHome);
+                sd.setExecutable(javaHome.toString());
             }
-            sd.addAttribute("wrapper.java.home", javaHome);
-            sd.setExecutable(javaHome + "/bin/java");
 
             boolean remoteIsGatEnabled = false;
             String remoteEngineLibLocation = "./lib/";
@@ -306,52 +307,6 @@ public class WrapperSubmitter {
 
         return f;
     }
-
-    // public String getHostname(JobDescription description)
-    // throws GATInvocationException {
-    // String contactHostname = null;
-    //
-    // String contact = (String) preferences
-    // .get("ResourceBroker.jobmanagerContact");
-    // if (contact != null) {
-    // StringTokenizer st = new StringTokenizer(contact, ":/");
-    // contactHostname = st.nextToken();
-    // }
-    //
-    // ResourceDescription d = description.getResourceDescription();
-    //
-    // if (d == null) {
-    // return contactHostname;
-    // }
-    //
-    // if (!(d instanceof HardwareResourceDescription)) {
-    // if (contactHostname != null)
-    // return contactHostname;
-    //
-    // throw new GATInvocationException(
-    // "Currently only hardware resource descriptions are supported");
-    // }
-    //
-    // Map<String, Object> m = d.getDescription();
-    // Set<String> keys = m.keySet();
-    // Iterator<String> i = keys.iterator();
-    //
-    // while (i.hasNext()) {
-    // String key = (String) i.next();
-    // Object val = m.get(key);
-    //
-    // if (key.equals("machine.node")) {
-    // if (val instanceof String) {
-    // return (String) val;
-    // } else {
-    // String[] hostList = (String[]) val;
-    // return hostList[0];
-    // }
-    // }
-    // }
-    //
-    // return contactHostname;
-    // }
 
     public static void end() {
         Iterator<String> it = hostsWithRemoteGAT.iterator();

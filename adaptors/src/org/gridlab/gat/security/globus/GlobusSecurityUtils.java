@@ -308,39 +308,4 @@ public class GlobusSecurityUtils {
                     "getCredentialFromMyProxyServer", e);
         }
     }
-
-    // try to get the credential passed in through the gat preferences
-    public static GSSCredential getCredentialFromPreferences(
-            GATContext context, Preferences preferences) {
-        GSSCredential credential = null;
-
-        try {
-            String val = (String) preferences.get("globusCert");
-            if (val == null)
-                return null;
-            GlobusCredential globusCred = new GlobusCredential(
-                    new ByteArrayInputStream(val.getBytes("UTF-8")));
-
-            if (logger.isDebugEnabled())
-                logger.debug("Found proxy.  Good for "
-                        + globusCred.getTimeLeft());
-            credential = new GlobusGSSCredentialImpl(globusCred,
-                    GSSCredential.INITIATE_AND_ACCEPT);
-        } catch (Exception x) {
-            if (logger.isDebugEnabled()) {
-                logger
-                        .debug("loading credential from preferences failed: "
-                                + x);
-                x.printStackTrace();
-            }
-
-            return null;
-        }
-
-        if (logger.isDebugEnabled()) {
-            logger.debug("loaded credential from preferences");
-        }
-
-        return credential;
-    }
 }

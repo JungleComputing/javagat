@@ -26,7 +26,7 @@ public class AdvertJob {
         Preferences prefs = new Preferences();
         prefs.put("AdvertService.adaptor.name", "local");
         prefs.put("ResourceBroker.adaptor.name", "globus");
-        prefs.put("killJobsOnExit", "false");
+        prefs.put("jobs.killonexit", "false");
         c.addPreferences(prefs);
 
         SoftwareDescription sd = new SoftwareDescription();

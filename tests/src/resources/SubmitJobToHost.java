@@ -25,7 +25,7 @@ public class SubmitJobToHost {
 
         // prefs.put("ResourceBroker.adaptor.name", "grms");
         prefs.put("ResourceBroker.adaptor.name", "globus");
-        prefs.put("ResourceBroker.jobmanager", "sge");
+        prefs.put("resourcebroker.jobmanager", "sge");
 
         String exe = "/bin/hostname";
         File outFile = null;
