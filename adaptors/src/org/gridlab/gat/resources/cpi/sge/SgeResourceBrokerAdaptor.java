@@ -9,7 +9,6 @@ package org.gridlab.gat.resources.cpi.sge;
 
 // org.ggf.drmaa imports
 import java.util.List;
-import java.util.Properties;
 
 import org.apache.log4j.Logger;
 import org.ggf.drmaa.DrmaaException;
