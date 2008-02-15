@@ -12,6 +12,7 @@ import org.gridlab.gat.GATObjectCreationException;
 import org.gridlab.gat.Preferences;
 import org.gridlab.gat.URI;
 import org.gridlab.gat.engine.GATEngine;
+import org.gridlab.gat.monitoring.MetricListener;
 import org.gridlab.gat.resources.Job;
 import org.gridlab.gat.resources.JobDescription;
 import org.gridlab.gat.resources.SoftwareDescription;
@@ -231,7 +232,8 @@ public class KoalaResourceBrokerAdaptor extends ResourceBrokerCpi {
         return rsl;
     }
 
-    public Job submitJob(JobDescription description)
+    public Job submitJob(JobDescription description, MetricListener listener,
+            String metricName)
             throws GATInvocationException {
 
         System.err.println("@@@ in koala.submit job");

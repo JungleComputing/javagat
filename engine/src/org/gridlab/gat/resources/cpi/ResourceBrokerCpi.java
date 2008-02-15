@@ -107,7 +107,7 @@ public abstract class ResourceBrokerCpi implements ResourceBroker {
      * 
      * @see org.gridlab.gat.resources.ResourceBroker#submitJob(org.gridlab.gat.resources.JobDescription)
      */
-    public Job submitJob(JobDescription description)
+    public final Job submitJob(JobDescription description)
             throws GATInvocationException {
         return submitJob(description, null, null);
     }
