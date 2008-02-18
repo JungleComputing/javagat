@@ -32,6 +32,11 @@ public class GAT {
     static Class<?> engineClass;
     static Method createProxyMethod;
 
+    /**
+     * We use reflection to load the GAT engine. The only reason for this
+     * is that the user can develop JavaGAT applications with only GAT-API.jar
+     * on his/her classpath.
+     */
     static {
         try {
             engineClass = Class.forName("org.gridlab.gat.engine.GATEngine");
