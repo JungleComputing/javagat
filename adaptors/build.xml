@@ -33,19 +33,17 @@
 			<classpath refid="external_jars" />
 		</javac>
 
-		<jar jarfile="${lib}/LocalFileAdaptor.jar" basedir="${tmp}" includes="**/LocalFileAdaptor.class,**/SerializedFile.class">
+		<jar jarfile="${lib}/LocalFileAdaptor.jar" basedir="${tmp}" includes="**/io/cpi/local/*.class,**/SerializedFile.class">
 			<manifest>
 				<attribute name="FileCpi-class" value="org.gridlab.gat.io.cpi.local.LocalFileAdaptor" />
-			</manifest>
-		</jar>
-
-		<jar jarfile="${lib}/LocalFileInputStreamAdaptor.jar" basedir="${tmp}" includes="**/LocalFileInputStreamAdaptor.class">
-			<manifest>
 				<attribute name="FileInputStreamCpi-class" value="org.gridlab.gat.io.cpi.local.LocalFileInputStreamAdaptor" />
+				<attribute name="FileOutputStreamCpi-class" value="org.gridlab.gat.io.cpi.local.LocalFileOutputStreamAdaptor" />
+				<attribute name="RandomAccessFileCpi-class" value="org.gridlab.gat.io.cpi.local.LocalRandomAccessFileAdaptor" />
+				<attribute name="LogicalFileCpi-class" value="org.gridlab.gat.io.cpi.local.LocalLogicalFileAdaptor" />
 			</manifest>
 		</jar>
 
-		<jar jarfile="${lib}/CopyingFileInputStreamAdaptor.jar" basedir="${tmp}" includes="**/CopyingFileInputStreamAdaptor.class">
+		<jar jarfile="${lib}/CopyingFileAdaptor.jar" basedir="${tmp}" includes="**/CopyingFileInputStreamAdaptor.class">
 			<manifest>
 				<attribute name="FileInputStreamCpi-class" value="org.gridlab.gat.io.cpi.copyingFileInputStream.CopyingFileInputStreamAdaptor" />
 			</manifest>
@@ -63,18 +61,6 @@
 			<manifest>
 				<attribute name="FileCpi-class" value="org.gridlab.gat.io.cpi.sftpnew.SftpNewFileAdaptor" />
 				<attribute name="FileInputStreamCpi-class" value="org.gridlab.gat.io.cpi.sftpnew.SftpNewFileInputStreamAdaptor" />
-			</manifest>
-		</jar>
-
-		<jar jarfile="${lib}/LocalFileOutputStreamAdaptor.jar" basedir="${tmp}" includes="**/LocalFileOutputStreamAdaptor.class">
-			<manifest>
-				<attribute name="FileOutputStreamCpi-class" value="org.gridlab.gat.io.cpi.local.LocalFileOutputStreamAdaptor" />
-			</manifest>
-		</jar>
-
-		<jar jarfile="${lib}/LocalRandomAccessFileAdaptor.jar" basedir="${tmp}" includes="**/LocalRandomAccessFileAdaptor.class">
-			<manifest>
-				<attribute name="RandomAccessFileCpi-class" value="org.gridlab.gat.io.cpi.local.LocalRandomAccessFileAdaptor" />
 			</manifest>
 		</jar>
 
@@ -137,30 +123,24 @@
 			</manifest>
 		</jar>
 
-		<jar jarfile="${lib}/HTTPFileStreamAdaptor.jar" basedir="${tmp}" includes="org/gridlab/gat/io/cpi/globus/**,org/globus/ftp/vanilla/**">
+		<jar jarfile="${lib}/HTTPFileAdaptor.jar" basedir="${tmp}" includes="org/gridlab/gat/io/cpi/globus/**,org/globus/ftp/vanilla/**">
 			<manifest>
 				<attribute name="FileInputStreamCpi-class" value="org.gridlab.gat.io.cpi.globus.HTTPFileInputStreamAdaptor" />
 				<attribute name="FileOutputStreamCpi-class" value="org.gridlab.gat.io.cpi.globus.HTTPFileOutputStreamAdaptor" />
 			</manifest>
 		</jar>
 
-		<jar jarfile="${lib}/HTTPSFileStreamAdaptor.jar" basedir="${tmp}" includes="org/gridlab/gat/io/cpi/globus/**,org/globus/ftp/vanilla/**">
+		<jar jarfile="${lib}/HTTPSFileAdaptor.jar" basedir="${tmp}" includes="org/gridlab/gat/io/cpi/globus/**,org/globus/ftp/vanilla/**">
 			<manifest>
 				<attribute name="FileInputStreamCpi-class" value="org.gridlab.gat.io.cpi.globus.HTTPSFileInputStreamAdaptor" />
 				<attribute name="FileOutputStreamCpi-class" value="org.gridlab.gat.io.cpi.globus.HTTPSFileOutputStreamAdaptor" />
 			</manifest>
 		</jar>
 
-		<jar jarfile="${lib}/SSHFileStreamAdaptor.jar" basedir="${tmp}" includes="org/gridlab/gat/io/cpi/ssh/**,com/jcraft/jsch/**">
+		<jar jarfile="${lib}/SSHFileAdaptor.jar" basedir="${tmp}" includes="org/gridlab/gat/io/cpi/ssh/**,com/jcraft/jsch/**">
 			<manifest>
 				<attribute name="FileInputStreamCpi-class" value="org.gridlab.gat.io.cpi.ssh.SshFileInputStreamAdaptor" />
 				<attribute name="FileOutputStreamCpi-class" value="org.gridlab.gat.io.cpi.ssh.SshFileOutputStreamAdaptor" />
-			</manifest>
-		</jar>
-
-		<jar jarfile="${lib}/LocalLogicalFileAdaptor.jar" basedir="${tmp}" includes="**/LocalLogicalFileAdaptor.class">
-			<manifest>
-				<attribute name="LogicalFileCpi-class" value="org.gridlab.gat.io.cpi.local.LocalLogicalFileAdaptor" />
 			</manifest>
 		</jar>
 
@@ -262,13 +242,13 @@
 			</manifest>
 		</jar>
 
-		<jar jarfile="${lib}/WSGT4ResourceBroker.jar" basedir="${tmp}" includes="**/wsgt4/WSGT4*.class">
+		<jar jarfile="${lib}/WSGT4ResourceBrokerAdaptor.jar" basedir="${tmp}" includes="**/wsgt4/WSGT4*.class">
 			<manifest>
 				<attribute name="ResourceBrokerCpi-class" value="org.gridlab.gat.resources.cpi.wsgt4.WSGT4ResourceBrokerAdaptor" />
 			</manifest>
 		</jar>
 		
-		<jar jarfile="${lib}/WSGT4newResourceBroker.jar" basedir="${tmp}" includes="**/wsgt4new/WSGT4new*.class">
+		<jar jarfile="${lib}/WSGT4newResourceBrokerAdaptor.jar" basedir="${tmp}" includes="**/wsgt4new/WSGT4new*.class">
 			<manifest>
 				<attribute name="ResourceBrokerCpi-class" value="org.gridlab.gat.resources.cpi.wsgt4new.WSGT4newResourceBrokerAdaptor" />
 			</manifest>
