@@ -146,10 +146,15 @@ class NestedException extends Exception {
         for (int i = 0; i < throwables.size(); i++) {
             if (adaptorNames.get(i) != null) {
                 if (adaptorNames.get(i).equals("")) {
-                    res += (indent + "*** ("
+                    res += indent + "*** ("
                             + throwables.get(i).getClass().getSimpleName()
-                            + "): " + ((NestedException) throwables.get(i))
-                            .getSuperMessage());
+                            + "): ";
+                    if (throwables.get(i) instanceof NestedException) {
+                        res += ((NestedException) throwables.get(i)).getSuperMessage();
+                    } else {
+                        res += throwables.get(i).getMessage();
+                    }
+                            
                 } else {
                     res += (indent + "*** " + adaptorNames.get(i) + " failed ("
                             + throwables.get(i).getClass().getSimpleName() + "): ");
