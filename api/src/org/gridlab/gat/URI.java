@@ -103,16 +103,20 @@ public class URI implements Serializable, Comparable<Object> {
         }
 
         String[] localhostIPs = getLocalHostIPs();
-        for (String localhostIP : localhostIPs) {
-            if (localhostIP.equals(u.getHost())) {
-                return true;
+        if (localhostIPs != null) {
+            for (String localhostIP : localhostIPs) {
+                if (localhostIP.equals(u.getHost())) {
+                    return true;
+                }
             }
         }
 
         String[] localhostIPsFromHostName = getLocalHostIPsFromHostName();
-        for (String localhostIP : localhostIPsFromHostName) {
-            if (localhostIP.equals(u.getHost())) {
-                return true;
+        if (localhostIPsFromHostName != null) {
+            for (String localhostIP : localhostIPsFromHostName) {
+                if (localhostIP.equals(u.getHost())) {
+                    return true;
+                }
             }
         }
 
@@ -125,7 +129,7 @@ public class URI implements Serializable, Comparable<Object> {
         if (path == null || path.equals("")) {
             return null;
         }
-        
+
         path = new URIEncoder().decodeUri(u.getPath());
 
         if ((u.getScheme() == null) && (u.getHost() == null)) {
