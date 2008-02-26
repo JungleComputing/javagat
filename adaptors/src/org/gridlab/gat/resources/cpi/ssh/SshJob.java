@@ -120,7 +120,7 @@ public class SshJob extends JobCpi {
 
         m.put("state", getStateString(state));
         m.put("exitValue", "" + exitVal);
-        m.put("hostname", sandbox.getHost());
+        m.put("hostname", sandbox.getAuthority());
 
         if (postStageException != null) {
             m.put("postStageError", postStageException);

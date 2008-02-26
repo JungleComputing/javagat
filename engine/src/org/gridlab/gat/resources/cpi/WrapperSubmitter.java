@@ -105,6 +105,8 @@ public class WrapperSubmitter {
             JavaSoftwareDescription sd = new JavaSoftwareDescription();
             sd.setAttributes(origSd.getAttributes());
             sd.addAttribute("wrapper.enable", "false");
+            // don't use this attribute, because it's only for the wrapped jobs.
+            sd.removeAttribute("sandbox.root");
 
             // start with all old attributes.
             // incorrect ones will be overwritten below

@@ -218,6 +218,10 @@ public abstract class ResourceBrokerCpi implements ResourceBroker {
     public String getHostname() {
         return brokerURI.getHost();
     }
+    
+    public String getAuthority() {
+        return brokerURI.getAuthority();
+    }
 
     public String getScheme() {
         return brokerURI.getScheme();

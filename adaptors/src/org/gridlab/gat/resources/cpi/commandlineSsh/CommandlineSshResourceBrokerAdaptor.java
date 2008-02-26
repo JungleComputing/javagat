@@ -53,7 +53,8 @@ public class CommandlineSshResourceBrokerAdaptor extends ResourceBrokerCpi {
         if (!brokerURI.isCompatible("ssh") && brokerURI.getScheme() != null
                 || (brokerURI.refersToLocalHost() && (brokerURI == null))) {
             throw new GATObjectCreationException(
-                    "cannot handle the scheme, scheme is: " + brokerURI.getScheme());
+                    "cannot handle the scheme, scheme is: "
+                            + brokerURI.getScheme());
         }
 
         String osname = System.getProperty("os.name");
@@ -78,6 +79,11 @@ public class CommandlineSshResourceBrokerAdaptor extends ResourceBrokerCpi {
         }
 
         String path = getExecutable(description);
+        String authority = getAuthority();
+        if (authority == null) {
+            authority = "localhost";
+        }
+
         String host = getHostname();
         if (host == null) {
             host = "localhost";
@@ -118,12 +124,13 @@ public class CommandlineSshResourceBrokerAdaptor extends ResourceBrokerCpi {
 
         if (logger.isDebugEnabled()) {
             logger.debug("Prepared session for location " + brokerURI
-                    + " with username: " + sui.username + "; host: " + host);
+                    + " with username: " + sui.username + "; authority: "
+                    + authority);
         }
 
         // create the sandbox
         Sandbox sandbox = new Sandbox(gatContext, preferences, description,
-                host, null, true, false, false, false);
+                authority, null, true, false, false, false);
         // create the job
         CommandlineSshJob job = new CommandlineSshJob(gatContext, preferences,
                 description, sandbox);
@@ -141,7 +148,7 @@ public class CommandlineSshResourceBrokerAdaptor extends ResourceBrokerCpi {
 
         String command = null;
         if (windows) {
-            command = "sexec " + sui.username + "@" + host + " -unat=yes -cmd="
+            command = "sexec " + sui.username + "@" + authority + " -unat=yes -cmd="
                     + path + " " + getArguments(description);
             if (sui.getPassword() == null) { // public/private key
                 int slot = sui.getPrivateKeySlot();
@@ -156,13 +163,9 @@ public class CommandlineSshResourceBrokerAdaptor extends ResourceBrokerCpi {
         } else {
             // we must use the -t option to ssh (allocates pseudo TTY).
             // If we don't, there is no way to kill the remote process.
-            command = "ssh -o BatchMode=yes -o StrictHostKeyChecking=yes -t -t "
-                    + host
-                    + " "
-                    + "cd "
-                    + sandbox.getSandbox()
-                    + " && "
-                    + path
+            command = "ssh -p " + port
+                    + "-o BatchMode=yes -o StrictHostKeyChecking=yes -t -t "
+                    + host + " " + "cd " + sandbox.getSandbox() + " && " + path
                     + " " + getArguments(description);
         }
 

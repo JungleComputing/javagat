@@ -27,7 +27,7 @@ public class Sandbox {
 
     private Preferences preferences;
 
-    private String host;
+    private String authority;
 
     private String sandbox;
 
@@ -58,16 +58,16 @@ public class Sandbox {
     }
 
     public Sandbox(GATContext gatContext, Preferences preferences,
-            JobDescription jobDescription, String host, String sandboxRoot,
-            boolean createSandboxDir, boolean preStageStdin,
-            boolean postStageStdout, boolean postStageStderr)
-            throws GATInvocationException {
+            JobDescription jobDescription, String authority,
+            String sandboxRoot, boolean createSandboxDir,
+            boolean preStageStdin, boolean postStageStdout,
+            boolean postStageStderr) throws GATInvocationException {
         this.gatContext = gatContext;
         this.preferences = preferences;
-        this.host = host;
+        this.authority = authority;
 
         this.createSandboxDir = createSandboxDir; // default value taken from
-                                                    // adaptor
+        // adaptor
         this.deleteSandboxDir = true; // default value
         this.sandboxRoot = sandboxRoot; // default value taken from adaptor
 
@@ -114,25 +114,26 @@ public class Sandbox {
         initSandbox();
 
         pre = new PreStagedFileSet(gatContext, preferences, jobDescription,
-                host, sandbox, preStageStdin);
+                authority, sandbox, preStageStdin);
         post = new PostStagedFileSet(gatContext, preferences, jobDescription,
-                host, sandbox, postStageStdout, postStageStderr);
+                authority, sandbox, postStageStdout, postStageStderr);
 
         wipePreStaged = sd.wipePreStaged();
         wipePostStaged = sd.wipePostStaged();
         toWipe = new PostStagedFileSet(gatContext, preferences, sd
-                .getWipedFiles(), host, sandbox);
+                .getWipedFiles(), authority, sandbox);
 
         deletePreStaged = sd.deletePreStaged();
         deletePostStaged = sd.deletePostStaged();
         toDelete = new PostStagedFileSet(gatContext, preferences, sd
-                .getDeletedFiles(), host, sandbox);
+                .getDeletedFiles(), authority, sandbox);
 
         // createSandbox();
     }
 
-    private void createSandboxDir(String host) throws GATInvocationException {
-        if (host == null) {
+    private void createSandboxDir(String authority)
+            throws GATInvocationException {
+        if (authority == null) {
             throw new FilePrestageException("Sandbox",
                     new GATInvocationException(
                             "cannot create a sandbox without a host name"));
@@ -141,7 +142,7 @@ public class Sandbox {
         for (int i = 0; i < 10; i++) {
             sandbox = getSandboxName();
             try {
-                URI location = new URI("any://" + host + "/" + sandbox);
+                URI location = new URI("any://" + authority + "/" + sandbox);
                 if (logger.isDebugEnabled()) {
                     logger.debug("sandbox dir: " + location);
                 }
@@ -161,7 +162,7 @@ public class Sandbox {
     private void removeSandboxDir() throws GATInvocationException {
         URI location = null;
         try {
-            location = new URI("any://" + host + "/" + sandbox);
+            location = new URI("any://" + authority + "/" + sandbox);
         } catch (URISyntaxException e) {
             throw new GATInvocationException("sandbox", e);
         }
@@ -188,7 +189,7 @@ public class Sandbox {
         }
 
         try {
-            createSandboxDir(host);
+            createSandboxDir(authority);
         } catch (Exception e) {
             throw new FilePrestageException("sandbox", e);
         }
@@ -373,8 +374,8 @@ public class Sandbox {
 
         if (deleteSandboxDir) {
             if (logger.isInfoEnabled()) {
-                logger.info("removing sandbox dir: " + "any://" + host + "/"
-                        + sandbox);
+                logger.info("removing sandbox dir: " + "any://" + authority
+                        + "/" + sandbox);
             }
             try {
                 removeSandboxDir();
@@ -388,8 +389,8 @@ public class Sandbox {
             }
         } else {
             if (logger.isInfoEnabled()) {
-                logger.info("sandbox persists at: " + "any://" + host + "/"
-                        + sandbox);
+                logger.info("sandbox persists at: " + "any://" + authority
+                        + "/" + sandbox);
             }
         }
 
@@ -466,8 +467,8 @@ public class Sandbox {
         return f.relativeURI;
     }
 
-    public String getHost() {
-        return host;
+    public String getAuthority() {
+        return authority;
     }
 
     public PreStagedFileSet getPrestagedFileSet() {
@@ -563,11 +564,12 @@ public class Sandbox {
     }
 
     /**
-     * @param host
-     *                the host to set
+     * @param authority
+     *                the authority to set (authority part of a URI, hostname +
+     *                some extra information)
      */
-    public void setHost(String host) {
-        this.host = host;
+    public void setAuthority(String authority) {
+        this.authority = authority;
     }
 
     /**
