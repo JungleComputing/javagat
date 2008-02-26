@@ -376,9 +376,9 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
             throws GATInvocationException {
         // long start = System.currentTimeMillis();
         String host = getHostname();
-        String contact = brokerURI.getAuthority();
-        if (brokerURI.getPath() != null) {
-            contact += "/" + brokerURI.getPath();
+        String contact = brokerURI.toString();
+        if (brokerURI.getScheme() != null) {
+            contact = contact.replace(brokerURI.getScheme() + "://", "");
         }
 
         URI hostUri;
@@ -466,10 +466,12 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
         // choose the first of the set descriptions to retrieve the hostname
         // etc.
         String host = getHostname();
-        String contact = brokerURI.getAuthority();
-        if (brokerURI.getPath() != null) {
-            contact += "/" + brokerURI.getPath();
+        
+        String contact = brokerURI.toString();
+        if (brokerURI.getScheme() != null) {
+            contact = contact.replace(brokerURI.getScheme() + "://", "");
         }
+        
         GSSCredential credential = getCredential(host);
 
         String random = "" + Math.random();

@@ -3,6 +3,8 @@
  */
 package org.gridlab.gat.resources.cpi;
 
+import java.net.URISyntaxException;
+
 import org.apache.log4j.Logger;
 import org.gridlab.gat.GAT;
 import org.gridlab.gat.GATContext;
@@ -60,7 +62,6 @@ public abstract class StagedFile {
             throws GATInvocationException {
         URI uri = f.toGATURI();
 
-        String relativeDest = null;
         String dest = "any://";
         dest += (uri.getUserInfo() == null) ? "" : uri.getUserInfo();
 
@@ -79,19 +80,31 @@ public abstract class StagedFile {
         }
 
         if (useNameOnly) {
-            java.io.File tmp = new java.io.File(uri.getPath());
-            dest += tmp.getName();
-            relativeDest = tmp.getName();
+            // if f is a directory we dont have to put its name to the dest,
+            // because copy dir a to dir b already ends up in b/a so adding the
+            // name would make it b/a/a which is wrong!
+            if (!f.isDirectory()) {
+                java.io.File tmp = new java.io.File(uri.getPath());
+                dest += tmp.getName();
+                try {
+                    relativeURI = new URI(tmp.getName());
+                } catch (URISyntaxException e) {
+                    // ignore
+                }
+            }
         } else {
             dest += uri.getPath();
-            relativeDest = uri.getPath();
+            try {
+                relativeURI = new URI(uri.getPath());
+            } catch (URISyntaxException e) {
+                // ignore
+            }
         }
 
         try {
             URI destURI = new URI(dest);
-            relativeURI = new URI(relativeDest);
-
-            return GAT.createFile(gatContext, preferences, destURI);
+            return GAT.createFile(f.getFileInterface().getGATContext(), f
+                    .getFileInterface().getPreferences(), destURI);
         } catch (Exception e) {
             throw new GATInvocationException("StageFile", e);
         }

@@ -157,6 +157,7 @@ public class PostStagedFileSet {
         GATInvocationException exceptions = new GATInvocationException();
         for (int i = 0; i < files.length; i++) {
             try {
+                
                 files[i].poststage();
             } catch (Throwable e) {
                 exceptions.add("resource broker cpi", e);

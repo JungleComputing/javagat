@@ -20,7 +20,6 @@ public class PreStagedFile extends StagedFile {
 
     private String exe;
 
-
     public PreStagedFile() {
         // constructor needed for castor marshalling, do *not* use
     }
@@ -122,25 +121,6 @@ public class PreStagedFile extends StagedFile {
             logger.info("prestage:\n  copy " + getResolvedSrc().toGATURI() + " to "
                     + getResolvedDest().toGATURI());
         }
-
-        // create any directories if needed.
-        if (getResolvedSrc().isDirectory()) {
-            // dest is also a dir, create it.
-            if (logger.isInfoEnabled()) {
-                logger.info("creating dir: " + getResolvedDest());
-            }
-            getResolvedDest().mkdirs();
-        } else {
-            // src is a file, dest is also a file.
-            File dir = (File) getResolvedDest().getParentFile();
-            if (dir != null) {
-                if (logger.isInfoEnabled()) {
-                    logger.info("creating dir: " + dir);
-                }
-                dir.mkdirs();
-            }
-        }
-
         getResolvedSrc().copy(getResolvedDest().toGATURI());
     }
 

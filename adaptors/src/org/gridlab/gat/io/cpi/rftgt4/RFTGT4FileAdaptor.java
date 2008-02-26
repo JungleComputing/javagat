@@ -281,7 +281,6 @@ public class RFTGT4FileAdaptor extends FileCpi {
 //        } catch (URISyntaxException e) {
 //            // ignore
 //        }
-        System.out.println("stringetje: " + rftgt4String);
         return rftgt4String;
     }
 

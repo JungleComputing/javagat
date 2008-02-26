@@ -6,7 +6,9 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 
+import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
+import org.gridlab.gat.Preferences;
 import org.gridlab.gat.URI;
 import org.gridlab.gat.advert.Advertisable;
 import org.gridlab.gat.monitoring.Monitorable;
@@ -19,7 +21,22 @@ import org.gridlab.gat.monitoring.Monitorable;
  *
  * @author rob
  */
-public interface FileInterface extends Monitorable, Advertisable, Comparable<Object> {
+public interface FileInterface extends Monitorable, Advertisable, Comparable<Object>, java.io.Serializable {
+    
+    /**
+     * This method returns the Preferences object belonging to this File
+     * 
+     * @return The Preferences of this File
+     */
+    public Preferences getPreferences();
+    
+    /**
+     * This method returns the GATContext object belonging to this File
+     * 
+     * @return The GATContext of this File
+     */
+    public GATContext getGATContext();
+    
     /**
      * This method returns the URI of this File
      *

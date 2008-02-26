@@ -74,7 +74,8 @@ public class WrapperSubmitter {
         }
         JobDescription mainDescription = descriptions.get(0);
         String host = brokerURI.getHost();
-        String singleRemoteGAT = (String) preferences.get("wrapper.remotegat.single");
+        String singleRemoteGAT = (String) preferences
+                .get("wrapper.remotegat.single");
         if (singleRemoteGAT != null && singleRemoteGAT.equalsIgnoreCase("true")) {
             SoftwareDescription sd = mainDescription.getSoftwareDescription();
             String remoteGATLocation = sd.getStringAttribute(
@@ -94,9 +95,6 @@ public class WrapperSubmitter {
 
     private Job doSubmitJob() throws GATInvocationException {
         try {
-            Preferences newPreferences = new Preferences(preferences);
-            newPreferences.put("wrapper.enable", "false");
-
             SoftwareDescription origSd = descriptions.get(0)
                     .getSoftwareDescription();
             if (origSd == null) {
@@ -105,6 +103,8 @@ public class WrapperSubmitter {
             }
 
             JavaSoftwareDescription sd = new JavaSoftwareDescription();
+            sd.setAttributes(origSd.getAttributes());
+            sd.addAttribute("wrapper.enable", "false");
 
             // start with all old attributes.
             // incorrect ones will be overwritten below
@@ -117,10 +117,10 @@ public class WrapperSubmitter {
             if (origSd.getBooleanAttribute("wrapper.output", false)) {
                 String remoteOutputURI = origSd.getStringAttribute(
                         "wrapper.output.location", "any:///wrapper");
-                File outFile = GAT.createFile(gatContext, newPreferences,
-                        new URI(remoteOutputURI + "." + counter + ".out"));
-                File errFile = GAT.createFile(gatContext, newPreferences,
-                        new URI(remoteOutputURI + "." + counter + ".err"));
+                File outFile = GAT.createFile(gatContext, preferences, new URI(
+                        remoteOutputURI + "." + counter + ".out"));
+                File errFile = GAT.createFile(gatContext, preferences, new URI(
+                        remoteOutputURI + "." + counter + ".err"));
                 sd.setStdout(outFile);
                 sd.setStderr(errFile);
             }
@@ -147,15 +147,11 @@ public class WrapperSubmitter {
                 sd.setExecutable(javaHome.toString());
             }
 
-            boolean remoteIsGatEnabled = false;
-            String remoteEngineLibLocation = "./lib/";
+            String remoteEngineLibLocation = "lib/";
 
             String remoteGatLocation = origSd.getStringAttribute(
-                    "wrapper.remotegat.location", null);
-            if (remoteGatLocation != null) {
-                remoteEngineLibLocation = remoteGatLocation + "/lib/";
-                remoteIsGatEnabled = true;
-            }
+                    "wrapper.remotegat.location", ".");
+            remoteEngineLibLocation = remoteGatLocation + "/lib/";
             String localGATLocation = localEnv.getVar("GAT_LOCATION");
             java.io.File engineDir = new java.io.File(localGATLocation + "/lib");
             String[] files = engineDir.list();
@@ -164,25 +160,25 @@ public class WrapperSubmitter {
                 classPath += ":" + remoteEngineLibLocation + files[i];
             }
 
-            if (remoteIsGatEnabled) {
-                environment.put("gat.adaptor.path", remoteGatLocation
-                        + "/lib/adaptors");
-            } else {
-                environment.put("gat.adaptor.path", "lib/adaptors");
-            }
+            environment.put("gat.adaptor.path", remoteGatLocation
+                    + "/lib/adaptors");
 
-            sd.setEnvironment(environment);
+            //
+            // sd.setEnvironment(environment);
+
+            boolean remoteIsGatEnabled = origSd.getStringAttribute(
+                    "wrapper.remotegat.location", null) != null;
 
             if (!remoteIsGatEnabled) {
                 // prestage the gat itself
-                sd.addPreStagedFile(GAT.createFile(gatContext, newPreferences,
+                sd.addPreStagedFile(GAT.createFile(gatContext, preferences,
                         new URI(localGATLocation + "/log4j.properties")));
-                sd.addPreStagedFile(GAT.createFile(gatContext, newPreferences,
+                sd.addPreStagedFile(GAT.createFile(gatContext, preferences,
                         new URI(localGATLocation + "/lib")));
             }
 
-            java.io.File descriptorFile = writeDescriptionsToFile(newPreferences);
-            sd.addPreStagedFile(GAT.createFile(gatContext, newPreferences,
+            java.io.File descriptorFile = writeDescriptionsToFile(preferences);
+            sd.addPreStagedFile(GAT.createFile(gatContext, preferences,
                     new URI(descriptorFile.getAbsolutePath())));
 
             String cwd = System.getProperty("user.dir");
@@ -193,7 +189,7 @@ public class WrapperSubmitter {
             }
 
             sd.setOptions(new String[] { "-classpath", classPath });
-            sd.setSystemProperties(new String[] { "-Dgat.adaptor.path="
+            sd.setSystemProperties(new String[] { "gat.adaptor.path="
                     + environment.get("gat.adaptor.path") });
             sd.setMain("org.gridlab.gat.resources.cpi.Wrapper");
             sd.setJavaArguments(new String[] {
@@ -237,7 +233,7 @@ public class WrapperSubmitter {
 
             JobDescription jd = new JobDescription(sd);
             ResourceBroker broker = GAT.createResourceBroker(gatContext,
-                    newPreferences, brokerURI);
+                    preferences, brokerURI);
             Job j = broker.submitJob(jd);
             descriptorFile.delete();
             Iterator<WrappedJobImpl> it = jobs.iterator();
@@ -258,16 +254,19 @@ public class WrapperSubmitter {
         Environment localEnv = new Environment();
         String localGATLocation = localEnv.getVar("GAT_LOCATION");
         try {
-            File gatDir = GAT.createFile(gatContext, localGATLocation + "/lib");
-            File log4jFile = GAT.createFile(gatContext, localGATLocation
+            Preferences prefs = new Preferences();
+            prefs.put("file.create", "true");
+            File gatDir = GAT.createFile(gatContext, prefs, localGATLocation
+                    + "/lib");
+            File log4jFile = GAT.createFile(gatContext, prefs, localGATLocation
                     + "/log4j.properties");
-            File destDir = GAT.createFile(gatContext, "any://" + host + "/"
-                    + WELL_KNOWN_REMOTE_GAT_LOCATION);
+            File destDir = GAT.createFile(gatContext, prefs, "any://" + host
+                    + "/" + WELL_KNOWN_REMOTE_GAT_LOCATION);
             if (!destDir.exists()) {
                 destDir.mkdir();
             }
             gatDir.copy(new URI("any://" + host + "/"
-                    + WELL_KNOWN_REMOTE_GAT_LOCATION + "/lib"));
+                    + WELL_KNOWN_REMOTE_GAT_LOCATION));
             log4jFile.copy(new URI("any://" + host + "/"
                     + WELL_KNOWN_REMOTE_GAT_LOCATION + "/log4j.properties"));
         } catch (GATObjectCreationException e) {

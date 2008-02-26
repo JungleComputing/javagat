@@ -14,6 +14,7 @@ import org.gridlab.gat.GAT;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATIOException;
 import org.gridlab.gat.GATInvocationException;
+import org.gridlab.gat.Preferences;
 import org.gridlab.gat.URI;
 import org.gridlab.gat.advert.Advertisable;
 import org.gridlab.gat.monitoring.Metric;
@@ -50,7 +51,8 @@ import org.gridlab.gat.monitoring.Monitorable;
  * file is moved.
  */
 @SuppressWarnings("serial")
-public class File extends java.io.File implements Monitorable, Advertisable {
+public class File extends java.io.File implements Monitorable, Advertisable,
+        java.io.Serializable {
     org.gridlab.gat.io.FileInterface f;
 
     /**
@@ -555,8 +557,7 @@ public class File extends java.io.File implements Monitorable, Advertisable {
     }
 
     /**
-     * Read a file object from a stream. We use a "default" context to create
-     * the resulting object.
+     * Read a file object from a stream. 
      * 
      * @param stream
      *                the stream to write to
@@ -566,11 +567,11 @@ public class File extends java.io.File implements Monitorable, Advertisable {
     private void readObject(java.io.ObjectInputStream stream)
             throws IOException, ClassNotFoundException {
         URI u = (URI) stream.readObject();
-
-        GATContext c = new GATContext();
+        Preferences p = (Preferences) stream.readObject();
+        GATContext c = (GATContext) stream.readObject();
 
         try {
-            File newFile = GAT.createFile(c, u);
+            File newFile = GAT.createFile(c, p, u);
             f = newFile.f;
         } catch (Exception e) {
             throw new Error("Could not create File object: " + u);
@@ -578,7 +579,8 @@ public class File extends java.io.File implements Monitorable, Advertisable {
     }
 
     /**
-     * Serialize this file, by just writing the URI.
+     * Serialize this file, by just writing the URI, the Preferences and the
+     * GATContext.
      * 
      * @param stream
      *                the stream to write to
@@ -587,5 +589,7 @@ public class File extends java.io.File implements Monitorable, Advertisable {
     private void writeObject(java.io.ObjectOutputStream stream)
             throws IOException {
         stream.writeObject(toGATURI());
+        stream.writeObject(getFileInterface().getPreferences());
+        stream.writeObject(getFileInterface().getGATContext());
     }
 }

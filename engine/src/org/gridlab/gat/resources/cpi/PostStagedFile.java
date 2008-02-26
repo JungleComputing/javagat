@@ -12,9 +12,9 @@ import org.gridlab.gat.URI;
 import org.gridlab.gat.io.File;
 
 public class PostStagedFile extends StagedFile {
-	
-	protected static Logger logger = Logger.getLogger(PostStagedFile.class);
-	
+
+    protected static Logger logger = Logger.getLogger(PostStagedFile.class);
+
     private boolean isStdout;
 
     private boolean isStderr;
@@ -32,8 +32,10 @@ public class PostStagedFile extends StagedFile {
         resolve();
     }
 
-    /* Creates a file object for the destination of the postStaged file.
-     * Src cannot be null, dest can be. */
+    /*
+     * Creates a file object for the destination of the postStaged file. Src
+     * cannot be null, dest can be.
+     */
     private void resolve() throws GATInvocationException {
         if (origSrc.isAbsolute()) {
             inSandbox = false;
@@ -51,11 +53,10 @@ public class PostStagedFile extends StagedFile {
         if (origDest == null) {
             // file with same name in CWD
             try {
-                URI resolvedDestURI =
-                        new URI("any:///" + dir + "/" + origSrc.getName());
-                setResolvedDest(GAT
-                        .createFile(gatContext, preferences,
-                                resolvedDestURI));
+                URI resolvedDestURI = new URI("any:///" + dir + "/"
+                        + origSrc.getName());
+                setResolvedDest(GAT.createFile(gatContext, preferences,
+                        resolvedDestURI));
             } catch (Exception e) {
                 throw new GATInvocationException("poststagedFile", e);
             }
@@ -73,8 +74,9 @@ public class PostStagedFile extends StagedFile {
                     }
 
                     destURIString += origDest.getPath();
-                    setResolvedDest(GAT.createFile(gatContext, preferences, new URI(
-                            destURIString)));
+                    setResolvedDest(GAT.createFile(origSrc.getFileInterface()
+                            .getGATContext(), origSrc.getFileInterface()
+                            .getPreferences(), new URI(destURIString)));
                 } catch (Exception e) {
                     throw new GATInvocationException("poststagedFile", e);
                 }
@@ -87,7 +89,6 @@ public class PostStagedFile extends StagedFile {
             logger.info("  copy " + getResolvedSrc().toGATURI() + " to "
                     + getResolvedDest().toGATURI());
         }
-
         getResolvedSrc().copy(getResolvedDest().toGATURI());
     }
 
@@ -110,10 +111,10 @@ public class PostStagedFile extends StagedFile {
     }
 
     public String toString() {
-        String srcURI =
-                getResolvedSrc() == null ? "" : getResolvedSrc().toGATURI().toString();
-        String destURI =
-                getResolvedDest() == null ? "" : getResolvedDest().toGATURI().toString();
+        String srcURI = getResolvedSrc() == null ? "" : getResolvedSrc()
+                .toGATURI().toString();
+        String destURI = getResolvedDest() == null ? "" : getResolvedDest()
+                .toGATURI().toString();
 
         return "PostStaged: " + srcURI + " -> " + destURI
                 + (isStdout ? " (STDOUT)" : "") + (isStderr ? " (STDERR)" : "")
@@ -128,7 +129,8 @@ public class PostStagedFile extends StagedFile {
     }
 
     /**
-     * @param isStderr the isStderr to set
+     * @param isStderr
+     *                the isStderr to set
      */
     public void setStderr(boolean isStderr) {
         this.isStderr = isStderr;
@@ -142,7 +144,8 @@ public class PostStagedFile extends StagedFile {
     }
 
     /**
-     * @param isStdout the isStdout to set
+     * @param isStdout
+     *                the isStdout to set
      */
     public void setStdout(boolean isStdout) {
         this.isStdout = isStdout;

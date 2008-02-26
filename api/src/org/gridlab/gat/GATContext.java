@@ -1,5 +1,7 @@
 package org.gridlab.gat;
 
+import java.io.IOException;
+import java.io.Serializable;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.Vector;
@@ -9,7 +11,12 @@ import org.gridlab.gat.security.SecurityContext;
 /**
  * An instance of this class is the primary GAT state object.
  */
-public class GATContext implements Cloneable {
+public class GATContext implements Cloneable, Serializable {
+    /**
+     * 
+     */
+    private static final long serialVersionUID = 1L;
+
     /**
      * This member variable holds the preferences for this GATContext
      */
@@ -29,9 +36,9 @@ public class GATContext implements Cloneable {
 
     /**
      * Adds the passed SecurityContext.
-     *
+     * 
      * @param securityContext
-     *            A SecurityContext.
+     *                A SecurityContext.
      */
     public void addSecurityContext(SecurityContext securityContext) {
         securityContexts.add(securityContext);
@@ -39,9 +46,9 @@ public class GATContext implements Cloneable {
 
     /**
      * Removes the passed SecurityContext.
-     *
+     * 
      * @param securityContext
-     *            A SecurityContext.
+     *                A SecurityContext.
      */
     public void removeSecurityContext(SecurityContext securityContext) {
         securityContexts.remove(securityContext);
@@ -49,7 +56,7 @@ public class GATContext implements Cloneable {
 
     /**
      * Gets the list of SecurityContexts associated with this GATContext.
-     *
+     * 
      * @return java.util.List of SecurityContexts.
      */
     public List<SecurityContext> getSecurityContexts() {
@@ -59,10 +66,10 @@ public class GATContext implements Cloneable {
     /**
      * Gets a list of SecurityContexts of the specified type associated with
      * this GATContext.
-     *
+     * 
      * @param type
-     *            A SecurityContext type, a java.lang.String, e.g.,
-     *            org.gridlab.gat.security.PasswordSecurityContext;
+     *                A SecurityContext type, a java.lang.String, e.g.,
+     *                org.gridlab.gat.security.PasswordSecurityContext;
      * @return java.util.List of SecurityContexts.
      */
     public List<SecurityContext> getSecurityContextsByType(String type) {
@@ -87,9 +94,9 @@ public class GATContext implements Cloneable {
      * between adaptors if the constructor of an object is not called with a
      * Preferences object. Only one such object may be associated with the
      * GATContext at any one time.
-     *
+     * 
      * @param newPreferences
-     *            A Preferences object.
+     *                A Preferences object.
      */
     public void addPreferences(Preferences newPreferences) {
         preferences.putAll(newPreferences);
@@ -101,9 +108,9 @@ public class GATContext implements Cloneable {
      * Preferences object.
      * 
      * @param key
-     *          The key of the single preference
+     *                The key of the single preference
      * @param value
-     *          The value that belongs to the key of the single preference
+     *                The value that belongs to the key of the single preference
      */
     public void addPreference(String key, Object value) {
         preferences.put(key, value);
@@ -118,7 +125,7 @@ public class GATContext implements Cloneable {
 
     /**
      * Returns the Preferences object associated with the GATContext.
-     *
+     * 
      * @return the Preferences object
      */
     public Preferences getPreferences() {
@@ -127,7 +134,7 @@ public class GATContext implements Cloneable {
 
     /**
      * Returns a clone of this context.
-     *
+     * 
      * @return the new clone
      */
     public Object clone() throws CloneNotSupportedException {
@@ -138,5 +145,33 @@ public class GATContext implements Cloneable {
         c.securityContexts = new Vector<SecurityContext>(securityContexts);
 
         return c;
+    }
+
+    /**
+     * Deserialize this Context, by reading the Preferences
+     * 
+     * @param stream
+     *                the stream to write to
+     * @throws IOException
+     * @throws ClassNotFoundException
+     */
+    private void readObject(java.io.ObjectInputStream stream)
+            throws IOException, ClassNotFoundException {
+        preferences = (Preferences) stream.readObject();
+        securityContexts = new Vector<SecurityContext>();
+    }
+
+    /**
+     * Serialize this Context, by just writing only the Preferences.
+     * 
+     * Don't write the security contexts because of security issues.
+     * 
+     * @param stream
+     *                the stream to write to
+     * @throws IOException
+     */
+    private void writeObject(java.io.ObjectOutputStream stream)
+            throws IOException {
+        stream.writeObject(preferences);
     }
 }

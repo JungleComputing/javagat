@@ -2,6 +2,7 @@ package org.gridlab.gat.io.cpi;
 
 import java.io.FileFilter;
 import java.io.FilenameFilter;
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -33,7 +34,7 @@ import org.gridlab.gat.monitoring.MetricValue;
  * this File class and will be used to implement the corresponding method in the
  * File class at runtime.
  */
-public abstract class FileCpi implements FileInterface {
+public abstract class FileCpi implements FileInterface, java.io.Serializable {
     protected static Logger logger = Logger.getLogger(FileCpi.class);
 
     protected GATContext gatContext;
@@ -41,7 +42,7 @@ public abstract class FileCpi implements FileInterface {
     protected Preferences preferences;
 
     protected URI location;
-
+    
     /**
      * Constructs a FileCpi instance which corresponds to the physical file
      * identified by the passed Location and whose access rights are determined
@@ -65,6 +66,14 @@ public abstract class FileCpi implements FileInterface {
         if (logger.isDebugEnabled()) {
             logger.debug("FileCpi: created file with URI " + location);
         }
+    }
+    
+    public final Preferences getPreferences() {
+        return preferences;
+    }
+    
+    public final GATContext getGATContext() {
+        return gatContext;
     }
 
     /**
@@ -525,6 +534,8 @@ public abstract class FileCpi implements FileInterface {
             logger.debug("copyDirectory");
         }
         FileInterface destFile = null;
+
+        // check whether the target is an existing file
         boolean existingFile = false;
         try {
             destFile = GAT.createFile(gatContext, preferences, dest)
@@ -540,27 +551,37 @@ public abstract class FileCpi implements FileInterface {
                         + dest.toString() + "' is existing file");
             }
         }
+        // if so, it isn't possible to copy the directory to that target
         if (existingFile) {
             throw new GATInvocationException("cannot overwrite non-directory '"
                     + dest.toString() + "' with directory '"
                     + dirURI.toString() + "'!");
         }
 
-        String sourcePath = dirURI.getPath();
-        if (sourcePath.endsWith(File.separator)) {
-            sourcePath = sourcePath.substring(0, sourcePath.length() - 1);
-        }
-        if (sourcePath.length() > 0) {
-            int start = sourcePath.lastIndexOf(File.separator) + 1;
-            String separator = "";
-            if (!dest.toString().endsWith(File.separator)) {
-                separator = File.separator;
+        if (preferences.containsKey("file.directory.copy")
+                && ((String) preferences.get("file.directory.copy"))
+                        .equalsIgnoreCase("contents")) {
+            // don't modify the dest dir, so copy dir a to dir b ends up as
+            // copying a/* to b/*, note that a/dir/* also ends up in b/*
+        } else {
+            // because copy dir a to dir b ends up as a/b we've to add /b to the
+            // dest.
+            String sourcePath = dirURI.getPath();
+            if (sourcePath.endsWith(File.separator)) {
+                sourcePath = sourcePath.substring(0, sourcePath.length() - 1);
             }
-            try {
-                dest = new URI(dest.toString() + separator
-                        + sourcePath.substring(start));
-            } catch (URISyntaxException e) {
-                // should not happen
+            if (sourcePath.length() > 0) {
+                int start = sourcePath.lastIndexOf(File.separator) + 1;
+                String separator = "";
+                if (!dest.toString().endsWith(File.separator)) {
+                    separator = File.separator;
+                }
+                try {
+                    dest = new URI(dest.toString() + separator
+                            + sourcePath.substring(start));
+                } catch (URISyntaxException e) {
+                    // should not happen
+                }
             }
         }
         if (logger.isDebugEnabled()) {
@@ -632,8 +653,15 @@ public abstract class FileCpi implements FileInterface {
                 if (logger.isDebugEnabled()) {
                     logger.debug("copyDirectory: copying dir " + f);
                 }
-
-                copyDirectory(gatContext, preferences, f.toURI(), newDest);
+                if (preferences.containsKey("file.directory.copy")
+                        && ((String) preferences.get("file.directory.copy"))
+                                .equalsIgnoreCase("contents")) {
+                    Preferences newPrefs = new Preferences(preferences);
+                    newPrefs.remove("file.directory.copy");
+                    copyDirectory(gatContext, newPrefs, f.toURI(), dest);
+                } else {
+                    copyDirectory(gatContext, preferences, f.toURI(), dest);
+                }
             } else {
                 throw new GATInvocationException(
                         "file cpi, don't know how to handle file: " + f

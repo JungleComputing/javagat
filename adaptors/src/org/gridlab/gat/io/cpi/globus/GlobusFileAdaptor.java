@@ -271,7 +271,7 @@ public abstract class GlobusFileAdaptor extends FileCpi {
             }
             client = createClient(dest);
             // removed line below, seems to make the copy fail...
-            //client.getCurrentDir(); // to ensure a command has been executed
+            // client.getCurrentDir(); // to ensure a command has been executed
             setActiveOrPassive(client, preferences);
             client.put(sourceFile, dest.getPath(), false); // overwrite
         } catch (Exception e) {
@@ -283,8 +283,7 @@ public abstract class GlobusFileAdaptor extends FileCpi {
         }
     }
 
-    protected void copyToLocal(URI src, URI dest)
-            throws GATInvocationException {
+    protected void copyToLocal(URI src, URI dest) throws GATInvocationException {
         FTPClient client = null;
 
         try {
@@ -325,7 +324,7 @@ public abstract class GlobusFileAdaptor extends FileCpi {
             }
             client = createClient(src);
             setActiveOrPassive(client, preferences);
-            client.get(src.getPath(), new java.io.File(dest.getPath())); 
+            client.get(src.getPath(), new java.io.File(dest.getPath()));
         } catch (Exception e) {
             throw new GATInvocationException("gridftp", e);
         } finally {
@@ -492,7 +491,8 @@ public abstract class GlobusFileAdaptor extends FileCpi {
                 return null;
             }
             if (toURI().refersToLocalHost()) {
-                throw new GATInvocationException("cannot list files of local dir '" + toURI() + "'");
+                throw new GATInvocationException(
+                        "cannot list files of local dir '" + toURI() + "'");
             }
             String remotePath = getPath();
 
@@ -785,10 +785,9 @@ public abstract class GlobusFileAdaptor extends FileCpi {
     public boolean mkdir() throws GATInvocationException {
         FTPClient client = null;
 
+        String remotePath = getPath();
+        client = createClient(toURI());
         try {
-            String remotePath = getPath();
-            client = createClient(toURI());
-
             client.makeDir(remotePath);
             setIsDir(toURI(), true);
         } catch (Exception e) {

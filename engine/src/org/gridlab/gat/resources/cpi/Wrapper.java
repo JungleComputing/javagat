@@ -98,9 +98,19 @@ public class Wrapper implements MetricListener {
             // file once the state is read. Therefore this method waits as long
             // as the file exists, once the state is read, the new state can be
             // written.
+            if (logger.isDebugEnabled()) {
+                logger.debug("metric received: " + val);
+            }
             URI local = new URI(".JavaGATstatus" + jobMap.get(job));
-            URI dest = new URI("any://" + initiator + "/.JavaGATstatus"
-                    + jobMap.get(job));
+            URI dest = null;
+            if (new URI("any://" + initiator).refersToLocalHost()) {
+                dest = new URI("any://" + initiator + "/"
+                        + System.getProperty("user.home") + "/.JavaGATstatus"
+                        + jobMap.get(job));
+            } else {
+                dest = new URI("any://" + initiator + "/.JavaGATstatus"
+                        + jobMap.get(job));
+            }
             File localFile = GAT.createFile(gatContext, local);
             File remoteFile = GAT.createFile(gatContext, dest);
             localFile.createNewFile();
@@ -115,8 +125,14 @@ public class Wrapper implements MetricListener {
                     // ignore
                 }
             }
+            if (logger.isDebugEnabled()) {
+                logger.debug("metric written to local file: " + local);
+            }
             localFile.copy(dest);
-            localFile.delete();
+            if (logger.isDebugEnabled()) {
+                logger.debug("local file copied to remote dest: " + dest);
+            }
+            // localFile.delete();
         } catch (GATObjectCreationException e) {
             if (logger.isDebugEnabled()) {
                 logger.debug(e);
@@ -158,27 +174,32 @@ public class Wrapper implements MetricListener {
     }
 
     private File rewriteStagedFile(GATContext gatContext,
-            Preferences preferences, File origSrc, File origDest,
-            String destHostname, String remoteCWD) {
-        if (origSrc == null && origDest == null) {
+            Preferences preferences, File executionSideFile,
+            File submissionSideFile, String destHostname, String remoteCWD) {
+        // we're going to rewrite the filename on the submissionside, because
+        // it's pointing to a local file, while it might be remote right now.
+
+        if (executionSideFile == null && submissionSideFile == null) {
             return null;
         }
 
         // leave remote files untouched
-        if (origDest != null && origDest.toGATURI().getHost() != null
-                && !origDest.toGATURI().getHost().equals("localhost")) {
-            return origDest;
+        if (submissionSideFile != null
+                && submissionSideFile.toGATURI().getHost() != null
+                && !submissionSideFile.toGATURI().getHost().equals("localhost")) {
+            return submissionSideFile;
         }
 
         String newPath = null;
-        if (origDest == null) {
-            newPath = origSrc.getName();
+        if (submissionSideFile == null) {
+            newPath = remoteCWD + "/" + executionSideFile.getName();
         } else {
-            newPath = origDest.toGATURI().getPath();
+            newPath = submissionSideFile.toGATURI().getPath();
 
             // if we have a relative path without a hostname in the URI,
             // it means that the file is relative to CWD.
-            if (origDest.toGATURI().getHost() == null && !origDest.isAbsolute()) {
+            if (submissionSideFile.toGATURI().getHost() == null
+                    && !submissionSideFile.isAbsolute()) {
                 newPath = remoteCWD + "/" + newPath;
             }
         }
@@ -190,13 +211,22 @@ public class Wrapper implements MetricListener {
             URI newURI = new URI(newLocation);
 
             if (logger.isInfoEnabled()) {
-                logger.info("rewrite of " + newPath + " to " + newURI);
+                logger.info("rewrite of " + submissionSideFile + " to "
+                        + newURI);
             }
-            res = GAT.createFile(gatContext, preferences, newURI);
+            if (submissionSideFile != null) {
+                res = GAT.createFile(submissionSideFile.getFileInterface()
+                        .getGATContext(), submissionSideFile.getFileInterface()
+                        .getPreferences(), newURI);
+            } else {
+                res = GAT.createFile(executionSideFile.getFileInterface()
+                        .getGATContext(), executionSideFile.getFileInterface()
+                        .getPreferences(), newURI);
+            }
         } catch (Exception e) {
             if (logger.isInfoEnabled()) {
-                logger.info("could not rewrite poststage file" + newPath + ":"
-                        + e);
+                logger.info("could not rewrite poststage file '" + newPath
+                        + "' :" + e);
             }
             System.exit(1);
         }
@@ -235,15 +265,20 @@ public class Wrapper implements MetricListener {
         try {
             if (logger.isInfoEnabled()) {
                 logger.info("opening descriptor file: " + descriptorFile);
-                logger.info(descriptorFile + " exists: " + new java.io.File(descriptorFile).exists());
+                logger.info(descriptorFile + " exists: "
+                        + new java.io.File(descriptorFile).exists());
             }
-            
+
             java.io.FileInputStream tmp = new java.io.FileInputStream(
                     descriptorFile);
             ObjectInputStream in = new ObjectInputStream(tmp);
-            logger.info("reading preferences");
+            if (logger.isInfoEnabled()) {
+                logger.info("reading preferences");
+            }
             preferences = (Preferences) in.readObject();
-            logger.info("reading jobdescriptions");
+            if (logger.isInfoEnabled()) {
+                logger.info("reading jobdescriptions");
+            }
             descriptions = (JobDescription[]) in.readObject();
             preStageDoneLocations = (String[]) in.readObject();
             in.close();
@@ -280,7 +315,8 @@ public class Wrapper implements MetricListener {
                     preferences, remoteCWD);
             ResourceBroker broker = null;
             try {
-                broker = GAT.createResourceBroker(gatContext, preferences, new URI("any://localhost"));
+                broker = GAT.createResourceBroker(gatContext, preferences,
+                        new URI("any://localhost"));
             } catch (GATObjectCreationException e) {
                 if (logger.isDebugEnabled()) {
                     logger.debug("could not create broker: " + e);
@@ -289,12 +325,16 @@ public class Wrapper implements MetricListener {
             } catch (URISyntaxException e) {
                 // should not happen, since the URI is hardcoded
             }
-            String prestageType = descriptions[submitted].getSoftwareDescription()
-            .getStringAttribute("wrapper.prestage", "parallel");
+            String prestageType = descriptions[submitted]
+                    .getSoftwareDescription().getStringAttribute(
+                            "wrapper.prestage", "parallel");
             if (prestageType.equalsIgnoreCase("sequential")) {
                 submitJob(broker, descriptions[submitted], gatContext,
                         preferences, jobIDs[submitted],
                         preStageDoneLocations[submitted]);
+                if (logger.isDebugEnabled()) {
+                    logger.debug("Job submitted!");
+                }
             } else {
                 submitJob(broker, descriptions[submitted], jobIDs[submitted]);
             }
@@ -327,7 +367,6 @@ public class Wrapper implements MetricListener {
     private void modifyJobDescription(JobDescription jd, GATContext gatContext,
             Preferences preferences, String remoteCWD) {
         SoftwareDescription sd = jd.getSoftwareDescription();
-        sd.addAttribute("wrapper.enable", "false");
         preferences.put("resourcebroker.adaptor.name", "local");
 
         // rewrite poststage files to go directly to their original
