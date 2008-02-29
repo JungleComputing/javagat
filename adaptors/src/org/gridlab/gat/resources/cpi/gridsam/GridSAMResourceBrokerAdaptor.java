@@ -48,7 +48,6 @@ public class GridSAMResourceBrokerAdaptor extends ResourceBrokerCpi {
             Preferences preferences, org.gridlab.gat.URI brokerURI)
             throws GATObjectCreationException {
         super(gatContext, preferences, brokerURI);
-        System.out.println("gridsam starting...");
     }
 
     /**
