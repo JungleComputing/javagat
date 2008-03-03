@@ -164,7 +164,7 @@ public class CommandlineSshResourceBrokerAdaptor extends ResourceBrokerCpi {
             // we must use the -t option to ssh (allocates pseudo TTY).
             // If we don't, there is no way to kill the remote process.
             command = "ssh -p " + port
-                    + "-o BatchMode=yes -o StrictHostKeyChecking=yes -t -t "
+                    + " -o BatchMode=yes -o StrictHostKeyChecking=yes -t -t "
                     + host + " " + "cd " + sandbox.getSandbox() + " && " + path
                     + " " + getArguments(description);
         }
