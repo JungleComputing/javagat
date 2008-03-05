@@ -1,7 +1,7 @@
 /*
  * Created on Aug 2, 2005
  */
-package org.gridlab.gat.io.cpi.ssh;
+package org.gridlab.gat.security.sftp;
 
 import org.gridlab.gat.CouldNotInitializeCredentialException;
 import org.gridlab.gat.CredentialExpiredException;
@@ -17,16 +17,19 @@ import org.gridlab.gat.security.cpi.SecurityContextUtils;
 
 /**
  * @author rob
+ * 
+ * THIS FILE IS SIMILAR TO SSHSECURITYUTILS
+ * PLEASE FIX BUGS IN BOTH FILES!!
  */
-class SshContextCreator implements SecurityContextCreator {
+class SftpContextCreator implements SecurityContextCreator {
     public SecurityContext createDefaultSecurityContext(GATContext gatContext,
             Preferences preferences, URI location)
             throws CouldNotInitializeCredentialException,
             CredentialExpiredException, InvalidUsernameOrPasswordException {
-        SshUserInfo cred = SshSecurityUtils.getDefaultUserInfo(gatContext,
+        SftpUserInfo cred = SftpSecurityUtils.getDefaultUserInfo(gatContext,
                 preferences, location);
         CertificateSecurityContext c = new CertificateSecurityContext();
-        c.putDataObject("ssh", cred);
+        c.putDataObject("sftp", cred);
 
         return c;
     }
@@ -35,7 +38,7 @@ class SshContextCreator implements SecurityContextCreator {
             Preferences preferences, URI location, SecurityContext inContext)
             throws CouldNotInitializeCredentialException,
             CredentialExpiredException, InvalidUsernameOrPasswordException {
-        SshUserInfo info;
+        SftpUserInfo info;
 
         if (inContext instanceof CertificateSecurityContext) {
             CertificateSecurityContext c = (CertificateSecurityContext) inContext;
@@ -43,7 +46,7 @@ class SshContextCreator implements SecurityContextCreator {
             if (c.getKeyfile() == null) { // must be a password (is possible,
                 // default info may be stored like
                 // that)
-                info = new SshUserInfo();
+                info = new SftpUserInfo();
                 info.username = SecurityContextUtils.getUser(gatContext,
                         preferences, inContext, location);
                 info.password = c.getPassword();
@@ -55,7 +58,7 @@ class SshContextCreator implements SecurityContextCreator {
                     System.err
                             .println("WARNING: URI for key file does not refer to local host, skipping this security context");
                 } else {
-                    info = new SshUserInfo();
+                    info = new SftpUserInfo();
                     info.username = SecurityContextUtils.getUser(gatContext,
                             preferences, inContext, location);
                     info.privateKeyfile = c.getKeyfile().getPath();
@@ -66,7 +69,7 @@ class SshContextCreator implements SecurityContextCreator {
             }
         } else if (inContext instanceof PasswordSecurityContext) {
             PasswordSecurityContext c = (PasswordSecurityContext) inContext;
-            info = new SshUserInfo();
+            info = new SftpUserInfo();
             info.username = SecurityContextUtils.getUser(gatContext,
                     preferences, inContext, location);
             info.password = c.getPassword();
@@ -78,23 +81,23 @@ class SshContextCreator implements SecurityContextCreator {
     }
 }
 
-public class SshSecurityUtils {
-    public static SshUserInfo getSshCredential(GATContext context,
+public class SftpSecurityUtils {
+    public static SftpUserInfo getSshCredential(GATContext context,
             Preferences preferences, String adaptorName, URI location,
             int defaultPort) throws CouldNotInitializeCredentialException,
             CredentialExpiredException, InvalidUsernameOrPasswordException {
         Object data = SecurityContextUtils.getSecurityUserData(context,
-                preferences, adaptorName, "ssh", location, defaultPort,
-                new SshContextCreator());
+                preferences, adaptorName, "sftp", location, defaultPort,
+                new SftpContextCreator());
 
-        return (SshUserInfo) data;
+        return (SftpUserInfo) data;
     }
 
-    protected static SshUserInfo getDefaultUserInfo(GATContext gatContext,
+    protected static SftpUserInfo getDefaultUserInfo(GATContext gatContext,
             Preferences preferences, URI location)
             throws CouldNotInitializeCredentialException,
             CredentialExpiredException, InvalidUsernameOrPasswordException {
-        SshUserInfo info = new SshUserInfo();
+        SftpUserInfo info = new SftpUserInfo();
         info.privateKeyfile = getDefaultPrivateKeyfile(gatContext, preferences);
         info.username = SecurityContextUtils.getUser(gatContext, preferences,
                 null, location);

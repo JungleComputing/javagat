@@ -14,9 +14,15 @@ import org.gridlab.gat.security.PasswordSecurityContext;
 import org.gridlab.gat.security.SecurityContext;
 import org.gridlab.gat.security.cpi.SecurityContextCreator;
 import org.gridlab.gat.security.cpi.SecurityContextUtils;
+import org.gridlab.gat.io.cpi.ssh.SshContextCreator;
+import org.gridlab.gat.io.cpi.ssh.SshSecurityUtils;
+import org.gridlab.gat.io.cpi.ssh.SshUserInfo;
 
 /**
  * @author rob
+ * 
+ * THIS FILE IS SIMILAR TO SFTPSECURITYUTILS
+ * PLEASE FIX BUGS IN BOTH FILES!!
  */
 class SshContextCreator implements SecurityContextCreator {
     public SecurityContext createDefaultSecurityContext(GATContext gatContext,

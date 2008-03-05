@@ -1,14 +1,14 @@
 /*
  * Created on Aug 2, 2005
  */
-package org.gridlab.gat.io.cpi.ssh;
+package org.gridlab.gat.security.sftp;
 
 import com.jcraft.jsch.UserInfo;
 
 /**
  * @author rob
  */
-public class SshUserInfo implements UserInfo {
+public class SftpUserInfo implements UserInfo {
     public String username;
 
     public String password;

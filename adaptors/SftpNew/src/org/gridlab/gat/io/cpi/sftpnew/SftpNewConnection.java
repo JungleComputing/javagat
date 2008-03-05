@@ -5,7 +5,7 @@ package org.gridlab.gat.io.cpi.sftpnew;
 
 import org.gridlab.gat.Preferences;
 import org.gridlab.gat.URI;
-import org.gridlab.gat.io.cpi.ssh.SshUserInfo;
+import org.gridlab.gat.security.sftp.SftpUserInfo;
 
 import com.jcraft.jsch.ChannelSftp;
 import com.jcraft.jsch.JSch;
@@ -18,7 +18,7 @@ public class SftpNewConnection {
 
     Session session;
 
-    SshUserInfo userInfo;
+    SftpUserInfo userInfo;
     
     URI remoteMachine;
     

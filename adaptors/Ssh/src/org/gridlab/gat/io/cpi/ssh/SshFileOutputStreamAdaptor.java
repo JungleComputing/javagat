@@ -15,6 +15,8 @@ import org.gridlab.gat.InvalidUsernameOrPasswordException;
 import org.gridlab.gat.Preferences;
 import org.gridlab.gat.URI;
 import org.gridlab.gat.io.cpi.FileOutputStreamCpi;
+import org.gridlab.gat.io.cpi.ssh.SshSecurityUtils;
+import org.gridlab.gat.io.cpi.ssh.SshUserInfo;
 
 import com.jcraft.jsch.Channel;
 import com.jcraft.jsch.ChannelExec;

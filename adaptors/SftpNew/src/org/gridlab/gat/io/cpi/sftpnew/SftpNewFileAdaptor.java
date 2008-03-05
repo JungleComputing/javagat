@@ -18,8 +18,8 @@ import org.gridlab.gat.URI;
 import org.gridlab.gat.io.File;
 import org.gridlab.gat.io.FileInterface;
 import org.gridlab.gat.io.cpi.FileCpi;
-import org.gridlab.gat.io.cpi.ssh.SshSecurityUtils;
-import org.gridlab.gat.io.cpi.ssh.SshUserInfo;
+import org.gridlab.gat.security.sftp.SftpSecurityUtils;
+import org.gridlab.gat.security.sftp.SftpUserInfo;
 
 import com.jcraft.jsch.Channel;
 import com.jcraft.jsch.ChannelSftp;
@@ -130,11 +130,11 @@ public class SftpNewFileAdaptor extends FileCpi {
         configJsch.put("StrictHostKeyChecking", "no");
         JSch.setConfig(configJsch);
 
-        SshUserInfo sui = null;
+        SftpUserInfo sui = null;
 
         try {
-            sui = SshSecurityUtils.getSshCredential(gatContext, preferences,
-                    "ssh", location, SSH_PORT);
+            sui = SftpSecurityUtils.getSshCredential(gatContext, preferences,
+                    "sftp", location, SSH_PORT);
         } catch (Exception e) {
             if (logger.isDebugEnabled()) {
                 logger.debug("SshFileAdaptor: failed to retrieve credentials"
