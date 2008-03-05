@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.LinkedList;
+import java.util.List;
 
 import org.apache.log4j.Logger;
 import org.gridlab.gat.AdaptorNotApplicableException;
@@ -107,7 +108,7 @@ public class AdaptorInvocationHandler implements InvocationHandler {
      */
     private Hashtable<String, Adaptor> adaptors = new Hashtable<String, Adaptor>();
 
-    public AdaptorInvocationHandler(AdaptorList adaptors, GATContext context,
+    public AdaptorInvocationHandler(List<Adaptor> adaptors, GATContext context,
             Preferences preferences, Class<?>[] parameterTypes, Object[] params)
             throws GATObjectCreationException {
 
@@ -289,7 +290,7 @@ public class AdaptorInvocationHandler implements InvocationHandler {
         if (logger.isDebugEnabled()) {
             logger.debug("initAdaptor: trying to instantiate "
                     + adaptor.getShortAdaptorClassName() + " for type "
-                    + adaptor.getShortCpiName());
+                    + adaptor.getCpi());
         }
         try {
             result = adaptor.newInstance(newParameterTypes, newParameters);
@@ -303,7 +304,7 @@ public class AdaptorInvocationHandler implements InvocationHandler {
             }
             if (t instanceof AdaptorNotApplicableException) {
                 if (logger.isDebugEnabled()) {
-                    logger.debug("initAdaptor: " + adaptor.getShortCpiName()
+                    logger.debug("initAdaptor: " + adaptor.getCpi()
                             + " is not applicable: " + t.getMessage());
                 }
             } else {
@@ -324,7 +325,7 @@ public class AdaptorInvocationHandler implements InvocationHandler {
         if (logger.isInfoEnabled()) {
             logger.info("initAdaptor: instantiated "
                     + adaptor.getShortAdaptorClassName() + " for type "
-                    + adaptor.getShortCpiName());
+                    + adaptor.getCpi());
         }
 
         return result;

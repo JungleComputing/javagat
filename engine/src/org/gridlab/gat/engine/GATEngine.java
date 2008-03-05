@@ -1,6 +1,7 @@
 package org.gridlab.gat.engine;
 
 import java.io.File;
+import java.io.FileFilter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringReader;
@@ -14,11 +15,12 @@ import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Properties;
-import java.util.StringTokenizer;
+import java.util.Set;
 import java.util.Vector;
 import java.util.jar.Attributes;
 import java.util.jar.JarFile;
@@ -33,20 +35,10 @@ import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.GATObjectCreationException;
 import org.gridlab.gat.Preferences;
 import org.gridlab.gat.advert.Advertisable;
-import org.gridlab.gat.advert.cpi.AdvertServiceCpi;
-import org.gridlab.gat.io.cpi.EndpointCpi;
-import org.gridlab.gat.io.cpi.FileCpi;
-import org.gridlab.gat.io.cpi.FileInputStreamCpi;
-import org.gridlab.gat.io.cpi.FileOutputStreamCpi;
-import org.gridlab.gat.io.cpi.LogicalFileCpi;
-import org.gridlab.gat.io.cpi.RandomAccessFileCpi;
 import org.gridlab.gat.monitoring.Metric;
 import org.gridlab.gat.monitoring.MetricDefinition;
 import org.gridlab.gat.monitoring.MetricListener;
 import org.gridlab.gat.monitoring.MetricValue;
-import org.gridlab.gat.monitoring.cpi.MonitorableCpi;
-import org.gridlab.gat.resources.cpi.ResourceBrokerCpi;
-import org.gridlab.gat.steering.cpi.SteeringManagerCpi;
 
 /**
  * @author rob
@@ -83,7 +75,8 @@ public class GATEngine {
     private boolean ended = false;
 
     /** Keys are cpiClass names, elements are AdaptorLists. */
-    private AdaptorSet adaptors;
+    // private AdaptorSet adaptors;
+    private HashMap<String, List<Adaptor>> adaptorLists = new HashMap<String, List<Adaptor>>();
 
     /** elements are of type MetricListenerNode */
     private Vector<MetricListenerNode> metricListeners = new Vector<MetricListenerNode>();
@@ -111,22 +104,70 @@ public class GATEngine {
             throw new Error("Getting gat engine while end was already called");
         }
 
-        adaptors = new AdaptorSet();
+        if (logger.isInfoEnabled()) {
+            logger.info("Before reading jar files");
+        }
+
         readJarFiles();
 
-        if (adaptors.size() == 0) {
+        if (adaptorLists.size() == 0) {
             throw new Error("GAT: No adaptors could be loaded");
         }
 
-        adaptors.order();
+        // order the lists!
+        orderAdaptorLists();
 
         if (logger.isInfoEnabled()) {
-            logger.info("\n" + adaptors.toString());
+            logger.info(getAdaptorListString());
         }
-
         // Don't add a shutdown hook, the application might add one that depends
         // on GAT
         // Runtime.getRuntime().addShutdownHook(new EndHook());
+    }
+
+    private void orderAdaptorLists() {
+        AdaptorOrderPolicy adaptorOrderPolicy;
+
+        String policy = System.getProperty("adaptor.order.policy");
+
+        if (policy != null) {
+            Class<?> c;
+
+            try {
+                c = Class.forName(policy);
+            } catch (ClassNotFoundException e) {
+                throw new Error("adaptor policy " + policy + " not found: " + e);
+            }
+
+            try {
+                adaptorOrderPolicy = (AdaptorOrderPolicy) c.newInstance();
+            } catch (Exception e) {
+                throw new Error("adaptor policy " + policy
+                        + " could not be instantiated: " + e);
+            }
+            if (logger.isInfoEnabled()) {
+                logger.info("using adaptor ordering policy: " + policy);
+            }
+        } else {
+            adaptorOrderPolicy = new DefaultAdaptorOrderPolicy();
+
+            if (logger.isInfoEnabled()) {
+                logger.info("using default adaptor ordering policy");
+            }
+        }
+        adaptorOrderPolicy.order(adaptorLists);
+    }
+
+    private String getAdaptorListString() {
+        String output = "\nAdaptor Lists:\n\n";
+        Set<String> keys = adaptorLists.keySet();
+        for (String key : keys) {
+            output += "\t" + key + "\n";
+            for (Adaptor adaptor : adaptorLists.get(key)) {
+                output += "\t\t" + adaptor + "\n";
+            }
+        }
+        return output;
     }
 
     static boolean propertySet(String name) {
@@ -165,85 +206,186 @@ public class GATEngine {
      *                the cpi class for which to look
      * @return the list of adaptors
      */
-    public AdaptorList getAdaptorList(Class<?> cpiClass)
+    public List<Adaptor> getAdaptorList(String cpiName)
             throws GATObjectCreationException {
-        if (adaptors.getAdaptorList(cpiClass.getName()) == null) {
-            // no adaptors for this type loaded.
-            if (logger.isInfoEnabled()) {
-                logger.info("getAdaptorList: No adaptors loaded for type "
-                        + cpiClass.getName());
-            }
-
+        List<Adaptor> result = adaptorLists.get(cpiName);
+        if (result == null) {
             throw new GATObjectCreationException(
-                    "getAdaptorList: No adaptors loaded for type "
-                            + cpiClass.getName());
-        } else {
-            return adaptors.getAdaptorList(cpiClass.getName());
+                    "getAdaptorList: No adaptors loaded for type " + cpiName);
         }
+        return result;
     }
 
-    /**
-     * This method periodically populates the Map returned from a call to the
-     * method getCpiClasses().
-     */
-    protected void readJarFiles() {
-        List<JarFile> adaptorPathList = new ArrayList<JarFile>();
+    // /**
+    // * Returns a list of adaptors for the specified cpiClass
+    // *
+    // * @param cpiClass
+    // * the cpi class for which to look
+    // * @return the list of adaptors
+    // */
+    // public AdaptorList getAdaptorList(Class<?> cpiClass)
+    // throws GATObjectCreationException {
+    // if (adaptors.getAdaptorList(cpiClass.getName()) == null) {
+    // // no adaptors for this type loaded.
+    // if (logger.isInfoEnabled()) {
+    // logger.info("getAdaptorList: No adaptors loaded for type "
+    // + cpiClass.getName());
+    // }
+    //
+    // throw new GATObjectCreationException(
+    // "getAdaptorList: No adaptors loaded for type "
+    // + cpiClass.getName());
+    // } else {
+    // return adaptors.getAdaptorList(cpiClass.getName());
+    // }
+    // }
 
+    protected void readJarFiles() {
+        // retrieve the path where the adaptors are located.
         String adaptorPath = System.getProperty("gat.adaptor.path");
 
         if (adaptorPath != null) {
-            StringTokenizer st = new StringTokenizer(adaptorPath,
-                    File.pathSeparator);
-
-            while (st.hasMoreTokens()) {
-                String dir = st.nextToken();
-                List<JarFile> l = getJarFiles(dir);
-                adaptorPathList.addAll(l);
+            File adaptorRoot = new File(adaptorPath);
+            if (!adaptorRoot.exists()) {
+                throw new Error("gat.adaptor.path set to '" + adaptorPath
+                        + "', but it doesn't exist!");
             }
-        }
-
-        ArrayList<URL> adaptorPathURLs = new ArrayList<URL>();
-
-        // Sort jar files: put adaptors first.
-        // Adaptors might override classes in the external jars,
-        // to fix bugs in globus for instance.
-        for (int i = 0; i < adaptorPathList.size(); i++) {
-            JarFile jarFile = (JarFile) adaptorPathList.get(i);
-
-            try {
-                File f = new File(jarFile.getName());
-
-                if (jarFile.getName().endsWith("Adaptor.jar")) {
-                    adaptorPathURLs.add(0, f.toURI().toURL()); // add to
-                    // beginning
-                } else {
-                    adaptorPathURLs.add(f.toURI().toURL()); // add to end
+            // now get the adaptor dirs from the adaptor path, adaptor dirs are
+            // of course directories and further will end with "Adaptor"
+            File[] adaptorDirs = adaptorRoot.listFiles(new FileFilter() {
+                public boolean accept(File file) {
+                    return file.isDirectory()
+                            && file.getName().endsWith("Adaptor");
                 }
+            });
+            if (adaptorDirs.length == 0) {
+                throw new Error("gat.adaptor.path set to '" + adaptorPath
+                        + "', but it doesn't contain any adaptor");
+            }
+            HashMap<String, ClassLoader> adaptorClassLoaders = new HashMap<String, ClassLoader>();
+            for (File adaptorDir : adaptorDirs) {
+                try {
+                    adaptorClassLoaders.put(adaptorDir.getName(),
+                            loadDirectory(adaptorDir));
+                } catch (Exception e) {
+                    if (logger.isDebugEnabled()) {
+                        logger.debug("Unable to load adaptor '"
+                                + adaptorDir.getName() + "': " + e);
+                        e.printStackTrace();
+                    }
+                }
+            }
+            // TODO this should be fixed more general!
+            Thread.currentThread().setContextClassLoader(
+                    adaptorClassLoaders.get("WSGT4Adaptor"));
+        } else {
+            throw new Error("gat.adaptor.path not set!");
+        }
+    }
 
-            } catch (Exception e) {
-                throw new Error(e);
+    private ClassLoader loadDirectory(File adaptorDir) throws Exception {
+        File adaptorJarFile = new File(adaptorDir.getPath() + File.separator
+                + adaptorDir.getName() + ".jar");
+        if (!adaptorJarFile.exists()) {
+            throw new Exception("found adaptor dir '" + adaptorDir.getPath()
+                    + "' that doesn't contain an adaptor named '"
+                    + adaptorJarFile.getPath() + "'");
+        }
+        JarFile adaptorJar = new JarFile(adaptorJarFile, true);
+        Attributes attributes = adaptorJar.getManifest().getMainAttributes();
+        String[] externalJars = adaptorDir.list(new java.io.FilenameFilter() {
+            public boolean accept(File file, String name) {
+                return name.endsWith(".jar");
+            }
+        });
+        Arrays.sort(externalJars);
+        ArrayList<URL> adaptorPathURLs = new ArrayList<URL>();
+        adaptorPathURLs.add(adaptorJarFile.toURI().toURL());
+        if (externalJars != null) {
+            for (String externalJar : externalJars) {
+                adaptorPathURLs.add(new URL(adaptorJarFile.getParentFile()
+                        .toURI().toURL().toString()
+                        + externalJar));
             }
         }
-
         URL[] urls = new URL[adaptorPathURLs.size()];
-
         for (int i = 0; i < adaptorPathURLs.size(); i++) {
             urls[i] = (URL) adaptorPathURLs.get(i);
         }
-
-        if (logger.isDebugEnabled()) {
-            logger.debug("List of GAT jar files is: " + getJarsAsString(urls));
-
-        }
-        gatClassLoader = new URLClassLoader(urls, this.getClass()
+        URLClassLoader adaptorLoader = new URLClassLoader(urls, this.getClass()
                 .getClassLoader());
-        // <experimental code>
-        // http://www.javaworld.com/javaworld/javaqa/2003-06/01-qa-0606-load.html?page=1
-        Thread.currentThread().setContextClassLoader(gatClassLoader);
-        // </experimental code>
+        // We've a class loader, now have a look at which adaptors are inside
+        // this jar.
+        Set<Object> keys = attributes.keySet();
+        for (Object key : keys) {
+            if (((Attributes.Name) key).toString().endsWith("Cpi-class")) {
+                // this is an adaptor!
 
-        // Populate cpiClasses
-        loadJarFiles(adaptorPathList);
+                // now get the cpi name (for 'FileCpi' the cpi name is 'File')
+                String cpiName = ((Attributes.Name) key).toString().replace(
+                        "Cpi-class", "");
+                String[] adaptorClasses = attributes.getValue(
+                        (Attributes.Name) key).split(",");
+                for (String adaptorClass : adaptorClasses) {
+                    try {
+                        Thread.currentThread().setContextClassLoader(
+                                adaptorLoader);
+                        Class<?> clazz = adaptorLoader.loadClass(adaptorClass);
+
+                        if (containsUnmarshaller(clazz)) {
+                            if (logger.isDebugEnabled()) {
+                                logger.debug("Adaptor " + adaptorClass
+                                        + " contains unmarshaller");
+                            }
+                            unmarshallers.add(clazz);
+                        }
+
+                        if (containsInitializer(clazz)) {
+                            callInitializer(clazz);
+                        }
+
+                        // if there are no adaptors loaded for this cpi name,
+                        // make a
+                        // new list of adaptors that are loaded for this cpi
+                        // name
+                        if (!adaptorLists.containsKey(cpiName)) {
+                            adaptorLists.put(cpiName, new ArrayList<Adaptor>());
+                        }
+                        // it's guaranteed that we've a list of adaptors
+                        // belonging
+                        // to this cpi name. So get this list and add the new
+                        // adaptor to it. Also pass through the attributes in a
+                        // preferences object.
+                        adaptorLists.get(cpiName).add(
+                                new Adaptor(cpiName, clazz,
+                                        attributesToPreferences(attributes)));
+                        // ok, now we're done loading this class and updating
+                        // our
+                        // administration
+                    } catch (Exception e) {
+                        if (logger.isDebugEnabled()) {
+                            logger.debug("Could not load Adaptor for " + key
+                                    + ": " + e);
+                        }
+                    }
+                }
+            }
+        }
+
+        return adaptorLoader;
+    }
+
+    private Preferences attributesToPreferences(Attributes attributes) {
+        Preferences preferences = new Preferences();
+
+        Iterator<Object> i = attributes.keySet().iterator();
+
+        while (i.hasNext()) {
+            Object key = i.next();
+            Object value = attributes.get(key);
+            preferences.put(key.toString(), value.toString());
+        }
+        return preferences;
     }
 
     protected String getJarsAsString(URL[] urls) {
@@ -336,142 +478,141 @@ public class GATEngine {
         unmarshallers.add(clazz);
     }
 
-    protected void loadCpiClass(JarFile jarFile, Manifest manifest,
-            Attributes attributes, String className, Class<?> cpiClazz) {
-        if (logger.isDebugEnabled()) {
-            logger.debug("Trying to load adaptor for " + className);
-        }
+    // protected void loadCpiClass(JarFile jarFile, Manifest manifest,
+    // Attributes attributes, String className, Class<?> cpiClazz) {
+    // if (logger.isDebugEnabled()) {
+    // logger.debug("Trying to load adaptor for " + className);
+    // }
+    //
+    // // Get info for the adaptor
+    // String attributeName = className + "Cpi-class";
+    // String clazzString = attributes.getValue(attributeName);
+    // if (clazzString == null) {
+    // if (logger.isDebugEnabled()) {
+    // logger.debug("Adaptor for " + className
+    // + " not found in Manifest");
+    // }
+    // return;
+    // }
+    // if (logger.isDebugEnabled()) {
+    // logger.debug("Adaptor for " + className
+    // + " found in Manifest, loading");
+    // }
+    //
+    // Class<?> clazz = null;
+    //
+    // /*
+    // * use a URL classloader to load the adaptors. This way, they don't have
+    // * to be in the classpath
+    // */
+    // try {
+    // clazz = gatClassLoader.loadClass(clazzString);
+    // } catch (Exception e) {
+    // if (logger.isDebugEnabled()) {
+    // StringWriter writer = new StringWriter();
+    // e.printStackTrace(new PrintWriter(writer));
+    // logger.debug("Could not load Adaptor for " + className + ": "
+    // + e + "\n" + writer.toString());
+    // }
+    // return;
+    // }
+    //
+    // if (containsUnmarshaller(clazz)) {
+    // if (logger.isDebugEnabled()) {
+    // logger.debug("Adaptor " + clazzString
+    // + " contains unmarshaller");
+    // }
+    //
+    // unmarshallers.add(clazz);
+    // }
+    //
+    // if (containsInitializer(clazz)) {
+    // callInitializer(clazz);
+    // }
+    //
+    // if (logger.isDebugEnabled()) {
+    // logger.debug("Adaptor for " + className + " loaded");
+    // }
+    //
+    // // /////////////
+    // Preferences preferences = new Preferences();
+    //
+    // Iterator<Object> i = attributes.keySet().iterator();
+    //
+    // while (i.hasNext()) {
+    // Object key = i.next();
+    // Object value = attributes.get(key);
+    // preferences.put(key.toString(), value.toString());
+    // }
+    //
+    // // /////////////
+    // Adaptor a = new Adaptor(cpiClazz, clazz, preferences);
+    // AdaptorList s = adaptors.getAdaptorList(cpiClazz.getName());
+    //
+    // if (s == null) {
+    // s = new AdaptorList(cpiClazz);
+    // adaptors.add(cpiClazz.getName(), s);
+    // }
+    //
+    // s.addAdaptor(a);
+    // }
 
-        // Get info for the adaptor
-        String attributeName = className + "Cpi-class";
-        String clazzString = attributes.getValue(attributeName);
-        if (clazzString == null) {
-            if (logger.isDebugEnabled()) {
-                logger.debug("Adaptor for " + className
-                        + " not found in Manifest");
-            }
-            return;
-        }
-        if (logger.isDebugEnabled()) {
-            logger.debug("Adaptor for " + className
-                    + " found in Manifest, loading");
-        }
+    // protected void loadCPIClassesFromJar(JarFile jarFile) {
+    // Manifest manifest = null;
+    // Attributes attributes = null;
+    //
+    // // Get info for all adaptors
+    // try {
+    // manifest = jarFile.getManifest();
+    // } catch (IOException e) {
+    // return;
+    // }
+    //
+    // attributes = manifest.getMainAttributes();
+    //
+    // loadCpiClass(jarFile, manifest, attributes, "Endpoint",
+    // EndpointCpi.class);
+    // loadCpiClass(jarFile, manifest, attributes, "AdvertService",
+    // AdvertServiceCpi.class);
+    // loadCpiClass(jarFile, manifest, attributes, "Monitorable",
+    // MonitorableCpi.class);
+    // loadCpiClass(jarFile, manifest, attributes, "SteeringManager",
+    // SteeringManagerCpi.class);
+    // loadCpiClass(jarFile, manifest, attributes, "File", FileCpi.class);
+    // loadCpiClass(jarFile, manifest, attributes, "LogicalFile",
+    // LogicalFileCpi.class);
+    // loadCpiClass(jarFile, manifest, attributes, "RandomAccessFile",
+    // RandomAccessFileCpi.class);
+    // loadCpiClass(jarFile, manifest, attributes, "FileInputStream",
+    // FileInputStreamCpi.class);
+    // loadCpiClass(jarFile, manifest, attributes, "FileOutputStream",
+    // FileOutputStreamCpi.class);
+    // loadCpiClass(jarFile, manifest, attributes, "ResourceBroker",
+    // ResourceBrokerCpi.class);
+    // }
 
-        Class<?> clazz = null;
-
-        /*
-         * use a URL classloader to load the adaptors. This way, they don't have
-         * to be in the classpath
-         */
-        try {
-            // TODO parent.loadClass??
-            clazz = gatClassLoader.loadClass(clazzString);
-        } catch (Exception e) {
-            if (logger.isDebugEnabled()) {
-                StringWriter writer = new StringWriter();
-                e.printStackTrace(new PrintWriter(writer));
-                logger.debug("Could not load Adaptor for " + className + ": "
-                        + e + "\n" + writer.toString());
-            }
-            return;
-        }
-
-        if (containsUnmarshaller(clazz)) {
-            if (logger.isDebugEnabled()) {
-                logger.debug("Adaptor " + clazzString
-                        + " contains unmarshaller");
-            }
-
-            unmarshallers.add(clazz);
-        }
-
-        if (containsInitializer(clazz)) {
-            callInitializer(clazz);
-        }
-
-        if (logger.isDebugEnabled()) {
-            logger.debug("Adaptor for " + className + " loaded");
-        }
-
-        // /////////////
-        Preferences preferences = new Preferences();
-
-        Iterator<Object> i = attributes.keySet().iterator();
-
-        while (i.hasNext()) {
-            Object key = i.next();
-            Object value = attributes.get(key);
-            preferences.put(key.toString(), value.toString());
-        }
-
-        // /////////////
-        Adaptor a = new Adaptor(cpiClazz, clazz, preferences);
-        AdaptorList s = adaptors.getAdaptorList(cpiClazz.getName());
-
-        if (s == null) {
-            s = new AdaptorList(cpiClazz);
-            adaptors.add(cpiClazz.getName(), s);
-        }
-
-        s.addAdaptor(a);
-    }
-
-    protected void loadCPIClassesFromJar(JarFile jarFile) {
-        Manifest manifest = null;
-        Attributes attributes = null;
-
-        // Get info for all adaptors
-        try {
-            manifest = jarFile.getManifest();
-        } catch (IOException e) {
-            return;
-        }
-
-        attributes = manifest.getMainAttributes();
-
-        loadCpiClass(jarFile, manifest, attributes, "Endpoint",
-                EndpointCpi.class);
-        loadCpiClass(jarFile, manifest, attributes, "AdvertService",
-                AdvertServiceCpi.class);
-        loadCpiClass(jarFile, manifest, attributes, "Monitorable",
-                MonitorableCpi.class);
-        loadCpiClass(jarFile, manifest, attributes, "SteeringManager",
-                SteeringManagerCpi.class);
-        loadCpiClass(jarFile, manifest, attributes, "File", FileCpi.class);
-        loadCpiClass(jarFile, manifest, attributes, "LogicalFile",
-                LogicalFileCpi.class);
-        loadCpiClass(jarFile, manifest, attributes, "RandomAccessFile",
-                RandomAccessFileCpi.class);
-        loadCpiClass(jarFile, manifest, attributes, "FileInputStream",
-                FileInputStreamCpi.class);
-        loadCpiClass(jarFile, manifest, attributes, "FileOutputStream",
-                FileOutputStreamCpi.class);
-        loadCpiClass(jarFile, manifest, attributes, "ResourceBroker",
-                ResourceBrokerCpi.class);
-    }
-
-    /**
-     * load jar files in the list, looking for CPI classes
-     * 
-     * @param jarFiles
-     *                the list of JarFile objects to load
-     */
-    protected void loadJarFiles(List<JarFile> jarFiles) {
-        JarFile jarFile = null;
-
-        Iterator<JarFile> iterator = jarFiles.iterator();
-
-        // Iterate over JarFiles
-        while (iterator.hasNext()) {
-            jarFile = (JarFile) iterator.next();
-
-            if (logger.isDebugEnabled()) {
-                logger.debug("loading adaptors from " + jarFile.getName());
-            }
-
-            loadCPIClassesFromJar(jarFile);
-        }
-    }
+    // /**
+    // * load jar files in the list, looking for CPI classes
+    // *
+    // * @param jarFiles
+    // * the list of JarFile objects to load
+    // */
+    // protected void loadJarFiles(List<JarFile> jarFiles) {
+    // JarFile jarFile = null;
+    //
+    // Iterator<JarFile> iterator = jarFiles.iterator();
+    //
+    // // Iterate over JarFiles
+    // while (iterator.hasNext()) {
+    // jarFile = (JarFile) iterator.next();
+    //
+    // if (logger.isDebugEnabled()) {
+    // logger.debug("loading adaptors from " + jarFile.getName());
+    // }
+    //
+    // loadCPIClassesFromJar(jarFile);
+    // }
+    // }
 
     /**
      * This method unmarshals an advertizable GAT object. The unmarshal method
@@ -812,12 +953,9 @@ public class GATEngine {
             logger.debug("shutting down GAT");
         }
 
-        for (int i = 0; i < engine.adaptors.size(); i++) {
-            AdaptorList l = engine.adaptors.getAdaptorList(i);
-
-            for (int j = 0; j < l.size(); j++) {
-                Adaptor a = l.get(j);
-                Class<?> c = a.adaptorClass;
+        for (List<Adaptor> adaptorList : engine.adaptorLists.values()) {
+            for (Adaptor adaptor : adaptorList) {
+                Class<?> c = adaptor.adaptorClass;
 
                 // invoke the "end" static method of the class
                 try {
@@ -834,31 +972,23 @@ public class GATEngine {
         }
     }
 
-    public static Object createAdaptorProxy(String cpiClassName,
+    public static Object createAdaptorProxy(String cpiName,
             Class<?> interfaceClass, GATContext gatContext,
             Preferences preferences, Class<?>[] parameterTypes,
             Object[] tmpParams) throws GATObjectCreationException {
 
-        Class<?> cpiClass;
-        try {
-            cpiClass = Class.forName(cpiClassName);
-        } catch (ClassNotFoundException e) {
-            throw new Error(e);
-        }
-
         GATEngine gatEngine = GATEngine.getGATEngine();
 
-        AdaptorList adaptors = gatEngine.getAdaptorList(cpiClass);
+        List<Adaptor> adaptors = gatEngine.adaptorLists.get(cpiName);
         if (adaptors == null) {
             throw new GATObjectCreationException("could not find any adaptors");
         }
 
-        String adaptorType = cpiClass.getSimpleName().replace("Cpi", "");
-        if (preferences.containsKey(adaptorType + ".adaptor.name")) {
+        if (preferences.containsKey(cpiName + ".adaptor.name")) {
             if (logger.isInfoEnabled()) {
                 logger.info("old adaptor order: \n" + adaptors.toString());
             }
-            adaptors = reorderAdaptorList(adaptors, cpiClass, preferences);
+            adaptors = reorderAdaptorList(adaptors, cpiName, preferences);
             if (logger.isInfoEnabled()) {
                 logger.info("new adaptor order: \n" + adaptors.toString());
             }
@@ -871,8 +1001,8 @@ public class GATEngine {
         return proxy;
     }
 
-    private static AdaptorList reorderAdaptorList(AdaptorList adaptors,
-            Class<?> cpiClass, Preferences preferences)
+    private static List<Adaptor> reorderAdaptorList(List<Adaptor> adaptors,
+            String cpiName, Preferences preferences)
             throws GATObjectCreationException {
         // parse the orderingString
         // all adaptor names are separated by a ',' and adaptors that should
@@ -881,12 +1011,11 @@ public class GATEngine {
         int insertPosition = 0;
         // make a new result adaptor list and fill it according to the global
         // adaptorlist (to which adaptors refers)
-        AdaptorList result = new AdaptorList(cpiClass);
+        List<Adaptor> result = new ArrayList<Adaptor>();
         for (int i = 0; i < adaptors.size(); i++) {
-            result.addAdaptor(i, adaptors.get(i));
+            result.add(i, adaptors.get(i));
         }
         // retrieve the adaptor type from the cpiClass
-        String adaptorType = cpiClass.getSimpleName().replace("Cpi", "");
         String nameString;
         // the adaptors.local preference overrides the xxx.adaptor.name
         // preference
@@ -894,8 +1023,7 @@ public class GATEngine {
         if ((local != null) && local.equalsIgnoreCase("true")) {
             nameString = "local";
         } else {
-            nameString = (String) preferences
-                    .get(adaptorType + ".adaptor.name");
+            nameString = (String) preferences.get(cpiName + ".adaptor.name");
         }
         // split the nameString into individual names
         String[] names = nameString.split(",");
@@ -904,7 +1032,8 @@ public class GATEngine {
             // names of adaptors that should not be used start with a '!'
             if (names[i].startsWith("!")) {
                 names[i] = names[i].substring(1); // remove the '!'
-                int pos = result.getPos(getFullAdaptorName(names[i], adaptors));
+                int pos = result
+                        .indexOf(getAdaptor(names[i], cpiName, adaptors));
                 // if the adaptor is found, remove it from the list
                 if (pos >= 0) {
                     result.remove(pos);
@@ -915,9 +1044,8 @@ public class GATEngine {
                         insertPosition--;
                 } else {
                     if (logger.isInfoEnabled()) {
-                        logger.info("Found non existing adaptor in "
-                                + adaptorType + ".adaptor.name preference: "
-                                + names[i]);
+                        logger.info("Found non existing adaptor in " + cpiName
+                                + ".adaptor.name preference: " + names[i]);
                     }
                 }
             } else if (names[i].equals("")) {
@@ -929,21 +1057,12 @@ public class GATEngine {
                 // when the current position is before the insert position, it
                 // means that the adaptor is already inserted, so don't insert
                 // it again
-                if (result.getPos(getFullAdaptorName(names[i], adaptors)) >= insertPosition) {
-                    // try to place the adaptor on the proper position
-                    if (result.placeAdaptor(insertPosition, getFullAdaptorName(
-                            names[i], adaptors)) >= 0) {
-                        // adjust the insert position only when the replacing
-                        // succeeded
-                        insertPosition++;
-                    } else {
-                        if (logger.isInfoEnabled()) {
-                            logger.info("Found non existing adaptor in "
-                                    + adaptorType
-                                    + ".adaptor.name preference: " + names[i]);
-                        }
-                    }
-
+                int currentPosition = result.indexOf(getAdaptor(names[i],
+                        cpiName, adaptors));
+                if (currentPosition >= insertPosition) {
+                    // place the adaptor on the proper position
+                    result.add(insertPosition, result.remove(currentPosition));
+                    insertPosition++;
                 }
             }
         }
@@ -957,30 +1076,19 @@ public class GATEngine {
             }
         } else if (insertPosition == 0) {
             throw new GATObjectCreationException(
-                    "no adaptors available for preference: \"" + adaptorType
+                    "no adaptors available for preference: \"" + cpiName
                             + ".adaptor.name\", \"" + nameString + "\"");
         }
         return result;
     }
 
-    private static String getFullAdaptorName(String shortName,
-            AdaptorList adaptors) {
-        for (int i = 0; i < adaptors.size(); i++) {
-            Adaptor adaptor = adaptors.get(i);
-            String adaptorType = adaptor.getShortCpiName();
-            String adaptorName = adaptor.getShortAdaptorClassName();
-            String postfix = adaptorType + "Adaptor";
-            String prefix = null;
-
-            // The prefix is the class name of the adaptor, with the TypeAdaptor
-            // part stripped of:
-            // So, "SshFileAdaptor" becomes "Ssh".
-            if (adaptorName.length() > postfix.length()) {
-                prefix = adaptorName.substring(0, adaptorName.length()
-                        - postfix.length());
+    private static Adaptor getAdaptor(String shortName, String cpiName,
+            List<Adaptor> adaptors) {
+        for (Adaptor adaptor : adaptors) {
+            if (adaptor.getShortAdaptorClassName().equalsIgnoreCase(
+                    shortName + cpiName + "Adaptor")) {
+                return adaptor;
             }
-            if (prefix.equalsIgnoreCase(shortName))
-                return adaptor.getName();
         }
         return null;
     }

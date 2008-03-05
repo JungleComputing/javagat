@@ -17,9 +17,6 @@ class Adaptor {
     /** The fully qualified class name of the api we implement. */
     String cpi;
 
-    /** The class of the api this adaptor implements. */
-    Class<?> cpiClass;
-
     /** The fully qualified class name of this adaptor. */
     String adaptorName;
 
@@ -38,9 +35,8 @@ class Adaptor {
      * @param preferences
      *            Preferences associated with this adaptor.
      */
-    public Adaptor(Class<?> cpiClass, Class<?> adaptorClass, Preferences preferences) {
-        this.cpi = cpiClass.getName();
-        this.cpiClass = cpiClass;
+    public Adaptor(String cpiName, Class<?> adaptorClass, Preferences preferences) {
+        this.cpi = cpiName;
         this.adaptorName = adaptorClass.getName();
         this.adaptorClass = adaptorClass;
         this.preferences = preferences;
@@ -66,8 +62,8 @@ class Adaptor {
                 }
             } else {
                 //              todo - namespace for preferences
-                //				retVal = false;
-                //				break;
+                //                              retVal = false;
+                //                              break;
             }
         }
 
@@ -106,10 +102,6 @@ class Adaptor {
         return cpi;
     }
 
-    Class<?> getCpiClass() {
-        return cpiClass;
-    }
-
     String getName() {
         return adaptorName;
     }
@@ -120,17 +112,6 @@ class Adaptor {
     
     public String toString() {
         return getName();
-    }
-
-    public String getShortCpiName() {
-        String shortCpiName = cpiClass.getName();
-        int index = shortCpiName.lastIndexOf(".");
-        if(index > 0) {
-            shortCpiName = shortCpiName.substring(index+1);
-        }
-        
-        // clip of the "Cpi"
-        return shortCpiName.substring(0, shortCpiName.length()-3);
     }
 
     public String getShortAdaptorClassName() {

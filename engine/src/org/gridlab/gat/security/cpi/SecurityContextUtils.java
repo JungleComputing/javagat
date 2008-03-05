@@ -198,8 +198,9 @@ public class SecurityContextUtils {
             CredentialExpiredException, InvalidUsernameOrPasswordException {
 
         String user = location.getUserInfo();
-        if (user != null)
+        if (user != null) {
             return user;
+        }
 
         if (securityContext != null) {
             user = securityContext.getUsername();

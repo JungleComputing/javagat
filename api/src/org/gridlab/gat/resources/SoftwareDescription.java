@@ -217,12 +217,12 @@ public class SoftwareDescription implements java.io.Serializable {
     public void addAttribute(String key, Object value) {
         attributes.put(key, value);
     }
-    
+
     /**
-     * Remove an attribute from the attribute set. 
+     * Remove an attribute from the attribute set.
      * 
      * @param key
-     * @param value
+     * @return the value belonging to this key
      */
     public Object removeAttribute(String key) {
         return attributes.remove(key);

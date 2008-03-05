@@ -58,6 +58,7 @@ public class OutputForwarder extends Thread {
         }
 
         this.out = buf;
+        setDaemon(true);
 
         start();
     }

@@ -3,133 +3,100 @@
  */
 package org.gridlab.gat.engine;
 
-import org.gridlab.gat.advert.cpi.AdvertServiceCpi;
-import org.gridlab.gat.io.cpi.EndpointCpi;
-import org.gridlab.gat.io.cpi.FileCpi;
-import org.gridlab.gat.io.cpi.FileInputStreamCpi;
-import org.gridlab.gat.io.cpi.FileOutputStreamCpi;
-import org.gridlab.gat.io.cpi.LogicalFileCpi;
-import org.gridlab.gat.io.cpi.RandomAccessFileCpi;
-import org.gridlab.gat.monitoring.cpi.MonitorableCpi;
-import org.gridlab.gat.resources.cpi.ResourceBrokerCpi;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * @author rob
  */
 public class DefaultAdaptorOrderPolicy implements AdaptorOrderPolicy {
-	public DefaultAdaptorOrderPolicy() {
-		// do nothing
-	}
+    public DefaultAdaptorOrderPolicy() {
+        // do nothing
+    }
 
-	/**
-	 * 
-	 */
-	public void order(AdaptorSet adaptors) {
-		for (int i = 0; i < adaptors.size(); i++) {
-			String type = adaptors.getAdaptorTypeName(i);
+    /**
+     * 
+     */
+    public void order(Map<String, List<Adaptor>> adaptors) {
+        Set<String> adaptorTypes = adaptors.keySet();
+        for (String adaptorType : adaptorTypes) {
+            if (adaptorType.equalsIgnoreCase("file")) {
+                orderFileList(adaptors.get(adaptorType));
+            } else if (adaptorType.equalsIgnoreCase("fileinputstream")) {
+                orderFileInputStreamList(adaptors.get(adaptorType));
+            } else if (adaptorType.equalsIgnoreCase("fileoutputstream")) {
+                orderFileOutputStreamList(adaptors.get(adaptorType));
+            } else if (adaptorType.equalsIgnoreCase("randomaccessfile")) {
+            } else if (adaptorType.equalsIgnoreCase("logicalfile")) {
+            } else if (adaptorType.equalsIgnoreCase("endpoint")) {
+            } else if (adaptorType.equalsIgnoreCase("resourcebroker")) {
+                orderResourceList(adaptors.get(adaptorType));
+            } else if (adaptorType.equalsIgnoreCase("advertservice")) {
+            } else if (adaptorType.equalsIgnoreCase("monitorable")) {
+            } else {
+                System.err
+                        .println("WARNING, unknown GAT type in DefaultAdaptorOrderPolicy");
+            }
+        }
+    }
 
-			if (type.equals(FileCpi.class.getName())) {
-				orderFileList(adaptors.getAdaptorList(i));
-			} else if (type.equals(FileInputStreamCpi.class.getName())) {
-				orderFileInputStreamList(adaptors.getAdaptorList(i));
-			} else if (type.equals(FileOutputStreamCpi.class.getName())) {
-				orderFileOutputStreamList(adaptors.getAdaptorList(i));
-			} else if (type.equals(RandomAccessFileCpi.class.getName())) {
-			} else if (type.equals(LogicalFileCpi.class.getName())) {
-			} else if (type.equals(EndpointCpi.class.getName())) {
-			} else if (type.equals(ResourceBrokerCpi.class.getName())) {
-				orderResourceList(adaptors.getAdaptorList(i));
-			} else if (type.equals(AdvertServiceCpi.class.getName())) {
-			} else if (type.equals(MonitorableCpi.class.getName())) {
-			} else {
-				// unknown type
-				System.err
-						.println("WARNING, unknown GAT type in DefaultAdaptorOrderPolicy");
-			}
-		}
-	}
+    private void orderFileList(List<Adaptor> l) {
+        int pos = 0;
+        placeAdaptor(pos++, "local", "file", l);
+        placeAdaptor(pos++, "gridftp", "file", l);
+        placeAdaptor(pos++, "sftpganymed", "file", l);
+        placeAdaptor(pos++, "commandlinessh", "file", l);
+        placeAdaptor(pos++, "sftpnew", "file", l);
+        placeAdaptor(pos++, "ssh", "file", l);
+        placeAdaptor(pos++, "sftp", "file", l);
+        // rest in random order
+    }
 
-	/**
-	 * Here I changed the order, put my GridFile (Balazs)
-	 */
-	protected void orderFileList(AdaptorList l) {
-		int insertPos = 0;
-		insertPos = l.placeAdaptor(insertPos,
-				"org.gridlab.gat.io.cpi.local.LocalFileAdaptor");
-		/*insertPos = l.placeAdaptor(insertPos,
-				"org.gridlab.gat.io.cpi.gt4.GT4GridFTPFileAdaptor");
-		insertPos = l.placeAdaptor(insertPos,
-				"org.gridlab.gat.io.cpi.gt4.GT4LocalFileAdaptor");*/
-		insertPos = l.placeAdaptor(insertPos,
-				"org.gridlab.gat.io.cpi.globus.GridFTPFileAdaptor");
-		insertPos = l.placeAdaptor(insertPos,
-				"org.gridlab.gat.io.cpi.sftpGanymed.SftpGanymedFileAdaptor");
-		insertPos = l
-				.placeAdaptor(insertPos,
-						"org.gridlab.gat.io.cpi.commandlineSsh.CommandlineSshFileAdaptor");
-		insertPos = l.placeAdaptor(insertPos,
-				"org.gridlab.gat.io.cpi.sftpnew.SftpNewFileAdaptor");
-		insertPos = l.placeAdaptor(insertPos,
-				"org.gridlab.gat.io.cpi.ssh.SshFileAdaptor");
-		insertPos = l.placeAdaptor(insertPos,
-				"org.gridlab.gat.io.cpi.sftp.SftpFileAdaptor");
+    private void orderFileInputStreamList(List<Adaptor> l) {
+        int pos = 0;
+        placeAdaptor(pos++, "local", "fileinputstream", l);
+        placeAdaptor(pos++, "gridftp", "fileinputstream", l);
+        placeAdaptor(pos++, "sftpnew", "fileinputstream", l);
+        placeAdaptor(pos++, "ssh", "fileinputstream", l);
+        placeAdaptor(pos++, "sftp", "fileinputstream", l);
+        placeAdaptor(pos++, "copying", "fileinputstream", l);
+        // rest in random order
+    }
 
-		// rest in random order
-	}
+    private void orderFileOutputStreamList(List<Adaptor> l) {
+        int pos = 0;
+        placeAdaptor(pos++, "local", "fileoutputstream", l);
+        placeAdaptor(pos++, "gridftp", "fileoutputstream", l);
+        placeAdaptor(pos++, "ssh", "fileoutputstream", l);
+        placeAdaptor(pos++, "sftp", "fileoutputstream", l);
+        // rest in random order
+    }
 
-	protected void orderFileInputStreamList(AdaptorList l) {
-		int insertPos = 0;
-		insertPos = l.placeAdaptor(insertPos,
-				"org.gridlab.gat.io.cpi.local.LocalFileInputStreamAdaptor");
-		insertPos = l.placeAdaptor(insertPos,
-				"org.gridlab.gat.io.cpi.globus.GridFTPFileInputStreamAdaptor");
-		insertPos = l.placeAdaptor(insertPos,
-				"org.gridlab.gat.io.cpi.sftpnew.SftpNewFileInputStreamAdaptor");
-		insertPos = l.placeAdaptor(insertPos,
-				"org.gridlab.gat.io.cpi.ssh.SshFileInputStreamAdaptor");
-		insertPos = l.placeAdaptor(insertPos,
-				"org.gridlab.gat.io.cpi.sftp.SftpFileInputStreamAdaptor");
-		insertPos = l
-				.placeAdaptor(insertPos,
-						"org.gridlab.gat.io.cpi.copyingFileInputStream.CopyingFileInputStreamAdaptor");
-
-		// rest in random order
-	}
-
-	protected void orderFileOutputStreamList(AdaptorList l) {
-		int insertPos = 0;
-		insertPos = l.placeAdaptor(insertPos,
-				"org.gridlab.gat.io.cpi.local.LocalFileOutputStreamAdaptor");
-		insertPos = l.placeAdaptor(insertPos,
-				"org.gridlab.gat.io.cpi.globus.GridFTPFileOutputStreamAdaptor");
-		insertPos = l.placeAdaptor(insertPos,
-				"org.gridlab.gat.io.cpi.ssh.SshFileOutputStreamAdaptor");
-		insertPos = l.placeAdaptor(insertPos,
-				"org.gridlab.gat.io.cpi.sftp.SftpFileOutputStreamAdaptor");
-
-		// rest in random order
-	}
-
-	protected void orderResourceList(AdaptorList l) {
-		int insertPos = 0;
-		/*insertPos = l.placeAdaptor(insertPos,
-				"org.gridlab.gat.resources.cpi.gt4.GT4ResourceBrokerAdaptor");*/
-		insertPos = l
-				.placeAdaptor(insertPos,
-						"org.gridlab.gat.resources.cpi.wsgt4.WSGT4ResourceBrokerAdaptor");
-		insertPos = l
-				.placeAdaptor(insertPos,
-						"org.gridlab.gat.resources.cpi.local.LocalResourceBrokerAdaptor");
-		insertPos = l
-				.placeAdaptor(insertPos,
-						"org.gridlab.gat.resources.cpi.globus.GlobusResourceBrokerAdaptor");
-		insertPos = l
-				.placeAdaptor(
-						insertPos,
-						"org.gridlab.gat.resources.cpi.commandlineSsh.CommandlineSshResourceBrokerAdaptor");
-		insertPos = l.placeAdaptor(insertPos,
-				"org.gridlab.gat.resources.cpi.ssh.SshResourceBrokerAdaptor");
-
-		// rest in random order
-	}
+    private void orderResourceList(List<Adaptor> l) {
+        int pos = 0;
+        placeAdaptor(pos++, "local", "resourcebroker", l);
+        placeAdaptor(pos++, "globus", "resourcebroker", l);
+        placeAdaptor(pos++, "wsgt4new", "resourcebroker", l);
+        placeAdaptor(pos++, "commandlinessh", "resourcebroker", l);
+        placeAdaptor(pos++, "ssh", "resourcebroker", l);
+        // rest in random order
+    }
+    
+    private void placeAdaptor(int position, String adaptorName, String cpiName, List<Adaptor> l) {
+        int currentPosition = l.indexOf(getAdaptor(adaptorName, cpiName, l));
+        l.add(position, l.remove(currentPosition));
+        return;
+    }
+    
+    private Adaptor getAdaptor(String shortName, String cpiName,
+            List<Adaptor> adaptors) {
+        for (Adaptor adaptor : adaptors) {
+            if (adaptor.getShortAdaptorClassName().equalsIgnoreCase(
+                    shortName + cpiName + "Adaptor")) {
+                return adaptor;
+            }
+        }
+        return null;
+    }
 }

@@ -8,8 +8,9 @@ import org.gridlab.gat.io.File;
 class Copy {
     public static void main(String[] args) {
         GATContext context = new GATContext();
-        context.addPreference("file.create", "true");
+        //context.addPreference("file.create", "true");
         context.addPreference("File.adaptor.name", "gridftp");
+        context.addPreference("gridftp.chmod", args[0]);
         System.err.println("------------FILE COPY TEST------------");
 
         URI src = null;
@@ -18,9 +19,9 @@ class Copy {
 
         try {
             src = new URI(
-                "/afs/mpa/home/roelof/test");
+                "file://fs0.das3.cs.vu.nl/test");
             dest = new URI(
-                "any://fs0.das3.cs.vu.nl/test");
+                "gsiftp://fs2.das3.science.uva.nl//home0/rkemp/dest");
             file = GAT.createFile(context, src);
         } catch (Exception e) {
             System.err.println("File creation failed: " + e);

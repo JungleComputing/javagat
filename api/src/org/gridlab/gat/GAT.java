@@ -32,11 +32,6 @@ public class GAT {
     static Class<?> engineClass;
     static Method createProxyMethod;
 
-    /**
-     * We use reflection to load the GAT engine. The only reason for this
-     * is that the user can develop JavaGAT applications with only GAT-API.jar
-     * on his/her classpath.
-     */
     static {
         try {
             engineClass = Class.forName("org.gridlab.gat.engine.GATEngine");
@@ -146,7 +141,7 @@ public class GAT {
             throws GATObjectCreationException {
         Object[] array = { location };
         FileInterface f = (FileInterface) getAdaptorProxy(
-                "org.gridlab.gat.io.cpi.FileCpi", FileInterface.class,
+                "File", FileInterface.class,
                 gatContext, preferences, new Class[] { URI.class }, array);
 
         return new org.gridlab.gat.io.File(f);
@@ -196,7 +191,7 @@ public class GAT {
         Object[] array = { name, modeTmp };
 
         return (LogicalFile) getAdaptorProxy(
-                "org.gridlab.gat.io.cpi.LogicalFileCpi", LogicalFile.class,
+                "LogicalFile", LogicalFile.class,
                 gatContext, preferences,
                 new Class[] { String.class, Integer.TYPE }, array);
     }
@@ -242,7 +237,7 @@ public class GAT {
             throws GATObjectCreationException {
         Object[] array = { location };
         FileInputStreamInterface res = (FileInputStreamInterface) getAdaptorProxy(
-                "org.gridlab.gat.io.cpi.FileInputStreamCpi",
+                "FileInputStream",
                 FileInputStreamInterface.class, gatContext, preferences, 
                 new Class[] { URI.class }, array);
 
@@ -625,7 +620,7 @@ public class GAT {
             boolean append) throws GATObjectCreationException {
         Object[] array = { location, new Boolean(append) };
         FileOutputStreamInterface res = (FileOutputStreamInterface) getAdaptorProxy(
-                "org.gridlab.gat.io.cpi.FileOutputStreamCpi",
+                "FileOutputStream",
                 FileOutputStreamInterface.class, gatContext, preferences,
                 new Class[] { URI.class, Boolean.class }, array);
 
@@ -647,7 +642,7 @@ public class GAT {
      */
     public static Endpoint createEndpoint(GATContext gatContext,
             Preferences preferences) throws GATObjectCreationException {
-        return (Endpoint) getAdaptorProxy("org.gridlab.gat.io.cpi.EndpointCpi",
+        return (Endpoint) getAdaptorProxy("Endpoint",
                 Endpoint.class, gatContext, preferences, null, null);
     }
 
@@ -681,7 +676,7 @@ public class GAT {
     public static AdvertService createAdvertService(GATContext gatContext,
             Preferences preferences) throws GATObjectCreationException {
         return (AdvertService) getAdaptorProxy(
-                "org.gridlab.gat.advert.cpi.AdvertServiceCpi",
+                "AdvertService",
                 AdvertService.class, gatContext, preferences, null, null);
     }
 
@@ -727,7 +722,7 @@ public class GAT {
     public static Monitorable createMonitorable(GATContext gatContext,
             Preferences preferences) throws GATObjectCreationException {
         return (Monitorable) getAdaptorProxy(
-                "org.gridlab.gat.monitoring.cpi.MonitorableCpi",
+                "Monitorable",
                 Monitorable.class, gatContext, preferences,
                 null, null);
     }
@@ -760,7 +755,7 @@ public class GAT {
     public static SteeringManager createSteeringManager(GATContext gatContext,
             Preferences preferences) throws GATObjectCreationException {
         return (SteeringManager) getAdaptorProxy(
-                "org.gridlab.gat.steering.cpi.SteeringManagerCpi",
+                "SteeringManager",
                 SteeringManager.class, gatContext, preferences, null, null);
     }
 
@@ -873,7 +868,7 @@ public class GAT {
         Object[] array = { location, mode };
 
         RandomAccessFileInterface f = (RandomAccessFileInterface) getAdaptorProxy(
-                "org.gridlab.gat.io.cpi.RandomAccessFileCpi",
+                "RandomAccessFile",
                 RandomAccessFileInterface.class, gatContext, preferences,
                 new Class[] { URI.class, String.class }, array);
         try {
@@ -929,7 +924,7 @@ public class GAT {
             Preferences preferences, URI brokerURI) throws GATObjectCreationException {
         Object[] array = { brokerURI };
         return (ResourceBroker) getAdaptorProxy(
-                "org.gridlab.gat.resources.cpi.ResourceBrokerCpi",
+                "ResourceBroker",
                 ResourceBroker.class, gatContext, preferences,
                 new Class[] {URI.class}, array);
     }
