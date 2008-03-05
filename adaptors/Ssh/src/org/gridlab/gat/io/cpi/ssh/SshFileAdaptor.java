@@ -29,8 +29,6 @@ import org.gridlab.gat.Preferences;
 import org.gridlab.gat.URI;
 import org.gridlab.gat.io.FileInterface;
 import org.gridlab.gat.io.cpi.FileCpi;
-import org.gridlab.gat.security.sftp.SftpSecurityUtils;
-import org.gridlab.gat.security.sftp.SftpUserInfo;
 
 import com.jcraft.jsch.Channel;
 import com.jcraft.jsch.ChannelExec;
@@ -74,7 +72,7 @@ public class SshFileAdaptor extends FileCpi {
 
     private Channel channel;
 
-    private SftpUserInfo sui;
+    private SshUserInfo sui;
 
     private int port;
 
@@ -147,7 +145,7 @@ public class SshFileAdaptor extends FileCpi {
         sui = null;
 
         try {
-            sui = SftpSecurityUtils.getSshCredential(gatContext, preferences,
+            sui = SshSecurityUtils.getSshCredential(gatContext, preferences,
                     "ssh", loc, SSH_PORT);
         } catch (Exception e) {
             if (logger.isInfoEnabled()) {
@@ -356,15 +354,15 @@ public class SshFileAdaptor extends FileCpi {
         }
 
         /* get destination user info if destination is not on local machine */
-        SftpUserInfo dui = null;
+        SshUserInfo dui = null;
         String destUserName = null;
 
         if (!loc.refersToLocalHost()) {
             try {
                 // has to be modified after proper modified SSHSecurityUtils
-                SftpUserInfo tmpsui = SftpSecurityUtils.getSshCredential(
+                SshUserInfo tmpsui = SshSecurityUtils.getSshCredential(
                         gatContext, preferences, "ssh", loc, SSH_PORT);
-                dui = new SftpUserInfo();
+                dui = new SshUserInfo();
                 dui.username = tmpsui.username;
                 dui.password = tmpsui.password;
                 dui.privateKeyfile = tmpsui.privateKeyfile;

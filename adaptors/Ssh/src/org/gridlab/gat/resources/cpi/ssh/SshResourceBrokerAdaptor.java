@@ -22,6 +22,8 @@ import org.gridlab.gat.engine.util.InputForwarder;
 import org.gridlab.gat.engine.util.OutputForwarder;
 import org.gridlab.gat.io.FileInputStream;
 import org.gridlab.gat.io.FileOutputStream;
+import org.gridlab.gat.io.cpi.ssh.SshSecurityUtils;
+import org.gridlab.gat.io.cpi.ssh.SshUserInfo;
 import org.gridlab.gat.monitoring.Metric;
 import org.gridlab.gat.monitoring.MetricListener;
 import org.gridlab.gat.resources.Job;
@@ -30,8 +32,6 @@ import org.gridlab.gat.resources.SoftwareDescription;
 import org.gridlab.gat.resources.cpi.ResourceBrokerCpi;
 import org.gridlab.gat.resources.cpi.Sandbox;
 import org.gridlab.gat.resources.cpi.WrapperSubmitter;
-import org.gridlab.gat.security.sftp.SftpSecurityUtils;
-import org.gridlab.gat.security.sftp.SftpUserInfo;
 
 import com.jcraft.jsch.Channel;
 import com.jcraft.jsch.ChannelExec;
@@ -460,7 +460,7 @@ public class SshResourceBrokerAdaptor extends ResourceBrokerCpi {
         return result;
     }
 
-    private static Session getSession(URI brokerURI, SftpUserInfo info)
+    private static Session getSession(URI brokerURI, SshUserInfo info)
             throws GATInvocationException, JSchException {
         String key = brokerURI.getHost() + ":" + brokerURI.getPort(SSH_PORT)
                 + "[" + info.toString() + "]";
@@ -470,7 +470,7 @@ public class SshResourceBrokerAdaptor extends ResourceBrokerCpi {
         return sessionCache.get(key);
     }
 
-    private static Session createNewSession(URI brokerURI, SftpUserInfo info)
+    private static Session createNewSession(URI brokerURI, SshUserInfo info)
             throws GATInvocationException, JSchException {
         String host = brokerURI.getHost();
         int port = brokerURI.getPort(SSH_PORT);
@@ -501,10 +501,10 @@ public class SshResourceBrokerAdaptor extends ResourceBrokerCpi {
         return result;
     }
 
-    private SftpUserInfo createSshUserInfo()
+    private SshUserInfo createSshUserInfo()
             throws CouldNotInitializeCredentialException,
             CredentialExpiredException, InvalidUsernameOrPasswordException {
-        return SftpSecurityUtils.getSshCredential(gatContext, preferences,
+        return SshSecurityUtils.getSshCredential(gatContext, preferences,
                 "ssh", brokerURI, brokerURI.getPort(SSH_PORT));
     }
 
