@@ -43,6 +43,8 @@
 			</fileset>
 		</copy>
 
+		<delete dir="${tmp}" />
+
 	</target>
 
 	<target name="clean" description="clean up">

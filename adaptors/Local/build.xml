@@ -48,6 +48,8 @@
 				<include name="*.jar" />
 			</fileset>
 		</copy>
+		
+		<delete dir="${tmp}" />
 
 	</target>
 
