@@ -16,9 +16,6 @@
 		<fileset dir="${external}">
 			<include name="*.jar" />
 		</fileset>
-		<fileset dir="${gat.location}/adaptors/external">
-			<include name="*.jar" />
-		</fileset>
 	</path>
 
 	<target name="compile" description="compile the source ">

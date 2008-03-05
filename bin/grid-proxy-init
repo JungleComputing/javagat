@@ -1,0 +1,3 @@
+#!/bin/sh
+
+java -DUID=${UID} -classpath :${GAT_LOCATION}/lib/adaptors/cog-jglobus-1.4.jar org.globus.tools.ProxyInit
