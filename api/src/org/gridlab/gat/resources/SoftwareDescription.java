@@ -8,6 +8,7 @@ import java.io.BufferedWriter;
 import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -65,8 +66,12 @@ public class SoftwareDescription implements java.io.Serializable {
     private File stdin;
 
     private File stdout;
+    private InputStream stdoutStream;
+    private boolean stdoutIsStreaming = false;
 
     private File stderr;
+    private InputStream stderrStream;
+    private boolean stderrIsStreaming = false;
 
     private HashMap<File, File> preStagedFiles; // contains (src, dest) tuples
 
@@ -369,13 +374,34 @@ public class SoftwareDescription implements java.io.Serializable {
     public File getStderr() {
         return stderr;
     }
+    
+    /**
+     * @return Returns the stderr stream.
+     */
+    public InputStream getStderrStream() {
+        return stderrStream;
+    }
 
     /**
      * @param stderr
      *                The file where stderr is redirected to.
      */
     public void setStderr(File stderr) {
+        stderrIsStreaming = false;
         this.stderr = stderr;
+    }
+    
+    /**
+     * @param stderrStream
+     *                The stream where stderr is redirected to.
+     */
+    public void setStderr(InputStream stderrStream) {
+        stderrIsStreaming = true;
+        this.stderrStream = stderrStream; 
+    }
+    
+    public boolean getStderrIsStreaming() {
+        return stderrIsStreaming;
     }
 
     /**
@@ -399,13 +425,34 @@ public class SoftwareDescription implements java.io.Serializable {
     public File getStdout() {
         return stdout;
     }
+    
+    /**
+     * @return Returns the stdout stream.
+     */
+    public InputStream getStdoutStream() {
+        return stdoutStream;
+    }
 
     /**
      * @param stdout
      *                The file where stdout is redirected to.
      */
     public void setStdout(File stdout) {
+        stdoutIsStreaming = false;
         this.stdout = stdout;
+    }
+    
+    /**
+     * @param stdoutStream
+     *                The stream where stdout is redirected to.
+     */
+    public void setStdout(InputStream stdoutStream) {
+        stdoutIsStreaming = true;
+        this.stdoutStream = stdoutStream; 
+    }
+    
+    public boolean getStdoutIsStreaming() {
+        return stdoutIsStreaming;
     }
 
     public String toString() {
