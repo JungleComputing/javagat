@@ -15,8 +15,6 @@ public class SerializedJob implements Serializable, Advertisable {
 
 	private Sandbox sandbox;
 
-	private boolean postStageFinished;
-
 	private String jobId;
 
 	private long queueTime;
@@ -30,11 +28,10 @@ public class SerializedJob implements Serializable, Advertisable {
 	}
 
 	public SerializedJob(JobDescription jobDescription, Sandbox sandbox,
-			boolean postStageFinished, String jobId, long queueTime,
+			 String jobId, long queueTime,
 			long runTime, long startTime) {
 		this.jobDescription = jobDescription;
 		this.sandbox = sandbox;
-		this.postStageFinished = postStageFinished;
 		this.jobId = jobId;
 		this.queueTime = queueTime;
 		this.runTime = runTime;
@@ -62,14 +59,6 @@ public class SerializedJob implements Serializable, Advertisable {
 	 */
 	public void setJobId(String jobId) {
 		this.jobId = jobId;
-	}
-
-	public boolean isPostStageFinished() {
-		return postStageFinished;
-	}
-
-	public void setPostStageFinished(boolean postStageFinished) {
-		this.postStageFinished = postStageFinished;
 	}
 
 	public long getQueueTime() {
@@ -117,7 +106,6 @@ public class SerializedJob implements Serializable, Advertisable {
 
 		res += "descr = " + jobDescription;
 		res += " sandbox = " + sandbox;
-		res += " postStagedFinished: " + postStageFinished;
 		res += " jobId: " + jobId;
 		res += " queueTime: " + queueTime;
 		res += " runTime: " + runTime;

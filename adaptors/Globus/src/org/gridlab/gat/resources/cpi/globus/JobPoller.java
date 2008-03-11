@@ -15,47 +15,48 @@ import org.gridlab.gat.resources.Job;
  */
 class JobPoller extends Thread {
 
-	protected static Logger logger = Logger.getLogger(JobPoller.class);
+    protected static Logger logger = Logger.getLogger(JobPoller.class);
 
-	private GlobusJob j;
+    private GlobusJob j;
 
-	private boolean die = false;
+    private boolean die = false;
 
-	JobPoller(GlobusJob j) {
-		this.j = j;
-		setDaemon(true);
-	}
+    JobPoller(GlobusJob j) {
+        super("GlobusJob poller thread");
+        this.j = j;
+        setDaemon(true);
+    }
 
-	public void run() {
-		while (true) {
-			if (j.getState() == Job.STOPPED)
-				return;
-			if (j.getState() == Job.SUBMISSION_ERROR)
-				return;
-			j.getStateActive();
-			if (j.getState() == Job.STOPPED)
-				return;
-			if (j.getState() == Job.SUBMISSION_ERROR)
-				return;
+    public void run() {
+        while (true) {
+            if (j.getState() == Job.STOPPED)
+                return;
+            if (j.getState() == Job.SUBMISSION_ERROR)
+                return;
+            j.getStateActive();
+            if (j.getState() == Job.STOPPED)
+                return;
+            if (j.getState() == Job.SUBMISSION_ERROR)
+                return;
 
-			synchronized (this) {
-				try {
-					wait(5 * 1000);
-				} catch (Exception e) {
-					// Ignore
-				}
-				if (die) {
-					if (logger.isDebugEnabled()) {
-						logger.debug("Job poller killed");
-					}
-					return;
-				}
-			}
-		}
-	}
+            synchronized (this) {
+                try {
+                    wait(5 * 1000);
+                } catch (Exception e) {
+                    // Ignore
+                }
+                if (die) {
+                    if (logger.isDebugEnabled()) {
+                        logger.debug("Job poller killed");
+                    }
+                    return;
+                }
+            }
+        }
+    }
 
-	synchronized void die() {
-		die = true;
-		notifyAll();
-	}
+    synchronized void die() {
+        die = true;
+        notifyAll();
+    }
 }
