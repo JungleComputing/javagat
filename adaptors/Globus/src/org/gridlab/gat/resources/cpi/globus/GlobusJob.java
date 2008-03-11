@@ -247,7 +247,8 @@ public class GlobusJob extends JobCpi implements GramJobListener,
                 GATInvocationException x = new GATInvocationException();
                 x.add("globus job", e);
                 x.add("globus job", e2);
-                x.add("globus job", new Exception("There may be jobs still running!"));
+                x.add("globus job", new Exception(
+                        "There may be jobs still running!"));
                 finished();
                 throw x;
             }
@@ -257,7 +258,7 @@ public class GlobusJob extends JobCpi implements GramJobListener,
         waitForJobCompletion();
         finished();
     }
-    
+
     private synchronized void waitForJobCompletion() {
         while (state != STOPPED && state != SUBMISSION_ERROR) {
             try {
@@ -353,7 +354,7 @@ public class GlobusJob extends JobCpi implements GramJobListener,
     public void statusChanged(GramJob newJob) {
         handleStatusChanged(newJob);
     }
-    
+
     private synchronized void handleStatusChanged(GramJob newJob) {
         // if the job is already done, simply return
         // because we remove the listeners will this ever be executed?
@@ -361,10 +362,16 @@ public class GlobusJob extends JobCpi implements GramJobListener,
             return;
         }
         int status = newJob.getStatus();
+        boolean stateChanged;
         if (newJob.getError() == GramError.GRAM_JOBMANAGER_CONNECTION_FAILURE) {
-            status = STATUS_DONE;
+            if (state == GLOBUS_JOB_SUBMISSION_ERROR) {
+                stateChanged = setState(SUBMISSION_ERROR);
+            } else {
+                stateChanged = setState(STOPPED);
+            }
+        } else {
+            stateChanged = setState(convertGram2Gat(status));
         }
-        boolean stateChanged = setState(convertGram2Gat(status));
         if (!stateChanged) {
             return;
         } else if (state == SCHEDULED) {
@@ -372,8 +379,7 @@ public class GlobusJob extends JobCpi implements GramJobListener,
         } else if (state == RUNNING) {
             runTime = System.currentTimeMillis();
             queueTime = runTime - queueTime;
-        } else if (state == GLOBUS_JOB_STOPPED
-                || state == GLOBUS_JOB_SUBMISSION_ERROR) {
+        } else if (state == GLOBUS_JOB_STOPPED || state == SUBMISSION_ERROR) {
             int globusState = state;
             runTime = System.currentTimeMillis() - runTime;
             stopHandlers();
@@ -385,8 +391,7 @@ public class GlobusJob extends JobCpi implements GramJobListener,
                     readExitStatus();
                 } catch (GATInvocationException e) {
                     logger
-                            .info(
-                                    "reading the exit status from file failed: ",
+                            .info("reading the exit status from file failed: ",
                                     e);
                 }
             }

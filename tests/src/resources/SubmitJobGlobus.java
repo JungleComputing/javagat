@@ -58,6 +58,7 @@ public class SubmitJobGlobus implements MetricListener {
         sd.setStderr(errFile);
         sd.addAttribute("globus.exitvalue.enable", args[3]);
         sd.addAttribute("host.count", args[4]);
+        sd.addAttribute("count", args[4]);
         if (args.length == 6) {
             sd.addAttribute("globus.queue", args[5]);
         }
@@ -85,8 +86,8 @@ public class SubmitJobGlobus implements MetricListener {
         System.err.println("job took " + (end - start) + " ms");
         System.err.println("job exit status: " + job.getExitStatus());
 
-        System.err.println("SubmitJobCallback: Job finished, state = "
-                + job.getInfo());
+        //System.err.println("SubmitJobCallback: Job finished, state = "
+        //        + job.getInfo());
 
     }
 }
