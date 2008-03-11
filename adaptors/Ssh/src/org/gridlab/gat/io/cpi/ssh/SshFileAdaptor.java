@@ -682,9 +682,10 @@ public class SshFileAdaptor extends FileCpi {
                 target = GAT.createFile(gatContext, preferences, loc)
                         .getFileInterface();
                 target.mkdir();
-            }  else {
-                throw new GATInvocationException("cannot overwrite non-directory '"
-                        + loc + "' with directory '" + location + "'!");
+            } else {
+                throw new GATInvocationException(
+                        "cannot overwrite non-directory '" + loc
+                                + "' with directory '" + location + "'!");
             }
             prepareSession(loc);
             startSession(loc);
@@ -891,12 +892,13 @@ public class SshFileAdaptor extends FileCpi {
 
     protected void scp(URI loc, String isRec) throws GATInvocationException {
         if (logger.isDebugEnabled()) {
-            logger.debug("scpFromRemoteToLocal: scp -f " + isRec);
+            logger.debug("scpFromRemoteToLocal: scp -f -p " + isRec + " "
+                    + fixURI(location, null).getPath());
         }
         /*-f from fetch*/
         try {
             startSession();
-            Object[] streams = execSessionCommand("scp -f " + isRec
+            Object[] streams = execSessionCommand("scp -f -p " + isRec + " "
                     + fixURI(location, null).getPath());
             sendAck(((OutputStream) streams[OUT]));
             File localFile = new File(loc.getPath());

@@ -305,7 +305,13 @@ public class URI implements Serializable, Comparable<Object> {
     }
 
     public boolean isAbsolute() {
-        return u.isAbsolute();
+        if (getPath().startsWith(File.separator)) {
+            return true;
+        } else {
+            return false;
+        }
+        
+//        return u.isAbsolute();
     }
 
     public boolean isOpaque() {

@@ -41,7 +41,7 @@ public abstract class FileCpi implements FileInterface, java.io.Serializable {
     protected Preferences preferences;
 
     protected URI location;
-    
+
     /**
      * Constructs a FileCpi instance which corresponds to the physical file
      * identified by the passed Location and whose access rights are determined
@@ -66,11 +66,11 @@ public abstract class FileCpi implements FileInterface, java.io.Serializable {
             logger.debug("FileCpi: created file with URI " + location);
         }
     }
-    
+
     public final Preferences getPreferences() {
         return preferences;
     }
-    
+
     public final GATContext getGATContext() {
         return gatContext;
     }
@@ -524,6 +524,73 @@ public abstract class FileCpi implements FileInterface, java.io.Serializable {
             }
         }
         return fixedURI;
+    }
+
+    protected void copyDir(URI destination) throws Exception {
+        FileInterface destinationFile = null;
+        try {
+            destinationFile = GAT.createFile(gatContext, preferences,
+                    destination).getFileInterface();
+        } catch (GATObjectCreationException e) {
+            throw new GATInvocationException("file cpi", e);
+        }
+        if (destinationFile.exists() && destinationFile.isFile()) {
+            throw new Exception("cannot overwrite non-directory '"
+                    + destination + "' with directory '" + location + "'!");
+        } else if (destinationFile.exists()
+                && destinationFile.isDirectory()
+                && !(preferences.containsKey("file.directory.copy") && ((String) preferences
+                        .get("file.directory.copy"))
+                        .equalsIgnoreCase("contents"))) {
+            // copy a/b c/d results in c/d/b
+            try {
+                copyDir(new URI(destination + "/" + getName()));
+            } catch (URISyntaxException e) {
+                // should not happen
+            }
+        } else {
+            // destinationFile doesn't exist! we've got to create the dir.
+            if ((preferences.containsKey("file.directory.copy") && ((String) preferences
+                    .get("file.directory.copy")).equalsIgnoreCase("contents"))) {
+                if (preferences.containsKey("file.create")
+                        && ((String) preferences.get("file.create"))
+                                .equalsIgnoreCase("true")) {
+                    // and if file.create is set also the nonexisting dirs below
+                    destinationFile.mkdirs();
+                } else {
+                    // if source is a dir 'dir1' and dest is a dir 'dir2' then
+                    // the result of dir1.copy(dir2) will be dir2/dir1/.. so even if
+                    // the 'file.create' flag isn't set, create the dir1 in dir2
+                    // before copying the files.
+                    destinationFile.mkdir();
+                }
+            }
+            copyDirContents(destination);
+        }
+    }
+
+    protected void copyDirContents(URI destination)
+            throws GATInvocationException {
+        // list all the files and copy recursively.
+        File[] files = (File[]) listFiles();
+        if (files == null) {
+            if (logger.isDebugEnabled()) {
+                logger.debug("copyDirectory: no files in src directory: "
+                        + location);
+            }
+            return;
+        }
+        for (File file : files) {
+            FileInterface f = file.getFileInterface();
+            if (logger.isDebugEnabled()) {
+                logger.debug("copyDirectory: file to copy = " + f);
+            }
+            try {
+                f.copy(new URI(destination + "/" + f.getName()));
+            } catch (URISyntaxException e) {
+                // would not happen
+            }
+        }
     }
 
     protected static void copyDirectory(GATContext gatContext,

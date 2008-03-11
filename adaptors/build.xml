@@ -18,6 +18,7 @@
 		<ant dir="SftpNew" />
 		<ant dir="Sge" />
 		<ant dir="Ssh" />
+		<ant dir="SshTrilead" />
 		<ant dir="Zorilla" />
 	</target>
 
@@ -36,6 +37,7 @@
 		<ant dir="SftpNew" target="clean" />
 		<ant dir="Sge" target="clean" />
 		<ant dir="Ssh" target="clean" />
+		<ant dir="SshTrilead" target="clean" />
 		<ant dir="Zorilla" target="clean" />
 	</target>
 
@@ -93,6 +95,10 @@
 
 	<target name="ssh" description="build Ssh adaptor">
 		<ant dir="Ssh" />
+	</target>
+
+	<target name="sshtrilead" description="build SshTrilead adaptor">
+		<ant dir="SshTrilead" />
 	</target>
 
 	<target name="zorilla" description="build Zorilla adaptor">
