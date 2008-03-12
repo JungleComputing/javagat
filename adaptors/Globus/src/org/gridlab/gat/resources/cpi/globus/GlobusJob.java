@@ -61,6 +61,8 @@ public class GlobusJob extends JobCpi implements GramJobListener,
 
     private long startTime;
 
+    private int globusJobState = 0;
+
     private boolean exitStatusEnabled = false;
 
     private String exitStatusFile;
@@ -181,17 +183,6 @@ public class GlobusJob extends JobCpi implements GramJobListener,
 
     private synchronized String getGlobusState() {
         return j.getStatusAsString();
-    }
-
-    public static String getStateString(int state) {
-        switch (state) {
-        case GLOBUS_JOB_STOPPED:
-            return "GLOBUS_JOB_STOPPED";
-        case GLOBUS_JOB_SUBMISSION_ERROR:
-            return "GLOBUS_JOB_SUBMISSION_ERROR";
-        default:
-            return org.gridlab.gat.resources.Job.getStateString(state);
-        }
     }
 
     public synchronized Map<String, Object> getInfo()
@@ -364,7 +355,7 @@ public class GlobusJob extends JobCpi implements GramJobListener,
         int status = newJob.getStatus();
         boolean stateChanged;
         if (newJob.getError() == GramError.GRAM_JOBMANAGER_CONNECTION_FAILURE) {
-            if (state == GLOBUS_JOB_SUBMISSION_ERROR) {
+            if (globusJobState == GLOBUS_JOB_SUBMISSION_ERROR) {
                 stateChanged = setState(SUBMISSION_ERROR);
             } else {
                 stateChanged = setState(STOPPED);
@@ -372,17 +363,17 @@ public class GlobusJob extends JobCpi implements GramJobListener,
         } else {
             stateChanged = setState(convertGram2Gat(status));
         }
-        if (!stateChanged) {
+        if (!stateChanged && globusJobState == 0) {
             return;
         } else if (state == SCHEDULED) {
             queueTime = System.currentTimeMillis();
         } else if (state == RUNNING) {
             runTime = System.currentTimeMillis();
             queueTime = runTime - queueTime;
-        } else if (state == GLOBUS_JOB_STOPPED || state == SUBMISSION_ERROR) {
-            int globusState = state;
+        } else if (globusJobState == GLOBUS_JOB_STOPPED
+                || globusJobState == SUBMISSION_ERROR) {
             runTime = System.currentTimeMillis() - runTime;
-            if (exitStatusEnabled && state == GLOBUS_JOB_STOPPED) {
+            if (exitStatusEnabled && globusJobState == GLOBUS_JOB_STOPPED) {
                 try {
                     readExitStatus();
                 } catch (GATInvocationException e) {
@@ -395,11 +386,12 @@ public class GlobusJob extends JobCpi implements GramJobListener,
             if (sandbox != null) {
                 sandbox.retrieveAndCleanup(this);
             }
-            if (globusState == GLOBUS_JOB_STOPPED) {
+            if (globusJobState == GLOBUS_JOB_STOPPED) {
                 setState(STOPPED);
             } else {
                 setState(SUBMISSION_ERROR);
             }
+            globusJobState = 0;
             stopHandlers();
             if (poller != null) {
                 poller.die();
@@ -423,9 +415,11 @@ public class GlobusJob extends JobCpi implements GramJobListener,
         case STATUS_ACTIVE:
             return RUNNING;
         case STATUS_DONE:
-            return GLOBUS_JOB_STOPPED;
+            globusJobState = GLOBUS_JOB_STOPPED;
+            return state;
         case STATUS_FAILED:
-            return GLOBUS_JOB_SUBMISSION_ERROR;
+            globusJobState = GLOBUS_JOB_SUBMISSION_ERROR;
+            return state;
         case STATUS_PENDING:
             return SCHEDULED;
         case STATUS_STAGE_IN:
@@ -449,11 +443,9 @@ public class GlobusJob extends JobCpi implements GramJobListener,
             return false;
         }
         this.state = state;
-        if (state != GLOBUS_JOB_STOPPED && state != GLOBUS_JOB_SUBMISSION_ERROR) {
-            MetricValue v = new MetricValue(this, getStateString(state),
-                    statusMetric, System.currentTimeMillis());
-            GATEngine.fireMetric(this, v);
-        }
+        MetricValue v = new MetricValue(this, getStateString(state),
+                statusMetric, System.currentTimeMillis());
+        GATEngine.fireMetric(this, v);
         return true;
     }
 
