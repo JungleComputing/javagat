@@ -8,6 +8,7 @@ import org.globus.ftp.DataChannelAuthentication;
 import org.globus.ftp.FTPClient;
 import org.globus.ftp.GridFTPClient;
 import org.globus.ftp.GridFTPSession;
+import org.globus.ftp.exception.ServerException;
 import org.gridlab.gat.AdaptorNotApplicableException;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
@@ -205,7 +206,35 @@ public class GridFTPFileAdaptor extends GlobusFileAdaptor {
                 setSecurityOptions(client, preferences);
 
                 // authenticate to the server
-                client.authenticate(credential);
+                int retry = 1;
+                String tmp = (String) preferences
+                        .get("gridftp.authenticate.retry");
+                if ((tmp != null)) {
+                    try {
+                        retry = Integer.parseInt(tmp);
+                    } catch (NumberFormatException e) {
+                        if (logger.isDebugEnabled()) {
+                            logger.debug("failed to parse value '" + tmp
+                                    + "' for key 'gridftp.authenticate.retry'");
+                        }
+                    }
+                }
+                for (int i = 0; i < retry; i++) {
+                    try {
+                        client.authenticate(credential);
+                    } catch (ServerException se) {
+                        if (se.getMessage().contains(
+                                "451 active connection to server failed")) {
+                            try {
+                                Thread.sleep(5000);
+                            } catch (InterruptedException e) {
+                                // ignore
+                            }
+                            continue;
+                        }
+                    }
+                    break;
+                }
 
                 setConnectionOptions(client, preferences);
 
