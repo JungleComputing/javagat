@@ -30,7 +30,6 @@ public class LocalFileAdaptor extends FileCpi {
 
     private File f;
 
-    private boolean ignoreHiddenFiles = false;
 
     /**
      * @param gatContext
@@ -40,15 +39,6 @@ public class LocalFileAdaptor extends FileCpi {
     public LocalFileAdaptor(GATContext gatContext, Preferences preferences,
             URI location) throws GATObjectCreationException {
         super(gatContext, preferences, location);
-
-        String res = (String) preferences.get("file.hiddenfiles.ignore");
-        if (res != null && res.equalsIgnoreCase("true")) {
-            if (logger.isDebugEnabled()) {
-                logger.debug("local file adaptor is ignoring hidden files");
-            }
-            ignoreHiddenFiles = true;
-        }
-
         if (!location.refersToLocalHost()) {
             throw new AdaptorNotApplicableException(
                     "Cannot use remote files with the local file adaptor, URI is: "
@@ -415,9 +405,9 @@ public class LocalFileAdaptor extends FileCpi {
      */
     public String[] list() throws GATInvocationException {
         String[] res = f.list();
-        if (!ignoreHiddenFiles)
+        if (!ignoreHiddenFiles) {
             return res;
-
+        }
         ArrayList<String> l = new ArrayList<String>();
         for (int i = 0; i < res.length; i++) {
             if (!res[i].startsWith(".")) {
@@ -435,9 +425,9 @@ public class LocalFileAdaptor extends FileCpi {
      */
     public String[] list(FilenameFilter arg0) {
         String[] res = f.list(arg0);
-        if (!ignoreHiddenFiles)
+        if (!ignoreHiddenFiles) {
             return res;
-
+        }
         ArrayList<String> l = new ArrayList<String>();
         for (int i = 0; i < res.length; i++) {
             if (!res[i].startsWith(".")) {
@@ -465,8 +455,9 @@ public class LocalFileAdaptor extends FileCpi {
 
         ArrayList<File> l = new ArrayList<File>();
         for (int i = 0; i < r.length; i++) {
-            if (!(ignoreHiddenFiles && r[i].isHidden()))
+            if (!(ignoreHiddenFiles && r[i].isHidden())) {
                 l.add(r[i]);
+            }
         }
 
         org.gridlab.gat.io.File[] res = new org.gridlab.gat.io.File[l.size()];
@@ -494,8 +485,9 @@ public class LocalFileAdaptor extends FileCpi {
 
         ArrayList<File> l = new ArrayList<File>();
         for (int i = 0; i < r.length; i++) {
-            if (!(ignoreHiddenFiles && r[i].isHidden()))
+            if (!(ignoreHiddenFiles && r[i].isHidden())) {
                 l.add(r[i]);
+            }
         }
 
         org.gridlab.gat.io.File[] res = new org.gridlab.gat.io.File[r.length];
@@ -523,8 +515,9 @@ public class LocalFileAdaptor extends FileCpi {
 
         ArrayList<File> l = new ArrayList<File>();
         for (int i = 0; i < r.length; i++) {
-            if (!(ignoreHiddenFiles && r[i].isHidden()))
+            if (!(ignoreHiddenFiles && r[i].isHidden())) {
                 l.add(r[i]);
+            }
         }
 
         org.gridlab.gat.io.File[] res = new org.gridlab.gat.io.File[r.length];

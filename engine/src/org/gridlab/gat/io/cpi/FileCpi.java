@@ -41,6 +41,8 @@ public abstract class FileCpi implements FileInterface, java.io.Serializable {
     protected Preferences preferences;
 
     protected URI location;
+    
+    protected boolean ignoreHiddenFiles = false;
 
     /**
      * Constructs a FileCpi instance which corresponds to the physical file
@@ -62,6 +64,13 @@ public abstract class FileCpi implements FileInterface, java.io.Serializable {
         this.preferences = preferences;
         this.location = location;
 
+        String res = (String) preferences.get("file.hiddenfiles.ignore");
+        if (res != null && res.equalsIgnoreCase("true")) {
+            if (logger.isDebugEnabled()) {
+                logger.debug("ignoring hidden files");
+            }
+            ignoreHiddenFiles = true;
+        }
         if (logger.isDebugEnabled()) {
             logger.debug("FileCpi: created file with URI " + location);
         }

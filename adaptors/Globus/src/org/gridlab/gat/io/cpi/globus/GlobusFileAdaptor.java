@@ -473,11 +473,15 @@ public abstract class GlobusFileAdaptor extends FileCpi {
 
             for (int i = 0; i < v.size(); i++) {
                 FileInfo info = ((FileInfo) v.get(i));
-                if (info.getName().equals("."))
+                if (info.getName().equals(".")) {
                     continue;
-                if (info.getName().equals(".."))
+                }
+                if (info.getName().equals("..")) {
                     continue;
-
+                }
+                if (info.getName().startsWith(".") && ignoreHiddenFiles) {
+                    continue;
+                }
                 result.add(getName(info));
             }
 
@@ -537,10 +541,15 @@ public abstract class GlobusFileAdaptor extends FileCpi {
             for (int i = 0; i < v.size(); i++) {
                 FileInfo info = ((FileInfo) v.get(i));
 
-                if (info.getName().equals("."))
+                if (info.getName().equals(".")) {
                     continue;
-                if (info.getName().equals(".."))
+                }
+                if (info.getName().equals("..")) {
                     continue;
+                }
+                if (info.getName().startsWith(".") && ignoreHiddenFiles) {
+                    continue;
+                }
 
                 String uri = location.toString();
                 if (!uri.endsWith("/")) {

@@ -256,7 +256,7 @@ public class GlobusJob extends JobCpi implements GramJobListener,
         // the signal has been sent. Now we wait for the termination to
         // complete. This is indicated when the job enters the STOPPED state
         waitForJobCompletion();
-        finished();
+        // finished(); already done in statusChanged();
     }
 
     private synchronized void waitForJobCompletion() {
@@ -382,10 +382,6 @@ public class GlobusJob extends JobCpi implements GramJobListener,
         } else if (state == GLOBUS_JOB_STOPPED || state == SUBMISSION_ERROR) {
             int globusState = state;
             runTime = System.currentTimeMillis() - runTime;
-            stopHandlers();
-            if (poller != null) {
-                poller.die();
-            }
             if (exitStatusEnabled && state == GLOBUS_JOB_STOPPED) {
                 try {
                     readExitStatus();
@@ -404,6 +400,11 @@ public class GlobusJob extends JobCpi implements GramJobListener,
             } else {
                 setState(SUBMISSION_ERROR);
             }
+            stopHandlers();
+            if (poller != null) {
+                poller.die();
+            }
+            finished();
         }
         if (GATEngine.TIMING) {
             System.err.println("TIMING: job " + jobID + ":" + " preStage: "
@@ -448,7 +449,7 @@ public class GlobusJob extends JobCpi implements GramJobListener,
             return false;
         }
         this.state = state;
-        if (state != GLOBUS_JOB_STOPPED) {
+        if (state != GLOBUS_JOB_STOPPED && state != GLOBUS_JOB_SUBMISSION_ERROR) {
             MetricValue v = new MetricValue(this, getStateString(state),
                     statusMetric, System.currentTimeMillis());
             GATEngine.fireMetric(this, v);
