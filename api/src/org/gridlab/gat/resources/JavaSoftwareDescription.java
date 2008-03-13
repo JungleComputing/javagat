@@ -5,6 +5,7 @@
 package org.gridlab.gat.resources;
 
 import java.util.Map;
+import java.util.Set;
 
 /**
  * @author rob
@@ -30,9 +31,9 @@ import java.util.Map;
 @SuppressWarnings("serial")
 public class JavaSoftwareDescription extends SoftwareDescription {
 
-    private String[] options;
-    private String[] systemProperties;
-    private String main;
+    private String[] javaOptions;
+    private Map<String, String> javaSystemProperties;
+    private String javaMain;
     private String[] javaArguments;
 
     /**
@@ -54,17 +55,17 @@ public class JavaSoftwareDescription extends SoftwareDescription {
     @SuppressWarnings("unchecked")
     public JavaSoftwareDescription(Map<String, Object> attributes) {
         super(attributes);
-        main = (String) attributes.get("java.main");
-        setOptions((String[]) attributes.get("java.options"));
-        systemProperties = (String[]) attributes.get("java.system.properties");
+        javaMain = (String) attributes.get("java.main");
+        setJavaOptions((String[]) attributes.get("java.options"));
+        javaSystemProperties = (Map<String, String>) attributes.get("java.system.properties");
         javaArguments = (String[]) attributes.get("java.arguments");
     }
 
     /**
      * @return Returns the jvm options.
      */
-    public String[] getOptions() {
-        return options;
+    public String[] getJavaOptions() {
+        return javaOptions;
     }
 
     /**
@@ -74,7 +75,7 @@ public class JavaSoftwareDescription extends SoftwareDescription {
      * @param options
      *                the jvm options.
      */
-    public void setOptions(String[] options) {
+    public void setJavaOptions(String[] options) {
         int systemProperties = 0;
         for (String option : options) {
             if (option.startsWith("-D") || option.startsWith("\"-D")) {
@@ -82,17 +83,17 @@ public class JavaSoftwareDescription extends SoftwareDescription {
             }
         }
         int pos = 0;
-        this.options = new String[options.length - systemProperties];
+        this.javaOptions = new String[options.length - systemProperties];
         for (String option : options) {
-            this.options[pos++] = option;
+            this.javaOptions[pos++] = option;
         }
     }
 
     /**
      * @return Returns the java system properties.
      */
-    public String[] getSystemProperties() {
-        return systemProperties;
+    public Map<String, String> getJavaSystemProperties() {
+        return javaSystemProperties;
     }
 
     /**
@@ -102,15 +103,15 @@ public class JavaSoftwareDescription extends SoftwareDescription {
      * @param systemProperties
      *                the system properties.
      */
-    public void setSystemProperties(String[] systemProperties) {
-        this.systemProperties = systemProperties;
+    public void setJavaSystemProperties(Map<String, String> systemProperties) {
+        this.javaSystemProperties = systemProperties;
     }
 
     /**
      * @return Returns the main class.
      */
-    public String getMain() {
-        return main;
+    public String getJavaMain() {
+        return javaMain;
     }
 
     /**
@@ -119,8 +120,8 @@ public class JavaSoftwareDescription extends SoftwareDescription {
      * @param main
      *                the main class.
      */
-    public void setMain(String main) {
-        this.main = main;
+    public void setJavaMain(String main) {
+        this.javaMain = main;
     }
 
     /**
@@ -159,16 +160,17 @@ public class JavaSoftwareDescription extends SoftwareDescription {
      * @return the command line arguments
      */
     public String[] getArguments() {
-        String result[] = new String[options.length + systemProperties.length
+        String result[] = new String[javaOptions.length + javaSystemProperties.size()
                 + 1 + javaArguments.length];
         int pos = 0;
-        for (String option : options) {
+        for (String option : javaOptions) {
             result[pos++] = option;
         }
-        for (String systemProperty : systemProperties) {
-            result[pos++] = "-D" + systemProperty;
+        Set<String> keys = javaSystemProperties.keySet();
+        for (String key: keys) {
+            result[pos++] = "-D" + key + "=" + javaSystemProperties.get(key);
         }
-        result[pos++] = main;
+        result[pos++] = javaMain;
         for (String javaArgument : javaArguments) {
             result[pos++] = javaArgument;
         }
