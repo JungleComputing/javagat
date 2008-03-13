@@ -27,6 +27,7 @@ import org.gridlab.gat.GATObjectCreationException;
 import org.gridlab.gat.InvalidUsernameOrPasswordException;
 import org.gridlab.gat.Preferences;
 import org.gridlab.gat.URI;
+import org.gridlab.gat.engine.util.CommandRunner;
 import org.gridlab.gat.io.File;
 import org.gridlab.gat.io.FileInterface;
 import org.gridlab.gat.io.cpi.FileCpi;
@@ -270,29 +271,37 @@ public abstract class GlobusFileAdaptor extends FileCpi {
                     destParentFile.mkdirs();
                 }
             }
+            if (preferences.containsKey("file.chmod")) {
+                client = createClient(dest);
+                // removed line below, seems to make the copy fail...
+                // client.getCurrentDir(); // to ensure a command has been executed
+                setActiveOrPassive(client, preferences);
+                java.io.File emptyFile = java.io.File.createTempFile(".JavaGAT", null);
+                client.put(emptyFile, dest.getPath(), false); // overwrite
+                emptyFile.deleteOnExit();
+                try {
+                    Reply r = client.site("CHMOD " + preferences.get("file.chmod") + " " + dest.getPath());
+                    if (r.getMessage().startsWith("250")) {
+                        if (logger.isDebugEnabled()) {
+                            logger.debug("CHMOD " + preferences.get("file.chmod") + " " + dest.getPath() + " successful");
+                        }
+                    } else {
+                        if (logger.isDebugEnabled()) {
+                            logger.debug("CHMOD " + preferences.get("file.chmod") + " " + dest.getPath() + " failed (no exception)");
+                        }
+                    }
+                } catch (Exception e) {
+                    if (logger.isDebugEnabled()) {
+                        logger.debug("CHMOD " + preferences.get("file.chmod") + " " + dest.getPath() + " failed (exception: " + e + ")");
+                    }
+                }
+                destroyClient(client, dest, preferences);
+            }
             client = createClient(dest);
             // removed line below, seems to make the copy fail...
             // client.getCurrentDir(); // to ensure a command has been executed
             setActiveOrPassive(client, preferences);
             client.put(sourceFile, dest.getPath(), false); // overwrite
-            if (preferences.containsKey("gridftp.chmod")) {
-                try {
-                    Reply r = client.site("CHMOD " + preferences.get("gridftp.chmod") + " " + dest.getPath());
-                    if (r.getMessage().startsWith("250")) {
-                        if (logger.isDebugEnabled()) {
-                            logger.debug("CHMOD " + preferences.get("gridftp.chmod") + " " + dest.getPath() + " successful");
-                        }
-                    } else {
-                        if (logger.isDebugEnabled()) {
-                            logger.debug("CHMOD " + preferences.get("gridftp.chmod") + " " + dest.getPath() + " failed (no exception)");
-                        }
-                    }
-                } catch (Exception e) {
-                    if (logger.isDebugEnabled()) {
-                        logger.debug("CHMOD " + preferences.get("gridftp.chmod") + " " + dest.getPath() + " failed (exception: " + e + ")");
-                    }
-                }
-            }
         } catch (Exception e) {
             throw new GATInvocationException("gridftp", e);
         } finally {
@@ -339,6 +348,23 @@ public abstract class GlobusFileAdaptor extends FileCpi {
                         .equalsIgnoreCase("true")) {
                     java.io.File destParentFile = destFile.getParentFile();
                     destParentFile.mkdirs();
+                }
+            }
+            // first create an empty file and set the mode
+            if (preferences.containsKey("file.chmod")) {
+                java.io.File empty = new java.io.File(dest.getPath());
+                if (!empty.createNewFile()) {
+                    // failed;
+                }
+                try {
+                    new CommandRunner("/bin/chmod " + preferences.get("file.chmod") + " " + dest.getPath());
+                } catch (Throwable t) {
+                    // ignore
+                }
+                try {
+                    new CommandRunner("/usr/bin/chmod " + preferences.get("file.chmod") + " " + dest.getPath());
+                } catch (Throwable t) {
+                    // ignore
                 }
             }
             client = createClient(src);

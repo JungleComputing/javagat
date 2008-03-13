@@ -198,6 +198,12 @@ public class SshTrileadFileAdaptor extends FileCpi {
         String mode = "0600";
         if (preferences.containsKey("file.chmod")) {
             mode = (String) preferences.get("file.chmod");
+            if (mode.length() == 3) {
+                mode = "0" + mode;
+            }
+            if (mode.length() != 4 || !mode.startsWith("0")) {
+                throw new GATInvocationException("invalid mode: '" + preferences.get("file.chmod") + "'. Should be like '0xxx' or 'xxx'");
+            }
         }
         if (destinationFile.isDirectory() && isFile()) {
             client.put(getPath(), remoteDir, mode);
@@ -227,8 +233,11 @@ public class SshTrileadFileAdaptor extends FileCpi {
 
         String mode = "0600";
         if (!isWindows(destination)) {
-            if (preferences.containsKey("file.chmod")) {
-                mode = (String) preferences.get("file.chmod");
+            if (mode.length() == 3) {
+                mode = "0" + mode;
+            }
+            if (mode.length() != 4 || !mode.startsWith("0")) {
+                throw new GATInvocationException("invalid mode: '" + preferences.get("file.chmod") + "'. Should be like '0xxx' or 'xxx'");
             }
         }
         if (destinationFile.isDirectory() && isFile()) {
