@@ -32,25 +32,20 @@ public class SubmitZorillaJob implements MetricListener {
     SubmitZorillaJob() {
         GATContext context = new GATContext();
         Preferences prefs = new Preferences();
-        prefs.put("ResourceBroker.adaptor.name", "zorilla,local");
+        prefs.put("ResourceBroker.adaptor.name", "zorilla");
         prefs.put("FileInputStream.adaptor.name", "local");
         prefs.put("FileOutputStream.adaptor.name", "local");
         prefs.put("File.adaptor.name", "local");
 
         String exe = null;
-        URI out = null, err = null, input = null, output = null;
+        URI input = null, output = null;
 
-        File exeFile = null;
-        File outFile = null;
-        File errFile = null;
         File inputFile = null;
         File outputFile = null;
         
-        exe = "sort_script";
+        exe = "sort";
 
         try {
-            out = new URI("any:///sort.out");
-            err = new URI("any:///sort.err");
             input = new URI("any:///sort.input");
             output = new URI("any:///sort.output");
         } catch (URISyntaxException e) {
@@ -59,9 +54,6 @@ public class SubmitZorillaJob implements MetricListener {
         }
 
         try {
-            exeFile = GAT.createFile(context, prefs, exe);
-            outFile = GAT.createFile(context, prefs, out);
-            errFile = GAT.createFile(context, prefs, err);
             inputFile = GAT.createFile(context, prefs, input);
             outputFile = GAT.createFile(context, prefs, output);
         } catch (GATObjectCreationException e) {
@@ -71,13 +63,13 @@ public class SubmitZorillaJob implements MetricListener {
 
         SoftwareDescription sd = new SoftwareDescription();
         sd.setExecutable(exe);
-        sd.setStdout(outFile);
-        sd.setStderr(errFile);
-        sd.addPreStagedFile(exeFile);
+        sd.setStdout(System.out);
+        sd.setStderr(System.err);
         sd.addPreStagedFile(inputFile);
         sd.addPostStagedFile(outputFile);
 
-        String[] arguments = { "-o", "sort.output", "sort.input" };
+//        String[] arguments = { "-o", "sort.output", "sort.input" };
+        String[] arguments = { "sort.input" };
         sd.setArguments(arguments);
 
         Hashtable<String, Object> hardwareAttributes =
@@ -91,13 +83,13 @@ public class SubmitZorillaJob implements MetricListener {
 
         try {
             jd = new JobDescription(sd, rd);
-            broker = GAT.createResourceBroker(context, prefs, null);
+            broker = GAT.createResourceBroker(context, prefs, new URI("any:///"));
         } catch (Exception e) {
             System.err.println("Could not create Job description: " + e);
             System.exit(1);
         }
 
-        Job[] jobs = new Job[10];
+        Job[] jobs = new Job[1];
 
         try {
             for (int i = 0; i < jobs.length; i++) {

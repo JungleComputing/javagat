@@ -29,7 +29,7 @@
 			<classpath refid="external_jars" />
 		</javac>
 
-		<jar jarfile="${lib}/ZorillaFileAdaptor.jar" basedir="${tmp}" includes="**">
+		<jar jarfile="${lib}/ZorillaAdaptor.jar" basedir="${tmp}" includes="**">
 			<manifest>
 				<attribute name="ResourceBrokerCpi-class" value="org.gridlab.gat.resources.cpi.zorilla.ZorillaResourceBrokerAdaptor" />
 			</manifest>
