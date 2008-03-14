@@ -69,6 +69,7 @@ public class SubmitJobGlobus implements MetricListener {
 
         long start = System.currentTimeMillis();
         Job job = broker.submitJob(jd);
+        System.out.println("id: " + job.getJobID());
         MetricDefinition md = job.getMetricDefinitionByName("job.status");
         Metric m = md.createMetric(null);
         job.addMetricListener(this, m);
@@ -76,6 +77,7 @@ public class SubmitJobGlobus implements MetricListener {
         while ((job.getState() != Job.STOPPED)
                 && (job.getState() != Job.SUBMISSION_ERROR)) {
             try {
+                System.out.println("id: " + job.getJobID());
                 Thread.sleep(1000);
             } catch (InterruptedException e) {
                 // TODO Auto-generated catch block
