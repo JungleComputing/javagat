@@ -75,7 +75,6 @@ public class GlobusJob extends JobCpi implements GramJobListener,
 
     protected void setGramJob(GramJob j) {
         this.j = j;
-        jobID = j.getIDAsString();
         j.addListener(this);
     }
 
@@ -215,6 +214,12 @@ public class GlobusJob extends JobCpi implements GramJobListener,
     }
 
     public String getJobID() {
+        if (jobID == null) {
+            jobID = j.getIDAsString();
+        }
+        if (jobID == null) {
+            return "not yet known";
+        }
         return jobID;
     }
 
@@ -399,7 +404,7 @@ public class GlobusJob extends JobCpi implements GramJobListener,
             finished();
         }
         if (GATEngine.TIMING) {
-            System.err.println("TIMING: job " + jobID + ":" + " preStage: "
+            System.err.println("TIMING: job " + getJobID() + ":" + " preStage: "
                     + sandbox.getPreStageTime() + " queue: " + queueTime
                     + " run: " + runTime + " postStage: "
                     + sandbox.getPostStageTime() + " wipe: "
