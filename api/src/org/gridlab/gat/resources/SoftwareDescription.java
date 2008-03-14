@@ -9,6 +9,7 @@ import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -66,11 +67,11 @@ public class SoftwareDescription implements java.io.Serializable {
     private File stdin;
 
     private File stdout;
-    private InputStream stdoutStream;
+    private OutputStream stdoutStream;
     private boolean stdoutIsStreaming = false;
 
     private File stderr;
-    private InputStream stderrStream;
+    private OutputStream stderrStream;
     private boolean stderrIsStreaming = false;
 
     private HashMap<File, File> preStagedFiles; // contains (src, dest) tuples
@@ -378,7 +379,7 @@ public class SoftwareDescription implements java.io.Serializable {
     /**
      * @return Returns the stderr stream.
      */
-    public InputStream getStderrStream() {
+    public OutputStream getStderrStream() {
         return stderrStream;
     }
 
@@ -395,7 +396,7 @@ public class SoftwareDescription implements java.io.Serializable {
      * @param stderrStream
      *                The stream where stderr is redirected to.
      */
-    public void setStderr(InputStream stderrStream) {
+    public void setStderr(OutputStream stderrStream) {
         stderrIsStreaming = true;
         this.stderrStream = stderrStream; 
     }
@@ -429,7 +430,7 @@ public class SoftwareDescription implements java.io.Serializable {
     /**
      * @return Returns the stdout stream.
      */
-    public InputStream getStdoutStream() {
+    public OutputStream getStdoutStream() {
         return stdoutStream;
     }
 
@@ -446,7 +447,7 @@ public class SoftwareDescription implements java.io.Serializable {
      * @param stdoutStream
      *                The stream where stdout is redirected to.
      */
-    public void setStdout(InputStream stdoutStream) {
+    public void setStdout(OutputStream stdoutStream) {
         stdoutIsStreaming = true;
         this.stdoutStream = stdoutStream; 
     }
