@@ -190,10 +190,11 @@ public class WrapperSubmitter {
                 jobIDs += jobs.get(i).getJobID() + ",";
             }
 
-            sd.setOptions(new String[] { "-classpath", classPath });
-            sd.setSystemProperties(new String[] { "gat.adaptor.path="
-                    + environment.get("gat.adaptor.path") });
-            sd.setMain("org.gridlab.gat.resources.cpi.Wrapper");
+            sd.setJavaOptions(new String[] { "-classpath", classPath });
+            Map<String, String> systemProperties = new HashMap<String, String>();
+            systemProperties.put("gat.adaptor.path", (String) environment.get("gat.adaptor.path"));
+            sd.setJavaSystemProperties(systemProperties);
+            sd.setJavaMain("org.gridlab.gat.resources.cpi.Wrapper");
             sd.setJavaArguments(new String[] {
                     descriptorFile.getName(),
                     GATEngine.getLocalHostName(),
