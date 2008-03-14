@@ -41,8 +41,8 @@ public class GAT {
         } catch (Exception e) {
             System.out.println(e);
             throw new Error(e);
-            
-            //logger.fatal()
+
+            // logger.fatal()
         }
     }
 
@@ -140,9 +140,9 @@ public class GAT {
             Preferences preferences, URI location)
             throws GATObjectCreationException {
         Object[] array = { location };
-        FileInterface f = (FileInterface) getAdaptorProxy(
-                "File", FileInterface.class,
-                gatContext, preferences, new Class[] { URI.class }, array);
+        FileInterface f = (FileInterface) getAdaptorProxy("File",
+                FileInterface.class, gatContext, preferences,
+                new Class[] { URI.class }, array);
 
         return new org.gridlab.gat.io.File(f);
     }
@@ -190,10 +190,9 @@ public class GAT {
         Integer modeTmp = new Integer(mode);
         Object[] array = { name, modeTmp };
 
-        return (LogicalFile) getAdaptorProxy(
-                "LogicalFile", LogicalFile.class,
-                gatContext, preferences,
-                new Class[] { String.class, Integer.TYPE }, array);
+        return (LogicalFile) getAdaptorProxy("LogicalFile", LogicalFile.class,
+                gatContext, preferences, new Class[] { String.class,
+                        Integer.TYPE }, array);
     }
 
     /**
@@ -237,9 +236,8 @@ public class GAT {
             throws GATObjectCreationException {
         Object[] array = { location };
         FileInputStreamInterface res = (FileInputStreamInterface) getAdaptorProxy(
-                "FileInputStream",
-                FileInputStreamInterface.class, gatContext, preferences, 
-                new Class[] { URI.class }, array);
+                "FileInputStream", FileInputStreamInterface.class, gatContext,
+                preferences, new Class[] { URI.class }, array);
 
         return new FileInputStream(res);
     }
@@ -457,6 +455,46 @@ public class GAT {
     /**
      * Constructs a FileOutputStream instance which corresponds to the physical
      * file identified by the passed File and whose access rights are determined
+     * by the GATContext and Preferences of this File. This stream overwrites
+     * the existing file.
+     * 
+     * @param file
+     *                the file to write to
+     * @return The FileOutputStream object
+     * @throws GATObjectCreationException
+     *                 Thrown upon creation problems
+     */
+    public static FileOutputStream createFileOutputStream(File file)
+            throws GATObjectCreationException {
+        return createFileOutputStream(file.getFileInterface().getGATContext(),
+                file.getFileInterface().getPreferences(), file.toGATURI(),
+                false);
+    }
+
+    /**
+     * Constructs a FileOutputStream instance which corresponds to the physical
+     * file identified by the passed File and whose access rights are determined
+     * by the GATContext and Preferences of this File.
+     * 
+     * @param file
+     *                the file to write to
+     * @param append
+     *                true if the output stream should append, false for
+     *                overwrite
+     * @return The FileOutputStream object
+     * @throws GATObjectCreationException
+     *                 Thrown upon creation problems
+     */
+    public static FileOutputStream createFileOutputStream(File file,
+            boolean append) throws GATObjectCreationException {
+        return createFileOutputStream(file.getFileInterface().getGATContext(),
+                file.getFileInterface().getPreferences(), file.toGATURI(),
+                append);
+    }
+
+    /**
+     * Constructs a FileOutputStream instance which corresponds to the physical
+     * file identified by the passed File and whose access rights are determined
      * by the passed GATContext. This stream overwrites the existing file.
      * 
      * @param file
@@ -620,8 +658,8 @@ public class GAT {
             boolean append) throws GATObjectCreationException {
         Object[] array = { location, new Boolean(append) };
         FileOutputStreamInterface res = (FileOutputStreamInterface) getAdaptorProxy(
-                "FileOutputStream",
-                FileOutputStreamInterface.class, gatContext, preferences,
+                "FileOutputStream", FileOutputStreamInterface.class,
+                gatContext, preferences,
                 new Class[] { URI.class, Boolean.class }, array);
 
         return new FileOutputStream(res);
@@ -642,8 +680,8 @@ public class GAT {
      */
     public static Endpoint createEndpoint(GATContext gatContext,
             Preferences preferences) throws GATObjectCreationException {
-        return (Endpoint) getAdaptorProxy("Endpoint",
-                Endpoint.class, gatContext, preferences, null, null);
+        return (Endpoint) getAdaptorProxy("Endpoint", Endpoint.class,
+                gatContext, preferences, null, null);
     }
 
     /**
@@ -675,8 +713,7 @@ public class GAT {
      */
     public static AdvertService createAdvertService(GATContext gatContext,
             Preferences preferences) throws GATObjectCreationException {
-        return (AdvertService) getAdaptorProxy(
-                "AdvertService",
+        return (AdvertService) getAdaptorProxy("AdvertService",
                 AdvertService.class, gatContext, preferences, null, null);
     }
 
@@ -721,10 +758,8 @@ public class GAT {
      */
     public static Monitorable createMonitorable(GATContext gatContext,
             Preferences preferences) throws GATObjectCreationException {
-        return (Monitorable) getAdaptorProxy(
-                "Monitorable",
-                Monitorable.class, gatContext, preferences,
-                null, null);
+        return (Monitorable) getAdaptorProxy("Monitorable", Monitorable.class,
+                gatContext, preferences, null, null);
     }
 
     /**
@@ -754,8 +789,7 @@ public class GAT {
      */
     public static SteeringManager createSteeringManager(GATContext gatContext,
             Preferences preferences) throws GATObjectCreationException {
-        return (SteeringManager) getAdaptorProxy(
-                "SteeringManager",
+        return (SteeringManager) getAdaptorProxy("SteeringManager",
                 SteeringManager.class, gatContext, preferences, null, null);
     }
 
@@ -868,8 +902,8 @@ public class GAT {
         Object[] array = { location, mode };
 
         RandomAccessFileInterface f = (RandomAccessFileInterface) getAdaptorProxy(
-                "RandomAccessFile",
-                RandomAccessFileInterface.class, gatContext, preferences,
+                "RandomAccessFile", RandomAccessFileInterface.class,
+                gatContext, preferences,
                 new Class[] { URI.class, String.class }, array);
         try {
             return new RandomAccessFile(f);
@@ -878,21 +912,21 @@ public class GAT {
         }
     }
 
-//    /**
-//     * This method constructs a ResourceBroker instance corresponding to the
-//     * passed GATContext.
-//     * 
-//     * @param gatContext
-//     *                A GATContext which will be used to broker resources
-//     * @return The resource broker object
-//     * @throws GATObjectCreationException
-//     *                 Thrown upon creation problems
-//     */
-//    public static ResourceBroker createResourceBroker(GATContext gatContext)
-//            throws GATObjectCreationException {
-//        return createResourceBroker(gatContext, null);
-//    }
-    
+    // /**
+    // * This method constructs a ResourceBroker instance corresponding to the
+    // * passed GATContext.
+    // *
+    // * @param gatContext
+    // * A GATContext which will be used to broker resources
+    // * @return The resource broker object
+    // * @throws GATObjectCreationException
+    // * Thrown upon creation problems
+    // */
+    // public static ResourceBroker createResourceBroker(GATContext gatContext)
+    // throws GATObjectCreationException {
+    // return createResourceBroker(gatContext, null);
+    // }
+
     /**
      * This method constructs a ResourceBroker instance corresponding to the
      * passed GATContext.
@@ -903,8 +937,8 @@ public class GAT {
      * @throws GATObjectCreationException
      *                 Thrown upon creation problems
      */
-    public static ResourceBroker createResourceBroker(GATContext gatContext, URI brokerURI)
-            throws GATObjectCreationException {
+    public static ResourceBroker createResourceBroker(GATContext gatContext,
+            URI brokerURI) throws GATObjectCreationException {
         return createResourceBroker(gatContext, null, brokerURI);
     }
 
@@ -921,12 +955,12 @@ public class GAT {
      *                 Thrown upon creation problems
      */
     public static ResourceBroker createResourceBroker(GATContext gatContext,
-            Preferences preferences, URI brokerURI) throws GATObjectCreationException {
+            Preferences preferences, URI brokerURI)
+            throws GATObjectCreationException {
         Object[] array = { brokerURI };
-        return (ResourceBroker) getAdaptorProxy(
-                "ResourceBroker",
+        return (ResourceBroker) getAdaptorProxy("ResourceBroker",
                 ResourceBroker.class, gatContext, preferences,
-                new Class[] {URI.class}, array);
+                new Class[] { URI.class }, array);
     }
 
     /**
@@ -945,8 +979,8 @@ public class GAT {
 
     protected static Object getAdaptorProxy(String cpiClassName,
             Class<?> interfaceClass, GATContext gatContext,
-            Preferences preferences, Class<?>[] parameterTypes, Object[] tmpParams)
-            throws GATObjectCreationException {
+            Preferences preferences, Class<?>[] parameterTypes,
+            Object[] tmpParams) throws GATObjectCreationException {
 
         /** Maybe we want to support a "default" context. */
         if (gatContext == null) {
@@ -962,7 +996,8 @@ public class GAT {
 
         try {
             return createProxyMethod.invoke(null, new Object[] { cpiClassName,
-                    interfaceClass, gatContext, prefs, parameterTypes, tmpParams });
+                    interfaceClass, gatContext, prefs, parameterTypes,
+                    tmpParams });
         } catch (Exception e) {
             throw new GATObjectCreationException("", e);
         }
