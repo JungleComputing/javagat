@@ -85,7 +85,37 @@ public class WSGT4newJob extends JobCpi implements GramJobListener {
     public synchronized Map<String, Object> getInfo()
             throws GATInvocationException {
         HashMap<String, Object> m = new HashMap<String, Object>();
-        m.put("state", getStateString(getState()));
+
+        m.put("state", getStateString(state));
+        if (state != RUNNING) {
+            m.put("hostname", null);
+        } else {
+            m.put("hostname", job.getEndpoint().getAddress().getHost());
+        }
+        if (state == INITIAL || state == UNKNOWN) {
+            m.put("submissiontime", null);
+        } else {
+            m.put("submissiontime", submissiontime);
+        }
+        if (state == INITIAL || state == UNKNOWN || state == SCHEDULED) {
+            m.put("starttime", null);
+        } else {
+            m.put("starttime", starttime);
+        }
+        if (state != STOPPED) {
+            m.put("stoptime", null);
+        } else {
+            m.put("stoptime", stoptime);
+        }
+        m.put("poststage.exception", postStageException);
+        m.put("resourcebroker", "WSGT4new");
+        m.put("exitvalue", "" + getExitStatus());
+        if (deleteException != null) {
+            m.put("delete.exception", deleteException);
+        }
+        if (wipeException != null) {
+            m.put("wipe.exception", wipeException);
+        }
         return m;
     }
 
@@ -110,11 +140,13 @@ public class WSGT4newJob extends JobCpi implements GramJobListener {
         if (jobState.equals(StateEnumeration.Pending)) {
             setState(SCHEDULED);
         } else if (jobState.equals(StateEnumeration.Active)) {
+            setStartTime();
             setState(RUNNING);
         } else if (jobState.equals(StateEnumeration.CleanUp)) {
             setState(POST_STAGING);
             sandbox.retrieveAndCleanup(this);
             setState(STOPPED);
+            setStopTime();
             finished();
         } else if (jobState.equals(StateEnumeration.Done)) {
             // setState(STOPPED);
@@ -136,6 +168,10 @@ public class WSGT4newJob extends JobCpi implements GramJobListener {
 
     protected void setGramJob(GramJob job) {
         this.job = job;
+    }
+
+    protected void submitted() {
+        setSubmissionTime();
     }
 
 }

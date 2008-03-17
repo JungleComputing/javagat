@@ -338,6 +338,7 @@ public class WSGT4newResourceBrokerAdaptor extends ResourceBrokerCpi {
         }
         try {
             job.submit(endpoint, false, false, submissionID);
+            wsgt4job.submitted();
         } catch (Exception e) {
             throw new GATInvocationException("WSGT4newResourceBrokerAdaptor", e);
         }
