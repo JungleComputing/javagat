@@ -117,6 +117,16 @@ public abstract class ResourceBrokerCpi implements ResourceBroker {
         throw new UnsupportedOperationException("Not implemented");
     }
 
+    public final Job[] submitJob(JobDescription[] description)
+            throws GATInvocationException {
+        return submitJob(description, null, null);
+    }
+
+    public Job[] submitJob(JobDescription[] description, MetricListener listener,
+            String metricName) throws GATInvocationException {
+        throw new UnsupportedOperationException("Not implemented");
+    }
+
     // utility methods
     protected String getExecutable(JobDescription description)
             throws GATInvocationException {
@@ -218,7 +228,7 @@ public abstract class ResourceBrokerCpi implements ResourceBroker {
     public String getHostname() {
         return brokerURI.getHost();
     }
-    
+
     public String getAuthority() {
         return brokerURI.getAuthority();
     }

@@ -215,6 +215,8 @@ public class LocalResourceBrokerAdaptor extends ResourceBrokerCpi {
             p = Runtime.getRuntime().exec(command, environment, f);
             job.setState(Job.RUNNING);
             job.setProcess(p);
+            job.setSubmissionTime();
+            job.setStartTime();
         } catch (IOException e) {
             throw new CommandNotFoundException("LocalResourceBrokerAdaptor", e);
         }

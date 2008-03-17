@@ -36,7 +36,7 @@ public class LocalJob extends JobCpi {
         public void run() {
             try {
                 int exitValue = p.waitFor();
-                runTime = System.currentTimeMillis() - runTime;
+                setStopTime();
 
                 // Wait for the output forwarders to finish!
                 // You may lose output if you don't -- Jason
@@ -69,14 +69,11 @@ public class LocalJob extends JobCpi {
 
     private OutputForwarder err;
 
-    private long startTime;
-    private long runTime;
-
     protected LocalJob(GATContext gatContext, Preferences preferences,
             JobDescription description, Sandbox sandbox) {
         super(gatContext, preferences, description, sandbox);
         jobID = allocJobID();
-        
+
         // Tell the engine that we provide job.status events
         HashMap<String, Object> returnDef = new HashMap<String, Object>();
         returnDef.put("status", String.class);
@@ -85,7 +82,7 @@ public class LocalJob extends JobCpi {
         statusMetric = statusMetricDefinition.createMetric(null);
         GATEngine.registerMetric(this, "getJobStatus", statusMetricDefinition);
     }
-    
+
     protected void setProcess(Process p) {
         this.p = p;
         Field f = null;
@@ -99,19 +96,19 @@ public class LocalJob extends JobCpi {
         } catch (IllegalAccessException e) {
         }
     }
-    
+
     protected void setOutputForwarder(OutputForwarder out) {
         this.out = out;
     }
-    
+
     protected void setErrorForwarder(OutputForwarder err) {
         this.err = err;
     }
-    
+
     protected void startProcessWaiter() {
         new ProcessWaiter();
     }
-    
+
     protected void setState(int state) {
         this.state = state;
         MetricValue v = new MetricValue(this, getStateString(state),
@@ -132,21 +129,35 @@ public class LocalJob extends JobCpi {
         getState();
 
         m.put("state", getStateString(state));
-        m.put("resManState", getStateString(state));
-        m.put("resManName", "Local");
-        m.put("exitValue", "" + exitVal);
-        m.put("hostname", GATEngine.getLocalHostName());
-
-        if (postStageException != null) {
-            m.put("postStageError", postStageException);
+        if (state != RUNNING) {
+            m.put("hostname", null);
+        } else {
+            m.put("hostname", GATEngine.getLocalHostName());
         }
+        if (state == INITIAL || state == UNKNOWN) {
+            m.put("submissiontime", null);
+        } else {
+            m.put("submissiontime", submissiontime);
+        }
+        if (state == INITIAL || state == UNKNOWN || state == SCHEDULED) {
+            m.put("starttime", null);
+        } else {
+            m.put("starttime", starttime);
+        }
+        if (state != STOPPED) {
+            m.put("hostname", null);
+        } else {
+            m.put("stoptime", stoptime);
+        }
+        m.put("poststage.exception", postStageException);
+        m.put("resourcebroker", "Local");
+        m.put("exitvalue", "" + exitVal);
         if (deleteException != null) {
-            m.put("deleteError", deleteException);
+            m.put("delete.exception", deleteException);
         }
         if (wipeException != null) {
-            m.put("wipeError", wipeException);
+            m.put("wipe.exception", wipeException);
         }
-
         return m;
     }
 
@@ -200,11 +211,12 @@ public class LocalJob extends JobCpi {
 
         if (GATEngine.TIMING) {
             System.err.println("TIMING: job " + jobID + ":" + " preStage: "
-                    + sandbox.getPreStageTime() + " run: " + runTime
-                    + " postStage: " + sandbox.getPostStageTime() + " wipe: "
+                    + sandbox.getPreStageTime() + " run: "
+                    + (stoptime - starttime) + " postStage: "
+                    + sandbox.getPostStageTime() + " wipe: "
                     + sandbox.getWipeTime() + " delete: "
                     + sandbox.getDeleteTime() + " total: "
-                    + (System.currentTimeMillis() - startTime));
+                    + (System.currentTimeMillis() - starttime));
         }
     }
 

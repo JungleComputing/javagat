@@ -59,16 +59,14 @@ public class LocalQJob extends JobCpi implements Runnable,
         this.startTime = startTime;
         this.jobID = allocJobID();
 
-        priority =
-            description.getSoftwareDescription().getIntAttribute(
+        priority = description.getSoftwareDescription().getIntAttribute(
                 "localq.job.priority", 0);
 
         // Tell the engine that we provide job.status events
         HashMap<String, Object> returnDef = new HashMap<String, Object>();
         returnDef.put("status", String.class);
-        statusMetricDefinition =
-            new MetricDefinition("job.status", MetricDefinition.DISCRETE,
-                    "String", null, null, returnDef);
+        statusMetricDefinition = new MetricDefinition("job.status",
+                MetricDefinition.DISCRETE, "String", null, null, returnDef);
         statusMetric = statusMetricDefinition.createMetric(null);
         GATEngine.registerMetric(this, "getJobStatus", statusMetricDefinition);
 
@@ -90,21 +88,35 @@ public class LocalQJob extends JobCpi implements Runnable,
         getState();
 
         m.put("state", getStateString(state));
-        m.put("resManState", getStateString(state));
-        m.put("resManName", "Local");
-        m.put("exitValue", "" + exitVal);
-        m.put("hostname", GATEngine.getLocalHostName());
-
-        if (postStageException != null) {
-            m.put("postStageError", postStageException);
+        if (state != RUNNING) {
+            m.put("hostname", null);
+        } else {
+            m.put("hostname", GATEngine.getLocalHostName());
         }
+        if (state == INITIAL || state == UNKNOWN) {
+            m.put("submissiontime", null);
+        } else {
+            m.put("submissiontime", submissiontime);
+        }
+        if (state == INITIAL || state == UNKNOWN || state == SCHEDULED) {
+            m.put("starttime", null);
+        } else {
+            m.put("starttime", starttime);
+        }
+        if (state != STOPPED) {
+            m.put("hostname", null);
+        } else {
+            m.put("stoptime", stoptime);
+        }
+        m.put("poststage.exception", postStageException);
+        m.put("resourcebroker", "Local");
+        m.put("exitvalue", "" + exitVal);
         if (deleteException != null) {
-            m.put("deleteError", deleteException);
+            m.put("delete.exception", deleteException);
         }
         if (wipeException != null) {
-            m.put("wipeError", wipeException);
+            m.put("wipe.exception", wipeException);
         }
-
         return m;
     }
 
@@ -143,9 +155,8 @@ public class LocalQJob extends JobCpi implements Runnable,
         MetricValue metricValue = null;
         synchronized (this) {
             this.state = state;
-            metricValue =
-                new MetricValue(this, getStateString(state), statusMetric,
-                        System.currentTimeMillis());
+            metricValue = new MetricValue(this, getStateString(state),
+                    statusMetric, System.currentTimeMillis());
 
             if (logger.isDebugEnabled()) {
                 logger.debug("default job callback: firing event: "
@@ -160,17 +171,18 @@ public class LocalQJob extends JobCpi implements Runnable,
     public void run() {
         logger.debug("running job with priority: " + priority);
 
-        SoftwareDescription description =
-            jobDescription.getSoftwareDescription();
+        SoftwareDescription description = jobDescription
+                .getSoftwareDescription();
 
         ProcessBuilder processBuilder = new ProcessBuilder();
 
         if (jobDescription.getSoftwareDescription().getEnvironment() != null) {
 
             processBuilder.environment().clear();
-            for (Map.Entry<String, Object> entry : jobDescription.getSoftwareDescription().getEnvironment().entrySet()) {
+            for (Map.Entry<String, Object> entry : jobDescription
+                    .getSoftwareDescription().getEnvironment().entrySet()) {
                 processBuilder.environment().put(entry.getKey(),
-                    (String) entry.getValue());
+                        (String) entry.getValue());
             }
         }
 
@@ -209,7 +221,7 @@ public class LocalQJob extends JobCpi implements Runnable,
             }
         }
 
-        //long startRun = System.currentTimeMillis();
+        // long startRun = System.currentTimeMillis();
 
         Process p;
         synchronized (this) {
@@ -221,6 +233,8 @@ public class LocalQJob extends JobCpi implements Runnable,
             try {
                 p = processBuilder.start();
                 this.p = p;
+                setSubmissionTime();
+                setStartTime();
             } catch (IOException e) {
                 logger.error(e);
                 setState(SUBMISSION_ERROR);
@@ -244,8 +258,8 @@ public class LocalQJob extends JobCpi implements Runnable,
             }
         } else {
             try {
-                java.io.FileInputStream fin =
-                    new java.io.FileInputStream(stdin.getAbsolutePath());
+                java.io.FileInputStream fin = new java.io.FileInputStream(stdin
+                        .getAbsolutePath());
                 OutputStream out = p.getOutputStream();
                 new InputForwarder(out, fin);
             } catch (Exception e) {
@@ -262,8 +276,8 @@ public class LocalQJob extends JobCpi implements Runnable,
             new OutputForwarder(p.getInputStream(), false); // throw away output
         } else {
             try {
-                java.io.FileOutputStream out =
-                    new java.io.FileOutputStream(stdout.getAbsolutePath());
+                java.io.FileOutputStream out = new java.io.FileOutputStream(
+                        stdout.getAbsolutePath());
                 outForwarder = new OutputForwarder(p.getInputStream(), out);
             } catch (Exception e) {
                 logger.error(e);
@@ -279,8 +293,8 @@ public class LocalQJob extends JobCpi implements Runnable,
             new OutputForwarder(p.getErrorStream(), false); // throw away output
         } else {
             try {
-                java.io.FileOutputStream out =
-                    new java.io.FileOutputStream(stderr.getAbsolutePath());
+                java.io.FileOutputStream out = new java.io.FileOutputStream(
+                        stderr.getAbsolutePath());
                 errForwarder = new OutputForwarder(p.getErrorStream(), out);
             } catch (Exception e) {
                 setState(SUBMISSION_ERROR);
@@ -293,6 +307,7 @@ public class LocalQJob extends JobCpi implements Runnable,
         int exitValue = 0;
         try {
             exitValue = p.waitFor();
+            setStopTime();
         } catch (InterruptedException e) {
             // CANNOT HAPPEN
         }
@@ -323,8 +338,9 @@ public class LocalQJob extends JobCpi implements Runnable,
 
         if (logger.isDebugEnabled()) {
             logger.debug("TIMING: job " + jobID + ":" + " preStage: "
-                    + sandbox.getPreStageTime() + " run: " + runTime
-                    + " postStage: " + sandbox.getPostStageTime() + " wipe: "
+                    + sandbox.getPreStageTime() + " run: "
+                    + (stoptime - starttime) + " postStage: "
+                    + sandbox.getPostStageTime() + " wipe: "
                     + sandbox.getWipeTime() + " delete: "
                     + sandbox.getDeleteTime() + " total: "
                     + (System.currentTimeMillis() - startTime));
@@ -332,13 +348,12 @@ public class LocalQJob extends JobCpi implements Runnable,
 
     }
 
-    //sort decending on priority, then ascending on jobID
+    // sort decending on priority, then ascending on jobID
     public int compareTo(LocalQJob other) {
         if (priority != other.priority) {
             return other.priority - priority;
         }
         return jobID - other.jobID;
     }
-    
-    
+
 }

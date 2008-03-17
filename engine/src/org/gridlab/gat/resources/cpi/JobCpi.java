@@ -42,6 +42,12 @@ public abstract class JobCpi extends Job {
 
     protected int state = INITIAL;
 
+    protected long submissiontime;
+
+    protected long starttime;
+
+    protected long stoptime;
+
     protected static ArrayList<Job> jobList = new ArrayList<Job>();
 
     protected static boolean shutdownInProgress = false;
@@ -78,6 +84,18 @@ public abstract class JobCpi extends Job {
 
     public synchronized int getState() {
         return state;
+    }
+    
+    public void setStartTime() {
+        starttime = System.currentTimeMillis();
+    }
+    
+    public void setSubmissionTime() {
+        submissiontime = System.currentTimeMillis();
+    }
+    
+    public void setStopTime() {
+        stoptime = System.currentTimeMillis();
     }
 
     /*

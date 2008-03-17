@@ -212,6 +212,11 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
         if (queue != null) {
             rsl += " (queue = " + queue + ")";
         }
+        
+        String timeout = getStringAttribute(description, "globus.proxy.timeout", null);
+        if (queue != null) {
+            rsl += " (proxy_timeout = " + timeout + ")";
+        }
 
         if (logger.isDebugEnabled()) {
             logger.debug("RSL: " + rsl);
