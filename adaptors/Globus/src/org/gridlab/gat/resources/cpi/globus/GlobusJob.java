@@ -358,12 +358,14 @@ public class GlobusJob extends JobCpi implements GramJobListener,
             return;
         }
         int status = newJob.getStatus();
-        boolean stateChanged;
+        boolean stateChanged = false;
         if (newJob.getError() == GramError.GRAM_JOBMANAGER_CONNECTION_FAILURE) {
             if (globusJobState == GLOBUS_JOB_SUBMISSION_ERROR) {
                 stateChanged = setState(SUBMISSION_ERROR);
-            } else {
+            } else if (globusJobState == GLOBUS_JOB_STOPPED){
                 stateChanged = setState(STOPPED);
+            } else {
+                globusJobState = GLOBUS_JOB_STOPPED;
             }
         } else {
             stateChanged = setState(convertGram2Gat(status));

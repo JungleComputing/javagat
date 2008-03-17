@@ -29,7 +29,7 @@
 			<classpath refid="external_jars" />
 		</javac>
 
-		<jar jarfile="${lib}/SgeFileAdaptor.jar" basedir="${tmp}" includes="**">
+		<jar jarfile="${lib}/SgeAdaptor.jar" basedir="${tmp}" includes="**">
 			<manifest>
 				<attribute name="ResourceBrokerCpi-class" value="org.gridlab.gat.resources.cpi.sge.SgeResourceBrokerAdaptor" />
 			</manifest>
