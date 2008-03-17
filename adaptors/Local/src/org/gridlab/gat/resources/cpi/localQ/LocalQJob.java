@@ -104,7 +104,7 @@ public class LocalQJob extends JobCpi implements Runnable,
             m.put("starttime", starttime);
         }
         if (state != STOPPED) {
-            m.put("hostname", null);
+            m.put("stoptime", null);
         } else {
             m.put("stoptime", stoptime);
         }

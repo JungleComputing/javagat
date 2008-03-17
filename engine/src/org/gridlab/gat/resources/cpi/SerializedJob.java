@@ -16,26 +16,22 @@ public class SerializedJob implements Serializable, Advertisable {
 	private Sandbox sandbox;
 
 	private String jobId;
-
-	private long queueTime;
-
-	private long runTime;
-
-	private long startTime;
+	
+	private long starttime, stoptime, submissiontime;
 
 	// we need this constructor for castor
 	public SerializedJob() {
 	}
 
 	public SerializedJob(JobDescription jobDescription, Sandbox sandbox,
-			 String jobId, long queueTime,
-			long runTime, long startTime) {
+			 String jobId, long submissiontime,
+			long starttime, long stoptime) {
 		this.jobDescription = jobDescription;
 		this.sandbox = sandbox;
 		this.jobId = jobId;
-		this.queueTime = queueTime;
-		this.runTime = runTime;
-		this.startTime = startTime;
+		this.submissiontime = starttime;
+		this.starttime = starttime;
+		this.stoptime= stoptime;
 
 		if (logger.isDebugEnabled()) {
 			logger.debug("created serialized job: " + this);
@@ -61,30 +57,6 @@ public class SerializedJob implements Serializable, Advertisable {
 		this.jobId = jobId;
 	}
 
-	public long getQueueTime() {
-		return queueTime;
-	}
-
-	public void setQueueTime(long queueTime) {
-		this.queueTime = queueTime;
-	}
-
-	public long getRunTime() {
-		return runTime;
-	}
-
-	public void setRunTime(long runTime) {
-		this.runTime = runTime;
-	}
-
-	public long getStartTime() {
-		return startTime;
-	}
-
-	public void setStartTime(long startTime) {
-		this.startTime = startTime;
-	}
-
 	public JobDescription getJobDescription() {
 		return jobDescription;
 	}
@@ -107,10 +79,34 @@ public class SerializedJob implements Serializable, Advertisable {
 		res += "descr = " + jobDescription;
 		res += " sandbox = " + sandbox;
 		res += " jobId: " + jobId;
-		res += " queueTime: " + queueTime;
-		res += " runTime: " + runTime;
-		res += " startTime: " + startTime;
+		res += " submissiontime: " + submissiontime;
+		res += " starttime: " + starttime;
+		res += " stoptime: " + stoptime;
 
 		return res;
 	}
+
+    public long getStarttime() {
+        return starttime;
+    }
+
+    public void setStarttime(long starttime) {
+        this.starttime = starttime;
+    }
+
+    public long getStoptime() {
+        return stoptime;
+    }
+
+    public void setStoptime(long stoptime) {
+        this.stoptime = stoptime;
+    }
+
+    public long getSubmissiontime() {
+        return submissiontime;
+    }
+
+    public void setSubmissiontime(long submissiontime) {
+        this.submissiontime = submissiontime;
+    }
 }

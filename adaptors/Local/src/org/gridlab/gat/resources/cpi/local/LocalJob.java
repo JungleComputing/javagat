@@ -145,7 +145,7 @@ public class LocalJob extends JobCpi {
             m.put("starttime", starttime);
         }
         if (state != STOPPED) {
-            m.put("hostname", null);
+            m.put("stoptime", null);
         } else {
             m.put("stoptime", stoptime);
         }

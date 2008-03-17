@@ -55,12 +55,6 @@ public class GlobusJob extends JobCpi implements GramJobListener,
 
     private JobPoller poller;
 
-    private long queueTime;
-
-    private long runTime;
-
-    private long startTime;
-
     private int globusJobState = 0;
 
     private boolean exitStatusEnabled = false;
@@ -110,9 +104,9 @@ public class GlobusJob extends JobCpi implements GramJobListener,
         }
 
         this.jobID = sj.getJobId();
-        this.queueTime = sj.getQueueTime();
-        this.runTime = sj.getRunTime();
-        this.startTime = sj.getStartTime();
+        this.starttime = sj.getStarttime();
+        this.stoptime = sj.getStoptime();
+        this.submissiontime = sj.getSubmissiontime();
 
         jobsAlive++;
 
@@ -188,28 +182,47 @@ public class GlobusJob extends JobCpi implements GramJobListener,
             throws GATInvocationException {
         HashMap<String, Object> m = new HashMap<String, Object>();
         getStateActive(); // update the state
-        m.put("state", getStateString(state));
-        m.put("resManState", getGlobusState());
-        m.put("resManName", "Globus");
-        m.put("resManError", GramError.getGramErrorString(j.getError()));
-        m.put("resManErrorNr", "" + j.getError());
-        m.put("resManId", j.getIDAsString());
-        m.put("id", j.getIDAsString());
 
-        if (getState() == RUNNING) {
+        m.put("state", getStateString(state));
+        if (state != RUNNING) {
+            m.put("hostname", null);
+        } else {
             m.put("hostname", j.getID().getHost());
         }
-
-        if (postStageException != null) {
-            m.put("postStageError", postStageException);
+        if (state == INITIAL || state == UNKNOWN) {
+            m.put("globus.state", null);
+            m.put("globus.error", null);
+            m.put("globus.errorno", null);
+            m.put("globus.id", null);
+            m.put("id", null);
+            m.put("submissiontime", null);
+        } else {
+            m.put("globus.state", getGlobusState());
+            m.put("globus.error", GramError.getGramErrorString(j.getError()));
+            m.put("globus.errorno", "" + j.getError());
+            m.put("globus.id", j.getIDAsString());
+            m.put("id", j.getIDAsString());
+            m.put("submissiontime", submissiontime);
         }
+        if (state == INITIAL || state == UNKNOWN || state == SCHEDULED) {
+            m.put("starttime", null);
+        } else {
+            m.put("starttime", starttime);
+        }
+        if (state != STOPPED) {
+            m.put("stoptime", null);
+        } else {
+            m.put("stoptime", stoptime);
+        }
+        m.put("poststage.exception", postStageException);
+        m.put("resourcebroker", "Globus");
+        m.put("exitvalue", "" + getExitStatus());
         if (deleteException != null) {
-            m.put("deleteError", deleteException);
+            m.put("delete.exception", deleteException);
         }
         if (wipeException != null) {
-            m.put("wipeError", wipeException);
+            m.put("wipe.exception", wipeException);
         }
-
         return m;
     }
 
@@ -362,7 +375,7 @@ public class GlobusJob extends JobCpi implements GramJobListener,
         if (newJob.getError() == GramError.GRAM_JOBMANAGER_CONNECTION_FAILURE) {
             if (globusJobState == GLOBUS_JOB_SUBMISSION_ERROR) {
                 stateChanged = setState(SUBMISSION_ERROR);
-            } else if (globusJobState == GLOBUS_JOB_STOPPED){
+            } else if (globusJobState == GLOBUS_JOB_STOPPED) {
                 stateChanged = setState(STOPPED);
             } else {
                 globusJobState = GLOBUS_JOB_STOPPED;
@@ -373,13 +386,11 @@ public class GlobusJob extends JobCpi implements GramJobListener,
         if (!stateChanged && globusJobState == 0) {
             return;
         } else if (state == SCHEDULED) {
-            queueTime = System.currentTimeMillis();
+            setSubmissionTime();
         } else if (state == RUNNING) {
-            runTime = System.currentTimeMillis();
-            queueTime = runTime - queueTime;
+            setStartTime();
         } else if (globusJobState == GLOBUS_JOB_STOPPED
                 || globusJobState == SUBMISSION_ERROR) {
-            runTime = System.currentTimeMillis() - runTime;
             if (exitStatusEnabled && globusJobState == GLOBUS_JOB_STOPPED) {
                 try {
                     readExitStatus();
@@ -398,6 +409,7 @@ public class GlobusJob extends JobCpi implements GramJobListener,
             } else {
                 setState(SUBMISSION_ERROR);
             }
+            setStopTime();
             globusJobState = 0;
             stopHandlers();
             if (poller != null) {
@@ -406,13 +418,14 @@ public class GlobusJob extends JobCpi implements GramJobListener,
             finished();
         }
         if (GATEngine.TIMING) {
-            System.err.println("TIMING: job " + getJobID() + ":" + " preStage: "
-                    + sandbox.getPreStageTime() + " queue: " + queueTime
-                    + " run: " + runTime + " postStage: "
+            System.err.println("TIMING: job " + getJobID() + ":"
+                    + " preStage: " + sandbox.getPreStageTime() + " queue: "
+                    + (starttime - submissiontime) + " run: "
+                    + (System.currentTimeMillis() - starttime) + " postStage: "
                     + sandbox.getPostStageTime() + " wipe: "
                     + sandbox.getWipeTime() + " delete: "
                     + sandbox.getDeleteTime() + " total: "
-                    + (System.currentTimeMillis() - startTime));
+                    + (System.currentTimeMillis() - submissiontime));
         }
         notifyAll();
     }
@@ -478,8 +491,8 @@ public class GlobusJob extends JobCpi implements GramJobListener,
                 }
             }
 
-            sj = new SerializedJob(jobDescription, sandbox, jobID, queueTime,
-                    runTime, startTime);
+            sj = new SerializedJob(jobDescription, sandbox, jobID, submissiontime,
+                    starttime, stoptime);
         }
         String res = GATEngine.defaultMarshal(sj);
         if (logger.isDebugEnabled()) {
