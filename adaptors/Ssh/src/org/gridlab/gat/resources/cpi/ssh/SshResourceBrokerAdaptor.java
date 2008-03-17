@@ -55,10 +55,6 @@ public class SshResourceBrokerAdaptor extends ResourceBrokerCpi {
     private static Map<String, Session> sessionCache = new HashMap<String, Session>();
     private static JSch jschObject = new JSch();
     private static Poller poller;
-    
-    static {
-        poller = new Poller();
-    }
 
     // private String host = null;
     //
@@ -89,6 +85,12 @@ public class SshResourceBrokerAdaptor extends ResourceBrokerCpi {
             throw new GATObjectCreationException(
                     "cannot handle the scheme, scheme is: "
                             + brokerURI.getScheme());
+        }
+
+        synchronized (SshResourceBrokerAdaptor.class) {
+            if (poller == null) {
+                poller = new Poller();
+            }
         }
     }
 
@@ -522,7 +524,7 @@ public class SshResourceBrokerAdaptor extends ResourceBrokerCpi {
         for (String key : keys) {
             if (logger.isDebugEnabled()) {
                 logger.debug("closing session: " + key);
-            }    
+            }
             sessionCache.get(key).disconnect();
             sessionCache.remove(key);
         }
@@ -563,17 +565,23 @@ public class SshResourceBrokerAdaptor extends ResourceBrokerCpi {
                         if (logger.isDebugEnabled()) {
                             logger
                                     .debug("poller thread sleeping (open channels: "
-                                            + openChannels.size() + ", open sessions: " + sessionCache.size() + ")");
+                                            + openChannels.size()
+                                            + ", open sessions: "
+                                            + sessionCache.size() + ")");
                         }
                         if (logger.isDebugEnabled()) {
-                            logger.debug("poller thread sleeping (open channels: "
-                                    + openChannels.size() + ", open sessions: " + sessionCache.size() + ")");
+                            logger
+                                    .debug("poller thread sleeping (open channels: "
+                                            + openChannels.size()
+                                            + ", open sessions: "
+                                            + sessionCache.size() + ")");
                         }
                         sleep(1000);
                     }
                     if (logger.isDebugEnabled()) {
                         logger.debug("poller thread waiting (open channels: "
-                                + openChannels.size() + ", open sessions: " + sessionCache.size() + ")");
+                                + openChannels.size() + ", open sessions: "
+                                + sessionCache.size() + ")");
                     }
                     wait();
                 } catch (InterruptedException e) {

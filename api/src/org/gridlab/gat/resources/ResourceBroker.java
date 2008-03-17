@@ -181,6 +181,42 @@ public interface ResourceBroker {
     public Job[] submitJob(JobDescription[] descriptions)
             throws GATInvocationException;
 
+    /**
+     * This operation takes an array of {@link JobDescription}s, and submits
+     * the specified jobs to some underlying resource management or allocation
+     * system. On success, a {@link Job} instance is returned, which represents
+     * the job. Upon failing to submit the job, an exception is issued. The
+     * {@link MetricListener} listening to the {@link Metric} defined by the
+     * metricDefinitionName is attached to all the {@link Job}s as soon as they
+     * are created. This has the big advantage that {@link Metric}s that are
+     * fired <i>during</i> the submitJob can be caught in the provided
+     * listener.
+     * <p>
+     * If one, for instance, would like to listen to the state of a {@link Job},
+     * using the "job.status" metricDefinitionName, during the submitJob the
+     * {@link Metric} containing the state PRE_STAGING will be fired. This state
+     * can only be caught in the listener, if the listener is directly provided
+     * with the submitJob invocation.
+     * <p>
+     * In former releases some resource broker adaptors would check the
+     * "resourcebroker.jobmanager" preference to see to which jobmanager (e.g.,
+     * fork, pbs, condor) should be used. This has been deprecated. Use the
+     * brokerURI which you have to set while creating the {@link ResourceBroker}
+     * instead.
+     * 
+     * @param descriptions
+     *                The job descriptions.
+     * @param listener
+     *                A metric listener that listens to the returned job
+     * @param metricDefinitionName
+     *                The name of the metric the listener listens to
+     * @return a job object that is a handle to the task that was submitted
+     * @throws IOException
+     *                 Upon non-remote IO problem
+     * @throws GATInvocationException
+     *                 a remote problem occurred
+     */
+
     public Job[] submitJob(JobDescription[] descriptions,
             MetricListener listener, String metricDefinitionName)
             throws GATInvocationException;
