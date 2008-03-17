@@ -753,9 +753,4 @@ public class WSGT4Job extends JobCpi {
         // not return the exit code.
     }
 
-    public synchronized Map<String, Object> getInfo()
-            throws GATInvocationException {
-        HashMap<String, Object> m = new HashMap<String, Object>();
-        return m;
-    }
 }

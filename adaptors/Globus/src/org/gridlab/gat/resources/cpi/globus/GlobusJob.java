@@ -82,6 +82,8 @@ public class GlobusJob extends JobCpi implements GramJobListener,
         super(gatContext, preferences, jobDescription, sandbox);
         state = SCHEDULED;
         jobsAlive++;
+        
+        logger.debug("--new version--");
 
         // Tell the engine that we provide job.status events
         HashMap<String, Object> returnDef = new HashMap<String, Object>();
