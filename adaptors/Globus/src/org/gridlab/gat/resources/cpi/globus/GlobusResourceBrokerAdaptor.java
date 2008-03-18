@@ -502,7 +502,15 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
         }
 
         job.setState(Job.PRE_STAGING);
-        sandbox.prestage();
+        try {
+            sandbox.prestage();
+        } catch (GATInvocationException e) {
+            // prestaging fails cleanup before throwing the exception.
+            job.setState(Job.POST_STAGING);
+            sandbox.retrieveAndCleanup(job);
+            job.setState(Job.SUBMISSION_ERROR);
+            throw e;
+        }
         // after the prestaging we can safely delete the wrapper script if we
         // did create it
         if (isExitValueEnabled(description)) {

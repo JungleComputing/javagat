@@ -82,7 +82,7 @@ public class GlobusJob extends JobCpi implements GramJobListener,
         super(gatContext, preferences, jobDescription, sandbox);
         state = SCHEDULED;
         jobsAlive++;
-        
+
         logger.debug("--new version--");
 
         // Tell the engine that we provide job.status events
@@ -239,35 +239,38 @@ public class GlobusJob extends JobCpi implements GramJobListener,
     }
 
     public void stop() throws GATInvocationException {
-        try {
-            if (j != null) {
-                j.cancel();
-            }
-        } catch (Exception e) {
-            if (logger.isInfoEnabled()) {
-                logger.info("got an exception while cancelling job: " + e);
-            }
+        if (j != null) {
             try {
-                j.signal(GRAMConstants.SIGNAL_CANCEL);
-            } catch (Exception e2) {
+                j.cancel();
+            } catch (Exception e) {
                 if (logger.isInfoEnabled()) {
-                    logger
-                            .info("got an exception while sending signal to job: "
-                                    + e2);
+                    logger.info("got an exception while cancelling job: " + e);
                 }
-                GATInvocationException x = new GATInvocationException();
-                x.add("globus job", e);
-                x.add("globus job", e2);
-                x.add("globus job", new Exception(
-                        "There may be jobs still running!"));
-                finished();
-                throw x;
+                try {
+                    j.signal(GRAMConstants.SIGNAL_CANCEL);
+                } catch (Exception e2) {
+                    if (logger.isInfoEnabled()) {
+                        logger
+                                .info("got an exception while sending signal to job: "
+                                        + e2);
+                    }
+                    GATInvocationException x = new GATInvocationException();
+                    x.add("globus job", e);
+                    x.add("globus job", e2);
+                    x.add("globus job", new Exception(
+                            "There may be jobs still running!"));
+                    finished();
+                    throw x;
+                }
             }
+            // the signal has been sent. Now we wait for the termination to
+            // complete. This is indicated when the job enters the STOPPED state
+            waitForJobCompletion();
+        } else {
+            // this can happen if an exception is thrown after the creation of
+            // this job in the submitjob method, simply remove the job from the list.
+            finished();
         }
-        // the signal has been sent. Now we wait for the termination to
-        // complete. This is indicated when the job enters the STOPPED state
-        waitForJobCompletion();
-        // finished(); already done in statusChanged();
     }
 
     private synchronized void waitForJobCompletion() {
@@ -493,8 +496,8 @@ public class GlobusJob extends JobCpi implements GramJobListener,
                 }
             }
 
-            sj = new SerializedJob(jobDescription, sandbox, jobID, submissiontime,
-                    starttime, stoptime);
+            sj = new SerializedJob(jobDescription, sandbox, jobID,
+                    submissiontime, starttime, stoptime);
         }
         String res = GATEngine.defaultMarshal(sj);
         if (logger.isDebugEnabled()) {
