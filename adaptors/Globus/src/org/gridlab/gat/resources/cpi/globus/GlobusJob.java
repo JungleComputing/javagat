@@ -218,7 +218,11 @@ public class GlobusJob extends JobCpi implements GramJobListener,
         }
         m.put("poststage.exception", postStageException);
         m.put("resourcebroker", "Globus");
-        m.put("exitvalue", "" + getExitStatus());
+        try {
+            m.put("exitvalue", "" + getExitStatus());
+        } catch (GATInvocationException e) {
+            //ignore
+        }
         if (deleteException != null) {
             m.put("delete.exception", deleteException);
         }
