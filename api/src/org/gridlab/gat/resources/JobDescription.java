@@ -6,12 +6,12 @@ package org.gridlab.gat.resources;
 /**
  * @author rob
  */
-/** An instance of this class describes a job to be run.
- *
- * It consists of a
- * description of the "executable" (a SoftwareDescription), and of a
- * description of the resource requirements of the job. The latter can be given
- * as either a ResourceDescription, or as a specific Resource; only one of
+/**
+ * An instance of this class describes a job to be run.
+ * 
+ * It consists of a description of the "executable" (a SoftwareDescription), and
+ * of a description of the resource requirements of the job. The latter can be
+ * given as either a ResourceDescription, or as a specific Resource; only one of
  * these may be specified.
  */
 @SuppressWarnings("serial")
@@ -23,8 +23,9 @@ public class JobDescription implements java.io.Serializable {
     Resource resource;
 
     /**
-     * Create a job description with no resource description.
-     * I.e., we don't care where it runs.
+     * Create a job description with no resource description. I.e., we don't
+     * care where it runs.
+     * 
      * @param softwareDescription
      */
     public JobDescription(SoftwareDescription softwareDescription) {
@@ -52,7 +53,7 @@ public class JobDescription implements java.io.Serializable {
 
     /**
      * @param resource
-     *            The resource to set.
+     *                The resource to set.
      */
     public void setResource(Resource resource) {
         this.resource = resource;
@@ -67,7 +68,7 @@ public class JobDescription implements java.io.Serializable {
 
     /**
      * @param resourceDescription
-     *            The resourceDescription to set.
+     *                The resourceDescription to set.
      */
     public void setResourceDescription(ResourceDescription resourceDescription) {
         this.resourceDescription = resourceDescription;
@@ -82,21 +83,26 @@ public class JobDescription implements java.io.Serializable {
 
     /**
      * @param softwareDescription
-     *            The softwareDescription to set.
+     *                The softwareDescription to set.
      */
     public void setSoftwareDescription(SoftwareDescription softwareDescription) {
         this.softwareDescription = softwareDescription;
     }
-    
+
     public String toString() {
         String res = " JobDescription(";
 
-        res += "softwareDescription: " + (softwareDescription == null ?  "null" : softwareDescription.toString());
-        res += ", resourceDescription: " + (resourceDescription == null ?  "null" : resourceDescription.toString());
-        res += ", resource: " + (resource == null ?  "null" : resource.toString());
-        
+        res += "softwareDescription: "
+                + (softwareDescription == null ? "null" : softwareDescription
+                        .toString());
+        res += ", resourceDescription: "
+                + (resourceDescription == null ? "null" : resourceDescription
+                        .toString());
+        res += ", resource: "
+                + (resource == null ? "null" : resource.toString());
+
         res += ")";
-        
+
         return res;
     }
 }

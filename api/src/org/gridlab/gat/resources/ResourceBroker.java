@@ -178,6 +178,27 @@ public interface ResourceBroker {
     public Job submitJob(JobDescription description, MetricListener listener,
             String metricDefinitionName) throws GATInvocationException;
 
+    /**
+     * This operation takes an array of {@link JobDescription}s, and submits
+     * the specified jobs to some underlying resource management or allocation
+     * system. On success, a {@link Job} instance is returned, which represents
+     * the job. Upon failing to submit the job, an exception is issued. 
+     * <p>
+     * In former releases some resource broker adaptors would check the
+     * "resourcebroker.jobmanager" preference to see to which jobmanager (e.g.,
+     * fork, pbs, condor) should be used. This has been deprecated. Use the
+     * brokerURI which you have to set while creating the {@link ResourceBroker}
+     * instead.
+     * 
+     * @param descriptions
+     *                The job descriptions.
+     * @return a job array object that is a handle to the tasks that were
+     *         submitted
+     * @throws IOException
+     *                 Upon non-remote IO problem
+     * @throws GATInvocationException
+     *                 a remote problem occurred
+     */
     public Job[] submitJob(JobDescription[] descriptions)
             throws GATInvocationException;
 
@@ -210,13 +231,13 @@ public interface ResourceBroker {
      *                A metric listener that listens to the returned job
      * @param metricDefinitionName
      *                The name of the metric the listener listens to
-     * @return a job object that is a handle to the task that was submitted
+     * @return a job array object that is a handle to the tasks that were
+     *         submitted
      * @throws IOException
      *                 Upon non-remote IO problem
      * @throws GATInvocationException
      *                 a remote problem occurred
      */
-
     public Job[] submitJob(JobDescription[] descriptions,
             MetricListener listener, String metricDefinitionName)
             throws GATInvocationException;

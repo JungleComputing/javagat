@@ -303,6 +303,9 @@ public abstract class GlobusFileAdaptor extends FileCpi {
             setActiveOrPassive(client, preferences);
             client.put(sourceFile, dest.getPath(), false); // overwrite
         } catch (Exception e) {
+            if (client != null) {
+                destroyClient(client, dest, preferences);
+            }
             throw new GATInvocationException("gridftp", e);
         } finally {
             if (client != null) {
@@ -371,6 +374,9 @@ public abstract class GlobusFileAdaptor extends FileCpi {
             setActiveOrPassive(client, preferences);
             client.get(src.getPath(), new java.io.File(dest.getPath()));
         } catch (Exception e) {
+            if (client != null) {
+                destroyClient(client, dest, preferences);
+            }
             throw new GATInvocationException("gridftp", e);
         } finally {
             if (client != null) {

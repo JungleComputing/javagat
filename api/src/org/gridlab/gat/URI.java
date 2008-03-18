@@ -127,13 +127,14 @@ public class URI implements Serializable, Comparable<Object> {
     public String getPath() {
         String path = u.getPath();
         if (u.getScheme() != null && u.getHost() == null && u.getSchemeSpecificPart() != null) {
-            path = u.getSchemeSpecificPart();
+            // silly fix, the '/' gets chopped of anyway.
+            path = "/" + u.getSchemeSpecificPart();
         } 
         if (path == null || path.equals("")) {
             return null;
         }
 
-        path = new URIEncoder().decodeUri(u.getPath());
+        
 
         if ((u.getScheme() == null) && (u.getHost() == null)) {
             return path;
@@ -161,6 +162,7 @@ public class URI implements Serializable, Comparable<Object> {
                 path = home + path;
             }
         }
+        System.out.println("path: " + path);
 
         return path;
     }

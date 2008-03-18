@@ -24,7 +24,7 @@ public class GridFTPFileAdaptor extends GlobusFileAdaptor {
 
     protected static Logger logger = Logger.getLogger(GlobusFileAdaptor.class);
 
-    static boolean USE_CLIENT_CACHING = true;
+    static boolean USE_CLIENT_CACHING = false;
 
     private static Hashtable<String, FTPClient> clienttable = new Hashtable<String, FTPClient>();
 
