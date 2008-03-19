@@ -1,5 +1,4 @@
 /*
- * Created on Jan 7, 2005
  */
 package org.gridlab.gat;
 
@@ -162,7 +161,6 @@ public class URI implements Serializable, Comparable<Object> {
                 path = home + path;
             }
         }
-        System.out.println("path: " + path);
 
         return path;
     }

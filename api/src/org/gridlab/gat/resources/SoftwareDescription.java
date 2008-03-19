@@ -13,6 +13,7 @@ import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -25,34 +26,77 @@ import org.gridlab.gat.URI;
 import org.gridlab.gat.io.File;
 
 /**
- * @author rob
- * 
  * An instance of this class is a description of a piece of software (component)
  * which is to be submitted as a job. It currently takes a table describing this
  * piece of software's attributes to any underlying job submission system.
- * 
+ * <p>
  * The following attributes are defined in the specification and should be
- * recognized by ResourceBroker adaptors.
+ * recognized by {@link ResourceBroker} adaptors.
+ * <p>
+ * <TABLE border="2" frame="box" rules="groups" summary="Minimum set of
+ * supported attributes"> <CAPTION>Minimum set of supported name/value pairs
+ * </CAPTION> <COLGROUP align="left"> <COLGROUP align="center"> <COLGROUP
+ * align="left" > <THEAD valign="top">
+ * <TR>
+ * <TH>Name
+ * <TH>Type
+ * <TH>Description <TBODY>
+ * <TR>
+ * <TD>directory
+ * <TD>{@link String}
+ * <TD>working directory
+ * <TR>
+ * <TD>count
+ * <TD>{@link Integer}/{@link String}
+ * <TD>number of executables to run
+ * <TR>
+ * <TD>host.count
+ * <TD>{@link Integer}/{@link String}
+ * <TD>number of hosts to distribute on
+ * <TR>
+ * <TD>time.max
+ * <TD>{@link Long}/{@link String}
+ * <TD>The maximum walltime or cputime for a single execution of the
+ * executable. The units is in minutes.
+ * <TR>
+ * <TD>walltime.max
+ * <TD>{@link Long}/{@link String}
+ * <TD>the maximum walltime in minutes
+ * <TR>
+ * <TD>cputime.max
+ * <TD>{@link Long}/{@link String}
+ * <TD>the maximum cputime in minutes
+ * <TR>
+ * <TD>job.type
+ * <TD>{@link String}
+ * <TD>single|multiple|mpi|condor|...
+ * <TR>
+ * <TD>project
+ * <TD>{@link String}
+ * <TD>project to use, for accounting purposes
+ * <TR>
+ * <TD>dryrun
+ * <TD>{@link String}
+ * <TD>if set, don't submit but return success
+ * <TR>
+ * <TD>memory.min
+ * <TD>{@link String}
+ * <TD>minimal required memory in MB
+ * <TR>
+ * <TD>memory.max
+ * <TD>{@link String}
+ * <TD>maximal required memory in MB
+ * <TR>
+ * <TD>savestate
+ * <TD>{@link Boolean}/{@link String}
+ * <TD>keep job data persistent for restart
+ * <TR>
+ * <TD>restart
+ * <TD>{@link String}
+ * <TD>restart job with given ID
+ * <TR></TBODY> </TABLE>
  * 
- * <ul>
- * <li> directory (String): working directory.
- * <li> count (Integer/String): number of executables to run.
- * <li> host.count (Integer/String): number of hosts to distribute on.
- * <li> time.max (Long/String): The maximum walltime or cputime for a single
- * execution of the executable. The units is in minutes.
- * <li> walltime.max (Long/String): maximal WALL time in minutes.
- * <li> cputime.max (Long/String): maximal CPU time in minutes.
- * <li> job.type (String): single|multiple|mpi|condor|...
- * <li> globus.queue (String): target queue name.
- * <li> project (String): project to use, for accounting purposes.
- * <li> dryrun (Boolean/String): if set, dont submit but return success.
- * <li> memory.min (Integer/String): minimal required memory in MB.
- * <li> memory.max (Integer/String): maximal required memory in MB.
- * <li> savestate (Boolean/String): keep job data persistent for restart.
- * <li> restart=ID (String): restart job with given ID.
- * </ul>
- * 
- * 
+ * @author rob
  */
 @SuppressWarnings("serial")
 public class SoftwareDescription implements java.io.Serializable {
@@ -98,9 +142,8 @@ public class SoftwareDescription implements java.io.Serializable {
     private String virtualOrganisation;
 
     /**
-     * Create a software description, which describes the application you want
-     * to run.
-     * 
+     * Create a {@link SoftwareDescription}, which describes the application
+     * you want to run.
      */
     public SoftwareDescription() {
         attributes = new HashMap<String, Object>();
@@ -111,8 +154,8 @@ public class SoftwareDescription implements java.io.Serializable {
     }
 
     /**
-     * Create a software description, which describes the application you want
-     * to run.
+     * Create a {@link SoftwareDescription}, which describes the application
+     * you want to run.
      * 
      * @param attributes
      *                See the comment above for a list of known attributes.
@@ -131,9 +174,9 @@ public class SoftwareDescription implements java.io.Serializable {
     }
 
     /**
-     * Tests this GATSoftwareDescription for equality with the passed GATObject.
-     * GATSoftwareDescription are equal if they have equivalent entries in the
-     * description table.
+     * Tests this {@link SoftwareDescription} for equality with the passed
+     * {@link Object}. {@link SoftwareDescription}s are equal if they have
+     * equivalent entries in the description table.
      * 
      * @see java.lang.Object#equals(java.lang.Object)
      */
@@ -147,11 +190,22 @@ public class SoftwareDescription implements java.io.Serializable {
         return other.attributes.equals(attributes);
     }
 
+    /**
+     * Returns the hashcode of this {@link SoftwareDescription}
+     * 
+     * @return the hashcode of this {@link SoftwareDescription}
+     * 
+     * @see java.lang.Object#hashCode()
+     */
     public int hashCode() {
         return attributes.hashCode();
     }
 
     /**
+     * Returns the arguments of the executable. For the following commandline
+     * <code>/bin/cat hello world > out</code> it will return a {@link String}[]{"hello",
+     * "world", ">", "out"}
+     * 
      * @return Returns the commandline arguments.
      */
     public String[] getArguments() {
@@ -159,6 +213,10 @@ public class SoftwareDescription implements java.io.Serializable {
     }
 
     /**
+     * Sets the arguments of the executable. For the following commandline
+     * <code>/bin/cat hello world > out</code> the {@link String}[]{"hello",
+     * "world", ">", "out"} contains the arguments.
+     * 
      * @param arguments
      *                The commandline arguments to set.
      */
@@ -167,7 +225,13 @@ public class SoftwareDescription implements java.io.Serializable {
     }
 
     /**
-     * @return Returns the attributes.
+     * Gets the attributes of this {@link SoftwareDescription}. This method
+     * converts the well known attributes as listed in the table of
+     * {@link SoftwareDescription} to their specific type (which means that if
+     * an value can be a String or an Integer, it's cast to the non String
+     * type).
+     * 
+     * @return the attributes.
      */
     public Map<String, Object> getAttributes() {
         // For known keys, resolve value strings to the correct type.
@@ -204,20 +268,29 @@ public class SoftwareDescription implements java.io.Serializable {
     }
 
     /**
+     * Set the attributes to the attributes specified in the {@link Map}. This
+     * will create a set of attributes only containing the attributes from the
+     * {@link Map}. Use addAttribute to add attributes to an existing set of
+     * attributes.
+     * 
      * @param attributes
      *                The attributes to set. See the comment above for a list of
-     *                known attributes.
+     *                known attributes. Note that some adaptors may also support
+     *                other attributes.
      */
     public void setAttributes(Map<String, Object> attributes) {
         this.attributes = new HashMap<String, Object>(attributes);
     }
 
     /**
-     * Add an attribute to the attribute set. See the comment above for a list
-     * of known attributes.
+     * Add an attribute to the existing attribute set. See the comment above for
+     * a list of known attributes. Note that some adaptors may also support
+     * other attributes.
      * 
      * @param key
+     *                the key of the attribute
      * @param value
+     *                the value of the attribute
      */
     public void addAttribute(String key, Object value) {
         attributes.put(key, value);
@@ -234,13 +307,21 @@ public class SoftwareDescription implements java.io.Serializable {
     }
 
     /**
-     * @return Returns the environment.
+     * Returns the environment of the executable. The environment of the
+     * executable consists of a {@link Map} of environment variables with their
+     * values (for instance the key, value pair "JAVA_HOME", "/path/to/java").
+     * 
+     * @return the environment
      */
     public Map<String, Object> getEnvironment() {
         return environment;
     }
 
     /**
+     * Sets the environment of the executable. The environment of the executable
+     * consists of a {@link Map} of environment variables with their values (for
+     * instance the key, value pair "JAVA_HOME", "/path/to/java").
+     * 
      * @param environment
      *                The environment to set.
      */
@@ -249,13 +330,21 @@ public class SoftwareDescription implements java.io.Serializable {
     }
 
     /**
-     * @return Returns the path to the executable.
+     * Returns the path to the executable. For the following commandline
+     * <code>/bin/cat hello world > out</code> it will return a {@link String}
+     * "/bin/cat".
+     * 
+     * @return the path to the executable.
      */
     public String getExecutable() {
         return executable;
     }
 
     /**
+     * Sets the path to the executable. For the following commandline
+     * <code>/bin/cat hello world > out</code> the {@link String} "/bin/cat"
+     * should be provided.
+     * 
      * @param executable
      *                The path to the executable.
      */
@@ -264,12 +353,27 @@ public class SoftwareDescription implements java.io.Serializable {
     }
 
     /**
-     * @return Returns the pre staged files.
+     * Returns the pre staged file set. This a {@link Map} with the source
+     * {@link File}s as keys and the destination {@link File}s as values. This
+     * method returns the files that should be pre staged regardless of whether
+     * they are already pre staged or not.
+     * 
+     * @return the pre staged file set.
      */
     public Map<File, File> getPreStaged() {
         return preStagedFiles;
     }
 
+    /**
+     * Sets the pre staged file set. Any former pre staged files added to the
+     * pre staged file set are no longer part of the pre staged file set. More
+     * {@link File}s can be added using the <code>addPreStagedFile</code>
+     * methods. See these methods for a table stating at which locations the
+     * {@link File}s will end up after the pre staging.
+     * 
+     * @param files
+     *                An array of files that should be pre staged.
+     */
     public void setPreStaged(File[] files) {
         preStagedFiles = new HashMap<File, File>();
         for (int i = 0; i < files.length; i++) {
@@ -278,16 +382,61 @@ public class SoftwareDescription implements java.io.Serializable {
     }
 
     /**
-     * Add a prestaged file. The file will have the same name in the CWD at the
-     * remote machine.
+     * Add a single pre stage file. This is similar to
+     * <code>addPreStagedFile(src, null)</code>.
+     * 
+     * @param src
+     *                the file that should be pre staged.
      */
     public void addPreStagedFile(File src) {
         addPreStagedFile(src, null);
     }
 
     /**
-     * Dest can be null, this means file with the same name in the CWD at the
-     * remote machine
+     * Add a single pre stage file that should be pre staged to the given
+     * destination. The table below shows where the pre stage files will end up
+     * after pre staging.
+     * <p>
+     * <TABLE border="2" frame="box" rules="groups" summary="pre staging
+     * overview" cellpadding="2"> <CAPTION>where do the pre staged files end up
+     * </CAPTION> <COLGROUP align="left"> <COLGROUP align="center"> <COLGROUP
+     * align="left" > <THEAD valign="top">
+     * 
+     * <TR>
+     * <TH> source file
+     * <TH> destination file
+     * <TH> location after pre staging<TBODY>
+     * <TR>
+     * <TD><code>path/to/file</code>
+     * <TD><code>null</code>
+     * <TD><code>sandbox/file</code>
+     * <TR>
+     * <TD><code>path/to/file</code>
+     * <TD><code>other/path/to/file</code>
+     * <TD><code>sandbox/other/path/to/file</code>
+     * <TR>
+     * <TD><code>path/to/file</code>
+     * <TD><code>/other/path/to/file</code>
+     * <TD><code>/other/path/to/file</code>
+     * <TR>
+     * <TD><code>/path/to/file</code>
+     * <TD><code>null</code>
+     * <TD><code>sandbox/file</code>
+     * <TR>
+     * <TD><code>/path/to/file</code>
+     * <TD><code>other/path/to/file</code>
+     * <TD><code>sandbox/other/path/to/file</code>
+     * <TR>
+     * <TD><code>/path/to/file</code>
+     * <TD><code>/other/path/to/file</code>
+     * <TD><code>/other/path/to/file</code> </TABLE>
+     * 
+     * @param src
+     *                the {@link File} that should be pre staged (may not be
+     *                <code>null</code>)
+     * @param dest
+     *                the {@link File} that should exist after the pre staging
+     *                (may be <code>null</code>, see table).
      */
     public void addPreStagedFile(File src, File dest) {
         if (src == null) {
@@ -298,13 +447,28 @@ public class SoftwareDescription implements java.io.Serializable {
     }
 
     /**
-     * @return Returns the postStaged files. the order inside a tuple in this
-     *         map is (src, dest)
+     * Returns the post stage file set. The key {@link File}s are the source
+     * files on the execution site, the values are the {@link File}s with the
+     * destination of the post staging. This method returns the files that
+     * should be post staged regardless of whether they are already post staged
+     * or not.
+     * 
+     * @return the post stage file set
      */
     public Map<File, File> getPostStaged() {
         return postStagedFiles;
     }
 
+    /**
+     * Sets the post staged file set. Any former post staged files added to the
+     * post staged file set are no longer part of the post staged file set. More
+     * {@link File}s can be added using the <code>addPostStagedFile</code>
+     * methods. See these methods for a table stating at which locations the
+     * {@link File}s will end up after the post staging.
+     * 
+     * @param files
+     *                An array of files that should be pre staged.
+     */
     public void setPostStaged(File[] files) {
         postStagedFiles = new HashMap<File, File>();
         for (int i = 0; i < files.length; i++) {
@@ -313,16 +477,61 @@ public class SoftwareDescription implements java.io.Serializable {
     }
 
     /**
-     * Add a file to poststage. The file will be post staged to the current
-     * working directory, and will have the same name as the remote file.
+     * Add a single post stage file. This is similar to
+     * <code>addPostStagedFile(src, null)</code>.
+     * 
+     * @param src
+     *                the file that should be post staged.
      */
     public void addPostStagedFile(File src) {
         addPostStagedFile(src, null);
     }
 
     /**
-     * dest can be null, this means file with the same name in the CWD at the
-     * local machine
+     * Add a single post stage file that should be post staged to the given
+     * destination. The table below shows where the post stage files will end up
+     * after post staging.
+     * <p>
+     * <TABLE border="2" frame="box" rules="groups" summary="post staging
+     * overview" cellpadding="2"> <CAPTION>where do the post staged files end up
+     * </CAPTION> <COLGROUP align="left"> <COLGROUP align="center"> <COLGROUP
+     * align="left" > <THEAD valign="top">
+     * 
+     * <TR>
+     * <TH> source file
+     * <TH> destination file
+     * <TH> location after post staging<TBODY>
+     * <TR>
+     * <TD><code>path/to/file</code>
+     * <TD><code>null</code>
+     * <TD><code>cwd/file</code>
+     * <TR>
+     * <TD><code>path/to/file</code>
+     * <TD><code>other/path/to/file</code>
+     * <TD><code>cwd/other/path/to/file</code>
+     * <TR>
+     * <TD><code>path/to/file</code>
+     * <TD><code>/other/path/to/file</code>
+     * <TD><code>/other/path/to/file</code>
+     * <TR>
+     * <TD><code>/path/to/file</code>
+     * <TD><code>null</code>
+     * <TD><code>cwd/file</code>
+     * <TR>
+     * <TD><code>/path/to/file</code>
+     * <TD><code>other/path/to/file</code>
+     * <TD><code>cwd/other/path/to/file</code>
+     * <TR>
+     * <TD><code>/path/to/file</code>
+     * <TD><code>/other/path/to/file</code>
+     * <TD><code>/other/path/to/file</code> </TABLE>
+     * 
+     * @param src
+     *                the {@link File} that should be post staged (may not be
+     *                <code>null</code>)
+     * @param dest
+     *                the {@link File} that should exist after the post staging
+     *                (may be <code>null</code>, see table).
      */
     public void addPostStagedFile(File src, File dest) {
         if (src == null) {
@@ -334,49 +543,80 @@ public class SoftwareDescription implements java.io.Serializable {
     }
 
     /**
+     * Returns a {@link List} of the {@link File}s that should be deleted after
+     * the run.
+     * 
      * @return the list of files to be deleted after the run. elements are of
      *         type File.
      */
-    public ArrayList<File> getDeletedFiles() {
+    public List<File> getDeletedFiles() {
         return deletedFiles;
     }
 
     /**
+     * Adds a {@link File} to the set of {@link File}s that should be deleted
+     * after the run. Normally the {@link ResourceBroker} will delete the
+     * sandbox with all its contents after the run and it isn't necessary to
+     * specify {@link File}s using this method to be deleted. However, there
+     * are two cases where this method will be applicable.
+     * <p>
+     * First of all, {@link File}s outside the sandbox are not automatically
+     * deleted by the {@link ResourceBroker}. Those {@link File}s should be
+     * explicitly added to be deleted using this method.
+     * <p>
+     * Second, it's possible to specify that sandbox isn't deleted after the job
+     * run, using the attribute "sandbox.delete" set to "false". In the case
+     * that sandbox isn't deleted but some files inside the sandbox should be
+     * deleted, use this method.
      * 
-     * @param f
-     *                the file to be wiped (overwritten) after the run.
+     * 
+     * @param file
+     *                the file to be deleted after the run.
      */
-    public void addDeletedFile(File f) {
-        deletedFiles.add(f);
+    public void addDeletedFile(File file) {
+        deletedFiles.add(file);
     }
 
     /**
-     * @return the list of files to be wiped (overwritten) and deleted after the
-     *         run. elements are of type File.
+     * Returns a {@link List} of the {@link File}s that should be wiped and
+     * deleted after the run.
+     * 
+     * @return the list of files to be deleted after the run. elements are of
+     *         type File.
      */
-    public ArrayList<File> getWipedFiles() {
+    public List<File> getWipedFiles() {
         return wipedFiles;
     }
 
     /**
+     * Adds a {@link File} to the set of {@link File}s that should be wiped
+     * after the run. When a {@link File} gets deleted, it's possible that some
+     * data that was in the file remains on the disk. To be sure these data is
+     * also removed, the wiping of a {@link File} consists of first overwriting
+     * the {@link File}, in order to delete the contents of the File. And then
+     * deleting the File, in order to free up the disk space.
      * 
-     * @param f
+     * @param file
      *                the file to be wiped (overwritten) and deleted after the
      *                run.
      */
-    public void addWipedFile(File f) {
-        wipedFiles.add(f);
+    public void addWipedFile(File file) {
+        wipedFiles.add(file);
     }
 
     /**
-     * @return Returns the stderr file.
+     * Returns the stderr {@link File}
+     * 
+     * @return the stderr {@link File}
      */
     public File getStderr() {
         return stderr;
     }
-    
+
     /**
-     * @return Returns the stderr stream.
+     * Returns the stderr {@link OutputStream}
+     * 
+     * @return the stderr {@link OutputStream}.
      */
     public OutputStream getStderrStream() {
         return stderrStream;
@@ -390,17 +630,22 @@ public class SoftwareDescription implements java.io.Serializable {
         stderrIsStreaming = false;
         this.stderr = stderr;
     }
-    
+
     /**
      * @param stderrStream
      *                The stream where stderr is redirected to.
      */
     public void setStderr(OutputStream stderrStream) {
         stderrIsStreaming = true;
-        this.stderrStream = stderrStream; 
+        this.stderrStream = stderrStream;
     }
-    
-    public boolean getStderrIsStreaming() {
+
+    /**
+     * Returns whether the stderr is set to streaming.
+     * 
+     * @return whether the stderr is streaming
+     */
+    public boolean stderrIsStreaming() {
         return stderrIsStreaming;
     }
 
@@ -425,7 +670,7 @@ public class SoftwareDescription implements java.io.Serializable {
     public File getStdout() {
         return stdout;
     }
-    
+
     /**
      * @return Returns the stdout stream.
      */
@@ -441,26 +686,23 @@ public class SoftwareDescription implements java.io.Serializable {
         stdoutIsStreaming = false;
         this.stdout = stdout;
     }
-    
+
     /**
      * @param stdoutStream
      *                The stream where stdout is redirected to.
      */
     public void setStdout(OutputStream stdoutStream) {
         stdoutIsStreaming = true;
-        this.stdoutStream = stdoutStream; 
+        this.stdoutStream = stdoutStream;
     }
-    
-    public boolean getStdoutIsStreaming() {
+
+    public boolean stdoutIsStreaming() {
         return stdoutIsStreaming;
     }
 
     public String toString() {
         String res = "SoftwareDescription(";
-        // res += "location: " + (location == null ? "null" :
-        // location.toString());
         res += "executable: " + executable;
-
         res += ", arguments: ";
         if (arguments != null) {
             for (int i = 0; i < arguments.length; i++) {

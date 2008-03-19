@@ -282,7 +282,7 @@ public class SshTrileadFileAdaptor extends FileCpi {
         new CommandRunner("chmod " + mode + " " + localfile);
     }
 
-    private static Connection getConnection(URI location, GATContext context,
+    public static Connection getConnection(URI location, GATContext context,
             Preferences preferences) throws Exception {
         if (connections.containsKey(location)) {
             return connections.get(location);

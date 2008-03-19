@@ -8,7 +8,7 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * @author rob
+ * @author roelof
  * 
  * An instance of this class is a description of a piece of java software
  * (component) which is to be submitted as a job.

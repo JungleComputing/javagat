@@ -5,6 +5,7 @@ package org.gridlab.gat.resources.cpi;
 
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -62,7 +63,7 @@ public class PostStagedFileSet {
     }
 
     public PostStagedFileSet(GATContext gatContext, Preferences preferences,
-            ArrayList<File> files, String host, String sandbox)
+            List<File> files, String host, String sandbox)
             throws GATInvocationException {
         this.gatContext = gatContext;
         this.preferences = preferences;
@@ -131,7 +132,7 @@ public class PostStagedFileSet {
         files = (PostStagedFile[]) tmp.toArray(new PostStagedFile[] {});
     }
 
-    private void resolveFiles(ArrayList<File> f) throws GATInvocationException {
+    private void resolveFiles(List<File> f) throws GATInvocationException {
         if (f == null) return;
 
         int startPos = 0;

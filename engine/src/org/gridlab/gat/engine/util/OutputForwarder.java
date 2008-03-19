@@ -20,11 +20,11 @@ public class OutputForwarder extends Thread {
     /**
      * forward the output to another stream. The destination stream is not
      * buffered, and not closed at the end.
-     *
+     * 
      * @param out
-     *            the input stream to forward
+     *                the input stream to forward
      * @param destination
-     *            the destination output stream
+     *                the destination output stream
      */
     public OutputForwarder(InputStream out, OutputStream destination) {
         this(out, false, destination);
@@ -82,7 +82,11 @@ public class OutputForwarder extends Thread {
                 if (res < 0) {
                     synchronized (this) {
                         destination.flush();
-                        destination.close();
+                        // roelof: don't close destination, should be done by
+                        // the user of the OutputForwarder, because he might
+                        // want to write other things to it (for instance if
+                        // it's System.out)
+                        // destination.close();
                         finished = true;
 
                         notifyAll();
@@ -117,10 +121,10 @@ public class OutputForwarder extends Thread {
     }
 
     public void run() {
-        //		if (out != null) {
+        // if (out != null) {
         readInputStream();
 
-        //		}
+        // }
     }
 
     public synchronized StringBuffer getResult() {
@@ -138,7 +142,7 @@ public class OutputForwarder extends Thread {
     public synchronized boolean isFinished() {
         return finished;
     }
-    
+
     public synchronized void waitUntilFinished() {
         while (!finished) {
             try {

@@ -34,7 +34,7 @@ Jobs represent running tasks on a grid site.
 <p>The classes in this package are related to each other as follows. A JobDescription contains a SoftwareDescription
 and either a ResourceDescription or a Resource object. The method submitJob of the 
 ResourceBroker creates a Job out of the JobDescription. The ResourceDescription object as well as
-the Resource object are abstract and both have non abstract implementations for Hardware and Software.
+the Resource object are abstract and have subclasses for hardware and software (called HardwareResourceDescription, HardwareResource, SoftwareResourceDescription and SoftwareResource).
 There's also a special convenience sub type of the SoftwareDescription, the JavaSoftwareDescription, which
 makes it easier to create a description of a java application. The ResourceBroker cannot only turn JobDescriptions
 into Jobs, but also pairs of Resources (or ResourceDescriptions) and TimePeriods into Reservations.

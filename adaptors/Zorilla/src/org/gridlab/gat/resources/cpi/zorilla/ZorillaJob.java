@@ -206,7 +206,7 @@ public class ZorillaJob extends JobCpi {
             }
 
             File stdout = soft.getStdout();
-            if (soft.getStdoutIsStreaming()) {
+            if (soft.stdoutIsStreaming()) {
                 stdoutForwarder = new OutputForwarder(address, jobID, soft
                         .getStdoutStream(), false);
                 stdoutForwarder.startAsDaemon();
@@ -219,7 +219,7 @@ public class ZorillaJob extends JobCpi {
             }
 
             File stderr = soft.getStderr();
-            if (soft.getStderrIsStreaming()) {
+            if (soft.stderrIsStreaming()) {
                 stderrForwarder = new OutputForwarder(address, jobID, soft
                         .getStderrStream(), true);
                 stderrForwarder.startAsDaemon();
