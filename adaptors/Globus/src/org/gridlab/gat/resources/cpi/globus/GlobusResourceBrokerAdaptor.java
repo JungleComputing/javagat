@@ -173,18 +173,20 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
             }
         }
 
-        org.gridlab.gat.io.File stdout = sd.getStdout();
-        if (stdout != null) {
-            if (sandbox != null) {
-                rsl += (" (stdout = " + sandbox.getRelativeStdout().getPath() + ")");
-            }
+        if (sd.getStdout() != null || sd.getStdoutStream() != null) {
+            // if (sandbox != null && sd.getStdout() != null) {
+            rsl += (" (stdout = " + sandbox.getRelativeStdout().getPath() + ")");
+            // } else {
+            // rsl += (" (stdout = stdout)");
+            // }
         }
 
-        org.gridlab.gat.io.File stderr = sd.getStderr();
-        if (stderr != null) {
-            if (sandbox != null) {
-                rsl += (" (stderr = " + sandbox.getRelativeStderr().getPath() + ")");
-            }
+        if (sd.getStderr() != null || sd.getStderrStream() != null) {
+            // if (sandbox != null && sd.getStderr() != null) {
+            rsl += (" (stderr = " + sandbox.getRelativeStderr().getPath() + ")");
+            // } else {
+            // rsl += (" (stderr = stderr)");
+            // }
         }
 
         org.gridlab.gat.io.File stdin = sd.getStdin();
@@ -212,8 +214,9 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
         if (queue != null) {
             rsl += " (queue = " + queue + ")";
         }
-        
-        String timeout = getStringAttribute(description, "globus.proxy.timeout", null);
+
+        String timeout = getStringAttribute(description,
+                "globus.proxy.timeout", null);
         if (queue != null) {
             rsl += " (proxy_timeout = " + timeout + ")";
         }
@@ -487,8 +490,14 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
                     preferences, ".JavaGAT-wrapper-script-" + random,
                     ".JavaGAT-exit-value-" + random);
         }
+
+        // code to handle streaming err and out
+        SoftwareDescription sd = description.getSoftwareDescription();
+
+        // if output should be streamed, don't poststage it!
         Sandbox sandbox = new Sandbox(gatContext, preferences, description,
-                host, null, true, true, true, true);
+                host, null, true, true, !sd.stdoutIsStreaming(), !sd
+                        .stderrIsStreaming());
         GlobusJob job = new GlobusJob(gatContext, preferences, description,
                 sandbox);
         if (isExitValueEnabled(description)) {
@@ -499,6 +508,15 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
             Metric metric = job.getMetricDefinitionByName(metricDefinitionName)
                     .createMetric(null);
             job.addMetricListener(listener, metric);
+        }
+
+        if (sd.stderrIsStreaming()) {
+            job.startOutputForwarder(sandbox.getResolvedStderr(), sd
+                    .getStderrStream());
+        }
+        if (sd.stdoutIsStreaming()) {
+            job.startOutputForwarder(sandbox.getResolvedStdout(), sd
+                    .getStdoutStream());
         }
 
         job.setState(Job.PRE_STAGING);

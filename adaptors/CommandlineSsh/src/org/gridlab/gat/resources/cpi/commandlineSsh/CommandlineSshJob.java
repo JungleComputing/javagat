@@ -35,15 +35,11 @@ public class CommandlineSshJob extends JobCpi {
 
     Process p;
 
-    int exitVal = 0;
+    int exitStatus = 0;
 
     MetricDefinition statusMetricDefinition;
 
     Metric statusMetric;
-
-    OutputForwarder out;
-
-    OutputForwarder err;
 
     CommandlineSshJob(GATContext gatContext, Preferences preferences,
             JobDescription description, Sandbox sandbox) {
@@ -69,18 +65,6 @@ public class CommandlineSshJob extends JobCpi {
         GATEngine.fireMetric(this, v);
     }
 
-    protected void setOutputForwarder(OutputForwarder out) {
-        this.out = out;
-    }
-
-    protected void setErrorForwarder(OutputForwarder err) {
-        this.err = err;
-    }
-
-    protected void startProcessWaiter() {
-        new ProcessWaiter();
-    }
-
     /*
      * (non-Javadoc)
      * 
@@ -95,7 +79,7 @@ public class CommandlineSshJob extends JobCpi {
         m.put("state", getStateString(state));
         m.put("resManState", getStateString(state));
         m.put("resManName", "CommandlineSsh");
-        m.put("exitValue", "" + exitVal);
+        m.put("exitValue", "" + exitStatus);
         m.put("hostname", broker.getHostname());
 
         if (postStageException != null) {
@@ -113,7 +97,7 @@ public class CommandlineSshJob extends JobCpi {
     public synchronized int getExitStatus() throws GATInvocationException {
         if (state != STOPPED)
             throw new GATInvocationException("not in RUNNING state");
-        return exitVal;
+        return exitStatus;
     }
 
     /*
@@ -125,86 +109,41 @@ public class CommandlineSshJob extends JobCpi {
         return "" + jobID;
     }
 
-    void finished(int exitValue) {
-        MetricValue v = null;
-
-        synchronized (this) {
-            exitVal = exitValue;
-            state = POST_STAGING;
-            v = new MetricValue(this, getStateString(state), statusMetric,
-                    System.currentTimeMillis());
-            if (logger.isDebugEnabled()) {
-                logger.debug("default job callback: firing event: " + v);
-            }
-        }
-        GATEngine.fireMetric(this, v);
-
+    public synchronized void stop() throws GATInvocationException {
+        setState(POST_STAGING);
         sandbox.retrieveAndCleanup(this);
-
-        synchronized (this) {
-            state = STOPPED;
-            v = new MetricValue(this, getStateString(state), statusMetric,
-                    System.currentTimeMillis());
-            if (logger.isDebugEnabled()) {
-                logger.debug("default job callback: firing event: " + v);
-            }
-        }
-        GATEngine.fireMetric(this, v);
+        exitStatus = p.exitValue();
+        p.destroy();
+        setState(STOPPED);
         finished();
     }
 
-    public void stop() throws GATInvocationException {
-        MetricValue v = null;
-
-        synchronized (this) {
-            p.destroy();
-            state = POST_STAGING;
-            v = new MetricValue(this, getStateString(state), statusMetric,
-                    System.currentTimeMillis());
-            if (logger.isDebugEnabled()) {
-                logger.debug("default job callback: firing event: " + v);
-            }
-        }
-        GATEngine.fireMetric(this, v);
-
-        sandbox.retrieveAndCleanup(this);
-
-        synchronized (this) {
-            state = STOPPED;
-            v = new MetricValue(this, getStateString(state), statusMetric,
-                    System.currentTimeMillis());
-        }
-
-        if (logger.isDebugEnabled()) {
-            logger.debug("commandline ssh job callback: firing event: " + v);
-        }
-
-        GATEngine.fireMetric(this, v);
-        finished();
+    public void startOutputWaiter(OutputForwarder outForwarder,
+            OutputForwarder errForwarder) {
+        new OutputWaiter(outForwarder, errForwarder);
     }
 
-    class ProcessWaiter extends Thread {
-        ProcessWaiter() {
+    class OutputWaiter extends Thread {
+
+        OutputForwarder outForwarder, errForwarder;
+
+        OutputWaiter(OutputForwarder outForwarder, OutputForwarder errForwarder) {
+            setName("CommandlineSshJob OutputForwarderWaiter");
+            setDaemon(true);
+            this.outForwarder = outForwarder;
+            this.errForwarder = errForwarder;
             start();
         }
 
         public void run() {
+            outForwarder.waitUntilFinished();
+            errForwarder.waitUntilFinished();
             try {
-                int exitValue = p.waitFor();
-
-                // Wait for the output forwarders to finish!
-                // You may lose output if you don't -- Jason
-                if (out != null) {
-                    out.waitUntilFinished();
+                CommandlineSshJob.this.stop();
+            } catch (GATInvocationException e) {
+                if (logger.isDebugEnabled()) {
+                    logger.debug("unable to stop job: " + e);
                 }
-
-                if (err != null) {
-                    err.waitUntilFinished();
-                }
-
-                finished(exitValue);
-            } catch (InterruptedException e) {
-                // Cannot happen
             }
         }
     }

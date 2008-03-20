@@ -197,6 +197,23 @@ public class GAT {
 
     /**
      * Constructs a FileInputStream instance which corresponds to the physical
+     * file identified by the passed File and whose access rights are determined
+     * by the GATContext and Preferences of this File.
+     * 
+     * @param file
+     *                the file to read from
+     * @return The FileInputStream object
+     * @throws GATObjectCreationException
+     *                 Thrown upon creation problems
+     */
+    public static FileInputStream createFileInputStream(File file)
+            throws GATObjectCreationException {
+        return createFileInputStream(file.getFileInterface().getGATContext(),
+                file.getFileInterface().getPreferences(), file.toGATURI());
+    }
+
+    /**
+     * Constructs a FileInputStream instance which corresponds to the physical
      * file identified by the passed URI and whose access rights are determined
      * by the passed GATContext.
      * 

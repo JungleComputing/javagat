@@ -4,6 +4,8 @@ import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
@@ -16,6 +18,7 @@ import org.globus.gram.GramJobListener;
 import org.globus.gram.internal.GRAMConstants;
 import org.gridlab.gat.CouldNotInitializeCredentialException;
 import org.gridlab.gat.CredentialExpiredException;
+import org.gridlab.gat.GAT;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.GATObjectCreationException;
@@ -24,6 +27,7 @@ import org.gridlab.gat.Preferences;
 import org.gridlab.gat.URI;
 import org.gridlab.gat.advert.Advertisable;
 import org.gridlab.gat.engine.GATEngine;
+import org.gridlab.gat.io.File;
 import org.gridlab.gat.monitoring.Metric;
 import org.gridlab.gat.monitoring.MetricDefinition;
 import org.gridlab.gat.monitoring.MetricValue;
@@ -63,6 +67,8 @@ public class GlobusJob extends JobCpi implements GramJobListener,
 
     private int exitStatusFromFile;
 
+    private int streamingOutputs = 0;
+
     // shouldn't interfere with other JavaGAT job states
     private static final int GLOBUS_JOB_STOPPED = 1984;
     private static final int GLOBUS_JOB_SUBMISSION_ERROR = 1985;
@@ -82,8 +88,6 @@ public class GlobusJob extends JobCpi implements GramJobListener,
         super(gatContext, preferences, jobDescription, sandbox);
         state = SCHEDULED;
         jobsAlive++;
-
-        logger.debug("--new version--");
 
         // Tell the engine that we provide job.status events
         HashMap<String, Object> returnDef = new HashMap<String, Object>();
@@ -221,7 +225,7 @@ public class GlobusJob extends JobCpi implements GramJobListener,
         try {
             m.put("exitvalue", "" + getExitStatus());
         } catch (GATInvocationException e) {
-            //ignore
+            // ignore
         }
         if (deleteException != null) {
             m.put("delete.exception", deleteException);
@@ -242,7 +246,7 @@ public class GlobusJob extends JobCpi implements GramJobListener,
         return jobID;
     }
 
-    public void stop() throws GATInvocationException {
+    public synchronized void stop() throws GATInvocationException {
         if (j != null) {
             try {
                 j.cancel();
@@ -272,7 +276,8 @@ public class GlobusJob extends JobCpi implements GramJobListener,
             waitForJobCompletion();
         } else {
             // this can happen if an exception is thrown after the creation of
-            // this job in the submitjob method, simply remove the job from the list.
+            // this job in the submitjob method, simply remove the job from the
+            // list.
             finished();
         }
     }
@@ -382,11 +387,8 @@ public class GlobusJob extends JobCpi implements GramJobListener,
         int status = newJob.getStatus();
         boolean stateChanged = false;
         if (newJob.getError() == GramError.GRAM_JOBMANAGER_CONNECTION_FAILURE) {
-            if (globusJobState == GLOBUS_JOB_SUBMISSION_ERROR) {
-                stateChanged = setState(SUBMISSION_ERROR);
-            } else if (globusJobState == GLOBUS_JOB_STOPPED) {
-                stateChanged = setState(STOPPED);
-            } else {
+            if (globusJobState != GLOBUS_JOB_SUBMISSION_ERROR
+                    && globusJobState != GLOBUS_JOB_STOPPED) {
                 globusJobState = GLOBUS_JOB_STOPPED;
             }
         } else {
@@ -394,12 +396,12 @@ public class GlobusJob extends JobCpi implements GramJobListener,
         }
         if (!stateChanged && globusJobState == 0) {
             return;
-        } else if (state == SCHEDULED) {
+        } else if (stateChanged && state == SCHEDULED) {
             setSubmissionTime();
-        } else if (state == RUNNING) {
+        } else if (stateChanged && state == RUNNING) {
             setStartTime();
         } else if (globusJobState == GLOBUS_JOB_STOPPED
-                || globusJobState == SUBMISSION_ERROR) {
+                || globusJobState == GLOBUS_JOB_SUBMISSION_ERROR) {
             if (exitStatusEnabled && globusJobState == GLOBUS_JOB_STOPPED) {
                 try {
                     readExitStatus();
@@ -407,6 +409,12 @@ public class GlobusJob extends JobCpi implements GramJobListener,
                     logger
                             .info("reading the exit status from file failed: ",
                                     e);
+                }
+            }
+            while (streamingOutputs > 0) {
+                try {
+                    wait();
+                } catch (InterruptedException e) {
                 }
             }
             setState(POST_STAGING);
@@ -544,4 +552,108 @@ public class GlobusJob extends JobCpi implements GramJobListener,
         this.exitStatusEnabled = exitValueEnabled;
         this.exitStatusFile = exitValueFile;
     }
+
+    protected void startOutputForwarder(File in, OutputStream out) {
+        logger.debug("starting output forwarder!");
+        new OutputForwarder(in, out);
+    }
+
+    class OutputForwarder extends Thread {
+
+        File in;
+        OutputStream out;
+
+        OutputForwarder(File in, OutputStream out) {
+            setName("GlobusJob Output Waiter");
+            setDaemon(true);
+            this.in = in;
+            this.out = out;
+            synchronized (GlobusJob.this) {
+                streamingOutputs++;
+            }
+            start();
+        }
+
+        public void run() {
+            int totalBytesRead = 0;
+            byte[] buffer = new byte[1024];
+            while (!in.exists() && GlobusJob.this.getState() != STOPPED
+                    && GlobusJob.this.getState() != SUBMISSION_ERROR) {
+                try {
+                    sleep(1000);
+                } catch (InterruptedException e) {
+
+                }
+            }
+            while (true) {
+                int bytesRead;
+                int globusStateBeforeRead = globusJobState;
+                InputStream inStream = null;
+                try {
+                    inStream = GAT.createFileInputStream(in);
+                } catch (GATObjectCreationException e2) {
+                    logger.debug("unable to stream output/error: " + e2);
+                    return;
+                }
+                try {
+                    logger
+                            .debug("before skipping " + totalBytesRead
+                                    + " bytes");
+                    inStream.skip(totalBytesRead);
+                    logger.debug("before reading");
+                    bytesRead = inStream.read(buffer);
+                    logger.debug("before closing");
+                    inStream.close();
+                } catch (IOException e) {
+                    if (logger.isDebugEnabled()) {
+                        logger.debug("failed to read: " + e);
+                    }
+                    try {
+                        sleep(1000);
+                    } catch (InterruptedException e1) {
+                        if (logger.isDebugEnabled()) {
+                            logger.debug("failed to sleep: " + e1);
+                        }
+                    }
+                    continue;
+                }
+                if (bytesRead == -1) {
+                    if (globusStateBeforeRead == GLOBUS_JOB_STOPPED
+                            || globusStateBeforeRead == GLOBUS_JOB_SUBMISSION_ERROR) {
+                        break;
+                    } else {
+                        try {
+                            sleep(1000);
+                        } catch (InterruptedException e) {
+                            if (logger.isDebugEnabled()) {
+                                logger.debug("failed to sleep: " + e);
+                            }
+                        }
+                    }
+                } else {
+                    totalBytesRead += bytesRead;
+                    try {
+                        out.write(buffer, 0, bytesRead);
+                    } catch (IOException e) {
+                        if (logger.isDebugEnabled()) {
+                            logger.debug("failed to write: " + e);
+                        }
+                        try {
+                            sleep(1000);
+                        } catch (InterruptedException e1) {
+                            if (logger.isDebugEnabled()) {
+                                logger.debug("failed to sleep: " + e1);
+                            }
+                        }
+                        continue;
+                    }
+                }
+            }
+            synchronized (GlobusJob.this) {
+                streamingOutputs--;
+                GlobusJob.this.notifyAll();
+            }
+        }
+    }
+
 }

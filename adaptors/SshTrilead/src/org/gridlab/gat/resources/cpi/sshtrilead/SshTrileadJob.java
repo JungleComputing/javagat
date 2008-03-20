@@ -81,7 +81,7 @@ public class SshTrileadJob extends JobCpi {
         return exitStatus;
     }
     
-    public void stop() throws GATInvocationException {
+    public synchronized void stop() throws GATInvocationException {
         setState(POST_STAGING);
         sandbox.retrieveAndCleanup(this);
         try {

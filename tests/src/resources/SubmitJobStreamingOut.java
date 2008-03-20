@@ -22,9 +22,12 @@ import org.gridlab.gat.resources.SoftwareDescription;
  */
 public class SubmitJobStreamingOut {
     public static void main(String[] args) throws Exception {
+        
         GATContext context = new GATContext();
         Preferences prefs = new Preferences();
         prefs.put("ResourceBroker.adaptor.name", args[0]);
+        prefs.put("File.adaptor.name", "sshtrilead, local, gridftp");
+        prefs.put("FileInputStream.adaptor.name", "sftp");
 
         SoftwareDescription sd = new SoftwareDescription();
         sd.setExecutable(args[1]);

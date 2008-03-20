@@ -9,6 +9,7 @@ import java.util.Set;
 
 import org.apache.log4j.Logger;
 import org.gridlab.gat.CommandNotFoundException;
+import org.gridlab.gat.GAT;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.GATObjectCreationException;
@@ -220,12 +221,8 @@ public class LocalResourceBrokerAdaptor extends ResourceBrokerCpi {
         } catch (IOException e) {
             throw new CommandNotFoundException("LocalResourceBrokerAdaptor", e);
         }
-        job.setState(Job.RUNNING);
-        job.setProcess(p);
         
         org.gridlab.gat.io.File stdin = sandbox.getResolvedStdin();
-        org.gridlab.gat.io.File stdout = sandbox.getResolvedStdout();
-        org.gridlab.gat.io.File stderr = sandbox.getResolvedStderr();
 
         if (stdin == null) {
             // close stdin.
@@ -244,39 +241,30 @@ public class LocalResourceBrokerAdaptor extends ResourceBrokerCpi {
                 throw new GATInvocationException("local broker", e);
             }
         }
-
-        OutputForwarder outForwarder = null;
-
-        // we must always read the output and error streams to avoid deadlocks
-        if (stdout == null) {
-            new OutputForwarder(p.getInputStream(), false); // throw away output
+        
+        OutputStream userOut;
+        OutputStream userErr;
+        if (sd.stdoutIsStreaming()) {
+            userOut = sd.getStdoutStream();
         } else {
             try {
-                java.io.FileOutputStream out = new java.io.FileOutputStream(
-                        stdout.getAbsolutePath());
-                outForwarder = new OutputForwarder(p.getInputStream(), out);
-            } catch (Exception e) {
-                throw new GATInvocationException("local broker", e);
+                userOut = GAT.createFileOutputStream(sd.getStdout());
+            } catch (GATObjectCreationException e) {
+                throw new GATInvocationException("failed to create outputstream to write in output file: '" + sd.getStdout() + "'", e);
             }
         }
-        job.setOutputForwarder(outForwarder);
-
-        OutputForwarder errForwarder = null;
-
-        // we must always read the output and error streams to avoid deadlocks
-        if (stderr == null) {
-            new OutputForwarder(p.getErrorStream(), false); // throw away output
+        if (sd.stderrIsStreaming()) {
+            userErr = sd.getStderrStream();
         } else {
             try {
-                java.io.FileOutputStream out = new java.io.FileOutputStream(
-                        stderr.getAbsolutePath());
-                errForwarder = new OutputForwarder(p.getErrorStream(), out);
-            } catch (Exception e) {
-                throw new GATInvocationException("local broker", e);
+                userErr = GAT.createFileOutputStream(sd.getStderr());
+            } catch (GATObjectCreationException e) {
+                throw new GATInvocationException("failed to create outputstream to write in error file: '" + sd.getStderr() + "'", e);
             }
         }
-        job.setErrorForwarder(errForwarder);
-        job.startProcessWaiter();
+        OutputForwarder outForwarder = new OutputForwarder(p.getInputStream(), userOut);
+        OutputForwarder errForwarder = new OutputForwarder(p.getErrorStream(), userErr);
+        job.startOutputWaiter(outForwarder, errForwarder);
 
         return job;
     }

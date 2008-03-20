@@ -16,7 +16,6 @@ import org.gridlab.gat.URI;
 import org.gridlab.gat.engine.util.InputForwarder;
 import org.gridlab.gat.engine.util.OutputForwarder;
 import org.gridlab.gat.io.FileInputStream;
-import org.gridlab.gat.io.FileOutputStream; 
 import org.gridlab.gat.monitoring.Metric;
 import org.gridlab.gat.monitoring.MetricListener;
 import org.gridlab.gat.resources.Job;
@@ -161,9 +160,7 @@ public class CommandlineSshResourceBrokerAdaptor extends ResourceBrokerCpi {
         job.setProcess(p);
 
         org.gridlab.gat.io.File stdin = sd.getStdin();
-        org.gridlab.gat.io.File stdout = sd.getStdout();
-        org.gridlab.gat.io.File stderr = sd.getStderr();
-
+ 
         if (stdin == null) {
             // close stdin.
             try {
@@ -182,43 +179,30 @@ public class CommandlineSshResourceBrokerAdaptor extends ResourceBrokerCpi {
             }
         }
 
-        OutputForwarder outForwarder = null;
-
-        // we must always read the output and error streams to avoid deadlocks
-        if (stdout == null) {
-            new OutputForwarder(p.getInputStream(), false); // throw away output
+        OutputStream userOut;
+        OutputStream userErr;
+        if (sd.stdoutIsStreaming()) {
+            userOut = sd.getStdoutStream();
         } else {
             try {
-                FileOutputStream out = GAT.createFileOutputStream(gatContext,
-                        preferences, stdout.toGATURI());
-                outForwarder = new OutputForwarder(p.getInputStream(), out);
+                userOut = GAT.createFileOutputStream(sd.getStdout());
             } catch (GATObjectCreationException e) {
-                throw new GATInvocationException("commandlineSsh broker", e);
+                throw new GATInvocationException("failed to create outputstream to write in output file: '" + sd.getStdout() + "'", e);
             }
         }
-        job.setOutputForwarder(outForwarder);
-
-        OutputForwarder errForwarder = null;
-
-        // we must always read the output and error streams to avoid deadlocks
-        if (stderr == null) {
-            new OutputForwarder(p.getErrorStream(), false); // throw away output
+        if (sd.stderrIsStreaming()) {
+            userErr = sd.getStderrStream();
         } else {
             try {
-                FileOutputStream out = GAT.createFileOutputStream(gatContext,
-                        preferences, stderr.toGATURI());
-                errForwarder = new OutputForwarder(p.getErrorStream(), out);
+                userErr = GAT.createFileOutputStream(sd.getStderr());
             } catch (GATObjectCreationException e) {
-                throw new GATInvocationException("commandlineSsh broker", e);
+                throw new GATInvocationException("failed to create outputstream to write in error file: '" + sd.getStderr() + "'", e);
             }
         }
-        job.setErrorForwarder(errForwarder);
-
-        // now we have set the process, the output and error forwarder, we start
-        // the process waiter, which waits until the process finishes and stores
-        // all the output and error
-        job.startProcessWaiter();
-
+        OutputForwarder outForwarder = new OutputForwarder(p.getInputStream(), userOut);
+        OutputForwarder errForwarder = new OutputForwarder(p.getErrorStream(), userErr);
+        job.startOutputWaiter(outForwarder, errForwarder);
+        
         return job;
     }
 }

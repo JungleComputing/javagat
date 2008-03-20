@@ -28,46 +28,15 @@ public class LocalJob extends JobCpi {
 
     protected static Logger logger = Logger.getLogger(LocalJob.class);
 
-    class ProcessWaiter extends Thread {
-        ProcessWaiter() {
-            start();
-        }
-
-        public void run() {
-            try {
-                int exitValue = p.waitFor();
-                setStopTime();
-
-                // Wait for the output forwarders to finish!
-                // You may lose output if you don't -- Jason
-                if (out != null) {
-                    out.waitUntilFinished();
-                }
-
-                if (err != null) {
-                    err.waitUntilFinished();
-                }
-
-                finished(exitValue);
-            } catch (InterruptedException e) {
-                // Cannot happen
-            }
-        }
-    }
-
     private int jobID;
 
     private Process p;
 
-    private int exitVal = 0;
+    private int exitStatus = 0;
 
     private MetricDefinition statusMetricDefinition;
 
     private Metric statusMetric;
-
-    private OutputForwarder out;
-
-    private OutputForwarder err;
 
     protected LocalJob(GATContext gatContext, Preferences preferences,
             JobDescription description, Sandbox sandbox) {
@@ -95,18 +64,6 @@ public class LocalJob extends JobCpi {
         } catch (NoSuchFieldException e) {
         } catch (IllegalAccessException e) {
         }
-    }
-
-    protected void setOutputForwarder(OutputForwarder out) {
-        this.out = out;
-    }
-
-    protected void setErrorForwarder(OutputForwarder err) {
-        this.err = err;
-    }
-
-    protected void startProcessWaiter() {
-        new ProcessWaiter();
     }
 
     protected void setState(int state) {
@@ -151,7 +108,7 @@ public class LocalJob extends JobCpi {
         }
         m.put("poststage.exception", postStageException);
         m.put("resourcebroker", "Local");
-        m.put("exitvalue", "" + exitVal);
+        m.put("exitvalue", "" + exitStatus);
         if (deleteException != null) {
             m.put("delete.exception", deleteException);
         }
@@ -167,9 +124,10 @@ public class LocalJob extends JobCpi {
      * @see org.gridlab.gat.resources.Job#getExitStatus()
      */
     public synchronized int getExitStatus() throws GATInvocationException {
-        if (state != STOPPED)
+        if (state != STOPPED) {
             throw new GATInvocationException("not in RUNNING state");
-        return exitVal;
+        }
+        return exitStatus;
     }
 
     /*
@@ -181,73 +139,43 @@ public class LocalJob extends JobCpi {
         return "" + jobID;
     }
 
-    void finished(int exitValue) {
-        MetricValue v = null;
 
-        synchronized (this) {
-            exitVal = exitValue;
-            state = POST_STAGING;
-            v = new MetricValue(this, getStateString(state), statusMetric,
-                    System.currentTimeMillis());
-            if (logger.isDebugEnabled()) {
-                logger.debug("default job callback: firing event: " + v);
-            }
-        }
-        GATEngine.fireMetric(this, v);
-
+    public synchronized void stop() throws GATInvocationException {
+        setState(POST_STAGING);
         sandbox.retrieveAndCleanup(this);
-
-        synchronized (this) {
-            state = STOPPED;
-            v = new MetricValue(this, getStateString(state), statusMetric,
-                    System.currentTimeMillis());
-
-            if (logger.isDebugEnabled()) {
-                logger.debug("default job callback: firing event: " + v);
-            }
-        }
-        GATEngine.fireMetric(this, v);
+        exitStatus = p.exitValue();
+        p.destroy();
+        setState(STOPPED);
         finished();
-
-        if (GATEngine.TIMING) {
-            System.err.println("TIMING: job " + jobID + ":" + " preStage: "
-                    + sandbox.getPreStageTime() + " run: "
-                    + (stoptime - starttime) + " postStage: "
-                    + sandbox.getPostStageTime() + " wipe: "
-                    + sandbox.getWipeTime() + " delete: "
-                    + sandbox.getDeleteTime() + " total: "
-                    + (System.currentTimeMillis() - starttime));
-        }
     }
 
-    public void stop() throws GATInvocationException {
-        MetricValue v = null;
+    public void startOutputWaiter(OutputForwarder outForwarder,
+            OutputForwarder errForwarder) {
+        new OutputWaiter(outForwarder, errForwarder);
+    }
 
-        synchronized (this) {
-            if (p != null)
-                p.destroy();
-            state = POST_STAGING;
-            v = new MetricValue(this, getStateString(state), statusMetric,
-                    System.currentTimeMillis());
-            if (logger.isDebugEnabled()) {
-                logger.debug("default job callback: firing event: " + v);
+    class OutputWaiter extends Thread {
+
+        OutputForwarder outForwarder, errForwarder;
+
+        OutputWaiter(OutputForwarder outForwarder, OutputForwarder errForwarder) {
+            setName("LocalJob OutputForwarderWaiter");
+            setDaemon(true);
+            this.outForwarder = outForwarder;
+            this.errForwarder = errForwarder;
+            start();
+        }
+
+        public void run() {
+            outForwarder.waitUntilFinished();
+            errForwarder.waitUntilFinished();
+            try {
+                LocalJob.this.stop();
+            } catch (GATInvocationException e) {
+                if (logger.isDebugEnabled()) {
+                    logger.debug("unable to stop job: " + e);
+                }
             }
         }
-        GATEngine.fireMetric(this, v);
-
-        sandbox.retrieveAndCleanup(this);
-
-        synchronized (this) {
-            state = STOPPED;
-            v = new MetricValue(this, getStateString(state), statusMetric,
-                    System.currentTimeMillis());
-        }
-
-        if (logger.isDebugEnabled()) {
-            logger.debug("default job callback: firing event: " + v);
-        }
-
-        GATEngine.fireMetric(this, v);
-        finished();
     }
 }

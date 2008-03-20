@@ -20,9 +20,9 @@ import org.gridlab.gat.resources.JobDescription;
 import org.gridlab.gat.resources.SoftwareDescription;
 
 public class PostStagedFileSet {
-	
-	protected static Logger logger = Logger.getLogger(PostStagedFileSet.class);
-	
+
+    protected static Logger logger = Logger.getLogger(PostStagedFileSet.class);
+
     private GATContext gatContext;
 
     private Preferences preferences;
@@ -79,13 +79,13 @@ public class PostStagedFileSet {
 
         if (sd == null) {
             throw new GATInvocationException(
-                "The job description does not contain a software description");
+                    "The job description does not contain a software description");
         }
 
         Map<File, File> post = sd.getPostStaged();
 
         ArrayList<PostStagedFile> tmp = new ArrayList<PostStagedFile>();
-        
+
         if (post != null) {
             Set<File> keys = post.keySet();
             Iterator<File> i = keys.iterator();
@@ -95,62 +95,96 @@ public class PostStagedFileSet {
                 File destFile = (File) post.get(srcFile);
 
                 tmp.add(new PostStagedFile(gatContext, preferences, srcFile,
-                    destFile, host, sandbox, false, false));
+                        destFile, host, sandbox, false, false));
             }
         }
 
-        if (postStageStdout) {
-            File stdout = sd.getStdout();
-            if (stdout != null) {
-                try {
-                    File f =
-                            GAT.createFile(gatContext, preferences, new URI(
-                                "any:///" + stdout.getName()));
-                    tmp.add(new PostStagedFile(gatContext, preferences, f,
-                        stdout, host, sandbox, true, false));
-                } catch (Exception e) {
-                    throw new GATInvocationException("postStagedFileSet", e);
-                }
+        // if (postStageStdout) {
+        File resolvedStdout = null;
+        if (sd.getStdout() != null) {
+            try {
+                resolvedStdout = GAT.createFile(sd.getStdout().getFileInterface()
+                        .getGATContext(), sd.getStdout().getFileInterface()
+                        .getPreferences(), new URI("any:///"
+                        + sd.getStdout().getName()));
+            } catch (Exception e) {
+                throw new GATInvocationException("postStagedFileSet", e);
+            }
+        } else if (sd.getStdoutStream() != null) {
+            try {
+                resolvedStdout = GAT.createFile(gatContext, preferences, new URI(
+                        "any:///stdout"));
+            } catch (Exception e) {
+                throw new GATInvocationException("postStagedFileSet", e);
             }
         }
-
-        if (postStageStderr) {
-            File stderr = sd.getStderr();
-            if (stderr != null) {
-                try {
-                    File f =
-                            GAT.createFile(gatContext, preferences, new URI(
-                                "any:///" + stderr.getName()));
-                    tmp.add(new PostStagedFile(gatContext, preferences, f,
-                        stderr, host, sandbox, false, true));
-                } catch (Exception e) {
-                    throw new GATInvocationException("postStagedFileSet", e);
-                }
-            }
+        if (resolvedStdout != null) {
+            tmp.add(new PostStagedFile(gatContext, preferences, resolvedStdout, sd
+                    .getStdout(), host, sandbox, true, false));
         }
         
+        File resolvedStderr = null;
+        if (sd.getStderr() != null) {
+            try {
+                resolvedStderr = GAT.createFile(sd.getStderr().getFileInterface()
+                        .getGATContext(), sd.getStderr().getFileInterface()
+                        .getPreferences(), new URI("any:///"
+                        + sd.getStderr().getName()));
+            } catch (Exception e) {
+                throw new GATInvocationException("postStagedFileSet", e);
+            }
+        } else if (sd.getStderrStream() != null) {
+            try {
+                resolvedStderr = GAT.createFile(gatContext, preferences, new URI(
+                        "any:///stderr"));
+            } catch (Exception e) {
+                throw new GATInvocationException("postStagedFileSet", e);
+            }
+        }
+        if (resolvedStderr != null) {
+            tmp.add(new PostStagedFile(gatContext, preferences, resolvedStderr, sd
+                    .getStderr(), host, sandbox, false, true));
+        }
+        
+        // }
+
+//        // if (postStageStderr) {
+//        File stderr = sd.getStderr();
+//        if (stderr != null) {
+//            try {
+//                File f = GAT.createFile(gatContext, preferences, new URI(
+//                        "any:///" + stderr.getName()));
+//                tmp.add(new PostStagedFile(gatContext, preferences, f, stderr,
+//                        host, sandbox, false, true));
+//            } catch (Exception e) {
+//                throw new GATInvocationException("postStagedFileSet", e);
+//            }
+//        }
+//        // }
+
         files = (PostStagedFile[]) tmp.toArray(new PostStagedFile[] {});
     }
 
     private void resolveFiles(List<File> f) throws GATInvocationException {
-        if (f == null) return;
+        if (f == null)
+            return;
 
         int startPos = 0;
-        if(files == null) {
+        if (files == null) {
             files = new PostStagedFile[f.size()];
         } else {
             PostStagedFile[] tmp = new PostStagedFile[files.length + f.size()];
-            for(int i=0; i<files.length; i++) {
+            for (int i = 0; i < files.length; i++) {
                 tmp[i] = files[i];
             }
             files = tmp;
             startPos = files.length;
         }
-        
+
         for (int i = 0; i < f.size(); i++) {
             File srcFile = (File) f.get(i);
-            files[startPos + i] = new PostStagedFile(gatContext, preferences, srcFile,
-                null, host, sandbox, false, false);
+            files[startPos + i] = new PostStagedFile(gatContext, preferences,
+                    srcFile, null, host, sandbox, false, false);
         }
     }
 
@@ -158,8 +192,12 @@ public class PostStagedFileSet {
         GATInvocationException exceptions = new GATInvocationException();
         for (int i = 0; i < files.length; i++) {
             try {
-                
-                files[i].poststage();
+                // post stage only if needed!
+                if (!(files[i].isStdout() && !postStageStdout || files[i]
+                        .isStderr()
+                        && !postStageStderr)) {
+                    files[i].poststage();
+                }
             } catch (Throwable e) {
                 exceptions.add("resource broker cpi", e);
             }
@@ -169,8 +207,7 @@ public class PostStagedFileSet {
         }
     }
 
-    public void delete()
-            throws GATInvocationException {
+    public void delete() throws GATInvocationException {
         GATInvocationException e = new GATInvocationException();
         for (int i = 0; i < files.length; i++) {
             try {
@@ -180,7 +217,8 @@ public class PostStagedFileSet {
             }
         }
 
-        if (e.getNrChildren() != 0) throw e;
+        if (e.getNrChildren() != 0)
+            throw e;
     }
 
     public void wipe() throws GATInvocationException {
@@ -193,7 +231,8 @@ public class PostStagedFileSet {
             }
         }
 
-        if (e.getNrChildren() != 0) throw e;
+        if (e.getNrChildren() != 0)
+            throw e;
     }
 
     PostStagedFile getStdout() {
@@ -219,11 +258,11 @@ public class PostStagedFileSet {
     public int size() {
         return files.length;
     }
-    
+
     public PostStagedFile getFile(int i) {
         return files[i];
     }
-    
+
     public String toString() {
         String res = "";
         res += "PostStagedFileSet:\n";
@@ -241,7 +280,8 @@ public class PostStagedFileSet {
     }
 
     /**
-     * @param files the files to set
+     * @param files
+     *                the files to set
      */
     public void setFiles(PostStagedFile[] files) {
         this.files = files;
@@ -255,7 +295,8 @@ public class PostStagedFileSet {
     }
 
     /**
-     * @param postStageStderr the postStageStderr to set
+     * @param postStageStderr
+     *                the postStageStderr to set
      */
     public void setPostStageStderr(boolean postStageStderr) {
         this.postStageStderr = postStageStderr;
@@ -269,7 +310,8 @@ public class PostStagedFileSet {
     }
 
     /**
-     * @param postStageStdout the postStageStdout to set
+     * @param postStageStdout
+     *                the postStageStdout to set
      */
     public void setPostStageStdout(boolean postStageStdout) {
         this.postStageStdout = postStageStdout;
