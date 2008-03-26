@@ -124,7 +124,7 @@ public class JavaSoftwareDescription extends SoftwareDescription {
     /**
      * Sets the jvm options. Note that any option starting with '-D' or '"-D'
      * will be ignored. These should be set using the method
-     * <code>setSystemProperties</code>.
+     * {@link #setJavaSystemProperties(Map)}.
      * 
      * @param options
      *                the jvm options.
@@ -139,7 +139,9 @@ public class JavaSoftwareDescription extends SoftwareDescription {
         int pos = 0;
         this.javaOptions = new String[options.length - systemProperties];
         for (String option : options) {
-            this.javaOptions[pos++] = option;
+            if (!(option.startsWith("-D") || option.startsWith("\"-D"))) {
+                this.javaOptions[pos++] = option;
+            }
         }
     }
 
