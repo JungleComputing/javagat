@@ -5,7 +5,7 @@
     	</description>
 
     
-	<target name="build" description="build everything">
+	<target name="build" depends="clean" description="build everything">
         <ant dir="api" />
         <ant dir="tests" />
         <ant dir="engine" />
