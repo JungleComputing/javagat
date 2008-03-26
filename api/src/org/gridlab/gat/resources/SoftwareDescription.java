@@ -139,8 +139,6 @@ public class SoftwareDescription implements java.io.Serializable {
 
     private boolean wipePostStaged;
 
-    private String virtualOrganisation;
-
     /**
      * Create a {@link SoftwareDescription}, which describes the application
      * you want to run.
@@ -203,8 +201,8 @@ public class SoftwareDescription implements java.io.Serializable {
 
     /**
      * Returns the arguments of the executable. For the following commandline
-     * <code>/bin/cat hello world > out</code> it will return a {@link String}[]{"hello",
-     * "world", ">", "out"}
+     * <code>"/bin/cat hello world > out"</code> it will return a
+     * {@link String}[]{"hello", "world", ">", "out"}
      * 
      * @return Returns the commandline arguments.
      */
@@ -214,7 +212,7 @@ public class SoftwareDescription implements java.io.Serializable {
 
     /**
      * Sets the arguments of the executable. For the following commandline
-     * <code>/bin/cat hello world > out</code> the {@link String}[]{"hello",
+     * <code>"/bin/cat hello world > out"</code> the {@link String}[]{"hello",
      * "world", ">", "out"} contains the arguments.
      * 
      * @param arguments
@@ -300,6 +298,7 @@ public class SoftwareDescription implements java.io.Serializable {
      * Remove an attribute from the attribute set.
      * 
      * @param key
+     *                the key of the attribute
      * @return the value belonging to this key
      */
     public Object removeAttribute(String key) {
@@ -331,8 +330,8 @@ public class SoftwareDescription implements java.io.Serializable {
 
     /**
      * Returns the path to the executable. For the following commandline
-     * <code>/bin/cat hello world > out</code> it will return a {@link String}
-     * "/bin/cat".
+     * <code>"/bin/cat hello world > out"</code> it will return a
+     * {@link String} "/bin/cat".
      * 
      * @return the path to the executable.
      */
@@ -342,7 +341,7 @@ public class SoftwareDescription implements java.io.Serializable {
 
     /**
      * Sets the path to the executable. For the following commandline
-     * <code>/bin/cat hello world > out</code> the {@link String} "/bin/cat"
+     * <code>"/bin/cat hello world > out"</code> the {@link String} "/bin/cat"
      * should be provided.
      * 
      * @param executable
@@ -605,7 +604,7 @@ public class SoftwareDescription implements java.io.Serializable {
     }
 
     /**
-     * Returns the stderr {@link File}
+     * Returns the stderr {@link File}.
      * 
      * @return the stderr {@link File}
      */
@@ -614,7 +613,7 @@ public class SoftwareDescription implements java.io.Serializable {
     }
 
     /**
-     * Returns the stderr {@link OutputStream}
+     * Returns the stderr {@link OutputStream}.
      * 
      * @return the stderr {@link OutputStream}.
      */
@@ -623,8 +622,13 @@ public class SoftwareDescription implements java.io.Serializable {
     }
 
     /**
+     * Sets the stderr {@link File}. Note that stderr will be redirected to
+     * either a {@link File} or a {@link OutputStream}. The last invocation of
+     * <code>setStderr()</code> determines whether the destination of the
+     * output.
+     * 
      * @param stderr
-     *                The file where stderr is redirected to.
+     *                The {@link File} where stderr is redirected to.
      */
     public void setStderr(File stderr) {
         stderrIsStreaming = false;
@@ -632,8 +636,13 @@ public class SoftwareDescription implements java.io.Serializable {
     }
 
     /**
+     * Sets the stderr {@link OutputStream}. Note that stderr will be
+     * redirected to either a {@link File} or a {@link OutputStream}. The last
+     * invocation of <code>setStderr()</code> determines whether the
+     * destination of the output.
+     * 
      * @param stderrStream
-     *                The stream where stderr is redirected to.
+     *                The {@link OutputStream} where stderr is redirected to.
      */
     public void setStderr(OutputStream stderrStream) {
         stderrIsStreaming = true;
@@ -643,44 +652,57 @@ public class SoftwareDescription implements java.io.Serializable {
     /**
      * Returns whether the stderr is set to streaming.
      * 
-     * @return whether the stderr is streaming
+     * @return whether the stderr is streaming.
      */
     public boolean stderrIsStreaming() {
         return stderrIsStreaming;
     }
 
     /**
-     * @return Returns the stdin file.
+     * Returns the stdin {@link File}.
+     * 
+     * @return the stdin {@link File}.
      */
     public File getStdin() {
         return stdin;
     }
 
     /**
+     * Sets the {@link File} where stdin is redirected from.
+     * 
      * @param stdin
-     *                The file where stdin is redirected from.
+     *                The {@link File} where stdin is redirected from.
      */
     public void setStdin(File stdin) {
         this.stdin = stdin;
     }
 
     /**
-     * @return Returns the stdout file.
+     * Returns the stdout {@link File}.
+     * 
+     * @return the stdout {@link File}.
      */
     public File getStdout() {
         return stdout;
     }
 
     /**
-     * @return Returns the stdout stream.
+     * Returns the stdout {@link OutputStream}.
+     * 
+     * @return the stdout {@link OutputStream}.
      */
     public OutputStream getStdoutStream() {
         return stdoutStream;
     }
 
     /**
+     * Sets the stdout {@link File}. Note that stdout will be redirected to
+     * either a {@link File} or a {@link OutputStream}. The last invocation of
+     * <code>setStdout()</code> determines whether the destination of the
+     * output.
+     * 
      * @param stdout
-     *                The file where stdout is redirected to.
+     *                The {@link File} where stdout is redirected to.
      */
     public void setStdout(File stdout) {
         stdoutIsStreaming = false;
@@ -688,14 +710,24 @@ public class SoftwareDescription implements java.io.Serializable {
     }
 
     /**
+     * Sets the stdout {@link OutputStream}. Note that stdout will be
+     * redirected to either a {@link File} or a {@link OutputStream}. The last
+     * invocation of <code>setStdout()</code> determines whether the
+     * destination of the output.
+     * 
      * @param stdoutStream
-     *                The stream where stdout is redirected to.
+     *                The {@link OutputStream} where stdout is redirected to.
      */
     public void setStdout(OutputStream stdoutStream) {
         stdoutIsStreaming = true;
         this.stdoutStream = stdoutStream;
     }
 
+    /**
+     * Returns whether the stdout is set to streaming.
+     * 
+     * @return whether the stdout is streaming.
+     */
     public boolean stdoutIsStreaming() {
         return stdoutIsStreaming;
     }
@@ -733,38 +765,113 @@ public class SoftwareDescription implements java.io.Serializable {
         return res;
     }
 
+    /**
+     * Returns whether the {@link File}s in the post stage file set should be
+     * deleted after the post staging.
+     * 
+     * @return TRUE if post stage files will be deleted, FALSE if they won't be
+     *         deleted.
+     */
     public boolean deletePostStaged() {
         return deletePostStaged;
     }
 
+    /**
+     * Sets the value which is used to determine whether the {@link File}s in
+     * the post stage file set should be deleted after the post staging. (TRUE
+     * if the post stage files should be deleted, FALSE if they shouldn't be
+     * deleted).
+     * 
+     * @param deletePostStaged
+     *                delete the post stage {@link File}s after post staging.
+     */
     public void setDeletePostStaged(boolean deletePostStaged) {
         this.deletePostStaged = deletePostStaged;
     }
 
+    /**
+     * Returns whether the {@link File}s in the pre stage file set should be
+     * deleted after the post staging.
+     * 
+     * @return TRUE if pre stage files will be deleted, FALSE if they won't be
+     *         deleted.
+     */
     public boolean deletePreStaged() {
         return deletePreStaged;
     }
 
+    /**
+     * Sets the value which is used to determine whether the {@link File}s in
+     * the pre stage file set should be deleted after the post staging. (TRUE if
+     * the pre stage files should be deleted, FALSE if they shouldn't be
+     * deleted).
+     * 
+     * @param deletePreStaged
+     *                delete the pre stage {@link File}s after post staging.
+     */
     public void setDeletePreStaged(boolean deletePreStaged) {
         this.deletePreStaged = deletePreStaged;
     }
 
+    /**
+     * Returns whether the {@link File}s in the post stage file set should be
+     * wiped after the post staging.
+     * 
+     * @return TRUE if post stage files will be wiped, FALSE if they won't be
+     *         wiped.
+     */
     public boolean wipePostStaged() {
         return wipePostStaged;
     }
 
+    /**
+     * Sets the value which is used to determine whether the {@link File}s in
+     * the post stage file set should be wiped after the post staging. (TRUE if
+     * the post stage files should be wiped, FALSE if they shouldn't be wiped).
+     * 
+     * @param wipePostStaged
+     *                wipe the post stage {@link File}s after post staging.
+     */
     public void setWipePostStaged(boolean wipePostStaged) {
         this.wipePostStaged = wipePostStaged;
     }
 
+    /**
+     * Returns whether the {@link File}s in the pre stage file set should be
+     * wiped after the post staging.
+     * 
+     * @return TRUE if pre stage files will be wiped, FALSE if they won't be
+     *         wiped.
+     */
     public boolean wipePreStaged() {
         return wipePreStaged;
     }
 
+    /**
+     * Sets the value which is used to determine whether the {@link File}s in
+     * the pre stage file set should be wiped after the post staging. (TRUE if
+     * the pre stage files should be wiped, FALSE if they shouldn't be wiped).
+     * 
+     * @param wipePreStaged
+     *                wipe the pre stage {@link File}s after post staging.
+     */
     public void setWipePreStaged(boolean wipePreStaged) {
         this.wipePreStaged = wipePreStaged;
     }
 
+    /**
+     * Returns the int value of an attribute. If no value (or the value
+     * <code>null</code>) can be found for the given <code>name</code>,
+     * the <code>defaultVal</code> is returned. If there exist a value for the
+     * key, but this value cannot be parsed to an int, this method throws an
+     * {@link Error}.
+     * 
+     * @param name
+     *                the key of the attribute
+     * @param defaultVal
+     *                the default value
+     * @return the int value of the attribute indicated by the <code>name</code>.
+     */
     public int getIntAttribute(String name, int defaultVal) {
         Object val = (Integer) attributes.get(name);
         if (val == null)
@@ -780,6 +887,20 @@ public class SoftwareDescription implements java.io.Serializable {
         }
     }
 
+    /**
+     * Returns the long value of an attribute. If no value (or the value
+     * <code>null</code>) can be found for the given <code>name</code>,
+     * the <code>defaultVal</code> is returned. If there exist a value for the
+     * key, but this value cannot be parsed to a long, this method throws an
+     * {@link Error}.
+     * 
+     * @param name
+     *                the key of the attribute
+     * @param defaultVal
+     *                the default value
+     * @return the long value of the attribute indicated by the
+     *         <code>name</code>.
+     */
     public long getLongAttribute(String name, long defaultVal) {
         Object val = attributes.get(name);
         if (val == null)
@@ -795,6 +916,18 @@ public class SoftwareDescription implements java.io.Serializable {
         }
     }
 
+    /**
+     * Returns the {@link String} value of an attribute. If no value (or the
+     * value <code>null</code>) can be found for the given <code>name</code>,
+     * the <code>defaultVal</code> is returned.
+     * 
+     * @param name
+     *                the key of the attribute
+     * @param defaultVal
+     *                the default value
+     * @return the {@link String} value of the attribute indicated by the
+     *         <code>name</code>.
+     */
     public String getStringAttribute(String name, String defaultVal) {
         String val = (String) attributes.get(name);
         if (val == null)
@@ -802,11 +935,34 @@ public class SoftwareDescription implements java.io.Serializable {
         return val;
     }
 
-    /** returns the associated object, or null if it is not set * */
+    /**
+     * Returns the {@link Object} value of an attribute. If no value (or the
+     * value <code>null</code>) can be found for the given <code>name</code>,
+     * <code>null</code> is returned.
+     * 
+     * @param name
+     *                the key of the attribute
+     * @return the {@link Object} value of the attribute indicated by the
+     *         <code>name</code>.
+     */
     public Object getObjectAttribute(String name) {
         return attributes.get(name);
     }
 
+    /**
+     * Returns the boolean value of an attribute. If no value (or the value
+     * <code>null</code>) can be found for the given <code>name</code>,
+     * the <code>defaultVal</code> is returned. If there exist a value for the
+     * key, but this value cannot be parsed to a boolean, this method throws an
+     * {@link Error}.
+     * 
+     * @param name
+     *                the key of the attribute
+     * @param defaultVal
+     *                the default value
+     * @return the boolean value of the attribute indicated by the
+     *         <code>name</code>.
+     */
     public boolean getBooleanAttribute(String name, boolean defaultVal) {
         Object val = attributes.get(name);
 
@@ -823,17 +979,25 @@ public class SoftwareDescription implements java.io.Serializable {
         }
     }
 
-    public void setVirtualOrganisation(String vo) {
-        this.virtualOrganisation = vo;
-    }
-
-    public String getVirtualOrganisation() {
-        return virtualOrganisation;
-    }
-
     /**
-     * Creates a wrapper script to retrieve the exit code of a Globus job, and
-     * stores it in a file.
+     * <b>Do not use this method. This method is for internal use of JavaGAT.</b>
+     * The attribute "globus.exitvalue.enable" can be set to "true" to make
+     * JavaGAT use the wrapper script.
+     * <p>
+     * It creates a wrapper script out of this {@link SoftwareDescription} in
+     * order to be able to retrieve the exit code of a Globus job, it stores the
+     * output value in a file.
+     * <p>
+     * 
+     * @param context
+     *                the {@link GATContext} used to create the wrapper file
+     * @param preferences
+     *                the {@link Preferences} used to create the wrapper file
+     * @param wrapperFileName
+     *                the wrapper file name
+     * @param exitValueFileName
+     *                the file name where the exit value is written to
+     * @throws GATInvocationException
      */
     public void toWrapper(GATContext context, Preferences preferences,
             String wrapperFileName, String exitValueFileName)
@@ -860,19 +1024,10 @@ public class SoftwareDescription implements java.io.Serializable {
             }
             sb.append("\"");
             sb.append(newline);
-            // sb.append("/bin/sh $cmd");
             sb.append("$cmd");
             sb.append(newline);
             sb.append("rc=$?");
             sb.append(newline);
-            // sb.append("echo 'test echo' >> /tmp/proc_gat_test_log.test");
-            // sb.append(newline);
-            // sb.append("echo 'test echo rc of date_script: `echo $rc` >>
-            // /tmp/proc_gat_test_log.test");
-            // sb.append(newline);
-            // sb.append("echo 'test echo date: `/bin/date` >>
-            // /tmp/proc_gat_test_log.test");
-            // sb.append(newline);
             sb.append("echo $rc > $rcfile");
             sb.append(newline);
             sb.append("exit $rc");
@@ -909,7 +1064,5 @@ public class SoftwareDescription implements java.io.Serializable {
         } catch (URISyntaxException e) {
             throw new GATInvocationException("SoftwareDescription toWrapper", e);
         }
-
     }
-
 }

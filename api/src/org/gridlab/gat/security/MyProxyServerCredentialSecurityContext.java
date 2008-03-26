@@ -3,18 +3,16 @@
  */
 package org.gridlab.gat.security;
 
-/** This context is used if you have a credential stored in a myproxy server.
- * You need to specify a host, port, username and password to the myproxy server.
- *
+/**
+ * This context is used if you have a credential stored in a myproxy server. You
+ * need to specify a host, port, username and password to the myproxy server.
+ * 
  * @author rob
- *
- *
  */
 public class MyProxyServerCredentialSecurityContext extends SecurityContext {
 
     /**
      * The hostname of the server
-     *
      */
     protected String host;
 
@@ -24,11 +22,17 @@ public class MyProxyServerCredentialSecurityContext extends SecurityContext {
     protected int port;
 
     /**
-     *
-     * @param host the hostname of the myproxy server
-     * @param port the port where the myproxy server runs, -1 for the default port
-     * @param username the username to use to connect to the myproxy server
-     * @param password the password to use to connect to the myproxy server
+     * Creates a {@link MyProxyServerCredentialSecurityContext}.
+     * 
+     * @param host
+     *                the hostname of the myproxy server
+     * @param port
+     *                the port where the myproxy server runs, -1 for the default
+     *                port
+     * @param username
+     *                the username to use to connect to the myproxy server
+     * @param password
+     *                the password to use to connect to the myproxy server
      */
     public MyProxyServerCredentialSecurityContext(String host, int port,
             String username, String password) {
@@ -39,7 +43,7 @@ public class MyProxyServerCredentialSecurityContext extends SecurityContext {
 
     public Object clone() throws CloneNotSupportedException {
         return new MyProxyServerCredentialSecurityContext(host, port, username,
-            password);
+                password);
     }
 
     public boolean equals(Object obj) {
@@ -50,22 +54,44 @@ public class MyProxyServerCredentialSecurityContext extends SecurityContext {
         MyProxyServerCredentialSecurityContext other = (MyProxyServerCredentialSecurityContext) obj;
 
         return other.username.equals(username)
-            && other.password.equals(password) && other.host.equals(host)
-            && (other.port == port);
+                && other.password.equals(password) && other.host.equals(host)
+                && (other.port == port);
     }
 
+    /**
+     * Returns the host of the MyProxy server.
+     * 
+     * @return the host of the MyProxy server
+     */
     public String getHost() {
         return host;
     }
 
+    /**
+     * Sets the host of the MyProxy server.
+     * 
+     * @param host
+     *                the new host of the MyProxy server
+     */
     public void setHost(String host) {
         this.host = host;
     }
 
+    /**
+     * Gets the port of the MyProxy server.
+     * 
+     * @return the port of the MyProxy server.
+     */
     public int getPort() {
         return port;
     }
 
+    /**
+     * Sets the port of the MyProxy server.
+     * 
+     * @param port
+     *                the new port of the MyProxy server
+     */
     public void setPort(int port) {
         this.port = port;
     }

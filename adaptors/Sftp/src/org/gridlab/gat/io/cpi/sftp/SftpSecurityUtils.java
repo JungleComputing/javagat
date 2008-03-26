@@ -14,6 +14,7 @@ import org.gridlab.gat.InvalidUsernameOrPasswordException;
 import org.gridlab.gat.Preferences;
 import org.gridlab.gat.URI;
 import org.gridlab.gat.security.CertificateSecurityContext;
+import org.gridlab.gat.security.CredentialSecurityContext;
 import org.gridlab.gat.security.PasswordSecurityContext;
 import org.gridlab.gat.security.SecurityContext;
 import org.gridlab.gat.security.cpi.SecurityContextCreator;
@@ -26,6 +27,9 @@ import com.sshtools.j2ssh.transport.publickey.SshPrivateKeyFile;
  * @author rob
  */
 class SftpContextCreator implements SecurityContextCreator {
+    
+    protected static Logger logger = Logger
+            .getLogger(SftpSecurityUtils.class);
 
     public SecurityContext createDefaultSecurityContext(GATContext gatContext,
             Preferences preferences, URI location)
@@ -33,7 +37,7 @@ class SftpContextCreator implements SecurityContextCreator {
             CredentialExpiredException, InvalidUsernameOrPasswordException {
         SftpUserInfo cred = SftpSecurityUtils.getDefaultUserInfo(gatContext,
                 preferences, location);
-        CertificateSecurityContext c = new CertificateSecurityContext();
+        CredentialSecurityContext c = new CredentialSecurityContext();
         c.putDataObject("sftp", cred);
 
         return c;
@@ -45,13 +49,16 @@ class SftpContextCreator implements SecurityContextCreator {
             CredentialExpiredException, InvalidUsernameOrPasswordException {
         SftpUserInfo info;
 
-        if (inContext instanceof CertificateSecurityContext) {
+        if (inContext instanceof CredentialSecurityContext) {
+            return inContext.getDataObject("sftp");
+        } else if (inContext instanceof CertificateSecurityContext) {
             CertificateSecurityContext c = (CertificateSecurityContext) inContext;
 
             URI keyURI = c.getKeyfile();
 
-            if (keyURI == null) { // must be a password (is possible, default
-                // info may be stored like that)
+            if (keyURI == null) {
+                // must be a password (is possible, default info may be stored
+                // like that)
                 info = new SftpUserInfo();
                 info.username = SecurityContextUtils.getUser(gatContext,
                         preferences, inContext, location);
@@ -61,8 +68,10 @@ class SftpContextCreator implements SecurityContextCreator {
             } else { // public / private key
 
                 if (!keyURI.refersToLocalHost()) {
-                    System.err
-                            .println("WARNING: URI for key file does not refer to local host, skipping this security context");
+                    if (logger.isDebugEnabled()) {
+                        logger
+                                .debug("WARNING: URI for key file does not refer to local host, skipping this security context");
+                    }
                 } else {
                     info = new SftpUserInfo();
                     info.username = SecurityContextUtils.getUser(gatContext,

@@ -3,9 +3,9 @@ package org.gridlab.gat.security;
 import org.gridlab.gat.URI;
 
 /**
- * A container for security Information based upon credentials stored in a file.
- * Contexts based upon these mechanisms can be used by adaptors to create
- * further contexts containing opaque data objects, e.g. GSSAPI credentials.
+ * A container for security Information based upon certificates. Contexts based
+ * upon these mechanisms can be used by adaptors to create further contexts
+ * containing opaque data objects, e.g. GSSAPI credentials.
  */
 public class CertificateSecurityContext extends SecurityContext {
 
@@ -21,6 +21,21 @@ public class CertificateSecurityContext extends SecurityContext {
 
     private URI certfile = null;
 
+    /**
+     * Constructs a {@link CertificateSecurityContext} out of a {@link URI}
+     * pointing to the private key, a {@link URI} pointing to the certificate, a
+     * username and a password.
+     * 
+     * @param keyfile
+     *                the private key file (for example userkey.pem)
+     * @param certfile
+     *                the certificate file (for example usercert.pem)
+     * @param username
+     *                the username
+     * @param password
+     *                the password or passphrase belonging to the key and
+     *                certificate.
+     */
     public CertificateSecurityContext(URI keyfile, URI certfile,
             String username, String password) {
         super(username, password);
@@ -28,36 +43,21 @@ public class CertificateSecurityContext extends SecurityContext {
         this.certfile = certfile;
     }
 
-    public CertificateSecurityContext(URI keyfile, URI certfile, String password) {
-        this(keyfile, certfile, null, password);
-    }
-
     /**
-     * @param password
-     * @param keyfile
-     */
-    public CertificateSecurityContext(URI keyfile, String username,
-            String password) {
-        this(keyfile, null, username, password);
-    }
-
-    /**
-     * Makes this a "Certificate" type security context and stores the
-     * information about the location of keyfile in the context.
+     * Constructs a {@link CertificateSecurityContext} out of a {@link URI}
+     * pointing to the private key, a {@link URI} pointing to the certificate
+     * and a password.
      * 
      * @param keyfile
-     *                The URI of keyfile
+     *                the private key file (for example userkey.pem)
+     * @param certfile
+     *                the certificate file (for example usercert.pem)
+     * @param password
+     *                the password or passphrase belonging to the key and
+     *                certificate.
      */
-    public CertificateSecurityContext(URI keyfile) {
-        this(keyfile, null, null, null);
-    }
-
-    public CertificateSecurityContext() {
-        super(null, null);
-    }
-
-    public CertificateSecurityContext(URI keyfile, String password) {
-        this(keyfile, null, null, password);
+    public CertificateSecurityContext(URI keyfile, URI certfile, String password) {
+        this(keyfile, certfile, null, password);
     }
 
     /**
@@ -75,7 +75,8 @@ public class CertificateSecurityContext extends SecurityContext {
         CertificateSecurityContext other = (CertificateSecurityContext) obj;
 
         return other.password.equals(password) && other.keyfile.equals(keyfile)
-                && other.username.equals(username);
+                && other.username.equals(username)
+                && other.certfile.equals(certfile);
     }
 
     /**
@@ -85,11 +86,12 @@ public class CertificateSecurityContext extends SecurityContext {
      *         adaptor data)
      */
     public Object clone() throws CloneNotSupportedException {
-        return new CertificateSecurityContext(keyfile, username, password);
+        return new CertificateSecurityContext(keyfile, certfile, username,
+                password);
     }
 
     /**
-     * Gets the type associated with the security context.
+     * Returns the location of the keyfile associated with the context.
      * 
      * @return The location of the keyfile associated with the context.
      */
@@ -97,6 +99,12 @@ public class CertificateSecurityContext extends SecurityContext {
         return keyfile;
     }
 
+    /**
+     * Sets the location of the keyfile associated with the context.
+     * 
+     * @param keyfile
+     *                the location of the keyfile associated with the context.
+     */
     public void setKeyfile(URI keyfile) {
         this.keyfile = keyfile;
     }
@@ -107,23 +115,48 @@ public class CertificateSecurityContext extends SecurityContext {
 
     public String toString() {
         return "CertificateSecurityContext(keyfile = " + keyfile
+                + " certfile = " + certfile
                 + ((username == null) ? "" : ("username = " + username))
                 + ((dataObjects == null) ? "" : ("userdata = " + dataObjects))
                 + ")";
     }
 
+    /**
+     * Returns the private key slot. Some ssh implementations on windows
+     * (tunnelier) use a private key slot.
+     * 
+     * @return the private key slot.
+     */
     public int getPrivateKeySlot() {
         return privateKeySlot;
     }
 
+    /**
+     * Sets the private key slot. Some ssh implementations on windows
+     * (tunnelier) use a private key slot.
+     * 
+     * @param privateKeySlot
+     *                the new private key slot.
+     */
     public void setPrivateKeySlot(int privateKeySlot) {
         this.privateKeySlot = privateKeySlot;
     }
 
+    /**
+     * Returns the {@link URI} of the certificate file.
+     * 
+     * @return the {@link URI} of the certificate file.
+     */
     public URI getCertfile() {
         return certfile;
     }
 
+    /**
+     * Set the location of the certificate file.
+     * 
+     * @param certfile
+     *                the location of the certificate file.
+     */
     public void setCertfile(URI certfile) {
         this.certfile = certfile;
     }

@@ -1,18 +1,18 @@
 JavaGAT 2.0
 -----------
 
-- gt4 file adaptor does not check URI. (it accepts aap://xyz)
-- Document new securityContext features
++ gt4 file adaptor does not check URI. (it accepts aap://xyz)
++ Document new securityContext features
 - Complete GT4 adaptor set
   * test it
   * integrate Frank Knoll's advert service adaptors
-- Document all preferences and attributes
++ Document all preferences and attributes
 - Make a pass over all javadocs
-- Document GAT.end()
-- Check: sandbox CTRL-C during poststage stops it?
-- Create and use InvalidUsernameOrPasswordException
++ Document GAT.end()
++ Check: sandbox CTRL-C during poststage stops it?
++ Create and use InvalidUsernameOrPasswordException
 - Store VO (virtual organisation) in SecurityContext (--roelof or in SoftwareDescription?)
-- Cleanup SSH adaptors:
++ Cleanup SSH adaptors:
   * If the executable does not exist, we get no error.
   * Broker does not work to fs3
   * remove retry code for job submit
@@ -20,11 +20,11 @@ JavaGAT 2.0
   * support environment vars in ssh broker.
   * remove old ssh/sftp adaptors?
 - URI file://localhost//score.icme is not handled correctly on windows?
-- Look into file permissions for Keith (gridftp)
-- MultiJobs: number of jobs/machine to run concurrently
-- Check events: globus adaptor should throw all events (PRE_STAGING, SUBMITTED,
++ Look into file permissions for Keith (gridftp)
++ MultiJobs: number of jobs/machine to run concurrently
++ Check events: globus adaptor should throw all events (PRE_STAGING, SUBMITTED,
   RUNNING, POST_STAGING, STOPPED).
-- Fix race in globus adaptor: access to shutdownInProgress should be 
++ Fix race in globus adaptor: access to shutdownInProgress should be 
   synchronized
 - Fix leaking connections with globus. Enric reported that if a 
   GLOBUS_TCP_PORT_RANGE is set, globus job submission failes after a while
@@ -41,7 +41,7 @@ JavaGAT 2.1
 - JSDL interface
 - resource broker adaptors should fill in ALL defined states in getInfo call.
 - in the engine, check if GAT.end hasn't been called before doing an operation.
-- brokering: also allow output to be printed on the sceen, when no output files
++ brokering: also allow output to be printed on the sceen, when no output files
   are given.
   maybe use special property for this? Not all middlewares can do this.
 - merge stdout and stderr into one file

@@ -10,6 +10,7 @@ import org.gridlab.gat.InvalidUsernameOrPasswordException;
 import org.gridlab.gat.Preferences;
 import org.gridlab.gat.URI;
 import org.gridlab.gat.security.CertificateSecurityContext;
+import org.gridlab.gat.security.CredentialSecurityContext;
 import org.gridlab.gat.security.PasswordSecurityContext;
 import org.gridlab.gat.security.SecurityContext;
 import org.gridlab.gat.security.cpi.SecurityContextCreator;
@@ -31,7 +32,7 @@ class SshContextCreator implements SecurityContextCreator {
             CredentialExpiredException, InvalidUsernameOrPasswordException {
         SshUserInfo cred = SshSecurityUtils.getDefaultUserInfo(gatContext,
                 preferences, location);
-        CertificateSecurityContext c = new CertificateSecurityContext();
+        CredentialSecurityContext c = new CredentialSecurityContext();
         c.putDataObject("ssh", cred);
 
         return c;
@@ -43,7 +44,9 @@ class SshContextCreator implements SecurityContextCreator {
             CredentialExpiredException, InvalidUsernameOrPasswordException {
         SshUserInfo info;
 
-        if (inContext instanceof CertificateSecurityContext) {
+        if (inContext instanceof CredentialSecurityContext) {
+            return inContext.getDataObject("ssh");
+        } else if (inContext instanceof CertificateSecurityContext) {
             CertificateSecurityContext c = (CertificateSecurityContext) inContext;
 
             if (c.getKeyfile() == null) { // must be a password (is possible,

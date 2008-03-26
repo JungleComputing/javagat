@@ -58,7 +58,7 @@ public class WSGT4newJob extends JobCpi implements GramJobListener {
         }
     }
 
-    public void stop() throws GATInvocationException {
+    public synchronized void stop() throws GATInvocationException {
         if (getState() != STOPPED && getState() != SUBMISSION_ERROR) {
             try {
                 job.cancel();

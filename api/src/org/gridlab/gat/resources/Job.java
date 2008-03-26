@@ -118,7 +118,8 @@ public abstract class Job implements Monitorable, Advertisable {
      * invalid it throws a RuntimeException. The state strings are literally the
      * same as the name of the constants used, e.g., "RUNNING", or "STOPPED".
      * 
-     * @param state the state to convert into a String representation
+     * @param state
+     *                the state to convert into a String representation
      * @return the String representation of the given state
      */
     public static String getStateString(int state) {
@@ -266,20 +267,7 @@ public abstract class Job implements Monitorable, Advertisable {
     }
 
     /**
-     * Checkpoints the associated physical job. A physical job is said to be
-     * checkpointed when it writes its current state information to a long term
-     * storage medium. A physical job when checkpointing must write its current
-     * state information to a long term storage medium in such a manner so that
-     * it can, at a later date, by using the state information stored in the
-     * long term storage medium continue running "from the same point" it was at
-     * before checkpointing. This is useful for physical jobs which involve
-     * significant data processing and can not, for any number of reasons,
-     * process all of this data in a single run; also, it is useful for physical
-     * jobs which involve significant data processing and are, for any number of
-     * reasons unstable. In both of these cases checkpointing allows the
-     * physical job to process some data now, then, at a later date, continue
-     * running. This method can only be called on a Job in the Running state or
-     * an error will occur.
+     * @deprecated Deprecated, this method doesn't fit in the API anymore
      * 
      * @throws GATInvocationException
      *                 Thrown upon problems accessing the remote instance
@@ -289,8 +277,7 @@ public abstract class Job implements Monitorable, Advertisable {
     }
 
     /**
-     * This method is equivalent to calling Checkpoint, Stop, then Submit on
-     * this instance of Job.
+     * @deprecated Deprecated, this method doesn't fit in the API anymore
      * 
      * @throws GATInvocationException
      *                 Thrown upon problems accessing the remote instance
@@ -302,24 +289,12 @@ public abstract class Job implements Monitorable, Advertisable {
     }
 
     /**
-     * Migrate a job.
-     * <p>
-     * This method is equivalent to calling Checkpoint then Stop on this
-     * instance of Job, then calling Submit on an instance of Job identical to
-     * this instance except that
-     * <ul>
-     * <li>The Job when it first enters the Running state will be in the state
-     * specified by the state information stored during the previous call to the
-     * Checkpoint method.</li>
-     * <li>The Job when it first enters the Running state will be running on a
-     * hardware resource described in the passed HardwareResourceDescription.
-     * </li>
-     * </ul>
+     * @deprecated Deprecated, this method doesn't fit in the API anymore
      * 
      * @param hardwareResourceDescription
      *                A description of the hardware resource to which the
-     *                physical job corresponding to this Job should be migrated,
-     *                a HardwareResourceDescription
+     *                physical job corresponding to this {@link Job} should be
+     *                migrated, a {@link HardwareResourceDescription}
      * @throws GATInvocationException
      *                 Thrown upon problems accessing the remote instance
      */
@@ -329,28 +304,7 @@ public abstract class Job implements Monitorable, Advertisable {
     }
 
     /**
-     * The Clone operation creates a copy of the GATJob.
-     * 
-     * The resulting GATJob has the same GATSoftwareDescription in its
-     * GATJobDescription, but the GATResourceDescriptions or GATResources of its
-     * GATJobDescription may be altered.
-     * 
-     * This operation upon success completes the following steps:
-     * <LI>Constructs a new GATJobDescription instance with the
-     * GATSoftwareResourceDescription used to construct this GATJob instance.
-     * <LI>Complete the new GATJobDescription instance with the optional
-     * GATHardwareResource passed to the Clone operation.
-     * <LI>If no GATHardwareResource is given, use the
-     * GATHardwareResourceDescription or GATHardwareResource used to construct
-     * the current job.
-     * <LI>Configures the new GATJobDescription instance so that when it begins
-     * running it will have the same state as the state saved in the last call
-     * to checkpoint on this GATJob instance.
-     * <LI>Returns this new GATJob instance to the caller.
-     * 
-     * This operation can only be called on a GATJob instance on which the
-     * operation Checkpoint has been successfully called at least once,
-     * otherwise an error will be issued.
+     * @deprecated Deprecated, this method doesn't fit in the API anymore
      * 
      * @param resource
      *                HarwareResource to run the job on (null means any

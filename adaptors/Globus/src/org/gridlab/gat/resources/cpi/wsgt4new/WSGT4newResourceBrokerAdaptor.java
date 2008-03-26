@@ -77,6 +77,9 @@ public class WSGT4newResourceBrokerAdaptor extends ResourceBrokerCpi {
             throws GATObjectCreationException {
         super(gatContext, preferences, brokerURI);
         String globusLocation = System.getenv("GLOBUS_LOCATION");
+//        URL configLocation = ClassLoader.getSystemClassLoader().getResource("client-config.wsdd");
+//        System.out.println("classpath:      " + System.getProperty("java.class.path"));
+//        System.out.println("configlocation: " + configLocation);
         if (globusLocation == null) {
             throw new GATObjectCreationException("$GLOBUS_LOCATION is not set");
         }

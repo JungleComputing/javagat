@@ -6,7 +6,7 @@ import java.util.Map;
 
 /**
  * An instance of this class represents a measurable quantity within a
- * monitoring system.There are two classes of metrics a monitoring system must
+ * monitoring system. There are two classes of metrics a monitoring system must
  * deal with:
  * <ul>
  * <li><em>Local metrics</em> --- Local metrics are metrics that are directly
@@ -18,13 +18,13 @@ import java.util.Map;
  * administrators who know the configuration of the resource need local metrics
  * for detailed monitoring of the status and operation of the resource.</li>
  * <li><em>Grid metrics</em> --- Grid metrics are metrics that have
- * predefined semantics thus, they are resource independent. Grid metrics are
+ * predefined semantics, thus they are resource independent. Grid metrics are
  * derived from one or more local metrics by applying a specific, well defined
  * algorithm (such as unit conversion, aggregation or averaging). Because of
  * this transformation grid metrics may have less precision or they could be
  * less specific but are guaranteed to be comparable between different
  * resources. Unlike local metrics which a local resource is free to change grid
- * metrics must be agreed upon, standardised and introduced by community
+ * metrics must be agreed upon, standardized and introduced by community
  * consensus.</li>
  * </ul>
  * Instances of this class deal with both classes of metrics.
@@ -55,76 +55,81 @@ public class Metric implements Serializable {
 
     /** in milliseconds */
     /**
-     * Constructs a Metric instance from the passed Metric name and concrete
-     * values for the Metric parameters. This constructor is used for DISCRETE
-     * metrics. Hence, there is no frequency specified.
+     * Constructs a {@link Metric} instance from the passed Metric name and
+     * concrete values for the Metric parameters. This constructor is used for
+     * DISCRETE metrics. Hence, there is no frequency specified.
      * <p>
-     * The passed Metric name must be equal, as determined by the Equals method
-     * of the java.lang.String class, to the Metric name is the desired target
-     * Metric definition. In addition, the passed concrete values for the Metric
-     * parameters must be of the same name and type as the Metric parameters in
-     * the desired target Metric definition. Also, all the required Metric
-     * parameters as specified in the Metric definition must be present.
-     *
+     * The passed {@link Metric} name must be equal, as determined by
+     * {@link String#equals(Object)}, to the {@link Metric} name in the desired
+     * target {@link MetricDefinition}. In addition, the passed concrete values
+     * for the {@link Metric} parameters must be of the same name and type as
+     * the {@link Metric} parameters in the desired target
+     * {@link MetricDefinition}. Also, all the required {@link Metric}
+     * parameters as specified in the {@link MetricDefinition} must be present.
+     * 
      * @param definition
-     *            The Metric definition to create an instance of
+     *                The {@link MetricDefinition} to create an instance of
      * @param metricParameters
-     *            The Metric parameters, a java.util.Map, for the desired Metric
-     *            definition
+     *                The {@link Metric} parameters, a {@link java.util.Map},
+     *                for the desired {@link MetricDefinition}.
      */
-    public Metric(MetricDefinition definition, Map<String, Object> metricParameters) {
+    public Metric(MetricDefinition definition,
+            Map<String, Object> metricParameters) {
         this.definition = definition;
 
         if (metricParameters == null) {
             this.metricParameters = new Hashtable<String, Object>();
         } else {
-            this.metricParameters = new Hashtable<String, Object>(metricParameters);
+            this.metricParameters = new Hashtable<String, Object>(
+                    metricParameters);
         }
     }
 
     /**
-     * Constructs a Metric instance from the passed Metric name and concrete
-     * values for the Metric parameters. This constructor is used for CONTINUOUS
-     * metrics. Hence, the frequency must be specified.
+     * Constructs a {@link Metric} instance from the passed {@link Metric} name
+     * and concrete values for the {@link Metric} parameters. This constructor
+     * is used for CONTINUOUS metrics. Hence, the frequency must be specified.
      * <p>
-     * The passed Metric name must be equal, as determined by the Equals method
-     * of the java.lang.String class, to the Metric name is the desired target
-     * Metric definition. In addition, the passed concrete values for the Metric
-     * parameters must be of the same name and type as the Metric parameters in
-     * the desired target Metric definition. Also, all the required Metric
-     * parameters as specified in the Metric definition must be present.
-     *
+     * The passed {@link Metric} name must be equal, as determined by
+     * {@link String#equals(Object)}, to the {@link Metric} name in the desired
+     * target {@link MetricDefinition}. In addition, the passed concrete values
+     * for the {@link Metric} parameters must be of the same name and type as
+     * the {@link Metric} parameters in the desired target
+     * {@link MetricDefinition}. Also, all the required {@link Metric}
+     * parameters as specified in the {@link MetricDefinition} must be present.
+     * 
      * @param definition
-     *            The Metric definition to create an instance of
+     *                The {@link MetricDefinition} to create an instance of
      * @param metricParameters
-     *            The Metric parameters, a java.util.Map, for the desired Metric
-     *            definition
+     *                The {@link Metric} parameters, a {@link java.util.Map},
+     *                for the desired {@link MetricDefinition}
      * @param frequency
-     *            The measuring frequency.
+     *                The measuring frequency.
      */
-    public Metric(MetricDefinition definition, Map<String, Object> metricParameters,
-            long frequency) {
+    public Metric(MetricDefinition definition,
+            Map<String, Object> metricParameters, long frequency) {
         this.definition = definition;
         this.frequency = frequency;
 
         if (metricParameters == null) {
             this.metricParameters = new Hashtable<String, Object>();
         } else {
-            this.metricParameters = new Hashtable<String, Object>(metricParameters);
+            this.metricParameters = new Hashtable<String, Object>(
+                    metricParameters);
         }
     }
 
     /**
-     * Tests this Metric for equality with the passed Object.
+     * Tests this {@link Metric} for equality with the passed {@link Object}.
      * <p>
-     * If the given object is not a Metric, then this method immediately returns
-     * false.
+     * If the given object is not a {@link Metric}, then this method
+     * immediately returns false.
      * <p>
-     * For two Metric instances to be considered as equal they must have equal
-     * descriptors, parameters and frequency.
-     *
+     * For two {@link Metric} instances to be considered as equal they must have
+     * equal descriptors, parameters and frequency.
+     * 
      * @param object
-     *            The Object to test for equality
+     *                The {@link Object} to test for equality
      * @return A boolean indicating equality
      */
     public boolean equals(Object object) {
@@ -137,43 +142,54 @@ public class Metric implements Serializable {
         metric = (Metric) object;
 
         return definition.equals(metric.definition)
-            && metricParameters.equals(metric.metricParameters);
+                && metricParameters.equals(metric.metricParameters);
     }
 
     /**
-     * Gets the Metric parameters associated with this Metric.
-     *
-     * @return The Metric parameters, a java.util.Map
+     * Gets the {@link Metric} parameters associated with this {@link Metric}.
+     * 
+     * @return The {@link Metric} parameters, a {@link java.util.Map}
      */
     public Map<String, Object> getMetricParameters() {
         return metricParameters;
     }
 
+    /**
+     * Gets the measurement frequency in milliseconds.
+     * 
+     * @return the measurement frequency in milliseconds.
+     */
     public long getFrequency() {
         return frequency;
     }
 
     /**
-     * Gets the Metric parameter value associated with the passed Metric
-     * parameter name. The value null is returned if there is no Metric
-     * parameter value with the passed name.
-     *
+     * Gets the {@link Metric} parameter value associated with the passed
+     * {@link Metric} parameter name. The value <code>null</code> is returned
+     * if there is no {@link Metric} parameter value with the passed name.
+     * 
      * @param name
-     *            The Metric parameter name, a java.lang.String, for which to
-     *            obtain the associated Metric
-     * @return The Metric parameter value, an Object, associated with the passed
-     *         Metric parameter name.
+     *                The {@link Metric} parameter name, a
+     *                {@link java.lang.String}, for which to obtain the
+     *                associated {@link Metric}
+     * @return The {@link Metric} parameter value, an {@link Object},
+     *         associated with the passed {@link Metric} parameter name.
      */
     public Object getMetricParameterByName(String name) {
         return metricParameters.get(name);
     }
 
+    /**
+     * Gets the {@link MetricDefinition}.
+     * 
+     * @return the {@link MetricDefinition}
+     */
     public MetricDefinition getDefinition() {
         return definition;
     }
 
     public String toString() {
         return "Metric(def = " + definition + ", params = " + metricParameters
-            + ", freq = " + frequency + ")";
+                + ", freq = " + frequency + ")";
     }
 }

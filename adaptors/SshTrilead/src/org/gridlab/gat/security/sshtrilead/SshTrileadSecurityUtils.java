@@ -10,6 +10,7 @@ import org.gridlab.gat.InvalidUsernameOrPasswordException;
 import org.gridlab.gat.Preferences;
 import org.gridlab.gat.URI;
 import org.gridlab.gat.security.CertificateSecurityContext;
+import org.gridlab.gat.security.CredentialSecurityContext;
 import org.gridlab.gat.security.PasswordSecurityContext;
 import org.gridlab.gat.security.SecurityContext;
 import org.gridlab.gat.security.cpi.SecurityContextCreator;
@@ -25,7 +26,7 @@ class SshTrileadContextCreator implements SecurityContextCreator {
             CredentialExpiredException, InvalidUsernameOrPasswordException {
         Map<String, Object> securityInfo = SshTrileadSecurityUtils
                 .getDefaultUserInfo(gatContext, preferences, location);
-        CertificateSecurityContext c = new CertificateSecurityContext();
+        CredentialSecurityContext c = new CredentialSecurityContext();
         c.putDataObject("sshtrilead", securityInfo);
         return c;
     }
@@ -36,12 +37,10 @@ class SshTrileadContextCreator implements SecurityContextCreator {
             CredentialExpiredException, InvalidUsernameOrPasswordException {
         Map<String, Object> securityInfo = new HashMap<String, Object>();
 
-        if (inContext instanceof CertificateSecurityContext) {
+        if (inContext instanceof CredentialSecurityContext) {
+            return inContext.getDataObject("sshtrilead");
+        } else if (inContext instanceof CertificateSecurityContext) {
             CertificateSecurityContext c = (CertificateSecurityContext) inContext;
-
-            if (c.getDataObject("sshtrilead") != null) {
-                return c.getDataObject("sshtrilead");
-            }
             if (c.getUsername() != null) {
                 securityInfo.put("username", c.getUsername());
             } else {

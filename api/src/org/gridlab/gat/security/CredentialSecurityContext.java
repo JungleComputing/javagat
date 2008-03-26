@@ -10,82 +10,85 @@ package org.gridlab.gat.security;
  */
 public class CredentialSecurityContext extends SecurityContext {
 
-	/**
-	 * This member variable holds the credential object
-	 */
-	private Object credential;
+    /**
+     * This member variable holds the credential object
+     */
+    private Object credential;
 
-	/**
-	 * Constructor of the CredentialSecurityContext.
-	 * 
-	 * Use setCredential to set the credential object.
-	 */
-	public CredentialSecurityContext() {
-		super(null, null);
-	}
+    /**
+     * Constructor of the CredentialSecurityContext.
+     * 
+     * Use {@link #setCredential(Object)} to set the credential object.
+     */
+    public CredentialSecurityContext() {
+        super(null, null);
+    }
 
-	/**
-	 * Constructor of the CredentialSecurityContext.
-	 * 
-	 * @param credential
-	 * 		creates a credential security context with the supplied credential
-	 */
-	public CredentialSecurityContext(Object credential) {
-		super(null, null);
-		this.credential = credential;
-	}
+    /**
+     * Constructor of the CredentialSecurityContext.
+     * 
+     * @param credential
+     *                creates a {@link CredentialSecurityContext} with the
+     *                supplied credential
+     */
+    public CredentialSecurityContext(Object credential) {
+        super(null, null);
+        this.credential = credential;
+    }
 
-	/**
-	 * Returns a clone of this context.
-	 * 
-	 * @return the clone of this security context
-	 */
-	public Object clone() throws CloneNotSupportedException {
-		CredentialSecurityContext result = new CredentialSecurityContext();
-		result.setCredential(credential);
-		return result;
-	}
+    /**
+     * Returns a clone of this context.
+     * 
+     * @return the clone of this security context
+     */
+    public Object clone() throws CloneNotSupportedException {
+        CredentialSecurityContext result = new CredentialSecurityContext();
+        result.setCredential(credential);
+        return result;
+    }
 
-	/**
-	 * Check two SecurityContexts for equality.
-	 * 
-	 * @param obj
-	 *            the object to compare this with
-	 * @return true if the objects are semantically equal
-	 */
-	public boolean equals(Object obj) {
-		if (obj instanceof CredentialSecurityContext) {
-			return credential
-					.equals(((CredentialSecurityContext) obj).credential);
-		}
-		return false;
-	}
+    /**
+     * Check two SecurityContexts for equality.
+     * 
+     * @param obj
+     *                the object to compare this with
+     * @return true if the objects are semantically equal
+     */
+    public boolean equals(Object obj) {
+        if (obj instanceof CredentialSecurityContext) {
+            return credential
+                    .equals(((CredentialSecurityContext) obj).credential);
+        }
+        return false;
+    }
 
     /**
      * Gets the hashcode of this security context
-     *
+     * 
      * @return The hashcode of this object
      */
-	public int hashCode() {
-		return credential.hashCode();
-	}
+    public int hashCode() {
+        return credential.hashCode();
+    }
 
     /**
      * Gets the credential associated with this security context.
-     *
+     * 
      * @return The credential associated with this security context.
      */
-	public Object getCredential() {
-		return credential;
-	}
-	
-	/**
+    public Object getCredential() {
+        return credential;
+    }
+
+    /**
      * Sets the credential associated with this security context.
-     *
-     * @param credential The credential to be associated with this security context.
+     * 
+     * @param credential
+     *                The credential to be associated with this security
+     *                context.
      */
-	public void setCredential(Object credential) {
-		this.credential = credential;
-	}
+    public void setCredential(Object credential) {
+        this.credential = credential;
+    }
 
 }

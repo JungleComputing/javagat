@@ -162,7 +162,7 @@ public class MetricDefinition implements Serializable {
      *            creating a diskFree metric, a parameter could be the physical
      *            device name. If no special parameters are needed, it is OK to
      *            pass null
-     * @return the new Netric
+     * @return the new Metric
      */
     public Metric createMetric(Map<String, Object> parameters, long frequency) {
         return new Metric(this, parameters, frequency);

@@ -13,6 +13,7 @@ import org.gridlab.gat.InvalidUsernameOrPasswordException;
 import org.gridlab.gat.Preferences;
 import org.gridlab.gat.URI;
 import org.gridlab.gat.security.CertificateSecurityContext;
+import org.gridlab.gat.security.CredentialSecurityContext;
 import org.gridlab.gat.security.PasswordSecurityContext;
 import org.gridlab.gat.security.SecurityContext;
 import org.gridlab.gat.security.cpi.SecurityContextCreator;
@@ -32,7 +33,7 @@ class SftpGanymedContextCreator implements SecurityContextCreator {
             CredentialExpiredException, InvalidUsernameOrPasswordException {
         SftpGanymedUserInfo cred = SftpGanymedSecurityUtils.getDefaultUserInfo(
                 gatContext, preferences, location);
-        CertificateSecurityContext c = new CertificateSecurityContext();
+        CredentialSecurityContext c = new CredentialSecurityContext();
         c.putDataObject("sftpGanymed", cred);
 
         return c;
@@ -44,7 +45,9 @@ class SftpGanymedContextCreator implements SecurityContextCreator {
             CredentialExpiredException, InvalidUsernameOrPasswordException {
         SftpGanymedUserInfo info;
 
-        if (inContext instanceof CertificateSecurityContext) {
+        if (inContext instanceof CredentialSecurityContext) {
+            return inContext.getDataObject("sftpGanymed");
+        } else if (inContext instanceof CertificateSecurityContext) {
             CertificateSecurityContext c = (CertificateSecurityContext) inContext;
 
             if (c.getKeyfile() == null) { // must be a password (is possible,

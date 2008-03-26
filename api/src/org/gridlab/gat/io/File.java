@@ -36,10 +36,10 @@ import org.gridlab.gat.monitoring.Monitorable;
  * file in GAT is identified by a URI.
  * <p>
  * An instance of this File class allows for various high-level operations to be
- * preformed on a physical file. For example, one can, with a single API call,
+ * performed on a physical file. For example, one can, with a single API call,
  * copy a physical file from one location to a second location, move a physical
  * file from one location to a second location, delete a physical file, and
- * preform various other operations on a physical file. The utility of this
+ * perform various other operations on a physical file. The utility of this
  * high-level view of a physical file is multi-fold. The client of an instance
  * of this class does not have to concern themselves with the details of reading
  * every single byte of a physical file when all they wish to do is copy the
@@ -79,11 +79,39 @@ public class File extends java.io.File implements Monitorable, Advertisable,
     }
 
     /**
-     * This method return the FileInterface associated with this File. Use the
-     * FileInterface instead of the File if you care about the exceptions that
-     * could occur during operations on the file.
+     * Returns the FileInterface object associated with this {@link File}. Use
+     * The FileInterface offers the same functionality as the File object. The
+     * difference between the FileInterface object and the File object is that
+     * the FileInterface is an internal GAT object and it will throw
+     * {@link GATInvocationException}s upon failures, whereas the File object
+     * would have default values.
+     * <p>
+     * This might be handy in certain circumstances. Suppose that one checks
+     * whether a file exists and if not one creates a file at that location.
+     * Using the File object the code will look like this:
+     * <p>
+     * <code>
+     * if (!file.exists()) {
+     *     file.createNewFile();
+     * }
+     * </code>
+     * <p>
+     * Now suppose that the {@link #exists()} call fails because the network is
+     * down for a moment. The File object will return false for this call,
+     * because the network was down, even though the file might exist. To
+     * overcome this one can change the code to code which uses the
+     * FileInterface instead of the File object:
+     * <p>
+     * <code>
+     * if (!file.getFileInterface().exists()) {
+     *      file.getFileInterface().createNewFile();
+     * }
+     * </code>
+     * <p>
+     * Now an exception will be thrown by the FileInterface if the network is
+     * down. It is possible to retry the code until the network is up again.
      * 
-     * @return the FileInterface
+     * @return the FileInterface object
      */
     public org.gridlab.gat.io.FileInterface getFileInterface() {
         return f;
@@ -557,7 +585,7 @@ public class File extends java.io.File implements Monitorable, Advertisable,
     }
 
     /**
-     * Read a file object from a stream. 
+     * Read a file object from a stream.
      * 
      * @param stream
      *                the stream to write to

@@ -7,10 +7,11 @@ import org.gridlab.gat.monitoring.Metric;
 import org.gridlab.gat.monitoring.MetricDefinition;
 import org.gridlab.gat.monitoring.MetricListener;
 import org.gridlab.gat.monitoring.MetricValue;
+import org.gridlab.gat.monitoring.Monitorable;
 
 /**
  * An instance of this interface is an abstract representation of a physical
- * hardware resource which is monitorable.
+ * hardware resource which is {@link Monitorable}.
  * <p>
  * An instance of this interface allows on to examine the various properties of
  * the physical hardware resource to which this instance corresponds. In
@@ -49,6 +50,11 @@ public abstract class HardwareResource implements Resource {
         throw new Error("Not implemented");
     }
 
+    /*
+     * (non-Javadoc)
+     *
+     * @see org.gridlab.gat.monitoring.Monitorable#getMeasurement(org.gridlab.gat.monitoring.Metric)
+     */
     public MetricValue getMeasurement(Metric metric)
             throws GATInvocationException {
         throw new Error("Not implemented");

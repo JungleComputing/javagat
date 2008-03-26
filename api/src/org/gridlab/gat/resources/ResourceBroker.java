@@ -107,7 +107,7 @@ public interface ResourceBroker {
      * @param resourceDescription
      *                A description, a {@link ResourceDescription}, of the
      *                {@link Resource}(s) to find
-     * @return java.util.List of {@link Resource}s upon success
+     * @return {@link java.util.List} of {@link Resource}s upon success
      * @throws GATInvocationException
      *                 Thrown upon problems accessing the remote instance
      * @throws java.io.IOException

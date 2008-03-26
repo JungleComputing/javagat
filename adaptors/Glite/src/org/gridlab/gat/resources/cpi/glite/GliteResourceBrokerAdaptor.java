@@ -194,7 +194,8 @@ public class GliteResourceBrokerAdaptor extends ResourceBrokerCpi {
     private void setVirtualOrganisation(JobAd jobAd, SoftwareDescription sd)
             throws GATInvocationException, IllegalArgumentException,
             InvalidAttributeValueException {
-        String vo = sd.getVirtualOrganisation();
+        //TODO get the VO from somewhere
+        String vo = "";
         if (vo == null || vo.equals("")) {
             throw new GATInvocationException(
                     "no virtual organisation specified: " + vo);
