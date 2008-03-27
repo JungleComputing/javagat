@@ -75,7 +75,7 @@ import org.gridlab.gat.io.File;
  * <TD>{@link String}
  * <TD>project to use, for accounting purposes
  * <TR>
- * <TD>dryrun
+ * <TD>dry.run
  * <TD>{@link String}
  * <TD>if set, don't submit but return success
  * <TR>
@@ -87,7 +87,7 @@ import org.gridlab.gat.io.File;
  * <TD>{@link String}
  * <TD>maximal required memory in MB
  * <TR>
- * <TD>savestate
+ * <TD>save.state
  * <TD>{@link Boolean}/{@link String}
  * <TD>keep job data persistent for restart
  * <TR>
@@ -251,13 +251,13 @@ public class SoftwareDescription implements java.io.Serializable {
                 attributes.put(key, new Long(val));
             } else if (key.equalsIgnoreCase("cputime.max")) {
                 attributes.put(key, new Long(val));
-            } else if (key.equalsIgnoreCase("dryrun")) {
+            } else if (key.equalsIgnoreCase("dry.run")) {
                 attributes.put(key, new Boolean(val));
             } else if (key.equalsIgnoreCase("memory.min")) {
                 attributes.put(key, new Integer(val));
             } else if (key.equalsIgnoreCase("memory.max")) {
                 attributes.put(key, new Integer(val));
-            } else if (key.equalsIgnoreCase("savestate")) {
+            } else if (key.equalsIgnoreCase("save.state")) {
                 attributes.put(key, new Boolean(val));
             }
         }

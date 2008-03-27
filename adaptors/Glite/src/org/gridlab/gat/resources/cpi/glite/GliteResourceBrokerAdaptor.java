@@ -342,7 +342,7 @@ public class GliteResourceBrokerAdaptor extends ResourceBrokerCpi {
                 .getAttributes();
         if (attributes == null)
             return false;
-        Boolean dryRun = (Boolean) attributes.get("dryrun");
+        Boolean dryRun = (Boolean) attributes.get("dry.run");
         if (dryRun != null)
             return dryRun.booleanValue();
         else
