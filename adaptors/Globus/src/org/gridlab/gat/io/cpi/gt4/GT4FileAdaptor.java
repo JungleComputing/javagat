@@ -239,7 +239,7 @@ abstract public class GT4FileAdaptor extends FileCpi {
      * @see org.gridlab.gat.io.File#getAbsolutePath()
      */
     public String getAbsolutePath() throws GATInvocationException {
-        if (location.isAbsolute()) {
+        if (location.hasAbsolutePath()) {
             return location.getPath();
         }
         GridFile gf = null;

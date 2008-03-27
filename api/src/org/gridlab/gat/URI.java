@@ -11,74 +11,184 @@ import java.net.URISyntaxException;
 import java.net.URL;
 
 /**
- * @author rob
- */
-/**
- * This class implements URIs. It is API compatible with java.net.URI. However,
- * the standard Java class has a bug. The Java URI class does not work correctly
- * if you omit the hostname in a URI. For example: <BR>
- * file://&lt;hostname&gt;/<path><BR>
- * and <BR>
- * &lt;hostname&gt;== not set (empty string) <BR>
- * and <BR>
- * &lt;path&gt;== /bin/date <BR>
- * then the correct URI is <BR>
- * file:////bin/date <BR>
- * So four slashes in total after the "file:" <BR>
- * if the path would be a relative path such as foo/bar, the URI would be: <BR>
- * file:///foo/bar (three slashes because of the empty hostname). <BR>
- * However, the Java URI class getPath() method will return "/foo/bar" as the
- * path instead of "foo/bar"... <BR>
- * <BR>
- * <P>
- * Also note that relative paths in URIs are a bit ambiguous, especially with
- * the "any" scheme. It depends on the protocol (scheme) used which root is used
- * to resolve the path. So a URI with the "file" scheme will be relative to the
- * current working directory, while "ssh" might be relative to $HOME (it depends
- * on the settings of the ssh daemon of the remote machine). A "ftp" URI might
- * end up somewhere else, etc.
- * 
+ * This class implements URIs. It is API compatible with the java.net.{@link java.net.URI}.
+ * However, URIs have a slightly different meaning in JavaGAT. The java.net.{@link java.net.URI}
+ * only accepts absolute path names for URIs with a scheme and a host. The
+ * JavaGAT URI also accepts relative path names for URIs with a scheme and a
+ * host. This may be useful for protocols that have an entry point (the working
+ * directory after a connection has been established), which is not the same as
+ * the root of the file system.
+ * <p>
+ * For instance, if you ssh to a machine, your entry point is typically your
+ * $HOME directory, which might be the only place on that machine where you're
+ * allowed to do something. It might also be the case that you don't know
+ * beforehand the path of your $HOME (it might start with '<code>/home/user</code>'
+ * or '<code>/home3/user</code>', etc.). Although you don't know the
+ * absolute path name to a file '<code>$HOME/somedir/somefile</code>' in
+ * your $HOME, you do know the path name which is relative to the ssh entry
+ * point.
+ * <p>
+ * Now let's see what would happen if you do want to specify this URI using the
+ * java.net.{@link java.net.URI}:
+ * <p>
+ * <code>any://myhost/somedir/somefile</code>
+ * <p>
+ * According to the java.net.{@link java.net.URI}, this URI can be split up in
+ * the following parts:
+ * <p>
+ * scheme: <code>any</code><br>
+ * host: <code>myhost</code><br>
+ * path: <code>/somedir/somefile</code><br>
+ * <p>
+ * It's impossible to specify a path like this:
+ * <p>
+ * path: <code>somedir/somefile</code><br>
+ * <p>
+ * We can try by leaving the first '/' of the path out. The URI would then be:
+ * <p>
+ * <code>any://myhostsomedir/somefile</code>
+ * <p>
+ * Which would be split up in these parts:
+ * <p>
+ * scheme: <code>any</code><br>
+ * host: <code>myhostsomedir</code><br>
+ * path: <code>/somefile</code><br>
+ * <p>
+ * Which is also not what we want. Therefore the JavaGAT URI semantics aren't
+ * exactly the same as the java.net.{@link java.net.URI}. The JavaGAT URI
+ * treats the first '/' of the java.net.{@link java.net.URI} path not as part
+ * of the path, but as a separator between the previous parts of the URI and the
+ * path. The 'real' path starts after the first '/'. Let's show a few examples
+ * of the JavaGAT URI. Suppose we want to specify the same path
+ * <code>somedir/somefile</code> using the JavaGAT URI. This would be:
+ * <p>
+ * <code>any://myhost/somedir/somefile</code>
+ * <p>
+ * According to JavaGAT URI, this URI can be split up in the following parts:
+ * <p>
+ * scheme: <code>any</code><br>
+ * host: <code>myhost</code><br>
+ * path: <code>somedir/somefile</code><br>
+ * <p>
+ * Which is exactly what we want. If we did want to specify the <emph>absolute</emph>
+ * path <code>/somedir/somefile</code>, then the URI would be:
+ * <p>
+ * <code>any://myhost//somedir/somefile</code>
+ * <p>
+ * According to JavaGAT URI, this URI can be split up in the following parts:
+ * <p>
+ * scheme: <code>any</code><br>
+ * host: <code>myhost</code><br>
+ * path: <code>/somedir/somefile</code><br>
+ * <p>
+ * A few more examples will show correct JavaGAT URIs and how they're split up:
+ * <p>
+ * This JavaGAT URI '<code>/somedir/somefile</code>' splits up into:
+ * <p>
+ * scheme: <code>null</code><br>
+ * host: <code>null</code><br>
+ * path: <code>/somedir/somefile</code><br>
+ * <p>
+ * This JavaGAT URI '<code>file:somedir/somefile</code>' splits up into:
+ * <p>
+ * scheme: <code>file</code><br>
+ * host: <code>null</code><br>
+ * path: <code>somedir/somefile</code><br>
+ * <p>
+ * This JavaGAT URI '<code>any:////somedir/somefile</code>' splits up into:
+ * <p>
+ * scheme: <code>any</code><br>
+ * host: <code>null</code><br>
+ * path: <code>/somedir/somefile</code><br>
+ * <p>
+ * This JavaGAT URI '<code>any:///somedir/somefile</code>' splits up into:
+ * <p>
+ * scheme: <code>any</code><br>
+ * host: <code>null</code><br>
+ * path: <code>somedir/somefile</code><br>
+ * <p>
+ * JavaGAT supports the "any" protocol, which means that any protocol may be
+ * used to retrieve this URI.
+ * <p>
+ * <b>Please be careful of using the "any" protocol in combination with relative
+ * path names!</b> Suppose protocol A has the entry point '<code>/home/user</code>'
+ * and protocol B has the entry point '/tmp'. Then the URI '<code>any://myhost/somedir/somefile</code>'
+ * would point to two different location depending on the protocol. So, for
+ * protocol A it would be resolved to '<code>/home/user/somedir/somefile</code>'
+ * as for B it would be '<code>/tmp/somedir/somefile</code>'.
  * <p>
  * As far as we know, there is no good general solution for this problem. So,
  * try to use URIs with an absolute path as much as possible, and be careful
  * when you use URIs with relative paths.
+ * <p>
+ * One further note: for local files, '<code>file:///bla</code>' means the
+ * file '<code>bla</code>' in the current directory (which is the directory
+ * where the jvm is started), while '<code>file://hostname/bla</code>' means
+ * the file named '<code>bla</code>' relative to the entry point for the
+ * host, just like with the "any" protocol. The entry point in this case is
+ * assumed to be your home directory: the user.home system property. The
+ * hostname can be either "localhost" or the real hostname for your local
+ * machine.
  * 
- * <P>
- * One further note: for local files, file:///bla means the file bla in the
- * current directory, while file://hostname/bla means the file named bla
- * relative to the entry point for the host, just like with the any protocol.
- * The entry point in this case is assumed to be your home directory: the
- * user.home system property. The hostname can be either "localhost" or the real
- * hostname for your local machine.
  * 
+ * @author rob
  */
 @SuppressWarnings("serial")
 public class URI implements Serializable, Comparable<Object> {
     java.net.URI u;
 
+    /**
+     * @see java.net.URI#URI(String)
+     * @param s
+     *                The string to be parsed into a URI
+     * @throws URISyntaxException
+     */
     public URI(String s) throws URISyntaxException {
         u = new java.net.URI(new URIEncoder().encodeUri(s));
     }
 
+    /**
+     * Constructs a JavaGAT URI out of a {@link java.net.URI}.
+     * 
+     * @param u
+     *                the {@link java.net.URI}.
+     */
     public URI(java.net.URI u) {
         this.u = u;
     }
 
+    /**
+     * Creates a URI by parsing the given string.
+     * 
+     * @see java.net.URI#create(String)
+     * 
+     * @param s
+     *                The string to be parsed into a URI
+     * @return The new URI
+     * @throws URISyntaxException
+     */
     public static URI create(String s) throws URISyntaxException {
         return new URI(s);
     }
 
-    /** Check whether URI refers to the local machine */
+    /**
+     * Small, but not complete check whether this URI refers to the local
+     * machine. If the URI contains a hostname it is assumed to be remote. The
+     * {@link #refersToLocalHost()} provides a more extensive check.
+     * 
+     * @return true if the URI refers to the localhost, false otherwise.
+     */
     public boolean isLocal() {
         return u.getHost() == null;
     }
 
     /**
-     * Check whether URI refers to the local machine. The difference between
-     * this call and isLocal is that this call also checks if the host in the
-     * URI is equal to the hostname of the local mahince or "localhost". Another
-     * exception is when the URI specifies a port number. Then, this is assumed
-     * to be a tunnel.
+     * Extensive check whether URI refers to the local machine. This method
+     * checks for the hostname "localhost", the short hostname, the full
+     * hostname and the ip address. When the URI specifies a port number, it is
+     * assumed to be a tunnel and this call will return FALSE.
+     * 
+     * @return true if the URI refers to the localhost, false otherwise
      */
     public boolean refersToLocalHost() {
         if (u.getHost() == null) {
@@ -122,17 +232,26 @@ public class URI implements Serializable, Comparable<Object> {
         return false;
     }
 
-    /* this is where the magic happens to fix SUNs bug.. */
+    /**
+     * Returns the decoded path component of this URI.
+     * 
+     * @see java.net.URI#getPath()
+     * 
+     * @return The decoded path component of this URI, or <code>null</code> if
+     *         the path is undefined
+     */
     public String getPath() {
+        /* this is where the magic happens to fix SUNs bug.. */
         String path = u.getPath();
-        if (u.getScheme() != null && u.getHost() == null && u.getSchemeSpecificPart() != null) {
+        if (u.getScheme() != null && u.getHost() == null
+                && u.getSchemeSpecificPart() != null) {
             path = u.getSchemeSpecificPart();
             if (path.startsWith("///")) {
                 path = path.substring(3);
             }
             // silly fix, the '/' gets chopped of anyway.
             path = "/" + path;
-        } 
+        }
         if (path == null || path.equals("")) {
             return null;
         }
@@ -142,7 +261,7 @@ public class URI implements Serializable, Comparable<Object> {
         }
 
         path = path.substring(1);
-        
+
         if (u.getHost() != null
                 && (u.getHost().equals("localhost") || getLocalHostName()
                         .equals(u.getHost()))) {
@@ -163,10 +282,20 @@ public class URI implements Serializable, Comparable<Object> {
                 path = home + path;
             }
         }
-        
+
         return path;
     }
 
+    /**
+     * Compares this URI to another object, which must be a URI.
+     * 
+     * @see java.net.URI#compareTo(java.net.URI)
+     * 
+     * @param other
+     *                The object to which this URI is to be compared
+     * @return A negative integer, zero, or a positive integer as this URI is
+     *         less than, equal to, or greater than the given URI
+     */
     public int compareTo(Object other) {
         if (other instanceof java.net.URI) {
             return u.compareTo((java.net.URI) other);
@@ -179,6 +308,15 @@ public class URI implements Serializable, Comparable<Object> {
         return -1;
     }
 
+    /**
+     * Tests this URI for equality with another object.
+     * 
+     * @see java.net.URI#equals(Object)
+     * @param o
+     *                The object to which this URI is to be compared
+     * @return true if, and only if, the given object is a URI that is identical
+     *         to this URI
+     */
     public boolean equals(Object o) {
         if (o == null) {
             return false;
@@ -213,22 +351,43 @@ public class URI implements Serializable, Comparable<Object> {
          */
     }
 
+    /**
+     * Returns the decoded authority component of this URI.
+     * 
+     * @see java.net.URI#getAuthority()
+     * @return The decoded authority component of this URI, or <code>null</code>
+     *         if the authority is undefined
+     */
     public String getAuthority() {
         return u.getAuthority();
     }
 
+    /**
+     * Returns the decoded fragment component of this URI.
+     * 
+     * @see java.net.URI#getFragment()
+     * @return The decoded fragment component of this URI, or <code>null</code>
+     *         if the fragment is undefined
+     */
     public String getFragment() {
         return u.getFragment();
     }
 
+    /**
+     * Returns the host component of this URI.
+     * 
+     * @see java.net.URI#getHost()
+     * @return The host component of this URI, or <code>null</code> if the
+     *         host is undefined
+     */
     public String getHost() {
         return u.getHost();
     }
 
     /**
-     * gets the host component of the URI. If the URI refers to the local host,
-     * this will try to get the local host name and return that. If that fails,
-     * "localhost" is returned.
+     * Returns the host component of the URI with a resolved host. If the URI
+     * refers to the local host, this will try to get the local host name and
+     * return that. If that fails, "localhost" is returned.
      * 
      * @return the host
      */
@@ -246,14 +405,24 @@ public class URI implements Serializable, Comparable<Object> {
         return host;
     }
 
+    /**
+     * Returns the port number of this URI.
+     * 
+     * @see java.net.URI#getPort()
+     * @return The port component of this URI, or -1 if the port is undefined
+     */
     public int getPort() {
         return u.getPort();
     }
 
     /**
+     * Returns the port number of this URI or the default port if the port is
+     * undefined.
      * 
-     * @return returns the port specified in the URI, and default if none was
-     *         specified.
+     * @param defaultPort
+     *                the default port
+     * @return the port number of this URI or the default port if the port is
+     *         undefined
      */
     public int getPort(int defaultPort) {
         int port = getPort();
@@ -265,96 +434,261 @@ public class URI implements Serializable, Comparable<Object> {
         return port;
     }
 
+    /**
+     * Returns the decoded query component of this URI.
+     * 
+     * 
+     * @see java.net.URI#getQuery()
+     * @return The decoded query component of this URI, or <code>null</code>
+     *         if the query is undefined
+     */
     public String getQuery() {
         return u.getQuery();
     }
 
+    /**
+     * Returns the raw authority component of this URI.
+     * 
+     * @see java.net.URI#getRawAuthority()
+     * @return The raw authority component of this URI, or <code>null</code>
+     *         if the authority is undefined
+     */
     public String getRawAuthority() {
         return u.getRawAuthority();
     }
 
+    /**
+     * Returns the raw fragment component of this URI.
+     * 
+     * @see java.net.URI#getRawFragment()
+     * @return The raw fragment component of this URI, or <code>null</code> if
+     *         the fragment is undefined
+     */
     public String getRawFragment() {
         return u.getRawFragment();
     }
 
+    /**
+     * Returns the raw path component of this URI.
+     * 
+     * @see java.net.URI#getRawPath()
+     * @return The path component of this URI, or <code>null</code> if the
+     *         path is undefined
+     */
     public String getRawPath() {
         return u.getRawPath();
     }
 
+    /**
+     * Returns the raw query component of this URI.
+     * 
+     * @see java.net.URI#getRawQuery()
+     * @return The raw query component of this URI, or <code>null</code> if
+     *         the query is undefined
+     */
     public String getRawQuery() {
         return u.getRawQuery();
     }
 
+    /**
+     * Returns the raw scheme-specific part of this URI.
+     * 
+     * @see java.net.URI#getRawSchemeSpecificPart()
+     * @return The raw scheme-specific part of this URI (never <code>null</code>)
+     */
     public String getRawSchemeSpecificPart() {
         return u.getRawSchemeSpecificPart();
     }
 
+    /**
+     * Returns the raw user-information component of this URI.
+     * 
+     * @see java.net.URI#getRawUserInfo()
+     * @return The raw user-information component of this URI, or
+     *         <code>null</code> if the user information is undefined
+     */
     public String getRawUserInfo() {
         return u.getRawUserInfo();
     }
 
+    /**
+     * Returns the scheme component of this URI.
+     * 
+     * @see java.net.URI#getScheme()
+     * @return The scheme component of this URI, or <code>null</code> if the
+     *         scheme is undefined
+     */
     public String getScheme() {
         return u.getScheme();
     }
 
+    /**
+     * Returns the decoded scheme-specific part of this URI.
+     * 
+     * @see java.net.URI#getSchemeSpecificPart()
+     * @return The decoded scheme-specific part of this URI (never
+     *         <code>null</code>)
+     */
     public String getSchemeSpecificPart() {
         return u.getSchemeSpecificPart();
     }
 
+    /**
+     * Returns the decoded user-information component of this URI.
+     * 
+     * @see java.net.URI#getUserInfo()
+     * @return The decoded user-information component of this URI, or
+     *         <code>null</code> if the user information is undefined
+     */
     public String getUserInfo() {
         return u.getUserInfo();
     }
 
+    /**
+     * Returns a hash-code value for this URI.
+     * 
+     * @see java.net.URI#hashCode()
+     * @return A hash-code value for this URI
+     */
     public int hashCode() {
         return u.hashCode();
     }
 
-    public boolean isAbsolute() {
-        if (getPath().startsWith(File.separator)) {
-            return true;
-        } else {
+    /**
+     * Tells whether or not this URI has an absolute path.
+     * 
+     * @return true if this URI has an absolute path, false otherwise.
+     */
+    public boolean hasAbsolutePath() {
+        if (getPath() == null) {
             return false;
+        } else {
+            return getPath().startsWith("/");
         }
-        
-//        return u.isAbsolute();
     }
 
+    /**
+     * Tells whether or not this URI is absolute.
+     * 
+     * @see java.net.URI#isAbsolute()
+     * @return true if, and only if, this URI is absolute
+     */
+    public boolean isAbsolute() {
+        return u.isAbsolute();
+    }
+
+    /**
+     * Tells whether or not this URI is opaque.
+     * 
+     * @see java.net.URI#isOpaque()
+     * @return true if, and only if, this URI is opaque
+     */
     public boolean isOpaque() {
         return u.isOpaque();
     }
 
+    /**
+     * Normalizes this URI's path.
+     * 
+     * @see java.net.URI#normalize()
+     * @return A URI equivalent to this URI, but whose path is in normal form
+     */
     public URI normalize() {
         return new URI(u.normalize());
     }
 
+    /**
+     * Attempts to parse this URI's authority component, if defined, into
+     * user-information, host, and port components.
+     * 
+     * @see java.net.URI#parseServerAuthority()
+     * @return A URI whose authority field has been parsed as a server-based
+     *         authority
+     * @throws URISyntaxException
+     *                 If the authority component of this URI is defined but
+     *                 cannot be parsed as a server-based authority according to
+     *                 RFC 2396
+     */
     public URI parseServerAuthority() throws URISyntaxException {
         return new URI(u.parseServerAuthority());
     }
 
+    /**
+     * Relativizes the given URI against this URI.
+     * 
+     * @see java.net.URI#relativize(java.net.URI)
+     * @param arg0
+     *                The URI to be relativized against this URI
+     * @return The resulting URI
+     */
     public URI relativize(java.net.URI arg0) {
         return new URI(u.relativize(arg0));
     }
 
+    /**
+     * Constructs a new URI by parsing the given string and then resolving it
+     * against this URI.
+     * 
+     * @see java.net.URI#resolve(String)
+     * @param arg0
+     *                The string to be parsed into a URI
+     * @return The resulting URI
+     */
     public URI resolve(String arg0) {
         return new URI(u.resolve(arg0));
     }
 
+    /**
+     * Resolves the given URI against this URI.
+     * 
+     * @see java.net.URI#resolve(java.net.URI)
+     * @param arg0
+     *                The URI to be resolved against this URI
+     * @return The resulting URI
+     */
     public URI resolve(java.net.URI arg0) {
         return new URI(u.resolve(arg0));
     }
 
+    /**
+     * Returns the content of this URI as a US-ASCII string.
+     * 
+     * @see java.net.URI#toASCIIString()
+     * @return The string form of this URI, encoded as needed so that it only
+     *         contains characters in the US-ASCII charset
+     */
     public String toASCIIString() {
         return u.toASCIIString();
     }
 
+    /**
+     * Returns the content of this URI as a string.
+     * 
+     * @see java.net.URI#toString()
+     * @return The string form of this URI
+     */
     public String toString() {
         return u.toString();
     }
 
+    /**
+     * Constructs a URL from this URI.
+     * 
+     * @see java.net.URI#toURL()
+     * @return A URL constructed from this URI
+     * @throws MalformedURLException
+     *                 If a protocol handler for the URL could not be found, or
+     *                 if some other error occurred while constructing the URL
+     */
     public URL toURL() throws MalformedURLException {
         return u.toURL();
     }
 
+    /**
+     * Constructs a java.net.{@link java.net.URI} out of this URI.
+     * 
+     * @return the java.net.{@link java.net.URI} similar to this URI.
+     */
     public java.net.URI toJavaURI() {
         return u;
     }
@@ -383,14 +717,6 @@ public class URI implements Serializable, Comparable<Object> {
         }
 
         return getScheme().equals(scheme);
-    }
-
-    public void debugPrint() {
-        System.err
-                .println("URI: scheme = " + getScheme() + ", host = "
-                        + getHost() + ", port = " + getPort() + ", path = "
-                        + getPath());
-        System.err.println("underlying: " + u);
     }
 
     private String getLocalHostName() {

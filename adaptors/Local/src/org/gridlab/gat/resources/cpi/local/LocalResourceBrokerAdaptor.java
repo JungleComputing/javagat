@@ -248,7 +248,7 @@ public class LocalResourceBrokerAdaptor extends ResourceBrokerCpi {
             userOut = sd.getStdoutStream();
         } else {
             try {
-                userOut = GAT.createFileOutputStream(sd.getStdout());
+                userOut = GAT.createFileOutputStream(sandbox.getResolvedStdout());
             } catch (GATObjectCreationException e) {
                 throw new GATInvocationException("failed to create outputstream to write in output file: '" + sd.getStdout() + "'", e);
             }
@@ -257,7 +257,7 @@ public class LocalResourceBrokerAdaptor extends ResourceBrokerCpi {
             userErr = sd.getStderrStream();
         } else {
             try {
-                userErr = GAT.createFileOutputStream(sd.getStderr());
+                userErr = GAT.createFileOutputStream(sandbox.getResolvedStderr());
             } catch (GATObjectCreationException e) {
                 throw new GATInvocationException("failed to create outputstream to write in error file: '" + sd.getStderr() + "'", e);
             }

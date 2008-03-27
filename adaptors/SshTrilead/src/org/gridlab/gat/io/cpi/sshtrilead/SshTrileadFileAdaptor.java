@@ -171,7 +171,7 @@ public class SshTrileadFileAdaptor extends FileCpi {
             }
         }
 
-        if (destination.isAbsolute()) {
+        if (destination.hasAbsolutePath()) {
             if (destinationFile.isDirectory()) {
                 remoteDir = destinationFile.getPath();
             } else {
