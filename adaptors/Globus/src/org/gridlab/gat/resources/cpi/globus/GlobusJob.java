@@ -402,15 +402,6 @@ public class GlobusJob extends JobCpi implements GramJobListener,
             setStartTime();
         } else if (globusJobState == GLOBUS_JOB_STOPPED
                 || globusJobState == GLOBUS_JOB_SUBMISSION_ERROR) {
-            if (exitStatusEnabled && globusJobState == GLOBUS_JOB_STOPPED) {
-                try {
-                    readExitStatus();
-                } catch (GATInvocationException e) {
-                    logger
-                            .info("reading the exit status from file failed: ",
-                                    e);
-                }
-            }
             while (streamingOutputs > 0) {
                 try {
                     wait();
@@ -425,6 +416,15 @@ public class GlobusJob extends JobCpi implements GramJobListener,
                 setState(STOPPED);
             } else {
                 setState(SUBMISSION_ERROR);
+            }
+            if (exitStatusEnabled && globusJobState == GLOBUS_JOB_STOPPED) {
+                try {
+                    readExitStatus();
+                } catch (GATInvocationException e) {
+                    logger
+                            .info("reading the exit status from file failed: ",
+                                    e);
+                }
             }
             setStopTime();
             globusJobState = 0;
