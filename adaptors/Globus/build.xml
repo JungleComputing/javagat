@@ -45,8 +45,15 @@
 				<include name="*.jar" />
 			</fileset>
 		</copy>
-		
+
 		<delete dir="${tmp}" />
+
+		<!-- Copy the lib gt4 stuff for globus 4 -->
+		<copy todir="${gat.location}/lib/lib-gt4_0_0">
+			<fileset dir="${external}/lib-gt4_0_0">
+				<include name="*.jar" />
+			</fileset>
+		</copy>
 
 	</target>
 
