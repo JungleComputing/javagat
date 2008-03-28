@@ -77,15 +77,20 @@ public class WSGT4newResourceBrokerAdaptor extends ResourceBrokerCpi {
             throws GATObjectCreationException {
         super(gatContext, preferences, brokerURI);
         String globusLocation = System.getenv("GLOBUS_LOCATION");
-//        URL configLocation = ClassLoader.getSystemClassLoader().getResource("client-config.wsdd");
-//        System.out.println("classpath:      " + System.getProperty("java.class.path"));
-//        System.out.println("configlocation: " + configLocation);
+        // URL configLocation =
+        // ClassLoader.getSystemClassLoader().getResource("client-config.wsdd");
+        // System.out.println("classpath: " +
+        // System.getProperty("java.class.path"));
+        // System.out.println("configlocation: " + configLocation);
         if (globusLocation == null) {
             throw new GATObjectCreationException("$GLOBUS_LOCATION is not set");
         }
         System.setProperty("GLOBUS_LOCATION", globusLocation);
-        System.setProperty("axis.ClientConfigFile", globusLocation
-                + "/client-config.wsdd");
+        System.setProperty("axis.ClientConfigFile", System
+                .getProperty("axis.ClientConfigFile", globusLocation
+                        + "/client-config.wsdd"));
+        // System.setProperty("axis.ClientConfigFile", globusLocation
+        // + "/client-config.wsdd");
     }
 
     protected String createRSL(JobDescription description, Sandbox sandbox,
@@ -213,7 +218,8 @@ public class WSGT4newResourceBrokerAdaptor extends ResourceBrokerCpi {
                     try {
                         rsl += "<sourceUrl>" + srcFile.toURL() + "</sourceUrl>";
                         rsl += "<destinationUrl>" + destFile.toURL()
-                                + "</destinationUrl>"; // TODO: Add ${GLOBUS_USER_HOME}
+                                + "</destinationUrl>"; // TODO: Add
+                        // ${GLOBUS_USER_HOME}
                     } catch (MalformedURLException e) {
                         throw new GATInvocationException(
                                 "WSGT4ResourceBrokerAdaptor", e);
