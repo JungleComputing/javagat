@@ -168,7 +168,7 @@ public class SgeJob extends JobCpi {
     }
 
     public String marshal() {
-        throw new Error("Not implemented");
+        throw new UnsupportedOperationException("Not implemented");
     }
 
     protected void setState() {

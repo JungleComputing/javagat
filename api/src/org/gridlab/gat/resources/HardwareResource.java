@@ -27,7 +27,7 @@ public abstract class HardwareResource implements Resource {
      */
     public void addMetricListener(MetricListener metricListener, Metric metric)
             throws GATInvocationException {
-        throw new Error("Not implemented");
+        throw new UnsupportedOperationException("Not implemented");
     }
 
     /*
@@ -36,7 +36,7 @@ public abstract class HardwareResource implements Resource {
      * @see org.gridlab.gat.monitoring.Monitorable#getMetrics()
      */
     public List<MetricDefinition> getMetricDefinitions() throws GATInvocationException {
-        throw new Error("Not implemented");
+        throw new UnsupportedOperationException("Not implemented");
     }
 
     /*
@@ -47,7 +47,7 @@ public abstract class HardwareResource implements Resource {
      */
     public void removeMetricListener(MetricListener metricListener,
             Metric metric) throws GATInvocationException {
-        throw new Error("Not implemented");
+        throw new UnsupportedOperationException("Not implemented");
     }
 
     /*
@@ -57,6 +57,6 @@ public abstract class HardwareResource implements Resource {
      */
     public MetricValue getMeasurement(Metric metric)
             throws GATInvocationException {
-        throw new Error("Not implemented");
+        throw new UnsupportedOperationException("Not implemented");
     }
 }

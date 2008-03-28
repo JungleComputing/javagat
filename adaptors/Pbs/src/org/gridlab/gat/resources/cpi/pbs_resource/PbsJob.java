@@ -114,7 +114,7 @@ public class PbsJob extends JobCpi {
     }
 
     public String marshal() {
-        throw new Error("Not implemented");
+        throw new UnsupportedOperationException("Not implemented");
     }
 
     public void stop() throws GATInvocationException {

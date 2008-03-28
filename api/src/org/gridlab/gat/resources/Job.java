@@ -181,7 +181,7 @@ public abstract class Job implements Monitorable, Advertisable {
      *                 Thrown upon problems accessing the remote instance
      */
     public void stop() throws GATInvocationException {
-        throw new RuntimeException("Not implemented");
+        throw new UnsupportedOperationException("Not implemented");
     }
 
     /**
@@ -248,7 +248,7 @@ public abstract class Job implements Monitorable, Advertisable {
      *                 Thrown upon problems accessing the remote instance
      */
     public Map<String, Object> getInfo() throws GATInvocationException {
-        throw new RuntimeException("Not implemented");
+        throw new UnsupportedOperationException("Not implemented");
     }
 
     /**
@@ -263,7 +263,7 @@ public abstract class Job implements Monitorable, Advertisable {
      *                 Thrown upon problems accessing the remote instance
      */
     public String getJobID() throws GATInvocationException {
-        throw new RuntimeException("Not implemented");
+        throw new UnsupportedOperationException("Not implemented");
     }
 
     /**
@@ -273,7 +273,7 @@ public abstract class Job implements Monitorable, Advertisable {
      *                 Thrown upon problems accessing the remote instance
      */
     public void checkpoint() throws GATInvocationException {
-        throw new RuntimeException("Not implemented");
+        throw new UnsupportedOperationException("Not implemented");
     }
 
     /**
@@ -285,7 +285,7 @@ public abstract class Job implements Monitorable, Advertisable {
      *                 Upon non-remote IO problem
      */
     public void migrate() throws GATInvocationException {
-        throw new RuntimeException("Not implemented");
+        throw new UnsupportedOperationException("Not implemented");
     }
 
     /**
@@ -300,7 +300,7 @@ public abstract class Job implements Monitorable, Advertisable {
      */
     public void migrate(HardwareResourceDescription hardwareResourceDescription)
             throws GATInvocationException {
-        throw new RuntimeException("Not implemented");
+        throw new UnsupportedOperationException("Not implemented");
     }
 
     /**
@@ -312,7 +312,7 @@ public abstract class Job implements Monitorable, Advertisable {
      * @return the clone of the job
      */
     public Job cloneJob(HardwareResource resource) {
-        throw new RuntimeException("Not implemented");
+        throw new UnsupportedOperationException("Not implemented");
     }
 
     /**
@@ -320,7 +320,7 @@ public abstract class Job implements Monitorable, Advertisable {
      * state.
      */
     public void hold() throws GATInvocationException {
-        throw new RuntimeException("Not implemented");
+        throw new UnsupportedOperationException("Not implemented");
     }
 
     /**
@@ -328,7 +328,7 @@ public abstract class Job implements Monitorable, Advertisable {
      * only in the ON_HOLD state.
      */
     public void resume() throws GATInvocationException {
-        throw new RuntimeException("Not implemented");
+        throw new UnsupportedOperationException("Not implemented");
     }
 
     /**
@@ -337,32 +337,32 @@ public abstract class Job implements Monitorable, Advertisable {
      * @return the exit status of a job.
      */
     public int getExitStatus() throws GATInvocationException {
-        throw new RuntimeException("Not implemented");
+        throw new UnsupportedOperationException("Not implemented");
     }
 
     public MetricValue getMeasurement(Metric metric)
             throws GATInvocationException {
-        throw new RuntimeException("Not implemented");
+        throw new UnsupportedOperationException("Not implemented");
     }
 
     public List<MetricDefinition> getMetricDefinitions()
             throws GATInvocationException {
-        throw new RuntimeException("Not implemented");
+        throw new UnsupportedOperationException("Not implemented");
     }
 
     public MetricDefinition getMetricDefinitionByName(String name)
             throws GATInvocationException {
-        throw new RuntimeException("Not implemented");
+        throw new UnsupportedOperationException("Not implemented");
     }
 
     public void addMetricListener(MetricListener metricListener, Metric metric)
             throws GATInvocationException {
-        throw new RuntimeException("Not implemented");
+        throw new UnsupportedOperationException("Not implemented");
     }
 
     public void removeMetricListener(MetricListener metricListener,
             Metric metric) throws GATInvocationException {
-        throw new RuntimeException("Not implemented");
+        throw new UnsupportedOperationException("Not implemented");
     }
 
     public String toString() {

@@ -1441,7 +1441,7 @@ public class SshFileAdaptor extends FileCpi {
             }
 
         case WOS:
-            throw new GATInvocationException("Not implemented");
+            throw new UnsupportedOperationException("Not implemented");
         }
 
         throw new GATInvocationException("Unknown remote OS type");

@@ -146,7 +146,7 @@ public abstract class JobCpi extends Job {
             return GATEngine.getMeasurement(this, metric);
         }
 
-        throw new RuntimeException("Not implemented");
+        throw new UnsupportedOperationException("Not implemented");
     }
 
     public final List<MetricDefinition> getMetricDefinitions()

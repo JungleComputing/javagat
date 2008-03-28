@@ -140,7 +140,7 @@ public class SocketEndpointAdaptor extends EndpointCpi implements Serializable {
             throw new GATInvocationException("cannot listen to local endpoint");
         }
 
-        throw new Error("Not implemented"); // TODO implement listen
+        throw new UnsupportedOperationException("Not implemented"); // TODO implement listen
     }
 
     /**

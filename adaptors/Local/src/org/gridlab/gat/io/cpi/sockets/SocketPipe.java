@@ -76,12 +76,12 @@ public class SocketPipe implements Pipe {
      */
     public void addMetricListener(MetricListener metricListener, Metric metric)
             throws GATInvocationException {
-        throw new Error("Not implemented");
+        throw new UnsupportedOperationException("Not implemented");
     }
 
     public MetricDefinition getMetricDefinitionByName(String name)
             throws GATInvocationException {
-        throw new Error("Not implemented");
+        throw new UnsupportedOperationException("Not implemented");
     }
 
     /*
@@ -90,7 +90,7 @@ public class SocketPipe implements Pipe {
      * @see org.gridlab.gat.monitoring.Monitorable#getMetrics()
      */
     public List<MetricDefinition> getMetricDefinitions() throws GATInvocationException {
-        throw new Error("Not implemented");
+        throw new UnsupportedOperationException("Not implemented");
     }
 
     /*
@@ -101,11 +101,11 @@ public class SocketPipe implements Pipe {
      */
     public void removeMetricListener(MetricListener metricListener,
             Metric metric) throws GATInvocationException {
-        throw new Error("Not implemented");
+        throw new UnsupportedOperationException("Not implemented");
     }
 
     public MetricValue getMeasurement(Metric metric)
             throws GATInvocationException {
-        throw new Error("Not implemented");
+        throw new UnsupportedOperationException("Not implemented");
     }
 }

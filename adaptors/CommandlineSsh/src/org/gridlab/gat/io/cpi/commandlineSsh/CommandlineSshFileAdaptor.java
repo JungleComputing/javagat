@@ -112,21 +112,21 @@ public class CommandlineSshFileAdaptor extends FileCpi {
 
     public boolean delete() throws GATInvocationException {
         if (windows) {
-            throw new GATInvocationException("Not implemented");
+            throw new UnsupportedOperationException("Not implemented");
         }
         return runSshCommand("rm -rf " + getPathFixed(), true);
     }
 
     public boolean isDirectory() throws GATInvocationException {
         if (windows) {
-            throw new GATInvocationException("Not implemented");
+            throw new UnsupportedOperationException("Not implemented");
         }
         return runSshCommand("test -d " + getPathFixed(), true);
     }
 
     public boolean exists() throws GATInvocationException {
         if (windows) {
-            throw new GATInvocationException("Not implemented");
+            throw new UnsupportedOperationException("Not implemented");
         }
         return runSshCommand("test -e " + getPathFixed(), true);
     }
