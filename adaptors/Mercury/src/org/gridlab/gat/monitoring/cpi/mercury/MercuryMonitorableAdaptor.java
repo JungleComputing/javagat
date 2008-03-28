@@ -17,7 +17,7 @@ import org.gridlab.gat.Preferences;
 import org.gridlab.gat.monitoring.Metric;
 import org.gridlab.gat.monitoring.MetricDefinition;
 import org.gridlab.gat.monitoring.MetricListener;
-import org.gridlab.gat.monitoring.MetricValue;
+import org.gridlab.gat.monitoring.MetricEvent;
 import org.gridlab.gat.monitoring.cpi.MonitorableCpi;
 
 import java.math.BigInteger;
@@ -205,7 +205,7 @@ class LocalMetricListener implements hu.sztaki.lpds.monitor.MetricListener {
 
             for (int i = 0; i < mm.getListeners().size(); i++)
                 ((MetricListener) (mm.getListeners().get(i)))
-                        .processMetricEvent(new MetricValue("localhost", value
+                        .processMetricEvent(new MetricEvent("localhost", value
                                 .getValue(), mm.metric, value.getTimeStamp()
                                 .getTime()));
         } else if (md_mercury.getMeasurementType().toString().equals(
@@ -715,7 +715,7 @@ public class MercuryMonitorableAdaptor extends MonitorableCpi {
     }
 
     @SuppressWarnings("unchecked")
-    public MetricValue getMeasurement(Metric metric)
+    public MetricEvent getMeasurement(Metric metric)
             throws GATInvocationException {
         // continuousListener
         if (metric == null) {
@@ -783,7 +783,7 @@ public class MercuryMonitorableAdaptor extends MonitorableCpi {
 
         results.remove(id);
 
-        return new MetricValue("localhost", crt_mv1.getValue(), metric, crt_mv1
+        return new MetricEvent("localhost", crt_mv1.getValue(), metric, crt_mv1
                 .getTimeStamp().getTime());
     }
 
@@ -807,7 +807,7 @@ public class MercuryMonitorableAdaptor extends MonitorableCpi {
 
         params.put("name", name);
 
-        MetricValue result = getMeasurement(new Metric(md, params, 0));
+        MetricEvent result = getMeasurement(new Metric(md, params, 0));
 
         // retrieve metric definition from returned result:
         Object[] fields = (Object[]) result.getValue();

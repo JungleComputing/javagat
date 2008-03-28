@@ -9,14 +9,14 @@ import org.gridlab.gat.Preferences;
 import org.gridlab.gat.monitoring.Metric;
 import org.gridlab.gat.monitoring.MetricDefinition;
 import org.gridlab.gat.monitoring.MetricListener;
-import org.gridlab.gat.monitoring.MetricValue;
+import org.gridlab.gat.monitoring.MetricEvent;
 import org.gridlab.gat.monitoring.Monitorable;
 
 // This class can be used along with Mercury's monapptest command line client
 public class MetricListenerTest2 implements MetricListener {
     public int times = 0;
 
-    public void processMetricEvent(MetricValue val) {
+    public void processMetricEvent(MetricEvent val) {
         System.out.println("MetricListenerTest: Received metric event: " + val);
         times++;
     }

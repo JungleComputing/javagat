@@ -22,7 +22,7 @@ import org.gridlab.gat.engine.GATEngine;
 import org.gridlab.gat.io.File;
 import org.gridlab.gat.monitoring.Metric;
 import org.gridlab.gat.monitoring.MetricDefinition;
-import org.gridlab.gat.monitoring.MetricValue;
+import org.gridlab.gat.monitoring.MetricEvent;
 import org.gridlab.gat.resources.JobDescription;
 import org.gridlab.gat.resources.SoftwareDescription;
 import org.gridlab.gat.resources.cpi.JobCpi;
@@ -617,11 +617,11 @@ public class ProActiveJob extends JobCpi {
      *                the new state.
      */
     private void setState(int newState) {
-        MetricValue v = null;
+        MetricEvent v = null;
 
         synchronized (this) {
             state = newState;
-            v = new MetricValue(this, getStateString(state), statusMetric,
+            v = new MetricEvent(this, getStateString(state), statusMetric,
                     System.currentTimeMillis());
             if (state == STOPPED || state == SUBMISSION_ERROR) {
                 jobID = null;

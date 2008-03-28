@@ -12,7 +12,7 @@ import java.util.EventObject;
  * This topic is covered in more detail in the Metric documentation.
  */
 @SuppressWarnings("serial")
-public class MetricValue extends EventObject {
+public class MetricEvent extends EventObject {
     /**
      * This member variable holds the event time of this MetricEvent
      */
@@ -41,7 +41,7 @@ public class MetricValue extends EventObject {
      *            The number of milliseconds after January 1, 1970, 00:00:00 GMT
      *            when the MetricEvent happened.
      */
-    public MetricValue(Object source, Object value, Metric metric,
+    public MetricEvent(Object source, Object value, Metric metric,
             long eventTime) {
         super(source);
 

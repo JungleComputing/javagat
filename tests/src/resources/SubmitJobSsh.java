@@ -8,7 +8,7 @@ import org.gridlab.gat.GATContext;
 import org.gridlab.gat.Preferences;
 import org.gridlab.gat.URI;
 import org.gridlab.gat.monitoring.MetricListener;
-import org.gridlab.gat.monitoring.MetricValue;
+import org.gridlab.gat.monitoring.MetricEvent;
 import org.gridlab.gat.resources.JobDescription;
 import org.gridlab.gat.resources.ResourceBroker;
 import org.gridlab.gat.resources.SoftwareDescription;
@@ -28,7 +28,7 @@ public class SubmitJobSsh implements MetricListener {
         }
     }
 
-    public synchronized void processMetricEvent(MetricValue val) {
+    public synchronized void processMetricEvent(MetricEvent val) {
         notifyAll();
     }
 

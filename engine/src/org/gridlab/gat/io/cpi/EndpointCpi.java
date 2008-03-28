@@ -11,7 +11,7 @@ import org.gridlab.gat.io.PipeListener;
 import org.gridlab.gat.monitoring.Metric;
 import org.gridlab.gat.monitoring.MetricDefinition;
 import org.gridlab.gat.monitoring.MetricListener;
-import org.gridlab.gat.monitoring.MetricValue;
+import org.gridlab.gat.monitoring.MetricEvent;
 
 /**
  * Capability provider interface to the Endpoint class.
@@ -109,7 +109,7 @@ public abstract class EndpointCpi implements Endpoint {
         throw new UnsupportedOperationException("Not implemented");
     }
 
-    public MetricValue getMeasurement(Metric metric)
+    public MetricEvent getMeasurement(Metric metric)
             throws GATInvocationException {
         throw new UnsupportedOperationException("Not implemented");
     }

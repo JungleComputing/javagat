@@ -12,7 +12,7 @@ import org.gridlab.gat.engine.GATEngine;
 import org.gridlab.gat.monitoring.Metric;
 import org.gridlab.gat.monitoring.MetricDefinition;
 import org.gridlab.gat.monitoring.MetricListener;
-import org.gridlab.gat.monitoring.MetricValue;
+import org.gridlab.gat.monitoring.MetricEvent;
 import org.gridlab.gat.resources.Job;
 import org.gridlab.gat.resources.JobDescription;
 
@@ -134,7 +134,7 @@ public class WrappedJob extends JobCpi implements MetricListener {
      * state of the WrappedJob according to the state of the WrapperJob and fire
      * a metric to the application that listens to the WrappedJob.
      */
-    public void processMetricEvent(MetricValue val) {
+    public void processMetricEvent(MetricEvent val) {
         if (state == STOPPED || state == SUBMISSION_ERROR) {
             return;
         }
@@ -168,7 +168,7 @@ public class WrappedJob extends JobCpi implements MetricListener {
     }
 
     private void fireStateMetric(int state) {
-        MetricValue v = new MetricValue(this, Job.getStateString(state),
+        MetricEvent v = new MetricEvent(this, Job.getStateString(state),
                 statusMetric, System.currentTimeMillis());
         GATEngine.fireMetric(this, v);
     }

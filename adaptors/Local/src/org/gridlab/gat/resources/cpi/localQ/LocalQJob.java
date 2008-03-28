@@ -18,7 +18,7 @@ import org.gridlab.gat.engine.util.InputForwarder;
 import org.gridlab.gat.engine.util.OutputForwarder;
 import org.gridlab.gat.monitoring.Metric;
 import org.gridlab.gat.monitoring.MetricDefinition;
-import org.gridlab.gat.monitoring.MetricValue;
+import org.gridlab.gat.monitoring.MetricEvent;
 import org.gridlab.gat.resources.JobDescription;
 import org.gridlab.gat.resources.SoftwareDescription;
 import org.gridlab.gat.resources.cpi.JobCpi;
@@ -152,10 +152,10 @@ public class LocalQJob extends JobCpi implements Runnable,
     }
 
     private void setState(int state) {
-        MetricValue metricValue = null;
+        MetricEvent metricValue = null;
         synchronized (this) {
             this.state = state;
-            metricValue = new MetricValue(this, getStateString(state),
+            metricValue = new MetricEvent(this, getStateString(state),
                     statusMetric, System.currentTimeMillis());
 
             if (logger.isDebugEnabled()) {

@@ -24,7 +24,7 @@ import org.gridlab.gat.engine.GATEngine;
 import org.gridlab.gat.io.File;
 import org.gridlab.gat.monitoring.Metric;
 import org.gridlab.gat.monitoring.MetricDefinition;
-import org.gridlab.gat.monitoring.MetricValue;
+import org.gridlab.gat.monitoring.MetricEvent;
 import org.gridlab.gat.resources.Job;
 import org.gridlab.gat.resources.JobDescription;
 import org.gridlab.gat.resources.cpi.JobCpi;
@@ -242,7 +242,7 @@ public class GliteJob extends JobCpi {
             state = POST_STAGING;
             stateString = getStateString(state);
         }
-        MetricValue v = new MetricValue(this, stateString, statusMetric, System
+        MetricEvent v = new MetricEvent(this, stateString, statusMetric, System
                 .currentTimeMillis());
         if (GATEngine.DEBUG) {
             System.err.println("glite job stop: firing event: " + v);
@@ -282,7 +282,7 @@ public class GliteJob extends JobCpi {
             stateString = getStateString(state);
         }
 
-        MetricValue v2 = new MetricValue(this, stateString, statusMetric,
+        MetricEvent v2 = new MetricEvent(this, stateString, statusMetric,
                 System.currentTimeMillis());
         if (GATEngine.DEBUG) {
             System.err.println("glite job stop: firing event: " + v2);

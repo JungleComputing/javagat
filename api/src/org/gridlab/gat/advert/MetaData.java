@@ -9,12 +9,11 @@ import java.util.Hashtable;
 import java.util.Map;
 
 /**
+ * This class describes meta data that can be attached to an
+ * {@link Advertisable} object. MetaData consists of a number of key value
+ * tuples, where both the keys and the values are strings.
+ * 
  * @author rob
- */
-/**
- * This class describes meta data that can be attached to an Advertizable
- * object. MetaData consists of a number of key value tuples, where both the
- * keys and the values are strings.
  */
 @SuppressWarnings("serial")
 public class MetaData implements Serializable {
@@ -25,7 +24,7 @@ public class MetaData implements Serializable {
     }
 
     /**
-     * Put an entry in the MetaData object.
+     * Put an entry in the {@link MetaData} object.
      * 
      * @param key
      *                the key that corresponds to the given value
@@ -83,7 +82,7 @@ public class MetaData implements Serializable {
     }
 
     /**
-     * Returns the number of entries in the MetaData.
+     * Returns the number of entries in the {@link MetaData}.
      * 
      * @return the number of entries in the MetaData
      */
@@ -92,12 +91,13 @@ public class MetaData implements Serializable {
     }
 
     /**
-     * Match two metadata objects. Used internally by the GAT. GAT users should
-     * not call this method.
+     * Match two {@link MetaData} objects. <b>Used internally by the GAT. GAT
+     * users should not call this method.</b>
      * 
      * @param query
-     *                the meta data object to compare to.
-     * @return true: the two objects match. false: otherwise.
+     *                the {@link MetaData} object to compare to.
+     * @return <code>true</code>: the two objects match. <code>false</code>:
+     *         otherwise.
      * 
      */
     public boolean match(MetaData query) {

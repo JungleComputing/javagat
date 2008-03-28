@@ -4,7 +4,7 @@
 package org.gridlab.gat.engine;
 
 import org.gridlab.gat.monitoring.MetricDefinition;
-import org.gridlab.gat.monitoring.MetricValue;
+import org.gridlab.gat.monitoring.MetricEvent;
 
 /**
  * @author rob
@@ -16,7 +16,7 @@ class MetricNode {
 
     MetricDefinition definition;
 
-    MetricValue lastValue;
+    MetricEvent lastValue;
 
     MetricNode(Object adaptor, String methodName, MetricDefinition definition) {
         this.adaptor = adaptor;
@@ -24,7 +24,7 @@ class MetricNode {
         this.definition = definition;
     }
 
-    void setLastValue(MetricValue v) {
+    void setLastValue(MetricEvent v) {
         lastValue = v;
     }
 

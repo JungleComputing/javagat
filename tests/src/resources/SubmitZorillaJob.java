@@ -16,7 +16,7 @@ import org.gridlab.gat.io.File;
 import org.gridlab.gat.monitoring.Metric;
 import org.gridlab.gat.monitoring.MetricDefinition;
 import org.gridlab.gat.monitoring.MetricListener;
-import org.gridlab.gat.monitoring.MetricValue;
+import org.gridlab.gat.monitoring.MetricEvent;
 import org.gridlab.gat.resources.HardwareResourceDescription;
 import org.gridlab.gat.resources.Job;
 import org.gridlab.gat.resources.JobDescription;
@@ -133,7 +133,7 @@ public class SubmitZorillaJob implements MetricListener {
         }
     }
 
-    public void processMetricEvent(MetricValue val) {
+    public void processMetricEvent(MetricEvent val) {
         System.err.println("updated status: " + val);
     }
 

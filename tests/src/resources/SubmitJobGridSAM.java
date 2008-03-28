@@ -9,7 +9,7 @@ import org.gridlab.gat.GATContext;
 import org.gridlab.gat.Preferences;
 import org.gridlab.gat.URI;
 import org.gridlab.gat.monitoring.MetricListener;
-import org.gridlab.gat.monitoring.MetricValue;
+import org.gridlab.gat.monitoring.MetricEvent;
 import org.gridlab.gat.resources.HardwareResourceDescription;
 import org.gridlab.gat.resources.Job;
 import org.gridlab.gat.resources.JobDescription;
@@ -23,7 +23,7 @@ public class SubmitJobGridSAM {
     
     private class GridSAMMetricListener implements MetricListener {
 
-        public void processMetricEvent(MetricValue val) {
+        public void processMetricEvent(MetricEvent val) {
             logger.info("got process event, val=" + val);
         }
         

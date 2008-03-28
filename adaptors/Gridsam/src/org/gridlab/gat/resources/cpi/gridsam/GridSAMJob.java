@@ -12,7 +12,7 @@ import org.gridlab.gat.Preferences;
 import org.gridlab.gat.engine.GATEngine;
 import org.gridlab.gat.monitoring.Metric;
 import org.gridlab.gat.monitoring.MetricDefinition;
-import org.gridlab.gat.monitoring.MetricValue;
+import org.gridlab.gat.monitoring.MetricEvent;
 import org.gridlab.gat.resources.JobDescription;
 import org.gridlab.gat.resources.cpi.JobCpi;
 import org.gridlab.gat.resources.cpi.Sandbox;
@@ -47,7 +47,7 @@ public class GridSAMJob extends JobCpi {
         }
         
         private void fireEvent(int state) {
-            MetricValue v = new MetricValue(this, getStateString(state), statusMetric,
+            MetricEvent v = new MetricEvent(this, getStateString(state), statusMetric,
                     System.currentTimeMillis());
             GATEngine.fireMetric(parent, v);
             if (logger.isDebugEnabled()) {
@@ -271,11 +271,11 @@ public class GridSAMJob extends JobCpi {
     }
     
     void setFinished() {
-        MetricValue v = null;
+        MetricEvent v = null;
 
         synchronized (this) {
             state = POST_STAGING;
-            v = new MetricValue(this, getStateString(state), statusMetric, System.currentTimeMillis());
+            v = new MetricEvent(this, getStateString(state), statusMetric, System.currentTimeMillis());
         }
         
         if (logger.isDebugEnabled()) {
@@ -288,7 +288,7 @@ public class GridSAMJob extends JobCpi {
 
         synchronized (this) {
             state = STOPPED;
-            v = new MetricValue(this, getStateString(state), statusMetric, System.currentTimeMillis());
+            v = new MetricEvent(this, getStateString(state), statusMetric, System.currentTimeMillis());
         }
 
         GATEngine.fireMetric(this, v);
@@ -326,11 +326,11 @@ public class GridSAMJob extends JobCpi {
             }
         }
         
-        MetricValue v = null;
+        MetricEvent v = null;
 
         synchronized (this) {
             state = POST_STAGING;
-            v = new MetricValue(this, getStateString(state), statusMetric, System.currentTimeMillis());
+            v = new MetricEvent(this, getStateString(state), statusMetric, System.currentTimeMillis());
         }
         
         if (logger.isDebugEnabled()) {
@@ -343,7 +343,7 @@ public class GridSAMJob extends JobCpi {
 
         synchronized (this) {
             state = STOPPED;
-            v = new MetricValue(this, getStateString(state), statusMetric, System.currentTimeMillis());
+            v = new MetricEvent(this, getStateString(state), statusMetric, System.currentTimeMillis());
         }
 
         GATEngine.fireMetric(this, v);

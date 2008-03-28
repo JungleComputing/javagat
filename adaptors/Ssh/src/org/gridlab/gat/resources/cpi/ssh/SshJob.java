@@ -13,7 +13,7 @@ import org.gridlab.gat.Preferences;
 import org.gridlab.gat.engine.GATEngine;
 import org.gridlab.gat.monitoring.Metric;
 import org.gridlab.gat.monitoring.MetricDefinition;
-import org.gridlab.gat.monitoring.MetricValue;
+import org.gridlab.gat.monitoring.MetricEvent;
 import org.gridlab.gat.resources.JobDescription;
 import org.gridlab.gat.resources.cpi.JobCpi;
 import org.gridlab.gat.resources.cpi.Sandbox;
@@ -103,7 +103,7 @@ public class SshJob extends JobCpi {
 
     protected synchronized void setState(int state) {
         this.state = state;
-        MetricValue v = new MetricValue(this, getStateString(state),
+        MetricEvent v = new MetricEvent(this, getStateString(state),
                 statusMetric, System.currentTimeMillis());
         GATEngine.fireMetric(this, v);
     }
@@ -151,12 +151,12 @@ public class SshJob extends JobCpi {
     }
 
     void finished(int exitValue) {
-        MetricValue v = null;
+        MetricEvent v = null;
 
         synchronized (this) {
             exitVal = exitValue;
             state = POST_STAGING;
-            v = new MetricValue(this, getStateString(state), statusMetric,
+            v = new MetricEvent(this, getStateString(state), statusMetric,
                     System.currentTimeMillis());
             if (logger.isDebugEnabled()) {
                 logger.debug("default job callback: firing event: " + v);
@@ -168,7 +168,7 @@ public class SshJob extends JobCpi {
 
         synchronized (this) {
             state = STOPPED;
-            v = new MetricValue(this, getStateString(state), statusMetric,
+            v = new MetricEvent(this, getStateString(state), statusMetric,
                     System.currentTimeMillis());
             if (logger.isDebugEnabled()) {
                 logger.debug("default job callback: firing event: " + v);
@@ -179,7 +179,7 @@ public class SshJob extends JobCpi {
     }
 
     public void stop() throws GATInvocationException {
-        MetricValue v = null;
+        MetricEvent v = null;
         if (channel != null) {
             try {
                 /*
@@ -207,7 +207,7 @@ public class SshJob extends JobCpi {
 
         synchronized (this) {
             state = POST_STAGING;
-            v = new MetricValue(this, getStateString(state), statusMetric,
+            v = new MetricEvent(this, getStateString(state), statusMetric,
                     System.currentTimeMillis());
             if (logger.isDebugEnabled()) {
                 logger.debug("default job callback: firing event: " + v);
@@ -219,7 +219,7 @@ public class SshJob extends JobCpi {
 
         synchronized (this) {
             state = STOPPED;
-            v = new MetricValue(this, getStateString(state), statusMetric,
+            v = new MetricEvent(this, getStateString(state), statusMetric,
                     System.currentTimeMillis());
             if (logger.isDebugEnabled()) {
                 logger.debug("default job callback: firing event: " + v);

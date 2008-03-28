@@ -7,7 +7,7 @@ import org.gridlab.gat.GAT;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.Preferences;
 import org.gridlab.gat.monitoring.Metric;
-import org.gridlab.gat.monitoring.MetricValue;
+import org.gridlab.gat.monitoring.MetricEvent;
 import org.gridlab.gat.monitoring.Monitorable;
 
 class Server implements Runnable {
@@ -43,7 +43,7 @@ public class SimpleTest {
 
             params.put("host", "fs0.das2.cs.vu.nl");
 
-            MetricValue result = m.getMeasurement(new Metric(m
+            MetricEvent result = m.getMeasurement(new Metric(m
                 .getMetricDefinitionByName("host.cpu.number"), params, 0));
 
             //MetricValue result = m.getMeasurement(null);

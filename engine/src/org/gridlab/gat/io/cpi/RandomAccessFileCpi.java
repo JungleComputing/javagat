@@ -11,7 +11,7 @@ import org.gridlab.gat.io.RandomAccessFileInterface;
 import org.gridlab.gat.monitoring.Metric;
 import org.gridlab.gat.monitoring.MetricDefinition;
 import org.gridlab.gat.monitoring.MetricListener;
-import org.gridlab.gat.monitoring.MetricValue;
+import org.gridlab.gat.monitoring.MetricEvent;
 
 /**
  * Capability provider interface to the File class.
@@ -227,7 +227,7 @@ public abstract class RandomAccessFileCpi implements RandomAccessFileInterface {
         throw new UnsupportedOperationException("Not implemented");
     }
 
-    public MetricValue getMeasurement(Metric metric)
+    public MetricEvent getMeasurement(Metric metric)
             throws GATInvocationException {
         throw new UnsupportedOperationException("Not implemented");
     }

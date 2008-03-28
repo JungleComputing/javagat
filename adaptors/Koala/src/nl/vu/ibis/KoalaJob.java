@@ -6,7 +6,7 @@ import org.gridlab.gat.Preferences;
 import org.gridlab.gat.engine.GATEngine;
 import org.gridlab.gat.monitoring.Metric;
 import org.gridlab.gat.monitoring.MetricDefinition;
-import org.gridlab.gat.monitoring.MetricValue;
+import org.gridlab.gat.monitoring.MetricEvent;
 import org.gridlab.gat.resources.Job;
 import org.gridlab.gat.resources.JobDescription;
 import org.gridlab.gat.resources.cpi.JobCpi;
@@ -911,7 +911,7 @@ public class KoalaJob extends JobCpi implements Runnable {
     public void stateChange(int state, long time) {
         setState(state);
         
-        GATEngine.fireMetric(this, new MetricValue(this, 
+        GATEngine.fireMetric(this, new MetricEvent(this, 
                 Job.getStateString(state), statusMetric, time));
     }        
 }

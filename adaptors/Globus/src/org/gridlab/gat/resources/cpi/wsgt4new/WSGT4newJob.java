@@ -12,7 +12,7 @@ import org.gridlab.gat.Preferences;
 import org.gridlab.gat.engine.GATEngine;
 import org.gridlab.gat.monitoring.Metric;
 import org.gridlab.gat.monitoring.MetricDefinition;
-import org.gridlab.gat.monitoring.MetricValue;
+import org.gridlab.gat.monitoring.MetricEvent;
 import org.gridlab.gat.resources.JobDescription;
 import org.gridlab.gat.resources.cpi.JobCpi;
 import org.gridlab.gat.resources.cpi.Sandbox;
@@ -49,7 +49,7 @@ public class WSGT4newJob extends JobCpi implements GramJobListener {
     protected synchronized void setState(int state) {
         if (this.state != state) {
             this.state = state;
-            MetricValue v = new MetricValue(this, getStateString(state),
+            MetricEvent v = new MetricEvent(this, getStateString(state),
                     statusMetric, System.currentTimeMillis());
 
             if (logger.isDebugEnabled()) {

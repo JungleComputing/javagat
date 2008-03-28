@@ -7,7 +7,7 @@ import org.gridlab.gat.GAT;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.monitoring.Metric;
 import org.gridlab.gat.monitoring.MetricDefinition;
-import org.gridlab.gat.monitoring.MetricValue;
+import org.gridlab.gat.monitoring.MetricEvent;
 import org.gridlab.gat.monitoring.Monitorable;
 
 public class GetMetric {
@@ -23,7 +23,7 @@ public class GetMetric {
         params.put("host", args[0]);
 
         Metric metric = def.createMetric(params);
-        MetricValue result = m.getMeasurement(metric);
+        MetricEvent result = m.getMeasurement(metric);
         System.err.println("Free memory at " + new Date(result.getEventTime())
             + " was: " + result.getValue());
     }

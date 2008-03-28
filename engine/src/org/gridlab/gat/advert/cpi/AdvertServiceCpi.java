@@ -15,7 +15,7 @@ import org.gridlab.gat.advert.MetaData;
 import org.gridlab.gat.monitoring.Metric;
 import org.gridlab.gat.monitoring.MetricDefinition;
 import org.gridlab.gat.monitoring.MetricListener;
-import org.gridlab.gat.monitoring.MetricValue;
+import org.gridlab.gat.monitoring.MetricEvent;
 import org.gridlab.gat.monitoring.Monitorable;
 
 /**
@@ -148,7 +148,7 @@ public class AdvertServiceCpi implements AdvertService, Monitorable {
         throw new UnsupportedOperationException("Not implemented");
     }
 
-    public MetricValue getMeasurement(Metric metric)
+    public MetricEvent getMeasurement(Metric metric)
             throws GATInvocationException {
         throw new UnsupportedOperationException("Not implemented");
     }

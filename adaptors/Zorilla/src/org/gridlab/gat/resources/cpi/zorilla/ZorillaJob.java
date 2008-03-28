@@ -29,7 +29,7 @@ import org.gridlab.gat.io.FileInputStream;
 import org.gridlab.gat.io.FileOutputStream;
 import org.gridlab.gat.monitoring.Metric;
 import org.gridlab.gat.monitoring.MetricDefinition;
-import org.gridlab.gat.monitoring.MetricValue;
+import org.gridlab.gat.monitoring.MetricEvent;
 import org.gridlab.gat.resources.JavaSoftwareDescription;
 import org.gridlab.gat.resources.Job;
 import org.gridlab.gat.resources.JobDescription;
@@ -413,7 +413,7 @@ public class ZorillaJob extends JobCpi {
     }
 
     private void fireStatusMetric() {
-        MetricValue v = null;
+        MetricEvent v = null;
 
         synchronized (this) {
             int state = getState();
@@ -423,7 +423,7 @@ public class ZorillaJob extends JobCpi {
                 return;
             }
             lastState = state;
-            v = new MetricValue(this, getStateString(state), statusMetric,
+            v = new MetricEvent(this, getStateString(state), statusMetric,
                     System.currentTimeMillis());
         }
 

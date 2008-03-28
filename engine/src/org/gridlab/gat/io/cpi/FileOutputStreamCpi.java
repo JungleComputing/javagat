@@ -11,7 +11,7 @@ import org.gridlab.gat.io.FileOutputStreamInterface;
 import org.gridlab.gat.monitoring.Metric;
 import org.gridlab.gat.monitoring.MetricDefinition;
 import org.gridlab.gat.monitoring.MetricListener;
-import org.gridlab.gat.monitoring.MetricValue;
+import org.gridlab.gat.monitoring.MetricEvent;
 
 /**
  * Capability provider interface to the FileStream class.
@@ -167,7 +167,7 @@ public abstract class FileOutputStreamCpi implements FileOutputStreamInterface {
         throw new UnsupportedOperationException("Not implemented");
     }
 
-    public MetricValue getMeasurement(Metric metric)
+    public MetricEvent getMeasurement(Metric metric)
             throws GATInvocationException {
         throw new UnsupportedOperationException("Not implemented");
     }

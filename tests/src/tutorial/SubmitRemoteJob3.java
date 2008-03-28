@@ -5,7 +5,7 @@ import org.gridlab.gat.GATContext;
 import org.gridlab.gat.URI;
 import org.gridlab.gat.io.File;
 import org.gridlab.gat.monitoring.MetricListener;
-import org.gridlab.gat.monitoring.MetricValue;
+import org.gridlab.gat.monitoring.MetricEvent;
 import org.gridlab.gat.resources.Job;
 import org.gridlab.gat.resources.JobDescription;
 import org.gridlab.gat.resources.ResourceBroker;
@@ -60,7 +60,7 @@ public class SubmitRemoteJob3 implements MetricListener {
         System.out.println("jobs DONE!");
     }
 
-    public void processMetricEvent(MetricValue val) {
+    public void processMetricEvent(MetricEvent val) {
         System.out.println("val: " + val.getValue());
     }
 }

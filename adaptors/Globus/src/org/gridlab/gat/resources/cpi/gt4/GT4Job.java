@@ -21,7 +21,7 @@ import org.gridlab.gat.Preferences;
 import org.gridlab.gat.engine.GATEngine;
 import org.gridlab.gat.monitoring.Metric;
 import org.gridlab.gat.monitoring.MetricDefinition;
-import org.gridlab.gat.monitoring.MetricValue;
+import org.gridlab.gat.monitoring.MetricEvent;
 import org.gridlab.gat.resources.JobDescription;
 import org.gridlab.gat.resources.cpi.JobCpi;
 import org.gridlab.gat.resources.cpi.Sandbox;
@@ -149,7 +149,7 @@ public class GT4Job extends JobCpi {
         }
         task.removeStatusListener(statusListener);
 
-        MetricValue v = new MetricValue(this, stateString, statusMetric, System
+        MetricEvent v = new MetricEvent(this, stateString, statusMetric, System
                 .currentTimeMillis());
 
         if (logger.isDebugEnabled()) {
@@ -175,7 +175,7 @@ public class GT4Job extends JobCpi {
             stateString = getStateString(state);
         }
 
-        MetricValue v2 = new MetricValue(this, stateString, statusMetric,
+        MetricEvent v2 = new MetricEvent(this, stateString, statusMetric,
                 System.currentTimeMillis());
 
         if (logger.isDebugEnabled()) {
@@ -194,7 +194,7 @@ public class GT4Job extends JobCpi {
     protected synchronized void setState(int state) {
         this.state = state;
 
-        MetricValue v = new MetricValue(this, getStateString(state),
+        MetricEvent v = new MetricEvent(this, getStateString(state),
                 statusMetric, System.currentTimeMillis());
         GATEngine.fireMetric(this, v);
     }

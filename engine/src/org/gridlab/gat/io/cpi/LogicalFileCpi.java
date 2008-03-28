@@ -17,7 +17,7 @@ import org.gridlab.gat.io.LogicalFile;
 import org.gridlab.gat.monitoring.Metric;
 import org.gridlab.gat.monitoring.MetricDefinition;
 import org.gridlab.gat.monitoring.MetricListener;
-import org.gridlab.gat.monitoring.MetricValue;
+import org.gridlab.gat.monitoring.MetricEvent;
 import org.gridlab.gat.monitoring.Monitorable;
 
 /**
@@ -248,7 +248,7 @@ public abstract class LogicalFileCpi implements LogicalFile, Monitorable {
         throw new UnsupportedOperationException("Not implemented");
     }
 
-    public MetricValue getMeasurement(Metric metric)
+    public MetricEvent getMeasurement(Metric metric)
             throws GATInvocationException {
         throw new UnsupportedOperationException("Not implemented");
     }

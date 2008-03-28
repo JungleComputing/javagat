@@ -8,7 +8,7 @@ import org.gridlab.gat.URI;
 import org.gridlab.gat.monitoring.Metric;
 import org.gridlab.gat.monitoring.MetricDefinition;
 import org.gridlab.gat.monitoring.MetricListener;
-import org.gridlab.gat.monitoring.MetricValue;
+import org.gridlab.gat.monitoring.MetricEvent;
 import org.gridlab.gat.resources.Job;
 import org.gridlab.gat.resources.JobDescription;
 import org.gridlab.gat.resources.ResourceBroker;
@@ -296,7 +296,7 @@ public class Component implements MetricListener {
         owner.stateChange(this, this.state);
     }
 
-    public void processMetricEvent(MetricValue value) {
+    public void processMetricEvent(MetricEvent value) {
         stateChange((String) value.getValue());
     }
 }

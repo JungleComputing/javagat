@@ -16,7 +16,7 @@ import org.gridlab.gat.Preferences;
 import org.gridlab.gat.engine.GATEngine;
 import org.gridlab.gat.monitoring.Metric;
 import org.gridlab.gat.monitoring.MetricDefinition;
-import org.gridlab.gat.monitoring.MetricValue;
+import org.gridlab.gat.monitoring.MetricEvent;
 import org.gridlab.gat.resources.JobDescription;
 import org.gridlab.gat.resources.cpi.JobCpi;
 import org.gridlab.gat.resources.cpi.Sandbox;
@@ -58,7 +58,7 @@ public class PbsJob extends JobCpi {
     
     protected synchronized void setState(int state) {
         this.state = state;
-        MetricValue v = new MetricValue(this, getStateString(state), statusMetric, System
+        MetricEvent v = new MetricEvent(this, getStateString(state), statusMetric, System
                 .currentTimeMillis());
         GATEngine.fireMetric(this, v);
     }

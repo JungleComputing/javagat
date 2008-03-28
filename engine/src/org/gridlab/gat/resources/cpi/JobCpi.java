@@ -14,7 +14,7 @@ import org.gridlab.gat.engine.GATEngine;
 import org.gridlab.gat.monitoring.Metric;
 import org.gridlab.gat.monitoring.MetricDefinition;
 import org.gridlab.gat.monitoring.MetricListener;
-import org.gridlab.gat.monitoring.MetricValue;
+import org.gridlab.gat.monitoring.MetricEvent;
 import org.gridlab.gat.resources.Job;
 import org.gridlab.gat.resources.JobDescription;
 
@@ -140,7 +140,7 @@ public abstract class JobCpi extends Job {
         }
     }
 
-    public MetricValue getMeasurement(Metric metric)
+    public MetricEvent getMeasurement(Metric metric)
             throws GATInvocationException {
         if (metric.getDefinition().getMeasurementType() == MetricDefinition.DISCRETE) {
             return GATEngine.getMeasurement(this, metric);

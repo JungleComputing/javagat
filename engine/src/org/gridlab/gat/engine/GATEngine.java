@@ -38,7 +38,7 @@ import org.gridlab.gat.advert.Advertisable;
 import org.gridlab.gat.monitoring.Metric;
 import org.gridlab.gat.monitoring.MetricDefinition;
 import org.gridlab.gat.monitoring.MetricListener;
-import org.gridlab.gat.monitoring.MetricValue;
+import org.gridlab.gat.monitoring.MetricEvent;
 
 /**
  * @author rob
@@ -866,7 +866,7 @@ public class GATEngine {
         }
     }
 
-    public static void fireMetric(Object adaptor, MetricValue v) {
+    public static void fireMetric(Object adaptor, MetricEvent v) {
         // look for all callbacks that were installed for this metric, call
         // them.
         GATEngine e = getGATEngine();
@@ -907,7 +907,7 @@ public class GATEngine {
         throw new Error("Internal error: event fired for non-registered metric");
     }
 
-    public static MetricValue getMeasurement(Object adaptor, Metric metric)
+    public static MetricEvent getMeasurement(Object adaptor, Metric metric)
             throws GATInvocationException {
         if (metric.getDefinition().getMeasurementType() != MetricDefinition.DISCRETE) {
             throw new GATInvocationException(

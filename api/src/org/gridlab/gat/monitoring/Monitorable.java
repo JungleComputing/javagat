@@ -73,12 +73,12 @@ public interface Monitorable {
             throws GATInvocationException;
 
     /**
-     * Returns a {@link MetricValue} that represents the measured {@link Metric}.
+     * Returns a {@link MetricEvent} that represents the measured {@link Metric}.
      * 
-     * @return a {@link MetricValue} that represents the measured {@link Metric}.
+     * @return a {@link MetricEvent} that represents the measured {@link Metric}.
      * @throws GATInvocationException
      *                 the measurement failed
      */
-    public MetricValue getMeasurement(Metric metric)
+    public MetricEvent getMeasurement(Metric metric)
             throws GATInvocationException;
 }

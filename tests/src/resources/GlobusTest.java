@@ -10,7 +10,7 @@ import org.gridlab.gat.URI;
 import org.gridlab.gat.monitoring.Metric;
 import org.gridlab.gat.monitoring.MetricDefinition;
 import org.gridlab.gat.monitoring.MetricListener;
-import org.gridlab.gat.monitoring.MetricValue;
+import org.gridlab.gat.monitoring.MetricEvent;
 import org.gridlab.gat.resources.Job;
 import org.gridlab.gat.resources.JobDescription;
 import org.gridlab.gat.resources.ResourceBroker;
@@ -31,7 +31,7 @@ public class GlobusTest implements MetricListener {
         }
     }
 
-    public synchronized void processMetricEvent(MetricValue val) {
+    public synchronized void processMetricEvent(MetricEvent val) {
         System.err.println("job status changed to: " + val);
         notifyAll();
     }
