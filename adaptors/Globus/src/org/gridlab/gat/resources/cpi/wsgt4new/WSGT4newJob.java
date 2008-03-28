@@ -31,6 +31,7 @@ public class WSGT4newJob extends JobCpi implements GramJobListener {
     private GramJob job;
     private int exitStatus;
     private Metric statusMetric;
+    private String jobID;
 
     protected WSGT4newJob(GATContext gatContext, Preferences preferences,
             JobDescription jobDescription, Sandbox sandbox) {
@@ -172,6 +173,18 @@ public class WSGT4newJob extends JobCpi implements GramJobListener {
 
     protected void submitted() {
         setSubmissionTime();
+    }
+
+    public void setJobID(String submissionID) {
+        this.jobID = submissionID;
+        
+    }
+    
+    public String getJobID() {
+        if (jobID == null) {
+            return "unknown wsgt4 job";
+        }
+        return jobID;
     }
 
 }

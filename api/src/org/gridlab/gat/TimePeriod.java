@@ -16,15 +16,15 @@ public class TimePeriod implements java.io.Serializable {
     private long stopTime;
 
     /**
-     * This method constructs a TimePeriod instance corresponding to the passed
-     * StartTime and StopTime.
-     *
+     * This method constructs a {@link TimePeriod} instance corresponding to the
+     * passed <code>startTime</code> and <code>stopTime</code>.
+     * 
      * @param startTime
-     *            The number of milliseconds after January 1, 1970, 00:00:00 GMT
-     *            when the time period starts, a long
+     *                The number of milliseconds after January 1, 1970, 00:00:00
+     *                GMT when the time period starts, a long
      * @param stopTime
-     *            The number of milliseconds after January 1, 1970, 00:00:00 GMT
-     *            when the time period stops, a long
+     *                The number of milliseconds after January 1, 1970, 00:00:00
+     *                GMT when the time period stops, a long
      */
     public TimePeriod(long startTime, long stopTime) {
         this.stopTime = stopTime;
@@ -32,17 +32,17 @@ public class TimePeriod implements java.io.Serializable {
     }
 
     /**
-     * Tests this TimePeriod for equality with the passed Object.
+     * Tests this {@link TimePeriod} for equality with the passed Object.
      * <p>
-     * If the given object is not a TimePeriod, then this method immediately
-     * returns false.
+     * If the given object is not a {@link TimePeriod}, then this method
+     * immediately returns <code>false</code>.
      * <p>
-     * If the passed object is a TimePeriod, then it is deemed equal if it has a
-     * numerically equivalent start time and a numerically equivalent stop time
-     * to the passed TimePeriod instance.
-     *
+     * If the passed object is a {@link TimePeriod}, then it is deemed equal if
+     * it has a numerically equivalent start time and a numerically equivalent
+     * stop time to the passed {@link TimePeriod} instance.
+     * 
      * @param object
-     *            The Object to test for equality
+     *                The {@link Object} to test for equality
      * @return A boolean indicating equality
      */
     public boolean equals(Object object) {
@@ -70,9 +70,9 @@ public class TimePeriod implements java.io.Serializable {
     }
 
     /**
-     * This method returns the number of milliseconds after January 1, 1970,
-     * 00:00:00 GMT when the time period starts, a long
-     *
+     * Returns the number of milliseconds after January 1, 1970, 00:00:00 GMT
+     * when the time period starts, a long
+     * 
      * @return The number of milliseconds after January 1, 1970, 00:00:00 GMT
      *         when the time period starts, a long
      */
@@ -81,9 +81,9 @@ public class TimePeriod implements java.io.Serializable {
     }
 
     /**
-     * This method returns the number of milliseconds after January 1, 1970,
-     * 00:00:00 GMT when the time period stops, a long
-     *
+     * Returns the number of milliseconds after January 1, 1970, 00:00:00 GMT
+     * when the time period stops, a long
+     * 
      * @return The number of milliseconds after January 1, 1970, 00:00:00 GMT
      *         when the time period stops, a long
      */
