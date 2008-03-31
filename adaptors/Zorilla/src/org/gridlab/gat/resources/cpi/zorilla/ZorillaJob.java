@@ -26,6 +26,7 @@ import org.gridlab.gat.URI;
 import org.gridlab.gat.engine.GATEngine;
 import org.gridlab.gat.io.File;
 import org.gridlab.gat.io.FileInputStream;
+import org.gridlab.gat.io.FileInterface;
 import org.gridlab.gat.io.FileOutputStream;
 import org.gridlab.gat.monitoring.Metric;
 import org.gridlab.gat.monitoring.MetricDefinition;
@@ -262,7 +263,13 @@ public class ZorillaJob extends JobCpi {
                         childFile);
             }
         } else {
-            File parent = dst.getFileInterface().getParentFile();
+            FileInterface fileInterface = dst.getFileInterface();
+            
+            if (fileInterface == null) {
+                throw new Exception("could not get file file interface");
+            }
+            
+            File parent = fileInterface.getParentFile();
             if (parent != null) {
                 parent.getFileInterface().mkdirs();
             }
