@@ -4,6 +4,7 @@
  */
 package org.gridlab.gat.resources;
 
+import java.util.ArrayList;
 import java.util.Map;
 import java.util.Set;
 
@@ -52,228 +53,242 @@ import java.util.Set;
 @SuppressWarnings("serial")
 public class JavaSoftwareDescription extends SoftwareDescription {
 
-    private String[] javaOptions;
-    private Map<String, String> javaSystemProperties;
-    private String javaMain;
-    private String[] javaArguments;
-    private String javaClassPath;
+	private String[] javaOptions;
 
-    /**
-     * Create a {@link JavaSoftwareDescription}, which describes the java
-     * application.
-     */
-    public JavaSoftwareDescription() {
-        super();
-    }
+	private Map<String, String> javaSystemProperties;
 
-    /**
-     * Create a {@link JavaSoftwareDescription} with the provided
-     * <code>attributes</code>, which describes the java application. See
-     * {@link SoftwareDescription} for a list of well known attributes. Besides
-     * this list the {@link JavaSoftwareDescription} knows these attributes:
-     * <p>
-     * <TABLE border="2" frame="box" rules="groups" summary="Minimum set of
-     * supported attributes"> <CAPTION>supported name/value pairs of
-     * JavaSoftwareDescription</CAPTION> <COLGROUP align="left"> <COLGROUP
-     * align="center"> <COLGROUP align="left" > <THEAD valign="top">
-     * <TR>
-     * <TH>Name
-     * <TH>Type
-     * <TH>Description <TBODY>
-     * <TR>
-     * <TD>java.main
-     * <TD>{@link String}
-     * <TD>the main class that should be executed
-     * <TR>
-     * <TD>java.options
-     * <TD>{@link String}[]
-     * <TD>the jvm options for this java application
-     * <TR>
-     * <TD>java.system.properties
-     * <TD>{@link Map}<{@link String}, {@link String}>
-     * <TD>the java system properties
-     * <TR>
-     * <TD>java.arguments
-     * <TD>{@link String}[]
-     * <TD>the java arguments for the main class of the java application
-     * <TR></TBODY> </TABLE>
-     * 
-     * @param attributes
-     *                the attributes belonging to this
-     *                {@link JavaSoftwareDescription}.
-     */
-    @SuppressWarnings("unchecked")
-    public JavaSoftwareDescription(Map<String, Object> attributes) {
-        super(attributes);
-        javaMain = (String) attributes.get("java.main");
-        setJavaOptions((String[]) attributes.get("java.options"));
-        javaSystemProperties = (Map<String, String>) attributes
-                .get("java.system.properties");
-        javaArguments = (String[]) attributes.get("java.arguments");
-    }
+	private String javaMain;
 
-    /**
-     * Returns the jvm options.
-     * 
-     * @return the jvm options.
-     */
-    public String[] getJavaOptions() {
-        return javaOptions;
-    }
+	private String[] javaArguments;
 
-    /**
-     * Sets the jvm options. Note that any option starting with '-D' or '"-D'
-     * will be ignored. These should be set using the method
-     * {@link #setJavaSystemProperties(Map)}.
-     * 
-     * @param options
-     *                the jvm options.
-     */
-    public void setJavaOptions(String[] options) {
-        int systemProperties = 0;
-        for (String option : options) {
-            if (option.startsWith("-D") || option.startsWith("\"-D")) {
-                systemProperties++;
-            }
-        }
-        int pos = 0;
-        this.javaOptions = new String[options.length - systemProperties];
-        for (String option : options) {
-            if (!(option.startsWith("-D") || option.startsWith("\"-D"))) {
-                this.javaOptions[pos++] = option;
-            }
-        }
-    }
+	private String javaClassPath;
 
-    /**
-     * Returns the java system properties.
-     * 
-     * @return the java system properties.
-     */
-    public Map<String, String> getJavaSystemProperties() {
-        return javaSystemProperties;
-    }
+	/**
+	 * Create a {@link JavaSoftwareDescription}, which describes the java
+	 * application.
+	 */
+	public JavaSoftwareDescription() {
+		super();
+	}
 
-    /**
-     * Sets the system properties. A system property should be passed as a key
-     * value pair <"a", "b">, not as <"-Da", "b">, JavaGAT will add the -D to
-     * the property.
-     * 
-     * @param systemProperties
-     *                the system properties.
-     */
-    public void setJavaSystemProperties(Map<String, String> systemProperties) {
-        this.javaSystemProperties = systemProperties;
-    }
+	/**
+	 * Create a {@link JavaSoftwareDescription} with the provided
+	 * <code>attributes</code>, which describes the java application. See
+	 * {@link SoftwareDescription} for a list of well known attributes. Besides
+	 * this list the {@link JavaSoftwareDescription} knows these attributes:
+	 * <p>
+	 * <TABLE border="2" frame="box" rules="groups" summary="Minimum set of
+	 * supported attributes"> <CAPTION>supported name/value pairs of
+	 * JavaSoftwareDescription</CAPTION> <COLGROUP align="left"> <COLGROUP
+	 * align="center"> <COLGROUP align="left" > <THEAD valign="top">
+	 * <TR>
+	 * <TH>Name
+	 * <TH>Type
+	 * <TH>Description <TBODY>
+	 * <TR>
+	 * <TD>java.main
+	 * <TD>{@link String}
+	 * <TD>the main class that should be executed
+	 * <TR>
+	 * <TD>java.options
+	 * <TD>{@link String}[]
+	 * <TD>the jvm options for this java application
+	 * <TR>
+	 * <TD>java.system.properties
+	 * <TD>{@link Map}<{@link String}, {@link String}>
+	 * <TD>the java system properties
+	 * <TR>
+	 * <TD>java.arguments
+	 * <TD>{@link String}[]
+	 * <TD>the java arguments for the main class of the java application
+	 * <TR></TBODY> </TABLE>
+	 * 
+	 * @param attributes
+	 *            the attributes belonging to this
+	 *            {@link JavaSoftwareDescription}.
+	 */
+	@SuppressWarnings("unchecked")
+	public JavaSoftwareDescription(Map<String, Object> attributes) {
+		super(attributes);
+		javaMain = (String) attributes.get("java.main");
+		setJavaOptions((String[]) attributes.get("java.options"));
+		javaSystemProperties = (Map<String, String>) attributes
+				.get("java.system.properties");
+		javaArguments = (String[]) attributes.get("java.arguments");
+	}
 
-    /**
-     * Returns the main class of the java application.
-     * 
-     * @return the main class.
-     */
-    public String getJavaMain() {
-        return javaMain;
-    }
+	/**
+	 * Returns the jvm options.
+	 * 
+	 * @return the jvm options.
+	 */
+	public String[] getJavaOptions() {
+		return javaOptions;
+	}
 
-    /**
-     * Sets the main class.
-     * 
-     * @param main
-     *                the main class.
-     */
-    public void setJavaMain(String main) {
-        this.javaMain = main;
-    }
+	/**
+	 * Sets the jvm options. Note that any option starting with '-D' or '"-D'
+	 * will be ignored. These should be set using the method
+	 * {@link #setJavaSystemProperties(Map)}.
+	 * 
+	 * @param options
+	 *            the jvm options.
+	 */
+	public void setJavaOptions(String[] options) {
+		int systemProperties = 0;
+		for (String option : options) {
+			if (option.startsWith("-D") || option.startsWith("\"-D")) {
+				systemProperties++;
+			}
+		}
+		int pos = 0;
+		this.javaOptions = new String[options.length - systemProperties];
+		for (String option : options) {
+			if (!(option.startsWith("-D") || option.startsWith("\"-D"))) {
+				this.javaOptions[pos++] = option;
+			}
+		}
+	}
 
-    /**
-     * Returns the arguments for the main class.
-     * 
-     * @return the arguments for the main class
-     */
-    public String[] getJavaArguments() {
-        return javaArguments;
-    }
+	/**
+	 * Returns the java system properties.
+	 * 
+	 * @return the java system properties.
+	 */
+	public Map<String, String> getJavaSystemProperties() {
+		return javaSystemProperties;
+	}
 
-    /**
-     * Sets the arguments of the java main class.
-     * 
-     * @param javaArguments
-     *                the arguments of the java main class.
-     */
-    public void setJavaArguments(String[] javaArguments) {
-        this.javaArguments = javaArguments;
-    }
+	/**
+	 * Sets the system properties. A system property should be passed as a key
+	 * value pair <"a", "b">, not as <"-Da", "b">, JavaGAT will add the -D to
+	 * the property.
+	 * 
+	 * @param systemProperties
+	 *            the system properties.
+	 */
+	public void setJavaSystemProperties(Map<String, String> systemProperties) {
+		this.javaSystemProperties = systemProperties;
+	}
 
-    /**
-     * <b>This method should not be used</b>. This method will ignore all
-     * arguments. The methods {@link #setJavaClassPath(String)},
-     * {@link #setJavaOptions(String[])}, {@link #setJavaSystemProperties(Map)},
-     * {@link #setJavaMain(String)} and {@link #setJavaArguments(String[])}
-     * should be used to construct the command line arguments.
-     * 
-     * @param arguments
-     */
-    public void setArguments(String[] arguments) {
-    }
+	/**
+	 * Returns the main class of the java application.
+	 * 
+	 * @return the main class.
+	 */
+	public String getJavaMain() {
+		return javaMain;
+	}
 
-    /**
-     * Constructs the command line arguments from the class path, the jvm
-     * options, the system properties, the main and the java arguments of this
-     * {@link SoftwareDescription}.
-     * 
-     * @return the command line arguments
-     */
-    public String[] getArguments() {
-        String result[] = new String[2 + javaOptions.length
-                + javaSystemProperties.size() + 1 + javaArguments.length];
-        int pos = 0;
-        result[pos++] = "-classpath";
-        result[pos++] = javaClassPath;
-        for (String option : javaOptions) {
-            result[pos++] = option;
-        }
-        Set<String> keys = javaSystemProperties.keySet();
-        for (String key : keys) {
-            result[pos++] = "-D" + key + "=" + javaSystemProperties.get(key);
-        }
-        result[pos++] = javaMain;
-        for (String javaArgument : javaArguments) {
-            result[pos++] = javaArgument;
-        }
-        return result;
-    }
+	/**
+	 * Sets the main class.
+	 * 
+	 * @param main
+	 *            the main class.
+	 */
+	public void setJavaMain(String main) {
+		this.javaMain = main;
+	}
 
-    /**
-     * Returns the executable. If no executable is set the default executable
-     * will be "java".
-     * 
-     * @return Returns the executable.
-     */
-    public String getExecutable() {
-        if (super.getExecutable() == null) {
-            return "java";
-        } else {
-            return super.getExecutable();
-        }
-    }
+	/**
+	 * Returns the arguments for the main class.
+	 * 
+	 * @return the arguments for the main class
+	 */
+	public String[] getJavaArguments() {
+		return javaArguments;
+	}
 
-    /**
-     * Returns the java class path.
-     * 
-     * @return the java class path.
-     */
-    public String getJavaClassPath() {
-        return javaClassPath;
-    }
+	/**
+	 * Sets the arguments of the java main class.
+	 * 
+	 * @param javaArguments
+	 *            the arguments of the java main class.
+	 */
+	public void setJavaArguments(String[] javaArguments) {
+		this.javaArguments = javaArguments;
+	}
 
-    /**
-     * Sets the java class path.
-     * 
-     * @param javaClassPath
-     *                the class path to be set.
-     */
-    public void setJavaClassPath(String javaClassPath) {
-        this.javaClassPath = javaClassPath;
-    }
+	/**
+	 * <b>This method should not be used</b>. This method will ignore all
+	 * arguments. The methods {@link #setJavaClassPath(String)},
+	 * {@link #setJavaOptions(String[])}, {@link #setJavaSystemProperties(Map)},
+	 * {@link #setJavaMain(String)} and {@link #setJavaArguments(String[])}
+	 * should be used to construct the command line arguments.
+	 * 
+	 * @param arguments
+	 */
+	public void setArguments(String[] arguments) {
+	}
+
+	/**
+	 * Constructs the command line arguments from the class path, the jvm
+	 * options, the system properties, the main and the java arguments of this
+	 * {@link SoftwareDescription}.
+	 * 
+	 * @return the command line arguments
+	 */
+	public String[] getArguments() {
+		ArrayList<String> result = new ArrayList<String>();
+		if (javaClassPath != null) {
+			result.add("-classpath");
+			result.add(javaClassPath);
+		}
+		if (javaOptions != null) {
+			for (String option : javaOptions) {
+				result.add(option);
+			}
+		}
+		if (javaSystemProperties != null) {
+			Set<String> keys = javaSystemProperties.keySet();
+			for (String key : keys) {
+				result.add("-D" + key + "=" + javaSystemProperties.get(key));
+			}
+		}
+		if (javaMain != null) {
+			result.add(javaMain);
+		} else {
+			return null;
+		}
+		if (javaArguments != null) {
+			for (String javaArgument : javaArguments) {
+				result.add(javaArgument);
+			}
+		}
+		return result.toArray(new String[result.size()]);
+	}
+
+	/**
+	 * Returns the executable. If no executable is set the default executable
+	 * will be "java".
+	 * 
+	 * @return Returns the executable.
+	 */
+	public String getExecutable() {
+		if (super.getExecutable() == null) {
+			return "java";
+		} else {
+			return super.getExecutable();
+		}
+	}
+
+	/**
+	 * Returns the java class path.
+	 * 
+	 * @return the java class path.
+	 */
+	public String getJavaClassPath() {
+		return javaClassPath;
+	}
+
+	/**
+	 * Sets the java class path.
+	 * 
+	 * @param javaClassPath
+	 *            the class path to be set.
+	 */
+	public void setJavaClassPath(String javaClassPath) {
+		this.javaClassPath = javaClassPath;
+	}
 
 }

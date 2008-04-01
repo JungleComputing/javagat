@@ -6,27 +6,30 @@ import org.gridlab.gat.monitoring.Monitorable;
 /**
  * This interface is for internal GAT use only. It has to be public for
  * technical reasons.
- *
- * All GAT users should use org.gridlab.gat.io.FileInputStream
- *
+ * 
+ * All GAT users should use {@link org.gridlab.gat.io.FileInputStream} or
+ * retrieve a {@link FileInputStreamInterface} using the
+ * {@link FileInputStream#getFileInputStreamInterface()}.
+ * 
+ * 
  * @author rob
  */
 public interface FileInputStreamInterface extends Monitorable {
-    int available() throws GATInvocationException;
+	int available() throws GATInvocationException;
 
-    void close() throws GATInvocationException;
+	void close() throws GATInvocationException;
 
-    void mark(int readlimit);
+	void mark(int readlimit);
 
-    boolean markSupported();
+	boolean markSupported();
 
-    abstract int read() throws GATInvocationException;
+	abstract int read() throws GATInvocationException;
 
-    int read(byte[] b) throws GATInvocationException;
+	int read(byte[] b) throws GATInvocationException;
 
-    int read(byte[] b, int off, int len) throws GATInvocationException;
+	int read(byte[] b, int off, int len) throws GATInvocationException;
 
-    void reset() throws GATInvocationException;
+	void reset() throws GATInvocationException;
 
-    long skip(long n) throws GATInvocationException;
+	long skip(long n) throws GATInvocationException;
 }
