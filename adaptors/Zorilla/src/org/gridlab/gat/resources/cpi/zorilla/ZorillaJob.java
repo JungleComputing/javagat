@@ -185,7 +185,7 @@ public class ZorillaJob extends JobCpi {
     protected synchronized void startJob(InetSocketAddress address,
             CallbackReceiver receiver) throws GATInvocationException {
         if (logger.isDebugEnabled()) {
-            logger.debug("starting zorilla job");
+            logger.debug("starting zorilla job:" + zorillaJobDescription);
         }
 
         try {
