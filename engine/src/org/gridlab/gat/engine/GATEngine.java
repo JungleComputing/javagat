@@ -276,6 +276,7 @@ public class GATEngine {
                 }
             }
             // TODO this should be fixed more general!
+            // Yes, these two lines kill the Gridsam adaptor! (Ceriel)
             Thread.currentThread().setContextClassLoader(
                     adaptorClassLoaders.get("GlobusAdaptor"));
         } else {
