@@ -145,7 +145,6 @@ public class ZorillaJob extends JobCpi {
         zorillaJobDescription = new ZorillaJobDescription();
 
         zorillaJobDescription.setExecutable(soft.getExecutable());
-        zorillaJobDescription.setArguments(soft.getArguments());
         zorillaJobDescription.setEnvironment(createStringMap(soft
                 .getEnvironment()));
         zorillaJobDescription.setAttributes(createStringMap(soft
@@ -153,11 +152,23 @@ public class ZorillaJob extends JobCpi {
 
         if (soft instanceof JavaSoftwareDescription) {
             JavaSoftwareDescription javaSoft = (JavaSoftwareDescription) soft;
-            zorillaJobDescription.setJavaOptions(javaSoft.getJavaOptions());
+            
             zorillaJobDescription.setJavaSystemProperties(javaSoft
                     .getJavaSystemProperties());
             zorillaJobDescription.setJavaMain(javaSoft.getJavaMain());
             zorillaJobDescription.setJavaArguments(javaSoft.getJavaArguments());
+            
+            if (javaSoft.getJavaOptions().length > 0) {
+                String message = "java options ignored by Zorilla adaptor:";
+                
+                for(String option: javaSoft.getJavaOptions()) {
+                    message += " " + option;
+                }
+                
+                logger.warn(message);
+            }
+        } else {
+            zorillaJobDescription.setArguments(soft.getArguments());
         }
 
         for (Map.Entry<File, File> entry : soft.getPreStaged().entrySet()) {
