@@ -74,10 +74,6 @@ public class GlobusJob extends JobCpi implements GramJobListener,
 
 	private static final int GLOBUS_JOB_SUBMISSION_ERROR = 1985;
 
-	protected void setGramJob(GramJob j) {
-		this.j = j;
-		j.addListener(this);
-	}
 
 	protected void startPoller() {
 		poller = new JobPoller(this);
@@ -161,6 +157,13 @@ public class GlobusJob extends JobCpi implements GramJobListener,
 		poller = new JobPoller(this);
 		poller.start();
 	}
+	
+
+	protected void setGramJob(GramJob j) {
+		this.j = j;
+		j.addListener(this);
+		this.jobID = j.getIDAsString();
+	}
 
 	/*
 	 * (non-Javadoc)
@@ -206,8 +209,8 @@ public class GlobusJob extends JobCpi implements GramJobListener,
 			m.put("globus.state", getGlobusState());
 			m.put("globus.error", GramError.getGramErrorString(j.getError()));
 			m.put("globus.errorno", "" + j.getError());
-			m.put("globus.id", j.getIDAsString());
-			m.put("id", j.getIDAsString());
+			m.put("globus.id", jobID);
+			m.put("id", jobID);
 			m.put("submissiontime", submissiontime);
 		}
 		if (state == INITIAL || state == UNKNOWN || state == SCHEDULED) {
@@ -237,11 +240,6 @@ public class GlobusJob extends JobCpi implements GramJobListener,
 	}
 
 	public String getJobID() {
-		if (jobID != null) {
-			jobID = j.getIDAsString();
-		} else {
-			return "not yet known";
-		}
 		return jobID;
 	}
 
@@ -396,6 +394,7 @@ public class GlobusJob extends JobCpi implements GramJobListener,
 		if (!stateChanged && globusJobState == 0) {
 			return;
 		} else if (stateChanged && state == SCHEDULED) {
+			jobID = j.getIDAsString();
 			setSubmissionTime();
 		} else if (stateChanged && state == RUNNING) {
 			setStartTime();
