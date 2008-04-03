@@ -30,7 +30,7 @@ import org.gridlab.gat.monitoring.Monitorable;
  */
 public interface Endpoint extends Monitorable, Advertisable, Serializable {
 	/**
-	 * Connect to the Endpoint.
+	 * Connect to the {@link Endpoint}.
 	 * 
 	 * When a {@link Endpoint} is obtained from an {@link AdvertService}, it
 	 * can be used to create a {@link Pipe} connected to the advertising
@@ -43,7 +43,7 @@ public interface Endpoint extends Monitorable, Advertisable, Serializable {
 	public Pipe connect() throws GATInvocationException;
 
 	/**
-	 * Listen for a new connection to the Endpoint.
+	 * Listen for a new connection to the {@link Endpoint}.
 	 * 
 	 * The creator of an {@link Endpoint} can use the {@link Endpoint} to create
 	 * {@link Pipe}s, which represent incoming connections. This is done by
@@ -90,12 +90,13 @@ public interface Endpoint extends Monitorable, Advertisable, Serializable {
 	public void listen(PipeListener pipeListener) throws GATInvocationException;
 
 	/**
-	 * Listen for a new connection to the Endpoint.
+	 * Listen for a new connection to the {@link Endpoint}.
 	 * 
-	 * The creator of an Endpoint can use the Endpoint to create Pipes, which
-	 * represent incoming connections. This is done by calling listen on the
-	 * Endpoint instance. This call is asynchronous, and returns immediately.
-	 * When a new connection has been made, the pipeListener will be informed.
+	 * The creator of an {@link Endpoint} can use the {@link Endpoint} to create
+	 * {@link Pipe}s, which represent incoming connections. This is done by
+	 * calling listen on the {@link Endpoint} instance. This call is
+	 * asynchronous, and returns immediately. When a new connection has been
+	 * made, the {@link PipeListener} will be informed.
 	 * 
 	 * @param pipeListener
 	 *            the {@link PipeListener} that will be informed

@@ -9,7 +9,8 @@ package org.gridlab.gat;
  */
 @SuppressWarnings("serial")
 public class GATObjectCreationException extends NestedException {
-    public GATObjectCreationException(String s) {
+    
+	public GATObjectCreationException(String s) {
         super(s);
     }
 

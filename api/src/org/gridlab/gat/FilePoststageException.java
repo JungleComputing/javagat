@@ -12,11 +12,11 @@ package org.gridlab.gat;
 @SuppressWarnings("serial")
 public class FilePoststageException extends GATInvocationException {
 
-    public FilePoststageException() {
+	public FilePoststageException() {
         super();
     }
 
-    public FilePoststageException(String adaptor, Throwable t) {
+	public FilePoststageException(String adaptor, Throwable t) {
         super(adaptor, t);
     }
 

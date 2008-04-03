@@ -10,7 +10,8 @@ package org.gridlab.gat;
 
 @SuppressWarnings("serial")
 public class GATInvocationException extends NestedException {
-    public GATInvocationException(String s) {
+    
+	public GATInvocationException(String s) {
         super(s);
     }
 

@@ -10,7 +10,8 @@ package org.gridlab.gat;
 
 @SuppressWarnings("serial")
 public class CredentialExpiredException extends GATInvocationException {
-    public CredentialExpiredException(String s) {
+    
+	public CredentialExpiredException(String s) {
         super(s);
     }
 }

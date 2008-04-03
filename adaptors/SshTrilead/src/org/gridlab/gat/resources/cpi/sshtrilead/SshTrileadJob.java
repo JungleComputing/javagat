@@ -8,7 +8,6 @@ import java.util.HashMap;
 import org.apache.log4j.Logger;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
-import org.gridlab.gat.Preferences;
 import org.gridlab.gat.engine.GATEngine;
 import org.gridlab.gat.engine.util.OutputForwarder;
 import org.gridlab.gat.monitoring.Metric;
@@ -26,100 +25,103 @@ import com.trilead.ssh2.Session;
  */
 public class SshTrileadJob extends JobCpi {
 
-    private static final long serialVersionUID = -4510717445792377245L;
+	private static final long serialVersionUID = -4510717445792377245L;
 
-    protected static Logger logger = Logger.getLogger(SshTrileadJob.class);
+	protected static Logger logger = Logger.getLogger(SshTrileadJob.class);
 
-    MetricDefinition statusMetricDefinition;
+	MetricDefinition statusMetricDefinition;
 
-    Metric statusMetric;
+	Metric statusMetric;
 
-    private Session session;
-    private int jobID;
-    // the default exit status is -1
-    private int exitStatus = -1;
+	private Session session;
 
-    protected SshTrileadJob(GATContext gatContext, Preferences preferences,
-            JobDescription description, Sandbox sandbox) {
-        super(gatContext, preferences, description, sandbox);
+	private int jobID;
 
-        jobID = allocJobID();
+	// the default exit status is -1
+	private int exitStatus = -1;
 
-        // Tell the engine that we provide job.status events
-        HashMap<String, Object> returnDef = new HashMap<String, Object>();
-        returnDef.put("status", String.class);
-        statusMetricDefinition = new MetricDefinition("job.status",
-                MetricDefinition.DISCRETE, "String", null, null, returnDef);
-        statusMetric = statusMetricDefinition.createMetric(null);
-        GATEngine.registerMetric(this, "getJobStatus", statusMetricDefinition);
-    }
+	protected SshTrileadJob(GATContext gatContext, JobDescription description,
+			Sandbox sandbox) {
+		super(gatContext, description, sandbox);
 
-    protected void setSession(Session session) {
-        this.session = session;
-    }
+		jobID = allocJobID();
 
-    protected synchronized void setState(int state) {
-        this.state = state;
-        MetricEvent v = new MetricEvent(this, getStateString(state),
-                statusMetric, System.currentTimeMillis());
-        GATEngine.fireMetric(this, v);
-    }
+		// Tell the engine that we provide job.status events
+		HashMap<String, Object> returnDef = new HashMap<String, Object>();
+		returnDef.put("status", String.class);
+		statusMetricDefinition = new MetricDefinition("job.status",
+				MetricDefinition.DISCRETE, "String", null, null, returnDef);
+		statusMetric = statusMetricDefinition.createMetric(null);
+		GATEngine.registerMetric(this, "getJobStatus", statusMetricDefinition);
+	}
 
-    public String getJobID() {
-        return "" + jobID;
-    }
+	protected void setSession(Session session) {
+		this.session = session;
+	}
 
-    public void startOutputWaiter(OutputForwarder outForwarder,
-            OutputForwarder errForwarder) {
-        new OutputWaiter(outForwarder, errForwarder);
-    }
+	protected synchronized void setState(int state) {
+		this.state = state;
+		MetricEvent v = new MetricEvent(this, getStateString(state),
+				statusMetric, System.currentTimeMillis());
+		GATEngine.fireMetric(this, v);
+	}
 
-    public synchronized int getExitStatus() throws GATInvocationException {
-        if (state != STOPPED && state != SUBMISSION_ERROR) {
-            throw new GATInvocationException("not in STOPPED or SUBMISSION_ERROR state");
-        }
-        return exitStatus;
-    }
-    
-    public synchronized void stop() throws GATInvocationException {
-        setState(POST_STAGING);
-        sandbox.retrieveAndCleanup(this);
-        try {
-            session.waitForCondition(ChannelCondition.EXIT_STATUS, 5000);
-            exitStatus = session.getExitStatus();
-            setState(STOPPED);
-        } catch (NullPointerException e) {
-            // unable to retrieve exit status
-            setState(SUBMISSION_ERROR);
-        } finally {
-            session.close();
-            finished();
-        }
-    }
+	public String getJobID() {
+		return "" + jobID;
+	}
 
-    class OutputWaiter extends Thread {
+	public void startOutputWaiter(OutputForwarder outForwarder,
+			OutputForwarder errForwarder) {
+		new OutputWaiter(outForwarder, errForwarder);
+	}
 
-        OutputForwarder outForwarder, errForwarder;
+	public synchronized int getExitStatus() throws GATInvocationException {
+		if (state != STOPPED && state != SUBMISSION_ERROR) {
+			throw new GATInvocationException(
+					"not in STOPPED or SUBMISSION_ERROR state");
+		}
+		return exitStatus;
+	}
 
-        OutputWaiter(OutputForwarder outForwarder, OutputForwarder errForwarder) {
-            setName("SshTrileadJob OutputForwarderWaiter");
-            setDaemon(true);
-            this.outForwarder = outForwarder;
-            this.errForwarder = errForwarder;
-            start();
-        }
+	public synchronized void stop() throws GATInvocationException {
+		setState(POST_STAGING);
+		sandbox.retrieveAndCleanup(this);
+		try {
+			session.waitForCondition(ChannelCondition.EXIT_STATUS, 5000);
+			exitStatus = session.getExitStatus();
+			setState(STOPPED);
+		} catch (NullPointerException e) {
+			// unable to retrieve exit status
+			setState(SUBMISSION_ERROR);
+		} finally {
+			session.close();
+			finished();
+		}
+	}
 
-        public void run() {
-            outForwarder.waitUntilFinished();
-            errForwarder.waitUntilFinished();
-            try {
-                SshTrileadJob.this.stop();
-            } catch (GATInvocationException e) {
-                if (logger.isDebugEnabled()) {
-                    logger.debug("unable to stop job: " + e);
-                }
-            }
-        }
-    }
+	class OutputWaiter extends Thread {
+
+		OutputForwarder outForwarder, errForwarder;
+
+		OutputWaiter(OutputForwarder outForwarder, OutputForwarder errForwarder) {
+			setName("SshTrileadJob OutputForwarderWaiter");
+			setDaemon(true);
+			this.outForwarder = outForwarder;
+			this.errForwarder = errForwarder;
+			start();
+		}
+
+		public void run() {
+			outForwarder.waitUntilFinished();
+			errForwarder.waitUntilFinished();
+			try {
+				SshTrileadJob.this.stop();
+			} catch (GATInvocationException e) {
+				if (logger.isDebugEnabled()) {
+					logger.debug("unable to stop job: " + e);
+				}
+			}
+		}
+	}
 
 }

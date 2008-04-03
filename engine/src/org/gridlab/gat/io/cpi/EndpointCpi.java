@@ -4,14 +4,13 @@ import java.util.List;
 
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
-import org.gridlab.gat.Preferences;
 import org.gridlab.gat.io.Endpoint;
 import org.gridlab.gat.io.Pipe;
 import org.gridlab.gat.io.PipeListener;
 import org.gridlab.gat.monitoring.Metric;
 import org.gridlab.gat.monitoring.MetricDefinition;
-import org.gridlab.gat.monitoring.MetricListener;
 import org.gridlab.gat.monitoring.MetricEvent;
+import org.gridlab.gat.monitoring.MetricListener;
 
 /**
  * Capability provider interface to the Endpoint class.
@@ -25,8 +24,6 @@ import org.gridlab.gat.monitoring.MetricEvent;
 public abstract class EndpointCpi implements Endpoint {
     protected GATContext gatContext;
 
-    protected Preferences preferences;
-
     /**
      * Constructs a EndPointCpi instance which corresponds to the physical
      * EndPoint identified by the passed Location and whose access rights are
@@ -38,9 +35,8 @@ public abstract class EndpointCpi implements Endpoint {
      * @param preferences
      *                the preferences to be associated with this adaptor
      */
-    protected EndpointCpi(GATContext gatContext, Preferences preferences) {
+    protected EndpointCpi(GATContext gatContext) {
         this.gatContext = gatContext;
-        this.preferences = preferences;
     }
 
     public boolean equals(Object object) {

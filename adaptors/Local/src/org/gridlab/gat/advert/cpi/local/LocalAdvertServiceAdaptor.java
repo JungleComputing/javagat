@@ -23,7 +23,6 @@ import java.util.Vector;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.GATObjectCreationException;
-import org.gridlab.gat.Preferences;
 import org.gridlab.gat.advert.Advertisable;
 import org.gridlab.gat.advert.MetaData;
 import org.gridlab.gat.advert.cpi.AdvertServiceCpi;
@@ -33,266 +32,266 @@ import org.gridlab.gat.engine.GATEngine;
  * @author rob
  */
 public class LocalAdvertServiceAdaptor extends AdvertServiceCpi {
-    static final String SEPERATOR = "/";
+	static final String SEPERATOR = "/";
 
-    String pwd = SEPERATOR;
+	String pwd = SEPERATOR;
 
-    Hashtable<String, Entry> hash = new Hashtable<String, Entry>();
+	Hashtable<String, Entry> hash = new Hashtable<String, Entry>();
 
-    File f;
+	File f;
 
-    /**
-     * @param gatContext
-     * @param preferences
-     */
-    public LocalAdvertServiceAdaptor(GATContext gatContext,
-        Preferences preferences) throws GATObjectCreationException {
-        super(gatContext, preferences);
+	/**
+	 * @param gatContext
+	 * @param preferences
+	 */
+	public LocalAdvertServiceAdaptor(GATContext gatContext)
+			throws GATObjectCreationException {
+		super(gatContext);
 
-        String home = System.getProperty("user.home");
+		String home = System.getProperty("user.home");
 
-        if (home == null) {
-            throw new GATObjectCreationException("could not get user home dir");
-        }
+		if (home == null) {
+			throw new GATObjectCreationException("could not get user home dir");
+		}
 
-        String filename = home + File.separator + ".gatAdvertDB";
-        f = new File(filename);
-    }
+		String filename = home + File.separator + ".gatAdvertDB";
+		f = new File(filename);
+	}
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see org.gridlab.gat.advert.AdvertService#getAdvertisable(java.lang.String).
-     */
-    public Advertisable getAdvertisable(String path)
-        throws GATInvocationException, NoSuchElementException {
-        path = normalizePath(path);
-        load();
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.gridlab.gat.advert.AdvertService#getAdvertisable(java.lang.String).
+	 */
+	public Advertisable getAdvertisable(String path)
+			throws GATInvocationException, NoSuchElementException {
+		path = normalizePath(path);
+		load();
 
-        Entry e = (Entry) hash.get(path);
+		Entry e = (Entry) hash.get(path);
 
-        if (e == null) {
-            throw new NoSuchElementException("No such element: " + path);
-        }
-        
-        if(e.a == null) {
-            throw new NoSuchElementException("No such element: " + path);
-        }
+		if (e == null) {
+			throw new NoSuchElementException("No such element: " + path);
+		}
 
-        Advertisable advert = GATEngine.getGATEngine().unmarshalAdvertisable(
-            gatContext, preferences, e.a);
+		if (e.a == null) {
+			throw new NoSuchElementException("No such element: " + path);
+		}
 
-        return advert;
-    }
+		Advertisable advert = GATEngine.getGATEngine().unmarshalAdvertisable(
+				gatContext, e.a);
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see org.gridlab.gat.advert.AdvertService#add(org.gridlab.gat.advert.Advertisable,
-     *      java.util.Map, java.lang.String)
-     */
-    public void add(Advertisable advert, MetaData metaData, String path)
-        throws GATInvocationException {
-        path = normalizePath(path);
+		return advert;
+	}
 
-        try {
-            String advertString = null;
-            if(advert != null) {
-                advertString = advert.marshal();
-                if(advertString == null) {
-                    throw new GATInvocationException("could not marshal object");
-                }
-            }
-            Entry e = new Entry();
-            e.a = advertString;
-            e.m = metaData;
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.gridlab.gat.advert.AdvertService#add(org.gridlab.gat.advert.Advertisable,
+	 *      java.util.Map, java.lang.String)
+	 */
+	public void add(Advertisable advert, MetaData metaData, String path)
+			throws GATInvocationException {
+		path = normalizePath(path);
 
-            load();
-            hash.put(path, e);
-            save();
-        } catch (Exception e) {
-            System.err.println("ERROR: " + e);
-            e.printStackTrace();
+		try {
+			String advertString = null;
+			if (advert != null) {
+				advertString = advert.marshal();
+				if (advertString == null) {
+					throw new GATInvocationException("could not marshal object");
+				}
+			}
+			Entry e = new Entry();
+			e.a = advertString;
+			e.m = metaData;
 
-            if (e.getCause() != null) {
-                System.err.println("CAUSE: " + e.getCause());
-                e.getCause().printStackTrace();
-            }
+			load();
+			hash.put(path, e);
+			save();
+		} catch (Exception e) {
+			System.err.println("ERROR: " + e);
+			e.printStackTrace();
 
-            throw new GATInvocationException("local advert", e);
-        }
-    }
+			if (e.getCause() != null) {
+				System.err.println("CAUSE: " + e.getCause());
+				e.getCause().printStackTrace();
+			}
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see org.gridlab.gat.advert.AdvertService#delete(java.lang.String)
-     */
-    public void delete(String path) throws NoSuchElementException,
-        GATInvocationException {
-        path = normalizePath(path);
+			throw new GATInvocationException("local advert", e);
+		}
+	}
 
-        load();
-        hash.remove(path);
-        save();
-    }
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.gridlab.gat.advert.AdvertService#delete(java.lang.String)
+	 */
+	public void delete(String path) throws NoSuchElementException,
+			GATInvocationException {
+		path = normalizePath(path);
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see org.gridlab.gat.advert.AdvertService#find(java.util.Map)
-     */
-    public String[] find(MetaData query) throws GATInvocationException {
-        load();
+		load();
+		hash.remove(path);
+		save();
+	}
 
-        Vector<String> res = new Vector<String>();
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.gridlab.gat.advert.AdvertService#find(java.util.Map)
+	 */
+	public String[] find(MetaData query) throws GATInvocationException {
+		load();
 
-        Enumeration<String> keys = hash.keys();
-        Enumeration<Entry> data = hash.elements();
+		Vector<String> res = new Vector<String>();
 
-        while (data.hasMoreElements()) {
-            Entry e = (Entry) data.nextElement();
-            String key = (String) keys.nextElement();
-            MetaData m = e.m;
+		Enumeration<String> keys = hash.keys();
+		Enumeration<Entry> data = hash.elements();
 
-            if (m.match(query)) {
-                res.add(key);
-            }
-        }
+		while (data.hasMoreElements()) {
+			Entry e = (Entry) data.nextElement();
+			String key = (String) keys.nextElement();
+			MetaData m = e.m;
 
-        String[] s = new String[res.size()];
+			if (m.match(query)) {
+				res.add(key);
+			}
+		}
 
-        for (int i = 0; i < s.length; i++) {
-            s[i] = (String) res.get(i);
-        }
+		String[] s = new String[res.size()];
 
-        return s;
-    }
+		for (int i = 0; i < s.length; i++) {
+			s[i] = (String) res.get(i);
+		}
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see org.gridlab.gat.advert.AdvertService#getMetaData(java.lang.String)
-     */
-    public MetaData getMetaData(String path) throws NoSuchElementException,
-        GATInvocationException {
-        path = normalizePath(path);
+		return s;
+	}
 
-        load();
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.gridlab.gat.advert.AdvertService#getMetaData(java.lang.String)
+	 */
+	public MetaData getMetaData(String path) throws NoSuchElementException,
+			GATInvocationException {
+		path = normalizePath(path);
 
-        Entry e = (Entry) hash.get(path);
+		load();
 
-        return e.m;
-    }
+		Entry e = (Entry) hash.get(path);
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see org.gridlab.gat.advert.AdvertService#getPWD()
-     */
-    public String getPWD() {
-        return pwd;
-    }
+		return e.m;
+	}
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see org.gridlab.gat.advert.AdvertService#setPWD(java.lang.String)
-     */
-    public void setPWD(String path) {
-        pwd = path;
-    }
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.gridlab.gat.advert.AdvertService#getPWD()
+	 */
+	public String getPWD() {
+		return pwd;
+	}
 
-    private synchronized void save() throws GATInvocationException {
-        ObjectOutputStream out = null;
-        FileLock lock = null;
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.gridlab.gat.advert.AdvertService#setPWD(java.lang.String)
+	 */
+	public void setPWD(String path) {
+		pwd = path;
+	}
 
-        try {
-            FileOutputStream fout = new FileOutputStream(f);
-            FileChannel fc = fout.getChannel();
-            lock = fc.lock();
+	private synchronized void save() throws GATInvocationException {
+		ObjectOutputStream out = null;
+		FileLock lock = null;
 
-            BufferedOutputStream bout = new BufferedOutputStream(fout);
-            out = new ObjectOutputStream(bout);
+		try {
+			FileOutputStream fout = new FileOutputStream(f);
+			FileChannel fc = fout.getChannel();
+			lock = fc.lock();
 
-            out.writeObject(hash);
-        } catch (Exception e) {
-            throw new GATInvocationException("local advert", e);
-        } finally {
-            if (lock != null) {
-                try {
-                    lock.release();
-                } catch (Exception e) {
-                    // Ignore.
-                }
-            }
-            if (out != null) {
-                try {
-                    out.close();
-                } catch (Exception e) {
-                    // Ignore.
-                }
-            }
-        }
-    }
+			BufferedOutputStream bout = new BufferedOutputStream(fout);
+			out = new ObjectOutputStream(bout);
 
-    @SuppressWarnings("unchecked")
+			out.writeObject(hash);
+		} catch (Exception e) {
+			throw new GATInvocationException("local advert", e);
+		} finally {
+			if (lock != null) {
+				try {
+					lock.release();
+				} catch (Exception e) {
+					// Ignore.
+				}
+			}
+			if (out != null) {
+				try {
+					out.close();
+				} catch (Exception e) {
+					// Ignore.
+				}
+			}
+		}
+	}
+
+	@SuppressWarnings("unchecked")
 	private synchronized void load() throws GATInvocationException {
-        if (!f.exists()) {
-            return;
-        }
+		if (!f.exists()) {
+			return;
+		}
 
-        ObjectInputStream in = null;
-        FileLock lock = null;
+		ObjectInputStream in = null;
+		FileLock lock = null;
 
-        try {
-            RandomAccessFile rf = new RandomAccessFile(f, "rw");
-            FileChannel fc = rf.getChannel();
-            lock = fc.lock();
+		try {
+			RandomAccessFile rf = new RandomAccessFile(f, "rw");
+			FileChannel fc = rf.getChannel();
+			lock = fc.lock();
 
-            FileInputStream fin = new FileInputStream(rf.getFD());
-            BufferedInputStream bin = new BufferedInputStream(fin);
-            in = new ObjectInputStream(bin);
+			FileInputStream fin = new FileInputStream(rf.getFD());
+			BufferedInputStream bin = new BufferedInputStream(fin);
+			in = new ObjectInputStream(bin);
 
-            hash = (Hashtable<String, Entry>) in.readObject();
-        } catch (Exception e) {
-            throw new GATInvocationException("local advert", e);
-        } finally {
-            if (lock != null) {
-                try {
-                    lock.release();
-                } catch (Exception e) {
-                    // Ignore.
-                }
-            }
-            if (in != null) {
-                try {
-                    in.close();
-                } catch (Exception e) {
-                    // Ignore.
-                }
-            }
-        }
-    }
+			hash = (Hashtable<String, Entry>) in.readObject();
+		} catch (Exception e) {
+			throw new GATInvocationException("local advert", e);
+		} finally {
+			if (lock != null) {
+				try {
+					lock.release();
+				} catch (Exception e) {
+					// Ignore.
+				}
+			}
+			if (in != null) {
+				try {
+					in.close();
+				} catch (Exception e) {
+					// Ignore.
+				}
+			}
+		}
+	}
 
-    private String normalizePath(String path) throws GATInvocationException {
-        try {
-            if (!path.startsWith(SEPERATOR)) {
-                path = pwd + SEPERATOR + path;
-            }
+	private String normalizePath(String path) throws GATInvocationException {
+		try {
+			if (!path.startsWith(SEPERATOR)) {
+				path = pwd + SEPERATOR + path;
+			}
 
-            URI u = new URI(path);
+			URI u = new URI(path);
 
-            return u.normalize().getPath();
-        } catch (Exception e) {
-            throw new GATInvocationException("local advert", e);
-        }
-    }
+			return u.normalize().getPath();
+		} catch (Exception e) {
+			throw new GATInvocationException("local advert", e);
+		}
+	}
 
-    @SuppressWarnings("serial")
+	@SuppressWarnings("serial")
 	static class Entry implements Serializable {
-        String a;
+		String a;
 
-        MetaData m;
-    }
+		MetaData m;
+	}
 }

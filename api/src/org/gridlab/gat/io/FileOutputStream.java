@@ -25,6 +25,18 @@ public class FileOutputStream extends OutputStream implements Monitorable {
         this.out = out;
     }
     
+    /**
+	 * Returns the FileOutputStreamInterface object associated with this
+	 * {@link FileOutputStream}. The FileOutputStreamInterface offers the same
+	 * functionality as the {@link FileOutputStream} object. The difference
+	 * between the FileInputStreamInterface object and the FileOutputStream
+	 * object is that the FileOutputStreamInterface is an internal GAT object and
+	 * it will throw {@link GATInvocationException}s upon failures, whereas the
+	 * FileOutputStream object would have default values.
+	 * <p>
+	 * 
+	 * @return the FileOutputStreamInterface object
+	 */
     public org.gridlab.gat.io.FileOutputStreamInterface getFileOutputStreamInterface() {
         return out;
     }
@@ -35,11 +47,13 @@ public class FileOutputStream extends OutputStream implements Monitorable {
         out.addMetricListener(metricListener, metric);
     }
 
+    /** {@inheritDoc} */
     public MetricEvent getMeasurement(Metric metric)
             throws GATInvocationException {
         return out.getMeasurement(metric);
     }
 
+    /** {@inheritDoc} */
     public MetricDefinition getMetricDefinitionByName(String name)
             throws GATInvocationException {
         return out.getMetricDefinitionByName(name);

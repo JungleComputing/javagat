@@ -18,7 +18,6 @@ import org.ggf.drmaa.SessionFactory;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.GATObjectCreationException;
-import org.gridlab.gat.Preferences;
 import org.gridlab.gat.TimePeriod;
 import org.gridlab.gat.URI;
 import org.gridlab.gat.monitoring.Metric;
@@ -43,92 +42,90 @@ import org.gridlab.gat.resources.cpi.Sandbox;
 
 public class SgeResourceBrokerAdaptor extends ResourceBrokerCpi {
 
-    protected static Logger logger = Logger
-            .getLogger(SgeResourceBrokerAdaptor.class);
+	protected static Logger logger = Logger
+			.getLogger(SgeResourceBrokerAdaptor.class);
 
-    private Session SGEsession;
+	private Session SGEsession;
 
-    public SgeResourceBrokerAdaptor(GATContext gatContext,
-            Preferences preferences, URI brokerURI)
-            throws GATObjectCreationException {
-        super(gatContext, preferences, brokerURI);
+	public SgeResourceBrokerAdaptor(GATContext gatContext, URI brokerURI)
+			throws GATObjectCreationException {
+		super(gatContext, brokerURI);
 
-        SessionFactory factory = SessionFactory.getFactory();
-        SGEsession = factory.getSession();
+		SessionFactory factory = SessionFactory.getFactory();
+		SGEsession = factory.getSession();
 
+	}
 
-    }
+	public Reservation reserveResource(ResourceDescription resourceDescription,
+			TimePeriod timePeriod) {
+		throw new UnsupportedOperationException("Not implemented");
+	}
 
-    public Reservation reserveResource(ResourceDescription resourceDescription,
-            TimePeriod timePeriod) {
-        throw new UnsupportedOperationException("Not implemented");
-    }
+	public Reservation reserveResource(Resource resource, TimePeriod timePeriod) {
+		throw new UnsupportedOperationException("Not implemented");
+	}
 
-    public Reservation reserveResource(Resource resource, TimePeriod timePeriod) {
-        throw new UnsupportedOperationException("Not implemented");
-    }
+	public List<HardwareResource> findResources(
+			ResourceDescription resourceDescription) {
+		throw new UnsupportedOperationException("Not implemented");
+	}
 
-    public List<HardwareResource> findResources(
-            ResourceDescription resourceDescription) {
-        throw new UnsupportedOperationException("Not implemented");
-    }
+	public Job submitJob(JobDescription description, MetricListener listener,
+			String metricDefinitionName) throws GATInvocationException {
 
-    public Job submitJob(JobDescription description, MetricListener listener,
-            String metricDefinitionName) throws GATInvocationException {
+		SoftwareDescription sd = description.getSoftwareDescription();
+		String host = getHostname();
 
-        SoftwareDescription sd = description.getSoftwareDescription();
-        String host = getHostname();
+		Sandbox sandbox = null;
 
-        Sandbox sandbox = null;
+		/* Handle pre-/poststaging */
+		if (host != null) {
+			sandbox = new Sandbox(gatContext, description, host, null, false,
+					true, true, true);
+		}
+		SgeJob job = new SgeJob(gatContext, description, sandbox);
+		if (listener != null && metricDefinitionName != null) {
+			Metric metric = job.getMetricDefinitionByName(metricDefinitionName)
+					.createMetric(null);
+			job.addMetricListener(listener, metric);
+		}
+		job.setHostname(getHostname());
+		job.setState(Job.PRE_STAGING);
+		job.setSession(SGEsession);
+		sandbox.prestage();
 
-        /* Handle pre-/poststaging */
-        if (host != null) {
-            sandbox = new Sandbox(gatContext, preferences, description, host,
-                    null, false, true, true, true);
-        }
-        SgeJob job = new SgeJob(gatContext, preferences, description, sandbox);
-        if (listener != null && metricDefinitionName != null) {
-            Metric metric = job.getMetricDefinitionByName(metricDefinitionName)
-                    .createMetric(null);
-            job.addMetricListener(listener, metric);
-        }
-        job.setHostname(getHostname());
-        job.setState(Job.PRE_STAGING);
-        job.setSession(SGEsession);
-        sandbox.prestage();
+		if (sd == null) {
+			throw new GATInvocationException(
+					"The job description does not contain a software description");
+		}
 
-        if (sd == null) {
-            throw new GATInvocationException(
-                    "The job description does not contain a software description");
-        }
+		try {
 
-        try {
+			SGEsession.init(brokerURI.toString());
+			JobTemplate jt = SGEsession.createJobTemplate();
 
-            SGEsession.init(brokerURI.toString());
-            JobTemplate jt = SGEsession.createJobTemplate();
+			jt.setRemoteCommand(getExecutable(description));
 
-            jt.setRemoteCommand(getExecutable(description));
+			if (logger.isInfoEnabled()) {
+				logger.info("Remote command: " + jt.getRemoteCommand());
+			}
 
-            if (logger.isInfoEnabled()) {
-                logger.info("Remote command: " + jt.getRemoteCommand());
-            }
+			if (sd.getArguments() != null) {
+				jt.setArgs(sd.getArguments());
+			}
 
-            if (sd.getArguments() != null) {
-                jt.setArgs(sd.getArguments());
-            }
+			if (sd.getStdout() != null) {
+				jt.setOutputPath(host + ":" + sd.getStdout().getName());
+			}
 
-            if (sd.getStdout() != null) {
-                jt.setOutputPath(host + ":" + sd.getStdout().getName());
-            }
+			job.setJobID(SGEsession.runJob(jt));
+			job.setState(Job.SCHEDULED);
+			job.startListener();
 
-            job.setJobID(SGEsession.runJob(jt));
-            job.setState(Job.SCHEDULED);
-            job.startListener();
-
-            SGEsession.deleteJobTemplate(jt);
-            return job;
-        } catch (DrmaaException e) {
-            throw new GATInvocationException("SGEResourceBrokerAdaptor", e);
-        }
-    }
+			SGEsession.deleteJobTemplate(jt);
+			return job;
+		} catch (DrmaaException e) {
+			throw new GATInvocationException("SGEResourceBrokerAdaptor", e);
+		}
+	}
 }

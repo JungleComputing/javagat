@@ -6,40 +6,41 @@ import org.gridlab.gat.URI;
 import org.gridlab.gat.io.File;
 
 class Copy {
-    public static void main(String[] args) {
-        GATContext context = new GATContext();
-        // context.addPreference("file.create", "true");
-        context.addPreference("File.adaptor.name", args[0]);
-        if (args.length > 3) {
-            context.addPreference("file.chmod", args[3]);
-        }
-        System.err.println("------------FILE COPY TEST------------");
+	public static void main(String[] args) {
+		GATContext context = new GATContext();
+		// context.addPreference("file.create", "true");
+		context.addPreference("File.adaptor.name", args[0]);
+		if (args.length > 3) {
+			context.addPreference("file.chmod", args[3]);
+		}
+		System.err.println("------------FILE COPY TEST------------");
 
-        URI src = null;
-        URI dest = null;
-        File file = null;
+		URI src = null;
+		URI dest = null;
+		File file = null;
 
-        try {
-            src = new URI(args[1]);
-            dest = new URI(args[2]);
-            file = GAT.createFile(context, src);
-        } catch (Exception e) {
-            System.err.println("File creation failed: " + e);
-            System.exit(1);
-        }
+		try {
+			src = new URI(args[1]);
+			dest = new URI(args[2]);
+			file = GAT.createFile(context, src);
+		} catch (Exception e) {
+			System.err.println("File creation failed: " + e);
+			e.printStackTrace();
+			System.exit(1);
+		}
 
-        if (file == null) {
-            System.err.println("Could not create a file object.");
-            System.exit(1);
-        }
+		if (file == null) {
+			System.err.println("Could not create a file object.");
+			System.exit(1);
+		}
 
-        try {
-            file.copy(dest);
-            System.err.println("------------FILE COPY TEST OK---------");
-        } catch (Exception e) {
-            System.err.println("Could not copy file: " + e);
-            e.printStackTrace();
-            System.exit(1);
-        }
-    }
+		try {
+			file.copy(dest);
+			System.err.println("------------FILE COPY TEST OK---------");
+		} catch (Exception e) {
+			System.err.println("Could not copy file: " + e);
+			e.printStackTrace();
+			System.exit(1);
+		}
+	}
 }

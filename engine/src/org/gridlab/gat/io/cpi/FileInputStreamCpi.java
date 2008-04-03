@@ -5,21 +5,18 @@ import java.util.List;
 import org.apache.log4j.Logger;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
-import org.gridlab.gat.Preferences;
 import org.gridlab.gat.URI;
 import org.gridlab.gat.io.FileInputStreamInterface;
 import org.gridlab.gat.monitoring.Metric;
 import org.gridlab.gat.monitoring.MetricDefinition;
-import org.gridlab.gat.monitoring.MetricListener;
 import org.gridlab.gat.monitoring.MetricEvent;
+import org.gridlab.gat.monitoring.MetricListener;
 
 public abstract class FileInputStreamCpi implements FileInputStreamInterface {
 	
 	protected static Logger logger = Logger.getLogger(FileInputStreamCpi.class);
 	
     protected GATContext gatContext;
-
-    protected Preferences preferences;
 
     protected URI location;
 
@@ -38,9 +35,8 @@ public abstract class FileInputStreamCpi implements FileInputStreamInterface {
      *            the preferences to be associated with this adaptor
      */
     protected FileInputStreamCpi(GATContext gatContext,
-            Preferences preferences, URI location) {
+            URI location) {
         this.gatContext = gatContext;
-        this.preferences = preferences;
         this.location = location;
 
         if(logger.isDebugEnabled()) {

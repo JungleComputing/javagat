@@ -11,7 +11,8 @@ package org.gridlab.gat;
  */
 @SuppressWarnings("serial")
 public class AdaptorNotSelectedException extends GATObjectCreationException {
-    public AdaptorNotSelectedException(String s) {
+    
+	public AdaptorNotSelectedException(String s) {
         super(s);
     }
 

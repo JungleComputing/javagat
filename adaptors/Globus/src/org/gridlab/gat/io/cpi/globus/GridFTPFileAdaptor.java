@@ -22,300 +22,299 @@ import org.ietf.jgss.GSSCredential;
 @SuppressWarnings("serial")
 public class GridFTPFileAdaptor extends GlobusFileAdaptor {
 
-    protected static Logger logger = Logger.getLogger(GlobusFileAdaptor.class);
+	protected static Logger logger = Logger.getLogger(GlobusFileAdaptor.class);
 
-    static boolean USE_CLIENT_CACHING = false;
+	static boolean USE_CLIENT_CACHING = false;
 
-    private static Hashtable<String, FTPClient> clienttable = new Hashtable<String, FTPClient>();
+	private static Hashtable<String, FTPClient> clienttable = new Hashtable<String, FTPClient>();
 
-    /**
-     * Constructs a LocalFileAdaptor instance which corresponds to the physical
-     * file identified by the passed URI and whose access rights are determined
-     * by the passed GATContext.
-     * 
-     * @param location
-     *                A URI which represents the URI corresponding to the
-     *                physical file.
-     * @param gatContext
-     *                A GATContext which is used to determine the access rights
-     *                for this LocalFileAdaptor.
-     */
-    public GridFTPFileAdaptor(GATContext gatContext, Preferences preferences,
-            URI location) throws GATObjectCreationException {
-        super(gatContext, preferences, location);
+	/**
+	 * Constructs a LocalFileAdaptor instance which corresponds to the physical
+	 * file identified by the passed URI and whose access rights are determined
+	 * by the passed GATContext.
+	 * 
+	 * @param location
+	 *            A URI which represents the URI corresponding to the physical
+	 *            file.
+	 * @param gatContext
+	 *            A GATContext which is used to determine the access rights for
+	 *            this LocalFileAdaptor.
+	 */
+	public GridFTPFileAdaptor(GATContext gatContext, URI location)
+			throws GATObjectCreationException {
+		super(gatContext, location);
 
-        if (!location.isCompatible("gsiftp") && !location.isCompatible("file")) {
-            throw new AdaptorNotApplicableException("cannot handle this URI ("
-                    + location + ")");
-        }
+		if (!location.isCompatible("gsiftp") && !location.isCompatible("file")) {
+			throw new AdaptorNotApplicableException("cannot handle this URI ("
+					+ location + ")");
+		}
 
-        /*
-         * try to get the credential to see whether we need to instantiate this
-         * adaptor alltogether
-         */
-        try {
-            GlobusSecurityUtils.getGlobusCredential(gatContext, preferences,
-                    "gridftp", location, DEFAULT_GRIDFTP_PORT);
-        } catch (Exception e) {
-            throw new GATObjectCreationException("gridftp", e);
-        }
-    }
+		/*
+		 * try to get the credential to see whether we need to instantiate this
+		 * adaptor alltogether
+		 */
+		try {
+			GlobusSecurityUtils.getGlobusCredential(gatContext, "gridftp",
+					location, DEFAULT_GRIDFTP_PORT);
+		} catch (Exception e) {
+			throw new GATObjectCreationException("gridftp", e);
+		}
+	}
 
-    protected URI fixURI(URI in) {
-        return fixURI(in, "gsiftp");
-    }
+	protected URI fixURI(URI in) {
+		return fixURI(in, "gsiftp");
+	}
 
-    private static void setConnectionOptions(GridFTPClient c,
-            Preferences preferences) throws Exception {
-        c.setType(GridFTPSession.TYPE_IMAGE);
+	private static void setConnectionOptions(GridFTPClient c,
+			Preferences preferences) throws Exception {
+		c.setType(GridFTPSession.TYPE_IMAGE);
 
-        // c.setMode(GridFTPSession.MODE_BLOCK);
-    }
+		// c.setMode(GridFTPSession.MODE_BLOCK);
+	}
 
-    /**
-     * Set security parameters such as data channel authentication (defined by
-     * the GridFTP protocol) and data channel protection (defined by RFC 2228).
-     * If you do not specify these, data channels are authenticated by default.
-     */
-    private static void setSecurityOptions(GridFTPClient c,
-            Preferences preferences) throws Exception {
-        if (isOldServer(preferences)) {
-            if (logger.isDebugEnabled()) {
-                logger
-                        .debug("setting localNoChannelAuthentication (for old servers)");
-            }
+	/**
+	 * Set security parameters such as data channel authentication (defined by
+	 * the GridFTP protocol) and data channel protection (defined by RFC 2228).
+	 * If you do not specify these, data channels are authenticated by default.
+	 */
+	private static void setSecurityOptions(GridFTPClient c,
+			Preferences preferences) throws Exception {
+		if (isOldServer(preferences)) {
+			if (logger.isDebugEnabled()) {
+				logger
+						.debug("setting localNoChannelAuthentication (for old servers)");
+			}
 
-            c.setLocalNoDataChannelAuthentication();
-        }
+			c.setLocalNoDataChannelAuthentication();
+		}
 
-        if (noAuthentication(preferences)) {
-            if (logger.isDebugEnabled()) {
-                logger.debug("setting data channelAuthentication to none");
-            }
+		if (noAuthentication(preferences)) {
+			if (logger.isDebugEnabled()) {
+				logger.debug("setting data channelAuthentication to none");
+			}
 
-            c.setDataChannelAuthentication(DataChannelAuthentication.NONE);
-        }
+			c.setDataChannelAuthentication(DataChannelAuthentication.NONE);
+		}
 
-        int mode = getProtectionMode(preferences);
+		int mode = getProtectionMode(preferences);
 
-        if (mode > 0) {
-            if (logger.isDebugEnabled()) {
-                logger
-                        .debug("setting data channel proptection to mode "
-                                + mode);
-            }
+		if (mode > 0) {
+			if (logger.isDebugEnabled()) {
+				logger
+						.debug("setting data channel proptection to mode "
+								+ mode);
+			}
 
-            c.setDataChannelProtection(mode);
-        }
+			c.setDataChannelProtection(mode);
+		}
 
-        // c.setProtectionBufferSize(16384);
-        // c.setDataChannelAuthentication(DataChannelAuthentication.SELF);
-        // c.setDataChannelProtection(GridFTPSession.PROTECTION_SAFE);
-        // c.setType(GridFTPSession.TYPE_IMAGE); //transfertype
-        // c.setMode(GridFTPSession.MODE_EBLOCK); //transfermode
-    }
+		// c.setProtectionBufferSize(16384);
+		// c.setDataChannelAuthentication(DataChannelAuthentication.SELF);
+		// c.setDataChannelProtection(GridFTPSession.PROTECTION_SAFE);
+		// c.setType(GridFTPSession.TYPE_IMAGE); //transfertype
+		// c.setMode(GridFTPSession.MODE_EBLOCK); //transfermode
+	}
 
-    /**
-     * Create an FTP Client.
-     * 
-     * @param hostURI
-     *                the uri of the FTP host
-     */
-    protected FTPClient createClient(GATContext gatContext,
-            Preferences preferences, URI hostURI)
-            throws GATInvocationException, InvalidUsernameOrPasswordException {
-        return doWorkCreateClient(gatContext, preferences, hostURI);
-    }
+	/**
+	 * Create an FTP Client.
+	 * 
+	 * @param hostURI
+	 *            the uri of the FTP host
+	 */
+	protected FTPClient createClient(GATContext gatContext,
+			Preferences preferences, URI hostURI)
+			throws GATInvocationException, InvalidUsernameOrPasswordException {
+		return doWorkCreateClient(gatContext, preferences, hostURI);
+	}
 
-    private static String getClientKey(URI hostURI, Preferences preferences) {
-        return hostURI.resolveHost() + ":"
-                + hostURI.getPort(DEFAULT_GRIDFTP_PORT) + preferences; // include
-        // preferences
-        // in
-        // key
-    }
+	private static String getClientKey(URI hostURI, Preferences preferences) {
+		return hostURI.resolveHost() + ":"
+				+ hostURI.getPort(DEFAULT_GRIDFTP_PORT) + preferences; // include
+		// preferences
+		// in
+		// key
+	}
 
-    private static synchronized GridFTPClient getFromCache(String key) {
-        GridFTPClient client = null;
-        if (clienttable.containsKey(key)) {
-            client = (GridFTPClient) clienttable.remove(key);
-        }
-        return client;
-    }
+	private static synchronized GridFTPClient getFromCache(String key) {
+		GridFTPClient client = null;
+		if (clienttable.containsKey(key)) {
+			client = (GridFTPClient) clienttable.remove(key);
+		}
+		return client;
+	}
 
-    private static synchronized boolean putInCache(String key, FTPClient c) {
-        if (!clienttable.containsKey(key)) {
-            clienttable.put(key, c);
-            return true;
-        }
-        return false;
-    }
+	private static synchronized boolean putInCache(String key, FTPClient c) {
+		if (!clienttable.containsKey(key)) {
+			clienttable.put(key, c);
+			return true;
+		}
+		return false;
+	}
 
-    protected static GridFTPClient doWorkCreateClient(GATContext gatContext,
-            Preferences preferences, URI hostURI)
-            throws GATInvocationException, InvalidUsernameOrPasswordException {
-        try {
-            GSSCredential credential = GlobusSecurityUtils.getGlobusCredential(
-                    gatContext, preferences, "gridftp", hostURI,
-                    DEFAULT_GRIDFTP_PORT);
-            String host = hostURI.resolveHost();
+	protected static GridFTPClient doWorkCreateClient(GATContext gatContext,
+			Preferences preferences, URI hostURI)
+			throws GATInvocationException, InvalidUsernameOrPasswordException {
+		try {
+			GSSCredential credential = GlobusSecurityUtils.getGlobusCredential(
+					gatContext, "gridftp", hostURI, DEFAULT_GRIDFTP_PORT);
+			String host = hostURI.resolveHost();
 
-            int port = DEFAULT_GRIDFTP_PORT;
+			int port = DEFAULT_GRIDFTP_PORT;
 
-            // allow port override
-            if (hostURI.getPort() != -1) {
-                port = hostURI.getPort();
-            }
+			// allow port override
+			if (hostURI.getPort() != -1) {
+				port = hostURI.getPort();
+			}
 
-            if (logger.isDebugEnabled()) {
-                logger.debug("open gridftp client to " + host + ":" + port);
-            }
+			if (logger.isDebugEnabled()) {
+				logger.debug("open gridftp client to " + host + ":" + port);
+			}
 
-            GridFTPClient client = null;
-            String key = getClientKey(hostURI, preferences);
+			GridFTPClient client = null;
+			String key = getClientKey(hostURI, preferences);
 
-            if (USE_CLIENT_CACHING) {
-                client = getFromCache(key);
-                if (client != null) {
-                    try {
-                        // test if the client is still alive
-                        client.getCurrentDir();
+			if (USE_CLIENT_CACHING) {
+				client = getFromCache(key);
+				if (client != null) {
+					try {
+						// test if the client is still alive
+						client.getCurrentDir();
 
-                        if (logger.isDebugEnabled()) {
-                            logger.debug("using cached client");
-                        }
-                    } catch (Exception except) {
-                        if (logger.isDebugEnabled()) {
-                            logger.debug("could not reuse cached client: "
-                                    + except);
-                            except.printStackTrace();
-                        }
+						if (logger.isDebugEnabled()) {
+							logger.debug("using cached client");
+						}
+					} catch (Exception except) {
+						if (logger.isDebugEnabled()) {
+							logger.debug("could not reuse cached client: "
+									+ except);
+							except.printStackTrace();
+						}
 
-                        client = null;
-                    }
-                }
-            }
+						client = null;
+					}
+				}
+			}
 
-            if (client == null) {
-                client = new GridFTPClient(host, port);
+			if (client == null) {
+				client = new GridFTPClient(host, port);
 
-                if (logger.isDebugEnabled()) {
-                    logger.debug("authenticating");
-                }
+				if (logger.isDebugEnabled()) {
+					logger.debug("authenticating");
+				}
 
-                setSecurityOptions(client, preferences);
+				setSecurityOptions(client, preferences);
 
-                // authenticate to the server
-                int retry = 1;
-                String tmp = (String) preferences
-                        .get("gridftp.authenticate.retry");
-                if ((tmp != null)) {
-                    try {
-                        retry = Integer.parseInt(tmp);
-                    } catch (NumberFormatException e) {
-                        if (logger.isDebugEnabled()) {
-                            logger.debug("failed to parse value '" + tmp
-                                    + "' for key 'gridftp.authenticate.retry'");
-                        }
-                    }
-                }
-                for (int i = 0; i < retry; i++) {
-                    try {
-                        client.authenticate(credential);
-                    } catch (ServerException se) {
-                        if (se.getMessage().contains(
-                                "451 active connection to server failed")) {
-                            try {
-                                Thread.sleep(5000);
-                            } catch (InterruptedException e) {
-                                // ignore
-                            }
-                            continue;
-                        }
-                    }
-                    break;
-                }
+				// authenticate to the server
+				int retry = 1;
+				String tmp = (String) preferences
+						.get("gridftp.authenticate.retry");
+				if ((tmp != null)) {
+					try {
+						retry = Integer.parseInt(tmp);
+					} catch (NumberFormatException e) {
+						if (logger.isDebugEnabled()) {
+							logger.debug("failed to parse value '" + tmp
+									+ "' for key 'gridftp.authenticate.retry'");
+						}
+					}
+				}
+				for (int i = 0; i < retry; i++) {
+					try {
+						client.authenticate(credential);
+					} catch (ServerException se) {
+						if (se.getMessage().contains(
+								"451 active connection to server failed")) {
+							try {
+								Thread.sleep(5000);
+							} catch (InterruptedException e) {
+								// ignore
+							}
+							continue;
+						}
+					}
+					break;
+				}
 
-                setConnectionOptions(client, preferences);
+				setConnectionOptions(client, preferences);
 
-                if (logger.isDebugEnabled()) {
-                    logger.debug("setting channel options");
-                }
+				if (logger.isDebugEnabled()) {
+					logger.debug("setting channel options");
+				}
 
-                if (logger.isDebugEnabled()) {
-                    logger.debug("done");
-                }
-            }
+				if (logger.isDebugEnabled()) {
+					logger.debug("done");
+				}
+			}
 
-            return client;
-        } catch (Exception e) {
-            throw new GATInvocationException("gridftp", e);
-        }
-    }
+			return client;
+		} catch (Exception e) {
+			throw new GATInvocationException("gridftp", e);
+		}
+	}
 
-    protected void destroyClient(FTPClient c, URI hostURI,
-            Preferences preferences) {
-        doWorkDestroyClient(c, hostURI, preferences);
-    }
+	protected void destroyClient(FTPClient c, URI hostURI,
+			Preferences preferences) {
+		doWorkDestroyClient(c, hostURI, preferences);
+	}
 
-    protected static void doWorkDestroyClient(FTPClient c, URI hostURI,
-            Preferences preferences) {
-        String key = getClientKey(hostURI, preferences);
+	protected static void doWorkDestroyClient(FTPClient c, URI hostURI,
+			Preferences preferences) {
+		String key = getClientKey(hostURI, preferences);
 
-        if (!USE_CLIENT_CACHING || !putInCache(key, c)) {
-            try {
-                if (logger.isDebugEnabled()) {
-                    logger.debug("closing gridftp client");
-                }
+		if (!USE_CLIENT_CACHING || !putInCache(key, c)) {
+			try {
+				if (logger.isDebugEnabled()) {
+					logger.debug("closing gridftp client");
+				}
 
-                c.close();
-            } catch (Exception e) {
-                if (logger.isDebugEnabled()) {
-                    logger
-                            .debug("doWorkDestroyClient, closing client, got exception (ignoring): "
-                                    + e);
-                }
+				c.close();
+			} catch (Exception e) {
+				if (logger.isDebugEnabled()) {
+					logger
+							.debug("doWorkDestroyClient, closing client, got exception (ignoring): "
+									+ e);
+				}
 
-                // ignore
-            }
-        }
-    }
+				// ignore
+			}
+		}
+	}
 
-    public static void end() {
-        if (logger.isDebugEnabled()) {
-            logger.debug("end of gridftp adaptor");
-        }
+	public static void end() {
+		if (logger.isDebugEnabled()) {
+			logger.debug("end of gridftp adaptor");
+		}
 
-        USE_CLIENT_CACHING = false;
+		USE_CLIENT_CACHING = false;
 
-        // destroy the cache
-        if (clienttable == null) {
-            return;
-        }
+		// destroy the cache
+		if (clienttable == null) {
+			return;
+		}
 
-        Enumeration<FTPClient> e = clienttable.elements();
+		Enumeration<FTPClient> e = clienttable.elements();
 
-        while (e.hasMoreElements()) {
-            GridFTPClient c = (GridFTPClient) e.nextElement();
+		while (e.hasMoreElements()) {
+			GridFTPClient c = (GridFTPClient) e.nextElement();
 
-            try {
-                if (logger.isDebugEnabled()) {
-                    logger.debug("end of gridftp adaptor, closing client");
-                }
+			try {
+				if (logger.isDebugEnabled()) {
+					logger.debug("end of gridftp adaptor, closing client");
+				}
 
-                c.close(true);
-            } catch (Exception x) {
-                if (logger.isDebugEnabled()) {
-                    logger
-                            .debug("end of gridftp adaptor, closing client, got exception (ignoring): "
-                                    + x);
-                }
+				c.close(true);
+			} catch (Exception x) {
+				if (logger.isDebugEnabled()) {
+					logger
+							.debug("end of gridftp adaptor, closing client, got exception (ignoring): "
+									+ x);
+				}
 
-                // ignore
-            }
-        }
+				// ignore
+			}
+		}
 
-        clienttable.clear();
-        clienttable = null;
-    }
+		clienttable.clear();
+		clienttable = null;
+	}
 }

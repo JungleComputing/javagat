@@ -85,6 +85,9 @@ public class DefaultAdaptorOrderPolicy implements AdaptorOrderPolicy {
     
     private void placeAdaptor(int position, String adaptorName, String cpiName, List<Adaptor> l) {
         int currentPosition = l.indexOf(getAdaptor(adaptorName, cpiName, l));
+        if (currentPosition < 0) {
+        	return;
+        }
         l.add(position, l.remove(currentPosition));
         return;
     }

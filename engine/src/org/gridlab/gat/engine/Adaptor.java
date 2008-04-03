@@ -5,10 +5,8 @@ package org.gridlab.gat.engine;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
-import java.util.Iterator;
 
 import org.gridlab.gat.GATObjectCreationException;
-import org.gridlab.gat.Preferences;
 
 /**
  * @author rob
@@ -23,52 +21,46 @@ class Adaptor {
     /** The actual class of this adaptor, must be a subclass of cpiClass. */
     Class<?> adaptorClass;
 
-    /** Preferences associated with this adaptor. */
-    Preferences preferences;
-
     /**
      * @param cpiClass
      *            The class of the api this adaptor implements.
      * @param adaptorClass
      *            The actual class of this adaptor, must be a subclass of
      *            cpiClass.
-     * @param preferences
-     *            Preferences associated with this adaptor.
      */
-    public Adaptor(String cpiName, Class<?> adaptorClass, Preferences preferences) {
+    public Adaptor(String cpiName, Class<?> adaptorClass) {
         this.cpi = cpiName;
         this.adaptorName = adaptorClass.getName();
         this.adaptorClass = adaptorClass;
-        this.preferences = preferences;
     }
 
-    boolean satisfies(Preferences p) {
-        boolean retVal = true;
-
-        Iterator<String> i = p.keySet().iterator();
-
-        while (i.hasNext()) {
-            String key = (String) i.next();
-            Object requestedValue = p.get(key);
-
-            if (this.preferences.containsKey(key)) {
-                Object adaptorValue = this.preferences.get(key);
-                boolean comparison = requestedValue.equals(adaptorValue);
-
-                if (comparison == false) {
-                    retVal = false;
-
-                    break;
-                }
-            } else {
-                //              todo - namespace for preferences
-                //                              retVal = false;
-                //                              break;
-            }
-        }
-
-        return retVal;
-    }
+//    boolean satisfies(Preferences p) {
+//        boolean retVal = true;
+//
+//        Iterator<String> i = p.keySet().iterator();
+//
+//        while (i.hasNext()) {
+//            String key = (String) i.next();
+//            Object requestedValue = p.get(key);
+//
+//            if (this.preferences.containsKey(key)) {
+//                Object adaptorValue = this.preferences.get(key);
+//                boolean comparison = requestedValue.equals(adaptorValue);
+//
+//                if (comparison == false) {
+//                    retVal = false;
+//
+//                    break;
+//                }
+//            } else {
+//                //              todo - namespace for preferences
+//                //                              retVal = false;
+//                //                              break;
+//            }
+//        }
+//
+//        return retVal;
+//    }
 
     Object newInstance(Class<?>[] parameterTypes, Object[] parameters)
             throws Throwable {

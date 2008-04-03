@@ -127,27 +127,13 @@ public class JavaSoftwareDescription extends SoftwareDescription {
 	}
 
 	/**
-	 * Sets the jvm options. Note that any option starting with '-D' or '"-D'
-	 * will be ignored. These should be set using the method
-	 * {@link #setJavaSystemProperties(Map)}.
+	 * Sets the jvm options.
 	 * 
 	 * @param options
 	 *            the jvm options.
 	 */
 	public void setJavaOptions(String[] options) {
-		int systemProperties = 0;
-		for (String option : options) {
-			if (option.startsWith("-D") || option.startsWith("\"-D")) {
-				systemProperties++;
-			}
-		}
-		int pos = 0;
-		this.javaOptions = new String[options.length - systemProperties];
-		for (String option : options) {
-			if (!(option.startsWith("-D") || option.startsWith("\"-D"))) {
-				this.javaOptions[pos++] = option;
-			}
-		}
+		javaOptions = options;
 	}
 
 	/**

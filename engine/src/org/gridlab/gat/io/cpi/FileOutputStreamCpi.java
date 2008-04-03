@@ -5,13 +5,12 @@ import java.util.List;
 import org.apache.log4j.Logger;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
-import org.gridlab.gat.Preferences;
 import org.gridlab.gat.URI;
 import org.gridlab.gat.io.FileOutputStreamInterface;
 import org.gridlab.gat.monitoring.Metric;
 import org.gridlab.gat.monitoring.MetricDefinition;
-import org.gridlab.gat.monitoring.MetricListener;
 import org.gridlab.gat.monitoring.MetricEvent;
+import org.gridlab.gat.monitoring.MetricListener;
 
 /**
  * Capability provider interface to the FileStream class.
@@ -28,8 +27,6 @@ public abstract class FileOutputStreamCpi implements FileOutputStreamInterface {
 	
 	protected GATContext gatContext;
 
-    protected Preferences preferences;
-
     protected URI location;
 
     protected boolean append;
@@ -45,13 +42,10 @@ public abstract class FileOutputStreamCpi implements FileOutputStreamInterface {
      * @param gatContext
      *            A GATContext which is used to determine the access rights for
      *            this FileCpi.
-     * @param preferences
-     *            the preferences to be associated with this adaptor
      */
     protected FileOutputStreamCpi(GATContext gatContext,
-            Preferences preferences, URI location, Boolean append) {
+             URI location, Boolean append) {
         this.gatContext = gatContext;
-        this.preferences = preferences;
         this.location = location;
         this.append = append.booleanValue();
 

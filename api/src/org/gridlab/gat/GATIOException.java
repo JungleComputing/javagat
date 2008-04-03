@@ -18,10 +18,12 @@ public class GATIOException extends IOException {
         cause = e;
     }
 
+    /** {@inheritDoc} */
     public String toString() {
         return cause.toString();
     }
 
+    /** {@inheritDoc} */
     public void printStackTrace() {
         cause.printStackTrace();
     }

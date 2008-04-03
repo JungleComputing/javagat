@@ -3,7 +3,6 @@
  */
 package org.gridlab.gat.io.cpi.sftpnew;
 
-import org.gridlab.gat.Preferences;
 import org.gridlab.gat.URI;
 import org.gridlab.gat.security.sftp.SftpUserInfo;
 
@@ -22,5 +21,4 @@ public class SftpNewConnection {
     
     URI remoteMachine;
     
-    Preferences preferences;
 }

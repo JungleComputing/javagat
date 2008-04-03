@@ -6,154 +6,157 @@ package org.gridlab.gat.resources.cpi;
 import org.apache.log4j.Logger;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
-import org.gridlab.gat.Preferences;
 import org.gridlab.gat.io.File;
 import org.gridlab.gat.io.cpi.FileCpi;
 
 public class PreStagedFile extends StagedFile {
-	
+
 	protected static Logger logger = Logger.getLogger(PreStagedFile.class);
-	
-    private boolean isExecutable;
 
-    private boolean isStdIn;
+	private boolean isExecutable;
 
-    private String exe;
+	private boolean isStdIn;
 
-    public PreStagedFile() {
-        // constructor needed for castor marshalling, do *not* use
-    }
+	private String exe;
 
-    public PreStagedFile(GATContext context, Preferences preferences, File src,
-            File dest, String host, String sandbox, boolean isStdIn, String exe)
-            throws GATInvocationException {
-        super(context, preferences, src, dest, host, sandbox);
+	public PreStagedFile() {
+		// constructor needed for castor marshalling, do *not* use
+	}
 
-        this.isStdIn = isStdIn;
-        this.exe = exe;
+	public PreStagedFile(GATContext context, File src, File dest, String host,
+			String sandbox, boolean isStdIn, String exe)
+			throws GATInvocationException {
+		super(context, src, dest, host, sandbox);
 
-        resolve();
-    }
+		this.isStdIn = isStdIn;
+		this.exe = exe;
 
-    /**
-     * @return the exe
-     */
-    public String getExe() {
-        return exe;
-    }
+		resolve();
+	}
 
-    /**
-     * @param exe the exe to set
-     */
-    public void setExe(String exe) {
-        this.exe = exe;
-    }
+	/**
+	 * @return the exe
+	 */
+	public String getExe() {
+		return exe;
+	}
 
-    /**
-     * @return the isExecutable
-     */
-    public boolean isExecutable() {
-        return isExecutable;
-    }
+	/**
+	 * @param exe
+	 *            the exe to set
+	 */
+	public void setExe(String exe) {
+		this.exe = exe;
+	}
 
-    /**
-     * @param isExecutable the isExecutable to set
-     */
-    public void setExecutable(boolean isExecutable) {
-        this.isExecutable = isExecutable;
-    }
+	/**
+	 * @return the isExecutable
+	 */
+	public boolean isExecutable() {
+		return isExecutable;
+	}
 
-    /**
-     * @return the isStdIn
-     */
-    public boolean isStdIn() {
-        return isStdIn;
-    }
+	/**
+	 * @param isExecutable
+	 *            the isExecutable to set
+	 */
+	public void setExecutable(boolean isExecutable) {
+		this.isExecutable = isExecutable;
+	}
 
-    /**
-     * @param isStdIn the isStdIn to set
-     */
-    public void setStdIn(boolean isStdIn) {
-        this.isStdIn = isStdIn;
-    }
+	/**
+	 * @return the isStdIn
+	 */
+	public boolean isStdIn() {
+		return isStdIn;
+	}
 
-    /* Creates a file object for the destination of the preStaged src file */
-    private void resolve() throws GATInvocationException {
-        setResolvedSrc(origSrc);
+	/**
+	 * @param isStdIn
+	 *            the isStdIn to set
+	 */
+	public void setStdIn(boolean isStdIn) {
+		this.isStdIn = isStdIn;
+	}
 
-        if (origDest != null) { // already set manually
-            if (origDest.isAbsolute()) {
-                inSandbox = false;
-            } else {
-                inSandbox = true;
-            }
-            setResolvedDest(resolve(origDest, false));
-        } else {
-            inSandbox = true;
-            setResolvedDest(resolve(origSrc, true));
-        }
+	/* Creates a file object for the destination of the preStaged src file */
+	private void resolve() throws GATInvocationException {
+		setResolvedSrc(origSrc);
 
-        if (inSandbox) {
-            if (exe == null) {
-                // can happen with java executables
-                isExecutable = false;
-                return;
-            }
+		if (origDest != null) { // already set manually
+			if (origDest.isAbsolute()) {
+				inSandbox = false;
+			} else {
+				inSandbox = true;
+			}
+			setResolvedDest(resolve(origDest, false));
+		} else {
+			inSandbox = true;
+			setResolvedDest(resolve(origSrc, true));
+		}
 
-            if (exe.startsWith("/")) {
-                // file is relative, exe is absolute
-                isExecutable = false;
-                return;
-            }
+		if (inSandbox) {
+			if (exe == null) {
+				// can happen with java executables
+				isExecutable = false;
+				return;
+			}
 
-            if (getResolvedSrc().isFile() && relativeURI.getPath().equals(exe)) {
-                isExecutable = true;
-            }
-        } else {
-            if (getResolvedSrc().isFile() && getResolvedDest().getPath().equals(exe)) {
-                isExecutable = true;
-            }
-        }
-    }
+			if (exe.startsWith("/")) {
+				// file is relative, exe is absolute
+				isExecutable = false;
+				return;
+			}
 
-    protected void prestage() throws GATInvocationException {
-        if (logger.isInfoEnabled()) {
-            logger.info("prestage:\n  copy " + getResolvedSrc().toGATURI() + " to "
-                    + getResolvedDest().toGATURI());
-        }
-        getResolvedSrc().copy(getResolvedDest().toGATURI());
-    }
+			if (getResolvedSrc().isFile() && relativeURI.getPath().equals(exe)) {
+				isExecutable = true;
+			}
+		} else {
+			if (getResolvedSrc().isFile()
+					&& getResolvedDest().getPath().equals(exe)) {
+				isExecutable = true;
+			}
+		}
+	}
 
-    protected void delete() throws GATInvocationException {
-        if (inSandbox) {
-            return;
-        }
-        
-        if (getResolvedDest().isDirectory()) {
-            if (logger.isInfoEnabled()) {
-                logger.info("DELETE_DIR:" + getResolvedDest());
-            }
-            FileCpi.recursiveDeleteDirectory(gatContext, preferences,
-                    getResolvedDest().getFileInterface());
-        } else {
-            if (logger.isInfoEnabled()) {
-                logger.info("DELETE_FILE:" + getResolvedDest());
-            }
-            getResolvedDest().delete();
-        }
-    }
+	protected void prestage() throws GATInvocationException {
+		if (logger.isInfoEnabled()) {
+			logger.info("prestage:\n  copy " + getResolvedSrc().toGATURI()
+					+ " to " + getResolvedDest().toGATURI());
+		}
+		getResolvedSrc().copy(getResolvedDest().toGATURI());
+	}
 
-    protected void wipe() throws GATInvocationException {
-        if (logger.isInfoEnabled()) {
-            logger.info("WIPE_FILE:" + getResolvedDest());
-        }
-        wipe(getResolvedDest());
-    }
+	protected void delete() throws GATInvocationException {
+		if (inSandbox) {
+			return;
+		}
 
-    public String toString() {
-        return "PreStaged: " + getResolvedSrc().toGATURI() + " -> "
-                + getResolvedDest().toGATURI() + (isStdIn ? " (STDIN)" : "")
-                + (isExecutable ? " (EXE)" : "")
-                + (inSandbox ? " (IN SANDBOX)" : " (OUTSIDE SANDBOX)");
-    }
+		if (getResolvedDest().isDirectory()) {
+			if (logger.isInfoEnabled()) {
+				logger.info("DELETE_DIR:" + getResolvedDest());
+			}
+			FileCpi.recursiveDeleteDirectory(gatContext, getResolvedDest()
+					.getFileInterface());
+		} else {
+			if (logger.isInfoEnabled()) {
+				logger.info("DELETE_FILE:" + getResolvedDest());
+			}
+			getResolvedDest().delete();
+		}
+	}
+
+	protected void wipe() throws GATInvocationException {
+		if (logger.isInfoEnabled()) {
+			logger.info("WIPE_FILE:" + getResolvedDest());
+		}
+		wipe(getResolvedDest());
+	}
+
+	public String toString() {
+		return "PreStaged: " + getResolvedSrc().toGATURI() + " -> "
+				+ getResolvedDest().toGATURI() + (isStdIn ? " (STDIN)" : "")
+				+ (isExecutable ? " (EXE)" : "")
+				+ (inSandbox ? " (IN SANDBOX)" : " (OUTSIDE SANDBOX)");
+	}
 }

@@ -43,7 +43,7 @@ public class FileInputStream extends InputStream implements Monitorable {
 	 * FileInputStream object would have default values.
 	 * <p>
 	 * 
-	 * @return the FileInterface object
+	 * @return the FileInputStreamInterface object
 	 */
 	public org.gridlab.gat.io.FileInputStreamInterface getFileInputStreamInterface() {
 		return in;

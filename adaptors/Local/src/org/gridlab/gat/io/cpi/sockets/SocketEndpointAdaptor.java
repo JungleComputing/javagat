@@ -45,7 +45,7 @@ public class SocketEndpointAdaptor extends EndpointCpi implements Serializable {
     ServerSocket serverSocket;
 
     public SocketEndpointAdaptor() {
-        super(null, null);
+        super(null);
     }
 
     /**
@@ -53,9 +53,9 @@ public class SocketEndpointAdaptor extends EndpointCpi implements Serializable {
      * @param preferences
      * @throws GATObjectCreationException
      */
-    public SocketEndpointAdaptor(GATContext gatContext, Preferences preferences)
+    public SocketEndpointAdaptor(GATContext gatContext)
             throws GATObjectCreationException {
-        super(gatContext, preferences);
+        super(gatContext);
 
         try {
             localAddress = GATEngine.getLocalHostAddress();
@@ -110,7 +110,7 @@ public class SocketEndpointAdaptor extends EndpointCpi implements Serializable {
         try {
             Socket s = new Socket(remoteAddress, remotePort);
 
-            return new SocketPipe(gatContext, preferences, s);
+            return new SocketPipe(gatContext, s);
         } catch (IOException e) {
             throw new GATInvocationException("socketendpoint", e);
         }
@@ -129,7 +129,7 @@ public class SocketEndpointAdaptor extends EndpointCpi implements Serializable {
             serverSocket.setSoTimeout(timeout);
             Socket s = serverSocket.accept();
 
-            return new SocketPipe(gatContext, preferences, s);
+            return new SocketPipe(gatContext, s);
         } catch (IOException e) {
             throw new GATInvocationException("socketPipe", e);
         }        

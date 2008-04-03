@@ -11,7 +11,8 @@ package org.gridlab.gat;
  */
 @SuppressWarnings("serial")
 public class InvalidUsernameOrPasswordException extends GATInvocationException {
-    public InvalidUsernameOrPasswordException(String s) {
+    
+	public InvalidUsernameOrPasswordException(String s) {
         super(s);
     }
 

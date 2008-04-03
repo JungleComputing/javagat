@@ -7,7 +7,6 @@ import org.globus.io.streams.GassOutputStream;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.GATObjectCreationException;
-import org.gridlab.gat.Preferences;
 import org.gridlab.gat.URI;
 import org.gridlab.gat.security.globus.GlobusSecurityUtils;
 import org.ietf.jgss.GSSCredential;
@@ -27,40 +26,40 @@ import org.ietf.jgss.GSSCredential;
  * call.
  */
 public class HTTPSFileOutputStreamAdaptor extends GlobusFileOutputStreamAdaptor {
-    public HTTPSFileOutputStreamAdaptor(GATContext gatContext,
-            Preferences preferences, URI location, Boolean append)
-            throws GATObjectCreationException {
-        super(gatContext, preferences, location, append);
+	public HTTPSFileOutputStreamAdaptor(GATContext gatContext, URI location,
+			Boolean append) throws GATObjectCreationException {
+		super(gatContext, location, append);
 
-        if (!location.isCompatible("https")) {
-            throw new GATObjectCreationException("cannot handle this URI");
-        }
+		if (!location.isCompatible("https")) {
+			throw new GATObjectCreationException("cannot handle this URI");
+		}
 
-        // now try to create a stream.
-        try {
-            out = createStream();
-        } catch (GATInvocationException e) {
-            throw new GATObjectCreationException("https outputstream", e);
-        }
-    }
+		// now try to create a stream.
+		try {
+			out = createStream();
+		} catch (GATInvocationException e) {
+			throw new GATObjectCreationException("https outputstream", e);
+		}
+	}
 
-    protected OutputStream createStream() throws GATInvocationException {
-        String host = location.resolveHost();
-        String path = location.getPath();
+	protected OutputStream createStream() throws GATInvocationException {
+		String host = location.resolveHost();
+		String path = location.getPath();
 
-        try {
-            int port = location.getPort(GlobusFileAdaptor.DEFAULT_GRIDFTP_PORT);
+		try {
+			int port = location.getPort(GlobusFileAdaptor.DEFAULT_GRIDFTP_PORT);
 
-            GSSCredential credential = GlobusSecurityUtils.getGlobusCredential(
-                gatContext, preferences, "gridftp", location,
-                GlobusFileAdaptor.DEFAULT_HTTPS_PORT);
+			GSSCredential credential = GlobusSecurityUtils.getGlobusCredential(
+					gatContext, "gridftp", location,
+					GlobusFileAdaptor.DEFAULT_HTTPS_PORT);
 
-            GassOutputStream output = new GassOutputStream(credential,
-                SelfAuthorization.getInstance(), host, port, path, -1, append); // length unknown
+			GassOutputStream output = new GassOutputStream(credential,
+					SelfAuthorization.getInstance(), host, port, path, -1,
+					append); // length unknown
 
-            return output;
-        } catch (Exception e) {
-            throw new GATInvocationException("https", e);
-        }
-    }
+			return output;
+		} catch (Exception e) {
+			throw new GATInvocationException("https", e);
+		}
+	}
 }

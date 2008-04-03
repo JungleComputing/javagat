@@ -17,7 +17,6 @@ import org.apache.log4j.Logger;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.GATObjectCreationException;
-import org.gridlab.gat.Preferences;
 import org.gridlab.gat.TimePeriod;
 import org.gridlab.gat.URI;
 import org.gridlab.gat.monitoring.Metric;
@@ -37,203 +36,204 @@ import org.gridlab.gat.resources.cpi.ResourceBrokerCpi;
  * 
  */
 public class ZorillaResourceBrokerAdaptor extends ResourceBrokerCpi implements
-        Callback, Runnable {
+		Callback, Runnable {
 
-    // update status of each job every minute
-    public static final int TIMEOUT = 60000;
+	// update status of each job every minute
+	public static final int TIMEOUT = 60000;
 
-    private static final Logger logger = Logger
-            .getLogger(ZorillaResourceBrokerAdaptor.class);
+	private static final Logger logger = Logger
+			.getLogger(ZorillaResourceBrokerAdaptor.class);
 
-    private static boolean ended = false;
+	private static boolean ended = false;
 
-    private static synchronized boolean hasEnded() {
-        return ended;
-    }
+	private static synchronized boolean hasEnded() {
+		return ended;
+	}
 
-    // called by the gat engine
-    public static synchronized void end() {
-        ended = true;
-    }
+	// called by the gat engine
+	public static synchronized void end() {
+		ended = true;
+	}
 
-    private final InetSocketAddress nodeSocketAddress;
+	private final InetSocketAddress nodeSocketAddress;
 
-    private final Map<String, ZorillaJob> jobs;
+	private final Map<String, ZorillaJob> jobs;
 
-    // receives callbacks from the zorilla node.
-    private final CallbackReceiver callbackReceiver;
+	// receives callbacks from the zorilla node.
+	private final CallbackReceiver callbackReceiver;
 
-    public ZorillaResourceBrokerAdaptor(GATContext gatContext,
-            Preferences preferences, URI brokerURI) throws Exception {
-        super(gatContext, preferences, brokerURI);
-        
-        jobs = new HashMap<String, ZorillaJob>();
+	public ZorillaResourceBrokerAdaptor(GATContext gatContext, URI brokerURI)
+			throws Exception {
+		super(gatContext, brokerURI);
 
-        if (brokerURI == null) {
-            throw new GATObjectCreationException("broker URI (zorilla node address) not specified");
-        }
-        
-        String host = brokerURI.getHost();
-        if (host == null) {
-            host = "localhost";
-        }
+		jobs = new HashMap<String, ZorillaJob>();
 
-        int port = brokerURI.getPort(ZoniProtocol.DEFAULT_PORT);
+		if (brokerURI == null) {
+			throw new GATObjectCreationException(
+					"broker URI (zorilla node address) not specified");
+		}
 
-        nodeSocketAddress = new InetSocketAddress(InetAddress.getByName(host),
-                port);
-        
-        logger.debug("zorilla node address = " + nodeSocketAddress);
+		String host = brokerURI.getHost();
+		if (host == null) {
+			host = "localhost";
+		}
 
-        callbackReceiver = new CallbackReceiver(this);
+		int port = brokerURI.getPort(ZoniProtocol.DEFAULT_PORT);
 
-        try {
-            ZoniConnection connection = new ZoniConnection(getNodeSocketAddress(),
-                    null, ZoniProtocol.TYPE_CLIENT);
-            connection.close();
-        } catch (IOException e) {
-            throw new GATObjectCreationException("could not reach zorilla node", e);
-        }
+		nodeSocketAddress = new InetSocketAddress(InetAddress.getByName(host),
+				port);
 
-        // start a thread to monitor jobs
-        Thread thread = new Thread(this);
-        thread.setDaemon(true);
-        thread.setName("zorilla job monitor");
-        thread.start();
-    }
+		logger.debug("zorilla node address = " + nodeSocketAddress);
 
-   
-    public Reservation reserveResource(ResourceDescription resourceDescription,
-            TimePeriod timePeriod) {
-        throw new UnsupportedOperationException("Not implemented");
-    }
+		callbackReceiver = new CallbackReceiver(this);
 
-    public List<HardwareResource> findResources(
-            ResourceDescription resourceDescription) {
-        throw new UnsupportedOperationException("Not implemented");
-    }
+		try {
+			ZoniConnection connection = new ZoniConnection(
+					getNodeSocketAddress(), null, ZoniProtocol.TYPE_CLIENT);
+			connection.close();
+		} catch (IOException e) {
+			throw new GATObjectCreationException(
+					"could not reach zorilla node", e);
+		}
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.gridlab.gat.resources.ResourceBroker#submitJob(org.gridlab.gat.resources.JobDescription)
-     */
-    public Job submitJob(JobDescription description, MetricListener listener,
-            String metricDefinitionName) throws GATInvocationException {
-        SoftwareDescription sd = description.getSoftwareDescription();
+		// start a thread to monitor jobs
+		Thread thread = new Thread(this);
+		thread.setDaemon(true);
+		thread.setName("zorilla job monitor");
+		thread.start();
+	}
 
-        if (sd == null) {
-            throw new GATInvocationException(
-                    "The job description does not contain a software description");
-        }
+	public Reservation reserveResource(ResourceDescription resourceDescription,
+			TimePeriod timePeriod) {
+		throw new UnsupportedOperationException("Not implemented");
+	}
 
-        ZorillaJob job = new ZorillaJob(gatContext, preferences, description,
-                null, this);
-        if (listener != null && metricDefinitionName != null) {
-            Metric metric = job.getMetricDefinitionByName(metricDefinitionName)
-                    .createMetric(null);
-            job.addMetricListener(listener, metric);
-        }
-        job.startJob(getNodeSocketAddress(), getCallbackReceiver());
+	public List<HardwareResource> findResources(
+			ResourceDescription resourceDescription) {
+		throw new UnsupportedOperationException("Not implemented");
+	}
 
-        synchronized (this) {
-            jobs.put(job.getJobID(), job);
-        }
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.gridlab.gat.resources.ResourceBroker#submitJob(org.gridlab.gat.resources.JobDescription)
+	 */
+	public Job submitJob(JobDescription description, MetricListener listener,
+			String metricDefinitionName) throws GATInvocationException {
+		SoftwareDescription sd = description.getSoftwareDescription();
 
-        return job;
-    }
+		if (sd == null) {
+			throw new GATInvocationException(
+					"The job description does not contain a software description");
+		}
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.gridlab.gat.resources.ResourceBroker#reserveResource(org.gridlab.gat.resources.Resource,
-     *      org.gridlab.gat.engine.util.TimePeriod)
-     */
-    public Reservation reserveResource(Resource resource, TimePeriod timePeriod) {
-        throw new UnsupportedOperationException("Not implemented");
-    }
+		ZorillaJob job = new ZorillaJob(gatContext, description, null, this);
+		if (listener != null && metricDefinitionName != null) {
+			Metric metric = job.getMetricDefinitionByName(metricDefinitionName)
+					.createMetric(null);
+			job.addMetricListener(listener, metric);
+		}
+		job.startJob(getNodeSocketAddress(), getCallbackReceiver());
 
-    InetSocketAddress getNodeSocketAddress() {
-        return nodeSocketAddress;
-    }
+		synchronized (this) {
+			jobs.put(job.getJobID(), job);
+		}
 
-    // zoni callback with update of job info
-    public synchronized void callback(JobInfo info) {
-        if (logger.isDebugEnabled()) {
-            logger.debug("got new job info: " + info);
-        }
+		return job;
+	}
 
-        ZorillaJob job = jobs.get(info.getJobID());
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.gridlab.gat.resources.ResourceBroker#reserveResource(org.gridlab.gat.resources.Resource,
+	 *      org.gridlab.gat.engine.util.TimePeriod)
+	 */
+	public Reservation reserveResource(Resource resource, TimePeriod timePeriod) {
+		throw new UnsupportedOperationException("Not implemented");
+	}
 
-        if (job == null) {
-            logger.warn("could not update job info: job not in active list: "
-                    + info);
-            return;
-        }
+	InetSocketAddress getNodeSocketAddress() {
+		return nodeSocketAddress;
+	}
 
-        job.setInfo(info);
-    }
+	// zoni callback with update of job info
+	public synchronized void callback(JobInfo info) {
+		if (logger.isDebugEnabled()) {
+			logger.debug("got new job info: " + info);
+		}
 
-    private synchronized ZorillaJob[] getJobs() {
-        return jobs.values().toArray(new ZorillaJob[0]);
-    }
+		ZorillaJob job = jobs.get(info.getJobID());
 
-    private synchronized void removeJob(String jobID) {
-        jobs.remove(jobID);
-    }
+		if (job == null) {
+			logger.warn("could not update job info: job not in active list: "
+					+ info);
+			return;
+		}
 
-    private void updateJobInfos() throws IOException {
-        logger.debug("updating job info for all jobs");
-        ZoniConnection connection = null;
+		job.setInfo(info);
+	}
 
-        for (ZorillaJob job : getJobs()) {
-            if (connection == null) {
-                    connection = new ZoniConnection(getNodeSocketAddress(),
-                            null, ZoniProtocol.TYPE_CLIENT);
-            }
+	private synchronized ZorillaJob[] getJobs() {
+		return jobs.values().toArray(new ZorillaJob[0]);
+	}
 
-            try {
-                JobInfo info = connection.getJobInfo(job.getJobID());
+	private synchronized void removeJob(String jobID) {
+		jobs.remove(jobID);
+	}
 
-                if (logger.isDebugEnabled()) {
-                    logger.debug("retrieved new info: " + info);
-                }
+	private void updateJobInfos() throws IOException {
+		logger.debug("updating job info for all jobs");
+		ZoniConnection connection = null;
 
-                job.setInfo(info);
+		for (ZorillaJob job : getJobs()) {
+			if (connection == null) {
+				connection = new ZoniConnection(getNodeSocketAddress(), null,
+						ZoniProtocol.TYPE_CLIENT);
+			}
 
-                if (job.hasEnded()) {
-                    // no need to update info any longer
-                    removeJob(job.getJobID());
-                }
-            } catch (IOException e) {
-                if (connection != null) {
-                    connection.close();
-                }
-                connection = null;
-                throw e;
-            }
-        }
-    }
+			try {
+				JobInfo info = connection.getJobInfo(job.getJobID());
 
-    public void run() {
-        while (!hasEnded()) {
-            try {
-                updateJobInfos();
-            } catch (IOException e) {
-                logger.warn("could not update job infos of " + nodeSocketAddress, e);
-            }
+				if (logger.isDebugEnabled()) {
+					logger.debug("retrieved new info: " + info);
+				}
 
-            try {
-                Thread.sleep(TIMEOUT);
-            } catch (InterruptedException e) {
-                // IGNORE
-            }
-        }
+				job.setInfo(info);
 
-    }
+				if (job.hasEnded()) {
+					// no need to update info any longer
+					removeJob(job.getJobID());
+				}
+			} catch (IOException e) {
+				if (connection != null) {
+					connection.close();
+				}
+				connection = null;
+				throw e;
+			}
+		}
+	}
 
-    public CallbackReceiver getCallbackReceiver() {
-        return callbackReceiver;
-    }
+	public void run() {
+		while (!hasEnded()) {
+			try {
+				updateJobInfos();
+			} catch (IOException e) {
+				logger.warn("could not update job infos of "
+						+ nodeSocketAddress, e);
+			}
+
+			try {
+				Thread.sleep(TIMEOUT);
+			} catch (InterruptedException e) {
+				// IGNORE
+			}
+		}
+
+	}
+
+	public CallbackReceiver getCallbackReceiver() {
+		return callbackReceiver;
+	}
 
 }
