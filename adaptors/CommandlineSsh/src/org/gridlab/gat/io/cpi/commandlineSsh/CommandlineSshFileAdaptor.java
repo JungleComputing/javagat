@@ -222,9 +222,10 @@ public class CommandlineSshFileAdaptor extends FileCpi {
 					FileInterface destFile = GAT.createFile(gatContext,
 							gatContext.getPreferences(), dest)
 							.getFileInterface();
-					FileInterface destParentFile = destFile.getParentFile()
-							.getFileInterface();
-					destParentFile.mkdirs();
+					File destinationParentFile = destFile.getParentFile();
+					if (destinationParentFile != null) {
+						destinationParentFile.getFileInterface().mkdirs();
+					}
 				} catch (GATObjectCreationException e) {
 					throw new GATInvocationException(
 							"CommandlineSshFileAdaptor", e);
@@ -350,9 +351,10 @@ public class CommandlineSshFileAdaptor extends FileCpi {
 				try {
 					FileInterface destFile = GAT.createFile(gatContext, dest)
 							.getFileInterface();
-					FileInterface destParentFile = destFile.getParentFile()
-							.getFileInterface();
-					destParentFile.mkdirs();
+					File destinationParentFile = destFile.getParentFile();
+					if (destinationParentFile != null) {
+						destinationParentFile.getFileInterface().mkdirs();
+					}
 				} catch (GATObjectCreationException e) {
 					throw new GATInvocationException(
 							"CommandlineSshFileAdaptor", e);
@@ -488,9 +490,10 @@ public class CommandlineSshFileAdaptor extends FileCpi {
 				try {
 					FileInterface destFile = GAT.createFile(gatContext, dest)
 							.getFileInterface();
-					FileInterface destParentFile = destFile.getParentFile()
-							.getFileInterface();
-					destParentFile.mkdirs();
+					File destinationParentFile = destFile.getParentFile();
+					if (destinationParentFile != null) {
+						destinationParentFile.getFileInterface().mkdirs();
+					}
 				} catch (GATObjectCreationException e) {
 					throw new GATInvocationException(
 							"CommandlineSshFileAdaptor", e);

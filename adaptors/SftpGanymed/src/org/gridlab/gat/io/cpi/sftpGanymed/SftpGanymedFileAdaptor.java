@@ -444,7 +444,9 @@ public class SftpGanymedFileAdaptor extends FileCpi {
 			if (gatContext.getPreferences().containsKey("file.create")) {
 				if (((String) gatContext.getPreferences().get("file.create"))
 						.equalsIgnoreCase("true")) {
-					destinationFile.getParentFile().mkdirs();
+					if (destinationFile.getParentFile() != null) {
+						destinationFile.getParentFile().mkdirs();
+					}
 				}
 			}
 
@@ -534,9 +536,11 @@ public class SftpGanymedFileAdaptor extends FileCpi {
 					destFile = GAT.createFile(gatContext,
 							dest.toString().replace(dest.getPath(), destPath))
 							.getFileInterface();
-					FileInterface destParentFile = destFile.getParentFile()
-							.getFileInterface();
-					destParentFile.mkdirs();
+					org.gridlab.gat.io.File destinationParentFile = destFile
+							.getParentFile();
+					if (destinationParentFile != null) {
+						destinationParentFile.getFileInterface().mkdirs();
+					}
 				}
 			}
 

@@ -151,12 +151,16 @@ public class LocalFileAdaptor extends FileCpi {
 				try {
 					FileInterface destFile = GAT.createFile(gatContext,
 							destination).getFileInterface();
-					FileInterface destParentFile = destFile.getParentFile()
-							.getFileInterface();
-					boolean result = destParentFile.mkdirs();
-					if (logger.isDebugEnabled()) {
-						logger.debug("new dirs created: " + result);
+					org.gridlab.gat.io.File destinationParentFile = destFile
+							.getParentFile();
+					if (destinationParentFile != null) {
+						boolean result = destinationParentFile
+								.getFileInterface().mkdirs();
+						if (logger.isDebugEnabled()) {
+							logger.debug("new dirs created: " + result);
+						}
 					}
+
 				} catch (GATObjectCreationException e) {
 					throw new GATInvocationException("LocalFileAdaptor", e);
 				}

@@ -310,9 +310,11 @@ public class SshFileAdaptor extends FileCpi {
 				try {
 					FileInterface destFile = GAT.createFile(gatContext, loc)
 							.getFileInterface();
-					FileInterface destParentFile = destFile.getParentFile()
-							.getFileInterface();
-					destParentFile.mkdirs();
+					org.gridlab.gat.io.File destinationParentFile = destFile
+							.getParentFile();
+					if (destinationParentFile != null) {
+						destinationParentFile.getFileInterface().mkdirs();
+					}
 				} catch (GATObjectCreationException e) {
 					throw new GATInvocationException("SshFileAdaptor", e);
 				}

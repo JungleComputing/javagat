@@ -442,9 +442,11 @@ public class SftpFileAdaptor extends FileCpi {
 						.equalsIgnoreCase("true")) {
 					FileInterface destFile = GAT.createFile(gatContext, dest)
 							.getFileInterface();
-					FileInterface destParentFile = destFile.getParentFile()
-							.getFileInterface();
-					destParentFile.mkdirs();
+					File destinationParentFile = destFile
+							.getParentFile();
+					if (destinationParentFile != null) {
+						destinationParentFile.getFileInterface().mkdirs();
+					}
 				}
 			}
 

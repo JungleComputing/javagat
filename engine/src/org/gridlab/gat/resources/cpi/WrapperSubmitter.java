@@ -257,37 +257,43 @@ public class WrapperSubmitter {
 		}
 	}
 
-	private void copyGAT(String host) {
+	private void copyGAT(String host) throws GATInvocationException {
 		Environment localEnv = new Environment();
 		String localGATLocation = localEnv.getVar("GAT_LOCATION");
+		if (logger.isInfoEnabled()) {
+			logger.info("using gat at: " + localGATLocation);
+		}
 		try {
 			Preferences prefs = new Preferences();
 			prefs.put("file.create", "true");
-			File gatDir = GAT.createFile(gatContext, prefs, localGATLocation
-					+ "/lib");
-			File log4jFile = GAT.createFile(gatContext, prefs, localGATLocation
+			File gatDir = GAT.createFile(gatContext, localGATLocation + "/lib");
+			File log4jFile = GAT.createFile(gatContext, localGATLocation
 					+ "/log4j.properties");
-			File destDir = GAT.createFile(gatContext, prefs, "any://" + host
-					+ "/" + WELL_KNOWN_REMOTE_GAT_LOCATION);
+			File destDir = GAT.createFile(gatContext, "any://" + host + "/"
+					+ WELL_KNOWN_REMOTE_GAT_LOCATION);
 			if (!destDir.exists()) {
 				destDir.mkdir();
 			}
 			gatDir.copy(new URI("any://" + host + "/"
 					+ WELL_KNOWN_REMOTE_GAT_LOCATION));
+			if (logger.isInfoEnabled()) {
+				logger.info("gat dir copied");
+			}
 			log4jFile.copy(new URI("any://" + host + "/"
 					+ WELL_KNOWN_REMOTE_GAT_LOCATION + "/log4j.properties"));
+			if (logger.isInfoEnabled()) {
+				logger.info("log4j.properties copied");
+			}
 		} catch (GATObjectCreationException e) {
 			if (logger.isDebugEnabled()) {
 				logger.debug("Failed to create remote file:" + e);
 			}
+			throw new GATInvocationException("Failed to create remote file", e);
 		} catch (URISyntaxException e) {
 			if (logger.isDebugEnabled()) {
 				logger.debug("Wrong URI:" + e);
 			}
-		} catch (GATInvocationException e) {
-			if (logger.isDebugEnabled()) {
-				logger.debug(e);
-			}
+			throw new GATInvocationException("Failed to create remote file", e);
 		}
 		hostsWithRemoteGAT.add(host);
 	}

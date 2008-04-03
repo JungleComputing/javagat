@@ -174,9 +174,10 @@ public class SshTrileadFileAdaptor extends FileCpi {
 		if (gatContext.getPreferences().containsKey("file.create")) {
 			if (((String) gatContext.getPreferences().get("file.create"))
 					.equalsIgnoreCase("true")) {
-				FileInterface destinationParentFile = destinationFile
-						.getParentFile().getFileInterface();
-				destinationParentFile.mkdirs();
+				File destinationParentFile = destinationFile.getParentFile();
+				if (destinationParentFile != null) {
+					destinationParentFile.getFileInterface().mkdirs();
+				}
 			}
 		}
 
@@ -223,7 +224,9 @@ public class SshTrileadFileAdaptor extends FileCpi {
 		} else if (isFile()) {
 			client.put(getPath(), remoteFileName, remoteDir, mode);
 		} else {
-			throw new GATInvocationException("cannot copy this file!");
+			throw new GATInvocationException("cannot copy this file '"
+					+ location + "' to '" + remoteFileName + "' in dir '"
+					+ remoteDir + "'!");
 		}
 	}
 
@@ -236,9 +239,10 @@ public class SshTrileadFileAdaptor extends FileCpi {
 		if (gatContext.getPreferences().containsKey("file.create")) {
 			if (((String) gatContext.getPreferences().get("file.create"))
 					.equalsIgnoreCase("true")) {
-				FileInterface destinationParentFile = destinationFile
-						.getParentFile().getFileInterface();
-				destinationParentFile.mkdirs();
+				File destinationParentFile = destinationFile.getParentFile();
+				if (destinationParentFile != null) {
+					destinationParentFile.getFileInterface().mkdirs();
+				}
 			}
 		}
 

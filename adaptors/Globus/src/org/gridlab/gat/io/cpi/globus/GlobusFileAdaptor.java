@@ -68,7 +68,8 @@ public abstract class GlobusFileAdaptor extends FileCpi {
 			throws GATObjectCreationException {
 		super(gatContext, location);
 
-		cachedInfo = (FileInfo) gatContext.getPreferences().get("GAT_INTERNAL_FILE_INFO");
+		cachedInfo = (FileInfo) gatContext.getPreferences().get(
+				"GAT_INTERNAL_FILE_INFO");
 		gatContext.getPreferences().remove("GAT_INTERNAL_FILE_INFO");
 	}
 
@@ -266,9 +267,10 @@ public abstract class GlobusFileAdaptor extends FileCpi {
 						.equalsIgnoreCase("true")) {
 					destFile = GAT.createFile(gatContext, dest)
 							.getFileInterface();
-					FileInterface destParentFile = destFile.getParentFile()
-							.getFileInterface();
-					destParentFile.mkdirs();
+					File destinationParentFile = destFile.getParentFile();
+					if (destinationParentFile != null) {
+						destinationParentFile.getFileInterface().mkdirs();
+					}
 				}
 			}
 			if (gatContext.getPreferences().containsKey("file.chmod")) {
@@ -365,7 +367,9 @@ public abstract class GlobusFileAdaptor extends FileCpi {
 				if (((String) gatContext.getPreferences().get("file.create"))
 						.equalsIgnoreCase("true")) {
 					java.io.File destParentFile = destFile.getParentFile();
-					destParentFile.mkdirs();
+					if (destParentFile != null) {
+						destParentFile.mkdirs();
+					}
 				}
 			}
 			// first create an empty file and set the mode

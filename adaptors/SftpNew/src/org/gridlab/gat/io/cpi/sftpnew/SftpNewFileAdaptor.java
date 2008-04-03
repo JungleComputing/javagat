@@ -302,7 +302,9 @@ public class SftpNewFileAdaptor extends FileCpi {
 			if (gatContext.getPreferences().containsKey("file.create")) {
 				if (((String) gatContext.getPreferences().get("file.create"))
 						.equalsIgnoreCase("true")) {
-					destinationFile.getParentFile().mkdirs();
+					if (destinationFile.getParentFile() != null) {
+						destinationFile.getParentFile().mkdirs();
+					}
 				}
 			}
 			c.channel.get(src.getPath(), destPath);
@@ -335,9 +337,11 @@ public class SftpNewFileAdaptor extends FileCpi {
 						.equalsIgnoreCase("true")) {
 					FileInterface destFile = GAT.createFile(gatContext, dest)
 							.getFileInterface();
-					FileInterface destParentFile = destFile.getParentFile()
-							.getFileInterface();
-					destParentFile.mkdirs();
+					File destinationParentFile = destFile
+							.getParentFile();
+					if (destinationParentFile != null) {
+						destinationParentFile.getFileInterface().mkdirs();
+					}
 				}
 			}
 
