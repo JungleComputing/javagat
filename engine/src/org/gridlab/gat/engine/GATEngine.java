@@ -278,9 +278,6 @@ public class GATEngine {
 					}
 				}
 			}
-			// TODO this should be fixed more general!
-			Thread.currentThread().setContextClassLoader(
-					adaptorClassLoaders.get("GlobusAdaptor"));
 		} else {
 			throw new Error("gat.adaptor.path not set!");
 		}

@@ -182,6 +182,11 @@ public class AdaptorInvocationHandler implements InvocationHandler {
 								+ " START");
 					}
 
+        // Set context classloader before calling constructor.
+        // Some adaptors may need this because some libraries explicitly
+        // use the context classloader. (jaxrpc).
+                                        Thread.currentThread().setContextClassLoader(adaptor.adaptorClass.getClassLoader());
+
 					// now invoke the method on the adaptor
 					Object res = m.invoke(adaptorInstantiation, params);
 

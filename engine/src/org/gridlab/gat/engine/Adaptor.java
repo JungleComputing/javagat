@@ -66,6 +66,10 @@ class Adaptor {
             throws Throwable {
         Throwable t = null;
 
+        // Set context classloader before calling constructor.
+        // Some adaptors may need this because some libraries explicitly
+        // use the context classloader. (jaxrpc).
+        Thread.currentThread().setContextClassLoader(adaptorClass.getClassLoader());
         try {
             Constructor<?> ctor = adaptorClass.getConstructor(parameterTypes);
 
