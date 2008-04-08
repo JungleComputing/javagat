@@ -167,7 +167,14 @@ public class AdaptorInvocationHandler implements InvocationHandler {
 						.get(adaptornames[i]);
 				adaptor = (Adaptor) adaptors.get(adaptornames[i]);
 
+                                ClassLoader loader = Thread.currentThread().getContextClassLoader();
+
 				try {
+                                        // Set context classloader before calling constructor.
+                                        // Some adaptors may need this because some libraries explicitly
+                                        // use the context classloader. (jaxrpc).
+                                        System.out.println("Setting context classloader to classloader of " + adaptor.adaptorClass);
+                                        Thread.currentThread().setContextClassLoader(adaptor.adaptorClass.getClassLoader());
 					String paramString = "";
 
 					if (params != null) {
@@ -182,10 +189,6 @@ public class AdaptorInvocationHandler implements InvocationHandler {
 								+ " START");
 					}
 
-        // Set context classloader before calling constructor.
-        // Some adaptors may need this because some libraries explicitly
-        // use the context classloader. (jaxrpc).
-                                        Thread.currentThread().setContextClassLoader(adaptor.adaptorClass.getClassLoader());
 
 					// now invoke the method on the adaptor
 					Object res = m.invoke(adaptorInstantiation, params);
@@ -230,7 +233,9 @@ public class AdaptorInvocationHandler implements InvocationHandler {
 							logger.debug(writer.toString());
 						}
 					}
-				}
+				} finally {
+                                        Thread.currentThread().setContextClassLoader(loader);
+                                }
 			}
 		}
 
