@@ -396,6 +396,8 @@ public class ZorillaJob extends JobCpi {
 		} else if (phase == ZoniProtocol.PHASE_COMPLETED
 				|| phase == ZoniProtocol.PHASE_CANCELLED) {
 			return Job.STOPPED;
+		} else if (phase == ZoniProtocol.PHASE_USER_ERROR) {
+			return Job.STOPPED;
 		} else if (phase == ZoniProtocol.PHASE_ERROR) {
 			return Job.SUBMISSION_ERROR;
 		}
