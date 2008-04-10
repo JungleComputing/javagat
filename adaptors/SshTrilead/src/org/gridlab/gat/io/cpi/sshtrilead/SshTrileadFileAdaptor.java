@@ -226,7 +226,9 @@ public class SshTrileadFileAdaptor extends FileCpi {
 		} else {
 			throw new GATInvocationException("cannot copy this file '"
 					+ location + "' to '" + remoteFileName + "' in dir '"
-					+ remoteDir + "'!");
+					+ remoteDir + "'! (Reason: src is file: " + isFile()
+					+ ", src is dir: " + isDirectory() + ", dest is dir: "
+					+ destinationFile.isDirectory());
 		}
 	}
 
@@ -269,7 +271,10 @@ public class SshTrileadFileAdaptor extends FileCpi {
 			client.get(getPath(), new java.io.FileOutputStream(destination
 					.getPath()));
 		} else {
-			throw new GATInvocationException("cannot copy this file!");
+			throw new GATInvocationException("cannot copy this file '"
+					+ location + "' to '" + destination + "'! (Reason: target is file: " + isFile()
+					+ ", target is dir: " + isDirectory() + ", src is dir: "
+					+ destinationFile.isDirectory());
 		}
 	}
 
@@ -405,8 +410,17 @@ public class SshTrileadFileAdaptor extends FileCpi {
 			}
 			result[STDERR] += line + "\n";
 		}
+		while (session.getExitStatus() == null) {
+			Thread.sleep(500);
+		}
 		result[EXIT_VALUE] = "" + session.getExitStatus();
 		session.close();
+		if (logger.isDebugEnabled()) {
+			logger.debug("command: " + cmd);
+			logger.debug("STDOUT: " + result[STDOUT]);
+			logger.debug("STDERR: " + result[STDERR]);
+			logger.debug("EXIT:   " + result[EXIT_VALUE]);
+		}
 		return result;
 	}
 

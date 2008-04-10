@@ -34,6 +34,7 @@ class GrabberThread extends Thread {
      */
     GrabberThread(String descriptor, ProActiveResourceBrokerAdaptor broker,
             Preferences preferences) {
+    	setName("ProActive Grabber");
         setDaemon(true);
         this.descriptor = descriptor;
         this.broker = broker;

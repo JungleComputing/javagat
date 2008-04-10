@@ -141,8 +141,9 @@ public class LocalJob extends JobCpi {
 	public synchronized void stop() throws GATInvocationException {
 		setState(POST_STAGING);
 		sandbox.retrieveAndCleanup(this);
-		exitStatus = p.exitValue();
+		// TODO: check exit value for proper value
 		p.destroy();
+		exitStatus = p.exitValue();
 		setState(STOPPED);
 		finished();
 	}

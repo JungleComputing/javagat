@@ -39,6 +39,7 @@ public class Threader extends Thread {
     }
 
     private Threader(int maxThreads) {
+    	this.setDaemon(true);
         this.maxThreads = maxThreads;
     }
 

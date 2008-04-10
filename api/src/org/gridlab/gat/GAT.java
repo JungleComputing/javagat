@@ -1804,12 +1804,8 @@ public class GAT {
 			Object[] tmpParams) throws GATObjectCreationException {
 
 		// clone the context, it will be fixed for the instance that's created
-		GATContext newContext = null;
-		try {
-			newContext = (GATContext) gatContext.clone();
-		} catch (CloneNotSupportedException e) {
-			// will not happen.
-		}
+		GATContext newContext = (GATContext) gatContext.clone();
+
 		// add the overriding preferences to the cloned context
 		newContext.addPreferences(additionalPreferences);
 

@@ -48,6 +48,7 @@ public class Launcher implements Serializable, RunActive {
         OutputLogger(String jobID, boolean toStderr) {
             this.jobID = jobID;
             this.toStderr = toStderr;
+            this.setName("ProActive Output Logger");
             this.setDaemon(true);
             start();
         }
@@ -170,6 +171,8 @@ public class Launcher implements Serializable, RunActive {
             this.jobID = jobID;
             this.stdout = stdout;
             this.stderr = stderr;
+            this.setName("ProActive Watcher");
+            this.setDaemon(true);
         }
 
         /**

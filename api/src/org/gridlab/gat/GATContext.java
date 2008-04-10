@@ -144,8 +144,8 @@ public class GATContext implements Cloneable, Serializable {
 	 * 
 	 * @return the new clone
 	 */
-	public Object clone() throws CloneNotSupportedException {
-		super.clone();
+	public Object clone() {
+		//super.clone();
 
 		GATContext c = new GATContext();
 		c.preferences = (Preferences) preferences.clone();

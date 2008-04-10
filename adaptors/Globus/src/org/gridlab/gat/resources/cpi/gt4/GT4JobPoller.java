@@ -22,6 +22,7 @@ class GT4JobPoller extends Thread {
 	private boolean die = false;
 
 	GT4JobPoller(GT4Job j) {
+		setName("GT4 Job Poller");
 		this.j = j;
 		setDaemon(true);
 	}

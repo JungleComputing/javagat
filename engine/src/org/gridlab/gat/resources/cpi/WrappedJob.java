@@ -181,6 +181,7 @@ public class WrappedJob extends JobCpi implements MetricListener {
 			// deamon threads are running. If it isn't set to be deamon thread
 			// the GAT application will hang unless an explicit System.exit is
 			// done.
+			setName("Wrapped Job State Monitor " + getJobID());
 			setDaemon(true);
 		}
 
@@ -191,7 +192,7 @@ public class WrappedJob extends JobCpi implements MetricListener {
 					+ ".JavaGATstatus" + getJobID();
 
 			do {
-				int newstate = -666;
+				int newstate = -777;
 				FileInputStream in = null;
 				try {
 					in = new FileInputStream(statusFileName);

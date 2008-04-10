@@ -172,7 +172,7 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
 
 		if (sd.getStdout() != null || sd.getStdoutStream() != null) {
 			// if (sandbox != null && sd.getStdout() != null) {
-			rsl += (" (stdout = " + sandbox.getRelativeStdout().getPath() + ")");
+			rsl += (" (stdout = " + sd.getStdout().getName() + ")");
 			// } else {
 			// rsl += (" (stdout = stdout)");
 			// }
@@ -180,7 +180,7 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
 
 		if (sd.getStderr() != null || sd.getStderrStream() != null) {
 			// if (sandbox != null && sd.getStderr() != null) {
-			rsl += (" (stderr = " + sandbox.getRelativeStderr().getPath() + ")");
+			rsl += (" (stderr = " + sd.getStderr().getName() + ")");
 			// } else {
 			// rsl += (" (stderr = stderr)");
 			// }
@@ -189,7 +189,7 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
 		org.gridlab.gat.io.File stdin = sd.getStdin();
 		if (stdin != null) {
 			if (sandbox != null) {
-				rsl += (" (stdin = " + sandbox.getRelativeStdin().getPath() + ")");
+				rsl += (" (stdin = " + sd.getStdin().getName() + ")");
 			}
 		}
 

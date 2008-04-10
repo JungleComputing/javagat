@@ -122,9 +122,9 @@ public class GridFTPFileAdaptor extends GlobusFileAdaptor {
 	 *            the uri of the FTP host
 	 */
 	protected FTPClient createClient(GATContext gatContext,
-			Preferences preferences, URI hostURI)
+			Preferences additionalPreferences, URI hostURI)
 			throws GATInvocationException, InvalidUsernameOrPasswordException {
-		return doWorkCreateClient(gatContext, preferences, hostURI);
+		return doWorkCreateClient(gatContext, additionalPreferences, hostURI);
 	}
 
 	private static String getClientKey(URI hostURI, Preferences preferences) {
@@ -151,27 +151,24 @@ public class GridFTPFileAdaptor extends GlobusFileAdaptor {
 		return false;
 	}
 
-	protected static GridFTPClient doWorkCreateClient(GATContext gatContext,
-			Preferences preferences, URI hostURI)
+	protected static GridFTPClient doWorkCreateClient(GATContext context,
+			Preferences additionalPreferences, URI hostURI)
 			throws GATInvocationException, InvalidUsernameOrPasswordException {
 		try {
+			GATContext gatContext = (GATContext) context.clone();
+			gatContext.addPreferences(additionalPreferences);
 			GSSCredential credential = GlobusSecurityUtils.getGlobusCredential(
 					gatContext, "gridftp", hostURI, DEFAULT_GRIDFTP_PORT);
 			String host = hostURI.resolveHost();
 
-			int port = DEFAULT_GRIDFTP_PORT;
-
-			// allow port override
-			if (hostURI.getPort() != -1) {
-				port = hostURI.getPort();
-			}
+			int port = hostURI.getPort(DEFAULT_GRIDFTP_PORT);
 
 			if (logger.isDebugEnabled()) {
 				logger.debug("open gridftp client to " + host + ":" + port);
 			}
 
 			GridFTPClient client = null;
-			String key = getClientKey(hostURI, preferences);
+			String key = getClientKey(hostURI, gatContext.getPreferences());
 
 			if (USE_CLIENT_CACHING) {
 				client = getFromCache(key);
@@ -199,15 +196,23 @@ public class GridFTPFileAdaptor extends GlobusFileAdaptor {
 				client = new GridFTPClient(host, port);
 
 				if (logger.isDebugEnabled()) {
-					logger.debug("authenticating");
+					logger.debug("authenticating, preferences="
+							+ gatContext.getPreferences());
 				}
 
-				setSecurityOptions(client, preferences);
+				setSecurityOptions(client, gatContext.getPreferences());
+
+				if (logger.isDebugEnabled()) {
+					logger.debug("security options set");
+				}
 
 				// authenticate to the server
 				int retry = 1;
-				String tmp = (String) preferences
-						.get("gridftp.authenticate.retry");
+				String tmp = (String) gatContext.getPreferences().get(
+						"gridftp.authenticate.retry");
+				if (logger.isDebugEnabled()) {
+					logger.debug("gridftp.authenticate.retry=" + tmp);
+				}
 				if ((tmp != null)) {
 					try {
 						retry = Integer.parseInt(tmp);
@@ -221,6 +226,9 @@ public class GridFTPFileAdaptor extends GlobusFileAdaptor {
 				for (int i = 0; i < retry; i++) {
 					try {
 						client.authenticate(credential);
+						if (logger.isDebugEnabled()) {
+							logger.debug("authenticating done");
+						}
 					} catch (ServerException se) {
 						if (se.getMessage().contains(
 								"451 active connection to server failed")) {
@@ -235,11 +243,11 @@ public class GridFTPFileAdaptor extends GlobusFileAdaptor {
 					break;
 				}
 
-				setConnectionOptions(client, preferences);
-
 				if (logger.isDebugEnabled()) {
 					logger.debug("setting channel options");
 				}
+
+				setConnectionOptions(client, gatContext.getPreferences());
 
 				if (logger.isDebugEnabled()) {
 					logger.debug("done");

@@ -173,7 +173,7 @@ public class Sandbox {
 		res += ".JavaGAT_SANDBOX_" + Math.random();
 		return res;
 	}
-
+	
 	private void initSandbox() throws GATInvocationException {
 		if (!createSandboxDir) {
 			if (logger.isInfoEnabled()) {

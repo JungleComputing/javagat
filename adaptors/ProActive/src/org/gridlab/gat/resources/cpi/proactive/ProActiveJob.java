@@ -165,6 +165,7 @@ public class ProActiveJob extends JobCpi {
 
 		InputHandler(BufferedReader reader) {
 			inputReader = reader;
+			setName("ProActive Input Handler");
 			setDaemon(true);
 		}
 

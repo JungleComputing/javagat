@@ -42,6 +42,8 @@ public class GridSAMJob extends JobCpi {
 		private int firedEventCount = 0;
 
 		public PollingThread(GridSAMJob parent) {
+			setDaemon(true);
+			setName("GridSAM Job Poller");
 			this.parent = parent;
 		}
 

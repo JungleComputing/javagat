@@ -311,6 +311,9 @@ public class Wrapper implements MetricListener {
 			GATContext gatContext = new GATContext();
 			modifyJobDescription(descriptions[submitted], gatContext,
 					preferences, remoteCWD);
+			if (logger.isInfoEnabled()) {
+				logger.info("job descriptions modified!: " + initiator);
+			}
 			ResourceBroker broker = null;
 			try {
 				broker = GAT.createResourceBroker(gatContext, preferences,
@@ -382,12 +385,22 @@ public class Wrapper implements MetricListener {
 		Object[] keys = tmp.toArray();
 		File[] srcs = new File[keys.length];
 		File[] dests = new File[keys.length];
+		logger.info("keys.length: " + keys.length);
 		for (int i = 0; i < keys.length; i++) {
+			logger.info(i + " of " + keys.length);
 			File src = (File) keys[i];
+			logger.info("src before: " + src.toGATURI());
 			File dest = (File) pre.get(src);
+			if (dest != null) {
+				logger.info("dest before: " + dest.toGATURI());
+			}
 			srcs[i] = rewriteStagedFile(gatContext, preferences, dest, src,
 					initiator, remoteCWD);
+			logger.info("src after: " + srcs[i].toGATURI());
 			dests[i] = dest;
+			if (dests[i] != null) {
+				logger.info("dest after: " + dests[i].toGATURI());
+			}
 		}
 		pre.clear();
 		for (int i = 0; i < keys.length; i++) {

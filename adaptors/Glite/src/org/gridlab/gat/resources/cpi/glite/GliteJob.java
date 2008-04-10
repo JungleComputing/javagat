@@ -44,6 +44,7 @@ class GliteJobPoller extends Thread {
 
 	GliteJobPoller(GliteJob j) {
 		this.job = j;
+		setName("GliteJobPoller");
 		setDaemon(true);
 	}
 

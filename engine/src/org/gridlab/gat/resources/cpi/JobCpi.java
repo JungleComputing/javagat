@@ -62,9 +62,9 @@ public abstract class JobCpi extends Job {
 		this.gatContext = gatContext;
 		this.jobDescription = jobDescription;
 		this.sandbox = sandbox;
-		String pref = (String) gatContext.getPreferences().get(
-				"jobs.killonexit");
-		if (pref == null || pref.equalsIgnoreCase("true")) {
+		// better make this an attribute!
+		if (jobDescription.getSoftwareDescription().getBooleanAttribute(
+				"kill.on.exit", true)) {
 			synchronized (JobCpi.class) {
 				if (shutdownInProgress) {
 					throw new Error(

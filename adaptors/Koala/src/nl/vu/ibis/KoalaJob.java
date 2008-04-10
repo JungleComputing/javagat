@@ -82,6 +82,7 @@ public class KoalaJob extends JobCpi implements Runnable {
 		public MessageHandler(Socket socket) {
 			this.socket = socket;
 			setName("KoalaJob Message Handler");
+			setDaemon(true);
 		}
 
 		public void run() {

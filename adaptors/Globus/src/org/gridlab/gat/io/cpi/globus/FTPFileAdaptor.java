@@ -74,8 +74,10 @@ public class FTPFileAdaptor extends GlobusFileAdaptor {
 	 * @param hostURI
 	 *            the uri of the FTP host
 	 */
-	protected FTPClient createClient(GATContext gatContext,
-			Preferences preferences, URI hostURI) throws GATInvocationException {
+	protected FTPClient createClient(GATContext context,
+			Preferences additionalPreferences, URI hostURI) throws GATInvocationException {
+		GATContext gatContext = (GATContext) context.clone();
+		gatContext.addPreferences(additionalPreferences);
 		String host = hostURI.resolveHost();
 
 		int port = hostURI.getPort(DEFAULT_FTP_PORT);
@@ -84,7 +86,7 @@ public class FTPFileAdaptor extends GlobusFileAdaptor {
 			FTPClient client = new FTPClient(host, port);
 			client.authorize(user, password);
 
-			if (isPassive(preferences)) {
+			if (isPassive(gatContext.getPreferences())) {
 				setChannelOptions(client);
 			}
 

@@ -53,6 +53,8 @@ class MeasurementTrigger extends Thread {
 	MonitorConsumer mc = null;
 
 	public MeasurementTrigger(MonitorConsumer mc) {
+		setDaemon(true);
+		setName("Mercury Measurement Trigger Thread");
 		this.mc = mc;
 	}
 

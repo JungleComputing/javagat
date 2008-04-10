@@ -54,8 +54,7 @@ public abstract class FileCpi implements FileInterface, java.io.Serializable {
 	 *            A GATContext which is used to determine the access rights for
 	 *            this FileCpi.
 	 */
-	protected FileCpi(GATContext gatContext, 
-			URI location) {
+	protected FileCpi(GATContext gatContext, URI location) {
 		this.gatContext = gatContext;
 		this.location = location;
 
@@ -528,6 +527,7 @@ public abstract class FileCpi implements FileInterface, java.io.Serializable {
 	}
 
 	protected void copyDir(URI destination) throws Exception {
+		// copies a dir to the target destination
 		FileInterface destinationFile = null;
 		try {
 			destinationFile = GAT.createFile(gatContext, destination)
@@ -535,6 +535,7 @@ public abstract class FileCpi implements FileInterface, java.io.Serializable {
 		} catch (GATObjectCreationException e) {
 			throw new GATInvocationException("file cpi", e);
 		}
+		// if the target already exists and it's a file, then the copy will fail
 		if (destinationFile.exists() && destinationFile.isFile()) {
 			throw new Exception("cannot overwrite non-directory '"
 					+ destination + "' with directory '" + location + "'!");
@@ -544,6 +545,8 @@ public abstract class FileCpi implements FileInterface, java.io.Serializable {
 						"file.directory.copy") && ((String) gatContext
 						.getPreferences().get("file.directory.copy"))
 						.equalsIgnoreCase("contents"))) {
+			// if the target already exists and it's a directory and we should
+			// copy not only the contents of the dir, but the whole dir.
 			// copy a/b c/d results in c/d/b
 			try {
 				copyDir(new URI(destination + "/" + getName()));
@@ -551,8 +554,11 @@ public abstract class FileCpi implements FileInterface, java.io.Serializable {
 				// should not happen
 			}
 		} else {
-			// destinationFile doesn't exist! we've got to create the dir.
-			if ((gatContext.getPreferences().containsKey("file.directory.copy") && ((String) gatContext
+			// destinationFile doesn't exist! we've got to create the dir, or
+			// the destinationFile does exist, but we only have to copy the
+			// contents of the directory.
+			if (!(gatContext.getPreferences()
+					.containsKey("file.directory.copy") && ((String) gatContext
 					.getPreferences().get("file.directory.copy"))
 					.equalsIgnoreCase("contents"))) {
 				if (gatContext.getPreferences().containsKey("file.create")

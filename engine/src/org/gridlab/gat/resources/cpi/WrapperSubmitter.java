@@ -30,7 +30,11 @@ public class WrapperSubmitter {
 
 	protected static Logger logger = Logger.getLogger(WrapperSubmitter.class);
 
-	private static final String WELL_KNOWN_REMOTE_GAT_LOCATION = ".tempGAT";
+	private static String WELL_KNOWN_REMOTE_GAT_LOCATION;
+
+	static {
+		WELL_KNOWN_REMOTE_GAT_LOCATION = ".JavaGAT_SANDBOX_" + Math.random();
+	}
 
 	private static HashSet<String> hostsWithRemoteGAT = new HashSet<String>();
 
@@ -141,8 +145,6 @@ public class WrapperSubmitter {
 				}
 			}
 
-			// sd.setExecutable("java:org.gridlab.gat.resources.cpi.Wrapper");
-
 			Object javaHome = origSd.getObjectAttribute("wrapper.java.home");
 			if (javaHome == null) {
 				sd.setExecutable("java");
@@ -193,7 +195,7 @@ public class WrapperSubmitter {
 				jobIDs += jobs.get(i).getJobID() + ",";
 			}
 
-			sd.setJavaOptions(new String[] { "-classpath", classPath });
+			sd.setJavaClassPath(classPath);
 			Map<String, String> systemProperties = new HashMap<String, String>();
 			systemProperties.put("gat.adaptor.path", (String) environment
 					.get("gat.adaptor.path"));
@@ -269,11 +271,6 @@ public class WrapperSubmitter {
 			File gatDir = GAT.createFile(gatContext, localGATLocation + "/lib");
 			File log4jFile = GAT.createFile(gatContext, localGATLocation
 					+ "/log4j.properties");
-			File destDir = GAT.createFile(gatContext, "any://" + host + "/"
-					+ WELL_KNOWN_REMOTE_GAT_LOCATION);
-			if (!destDir.exists()) {
-				destDir.mkdir();
-			}
 			gatDir.copy(new URI("any://" + host + "/"
 					+ WELL_KNOWN_REMOTE_GAT_LOCATION));
 			if (logger.isInfoEnabled()) {
