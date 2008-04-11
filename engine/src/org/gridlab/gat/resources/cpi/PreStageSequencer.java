@@ -15,7 +15,7 @@ public class PreStageSequencer {
 		try {
 			queue.put(fileName);
 		} catch (InterruptedException e) {
-			// TODO Appropriate action
+			// ignore
 		}
 		if (!monitor.isAlive()) {
 			monitor.start();
@@ -24,29 +24,28 @@ public class PreStageSequencer {
 	}
 
 	private static class PreStageDoneFileMonitor extends Thread {
-
+		
 		public void run() {
+			setDaemon(true);
+			setName("PreStageDoneFileMonitor thread");
 			while (!queue.isEmpty()) {
 				String fileName = null;
 				try {
 					fileName = queue.take();
-				} catch (InterruptedException e1) {
-					// TODO Auto-generated catch block
-					e1.printStackTrace();
+				} catch (InterruptedException e) {
+					// ignore
 				}
 				java.io.File file = new java.io.File(fileName);
 				try {
 					file.createNewFile();
-				} catch (IOException e1) {
-					// TODO Auto-generated catch block
-					e1.printStackTrace();
+				} catch (IOException e) {
+					// ignore
 				}
 				while (file.exists()) {
 					try {
 						Thread.sleep(500);
 					} catch (InterruptedException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
+						// ignore
 					}
 				}
 			}
