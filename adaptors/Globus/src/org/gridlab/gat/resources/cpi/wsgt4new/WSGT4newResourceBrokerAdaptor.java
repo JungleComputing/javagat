@@ -268,7 +268,7 @@ public class WSGT4newResourceBrokerAdaptor extends ResourceBrokerCpi {
 		// create an endpoint reference type
 		EndpointReferenceType endpoint = new EndpointReferenceType();
 		try {
-			endpoint.setAddress(new Address(brokerURI.toString()));
+			endpoint.setAddress(new Address(createAddressString()));
 		} catch (MalformedURIException e) {
 			throw new GATInvocationException("WSGT4newResourceBrokerAdaptor", e);
 		}
@@ -352,5 +352,24 @@ public class WSGT4newResourceBrokerAdaptor extends ResourceBrokerCpi {
 		// second parameter is batch, should be set to false.
 		// third parameter is limitedDelegation, currently hardcoded to false
 		return wsgt4job;
+	}
+
+	private String createAddressString() {
+		// default scheme: https
+		// default port: 8443
+		// default path: /wsrf/services/ManagedJobFactoryService
+		String scheme = "https";
+		if (brokerURI == null || !brokerURI.getScheme().equals("any")) {
+			scheme = brokerURI.getScheme();
+		}
+
+		int port = brokerURI.getPort(8443);
+
+		String path = "/wsrf/services/ManagedJobFactoryService";
+		if (brokerURI.getPath() != null) {
+			path = brokerURI.getPath();
+		}
+
+		return scheme + "://" + brokerURI.getHost() + ":" + port + path;
 	}
 }
