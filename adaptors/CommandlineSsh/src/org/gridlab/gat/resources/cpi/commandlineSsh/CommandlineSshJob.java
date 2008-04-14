@@ -111,8 +111,8 @@ public class CommandlineSshJob extends JobCpi {
 	public synchronized void stop() throws GATInvocationException {
 		setState(POST_STAGING);
 		sandbox.retrieveAndCleanup(this);
+                p.destroy();
 		exitStatus = p.exitValue();
-		p.destroy();
 		setState(STOPPED);
 		finished();
 	}
