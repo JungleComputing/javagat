@@ -1,0 +1,37 @@
+<project name="untested GAT Adaptors" default="build" basedir=".">
+	<description>
+        Build file for untested Java GAT Adaptors.
+        </description>
+
+	<target name="build" description="build all untested adaptors">
+		<ant dir="Glite" />
+		<ant dir="Koala" />
+		<ant dir="Pbs" />
+		<ant dir="ProActive" />
+	</target>
+
+
+	<target name="clean" description="clean all adaptors">
+		<ant dir="Glite" target="clean" />
+		<ant dir="Koala" target="clean" />
+		<ant dir="Pbs" target="clean" />
+		<ant dir="ProActive" target="clean" />
+	</target>
+
+	<target name="glite" description="build Glite adaptors">
+		<ant dir="Glite" />
+	</target>
+
+	<target name="koala" description="build Koala adaptors">
+		<ant dir="Koala" />
+	</target>
+
+	<target name="pbs" description="build Pbs adaptors">
+		<ant dir="Pbs" />
+	</target>
+
+	<target name="proactive" description="build ProActive adaptors">
+		<ant dir="ProActive" />
+	</target>
+
+</project>
