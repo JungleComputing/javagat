@@ -24,126 +24,131 @@ import org.gridlab.gat.resources.cpi.Sandbox;
 @SuppressWarnings("serial")
 public class CommandlineSshJob extends JobCpi {
 
-	protected static Logger logger = Logger.getLogger(CommandlineSshJob.class);
+    protected static Logger logger = Logger.getLogger(CommandlineSshJob.class);
 
-	CommandlineSshResourceBrokerAdaptor broker;
+    CommandlineSshResourceBrokerAdaptor broker;
 
-	JobDescription description;
+    JobDescription description;
 
-	int jobID;
+    int jobID;
 
-	Process p;
+    Process p;
 
-	int exitStatus = 0;
+    int exitStatus = 0;
 
-	MetricDefinition statusMetricDefinition;
+    MetricDefinition statusMetricDefinition;
 
-	Metric statusMetric;
+    Metric statusMetric;
 
-	CommandlineSshJob(GATContext gatContext, JobDescription description,
-			Sandbox sandbox) {
-		super(gatContext, description, sandbox);
-		jobID = allocJobID();
+    CommandlineSshJob(GATContext gatContext, JobDescription description,
+            Sandbox sandbox) {
+        super(gatContext, description, sandbox);
+        jobID = allocJobID();
 
-		HashMap<String, Object> returnDef = new HashMap<String, Object>();
-		returnDef.put("status", String.class);
-		statusMetricDefinition = new MetricDefinition("job.status",
-				MetricDefinition.DISCRETE, "String", null, null, returnDef);
-		statusMetric = statusMetricDefinition.createMetric(null);
-		GATEngine.registerMetric(this, "getJobStatus", statusMetricDefinition);
-	}
+        HashMap<String, Object> returnDef = new HashMap<String, Object>();
+        returnDef.put("status", String.class);
+        statusMetricDefinition = new MetricDefinition("job.status",
+                MetricDefinition.DISCRETE, "String", null, null, returnDef);
+        statusMetric = statusMetricDefinition.createMetric(null);
+        GATEngine.registerMetric(this, "getJobStatus", statusMetricDefinition);
+    }
 
-	protected void setProcess(Process p) {
-		this.p = p;
-	}
+    protected void setProcess(Process p) {
+        this.p = p;
+    }
 
-	protected synchronized void setState(int state) {
-		this.state = state;
-		MetricEvent v = new MetricEvent(this, getStateString(state),
-				statusMetric, System.currentTimeMillis());
-		GATEngine.fireMetric(this, v);
-	}
+    protected synchronized void setState(int state) {
+        this.state = state;
+        MetricEvent v = new MetricEvent(this, getStateString(state),
+                statusMetric, System.currentTimeMillis());
+        GATEngine.fireMetric(this, v);
+    }
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.gridlab.gat.resources.Job#getInfo()
-	 */
-	public synchronized Map<String, Object> getInfo() {
-		HashMap<String, Object> m = new HashMap<String, Object>();
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.gridlab.gat.resources.Job#getInfo()
+     */
+    public synchronized Map<String, Object> getInfo() {
+        HashMap<String, Object> m = new HashMap<String, Object>();
 
-		// update state
-		getState();
+        // update state
+        getState();
 
-		m.put("state", getStateString(state));
-		m.put("resManState", getStateString(state));
-		m.put("resManName", "CommandlineSsh");
-		m.put("exitValue", "" + exitStatus);
-		m.put("hostname", broker.getHostname());
+        m.put("state", getStateString(state));
+        m.put("resManState", getStateString(state));
+        m.put("resManName", "CommandlineSsh");
+        m.put("exitValue", "" + exitStatus);
+        m.put("hostname", broker.getHostname());
 
-		if (postStageException != null) {
-			m.put("postStageError", postStageException);
-		}
+        if (postStageException != null) {
+            m.put("postStageError", postStageException);
+        }
 
-		return m;
-	}
+        return m;
+    }
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.gridlab.gat.resources.Job#getExitStatus()
-	 */
-	public synchronized int getExitStatus() throws GATInvocationException {
-		if (state != STOPPED)
-			throw new GATInvocationException("not in RUNNING state");
-		return exitStatus;
-	}
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.gridlab.gat.resources.Job#getExitStatus()
+     */
+    public synchronized int getExitStatus() throws GATInvocationException {
+        if (state != STOPPED)
+            throw new GATInvocationException("not in RUNNING state");
+        return exitStatus;
+    }
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.gridlab.gat.resources.Job#getJobID()
-	 */
-	public String getJobID() {
-		return "" + jobID;
-	}
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.gridlab.gat.resources.Job#getJobID()
+     */
+    public String getJobID() {
+        return "" + jobID;
+    }
 
-	public synchronized void stop() throws GATInvocationException {
-		setState(POST_STAGING);
-		sandbox.retrieveAndCleanup(this);
-                p.destroy();
-		exitStatus = p.exitValue();
-		setState(STOPPED);
-		finished();
-	}
+    public synchronized void stop() throws GATInvocationException {
+        setState(POST_STAGING);
+        sandbox.retrieveAndCleanup(this);
+        p.destroy();
+        try {
+            exitStatus = p.exitValue();
+        } catch (IllegalThreadStateException e) {
+            // IGNORE
+            exitStatus = 0;
+        }
+        setState(STOPPED);
+        finished();
+    }
 
-	public void startOutputWaiter(OutputForwarder outForwarder,
-			OutputForwarder errForwarder) {
-		new OutputWaiter(outForwarder, errForwarder);
-	}
+    public void startOutputWaiter(OutputForwarder outForwarder,
+            OutputForwarder errForwarder) {
+        new OutputWaiter(outForwarder, errForwarder);
+    }
 
-	class OutputWaiter extends Thread {
+    class OutputWaiter extends Thread {
 
-		OutputForwarder outForwarder, errForwarder;
+        OutputForwarder outForwarder, errForwarder;
 
-		OutputWaiter(OutputForwarder outForwarder, OutputForwarder errForwarder) {
-			setName("CommandlineSshJob OutputForwarderWaiter");
-			setDaemon(true);
-			this.outForwarder = outForwarder;
-			this.errForwarder = errForwarder;
-			start();
-		}
+        OutputWaiter(OutputForwarder outForwarder, OutputForwarder errForwarder) {
+            setName("CommandlineSshJob OutputForwarderWaiter");
+            setDaemon(true);
+            this.outForwarder = outForwarder;
+            this.errForwarder = errForwarder;
+            start();
+        }
 
-		public void run() {
-			outForwarder.waitUntilFinished();
-			errForwarder.waitUntilFinished();
-			try {
-				CommandlineSshJob.this.stop();
-			} catch (GATInvocationException e) {
-				if (logger.isDebugEnabled()) {
-					logger.debug("unable to stop job: " + e);
-				}
-			}
-		}
-	}
+        public void run() {
+            outForwarder.waitUntilFinished();
+            errForwarder.waitUntilFinished();
+            try {
+                CommandlineSshJob.this.stop();
+            } catch (GATInvocationException e) {
+                if (logger.isDebugEnabled()) {
+                    logger.debug("unable to stop job: " + e);
+                }
+            }
+        }
+    }
 }
