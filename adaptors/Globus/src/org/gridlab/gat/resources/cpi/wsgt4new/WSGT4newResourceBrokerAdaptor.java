@@ -73,6 +73,12 @@ public class WSGT4newResourceBrokerAdaptor extends ResourceBrokerCpi {
 	public WSGT4newResourceBrokerAdaptor(GATContext gatContext, URI brokerURI)
 			throws GATObjectCreationException {
 		super(gatContext, brokerURI);
+		// accept if broker URI is compatible with ssh or with file
+		if (!brokerURI.isCompatible("https")) {
+			throw new GATObjectCreationException(
+					"Can only handle schemes 'any' and 'https', scheme is: "
+							+ brokerURI.getScheme());
+		}
 		String globusLocation = System.getenv("GLOBUS_LOCATION");
 		// URL configLocation =
 		// ClassLoader.getSystemClassLoader().getResource("client-config.wsdd");
