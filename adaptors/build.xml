@@ -17,7 +17,7 @@
 		<ant dir="SftpGanymed" />
 		<ant dir="SftpNew" />
 		<ant dir="Sge" />
-		<ant dir="Ssh" />
+		<!--<ant dir="Ssh" />-->
 		<ant dir="SshTrilead" />
 		<ant dir="Zorilla" />
 	</target>
@@ -93,9 +93,9 @@
 		<ant dir="Sge" />
 	</target>
 
-	<target name="ssh" description="build Ssh adaptor">
+	<!--<target name="ssh" description="build Ssh adaptor">
 		<ant dir="Ssh" />
-	</target>
+	</target>-->
 
 	<target name="sshtrilead" description="build SshTrilead adaptor">
 		<ant dir="SshTrilead" />
