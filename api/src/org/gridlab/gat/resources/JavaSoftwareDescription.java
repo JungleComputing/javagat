@@ -204,7 +204,7 @@ public class JavaSoftwareDescription extends SoftwareDescription {
 	 * 
 	 * @param arguments
 	 */
-	public void setArguments(String[] arguments) {
+	public void setArguments(String... arguments) {
 	}
 
 	/**

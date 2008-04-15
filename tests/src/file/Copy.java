@@ -1,12 +1,23 @@
 package file;
 
+import java.net.URISyntaxException;
+
 import org.gridlab.gat.GAT;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.URI;
 import org.gridlab.gat.io.File;
 
 class Copy {
-	public static void main(String[] args) {
+	public static void main(String[] args) throws URISyntaxException {
+		URI uri = null;
+		uri = new URI(new java.io.File("C:\\Documents and Settings\\user\\workspace\\JavaGAT\\bla.tmp").toURI());
+		System.out.println("URI: " + uri);
+		System.out.println(uri.getHost());
+		System.out.println(uri.getPath());
+		if (uri != null) {
+			System.exit(1);
+		}
+		
 		GATContext context = new GATContext();
 		// context.addPreference("file.create", "true");
 		context.addPreference("File.adaptor.name", args[0]);

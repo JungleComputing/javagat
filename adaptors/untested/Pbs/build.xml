@@ -1,7 +1,7 @@
 <project name="PbsAdaptor" default="build" basedir=".">
 	<description>Build file for JavaGAT Pbs Adaptors.</description>
 
-	<property name="gat.location" location="../.." />
+	<property name="gat.location" location="../../.." />
 	<property name="engine_path" location="${gat.location}/lib" />
 
 	<property name="src" location="src" />
@@ -31,7 +31,7 @@
 
 		<jar jarfile="${lib}/PbsAdaptor.jar" basedir="${tmp}" includes="**">
 			<manifest>
-				<attribute name="ResourceBrokerCpi-class" value="org.gridlab.gat.resources.cpi.pbs.PbsResourceBrokerAdaptor" />
+				<attribute name="ResourceBrokerCpi-class" value="org.gridlab.gat.resources.cpi.pbs_resource.PbsResourceBrokerAdaptor" />
 			</manifest>
 		</jar>
 

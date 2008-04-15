@@ -1257,8 +1257,6 @@ public class GAT {
 		return new FileOutputStream(res);
 	}
 
-	// hier ben ik
-
 	/**
 	 * Create an {@link Endpoint} for a {@link Pipe} using the default
 	 * {@link GATContext} and additional {@link Preferences}.

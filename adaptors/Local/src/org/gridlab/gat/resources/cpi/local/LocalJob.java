@@ -171,8 +171,17 @@ public class LocalJob extends JobCpi {
         }
 
         public void run() {
-            outForwarder.waitUntilFinished();
-            errForwarder.waitUntilFinished();
+            if (outForwarder != null) {
+                outForwarder.waitUntilFinished();
+            }
+            if (errForwarder != null) {
+                errForwarder.waitUntilFinished();
+            }
+            try {
+                p.waitFor();
+            } catch (InterruptedException e) {
+                // ignore
+            }
             try {
                 LocalJob.this.stop();
             } catch (GATInvocationException e) {
