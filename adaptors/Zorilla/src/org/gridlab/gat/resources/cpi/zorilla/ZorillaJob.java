@@ -196,15 +196,15 @@ public class ZorillaJob extends JobCpi {
 		}
 	}
 
-	protected synchronized void startJob(InetSocketAddress address,
+	protected synchronized void startJob(String address,
 			CallbackReceiver receiver) throws GATInvocationException {
 		if (logger.isDebugEnabled()) {
 			logger.debug("starting zorilla job:" + zorillaJobDescription);
 		}
 
 		try {
-			ZoniConnection connection = new ZoniConnection(address, null,
-					ZoniProtocol.TYPE_CLIENT);
+			ZoniConnection connection = new ZoniConnection(address, null
+					);
 
 			jobID = connection.submitJob(zorillaJobDescription, receiver);
 			connection.close();
@@ -260,7 +260,7 @@ public class ZorillaJob extends JobCpi {
 		logger.debug("copying: " + sandboxPath + " to file " + dst);
 
 		ZoniConnection connection = new ZoniConnection(broker
-				.getNodeSocketAddress(), null, ZoniProtocol.TYPE_CLIENT);
+				.getNodeSocketAddress(), null);
 
 		ZoniFileInfo info = connection.getFileInfo(sandboxPath, jobID);
 
@@ -361,7 +361,7 @@ public class ZorillaJob extends JobCpi {
 		result.put("state", getStateString(getState()));
 		result.put("resManState", result.get("phase"));
 		result.put("resManName", "Zorilla");
-		result.put("hostname", broker.getNodeSocketAddress().getHostName());
+		result.put("hostname", broker.getNodeSocketAddress());
 		if (error != null) {
 			result.put("resManError", error.getMessage());
 		}
@@ -465,7 +465,7 @@ public class ZorillaJob extends JobCpi {
 
 		try {
 			ZoniConnection connection = new ZoniConnection(broker
-					.getNodeSocketAddress(), null, ZoniProtocol.TYPE_CLIENT);
+					.getNodeSocketAddress(), null);
 
 			connection.cancelJob(jobID);
 		} catch (Exception e) {
