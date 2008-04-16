@@ -13,7 +13,6 @@ import ibis.zorilla.zoni.ZoniInputFile;
 import ibis.zorilla.zoni.ZoniProtocol;
 import ibis.zorilla.zoni.ZorillaJobDescription;
 
-import java.net.InetSocketAddress;
 import java.util.HashMap;
 import java.util.Map;
 
