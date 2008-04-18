@@ -8,6 +8,7 @@
 		<ant dir="Koala" />
 		<ant dir="Pbs" />
 		<ant dir="ProActive" />
+		<ant dir="SftpNew" />
 	</target>
 
 
@@ -16,6 +17,7 @@
 		<ant dir="Koala" target="clean" />
 		<ant dir="Pbs" target="clean" />
 		<ant dir="ProActive" target="clean" />
+		<ant dir="SftpNew" target="clean" />
 	</target>
 
 	<target name="glite" description="build Glite adaptors">
@@ -32,6 +34,10 @@
 
 	<target name="proactive" description="build ProActive adaptors">
 		<ant dir="ProActive" />
+	</target>
+
+	<target name="sftpnew" description="build SftpNew adaptor">
+		<ant dir="SftpNew" />
 	</target>
 
 </project>

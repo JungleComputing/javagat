@@ -335,6 +335,7 @@ public class Wrapper implements MetricListener {
                 } catch (InterruptedException e) {
                     if (logger.isDebugEnabled()) {
                         logger.debug("an exception occurred: " + e);
+                        e.printStackTrace();
                     }
                     System.exit(1);
                 }
@@ -350,7 +351,9 @@ public class Wrapper implements MetricListener {
             } catch (InterruptedException e) {
                 if (logger.isDebugEnabled()) {
                     logger.debug("an exception occurred: " + e);
+                    e.printStackTrace();
                 }
+                
                 System.exit(1);
             }
         }
@@ -385,7 +388,7 @@ public class Wrapper implements MetricListener {
             while (!preStageDoneFile.exists()) {
                 logger.debug("waiting for pre stage done file at location: " + "any://" + initiator + "/"
                     + preStageDoneLocation);
-                Thread.sleep(500);
+                Thread.sleep(5000);
             }
         } catch (Exception e) {
             // ignore
@@ -396,7 +399,7 @@ public class Wrapper implements MetricListener {
         while (lastJob.getState() == Job.INITIAL
                 || lastJob.getState() == Job.PRE_STAGING) {
             try {
-                Thread.sleep(500);
+                Thread.sleep(5000);
             } catch (InterruptedException e) {
                 // ignore
             }
@@ -479,6 +482,7 @@ public class Wrapper implements MetricListener {
         } catch (GATInvocationException e) {
             if (logger.isDebugEnabled()) {
                 logger.debug("an exception occurred: " + e);
+                e.printStackTrace();
             }
             System.exit(1);
         }

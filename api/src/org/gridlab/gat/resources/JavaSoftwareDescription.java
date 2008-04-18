@@ -132,7 +132,7 @@ public class JavaSoftwareDescription extends SoftwareDescription {
 	 * @param options
 	 *            the jvm options.
 	 */
-	public void setJavaOptions(String[] options) {
+	public void setJavaOptions(String... options) {
 		javaOptions = options;
 	}
 
@@ -191,7 +191,7 @@ public class JavaSoftwareDescription extends SoftwareDescription {
 	 * @param javaArguments
 	 *            the arguments of the java main class.
 	 */
-	public void setJavaArguments(String[] javaArguments) {
+	public void setJavaArguments(String... javaArguments) {
 		this.javaArguments = javaArguments;
 	}
 

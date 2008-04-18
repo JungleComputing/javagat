@@ -100,123 +100,123 @@ import org.gridlab.gat.io.File;
 @SuppressWarnings("serial")
 public class SoftwareDescription implements java.io.Serializable {
 
-	private String executable;
+    private String executable;
 
-	private String[] arguments;
+    private String[] arguments;
 
-	private HashMap<String, Object> environment;
+    private HashMap<String, Object> environment;
 
-	private File stdin;
+    private File stdin;
 
-	private File stdout;
+    private File stdout;
 
-	private OutputStream stdoutStream;
+    private OutputStream stdoutStream;
 
-	private boolean stdoutIsStreaming = false;
+    private boolean stdoutIsStreaming = false;
 
-	private File stderr;
+    private File stderr;
 
-	private OutputStream stderrStream;
+    private OutputStream stderrStream;
 
-	private boolean stderrIsStreaming = false;
+    private boolean stderrIsStreaming = false;
 
-	private HashMap<File, File> preStagedFiles; // contains (src, dest) tuples
+    private HashMap<File, File> preStagedFiles; // contains (src, dest) tuples
 
-	private HashMap<File, File> postStagedFiles; // contains (src, dest)
+    private HashMap<File, File> postStagedFiles; // contains (src, dest)
 
-	// tuples
+    // tuples
 
-	private ArrayList<File> deletedFiles; // contains Files, filenames of
+    private ArrayList<File> deletedFiles; // contains Files, filenames of
 
-	// files to be removed after the
-	// run.
+    // files to be removed after the
+    // run.
 
-	private ArrayList<File> wipedFiles; // contains Files, filenames of files to
+    private ArrayList<File> wipedFiles; // contains Files, filenames of files to
 
-	// be wiped and removed after the run.
+    // be wiped and removed after the run.
 
-	private HashMap<String, Object> attributes;
+    private HashMap<String, Object> attributes;
 
-	private boolean deletePreStaged;
+    private boolean deletePreStaged;
 
-	private boolean deletePostStaged;
+    private boolean deletePostStaged;
 
-	private boolean wipePreStaged;
+    private boolean wipePreStaged;
 
-	private boolean wipePostStaged;
+    private boolean wipePostStaged;
 
-	/**
+    /**
      * Create a {@link SoftwareDescription}, which describes the application
      * you want to run.
      */
-	public SoftwareDescription() {
-		attributes = new HashMap<String, Object>();
-		preStagedFiles = new HashMap<File, File>();
-		postStagedFiles = new HashMap<File, File>();
-		deletedFiles = new ArrayList<File>();
-		wipedFiles = new ArrayList<File>();
-	}
+    public SoftwareDescription() {
+        attributes = new HashMap<String, Object>();
+        preStagedFiles = new HashMap<File, File>();
+        postStagedFiles = new HashMap<File, File>();
+        deletedFiles = new ArrayList<File>();
+        wipedFiles = new ArrayList<File>();
+    }
 
-	/**
+    /**
      * Create a {@link SoftwareDescription}, which describes the application
      * you want to run.
      * 
      * @param attributes
      *            See the comment above for a list of known attributes.
      */
-	@SuppressWarnings("unchecked")
-	public SoftwareDescription(Map<String, Object> attributes) {
-		this.attributes = new HashMap<String, Object>(attributes);
+    @SuppressWarnings("unchecked")
+    public SoftwareDescription(Map<String, Object> attributes) {
+        this.attributes = new HashMap<String, Object>(attributes);
 
-		executable = (String) attributes.get("executable");
-		arguments = (String[]) attributes.get("arguments");
-		environment = new HashMap<String, Object>(
-				(Map<String, Object>) attributes.get("environment"));
-		stdin = (File) attributes.get("stdin");
-		stdout = (File) attributes.get("stdout");
-		stderr = (File) attributes.get("stderr");
-	}
+        executable = (String) attributes.get("executable");
+        arguments = (String[]) attributes.get("arguments");
+        environment = new HashMap<String, Object>(
+                (Map<String, Object>) attributes.get("environment"));
+        stdin = (File) attributes.get("stdin");
+        stdout = (File) attributes.get("stdout");
+        stderr = (File) attributes.get("stderr");
+    }
 
-	/**
+    /**
      * Tests this {@link SoftwareDescription} for equality with the passed
      * {@link Object}. {@link SoftwareDescription}s are equal if they have
      * equivalent entries in the description table.
      * 
      * @see java.lang.Object#equals(java.lang.Object)
      */
-	public boolean equals(Object o) {
-		if (!(o instanceof SoftwareDescription)) {
-			return false;
-		}
+    public boolean equals(Object o) {
+        if (!(o instanceof SoftwareDescription)) {
+            return false;
+        }
 
-		SoftwareDescription other = (SoftwareDescription) o;
+        SoftwareDescription other = (SoftwareDescription) o;
 
-		return other.attributes.equals(attributes);
-	}
+        return other.attributes.equals(attributes);
+    }
 
-	/**
+    /**
      * Returns the hashcode of this {@link SoftwareDescription}
      * 
      * @return the hashcode of this {@link SoftwareDescription}
      * 
      * @see java.lang.Object#hashCode()
      */
-	public int hashCode() {
-		return attributes.hashCode();
-	}
+    public int hashCode() {
+        return attributes.hashCode();
+    }
 
-	/**
+    /**
      * Returns the arguments of the executable. For the following commandline
      * <code>"/bin/cat hello world > out"</code> it will return a
      * {@link String}[]{"hello", "world", ">", "out"}
      * 
      * @return Returns the commandline arguments.
      */
-	public String[] getArguments() {
-		return arguments;
-	}
+    public String[] getArguments() {
+        return arguments;
+    }
 
-	/**
+    /**
      * Sets the arguments of the executable. For the following commandline
      * <code>"/bin/cat hello world > out"</code> the {@link String}[]{"hello",
      * "world", ">", "out"} contains the arguments.
@@ -224,11 +224,11 @@ public class SoftwareDescription implements java.io.Serializable {
      * @param arguments
      *            The commandline arguments to set.
      */
-	public void setArguments(String... arguments) {
-		this.arguments = arguments;
-	}
+    public void setArguments(String... arguments) {
+        this.arguments = arguments;
+    }
 
-	/**
+    /**
      * Gets the attributes of this {@link SoftwareDescription}. This method
      * converts the well known attributes as listed in the table of
      * {@link SoftwareDescription} to their specific type (which means that if
@@ -237,41 +237,41 @@ public class SoftwareDescription implements java.io.Serializable {
      * 
      * @return the attributes.
      */
-	public Map<String, Object> getAttributes() {
-		// For known keys, resolve value strings to the correct type.
-		Set<String> s = attributes.keySet();
-		Iterator<String> i = s.iterator();
-		while (i.hasNext()) {
-			String key = (String) i.next();
-			Object tmp = attributes.get(key);
-			if (!(tmp instanceof String))
-				continue;
-			String val = (String) tmp;
-			if (key.equalsIgnoreCase("count")) {
-				attributes.put(key, new Integer(val));
-			} else if (key.equalsIgnoreCase("host.count")) {
-				attributes.put(key, new Integer(val));
-			} else if (key.equalsIgnoreCase("time.max")) {
-				attributes.put(key, new Long(val));
-			} else if (key.equalsIgnoreCase("walltime.max")) {
-				attributes.put(key, new Long(val));
-			} else if (key.equalsIgnoreCase("cputime.max")) {
-				attributes.put(key, new Long(val));
-			} else if (key.equalsIgnoreCase("dry.run")) {
-				attributes.put(key, new Boolean(val));
-			} else if (key.equalsIgnoreCase("memory.min")) {
-				attributes.put(key, new Integer(val));
-			} else if (key.equalsIgnoreCase("memory.max")) {
-				attributes.put(key, new Integer(val));
-			} else if (key.equalsIgnoreCase("save.state")) {
-				attributes.put(key, new Boolean(val));
-			}
-		}
+    public Map<String, Object> getAttributes() {
+        // For known keys, resolve value strings to the correct type.
+        Set<String> s = attributes.keySet();
+        Iterator<String> i = s.iterator();
+        while (i.hasNext()) {
+            String key = (String) i.next();
+            Object tmp = attributes.get(key);
+            if (!(tmp instanceof String))
+                continue;
+            String val = (String) tmp;
+            if (key.equalsIgnoreCase("count")) {
+                attributes.put(key, new Integer(val));
+            } else if (key.equalsIgnoreCase("host.count")) {
+                attributes.put(key, new Integer(val));
+            } else if (key.equalsIgnoreCase("time.max")) {
+                attributes.put(key, new Long(val));
+            } else if (key.equalsIgnoreCase("walltime.max")) {
+                attributes.put(key, new Long(val));
+            } else if (key.equalsIgnoreCase("cputime.max")) {
+                attributes.put(key, new Long(val));
+            } else if (key.equalsIgnoreCase("dry.run")) {
+                attributes.put(key, new Boolean(val));
+            } else if (key.equalsIgnoreCase("memory.min")) {
+                attributes.put(key, new Integer(val));
+            } else if (key.equalsIgnoreCase("memory.max")) {
+                attributes.put(key, new Integer(val));
+            } else if (key.equalsIgnoreCase("save.state")) {
+                attributes.put(key, new Boolean(val));
+            }
+        }
 
-		return attributes;
-	}
+        return attributes;
+    }
 
-	/**
+    /**
      * Set the attributes to the attributes specified in the {@link Map}. This
      * will create a set of attributes only containing the attributes from the
      * {@link Map}. Use addAttribute to add attributes to an existing set of
@@ -282,11 +282,11 @@ public class SoftwareDescription implements java.io.Serializable {
      *            known attributes. Note that some adaptors may also support
      *            other attributes.
      */
-	public void setAttributes(Map<String, Object> attributes) {
-		this.attributes = new HashMap<String, Object>(attributes);
-	}
+    public void setAttributes(Map<String, Object> attributes) {
+        this.attributes = new HashMap<String, Object>(attributes);
+    }
 
-	/**
+    /**
      * Add an attribute to the existing attribute set. See the comment above for
      * a list of known attributes. Note that some adaptors may also support
      * other attributes.
@@ -296,33 +296,33 @@ public class SoftwareDescription implements java.io.Serializable {
      * @param value
      *            the value of the attribute
      */
-	public void addAttribute(String key, Object value) {
-		attributes.put(key, value);
-	}
+    public void addAttribute(String key, Object value) {
+        attributes.put(key, value);
+    }
 
-	/**
+    /**
      * Remove an attribute from the attribute set.
      * 
      * @param key
      *            the key of the attribute
      * @return the value belonging to this key
      */
-	public Object removeAttribute(String key) {
-		return attributes.remove(key);
-	}
+    public Object removeAttribute(String key) {
+        return attributes.remove(key);
+    }
 
-	/**
+    /**
      * Returns the environment of the executable. The environment of the
      * executable consists of a {@link Map} of environment variables with their
      * values (for instance the key, value pair "JAVA_HOME", "/path/to/java").
      * 
      * @return the environment
      */
-	public Map<String, Object> getEnvironment() {
-		return environment;
-	}
+    public Map<String, Object> getEnvironment() {
+        return environment;
+    }
 
-	/**
+    /**
      * Sets the environment of the executable. The environment of the executable
      * consists of a {@link Map} of environment variables with their values (for
      * instance the key, value pair "JAVA_HOME", "/path/to/java").
@@ -330,22 +330,22 @@ public class SoftwareDescription implements java.io.Serializable {
      * @param environment
      *            The environment to set.
      */
-	public void setEnvironment(Map<String, Object> environment) {
-		this.environment = new HashMap<String, Object>(environment);
-	}
+    public void setEnvironment(Map<String, Object> environment) {
+        this.environment = new HashMap<String, Object>(environment);
+    }
 
-	/**
+    /**
      * Returns the path to the executable. For the following commandline
      * <code>"/bin/cat hello world > out"</code> it will return a
      * {@link String} "/bin/cat".
      * 
      * @return the path to the executable.
      */
-	public String getExecutable() {
-		return executable;
-	}
+    public String getExecutable() {
+        return executable;
+    }
 
-	/**
+    /**
      * Sets the path to the executable. For the following commandline
      * <code>"/bin/cat hello world > out"</code> the {@link String} "/bin/cat"
      * should be provided.
@@ -353,11 +353,11 @@ public class SoftwareDescription implements java.io.Serializable {
      * @param executable
      *            The path to the executable.
      */
-	public void setExecutable(String executable) {
-		this.executable = executable;
-	}
+    public void setExecutable(String executable) {
+        this.executable = executable;
+    }
 
-	/**
+    /**
      * Returns the pre staged file set. This a {@link Map} with the source
      * {@link File}s as keys and the destination {@link File}s as values. This
      * method returns the files that should be pre staged regardless of whether
@@ -365,11 +365,11 @@ public class SoftwareDescription implements java.io.Serializable {
      * 
      * @return the pre staged file set.
      */
-	public Map<File, File> getPreStaged() {
-		return preStagedFiles;
-	}
+    public Map<File, File> getPreStaged() {
+        return preStagedFiles;
+    }
 
-	/**
+    /**
      * Sets the pre staged file set. Any former pre staged files added to the
      * pre staged file set are no longer part of the pre staged file set. More
      * {@link File}s can be added using the <code>addPreStagedFile</code>
@@ -379,25 +379,25 @@ public class SoftwareDescription implements java.io.Serializable {
      * @param files
      *            An array of files that should be pre staged.
      */
-	public void setPreStaged(File... files) {
-		preStagedFiles = new HashMap<File, File>();
-		for (int i = 0; i < files.length; i++) {
-			addPreStagedFile(files[i]);
-		}
-	}
+    public void setPreStaged(File... files) {
+        preStagedFiles = new HashMap<File, File>();
+        for (int i = 0; i < files.length; i++) {
+            addPreStagedFile(files[i]);
+        }
+    }
 
-	/**
+    /**
      * Add a single pre stage file. This is similar to
      * <code>addPreStagedFile(src, null)</code>.
      * 
      * @param src
      *            the file that should be pre staged.
      */
-	public void addPreStagedFile(File src) {
-		addPreStagedFile(src, null);
-	}
+    public void addPreStagedFile(File src) {
+        addPreStagedFile(src, null);
+    }
 
-	/**
+    /**
      * Add a single pre stage file that should be pre staged to the given
      * destination. The table below shows where the pre stage files will end up
      * after pre staging.
@@ -443,15 +443,15 @@ public class SoftwareDescription implements java.io.Serializable {
      *            the {@link File} that should exist after the pre staging (may
      *            be <code>null</code>, see table).
      */
-	public void addPreStagedFile(File src, File dest) {
-		if (src == null) {
-			throw new NullPointerException(
-					"the source file cannot be null when adding a preStaged file");
-		}
-		preStagedFiles.put(src, dest);
-	}
+    public void addPreStagedFile(File src, File dest) {
+        if (src == null) {
+            throw new NullPointerException(
+                    "the source file cannot be null when adding a preStaged file");
+        }
+        preStagedFiles.put(src, dest);
+    }
 
-	/**
+    /**
      * Returns the post stage file set. The key {@link File}s are the source
      * files on the execution site, the values are the {@link File}s with the
      * destination of the post staging. This method returns the files that
@@ -460,11 +460,11 @@ public class SoftwareDescription implements java.io.Serializable {
      * 
      * @return the post stage file set
      */
-	public Map<File, File> getPostStaged() {
-		return postStagedFiles;
-	}
+    public Map<File, File> getPostStaged() {
+        return postStagedFiles;
+    }
 
-	/**
+    /**
      * Sets the post staged file set. Any former post staged files added to the
      * post staged file set are no longer part of the post staged file set. More
      * {@link File}s can be added using the <code>addPostStagedFile</code>
@@ -474,25 +474,25 @@ public class SoftwareDescription implements java.io.Serializable {
      * @param files
      *            An array of files that should be pre staged.
      */
-	public void setPostStaged(File... files) {
-		postStagedFiles = new HashMap<File, File>();
-		for (int i = 0; i < files.length; i++) {
-			addPostStagedFile(files[i]);
-		}
-	}
+    public void setPostStaged(File... files) {
+        postStagedFiles = new HashMap<File, File>();
+        for (int i = 0; i < files.length; i++) {
+            addPostStagedFile(files[i]);
+        }
+    }
 
-	/**
+    /**
      * Add a single post stage file. This is similar to
      * <code>addPostStagedFile(src, null)</code>.
      * 
      * @param src
      *            the file that should be post staged.
      */
-	public void addPostStagedFile(File src) {
-		addPostStagedFile(src, null);
-	}
+    public void addPostStagedFile(File src) {
+        addPostStagedFile(src, null);
+    }
 
-	/**
+    /**
      * Add a single post stage file that should be post staged to the given
      * destination. The table below shows where the post stage files will end up
      * after post staging.
@@ -538,27 +538,27 @@ public class SoftwareDescription implements java.io.Serializable {
      *            the {@link File} that should exist after the post staging (may
      *            be <code>null</code>, see table).
      */
-	public void addPostStagedFile(File src, File dest) {
-		if (src == null) {
-			throw new NullPointerException(
-					"the destination file cannot be null when adding a postStaged file");
-		}
+    public void addPostStagedFile(File src, File dest) {
+        if (src == null) {
+            throw new NullPointerException(
+                    "the destination file cannot be null when adding a postStaged file");
+        }
 
-		postStagedFiles.put(src, dest);
-	}
+        postStagedFiles.put(src, dest);
+    }
 
-	/**
+    /**
      * Returns a {@link List} of the {@link File}s that should be deleted after
      * the run.
      * 
      * @return the list of files to be deleted after the run. elements are of
      *         type File.
      */
-	public List<File> getDeletedFiles() {
-		return deletedFiles;
-	}
+    public List<File> getDeletedFiles() {
+        return deletedFiles;
+    }
 
-	/**
+    /**
      * Adds a {@link File} to the set of {@link File}s that should be deleted
      * after the run. Normally the {@link ResourceBroker} will delete the
      * sandbox with all its contents after the run and it isn't necessary to
@@ -578,22 +578,22 @@ public class SoftwareDescription implements java.io.Serializable {
      * @param file
      *            the file to be deleted after the run.
      */
-	public void addDeletedFile(File file) {
-		deletedFiles.add(file);
-	}
+    public void addDeletedFile(File file) {
+        deletedFiles.add(file);
+    }
 
-	/**
+    /**
      * Returns a {@link List} of the {@link File}s that should be wiped and
      * deleted after the run.
      * 
      * @return the list of files to be deleted after the run. elements are of
      *         type File.
      */
-	public List<File> getWipedFiles() {
-		return wipedFiles;
-	}
+    public List<File> getWipedFiles() {
+        return wipedFiles;
+    }
 
-	/**
+    /**
      * Adds a {@link File} to the set of {@link File}s that should be wiped
      * after the run. When a {@link File} gets deleted, it's possible that some
      * data that was in the file remains on the disk. To be sure these data is
@@ -604,29 +604,29 @@ public class SoftwareDescription implements java.io.Serializable {
      * @param file
      *            the file to be wiped (overwritten) and deleted after the run.
      */
-	public void addWipedFile(File file) {
-		wipedFiles.add(file);
-	}
+    public void addWipedFile(File file) {
+        wipedFiles.add(file);
+    }
 
-	/**
+    /**
      * Returns the stderr {@link File}.
      * 
      * @return the stderr {@link File}
      */
-	public File getStderr() {
-		return stderr;
-	}
+    public File getStderr() {
+        return stderr;
+    }
 
-	/**
+    /**
      * Returns the stderr {@link OutputStream}.
      * 
      * @return the stderr {@link OutputStream}.
      */
-	public OutputStream getStderrStream() {
-		return stderrStream;
-	}
+    public OutputStream getStderrStream() {
+        return stderrStream;
+    }
 
-	/**
+    /**
      * Sets the stderr {@link File}. Note that stderr will be redirected to
      * either a {@link File} or a {@link OutputStream}. The last invocation of
      * <code>setStderr()</code> determines whether the destination of the
@@ -635,12 +635,12 @@ public class SoftwareDescription implements java.io.Serializable {
      * @param stderr
      *            The {@link File} where stderr is redirected to.
      */
-	public void setStderr(File stderr) {
-		stderrIsStreaming = false;
-		this.stderr = stderr;
-	}
+    public void setStderr(File stderr) {
+        stderrIsStreaming = false;
+        this.stderr = stderr;
+    }
 
-	/**
+    /**
      * Sets the stderr {@link OutputStream}. Note that stderr will be
      * redirected to either a {@link File} or a {@link OutputStream}. The last
      * invocation of <code>setStderr()</code> determines whether the
@@ -649,58 +649,58 @@ public class SoftwareDescription implements java.io.Serializable {
      * @param stderrStream
      *            The {@link OutputStream} where stderr is redirected to.
      */
-	public void setStderr(OutputStream stderrStream) {
-		stderrIsStreaming = true;
-		this.stderrStream = stderrStream;
-	}
+    public void setStderr(OutputStream stderrStream) {
+        stderrIsStreaming = true;
+        this.stderrStream = stderrStream;
+    }
 
-	/**
+    /**
      * Returns whether the stderr is set to streaming.
      * 
      * @return whether the stderr is streaming.
      */
-	public boolean stderrIsStreaming() {
-		return stderrIsStreaming;
-	}
+    public boolean stderrIsStreaming() {
+        return stderrIsStreaming;
+    }
 
-	/**
+    /**
      * Returns the stdin {@link File}.
      * 
      * @return the stdin {@link File}.
      */
-	public File getStdin() {
-		return stdin;
-	}
+    public File getStdin() {
+        return stdin;
+    }
 
-	/**
+    /**
      * Sets the {@link File} where stdin is redirected from.
      * 
      * @param stdin
      *            The {@link File} where stdin is redirected from.
      */
-	public void setStdin(File stdin) {
-		this.stdin = stdin;
-	}
+    public void setStdin(File stdin) {
+        this.stdin = stdin;
+    }
 
-	/**
+    /**
      * Returns the stdout {@link File}.
      * 
      * @return the stdout {@link File}.
      */
-	public File getStdout() {
-		return stdout;
-	}
+    public File getStdout() {
+        return stdout;
+    }
 
-	/**
+    /**
      * Returns the stdout {@link OutputStream}.
      * 
      * @return the stdout {@link OutputStream}.
      */
-	public OutputStream getStdoutStream() {
-		return stdoutStream;
-	}
+    public OutputStream getStdoutStream() {
+        return stdoutStream;
+    }
 
-	/**
+    /**
      * Sets the stdout {@link File}. Note that stdout will be redirected to
      * either a {@link File} or a {@link OutputStream}. The last invocation of
      * <code>setStdout()</code> determines whether the destination of the
@@ -709,12 +709,12 @@ public class SoftwareDescription implements java.io.Serializable {
      * @param stdout
      *            The {@link File} where stdout is redirected to.
      */
-	public void setStdout(File stdout) {
-		stdoutIsStreaming = false;
-		this.stdout = stdout;
-	}
+    public void setStdout(File stdout) {
+        stdoutIsStreaming = false;
+        this.stdout = stdout;
+    }
 
-	/**
+    /**
      * Sets the stdout {@link OutputStream}. Note that stdout will be
      * redirected to either a {@link File} or a {@link OutputStream}. The last
      * invocation of <code>setStdout()</code> determines whether the
@@ -723,65 +723,63 @@ public class SoftwareDescription implements java.io.Serializable {
      * @param stdoutStream
      *            The {@link OutputStream} where stdout is redirected to.
      */
-	public void setStdout(OutputStream stdoutStream) {
-		stdoutIsStreaming = true;
-		this.stdoutStream = stdoutStream;
-	}
+    public void setStdout(OutputStream stdoutStream) {
+        stdoutIsStreaming = true;
+        this.stdoutStream = stdoutStream;
+    }
 
-	/**
+    /**
      * Returns whether the stdout is set to streaming.
      * 
      * @return whether the stdout is streaming.
      */
-	public boolean stdoutIsStreaming() {
-		return stdoutIsStreaming;
-	}
+    public boolean stdoutIsStreaming() {
+        return stdoutIsStreaming;
+    }
 
-	public String toString() {
-		String res = "SoftwareDescription(";
-		res += "executable: " + executable;
-		res += ", arguments: ";
-		if (arguments != null) {
-			for (int i = 0; i < arguments.length; i++) {
-				res += arguments[i];
-				if (i != arguments.length - 1)
-					res += ", ";
-			}
-		} else {
-			res += "null";
-		}
+    public String toString() {
+        String res = "SoftwareDescription(";
+        res += "executable: " + executable;
+        res += ", arguments: {";
+        if (getArguments() != null) {
+            for (String argument : getArguments()) {
+                res += argument + ",";
+            }
+        } else {
+            res += "null";
+        }
+        res += "}";
+        res += ", stdin: " + (stdin == null ? "null" : stdin.toString());
+        res += ", stdout: " + (stdout == null ? "null" : stdout.toString());
+        res += ", stderr: " + (stderr == null ? "null" : stderr.toString());
 
-		res += ", stdin: " + (stdin == null ? "null" : stdin.toString());
-		res += ", stdout: " + (stdout == null ? "null" : stdout.toString());
-		res += ", stderr: " + (stderr == null ? "null" : stderr.toString());
+        res += ", environment: "
+                + (environment == null ? "null" : environment.toString());
+        res += ", preStaged: "
+                + (preStagedFiles == null ? "null" : preStagedFiles.toString());
+        res += ", postStaged: "
+                + (postStagedFiles == null ? "null" : postStagedFiles
+                        .toString());
+        res += ", attributes: "
+                + (attributes == null ? "null" : attributes.toString());
 
-		res += ", environment: "
-				+ (environment == null ? "null" : environment.toString());
-		res += ", preStaged: "
-				+ (preStagedFiles == null ? "null" : preStagedFiles.toString());
-		res += ", postStaged: "
-				+ (postStagedFiles == null ? "null" : postStagedFiles
-						.toString());
-		res += ", attributes: "
-				+ (attributes == null ? "null" : attributes.toString());
+        res += ")";
 
-		res += ")";
+        return res;
+    }
 
-		return res;
-	}
-
-	/**
+    /**
      * Returns whether the {@link File}s in the post stage file set should be
      * deleted after the post staging.
      * 
      * @return TRUE if post stage files will be deleted, FALSE if they won't be
      *         deleted.
      */
-	public boolean deletePostStaged() {
-		return deletePostStaged;
-	}
+    public boolean deletePostStaged() {
+        return deletePostStaged;
+    }
 
-	/**
+    /**
      * Sets the value which is used to determine whether the {@link File}s in
      * the post stage file set should be deleted after the post staging. (TRUE
      * if the post stage files should be deleted, FALSE if they shouldn't be
@@ -790,22 +788,22 @@ public class SoftwareDescription implements java.io.Serializable {
      * @param deletePostStaged
      *            delete the post stage {@link File}s after post staging.
      */
-	public void setDeletePostStaged(boolean deletePostStaged) {
-		this.deletePostStaged = deletePostStaged;
-	}
+    public void setDeletePostStaged(boolean deletePostStaged) {
+        this.deletePostStaged = deletePostStaged;
+    }
 
-	/**
+    /**
      * Returns whether the {@link File}s in the pre stage file set should be
      * deleted after the post staging.
      * 
      * @return TRUE if pre stage files will be deleted, FALSE if they won't be
      *         deleted.
      */
-	public boolean deletePreStaged() {
-		return deletePreStaged;
-	}
+    public boolean deletePreStaged() {
+        return deletePreStaged;
+    }
 
-	/**
+    /**
      * Sets the value which is used to determine whether the {@link File}s in
      * the pre stage file set should be deleted after the post staging. (TRUE if
      * the pre stage files should be deleted, FALSE if they shouldn't be
@@ -814,22 +812,22 @@ public class SoftwareDescription implements java.io.Serializable {
      * @param deletePreStaged
      *            delete the pre stage {@link File}s after post staging.
      */
-	public void setDeletePreStaged(boolean deletePreStaged) {
-		this.deletePreStaged = deletePreStaged;
-	}
+    public void setDeletePreStaged(boolean deletePreStaged) {
+        this.deletePreStaged = deletePreStaged;
+    }
 
-	/**
+    /**
      * Returns whether the {@link File}s in the post stage file set should be
      * wiped after the post staging.
      * 
      * @return TRUE if post stage files will be wiped, FALSE if they won't be
      *         wiped.
      */
-	public boolean wipePostStaged() {
-		return wipePostStaged;
-	}
+    public boolean wipePostStaged() {
+        return wipePostStaged;
+    }
 
-	/**
+    /**
      * Sets the value which is used to determine whether the {@link File}s in
      * the post stage file set should be wiped after the post staging. (TRUE if
      * the post stage files should be wiped, FALSE if they shouldn't be wiped).
@@ -837,22 +835,22 @@ public class SoftwareDescription implements java.io.Serializable {
      * @param wipePostStaged
      *            wipe the post stage {@link File}s after post staging.
      */
-	public void setWipePostStaged(boolean wipePostStaged) {
-		this.wipePostStaged = wipePostStaged;
-	}
+    public void setWipePostStaged(boolean wipePostStaged) {
+        this.wipePostStaged = wipePostStaged;
+    }
 
-	/**
+    /**
      * Returns whether the {@link File}s in the pre stage file set should be
      * wiped after the post staging.
      * 
      * @return TRUE if pre stage files will be wiped, FALSE if they won't be
      *         wiped.
      */
-	public boolean wipePreStaged() {
-		return wipePreStaged;
-	}
+    public boolean wipePreStaged() {
+        return wipePreStaged;
+    }
 
-	/**
+    /**
      * Sets the value which is used to determine whether the {@link File}s in
      * the pre stage file set should be wiped after the post staging. (TRUE if
      * the pre stage files should be wiped, FALSE if they shouldn't be wiped).
@@ -860,11 +858,11 @@ public class SoftwareDescription implements java.io.Serializable {
      * @param wipePreStaged
      *            wipe the pre stage {@link File}s after post staging.
      */
-	public void setWipePreStaged(boolean wipePreStaged) {
-		this.wipePreStaged = wipePreStaged;
-	}
+    public void setWipePreStaged(boolean wipePreStaged) {
+        this.wipePreStaged = wipePreStaged;
+    }
 
-	/**
+    /**
      * Returns the int value of an attribute. If no value (or the value
      * <code>null</code>) can be found for the given <code>name</code>,
      * the <code>defaultVal</code> is returned. If there exist a value for the
@@ -877,22 +875,22 @@ public class SoftwareDescription implements java.io.Serializable {
      *            the default value
      * @return the int value of the attribute indicated by the <code>name</code>.
      */
-	public int getIntAttribute(String name, int defaultVal) {
-		Object val = (Integer) attributes.get(name);
-		if (val == null)
-			return defaultVal;
+    public int getIntAttribute(String name, int defaultVal) {
+        Object val = (Integer) attributes.get(name);
+        if (val == null)
+            return defaultVal;
 
-		if (val instanceof Integer) {
-			Integer ival = (Integer) val;
-			return ival.intValue();
-		} else if (val instanceof String) {
-			return Integer.parseInt((String) val);
-		} else {
-			throw new Error("illegal int value: " + val);
-		}
-	}
+        if (val instanceof Integer) {
+            Integer ival = (Integer) val;
+            return ival.intValue();
+        } else if (val instanceof String) {
+            return Integer.parseInt((String) val);
+        } else {
+            throw new Error("illegal int value: " + val);
+        }
+    }
 
-	/**
+    /**
      * Returns the long value of an attribute. If no value (or the value
      * <code>null</code>) can be found for the given <code>name</code>,
      * the <code>defaultVal</code> is returned. If there exist a value for the
@@ -906,22 +904,22 @@ public class SoftwareDescription implements java.io.Serializable {
      * @return the long value of the attribute indicated by the
      *         <code>name</code>.
      */
-	public long getLongAttribute(String name, long defaultVal) {
-		Object val = attributes.get(name);
-		if (val == null)
-			return defaultVal;
+    public long getLongAttribute(String name, long defaultVal) {
+        Object val = attributes.get(name);
+        if (val == null)
+            return defaultVal;
 
-		if (val instanceof Long) {
-			Long lval = (Long) val;
-			return lval.longValue();
-		} else if (val instanceof String) {
-			return Long.parseLong((String) val);
-		} else {
-			throw new Error("illegal long value: " + val);
-		}
-	}
+        if (val instanceof Long) {
+            Long lval = (Long) val;
+            return lval.longValue();
+        } else if (val instanceof String) {
+            return Long.parseLong((String) val);
+        } else {
+            throw new Error("illegal long value: " + val);
+        }
+    }
 
-	/**
+    /**
      * Returns the {@link String} value of an attribute. If no value (or the
      * value <code>null</code>) can be found for the given <code>name</code>,
      * the <code>defaultVal</code> is returned.
@@ -933,14 +931,14 @@ public class SoftwareDescription implements java.io.Serializable {
      * @return the {@link String} value of the attribute indicated by the
      *         <code>name</code>.
      */
-	public String getStringAttribute(String name, String defaultVal) {
-		String val = (String) attributes.get(name);
-		if (val == null)
-			return defaultVal;
-		return val;
-	}
+    public String getStringAttribute(String name, String defaultVal) {
+        String val = (String) attributes.get(name);
+        if (val == null)
+            return defaultVal;
+        return val;
+    }
 
-	/**
+    /**
      * Returns the {@link Object} value of an attribute. If no value (or the
      * value <code>null</code>) can be found for the given <code>name</code>,
      * <code>null</code> is returned.
@@ -950,11 +948,11 @@ public class SoftwareDescription implements java.io.Serializable {
      * @return the {@link Object} value of the attribute indicated by the
      *         <code>name</code>.
      */
-	public Object getObjectAttribute(String name) {
-		return attributes.get(name);
-	}
+    public Object getObjectAttribute(String name) {
+        return attributes.get(name);
+    }
 
-	/**
+    /**
      * Returns the boolean value of an attribute. If no value (or the value
      * <code>null</code>) can be found for the given <code>name</code>,
      * the <code>defaultVal</code> is returned. If there exist a value for the
@@ -968,23 +966,23 @@ public class SoftwareDescription implements java.io.Serializable {
      * @return the boolean value of the attribute indicated by the
      *         <code>name</code>.
      */
-	public boolean getBooleanAttribute(String name, boolean defaultVal) {
-		Object val = attributes.get(name);
+    public boolean getBooleanAttribute(String name, boolean defaultVal) {
+        Object val = attributes.get(name);
 
-		if (val == null)
-			return defaultVal;
+        if (val == null)
+            return defaultVal;
 
-		if (val instanceof Boolean) {
-			return ((Boolean) val).booleanValue();
-		} else if (val instanceof String) {
-			return ((String) val).equalsIgnoreCase("true");
-		} else {
-			throw new Error("illegal type for boolean attribute: " + name
-					+ ": " + val);
-		}
-	}
+        if (val instanceof Boolean) {
+            return ((Boolean) val).booleanValue();
+        } else if (val instanceof String) {
+            return ((String) val).equalsIgnoreCase("true");
+        } else {
+            throw new Error("illegal type for boolean attribute: " + name
+                    + ": " + val);
+        }
+    }
 
-	/**
+    /**
      * <b>Do not use this method. This method is for internal use of JavaGAT.</b>
      * The attribute "globus.exitvalue.enable" can be set to "true" to make
      * JavaGAT use the wrapper script.
@@ -1002,102 +1000,102 @@ public class SoftwareDescription implements java.io.Serializable {
      *            the file name where the exit value is written to
      * @throws GATInvocationException
      */
-	public void toWrapper(GATContext context, String wrapperFileName,
-			String exitValueFileName) throws GATInvocationException {
-		// assemble the content
-		String newline = System.getProperty("line.separator");
-		try {
-			StringBuffer sb = new StringBuffer();
-			sb.append("#!/bin/sh");
-			sb.append(newline);
-			sb.append("# wrapper script for " + executable);
-			sb.append(newline);
-			sb.append("typeset int rc");
-			sb.append(newline);
-			sb.append("rcfile=" + exitValueFileName);
-			sb.append(newline);
-			sb.append("cmd=\"");
-			sb.append(executable);
-			if (arguments != null) {
-				for (String argument : arguments) {
-					sb.append(" ");
-					sb.append(argument);
-				}
-			}
-			sb.append("\"");
-			sb.append(newline);
-			sb.append("$cmd");
-			sb.append(newline);
-			sb.append("rc=$?");
-			sb.append(newline);
-			sb.append("echo $rc > $rcfile");
-			sb.append(newline);
-			sb.append("exit $rc");
-
-			// write out the content of the wrapper file
-			BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter(
-					wrapperFileName));
-			bufferedWriter.write(sb.toString());
-			bufferedWriter.flush();
-			bufferedWriter.close();
-		} catch (FileNotFoundException e) {
-			throw new GATInvocationException("SoftwareDescription toWrapper", e);
-		} catch (IOException e) {
-			throw new GATInvocationException("SoftwareDescription toWrapper", e);
-		}
-		// OK, now we've created the wrapper script and written it to the local
-		// disk. We have to add the wrapper script to prestage fileset and set
-		// the executable to '/bin/sh' and the arguments to the wrapperscript.
-		this.executable = "/bin/sh";
-		this.arguments = new String[] { wrapperFileName };
-		try {
-			addPreStagedFile(GAT.createFile(context, new URI(wrapperFileName)));
-		} catch (GATObjectCreationException e) {
-			throw new GATInvocationException("SoftwareDescription toWrapper", e);
-		} catch (URISyntaxException e) {
-			throw new GATInvocationException("SoftwareDescription toWrapper", e);
-		}
-		try {
-			addPostStagedFile(GAT.createFile(context,
-					new URI(exitValueFileName)));
-		} catch (GATObjectCreationException e) {
-			throw new GATInvocationException("SoftwareDescription toWrapper", e);
-		} catch (URISyntaxException e) {
-			throw new GATInvocationException("SoftwareDescription toWrapper", e);
-		}
-	}
-        
-        @SuppressWarnings("unchecked")
-        public Object clone() {
-            SoftwareDescription sd = new SoftwareDescription();
-            sd.executable = executable;
-            sd.stdin = stdin;
-            sd.stdout = stdout;
-            sd.stderr = stderr;
-            sd.stdoutStream = stdoutStream;
-            sd.stderrStream = stderrStream;
-            sd.stderrIsStreaming = stderrIsStreaming;
-            sd.stdoutIsStreaming = stdoutIsStreaming;
-            sd.preStagedFiles = preStagedFiles;
-            sd.postStagedFiles = postStagedFiles;
-            sd.deletedFiles = deletedFiles;
-            sd.wipedFiles = wipedFiles;
-            sd.deletePostStaged = deletePostStaged;
-            sd.deletePreStaged = deletePreStaged;
-            sd.wipePostStaged = wipePostStaged;
-            sd.wipePreStaged = wipePreStaged;
+    public void toWrapper(GATContext context, String wrapperFileName,
+            String exitValueFileName) throws GATInvocationException {
+        // assemble the content
+        String newline = System.getProperty("line.separator");
+        try {
+            StringBuffer sb = new StringBuffer();
+            sb.append("#!/bin/sh");
+            sb.append(newline);
+            sb.append("# wrapper script for " + executable);
+            sb.append(newline);
+            sb.append("typeset int rc");
+            sb.append(newline);
+            sb.append("rcfile=" + exitValueFileName);
+            sb.append(newline);
+            sb.append("cmd=\"");
+            sb.append(executable);
             if (arguments != null) {
-                sd.arguments = new String[arguments.length];
-                System.arraycopy(arguments, 0, sd.arguments, 0, arguments.length);
+                for (String argument : arguments) {
+                    sb.append(" ");
+                    sb.append(argument);
+                }
             }
-            if (attributes != null) {
-                sd.attributes = (HashMap<String, Object>) attributes.clone();
-            }
-            if (environment != null) {
-                sd.environment = (HashMap<String, Object>) environment.clone();
-            }
-            return sd;
-            
+            sb.append("\"");
+            sb.append(newline);
+            sb.append("$cmd");
+            sb.append(newline);
+            sb.append("rc=$?");
+            sb.append(newline);
+            sb.append("echo $rc > $rcfile");
+            sb.append(newline);
+            sb.append("exit $rc");
+
+            // write out the content of the wrapper file
+            BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter(
+                    wrapperFileName));
+            bufferedWriter.write(sb.toString());
+            bufferedWriter.flush();
+            bufferedWriter.close();
+        } catch (FileNotFoundException e) {
+            throw new GATInvocationException("SoftwareDescription toWrapper", e);
+        } catch (IOException e) {
+            throw new GATInvocationException("SoftwareDescription toWrapper", e);
         }
-        
+        // OK, now we've created the wrapper script and written it to the local
+        // disk. We have to add the wrapper script to prestage fileset and set
+        // the executable to '/bin/sh' and the arguments to the wrapperscript.
+        this.executable = "/bin/sh";
+        this.arguments = new String[] { wrapperFileName };
+        try {
+            addPreStagedFile(GAT.createFile(context, new URI(wrapperFileName)));
+        } catch (GATObjectCreationException e) {
+            throw new GATInvocationException("SoftwareDescription toWrapper", e);
+        } catch (URISyntaxException e) {
+            throw new GATInvocationException("SoftwareDescription toWrapper", e);
+        }
+        try {
+            addPostStagedFile(GAT.createFile(context,
+                    new URI(exitValueFileName)));
+        } catch (GATObjectCreationException e) {
+            throw new GATInvocationException("SoftwareDescription toWrapper", e);
+        } catch (URISyntaxException e) {
+            throw new GATInvocationException("SoftwareDescription toWrapper", e);
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    public Object clone() {
+        SoftwareDescription sd = new SoftwareDescription();
+        sd.executable = executable;
+        sd.stdin = stdin;
+        sd.stdout = stdout;
+        sd.stderr = stderr;
+        sd.stdoutStream = stdoutStream;
+        sd.stderrStream = stderrStream;
+        sd.stderrIsStreaming = stderrIsStreaming;
+        sd.stdoutIsStreaming = stdoutIsStreaming;
+        sd.preStagedFiles = preStagedFiles;
+        sd.postStagedFiles = postStagedFiles;
+        sd.deletedFiles = deletedFiles;
+        sd.wipedFiles = wipedFiles;
+        sd.deletePostStaged = deletePostStaged;
+        sd.deletePreStaged = deletePreStaged;
+        sd.wipePostStaged = wipePostStaged;
+        sd.wipePreStaged = wipePreStaged;
+        if (arguments != null) {
+            sd.arguments = new String[arguments.length];
+            System.arraycopy(arguments, 0, sd.arguments, 0, arguments.length);
+        }
+        if (attributes != null) {
+            sd.attributes = (HashMap<String, Object>) attributes.clone();
+        }
+        if (environment != null) {
+            sd.environment = (HashMap<String, Object>) environment.clone();
+        }
+        return sd;
+
+    }
+
 }
