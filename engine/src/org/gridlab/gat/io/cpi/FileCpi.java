@@ -2,7 +2,6 @@ package org.gridlab.gat.io.cpi;
 
 import java.io.FileFilter;
 import java.io.FilenameFilter;
-import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -22,8 +21,8 @@ import org.gridlab.gat.io.File;
 import org.gridlab.gat.io.FileInterface;
 import org.gridlab.gat.monitoring.Metric;
 import org.gridlab.gat.monitoring.MetricDefinition;
-import org.gridlab.gat.monitoring.MetricListener;
 import org.gridlab.gat.monitoring.MetricEvent;
+import org.gridlab.gat.monitoring.MetricListener;
 
 /**
  * Capability provider interface to the File class.
@@ -512,16 +511,12 @@ public abstract class FileCpi implements FileInterface, java.io.Serializable {
             }
         }
         if (in.refersToLocalHost() && !isAbsolute(in)) {
-            String userDir = System.getProperty("user.dir");
-            userDir = userDir.replace('\\', '/');
-            try {
-                userDir = userDir.replace(":", ":".getBytes("UTF-8").toString());
-            } catch (UnsupportedEncodingException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
+            if (destScheme == null) {
+                uriString = "file:" + uriString;
             }
-            uriString = uriString.replace(in.getPath(), userDir + '/'
-                    + in.getPath());
+            uriString = uriString.replace(in.getPath(), System
+                    .getProperty("user.dir")
+                    + java.io.File.separator + in.getPath());
         }
         URI fixedURI = null;
         try {
