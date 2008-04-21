@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.globus.ftp.exception.ServerException;
 import org.globus.io.streams.FTPInputStream;
+import org.gridlab.gat.AdaptorNotApplicableException;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.GATObjectCreationException;
@@ -29,72 +30,73 @@ import org.gridlab.gat.security.cpi.SecurityContextUtils;
  * call.
  */
 public class FTPFileInputStreamAdaptor extends GlobusFileInputStreamAdaptor {
-	public FTPFileInputStreamAdaptor(GATContext gatContext, URI location)
-			throws GATObjectCreationException {
-		super(gatContext, location);
+    public FTPFileInputStreamAdaptor(GATContext gatContext, URI location)
+            throws GATObjectCreationException {
+        super(gatContext, location);
 
-		if (!location.isCompatible("ftp")) {
-			throw new GATObjectCreationException("cannot handle this URI");
-		}
+        if (!location.isCompatible("ftp")) {
+            throw new AdaptorNotApplicableException("cannot handle this URI: "
+                    + location);
+        }
 
-		// now try to create a stream.
-		try {
-			in = createStream();
-		} catch (GATInvocationException e) {
-			throw new GATObjectCreationException("FTPFileInputStreamAdaptor", e);
-		}
-	}
+        // now try to create a stream.
+        try {
+            in = createStream();
+        } catch (GATInvocationException e) {
+            throw new GATObjectCreationException("FTPFileInputStreamAdaptor", e);
+        }
+    }
 
-	protected InputStream createStream() throws GATInvocationException {
-		List<SecurityContext> l = SecurityContextUtils
-				.getValidSecurityContextsByType(gatContext,
-						"org.gridlab.gat.security.PasswordSecurityContext",
-						"ftp", location.resolveHost(), location
-								.getPort(GlobusFileAdaptor.DEFAULT_FTP_PORT));
+    protected InputStream createStream() throws GATInvocationException {
+        List<SecurityContext> l = SecurityContextUtils
+                .getValidSecurityContextsByType(gatContext,
+                        "org.gridlab.gat.security.PasswordSecurityContext",
+                        "ftp", location.resolveHost(), location
+                                .getPort(GlobusFileAdaptor.DEFAULT_FTP_PORT));
 
-		if ((l == null) || (l.size() == 0)) {
-			throw new GATInvocationException(
-					"Could not find a valid security context for this " + ""
-							+ "adaptor to use for the specified host/port");
-		}
+        if ((l == null) || (l.size() == 0)) {
+            throw new GATInvocationException(
+                    "Could not find a valid security context for this " + ""
+                            + "adaptor to use for the specified host/port");
+        }
 
-		// for now, just take the first one from the list that matches
-		PasswordSecurityContext c = (PasswordSecurityContext) l.get(0);
-		String user = c.getUsername();
-		String password = c.getPassword();
+        // for now, just take the first one from the list that matches
+        PasswordSecurityContext c = (PasswordSecurityContext) l.get(0);
+        String user = c.getUsername();
+        String password = c.getPassword();
 
-		String host = location.resolveHost();
-		String path = location.getPath();
+        String host = location.resolveHost();
+        String path = location.getPath();
 
-		int port = GlobusFileAdaptor.DEFAULT_FTP_PORT;
+        int port = GlobusFileAdaptor.DEFAULT_FTP_PORT;
 
-		// allow port override
-		if (location.getPort() != -1) {
-			port = location.getPort();
-		}
+        // allow port override
+        if (location.getPort() != -1) {
+            port = location.getPort();
+        }
 
-		try {
-			FTPInputStream input = new FTPInputStream(host, port, user,
-					password, path);
+        try {
+            FTPInputStream input = new FTPInputStream(host, port, user,
+                    password, path);
 
-			return input;
-		} catch (Exception e) {
-			if (e instanceof ServerException) {
-				if (((ServerException) e).getCode() == ServerException.SERVER_REFUSED) {
-					if (e
-							.getMessage()
-							.startsWith(
-									"Server refused performing the request. Custom message: Bad password.")
-							|| e
-									.getMessage()
-									.startsWith(
-											"Server refused performing the request. Custom message: Bad user.")) {
-						throw new InvalidUsernameOrPasswordException(e);
-					}
-				}
-			}
-			// ouch, both failed.
-			throw new GATInvocationException("FTPFileInputStreamAdaptor", e);
-		}
-	}
+            return input;
+        } catch (Exception e) {
+            if (e instanceof ServerException) {
+                if (((ServerException) e).getCode() == ServerException.SERVER_REFUSED) {
+                    if (e
+                            .getMessage()
+                            .startsWith(
+                                    "Server refused performing the request. Custom message: Bad password.")
+                            || e
+                                    .getMessage()
+                                    .startsWith(
+                                            "Server refused performing the request. Custom message: Bad user.")) {
+                        throw new InvalidUsernameOrPasswordException(e);
+                    }
+                }
+            }
+            // ouch, both failed.
+            throw new GATInvocationException("FTPFileInputStreamAdaptor", e);
+        }
+    }
 }

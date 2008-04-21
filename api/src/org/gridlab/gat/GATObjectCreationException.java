@@ -5,12 +5,13 @@ package org.gridlab.gat;
 
 /**
  * This exception is thrown when the GAT engine cannot instantiate a gat object.
+ * 
  * @author rob
  */
 @SuppressWarnings("serial")
 public class GATObjectCreationException extends NestedException {
-    
-	public GATObjectCreationException(String s) {
+
+    public GATObjectCreationException(String s) {
         super(s);
     }
 

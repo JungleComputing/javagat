@@ -15,21 +15,21 @@ import org.gridlab.gat.monitoring.Monitorable;
  * @author rob
  */
 public interface FileInputStreamInterface extends Monitorable {
-	int available() throws GATInvocationException;
+    int available() throws GATInvocationException;
 
-	void close() throws GATInvocationException;
+    void close() throws GATInvocationException;
 
-	void mark(int readlimit);
+    void mark(int readlimit);
 
-	boolean markSupported();
+    boolean markSupported();
 
-	abstract int read() throws GATInvocationException;
+    abstract int read() throws GATInvocationException;
 
-	int read(byte[] b) throws GATInvocationException;
+    int read(byte[] b) throws GATInvocationException;
 
-	int read(byte[] b, int off, int len) throws GATInvocationException;
+    int read(byte[] b, int off, int len) throws GATInvocationException;
 
-	void reset() throws GATInvocationException;
+    void reset() throws GATInvocationException;
 
-	long skip(long n) throws GATInvocationException;
+    long skip(long n) throws GATInvocationException;
 }

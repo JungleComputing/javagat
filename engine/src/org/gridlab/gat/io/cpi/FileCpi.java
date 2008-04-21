@@ -514,9 +514,9 @@ public abstract class FileCpi implements FileInterface, java.io.Serializable {
             if (destScheme == null) {
                 uriString = "file:" + uriString;
             }
-            uriString = uriString.replace(in.getPath(), System
-                    .getProperty("user.dir")
-                    + java.io.File.separator + in.getPath());
+            uriString = uriString.replace(in.getPath(), new java.io.File(System
+                    .getProperty("user.dir")).toURI().getPath()
+                    + "/" + in.getPath());
         }
         URI fixedURI = null;
         try {

@@ -10,10 +10,11 @@ import org.gridlab.gat.monitoring.Monitorable;
  * An instance of this class presents an abstract, system-independent view of a
  * physical file.
  */
-public interface RandomAccessFileInterface extends Monitorable, java.io.Serializable {
-    
+public interface RandomAccessFileInterface extends Monitorable,
+        java.io.Serializable {
+
     public URI toURI();
-    
+
     /**
      * Tests this RandomAccessFile for equality with the passed Object.
      * <p>
@@ -24,13 +25,12 @@ public interface RandomAccessFileInterface extends Monitorable, java.io.Serializ
      * this instance if a URI object constructed from this RandomAccessFile's
      * location and a URI object constructed from the passed RandomAccessFile's
      * URI are equal as determined by the Equals method of URI.
-     *
+     * 
      * @param object
      *            The Object to test for equality
      * @return A boolean indicating equality
      */
     public boolean equals(Object object);
-
 
     /** See {@link java.io.RandomAccessFile#close}. */
     public void close() throws GATInvocationException;
@@ -45,7 +45,8 @@ public interface RandomAccessFileInterface extends Monitorable, java.io.Serializ
     public int read() throws GATInvocationException;
 
     /** See {@link java.io.RandomAccessFile#read(byte[], int, int)}. */
-    public int read(byte[] arg0, int arg1, int arg2) throws GATInvocationException;
+    public int read(byte[] arg0, int arg1, int arg2)
+            throws GATInvocationException;
 
     /** See {@link java.io.RandomAccessFile#read(byte[])}. */
     public int read(byte[] arg0) throws GATInvocationException;
@@ -60,7 +61,8 @@ public interface RandomAccessFileInterface extends Monitorable, java.io.Serializ
     public int skipBytes(int arg0) throws GATInvocationException;
 
     /** See {@link java.io.RandomAccessFile#write(byte[], int, int)}. */
-    public void write(byte[] arg0, int arg1, int arg2) throws GATInvocationException;
+    public void write(byte[] arg0, int arg1, int arg2)
+            throws GATInvocationException;
 
     /** See {@link java.io.RandomAccessFile#write(byte[])}. */
     public void write(byte[] arg0) throws GATInvocationException;

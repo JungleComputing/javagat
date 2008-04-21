@@ -45,8 +45,8 @@ public class GridFTPFileAdaptor extends GlobusFileAdaptor {
         super(gatContext, location);
 
         if (!location.isCompatible("gsiftp") && !location.isCompatible("file")) {
-            throw new AdaptorNotApplicableException("cannot handle this URI ("
-                    + location + ")");
+            throw new AdaptorNotApplicableException("cannot handle this URI: "
+                    + location);
         }
 
         /*

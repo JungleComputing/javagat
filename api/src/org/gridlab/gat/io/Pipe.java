@@ -11,15 +11,15 @@ import org.gridlab.gat.monitoring.Monitorable;
 
 /**
  * A Pipe represents a connection to another process.
- *
+ * 
  * The real communication is done through the streams that this pipe contains.
- *
+ * 
  * @author rob
  */
 public interface Pipe extends Monitorable {
     /**
      * Get the output stream connected to this pipe.
-     *
+     * 
      * @return the output stream connected to this pipe.
      * @throws GATInvocationException
      *             an IO error occurred
@@ -28,7 +28,7 @@ public interface Pipe extends Monitorable {
 
     /**
      * Get the input stream connected to this pipe.
-     *
+     * 
      * @return the input stream connected to this pipe.
      * @throws GATInvocationException
      *             an IO error occurred
@@ -37,7 +37,7 @@ public interface Pipe extends Monitorable {
 
     /**
      * Close the connection to the other process.
-     *
+     * 
      * @throws GATInvocationException
      *             an IO error occurred
      */

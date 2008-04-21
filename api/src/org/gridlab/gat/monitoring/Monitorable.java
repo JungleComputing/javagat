@@ -17,12 +17,12 @@ public interface Monitorable {
      * passed to this method.
      * 
      * @param metricListener
-     *                The {@link MetricListener} to notify of MetricEvents
+     *            The {@link MetricListener} to notify of MetricEvents
      * @param metric
-     *                The {@link Metric} corresponding to the MetricEvents for
-     *                which the passed {@link MetricListener} will be notified
+     *            The {@link Metric} corresponding to the MetricEvents for which
+     *            the passed {@link MetricListener} will be notified
      * @throws GATInvocationException
-     *                 The {@link MetricListener} cannot be added
+     *             The {@link MetricListener} cannot be added
      */
     public void addMetricListener(MetricListener metricListener, Metric metric)
             throws GATInvocationException;
@@ -33,12 +33,12 @@ public interface Monitorable {
      * corresponding to the passed {@link Metric} instance.
      * 
      * @param metricListener
-     *                The {@link MetricListener} to notify of MetricEvents
+     *            The {@link MetricListener} to notify of MetricEvents
      * @param metric
-     *                The {@link Metric} corresponding to the MetricEvents for
-     *                which the passed {@link MetricListener} has been notified
+     *            The {@link Metric} corresponding to the MetricEvents for which
+     *            the passed {@link MetricListener} has been notified
      * @throws GATInvocationException
-     *                 The {@link MetricListener} cannot be removed
+     *             The {@link MetricListener} cannot be removed
      */
     public void removeMetricListener(MetricListener metricListener,
             Metric metric) throws GATInvocationException;
@@ -52,7 +52,7 @@ public interface Monitorable {
      *         Each instance in this {@link java.util.List} is a {@link Metric}
      *         which can be monitored on this instance
      * @throws GATInvocationException
-     *                 An error occurred while getting the list of metrics
+     *             An error occurred while getting the list of metrics
      */
     public List<MetricDefinition> getMetricDefinitions()
             throws GATInvocationException;
@@ -61,13 +61,12 @@ public interface Monitorable {
      * Gets the {@link MetricDefinition} using its <code>name</code>.
      * 
      * @param name
-     *                The MetricDefinition name
+     *            The MetricDefinition name
      * @return The {@link MetricDefinition} with the given <code>name</code>
      * 
      * @throws GATInvocationException
-     *                 An error occurred while getting the list of
-     *                 {@link Metric}s or no {@link Metric} with this name
-     *                 exists
+     *             An error occurred while getting the list of {@link Metric}s
+     *             or no {@link Metric} with this name exists
      */
     public MetricDefinition getMetricDefinitionByName(String name)
             throws GATInvocationException;
@@ -77,7 +76,7 @@ public interface Monitorable {
      * 
      * @return a {@link MetricEvent} that represents the measured {@link Metric}.
      * @throws GATInvocationException
-     *                 the measurement failed
+     *             the measurement failed
      */
     public MetricEvent getMeasurement(Metric metric)
             throws GATInvocationException;

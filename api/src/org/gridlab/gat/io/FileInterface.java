@@ -15,23 +15,24 @@ import org.gridlab.gat.monitoring.Monitorable;
 /**
  * This interface is for internal GAT use only. It has to be public for
  * techinical reasons.
- *
+ * 
  * All GAT users should use org.gridlab.gat.io.File
- *
+ * 
  * @author rob
  */
-public interface FileInterface extends Monitorable, Advertisable, Comparable<Object>, java.io.Serializable {
-    
+public interface FileInterface extends Monitorable, Advertisable,
+        Comparable<Object>, java.io.Serializable {
+
     /**
      * This method returns the GATContext object belonging to this File
      * 
      * @return The GATContext of this File
      */
     public GATContext getGATContext();
-    
+
     /**
      * This method returns the URI of this File
-     *
+     * 
      * @return The URI of this File
      */
     public URI toURI();
@@ -39,7 +40,7 @@ public interface FileInterface extends Monitorable, Advertisable, Comparable<Obj
     /**
      * This method copies the physical file represented by this File instance to
      * a physical file identified by the passed URI.
-     *
+     * 
      * @param loc
      *            The new location
      * @throws GATInvocationException
@@ -52,7 +53,7 @@ public interface FileInterface extends Monitorable, Advertisable, Comparable<Obj
     /**
      * This method moves the physical file represented by this File instance to
      * a physical file identified by the passed URI.
-     *
+     * 
      * @param location
      *            The URI to which to move the physical file corresponding to
      *            this File instance
@@ -63,12 +64,13 @@ public interface FileInterface extends Monitorable, Advertisable, Comparable<Obj
      */
     public void move(URI location) throws GATInvocationException;
 
-    /** This method deletes a directory and everything that is in it.
-     * This method can only be called on a directory, not on a file.
+    /**
+     * This method deletes a directory and everything that is in it. This method
+     * can only be called on a directory, not on a file.
+     * 
      * @throws GATInvocationException
      */
-    public void recursivelyDeleteDirectory()
-            throws GATInvocationException;
+    public void recursivelyDeleteDirectory() throws GATInvocationException;
 
     /**
      * Tests this File for equality with the passed Object.
@@ -80,7 +82,7 @@ public interface FileInterface extends Monitorable, Advertisable, Comparable<Obj
      * if a URI object constructed from this File's location and a URI object
      * constructed from the passed File's URI are equal as determined by the
      * Equals method of URI.
-     *
+     * 
      * @param object
      *            The Object to test for equality
      * @return A boolean indicating equality

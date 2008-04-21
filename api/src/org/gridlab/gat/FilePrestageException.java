@@ -2,6 +2,7 @@
  * Created on Mar 2, 2006
  */
 package org.gridlab.gat;
+
 /**
  * Thrown when something goes wrong during the prestaging
  * 
@@ -11,11 +12,11 @@ package org.gridlab.gat;
 @SuppressWarnings("serial")
 public class FilePrestageException extends GATInvocationException {
 
-	public FilePrestageException() {
+    public FilePrestageException() {
         super();
     }
 
-	public FilePrestageException(String adaptor, Throwable t) {
+    public FilePrestageException(String adaptor, Throwable t) {
         super(adaptor, t);
     }
 

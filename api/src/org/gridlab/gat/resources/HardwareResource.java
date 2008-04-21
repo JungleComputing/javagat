@@ -21,7 +21,7 @@ import org.gridlab.gat.monitoring.Monitorable;
 public abstract class HardwareResource implements Resource {
     /*
      * (non-Javadoc)
-     *
+     * 
      * @see org.gridlab.gat.monitoring.Monitorable#addMetricListener(org.gridlab.gat.monitoring.MetricListener,
      *      org.gridlab.gat.monitoring.Metric)
      */
@@ -32,16 +32,17 @@ public abstract class HardwareResource implements Resource {
 
     /*
      * (non-Javadoc)
-     *
+     * 
      * @see org.gridlab.gat.monitoring.Monitorable#getMetrics()
      */
-    public List<MetricDefinition> getMetricDefinitions() throws GATInvocationException {
+    public List<MetricDefinition> getMetricDefinitions()
+            throws GATInvocationException {
         throw new UnsupportedOperationException("Not implemented");
     }
 
     /*
      * (non-Javadoc)
-     *
+     * 
      * @see org.gridlab.gat.monitoring.Monitorable#removeMetricListener(org.gridlab.gat.monitoring.MetricListener,
      *      org.gridlab.gat.monitoring.Metric)
      */
@@ -52,7 +53,7 @@ public abstract class HardwareResource implements Resource {
 
     /*
      * (non-Javadoc)
-     *
+     * 
      * @see org.gridlab.gat.monitoring.Monitorable#getMeasurement(org.gridlab.gat.monitoring.Metric)
      */
     public MetricEvent getMeasurement(Metric metric)

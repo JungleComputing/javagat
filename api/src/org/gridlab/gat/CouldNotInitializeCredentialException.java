@@ -9,9 +9,10 @@ package org.gridlab.gat;
  * @author rob
  */
 @SuppressWarnings("serial")
-public class CouldNotInitializeCredentialException extends GATInvocationException {
-    
-	public CouldNotInitializeCredentialException() {
+public class CouldNotInitializeCredentialException extends
+        GATInvocationException {
+
+    public CouldNotInitializeCredentialException() {
         super();
     }
 

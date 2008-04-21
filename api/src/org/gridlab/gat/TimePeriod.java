@@ -20,11 +20,11 @@ public class TimePeriod implements java.io.Serializable {
      * passed <code>startTime</code> and <code>stopTime</code>.
      * 
      * @param startTime
-     *                The number of milliseconds after January 1, 1970, 00:00:00
-     *                GMT when the time period starts, a long
+     *            The number of milliseconds after January 1, 1970, 00:00:00 GMT
+     *            when the time period starts, a long
      * @param stopTime
-     *                The number of milliseconds after January 1, 1970, 00:00:00
-     *                GMT when the time period stops, a long
+     *            The number of milliseconds after January 1, 1970, 00:00:00 GMT
+     *            when the time period stops, a long
      */
     public TimePeriod(long startTime, long stopTime) {
         this.stopTime = stopTime;
@@ -42,7 +42,7 @@ public class TimePeriod implements java.io.Serializable {
      * stop time to the passed {@link TimePeriod} instance.
      * 
      * @param object
-     *                The {@link Object} to test for equality
+     *            The {@link Object} to test for equality
      * @return A boolean indicating equality
      */
     public boolean equals(Object object) {

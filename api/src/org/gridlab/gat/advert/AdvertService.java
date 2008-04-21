@@ -23,17 +23,15 @@ public interface AdvertService extends Monitorable {
      * overwritten, and a warning is issued.
      * 
      * @param advert
-     *                instance to be entered into the {@link AdvertService}.
+     *            instance to be entered into the {@link AdvertService}.
      * @param metaData
-     *                Meta data to be associated with the passed
-     *                {@link Advertisable}.
+     *            Meta data to be associated with the passed
+     *            {@link Advertisable}.
      * @param path
-     *                Path (either absolute or relative to PWD) of the new
-     *                entry.
+     *            Path (either absolute or relative to PWD) of the new entry.
      * @throws GATInvocationException
-     *                 this exception is thrown when all adaptors fail on this
-     *                 method it contains a tree of exceptions that were the
-     *                 causes.
+     *             this exception is thrown when all adaptors fail on this
+     *             method it contains a tree of exceptions that were the causes.
      */
     public void add(Advertisable advert, MetaData metaData, String path)
             throws GATInvocationException;
@@ -43,14 +41,13 @@ public interface AdvertService extends Monitorable {
      * {@link AdvertService}, at path (absolute or relative to PWD).
      * 
      * @param path
-     *                Path (either absolute or relative to PWD) of the entry to
-     *                be deleted.
+     *            Path (either absolute or relative to PWD) of the entry to be
+     *            deleted.
      * @throws NoSuchElementException
-     *                 The path is incorrect.
+     *             The path is incorrect.
      * @throws GATInvocationException
-     *                 this exception is thrown when all adaptors fail on this
-     *                 method it contains a tree of exceptions that were the
-     *                 causes.
+     *             this exception is thrown when all adaptors fail on this
+     *             method it contains a tree of exceptions that were the causes.
      */
     public void delete(String path) throws NoSuchElementException,
             GATInvocationException;
@@ -60,14 +57,13 @@ public interface AdvertService extends Monitorable {
      * relative to PWD).
      * 
      * @param path
-     *                Path (either absolute or relative to PWD) of the entry.
+     *            Path (either absolute or relative to PWD) of the entry.
      * @return The {@link Advertisable} instance at the given path
      * @throws NoSuchElementException
-     *                 The path is incorrect.
+     *             The path is incorrect.
      * @throws GATInvocationException
-     *                 this exception is thrown when all adaptors fail on this
-     *                 method it contains a tree of exceptions that were the
-     *                 causes.
+     *             this exception is thrown when all adaptors fail on this
+     *             method it contains a tree of exceptions that were the causes.
      */
     public Advertisable getAdvertisable(String path)
             throws GATInvocationException, NoSuchElementException;
@@ -77,14 +73,13 @@ public interface AdvertService extends Monitorable {
      * given path (absolute or relative to the PWD).
      * 
      * @param path
-     *                Path (either absolute or relative to PWD) of the entry.
+     *            Path (either absolute or relative to PWD) of the entry.
      * @return A {@link MetaData} containing the meta data.
      * @throws NoSuchElementException
-     *                 The path is incorrect.
+     *             The path is incorrect.
      * @throws GATInvocationException
-     *                 this exception is thrown when all adaptors fail on this
-     *                 method it contains a tree of exceptions that were the
-     *                 causes.
+     *             this exception is thrown when all adaptors fail on this
+     *             method it contains a tree of exceptions that were the causes.
      */
     public MetaData getMetaData(String path) throws NoSuchElementException,
             GATInvocationException;
@@ -94,14 +89,12 @@ public interface AdvertService extends Monitorable {
      * meta data in the {@link MetaData}.
      * 
      * @param metaData
-     *                {@link MetaData} describing the entries to be searched
-     *                for.
+     *            {@link MetaData} describing the entries to be searched for.
      * @return a {@link String}[] of paths, each pointing to a matching entry.
      *         If no matches are found, <code>null</code> is returned.
      * @throws GATInvocationException
-     *                 this exception is thrown when all adaptors fail on this
-     *                 method it contains a tree of exceptions that were the
-     *                 causes.
+     *             this exception is thrown when all adaptors fail on this
+     *             method it contains a tree of exceptions that were the causes.
      */
     public String[] find(MetaData metaData) throws GATInvocationException;
 
@@ -110,11 +103,10 @@ public interface AdvertService extends Monitorable {
      * reference for relative paths.
      * 
      * @param path
-     *                New absolute or relative reference path.
+     *            New absolute or relative reference path.
      * @throws GATInvocationException
-     *                 this exception is thrown when all adaptors fail on this
-     *                 method it contains a tree of exceptions that were the
-     *                 causes.
+     *             this exception is thrown when all adaptors fail on this
+     *             method it contains a tree of exceptions that were the causes.
      */
     public void setPWD(String path) throws GATInvocationException;
 
@@ -124,9 +116,8 @@ public interface AdvertService extends Monitorable {
      * 
      * @return absolute reference path.
      * @throws GATInvocationException
-     *                 this exception is thrown when all adaptors fail on this
-     *                 method it contains a tree of exceptions that were the
-     *                 causes.
+     *             this exception is thrown when all adaptors fail on this
+     *             method it contains a tree of exceptions that were the causes.
      */
     public String getPWD() throws GATInvocationException;
 }

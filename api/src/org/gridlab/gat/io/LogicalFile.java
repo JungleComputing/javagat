@@ -39,7 +39,7 @@ public interface LogicalFile extends Monitorable, Serializable, Advertisable {
     /**
      * Adds the passed File instance to the set of physical files represented by
      * this LogicalFile instance.
-     *
+     * 
      * @param file
      *            A File instance to add to the set of physical files
      *            represented by this LogicalFile instance.
@@ -53,7 +53,7 @@ public interface LogicalFile extends Monitorable, Serializable, Advertisable {
     /**
      * Adds the physical file at the passed URI to the set of physical files
      * represented by this LogicalFile instance.
-     *
+     * 
      * @param location
      *            The URI of a physical file to add to the set of physical files
      *            represented by this LogicalFile instance.
@@ -67,7 +67,7 @@ public interface LogicalFile extends Monitorable, Serializable, Advertisable {
     /**
      * Removes the passed File instance from the set of physical files
      * represented by this LogicalFile instance.
-     *
+     * 
      * @param file
      *            A File instance to remove from the set of physical files
      *            represented by this LogicalFile instance.
@@ -82,7 +82,7 @@ public interface LogicalFile extends Monitorable, Serializable, Advertisable {
     /**
      * Removes the physical file at the passed URI from the set of physical
      * files represented by this LogicalFile instance.
-     *
+     * 
      * @param location
      *            The URI of a physical file to remove from the set of physical
      *            files represented by this LogicalFile instance.
@@ -97,7 +97,7 @@ public interface LogicalFile extends Monitorable, Serializable, Advertisable {
     /**
      * Replicates the logical file represented by this instance to the physical
      * file specified by the passed URI.
-     *
+     * 
      * @param location
      *            The URI of the new physical file
      * @throws GATInvocationException
@@ -111,7 +111,7 @@ public interface LogicalFile extends Monitorable, Serializable, Advertisable {
     /**
      * Returns a java.util.List of URI instances each of which is the URI of a
      * physical file represented by this instance.
-     *
+     * 
      * @return The java.util.List of URIs
      * @throws GATInvocationException
      *             Thrown upon problems accessing the remote instance
@@ -123,7 +123,7 @@ public interface LogicalFile extends Monitorable, Serializable, Advertisable {
     /**
      * Returns a java.util.List of File instances each of which is a File
      * corresponding to a physical file represented by this instance.
-     *
+     * 
      * @return The java.util.List of URIs
      * @throws GATInvocationException
      *             Thrown upon problems accessing the remote instance

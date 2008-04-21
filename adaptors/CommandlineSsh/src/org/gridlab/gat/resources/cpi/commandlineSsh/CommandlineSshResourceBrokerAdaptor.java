@@ -5,6 +5,7 @@ import java.io.OutputStream;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
+import org.gridlab.gat.AdaptorNotApplicableException;
 import org.gridlab.gat.CommandNotFoundException;
 import org.gridlab.gat.GAT;
 import org.gridlab.gat.GATContext;
@@ -46,7 +47,7 @@ public class CommandlineSshResourceBrokerAdaptor extends ResourceBrokerCpi {
 
 		if (!brokerURI.isCompatible("ssh") && brokerURI.getScheme() != null
 				|| (brokerURI.refersToLocalHost() && (brokerURI == null))) {
-			throw new GATObjectCreationException(
+			throw new AdaptorNotApplicableException(
 					"cannot handle the scheme, scheme is: "
 							+ brokerURI.getScheme());
 		}

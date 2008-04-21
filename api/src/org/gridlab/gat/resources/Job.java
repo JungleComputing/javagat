@@ -114,12 +114,72 @@ public abstract class Job implements Monitorable, Advertisable {
     public static final int UNKNOWN = 8;
 
     /**
+     * Initial state indicator (String).
+     * <p>
+     * The Job has been constructed.
+     */
+    public static final String INITIAL_STRING = "INITIAL";
+
+    /**
+     * Scheduled state indicator (String).
+     * <p>
+     * The Job has been submitted to a resource broker and is scheduled to be
+     * executed.
+     */
+    public static final String SCHEDULED_STRING = "SCHEDULED";
+
+    /**
+     * Running state indicator (String).
+     * <p>
+     * The Job is executing.
+     */
+    public static final String RUNNING_STRING = "RUNNING";
+
+    /**
+     * Stopped state indicator (String).
+     * <p>
+     * The Job has properly run. All the cleanup and administration of the Job
+     * is completely done.
+     */
+    public static final String STOPPED_STRING = "STOPPED";
+
+    /**
+     * Submission error state indicator (String).
+     * <p>
+     * The Job hasn't properly run. All the cleanup and administration of the
+     * Job is completely done.
+     */
+    public static final String SUBMISSION_ERROR_STRING = "SUBMISSION_ERROR";
+
+    /**
+     * The Job has been paused (String).
+     * <p>
+     * The Job has been paused by the user.
+     */
+    public static final String ON_HOLD_STRING = "ON_HOLD";
+
+    /**
+     * The input files of the job are being pre-staged (String).
+     */
+    public static final String PRE_STAGING_STRING = "PRE_STAGING";
+
+    /**
+     * The output files of the job are being post-staged (String).
+     */
+    public static final String POST_STAGING_STRING = "POST_STAGING";
+
+    /**
+     * The job state is unkown for some reason. May be a network problem.
+     */
+    public static final String UNKNOWN_STRING = "UNKNOWN";
+
+    /**
      * Returns a String representation of the given state. If the given state is
      * invalid it throws a RuntimeException. The state strings are literally the
      * same as the name of the constants used, e.g., "RUNNING", or "STOPPED".
      * 
      * @param state
-     *                the state to convert into a String representation
+     *            the state to convert into a String representation
      * @return the String representation of the given state
      */
     public static String getStateString(int state) {
@@ -165,7 +225,7 @@ public abstract class Job implements Monitorable, Advertisable {
      *             stop/unSchedule. Use stop instead.
      * 
      * @throws GATInvocationException
-     *                 Thrown upon problems accessing the remote instance
+     *             Thrown upon problems accessing the remote instance
      */
     public final void unSchedule() throws GATInvocationException {
         stop();
@@ -178,7 +238,7 @@ public abstract class Job implements Monitorable, Advertisable {
      * time.
      * 
      * @throws GATInvocationException
-     *                 Thrown upon problems accessing the remote instance
+     *             Thrown upon problems accessing the remote instance
      */
     public void stop() throws GATInvocationException {
         throw new UnsupportedOperationException("Not implemented");
@@ -245,7 +305,7 @@ public abstract class Job implements Monitorable, Advertisable {
      * @return An instance of the class {@link java.util.Map} which presents
      *         information about the associated job.
      * @throws GATInvocationException
-     *                 Thrown upon problems accessing the remote instance
+     *             Thrown upon problems accessing the remote instance
      */
     public Map<String, Object> getInfo() throws GATInvocationException {
         throw new UnsupportedOperationException("Not implemented");
@@ -260,7 +320,7 @@ public abstract class Job implements Monitorable, Advertisable {
      * @return An instance of the class java.lang.String which represents the
      *         job ID
      * @throws GATInvocationException
-     *                 Thrown upon problems accessing the remote instance
+     *             Thrown upon problems accessing the remote instance
      */
     public String getJobID() throws GATInvocationException {
         throw new UnsupportedOperationException("Not implemented");
@@ -270,7 +330,7 @@ public abstract class Job implements Monitorable, Advertisable {
      * @deprecated Deprecated, this method doesn't fit in the API anymore
      * 
      * @throws GATInvocationException
-     *                 Thrown upon problems accessing the remote instance
+     *             Thrown upon problems accessing the remote instance
      */
     public void checkpoint() throws GATInvocationException {
         throw new UnsupportedOperationException("Not implemented");
@@ -280,9 +340,9 @@ public abstract class Job implements Monitorable, Advertisable {
      * @deprecated Deprecated, this method doesn't fit in the API anymore
      * 
      * @throws GATInvocationException
-     *                 Thrown upon problems accessing the remote instance
+     *             Thrown upon problems accessing the remote instance
      * @throws java.io.IOException
-     *                 Upon non-remote IO problem
+     *             Upon non-remote IO problem
      */
     public void migrate() throws GATInvocationException {
         throw new UnsupportedOperationException("Not implemented");
@@ -292,11 +352,11 @@ public abstract class Job implements Monitorable, Advertisable {
      * @deprecated Deprecated, this method doesn't fit in the API anymore
      * 
      * @param hardwareResourceDescription
-     *                A description of the hardware resource to which the
-     *                physical job corresponding to this {@link Job} should be
-     *                migrated, a {@link HardwareResourceDescription}
+     *            A description of the hardware resource to which the physical
+     *            job corresponding to this {@link Job} should be migrated, a
+     *            {@link HardwareResourceDescription}
      * @throws GATInvocationException
-     *                 Thrown upon problems accessing the remote instance
+     *             Thrown upon problems accessing the remote instance
      */
     public void migrate(HardwareResourceDescription hardwareResourceDescription)
             throws GATInvocationException {
@@ -307,8 +367,7 @@ public abstract class Job implements Monitorable, Advertisable {
      * @deprecated Deprecated, this method doesn't fit in the API anymore
      * 
      * @param resource
-     *                HarwareResource to run the job on (null means any
-     *                resource)
+     *            HarwareResource to run the job on (null means any resource)
      * @return the clone of the job
      */
     public Job cloneJob(HardwareResource resource) {

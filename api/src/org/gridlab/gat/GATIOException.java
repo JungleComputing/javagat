@@ -5,7 +5,6 @@ package org.gridlab.gat;
 
 import java.io.IOException;
 
-
 /**
  * @author rob
  */

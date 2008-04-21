@@ -44,9 +44,9 @@ class NestedException extends Exception {
      * adaptor
      * 
      * @param adaptor
-     *                the adaptor that caused the throwable
+     *            the adaptor that caused the throwable
      * @param t
-     *                the throwable that is caused by the adaptor
+     *            the throwable that is caused by the adaptor
      */
     public void add(String adaptor, Throwable t) {
         if (t instanceof InvocationTargetException) {
@@ -150,11 +150,12 @@ class NestedException extends Exception {
                             + throwables.get(i).getClass().getSimpleName()
                             + "): ";
                     if (throwables.get(i) instanceof NestedException) {
-                        res += ((NestedException) throwables.get(i)).getSuperMessage();
+                        res += ((NestedException) throwables.get(i))
+                                .getSuperMessage();
                     } else {
                         res += throwables.get(i).getMessage();
                     }
-                            
+
                 } else {
                     res += (indent + "*** " + adaptorNames.get(i) + " failed ("
                             + throwables.get(i).getClass().getSimpleName() + "): ");

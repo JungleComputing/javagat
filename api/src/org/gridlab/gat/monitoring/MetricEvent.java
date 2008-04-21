@@ -30,7 +30,7 @@ public class MetricEvent extends EventObject {
 
     /**
      * Constructs a MetricEvent with the specified properties
-     *
+     * 
      * @param source
      *            The source of the MetricEvent
      * @param value
@@ -53,7 +53,7 @@ public class MetricEvent extends EventObject {
     /**
      * This method returns an instance of the Metric to which this MetricEvent
      * corresponds.
-     *
+     * 
      * @return A Metric corresponding to this MetricEvent
      */
     public Metric getMetric() {
@@ -62,7 +62,7 @@ public class MetricEvent extends EventObject {
 
     /**
      * This method returns the value corresponding to this MetricEvent.
-     *
+     * 
      * @return An Object which is the value of this MetricEvent.
      */
     public Object getValue() {
@@ -72,7 +72,7 @@ public class MetricEvent extends EventObject {
     /**
      * This method returns the number of milliseconds after January 1, 1970,
      * 00:00:00 GMT when the event happened.
-     *
+     * 
      * @return A long, the number of milliseconds after January 1, 1970,
      *         00:00:00 GMT when the event happened.
      */
@@ -82,6 +82,6 @@ public class MetricEvent extends EventObject {
 
     public String toString() {
         return "MetricValue(time = " + eventTime + ", val =" + value
-            + ", metric =" + metric;
+                + ", metric =" + metric;
     }
 }

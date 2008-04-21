@@ -20,7 +20,7 @@ public class RandomAccessFile extends java.io.RandomAccessFile {
     private RandomAccessFileInterface f;
 
     public RandomAccessFile(RandomAccessFileInterface f)
-        throws FileNotFoundException {
+            throws FileNotFoundException {
         super(getDummyFile(), "rw");
         this.f = f;
     }
@@ -28,7 +28,7 @@ public class RandomAccessFile extends java.io.RandomAccessFile {
     private static java.io.File getDummyFile() {
         try {
             java.io.File tmp = java.io.File.createTempFile("JavaGATDummy",
-                "tmp");
+                    "tmp");
             return tmp;
         } catch (IOException e) {
             throw new Error("could not create dummy file: " + e);
@@ -41,8 +41,10 @@ public class RandomAccessFile extends java.io.RandomAccessFile {
     public URI toURI() {
         return f.toURI();
     }
-    
-    /* (non-Javadoc)
+
+    /*
+     * (non-Javadoc)
+     * 
      * @see java.io.RandomAccessFile#close()
      */
     public void close() throws IOException {
@@ -53,7 +55,9 @@ public class RandomAccessFile extends java.io.RandomAccessFile {
         }
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see java.io.RandomAccessFile#getFilePointer()
      */
     public long getFilePointer() throws IOException {
@@ -64,7 +68,9 @@ public class RandomAccessFile extends java.io.RandomAccessFile {
         }
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see java.io.RandomAccessFile#length()
      */
     public long length() throws IOException {
@@ -75,7 +81,9 @@ public class RandomAccessFile extends java.io.RandomAccessFile {
         }
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see java.io.RandomAccessFile#read()
      */
     public int read() throws IOException {
@@ -86,7 +94,9 @@ public class RandomAccessFile extends java.io.RandomAccessFile {
         }
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see java.io.RandomAccessFile#read(byte[], int, int)
      */
     public int read(byte[] b, int off, int len) throws IOException {
@@ -97,7 +107,9 @@ public class RandomAccessFile extends java.io.RandomAccessFile {
         }
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see java.io.RandomAccessFile#read(byte[])
      */
     public int read(byte[] b) throws IOException {
@@ -108,7 +120,9 @@ public class RandomAccessFile extends java.io.RandomAccessFile {
         }
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see java.io.RandomAccessFile#seek(long)
      */
     public void seek(long pos) throws IOException {
@@ -119,7 +133,9 @@ public class RandomAccessFile extends java.io.RandomAccessFile {
         }
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see java.io.RandomAccessFile#setLength(long)
      */
     public void setLength(long newLength) throws IOException {
@@ -130,7 +146,9 @@ public class RandomAccessFile extends java.io.RandomAccessFile {
         }
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see java.io.RandomAccessFile#skipBytes(int)
      */
     public int skipBytes(int n) throws IOException {
@@ -141,7 +159,9 @@ public class RandomAccessFile extends java.io.RandomAccessFile {
         }
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see java.io.RandomAccessFile#write(byte[], int, int)
      */
     public void write(byte[] b, int off, int len) throws IOException {
@@ -152,7 +172,9 @@ public class RandomAccessFile extends java.io.RandomAccessFile {
         }
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see java.io.RandomAccessFile#write(byte[])
      */
     public void write(byte[] b) throws IOException {
@@ -163,7 +185,9 @@ public class RandomAccessFile extends java.io.RandomAccessFile {
         }
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see java.io.RandomAccessFile#write(int)
      */
     public void write(int b) throws IOException {

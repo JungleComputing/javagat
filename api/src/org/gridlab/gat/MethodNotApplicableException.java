@@ -4,11 +4,12 @@
 package org.gridlab.gat;
 
 /**
- * Thrown when an adaptor is selected, but it cannot execute the requested operation.
- * For instance, the local file adaptor would throw this exception when asked to copy
- * to a remote destination.
+ * Thrown when an adaptor is selected, but it cannot execute the requested
+ * operation. For instance, the local file adaptor would throw this exception
+ * when asked to copy to a remote destination.
+ * 
  * @author rob
- *
+ * 
  */
 @SuppressWarnings("serial")
 public class MethodNotApplicableException extends GATInvocationException {
@@ -26,8 +27,9 @@ public class MethodNotApplicableException extends GATInvocationException {
 
     /**
      * Overrides the <code>fillInStackTrace</code> from <code>Throwable</code>.
-     * This version does not actually create a stack trace, which not very useful
-     * if the method was not applicable. 
+     * This version does not actually create a stack trace, which not very
+     * useful if the method was not applicable.
+     * 
      * @return this inlet.
      */
     public Throwable fillInStackTrace() {

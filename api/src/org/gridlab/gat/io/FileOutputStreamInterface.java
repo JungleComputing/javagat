@@ -9,9 +9,9 @@ import org.gridlab.gat.monitoring.Monitorable;
 /**
  * This interface is for internal GAT use only. It has to be public for
  * techinical reasons.
- *
+ * 
  * All GAT users should use org.gridlab.gat.io.FileInputStream
- *
+ * 
  * @author rob
  */
 public interface FileOutputStreamInterface extends Monitorable {

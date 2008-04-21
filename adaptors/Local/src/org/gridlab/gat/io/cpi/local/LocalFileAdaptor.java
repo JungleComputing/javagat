@@ -43,7 +43,8 @@ public class LocalFileAdaptor extends FileCpi {
         }
 
         if (!location.isCompatible("file")) {
-            throw new AdaptorNotApplicableException("cannot handle this URI");
+            throw new AdaptorNotApplicableException("cannot handle this URI: "
+                    + location);
         }
 
         location = correctURI(location);

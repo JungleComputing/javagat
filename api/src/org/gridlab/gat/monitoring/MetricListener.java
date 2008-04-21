@@ -9,7 +9,7 @@ public interface MetricListener {
      * An instance of a class implementing this interface receives MetricEvents
      * through calls to this method when it is registered to receive such
      * events.
-     *
+     * 
      * @param val
      *            The MetricValue which triggered this method call
      */

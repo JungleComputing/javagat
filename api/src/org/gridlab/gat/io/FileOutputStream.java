@@ -19,24 +19,25 @@ import org.gridlab.gat.monitoring.Monitorable;
 public class FileOutputStream extends OutputStream implements Monitorable {
     FileOutputStreamInterface out;
 
-    /** Do not use this constructur, it is for internal GAT use.
+    /**
+     * Do not use this constructur, it is for internal GAT use.
      */
     public FileOutputStream(FileOutputStreamInterface out) {
         this.out = out;
     }
-    
+
     /**
-	 * Returns the FileOutputStreamInterface object associated with this
-	 * {@link FileOutputStream}. The FileOutputStreamInterface offers the same
-	 * functionality as the {@link FileOutputStream} object. The difference
-	 * between the FileInputStreamInterface object and the FileOutputStream
-	 * object is that the FileOutputStreamInterface is an internal GAT object and
-	 * it will throw {@link GATInvocationException}s upon failures, whereas the
-	 * FileOutputStream object would have default values.
-	 * <p>
-	 * 
-	 * @return the FileOutputStreamInterface object
-	 */
+     * Returns the FileOutputStreamInterface object associated with this
+     * {@link FileOutputStream}. The FileOutputStreamInterface offers the same
+     * functionality as the {@link FileOutputStream} object. The difference
+     * between the FileInputStreamInterface object and the FileOutputStream
+     * object is that the FileOutputStreamInterface is an internal GAT object
+     * and it will throw {@link GATInvocationException}s upon failures, whereas
+     * the FileOutputStream object would have default values.
+     * <p>
+     * 
+     * @return the FileOutputStreamInterface object
+     */
     public org.gridlab.gat.io.FileOutputStreamInterface getFileOutputStreamInterface() {
         return out;
     }
@@ -83,7 +84,8 @@ public class FileOutputStream extends OutputStream implements Monitorable {
     }
 
     /** {@inheritDoc} */
-    public List<MetricDefinition> getMetricDefinitions() throws GATInvocationException {
+    public List<MetricDefinition> getMetricDefinitions()
+            throws GATInvocationException {
         return out.getMetricDefinitions();
     }
 
