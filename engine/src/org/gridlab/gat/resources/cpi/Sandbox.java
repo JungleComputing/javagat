@@ -166,9 +166,12 @@ public class Sandbox {
 	}
 
 	private String getSandboxName() {
+		if (logger.isInfoEnabled()) {
+			logger.info("creating sandbox name, sandbox root = " +sandboxRoot);
+		}
 		String res = "";
 		if (sandboxRoot != null) {
-			res += sandboxRoot + "/";
+			res += new java.io.File(sandboxRoot).toURI().getPath();
 		}
 		res += ".JavaGAT_SANDBOX_" + Math.random();
 		return res;
