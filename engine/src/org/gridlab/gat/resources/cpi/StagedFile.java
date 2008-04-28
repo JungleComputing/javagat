@@ -99,6 +99,19 @@ public abstract class StagedFile {
                 throw new GATInvocationException("StageFile", e);
             }
         }
+        if (f.isDirectory()) {
+            try {
+                relativeURI = new URI(f.getPath());
+            } catch (URISyntaxException e) {
+                throw new GATInvocationException("StageFile", e);
+            }
+        } else {
+            try {
+                relativeURI = new URI(f.getName());
+            } catch (URISyntaxException e) {
+                throw new GATInvocationException("StageFile", e);
+            }
+        }
         logger.info("sandbox done: " + uri);
         try {
             return GAT.createFile(f.getFileInterface().getGATContext(), uri);
