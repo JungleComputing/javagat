@@ -13,7 +13,7 @@ import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.GATObjectCreationException;
 import org.gridlab.gat.URI;
-import org.gridlab.gat.engine.util.OutputForwarder;
+import org.gridlab.gat.engine.util.StreamForwarder;
 import org.gridlab.gat.io.cpi.sshtrilead.SshTrileadFileAdaptor;
 import org.gridlab.gat.monitoring.Metric;
 import org.gridlab.gat.monitoring.MetricListener;
@@ -124,51 +124,74 @@ public class SshTrileadResourceBrokerAdaptor extends ResourceBrokerCpi {
             logger.info("running command: " + command);
         }
 
-        OutputStream userOut;
-        OutputStream userErr;
-        if (sd.stdoutIsStreaming()) {
-            userOut = sd.getStdoutStream();
-        } else {
+        InputStream userIn = null;
+        OutputStream userOut = null;
+        OutputStream userErr = null;
+
+        if (sd.getStdinStream() != null) {
+            userIn = sd.getStdinStream();
+        } else if (sd.getStdinFile() != null) {
             try {
-                userOut = GAT.createFileOutputStream(sd.getStdout());
+                userIn = GAT.createFileInputStream(sd.getStdinFile());
+            } catch (GATObjectCreationException e) {
+                throw new GATInvocationException(
+                        "failed to create inputstream to read input from file: '"
+                                + sd.getStdinFile() + "'", e);
+            }
+        }
+        if (sd.getStdoutStream() != null) {
+            userOut = sd.getStdoutStream();
+        } else if (sd.getStdoutFile() != null) {
+            try {
+                userOut = GAT.createFileOutputStream(sd.getStdoutFile());
             } catch (GATObjectCreationException e) {
                 throw new GATInvocationException(
                         "failed to create outputstream to write in output file: '"
-                                + sd.getStdout() + "'", e);
+                                + sd.getStdoutFile() + "'", e);
             }
         }
-        if (sd.stderrIsStreaming()) {
+        if (sd.getStderrStream() != null) {
             userErr = sd.getStderrStream();
-        } else {
+        } else if (sd.getStderrFile() != null) {
             try {
-                userErr = GAT.createFileOutputStream(sd.getStderr());
+                userErr = GAT.createFileOutputStream(sd.getStderrFile());
             } catch (GATObjectCreationException e) {
                 throw new GATInvocationException(
                         "failed to create outputstream to write in error file: '"
-                                + sd.getStderr() + "'", e);
+                                + sd.getStderrFile() + "'", e);
             }
         }
         Session session;
         try {
             session = SshTrileadFileAdaptor
                     .getConnection(brokerURI, gatContext).openSession();
-            session.requestDumbPTY();
+            // session.requestDumbPTY();
+            // session.startShell();
         } catch (Exception e) {
             throw new GATInvocationException("Unable to connect!", e);
         }
         job.setSession(session);
-        try {
-            session.execCommand(command);
-        } catch (IOException e) {
-            throw new GATInvocationException("execution failed!", e);
-        }
-        job.setState(Job.RUNNING);
+
         // see http://www.trilead.com/Products/Trilead-SSH-2-Java/FAQ/#blocking
         InputStream stdout = new StreamGobbler(session.getStdout());
         InputStream stderr = new StreamGobbler(session.getStderr());
-        OutputForwarder outForwarder = new OutputForwarder(stdout, userOut);
-        OutputForwarder errForwarder = new OutputForwarder(stderr, userErr);
+        try {
+            session.execCommand(command);
+            // session.getStdin().write((command + "\n").getBytes());
+        } catch (IOException e) {
+            throw new GATInvocationException("execution failed!", e);
+        }
+
+        if (userIn != null) {
+            new StreamForwarder(userIn, session.getStdin(), "ssh in");
+        }
+
+        StreamForwarder outForwarder = new StreamForwarder(stdout, userOut,
+                "ssh output");
+        StreamForwarder errForwarder = new StreamForwarder(stderr, userErr,
+                "ssh error");
         job.startOutputWaiter(outForwarder, errForwarder);
+        job.setState(Job.RUNNING);
         return job;
     }
 }

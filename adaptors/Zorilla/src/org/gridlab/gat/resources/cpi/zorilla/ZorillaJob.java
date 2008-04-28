@@ -210,7 +210,7 @@ public class ZorillaJob extends JobCpi {
 
 			SoftwareDescription soft = jobDescription.getSoftwareDescription();
 
-			File stdin = soft.getStdin();
+			File stdin = soft.getStdinFile();
 
 			if (stdin != null) {
 				FileInputStream in = GAT.createFileInputStream(stdin
@@ -219,8 +219,8 @@ public class ZorillaJob extends JobCpi {
 				stdinForwarder.startAsDaemon();
 			}
 
-			File stdout = soft.getStdout();
-			if (soft.stdoutIsStreaming()) {
+			File stdout = soft.getStdoutFile();
+			if (soft.getStdoutFile() != null) {
 				stdoutForwarder = new OutputForwarder(address, jobID, soft
 						.getStdoutStream(), false);
 				stdoutForwarder.startAsDaemon();
@@ -232,8 +232,8 @@ public class ZorillaJob extends JobCpi {
 				stdoutForwarder.startAsDaemon();
 			}
 
-			File stderr = soft.getStderr();
-			if (soft.stderrIsStreaming()) {
+			File stderr = soft.getStderrFile();
+			if (soft.getStderrStream() != null) {
 				stderrForwarder = new OutputForwarder(address, jobID, soft
 						.getStderrStream(), true);
 				stderrForwarder.startAsDaemon();

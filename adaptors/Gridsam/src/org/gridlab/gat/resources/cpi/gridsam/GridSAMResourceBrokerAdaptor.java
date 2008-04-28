@@ -199,24 +199,24 @@ public class GridSAMResourceBrokerAdaptor extends ResourceBrokerCpi {
     private void addIOFiles(JobDescription description)
             throws GATObjectCreationException {
         SoftwareDescription sd = description.getSoftwareDescription();
-        if (sd.getStdin() != null) {
+        if (sd.getStdinFile() != null) {
             org.gridlab.gat.io.File stdin = GAT.createFile(gatContext,
                     gridSAMConf.getJavaGATStdin());
-            sd.addPreStagedFile(sd.getStdin(), stdin);
+            sd.addPreStagedFile(sd.getStdinFile(), stdin);
             sd.getAttributes().put("stdin", gridSAMConf.getJavaGATStdin());
         }
 
-        if (sd.getStdout() != null) {
+        if (sd.getStdoutFile() != null) {
             org.gridlab.gat.io.File stdout = GAT.createFile(gatContext,
                     gridSAMConf.getJavaGATStdout());
-            sd.addPostStagedFile(stdout, sd.getStdout());
+            sd.addPostStagedFile(stdout, sd.getStdoutFile());
             sd.getAttributes().put("stdout", gridSAMConf.getJavaGATStdout());
         }
 
-        if (sd.getStderr() != null) {
+        if (sd.getStderrFile() != null) {
             org.gridlab.gat.io.File stderr = GAT.createFile(gatContext,
                     gridSAMConf.getJavaGATStderr());
-            sd.addPostStagedFile(stderr, sd.getStderr());
+            sd.addPostStagedFile(stderr, sd.getStderrFile());
             sd.getAttributes().put("stderr", gridSAMConf.getJavaGATStderr());
         }
 

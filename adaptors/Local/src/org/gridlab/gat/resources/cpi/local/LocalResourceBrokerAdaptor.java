@@ -1,7 +1,6 @@
 package org.gridlab.gat.resources.cpi.local;
 
 import java.io.IOException;
-import java.io.OutputStream;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -16,8 +15,7 @@ import org.gridlab.gat.GATObjectCreationException;
 import org.gridlab.gat.TimePeriod;
 import org.gridlab.gat.URI;
 import org.gridlab.gat.engine.util.CommandRunner;
-import org.gridlab.gat.engine.util.InputForwarder;
-import org.gridlab.gat.engine.util.OutputForwarder;
+import org.gridlab.gat.engine.util.StreamForwarder;
 import org.gridlab.gat.monitoring.Metric;
 import org.gridlab.gat.monitoring.MetricListener;
 import org.gridlab.gat.resources.HardwareResource;
@@ -221,7 +219,7 @@ public class LocalResourceBrokerAdaptor extends ResourceBrokerCpi {
 
         String command = exe + " " + getArguments(description);
 
-        java.io.File f = new java.io.File(sandbox.getSandbox());
+        java.io.File f = new java.io.File(sandbox.getSandboxURI().getPath());
 
         if (logger.isInfoEnabled()) {
             logger.info("running command: " + command);
@@ -234,7 +232,7 @@ public class LocalResourceBrokerAdaptor extends ResourceBrokerCpi {
             }
 
             if (home != null) {
-                logger.info("working dir is: " + f.getPath());
+                logger.info("working dir is: " + sandbox.getSandboxURI().getPath());
             }
         }
 
@@ -249,70 +247,98 @@ public class LocalResourceBrokerAdaptor extends ResourceBrokerCpi {
             throw new CommandNotFoundException("LocalResourceBrokerAdaptor", e);
         }
 
-        org.gridlab.gat.io.File stdin = sandbox.getResolvedStdin();
+        // org.gridlab.gat.io.File stdin = sandbox.getResolvedStdin();
+        //
+        // if (stdin == null) {
+        // // close stdin.
+        // try {
+        // p.getOutputStream().close();
+        // } catch (Throwable e) {
+        // // ignore
+        // }
+        // } else {
+        // try {
+        // java.io.FileInputStream fin = new java.io.FileInputStream(stdin
+        // .getAbsolutePath());
+        // OutputStream out = p.getOutputStream();
+        // new InputForwarder(out, fin);
+        // } catch (Exception e) {
+        // throw new GATInvocationException("local broker", e);
+        // }
+        // }
 
-        if (stdin == null) {
-            // close stdin.
+        StreamForwarder outForwarder = null;
+        StreamForwarder errForwarder = null;
+
+        // handle the input
+        if (sd.getStdinFile() != null) {
             try {
-                p.getOutputStream().close();
-            } catch (Throwable e) {
-                // ignore
+                new StreamForwarder(GAT.createFileInputStream(sandbox
+                        .getResolvedStdin()), p.getOutputStream());
+            } catch (GATObjectCreationException e) {
+                throw new GATInvocationException(
+                        "Could not create a FileInputStream to read from the input '"
+                                + sandbox.getResolvedStdin() + "'", e);
             }
+        } else if (sd.getStdinStream() != null) {
+            new StreamForwarder(sd.getStdinStream(), p.getOutputStream());
         } else {
             try {
-                java.io.FileInputStream fin = new java.io.FileInputStream(stdin
-                        .getAbsolutePath());
-                OutputStream out = p.getOutputStream();
-                new InputForwarder(out, fin);
-            } catch (Exception e) {
-                throw new GATInvocationException("local broker", e);
+                p.getOutputStream().close();
+            } catch (IOException e) {
+                if (logger.isDebugEnabled()) {
+                    logger
+                            .debug("Failed to close the OutputStream of the process: "
+                                    + e);
+                }
             }
         }
 
-        OutputStream userOut;
-        OutputStream userErr;
-        OutputForwarder outForwarder = null;
-        OutputForwarder errForwarder = null;
-        if (sd.getStdout() != null) {
-            if (sd.stdoutIsStreaming()) {
-                userOut = sd.getStdoutStream();
-            } else {
-                try {
-                    userOut = GAT.createFileOutputStream(sandbox
-                            .getResolvedStdout());
-                } catch (GATObjectCreationException e) {
-                    throw new GATInvocationException(
-                            "failed to create outputstream to write in output file: '"
-                                    + sd.getStdout() + "'", e);
-                }
+        if (sd.getStdoutFile() != null) {
+            try {
+                outForwarder = new StreamForwarder(p.getInputStream(), GAT
+                        .createFileOutputStream(sandbox.getResolvedStdout()));
+            } catch (GATObjectCreationException e) {
+                throw new GATInvocationException(
+                        "Could not creat a FileOutputStream to write the output to '"
+                                + sandbox.getResolvedStdout() + "'", e);
             }
-            outForwarder = new OutputForwarder(p.getInputStream(), userOut);
+        } else if (sd.getStdoutStream() != null) {
+            outForwarder = new StreamForwarder(p.getInputStream(), sd
+                    .getStdoutStream());
         } else {
             try {
                 p.getInputStream().close();
             } catch (IOException e) {
-                // ignore
-            }
-        }
-        if (sd.getStderr() != null) {
-            if (sd.stderrIsStreaming()) {
-                userErr = sd.getStderrStream();
-            } else {
-                try {
-                    userErr = GAT.createFileOutputStream(sandbox
-                            .getResolvedStderr());
-                } catch (GATObjectCreationException e) {
-                    throw new GATInvocationException(
-                            "failed to create outputstream to write in error file: '"
-                                    + sd.getStderr() + "'", e);
+                if (logger.isDebugEnabled()) {
+                    logger
+                            .debug("Failed to close the InputStream of the process: "
+                                    + e);
                 }
             }
-            errForwarder = new OutputForwarder(p.getErrorStream(), userErr);
+        }
+
+        if (sd.getStderrFile() != null) {
+            try {
+                errForwarder = new StreamForwarder(p.getErrorStream(), GAT
+                        .createFileOutputStream(sandbox.getResolvedStderr()));
+            } catch (GATObjectCreationException e) {
+                throw new GATInvocationException(
+                        "Could not creat a FileOutputStream to write the error to '"
+                                + sandbox.getResolvedStderr() + "'", e);
+            }
+        } else if (sd.getStderrStream() != null) {
+            errForwarder = new StreamForwarder(p.getErrorStream(), sd
+                    .getStderrStream());
         } else {
             try {
                 p.getErrorStream().close();
             } catch (IOException e) {
-                // ignore
+                if (logger.isDebugEnabled()) {
+                    logger
+                            .debug("Failed to close the ErrorStream of the process: "
+                                    + e);
+                }
             }
         }
 

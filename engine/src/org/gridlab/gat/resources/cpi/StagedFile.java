@@ -16,229 +16,284 @@ import org.gridlab.gat.io.FileOutputStream;
 
 public abstract class StagedFile {
 
-	protected static Logger logger = Logger.getLogger(StagedFile.class);
+    protected static Logger logger = Logger.getLogger(StagedFile.class);
 
-	protected GATContext gatContext;
+    protected GATContext gatContext;
 
-	protected File origSrc;
+    protected File origSrc;
 
-	protected File origDest;
+    protected File origDest;
 
-	private File resolvedSrc;
+    private File resolvedSrc;
 
-	private File resolvedDest;
+    private File resolvedDest;
 
-	private String resolvedSrcURIString;
+    private String resolvedSrcURIString;
 
-	private String resolvedDestURIString;
+    private String resolvedDestURIString;
 
-	protected String host;
+    protected String host;
 
-	protected String sandbox;
+    protected String sandbox;
 
-	protected boolean inSandbox;
+    protected boolean inSandbox;
 
-	protected URI relativeURI;
+    protected URI relativeURI;
 
-	public StagedFile() {
-		// constructor needed for castor marshalling, do *not* use
-	}
+    public StagedFile() {
+        // constructor needed for castor marshalling, do *not* use
+    }
 
-	public StagedFile(GATContext context, File origSrc, File origDest,
-			String host, String sandbox) {
-		super();
-		this.gatContext = context;
-		this.origSrc = origSrc;
-		this.origDest = origDest;
-		this.host = host;
-		this.sandbox = sandbox;
-	}
+    public StagedFile(GATContext context, File origSrc, File origDest,
+            String host, String sandbox) {
+        super();
+        this.gatContext = context;
+        this.origSrc = origSrc;
+        this.origDest = origDest;
+        this.host = host;
+        this.sandbox = sandbox;
+    }
 
-	/** Creates a file object that points to the sandbox. */
-	protected File resolve(File f, boolean useNameOnly)
-			throws GATInvocationException {
-		URI uri = f.toGATURI();
+    protected File resolve(File f, boolean useNameOnly)
+            throws GATInvocationException {
+        URI uri = f.toGATURI();
+        logger.info("resolving uri: " + uri);
+        if (uri.getHost() == null || useNameOnly) {
+            try {
+                uri = uri.setHost(host);
+            } catch (URISyntaxException e) {
+                throw new GATInvocationException("StageFile", e);
+            }
+        }
+        logger.info("host done: " + uri);
+        if (uri.getScheme() == null) {
+            try {
+                uri = uri.setScheme("any");
+            } catch (URISyntaxException e) {
+                throw new GATInvocationException("StageFile", e);
+            }
+        }
+        logger.info("scheme done: " + uri);
+        if (useNameOnly && !uri.hasAbsolutePath()) {
+            if (f.isDirectory()) {
+                try {
+                    uri = uri.setPath("");
+                } catch (URISyntaxException e) {
+                    throw new GATInvocationException("StageFile", e);
+                }
+            } else {
+                try {
+                    uri = uri.setPath(f.getName());
+                } catch (URISyntaxException e) {
+                    throw new GATInvocationException("StageFile", e);
+                }
+            }
+        }
+        logger.info("path done: " + uri + "\npath: " + uri.getUnresolvedPath());
+        if (inSandbox && !uri.hasAbsolutePath()) {
+            try {
+                logger.info("setting path to :" + sandbox + "/"
+                        + uri.getUnresolvedPath());
+                uri = uri.setPath(sandbox + "/" + uri.getUnresolvedPath());
+            } catch (URISyntaxException e) {
+                throw new GATInvocationException("StageFile", e);
+            }
+        }
+        logger.info("sandbox done: " + uri);
+        try {
+            return GAT.createFile(f.getFileInterface().getGATContext(), uri);
+        } catch (GATObjectCreationException e) {
+            throw new GATInvocationException("StageFile", e);
+        }
+    }
 
-		String dest = "any://";
-		dest += (uri.getUserInfo() == null) ? "" : uri.getUserInfo();
+    // /** Creates a file object that points to the sandbox. */
+    // protected File resolve(File f, boolean useNameOnly)
+    // throws GATInvocationException {
+    // // this doesn't work...
+    // URI uri = f.toGATURI(); // VU.sleep.stderr
+    //
+    // String dest = "any://"; // any://
+    // dest += (uri.getUserInfo() == null) ? "" : uri.getUserInfo(); // any://
+    //
+    // String origHost = f.toGATURI().getHost();
+    // if (useNameOnly || origHost == null) {
+    // dest += host; // any://fs0.das3.cs.vu.nl
+    // } else {
+    // dest += origHost;
+    // }
+    //
+    // dest += (uri.getPort() == -1) ? "" : (":" + uri.getPort());
+    // dest += "/"; // any://fs0.das3.cs.vu.nl/
+    //
+    // if (inSandbox) {
+    // dest += sandbox == null ? "" : sandbox + "/"; //
+    // any://fs0.das3.cs.vu.nl/.JavaGAT769/
+    // }
+    //
+    // if (useNameOnly) {
+    // // if f is a directory we dont have to put its name to the dest,
+    // // because copy dir a to dir b already ends up in b/a so adding the
+    // // name would make it b/a/a which is wrong!
+    // if (!f.isDirectory()) {
+    // java.io.File tmp = new java.io.File(uri.getPath());
+    // dest += tmp.getName();
+    // try {
+    // relativeURI = new URI(tmp.getName());
+    // } catch (URISyntaxException e) {
+    // // ignore
+    // }
+    // }
+    // } else {
+    // dest += uri.getPath();
+    // try {
+    // relativeURI = new URI(uri.getPath());
+    // } catch (URISyntaxException e) {
+    // // ignore
+    // }
+    // }
+    //
+    // try {
+    // URI destURI = new URI(dest);
+    // return GAT
+    // .createFile(f.getFileInterface().getGATContext(), destURI);
+    // } catch (Exception e) {
+    // throw new GATInvocationException("StageFile", e);
+    // }
+    // }
 
-		String origHost = f.toGATURI().getHost();
-		if (useNameOnly || origHost == null) {
-			dest += host;
-		} else {
-			dest += origHost;
-		}
+    protected void wipe(File f) throws GATInvocationException {
+        if (!f.exists()) {
+            if (logger.isDebugEnabled()) {
+                logger.debug("file to wipe does not exists, skipping.");
+            }
+            return;
+        }
 
-		dest += (uri.getPort() == -1) ? "" : (":" + uri.getPort());
-		dest += "/";
+        if (!f.isFile()) {
+            if (logger.isDebugEnabled()) {
+                logger.debug("file to wipe is not a normal file, skipping.");
+            }
+            return;
+        }
 
-		if (inSandbox) {
-			dest += sandbox == null ? "" : sandbox + "/";
-		}
+        long size = f.length();
 
-		if (useNameOnly) {
-			// if f is a directory we dont have to put its name to the dest,
-			// because copy dir a to dir b already ends up in b/a so adding the
-			// name would make it b/a/a which is wrong!
-			if (!f.isDirectory()) {
-				java.io.File tmp = new java.io.File(uri.getPath());
-				dest += tmp.getName();
-				try {
-					relativeURI = new URI(tmp.getName());
-				} catch (URISyntaxException e) {
-					// ignore
-				}
-			}
-		} else {
-			dest += uri.getPath();
-			try {
-				relativeURI = new URI(uri.getPath());
-			} catch (URISyntaxException e) {
-				// ignore
-			}
-		}
+        FileOutputStream out = null;
 
-		try {
-			URI destURI = new URI(dest);
-			return GAT
-					.createFile(f.getFileInterface().getGATContext(), destURI);
-		} catch (Exception e) {
-			throw new GATInvocationException("StageFile", e);
-		}
-	}
+        try {
+            out = GAT.createFileOutputStream(gatContext, f);
+        } catch (GATObjectCreationException e) {
+            throw new GATInvocationException("resource broker", e);
+        }
 
-	protected void wipe(File f) throws GATInvocationException {
-		if (!f.exists()) {
-			if (logger.isDebugEnabled()) {
-				logger.debug("file to wipe does not exists, skipping.");
-			}
-			return;
-		}
+        try {
+            int bufSize = 64 * 1024;
+            byte[] buf = new byte[bufSize];
+            long wiped = 0;
+            while (wiped != size) {
+                int toWipe;
+                if (size - wiped < bufSize) {
+                    toWipe = (int) (size - wiped);
+                } else {
+                    toWipe = bufSize;
+                }
 
-		if (!f.isFile()) {
-			if (logger.isDebugEnabled()) {
-				logger.debug("file to wipe is not a normal file, skipping.");
-			}
-			return;
-		}
+                out.write(buf, 0, toWipe);
+                wiped += toWipe;
+            }
+        } catch (Exception e) {
+            throw new GATInvocationException("resource broker", e);
+        } finally {
+            if (out != null) {
+                try {
+                    out.close();
+                } catch (Exception e) {
+                    // ignore
+                }
+            }
+        }
+    }
 
-		long size = f.length();
+    /**
+     * @return the inSandbox
+     */
+    public boolean isInSandbox() {
+        return inSandbox;
+    }
 
-		FileOutputStream out = null;
+    /**
+     * @param inSandbox
+     *            the inSandbox to set
+     */
+    public void setInSandbox(boolean inSandbox) {
+        this.inSandbox = inSandbox;
+    }
 
-		try {
-			out = GAT.createFileOutputStream(gatContext, f);
-		} catch (GATObjectCreationException e) {
-			throw new GATInvocationException("resource broker", e);
-		}
+    protected void setResolvedSrc(File resolvedSrc) {
+        this.resolvedSrc = resolvedSrc;
+        resolvedSrcURIString = resolvedSrc.toGATURI().toString();
+    }
 
-		try {
-			int bufSize = 64 * 1024;
-			byte[] buf = new byte[bufSize];
-			long wiped = 0;
-			while (wiped != size) {
-				int toWipe;
-				if (size - wiped < bufSize) {
-					toWipe = (int) (size - wiped);
-				} else {
-					toWipe = bufSize;
-				}
+    public File getResolvedSrc() {
+        // if this sandbox object was retrieved from the advert service, we have
+        // to recreate the file object
+        if (resolvedSrc == null && resolvedSrcURIString != null) {
+            try {
+                resolvedSrc = GAT.createFile(gatContext, resolvedSrcURIString);
+            } catch (Exception e) {
+                throw new Error(e);
+            }
+        }
+        return resolvedSrc;
+    }
 
-				out.write(buf, 0, toWipe);
-				wiped += toWipe;
-			}
-		} catch (Exception e) {
-			throw new GATInvocationException("resource broker", e);
-		} finally {
-			if (out != null) {
-				try {
-					out.close();
-				} catch (Exception e) {
-					// ignore
-				}
-			}
-		}
-	}
+    /**
+     * @return the resolvedDestURIString
+     */
+    public String getResolvedDestURIString() {
+        return resolvedDestURIString;
+    }
 
-	/**
-	 * @return the inSandbox
-	 */
-	public boolean isInSandbox() {
-		return inSandbox;
-	}
+    /**
+     * @param resolvedDestURIString
+     *            the resolvedDestURIString to set
+     */
+    public void setResolvedDestURIString(String resolvedDestURIString) {
+        this.resolvedDestURIString = resolvedDestURIString;
+    }
 
-	/**
-	 * @param inSandbox
-	 *            the inSandbox to set
-	 */
-	public void setInSandbox(boolean inSandbox) {
-		this.inSandbox = inSandbox;
-	}
+    protected void setResolvedDest(File resolvedDest) {
+        this.resolvedDest = resolvedDest;
+        resolvedDestURIString = resolvedDest.toGATURI().toString();
+    }
 
-	protected void setResolvedSrc(File resolvedSrc) {
-		this.resolvedSrc = resolvedSrc;
-		resolvedSrcURIString = resolvedSrc.toGATURI().toString();
-	}
+    public File getResolvedDest() {
+        // if this sandbox object was retrieved from the advert service, we have
+        // to recreate the file object
+        if (resolvedDest == null && resolvedDestURIString != null) {
+            try {
+                resolvedDest = GAT
+                        .createFile(gatContext, resolvedDestURIString);
+            } catch (Exception e) {
+                throw new Error(e);
+            }
+        }
+        return resolvedDest;
+    }
 
-	public File getResolvedSrc() {
-		// if this sandbox object was retrieved from the advert service, we have
-		// to recreate the file object
-		if (resolvedSrc == null && resolvedSrcURIString != null) {
-			try {
-				resolvedSrc = GAT.createFile(gatContext, resolvedSrcURIString);
-			} catch (Exception e) {
-				throw new Error(e);
-			}
-		}
-		return resolvedSrc;
-	}
+    /**
+     * @return the resolvedSrcURIString
+     */
+    public String getResolvedSrcURIString() {
+        return resolvedSrcURIString;
+    }
 
-	/**
-	 * @return the resolvedDestURIString
-	 */
-	public String getResolvedDestURIString() {
-		return resolvedDestURIString;
-	}
-
-	/**
-	 * @param resolvedDestURIString
-	 *            the resolvedDestURIString to set
-	 */
-	public void setResolvedDestURIString(String resolvedDestURIString) {
-		this.resolvedDestURIString = resolvedDestURIString;
-	}
-
-	protected void setResolvedDest(File resolvedDest) {
-		this.resolvedDest = resolvedDest;
-		resolvedDestURIString = resolvedDest.toGATURI().toString();
-	}
-
-	public File getResolvedDest() {
-		// if this sandbox object was retrieved from the advert service, we have
-		// to recreate the file object
-		if (resolvedDest == null && resolvedDestURIString != null) {
-			try {
-				resolvedDest = GAT
-						.createFile(gatContext, resolvedDestURIString);
-			} catch (Exception e) {
-				throw new Error(e);
-			}
-		}
-		return resolvedDest;
-	}
-
-	/**
-	 * @return the resolvedSrcURIString
-	 */
-	public String getResolvedSrcURIString() {
-		return resolvedSrcURIString;
-	}
-
-	/**
-	 * @param resolvedSrcURIString
-	 *            the resolvedSrcURIString to set
-	 */
-	public void setResolvedSrcURIString(String resolvedSrcURIString) {
-		this.resolvedSrcURIString = resolvedSrcURIString;
-	}
+    /**
+     * @param resolvedSrcURIString
+     *            the resolvedSrcURIString to set
+     */
+    public void setResolvedSrcURIString(String resolvedSrcURIString) {
+        this.resolvedSrcURIString = resolvedSrcURIString;
+    }
 }

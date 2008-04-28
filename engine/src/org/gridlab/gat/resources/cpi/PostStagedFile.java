@@ -43,8 +43,9 @@ public class PostStagedFile extends StagedFile {
         }
         setResolvedSrc(resolve(origSrc, false));
 
-        String dir = System.getProperty("user.dir");
-        if (dir == null) {
+        String cwd = new java.io.File(System.getProperty("user.dir")).toURI()
+                .getPath();
+        if (cwd == null) {
             throw new GATInvocationException(
                     "cannot get current working directory");
         }
@@ -52,8 +53,8 @@ public class PostStagedFile extends StagedFile {
         if (origDest == null) {
             // file with same name in CWD
             try {
-                URI resolvedDestURI = new URI("any:///" + dir
-                        + java.io.File.separator + origSrc.getName());
+                URI resolvedDestURI = new URI("any:///" + cwd
+                        + origSrc.getName());
                 setResolvedDest(GAT.createFile(gatContext, resolvedDestURI));
             } catch (Exception e) {
                 throw new GATInvocationException("poststagedFile", e);
@@ -62,11 +63,13 @@ public class PostStagedFile extends StagedFile {
             if (origDest.isAbsolute()) {
                 setResolvedDest(origDest);
             } else {
+                // TODO: check for post staging to other machine
+
                 // file with same name in CWD
                 try {
                     String destURIString = "any://";
                     if (origDest.toGATURI().getHost() == null) {
-                        destURIString += "/" + dir + "/";
+                        destURIString += "/" + cwd;
                     } else {
                         destURIString += origDest.toGATURI().getHost() + "/";
                     }

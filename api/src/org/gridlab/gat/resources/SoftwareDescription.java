@@ -8,6 +8,7 @@ import java.io.BufferedWriter;
 import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
@@ -106,19 +107,17 @@ public class SoftwareDescription implements java.io.Serializable {
 
     private HashMap<String, Object> environment;
 
-    private File stdin;
+    private File stdinFile;
 
-    private File stdout;
+    private File stdoutFile;
 
     private OutputStream stdoutStream;
 
-    private boolean stdoutIsStreaming = false;
-
-    private File stderr;
+    private File stderrFile;
 
     private OutputStream stderrStream;
 
-    private boolean stderrIsStreaming = false;
+    private InputStream stdinStream;
 
     private HashMap<File, File> preStagedFiles; // contains (src, dest) tuples
 
@@ -172,9 +171,9 @@ public class SoftwareDescription implements java.io.Serializable {
         arguments = (String[]) attributes.get("arguments");
         environment = new HashMap<String, Object>(
                 (Map<String, Object>) attributes.get("environment"));
-        stdin = (File) attributes.get("stdin");
-        stdout = (File) attributes.get("stdout");
-        stderr = (File) attributes.get("stderr");
+        stdinFile = (File) attributes.get("stdin");
+        stdoutFile = (File) attributes.get("stdout");
+        stderrFile = (File) attributes.get("stderr");
     }
 
     /**
@@ -612,9 +611,19 @@ public class SoftwareDescription implements java.io.Serializable {
      * Returns the stderr {@link File}.
      * 
      * @return the stderr {@link File}
+     * @deprecated use {@link #getStderrFile()}
      */
     public File getStderr() {
-        return stderr;
+        return stderrFile;
+    }
+
+    /**
+     * Returns the stderr {@link File}.
+     * 
+     * @return the stderr {@link File}
+     */
+    public File getStderrFile() {
+        return stderrFile;
     }
 
     /**
@@ -636,8 +645,8 @@ public class SoftwareDescription implements java.io.Serializable {
      *            The {@link File} where stderr is redirected to.
      */
     public void setStderr(File stderr) {
-        stderrIsStreaming = false;
-        this.stderr = stderr;
+        this.stderrStream = null;
+        this.stderrFile = stderr;
     }
 
     /**
@@ -650,17 +659,18 @@ public class SoftwareDescription implements java.io.Serializable {
      *            The {@link OutputStream} where stderr is redirected to.
      */
     public void setStderr(OutputStream stderrStream) {
-        stderrIsStreaming = true;
+        this.stderrFile = null;
         this.stderrStream = stderrStream;
     }
 
     /**
-     * Returns whether the stderr is set to streaming.
+     * Returns the stdin {@link File}.
      * 
-     * @return whether the stderr is streaming.
+     * @return the stdin {@link File}.
+     * @deprecated use {@link #getStdinFile()}
      */
-    public boolean stderrIsStreaming() {
-        return stderrIsStreaming;
+    public File getStdin() {
+        return getStdinFile();
     }
 
     /**
@@ -668,8 +678,17 @@ public class SoftwareDescription implements java.io.Serializable {
      * 
      * @return the stdin {@link File}.
      */
-    public File getStdin() {
-        return stdin;
+    public File getStdinFile() {
+        return stdinFile;
+    }
+
+    /**
+     * Returns the stdin {@link InputStream}.
+     * 
+     * @return the stdin {@link InputStream}.
+     */
+    public InputStream getStdinStream() {
+        return stdinStream;
     }
 
     /**
@@ -679,7 +698,29 @@ public class SoftwareDescription implements java.io.Serializable {
      *            The {@link File} where stdin is redirected from.
      */
     public void setStdin(File stdin) {
-        this.stdin = stdin;
+        this.stdinStream = null;
+        this.stdinFile = stdin;
+    }
+
+    /**
+     * Sets the {@link InputStream} where stdin is redirected from.
+     * 
+     * @param stdinStream
+     *            The {@link InputStream} where stdin is redirected from.
+     */
+    public void setStdin(InputStream stdinStream) {
+        this.stdinFile = null;
+        this.stdinStream = stdinStream;
+    }
+
+    /**
+     * Returns the stdout {@link File}.
+     * 
+     * @return the stdout {@link File}.
+     * @deprecated use {@link #getStdoutFile()}
+     */
+    public File getStdout() {
+        return stdoutFile;
     }
 
     /**
@@ -687,8 +728,8 @@ public class SoftwareDescription implements java.io.Serializable {
      * 
      * @return the stdout {@link File}.
      */
-    public File getStdout() {
-        return stdout;
+    public File getStdoutFile() {
+        return stdoutFile;
     }
 
     /**
@@ -710,8 +751,8 @@ public class SoftwareDescription implements java.io.Serializable {
      *            The {@link File} where stdout is redirected to.
      */
     public void setStdout(File stdout) {
-        stdoutIsStreaming = false;
-        this.stdout = stdout;
+        this.stdoutStream = null;
+        this.stdoutFile = stdout;
     }
 
     /**
@@ -724,17 +765,8 @@ public class SoftwareDescription implements java.io.Serializable {
      *            The {@link OutputStream} where stdout is redirected to.
      */
     public void setStdout(OutputStream stdoutStream) {
-        stdoutIsStreaming = true;
+        this.stdoutFile = null;
         this.stdoutStream = stdoutStream;
-    }
-
-    /**
-     * Returns whether the stdout is set to streaming.
-     * 
-     * @return whether the stdout is streaming.
-     */
-    public boolean stdoutIsStreaming() {
-        return stdoutIsStreaming;
     }
 
     public String toString() {
@@ -749,9 +781,12 @@ public class SoftwareDescription implements java.io.Serializable {
             res += "null";
         }
         res += "}";
-        res += ", stdin: " + (stdin == null ? "null" : stdin.toString());
-        res += ", stdout: " + (stdout == null ? "null" : stdout.toString());
-        res += ", stderr: " + (stderr == null ? "null" : stderr.toString());
+        res += ", stdin: "
+                + (stdinFile == null ? "null" : stdinFile.toString());
+        res += ", stdout: "
+                + (stdoutFile == null ? "null" : stdoutFile.toString());
+        res += ", stderr: "
+                + (stderrFile == null ? "null" : stderrFile.toString());
 
         res += ", environment: "
                 + (environment == null ? "null" : environment.toString());
@@ -1069,13 +1104,12 @@ public class SoftwareDescription implements java.io.Serializable {
     public Object clone() {
         SoftwareDescription sd = new SoftwareDescription();
         sd.executable = executable;
-        sd.stdin = stdin;
-        sd.stdout = stdout;
-        sd.stderr = stderr;
+        sd.stdinFile = stdinFile;
+        sd.stdoutFile = stdoutFile;
+        sd.stderrFile = stderrFile;
         sd.stdoutStream = stdoutStream;
         sd.stderrStream = stderrStream;
-        sd.stderrIsStreaming = stderrIsStreaming;
-        sd.stdoutIsStreaming = stdoutIsStreaming;
+        sd.stdinStream = stdinStream;
         sd.preStagedFiles = preStagedFiles;
         sd.postStagedFiles = postStagedFiles;
         sd.deletedFiles = deletedFiles;

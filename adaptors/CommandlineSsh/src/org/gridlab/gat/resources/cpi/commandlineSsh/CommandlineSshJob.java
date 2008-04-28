@@ -10,7 +10,7 @@ import org.apache.log4j.Logger;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.engine.GATEngine;
-import org.gridlab.gat.engine.util.OutputForwarder;
+import org.gridlab.gat.engine.util.StreamForwarder;
 import org.gridlab.gat.monitoring.Metric;
 import org.gridlab.gat.monitoring.MetricDefinition;
 import org.gridlab.gat.monitoring.MetricEvent;
@@ -122,17 +122,17 @@ public class CommandlineSshJob extends JobCpi {
         finished();
     }
 
-    public void startOutputWaiter(OutputForwarder outForwarder,
-            OutputForwarder errForwarder) {
+    public void startOutputWaiter(StreamForwarder outForwarder,
+            StreamForwarder errForwarder) {
         new OutputWaiter(outForwarder, errForwarder);
     }
 
     class OutputWaiter extends Thread {
 
-        OutputForwarder outForwarder, errForwarder;
+        StreamForwarder outForwarder, errForwarder;
 
-        OutputWaiter(OutputForwarder outForwarder, OutputForwarder errForwarder) {
-            setName("CommandlineSshJob OutputForwarderWaiter");
+        OutputWaiter(StreamForwarder outForwarder, StreamForwarder errForwarder) {
+            setName("LocalJob OutputForwarderWaiter");
             setDaemon(true);
             this.outForwarder = outForwarder;
             this.errForwarder = errForwarder;

@@ -428,10 +428,10 @@ public class Wrapper implements MetricListener {
         // destination
         // also stdout and stderr
         sd.setStderr(rewriteStagedFile(gatContext, preferences, null, sd
-                .getStderr(), initiator, remoteCWD));
+                .getStderrFile(), initiator, remoteCWD));
         sd.setStdout(rewriteStagedFile(gatContext, preferences, null, sd
-                .getStdout(), initiator, remoteCWD));
-        sd.setStdin(rewriteStagedFile(gatContext, preferences, sd.getStdin(),
+                .getStdoutFile(), initiator, remoteCWD));
+        sd.setStdin(rewriteStagedFile(gatContext, preferences, sd.getStdinFile(),
                 null, initiator, remoteCWD));
 
         Map<File, File> pre = sd.getPreStaged();

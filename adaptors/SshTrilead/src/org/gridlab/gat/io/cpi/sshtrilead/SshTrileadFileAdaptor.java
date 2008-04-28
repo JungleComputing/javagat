@@ -43,7 +43,7 @@ public class SshTrileadFileAdaptor extends FileCpi {
 
     private static final int STDOUT = 0, STDERR = 1, EXIT_VALUE = 2;
 
-    private static Map<URI, Connection> connections = new HashMap<URI, Connection>();
+    private static Map<String, Connection> connections = new HashMap<String, Connection>();
 
     private static Map<URI, Boolean> isDirCache = new HashMap<URI, Boolean>();
 
@@ -55,19 +55,23 @@ public class SshTrileadFileAdaptor extends FileCpi {
 
     private static Map<URI, Boolean> canWriteCache = new HashMap<URI, Boolean>();
 
+    private static Map<String, Boolean> isWindowsCache = new HashMap<String, Boolean>();
+
     private static Map<URI, String[]> listCache = new HashMap<URI, String[]>();
 
     private static boolean canReadCacheEnable = true;
 
     private static boolean canWriteCacheEnable = true;
 
-    private static boolean existsCacheEnable = true;
+    private static boolean existsCacheEnable = false;
 
     private static boolean isDirCacheEnable = true;
 
     private static boolean isFileCacheEnable = true;
 
-    private static boolean listCacheEnable = true;
+    private static boolean listCacheEnable = false;
+
+    private static boolean isWindowsCacheEnable = true;
 
     private static String[] client2serverCiphers = new String[] { "aes256-ctr",
             "aes192-ctr", "aes128-ctr", "blowfish-ctr", "aes256-cbc",
@@ -123,9 +127,12 @@ public class SshTrileadFileAdaptor extends FileCpi {
         }
     }
 
+    private URI fixedURI;
+
     public SshTrileadFileAdaptor(GATContext gatContext, URI location)
             throws GATObjectCreationException, GATInvocationException {
-        super(gatContext, fixURI(location, null));
+        super(gatContext, location);
+        fixedURI = fixURI(location, null);
         if (!location.isCompatible("ssh") && !location.isCompatible("file")) {
             throw new AdaptorNotApplicableException("cannot handle this URI: "
                     + location);
@@ -134,7 +141,7 @@ public class SshTrileadFileAdaptor extends FileCpi {
 
     public void copy(URI destination) throws GATInvocationException {
         destination = fixURI(destination, null);
-        if (location.refersToLocalHost()) {
+        if (fixedURI.refersToLocalHost()) {
             // put the file
             try {
                 put(destination);
@@ -167,6 +174,7 @@ public class SshTrileadFileAdaptor extends FileCpi {
         Connection connection = getConnection(destination, gatContext);
 
         SCPClient client = connection.createSCPClient();
+
         FileInterface destinationFile = GAT.createFile(gatContext, destination)
                 .getFileInterface();
         String remoteDir = null;
@@ -181,7 +189,6 @@ public class SshTrileadFileAdaptor extends FileCpi {
                 }
             }
         }
-
         if (destination.hasAbsolutePath()) {
             if (destinationFile.isDirectory()) {
                 remoteDir = destinationFile.getPath();
@@ -196,7 +203,7 @@ public class SshTrileadFileAdaptor extends FileCpi {
                 String parent = destinationFile.getParent();
                 if (parent != null) {
                     String separator;
-                    if (isWindows(destination)) {
+                    if (isWindows(gatContext, destination)) {
                         separator = "\\";
                     } else {
                         separator = "/";
@@ -218,23 +225,25 @@ public class SshTrileadFileAdaptor extends FileCpi {
                         + "'. Should be like '0xxx' or 'xxx'");
             }
         }
-        if (destinationFile.isDirectory() && isFile()) {
-            client.put(getPath(), remoteDir, mode);
-        } else if (isDirectory()) {
+        File sourceFile = GAT.createFile(gatContext, location);
+        if (destinationFile.isDirectory() && sourceFile.isFile()) {
+            client.put(getFixedPath(), remoteDir, mode);
+        } else if (sourceFile.isDirectory()) {
             copyDir(destination);
-        } else if (isFile()) {
-            client.put(getPath(), remoteFileName, remoteDir, mode);
+        } else if (sourceFile.isFile()) {
+            client.put(getFixedPath(), remoteFileName, remoteDir, mode);
         } else {
             throw new GATInvocationException("cannot copy this file '"
-                    + location + "' to '" + remoteFileName + "' in dir '"
-                    + remoteDir + "'! (Reason: src is file: " + isFile()
-                    + ", src is dir: " + isDirectory() + ", dest is dir: "
+                    + fixedURI + "' to '" + remoteFileName + "' in dir '"
+                    + remoteDir + "'! (Reason: src is file: "
+                    + sourceFile.isFile() + ", src is dir: "
+                    + sourceFile.isDirectory() + ", dest is dir: "
                     + destinationFile.isDirectory());
         }
     }
 
     private void get(URI destination) throws Exception {
-        Connection connection = getConnection(location, gatContext);
+        Connection connection = getConnection(fixedURI, gatContext);
         SCPClient client = connection.createSCPClient();
         FileInterface destinationFile = GAT.createFile(gatContext, destination)
                 .getFileInterface();
@@ -250,7 +259,7 @@ public class SshTrileadFileAdaptor extends FileCpi {
         }
 
         String mode = "0600";
-        if (!isWindows(destination)) {
+        if (!isWindows(gatContext, destination)) {
             if (mode.length() == 3) {
                 mode = "0" + mode;
             }
@@ -260,42 +269,66 @@ public class SshTrileadFileAdaptor extends FileCpi {
                         + "'. Should be like '0xxx' or 'xxx'");
             }
         }
-        if (destinationFile.isDirectory() && isFile()) {
-            createNewFile(destination.getPath() + "/" + getName(), mode);
-            client.get(getPath(), new java.io.FileOutputStream(destination
+        File sourceFile = GAT.createFile(gatContext, location);
+        if (destinationFile.isDirectory() && sourceFile.isFile()) {
+            createNewFile(destination.getPath() + "/" + sourceFile.getName(),
+                    mode);
+            client.get(getFixedPath(), new java.io.FileOutputStream(destination
                     .getPath()
-                    + "/" + getName()));
-        } else if (isDirectory()) {
+                    + "/" + sourceFile.getName()));
+        } else if (sourceFile.isDirectory()) {
             copyDir(destination);
-        } else if (isFile()) {
+        } else if (sourceFile.isFile()) {
             createNewFile(destination.getPath(), mode);
-            client.get(getPath(), new java.io.FileOutputStream(destination
+            client.get(getFixedPath(), new java.io.FileOutputStream(destination
                     .getPath()));
         } else {
             throw new GATInvocationException("cannot copy this file '"
-                    + location + "' to '" + destination
-                    + "'! (Reason: target is file: " + isFile()
-                    + ", target is dir: " + isDirectory() + ", src is dir: "
-                    + destinationFile.isDirectory());
+                    + fixedURI + "' to '" + destination
+                    + "'! (Reason: target is file: " + sourceFile.isFile()
+                    + ", target is dir: " + sourceFile.isDirectory()
+                    + ", src is dir: " + destinationFile.isDirectory());
         }
     }
 
-    private boolean isWindows(URI destination) throws GATInvocationException {
+    private static boolean isWindows(GATContext context, URI destination)
+            throws GATInvocationException {
         // if 'ls' gives stderr and 'dir' doesn't then we guess it's Windows
         // else we assume it's non-Windows
+
+        String host = destination.getHost();
+        if (host == null) {
+            host = destination.resolveHost();
+        }
+        if (isWindowsCacheEnable) {
+            if (isWindowsCache.containsKey(host)) {
+                return isWindowsCache.get(host);
+            }
+        }
+        SshTrileadFileAdaptor file;
+        try {
+            file = new SshTrileadFileAdaptor(context, destination);
+        } catch (GATObjectCreationException e) {
+            throw new GATInvocationException("failed to create ssh file", e);
+        }
         String[] result;
         try {
-            result = execCommand("ls");
+            result = file.execCommand("ls");
         } catch (Exception e) {
             throw new GATInvocationException("sshtrilead", e);
         }
         if (result[STDERR].length() != 0) {
             try {
-                result = execCommand("dir");
+                result = file.execCommand("dir");
             } catch (Exception e) {
                 throw new GATInvocationException("sshtrilead", e);
             }
-            return result[STDERR].length() == 0;
+            boolean isWindows = result[STDOUT].length() == 0;
+            if (isWindowsCacheEnable) {
+                isWindowsCache.put(host, isWindows);
+            }
+            return isWindows;
+
         }
         return false;
     }
@@ -306,16 +339,18 @@ public class SshTrileadFileAdaptor extends FileCpi {
         new CommandRunner("chmod " + mode + " " + localfile);
     }
 
-    public static Connection getConnection(URI location, GATContext context)
+    public static Connection getConnection(URI fixedURI, GATContext context)
             throws Exception {
-        if (connections.containsKey(location)) {
-            return connections.get(location);
+        String host = fixedURI.getHost();
+        if (host == null) {
+            host = fixedURI.resolveHost();
+        }
+        logger.info("getting connection for host: " + host);
+        if (connections.containsKey(host)) {
+            logger.info("returning cached connection");
+            return connections.get(host);
         } else {
-            String host = location.getHost();
-            if (host == null) {
-                host = "localhost";
-            }
-            Connection newConnection = new Connection(host, location
+            Connection newConnection = new Connection(host, fixedURI
                     .getPort(SSH_PORT));
 
             newConnection.setClient2ServerCiphers(client2serverCiphers);
@@ -323,8 +358,8 @@ public class SshTrileadFileAdaptor extends FileCpi {
             newConnection.setTCPNoDelay(tcpNoDelay);
             newConnection.connect();
             Map<String, Object> securityInfo = SshTrileadSecurityUtils
-                    .getSshTrileadCredential(context, "sshtrilead", location,
-                            location.getPort(SSH_PORT));
+                    .getSshTrileadCredential(context, "sshtrilead", fixedURI,
+                            fixedURI.getPort(SSH_PORT));
             String username = (String) securityInfo.get("username");
             String password = (String) securityInfo.get("password");
             java.io.File keyFile = (java.io.File) securityInfo.get("keyfile");
@@ -381,15 +416,17 @@ public class SshTrileadFileAdaptor extends FileCpi {
             if (!connected) {
                 throw new Exception("unable to authenticate");
             } else {
-                connections.put(location, newConnection);
+                logger.info("putting connection for host " + host + " into cache");
+                connections.put(host, newConnection);
             }
             return newConnection;
         }
     }
 
     private String[] execCommand(String cmd) throws IOException, Exception {
+        logger.info("command: " + cmd + ", uri: " + fixedURI);
         String[] result = new String[3];
-        Session session = getConnection(location, gatContext).openSession();
+        Session session = getConnection(fixedURI, gatContext).openSession();
         session.execCommand(cmd);
         // see http://www.trilead.com/Products/Trilead-SSH-2-Java/FAQ/#blocking
         InputStream stdout = new StreamGobbler(session.getStdout());
@@ -418,7 +455,6 @@ public class SshTrileadFileAdaptor extends FileCpi {
         result[EXIT_VALUE] = "" + session.getExitStatus();
         session.close();
         if (logger.isDebugEnabled()) {
-            logger.debug("command: " + cmd);
             logger.debug("STDOUT: " + result[STDOUT]);
             logger.debug("STDERR: " + result[STDERR]);
             logger.debug("EXIT:   " + result[EXIT_VALUE]);
@@ -428,22 +464,22 @@ public class SshTrileadFileAdaptor extends FileCpi {
 
     public boolean canRead() throws GATInvocationException {
         if (canReadCacheEnable) {
-            if (canReadCache.containsKey(location)) {
-                return canReadCache.get(location);
+            if (canReadCache.containsKey(fixedURI)) {
+                return canReadCache.get(fixedURI);
             }
         }
-        if (isWindows(location)) {
+        if (isWindows(gatContext, fixedURI)) {
             throw new UnsupportedOperationException("Not implemented");
         } else {
             String[] result;
             try {
-                result = execCommand("test -r " + getPath() + " && echo 0");
+                result = execCommand("test -r " + getFixedPath() + " && echo 0");
             } catch (Exception e) {
                 throw new GATInvocationException("sshtrilead", e);
             }
             boolean canread = result[STDOUT].length() != 0;
             if (canReadCacheEnable) {
-                canReadCache.put(location, canread);
+                canReadCache.put(fixedURI, canread);
             }
             return canread;
         }
@@ -451,36 +487,36 @@ public class SshTrileadFileAdaptor extends FileCpi {
 
     public boolean canWrite() throws GATInvocationException {
         if (canWriteCacheEnable) {
-            if (canWriteCache.containsKey(location)) {
-                return canWriteCache.get(location);
+            if (canWriteCache.containsKey(fixedURI)) {
+                return canWriteCache.get(fixedURI);
             }
         }
-        if (isWindows(location)) {
+        if (isWindows(gatContext, fixedURI)) {
             throw new UnsupportedOperationException("Not implemented");
         } else {
             String[] result;
             try {
-                result = execCommand("test -w " + getPath() + " && echo 0");
+                result = execCommand("test -w " + getFixedPath() + " && echo 0");
             } catch (Exception e) {
                 throw new GATInvocationException("sshtrilead", e);
             }
             boolean canwrite = result[STDOUT].length() != 0;
             if (canWriteCacheEnable) {
-                canWriteCache.put(location, canwrite);
+                canWriteCache.put(fixedURI, canwrite);
             }
             return canwrite;
         }
     }
 
     public boolean createNewFile() throws GATInvocationException {
-        if (isWindows(location)) {
+        if (isWindows(gatContext, fixedURI)) {
             throw new UnsupportedOperationException("Not implemented");
         } else {
             String[] result;
             try {
-                result = execCommand("test ! -d " + getPath()
-                        + " && test ! -f " + getPath() + " && touch "
-                        + getPath());
+                result = execCommand("test ! -d " + getFixedPath()
+                        + " && test ! -f " + getFixedPath() + " && touch "
+                        + getFixedPath());
             } catch (Exception e) {
                 throw new GATInvocationException("sshtrilead", e);
             }
@@ -490,16 +526,16 @@ public class SshTrileadFileAdaptor extends FileCpi {
 
     public boolean delete() throws GATInvocationException {
         if (existsCacheEnable) {
-            if (existsCache.containsKey(location)) {
-                existsCache.remove(location);
+            if (existsCache.containsKey(fixedURI)) {
+                existsCache.remove(fixedURI);
             }
         }
-        if (isWindows(location)) {
+        if (isWindows(gatContext, fixedURI)) {
             throw new UnsupportedOperationException("Not implemented");
         } else {
             String[] result;
             try {
-                result = execCommand("rm -rf " + getPath());
+                result = execCommand("rm -rf " + getFixedPath());
             } catch (Exception e) {
                 throw new GATInvocationException("sshtrilead", e);
             }
@@ -508,25 +544,27 @@ public class SshTrileadFileAdaptor extends FileCpi {
     }
 
     public boolean exists() throws GATInvocationException {
+        logger.info("exists: ls " + getFixedPath());
+
         if (existsCacheEnable) {
-            if (existsCache.containsKey(location)) {
-                return existsCache.get(location);
+            if (existsCache.containsKey(fixedURI)) {
+                return existsCache.get(fixedURI);
             }
         }
-        if (isWindows(location)) {
+        if (isWindows(gatContext, fixedURI)) {
             throw new UnsupportedOperationException("Not implemented");
         } else {
             String[] result;
             try {
-                result = execCommand("ls " + getPath());
+                result = execCommand("ls " + getFixedPath());
             } catch (Exception e) {
                 throw new GATInvocationException("sshtrilead", e);
             }
-            // no stderr, and >0 stdout mean that the file exists
+            // no stderr, and >=0 stdout mean that the file exists
             boolean exists = result[STDERR].length() == 0
-                    && result[STDOUT].length() > 0;
+                    && result[STDOUT].length() >= 0;
             if (existsCacheEnable) {
-                existsCache.put(location, exists);
+                existsCache.put(fixedURI, exists);
             }
             return exists;
         }
@@ -534,7 +572,7 @@ public class SshTrileadFileAdaptor extends FileCpi {
 
     public org.gridlab.gat.io.File getAbsoluteFile()
             throws GATInvocationException {
-        String absUri = location.toString().replace(location.getPath(),
+        String absUri = fixedURI.toString().replace(fixedURI.getPath(),
                 getAbsolutePath());
         try {
             return GAT.createFile(gatContext, new URI(absUri));
@@ -544,7 +582,7 @@ public class SshTrileadFileAdaptor extends FileCpi {
     }
 
     public String getAbsolutePath() throws GATInvocationException {
-        if (isWindows(location)) {
+        if (isWindows(gatContext, fixedURI)) {
             throw new UnsupportedOperationException("Not implemented");
         } else {
             String[] result;
@@ -553,60 +591,69 @@ public class SshTrileadFileAdaptor extends FileCpi {
             } catch (Exception e) {
                 throw new GATInvocationException("sshtrilead", e);
             }
-            return result[STDOUT].replace("\n", "") + "/" + getPath();
+            return result[STDOUT].replace("\n", "") + "/" + getFixedPath();
         }
     }
 
     public boolean isDirectory() throws GATInvocationException {
+        logger.debug("isDirectory");
         if (isDirCacheEnable) {
-            if (isDirCache.containsKey(location)) {
-                return isDirCache.get(location);
+            if (isDirCache.containsKey(fixedURI)) {
+                return isDirCache.get(fixedURI);
             }
         }
-        if (isWindows(location)) {
+        if (isWindows(gatContext, fixedURI)) {
             throw new UnsupportedOperationException("Not implemented");
         } else {
             String[] result;
             try {
-                result = execCommand("test -d " + getPath());
+                result = execCommand("test -d " + getFixedPath());
             } catch (Exception e) {
                 throw new GATInvocationException("sshtrilead", e);
             }
             // 0=dir 1=other
             boolean isDir = result[EXIT_VALUE].equals("0");
             if (isDirCacheEnable) {
-                isDirCache.put(location, isDir);
+                isDirCache.put(fixedURI, isDir);
             }
             return isDir;
         }
     }
 
+    private final String getFixedPath() {
+        String res = fixedURI.getPath();
+        if (res == null) {
+            throw new Error("path not specified correctly in URI: " + fixedURI);
+        }
+        return res;
+    }
+
     public boolean isFile() throws GATInvocationException {
         if (isFileCacheEnable) {
-            if (isFileCache.containsKey(location)) {
-                return isFileCache.get(location);
+            if (isFileCache.containsKey(fixedURI)) {
+                return isFileCache.get(fixedURI);
             }
         }
-        if (isWindows(location)) {
+        if (isWindows(gatContext, fixedURI)) {
             throw new UnsupportedOperationException("Not implemented");
         } else {
             String[] result;
             try {
-                result = execCommand("test -f " + getPath());
+                result = execCommand("test -f " + getFixedPath());
             } catch (Exception e) {
                 throw new GATInvocationException("sshtrilead", e);
             }
             // 0=file 1=other
             boolean isFile = result[EXIT_VALUE].equals("0");
             if (isFileCacheEnable) {
-                isFileCache.put(location, isFile);
+                isFileCache.put(fixedURI, isFile);
             }
             return isFile;
         }
     }
 
     public boolean isHidden() throws GATInvocationException {
-        if (isWindows(location)) {
+        if (isWindows(gatContext, fixedURI)) {
             throw new UnsupportedOperationException("Not implemented");
         } else {
             return getName().startsWith(".");
@@ -614,12 +661,12 @@ public class SshTrileadFileAdaptor extends FileCpi {
     }
 
     public long length() throws GATInvocationException {
-        if (isWindows(location)) {
+        if (isWindows(gatContext, fixedURI)) {
             throw new UnsupportedOperationException("Not implemented");
         } else {
             String[] result;
             try {
-                result = execCommand("wc -c < " + getPath());
+                result = execCommand("wc -c < " + getFixedPath());
             } catch (Exception e) {
                 throw new GATInvocationException("sshtrilead", e);
             }
@@ -629,16 +676,16 @@ public class SshTrileadFileAdaptor extends FileCpi {
 
     public String[] list() throws GATInvocationException {
         if (listCacheEnable) {
-            if (listCache.containsKey(location)) {
-                return listCache.get(location);
+            if (listCache.containsKey(fixedURI)) {
+                return listCache.get(fixedURI);
             }
         }
-        if (isWindows(location)) {
+        if (isWindows(gatContext, fixedURI)) {
             throw new UnsupportedOperationException("Not implemented");
         } else {
             String[] result;
             try {
-                result = execCommand("ls -1 " + getPath());
+                result = execCommand("ls -1 " + getFixedPath());
             } catch (Exception e) {
                 throw new GATInvocationException("sshtrilead", e);
             }
@@ -647,43 +694,70 @@ public class SshTrileadFileAdaptor extends FileCpi {
             }
             String[] list = result[STDOUT].split("\n");
             if (listCacheEnable) {
-                listCache.put(location, list);
+                listCache.put(fixedURI, list);
             }
             return list;
         }
     }
 
+    public File[] listFiles() throws GATInvocationException {
+        if (!isDirectory()) {
+            throw new GATInvocationException("this is not a directory: "
+                    + fixedURI);
+        }
+
+        try {
+            String[] f = list();
+            File[] res = new File[f.length];
+
+            for (int i = 0; i < f.length; i++) {
+                String uri = fixedURI.toString();
+
+                if (!uri.endsWith("/")) {
+                    uri += "/";
+                }
+
+                uri += f[i];
+                res[i] = GAT.createFile(gatContext, new URI(uri));
+            }
+
+            return res;
+        } catch (Exception e) {
+            throw new GATInvocationException("file cpi", e);
+        }
+    }
+
     public boolean mkdir() throws GATInvocationException {
-        if (isWindows(location)) {
+        if (isWindows(gatContext, fixedURI)) {
             throw new UnsupportedOperationException("Not implemented");
         } else {
             String[] result;
             try {
-                result = execCommand("mkdir " + getPath());
+                result = execCommand("mkdir " + getFixedPath());
             } catch (Exception e) {
                 throw new GATInvocationException("sshtrilead", e);
             }
             boolean mkdir = result[STDERR].length() == 0;
             if (isDirCacheEnable && mkdir) {
-                isDirCache.put(location, mkdir);
+                isDirCache.put(fixedURI, mkdir);
             }
             return mkdir;
         }
     }
 
     public boolean mkdirs() throws GATInvocationException {
-        if (isWindows(location)) {
+        if (isWindows(gatContext, fixedURI)) {
             return super.mkdirs();
         } else {
             String[] result;
             try {
-                result = execCommand("mkdir -p " + getPath());
+                result = execCommand("mkdir -p " + getFixedPath());
             } catch (Exception e) {
                 throw new GATInvocationException("sshtrilead", e);
             }
             boolean mkdirs = result[STDERR].length() == 0;
             if (isDirCacheEnable && mkdirs) {
-                isDirCache.put(location, mkdirs);
+                isDirCache.put(fixedURI, mkdirs);
             }
             return mkdirs;
         }
@@ -707,35 +781,35 @@ public class SshTrileadFileAdaptor extends FileCpi {
         }
         // remove from cache...
         if (canReadCacheEnable) {
-            canReadCache.remove(location);
+            canReadCache.remove(fixedURI);
         }
         if (canWriteCacheEnable) {
-            canWriteCache.remove(location);
+            canWriteCache.remove(fixedURI);
         }
         if (isDirCacheEnable) {
-            isDirCache.remove(location);
+            isDirCache.remove(fixedURI);
         }
         if (isFileCacheEnable) {
-            isFileCache.remove(location);
+            isFileCache.remove(fixedURI);
         }
         if (existsCacheEnable) {
-            existsCache.remove(location);
+            existsCache.remove(fixedURI);
         }
         if (listCacheEnable) {
-            listCache.remove(location);
+            listCache.remove(fixedURI);
         }
-        // now let the location point to the new location (destination)
+        // now let the fixedURI point to the new fixedURI (destination)
         if (movedIntoExistingDir) {
             try {
-                location = new URI(destination + "/" + getName());
+                fixedURI = new URI(destination + "/" + getName());
             } catch (URISyntaxException e) {
                 // should not occur
             }
         } else {
-            location = destination;
+            fixedURI = destination;
         }
         if (existsCacheEnable) {
-            existsCache.put(location, true);
+            existsCache.put(fixedURI, true);
         }
         return;
     }
@@ -750,19 +824,20 @@ public class SshTrileadFileAdaptor extends FileCpi {
         if (!delete()) {
             return false;
         }
-        location = file.toGATURI();
+        fixedURI = file.toGATURI();
         return true;
     }
 
     public boolean setLastModified(long lastModified)
             throws GATInvocationException {
-        if (isWindows(location)) {
+        if (isWindows(gatContext, fixedURI)) {
             throw new UnsupportedOperationException("Not implemented");
         } else {
             String[] result;
             try {
                 result = execCommand("touch -t "
-                        + toTouchDateFormat(lastModified) + " " + getPath());
+                        + toTouchDateFormat(lastModified) + " "
+                        + getFixedPath());
             } catch (Exception e) {
                 throw new GATInvocationException("sshtrilead", e);
             }
@@ -778,16 +853,44 @@ public class SshTrileadFileAdaptor extends FileCpi {
     }
 
     public boolean setReadOnly() throws GATInvocationException {
-        if (isWindows(location)) {
+        if (isWindows(gatContext, fixedURI)) {
             throw new UnsupportedOperationException("Not implemented");
         } else {
             String[] result;
             try {
-                result = execCommand("chmod a-w " + getPath());
+                result = execCommand("chmod a-w " + getFixedPath());
             } catch (Exception e) {
                 throw new GATInvocationException("sshtrilead", e);
             }
             return result[STDERR].length() == 0;
         }
     }
+
+//    protected void copyDirContents(URI destination)
+//            throws GATInvocationException {
+//        // list all the files and copy recursively.
+//        if (logger.isInfoEnabled()) {
+//            logger.info("copyDirectory contents '" + fixedURI + "' to '"
+//                    + destination + "'");
+//        }
+//        File[] files = (File[]) listFiles();
+//        if (files == null) {
+//            if (logger.isInfoEnabled()) {
+//                logger.info("copyDirectory: no files in src directory: "
+//                        + fixedURI);
+//            }
+//            return;
+//        }
+//        for (File file : files) {
+//            FileInterface f = file.getFileInterface();
+//            if (logger.isInfoEnabled()) {
+//                logger.info("copyDirectory: file to copy = " + f);
+//            }
+//            try {
+//                f.copy(new URI(destination + "/" + f.getName()));
+//            } catch (URISyntaxException e) {
+//                // would not happen
+//            }
+//        }
+//    }
 }

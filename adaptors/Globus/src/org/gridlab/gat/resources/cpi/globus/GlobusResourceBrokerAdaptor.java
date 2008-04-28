@@ -170,26 +170,26 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
             }
         }
 
-        if (sd.getStdout() != null || sd.getStdoutStream() != null) {
+        if (sd.getStdoutFile() != null || sd.getStdoutStream() != null) {
             // if (sandbox != null && sd.getStdout() != null) {
-            rsl += (" (stdout = " + sd.getStdout().getName() + ")");
+            rsl += (" (stdout = " + sd.getStdoutFile().getName() + ")");
             // } else {
             // rsl += (" (stdout = stdout)");
             // }
         }
 
-        if (sd.getStderr() != null || sd.getStderrStream() != null) {
+        if (sd.getStderrFile() != null || sd.getStderrStream() != null) {
             // if (sandbox != null && sd.getStderr() != null) {
-            rsl += (" (stderr = " + sd.getStderr().getName() + ")");
+            rsl += (" (stderr = " + sd.getStderrFile().getName() + ")");
             // } else {
             // rsl += (" (stderr = stderr)");
             // }
         }
 
-        org.gridlab.gat.io.File stdin = sd.getStdin();
+        org.gridlab.gat.io.File stdin = sd.getStdinFile();
         if (stdin != null) {
             if (sandbox != null) {
-                rsl += (" (stdin = " + sd.getStdin().getName() + ")");
+                rsl += (" (stdin = " + sd.getStdinFile().getName() + ")");
             }
         }
 
@@ -490,7 +490,8 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
 
         // if output should be streamed, don't poststage it!
         Sandbox sandbox = new Sandbox(gatContext, description, host, null,
-                true, true, !sd.stdoutIsStreaming(), !sd.stderrIsStreaming());
+                true, true, sd.getStdoutFile() != null,
+                sd.getStderrFile() != null);
         GlobusJob job = new GlobusJob(gatContext, description, sandbox);
         if (isExitValueEnabled(description)) {
             job.setExitValueEnabled(isExitValueEnabled(description),
@@ -502,11 +503,11 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
             job.addMetricListener(listener, metric);
         }
 
-        if (sd.stderrIsStreaming()) {
+        if (sd.getStderrStream() != null) {
             job.startOutputForwarder(sandbox.getResolvedStderr(), sd
                     .getStderrStream());
         }
-        if (sd.stdoutIsStreaming()) {
+        if (sd.getStdoutStream() != null) {
             job.startOutputForwarder(sandbox.getResolvedStdout(), sd
                     .getStdoutStream());
         }
