@@ -416,7 +416,8 @@ public class SshTrileadFileAdaptor extends FileCpi {
             if (!connected) {
                 throw new Exception("unable to authenticate");
             } else {
-                logger.info("putting connection for host " + host + " into cache");
+                logger.info("putting connection for host " + host
+                        + " into cache");
                 connections.put(host, newConnection);
             }
             return newConnection;
@@ -866,31 +867,31 @@ public class SshTrileadFileAdaptor extends FileCpi {
         }
     }
 
-//    protected void copyDirContents(URI destination)
-//            throws GATInvocationException {
-//        // list all the files and copy recursively.
-//        if (logger.isInfoEnabled()) {
-//            logger.info("copyDirectory contents '" + fixedURI + "' to '"
-//                    + destination + "'");
-//        }
-//        File[] files = (File[]) listFiles();
-//        if (files == null) {
-//            if (logger.isInfoEnabled()) {
-//                logger.info("copyDirectory: no files in src directory: "
-//                        + fixedURI);
-//            }
-//            return;
-//        }
-//        for (File file : files) {
-//            FileInterface f = file.getFileInterface();
-//            if (logger.isInfoEnabled()) {
-//                logger.info("copyDirectory: file to copy = " + f);
-//            }
-//            try {
-//                f.copy(new URI(destination + "/" + f.getName()));
-//            } catch (URISyntaxException e) {
-//                // would not happen
-//            }
-//        }
-//    }
+    // protected void copyDirContents(URI destination)
+    // throws GATInvocationException {
+    // // list all the files and copy recursively.
+    // if (logger.isInfoEnabled()) {
+    // logger.info("copyDirectory contents '" + fixedURI + "' to '"
+    // + destination + "'");
+    // }
+    // File[] files = (File[]) listFiles();
+    // if (files == null) {
+    // if (logger.isInfoEnabled()) {
+    // logger.info("copyDirectory: no files in src directory: "
+    // + fixedURI);
+    // }
+    // return;
+    // }
+    // for (File file : files) {
+    // FileInterface f = file.getFileInterface();
+    // if (logger.isInfoEnabled()) {
+    // logger.info("copyDirectory: file to copy = " + f);
+    // }
+    // try {
+    // f.copy(new URI(destination + "/" + f.getName()));
+    // } catch (URISyntaxException e) {
+    // // would not happen
+    // }
+    // }
+    // }
 }

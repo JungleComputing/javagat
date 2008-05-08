@@ -51,6 +51,9 @@ class SshTrileadContextCreator implements SecurityContextCreator {
             if (c.getKeyfile() != null && c.getKeyfile().refersToLocalHost()) {
                 securityInfo.put("keyfile", new java.io.File(c.getKeyfile()
                         .getPath()));
+            } else {
+                securityInfo.put("keyfile", SshTrileadSecurityUtils
+                        .getDefaultPrivateKeyfile());
             }
             return securityInfo;
         } else if (inContext instanceof PasswordSecurityContext) {
@@ -90,11 +93,11 @@ public class SshTrileadSecurityUtils {
         Map<String, Object> securityInfo = new HashMap<String, Object>();
         securityInfo.put("username", SecurityContextUtils.getUser(gatContext,
                 null, location));
-        securityInfo.put("keyfile", getDefaultPrivateKeyfile(gatContext));
+        securityInfo.put("keyfile", getDefaultPrivateKeyfile());
         return securityInfo;
     }
 
-    private static java.io.File getDefaultPrivateKeyfile(GATContext context) {
+    protected static java.io.File getDefaultPrivateKeyfile() {
         String keyfile = null;
 
         // no key file given, try id_dsa and id_rsa
