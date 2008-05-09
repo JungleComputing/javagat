@@ -67,11 +67,11 @@ public class File extends java.io.File implements Monitorable, Advertisable,
      * a physical file identified by the passed URI.
      * 
      * @param loc
-     *            The new location
+     *                The new location
      * @throws GATInvocationException
-     *             Thrown upon problems accessing the remote instance
+     *                 Thrown upon problems accessing the remote instance
      * @throws java.io.IOException
-     *             Upon non-remote IO problem
+     *                 Upon non-remote IO problem
      */
     public void copy(URI loc) throws GATInvocationException {
         f.copy(loc);
@@ -121,12 +121,12 @@ public class File extends java.io.File implements Monitorable, Advertisable,
      * a physical file identified by the passed URI.
      * 
      * @param location
-     *            The URI to which to move the physical file corresponding to
-     *            this File instance
+     *                The URI to which to move the physical file corresponding
+     *                to this File instance
      * @throws GATInvocationException
-     *             Thrown upon problems accessing the remote instance
+     *                 Thrown upon problems accessing the remote instance
      * @throws IOException
-     *             Upon non-remote IO problem
+     *                 Upon non-remote IO problem
      */
     public void move(URI location) throws GATInvocationException {
         f.move(location);
@@ -587,7 +587,7 @@ public class File extends java.io.File implements Monitorable, Advertisable,
      * Read a file object from a stream.
      * 
      * @param stream
-     *            the stream to write to
+     *                the stream to write to
      * @throws IOException
      * @throws ClassNotFoundException
      */
@@ -609,7 +609,7 @@ public class File extends java.io.File implements Monitorable, Advertisable,
      * GATContext.
      * 
      * @param stream
-     *            the stream to write to
+     *                the stream to write to
      * @throws IOException
      */
     private void writeObject(java.io.ObjectOutputStream stream)

@@ -42,11 +42,11 @@ public interface FileInterface extends Monitorable, Advertisable,
      * a physical file identified by the passed URI.
      * 
      * @param loc
-     *            The new location
+     *                The new location
      * @throws GATInvocationException
-     *             Thrown upon problems accessing the remote instance
+     *                 Thrown upon problems accessing the remote instance
      * @throws java.io.IOException
-     *             Upon non-remote IO problem
+     *                 Upon non-remote IO problem
      */
     public void copy(URI loc) throws GATInvocationException;
 
@@ -55,12 +55,12 @@ public interface FileInterface extends Monitorable, Advertisable,
      * a physical file identified by the passed URI.
      * 
      * @param location
-     *            The URI to which to move the physical file corresponding to
-     *            this File instance
+     *                The URI to which to move the physical file corresponding
+     *                to this File instance
      * @throws GATInvocationException
-     *             Thrown upon problems accessing the remote instance
+     *                 Thrown upon problems accessing the remote instance
      * @throws IOException
-     *             Upon non-remote IO problem
+     *                 Upon non-remote IO problem
      */
     public void move(URI location) throws GATInvocationException;
 
@@ -84,7 +84,7 @@ public interface FileInterface extends Monitorable, Advertisable,
      * Equals method of URI.
      * 
      * @param object
-     *            The Object to test for equality
+     *                The Object to test for equality
      * @return A boolean indicating equality
      */
     public boolean equals(Object object);

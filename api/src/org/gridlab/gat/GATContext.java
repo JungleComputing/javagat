@@ -40,7 +40,7 @@ public class GATContext implements Cloneable, Serializable {
      * Adds the passed {@link SecurityContext}.
      * 
      * @param securityContext
-     *            A {@link SecurityContext}.
+     *                A {@link SecurityContext}.
      */
     public void addSecurityContext(SecurityContext securityContext) {
         securityContexts.add(securityContext);
@@ -50,7 +50,7 @@ public class GATContext implements Cloneable, Serializable {
      * Removes the passed {@link SecurityContext}.
      * 
      * @param securityContext
-     *            A {@link SecurityContext}.
+     *                A {@link SecurityContext}.
      */
     public void removeSecurityContext(SecurityContext securityContext) {
         securityContexts.remove(securityContext);
@@ -71,8 +71,8 @@ public class GATContext implements Cloneable, Serializable {
      * with this {@link GATContext}.
      * 
      * @param type
-     *            A {@link SecurityContext} type, a {@link java.lang.String},
-     *            e.g., org.gridlab.gat.security.PasswordSecurityContext;
+     *                A {@link SecurityContext} type, a {@link java.lang.String},
+     *                e.g., org.gridlab.gat.security.PasswordSecurityContext;
      * @return {@link java.util.List} of {@link SecurityContext}s.
      */
     public List<SecurityContext> getSecurityContextsByType(String type) {
@@ -99,7 +99,7 @@ public class GATContext implements Cloneable, Serializable {
      * associated with the {@link GATContext} at any one time.
      * 
      * @param newPreferences
-     *            A {@link Preferences} object.
+     *                A {@link Preferences} object.
      */
     public void addPreferences(Preferences newPreferences) {
         if (newPreferences != null) {
@@ -113,9 +113,9 @@ public class GATContext implements Cloneable, Serializable {
      * with a {@link Preferences} object.
      * 
      * @param key
-     *            The key of the single preference
+     *                The key of the single preference
      * @param value
-     *            The value that belongs to the key of the single preference
+     *                The value that belongs to the key of the single preference
      */
     public void addPreference(String key, Object value) {
         preferences.put(key, value);
@@ -158,7 +158,7 @@ public class GATContext implements Cloneable, Serializable {
      * Deserialize this {@link GATContext}, by reading the {@link Preferences}
      * 
      * @param stream
-     *            the stream to write to
+     *                the stream to write to
      * @throws IOException
      * @throws ClassNotFoundException
      */
@@ -175,7 +175,7 @@ public class GATContext implements Cloneable, Serializable {
      * Don't write the {@link SecurityContext}s because of security issues.
      * 
      * @param stream
-     *            the stream to write to
+     *                the stream to write to
      * @throws IOException
      */
     private void writeObject(java.io.ObjectOutputStream stream)

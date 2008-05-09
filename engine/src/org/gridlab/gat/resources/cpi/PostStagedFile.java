@@ -130,7 +130,7 @@ public class PostStagedFile extends StagedFile {
 
     /**
      * @param isStderr
-     *            the isStderr to set
+     *                the isStderr to set
      */
     public void setStderr(boolean isStderr) {
         this.isStderr = isStderr;
@@ -145,7 +145,7 @@ public class PostStagedFile extends StagedFile {
 
     /**
      * @param isStdout
-     *            the isStdout to set
+     *                the isStdout to set
      */
     public void setStdout(boolean isStdout) {
         this.isStdout = isStdout;

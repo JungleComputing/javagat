@@ -27,9 +27,9 @@ public class MetaData implements Serializable {
      * Put an entry in the {@link MetaData} object.
      * 
      * @param key
-     *            the key that corresponds to the given value
+     *                the key that corresponds to the given value
      * @param value
-     *            the value that corresponds to the given key
+     *                the value that corresponds to the given key
      */
     public void put(String key, String value) {
         data.put(key, value);
@@ -39,7 +39,7 @@ public class MetaData implements Serializable {
      * Gets the value associated to the provided key.
      * 
      * @param key
-     *            the key for which the associated value should be retrieved
+     *                the key for which the associated value should be retrieved
      * @return the associated value
      */
     public String get(String key) {
@@ -50,7 +50,7 @@ public class MetaData implements Serializable {
      * Removes an entry specified by the provided key.
      * 
      * @param key
-     *            the key for which the entry should be removed
+     *                the key for which the entry should be removed
      * @return the associated value of the provided key
      */
     public String remove(String key) {
@@ -61,7 +61,7 @@ public class MetaData implements Serializable {
      * Gets the i-th key of the MetaData.
      * 
      * @param i
-     *            the position of the key
+     *                the position of the key
      * @return the key at position i
      */
     public String getKey(int i) {
@@ -72,7 +72,7 @@ public class MetaData implements Serializable {
      * Gets the value associated to the key retrieved by getKey(i).
      * 
      * @param i
-     *            the position of the value
+     *                the position of the value
      * @return the value associated with the key at position i
      */
     @SuppressWarnings("unchecked")
@@ -95,7 +95,7 @@ public class MetaData implements Serializable {
      * users should not call this method.</b>
      * 
      * @param query
-     *            the {@link MetaData} object to compare to.
+     *                the {@link MetaData} object to compare to.
      * @return <code>true</code>: the two objects match. <code>false</code>:
      *         otherwise.
      * 

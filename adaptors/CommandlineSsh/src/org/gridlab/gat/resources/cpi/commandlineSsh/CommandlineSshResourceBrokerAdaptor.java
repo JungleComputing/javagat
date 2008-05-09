@@ -36,7 +36,7 @@ public class CommandlineSshResourceBrokerAdaptor extends ResourceBrokerCpi {
      * corresponding to the passed GATContext.
      * 
      * @param gatContext
-     *            A GATContext which will be used to broker resources
+     *                A GATContext which will be used to broker resources
      */
     public CommandlineSshResourceBrokerAdaptor(GATContext gatContext,
             URI brokerURI) throws GATObjectCreationException {

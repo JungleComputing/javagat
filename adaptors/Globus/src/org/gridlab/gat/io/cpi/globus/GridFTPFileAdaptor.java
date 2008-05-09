@@ -34,11 +34,11 @@ public class GridFTPFileAdaptor extends GlobusFileAdaptor {
      * by the passed GATContext.
      * 
      * @param location
-     *            A URI which represents the URI corresponding to the physical
-     *            file.
+     *                A URI which represents the URI corresponding to the
+     *                physical file.
      * @param gatContext
-     *            A GATContext which is used to determine the access rights for
-     *            this LocalFileAdaptor.
+     *                A GATContext which is used to determine the access rights
+     *                for this LocalFileAdaptor.
      */
     public GridFTPFileAdaptor(GATContext gatContext, URI location)
             throws GATObjectCreationException {
@@ -119,7 +119,7 @@ public class GridFTPFileAdaptor extends GlobusFileAdaptor {
      * Create an FTP Client.
      * 
      * @param hostURI
-     *            the uri of the FTP host
+     *                the uri of the FTP host
      */
     protected FTPClient createClient(GATContext gatContext,
             Preferences additionalPreferences, URI hostURI)

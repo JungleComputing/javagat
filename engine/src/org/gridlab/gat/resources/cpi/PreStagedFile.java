@@ -43,7 +43,7 @@ public class PreStagedFile extends StagedFile {
 
     /**
      * @param exe
-     *            the exe to set
+     *                the exe to set
      */
     public void setExe(String exe) {
         this.exe = exe;
@@ -58,7 +58,7 @@ public class PreStagedFile extends StagedFile {
 
     /**
      * @param isExecutable
-     *            the isExecutable to set
+     *                the isExecutable to set
      */
     public void setExecutable(boolean isExecutable) {
         this.isExecutable = isExecutable;
@@ -73,7 +73,7 @@ public class PreStagedFile extends StagedFile {
 
     /**
      * @param isStdIn
-     *            the isStdIn to set
+     *                the isStdIn to set
      */
     public void setStdIn(boolean isStdIn) {
         this.isStdIn = isStdIn;

@@ -59,7 +59,8 @@ public class SocketEndpointAdaptor extends EndpointCpi implements Serializable {
 
         try {
             localAddress = GATEngine.getLocalHostAddress();
-            serverSocket = new ServerSocket(0, 0, localAddress); // bind to any
+            serverSocket = new ServerSocket(0, 0, localAddress); // bind to
+                                                                    // any
 
             // free port
             localPort = serverSocket.getLocalPort();
@@ -82,11 +83,11 @@ public class SocketEndpointAdaptor extends EndpointCpi implements Serializable {
 
         if (localEndpoint) {
             return localAddress.equals(other.localAddress)
-                && (localPort == other.localPort);
+                    && (localPort == other.localPort);
         }
 
         return remoteAddress.equals(other.remoteAddress)
-            && (remotePort == other.remotePort);
+                && (remotePort == other.remotePort);
     }
 
     public int hashCode() {
@@ -104,7 +105,7 @@ public class SocketEndpointAdaptor extends EndpointCpi implements Serializable {
     public Pipe connect() throws GATInvocationException {
         if (localEndpoint) {
             throw new GATInvocationException(
-                "Trying to connect an endpoint that was not obtained through the advert service");
+                    "Trying to connect an endpoint that was not obtained through the advert service");
         }
 
         try {
@@ -119,7 +120,7 @@ public class SocketEndpointAdaptor extends EndpointCpi implements Serializable {
     public Pipe listen() throws GATInvocationException {
         return listen(0);
     }
-    
+
     public Pipe listen(int timeout) throws GATInvocationException {
         if (!localEndpoint) {
             throw new GATInvocationException("cannot listen to local endpoint");
@@ -132,7 +133,7 @@ public class SocketEndpointAdaptor extends EndpointCpi implements Serializable {
             return new SocketPipe(gatContext, s);
         } catch (IOException e) {
             throw new GATInvocationException("socketPipe", e);
-        }        
+        }
     }
 
     public void listen(PipeListener pipeListener) throws GATInvocationException {
@@ -140,7 +141,9 @@ public class SocketEndpointAdaptor extends EndpointCpi implements Serializable {
             throw new GATInvocationException("cannot listen to local endpoint");
         }
 
-        throw new UnsupportedOperationException("Not implemented"); // TODO implement listen
+        throw new UnsupportedOperationException("Not implemented"); // TODO
+                                                                    // implement
+                                                                    // listen
     }
 
     /**
@@ -152,7 +155,7 @@ public class SocketEndpointAdaptor extends EndpointCpi implements Serializable {
 
     /**
      * @param localIP
-     *            The localIP to set.
+     *                The localIP to set.
      */
     public void setLocalIP(String localIP) {
         this.localIP = localIP;
@@ -167,7 +170,7 @@ public class SocketEndpointAdaptor extends EndpointCpi implements Serializable {
 
     /**
      * @param localPort
-     *            The localPort to set.
+     *                The localPort to set.
      */
     public void setLocalPort(int localPort) {
         this.localPort = localPort;
@@ -192,7 +195,7 @@ public class SocketEndpointAdaptor extends EndpointCpi implements Serializable {
             Preferences preferences, String s) {
         try {
             SocketEndpointAdaptor res = (SocketEndpointAdaptor) GATEngine
-                .defaultUnmarshal(SocketEndpointAdaptor.class, s);
+                    .defaultUnmarshal(SocketEndpointAdaptor.class, s);
 
             res.remotePort = res.localPort;
             res.localPort = -1;
@@ -211,12 +214,13 @@ public class SocketEndpointAdaptor extends EndpointCpi implements Serializable {
 
     public String toString() {
         return "endpoint: localPort = " + localPort + ", localAddr = "
-            + localAddress + ", remotePort = " + remotePort + ", remoteAddr = "
-            + remoteAddress;
+                + localAddress + ", remotePort = " + remotePort
+                + ", remoteAddr = " + remoteAddress;
     }
-    
+
     // For some reason, we need this for castor serialization
-    public List<MetricDefinition> getMetricDefinitions() throws GATInvocationException {
+    public List<MetricDefinition> getMetricDefinitions()
+            throws GATInvocationException {
         return null;
     }
 

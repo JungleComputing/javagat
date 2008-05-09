@@ -182,7 +182,7 @@ public interface ResourceBroker {
      * This operation takes an array of {@link JobDescription}s, and submits
      * the specified jobs to some underlying resource management or allocation
      * system. On success, a {@link Job} instance is returned, which represents
-     * the job. Upon failing to submit the job, an exception is issued. 
+     * the job. Upon failing to submit the job, an exception is issued.
      * <p>
      * In former releases some resource broker adaptors would check the
      * "resourcebroker.jobmanager" preference to see to which jobmanager (e.g.,

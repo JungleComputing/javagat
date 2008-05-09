@@ -48,11 +48,11 @@ public abstract class FileCpi implements FileInterface, java.io.Serializable {
      * by the passed GATContext.
      * 
      * @param location
-     *            A Location which represents the URI corresponding to the
-     *            physical file.
+     *                A Location which represents the URI corresponding to the
+     *                physical file.
      * @param gatContext
-     *            A GATContext which is used to determine the access rights for
-     *            this FileCpi.
+     *                A GATContext which is used to determine the access rights
+     *                for this FileCpi.
      */
     protected FileCpi(GATContext gatContext, URI location) {
         this.gatContext = gatContext;
@@ -87,7 +87,7 @@ public abstract class FileCpi implements FileInterface, java.io.Serializable {
      * Equals method of URI.
      * 
      * @param object
-     *            The Object to test for equality
+     *                The Object to test for equality
      * @return A boolean indicating equality
      */
     public final boolean equals(Object object) {
@@ -114,12 +114,12 @@ public abstract class FileCpi implements FileInterface, java.io.Serializable {
      * a physical file identified by the passed URI.
      * 
      * @param destination
-     *            The URI to which to move the physical file corresponding to
-     *            this File instance
+     *                The URI to which to move the physical file corresponding
+     *                to this File instance
      * @throws GATInvocationException
-     *             Thrown upon problems accessing the remote instance
+     *                 Thrown upon problems accessing the remote instance
      * @throws java.io.IOException
-     *             Upon non-remote IO problem
+     *                 Upon non-remote IO problem
      */
     public void move(URI destination) throws GATInvocationException {
         // Step 1: Copy the original file

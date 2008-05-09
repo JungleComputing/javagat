@@ -136,11 +136,11 @@ public class GAT {
      * determined by the default {@link GATContext}.
      * 
      * @param location
-     *            A {@link URI} which represents the URI corresponding to the
-     *            physical file.
+     *                A {@link URI} which represents the URI corresponding to
+     *                the physical file.
      * @return The {@link File} object
      * @throws GATObjectCreationException
-     *             Thrown upon creation problems
+     *                 Thrown upon creation problems
      */
     public static org.gridlab.gat.io.File createFile(URI location)
             throws GATObjectCreationException {
@@ -153,11 +153,11 @@ public class GAT {
      * rights are determined by the default {@link GATContext}.
      * 
      * @param location
-     *            A {@link String} which represents the URI corresponding to the
-     *            physical file.
+     *                A {@link String} which represents the URI corresponding to
+     *                the physical file.
      * @return The {@link File} object
      * @throws GATObjectCreationException
-     *             Thrown upon creation problems
+     *                 Thrown upon creation problems
      */
     public static org.gridlab.gat.io.File createFile(String location)
             throws GATObjectCreationException {
@@ -171,17 +171,17 @@ public class GAT {
      * {@link Preferences}.
      * 
      * @param location
-     *            A {@link URI} which represents the URI corresponding to the
-     *            physical file.
+     *                A {@link URI} which represents the URI corresponding to
+     *                the physical file.
      * @param preferences
-     *            A {@link Preferences} which is used to determine the user's
-     *            preferences for this {@link File}, these {@link Preferences}
-     *            are added to the Preferences from
-     *            {@link GATContext#getPreferences()}, possibly overriding
-     *            them.
+     *                A {@link Preferences} which is used to determine the
+     *                user's preferences for this {@link File}, these
+     *                {@link Preferences} are added to the Preferences from
+     *                {@link GATContext#getPreferences()}, possibly overriding
+     *                them.
      * @return The {@link File} object
      * @throws GATObjectCreationException
-     *             Thrown upon creation problems
+     *                 Thrown upon creation problems
      */
     public static org.gridlab.gat.io.File createFile(Preferences preferences,
             URI location) throws GATObjectCreationException {
@@ -195,17 +195,17 @@ public class GAT {
      * {@link Preferences}.
      * 
      * @param location
-     *            A {@link String} which represents the URI corresponding to the
-     *            physical file.
+     *                A {@link String} which represents the URI corresponding to
+     *                the physical file.
      * @param preferences
-     *            A {@link Preferences} which is used to determine the user's
-     *            preferences for this {@link File}, these {@link Preferences}
-     *            are added to the Preferences from
-     *            {@link GATContext#getPreferences()}, possibly overriding
-     *            them.
+     *                A {@link Preferences} which is used to determine the
+     *                user's preferences for this {@link File}, these
+     *                {@link Preferences} are added to the Preferences from
+     *                {@link GATContext#getPreferences()}, possibly overriding
+     *                them.
      * @return The {@link File} object
      * @throws GATObjectCreationException
-     *             Thrown upon creation problems
+     *                 Thrown upon creation problems
      */
     public static org.gridlab.gat.io.File createFile(Preferences preferences,
             String location) throws GATObjectCreationException {
@@ -218,14 +218,14 @@ public class GAT {
      * determined by the passed {@link GATContext}.
      * 
      * @param location
-     *            A {@link URI} which represents the URI corresponding to the
-     *            physical file.
+     *                A {@link URI} which represents the URI corresponding to
+     *                the physical file.
      * @param gatContext
-     *            A {@link GATContext} which is used to determine the access
-     *            rights for this {@link File}.
+     *                A {@link GATContext} which is used to determine the access
+     *                rights for this {@link File}.
      * @return The {@link File} object
      * @throws GATObjectCreationException
-     *             Thrown upon creation problems
+     *                 Thrown upon creation problems
      */
     public static org.gridlab.gat.io.File createFile(GATContext gatContext,
             URI location) throws GATObjectCreationException {
@@ -238,14 +238,14 @@ public class GAT {
      * rights are determined by the passed {@link GATContext}.
      * 
      * @param location
-     *            A URI (in {@link String} format) which represents the URI
-     *            corresponding to the physical file.
+     *                A URI (in {@link String} format) which represents the URI
+     *                corresponding to the physical file.
      * @param gatContext
-     *            A {@link GATContext} which is used to determine the access
-     *            rights for this {@link File}.
+     *                A {@link GATContext} which is used to determine the access
+     *                rights for this {@link File}.
      * @return The {@link File} object
      * @throws GATObjectCreationException
-     *             Thrown upon creation problems
+     *                 Thrown upon creation problems
      */
     public static org.gridlab.gat.io.File createFile(GATContext gatContext,
             String location) throws GATObjectCreationException {
@@ -262,20 +262,20 @@ public class GAT {
      * rights are determined by the passed {@link GATContext}.
      * 
      * @param location
-     *            A URI (in {@link String} format) which represents the URI
-     *            corresponding to the physical file.
+     *                A URI (in {@link String} format) which represents the URI
+     *                corresponding to the physical file.
      * @param gatContext
-     *            A {@link GATContext} which is used to determine the access
-     *            rights for this {@link File}.
+     *                A {@link GATContext} which is used to determine the access
+     *                rights for this {@link File}.
      * @param preferences
-     *            A {@link Preferences} which is used to determine the user's
-     *            preferences for this {@link File}, these {@link Preferences}
-     *            are added to the Preferences from
-     *            {@link GATContext#getPreferences()}, possibly overriding
-     *            them.
+     *                A {@link Preferences} which is used to determine the
+     *                user's preferences for this {@link File}, these
+     *                {@link Preferences} are added to the Preferences from
+     *                {@link GATContext#getPreferences()}, possibly overriding
+     *                them.
      * @return The {@link File} object
      * @throws GATObjectCreationException
-     *             Thrown upon creation problems
+     *                 Thrown upon creation problems
      */
     public static org.gridlab.gat.io.File createFile(GATContext gatContext,
             Preferences preferences, String location)
@@ -293,20 +293,20 @@ public class GAT {
      * determined by the passed {@link GATContext}.
      * 
      * @param location
-     *            A {@link URI} which represents the URI corresponding to the
-     *            physical file.
+     *                A {@link URI} which represents the URI corresponding to
+     *                the physical file.
      * @param gatContext
-     *            A {@link GATContext} which is used to determine the access
-     *            rights for this {@link File}.
+     *                A {@link GATContext} which is used to determine the access
+     *                rights for this {@link File}.
      * @param preferences
-     *            A {@link Preferences} which is used to determine the user's
-     *            preferences for this {@link File}, these {@link Preferences}
-     *            are added to the Preferences from
-     *            {@link GATContext#getPreferences()}, possibly overriding
-     *            them.
+     *                A {@link Preferences} which is used to determine the
+     *                user's preferences for this {@link File}, these
+     *                {@link Preferences} are added to the Preferences from
+     *                {@link GATContext#getPreferences()}, possibly overriding
+     *                them.
      * @return The {@link File} object
      * @throws GATObjectCreationException
-     *             Thrown upon creation problems
+     *                 Thrown upon creation problems
      */
     public static org.gridlab.gat.io.File createFile(GATContext gatContext,
             Preferences preferences, URI location)
@@ -324,14 +324,14 @@ public class GAT {
      * (in {@link String} format) instance using the default {@link GATContext}.
      * 
      * @param name
-     *            The name in the logical name space
+     *                The name in the logical name space
      * @param mode
-     *            The mode to use for opening this logical file. Choose from
-     *            {@link LogicalFile#OPEN}, {@link LogicalFile#CREATE},
-     *            {@link LogicalFile#TRUNCATE}
+     *                The mode to use for opening this logical file. Choose from
+     *                {@link LogicalFile#OPEN}, {@link LogicalFile#CREATE},
+     *                {@link LogicalFile#TRUNCATE}
      * @return The {@link LogicalFile} object
      * @throws GATObjectCreationException
-     *             Thrown upon creation problems
+     *                 Thrown upon creation problems
      */
     public static LogicalFile createLogicalFile(String name, int mode)
             throws GATObjectCreationException {
@@ -344,16 +344,16 @@ public class GAT {
      * with additional {@link Preferences}.
      * 
      * @param preferences
-     *            The additional {@link Preferences}
+     *                The additional {@link Preferences}
      * @param name
-     *            The name in the logical name space
+     *                The name in the logical name space
      * @param mode
-     *            The mode to use for opening this logical file. Choose from
-     *            {@link LogicalFile#OPEN}, {@link LogicalFile#CREATE},
-     *            {@link LogicalFile#TRUNCATE}
+     *                The mode to use for opening this logical file. Choose from
+     *                {@link LogicalFile#OPEN}, {@link LogicalFile#CREATE},
+     *                {@link LogicalFile#TRUNCATE}
      * @return The {@link LogicalFile} object
      * @throws GATObjectCreationException
-     *             Thrown upon creation problems
+     *                 Thrown upon creation problems
      */
     public static LogicalFile createLogicalFile(Preferences preferences,
             String name, int mode) throws GATObjectCreationException {
@@ -365,16 +365,16 @@ public class GAT {
      * (in {@link String} format) instance using a specified {@link GATContext}.
      * 
      * @param gatContext
-     *            The {@link GATContext}
+     *                The {@link GATContext}
      * @param name
-     *            The name in the logical name space
+     *                The name in the logical name space
      * @param mode
-     *            The mode to use for opening this logical file. Choose from
-     *            {@link LogicalFile#OPEN}, {@link LogicalFile#CREATE},
-     *            {@link LogicalFile#TRUNCATE}
+     *                The mode to use for opening this logical file. Choose from
+     *                {@link LogicalFile#OPEN}, {@link LogicalFile#CREATE},
+     *                {@link LogicalFile#TRUNCATE}
      * @return The {@link LogicalFile} object
      * @throws GATObjectCreationException
-     *             Thrown upon creation problems
+     *                 Thrown upon creation problems
      */
     public static LogicalFile createLogicalFile(GATContext gatContext,
             String name, int mode) throws GATObjectCreationException {
@@ -387,18 +387,18 @@ public class GAT {
      * with additional {@link Preferences}.
      * 
      * @param gatContext
-     *            The {@link GATContext}
+     *                The {@link GATContext}
      * @param preferences
-     *            The additional {@link Preferences}
+     *                The additional {@link Preferences}
      * @param name
-     *            The name in the logical name space
+     *                The name in the logical name space
      * @param mode
-     *            The mode to use for opening this logical file. Choose from
-     *            {@link LogicalFile#OPEN}, {@link LogicalFile#CREATE},
-     *            {@link LogicalFile#TRUNCATE}
+     *                The mode to use for opening this logical file. Choose from
+     *                {@link LogicalFile#OPEN}, {@link LogicalFile#CREATE},
+     *                {@link LogicalFile#TRUNCATE}
      * @return The {@link LogicalFile} object
      * @throws GATObjectCreationException
-     *             Thrown upon creation problems
+     *                 Thrown upon creation problems
      */
     public static LogicalFile createLogicalFile(GATContext gatContext,
             Preferences preferences, String name, int mode)
@@ -417,10 +417,10 @@ public class GAT {
      * rights are determined by the default {@link GATContext}.
      * 
      * @param location
-     *            location of the {@link File} to read from
+     *                location of the {@link File} to read from
      * @return The {@link FileInputStream} object
      * @throws GATObjectCreationException
-     *             Thrown upon creation problems
+     *                 Thrown upon creation problems
      */
     public static FileInputStream createFileInputStream(URI location)
             throws GATObjectCreationException {
@@ -434,12 +434,12 @@ public class GAT {
      * {@link Preferences}.
      * 
      * @param location
-     *            location of the {@link File} to read from
+     *                location of the {@link File} to read from
      * @param preferences
-     *            The additional {@link Preferences}
+     *                The additional {@link Preferences}
      * @return The {@link FileInputStream} object
      * @throws GATObjectCreationException
-     *             Thrown upon creation problems
+     *                 Thrown upon creation problems
      */
     public static FileInputStream createFileInputStream(
             Preferences preferences, URI location)
@@ -453,13 +453,13 @@ public class GAT {
      * rights are determined by the passed {@link GATContext}.
      * 
      * @param location
-     *            location of the {@link File} to read from
+     *                location of the {@link File} to read from
      * @param gatContext
-     *            A {@link GATContext} which is used to determine the access
-     *            rights for this {@link File}.
+     *                A {@link GATContext} which is used to determine the access
+     *                rights for this {@link File}.
      * @return The {@link FileInputStream} object
      * @throws GATObjectCreationException
-     *             Thrown upon creation problems
+     *                 Thrown upon creation problems
      */
     public static FileInputStream createFileInputStream(GATContext gatContext,
             URI location) throws GATObjectCreationException {
@@ -473,16 +473,17 @@ public class GAT {
      * {@link Preferences}.
      * 
      * @param location
-     *            {@link URI} of the location of the {@link File} to read from
+     *                {@link URI} of the location of the {@link File} to read
+     *                from
      * @param gatContext
-     *            A {@link GATContext} which is used to determine the access
-     *            rights for this {@link File}.
+     *                A {@link GATContext} which is used to determine the access
+     *                rights for this {@link File}.
      * @param preferences
-     *            A {@link Preferences} which is used to determine the user's
-     *            preferences for this {@link File}.
+     *                A {@link Preferences} which is used to determine the
+     *                user's preferences for this {@link File}.
      * @return The {@link FileInputStream} object
      * @throws GATObjectCreationException
-     *             Thrown upon creation problems
+     *                 Thrown upon creation problems
      */
     public static FileInputStream createFileInputStream(GATContext gatContext,
             Preferences preferences, URI location)
@@ -505,10 +506,10 @@ public class GAT {
      * <code>GAT.createFileInputStream(GAT.getDefaultGATContext(), file)</code>
      * 
      * @param file
-     *            the {@link File} to read from
+     *                the {@link File} to read from
      * @return The {@link FileInputStream} object
      * @throws GATObjectCreationException
-     *             Thrown upon creation problems
+     *                 Thrown upon creation problems
      */
     public static FileInputStream createFileInputStream(File file)
             throws GATObjectCreationException {
@@ -527,12 +528,12 @@ public class GAT {
      * <code>GAT.createFileInputStream(GAT.getDefaultGATContext(), preferences, file)</code>
      * 
      * @param file
-     *            the {@link File} to read from
+     *                the {@link File} to read from
      * @param preferences
-     *            The additional {@link Preferences}
+     *                The additional {@link Preferences}
      * @return The {@link FileInputStream} object
      * @throws GATObjectCreationException
-     *             Thrown upon creation problems
+     *                 Thrown upon creation problems
      */
     public static FileInputStream createFileInputStream(
             Preferences preferences, File file)
@@ -547,13 +548,13 @@ public class GAT {
      * rights are determined by the passed {@link GATContext}.
      * 
      * @param file
-     *            the {@link File} to read from
+     *                the {@link File} to read from
      * @param gatContext
-     *            A {@link GATContext} which is used to determine the access
-     *            rights for this {@link File}.
+     *                A {@link GATContext} which is used to determine the access
+     *                rights for this {@link File}.
      * @return The {@link FileInputStream} object
      * @throws GATObjectCreationException
-     *             Thrown upon creation problems
+     *                 Thrown upon creation problems
      */
     public static FileInputStream createFileInputStream(GATContext gatContext,
             File file) throws GATObjectCreationException {
@@ -567,15 +568,15 @@ public class GAT {
      * {@link Preferences}.
      * 
      * @param file
-     *            the {@link File} to read from
+     *                the {@link File} to read from
      * @param gatContext
-     *            A {@link GATContext} which is used to determine the access
-     *            rights for this {@link File}.
+     *                A {@link GATContext} which is used to determine the access
+     *                rights for this {@link File}.
      * @param preferences
-     *            The additional {@link Preferences}
+     *                The additional {@link Preferences}
      * @return The {@link FileInputStream} object
      * @throws GATObjectCreationException
-     *             Thrown upon creation problems
+     *                 Thrown upon creation problems
      */
     public static FileInputStream createFileInputStream(GATContext gatContext,
             Preferences preferences, File file)
@@ -589,10 +590,10 @@ public class GAT {
      * whose access rights are determined by the default {@link GATContext}.
      * 
      * @param location
-     *            location of the {@link File} to read from
+     *                location of the {@link File} to read from
      * @return The {@link FileInputStream} object
      * @throws GATObjectCreationException
-     *             Thrown upon creation problems
+     *                 Thrown upon creation problems
      */
     public static FileInputStream createFileInputStream(String location)
             throws GATObjectCreationException {
@@ -611,12 +612,12 @@ public class GAT {
      * additional {@link Preferences}.
      * 
      * @param preferences
-     *            the additional {@link Preferences}
+     *                the additional {@link Preferences}
      * @param location
-     *            location of the {@link File} to read from
+     *                location of the {@link File} to read from
      * @return The {@link FileInputStream} object
      * @throws GATObjectCreationException
-     *             Thrown upon creation problems
+     *                 Thrown upon creation problems
      */
     public static FileInputStream createFileInputStream(
             Preferences preferences, String location)
@@ -635,14 +636,14 @@ public class GAT {
      * whose access rights are determined by the passed {@link GATContext}.
      * 
      * @param location
-     *            URI (in {@link String} format) of the location of the
-     *            {@link File} to read from
+     *                URI (in {@link String} format) of the location of the
+     *                {@link File} to read from
      * @param gatContext
-     *            A {@link GATContext} which is used to determine the access
-     *            rights for this {@link File}.
+     *                A {@link GATContext} which is used to determine the access
+     *                rights for this {@link File}.
      * @return The {@link FileInputStream} object
      * @throws GATObjectCreationException
-     *             Thrown upon creation problems
+     *                 Thrown upon creation problems
      */
     public static FileInputStream createFileInputStream(GATContext gatContext,
             String location) throws GATObjectCreationException {
@@ -660,16 +661,16 @@ public class GAT {
      * additional {@link Preferences}.
      * 
      * @param location
-     *            URI (in {@link String} format) of the location of the
-     *            {@link File} to read from
+     *                URI (in {@link String} format) of the location of the
+     *                {@link File} to read from
      * @param gatContext
-     *            A {@link GATContext} which is used to determine the access
-     *            rights for this {@link File}.
+     *                A {@link GATContext} which is used to determine the access
+     *                rights for this {@link File}.
      * @param preferences
-     *            The additional {@link Preferences}
+     *                The additional {@link Preferences}
      * @return The {@link FileInputStream} object
      * @throws GATObjectCreationException
-     *             Thrown upon creation problems
+     *                 Thrown upon creation problems
      */
     public static FileInputStream createFileInputStream(GATContext gatContext,
             Preferences preferences, String location)
@@ -689,11 +690,11 @@ public class GAT {
      * This stream overwrites the existing file.
      * 
      * @param location
-     *            URI (in {@link String} format) of the location of the
-     *            {@link File} to write to
+     *                URI (in {@link String} format) of the location of the
+     *                {@link File} to write to
      * @return The {@link FileOutputStream} object
      * @throws GATObjectCreationException
-     *             Thrown upon creation problems
+     *                 Thrown upon creation problems
      */
     public static FileOutputStream createFileOutputStream(String location)
             throws GATObjectCreationException {
@@ -713,13 +714,13 @@ public class GAT {
      * file.
      * 
      * @param preferences
-     *            The additional {@link Preferences}
+     *                The additional {@link Preferences}
      * @param location
-     *            URI (in {@link String} format) of the location of the
-     *            {@link File} to write to
+     *                URI (in {@link String} format) of the location of the
+     *                {@link File} to write to
      * @return The {@link FileOutputStream} object
      * @throws GATObjectCreationException
-     *             Thrown upon creation problems
+     *                 Thrown upon creation problems
      */
     public static FileOutputStream createFileOutputStream(
             Preferences preferences, String location)
@@ -739,14 +740,14 @@ public class GAT {
      * This stream overwrites the existing file.
      * 
      * @param location
-     *            URI (in {@link String} format) of the location of the
-     *            {@link File} to write to
+     *                URI (in {@link String} format) of the location of the
+     *                {@link File} to write to
      * @param gatContext
-     *            A {@link GATContext} which is used to determine the access
-     *            rights for this {@link File}.
+     *                A {@link GATContext} which is used to determine the access
+     *                rights for this {@link File}.
      * @return The {@link FileOutputStream} object
      * @throws GATObjectCreationException
-     *             Thrown upon creation problems
+     *                 Thrown upon creation problems
      */
     public static FileOutputStream createFileOutputStream(
             GATContext gatContext, String location)
@@ -767,16 +768,16 @@ public class GAT {
      * file.
      * 
      * @param location
-     *            URI (in {@link String} format) of the location of the file to
-     *            write to
+     *                URI (in {@link String} format) of the location of the file
+     *                to write to
      * @param gatContext
-     *            A {@link GATContext} which is used to determine the access
-     *            rights for this {@link File}.
+     *                A {@link GATContext} which is used to determine the access
+     *                rights for this {@link File}.
      * @param preferences
-     *            The additional {@link Preferences}
+     *                The additional {@link Preferences}
      * @return The {@link FileOutputStream} object
      * @throws GATObjectCreationException
-     *             Thrown upon creation problems
+     *                 Thrown upon creation problems
      */
     public static FileOutputStream createFileOutputStream(
             GATContext gatContext, Preferences preferences, String location)
@@ -795,14 +796,14 @@ public class GAT {
      * whose access rights are determined by the passed {@link GATContext}.
      * 
      * @param location
-     *            URI (in {@link String} format) of the location of the file to
-     *            write to
+     *                URI (in {@link String} format) of the location of the file
+     *                to write to
      * @param append
-     *            if <code>true</code>, then bytes will be written to the end
-     *            of the file rather than the beginning
+     *                if <code>true</code>, then bytes will be written to the
+     *                end of the file rather than the beginning
      * @return The {@link FileOutputStream} object
      * @throws GATObjectCreationException
-     *             Thrown upon creation problems
+     *                 Thrown upon creation problems
      */
     public static FileOutputStream createFileOutputStream(String location,
             boolean append) throws GATObjectCreationException {
@@ -821,16 +822,16 @@ public class GAT {
      * additional {@link Preferences}.
      * 
      * @param preferences
-     *            The additional {@link Preferences}
+     *                The additional {@link Preferences}
      * @param location
-     *            URI (in {@link String} format) of the location of the file to
-     *            write to
+     *                URI (in {@link String} format) of the location of the file
+     *                to write to
      * @param append
-     *            if <code>true</code>, then bytes will be written to the end
-     *            of the file rather than the beginning
+     *                if <code>true</code>, then bytes will be written to the
+     *                end of the file rather than the beginning
      * @return The {@link FileOutputStream} object
      * @throws GATObjectCreationException
-     *             Thrown upon creation problems
+     *                 Thrown upon creation problems
      */
     public static FileOutputStream createFileOutputStream(
             Preferences preferences, String location, boolean append)
@@ -849,17 +850,17 @@ public class GAT {
      * whose access rights are determined by the passed {@link GATContext}.
      * 
      * @param location
-     *            URI (in {@link String} format) of the location of the file to
-     *            write to
+     *                URI (in {@link String} format) of the location of the file
+     *                to write to
      * @param gatContext
-     *            A {@link GATContext} which is used to determine the access
-     *            rights for this {@link File}.
+     *                A {@link GATContext} which is used to determine the access
+     *                rights for this {@link File}.
      * @param append
-     *            if <code>true</code>, then bytes will be written to the end
-     *            of the file rather than the beginning
+     *                if <code>true</code>, then bytes will be written to the
+     *                end of the file rather than the beginning
      * @return The {@link FileOutputStream} object
      * @throws GATObjectCreationException
-     *             Thrown upon creation problems
+     *                 Thrown upon creation problems
      */
     public static FileOutputStream createFileOutputStream(
             GATContext gatContext, String location, boolean append)
@@ -879,19 +880,19 @@ public class GAT {
      * additional {@link Preferences}.
      * 
      * @param location
-     *            URI (in {@link String} format) of the location of the file to
-     *            write to
+     *                URI (in {@link String} format) of the location of the file
+     *                to write to
      * @param gatContext
-     *            A {@link GATContext} which is used to determine the access
-     *            rights for this {@link File}.
+     *                A {@link GATContext} which is used to determine the access
+     *                rights for this {@link File}.
      * @param preferences
-     *            The additional {@link Preferences}
+     *                The additional {@link Preferences}
      * @param append
-     *            if <code>true</code>, then bytes will be written to the end
-     *            of the file rather than the beginning
+     *                if <code>true</code>, then bytes will be written to the
+     *                end of the file rather than the beginning
      * @return The {@link FileOutputStream} object
      * @throws GATObjectCreationException
-     *             Thrown upon creation problems
+     *                 Thrown upon creation problems
      */
     public static FileOutputStream createFileOutputStream(
             GATContext gatContext, Preferences preferences, String location,
@@ -915,10 +916,10 @@ public class GAT {
      * <code>GAT.createFileOutputStream(GAT.getDefaultGATContext(), file)</code>
      * 
      * @param file
-     *            the {@link File} to write to
+     *                the {@link File} to write to
      * @return The {@link FileOutputStream} object
      * @throws GATObjectCreationException
-     *             Thrown upon creation problems
+     *                 Thrown upon creation problems
      */
     public static FileOutputStream createFileOutputStream(File file)
             throws GATObjectCreationException {
@@ -936,13 +937,13 @@ public class GAT {
      * <code>GAT.createFileOutputStream(GAT.getDefaultGATContext(), file, append)</code>
      * 
      * @param file
-     *            the {@link File} to write to
+     *                the {@link File} to write to
      * @param append
-     *            <code>true</code> if the output stream should append,
-     *            <code>false</code> for overwrite
+     *                <code>true</code> if the output stream should append,
+     *                <code>false</code> for overwrite
      * @return The {@link FileOutputStream} object
      * @throws GATObjectCreationException
-     *             Thrown upon creation problems
+     *                 Thrown upon creation problems
      */
     public static FileOutputStream createFileOutputStream(File file,
             boolean append) throws GATObjectCreationException {
@@ -961,12 +962,12 @@ public class GAT {
      * <code>GAT.createFileOutputStream(GAT.getDefaultGATContext(), preferences, file)</code>
      * 
      * @param preferences
-     *            the additional {@link Preferences}
+     *                the additional {@link Preferences}
      * @param file
-     *            the {@link File} to write to
+     *                the {@link File} to write to
      * @return The {@link FileOutputStream} object
      * @throws GATObjectCreationException
-     *             Thrown upon creation problems
+     *                 Thrown upon creation problems
      */
     public static FileOutputStream createFileOutputStream(
             Preferences preferences, File file)
@@ -986,15 +987,15 @@ public class GAT {
      * <code>GAT.createFileOutputStream(GAT.getDefaultGATContext(), preferences, file, append)</code>
      * 
      * @param preferences
-     *            the additional {@link Preferences}
+     *                the additional {@link Preferences}
      * @param file
-     *            the {@link File} to write to
+     *                the {@link File} to write to
      * @param append
-     *            <code>true</code> if the output stream should append,
-     *            <code>false</code> for overwrite
+     *                <code>true</code> if the output stream should append,
+     *                <code>false</code> for overwrite
      * @return The {@link FileOutputStream} object
      * @throws GATObjectCreationException
-     *             Thrown upon creation problems
+     *                 Thrown upon creation problems
      */
     public static FileOutputStream createFileOutputStream(
             Preferences preferences, File file, boolean append)
@@ -1010,13 +1011,13 @@ public class GAT {
      * overwrites the existing file.
      * 
      * @param file
-     *            the <@link File> to write to
+     *                the <@link File> to write to
      * @param gatContext
-     *            A {@link GATContext} which is used to determine the access
-     *            rights for this {@link File}.
+     *                A {@link GATContext} which is used to determine the access
+     *                rights for this {@link File}.
      * @return The {@link FileOutputStream} object
      * @throws GATObjectCreationException
-     *             Thrown upon creation problems
+     *                 Thrown upon creation problems
      */
     public static FileOutputStream createFileOutputStream(
             GATContext gatContext, File file) throws GATObjectCreationException {
@@ -1030,15 +1031,15 @@ public class GAT {
      * {@link Preferences}. This stream overwrites the existing file.
      * 
      * @param file
-     *            the <@link File> to write to
+     *                the <@link File> to write to
      * @param gatContext
-     *            A {@link GATContext} which is used to determine the access
-     *            rights for this {@link File}.
+     *                A {@link GATContext} which is used to determine the access
+     *                rights for this {@link File}.
      * @param preferences
-     *            the additional {@link Preferences}
+     *                the additional {@link Preferences}
      * @return The {@link FileOutputStream} object
      * @throws GATObjectCreationException
-     *             Thrown upon creation problems
+     *                 Thrown upon creation problems
      */
     public static FileOutputStream createFileOutputStream(
             GATContext gatContext, Preferences preferences, File file)
@@ -1053,13 +1054,13 @@ public class GAT {
      * rights are determined by the passed {@link GATContext}.
      * 
      * @param file
-     *            the <@link File> to write to
+     *                the <@link File> to write to
      * @param gatContext
-     *            A {@link GATContext} which is used to determine the access
-     *            rights for this {@link File}.
+     *                A {@link GATContext} which is used to determine the access
+     *                rights for this {@link File}.
      * @return The {@link FileOutputStream} object
      * @throws GATObjectCreationException
-     *             Thrown upon creation problems
+     *                 Thrown upon creation problems
      */
     public static FileOutputStream createFileOutputStream(
             GATContext gatContext, File file, boolean append)
@@ -1074,15 +1075,15 @@ public class GAT {
      * {@link Preferences}.
      * 
      * @param file
-     *            the <@link File> to write to
+     *                the <@link File> to write to
      * @param gatContext
-     *            A {@link GATContext} which is used to determine the access
-     *            rights for this {@link File}.
+     *                A {@link GATContext} which is used to determine the access
+     *                rights for this {@link File}.
      * @param preferences
-     *            the additional {@link Preferences}
+     *                the additional {@link Preferences}
      * @return The {@link FileOutputStream} object
      * @throws GATObjectCreationException
-     *             Thrown upon creation problems
+     *                 Thrown upon creation problems
      */
     public static FileOutputStream createFileOutputStream(
             GATContext gatContext, Preferences preferences, File file,
@@ -1098,10 +1099,10 @@ public class GAT {
      * overwrites the existing file.
      * 
      * @param location
-     *            URI of the location the <@link File> to write to
+     *                URI of the location the <@link File> to write to
      * @return The {@link FileOutputStream} object
      * @throws GATObjectCreationException
-     *             Thrown upon creation problems
+     *                 Thrown upon creation problems
      */
     public static FileOutputStream createFileOutputStream(URI location)
             throws GATObjectCreationException {
@@ -1115,12 +1116,12 @@ public class GAT {
      * {@link Preferences}. This stream overwrites the existing file.
      * 
      * @param location
-     *            URI of the location the <@link File> to write to
+     *                URI of the location the <@link File> to write to
      * @param preferences
-     *            the additional {@link Preferences}
+     *                the additional {@link Preferences}
      * @return The {@link FileOutputStream} object
      * @throws GATObjectCreationException
-     *             Thrown upon creation problems
+     *                 Thrown upon creation problems
      */
     public static FileOutputStream createFileOutputStream(
             Preferences preferences, URI location)
@@ -1136,13 +1137,13 @@ public class GAT {
      * overwrites the existing file.
      * 
      * @param location
-     *            URI of the location the <@link File> to write to
+     *                URI of the location the <@link File> to write to
      * @param gatContext
-     *            A {@link GATContext} which is used to determine the access
-     *            rights for this {@link File}.
+     *                A {@link GATContext} which is used to determine the access
+     *                rights for this {@link File}.
      * @return The {@link FileOutputStream} object
      * @throws GATObjectCreationException
-     *             Thrown upon creation problems
+     *                 Thrown upon creation problems
      */
     public static FileOutputStream createFileOutputStream(
             GATContext gatContext, URI location)
@@ -1157,13 +1158,13 @@ public class GAT {
      * overwrites the existing file.
      * 
      * @param location
-     *            URI of the location the <@link File> to write to
+     *                URI of the location the <@link File> to write to
      * @param gatContext
-     *            A {@link GATContext} which is used to determine the access
-     *            rights for this {@link File}.
+     *                A {@link GATContext} which is used to determine the access
+     *                rights for this {@link File}.
      * @return The {@link FileOutputStream} object
      * @throws GATObjectCreationException
-     *             Thrown upon creation problems
+     *                 Thrown upon creation problems
      */
     public static FileOutputStream createFileOutputStream(
             GATContext gatContext, Preferences preferences, URI location)
@@ -1177,10 +1178,10 @@ public class GAT {
      * rights are determined by the default {@link GATContext}.
      * 
      * @param location
-     *            URI of the location the <@link File> to write to
+     *                URI of the location the <@link File> to write to
      * @return The {@link FileOutputStream} object
      * @throws GATObjectCreationException
-     *             Thrown upon creation problems
+     *                 Thrown upon creation problems
      */
     public static FileOutputStream createFileOutputStream(URI location,
             boolean append) throws GATObjectCreationException {
@@ -1194,12 +1195,12 @@ public class GAT {
      * {@link Preferences}.
      * 
      * @param location
-     *            URI of the location the <@link File> to write to
+     *                URI of the location the <@link File> to write to
      * @param preferences
-     *            the additional {@link Preferences}
+     *                the additional {@link Preferences}
      * @return The {@link FileOutputStream} object
      * @throws GATObjectCreationException
-     *             Thrown upon creation problems
+     *                 Thrown upon creation problems
      */
     public static FileOutputStream createFileOutputStream(
             Preferences preferences, URI location, boolean append)
@@ -1214,13 +1215,13 @@ public class GAT {
      * rights are determined by the passed {@link GATContext}.
      * 
      * @param location
-     *            URI of the location the <@link File> to write to
+     *                URI of the location the <@link File> to write to
      * @param gatContext
-     *            A {@link GATContext} which is used to determine the access
-     *            rights for this {@link File}.
+     *                A {@link GATContext} which is used to determine the access
+     *                rights for this {@link File}.
      * @return The {@link FileOutputStream} object
      * @throws GATObjectCreationException
-     *             Thrown upon creation problems
+     *                 Thrown upon creation problems
      */
     public static FileOutputStream createFileOutputStream(
             GATContext gatContext, URI location, boolean append)
@@ -1235,15 +1236,15 @@ public class GAT {
      * {@link Preferences}.
      * 
      * @param location
-     *            URI of the location the <@link File> to write to
+     *                URI of the location the <@link File> to write to
      * @param gatContext
-     *            A {@link GATContext} which is used to determine the access
-     *            rights for this {@link File}.
+     *                A {@link GATContext} which is used to determine the access
+     *                rights for this {@link File}.
      * @param preferences
-     *            the additional {@link Preferences}
+     *                the additional {@link Preferences}
      * @return The {@link FileOutputStream} object
      * @throws GATObjectCreationException
-     *             Thrown upon creation problems
+     *                 Thrown upon creation problems
      */
     public static FileOutputStream createFileOutputStream(
             GATContext gatContext, Preferences preferences, URI location,
@@ -1262,13 +1263,13 @@ public class GAT {
      * {@link GATContext} and additional {@link Preferences}.
      * 
      * @param gatContext
-     *            A {@link GATContext} which is used to determine the access
-     *            rights for this {@link File}.
+     *                A {@link GATContext} which is used to determine the access
+     *                rights for this {@link File}.
      * @param preferences
-     *            the additional {@link Preferences}
+     *                the additional {@link Preferences}
      * @return The {@link Endpoint} object
      * @throws GATObjectCreationException
-     *             Thrown upon creation problems
+     *                 Thrown upon creation problems
      */
     public static Endpoint createEndpoint(GATContext gatContext,
             Preferences preferences) throws GATObjectCreationException {
@@ -1281,11 +1282,11 @@ public class GAT {
      * {@link GATContext}.
      * 
      * @param gatContext
-     *            A {@link GATContext} which is used to determine the access
-     *            rights for this {@link File}.
+     *                A {@link GATContext} which is used to determine the access
+     *                rights for this {@link File}.
      * @return The {@link Endpoint} object
      * @throws GATObjectCreationException
-     *             Thrown upon creation problems
+     *                 Thrown upon creation problems
      */
     public static Endpoint createEndpoint(GATContext gatContext)
             throws GATObjectCreationException {
@@ -1297,10 +1298,10 @@ public class GAT {
      * {@link GATContext} and additional {@link Preferences}.
      * 
      * @param preferences
-     *            the additional {@link Preferences}
+     *                the additional {@link Preferences}
      * @return The {@link Endpoint} object
      * @throws GATObjectCreationException
-     *             Thrown upon creation problems
+     *                 Thrown upon creation problems
      */
     public static Endpoint createEndpoint(Preferences preferences)
             throws GATObjectCreationException {
@@ -1313,7 +1314,7 @@ public class GAT {
      * 
      * @return The {@link Endpoint} object
      * @throws GATObjectCreationException
-     *             Thrown upon creation problems
+     *                 Thrown upon creation problems
      */
     public static Endpoint createEndpoint() throws GATObjectCreationException {
         return createEndpoint(defaultContext, null);
@@ -1324,13 +1325,13 @@ public class GAT {
      * {@link GATContext} and additional {@link Preferences}.
      * 
      * @param gatContext
-     *            A {@link GATContext} which is used to determine the access
-     *            rights.
+     *                A {@link GATContext} which is used to determine the access
+     *                rights.
      * @param preferences
-     *            the additional {@link Preferences}
+     *                the additional {@link Preferences}
      * @return The {@link AdvertService} object
      * @throws GATObjectCreationException
-     *             Thrown upon creation problems
+     *                 Thrown upon creation problems
      */
     public static AdvertService createAdvertService(GATContext gatContext,
             Preferences preferences) throws GATObjectCreationException {
@@ -1343,11 +1344,11 @@ public class GAT {
      * {@link GATContext}.
      * 
      * @param gatContext
-     *            A {@link GATContext} which is used to determine the access
-     *            rights.
+     *                A {@link GATContext} which is used to determine the access
+     *                rights.
      * @return The {@link AdvertService} object
      * @throws GATObjectCreationException
-     *             Thrown upon creation problems
+     *                 Thrown upon creation problems
      */
     public static AdvertService createAdvertService(GATContext gatContext)
             throws GATObjectCreationException {
@@ -1359,10 +1360,10 @@ public class GAT {
      * {@link GATContext} and additional {@link Preferences}.
      * 
      * @param preferences
-     *            the additional {@link Preferences}
+     *                the additional {@link Preferences}
      * @return The {@link AdvertService} object
      * @throws GATObjectCreationException
-     *             Thrown upon creation problems
+     *                 Thrown upon creation problems
      */
     public static AdvertService createAdvertService(Preferences preferences)
             throws GATObjectCreationException {
@@ -1375,7 +1376,7 @@ public class GAT {
      * 
      * @return The {@link AdvertService} object
      * @throws GATObjectCreationException
-     *             Thrown upon creation problems
+     *                 Thrown upon creation problems
      */
     public static AdvertService createAdvertService()
             throws GATObjectCreationException {
@@ -1388,7 +1389,7 @@ public class GAT {
      * 
      * @return The default {@link Monitorable} object
      * @throws GATObjectCreationException
-     *             Thrown upon creation problems
+     *                 Thrown upon creation problems
      */
     public static Monitorable createMonitorable()
             throws GATObjectCreationException {
@@ -1400,11 +1401,11 @@ public class GAT {
      * {@link GATContext} and additional {@link Preferences}.
      * 
      * @param preferences
-     *            The additional {@link Preferences}
+     *                The additional {@link Preferences}
      * 
      * @return The default {@link Monitorable} object
      * @throws GATObjectCreationException
-     *             Thrown upon creation problems
+     *                 Thrown upon creation problems
      */
     public static Monitorable createMonitorable(Preferences preferences)
             throws GATObjectCreationException {
@@ -1416,10 +1417,10 @@ public class GAT {
      * {@link GATContext}.
      * 
      * @param gatContext
-     *            A {@link GATContext} object
+     *                A {@link GATContext} object
      * @return The default {@link Monitorable} object
      * @throws GATObjectCreationException
-     *             Thrown upon creation problems
+     *                 Thrown upon creation problems
      */
     public static Monitorable createMonitorable(GATContext gatContext)
             throws GATObjectCreationException {
@@ -1431,12 +1432,12 @@ public class GAT {
      * {@link GATContext} and additional {@link Preferences}.
      * 
      * @param gatContext
-     *            A {@link GATContext} object
+     *                A {@link GATContext} object
      * @param preferences
-     *            The additional {@link Preferences}
+     *                The additional {@link Preferences}
      * @return The default {@link Monitorable} object
      * @throws GATObjectCreationException
-     *             Thrown upon creation problems
+     *                 Thrown upon creation problems
      */
     public static Monitorable createMonitorable(GATContext gatContext,
             Preferences preferences) throws GATObjectCreationException {
@@ -1450,7 +1451,7 @@ public class GAT {
      * 
      * @return The {@link SteeringManager}
      * @throws GATObjectCreationException
-     *             Thrown upon creation problems
+     *                 Thrown upon creation problems
      */
     public static SteeringManager createSteeringManager()
             throws GATObjectCreationException {
@@ -1462,10 +1463,10 @@ public class GAT {
      * {@link GATContext} and additional {@link Preferences}.
      * 
      * @param preferences
-     *            The additional {@link Preferences}
+     *                The additional {@link Preferences}
      * @return The {@link SteeringManager}
      * @throws GATObjectCreationException
-     *             Thrown upon creation problems
+     *                 Thrown upon creation problems
      */
     public static SteeringManager createSteeringManager(Preferences preferences)
             throws GATObjectCreationException {
@@ -1477,10 +1478,10 @@ public class GAT {
      * {@link GATContext}.
      * 
      * @param gatContext
-     *            A {@link GATContext} object
+     *                A {@link GATContext} object
      * @return The {@link SteeringManager}
      * @throws GATObjectCreationException
-     *             Thrown upon creation problems
+     *                 Thrown upon creation problems
      */
     public static SteeringManager createSteeringManager(GATContext gatContext)
             throws GATObjectCreationException {
@@ -1492,12 +1493,12 @@ public class GAT {
      * {@link GATContext} and additional {@link Preferences}.
      * 
      * @param gatContext
-     *            A {@link GATContext} object
+     *                A {@link GATContext} object
      * @param preferences
-     *            The additional {@link Preferences}
+     *                The additional {@link Preferences}
      * @return The {@link SteeringManager}
      * @throws GATObjectCreationException
-     *             Thrown upon creation problems
+     *                 Thrown upon creation problems
      */
     public static SteeringManager createSteeringManager(GATContext gatContext,
             Preferences preferences) throws GATObjectCreationException {
@@ -1511,13 +1512,13 @@ public class GAT {
      * whose access rights are determined by the default {@link GATContext}.
      * 
      * @param location
-     *            a URI (in {@link String} format) for the file to access.
+     *                a URI (in {@link String} format) for the file to access.
      * @param mode
-     *            The mode to open the file with. See
-     *            {@link java.io.RandomAccessFile} for details.
+     *                The mode to open the file with. See
+     *                {@link java.io.RandomAccessFile} for details.
      * @return The {@link RandomAccessFile} object
      * @throws GATObjectCreationException
-     *             Thrown upon creation problems
+     *                 Thrown upon creation problems
      */
     public static RandomAccessFile createRandomAccessFile(String location,
             String mode) throws GATObjectCreationException {
@@ -1536,15 +1537,15 @@ public class GAT {
      * additional {@link Preferences}.
      * 
      * @param preferences
-     *            The additional {@link Preferences}
+     *                The additional {@link Preferences}
      * @param location
-     *            a URI (in {@link String} format) for the file to access.
+     *                a URI (in {@link String} format) for the file to access.
      * @param mode
-     *            The mode to open the file with. See
-     *            {@link java.io.RandomAccessFile} for details.
+     *                The mode to open the file with. See
+     *                {@link java.io.RandomAccessFile} for details.
      * @return The {@link RandomAccessFile} object
      * @throws GATObjectCreationException
-     *             Thrown upon creation problems
+     *                 Thrown upon creation problems
      */
     public static RandomAccessFile createRandomAccessFile(
             Preferences preferences, String location, String mode)
@@ -1563,16 +1564,16 @@ public class GAT {
      * whose access rights are determined by the passed {@link GATContext}.
      * 
      * @param gatContext
-     *            A {@link GATContext} which is used to determine the access
-     *            rights for this {@link File}.
+     *                A {@link GATContext} which is used to determine the access
+     *                rights for this {@link File}.
      * @param location
-     *            a URI (in {@link String} format) for the file to access.
+     *                a URI (in {@link String} format) for the file to access.
      * @param mode
-     *            The mode to open the file with. See
-     *            {@link java.io.RandomAccessFile} for details.
+     *                The mode to open the file with. See
+     *                {@link java.io.RandomAccessFile} for details.
      * @return The {@link RandomAccessFile} object
      * @throws GATObjectCreationException
-     *             Thrown upon creation problems
+     *                 Thrown upon creation problems
      */
     public static RandomAccessFile createRandomAccessFile(
             GATContext gatContext, String location, String mode)
@@ -1592,18 +1593,18 @@ public class GAT {
      * additional {@link Preferences}.
      * 
      * @param gatContext
-     *            A {@link GATContext} which is used to determine the access
-     *            rights for this {@link File}.
+     *                A {@link GATContext} which is used to determine the access
+     *                rights for this {@link File}.
      * @param preferences
-     *            The additional {@link Preferences}
+     *                The additional {@link Preferences}
      * @param location
-     *            the URI (in {@link String} format) of the file to access
+     *                the URI (in {@link String} format) of the file to access
      * @param mode
-     *            The mode to open the file with. See
-     *            {@link java.io.RandomAccessFile} for details.
+     *                The mode to open the file with. See
+     *                {@link java.io.RandomAccessFile} for details.
      * @return The {@link RandomAccessFile} object
      * @throws GATObjectCreationException
-     *             Thrown upon creation problems
+     *                 Thrown upon creation problems
      */
     public static RandomAccessFile createRandomAccessFile(
             GATContext gatContext, Preferences preferences, String location,
@@ -1622,13 +1623,13 @@ public class GAT {
      * rights are determined by the default {@link GATContext}.
      * 
      * @param location
-     *            a {@link URI} for the file to access.
+     *                a {@link URI} for the file to access.
      * @param mode
-     *            The mode to open the file with. See
-     *            {@link java.io.RandomAccessFile} for details.
+     *                The mode to open the file with. See
+     *                {@link java.io.RandomAccessFile} for details.
      * @return The {@link RandomAccessFile} object
      * @throws GATObjectCreationException
-     *             Thrown upon creation problems
+     *                 Thrown upon creation problems
      */
     public static RandomAccessFile createRandomAccessFile(URI location,
             String mode) throws GATObjectCreationException {
@@ -1642,15 +1643,15 @@ public class GAT {
      * {@link Preferences}.
      * 
      * @param preferences
-     *            The additional {@link Preferences}
+     *                The additional {@link Preferences}
      * @param location
-     *            a {@link URI} for the file to access.
+     *                a {@link URI} for the file to access.
      * @param mode
-     *            The mode to open the file with. See
-     *            {@link java.io.RandomAccessFile} for details.
+     *                The mode to open the file with. See
+     *                {@link java.io.RandomAccessFile} for details.
      * @return The {@link RandomAccessFile} object
      * @throws GATObjectCreationException
-     *             Thrown upon creation problems
+     *                 Thrown upon creation problems
      */
     public static RandomAccessFile createRandomAccessFile(
             Preferences preferences, URI location, String mode)
@@ -1665,16 +1666,16 @@ public class GAT {
      * rights are determined by the passed {@link GATContext}.
      * 
      * @param gatContext
-     *            A {@link GATContext} which is used to determine the access
-     *            rights for this {@link File}.
+     *                A {@link GATContext} which is used to determine the access
+     *                rights for this {@link File}.
      * @param location
-     *            a {@link URI} for the file to access.
+     *                a {@link URI} for the file to access.
      * @param mode
-     *            The mode to open the file with. See
-     *            {@link java.io.RandomAccessFile} for details.
+     *                The mode to open the file with. See
+     *                {@link java.io.RandomAccessFile} for details.
      * @return The {@link RandomAccessFile} object
      * @throws GATObjectCreationException
-     *             Thrown upon creation problems
+     *                 Thrown upon creation problems
      */
     public static RandomAccessFile createRandomAccessFile(
             GATContext gatContext, URI location, String mode)
@@ -1689,18 +1690,18 @@ public class GAT {
      * {@link Preferences}.
      * 
      * @param gatContext
-     *            A {@link GATContext} which is used to determine the access
-     *            rights for this {@link File}.
+     *                A {@link GATContext} which is used to determine the access
+     *                rights for this {@link File}.
      * @param preferences
-     *            The additional {@link Preferences}
+     *                The additional {@link Preferences}
      * @param location
-     *            the {@link URISyntaxException} of the file to access
+     *                the {@link URISyntaxException} of the file to access
      * @param mode
-     *            The mode to open the file with. See
-     *            {@link java.io.RandomAccessFile} for details.
+     *                The mode to open the file with. See
+     *                {@link java.io.RandomAccessFile} for details.
      * @return The {@link RandomAccessFile} object
      * @throws GATObjectCreationException
-     *             Thrown upon creation problems
+     *                 Thrown upon creation problems
      */
     public static RandomAccessFile createRandomAccessFile(
             GATContext gatContext, Preferences preferences, URI location,
@@ -1724,7 +1725,7 @@ public class GAT {
      * 
      * @return The {@link ResourceBroker} object
      * @throws GATObjectCreationException
-     *             Thrown upon creation problems
+     *                 Thrown upon creation problems
      */
     public static ResourceBroker createResourceBroker(URI brokerURI)
             throws GATObjectCreationException {
@@ -1736,10 +1737,10 @@ public class GAT {
      * the default {@link GATContext} and additional {@link Preferences}.
      * 
      * @param preferences
-     *            the additional {@link Preferences}
+     *                the additional {@link Preferences}
      * @return The {@link ResourceBroker} object
      * @throws GATObjectCreationException
-     *             Thrown upon creation problems
+     *                 Thrown upon creation problems
      */
     public static ResourceBroker createResourceBroker(Preferences preferences,
             URI brokerURI) throws GATObjectCreationException {
@@ -1751,10 +1752,11 @@ public class GAT {
      * the passed {@link GATContext}.
      * 
      * @param gatContext
-     *            A {@link GATContext} which will be used to broker resources
+     *                A {@link GATContext} which will be used to broker
+     *                resources
      * @return The {@link ResourceBroker} object
      * @throws GATObjectCreationException
-     *             Thrown upon creation problems
+     *                 Thrown upon creation problems
      */
     public static ResourceBroker createResourceBroker(GATContext gatContext,
             URI brokerURI) throws GATObjectCreationException {
@@ -1766,12 +1768,13 @@ public class GAT {
      * the passed {@link GATContext} and additional {@link Preferences}.
      * 
      * @param gatContext
-     *            A {@link GATContext} which will be used to broker resources
+     *                A {@link GATContext} which will be used to broker
+     *                resources
      * @param preferences
-     *            The additional {@link Preferences}
+     *                The additional {@link Preferences}
      * @return The {@link ResourceBroker} object
      * @throws GATObjectCreationException
-     *             Thrown upon creation problems
+     *                 Thrown upon creation problems
      */
     public static ResourceBroker createResourceBroker(GATContext gatContext,
             Preferences preferences, URI brokerURI)
@@ -1820,7 +1823,7 @@ public class GAT {
      * the previous value.
      * 
      * @param context
-     *            the new {@link GATContext}
+     *                the new {@link GATContext}
      */
     public static synchronized void setDefaultGATContext(GATContext context) {
         defaultContext = context;

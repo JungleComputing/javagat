@@ -42,196 +42,196 @@ import org.gridlab.gat.resources.WrappedJob;
 
 @SuppressWarnings("serial")
 public class WrappedJobImpl extends JobCpi implements MetricListener,
-		WrappedJob {
+        WrappedJob {
 
-	// this class variable is used to give each WrappedJob a unique ID
-	private static int id = 0;
+    // this class variable is used to give each WrappedJob a unique ID
+    private static int id = 0;
 
-	private Job wrapperJob;
+    private Job wrapperJob;
 
-	private int jobID;
+    private int jobID;
 
-	private String jobString;
+    private String jobString;
 
-	private MetricDefinition statusMetricDefinition;
+    private MetricDefinition statusMetricDefinition;
 
-	private Metric statusMetric;
+    private Metric statusMetric;
 
-	private JobStateMonitor monitor;
+    private JobStateMonitor monitor;
 
-	private synchronized static int getID() {
-		return id++;
-	}
+    private synchronized static int getID() {
+        return id++;
+    }
 
-	/**
-	 * Creates a new WrappedJob.
-	 * 
-	 * This constructor is used by the WrapperSubmitter.
-	 * 
-	 * @param gatContext
-	 * @param jobDescription
-	 */
-	protected WrappedJobImpl(GATContext gatContext,
-			JobDescription jobDescription) {
-		super(gatContext, jobDescription, null);
+    /**
+     * Creates a new WrappedJob.
+     * 
+     * This constructor is used by the WrapperSubmitter.
+     * 
+     * @param gatContext
+     * @param jobDescription
+     */
+    protected WrappedJobImpl(GATContext gatContext,
+            JobDescription jobDescription) {
+        super(gatContext, jobDescription, null);
 
-		// Tell the engine that we provide job.status events
-		HashMap<String, Object> returnDef = new HashMap<String, Object>();
-		returnDef.put("status", String.class);
-		statusMetricDefinition = new MetricDefinition("job.status",
-				MetricDefinition.DISCRETE, "String", null, null, returnDef);
-		statusMetric = statusMetricDefinition.createMetric(null);
-		GATEngine.registerMetric(this, "getJobStatus", statusMetricDefinition);
+        // Tell the engine that we provide job.status events
+        HashMap<String, Object> returnDef = new HashMap<String, Object>();
+        returnDef.put("status", String.class);
+        statusMetricDefinition = new MetricDefinition("job.status",
+                MetricDefinition.DISCRETE, "String", null, null, returnDef);
+        statusMetric = statusMetricDefinition.createMetric(null);
+        GATEngine.registerMetric(this, "getJobStatus", statusMetricDefinition);
 
-		// set the jobID
-		jobID = getID();
+        // set the jobID
+        jobID = getID();
 
-		// start a thread that monitors the job state, by monitoring a file
-		monitor = new JobStateMonitor();
-		monitor.start();
-	}
+        // start a thread that monitors the job state, by monitoring a file
+        monitor = new JobStateMonitor();
+        monitor.start();
+    }
 
-	/**
-	 * Associates the specified WrapperJob to this WrappedJob
-	 * 
-	 * @param j
-	 *            the WrapperJob
-	 * @throws GATInvocationException
-	 */
-	protected void setWrapperJob(Job j) throws GATInvocationException {
-		// each WrappedJob belongs to exactly one WrapperJob, but a
-		// WrapperJob may be linked to more WrappedJobs. The
-		// WrappedJob listens to the WrapperJob, because when it ends
-		// abruptly, the WrapperJob should also end
-		this.wrapperJob = j;
-		MetricDefinition md = wrapperJob
-				.getMetricDefinitionByName("job.status");
-		wrapperJob.addMetricListener(this, md.createMetric());
-	}
+    /**
+     * Associates the specified WrapperJob to this WrappedJob
+     * 
+     * @param j
+     *                the WrapperJob
+     * @throws GATInvocationException
+     */
+    protected void setWrapperJob(Job j) throws GATInvocationException {
+        // each WrappedJob belongs to exactly one WrapperJob, but a
+        // WrapperJob may be linked to more WrappedJobs. The
+        // WrappedJob listens to the WrapperJob, because when it ends
+        // abruptly, the WrapperJob should also end
+        this.wrapperJob = j;
+        MetricDefinition md = wrapperJob
+                .getMetricDefinitionByName("job.status");
+        wrapperJob.addMetricListener(this, md.createMetric());
+    }
 
-	/**
-	 * gets the WrapperJob
-	 * 
-	 * @return the WrapperJob
-	 */
-	public Job getWrapperJob() {
-		return wrapperJob;
-	}
+    /**
+     * gets the WrapperJob
+     * 
+     * @return the WrapperJob
+     */
+    public Job getWrapperJob() {
+        return wrapperJob;
+    }
 
-	/**
-	 * add a MetricListener to the WrapperJob
-	 * 
-	 * @param metricListener
-	 * @param metric
-	 * @throws GATInvocationException
-	 */
-	public final void addMetricListenerToWrapperJob(
-			MetricListener metricListener, Metric metric)
-			throws GATInvocationException {
-		// if you want to listen explicit to the wrapper job
-		wrapperJob.addMetricListener(metricListener, metric);
-	}
+    /**
+     * add a MetricListener to the WrapperJob
+     * 
+     * @param metricListener
+     * @param metric
+     * @throws GATInvocationException
+     */
+    public final void addMetricListenerToWrapperJob(
+            MetricListener metricListener, Metric metric)
+            throws GATInvocationException {
+        // if you want to listen explicit to the wrapper job
+        wrapperJob.addMetricListener(metricListener, metric);
+    }
 
-	/**
-	 * process the incoming metrics from the WrapperJob. Only do something if
-	 * the WrapperJob is stopped or if there's a submission error. Change the
-	 * state of the WrappedJob according to the state of the WrapperJob and fire
-	 * a metric to the application that listens to the WrappedJob.
-	 */
-	public void processMetricEvent(MetricEvent val) {
-		if (state == STOPPED || state == SUBMISSION_ERROR) {
-			return;
-		}
-		if (wrapperJob.getState() == Job.STOPPED
-				|| wrapperJob.getState() == Job.SUBMISSION_ERROR) {
-			try {
-				MetricDefinition md = wrapperJob
-						.getMetricDefinitionByName("job.status");
-				wrapperJob.removeMetricListener(this, md.createMetric());
-				wrapperJob.stop();
-				fireStateMetric(wrapperJob.getState());
-				finished();
-			} catch (GATInvocationException e) {
-				if (logger.isInfoEnabled()) {
-					logger.info(e);
-				}
-			}
-		}
-	}
+    /**
+     * process the incoming metrics from the WrapperJob. Only do something if
+     * the WrapperJob is stopped or if there's a submission error. Change the
+     * state of the WrappedJob according to the state of the WrapperJob and fire
+     * a metric to the application that listens to the WrappedJob.
+     */
+    public void processMetricEvent(MetricEvent val) {
+        if (state == STOPPED || state == SUBMISSION_ERROR) {
+            return;
+        }
+        if (wrapperJob.getState() == Job.STOPPED
+                || wrapperJob.getState() == Job.SUBMISSION_ERROR) {
+            try {
+                MetricDefinition md = wrapperJob
+                        .getMetricDefinitionByName("job.status");
+                wrapperJob.removeMetricListener(this, md.createMetric());
+                wrapperJob.stop();
+                fireStateMetric(wrapperJob.getState());
+                finished();
+            } catch (GATInvocationException e) {
+                if (logger.isInfoEnabled()) {
+                    logger.info(e);
+                }
+            }
+        }
+    }
 
-	/**
-	 * gets the JobID of this Job
-	 * 
-	 * @return the JobID
-	 */
-	public String getJobID() {
-		if (jobString == null) {
-			jobString = "WrapperJob" + jobID + "_" + Math.random();
-		}
-		return jobString;
-	}
+    /**
+     * gets the JobID of this Job
+     * 
+     * @return the JobID
+     */
+    public String getJobID() {
+        if (jobString == null) {
+            jobString = "WrapperJob" + jobID + "_" + Math.random();
+        }
+        return jobString;
+    }
 
-	private void fireStateMetric(int state) {
-		MetricEvent v = new MetricEvent(this, Job.getStateString(state),
-				statusMetric, System.currentTimeMillis());
-		GATEngine.fireMetric(this, v);
-	}
+    private void fireStateMetric(int state) {
+        MetricEvent v = new MetricEvent(this, Job.getStateString(state),
+                statusMetric, System.currentTimeMillis());
+        GATEngine.fireMetric(this, v);
+    }
 
-	private class JobStateMonitor extends Thread {
+    private class JobStateMonitor extends Thread {
 
-		public JobStateMonitor() {
-			// set this thread to be a deamon thread, it will close if only
-			// deamon threads are running. If it isn't set to be deamon thread
-			// the GAT application will hang unless an explicit System.exit is
-			// done.
-			setName("Wrapped Job State Monitor " + getJobID());
-			setDaemon(true);
-		}
+        public JobStateMonitor() {
+            // set this thread to be a deamon thread, it will close if only
+            // deamon threads are running. If it isn't set to be deamon thread
+            // the GAT application will hang unless an explicit System.exit is
+            // done.
+            setName("Wrapped Job State Monitor " + getJobID());
+            setDaemon(true);
+        }
 
-		public void run() {
-			String statusFileName = null;
+        public void run() {
+            String statusFileName = null;
 
-			statusFileName = System.getProperty("user.home") + File.separator
-					+ ".JavaGATstatus" + getJobID();
+            statusFileName = System.getProperty("user.home") + File.separator
+                    + ".JavaGATstatus" + getJobID();
 
-			do {
-				int newstate = -777;
-				FileInputStream in = null;
-				try {
-					in = new FileInputStream(statusFileName);
-					newstate = in.read();
-				} catch (Exception e) {
-					if (logger.isInfoEnabled()) {
-						logger.info(e);
-					}
-				}
-				if (in != null) {
-					try {
-						in.close();
-					} catch (IOException e) {
-						if (logger.isInfoEnabled()) {
-							logger.info(e);
-						}
-					}
-				}
-				if (newstate >= 0) {
-					File monitorFile = new File(statusFileName);
-					if (!monitorFile.delete()) {
-						logger.fatal("Could not delete job status file!");
-					}
+            do {
+                int newstate = -777;
+                FileInputStream in = null;
+                try {
+                    in = new FileInputStream(statusFileName);
+                    newstate = in.read();
+                } catch (Exception e) {
+                    if (logger.isInfoEnabled()) {
+                        logger.info(e);
+                    }
+                }
+                if (in != null) {
+                    try {
+                        in.close();
+                    } catch (IOException e) {
+                        if (logger.isInfoEnabled()) {
+                            logger.info(e);
+                        }
+                    }
+                }
+                if (newstate >= 0) {
+                    File monitorFile = new File(statusFileName);
+                    if (!monitorFile.delete()) {
+                        logger.fatal("Could not delete job status file!");
+                    }
 
-					state = newstate;
-					fireStateMetric(state);
-				}
+                    state = newstate;
+                    fireStateMetric(state);
+                }
 
-				try {
-					Thread.sleep(1000);
-				} catch (InterruptedException e) {
-					if (logger.isInfoEnabled()) {
-						logger.info(e);
-					}
-				}
-			} while (state != Job.STOPPED && state != Job.SUBMISSION_ERROR);
-		}
-	}
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException e) {
+                    if (logger.isInfoEnabled()) {
+                        logger.info(e);
+                    }
+                }
+            } while (state != Job.STOPPED && state != Job.SUBMISSION_ERROR);
+        }
+    }
 }

@@ -48,7 +48,7 @@ public class DefaultAdaptorOrderPolicy implements AdaptorOrderPolicy {
         placeAdaptor(pos++, "sftpganymed", "file", l);
         placeAdaptor(pos++, "commandlinessh", "file", l);
         placeAdaptor(pos++, "sftpnew", "file", l);
-        placeAdaptor(pos++, "ssh", "file", l);
+        placeAdaptor(pos++, "sshtrilead", "file", l);
         placeAdaptor(pos++, "sftp", "file", l);
         // rest in random order
     }
@@ -58,7 +58,6 @@ public class DefaultAdaptorOrderPolicy implements AdaptorOrderPolicy {
         placeAdaptor(pos++, "local", "fileinputstream", l);
         placeAdaptor(pos++, "gridftp", "fileinputstream", l);
         placeAdaptor(pos++, "sftpnew", "fileinputstream", l);
-        placeAdaptor(pos++, "ssh", "fileinputstream", l);
         placeAdaptor(pos++, "sftp", "fileinputstream", l);
         placeAdaptor(pos++, "copying", "fileinputstream", l);
         // rest in random order
@@ -68,7 +67,6 @@ public class DefaultAdaptorOrderPolicy implements AdaptorOrderPolicy {
         int pos = 0;
         placeAdaptor(pos++, "local", "fileoutputstream", l);
         placeAdaptor(pos++, "gridftp", "fileoutputstream", l);
-        placeAdaptor(pos++, "ssh", "fileoutputstream", l);
         placeAdaptor(pos++, "sftp", "fileoutputstream", l);
         // rest in random order
     }
@@ -78,8 +76,7 @@ public class DefaultAdaptorOrderPolicy implements AdaptorOrderPolicy {
         placeAdaptor(pos++, "local", "resourcebroker", l);
         placeAdaptor(pos++, "globus", "resourcebroker", l);
         placeAdaptor(pos++, "wsgt4new", "resourcebroker", l);
-        placeAdaptor(pos++, "commandlinessh", "resourcebroker", l);
-        placeAdaptor(pos++, "ssh", "resourcebroker", l);
+        placeAdaptor(pos++, "sshtrilead", "resourcebroker", l);
         // rest in random order
     }
     

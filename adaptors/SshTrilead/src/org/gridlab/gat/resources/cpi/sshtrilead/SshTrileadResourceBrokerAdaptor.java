@@ -47,7 +47,7 @@ public class SshTrileadResourceBrokerAdaptor extends ResourceBrokerCpi {
      * to the passed GATContext.
      * 
      * @param gatContext
-     *            A GATContext which will be used to execute remote jobs
+     *                A GATContext which will be used to execute remote jobs
      */
     public SshTrileadResourceBrokerAdaptor(GATContext gatContext, URI brokerURI)
             throws Exception {
@@ -85,6 +85,16 @@ public class SshTrileadResourceBrokerAdaptor extends ResourceBrokerCpi {
         if (sd == null) {
             throw new GATInvocationException(
                     "The job description does not contain a software description");
+        }
+
+        boolean separateOutput = "true".equalsIgnoreCase((String) gatContext
+                .getPreferences().get("sshtrilead.separate.output"));
+        boolean stoppable = "true".equalsIgnoreCase((String) gatContext
+                .getPreferences().get("sshtrilead.stoppable"));
+
+        if (stoppable && separateOutput) {
+            throw new GATInvocationException(
+                    "The preferences 'sshtrilead.separate.output' and 'sshtrilead.stoppable' cannot both be set to 'true'.");
         }
 
         // create the sandbox
@@ -165,7 +175,10 @@ public class SshTrileadResourceBrokerAdaptor extends ResourceBrokerCpi {
         try {
             session = SshTrileadFileAdaptor
                     .getConnection(brokerURI, gatContext).openSession();
-            // session.requestDumbPTY();
+            if (stoppable) {
+                logger.info("starting dumb pty");
+                session.requestDumbPTY();
+            }
             // session.startShell();
         } catch (Exception e) {
             throw new GATInvocationException("Unable to connect!", e);

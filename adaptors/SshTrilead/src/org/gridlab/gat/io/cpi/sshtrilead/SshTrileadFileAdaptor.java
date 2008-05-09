@@ -709,6 +709,9 @@ public class SshTrileadFileAdaptor extends FileCpi {
 
         try {
             String[] f = list();
+            if (f == null) {
+                return null;
+            }
             File[] res = new File[f.length];
 
             for (int i = 0; i < f.length; i++) {

@@ -15,7 +15,7 @@ public interface PipeListener {
      * produced by listening on Endpoints through calls to this callback method.
      * 
      * @param pipe
-     *            the new Pipe.
+     *                the new Pipe.
      */
     public void processPipe(Pipe pipe);
 }

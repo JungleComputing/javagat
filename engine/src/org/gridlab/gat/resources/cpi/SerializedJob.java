@@ -9,82 +9,81 @@ import org.gridlab.gat.resources.JobDescription;
 @SuppressWarnings("serial")
 public class SerializedJob implements Serializable, Advertisable {
 
-	protected static Logger logger = Logger.getLogger(SerializedJob.class);
+    protected static Logger logger = Logger.getLogger(SerializedJob.class);
 
-	private JobDescription jobDescription;
+    private JobDescription jobDescription;
 
-	private Sandbox sandbox;
+    private Sandbox sandbox;
 
-	private String jobId;
-	
-	private long starttime, stoptime, submissiontime;
+    private String jobId;
 
-	// we need this constructor for castor
-	public SerializedJob() {
-	}
+    private long starttime, stoptime, submissiontime;
 
-	public SerializedJob(JobDescription jobDescription, Sandbox sandbox,
-			 String jobId, long submissiontime,
-			long starttime, long stoptime) {
-		this.jobDescription = jobDescription;
-		this.sandbox = sandbox;
-		this.jobId = jobId;
-		this.submissiontime = starttime;
-		this.starttime = starttime;
-		this.stoptime= stoptime;
+    // we need this constructor for castor
+    public SerializedJob() {
+    }
 
-		if (logger.isDebugEnabled()) {
-			logger.debug("created serialized job: " + this);
-		}
-	}
+    public SerializedJob(JobDescription jobDescription, Sandbox sandbox,
+            String jobId, long submissiontime, long starttime, long stoptime) {
+        this.jobDescription = jobDescription;
+        this.sandbox = sandbox;
+        this.jobId = jobId;
+        this.submissiontime = starttime;
+        this.starttime = starttime;
+        this.stoptime = stoptime;
 
-	public String marshal() {
-		throw new Error("Should not be called");
-	}
+        if (logger.isDebugEnabled()) {
+            logger.debug("created serialized job: " + this);
+        }
+    }
 
-	/**
-	 * @return the jobId
-	 */
-	public String getJobId() {
-		return jobId;
-	}
+    public String marshal() {
+        throw new Error("Should not be called");
+    }
 
-	/**
-	 * @param jobId
-	 *            the jobId to set
-	 */
-	public void setJobId(String jobId) {
-		this.jobId = jobId;
-	}
+    /**
+     * @return the jobId
+     */
+    public String getJobId() {
+        return jobId;
+    }
 
-	public JobDescription getJobDescription() {
-		return jobDescription;
-	}
+    /**
+     * @param jobId
+     *                the jobId to set
+     */
+    public void setJobId(String jobId) {
+        this.jobId = jobId;
+    }
 
-	public void setJobDescription(JobDescription jobDescription) {
-		this.jobDescription = jobDescription;
-	}
+    public JobDescription getJobDescription() {
+        return jobDescription;
+    }
 
-	public Sandbox getSandbox() {
-		return sandbox;
-	}
+    public void setJobDescription(JobDescription jobDescription) {
+        this.jobDescription = jobDescription;
+    }
 
-	public void setSandbox(Sandbox sandbox) {
-		this.sandbox = sandbox;
-	}
+    public Sandbox getSandbox() {
+        return sandbox;
+    }
 
-	public String toString() {
-		String res = "";
+    public void setSandbox(Sandbox sandbox) {
+        this.sandbox = sandbox;
+    }
 
-		res += "descr = " + jobDescription;
-		res += " sandbox = " + sandbox;
-		res += " jobId: " + jobId;
-		res += " submissiontime: " + submissiontime;
-		res += " starttime: " + starttime;
-		res += " stoptime: " + stoptime;
+    public String toString() {
+        String res = "";
 
-		return res;
-	}
+        res += "descr = " + jobDescription;
+        res += " sandbox = " + sandbox;
+        res += " jobId: " + jobId;
+        res += " submissiontime: " + submissiontime;
+        res += " starttime: " + starttime;
+        res += " stoptime: " + stoptime;
+
+        return res;
+    }
 
     public long getStarttime() {
         return starttime;

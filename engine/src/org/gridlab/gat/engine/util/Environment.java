@@ -7,8 +7,10 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.StringTokenizer;
 
-/** This class allows you to access environment variables.
- * It is for internal gat use.
+/**
+ * This class allows you to access environment variables. It is for internal gat
+ * use.
+ * 
  * @author rob
  */
 public class Environment {

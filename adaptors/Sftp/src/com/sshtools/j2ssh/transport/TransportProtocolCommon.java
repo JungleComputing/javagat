@@ -64,6 +64,7 @@ public abstract class TransportProtocolCommon implements TransportProtocol,
 
     /**  */
     protected static Log log = LogFactory.getLog(TransportProtocolCommon.class);
+
     private static int nextThreadNo = 1;
 
     /**  */
@@ -78,6 +79,7 @@ public abstract class TransportProtocolCommon implements TransportProtocol,
     /**  */
     public static String SOFTWARE_VERSION_COMMENTS = "http://www.sshtools.com "
             + ConfigurationLoader.getVersionString("J2SSH", "j2ssh.properties");
+
     private int threadNo = nextThreadNo++;
 
     /**  */
@@ -91,6 +93,7 @@ public abstract class TransportProtocolCommon implements TransportProtocol,
 
     /**  */
     protected Map<String, SshKeyExchange> kexs = new HashMap<String, SshKeyExchange>();
+
     private boolean sendIgnore = false;
 
     // protected Map transportMessages = new HashMap();
@@ -121,6 +124,7 @@ public abstract class TransportProtocolCommon implements TransportProtocol,
 
     /**  */
     protected TransportProtocolState state = new TransportProtocolState();
+
     private byte[] exchangeHash = null;
 
     /**  */
@@ -131,6 +135,7 @@ public abstract class TransportProtocolCommon implements TransportProtocol,
 
     /**  */
     protected byte[] signature = null;
+
     private Vector<TransportProtocolEventHandler> eventHandlers = new Vector<TransportProtocolEventHandler>();
 
     // Storage of messages whilst in key exchange
@@ -152,8 +157,11 @@ public abstract class TransportProtocolCommon implements TransportProtocol,
 
     // The thread object
     private SshThread thread;
+
     private long kexTimeout = 3600000L;
+
     private long kexTransferLimit = 1073741824L;
+
     private long startTime = System.currentTimeMillis();
 
     // The input stream for recieving data
@@ -165,6 +173,7 @@ public abstract class TransportProtocolCommon implements TransportProtocol,
 
     /**  */
     protected TransportProtocolOutputStream sshOut;
+
     private int remoteEOL = EOL_CRLF;
 
     // private Map registeredMessages = new HashMap();
@@ -359,7 +368,8 @@ public abstract class TransportProtocolCommon implements TransportProtocol,
                     SshMsgNewKeys.class);
             registerTransportMessages();
 
-            List<String> list = (List<String>) SshKeyExchangeFactory.getSupportedKeyExchanges();
+            List<String> list = (List<String>) SshKeyExchangeFactory
+                    .getSupportedKeyExchanges();
             Iterator<String> it = list.iterator();
 
             while (it.hasNext()) {
@@ -1045,7 +1055,8 @@ public abstract class TransportProtocolCommon implements TransportProtocol,
         // all close all the registerd messageStores
         SshMessageStore ms;
 
-        for (Iterator<SshMessageStore> it2 = messageStores.iterator(); (it2 != null) && it2.hasNext();) {
+        for (Iterator<SshMessageStore> it2 = messageStores.iterator(); (it2 != null)
+                && it2.hasNext();) {
             ms = (SshMessageStore) it2.next();
 
             try {
@@ -1359,7 +1370,8 @@ public abstract class TransportProtocolCommon implements TransportProtocol,
                 } catch (InterruptedIOException ex /* SocketTimeoutException ex */) {
                     log.info("Possible timeout on transport inputstream");
 
-                    Iterator<TransportProtocolEventHandler> it = eventHandlers.iterator();
+                    Iterator<TransportProtocolEventHandler> it = eventHandlers
+                            .iterator();
                     TransportProtocolEventHandler eventHandler;
 
                     while (it.hasNext()) {

@@ -44,7 +44,9 @@ public class StreamForwarder implements Runnable {
 
                 if (read == -1) {
                     synchronized (this) {
-                        out.flush();
+                        if (out != null) {
+                            out.flush();
+                        }
 
                         // roelof: don't close out, should be done by
                         // the user of the StreamForwarder, because he might
@@ -58,9 +60,10 @@ public class StreamForwarder implements Runnable {
                         return;
                     }
                 }
-
-                out.write(buffer, 0, read);
-                out.flush();
+                if (out != null) {
+                    out.write(buffer, 0, read);
+                    out.flush();
+                }
                 logger.info("Forwarder '" + name + "' forwarded: "
                         + new String(buffer, 0, read));
 

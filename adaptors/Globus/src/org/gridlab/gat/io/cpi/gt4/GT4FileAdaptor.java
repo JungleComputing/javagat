@@ -52,17 +52,17 @@ abstract public class GT4FileAdaptor extends FileCpi {
      * subclasses.
      * 
      * @param gatContext
-     *            GAT context
+     *                GAT context
      * @param preferences
-     *            GAT preferences
+     *                GAT preferences
      * @param location
-     *            FILE location URI
+     *                FILE location URI
      * @param prov
-     *            marks the JavaCog provider, possible values are: gt2ft,
-     *            gsiftp, condor, ssh, gt4ft, local, gt4, gsiftp-old, gt3.2.1,
-     *            gt2, ftp, webdav. Aliases: webdav <-> http; local <-> file;
-     *            gsiftp-old <-> gridftp-old; gsiftp <-> gridftp; gt4 <->
-     *            gt3.9.5, gt4.0.2, gt4.0.1, gt4.0.0
+     *                marks the JavaCog provider, possible values are: gt2ft,
+     *                gsiftp, condor, ssh, gt4ft, local, gt4, gsiftp-old,
+     *                gt3.2.1, gt2, ftp, webdav. Aliases: webdav <-> http; local
+     *                <-> file; gsiftp-old <-> gridftp-old; gsiftp <-> gridftp;
+     *                gt4 <-> gt3.9.5, gt4.0.2, gt4.0.1, gt4.0.0
      */
     public GT4FileAdaptor(GATContext gatContext, URI location, String prov)
             throws GATObjectCreationException {

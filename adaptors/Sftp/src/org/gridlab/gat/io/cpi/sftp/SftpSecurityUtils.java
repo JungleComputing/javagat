@@ -27,182 +27,182 @@ import com.sshtools.j2ssh.transport.publickey.SshPrivateKeyFile;
  */
 class SftpContextCreator implements SecurityContextCreator {
 
-	protected static Logger logger = Logger.getLogger(SftpSecurityUtils.class);
+    protected static Logger logger = Logger.getLogger(SftpSecurityUtils.class);
 
-	public SecurityContext createDefaultSecurityContext(GATContext gatContext,
-			URI location) throws CouldNotInitializeCredentialException,
-			CredentialExpiredException, InvalidUsernameOrPasswordException {
-		SftpUserInfo cred = SftpSecurityUtils.getDefaultUserInfo(gatContext,
-				location);
-		CredentialSecurityContext c = new CredentialSecurityContext();
-		c.putDataObject("sftp", cred);
+    public SecurityContext createDefaultSecurityContext(GATContext gatContext,
+            URI location) throws CouldNotInitializeCredentialException,
+            CredentialExpiredException, InvalidUsernameOrPasswordException {
+        SftpUserInfo cred = SftpSecurityUtils.getDefaultUserInfo(gatContext,
+                location);
+        CredentialSecurityContext c = new CredentialSecurityContext();
+        c.putDataObject("sftp", cred);
 
-		return c;
-	}
+        return c;
+    }
 
-	public Object createUserData(GATContext gatContext, URI location,
-			SecurityContext inContext)
-			throws CouldNotInitializeCredentialException,
-			CredentialExpiredException, InvalidUsernameOrPasswordException {
-		SftpUserInfo info;
+    public Object createUserData(GATContext gatContext, URI location,
+            SecurityContext inContext)
+            throws CouldNotInitializeCredentialException,
+            CredentialExpiredException, InvalidUsernameOrPasswordException {
+        SftpUserInfo info;
 
-		if (inContext instanceof CredentialSecurityContext) {
-			return inContext.getDataObject("sftp");
-		} else if (inContext instanceof CertificateSecurityContext) {
-			CertificateSecurityContext c = (CertificateSecurityContext) inContext;
+        if (inContext instanceof CredentialSecurityContext) {
+            return inContext.getDataObject("sftp");
+        } else if (inContext instanceof CertificateSecurityContext) {
+            CertificateSecurityContext c = (CertificateSecurityContext) inContext;
 
-			URI keyURI = c.getKeyfile();
+            URI keyURI = c.getKeyfile();
 
-			if (keyURI == null) {
-				// must be a password (is possible, default info may be stored
-				// like that)
-				info = new SftpUserInfo();
-				info.username = SecurityContextUtils.getUser(gatContext,
-						inContext, location);
-				info.password = c.getPassword();
+            if (keyURI == null) {
+                // must be a password (is possible, default info may be stored
+                // like that)
+                info = new SftpUserInfo();
+                info.username = SecurityContextUtils.getUser(gatContext,
+                        inContext, location);
+                info.password = c.getPassword();
 
-				return info;
-			} else { // public / private key
+                return info;
+            } else { // public / private key
 
-				if (!keyURI.refersToLocalHost()) {
-					if (logger.isDebugEnabled()) {
-						logger
-								.debug("WARNING: URI for key file does not refer to local host, skipping this security context");
-					}
-				} else {
-					info = new SftpUserInfo();
-					info.username = SecurityContextUtils.getUser(gatContext,
-							inContext, location);
-					info.privateKey = SftpSecurityUtils.loadKey(c.getKeyfile()
-							.getPath());
+                if (!keyURI.refersToLocalHost()) {
+                    if (logger.isDebugEnabled()) {
+                        logger
+                                .debug("WARNING: URI for key file does not refer to local host, skipping this security context");
+                    }
+                } else {
+                    info = new SftpUserInfo();
+                    info.username = SecurityContextUtils.getUser(gatContext,
+                            inContext, location);
+                    info.privateKey = SftpSecurityUtils.loadKey(c.getKeyfile()
+                            .getPath());
 
-					return info;
-				}
-			}
-		} else if (inContext instanceof PasswordSecurityContext) {
-			PasswordSecurityContext c = (PasswordSecurityContext) inContext;
-			info = new SftpUserInfo();
-			info.username = SecurityContextUtils.getUser(gatContext, inContext,
-					location);
-			info.password = c.getPassword();
+                    return info;
+                }
+            }
+        } else if (inContext instanceof PasswordSecurityContext) {
+            PasswordSecurityContext c = (PasswordSecurityContext) inContext;
+            info = new SftpUserInfo();
+            info.username = SecurityContextUtils.getUser(gatContext, inContext,
+                    location);
+            info.password = c.getPassword();
 
-			return info;
-		}
+            return info;
+        }
 
-		return null;
-	}
+        return null;
+    }
 }
 
 public class SftpSecurityUtils {
 
-	protected static Logger logger = Logger.getLogger(SftpSecurityUtils.class);
+    protected static Logger logger = Logger.getLogger(SftpSecurityUtils.class);
 
-	protected static SftpUserInfo getSftpCredential(GATContext context,
-			String adaptorName, URI location, int defaultPort)
-			throws CouldNotInitializeCredentialException,
-			CredentialExpiredException, InvalidUsernameOrPasswordException {
-		Object data = SecurityContextUtils.getSecurityUserData(context,
-				adaptorName, "sftp", location, defaultPort,
-				new SftpContextCreator());
+    protected static SftpUserInfo getSftpCredential(GATContext context,
+            String adaptorName, URI location, int defaultPort)
+            throws CouldNotInitializeCredentialException,
+            CredentialExpiredException, InvalidUsernameOrPasswordException {
+        Object data = SecurityContextUtils.getSecurityUserData(context,
+                adaptorName, "sftp", location, defaultPort,
+                new SftpContextCreator());
 
-		return (SftpUserInfo) data;
-	}
+        return (SftpUserInfo) data;
+    }
 
-	protected static SftpUserInfo getDefaultUserInfo(GATContext gatContext,
-			URI location) throws CouldNotInitializeCredentialException,
-			CredentialExpiredException, InvalidUsernameOrPasswordException {
-		SftpUserInfo info = new SftpUserInfo();
-		info.privateKey = getDefaultPrivateKey(gatContext);
-		info.username = SecurityContextUtils
-				.getUser(gatContext, null, location);
-		return info;
-	}
+    protected static SftpUserInfo getDefaultUserInfo(GATContext gatContext,
+            URI location) throws CouldNotInitializeCredentialException,
+            CredentialExpiredException, InvalidUsernameOrPasswordException {
+        SftpUserInfo info = new SftpUserInfo();
+        info.privateKey = getDefaultPrivateKey(gatContext);
+        info.username = SecurityContextUtils
+                .getUser(gatContext, null, location);
+        return info;
+    }
 
-	private static SshPrivateKey getDefaultPrivateKey(GATContext context)
-			throws CouldNotInitializeCredentialException,
-			CredentialExpiredException {
-		String keyfile = null;
+    private static SshPrivateKey getDefaultPrivateKey(GATContext context)
+            throws CouldNotInitializeCredentialException,
+            CredentialExpiredException {
+        String keyfile = null;
 
-		// no key file given, try id_dsa and id_rsa
-		String home = System.getProperty("user.home");
+        // no key file given, try id_dsa and id_rsa
+        String home = System.getProperty("user.home");
 
-		if (home == null) {
-			home = "";
-		} else {
-			home += File.separator;
-		}
+        if (home == null) {
+            home = "";
+        } else {
+            home += File.separator;
+        }
 
-		try {
-			keyfile = home + ".ssh" + File.separator + "identity";
+        try {
+            keyfile = home + ".ssh" + File.separator + "identity";
 
-			return loadKey(keyfile);
-		} catch (Exception e) {
-			// Ignore
-		}
+            return loadKey(keyfile);
+        } catch (Exception e) {
+            // Ignore
+        }
 
-		try {
-			keyfile = home + ".ssh" + File.separator + "id_dsa";
+        try {
+            keyfile = home + ".ssh" + File.separator + "id_dsa";
 
-			return loadKey(keyfile);
-		} catch (Exception e) {
-			// Ignore
-		}
+            return loadKey(keyfile);
+        } catch (Exception e) {
+            // Ignore
+        }
 
-		try {
-			keyfile = home + ".ssh" + File.separator + "id_rsa";
+        try {
+            keyfile = home + ".ssh" + File.separator + "id_rsa";
 
-			return loadKey(keyfile);
-		} catch (Exception e) {
-			// Ignore
-		}
+            return loadKey(keyfile);
+        } catch (Exception e) {
+            // Ignore
+        }
 
-		try {
-			keyfile = home + "ssh" + File.separator + "identity";
+        try {
+            keyfile = home + "ssh" + File.separator + "identity";
 
-			return loadKey(keyfile);
-		} catch (Exception e) {
-			// Ignore
-		}
+            return loadKey(keyfile);
+        } catch (Exception e) {
+            // Ignore
+        }
 
-		try {
-			keyfile = home + "ssh" + File.separator + "id_dsa";
+        try {
+            keyfile = home + "ssh" + File.separator + "id_dsa";
 
-			return loadKey(keyfile);
-		} catch (Exception e) {
-			// Ignore
-		}
+            return loadKey(keyfile);
+        } catch (Exception e) {
+            // Ignore
+        }
 
-		try {
-			keyfile = home + "ssh" + File.separator + "id_rsa";
+        try {
+            keyfile = home + "ssh" + File.separator + "id_rsa";
 
-			return loadKey(keyfile);
-		} catch (Exception e) {
-			// Ignore
-		}
+            return loadKey(keyfile);
+        } catch (Exception e) {
+            // Ignore
+        }
 
-		return null;
-	}
+        return null;
+    }
 
-	protected static SshPrivateKey loadKey(String keyfile)
-			throws CouldNotInitializeCredentialException,
-			CredentialExpiredException {
-		if (logger.isDebugEnabled()) {
-			logger.debug("trying to load ssh key from: " + keyfile);
-		}
+    protected static SshPrivateKey loadKey(String keyfile)
+            throws CouldNotInitializeCredentialException,
+            CredentialExpiredException {
+        if (logger.isDebugEnabled()) {
+            logger.debug("trying to load ssh key from: " + keyfile);
+        }
 
-		java.io.File keyf = new java.io.File(keyfile);
+        java.io.File keyf = new java.io.File(keyfile);
 
-		if (!keyf.exists()) {
-			throw new CouldNotInitializeCredentialException(
-					"could not find private key");
-		}
+        if (!keyf.exists()) {
+            throw new CouldNotInitializeCredentialException(
+                    "could not find private key");
+        }
 
-		try {
-			SshPrivateKeyFile key = SshPrivateKeyFile.parse(keyf);
+        try {
+            SshPrivateKeyFile key = SshPrivateKeyFile.parse(keyf);
 
-			return key.toPrivateKey("");
-		} catch (IOException e) {
-			throw new CouldNotInitializeCredentialException("sftp", e);
-		}
-	}
+            return key.toPrivateKey("");
+        } catch (IOException e) {
+            throw new CouldNotInitializeCredentialException("sftp", e);
+        }
+    }
 }

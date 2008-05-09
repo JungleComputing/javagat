@@ -103,12 +103,12 @@ public class PostStagedFileSet {
                 throw new GATInvocationException("postStagedFileSet", e);
             }
         } else if (sd.getStdoutStream() != null) {
-//            try {
-//                resolvedStdout = GAT.createFile(gatContext, new URI(
-//                        "any:///stdout"));
-//            } catch (Exception e) {
-//                throw new GATInvocationException("postStagedFileSet", e);
-//            }
+            // try {
+            // resolvedStdout = GAT.createFile(gatContext, new URI(
+            // "any:///stdout"));
+            // } catch (Exception e) {
+            // throw new GATInvocationException("postStagedFileSet", e);
+            // }
         }
         if (resolvedStdout != null) {
             tmp.add(new PostStagedFile(gatContext, resolvedStdout, sd
@@ -125,12 +125,12 @@ public class PostStagedFileSet {
                 throw new GATInvocationException("postStagedFileSet", e);
             }
         } else if (sd.getStderrStream() != null) {
-//            try {
-//                resolvedStderr = GAT.createFile(gatContext, new URI(
-//                        "any:///stderr"));
-//            } catch (Exception e) {
-//                throw new GATInvocationException("postStagedFileSet", e);
-//            }
+            // try {
+            // resolvedStderr = GAT.createFile(gatContext, new URI(
+            // "any:///stderr"));
+            // } catch (Exception e) {
+            // throw new GATInvocationException("postStagedFileSet", e);
+            // }
         }
         if (resolvedStderr != null) {
             tmp.add(new PostStagedFile(gatContext, resolvedStderr, sd
@@ -272,7 +272,7 @@ public class PostStagedFileSet {
 
     /**
      * @param files
-     *            the files to set
+     *                the files to set
      */
     public void setFiles(PostStagedFile[] files) {
         this.files = files;
@@ -287,7 +287,7 @@ public class PostStagedFileSet {
 
     /**
      * @param postStageStderr
-     *            the postStageStderr to set
+     *                the postStageStderr to set
      */
     public void setPostStageStderr(boolean postStageStderr) {
         this.postStageStderr = postStageStderr;
@@ -302,7 +302,7 @@ public class PostStagedFileSet {
 
     /**
      * @param postStageStdout
-     *            the postStageStdout to set
+     *                the postStageStdout to set
      */
     public void setPostStageStdout(boolean postStageStdout) {
         this.postStageStdout = postStageStdout;

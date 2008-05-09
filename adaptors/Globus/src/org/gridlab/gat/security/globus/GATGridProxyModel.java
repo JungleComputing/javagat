@@ -15,32 +15,31 @@ import org.globus.tools.proxy.GridProxyModel;
 
 public class GATGridProxyModel extends GridProxyModel {
 
-	public GlobusCredential createProxy(String pwd) {
-		return null;
-	}
-	
-	public GlobusCredential createProxy(String passphrase, String certFile, String keyFile) throws Exception {
-		userCert = CertUtil.loadCertificate(certFile);
-		OpenSSLKey key = new BouncyCastleOpenSSLKey(keyFile);
+    public GlobusCredential createProxy(String pwd) {
+        return null;
+    }
 
-		if (key.isEncrypted()) {
-			try {
-				key.decrypt(passphrase);
-			} catch (GeneralSecurityException e) {
-				throw new Exception("Wrong password or other security error");
-			}
-		}
+    public GlobusCredential createProxy(String passphrase, String certFile,
+            String keyFile) throws Exception {
+        userCert = CertUtil.loadCertificate(certFile);
+        OpenSSLKey key = new BouncyCastleOpenSSLKey(keyFile);
 
-		PrivateKey userKey = key.getPrivateKey();
-		BouncyCastleCertProcessingFactory factory = BouncyCastleCertProcessingFactory
-				.getDefault();
-		int proxyType = (getLimited()) ? GSIConstants.DELEGATION_LIMITED
-				: GSIConstants.DELEGATION_FULL;
-		
-		return factory.createCredential(new X509Certificate[] { userCert },
-				userKey, 512,
-				12 * 3600, proxyType,
-				(X509ExtensionSet) null);
-	}
+        if (key.isEncrypted()) {
+            try {
+                key.decrypt(passphrase);
+            } catch (GeneralSecurityException e) {
+                throw new Exception("Wrong password or other security error");
+            }
+        }
+
+        PrivateKey userKey = key.getPrivateKey();
+        BouncyCastleCertProcessingFactory factory = BouncyCastleCertProcessingFactory
+                .getDefault();
+        int proxyType = (getLimited()) ? GSIConstants.DELEGATION_LIMITED
+                : GSIConstants.DELEGATION_FULL;
+
+        return factory.createCredential(new X509Certificate[] { userCert },
+                userKey, 512, 12 * 3600, proxyType, (X509ExtensionSet) null);
+    }
 
 }

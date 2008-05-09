@@ -144,10 +144,10 @@ public class MetricDefinition implements Serializable {
      * there is no frequency specified.
      * 
      * @param parameters
-     *            the parameters to this metricDefinition. For instance, when
-     *            creating a diskFree metric, a parameter could be the physical
-     *            device name. If no special parameters are needed, it is OK to
-     *            pass null
+     *                the parameters to this metricDefinition. For instance,
+     *                when creating a diskFree metric, a parameter could be the
+     *                physical device name. If no special parameters are needed,
+     *                it is OK to pass null
      * @return the new Netric
      */
     public Metric createMetric(Map<String, Object> parameters) {
@@ -159,10 +159,10 @@ public class MetricDefinition implements Serializable {
      * CONTINUOUS metrics. Hence, there the frequency must be specified.
      * 
      * @param parameters
-     *            the parameters to this metricDefinition. For instance, when
-     *            creating a diskFree metric, a parameter could be the physical
-     *            device name. If no special parameters are needed, it is OK to
-     *            pass null
+     *                the parameters to this metricDefinition. For instance,
+     *                when creating a diskFree metric, a parameter could be the
+     *                physical device name. If no special parameters are needed,
+     *                it is OK to pass null
      * @return the new Metric
      */
     public Metric createMetric(Map<String, Object> parameters, long frequency) {

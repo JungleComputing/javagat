@@ -19,7 +19,7 @@ import org.gridlab.gat.monitoring.Monitorable;
 
 /**
  * @author rob
- *
+ * 
  * The GATAdvertService allows GATAdvertisable instances to get published to and
  * queried in an advert directory. Such an advert directory is a meta data
  * directory with an hierarchical namespace attached.
@@ -29,11 +29,11 @@ public class AdvertServiceCpi implements AdvertService, Monitorable {
 
     /**
      * Create an instance of the AdvertService using the provided preference.
-     *
+     * 
      * @param gatContext
-     *            The context to use.
+     *                The context to use.
      * @param preferences
-     *            The user preferences.
+     *                The user preferences.
      */
     public AdvertServiceCpi(GATContext gatContext) {
         this.gatContext = gatContext;
@@ -44,13 +44,15 @@ public class AdvertServiceCpi implements AdvertService, Monitorable {
      * GATAdvertService, at path (absolute or relative to PWD). If an
      * GATAdvertService entry exists at the specified path, that entry gets
      * overwritten, and a warning is issued.
-     *
+     * 
      * @param advert
-     *            instance to be entered into the GATAdvertService.
+     *                instance to be entered into the GATAdvertService.
      * @param metaData
-     *            Meta data to be associated with the passed GATAdvertiseable.
+     *                Meta data to be associated with the passed
+     *                GATAdvertiseable.
      * @param path
-     *            Path (either absolute or relative to PWD) of the new entry.
+     *                Path (either absolute or relative to PWD) of the new
+     *                entry.
      */
     public void add(Advertisable advert, MetaData metaData, String path)
             throws GATInvocationException {
@@ -60,12 +62,12 @@ public class AdvertServiceCpi implements AdvertService, Monitorable {
     /**
      * Remove an Advertizable instance and related meta data from the
      * GATAdvertService, at path (absolute or relative to PWD). If
-     *
+     * 
      * @param path
-     *            Path (either absolute or relative to PWD) of the entry to be
-     *            deleted.
+     *                Path (either absolute or relative to PWD) of the entry to
+     *                be deleted.
      * @throws NoSuchElementException
-     *             The path is incorrect.
+     *                 The path is incorrect.
      */
     public void delete(String path) throws GATInvocationException,
             NoSuchElementException {
@@ -74,10 +76,10 @@ public class AdvertServiceCpi implements AdvertService, Monitorable {
 
     /**
      * @param path
-     *            Path (either absolute or relative to PWD) of the entry.
+     *                Path (either absolute or relative to PWD) of the entry.
      * @return A MetaData containing the metadata.
      * @throws NoSuchElementException
-     *             The path is incorrect.
+     *                 The path is incorrect.
      */
     public MetaData getMetaData(String path) throws GATInvocationException,
             NoSuchElementException {
@@ -86,10 +88,10 @@ public class AdvertServiceCpi implements AdvertService, Monitorable {
 
     /**
      * @param path
-     *            Path (either absolute or relative to PWD) of the entry.
+     *                Path (either absolute or relative to PWD) of the entry.
      * @return A MetaData containing the metadata.
      * @throws NoSuchElementException
-     *             The path is incorrect.
+     *                 The path is incorrect.
      */
     public Advertisable getAdvertisable(String path)
             throws GATInvocationException, NoSuchElementException {
@@ -99,9 +101,9 @@ public class AdvertServiceCpi implements AdvertService, Monitorable {
     /**
      * Query the GATAdvertService for entries matching the specified set of meta
      * data. The returned paths can be destroyed at any time.
-     *
+     * 
      * @param metaData
-     *            Meta data describing the entries to be searched for.
+     *                Meta data describing the entries to be searched for.
      * @return Paths, each pointing to a matching entry. If no mathces are
      *         found, null is returned.
      */
@@ -112,9 +114,9 @@ public class AdvertServiceCpi implements AdvertService, Monitorable {
     /**
      * Specify the element of the GATAdvertService namespace to be used as
      * reference for relative paths.
-     *
+     * 
      * @param path
-     *            New absolute or relative reference path.
+     *                New absolute or relative reference path.
      */
     public void setPWD(String path) throws GATInvocationException {
         throw new UnsupportedOperationException("Not implemented");
@@ -123,7 +125,7 @@ public class AdvertServiceCpi implements AdvertService, Monitorable {
     /**
      * Returns the current element of the GATAdvertService namespace used as
      * reference for relative paths.
-     *
+     * 
      * @return Absolute reference path.
      */
     public String getPWD() throws GATInvocationException {
@@ -140,7 +142,8 @@ public class AdvertServiceCpi implements AdvertService, Monitorable {
         throw new UnsupportedOperationException("Not implemented");
     }
 
-    public List<MetricDefinition> getMetricDefinitions() throws GATInvocationException {
+    public List<MetricDefinition> getMetricDefinitions()
+            throws GATInvocationException {
         throw new UnsupportedOperationException("Not implemented");
     }
 

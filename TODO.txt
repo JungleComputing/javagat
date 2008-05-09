@@ -7,11 +7,11 @@ JavaGAT 2.0
   * test it
   * integrate Frank Knoll's advert service adaptors
 + Document all preferences and attributes
-- Make a pass over all javadocs
++ Make a pass over all javadocs
 + Document GAT.end()
 + Check: sandbox CTRL-C during poststage stops it?
 + Create and use InvalidUsernameOrPasswordException
-- Store VO (virtual organisation) in SecurityContext (--roelof or in SoftwareDescription?)
+- Store VO (virtual organisation) in SecurityContext 
 + Cleanup SSH adaptors:
   * If the executable does not exist, we get no error.
   * Broker does not work to fs3
@@ -19,7 +19,7 @@ JavaGAT 2.0
   * use a cache to save on connection setup time(also for sftp)
   * support environment vars in ssh broker.
   * remove old ssh/sftp adaptors?
-- URI file://localhost//score.icme is not handled correctly on windows?
++ URI file://localhost//score.icme is not handled correctly on windows?
 + Look into file permissions for Keith (gridftp)
 + MultiJobs: number of jobs/machine to run concurrently
 + Check events: globus adaptor should throw all events (PRE_STAGING, SUBMITTED,
@@ -27,7 +27,7 @@ JavaGAT 2.0
 + Fix race in globus adaptor: access to shutdownInProgress should be 
   synchronized
 - Fix leaking connections with globus. Enric reported that if a 
-  GLOBUS_TCP_PORT_RANGE is set, globus job submission failes after a while
+  GLOBUS_TCP_PORT_RANGE is set, globus job submission fails after a while
 - Task model?
 -------------------------------------------------------------------------------
   

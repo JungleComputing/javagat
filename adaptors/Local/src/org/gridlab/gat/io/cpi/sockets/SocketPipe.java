@@ -32,7 +32,7 @@ public class SocketPipe implements Pipe {
 
     /*
      * (non-Javadoc)
-     *
+     * 
      * @see org.gridlab.gat.io.Pipe#getInputStream()
      */
     public InputStream getInputStream() throws GATInvocationException {
@@ -45,7 +45,7 @@ public class SocketPipe implements Pipe {
 
     /*
      * (non-Javadoc)
-     *
+     * 
      * @see org.gridlab.gat.io.Pipe#getOutputStream()
      */
     public OutputStream getOutputStream() throws GATInvocationException {
@@ -66,7 +66,7 @@ public class SocketPipe implements Pipe {
 
     /*
      * (non-Javadoc)
-     *
+     * 
      * @see org.gridlab.gat.monitoring.Monitorable#addMetricListener(org.gridlab.gat.monitoring.MetricListener,
      *      org.gridlab.gat.monitoring.Metric)
      */
@@ -82,16 +82,17 @@ public class SocketPipe implements Pipe {
 
     /*
      * (non-Javadoc)
-     *
+     * 
      * @see org.gridlab.gat.monitoring.Monitorable#getMetrics()
      */
-    public List<MetricDefinition> getMetricDefinitions() throws GATInvocationException {
+    public List<MetricDefinition> getMetricDefinitions()
+            throws GATInvocationException {
         throw new UnsupportedOperationException("Not implemented");
     }
 
     /*
      * (non-Javadoc)
-     *
+     * 
      * @see org.gridlab.gat.monitoring.Monitorable#removeMetricListener(org.gridlab.gat.monitoring.MetricListener,
      *      org.gridlab.gat.monitoring.Metric)
      */

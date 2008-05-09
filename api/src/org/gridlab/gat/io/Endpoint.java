@@ -38,7 +38,7 @@ public interface Endpoint extends Monitorable, Advertisable, Serializable {
      * 
      * @return a new {@link Pipe} connected to the {@link Endpoint}.
      * @throws GATInvocationException
-     *             if no connection could be made.
+     *                 if no connection could be made.
      */
     public Pipe connect() throws GATInvocationException;
 
@@ -52,7 +52,7 @@ public interface Endpoint extends Monitorable, Advertisable, Serializable {
      * 
      * @return a new {@link Pipe} connected to the {@link Endpoint}.
      * @throws GATInvocationException
-     *             if no connection could be made.
+     *                 if no connection could be made.
      */
     public Pipe listen() throws GATInvocationException;
 
@@ -66,10 +66,10 @@ public interface Endpoint extends Monitorable, Advertisable, Serializable {
      * specified timeout expires.
      * 
      * @param timeout
-     *            the specified timeout in milliseconds
+     *                the specified timeout in milliseconds
      * @return a new {@link Pipe} connected to the {@link Endpoint}.
      * @throws GATInvocationException
-     *             if no connection could be made.
+     *                 if no connection could be made.
      */
     public Pipe listen(int timeout) throws GATInvocationException;
 
@@ -83,9 +83,9 @@ public interface Endpoint extends Monitorable, Advertisable, Serializable {
      * made, the pipeListener will be informed.
      * 
      * @param pipeListener
-     *            the listener that will be informed
+     *                the listener that will be informed
      * @throws GATInvocationException
-     *             if no connection could be made.
+     *                 if no connection could be made.
      */
     public void listen(PipeListener pipeListener) throws GATInvocationException;
 
@@ -99,11 +99,11 @@ public interface Endpoint extends Monitorable, Advertisable, Serializable {
      * made, the {@link PipeListener} will be informed.
      * 
      * @param pipeListener
-     *            the {@link PipeListener} that will be informed
+     *                the {@link PipeListener} that will be informed
      * @param timeout
-     *            the specified timeout in milliseconds
+     *                the specified timeout in milliseconds
      * @throws GATInvocationException
-     *             if no connection could be made.
+     *                 if no connection could be made.
      */
     public void listen(PipeListener pipeListener, int timeout)
             throws GATInvocationException;

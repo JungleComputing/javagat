@@ -41,12 +41,12 @@ public interface LogicalFile extends Monitorable, Serializable, Advertisable {
      * this LogicalFile instance.
      * 
      * @param file
-     *            A File instance to add to the set of physical files
-     *            represented by this LogicalFile instance.
+     *                A File instance to add to the set of physical files
+     *                represented by this LogicalFile instance.
      * @throws GATInvocationException
-     *             Thrown upon problems accessing the remote instance
+     *                 Thrown upon problems accessing the remote instance
      * @throws IOException
-     *             if an IO operation fails
+     *                 if an IO operation fails
      */
     public void addFile(File file) throws GATInvocationException, IOException;
 
@@ -55,12 +55,12 @@ public interface LogicalFile extends Monitorable, Serializable, Advertisable {
      * represented by this LogicalFile instance.
      * 
      * @param location
-     *            The URI of a physical file to add to the set of physical files
-     *            represented by this LogicalFile instance.
+     *                The URI of a physical file to add to the set of physical
+     *                files represented by this LogicalFile instance.
      * @throws GATInvocationException
-     *             Thrown upon problems accessing the remote instance
+     *                 Thrown upon problems accessing the remote instance
      * @throws IOException
-     *             if an IO operation fails
+     *                 if an IO operation fails
      */
     public void addURI(URI location) throws GATInvocationException, IOException;
 
@@ -69,12 +69,12 @@ public interface LogicalFile extends Monitorable, Serializable, Advertisable {
      * represented by this LogicalFile instance.
      * 
      * @param file
-     *            A File instance to remove from the set of physical files
-     *            represented by this LogicalFile instance.
+     *                A File instance to remove from the set of physical files
+     *                represented by this LogicalFile instance.
      * @throws GATInvocationException
-     *             Thrown upon problems accessing the remote instance
+     *                 Thrown upon problems accessing the remote instance
      * @throws IOException
-     *             if an IO operation fails
+     *                 if an IO operation fails
      */
     public void removeFile(File file) throws GATInvocationException,
             IOException;
@@ -84,12 +84,12 @@ public interface LogicalFile extends Monitorable, Serializable, Advertisable {
      * files represented by this LogicalFile instance.
      * 
      * @param location
-     *            The URI of a physical file to remove from the set of physical
-     *            files represented by this LogicalFile instance.
+     *                The URI of a physical file to remove from the set of
+     *                physical files represented by this LogicalFile instance.
      * @throws GATInvocationException
-     *             Thrown upon problems accessing the remote instance
+     *                 Thrown upon problems accessing the remote instance
      * @throws IOException
-     *             if an IO operation fails
+     *                 if an IO operation fails
      */
     public void removeURI(URI location) throws GATInvocationException,
             IOException;
@@ -99,11 +99,11 @@ public interface LogicalFile extends Monitorable, Serializable, Advertisable {
      * file specified by the passed URI.
      * 
      * @param location
-     *            The URI of the new physical file
+     *                The URI of the new physical file
      * @throws GATInvocationException
-     *             Upon non-remote IO problem
+     *                 Upon non-remote IO problem
      * @throws IOException
-     *             if an IO operation fails
+     *                 if an IO operation fails
      */
     public void replicate(URI location) throws GATInvocationException,
             IOException;
@@ -114,9 +114,9 @@ public interface LogicalFile extends Monitorable, Serializable, Advertisable {
      * 
      * @return The java.util.List of URIs
      * @throws GATInvocationException
-     *             Thrown upon problems accessing the remote instance
+     *                 Thrown upon problems accessing the remote instance
      * @throws IOException
-     *             if an IO operation fails
+     *                 if an IO operation fails
      */
     public List<URI> getURIs() throws GATInvocationException, IOException;
 
@@ -126,9 +126,9 @@ public interface LogicalFile extends Monitorable, Serializable, Advertisable {
      * 
      * @return The java.util.List of URIs
      * @throws GATInvocationException
-     *             Thrown upon problems accessing the remote instance
+     *                 Thrown upon problems accessing the remote instance
      * @throws IOException
-     *             if an IO operation fails
+     *                 if an IO operation fails
      */
     public List<File> getFiles() throws GATInvocationException, IOException;
 }

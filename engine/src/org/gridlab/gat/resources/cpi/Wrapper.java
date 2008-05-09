@@ -89,7 +89,7 @@ public class Wrapper implements MetricListener {
      * Processes the incoming metrics of the jobs the wrapper submitted.
      * 
      * @param val
-     *            The MetricValue received from the job
+     *                The MetricValue received from the job
      */
     public synchronized void processMetricEvent(MetricEvent val) {
         Job job = (Job) val.getSource();
@@ -353,7 +353,7 @@ public class Wrapper implements MetricListener {
                     logger.debug("an exception occurred: " + e);
                     e.printStackTrace();
                 }
-                
+
                 System.exit(1);
             }
         }
@@ -386,8 +386,8 @@ public class Wrapper implements MetricListener {
             preStageDoneFile = GAT.createFile("any://" + initiator + "/"
                     + preStageDoneLocation);
             while (!preStageDoneFile.exists()) {
-                logger.debug("waiting for pre stage done file at location: " + "any://" + initiator + "/"
-                    + preStageDoneLocation);
+                logger.debug("waiting for pre stage done file at location: "
+                        + "any://" + initiator + "/" + preStageDoneLocation);
                 Thread.sleep(5000);
             }
         } catch (Exception e) {
@@ -431,8 +431,8 @@ public class Wrapper implements MetricListener {
                 .getStderrFile(), initiator, remoteCWD));
         sd.setStdout(rewriteStagedFile(gatContext, preferences, null, sd
                 .getStdoutFile(), initiator, remoteCWD));
-        sd.setStdin(rewriteStagedFile(gatContext, preferences, sd.getStdinFile(),
-                null, initiator, remoteCWD));
+        sd.setStdin(rewriteStagedFile(gatContext, preferences, sd
+                .getStdinFile(), null, initiator, remoteCWD));
 
         Map<File, File> pre = sd.getPreStaged();
         Set<File> tmp = pre.keySet();

@@ -22,10 +22,11 @@ import org.gridlab.gat.monitoring.MetricListener;
  * corresponding method in the FileStream class at runtime.
  */
 public abstract class FileOutputStreamCpi implements FileOutputStreamInterface {
-    
-	protected static Logger logger = Logger.getLogger(FileOutputStreamCpi.class);
-	
-	protected GATContext gatContext;
+
+    protected static Logger logger = Logger
+            .getLogger(FileOutputStreamCpi.class);
+
+    protected GATContext gatContext;
 
     protected URI location;
 
@@ -35,22 +36,23 @@ public abstract class FileOutputStreamCpi implements FileOutputStreamInterface {
      * Constructs a FileInputStream Cpi instance which corresponds to the
      * physical file identified by the passed Location and whose access rights
      * are determined by the passed GATContext.
-     *
+     * 
      * @param location
-     *            A Location which represents the URI corresponding to the
-     *            physical file.
+     *                A Location which represents the URI corresponding to the
+     *                physical file.
      * @param gatContext
-     *            A GATContext which is used to determine the access rights for
-     *            this FileCpi.
+     *                A GATContext which is used to determine the access rights
+     *                for this FileCpi.
      */
-    protected FileOutputStreamCpi(GATContext gatContext,
-             URI location, Boolean append) {
+    protected FileOutputStreamCpi(GATContext gatContext, URI location,
+            Boolean append) {
         this.gatContext = gatContext;
         this.location = location;
         this.append = append.booleanValue();
 
-        if(logger.isDebugEnabled()) {
-            logger.debug("FileOutputStreamCpi: created stream with URI " + location);
+        if (logger.isDebugEnabled()) {
+            logger.debug("FileOutputStreamCpi: created stream with URI "
+                    + location);
         }
     }
 
@@ -64,9 +66,9 @@ public abstract class FileOutputStreamCpi implements FileOutputStreamInterface {
      * if a URI object constructed from this File's location and a URI object
      * constructed from the passed File's URI are equal as determined by the
      * Equals method of URI.
-     *
+     * 
      * @param object
-     *            The Object to test for equality
+     *                The Object to test for equality
      * @return A boolean indicating equality
      */
     public boolean equals(Object object) {
@@ -81,7 +83,7 @@ public abstract class FileOutputStreamCpi implements FileOutputStreamInterface {
 
     /*
      * (non-Javadoc)
-     *
+     * 
      * @see org.gridlab.gat.io.FileOutputStreamInterface#close()
      */
     public void close() throws GATInvocationException {
@@ -90,7 +92,7 @@ public abstract class FileOutputStreamCpi implements FileOutputStreamInterface {
 
     /*
      * (non-Javadoc)
-     *
+     * 
      * @see org.gridlab.gat.io.FileOutputStreamInterface#flush()
      */
     public void flush() throws GATInvocationException {
@@ -99,7 +101,7 @@ public abstract class FileOutputStreamCpi implements FileOutputStreamInterface {
 
     /*
      * (non-Javadoc)
-     *
+     * 
      * @see org.gridlab.gat.io.FileOutputStreamInterface#write(byte[], int, int)
      */
     public void write(byte[] arg0, int arg1, int arg2)
@@ -109,7 +111,7 @@ public abstract class FileOutputStreamCpi implements FileOutputStreamInterface {
 
     /*
      * (non-Javadoc)
-     *
+     * 
      * @see org.gridlab.gat.io.FileOutputStreamInterface#write(byte[])
      */
     public void write(byte[] arg0) throws GATInvocationException {
@@ -118,7 +120,7 @@ public abstract class FileOutputStreamCpi implements FileOutputStreamInterface {
 
     /*
      * (non-Javadoc)
-     *
+     * 
      * @see org.gridlab.gat.io.FileOutputStreamInterface#write(int)
      */
     public void write(int arg0) throws GATInvocationException {
@@ -127,7 +129,7 @@ public abstract class FileOutputStreamCpi implements FileOutputStreamInterface {
 
     /*
      * (non-Javadoc)
-     *
+     * 
      * @see org.gridlab.gat.monitoring.Monitorable#addMetricListener(org.gridlab.gat.monitoring.MetricListener,
      *      org.gridlab.gat.monitoring.Metric)
      */
@@ -143,16 +145,17 @@ public abstract class FileOutputStreamCpi implements FileOutputStreamInterface {
 
     /*
      * (non-Javadoc)
-     *
+     * 
      * @see org.gridlab.gat.monitoring.Monitorable#getMetrics()
      */
-    public List<MetricDefinition> getMetricDefinitions() throws GATInvocationException {
+    public List<MetricDefinition> getMetricDefinitions()
+            throws GATInvocationException {
         throw new UnsupportedOperationException("Not implemented");
     }
 
     /*
      * (non-Javadoc)
-     *
+     * 
      * @see org.gridlab.gat.monitoring.Monitorable#removeMetricListener(org.gridlab.gat.monitoring.MetricListener,
      *      org.gridlab.gat.monitoring.Metric)
      */

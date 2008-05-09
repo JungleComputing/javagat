@@ -237,7 +237,7 @@ public abstract class StagedFile {
 
     /**
      * @param inSandbox
-     *            the inSandbox to set
+     *                the inSandbox to set
      */
     public void setInSandbox(boolean inSandbox) {
         this.inSandbox = inSandbox;
@@ -270,7 +270,7 @@ public abstract class StagedFile {
 
     /**
      * @param resolvedDestURIString
-     *            the resolvedDestURIString to set
+     *                the resolvedDestURIString to set
      */
     public void setResolvedDestURIString(String resolvedDestURIString) {
         this.resolvedDestURIString = resolvedDestURIString;
@@ -304,7 +304,7 @@ public abstract class StagedFile {
 
     /**
      * @param resolvedSrcURIString
-     *            the resolvedSrcURIString to set
+     *                the resolvedSrcURIString to set
      */
     public void setResolvedSrcURIString(String resolvedSrcURIString) {
         this.resolvedSrcURIString = resolvedSrcURIString;

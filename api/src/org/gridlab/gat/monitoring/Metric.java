@@ -68,10 +68,10 @@ public class Metric implements Serializable {
      * parameters as specified in the {@link MetricDefinition} must be present.
      * 
      * @param definition
-     *            The {@link MetricDefinition} to create an instance of
+     *                The {@link MetricDefinition} to create an instance of
      * @param metricParameters
-     *            The {@link Metric} parameters, a {@link java.util.Map}, for
-     *            the desired {@link MetricDefinition}.
+     *                The {@link Metric} parameters, a {@link java.util.Map},
+     *                for the desired {@link MetricDefinition}.
      */
     public Metric(MetricDefinition definition,
             Map<String, Object> metricParameters) {
@@ -99,12 +99,12 @@ public class Metric implements Serializable {
      * parameters as specified in the {@link MetricDefinition} must be present.
      * 
      * @param definition
-     *            The {@link MetricDefinition} to create an instance of
+     *                The {@link MetricDefinition} to create an instance of
      * @param metricParameters
-     *            The {@link Metric} parameters, a {@link java.util.Map}, for
-     *            the desired {@link MetricDefinition}
+     *                The {@link Metric} parameters, a {@link java.util.Map},
+     *                for the desired {@link MetricDefinition}
      * @param frequency
-     *            The measuring frequency.
+     *                The measuring frequency.
      */
     public Metric(MetricDefinition definition,
             Map<String, Object> metricParameters, long frequency) {
@@ -129,7 +129,7 @@ public class Metric implements Serializable {
      * equal descriptors, parameters and frequency.
      * 
      * @param object
-     *            The {@link Object} to test for equality
+     *                The {@link Object} to test for equality
      * @return A boolean indicating equality
      */
     public boolean equals(Object object) {
@@ -169,8 +169,9 @@ public class Metric implements Serializable {
      * if there is no {@link Metric} parameter value with the passed name.
      * 
      * @param name
-     *            The {@link Metric} parameter name, a {@link java.lang.String},
-     *            for which to obtain the associated {@link Metric}
+     *                The {@link Metric} parameter name, a
+     *                {@link java.lang.String}, for which to obtain the
+     *                associated {@link Metric}
      * @return The {@link Metric} parameter value, an {@link Object},
      *         associated with the passed {@link Metric} parameter name.
      */

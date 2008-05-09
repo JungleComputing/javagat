@@ -12,12 +12,12 @@ import ch.ethz.ssh2.SFTPv3Client;
 public class SftpGanymedConnection {
 
     Connection connection;
-    
+
     SFTPv3Client sftpClient;
-    
+
     SftpGanymedUserInfo userInfo;
-    
+
     URI remoteMachine;
-    
+
     Preferences preferences;
 }

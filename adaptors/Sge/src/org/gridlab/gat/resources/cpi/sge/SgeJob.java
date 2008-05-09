@@ -32,292 +32,292 @@ import org.gridlab.gat.resources.cpi.Sandbox;
 @SuppressWarnings("serial")
 public class SgeJob extends JobCpi {
 
-	private String jobID;
+    private String jobID;
 
-	private String hostname;
+    private String hostname;
 
-	private MetricDefinition statusMetricDefinition;
+    private MetricDefinition statusMetricDefinition;
 
-	Metric statusMetric;
+    Metric statusMetric;
 
-	private Session session;
+    private Session session;
 
-	private Hashtable<String, Long> time;
+    private Hashtable<String, Long> time;
 
-	/**
-	 * The jobStartListener runs in a thread and checks the job's state. When it
-	 * detects a state transition from SCHEDULED to RUN, it writes the time and
-	 * exits
-	 */
-	private class jobStartListener implements Runnable {
+    /**
+     * The jobStartListener runs in a thread and checks the job's state. When it
+     * detects a state transition from SCHEDULED to RUN, it writes the time and
+     * exits
+     */
+    private class jobStartListener implements Runnable {
 
-		int state = 0x00;
+        int state = 0x00;
 
-		final int SLEEP = 250;
+        final int SLEEP = 250;
 
-		Session session = null;
+        Session session = null;
 
-		String jobID = null;
+        String jobID = null;
 
-		Hashtable<String, Long> time = null;
+        Hashtable<String, Long> time = null;
 
-		public jobStartListener(Session session, String jobID,
-				Hashtable<String, Long> time) {
-			this.session = session;
-			this.jobID = jobID;
-			this.time = time;
-		}
+        public jobStartListener(Session session, String jobID,
+                Hashtable<String, Long> time) {
+            this.session = session;
+            this.jobID = jobID;
+            this.time = time;
+        }
 
-		public void run() {
-			while (state != Session.RUNNING) {
-				try {
-					state = session.getJobProgramStatus(jobID);
-					if (state == Session.FAILED) {
-						// TODO
-					} else if (state == Session.DONE) {
-						// TODO
-					}
-					Thread.sleep(SLEEP);
-				} catch (DrmaaException e) {
-					// TODO
-				} catch (InterruptedException e) {
-					// TODO
-				}
-			}
-			// Now we're in RUNNING state - set the time and start the
-			// jobStopListener
-			time.put("start_time", new Long(System.currentTimeMillis()));
+        public void run() {
+            while (state != Session.RUNNING) {
+                try {
+                    state = session.getJobProgramStatus(jobID);
+                    if (state == Session.FAILED) {
+                        // TODO
+                    } else if (state == Session.DONE) {
+                        // TODO
+                    }
+                    Thread.sleep(SLEEP);
+                } catch (DrmaaException e) {
+                    // TODO
+                } catch (InterruptedException e) {
+                    // TODO
+                }
+            }
+            // Now we're in RUNNING state - set the time and start the
+            // jobStopListener
+            time.put("start_time", new Long(System.currentTimeMillis()));
 
-			jobStopListener jsl = new jobStopListener(this.session, this.jobID,
-					time);
-			new Thread(jsl).start();
-		}
-	}
+            jobStopListener jsl = new jobStopListener(this.session, this.jobID,
+                    time);
+            new Thread(jsl).start();
+        }
+    }
 
-	/**
-	 * The jobStopListener runs in a thread and checks the job's state. When it
-	 * detects a state transition from RUN to STOP, it writes the time and exits
-	 */
-	private class jobStopListener implements Runnable {
+    /**
+     * The jobStopListener runs in a thread and checks the job's state. When it
+     * detects a state transition from RUN to STOP, it writes the time and exits
+     */
+    private class jobStopListener implements Runnable {
 
-		int state = 0x00;
+        int state = 0x00;
 
-		final int SLEEP = 250;
+        final int SLEEP = 250;
 
-		Session session = null;
+        Session session = null;
 
-		String jobID = null;
+        String jobID = null;
 
-		Hashtable<String, Long> time = null;
+        Hashtable<String, Long> time = null;
 
-		public jobStopListener(Session session, String jobID,
-				Hashtable<String, Long> time) {
-			this.session = session;
-			this.jobID = jobID;
-			this.time = time;
-		}
+        public jobStopListener(Session session, String jobID,
+                Hashtable<String, Long> time) {
+            this.session = session;
+            this.jobID = jobID;
+            this.time = time;
+        }
 
-		public void run() {
-			while (state != Session.DONE) {
-				try {
-					state = session.getJobProgramStatus(jobID);
-					if (state == Session.FAILED) {
-						// TODO
-					}
-					Thread.sleep(SLEEP);
-				} catch (DrmaaException e) {
-					// TODO
-				} catch (InterruptedException e) {
-					// TODO
-				}
-			}
-			// Now we're in STOPPED state - set the time and exit
-			time.put("stop_time", new Long(System.currentTimeMillis()));
-		}
-	}
+        public void run() {
+            while (state != Session.DONE) {
+                try {
+                    state = session.getJobProgramStatus(jobID);
+                    if (state == Session.FAILED) {
+                        // TODO
+                    }
+                    Thread.sleep(SLEEP);
+                } catch (DrmaaException e) {
+                    // TODO
+                } catch (InterruptedException e) {
+                    // TODO
+                }
+            }
+            // Now we're in STOPPED state - set the time and exit
+            time.put("stop_time", new Long(System.currentTimeMillis()));
+        }
+    }
 
-	protected SgeJob(GATContext gatContext, JobDescription jobDescription,
-			Sandbox sandbox) {
-		super(gatContext, jobDescription, sandbox);
+    protected SgeJob(GATContext gatContext, JobDescription jobDescription,
+            Sandbox sandbox) {
+        super(gatContext, jobDescription, sandbox);
 
-		state = INITIAL;
+        state = INITIAL;
 
-		HashMap<String, Object> returnDef = new HashMap<String, Object>();
-		returnDef.put("status", String.class);
-		statusMetricDefinition = new MetricDefinition("job.status",
-				MetricDefinition.DISCRETE, "String", null, null, returnDef);
-		statusMetric = statusMetricDefinition.createMetric(null);
-		GATEngine.registerMetric(this, "getJobStatus", statusMetricDefinition);
-	}
+        HashMap<String, Object> returnDef = new HashMap<String, Object>();
+        returnDef.put("status", String.class);
+        statusMetricDefinition = new MetricDefinition("job.status",
+                MetricDefinition.DISCRETE, "String", null, null, returnDef);
+        statusMetric = statusMetricDefinition.createMetric(null);
+        GATEngine.registerMetric(this, "getJobStatus", statusMetricDefinition);
+    }
 
-	protected void setSession(Session session) {
-		this.session = session;
-	}
+    protected void setSession(Session session) {
+        this.session = session;
+    }
 
-	protected void setJobID(String jobID) {
-		this.jobID = jobID;
-	}
+    protected void setJobID(String jobID) {
+        this.jobID = jobID;
+    }
 
-	protected void startListener() {
-		jobStartListener jsl = new jobStartListener(this.session, this.jobID,
-				time);
-		new Thread(jsl).start();
-	}
+    protected void startListener() {
+        jobStartListener jsl = new jobStartListener(this.session, this.jobID,
+                time);
+        new Thread(jsl).start();
+    }
 
-	protected void setState(int state) {
-		this.state = state;
-	}
+    protected void setState(int state) {
+        this.state = state;
+    }
 
-	public String getJobID() {
-		return jobID;
-	}
+    public String getJobID() {
+        return jobID;
+    }
 
-	public synchronized int getState() {
-		setState();
-		return state;
-	}
+    public synchronized int getState() {
+        setState();
+        return state;
+    }
 
-	public String marshal() {
-		throw new UnsupportedOperationException("Not implemented");
-	}
+    public String marshal() {
+        throw new UnsupportedOperationException("Not implemented");
+    }
 
-	protected void setState() {
-		try {
-			int status = session.getJobProgramStatus(jobID);
+    protected void setState() {
+        try {
+            int status = session.getJobProgramStatus(jobID);
 
-			switch (status) {
+            switch (status) {
 
-			case Session.RUNNING:
-				state = RUNNING;
-				break;
+            case Session.RUNNING:
+                state = RUNNING;
+                break;
 
-			case Session.FAILED:
-				state = SUBMISSION_ERROR;
-				break;
+            case Session.FAILED:
+                state = SUBMISSION_ERROR;
+                break;
 
-			case Session.DONE:
-				state = STOPPED;
-				break;
+            case Session.DONE:
+                state = STOPPED;
+                break;
 
-			/* Job is active but suspended */
+            /* Job is active but suspended */
 
-			case Session.SYSTEM_SUSPENDED:
-				state = STOPPED;
-				break;
-			case Session.USER_SUSPENDED:
-				state = STOPPED;
-				break;
-			case Session.USER_SYSTEM_SUSPENDED:
-				state = STOPPED;
-				break;
+            case Session.SYSTEM_SUSPENDED:
+                state = STOPPED;
+                break;
+            case Session.USER_SUSPENDED:
+                state = STOPPED;
+                break;
+            case Session.USER_SYSTEM_SUSPENDED:
+                state = STOPPED;
+                break;
 
-			/* Job is in the queue states */
+            /* Job is in the queue states */
 
-			case Session.QUEUED_ACTIVE:
-				state = SCHEDULED;
-				break;
-			case Session.SYSTEM_ON_HOLD:
-				state = ON_HOLD;
-				break;
-			case Session.USER_ON_HOLD:
-				state = ON_HOLD;
-				break;
-			case Session.USER_SYSTEM_ON_HOLD:
-				state = ON_HOLD;
-				break;
-			default:
-				if (logger.isDebugEnabled()) {
-					logger.debug("WARNING: SGE Job: unknown DRMAA state: "
-							+ status);
-				}
-			}
-		} catch (DrmaaException e) {
-			if (logger.isDebugEnabled()) {
-				logger.debug("-- SGEJob EXCEPTION --");
-				logger
-						.debug("Got an exception while retrieving resource manager status:");
-				logger.debug(e);
-			}
-		}
-	}
+            case Session.QUEUED_ACTIVE:
+                state = SCHEDULED;
+                break;
+            case Session.SYSTEM_ON_HOLD:
+                state = ON_HOLD;
+                break;
+            case Session.USER_ON_HOLD:
+                state = ON_HOLD;
+                break;
+            case Session.USER_SYSTEM_ON_HOLD:
+                state = ON_HOLD;
+                break;
+            default:
+                if (logger.isDebugEnabled()) {
+                    logger.debug("WARNING: SGE Job: unknown DRMAA state: "
+                            + status);
+                }
+            }
+        } catch (DrmaaException e) {
+            if (logger.isDebugEnabled()) {
+                logger.debug("-- SGEJob EXCEPTION --");
+                logger
+                        .debug("Got an exception while retrieving resource manager status:");
+                logger.debug(e);
+            }
+        }
+    }
 
-	protected void setHostname(String hostname) {
-		this.hostname = hostname;
-	}
+    protected void setHostname(String hostname) {
+        this.hostname = hostname;
+    }
 
-	public Map<String, Object> getInfo() {
+    public Map<String, Object> getInfo() {
 
-		HashMap<String, Object> m = new HashMap<String, Object>();
-		setState();
+        HashMap<String, Object> m = new HashMap<String, Object>();
+        setState();
 
-		try {
-			m.put("hostname", hostname);
-			m.put("checkpointable", "0");
-			m.put("scheduletime", null);
-			m.put("resManName", "Sun Grid Engine");
-			m.put("state", getStateString(state));
-			m.put("resManState", Integer.toString(session
-					.getJobProgramStatus(jobID)));
-			m.put("jobID", jobID);
-			m.put("starttime", time.get("start_time"));
-			m.put("stoptime", time.get("stop_time"));
+        try {
+            m.put("hostname", hostname);
+            m.put("checkpointable", "0");
+            m.put("scheduletime", null);
+            m.put("resManName", "Sun Grid Engine");
+            m.put("state", getStateString(state));
+            m.put("resManState", Integer.toString(session
+                    .getJobProgramStatus(jobID)));
+            m.put("jobID", jobID);
+            m.put("starttime", time.get("start_time"));
+            m.put("stoptime", time.get("stop_time"));
 
-		} catch (DrmaaException e) {
-			if (logger.isDebugEnabled()) {
-				logger.debug("-- SGEJob EXCEPTION --");
-				logger
-						.debug("Got an exception while retrieving resource manager status:");
-				logger.debug(e);
-			}
-		}
-		return m;
-	}
+        } catch (DrmaaException e) {
+            if (logger.isDebugEnabled()) {
+                logger.debug("-- SGEJob EXCEPTION --");
+                logger
+                        .debug("Got an exception while retrieving resource manager status:");
+                logger.debug(e);
+            }
+        }
+        return m;
+    }
 
-	public int getExitStatus() {
-		JobInfo info = null;
-		int retVal = -255;
-		try {
-			info = session.wait(jobID, Session.TIMEOUT_NO_WAIT);
-		} catch (ExitTimeoutException ete) {
-			/*
-			 * This exception is OK - it's always thrown, when the job is still
-			 * running. Just ignore and do nothing...
-			 */
-		} catch (DrmaaException e) {
-			/* This kind of exception is NOT OK - something ugly happened... */
-			if (logger.isDebugEnabled()) {
-				logger.debug("-- SGEJob EXCEPTION --");
-				logger.debug("Got an exception while retrieving JobInfo:");
-				logger.debug(e);
-			}
-		}
-		if (info != null) {
-			if (info.hasExited()) {
-				retVal = info.getExitStatus();
-			} else {
-				retVal = -255;
-			}
-		}
-		return retVal;
-	}
+    public int getExitStatus() {
+        JobInfo info = null;
+        int retVal = -255;
+        try {
+            info = session.wait(jobID, Session.TIMEOUT_NO_WAIT);
+        } catch (ExitTimeoutException ete) {
+            /*
+             * This exception is OK - it's always thrown, when the job is still
+             * running. Just ignore and do nothing...
+             */
+        } catch (DrmaaException e) {
+            /* This kind of exception is NOT OK - something ugly happened... */
+            if (logger.isDebugEnabled()) {
+                logger.debug("-- SGEJob EXCEPTION --");
+                logger.debug("Got an exception while retrieving JobInfo:");
+                logger.debug(e);
+            }
+        }
+        if (info != null) {
+            if (info.hasExited()) {
+                retVal = info.getExitStatus();
+            } else {
+                retVal = -255;
+            }
+        }
+        return retVal;
+    }
 
-	public void stop() throws GATInvocationException {
-		if ((getState() != RUNNING) || (getState() != ON_HOLD)
-				|| (getState() != SCHEDULED)) {
-			throw new GATInvocationException(
-					"Cant stop(): job is not in a running state");
-		} else {
-			try {
-				session.control(jobID, Session.TERMINATE);
-				state = INITIAL;
-			} catch (DrmaaException e) {
-				if (logger.isDebugEnabled()) {
-					logger.debug("-- SGEJob EXCEPTION --");
-					logger
-							.debug("Got an exception while trying to TERMINATE job:");
-					logger.debug(e);
-				}
-			}
-		}
-	}
+    public void stop() throws GATInvocationException {
+        if ((getState() != RUNNING) || (getState() != ON_HOLD)
+                || (getState() != SCHEDULED)) {
+            throw new GATInvocationException(
+                    "Cant stop(): job is not in a running state");
+        } else {
+            try {
+                session.control(jobID, Session.TERMINATE);
+                state = INITIAL;
+            } catch (DrmaaException e) {
+                if (logger.isDebugEnabled()) {
+                    logger.debug("-- SGEJob EXCEPTION --");
+                    logger
+                            .debug("Got an exception while trying to TERMINATE job:");
+                    logger.debug(e);
+                }
+            }
+        }
+    }
 }

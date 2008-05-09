@@ -26,14 +26,14 @@ public class PreStageSequencer {
     }
 
     private static class PreStageDoneFileMonitor extends Thread {
-        
+
         public PreStageDoneFileMonitor() {
             setDaemon(true);
             setName("PreStageDoneFileMonitor thread");
         }
 
         public void run() {
-            //setDaemon(true);
+            // setDaemon(true);
             while (!queue.isEmpty()) {
                 String fileName = null;
                 try {

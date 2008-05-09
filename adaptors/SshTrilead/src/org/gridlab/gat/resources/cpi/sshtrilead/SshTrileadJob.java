@@ -84,19 +84,11 @@ public class SshTrileadJob extends JobCpi {
     }
 
     public synchronized void stop() throws GATInvocationException {
+        session.close();
         setState(POST_STAGING);
         sandbox.retrieveAndCleanup(this);
-        try {
-            session.waitForCondition(ChannelCondition.EXIT_STATUS, 5000);
-            exitStatus = session.getExitStatus();
-            setState(STOPPED);
-        } catch (NullPointerException e) {
-            // unable to retrieve exit status
-            setState(SUBMISSION_ERROR);
-        } finally {
-            session.close();
-            finished();
-        }
+        setState(STOPPED);
+        finished();
     }
 
     class OutputWaiter extends Thread {
@@ -114,6 +106,14 @@ public class SshTrileadJob extends JobCpi {
         public void run() {
             outForwarder.waitUntilFinished();
             errForwarder.waitUntilFinished();
+            session.waitForCondition(ChannelCondition.EXIT_STATUS, 5000);
+            try {
+                exitStatus = session.getExitStatus();
+            } catch (NullPointerException e) {
+                if (logger.isDebugEnabled()) {
+                    logger.debug("unable to retrieve exit status");
+                }
+            }
             try {
                 SshTrileadJob.this.stop();
             } catch (GATInvocationException e) {

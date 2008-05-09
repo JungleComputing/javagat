@@ -161,7 +161,7 @@ public class SoftwareDescription implements java.io.Serializable {
      * you want to run.
      * 
      * @param attributes
-     *            See the comment above for a list of known attributes.
+     *                See the comment above for a list of known attributes.
      */
     @SuppressWarnings("unchecked")
     public SoftwareDescription(Map<String, Object> attributes) {
@@ -221,7 +221,7 @@ public class SoftwareDescription implements java.io.Serializable {
      * "world", ">", "out"} contains the arguments.
      * 
      * @param arguments
-     *            The commandline arguments to set.
+     *                The commandline arguments to set.
      */
     public void setArguments(String... arguments) {
         this.arguments = arguments;
@@ -277,9 +277,9 @@ public class SoftwareDescription implements java.io.Serializable {
      * attributes.
      * 
      * @param attributes
-     *            The attributes to set. See the comment above for a list of
-     *            known attributes. Note that some adaptors may also support
-     *            other attributes.
+     *                The attributes to set. See the comment above for a list of
+     *                known attributes. Note that some adaptors may also support
+     *                other attributes.
      */
     public void setAttributes(Map<String, Object> attributes) {
         this.attributes = new HashMap<String, Object>(attributes);
@@ -291,9 +291,9 @@ public class SoftwareDescription implements java.io.Serializable {
      * other attributes.
      * 
      * @param key
-     *            the key of the attribute
+     *                the key of the attribute
      * @param value
-     *            the value of the attribute
+     *                the value of the attribute
      */
     public void addAttribute(String key, Object value) {
         attributes.put(key, value);
@@ -303,7 +303,7 @@ public class SoftwareDescription implements java.io.Serializable {
      * Remove an attribute from the attribute set.
      * 
      * @param key
-     *            the key of the attribute
+     *                the key of the attribute
      * @return the value belonging to this key
      */
     public Object removeAttribute(String key) {
@@ -327,7 +327,7 @@ public class SoftwareDescription implements java.io.Serializable {
      * instance the key, value pair "JAVA_HOME", "/path/to/java").
      * 
      * @param environment
-     *            The environment to set.
+     *                The environment to set.
      */
     public void setEnvironment(Map<String, Object> environment) {
         this.environment = new HashMap<String, Object>(environment);
@@ -350,7 +350,7 @@ public class SoftwareDescription implements java.io.Serializable {
      * should be provided.
      * 
      * @param executable
-     *            The path to the executable.
+     *                The path to the executable.
      */
     public void setExecutable(String executable) {
         this.executable = executable;
@@ -376,7 +376,7 @@ public class SoftwareDescription implements java.io.Serializable {
      * {@link File}s will end up after the pre staging.
      * 
      * @param files
-     *            An array of files that should be pre staged.
+     *                An array of files that should be pre staged.
      */
     public void setPreStaged(File... files) {
         preStagedFiles = new HashMap<File, File>();
@@ -390,7 +390,7 @@ public class SoftwareDescription implements java.io.Serializable {
      * <code>addPreStagedFile(src, null)</code>.
      * 
      * @param src
-     *            the file that should be pre staged.
+     *                the file that should be pre staged.
      */
     public void addPreStagedFile(File src) {
         addPreStagedFile(src, null);
@@ -436,11 +436,11 @@ public class SoftwareDescription implements java.io.Serializable {
      * <TD><code>/other/path/to/file</code> </TABLE>
      * 
      * @param src
-     *            the {@link File} that should be pre staged (may not be
-     *            <code>null</code>)
+     *                the {@link File} that should be pre staged (may not be
+     *                <code>null</code>)
      * @param dest
-     *            the {@link File} that should exist after the pre staging (may
-     *            be <code>null</code>, see table).
+     *                the {@link File} that should exist after the pre staging
+     *                (may be <code>null</code>, see table).
      */
     public void addPreStagedFile(File src, File dest) {
         if (src == null) {
@@ -471,7 +471,7 @@ public class SoftwareDescription implements java.io.Serializable {
      * {@link File}s will end up after the post staging.
      * 
      * @param files
-     *            An array of files that should be pre staged.
+     *                An array of files that should be pre staged.
      */
     public void setPostStaged(File... files) {
         postStagedFiles = new HashMap<File, File>();
@@ -485,7 +485,7 @@ public class SoftwareDescription implements java.io.Serializable {
      * <code>addPostStagedFile(src, null)</code>.
      * 
      * @param src
-     *            the file that should be post staged.
+     *                the file that should be post staged.
      */
     public void addPostStagedFile(File src) {
         addPostStagedFile(src, null);
@@ -531,11 +531,11 @@ public class SoftwareDescription implements java.io.Serializable {
      * <TD><code>/other/path/to/file</code> </TABLE>
      * 
      * @param src
-     *            the {@link File} that should be post staged (may not be
-     *            <code>null</code>)
+     *                the {@link File} that should be post staged (may not be
+     *                <code>null</code>)
      * @param dest
-     *            the {@link File} that should exist after the post staging (may
-     *            be <code>null</code>, see table).
+     *                the {@link File} that should exist after the post staging
+     *                (may be <code>null</code>, see table).
      */
     public void addPostStagedFile(File src, File dest) {
         if (src == null) {
@@ -575,7 +575,7 @@ public class SoftwareDescription implements java.io.Serializable {
      * 
      * 
      * @param file
-     *            the file to be deleted after the run.
+     *                the file to be deleted after the run.
      */
     public void addDeletedFile(File file) {
         deletedFiles.add(file);
@@ -601,7 +601,8 @@ public class SoftwareDescription implements java.io.Serializable {
      * deleting the File, in order to free up the disk space.
      * 
      * @param file
-     *            the file to be wiped (overwritten) and deleted after the run.
+     *                the file to be wiped (overwritten) and deleted after the
+     *                run.
      */
     public void addWipedFile(File file) {
         wipedFiles.add(file);
@@ -642,7 +643,7 @@ public class SoftwareDescription implements java.io.Serializable {
      * output.
      * 
      * @param stderr
-     *            The {@link File} where stderr is redirected to.
+     *                The {@link File} where stderr is redirected to.
      */
     public void setStderr(File stderr) {
         this.stderrStream = null;
@@ -656,7 +657,7 @@ public class SoftwareDescription implements java.io.Serializable {
      * destination of the output.
      * 
      * @param stderrStream
-     *            The {@link OutputStream} where stderr is redirected to.
+     *                The {@link OutputStream} where stderr is redirected to.
      */
     public void setStderr(OutputStream stderrStream) {
         this.stderrFile = null;
@@ -695,7 +696,7 @@ public class SoftwareDescription implements java.io.Serializable {
      * Sets the {@link File} where stdin is redirected from.
      * 
      * @param stdin
-     *            The {@link File} where stdin is redirected from.
+     *                The {@link File} where stdin is redirected from.
      */
     public void setStdin(File stdin) {
         this.stdinStream = null;
@@ -706,7 +707,7 @@ public class SoftwareDescription implements java.io.Serializable {
      * Sets the {@link InputStream} where stdin is redirected from.
      * 
      * @param stdinStream
-     *            The {@link InputStream} where stdin is redirected from.
+     *                The {@link InputStream} where stdin is redirected from.
      */
     public void setStdin(InputStream stdinStream) {
         this.stdinFile = null;
@@ -748,7 +749,7 @@ public class SoftwareDescription implements java.io.Serializable {
      * output.
      * 
      * @param stdout
-     *            The {@link File} where stdout is redirected to.
+     *                The {@link File} where stdout is redirected to.
      */
     public void setStdout(File stdout) {
         this.stdoutStream = null;
@@ -762,7 +763,7 @@ public class SoftwareDescription implements java.io.Serializable {
      * destination of the output.
      * 
      * @param stdoutStream
-     *            The {@link OutputStream} where stdout is redirected to.
+     *                The {@link OutputStream} where stdout is redirected to.
      */
     public void setStdout(OutputStream stdoutStream) {
         this.stdoutFile = null;
@@ -821,7 +822,7 @@ public class SoftwareDescription implements java.io.Serializable {
      * deleted).
      * 
      * @param deletePostStaged
-     *            delete the post stage {@link File}s after post staging.
+     *                delete the post stage {@link File}s after post staging.
      */
     public void setDeletePostStaged(boolean deletePostStaged) {
         this.deletePostStaged = deletePostStaged;
@@ -845,7 +846,7 @@ public class SoftwareDescription implements java.io.Serializable {
      * deleted).
      * 
      * @param deletePreStaged
-     *            delete the pre stage {@link File}s after post staging.
+     *                delete the pre stage {@link File}s after post staging.
      */
     public void setDeletePreStaged(boolean deletePreStaged) {
         this.deletePreStaged = deletePreStaged;
@@ -868,7 +869,7 @@ public class SoftwareDescription implements java.io.Serializable {
      * the post stage files should be wiped, FALSE if they shouldn't be wiped).
      * 
      * @param wipePostStaged
-     *            wipe the post stage {@link File}s after post staging.
+     *                wipe the post stage {@link File}s after post staging.
      */
     public void setWipePostStaged(boolean wipePostStaged) {
         this.wipePostStaged = wipePostStaged;
@@ -891,7 +892,7 @@ public class SoftwareDescription implements java.io.Serializable {
      * the pre stage files should be wiped, FALSE if they shouldn't be wiped).
      * 
      * @param wipePreStaged
-     *            wipe the pre stage {@link File}s after post staging.
+     *                wipe the pre stage {@link File}s after post staging.
      */
     public void setWipePreStaged(boolean wipePreStaged) {
         this.wipePreStaged = wipePreStaged;
@@ -905,9 +906,9 @@ public class SoftwareDescription implements java.io.Serializable {
      * {@link Error}.
      * 
      * @param name
-     *            the key of the attribute
+     *                the key of the attribute
      * @param defaultVal
-     *            the default value
+     *                the default value
      * @return the int value of the attribute indicated by the <code>name</code>.
      */
     public int getIntAttribute(String name, int defaultVal) {
@@ -933,9 +934,9 @@ public class SoftwareDescription implements java.io.Serializable {
      * {@link Error}.
      * 
      * @param name
-     *            the key of the attribute
+     *                the key of the attribute
      * @param defaultVal
-     *            the default value
+     *                the default value
      * @return the long value of the attribute indicated by the
      *         <code>name</code>.
      */
@@ -960,9 +961,9 @@ public class SoftwareDescription implements java.io.Serializable {
      * the <code>defaultVal</code> is returned.
      * 
      * @param name
-     *            the key of the attribute
+     *                the key of the attribute
      * @param defaultVal
-     *            the default value
+     *                the default value
      * @return the {@link String} value of the attribute indicated by the
      *         <code>name</code>.
      */
@@ -979,7 +980,7 @@ public class SoftwareDescription implements java.io.Serializable {
      * <code>null</code> is returned.
      * 
      * @param name
-     *            the key of the attribute
+     *                the key of the attribute
      * @return the {@link Object} value of the attribute indicated by the
      *         <code>name</code>.
      */
@@ -995,9 +996,9 @@ public class SoftwareDescription implements java.io.Serializable {
      * {@link Error}.
      * 
      * @param name
-     *            the key of the attribute
+     *                the key of the attribute
      * @param defaultVal
-     *            the default value
+     *                the default value
      * @return the boolean value of the attribute indicated by the
      *         <code>name</code>.
      */
@@ -1028,11 +1029,11 @@ public class SoftwareDescription implements java.io.Serializable {
      * <p>
      * 
      * @param context
-     *            the {@link GATContext} used to create the wrapper file
+     *                the {@link GATContext} used to create the wrapper file
      * @param wrapperFileName
-     *            the wrapper file name
+     *                the wrapper file name
      * @param exitValueFileName
-     *            the file name where the exit value is written to
+     *                the file name where the exit value is written to
      * @throws GATInvocationException
      */
     public void toWrapper(GATContext context, String wrapperFileName,

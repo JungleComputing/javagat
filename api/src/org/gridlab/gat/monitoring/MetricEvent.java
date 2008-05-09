@@ -32,14 +32,14 @@ public class MetricEvent extends EventObject {
      * Constructs a MetricEvent with the specified properties
      * 
      * @param source
-     *            The source of the MetricEvent
+     *                The source of the MetricEvent
      * @param value
-     *            The value of the MetricEvent
+     *                The value of the MetricEvent
      * @param metric
-     *            The Metric of the MetricEvent
+     *                The Metric of the MetricEvent
      * @param eventTime
-     *            The number of milliseconds after January 1, 1970, 00:00:00 GMT
-     *            when the MetricEvent happened.
+     *                The number of milliseconds after January 1, 1970, 00:00:00
+     *                GMT when the MetricEvent happened.
      */
     public MetricEvent(Object source, Object value, Metric metric,
             long eventTime) {

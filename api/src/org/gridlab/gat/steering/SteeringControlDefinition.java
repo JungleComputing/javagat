@@ -9,14 +9,16 @@ public class SteeringControlDefinition {
 
     Map<String, Object> returnDefinition = null;
 
-    public SteeringControlDefinition(String name, Map<String, Object> formalParameters,
-        Map<String, Object> returnDefinition) {
+    public SteeringControlDefinition(String name,
+            Map<String, Object> formalParameters,
+            Map<String, Object> returnDefinition) {
         this.name = name;
         this.formalParameters = formalParameters;
         this.returnDefinition = returnDefinition;
     }
 
-    public SteeringControl createSteeringControl(Map<String, Object> actualParameters) {
+    public SteeringControl createSteeringControl(
+            Map<String, Object> actualParameters) {
         // perform "type safety" check
 
         return new SteeringControl(this, actualParameters);
@@ -47,16 +49,20 @@ public class SteeringControlDefinition {
         boolean nameSame = true, formalSame = true, returnSame = true;
 
         if (this.name == null) {
-            if (scd.getControlName() != null) nameSame = false;
-        } else if (!this.name.equals(scd.getControlName())) nameSame = false;
+            if (scd.getControlName() != null)
+                nameSame = false;
+        } else if (!this.name.equals(scd.getControlName()))
+            nameSame = false;
 
         if (this.formalParameters == null) {
-            if (scd.getParameterDefinitions() != null) formalSame = false;
+            if (scd.getParameterDefinitions() != null)
+                formalSame = false;
         } else if (!this.formalParameters.equals(scd.getParameterDefinitions()))
             formalSame = false;
 
         if (this.returnDefinition == null) {
-            if (scd.getReturnDefinition() != null) returnSame = false;
+            if (scd.getReturnDefinition() != null)
+                returnSame = false;
         } else if (!this.returnDefinition.equals(scd.getReturnDefinition()))
             returnSame = false;
 
@@ -65,7 +71,7 @@ public class SteeringControlDefinition {
 
     public String toString() {
         return "Name:" + this.name + "; Formal Parameters: "
-            + this.formalParameters + "; Return Definition: "
-            + this.returnDefinition;
+                + this.formalParameters + "; Return Definition: "
+                + this.returnDefinition;
     }
 }

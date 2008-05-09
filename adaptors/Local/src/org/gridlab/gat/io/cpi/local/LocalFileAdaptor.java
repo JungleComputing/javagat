@@ -114,9 +114,9 @@ public class LocalFileAdaptor extends FileCpi {
      * a physical file identified by the passed URI.
      * 
      * @param destination
-     *            The new location
+     *                The new location
      * @throws java.io.IOException
-     *             Upon non-remote IO problem
+     *                 Upon non-remote IO problem
      */
     public void copy(URI destination) throws GATInvocationException {
         if (!destination.refersToLocalHost()) {

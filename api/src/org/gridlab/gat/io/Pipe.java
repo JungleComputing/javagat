@@ -22,7 +22,7 @@ public interface Pipe extends Monitorable {
      * 
      * @return the output stream connected to this pipe.
      * @throws GATInvocationException
-     *             an IO error occurred
+     *                 an IO error occurred
      */
     OutputStream getOutputStream() throws GATInvocationException;
 
@@ -31,7 +31,7 @@ public interface Pipe extends Monitorable {
      * 
      * @return the input stream connected to this pipe.
      * @throws GATInvocationException
-     *             an IO error occurred
+     *                 an IO error occurred
      */
     InputStream getInputStream() throws GATInvocationException;
 
@@ -39,7 +39,7 @@ public interface Pipe extends Monitorable {
      * Close the connection to the other process.
      * 
      * @throws GATInvocationException
-     *             an IO error occurred
+     *                 an IO error occurred
      */
     void close() throws GATInvocationException;
 }

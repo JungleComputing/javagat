@@ -120,8 +120,8 @@ public class HardwareResourceDescription extends ResourceDescription {
      * passed attributes. There are no further dependencies
      * 
      * @param attributes
-     *            A {@link java.util.Map}<{@link String}, {@link Object}>,
-     *            which describes the attributes of this {@link Resource}.
+     *                A {@link java.util.Map}<{@link String}, {@link Object}>,
+     *                which describes the attributes of this {@link Resource}.
      */
     public HardwareResourceDescription(Map<String, Object> attributes) {
         super(attributes);
@@ -132,13 +132,14 @@ public class HardwareResourceDescription extends ResourceDescription {
      * objects.
      * 
      * @param attributes
-     *            A {@link java.util.Map}<{@link String}, {@link Object}>,
-     *            which describes the attributes of this {@link Resource}.
+     *                A {@link java.util.Map}<{@link String}, {@link Object}>,
+     *                which describes the attributes of this {@link Resource}.
      * 
      * @param resourceDescriptions
-     *            A {@link java.util.List}, which is a list of
-     *            {@link ResourceDescription}s each of which describes a
-     *            software component upon which this software component depends.
+     *                A {@link java.util.List}, which is a list of
+     *                {@link ResourceDescription}s each of which describes a
+     *                software component upon which this software component
+     *                depends.
      */
     public HardwareResourceDescription(Map<String, Object> attributes,
             List<ResourceDescription> resourceDescriptions) {

@@ -139,7 +139,7 @@ public class URI implements Serializable, Comparable<Object> {
     /**
      * @see java.net.URI#URI(String)
      * @param s
-     *            The string to be parsed into a URI
+     *                The string to be parsed into a URI
      * @throws URISyntaxException
      */
     public URI(String s) throws URISyntaxException {
@@ -150,7 +150,7 @@ public class URI implements Serializable, Comparable<Object> {
      * Constructs a JavaGAT URI out of a {@link java.net.URI}.
      * 
      * @param u
-     *            the {@link java.net.URI}.
+     *                the {@link java.net.URI}.
      */
     public URI(java.net.URI u) {
         this.u = u;
@@ -172,7 +172,7 @@ public class URI implements Serializable, Comparable<Object> {
      * @see java.net.URI#create(String)
      * 
      * @param s
-     *            The string to be parsed into a URI
+     *                The string to be parsed into a URI
      * @return The new URI
      * @throws URISyntaxException
      */
@@ -304,7 +304,7 @@ public class URI implements Serializable, Comparable<Object> {
      * @see java.net.URI#compareTo(java.net.URI)
      * 
      * @param other
-     *            The object to which this URI is to be compared
+     *                The object to which this URI is to be compared
      * @return A negative integer, zero, or a positive integer as this URI is
      *         less than, equal to, or greater than the given URI
      */
@@ -325,7 +325,7 @@ public class URI implements Serializable, Comparable<Object> {
      * 
      * @see java.net.URI#equals(Object)
      * @param o
-     *            The object to which this URI is to be compared
+     *                The object to which this URI is to be compared
      * @return true if, and only if, the given object is a URI that is identical
      *         to this URI
      */
@@ -432,7 +432,7 @@ public class URI implements Serializable, Comparable<Object> {
      * undefined.
      * 
      * @param defaultPort
-     *            the default port
+     *                the default port
      * @return the port number of this URI or the default port if the port is
      *         undefined
      */
@@ -617,8 +617,9 @@ public class URI implements Serializable, Comparable<Object> {
      * @return A URI whose authority field has been parsed as a server-based
      *         authority
      * @throws URISyntaxException
-     *             If the authority component of this URI is defined but cannot
-     *             be parsed as a server-based authority according to RFC 2396
+     *                 If the authority component of this URI is defined but
+     *                 cannot be parsed as a server-based authority according to
+     *                 RFC 2396
      */
     public URI parseServerAuthority() throws URISyntaxException {
         return new URI(u.parseServerAuthority());
@@ -629,7 +630,7 @@ public class URI implements Serializable, Comparable<Object> {
      * 
      * @see java.net.URI#relativize(java.net.URI)
      * @param arg0
-     *            The URI to be relativized against this URI
+     *                The URI to be relativized against this URI
      * @return The resulting URI
      */
     public URI relativize(java.net.URI arg0) {
@@ -642,7 +643,7 @@ public class URI implements Serializable, Comparable<Object> {
      * 
      * @see java.net.URI#resolve(String)
      * @param arg0
-     *            The string to be parsed into a URI
+     *                The string to be parsed into a URI
      * @return The resulting URI
      */
     public URI resolve(String arg0) {
@@ -654,7 +655,7 @@ public class URI implements Serializable, Comparable<Object> {
      * 
      * @see java.net.URI#resolve(java.net.URI)
      * @param arg0
-     *            The URI to be resolved against this URI
+     *                The URI to be resolved against this URI
      * @return The resulting URI
      */
     public URI resolve(java.net.URI arg0) {
@@ -688,8 +689,8 @@ public class URI implements Serializable, Comparable<Object> {
      * @see java.net.URI#toURL()
      * @return A URL constructed from this URI
      * @throws MalformedURLException
-     *             If a protocol handler for the URL could not be found, or if
-     *             some other error occurred while constructing the URL
+     *                 If a protocol handler for the URL could not be found, or
+     *                 if some other error occurred while constructing the URL
      */
     public URL toURL() throws MalformedURLException {
         return u.toURL();
@@ -711,7 +712,7 @@ public class URI implements Serializable, Comparable<Object> {
      * method always returns true. No scheme is interpreted as a "file" scheme.
      * 
      * @param scheme
-     *            the scheme to compare to
+     *                the scheme to compare to
      * @return true: the URIs are compatible
      */
     public boolean isCompatible(String scheme) {
@@ -855,7 +856,7 @@ public class URI implements Serializable, Comparable<Object> {
          * escaped. This method will perform this escaping.
          * 
          * @param uri
-         *            The URI to encode.
+         *                The URI to encode.
          * @return The encoded URI.
          */
         public String encodeUri(String uri) {
@@ -869,9 +870,10 @@ public class URI implements Serializable, Comparable<Object> {
          * Encodes a string according to RFC 2396.
          * 
          * @param uri
-         *            The URI to encode.
+         *                The URI to encode.
          * @param buf
-         *            The StringBuffer that the encoded URI will be appended to.
+         *                The StringBuffer that the encoded URI will be appended
+         *                to.
          * @see #encodeUri(java.lang.String)
          */
         public void encodeUri(String uri, StringBuffer buf) {
@@ -905,7 +907,7 @@ public class URI implements Serializable, Comparable<Object> {
          * characters back to the original.
          * 
          * @param uri
-         *            The URI to decode.
+         *                The URI to decode.
          * @return The decoded URI.
          */
         public String decodeUri(String uri) {
@@ -919,9 +921,10 @@ public class URI implements Serializable, Comparable<Object> {
          * Decodes a string according to RFC 2396.
          * 
          * @param uri
-         *            The URI to decode.
+         *                The URI to decode.
          * @param buf
-         *            The StringBuffer that the decoded URI will be appended to.
+         *                The StringBuffer that the decoded URI will be appended
+         *                to.
          * @see #decodeUri(java.lang.String)
          */
         public void decodeUri(String uri, StringBuffer buf) {

@@ -28,7 +28,6 @@ public class InputForwarder extends Thread {
         this.source = buf;
         setDaemon(true);
 
-
         start();
     }
 

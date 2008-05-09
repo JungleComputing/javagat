@@ -44,9 +44,9 @@ class NestedException extends Exception {
      * adaptor
      * 
      * @param adaptor
-     *            the adaptor that caused the throwable
+     *                the adaptor that caused the throwable
      * @param t
-     *            the throwable that is caused by the adaptor
+     *                the throwable that is caused by the adaptor
      */
     public void add(String adaptor, Throwable t) {
         if (t instanceof InvocationTargetException) {

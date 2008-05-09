@@ -5,7 +5,6 @@ package org.gridlab.gat.io.cpi.sftpGanymed;
 
 import java.io.File;
 
-
 /**
  * @author rob
  */

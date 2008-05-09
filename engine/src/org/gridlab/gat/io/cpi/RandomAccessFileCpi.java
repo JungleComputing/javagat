@@ -22,211 +22,211 @@ import org.gridlab.gat.monitoring.MetricListener;
  * File class at runtime.
  */
 public abstract class RandomAccessFileCpi implements RandomAccessFileInterface {
-	protected GATContext gatContext;
+    protected GATContext gatContext;
 
-	protected URI location;
+    protected URI location;
 
-	protected String mode;
+    protected String mode;
 
-	/**
-	 * Constructs a FileCpi instance which corresponds to the physical file
-	 * identified by the passed Location and whose access rights are determined
-	 * by the passed GATContext.
-	 * 
-	 * @param gatContext
-	 *            A GATContext which is used to determine the access rights for
-	 *            this FileCpi.
-	 * @param file
-	 *            the file to create this random access file on
-	 * @param mode
-	 *            see RandomAccessFile
-	 */
-	public RandomAccessFileCpi(GATContext gatContext, URI location, String mode) {
-		this.gatContext = gatContext;
-		this.location = location;
-		this.mode = mode;
-	}
+    /**
+     * Constructs a FileCpi instance which corresponds to the physical file
+     * identified by the passed Location and whose access rights are determined
+     * by the passed GATContext.
+     * 
+     * @param gatContext
+     *                A GATContext which is used to determine the access rights
+     *                for this FileCpi.
+     * @param file
+     *                the file to create this random access file on
+     * @param mode
+     *                see RandomAccessFile
+     */
+    public RandomAccessFileCpi(GATContext gatContext, URI location, String mode) {
+        this.gatContext = gatContext;
+        this.location = location;
+        this.mode = mode;
+    }
 
-	public boolean equals(Object object) {
-		if (!(object instanceof org.gridlab.gat.io.RandomAccessFile)) {
-			return false;
-		}
+    public boolean equals(Object object) {
+        if (!(object instanceof org.gridlab.gat.io.RandomAccessFile)) {
+            return false;
+        }
 
-		org.gridlab.gat.io.RandomAccessFile rf = (org.gridlab.gat.io.RandomAccessFile) object;
+        org.gridlab.gat.io.RandomAccessFile rf = (org.gridlab.gat.io.RandomAccessFile) object;
 
-		return location.equals(rf.toURI());
-	}
+        return location.equals(rf.toURI());
+    }
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.gridlab.gat.io.RandomAccessFileInterface#toURI()
-	 */
-	public URI toURI() {
-		return location;
-	}
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.gridlab.gat.io.RandomAccessFileInterface#toURI()
+     */
+    public URI toURI() {
+        return location;
+    }
 
-	public int hashCode() {
-		return location.hashCode();
-	}
+    public int hashCode() {
+        return location.hashCode();
+    }
 
-	public org.gridlab.gat.io.File getFile() throws GATInvocationException {
-		try {
-			return GAT.createFile(gatContext, location);
-		} catch (Exception e) {
-			throw new GATInvocationException("random access file cpi", e);
-		}
-	}
+    public org.gridlab.gat.io.File getFile() throws GATInvocationException {
+        try {
+            return GAT.createFile(gatContext, location);
+        } catch (Exception e) {
+            throw new GATInvocationException("random access file cpi", e);
+        }
+    }
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.gridlab.gat.io.RandomAccessFile#close()
-	 */
-	public void close() throws GATInvocationException {
-		throw new UnsupportedOperationException("Not implemented");
-	}
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.gridlab.gat.io.RandomAccessFile#close()
+     */
+    public void close() throws GATInvocationException {
+        throw new UnsupportedOperationException("Not implemented");
+    }
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.gridlab.gat.io.RandomAccessFile#getFilePointer()
-	 */
-	public long getFilePointer() throws GATInvocationException {
-		throw new UnsupportedOperationException("Not implemented");
-	}
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.gridlab.gat.io.RandomAccessFile#getFilePointer()
+     */
+    public long getFilePointer() throws GATInvocationException {
+        throw new UnsupportedOperationException("Not implemented");
+    }
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.gridlab.gat.io.RandomAccessFile#length()
-	 */
-	public long length() throws GATInvocationException {
-		throw new UnsupportedOperationException("Not implemented");
-	}
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.gridlab.gat.io.RandomAccessFile#length()
+     */
+    public long length() throws GATInvocationException {
+        throw new UnsupportedOperationException("Not implemented");
+    }
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.gridlab.gat.io.RandomAccessFile#read()
-	 */
-	public int read() throws GATInvocationException {
-		throw new UnsupportedOperationException("Not implemented");
-	}
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.gridlab.gat.io.RandomAccessFile#read()
+     */
+    public int read() throws GATInvocationException {
+        throw new UnsupportedOperationException("Not implemented");
+    }
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.gridlab.gat.io.RandomAccessFile#read(byte[], int, int)
-	 */
-	public int read(byte[] arg0, int arg1, int arg2)
-			throws GATInvocationException {
-		throw new UnsupportedOperationException("Not implemented");
-	}
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.gridlab.gat.io.RandomAccessFile#read(byte[], int, int)
+     */
+    public int read(byte[] arg0, int arg1, int arg2)
+            throws GATInvocationException {
+        throw new UnsupportedOperationException("Not implemented");
+    }
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.gridlab.gat.io.RandomAccessFile#read(byte[])
-	 */
-	public int read(byte[] arg0) throws GATInvocationException {
-		throw new UnsupportedOperationException("Not implemented");
-	}
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.gridlab.gat.io.RandomAccessFile#read(byte[])
+     */
+    public int read(byte[] arg0) throws GATInvocationException {
+        throw new UnsupportedOperationException("Not implemented");
+    }
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.gridlab.gat.io.RandomAccessFile#seek(long)
-	 */
-	public void seek(long arg0) throws GATInvocationException {
-		throw new UnsupportedOperationException("Not implemented");
-	}
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.gridlab.gat.io.RandomAccessFile#seek(long)
+     */
+    public void seek(long arg0) throws GATInvocationException {
+        throw new UnsupportedOperationException("Not implemented");
+    }
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.gridlab.gat.io.RandomAccessFile#setLength(long)
-	 */
-	public void setLength(long arg0) throws GATInvocationException {
-		throw new UnsupportedOperationException("Not implemented");
-	}
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.gridlab.gat.io.RandomAccessFile#setLength(long)
+     */
+    public void setLength(long arg0) throws GATInvocationException {
+        throw new UnsupportedOperationException("Not implemented");
+    }
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.gridlab.gat.io.RandomAccessFile#skipBytes(int)
-	 */
-	public int skipBytes(int arg0) throws GATInvocationException {
-		throw new UnsupportedOperationException("Not implemented");
-	}
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.gridlab.gat.io.RandomAccessFile#skipBytes(int)
+     */
+    public int skipBytes(int arg0) throws GATInvocationException {
+        throw new UnsupportedOperationException("Not implemented");
+    }
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.gridlab.gat.io.RandomAccessFile#write(byte[], int, int)
-	 */
-	public void write(byte[] arg0, int arg1, int arg2)
-			throws GATInvocationException {
-		throw new UnsupportedOperationException("Not implemented");
-	}
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.gridlab.gat.io.RandomAccessFile#write(byte[], int, int)
+     */
+    public void write(byte[] arg0, int arg1, int arg2)
+            throws GATInvocationException {
+        throw new UnsupportedOperationException("Not implemented");
+    }
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.gridlab.gat.io.RandomAccessFile#write(byte[])
-	 */
-	public void write(byte[] arg0) throws GATInvocationException {
-		throw new UnsupportedOperationException("Not implemented");
-	}
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.gridlab.gat.io.RandomAccessFile#write(byte[])
+     */
+    public void write(byte[] arg0) throws GATInvocationException {
+        throw new UnsupportedOperationException("Not implemented");
+    }
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.gridlab.gat.io.RandomAccessFile#write(int)
-	 */
-	public void write(int arg0) throws GATInvocationException {
-		throw new UnsupportedOperationException("Not implemented");
-	}
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.gridlab.gat.io.RandomAccessFile#write(int)
+     */
+    public void write(int arg0) throws GATInvocationException {
+        throw new UnsupportedOperationException("Not implemented");
+    }
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.gridlab.gat.monitoring.Monitorable#addMetricListener(org.gridlab.gat.monitoring.MetricListener,
-	 *      org.gridlab.gat.monitoring.Metric)
-	 */
-	public void addMetricListener(MetricListener metricListener, Metric metric)
-			throws GATInvocationException {
-		throw new UnsupportedOperationException("Not implemented");
-	}
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.gridlab.gat.monitoring.Monitorable#addMetricListener(org.gridlab.gat.monitoring.MetricListener,
+     *      org.gridlab.gat.monitoring.Metric)
+     */
+    public void addMetricListener(MetricListener metricListener, Metric metric)
+            throws GATInvocationException {
+        throw new UnsupportedOperationException("Not implemented");
+    }
 
-	public MetricDefinition getMetricDefinitionByName(String name)
-			throws GATInvocationException {
-		throw new UnsupportedOperationException("Not implemented");
-	}
+    public MetricDefinition getMetricDefinitionByName(String name)
+            throws GATInvocationException {
+        throw new UnsupportedOperationException("Not implemented");
+    }
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.gridlab.gat.monitoring.Monitorable#getMetrics()
-	 */
-	public List<MetricDefinition> getMetricDefinitions()
-			throws GATInvocationException {
-		throw new UnsupportedOperationException("Not implemented");
-	}
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.gridlab.gat.monitoring.Monitorable#getMetrics()
+     */
+    public List<MetricDefinition> getMetricDefinitions()
+            throws GATInvocationException {
+        throw new UnsupportedOperationException("Not implemented");
+    }
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.gridlab.gat.monitoring.Monitorable#removeMetricListener(org.gridlab.gat.monitoring.MetricListener,
-	 *      org.gridlab.gat.monitoring.Metric)
-	 */
-	public void removeMetricListener(MetricListener metricListener,
-			Metric metric) throws GATInvocationException {
-		throw new UnsupportedOperationException("Not implemented");
-	}
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.gridlab.gat.monitoring.Monitorable#removeMetricListener(org.gridlab.gat.monitoring.MetricListener,
+     *      org.gridlab.gat.monitoring.Metric)
+     */
+    public void removeMetricListener(MetricListener metricListener,
+            Metric metric) throws GATInvocationException {
+        throw new UnsupportedOperationException("Not implemented");
+    }
 
-	public MetricEvent getMeasurement(Metric metric)
-			throws GATInvocationException {
-		throw new UnsupportedOperationException("Not implemented");
-	}
+    public MetricEvent getMeasurement(Metric metric)
+            throws GATInvocationException {
+        throw new UnsupportedOperationException("Not implemented");
+    }
 }

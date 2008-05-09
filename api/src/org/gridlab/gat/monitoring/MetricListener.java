@@ -11,7 +11,7 @@ public interface MetricListener {
      * events.
      * 
      * @param val
-     *            The MetricValue which triggered this method call
+     *                The MetricValue which triggered this method call
      */
     public void processMetricEvent(MetricEvent val);
 }

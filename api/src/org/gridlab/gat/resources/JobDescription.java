@@ -28,7 +28,7 @@ public class JobDescription implements java.io.Serializable {
      * care where it runs, the {@link ResourceBroker} will choose the location.
      * 
      * @param softwareDescription
-     *            the {@link SoftwareDescription} of the executable.
+     *                the {@link SoftwareDescription} of the executable.
      */
     public JobDescription(SoftwareDescription softwareDescription) {
         this.softwareDescription = softwareDescription;
@@ -39,10 +39,10 @@ public class JobDescription implements java.io.Serializable {
      * a {@link ResourceDescription}.
      * 
      * @param softwareDescription
-     *            the {@link SoftwareDescription} of the executable.
+     *                the {@link SoftwareDescription} of the executable.
      * @param resourceDescription
-     *            the {@link ResourceDescription} of the resource where the
-     *            executable should run.
+     *                the {@link ResourceDescription} of the resource where the
+     *                executable should run.
      */
     public JobDescription(SoftwareDescription softwareDescription,
             ResourceDescription resourceDescription) {
@@ -55,9 +55,9 @@ public class JobDescription implements java.io.Serializable {
      * a {@link Resource}.
      * 
      * @param softwareDescription
-     *            the {@link SoftwareDescription} of the executable.
+     *                the {@link SoftwareDescription} of the executable.
      * @param resource
-     *            the Resource where the executable should run on.
+     *                the Resource where the executable should run on.
      */
     public JobDescription(SoftwareDescription softwareDescription,
             Resource resource) {
@@ -78,7 +78,7 @@ public class JobDescription implements java.io.Serializable {
      * Set the {@link Resource} associated with this {@link JobDescription}.
      * 
      * @param resource
-     *            The {@link Resource} to set.
+     *                The {@link Resource} to set.
      */
     public void setResource(Resource resource) {
         this.resource = resource;
@@ -99,7 +99,7 @@ public class JobDescription implements java.io.Serializable {
      * {@link JobDescription}.
      * 
      * @param resourceDescription
-     *            The {@link ResourceDescription} to set.
+     *                The {@link ResourceDescription} to set.
      */
     public void setResourceDescription(ResourceDescription resourceDescription) {
         this.resourceDescription = resourceDescription;
@@ -120,7 +120,7 @@ public class JobDescription implements java.io.Serializable {
      * {@link JobDescription}.
      * 
      * @param softwareDescription
-     *            The {@link SoftwareDescription} to set.
+     *                The {@link SoftwareDescription} to set.
      */
     public void setSoftwareDescription(SoftwareDescription softwareDescription) {
         this.softwareDescription = softwareDescription;

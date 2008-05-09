@@ -44,7 +44,7 @@ public class GridSAMResourceBrokerAdaptor extends ResourceBrokerCpi {
      * corresponding to the passed GATContext.
      * 
      * @param gatContext
-     *            A GATContext which will be used to broker resources
+     *                A GATContext which will be used to broker resources
      */
     public GridSAMResourceBrokerAdaptor(GATContext gatContext,
             org.gridlab.gat.URI brokerURI) throws GATObjectCreationException {
@@ -58,11 +58,11 @@ public class GridSAMResourceBrokerAdaptor extends ResourceBrokerCpi {
      * hardware resource this method returns an error.
      * 
      * @param resourceDescription
-     *            A description, a HardwareResourceDescription, of the hardware
-     *            resource to reserve
+     *                A description, a HardwareResourceDescription, of the
+     *                hardware resource to reserve
      * @param timePeriod
-     *            The time period, a TimePeriod , for which to reserve the
-     *            hardware resource
+     *                The time period, a TimePeriod , for which to reserve the
+     *                hardware resource
      */
     public Reservation reserveResource(ResourceDescription resourceDescription,
             TimePeriod timePeriod) {
@@ -76,8 +76,8 @@ public class GridSAMResourceBrokerAdaptor extends ResourceBrokerCpi {
      * specified hardware resource this method returns an error.
      * 
      * @param resourceDescription
-     *            A description, a HardwareResoucreDescription, of the hardware
-     *            resource(s) to find
+     *                A description, a HardwareResoucreDescription, of the
+     *                hardware resource(s) to find
      * @return java.util.List of HardwareResources upon success
      */
     public List<HardwareResource> findResources(

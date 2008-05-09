@@ -10,7 +10,7 @@ import org.gridlab.gat.advert.Advertisable;
 
 /**
  * @author rob
- *
+ * 
  */
 @SuppressWarnings("serial")
 public class SerializedLogicalFile implements Serializable, Advertisable {

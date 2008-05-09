@@ -8,7 +8,8 @@ public class SteeringControl {
 
     Map<String, Object> actualParameters = null;
 
-    public SteeringControl(SteeringControlDefinition scd, Map<String, Object> actualParameters) {
+    public SteeringControl(SteeringControlDefinition scd,
+            Map<String, Object> actualParameters) {
         this.scd = scd;
         this.actualParameters = actualParameters;
     }
@@ -38,13 +39,14 @@ public class SteeringControl {
 
         if (this.scd == null) {
             if (sc.getDefinition() != null)
-            ;
+                ;
             definitionSame = false;
         } else if (!this.scd.equals(sc.getDefinition()))
             definitionSame = false;
 
         if (this.actualParameters == null) {
-            if (sc.getParameters() != null) actualSame = false;
+            if (sc.getParameters() != null)
+                actualSame = false;
         } else if (!this.actualParameters.equals(sc.getParameters()))
             actualSame = false;
 
@@ -53,6 +55,6 @@ public class SteeringControl {
 
     public String toString() {
         return "Definition: " + this.scd + "; Actual parameters: "
-            + this.actualParameters;
+                + this.actualParameters;
     }
 }

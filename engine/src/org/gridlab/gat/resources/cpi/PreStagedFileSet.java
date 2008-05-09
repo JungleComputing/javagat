@@ -44,7 +44,7 @@ public class PreStagedFileSet {
 
     /**
      * @param files
-     *            the files to set
+     *                the files to set
      */
     public void setFiles(PreStagedFile[] files) {
         this.files = files;
@@ -83,7 +83,6 @@ public class PreStagedFileSet {
 
         ArrayList<PreStagedFile> tmp = new ArrayList<PreStagedFile>();
         Map<File, File> pre = sd.getPreStaged();
-
         if (pre != null) {
             Set<File> keys = pre.keySet();
             Iterator<File> i = keys.iterator();

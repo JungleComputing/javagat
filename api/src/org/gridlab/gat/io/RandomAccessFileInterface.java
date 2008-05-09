@@ -27,7 +27,7 @@ public interface RandomAccessFileInterface extends Monitorable,
      * URI are equal as determined by the Equals method of URI.
      * 
      * @param object
-     *            The Object to test for equality
+     *                The Object to test for equality
      * @return A boolean indicating equality
      */
     public boolean equals(Object object);

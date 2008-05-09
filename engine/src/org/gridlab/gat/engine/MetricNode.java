@@ -31,9 +31,9 @@ class MetricNode {
     /*
      * public boolean equals(Object o) { if (!(o instanceof MetricNode)) return
      * false;
-     *
+     * 
      * MetricNode other = (MetricNode) o;
-     *
+     * 
      * return other.adaptor == adaptor; }
      */
 }

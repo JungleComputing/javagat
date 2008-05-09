@@ -229,7 +229,6 @@ public abstract class ResourceDescription implements java.io.Serializable {
         resourceDescriptions.remove(hardwareResourceDescription);
     }
 
-    
     public String toString() {
         String res = "ResourceDescription(";
 
