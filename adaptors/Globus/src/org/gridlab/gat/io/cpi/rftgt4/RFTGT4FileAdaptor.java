@@ -202,13 +202,12 @@ public class RFTGT4FileAdaptor extends FileCpi {
                     + location);
         }
 
-        String globusLocation = System.getenv("GLOBUS_LOCATION");
-        if (globusLocation == null) {
-            throw new GATObjectCreationException("$GLOBUS_LOCATION is not set");
-        }
-        System.setProperty("GLOBUS_LOCATION", globusLocation);
-        System.setProperty("axis.ClientConfigFile", globusLocation
-                + "/client-config.wsdd");
+        // String globusLocation = System.getenv("GLOBUS_LOCATION");
+        // if (globusLocation == null) {
+        // throw new GATObjectCreationException("$GLOBUS_LOCATION is not set");
+        // }
+        // System.setProperty("GLOBUS_LOCATION", globusLocation);
+        System.setProperty("axis.ClientConfigFile", "client-config.wsdd");
         this.host = location.getHost();
         if (this.host == null) {
             this.host = getLocalHost();
@@ -497,10 +496,13 @@ public class RFTGT4FileAdaptor extends FileCpi {
         while (status == null
                 || !(status.equals(RequestStatusTypeEnumeration.Done) || status
                         .equals(RequestStatusTypeEnumeration.Failed))) {
-            try {
-                wait();
-            } catch (InterruptedException e) {
-                throw new GATInvocationException("RFTGT4FileAdaptor: " + e);
+            synchronized (this) {
+
+                try {
+                    wait();
+                } catch (InterruptedException e) {
+                    throw new GATInvocationException("RFTGT4FileAdaptor: " + e);
+                }
             }
         }
         return status.equals(RequestStatusTypeEnumeration.Done);

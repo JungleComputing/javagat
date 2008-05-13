@@ -1,32 +1,24 @@
 package tutorial;
 
 import org.gridlab.gat.GAT;
-import org.gridlab.gat.GATContext;
 import org.gridlab.gat.URI;
 import org.gridlab.gat.io.File;
-import org.gridlab.gat.resources.HardwareResourceDescription;
 import org.gridlab.gat.resources.Job;
 import org.gridlab.gat.resources.JobDescription;
 import org.gridlab.gat.resources.ResourceBroker;
-import org.gridlab.gat.resources.ResourceDescription;
 import org.gridlab.gat.resources.SoftwareDescription;
 
 public class SubmitRemoteJob {
     public static void main(String[] args) throws Exception {
-        GATContext context = new GATContext();
-
         SoftwareDescription sd = new SoftwareDescription();
         sd.setExecutable("/bin/hostname");
 
-        File stdout = GAT.createFile(context, "hostname.txt");
+        File stdout = GAT.createFile("hostname.txt");
         sd.setStdout(stdout);
 
-        ResourceDescription rd = new HardwareResourceDescription();
-        rd.addResourceAttribute("machine.node", args[0]);
-
-        JobDescription jd = new JobDescription(sd, rd);
-        ResourceBroker broker = GAT.createResourceBroker(context, new URI(
-                "any://" + args[0] + "/"));
+        JobDescription jd = new JobDescription(sd);
+        ResourceBroker broker = GAT.createResourceBroker(new URI("any://"
+                + args[0]));
         Job job = broker.submitJob(jd);
 
         while ((job.getState() != Job.STOPPED)

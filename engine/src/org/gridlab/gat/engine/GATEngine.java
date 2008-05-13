@@ -1005,6 +1005,9 @@ public class GATEngine {
     private static List<Adaptor> reorderAdaptorList(List<Adaptor> adaptors,
             String cpiName, Preferences preferences)
             throws GATObjectCreationException {
+        logger.debug("reordering, cpiname: " + cpiName + ", preferences: "
+                + preferences);
+
         // parse the orderingString
         // all adaptor names are separated by a ',' and adaptors that should
         // not be used are prefixed with a '!'
@@ -1022,6 +1025,7 @@ public class GATEngine {
         // preference
         String local = (String) preferences.get("adaptors.local");
         if ((local != null) && local.equalsIgnoreCase("true")) {
+            logger.debug("setting to local!");
             nameString = "local";
         } else {
             nameString = (String) preferences.get(cpiName + ".adaptor.name");

@@ -50,8 +50,9 @@ public class SubmitJobSshTrilead implements MetricListener {
         SoftwareDescription sd = new SoftwareDescription();
         sd.setExecutable(args[1]);
         sd.setArguments(args[2]);
-//        sd.setStdout(GAT.createFile("stdout"));
-//        sd.setStderr(GAT.createFile("stderr"));
+        sd.setStdout(GAT.createFile("stdout"));
+        sd.addPreStagedFile(GAT.createFile("Sleep.class"));
+        // sd.setStderr(GAT.createFile("stderr"));
         JobDescription jd = new JobDescription(sd);
 
         ResourceBroker broker = GAT.createResourceBroker(preferences, new URI(
