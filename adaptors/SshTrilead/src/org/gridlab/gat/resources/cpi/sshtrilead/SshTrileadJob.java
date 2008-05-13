@@ -4,6 +4,7 @@
 package org.gridlab.gat.resources.cpi.sshtrilead;
 
 import java.util.HashMap;
+import java.util.Map;
 
 import org.apache.log4j.Logger;
 import org.gridlab.gat.GATContext;
@@ -68,6 +69,48 @@ public class SshTrileadJob extends JobCpi {
 
     public String getJobID() {
         return "" + jobID;
+    }
+
+    public synchronized Map<String, Object> getInfo()
+            throws GATInvocationException {
+        HashMap<String, Object> m = new HashMap<String, Object>();
+
+        m.put("state", getStateString(state));
+        if (state != RUNNING) {
+            m.put("hostname", null);
+        } else {
+            m.put("hostname", "not available");
+        }
+        if (state == INITIAL || state == UNKNOWN) {
+            m.put("submissiontime", null);
+        } else {
+            m.put("id", jobID);
+            m.put("submissiontime", submissiontime);
+        }
+        if (state == INITIAL || state == UNKNOWN || state == SCHEDULED) {
+            m.put("starttime", null);
+        } else {
+            m.put("starttime", starttime);
+        }
+        if (state != STOPPED) {
+            m.put("stoptime", null);
+        } else {
+            m.put("stoptime", stoptime);
+        }
+        m.put("poststage.exception", postStageException);
+        m.put("resourcebroker", "SshTrilead");
+        try {
+            m.put("exitvalue", "" + getExitStatus());
+        } catch (GATInvocationException e) {
+            // ignore
+        }
+        if (deleteException != null) {
+            m.put("delete.exception", deleteException);
+        }
+        if (wipeException != null) {
+            m.put("wipe.exception", wipeException);
+        }
+        return m;
     }
 
     public void startOutputWaiter(StreamForwarder outForwarder,

@@ -23,7 +23,7 @@ public class SubmitRemoteJob {
 
         while ((job.getState() != Job.STOPPED)
                 && (job.getState() != Job.SUBMISSION_ERROR)) {
-            System.err.println("job state = " + job.getInfo());
+            System.err.println("job state = " + job.getState());
             Thread.sleep(1000);
         }
 
