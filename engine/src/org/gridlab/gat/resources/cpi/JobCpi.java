@@ -79,7 +79,7 @@ public abstract class JobCpi extends Job {
         return jobDescription;
     }
 
-    public synchronized int getState() {
+    public int getState() {
         return state;
     }
 

@@ -79,21 +79,21 @@ public class WSGT4newResourceBrokerAdaptor extends ResourceBrokerCpi {
             throw new AdaptorNotApplicableException("cannot handle this URI: "
                     + brokerURI);
         }
-        String globusLocation = System.getenv("GLOBUS_LOCATION");
-        // URL configLocation =
-        // ClassLoader.getSystemClassLoader().getResource("client-config.wsdd");
-        // System.out.println("classpath: " +
-        // System.getProperty("java.class.path"));
-        // System.out.println("configlocation: " + configLocation);
-        if (globusLocation == null) {
-            throw new GATObjectCreationException("$GLOBUS_LOCATION is not set");
+        if (System.getProperty("GLOBUS_LOCATION") == null) {
+            String globusLocation = System.getProperty("gat.adaptor.path")
+                    + java.io.File.separator + "GlobusAdaptor"
+                    + java.io.File.separator;
+            System.setProperty("GLOBUS_LOCATION", globusLocation);
         }
-        System.setProperty("GLOBUS_LOCATION", globusLocation);
-        System.setProperty("axis.ClientConfigFile", System
-                .getProperty("axis.ClientConfigFile", globusLocation
-                        + "/client-config.wsdd"));
-        // System.setProperty("axis.ClientConfigFile", globusLocation
-        // + "/client-config.wsdd");
+
+        if (System.getProperty("axis.ClientConfigFile") == null) {
+            String axisClientConfigFile = System
+                    .getProperty("gat.adaptor.path")
+                    + java.io.File.separator
+                    + "GlobusAdaptor"
+                    + java.io.File.separator + "client-config.wsdd";
+            System.setProperty("axis.ClientConfigFile", axisClientConfigFile);
+        }
     }
 
     protected String createRSL(JobDescription description, Sandbox sandbox,
@@ -364,6 +364,7 @@ public class WSGT4newResourceBrokerAdaptor extends ResourceBrokerCpi {
         // default scheme: https
         // default port: 8443
         // default path: /wsrf/services/ManagedJobFactoryService
+        logger.debug("brokerURI: " + brokerURI);
         String scheme = "https";
         if (brokerURI == null || !brokerURI.getScheme().equals("any")) {
             scheme = brokerURI.getScheme();
@@ -372,8 +373,8 @@ public class WSGT4newResourceBrokerAdaptor extends ResourceBrokerCpi {
         int port = brokerURI.getPort(8443);
 
         String path = "/wsrf/services/ManagedJobFactoryService";
-        if (brokerURI.getPath() != null) {
-            path = brokerURI.getPath();
+        if (brokerURI.getUnresolvedPath() != null) {
+            path = brokerURI.getUnresolvedPath();
         }
 
         return scheme + "://" + brokerURI.getHost() + ":" + port + path;

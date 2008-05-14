@@ -50,6 +50,7 @@ public class SubmitJobWSGT4new implements MetricListener {
         sd.setExecutable(args[0]);
         sd.setStdout(outFile);
         sd.setStderr(errFile);
+        sd.addAttribute("count", 10);
 
         JobDescription jd = new JobDescription(sd);
         ResourceBroker broker = GAT.createResourceBroker(context, prefs,

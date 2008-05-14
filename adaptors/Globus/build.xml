@@ -49,11 +49,23 @@
 
 		<delete dir="${tmp}" />
 
-		<!-- Copy the lib gt4 stuff for globus 4 -->
+
+
+		<!-- Copy the cog lib gt4 stuff for globus 4 -->
 		<copy todir="${gat.location}/lib/lib-gt4_0_0">
 			<fileset dir="${external}/lib-gt4_0_0">
 				<include name="*.jar" />
 			</fileset>
+		</copy>
+
+		<!-- Copy the globus files for globus 4 -->
+		<copy todir="${lib}">
+			<fileset dir="${external}">
+				<include name="share/**" />
+				<include name="etc/**" />
+				<include name="client-config.wsdd" />
+			</fileset>
+
 		</copy>
 
 	</target>

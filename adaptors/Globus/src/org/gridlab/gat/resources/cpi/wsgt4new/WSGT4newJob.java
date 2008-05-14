@@ -24,7 +24,7 @@ import org.gridlab.gat.resources.cpi.Sandbox;
  * @since 1.0
  */
 @SuppressWarnings("serial")
-public class WSGT4newJob extends JobCpi implements GramJobListener {
+public class WSGT4newJob extends JobCpi implements GramJobListener, Runnable {
 
     private MetricDefinition statusMetricDefinition;
 
@@ -34,19 +34,28 @@ public class WSGT4newJob extends JobCpi implements GramJobListener {
 
     private Metric statusMetric;
 
+    private Thread poller;
+
+    private boolean finished = false;
+
     private String jobID;
+
+    private StateEnumeration jobState = StateEnumeration.Unsubmitted;
 
     protected WSGT4newJob(GATContext gatContext, JobDescription jobDescription,
             Sandbox sandbox) {
         super(gatContext, jobDescription, sandbox);
-
         HashMap<String, Object> returnDef = new HashMap<String, Object>();
         returnDef.put("status", String.class);
         statusMetricDefinition = new MetricDefinition("job.status",
                 MetricDefinition.DISCRETE, "String", null, null, returnDef);
         GATEngine.registerMetric(this, "getJobStatus", statusMetricDefinition);
         statusMetric = statusMetricDefinition.createMetric(null);
-
+        poller = new Thread(this);
+        poller.setDaemon(true);
+        poller.setName("WSGT4 Job - "
+                + jobDescription.getSoftwareDescription().getExecutable());
+        poller.start();
     }
 
     protected synchronized void setState(int state) {
@@ -59,15 +68,23 @@ public class WSGT4newJob extends JobCpi implements GramJobListener {
                 logger.debug("wsgt4new job callback: firing event: " + v);
             }
             GATEngine.fireMetric(this, v);
+            if (state == STOPPED || state == SUBMISSION_ERROR) {
+                try {
+                    stop();
+                } catch (GATInvocationException e) {
+                    // ignore
+                }
+            }
         }
     }
 
     public synchronized void stop() throws GATInvocationException {
-        if (getState() != STOPPED && getState() != SUBMISSION_ERROR) {
+        if (state != STOPPED && state != SUBMISSION_ERROR) {
             try {
                 job.cancel();
             } catch (Exception e) {
                 finished();
+                finished = true;
                 throw new GATInvocationException("WSGT4newJob", e);
             }
             sandbox.retrieveAndCleanup(this);
@@ -76,6 +93,7 @@ public class WSGT4newJob extends JobCpi implements GramJobListener {
                 logger.debug("job not running anymore!");
             }
         }
+        finished = true;
         finished();
     }
 
@@ -91,6 +109,7 @@ public class WSGT4newJob extends JobCpi implements GramJobListener {
         HashMap<String, Object> m = new HashMap<String, Object>();
 
         m.put("state", getStateString(state));
+        m.put("globusstate", jobState);
         if (state != RUNNING) {
             m.put("hostname", null);
         } else {
@@ -123,8 +142,27 @@ public class WSGT4newJob extends JobCpi implements GramJobListener {
         return m;
     }
 
-    public void stateChanged(GramJob arg0) {
-        StateEnumeration jobState = job.getState();
+    public void stateChanged(GramJob job) {
+        // don't let the upcall and the poller interfere, so synchronize the
+        // state stuff
+        synchronized (this) {
+            try {
+                job.refreshStatus();
+            } catch (Exception e) {
+                // ignore
+            }
+            StateEnumeration newState = job.getState();
+            logger.debug("jobState (upcall): " + newState);
+            doStateChange(newState);
+        }
+    }
+
+    private void doStateChange(StateEnumeration newState) {
+        if (newState.equals(jobState)) {
+            return;
+        }
+        jobState = newState;
+
         boolean holding = job.isHolding();
         if (jobState.equals(StateEnumeration.Done)
                 || jobState.equals(StateEnumeration.Failed)) {
@@ -147,25 +185,27 @@ public class WSGT4newJob extends JobCpi implements GramJobListener {
             setStartTime();
             setState(RUNNING);
         } else if (jobState.equals(StateEnumeration.CleanUp)) {
+            // setState(POST_STAGING);
+            // sandbox.retrieveAndCleanup(this);
+            // setState(STOPPED);
+            // setStopTime();
+        } else if (jobState.equals(StateEnumeration.Done)) {
             setState(POST_STAGING);
             sandbox.retrieveAndCleanup(this);
             setState(STOPPED);
             setStopTime();
-            finished();
-        } else if (jobState.equals(StateEnumeration.Done)) {
-            // setState(STOPPED);
         } else if (jobState.equals(StateEnumeration.Failed)) {
             setState(POST_STAGING);
             sandbox.retrieveAndCleanup(this);
             setState(SUBMISSION_ERROR);
-            finished();
         } else if (jobState.equals(StateEnumeration.StageIn)) {
             setState(PRE_STAGING);
         } else if (jobState.equals(StateEnumeration.StageOut)) {
             setState(POST_STAGING);
         } else if (jobState.equals(StateEnumeration.Suspended)) {
             setState(ON_HOLD);
-        } else if (jobState.equals(StateEnumeration.Unsubmitted)) {
+        } else if (jobState.equals(StateEnumeration.Unsubmitted)
+                && state != PRE_STAGING) {
             setState(INITIAL);
         }
     }
@@ -190,4 +230,25 @@ public class WSGT4newJob extends JobCpi implements GramJobListener {
         return jobID;
     }
 
+    public void run() {
+        while (!finished) {
+            synchronized (this) {
+                try {
+                    job.refreshStatus();
+
+                    // TODO
+                    StateEnumeration newState = job.getState();
+                    logger.debug("jobState (poller): " + newState);
+                    doStateChange(newState);
+                } catch (Exception e) {
+                    // ignore
+                }
+            }
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                // ignore
+            }
+        }
+    }
 }
