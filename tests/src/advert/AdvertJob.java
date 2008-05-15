@@ -38,7 +38,7 @@ public class AdvertJob {
         AdvertService a = GAT.createAdvertService(prefs);
         MetaData m = new MetaData();
         m.put("name", "testJob");
-        a.add(job, m, "/testJob");
+        a.add(job, m, "/test/testJob");
 
         GAT.end();
         System.exit(0);

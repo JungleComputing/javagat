@@ -4,7 +4,6 @@
 package advert;
 
 import org.gridlab.gat.GAT;
-import org.gridlab.gat.GATContext;
 import org.gridlab.gat.Preferences;
 import org.gridlab.gat.advert.AdvertService;
 import org.gridlab.gat.resources.Job;
@@ -14,13 +13,12 @@ import org.gridlab.gat.resources.Job;
  */
 public class ConnectToAdvertJob {
     public static void main(String[] args) throws Exception {
-        GATContext c = new GATContext();
         Preferences prefs = new Preferences();
         prefs.put("AdvertService.adaptor.name", "local");
         prefs.put("ResourceBroker.adaptor.name", "globus");
 
-        AdvertService a = GAT.createAdvertService(c, prefs);
-        Job other = (Job) a.getAdvertisable("/rob/testJob");
+        AdvertService a = GAT.createAdvertService(prefs);
+        Job other = (Job) a.getAdvertisable("/test/testJob");
 
         System.err.println("got job back: " + other);
 
