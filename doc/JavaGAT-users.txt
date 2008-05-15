@@ -23,9 +23,9 @@ In many cases we don't exactly know what JavaGAT is used for.
 
 - Georgia State University (Milan Pandya)
 
-- Vrije Universiteit Amsterdam. JavaGAT is developped here. Several of our grid projects 
-  use it. We also use it for the Grid Computing course here, studens have to write grid 
-  progams with the JavaGAT.
+- Vrije Universiteit Amsterdam. JavaGAT is developed here. Several of our grid projects 
+  use it. We also use it for the Grid Computing course here, students have to write grid 
+  programs with the JavaGAT.
   
 - The Multimedian project (http://www.multimedian.nl) uses JavaGAT to start parallel jobs 
   on the grid (Frank Seinstra).

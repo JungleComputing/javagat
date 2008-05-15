@@ -4,7 +4,7 @@
 <title>Attributes</title>
 </head>
 <body>
-<h2>General Attributes</h2>
+<h1>General Attributes</h1>
 <table border=1>
 <tr><td>attribute key</td><td>possible value(s)</td><td>default value</td><td>meaning</td></tr>
 <tr><td>"executable"</td><td>"path/to/executable"</td><td>-</td><td>the path to the executable, use SoftwareDescription.setExecutable</td></tr>
@@ -39,7 +39,7 @@
 <tr><td>attribute key</td><td>possible value(s)</td><td>default value</td><td>meaning</td></tr>
 <tr><td>"wrapper.enable"</td><td>"true", "false"</td><td>"false"</td><td>set to true if you want to use the wrapper</td></tr>
 <tr><td>"wrapper.output"</td><td>"true", "false"</td><td>"false"</td><td>set to true if you want the wrapper application to produce debug output</td></tr>
-<tr><td>"wrapper.output.location"</td><td>/path/to/output</td><td>wrapper.<counter>.[err|out]</td><td>the default location of the debug output of the wrapper application is at $PWD/wrapper.<counter>.out and $PWD/wrapper.<counter>.err, you can overwrite it using this attribute however the postfixes (<counter>.[out|err]) will remain.</td></tr>
+<tr><td>"wrapper.output.location"</td><td>/path/to/output</td><td>wrapper.[counter].[err|out]</td><td>the default location of the debug output of the wrapper application is at $PWD/wrapper.[counter].out and $PWD/wrapper.[counter].err, you can overwrite it using this attribute however the postfixes (<counter>.[out|err]) will remain.</td></tr>
 <tr><td>"wrapper.sandbox.root"</td><td>path/to/sandboxroot/of/wrapper</td><td>adaptor's entry point</td><td>the root of the sandbox where the wrapper will execute</td></tr>
 <tr><td>"wrapper.prestage"</td><td>"sequential", "parallel"</td><td>"parallel"</td><td>by default all wrappers will do their staging in parallel, however if all staging comes from one host, this may overload that host. Setting this attribute to "sequential" will allow just one wrapper at a time to prestage its files</td></tr>
 <tr><td>"wrapper.debug"</td><td>"true", "false"</td><td>"false"</td><td>turn on the debug output of the wrapper (this overrides the log4j.properties file)</td></tr>
@@ -51,13 +51,13 @@
 <hr />
 <h1>Adaptor specific attributes</h1>
 
-<h2>Koala</h2>
+<!---<h2>Koala</h2>
 <table border=1>
 <tr><td>attribute key</td><td>possible value(s)</td><td>default value</td><td>meaning</td></tr>
 <tr><td>"koala.job.priority"</td><td>integer</td><td>1</td><td>job priority</td></tr>
 <tr><td>"koala.minimalsize"</td><td>integer</td><td>1</td><td>if set, the job is flexible, with a minimal size set by this value</td></tr>
 <tr><td>"koala.transfer.optimize"</td><td>"true", "false"</td><td>“false”</td><td>if true, the file transfertime will be optimized</td></tr>
-</table>
+</table>--->
 
 <h2>Globus</h2>
 <table border=1>
@@ -72,13 +72,13 @@
 <tr><td>"localq.job.priority"</td><td>integer</td><td>0</td><td>job priority</td></tr>
 </table>
 
-</table>
+<!---</table>
 <h2>ProActive attributes</h2>
 <table border=1>
 <tr><td>attribute key</td><td>possible value(s)</td><td>default value</td><td>meaning</td></tr>
 <tr><td>"proactive.host.count.soft"</td><td>""</td><td>-</td><td></td></tr>
 <tr><td>"proactive.classpath"</td><td>""</td><td>-</td><td></td></tr>
-</table>
+</table>--->
 
 </body>
 </html>

@@ -22,31 +22,26 @@ import org.gridlab.gat.resources.SoftwareDescription;
  */
 public class AdvertJob {
     public static void main(String[] args) throws Exception {
-        GATContext c = new GATContext();
         Preferences prefs = new Preferences();
         prefs.put("AdvertService.adaptor.name", "local");
         prefs.put("ResourceBroker.adaptor.name", "globus");
         prefs.put("jobs.killonexit", "false");
-        c.addPreferences(prefs);
 
         SoftwareDescription sd = new SoftwareDescription();
         sd.setExecutable("/bin/hostname");
 
-        File stdout = GAT.createFile(c, "hostname.txt");
+        File stdout = GAT.createFile("hostname.txt");
         sd.setStdout(stdout);
 
-        ResourceDescription rd = new HardwareResourceDescription();
-        rd.addResourceAttribute("machine.node", args[0]);
-
-        JobDescription jd = new JobDescription(sd, rd);
-        ResourceBroker broker = GAT.createResourceBroker(c, new URI("any://"
-                + args[0] + "/"));
+        JobDescription jd = new JobDescription(sd);
+        ResourceBroker broker = GAT.createResourceBroker(prefs, new URI(
+                "any://" + args[0]));
         Job job = broker.submitJob(jd);
 
-        AdvertService a = GAT.createAdvertService(c);
+        AdvertService a = GAT.createAdvertService(prefs);
         MetaData m = new MetaData();
         m.put("name", "testJob");
-        a.add(job, m, "/rob/testJob");
+        a.add(job, m, "/testJob");
 
         GAT.end();
         System.exit(0);
