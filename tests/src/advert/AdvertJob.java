@@ -4,17 +4,14 @@
 package advert;
 
 import org.gridlab.gat.GAT;
-import org.gridlab.gat.GATContext;
 import org.gridlab.gat.Preferences;
 import org.gridlab.gat.URI;
 import org.gridlab.gat.advert.AdvertService;
 import org.gridlab.gat.advert.MetaData;
 import org.gridlab.gat.io.File;
-import org.gridlab.gat.resources.HardwareResourceDescription;
 import org.gridlab.gat.resources.Job;
 import org.gridlab.gat.resources.JobDescription;
 import org.gridlab.gat.resources.ResourceBroker;
-import org.gridlab.gat.resources.ResourceDescription;
 import org.gridlab.gat.resources.SoftwareDescription;
 
 /**
