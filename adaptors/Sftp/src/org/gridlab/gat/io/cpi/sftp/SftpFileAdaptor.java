@@ -267,6 +267,9 @@ public class SftpFileAdaptor extends FileCpi {
     }
 
     public boolean mkdir() throws GATInvocationException {
+        if (exists()) {
+            return false;
+        }
         SftpConnection c = openConnection(gatContext, location);
         try {
             c.sftp.mkdir(fixURI(location, null).getPath());

@@ -19,6 +19,7 @@ import org.gridlab.gat.engine.util.StreamForwarder;
 import org.gridlab.gat.monitoring.Metric;
 import org.gridlab.gat.monitoring.MetricListener;
 import org.gridlab.gat.resources.HardwareResource;
+import org.gridlab.gat.resources.JavaSoftwareDescription;
 import org.gridlab.gat.resources.Job;
 import org.gridlab.gat.resources.JobDescription;
 import org.gridlab.gat.resources.Reservation;
@@ -267,6 +268,10 @@ public class LocalResourceBrokerAdaptor extends ResourceBrokerCpi {
         // throw new GATInvocationException("local broker", e);
         // }
         // }
+        String executable = sd.getExecutable();
+        if (sd instanceof JavaSoftwareDescription) {
+            executable = ((JavaSoftwareDescription) sd).getJavaMain();
+        }
 
         StreamForwarder outForwarder = null;
         StreamForwarder errForwarder = null;
@@ -275,14 +280,16 @@ public class LocalResourceBrokerAdaptor extends ResourceBrokerCpi {
         if (sd.getStdinFile() != null) {
             try {
                 new StreamForwarder(GAT.createFileInputStream(sandbox
-                        .getResolvedStdin()), p.getOutputStream());
+                        .getResolvedStdin()), p.getOutputStream(),
+                        "local input " + executable);
             } catch (GATObjectCreationException e) {
                 throw new GATInvocationException(
                         "Could not create a FileInputStream to read from the input '"
                                 + sandbox.getResolvedStdin() + "'", e);
             }
         } else if (sd.getStdinStream() != null) {
-            new StreamForwarder(sd.getStdinStream(), p.getOutputStream());
+            new StreamForwarder(sd.getStdinStream(), p.getOutputStream(),
+                    "local input" + executable);
         } else {
             try {
                 p.getOutputStream().close();
@@ -298,7 +305,8 @@ public class LocalResourceBrokerAdaptor extends ResourceBrokerCpi {
         if (sd.getStdoutFile() != null) {
             try {
                 outForwarder = new StreamForwarder(p.getInputStream(), GAT
-                        .createFileOutputStream(sandbox.getResolvedStdout()));
+                        .createFileOutputStream(sandbox.getResolvedStdout()),
+                        "local output" + executable);
             } catch (GATObjectCreationException e) {
                 throw new GATInvocationException(
                         "Could not creat a FileOutputStream to write the output to '"
@@ -306,7 +314,7 @@ public class LocalResourceBrokerAdaptor extends ResourceBrokerCpi {
             }
         } else if (sd.getStdoutStream() != null) {
             outForwarder = new StreamForwarder(p.getInputStream(), sd
-                    .getStdoutStream());
+                    .getStdoutStream(), "local output" + executable);
         } else {
             try {
                 p.getInputStream().close();
@@ -322,7 +330,8 @@ public class LocalResourceBrokerAdaptor extends ResourceBrokerCpi {
         if (sd.getStderrFile() != null) {
             try {
                 errForwarder = new StreamForwarder(p.getErrorStream(), GAT
-                        .createFileOutputStream(sandbox.getResolvedStderr()));
+                        .createFileOutputStream(sandbox.getResolvedStderr()),
+                        "local error" + executable);
             } catch (GATObjectCreationException e) {
                 throw new GATInvocationException(
                         "Could not creat a FileOutputStream to write the error to '"
@@ -330,7 +339,7 @@ public class LocalResourceBrokerAdaptor extends ResourceBrokerCpi {
             }
         } else if (sd.getStderrStream() != null) {
             errForwarder = new StreamForwarder(p.getErrorStream(), sd
-                    .getStderrStream());
+                    .getStderrStream(), "local error" + executable);
         } else {
             try {
                 p.getErrorStream().close();

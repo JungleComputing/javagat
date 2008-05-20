@@ -113,6 +113,9 @@ public class CommandlineSshFileAdaptor extends FileCpi {
         if (windows) {
             throw new UnsupportedOperationException("Not implemented");
         }
+        if (!exists()) {
+            return false;
+        }
         return runSshCommand("rm -rf " + getPathFixed(), true);
     }
 
@@ -121,6 +124,13 @@ public class CommandlineSshFileAdaptor extends FileCpi {
             throw new UnsupportedOperationException("Not implemented");
         }
         return runSshCommand("test -d " + getPathFixed(), true);
+    }
+
+    public boolean isFile() throws GATInvocationException {
+        if (windows) {
+            throw new UnsupportedOperationException("Not implemented");
+        }
+        return runSshCommand("test -f " + getPathFixed(), true);
     }
 
     public boolean exists() throws GATInvocationException {

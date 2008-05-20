@@ -281,6 +281,9 @@ abstract public class GT4FileAdaptor extends FileCpi {
     public boolean isDirectory() throws GATInvocationException {
         // How should be handled the / in the in the end of the location?
         // Probably a bug in the Cog Toolkit?
+        if (!exists()) {
+            return false;
+        }
         GridFile gf = null;
         try {
             String path = location.getPath();
@@ -306,12 +309,15 @@ abstract public class GT4FileAdaptor extends FileCpi {
      * @see org.gridlab.gat.io.File#isFile()
      */
     public boolean isFile() throws GATInvocationException {
+        if (!exists()) {
+            return false;
+        }
         GridFile gf = null;
         try {
             gf = resource.getGridFile(location.getPath());
             return gf.isFile();
         } catch (FileNotFoundException e) {
-            throw new GATInvocationException();
+            return false;
         } catch (GeneralException e) {
             throw new GATInvocationException(e.getMessage());
         }

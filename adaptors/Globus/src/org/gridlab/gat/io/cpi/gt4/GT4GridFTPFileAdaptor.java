@@ -204,8 +204,7 @@ public class GT4GridFTPFileAdaptor extends GT4FileAdaptor {
         }
         if (dest.isLocal()) {
             if (GATEngine.DEBUG) {
-                System.err
-                        .println("GT4GridFTPFileAdaptor: copy remote to local");
+                logger.debug("GT4GridFTPFileAdaptor: copy remote to local");
             }
             copyToLocal(dest);
             return;

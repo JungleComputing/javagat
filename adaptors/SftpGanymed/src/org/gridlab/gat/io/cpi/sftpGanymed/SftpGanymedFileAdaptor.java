@@ -212,12 +212,6 @@ public class SftpGanymedFileAdaptor extends FileCpi {
     }
 
     public boolean mkdir() throws GATInvocationException {
-        // if mkdir is invoked on an already existing dir, it will cause an
-        // exception and return false, therefore check beforehand for this
-        // situation and return true
-        if (exists() && isDirectory()) {
-            return true;
-        }
         SftpGanymedConnection c = openConnection(gatContext, location);
         try {
             c.sftpClient.mkdir(fixURI(location, null).getPath(), 0700);
@@ -264,6 +258,12 @@ public class SftpGanymedFileAdaptor extends FileCpi {
                 c.sftpClient.rm(fixURI(location, null).getPath());
             }
         } catch (IOException e) {
+            if (e instanceof SFTPException) {
+                if (((SFTPException) e).getServerErrorCode() == ErrorCodes.SSH_FX_NO_SUCH_FILE) {
+                    closeConnection(c);
+                    return false;
+                }
+            }
             throw new GATInvocationException("sftpGanymed", e);
         } finally {
             closeConnection(c);
