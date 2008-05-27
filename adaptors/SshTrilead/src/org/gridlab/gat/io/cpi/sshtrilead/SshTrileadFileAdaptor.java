@@ -342,6 +342,9 @@ public class SshTrileadFileAdaptor extends FileCpi {
             return isWindows;
 
         }
+        if (isWindowsCacheEnable) {
+            isWindowsCache.put(host, false);
+        }
         return false;
     }
 

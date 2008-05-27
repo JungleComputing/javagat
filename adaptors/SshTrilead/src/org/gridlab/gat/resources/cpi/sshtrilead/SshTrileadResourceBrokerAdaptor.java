@@ -17,6 +17,7 @@ import org.gridlab.gat.engine.util.StreamForwarder;
 import org.gridlab.gat.io.cpi.sshtrilead.SshTrileadFileAdaptor;
 import org.gridlab.gat.monitoring.Metric;
 import org.gridlab.gat.monitoring.MetricListener;
+import org.gridlab.gat.resources.JavaSoftwareDescription;
 import org.gridlab.gat.resources.Job;
 import org.gridlab.gat.resources.JobDescription;
 import org.gridlab.gat.resources.SoftwareDescription;
@@ -195,14 +196,20 @@ public class SshTrileadResourceBrokerAdaptor extends ResourceBrokerCpi {
             throw new GATInvocationException("execution failed!", e);
         }
 
+        String executable = sd.getExecutable();
+        if (sd instanceof JavaSoftwareDescription) {
+            executable = ((JavaSoftwareDescription) sd).getJavaMain();
+        }
+
         if (userIn != null) {
-            new StreamForwarder(userIn, session.getStdin(), "ssh in");
+            new StreamForwarder(userIn, session.getStdin(), "ssh input for '"
+                    + executable + "'");
         }
 
         StreamForwarder outForwarder = new StreamForwarder(stdout, userOut,
-                "ssh output");
+                "ssh output for '" + executable + "'");
         StreamForwarder errForwarder = new StreamForwarder(stderr, userErr,
-                "ssh error");
+                "ssh error for '" + executable + "'");
         job.startOutputWaiter(outForwarder, errForwarder);
         job.setState(Job.RUNNING);
         return job;

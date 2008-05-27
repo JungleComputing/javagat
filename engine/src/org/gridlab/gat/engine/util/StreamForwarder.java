@@ -3,6 +3,8 @@ package org.gridlab.gat.engine.util;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 
 import org.apache.log4j.Logger;
 
@@ -43,16 +45,17 @@ public class StreamForwarder implements Runnable {
                 read = in.read(buffer);
 
                 if (read == -1) {
-                    synchronized (this) {
-                        if (out != null) {
-                            out.flush();
-                        }
+                    if (out != null) {
+                        out.flush();
+                    }
 
-                        // roelof: don't close out, should be done by
-                        // the user of the StreamForwarder, because he might
-                        // want to write other things to it (for instance if
-                        // it's System.out)
-                        // out.close();
+                    // roelof: don't close out, should be done by
+                    // the user of the StreamForwarder, because he might
+                    // want to write other things to it (for instance if
+                    // it's System.out)
+                    // out.close();
+                    synchronized (this) {
+
                         finished = true;
 
                         notifyAll();
@@ -60,19 +63,28 @@ public class StreamForwarder implements Runnable {
                         return;
                     }
                 }
+                if (logger.isTraceEnabled()) {
+                    for (int i = 0; i < read; i++) {
+                        logger.trace("read byte: " + buffer[i] + " ("
+                                + ((char) buffer[i]) + ")");
+                    }
+                }
+
                 if (out != null) {
                     out.write(buffer, 0, read);
                     out.flush();
+                    logger.info("Forwarder '" + name + "' forwarded: "
+                            + new String(buffer, 0, read));
+                } else {
+                    logger.info("forwarding impossible, outputstream closed");
                 }
-                logger.info("Forwarder '" + name + "' forwarded: "
-                        + new String(buffer, 0, read));
-
-                // System.err.println("written: " + new String(buffer, 0,
-                // read));
 
             }
         } catch (IOException e) {
-            // IGNORE
+            logger.info("caught exception: " + e);
+            StringWriter writer = new StringWriter();
+            e.printStackTrace(new PrintWriter(writer));
+            logger.debug("stacktrace: \n" + writer.toString());
         }
     }
 

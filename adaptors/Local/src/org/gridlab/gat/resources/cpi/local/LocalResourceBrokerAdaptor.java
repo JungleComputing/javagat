@@ -289,7 +289,7 @@ public class LocalResourceBrokerAdaptor extends ResourceBrokerCpi {
             }
         } else if (sd.getStdinStream() != null) {
             new StreamForwarder(sd.getStdinStream(), p.getOutputStream(),
-                    "local input" + executable);
+                    "local input " + executable);
         } else {
             try {
                 p.getOutputStream().close();
@@ -306,7 +306,7 @@ public class LocalResourceBrokerAdaptor extends ResourceBrokerCpi {
             try {
                 outForwarder = new StreamForwarder(p.getInputStream(), GAT
                         .createFileOutputStream(sandbox.getResolvedStdout()),
-                        "local output" + executable);
+                        "local output " + executable);
             } catch (GATObjectCreationException e) {
                 throw new GATInvocationException(
                         "Could not creat a FileOutputStream to write the output to '"
@@ -314,7 +314,7 @@ public class LocalResourceBrokerAdaptor extends ResourceBrokerCpi {
             }
         } else if (sd.getStdoutStream() != null) {
             outForwarder = new StreamForwarder(p.getInputStream(), sd
-                    .getStdoutStream(), "local output" + executable);
+                    .getStdoutStream(), "local output " + executable);
         } else {
             try {
                 p.getInputStream().close();
@@ -331,7 +331,7 @@ public class LocalResourceBrokerAdaptor extends ResourceBrokerCpi {
             try {
                 errForwarder = new StreamForwarder(p.getErrorStream(), GAT
                         .createFileOutputStream(sandbox.getResolvedStderr()),
-                        "local error" + executable);
+                        "local error " + executable);
             } catch (GATObjectCreationException e) {
                 throw new GATInvocationException(
                         "Could not creat a FileOutputStream to write the error to '"
@@ -339,7 +339,7 @@ public class LocalResourceBrokerAdaptor extends ResourceBrokerCpi {
             }
         } else if (sd.getStderrStream() != null) {
             errForwarder = new StreamForwarder(p.getErrorStream(), sd
-                    .getStderrStream(), "local error" + executable);
+                    .getStderrStream(), "local error " + executable);
         } else {
             try {
                 p.getErrorStream().close();
