@@ -3,6 +3,8 @@
  */
 package org.gridlab.gat.resources.cpi.sshtrilead;
 
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -10,7 +12,6 @@ import org.apache.log4j.Logger;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.engine.GATEngine;
-import org.gridlab.gat.engine.util.StreamForwarder;
 import org.gridlab.gat.monitoring.Metric;
 import org.gridlab.gat.monitoring.MetricDefinition;
 import org.gridlab.gat.monitoring.MetricEvent;
@@ -113,10 +114,10 @@ public class SshTrileadJob extends JobCpi {
         return m;
     }
 
-    public void startOutputWaiter(StreamForwarder outForwarder,
-            StreamForwarder errForwarder) {
-        new OutputWaiter(outForwarder, errForwarder);
-    }
+    // public void startOutputWaiter(StreamForwarder outForwarder,
+    // StreamForwarder errForwarder) {
+    // new OutputWaiter(outForwarder, errForwarder);
+    // }
 
     public synchronized int getExitStatus() throws GATInvocationException {
         if (state != STOPPED && state != SUBMISSION_ERROR) {
@@ -134,22 +135,45 @@ public class SshTrileadJob extends JobCpi {
         finished();
     }
 
-    class OutputWaiter extends Thread {
+    public OutputStream getStdIn() throws GATInvocationException {
+        if (jobDescription.getSoftwareDescription().streamingStdinEnabled()) {
+            return session.getStdin();
+        } else {
+            throw new GATInvocationException("stdin streaming is not enabled!");
+        }
+    }
 
-        StreamForwarder outForwarder, errForwarder;
+    public InputStream getStdout() throws GATInvocationException {
+        if (jobDescription.getSoftwareDescription().streamingStdoutEnabled()) {
+            return session.getStdout();
+        } else {
+            throw new GATInvocationException("stdout streaming is not enabled!");
+        }
+    }
 
-        OutputWaiter(StreamForwarder outForwarder, StreamForwarder errForwarder) {
-            setName("SshTrileadJob OutputForwarderWaiter");
+    public InputStream getStderr() throws GATInvocationException {
+        if (jobDescription.getSoftwareDescription().streamingStderrEnabled()) {
+            return session.getStderr();
+        } else {
+            throw new GATInvocationException("stderr streaming is not enabled!");
+        }
+    }
+
+    protected void monitorState() {
+        new StateMonitor();
+    }
+
+    class StateMonitor extends Thread {
+
+        StateMonitor() {
+            setName("ssh state monitor: "
+                    + jobDescription.getSoftwareDescription().getExecutable());
             setDaemon(true);
-            this.outForwarder = outForwarder;
-            this.errForwarder = errForwarder;
             start();
         }
 
         public void run() {
-            outForwarder.waitUntilFinished();
-            errForwarder.waitUntilFinished();
-            session.waitForCondition(ChannelCondition.EXIT_STATUS, 5000);
+            session.waitForCondition(ChannelCondition.EXIT_STATUS, 0);
             try {
                 exitStatus = session.getExitStatus();
             } catch (NullPointerException e) {
@@ -166,5 +190,39 @@ public class SshTrileadJob extends JobCpi {
             }
         }
     }
+
+    // class OutputWaiter extends Thread {
+    //
+    // StreamForwarder outForwarder, errForwarder;
+    //
+    // OutputWaiter(StreamForwarder outForwarder, StreamForwarder errForwarder)
+    // {
+    // setName("SshTrileadJob OutputForwarderWaiter");
+    // setDaemon(true);
+    // this.outForwarder = outForwarder;
+    // this.errForwarder = errForwarder;
+    // start();
+    // }
+    //
+    // public void run() {
+    // outForwarder.waitUntilFinished();
+    // errForwarder.waitUntilFinished();
+    // session.waitForCondition(ChannelCondition.EXIT_STATUS, 5000);
+    // try {
+    // exitStatus = session.getExitStatus();
+    // } catch (NullPointerException e) {
+    // if (logger.isDebugEnabled()) {
+    // logger.debug("unable to retrieve exit status");
+    // }
+    // }
+    // try {
+    // SshTrileadJob.this.stop();
+    // } catch (GATInvocationException e) {
+    // if (logger.isDebugEnabled()) {
+    // logger.debug("unable to stop job: " + e);
+    // }
+    // }
+    // }
+    // }
 
 }

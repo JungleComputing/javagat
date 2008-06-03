@@ -202,46 +202,19 @@ public class GATEngine {
         return gatEngine;
     }
 
-    /**
-     * Returns a list of adaptors for the specified cpiClass
-     * 
-     * @param cpiClass
-     *                the cpi class for which to look
-     * @return the list of adaptors
-     */
-    public List<Adaptor> getAdaptorList(String cpiName)
-            throws GATObjectCreationException {
-        List<Adaptor> result = adaptorLists.get(cpiName);
-        if (result == null) {
-            throw new GATObjectCreationException(
-                    "getAdaptorList: No adaptors loaded for type " + cpiName);
+    public static String[] getAdaptors(String cpiName) {
+        GATEngine gatEngine = GATEngine.getGATEngine();
+        List<Adaptor> adaptors = gatEngine.adaptorLists.get(cpiName);
+        if (adaptors == null) {
+            return null;
+        }
+        String[] result = new String[adaptors.size()];
+        int i = 0;
+        for (Adaptor adaptor : adaptors) {
+            result[i++] = adaptor.getName();
         }
         return result;
     }
-
-    // /**
-    // * Returns a list of adaptors for the specified cpiClass
-    // *
-    // * @param cpiClass
-    // * the cpi class for which to look
-    // * @return the list of adaptors
-    // */
-    // public AdaptorList getAdaptorList(Class<?> cpiClass)
-    // throws GATObjectCreationException {
-    // if (adaptors.getAdaptorList(cpiClass.getName()) == null) {
-    // // no adaptors for this type loaded.
-    // if (logger.isInfoEnabled()) {
-    // logger.info("getAdaptorList: No adaptors loaded for type "
-    // + cpiClass.getName());
-    // }
-    //
-    // throw new GATObjectCreationException(
-    // "getAdaptorList: No adaptors loaded for type "
-    // + cpiClass.getName());
-    // } else {
-    // return adaptors.getAdaptorList(cpiClass.getName());
-    // }
-    // }
 
     protected void readJarFiles() {
         // retrieve the path where the adaptors are located.

@@ -145,21 +145,21 @@ public class WSGT4newResourceBrokerAdaptor extends ResourceBrokerCpi {
         }
         rsl += "</directory>";
 
-        File stdout = sd.getStdoutFile();
+        File stdout = sd.getStdout();
         if (stdout != null) {
             rsl += "<stdout>";
             rsl += sandbox.getRelativeStdout().getPath();
             rsl += "</stdout>";
         }
 
-        File stderr = sd.getStderrFile();
+        File stderr = sd.getStderr();
         if (stderr != null) {
             rsl += "<stderr>";
             rsl += sandbox.getRelativeStderr().getPath();
             rsl += "</stderr>";
         }
 
-        File stdin = sd.getStdinFile();
+        File stdin = sd.getStdin();
         if (stdin != null) {
             rsl += "<stdin>";
             rsl += sandbox.getRelativeStdin().getPath();

@@ -116,8 +116,6 @@ public class WrapperSubmitter {
             // don't use this attribute, because it's only for the wrapped jobs.
             sd.removeAttribute("sandbox.root");
 
-            System.out.println("attributes: " + sd.getAttributes());
-
             // start with all old attributes.
             // incorrect ones will be overwritten below
             // sd.setAttributes(origSd.getAttributes());
@@ -317,11 +315,6 @@ public class WrapperSubmitter {
             FileOutputStream tmp = new FileOutputStream(f);
             ObjectOutputStream out = new ObjectOutputStream(tmp);
             out.writeObject(preferences);
-            System.out.println("preferences: " + preferences);
-            for (int i = 0; i < descriptions.size(); i++) {
-                System.out.println("description[" + i + "]: "
-                        + descriptions.get(i));
-            }
             out.writeObject((JobDescription[]) descriptions
                     .toArray(new JobDescription[descriptions.size()]));
             out.writeObject(preStageDoneLocation);

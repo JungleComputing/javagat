@@ -6,6 +6,7 @@ package org.gridlab.gat;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URISyntaxException;
 import java.util.Properties;
@@ -1783,6 +1784,31 @@ public class GAT {
         return (ResourceBroker) getAdaptorProxy("ResourceBroker",
                 ResourceBroker.class, gatContext, preferences,
                 new Class[] { URI.class }, array);
+    }
+
+    public static String[] getAdaptors(String type)
+            throws GATInvocationException {
+        String[] result = null;
+        Method m = null;
+        try {
+            m = engineClass.getMethod("getAdaptors",
+                    new Class[] { String.class });
+        } catch (SecurityException e) {
+            throw new GATInvocationException("GAT api: ", e);
+        } catch (NoSuchMethodException e) {
+            throw new GATInvocationException("GAT api: ", e);
+        }
+        try {
+            result = (String[]) m.invoke(null, new Object[] { type });
+        } catch (IllegalArgumentException e) {
+            throw new GATInvocationException("GAT api: ", e);
+        } catch (IllegalAccessException e) {
+            throw new GATInvocationException("GAT api: ", e);
+        } catch (InvocationTargetException e) {
+            throw new GATInvocationException("GAT api: ", e);
+        }
+
+        return result;
     }
 
     /**

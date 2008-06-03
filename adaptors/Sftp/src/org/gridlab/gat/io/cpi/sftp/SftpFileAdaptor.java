@@ -228,6 +228,9 @@ public class SftpFileAdaptor extends FileCpi {
     }
 
     public boolean isDirectory() throws GATInvocationException {
+        if (!exists()) {
+            return false;
+        }
         SftpConnection c = openConnection(gatContext, fixURI(location, null));
         try {
             FileAttributes attr = c.sftp.stat(fixURI(location, null).getPath());
@@ -241,6 +244,9 @@ public class SftpFileAdaptor extends FileCpi {
     }
 
     public boolean isFile() throws GATInvocationException {
+        if (!exists()) {
+            return false;
+        }
         SftpConnection c = openConnection(gatContext, location);
         try {
             FileAttributes attr = c.sftp.stat(fixURI(location, null).getPath());

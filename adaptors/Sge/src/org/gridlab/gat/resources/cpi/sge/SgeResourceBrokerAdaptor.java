@@ -114,8 +114,8 @@ public class SgeResourceBrokerAdaptor extends ResourceBrokerCpi {
                 jt.setArgs(sd.getArguments());
             }
 
-            if (sd.getStdoutFile() != null) {
-                jt.setOutputPath(host + ":" + sd.getStdoutFile().getName());
+            if (sd.getStdout() != null) {
+                jt.setOutputPath(host + ":" + sd.getStdout().getName());
             }
 
             job.setJobID(SGEsession.runJob(jt));

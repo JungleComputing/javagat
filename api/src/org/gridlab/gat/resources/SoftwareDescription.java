@@ -144,6 +144,12 @@ public class SoftwareDescription implements java.io.Serializable {
 
     private boolean wipePostStaged;
 
+    private boolean streamingStderr;
+
+    private boolean streamingStdout;
+
+    private boolean streamingStdin;
+
     /**
      * Create a {@link SoftwareDescription}, which describes the application
      * you want to run.
@@ -154,6 +160,14 @@ public class SoftwareDescription implements java.io.Serializable {
         postStagedFiles = new HashMap<File, File>();
         deletedFiles = new ArrayList<File>();
         wipedFiles = new ArrayList<File>();
+    }
+
+    /**
+     * To be implemented.
+     * 
+     * @param jsdlString
+     */
+    public SoftwareDescription(String jsdlString) {
     }
 
     /**
@@ -612,28 +626,33 @@ public class SoftwareDescription implements java.io.Serializable {
      * Returns the stderr {@link File}.
      * 
      * @return the stderr {@link File}
-     * @deprecated use {@link #getStderrFile()}
      */
     public File getStderr() {
         return stderrFile;
     }
 
-    /**
-     * Returns the stderr {@link File}.
-     * 
-     * @return the stderr {@link File}
-     */
-    public File getStderrFile() {
-        return stderrFile;
+    public void enableStreamingStderr(boolean enabled) {
+        this.streamingStderr = enabled;
     }
 
-    /**
-     * Returns the stderr {@link OutputStream}.
-     * 
-     * @return the stderr {@link OutputStream}.
-     */
-    public OutputStream getStderrStream() {
-        return stderrStream;
+    public boolean streamingStderrEnabled() {
+        return this.streamingStderr;
+    }
+
+    public void enableStreamingStdout(boolean enabled) {
+        this.streamingStdout = enabled;
+    }
+
+    public boolean streamingStdoutEnabled() {
+        return this.streamingStdout;
+    }
+
+    public void enableStreamingStdin(boolean enabled) {
+        this.streamingStdin = enabled;
+    }
+
+    public boolean streamingStdinEnabled() {
+        return this.streamingStdin;
     }
 
     /**
@@ -651,45 +670,12 @@ public class SoftwareDescription implements java.io.Serializable {
     }
 
     /**
-     * Sets the stderr {@link OutputStream}. Note that stderr will be
-     * redirected to either a {@link File} or a {@link OutputStream}. The last
-     * invocation of <code>setStderr()</code> determines whether the
-     * destination of the output.
-     * 
-     * @param stderrStream
-     *                The {@link OutputStream} where stderr is redirected to.
-     */
-    public void setStderr(OutputStream stderrStream) {
-        this.stderrFile = null;
-        this.stderrStream = stderrStream;
-    }
-
-    /**
      * Returns the stdin {@link File}.
      * 
      * @return the stdin {@link File}.
-     * @deprecated use {@link #getStdinFile()}
      */
     public File getStdin() {
-        return getStdinFile();
-    }
-
-    /**
-     * Returns the stdin {@link File}.
-     * 
-     * @return the stdin {@link File}.
-     */
-    public File getStdinFile() {
         return stdinFile;
-    }
-
-    /**
-     * Returns the stdin {@link InputStream}.
-     * 
-     * @return the stdin {@link InputStream}.
-     */
-    public InputStream getStdinStream() {
-        return stdinStream;
     }
 
     /**
@@ -704,42 +690,12 @@ public class SoftwareDescription implements java.io.Serializable {
     }
 
     /**
-     * Sets the {@link InputStream} where stdin is redirected from.
-     * 
-     * @param stdinStream
-     *                The {@link InputStream} where stdin is redirected from.
-     */
-    public void setStdin(InputStream stdinStream) {
-        this.stdinFile = null;
-        this.stdinStream = stdinStream;
-    }
-
-    /**
      * Returns the stdout {@link File}.
      * 
      * @return the stdout {@link File}.
-     * @deprecated use {@link #getStdoutFile()}
      */
     public File getStdout() {
         return stdoutFile;
-    }
-
-    /**
-     * Returns the stdout {@link File}.
-     * 
-     * @return the stdout {@link File}.
-     */
-    public File getStdoutFile() {
-        return stdoutFile;
-    }
-
-    /**
-     * Returns the stdout {@link OutputStream}.
-     * 
-     * @return the stdout {@link OutputStream}.
-     */
-    public OutputStream getStdoutStream() {
-        return stdoutStream;
     }
 
     /**
@@ -754,20 +710,6 @@ public class SoftwareDescription implements java.io.Serializable {
     public void setStdout(File stdout) {
         this.stdoutStream = null;
         this.stdoutFile = stdout;
-    }
-
-    /**
-     * Sets the stdout {@link OutputStream}. Note that stdout will be
-     * redirected to either a {@link File} or a {@link OutputStream}. The last
-     * invocation of <code>setStdout()</code> determines whether the
-     * destination of the output.
-     * 
-     * @param stdoutStream
-     *                The {@link OutputStream} where stdout is redirected to.
-     */
-    public void setStdout(OutputStream stdoutStream) {
-        this.stdoutFile = null;
-        this.stdoutStream = stdoutStream;
     }
 
     public String toString() {
@@ -1131,6 +1073,15 @@ public class SoftwareDescription implements java.io.Serializable {
         }
         return sd;
 
+    }
+
+    /**
+     * to be implemented.
+     * 
+     * @return
+     */
+    public String getJSDL() {
+        return null;
     }
 
 }

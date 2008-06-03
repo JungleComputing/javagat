@@ -22,7 +22,7 @@ import org.ietf.jgss.GSSCredential;
 @SuppressWarnings("serial")
 public class GridFTPFileAdaptor extends GlobusFileAdaptor {
 
-    protected static Logger logger = Logger.getLogger(GlobusFileAdaptor.class);
+    protected static Logger logger = Logger.getLogger(GridFTPFileAdaptor.class);
 
     static boolean USE_CLIENT_CACHING = false;
 

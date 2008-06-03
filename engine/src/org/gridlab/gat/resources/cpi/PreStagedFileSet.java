@@ -96,7 +96,7 @@ public class PreStagedFileSet {
         }
 
         if (preStageStdin) {
-            File stdin = sd.getStdinFile();
+            File stdin = sd.getStdin();
 
             if (stdin != null) {
                 tmp.add(new PreStagedFile(gatContext, stdin, null, host,

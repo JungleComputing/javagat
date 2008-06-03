@@ -5,7 +5,9 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.StringReader;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.StringTokenizer;
 import java.util.Vector;
 
@@ -500,146 +502,209 @@ public abstract class GlobusFileAdaptor extends FileCpi {
         return info.getName();
     }
 
+    // first time, don't fiddle with active/passive settings, if it fails, then
+    // change it the second time.
     public String[] list() throws GATInvocationException {
-        FTPClient client = null;
-
         try {
-            if (!isDirectory()) {
-                return null;
-            }
-            String remotePath = getPath();
-
-            client = createClient(toURI());
-
-            if (!remotePath.equals("")) {
-                client.changeDir(remotePath);
-            }
-
-            setActiveOrPassive(client, gatContext.getPreferences());
-
-            Vector<FileInfo> v = null;
-
-            // we know it is a dir, so we can use this call.
-            // for some reason, on old servers the list() method returns
-            // an empty list if there are many files.
-            v = listNoMinusD(client, remotePath);
-
-            Vector<String> result = new Vector<String>();
-
-            for (int i = 0; i < v.size(); i++) {
-                FileInfo info = ((FileInfo) v.get(i));
-                if (info.getName().equals(".")) {
-                    continue;
-                }
-                if (info.getName().equals("..")) {
-                    continue;
-                }
-                if (info.getName().startsWith(".") && ignoreHiddenFiles) {
-                    continue;
-                }
-                result.add(getName(info));
-            }
-
-            String[] res = new String[result.size()];
-            for (int i = 0; i < result.size(); i++) {
-                res[i] = (String) result.get(i);
-            }
-            return res;
-        } catch (Exception e) {
-            throw new GATInvocationException("gridftp", e);
-        } finally {
-            if (client != null) {
-                destroyClient(client, toURI(), gatContext.getPreferences());
-            }
+            return list(false);
+        } catch (GATInvocationException e) {
+            return list(true);
         }
     }
 
-    public File[] listFiles() throws GATInvocationException {
-        if (logger.isInfoEnabled()) {
-            logger.info("list files of: " + location);
+    @SuppressWarnings("unchecked")
+    private String[] list(boolean passive) throws GATInvocationException {
+        if (!isDirectory()) {
+            return null;
         }
         FTPClient client = null;
-        String CWD = null;
-
-        try {
-            if (!isDirectory()) {
-                if (logger.isDebugEnabled()) {
-                    logger.debug("listFiles: not a directory");
-                }
-                return null;
+        client = createClient(toURI());
+        if (passive) {
+            try {
+                client.setPassive();
+                client.setLocalActive();
+            } catch (Exception e) {
+                throw new GATInvocationException("Generic globus file adaptor",
+                        e);
             }
-            if (toURI().refersToLocalHost()) {
-                throw new GATInvocationException(
-                        "cannot list files of local dir '" + toURI() + "'");
+        }
+        if (getPath() != null) {
+            Vector<FileInfo> list = null;
+            try {
+                client.changeDir(getPath());
+                list = client.nlist();
+            } catch (ServerException e) {
+                destroyClient(client, toURI(), gatContext.getPreferences());
+                throw new GATInvocationException("Generic globus file adaptor",
+                        e);
+            } catch (ClientException e) {
+                destroyClient(client, toURI(), gatContext.getPreferences());
+                throw new GATInvocationException("Generic globus file adaptor",
+                        e);
+            } catch (IOException e) {
+                destroyClient(client, toURI(), gatContext.getPreferences());
+                throw new GATInvocationException("Generic globus file adaptor",
+                        e);
             }
-            String remotePath = getPath();
-
-            client = createClient(toURI());
-            CWD = client.getCurrentDir();
-
-            if (!remotePath.equals("")) {
-                client.changeDir(remotePath);
-            }
-
-            setActiveOrPassive(client, gatContext.getPreferences());
-
-            Vector<?> v = null;
-
-            // we know it is a dir, so we can use this call.
-            // for some reason, on old servers the list() method returns
-            // an empty list if there are many files.
-            // v = listNoMinusD(client, remotePath);
-            v = client.list();
-
-            Vector<File> result = new Vector<File>();
-
-            for (int i = 0; i < v.size(); i++) {
-                FileInfo info = ((FileInfo) v.get(i));
-
-                if (info.getName().equals(".")) {
-                    continue;
-                }
-                if (info.getName().equals("..")) {
-                    continue;
-                }
-                if (info.getName().startsWith(".") && ignoreHiddenFiles) {
-                    continue;
-                }
-
-                String uri = location.toString();
-                if (!uri.endsWith("/")) {
-                    uri += "/";
-                }
-                uri += getName(info);
-
-                // Improve the performance of further file accesses to the list.
-                // pass the FileInfo object via the preferences.
-                Preferences additionalPrefs = new Preferences();
-                additionalPrefs.put("GAT_INTERNAL_FILE_INFO", info);
-                result.add(GAT.createFile(gatContext, additionalPrefs, new URI(
-                        uri)));
-            }
-
-            File[] res = new File[result.size()];
-            for (int i = 0; i < result.size(); i++) {
-                res[i] = (File) result.get(i);
-            }
-            return res;
-        } catch (Exception e) {
-            throw new GATInvocationException("gridftp", e);
-        } finally {
-            if (client != null) {
-                if (CWD != null) {
-                    try {
-                        client.changeDir(CWD);
-                    } catch (Exception e) {
-                        // ignore
+            if (list != null) {
+                List<String> result = new ArrayList<String>();
+                for (int i = 0; i < list.size(); i++) {
+                    if (list.get(i).getName().equals(".")
+                            || list.get(i).getName().equals("..")) {
+                        continue;
+                    } else {
+                        result.add(list.get(i).getName());
                     }
                 }
                 destroyClient(client, toURI(), gatContext.getPreferences());
+                return result.toArray(new String[result.size()]);
             }
         }
+        destroyClient(client, toURI(), gatContext.getPreferences());
+        return null;
+
     }
+
+    // public String[] oldlist() throws GATInvocationException {
+    // FTPClient client = null;
+    //
+    // try {
+    // if (!isDirectory()) {
+    // return null;
+    // }
+    // String remotePath = getPath();
+    //
+    // client = createClient(toURI());
+    //
+    // if (!remotePath.equals("")) {
+    // client.changeDir(remotePath);
+    // }
+    //
+    // setActiveOrPassive(client, gatContext.getPreferences());
+    //
+    // Vector<FileInfo> v = null;
+    //
+    // // we know it is a dir, so we can use this call.
+    // // for some reason, on old servers the list() method returns
+    // // an empty list if there are many files.
+    // v = listNoMinusD(client, remotePath);
+    //
+    // Vector<String> result = new Vector<String>();
+    //
+    // for (int i = 0; i < v.size(); i++) {
+    // FileInfo info = ((FileInfo) v.get(i));
+    // if (info.getName().equals(".")) {
+    // continue;
+    // }
+    // if (info.getName().equals("..")) {
+    // continue;
+    // }
+    // if (info.getName().startsWith(".") && ignoreHiddenFiles) {
+    // continue;
+    // }
+    // result.add(getName(info));
+    // }
+    //
+    // String[] res = new String[result.size()];
+    // for (int i = 0; i < result.size(); i++) {
+    // res[i] = (String) result.get(i);
+    // }
+    // return res;
+    // } catch (Exception e) {
+    // throw new GATInvocationException("gridftp", e);
+    // } finally {
+    // if (client != null) {
+    // destroyClient(client, toURI(), gatContext.getPreferences());
+    // }
+    // }
+    // }
+
+    // public File[] listFiles() throws GATInvocationException {
+    // if (logger.isInfoEnabled()) {
+    // logger.info("list files of: " + location);
+    // }
+    // FTPClient client = null;
+    // String CWD = null;
+    //
+    // try {
+    // if (!isDirectory()) {
+    // if (logger.isDebugEnabled()) {
+    // logger.debug("listFiles: not a directory");
+    // }
+    // return null;
+    // }
+    // if (toURI().refersToLocalHost()) {
+    // throw new GATInvocationException(
+    // "cannot list files of local dir '" + toURI() + "'");
+    // }
+    // String remotePath = getPath();
+    //
+    // client = createClient(toURI());
+    // CWD = client.getCurrentDir();
+    //
+    // if (!remotePath.equals("")) {
+    // client.changeDir(remotePath);
+    // }
+    //
+    // setActiveOrPassive(client, gatContext.getPreferences());
+    //
+    // Vector<?> v = null;
+    //
+    // // we know it is a dir, so we can use this call.
+    // // for some reason, on old servers the list() method returns
+    // // an empty list if there are many files.
+    // // v = listNoMinusD(client, remotePath);
+    // v = client.list();
+    //
+    // Vector<File> result = new Vector<File>();
+    //
+    // for (int i = 0; i < v.size(); i++) {
+    // FileInfo info = ((FileInfo) v.get(i));
+    //
+    // if (info.getName().equals(".")) {
+    // continue;
+    // }
+    // if (info.getName().equals("..")) {
+    // continue;
+    // }
+    // if (info.getName().startsWith(".") && ignoreHiddenFiles) {
+    // continue;
+    // }
+    //
+    // String uri = location.toString();
+    // if (!uri.endsWith("/")) {
+    // uri += "/";
+    // }
+    // uri += getName(info);
+    //
+    // // Improve the performance of further file accesses to the list.
+    // // pass the FileInfo object via the preferences.
+    // Preferences additionalPrefs = new Preferences();
+    // additionalPrefs.put("GAT_INTERNAL_FILE_INFO", info);
+    // result.add(GAT.createFile(gatContext, additionalPrefs, new URI(
+    // uri)));
+    // }
+    //
+    // File[] res = new File[result.size()];
+    // for (int i = 0; i < result.size(); i++) {
+    // res[i] = (File) result.get(i);
+    // }
+    // return res;
+    // } catch (Exception e) {
+    // throw new GATInvocationException("gridftp", e);
+    // } finally {
+    // if (client != null) {
+    // if (CWD != null) {
+    // try {
+    // client.changeDir(CWD);
+    // } catch (Exception e) {
+    // // ignore
+    // }
+    // }
+    // destroyClient(client, toURI(), gatContext.getPreferences());
+    // }
+    // }
+    // }
 
     protected FileInfo getInfo() throws GATInvocationException {
         if (cachedInfo != null) {
@@ -835,7 +900,7 @@ public abstract class GlobusFileAdaptor extends FileCpi {
     }
 
     public boolean isFile() throws GATInvocationException {
-        return !isDirectory();
+        return exists() && !isDirectory();
     }
 
     public boolean canRead() throws GATInvocationException {
@@ -1105,8 +1170,8 @@ public abstract class GlobusFileAdaptor extends FileCpi {
                 fileInfo = new FileInfo(fixListReply(line));
                 fileList.addElement(fileInfo);
             } catch (org.globus.ftp.exception.FTPException e) {
-                System.err
-                        .println("globus file adaptor: WARNING, could not create FileInfo for: "
+                logger
+                        .debug("globus file adaptor: WARNING, could not create FileInfo for: "
                                 + line);
             }
         }

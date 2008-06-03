@@ -293,26 +293,18 @@ public class RFTGT4FileAdaptor extends FileCpi {
         request.setTransferCredentialEndpoint(credentialEndpoint);
         setRequest(request);
 
-        while (status == null
-                || !(status.equals(RequestStatusTypeEnumeration.Done) || status
-                        .equals(RequestStatusTypeEnumeration.Failed))) {
-            try {
-                wait();
-            } catch (InterruptedException e) {
-                throw new GATInvocationException("RFTGT4FileAdaptor: " + e);
-            }
-        }
-        return status.equals(RequestStatusTypeEnumeration.Done);
+        return status.equals(RequestStatusTypeEnumeration.Done.toString())
+                || status.equals(TransferStatusTypeEnumeration.Finished
+                        .toString());
     }
 
     public String URItoRFTGT4String(URI in) throws URISyntaxException {
         URI fixedPath = in.setPath(in.getPath().substring(1));
         String rftgt4String = fixURI(fixedPath, "gsiftp").toString();
         if (fixedPath.getHost() == null) {
-            rftgt4String = rftgt4String.replace("gsiftp://", "gsiftp://"
+            rftgt4String = rftgt4String.replace("gsiftp:", "gsiftp://"
                     + getLocalHost());
         }
-
         // Uncomment this code if the ${GLOBUS_USER_HOME} will work
         // try {
         // URI fixedURI = new URI(rftgt4String);
@@ -338,6 +330,7 @@ public class RFTGT4FileAdaptor extends FileCpi {
     }
 
     public void copy(URI dest) throws GATInvocationException {
+        System.out.println("\ncopy " + location + " -> " + dest);
         try {
             if (!copy2(URItoRFTGT4String(dest))) {
                 throw new GATInvocationException(
@@ -568,7 +561,8 @@ public class RFTGT4FileAdaptor extends FileCpi {
         // try recursive directory deletion
         if (!result && !rftgt4Location.endsWith("/")) {
             rftgt4Location += "/";
-            return delete2();
+            result = delete2();
+            return result;
         }
         return result;
     }

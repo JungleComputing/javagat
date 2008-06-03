@@ -361,6 +361,13 @@ public class File extends java.io.File implements Monitorable, Advertisable,
 
     /**
      * @see java.io.File#lastModified()
+     * 
+     * Please note there's an issue with the gt4 file adaptor (gt4gridftp). It
+     * takes time zones into account where as the
+     * {@link java.io.File#lastModified()} doesn't. For instance a file that's
+     * last modified on 10 July 1984 at 00:00 GMT +2:00 will have a last
+     * modified time of 9 July 1984 at 22:00 using the gt4 file adaptor. The
+     * {@link java.io.File#lastModified()} will return 10 July 1984, 00:00.
      */
     public long lastModified() {
         try {

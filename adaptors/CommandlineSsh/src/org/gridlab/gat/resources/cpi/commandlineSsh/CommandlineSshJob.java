@@ -3,6 +3,8 @@
  */
 package org.gridlab.gat.resources.cpi.commandlineSsh;
 
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -10,7 +12,6 @@ import org.apache.log4j.Logger;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.engine.GATEngine;
-import org.gridlab.gat.engine.util.StreamForwarder;
 import org.gridlab.gat.monitoring.Metric;
 import org.gridlab.gat.monitoring.MetricDefinition;
 import org.gridlab.gat.monitoring.MetricEvent;
@@ -112,44 +113,61 @@ public class CommandlineSshJob extends JobCpi {
         setState(POST_STAGING);
         sandbox.retrieveAndCleanup(this);
         p.destroy();
-        try {
-            exitStatus = p.exitValue();
-        } catch (IllegalThreadStateException e) {
-            // IGNORE
-            exitStatus = 0;
-        }
         setState(STOPPED);
         finished();
     }
 
-    public void startOutputWaiter(StreamForwarder outForwarder,
-            StreamForwarder errForwarder) {
-        new OutputWaiter(outForwarder, errForwarder);
+    public OutputStream getStdIn() throws GATInvocationException {
+        if (jobDescription.getSoftwareDescription().streamingStdinEnabled()) {
+            return p.getOutputStream();
+        } else {
+            throw new GATInvocationException("stdin streaming is not enabled!");
+        }
     }
 
-    class OutputWaiter extends Thread {
+    public InputStream getStdout() throws GATInvocationException {
+        if (jobDescription.getSoftwareDescription().streamingStdoutEnabled()) {
+            return p.getInputStream();
+        } else {
+            throw new GATInvocationException("stdout streaming is not enabled!");
+        }
+    }
 
-        StreamForwarder outForwarder, errForwarder;
+    public InputStream getStderr() throws GATInvocationException {
+        if (jobDescription.getSoftwareDescription().streamingStderrEnabled()) {
+            return p.getErrorStream();
+        } else {
+            throw new GATInvocationException("stderr streaming is not enabled!");
+        }
+    }
 
-        OutputWaiter(StreamForwarder outForwarder, StreamForwarder errForwarder) {
-            setName("LocalJob OutputForwarderWaiter");
+    protected void monitorState() {
+        new StateMonitor();
+    }
+
+    class StateMonitor extends Thread {
+
+        StateMonitor() {
+            setName("command line ssh state monitor: "
+                    + jobDescription.getSoftwareDescription().getExecutable());
             setDaemon(true);
-            this.outForwarder = outForwarder;
-            this.errForwarder = errForwarder;
             start();
         }
 
         public void run() {
-            if (outForwarder != null) {
-                outForwarder.waitUntilFinished();
-            }
-            if (errForwarder != null) {
-                errForwarder.waitUntilFinished();
-            }
             try {
                 p.waitFor();
             } catch (InterruptedException e) {
-                // ignore
+                if (logger.isDebugEnabled()) {
+                    logger.debug("p.waitFor is interrupted (commandline ssh)");
+                }
+            }
+            try {
+                exitStatus = p.exitValue();
+            } catch (NullPointerException e) {
+                if (logger.isDebugEnabled()) {
+                    logger.debug("unable to retrieve exit status");
+                }
             }
             try {
                 CommandlineSshJob.this.stop();
@@ -160,4 +178,44 @@ public class CommandlineSshJob extends JobCpi {
             }
         }
     }
+
+    // public void startOutputWaiter(StreamForwarder outForwarder,
+    // StreamForwarder errForwarder) {
+    // new OutputWaiter(outForwarder, errForwarder);
+    // }
+    //
+    // class OutputWaiter extends Thread {
+    //
+    // StreamForwarder outForwarder, errForwarder;
+    //
+    // OutputWaiter(StreamForwarder outForwarder, StreamForwarder errForwarder)
+    // {
+    // setName("LocalJob OutputForwarderWaiter");
+    // setDaemon(true);
+    // this.outForwarder = outForwarder;
+    // this.errForwarder = errForwarder;
+    // start();
+    // }
+    //
+    // public void run() {
+    // if (outForwarder != null) {
+    // outForwarder.waitUntilFinished();
+    // }
+    // if (errForwarder != null) {
+    // errForwarder.waitUntilFinished();
+    // }
+    // try {
+    // p.waitFor();
+    // } catch (InterruptedException e) {
+    // // ignore
+    // }
+    // try {
+    // CommandlineSshJob.this.stop();
+    // } catch (GATInvocationException e) {
+    // if (logger.isDebugEnabled()) {
+    // logger.debug("unable to stop job: " + e);
+    // }
+    // }
+    // }
+    // }
 }

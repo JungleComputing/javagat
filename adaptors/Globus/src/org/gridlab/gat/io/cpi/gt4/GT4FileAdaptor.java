@@ -6,6 +6,7 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.Iterator;
 
+import org.apache.log4j.Logger;
 import org.globus.cog.abstraction.impl.common.AbstractionFactory;
 import org.globus.cog.abstraction.impl.common.task.ServiceContactImpl;
 import org.globus.cog.abstraction.impl.file.DirectoryNotFoundException;
@@ -46,6 +47,8 @@ abstract public class GT4FileAdaptor extends FileCpi {
 
     String[] providers = { "gsiftp", "local", "gt2ft", "condor", "ssh",
             "gt4ft", "gt4", "gsiftp-old", "gt3.2.1", "gt2", "ftp", "webdav" };
+
+    protected static Logger logger = Logger.getLogger(GT4FileAdaptor.class);
 
     /**
      * Creates new GAT GT4 file object. The constructor is called by the
@@ -336,6 +339,13 @@ abstract public class GT4FileAdaptor extends FileCpi {
      * (non-Javadoc)
      * 
      * @see org.gridlab.gat.io.File#lastModified()
+     * 
+     * Please note there's an issue with the gt4 file adaptor (gt4gridftp). It
+     * takes time zones into account where as the
+     * {@link java.io.File#lastModified()} doesn't. For instance a file that's
+     * last modified on 10 July 1984 at 00:00 GMT +2:00 will have a last
+     * modified time of 9 July 1984 at 22:00 using the gt4 file adaptor. The
+     * {@link java.io.File#lastModified()} will return 10 July 1984, 00:00.
      */
     public long lastModified() throws GATInvocationException {
         GridFile gf = null;

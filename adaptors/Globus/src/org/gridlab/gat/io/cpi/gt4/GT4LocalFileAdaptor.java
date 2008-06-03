@@ -38,9 +38,9 @@ public class GT4LocalFileAdaptor extends GT4FileAdaptor {
 
     synchronized protected void copyThirdParty(URI dest, String destProvider)
             throws GATInvocationException {
-        if (GATEngine.DEBUG) {
-            System.err
-                    .println("GT4LocalFileAdaptor file: start file copy with destination provider "
+        if (logger.isDebugEnabled()) {
+            logger
+                    .debug("GT4LocalFileAdaptor file: start file copy with destination provider "
                             + destProvider);
         }
         Task task = new TaskImpl("my3rdpartycopy" + Math.random(),

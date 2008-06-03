@@ -1,5 +1,7 @@
 package org.gridlab.gat.resources;
 
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.List;
 import java.util.Map;
 
@@ -7,8 +9,8 @@ import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.advert.Advertisable;
 import org.gridlab.gat.monitoring.Metric;
 import org.gridlab.gat.monitoring.MetricDefinition;
-import org.gridlab.gat.monitoring.MetricListener;
 import org.gridlab.gat.monitoring.MetricEvent;
+import org.gridlab.gat.monitoring.MetricListener;
 import org.gridlab.gat.monitoring.Monitorable;
 
 /**
@@ -441,5 +443,17 @@ public abstract class Job implements Monitorable, Advertisable {
         }
 
         return res;
+    }
+
+    public InputStream getStdout() throws GATInvocationException {
+        throw new UnsupportedOperationException("Not implemented");
+    }
+
+    public InputStream getStderr() throws GATInvocationException {
+        throw new UnsupportedOperationException("Not implemented");
+    }
+
+    public OutputStream getStdin() throws GATInvocationException {
+        throw new UnsupportedOperationException("Not implemented");
     }
 }

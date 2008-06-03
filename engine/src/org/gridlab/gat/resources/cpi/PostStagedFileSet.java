@@ -94,47 +94,33 @@ public class PostStagedFileSet {
 
         // if (postStageStdout) {
         File resolvedStdout = null;
-        if (sd.getStdoutFile() != null) {
+        if (sd.getStdout() != null) {
             try {
-                resolvedStdout = GAT.createFile(sd.getStdoutFile()
+                resolvedStdout = GAT.createFile(sd.getStdout()
                         .getFileInterface().getGATContext(), new URI("any:///"
-                        + sd.getStdoutFile().getName()));
+                        + sd.getStdout().getName()));
             } catch (Exception e) {
                 throw new GATInvocationException("postStagedFileSet", e);
             }
-        } else if (sd.getStdoutStream() != null) {
-            // try {
-            // resolvedStdout = GAT.createFile(gatContext, new URI(
-            // "any:///stdout"));
-            // } catch (Exception e) {
-            // throw new GATInvocationException("postStagedFileSet", e);
-            // }
-        }
+        } 
         if (resolvedStdout != null) {
             tmp.add(new PostStagedFile(gatContext, resolvedStdout, sd
-                    .getStdoutFile(), host, sandbox, true, false));
+                    .getStdout(), host, sandbox, true, false));
         }
 
         File resolvedStderr = null;
-        if (sd.getStderrFile() != null) {
+        if (sd.getStderr() != null) {
             try {
-                resolvedStderr = GAT.createFile(sd.getStderrFile()
+                resolvedStderr = GAT.createFile(sd.getStderr()
                         .getFileInterface().getGATContext(), new URI("any:///"
-                        + sd.getStderrFile().getName()));
+                        + sd.getStderr().getName()));
             } catch (Exception e) {
                 throw new GATInvocationException("postStagedFileSet", e);
             }
-        } else if (sd.getStderrStream() != null) {
-            // try {
-            // resolvedStderr = GAT.createFile(gatContext, new URI(
-            // "any:///stderr"));
-            // } catch (Exception e) {
-            // throw new GATInvocationException("postStagedFileSet", e);
-            // }
-        }
+        } 
         if (resolvedStderr != null) {
             tmp.add(new PostStagedFile(gatContext, resolvedStderr, sd
-                    .getStderrFile(), host, sandbox, false, true));
+                    .getStderr(), host, sandbox, false, true));
         }
 
         // }

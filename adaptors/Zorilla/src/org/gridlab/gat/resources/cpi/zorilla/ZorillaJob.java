@@ -209,7 +209,7 @@ public class ZorillaJob extends JobCpi {
 
             SoftwareDescription soft = jobDescription.getSoftwareDescription();
 
-            File stdin = soft.getStdinFile();
+            File stdin = soft.getStdin();
 
             if (stdin != null) {
                 FileInputStream in = GAT.createFileInputStream(stdin
@@ -218,31 +218,31 @@ public class ZorillaJob extends JobCpi {
                 stdinForwarder.startAsDaemon();
             }
 
-            File stdout = soft.getStdoutFile();
-            if (soft.getStdoutFile() != null) {
-                stdoutForwarder = new OutputForwarder(address, jobID, soft
-                        .getStdoutStream(), false);
-                stdoutForwarder.startAsDaemon();
-            } else if (stdout != null) {
-                outStream = GAT.createFileOutputStream(stdout
-                        .getFileInterface().getGATContext(), stdout);
-                stdoutForwarder = new OutputForwarder(address, jobID,
-                        outStream, false);
-                stdoutForwarder.startAsDaemon();
-            }
-
-            File stderr = soft.getStderrFile();
-            if (soft.getStderrStream() != null) {
-                stderrForwarder = new OutputForwarder(address, jobID, soft
-                        .getStderrStream(), true);
-                stderrForwarder.startAsDaemon();
-            } else if (stdout != null) {
-                errStream = GAT.createFileOutputStream(stderr
-                        .getFileInterface().getGATContext(), stderr);
-                stderrForwarder = new OutputForwarder(address, jobID,
-                        errStream, true);
-                stderrForwarder.startAsDaemon();
-            }
+//            File stdout = soft.getStdout();
+//            if (soft.getStdout() != null) {
+//                stdoutForwarder = new OutputForwarder(address, jobID, soft
+//                        .getStdoutStream(), false);
+//                stdoutForwarder.startAsDaemon();
+//            } else if (stdout != null) {
+//                outStream = GAT.createFileOutputStream(stdout
+//                        .getFileInterface().getGATContext(), stdout);
+//                stdoutForwarder = new OutputForwarder(address, jobID,
+//                        outStream, false);
+//                stdoutForwarder.startAsDaemon();
+//            }
+//
+//            File stderr = soft.getStderr();
+//            if (soft.getStderrStream() != null) {
+//                stderrForwarder = new OutputForwarder(address, jobID, soft
+//                        .getStderrStream(), true);
+//                stderrForwarder.startAsDaemon();
+//            } else if (stdout != null) {
+//                errStream = GAT.createFileOutputStream(stderr
+//                        .getFileInterface().getGATContext(), stderr);
+//                stderrForwarder = new OutputForwarder(address, jobID,
+//                        errStream, true);
+//                stderrForwarder.startAsDaemon();
+//            }
         } catch (Exception e) {
             throw new GATInvocationException(
                     "cannot submit job to zorilla node", e);

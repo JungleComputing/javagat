@@ -229,6 +229,9 @@ public class SftpGanymedFileAdaptor extends FileCpi {
      * @see org.gridlab.gat.io.cpi.FileCpi#isDirectory()
      */
     public boolean isDirectory() throws GATInvocationException {
+        if (!exists()) {
+            return false;
+        }
         SftpGanymedConnection c = openConnection(gatContext, location);
         try {
             SFTPv3FileAttributes attr = c.sftpClient
@@ -338,6 +341,9 @@ public class SftpGanymedFileAdaptor extends FileCpi {
      * @see org.gridlab.gat.io.cpi.FileCpi#isFile()
      */
     public boolean isFile() throws GATInvocationException {
+        if (!exists()) {
+            return false;
+        }
         SftpGanymedConnection c = openConnection(gatContext, location);
         try {
             SFTPv3FileAttributes attr = c.sftpClient

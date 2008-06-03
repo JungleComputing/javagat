@@ -19,7 +19,6 @@ import org.gridlab.gat.engine.util.StreamForwarder;
 import org.gridlab.gat.monitoring.Metric;
 import org.gridlab.gat.monitoring.MetricListener;
 import org.gridlab.gat.resources.HardwareResource;
-import org.gridlab.gat.resources.JavaSoftwareDescription;
 import org.gridlab.gat.resources.Job;
 import org.gridlab.gat.resources.JobDescription;
 import org.gridlab.gat.resources.Reservation;
@@ -249,110 +248,53 @@ public class LocalResourceBrokerAdaptor extends ResourceBrokerCpi {
             throw new CommandNotFoundException("LocalResourceBrokerAdaptor", e);
         }
 
-        // org.gridlab.gat.io.File stdin = sandbox.getResolvedStdin();
-        //
-        // if (stdin == null) {
-        // // close stdin.
-        // try {
-        // p.getOutputStream().close();
-        // } catch (Throwable e) {
-        // // ignore
-        // }
-        // } else {
-        // try {
-        // java.io.FileInputStream fin = new java.io.FileInputStream(stdin
-        // .getAbsolutePath());
-        // OutputStream out = p.getOutputStream();
-        // new InputForwarder(out, fin);
-        // } catch (Exception e) {
-        // throw new GATInvocationException("local broker", e);
-        // }
-        // }
-        String executable = sd.getExecutable();
-        if (sd instanceof JavaSoftwareDescription) {
-            executable = ((JavaSoftwareDescription) sd).getJavaMain();
-        }
+        if (!sd.streamingStderrEnabled()) {
+            // read away the stderr
 
-        StreamForwarder outForwarder = null;
-        StreamForwarder errForwarder = null;
-
-        // handle the input
-        if (sd.getStdinFile() != null) {
             try {
-                new StreamForwarder(GAT.createFileInputStream(sandbox
-                        .getResolvedStdin()), p.getOutputStream(),
-                        "local input " + executable);
+                if (sd.getStderr() != null) {
+                    // to file
+                    new StreamForwarder(p.getErrorStream(), GAT
+                            .createFileOutputStream(sd.getStderr()));
+                } else {
+                    // or throw it away
+                    new StreamForwarder(p.getErrorStream(), null);
+                }
             } catch (GATObjectCreationException e) {
                 throw new GATInvocationException(
-                        "Could not create a FileInputStream to read from the input '"
-                                + sandbox.getResolvedStdin() + "'", e);
-            }
-        } else if (sd.getStdinStream() != null) {
-            new StreamForwarder(sd.getStdinStream(), p.getOutputStream(),
-                    "local input " + executable);
-        } else {
-            try {
-                p.getOutputStream().close();
-            } catch (IOException e) {
-                if (logger.isDebugEnabled()) {
-                    logger
-                            .debug("Failed to close the OutputStream of the process: "
-                                    + e);
-                }
+                        "Unable to create file output stream for stderr!", e);
             }
         }
 
-        if (sd.getStdoutFile() != null) {
+        if (!sd.streamingStdoutEnabled()) {
+            // read away the stdout
             try {
-                outForwarder = new StreamForwarder(p.getInputStream(), GAT
-                        .createFileOutputStream(sandbox.getResolvedStdout()),
-                        "local output " + executable);
+                if (sd.getStdout() != null) {
+                    // to file
+                    new StreamForwarder(p.getInputStream(), GAT
+                            .createFileOutputStream(sd.getStdout()));
+                } else {
+                    // or throw it away
+                    new StreamForwarder(p.getInputStream(), null);
+                }
             } catch (GATObjectCreationException e) {
                 throw new GATInvocationException(
-                        "Could not creat a FileOutputStream to write the output to '"
-                                + sandbox.getResolvedStdout() + "'", e);
-            }
-        } else if (sd.getStdoutStream() != null) {
-            outForwarder = new StreamForwarder(p.getInputStream(), sd
-                    .getStdoutStream(), "local output " + executable);
-        } else {
-            try {
-                p.getInputStream().close();
-            } catch (IOException e) {
-                if (logger.isDebugEnabled()) {
-                    logger
-                            .debug("Failed to close the InputStream of the process: "
-                                    + e);
-                }
+                        "Unable to create file output stream for stdout!", e);
             }
         }
 
-        if (sd.getStderrFile() != null) {
+        if (!sd.streamingStdinEnabled() && sd.getStdin() != null) {
+            // forward the stdin from file
             try {
-                errForwarder = new StreamForwarder(p.getErrorStream(), GAT
-                        .createFileOutputStream(sandbox.getResolvedStderr()),
-                        "local error " + executable);
+                new StreamForwarder(GAT.createFileInputStream(sd.getStdin()), p
+                        .getOutputStream());
             } catch (GATObjectCreationException e) {
                 throw new GATInvocationException(
-                        "Could not creat a FileOutputStream to write the error to '"
-                                + sandbox.getResolvedStderr() + "'", e);
-            }
-        } else if (sd.getStderrStream() != null) {
-            errForwarder = new StreamForwarder(p.getErrorStream(), sd
-                    .getStderrStream(), "local error " + executable);
-        } else {
-            try {
-                p.getErrorStream().close();
-            } catch (IOException e) {
-                if (logger.isDebugEnabled()) {
-                    logger
-                            .debug("Failed to close the ErrorStream of the process: "
-                                    + e);
-                }
+                        "Unable to create file input stream for stdin!", e);
             }
         }
 
-        job.startOutputWaiter(outForwarder, errForwarder);
+        job.monitorState();
 
         return job;
     }

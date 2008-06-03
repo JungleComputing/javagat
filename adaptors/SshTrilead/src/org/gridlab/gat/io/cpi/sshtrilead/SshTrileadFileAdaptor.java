@@ -269,7 +269,8 @@ public class SshTrileadFileAdaptor extends FileCpi {
         }
 
         String mode = "0600";
-        if (!isWindows(gatContext, destination)) {
+        // if (!isWindows(gatContext, destination)) {
+        if (java.io.File.separator.equals("/")) {
             if (mode.length() == 3) {
                 mode = "0" + mode;
             }
@@ -525,6 +526,9 @@ public class SshTrileadFileAdaptor extends FileCpi {
     }
 
     public boolean createNewFile() throws GATInvocationException {
+        if (exists()) {
+            return false;
+        }
         if (isWindows(gatContext, location)) {
             throw new UnsupportedOperationException("Not implemented");
         } else {
@@ -771,6 +775,9 @@ public class SshTrileadFileAdaptor extends FileCpi {
     }
 
     public boolean mkdirs() throws GATInvocationException {
+        if (exists()) {
+            return false;
+        }
         if (isWindows(gatContext, location)) {
             return super.mkdirs();
         } else {
@@ -867,6 +874,26 @@ public class SshTrileadFileAdaptor extends FileCpi {
                 throw new GATInvocationException("sshtrilead", e);
             }
             return result[STDERR].length() == 0;
+        }
+    }
+
+    public long lastModified() throws GATInvocationException {
+        if (isWindows(gatContext, location)) {
+            throw new UnsupportedOperationException("Not implemented");
+        } else {
+            String[] result;
+            try {
+                result = execCommand("perl -e 'print ((stat $ARGV[0])[9]);' "
+                        + getFixedPath());
+            } catch (Exception e) {
+                throw new GATInvocationException("sshtrilead", e);
+            }
+            try {
+                return Long.parseLong(result[STDOUT].substring(0,
+                        result[STDOUT].length() - 1)) * 1000;
+            } catch (NumberFormatException e) {
+                throw new GATInvocationException("sshtrilead", e);
+            }
         }
     }
 

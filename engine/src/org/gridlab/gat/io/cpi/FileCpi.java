@@ -511,7 +511,7 @@ public abstract class FileCpi implements FileInterface, java.io.Serializable {
             }
         }
         if (in.refersToLocalHost() && !isAbsolute(in)) {
-            if (destScheme == null) {
+            if (destScheme == null && in.getScheme() == null) {
                 uriString = "file:" + uriString;
             }
             uriString = uriString.replace(in.getPath(), new java.io.File(System

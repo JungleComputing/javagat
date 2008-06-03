@@ -170,26 +170,26 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
             }
         }
 
-        if (sd.getStdoutFile() != null || sd.getStdoutStream() != null) {
+        if (sd.getStdout() != null || sd.streamingStdoutEnabled()) {
             // if (sandbox != null && sd.getStdout() != null) {
-            rsl += (" (stdout = " + sd.getStdoutFile().getName() + ")");
+            rsl += (" (stdout = stdout)");
             // } else {
             // rsl += (" (stdout = stdout)");
             // }
         }
 
-        if (sd.getStderrFile() != null || sd.getStderrStream() != null) {
+        if (sd.getStderr() != null || sd.streamingStderrEnabled()) {
             // if (sandbox != null && sd.getStderr() != null) {
-            rsl += (" (stderr = " + sd.getStderrFile().getName() + ")");
+            rsl += (" (stderr = stderr)");
             // } else {
             // rsl += (" (stderr = stderr)");
             // }
         }
 
-        org.gridlab.gat.io.File stdin = sd.getStdinFile();
+        org.gridlab.gat.io.File stdin = sd.getStdin();
         if (stdin != null) {
             if (sandbox != null) {
-                rsl += (" (stdin = " + sd.getStdinFile().getName() + ")");
+                rsl += (" (stdin = " + sd.getStdin().getName() + ")");
             }
         }
 
@@ -490,8 +490,7 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
 
         // if output should be streamed, don't poststage it!
         Sandbox sandbox = new Sandbox(gatContext, description, host, null,
-                true, true, sd.getStdoutFile() != null,
-                sd.getStderrFile() != null);
+                true, true, sd.getStdout() != null, sd.getStderr() != null);
         GlobusJob job = new GlobusJob(gatContext, description, sandbox);
         if (isExitValueEnabled(description)) {
             job.setExitValueEnabled(isExitValueEnabled(description),
@@ -501,15 +500,6 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
             Metric metric = job.getMetricDefinitionByName(metricDefinitionName)
                     .createMetric(null);
             job.addMetricListener(listener, metric);
-        }
-
-        if (sd.getStderrStream() != null) {
-            job.startOutputForwarder(sandbox.getResolvedStderr(), sd
-                    .getStderrStream());
-        }
-        if (sd.getStdoutStream() != null) {
-            job.startOutputForwarder(sandbox.getResolvedStdout(), sd
-                    .getStdoutStream());
         }
 
         job.setState(Job.PRE_STAGING);

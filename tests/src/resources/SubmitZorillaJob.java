@@ -63,8 +63,8 @@ public class SubmitZorillaJob implements MetricListener {
 
         SoftwareDescription sd = new SoftwareDescription();
         sd.setExecutable(exe);
-        sd.setStdout(System.out);
-        sd.setStderr(System.err);
+//        sd.setStdout(System.out);
+//        sd.setStderr(System.err);
         sd.addPreStagedFile(inputFile);
         sd.addPostStagedFile(outputFile);
 
