@@ -8,7 +8,6 @@ import java.io.BufferedWriter;
 import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
@@ -111,13 +110,7 @@ public class SoftwareDescription implements java.io.Serializable {
 
     private File stdoutFile;
 
-    private OutputStream stdoutStream;
-
     private File stderrFile;
-
-    private OutputStream stderrStream;
-
-    private InputStream stdinStream;
 
     private HashMap<File, File> preStagedFiles; // contains (src, dest) tuples
 
@@ -144,11 +137,11 @@ public class SoftwareDescription implements java.io.Serializable {
 
     private boolean wipePostStaged;
 
-    private boolean streamingStderr;
+    private boolean streamingStderr = false;
 
-    private boolean streamingStdout;
+    private boolean streamingStdout = false;
 
-    private boolean streamingStdin;
+    private boolean streamingStdin = false;
 
     /**
      * Create a {@link SoftwareDescription}, which describes the application
@@ -665,7 +658,6 @@ public class SoftwareDescription implements java.io.Serializable {
      *                The {@link File} where stderr is redirected to.
      */
     public void setStderr(File stderr) {
-        this.stderrStream = null;
         this.stderrFile = stderr;
     }
 
@@ -685,7 +677,6 @@ public class SoftwareDescription implements java.io.Serializable {
      *                The {@link File} where stdin is redirected from.
      */
     public void setStdin(File stdin) {
-        this.stdinStream = null;
         this.stdinFile = stdin;
     }
 
@@ -708,7 +699,6 @@ public class SoftwareDescription implements java.io.Serializable {
      *                The {@link File} where stdout is redirected to.
      */
     public void setStdout(File stdout) {
-        this.stdoutStream = null;
         this.stdoutFile = stdout;
     }
 
@@ -1050,9 +1040,9 @@ public class SoftwareDescription implements java.io.Serializable {
         sd.stdinFile = stdinFile;
         sd.stdoutFile = stdoutFile;
         sd.stderrFile = stderrFile;
-        sd.stdoutStream = stdoutStream;
-        sd.stderrStream = stderrStream;
-        sd.stdinStream = stdinStream;
+        sd.streamingStderr = streamingStderr;
+        sd.streamingStdin = streamingStdin;
+        sd.streamingStdout = streamingStdout;
         sd.preStagedFiles = preStagedFiles;
         sd.postStagedFiles = postStagedFiles;
         sd.deletedFiles = deletedFiles;
@@ -1078,7 +1068,7 @@ public class SoftwareDescription implements java.io.Serializable {
     /**
      * to be implemented.
      * 
-     * @return
+     * @return the JSDL representation of this {@link SoftwareDescription}
      */
     public String getJSDL() {
         return null;
