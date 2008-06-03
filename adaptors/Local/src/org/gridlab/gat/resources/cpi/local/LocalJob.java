@@ -147,7 +147,8 @@ public class LocalJob extends JobCpi {
         finished();
     }
 
-    public OutputStream getStdIn() throws GATInvocationException {
+
+    public OutputStream getStdin() throws GATInvocationException {
         if (jobDescription.getSoftwareDescription().streamingStdinEnabled()) {
             return p.getOutputStream();
         } else {
