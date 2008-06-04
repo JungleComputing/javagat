@@ -1,6 +1,7 @@
 package org.gridlab.gat.io;
 
 import org.gridlab.gat.GATInvocationException;
+import org.gridlab.gat.SingleAdaptorPerProxy;
 import org.gridlab.gat.URI;
 import org.gridlab.gat.monitoring.Monitorable;
 
@@ -11,7 +12,7 @@ import org.gridlab.gat.monitoring.Monitorable;
  * physical file.
  */
 public interface RandomAccessFileInterface extends Monitorable,
-        java.io.Serializable {
+        java.io.Serializable, SingleAdaptorPerProxy {
 
     public URI toURI();
 

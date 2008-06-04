@@ -968,8 +968,22 @@ public class GATEngine {
             }
         }
 
+        boolean singleAdaptorPerProxy = false;
+        Class<?>[] implementedInterfaces = interfaceClass.getInterfaces();
+        if (implementedInterfaces != null) {
+            for (Class<?> implementedInterface : implementedInterfaces) {
+                if (implementedInterface.getName().equals(
+                        "org.gridlab.gat.SingleAdaptorPerProxy")) {
+                    singleAdaptorPerProxy = true;
+                    break;
+                }
+            }
+        }
+
         AdaptorInvocationHandler handler = new AdaptorInvocationHandler(
-                adaptors, gatContext, parameterTypes, tmpParams);
+                adaptors, gatContext, parameterTypes, tmpParams,
+                singleAdaptorPerProxy);
+
         Object proxy = Proxy.newProxyInstance(interfaceClass.getClassLoader(),
                 new Class[] { interfaceClass }, handler);
         return proxy;

@@ -3,6 +3,7 @@
  */
 package org.gridlab.gat.resources.cpi.globus;
 
+import java.net.URISyntaxException;
 import java.util.Map;
 import java.util.Set;
 
@@ -14,6 +15,7 @@ import org.globus.gram.GramJob;
 import org.globus.gram.internal.GRAMConstants;
 import org.gridlab.gat.CouldNotInitializeCredentialException;
 import org.gridlab.gat.CredentialExpiredException;
+import org.gridlab.gat.GAT;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.GATObjectCreationException;
@@ -170,27 +172,20 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
             }
         }
 
-        if (sd.getStdout() != null || sd.streamingStdoutEnabled()) {
-            // if (sandbox != null && sd.getStdout() != null) {
+        if (sd.getStdout() != null) {
+            rsl += (" (stdout = " + sd.getStdout().getName() + ")");
+        } else if (sd.streamingStdoutEnabled()) {
             rsl += (" (stdout = stdout)");
-            // } else {
-            // rsl += (" (stdout = stdout)");
-            // }
         }
 
-        if (sd.getStderr() != null || sd.streamingStderrEnabled()) {
-            // if (sandbox != null && sd.getStderr() != null) {
+        if (sd.getStderr() != null) {
+            rsl += (" (stderr = " + sd.getStderr().getName() + ")");
+        } else if (sd.streamingStderrEnabled()) {
             rsl += (" (stderr = stderr)");
-            // } else {
-            // rsl += (" (stderr = stderr)");
-            // }
         }
 
-        org.gridlab.gat.io.File stdin = sd.getStdin();
-        if (stdin != null) {
-            if (sandbox != null) {
-                rsl += (" (stdin = " + sd.getStdin().getName() + ")");
-            }
+        if (sd.getStdin() != null) {
+            rsl += (" (stdin = " + sd.getStdin().getName() + ")");
         }
 
         // set the environment
@@ -551,6 +546,30 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
         } catch (GSSException e2) {
             throw new GATInvocationException("globus",
                     new CouldNotInitializeCredentialException("globus", e2));
+        }
+        if (sd.streamingStderrEnabled()) {
+            try {
+                job.startStderrForwarder(GAT.createFile(brokerURI
+                        .setPath(sandbox.getSandbox() + "/stderr")));
+            } catch (GATObjectCreationException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            } catch (URISyntaxException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+        }
+        if (sd.streamingStdoutEnabled()) {
+            try {
+                job.startStdoutForwarder(GAT.createFile(brokerURI
+                        .setPath(sandbox.getSandbox() + "/stdout")));
+            } catch (GATObjectCreationException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            } catch (URISyntaxException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
         }
         return job;
     }

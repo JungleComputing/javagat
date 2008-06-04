@@ -4,6 +4,7 @@
 package org.gridlab.gat.io;
 
 import org.gridlab.gat.GATInvocationException;
+import org.gridlab.gat.SingleAdaptorPerProxy;
 import org.gridlab.gat.monitoring.Monitorable;
 
 /**
@@ -14,7 +15,8 @@ import org.gridlab.gat.monitoring.Monitorable;
  * 
  * @author rob
  */
-public interface FileOutputStreamInterface extends Monitorable {
+public interface FileOutputStreamInterface extends Monitorable,
+        SingleAdaptorPerProxy {
     public void close() throws GATInvocationException;
 
     public void flush() throws GATInvocationException;

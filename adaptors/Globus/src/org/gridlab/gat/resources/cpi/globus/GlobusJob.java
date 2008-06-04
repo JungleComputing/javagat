@@ -5,7 +5,6 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
@@ -48,6 +47,10 @@ public class GlobusJob extends JobCpi implements GramJobListener,
     protected static Logger logger = Logger.getLogger(GlobusJob.class);
 
     private static int jobsAlive = 0;
+
+    private WritableInputStream stderrStream = new WritableInputStream();
+
+    private WritableInputStream stdoutStream = new WritableInputStream();
 
     private GramJob j;
 
@@ -549,22 +552,46 @@ public class GlobusJob extends JobCpi implements GramJobListener,
         this.exitStatusFile = exitValueFile;
     }
 
-    protected void startOutputForwarder(File in, OutputStream out) {
-        logger.debug("starting output forwarder!");
-        new OutputForwarder(in, out);
+    public InputStream getStdout() throws GATInvocationException {
+        if (jobDescription.getSoftwareDescription().streamingStdoutEnabled()) {
+            return stdoutStream;
+        } else {
+            throw new GATInvocationException("stdout streaming is not enabled!");
+        }
     }
+
+    public InputStream getStderr() throws GATInvocationException {
+        if (jobDescription.getSoftwareDescription().streamingStderrEnabled()) {
+            return stderrStream;
+        } else {
+            throw new GATInvocationException("stderr streaming is not enabled!");
+        }
+    }
+
+    protected void startStderrForwarder(File err) {
+        new OutputForwarder(err, stderrStream);
+    }
+
+    protected void startStdoutForwarder(File out) {
+        new OutputForwarder(out, stdoutStream);
+    }
+
+    // protected void startOutputForwarder(File out, File err) {
+    // logger.debug("starting output forwarder!");
+    // new OutputForwarder(in, out);
+    // }
 
     class OutputForwarder extends Thread {
 
-        File in;
+        File source;
 
-        OutputStream out;
+        WritableInputStream target;
 
-        OutputForwarder(File in, OutputStream out) {
+        OutputForwarder(File source, WritableInputStream target) {
             setName("GlobusJob Output Waiter");
             setDaemon(true);
-            this.in = in;
-            this.out = out;
+            this.source = source;
+            this.target = target;
             synchronized (GlobusJob.this) {
                 streamingOutputs++;
             }
@@ -574,7 +601,8 @@ public class GlobusJob extends JobCpi implements GramJobListener,
         public void run() {
             int totalBytesRead = 0;
             byte[] buffer = new byte[1024];
-            while (!in.exists() && GlobusJob.this.getState() != STOPPED
+            // wait until the remote output file exists
+            while (!source.exists() && GlobusJob.this.getState() != STOPPED
                     && GlobusJob.this.getState() != SUBMISSION_ERROR) {
                 try {
                     sleep(1000);
@@ -582,12 +610,16 @@ public class GlobusJob extends JobCpi implements GramJobListener,
 
                 }
             }
+            // now continuously check if there's new data to read
             while (true) {
                 int bytesRead;
+                // remember the state before you read, because if the job is
+                // already stopped before the read AND there's no new data to be
+                // read, we're done
                 int globusStateBeforeRead = globusJobState;
                 InputStream inStream = null;
                 try {
-                    inStream = GAT.createFileInputStream(in);
+                    inStream = GAT.createFileInputStream(source);
                 } catch (GATObjectCreationException e2) {
                     logger.debug("unable to stream output/error: " + e2);
                     return;
@@ -599,8 +631,10 @@ public class GlobusJob extends JobCpi implements GramJobListener,
                     inStream.skip(totalBytesRead);
                     logger.debug("before reading");
                     bytesRead = inStream.read(buffer);
+                    logger.debug("bytes read: " + bytesRead);
                     logger.debug("before closing");
                     inStream.close();
+                    logger.debug("after closing");
                 } catch (IOException e) {
                     if (logger.isDebugEnabled()) {
                         logger.debug("failed to read: " + e);
@@ -629,23 +663,10 @@ public class GlobusJob extends JobCpi implements GramJobListener,
                     }
                 } else {
                     totalBytesRead += bytesRead;
-                    try {
-                        out.write(buffer, 0, bytesRead);
-                    } catch (IOException e) {
-                        if (logger.isDebugEnabled()) {
-                            logger.debug("failed to write: " + e);
-                        }
-                        try {
-                            sleep(1000);
-                        } catch (InterruptedException e1) {
-                            if (logger.isDebugEnabled()) {
-                                logger.debug("failed to sleep: " + e1);
-                            }
-                        }
-                        continue;
-                    }
+                    target.write(buffer, 0, bytesRead);
                 }
             }
+            target.finished();
             synchronized (GlobusJob.this) {
                 streamingOutputs--;
                 GlobusJob.this.notifyAll();

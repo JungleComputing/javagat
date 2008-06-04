@@ -112,7 +112,7 @@ public class AdaptorInvocationHandler implements InvocationHandler {
     private Map<Adaptor, Object> instantiatedAdaptors = new HashMap<Adaptor, Object>();
 
     public AdaptorInvocationHandler(List<Adaptor> adaptors, GATContext context,
-            Class<?>[] parameterTypes, Object[] params)
+            Class<?>[] parameterTypes, Object[] params, boolean singleInstance)
             throws GATObjectCreationException {
 
         if (adaptors.size() == 0) {
@@ -128,6 +128,14 @@ public class AdaptorInvocationHandler implements InvocationHandler {
                 instantiatedAdaptors.put(adaptor, initAdaptor(adaptor, context,
                         parameterTypes, params));
                 this.adaptors.add(adaptor);
+                // this test keeps the number of instantiated adaptors for
+                // objects that contain internal state, like the
+                // FileInputStream, to a fixed size of 1, in order to prevent
+                // multiple adaptors operating on one object, while all the
+                // adaptors have a different internal state.
+                if (singleInstance) {
+                    break;
+                }
             } catch (Throwable t) {
                 e.add(adaptor.adaptorName, t);
             }

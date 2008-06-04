@@ -279,7 +279,7 @@ public class GridFTPFileAdaptor extends GlobusFileAdaptor {
                     logger.debug("closing gridftp client");
                 }
 
-                c.close();
+                c.close(true);
             } catch (Exception e) {
                 if (logger.isDebugEnabled()) {
                     logger
@@ -289,6 +289,9 @@ public class GridFTPFileAdaptor extends GlobusFileAdaptor {
 
                 // ignore
             }
+        }
+        if (logger.isDebugEnabled()) {
+            logger.debug("closing gridftp client done");
         }
     }
 
