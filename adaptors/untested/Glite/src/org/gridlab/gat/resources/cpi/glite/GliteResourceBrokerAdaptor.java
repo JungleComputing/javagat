@@ -27,6 +27,7 @@ import org.glite.wms.wmproxy.WMProxyAPI;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.GATObjectCreationException;
+import org.gridlab.gat.Preferences;
 import org.gridlab.gat.URI;
 import org.gridlab.gat.engine.util.Environment;
 import org.gridlab.gat.io.File;
@@ -39,6 +40,8 @@ import org.gridlab.gat.resources.ResourceDescription;
 import org.gridlab.gat.resources.SoftwareDescription;
 import org.gridlab.gat.resources.cpi.ResourceBrokerCpi;
 import org.gridlab.gat.resources.cpi.Sandbox;
+import org.gridlab.gat.security.glite.VomsProxyManager;
+
 
 /**
  * @author anna
@@ -50,10 +53,21 @@ public class GliteResourceBrokerAdaptor extends ResourceBrokerCpi {
 			.getLogger(GliteResourceBrokerAdaptor.class);
 
 	private String delegationId;
+	
+	/** this is just a workaround to make the class work... previously the vo couldn't be retrieved at all (thomas) */
+	private String vo = "";
 
 	public GliteResourceBrokerAdaptor(GATContext gatContext, URI brokerURI)
 			throws GATObjectCreationException {
 		super(gatContext, brokerURI);
+		
+		try {
+			this.vo = (String) gatContext.getPreferences().get("VirtualOrganisation");
+			
+			createVomsProxy(gatContext);
+		} catch (GATInvocationException exp) {
+			throw new GATObjectCreationException("Proxy could not be created!", exp);
+		}
 	}
 
 	private String getDelegationId() {
@@ -84,6 +98,45 @@ public class GliteResourceBrokerAdaptor extends ResourceBrokerCpi {
 		}
 	}
 
+	/**
+	 * Create a VOMS proxy (with ACs) and store on the position on 
+	 * the filesystem indicated by the global X509_USER_PROXY variable.
+	 * All the necessary parameters for the voms proxy creation such as
+	 * path to the user certificate, user key, password, desired lifetime and server
+	 * specific data such as host-dn, URL of the server and server port
+	 * are expected to be given as global preferences to the gat context.
+	 * 
+	 * @param gatContext The context that contains the preferences for the voms proxy
+	 */
+	private void createVomsProxy(GATContext gatContext) throws GATInvocationException {
+		Preferences prefs = gatContext.getPreferences();
+		String usercert = (String) prefs.get("vomsUserCert");
+		String userkey = (String) prefs.get("vomsUserKey");
+		String password = (String) prefs.get("vomsPassword");
+		String lifetimeStr = (String) prefs.get("vomsLifetime");
+		int lifetime = Integer.parseInt(lifetimeStr);
+		String hostDN = (String) prefs.get("vomsHostDN");
+		String serverURI = (String) prefs.get("vomsServerURL");
+		String serverPortStr = (String) prefs.get("vomsServerPort");
+		int serverPort = Integer.parseInt(serverPortStr);
+		
+		String voName = (String) prefs.get("VirtualOrganisation");
+
+		try {
+			VomsProxyManager manager = new VomsProxyManager(usercert,
+															userkey,
+															password,
+															lifetime,
+															hostDN,
+															serverURI,
+															serverPort);
+			manager.makeProxyCredential(voName);
+			manager.saveProxyToFile(System.getenv("X509_USER_PROXY"));
+			} catch (Exception e) {
+				throw new GATInvocationException("Could not create VOMS proxy!", e);
+			}
+	}
+	
 	/* connect to WMProxy */
 	private WMProxyAPI connectToWMProxy(String delegationId,
 			JobDescription description) throws GATInvocationException {
@@ -193,8 +246,7 @@ public class GliteResourceBrokerAdaptor extends ResourceBrokerCpi {
 	private void setVirtualOrganisation(JobAd jobAd, SoftwareDescription sd)
 			throws GATInvocationException, IllegalArgumentException,
 			InvalidAttributeValueException {
-		// TODO get the VO from somewhere
-		String vo = "";
+		// TODO get the VO from somewhere;
 		if (vo == null || vo.equals("")) {
 			throw new GATInvocationException(
 					"no virtual organisation specified: " + vo);
