@@ -131,7 +131,7 @@ public class ZorillaJob extends JobCpi {
         this.broker = broker;
 
         if (logger.isDebugEnabled()) {
-            logger.debug("creating zorilla job");
+            logger.debug("creating zorilla job from: " + description.getSoftwareDescription().toString());
         }
 
         // Tell the engine that we provide job.status events
@@ -191,7 +191,7 @@ public class ZorillaJob extends JobCpi {
         zorillaJobDescription.setInteractive(true);
 
         if (logger.isDebugEnabled()) {
-            logger.debug("done creating zorilla job");
+            logger.debug("done creating zorilla job: " + zorillaJobDescription.toString());
         }
     }
 
