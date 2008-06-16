@@ -131,7 +131,8 @@ public class ZorillaJob extends JobCpi {
         this.broker = broker;
 
         if (logger.isDebugEnabled()) {
-            logger.debug("creating zorilla job from: " + description.getSoftwareDescription().toString());
+            logger.debug("creating zorilla job from: "
+                    + description.getSoftwareDescription().toString());
         }
 
         // Tell the engine that we provide job.status events
@@ -160,7 +161,8 @@ public class ZorillaJob extends JobCpi {
             zorillaJobDescription.setJavaMain(javaSoft.getJavaMain());
             zorillaJobDescription.setJavaArguments(javaSoft.getJavaArguments());
 
-            if (javaSoft.getJavaOptions().length > 0) {
+            if (javaSoft.getJavaOptions() != null
+                    && javaSoft.getJavaOptions().length > 0) {
                 String message = "java options ignored by Zorilla adaptor:";
 
                 for (String option : javaSoft.getJavaOptions()) {
@@ -191,7 +193,8 @@ public class ZorillaJob extends JobCpi {
         zorillaJobDescription.setInteractive(true);
 
         if (logger.isDebugEnabled()) {
-            logger.debug("done creating zorilla job: " + zorillaJobDescription.toString());
+            logger.debug("done creating zorilla job: "
+                    + zorillaJobDescription.toString());
         }
     }
 
@@ -218,31 +221,31 @@ public class ZorillaJob extends JobCpi {
                 stdinForwarder.startAsDaemon();
             }
 
-//            File stdout = soft.getStdout();
-//            if (soft.getStdout() != null) {
-//                stdoutForwarder = new OutputForwarder(address, jobID, soft
-//                        .getStdoutStream(), false);
-//                stdoutForwarder.startAsDaemon();
-//            } else if (stdout != null) {
-//                outStream = GAT.createFileOutputStream(stdout
-//                        .getFileInterface().getGATContext(), stdout);
-//                stdoutForwarder = new OutputForwarder(address, jobID,
-//                        outStream, false);
-//                stdoutForwarder.startAsDaemon();
-//            }
-//
-//            File stderr = soft.getStderr();
-//            if (soft.getStderrStream() != null) {
-//                stderrForwarder = new OutputForwarder(address, jobID, soft
-//                        .getStderrStream(), true);
-//                stderrForwarder.startAsDaemon();
-//            } else if (stdout != null) {
-//                errStream = GAT.createFileOutputStream(stderr
-//                        .getFileInterface().getGATContext(), stderr);
-//                stderrForwarder = new OutputForwarder(address, jobID,
-//                        errStream, true);
-//                stderrForwarder.startAsDaemon();
-//            }
+            // File stdout = soft.getStdout();
+            // if (soft.getStdout() != null) {
+            // stdoutForwarder = new OutputForwarder(address, jobID, soft
+            // .getStdoutStream(), false);
+            // stdoutForwarder.startAsDaemon();
+            // } else if (stdout != null) {
+            // outStream = GAT.createFileOutputStream(stdout
+            // .getFileInterface().getGATContext(), stdout);
+            // stdoutForwarder = new OutputForwarder(address, jobID,
+            // outStream, false);
+            // stdoutForwarder.startAsDaemon();
+            // }
+            //
+            // File stderr = soft.getStderr();
+            // if (soft.getStderrStream() != null) {
+            // stderrForwarder = new OutputForwarder(address, jobID, soft
+            // .getStderrStream(), true);
+            // stderrForwarder.startAsDaemon();
+            // } else if (stdout != null) {
+            // errStream = GAT.createFileOutputStream(stderr
+            // .getFileInterface().getGATContext(), stderr);
+            // stderrForwarder = new OutputForwarder(address, jobID,
+            // errStream, true);
+            // stderrForwarder.startAsDaemon();
+            // }
         } catch (Exception e) {
             throw new GATInvocationException(
                     "cannot submit job to zorilla node", e);
