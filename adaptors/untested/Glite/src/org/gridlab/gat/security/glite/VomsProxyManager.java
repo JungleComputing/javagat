@@ -22,6 +22,7 @@ import org.globus.gsi.gssapi.auth.IdentityAuthorization;
 import org.globus.gsi.gssapi.net.GssSocket;
 import org.globus.gsi.gssapi.net.GssSocketFactory;
 import org.gridforum.jgss.ExtendedGSSContext;
+import org.gridlab.gat.GATInvocationException;
 import org.ietf.jgss.GSSException;
 
 /**
@@ -94,7 +95,7 @@ public class VomsProxyManager extends GlobusProxyManager {
 	 * @throws GeneralSecurityException 
 	 * @throws GSSException 
 	 */
-	protected void createProxyCredential(AttributeCertificate ac) throws VomsProxyException {
+	protected void createProxyCredential(AttributeCertificate ac) throws GATInvocationException {
 		ASN1EncodableVector acVec = new ASN1EncodableVector();
 		acVec.add(ac);
 		
@@ -121,7 +122,7 @@ public class VomsProxyManager extends GlobusProxyManager {
 					.getPrivateKey(), KEY_LENGTH, lifetime,
 					GSIConstants.GSI_2_PROXY, extSet);
 		} catch (GeneralSecurityException e) {
-			throw new VomsProxyException("Problem creating a globus credential!", e);
+			throw new GATInvocationException("Problem creating a globus credential!", e);
 		}
 
 	}
@@ -132,7 +133,7 @@ public class VomsProxyManager extends GlobusProxyManager {
 	 * @throws GeneralSecurityException
 	 * @throws GSSException
 	 */
-	public void makeProxyCredential(String requestCode) throws GlobusProxyException {
+	public void makeProxyCredential(String requestCode) throws GATInvocationException {
 		
 		if (proxyCred == null) {
 			createProxyCredential();
@@ -153,7 +154,7 @@ public class VomsProxyManager extends GlobusProxyManager {
 		}
 	}
 
-	private void connectToVomsServer() throws VomsProxyException {
+	private void connectToVomsServer() throws GATInvocationException {
 		if (alreadyConnected()) {
 			return;
 		}
@@ -199,22 +200,20 @@ public class VomsProxyManager extends GlobusProxyManager {
 					+ gssSocket.getInetAddress());
 
 		} catch (GSSException e) {
-			throw new VomsProxyException("Problem with the credentials detected!", e);
+			throw new GATInvocationException("Problem with the credentials detected!", e);
 		} catch (IOException e) {
-			throw new VomsProxyException("Could not open socket at the VOMS server!", e);
-		} catch (GlobusProxyException e) {
-			throw new VomsProxyException("Problem with the credentials detected!", e);
-		}
+			throw new GATInvocationException("Could not open socket at the VOMS server!", e);
+		} 
 
 	}
 
-	private void disconnectFromVomsServer() throws VomsProxyException {
+	private void disconnectFromVomsServer() throws GATInvocationException {
 		try {
 			if (gssSocket != null) {
 				gssSocket.close();
 			}
 		} catch (IOException e) {
-			throw new VomsProxyException("Could not disconnect from the VOMS server!", e);
+			logger.error("Could not disconnect from the VOMS server!");
 		}
 	}
 
@@ -228,7 +227,7 @@ public class VomsProxyManager extends GlobusProxyManager {
 	 * @throws IOException
 	 *             If there are problems with the socket
 	 */
-	private AttributeCertificate query(String requestCode) throws VomsProxyException {
+	private AttributeCertificate query(String requestCode) throws GATInvocationException {
 		AttributeCertificate ac = null;
 		
 		try {
@@ -245,13 +244,13 @@ public class VomsProxyManager extends GlobusProxyManager {
 					logger.info("Error msg: " + error);
 				}
 				
-				throw new VomsProxyException("The server response has errors!");
+				throw new GATInvocationException("The server response has errors!");
 			}
 			
 			ac = response.getAc();
 			
 		} catch (IOException e) {
-			throw new VomsProxyException("Could not get streams from VOMS-server socket!", e);
+			throw new GATInvocationException("Could not get streams from VOMS-server socket!", e);
 		} 
 
 		return ac;

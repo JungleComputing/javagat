@@ -8,6 +8,7 @@ import org.bouncycastle.asn1.ASN1InputStream;
 import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.DERObject;
 import org.bouncycastle.asn1.x509.AttributeCertificate;
+import org.gridlab.gat.GATInvocationException;
 
 /**
  * Manages the response received from the VOMS server.
@@ -52,14 +53,14 @@ public class VomsServerResponse {
 	 * @throws VomsProxyException If the DER object found in the server bytestream response is invalid (not properly decoded)
 	 * @throws IOException 
 	 */
-	public AttributeCertificate getAc() throws VomsProxyException, IOException {
+	public AttributeCertificate getAc() throws GATInvocationException, IOException {
 
 		if (acBytes != null && atCert == null) {
 			ASN1InputStream asn1Stream = new ASN1InputStream(acBytes);
 			DERObject dObj = asn1Stream.readObject();
 
 			if (!(dObj instanceof ASN1Sequence)) {
-				throw new VomsProxyException("Invalid DER object found in AC");
+				throw new GATInvocationException("Invalid DER object found in AC");
 			}
 			
 			atCert = new AttributeCertificate((ASN1Sequence) dObj);

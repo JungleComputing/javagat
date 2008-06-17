@@ -14,6 +14,7 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
+import org.gridlab.gat.GATInvocationException;
 import org.w3c.dom.Document;
 import org.w3c.dom.DocumentFragment;
 import org.w3c.dom.Element;
@@ -72,7 +73,7 @@ public class VomsServerCommunicator {
 	 * @param lifetime The desired lifetime of the extended proxy part
 	 * @throws VomsProxyException If trouble with parser or transformer creation occurs
 	 */
-	public VomsServerCommunicator(String requestString, int lifetime) throws VomsProxyException {
+	public VomsServerCommunicator(String requestString, int lifetime) throws GATInvocationException {
 
 		try {
 			DocumentBuilderFactory factory = DocumentBuilderFactory
@@ -84,9 +85,9 @@ public class VomsServerCommunicator {
 			this.docBuilder = factory.newDocumentBuilder();
 			this.transformer = transFactory.newTransformer();
 		} catch (ParserConfigurationException e) {
-			throw new VomsProxyException("Could not create a DOM document builder for VOMS server request", e);
+			throw new GATInvocationException("Could not create a DOM document builder for VOMS server request", e);
 		} catch (TransformerConfigurationException e) {
-			throw new VomsProxyException("Could not create a copy-only transformer for VOMS server request", e);
+			throw new GATInvocationException("Could not create a copy-only transformer for VOMS server request", e);
 		}
 
 		this.requestString = requestString;
@@ -123,7 +124,7 @@ public class VomsServerCommunicator {
 	 * @return VomsServerResponse data structure with received ACs and/or error messages
 	 * @throws VomsProxyException If there are problems during parsing and I/O
 	 */
-	public VomsServerResponse readServerResponse(InputStream iStream) throws VomsProxyException {
+	public VomsServerResponse readServerResponse(InputStream iStream) throws GATInvocationException {
 		
 		VomsServerResponse response = new VomsServerResponse();
 		
@@ -138,9 +139,9 @@ public class VomsServerCommunicator {
 			}
 
 		} catch (SAXException e) {
-			throw new VomsProxyException("Encountered error upon parsing the server response!", e);
+			throw new GATInvocationException("Encountered error upon parsing the server response!", e);
 		} catch (IOException e) {
-			throw new VomsProxyException("Error upon reading from the server response socket!", e);
+			throw new GATInvocationException("Error upon reading from the server response socket!", e);
 		}
 
 		return response;
@@ -156,7 +157,7 @@ public class VomsServerCommunicator {
 	 * @throws VomsProxyException If an unexpected node name is encountered
 	 */
 	private void parseResponseACs(Node node, VomsServerResponse response)
-			throws VomsProxyException {
+			throws GATInvocationException {
 		NodeList list = node.getChildNodes();
 
 		for (int i = 0; i < list.getLength(); i++) {
@@ -176,8 +177,9 @@ public class VomsServerCommunicator {
 				parseErrors((Element) current, response);
 			}
 			
-			else
-				throw new VomsProxyException("Invalid node name: " + nodeName);
+			else {
+				throw new GATInvocationException("Invalid node name: " + nodeName);
+			}
 		}
 	}
 	

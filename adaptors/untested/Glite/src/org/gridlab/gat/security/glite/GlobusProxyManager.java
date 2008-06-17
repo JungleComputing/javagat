@@ -5,6 +5,7 @@ import java.security.GeneralSecurityException;
 import java.security.cert.X509Certificate;
 
 import org.apache.log4j.Logger;
+import org.globus.common.CoGProperties;
 import org.globus.gsi.CertUtil;
 import org.globus.gsi.GSIConstants;
 import org.globus.gsi.GlobusCredential;
@@ -13,6 +14,8 @@ import org.globus.gsi.bc.BouncyCastleCertProcessingFactory;
 import org.globus.gsi.bc.BouncyCastleOpenSSLKey;
 import org.globus.gsi.gssapi.GlobusGSSCredentialImpl;
 import org.globus.myproxy.CredentialInfo;
+import org.gridlab.gat.GATInvocationException;
+import org.gridlab.gat.resources.cpi.glite.GliteResourceBrokerAdaptor;
 import org.ietf.jgss.GSSException;
 
 /**
@@ -29,7 +32,7 @@ public class GlobusProxyManager {
 	protected OpenSSLKey proxyKey = null;				/** Internal representation of the private key of the user */
 	protected X509Certificate[] proxyCerts = null;		/** Internal representation of the certificate(s) of the CA of the user */
 	private CredentialInfo credInfo = null;			/** This is where the credential information will be encapsulated */
-		
+	
 	protected static final int KEY_LENGTH = 512;
 	/**
 	 * Constructs a new instance of the proxy with specified lifetime.
@@ -42,6 +45,25 @@ public class GlobusProxyManager {
 	throws IOException, GeneralSecurityException, GSSException  {
 		this.lifetime = lifetime;
 
+		CoGProperties properties = CoGProperties.getDefault();
+		String proxyLocation = "";
+		String usercert = "";
+		String userkey = "";
+		
+		// set the environment to the value stored in the proxy if it is currently unset
+		if ((proxyLocation = properties.getProxyFile()) != null) {
+			System.out.println("Setting proxy location to " + proxyLocation);
+			System.setProperty(GliteResourceBrokerAdaptor.PROXY_VAR, proxyLocation);
+		}
+		
+		if (userCertFile == null) {
+			userCertFile = properties.getUserCertFile();
+		}
+		
+		if (userKeyFile == null) {
+			userKeyFile = properties.getUserKeyFile();
+		}
+		
 		// force the CertUtil to initialize
 		CertUtil.init();
 		// get the X509 certificate from the globus directory
@@ -54,12 +76,10 @@ public class GlobusProxyManager {
 			proxyKey.decrypt(keyPassword);
 		}
 		
-		// retrieve the length of the proxy key
-		//this.keylength = proxyKey.getPrivateKey().
 	} // end constructor
 	
 	
-	protected void createProxyCredential() throws GlobusProxyException {
+	protected void createProxyCredential() throws GATInvocationException {
 		BouncyCastleCertProcessingFactory factory = 
 			BouncyCastleCertProcessingFactory.getDefault();
 		
@@ -73,15 +93,15 @@ public class GlobusProxyManager {
 			gsci = new GlobusGSSCredentialImpl(proxyCred, 
 					   GlobusGSSCredentialImpl.INITIATE_AND_ACCEPT);
 		} catch (GSSException e) {
-			throw new GlobusProxyException("Problem creating GlobusGSSCredentialImpl!", e);
+			throw new GATInvocationException("Problem creating GlobusGSSCredentialImpl!", e);
 		} catch (GeneralSecurityException e) {
-			throw new GlobusProxyException("Problem creating Globus proxy!", e);
+			throw new GATInvocationException("Problem creating Globus proxy!", e);
 		}
 			
 
 	}
 	
-	public void makeProxyCredential() throws GlobusProxyException {
+	public void makeProxyCredential() throws GATInvocationException {
 		if (this.gsci == null) {
 			createProxyCredential();
 		}
