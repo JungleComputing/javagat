@@ -52,6 +52,9 @@ public class GliteResourceBrokerAdaptor extends ResourceBrokerCpi {
 	protected static Logger logger = Logger
 			.getLogger(GliteResourceBrokerAdaptor.class);
 
+	
+	public static final String PROXY_VAR = "X509_USER_PROXY";
+	
 	private String delegationId;
 	
 	/** this is just a workaround to make the class work... previously the vo couldn't be retrieved at all (thomas) */
@@ -60,14 +63,7 @@ public class GliteResourceBrokerAdaptor extends ResourceBrokerCpi {
 	public GliteResourceBrokerAdaptor(GATContext gatContext, URI brokerURI)
 			throws GATObjectCreationException {
 		super(gatContext, brokerURI);
-		
-		try {
-			this.vo = (String) gatContext.getPreferences().get("VirtualOrganisation");
-			
-			createVomsProxy(gatContext);
-		} catch (GATInvocationException exp) {
-			throw new GATObjectCreationException("Proxy could not be created!", exp);
-		}
+		this.vo = (String) gatContext.getPreferences().get("VirtualOrganisation");
 	}
 
 	private String getDelegationId() {
@@ -88,14 +84,19 @@ public class GliteResourceBrokerAdaptor extends ResourceBrokerCpi {
 	// maybe in the future it will be more elaborate
 	private String getProxyLocation() throws GATInvocationException {
 		Environment e = new Environment();
-		String proxyLocation = e.getVar("X509_USER_PROXY");
+		String proxyLocation = e.getVar(PROXY_VAR);
 
 		if (proxyLocation == null) {
-			throw new GATInvocationException(
-					"No proxy location under X509_USER_PROXY");
-		} else {
-			return proxyLocation;
-		}
+			
+			proxyLocation = System.getProperty(PROXY_VAR);
+			
+			if (proxyLocation == null) {
+			     throw new GATInvocationException("No proxy location under " + PROXY_VAR);
+			}
+		} 
+		
+		return proxyLocation;
+		
 	}
 
 	/**
@@ -109,20 +110,30 @@ public class GliteResourceBrokerAdaptor extends ResourceBrokerCpi {
 	 * @param gatContext The context that contains the preferences for the voms proxy
 	 */
 	private void createVomsProxy(GATContext gatContext) throws GATInvocationException {
-		Preferences prefs = gatContext.getPreferences();
-		String usercert = (String) prefs.get("vomsUserCert");
-		String userkey = (String) prefs.get("vomsUserKey");
-		String password = (String) prefs.get("vomsPassword");
-		String lifetimeStr = (String) prefs.get("vomsLifetime");
-		int lifetime = Integer.parseInt(lifetimeStr);
-		String hostDN = (String) prefs.get("vomsHostDN");
-		String serverURI = (String) prefs.get("vomsServerURL");
-		String serverPortStr = (String) prefs.get("vomsServerPort");
-		int serverPort = Integer.parseInt(serverPortStr);
-		
-		String voName = (String) prefs.get("VirtualOrganisation");
-
 		try {
+		
+			Preferences prefs = gatContext.getPreferences();
+			String usercert = (String) prefs.get("vomsUserCert");
+			String userkey = (String) prefs.get("vomsUserKey");
+			String password = (String) prefs.get("vomsPassword");
+			String lifetimeStr = (String) prefs.get("vomsLifetime");
+			
+			int lifetime = 3600;
+			
+			// if lifetime not specified, keep standard value
+			if (lifetimeStr != null) {
+				lifetime = Integer.parseInt(lifetimeStr);
+			} 
+			
+			String hostDN = (String) prefs.get("vomsHostDN");
+			String serverURI = (String) prefs.get("vomsServerURL");
+			String serverPortStr = (String) prefs.get("vomsServerPort");
+			int serverPort = Integer.parseInt(serverPortStr);
+			
+		
+		
+			String voName = (String) prefs.get("VirtualOrganisation");
+
 			VomsProxyManager manager = new VomsProxyManager(usercert,
 															userkey,
 															password,
@@ -132,15 +143,18 @@ public class GliteResourceBrokerAdaptor extends ResourceBrokerCpi {
 															serverPort);
 			manager.makeProxyCredential(voName);
 			manager.saveProxyToFile(System.getenv("X509_USER_PROXY"));
-			} catch (Exception e) {
-				throw new GATInvocationException("Could not create VOMS proxy!", e);
-			}
+		} catch (Exception e) {
+			throw new GATInvocationException("Could not create VOMS proxy!", e);
+		}
 	}
 	
 	/* connect to WMProxy */
 	private WMProxyAPI connectToWMProxy(String delegationId,
 			JobDescription description) throws GATInvocationException {
 		WMProxyAPI client = null;
+		
+		createVomsProxy(gatContext);
+		
 		try {
 			String clientContact = getResourceManagerContact(description);
 			String proxyLocation = getProxyLocation();
@@ -324,7 +338,18 @@ public class GliteResourceBrokerAdaptor extends ResourceBrokerCpi {
 	private JobAd createJobDescription(ResourceDescription resourceDescription)
 			throws GATInvocationException {
 		JobAd jobAd = new JobAd();
-		// TODO: creating jdl
+		
+		try {
+			String machineNode = (String) resourceDescription.getResourceAttribute("machine.node");
+			
+			if (machineNode != null) {
+				String reqString = "other.GlueCEUniqueID==\"" + machineNode + "\"";
+				jobAd.setAttribute("requirements", reqString);
+			}
+		} catch (InvalidAttributeValueException e) {
+			e.printStackTrace();
+		}
+		
 		checkJobAd(jobAd);
 		return jobAd;
 	}
@@ -337,6 +362,8 @@ public class GliteResourceBrokerAdaptor extends ResourceBrokerCpi {
 	public List<HardwareResource> findResources(
 			ResourceDescription resourceDescription)
 			throws GATInvocationException {
+		
+		String delegationId = getDelegationId();
 		JobDescription jd = new JobDescription(null, resourceDescription);
 		WMProxyAPI client = connectToWMProxy(delegationId, jd);
 		ArrayList<HardwareResource> resources = null;
