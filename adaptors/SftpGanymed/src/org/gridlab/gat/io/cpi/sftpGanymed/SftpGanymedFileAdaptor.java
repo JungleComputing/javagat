@@ -10,6 +10,7 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Hashtable;
+import java.util.Map;
 import java.util.Vector;
 
 import org.apache.log4j.Logger;
@@ -35,6 +36,19 @@ import ch.ethz.ssh2.sftp.ErrorCodes;
 
 @SuppressWarnings("serial")
 public class SftpGanymedFileAdaptor extends FileCpi {
+
+    public static Map<String, Boolean> getSupportedCapabilities() {
+        Map<String, Boolean> capabilities = FileCpi.getSupportedCapabilities();
+        capabilities.put("copy", true);
+        capabilities.put("delete", true);
+        capabilities.put("exists", true);
+        capabilities.put("isDirectory", true);
+        capabilities.put("isFile", true);
+        capabilities.put("length", true);
+        capabilities.put("list", true);
+        capabilities.put("mkdir", true);
+        return capabilities;
+    }
 
     protected static Logger logger = Logger
             .getLogger(SftpGanymedFileAdaptor.class);

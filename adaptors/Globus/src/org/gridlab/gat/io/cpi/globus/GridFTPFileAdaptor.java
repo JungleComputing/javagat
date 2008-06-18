@@ -22,6 +22,12 @@ import org.ietf.jgss.GSSCredential;
 @SuppressWarnings("serial")
 public class GridFTPFileAdaptor extends GlobusFileAdaptor {
 
+    public static Preferences getSupportedPreferences() {
+        Preferences p = GlobusFileAdaptor.getSupportedPreferences();
+        p.put("gridftp.authentication.retry", "0");
+        return p;
+    }
+
     protected static Logger logger = Logger.getLogger(GridFTPFileAdaptor.class);
 
     static boolean USE_CLIENT_CACHING = false;

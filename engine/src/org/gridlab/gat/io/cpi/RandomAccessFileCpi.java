@@ -1,6 +1,8 @@
 package org.gridlab.gat.io.cpi;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.gridlab.gat.GAT;
 import org.gridlab.gat.GATContext;
@@ -22,6 +24,27 @@ import org.gridlab.gat.monitoring.MetricListener;
  * File class at runtime.
  */
 public abstract class RandomAccessFileCpi implements RandomAccessFileInterface {
+
+    public static Map<String, Boolean> getSupportedCapabilities() {
+        Map<String, Boolean> capabilities = new HashMap<String, Boolean>();
+        capabilities.put("addMetricListener", false);
+        capabilities.put("getMetricDefinitionsByName", false);
+        capabilities.put("getMetricDefinitions", false);
+        capabilities.put("removeMetricListener", false);
+        capabilities.put("getMeasurement", false);
+        capabilities.put("toURI", true);
+        capabilities.put("getFile", true);
+        capabilities.put("close", false);
+        capabilities.put("getFilePointer", false);
+        capabilities.put("length", false);
+        capabilities.put("read", false);
+        capabilities.put("seek", false);
+        capabilities.put("setLength", false);
+        capabilities.put("skipBytes", false);
+        capabilities.put("write", false);
+        return capabilities;
+    }
+
     protected GATContext gatContext;
 
     protected URI location;

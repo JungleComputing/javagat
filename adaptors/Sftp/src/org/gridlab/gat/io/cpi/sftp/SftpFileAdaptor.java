@@ -5,6 +5,7 @@ package org.gridlab.gat.io.cpi.sftp;
 
 import java.io.IOException;
 import java.util.Hashtable;
+import java.util.Map;
 import java.util.Vector;
 
 import org.apache.log4j.Logger;
@@ -36,6 +37,19 @@ import com.sshtools.j2ssh.transport.publickey.SshPublicKey;
  */
 @SuppressWarnings("serial")
 public class SftpFileAdaptor extends FileCpi {
+    
+    public static Map<String, Boolean> getSupportedCapabilities() {
+        Map<String, Boolean> capabilities = FileCpi.getSupportedCapabilities();
+        capabilities.put("list", true);
+        capabilities.put("length", true);
+        capabilities.put("copy", true);
+        capabilities.put("delete", true);
+        capabilities.put("isDirectory", true);
+        capabilities.put("isFile", true);
+        capabilities.put("mkdir", true);
+        capabilities.put("exists", true);
+        return capabilities;
+    }
 
     protected static Logger logger = Logger.getLogger(SftpFileAdaptor.class);
 

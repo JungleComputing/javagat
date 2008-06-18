@@ -5,7 +5,9 @@ import java.io.FilenameFilter;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Vector;
 
 import org.apache.log4j.Logger;
@@ -34,6 +36,62 @@ import org.gridlab.gat.monitoring.MetricListener;
  * File class at runtime.
  */
 public abstract class FileCpi implements FileInterface, java.io.Serializable {
+
+    public static Map<String, Boolean> getSupportedCapabilities() {
+        Map<String, Boolean> capabilities = new HashMap<String, Boolean>();
+        capabilities.put("getGATContext", true);
+        capabilities.put("equals", true);
+        capabilities.put("toURI", true);
+        capabilities.put("toURL", true);
+        capabilities.put("toString", true);
+        capabilities.put("recursivelyDeleteDirectory", true);
+        capabilities.put("addMetricListener", false);
+        capabilities.put("getMetricDefinitions", false);
+        capabilities.put("getMeasurement", false);
+        capabilities.put("compareTo", true);
+        capabilities.put("deleteOneExit", true);
+        capabilities.put("getAbsolutePath", false);
+        capabilities.put("getCanonicalPath", false);
+        capabilities.put("getPath", true);
+        capabilities.put("hashcode", true);
+        capabilities.put("copy", false);
+        capabilities.put("canRead", false);
+        capabilities.put("canWrite", false);
+        capabilities.put("createNewFile", false);
+        capabilities.put("delete", false);
+        capabilities.put("exists", false);
+        capabilities.put("getAbsoluteFile", false);
+        capabilities.put("getCanonicalFile", false);
+        capabilities.put("getName", true);
+        capabilities.put("getParent", true);
+        capabilities.put("getParentFile", true);
+        capabilities.put("isDirectory", false);
+        capabilities.put("isAbsolute", true);
+        capabilities.put("isFile", false);
+        capabilities.put("isHidden", false);
+        capabilities.put("lastModified", false);
+        capabilities.put("length", false);
+        capabilities.put("list", false);
+        capabilities.put("listFiles", true);
+        capabilities.put("mkdir", false);
+        capabilities.put("mkdirs", true);
+        capabilities.put("move", true);
+        capabilities.put("renameTo", false);
+        capabilities.put("setLastModified", false);
+        capabilities.put("setReadOnly", false);
+
+        return capabilities;
+    }
+
+    public static Preferences getSupportedPreferences() {
+        Preferences preferences = new Preferences();
+        preferences.put("file.adaptor.name", "<no default>");
+        preferences.put("adaptors.local", "false");
+        preferences.put("file.create", "false");
+
+        return preferences;
+    }
+
     protected static Logger logger = Logger.getLogger(FileCpi.class);
 
     protected GATContext gatContext;
@@ -883,4 +941,5 @@ public abstract class FileCpi implements FileInterface, java.io.Serializable {
             }
         }
     }
+
 }

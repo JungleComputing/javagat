@@ -409,7 +409,7 @@ public class GAT {
 
         return (LogicalFile) getAdaptorProxy("LogicalFile", LogicalFile.class,
                 gatContext, preferences, new Class[] { String.class,
-                        Integer.TYPE }, array);
+                        Integer.class }, array);
     }
 
     /**
@@ -1786,9 +1786,9 @@ public class GAT {
                 new Class[] { URI.class }, array);
     }
 
-    public static String[] getAdaptors(String type)
+    public static AdaptorInfo[] getAdaptors(String type)
             throws GATInvocationException {
-        String[] result = null;
+        AdaptorInfo[] result = null;
         Method m = null;
         try {
             m = engineClass.getMethod("getAdaptors",
@@ -1799,7 +1799,30 @@ public class GAT {
             throw new GATInvocationException("GAT api: ", e);
         }
         try {
-            result = (String[]) m.invoke(null, new Object[] { type });
+            result = (AdaptorInfo[]) m.invoke(null, new Object[] { type });
+        } catch (IllegalArgumentException e) {
+            throw new GATInvocationException("GAT api: ", e);
+        } catch (IllegalAccessException e) {
+            throw new GATInvocationException("GAT api: ", e);
+        } catch (InvocationTargetException e) {
+            throw new GATInvocationException("GAT api: ", e);
+        }
+
+        return result;
+    }
+
+    public static String[] getAdaptorTypes() throws GATInvocationException {
+        String[] result = null;
+        Method m = null;
+        try {
+            m = engineClass.getMethod("getAdaptorTypes", (Class[]) null);
+        } catch (SecurityException e) {
+            throw new GATInvocationException("GAT api: ", e);
+        } catch (NoSuchMethodException e) {
+            throw new GATInvocationException("GAT api: ", e);
+        }
+        try {
+            result = (String[]) m.invoke(null, (Object[]) null);
         } catch (IllegalArgumentException e) {
             throw new GATInvocationException("GAT api: ", e);
         } catch (IllegalAccessException e) {

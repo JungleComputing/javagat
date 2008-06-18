@@ -8,6 +8,7 @@ import org.gridlab.gat.GAT;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.GATObjectCreationException;
+import org.gridlab.gat.Preferences;
 import org.gridlab.gat.URI;
 import org.gridlab.gat.engine.util.CommandRunner;
 import org.gridlab.gat.io.File;
@@ -17,6 +18,23 @@ import org.gridlab.gat.security.commandlinessh.CommandlineSshSecurityUtils;
 
 @SuppressWarnings("serial")
 public class CommandlineSshFileAdaptor extends FileCpi {
+
+    public static Map<String, Boolean> getSupportedCapabilities() {
+        Map<String, Boolean> capabilities = FileCpi.getSupportedCapabilities();
+        capabilities.put("copy", true);
+        capabilities.put("delete", true);
+        capabilities.put("isDirectory", true);
+        capabilities.put("isFile", true);
+        capabilities.put("mkdir", true);
+        capabilities.put("exists", true);
+        return capabilities;
+    }
+
+    public static Preferences getSupportedPreferences() {
+        Preferences p = FileCpi.getSupportedPreferences();
+        p.put("commandlinesshfile.ssh.port", "22");
+        return p;
+    }
 
     protected static Logger logger = Logger
             .getLogger(CommandlineSshFileAdaptor.class);

@@ -89,6 +89,14 @@ import org.oasis.wsrf.properties.GetMultipleResourceProperties_Element;
 import org.oasis.wsrf.properties.ResourcePropertyValueChangeNotificationType;
 
 class RFTGT4NotifyCallback implements NotifyCallback {
+
+    public static Map<String, Boolean> getSupportedCapabilities() {
+        Map<String, Boolean> capabilities = FileCpi.getSupportedCapabilities();
+        capabilities.put("delete", true);
+        capabilities.put("copy", true);
+        return capabilities;
+    }
+
     protected static Logger logger = Logger
             .getLogger(RFTGT4NotifyCallback.class);
 

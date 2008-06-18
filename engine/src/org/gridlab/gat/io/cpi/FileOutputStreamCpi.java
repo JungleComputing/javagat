@@ -1,10 +1,13 @@
 package org.gridlab.gat.io.cpi;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.log4j.Logger;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
+import org.gridlab.gat.Preferences;
 import org.gridlab.gat.URI;
 import org.gridlab.gat.io.FileOutputStreamInterface;
 import org.gridlab.gat.monitoring.Metric;
@@ -22,6 +25,27 @@ import org.gridlab.gat.monitoring.MetricListener;
  * corresponding method in the FileStream class at runtime.
  */
 public abstract class FileOutputStreamCpi implements FileOutputStreamInterface {
+
+    public static Map<String, Boolean> getSupportedCapabilities() {
+        Map<String, Boolean> capabilities = new HashMap<String, Boolean>();
+        capabilities.put("addMetricListener", false);
+        capabilities.put("getMetricDefinitionsByName", false);
+        capabilities.put("getMetricDefinitions", false);
+        capabilities.put("removeMetricListener", false);
+        capabilities.put("getMeasurement", false);
+        capabilities.put("close", false);
+        capabilities.put("flush", false);
+        capabilities.put("write", false);
+        return capabilities;
+    }
+
+    protected static Preferences getSupportedPreferences() {
+        Preferences preferences = new Preferences();
+        preferences.put("FileOutputStream.adaptor.name", "<no default>");
+        preferences.put("adaptors.local", "false");
+
+        return preferences;
+    }
 
     protected static Logger logger = Logger
             .getLogger(FileOutputStreamCpi.class);
@@ -168,4 +192,5 @@ public abstract class FileOutputStreamCpi implements FileOutputStreamInterface {
             throws GATInvocationException {
         throw new UnsupportedOperationException("Not implemented");
     }
+
 }

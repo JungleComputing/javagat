@@ -1,7 +1,9 @@
 package org.gridlab.gat.io.cpi;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Vector;
 
 import org.gridlab.gat.GAT;
@@ -30,6 +32,24 @@ import org.gridlab.gat.monitoring.Monitorable;
  * corresponding method in the LogicalFile class at runtime.
  */
 public abstract class LogicalFileCpi implements LogicalFile, Monitorable {
+
+    public static Map<String, Boolean> getSupportedCapabilities() {
+        Map<String, Boolean> capabilities = new HashMap<String, Boolean>();
+        capabilities.put("addMetricListener", false);
+        capabilities.put("getMetricDefinitionsByName", false);
+        capabilities.put("getMetricDefinitions", false);
+        capabilities.put("removeMetricListener", false);
+        capabilities.put("getMeasurement", false);
+        capabilities.put("addFile", true);
+        capabilities.put("addURI", true);
+        capabilities.put("removeFile", true);
+        capabilities.put("removeURI", true);
+        capabilities.put("replicate", true);
+        capabilities.put("getURIs", true);
+        capabilities.put("getFiles", true);
+        return capabilities;
+    }
+
     protected GATContext gatContext;
 
     protected String name;
@@ -52,13 +72,11 @@ public abstract class LogicalFileCpi implements LogicalFile, Monitorable {
      * 
      * @param gatContext
      *                The GATContext used to broker resources
-     * @param preferences
-     *                the preferences to be associated with this adaptor
      * @throws GATObjectCreationException
      *                 Thrown upon creation problems
      */
-    public LogicalFileCpi(GATContext gatContext, Preferences preferences,
-            String name, Integer mode) throws GATObjectCreationException {
+    public LogicalFileCpi(GATContext gatContext, String name, Integer mode)
+            throws GATObjectCreationException {
         this.gatContext = gatContext;
         files = new Vector<URI>();
         this.mode = mode.intValue();

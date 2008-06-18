@@ -1,6 +1,8 @@
 package org.gridlab.gat.io.cpi;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
@@ -22,6 +24,19 @@ import org.gridlab.gat.monitoring.MetricListener;
  * the EndPoint class at runtime.
  */
 public abstract class EndpointCpi implements Endpoint {
+    
+    public static Map<String, Boolean> getSupportedCapabilities() {
+        Map<String, Boolean> capabilities = new HashMap<String, Boolean>();
+        capabilities.put("addMetricListener", false);
+        capabilities.put("getMetricDefinitionsByName", false);
+        capabilities.put("getMetricDefinitions", false);
+        capabilities.put("removeMetricListener", false);
+        capabilities.put("getMeasurement", false);
+        capabilities.put("connect", false);
+        capabilities.put("listen", false);
+        return capabilities;
+    }
+    
     protected GATContext gatContext;
 
     /**

@@ -3,7 +3,6 @@
 package org.gridlab.gat.io.cpi.local;
 
 import org.gridlab.gat.GATContext;
-import org.gridlab.gat.Preferences;
 import org.gridlab.gat.io.cpi.LogicalFileCpi;
 
 @SuppressWarnings("serial")
@@ -20,9 +19,8 @@ public class LocalLogicalFileAdaptor extends LogicalFileCpi {
      * @throws java.lang.Exception
      *                 Thrown upon creation problems
      */
-    public LocalLogicalFileAdaptor(GATContext gatContext,
-            Preferences preferences, String name, Integer mode)
-            throws Exception {
-        super(gatContext, preferences, name, mode);
+    public LocalLogicalFileAdaptor(GATContext gatContext, String name,
+            Integer mode) throws Exception {
+        super(gatContext, name, mode);
     }
 }

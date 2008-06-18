@@ -2,7 +2,6 @@ package org.gridlab.gat.resources.cpi.local;
 
 import java.io.IOException;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -12,18 +11,13 @@ import org.gridlab.gat.GAT;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.GATObjectCreationException;
-import org.gridlab.gat.TimePeriod;
 import org.gridlab.gat.URI;
 import org.gridlab.gat.engine.util.CommandRunner;
 import org.gridlab.gat.engine.util.StreamForwarder;
 import org.gridlab.gat.monitoring.Metric;
 import org.gridlab.gat.monitoring.MetricListener;
-import org.gridlab.gat.resources.HardwareResource;
 import org.gridlab.gat.resources.Job;
 import org.gridlab.gat.resources.JobDescription;
-import org.gridlab.gat.resources.Reservation;
-import org.gridlab.gat.resources.Resource;
-import org.gridlab.gat.resources.ResourceDescription;
 import org.gridlab.gat.resources.SoftwareDescription;
 import org.gridlab.gat.resources.cpi.ResourceBrokerCpi;
 import org.gridlab.gat.resources.cpi.Sandbox;
@@ -65,6 +59,16 @@ import org.gridlab.gat.resources.cpi.WrapperSubmitter;
  */
 public class LocalResourceBrokerAdaptor extends ResourceBrokerCpi {
 
+    public static Map<String, Boolean> getSupportedCapabilities() {
+        Map<String, Boolean> capabilities = ResourceBrokerCpi
+                .getSupportedCapabilities();
+        capabilities.put("beginMultiJob", true);
+        capabilities.put("endMultiJob", true);
+        capabilities.put("submitJob", false);
+
+        return capabilities;
+    }
+
     protected static Logger logger = Logger
             .getLogger(LocalResourceBrokerAdaptor.class);
 
@@ -104,40 +108,6 @@ public class LocalResourceBrokerAdaptor extends ResourceBrokerCpi {
         Job job = submitter.flushJobSubmission();
         submitter = null;
         return job;
-    }
-
-    /**
-     * This method attempts to reserve the specified hardware resource for the
-     * specified time period. Upon reserving the specified hardware resource
-     * this method returns a Reservation. Upon failing to reserve the specified
-     * hardware resource this method returns an error.
-     * 
-     * @param resourceDescription
-     *                A description, a HardwareResourceDescription, of the
-     *                hardware resource to reserve
-     * @param timePeriod
-     *                The time period, a TimePeriod , for which to reserve the
-     *                hardware resource
-     */
-    public Reservation reserveResource(ResourceDescription resourceDescription,
-            TimePeriod timePeriod) {
-        throw new UnsupportedOperationException("Not implemented");
-    }
-
-    /**
-     * This method attempts to find one or more matching hardware resources.
-     * Upon finding the specified hardware resource(s) this method returns a
-     * java.util.List of HardwareResource instances. Upon failing to find the
-     * specified hardware resource this method returns an error.
-     * 
-     * @param resourceDescription
-     *                A description, a HardwareResoucreDescription, of the
-     *                hardware resource(s) to find
-     * @return java.util.List of HardwareResources upon success
-     */
-    public List<HardwareResource> findResources(
-            ResourceDescription resourceDescription) {
-        throw new UnsupportedOperationException("Not implemented");
     }
 
     /*
@@ -297,16 +267,6 @@ public class LocalResourceBrokerAdaptor extends ResourceBrokerCpi {
         job.monitorState();
 
         return job;
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.gridlab.gat.resources.ResourceBroker#reserveResource(org.gridlab.gat.resources.Resource,
-     *      org.gridlab.gat.engine.util.TimePeriod)
-     */
-    public Reservation reserveResource(Resource resource, TimePeriod timePeriod) {
-        throw new UnsupportedOperationException("Not implemented");
     }
 
     public static void end() {

@@ -18,6 +18,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Properties;
 import java.util.Set;
@@ -30,6 +31,7 @@ import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.exolab.castor.xml.Marshaller;
 import org.exolab.castor.xml.Unmarshaller;
+import org.gridlab.gat.AdaptorInfo;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.GATObjectCreationException;
@@ -37,8 +39,8 @@ import org.gridlab.gat.Preferences;
 import org.gridlab.gat.advert.Advertisable;
 import org.gridlab.gat.monitoring.Metric;
 import org.gridlab.gat.monitoring.MetricDefinition;
-import org.gridlab.gat.monitoring.MetricListener;
 import org.gridlab.gat.monitoring.MetricEvent;
+import org.gridlab.gat.monitoring.MetricListener;
 
 /**
  * @author rob
@@ -202,16 +204,44 @@ public class GATEngine {
         return gatEngine;
     }
 
-    public static String[] getAdaptors(String cpiName) {
+    public static String[] getAdaptorTypes() {
+        GATEngine gatEngine = GATEngine.getGATEngine();
+        return gatEngine.adaptorLists.keySet().toArray(
+                new String[gatEngine.adaptorLists.keySet().size()]);
+    }
+
+    @SuppressWarnings("unchecked")
+    public static AdaptorInfo[] getAdaptors(String cpiName) {
         GATEngine gatEngine = GATEngine.getGATEngine();
         List<Adaptor> adaptors = gatEngine.adaptorLists.get(cpiName);
         if (adaptors == null) {
             return null;
         }
-        String[] result = new String[adaptors.size()];
+        AdaptorInfo[] result = new AdaptorInfo[adaptors.size()];
         int i = 0;
         for (Adaptor adaptor : adaptors) {
-            result[i++] = adaptor.getName();
+            Map<String, Boolean> capabilities = null;
+            try {
+                Class<?> adaptorClass = adaptor.getAdaptorClass();
+                Method infoMethod = adaptorClass.getMethod(
+                        "getSupportedCapabilities", (Class[]) null);
+                capabilities = (Map<String, Boolean>) infoMethod.invoke(null,
+                        (Object[]) null);
+            } catch (Exception e) {
+            }
+            Preferences preferences = null;
+            try {
+                Class<?> adaptorClass = adaptor.getAdaptorClass();
+                Method infoMethod = adaptorClass.getMethod(
+                        "getSupportedPreferences", (Class[]) null);
+                preferences = (Preferences) infoMethod.invoke(null,
+                        (Object[]) null);
+            } catch (Exception e) {
+            }
+            result[i++] = new AdaptorInfo(adaptor.getName(), adaptor
+                    .getAdaptorClass().getSimpleName(), cpiName, preferences,
+                    capabilities);
+
         }
         return result;
     }

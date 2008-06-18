@@ -6,6 +6,7 @@ package org.gridlab.gat.io.cpi.streaming;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.util.Map;
 
 import org.gridlab.gat.GAT;
 import org.gridlab.gat.GATContext;
@@ -19,6 +20,13 @@ import org.gridlab.gat.io.cpi.FileCpi;
 
 @SuppressWarnings("serial")
 public class StreamingFileAdaptor extends FileCpi {
+
+    public static Map<String, Boolean> getSupportedCapabilities() {
+        Map<String, Boolean> capabilities = FileCpi.getSupportedCapabilities();
+        capabilities.put("copy", true);
+        capabilities.put("exists", true);
+        return capabilities;
+    }
 
     public StreamingFileAdaptor(GATContext gatContext, URI location) {
         super(gatContext, location);

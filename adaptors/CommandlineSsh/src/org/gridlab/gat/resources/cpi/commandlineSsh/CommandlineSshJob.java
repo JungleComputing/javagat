@@ -27,8 +27,6 @@ public class CommandlineSshJob extends JobCpi {
 
     protected static Logger logger = Logger.getLogger(CommandlineSshJob.class);
 
-    CommandlineSshResourceBrokerAdaptor broker;
-
     JobDescription description;
 
     int jobID;
@@ -80,7 +78,6 @@ public class CommandlineSshJob extends JobCpi {
         m.put("resManState", getStateString(state));
         m.put("resManName", "CommandlineSsh");
         m.put("exitValue", "" + exitStatus);
-        m.put("hostname", broker.getHostname());
 
         if (postStageException != null) {
             m.put("postStageError", postStageException);

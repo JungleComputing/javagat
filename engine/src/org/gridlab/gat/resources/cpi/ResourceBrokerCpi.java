@@ -1,6 +1,8 @@
 package org.gridlab.gat.resources.cpi;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
@@ -26,6 +28,18 @@ import org.gridlab.gat.resources.SoftwareDescription;
  * method in the ResourceBroker class at runtime.
  */
 public abstract class ResourceBrokerCpi implements ResourceBroker {
+
+    public static Map<String, Boolean> getSupportedCapabilities() {
+        Map<String, Boolean> capabilities = new HashMap<String, Boolean>();
+        capabilities.put("beginMultiJob", false);
+        capabilities.put("endMultiJob", false);
+        capabilities.put("findResources", false);
+        capabilities.put("reserveResource", false);
+        capabilities.put("submitJob", false);
+
+        return capabilities;
+    }
+
     protected GATContext gatContext;
 
     protected URI brokerURI;
@@ -220,15 +234,15 @@ public abstract class ResourceBrokerCpi implements ResourceBroker {
         return argString;
     }
 
-    public String getHostname() {
+    protected String getHostname() {
         return brokerURI.getHost();
     }
 
-    public String getAuthority() {
+    protected String getAuthority() {
         return brokerURI.getAuthority();
     }
 
-    public String getScheme() {
+    protected String getScheme() {
         return brokerURI.getScheme();
     }
 

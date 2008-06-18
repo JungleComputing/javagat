@@ -10,6 +10,7 @@ import org.gridlab.gat.GAT;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.GATObjectCreationException;
+import org.gridlab.gat.Preferences;
 import org.gridlab.gat.URI;
 import org.gridlab.gat.engine.util.StreamForwarder;
 import org.gridlab.gat.io.cpi.sshtrilead.SshTrileadFileAdaptor;
@@ -37,6 +38,14 @@ public class SshTrileadResourceBrokerAdaptor extends ResourceBrokerCpi {
 
     public static final int SSH_PORT = 22;
 
+    private boolean connectionCacheEnable;
+
+    private String[] client2serverCiphers;
+
+    private String[] server2clientCiphers;
+
+    private boolean tcpNoDelay;
+
     private WrapperSubmitter submitter;
 
     /**
@@ -55,6 +64,23 @@ public class SshTrileadResourceBrokerAdaptor extends ResourceBrokerCpi {
             throw new AdaptorNotApplicableException("cannot handle this URI: "
                     + brokerURI);
         }
+        // init from preferences
+        Preferences p = gatContext.getPreferences();
+        String client2serverCipherString = ((String) p
+                .get(
+                        "sshtrilead.cipher.client2server",
+                        "aes256-ctr,aes192-ctr,aes128-ctr,blowfish-ctr,aes256-cbc,aes192-cbc,aes128-cbc,blowfish-cbc"));
+        client2serverCiphers = client2serverCipherString.split(",");
+        String server2clientCipherString = ((String) p
+                .get(
+                        "sshtrilead.cipher.server2client",
+                        "aes256-ctr,aes192-ctr,aes128-ctr,blowfish-ctr,aes256-cbc,aes192-cbc,aes128-cbc,blowfish-cbc"));
+        server2clientCiphers = server2clientCipherString.split(",");
+        tcpNoDelay = ((String) p.get("sshtrilead.tcp.nodelay", "true"))
+                .equalsIgnoreCase("true");
+        connectionCacheEnable = ((String) p.get(
+                "sshtrilead.use.cached.connections", "true"))
+                .equalsIgnoreCase("true");
     }
 
     public void beginMultiJob() {
@@ -133,8 +159,9 @@ public class SshTrileadResourceBrokerAdaptor extends ResourceBrokerCpi {
 
         Session session;
         try {
-            session = SshTrileadFileAdaptor
-                    .getConnection(brokerURI, gatContext).openSession();
+            session = SshTrileadFileAdaptor.getConnection(brokerURI,
+                    gatContext, connectionCacheEnable, tcpNoDelay,
+                    client2serverCiphers, server2clientCiphers).openSession();
             if (stoppable) {
                 logger.info("starting dumb pty");
                 session.requestDumbPTY();

@@ -10,6 +10,7 @@ import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.List;
+import java.util.Map;
 
 import org.exolab.castor.xml.Marshaller;
 import org.gridlab.gat.GATContext;
@@ -28,6 +29,15 @@ import org.gridlab.gat.monitoring.MetricDefinition;
  */
 @SuppressWarnings("serial")
 public class SocketEndpointAdaptor extends EndpointCpi implements Serializable {
+
+    public static Map<String, Boolean> getSupportedCapabilities() {
+        Map<String, Boolean> capabilities = EndpointCpi
+                .getSupportedCapabilities();
+        capabilities.put("connect", true);
+        capabilities.put("listen", true);
+        return capabilities;
+    }
+
     int localPort; // filled in locally
 
     InetAddress localAddress; // filled in locally
@@ -60,7 +70,7 @@ public class SocketEndpointAdaptor extends EndpointCpi implements Serializable {
         try {
             localAddress = GATEngine.getLocalHostAddress();
             serverSocket = new ServerSocket(0, 0, localAddress); // bind to
-                                                                    // any
+            // any
 
             // free port
             localPort = serverSocket.getLocalPort();
@@ -142,38 +152,8 @@ public class SocketEndpointAdaptor extends EndpointCpi implements Serializable {
         }
 
         throw new UnsupportedOperationException("Not implemented"); // TODO
-                                                                    // implement
-                                                                    // listen
-    }
-
-    /**
-     * @return Returns the localIP.
-     */
-    public String getLocalIP() {
-        return localIP;
-    }
-
-    /**
-     * @param localIP
-     *                The localIP to set.
-     */
-    public void setLocalIP(String localIP) {
-        this.localIP = localIP;
-    }
-
-    /**
-     * @return Returns the localPort.
-     */
-    public int getLocalPort() {
-        return localPort;
-    }
-
-    /**
-     * @param localPort
-     *                The localPort to set.
-     */
-    public void setLocalPort(int localPort) {
-        this.localPort = localPort;
+        // implement
+        // listen
     }
 
     /*

@@ -3,6 +3,8 @@
  */
 package org.gridlab.gat.io.cpi.srcToLocalToDestCopy;
 
+import java.util.Map;
+
 import org.gridlab.gat.GAT;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
@@ -12,6 +14,13 @@ import org.gridlab.gat.io.cpi.FileCpi;
 
 @SuppressWarnings("serial")
 public class SrcToLocalToDestCopyFileAdaptor extends FileCpi {
+
+    public static Map<String, Boolean> getSupportedCapabilities() {
+        Map<String, Boolean> capabilities = FileCpi.getSupportedCapabilities();
+        capabilities.put("copy", true);
+        return capabilities;
+    }
+
     public SrcToLocalToDestCopyFileAdaptor(GATContext gatContext, URI location) {
         super(gatContext, location);
     }

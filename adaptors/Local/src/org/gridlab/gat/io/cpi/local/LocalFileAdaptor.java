@@ -10,6 +10,7 @@ import java.io.FilenameFilter;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
+import java.util.Map;
 
 import org.apache.log4j.Logger;
 import org.gridlab.gat.AdaptorNotApplicableException;
@@ -26,6 +27,35 @@ import org.gridlab.gat.io.cpi.FileCpi;
 public class LocalFileAdaptor extends FileCpi {
 
     protected static Logger logger = Logger.getLogger(LocalFileAdaptor.class);
+
+    public static Map<String, Boolean> getSupportedCapabilities() {
+        Map<String, Boolean> capabilities = FileCpi.getSupportedCapabilities();
+        capabilities.put("copy", true);
+        capabilities.put("canRead", true);
+        capabilities.put("canWrite", true);
+        capabilities.put("createNewFile", true);
+        capabilities.put("delete", true);
+        capabilities.put("exists", true);
+        capabilities.put("getAbsoluteFile", true);
+        capabilities.put("getCanonicalFile", true);
+        capabilities.put("getParent", true);
+        capabilities.put("getParentFile", true);
+        capabilities.put("isDirectory", true);
+        capabilities.put("isFile", true);
+        capabilities.put("isHidden", true);
+        capabilities.put("lastModified", true);
+        capabilities.put("length", true);
+        capabilities.put("list", true);
+        capabilities.put("listFiles", true);
+        capabilities.put("mkdir", true);
+        capabilities.put("mkdirs", true);
+        capabilities.put("move", true);
+        capabilities.put("renameTo", true);
+        capabilities.put("setLastModified", true);
+        capabilities.put("setReadOnly", true);
+
+        return capabilities;
+    }
 
     private File f;
 
@@ -635,7 +665,7 @@ public class LocalFileAdaptor extends FileCpi {
      * 
      * @return a URI representing the path
      */
-    public URI localToURI(String path) throws URISyntaxException {
+    private URI localToURI(String path) throws URISyntaxException {
         return new URI(path.replace(File.separatorChar, '/'));
     }
 }

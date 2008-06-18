@@ -1,6 +1,7 @@
 package org.gridlab.gat.io.cpi.globus;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Vector;
 
 import org.globus.ftp.FTPClient;
@@ -18,6 +19,14 @@ import org.gridlab.gat.security.cpi.SecurityContextUtils;
 
 @SuppressWarnings("serial")
 public class FTPFileAdaptor extends GlobusFileAdaptor {
+
+    public static Map<String, Boolean> getSupportedCapabilities() {
+        Map<String, Boolean> capabilities = GlobusFileAdaptor
+                .getSupportedCapabilities();
+        capabilities.put("exists", true);
+        return capabilities;
+    }
+
     String user;
 
     String password;

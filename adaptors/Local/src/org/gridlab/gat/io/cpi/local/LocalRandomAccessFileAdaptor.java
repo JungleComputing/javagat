@@ -5,6 +5,7 @@ package org.gridlab.gat.io.cpi.local;
 
 import java.io.FileNotFoundException;
 import java.io.RandomAccessFile;
+import java.util.Map;
 
 import org.gridlab.gat.AdaptorNotApplicableException;
 import org.gridlab.gat.GATContext;
@@ -18,6 +19,23 @@ import org.gridlab.gat.io.cpi.RandomAccessFileCpi;
  */
 @SuppressWarnings("serial")
 public class LocalRandomAccessFileAdaptor extends RandomAccessFileCpi {
+
+    public static Map<String, Boolean> getSupportedCapabilities() {
+        Map<String, Boolean> capabilities = RandomAccessFileCpi
+                .getSupportedCapabilities();
+        capabilities.put("toURI", true);
+        capabilities.put("getFile", true);
+        capabilities.put("close", true);
+        capabilities.put("getFilePointer", true);
+        capabilities.put("length", true);
+        capabilities.put("read", true);
+        capabilities.put("seek", true);
+        capabilities.put("setLength", true);
+        capabilities.put("skipBytes", true);
+        capabilities.put("write", true);
+        return capabilities;
+    }
+
     RandomAccessFile rf;
 
     public LocalRandomAccessFileAdaptor(GATContext gatContext, URI location,

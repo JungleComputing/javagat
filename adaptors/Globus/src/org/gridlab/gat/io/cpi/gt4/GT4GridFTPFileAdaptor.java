@@ -1,6 +1,7 @@
 package org.gridlab.gat.io.cpi.gt4;
 
 import java.net.URISyntaxException;
+import java.util.Map;
 
 import org.globus.cog.abstraction.impl.common.AbstractionFactory;
 import org.globus.cog.abstraction.impl.common.task.FileTransferSpecificationImpl;
@@ -26,6 +27,13 @@ import org.gridlab.gat.io.File;
 //This class only supports the URIs with gsiftp
 @SuppressWarnings("serial")
 public class GT4GridFTPFileAdaptor extends GT4FileAdaptor {
+    
+    public static Map<String, Boolean> getSupportedCapabilities() {
+        Map<String, Boolean> capabilities = GT4FileAdaptor.getSupportedCapabilities();
+        capabilities.put("copy", true);
+        return capabilities;
+    }
+    
     /**
      * @param gatContext
      * @param location

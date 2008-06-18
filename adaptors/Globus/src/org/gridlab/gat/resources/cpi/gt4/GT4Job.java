@@ -74,8 +74,6 @@ class GT4StatusListener implements StatusListener {
  */
 @SuppressWarnings("serial")
 public class GT4Job extends JobCpi {
-    GT4ResourceBrokerAdaptor broker;
-
     Task task;
 
     private GT4StatusListener statusListener;
@@ -201,7 +199,7 @@ public class GT4Job extends JobCpi {
         if (state != RUNNING) {
             m.put("hostname", null);
         } else {
-            m.put("hostname", broker.getHostname());
+            m.put("hostname", null);
         }
         if (state == INITIAL || state == UNKNOWN) {
             m.put("globus.state", null);

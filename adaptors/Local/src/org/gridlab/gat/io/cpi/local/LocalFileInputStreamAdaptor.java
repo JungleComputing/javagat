@@ -2,7 +2,9 @@ package org.gridlab.gat.io.cpi.local;
 
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.util.Map;
 
+import org.gridlab.gat.AdaptorInfo;
 import org.gridlab.gat.AdaptorNotApplicableException;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
@@ -11,6 +13,27 @@ import org.gridlab.gat.URI;
 import org.gridlab.gat.io.cpi.FileInputStreamCpi;
 
 public class LocalFileInputStreamAdaptor extends FileInputStreamCpi {
+
+    public static Map<String, Boolean> getSupportedCapabilities() {
+        Map<String, Boolean> capabilities = FileInputStreamCpi
+                .getSupportedCapabilities();
+        capabilities.put("available", true);
+        capabilities.put("close", true);
+        capabilities.put("mark", true);
+        capabilities.put("markSupported", true);
+        capabilities.put("read", true);
+        capabilities.put("reset", true);
+        capabilities.put("skip", true);
+
+        return capabilities;
+    }
+
+    public static AdaptorInfo getInfo() {
+        return new AdaptorInfo(LocalFileAdaptor.class.getCanonicalName(),
+                LocalFileAdaptor.class.getSimpleName(), "File",
+                getSupportedPreferences(), getSupportedCapabilities());
+    }
+
     FileInputStream in;
 
     public LocalFileInputStreamAdaptor(GATContext gatContext, URI location)

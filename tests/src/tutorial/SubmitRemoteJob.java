@@ -1,6 +1,7 @@
 package tutorial;
 
 import org.gridlab.gat.GAT;
+import org.gridlab.gat.Preferences;
 import org.gridlab.gat.URI;
 import org.gridlab.gat.io.File;
 import org.gridlab.gat.resources.Job;
@@ -17,7 +18,10 @@ public class SubmitRemoteJob {
         sd.setStdout(stdout);
 
         JobDescription jd = new JobDescription(sd);
-        ResourceBroker broker = GAT.createResourceBroker(new URI("any://"
+        Preferences p = new Preferences();
+        p.put("resourcebroker.adaptor.name", "wsgt4new");
+
+        ResourceBroker broker = GAT.createResourceBroker(p, new URI("any://"
                 + args[0]));
         Job job = broker.submitJob(jd);
 

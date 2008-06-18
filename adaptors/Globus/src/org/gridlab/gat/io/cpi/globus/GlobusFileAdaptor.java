@@ -8,6 +8,7 @@ import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.StringTokenizer;
 import java.util.Vector;
 
@@ -35,6 +36,33 @@ import org.gridlab.gat.io.FileInterface;
 import org.gridlab.gat.io.cpi.FileCpi;
 
 public abstract class GlobusFileAdaptor extends FileCpi {
+
+    public static Preferences getSupportedPreferences() {
+        Preferences p = FileCpi.getSupportedPreferences();
+        p.put("ftp.connection.passive", "false");
+        p.put("ftp.connection.protection", "<default taken from globus>");
+        p.put("ftp.server.old", "false");
+        p.put("ftp.server.noauthentication", "false");
+        return p;
+    }
+
+    public static Map<String, Boolean> getSupportedCapabilities() {
+        Map<String, Boolean> capabilities = FileCpi.getSupportedCapabilities();
+        capabilities.put("copy", true);
+        capabilities.put("lastModified", true);
+        capabilities.put("delete", true);
+        capabilities.put("list", true);
+        capabilities.put("isDirectory", true);
+        capabilities.put("isFile", true);
+        capabilities.put("canRead", true);
+        capabilities.put("canWrite", true);
+        capabilities.put("length", true);
+        capabilities.put("mkdir", true);
+        capabilities.put("exists", true);
+        capabilities.put("getAbsolutePath", true);
+        capabilities.put("renameTo", true);
+        return capabilities;
+    }
 
     protected static Logger logger = Logger.getLogger(GlobusFileAdaptor.class);
 

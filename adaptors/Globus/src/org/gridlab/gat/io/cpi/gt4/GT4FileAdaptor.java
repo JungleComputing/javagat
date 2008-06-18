@@ -5,6 +5,7 @@ import java.text.SimpleDateFormat;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Iterator;
+import java.util.Map;
 
 import org.apache.log4j.Logger;
 import org.globus.cog.abstraction.impl.common.AbstractionFactory;
@@ -39,6 +40,26 @@ import org.ietf.jgss.GSSCredential;
  * @since 1.0
  */
 abstract public class GT4FileAdaptor extends FileCpi {
+
+    public static Map<String, Boolean> getSupportedCapabilities() {
+        Map<String, Boolean> capabilities = FileCpi.getSupportedCapabilities();
+        capabilities.put("canRead", true);
+        capabilities.put("canWrite", true);
+        capabilities.put("delete", true);
+        capabilities.put("exists", true);
+        capabilities.put("getAbsoluteFile", true);
+        capabilities.put("getAbsolutePath", true);
+        capabilities.put("isDirectory", true);
+        capabilities.put("isFile", true);
+        capabilities.put("lastModified", true);
+        capabilities.put("length", true);
+        capabilities.put("list", true);
+        capabilities.put("mkdir", true);
+        capabilities.put("setLastModified", true);
+        capabilities.put("setReadOnly", true);
+        return capabilities;
+    }
+
     FileResource resource = null;
 
     String srcProvider;
@@ -174,15 +195,6 @@ abstract public class GT4FileAdaptor extends FileCpi {
     /*
      * (non-Javadoc)
      * 
-     * @see org.gridlab.gat.io.File#createNewFile()
-     */
-    public boolean createNewFile() {
-        throw new UnsupportedOperationException("Not implemented");
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
      * @see org.gridlab.gat.io.File#delete()
      */
     public boolean delete() throws GATInvocationException {
@@ -261,24 +273,6 @@ abstract public class GT4FileAdaptor extends FileCpi {
     /*
      * (non-Javadoc)
      * 
-     * @see org.gridlab.gat.io.File#getCanonicalFile()
-     */
-    public org.gridlab.gat.io.File getCanonicalFile() {
-        throw new UnsupportedOperationException("Not implemented");
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.gridlab.gat.io.File#getCanonicalPath()
-     */
-    public String getCanonicalPath() throws GATInvocationException {
-        throw new UnsupportedOperationException("Not implemented");
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
      * @see org.gridlab.gat.io.File#isDirectory()
      */
     public boolean isDirectory() throws GATInvocationException {
@@ -324,15 +318,6 @@ abstract public class GT4FileAdaptor extends FileCpi {
         } catch (GeneralException e) {
             throw new GATInvocationException(e.getMessage());
         }
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.gridlab.gat.io.File#isHidden()
-     */
-    public boolean isHidden() {
-        throw new UnsupportedOperationException("Not implemented");
     }
 
     /*

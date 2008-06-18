@@ -9,7 +9,6 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Properties;
 
 import org.apache.log4j.Logger;
 import org.gridlab.gat.AdaptorNotApplicableException;
@@ -17,6 +16,7 @@ import org.gridlab.gat.GAT;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.GATObjectCreationException;
+import org.gridlab.gat.Preferences;
 import org.gridlab.gat.URI;
 import org.gridlab.gat.engine.util.CommandRunner;
 import org.gridlab.gat.io.File;
@@ -30,6 +30,57 @@ import com.trilead.ssh2.Session;
 import com.trilead.ssh2.StreamGobbler;
 
 public class SshTrileadFileAdaptor extends FileCpi {
+
+    public static Map<String, Boolean> getSupportedCapabilities() {
+        Map<String, Boolean> capabilities = FileCpi.getSupportedCapabilities();
+        capabilities.put("copy", true);
+        capabilities.put("canRead", true);
+        capabilities.put("canWrite", true);
+        capabilities.put("createNewFile", true);
+        capabilities.put("delete", true);
+        capabilities.put("exists", true);
+        capabilities.put("getAbsoluteFile", true);
+        capabilities.put("getAbsolutePath", true);
+        capabilities.put("isDirectory", true);
+        capabilities.put("isFile", true);
+        capabilities.put("isHidden", true);
+        capabilities.put("lastModified", true);
+        capabilities.put("length", true);
+        capabilities.put("list", true);
+        capabilities.put("mkdir", true);
+        capabilities.put("mkdirs", true);
+        capabilities.put("move", true);
+        capabilities.put("renameTo", true);
+        capabilities.put("setLastModified", true);
+        capabilities.put("setReadOnly", true);
+        return capabilities;
+    }
+
+    public static Preferences getSupportedPreferences() {
+        Preferences preferences = FileCpi.getSupportedPreferences();
+        preferences.put("sshtrilead.caching.canread", "true");
+        preferences.put("sshtrilead.caching.canwrite", "true");
+        preferences.put("sshtrilead.caching.exists", "true");
+        preferences.put("sshtrilead.caching.isdirectory", "true");
+        preferences.put("sshtrilead.caching.isfile", "true");
+        preferences.put("sshtrilead.caching.ishidden", "true");
+        preferences.put("sshtrilead.caching.lastmodified", "true");
+        preferences.put("sshtrilead.caching.length", "true");
+        preferences.put("sshtrilead.caching.list", "true");
+        preferences.put("sshtrilead.caching.iswindows", "true");
+        preferences
+                .put(
+                        "sshtrilead.cipher.client2server",
+                        "aes256-ctr,aes192-ctr,aes128-ctr,blowfish-ctr,aes256-cbc,aes192-cbc,aes128-cbc,blowfish-cbc");
+        preferences
+                .put(
+                        "sshtrilead.cipher.server2client",
+                        "aes256-ctr,aes192-ctr,aes128-ctr,blowfish-ctr,aes256-cbc,aes192-cbc,aes128-cbc,blowfish-cbc");
+        preferences.put("sshtrilead.tcp.nodelay", "false");
+        preferences.put("sshtrilead.use.cached.connections", "true");
+        preferences.put("file.chmod", "0600");
+        return preferences;
+    }
 
     /**
      * On the server side, the "scp" program must be in the PATH.
@@ -59,73 +110,27 @@ public class SshTrileadFileAdaptor extends FileCpi {
 
     private static Map<URI, String[]> listCache = new HashMap<URI, String[]>();
 
-    private static boolean canReadCacheEnable = true;
+    private boolean canReadCacheEnable;
 
-    private static boolean canWriteCacheEnable = true;
+    private boolean canWriteCacheEnable;
 
-    private static boolean existsCacheEnable = false;
+    private boolean existsCacheEnable;
 
-    private static boolean isDirCacheEnable = true;
+    private boolean isDirCacheEnable;
 
-    private static boolean isFileCacheEnable = true;
+    private boolean isFileCacheEnable;
 
-    private static boolean listCacheEnable = false;
+    private boolean listCacheEnable;
 
-    private static boolean isWindowsCacheEnable = true;
+    private boolean isWindowsCacheEnable;
 
-    private static String[] client2serverCiphers = new String[] { "aes256-ctr",
-            "aes192-ctr", "aes128-ctr", "blowfish-ctr", "aes256-cbc",
-            "aes192-cbc", "aes128-cbc", "blowfish-cbc" };
+    private boolean connectionCacheEnable;
 
-    private static String[] server2clientCiphers = new String[] { "aes256-ctr",
-            "aes192-ctr", "aes128-ctr", "blowfish-ctr", "aes256-cbc",
-            "aes192-cbc", "aes128-cbc", "blowfish-cbc" };
+    private String[] client2serverCiphers;
 
-    private static boolean tcpNoDelay = true;
+    private String[] server2clientCiphers;
 
-    static {
-        Properties sshTrileadProperties = new Properties();
-        try {
-            sshTrileadProperties.load(new java.io.FileInputStream(System
-                    .getProperty("gat.adaptor.path")
-                    + File.separator
-                    + "SshTrileadAdaptor"
-                    + File.separator
-                    + "sshtrilead.properties"));
-            if (logger.isDebugEnabled()) {
-                logger.debug("reading properties file for sshtrilead adaptor");
-            }
-            canReadCacheEnable = ((String) sshTrileadProperties.getProperty(
-                    "caching.canread", "true")).equalsIgnoreCase("true");
-            canWriteCacheEnable = ((String) sshTrileadProperties.getProperty(
-                    "caching.canwrite", "true")).equalsIgnoreCase("true");
-            existsCacheEnable = ((String) sshTrileadProperties.getProperty(
-                    "caching.exists", "true")).equalsIgnoreCase("true");
-            isDirCacheEnable = ((String) sshTrileadProperties.getProperty(
-                    "caching.isdirectory", "true")).equalsIgnoreCase("true");
-            isFileCacheEnable = ((String) sshTrileadProperties.getProperty(
-                    "caching.isfile", "true")).equalsIgnoreCase("true");
-            listCacheEnable = ((String) sshTrileadProperties.getProperty(
-                    "caching.list", "true")).equalsIgnoreCase("true");
-            String client2serverCipherString = ((String) sshTrileadProperties
-                    .getProperty(
-                            "cipher.client2server",
-                            "aes256-ctr,aes192-ctr,aes128-ctr,blowfish-ctr,aes256-cbc,aes192-cbc,aes128-cbc,blowfish-cbc"));
-            client2serverCiphers = client2serverCipherString.split(",");
-            String server2clientCipherString = ((String) sshTrileadProperties
-                    .getProperty(
-                            "cipher.server2client",
-                            "aes256-ctr,aes192-ctr,aes128-ctr,blowfish-ctr,aes256-cbc,aes192-cbc,aes128-cbc,blowfish-cbc"));
-            server2clientCiphers = server2clientCipherString.split(",");
-            tcpNoDelay = ((String) sshTrileadProperties.getProperty(
-                    "tcp.nodelay", "true")).equalsIgnoreCase("true");
-        } catch (Exception e) {
-            if (logger.isDebugEnabled()) {
-                logger.debug("exception while trying to read property file: "
-                        + e);
-            }
-        }
-    }
+    private boolean tcpNoDelay;
 
     private URI fixedURI;
 
@@ -137,6 +142,37 @@ public class SshTrileadFileAdaptor extends FileCpi {
             throw new AdaptorNotApplicableException("cannot handle this URI: "
                     + location);
         }
+        // init from preferences ...
+        Preferences p = gatContext.getPreferences();
+        canReadCacheEnable = ((String) p.get("sshtrilead.caching.canread",
+                "true")).equalsIgnoreCase("true");
+        canWriteCacheEnable = ((String) p.get("sshtrilead.caching.canwrite",
+                "true")).equalsIgnoreCase("true");
+        existsCacheEnable = ((String) p
+                .get("sshtrilead.caching.exists", "true"))
+                .equalsIgnoreCase("true");
+        isDirCacheEnable = ((String) p.get("sshtrilead.caching.isdirectory",
+                "true")).equalsIgnoreCase("true");
+        isFileCacheEnable = ((String) p
+                .get("sshtrilead.caching.isfile", "true"))
+                .equalsIgnoreCase("true");
+        listCacheEnable = ((String) p.get("sshtrilead.caching.list", "true"))
+                .equalsIgnoreCase("true");
+        String client2serverCipherString = ((String) p
+                .get(
+                        "sshtrilead.cipher.client2server",
+                        "aes256-ctr,aes192-ctr,aes128-ctr,blowfish-ctr,aes256-cbc,aes192-cbc,aes128-cbc,blowfish-cbc"));
+        client2serverCiphers = client2serverCipherString.split(",");
+        String server2clientCipherString = ((String) p
+                .get(
+                        "sshtrilead.cipher.server2client",
+                        "aes256-ctr,aes192-ctr,aes128-ctr,blowfish-ctr,aes256-cbc,aes192-cbc,aes128-cbc,blowfish-cbc"));
+        server2clientCiphers = server2clientCipherString.split(",");
+        tcpNoDelay = ((String) p.get("sshtrilead.tcp.nodelay", "true"))
+                .equalsIgnoreCase("true");
+        connectionCacheEnable = ((String) p.get(
+                "sshtrilead.use.cached.connections", "true"))
+                .equalsIgnoreCase("true");
     }
 
     public void copy(URI destination) throws GATInvocationException {
@@ -172,7 +208,9 @@ public class SshTrileadFileAdaptor extends FileCpi {
 
     private void put(URI destination) throws Exception {
         logger.debug("destination: " + destination);
-        Connection connection = getConnection(destination, gatContext);
+        Connection connection = getConnection(destination, gatContext,
+                connectionCacheEnable, tcpNoDelay, client2serverCiphers,
+                server2clientCiphers);
 
         SCPClient client = connection.createSCPClient();
 
@@ -253,7 +291,9 @@ public class SshTrileadFileAdaptor extends FileCpi {
     }
 
     private void get(URI destination) throws Exception {
-        Connection connection = getConnection(fixedURI, gatContext);
+        Connection connection = getConnection(fixedURI, gatContext,
+                connectionCacheEnable, tcpNoDelay, client2serverCiphers,
+                server2clientCiphers);
         SCPClient client = connection.createSCPClient();
         FileInterface destinationFile = GAT.createFile(gatContext, destination)
                 .getFileInterface();
@@ -302,7 +342,7 @@ public class SshTrileadFileAdaptor extends FileCpi {
         }
     }
 
-    private static boolean isWindows(GATContext context, URI destination)
+    private boolean isWindows(GATContext context, URI destination)
             throws GATInvocationException {
         // if 'ls' gives stderr and 'dir' doesn't then we guess it's Windows
         // else we assume it's non-Windows
@@ -355,22 +395,23 @@ public class SshTrileadFileAdaptor extends FileCpi {
         new CommandRunner("chmod " + mode + " " + localfile);
     }
 
-    public static Connection getConnection(URI fixedURI, GATContext context)
-            throws Exception {
+    public static Connection getConnection(URI fixedURI, GATContext context,
+            boolean useCachedConnection, boolean tcpNoDelay,
+            String[] client2server, String[] server2client) throws Exception {
         String host = fixedURI.getHost();
         if (host == null) {
             host = fixedURI.resolveHost();
         }
         logger.info("getting connection for host: " + host);
-        if (connections.containsKey(host)) {
+        if (connections.containsKey(host) && useCachedConnection) {
             logger.info("returning cached connection");
             return connections.get(host);
         } else {
             Connection newConnection = new Connection(host, fixedURI
                     .getPort(SSH_PORT));
 
-            newConnection.setClient2ServerCiphers(client2serverCiphers);
-            newConnection.setServer2ClientCiphers(server2clientCiphers);
+            newConnection.setClient2ServerCiphers(client2server);
+            newConnection.setServer2ClientCiphers(server2client);
             newConnection.setTCPNoDelay(tcpNoDelay);
             newConnection.connect();
             Map<String, Object> securityInfo = SshTrileadSecurityUtils
@@ -443,7 +484,9 @@ public class SshTrileadFileAdaptor extends FileCpi {
     private String[] execCommand(String cmd) throws IOException, Exception {
         logger.info("command: " + cmd + ", uri: " + fixedURI);
         String[] result = new String[3];
-        Session session = getConnection(fixedURI, gatContext).openSession();
+        Session session = getConnection(fixedURI, gatContext,
+                connectionCacheEnable, tcpNoDelay, client2serverCiphers,
+                server2clientCiphers).openSession();
         session.execCommand(cmd);
         // see http://www.trilead.com/Products/Trilead-SSH-2-Java/FAQ/#blocking
         InputStream stdout = new StreamGobbler(session.getStdout());
@@ -917,32 +960,4 @@ public class SshTrileadFileAdaptor extends FileCpi {
             return result[STDERR].length() == 0;
         }
     }
-
-    // protected void copyDirContents(URI destination)
-    // throws GATInvocationException {
-    // // list all the files and copy recursively.
-    // if (logger.isInfoEnabled()) {
-    // logger.info("copyDirectory contents '" + fixedURI + "' to '"
-    // + destination + "'");
-    // }
-    // File[] files = (File[]) listFiles();
-    // if (files == null) {
-    // if (logger.isInfoEnabled()) {
-    // logger.info("copyDirectory: no files in src directory: "
-    // + fixedURI);
-    // }
-    // return;
-    // }
-    // for (File file : files) {
-    // FileInterface f = file.getFileInterface();
-    // if (logger.isInfoEnabled()) {
-    // logger.info("copyDirectory: file to copy = " + f);
-    // }
-    // try {
-    // f.copy(new URI(destination + "/" + f.getName()));
-    // } catch (URISyntaxException e) {
-    // // would not happen
-    // }
-    // }
-    // }
 }

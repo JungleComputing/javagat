@@ -129,6 +129,25 @@ public class Preferences implements java.io.Serializable {
     }
 
     /**
+     * Returns the value to which the specified key is mapped in the
+     * preferences.
+     * 
+     * @param key
+     *                a key in the preferences
+     * @return the value to which the key is mapped in the preferences;
+     *         <tt>null</tt> if the key is not mapped to any value
+     * @throws NullPointerException
+     *                 if the key or value is <tt>null</tt>.
+     */
+    public Object get(String key, Object defaultValue) {
+        if (t.get(key.toLowerCase()) != null) {
+            return t.get(key.toLowerCase());
+        } else {
+            return defaultValue;
+        }
+    }
+
+    /**
      * Copies all of the mappings from the specified Preferences to this
      * Preferences. These mappings will replace any mappings that this
      * Preferences had for any of the keys currently in the specified
