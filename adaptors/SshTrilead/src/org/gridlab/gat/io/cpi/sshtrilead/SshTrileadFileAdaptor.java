@@ -199,9 +199,7 @@ public class SshTrileadFileAdaptor extends FileCpi {
                     throw new GATInvocationException("SshTrileadFileAdaptor", e);
                 }
             } else {
-                // not supported
-                throw new GATInvocationException(
-                        "cannot perform third party file transfers!");
+                remoteScp(destination);
             }
         }
     }
@@ -542,6 +540,24 @@ public class SshTrileadFileAdaptor extends FileCpi {
                 canReadCache.put(fixedURI, canread);
             }
             return canread;
+        }
+    }
+
+    private void remoteScp(URI dest) throws GATInvocationException {
+        if (isWindows(gatContext, location)) {
+            throw new UnsupportedOperationException("Not implemented");
+        } else {
+            String[] result;
+            try {
+                result = execCommand("scp -r " + getFixedPath() + " ${USER}@"
+                        + dest.getHost() + ":" + dest.getPath());
+            } catch (Exception e) {
+                throw new GATInvocationException("sshtrilead", e);
+            }
+            if (result[STDERR].length() != 0) {
+                throw new GATInvocationException(
+                        "Third party transfer failed: " + result[STDERR]);
+            }
         }
     }
 
