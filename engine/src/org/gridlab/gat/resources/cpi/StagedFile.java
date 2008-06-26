@@ -54,6 +54,21 @@ public abstract class StagedFile {
         this.sandbox = sandbox;
     }
 
+    protected boolean inSandbox(String path) {
+        // if it isn't (1) an absolute path or (2) a path that jumps out of the
+        // sandbox, this path is regarded as IN the sandbox. Note that there are
+        // a false negatives in the case (1) an absolute path that refers to
+        // the sandbox, (2) a relative path like "../sandbox/path/to/file".
+        System.out.println("testing path: " + path);
+        try {
+            return !((path.startsWith("/")) || (new java.net.URI(path)
+                    .normalize().toString().startsWith("..")));
+        } catch (URISyntaxException e) {
+            // won't happen!
+            return true;
+        }
+    }
+
     protected File resolve(File f, boolean useNameOnly)
             throws GATInvocationException {
         URI uri = f.toGATURI();
@@ -90,7 +105,7 @@ public abstract class StagedFile {
             }
         }
         logger.info("path done: " + uri + "\npath: " + uri.getUnresolvedPath());
-        if (inSandbox && !uri.hasAbsolutePath()) {
+        if (!uri.hasAbsolutePath()) {
             try {
                 logger.info("setting path to :" + sandbox + "/"
                         + uri.getUnresolvedPath());

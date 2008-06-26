@@ -102,7 +102,7 @@ public class PostStagedFileSet {
             } catch (Exception e) {
                 throw new GATInvocationException("postStagedFileSet", e);
             }
-        } 
+        }
         if (resolvedStdout != null) {
             tmp.add(new PostStagedFile(gatContext, resolvedStdout, sd
                     .getStdout(), host, sandbox, true, false));
@@ -117,7 +117,7 @@ public class PostStagedFileSet {
             } catch (Exception e) {
                 throw new GATInvocationException("postStagedFileSet", e);
             }
-        } 
+        }
         if (resolvedStderr != null) {
             tmp.add(new PostStagedFile(gatContext, resolvedStderr, sd
                     .getStderr(), host, sandbox, false, true));
@@ -154,10 +154,9 @@ public class PostStagedFileSet {
             for (int i = 0; i < files.length; i++) {
                 tmp[i] = files[i];
             }
-            files = tmp;
             startPos = files.length;
+            files = tmp;
         }
-
         for (int i = 0; i < f.size(); i++) {
             File srcFile = (File) f.get(i);
             files[startPos + i] = new PostStagedFile(gatContext, srcFile, null,

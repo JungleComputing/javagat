@@ -28,6 +28,7 @@ public class PostStagedFile extends StagedFile {
         super(context, origSrc, origDest, host, sandbox);
         this.isStdout = isStdOut;
         this.isStderr = isStderr;
+        this.inSandbox = inSandbox(origSrc.getPath());
         resolve();
     }
 
@@ -36,11 +37,6 @@ public class PostStagedFile extends StagedFile {
      * cannot be null, dest can be.
      */
     private void resolve() throws GATInvocationException {
-        if (origSrc.isAbsolute()) {
-            inSandbox = false;
-        } else {
-            inSandbox = true;
-        }
         setResolvedSrc(resolve(origSrc, false));
 
         String cwd = new java.io.File(System.getProperty("user.dir")).toURI()
@@ -96,9 +92,8 @@ public class PostStagedFile extends StagedFile {
         if (inSandbox) {
             return;
         }
-
         if (logger.isInfoEnabled()) {
-            logger.info("DELETE_FILE:" + getResolvedSrc());
+            logger.info("DELETE_FILE: " + getResolvedSrc());
         }
         getResolvedSrc().delete();
     }
