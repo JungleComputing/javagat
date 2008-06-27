@@ -15,7 +15,6 @@ import org.globus.gsi.bc.BouncyCastleOpenSSLKey;
 import org.globus.gsi.gssapi.GlobusGSSCredentialImpl;
 import org.globus.myproxy.CredentialInfo;
 import org.gridlab.gat.GATInvocationException;
-import org.gridlab.gat.resources.cpi.glite.GliteResourceBrokerAdaptor;
 import org.ietf.jgss.GSSException;
 
 /**
@@ -34,6 +33,7 @@ public class GlobusProxyManager {
 	private CredentialInfo credInfo = null;			/** This is where the credential information will be encapsulated */
 	
 	protected static final int KEY_LENGTH = 512;
+	
 	/**
 	 * Constructs a new instance of the proxy with specified lifetime.
 	 * @throws GSSException 
@@ -43,18 +43,11 @@ public class GlobusProxyManager {
 							  String keyPassword, 
 							  int lifetime) 
 	throws IOException, GeneralSecurityException, GSSException  {
+		
+
 		this.lifetime = lifetime;
 
 		CoGProperties properties = CoGProperties.getDefault();
-		String proxyLocation = "";
-		String usercert = "";
-		String userkey = "";
-		
-		// set the environment to the value stored in the proxy if it is currently unset
-		if ((proxyLocation = properties.getProxyFile()) != null) {
-			System.out.println("Setting proxy location to " + proxyLocation);
-			System.setProperty(GliteResourceBrokerAdaptor.PROXY_VAR, proxyLocation);
-		}
 		
 		if (userCertFile == null) {
 			userCertFile = properties.getUserCertFile();

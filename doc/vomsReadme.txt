@@ -44,7 +44,7 @@ The necessary preference keys are:
 vomsUserCert - path to the user certificate
 vomsUserKey - path to the user (private key)
 vomsPassword - password to be used to decrypt the private key
-vomsLifetime - the desired proxy lifetime in seconds
+vomsLifetime - (optional) the desired proxy lifetime in seconds. If not set, set to standard value (3600)
 vomsHostDN - the distinguished name of the VOMS host (e.g. /DC=cz/DC=cesnet-ca/O=CESNET/CN=skurut19.cesnet.cz)
 vomsServerURL - the URL of the voms server, without protocol (e.g. skurut19.cesnet.cz)
 vomsServerPort - the port on which to connect to the voms server
@@ -71,3 +71,21 @@ or the vomsLifetime preference.
 
 Either you forgot to set the vomsServerURL preference value or you set either the
 server url or the vomsServerPort preference to wrong values.
+
+
+6.) It's kind of confusing: I have to write the cog.properties file and I have to set
+environment variables and GAT preferences!
+
+Some efforts have been made to reduce the configuration effort: The X509_USER_PROXY environment variable need
+not be set if there is a proxy= line (as in answer 1) in the cog.properties file and
+vomsUserCert and vomsUserKey need not be given as global preferences if there
+are usercert and userkey lines in cog.properties.
+
+So in order to run the adaptor, the following things have to present at minimum:
+* A cog.properties file with lines as in answer 1.
+* The following global preferences set in the gat context
+ - vomsPassword
+ - vomsHostDN
+ - vomsServerURL
+ - vomsServerPort
+ - VirtualOrganisation 
