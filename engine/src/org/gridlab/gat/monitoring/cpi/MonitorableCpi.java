@@ -1,6 +1,8 @@
 package org.gridlab.gat.monitoring.cpi;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
@@ -17,6 +19,23 @@ import org.gridlab.gat.monitoring.Monitorable;
  * Monitorable interface impl
  */
 public class MonitorableCpi implements Monitorable {
+
+    public static Map<String, Boolean> getSupportedCapabilities() {
+        Map<String, Boolean> capabilities = new HashMap<String, Boolean>();
+        capabilities.put("addMetricListener", false);
+        capabilities.put("removeMetricListener", false);
+        capabilities.put("getMetricDefinitions", false);
+        capabilities.put("getMeasurement", false);
+        capabilities.put("getMetricDefinitionByName", false);
+
+        return capabilities;
+    }
+
+    public static Preferences getSupportedPreferences() {
+        Preferences preferences = new Preferences();
+        return preferences;
+    }
+
     GATContext gatContext;
 
     Preferences preferences;

@@ -82,6 +82,10 @@ public class SshTrileadFileAdaptor extends FileCpi {
         return preferences;
     }
 
+    public static String getDescription() {
+        return "The SshTrilead File Adaptor implements the File object using the trilead ssh library. Trilead ssh is an open source full java ssh library. On the server side, the 'scp' program must be in the PATH. Connections with a remote ssh server can be made by using the username + password, username + keyfile, or with only a username, depending on the client and server settings.";
+    }
+
     /**
      * On the server side, the "scp" program must be in the PATH.
      */

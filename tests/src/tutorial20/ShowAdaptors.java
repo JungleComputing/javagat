@@ -12,7 +12,7 @@ public class ShowAdaptors {
      */
     public static void main(String[] args) throws GATInvocationException {
         for (String adaptorType : GAT.getAdaptorTypes()) {
-            for (AdaptorInfo adaptorInfo : GAT.getAdaptors(adaptorType)) {
+            for (AdaptorInfo adaptorInfo : GAT.getAdaptorInfos(adaptorType)) {
                 System.out.println(adaptorInfo.toString());
             }
         }

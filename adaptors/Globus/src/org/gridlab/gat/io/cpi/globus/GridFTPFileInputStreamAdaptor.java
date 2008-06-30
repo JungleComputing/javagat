@@ -64,7 +64,6 @@ public class GridFTPFileInputStreamAdaptor extends GlobusFileInputStreamAdaptor 
 
             GridFTPInputStream input = new GridFTPInputStream(path,
                     true /* passive */, GridFTPSession.TYPE_IMAGE, c);
-
             return input;
         } catch (Exception e) {
             throw new GATInvocationException("gridftp", e);

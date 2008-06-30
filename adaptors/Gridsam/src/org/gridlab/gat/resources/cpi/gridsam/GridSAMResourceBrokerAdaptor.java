@@ -2,6 +2,7 @@ package org.gridlab.gat.resources.cpi.gridsam;
 
 import java.io.File;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.log4j.Logger;
 import org.apache.xmlbeans.XmlException;
@@ -31,6 +32,14 @@ import org.icenigrid.gridsam.core.UnsupportedFeatureException;
 import org.icenigrid.schema.jsdl.y2005.m11.JobDefinitionDocument;
 
 public class GridSAMResourceBrokerAdaptor extends ResourceBrokerCpi {
+
+    public static Map<String, Boolean> getSupportedCapabilities() {
+        Map<String, Boolean> capabilities = ResourceBrokerCpi
+                .getSupportedCapabilities();
+        capabilities.put("submitJob", true);
+
+        return capabilities;
+    }
 
     private Logger logger = Logger
             .getLogger(GridSAMResourceBrokerAdaptor.class);

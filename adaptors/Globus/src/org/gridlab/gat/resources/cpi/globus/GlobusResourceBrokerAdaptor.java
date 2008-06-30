@@ -42,6 +42,16 @@ import org.ietf.jgss.GSSException;
  */
 public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
 
+    public static Map<String, Boolean> getSupportedCapabilities() {
+        Map<String, Boolean> capabilities = ResourceBrokerCpi
+                .getSupportedCapabilities();
+        capabilities.put("beginMultiJob", true);
+        capabilities.put("endMultiJob", true);
+        capabilities.put("submitJob", true);
+
+        return capabilities;
+    }
+
     protected static Logger logger = Logger
             .getLogger(GlobusResourceBrokerAdaptor.class);
 

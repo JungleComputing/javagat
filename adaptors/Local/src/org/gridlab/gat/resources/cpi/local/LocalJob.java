@@ -3,6 +3,7 @@
  */
 package org.gridlab.gat.resources.cpi.local;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.lang.reflect.Field;
@@ -142,11 +143,17 @@ public class LocalJob extends JobCpi {
     public synchronized void stop() throws GATInvocationException {
         setState(POST_STAGING);
         sandbox.retrieveAndCleanup(this);
+        try {
+            p.getErrorStream().close();
+            p.getInputStream().close();
+            p.getOutputStream().close();
+        } catch (IOException e) {
+            // ignore
+        }
         p.destroy();
         setState(STOPPED);
         finished();
     }
-
 
     public OutputStream getStdin() throws GATInvocationException {
         if (jobDescription.getSoftwareDescription().streamingStdinEnabled()) {

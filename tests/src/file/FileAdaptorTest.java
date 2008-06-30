@@ -17,10 +17,10 @@ import org.gridlab.gat.resources.JobDescription;
 import org.gridlab.gat.resources.ResourceBroker;
 import org.gridlab.gat.resources.SoftwareDescription;
 
-public class AdaptorTest {
+public class FileAdaptorTest {
 
     public static void main(String[] args) {
-        AdaptorTest a = new AdaptorTest();
+        FileAdaptorTest a = new FileAdaptorTest();
         a.test(args[0], args[1]).print();
     }
 

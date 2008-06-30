@@ -32,7 +32,7 @@ public class CreatePropertiesFile {
                     .write(("\n################################################\n# Preferences for type: '"
                             + gatObjectType + "'\n################################################\n")
                             .getBytes());
-            for (AdaptorInfo adaptorInfo : GAT.getAdaptors(gatObjectType)) {
+            for (AdaptorInfo adaptorInfo : GAT.getAdaptorInfos(gatObjectType)) {
                 out.write(("\n### Preferences for adaptor: '"
                         + adaptorInfo.getShortName() + "'\n").getBytes());
                 if (adaptorInfo.getSupportedPreferences() != null) {

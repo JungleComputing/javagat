@@ -29,20 +29,25 @@ public class AdaptorTestResult {
         System.out.println("avg time  : " + getAverageRunTime() + " msec");
         System.out.println("*** method results  ***");
 
-        // for (AdaptorTestResultEntry testResultEntry :
-        // testResultEntries.values()) {
-        // System.out.print(testResultEntry.getTestName());
-        // for (int i = 0; i < (50 - testResultEntry.getTestName().length());
-        // i++) {
-        // System.out.print(" ");
-        // }
-        // if (testResultEntry.getResult()) {
-        // System.out.println("SUCCESS \t" + testResultEntry.getTime()
-        // + " msec");
-        // } else {
-        // System.out.println("FAILURE");
-        // }
-        // }
+        for (String key : testResultEntries.keySet()) {
+            System.out.print(key);
+            if (testResultEntries.get(key).getResult()) {
+                System.out.print("\t SUCCESS \t"
+                        + testResultEntries.get(key).getTime() + " msec");
+                if (testResultEntries.get(key).getException() != null) {
+                    System.out.println("\t"
+                            + testResultEntries.get(key).getException());
+                } else {
+                    System.out.println();
+                }
+            } else {
+                System.out.println("\t FAILURE \t"
+                        + testResultEntries.get(key).getException());
+                if (testResultEntries.get(key).getException() != null) {
+//                    testResultEntries.get(key).getException().printStackTrace();
+                }
+            }
+        }
     }
 
     public long getTotalRunTime() {

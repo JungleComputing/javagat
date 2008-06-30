@@ -8,23 +8,17 @@ import ibis.zorilla.zoni.ZoniProtocol;
 
 import java.io.IOException;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.GATObjectCreationException;
-import org.gridlab.gat.TimePeriod;
 import org.gridlab.gat.URI;
 import org.gridlab.gat.monitoring.Metric;
 import org.gridlab.gat.monitoring.MetricListener;
-import org.gridlab.gat.resources.HardwareResource;
 import org.gridlab.gat.resources.Job;
 import org.gridlab.gat.resources.JobDescription;
-import org.gridlab.gat.resources.Reservation;
-import org.gridlab.gat.resources.Resource;
-import org.gridlab.gat.resources.ResourceDescription;
 import org.gridlab.gat.resources.SoftwareDescription;
 import org.gridlab.gat.resources.cpi.ResourceBrokerCpi;
 
@@ -35,6 +29,14 @@ import org.gridlab.gat.resources.cpi.ResourceBrokerCpi;
  */
 public class ZorillaResourceBrokerAdaptor extends ResourceBrokerCpi implements
         Callback, Runnable {
+
+    public static Map<String, Boolean> getSupportedCapabilities() {
+        Map<String, Boolean> capabilities = ResourceBrokerCpi
+                .getSupportedCapabilities();
+        capabilities.put("submitJob", true);
+
+        return capabilities;
+    }
 
     // update status of each job every minute
     public static final int TIMEOUT = 60000;
@@ -99,16 +101,6 @@ public class ZorillaResourceBrokerAdaptor extends ResourceBrokerCpi implements
         thread.start();
     }
 
-    public Reservation reserveResource(ResourceDescription resourceDescription,
-            TimePeriod timePeriod) {
-        throw new UnsupportedOperationException("Not implemented");
-    }
-
-    public List<HardwareResource> findResources(
-            ResourceDescription resourceDescription) {
-        throw new UnsupportedOperationException("Not implemented");
-    }
-
     /*
      * (non-Javadoc)
      * 
@@ -136,16 +128,6 @@ public class ZorillaResourceBrokerAdaptor extends ResourceBrokerCpi implements
         }
 
         return job;
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.gridlab.gat.resources.ResourceBroker#reserveResource(org.gridlab.gat.resources.Resource,
-     *      org.gridlab.gat.engine.util.TimePeriod)
-     */
-    public Reservation reserveResource(Resource resource, TimePeriod timePeriod) {
-        throw new UnsupportedOperationException("Not implemented");
     }
 
     String getNodeSocketAddress() {

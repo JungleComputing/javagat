@@ -3,11 +3,14 @@
  */
 package org.gridlab.gat.advert.cpi;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.NoSuchElementException;
 
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
+import org.gridlab.gat.Preferences;
 import org.gridlab.gat.advert.AdvertService;
 import org.gridlab.gat.advert.Advertisable;
 import org.gridlab.gat.advert.MetaData;
@@ -26,6 +29,28 @@ import org.gridlab.gat.monitoring.Monitorable;
  */
 public class AdvertServiceCpi implements AdvertService, Monitorable {
     protected GATContext gatContext;
+
+    public static Map<String, Boolean> getSupportedCapabilities() {
+        Map<String, Boolean> capabilities = new HashMap<String, Boolean>();
+        capabilities.put("add", false);
+        capabilities.put("delete", false);
+        capabilities.put("getMetaData", false);
+        capabilities.put("getAdvertisable", false);
+        capabilities.put("find", false);
+        capabilities.put("setPWD", false);
+        capabilities.put("getPWD", false);
+        capabilities.put("addMetricListener", false);
+        capabilities.put("removeMetricListener", false);
+        capabilities.put("getMetricDefinitions", false);
+        capabilities.put("getMeasurement", false);
+        capabilities.put("getMetricDefinitionByName", false);
+        return capabilities;
+    }
+
+    public static Preferences getSupportedPreferences() {
+        Preferences preferences = new Preferences();
+        return preferences;
+    }
 
     /**
      * Create an instance of the AdvertService using the provided preference.

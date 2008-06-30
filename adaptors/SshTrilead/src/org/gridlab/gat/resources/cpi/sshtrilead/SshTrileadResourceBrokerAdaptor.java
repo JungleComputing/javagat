@@ -31,6 +31,20 @@ import com.trilead.ssh2.Session;
 
 public class SshTrileadResourceBrokerAdaptor extends ResourceBrokerCpi {
 
+    public static Map<String, Boolean> getSupportedCapabilities() {
+        Map<String, Boolean> capabilities = ResourceBrokerCpi
+                .getSupportedCapabilities();
+        capabilities.put("beginMultiJob", true);
+        capabilities.put("endMultiJob", true);
+        capabilities.put("submitJob", true);
+
+        return capabilities;
+    }
+
+    public static String getDescription() {
+        return "The SshTrilead ResourceBroker Adaptor implements the ResourceBroker object using the trilead ssh library. Trilead ssh is an open source full java ssh library. The ssh trilead ResourceBroker adaptor can only submit to single machines, however if you invoke a command like 'qsub' on a headnode, it might result in an application running on multiple machines. Connections with a remote ssh server can be made by using the username + password, username + keyfile, or with only a username, depending on the client and server settings.";
+    }
+
     protected static Logger logger = Logger
             .getLogger(SshTrileadResourceBrokerAdaptor.class);
 

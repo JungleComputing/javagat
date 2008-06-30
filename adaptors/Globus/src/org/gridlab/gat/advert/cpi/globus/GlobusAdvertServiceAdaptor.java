@@ -1,6 +1,7 @@
 package org.gridlab.gat.advert.cpi.globus;
 
 import java.net.URI;
+import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Vector;
 
@@ -23,6 +24,20 @@ import stubs.IndexServiceProxyService.IndexServiceProxyServicePortType;
 import stubs.IndexServiceProxyService.service.IndexServiceProxyServiceAddressingLocator;
 
 public class GlobusAdvertServiceAdaptor extends AdvertServiceCpi {
+    
+    public static Map<String, Boolean> getSupportedCapabilities() {
+        Map<String, Boolean> capabilities = AdvertServiceCpi
+                .getSupportedCapabilities();
+        capabilities.put("add", true);
+        capabilities.put("delete", true);
+        capabilities.put("getMetaData", true);
+        capabilities.put("getAdvertisable", true);
+        capabilities.put("find", true);
+        capabilities.put("setPWD", true);
+        capabilities.put("getPWD", true);
+        return capabilities;
+    }
+    
     private static final String SEPERATOR = "/";
 
     private String pwd = SEPERATOR;

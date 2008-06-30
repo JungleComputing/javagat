@@ -1786,12 +1786,12 @@ public class GAT {
                 new Class[] { URI.class }, array);
     }
 
-    public static AdaptorInfo[] getAdaptors(String type)
+    public static AdaptorInfo[] getAdaptorInfos(String type)
             throws GATInvocationException {
         AdaptorInfo[] result = null;
         Method m = null;
         try {
-            m = engineClass.getMethod("getAdaptors",
+            m = engineClass.getMethod("getAdaptorInfos",
                     new Class[] { String.class });
         } catch (SecurityException e) {
             throw new GATInvocationException("GAT api: ", e);

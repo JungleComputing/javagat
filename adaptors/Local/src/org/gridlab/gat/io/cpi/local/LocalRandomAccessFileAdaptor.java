@@ -52,16 +52,9 @@ public class LocalRandomAccessFileAdaptor extends RandomAccessFileCpi {
                     + location);
         }
 
-        java.io.File f;
-
-        if (location.getScheme() != null) {
-            f = new java.io.File(location.toJavaURI());
-        } else {
-            f = new java.io.File(location.getPath());
-        }
-
         try {
-            rf = new RandomAccessFile(f, mode);
+            rf = new RandomAccessFile(new java.io.File(location.getPath()),
+                    mode);
         } catch (FileNotFoundException e) {
             throw new GATObjectCreationException("local randomaccess file", e);
         }

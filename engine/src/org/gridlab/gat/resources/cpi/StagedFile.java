@@ -59,7 +59,6 @@ public abstract class StagedFile {
         // sandbox, this path is regarded as IN the sandbox. Note that there are
         // a false negatives in the case (1) an absolute path that refers to
         // the sandbox, (2) a relative path like "../sandbox/path/to/file".
-        System.out.println("testing path: " + path);
         try {
             return !((path.startsWith("/")) || (new java.net.URI(path)
                     .normalize().toString().startsWith("..")));

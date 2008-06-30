@@ -37,7 +37,7 @@ import com.sshtools.j2ssh.transport.publickey.SshPublicKey;
  */
 @SuppressWarnings("serial")
 public class SftpFileAdaptor extends FileCpi {
-    
+
     public static Map<String, Boolean> getSupportedCapabilities() {
         Map<String, Boolean> capabilities = FileCpi.getSupportedCapabilities();
         capabilities.put("list", true);
@@ -49,6 +49,10 @@ public class SftpFileAdaptor extends FileCpi {
         capabilities.put("mkdir", true);
         capabilities.put("exists", true);
         return capabilities;
+    }
+
+    public static String getDescription() {
+        return "The Sftp File Adaptor implements the File object using the j2ssh library. ";
     }
 
     protected static Logger logger = Logger.getLogger(SftpFileAdaptor.class);

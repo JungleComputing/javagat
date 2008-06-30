@@ -5,6 +5,7 @@ package org.gridlab.gat.io.cpi.copyingFileInputStream;
 
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.util.Map;
 
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
@@ -21,6 +22,20 @@ import org.gridlab.gat.io.cpi.commandlineSsh.CommandlineSshFileAdaptor;
  * @author rob
  */
 public class CopyingFileInputStreamAdaptor extends FileInputStreamCpi {
+    
+    public static Map<String, Boolean> getSupportedCapabilities() {
+        Map<String, Boolean> capabilities = FileInputStreamCpi
+                .getSupportedCapabilities();
+        capabilities.put("available", true);
+        capabilities.put("close", true);
+        capabilities.put("mark", true);
+        capabilities.put("markSupported", true);
+        capabilities.put("read", true);
+        capabilities.put("reset", true);
+        capabilities.put("skip", true);
+
+        return capabilities;
+    }
 
     private static final int MAX_SIZE = 1 * 1024 * 1024;
 
@@ -75,7 +90,7 @@ public class CopyingFileInputStreamAdaptor extends FileInputStreamCpi {
         try {
             return in.available();
         } catch (IOException e) {
-            throw new GATInvocationException("CopyingFileInpuStream", e);
+            throw new GATInvocationException("CopyingFileInputStream", e);
         }
     }
 
@@ -95,7 +110,7 @@ public class CopyingFileInputStreamAdaptor extends FileInputStreamCpi {
         try {
             return in.read();
         } catch (IOException e) {
-            throw new GATInvocationException("CopyingFileInpuStream", e);
+            throw new GATInvocationException("CopyingFileInputStream", e);
         }
     }
 
@@ -104,7 +119,7 @@ public class CopyingFileInputStreamAdaptor extends FileInputStreamCpi {
         try {
             return in.read(arg0, arg1, arg2);
         } catch (IOException e) {
-            throw new GATInvocationException("CopyingFileInpuStream", e);
+            throw new GATInvocationException("CopyingFileInputStream", e);
         }
     }
 
@@ -112,7 +127,7 @@ public class CopyingFileInputStreamAdaptor extends FileInputStreamCpi {
         try {
             return in.read(arg0);
         } catch (IOException e) {
-            throw new GATInvocationException("CopyingFileInpuStream", e);
+            throw new GATInvocationException("CopyingFileInputStream", e);
         }
     }
 
@@ -120,7 +135,7 @@ public class CopyingFileInputStreamAdaptor extends FileInputStreamCpi {
         try {
             in.reset();
         } catch (IOException e) {
-            throw new GATInvocationException("CopyingFileInpuStream", e);
+            throw new GATInvocationException("CopyingFileInputStream", e);
         }
     }
 
@@ -128,7 +143,7 @@ public class CopyingFileInputStreamAdaptor extends FileInputStreamCpi {
         try {
             return in.skip(arg0);
         } catch (IOException e) {
-            throw new GATInvocationException("CopyingFileInpuStream", e);
+            throw new GATInvocationException("CopyingFileInputStream", e);
         }
     }
 

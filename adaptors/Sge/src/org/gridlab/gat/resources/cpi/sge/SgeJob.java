@@ -21,6 +21,7 @@ import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.engine.GATEngine;
 import org.gridlab.gat.monitoring.Metric;
 import org.gridlab.gat.monitoring.MetricDefinition;
+import org.gridlab.gat.monitoring.MetricEvent;
 import org.gridlab.gat.resources.JobDescription;
 import org.gridlab.gat.resources.cpi.JobCpi;
 import org.gridlab.gat.resources.cpi.Sandbox;
@@ -42,7 +43,7 @@ public class SgeJob extends JobCpi {
 
     private Session session;
 
-    private Hashtable<String, Long> time;
+    private Hashtable<String, Long> time = new Hashtable<String, Long>();
 
     /**
      * The jobStartListener runs in a thread and checks the job's state. When it
@@ -86,7 +87,8 @@ public class SgeJob extends JobCpi {
             }
             // Now we're in RUNNING state - set the time and start the
             // jobStopListener
-            time.put("start_time", new Long(System.currentTimeMillis()));
+            time.put("start", new Long(System.currentTimeMillis()));
+            setState(RUNNING);
 
             jobStopListener jsl = new jobStopListener(this.session, this.jobID,
                     time);
@@ -131,8 +133,11 @@ public class SgeJob extends JobCpi {
                     // TODO
                 }
             }
+            setState(POST_STAGING);
+            sandbox.retrieveAndCleanup(SgeJob.this);
+            setState(STOPPED);
             // Now we're in STOPPED state - set the time and exit
-            time.put("stop_time", new Long(System.currentTimeMillis()));
+            time.put("stop", new Long(System.currentTimeMillis()));
         }
     }
 
@@ -156,6 +161,7 @@ public class SgeJob extends JobCpi {
 
     protected void setJobID(String jobID) {
         this.jobID = jobID;
+        time.put("submission", new Long(System.currentTimeMillis()));
     }
 
     protected void startListener() {
@@ -164,8 +170,11 @@ public class SgeJob extends JobCpi {
         new Thread(jsl).start();
     }
 
-    protected void setState(int state) {
+    protected synchronized void setState(int state) {
         this.state = state;
+        MetricEvent v = new MetricEvent(this, getStateString(state),
+                statusMetric, System.currentTimeMillis());
+        GATEngine.fireMetric(this, v);
     }
 
     public String getJobID() {
@@ -173,7 +182,7 @@ public class SgeJob extends JobCpi {
     }
 
     public synchronized int getState() {
-        setState();
+        // setState();
         return state;
     }
 
@@ -181,65 +190,65 @@ public class SgeJob extends JobCpi {
         throw new UnsupportedOperationException("Not implemented");
     }
 
-    protected void setState() {
-        try {
-            int status = session.getJobProgramStatus(jobID);
-
-            switch (status) {
-
-            case Session.RUNNING:
-                state = RUNNING;
-                break;
-
-            case Session.FAILED:
-                state = SUBMISSION_ERROR;
-                break;
-
-            case Session.DONE:
-                state = STOPPED;
-                break;
-
-            /* Job is active but suspended */
-
-            case Session.SYSTEM_SUSPENDED:
-                state = STOPPED;
-                break;
-            case Session.USER_SUSPENDED:
-                state = STOPPED;
-                break;
-            case Session.USER_SYSTEM_SUSPENDED:
-                state = STOPPED;
-                break;
-
-            /* Job is in the queue states */
-
-            case Session.QUEUED_ACTIVE:
-                state = SCHEDULED;
-                break;
-            case Session.SYSTEM_ON_HOLD:
-                state = ON_HOLD;
-                break;
-            case Session.USER_ON_HOLD:
-                state = ON_HOLD;
-                break;
-            case Session.USER_SYSTEM_ON_HOLD:
-                state = ON_HOLD;
-                break;
-            default:
-                if (logger.isDebugEnabled()) {
-                    logger.debug("WARNING: SGE Job: unknown DRMAA state: "
-                            + status);
-                }
-            }
-        } catch (DrmaaException e) {
-            if (logger.isDebugEnabled()) {
-                logger.debug("-- SGEJob EXCEPTION --");
-                logger
-                        .debug("Got an exception while retrieving resource manager status:");
-                logger.debug(e);
-            }
-        }
-    }
+    // protected void setState() {
+    // try {
+    // int status = session.getJobProgramStatus(jobID);
+    //
+    // switch (status) {
+    //
+    // case Session.RUNNING:
+    // state = RUNNING;
+    // break;
+    //
+    // case Session.FAILED:
+    // state = SUBMISSION_ERROR;
+    // break;
+    //
+    // case Session.DONE:
+    // state = STOPPED;
+    // break;
+    //
+    // /* Job is active but suspended */
+    //
+    // case Session.SYSTEM_SUSPENDED:
+    // state = STOPPED;
+    // break;
+    // case Session.USER_SUSPENDED:
+    // state = STOPPED;
+    // break;
+    // case Session.USER_SYSTEM_SUSPENDED:
+    // state = STOPPED;
+    // break;
+    //
+    // /* Job is in the queue states */
+    //
+    // case Session.QUEUED_ACTIVE:
+    // state = SCHEDULED;
+    // break;
+    // case Session.SYSTEM_ON_HOLD:
+    // state = ON_HOLD;
+    // break;
+    // case Session.USER_ON_HOLD:
+    // state = ON_HOLD;
+    // break;
+    // case Session.USER_SYSTEM_ON_HOLD:
+    // state = ON_HOLD;
+    // break;
+    // default:
+    // if (logger.isDebugEnabled()) {
+    // logger.debug("WARNING: SGE Job: unknown DRMAA state: "
+    // + status);
+    // }
+    // }
+    // } catch (DrmaaException e) {
+    // if (logger.isDebugEnabled()) {
+    // logger.debug("-- SGEJob EXCEPTION --");
+    // logger
+    // .debug("Got an exception while retrieving resource manager status:");
+    // logger.debug(e);
+    // }
+    // }
+    // }
 
     protected void setHostname(String hostname) {
         this.hostname = hostname;
@@ -248,7 +257,7 @@ public class SgeJob extends JobCpi {
     public Map<String, Object> getInfo() {
 
         HashMap<String, Object> m = new HashMap<String, Object>();
-        setState();
+        // setState();
 
         try {
             m.put("hostname", hostname);
@@ -259,8 +268,10 @@ public class SgeJob extends JobCpi {
             m.put("resManState", Integer.toString(session
                     .getJobProgramStatus(jobID)));
             m.put("jobID", jobID);
-            m.put("starttime", time.get("start_time"));
-            m.put("stoptime", time.get("stop_time"));
+            m.put("starttime", time.get("start"));
+            m.put("stoptime", time.get("stop"));
+            m.put("submissiontime", time.get("submission"));
+            m.put("poststage.exception", postStageException);
 
         } catch (DrmaaException e) {
             if (logger.isDebugEnabled()) {
@@ -309,7 +320,7 @@ public class SgeJob extends JobCpi {
         } else {
             try {
                 session.control(jobID, Session.TERMINATE);
-                state = INITIAL;
+                state = STOPPED;
             } catch (DrmaaException e) {
                 if (logger.isDebugEnabled()) {
                     logger.debug("-- SGEJob EXCEPTION --");

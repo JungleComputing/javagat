@@ -57,9 +57,7 @@ public class LocalQResourceBrokerAdaptor extends ResourceBrokerCpi implements
     public static Map<String, Boolean> getSupportedCapabilities() {
         Map<String, Boolean> capabilities = ResourceBrokerCpi
                 .getSupportedCapabilities();
-        capabilities.put("beginMultiJob", true);
-        capabilities.put("endMultiJob", true);
-        capabilities.put("submitJob", false);
+        capabilities.put("submitJob", true);
 
         return capabilities;
     }

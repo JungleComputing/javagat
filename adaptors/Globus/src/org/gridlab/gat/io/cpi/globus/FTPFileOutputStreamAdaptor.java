@@ -16,6 +16,7 @@ import org.gridlab.gat.security.SecurityContext;
 import org.gridlab.gat.security.cpi.SecurityContextUtils;
 
 public class FTPFileOutputStreamAdaptor extends GlobusFileOutputStreamAdaptor {
+
     public FTPFileOutputStreamAdaptor(GATContext gatContext, URI location,
             Boolean append) throws GATObjectCreationException {
         super(gatContext, location, append);

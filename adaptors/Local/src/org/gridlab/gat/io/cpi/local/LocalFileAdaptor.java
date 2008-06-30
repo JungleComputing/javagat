@@ -56,6 +56,10 @@ public class LocalFileAdaptor extends FileCpi {
 
         return capabilities;
     }
+    
+    public static String getDescription() {
+        return "The Local File Adaptor is a simple wrapper around the java.io.File object.";
+    }
 
     private File f;
 

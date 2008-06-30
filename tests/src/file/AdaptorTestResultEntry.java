@@ -1,6 +1,5 @@
 package file;
 
-
 public class AdaptorTestResultEntry {
 
     private boolean result;
@@ -9,22 +8,21 @@ public class AdaptorTestResultEntry {
 
     private Exception e;
 
-    public AdaptorTestResultEntry(boolean result, long time,
-            Exception e) {
+    public AdaptorTestResultEntry(boolean result, long time, Exception e) {
         this.result = result;
         this.time = time;
         this.e = e;
     }
 
-    protected boolean getResult() {
+    public boolean getResult() {
         return result;
     }
 
-    protected long getTime() {
+    public long getTime() {
         return time;
     }
 
-    protected Exception getException() {
+    public Exception getException() {
         return e;
     }
 

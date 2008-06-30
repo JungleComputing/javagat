@@ -5,6 +5,7 @@ package org.gridlab.gat.io.cpi.sftp;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.Map;
 
 import org.gridlab.gat.AdaptorNotApplicableException;
 import org.gridlab.gat.GATContext;
@@ -22,6 +23,21 @@ import com.sshtools.j2ssh.sftp.SftpSubsystemClient;
  * @author rob
  */
 public class SftpFileOutputStreamAdaptor extends FileOutputStreamCpi {
+
+    public static Map<String, Boolean> getSupportedCapabilities() {
+        Map<String, Boolean> capabilities = FileOutputStreamCpi
+                .getSupportedCapabilities();
+        capabilities.put("close", true);
+        capabilities.put("flush", true);
+        capabilities.put("write", true);
+
+        return capabilities;
+    }
+    
+    public static String getDescription() {
+        return "The Sftp FileOutputStream Adaptor implements the FileOutputStream object using the j2ssh library. ";
+    }
+
     OutputStream out;
 
     SftpConnection c;

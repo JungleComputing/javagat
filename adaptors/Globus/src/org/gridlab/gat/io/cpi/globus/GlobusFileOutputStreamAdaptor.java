@@ -2,6 +2,7 @@ package org.gridlab.gat.io.cpi.globus;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.Map;
 
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
@@ -10,6 +11,17 @@ import org.gridlab.gat.URI;
 import org.gridlab.gat.io.cpi.FileOutputStreamCpi;
 
 public abstract class GlobusFileOutputStreamAdaptor extends FileOutputStreamCpi {
+
+    public static Map<String, Boolean> getSupportedCapabilities() {
+        Map<String, Boolean> capabilities = FileOutputStreamCpi
+                .getSupportedCapabilities();
+        capabilities.put("close", true);
+        capabilities.put("flush", true);
+        capabilities.put("write", true);
+
+        return capabilities;
+    }
+
     OutputStream out;
 
     public GlobusFileOutputStreamAdaptor(GATContext gatContext, URI location,

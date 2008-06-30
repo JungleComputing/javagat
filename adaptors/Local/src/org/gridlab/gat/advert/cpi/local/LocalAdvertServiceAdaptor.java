@@ -17,6 +17,7 @@ import java.nio.channels.FileChannel;
 import java.nio.channels.FileLock;
 import java.util.Enumeration;
 import java.util.Hashtable;
+import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Vector;
 
@@ -32,6 +33,20 @@ import org.gridlab.gat.engine.GATEngine;
  * @author rob
  */
 public class LocalAdvertServiceAdaptor extends AdvertServiceCpi {
+
+    public static Map<String, Boolean> getSupportedCapabilities() {
+        Map<String, Boolean> capabilities = AdvertServiceCpi
+                .getSupportedCapabilities();
+        capabilities.put("add", true);
+        capabilities.put("delete", true);
+        capabilities.put("getMetaData", true);
+        capabilities.put("getAdvertisable", true);
+        capabilities.put("find", true);
+        capabilities.put("setPWD", true);
+        capabilities.put("getPWD", true);
+        return capabilities;
+    }
+
     static final String SEPERATOR = "/";
 
     String pwd = SEPERATOR;

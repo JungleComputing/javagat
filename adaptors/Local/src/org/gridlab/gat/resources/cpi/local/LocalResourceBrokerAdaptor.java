@@ -64,7 +64,7 @@ public class LocalResourceBrokerAdaptor extends ResourceBrokerCpi {
                 .getSupportedCapabilities();
         capabilities.put("beginMultiJob", true);
         capabilities.put("endMultiJob", true);
-        capabilities.put("submitJob", false);
+        capabilities.put("submitJob", true);
 
         return capabilities;
     }
@@ -190,7 +190,6 @@ public class LocalResourceBrokerAdaptor extends ResourceBrokerCpi {
         String command = exe + " " + getArguments(description);
 
         java.io.File f = new java.io.File(sandbox.getSandboxURI().getPath());
-
         if (logger.isInfoEnabled()) {
             logger.info("running command: " + command);
 

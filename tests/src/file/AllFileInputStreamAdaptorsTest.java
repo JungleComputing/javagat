@@ -11,7 +11,7 @@ import org.gridlab.gat.AdaptorNotApplicableException;
 import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.GATObjectCreationException;
 
-public class AllAdaptorsTest {
+public class AllFileInputStreamAdaptorsTest {
 
     /**
      * @param args
@@ -27,9 +27,11 @@ public class AllAdaptorsTest {
         int i = 0;
         for (String adaptor : adaptors) {
             if (adaptor.equals("local")) {
-                results[i++] = new AdaptorTest().test(adaptor, "localhost");
+                results[i++] = new FileInputStreamAdaptorTest().test(adaptor,
+                        "localhost");
             } else {
-                results[i++] = new AdaptorTest().test(adaptor, host);
+                results[i++] = new FileInputStreamAdaptorTest().test(adaptor,
+                        host);
             }
         }
         try {
@@ -42,7 +44,7 @@ public class AllAdaptorsTest {
 
     private static void printResults(AdaptorTestResult[] results, String host)
             throws IOException {
-        File outFile = new File("results-" + host + ".html");
+        File outFile = new File("FileInputStream-results-" + host + ".html");
         if (!outFile.exists()) {
             outFile.createNewFile();
         }

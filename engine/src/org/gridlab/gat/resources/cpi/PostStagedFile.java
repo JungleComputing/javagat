@@ -82,6 +82,7 @@ public class PostStagedFile extends StagedFile {
 
     protected void poststage() throws GATInvocationException {
         if (logger.isInfoEnabled()) {
+            logger.info("  exists: " + getResolvedSrc().exists());
             logger.info("  copy " + getResolvedSrc().toGATURI() + " to "
                     + getResolvedDest().toGATURI());
         }

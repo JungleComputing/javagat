@@ -46,6 +46,17 @@ import org.ietf.jgss.GSSCredential;
  * @since 1.0
  */
 public class WSGT4newResourceBrokerAdaptor extends ResourceBrokerCpi {
+
+    public static Map<String, Boolean> getSupportedCapabilities() {
+        Map<String, Boolean> capabilities = ResourceBrokerCpi
+                .getSupportedCapabilities();
+        capabilities.put("beginMultiJob", true);
+        capabilities.put("endMultiJob", true);
+        capabilities.put("submitJob", true);
+
+        return capabilities;
+    }
+
     protected static Logger logger = Logger
             .getLogger(WSGT4newResourceBrokerAdaptor.class);
 

@@ -211,7 +211,7 @@ public class GATEngine {
     }
 
     @SuppressWarnings("unchecked")
-    public static AdaptorInfo[] getAdaptors(String cpiName) {
+    public static AdaptorInfo[] getAdaptorInfos(String cpiName) {
         GATEngine gatEngine = GATEngine.getGATEngine();
         List<Adaptor> adaptors = gatEngine.adaptorLists.get(cpiName);
         if (adaptors == null) {
@@ -238,9 +238,18 @@ public class GATEngine {
                         (Object[]) null);
             } catch (Exception e) {
             }
+            String description = "not available";
+            try {
+                Class<?> adaptorClass = adaptor.getAdaptorClass();
+                Method infoMethod = adaptorClass.getMethod("getDescription",
+                        (Class[]) null);
+                description = (String) infoMethod.invoke(null,
+                        (Object[]) null);
+            } catch (Exception e) {
+            }
             result[i++] = new AdaptorInfo(adaptor.getName(), adaptor
                     .getAdaptorClass().getSimpleName(), cpiName, preferences,
-                    capabilities);
+                    capabilities, description);
 
         }
         return result;

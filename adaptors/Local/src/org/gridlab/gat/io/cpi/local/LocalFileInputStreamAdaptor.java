@@ -4,7 +4,6 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.Map;
 
-import org.gridlab.gat.AdaptorInfo;
 import org.gridlab.gat.AdaptorNotApplicableException;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
@@ -26,12 +25,6 @@ public class LocalFileInputStreamAdaptor extends FileInputStreamCpi {
         capabilities.put("skip", true);
 
         return capabilities;
-    }
-
-    public static AdaptorInfo getInfo() {
-        return new AdaptorInfo(LocalFileAdaptor.class.getCanonicalName(),
-                LocalFileAdaptor.class.getSimpleName(), "File",
-                getSupportedPreferences(), getSupportedCapabilities());
     }
 
     FileInputStream in;
