@@ -65,11 +65,25 @@ public class CommandlineSshResourceBrokerAdaptor extends ResourceBrokerCpi {
 
     public Job submitJob(JobDescription description, MetricListener listener,
             String metricDefinitionName) throws GATInvocationException {
-        SoftwareDescription sd = description.getSoftwareDescription();
 
+        SoftwareDescription sd = description.getSoftwareDescription();
         if (sd == null) {
             throw new GATInvocationException(
                     "The job description does not contain a software description");
+        }
+
+        if (getProcessCount(description) != 1) {
+            throw new GATInvocationException(
+                    "Value of attribute 'process.count' cannot be handled: "
+                            + getProcessCount(description));
+        }
+        if (getHostCount(description) != 1) {
+            throw new GATInvocationException(
+                    "Value of attribute 'host.count' cannot be handled: "
+                            + getHostCount(description));
+        }
+        if (sd.getAttributes().containsKey("cores.per.process")) {
+            logger.info("ignoring attribute 'cores.per.process'");
         }
 
         // we do not support environment yet

@@ -70,6 +70,15 @@ public class SgeResourceBrokerAdaptor extends ResourceBrokerCpi {
             String metricDefinitionName) throws GATInvocationException {
 
         SoftwareDescription sd = description.getSoftwareDescription();
+        if (sd == null) {
+            throw new GATInvocationException(
+                    "The job description does not contain a software description");
+        }
+
+        if (sd.getAttributes().containsKey("cores.per.process")) {
+            logger.info("ignoring attribute 'cores.per.process'");
+        }
+
         String host = getHostname();
 
         Sandbox sandbox = null;
@@ -130,6 +139,12 @@ public class SgeResourceBrokerAdaptor extends ResourceBrokerCpi {
 
             if (sd.getStderr() != null) {
                 jt.setErrorPath(host + ":" + sd.getStderr().getName());
+            }
+            if (sd.getAttributes().containsKey("host.count")) {
+                jt.setNativeSpecification("-pe * " + getHostCount(description));
+            } else {
+                jt.setNativeSpecification("-pe * "
+                        + getProcessCount(description));
             }
 
             job.setJobID(SGEsession.runJob(jt));

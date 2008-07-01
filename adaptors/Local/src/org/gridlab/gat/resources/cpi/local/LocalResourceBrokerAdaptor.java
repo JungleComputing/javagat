@@ -124,6 +124,23 @@ public class LocalResourceBrokerAdaptor extends ResourceBrokerCpi {
                     "The job description does not contain a software description");
         }
 
+        if (getProcessCount(description) != 1) {
+            throw new GATInvocationException(
+                    "Value of attribute 'process.count' cannot be handled: "
+                            + getProcessCount(description));
+        }
+        if (getHostCount(description) != 1) {
+            throw new GATInvocationException(
+                    "Value of attribute 'host.count' cannot be handled: "
+                            + getHostCount(description));
+        }
+        if (Integer.parseInt(getCoresPerProcess(description)) > Runtime
+                .getRuntime().availableProcessors()) {
+            throw new GATInvocationException(
+                    "Value of attribute 'cores.per.process' cannot be handled: "
+                            + getCoresPerProcess(description));
+        }
+
         if (getBooleanAttribute(description, "wrapper.enable", false)) {
             if (logger.isDebugEnabled()) {
                 logger.debug("wrapper enabled: using wrapper application.");

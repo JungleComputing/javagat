@@ -41,6 +41,8 @@ public class AdaptorTest implements MetricListener {
         preferences.put("file.adaptor.name", "sshtrilead,local");
         adaptorTestResult.put("submit job easy  ", submitJobEasy(preferences,
                 host));
+        adaptorTestResult.put("submit job parallel", submitJobParallel(
+                preferences, host));
         adaptorTestResult.put("submit job stdout", submitJobStdout(preferences,
                 host));
         adaptorTestResult.put("submit job stderr", submitJobStderr(preferences,
@@ -66,6 +68,42 @@ public class AdaptorTest implements MetricListener {
         Map<String, Object> attributes = new HashMap<String, Object>();
 
         sd.setAttributes(attributes);
+        JobDescription jd = new JobDescription(sd);
+        ResourceBroker broker;
+        try {
+            broker = GAT.createResourceBroker(preferences, new URI("any://"
+                    + host));
+        } catch (GATObjectCreationException e) {
+            return new AdaptorTestResultEntry(false, 0L, e);
+        } catch (URISyntaxException e) {
+            return new AdaptorTestResultEntry(false, 0L, e);
+        }
+        long start = System.currentTimeMillis();
+        try {
+            broker.submitJob(jd, this, "job.status");
+        } catch (GATInvocationException e) {
+            e.printStackTrace();
+            return new AdaptorTestResultEntry(false, 0L, e);
+        }
+        synchronized (this) {
+            try {
+                wait();
+            } catch (InterruptedException e) {
+
+            }
+        }
+        long stop = System.currentTimeMillis();
+        return new AdaptorTestResultEntry(true, (stop - start), null);
+
+    }
+
+    private AdaptorTestResultEntry submitJobParallel(Preferences preferences,
+            String host) {
+        SoftwareDescription sd = new SoftwareDescription();
+        sd.setExecutable("/bin/echo");
+        sd.setArguments("test", "1", "2", "3");
+        sd.addAttribute("host.count", 2);
+        sd.addAttribute("process.count", 2);
         JobDescription jd = new JobDescription(sd);
         ResourceBroker broker;
         try {
