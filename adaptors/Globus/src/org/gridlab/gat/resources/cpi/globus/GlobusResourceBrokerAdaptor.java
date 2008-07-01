@@ -115,7 +115,7 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
             rsl += (" (arguments = " + args + ")");
         }
 
-        rsl += " (count = " + getCPUCount(description) + ")";
+        rsl += " (count = " + getProcessCount(description) + ")";
 
         rsl += " (hostCount = " + getHostCount(description) + ")";
 

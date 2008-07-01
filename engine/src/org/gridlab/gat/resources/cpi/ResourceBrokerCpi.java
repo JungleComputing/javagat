@@ -198,11 +198,45 @@ public abstract class ResourceBrokerCpi implements ResourceBroker {
         return sd.getBooleanAttribute(name, defaultVal);
     }
 
-    protected int getCPUCount(JobDescription description) {
-        return getIntAttribute(description, "count", 1);
+    protected int getProcessCount(JobDescription description) {
+        if (description.getSoftwareDescription().getAttributes().containsKey(
+                "process.count")) {
+            return getIntAttribute(description, "process.count", 1);
+        } else {
+            return getIntAttribute(description, "count", 1);
+        }
+    }
+
+    protected String getCoresPerProcess(JobDescription description) {
+        // if cores per process isn't set, try to approximate it by dividing
+        // process.count by host.count
+        if (!description.getSoftwareDescription().getAttributes().containsKey(
+                "cores.per.process")
+                && description.getSoftwareDescription().getAttributes()
+                        .containsKey("host.count")) {
+            int hostCount = getIntAttribute(description, "host.count", -1);
+            int processCount = getIntAttribute(description, "process.count", 1);
+            if (hostCount > 0 && processCount >= hostCount) {
+                return "" + processCount / hostCount;
+            }
+        }
+        return getStringAttribute(description, "cores.per.process", "1");
     }
 
     protected int getHostCount(JobDescription description) {
+        // if host count isn't set, try to approximate it by dividing
+        // process.count by cores.per.process
+        if (!description.getSoftwareDescription().getAttributes().containsKey(
+                "host.count")
+                && description.getSoftwareDescription().getAttributes()
+                        .containsKey("cores.per.process")) {
+            int coresPerProcess = getIntAttribute(description,
+                    "cores.per.process", -1);
+            int processCount = getIntAttribute(description, "process.count", 1);
+            if (coresPerProcess > 0 && processCount >= coresPerProcess) {
+                return processCount / coresPerProcess;
+            }
+        }
         return getIntAttribute(description, "host.count", 1);
     }
 

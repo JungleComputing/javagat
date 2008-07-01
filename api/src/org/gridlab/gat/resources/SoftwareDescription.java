@@ -45,13 +45,21 @@ import org.gridlab.gat.io.File;
  * <TD>{@link String}
  * <TD>working directory
  * <TR>
- * <TD>count
+ * <TD>count (<b>deprecated</b> use process.count)
+ * <TD>{@link Integer}/{@link String}
+ * <TD>number of executables to run
+ * <TR>
+ * <TD>process.count
  * <TD>{@link Integer}/{@link String}
  * <TD>number of executables to run
  * <TR>
  * <TD>host.count
  * <TD>{@link Integer}/{@link String}
  * <TD>number of hosts to distribute on
+ * <TR>
+ * <TD>cores.per.process
+ * <TD>{@link Integer}/{@link String}
+ * <TD>number of cores to be used by a process
  * <TR>
  * <TD>time.max
  * <TD>{@link Long}/{@link String}
@@ -254,6 +262,11 @@ public class SoftwareDescription implements java.io.Serializable {
                 continue;
             String val = (String) tmp;
             if (key.equalsIgnoreCase("count")) {
+                attributes.put(key, new Integer(val));
+                if (!attributes.containsKey("process.count")) {
+                    attributes.put("process.count", new Integer(val));
+                }
+            } else if (key.equalsIgnoreCase("process.count")) {
                 attributes.put(key, new Integer(val));
             } else if (key.equalsIgnoreCase("host.count")) {
                 attributes.put(key, new Integer(val));
