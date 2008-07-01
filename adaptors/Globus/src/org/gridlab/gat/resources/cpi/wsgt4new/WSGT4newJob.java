@@ -132,7 +132,11 @@ public class WSGT4newJob extends JobCpi implements GramJobListener, Runnable {
         }
         m.put("poststage.exception", postStageException);
         m.put("resourcebroker", "WSGT4new");
-        m.put("exitvalue", "" + getExitStatus());
+        m
+                .put(
+                        "exitvalue",
+                        (getState() != STOPPED && getState() != SUBMISSION_ERROR) ? null
+                                : "" + getExitStatus());
         if (deleteException != null) {
             m.put("delete.exception", deleteException);
         }
