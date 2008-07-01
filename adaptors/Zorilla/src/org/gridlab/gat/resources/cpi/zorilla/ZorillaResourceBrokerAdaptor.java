@@ -39,7 +39,7 @@ public class ZorillaResourceBrokerAdaptor extends ResourceBrokerCpi implements
     }
 
     // update status of each job every minute
-    public static final int TIMEOUT = 60000;
+    public static final int TIMEOUT = 5000;
 
     private static final Logger logger = Logger
             .getLogger(ZorillaResourceBrokerAdaptor.class);
