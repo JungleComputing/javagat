@@ -36,8 +36,6 @@ public class LocalQJob extends JobCpi implements Runnable,
 
     private final Metric statusMetric;
 
-    private final long startTime;
-
     private final int priority;
 
     private final int jobID;
@@ -51,10 +49,9 @@ public class LocalQJob extends JobCpi implements Runnable,
     private Process p = null;
 
     LocalQJob(GATContext gatContext, LocalQResourceBrokerAdaptor broker,
-            JobDescription description, Sandbox sandbox, long startTime) {
+            JobDescription description, Sandbox sandbox) {
         super(gatContext, description, sandbox);
 
-        this.startTime = startTime;
         this.jobID = allocJobID();
 
         priority = description.getSoftwareDescription().getIntAttribute(
@@ -67,7 +64,7 @@ public class LocalQJob extends JobCpi implements Runnable,
                 MetricDefinition.DISCRETE, "String", null, null, returnDef);
         statusMetric = statusMetricDefinition.createMetric(null);
         GATEngine.registerMetric(this, "getJobStatus", statusMetricDefinition);
-
+        setSubmissionTime();
         // cheat and start job right now :)
         // Thread thread = new Thread(this);
         // thread.start();
@@ -149,26 +146,24 @@ public class LocalQJob extends JobCpi implements Runnable,
         }
     }
 
-    private void setState(int state) {
-        MetricEvent metricValue = null;
+    protected void setState(int state) {
+        MetricEvent metricEvent = null;
         synchronized (this) {
             this.state = state;
-            metricValue = new MetricEvent(this, getStateString(state),
+            metricEvent = new MetricEvent(this, getStateString(state),
                     statusMetric, System.currentTimeMillis());
 
             if (logger.isDebugEnabled()) {
                 logger.debug("default job callback: firing event: "
-                        + metricValue);
+                        + metricEvent);
             }
         }
-
-        GATEngine.fireMetric(this, metricValue);
+        GATEngine.fireMetric(this, metricEvent);
     }
 
     // start running this job
     public void run() {
         logger.debug("running job with priority: " + priority);
-
         SoftwareDescription description = jobDescription
                 .getSoftwareDescription();
 
@@ -204,11 +199,15 @@ public class LocalQJob extends JobCpi implements Runnable,
         }
 
         processBuilder.command().add(exe);
-        for (String argument : description.getArguments()) {
-            processBuilder.command().add(argument);
+        if (description.getArguments() != null) {
+            for (String argument : description.getArguments()) {
+                processBuilder.command().add(argument);
+            }
         }
 
-        java.io.File workingDirectory = new java.io.File(sandbox.getSandbox());
+        java.io.File workingDirectory = new java.io.File(System
+                .getProperty("user.home")
+                + java.io.File.separator + sandbox.getSandbox());
         processBuilder.directory(workingDirectory);
 
         if (logger.isDebugEnabled()) {
@@ -231,7 +230,6 @@ public class LocalQJob extends JobCpi implements Runnable,
             try {
                 p = processBuilder.start();
                 this.p = p;
-                setSubmissionTime();
                 setStartTime();
             } catch (IOException e) {
                 logger.error(e);
@@ -275,7 +273,7 @@ public class LocalQJob extends JobCpi implements Runnable,
         } else {
             try {
                 java.io.FileOutputStream out = new java.io.FileOutputStream(
-                        stdout.getAbsolutePath());
+                        stdout.getAbsolutePath(), true);
                 outForwarder = new OutputForwarder(p.getInputStream(), out);
             } catch (Exception e) {
                 logger.error(e);
@@ -341,7 +339,7 @@ public class LocalQJob extends JobCpi implements Runnable,
                     + sandbox.getPostStageTime() + " wipe: "
                     + sandbox.getWipeTime() + " delete: "
                     + sandbox.getDeleteTime() + " total: "
-                    + (System.currentTimeMillis() - startTime));
+                    + (System.currentTimeMillis() - starttime));
         }
 
     }

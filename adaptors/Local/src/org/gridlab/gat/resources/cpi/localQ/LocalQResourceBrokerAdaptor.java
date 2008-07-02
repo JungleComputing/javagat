@@ -10,6 +10,7 @@ import org.gridlab.gat.GATObjectCreationException;
 import org.gridlab.gat.MethodNotApplicableException;
 import org.gridlab.gat.URI;
 import org.gridlab.gat.engine.GATEngine;
+import org.gridlab.gat.monitoring.Metric;
 import org.gridlab.gat.monitoring.MetricListener;
 import org.gridlab.gat.resources.Job;
 import org.gridlab.gat.resources.JobDescription;
@@ -118,12 +119,27 @@ public class LocalQResourceBrokerAdaptor extends ResourceBrokerCpi implements
      */
     public Job submitJob(JobDescription description, MetricListener listener,
             String metricDefinitionName) throws GATInvocationException {
-        long start = System.currentTimeMillis();
         SoftwareDescription sd = description.getSoftwareDescription();
 
         if (sd == null) {
             throw new GATInvocationException(
                     "The job description does not contain a software description");
+        }
+
+        if (getProcessCount(description) != 1) {
+            throw new GATInvocationException(
+                    "Value of attribute 'process.count' cannot be handled: "
+                            + getProcessCount(description));
+        }
+
+        if (getHostCount(description) != 1) {
+            throw new GATInvocationException(
+                    "Value of attribute 'host.count' cannot be handled: "
+                            + getHostCount(description));
+        }
+        if (Integer.parseInt(getCoresPerProcess(description)) != 1) {
+            logger.info("Value of attribute 'cores.per.process' is ignored: "
+                    + getCoresPerProcess(description));
         }
 
         String host = getHostname();
@@ -144,13 +160,22 @@ public class LocalQResourceBrokerAdaptor extends ResourceBrokerCpi implements
         Sandbox sandbox = new Sandbox(gatContext, description, "localhost",
                 home, true, true, true, true);
 
-        LocalQJob result = new LocalQJob(gatContext, this, description,
-                sandbox, start);
+        LocalQJob result = new LocalQJob(gatContext, this, description, sandbox);
+        if (listener != null && metricDefinitionName != null) {
+            Metric metric = result.getMetricDefinitionByName(
+                    metricDefinitionName).createMetric(null);
+            result.addMetricListener(listener, metric);
+        }
+
+        result.setState(Job.PRE_STAGING);
+        sandbox.prestage();
 
         // add to queue
         synchronized (this) {
+            // for (int i = 0; i < getProcessCount(description); i++) {
             queue.add(result);
             notifyAll();
+            // }
         }
 
         return result;
@@ -186,6 +211,7 @@ public class LocalQResourceBrokerAdaptor extends ResourceBrokerCpi implements
                 next.run();
             } catch (Throwable t) {
                 logger.error("error while running job: " + t);
+                t.printStackTrace();
             }
         }
     }

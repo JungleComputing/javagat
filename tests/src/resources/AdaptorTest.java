@@ -55,7 +55,7 @@ public class AdaptorTest implements MetricListener {
                 preferences, host));
         adaptorTestResult.put("job state consistency",
                 submitJobStateConsistency(preferences, host));
-        adaptorTestResult.put("job get info         ", submitJobGetInfo(
+        adaptorTestResult.put("job get info        ", submitJobGetInfo(
                 preferences, host));
         return adaptorTestResult;
     }
@@ -102,7 +102,7 @@ public class AdaptorTest implements MetricListener {
         SoftwareDescription sd = new SoftwareDescription();
         sd.setExecutable("/bin/echo");
         sd.setArguments("test", "1", "2", "3");
-        sd.addAttribute("host.count", 2);
+        sd.addAttribute("host.count", 1);
         sd.addAttribute("process.count", 2);
         JobDescription jd = new JobDescription(sd);
         ResourceBroker broker;
@@ -118,7 +118,6 @@ public class AdaptorTest implements MetricListener {
         try {
             broker.submitJob(jd, this, "job.status");
         } catch (GATInvocationException e) {
-            e.printStackTrace();
             return new AdaptorTestResultEntry(false, 0L, e);
         }
         synchronized (this) {
