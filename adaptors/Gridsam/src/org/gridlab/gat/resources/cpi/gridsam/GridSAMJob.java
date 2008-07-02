@@ -72,6 +72,11 @@ public class GridSAMJob extends JobCpi {
         public void run() {
             while (true) {
 
+                String saved = System.getProperty("axis.ClientConfigFile");
+                if (saved != null) {
+                    System.clearProperty("axis.ClientConfigFile");
+                }
+
                 // update the manager state of the job
                 try {
                     jobInstance = adaptor.getJobManager()
@@ -82,6 +87,10 @@ public class GridSAMJob extends JobCpi {
                 } catch (UnknownJobException e) {
                     logger.error("caught exception", e);
                     throw new RuntimeException(e);
+                } finally {
+                    if (saved != null) {
+                        System.setProperty("axis.ClientConfigFile", saved);
+                    }
                 }
 
                 if (logger.isDebugEnabled()) {
@@ -211,7 +220,7 @@ public class GridSAMJob extends JobCpi {
         } else if (jobState == JobState.FAILED) {
             return SUBMISSION_ERROR;
         } else if (jobState == JobState.PENDING) {
-            return RUNNING;
+            return PRE_STAGING;
         } else if (jobState == JobState.STAGED_IN
                 || jobState == JobState.STAGING_IN) {
             return PRE_STAGING;
@@ -246,6 +255,10 @@ public class GridSAMJob extends JobCpi {
         }
         if (exitVal != -1) {
             m.put("exitValue", Integer.toString(exitVal));
+        }
+
+        if (postStageException != null) {
+            m.put("poststage.exception", postStageException);
         }
 
         return m;

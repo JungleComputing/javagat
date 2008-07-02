@@ -6,12 +6,14 @@ import java.util.Map;
 
 import org.apache.log4j.Logger;
 import org.apache.xmlbeans.XmlException;
+import org.gridlab.gat.AdaptorNotApplicableException;
 import org.gridlab.gat.GAT;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.GATObjectCreationException;
 import org.gridlab.gat.Preferences;
 import org.gridlab.gat.TimePeriod;
+import org.gridlab.gat.URI;
 import org.gridlab.gat.monitoring.Metric;
 import org.gridlab.gat.monitoring.MetricListener;
 import org.gridlab.gat.resources.HardwareResource;
@@ -57,7 +59,13 @@ public class GridSAMResourceBrokerAdaptor extends ResourceBrokerCpi {
      */
     public GridSAMResourceBrokerAdaptor(GATContext gatContext,
             org.gridlab.gat.URI brokerURI) throws GATObjectCreationException {
+
         super(gatContext, brokerURI);
+
+        if (!brokerURI.isCompatible("https")) {
+            throw new AdaptorNotApplicableException("cannot handle this URI: "
+                    + brokerURI);
+        }
     }
 
     /**
@@ -121,12 +129,22 @@ public class GridSAMResourceBrokerAdaptor extends ResourceBrokerCpi {
                     "The job description does not contain a software description");
         }
 
-        String gridSAMWebServiceURL = brokerURI.toString();
+        URI uri = brokerURI;
+
+        if (! "https".equals(brokerURI.getScheme())) {
+            try {
+                uri = brokerURI.setScheme("https");
+            } catch(Throwable e) {
+                logger.debug("Should not happen");
+            }
+        }
+
+        String gridSAMWebServiceURL = uri.toString();
         String sandboxRoot = getSandboxRoot(gatContext.getPreferences());
 
         if (logger.isInfoEnabled()) {
-            logger.info("url='" + gridSAMWebServiceURL + "'; sandboxRoot="
-                    + sandboxRoot);
+            logger.info("url='" + gridSAMWebServiceURL + "'");
+            logger.info("sandboxRoot=" + sandboxRoot);
         }
 
         JobInstance jobInstance = null;
@@ -170,7 +188,21 @@ public class GridSAMResourceBrokerAdaptor extends ResourceBrokerCpi {
                         + jobDefinitionDocument.toString());
             }
 
+            // Take care of axis.ClientConfigFile system property: it may
+            // be set by some Globus adaptor, but GridSAM cannot stand that.
+            // So, save and restore it.
+            String saved = System.getProperty("axis.ClientConfigFile");
+            if (saved != null) {
+                System.clearProperty("axis.ClientConfigFile");
+            }
+
+            sandbox.prestage();
+
             jobInstance = jobManager.submitJob(jobDefinitionDocument);
+
+            if (saved != null) {
+                System.setProperty("axis.ClientConfigFile", saved);
+            }
 
             String jobID = jobInstance.getID();
             if (logger.isInfoEnabled()) {
@@ -233,17 +265,16 @@ public class GridSAMResourceBrokerAdaptor extends ResourceBrokerCpi {
 
     private String getSandboxRoot(Preferences prefs)
             throws GATInvocationException {
-        Object tmp = prefs.get("ResourceBroker.sandbox.root");
+        Object tmp = prefs.get("resourcebroker.sandbox.root");
         if (tmp == null || !(tmp instanceof String)) {
-            logger.info("unable to get sandbox root directory");
-            throw new GATInvocationException(
-                    "unable to get sandbox root directory");
+            // Default if user did not set this preference.
+            tmp = "/tmp";
         }
         File fTmp = new File(tmp.toString());
         if (!fTmp.isAbsolute()) {
-            logger.info("sandboxRoot has to be an absolute path");
+            logger.info("resourcebroker.sandbox.root has to be an absolute path");
             throw new GATInvocationException(
-                    "sandboxRoot has to be an absolute path");
+                    "resourcebroker.sandbox.root has to be an absolute path");
         }
         return tmp.toString();
     }

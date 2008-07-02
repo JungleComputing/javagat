@@ -129,62 +129,68 @@ public class GridSAMJSDLGeneratorImpl implements GridSAMJSDLGenerator {
     @SuppressWarnings("unchecked")
     private StringBuilder addApplication(StringBuilder builder,
             SoftwareDescription sd, Sandbox sandbox) {
-        builder
-                .append("<Application>")
+        if (sd.getExecutable() != null) {
+            builder.append("<Application>")
                 .append(
                         "<POSIXApplication xmlns=\"http://schemas.ggf.org/jsdl/2005/11/jsdl-posix\">");
-
-        // add executable
-        builder.append("<Executable>").append(sd.getExecutable()).append(
-                "</Executable>");
-        if (logger.isDebugEnabled()) {
-            logger.debug("executable =" + sd.getExecutable());
-            logger.debug("arguments count=" + sd.getArguments().length);
-        }
-
-        // add arguments
-        if (sd.getArguments().length > 0) {
-            for (String argument : sd.getArguments()) {
-                if (logger.isDebugEnabled()) {
-                    logger.debug("argument=" + argument);
+            // add executable
+            builder.append("<Executable>").append(sd.getExecutable()).append(
+                    "</Executable>");
+            if (logger.isDebugEnabled()) {
+                logger.debug("executable =" + sd.getExecutable());
+                if (sd.getArguments() != null) {
+                    logger.debug("arguments count=" + sd.getArguments().length);
+                } else {
+                    logger.debug("null arguments!");
                 }
-                builder.append("<Argument>").append(argument).append(
-                        "</Argument>");
             }
-        }
-        Map<String, Object> attrs = sd.getAttributes();
 
-        // add error output
-        String tmp = (String) attrs.get(STDERR_ATTRIBUTE);
-        if (tmp != null) {
-            addSimpleTag(builder, "Error", javaGatStderr);
-        }
-
-        // add input
-        tmp = (String) attrs.get(STDIN_ATTRIBUTE);
-        if (tmp != null) {
-            addSimpleTag(builder, "Input", javaGatStdin);
-
-        }
-
-        // add output
-        tmp = (String) attrs.get(STDOUT_ATTRIBUTE);
-        if (tmp != null) {
-            addSimpleTag(builder, "Output", javaGatStdout);
-        }
-
-        Map env = (Map) attrs.get("environment");
-        if (env != null) {
-            for (Object eo : env.keySet()) {
-                builder.append("<Environment name=\"").append(eo.toString())
-                        .append("\">").append(env.get(eo).toString()).append(
-                                "</Environment>");
+            // add arguments
+            if (sd.getArguments()!= null && sd.getArguments().length > 0) {
+                for (String argument : sd.getArguments()) {
+                    if (logger.isDebugEnabled()) {
+                        logger.debug("argument=" + argument);
+                    }
+                    builder.append("<Argument>").append(argument).append(
+                            "</Argument>");
+                }
             }
+            Map<String, Object> attrs = sd.getAttributes();
+
+            // add error output
+            String tmp = (String) attrs.get(STDERR_ATTRIBUTE);
+            if (tmp != null) {
+                addSimpleTag(builder, "Error", javaGatStderr);
+            }
+
+            // add input
+            tmp = (String) attrs.get(STDIN_ATTRIBUTE);
+            if (tmp != null) {
+                addSimpleTag(builder, "Input", javaGatStdin);
+
+            }
+
+            // add output
+            tmp = (String) attrs.get(STDOUT_ATTRIBUTE);
+            if (tmp != null) {
+                addSimpleTag(builder, "Output", javaGatStdout);
+            }
+
+            Map<String, Object> env = sd.getEnvironment();
+            if (env != null) {
+                for (Object eo : env.keySet()) {
+                    builder.append("<Environment name=\"").append(eo.toString())
+                            .append("\">").append(env.get(eo).toString()).append(
+                                    "</Environment>");
+                }
+            }
+
+            addLimitsInfo(builder, sd);
+            builder.append("</POSIXApplication></Application>");
+
+        } else {
+            logger.debug("No executable in job description!");
         }
-
-        addLimitsInfo(builder, sd);
-
-        builder.append("</POSIXApplication></Application>");
 
         return builder;
     }
@@ -207,7 +213,7 @@ public class GridSAMJSDLGeneratorImpl implements GridSAMJSDLGenerator {
             SoftwareDescription sd, Sandbox sandbox) {
 
         // copy whole sandbox
-        addDataStage(builder, ".", DataStageType.SOURCE, sandbox.getSandbox(),
+        addDataStage(builder, ".", DataStageType.SOURCE, sandbox.getSandboxPath(),
                 true);
 
         // we have to copy all the files back by ourselves
@@ -218,7 +224,7 @@ public class GridSAMJSDLGeneratorImpl implements GridSAMJSDLGenerator {
                 continue;
             }
             addDataStage(builder, file.getPath(), DataStageType.TARGET, sandbox
-                    .getSandbox()
+                    .getSandboxPath()
                     + SLASH + file.getPath(), true);
         }
         return builder;
