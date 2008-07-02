@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Vector;
 
+import org.apache.log4j.Logger;
 import org.gridlab.gat.GAT;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
@@ -15,11 +16,12 @@ import org.gridlab.gat.URI;
 import org.gridlab.gat.advert.Advertisable;
 import org.gridlab.gat.engine.GATEngine;
 import org.gridlab.gat.io.File;
+import org.gridlab.gat.io.FileInterface;
 import org.gridlab.gat.io.LogicalFile;
 import org.gridlab.gat.monitoring.Metric;
 import org.gridlab.gat.monitoring.MetricDefinition;
-import org.gridlab.gat.monitoring.MetricListener;
 import org.gridlab.gat.monitoring.MetricEvent;
+import org.gridlab.gat.monitoring.MetricListener;
 import org.gridlab.gat.monitoring.Monitorable;
 
 /**
@@ -50,6 +52,8 @@ public abstract class LogicalFileCpi implements LogicalFile, Monitorable {
         return capabilities;
     }
 
+    protected static Logger logger = Logger.getLogger(LogicalFileCpi.class);
+
     protected GATContext gatContext;
 
     protected String name;
@@ -59,7 +63,7 @@ public abstract class LogicalFileCpi implements LogicalFile, Monitorable {
     /**
      * Files in the LogicalFile. elements are URIs.
      */
-    protected Vector<URI> files;
+    protected List<URI> files;
 
     /*
      * static { // we must tell the gat engine that we can unmarshal logical
@@ -119,7 +123,27 @@ public abstract class LogicalFileCpi implements LogicalFile, Monitorable {
      *                 Thrown upon problems accessing the remote instance
      */
     public void addURI(URI location) throws GATInvocationException {
-        files.add(location);
+        if (files.contains(location)) {
+            if (logger.isInfoEnabled()) {
+                logger.info("logical file '" + name
+                        + "' already contains URI '" + location + "'.");
+            }
+            return;
+        }
+        try {
+            if (GAT.createFile(location).getFileInterface().exists()) {
+                files.add(location);
+            } else {
+                throw new GATInvocationException(
+                        "The file at URI '"
+                                + location
+                                + "' doesn't exist. Use replicate to add a new copy to the LogicalFile");
+            }
+        } catch (GATObjectCreationException e) {
+            throw new GATInvocationException("Unable to test file at URI '"
+                    + location + "' for existence.", e);
+        }
+
     }
 
     public MetricDefinition getMetricDefinitionByName(String myName)
@@ -168,18 +192,42 @@ public abstract class LogicalFileCpi implements LogicalFile, Monitorable {
         if (files.size() == 0) {
             throw new IOException("Must have at least one source file");
         }
+        if (files.contains(loc)) {
+            if (logger.isInfoEnabled()) {
+                logger.info("logical file '" + name
+                        + "' already contains URI '" + loc + "'.");
+            }
+            return;
+        }
+        try {
+            if (GAT.createFile(loc).getFileInterface().exists()) {
+                throw new GATInvocationException(
+                        "Unable to replicate logical file '" + name
+                                + "' to location '" + loc
+                                + "': target already exists.");
+            }
+        } catch (GATObjectCreationException e) {
+            throw new GATInvocationException(
+                    "Unable to replicate logical file '" + name
+                            + "' to location '" + loc
+                            + "': target cannot be checked for existence.", e);
+        }
 
-        URI u = (URI) files.get(0);
-        File f = null;
+        URI u = (URI) getClosestFile(loc);
+        FileInterface f = null;
 
         try {
-            f = GAT.createFile(gatContext, u);
+            f = GAT.createFile(gatContext, u).getFileInterface();
         } catch (Exception e) {
             throw new GATInvocationException("default logical file", e);
         }
 
         f.copy(loc);
         files.add(loc);
+    }
+
+    protected URI getClosestFile(URI loc) {
+        return files.get(0);
     }
 
     /**
