@@ -143,8 +143,11 @@ public class ZorillaResourceBrokerAdaptor extends ResourceBrokerCpi implements
         ZorillaJob job = jobs.get(info.getJobID());
 
         if (job == null) {
-            logger.warn("could not update job info: job not in active list: "
-                    + info);
+            if (logger.isDebugEnabled()) {
+                logger
+                        .debug("could not update job info: job not in active list: "
+                                + info);
+            }
             return;
         }
 

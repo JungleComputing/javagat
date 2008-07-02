@@ -176,7 +176,11 @@ public class ZorillaJob extends JobCpi {
                 logger.warn(message);
             }
         } else {
-            zorillaJobDescription.setArguments(soft.getArguments());
+            if (soft.getArguments() == null) {
+                zorillaJobDescription.setArguments(new String[0]);
+            } else {
+                zorillaJobDescription.setArguments(soft.getArguments());
+            }
         }
 
         for (Map.Entry<File, File> entry : soft.getPreStaged().entrySet()) {
@@ -452,6 +456,22 @@ public class ZorillaJob extends JobCpi {
             result.put("resManError", error.getMessage());
         }
         result.put("poststage.exception", postStageException);
+        if (state == INITIAL || state == UNKNOWN) {
+            result.put("submissiontime", null);
+        } else {
+            result.put("id", jobID);
+            result.put("submissiontime", submissiontime);
+        }
+        if (state == INITIAL || state == UNKNOWN || state == SCHEDULED) {
+            result.put("starttime", null);
+        } else {
+            result.put("starttime", starttime);
+        }
+        if (state != STOPPED) {
+            result.put("stoptime", null);
+        } else {
+            result.put("stoptime", stoptime);
+        }
 
         return result;
     }
