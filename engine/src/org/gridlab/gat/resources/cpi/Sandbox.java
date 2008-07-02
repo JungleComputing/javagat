@@ -52,6 +52,8 @@ public class Sandbox {
 
     private long preStageTime, postStageTime, wipeTime, deleteTime;
 
+    private String sandboxNameWithoutRoot;
+
     public Sandbox() {
         // constructor needed for castor marshalling, do *not* use
     }
@@ -172,10 +174,12 @@ public class Sandbox {
             logger.info("creating sandbox name, sandbox root = " + sandboxRoot);
         }
         String res = "";
-        // if (sandboxRoot != null) {
-        // res += new java.io.File(sandboxRoot).toURI().getPath();
-        // }
-        res += ".JavaGAT_SANDBOX_" + Math.random();
+        if (sandboxRoot != null) {
+            res += new java.io.File(sandboxRoot).toURI().getPath() + "/";
+        }
+        sandboxNameWithoutRoot = ".JavaGAT_SANDBOX_" + Math.random();
+        res += sandboxNameWithoutRoot;
+
         return res;
     }
 
@@ -403,6 +407,10 @@ public class Sandbox {
     }
 
     public String getSandbox() {
+        return sandboxNameWithoutRoot;
+    }
+
+    public String getSandboxPath() {
         return sandbox;
     }
 
