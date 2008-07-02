@@ -14,6 +14,7 @@
 		<ant dir="Sge" />
 		<ant dir="SshTrilead" />
 		<ant dir="Zorilla" />
+		<ant dir="Generic" />
 	</target>
 
 	<target name="build-with-untested" description="build all tested and untested adaptors">
@@ -46,6 +47,7 @@
 		<ant dir="Sge" target="clean" />
 		<ant dir="SshTrilead" target="clean" />
 		<ant dir="Zorilla" target="clean" />
+		<ant dir="Generic" target="clean" />
 		<ant dir="untested" target="clean" />
 	</target>
 
@@ -87,5 +89,9 @@
 
 	<target name="zorilla" description="build Zorilla adaptor">
 		<ant dir="Zorilla" />
+	</target>
+
+	<target name="generic" description="build Generic adaptor">
+		<ant dir="Generic" />
 	</target>
 </project>

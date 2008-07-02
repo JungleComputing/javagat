@@ -35,7 +35,6 @@
 				<attribute name="FileInputStreamCpi-class" value="org.gridlab.gat.io.cpi.local.LocalFileInputStreamAdaptor" />
 				<attribute name="FileOutputStreamCpi-class" value="org.gridlab.gat.io.cpi.local.LocalFileOutputStreamAdaptor" />
 				<attribute name="RandomAccessFileCpi-class" value="org.gridlab.gat.io.cpi.local.LocalRandomAccessFileAdaptor" />
-				<attribute name="LogicalFileCpi-class" value="org.gridlab.gat.io.cpi.local.LocalLogicalFileAdaptor" />
 				<attribute name="ResourceBrokerCpi-class" value="org.gridlab.gat.resources.cpi.local.LocalResourceBrokerAdaptor,org.gridlab.gat.resources.cpi.localQ.LocalQResourceBrokerAdaptor" />
 				<attribute name="AdvertServiceCpi-class" value="org.gridlab.gat.advert.cpi.local.LocalAdvertServiceAdaptor" />
 				<attribute name="EndpointCpi-class" value="org.gridlab.gat.io.cpi.sockets.SocketEndpointAdaptor" />

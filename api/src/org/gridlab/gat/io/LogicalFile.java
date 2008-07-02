@@ -131,4 +131,16 @@ public interface LogicalFile extends Monitorable, Serializable, Advertisable {
      *                 if an IO operation fails
      */
     public List<File> getFiles() throws GATInvocationException, IOException;
+
+    /**
+     * Returns the {@link URI} with the smallest network distance to given
+     * {@link URI}.
+     * 
+     * @param loc
+     *                the URI to compare with
+     * @return the URI with the smallest network distance to loc
+     * @throws GATInvocationException
+     *                 if the method fails.
+     */
+    public URI getClosestURI(URI loc) throws GATInvocationException;
 }

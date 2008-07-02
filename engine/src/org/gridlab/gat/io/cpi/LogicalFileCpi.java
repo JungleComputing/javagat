@@ -84,6 +84,7 @@ public abstract class LogicalFileCpi implements LogicalFile, Monitorable {
         this.gatContext = gatContext;
         files = new Vector<URI>();
         this.mode = mode.intValue();
+        this.name = name;
 
         switch (this.mode) {
         case LogicalFile.CREATE:
@@ -212,8 +213,7 @@ public abstract class LogicalFileCpi implements LogicalFile, Monitorable {
                             + "' to location '" + loc
                             + "': target cannot be checked for existence.", e);
         }
-
-        URI u = (URI) getClosestFile(loc);
+        URI u = (URI) getClosestURI(loc);
         FileInterface f = null;
 
         try {
@@ -226,7 +226,11 @@ public abstract class LogicalFileCpi implements LogicalFile, Monitorable {
         files.add(loc);
     }
 
-    protected URI getClosestFile(URI loc) {
+    public URI getClosestURI(URI loc) throws GATInvocationException {
+        if (files == null || files.size() == 0) {
+            throw new GATInvocationException("No files in logical file '"
+                    + name + "' to compare with");
+        }
         return files.get(0);
     }
 
