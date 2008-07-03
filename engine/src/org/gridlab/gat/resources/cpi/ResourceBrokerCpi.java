@@ -10,6 +10,7 @@ import org.gridlab.gat.GATObjectCreationException;
 import org.gridlab.gat.TimePeriod;
 import org.gridlab.gat.URI;
 import org.gridlab.gat.monitoring.MetricListener;
+import org.gridlab.gat.resources.AbstractJobDescription;
 import org.gridlab.gat.resources.HardwareResource;
 import org.gridlab.gat.resources.Job;
 import org.gridlab.gat.resources.JobDescription;
@@ -115,12 +116,12 @@ public abstract class ResourceBrokerCpi implements ResourceBroker {
      * 
      * @see org.gridlab.gat.resources.ResourceBroker#submitJob(org.gridlab.gat.resources.JobDescription)
      */
-    public final Job submitJob(JobDescription description)
+    public final Job submitJob(AbstractJobDescription description)
             throws GATInvocationException {
         return submitJob(description, null, null);
     }
 
-    public Job submitJob(JobDescription description, MetricListener listener,
+    public Job submitJob(AbstractJobDescription description, MetricListener listener,
             String metricName) throws GATInvocationException {
         throw new UnsupportedOperationException("Not implemented");
     }

@@ -169,7 +169,7 @@ public class WrappedJob extends JobCpi implements MetricListener {
     }
 
     private void fireStateMetric(int state) {
-        MetricEvent v = new MetricEvent(this, Job.getStateString(state),
+        MetricEvent v = new MetricEvent(this, getStateString(state),
                 statusMetric, System.currentTimeMillis());
         GATEngine.fireMetric(this, v);
     }

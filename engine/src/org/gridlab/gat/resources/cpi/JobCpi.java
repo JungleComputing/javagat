@@ -3,8 +3,11 @@
  */
 package org.gridlab.gat.resources.cpi;
 
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.log4j.Logger;
 import org.gridlab.gat.GATContext;
@@ -14,10 +17,12 @@ import org.gridlab.gat.monitoring.Metric;
 import org.gridlab.gat.monitoring.MetricDefinition;
 import org.gridlab.gat.monitoring.MetricEvent;
 import org.gridlab.gat.monitoring.MetricListener;
+import org.gridlab.gat.resources.HardwareResource;
+import org.gridlab.gat.resources.HardwareResourceDescription;
 import org.gridlab.gat.resources.Job;
 import org.gridlab.gat.resources.JobDescription;
 
-public abstract class JobCpi extends Job {
+public abstract class JobCpi implements Job {
 
     protected static Logger logger = Logger.getLogger(JobCpi.class);
 
@@ -57,6 +62,10 @@ public abstract class JobCpi extends Job {
         return globalJobID++;
     }
 
+    protected JobCpi() {
+
+    }
+
     protected JobCpi(GATContext gatContext, JobDescription jobDescription,
             Sandbox sandbox) {
         this.gatContext = gatContext;
@@ -73,6 +82,106 @@ public abstract class JobCpi extends Job {
                 jobList.add(this);
             }
         }
+    }
+
+    public String getStateString(int state) {
+        switch (state) {
+        case INITIAL:
+            return INITIAL_STRING;
+        case SCHEDULED:
+            return SCHEDULED_STRING;
+        case RUNNING:
+            return RUNNING_STRING;
+        case STOPPED:
+            return STOPPED_STRING;
+        case SUBMISSION_ERROR:
+            return SUBMISSION_ERROR_STRING;
+        case ON_HOLD:
+            return ON_HOLD_STRING;
+        case PRE_STAGING:
+            return PRE_STAGING_STRING;
+        case POST_STAGING:
+            return POST_STAGING_STRING;
+        case UNKNOWN:
+            return UNKNOWN_STRING;
+        default:
+            throw new RuntimeException("unknown job state in getStateString");
+        }
+    }
+
+    public final void unSchedule() throws GATInvocationException {
+        stop();
+    }
+
+    public void stop() throws GATInvocationException {
+        throw new UnsupportedOperationException("Not implemented");
+    }
+
+    public Map<String, Object> getInfo() throws GATInvocationException {
+        throw new UnsupportedOperationException("Not implemented");
+    }
+
+    public String getJobID() throws GATInvocationException {
+        throw new UnsupportedOperationException("Not implemented");
+    }
+
+    public void checkpoint() throws GATInvocationException {
+        throw new UnsupportedOperationException("Not implemented");
+    }
+
+    public void migrate() throws GATInvocationException {
+        throw new UnsupportedOperationException("Not implemented");
+    }
+
+    public void migrate(HardwareResourceDescription hardwareResourceDescription)
+            throws GATInvocationException {
+        throw new UnsupportedOperationException("Not implemented");
+    }
+
+    public Job cloneJob(HardwareResource resource) {
+        throw new UnsupportedOperationException("Not implemented");
+    }
+
+    public void hold() throws GATInvocationException {
+        throw new UnsupportedOperationException("Not implemented");
+    }
+
+    public void resume() throws GATInvocationException {
+        throw new UnsupportedOperationException("Not implemented");
+    }
+
+    public int getExitStatus() throws GATInvocationException {
+        throw new UnsupportedOperationException("Not implemented");
+    }
+
+    public String toString() {
+        String res = "gat job";
+
+        String id = null;
+        try {
+            id = getJobID();
+        } catch (Exception e) {
+            // ignore
+        }
+        if (id != null)
+            res += ", id is " + id;
+        else {
+            res += ", " + "not initialized";
+        }
+
+        return res;
+    }
+
+    public InputStream getStdout() throws GATInvocationException {
+        throw new UnsupportedOperationException("Not implemented");
+    }
+
+    public InputStream getStderr() throws GATInvocationException {
+        throw new UnsupportedOperationException("Not implemented");
+    }
+
+    public OutputStream getStdin() throws GATInvocationException {
+        throw new UnsupportedOperationException("Not implemented");
     }
 
     public final JobDescription getJobDescription() {

@@ -15,6 +15,7 @@ import org.gridlab.gat.URI;
 import org.gridlab.gat.engine.util.StreamForwarder;
 import org.gridlab.gat.monitoring.Metric;
 import org.gridlab.gat.monitoring.MetricListener;
+import org.gridlab.gat.resources.AbstractJobDescription;
 import org.gridlab.gat.resources.Job;
 import org.gridlab.gat.resources.JobDescription;
 import org.gridlab.gat.resources.SoftwareDescription;
@@ -63,8 +64,17 @@ public class CommandlineSshResourceBrokerAdaptor extends ResourceBrokerCpi {
         }
     }
 
-    public Job submitJob(JobDescription description, MetricListener listener,
-            String metricDefinitionName) throws GATInvocationException {
+    public Job submitJob(AbstractJobDescription abstractDescription,
+            MetricListener listener, String metricDefinitionName)
+            throws GATInvocationException {
+
+        if (!(abstractDescription instanceof JobDescription)) {
+            throw new GATInvocationException(
+                    "can only handle JobDescriptions: "
+                            + abstractDescription.getClass());
+        }
+
+        JobDescription description = (JobDescription) abstractDescription;
 
         SoftwareDescription sd = description.getSoftwareDescription();
         if (sd == null) {

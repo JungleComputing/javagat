@@ -67,7 +67,7 @@ public class SubmitJobGlite implements MetricListener {
         sd.setExecutable(args[0]);
         sd.setStdout(outFile);
         sd.setStderr(errFile);
-        //sd.setVirtualOrganisation("pvier");
+        // sd.setVirtualOrganisation("pvier");
         sd.setArguments(new String[] { "*" });
         sd.addPreStagedFile(GAT.createFile(context, "test/stagein"), GAT
                 .createFile(context, "test/stagein"));
@@ -92,7 +92,7 @@ public class SubmitJobGlite implements MetricListener {
             while ((job.getState() != Job.STOPPED)
                     && (job.getState() != Job.SUBMISSION_ERROR)) {
                 System.out.println("job state: "
-                        + Job.getStateString(job.getState()));
+                        + job.getStateString(job.getState()));
                 Thread.sleep(5000);
 
             }

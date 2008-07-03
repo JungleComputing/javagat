@@ -33,7 +33,7 @@ public class SubmitLocalJob {
 
         GAT.end();
         System.out.println("fine! job.getState(): "
-                + Job.getStateString(job.getState()));
+                + job.getStateString(job.getState()));
 
     }
 }

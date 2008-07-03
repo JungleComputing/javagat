@@ -32,7 +32,8 @@ public class SubmitJobWSGT4new implements MetricListener {
 
     public synchronized void processMetricEvent(MetricEvent val) {
         System.out.println("state changed: "
-                + Job.getStateString(((Job) val.getSource()).getState()));
+                + ((Job) val.getSource())
+                        .getStateString(((Job) val.getSource()).getState()));
         notifyAll();
     }
 
@@ -40,7 +41,7 @@ public class SubmitJobWSGT4new implements MetricListener {
         GATContext context = new GATContext();
         Preferences prefs = new Preferences();
         prefs.put("ResourceBroker.adaptor.name", "wsgt4new");
-        //prefs.put("File.adaptor.name", "Local,GridFTP");
+        // prefs.put("File.adaptor.name", "Local,GridFTP");
         prefs.put("wsgt4.factory.type", "SGE");
 
         File outFile = GAT.createFile(context, prefs, new URI("any:///out"));

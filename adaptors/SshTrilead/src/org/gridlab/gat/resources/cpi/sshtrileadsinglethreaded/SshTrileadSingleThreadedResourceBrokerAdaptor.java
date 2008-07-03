@@ -17,6 +17,7 @@ import org.gridlab.gat.engine.util.StreamForwarder;
 import org.gridlab.gat.io.cpi.sshtrilead.SshTrileadFileAdaptor;
 import org.gridlab.gat.monitoring.Metric;
 import org.gridlab.gat.monitoring.MetricListener;
+import org.gridlab.gat.resources.AbstractJobDescription;
 import org.gridlab.gat.resources.Job;
 import org.gridlab.gat.resources.JobDescription;
 import org.gridlab.gat.resources.SoftwareDescription;
@@ -138,8 +139,16 @@ public class SshTrileadSingleThreadedResourceBrokerAdaptor extends
      * 
      * @see org.gridlab.gat.resources.ResourceBroker#submitJob(org.gridlab.gat.resources.JobDescription)
      */
-    public Job submitJob(JobDescription description, MetricListener listener,
+    public Job submitJob(AbstractJobDescription abstractDescription, MetricListener listener,
             String metricDefinitionName) throws GATInvocationException {
+        if (!(abstractDescription instanceof JobDescription)) {
+            throw new GATInvocationException(
+                    "can only handle JobDescriptions: "
+                            + abstractDescription.getClass());
+        }
+
+        JobDescription description = (JobDescription) abstractDescription;
+        
         // TODO: this broker is not Windows compatible (&&, export)
 
         // check whether there's a software description in the job

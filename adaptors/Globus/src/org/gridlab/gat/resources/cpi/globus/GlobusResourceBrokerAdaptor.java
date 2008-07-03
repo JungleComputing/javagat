@@ -23,6 +23,7 @@ import org.gridlab.gat.URI;
 import org.gridlab.gat.engine.GATEngine;
 import org.gridlab.gat.monitoring.Metric;
 import org.gridlab.gat.monitoring.MetricListener;
+import org.gridlab.gat.resources.AbstractJobDescription;
 import org.gridlab.gat.resources.Job;
 import org.gridlab.gat.resources.JobDescription;
 import org.gridlab.gat.resources.SoftwareDescription;
@@ -312,8 +313,18 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
         }
     }
 
-    public Job submitJob(JobDescription description, MetricListener listener,
-            String metricDefinitionName) throws GATInvocationException {
+    public Job submitJob(AbstractJobDescription abstractDescription,
+            MetricListener listener, String metricDefinitionName)
+            throws GATInvocationException {
+
+        if (!(abstractDescription instanceof JobDescription)) {
+            throw new GATInvocationException(
+                    "can only handle JobDescriptions: "
+                            + abstractDescription.getClass());
+        }
+
+        JobDescription description = (JobDescription) abstractDescription;
+
         boolean useGramSandbox = false;
         String s = (String) gatContext.getPreferences().get(
                 "globus.sandbox.gram");

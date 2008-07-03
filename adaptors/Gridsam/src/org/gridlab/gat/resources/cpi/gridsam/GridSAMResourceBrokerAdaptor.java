@@ -16,6 +16,7 @@ import org.gridlab.gat.TimePeriod;
 import org.gridlab.gat.URI;
 import org.gridlab.gat.monitoring.Metric;
 import org.gridlab.gat.monitoring.MetricListener;
+import org.gridlab.gat.resources.AbstractJobDescription;
 import org.gridlab.gat.resources.HardwareResource;
 import org.gridlab.gat.resources.Job;
 import org.gridlab.gat.resources.JobDescription;
@@ -118,8 +119,17 @@ public class GridSAMResourceBrokerAdaptor extends ResourceBrokerCpi {
      * 
      * @see org.gridlab.gat.resources.ResourceBroker#submitJob(org.gridlab.gat.resources.JobDescription)
      */
-    public Job submitJob(JobDescription description, MetricListener listener,
-            String metricDefinitionName) throws GATInvocationException {
+    public Job submitJob(AbstractJobDescription abstractDescription,
+            MetricListener listener, String metricDefinitionName)
+            throws GATInvocationException {
+        if (!(abstractDescription instanceof JobDescription)) {
+            throw new GATInvocationException(
+                    "can only handle JobDescriptions: "
+                            + abstractDescription.getClass());
+        }
+
+        JobDescription description = (JobDescription) abstractDescription;
+
         // long start = System.currentTimeMillis();
         SoftwareDescription sd = description.getSoftwareDescription();
 
@@ -135,10 +145,10 @@ public class GridSAMResourceBrokerAdaptor extends ResourceBrokerCpi {
 
         URI uri = brokerURI;
 
-        if (! "https".equals(brokerURI.getScheme())) {
+        if (!"https".equals(brokerURI.getScheme())) {
             try {
                 uri = brokerURI.setScheme("https");
-            } catch(Throwable e) {
+            } catch (Throwable e) {
                 logger.debug("Should not happen");
             }
         }
@@ -276,7 +286,8 @@ public class GridSAMResourceBrokerAdaptor extends ResourceBrokerCpi {
         }
         File fTmp = new File(tmp.toString());
         if (!fTmp.isAbsolute()) {
-            logger.info("resourcebroker.sandbox.root has to be an absolute path");
+            logger
+                    .info("resourcebroker.sandbox.root has to be an absolute path");
             throw new GATInvocationException(
                     "resourcebroker.sandbox.root has to be an absolute path");
         }

@@ -138,7 +138,7 @@ public interface ResourceBroker {
      * @throws GATInvocationException
      *                 a remote problem occurred
      */
-    public Job submitJob(JobDescription description)
+    public Job submitJob(AbstractJobDescription description)
             throws GATInvocationException;
 
     /**
@@ -175,8 +175,9 @@ public interface ResourceBroker {
      * @throws GATInvocationException
      *                 a remote problem occurred
      */
-    public Job submitJob(JobDescription description, MetricListener listener,
-            String metricDefinitionName) throws GATInvocationException;
+    public Job submitJob(AbstractJobDescription description,
+            MetricListener listener, String metricDefinitionName)
+            throws GATInvocationException;
 
     /**
      * This operation takes an array of {@link JobDescription}s, and submits

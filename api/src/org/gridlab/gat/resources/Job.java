@@ -54,7 +54,7 @@ import org.gridlab.gat.monitoring.Monitorable;
  * <p>
  * Note that adaptors might not implement the whole functionality.
  */
-public abstract class Job implements Monitorable, Advertisable {
+public interface Job extends Monitorable, Advertisable {
     /**
      * Initial state indicator.
      * <p>
@@ -184,37 +184,15 @@ public abstract class Job implements Monitorable, Advertisable {
      *                the state to convert into a String representation
      * @return the String representation of the given state
      */
-    public static String getStateString(int state) {
-        switch (state) {
-        case INITIAL:
-            return "INITIAL";
-        case SCHEDULED:
-            return "SCHEDULED";
-        case RUNNING:
-            return "RUNNING";
-        case STOPPED:
-            return "STOPPED";
-        case SUBMISSION_ERROR:
-            return "SUBMISSION_ERROR";
-        case ON_HOLD:
-            return "ON_HOLD";
-        case PRE_STAGING:
-            return "PRE_STAGING";
-        case POST_STAGING:
-            return "POST_STAGING";
-        case UNKNOWN:
-            return "UNKNOWN";
-        default:
-            throw new RuntimeException("unknown job state in getStateString");
-        }
-    }
+    public String getStateString(int state);
 
     /**
-     * Returns the {@link JobDescription} that was used to create this Job.
+     * Returns the {@link AbstractJobDescription} that was used to create this
+     * Job.
      * 
      * @return the JobDescription that belongs to this Job
      */
-    public abstract JobDescription getJobDescription();
+    public AbstractJobDescription getJobDescription();
 
     /**
      * Stops the associated physical job. Upon a successful call to this method
@@ -229,9 +207,7 @@ public abstract class Job implements Monitorable, Advertisable {
      * @throws GATInvocationException
      *                 Thrown upon problems accessing the remote instance
      */
-    public final void unSchedule() throws GATInvocationException {
-        stop();
-    }
+    public void unSchedule() throws GATInvocationException;
 
     /**
      * Stops the associated physical job. Upon a successful call to this method
@@ -242,9 +218,7 @@ public abstract class Job implements Monitorable, Advertisable {
      * @throws GATInvocationException
      *                 Thrown upon problems accessing the remote instance
      */
-    public void stop() throws GATInvocationException {
-        throw new UnsupportedOperationException("Not implemented");
-    }
+    public void stop() throws GATInvocationException;
 
     /**
      * This method returns the state of the Job. This is one of the associated
@@ -253,7 +227,7 @@ public abstract class Job implements Monitorable, Advertisable {
      * 
      * @return This method returns the state of the associated Job
      */
-    public abstract int getState();
+    public int getState();
 
     /**
      * This method returns an instance of the class {@link java.util.Map} which
@@ -309,9 +283,7 @@ public abstract class Job implements Monitorable, Advertisable {
      * @throws GATInvocationException
      *                 Thrown upon problems accessing the remote instance
      */
-    public Map<String, Object> getInfo() throws GATInvocationException {
-        throw new UnsupportedOperationException("Not implemented");
-    }
+    public Map<String, Object> getInfo() throws GATInvocationException;
 
     /**
      * This method returns the job id, a globally unique identifier for the
@@ -324,9 +296,7 @@ public abstract class Job implements Monitorable, Advertisable {
      * @throws GATInvocationException
      *                 Thrown upon problems accessing the remote instance
      */
-    public String getJobID() throws GATInvocationException {
-        throw new UnsupportedOperationException("Not implemented");
-    }
+    public String getJobID() throws GATInvocationException;
 
     /**
      * @deprecated Deprecated, this method doesn't fit in the API anymore
@@ -334,9 +304,7 @@ public abstract class Job implements Monitorable, Advertisable {
      * @throws GATInvocationException
      *                 Thrown upon problems accessing the remote instance
      */
-    public void checkpoint() throws GATInvocationException {
-        throw new UnsupportedOperationException("Not implemented");
-    }
+    public void checkpoint() throws GATInvocationException;
 
     /**
      * @deprecated Deprecated, this method doesn't fit in the API anymore
@@ -346,9 +314,7 @@ public abstract class Job implements Monitorable, Advertisable {
      * @throws java.io.IOException
      *                 Upon non-remote IO problem
      */
-    public void migrate() throws GATInvocationException {
-        throw new UnsupportedOperationException("Not implemented");
-    }
+    public void migrate() throws GATInvocationException;
 
     /**
      * @deprecated Deprecated, this method doesn't fit in the API anymore
@@ -361,9 +327,7 @@ public abstract class Job implements Monitorable, Advertisable {
      *                 Thrown upon problems accessing the remote instance
      */
     public void migrate(HardwareResourceDescription hardwareResourceDescription)
-            throws GATInvocationException {
-        throw new UnsupportedOperationException("Not implemented");
-    }
+            throws GATInvocationException;
 
     /**
      * @deprecated Deprecated, this method doesn't fit in the API anymore
@@ -373,87 +337,47 @@ public abstract class Job implements Monitorable, Advertisable {
      *                resource)
      * @return the clone of the job
      */
-    public Job cloneJob(HardwareResource resource) {
-        throw new UnsupportedOperationException("Not implemented");
-    }
+    public Job cloneJob(HardwareResource resource);
 
     /**
      * Put a job on hold, pause it. This can be called in SCHEDULED or RUNNING
      * state.
      */
-    public void hold() throws GATInvocationException {
-        throw new UnsupportedOperationException("Not implemented");
-    }
+    public void hold() throws GATInvocationException;
 
     /**
      * Resume a job that was paused with the "hold" method. This can be called
      * only in the ON_HOLD state.
      */
-    public void resume() throws GATInvocationException {
-        throw new UnsupportedOperationException("Not implemented");
-    }
+    public void resume() throws GATInvocationException;
 
     /**
      * Returns the exit status of a job.
      * 
      * @return the exit status of a job.
      */
-    public int getExitStatus() throws GATInvocationException {
-        throw new UnsupportedOperationException("Not implemented");
-    }
+    public int getExitStatus() throws GATInvocationException;
 
     public MetricEvent getMeasurement(Metric metric)
-            throws GATInvocationException {
-        throw new UnsupportedOperationException("Not implemented");
-    }
+            throws GATInvocationException;
 
     public List<MetricDefinition> getMetricDefinitions()
-            throws GATInvocationException {
-        throw new UnsupportedOperationException("Not implemented");
-    }
+            throws GATInvocationException;
 
     public MetricDefinition getMetricDefinitionByName(String name)
-            throws GATInvocationException {
-        throw new UnsupportedOperationException("Not implemented");
-    }
+            throws GATInvocationException;
 
     public void addMetricListener(MetricListener metricListener, Metric metric)
-            throws GATInvocationException {
-        throw new UnsupportedOperationException("Not implemented");
-    }
+            throws GATInvocationException;
 
     public void removeMetricListener(MetricListener metricListener,
-            Metric metric) throws GATInvocationException {
-        throw new UnsupportedOperationException("Not implemented");
-    }
+            Metric metric) throws GATInvocationException;
 
-    public String toString() {
-        String res = "gat job";
+    public String toString();
 
-        String id = null;
-        try {
-            id = getJobID();
-        } catch (Exception e) {
-            // ignore
-        }
-        if (id != null)
-            res += ", id is " + id;
-        else {
-            res += ", " + "not initialized";
-        }
+    public InputStream getStdout() throws GATInvocationException;
 
-        return res;
-    }
+    public InputStream getStderr() throws GATInvocationException;
 
-    public InputStream getStdout() throws GATInvocationException {
-        throw new UnsupportedOperationException("Not implemented");
-    }
-
-    public InputStream getStderr() throws GATInvocationException {
-        throw new UnsupportedOperationException("Not implemented");
-    }
-
-    public OutputStream getStdin() throws GATInvocationException {
-        throw new UnsupportedOperationException("Not implemented");
-    }
+    public OutputStream getStdin() throws GATInvocationException;
 }
