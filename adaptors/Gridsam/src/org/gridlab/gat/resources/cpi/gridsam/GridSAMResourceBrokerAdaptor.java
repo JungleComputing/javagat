@@ -68,6 +68,10 @@ public class GridSAMResourceBrokerAdaptor extends ResourceBrokerCpi {
         }
     }
 
+    URI getBroker() {
+        return brokerURI;
+    }
+
     /**
      * This method attempts to reserve the specified hardware resource for the
      * specified time period. Upon reserving the specified hardware resource
