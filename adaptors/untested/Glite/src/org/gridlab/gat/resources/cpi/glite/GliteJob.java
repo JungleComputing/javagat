@@ -7,7 +7,10 @@
 //     for Max Planck Institute for Gravitational Physics
 //     (Albert Einstein Institute) 
 //     Astrophysical Relativity / eScience
-// 
+// Jun,Jul/2008 - Thomas Zangerl 
+//		for Distributed and Parallel Systems Research Group
+//		University of Innsbruck
+//		some changes and enhancements
 //
 ////////////////////////////////////////////////////////////////////
 
@@ -65,6 +68,7 @@ import org.gridsite.www.namespaces.delegation_1.DelegationSoapBindingStub;
 
 public class GliteJob extends JobCpi {
 	
+	private LoggingAndBookkeepingPortType lbService = null;
 	private JDL gLiteJobDescription;
 	private JobDescription jobDescription;
 	private SoftwareDescription swDescription;
@@ -80,8 +84,11 @@ public class GliteJob extends JobCpi {
 	private DelegationSoapBindingStub grstStub = null; 
 	
 	 class JobStatusLookUp extends Thread {
-		public JobStatusLookUp() {
-			start();
+		private GliteJob polledJob;
+		 
+		public JobStatusLookUp(GliteJob job) {
+			this.polledJob = job;
+			this.start();
 		}
 
 		public void run() {
@@ -90,10 +97,10 @@ public class GliteJob extends JobCpi {
 					break;
 				if (state == Job.SUBMISSION_ERROR)
 					break;
-				state = GliteJob.this.getStatus();
+				state = polledJob.getStatus();
 				if (state == Job.POST_STAGING) {
-					GliteJob.this.receiveOutput();
-					GliteJob.this.outputDone = true;
+					polledJob.receiveOutput();
+					polledJob.outputDone = true;
 				}
 				
 				try {
@@ -134,9 +141,9 @@ public class GliteJob extends JobCpi {
 	
 		jobID = submitJob(jdlFileName);
 		System.err.println("jobID " + jobID);
-	
+
 		// start status lookup thread
-		new JobStatusLookUp();
+		new JobStatusLookUp(this);
 	}
 
 	private void createGliteJobDescContent() throws GATInvocationException {
@@ -153,8 +160,7 @@ public class GliteJob extends JobCpi {
 			gLiteJobDescription.setVirtualOrganisation((String) context
 					.getPreferences().get("VirtualOrganisation"));
 		if (swDescription.getStdin() != null)
-			gLiteJobDescription.setStdInputFile(swDescription.getStdin()
-					.getName());
+			gLiteJobDescription.setStdInputFile(swDescription.getStdin().getAbsolutePath());
 		try {
 			gLiteJobDescription.addInputFiles(swDescription.getPreStaged());
 		} catch (Exception e1) {
@@ -307,6 +313,10 @@ public class GliteJob extends JobCpi {
 			
 			System.setProperty(ContextWrapper.CA_FILES, certsWithoutCRLs);
 			System.setProperty(ContextWrapper.CRL_FILES, caCRLs);
+			System.setProperty(ContextWrapper.CRL_REQUIRED, "false");
+			// set the credential update interval to two hours
+			System.setProperty(ContextWrapper.CREDENTIALS_UPDATE_INTERVAL, "2h");
+			System.setProperty(ContextWrapper.CRL_UPDATE_INTERVAL, "2h");
 		}
 	}
 	
@@ -527,37 +537,46 @@ public class GliteJob extends JobCpi {
 	}
 
 	// via API
-	private String getGliteStatus() {
-
-		if (outputDone) // API is ready with POST STAGING
+	private String getGliteStatus() {		
+		if (outputDone) { // API is ready with POST STAGING
 			return "Cleared";
+		}
 
-		LoggingAndBookkeepingPortType lbService = null;
-		String gLiteState = null;
-		URL jobUrl;
-		try {
-			if (lbService == null) {
-				jobUrl = new URL(jobID);
+		// construct a logging and bookkeeping port type object, if it does not exist yet
+		if (this.lbService == null) {
+			try {
+				/* (thomas) This has already been done and periodically checking the crls leads to massive heap memory usage
+				 * and eventually to a OutOfMemoryError. Hence, don't check the CRLs again at every status lookup
+				*/
+				System.setProperty(ContextWrapper.CRL_ENABLED, "false");
+				URL jobUrl = new URL(jobID);
 				URL lbURL = new URL(jobUrl.getProtocol(), jobUrl.getHost(),
 						9003, "/");
 				LoggingAndBookkeepingLocator locator = new LoggingAndBookkeepingLocator();
-				lbService = locator.getLoggingAndBookkeeping(lbURL);
+				this.lbService = locator.getLoggingAndBookkeeping(lbURL);
+			} catch (MalformedURLException e) {
+				e.printStackTrace();
+			} catch (ServiceException e) {
+				e.printStackTrace();
 			}
-			JobFlags flags = new JobFlags();
-			JobStatus js = lbService.jobStatus(jobID, flags);
+		}
+		
+		JobStatus js = null;
+		String gliteState = "";
+			
+		try {
+			js = lbService.jobStatus(jobID, new JobFlags());
 			gLiteState = js.getState().toString();
-		} catch (MalformedURLException e) {
-			e.printStackTrace();
-		} catch (ServiceException e) {
-			e.printStackTrace();
+			// helps against memory leak?
+			js = null;
 		} catch (GenericFault e) {
+			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (RemoteException e) {
-			System.err
-					.println("gLite Error: LoggingAndBookkeeping service only works in glite 3.1 or higher");
+			System.err.println("gLite Error: LoggingAndBookkeeping service only works in glite 3.1 or higher");
 			e.printStackTrace();
-		}
-
+		} 
+		
 		return gLiteState;
 	}
 
@@ -570,6 +589,7 @@ public class GliteJob extends JobCpi {
 	public void receiveOutput() {
 		StringAndLongList sl;
 		StringAndLongType[] list = null;
+		
 		try {
 
 			String delegationId = "gatjob" + jdlFileId;
@@ -596,6 +616,7 @@ public class GliteJob extends JobCpi {
 		} catch (Exception e) {
 			// e.printStackTrace();
 		}
+		
 		if (list != null) {
 			for (int i = 0; i < list.length; i++) {
 				URI uri1;
@@ -610,6 +631,8 @@ public class GliteJob extends JobCpi {
 					int name_begin = uri2.getPath().lastIndexOf('/') + 1;
 					File f2 = GAT.createFile(context, new URI(uri2.getPath()
 							.substring(name_begin)));
+					
+					//f.copy(destForPostStagedFile(f2));
 					f.copy(f2.toGATURI());
 				} catch (GATInvocationException e) {
 					e.printStackTrace();
@@ -621,5 +644,19 @@ public class GliteJob extends JobCpi {
 			}
 		}
 		outputDone = true;
+	}
+	
+	private URI destForPostStagedFile(File output) {
+		Map<File, File> postStagedFiles = swDescription.getPostStaged();
+		
+		for (Map.Entry<File,File> psFile : postStagedFiles.entrySet()) {
+			if (psFile != null && psFile.getValue() != null && psFile.getKey() != null) {
+				if (psFile.getValue().getName().equals(output.getName())) {
+					return psFile.getKey().toGATURI();
+				}
+			}
+		}
+		
+		return output.toGATURI();
 	}
 }

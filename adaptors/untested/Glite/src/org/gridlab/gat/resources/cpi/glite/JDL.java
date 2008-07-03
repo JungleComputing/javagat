@@ -116,7 +116,8 @@ public class JDL {
 				OutputSrcFiles.add(fileSrc.getName());
 				org.gridlab.gat.io.File fileDest = (org.gridlab.gat.io.File) entry
 						.getValue();
-				OutputDestFiles.add(fileDest.getName());
+				// add the destination with it's absolute path
+				OutputDestFiles.add(fileDest.getAbsolutePath());
 			}
 		}
 	}
@@ -164,24 +165,31 @@ public class JDL {
 		content += "StdError = \"" + "std_" + fileID + ".err\";\n";
 		if (!InputFiles.isEmpty()) {
 			content += "InputSandbox = {\n\t";
-			for (int i = 0; InputFiles.size() - 1 > i; i++)
+			for (int i = 0; InputFiles.size() - 1 > i; i++) {
 				content += "\"file://" + (String) InputFiles.get(i) + "\",\n\t";
+			}
+			
 			content += "\"file://"
 					+ (String) InputFiles.get(InputFiles.size() - 1) + "\"\n";
 			content += "};\n";
 		}
 		if (!OutputSrcFiles.isEmpty()) {
 			content += "OutputSandbox = {\n\t";
-			for (int i = 0; OutputSrcFiles.size() - 1 > i; i++)
+			
+			for (int i = 0; OutputSrcFiles.size() - 1 > i; i++) {
 				content += "\"" + (String) OutputSrcFiles.get(i) + "\",\n\t";
+			}
+			
 			content += "\""
 					+ (String) OutputSrcFiles.get(OutputSrcFiles.size() - 1)
 					+ "\"";
 			content += "\n};\n";
 			
 			content += "OutputSandboxDestURI = {\n\t";
-			for (int i = 0; OutputDestFiles.size() - 1 > i; i++)
+			for (int i = 0; OutputDestFiles.size() - 1 > i; i++) {
 				content += "\"" + (String) OutputDestFiles.get(i) + "\",\n\t";
+			}
+			
 			content += "\""
 					+ (String) OutputDestFiles.get(OutputDestFiles.size() - 1)
 					+ "\"";
