@@ -85,14 +85,14 @@ public class GlobusJob extends JobCpi implements GramJobListener,
     protected GlobusJob(GATContext gatContext, JobDescription jobDescription,
             Sandbox sandbox) {
         super(gatContext, jobDescription, sandbox);
-        state = SCHEDULED;
+        state = JobState.SCHEDULED;
         jobsAlive++;
 
         // Tell the engine that we provide job.status events
         HashMap<String, Object> returnDef = new HashMap<String, Object>();
-        returnDef.put("status", String.class);
+        returnDef.put("status", JobState.class);
         statusMetricDefinition = new MetricDefinition("job.status",
-                MetricDefinition.DISCRETE, "String", null, null, returnDef);
+                MetricDefinition.DISCRETE, "JobState", null, null, returnDef);
         GATEngine.registerMetric(this, "getJobStatus", statusMetricDefinition);
         statusMetric = statusMetricDefinition.createMetric(null);
     }
@@ -172,7 +172,7 @@ public class GlobusJob extends JobCpi implements GramJobListener,
      * @see org.gridlab.gat.resources.Job#getExitStatus()
      */
     public synchronized int getExitStatus() throws GATInvocationException {
-        if (!(state == STOPPED || state == SUBMISSION_ERROR)) {
+        if (!(state == JobState.STOPPED || state == JobState.SUBMISSION_ERROR)) {
             throw new GATInvocationException("not in STOPPED state");
         }
         if (exitStatusEnabled) {
@@ -193,13 +193,13 @@ public class GlobusJob extends JobCpi implements GramJobListener,
         HashMap<String, Object> m = new HashMap<String, Object>();
         getStateActive(); // update the state
 
-        m.put("state", getStateString(state));
-        if (state != RUNNING) {
+        m.put("state", state.toString());
+        if (state != JobState.RUNNING) {
             m.put("hostname", null);
         } else {
             m.put("hostname", j.getID().getHost());
         }
-        if (state == INITIAL || state == UNKNOWN) {
+        if (state == JobState.INITIAL || state == JobState.UNKNOWN) {
             m.put("globus.state", null);
             m.put("globus.error", null);
             m.put("globus.errorno", null);
@@ -214,12 +214,13 @@ public class GlobusJob extends JobCpi implements GramJobListener,
             m.put("id", jobID);
             m.put("submissiontime", submissiontime);
         }
-        if (state == INITIAL || state == UNKNOWN || state == SCHEDULED) {
+        if (state == JobState.INITIAL || state == JobState.UNKNOWN
+                || state == JobState.SCHEDULED) {
             m.put("starttime", null);
         } else {
             m.put("starttime", starttime);
         }
-        if (state != STOPPED) {
+        if (state != JobState.STOPPED) {
             m.put("stoptime", null);
         } else {
             m.put("stoptime", stoptime);
@@ -281,7 +282,7 @@ public class GlobusJob extends JobCpi implements GramJobListener,
     }
 
     private synchronized void waitForJobCompletion() {
-        while (state != STOPPED && state != SUBMISSION_ERROR) {
+        while (state != JobState.STOPPED && state != JobState.SUBMISSION_ERROR) {
             try {
                 wait();
             } catch (InterruptedException e) {
@@ -379,7 +380,7 @@ public class GlobusJob extends JobCpi implements GramJobListener,
     private synchronized void handleStatusChanged(GramJob newJob) {
         // if the job is already done, simply return
         // because we remove the listeners will this ever be executed?
-        if (state == STOPPED || state == SUBMISSION_ERROR) {
+        if (state == JobState.STOPPED || state == JobState.SUBMISSION_ERROR) {
             return;
         }
         int status = newJob.getStatus();
@@ -394,10 +395,10 @@ public class GlobusJob extends JobCpi implements GramJobListener,
         }
         if (!stateChanged && globusJobState == 0) {
             return;
-        } else if (stateChanged && state == SCHEDULED) {
+        } else if (stateChanged && state == JobState.SCHEDULED) {
             jobID = j.getIDAsString();
             setSubmissionTime();
-        } else if (stateChanged && state == RUNNING) {
+        } else if (stateChanged && state == JobState.RUNNING) {
             setStartTime();
         } else if (globusJobState == GLOBUS_JOB_STOPPED
                 || globusJobState == GLOBUS_JOB_SUBMISSION_ERROR) {
@@ -407,14 +408,14 @@ public class GlobusJob extends JobCpi implements GramJobListener,
                 } catch (InterruptedException e) {
                 }
             }
-            setState(POST_STAGING);
+            setState(JobState.POST_STAGING);
             if (sandbox != null) {
                 sandbox.retrieveAndCleanup(this);
             }
             if (globusJobState == GLOBUS_JOB_STOPPED) {
-                setState(STOPPED);
+                setState(JobState.STOPPED);
             } else {
-                setState(SUBMISSION_ERROR);
+                setState(JobState.SUBMISSION_ERROR);
             }
             if (exitStatusEnabled && globusJobState == GLOBUS_JOB_STOPPED) {
                 try {
@@ -446,10 +447,10 @@ public class GlobusJob extends JobCpi implements GramJobListener,
         notifyAll();
     }
 
-    private int convertGram2Gat(int gramStatus) {
+    private JobState convertGram2Gat(int gramStatus) {
         switch (gramStatus) {
         case STATUS_ACTIVE:
-            return RUNNING;
+            return JobState.RUNNING;
         case STATUS_DONE:
             globusJobState = GLOBUS_JOB_STOPPED;
             return state;
@@ -457,30 +458,30 @@ public class GlobusJob extends JobCpi implements GramJobListener,
             globusJobState = GLOBUS_JOB_SUBMISSION_ERROR;
             return state;
         case STATUS_PENDING:
-            return SCHEDULED;
+            return JobState.SCHEDULED;
         case STATUS_STAGE_IN:
-            return PRE_STAGING;
+            return JobState.PRE_STAGING;
         case STATUS_STAGE_OUT:
-            return POST_STAGING;
+            return JobState.POST_STAGING;
         case STATUS_SUSPENDED:
-            return ON_HOLD;
+            return JobState.ON_HOLD;
         case 0: // unknown (no constant :-( )
-            return UNKNOWN;
+            return JobState.UNKNOWN;
         case STATUS_UNSUBMITTED:
-            return INITIAL;
+            return JobState.INITIAL;
         default:
             logger.warn("WARNING: Globus job: unknown state: " + gramStatus);
-            return UNKNOWN;
+            return JobState.UNKNOWN;
         }
     }
 
-    protected boolean setState(int state) {
+    protected boolean setState(JobState state) {
         if (this.state == state) {
             return false;
         }
         this.state = state;
-        MetricEvent v = new MetricEvent(this, getStateString(state),
-                statusMetric, System.currentTimeMillis());
+        MetricEvent v = new MetricEvent(this, state, statusMetric, System
+                .currentTimeMillis());
         GATEngine.fireMetric(this, v);
         return true;
     }
@@ -602,8 +603,9 @@ public class GlobusJob extends JobCpi implements GramJobListener,
             int totalBytesRead = 0;
             byte[] buffer = new byte[1024];
             // wait until the remote output file exists
-            while (!source.exists() && GlobusJob.this.getState() != STOPPED
-                    && GlobusJob.this.getState() != SUBMISSION_ERROR) {
+            while (!source.exists()
+                    && GlobusJob.this.getState() != GlobusJob.JobState.STOPPED
+                    && GlobusJob.this.getState() != GlobusJob.JobState.SUBMISSION_ERROR) {
                 try {
                     sleep(1000);
                 } catch (InterruptedException e) {

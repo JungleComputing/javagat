@@ -18,36 +18,36 @@ import org.gridlab.gat.resources.ResourceDescription;
 import org.gridlab.gat.resources.SoftwareDescription;
 
 public class SubmitJobGridSAM {
-    
+
     private Logger logger = Logger.getLogger(SubmitJobGridSAM.class);
-    
+
     private class GridSAMMetricListener implements MetricListener {
 
         public void processMetricEvent(MetricEvent val) {
             logger.info("got process event, val=" + val);
         }
-        
+
     }
-    
+
     public void start(String[] args) throws Exception {
         GATContext context = new GATContext();
-        
+
         Preferences prefs = new Preferences();
-        
+
         prefs.put("ResourceBroker.adaptor.name", "GridSAM");
         prefs.put("ResourceBroker.sandbox.root", "/tmp");
 
-//        prefs.put("File.adaptor.name", "commandlinessh");
-//        prefs.put("File.adaptor.name", "ssh");
+        // prefs.put("File.adaptor.name", "commandlinessh");
+        // prefs.put("File.adaptor.name", "ssh");
         SoftwareDescription sd = new SoftwareDescription();
 
         sd.setExecutable("/usr/bin/printenv");
-        sd.setArguments(new String[] { } );
-        
+        sd.setArguments(new String[] {});
+
         Map<String, Object> attributes = new HashMap<String, Object>();
         attributes.put("maxCPUTime", "60");
         attributes.put("maxMemory", "90");
-        
+
         Map<String, Object> env = new HashMap<String, Object>();
         env.put("ENV1", "env1val");
         env.put("GRIDSAMISCOOL", "no");
@@ -60,32 +60,37 @@ public class SubmitJobGridSAM {
         rd.addResourceAttribute("machine.node", "titan.cs.vu.nl");
 
         JobDescription jd = new JobDescription(sd, rd);
-        ResourceBroker broker = GAT.createResourceBroker(context, prefs,
-                new URI("https://titan.cs.vu.nl:18443/gridsam/services/gridsam"));
-        Job job = broker.submitJob(jd, new GridSAMMetricListener(), "job.status");
-        
+        ResourceBroker broker = GAT
+                .createResourceBroker(
+                        context,
+                        prefs,
+                        new URI(
+                                "https://titan.cs.vu.nl:18443/gridsam/services/gridsam"));
+        Job job = broker.submitJob(jd, new GridSAMMetricListener(),
+                "job.status");
+
         while (true) {
-            int state = job.getState();
+            Job.JobState state = job.getState();
             if (logger.isDebugEnabled()) {
                 logger.debug("state=" + state);
             }
-            if (state == Job.STOPPED) {
+            if (state == Job.JobState.STOPPED) {
                 logger.info("job done, exit code=" + job.getExitStatus());
                 break;
-            } else if (state == Job.SUBMISSION_ERROR) {
+            } else if (state == Job.JobState.SUBMISSION_ERROR) {
                 logger.info("job error, breaking");
                 break;
             }
-            Thread.sleep(1000);           
+            Thread.sleep(1000);
         }
-        
+
         GAT.end();
     }
-    
+
     public static void main(String[] args) throws Exception {
         try {
             new SubmitJobGridSAM().start(args);
-        } catch(Throwable e) {
+        } catch (Throwable e) {
             e.printStackTrace();
         }
     }

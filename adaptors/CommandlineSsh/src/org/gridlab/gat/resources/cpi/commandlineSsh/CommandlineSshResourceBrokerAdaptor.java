@@ -134,7 +134,7 @@ public class CommandlineSshResourceBrokerAdaptor extends ResourceBrokerCpi {
             job.addMetricListener(listener, metric);
         }
         // set the state to prestaging
-        job.setState(Job.PRE_STAGING);
+        job.setState(Job.JobState.PRE_STAGING);
         // and let the sandbox prestage the files!
         sandbox.prestage();
 
@@ -189,7 +189,7 @@ public class CommandlineSshResourceBrokerAdaptor extends ResourceBrokerCpi {
             throw new CommandNotFoundException(
                     "CommandlineSshResourceBrokerAdaptor", e);
         }
-        job.setState(Job.RUNNING);
+        job.setState(Job.JobState.RUNNING);
         job.setProcess(p);
 
         if (!sd.streamingStderrEnabled()) {

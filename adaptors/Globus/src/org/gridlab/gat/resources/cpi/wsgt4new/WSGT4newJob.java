@@ -46,9 +46,9 @@ public class WSGT4newJob extends JobCpi implements GramJobListener, Runnable {
             Sandbox sandbox) {
         super(gatContext, jobDescription, sandbox);
         HashMap<String, Object> returnDef = new HashMap<String, Object>();
-        returnDef.put("status", String.class);
+        returnDef.put("status", JobState.class);
         statusMetricDefinition = new MetricDefinition("job.status",
-                MetricDefinition.DISCRETE, "String", null, null, returnDef);
+                MetricDefinition.DISCRETE, "JobState", null, null, returnDef);
         GATEngine.registerMetric(this, "getJobStatus", statusMetricDefinition);
         statusMetric = statusMetricDefinition.createMetric(null);
         poller = new Thread(this);
@@ -58,17 +58,17 @@ public class WSGT4newJob extends JobCpi implements GramJobListener, Runnable {
         poller.start();
     }
 
-    protected synchronized void setState(int state) {
+    protected synchronized void setState(JobState state) {
         if (this.state != state) {
             this.state = state;
-            MetricEvent v = new MetricEvent(this, getStateString(state),
-                    statusMetric, System.currentTimeMillis());
+            MetricEvent v = new MetricEvent(this, state, statusMetric, System
+                    .currentTimeMillis());
 
             if (logger.isDebugEnabled()) {
                 logger.debug("wsgt4new job callback: firing event: " + v);
             }
             GATEngine.fireMetric(this, v);
-            if (state == STOPPED || state == SUBMISSION_ERROR) {
+            if (state == JobState.STOPPED || state == JobState.SUBMISSION_ERROR) {
                 try {
                     stop();
                 } catch (GATInvocationException e) {
@@ -79,7 +79,7 @@ public class WSGT4newJob extends JobCpi implements GramJobListener, Runnable {
     }
 
     public synchronized void stop() throws GATInvocationException {
-        if (state != STOPPED && state != SUBMISSION_ERROR) {
+        if (state != JobState.STOPPED && state != JobState.SUBMISSION_ERROR) {
             try {
                 job.cancel();
             } catch (Exception e) {
@@ -98,7 +98,8 @@ public class WSGT4newJob extends JobCpi implements GramJobListener, Runnable {
     }
 
     public synchronized int getExitStatus() throws GATInvocationException {
-        if (getState() != STOPPED && getState() != SUBMISSION_ERROR) {
+        if (getState() != JobState.STOPPED
+                && getState() != JobState.SUBMISSION_ERROR) {
             throw new GATInvocationException("exit status not yet available");
         }
         return exitStatus;
@@ -108,24 +109,25 @@ public class WSGT4newJob extends JobCpi implements GramJobListener, Runnable {
             throws GATInvocationException {
         HashMap<String, Object> m = new HashMap<String, Object>();
 
-        m.put("state", getStateString(state));
+        m.put("state", state.toString());
         m.put("globusstate", jobState);
-        if (state != RUNNING) {
+        if (state != JobState.RUNNING) {
             m.put("hostname", null);
         } else {
             m.put("hostname", job.getEndpoint().getAddress().getHost());
         }
-        if (state == INITIAL || state == UNKNOWN) {
+        if (state == JobState.INITIAL || state == JobState.UNKNOWN) {
             m.put("submissiontime", null);
         } else {
             m.put("submissiontime", submissiontime);
         }
-        if (state == INITIAL || state == UNKNOWN || state == SCHEDULED) {
+        if (state == JobState.INITIAL || state == JobState.UNKNOWN
+                || state == JobState.SCHEDULED) {
             m.put("starttime", null);
         } else {
             m.put("starttime", starttime);
         }
-        if (state != STOPPED) {
+        if (state != JobState.STOPPED) {
             m.put("stoptime", null);
         } else {
             m.put("stoptime", stoptime);
@@ -135,7 +137,7 @@ public class WSGT4newJob extends JobCpi implements GramJobListener, Runnable {
         m
                 .put(
                         "exitvalue",
-                        (getState() != STOPPED && getState() != SUBMISSION_ERROR) ? null
+                        (getState() != JobState.STOPPED && getState() != JobState.SUBMISSION_ERROR) ? null
                                 : "" + getExitStatus());
         if (deleteException != null) {
             m.put("delete.exception", deleteException);
@@ -184,33 +186,33 @@ public class WSGT4newJob extends JobCpi implements GramJobListener, Runnable {
             }
         }
         if (jobState.equals(StateEnumeration.Pending)) {
-            setState(SCHEDULED);
+            setState(JobState.SCHEDULED);
         } else if (jobState.equals(StateEnumeration.Active)) {
             setStartTime();
-            setState(RUNNING);
+            setState(JobState.RUNNING);
         } else if (jobState.equals(StateEnumeration.CleanUp)) {
             // setState(POST_STAGING);
             // sandbox.retrieveAndCleanup(this);
             // setState(STOPPED);
             // setStopTime();
         } else if (jobState.equals(StateEnumeration.Done)) {
-            setState(POST_STAGING);
+            setState(JobState.POST_STAGING);
             sandbox.retrieveAndCleanup(this);
-            setState(STOPPED);
+            setState(JobState.STOPPED);
             setStopTime();
         } else if (jobState.equals(StateEnumeration.Failed)) {
-            setState(POST_STAGING);
+            setState(JobState.POST_STAGING);
             sandbox.retrieveAndCleanup(this);
-            setState(SUBMISSION_ERROR);
+            setState(JobState.SUBMISSION_ERROR);
         } else if (jobState.equals(StateEnumeration.StageIn)) {
-            setState(PRE_STAGING);
+            setState(JobState.PRE_STAGING);
         } else if (jobState.equals(StateEnumeration.StageOut)) {
-            setState(POST_STAGING);
+            setState(JobState.POST_STAGING);
         } else if (jobState.equals(StateEnumeration.Suspended)) {
-            setState(ON_HOLD);
+            setState(JobState.ON_HOLD);
         } else if (jobState.equals(StateEnumeration.Unsubmitted)
-                && state != PRE_STAGING) {
-            setState(INITIAL);
+                && state != JobState.PRE_STAGING) {
+            setState(JobState.INITIAL);
         }
     }
 

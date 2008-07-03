@@ -49,8 +49,8 @@ public class SubmitWithWrapper implements MetricListener {
                 System.out.println("--- end multi job " + i);
                 broker.endMultiJob();
             }
-            while (lastJob.getState() != Job.STOPPED
-                    && lastJob.getState() != Job.SUBMISSION_ERROR) {
+            while (lastJob.getState() != Job.JobState.STOPPED
+                    && lastJob.getState() != Job.JobState.SUBMISSION_ERROR) {
                 System.out
                         .println("waiting for last job, its current state is: '"
                                 + lastJob.getState() + "'");

@@ -422,49 +422,49 @@ public class AdaptorTest implements MetricListener {
 
     class JobStateMetricListener implements MetricListener {
 
-        private String state = Job.INITIAL_STRING;
+        private Job.JobState state = Job.JobState.INITIAL;
 
         private Exception e;
 
         public void processMetricEvent(MetricEvent val) {
-            String newState = (String) val.getValue();
-            if (newState.equals(Job.INITIAL_STRING)
-                    && !(state.equals(Job.INITIAL_STRING))) {
+            Job.JobState newState = (Job.JobState) val.getValue();
+            if (newState.equals(Job.JobState.INITIAL)
+                    && !(state.equals(Job.JobState.INITIAL))) {
                 e = new Exception(newState + " occurs after " + state
                         + " but shouldn't");
             }
-            if (newState.equals(Job.PRE_STAGING_STRING)
-                    && (state.equals(Job.SCHEDULED_STRING)
-                            || state.equals(Job.POST_STAGING_STRING)
-                            || state.equals(Job.RUNNING_STRING)
-                            || state.equals(Job.STOPPED_STRING) || state
-                            .equals(Job.SUBMISSION_ERROR_STRING))) {
+            if (newState.equals(Job.JobState.PRE_STAGING)
+                    && (state.equals(Job.JobState.SCHEDULED)
+                            || state.equals(Job.JobState.POST_STAGING)
+                            || state.equals(Job.JobState.RUNNING)
+                            || state.equals(Job.JobState.STOPPED) || state
+                            .equals(Job.JobState.SUBMISSION_ERROR))) {
                 e = new Exception(newState + " occurs after " + state
                         + " but shouldn't");
             }
-            if (newState.equals(Job.SCHEDULED_STRING)
-                    && (state.equals(Job.POST_STAGING_STRING)
-                            || state.equals(Job.RUNNING_STRING)
-                            || state.equals(Job.STOPPED_STRING) || state
-                            .equals(Job.SUBMISSION_ERROR_STRING))) {
+            if (newState.equals(Job.JobState.SCHEDULED)
+                    && (state.equals(Job.JobState.POST_STAGING)
+                            || state.equals(Job.JobState.RUNNING)
+                            || state.equals(Job.JobState.STOPPED) || state
+                            .equals(Job.JobState.SUBMISSION_ERROR))) {
                 e = new Exception(newState + " occurs after " + state
                         + " but shouldn't");
             }
-            if (newState.equals(Job.RUNNING_STRING)
-                    && (state.equals(Job.POST_STAGING_STRING)
-                            || state.equals(Job.STOPPED_STRING) || state
-                            .equals(Job.SUBMISSION_ERROR_STRING))) {
+            if (newState.equals(Job.JobState.RUNNING)
+                    && (state.equals(Job.JobState.POST_STAGING)
+                            || state.equals(Job.JobState.STOPPED) || state
+                            .equals(Job.JobState.SUBMISSION_ERROR))) {
                 e = new Exception(newState + " occurs after " + state
                         + " but shouldn't");
             }
-            if (newState.equals(Job.POST_STAGING_STRING)
-                    && (state.equals(Job.STOPPED_STRING) || state
-                            .equals(Job.SUBMISSION_ERROR_STRING))) {
+            if (newState.equals(Job.JobState.POST_STAGING)
+                    && (state.equals(Job.JobState.STOPPED) || state
+                            .equals(Job.JobState.SUBMISSION_ERROR))) {
                 e = new Exception(newState + " occurs after " + state
                         + " but shouldn't");
             }
             state = newState;
-            if (state.equals(Job.STOPPED_STRING)) {
+            if (state.equals(Job.JobState.STOPPED)) {
                 synchronized (this) {
                     notifyAll();
                 }
@@ -500,7 +500,7 @@ public class AdaptorTest implements MetricListener {
             return new AdaptorTestResultEntry(false, 0L, e);
         }
 
-        while (job.getState() != Job.STOPPED) {
+        while (job.getState() != Job.JobState.STOPPED) {
             Map<String, Object> info = null;
             try {
                 info = job.getInfo();
@@ -525,7 +525,7 @@ public class AdaptorTest implements MetricListener {
                     exception = new Exception(
                             "getInfo doesn't contain a key 'hostname'");
                 } else {
-                    if (info.get("state").equals(Job.RUNNING_STRING)
+                    if (info.get("state").equals(Job.JobState.RUNNING)
                             && info.get("hostname") == null) {
                         exception = new Exception(
                                 "inconsistent getInfo: state=RUNNING, hostname=null");
@@ -563,7 +563,7 @@ public class AdaptorTest implements MetricListener {
     }
 
     public void processMetricEvent(MetricEvent val) {
-        if (val.getValue().equals(Job.STOPPED_STRING)) {
+        if (val.getValue().equals(Job.JobState.STOPPED)) {
             synchronized (this) {
                 notifyAll();
             }

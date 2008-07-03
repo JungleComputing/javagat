@@ -25,12 +25,13 @@ public class SubmitJobCallback implements MetricListener {
     }
 
     public synchronized void processMetricEvent(MetricEvent val) {
-        String state = (String) val.getValue();
+        Job.JobState state = (Job.JobState) val.getValue();
 
         System.err.println("SubmitJobCallback: Processing metric: "
                 + val.getMetric() + ", value is " + state);
 
-        if (state.equals("STOPPED") || state.equals("SUBMISSION_ERROR")) {
+        if (state.equals(Job.JobState.STOPPED)
+                || state.equals(Job.JobState.SUBMISSION_ERROR)) {
             notifyAll();
         }
     }
@@ -61,8 +62,8 @@ public class SubmitJobCallback implements MetricListener {
 
         // wait until job is done
         synchronized (this) {
-            while ((job.getState() != Job.STOPPED)
-                    && (job.getState() != Job.SUBMISSION_ERROR)) {
+            while ((job.getState() != Job.JobState.STOPPED)
+                    && (job.getState() != Job.JobState.SUBMISSION_ERROR)) {
                 wait();
             }
         }

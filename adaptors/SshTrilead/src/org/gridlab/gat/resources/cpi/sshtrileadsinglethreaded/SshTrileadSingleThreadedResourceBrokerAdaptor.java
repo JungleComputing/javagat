@@ -139,8 +139,9 @@ public class SshTrileadSingleThreadedResourceBrokerAdaptor extends
      * 
      * @see org.gridlab.gat.resources.ResourceBroker#submitJob(org.gridlab.gat.resources.JobDescription)
      */
-    public Job submitJob(AbstractJobDescription abstractDescription, MetricListener listener,
-            String metricDefinitionName) throws GATInvocationException {
+    public Job submitJob(AbstractJobDescription abstractDescription,
+            MetricListener listener, String metricDefinitionName)
+            throws GATInvocationException {
         if (!(abstractDescription instanceof JobDescription)) {
             throw new GATInvocationException(
                     "can only handle JobDescriptions: "
@@ -148,7 +149,7 @@ public class SshTrileadSingleThreadedResourceBrokerAdaptor extends
         }
 
         JobDescription description = (JobDescription) abstractDescription;
-        
+
         // TODO: this broker is not Windows compatible (&&, export)
 
         // check whether there's a software description in the job
@@ -181,7 +182,7 @@ public class SshTrileadSingleThreadedResourceBrokerAdaptor extends
             job.addMetricListener(listener, metric);
         }
         // and now do the prestaging
-        job.setState(Job.PRE_STAGING);
+        job.setState(Job.JobState.PRE_STAGING);
         sandbox.prestage();
 
         // construct the ssh command
@@ -277,7 +278,7 @@ public class SshTrileadSingleThreadedResourceBrokerAdaptor extends
             throw new GATInvocationException("execution failed!", e);
         }
 
-        job.setState(Job.RUNNING);
+        job.setState(Job.JobState.RUNNING);
         return job;
     }
 

@@ -59,9 +59,9 @@ public class LocalQJob extends JobCpi implements Runnable,
 
         // Tell the engine that we provide job.status events
         HashMap<String, Object> returnDef = new HashMap<String, Object>();
-        returnDef.put("status", String.class);
+        returnDef.put("status", JobState.class);
         statusMetricDefinition = new MetricDefinition("job.status",
-                MetricDefinition.DISCRETE, "String", null, null, returnDef);
+                MetricDefinition.DISCRETE, "JobState", null, null, returnDef);
         statusMetric = statusMetricDefinition.createMetric(null);
         GATEngine.registerMetric(this, "getJobStatus", statusMetricDefinition);
         setSubmissionTime();
@@ -82,23 +82,24 @@ public class LocalQJob extends JobCpi implements Runnable,
         // update state
         getState();
 
-        m.put("state", getStateString(state));
-        if (state != RUNNING) {
+        m.put("state", state.toString());
+        if (state != JobState.RUNNING) {
             m.put("hostname", null);
         } else {
             m.put("hostname", GATEngine.getLocalHostName());
         }
-        if (state == INITIAL || state == UNKNOWN) {
+        if (state == JobState.INITIAL || state == JobState.UNKNOWN) {
             m.put("submissiontime", null);
         } else {
             m.put("submissiontime", submissiontime);
         }
-        if (state == INITIAL || state == UNKNOWN || state == SCHEDULED) {
+        if (state == JobState.INITIAL || state == JobState.UNKNOWN
+                || state == JobState.SCHEDULED) {
             m.put("starttime", null);
         } else {
             m.put("starttime", starttime);
         }
-        if (state != STOPPED) {
+        if (state != JobState.STOPPED) {
             m.put("stoptime", null);
         } else {
             m.put("stoptime", stoptime);
@@ -121,7 +122,7 @@ public class LocalQJob extends JobCpi implements Runnable,
      * @see org.gridlab.gat.resources.Job#getExitStatus()
      */
     public synchronized int getExitStatus() throws GATInvocationException {
-        if (state != STOPPED) {
+        if (state != JobState.STOPPED) {
             throw new GATInvocationException("not in RUNNING state");
         }
 
@@ -146,12 +147,12 @@ public class LocalQJob extends JobCpi implements Runnable,
         }
     }
 
-    protected void setState(int state) {
+    protected void setState(JobState state) {
         MetricEvent metricEvent = null;
         synchronized (this) {
             this.state = state;
-            metricEvent = new MetricEvent(this, getStateString(state),
-                    statusMetric, System.currentTimeMillis());
+            metricEvent = new MetricEvent(this, state, statusMetric, System
+                    .currentTimeMillis());
 
             if (logger.isDebugEnabled()) {
                 logger.debug("default job callback: firing event: "
@@ -233,7 +234,7 @@ public class LocalQJob extends JobCpi implements Runnable,
                 setStartTime();
             } catch (IOException e) {
                 logger.error(e);
-                setState(SUBMISSION_ERROR);
+                setState(JobState.SUBMISSION_ERROR);
 
                 // FIXME: also cleanup sandbox?
 
@@ -260,7 +261,7 @@ public class LocalQJob extends JobCpi implements Runnable,
                 new InputForwarder(out, fin);
             } catch (Exception e) {
                 logger.error(e);
-                setState(SUBMISSION_ERROR);
+                setState(JobState.SUBMISSION_ERROR);
                 return;
             }
         }
@@ -277,7 +278,7 @@ public class LocalQJob extends JobCpi implements Runnable,
                 outForwarder = new OutputForwarder(p.getInputStream(), out);
             } catch (Exception e) {
                 logger.error(e);
-                setState(SUBMISSION_ERROR);
+                setState(JobState.SUBMISSION_ERROR);
                 return;
             }
         }
@@ -293,12 +294,12 @@ public class LocalQJob extends JobCpi implements Runnable,
                         stderr.getAbsolutePath());
                 errForwarder = new OutputForwarder(p.getErrorStream(), out);
             } catch (Exception e) {
-                setState(SUBMISSION_ERROR);
+                setState(JobState.SUBMISSION_ERROR);
                 return;
             }
         }
 
-        setState(RUNNING);
+        setState(JobState.RUNNING);
 
         int exitValue = 0;
         try {
@@ -324,13 +325,13 @@ public class LocalQJob extends JobCpi implements Runnable,
             errForwarder.waitUntilFinished();
         }
 
-        setState(POST_STAGING);
+        setState(JobState.POST_STAGING);
 
         sandbox.retrieveAndCleanup(this);
 
         finished();
 
-        setState(STOPPED);
+        setState(JobState.STOPPED);
 
         if (logger.isDebugEnabled()) {
             logger.debug("TIMING: job " + jobID + ":" + " preStage: "

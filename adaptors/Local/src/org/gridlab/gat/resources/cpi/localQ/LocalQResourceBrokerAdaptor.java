@@ -177,7 +177,7 @@ public class LocalQResourceBrokerAdaptor extends ResourceBrokerCpi implements
             result.addMetricListener(listener, metric);
         }
 
-        result.setState(Job.PRE_STAGING);
+        result.setState(Job.JobState.PRE_STAGING);
         sandbox.prestage();
 
         // add to queue

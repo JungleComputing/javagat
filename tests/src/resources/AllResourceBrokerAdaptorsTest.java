@@ -29,7 +29,7 @@ public class AllResourceBrokerAdaptorsTest {
         AdaptorTestResult[] results = new AdaptorTestResult[adaptors.length];
         int i = 0;
         for (String adaptor : adaptors) {
-            if (adaptor.equals("local")) {
+            if (adaptor.startsWith("local")) {
                 results[i++] = new AdaptorTest().test(adaptor, "localhost");
             } else {
                 results[i++] = new AdaptorTest().test(adaptor, host);

@@ -46,9 +46,9 @@ public class LocalJob extends JobCpi {
 
         // Tell the engine that we provide job.status events
         HashMap<String, Object> returnDef = new HashMap<String, Object>();
-        returnDef.put("status", String.class);
+        returnDef.put("status", JobState.class);
         statusMetricDefinition = new MetricDefinition("job.status",
-                MetricDefinition.DISCRETE, "String", null, null, returnDef);
+                MetricDefinition.DISCRETE, "JobState", null, null, returnDef);
         statusMetric = statusMetricDefinition.createMetric(null);
         GATEngine.registerMetric(this, "getJobStatus", statusMetricDefinition);
     }
@@ -67,10 +67,10 @@ public class LocalJob extends JobCpi {
         }
     }
 
-    protected void setState(int state) {
+    protected void setState(JobState state) {
         this.state = state;
-        MetricEvent v = new MetricEvent(this, getStateString(state),
-                statusMetric, System.currentTimeMillis());
+        MetricEvent v = new MetricEvent(this, state, statusMetric, System
+                .currentTimeMillis());
         GATEngine.fireMetric(this, v);
     }
 
@@ -86,23 +86,24 @@ public class LocalJob extends JobCpi {
         // update state
         getState();
 
-        m.put("state", getStateString(state));
-        if (state != RUNNING) {
+        m.put("state", state.toString());
+        if (state != JobState.RUNNING) {
             m.put("hostname", null);
         } else {
             m.put("hostname", GATEngine.getLocalHostName());
         }
-        if (state == INITIAL || state == UNKNOWN) {
+        if (state == JobState.INITIAL || state == JobState.UNKNOWN) {
             m.put("submissiontime", null);
         } else {
             m.put("submissiontime", submissiontime);
         }
-        if (state == INITIAL || state == UNKNOWN || state == SCHEDULED) {
+        if (state == JobState.INITIAL || state == JobState.UNKNOWN
+                || state == JobState.SCHEDULED) {
             m.put("starttime", null);
         } else {
             m.put("starttime", starttime);
         }
-        if (state != STOPPED) {
+        if (state != JobState.STOPPED) {
             m.put("stoptime", null);
         } else {
             m.put("stoptime", stoptime);
@@ -125,7 +126,7 @@ public class LocalJob extends JobCpi {
      * @see org.gridlab.gat.resources.Job#getExitStatus()
      */
     public synchronized int getExitStatus() throws GATInvocationException {
-        if (state != STOPPED) {
+        if (state != JobState.STOPPED) {
             throw new GATInvocationException("not in RUNNING state");
         }
         return exitStatus;
@@ -141,7 +142,7 @@ public class LocalJob extends JobCpi {
     }
 
     public synchronized void stop() throws GATInvocationException {
-        setState(POST_STAGING);
+        setState(JobState.POST_STAGING);
         sandbox.retrieveAndCleanup(this);
         try {
             p.getErrorStream().close();
@@ -151,7 +152,7 @@ public class LocalJob extends JobCpi {
             // ignore
         }
         p.destroy();
-        setState(STOPPED);
+        setState(JobState.STOPPED);
         finished();
     }
 

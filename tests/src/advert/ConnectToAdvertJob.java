@@ -24,8 +24,8 @@ public class ConnectToAdvertJob {
 
         System.err.println("got job back: " + other);
 
-        while ((other.getState() != Job.STOPPED)
-                && (other.getState() != Job.SUBMISSION_ERROR)) {
+        while ((other.getState() != Job.JobState.STOPPED)
+                && (other.getState() != Job.JobState.SUBMISSION_ERROR)) {
             System.err.println("job state = " + other.getInfo());
             Thread.sleep(1000);
         }

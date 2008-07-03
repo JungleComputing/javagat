@@ -89,10 +89,9 @@ public class SubmitJobGlite implements MetricListener {
         job.addMetricListener(this, m);
 
         synchronized (this) {
-            while ((job.getState() != Job.STOPPED)
-                    && (job.getState() != Job.SUBMISSION_ERROR)) {
-                System.out.println("job state: "
-                        + job.getStateString(job.getState()));
+            while ((job.getState() != Job.JobState.STOPPED)
+                    && (job.getState() != Job.JobState.SUBMISSION_ERROR)) {
+                System.out.println("job state: " + job.getState());
                 Thread.sleep(5000);
 
             }

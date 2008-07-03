@@ -54,7 +54,7 @@ public class SubmitJobStreamingOut {
         }
 
         System.out.println("--- job done! ---");
-        System.out.println("job state: " + job.getStateString(job.getState()));
+        System.out.println("job state: " + job.getState());
         System.out.println("exit val:  " + job.getExitStatus());
 
         GAT.end();

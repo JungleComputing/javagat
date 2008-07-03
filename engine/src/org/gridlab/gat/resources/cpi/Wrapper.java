@@ -1,8 +1,9 @@
 package org.gridlab.gat.resources.cpi;
 
-import java.io.FileWriter;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.net.URISyntaxException;
@@ -94,7 +95,7 @@ public class Wrapper implements MetricListener {
     public synchronized void processMetricEvent(MetricEvent val) {
         Job job = (Job) val.getSource();
         GATContext gatContext = new GATContext();
-        FileWriter writer = null;
+        ObjectOutputStream out = null;
         try {
             // create a new file and write the state to it. This file is copied
             // to the location of the submitter of the wrapper. It is monitored
@@ -122,10 +123,10 @@ public class Wrapper implements MetricListener {
             File localFile = GAT.createFile(gatContext, local);
             File remoteFile = GAT.createFile(gatContext, dest);
             localFile.createNewFile();
-            writer = new FileWriter(localFile);
-            writer.write(job.getState());
-            writer.flush();
-            writer.close();
+            out = new ObjectOutputStream(new FileOutputStream(local.toString()));
+            out.writeObject(job.getState());
+            out.flush();
+            out.close();
             while (remoteFile.exists()) {
                 try {
                     Thread.sleep(1000);
@@ -146,9 +147,9 @@ public class Wrapper implements MetricListener {
                 logger.debug(e);
             }
         } catch (IOException e) {
-            if (writer != null) {
+            if (out != null) {
                 try {
-                    writer.close();
+                    out.close();
                 } catch (IOException e1) {
                     if (logger.isDebugEnabled()) {
                         logger.debug(e1);
@@ -169,8 +170,8 @@ public class Wrapper implements MetricListener {
         }
         // if the metric indicates that a job has stopped, increment the
         // jobsstopped.
-        if (job.getState() == Job.STOPPED
-                || job.getState() == Job.SUBMISSION_ERROR) {
+        if (job.getState() == Job.JobState.STOPPED
+                || job.getState() == Job.JobState.SUBMISSION_ERROR) {
             jobsStopped++;
         }
         notifyAll();
@@ -396,8 +397,8 @@ public class Wrapper implements MetricListener {
     }
 
     private void waitForPreStageCompletion() {
-        while (lastJob.getState() == Job.INITIAL
-                || lastJob.getState() == Job.PRE_STAGING) {
+        while (lastJob.getState() == Job.JobState.INITIAL
+                || lastJob.getState() == Job.JobState.PRE_STAGING) {
             try {
                 Thread.sleep(5000);
             } catch (InterruptedException e) {
@@ -431,8 +432,8 @@ public class Wrapper implements MetricListener {
                 .getStderr(), initiator, remoteCWD));
         sd.setStdout(rewriteStagedFile(gatContext, preferences, null, sd
                 .getStdout(), initiator, remoteCWD));
-        sd.setStdin(rewriteStagedFile(gatContext, preferences, sd
-                .getStdin(), null, initiator, remoteCWD));
+        sd.setStdin(rewriteStagedFile(gatContext, preferences, sd.getStdin(),
+                null, initiator, remoteCWD));
 
         Map<File, File> pre = sd.getPreStaged();
         Set<File> tmp = pre.keySet();

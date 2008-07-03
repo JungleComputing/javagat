@@ -29,14 +29,14 @@ class JobPoller extends Thread {
 
     public void run() {
         while (true) {
-            if (j.getState() == Job.STOPPED)
+            if (j.getState() == Job.JobState.STOPPED)
                 return;
-            if (j.getState() == Job.SUBMISSION_ERROR)
+            if (j.getState() == Job.JobState.SUBMISSION_ERROR)
                 return;
             j.getStateActive();
-            if (j.getState() == Job.STOPPED)
+            if (j.getState() == Job.JobState.STOPPED)
                 return;
-            if (j.getState() == Job.SUBMISSION_ERROR)
+            if (j.getState() == Job.JobState.SUBMISSION_ERROR)
                 return;
 
             synchronized (this) {

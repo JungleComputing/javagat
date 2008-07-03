@@ -26,14 +26,13 @@ public class SubmitLocalJob {
                 .createResourceBroker(new URI("any://localhost"));
         Job job = broker.submitJob(jd);
 
-        while ((job.getState() != Job.STOPPED)
-                && (job.getState() != Job.SUBMISSION_ERROR)) {
+        while ((job.getState() != Job.JobState.STOPPED)
+                && (job.getState() != Job.JobState.SUBMISSION_ERROR)) {
             Thread.sleep(1000);
         }
 
         GAT.end();
-        System.out.println("fine! job.getState(): "
-                + job.getStateString(job.getState()));
+        System.out.println("fine! job.getState(): " + job.getState());
 
     }
 }

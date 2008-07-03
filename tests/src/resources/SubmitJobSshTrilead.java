@@ -60,8 +60,8 @@ public class SubmitJobSshTrilead implements MetricListener {
 
         Job job = broker.submitJob(jd, this, "job.status");
 
-        while (job.getState() != Job.STOPPED
-                && job.getState() != Job.SUBMISSION_ERROR) {
+        while (job.getState() != Job.JobState.STOPPED
+                && job.getState() != Job.JobState.SUBMISSION_ERROR) {
             Thread.sleep(2000);
         }
 

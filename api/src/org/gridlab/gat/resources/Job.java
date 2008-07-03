@@ -55,136 +55,130 @@ import org.gridlab.gat.monitoring.Monitorable;
  * Note that adaptors might not implement the whole functionality.
  */
 public interface Job extends Monitorable, Advertisable {
-    /**
-     * Initial state indicator.
-     * <p>
-     * The Job has been constructed.
-     */
-    public static final int INITIAL = 0;
 
-    /**
-     * Scheduled state indicator.
-     * <p>
-     * The Job has been submitted to a resource broker and is scheduled to be
-     * executed.
-     */
-    public static final int SCHEDULED = 1;
+    public enum JobState {
+        INITIAL, SCHEDULED, RUNNING, STOPPED, SUBMISSION_ERROR, ON_HOLD, PRE_STAGING, POST_STAGING, UNKNOWN
+    };
 
-    /**
-     * Running state indicator.
-     * <p>
-     * The Job is executing.
-     */
-    public static final int RUNNING = 2;
-
-    /**
-     * Stopped state indicator.
-     * <p>
-     * The Job has properly run. All the cleanup and administration of the Job
-     * is completely done.
-     */
-    public static final int STOPPED = 3;
-
-    /**
-     * Submission error state indicator.
-     * <p>
-     * The Job hasn't properly run. All the cleanup and administration of the
-     * Job is completely done.
-     */
-    public static final int SUBMISSION_ERROR = 4;
-
-    /**
-     * The Job has been paused.
-     * <p>
-     * The Job has been paused by the user.
-     */
-    public static final int ON_HOLD = 5;
-
-    /**
-     * The input files of the job are being pre-staged.
-     */
-    public static final int PRE_STAGING = 6;
-
-    /**
-     * The output files of the job are being post-staged.
-     */
-    public static final int POST_STAGING = 7;
-
-    /**
-     * The job state is unkown for some reason. May be a network problem.
-     */
-    public static final int UNKNOWN = 8;
-
-    /**
-     * Initial state indicator (String).
-     * <p>
-     * The Job has been constructed.
-     */
-    public static final String INITIAL_STRING = "INITIAL";
-
-    /**
-     * Scheduled state indicator (String).
-     * <p>
-     * The Job has been submitted to a resource broker and is scheduled to be
-     * executed.
-     */
-    public static final String SCHEDULED_STRING = "SCHEDULED";
-
-    /**
-     * Running state indicator (String).
-     * <p>
-     * The Job is executing.
-     */
-    public static final String RUNNING_STRING = "RUNNING";
-
-    /**
-     * Stopped state indicator (String).
-     * <p>
-     * The Job has properly run. All the cleanup and administration of the Job
-     * is completely done.
-     */
-    public static final String STOPPED_STRING = "STOPPED";
-
-    /**
-     * Submission error state indicator (String).
-     * <p>
-     * The Job hasn't properly run. All the cleanup and administration of the
-     * Job is completely done.
-     */
-    public static final String SUBMISSION_ERROR_STRING = "SUBMISSION_ERROR";
-
-    /**
-     * The Job has been paused (String).
-     * <p>
-     * The Job has been paused by the user.
-     */
-    public static final String ON_HOLD_STRING = "ON_HOLD";
-
-    /**
-     * The input files of the job are being pre-staged (String).
-     */
-    public static final String PRE_STAGING_STRING = "PRE_STAGING";
-
-    /**
-     * The output files of the job are being post-staged (String).
-     */
-    public static final String POST_STAGING_STRING = "POST_STAGING";
-
-    /**
-     * The job state is unkown for some reason. May be a network problem.
-     */
-    public static final String UNKNOWN_STRING = "UNKNOWN";
-
-    /**
-     * Returns a String representation of the given state. If the given state is
-     * invalid it throws a RuntimeException. The state strings are literally the
-     * same as the name of the constants used, e.g., "RUNNING", or "STOPPED".
-     * 
-     * @param state
-     *                the state to convert into a String representation
-     * @return the String representation of the given state
-     */
-    public String getStateString(int state);
+    // /**
+    // * Initial state indicator.
+    // * <p>
+    // * The Job has been constructed.
+    // */
+    // public static final int INITIAL = 0;
+    //
+    // /**
+    // * Scheduled state indicator.
+    // * <p>
+    // * The Job has been submitted to a resource broker and is scheduled to be
+    // * executed.
+    // */
+    // public static final int SCHEDULED = 1;
+    //
+    // /**
+    // * Running state indicator.
+    // * <p>
+    // * The Job is executing.
+    // */
+    // public static final int RUNNING = 2;
+    //
+    // /**
+    // * Stopped state indicator.
+    // * <p>
+    // * The Job has properly run. All the cleanup and administration of the Job
+    // * is completely done.
+    // */
+    // public static final int STOPPED = 3;
+    //
+    // /**
+    // * Submission error state indicator.
+    // * <p>
+    // * The Job hasn't properly run. All the cleanup and administration of the
+    // * Job is completely done.
+    // */
+    // public static final int SUBMISSION_ERROR = 4;
+    //
+    // /**
+    // * The Job has been paused.
+    // * <p>
+    // * The Job has been paused by the user.
+    // */
+    // public static final int ON_HOLD = 5;
+    //
+    // /**
+    // * The input files of the job are being pre-staged.
+    // */
+    // public static final int PRE_STAGING = 6;
+    //
+    // /**
+    // * The output files of the job are being post-staged.
+    // */
+    // public static final int POST_STAGING = 7;
+    //
+    // /**
+    // * The job state is unkown for some reason. May be a network problem.
+    // */
+    // public static final int UNKNOWN = 8;
+    //
+    // /**
+    // * Initial state indicator (String).
+    // * <p>
+    // * The Job has been constructed.
+    // */
+    // public static final String INITIAL_STRING = "INITIAL";
+    //
+    // /**
+    // * Scheduled state indicator (String).
+    // * <p>
+    // * The Job has been submitted to a resource broker and is scheduled to be
+    // * executed.
+    // */
+    // public static final String SCHEDULED_STRING = "SCHEDULED";
+    //
+    // /**
+    // * Running state indicator (String).
+    // * <p>
+    // * The Job is executing.
+    // */
+    // public static final String RUNNING_STRING = "RUNNING";
+    //
+    // /**
+    // * Stopped state indicator (String).
+    // * <p>
+    // * The Job has properly run. All the cleanup and administration of the Job
+    // * is completely done.
+    // */
+    // public static final String STOPPED_STRING = "STOPPED";
+    //
+    // /**
+    // * Submission error state indicator (String).
+    // * <p>
+    // * The Job hasn't properly run. All the cleanup and administration of the
+    // * Job is completely done.
+    // */
+    // public static final String SUBMISSION_ERROR_STRING = "SUBMISSION_ERROR";
+    //
+    // /**
+    // * The Job has been paused (String).
+    // * <p>
+    // * The Job has been paused by the user.
+    // */
+    // public static final String ON_HOLD_STRING = "ON_HOLD";
+    //
+    // /**
+    // * The input files of the job are being pre-staged (String).
+    // */
+    // public static final String PRE_STAGING_STRING = "PRE_STAGING";
+    //
+    // /**
+    // * The output files of the job are being post-staged (String).
+    // */
+    // public static final String POST_STAGING_STRING = "POST_STAGING";
+    //
+    // /**
+    // * The job state is unkown for some reason. May be a network problem.
+    // */
+    // public static final String UNKNOWN_STRING = "UNKNOWN";
 
     /**
      * Returns the {@link AbstractJobDescription} that was used to create this
@@ -227,7 +221,7 @@ public interface Job extends Monitorable, Advertisable {
      * 
      * @return This method returns the state of the associated Job
      */
-    public int getState();
+    public JobState getState();
 
     /**
      * This method returns an instance of the class {@link java.util.Map} which

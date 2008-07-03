@@ -32,8 +32,7 @@ public class SubmitJobWSGT4new implements MetricListener {
 
     public synchronized void processMetricEvent(MetricEvent val) {
         System.out.println("state changed: "
-                + ((Job) val.getSource())
-                        .getStateString(((Job) val.getSource()).getState()));
+                + ((Job) val.getSource()).getState());
         notifyAll();
     }
 
@@ -61,8 +60,8 @@ public class SubmitJobWSGT4new implements MetricListener {
         Job job = broker.submitJob(jd, this, "job.status");
 
         synchronized (this) {
-            while ((job.getState() != Job.STOPPED)
-                    && (job.getState() != Job.SUBMISSION_ERROR)) {
+            while ((job.getState() != Job.JobState.STOPPED)
+                    && (job.getState() != Job.JobState.SUBMISSION_ERROR)) {
                 wait();
             }
         }

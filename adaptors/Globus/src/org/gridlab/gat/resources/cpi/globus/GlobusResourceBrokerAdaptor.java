@@ -426,7 +426,7 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
                     .createMetric(null);
             job.addMetricListener(listener, metric);
         }
-        job.setState(Job.PRE_STAGING);
+        job.setState(Job.JobState.PRE_STAGING);
         PreStagedFileSet pre = new PreStagedFileSet(gatContext, description,
                 host, null, false);
 
@@ -518,14 +518,14 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
             job.addMetricListener(listener, metric);
         }
 
-        job.setState(Job.PRE_STAGING);
+        job.setState(Job.JobState.PRE_STAGING);
         try {
             sandbox.prestage();
         } catch (GATInvocationException e) {
             // prestaging fails cleanup before throwing the exception.
-            job.setState(Job.POST_STAGING);
+            job.setState(Job.JobState.POST_STAGING);
             sandbox.retrieveAndCleanup(job);
-            job.setState(Job.SUBMISSION_ERROR);
+            job.setState(Job.JobState.SUBMISSION_ERROR);
             throw e;
         }
         // after the prestaging we can safely delete the wrapper script if we

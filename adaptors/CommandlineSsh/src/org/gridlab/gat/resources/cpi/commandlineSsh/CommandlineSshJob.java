@@ -45,9 +45,9 @@ public class CommandlineSshJob extends JobCpi {
         jobID = allocJobID();
 
         HashMap<String, Object> returnDef = new HashMap<String, Object>();
-        returnDef.put("status", String.class);
+        returnDef.put("status", JobState.class);
         statusMetricDefinition = new MetricDefinition("job.status",
-                MetricDefinition.DISCRETE, "String", null, null, returnDef);
+                MetricDefinition.DISCRETE, "JobState", null, null, returnDef);
         statusMetric = statusMetricDefinition.createMetric(null);
         GATEngine.registerMetric(this, "getJobStatus", statusMetricDefinition);
     }
@@ -56,10 +56,10 @@ public class CommandlineSshJob extends JobCpi {
         this.p = p;
     }
 
-    protected synchronized void setState(int state) {
+    protected synchronized void setState(JobState state) {
         this.state = state;
-        MetricEvent v = new MetricEvent(this, getStateString(state),
-                statusMetric, System.currentTimeMillis());
+        MetricEvent v = new MetricEvent(this, state, statusMetric, System
+                .currentTimeMillis());
         GATEngine.fireMetric(this, v);
     }
 
@@ -74,14 +74,11 @@ public class CommandlineSshJob extends JobCpi {
         // update state
         getState();
 
-        m.put("state", getStateString(state));
-        m.put("resManState", getStateString(state));
+        m.put("state", state.toString());
+        m.put("resManState", state.toString());
         m.put("resManName", "CommandlineSsh");
         m.put("exitValue", "" + exitStatus);
-
-        if (postStageException != null) {
-            m.put("postStageError", postStageException);
-        }
+        m.put("poststage.exception", postStageException);
 
         return m;
     }
@@ -92,7 +89,7 @@ public class CommandlineSshJob extends JobCpi {
      * @see org.gridlab.gat.resources.Job#getExitStatus()
      */
     public synchronized int getExitStatus() throws GATInvocationException {
-        if (state != STOPPED)
+        if (state != JobState.STOPPED)
             throw new GATInvocationException("not in RUNNING state");
         return exitStatus;
     }
@@ -107,10 +104,10 @@ public class CommandlineSshJob extends JobCpi {
     }
 
     public synchronized void stop() throws GATInvocationException {
-        setState(POST_STAGING);
+        setState(JobState.POST_STAGING);
         sandbox.retrieveAndCleanup(this);
         p.destroy();
-        setState(STOPPED);
+        setState(JobState.STOPPED);
         finished();
     }
 

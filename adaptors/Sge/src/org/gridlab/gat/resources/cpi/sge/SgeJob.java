@@ -88,7 +88,7 @@ public class SgeJob extends JobCpi {
             // Now we're in RUNNING state - set the time and start the
             // jobStopListener
             time.put("start", new Long(System.currentTimeMillis()));
-            setState(RUNNING);
+            setState(JobState.RUNNING);
 
             jobStopListener jsl = new jobStopListener(this.session, this.jobID,
                     time);
@@ -133,9 +133,9 @@ public class SgeJob extends JobCpi {
                     // TODO
                 }
             }
-            setState(POST_STAGING);
+            setState(JobState.POST_STAGING);
             sandbox.retrieveAndCleanup(SgeJob.this);
-            setState(STOPPED);
+            setState(JobState.STOPPED);
             // Now we're in STOPPED state - set the time and exit
             time.put("stop", new Long(System.currentTimeMillis()));
         }
@@ -145,12 +145,10 @@ public class SgeJob extends JobCpi {
             Sandbox sandbox) {
         super(gatContext, jobDescription, sandbox);
 
-        state = INITIAL;
-
         HashMap<String, Object> returnDef = new HashMap<String, Object>();
-        returnDef.put("status", String.class);
+        returnDef.put("status", JobState.class);
         statusMetricDefinition = new MetricDefinition("job.status",
-                MetricDefinition.DISCRETE, "String", null, null, returnDef);
+                MetricDefinition.DISCRETE, "JobState", null, null, returnDef);
         statusMetric = statusMetricDefinition.createMetric(null);
         GATEngine.registerMetric(this, "getJobStatus", statusMetricDefinition);
     }
@@ -170,20 +168,15 @@ public class SgeJob extends JobCpi {
         new Thread(jsl).start();
     }
 
-    protected synchronized void setState(int state) {
+    protected synchronized void setState(JobState state) {
         this.state = state;
-        MetricEvent v = new MetricEvent(this, getStateString(state),
-                statusMetric, System.currentTimeMillis());
+        MetricEvent v = new MetricEvent(this, state, statusMetric, System
+                .currentTimeMillis());
         GATEngine.fireMetric(this, v);
     }
 
     public String getJobID() {
         return jobID;
-    }
-
-    public synchronized int getState() {
-        // setState();
-        return state;
     }
 
     public String marshal() {
@@ -264,7 +257,7 @@ public class SgeJob extends JobCpi {
             m.put("checkpointable", "0");
             m.put("scheduletime", null);
             m.put("resManName", "Sun Grid Engine");
-            m.put("state", getStateString(state));
+            m.put("state", state.toString());
             m.put("resManState", Integer.toString(session
                     .getJobProgramStatus(jobID)));
             m.put("jobID", jobID);
@@ -313,14 +306,15 @@ public class SgeJob extends JobCpi {
     }
 
     public void stop() throws GATInvocationException {
-        if ((getState() != RUNNING) || (getState() != ON_HOLD)
-                || (getState() != SCHEDULED)) {
+        if ((getState() != JobState.RUNNING)
+                || (getState() != JobState.ON_HOLD)
+                || (getState() != JobState.SCHEDULED)) {
             throw new GATInvocationException(
                     "Cant stop(): job is not in a running state");
         } else {
             try {
                 session.control(jobID, Session.TERMINATE);
-                state = STOPPED;
+                setState(JobState.STOPPED);
             } catch (DrmaaException e) {
                 if (logger.isDebugEnabled()) {
                     logger.debug("-- SGEJob EXCEPTION --");

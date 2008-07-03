@@ -52,7 +52,8 @@ public class SubmitJobWithLocalFiles implements MetricListener {
         sd.setStderr(errFile);
         sd.setExecutable("/bin/hostname");
         sd.addAttribute("wrapper.enable", "true");
-        sd.addAttribute("wrapper.java.home", new URI("/usr/local/sun-java/jdk1.5"));
+        sd.addAttribute("wrapper.java.home", new URI(
+                "/usr/local/sun-java/jdk1.5"));
         sd.addAttribute("sandbox.root", "/tmp");
 
         sd.addPreStagedFile(GAT.createFile(context, prefs, new URI(
@@ -75,8 +76,8 @@ public class SubmitJobWithLocalFiles implements MetricListener {
         job.addMetricListener(this, m);
 
         synchronized (this) {
-            while ((job.getState() != Job.STOPPED)
-                    && (job.getState() != Job.SUBMISSION_ERROR)) {
+            while ((job.getState() != Job.JobState.STOPPED)
+                    && (job.getState() != Job.JobState.SUBMISSION_ERROR)) {
                 wait();
             }
         }

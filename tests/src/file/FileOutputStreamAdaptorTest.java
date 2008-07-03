@@ -83,8 +83,8 @@ public class FileOutputStreamAdaptorTest {
             e.printStackTrace();
             System.exit(1);
         }
-        while (job.getState() != Job.STOPPED
-                && job.getState() != Job.SUBMISSION_ERROR) {
+        while (job.getState() != Job.JobState.STOPPED
+                && job.getState() != Job.JobState.SUBMISSION_ERROR) {
             try {
                 Thread.sleep(500);
             } catch (InterruptedException e) {

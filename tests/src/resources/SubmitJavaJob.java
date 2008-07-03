@@ -51,7 +51,8 @@ public class SubmitJavaJob implements MetricListener {
         sd.setStderr(errFile);
         sd.setExecutable("java:org.gridlab.gat.resources.cpi.wrapper.Wrapper");
 
-        sd.addAttribute("wrapper.java.home", new URI("/home/rob/contrib/jdk1.5.0_09"));
+        sd.addAttribute("wrapper.java.home", new URI(
+                "/home/rob/contrib/jdk1.5.0_09"));
         sd.addAttribute("wrapper.java.flags", "-server");
         sd
                 .addAttribute(
@@ -77,8 +78,8 @@ public class SubmitJavaJob implements MetricListener {
         job.addMetricListener(this, m);
 
         synchronized (this) {
-            while ((job.getState() != Job.STOPPED)
-                    && (job.getState() != Job.SUBMISSION_ERROR)) {
+            while ((job.getState() != Job.JobState.STOPPED)
+                    && (job.getState() != Job.JobState.SUBMISSION_ERROR)) {
                 wait();
             }
         }

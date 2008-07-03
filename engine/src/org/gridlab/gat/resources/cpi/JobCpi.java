@@ -42,7 +42,7 @@ public abstract class JobCpi implements Job {
 
     protected GATContext gatContext;
 
-    protected int state = INITIAL;
+    protected JobState state = JobState.INITIAL;
 
     protected long submissiontime;
 
@@ -81,31 +81,6 @@ public abstract class JobCpi implements Job {
                 }
                 jobList.add(this);
             }
-        }
-    }
-
-    public String getStateString(int state) {
-        switch (state) {
-        case INITIAL:
-            return INITIAL_STRING;
-        case SCHEDULED:
-            return SCHEDULED_STRING;
-        case RUNNING:
-            return RUNNING_STRING;
-        case STOPPED:
-            return STOPPED_STRING;
-        case SUBMISSION_ERROR:
-            return SUBMISSION_ERROR_STRING;
-        case ON_HOLD:
-            return ON_HOLD_STRING;
-        case PRE_STAGING:
-            return PRE_STAGING_STRING;
-        case POST_STAGING:
-            return POST_STAGING_STRING;
-        case UNKNOWN:
-            return UNKNOWN_STRING;
-        default:
-            throw new RuntimeException("unknown job state in getStateString");
         }
     }
 
@@ -188,7 +163,7 @@ public abstract class JobCpi implements Job {
         return jobDescription;
     }
 
-    public int getState() {
+    public JobState getState() {
         return state;
     }
 

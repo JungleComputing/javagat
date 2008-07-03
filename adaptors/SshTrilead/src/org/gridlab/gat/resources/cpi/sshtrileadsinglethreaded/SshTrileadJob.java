@@ -50,9 +50,9 @@ public class SshTrileadJob extends JobCpi {
 
         // Tell the engine that we provide job.status events
         HashMap<String, Object> returnDef = new HashMap<String, Object>();
-        returnDef.put("status", String.class);
+        returnDef.put("status", JobState.class);
         statusMetricDefinition = new MetricDefinition("job.status",
-                MetricDefinition.DISCRETE, "String", null, null, returnDef);
+                MetricDefinition.DISCRETE, "JobState", null, null, returnDef);
         statusMetric = statusMetricDefinition.createMetric(null);
         GATEngine.registerMetric(this, "getJobStatus", statusMetricDefinition);
     }
@@ -61,10 +61,10 @@ public class SshTrileadJob extends JobCpi {
         this.session = session;
     }
 
-    protected synchronized void setState(int state) {
+    protected synchronized void setState(JobState state) {
         this.state = state;
-        MetricEvent v = new MetricEvent(this, getStateString(state),
-                statusMetric, System.currentTimeMillis());
+        MetricEvent v = new MetricEvent(this, state, statusMetric, System
+                .currentTimeMillis());
         GATEngine.fireMetric(this, v);
     }
 
@@ -76,24 +76,25 @@ public class SshTrileadJob extends JobCpi {
             throws GATInvocationException {
         HashMap<String, Object> m = new HashMap<String, Object>();
 
-        m.put("state", getStateString(state));
-        if (state != RUNNING) {
+        m.put("state", state.toString());
+        if (state != JobState.RUNNING) {
             m.put("hostname", null);
         } else {
             m.put("hostname", "not available");
         }
-        if (state == INITIAL || state == UNKNOWN) {
+        if (state == JobState.INITIAL || state == JobState.UNKNOWN) {
             m.put("submissiontime", null);
         } else {
             m.put("id", jobID);
             m.put("submissiontime", submissiontime);
         }
-        if (state == INITIAL || state == UNKNOWN || state == SCHEDULED) {
+        if (state == JobState.INITIAL || state == JobState.UNKNOWN
+                || state == JobState.SCHEDULED) {
             m.put("starttime", null);
         } else {
             m.put("starttime", starttime);
         }
-        if (state != STOPPED) {
+        if (state != JobState.STOPPED) {
             m.put("stoptime", null);
         } else {
             m.put("stoptime", stoptime);
@@ -120,7 +121,7 @@ public class SshTrileadJob extends JobCpi {
     // }
 
     public synchronized int getExitStatus() throws GATInvocationException {
-        if (state != STOPPED && state != SUBMISSION_ERROR) {
+        if (state != JobState.STOPPED && state != JobState.SUBMISSION_ERROR) {
             throw new GATInvocationException(
                     "not in STOPPED or SUBMISSION_ERROR state");
         }
@@ -129,9 +130,9 @@ public class SshTrileadJob extends JobCpi {
 
     public synchronized void stop() throws GATInvocationException {
         session.close();
-        setState(POST_STAGING);
+        setState(JobState.POST_STAGING);
         sandbox.retrieveAndCleanup(this);
-        setState(STOPPED);
+        setState(JobState.STOPPED);
         finished();
     }
 

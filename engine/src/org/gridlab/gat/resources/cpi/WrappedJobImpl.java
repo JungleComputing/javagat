@@ -3,6 +3,7 @@ package org.gridlab.gat.resources.cpi;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.util.HashMap;
 
 import org.gridlab.gat.GATContext;
@@ -139,11 +140,11 @@ public class WrappedJobImpl extends JobCpi implements MetricListener,
      * a metric to the application that listens to the WrappedJob.
      */
     public void processMetricEvent(MetricEvent val) {
-        if (state == STOPPED || state == SUBMISSION_ERROR) {
+        if (state == JobState.STOPPED || state == JobState.SUBMISSION_ERROR) {
             return;
         }
-        if (wrapperJob.getState() == Job.STOPPED
-                || wrapperJob.getState() == Job.SUBMISSION_ERROR) {
+        if (wrapperJob.getState() == JobState.STOPPED
+                || wrapperJob.getState() == Job.JobState.SUBMISSION_ERROR) {
             try {
                 MetricDefinition md = wrapperJob
                         .getMetricDefinitionByName("job.status");
@@ -171,9 +172,9 @@ public class WrappedJobImpl extends JobCpi implements MetricListener,
         return jobString;
     }
 
-    private void fireStateMetric(int state) {
-        MetricEvent v = new MetricEvent(this, getStateString(state),
-                statusMetric, System.currentTimeMillis());
+    private void fireStateMetric(JobState state) {
+        MetricEvent v = new MetricEvent(this, state.toString(), statusMetric,
+                System.currentTimeMillis());
         GATEngine.fireMetric(this, v);
     }
 
@@ -195,11 +196,12 @@ public class WrappedJobImpl extends JobCpi implements MetricListener,
                     + ".JavaGATstatus" + getJobID();
 
             do {
-                int newstate = -777;
-                FileInputStream in = null;
+                JobState newstate = null;
+                ObjectInputStream in = null;
                 try {
-                    in = new FileInputStream(statusFileName);
-                    newstate = in.read();
+                    in = new ObjectInputStream(new FileInputStream(
+                            statusFileName));
+                    newstate = (JobState) in.readObject();
                 } catch (Exception e) {
                     if (logger.isInfoEnabled()) {
                         logger.info(e);
@@ -214,7 +216,7 @@ public class WrappedJobImpl extends JobCpi implements MetricListener,
                         }
                     }
                 }
-                if (newstate >= 0) {
+                if (newstate == null) {
                     File monitorFile = new File(statusFileName);
                     if (!monitorFile.delete()) {
                         logger.fatal("Could not delete job status file!");
@@ -231,7 +233,8 @@ public class WrappedJobImpl extends JobCpi implements MetricListener,
                         logger.info(e);
                     }
                 }
-            } while (state != Job.STOPPED && state != Job.SUBMISSION_ERROR);
+            } while (state != JobState.STOPPED
+                    && state != JobState.SUBMISSION_ERROR);
         }
     }
 }

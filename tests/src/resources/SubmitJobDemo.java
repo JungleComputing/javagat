@@ -58,8 +58,8 @@ public class SubmitJobDemo implements MetricListener {
             job.addMetricListener(this, m);
 
             synchronized (this) {
-                while ((job.getState() != Job.STOPPED)
-                        && (job.getState() != Job.SUBMISSION_ERROR)) {
+                while ((job.getState() != Job.JobState.STOPPED)
+                        && (job.getState() != Job.JobState.SUBMISSION_ERROR)) {
                     wait();
                 }
             }

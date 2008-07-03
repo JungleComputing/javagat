@@ -93,8 +93,8 @@ public class TestApplication {
 	ResourceBroker broker = GAT.createResourceBroker(context, prefs, submissionNode);
 	Job job = broker.submitJob(jd);
 	
-	while ((job.getState() != Job.STOPPED)
-	       && (job.getState() != Job.SUBMISSION_ERROR)) {
+	while ((job.getState() != Job.JobState.STOPPED)
+	       && (job.getState() != Job.JobState.SUBMISSION_ERROR)) {
 	    //System.err.println("job state = " + job.getInfo());
 	    Thread.sleep(1000);
 	}

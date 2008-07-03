@@ -170,7 +170,7 @@ public class SshTrileadResourceBrokerAdaptor extends ResourceBrokerCpi {
             job.addMetricListener(listener, metric);
         }
         // and now do the prestaging
-        job.setState(Job.PRE_STAGING);
+        job.setState(Job.JobState.PRE_STAGING);
         sandbox.prestage();
 
         // construct the ssh command
@@ -265,7 +265,7 @@ public class SshTrileadResourceBrokerAdaptor extends ResourceBrokerCpi {
             throw new GATInvocationException("execution failed!", e);
         }
 
-        job.setState(Job.RUNNING);
+        job.setState(Job.JobState.RUNNING);
         return job;
     }
     // /*

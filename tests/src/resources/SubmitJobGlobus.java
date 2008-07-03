@@ -74,8 +74,8 @@ public class SubmitJobGlobus implements MetricListener {
         Metric m = md.createMetric(null);
         job.addMetricListener(this, m);
 
-        while ((job.getState() != Job.STOPPED)
-                && (job.getState() != Job.SUBMISSION_ERROR)) {
+        while ((job.getState() != Job.JobState.STOPPED)
+                && (job.getState() != Job.JobState.SUBMISSION_ERROR)) {
             try {
                 System.out.println("id: " + job.getJobID());
                 Thread.sleep(1000);
@@ -88,8 +88,8 @@ public class SubmitJobGlobus implements MetricListener {
         System.err.println("job took " + (end - start) + " ms");
         System.err.println("job exit status: " + job.getExitStatus());
 
-        //System.err.println("SubmitJobCallback: Job finished, state = "
-        //        + job.getInfo());
+        // System.err.println("SubmitJobCallback: Job finished, state = "
+        // + job.getInfo());
 
     }
 }

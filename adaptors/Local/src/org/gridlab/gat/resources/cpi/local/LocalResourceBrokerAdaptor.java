@@ -193,7 +193,7 @@ public class LocalResourceBrokerAdaptor extends ResourceBrokerCpi {
                     .createMetric(null);
             job.addMetricListener(listener, metric);
         }
-        job.setState(Job.PRE_STAGING);
+        job.setState(Job.JobState.PRE_STAGING);
         sandbox.prestage();
 
         String exe;
@@ -237,7 +237,7 @@ public class LocalResourceBrokerAdaptor extends ResourceBrokerCpi {
         Process p = null;
         try {
             p = Runtime.getRuntime().exec(command, environment, f);
-            job.setState(Job.RUNNING);
+            job.setState(Job.JobState.RUNNING);
             job.setProcess(p);
             job.setSubmissionTime();
             job.setStartTime();

@@ -31,13 +31,15 @@ public class Local {
 
         JobDescription jd = new JobDescription(sd, rd);
 
-        ResourceBroker broker = GAT.createResourceBroker(context, new URI("any://localhost"));
+        ResourceBroker broker = GAT.createResourceBroker(context, new URI(
+                "any://localhost"));
 
         Job job = broker.submitJob(jd);
 
-        int state = job.getState();
+        Job.JobState state = job.getState();
 
-        while ((state != Job.STOPPED) && (state != Job.SUBMISSION_ERROR)) {
+        while ((state != Job.JobState.STOPPED)
+                && (state != Job.JobState.SUBMISSION_ERROR)) {
             try {
                 System.out.println("Sleeping!");
                 Thread.sleep(1000);
@@ -48,7 +50,7 @@ public class Local {
             state = job.getState();
         }
 
-        if (state == Job.SUBMISSION_ERROR) {
+        if (state == Job.JobState.SUBMISSION_ERROR) {
             System.out.println("ERROR");
         } else {
             System.out.println("OK");

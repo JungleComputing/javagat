@@ -96,8 +96,8 @@ public class TestResourceBroker {
 	long start = System.currentTimeMillis();
 	ResourceBroker broker = GAT.createResourceBroker(context, prefs, node);
 	Job job = broker.submitJob(jd);
-	while (job.getState() != Job.STOPPED &&
-	       job.getState() != Job.SUBMISSION_ERROR) Thread.sleep(1000);
+	while (job.getState() != Job.JobState.STOPPED &&
+	       job.getState() != Job.JobState.SUBMISSION_ERROR) Thread.sleep(1000);
 	long stop = System.currentTimeMillis();
 	long time = stop-start;
 	System.out.println("Job execution took " + time + " millisec");

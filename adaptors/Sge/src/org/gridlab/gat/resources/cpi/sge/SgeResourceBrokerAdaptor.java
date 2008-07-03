@@ -104,7 +104,7 @@ public class SgeResourceBrokerAdaptor extends ResourceBrokerCpi {
             job.addMetricListener(listener, metric);
         }
         job.setHostname(getHostname());
-        job.setState(Job.PRE_STAGING);
+        job.setState(Job.JobState.PRE_STAGING);
         job.setSession(SGEsession);
         sandbox.prestage();
 
@@ -118,7 +118,7 @@ public class SgeResourceBrokerAdaptor extends ResourceBrokerCpi {
         } catch (DrmaaException e) {
             if (!(e instanceof AlreadyActiveSessionException)) {
                 sandbox.retrieveAndCleanup(job);
-                job.setState(Job.SUBMISSION_ERROR);
+                job.setState(Job.JobState.SUBMISSION_ERROR);
                 throw new GATInvocationException("SGEResourceBrokerAdaptor", e);
             }
         }
@@ -157,7 +157,7 @@ public class SgeResourceBrokerAdaptor extends ResourceBrokerCpi {
             }
 
             job.setJobID(SGEsession.runJob(jt));
-            job.setState(Job.SCHEDULED);
+            job.setState(Job.JobState.SCHEDULED);
             job.startListener();
             SGEsession.deleteJobTemplate(jt);
             return job;
