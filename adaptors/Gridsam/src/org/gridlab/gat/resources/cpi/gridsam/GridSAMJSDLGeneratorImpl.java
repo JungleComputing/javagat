@@ -1,13 +1,31 @@
 package org.gridlab.gat.resources.cpi.gridsam;
 
+import java.math.BigDecimal;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
+import org.apache.xmlbeans.XmlCursor;
 import org.gridlab.gat.io.File;
 import org.gridlab.gat.resources.JobDescription;
 import org.gridlab.gat.resources.ResourceDescription;
 import org.gridlab.gat.resources.SoftwareDescription;
 import org.gridlab.gat.resources.cpi.Sandbox;
+import org.icenigrid.schema.jsdl.posix.y2005.m11.ArgumentType;
+import org.icenigrid.schema.jsdl.posix.y2005.m11.EnvironmentType;
+import org.icenigrid.schema.jsdl.posix.y2005.m11.FileNameType;
+import org.icenigrid.schema.jsdl.posix.y2005.m11.LimitsType;
+import org.icenigrid.schema.jsdl.posix.y2005.m11.POSIXApplicationDocument;
+import org.icenigrid.schema.jsdl.posix.y2005.m11.POSIXApplicationType;
+import org.icenigrid.schema.jsdl.y2005.m11.ApplicationType;
+import org.icenigrid.schema.jsdl.y2005.m11.CandidateHostsType;
+import org.icenigrid.schema.jsdl.y2005.m11.CreationFlagEnumeration;
+import org.icenigrid.schema.jsdl.y2005.m11.DataStagingType;
+import org.icenigrid.schema.jsdl.y2005.m11.JobDefinitionDocument;
+import org.icenigrid.schema.jsdl.y2005.m11.JobDefinitionType;
+import org.icenigrid.schema.jsdl.y2005.m11.JobDescriptionType;
+import org.icenigrid.schema.jsdl.y2005.m11.JobIdentificationType;
+import org.icenigrid.schema.jsdl.y2005.m11.ResourcesType;
+import org.icenigrid.schema.jsdl.y2005.m11.SourceTargetType;
 
 public class GridSAMJSDLGeneratorImpl implements GridSAMJSDLGenerator {
 
@@ -41,7 +59,6 @@ public class GridSAMJSDLGeneratorImpl implements GridSAMJSDLGenerator {
         public String toString() {
             return name;
         }
-
     }
 
     public GridSAMJSDLGeneratorImpl(GridSAMConf conf) {
@@ -52,20 +69,24 @@ public class GridSAMJSDLGeneratorImpl implements GridSAMJSDLGenerator {
 
     private Logger logger = Logger.getLogger(GridSAMJSDLGeneratorImpl.class);
 
-    public String generate(JobDescription description, Sandbox sandbox) {
+    public JobDefinitionDocument generate(JobDescription description, Sandbox sandbox) {
+        
         SoftwareDescription sd = description.getSoftwareDescription();
-        StringBuilder builder = new StringBuilder();
-        addBegin(builder);
-        addApplication(builder, sd, sandbox);
-        addResource(builder, description, sandbox);
-        addDataStaging(builder, sd, sandbox);
-        addEnd(builder);
+        
+        JobDefinitionDocument jobDefinitionDocument = JobDefinitionDocument.Factory.newInstance();
+        JobDefinitionType jobDef = jobDefinitionDocument.addNewJobDefinition();
+        JobDescriptionType jobDescr = jobDef.addNewJobDescription();
+        JobIdentificationType jobid = jobDescr.addNewJobIdentification();
+        jobid.addJobProject("gridsam");
 
-        return builder.toString();
+        addApplication(jobDescr, sd, sandbox);
+        addResource(jobDescr, description, sandbox);
+        addDataStaging(jobDescr, sd, sandbox);
+        
+        return jobDefinitionDocument;
     }
 
-    private StringBuilder addResource(StringBuilder builder,
-            JobDescription description, Sandbox sandbox) {
+    private void addResource(JobDescriptionType jobDescr, JobDescription description, Sandbox sandbox) {
 
         ResourceDescription rd = description.getResourceDescription();
         if (rd == null) {
@@ -73,76 +94,56 @@ public class GridSAMJSDLGeneratorImpl implements GridSAMJSDLGenerator {
                 logger
                         .debug("resourceDescription is null, not adding <Resources> tag");
             }
-            return builder;
+            return;
         }
-        StringBuilder tmp = new StringBuilder();
 
         Object res = rd.getResourceAttribute("machine.node");
+        String hosts[] = null;
+        ResourcesType resources = null;
         if (res != null) {
-            String hosts[] = null;
             if (res instanceof String) {
                 hosts = new String[] { (String) res };
             } else if (res instanceof String[]) {
                 hosts = (String[]) res;
             } else {
                 logger.warn("unknown machine.node type...");
-                return builder;
+                return;
             }
+            if (hosts != null && hosts.length != 0) {
+                resources = jobDescr.addNewResources();
+                CandidateHostsType candidates = resources.addNewCandidateHosts();
+                
+                for (String host : hosts) {
+                    candidates.addHostName(host);
+                }
+            } else {  
 
-            for (String host : hosts) {
-                addSimpleTag(tmp, "HostName", host);
-            }
-        }
-
-        // we have added something, so we have to add Resource tag
-        if (tmp.length() > 0) {
-            builder.append("<Resources><CandidateHosts>");
-            builder.append(tmp);
-            builder.append("</CandidateHosts></Resources>");
-        } else {
-            if (logger.isDebugEnabled()) {
-                logger
-                        .debug("did not found any properties to use, not adding <Resources> tag");
+                if (logger.isDebugEnabled()) {
+                    logger
+                    .debug("did not found any properties to use, not adding <Resources> tag");
+                }
             }
         }
-
-        return builder;
-
-    }
-
-    private StringBuilder addBegin(StringBuilder builder) {
-        builder
-                .append("<JobDefinition xmlns=\"http://schemas.ggf.org/jsdl/2005/11/jsdl\">"
-                        + "<JobDescription>"
-                        + "<JobIdentification>"
-                        + "<JobProject>gridsam</JobProject>"
-                        + "</JobIdentification>");
-        return builder;
-    }
-
-    private StringBuilder addEnd(StringBuilder builder) {
-        builder.append("</JobDescription>" + "</JobDefinition>");
-        return builder;
-
     }
 
     @SuppressWarnings("unchecked")
-    private StringBuilder addApplication(StringBuilder builder,
+    private void addApplication(JobDescriptionType jobDescr,
             SoftwareDescription sd, Sandbox sandbox) {
         if (sd.getExecutable() != null) {
-            builder.append("<Application>")
-                .append(
-                        "<POSIXApplication xmlns=\"http://schemas.ggf.org/jsdl/2005/11/jsdl-posix\">");
-            // add executable
-            builder.append("<Executable>").append(sd.getExecutable()).append(
-                    "</Executable>");
-            if (logger.isDebugEnabled()) {
-                logger.debug("executable =" + sd.getExecutable());
-                if (sd.getArguments() != null) {
-                    logger.debug("arguments count=" + sd.getArguments().length);
-                } else {
-                    logger.debug("null arguments!");
-                }
+            ApplicationType appl = jobDescr.addNewApplication();
+            XmlCursor cursor = appl.newCursor();
+            cursor.toEndToken();
+            
+            POSIXApplicationDocument posixDoc = POSIXApplicationDocument.Factory
+                    .newInstance();
+            POSIXApplicationType posixAppl = posixDoc.addNewPOSIXApplication();
+            FileNameType f = posixAppl.addNewExecutable();
+            f.setStringValue(sd.getExecutable());
+            
+            if (sd.getArguments() != null) {
+                logger.debug("arguments count=" + sd.getArguments().length);
+            } else {
+                logger.debug("null arguments!");
             }
 
             // add arguments
@@ -151,69 +152,70 @@ public class GridSAMJSDLGeneratorImpl implements GridSAMJSDLGenerator {
                     if (logger.isDebugEnabled()) {
                         logger.debug("argument=" + argument);
                     }
-                    builder.append("<Argument>").append(argument).append(
-                            "</Argument>");
+                    ArgumentType arg = posixAppl.addNewArgument();
+                    arg.setStringValue(argument);
                 }
             }
+            
             Map<String, Object> attrs = sd.getAttributes();
 
             // add error output
             String tmp = (String) attrs.get(STDERR_ATTRIBUTE);
             if (tmp != null) {
-                addSimpleTag(builder, "Error", javaGatStderr);
+                f = posixAppl.addNewError();
+                f.setStringValue(javaGatStderr);
             }
 
             // add input
             tmp = (String) attrs.get(STDIN_ATTRIBUTE);
             if (tmp != null) {
-                addSimpleTag(builder, "Input", javaGatStdin);
-
+                f = posixAppl.addNewInput();
+                f.setStringValue(javaGatStdin);
             }
 
             // add output
             tmp = (String) attrs.get(STDOUT_ATTRIBUTE);
             if (tmp != null) {
-                addSimpleTag(builder, "Output", javaGatStdout);
+                f = posixAppl.addNewOutput();               
+                f.setStringValue(javaGatStdout);
             }
 
             Map<String, Object> env = sd.getEnvironment();
             if (env != null) {
                 for (Object eo : env.keySet()) {
-                    builder.append("<Environment name=\"").append(eo.toString())
-                            .append("\">").append(env.get(eo).toString()).append(
-                                    "</Environment>");
+                    EnvironmentType ev = posixAppl.addNewEnvironment();                   
+                    ev.setName(eo.toString());
+                    ev.setStringValue(env.get(eo).toString());
                 }
             }
 
-            addLimitsInfo(builder, sd);
-            builder.append("</POSIXApplication></Application>");
-
+            addLimitsInfo(posixAppl, sd);
+            
+            XmlCursor c = posixDoc.newCursor();
+            c.toStartDoc();
+            c.toNextToken();
+            c.moveXml(cursor);
+            
         } else {
             logger.debug("No executable in job description!");
         }
-
-        return builder;
     }
 
-    private StringBuilder addDataStage(StringBuilder builder, String fileName,
+    private void addDataStage(JobDescriptionType jobDescr, String fileName,
             DataStageType type, String uri, boolean deleteOnTermination) {
-        builder.append("<DataStaging>");
-        builder.append("<FileName>").append(fileName).append("</FileName>");
-        builder.append(
-                "<CreationFlag>overwrite</CreationFlag><DeleteOnTermination>")
-                .append(deleteOnTermination ? "true" : "false").append(
-                        "</DeleteOnTermination>");
-        builder.append("<").append(type).append("><URI>").append(uri).append(
-                "</URI></").append(type).append(">");
-        builder.append("</DataStaging>");
-        return builder;
+        DataStagingType ds = jobDescr.addNewDataStaging();
+        SourceTargetType st = type == DataStageType.SOURCE ? ds.addNewSource() : ds.addNewTarget();
+        st.setURI(uri);
+        ds.setCreationFlag(CreationFlagEnumeration.OVERWRITE);
+        ds.setDeleteOnTermination(deleteOnTermination);
+        ds.setFileName(fileName);
     }
 
-    private StringBuilder addDataStaging(StringBuilder builder,
+    private void addDataStaging(JobDescriptionType jobDescr,
             SoftwareDescription sd, Sandbox sandbox) {
 
         // copy whole sandbox
-        addDataStage(builder, ".", DataStageType.SOURCE, sandbox.getSandboxPath(),
+        addDataStage(jobDescr, ".", DataStageType.SOURCE, sandbox.getSandboxPath(),
                 true);
 
         // we have to copy all the files back by ourselves
@@ -223,47 +225,30 @@ public class GridSAMJSDLGeneratorImpl implements GridSAMJSDLGenerator {
                 // we don't have to move absolute files
                 continue;
             }
-            addDataStage(builder, file.getPath(), DataStageType.TARGET, sandbox
+            addDataStage(jobDescr, file.getPath(), DataStageType.TARGET, sandbox
                     .getSandboxPath()
                     + SLASH + file.getPath(), true);
         }
-        return builder;
     }
 
     /**
      * Appends XML info about maximum CPU time, memory limits and so on.
      * 
-     * @param builder
+     * @param posixAppl
      * @param sd
      */
-    private void addLimitsInfo(StringBuilder builder, SoftwareDescription sd) {
+    private void addLimitsInfo(POSIXApplicationType posixAppl, SoftwareDescription sd) {
         Map<String, Object> attrs = sd.getAttributes();
 
         if (attrs.get(MAX_MEMORY_ATTRIBUTE) != null) {
-            addSimpleTag(builder, "MemoryLimit", attrs
-                    .get(MAX_MEMORY_ATTRIBUTE));
+            BigDecimal v = new BigDecimal(attrs.get(MAX_MEMORY_ATTRIBUTE).toString());
+            LimitsType memLimit = posixAppl.addNewMemoryLimit();
+            memLimit.setBigDecimalValue(v);
         }
         if (attrs.get(MAX_CPU_TIME_ATTRIBUTE) != null) {
-            addSimpleTag(builder, "CPUTimeLimit", attrs
-                    .get(MAX_CPU_TIME_ATTRIBUTE));
+            BigDecimal v = new BigDecimal(attrs.get(MAX_CPU_TIME_ATTRIBUTE).toString());
+            LimitsType timeLimit = posixAppl.addNewCPUTimeLimit();
+            timeLimit.setBigDecimalValue(v);
         }
     }
-
-    private StringBuilder addSimpleTag(StringBuilder builder, String tagName,
-            Object tagValue) {
-        builder.append("<").append(tagName).append(">").append(
-                tagValue.toString()).append("</").append(tagName).append(">");
-        return builder;
-    }
-
-    /*
-     * <JobDefinition xmlns="http://schemas.ggf.org/jsdl/2005/11/jsdl">
-     * <JobDescription> <JobIdentification> <JobProject>gridsam</JobProject>
-     * </JobIdentification> <Application> <POSIXApplication
-     * xmlns="http://schemas.ggf.org/jsdl/2005/11/jsdl-posix">
-     * <Executable>/bin/sleep</Executable> <!--<Argument>5</Argument>-->
-     * <Argument>10</Argument> </POSIXApplication> </Application>
-     * </JobDescription> </JobDefinition>
-     */
-
 }

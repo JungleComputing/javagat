@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
-import org.apache.xmlbeans.XmlException;
 import org.gridlab.gat.AdaptorNotApplicableException;
 import org.gridlab.gat.GAT;
 import org.gridlab.gat.GATContext;
@@ -193,9 +192,7 @@ public class GridSAMResourceBrokerAdaptor extends ResourceBrokerCpi {
             sandbox = new Sandbox(gatContext, description, sandboxHostname,
                     sandboxRoot, true, false, false, false);
 
-            String jsdl = jsdlGenerator.generate(description, sandbox);
-            JobDefinitionDocument jobDefinitionDocument = JobDefinitionDocument.Factory
-                    .parse(jsdl);
+            JobDefinitionDocument jobDefinitionDocument = jsdlGenerator.generate(description, sandbox);
 
             if (logger.isDebugEnabled()) {
                 logger.debug("jobDefinitionDocument = "
@@ -233,9 +230,6 @@ public class GridSAMResourceBrokerAdaptor extends ResourceBrokerCpi {
         } catch (UnsupportedFeatureException e) {
             logger.error("gridSAM exception caught", e);
             throw new GATInvocationException("gridSAM exception caught", e);
-        } catch (XmlException e) {
-            logger.error("unable to parse jsdl", e);
-            throw new GATInvocationException("unable to parse jsdl", e);
         } catch (GATObjectCreationException e) {
             throw new GATInvocationException("unable to create IO files", e);
         }
