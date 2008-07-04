@@ -157,6 +157,16 @@ public class AdvertServiceCpi implements AdvertService, Monitorable {
         throw new UnsupportedOperationException("Not implemented");
     }
 
+    public void exportDataBase(org.gridlab.gat.URI target)
+            throws GATInvocationException {
+        throw new UnsupportedOperationException("Not implemented");
+    }
+
+    public void importDataBase(org.gridlab.gat.URI target)
+            throws GATInvocationException {
+        throw new UnsupportedOperationException("Not implemented");
+    }
+
     public void addMetricListener(MetricListener metricListener, Metric metric)
             throws GATInvocationException {
         throw new UnsupportedOperationException("Not implemented");

@@ -885,14 +885,12 @@ public abstract class FileCpi implements FileInterface, java.io.Serializable {
         return GATEngine.defaultMarshal(f);
     }
 
-    public static Advertisable unmarshal(GATContext context,
-            Preferences preferences, String s) {
+    public static Advertisable unmarshal(GATContext context, String s) {
         SerializedFile f = (SerializedFile) GATEngine.defaultUnmarshal(
                 SerializedFile.class, s);
 
         try {
-            return GAT.createFile(context, preferences,
-                    new URI(f.getLocation()));
+            return GAT.createFile(context, new URI(f.getLocation()));
         } catch (Exception e) {
             throw new Error("could not create new GAT object");
         }

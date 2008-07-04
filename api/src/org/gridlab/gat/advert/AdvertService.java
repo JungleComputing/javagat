@@ -96,8 +96,9 @@ public interface AdvertService extends Monitorable {
      * @param metaData
      *                {@link MetaData} describing the entries to be searched
      *                for.
-     * @return a {@link String}[] of paths, each pointing to a matching entry.
-     *         If no matches are found, <code>null</code> is returned.
+     * @return a {@link String}[] of absolute paths, each pointing to a
+     *         matching entry. If no matches are found, <code>null</code> is
+     *         returned.
      * @throws GATInvocationException
      *                 this exception is thrown when all adaptors fail on this
      *                 method it contains a tree of exceptions that were the
@@ -107,7 +108,8 @@ public interface AdvertService extends Monitorable {
 
     /**
      * Specify the element of the {@link AdvertService} name space to be used as
-     * reference for relative paths.
+     * reference for relative paths. This method is equivalent to perform a 'cd'
+     * in the name space. A relative path will be appended to the current path.
      * 
      * @param path
      *                New absolute or relative reference path.
@@ -129,4 +131,10 @@ public interface AdvertService extends Monitorable {
      *                 causes.
      */
     public String getPWD() throws GATInvocationException;
+
+    public void exportDataBase(org.gridlab.gat.URI target)
+            throws GATInvocationException;
+
+    public void importDataBase(org.gridlab.gat.URI target)
+            throws GATInvocationException;
 }
