@@ -6,7 +6,6 @@ package org.gridlab.gat.io.cpi.sockets;
 import java.io.IOException;
 import java.io.Serializable;
 import java.io.StringWriter;
-import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.List;
@@ -16,7 +15,6 @@ import org.exolab.castor.xml.Marshaller;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.GATObjectCreationException;
-import org.gridlab.gat.Preferences;
 import org.gridlab.gat.advert.Advertisable;
 import org.gridlab.gat.engine.GATEngine;
 import org.gridlab.gat.io.Pipe;
@@ -40,13 +38,11 @@ public class SocketEndpointAdaptor extends EndpointCpi implements Serializable {
 
     int localPort; // filled in locally
 
-    InetAddress localAddress; // filled in locally
-
-    String localIP;
+    String localHost;
 
     int remotePort; // we get this from the advert service
 
-    InetAddress remoteAddress; // we get this from the advert service
+    String remoteHost;
 
     PipeListener listener;
 
@@ -68,13 +64,13 @@ public class SocketEndpointAdaptor extends EndpointCpi implements Serializable {
         super(gatContext);
 
         try {
-            localAddress = GATEngine.getLocalHostAddress();
-            serverSocket = new ServerSocket(0, 0, localAddress); // bind to
+            localHost = GATEngine.getLocalHostName();
+            serverSocket = new ServerSocket(0, 0, GATEngine
+                    .getLocalHostAddress());
+            // bind to
             // any
-
             // free port
             localPort = serverSocket.getLocalPort();
-            localIP = localAddress.getHostAddress();
         } catch (IOException e) {
             throw new GATObjectCreationException("socket endpoint", e);
         }
@@ -92,11 +88,11 @@ public class SocketEndpointAdaptor extends EndpointCpi implements Serializable {
         }
 
         if (localEndpoint) {
-            return localAddress.equals(other.localAddress)
+            return localHost.equals(other.localHost)
                     && (localPort == other.localPort);
         }
 
-        return remoteAddress.equals(other.remoteAddress)
+        return remoteHost.equals(other.remoteHost)
                 && (remotePort == other.remotePort);
     }
 
@@ -119,7 +115,7 @@ public class SocketEndpointAdaptor extends EndpointCpi implements Serializable {
         }
 
         try {
-            Socket s = new Socket(remoteAddress, remotePort);
+            Socket s = new Socket(remoteHost, remotePort);
 
             return new SocketPipe(gatContext, s);
         } catch (IOException e) {
@@ -171,8 +167,7 @@ public class SocketEndpointAdaptor extends EndpointCpi implements Serializable {
         return sw.toString();
     }
 
-    public static Advertisable unmarshal(GATContext context,
-            Preferences preferences, String s) {
+    public static Advertisable unmarshal(GATContext context, String s) {
         try {
             SocketEndpointAdaptor res = (SocketEndpointAdaptor) GATEngine
                     .defaultUnmarshal(SocketEndpointAdaptor.class, s);
@@ -180,10 +175,7 @@ public class SocketEndpointAdaptor extends EndpointCpi implements Serializable {
             res.remotePort = res.localPort;
             res.localPort = -1;
 
-            res.remoteAddress = InetAddress.getByName(res.localIP);
-            res.localIP = null;
-            res.localAddress = null;
-            res.localIP = null;
+            res.remoteHost = res.localHost;
             res.localEndpoint = false;
 
             return res;
@@ -193,15 +185,39 @@ public class SocketEndpointAdaptor extends EndpointCpi implements Serializable {
     }
 
     public String toString() {
-        return "endpoint: localPort = " + localPort + ", localAddr = "
-                + localAddress + ", remotePort = " + remotePort
-                + ", remoteAddr = " + remoteAddress;
+        return "endpoint: localPort = " + localPort + ", localHost = "
+                + localHost + ", remotePort = " + remotePort
+                + ", remoteHost = " + remoteHost;
     }
 
     // For some reason, we need this for castor serialization
     public List<MetricDefinition> getMetricDefinitions()
             throws GATInvocationException {
         return null;
+    }
+
+    public int getLocalPort() {
+        return localPort;
+    }
+
+    public void setLocalPort(int localPort) {
+        this.localPort = localPort;
+    }
+
+    public String getLocalHost() {
+        return localHost;
+    }
+
+    public void setLocalHost(String localHost) {
+        this.localHost = localHost;
+    }
+
+    public int getRemotePort() {
+        return remotePort;
+    }
+
+    public void setRemotePort(int remotePort) {
+        this.remotePort = remotePort;
     }
 
 }

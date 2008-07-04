@@ -32,6 +32,7 @@
 		<jar jarfile="${lib}/GenericAdaptor.jar" basedir="${tmp}" includes="**">
 			<manifest>
 				<attribute name="LogicalFileCpi-class" value="org.gridlab.gat.io.cpi.generic.GenericLogicalFileAdaptor" />
+				<attribute name="AdvertServiceCpi-class" value="org.gridlab.gat.advert.cpi.generic.GenericAdvertServiceAdaptor" />
 			</manifest>
 		</jar>
 

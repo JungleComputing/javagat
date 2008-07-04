@@ -17,7 +17,7 @@ import org.gridlab.gat.monitoring.MetricListener;
 /**
  * Capability provider interface to the Endpoint class.
  * <p>
- * Capability provider wishing to provide the functionality of the Endoint class
+ * Capability provider wishing to provide the functionality of the Endpoint class
  * must extend this class and implement all of the abstract methods in this
  * class. Each abstract method in this class mirrors the corresponding method in
  * this EndPoint class and will be used to implement the corresponding method in
