@@ -11,7 +11,17 @@ import org.gridlab.gat.io.File;
 public class FileExample {
 
     /**
+     * This example shows the use of Files in JavaGAT.
+     * 
+     * This example requires three valid URIs as arguments. At the first URI
+     * there should exist a file. This file will be copied to the second URI,
+     * then deleted at it's origin, and afterwards moved from the second to the
+     * third URI. It's just an example of the File object, there are much more
+     * possibilities using the File object.
+     * 
      * @param args
+     *                a String array of size 3 with each element containing a
+     *                String representation of a valid URI.
      */
     public static void main(String[] args) {
         if (args.length != 3) {
