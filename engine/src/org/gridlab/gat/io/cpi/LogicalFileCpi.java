@@ -202,19 +202,19 @@ public abstract class LogicalFileCpi implements LogicalFile, Monitorable {
             }
             return;
         }
-        try {
-            if (GAT.createFile(loc).getFileInterface().exists()) {
-                throw new GATInvocationException(
-                        "Unable to replicate logical file '" + name
-                                + "' to location '" + loc
-                                + "': target already exists.");
-            }
-        } catch (GATObjectCreationException e) {
-            throw new GATInvocationException(
-                    "Unable to replicate logical file '" + name
-                            + "' to location '" + loc
-                            + "': target cannot be checked for existence.", e);
-        }
+//        try {
+//            if (GAT.createFile(loc).getFileInterface().exists()) {
+//                throw new GATInvocationException(
+//                        "Unable to replicate logical file '" + name
+//                                + "' to location '" + loc
+//                                + "': target already exists.");
+//            }
+//        } catch (GATObjectCreationException e) {
+//            throw new GATInvocationException(
+//                    "Unable to replicate logical file '" + name
+//                            + "' to location '" + loc
+//                            + "': target cannot be checked for existence.", e);
+//        }
         GATInvocationException exception = new GATInvocationException("default logical file");
         for (URI u : getOrderedURIs(loc)) {
             FileInterface f = null;
