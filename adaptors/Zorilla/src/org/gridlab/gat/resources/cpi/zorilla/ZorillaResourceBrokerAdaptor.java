@@ -81,23 +81,8 @@ public class ZorillaResourceBrokerAdaptor extends ResourceBrokerCpi implements
             throw new AdaptorNotApplicableException("cannot handle this URI: "
                     + brokerURI);
         }
-
-        String host = brokerURI.getHost();
-        if (host == null) {
-            host = "localhost";
-        }
-
-        int port = brokerURI.getPort(ZoniProtocol.DEFAULT_PORT);
-
-        String user = brokerURI.getUserInfo();
-
-        logger.debug("user = " + user);
-
-        if (user == null) {
-            nodeSocketAddress = host + "-" + port;
-        } else {
-            nodeSocketAddress = host + "-" + port + "~" + user;
-        }
+        
+        nodeSocketAddress = brokerURI.getSchemeSpecificPart();
 
         logger.debug("zorilla node address = " + nodeSocketAddress);
 
