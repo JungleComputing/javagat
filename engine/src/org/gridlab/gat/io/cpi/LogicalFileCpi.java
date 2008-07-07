@@ -1,6 +1,7 @@
 package org.gridlab.gat.io.cpi;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -82,7 +83,7 @@ public abstract class LogicalFileCpi implements LogicalFile, Monitorable {
     public LogicalFileCpi(GATContext gatContext, String name, Integer mode)
             throws GATObjectCreationException {
         this.gatContext = gatContext;
-        files = new Vector<URI>();
+        files = new ArrayList<URI>();
         this.mode = mode.intValue();
         this.name = name;
 
@@ -124,26 +125,27 @@ public abstract class LogicalFileCpi implements LogicalFile, Monitorable {
      *                 Thrown upon problems accessing the remote instance
      */
     public void addURI(URI location) throws GATInvocationException {
-        if (files.contains(location)) {
-            if (logger.isInfoEnabled()) {
-                logger.info("logical file '" + name
-                        + "' already contains URI '" + location + "'.");
-            }
-            return;
-        }
-        try {
-            if (GAT.createFile(location).getFileInterface().exists()) {
-                files.add(location);
-            } else {
-                throw new GATInvocationException(
-                        "The file at URI '"
-                                + location
-                                + "' doesn't exist. Use replicate to add a new copy to the LogicalFile");
-            }
-        } catch (GATObjectCreationException e) {
-            throw new GATInvocationException("Unable to test file at URI '"
-                    + location + "' for existence.", e);
-        }
+        // if (files.contains(location)) {
+        // if (logger.isInfoEnabled()) {
+        // logger.info("logical file '" + name
+        // + "' already contains URI '" + location + "'.");
+        // }
+        // return;
+        // }
+        // try {
+        // if (GAT.createFile(location).getFileInterface().exists()) {
+        files.add(location);
+        // } else {
+        // throw new GATInvocationException(
+        // "The file at URI '"
+        // + location
+        // + "' doesn't exist. Use replicate to add a new copy to the
+        // LogicalFile");
+        // }
+        // } catch (GATObjectCreationException e) {
+        // throw new GATInvocationException("Unable to test file at URI '"
+        // + location + "' for existence.", e);
+        // }
 
     }
 
@@ -213,17 +215,22 @@ public abstract class LogicalFileCpi implements LogicalFile, Monitorable {
                             + "' to location '" + loc
                             + "': target cannot be checked for existence.", e);
         }
-        URI u = (URI) getClosestURI(loc);
-        FileInterface f = null;
+        GATInvocationException exception = new GATInvocationException("default logical file");
+        for (URI u : getOrderedURIs(loc)) {
+            FileInterface f = null;
 
-        try {
-            f = GAT.createFile(gatContext, u).getFileInterface();
-        } catch (Exception e) {
-            throw new GATInvocationException("default logical file", e);
+            try {
+                f = GAT.createFile(gatContext, u).getFileInterface();
+            } catch (Exception e) {
+                exception.add("default logical file", e);
+                continue;
+            }
+
+            f.copy(loc);
+            files.add(loc);
+            return;
         }
-
-        f.copy(loc);
-        files.add(loc);
+        throw exception;
     }
 
     public URI getClosestURI(URI loc) throws GATInvocationException {
@@ -234,6 +241,18 @@ public abstract class LogicalFileCpi implements LogicalFile, Monitorable {
         return files.get(0);
     }
 
+    public List<URI> getOrderedURIs(URI location) throws GATInvocationException {
+        if (files == null || files.size() == 0) {
+            throw new GATInvocationException("No files in logical file '"
+                    + name + "' to order");
+        }
+        List<URI> result = new ArrayList<URI>();
+        for (URI uri : files) {
+            result.add(uri);
+        }
+        return result;
+    }
+
     /**
      * Returns a java.util.List of URI instances each of which is the URI of a
      * physical file represented by this instance.
@@ -241,7 +260,7 @@ public abstract class LogicalFileCpi implements LogicalFile, Monitorable {
      * @return The java.util.List of URIs
      */
     public List<URI> getURIs() throws GATInvocationException {
-        return new Vector<URI>(files);
+        return files;
     }
 
     /**
@@ -251,13 +270,13 @@ public abstract class LogicalFileCpi implements LogicalFile, Monitorable {
      * @return The java.util.List of Files
      */
     public List<File> getFiles() throws GATInvocationException {
-        Vector<File> res = new Vector<File>();
+        List<File> res = new ArrayList<File>();
 
         List<URI> uris = getURIs();
 
-        for (int i = 0; i < uris.size(); i++) {
+        for (URI uri : uris) {
             try {
-                File f = GAT.createFile(gatContext, (URI) uris.get(i));
+                File f = GAT.createFile(gatContext, uri);
                 res.add(f);
             } catch (Exception e) {
                 // Ignore

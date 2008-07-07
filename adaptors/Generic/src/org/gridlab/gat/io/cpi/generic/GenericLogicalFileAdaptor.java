@@ -2,6 +2,9 @@
 // functionality.
 package org.gridlab.gat.io.cpi.generic;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.URI;
@@ -26,23 +29,28 @@ public class GenericLogicalFileAdaptor extends LogicalFileCpi {
         super(gatContext, name, mode);
     }
 
-    public URI getClosestURI(URI loc) throws GATInvocationException {
-        if (files == null || files.size() == 0) {
+    public URI getClosestURI(URI location) throws GATInvocationException {
+        return getClosestURI(location, files);
+    }
+
+    private URI getClosestURI(URI location, List<URI> otherLocations)
+            throws GATInvocationException {
+        if (otherLocations == null || otherLocations.size() == 0) {
             throw new GATInvocationException("No files in logical file '"
                     + name + "' to compare with");
         }
         // first check: same hostname
-        for (URI file : files) {
-            if (file.getHost().equalsIgnoreCase(loc.getHost())) {
+        for (URI file : otherLocations) {
+            if (file.getHost().equalsIgnoreCase(location.getHost())) {
                 return file;
             }
         }
         // check for same suffix. The more parts of the suffix are the same, the
         // closer the location
-        String locationPart = loc.getHost();
+        String locationPart = location.getHost();
         while (locationPart.contains(".")) {
             int position = locationPart.indexOf(".");
-            for (URI file : files) {
+            for (URI file : otherLocations) {
                 if (file.getHost().endsWith(locationPart.substring(position))) {
                     return file;
                 }
@@ -50,16 +58,34 @@ public class GenericLogicalFileAdaptor extends LogicalFileCpi {
             // assuming the a hostname never ends with a dot "."
             locationPart = locationPart.substring(position + 1);
         }
-        int separatorPosition = loc.getHost().indexOf(".");
+        int separatorPosition = location.getHost().indexOf(".");
         if (separatorPosition > 0) {
-            for (URI file : files) {
+            for (URI file : otherLocations) {
                 if (file.getHost().endsWith(
-                        loc.getHost().substring(separatorPosition))) {
+                        location.getHost().substring(separatorPosition))) {
                     return file;
                 }
             }
         }
         // return first
-        return files.get(0);
+        return otherLocations.get(0);
+    }
+
+    public List<URI> getOrderedURIs(URI location) throws GATInvocationException {
+        if (files == null || files.size() == 0) {
+            throw new GATInvocationException("No files in logical file '"
+                    + name + "' to order");
+        }
+        List<URI> tmp = new ArrayList<URI>();
+        for (URI uri : files) {
+            tmp.add(uri);
+        }
+        List<URI> result = new ArrayList<URI>();
+        for (int i = 0; i < files.size(); i++) {
+            URI closest = getClosestURI(location, tmp);
+            tmp.remove(tmp.indexOf(closest));
+            result.add(closest);
+        }
+        return result;
     }
 }

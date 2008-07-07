@@ -143,4 +143,16 @@ public interface LogicalFile extends Monitorable, Serializable, Advertisable {
      *                 if the method fails.
      */
     public URI getClosestURI(URI loc) throws GATInvocationException;
+
+    /**
+     * Returns a {@link java.util.List} of {@link URI}s ordered from close to
+     * less closer with respect to the given URI.
+     * 
+     * @param location
+     *                the location that's used to determine the distance
+     * @return a {@link java.util.List} of {@link URI}s ordered from close to
+     *         less closer with respect to the given URI.
+     * @throws GATInvocationException
+     */
+    public List<URI> getOrderedURIs(URI location) throws GATInvocationException;
 }

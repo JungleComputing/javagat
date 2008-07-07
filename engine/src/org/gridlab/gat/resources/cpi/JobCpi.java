@@ -84,6 +84,9 @@ public abstract class JobCpi implements Job {
         }
     }
 
+    /**
+     * @deprecated
+     */
     public final void unSchedule() throws GATInvocationException {
         stop();
     }
@@ -100,19 +103,31 @@ public abstract class JobCpi implements Job {
         throw new UnsupportedOperationException("Not implemented");
     }
 
+    /**
+     * @deprecated
+     */
     public void checkpoint() throws GATInvocationException {
         throw new UnsupportedOperationException("Not implemented");
     }
 
+    /**
+     * @deprecated
+     */
     public void migrate() throws GATInvocationException {
         throw new UnsupportedOperationException("Not implemented");
     }
 
+    /**
+     * @deprecated
+     */
     public void migrate(HardwareResourceDescription hardwareResourceDescription)
             throws GATInvocationException {
         throw new UnsupportedOperationException("Not implemented");
     }
 
+    /**
+     * @deprecated
+     */
     public Job cloneJob(HardwareResource resource) {
         throw new UnsupportedOperationException("Not implemented");
     }

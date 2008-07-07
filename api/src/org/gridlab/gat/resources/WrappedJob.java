@@ -52,7 +52,7 @@ package org.gridlab.gat.resources;
  * file is constructed as follows: ".JavaGATstatusXYZ", where XYZ is the job id.
  * </p>
  */
-public interface WrappedJob {
+public interface WrappedJob extends Job {
 
     /**
      * Gets the {@link Job} associated with the Wrapper application.
