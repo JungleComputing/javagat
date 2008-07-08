@@ -70,6 +70,11 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
         if (brokerURI == null) {
             throw new GATObjectCreationException("brokerURI is null");
         }
+        if (!(brokerURI.isCompatible("file") || brokerURI.isCompatible("http") || brokerURI
+                .isCompatible("https"))) {
+            throw new GATObjectCreationException("cannot handle scheme: "
+                    + brokerURI.getScheme());
+        }
     }
 
     public void beginMultiJob() throws GATInvocationException {
