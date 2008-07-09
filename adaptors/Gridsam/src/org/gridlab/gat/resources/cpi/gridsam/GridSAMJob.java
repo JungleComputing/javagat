@@ -261,24 +261,33 @@ public class GridSAMJob extends JobCpi {
 
         m.put("state", state);
 
-        m.put("submissiontime", state == JobState.INITIAL ? null : Long
-                .toString(submissionTime));
+        m.put("submissiontime", state == JobState.INITIAL || state == JobState.UNKNOWN
+                ? null : submissionTime);
 
-        m.put("starttime", state == JobState.INITIAL
-                || state == JobState.SCHEDULED ? null : Long
-                .toString(startTime));
+        m.put("starttime", state == JobState.INITIAL || state == JobState.UNKNOWN
+                || state == JobState.SCHEDULED ? null : startTime);
 
         m.put("hostname", state == JobState.RUNNING ? adaptor.getBroker()
                 .getHost() : null);
 
-        m.put("stoptime", state == JobState.STOPPED ? Long.toString(stopTime)
+        m.put("stoptime", state == JobState.STOPPED ? stopTime
                 : null);
 
         m.put("poststage.exception", postStageException);
 
         if (exitVal != -1) {
-            m.put("exitvalue", Integer.toString(exitVal));
+            m.put("exitvalue", exitVal);
         }
+        
+        m.put("resourcebroker", "GridSAM");
+        
+        if (deleteException != null) {
+            m.put("delete.exception", deleteException);
+        }
+        if (wipeException != null) {
+            m.put("wipe.exception", wipeException);
+        }
+
 
         return m;
     }
