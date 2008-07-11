@@ -31,6 +31,7 @@ import java.util.Map;
 
 import javax.xml.rpc.ServiceException;
 
+import org.apache.axis.types.URI.MalformedURIException;
 import org.glite.security.delegation.GrDPX509Util;
 import org.glite.security.delegation.GrDProxyGenerator;
 import org.glite.security.trustmanager.ContextWrapper;
@@ -341,12 +342,14 @@ public class GliteJob extends JobCpi {
 
 			WMProxyLocator serviceLocator = new WMProxyLocator();
 			serviceStub = serviceLocator.getWMProxy_PortType(wmsURL);
+			
 			grstStub = (DelegationSoapBindingStub) serviceLocator
 					.getWMProxyDelegation_PortType(wmsURL);
 
 			String delegationId = "gatjob" + jdlFileId;
-
+			
 			String certReq = grstStub.getProxyReq(delegationId);
+
 
 			byte[] x509Cert = null;
 			GrDProxyGenerator proxyGenerator = new GrDProxyGenerator();
@@ -632,8 +635,8 @@ public class GliteJob extends JobCpi {
 					File f2 = GAT.createFile(context, new URI(uri2.getPath()
 							.substring(name_begin)));
 					
-					//f.copy(destForPostStagedFile(f2));
-					f.copy(f2.toGATURI());
+					f.copy(destForPostStagedFile(f2));
+					//f.copy(f2.toGATURI());
 				} catch (GATInvocationException e) {
 					e.printStackTrace();
 				} catch (URISyntaxException e) {
@@ -648,11 +651,23 @@ public class GliteJob extends JobCpi {
 	
 	private URI destForPostStagedFile(File output) {
 		Map<File, File> postStagedFiles = swDescription.getPostStaged();
+		File stdout = swDescription.getStdout();
+		File stderr = swDescription.getStderr();
+		String outputName = output.getName();
 		
-		for (Map.Entry<File,File> psFile : postStagedFiles.entrySet()) {
-			if (psFile != null && psFile.getValue() != null && psFile.getKey() != null) {
-				if (psFile.getValue().getName().equals(output.getName())) {
-					return psFile.getKey().toGATURI();
+		if (stdout != null && outputName.equals(stdout.getName())) {
+			return stdout.toGATURI();
+		} else if (stderr != null && outputName.equals(stderr.getName())) {
+			return stderr.toGATURI();
+		} else {
+		
+			for (Map.Entry<File,File> psFile : postStagedFiles.entrySet()) {
+				if (psFile != null && psFile.getValue() != null && psFile.getKey() != null) {
+					String psFileName = psFile.getKey().getName();
+					
+					if (outputName.equals(psFileName)) {
+						return psFile.getValue().toGATURI();
+					}
 				}
 			}
 		}
