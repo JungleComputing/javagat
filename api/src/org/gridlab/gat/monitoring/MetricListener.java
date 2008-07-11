@@ -10,8 +10,8 @@ public interface MetricListener {
      * through calls to this method when it is registered to receive such
      * events.
      * 
-     * @param val
+     * @param event
      *                The MetricValue which triggered this method call
      */
-    public void processMetricEvent(MetricEvent val);
+    public void processMetricEvent(MetricEvent event);
 }

@@ -27,13 +27,14 @@ import org.gridlab.gat.resources.AbstractJobDescription;
 import org.gridlab.gat.resources.Job;
 import org.gridlab.gat.resources.JobDescription;
 import org.gridlab.gat.resources.SoftwareDescription;
+import org.gridlab.gat.resources.WrapperJobDescription;
 import org.gridlab.gat.resources.cpi.PostStagedFile;
 import org.gridlab.gat.resources.cpi.PostStagedFileSet;
 import org.gridlab.gat.resources.cpi.PreStagedFile;
 import org.gridlab.gat.resources.cpi.PreStagedFileSet;
 import org.gridlab.gat.resources.cpi.ResourceBrokerCpi;
 import org.gridlab.gat.resources.cpi.Sandbox;
-import org.gridlab.gat.resources.cpi.WrapperSubmitter;
+import org.gridlab.gat.resources.cpi.WrapperJobCpi;
 import org.gridlab.gat.security.globus.GlobusSecurityUtils;
 import org.ietf.jgss.GSSCredential;
 import org.ietf.jgss.GSSException;
@@ -58,8 +59,6 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
 
     static boolean shutdownInProgress = false;
 
-    private WrapperSubmitter submitter;
-
     public static void init() {
         GATEngine.registerUnmarshaller(GlobusJob.class);
     }
@@ -75,23 +74,6 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
             throw new GATObjectCreationException("cannot handle scheme: "
                     + brokerURI.getScheme());
         }
-    }
-
-    public void beginMultiJob() throws GATInvocationException {
-        if (submitter != null && submitter.isMultiJob()) {
-            throw new GATInvocationException("Multi job started twice!");
-        }
-        submitter = new WrapperSubmitter(gatContext, brokerURI, true);
-    }
-
-    public Job endMultiJob() throws GATInvocationException {
-        if (submitter == null) {
-            throw new GATInvocationException(
-                    "Multi job ended, without being started!");
-        }
-        Job job = submitter.flushJobSubmission();
-        submitter = null;
-        return job;
     }
 
     protected String createRSL(JobDescription description, String host,
@@ -476,15 +458,6 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
     public Job submitJobGatSandbox(JobDescription description,
             MetricListener listener, String metricDefinitionName)
             throws GATInvocationException {
-        if (getBooleanAttribute(description, "wrapper.enable", false)) {
-            if (logger.isDebugEnabled()) {
-                logger.debug("wrapper enabled: using wrapper application.");
-            }
-            if (submitter == null) {
-                submitter = new WrapperSubmitter(gatContext, brokerURI, false);
-            }
-            return submitter.submitJob(description);
-        }
         // long start = System.currentTimeMillis();
         // choose the first of the set descriptions to retrieve the hostname
         // etc.
@@ -512,10 +485,14 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
         // if output should be streamed, don't poststage it!
         Sandbox sandbox = new Sandbox(gatContext, description, host, null,
                 true, true, sd.getStdout() != null, sd.getStderr() != null);
-        GlobusJob job = new GlobusJob(gatContext, description, sandbox);
-        if (isExitValueEnabled(description)) {
-            job.setExitValueEnabled(isExitValueEnabled(description),
-                    ".JavaGAT-exit-value-" + random);
+        GlobusJob globusJob = new GlobusJob(gatContext, description, sandbox);
+        Job job = null;
+        if (description instanceof WrapperJobDescription) {
+            WrapperJobCpi tmp = new WrapperJobCpi(globusJob);
+            listener = tmp;
+            job = tmp;
+        } else {
+            job = globusJob;
         }
         if (listener != null && metricDefinitionName != null) {
             Metric metric = job.getMetricDefinitionByName(metricDefinitionName)
@@ -523,14 +500,19 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
             job.addMetricListener(listener, metric);
         }
 
-        job.setState(Job.JobState.PRE_STAGING);
+        if (isExitValueEnabled(description)) {
+            globusJob.setExitValueEnabled(isExitValueEnabled(description),
+                    ".JavaGAT-exit-value-" + random);
+        }
+
+        globusJob.setState(Job.JobState.PRE_STAGING);
         try {
             sandbox.prestage();
         } catch (GATInvocationException e) {
             // prestaging fails cleanup before throwing the exception.
-            job.setState(Job.JobState.POST_STAGING);
-            sandbox.retrieveAndCleanup(job);
-            job.setState(Job.JobState.SUBMISSION_ERROR);
+            globusJob.setState(Job.JobState.POST_STAGING);
+            sandbox.retrieveAndCleanup(globusJob);
+            globusJob.setState(Job.JobState.SUBMISSION_ERROR);
             throw e;
         }
         // after the prestaging we can safely delete the wrapper script if we
@@ -560,9 +542,9 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
 
         String rsl = createRSL(description, host, sandbox, null, null);
         GramJob j = new GramJob(credential, rsl);
-        job.setGramJob(j);
-        j.addListener(job);
-        job.startPoller();
+        globusJob.setGramJob(j);
+        j.addListener(globusJob);
+        globusJob.startPoller();
         try {
             j.request(contact);
             // Gram.request(contact, j);
@@ -575,7 +557,7 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
         }
         if (sd.streamingStderrEnabled()) {
             try {
-                job.startStderrForwarder(GAT.createFile(brokerURI
+                globusJob.startStderrForwarder(GAT.createFile(brokerURI
                         .setPath(sandbox.getSandbox() + "/stderr")));
             } catch (GATObjectCreationException e) {
                 // TODO Auto-generated catch block
@@ -587,7 +569,7 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
         }
         if (sd.streamingStdoutEnabled()) {
             try {
-                job.startStdoutForwarder(GAT.createFile(brokerURI
+                globusJob.startStdoutForwarder(GAT.createFile(brokerURI
                         .setPath(sandbox.getSandbox() + "/stdout")));
             } catch (GATObjectCreationException e) {
                 // TODO Auto-generated catch block
@@ -616,6 +598,6 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
                                 + t);
             }
         }
-        WrapperSubmitter.end();
     }
+
 }

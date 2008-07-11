@@ -21,9 +21,10 @@ import org.gridlab.gat.resources.AbstractJobDescription;
 import org.gridlab.gat.resources.Job;
 import org.gridlab.gat.resources.JobDescription;
 import org.gridlab.gat.resources.SoftwareDescription;
+import org.gridlab.gat.resources.WrapperJobDescription;
 import org.gridlab.gat.resources.cpi.ResourceBrokerCpi;
 import org.gridlab.gat.resources.cpi.Sandbox;
-import org.gridlab.gat.resources.cpi.WrapperSubmitter;
+import org.gridlab.gat.resources.cpi.WrapperJobCpi;
 
 import com.trilead.ssh2.ChannelCondition;
 import com.trilead.ssh2.Session;
@@ -80,8 +81,6 @@ public class SshTrileadSingleThreadedResourceBrokerAdaptor extends
 
     private boolean tcpNoDelay;
 
-    private WrapperSubmitter submitter;
-
     /**
      * This method constructs a SshResourceBrokerAdaptor instance corresponding
      * to the passed GATContext.
@@ -124,16 +123,6 @@ public class SshTrileadSingleThreadedResourceBrokerAdaptor extends
         thread.start();
     }
 
-    public void beginMultiJob() {
-        submitter = new WrapperSubmitter(gatContext, brokerURI, true);
-    }
-
-    public Job endMultiJob() throws GATInvocationException {
-        Job job = submitter.flushJobSubmission();
-        submitter = null;
-        return job;
-    }
-
     /*
      * (non-Javadoc)
      * 
@@ -174,15 +163,30 @@ public class SshTrileadSingleThreadedResourceBrokerAdaptor extends
         Sandbox sandbox = new Sandbox(gatContext, description, getAuthority(),
                 null, true, false, false, false);
         // create the job object
-        SshTrileadJob job = new SshTrileadJob(gatContext, description, sandbox);
-        // add the listener to the job if specified
+        SshTrileadJob sshJob = new SshTrileadJob(gatContext, description,
+                sandbox);
+        Job job = null;
+        if (description instanceof WrapperJobDescription) {
+            WrapperJobCpi tmp = new WrapperJobCpi(sshJob);
+            listener = tmp;
+            job = tmp;
+        } else {
+            job = sshJob;
+        }
         if (listener != null && metricDefinitionName != null) {
             Metric metric = job.getMetricDefinitionByName(metricDefinitionName)
                     .createMetric(null);
             job.addMetricListener(listener, metric);
         }
+
+        // add the listener to the job if specified
+        if (listener != null && metricDefinitionName != null) {
+            Metric metric = sshJob.getMetricDefinitionByName(
+                    metricDefinitionName).createMetric(null);
+            sshJob.addMetricListener(listener, metric);
+        }
         // and now do the prestaging
-        job.setState(Job.JobState.PRE_STAGING);
+        sshJob.setState(Job.JobState.PRE_STAGING);
         sandbox.prestage();
 
         // construct the ssh command
@@ -267,8 +271,8 @@ public class SshTrileadSingleThreadedResourceBrokerAdaptor extends
             }
         }
 
-        job.setSession(session);
-        jobs.put(job.getJobID(), job);
+        sshJob.setSession(session);
+        jobs.put(sshJob.getJobID(), sshJob);
         // job.monitorState();
 
         try {
@@ -278,7 +282,7 @@ public class SshTrileadSingleThreadedResourceBrokerAdaptor extends
             throw new GATInvocationException("execution failed!", e);
         }
 
-        job.setState(Job.JobState.RUNNING);
+        sshJob.setState(Job.JobState.RUNNING);
         return job;
     }
 

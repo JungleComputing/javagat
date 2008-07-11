@@ -216,28 +216,29 @@ public class JavaSoftwareDescription extends SoftwareDescription {
      */
     public String[] getArguments() {
         ArrayList<String> result = new ArrayList<String>();
-        if (javaClassPath != null) {
+        if (getJavaClassPath() != null) {
             result.add("-classpath");
-            result.add(javaClassPath);
+            result.add(getJavaClassPath());
         }
-        if (javaOptions != null) {
-            for (String option : javaOptions) {
+        if (getJavaOptions() != null) {
+            for (String option : getJavaOptions()) {
                 result.add(option);
             }
         }
-        if (javaSystemProperties != null) {
-            Set<String> keys = javaSystemProperties.keySet();
+        if (getJavaSystemProperties() != null) {
+            Set<String> keys = getJavaSystemProperties().keySet();
             for (String key : keys) {
-                result.add("-D" + key + "=" + javaSystemProperties.get(key));
+                result.add("-D" + key + "="
+                        + getJavaSystemProperties().get(key));
             }
         }
-        if (javaMain != null) {
-            result.add(javaMain);
+        if (getJavaMain() != null) {
+            result.add(getJavaMain());
         } else {
             return null;
         }
-        if (javaArguments != null) {
-            for (String javaArgument : javaArguments) {
+        if (getJavaArguments() != null) {
+            for (String javaArgument : getJavaArguments()) {
                 result.add(javaArgument);
             }
         }

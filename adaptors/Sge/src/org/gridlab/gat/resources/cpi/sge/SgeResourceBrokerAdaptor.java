@@ -27,8 +27,10 @@ import org.gridlab.gat.resources.AbstractJobDescription;
 import org.gridlab.gat.resources.Job;
 import org.gridlab.gat.resources.JobDescription;
 import org.gridlab.gat.resources.SoftwareDescription;
+import org.gridlab.gat.resources.WrapperJobDescription;
 import org.gridlab.gat.resources.cpi.ResourceBrokerCpi;
 import org.gridlab.gat.resources.cpi.Sandbox;
+import org.gridlab.gat.resources.cpi.WrapperJobCpi;
 
 /**
  * 
@@ -67,8 +69,9 @@ public class SgeResourceBrokerAdaptor extends ResourceBrokerCpi {
         SGEsession = factory.getSession();
     }
 
-    public Job submitJob(AbstractJobDescription abstractDescription, MetricListener listener,
-            String metricDefinitionName) throws GATInvocationException {
+    public Job submitJob(AbstractJobDescription abstractDescription,
+            MetricListener listener, String metricDefinitionName)
+            throws GATInvocationException {
         if (!(abstractDescription instanceof JobDescription)) {
             throw new GATInvocationException(
                     "can only handle JobDescriptions: "
@@ -76,8 +79,7 @@ public class SgeResourceBrokerAdaptor extends ResourceBrokerCpi {
         }
 
         JobDescription description = (JobDescription) abstractDescription;
-        
-        
+
         SoftwareDescription sd = description.getSoftwareDescription();
         if (sd == null) {
             throw new GATInvocationException(
@@ -97,15 +99,24 @@ public class SgeResourceBrokerAdaptor extends ResourceBrokerCpi {
             sandbox = new Sandbox(gatContext, description, host, null, true,
                     true, true, true);
         }
-        SgeJob job = new SgeJob(gatContext, description, sandbox);
+        SgeJob sgeJob = new SgeJob(gatContext, description, sandbox);
+        Job job = null;
+        if (description instanceof WrapperJobDescription) {
+            WrapperJobCpi tmp = new WrapperJobCpi(sgeJob);
+            listener = tmp;
+            job = tmp;
+        } else {
+            job = sgeJob;
+        }
         if (listener != null && metricDefinitionName != null) {
             Metric metric = job.getMetricDefinitionByName(metricDefinitionName)
                     .createMetric(null);
             job.addMetricListener(listener, metric);
         }
-        job.setHostname(getHostname());
-        job.setState(Job.JobState.PRE_STAGING);
-        job.setSession(SGEsession);
+
+        sgeJob.setHostname(getHostname());
+        sgeJob.setState(Job.JobState.PRE_STAGING);
+        sgeJob.setSession(SGEsession);
         sandbox.prestage();
 
         if (sd == null) {
@@ -117,8 +128,8 @@ public class SgeResourceBrokerAdaptor extends ResourceBrokerCpi {
             SGEsession.init(brokerURI.toString());
         } catch (DrmaaException e) {
             if (!(e instanceof AlreadyActiveSessionException)) {
-                sandbox.retrieveAndCleanup(job);
-                job.setState(Job.JobState.SUBMISSION_ERROR);
+                sandbox.retrieveAndCleanup(sgeJob);
+                sgeJob.setState(Job.JobState.SUBMISSION_ERROR);
                 throw new GATInvocationException("SGEResourceBrokerAdaptor", e);
             }
         }
@@ -156,9 +167,9 @@ public class SgeResourceBrokerAdaptor extends ResourceBrokerCpi {
                         + getProcessCount(description));
             }
 
-            job.setJobID(SGEsession.runJob(jt));
-            job.setState(Job.JobState.SCHEDULED);
-            job.startListener();
+            sgeJob.setJobID(SGEsession.runJob(jt));
+            sgeJob.setState(Job.JobState.SCHEDULED);
+            sgeJob.startListener();
             SGEsession.deleteJobTemplate(jt);
             return job;
         } catch (DrmaaException e) {

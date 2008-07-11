@@ -11,10 +11,18 @@ import org.gridlab.gat.io.FileInputStream;
 public class FileInputStreamExample {
 
     /**
+     * This example shows the use of the FileInputStream object in JavaGAT
+     * 
+     * This example requires one valid JavaGAT URI which should point to an
+     * existing file. The first line of this file will be read and printed.
+     * 
      * The JavaGAT FileInputStream can be used in combination with standard
      * java.io classes (like the BufferedInputStream).
      * 
      * @param args
+     *                the String representation of the file from which the first
+     *                line will be read.
+     * 
      */
     public static void main(String[] args) {
         if (args.length != 1) {
@@ -23,6 +31,7 @@ public class FileInputStreamExample {
             System.exit(1);
         }
         new FileInputStreamExample().start(args[0]);
+        GAT.end();
     }
 
     public void start(String location) {
@@ -32,7 +41,7 @@ public class FileInputStreamExample {
         } catch (GATObjectCreationException e) {
             System.err.println("failed to create inputstream at location '"
                     + location + "': " + e);
-            System.exit(1);
+            return;
         }
         InputStreamReader reader = new InputStreamReader(in);
         BufferedReader bufferedReader = new BufferedReader(reader);
@@ -42,14 +51,14 @@ public class FileInputStreamExample {
             System.err
                     .println("failed to read a line from inputstream at location '"
                             + location + "': " + e);
-            System.exit(1);
+            return;
         }
         try {
             bufferedReader.close();
         } catch (IOException e) {
             System.err.println("failed to close inputstream at location '"
                     + location + "': " + e);
-            System.exit(1);
+            return;
         }
     }
 

@@ -33,9 +33,10 @@ import org.gridlab.gat.resources.AbstractJobDescription;
 import org.gridlab.gat.resources.Job;
 import org.gridlab.gat.resources.JobDescription;
 import org.gridlab.gat.resources.SoftwareDescription;
+import org.gridlab.gat.resources.WrapperJobDescription;
 import org.gridlab.gat.resources.cpi.ResourceBrokerCpi;
 import org.gridlab.gat.resources.cpi.Sandbox;
-import org.gridlab.gat.resources.cpi.WrapperSubmitter;
+import org.gridlab.gat.resources.cpi.WrapperJobCpi;
 import org.gridlab.gat.security.globus.GlobusSecurityUtils;
 import org.ietf.jgss.GSSCredential;
 
@@ -60,8 +61,6 @@ public class WSGT4newResourceBrokerAdaptor extends ResourceBrokerCpi {
 
     protected static Logger logger = Logger
             .getLogger(WSGT4newResourceBrokerAdaptor.class);
-
-    private WrapperSubmitter submitter;
 
     protected GSSCredential getCred() throws GATInvocationException {
         GSSCredential cred = null;
@@ -253,16 +252,6 @@ public class WSGT4newResourceBrokerAdaptor extends ResourceBrokerCpi {
         return rsl;
     }
 
-    public void beginMultiJob() {
-        submitter = new WrapperSubmitter(gatContext, brokerURI, true);
-    }
-
-    public Job endMultiJob() throws GATInvocationException {
-        Job job = submitter.flushJobSubmission();
-        submitter = null;
-        return job;
-    }
-
     public Job submitJob(AbstractJobDescription abstractDescription,
             MetricListener listener, String metricDefinitionName)
             throws GATInvocationException {
@@ -276,15 +265,6 @@ public class WSGT4newResourceBrokerAdaptor extends ResourceBrokerCpi {
         JobDescription description = (JobDescription) abstractDescription;
 
         // if wrapper is enabled, do the wrapper stuff
-        if (getBooleanAttribute(description, "wrapper.enable", false)) {
-            if (logger.isDebugEnabled()) {
-                logger.debug("useWrapper, using wrapper application");
-            }
-            if (submitter == null) {
-                submitter = new WrapperSubmitter(gatContext, brokerURI, false);
-            }
-            return submitter.submitJob(description);
-        }
         String host = getHostname();
         SoftwareDescription sd = description.getSoftwareDescription();
         if (sd == null) {
@@ -314,33 +294,43 @@ public class WSGT4newResourceBrokerAdaptor extends ResourceBrokerCpi {
             }
         }
         WSGT4newJob wsgt4job = new WSGT4newJob(gatContext, description, sandbox);
-        if (listener != null && metricDefinitionName != null) {
-            Metric metric = wsgt4job.getMetricDefinitionByName(
-                    metricDefinitionName).createMetric(null);
-            wsgt4job.addMetricListener(listener, metric);
+        Job job = null;
+        if (description instanceof WrapperJobDescription) {
+            WrapperJobCpi tmp = new WrapperJobCpi(wsgt4job);
+            listener = tmp;
+            job = tmp;
+        } else {
+            job = wsgt4job;
         }
+        if (listener != null && metricDefinitionName != null) {
+            Metric metric = job.getMetricDefinitionByName(metricDefinitionName)
+                    .createMetric(null);
+            job.addMetricListener(listener, metric);
+        }
+
         if (!useGramSandbox) {
             wsgt4job.setState(Job.JobState.PRE_STAGING);
             sandbox.prestage();
         }
 
         // create a gramjob according to the jobdescription
-        GramJob job = null;
+        GramJob gramjob = null;
         try {
-            job = new GramJob(createRSL(description, sandbox, useGramSandbox));
+            gramjob = new GramJob(createRSL(description, sandbox,
+                    useGramSandbox));
         } catch (RSLParseException e) {
             throw new GATInvocationException("WSGT4newResourceBrokerAdaptor", e);
         }
 
         // inform the wsgt4 job of which gram job is related to it.
-        wsgt4job.setGramJob(job);
+        wsgt4job.setGramJob(gramjob);
 
-        job.setAuthorization(HostAuthorization.getInstance());
-        job.setMessageProtectionType(Constants.ENCRYPTION);
-        job.setDelegationEnabled(true);
+        gramjob.setAuthorization(HostAuthorization.getInstance());
+        gramjob.setMessageProtectionType(Constants.ENCRYPTION);
+        gramjob.setDelegationEnabled(true);
 
         // wsgt4 job object listens to the gram job
-        job.addListener(wsgt4job);
+        gramjob.addListener(wsgt4job);
 
         String factoryType = (String) gatContext.getPreferences().get(
                 "wsgt4.factory.type");
@@ -370,7 +360,7 @@ public class WSGT4newResourceBrokerAdaptor extends ResourceBrokerCpi {
         }
         wsgt4job.setJobID(submissionID);
         try {
-            job.submit(endpoint, false, false, submissionID);
+            gramjob.submit(endpoint, false, false, submissionID);
             wsgt4job.submitted();
         } catch (Exception e) {
             throw new GATInvocationException("WSGT4newResourceBrokerAdaptor", e);
@@ -378,7 +368,7 @@ public class WSGT4newResourceBrokerAdaptor extends ResourceBrokerCpi {
 
         // second parameter is batch, should be set to false.
         // third parameter is limitedDelegation, currently hardcoded to false
-        return wsgt4job;
+        return job;
     }
 
     private String createAddressString() {

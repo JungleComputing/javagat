@@ -23,6 +23,7 @@ import org.gridlab.gat.resources.Reservation;
 import org.gridlab.gat.resources.Resource;
 import org.gridlab.gat.resources.ResourceDescription;
 import org.gridlab.gat.resources.SoftwareDescription;
+import org.gridlab.gat.resources.WrapperJobDescription;
 import org.gridlab.gat.resources.cpi.ResourceBrokerCpi;
 import org.gridlab.gat.resources.cpi.Sandbox;
 import org.icenigrid.gridsam.client.common.ClientSideJobManager;
@@ -121,7 +122,8 @@ public class GridSAMResourceBrokerAdaptor extends ResourceBrokerCpi {
     public Job submitJob(AbstractJobDescription abstractDescription,
             MetricListener listener, String metricDefinitionName)
             throws GATInvocationException {
-        if (!(abstractDescription instanceof JobDescription)) {
+        if (!(abstractDescription instanceof JobDescription)
+                || abstractDescription instanceof WrapperJobDescription) {
             throw new GATInvocationException(
                     "can only handle JobDescriptions: "
                             + abstractDescription.getClass());
@@ -192,7 +194,8 @@ public class GridSAMResourceBrokerAdaptor extends ResourceBrokerCpi {
             sandbox = new Sandbox(gatContext, description, sandboxHostname,
                     sandboxRoot, true, false, false, false);
 
-            JobDefinitionDocument jobDefinitionDocument = jsdlGenerator.generate(description, sandbox);
+            JobDefinitionDocument jobDefinitionDocument = jsdlGenerator
+                    .generate(description, sandbox);
 
             if (logger.isDebugEnabled()) {
                 logger.debug("jobDefinitionDocument = "

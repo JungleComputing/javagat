@@ -16,8 +16,10 @@ import org.gridlab.gat.resources.AbstractJobDescription;
 import org.gridlab.gat.resources.Job;
 import org.gridlab.gat.resources.JobDescription;
 import org.gridlab.gat.resources.SoftwareDescription;
+import org.gridlab.gat.resources.WrapperJobDescription;
 import org.gridlab.gat.resources.cpi.ResourceBrokerCpi;
 import org.gridlab.gat.resources.cpi.Sandbox;
+import org.gridlab.gat.resources.cpi.WrapperJobCpi;
 
 /**
  * An instance of this class is used to reserve resources.
@@ -171,10 +173,18 @@ public class LocalQResourceBrokerAdaptor extends ResourceBrokerCpi implements
                 home, true, true, true, true);
 
         LocalQJob result = new LocalQJob(gatContext, this, description, sandbox);
+        Job job = null;
+        if (description instanceof WrapperJobDescription) {
+            WrapperJobCpi tmp = new WrapperJobCpi(result);
+            listener = tmp;
+            job = tmp;
+        } else {
+            job = result;
+        }
         if (listener != null && metricDefinitionName != null) {
-            Metric metric = result.getMetricDefinitionByName(
-                    metricDefinitionName).createMetric(null);
-            result.addMetricListener(listener, metric);
+            Metric metric = job.getMetricDefinitionByName(metricDefinitionName)
+                    .createMetric(null);
+            job.addMetricListener(listener, metric);
         }
 
         result.setState(Job.JobState.PRE_STAGING);
@@ -188,7 +198,7 @@ public class LocalQResourceBrokerAdaptor extends ResourceBrokerCpi implements
             // }
         }
 
-        return result;
+        return job;
     }
 
     private synchronized LocalQJob getJob() {

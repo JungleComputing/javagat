@@ -41,29 +41,36 @@ public class GenericLogicalFileAdaptor extends LogicalFileCpi {
         }
         // first check: same hostname
         for (URI file : otherLocations) {
-            if (file.getHost().equalsIgnoreCase(location.getHost())) {
+            if (file.getHost() != null
+                    && file.getHost().equalsIgnoreCase(location.getHost())) {
                 return file;
             }
         }
         // check for same suffix. The more parts of the suffix are the same, the
         // closer the location
         String locationPart = location.getHost();
-        while (locationPart.contains(".")) {
-            int position = locationPart.indexOf(".");
-            for (URI file : otherLocations) {
-                if (file.getHost().endsWith(locationPart.substring(position))) {
-                    return file;
+        if (locationPart != null) {
+            while (locationPart.contains(".")) {
+                int position = locationPart.indexOf(".");
+                for (URI file : otherLocations) {
+                    if (file.getHost() != null
+                            && file.getHost().endsWith(
+                                    locationPart.substring(position))) {
+                        return file;
+                    }
                 }
+                // assuming the a hostname never ends with a dot "."
+                locationPart = locationPart.substring(position + 1);
             }
-            // assuming the a hostname never ends with a dot "."
-            locationPart = locationPart.substring(position + 1);
-        }
-        int separatorPosition = location.getHost().indexOf(".");
-        if (separatorPosition > 0) {
-            for (URI file : otherLocations) {
-                if (file.getHost().endsWith(
-                        location.getHost().substring(separatorPosition))) {
-                    return file;
+            int separatorPosition = location.getHost().indexOf(".");
+            if (separatorPosition > 0) {
+                for (URI file : otherLocations) {
+                    if (file.getHost() != null
+                            && file.getHost().endsWith(
+                                    location.getHost().substring(
+                                            separatorPosition))) {
+                        return file;
+                    }
                 }
             }
         }

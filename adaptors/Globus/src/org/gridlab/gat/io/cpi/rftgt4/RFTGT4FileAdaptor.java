@@ -338,7 +338,7 @@ public class RFTGT4FileAdaptor extends FileCpi {
     }
 
     public void copy(URI dest) throws GATInvocationException {
-        System.out.println("\ncopy " + location + " -> " + dest);
+        // System.out.println("\ncopy " + location + " -> " + dest);
         try {
             if (!copy2(URItoRFTGT4String(dest))) {
                 throw new GATInvocationException(
@@ -687,7 +687,7 @@ public class RFTGT4FileAdaptor extends FileCpi {
         try {
             response = factoryPort.getMultipleResourceProperties(request);
         } catch (RemoteException e) {
-            e.printStackTrace();
+            // e.printStackTrace();
             throw new GATInvocationException(
                     "RFTGT4FileAdaptor: getMultipleResourceProperties, " + e);
         }

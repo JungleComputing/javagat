@@ -31,12 +31,14 @@
 
 		<jar jarfile="${lib}/GlobusAdaptor.jar" basedir="${tmp}" includes="**">
 			<manifest>
-				<attribute name="FileCpi-class" value="org.gridlab.gat.io.cpi.globus.FTPFileAdaptor,org.gridlab.gat.io.cpi.globus.GridFTPFileAdaptor,org.gridlab.gat.io.cpi.gt4.GT4GridFTPFileAdaptor,org.gridlab.gat.io.cpi.gt4.GT4LocalFileAdaptor,org.gridlab.gat.io.cpi.rftgt4.RFTGT4FileAdaptor" />
+				<!--<attribute name="FileCpi-class" value="org.gridlab.gat.io.cpi.globus.FTPFileAdaptor,org.gridlab.gat.io.cpi.globus.GridFTPFileAdaptor,org.gridlab.gat.io.cpi.gt4.GT4GridFTPFileAdaptor,org.gridlab.gat.io.cpi.gt4.GT4LocalFileAdaptor,org.gridlab.gat.io.cpi.rftgt4.RFTGT4FileAdaptor" />-->
+				<attribute name="FileCpi-class" value="org.gridlab.gat.io.cpi.globus.FTPFileAdaptor,org.gridlab.gat.io.cpi.globus.GridFTPFileAdaptor,org.gridlab.gat.io.cpi.gt4.GT4GridFTPFileAdaptor,org.gridlab.gat.io.cpi.rftgt4.RFTGT4FileAdaptor" />
 				<attribute name="FileInputStreamCpi-class" value="org.gridlab.gat.io.cpi.globus.FTPFileInputStreamAdaptor,org.gridlab.gat.io.cpi.globus.GridFTPFileInputStreamAdaptor,org.gridlab.gat.io.cpi.globus.HTTPFileInputStreamAdaptor,org.gridlab.gat.io.cpi.globus.HTTPSFileInputStreamAdaptor" />
 				<attribute name="FileOutputStreamCpi-class" value="org.gridlab.gat.io.cpi.globus.FTPFileOutputStreamAdaptor,org.gridlab.gat.io.cpi.globus.GridFTPFileOutputStreamAdaptor,org.gridlab.gat.io.cpi.globus.HTTPFileOutputStreamAdaptor,org.gridlab.gat.io.cpi.globus.HTTPSFileOutputStreamAdaptor" />
 				<!--<attribute name="ResourceBrokerCpi-class" value="org.gridlab.gat.resources.cpi.globus.GlobusResourceBrokerAdaptor,org.gridlab.gat.resources.cpi.gt4.GT4ResourceBrokerAdaptor,org.gridlab.gat.resources.cpi.wsgt4.WSGT4ResourceBrokerAdaptor,org.gridlab.gat.resources.cpi.wsgt4new.WSGT4newResourceBrokerAdaptor" />-->
-				<attribute name="ResourceBrokerCpi-class" value="org.gridlab.gat.resources.cpi.globus.GlobusResourceBrokerAdaptor,org.gridlab.gat.resources.cpi.gt4.GT4ResourceBrokerAdaptor,org.gridlab.gat.resources.cpi.wsgt4new.WSGT4newResourceBrokerAdaptor" />
-				<attribute name="AdvertServiceCpi-class" value="org.gridlab.gat.advert.cpi.globus.GlobusAdvertServiceAdaptor" />
+				<!--<attribute name="ResourceBrokerCpi-class" value="org.gridlab.gat.resources.cpi.globus.GlobusResourceBrokerAdaptor,org.gridlab.gat.resources.cpi.gt4.GT4ResourceBrokerAdaptor,org.gridlab.gat.resources.cpi.wsgt4new.WSGT4newResourceBrokerAdaptor" />-->
+				<attribute name="ResourceBrokerCpi-class" value="org.gridlab.gat.resources.cpi.globus.GlobusResourceBrokerAdaptor,org.gridlab.gat.resources.cpi.wsgt4new.WSGT4newResourceBrokerAdaptor" />
+				<!--<attribute name="AdvertServiceCpi-class" value="org.gridlab.gat.advert.cpi.globus.GlobusAdvertServiceAdaptor" />-->
 			</manifest>
 		</jar>
 

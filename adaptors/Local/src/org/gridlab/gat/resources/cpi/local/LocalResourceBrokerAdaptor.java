@@ -20,9 +20,10 @@ import org.gridlab.gat.resources.AbstractJobDescription;
 import org.gridlab.gat.resources.Job;
 import org.gridlab.gat.resources.JobDescription;
 import org.gridlab.gat.resources.SoftwareDescription;
+import org.gridlab.gat.resources.WrapperJobDescription;
 import org.gridlab.gat.resources.cpi.ResourceBrokerCpi;
 import org.gridlab.gat.resources.cpi.Sandbox;
-import org.gridlab.gat.resources.cpi.WrapperSubmitter;
+import org.gridlab.gat.resources.cpi.WrapperJobCpi;
 
 /**
  * An instance of this class is used to reserve resources.
@@ -73,8 +74,6 @@ public class LocalResourceBrokerAdaptor extends ResourceBrokerCpi {
     protected static Logger logger = Logger
             .getLogger(LocalResourceBrokerAdaptor.class);
 
-    private WrapperSubmitter submitter;
-
     /**
      * This method constructs a LocalResourceBrokerAdaptor instance
      * corresponding to the passed GATContext.
@@ -92,23 +91,6 @@ public class LocalResourceBrokerAdaptor extends ResourceBrokerCpi {
                     "The LocalResourceBrokerAdaptor doesn't refer to localhost, but to a remote host: "
                             + brokerURI.toString());
         }
-    }
-
-    public void beginMultiJob() throws GATInvocationException {
-        if (submitter != null && submitter.isMultiJob()) {
-            throw new GATInvocationException("Multi job started twice!");
-        }
-        submitter = new WrapperSubmitter(gatContext, brokerURI, true);
-    }
-
-    public Job endMultiJob() throws GATInvocationException {
-        if (submitter == null) {
-            throw new GATInvocationException(
-                    "Multi job ended, without being started!");
-        }
-        Job job = submitter.flushJobSubmission();
-        submitter = null;
-        return job;
     }
 
     /*
@@ -152,16 +134,6 @@ public class LocalResourceBrokerAdaptor extends ResourceBrokerCpi {
                             + getCoresPerProcess(description));
         }
 
-        if (getBooleanAttribute(description, "wrapper.enable", false)) {
-            if (logger.isDebugEnabled()) {
-                logger.debug("wrapper enabled: using wrapper application.");
-            }
-            if (submitter == null) {
-                submitter = new WrapperSubmitter(gatContext, brokerURI, false);
-            }
-            return submitter.submitJob(description);
-        }
-
         // fill in the environment
         String[] environment = null;
         Map<String, Object> env = sd.getEnvironment();
@@ -187,13 +159,21 @@ public class LocalResourceBrokerAdaptor extends ResourceBrokerCpi {
         Sandbox sandbox = new Sandbox(gatContext, description, "localhost",
                 home, true, true, true, true);
 
-        LocalJob job = new LocalJob(gatContext, description, sandbox);
+        LocalJob localJob = new LocalJob(gatContext, description, sandbox);
+        Job job = null;
+        if (description instanceof WrapperJobDescription) {
+            WrapperJobCpi tmp = new WrapperJobCpi(localJob);
+            listener = tmp;
+            job = tmp;
+        } else {
+            job = localJob;
+        }
         if (listener != null && metricDefinitionName != null) {
             Metric metric = job.getMetricDefinitionByName(metricDefinitionName)
                     .createMetric(null);
             job.addMetricListener(listener, metric);
         }
-        job.setState(Job.JobState.PRE_STAGING);
+        localJob.setState(Job.JobState.PRE_STAGING);
         sandbox.prestage();
 
         String exe;
@@ -237,10 +217,10 @@ public class LocalResourceBrokerAdaptor extends ResourceBrokerCpi {
         Process p = null;
         try {
             p = Runtime.getRuntime().exec(command, environment, f);
-            job.setState(Job.JobState.RUNNING);
-            job.setProcess(p);
-            job.setSubmissionTime();
-            job.setStartTime();
+            localJob.setState(Job.JobState.RUNNING);
+            localJob.setProcess(p);
+            localJob.setSubmissionTime();
+            localJob.setStartTime();
         } catch (IOException e) {
             throw new CommandNotFoundException("LocalResourceBrokerAdaptor", e);
         }
@@ -291,15 +271,9 @@ public class LocalResourceBrokerAdaptor extends ResourceBrokerCpi {
             }
         }
 
-        job.monitorState();
+        localJob.monitorState();
 
         return job;
     }
 
-    public static void end() {
-        if (logger.isDebugEnabled()) {
-            logger.debug("local broker adaptor end");
-        }
-        WrapperSubmitter.end();
-    }
 }

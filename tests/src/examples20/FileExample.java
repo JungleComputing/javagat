@@ -46,6 +46,7 @@ public class FileExample {
                             + "\t\tmv <location2> <location3>\n");
             System.exit(1);
         }
+        GAT.end();
     }
 
     public void start(URI uri1, URI uri2, URI uri3) {
@@ -55,7 +56,7 @@ public class FileExample {
         } catch (GATObjectCreationException e) {
             System.err.println("failed to create file1 at location '" + uri1
                     + "': " + e);
-            System.exit(1);
+            return;
         }
         try {
             file1.copy(uri2);
@@ -64,7 +65,7 @@ public class FileExample {
         } catch (GATInvocationException e) {
             System.err.println("failed to copy file1 at location '" + uri1
                     + "' to file2 at location '" + uri2 + "': " + e);
-            System.exit(1);
+            return;
         }
         file1.delete();
         System.out.println("file1 at location '" + uri1 + "' deleted");
@@ -74,7 +75,7 @@ public class FileExample {
         } catch (GATObjectCreationException e) {
             System.err.println("failed to create file2 at location '" + uri2
                     + "': " + e);
-            System.exit(1);
+            return;
         }
         try {
             file2.move(uri3);
@@ -83,7 +84,7 @@ public class FileExample {
         } catch (GATInvocationException e) {
             System.err.println("failed to move file2 at location '" + uri2
                     + "' to file3 at location '" + uri3 + "': " + e);
-            System.exit(1);
+            return;
         }
     }
 }

@@ -211,6 +211,7 @@ public class LocalJob extends JobCpi {
             try {
                 LocalJob.this.stop();
             } catch (GATInvocationException e) {
+                e.printStackTrace();
                 if (logger.isDebugEnabled()) {
                     logger.debug("unable to stop job: " + e);
                 }

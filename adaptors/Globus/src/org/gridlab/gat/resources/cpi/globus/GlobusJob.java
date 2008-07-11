@@ -675,5 +675,4 @@ public class GlobusJob extends JobCpi implements GramJobListener,
             }
         }
     }
-
 }

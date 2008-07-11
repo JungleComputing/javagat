@@ -9,11 +9,14 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
+import org.gridlab.gat.GAT;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
+import org.gridlab.gat.GATObjectCreationException;
 import org.gridlab.gat.io.File;
 import org.gridlab.gat.resources.JobDescription;
 import org.gridlab.gat.resources.SoftwareDescription;
+import org.gridlab.gat.resources.WrapperJobDescription;
 
 public class PreStagedFileSet {
 
@@ -101,6 +104,19 @@ public class PreStagedFileSet {
             if (stdin != null) {
                 tmp.add(new PreStagedFile(gatContext, stdin, null, host,
                         sandbox, true, exe));
+            }
+        }
+
+        if (description instanceof WrapperJobDescription) {
+            File wrapperInfoFile = ((WrapperJobDescription) description)
+                    .getInfoFile();
+            try {
+                tmp
+                        .add(new PreStagedFile(gatContext, wrapperInfoFile, GAT
+                                .createFile("wrapper.info"), host, sandbox,
+                                false, exe));
+            } catch (GATObjectCreationException e) {
+                // ignore
             }
         }
 

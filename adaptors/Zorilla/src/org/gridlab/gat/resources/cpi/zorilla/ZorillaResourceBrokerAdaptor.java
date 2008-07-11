@@ -4,7 +4,6 @@ import ibis.zorilla.zoni.Callback;
 import ibis.zorilla.zoni.CallbackReceiver;
 import ibis.zorilla.zoni.JobInfo;
 import ibis.zorilla.zoni.ZoniConnection;
-import ibis.zorilla.zoni.ZoniProtocol;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -22,7 +21,9 @@ import org.gridlab.gat.resources.AbstractJobDescription;
 import org.gridlab.gat.resources.Job;
 import org.gridlab.gat.resources.JobDescription;
 import org.gridlab.gat.resources.SoftwareDescription;
+import org.gridlab.gat.resources.WrapperJobDescription;
 import org.gridlab.gat.resources.cpi.ResourceBrokerCpi;
+import org.gridlab.gat.resources.cpi.WrapperJobCpi;
 
 /**
  * 
@@ -81,7 +82,7 @@ public class ZorillaResourceBrokerAdaptor extends ResourceBrokerCpi implements
             throw new AdaptorNotApplicableException("cannot handle this URI: "
                     + brokerURI);
         }
-        
+
         nodeSocketAddress = brokerURI.getSchemeSpecificPart();
 
         logger.debug("zorilla node address = " + nodeSocketAddress);
@@ -126,16 +127,25 @@ public class ZorillaResourceBrokerAdaptor extends ResourceBrokerCpi implements
                     "The job description does not contain a software description");
         }
 
-        ZorillaJob job = new ZorillaJob(gatContext, description, null, this);
+        ZorillaJob zorillaJob = new ZorillaJob(gatContext, description, null,
+                this);
+        Job job = null;
+        if (description instanceof WrapperJobDescription) {
+            WrapperJobCpi tmp = new WrapperJobCpi(zorillaJob);
+            listener = tmp;
+            job = tmp;
+        } else {
+            job = zorillaJob;
+        }
         if (listener != null && metricDefinitionName != null) {
             Metric metric = job.getMetricDefinitionByName(metricDefinitionName)
                     .createMetric(null);
             job.addMetricListener(listener, metric);
         }
-        job.startJob(getNodeSocketAddress(), getCallbackReceiver());
+        zorillaJob.startJob(getNodeSocketAddress(), getCallbackReceiver());
 
         synchronized (this) {
-            jobs.put(job.getJobID(), job);
+            jobs.put(zorillaJob.getJobID(), zorillaJob);
         }
 
         return job;

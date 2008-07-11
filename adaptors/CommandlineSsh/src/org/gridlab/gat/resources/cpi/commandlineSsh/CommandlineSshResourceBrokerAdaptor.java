@@ -19,8 +19,10 @@ import org.gridlab.gat.resources.AbstractJobDescription;
 import org.gridlab.gat.resources.Job;
 import org.gridlab.gat.resources.JobDescription;
 import org.gridlab.gat.resources.SoftwareDescription;
+import org.gridlab.gat.resources.WrapperJobDescription;
 import org.gridlab.gat.resources.cpi.ResourceBrokerCpi;
 import org.gridlab.gat.resources.cpi.Sandbox;
+import org.gridlab.gat.resources.cpi.WrapperJobCpi;
 import org.gridlab.gat.security.commandlinessh.CommandlineSshSecurityUtils;
 
 public class CommandlineSshResourceBrokerAdaptor extends ResourceBrokerCpi {
@@ -124,17 +126,23 @@ public class CommandlineSshResourceBrokerAdaptor extends ResourceBrokerCpi {
         Sandbox sandbox = new Sandbox(gatContext, description, authority, null,
                 true, false, false, false);
         // create the job
-        CommandlineSshJob job = new CommandlineSshJob(gatContext, description,
-                sandbox);
-        // now the job is created, immediately add the listener to it, so that
-        // it will receive each state
+        CommandlineSshJob commandlineSshJob = new CommandlineSshJob(gatContext,
+                description, sandbox);
+        Job job = null;
+        if (description instanceof WrapperJobDescription) {
+            WrapperJobCpi tmp = new WrapperJobCpi(commandlineSshJob);
+            listener = tmp;
+            job = tmp;
+        } else {
+            job = commandlineSshJob;
+        }
         if (listener != null && metricDefinitionName != null) {
             Metric metric = job.getMetricDefinitionByName(metricDefinitionName)
                     .createMetric(null);
             job.addMetricListener(listener, metric);
         }
         // set the state to prestaging
-        job.setState(Job.JobState.PRE_STAGING);
+        commandlineSshJob.setState(Job.JobState.PRE_STAGING);
         // and let the sandbox prestage the files!
         sandbox.prestage();
 
@@ -189,8 +197,8 @@ public class CommandlineSshResourceBrokerAdaptor extends ResourceBrokerCpi {
             throw new CommandNotFoundException(
                     "CommandlineSshResourceBrokerAdaptor", e);
         }
-        job.setState(Job.JobState.RUNNING);
-        job.setProcess(p);
+        commandlineSshJob.setState(Job.JobState.RUNNING);
+        commandlineSshJob.setProcess(p);
 
         if (!sd.streamingStderrEnabled()) {
             // read away the stderr
@@ -238,7 +246,7 @@ public class CommandlineSshResourceBrokerAdaptor extends ResourceBrokerCpi {
             }
         }
 
-        job.monitorState();
+        commandlineSshJob.monitorState();
 
         return job;
     }
