@@ -28,7 +28,7 @@ public class ResourceBrokerPollingExample {
     public static void main(String[] args) {
         if (args.length != 1) {
             System.out
-                    .println("\tUsage: bin/run_gat_app examples20.FileInputStreamExample <brokerURI> (where location is a valid JavaGAT URI)\n");
+                    .println("\tUsage: bin/run_gat_app examples20.ResourceBrokerPollingExample <brokerURI> (where location is a valid JavaGAT URI)\n");
 
             System.exit(1);
         }

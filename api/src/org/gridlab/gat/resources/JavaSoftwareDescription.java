@@ -5,6 +5,7 @@
 package org.gridlab.gat.resources;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
@@ -155,6 +156,23 @@ public class JavaSoftwareDescription extends SoftwareDescription {
      */
     public void setJavaSystemProperties(Map<String, String> systemProperties) {
         this.javaSystemProperties = systemProperties;
+    }
+
+    /**
+     * Adds a system property to the current set of system properties. The key
+     * of the system property should not start with "-D".
+     * 
+     * @param key
+     *                the key of the system property to be added
+     * @param value
+     *                the value belonging to the key of the system property to
+     *                be added
+     */
+    public void addJavaSystemProperty(String key, String value) {
+        if (javaSystemProperties == null) {
+            javaSystemProperties = new HashMap<String, String>();
+        }
+        javaSystemProperties.put(key, value);
     }
 
     /**
