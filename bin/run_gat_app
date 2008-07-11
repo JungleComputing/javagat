@@ -29,4 +29,4 @@ add_to_gat_classpath () {
 
 add_to_gat_classpath $GAT_LIB_LOCATION
 
-java -cp $CLASSPATH:$GAT_CLASSPATH -Dlog4j.configuration=file:$GAT_LOCATION/log4j.properties -Dgat.adaptor.path=$GAT_ADAPTOR_LOCATION $*
+java -cp $CLASSPATH:$GAT_CLASSPATH -Dlog4j.configuration=file:$GAT_LOCATION/log4j.properties -Djava.endorsed.dirs=$GAT_ADAPTOR_LOCATION/GridsamAdaptor/endorsed -Dgat.adaptor.path=$GAT_ADAPTOR_LOCATION $*

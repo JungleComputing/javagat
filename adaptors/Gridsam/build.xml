@@ -20,8 +20,9 @@
 	</path>
 
 	<target name="build" depends="clean" description="build the JARs and documentation">
-		<!-- Create the distribution end tmp directory -->
+		<!-- Create the distribution and tmp directory -->
 		<mkdir dir="${lib}" />
+		<mkdir dir="${lib}/endorsed" />
 		<mkdir dir="${tmp}" />
 
 		<!-- Compile the java code from ${src} into ${tmp} -->
@@ -38,6 +39,11 @@
 		<!-- Copy external libraries to lib directory -->
 		<copy todir="${lib}">
 			<fileset dir="${external}">
+				<include name="*.jar" />
+			</fileset>
+		</copy>
+		<copy todir="${lib}/endorsed">
+			<fileset dir="${external}/endorsed">
 				<include name="*.jar" />
 			</fileset>
 		</copy>
