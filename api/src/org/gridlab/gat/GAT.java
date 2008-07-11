@@ -1786,6 +1786,16 @@ public class GAT {
                 new Class[] { URI.class }, array);
     }
 
+    /**
+     * Returns for a given type the information of the adaptors implementing
+     * this type.
+     * 
+     * @param type
+     *                an adaptor type
+     * @return for a given type the information of the adaptors implementing
+     *         this type.
+     * @throws GATInvocationException
+     */
     public static AdaptorInfo[] getAdaptorInfos(String type)
             throws GATInvocationException {
         AdaptorInfo[] result = null;
@@ -1811,6 +1821,14 @@ public class GAT {
         return result;
     }
 
+    /**
+     * Returns all the adaptor types provided by the current set of adaptors in
+     * the 'gat.adaptor.path'.
+     * 
+     * @return all the adaptor types provided by the current set of adaptors in
+     *         the 'gat.adaptor.path'.
+     * @throws GATInvocationException
+     */
     public static String[] getAdaptorTypes() throws GATInvocationException {
         String[] result = null;
         Method m = null;

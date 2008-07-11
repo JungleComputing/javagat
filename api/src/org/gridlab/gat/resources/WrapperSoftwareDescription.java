@@ -8,6 +8,12 @@ import org.gridlab.gat.GATObjectCreationException;
 import org.gridlab.gat.URI;
 import org.gridlab.gat.io.File;
 
+/**
+ * 
+ * 
+ * @author rkemp
+ *
+ */
 public class WrapperSoftwareDescription extends JavaSoftwareDescription {
 
     /**
@@ -24,7 +30,8 @@ public class WrapperSoftwareDescription extends JavaSoftwareDescription {
     }
 
     /**
-     * Don't use this method
+     * Don't use this method. Use of this method will be ignored, since the java
+     * main is always "org.gridlab.gat.resources.cpi.Wrapper".
      */
     public void setJavaMain(String main) {
         // ignore

@@ -637,26 +637,62 @@ public class SoftwareDescription implements java.io.Serializable {
         return stderrFile;
     }
 
+    /**
+     * Enable or disable streaming standard error.
+     * 
+     * @param enabled
+     *                <code>true</code> if streaming standard error should be
+     *                enabled, <code>false</code> otherwise.
+     */
     public void enableStreamingStderr(boolean enabled) {
         this.streamingStderr = enabled;
     }
 
+    /**
+     * Returns whether streaming standard error is enabled.
+     * 
+     * @return whether streaming standard error is enabled.
+     */
     public boolean streamingStderrEnabled() {
         return this.streamingStderr;
     }
 
+    /**
+     * Enable or disable streaming standard output.
+     * 
+     * @param enabled
+     *                <code>true</code> if streaming standard output should be
+     *                enabled, <code>false</code> otherwise.
+     */
     public void enableStreamingStdout(boolean enabled) {
         this.streamingStdout = enabled;
     }
 
+    /**
+     * Returns whether streaming standard output is enabled.
+     * 
+     * @return whether streaming standard output is enabled.
+     */
     public boolean streamingStdoutEnabled() {
         return this.streamingStdout;
     }
 
+    /**
+     * Enable or disable streaming standard input.
+     * 
+     * @param enabled
+     *                <code>true</code> if streaming standard input should be
+     *                enabled, <code>false</code> otherwise.
+     */
     public void enableStreamingStdin(boolean enabled) {
         this.streamingStdin = enabled;
     }
 
+    /**
+     * Returns whether streaming standard input is enabled.
+     * 
+     * @return whether streaming standard input is enabled.
+     */
     public boolean streamingStdinEnabled() {
         return this.streamingStdin;
     }

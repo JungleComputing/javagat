@@ -1,6 +1,14 @@
 package org.gridlab.gat.resources;
 
-public class AbstractJobDescription implements java.io.Serializable {
+/**
+ * Abstract job description.
+ * 
+ * Sub classes of this class should describe a job.
+ * 
+ * @author rkemp
+ * 
+ */
+public abstract class AbstractJobDescription implements java.io.Serializable {
 
     /**
      * 

@@ -6,12 +6,14 @@ package org.gridlab.gat.advert;
 import java.util.NoSuchElementException;
 
 import org.gridlab.gat.GATInvocationException;
+import org.gridlab.gat.URI;
 import org.gridlab.gat.monitoring.Monitorable;
 
 /**
  * The AdvertService allows {@link Advertisable} instances to get published to
  * and queried in an advert directory. Such an advert directory is a meta data
- * directory with an hierarchical namespace attached.
+ * directory with an hierarchical namespace attached, it exists in memory, but
+ * can be exported to, or imported from persistent memory (hard disk).
  * 
  * @author rob
  */
@@ -132,9 +134,29 @@ public interface AdvertService extends Monitorable {
      */
     public String getPWD() throws GATInvocationException;
 
+    /**
+     * Exports the advert database to persistent memory located at the given
+     * {@link URI}.
+     * 
+     * @param target
+     *                the location where the advert database should be exported
+     *                to.
+     * @throws GATInvocationException
+     *                 if something fails during the export
+     */
     public void exportDataBase(org.gridlab.gat.URI target)
             throws GATInvocationException;
 
-    public void importDataBase(org.gridlab.gat.URI target)
+    /**
+     * Imports the advert database from persistent memory located at the given
+     * {@link URI}.
+     * 
+     * @param source
+     *                the location where the advert database should be imported
+     *                from.
+     * @throws GATInvocationException
+     *                 if something fails during the import
+     */
+    public void importDataBase(org.gridlab.gat.URI source)
             throws GATInvocationException;
 }

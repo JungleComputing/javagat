@@ -109,8 +109,8 @@ import java.net.URL;
  * JavaGAT supports the "any" protocol, which means that any protocol may be
  * used to retrieve this URI.
  * <p>
- * <b>Please be careful of using the "any" protocol in combination with relative
- * path names!</b> Suppose protocol A has the entry point '<code>/home/user</code>'
+ * <b>Please be careful with using the "any" protocol in combination with
+ * relative path names!</b> Suppose protocol A has the entry point '<code>/home/user</code>'
  * and protocol B has the entry point '/tmp'. Then the URI '<code>any://myhost/somedir/somefile</code>'
  * would point to two different location depending on the protocol. So, for
  * protocol A it would be resolved to '<code>/home/user/somedir/somefile</code>'
