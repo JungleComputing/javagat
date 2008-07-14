@@ -123,18 +123,16 @@ public class SshTrileadResourceBrokerAdaptor extends ResourceBrokerCpi {
                     "The job description does not contain a software description");
         }
 
-        if (getProcessCount(description) != 1) {
+        if (description.getProcessCount() != 1) {
             throw new GATInvocationException(
-                    "Value of attribute 'process.count' cannot be handled: "
-                            + getProcessCount(description));
+                    "Adaptor cannot handle: process count > 1: "
+                            + description.getProcessCount());
         }
-        if (getHostCount(description) != 1) {
+
+        if (description.getResourceCount() != 1) {
             throw new GATInvocationException(
-                    "Value of attribute 'host.count' cannot be handled: "
-                            + getHostCount(description));
-        }
-        if (sd.getAttributes().containsKey("cores.per.process")) {
-            logger.info("ignoring attribute 'cores.per.process'");
+                    "Adaptor cannot handle: resource count > 1: "
+                            + description.getResourceCount());
         }
 
         boolean separateOutput = "true".equalsIgnoreCase((String) gatContext

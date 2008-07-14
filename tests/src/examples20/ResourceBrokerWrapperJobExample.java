@@ -16,6 +16,7 @@ import org.gridlab.gat.resources.SoftwareDescription;
 import org.gridlab.gat.resources.WrapperJob;
 import org.gridlab.gat.resources.WrapperJobDescription;
 import org.gridlab.gat.resources.WrapperSoftwareDescription;
+import org.gridlab.gat.resources.WrapperJobDescription.StagingType;
 
 public class ResourceBrokerWrapperJobExample implements MetricListener {
 
@@ -28,7 +29,7 @@ public class ResourceBrokerWrapperJobExample implements MetricListener {
      */
     public static void main(String[] args) throws GATObjectCreationException,
             GATInvocationException, URISyntaxException, InterruptedException {
-        new ResourceBrokerWrapperJobExample().start2();
+        new ResourceBrokerWrapperJobExample().start();
     }
 
     public void start() throws URISyntaxException, GATObjectCreationException,
@@ -46,11 +47,13 @@ public class ResourceBrokerWrapperJobExample implements MetricListener {
             // sd.setExecutable("/bin/pwd");
             sd.setExecutable("/bin/sleep");
             sd.setArguments("" + (int) (30 * Math.random()));
+            sd.addPreStagedFile(GAT.createFile("largefile"));
             sd.setStdout(GAT.createFile("stdout." + i));
             Preferences preferences = new Preferences();
             preferences.put("resourcebroker.adaptor.name", "local");
             wrappedJobs[i] = new JobDescription(sd);
             wjd.setMaxConcurrentJobs(4);
+            wjd.setPreStagingType(StagingType.SEQUENTIAL);
             wjd.add(wrappedJobs[i], new URI("any://localhost"), preferences);
         }
         Preferences wrapperPreferences = new Preferences();

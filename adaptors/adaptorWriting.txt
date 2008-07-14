@@ -17,3 +17,12 @@ It can be used for cleanup of static adaptor datastructures (such as caches, etc
 Cheers,
 
 Rob
+
+---
+
+Please let us know when you're planning to write an adaptor. We'd like to
+assist you and include the adaptor in future JavaGAT releases.
+
+Roelof Kemp
+
+rkemp@cs.vu.nl

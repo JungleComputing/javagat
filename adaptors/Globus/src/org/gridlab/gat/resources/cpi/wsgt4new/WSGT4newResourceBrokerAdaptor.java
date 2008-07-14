@@ -146,7 +146,7 @@ public class WSGT4newResourceBrokerAdaptor extends ResourceBrokerCpi {
 
         // set the environment
         rsl += "<count>";
-        rsl += getProcessCount(description);
+        rsl += description.getProcessCount();
         rsl += "</count>";
         rsl += "<directory>";
         if (sandbox.getSandbox().startsWith(File.separator)) {

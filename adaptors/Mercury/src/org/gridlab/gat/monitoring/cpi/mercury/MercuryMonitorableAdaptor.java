@@ -702,7 +702,7 @@ public class MercuryMonitorableAdaptor extends MonitorableCpi {
             Map<String, Object> param_defs = new HashMap<String, Object>();
 
             for (int j = 0; j < metricParams.length; j++)
-                param_defs.put(((String[]) metricParams[j])[0],
+                param_defs.put((String) ((Object[]) metricParams[j])[0],
                         ((Object[]) metricParams[j])[1]);
 
             int measurementType = MetricDefinition.CONTINUOUS;

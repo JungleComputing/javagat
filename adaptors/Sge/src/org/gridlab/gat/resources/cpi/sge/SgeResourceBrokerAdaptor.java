@@ -160,12 +160,9 @@ public class SgeResourceBrokerAdaptor extends ResourceBrokerCpi {
             if (sd.getStderr() != null) {
                 jt.setErrorPath(host + ":" + sd.getStderr().getName());
             }
-            if (sd.getAttributes().containsKey("host.count")) {
-                jt.setNativeSpecification("-pe * " + getHostCount(description));
-            } else {
-                jt.setNativeSpecification("-pe * "
-                        + getProcessCount(description));
-            }
+            jt
+                    .setNativeSpecification("-pe * "
+                            + description.getResourceCount());
 
             sgeJob.setJobID(SGEsession.runJob(jt));
             sgeJob.setState(Job.JobState.SCHEDULED);

@@ -15,10 +15,10 @@ import org.gridlab.gat.io.File;
 import org.gridlab.gat.monitoring.MetricEvent;
 import org.gridlab.gat.monitoring.MetricListener;
 import org.gridlab.gat.resources.AbstractJobDescription;
-import org.gridlab.gat.resources.Job;
 import org.gridlab.gat.resources.JobDescription;
 import org.gridlab.gat.resources.ResourceBroker;
-import org.gridlab.gat.resources.WrapperJobDescription;
+import org.gridlab.gat.resources.Job.JobState;
+import org.gridlab.gat.resources.WrapperJobDescription.StagingType;
 import org.gridlab.gat.resources.WrapperJobDescription.WrappedJobInfo;
 
 /**
@@ -58,7 +58,11 @@ public class Wrapper {
 
     int jobsDone = 0;
 
+    int jobsPreStaging = 0;
+
     int maxConcurrentJobs;
+
+    StagingType stagingType;
 
     /**
      * Starts a wrapper with given arguments
@@ -88,8 +92,7 @@ public class Wrapper {
         System.out.println("debug level:    " + level);
         maxConcurrentJobs = in.readInt();
         System.out.println("max concurrent: " + maxConcurrentJobs);
-        WrapperJobDescription.StagingType stagingType = (WrapperJobDescription.StagingType) in
-                .readObject();
+        stagingType = (StagingType) in.readObject();
         System.out.println("staging type:   " + stagingType);
         List<WrappedJobInfo> infos = (List<WrappedJobInfo>) in.readObject();
         in.close();
@@ -233,19 +236,6 @@ public class Wrapper {
 
         public void run() {
             // if already max jobs running -> wait
-            synchronized (Wrapper.this) {
-                while (jobsSubmitted - jobsDone == maxConcurrentJobs) {
-                    try {
-                        Wrapper.this.wait();
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-                }
-                jobsSubmitted++;
-                System.out.println("jobs running now: "
-                        + (jobsSubmitted - jobsDone));
-            }
-
             ResourceBroker broker = null;
             try {
                 broker = GAT.createResourceBroker(info.getPreferences(), info
@@ -253,6 +243,21 @@ public class Wrapper {
             } catch (GATObjectCreationException e) {
                 // TODO Auto-generated catch block
                 e.printStackTrace();
+            }
+
+            synchronized (Wrapper.this) {
+                while (jobsSubmitted - jobsDone == maxConcurrentJobs
+                        || (jobsPreStaging > 0 && stagingType == StagingType.SEQUENTIAL)) {
+                    try {
+                        Wrapper.this.wait();
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
+                jobsSubmitted++;
+                jobsPreStaging++;
+                System.out.println("jobs running now: "
+                        + (jobsSubmitted - jobsDone));
             }
 
             try {
@@ -269,6 +274,8 @@ public class Wrapper {
     class JobListener implements MetricListener {
 
         private String filename;
+
+        private JobState lastState = JobState.INITIAL;
 
         public JobListener(String filename) {
             this.filename = filename;
@@ -323,16 +330,25 @@ public class Wrapper {
             } catch (GATInvocationException e) {
                 e.printStackTrace();
             }
+            // in case the previous state was pre staging and the current state
+            // is something different (e.g. this job finished its pre staging).
+            if (val.getValue() != JobState.PRE_STAGING
+                    && lastState == JobState.PRE_STAGING) {
+                synchronized (Wrapper.this) {
+                    jobsPreStaging--;
+                    Wrapper.this.notifyAll();
+                }
+            }
             // if the metric indicates that a job has stopped, increment the
-            // jobsstopped.
-            if (val.getValue() == Job.JobState.STOPPED
-                    || val.getValue() == Job.JobState.SUBMISSION_ERROR) {
+            // jobsDone.
+            if (val.getValue() == JobState.STOPPED
+                    || val.getValue() == JobState.SUBMISSION_ERROR) {
                 synchronized (Wrapper.this) {
                     jobsDone++;
                     Wrapper.this.notifyAll();
                 }
             }
-
+            lastState = (JobState) val.getValue();
         }
     }
 }

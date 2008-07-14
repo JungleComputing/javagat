@@ -17,6 +17,11 @@ package org.gridlab.gat.resources;
  */
 @SuppressWarnings("serial")
 public class JobDescription extends AbstractJobDescription {
+
+    private int processCount = 1;
+
+    private int resourceCount = 1;
+
     SoftwareDescription softwareDescription;
 
     ResourceDescription resourceDescription;
@@ -153,6 +158,48 @@ public class JobDescription extends AbstractJobDescription {
             description.setResourceDescription(resourceDescription);
         }
         return description;
+    }
+
+    /**
+     * Get the number of processes, which is the total number of times the
+     * executable should be run.
+     * 
+     * @return the number of processes
+     */
+    public int getProcessCount() {
+        return processCount;
+    }
+
+    /**
+     * Set the number of processes, which is the total number of times the
+     * executable should be run.
+     * 
+     * @param processCount
+     *                the number of processes
+     */
+    public void setProcessCount(int processCount) {
+        this.processCount = processCount;
+    }
+
+    /**
+     * Get the number of resources, which is the total number of resources where
+     * the number of processes should be distributed on.
+     * 
+     * @return the number of resources
+     */
+    public int getResourceCount() {
+        return resourceCount;
+    }
+
+    /**
+     * Set the number of resources, which is the total number of resources where
+     * the number of processes should be distributed on.
+     * 
+     * @param resourceCount
+     *                the number of resources
+     */
+    public void setResourceCount(int resourceCount) {
+        this.resourceCount = resourceCount;
     }
 
 }

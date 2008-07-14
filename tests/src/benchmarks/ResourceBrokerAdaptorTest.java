@@ -19,8 +19,6 @@ import org.gridlab.gat.resources.JobDescription;
 import org.gridlab.gat.resources.ResourceBroker;
 import org.gridlab.gat.resources.SoftwareDescription;
 
-
-
 public class ResourceBrokerAdaptorTest implements MetricListener {
 
     /**
@@ -101,9 +99,9 @@ public class ResourceBrokerAdaptorTest implements MetricListener {
         SoftwareDescription sd = new SoftwareDescription();
         sd.setExecutable("/bin/echo");
         sd.setArguments("test", "1", "2", "3");
-        sd.addAttribute("host.count", 1);
-        sd.addAttribute("process.count", 2);
         JobDescription jd = new JobDescription(sd);
+        jd.setProcessCount(2);
+        jd.setResourceCount(1);
         ResourceBroker broker;
         try {
             broker = GAT.createResourceBroker(preferences, new URI("any://"

@@ -103,9 +103,9 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
             rsl += (" (arguments = " + args + ")");
         }
 
-        rsl += " (count = " + getProcessCount(description) + ")";
+        rsl += " (count = " + description.getProcessCount() + ")";
 
-        rsl += " (hostCount = " + getHostCount(description) + ")";
+        rsl += " (hostCount = " + description.getResourceCount() + ")";
 
         String jobType = getStringAttribute(description, "job.type", null);
         if (jobType != null) {
