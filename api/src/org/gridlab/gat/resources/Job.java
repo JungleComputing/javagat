@@ -217,16 +217,14 @@ public interface Job extends Monitorable, Advertisable {
 
     /**
      * This method returns the job id, a globally unique identifier for the
-     * physical job corresponding to this instance. This method should be called
-     * on an instance of this class only when the instance is in a Running or
-     * Submitted state or an error will be returned.
+     * physical job corresponding to this instance. Some adaptors provide an
+     * adaptor specific job id. This can be retrieved by getting the value
+     * belonging to the key 'adaptor.job.id' in the Map returned by
+     * {@link #getInfo()}.
      * 
-     * @return An instance of the class java.lang.String which represents the
-     *         job ID
-     * @throws GATInvocationException
-     *                 Thrown upon problems accessing the remote instance
+     * @return An integer which represents the job ID
      */
-    public String getJobID() throws GATInvocationException;
+    public int getJobID();
 
     /**
      * @deprecated Deprecated, this method doesn't fit in the API anymore

@@ -58,7 +58,7 @@ public class GlobusJob extends JobCpi implements GramJobListener,
 
     private Metric statusMetric;
 
-    private String jobID;
+    private String globusJobID;
 
     private JobPoller poller;
 
@@ -108,7 +108,7 @@ public class GlobusJob extends JobCpi implements GramJobListener,
             logger.debug("reconstructing globusjob: " + sj);
         }
 
-        this.jobID = sj.getJobId();
+        this.globusJobID = sj.getJobId();
         this.starttime = sj.getStarttime();
         this.stoptime = sj.getStoptime();
         this.submissiontime = sj.getSubmissiontime();
@@ -126,14 +126,14 @@ public class GlobusJob extends JobCpi implements GramJobListener,
         j = new GramJob("");
 
         try {
-            j.setID(jobID);
+            j.setID(globusJobID);
         } catch (Exception e) {
             throw new GATObjectCreationException("globus job", e);
         }
 
         URI hostUri;
         try {
-            URL u = new URL(jobID);
+            URL u = new URL(globusJobID);
             hostUri = new URI(u.getHost());
         } catch (Exception e) {
             throw new GATObjectCreationException("globus job", e);
@@ -163,7 +163,7 @@ public class GlobusJob extends JobCpi implements GramJobListener,
     protected void setGramJob(GramJob j) {
         this.j = j;
         j.addListener(this);
-        this.jobID = j.getIDAsString();
+        this.globusJobID = j.getIDAsString();
     }
 
     /*
@@ -203,15 +203,12 @@ public class GlobusJob extends JobCpi implements GramJobListener,
             m.put("globus.state", null);
             m.put("globus.error", null);
             m.put("globus.errorno", null);
-            m.put("globus.id", null);
-            m.put("id", null);
             m.put("submissiontime", null);
         } else {
             m.put("globus.state", getGlobusState());
             m.put("globus.error", GramError.getGramErrorString(j.getError()));
             m.put("globus.errorno", "" + j.getError());
-            m.put("globus.id", jobID);
-            m.put("id", jobID);
+            m.put("adaptor.job.id", globusJobID);
             m.put("submissiontime", submissiontime);
         }
         if (state == JobState.INITIAL || state == JobState.UNKNOWN
@@ -239,10 +236,6 @@ public class GlobusJob extends JobCpi implements GramJobListener,
             m.put("wipe.exception", wipeException);
         }
         return m;
-    }
-
-    public String getJobID() {
-        return jobID;
     }
 
     public synchronized void stop() throws GATInvocationException {
@@ -396,7 +389,7 @@ public class GlobusJob extends JobCpi implements GramJobListener,
         if (!stateChanged && globusJobState == 0) {
             return;
         } else if (stateChanged && state == JobState.SCHEDULED) {
-            jobID = j.getIDAsString();
+            globusJobID = j.getIDAsString();
             setSubmissionTime();
         } else if (stateChanged && state == JobState.RUNNING) {
             setStartTime();
@@ -497,7 +490,7 @@ public class GlobusJob extends JobCpi implements GramJobListener,
             // we cannot marshal it if it is halfway during the poststage
             // process
             while (true) {
-                if (jobID != null) {
+                if (globusJobID != null) {
                     break;
                 }
 
@@ -508,7 +501,7 @@ public class GlobusJob extends JobCpi implements GramJobListener,
                 }
             }
 
-            sj = new SerializedJob(jobDescription, sandbox, jobID,
+            sj = new SerializedJob(jobDescription, sandbox, globusJobID,
                     submissiontime, starttime, stoptime);
         }
         String res = GATEngine.defaultMarshal(sj);
@@ -535,7 +528,7 @@ public class GlobusJob extends JobCpi implements GramJobListener,
                 JobCpi j = (JobCpi) jobList.get(i);
                 if (j instanceof GlobusJob) {
                     GlobusJob gj = (GlobusJob) j;
-                    if (gj.jobID.equals(sj.getJobId())) {
+                    if (gj.globusJobID.equals(sj.getJobId())) {
                         if (logger.isDebugEnabled()) {
                             logger.debug("returning existing job: " + gj);
                         }

@@ -37,16 +37,12 @@ public class SshTrileadJob extends JobCpi {
 
     private Session session;
 
-    private int jobID;
-
     // the default exit status is -1
     private int exitStatus = -1;
 
     protected SshTrileadJob(GATContext gatContext, JobDescription description,
             Sandbox sandbox) {
         super(gatContext, description, sandbox);
-
-        jobID = allocJobID();
 
         // Tell the engine that we provide job.status events
         HashMap<String, Object> returnDef = new HashMap<String, Object>();
@@ -66,10 +62,6 @@ public class SshTrileadJob extends JobCpi {
         MetricEvent v = new MetricEvent(this, state, statusMetric, System
                 .currentTimeMillis());
         GATEngine.fireMetric(this, v);
-    }
-
-    public String getJobID() {
-        return "" + jobID;
     }
 
     public synchronized Map<String, Object> getInfo()

@@ -54,6 +54,8 @@ public abstract class JobCpi implements Job {
 
     protected static boolean shutdownInProgress = false;
 
+    protected final int jobID = allocJobID();
+
     static {
         Runtime.getRuntime().addShutdownHook(new JobShutdownHook());
     }
@@ -84,6 +86,10 @@ public abstract class JobCpi implements Job {
         }
     }
 
+    public final int getJobID() {
+        return jobID;
+    }
+
     /**
      * @deprecated
      */
@@ -96,10 +102,6 @@ public abstract class JobCpi implements Job {
     }
 
     public Map<String, Object> getInfo() throws GATInvocationException {
-        throw new UnsupportedOperationException("Not implemented");
-    }
-
-    public String getJobID() throws GATInvocationException {
         throw new UnsupportedOperationException("Not implemented");
     }
 
@@ -145,21 +147,7 @@ public abstract class JobCpi implements Job {
     }
 
     public String toString() {
-        String res = "gat job";
-
-        String id = null;
-        try {
-            id = getJobID();
-        } catch (Exception e) {
-            // ignore
-        }
-        if (id != null)
-            res += ", id is " + id;
-        else {
-            res += ", " + "not initialized";
-        }
-
-        return res;
+        return "gat job, id is " + jobID;
     }
 
     public InputStream getStdout() throws GATInvocationException {

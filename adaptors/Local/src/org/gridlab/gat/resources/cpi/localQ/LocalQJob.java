@@ -38,8 +38,6 @@ public class LocalQJob extends JobCpi implements Runnable,
 
     private final int priority;
 
-    private final int jobID;
-
     private int exitVal = 0;
 
     private long runTime;
@@ -51,8 +49,6 @@ public class LocalQJob extends JobCpi implements Runnable,
     LocalQJob(GATContext gatContext, LocalQResourceBrokerAdaptor broker,
             JobDescription description, Sandbox sandbox) {
         super(gatContext, description, sandbox);
-
-        this.jobID = allocJobID();
 
         priority = description.getSoftwareDescription().getIntAttribute(
                 "localq.job.priority", 0);
@@ -127,15 +123,6 @@ public class LocalQJob extends JobCpi implements Runnable,
         }
 
         return exitVal;
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.gridlab.gat.resources.Job#getJobID()
-     */
-    public String getJobID() throws GATInvocationException {
-        return "" + jobID;
     }
 
     public void stop() throws GATInvocationException {

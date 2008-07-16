@@ -28,6 +28,8 @@ import org.gridlab.gat.resources.WrapperJobDescription.WrappedJobInfo;
 @SuppressWarnings("serial")
 public class WrapperJobCpi implements WrapperJob, MetricListener {
 
+    protected final int jobID = JobCpi.allocJobID();
+
     private Job wrapperJob;
 
     private Map<JobDescription, WrappedJobCpi> wrappedJobs = new HashMap<JobDescription, WrappedJobCpi>();
@@ -47,6 +49,10 @@ public class WrapperJobCpi implements WrapperJob, MetricListener {
         for (WrappedJobInfo info : wrapperDescription.getJobInfos()) {
             wrappedJobs.put(info.getJobDescription(), new WrappedJobCpi(info));
         }
+    }
+
+    public int getJobID() {
+        return jobID;
     }
 
     public Job getJob(JobDescription description) throws GATInvocationException {
@@ -93,10 +99,6 @@ public class WrapperJobCpi implements WrapperJob, MetricListener {
 
     public AbstractJobDescription getJobDescription() {
         return wrapperJob.getJobDescription();
-    }
-
-    public String getJobID() throws GATInvocationException {
-        return "wrapper-" + wrapperJob.getJobID();
     }
 
     public MetricEvent getMeasurement(Metric metric)

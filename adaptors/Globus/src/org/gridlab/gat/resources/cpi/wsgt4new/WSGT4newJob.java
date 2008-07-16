@@ -38,9 +38,9 @@ public class WSGT4newJob extends JobCpi implements GramJobListener, Runnable {
 
     private boolean finished = false;
 
-    private String jobID;
-
     private StateEnumeration jobState = StateEnumeration.Unsubmitted;
+
+    private String submissionID;
 
     protected WSGT4newJob(GATContext gatContext, JobDescription jobDescription,
             Sandbox sandbox) {
@@ -109,8 +109,9 @@ public class WSGT4newJob extends JobCpi implements GramJobListener, Runnable {
             throws GATInvocationException {
         HashMap<String, Object> m = new HashMap<String, Object>();
 
+        m.put("adaptor.job.id", submissionID);
         m.put("state", state.toString());
-        m.put("globusstate", jobState);
+        m.put("globus.state", jobState);
         if (state != JobState.RUNNING) {
             m.put("hostname", null);
         } else {
@@ -224,16 +225,9 @@ public class WSGT4newJob extends JobCpi implements GramJobListener, Runnable {
         setSubmissionTime();
     }
 
-    public void setJobID(String submissionID) {
-        this.jobID = submissionID;
+    public void setSubmissionID(String submissionID) {
+        this.submissionID = submissionID;
 
-    }
-
-    public String getJobID() {
-        if (jobID == null) {
-            return "unknown wsgt4 job";
-        }
-        return jobID;
     }
 
     public void run() {

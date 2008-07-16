@@ -358,7 +358,7 @@ public class WSGT4newResourceBrokerAdaptor extends ResourceBrokerCpi {
         if (logger.isDebugEnabled()) {
             logger.debug("submission id for job: " + submissionID);
         }
-        wsgt4job.setJobID(submissionID);
+        wsgt4job.setSubmissionID(submissionID);
         try {
             gramjob.submit(endpoint, false, false, submissionID);
             wsgt4job.submitted();

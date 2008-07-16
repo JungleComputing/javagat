@@ -272,7 +272,7 @@ public class SshTrileadSingleThreadedResourceBrokerAdaptor extends
         }
 
         sshJob.setSession(session);
-        jobs.put(sshJob.getJobID(), sshJob);
+        jobs.put("" + sshJob.getJobID(), sshJob);
         // job.monitorState();
 
         try {

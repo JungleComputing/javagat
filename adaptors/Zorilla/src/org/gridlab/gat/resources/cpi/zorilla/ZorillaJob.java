@@ -476,15 +476,6 @@ public class ZorillaJob extends JobCpi {
         return result;
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.gridlab.gat.resources.Job#getJobID()
-     */
-    public synchronized String getJobID() {
-        return jobID;
-    }
-
     // convert Zorilla phase to GAT state
     private JobState phase2State(int phase) throws GATInvocationException {
         if (phase == ZoniProtocol.PHASE_UNKNOWN) {

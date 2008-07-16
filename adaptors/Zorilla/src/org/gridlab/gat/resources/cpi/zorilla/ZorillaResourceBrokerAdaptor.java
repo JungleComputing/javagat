@@ -145,7 +145,7 @@ public class ZorillaResourceBrokerAdaptor extends ResourceBrokerCpi implements
         zorillaJob.startJob(getNodeSocketAddress(), getCallbackReceiver());
 
         synchronized (this) {
-            jobs.put(zorillaJob.getJobID(), zorillaJob);
+            jobs.put("" + zorillaJob.getJobID(), zorillaJob);
         }
 
         return job;
@@ -193,7 +193,7 @@ public class ZorillaResourceBrokerAdaptor extends ResourceBrokerCpi implements
             }
 
             try {
-                JobInfo info = connection.getJobInfo(job.getJobID());
+                JobInfo info = connection.getJobInfo("" + job.getJobID());
 
                 if (logger.isDebugEnabled()) {
                     logger.debug("retrieved new info: " + info);
@@ -203,7 +203,7 @@ public class ZorillaResourceBrokerAdaptor extends ResourceBrokerCpi implements
 
                 if (job.hasEnded()) {
                     // no need to update info any longer
-                    removeJob(job.getJobID());
+                    removeJob("" + job.getJobID());
                 }
             } catch (IOException e) {
                 if (connection != null) {

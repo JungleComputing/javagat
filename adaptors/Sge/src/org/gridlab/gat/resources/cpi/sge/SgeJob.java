@@ -175,10 +175,6 @@ public class SgeJob extends JobCpi {
         GATEngine.fireMetric(this, v);
     }
 
-    public String getJobID() {
-        return jobID;
-    }
-
     public String marshal() {
         throw new UnsupportedOperationException("Not implemented");
     }

@@ -39,22 +39,11 @@ import org.gridlab.gat.resources.WrapperJobDescription.WrappedJobInfo;
 @SuppressWarnings("serial")
 public class WrappedJobCpi extends JobCpi implements Runnable {
 
-    // this class variable is used to give each WrappedJob a unique ID
-    private static int id = 0;
-
-    private int jobID;
-
-    private String jobString;
-
     private MetricDefinition statusMetricDefinition;
 
     private Metric statusMetric;
 
     private String statusFileName;
-
-    private synchronized static int getID() {
-        return id++;
-    }
 
     /**
      * Creates a new WrappedJob.
@@ -77,26 +66,11 @@ public class WrappedJobCpi extends JobCpi implements Runnable {
         statusMetric = statusMetricDefinition.createMetric(null);
         GATEngine.registerMetric(this, "getJobStatus", statusMetricDefinition);
 
-        // set the jobID
-        jobID = getID();
-
         // start a thread that monitors the job state, by monitoring a file
         Thread thread = new Thread(this);
         thread.setDaemon(true);
         thread.setName("Wrapped Job State Monitor " + getJobID());
         thread.start();
-    }
-
-    /**
-     * gets the JobID of this Job
-     * 
-     * @return the JobID
-     */
-    public String getJobID() {
-        if (jobString == null) {
-            jobString = "WrapperJob" + jobID + "_" + Math.random();
-        }
-        return jobString;
     }
 
     private void fireStateMetric(JobState state) {

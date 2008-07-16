@@ -307,15 +307,6 @@ public class GridSAMJob extends JobCpi {
         return exitVal;
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.gridlab.gat.resources.Job#getJobID()
-     */
-    public String getJobID() throws GATInvocationException {
-        return jobID;
-    }
-
     private boolean isStillRunning() {
         return false;
     }

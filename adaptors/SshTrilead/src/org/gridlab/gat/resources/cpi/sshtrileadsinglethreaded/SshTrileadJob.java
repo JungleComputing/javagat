@@ -46,8 +46,6 @@ public class SshTrileadJob extends JobCpi {
             Sandbox sandbox) {
         super(gatContext, description, sandbox);
 
-        jobID = allocJobID();
-
         // Tell the engine that we provide job.status events
         HashMap<String, Object> returnDef = new HashMap<String, Object>();
         returnDef.put("status", JobState.class);
@@ -66,10 +64,6 @@ public class SshTrileadJob extends JobCpi {
         MetricEvent v = new MetricEvent(this, state, statusMetric, System
                 .currentTimeMillis());
         GATEngine.fireMetric(this, v);
-    }
-
-    public String getJobID() {
-        return "" + jobID;
     }
 
     public synchronized Map<String, Object> getInfo()

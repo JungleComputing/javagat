@@ -42,7 +42,6 @@ public class CommandlineSshJob extends JobCpi {
     CommandlineSshJob(GATContext gatContext, JobDescription description,
             Sandbox sandbox) {
         super(gatContext, description, sandbox);
-        jobID = allocJobID();
 
         HashMap<String, Object> returnDef = new HashMap<String, Object>();
         returnDef.put("status", JobState.class);
@@ -119,15 +118,6 @@ public class CommandlineSshJob extends JobCpi {
         if (state != JobState.STOPPED)
             throw new GATInvocationException("not in RUNNING state");
         return exitStatus;
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.gridlab.gat.resources.Job#getJobID()
-     */
-    public String getJobID() {
-        return "" + jobID;
     }
 
     public synchronized void stop() throws GATInvocationException {

@@ -29,8 +29,6 @@ public class LocalJob extends JobCpi {
 
     protected static Logger logger = Logger.getLogger(LocalJob.class);
 
-    private int jobID;
-
     private Process p;
 
     private int exitStatus = 0;
@@ -39,11 +37,11 @@ public class LocalJob extends JobCpi {
 
     private Metric statusMetric;
 
+    private int processID;
+
     protected LocalJob(GATContext gatContext, JobDescription description,
             Sandbox sandbox) {
         super(gatContext, description, sandbox);
-        jobID = allocJobID();
-
         // Tell the engine that we provide job.status events
         HashMap<String, Object> returnDef = new HashMap<String, Object>();
         returnDef.put("status", JobState.class);
@@ -59,7 +57,7 @@ public class LocalJob extends JobCpi {
         try {
             f = p.getClass().getDeclaredField("pid");
             f.setAccessible(true);
-            jobID = Integer.parseInt(f.get(p).toString()); // toString
+            processID = Integer.parseInt(f.get(p).toString()); // toString
             // ignore exceptions // necessary?
         } catch (SecurityException e) {
         } catch (NoSuchFieldException e) {
@@ -86,6 +84,7 @@ public class LocalJob extends JobCpi {
         // update state
         getState();
 
+        m.put("adaptor.job.id", processID);
         m.put("state", state.toString());
         if (state != JobState.RUNNING) {
             m.put("hostname", null);
@@ -130,15 +129,6 @@ public class LocalJob extends JobCpi {
             throw new GATInvocationException("not in RUNNING state");
         }
         return exitStatus;
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.gridlab.gat.resources.Job#getJobID()
-     */
-    public String getJobID() throws GATInvocationException {
-        return "" + jobID;
     }
 
     public synchronized void stop() throws GATInvocationException {
