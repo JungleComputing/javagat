@@ -214,5 +214,6 @@ public class CreateCapabilities {
             out.write("</body>\n".getBytes());
             out.write("</html>\n".getBytes());
         }
+        System.out.println("capabilities written to: " + htmlFile.getPath());
     }
 }

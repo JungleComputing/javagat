@@ -3,9 +3,8 @@ JavaGAT 2.0
 
 + gt4 file adaptor does not check URI. (it accepts aap://xyz)
 + Document new securityContext features
-- Complete GT4 adaptor set
++ Complete GT4 adaptor set
   * test it
-  * integrate Frank Knoll's advert service adaptors
 + Document all preferences and attributes
 + Make a pass over all javadocs
 + Document GAT.end()
@@ -37,9 +36,9 @@ JavaGAT 2.1
   asynchronous prestaging)
 - complete glite adaptor set: Integrate Anna's and Atul's adaptors
 - rewrite connection caching: make one framework for all adaptors
-- An API for multi-cluster jobs (co-scheduling)
++ An API for multi-cluster jobs (co-scheduling)
 - JSDL interface
-- resource broker adaptors should fill in ALL defined states in getInfo call.
++ resource broker adaptors should fill in ALL defined states in getInfo call.
 - in the engine, check if GAT.end hasn't been called before doing an operation.
 + brokering: also allow output to be printed on the sceen, when no output files
   are given.

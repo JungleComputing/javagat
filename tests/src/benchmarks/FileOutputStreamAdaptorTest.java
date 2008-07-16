@@ -17,7 +17,6 @@ import org.gridlab.gat.resources.JobDescription;
 import org.gridlab.gat.resources.ResourceBroker;
 import org.gridlab.gat.resources.SoftwareDescription;
 
-
 public class FileOutputStreamAdaptorTest {
 
     public static void main(String[] args) {
@@ -59,7 +58,9 @@ public class FileOutputStreamAdaptorTest {
         sd.setExecutable("/bin/sh");
         sd.setArguments(script);
         try {
-            sd.addPreStagedFile(GAT.createFile(script));
+            sd.addPreStagedFile(GAT.createFile("tests" + java.io.File.separator
+                    + "src" + java.io.File.separator + "benchmarks"
+                    + java.io.File.separator + script));
         } catch (GATObjectCreationException e) {
             e.printStackTrace();
             System.exit(1);

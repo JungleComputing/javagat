@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 
 import org.gridlab.gat.GAT;
+import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.GATObjectCreationException;
 import org.gridlab.gat.Preferences;
@@ -16,7 +17,7 @@ import org.gridlab.gat.resources.Job;
 import org.gridlab.gat.resources.JobDescription;
 import org.gridlab.gat.resources.ResourceBroker;
 import org.gridlab.gat.resources.SoftwareDescription;
-
+import org.gridlab.gat.security.PasswordSecurityContext;
 
 public class FileInputStreamAdaptorTest {
 
@@ -32,9 +33,11 @@ public class FileInputStreamAdaptorTest {
         AdaptorTestResult adaptorTestResult = new AdaptorTestResult(adaptor,
                 host);
 
-        // GATContext gatContext = new GATContext();
-        // gatContext.addSecurityContext(new PasswordSecurityContext("rkp400",
-        // "V!t3ss3"));
+        GATContext gatContext = new GATContext();
+        PasswordSecurityContext password = new PasswordSecurityContext(
+                "username", "TeMpPaSsWoRd");
+        password.addNote("adaptors", "ftp");
+        gatContext.addSecurityContext(password);
 
         Preferences preferences = new Preferences();
         preferences.put("fileinputstream.adaptor.name", adaptor);
@@ -83,7 +86,9 @@ public class FileInputStreamAdaptorTest {
         sd.setExecutable("/bin/sh");
         sd.setArguments(script);
         try {
-            sd.addPreStagedFile(GAT.createFile(script));
+            sd.addPreStagedFile(GAT.createFile("tests" + java.io.File.separator
+                    + "src" + java.io.File.separator + "benchmarks"
+                    + java.io.File.separator + script));
         } catch (GATObjectCreationException e) {
             e.printStackTrace();
             System.exit(1);
