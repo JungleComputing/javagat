@@ -93,7 +93,6 @@ public class GAT {
                 inputStream = new java.io.FileInputStream(file);
                 defaultProperties.load(inputStream);
             } catch (FileNotFoundException e) {
-                // TODO
                 System.err.println("User specified preferences \"" + file
                         + "\" not found!");
             } catch (IOException e) {

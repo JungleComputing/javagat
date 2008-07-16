@@ -16,7 +16,7 @@ import org.gridlab.gat.resources.Job;
 import org.gridlab.gat.resources.JobDescription;
 import org.gridlab.gat.resources.ResourceBroker;
 import org.gridlab.gat.resources.SoftwareDescription;
-
+import org.gridlab.gat.security.PasswordSecurityContext;
 
 public class FileAdaptorTest {
 
@@ -33,8 +33,10 @@ public class FileAdaptorTest {
                 host);
 
         GATContext gatContext = new GATContext();
-        // gatContext.addSecurityContext(new PasswordSecurityContext("rkp400",
-        // "V!t3ss3"));
+        PasswordSecurityContext password = new PasswordSecurityContext(
+                "rkp400", "TeMpPaSsWoRd");
+        password.addNote("adaptors", "ftp");
+        gatContext.addSecurityContext(password);
 
         Preferences preferences = new Preferences();
         preferences.put("file.adaptor.name", adaptor + ",local");
@@ -92,10 +94,10 @@ public class FileAdaptorTest {
                 gatContext, preferences, host, "/tmp/JavaGAT-test-delete-file",
                 0, false));
         adaptorTestResult.put("delete: absolute existing dir", deleteTest(
-                gatContext, preferences, host,
-                "/tmp/JavaGAT-test-delete-fake/", 0, true));
+                gatContext, preferences, host, "/tmp/JavaGAT-test-delete-dir/",
+                0, true));
         adaptorTestResult.put("delete: absolute non-existing dir", deleteTest(
-                gatContext, preferences, host, "/tmp/JavaGAT-test-delete-dir",
+                gatContext, preferences, host, "/tmp/JavaGAT-test-delete-fake",
                 0, false));
         adaptorTestResult.put("delete: relative existing file", deleteTest(
                 gatContext, preferences, host, "JavaGAT-test-delete-file", 0,

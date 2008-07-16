@@ -603,6 +603,9 @@ public class SshTrileadFileAdaptor extends FileCpi {
             } catch (Exception e) {
                 throw new GATInvocationException("sshtrilead", e);
             }
+            if (existsCacheEnable && result[STDERR].length() == 0) {
+                existsCache.put(fixedURI, result[STDERR].length() == 0);
+            }
             return result[STDERR].length() == 0;
         }
     }
@@ -830,6 +833,9 @@ public class SshTrileadFileAdaptor extends FileCpi {
                 throw new GATInvocationException("sshtrilead", e);
             }
             boolean mkdir = result[STDERR].length() == 0;
+            if (existsCacheEnable && mkdir) {
+                existsCache.put(fixedURI, mkdir);
+            }
             if (isDirCacheEnable && mkdir) {
                 isDirCache.put(fixedURI, mkdir);
             }
@@ -851,6 +857,9 @@ public class SshTrileadFileAdaptor extends FileCpi {
                 throw new GATInvocationException("sshtrilead", e);
             }
             boolean mkdirs = result[STDERR].length() == 0;
+            if (existsCacheEnable && mkdirs) {
+                existsCache.put(fixedURI, mkdirs);
+            }
             if (isDirCacheEnable && mkdirs) {
                 isDirCache.put(fixedURI, mkdirs);
             }

@@ -120,9 +120,10 @@ public class WrapperSoftwareDescription extends JavaSoftwareDescription {
             return ".:lib/*";
         } else {
             if (gatLocation.hasAbsolutePath()) {
-                return ".:" + gatLocation.getPath() + "/lib/*";
+                return ".:" + gatLocation.getUnresolvedPath() + "/lib/*";
             } else {
-                return ".:" + "../" + gatLocation.getPath() + "/lib/*";
+                return ".:" + "../" + gatLocation.getUnresolvedPath()
+                        + "/lib/*";
             }
         }
 
@@ -153,16 +154,20 @@ public class WrapperSoftwareDescription extends JavaSoftwareDescription {
             result.put("gat.adaptor.path", "lib/adaptors");
         } else {
             if (gatLocation.hasAbsolutePath()) {
-                result.put("log4j.configuration", "file:"
-                        + gatLocation.getPath() + "/log4j.properties");
-                result.put("gat.adaptor.path", gatLocation.getPath()
+                result
+                        .put("log4j.configuration", "file:"
+                                + gatLocation.getUnresolvedPath()
+                                + "/log4j.properties");
+                result.put("gat.adaptor.path", gatLocation.getUnresolvedPath()
                         + "/lib/adaptors");
 
             } else {
-                result.put("log4j.configuration", "file:../"
-                        + gatLocation.getPath() + "/log4j.properties");
-                result.put("gat.adaptor.path", "../" + gatLocation.getPath()
-                        + "/lib/adaptors");
+                result
+                        .put("log4j.configuration", "file:../"
+                                + gatLocation.getUnresolvedPath()
+                                + "/log4j.properties");
+                result.put("gat.adaptor.path", "../"
+                        + gatLocation.getUnresolvedPath() + "/lib/adaptors");
             }
         }
         return result;
@@ -174,9 +179,10 @@ public class WrapperSoftwareDescription extends JavaSoftwareDescription {
             result.put("GAT_LOCATION", ".");
         } else {
             if (gatLocation.hasAbsolutePath()) {
-                result.put("GAT_LOCATION", gatLocation.getPath());
+                result.put("GAT_LOCATION", gatLocation.getUnresolvedPath());
             } else {
-                result.put("GAT_LOCATION", "../" + gatLocation.getPath());
+                result.put("GAT_LOCATION", "../"
+                        + gatLocation.getUnresolvedPath());
             }
         }
         return result;

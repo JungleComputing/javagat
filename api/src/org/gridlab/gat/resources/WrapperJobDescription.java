@@ -74,14 +74,6 @@ public class WrapperJobDescription extends JobDescription {
             this.jobDescription = jobDescription;
             this.brokerURI = brokerURI;
             this.preferences = preferences;
-            try {
-                java.io.File file = java.io.File.createTempFile(".JavaGAT",
-                        "jobstate");
-                this.jobStateFileName = file.getPath();
-                file.delete();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
         }
 
         /**
@@ -127,9 +119,24 @@ public class WrapperJobDescription extends JobDescription {
         public String getJobStateFileName() {
             return jobStateFileName;
         }
+
+        public void generateJobStateFileName() {
+            try {
+                java.io.File file = java.io.File.createTempFile(".JavaGAT",
+                        "jobstate");
+                this.jobStateFileName = file.getPath();
+                file.delete();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     private static final long serialVersionUID = -3241293801064308501L;
+
+    private static int preStageIdentifier = 0;
+
+    private static String preStageDoneDirectory;
 
     private List<WrappedJobInfo> jobInfos = new ArrayList<WrappedJobInfo>();
 
@@ -138,6 +145,8 @@ public class WrapperJobDescription extends JobDescription {
     private int level;
 
     private int maxConcurrentJobs;
+
+    private int jobsUntilPreStageDone;
 
     /**
      * Creates a {@link WrapperJobDescription} based on the given
@@ -192,6 +201,17 @@ public class WrapperJobDescription extends JobDescription {
      */
     public void setPreStagingType(StagingType stagingType) {
         this.prestagingType = stagingType;
+    }
+
+    /**
+     * Sets the number of jobs that should be finished pre staging before the
+     * wrapper will write it's prestage done file.
+     * 
+     * @param jobsUntilPreStageDone
+     *                the number of jobs that should be finished pre staging
+     */
+    public void setNumberOfJobsUntilPreStageDone(int jobsUntilPreStageDone) {
+        this.jobsUntilPreStageDone = jobsUntilPreStageDone;
     }
 
     /**
@@ -289,19 +309,32 @@ public class WrapperJobDescription extends JobDescription {
                     + InetAddress.getLocalHost().getCanonicalHostName() + "/"
                     + System.getProperty("user.dir")));
             out.writeInt(level);
+            synchronized (WrapperJobDescription.class) {
+                out.writeInt(preStageIdentifier++);
+            }
+            synchronized (WrapperJobDescription.class) {
+                if (preStageDoneDirectory == null) {
+                    preStageDoneDirectory = System.getProperty("user.dir");
+                }
+            }
+            out.writeObject(preStageDoneDirectory);
+            out.writeInt(jobsUntilPreStageDone <= 0 ? jobInfos.size()
+                    : jobsUntilPreStageDone);
             out.writeInt(maxConcurrentJobs <= 0 ? jobInfos.size()
                     : maxConcurrentJobs);
             out.writeObject(prestagingType);
+            for (WrappedJobInfo jobInfo : jobInfos) {
+                jobInfo.generateJobStateFileName();
+            }
             out.writeObject(jobInfos);
             out.close();
         } catch (Exception e) {
-            // throw new GATInvocationException("WrapperJobDescription", e);
+            // TODO ignore, but should log or throw an exception
         }
         try {
             return GAT.createFile(f.getPath());
         } catch (GATObjectCreationException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            // TODO ignore, but should log or throw an exception
         }
         return null;
     }
@@ -347,6 +380,33 @@ public class WrapperJobDescription extends JobDescription {
      */
     public void setMaxConcurrentJobs(int maxConcurrentJobs) {
         this.maxConcurrentJobs = maxConcurrentJobs;
+    }
+
+    /**
+     * Sets the (local) directory where the pre stage done files will be written
+     * to. If the directory doesn't exists, it will be created. If it does
+     * exists, but it isn't a directory an Exception will be thrown. This method
+     * can only be invoked once. The user has to delete the pre stage done files
+     * itself.
+     * 
+     * @param location
+     * @throws Exception
+     */
+    public static void setPreStageDoneDirectory(String location)
+            throws Exception {
+        synchronized (WrapperJobDescription.class) {
+            if (preStageDoneDirectory != null) {
+                throw new Exception("pre stage done directory already set!");
+            }
+            java.io.File preStageDoneDirectoryFile = new java.io.File(location);
+            if (!preStageDoneDirectoryFile.exists()) {
+                preStageDoneDirectoryFile.mkdirs();
+            } else if (!preStageDoneDirectoryFile.isDirectory()) {
+                throw new Exception(
+                        "pre stage done directory exists, but isn't a directory");
+            }
+            preStageDoneDirectory = preStageDoneDirectoryFile.getPath();
+        }
     }
 
 }

@@ -54,7 +54,6 @@ public class Preferences implements java.io.Serializable {
                 properties.load(inputStream);
                 putAll(properties);
             } catch (FileNotFoundException e) {
-                // TODO
                 System.err.println("User specified preferences \""
                         + propertyFile + "\" not found!");
             } catch (IOException e) {

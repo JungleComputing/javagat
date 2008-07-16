@@ -11,8 +11,6 @@ import org.gridlab.gat.AdaptorNotApplicableException;
 import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.GATObjectCreationException;
 
-
-
 public class AllFileAdaptorsTest {
 
     /**
@@ -20,7 +18,7 @@ public class AllFileAdaptorsTest {
      */
     public static void main(String[] args) {
         if (args.length != 2) {
-            System.err.println("failed!");
+            System.err.println("usage: <host> <adaptor>,[<adaptor>]");
             System.exit(1);
         }
         String host = args[0];

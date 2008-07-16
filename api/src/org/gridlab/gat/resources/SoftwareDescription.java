@@ -45,12 +45,12 @@ import org.gridlab.gat.io.File;
  * <TD>{@link String}
  * <TD>working directory
  * <TR>
- * <TD>count (<b>deprecated</b> use {@link JobDescription#setProcessCount()})
+ * <TD>count (<b>deprecated</b> use {@link JobDescription#setProcessCount(int)})
  * <TD>{@link Integer}/{@link String}
  * <TD>number of executables to run
  * <TR>
  * <TD>host.count (<b>deprecated</b> use
- * {@link JobDescription#setResourceCount()})
+ * {@link JobDescription#setResourceCount(int)})
  * <TD>{@link Integer}/{@link String}
  * <TD>number of hosts to distribute on
  * <TR>

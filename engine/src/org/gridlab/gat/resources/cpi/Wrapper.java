@@ -60,9 +60,19 @@ public class Wrapper {
 
     int jobsPreStaging = 0;
 
+    int jobsDonePreStaging = 0;
+
     int maxConcurrentJobs;
 
     StagingType stagingType;
+
+    private int numberJobs;
+
+    private int preStageIdentifier;
+
+    private int numberPreStageJobs;
+
+    private String preStageDoneDirectory;
 
     /**
      * Starts a wrapper with given arguments
@@ -90,6 +100,16 @@ public class Wrapper {
         System.out.println("original host:  " + initiator);
         int level = in.readInt();
         System.out.println("debug level:    " + level);
+
+        preStageIdentifier = in.readInt();
+        System.out.println("pre stage id:   " + preStageIdentifier);
+
+        preStageDoneDirectory = (String) in.readObject();
+        System.out.println("pre stage done dir: " + preStageDoneDirectory);
+
+        numberPreStageJobs = in.readInt();
+        System.out.println("#pre stage jobs:" + numberPreStageJobs);
+
         maxConcurrentJobs = in.readInt();
         System.out.println("max concurrent: " + maxConcurrentJobs);
         stagingType = (StagingType) in.readObject();
@@ -102,12 +122,23 @@ public class Wrapper {
                     + info.getJobStateFileName() + "\t" + info.getPreferences()
                     + "\t" + info.getJobDescription());
         }
+        this.numberJobs = infos.size();
+        if (preStageIdentifier > 0) {
+            File prestageWaitFile = GAT.createFile(rewriteURI(new URI(
+                    preStageDoneDirectory + "/" + preStageIdentifier),
+                    initiator));
+            while (!prestageWaitFile.exists()) {
+                System.out.println("waiting for '" + prestageWaitFile
+                        + "' to appear...");
+                Thread.sleep(10000);
+            }
+        }
         for (WrappedJobInfo info : infos) {
             new Submitter(info).start();
         }
         synchronized (this) {
-            while (jobsDone < infos.size()) {
-                System.out.println("waiting for " + (infos.size() - jobsDone)
+            while (jobsDone < numberJobs) {
+                System.out.println("waiting for " + (numberJobs - jobsDone)
                         + " jobs");
                 wait();
             }
@@ -247,7 +278,7 @@ public class Wrapper {
 
             synchronized (Wrapper.this) {
                 while (jobsSubmitted - jobsDone == maxConcurrentJobs
-                        || (jobsPreStaging > 0 && stagingType == StagingType.SEQUENTIAL)) {
+                        || (jobsPreStaging - jobsDonePreStaging > 0 && stagingType == StagingType.SEQUENTIAL)) {
                     try {
                         Wrapper.this.wait();
                     } catch (InterruptedException e) {
@@ -281,7 +312,7 @@ public class Wrapper {
             this.filename = filename;
         }
 
-        public void processMetricEvent(MetricEvent val) {
+        public void processMetricEvent(MetricEvent event) {
             ObjectOutputStream out = null;
             try {
                 // create a new file and write the state to it. This file is
@@ -300,7 +331,7 @@ public class Wrapper {
                         "jobstate");
                 tmp.createNewFile();
                 out = new ObjectOutputStream(new java.io.FileOutputStream(tmp));
-                out.writeObject(val.getValue());
+                out.writeObject(event.getValue());
                 out.flush();
                 out.close();
                 File remoteFile = GAT.createFile(dest);
@@ -332,23 +363,60 @@ public class Wrapper {
             }
             // in case the previous state was pre staging and the current state
             // is something different (e.g. this job finished its pre staging).
-            if (val.getValue() != JobState.PRE_STAGING
+            if (event.getValue() != JobState.PRE_STAGING
                     && lastState == JobState.PRE_STAGING) {
                 synchronized (Wrapper.this) {
-                    jobsPreStaging--;
+                    jobsDonePreStaging++;
                     Wrapper.this.notifyAll();
+                }
+                if (jobsDonePreStaging == numberPreStageJobs) {
+                    try {
+                        File preStageDoneFile = GAT
+                                .createFile(rewriteURI(new URI(
+                                        preStageDoneDirectory + "/"
+                                                + (preStageIdentifier + 1)),
+                                        initiator));
+                        preStageDoneFile.createNewFile();
+                    } catch (GATObjectCreationException e) {
+                        System.err
+                                .println("Done pre staging: failed to create file at '"
+                                        + initiator
+                                        + " ("
+                                        + (preStageIdentifier + 1)
+                                        + ") ': "
+                                        + e);
+                        e.printStackTrace();
+                    } catch (IOException e) {
+                        System.err
+                                .println("Done pre staging: failed to create file at '"
+                                        + initiator
+                                        + " ("
+                                        + (preStageIdentifier + 1)
+                                        + ") ': "
+                                        + e);
+                        e.printStackTrace();
+                    } catch (URISyntaxException e) {
+                        System.err
+                                .println("Done pre staging: failed to create file at '"
+                                        + initiator
+                                        + " ("
+                                        + (preStageIdentifier + 1)
+                                        + ") ': "
+                                        + e);
+                        e.printStackTrace();
+                    }
                 }
             }
             // if the metric indicates that a job has stopped, increment the
             // jobsDone.
-            if (val.getValue() == JobState.STOPPED
-                    || val.getValue() == JobState.SUBMISSION_ERROR) {
+            if (event.getValue() == JobState.STOPPED
+                    || event.getValue() == JobState.SUBMISSION_ERROR) {
                 synchronized (Wrapper.this) {
                     jobsDone++;
                     Wrapper.this.notifyAll();
                 }
             }
-            lastState = (JobState) val.getValue();
+            lastState = (JobState) event.getValue();
         }
     }
 }
