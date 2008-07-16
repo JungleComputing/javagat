@@ -1,0 +1,45 @@
+<html>
+
+<head>
+<meta name=Title
+content="This package contains the classes and interfaces which are used for using resources, be they hardware or software resources">
+<meta name=Keywords content="">
+<link rel=File-List href="package_files/filelist.xml">
+<title>This package contains the classes and interfaces which are used for
+using resources, be they hardware or software resources</title>
+</head>
+
+<body>
+
+<p>This package contains the classes and interfaces which are
+used for using resources, be they hardware or software resources. The most
+important classes and interfaces in this package are ResourceBroker and
+Reservation. An instance of the class ResourceBroker represents a broker for
+resources and is used to reserve and find resources. An instance of the class Reservation
+represents a reservation for a resource and is used to manipulate this
+reservation.</p>
+
+<p>The most important classes and interfaces dealing with hardware resources are HardwareResourceDescription and HardwareResource.
+An instance of the class HardwareResourceDescription represents a description of
+a hardware resource and is used to describe such. An instance of the class
+HardwareResource represents a hardware resource and is used to manipulate such.
+</p>
+
+<p>The most important classes and interfaces dealing with software resources are SoftwareResourceDescription, and Job.
+An instance of the class SoftwareResourceDescription
+represents a description of a software resource and is used to describe such.
+Jobs represent running tasks on a grid site.
+</p>
+
+<p>The classes in this package are related to each other as follows. A JobDescription contains a SoftwareDescription
+and either a ResourceDescription or a Resource object. The method submitJob of the 
+ResourceBroker creates a Job out of the JobDescription. The ResourceDescription object as well as
+the Resource object are abstract and have subclasses for hardware and software (called HardwareResourceDescription, HardwareResource, SoftwareResourceDescription and SoftwareResource).
+There's also a special convenience sub type of the SoftwareDescription, the JavaSoftwareDescription, which
+makes it easier to create a description of a java application. The ResourceBroker cannot only turn JobDescriptions
+into Jobs, but also pairs of Resources (or ResourceDescriptions) and TimePeriods into Reservations.
+</p>
+
+</body>
+
+</html>

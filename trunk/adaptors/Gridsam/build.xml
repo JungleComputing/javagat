@@ -1,0 +1,59 @@
+<project name="GridsamAdaptor" default="build" basedir=".">
+	<description>Build file for JavaGAT Gridsam Adaptors.</description>
+
+	<property name="gat.location" location="../.." />
+	<property name="engine_path" location="${gat.location}/lib" />
+
+	<property name="src" location="src" />
+	<property name="tmp" location="tmp" />
+	<property name="lib" location="${gat.location}/lib/adaptors/GridsamAdaptor" />
+	<property name="external" location="external" />
+	<property name="java.debug.value" value="true" />
+
+	<path id="external_jars">
+		<fileset dir="${external}">
+			<include name="*.jar" />
+		</fileset>
+		<fileset dir="${engine_path}">
+			<include name="*.jar" />
+		</fileset>
+	</path>
+
+	<target name="build" depends="clean" description="build the JARs and documentation">
+		<!-- Create the distribution and tmp directory -->
+		<mkdir dir="${lib}" />
+		<mkdir dir="${lib}/endorsed" />
+		<mkdir dir="${tmp}" />
+
+		<!-- Compile the java code from ${src} into ${tmp} -->
+		<javac source="1.5" srcdir="${src}" destdir="${tmp}" debug="on">
+			<classpath refid="external_jars" />
+		</javac>
+
+		<jar jarfile="${lib}/GridsamAdaptor.jar" basedir="${tmp}" includes="**">
+			<manifest>
+				<attribute name="ResourceBrokerCpi-class" value="org.gridlab.gat.resources.cpi.gridsam.GridSAMResourceBrokerAdaptor" />
+			</manifest>
+		</jar>
+
+		<!-- Copy external libraries to lib directory -->
+		<copy todir="${lib}">
+			<fileset dir="${external}">
+				<include name="*.jar" />
+			</fileset>
+		</copy>
+		<copy todir="${lib}/endorsed">
+			<fileset dir="${external}/endorsed">
+				<include name="*.jar" />
+			</fileset>
+		</copy>
+		
+		<delete dir="${tmp}" />
+
+	</target>
+
+	<target name="clean" description="clean up">
+		<delete dir="${tmp}" />
+	</target>
+
+</project>

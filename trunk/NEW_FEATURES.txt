@@ -1,0 +1,9 @@
+- added Preference: xxx.adaptor.name to be a list (see javadoc of Preferences for
+  more information about the syntax)
+- added attribute "getRemoteSandboxOutputURI" for SoftwareDescription. 
+  The standard out and standard error will be written to the given URI appended
+  by ".X.out" and ".X.err" where X is a counter
+- logging uses log4j (see: http://logging.apache.org/log4j/) the logging properties
+  should be configured using the log4j.properties file in the $GAT_LOCATION dir.
+  logging using the commandline parameters (-Dgat.verbose and -Dgat.debug) is still
+  possible and overrides the configuration of the log4j.properties file.
