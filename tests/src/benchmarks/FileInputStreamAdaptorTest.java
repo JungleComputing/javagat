@@ -124,7 +124,7 @@ public class FileInputStreamAdaptorTest {
         long start = System.currentTimeMillis();
         boolean correct;
         try {
-            correct = in.available() <= correctValue;
+            correct = in.available() >= correctValue;
         } catch (IOException e) {
             return new AdaptorTestResultEntry(false, 0, e);
         }

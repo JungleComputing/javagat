@@ -494,9 +494,11 @@ public class ZorillaJob extends JobCpi {
         } else if (phase == ZoniProtocol.PHASE_PRE_STAGE) {
             return JobState.PRE_STAGING;
         } else if (phase == ZoniProtocol.PHASE_SCHEDULING) {
+            setSubmissionTime();
             return JobState.SCHEDULED;
         } else if (phase == ZoniProtocol.PHASE_RUNNING
                 || phase == ZoniProtocol.PHASE_CLOSED) {
+            setStartTime();
             return JobState.RUNNING;
         } else if (phase == ZoniProtocol.PHASE_POST_STAGING) {
             return JobState.POST_STAGING;

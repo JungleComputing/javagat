@@ -260,6 +260,8 @@ public class SshTrileadResourceBrokerAdaptor extends ResourceBrokerCpi {
         } catch (IOException e) {
             throw new GATInvocationException("execution failed!", e);
         }
+        sshJob.setSubmissionTime();
+        sshJob.setStartTime();
 
         sshJob.setState(Job.JobState.RUNNING);
         return job;

@@ -214,9 +214,7 @@ public class GridSAMJob extends JobCpi {
 
     private JobState translateState(org.icenigrid.gridsam.core.JobState jobState) {
         if (jobState == org.icenigrid.gridsam.core.JobState.ACTIVE) {
-            if (startTime == 0) {
-                startTime = System.currentTimeMillis();
-            }
+            setStartTime();
             return JobState.RUNNING;
         } else if (jobState == org.icenigrid.gridsam.core.JobState.DONE) {
             return JobState.POST_STAGING;
@@ -225,15 +223,9 @@ public class GridSAMJob extends JobCpi {
         } else if (jobState == org.icenigrid.gridsam.core.JobState.FAILED) {
             return JobState.SUBMISSION_ERROR;
         } else if (jobState == org.icenigrid.gridsam.core.JobState.PENDING) {
-            if (startTime == 0) {
-                startTime = System.currentTimeMillis();
-            }
             return JobState.PRE_STAGING;
         } else if (jobState == org.icenigrid.gridsam.core.JobState.STAGED_IN
                 || jobState == org.icenigrid.gridsam.core.JobState.STAGING_IN) {
-            if (startTime == 0) {
-                startTime = System.currentTimeMillis();
-            }
             return JobState.PRE_STAGING;
         } else if (jobState == org.icenigrid.gridsam.core.JobState.STAGED_OUT
                 || jobState == org.icenigrid.gridsam.core.JobState.STAGING_OUT) {
@@ -261,33 +253,32 @@ public class GridSAMJob extends JobCpi {
 
         m.put("state", state);
 
-        m.put("submissiontime", state == JobState.INITIAL || state == JobState.UNKNOWN
-                ? null : submissionTime);
+        m.put("submissiontime", state == JobState.INITIAL
+                || state == JobState.UNKNOWN ? null : submissionTime);
 
-        m.put("starttime", state == JobState.INITIAL || state == JobState.UNKNOWN
-                || state == JobState.SCHEDULED ? null : startTime);
+        m.put("starttime",
+                state == JobState.INITIAL || state == JobState.UNKNOWN
+                        || state == JobState.SCHEDULED ? null : startTime);
 
         m.put("hostname", state == JobState.RUNNING ? adaptor.getBroker()
                 .getHost() : null);
 
-        m.put("stoptime", state == JobState.STOPPED ? stopTime
-                : null);
+        m.put("stoptime", state == JobState.STOPPED ? stopTime : null);
 
         m.put("poststage.exception", postStageException);
 
         if (exitVal != -1) {
             m.put("exitvalue", exitVal);
         }
-        
+
         m.put("resourcebroker", "GridSAM");
-        
+
         if (deleteException != null) {
             m.put("delete.exception", deleteException);
         }
         if (wipeException != null) {
             m.put("wipe.exception", wipeException);
         }
-
 
         return m;
     }

@@ -236,7 +236,6 @@ public class GridSAMResourceBrokerAdaptor extends ResourceBrokerCpi {
         } catch (GATObjectCreationException e) {
             throw new GATInvocationException("unable to create IO files", e);
         }
-
         GridSAMJob job = new GridSAMJob(gatContext, description, sandbox, this,
                 jobInstance);
         if (listener != null && metricDefinitionName != null) {
@@ -244,6 +243,7 @@ public class GridSAMResourceBrokerAdaptor extends ResourceBrokerCpi {
                     .createMetric(null);
             job.addMetricListener(listener, metric);
         }
+        job.setSubmissionTime();
 
         return job;
     }

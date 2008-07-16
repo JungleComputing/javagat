@@ -195,6 +195,8 @@ public class CommandlineSshResourceBrokerAdaptor extends ResourceBrokerCpi {
                     "CommandlineSshResourceBrokerAdaptor", e);
         }
         commandlineSshJob.setState(Job.JobState.RUNNING);
+        commandlineSshJob.setSubmissionTime();
+        commandlineSshJob.setStartTime();
         commandlineSshJob.setProcess(p);
 
         if (!sd.streamingStderrEnabled()) {

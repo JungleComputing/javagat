@@ -71,15 +71,42 @@ public class CommandlineSshJob extends JobCpi {
     public synchronized Map<String, Object> getInfo() {
         HashMap<String, Object> m = new HashMap<String, Object>();
 
-        // update state
-        getState();
-
         m.put("state", state.toString());
-        m.put("resManState", state.toString());
-        m.put("resManName", "CommandlineSsh");
-        m.put("exitValue", "" + exitStatus);
+        if (state != JobState.RUNNING) {
+            m.put("hostname", null);
+        } else {
+            m.put("hostname", "not available");
+        }
+        if (state == JobState.INITIAL || state == JobState.UNKNOWN) {
+            m.put("submissiontime", null);
+        } else {
+            m.put("id", jobID);
+            m.put("submissiontime", submissiontime);
+        }
+        if (state == JobState.INITIAL || state == JobState.UNKNOWN
+                || state == JobState.SCHEDULED) {
+            m.put("starttime", null);
+        } else {
+            m.put("starttime", starttime);
+        }
+        if (state != JobState.STOPPED) {
+            m.put("stoptime", null);
+        } else {
+            m.put("stoptime", stoptime);
+        }
         m.put("poststage.exception", postStageException);
-
+        m.put("resourcebroker", "CommandlineSsh");
+        try {
+            m.put("exitvalue", "" + getExitStatus());
+        } catch (GATInvocationException e) {
+            // ignore
+        }
+        if (deleteException != null) {
+            m.put("delete.exception", deleteException);
+        }
+        if (wipeException != null) {
+            m.put("wipe.exception", wipeException);
+        }
         return m;
     }
 
