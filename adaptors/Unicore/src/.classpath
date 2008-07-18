@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path=""/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="lib" path="/home/alibeck/programme/JavaGAT-2.0-rc1/lib/GAT-API.jar"/>
+	<classpathentry kind="lib" path="/home/alibeck/programme/JavaGAT-2.0-rc1/lib/GAT-engine.jar"/>
+	<classpathentry kind="lib" path="/home/alibeck/programme/JavaGAT-2.0-rc1/lib/log4j-1.2.13.jar"/>
+	<classpathentry kind="lib" path="/home/alibeck/programme/JavaGAT-2.0-rc1/adaptors/Unicore/external/hila-api-1.0-SNAPSHOT.jar"/>
+	<classpathentry kind="lib" path="/home/alibeck/programme/JavaGAT-2.0-rc1/adaptors/Unicore/external/hila-common-1.0-SNAPSHOT.jar"/>
+	<classpathentry kind="lib" path="/home/alibeck/programme/JavaGAT-2.0-rc1/adaptors/Unicore/external/hila-unicore6-1.0-SNAPSHOT-jar-with-dependencies.jar"/>
+	<classpathentry kind="output" path=""/>
+</classpath>

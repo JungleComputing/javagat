@@ -1,0 +1,2587 @@
+runJob() exited with rc -1
+[Thread-0] INFO  cipher.SshCipherFactory  - Loading supported cipher algorithms
+0 [Thread-0] INFO com.sshtools.j2ssh.transport.cipher.SshCipherFactory  - Loading supported cipher algorithms
+[Thread-0] INFO  kex.SshKeyExchangeFactory  - Loading key exchange methods
+17 [Thread-0] INFO com.sshtools.j2ssh.transport.kex.SshKeyExchangeFactory  - Loading key exchange methods
+[Thread-0] INFO  configuration.ConfigurationLoader  - JAVA version is 1.5.0_06
+26 [Thread-0] INFO com.sshtools.j2ssh.configuration.ConfigurationLoader  - JAVA version is 1.5.0_06
+[Thread-0] INFO  configuration.ConfigurationLoader  - Extension /opt/SUNWappserver/jdk/jre/lib/ext/dnsns.jar being added to classpath
+29 [Thread-0] INFO com.sshtools.j2ssh.configuration.ConfigurationLoader  - Extension /opt/SUNWappserver/jdk/jre/lib/ext/dnsns.jar being added to classpath
+[Thread-0] INFO  util.ExtensionClassLoader  - Adding /opt/SUNWappserver/jdk/jre/lib/ext/dnsns.jar to the extension classpath
+29 [Thread-0] INFO com.sshtools.j2ssh.util.ExtensionClassLoader  - Adding /opt/SUNWappserver/jdk/jre/lib/ext/dnsns.jar to the extension classpath
+[Thread-0] INFO  configuration.ConfigurationLoader  - Extension /opt/SUNWappserver/jdk/jre/lib/ext/sunpkcs11.jar being added to classpath
+29 [Thread-0] INFO com.sshtools.j2ssh.configuration.ConfigurationLoader  - Extension /opt/SUNWappserver/jdk/jre/lib/ext/sunpkcs11.jar being added to classpath
+[Thread-0] INFO  util.ExtensionClassLoader  - Adding /opt/SUNWappserver/jdk/jre/lib/ext/sunpkcs11.jar to the extension classpath
+30 [Thread-0] INFO com.sshtools.j2ssh.util.ExtensionClassLoader  - Adding /opt/SUNWappserver/jdk/jre/lib/ext/sunpkcs11.jar to the extension classpath
+[Thread-0] INFO  configuration.ConfigurationLoader  - Extension /opt/SUNWappserver/jdk/jre/lib/ext/localedata.jar being added to classpath
+30 [Thread-0] INFO com.sshtools.j2ssh.configuration.ConfigurationLoader  - Extension /opt/SUNWappserver/jdk/jre/lib/ext/localedata.jar being added to classpath
+[Thread-0] INFO  util.ExtensionClassLoader  - Adding /opt/SUNWappserver/jdk/jre/lib/ext/localedata.jar to the extension classpath
+30 [Thread-0] INFO com.sshtools.j2ssh.util.ExtensionClassLoader  - Adding /opt/SUNWappserver/jdk/jre/lib/ext/localedata.jar to the extension classpath
+[Thread-0] INFO  configuration.ConfigurationLoader  - Extension /opt/SUNWappserver/jdk/jre/lib/ext/sunjce_provider.jar being added to classpath
+30 [Thread-0] INFO com.sshtools.j2ssh.configuration.ConfigurationLoader  - Extension /opt/SUNWappserver/jdk/jre/lib/ext/sunjce_provider.jar being added to classpath
+[Thread-0] INFO  util.ExtensionClassLoader  - Adding /opt/SUNWappserver/jdk/jre/lib/ext/sunjce_provider.jar to the extension classpath
+30 [Thread-0] INFO com.sshtools.j2ssh.util.ExtensionClassLoader  - Adding /opt/SUNWappserver/jdk/jre/lib/ext/sunjce_provider.jar to the extension classpath
+[Thread-0] INFO  publickey.SshKeyPairFactory  - Loading public key algorithms
+33 [Thread-0] INFO com.sshtools.j2ssh.transport.publickey.SshKeyPairFactory  - Loading public key algorithms
+[Thread-0] INFO  compression.SshCompressionFactory  - Loading compression methods
+43 [Thread-0] INFO com.sshtools.j2ssh.transport.compression.SshCompressionFactory  - Loading compression methods
+[Thread-0] INFO  hmac.SshHmacFactory  - Loading message authentication methods
+48 [Thread-0] INFO com.sshtools.j2ssh.transport.hmac.SshHmacFactory  - Loading message authentication methods
+[Thread-0] INFO  transport.TransportProtocolCommon  - Starting transport protocol
+84 [Thread-0] INFO com.sshtools.j2ssh.transport.TransportProtocolCommon  - Starting transport protocol
+[Transport protocol 1] INFO  transport.TransportProtocolCommon  - Registering transport protocol messages with inputstream
+87 [Transport protocol 1] INFO com.sshtools.j2ssh.transport.TransportProtocolCommon  - Registering transport protocol messages with inputstream
+[Transport protocol 1] INFO  transport.TransportProtocolCommon  - Negotiating protocol version
+446 [Transport protocol 1] INFO com.sshtools.j2ssh.transport.TransportProtocolCommon  - Negotiating protocol version
+[Transport protocol 1] INFO  transport.TransportProtocolCommon  - Protocol negotiation complete
+447 [Transport protocol 1] INFO com.sshtools.j2ssh.transport.TransportProtocolCommon  - Protocol negotiation complete
+[Transport protocol 1] INFO  transport.TransportProtocolCommon  - Starting key exchange
+451 [Transport protocol 1] INFO com.sshtools.j2ssh.transport.TransportProtocolCommon  - Starting key exchange
+[Transport protocol 1] INFO  kex.DhGroup1Sha1  - Starting client side key exchange.
+451 [Transport protocol 1] INFO com.sshtools.j2ssh.transport.kex.DhGroup1Sha1  - Starting client side key exchange.
+[Transport protocol 1] INFO  transport.TransportProtocolCommon  - The host key signature is  valid
+741 [Transport protocol 1] INFO com.sshtools.j2ssh.transport.TransportProtocolCommon  - The host key signature is  valid
+[Transport protocol 1] INFO  transport.TransportProtocolCommon  - Completing key exchange
+741 [Transport protocol 1] INFO com.sshtools.j2ssh.transport.TransportProtocolCommon  - Completing key exchange
+[Transport protocol 1] INFO  cipher.SshCipherFactory  - Creating new blowfish-cbc cipher instance
+742 [Transport protocol 1] INFO com.sshtools.j2ssh.transport.cipher.SshCipherFactory  - Creating new blowfish-cbc cipher instance
+[Transport protocol 1] INFO  cipher.SshCipherFactory  - Creating new blowfish-cbc cipher instance
+840 [Transport protocol 1] INFO com.sshtools.j2ssh.transport.cipher.SshCipherFactory  - Creating new blowfish-cbc cipher instance
+[Thread-0] INFO  transport.TransportProtocolCommon  - Starting transport protocol
+897 [Thread-0] INFO com.sshtools.j2ssh.transport.TransportProtocolCommon  - Starting transport protocol
+[Transport protocol 2] INFO  transport.TransportProtocolCommon  - Registering transport protocol messages with inputstream
+897 [Transport protocol 2] INFO com.sshtools.j2ssh.transport.TransportProtocolCommon  - Registering transport protocol messages with inputstream
+[Transport protocol 2] INFO  transport.TransportProtocolCommon  - Negotiating protocol version
+898 [Transport protocol 2] INFO com.sshtools.j2ssh.transport.TransportProtocolCommon  - Negotiating protocol version
+[Transport protocol 2] INFO  transport.TransportProtocolCommon  - Protocol negotiation complete
+906 [Transport protocol 2] INFO com.sshtools.j2ssh.transport.TransportProtocolCommon  - Protocol negotiation complete
+[Transport protocol 2] INFO  transport.TransportProtocolCommon  - Starting key exchange
+910 [Transport protocol 2] INFO com.sshtools.j2ssh.transport.TransportProtocolCommon  - Starting key exchange
+[Transport protocol 2] INFO  kex.DhGroup1Sha1  - Starting client side key exchange.
+917 [Transport protocol 2] INFO com.sshtools.j2ssh.transport.kex.DhGroup1Sha1  - Starting client side key exchange.
+[Transport protocol 2] INFO  transport.TransportProtocolCommon  - The host key signature is  valid
+1062 [Transport protocol 2] INFO com.sshtools.j2ssh.transport.TransportProtocolCommon  - The host key signature is  valid
+[Transport protocol 2] INFO  transport.TransportProtocolCommon  - Completing key exchange
+1062 [Transport protocol 2] INFO com.sshtools.j2ssh.transport.TransportProtocolCommon  - Completing key exchange
+[Transport protocol 2] INFO  cipher.SshCipherFactory  - Creating new blowfish-cbc cipher instance
+1063 [Transport protocol 2] INFO com.sshtools.j2ssh.transport.cipher.SshCipherFactory  - Creating new blowfish-cbc cipher instance
+[Transport protocol 2] INFO  cipher.SshCipherFactory  - Creating new blowfish-cbc cipher instance
+1066 [Transport protocol 2] INFO com.sshtools.j2ssh.transport.cipher.SshCipherFactory  - Creating new blowfish-cbc cipher instance
+or for RandomAccessFile not found in Manifest
+Trying to load adaptor for FileInputStream
+Adaptor for FileInputStream found in Manifest, loading
+Adaptor for FileInputStream loaded
+Trying to load adaptor for FileOutputStream
+Adaptor for FileOutputStream not found in Manifest
+Trying to load adaptor for ResourceBroker
+Adaptor for ResourceBroker not found in Manifest
+loading adaptors from /home/ali/programme/javagat-alexander-02-07-07/lib/adaptors/SftpFileOutputStreamAdaptor.jar
+Trying to load adaptor for Endpoint
+Adaptor for Endpoint not found in Manifest
+Trying to load adaptor for AdvertService
+Adaptor for AdvertService not found in Manifest
+Trying to load adaptor for Monitorable
+Adaptor for Monitorable not found in Manifest
+Trying to load adaptor for SteeringManager
+Adaptor for SteeringManager not found in Manifest
+Trying to load adaptor for File
+Adaptor for File not found in Manifest
+Trying to load adaptor for LogicalFile
+Adaptor for LogicalFile not found in Manifest
+Trying to load adaptor for RandomAccessFile
+Adaptor for RandomAccessFile not found in Manifest
+Trying to load adaptor for FileInputStream
+Adaptor for FileInputStream not found in Manifest
+Trying to load adaptor for FileOutputStream
+Adaptor for FileOutputStream found in Manifest, loading
+Adaptor for FileOutputStream loaded
+Trying to load adaptor for ResourceBroker
+Adaptor for ResourceBroker not found in Manifest
+loading adaptors from /home/ali/programme/javagat-alexander-02-07-07/lib/adaptors/ProActive.jar
+Trying to load adaptor for Endpoint
+Adaptor for Endpoint not found in Manifest
+Trying to load adaptor for AdvertService
+Adaptor for AdvertService not found in Manifest
+Trying to load adaptor for Monitorable
+Adaptor for Monitorable not found in Manifest
+Trying to load adaptor for SteeringManager
+Adaptor for SteeringManager not found in Manifest
+Trying to load adaptor for File
+Adaptor for File not found in Manifest
+Trying to load adaptor for LogicalFile
+Adaptor for LogicalFile not found in Manifest
+Trying to load adaptor for RandomAccessFile
+Adaptor for RandomAccessFile not found in Manifest
+Trying to load adaptor for FileInputStream
+Adaptor for FileInputStream not found in Manifest
+Trying to load adaptor for FileOutputStream
+Adaptor for FileOutputStream not found in Manifest
+Trying to load adaptor for ResourceBroker
+Adaptor for ResourceBroker not found in Manifest
+loading adaptors from /home/ali/programme/javagat-alexander-02-07-07/lib/adaptors/SSHFileInputStreamAdaptor.jar
+Trying to load adaptor for Endpoint
+Adaptor for Endpoint not found in Manifest
+Trying to load adaptor for AdvertService
+Adaptor for AdvertService not found in Manifest
+Trying to load adaptor for Monitorable
+Adaptor for Monitorable not found in Manifest
+Trying to load adaptor for SteeringManager
+Adaptor for SteeringManager not found in Manifest
+Trying to load adaptor for File
+Adaptor for File not found in Manifest
+Trying to load adaptor for LogicalFile
+Adaptor for LogicalFile not found in Manifest
+Trying to load adaptor for RandomAccessFile
+Adaptor for RandomAccessFile not found in Manifest
+Trying to load adaptor for FileInputStream
+Adaptor for FileInputStream found in Manifest, loading
+Adaptor for FileInputStream loaded
+Trying to load adaptor for FileOutputStream
+Adaptor for FileOutputStream not found in Manifest
+Trying to load adaptor for ResourceBroker
+Adaptor for ResourceBroker not found in Manifest
+loading adaptors from /home/ali/programme/javagat-alexander-02-07-07/lib/adaptors/SftpFileInputStreamAdaptor.jar
+Trying to load adaptor for Endpoint
+Adaptor for Endpoint not found in Manifest
+Trying to load adaptor for AdvertService
+Adaptor for AdvertService not found in Manifest
+Trying to load adaptor for Monitorable
+Adaptor for Monitorable not found in Manifest
+Trying to load adaptor for SteeringManager
+Adaptor for SteeringManager not found in Manifest
+Trying to load adaptor for File
+Adaptor for File not found in Manifest
+Trying to load adaptor for LogicalFile
+Adaptor for LogicalFile not found in Manifest
+Trying to load adaptor for RandomAccessFile
+Adaptor for RandomAccessFile not found in Manifest
+Trying to load adaptor for FileInputStream
+Adaptor for FileInputStream found in Manifest, loading
+Adaptor for FileInputStream loaded
+Trying to load adaptor for FileOutputStream
+Adaptor for FileOutputStream not found in Manifest
+Trying to load adaptor for ResourceBroker
+Adaptor for ResourceBroker not found in Manifest
+loading adaptors from /home/ali/programme/javagat-alexander-02-07-07/lib/adaptors/LocalResourceBrokerAdaptor.jar
+Trying to load adaptor for Endpoint
+Adaptor for Endpoint not found in Manifest
+Trying to load adaptor for AdvertService
+Adaptor for AdvertService not found in Manifest
+Trying to load adaptor for Monitorable
+Adaptor for Monitorable not found in Manifest
+Trying to load adaptor for SteeringManager
+Adaptor for SteeringManager not found in Manifest
+Trying to load adaptor for File
+Adaptor for File not found in Manifest
+Trying to load adaptor for LogicalFile
+Adaptor for LogicalFile not found in Manifest
+Trying to load adaptor for RandomAccessFile
+Adaptor for RandomAccessFile not found in Manifest
+Trying to load adaptor for FileInputStream
+Adaptor for FileInputStream not found in Manifest
+Trying to load adaptor for FileOutputStream
+Adaptor for FileOutputStream not found in Manifest
+Trying to load adaptor for ResourceBroker
+Adaptor for ResourceBroker found in Manifest, loading
+Adaptor for ResourceBroker loaded
+loading adaptors from /home/ali/programme/javagat-alexander-02-07-07/lib/adaptors/commons-cli-1.0.jar
+Trying to load adaptor for Endpoint
+Adaptor for Endpoint not found in Manifest
+Trying to load adaptor for AdvertService
+Adaptor for AdvertService not found in Manifest
+Trying to load adaptor for Monitorable
+Adaptor for Monitorable not found in Manifest
+Trying to load adaptor for SteeringManager
+Adaptor for SteeringManager not found in Manifest
+Trying to load adaptor for File
+Adaptor for File not found in Manifest
+Trying to load adaptor for LogicalFile
+Adaptor for LogicalFile not found in Manifest
+Trying to load adaptor for RandomAccessFile
+Adaptor for RandomAccessFile not found in Manifest
+Trying to load adaptor for FileInputStream
+Adaptor for FileInputStream not found in Manifest
+Trying to load adaptor for FileOutputStream
+Adaptor for FileOutputStream not found in Manifest
+Trying to load adaptor for ResourceBroker
+Adaptor for ResourceBroker not found in Manifest
+loading adaptors from /home/ali/programme/javagat-alexander-02-07-07/lib/adaptors/puretls.jar
+Trying to load adaptor for Endpoint
+Adaptor for Endpoint not found in Manifest
+Trying to load adaptor for AdvertService
+Adaptor for AdvertService not found in Manifest
+Trying to load adaptor for Monitorable
+Adaptor for Monitorable not found in Manifest
+Trying to load adaptor for SteeringManager
+Adaptor for SteeringManager not found in Manifest
+Trying to load adaptor for File
+Adaptor for File not found in Manifest
+Trying to load adaptor for LogicalFile
+Adaptor for LogicalFile not found in Manifest
+Trying to load adaptor for RandomAccessFile
+Adaptor for RandomAccessFile not found in Manifest
+Trying to load adaptor for FileInputStream
+Adaptor for FileInputStream not found in Manifest
+Trying to load adaptor for FileOutputStream
+Adaptor for FileOutputStream not found in Manifest
+Trying to load adaptor for ResourceBroker
+Adaptor for ResourceBroker not found in Manifest
+loading adaptors from /home/ali/programme/javagat-alexander-02-07-07/lib/adaptors/ZorillaResourceBrokerAdaptor.jar
+Trying to load adaptor for Endpoint
+Adaptor for Endpoint not found in Manifest
+Trying to load adaptor for AdvertService
+Adaptor for AdvertService not found in Manifest
+Trying to load adaptor for Monitorable
+Adaptor for Monitorable not found in Manifest
+Trying to load adaptor for SteeringManager
+Adaptor for SteeringManager not found in Manifest
+Trying to load adaptor for File
+Adaptor for File not found in Manifest
+Trying to load adaptor for LogicalFile
+Adaptor for LogicalFile not found in Manifest
+Trying to load adaptor for RandomAccessFile
+Adaptor for RandomAccessFile not found in Manifest
+Trying to load adaptor for FileInputStream
+Adaptor for FileInputStream not found in Manifest
+Trying to load adaptor for FileOutputStream
+Adaptor for FileOutputStream not found in Manifest
+Trying to load adaptor for ResourceBroker
+Adaptor for ResourceBroker found in Manifest, loading
+Adaptor for ResourceBroker loaded
+loading adaptors from /home/ali/programme/javagat-alexander-02-07-07/lib/adaptors/CommandlineSshResourceBrokerAdaptor.jar
+Trying to load adaptor for Endpoint
+Adaptor for Endpoint not found in Manifest
+Trying to load adaptor for AdvertService
+Adaptor for AdvertService not found in Manifest
+Trying to load adaptor for Monitorable
+Adaptor for Monitorable not found in Manifest
+Trying to load adaptor for SteeringManager
+Adaptor for SteeringManager not found in Manifest
+Trying to load adaptor for File
+Adaptor for File not found in Manifest
+Trying to load adaptor for LogicalFile
+Adaptor for LogicalFile not found in Manifest
+Trying to load adaptor for RandomAccessFile
+Adaptor for RandomAccessFile not found in Manifest
+Trying to load adaptor for FileInputStream
+Adaptor for FileInputStream not found in Manifest
+Trying to load adaptor for FileOutputStream
+Adaptor for FileOutputStream not found in Manifest
+Trying to load adaptor for ResourceBroker
+Adaptor for ResourceBroker found in Manifest, loading
+Adaptor for ResourceBroker loaded
+loading adaptors from /home/ali/programme/javagat-alexander-02-07-07/lib/adaptors/HTTPSFileOutputStreamAdaptor.jar
+Trying to load adaptor for Endpoint
+Adaptor for Endpoint not found in Manifest
+Trying to load adaptor for AdvertService
+Adaptor for AdvertService not found in Manifest
+Trying to load adaptor for Monitorable
+Adaptor for Monitorable not found in Manifest
+Trying to load adaptor for SteeringManager
+Adaptor for SteeringManager not found in Manifest
+Trying to load adaptor for File
+Adaptor for File not found in Manifest
+Trying to load adaptor for LogicalFile
+Adaptor for LogicalFile not found in Manifest
+Trying to load adaptor for RandomAccessFile
+Adaptor for RandomAccessFile not found in Manifest
+Trying to load adaptor for FileInputStream
+Adaptor for FileInputStream not found in Manifest
+Trying to load adaptor for FileOutputStream
+Adaptor for FileOutputStream found in Manifest, loading
+Adaptor for FileOutputStream loaded
+Trying to load adaptor for ResourceBroker
+Adaptor for ResourceBroker not found in Manifest
+loading adaptors from /home/ali/programme/javagat-alexander-02-07-07/lib/adaptors/SSHFileOutputStreamAdaptor.jar
+Trying to load adaptor for Endpoint
+Adaptor for Endpoint not found in Manifest
+Trying to load adaptor for AdvertService
+Adaptor for AdvertService not found in Manifest
+Trying to load adaptor for Monitorable
+Adaptor for Monitorable not found in Manifest
+Trying to load adaptor for SteeringManager
+Adaptor for SteeringManager not found in Manifest
+Trying to load adaptor for File
+Adaptor for File not found in Manifest
+Trying to load adaptor for LogicalFile
+Adaptor for LogicalFile not found in Manifest
+Trying to load adaptor for RandomAccessFile
+Adaptor for RandomAccessFile not found in Manifest
+Trying to load adaptor for FileInputStream
+Adaptor for FileInputStream not found in Manifest
+Trying to load adaptor for FileOutputStream
+Adaptor for FileOutputStream found in Manifest, loading
+Adaptor for FileOutputStream loaded
+Trying to load adaptor for ResourceBroker
+Adaptor for ResourceBroker not found in Manifest
+loading adaptors from /home/ali/programme/javagat-alexander-02-07-07/lib/adaptors/PbsBrokerAdaptor.jar
+Trying to load adaptor for Endpoint
+Adaptor for Endpoint not found in Manifest
+Trying to load adaptor for AdvertService
+Adaptor for AdvertService not found in Manifest
+Trying to load adaptor for Monitorable
+Adaptor for Monitorable not found in Manifest
+Trying to load adaptor for SteeringManager
+Adaptor for SteeringManager not found in Manifest
+Trying to load adaptor for File
+Adaptor for File not found in Manifest
+Trying to load adaptor for LogicalFile
+Adaptor for LogicalFile not found in Manifest
+Trying to load adaptor for RandomAccessFile
+Adaptor for RandomAccessFile not found in Manifest
+Trying to load adaptor for FileInputStream
+Adaptor for FileInputStream not found in Manifest
+Trying to load adaptor for FileOutputStream
+Adaptor for FileOutputStream not found in Manifest
+Trying to load adaptor for ResourceBroker
+Adaptor for ResourceBroker found in Manifest, loading
+Adaptor for ResourceBroker loaded
+loading adaptors from /home/ali/programme/javagat-alexander-02-07-07/lib/adaptors/SftpGanymedFileAdaptor.jar
+Trying to load adaptor for Endpoint
+Adaptor for Endpoint not found in Manifest
+Trying to load adaptor for AdvertService
+Adaptor for AdvertService not found in Manifest
+Trying to load adaptor for Monitorable
+Adaptor for Monitorable not found in Manifest
+Trying to load adaptor for SteeringManager
+Adaptor for SteeringManager not found in Manifest
+Trying to load adaptor for File
+Adaptor for File found in Manifest, loading
+Adaptor org.gridlab.gat.io.cpi.sftpGanymed.SftpGanymedFileAdaptor contains unmarshaller
+Adaptor for File loaded
+Trying to load adaptor for LogicalFile
+Adaptor for LogicalFile not found in Manifest
+Trying to load adaptor for RandomAccessFile
+Adaptor for RandomAccessFile not found in Manifest
+Trying to load adaptor for FileInputStream
+Adaptor for FileInputStream not found in Manifest
+Trying to load adaptor for FileOutputStream
+Adaptor for FileOutputStream not found in Manifest
+Trying to load adaptor for ResourceBroker
+Adaptor for ResourceBroker not found in Manifest
+loading adaptors from /home/ali/programme/javagat-alexander-02-07-07/lib/adaptors/cog-jobmanager-1.4.jar
+Trying to load adaptor for Endpoint
+Adaptor for Endpoint not found in Manifest
+Trying to load adaptor for AdvertService
+Adaptor for AdvertService not found in Manifest
+Trying to load adaptor for Monitorable
+Adaptor for Monitorable not found in Manifest
+Trying to load adaptor for SteeringManager
+Adaptor for SteeringManager not found in Manifest
+Trying to load adaptor for File
+Adaptor for File not found in Manifest
+Trying to load adaptor for LogicalFile
+Adaptor for LogicalFile not found in Manifest
+Trying to load adaptor for RandomAccessFile
+Adaptor for RandomAccessFile not found in Manifest
+Trying to load adaptor for FileInputStream
+Adaptor for FileInputStream not found in Manifest
+Trying to load adaptor for FileOutputStream
+Adaptor for FileOutputStream not found in Manifest
+Trying to load adaptor for ResourceBroker
+Adaptor for ResourceBroker not found in Manifest
+loading adaptors from /home/ali/programme/javagat-alexander-02-07-07/lib/adaptors/LocalFileOutputStreamAdaptor.jar
+Trying to load adaptor for Endpoint
+Adaptor for Endpoint not found in Manifest
+Trying to load adaptor for AdvertService
+Adaptor for AdvertService not found in Manifest
+Trying to load adaptor for Monitorable
+Adaptor for Monitorable not found in Manifest
+Trying to load adaptor for SteeringManager
+Adaptor for SteeringManager not found in Manifest
+Trying to load adaptor for File
+Adaptor for File not found in Manifest
+Trying to load adaptor for LogicalFile
+Adaptor for LogicalFile not found in Manifest
+Trying to load adaptor for RandomAccessFile
+Adaptor for RandomAccessFile not found in Manifest
+Trying to load adaptor for FileInputStream
+Adaptor for FileInputStream not found in Manifest
+Trying to load adaptor for FileOutputStream
+Adaptor for FileOutputStream found in Manifest, loading
+Adaptor for FileOutputStream loaded
+Trying to load adaptor for ResourceBroker
+Adaptor for ResourceBroker not found in Manifest
+loading adaptors from /home/ali/programme/javagat-alexander-02-07-07/lib/adaptors/SshResourceBrokerAdaptor.jar
+Trying to load adaptor for Endpoint
+Adaptor for Endpoint not found in Manifest
+Trying to load adaptor for AdvertService
+Adaptor for AdvertService not found in Manifest
+Trying to load adaptor for Monitorable
+Adaptor for Monitorable not found in Manifest
+Trying to load adaptor for SteeringManager
+Adaptor for SteeringManager not found in Manifest
+Trying to load adaptor for File
+Adaptor for File not found in Manifest
+Trying to load adaptor for LogicalFile
+Adaptor for LogicalFile not found in Manifest
+Trying to load adaptor for RandomAccessFile
+Adaptor for RandomAccessFile not found in Manifest
+Trying to load adaptor for FileInputStream
+Adaptor for FileInputStream not found in Manifest
+Trying to load adaptor for FileOutputStream
+Adaptor for FileOutputStream not found in Manifest
+Trying to load adaptor for ResourceBroker
+Adaptor for ResourceBroker found in Manifest, loading
+Adaptor for ResourceBroker loaded
+loading adaptors from /home/ali/programme/javagat-alexander-02-07-07/lib/adaptors/jce-jdk13-131.jar
+Trying to load adaptor for Endpoint
+Adaptor for Endpoint not found in Manifest
+Trying to load adaptor for AdvertService
+Adaptor for AdvertService not found in Manifest
+Trying to load adaptor for Monitorable
+Adaptor for Monitorable not found in Manifest
+Trying to load adaptor for SteeringManager
+Adaptor for SteeringManager not found in Manifest
+Trying to load adaptor for File
+Adaptor for File not found in Manifest
+Trying to load adaptor for LogicalFile
+Adaptor for LogicalFile not found in Manifest
+Trying to load adaptor for RandomAccessFile
+Adaptor for RandomAccessFile not found in Manifest
+Trying to load adaptor for FileInputStream
+Adaptor for FileInputStream not found in Manifest
+Trying to load adaptor for FileOutputStream
+Adaptor for FileOutputStream not found in Manifest
+Trying to load adaptor for ResourceBroker
+Adaptor for ResourceBroker not found in Manifest
+loading adaptors from /home/ali/programme/javagat-alexander-02-07-07/lib/adaptors/ganymed-ssh2-build211beta4.jar
+Trying to load adaptor for Endpoint
+Adaptor for Endpoint not found in Manifest
+Trying to load adaptor for AdvertService
+Adaptor for AdvertService not found in Manifest
+Trying to load adaptor for Monitorable
+Adaptor for Monitorable not found in Manifest
+Trying to load adaptor for SteeringManager
+Adaptor for SteeringManager not found in Manifest
+Trying to load adaptor for File
+Adaptor for File not found in Manifest
+Trying to load adaptor for LogicalFile
+Adaptor for LogicalFile not found in Manifest
+Trying to load adaptor for RandomAccessFile
+Adaptor for RandomAccessFile not found in Manifest
+Trying to load adaptor for FileInputStream
+Adaptor for FileInputStream not found in Manifest
+Trying to load adaptor for FileOutputStream
+Adaptor for FileOutputStream not found in Manifest
+Trying to load adaptor for ResourceBroker
+Adaptor for ResourceBroker not found in Manifest
+loading adaptors from /home/ali/programme/javagat-alexander-02-07-07/lib/adaptors/drmaa.jar
+Trying to load adaptor for Endpoint
+Adaptor for Endpoint not found in Manifest
+Trying to load adaptor for AdvertService
+Adaptor for AdvertService not found in Manifest
+Trying to load adaptor for Monitorable
+Adaptor for Monitorable not found in Manifest
+Trying to load adaptor for SteeringManager
+Adaptor for SteeringManager not found in Manifest
+Trying to load adaptor for File
+Adaptor for File not found in Manifest
+Trying to load adaptor for LogicalFile
+Adaptor for LogicalFile not found in Manifest
+Trying to load adaptor for RandomAccessFile
+Adaptor for RandomAccessFile not found in Manifest
+Trying to load adaptor for FileInputStream
+Adaptor for FileInputStream not found in Manifest
+Trying to load adaptor for FileOutputStream
+Adaptor for FileOutputStream not found in Manifest
+Trying to load adaptor for ResourceBroker
+Adaptor for ResourceBroker not found in Manifest
+loading adaptors from /home/ali/programme/javagat-alexander-02-07-07/lib/adaptors/SftpNewFileAdaptor.jar
+Trying to load adaptor for Endpoint
+Adaptor for Endpoint not found in Manifest
+Trying to load adaptor for AdvertService
+Adaptor for AdvertService not found in Manifest
+Trying to load adaptor for Monitorable
+Adaptor for Monitorable not found in Manifest
+Trying to load adaptor for SteeringManager
+Adaptor for SteeringManager not found in Manifest
+Trying to load adaptor for File
+Adaptor for File found in Manifest, loading
+Adaptor org.gridlab.gat.io.cpi.sftpnew.SftpNewFileAdaptor contains unmarshaller
+Adaptor for File loaded
+Trying to load adaptor for LogicalFile
+Adaptor for LogicalFile not found in Manifest
+Trying to load adaptor for RandomAccessFile
+Adaptor for RandomAccessFile not found in Manifest
+Trying to load adaptor for FileInputStream
+Adaptor for FileInputStream not found in Manifest
+Trying to load adaptor for FileOutputStream
+Adaptor for FileOutputStream not found in Manifest
+Trying to load adaptor for ResourceBroker
+Adaptor for ResourceBroker not found in Manifest
+loading adaptors from /home/ali/programme/javagat-alexander-02-07-07/lib/adaptors/cryptix-asn1.jar
+Trying to load adaptor for Endpoint
+Adaptor for Endpoint not found in Manifest
+Trying to load adaptor for AdvertService
+Adaptor for AdvertService not found in Manifest
+Trying to load adaptor for Monitorable
+Adaptor for Monitorable not found in Manifest
+Trying to load adaptor for SteeringManager
+Adaptor for SteeringManager not found in Manifest
+Trying to load adaptor for File
+Adaptor for File not found in Manifest
+Trying to load adaptor for LogicalFile
+Adaptor for LogicalFile not found in Manifest
+Trying to load adaptor for RandomAccessFile
+Adaptor for RandomAccessFile not found in Manifest
+Trying to load adaptor for FileInputStream
+Adaptor for FileInputStream not found in Manifest
+Trying to load adaptor for FileOutputStream
+Adaptor for FileOutputStream not found in Manifest
+Trying to load adaptor for ResourceBroker
+Adaptor for ResourceBroker not found in Manifest
+loading adaptors from /home/ali/programme/javagat-alexander-02-07-07/lib/adaptors/HTTPFileOutputStreamAdaptor.jar
+Trying to load adaptor for Endpoint
+Adaptor for Endpoint not found in Manifest
+Trying to load adaptor for AdvertService
+Adaptor for AdvertService not found in Manifest
+Trying to load adaptor for Monitorable
+Adaptor for Monitorable not found in Manifest
+Trying to load adaptor for SteeringManager
+Adaptor for SteeringManager not found in Manifest
+Trying to load adaptor for File
+Adaptor for File not found in Manifest
+Trying to load adaptor for LogicalFile
+Adaptor for LogicalFile not found in Manifest
+Trying to load adaptor for RandomAccessFile
+Adaptor for RandomAccessFile not found in Manifest
+Trying to load adaptor for FileInputStream
+Adaptor for FileInputStream not found in Manifest
+Trying to load adaptor for FileOutputStream
+Adaptor for FileOutputStream found in Manifest, loading
+Adaptor for FileOutputStream loaded
+Trying to load adaptor for ResourceBroker
+Adaptor for ResourceBroker not found in Manifest
+loading adaptors from /home/ali/programme/javagat-alexander-02-07-07/lib/adaptors/FTPFileAdaptor.jar
+Trying to load adaptor for Endpoint
+Adaptor for Endpoint not found in Manifest
+Trying to load adaptor for AdvertService
+Adaptor for AdvertService not found in Manifest
+Trying to load adaptor for Monitorable
+Adaptor for Monitorable not found in Manifest
+Trying to load adaptor for SteeringManager
+Adaptor for SteeringManager not found in Manifest
+Trying to load adaptor for File
+Adaptor for File found in Manifest, loading
+Adaptor org.gridlab.gat.io.cpi.globus.FTPFileAdaptor contains unmarshaller
+Adaptor for File loaded
+Trying to load adaptor for LogicalFile
+Adaptor for LogicalFile not found in Manifest
+Trying to load adaptor for RandomAccessFile
+Adaptor for RandomAccessFile not found in Manifest
+Trying to load adaptor for FileInputStream
+Adaptor for FileInputStream not found in Manifest
+Trying to load adaptor for FileOutputStream
+Adaptor for FileOutputStream not found in Manifest
+Trying to load adaptor for ResourceBroker
+Adaptor for ResourceBroker not found in Manifest
+loading adaptors from /home/ali/programme/javagat-alexander-02-07-07/lib/adaptors/SshFileAdaptor.jar
+Trying to load adaptor for Endpoint
+Adaptor for Endpoint not found in Manifest
+Trying to load adaptor for AdvertService
+Adaptor for AdvertService not found in Manifest
+Trying to load adaptor for Monitorable
+Adaptor for Monitorable not found in Manifest
+Trying to load adaptor for SteeringManager
+Adaptor for SteeringManager not found in Manifest
+Trying to load adaptor for File
+Adaptor for File found in Manifest, loading
+Adaptor org.gridlab.gat.io.cpi.ssh.SshFileAdaptor contains unmarshaller
+Adaptor for File loaded
+Trying to load adaptor for LogicalFile
+Adaptor for LogicalFile not found in Manifest
+Trying to load adaptor for RandomAccessFile
+Adaptor for RandomAccessFile not found in Manifest
+Trying to load adaptor for FileInputStream
+Adaptor for FileInputStream not found in Manifest
+Trying to load adaptor for FileOutputStream
+Adaptor for FileOutputStream not found in Manifest
+Trying to load adaptor for ResourceBroker
+Adaptor for ResourceBroker not found in Manifest
+loading adaptors from /home/ali/programme/javagat-alexander-02-07-07/lib/adaptors/GridFTPFileOutputStreamAdaptor.jar
+Trying to load adaptor for Endpoint
+Adaptor for Endpoint not found in Manifest
+Trying to load adaptor for AdvertService
+Adaptor for AdvertService not found in Manifest
+Trying to load adaptor for Monitorable
+Adaptor for Monitorable not found in Manifest
+Trying to load adaptor for SteeringManager
+Adaptor for SteeringManager not found in Manifest
+Trying to load adaptor for File
+Adaptor for File not found in Manifest
+Trying to load adaptor for LogicalFile
+Adaptor for LogicalFile not found in Manifest
+Trying to load adaptor for RandomAccessFile
+Adaptor for RandomAccessFile not found in Manifest
+Trying to load adaptor for FileInputStream
+Adaptor for FileInputStream not found in Manifest
+Trying to load adaptor for FileOutputStream
+Adaptor for FileOutputStream found in Manifest, loading
+Adaptor for FileOutputStream loaded
+Trying to load adaptor for ResourceBroker
+Adaptor for ResourceBroker not found in Manifest
+loading adaptors from /home/ali/programme/javagat-alexander-02-07-07/lib/adaptors/LocalLogicalFileAdaptor.jar
+Trying to load adaptor for Endpoint
+Adaptor for Endpoint not found in Manifest
+Trying to load adaptor for AdvertService
+Adaptor for AdvertService not found in Manifest
+Trying to load adaptor for Monitorable
+Adaptor for Monitorable not found in Manifest
+Trying to load adaptor for SteeringManager
+Adaptor for SteeringManager not found in Manifest
+Trying to load adaptor for File
+Adaptor for File not found in Manifest
+Trying to load adaptor for LogicalFile
+Adaptor for LogicalFile found in Manifest, loading
+Adaptor org.gridlab.gat.io.cpi.local.LocalLogicalFileAdaptor contains unmarshaller
+Adaptor for LogicalFile loaded
+Trying to load adaptor for RandomAccessFile
+Adaptor for RandomAccessFile not found in Manifest
+Trying to load adaptor for FileInputStream
+Adaptor for FileInputStream not found in Manifest
+Trying to load adaptor for FileOutputStream
+Adaptor for FileOutputStream not found in Manifest
+Trying to load adaptor for ResourceBroker
+Adaptor for ResourceBroker not found in Manifest
+loading adaptors from /home/ali/programme/javagat-alexander-02-07-07/lib/adaptors/cryptix32.jar
+Trying to load adaptor for Endpoint
+Adaptor for Endpoint not found in Manifest
+Trying to load adaptor for AdvertService
+Adaptor for AdvertService not found in Manifest
+Trying to load adaptor for Monitorable
+Adaptor for Monitorable not found in Manifest
+Trying to load adaptor for SteeringManager
+Adaptor for SteeringManager not found in Manifest
+Trying to load adaptor for File
+Adaptor for File not found in Manifest
+Trying to load adaptor for LogicalFile
+Adaptor for LogicalFile not found in Manifest
+Trying to load adaptor for RandomAccessFile
+Adaptor for RandomAccessFile not found in Manifest
+Trying to load adaptor for FileInputStream
+Adaptor for FileInputStream not found in Manifest
+Trying to load adaptor for FileOutputStream
+Adaptor for FileOutputStream not found in Manifest
+Trying to load adaptor for ResourceBroker
+Adaptor for ResourceBroker not found in Manifest
+loading adaptors from /home/ali/programme/javagat-alexander-02-07-07/lib/adaptors/jsch-0.1.33.jar
+Trying to load adaptor for Endpoint
+Adaptor for Endpoint not found in Manifest
+Trying to load adaptor for AdvertService
+Adaptor for AdvertService not found in Manifest
+Trying to load adaptor for Monitorable
+Adaptor for Monitorable not found in Manifest
+Trying to load adaptor for SteeringManager
+Adaptor for SteeringManager not found in Manifest
+Trying to load adaptor for File
+Adaptor for File not found in Manifest
+Trying to load adaptor for LogicalFile
+Adaptor for LogicalFile not found in Manifest
+Trying to load adaptor for RandomAccessFile
+Adaptor for RandomAccessFile not found in Manifest
+Trying to load adaptor for FileInputStream
+Adaptor for FileInputStream not found in Manifest
+Trying to load adaptor for FileOutputStream
+Adaptor for FileOutputStream not found in Manifest
+Trying to load adaptor for ResourceBroker
+Adaptor for ResourceBroker not found in Manifest
+loading adaptors from /home/ali/programme/javagat-alexander-02-07-07/lib/adaptors/cog-jglobus-1.4.jar
+Trying to load adaptor for Endpoint
+Adaptor for Endpoint not found in Manifest
+Trying to load adaptor for AdvertService
+Adaptor for AdvertService not found in Manifest
+Trying to load adaptor for Monitorable
+Adaptor for Monitorable not found in Manifest
+Trying to load adaptor for SteeringManager
+Adaptor for SteeringManager not found in Manifest
+Trying to load adaptor for File
+Adaptor for File not found in Manifest
+Trying to load adaptor for LogicalFile
+Adaptor for LogicalFile not found in Manifest
+Trying to load adaptor for RandomAccessFile
+Adaptor for RandomAccessFile not found in Manifest
+Trying to load adaptor for FileInputStream
+Adaptor for FileInputStream not found in Manifest
+Trying to load adaptor for FileOutputStream
+Adaptor for FileOutputStream not found in Manifest
+Trying to load adaptor for ResourceBroker
+Adaptor for ResourceBroker not found in Manifest
+loading adaptors from /home/ali/programme/javagat-alexander-02-07-07/lib/adaptors/CopyingFileInputStreamAdaptor.jar
+Trying to load adaptor for Endpoint
+Adaptor for Endpoint not found in Manifest
+Trying to load adaptor for AdvertService
+Adaptor for AdvertService not found in Manifest
+Trying to load adaptor for Monitorable
+Adaptor for Monitorable not found in Manifest
+Trying to load adaptor for SteeringManager
+Adaptor for SteeringManager not found in Manifest
+Trying to load adaptor for File
+Adaptor for File not found in Manifest
+Trying to load adaptor for LogicalFile
+Adaptor for LogicalFile not found in Manifest
+Trying to load adaptor for RandomAccessFile
+Adaptor for RandomAccessFile not found in Manifest
+Trying to load adaptor for FileInputStream
+Adaptor for FileInputStream found in Manifest, loading
+Adaptor for FileInputStream loaded
+Trying to load adaptor for FileOutputStream
+Adaptor for FileOutputStream not found in Manifest
+Trying to load adaptor for ResourceBroker
+Adaptor for ResourceBroker not found in Manifest
+loading adaptors from /home/ali/programme/javagat-alexander-02-07-07/lib/adaptors/log4j-1.2.13.jar
+Trying to load adaptor for Endpoint
+Adaptor for Endpoint not found in Manifest
+Trying to load adaptor for AdvertService
+Adaptor for AdvertService not found in Manifest
+Trying to load adaptor for Monitorable
+Adaptor for Monitorable not found in Manifest
+Trying to load adaptor for SteeringManager
+Adaptor for SteeringManager not found in Manifest
+Trying to load adaptor for File
+Adaptor for File not found in Manifest
+Trying to load adaptor for LogicalFile
+Adaptor for LogicalFile not found in Manifest
+Trying to load adaptor for RandomAccessFile
+Adaptor for RandomAccessFile not found in Manifest
+Trying to load adaptor for FileInputStream
+Adaptor for FileInputStream not found in Manifest
+Trying to load adaptor for FileOutputStream
+Adaptor for FileOutputStream not found in Manifest
+Trying to load adaptor for ResourceBroker
+Adaptor for ResourceBroker not found in Manifest
+loading adaptors from /home/ali/programme/javagat-alexander-02-07-07/lib/adaptors/LocalRandomAccessFileAdaptor.jar
+Trying to load adaptor for Endpoint
+Adaptor for Endpoint not found in Manifest
+Trying to load adaptor for AdvertService
+Adaptor for AdvertService not found in Manifest
+Trying to load adaptor for Monitorable
+Adaptor for Monitorable not found in Manifest
+Trying to load adaptor for SteeringManager
+Adaptor for SteeringManager not found in Manifest
+Trying to load adaptor for File
+Adaptor for File not found in Manifest
+Trying to load adaptor for LogicalFile
+Adaptor for LogicalFile not found in Manifest
+Trying to load adaptor for RandomAccessFile
+Adaptor for RandomAccessFile found in Manifest, loading
+Adaptor for RandomAccessFile loaded
+Trying to load adaptor for FileInputStream
+Adaptor for FileInputStream not found in Manifest
+Trying to load adaptor for FileOutputStream
+Adaptor for FileOutputStream not found in Manifest
+Trying to load adaptor for ResourceBroker
+Adaptor for ResourceBroker not found in Manifest
+loading adaptors from /home/ali/programme/javagat-alexander-02-07-07/lib/adaptors/j2ssh-core-0.2.7.jar
+Trying to load adaptor for Endpoint
+Adaptor for Endpoint not found in Manifest
+Trying to load adaptor for AdvertService
+Adaptor for AdvertService not found in Manifest
+Trying to load adaptor for Monitorable
+Adaptor for Monitorable not found in Manifest
+Trying to load adaptor for SteeringManager
+Adaptor for SteeringManager not found in Manifest
+Trying to load adaptor for File
+Adaptor for File not found in Manifest
+Trying to load adaptor for LogicalFile
+Adaptor for LogicalFile not found in Manifest
+Trying to load adaptor for RandomAccessFile
+Adaptor for RandomAccessFile not found in Manifest
+Trying to load adaptor for FileInputStream
+Adaptor for FileInputStream not found in Manifest
+Trying to load adaptor for FileOutputStream
+Adaptor for FileOutputStream not found in Manifest
+Trying to load adaptor for ResourceBroker
+Adaptor for ResourceBroker not found in Manifest
+loading adaptors from /home/ali/programme/javagat-alexander-02-07-07/lib/adaptors/jgss.jar
+Trying to load adaptor for Endpoint
+Adaptor for Endpoint not found in Manifest
+Trying to load adaptor for AdvertService
+Adaptor for AdvertService not found in Manifest
+Trying to load adaptor for Monitorable
+Adaptor for Monitorable not found in Manifest
+Trying to load adaptor for SteeringManager
+Adaptor for SteeringManager not found in Manifest
+Trying to load adaptor for File
+Adaptor for File not found in Manifest
+Trying to load adaptor for LogicalFile
+Adaptor for LogicalFile not found in Manifest
+Trying to load adaptor for RandomAccessFile
+Adaptor for RandomAccessFile not found in Manifest
+Trying to load adaptor for FileInputStream
+Adaptor for FileInputStream not found in Manifest
+Trying to load adaptor for FileOutputStream
+Adaptor for FileOutputStream not found in Manifest
+Trying to load adaptor for ResourceBroker
+Adaptor for ResourceBroker not found in Manifest
+loading adaptors from /home/ali/programme/javagat-alexander-02-07-07/lib/adaptors/CommandlineSshFileAdaptor.jar
+Trying to load adaptor for Endpoint
+Adaptor for Endpoint not found in Manifest
+Trying to load adaptor for AdvertService
+Adaptor for AdvertService not found in Manifest
+Trying to load adaptor for Monitorable
+Adaptor for Monitorable not found in Manifest
+Trying to load adaptor for SteeringManager
+Adaptor for SteeringManager not found in Manifest
+Trying to load adaptor for File
+Adaptor for File found in Manifest, loading
+Adaptor org.gridlab.gat.io.cpi.commandlineSsh.CommandlineSshFileAdaptor contains unmarshaller
+Adaptor for File loaded
+Trying to load adaptor for LogicalFile
+Adaptor for LogicalFile not found in Manifest
+Trying to load adaptor for RandomAccessFile
+Adaptor for RandomAccessFile not found in Manifest
+Trying to load adaptor for FileInputStream
+Adaptor for FileInputStream not found in Manifest
+Trying to load adaptor for FileOutputStream
+Adaptor for FileOutputStream not found in Manifest
+Trying to load adaptor for ResourceBroker
+Adaptor for ResourceBroker not found in Manifest
+loading adaptors from /home/ali/programme/javagat-alexander-02-07-07/lib/adaptors/GridFTPFileAdaptor.jar
+Trying to load adaptor for Endpoint
+Adaptor for Endpoint not found in Manifest
+Trying to load adaptor for AdvertService
+Adaptor for AdvertService not found in Manifest
+Trying to load adaptor for Monitorable
+Adaptor for Monitorable not found in Manifest
+Trying to load adaptor for SteeringManager
+Adaptor for SteeringManager not found in Manifest
+Trying to load adaptor for File
+Adaptor for File found in Manifest, loading
+Adaptor org.gridlab.gat.io.cpi.globus.GridFTPFileAdaptor contains unmarshaller
+Adaptor for File loaded
+Trying to load adaptor for LogicalFile
+Adaptor for LogicalFile not found in Manifest
+Trying to load adaptor for RandomAccessFile
+Adaptor for RandomAccessFile not found in Manifest
+Trying to load adaptor for FileInputStream
+Adaptor for FileInputStream not found in Manifest
+Trying to load adaptor for FileOutputStream
+Adaptor for FileOutputStream not found in Manifest
+Trying to load adaptor for ResourceBroker
+Adaptor for ResourceBroker not found in Manifest
+loading adaptors from /home/ali/programme/javagat-alexander-02-07-07/lib/adaptors/SGEBrokerAdaptor.jar
+Trying to load adaptor for Endpoint
+Adaptor for Endpoint not found in Manifest
+Trying to load adaptor for AdvertService
+Adaptor for AdvertService not found in Manifest
+Trying to load adaptor for Monitorable
+Adaptor for Monitorable not found in Manifest
+Trying to load adaptor for SteeringManager
+Adaptor for SteeringManager not found in Manifest
+Trying to load adaptor for File
+Adaptor for File not found in Manifest
+Trying to load adaptor for LogicalFile
+Adaptor for LogicalFile not found in Manifest
+Trying to load adaptor for RandomAccessFile
+Adaptor for RandomAccessFile not found in Manifest
+Trying to load adaptor for FileInputStream
+Adaptor for FileInputStream not found in Manifest
+Trying to load adaptor for FileOutputStream
+Adaptor for FileOutputStream not found in Manifest
+Trying to load adaptor for ResourceBroker
+Adaptor for ResourceBroker found in Manifest, loading
+Adaptor for ResourceBroker loaded
+loading adaptors from /home/ali/programme/javagat-alexander-02-07-07/lib/adaptors/commons-logging-1.1.jar
+Trying to load adaptor for Endpoint
+Adaptor for Endpoint not found in Manifest
+Trying to load adaptor for AdvertService
+Adaptor for AdvertService not found in Manifest
+Trying to load adaptor for Monitorable
+Adaptor for Monitorable not found in Manifest
+Trying to load adaptor for SteeringManager
+Adaptor for SteeringManager not found in Manifest
+Trying to load adaptor for File
+Adaptor for File not found in Manifest
+Trying to load adaptor for LogicalFile
+Adaptor for LogicalFile not found in Manifest
+Trying to load adaptor for RandomAccessFile
+Adaptor for RandomAccessFile not found in Manifest
+Trying to load adaptor for FileInputStream
+Adaptor for FileInputStream not found in Manifest
+Trying to load adaptor for FileOutputStream
+Adaptor for FileOutputStream not found in Manifest
+Trying to load adaptor for ResourceBroker
+Adaptor for ResourceBroker not found in Manifest
+loading adaptors from /home/ali/programme/javagat-alexander-02-07-07/lib/adaptors/junit.jar
+Trying to load adaptor for Endpoint
+Adaptor for Endpoint not found in Manifest
+Trying to load adaptor for AdvertService
+Adaptor for AdvertService not found in Manifest
+Trying to load adaptor for Monitorable
+Adaptor for Monitorable not found in Manifest
+Trying to load adaptor for SteeringManager
+Adaptor for SteeringManager not found in Manifest
+Trying to load adaptor for File
+Adaptor for File not found in Manifest
+Trying to load adaptor for LogicalFile
+Adaptor for LogicalFile not found in Manifest
+Trying to load adaptor for RandomAccessFile
+Adaptor for RandomAccessFile not found in Manifest
+Trying to load adaptor for FileInputStream
+Adaptor for FileInputStream not found in Manifest
+Trying to load adaptor for FileOutputStream
+Adaptor for FileOutputStream not found in Manifest
+Trying to load adaptor for ResourceBroker
+Adaptor for ResourceBroker not found in Manifest
+loading adaptors from /home/ali/programme/javagat-alexander-02-07-07/lib/adaptors/GridFTPFileInputStreamAdaptor.jar
+Trying to load adaptor for Endpoint
+Adaptor for Endpoint not found in Manifest
+Trying to load adaptor for AdvertService
+Adaptor for AdvertService not found in Manifest
+Trying to load adaptor for Monitorable
+Adaptor for Monitorable not found in Manifest
+Trying to load adaptor for SteeringManager
+Adaptor for SteeringManager not found in Manifest
+Trying to load adaptor for File
+Adaptor for File not found in Manifest
+Trying to load adaptor for LogicalFile
+Adaptor for LogicalFile not found in Manifest
+Trying to load adaptor for RandomAccessFile
+Adaptor for RandomAccessFile not found in Manifest
+Trying to load adaptor for FileInputStream
+Adaptor for FileInputStream found in Manifest, loading
+Adaptor for FileInputStream loaded
+Trying to load adaptor for FileOutputStream
+Adaptor for FileOutputStream not found in Manifest
+Trying to load adaptor for ResourceBroker
+Adaptor for ResourceBroker not found in Manifest
+loading adaptors from /home/ali/programme/javagat-alexander-02-07-07/lib/adaptors/cryptix.jar
+Trying to load adaptor for Endpoint
+Adaptor for Endpoint not found in Manifest
+Trying to load adaptor for AdvertService
+Adaptor for AdvertService not found in Manifest
+Trying to load adaptor for Monitorable
+Adaptor for Monitorable not found in Manifest
+Trying to load adaptor for SteeringManager
+Adaptor for SteeringManager not found in Manifest
+Trying to load adaptor for File
+Adaptor for File not found in Manifest
+Trying to load adaptor for LogicalFile
+Adaptor for LogicalFile not found in Manifest
+Trying to load adaptor for RandomAccessFile
+Adaptor for RandomAccessFile not found in Manifest
+Trying to load adaptor for FileInputStream
+Adaptor for FileInputStream not found in Manifest
+Trying to load adaptor for FileOutputStream
+Adaptor for FileOutputStream not found in Manifest
+Trying to load adaptor for ResourceBroker
+Adaptor for ResourceBroker not found in Manifest
+loading adaptors from /home/ali/programme/javagat-alexander-02-07-07/lib/adaptors/ProActiveBrokerAdaptor.jar
+Trying to load adaptor for Endpoint
+Adaptor for Endpoint not found in Manifest
+Trying to load adaptor for AdvertService
+Adaptor for AdvertService not found in Manifest
+Trying to load adaptor for Monitorable
+Adaptor for Monitorable not found in Manifest
+Trying to load adaptor for SteeringManager
+Adaptor for SteeringManager not found in Manifest
+Trying to load adaptor for File
+Adaptor for File not found in Manifest
+Trying to load adaptor for LogicalFile
+Adaptor for LogicalFile not found in Manifest
+Trying to load adaptor for RandomAccessFile
+Adaptor for RandomAccessFile not found in Manifest
+Trying to load adaptor for FileInputStream
+Adaptor for FileInputStream not found in Manifest
+Trying to load adaptor for FileOutputStream
+Adaptor for FileOutputStream not found in Manifest
+Trying to load adaptor for ResourceBroker
+Adaptor for ResourceBroker found in Manifest, loading
+Adaptor for ResourceBroker loaded
+loading adaptors from /home/ali/programme/javagat-alexander-02-07-07/lib/adaptors/SftpNewFileInputStreamAdaptor.jar
+Trying to load adaptor for Endpoint
+Adaptor for Endpoint not found in Manifest
+Trying to load adaptor for AdvertService
+Adaptor for AdvertService not found in Manifest
+Trying to load adaptor for Monitorable
+Adaptor for Monitorable not found in Manifest
+Trying to load adaptor for SteeringManager
+Adaptor for SteeringManager not found in Manifest
+Trying to load adaptor for File
+Adaptor for File not found in Manifest
+Trying to load adaptor for LogicalFile
+Adaptor for LogicalFile not found in Manifest
+Trying to load adaptor for RandomAccessFile
+Adaptor for RandomAccessFile not found in Manifest
+Trying to load adaptor for FileInputStream
+Adaptor for FileInputStream found in Manifest, loading
+Adaptor for FileInputStream loaded
+Trying to load adaptor for FileOutputStream
+Adaptor for FileOutputStream not found in Manifest
+Trying to load adaptor for ResourceBroker
+Adaptor for ResourceBroker not found in Manifest
+loading adaptors from /home/ali/programme/javagat-alexander-02-07-07/lib/adaptors/FTPFileInputStreamAdaptor.jar
+Trying to load adaptor for Endpoint
+Adaptor for Endpoint not found in Manifest
+Trying to load adaptor for AdvertService
+Adaptor for AdvertService not found in Manifest
+Trying to load adaptor for Monitorable
+Adaptor for Monitorable not found in Manifest
+Trying to load adaptor for SteeringManager
+Adaptor for SteeringManager not found in Manifest
+Trying to load adaptor for File
+Adaptor for File not found in Manifest
+Trying to load adaptor for LogicalFile
+Adaptor for LogicalFile not found in Manifest
+Trying to load adaptor for RandomAccessFile
+Adaptor for RandomAccessFile not found in Manifest
+Trying to load adaptor for FileInputStream
+Adaptor for FileInputStream found in Manifest, loading
+Adaptor for FileInputStream loaded
+Trying to load adaptor for FileOutputStream
+Adaptor for FileOutputStream not found in Manifest
+Trying to load adaptor for ResourceBroker
+Adaptor for ResourceBroker not found in Manifest
+loading adaptors from /home/ali/programme/javagat-alexander-02-07-07/lib/adaptors/SftpFileAdaptor.jar
+Trying to load adaptor for Endpoint
+Adaptor for Endpoint not found in Manifest
+Trying to load adaptor for AdvertService
+Adaptor for AdvertService not found in Manifest
+Trying to load adaptor for Monitorable
+Adaptor for Monitorable not found in Manifest
+Trying to load adaptor for SteeringManager
+Adaptor for SteeringManager not found in Manifest
+Trying to load adaptor for File
+Adaptor for File found in Manifest, loading
+Adaptor org.gridlab.gat.io.cpi.sftp.SftpFileAdaptor contains unmarshaller
+Adaptor for File loaded
+Trying to load adaptor for LogicalFile
+Adaptor for LogicalFile not found in Manifest
+Trying to load adaptor for RandomAccessFile
+Adaptor for RandomAccessFile not found in Manifest
+Trying to load adaptor for FileInputStream
+Adaptor for FileInputStream not found in Manifest
+Trying to load adaptor for FileOutputStream
+Adaptor for FileOutputStream not found in Manifest
+Trying to load adaptor for ResourceBroker
+Adaptor for ResourceBroker not found in Manifest
+loading adaptors from /home/ali/programme/javagat-alexander-02-07-07/lib/adaptors/zoni.jar
+Trying to load adaptor for Endpoint
+Adaptor for Endpoint not found in Manifest
+Trying to load adaptor for AdvertService
+Adaptor for AdvertService not found in Manifest
+Trying to load adaptor for Monitorable
+Adaptor for Monitorable not found in Manifest
+Trying to load adaptor for SteeringManager
+Adaptor for SteeringManager not found in Manifest
+Trying to load adaptor for File
+Adaptor for File not found in Manifest
+Trying to load adaptor for LogicalFile
+Adaptor for LogicalFile not found in Manifest
+Trying to load adaptor for RandomAccessFile
+Adaptor for RandomAccessFile not found in Manifest
+Trying to load adaptor for FileInputStream
+Adaptor for FileInputStream not found in Manifest
+Trying to load adaptor for FileOutputStream
+Adaptor for FileOutputStream not found in Manifest
+Trying to load adaptor for ResourceBroker
+Adaptor for ResourceBroker not found in Manifest
+loading adaptors from /home/ali/programme/javagat-alexander-02-07-07/lib/adaptors/ThirdPartyCopyFileAdaptor.jar
+Trying to load adaptor for Endpoint
+Adaptor for Endpoint not found in Manifest
+Trying to load adaptor for AdvertService
+Adaptor for AdvertService not found in Manifest
+Trying to load adaptor for Monitorable
+Adaptor for Monitorable not found in Manifest
+Trying to load adaptor for SteeringManager
+Adaptor for SteeringManager not found in Manifest
+Trying to load adaptor for File
+Adaptor for File found in Manifest, loading
+Adaptor org.gridlab.gat.io.cpi.thirdPartyCopy.ThirdPartyCopyFileAdaptor contains unmarshaller
+Adaptor for File loaded
+Trying to load adaptor for LogicalFile
+Adaptor for LogicalFile not found in Manifest
+Trying to load adaptor for RandomAccessFile
+Adaptor for RandomAccessFile not found in Manifest
+Trying to load adaptor for FileInputStream
+Adaptor for FileInputStream not found in Manifest
+Trying to load adaptor for FileOutputStream
+Adaptor for FileOutputStream not found in Manifest
+Trying to load adaptor for ResourceBroker
+Adaptor for ResourceBroker not found in Manifest
+loading adaptors from /home/ali/programme/javagat-alexander-02-07-07/lib/adaptors/CommandlineSshPrunResourceBrokerAdaptor.jar
+Trying to load adaptor for Endpoint
+Adaptor for Endpoint not found in Manifest
+Trying to load adaptor for AdvertService
+Adaptor for AdvertService not found in Manifest
+Trying to load adaptor for Monitorable
+Adaptor for Monitorable not found in Manifest
+Trying to load adaptor for SteeringManager
+Adaptor for SteeringManager not found in Manifest
+Trying to load adaptor for File
+Adaptor for File not found in Manifest
+Trying to load adaptor for LogicalFile
+Adaptor for LogicalFile not found in Manifest
+Trying to load adaptor for RandomAccessFile
+Adaptor for RandomAccessFile not found in Manifest
+Trying to load adaptor for FileInputStream
+Adaptor for FileInputStream not found in Manifest
+Trying to load adaptor for FileOutputStream
+Adaptor for FileOutputStream not found in Manifest
+Trying to load adaptor for ResourceBroker
+Adaptor for ResourceBroker found in Manifest, loading
+Adaptor for ResourceBroker loaded
+loading adaptors from /home/ali/programme/javagat-alexander-02-07-07/lib/adaptors/SocketEndpointAdaptor.jar
+Trying to load adaptor for Endpoint
+Adaptor for Endpoint found in Manifest, loading
+Adaptor org.gridlab.gat.io.cpi.sockets.SocketEndpointAdaptor contains unmarshaller
+Adaptor for Endpoint loaded
+Trying to load adaptor for AdvertService
+Adaptor for AdvertService not found in Manifest
+Trying to load adaptor for Monitorable
+Adaptor for Monitorable not found in Manifest
+Trying to load adaptor for SteeringManager
+Adaptor for SteeringManager not found in Manifest
+Trying to load adaptor for File
+Adaptor for File not found in Manifest
+Trying to load adaptor for LogicalFile
+Adaptor for LogicalFile not found in Manifest
+Trying to load adaptor for RandomAccessFile
+Adaptor for RandomAccessFile not found in Manifest
+Trying to load adaptor for FileInputStream
+Adaptor for FileInputStream not found in Manifest
+Trying to load adaptor for FileOutputStream
+Adaptor for FileOutputStream not found in Manifest
+Trying to load adaptor for ResourceBroker
+Adaptor for ResourceBroker not found in Manifest
+loading adaptors from /home/ali/programme/javagat-alexander-02-07-07/lib/adaptors/LocalFileAdaptor.jar
+Trying to load adaptor for Endpoint
+Adaptor for Endpoint not found in Manifest
+Trying to load adaptor for AdvertService
+Adaptor for AdvertService not found in Manifest
+Trying to load adaptor for Monitorable
+Adaptor for Monitorable not found in Manifest
+Trying to load adaptor for SteeringManager
+Adaptor for SteeringManager not found in Manifest
+Trying to load adaptor for File
+Adaptor for File found in Manifest, loading
+Adaptor org.gridlab.gat.io.cpi.local.LocalFileAdaptor contains unmarshaller
+Adaptor for File loaded
+Trying to load adaptor for LogicalFile
+Adaptor for LogicalFile not found in Manifest
+Trying to load adaptor for RandomAccessFile
+Adaptor for RandomAccessFile not found in Manifest
+Trying to load adaptor for FileInputStream
+Adaptor for FileInputStream not found in Manifest
+Trying to load adaptor for FileOutputStream
+Adaptor for FileOutputStream not found in Manifest
+Trying to load adaptor for ResourceBroker
+Adaptor for ResourceBroker not found in Manifest
+loading adaptors from /home/ali/programme/javagat-alexander-02-07-07/lib/adaptors/GlobusResourceBrokerAdaptor.jar
+Trying to load adaptor for Endpoint
+Adaptor for Endpoint not found in Manifest
+Trying to load adaptor for AdvertService
+Adaptor for AdvertService not found in Manifest
+Trying to load adaptor for Monitorable
+Adaptor for Monitorable not found in Manifest
+Trying to load adaptor for SteeringManager
+Adaptor for SteeringManager not found in Manifest
+Trying to load adaptor for File
+Adaptor for File not found in Manifest
+Trying to load adaptor for LogicalFile
+Adaptor for LogicalFile not found in Manifest
+Trying to load adaptor for RandomAccessFile
+Adaptor for RandomAccessFile not found in Manifest
+Trying to load adaptor for FileInputStream
+Adaptor for FileInputStream not found in Manifest
+Trying to load adaptor for FileOutputStream
+Adaptor for FileOutputStream not found in Manifest
+Trying to load adaptor for ResourceBroker
+Adaptor for ResourceBroker found in Manifest, loading
+register marshaller for: class org.gridlab.gat.resources.cpi.globus.GlobusJob
+Adaptor for ResourceBroker loaded
+loading adaptors from /home/ali/programme/javagat-alexander-02-07-07/lib/adaptors/FTPFileOutputStreamAdaptor.jar
+Trying to load adaptor for Endpoint
+Adaptor for Endpoint not found in Manifest
+Trying to load adaptor for AdvertService
+Adaptor for AdvertService not found in Manifest
+Trying to load adaptor for Monitorable
+Adaptor for Monitorable not found in Manifest
+Trying to load adaptor for SteeringManager
+Adaptor for SteeringManager not found in Manifest
+Trying to load adaptor for File
+Adaptor for File not found in Manifest
+Trying to load adaptor for LogicalFile
+Adaptor for LogicalFile not found in Manifest
+Trying to load adaptor for RandomAccessFile
+Adaptor for RandomAccessFile not found in Manifest
+Trying to load adaptor for FileInputStream
+Adaptor for FileInputStream not found in Manifest
+Trying to load adaptor for FileOutputStream
+Adaptor for FileOutputStream found in Manifest, loading
+Adaptor for FileOutputStream loaded
+Trying to load adaptor for ResourceBroker
+Adaptor for ResourceBroker not found in Manifest
+loading adaptors from /home/ali/programme/javagat-alexander-02-07-07/lib/adaptors/LocalFileInputStreamAdaptor.jar
+Trying to load adaptor for Endpoint
+Adaptor for Endpoint not found in Manifest
+Trying to load adaptor for AdvertService
+Adaptor for AdvertService not found in Manifest
+Trying to load adaptor for Monitorable
+Adaptor for Monitorable not found in Manifest
+Trying to load adaptor for SteeringManager
+Adaptor for SteeringManager not found in Manifest
+Trying to load adaptor for File
+Adaptor for File not found in Manifest
+Trying to load adaptor for LogicalFile
+Adaptor for LogicalFile not found in Manifest
+Trying to load adaptor for RandomAccessFile
+Adaptor for RandomAccessFile not found in Manifest
+Trying to load adaptor for FileInputStream
+Adaptor for FileInputStream found in Manifest, loading
+Adaptor for FileInputStream loaded
+Trying to load adaptor for FileOutputStream
+Adaptor for FileOutputStream not found in Manifest
+Trying to load adaptor for ResourceBroker
+Adaptor for ResourceBroker not found in Manifest
+loading adaptors from /home/ali/programme/javagat-alexander-02-07-07/lib/adaptors/LocalAdvertServiceAdaptor.jar
+Trying to load adaptor for Endpoint
+Adaptor for Endpoint not found in Manifest
+Trying to load adaptor for AdvertService
+Adaptor for AdvertService found in Manifest, loading
+Adaptor for AdvertService loaded
+Trying to load adaptor for Monitorable
+Adaptor for Monitorable not found in Manifest
+Trying to load adaptor for SteeringManager
+Adaptor for SteeringManager not found in Manifest
+Trying to load adaptor for File
+Adaptor for File not found in Manifest
+Trying to load adaptor for LogicalFile
+Adaptor for LogicalFile not found in Manifest
+Trying to load adaptor for RandomAccessFile
+Adaptor for RandomAccessFile not found in Manifest
+Trying to load adaptor for FileInputStream
+Adaptor for FileInputStream not found in Manifest
+Trying to load adaptor for FileOutputStream
+Adaptor for FileOutputStream not found in Manifest
+Trying to load adaptor for ResourceBroker
+Adaptor for ResourceBroker not found in Manifest
+using default adaptor ordering policy
+------------LOADED ADAPTORS------------
+Adaptor type: org.gridlab.gat.io.cpi.FileInputStreamCpi:
+    org.gridlab.gat.io.cpi.local.LocalFileInputStreamAdaptor
+    org.gridlab.gat.io.cpi.globus.GridFTPFileInputStreamAdaptor
+    org.gridlab.gat.io.cpi.sftpnew.SftpNewFileInputStreamAdaptor
+    org.gridlab.gat.io.cpi.ssh.SshFileInputStreamAdaptor
+    org.gridlab.gat.io.cpi.sftp.SftpFileInputStreamAdaptor
+    org.gridlab.gat.io.cpi.copyingFileInputStream.CopyingFileInputStreamAdaptor
+    org.gridlab.gat.io.cpi.globus.HTTPSFileInputStreamAdaptor
+    org.gridlab.gat.io.cpi.globus.HTTPFileInputStreamAdaptor
+    org.gridlab.gat.io.cpi.globus.FTPFileInputStreamAdaptor
+
+Adaptor type: org.gridlab.gat.io.cpi.FileOutputStreamCpi:
+    org.gridlab.gat.io.cpi.local.LocalFileOutputStreamAdaptor
+    org.gridlab.gat.io.cpi.globus.GridFTPFileOutputStreamAdaptor
+    org.gridlab.gat.io.cpi.ssh.SshFileOutputStreamAdaptor
+    org.gridlab.gat.io.cpi.sftp.SftpFileOutputStreamAdaptor
+    org.gridlab.gat.io.cpi.globus.HTTPSFileOutputStreamAdaptor
+    org.gridlab.gat.io.cpi.globus.HTTPFileOutputStreamAdaptor
+    org.gridlab.gat.io.cpi.globus.FTPFileOutputStreamAdaptor
+
+Adaptor type: org.gridlab.gat.resources.cpi.ResourceBrokerCpi:
+    org.gridlab.gat.resources.cpi.local.LocalResourceBrokerAdaptor
+    org.gridlab.gat.resources.cpi.globus.GlobusResourceBrokerAdaptor
+    org.gridlab.gat.resources.cpi.commandlineSsh.CommandlineSshResourceBrokerAdaptor
+    org.gridlab.gat.resources.cpi.ssh.SshResourceBrokerAdaptor
+    org.gridlab.gat.resources.cpi.zorilla.ZorillaResourceBrokerAdaptor
+    org.gridlab.gat.resources.cpi.pbs_resource.PbsBrokerAdaptor
+    org.gridlab.gat.resources.cpi.sge.SGEBrokerAdaptor
+    org.gridlab.gat.resources.cpi.proactive.ProActiveResourceBrokerAdaptor
+    org.gridlab.gat.resources.cpi.commandlineSshPrun.CommandlineSshPrunResourceBrokerAdaptor
+
+Adaptor type: org.gridlab.gat.io.cpi.FileCpi:
+    org.gridlab.gat.io.cpi.local.LocalFileAdaptor
+    org.gridlab.gat.io.cpi.globus.GridFTPFileAdaptor
+    org.gridlab.gat.io.cpi.sftpGanymed.SftpGanymedFileAdaptor
+    org.gridlab.gat.io.cpi.commandlineSsh.CommandlineSshFileAdaptor
+    org.gridlab.gat.io.cpi.sftpnew.SftpNewFileAdaptor
+    org.gridlab.gat.io.cpi.ssh.SshFileAdaptor
+    org.gridlab.gat.io.cpi.sftp.SftpFileAdaptor
+    org.gridlab.gat.io.cpi.globus.FTPFileAdaptor
+    org.gridlab.gat.io.cpi.thirdPartyCopy.ThirdPartyCopyFileAdaptor
+
+Adaptor type: org.gridlab.gat.io.cpi.LogicalFileCpi:
+    org.gridlab.gat.io.cpi.local.LocalLogicalFileAdaptor
+
+Adaptor type: org.gridlab.gat.io.cpi.RandomAccessFileCpi:
+    org.gridlab.gat.io.cpi.local.LocalRandomAccessFileAdaptor
+
+Adaptor type: org.gridlab.gat.io.cpi.EndpointCpi:
+    org.gridlab.gat.io.cpi.sockets.SocketEndpointAdaptor
+
+Adaptor type: org.gridlab.gat.advert.cpi.AdvertServiceCpi:
+    org.gridlab.gat.advert.cpi.local.LocalAdvertServiceAdaptor
+
+---------------------------------------
+initAdaptor: trying to instantiate LocalFileAdaptor for type File
+FileCpi: created file with URI date.out
+LocalFileAdaptor: LOCATION = file:///date.out
+initAdaptor: instantiated LocalFileAdaptor for type File
+initAdaptor: trying to instantiate GridFTPFileAdaptor for type File
+FileCpi: created file with URI date.out
+Getting default security object for adaptor gridftp
+trying to get credential from gat preferences
+trying to get credential from location specified in environment
+no credential location found in environment
+trying to get default credential
+initAdaptor: instantiated GridFTPFileAdaptor for type File
+initAdaptor: trying to instantiate SftpGanymedFileAdaptor for type File
+FileCpi: created file with URI date.out
+initAdaptor: instantiated SftpGanymedFileAdaptor for type File
+initAdaptor: trying to instantiate CommandlineSshFileAdaptor for type File
+FileCpi: created file with URI date.out
+initAdaptor: instantiated CommandlineSshFileAdaptor for type File
+initAdaptor: trying to instantiate SftpNewFileAdaptor for type File
+FileCpi: created file with URI date.out
+initAdaptor: instantiated SftpNewFileAdaptor for type File
+initAdaptor: trying to instantiate SshFileAdaptor for type File
+FileCpi: created file with URI date.out
+initAdaptor: Couldn't create SshFileAdaptor: cannot handle this URI
+org.gridlab.gat.GATObjectCreationException: cannot handle this URI
+	at org.gridlab.gat.io.cpi.ssh.SshFileAdaptor.<init>(SshFileAdaptor.java:82)
+	at sun.reflect.NativeConstructorAccessorImpl.newInstance0(Native Method)
+	at sun.reflect.NativeConstructorAccessorImpl.newInstance(NativeConstructorAccessorImpl.java:39)
+	at sun.reflect.DelegatingConstructorAccessorImpl.newInstance(DelegatingConstructorAccessorImpl.java:27)
+	at java.lang.reflect.Constructor.newInstance(Constructor.java:494)
+	at org.gridlab.gat.engine.Adaptor.newInstance(Adaptor.java:94)
+	at org.gridlab.gat.engine.AdaptorInvocationHandler.initAdaptor(AdaptorInvocationHandler.java:304)
+	at org.gridlab.gat.engine.AdaptorInvocationHandler.<init>(AdaptorInvocationHandler.java:119)
+	at org.gridlab.gat.engine.GATEngine.createAdaptorProxy(GATEngine.java:853)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:39)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:25)
+	at java.lang.reflect.Method.invoke(Method.java:585)
+	at org.gridlab.gat.GAT.getAdaptorProxy(GAT.java:897)
+	at org.gridlab.gat.GAT.createFile(GAT.java:140)
+	at gatjobrun.GATJobRunner.setStdout(GATJobRunner.java:539)
+	at gatjobrun.Main.invoke(Main.java:192)
+	at gatjobrun.Main.main(Main.java:237)
+initAdaptor: trying to instantiate SftpFileAdaptor for type File
+FileCpi: created file with URI date.out
+initAdaptor: instantiated SftpFileAdaptor for type File
+initAdaptor: trying to instantiate FTPFileAdaptor for type File
+FileCpi: created file with URI date.out
+initAdaptor: Couldn't create FTPFileAdaptor: Could not find a valid security context for this adaptor to use for the specified host/port
+org.gridlab.gat.GATObjectCreationException: Could not find a valid security context for this adaptor to use for the specified host/port
+	at org.gridlab.gat.io.cpi.globus.FTPFileAdaptor.<init>(FTPFileAdaptor.java:46)
+	at sun.reflect.NativeConstructorAccessorImpl.newInstance0(Native Method)
+	at sun.reflect.NativeConstructorAccessorImpl.newInstance(NativeConstructorAccessorImpl.java:39)
+	at sun.reflect.DelegatingConstructorAccessorImpl.newInstance(DelegatingConstructorAccessorImpl.java:27)
+	at java.lang.reflect.Constructor.newInstance(Constructor.java:494)
+	at org.gridlab.gat.engine.Adaptor.newInstance(Adaptor.java:94)
+	at org.gridlab.gat.engine.AdaptorInvocationHandler.initAdaptor(AdaptorInvocationHandler.java:304)
+	at org.gridlab.gat.engine.AdaptorInvocationHandler.<init>(AdaptorInvocationHandler.java:119)
+	at org.gridlab.gat.engine.GATEngine.createAdaptorProxy(GATEngine.java:853)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:39)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:25)
+	at java.lang.reflect.Method.invoke(Method.java:585)
+	at org.gridlab.gat.GAT.getAdaptorProxy(GAT.java:897)
+	at org.gridlab.gat.GAT.createFile(GAT.java:140)
+	at gatjobrun.GATJobRunner.setStdout(GATJobRunner.java:539)
+	at gatjobrun.Main.invoke(Main.java:192)
+	at gatjobrun.Main.main(Main.java:237)
+initAdaptor: trying to instantiate ThirdPartyCopyFileAdaptor for type File
+FileCpi: created file with URI date.out
+initAdaptor: instantiated ThirdPartyCopyFileAdaptor for type File
+initAdaptor: trying to instantiate LocalFileAdaptor for type File
+FileCpi: created file with URI date.err
+LocalFileAdaptor: LOCATION = file:///date.err
+initAdaptor: instantiated LocalFileAdaptor for type File
+initAdaptor: trying to instantiate GridFTPFileAdaptor for type File
+FileCpi: created file with URI date.err
+reusing security object for adaptor gridftp
+initAdaptor: instantiated GridFTPFileAdaptor for type File
+initAdaptor: trying to instantiate SftpGanymedFileAdaptor for type File
+FileCpi: created file with URI date.err
+initAdaptor: instantiated SftpGanymedFileAdaptor for type File
+initAdaptor: trying to instantiate CommandlineSshFileAdaptor for type File
+FileCpi: created file with URI date.err
+initAdaptor: instantiated CommandlineSshFileAdaptor for type File
+initAdaptor: trying to instantiate SftpNewFileAdaptor for type File
+FileCpi: created file with URI date.err
+initAdaptor: instantiated SftpNewFileAdaptor for type File
+initAdaptor: trying to instantiate SshFileAdaptor for type File
+FileCpi: created file with URI date.err
+initAdaptor: Couldn't create SshFileAdaptor: cannot handle this URI
+org.gridlab.gat.GATObjectCreationException: cannot handle this URI
+	at org.gridlab.gat.io.cpi.ssh.SshFileAdaptor.<init>(SshFileAdaptor.java:82)
+	at sun.reflect.NativeConstructorAccessorImpl.newInstance0(Native Method)
+	at sun.reflect.NativeConstructorAccessorImpl.newInstance(NativeConstructorAccessorImpl.java:39)
+	at sun.reflect.DelegatingConstructorAccessorImpl.newInstance(DelegatingConstructorAccessorImpl.java:27)
+	at java.lang.reflect.Constructor.newInstance(Constructor.java:494)
+	at org.gridlab.gat.engine.Adaptor.newInstance(Adaptor.java:94)
+	at org.gridlab.gat.engine.AdaptorInvocationHandler.initAdaptor(AdaptorInvocationHandler.java:304)
+	at org.gridlab.gat.engine.AdaptorInvocationHandler.<init>(AdaptorInvocationHandler.java:119)
+	at org.gridlab.gat.engine.GATEngine.createAdaptorProxy(GATEngine.java:853)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:39)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:25)
+	at java.lang.reflect.Method.invoke(Method.java:585)
+	at org.gridlab.gat.GAT.getAdaptorProxy(GAT.java:897)
+	at org.gridlab.gat.GAT.createFile(GAT.java:140)
+	at gatjobrun.GATJobRunner.setStderr(GATJobRunner.java:517)
+	at gatjobrun.Main.invoke(Main.java:194)
+	at gatjobrun.Main.main(Main.java:237)
+initAdaptor: trying to instantiate SftpFileAdaptor for type File
+FileCpi: created file with URI date.err
+initAdaptor: instantiated SftpFileAdaptor for type File
+initAdaptor: trying to instantiate FTPFileAdaptor for type File
+FileCpi: created file with URI date.err
+initAdaptor: Couldn't create FTPFileAdaptor: Could not find a valid security context for this adaptor to use for the specified host/port
+org.gridlab.gat.GATObjectCreationException: Could not find a valid security context for this adaptor to use for the specified host/port
+	at org.gridlab.gat.io.cpi.globus.FTPFileAdaptor.<init>(FTPFileAdaptor.java:46)
+	at sun.reflect.NativeConstructorAccessorImpl.newInstance0(Native Method)
+	at sun.reflect.NativeConstructorAccessorImpl.newInstance(NativeConstructorAccessorImpl.java:39)
+	at sun.reflect.DelegatingConstructorAccessorImpl.newInstance(DelegatingConstructorAccessorImpl.java:27)
+	at java.lang.reflect.Constructor.newInstance(Constructor.java:494)
+	at org.gridlab.gat.engine.Adaptor.newInstance(Adaptor.java:94)
+	at org.gridlab.gat.engine.AdaptorInvocationHandler.initAdaptor(AdaptorInvocationHandler.java:304)
+	at org.gridlab.gat.engine.AdaptorInvocationHandler.<init>(AdaptorInvocationHandler.java:119)
+	at org.gridlab.gat.engine.GATEngine.createAdaptorProxy(GATEngine.java:853)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:39)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:25)
+	at java.lang.reflect.Method.invoke(Method.java:585)
+	at org.gridlab.gat.GAT.getAdaptorProxy(GAT.java:897)
+	at org.gridlab.gat.GAT.createFile(GAT.java:140)
+	at gatjobrun.GATJobRunner.setStderr(GATJobRunner.java:517)
+	at gatjobrun.Main.invoke(Main.java:194)
+	at gatjobrun.Main.main(Main.java:237)
+initAdaptor: trying to instantiate ThirdPartyCopyFileAdaptor for type File
+FileCpi: created file with URI date.err
+initAdaptor: instantiated ThirdPartyCopyFileAdaptor for type File
+initAdaptor: trying to instantiate LocalFileAdaptor for type File
+FileCpi: created file with URI /tmp/date_script.log
+LocalFileAdaptor: LOCATION = file:////tmp/date_script.log
+initAdaptor: instantiated LocalFileAdaptor for type File
+initAdaptor: trying to instantiate GridFTPFileAdaptor for type File
+FileCpi: created file with URI /tmp/date_script.log
+reusing security object for adaptor gridftp
+initAdaptor: instantiated GridFTPFileAdaptor for type File
+initAdaptor: trying to instantiate SftpGanymedFileAdaptor for type File
+FileCpi: created file with URI /tmp/date_script.log
+initAdaptor: instantiated SftpGanymedFileAdaptor for type File
+initAdaptor: trying to instantiate CommandlineSshFileAdaptor for type File
+FileCpi: created file with URI /tmp/date_script.log
+initAdaptor: instantiated CommandlineSshFileAdaptor for type File
+initAdaptor: trying to instantiate SftpNewFileAdaptor for type File
+FileCpi: created file with URI /tmp/date_script.log
+initAdaptor: instantiated SftpNewFileAdaptor for type File
+initAdaptor: trying to instantiate SshFileAdaptor for type File
+FileCpi: created file with URI /tmp/date_script.log
+initAdaptor: Couldn't create SshFileAdaptor: cannot handle this URI
+org.gridlab.gat.GATObjectCreationException: cannot handle this URI
+	at org.gridlab.gat.io.cpi.ssh.SshFileAdaptor.<init>(SshFileAdaptor.java:82)
+	at sun.reflect.NativeConstructorAccessorImpl.newInstance0(Native Method)
+	at sun.reflect.NativeConstructorAccessorImpl.newInstance(NativeConstructorAccessorImpl.java:39)
+	at sun.reflect.DelegatingConstructorAccessorImpl.newInstance(DelegatingConstructorAccessorImpl.java:27)
+	at java.lang.reflect.Constructor.newInstance(Constructor.java:494)
+	at org.gridlab.gat.engine.Adaptor.newInstance(Adaptor.java:94)
+	at org.gridlab.gat.engine.AdaptorInvocationHandler.initAdaptor(AdaptorInvocationHandler.java:304)
+	at org.gridlab.gat.engine.AdaptorInvocationHandler.<init>(AdaptorInvocationHandler.java:119)
+	at org.gridlab.gat.engine.GATEngine.createAdaptorProxy(GATEngine.java:853)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:39)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:25)
+	at java.lang.reflect.Method.invoke(Method.java:585)
+	at org.gridlab.gat.GAT.getAdaptorProxy(GAT.java:897)
+	at org.gridlab.gat.GAT.createFile(GAT.java:140)
+	at gatjobrun.GATJobRunner.addPostStageFile(GATJobRunner.java:156)
+	at gatjobrun.Main.invoke(Main.java:223)
+	at gatjobrun.Main.main(Main.java:237)
+initAdaptor: trying to instantiate SftpFileAdaptor for type File
+FileCpi: created file with URI /tmp/date_script.log
+initAdaptor: instantiated SftpFileAdaptor for type File
+initAdaptor: trying to instantiate FTPFileAdaptor for type File
+FileCpi: created file with URI /tmp/date_script.log
+initAdaptor: Couldn't create FTPFileAdaptor: Could not find a valid security context for this adaptor to use for the specified host/port
+org.gridlab.gat.GATObjectCreationException: Could not find a valid security context for this adaptor to use for the specified host/port
+	at org.gridlab.gat.io.cpi.globus.FTPFileAdaptor.<init>(FTPFileAdaptor.java:46)
+	at sun.reflect.NativeConstructorAccessorImpl.newInstance0(Native Method)
+	at sun.reflect.NativeConstructorAccessorImpl.newInstance(NativeConstructorAccessorImpl.java:39)
+	at sun.reflect.DelegatingConstructorAccessorImpl.newInstance(DelegatingConstructorAccessorImpl.java:27)
+	at java.lang.reflect.Constructor.newInstance(Constructor.java:494)
+	at org.gridlab.gat.engine.Adaptor.newInstance(Adaptor.java:94)
+	at org.gridlab.gat.engine.AdaptorInvocationHandler.initAdaptor(AdaptorInvocationHandler.java:304)
+	at org.gridlab.gat.engine.AdaptorInvocationHandler.<init>(AdaptorInvocationHandler.java:119)
+	at org.gridlab.gat.engine.GATEngine.createAdaptorProxy(GATEngine.java:853)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:39)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:25)
+	at java.lang.reflect.Method.invoke(Method.java:585)
+	at org.gridlab.gat.GAT.getAdaptorProxy(GAT.java:897)
+	at org.gridlab.gat.GAT.createFile(GAT.java:140)
+	at gatjobrun.GATJobRunner.addPostStageFile(GATJobRunner.java:156)
+	at gatjobrun.Main.invoke(Main.java:223)
+	at gatjobrun.Main.main(Main.java:237)
+initAdaptor: trying to instantiate ThirdPartyCopyFileAdaptor for type File
+FileCpi: created file with URI /tmp/date_script.log
+initAdaptor: instantiated ThirdPartyCopyFileAdaptor for type File
+initAdaptor: trying to instantiate LocalFileAdaptor for type File
+FileCpi: created file with URI date_script.sh
+LocalFileAdaptor: LOCATION = file:///date_script.sh
+initAdaptor: instantiated LocalFileAdaptor for type File
+initAdaptor: trying to instantiate GridFTPFileAdaptor for type File
+FileCpi: created file with URI date_script.sh
+reusing security object for adaptor gridftp
+initAdaptor: instantiated GridFTPFileAdaptor for type File
+initAdaptor: trying to instantiate SftpGanymedFileAdaptor for type File
+FileCpi: created file with URI date_script.sh
+initAdaptor: instantiated SftpGanymedFileAdaptor for type File
+initAdaptor: trying to instantiate CommandlineSshFileAdaptor for type File
+FileCpi: created file with URI date_script.sh
+initAdaptor: instantiated CommandlineSshFileAdaptor for type File
+initAdaptor: trying to instantiate SftpNewFileAdaptor for type File
+FileCpi: created file with URI date_script.sh
+initAdaptor: instantiated SftpNewFileAdaptor for type File
+initAdaptor: trying to instantiate SshFileAdaptor for type File
+FileCpi: created file with URI date_script.sh
+initAdaptor: Couldn't create SshFileAdaptor: cannot handle this URI
+org.gridlab.gat.GATObjectCreationException: cannot handle this URI
+	at org.gridlab.gat.io.cpi.ssh.SshFileAdaptor.<init>(SshFileAdaptor.java:82)
+	at sun.reflect.NativeConstructorAccessorImpl.newInstance0(Native Method)
+	at sun.reflect.NativeConstructorAccessorImpl.newInstance(NativeConstructorAccessorImpl.java:39)
+	at sun.reflect.DelegatingConstructorAccessorImpl.newInstance(DelegatingConstructorAccessorImpl.java:27)
+	at java.lang.reflect.Constructor.newInstance(Constructor.java:494)
+	at org.gridlab.gat.engine.Adaptor.newInstance(Adaptor.java:94)
+	at org.gridlab.gat.engine.AdaptorInvocationHandler.initAdaptor(AdaptorInvocationHandler.java:304)
+	at org.gridlab.gat.engine.AdaptorInvocationHandler.<init>(AdaptorInvocationHandler.java:119)
+	at org.gridlab.gat.engine.GATEngine.createAdaptorProxy(GATEngine.java:853)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:39)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:25)
+	at java.lang.reflect.Method.invoke(Method.java:585)
+	at org.gridlab.gat.GAT.getAdaptorProxy(GAT.java:897)
+	at org.gridlab.gat.GAT.createFile(GAT.java:140)
+	at org.gridlab.gat.GAT.createFile(GAT.java:84)
+	at gatjobrun.GATJobRunner.createSoftwareDescription(GATJobRunner.java:276)
+	at gatjobrun.GATJobRunner.runJob(GATJobRunner.java:300)
+	at gatjobrun.Main.invoke(Main.java:227)
+	at gatjobrun.Main.main(Main.java:237)
+initAdaptor: trying to instantiate SftpFileAdaptor for type File
+FileCpi: created file with URI date_script.sh
+initAdaptor: instantiated SftpFileAdaptor for type File
+initAdaptor: trying to instantiate FTPFileAdaptor for type File
+FileCpi: created file with URI date_script.sh
+initAdaptor: instantiated FTPFileAdaptor for type File
+initAdaptor: trying to instantiate ThirdPartyCopyFileAdaptor for type File
+FileCpi: created file with URI date_script.sh
+initAdaptor: instantiated ThirdPartyCopyFileAdaptor for type File
+initAdaptor: trying to instantiate LocalFileAdaptor for type File
+FileCpi: created file with URI /tmp/date_script.sh
+LocalFileAdaptor: LOCATION = file:////tmp/date_script.sh
+initAdaptor: instantiated LocalFileAdaptor for type File
+initAdaptor: trying to instantiate GridFTPFileAdaptor for type File
+FileCpi: created file with URI /tmp/date_script.sh
+reusing security object for adaptor gridftp
+initAdaptor: instantiated GridFTPFileAdaptor for type File
+initAdaptor: trying to instantiate SftpGanymedFileAdaptor for type File
+FileCpi: created file with URI /tmp/date_script.sh
+initAdaptor: instantiated SftpGanymedFileAdaptor for type File
+initAdaptor: trying to instantiate CommandlineSshFileAdaptor for type File
+FileCpi: created file with URI /tmp/date_script.sh
+initAdaptor: instantiated CommandlineSshFileAdaptor for type File
+initAdaptor: trying to instantiate SftpNewFileAdaptor for type File
+FileCpi: created file with URI /tmp/date_script.sh
+initAdaptor: instantiated SftpNewFileAdaptor for type File
+initAdaptor: trying to instantiate SshFileAdaptor for type File
+FileCpi: created file with URI /tmp/date_script.sh
+initAdaptor: Couldn't create SshFileAdaptor: cannot handle this URI
+org.gridlab.gat.GATObjectCreationException: cannot handle this URI
+	at org.gridlab.gat.io.cpi.ssh.SshFileAdaptor.<init>(SshFileAdaptor.java:82)
+	at sun.reflect.NativeConstructorAccessorImpl.newInstance0(Native Method)
+	at sun.reflect.NativeConstructorAccessorImpl.newInstance(NativeConstructorAccessorImpl.java:39)
+	at sun.reflect.DelegatingConstructorAccessorImpl.newInstance(DelegatingConstructorAccessorImpl.java:27)
+	at java.lang.reflect.Constructor.newInstance(Constructor.java:494)
+	at org.gridlab.gat.engine.Adaptor.newInstance(Adaptor.java:94)
+	at org.gridlab.gat.engine.AdaptorInvocationHandler.initAdaptor(AdaptorInvocationHandler.java:304)
+	at org.gridlab.gat.engine.AdaptorInvocationHandler.<init>(AdaptorInvocationHandler.java:119)
+	at org.gridlab.gat.engine.GATEngine.createAdaptorProxy(GATEngine.java:853)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:39)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:25)
+	at java.lang.reflect.Method.invoke(Method.java:585)
+	at org.gridlab.gat.GAT.getAdaptorProxy(GAT.java:897)
+	at org.gridlab.gat.GAT.createFile(GAT.java:140)
+	at org.gridlab.gat.GAT.createFile(GAT.java:84)
+	at gatjobrun.GATJobRunner.createSoftwareDescription(GATJobRunner.java:276)
+	at gatjobrun.GATJobRunner.runJob(GATJobRunner.java:300)
+	at gatjobrun.Main.invoke(Main.java:227)
+	at gatjobrun.Main.main(Main.java:237)
+initAdaptor: trying to instantiate SftpFileAdaptor for type File
+FileCpi: created file with URI /tmp/date_script.sh
+initAdaptor: instantiated SftpFileAdaptor for type File
+initAdaptor: trying to instantiate FTPFileAdaptor for type File
+FileCpi: created file with URI /tmp/date_script.sh
+initAdaptor: instantiated FTPFileAdaptor for type File
+initAdaptor: trying to instantiate ThirdPartyCopyFileAdaptor for type File
+FileCpi: created file with URI /tmp/date_script.sh
+initAdaptor: instantiated ThirdPartyCopyFileAdaptor for type File
+invocation of method hashCode on LocalFileAdaptor START
+invocation of method hashCode on LocalFileAdaptor DONE
+invocation of method hashCode on LocalFileAdaptor START
+invocation of method hashCode on LocalFileAdaptor DONE
+initAdaptor: trying to instantiate GlobusResourceBrokerAdaptor for type ResourceBroker
+initAdaptor: instantiated GlobusResourceBrokerAdaptor for type ResourceBroker
+invocation of method toString on LocalFileAdaptor START
+invocation of method toString on LocalFileAdaptor DONE
+invocation of method toString on LocalFileAdaptor START
+invocation of method toString on LocalFileAdaptor DONE
+invocation of method toString on LocalFileAdaptor START
+invocation of method toString on LocalFileAdaptor DONE
+invocation of method toString on LocalFileAdaptor START
+invocation of method toString on LocalFileAdaptor DONE
+invocation of method toString on LocalFileAdaptor START
+invocation of method toString on LocalFileAdaptor DONE
+invocation of method submitJob on GlobusResourceBrokerAdaptor START
+Resource manager contact = buran.aei.mpg.de/jobmanager-gw
+creating a new security object based on a security context for adaptor gram
+Getting default security object for adaptor gram
+trying to get credential from gat preferences
+trying to get credential from location specified in environment
+no credential location found in environment
+trying to get default credential
+initAdaptor: trying to instantiate LocalFileAdaptor for type File
+FileCpi: created file with URI any://buran.aei.mpg.de/.JavaGAT_SANDBOX_0.4161186847745283
+initAdaptor: File is not applicable: Cannot use remote files with the local file adaptor, URI is: any://buran.aei.mpg.de/.JavaGAT_SANDBOX_0.4161186847745283
+initAdaptor: trying to instantiate GridFTPFileAdaptor for type File
+FileCpi: created file with URI any://buran.aei.mpg.de/.JavaGAT_SANDBOX_0.4161186847745283
+reusing security object for adaptor gridftp
+initAdaptor: instantiated GridFTPFileAdaptor for type File
+initAdaptor: trying to instantiate SftpGanymedFileAdaptor for type File
+FileCpi: created file with URI any://buran.aei.mpg.de/.JavaGAT_SANDBOX_0.4161186847745283
+initAdaptor: instantiated SftpGanymedFileAdaptor for type File
+initAdaptor: trying to instantiate CommandlineSshFileAdaptor for type File
+FileCpi: created file with URI any://buran.aei.mpg.de/.JavaGAT_SANDBOX_0.4161186847745283
+initAdaptor: instantiated CommandlineSshFileAdaptor for type File
+initAdaptor: trying to instantiate SftpNewFileAdaptor for type File
+FileCpi: created file with URI any://buran.aei.mpg.de/.JavaGAT_SANDBOX_0.4161186847745283
+initAdaptor: instantiated SftpNewFileAdaptor for type File
+initAdaptor: trying to instantiate SshFileAdaptor for type File
+FileCpi: created file with URI any://buran.aei.mpg.de/.JavaGAT_SANDBOX_0.4161186847745283
+SshFileAdaptor: remote file LOCATION = any://buran.aei.mpg.de/.JavaGAT_SANDBOX_0.4161186847745283
+creating a new security object based on a security context for adaptor ssh
+Prepared session for location any://buran.aei.mpg.de/.JavaGAT_SANDBOX_0.4161186847745283 with username: ali; host: buran.aei.mpg.de
+SshFileAdaptor: started session with buran.aei.mpg.de using username: ali on port: 22 for file: .JavaGAT_SANDBOX_0.4161186847745283
+initAdaptor: instantiated SshFileAdaptor for type File
+initAdaptor: trying to instantiate SftpFileAdaptor for type File
+FileCpi: created file with URI any://buran.aei.mpg.de/.JavaGAT_SANDBOX_0.4161186847745283
+initAdaptor: instantiated SftpFileAdaptor for type File
+initAdaptor: trying to instantiate FTPFileAdaptor for type File
+FileCpi: created file with URI any://buran.aei.mpg.de/.JavaGAT_SANDBOX_0.4161186847745283
+initAdaptor: instantiated FTPFileAdaptor for type File
+initAdaptor: trying to instantiate ThirdPartyCopyFileAdaptor for type File
+FileCpi: created file with URI any://buran.aei.mpg.de/.JavaGAT_SANDBOX_0.4161186847745283
+initAdaptor: instantiated ThirdPartyCopyFileAdaptor for type File
+invocation of method mkdir on GridFTPFileAdaptor START
+reusing security object for adaptor gridftp
+open gridftp client to buran.aei.mpg.de:2811
+authenticating
+setting channel options
+done
+invocation of method mkdir on GridFTPFileAdaptor DONE
+sandbox: .JavaGAT_SANDBOX_0.4161186847745283
+invocation of method hashCode on LocalFileAdaptor START
+invocation of method hashCode on LocalFileAdaptor DONE
+invocation of method toURI on LocalFileAdaptor START
+invocation of method toURI on LocalFileAdaptor DONE
+invocation of method isAbsolute on LocalFileAdaptor START
+invocation of method isAbsolute on LocalFileAdaptor DONE
+invocation of method toURI on LocalFileAdaptor START
+invocation of method toURI on LocalFileAdaptor DONE
+invocation of method toURI on LocalFileAdaptor START
+invocation of method toURI on LocalFileAdaptor DONE
+initAdaptor: trying to instantiate LocalFileAdaptor for type File
+FileCpi: created file with URI any://buran.aei.mpg.de//tmp/date_script.sh
+initAdaptor: File is not applicable: Cannot use remote files with the local file adaptor, URI is: any://buran.aei.mpg.de//tmp/date_script.sh
+initAdaptor: trying to instantiate GridFTPFileAdaptor for type File
+FileCpi: created file with URI any://buran.aei.mpg.de//tmp/date_script.sh
+reusing security object for adaptor gridftp
+initAdaptor: instantiated GridFTPFileAdaptor for type File
+initAdaptor: trying to instantiate SftpGanymedFileAdaptor for type File
+FileCpi: created file with URI any://buran.aei.mpg.de//tmp/date_script.sh
+initAdaptor: instantiated SftpGanymedFileAdaptor for type File
+initAdaptor: trying to instantiate CommandlineSshFileAdaptor for type File
+FileCpi: created file with URI any://buran.aei.mpg.de//tmp/date_script.sh
+initAdaptor: instantiated CommandlineSshFileAdaptor for type File
+initAdaptor: trying to instantiate SftpNewFileAdaptor for type File
+FileCpi: created file with URI any://buran.aei.mpg.de//tmp/date_script.sh
+initAdaptor: instantiated SftpNewFileAdaptor for type File
+initAdaptor: trying to instantiate SshFileAdaptor for type File
+FileCpi: created file with URI any://buran.aei.mpg.de//tmp/date_script.sh
+SshFileAdaptor: remote file LOCATION = any://buran.aei.mpg.de//tmp/date_script.sh
+reusing security object for adaptor ssh
+Prepared session for location any://buran.aei.mpg.de//tmp/date_script.sh with username: ali; host: buran.aei.mpg.de
+SshFileAdaptor: started session with buran.aei.mpg.de using username: ali on port: 22 for file: /tmp/date_script.sh
+initAdaptor: instantiated SshFileAdaptor for type File
+initAdaptor: trying to instantiate SftpFileAdaptor for type File
+FileCpi: created file with URI any://buran.aei.mpg.de//tmp/date_script.sh
+initAdaptor: instantiated SftpFileAdaptor for type File
+initAdaptor: trying to instantiate FTPFileAdaptor for type File
+FileCpi: created file with URI any://buran.aei.mpg.de//tmp/date_script.sh
+initAdaptor: instantiated FTPFileAdaptor for type File
+initAdaptor: trying to instantiate ThirdPartyCopyFileAdaptor for type File
+FileCpi: created file with URI any://buran.aei.mpg.de//tmp/date_script.sh
+initAdaptor: instantiated ThirdPartyCopyFileAdaptor for type File
+invocation of method toURI on GridFTPFileAdaptor START
+invocation of method toURI on GridFTPFileAdaptor DONE
+invocation of method isFile on LocalFileAdaptor START
+invocation of method isFile on LocalFileAdaptor DONE
+invocation of method getPath on GridFTPFileAdaptor START
+invocation of method getPath on GridFTPFileAdaptor DONE
+invocation of method toURI on GridFTPFileAdaptor START
+invocation of method toURI on GridFTPFileAdaptor DONE
+invocation of method toURI on GridFTPFileAdaptor START
+invocation of method toURI on GridFTPFileAdaptor DONE
+PreStagedFileSet:
+PreStaged: date_script.sh -> any://buran.aei.mpg.de//tmp/date_script.sh (OUTSIDE SANDBOX)
+
+invocation of method hashCode on LocalFileAdaptor START
+invocation of method hashCode on LocalFileAdaptor DONE
+invocation of method isAbsolute on LocalFileAdaptor START
+invocation of method isAbsolute on LocalFileAdaptor DONE
+invocation of method toURI on GridFTPFileAdaptor START
+invocation of method toURI on GridFTPFileAdaptor DONE
+invocation of method toURI on GridFTPFileAdaptor START
+invocation of method toURI on GridFTPFileAdaptor DONE
+initAdaptor: trying to instantiate LocalFileAdaptor for type File
+FileCpi: created file with URI any://buran.aei.mpg.de//tmp/date_script.log
+initAdaptor: File is not applicable: Cannot use remote files with the local file adaptor, URI is: any://buran.aei.mpg.de//tmp/date_script.log
+initAdaptor: trying to instantiate GridFTPFileAdaptor for type File
+FileCpi: created file with URI any://buran.aei.mpg.de//tmp/date_script.log
+reusing security object for adaptor gridftp
+initAdaptor: instantiated GridFTPFileAdaptor for type File
+initAdaptor: trying to instantiate SftpGanymedFileAdaptor for type File
+FileCpi: created file with URI any://buran.aei.mpg.de//tmp/date_script.log
+initAdaptor: instantiated SftpGanymedFileAdaptor for type File
+initAdaptor: trying to instantiate CommandlineSshFileAdaptor for type File
+FileCpi: created file with URI any://buran.aei.mpg.de//tmp/date_script.log
+initAdaptor: instantiated CommandlineSshFileAdaptor for type File
+initAdaptor: trying to instantiate SftpNewFileAdaptor for type File
+FileCpi: created file with URI any://buran.aei.mpg.de//tmp/date_script.log
+initAdaptor: instantiated SftpNewFileAdaptor for type File
+initAdaptor: trying to instantiate SshFileAdaptor for type File
+FileCpi: created file with URI any://buran.aei.mpg.de//tmp/date_script.log
+SshFileAdaptor: remote file LOCATION = any://buran.aei.mpg.de//tmp/date_script.log
+reusing security object for adaptor ssh
+Prepared session for location any://buran.aei.mpg.de//tmp/date_script.log with username: ali; host: buran.aei.mpg.de
+SshFileAdaptor: started session with buran.aei.mpg.de using username: ali on port: 22 for file: /tmp/date_script.log
+initAdaptor: instantiated SshFileAdaptor for type File
+initAdaptor: trying to instantiate SftpFileAdaptor for type File
+FileCpi: created file with URI any://buran.aei.mpg.de//tmp/date_script.log
+initAdaptor: instantiated SftpFileAdaptor for type File
+initAdaptor: trying to instantiate FTPFileAdaptor for type File
+FileCpi: created file with URI any://buran.aei.mpg.de//tmp/date_script.log
+initAdaptor: instantiated FTPFileAdaptor for type File
+initAdaptor: trying to instantiate ThirdPartyCopyFileAdaptor for type File
+FileCpi: created file with URI any://buran.aei.mpg.de//tmp/date_script.log
+initAdaptor: instantiated ThirdPartyCopyFileAdaptor for type File
+invocation of method toURI on GridFTPFileAdaptor START
+invocation of method toURI on GridFTPFileAdaptor DONE
+invocation of method getName on LocalFileAdaptor START
+invocation of method getName on LocalFileAdaptor DONE
+initAdaptor: trying to instantiate LocalFileAdaptor for type File
+FileCpi: created file with URI any:////home/ali/programme/javagat-alexander-02-07-07/astrogrid-packages/GATJobRun/scripts/date_script.log
+LocalFileAdaptor: LOCATION = any:////home/ali/programme/javagat-alexander-02-07-07/astrogrid-packages/GATJobRun/scripts/date_script.log
+initAdaptor: instantiated LocalFileAdaptor for type File
+initAdaptor: trying to instantiate GridFTPFileAdaptor for type File
+FileCpi: created file with URI any:////home/ali/programme/javagat-alexander-02-07-07/astrogrid-packages/GATJobRun/scripts/date_script.log
+reusing security object for adaptor gridftp
+initAdaptor: instantiated GridFTPFileAdaptor for type File
+initAdaptor: trying to instantiate SftpGanymedFileAdaptor for type File
+FileCpi: created file with URI any:////home/ali/programme/javagat-alexander-02-07-07/astrogrid-packages/GATJobRun/scripts/date_script.log
+initAdaptor: instantiated SftpGanymedFileAdaptor for type File
+initAdaptor: trying to instantiate CommandlineSshFileAdaptor for type File
+FileCpi: created file with URI any:////home/ali/programme/javagat-alexander-02-07-07/astrogrid-packages/GATJobRun/scripts/date_script.log
+initAdaptor: instantiated CommandlineSshFileAdaptor for type File
+initAdaptor: trying to instantiate SftpNewFileAdaptor for type File
+FileCpi: created file with URI any:////home/ali/programme/javagat-alexander-02-07-07/astrogrid-packages/GATJobRun/scripts/date_script.log
+initAdaptor: instantiated SftpNewFileAdaptor for type File
+initAdaptor: trying to instantiate SshFileAdaptor for type File
+FileCpi: created file with URI any:////home/ali/programme/javagat-alexander-02-07-07/astrogrid-packages/GATJobRun/scripts/date_script.log
+SshFileAdaptor: local file LOCATION = any:////home/ali/programme/javagat-alexander-02-07-07/astrogrid-packages/GATJobRun/scripts/date_script.log
+initAdaptor: instantiated SshFileAdaptor for type File
+initAdaptor: trying to instantiate SftpFileAdaptor for type File
+FileCpi: created file with URI any:////home/ali/programme/javagat-alexander-02-07-07/astrogrid-packages/GATJobRun/scripts/date_script.log
+initAdaptor: instantiated SftpFileAdaptor for type File
+initAdaptor: trying to instantiate FTPFileAdaptor for type File
+FileCpi: created file with URI any:////home/ali/programme/javagat-alexander-02-07-07/astrogrid-packages/GATJobRun/scripts/date_script.log
+initAdaptor: instantiated FTPFileAdaptor for type File
+initAdaptor: trying to instantiate ThirdPartyCopyFileAdaptor for type File
+FileCpi: created file with URI any:////home/ali/programme/javagat-alexander-02-07-07/astrogrid-packages/GATJobRun/scripts/date_script.log
+initAdaptor: instantiated ThirdPartyCopyFileAdaptor for type File
+invocation of method toURI on GridFTPFileAdaptor START
+invocation of method toURI on GridFTPFileAdaptor DONE
+invocation of method getName on LocalFileAdaptor START
+invocation of method getName on LocalFileAdaptor DONE
+initAdaptor: trying to instantiate LocalFileAdaptor for type File
+FileCpi: created file with URI any:///date.out
+LocalFileAdaptor: LOCATION = any:///date.out
+initAdaptor: instantiated LocalFileAdaptor for type File
+initAdaptor: trying to instantiate GridFTPFileAdaptor for type File
+FileCpi: created file with URI any:///date.out
+reusing security object for adaptor gridftp
+initAdaptor: instantiated GridFTPFileAdaptor for type File
+initAdaptor: trying to instantiate SftpGanymedFileAdaptor for type File
+FileCpi: created file with URI any:///date.out
+initAdaptor: instantiated SftpGanymedFileAdaptor for type File
+initAdaptor: trying to instantiate CommandlineSshFileAdaptor for type File
+FileCpi: created file with URI any:///date.out
+initAdaptor: instantiated CommandlineSshFileAdaptor for type File
+initAdaptor: trying to instantiate SftpNewFileAdaptor for type File
+FileCpi: created file with URI any:///date.out
+initAdaptor: instantiated SftpNewFileAdaptor for type File
+initAdaptor: trying to instantiate SshFileAdaptor for type File
+FileCpi: created file with URI any:///date.out
+SshFileAdaptor: local file LOCATION = any:///date.out
+initAdaptor: instantiated SshFileAdaptor for type File
+initAdaptor: trying to instantiate SftpFileAdaptor for type File
+FileCpi: created file with URI any:///date.out
+initAdaptor: instantiated SftpFileAdaptor for type File
+initAdaptor: trying to instantiate FTPFileAdaptor for type File
+FileCpi: created file with URI any:///date.out
+initAdaptor: instantiated FTPFileAdaptor for type File
+initAdaptor: trying to instantiate ThirdPartyCopyFileAdaptor for type File
+FileCpi: created file with URI any:///date.out
+initAdaptor: instantiated ThirdPartyCopyFileAdaptor for type File
+invocation of method isAbsolute on LocalFileAdaptor START
+invocation of method isAbsolute on LocalFileAdaptor DONE
+invocation of method toURI on GridFTPFileAdaptor START
+invocation of method toURI on GridFTPFileAdaptor DONE
+invocation of method toURI on GridFTPFileAdaptor START
+invocation of method toURI on GridFTPFileAdaptor DONE
+initAdaptor: trying to instantiate LocalFileAdaptor for type File
+FileCpi: created file with URI any://buran.aei.mpg.de/.JavaGAT_SANDBOX_0.4161186847745283/date.out
+initAdaptor: File is not applicable: Cannot use remote files with the local file adaptor, URI is: any://buran.aei.mpg.de/.JavaGAT_SANDBOX_0.4161186847745283/date.out
+initAdaptor: trying to instantiate GridFTPFileAdaptor for type File
+FileCpi: created file with URI any://buran.aei.mpg.de/.JavaGAT_SANDBOX_0.4161186847745283/date.out
+reusing security object for adaptor gridftp
+initAdaptor: instantiated GridFTPFileAdaptor for type File
+initAdaptor: trying to instantiate SftpGanymedFileAdaptor for type File
+FileCpi: created file with URI any://buran.aei.mpg.de/.JavaGAT_SANDBOX_0.4161186847745283/date.out
+initAdaptor: instantiated SftpGanymedFileAdaptor for type File
+initAdaptor: trying to instantiate CommandlineSshFileAdaptor for type File
+FileCpi: created file with URI any://buran.aei.mpg.de/.JavaGAT_SANDBOX_0.4161186847745283/date.out
+initAdaptor: instantiated CommandlineSshFileAdaptor for type File
+initAdaptor: trying to instantiate SftpNewFileAdaptor for type File
+FileCpi: created file with URI any://buran.aei.mpg.de/.JavaGAT_SANDBOX_0.4161186847745283/date.out
+initAdaptor: instantiated SftpNewFileAdaptor for type File
+initAdaptor: trying to instantiate SshFileAdaptor for type File
+FileCpi: created file with URI any://buran.aei.mpg.de/.JavaGAT_SANDBOX_0.4161186847745283/date.out
+SshFileAdaptor: remote file LOCATION = any://buran.aei.mpg.de/.JavaGAT_SANDBOX_0.4161186847745283/date.out
+reusing security object for adaptor ssh
+Prepared session for location any://buran.aei.mpg.de/.JavaGAT_SANDBOX_0.4161186847745283/date.out with username: ali; host: buran.aei.mpg.de
+SshFileAdaptor: started session with buran.aei.mpg.de using username: ali on port: 22 for file: .JavaGAT_SANDBOX_0.4161186847745283/date.out
+initAdaptor: instantiated SshFileAdaptor for type File
+initAdaptor: trying to instantiate SftpFileAdaptor for type File
+FileCpi: created file with URI any://buran.aei.mpg.de/.JavaGAT_SANDBOX_0.4161186847745283/date.out
+initAdaptor: instantiated SftpFileAdaptor for type File
+initAdaptor: trying to instantiate FTPFileAdaptor for type File
+FileCpi: created file with URI any://buran.aei.mpg.de/.JavaGAT_SANDBOX_0.4161186847745283/date.out
+initAdaptor: instantiated FTPFileAdaptor for type File
+initAdaptor: trying to instantiate ThirdPartyCopyFileAdaptor for type File
+FileCpi: created file with URI any://buran.aei.mpg.de/.JavaGAT_SANDBOX_0.4161186847745283/date.out
+initAdaptor: instantiated ThirdPartyCopyFileAdaptor for type File
+invocation of method toURI on GridFTPFileAdaptor START
+invocation of method toURI on GridFTPFileAdaptor DONE
+invocation of method isAbsolute on LocalFileAdaptor START
+invocation of method isAbsolute on LocalFileAdaptor DONE
+invocation of method toURI on GridFTPFileAdaptor START
+invocation of method toURI on GridFTPFileAdaptor DONE
+invocation of method getPath on GridFTPFileAdaptor START
+invocation of method getPath on GridFTPFileAdaptor DONE
+initAdaptor: trying to instantiate LocalFileAdaptor for type File
+FileCpi: created file with URI any:////home/ali/programme/javagat-alexander-02-07-07/astrogrid-packages/GATJobRun/scripts/date.out
+LocalFileAdaptor: LOCATION = any:////home/ali/programme/javagat-alexander-02-07-07/astrogrid-packages/GATJobRun/scripts/date.out
+initAdaptor: instantiated LocalFileAdaptor for type File
+initAdaptor: trying to instantiate GridFTPFileAdaptor for type File
+FileCpi: created file with URI any:////home/ali/programme/javagat-alexander-02-07-07/astrogrid-packages/GATJobRun/scripts/date.out
+reusing security object for adaptor gridftp
+initAdaptor: instantiated GridFTPFileAdaptor for type File
+initAdaptor: trying to instantiate SftpGanymedFileAdaptor for type File
+FileCpi: created file with URI any:////home/ali/programme/javagat-alexander-02-07-07/astrogrid-packages/GATJobRun/scripts/date.out
+initAdaptor: instantiated SftpGanymedFileAdaptor for type File
+initAdaptor: trying to instantiate CommandlineSshFileAdaptor for type File
+FileCpi: created file with URI any:////home/ali/programme/javagat-alexander-02-07-07/astrogrid-packages/GATJobRun/scripts/date.out
+initAdaptor: instantiated CommandlineSshFileAdaptor for type File
+initAdaptor: trying to instantiate SftpNewFileAdaptor for type File
+FileCpi: created file with URI any:////home/ali/programme/javagat-alexander-02-07-07/astrogrid-packages/GATJobRun/scripts/date.out
+initAdaptor: instantiated SftpNewFileAdaptor for type File
+initAdaptor: trying to instantiate SshFileAdaptor for type File
+FileCpi: created file with URI any:////home/ali/programme/javagat-alexander-02-07-07/astrogrid-packages/GATJobRun/scripts/date.out
+SshFileAdaptor: local file LOCATION = any:////home/ali/programme/javagat-alexander-02-07-07/astrogrid-packages/GATJobRun/scripts/date.out
+initAdaptor: instantiated SshFileAdaptor for type File
+initAdaptor: trying to instantiate SftpFileAdaptor for type File
+FileCpi: created file with URI any:////home/ali/programme/javagat-alexander-02-07-07/astrogrid-packages/GATJobRun/scripts/date.out
+initAdaptor: instantiated SftpFileAdaptor for type File
+initAdaptor: trying to instantiate FTPFileAdaptor for type File
+FileCpi: created file with URI any:////home/ali/programme/javagat-alexander-02-07-07/astrogrid-packages/GATJobRun/scripts/date.out
+initAdaptor: instantiated FTPFileAdaptor for type File
+initAdaptor: trying to instantiate ThirdPartyCopyFileAdaptor for type File
+FileCpi: created file with URI any:////home/ali/programme/javagat-alexander-02-07-07/astrogrid-packages/GATJobRun/scripts/date.out
+initAdaptor: instantiated ThirdPartyCopyFileAdaptor for type File
+invocation of method toURI on GridFTPFileAdaptor START
+invocation of method toURI on GridFTPFileAdaptor DONE
+invocation of method getName on LocalFileAdaptor START
+invocation of method getName on LocalFileAdaptor DONE
+initAdaptor: trying to instantiate LocalFileAdaptor for type File
+FileCpi: created file with URI any:///date.err
+LocalFileAdaptor: LOCATION = any:///date.err
+initAdaptor: instantiated LocalFileAdaptor for type File
+initAdaptor: trying to instantiate GridFTPFileAdaptor for type File
+FileCpi: created file with URI any:///date.err
+reusing security object for adaptor gridftp
+initAdaptor: instantiated GridFTPFileAdaptor for type File
+initAdaptor: trying to instantiate SftpGanymedFileAdaptor for type File
+FileCpi: created file with URI any:///date.err
+initAdaptor: instantiated SftpGanymedFileAdaptor for type File
+initAdaptor: trying to instantiate CommandlineSshFileAdaptor for type File
+FileCpi: created file with URI any:///date.err
+initAdaptor: instantiated CommandlineSshFileAdaptor for type File
+initAdaptor: trying to instantiate SftpNewFileAdaptor for type File
+FileCpi: created file with URI any:///date.err
+initAdaptor: instantiated SftpNewFileAdaptor for type File
+initAdaptor: trying to instantiate SshFileAdaptor for type File
+FileCpi: created file with URI any:///date.err
+SshFileAdaptor: local file LOCATION = any:///date.err
+initAdaptor: instantiated SshFileAdaptor for type File
+initAdaptor: trying to instantiate SftpFileAdaptor for type File
+FileCpi: created file with URI any:///date.err
+initAdaptor: instantiated SftpFileAdaptor for type File
+initAdaptor: trying to instantiate FTPFileAdaptor for type File
+FileCpi: created file with URI any:///date.err
+initAdaptor: instantiated FTPFileAdaptor for type File
+initAdaptor: trying to instantiate ThirdPartyCopyFileAdaptor for type File
+FileCpi: created file with URI any:///date.err
+initAdaptor: instantiated ThirdPartyCopyFileAdaptor for type File
+invocation of method isAbsolute on LocalFileAdaptor START
+invocation of method isAbsolute on LocalFileAdaptor DONE
+invocation of method toURI on GridFTPFileAdaptor START
+invocation of method toURI on GridFTPFileAdaptor DONE
+invocation of method toURI on GridFTPFileAdaptor START
+invocation of method toURI on GridFTPFileAdaptor DONE
+initAdaptor: trying to instantiate LocalFileAdaptor for type File
+FileCpi: created file with URI any://buran.aei.mpg.de/.JavaGAT_SANDBOX_0.4161186847745283/date.err
+initAdaptor: File is not applicable: Cannot use remote files with the local file adaptor, URI is: any://buran.aei.mpg.de/.JavaGAT_SANDBOX_0.4161186847745283/date.err
+initAdaptor: trying to instantiate GridFTPFileAdaptor for type File
+FileCpi: created file with URI any://buran.aei.mpg.de/.JavaGAT_SANDBOX_0.4161186847745283/date.err
+reusing security object for adaptor gridftp
+initAdaptor: instantiated GridFTPFileAdaptor for type File
+initAdaptor: trying to instantiate SftpGanymedFileAdaptor for type File
+FileCpi: created file with URI any://buran.aei.mpg.de/.JavaGAT_SANDBOX_0.4161186847745283/date.err
+initAdaptor: instantiated SftpGanymedFileAdaptor for type File
+initAdaptor: trying to instantiate CommandlineSshFileAdaptor for type File
+FileCpi: created file with URI any://buran.aei.mpg.de/.JavaGAT_SANDBOX_0.4161186847745283/date.err
+initAdaptor: instantiated CommandlineSshFileAdaptor for type File
+initAdaptor: trying to instantiate SftpNewFileAdaptor for type File
+FileCpi: created file with URI any://buran.aei.mpg.de/.JavaGAT_SANDBOX_0.4161186847745283/date.err
+initAdaptor: instantiated SftpNewFileAdaptor for type File
+initAdaptor: trying to instantiate SshFileAdaptor for type File
+FileCpi: created file with URI any://buran.aei.mpg.de/.JavaGAT_SANDBOX_0.4161186847745283/date.err
+SshFileAdaptor: remote file LOCATION = any://buran.aei.mpg.de/.JavaGAT_SANDBOX_0.4161186847745283/date.err
+reusing security object for adaptor ssh
+Prepared session for location any://buran.aei.mpg.de/.JavaGAT_SANDBOX_0.4161186847745283/date.err with username: ali; host: buran.aei.mpg.de
+SshFileAdaptor: started session with buran.aei.mpg.de using username: ali on port: 22 for file: .JavaGAT_SANDBOX_0.4161186847745283/date.err
+initAdaptor: instantiated SshFileAdaptor for type File
+initAdaptor: trying to instantiate SftpFileAdaptor for type File
+FileCpi: created file with URI any://buran.aei.mpg.de/.JavaGAT_SANDBOX_0.4161186847745283/date.err
+initAdaptor: instantiated SftpFileAdaptor for type File
+initAdaptor: trying to instantiate FTPFileAdaptor for type File
+FileCpi: created file with URI any://buran.aei.mpg.de/.JavaGAT_SANDBOX_0.4161186847745283/date.err
+initAdaptor: instantiated FTPFileAdaptor for type File
+initAdaptor: trying to instantiate ThirdPartyCopyFileAdaptor for type File
+FileCpi: created file with URI any://buran.aei.mpg.de/.JavaGAT_SANDBOX_0.4161186847745283/date.err
+initAdaptor: instantiated ThirdPartyCopyFileAdaptor for type File
+invocation of method toURI on GridFTPFileAdaptor START
+invocation of method toURI on GridFTPFileAdaptor DONE
+invocation of method isAbsolute on LocalFileAdaptor START
+invocation of method isAbsolute on LocalFileAdaptor DONE
+invocation of method toURI on GridFTPFileAdaptor START
+invocation of method toURI on GridFTPFileAdaptor DONE
+invocation of method getPath on GridFTPFileAdaptor START
+invocation of method getPath on GridFTPFileAdaptor DONE
+initAdaptor: trying to instantiate LocalFileAdaptor for type File
+FileCpi: created file with URI any:////home/ali/programme/javagat-alexander-02-07-07/astrogrid-packages/GATJobRun/scripts/date.err
+LocalFileAdaptor: LOCATION = any:////home/ali/programme/javagat-alexander-02-07-07/astrogrid-packages/GATJobRun/scripts/date.err
+initAdaptor: instantiated LocalFileAdaptor for type File
+initAdaptor: trying to instantiate GridFTPFileAdaptor for type File
+FileCpi: created file with URI any:////home/ali/programme/javagat-alexander-02-07-07/astrogrid-packages/GATJobRun/scripts/date.err
+reusing security object for adaptor gridftp
+initAdaptor: instantiated GridFTPFileAdaptor for type File
+initAdaptor: trying to instantiate SftpGanymedFileAdaptor for type File
+FileCpi: created file with URI any:////home/ali/programme/javagat-alexander-02-07-07/astrogrid-packages/GATJobRun/scripts/date.err
+initAdaptor: instantiated SftpGanymedFileAdaptor for type File
+initAdaptor: trying to instantiate CommandlineSshFileAdaptor for type File
+FileCpi: created file with URI any:////home/ali/programme/javagat-alexander-02-07-07/astrogrid-packages/GATJobRun/scripts/date.err
+initAdaptor: instantiated CommandlineSshFileAdaptor for type File
+initAdaptor: trying to instantiate SftpNewFileAdaptor for type File
+FileCpi: created file with URI any:////home/ali/programme/javagat-alexander-02-07-07/astrogrid-packages/GATJobRun/scripts/date.err
+initAdaptor: instantiated SftpNewFileAdaptor for type File
+initAdaptor: trying to instantiate SshFileAdaptor for type File
+FileCpi: created file with URI any:////home/ali/programme/javagat-alexander-02-07-07/astrogrid-packages/GATJobRun/scripts/date.err
+SshFileAdaptor: local file LOCATION = any:////home/ali/programme/javagat-alexander-02-07-07/astrogrid-packages/GATJobRun/scripts/date.err
+initAdaptor: instantiated SshFileAdaptor for type File
+initAdaptor: trying to instantiate SftpFileAdaptor for type File
+FileCpi: created file with URI any:////home/ali/programme/javagat-alexander-02-07-07/astrogrid-packages/GATJobRun/scripts/date.err
+initAdaptor: instantiated SftpFileAdaptor for type File
+initAdaptor: trying to instantiate FTPFileAdaptor for type File
+FileCpi: created file with URI any:////home/ali/programme/javagat-alexander-02-07-07/astrogrid-packages/GATJobRun/scripts/date.err
+initAdaptor: instantiated FTPFileAdaptor for type File
+initAdaptor: trying to instantiate ThirdPartyCopyFileAdaptor for type File
+FileCpi: created file with URI any:////home/ali/programme/javagat-alexander-02-07-07/astrogrid-packages/GATJobRun/scripts/date.err
+initAdaptor: instantiated ThirdPartyCopyFileAdaptor for type File
+invocation of method toURI on GridFTPFileAdaptor START
+invocation of method toURI on GridFTPFileAdaptor DONE
+invocation of method toURI on GridFTPFileAdaptor START
+invocation of method toURI on GridFTPFileAdaptor DONE
+invocation of method toURI on GridFTPFileAdaptor START
+invocation of method toURI on GridFTPFileAdaptor DONE
+invocation of method toURI on GridFTPFileAdaptor START
+invocation of method toURI on GridFTPFileAdaptor DONE
+invocation of method toURI on GridFTPFileAdaptor START
+invocation of method toURI on GridFTPFileAdaptor DONE
+invocation of method toURI on GridFTPFileAdaptor START
+invocation of method toURI on GridFTPFileAdaptor DONE
+invocation of method toURI on GridFTPFileAdaptor START
+invocation of method toURI on GridFTPFileAdaptor DONE
+PostStagedFileSet:
+PostStaged: any://buran.aei.mpg.de//tmp/date_script.log -> any:////home/ali/programme/javagat-alexander-02-07-07/astrogrid-packages/GATJobRun/scripts/date_script.log (OUTSIDE SANDBOX)
+PostStaged: any://buran.aei.mpg.de/.JavaGAT_SANDBOX_0.4161186847745283/date.out -> any:////home/ali/programme/javagat-alexander-02-07-07/astrogrid-packages/GATJobRun/scripts/date.out (STDOUT) (IN SANDBOX)
+PostStaged: any://buran.aei.mpg.de/.JavaGAT_SANDBOX_0.4161186847745283/date.err -> any:////home/ali/programme/javagat-alexander-02-07-07/astrogrid-packages/GATJobRun/scripts/date.err (STDERR) (IN SANDBOX)
+
+deleting post stage files outside sandbox
+invocation of method toString on GridFTPFileAdaptor START
+invocation of method toString on GridFTPFileAdaptor DONE
+DELETE_FILE:GAT file: any://buran.aei.mpg.de//tmp/date_script.log
+invocation of method delete on GridFTPFileAdaptor START
+reusing security object for adaptor gridftp
+open gridftp client to buran.aei.mpg.de:2811
+using cached client
+invocation of method delete on GridFTPFileAdaptor DONE
+deleting post stage files outside sandbox done
+pre stage starting
+prestage:
+invocation of method toURI on GridFTPFileAdaptor START
+invocation of method toURI on GridFTPFileAdaptor DONE
+invocation of method toURI on GridFTPFileAdaptor START
+invocation of method toURI on GridFTPFileAdaptor DONE
+  copy date_script.sh to any://buran.aei.mpg.de//tmp/date_script.sh
+invocation of method isDirectory on LocalFileAdaptor START
+invocation of method isDirectory on LocalFileAdaptor DONE
+invocation of method getParentFile on GridFTPFileAdaptor START
+GET PARENT: orig = /tmp/date_script.sh parent = /tmp
+GET PARENTFILE: orig = any://buran.aei.mpg.de//tmp/date_script.sh new = any://buran.aei.mpg.de//tmp
+initAdaptor: trying to instantiate LocalFileAdaptor for type File
+FileCpi: created file with URI any://buran.aei.mpg.de//tmp
+initAdaptor: File is not applicable: Cannot use remote files with the local file adaptor, URI is: any://buran.aei.mpg.de//tmp
+initAdaptor: trying to instantiate GridFTPFileAdaptor for type File
+FileCpi: created file with URI any://buran.aei.mpg.de//tmp
+reusing security object for adaptor gridftp
+initAdaptor: instantiated GridFTPFileAdaptor for type File
+initAdaptor: trying to instantiate SftpGanymedFileAdaptor for type File
+FileCpi: created file with URI any://buran.aei.mpg.de//tmp
+initAdaptor: instantiated SftpGanymedFileAdaptor for type File
+initAdaptor: trying to instantiate CommandlineSshFileAdaptor for type File
+FileCpi: created file with URI any://buran.aei.mpg.de//tmp
+initAdaptor: instantiated CommandlineSshFileAdaptor for type File
+initAdaptor: trying to instantiate SftpNewFileAdaptor for type File
+FileCpi: created file with URI any://buran.aei.mpg.de//tmp
+initAdaptor: instantiated SftpNewFileAdaptor for type File
+initAdaptor: trying to instantiate SshFileAdaptor for type File
+FileCpi: created file with URI any://buran.aei.mpg.de//tmp
+SshFileAdaptor: remote file LOCATION = any://buran.aei.mpg.de//tmp
+reusing security object for adaptor ssh
+Prepared session for location any://buran.aei.mpg.de//tmp with username: ali; host: buran.aei.mpg.de
+SshFileAdaptor: started session with buran.aei.mpg.de using username: ali on port: 22 for file: /tmp
+initAdaptor: instantiated SshFileAdaptor for type File
+initAdaptor: trying to instantiate SftpFileAdaptor for type File
+FileCpi: created file with URI any://buran.aei.mpg.de//tmp
+initAdaptor: instantiated SftpFileAdaptor for type File
+initAdaptor: trying to instantiate FTPFileAdaptor for type File
+FileCpi: created file with URI any://buran.aei.mpg.de//tmp
+initAdaptor: instantiated FTPFileAdaptor for type File
+initAdaptor: trying to instantiate ThirdPartyCopyFileAdaptor for type File
+FileCpi: created file with URI any://buran.aei.mpg.de//tmp
+initAdaptor: instantiated ThirdPartyCopyFileAdaptor for type File
+invocation of method toString on GridFTPFileAdaptor START
+invocation of method toString on GridFTPFileAdaptor DONE
+invocation of method getParentFile on GridFTPFileAdaptor DONE
+invocation of method toString on GridFTPFileAdaptor START
+invocation of method toString on GridFTPFileAdaptor DONE
+creating dir: GAT file: any://buran.aei.mpg.de//tmp
+invocation of method mkdirs on GridFTPFileAdaptor START
+getINFO: remotePath = /tmp, creating client to: any://buran.aei.mpg.de//tmp
+reusing security object for adaptor gridftp
+open gridftp client to buran.aei.mpg.de:2811
+using cached client
+getINFO: client created
+invocation of method mkdirs on GridFTPFileAdaptor DONE
+invocation of method toURI on GridFTPFileAdaptor START
+invocation of method toURI on GridFTPFileAdaptor DONE
+invocation of method copy on LocalFileAdaptor START
+Method copy on LocalFileAdaptor is not applicable: org.gridlab.gat.MethodNotApplicableException: default file: cannot copy to remote destination
+invocation of method copy on GridFTPFileAdaptor START
+Globus file: copy local to remote
+copying from date_script.sh to /tmp/date_script.sh
+reusing security object for adaptor gridftp
+open gridftp client to buran.aei.mpg.de:2811
+authenticating
+setting channel options
+done
+gridftp: using local active / remote PASSIVE
+invocation of method copy on GridFTPFileAdaptor DONE
+pre stage done (SUCCESS)
+RSL: & (executable = /bin/sh) (arguments =  "/tmp/date_script.sh" ) (count = 1) (hostCount = 1) (directory = .JavaGAT_SANDBOX_0.4161186847745283) (stdout = date.out) (stderr = date.err)
+polling state of globus job
+Method submitJob on GlobusResourceBrokerAdaptor failed: 
+--- START OF NESTED EXCEPTION ---
+*** globus failed: The gatekeeper failed to find the requested service
+--- END OF NESTED EXCEPTION ---
+
+--- START OF NESTED EXCEPTION STACK TRACE ---
+*** stack trace of globus
+org.globus.gram.GramException: The gatekeeper failed to find the requested service
+	at org.globus.gram.Gram.checkHttpReply(Gram.java:137)
+	at org.globus.gram.Gram.request(Gram.java:342)
+	at org.globus.gram.Gram.request(Gram.java:268)
+	at org.globus.gram.Gram.request(Gram.java:252)
+	at org.gridlab.gat.resources.cpi.globus.GlobusResourceBrokerAdaptor.submitJobGatSandbox(GlobusResourceBrokerAdaptor.java:528)
+	at org.gridlab.gat.resources.cpi.globus.GlobusResourceBrokerAdaptor.submitJob(GlobusResourceBrokerAdaptor.java:389)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:39)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:25)
+	at java.lang.reflect.Method.invoke(Method.java:585)
+	at org.gridlab.gat.engine.AdaptorInvocationHandler.invoke(AdaptorInvocationHandler.java:185)
+	at $Proxy1.submitJob(Unknown Source)
+	at gatjobrun.GATJobRunner.runJob(GATJobRunner.java:305)
+	at gatjobrun.Main.invoke(Main.java:227)
+	at gatjobrun.Main.main(Main.java:237)
+--- END OF NESTED EXCEPTION STACK TRACE ---
+invoke: No adaptor could be invoked.
+Error submiting job: 
+--- START OF NESTED EXCEPTION ---
+*** globus failed: The gatekeeper failed to find the requested service
+--- END OF NESTED EXCEPTION ---
+
+--- START OF NESTED EXCEPTION STACK TRACE ---
+*** stack trace of globus
+org.globus.gram.GramException: The gatekeeper failed to find the requested service
+	at org.globus.gram.Gram.checkHttpReply(Gram.java:137)
+	at org.globus.gram.Gram.request(Gram.java:342)
+	at org.globus.gram.Gram.request(Gram.java:268)
+	at org.globus.gram.Gram.request(Gram.java:252)
+	at org.gridlab.gat.resources.cpi.globus.GlobusResourceBrokerAdaptor.submitJobGatSandbox(GlobusResourceBrokerAdaptor.java:528)
+	at org.gridlab.gat.resources.cpi.globus.GlobusResourceBrokerAdaptor.submitJob(GlobusResourceBrokerAdaptor.java:389)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:39)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:25)
+	at java.lang.reflect.Method.invoke(Method.java:585)
+	at org.gridlab.gat.engine.AdaptorInvocationHandler.invoke(AdaptorInvocationHandler.java:185)
+	at $Proxy1.submitJob(Unknown Source)
+	at gatjobrun.GATJobRunner.runJob(GATJobRunner.java:305)
+	at gatjobrun.Main.invoke(Main.java:227)
+	at gatjobrun.Main.main(Main.java:237)
+--- END OF NESTED EXCEPTION STACK TRACE ---
+shutting down GAT
+globus broker adaptor end
+end of gridftp adaptor
+end of gridftp adaptor, closing client
+end of gridftp adaptor, closing client
+end of sftpnew adaptor
+shutting down GAT DONE
+stopping job: gat job, not initialized
+WARNING, globus job could not unbind: java.lang.NullPointerException
+globus job stop: firing event: MetricValue(time = 1186483186899, val =POST_STAGING, metric =Metric(def = MetricDefinition(job.status, type = DISCRETE, datatype = String, unit = none, params = {}), params = {}, freq = 0)
+got an exception while cancelling job: org.globus.gram.GramException: Job contact not set
+got an exception while sending signal to job: java.lang.NullPointerException
+globus job stop: delete/wipe starting
+post stage starting
+invocation of method toURI on GridFTPFileAdaptor START
+invocation of method toURI on GridFTPFileAdaptor DONE
+invocation of method toURI on GridFTPFileAdaptor START
+invocation of method toURI on GridFTPFileAdaptor DONE
+  copy any://buran.aei.mpg.de//tmp/date_script.log to any:////home/ali/programme/javagat-alexander-02-07-07/astrogrid-packages/GATJobRun/scripts/date_script.log
+invocation of method toURI on GridFTPFileAdaptor START
+invocation of method toURI on GridFTPFileAdaptor DONE
+invocation of method copy on GridFTPFileAdaptor START
+real isDir on any://buran.aei.mpg.de//tmp/date_script.log
+getINFO: remotePath = /tmp/date_script.log, creating client to: any://buran.aei.mpg.de//tmp/date_script.log
+reusing security object for adaptor gridftp
+open gridftp client to buran.aei.mpg.de:2811
+authenticating
+setting channel options
+done
+getINFO: client created
+gridftp: using local active / remote PASSIVE
+closing gridftp client
+fast isDirectory failed, falling back to slower version: 
+--- START OF NESTED EXCEPTION ---
+*** gridftp failed: Server refused performing the request. Custom message:  (error code 1) [Nested exception message:  Custom message: Unexpected reply: 500-Command failed. : System error in stat: No such file or directory
+500-A system call failed: No such file or directory
+500 End.]
+--- END OF NESTED EXCEPTION ---
+
+getINFO: remotePath = /tmp/date_script.log, creating client to: any://buran.aei.mpg.de//tmp/date_script.log
+reusing security object for adaptor gridftp
+open gridftp client to buran.aei.mpg.de:2811
+authenticating
+setting channel options
+done
+getINFO: client created
+closing gridftp client
+set cached dir of any://buran.aei.mpg.de//tmp/date_script.log to false
+Globus file: copy remote to local
+copying from /tmp/date_script.log to /home/ali/programme/javagat-alexander-02-07-07/astrogrid-packages/GATJobRun/scripts/date_script.log
+reusing security object for adaptor gridftp
+open gridftp client to buran.aei.mpg.de:2811
+authenticating
+setting channel options
+done
+gridftp: using local active / remote PASSIVE
+closing gridftp client
+Method copy on GridFTPFileAdaptor failed: 
+--- START OF NESTED EXCEPTION ---
+*** gridftp failed: Server refused performing the request. Custom message:  (error code 1) [Nested exception message:  Custom message: Unexpected reply: 500-Command failed. : globus_l_gfs_file_open failed.
+500-globus_xio: Unable to open file /tmp/date_script.log
+500-globus_xio: System error in open: No such file or directory
+500-globus_xio: A system call failed: No such file or directory
+500 End.]
+--- END OF NESTED EXCEPTION ---
+
+--- START OF NESTED EXCEPTION STACK TRACE ---
+*** stack trace of gridftp
+org.globus.ftp.exception.ServerException: Server refused performing the request. Custom message:  (error code 1) [Nested exception message:  Custom message: Unexpected reply: 500-Command failed. : globus_l_gfs_file_open failed.
+500-globus_xio: Unable to open file /tmp/date_script.log
+500-globus_xio: System error in open: No such file or directory
+500-globus_xio: A system call failed: No such file or directory
+500 End.].  Nested exception is org.globus.ftp.exception.UnexpectedReplyCodeException:  Custom message: Unexpected reply: 500-Command failed. : globus_l_gfs_file_open failed.
+500-globus_xio: Unable to open file /tmp/date_script.log
+500-globus_xio: System error in open: No such file or directory
+500-globus_xio: A system call failed: No such file or directory
+500 End.
+	at org.globus.ftp.vanilla.TransferMonitor.run(TransferMonitor.java:195)
+	at org.globus.ftp.vanilla.TransferMonitor.start(TransferMonitor.java:109)
+	at org.globus.ftp.FTPClient.transferRunSingleThread(FTPClient.java:1456)
+	at org.globus.ftp.FTPClient.get(FTPClient.java:1225)
+	at org.globus.ftp.FTPClient.get(FTPClient.java:1538)
+	at org.globus.ftp.GridFTPClient.get(GridFTPClient.java:776)
+	at org.gridlab.gat.io.cpi.globus.GlobusFileAdaptor.copyToLocal(GlobusFileAdaptor.java:295)
+	at org.gridlab.gat.io.cpi.globus.GlobusFileAdaptor.copy(GlobusFileAdaptor.java:159)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:39)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:25)
+	at java.lang.reflect.Method.invoke(Method.java:585)
+	at org.gridlab.gat.engine.AdaptorInvocationHandler.invoke(AdaptorInvocationHandler.java:185)
+	at $Proxy0.copy(Unknown Source)
+	at org.gridlab.gat.io.File.copy(File.java:74)
+	at org.gridlab.gat.resources.cpi.PostStagedFile.poststage(PostStagedFile.java:88)
+	at org.gridlab.gat.resources.cpi.PostStagedFileSet.poststage(PostStagedFileSet.java:157)
+	at org.gridlab.gat.resources.cpi.Sandbox.retrieveAndCleanup(Sandbox.java:326)
+	at org.gridlab.gat.resources.cpi.globus.GlobusJob.stop(GlobusJob.java:306)
+	at org.gridlab.gat.resources.cpi.JobCpi$JobShutdownHook.run(JobCpi.java:114)
+--- END OF NESTED EXCEPTION STACK TRACE ---
+invocation of method copy on SftpGanymedFileAdaptor START
+creating a new security object based on a security context for adaptor sftpGanymed
+initAdaptor: trying to instantiate LocalFileAdaptor for type File
+FileCpi: created file with URI any://buran.aei.mpg.de//tmp/date_script.log
+initAdaptor: File is not applicable: Cannot use remote files with the local file adaptor, URI is: any://buran.aei.mpg.de//tmp/date_script.log
+initAdaptor: trying to instantiate GridFTPFileAdaptor for type File
+FileCpi: created file with URI any://buran.aei.mpg.de//tmp/date_script.log
+reusing security object for adaptor gridftp
+initAdaptor: instantiated GridFTPFileAdaptor for type File
+initAdaptor: trying to instantiate SftpGanymedFileAdaptor for type File
+FileCpi: created file with URI any://buran.aei.mpg.de//tmp/date_script.log
+initAdaptor: instantiated SftpGanymedFileAdaptor for type File
+initAdaptor: trying to instantiate CommandlineSshFileAdaptor for type File
+FileCpi: created file with URI any://buran.aei.mpg.de//tmp/date_script.log
+initAdaptor: instantiated CommandlineSshFileAdaptor for type File
+initAdaptor: trying to instantiate SftpNewFileAdaptor for type File
+FileCpi: created file with URI any://buran.aei.mpg.de//tmp/date_script.log
+initAdaptor: instantiated SftpNewFileAdaptor for type File
+initAdaptor: trying to instantiate SshFileAdaptor for type File
+FileCpi: created file with URI any://buran.aei.mpg.de//tmp/date_script.log
+SshFileAdaptor: remote file LOCATION = any://buran.aei.mpg.de//tmp/date_script.log
+reusing security object for adaptor ssh
+Prepared session for location any://buran.aei.mpg.de//tmp/date_script.log with username: ali; host: buran.aei.mpg.de
+SshFileAdaptor: started session with buran.aei.mpg.de using username: ali on port: 22 for file: /tmp/date_script.log
+initAdaptor: instantiated SshFileAdaptor for type File
+initAdaptor: trying to instantiate SftpFileAdaptor for type File
+FileCpi: created file with URI any://buran.aei.mpg.de//tmp/date_script.log
+initAdaptor: instantiated SftpFileAdaptor for type File
+initAdaptor: trying to instantiate FTPFileAdaptor for type File
+FileCpi: created file with URI any://buran.aei.mpg.de//tmp/date_script.log
+initAdaptor: instantiated FTPFileAdaptor for type File
+initAdaptor: trying to instantiate ThirdPartyCopyFileAdaptor for type File
+FileCpi: created file with URI any://buran.aei.mpg.de//tmp/date_script.log
+initAdaptor: instantiated ThirdPartyCopyFileAdaptor for type File
+invocation of method isDirectory on GridFTPFileAdaptor START
+cached isDir of any://buran.aei.mpg.de//tmp/date_script.log result = 0
+invocation of method isDirectory on GridFTPFileAdaptor DONE
+sftpGanymed file: copy remote to local
+creating local file /home/ali/programme/javagat-alexander-02-07-07/astrogrid-packages/GATJobRun/scripts/date_script.log
+reusing security object for adaptor sftpGanymed
+Method copy on SftpGanymedFileAdaptor failed: java.lang.IllegalArgumentException: pemFile argument is null
+java.lang.IllegalArgumentException: pemFile argument is null
+	at ch.ethz.ssh2.Connection.authenticateWithPublicKey(Connection.java:463)
+	at org.gridlab.gat.io.cpi.sftpGanymed.SftpGanymedFileAdaptor.doWorkcreateConnection(SftpGanymedFileAdaptor.java:157)
+	at org.gridlab.gat.io.cpi.sftpGanymed.SftpGanymedFileAdaptor.openConnection(SftpGanymedFileAdaptor.java:105)
+	at org.gridlab.gat.io.cpi.sftpGanymed.SftpGanymedFileAdaptor.length(SftpGanymedFileAdaptor.java:344)
+	at org.gridlab.gat.io.cpi.sftpGanymed.SftpGanymedFileAdaptor.copyToLocal(SftpGanymedFileAdaptor.java:419)
+	at org.gridlab.gat.io.cpi.sftpGanymed.SftpGanymedFileAdaptor.copy(SftpGanymedFileAdaptor.java:383)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:39)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:25)
+	at java.lang.reflect.Method.invoke(Method.java:585)
+	at org.gridlab.gat.engine.AdaptorInvocationHandler.invoke(AdaptorInvocationHandler.java:185)
+	at $Proxy0.copy(Unknown Source)
+	at org.gridlab.gat.io.File.copy(File.java:74)
+	at org.gridlab.gat.resources.cpi.PostStagedFile.poststage(PostStagedFile.java:88)
+	at org.gridlab.gat.resources.cpi.PostStagedFileSet.poststage(PostStagedFileSet.java:157)
+	at org.gridlab.gat.resources.cpi.Sandbox.retrieveAndCleanup(Sandbox.java:326)
+	at org.gridlab.gat.resources.cpi.globus.GlobusJob.stop(GlobusJob.java:306)
+	at org.gridlab.gat.resources.cpi.JobCpi$JobShutdownHook.run(JobCpi.java:114)
+invocation of method copy on CommandlineSshFileAdaptor START
+initAdaptor: trying to instantiate LocalFileAdaptor for type File
+FileCpi: created file with URI any://buran.aei.mpg.de//tmp/date_script.log
+initAdaptor: File is not applicable: Cannot use remote files with the local file adaptor, URI is: any://buran.aei.mpg.de//tmp/date_script.log
+initAdaptor: trying to instantiate GridFTPFileAdaptor for type File
+FileCpi: created file with URI any://buran.aei.mpg.de//tmp/date_script.log
+reusing security object for adaptor gridftp
+initAdaptor: instantiated GridFTPFileAdaptor for type File
+initAdaptor: trying to instantiate SftpGanymedFileAdaptor for type File
+FileCpi: created file with URI any://buran.aei.mpg.de//tmp/date_script.log
+initAdaptor: instantiated SftpGanymedFileAdaptor for type File
+initAdaptor: trying to instantiate CommandlineSshFileAdaptor for type File
+FileCpi: created file with URI any://buran.aei.mpg.de//tmp/date_script.log
+initAdaptor: instantiated CommandlineSshFileAdaptor for type File
+initAdaptor: trying to instantiate SftpNewFileAdaptor for type File
+FileCpi: created file with URI any://buran.aei.mpg.de//tmp/date_script.log
+initAdaptor: instantiated SftpNewFileAdaptor for type File
+initAdaptor: trying to instantiate SshFileAdaptor for type File
+FileCpi: created file with URI any://buran.aei.mpg.de//tmp/date_script.log
+SshFileAdaptor: remote file LOCATION = any://buran.aei.mpg.de//tmp/date_script.log
+reusing security object for adaptor ssh
+Prepared session for location any://buran.aei.mpg.de//tmp/date_script.log with username: ali; host: buran.aei.mpg.de
+SshFileAdaptor: started session with buran.aei.mpg.de using username: ali on port: 22 for file: /tmp/date_script.log
+initAdaptor: instantiated SshFileAdaptor for type File
+initAdaptor: trying to instantiate SftpFileAdaptor for type File
+FileCpi: created file with URI any://buran.aei.mpg.de//tmp/date_script.log
+initAdaptor: instantiated SftpFileAdaptor for type File
+initAdaptor: trying to instantiate FTPFileAdaptor for type File
+FileCpi: created file with URI any://buran.aei.mpg.de//tmp/date_script.log
+initAdaptor: instantiated FTPFileAdaptor for type File
+initAdaptor: trying to instantiate ThirdPartyCopyFileAdaptor for type File
+FileCpi: created file with URI any://buran.aei.mpg.de//tmp/date_script.log
+initAdaptor: instantiated ThirdPartyCopyFileAdaptor for type File
+invocation of method isDirectory on GridFTPFileAdaptor START
+cached isDir of any://buran.aei.mpg.de//tmp/date_script.log result = 0
+invocation of method isDirectory on GridFTPFileAdaptor DONE
+commandlineSsh file: copy remote to local
+reusing security object for adaptor ssh
+CommandlineSsh: Prepared session for location any://buran.aei.mpg.de//tmp/date_script.log with username: ali; host: buran.aei.mpg.de
+initAdaptor: trying to instantiate LocalFileAdaptor for type File
+FileCpi: created file with URI any://buran.aei.mpg.de//tmp/date_script.log
+initAdaptor: File is not applicable: Cannot use remote files with the local file adaptor, URI is: any://buran.aei.mpg.de//tmp/date_script.log
+initAdaptor: trying to instantiate GridFTPFileAdaptor for type File
+FileCpi: created file with URI any://buran.aei.mpg.de//tmp/date_script.log
+reusing security object for adaptor gridftp
+initAdaptor: instantiated GridFTPFileAdaptor for type File
+initAdaptor: trying to instantiate SftpGanymedFileAdaptor for type File
+FileCpi: created file with URI any://buran.aei.mpg.de//tmp/date_script.log
+initAdaptor: instantiated SftpGanymedFileAdaptor for type File
+initAdaptor: trying to instantiate CommandlineSshFileAdaptor for type File
+FileCpi: created file with URI any://buran.aei.mpg.de//tmp/date_script.log
+initAdaptor: instantiated CommandlineSshFileAdaptor for type File
+initAdaptor: trying to instantiate SftpNewFileAdaptor for type File
+FileCpi: created file with URI any://buran.aei.mpg.de//tmp/date_script.log
+initAdaptor: instantiated SftpNewFileAdaptor for type File
+initAdaptor: trying to instantiate SshFileAdaptor for type File
+FileCpi: created file with URI any://buran.aei.mpg.de//tmp/date_script.log
+SshFileAdaptor: remote file LOCATION = any://buran.aei.mpg.de//tmp/date_script.log
+reusing security object for adaptor ssh
+Prepared session for location any://buran.aei.mpg.de//tmp/date_script.log with username: ali; host: buran.aei.mpg.de
+SshFileAdaptor: started session with buran.aei.mpg.de using username: ali on port: 22 for file: /tmp/date_script.log
+initAdaptor: instantiated SshFileAdaptor for type File
+initAdaptor: trying to instantiate SftpFileAdaptor for type File
+FileCpi: created file with URI any://buran.aei.mpg.de//tmp/date_script.log
+initAdaptor: instantiated SftpFileAdaptor for type File
+initAdaptor: trying to instantiate FTPFileAdaptor for type File
+FileCpi: created file with URI any://buran.aei.mpg.de//tmp/date_script.log
+initAdaptor: instantiated FTPFileAdaptor for type File
+initAdaptor: trying to instantiate ThirdPartyCopyFileAdaptor for type File
+FileCpi: created file with URI any://buran.aei.mpg.de//tmp/date_script.log
+initAdaptor: instantiated ThirdPartyCopyFileAdaptor for type File
+invocation of method exists on GridFTPFileAdaptor START
+getINFO: remotePath = /tmp/date_script.log, creating client to: any://buran.aei.mpg.de//tmp/date_script.log
+reusing security object for adaptor gridftp
+open gridftp client to buran.aei.mpg.de:2811
+authenticating
+setting channel options
+done
+getINFO: client created
+closing gridftp client
+invocation of method exists on GridFTPFileAdaptor DONE
+Method copy on CommandlineSshFileAdaptor failed: org.gridlab.gat.GATInvocationException: the remote file does not exist.
+org.gridlab.gat.GATInvocationException: the remote file does not exist.
+	at org.gridlab.gat.io.cpi.commandlineSsh.CommandlineSshFileAdaptor.copyToLocal(CommandlineSshFileAdaptor.java:156)
+	at org.gridlab.gat.io.cpi.commandlineSsh.CommandlineSshFileAdaptor.copy(CommandlineSshFileAdaptor.java:74)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:39)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:25)
+	at java.lang.reflect.Method.invoke(Method.java:585)
+	at org.gridlab.gat.engine.AdaptorInvocationHandler.invoke(AdaptorInvocationHandler.java:185)
+	at $Proxy0.copy(Unknown Source)
+	at org.gridlab.gat.io.File.copy(File.java:74)
+	at org.gridlab.gat.resources.cpi.PostStagedFile.poststage(PostStagedFile.java:88)
+	at org.gridlab.gat.resources.cpi.PostStagedFileSet.poststage(PostStagedFileSet.java:157)
+	at org.gridlab.gat.resources.cpi.Sandbox.retrieveAndCleanup(Sandbox.java:326)
+	at org.gridlab.gat.resources.cpi.globus.GlobusJob.stop(GlobusJob.java:306)
+	at org.gridlab.gat.resources.cpi.JobCpi$JobShutdownHook.run(JobCpi.java:114)
+invocation of method copy on SftpNewFileAdaptor START
+initAdaptor: trying to instantiate LocalFileAdaptor for type File
+FileCpi: created file with URI any://buran.aei.mpg.de//tmp/date_script.log
+initAdaptor: File is not applicable: Cannot use remote files with the local file adaptor, URI is: any://buran.aei.mpg.de//tmp/date_script.log
+initAdaptor: trying to instantiate GridFTPFileAdaptor for type File
+FileCpi: created file with URI any://buran.aei.mpg.de//tmp/date_script.log
+reusing security object for adaptor gridftp
+initAdaptor: instantiated GridFTPFileAdaptor for type File
+initAdaptor: trying to instantiate SftpGanymedFileAdaptor for type File
+FileCpi: created file with URI any://buran.aei.mpg.de//tmp/date_script.log
+initAdaptor: instantiated SftpGanymedFileAdaptor for type File
+initAdaptor: trying to instantiate CommandlineSshFileAdaptor for type File
+FileCpi: created file with URI any://buran.aei.mpg.de//tmp/date_script.log
+initAdaptor: instantiated CommandlineSshFileAdaptor for type File
+initAdaptor: trying to instantiate SftpNewFileAdaptor for type File
+FileCpi: created file with URI any://buran.aei.mpg.de//tmp/date_script.log
+initAdaptor: instantiated SftpNewFileAdaptor for type File
+initAdaptor: trying to instantiate SshFileAdaptor for type File
+FileCpi: created file with URI any://buran.aei.mpg.de//tmp/date_script.log
+SshFileAdaptor: remote file LOCATION = any://buran.aei.mpg.de//tmp/date_script.log
+reusing security object for adaptor ssh
+Prepared session for location any://buran.aei.mpg.de//tmp/date_script.log with username: ali; host: buran.aei.mpg.de
+SshFileAdaptor: started session with buran.aei.mpg.de using username: ali on port: 22 for file: /tmp/date_script.log
+initAdaptor: instantiated SshFileAdaptor for type File
+initAdaptor: trying to instantiate SftpFileAdaptor for type File
+FileCpi: created file with URI any://buran.aei.mpg.de//tmp/date_script.log
+initAdaptor: instantiated SftpFileAdaptor for type File
+initAdaptor: trying to instantiate FTPFileAdaptor for type File
+FileCpi: created file with URI any://buran.aei.mpg.de//tmp/date_script.log
+initAdaptor: instantiated FTPFileAdaptor for type File
+initAdaptor: trying to instantiate ThirdPartyCopyFileAdaptor for type File
+FileCpi: created file with URI any://buran.aei.mpg.de//tmp/date_script.log
+initAdaptor: instantiated ThirdPartyCopyFileAdaptor for type File
+invocation of method isDirectory on GridFTPFileAdaptor START
+cached isDir of any://buran.aei.mpg.de//tmp/date_script.log result = 0
+invocation of method isDirectory on GridFTPFileAdaptor DONE
+sftpnew file: copy remote to local
+Method copy on SftpNewFileAdaptor failed: java.lang.NullPointerException
+java.lang.NullPointerException
+	at org.gridlab.gat.io.cpi.sftpnew.SftpNewFileAdaptor.getFromCache(SftpNewFileAdaptor.java:55)
+	at org.gridlab.gat.io.cpi.sftpnew.SftpNewFileAdaptor.createChannel(SftpNewFileAdaptor.java:78)
+	at org.gridlab.gat.io.cpi.sftpnew.SftpNewFileAdaptor.copyToLocal(SftpNewFileAdaptor.java:257)
+	at org.gridlab.gat.io.cpi.sftpnew.SftpNewFileAdaptor.copy(SftpNewFileAdaptor.java:237)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:39)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:25)
+	at java.lang.reflect.Method.invoke(Method.java:585)
+	at org.gridlab.gat.engine.AdaptorInvocationHandler.invoke(AdaptorInvocationHandler.java:185)
+	at $Proxy0.copy(Unknown Source)
+	at org.gridlab.gat.io.File.copy(File.java:74)
+	at org.gridlab.gat.resources.cpi.PostStagedFile.poststage(PostStagedFile.java:88)
+	at org.gridlab.gat.resources.cpi.PostStagedFileSet.poststage(PostStagedFileSet.java:157)
+	at org.gridlab.gat.resources.cpi.Sandbox.retrieveAndCleanup(Sandbox.java:326)
+	at org.gridlab.gat.resources.cpi.globus.GlobusJob.stop(GlobusJob.java:306)
+	at org.gridlab.gat.resources.cpi.JobCpi$JobShutdownHook.run(JobCpi.java:114)
+invocation of method copy on SftpFileAdaptor START
+creating a new security object based on a security context for adaptor sftp
+initAdaptor: trying to instantiate LocalFileAdaptor for type File
+FileCpi: created file with URI any://buran.aei.mpg.de//tmp/date_script.log
+initAdaptor: File is not applicable: Cannot use remote files with the local file adaptor, URI is: any://buran.aei.mpg.de//tmp/date_script.log
+initAdaptor: trying to instantiate GridFTPFileAdaptor for type File
+FileCpi: created file with URI any://buran.aei.mpg.de//tmp/date_script.log
+reusing security object for adaptor gridftp
+initAdaptor: instantiated GridFTPFileAdaptor for type File
+initAdaptor: trying to instantiate SftpGanymedFileAdaptor for type File
+FileCpi: created file with URI any://buran.aei.mpg.de//tmp/date_script.log
+initAdaptor: instantiated SftpGanymedFileAdaptor for type File
+initAdaptor: trying to instantiate CommandlineSshFileAdaptor for type File
+FileCpi: created file with URI any://buran.aei.mpg.de//tmp/date_script.log
+initAdaptor: instantiated CommandlineSshFileAdaptor for type File
+initAdaptor: trying to instantiate SftpNewFileAdaptor for type File
+FileCpi: created file with URI any://buran.aei.mpg.de//tmp/date_script.log
+initAdaptor: instantiated SftpNewFileAdaptor for type File
+initAdaptor: trying to instantiate SshFileAdaptor for type File
+FileCpi: created file with URI any://buran.aei.mpg.de//tmp/date_script.log
+SshFileAdaptor: remote file LOCATION = any://buran.aei.mpg.de//tmp/date_script.log
+reusing security object for adaptor ssh
+Prepared session for location any://buran.aei.mpg.de//tmp/date_script.log with username: ali; host: buran.aei.mpg.de
+SshFileAdaptor: started session with buran.aei.mpg.de using username: ali on port: 22 for file: /tmp/date_script.log
+initAdaptor: instantiated SshFileAdaptor for type File
+initAdaptor: trying to instantiate SftpFileAdaptor for type File
+FileCpi: created file with URI any://buran.aei.mpg.de//tmp/date_script.log
+initAdaptor: instantiated SftpFileAdaptor for type File
+initAdaptor: trying to instantiate FTPFileAdaptor for type File
+FileCpi: created file with URI any://buran.aei.mpg.de//tmp/date_script.log
+initAdaptor: instantiated FTPFileAdaptor for type File
+initAdaptor: trying to instantiate ThirdPartyCopyFileAdaptor for type File
+FileCpi: created file with URI any://buran.aei.mpg.de//tmp/date_script.log
+initAdaptor: instantiated ThirdPartyCopyFileAdaptor for type File
+invocation of method isDirectory on GridFTPFileAdaptor START
+cached isDir of any://buran.aei.mpg.de//tmp/date_script.log result = 0
+invocation of method isDirectory on GridFTPFileAdaptor DONE
+sftp file: copy remote to local
+reusing security object for adaptor sftp
+Method copy on SftpFileAdaptor failed: 
+--- START OF NESTED EXCEPTION ---
+*** sftp failed: You must supply a username and a key
+--- END OF NESTED EXCEPTION ---
+
+--- START OF NESTED EXCEPTION STACK TRACE ---
+*** stack trace of sftp
+com.sshtools.j2ssh.authentication.AuthenticationProtocolException: You must supply a username and a key
+	at com.sshtools.j2ssh.authentication.PublicKeyAuthenticationClient.authenticate(Unknown Source)
+	at com.sshtools.j2ssh.authentication.AuthenticationProtocolClient.authenticate(Unknown Source)
+	at com.sshtools.j2ssh.SshClient.authenticate(Unknown Source)
+	at org.gridlab.gat.io.cpi.sftp.SftpFileAdaptor.openConnection(SftpFileAdaptor.java:99)
+	at org.gridlab.gat.io.cpi.sftp.SftpFileAdaptor.copyToLocal(SftpFileAdaptor.java:287)
+	at org.gridlab.gat.io.cpi.sftp.SftpFileAdaptor.copy(SftpFileAdaptor.java:267)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:39)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:25)
+	at java.lang.reflect.Method.invoke(Method.java:585)
+	at org.gridlab.gat.engine.AdaptorInvocationHandler.invoke(AdaptorInvocationHandler.java:185)
+	at $Proxy0.copy(Unknown Source)
+	at org.gridlab.gat.io.File.copy(File.java:74)
+	at org.gridlab.gat.resources.cpi.PostStagedFile.poststage(PostStagedFile.java:88)
+	at org.gridlab.gat.resources.cpi.PostStagedFileSet.poststage(PostStagedFileSet.java:157)
+	at org.gridlab.gat.resources.cpi.Sandbox.retrieveAndCleanup(Sandbox.java:326)
+	at org.gridlab.gat.resources.cpi.globus.GlobusJob.stop(GlobusJob.java:306)
+	at org.gridlab.gat.resources.cpi.JobCpi$JobShutdownHook.run(JobCpi.java:114)
+--- END OF NESTED EXCEPTION STACK TRACE ---
+invocation of method copy on ThirdPartyCopyFileAdaptor START
+Method copy on ThirdPartyCopyFileAdaptor failed: org.gridlab.gat.GATInvocationException: ThirdPartyCopyFileAdaptor can only do third party copies
+org.gridlab.gat.GATInvocationException: ThirdPartyCopyFileAdaptor can only do third party copies
+	at org.gridlab.gat.io.cpi.thirdPartyCopy.ThirdPartyCopyFileAdaptor.copy(ThirdPartyCopyFileAdaptor.java:32)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:39)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:25)
+	at java.lang.reflect.Method.invoke(Method.java:585)
+	at org.gridlab.gat.engine.AdaptorInvocationHandler.invoke(AdaptorInvocationHandler.java:185)
+	at $Proxy0.copy(Unknown Source)
+	at org.gridlab.gat.io.File.copy(File.java:74)
+	at org.gridlab.gat.resources.cpi.PostStagedFile.poststage(PostStagedFile.java:88)
+	at org.gridlab.gat.resources.cpi.PostStagedFileSet.poststage(PostStagedFileSet.java:157)
+	at org.gridlab.gat.resources.cpi.Sandbox.retrieveAndCleanup(Sandbox.java:326)
+	at org.gridlab.gat.resources.cpi.globus.GlobusJob.stop(GlobusJob.java:306)
+	at org.gridlab.gat.resources.cpi.JobCpi$JobShutdownHook.run(JobCpi.java:114)
+invocation of method copy on FTPFileAdaptor START
+cached isDir of any://buran.aei.mpg.de//tmp/date_script.log result = 0
+Globus file: copy remote to local
+copying from /tmp/date_script.log to /home/ali/programme/javagat-alexander-02-07-07/astrogrid-packages/GATJobRun/scripts/date_script.log
+polling state of globus job
+polling state of globus job
+polling state of globus job
+polling state of globus job
+polling state of globus job

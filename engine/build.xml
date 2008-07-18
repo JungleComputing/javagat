@@ -1,0 +1,48 @@
+<project name="GATEngine" default="build" basedir=".">
+	<description>
+      Build file for GAT
+    </description>
+
+	<property name="gat.location" location=".." />
+	<property name="api" location="${gat.location}/lib/GAT-API.jar" />
+
+	<property name="src" location="src" />
+	<property name="tmp" location="tmp" />
+	<property name="lib" location="${gat.location}/lib" />
+	<property name="java.debug.value" value="true" />
+	<property name="external" location="external" />
+
+	<path id="external_jars">
+		<fileset dir="${external}">
+			<include name="*.jar" />
+		</fileset>
+		<fileset file="${api}">
+		</fileset>
+	</path>
+
+	<target name="compile" description="compile the source ">
+		<mkdir dir="${tmp}" />
+		<mkdir dir="${lib}" />
+
+		<!-- Compile the java code from ${src} into ${tmp} -->
+		<javac source="1.5" srcdir="${src}" destdir="${tmp}" debug="on">
+			<classpath refid="external_jars" />
+		</javac>
+
+		<!-- Put everything in ${tmp} into the GAT.jar file -->
+		<jar jarfile="${lib}/GAT-engine.jar" basedir="${tmp}" />
+
+		<!-- Copy external libraries to lib directory -->
+		<copy todir="${lib}">
+			<fileset dir="${external}" />
+		</copy>
+
+		<delete dir="${tmp}" />
+	</target>
+
+	<target name="build" description="build everything" depends="clean,compile" />
+
+	<target name="clean" description="clean up">
+		<delete dir="${tmp}" />
+	</target>
+</project>

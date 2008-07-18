@@ -1,0 +1,116 @@
+#!/bin/sh
+
+echo ---------- RemoteCopy ------------
+rm -rf foo
+echo bin/run_gat_app tutorial.RemoteCopy /bin/echo foo
+bin/run_gat_app tutorial.RemoteCopy /bin/echo foo
+rm -rf foo
+
+rm -rf foo
+echo bin/run_gat_app tutorial.RemoteCopy sftp://kits.cs.vu.nl//bin/echo foo
+bin/run_gat_app tutorial.RemoteCopy sftp://kits.cs.vu.nl//bin/echo foo
+rm -rf foo
+ 
+rm -rf foo
+echo bin/run_gat_app tutorial.RemoteCopy gsiftp://fs1.das3.liacs.nl//bin/echo foo
+bin/run_gat_app tutorial.RemoteCopy gsiftp://fs1.das3.liacs.nl//bin/echo foo
+rm -rf foo
+
+rm -rf foo
+echo bin/run_gat_app tutorial.RemoteCopy any://kits.cs.vu.nl//bin/echo foo
+bin/run_gat_app tutorial.RemoteCopy any://kits.cs.vu.nl//bin/echo foo
+rm -rf foo
+
+ssh kits.cs.vu.nl rm -rf foo
+echo bin/run_gat_app tutorial.RemoteCopy /bin/echo any://kits.cs.vu.nl/foo
+bin/run_gat_app tutorial.RemoteCopy /bin/echo any://kits.cs.vu.nl/foo
+ssh kits.cs.vu.nl rm -rf foo
+
+ssh fs2.das3.science.uva.nl rm -rf hiha.dat
+echo bin/run_gat_app tutorial.RemoteCopy any://fs1.das3.liacs.nl//bin/echo any://fs2.das3.science.uva.nl/hiha.dat
+bin/run_gat_app tutorial.RemoteCopy any://fs1.das3.liacs.nl//bin/echo any://fs2.das3.science.uva.nl/hiha.dat
+ssh fs2.das3.science.uva.nl rm -rf hiha.dat
+
+echo ---------- RemoteCat ------------
+
+echo bin/run_gat_app tutorial.RemoteCat http://www.cs.vu.nl/~rob/hello.txt
+bin/run_gat_app tutorial.RemoteCat http://www.cs.vu.nl/~rob/hello.txt
+
+echo bin/run_gat_app tutorial.RemoteCat any://kits.cs.vu.nl/.bashrc
+bin/run_gat_app tutorial.RemoteCat any://kits.cs.vu.nl/.bashrc
+
+
+echo ---------- SubmitLocalJob ------------
+
+rm -rf hostname.txt
+echo bin/run_gat_app tutorial.SubmitLocalJob
+bin/run_gat_app tutorial.SubmitLocalJob
+cat hostname.txt
+rm -rf hostname.txt
+
+echo ---------- SubmitRemoteJob ------------
+
+rm -rf hostname.txt
+echo bin/run_gat_app tutorial.SubmitRemoteJob fs0.das3.cs.vu.nl
+bin/run_gat_app tutorial.SubmitRemoteJob fs0.das3.cs.vu.nl
+cat hostname.txt
+rm -rf hostname.txt
+
+rm -rf hostname.txt
+echo bin/run_gat_app tutorial.SubmitRemoteJob fs1.das3.liacs.nl
+bin/run_gat_app tutorial.SubmitRemoteJob fs1.das3.liacs.nl
+cat hostname.txt
+rm -rf hostname.txt
+
+
+
+echo ---------- AdvertServicePublish ------------
+
+echo bin/run_gat_app tutorial.AdvertServicePublish
+bin/run_gat_app tutorial.AdvertServicePublish
+
+
+echo ---------- AdvertServicePrinter ------------
+
+echo bin/run_gat_app tutorial.AdvertServicePrinter /home/rob/tutorialFile
+bin/run_gat_app tutorial.AdvertServicePrinter /home/rob/tutorialFile
+
+echo bin/run_gat_app tutorial.AdvertServicePrinter /home/rob/tutorialEndpoint
+bin/run_gat_app tutorial.AdvertServicePrinter /home/rob/tutorialEndpoint
+
+
+echo ---------- AdvertServiceQuery ------------
+
+echo bin/run_gat_app tutorial.AdvertServiceQuery purpose tutorial
+bin/run_gat_app tutorial.AdvertServiceQuery purpose tutorial
+
+echo bin/run_gat_app tutorial.AdvertServiceQuery name .*File
+bin/run_gat_app tutorial.AdvertServiceQuery name .*File
+
+echo bin/run_gat_app tutorial.AdvertServiceQuery name my.*
+bin/run_gat_app tutorial.AdvertServiceQuery name my.*
+
+
+echo ---------- ListMetricDefinitions ------------
+
+echo bin/run_gat_app tutorial.ListMetricDefinitions
+bin/run_gat_app tutorial.ListMetricDefinitions 2> out
+grep Exception out
+rm -rf out
+
+
+echo ---------- GetMetric ------------
+
+echo bin/run_gat_app tutorial.GetMetric fs0.das3.cs.vu.nl
+bin/run_gat_app tutorial.GetMetric fs0.das3.cs.vu.nl
+
+echo bin/run_gat_app tutorial.GetMetric node001.das3.cs.vu.nl
+bin/run_gat_app tutorial.GetMetric node001.das3.cs.vu.nl
+
+echo ---------- SubmitJobCallback ------------
+
+ssh fs1.das3.liacs.nl rm -rf testDir
+bin/run_gat_app tutorial.SubmitJobCallback fs1.das3.liacs.nl
+cat hostname.txt
+rm -rf hostname.txt
+ssh fs1.das3.liacs.nl rm -rf testDir

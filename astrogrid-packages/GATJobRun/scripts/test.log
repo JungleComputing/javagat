@@ -1,0 +1,153 @@
+java.naming.factory.initial: null
+java.naming.factory.initial: null
+java.naming.factory.initial: null
+java.naming.factory.initial: null
+java.naming.factory.initial: null
+java.naming.factory.initial: null
+java.naming.factory.initial: null
+Endpoint reference type created to: 'buran.aei.mpg.de', factory type: 'Fork'
+UUID created: uuid:fdc239d0-cf50-11dc-8319-fca0423ed40a
+EPR: Address: https://buran.aei.mpg.de:8443/wsrf/services/ManagedJobFactoryService
+Reference property[0]:
+<ns1:ResourceID xmlns:ns1="http://www.globus.org/namespaces/2004/10/gram/job" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="xsd:string">Fork</ns1:ResourceID>
+
+before job.submit
+17:32:47 INFO  [main] org.globus.exec.client.GramJob - <startTime name="submission">1201710767601</startTime>
+0 [main] INFO org.globus.exec.client.GramJob  - <startTime name="submission">1201710767601</startTime>
+17:32:47 DEBUG [main] org.globus.exec.client.GramJob - No Factory Endpoint Override...using supplied.
+2 [main] DEBUG org.globus.exec.client.GramJob  - No Factory Endpoint Override...using supplied.
+17:32:47 DEBUG [main] org.globus.exec.client.GramJob - Factory EPR: <ns1:factoryEndpoint xmlns:ns1="http://www.globus.org/namespaces/2004/10/gram/job/description" xmlns:ns2="http://schemas.xmlsoap.org/ws/2004/03/addressing" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="ns2:EndpointReferenceType">
+ <ns2:Address xsi:type="ns2:AttributedURI">https://buran.aei.mpg.de:8443/wsrf/services/ManagedJobFactoryService</ns2:Address>
+ <ns2:ReferenceProperties xsi:type="ns2:ReferencePropertiesType">
+  <ns3:ResourceID xmlns:ns3="http://www.globus.org/namespaces/2004/10/gram/job" xmlns:ns4="http://www.globus.org/foobar" xsi:type="ns4:QueryExpressionDialect">Fork</ns3:ResourceID>
+ </ns2:ReferenceProperties>
+ <ns2:ReferenceParameters xsi:type="ns2:ReferenceParametersType"/>
+</ns1:factoryEndpoint>
+23 [main] DEBUG org.globus.exec.client.GramJob  - Factory EPR: <ns1:factoryEndpoint xmlns:ns1="http://www.globus.org/namespaces/2004/10/gram/job/description" xmlns:ns2="http://schemas.xmlsoap.org/ws/2004/03/addressing" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="ns2:EndpointReferenceType">
+ <ns2:Address xsi:type="ns2:AttributedURI">https://buran.aei.mpg.de:8443/wsrf/services/ManagedJobFactoryService</ns2:Address>
+ <ns2:ReferenceProperties xsi:type="ns2:ReferencePropertiesType">
+  <ns3:ResourceID xmlns:ns3="http://www.globus.org/namespaces/2004/10/gram/job" xmlns:ns4="http://www.globus.org/foobar" xsi:type="ns4:QueryExpressionDialect">Fork</ns3:ResourceID>
+ </ns2:ReferenceProperties>
+ <ns2:ReferenceParameters xsi:type="ns2:ReferenceParametersType"/>
+</ns1:factoryEndpoint>
+17:32:47 DEBUG [main] org.globus.exec.client.GramJob - Factory Endpoint Address URL Scheme:
+https
+23 [main] DEBUG org.globus.exec.client.GramJob  - Factory Endpoint Address URL Scheme:
+https
+17:32:47 DEBUG [main] org.globus.exec.client.GramJob - using transport-level security
+23 [main] DEBUG org.globus.exec.client.GramJob  - using transport-level security
+17:32:47 DEBUG [main] org.globus.exec.client.GramJob - setting factory stub security...using authz method org.globus.wsrf.impl.security.authorization.HostAuthorization@16f5261
+186 [main] DEBUG org.globus.exec.client.GramJob  - setting factory stub security...using authz method org.globus.wsrf.impl.security.authorization.HostAuthorization@16f5261
+17:32:47 INFO  [main] org.globus.exec.client.GramJob - <startTime name="fetchDelegFactoryEndoints">1201710767842</startTime>
+241 [main] INFO org.globus.exec.client.GramJob  - <startTime name="fetchDelegFactoryEndoints">1201710767842</startTime>
+17:32:49 INFO  [main] org.globus.exec.client.GramJob - <endTime name="fetchDelegFactoryEndoints">1201710769066</endTime>
+1465 [main] INFO org.globus.exec.client.GramJob  - <endTime name="fetchDelegFactoryEndoints">1201710769066</endTime>
+17:32:49 DEBUG [main] org.globus.exec.client.GramJob - Delegation Factory Endpoint:
+Address: https://buran.aei.mpg.de:8443/wsrf/services/DelegationFactoryService
+
+1469 [main] DEBUG org.globus.exec.client.GramJob  - Delegation Factory Endpoint:
+Address: https://buran.aei.mpg.de:8443/wsrf/services/DelegationFactoryService
+
+17:32:49 DEBUG [main] org.globus.exec.client.GramJob - Setting GSITransport protection type
+1469 [main] DEBUG org.globus.exec.client.GramJob  - Setting GSITransport protection type
+17:32:49 INFO  [main] org.globus.exec.client.GramJob - <startTime name="fetchDelegCertChainRP">1201710769071</startTime>
+1470 [main] INFO org.globus.exec.client.GramJob  - <startTime name="fetchDelegCertChainRP">1201710769071</startTime>
+17:32:50 INFO  [main] org.globus.exec.client.GramJob - <endTime name="fetchDelegCertChainRP">1201710770018</endTime>
+2417 [main] INFO org.globus.exec.client.GramJob  - <endTime name="fetchDelegCertChainRP">1201710770018</endTime>
+17:32:50 DEBUG [main] org.globus.exec.client.GramJob - delegating...using authz method org.globus.wsrf.impl.security.authorization.HostAuthorization@16f5261
+2418 [main] DEBUG org.globus.exec.client.GramJob  - delegating...using authz method org.globus.wsrf.impl.security.authorization.HostAuthorization@16f5261
+17:32:50 DEBUG [main] org.globus.exec.client.GramJob - Delegation Factory URL https://buran.aei.mpg.de:8443/wsrf/services/DelegationFactoryService
+2418 [main] DEBUG org.globus.exec.client.GramJob  - Delegation Factory URL https://buran.aei.mpg.de:8443/wsrf/services/DelegationFactoryService
+17:32:50 INFO  [main] org.globus.exec.client.GramJob - <startTime name="delegate">1201710770019</startTime>
+2418 [main] INFO org.globus.exec.client.GramJob  - <startTime name="delegate">1201710770019</startTime>
+17:32:50 DEBUG [main] org.globus.exec.client.GramJob - Delegated Credential Endpoint:
+Address: https://buran.aei.mpg.de:8443/wsrf/services/DelegationService
+Reference property[0]:
+<ns1:DelegationKey xmlns:ns1="http://www.globus.org/08/2004/delegationService">ff46de00-cf50-11dc-b209-91714a565505</ns1:DelegationKey>
+
+2823 [main] DEBUG org.globus.exec.client.GramJob  - Delegated Credential Endpoint:
+Address: https://buran.aei.mpg.de:8443/wsrf/services/DelegationService
+Reference property[0]:
+<ns1:DelegationKey xmlns:ns1="http://www.globus.org/08/2004/delegationService">ff46de00-cf50-11dc-b209-91714a565505</ns1:DelegationKey>
+
+17:32:50 INFO  [main] org.globus.exec.client.GramJob - <endTime name="delegate">1201710770424</endTime>
+2823 [main] INFO org.globus.exec.client.GramJob  - <endTime name="delegate">1201710770424</endTime>
+17:32:50 DEBUG [main] org.globus.exec.client.GramJob - delegated credential endpoint:
+Address: https://buran.aei.mpg.de:8443/wsrf/services/DelegationService
+Reference property[0]:
+<ns1:DelegationKey xmlns:ns1="http://www.globus.org/08/2004/delegationService">ff46de00-cf50-11dc-b209-91714a565505</ns1:DelegationKey>
+
+2825 [main] DEBUG org.globus.exec.client.GramJob  - delegated credential endpoint:
+Address: https://buran.aei.mpg.de:8443/wsrf/services/DelegationService
+Reference property[0]:
+<ns1:DelegationKey xmlns:ns1="http://www.globus.org/08/2004/delegationService">ff46de00-cf50-11dc-b209-91714a565505</ns1:DelegationKey>
+
+17:32:50 DEBUG [main] org.globus.exec.client.GramJob - Job Submission ID: uuid:fdc239d0-cf50-11dc-8319-fca0423ed40a
+2825 [main] DEBUG org.globus.exec.client.GramJob  - Job Submission ID: uuid:fdc239d0-cf50-11dc-8319-fca0423ed40a
+17:32:50 DEBUG [main] org.globus.exec.client.GramJob - setting factory stub security...using authz method org.globus.wsrf.impl.security.authorization.HostAuthorization@16f5261
+2869 [main] DEBUG org.globus.exec.client.GramJob  - setting factory stub security...using authz method org.globus.wsrf.impl.security.authorization.HostAuthorization@16f5261
+17:32:50 DEBUG [main] org.globus.exec.client.GramJob - creating ManagedJob instance
+2869 [main] DEBUG org.globus.exec.client.GramJob  - creating ManagedJob instance
+17:32:50 DEBUG [main] org.globus.exec.client.GramJob - submission time, in seconds from the Epoch:
+before: 1201710770.470
+2878 [main] DEBUG org.globus.exec.client.GramJob  - submission time, in seconds from the Epoch:
+before: 1201710770.470
+17:32:50 DEBUG [main] org.globus.exec.client.GramJob - 
+before, in milliseconds: 1201710770470
+2878 [main] DEBUG org.globus.exec.client.GramJob  - 
+before, in milliseconds: 1201710770470
+17:32:50 INFO  [main] org.globus.exec.client.GramJob - <startTime name="createManagedJob">1201710770794</startTime>
+3193 [main] INFO org.globus.exec.client.GramJob  - <startTime name="createManagedJob">1201710770794</startTime>
+17:32:52 INFO  [main] org.globus.exec.client.GramJob - <endTime name="createManagedJob">1201710772673</endTime
+5072 [main] INFO org.globus.exec.client.GramJob  - <endTime name="createManagedJob">1201710772673</endTime
+17:32:52 DEBUG [main] org.globus.exec.client.GramJob - Termination time granted by the factory to the job resource: Thu Jan 31 17:32:50 CET 2008
+5093 [main] DEBUG org.globus.exec.client.GramJob  - Termination time granted by the factory to the job resource: Thu Jan 31 17:32:50 CET 2008
+17:32:52 DEBUG [main] org.globus.exec.client.GramJob - Current time seen by the factory service on creation: Wed Jan 30 17:32:50 CET 2008
+5106 [main] DEBUG org.globus.exec.client.GramJob  - Current time seen by the factory service on creation: Wed Jan 30 17:32:50 CET 2008
+17:32:52 DEBUG [main] org.globus.exec.client.GramJob - Job Endpoint:
+Address: https://buran.aei.mpg.de:8443/wsrf/services/ManagedExecutableJobService
+Reference property[0]:
+<ns1:ResourceID xmlns:ns1="http://www.globus.org/namespaces/2004/10/gram/job">ffc69550-cf50-11dc-b209-91714a565505</ns1:ResourceID>
+
+5108 [main] DEBUG org.globus.exec.client.GramJob  - Job Endpoint:
+Address: https://buran.aei.mpg.de:8443/wsrf/services/ManagedExecutableJobService
+Reference property[0]:
+<ns1:ResourceID xmlns:ns1="http://www.globus.org/namespaces/2004/10/gram/job">ffc69550-cf50-11dc-b209-91714a565505</ns1:ResourceID>
+
+after job.submit
+null
+0
+Error submiting job: 
+--- START OF NESTED EXCEPTION ---
+*** WSGT4newResourceBrokerAdaptor failed (GATInvocationException): 
+    --- START OF NESTED EXCEPTION ---
+    *** WSGT4newResourceBrokerAdaptor failed (RuntimeException): NOT IMPLEMENTED YET
+    --- END OF NESTED EXCEPTION ---
+--- END OF NESTED EXCEPTION ---
+--- START OF NESTED EXCEPTION STACK TRACE ---
+*** stack trace of GATInvocationException
+    --- START OF NESTED EXCEPTION STACK TRACE ---
+    *** stack trace of RuntimeException
+    java.lang.RuntimeException: NOT IMPLEMENTED YET
+	at org.globus.exec.client.GramJob.getJobs(GramJob.java:1789)
+	at org.gridlab.gat.resources.cpi.wsgt4new.WSGT4newResourceBrokerAdaptor.submitJob(WSGT4newResourceBrokerAdaptor.java:314)
+	at org.gridlab.gat.resources.cpi.ResourceBrokerCpi.submitJob(ResourceBrokerCpi.java:112)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:39)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:25)
+	at java.lang.reflect.Method.invoke(Method.java:597)
+	at org.gridlab.gat.engine.AdaptorInvocationHandler.invoke(AdaptorInvocationHandler.java:185)
+	at $Proxy1.submitJob(Unknown Source)
+	at gatjobrun.GATJobRunner.runJob(GATJobRunner.java:309)
+	at gatjobrun.Main.invoke(Main.java:227)
+	at gatjobrun.Main.main(Main.java:237)
+
+    --- END OF NESTED EXCEPTION STACK TRACE ---
+--- END OF NESTED EXCEPTION STACK TRACE ---
+java.naming.factory.initial: org.apache.naming.java.javaURLContextFactory
+java.naming.factory.initial: org.apache.naming.java.javaURLContextFactory
+java.naming.factory.initial: org.apache.naming.java.javaURLContextFactory
+java.naming.factory.initial: org.apache.naming.java.javaURLContextFactory
+java.naming.factory.initial: org.apache.naming.java.javaURLContextFactory
+java.naming.factory.initial: org.apache.naming.java.javaURLContextFactory
+java.naming.factory.initial: org.apache.naming.java.javaURLContextFactory

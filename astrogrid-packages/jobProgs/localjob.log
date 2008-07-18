@@ -1,0 +1,530 @@
+13:22:32 INFO  [main] org.gridlab.gat.engine.GATEngine - Before reading jar files
+13:22:32 DEBUG [main] org.gridlab.gat.engine.GATEngine - register marshaller for: class org.gridlab.gat.resources.cpi.globus.GlobusJob
+13:22:32 INFO  [main] org.gridlab.gat.engine.GATEngine - using default adaptor ordering policy
+13:22:32 INFO  [main] org.gridlab.gat.engine.GATEngine - adaptors ordered!
+13:22:32 INFO  [main] org.gridlab.gat.engine.GATEngine - 
+Adaptor Lists:
+
+	FileInputStream
+		org.gridlab.gat.io.cpi.local.LocalFileInputStreamAdaptor
+		org.gridlab.gat.io.cpi.globus.GridFTPFileInputStreamAdaptor
+		org.gridlab.gat.io.cpi.globus.FTPFileInputStreamAdaptor
+		org.gridlab.gat.io.cpi.sftp.SftpFileInputStreamAdaptor
+		org.gridlab.gat.io.cpi.copyingFileInputStream.CopyingFileInputStreamAdaptor
+		org.gridlab.gat.io.cpi.globus.HTTPFileInputStreamAdaptor
+		org.gridlab.gat.io.cpi.globus.HTTPSFileInputStreamAdaptor
+	LogicalFile
+		org.gridlab.gat.io.cpi.local.LocalLogicalFileAdaptor
+	File
+		org.gridlab.gat.io.cpi.local.LocalFileAdaptor
+		org.gridlab.gat.io.cpi.globus.GridFTPFileAdaptor
+		org.gridlab.gat.io.cpi.sftpGanymed.SftpGanymedFileAdaptor
+		org.gridlab.gat.io.cpi.commandlineSsh.CommandlineSshFileAdaptor
+		org.gridlab.gat.io.cpi.srcToLocalToDestCopy.SrcToLocalToDestCopyFileAdaptor
+		org.gridlab.gat.io.cpi.sshtrilead.SshTrileadFileAdaptor
+		org.gridlab.gat.io.cpi.sftp.SftpFileAdaptor
+		org.gridlab.gat.io.cpi.streaming.StreamingFileAdaptor
+		org.gridlab.gat.io.cpi.globus.FTPFileAdaptor
+		org.gridlab.gat.io.cpi.gt4.GT4GridFTPFileAdaptor
+		org.gridlab.gat.io.cpi.gt4.GT4LocalFileAdaptor
+		org.gridlab.gat.io.cpi.rftgt4.RFTGT4FileAdaptor
+	ResourceBroker
+		org.gridlab.gat.resources.cpi.local.LocalResourceBrokerAdaptor
+		org.gridlab.gat.resources.cpi.globus.GlobusResourceBrokerAdaptor
+		org.gridlab.gat.resources.cpi.wsgt4new.WSGT4newResourceBrokerAdaptor
+		org.gridlab.gat.resources.cpi.sshtrilead.SshTrileadResourceBrokerAdaptor
+		org.gridlab.gat.resources.cpi.zorilla.ZorillaResourceBrokerAdaptor
+		org.gridlab.gat.resources.cpi.localQ.LocalQResourceBrokerAdaptor
+		org.gridlab.gat.resources.cpi.gridsam.GridSAMResourceBrokerAdaptor
+		org.gridlab.gat.resources.cpi.gt4.GT4ResourceBrokerAdaptor
+		org.gridlab.gat.resources.cpi.commandlineSsh.CommandlineSshResourceBrokerAdaptor
+		org.gridlab.gat.resources.cpi.sge.SgeResourceBrokerAdaptor
+	AdvertService
+		org.gridlab.gat.advert.cpi.local.LocalAdvertServiceAdaptor
+		org.gridlab.gat.advert.cpi.globus.GlobusAdvertServiceAdaptor
+	Monitorable
+		org.gridlab.gat.monitoring.cpi.mercury.MercuryMonitorableAdaptor
+	Endpoint
+		org.gridlab.gat.io.cpi.sockets.SocketEndpointAdaptor
+	FileOutputStream
+		org.gridlab.gat.io.cpi.local.LocalFileOutputStreamAdaptor
+		org.gridlab.gat.io.cpi.globus.GridFTPFileOutputStreamAdaptor
+		org.gridlab.gat.io.cpi.sftp.SftpFileOutputStreamAdaptor
+		org.gridlab.gat.io.cpi.globus.FTPFileOutputStreamAdaptor
+		org.gridlab.gat.io.cpi.globus.HTTPFileOutputStreamAdaptor
+		org.gridlab.gat.io.cpi.globus.HTTPSFileOutputStreamAdaptor
+	RandomAccessFile
+		org.gridlab.gat.io.cpi.local.LocalRandomAccessFileAdaptor
+
+13:22:32 INFO  [main] org.gridlab.gat.engine.GATEngine - old adaptor order: 
+[org.gridlab.gat.io.cpi.local.LocalFileAdaptor, org.gridlab.gat.io.cpi.globus.GridFTPFileAdaptor, org.gridlab.gat.io.cpi.sftpGanymed.SftpGanymedFileAdaptor, org.gridlab.gat.io.cpi.commandlineSsh.CommandlineSshFileAdaptor, org.gridlab.gat.io.cpi.srcToLocalToDestCopy.SrcToLocalToDestCopyFileAdaptor, org.gridlab.gat.io.cpi.sshtrilead.SshTrileadFileAdaptor, org.gridlab.gat.io.cpi.sftp.SftpFileAdaptor, org.gridlab.gat.io.cpi.streaming.StreamingFileAdaptor, org.gridlab.gat.io.cpi.globus.FTPFileAdaptor, org.gridlab.gat.io.cpi.gt4.GT4GridFTPFileAdaptor, org.gridlab.gat.io.cpi.gt4.GT4LocalFileAdaptor, org.gridlab.gat.io.cpi.rftgt4.RFTGT4FileAdaptor]
+13:22:32 DEBUG [main] org.gridlab.gat.engine.GATEngine - reordering, cpiname: File, preferences: {globus.authenticate.retry=5, file.adaptor.name=gridftp, resourcebroker.adaptor.name=wsgt4new}
+13:22:32 INFO  [main] org.gridlab.gat.engine.GATEngine - new adaptor order: 
+[org.gridlab.gat.io.cpi.globus.GridFTPFileAdaptor]
+13:22:32 DEBUG [main] org.gridlab.gat.engine.AdaptorInvocationHandler - initAdaptor: trying to instantiate GridFTPFileAdaptor for type File
+13:22:32 DEBUG [main] org.gridlab.gat.io.cpi.FileCpi - FileCpi: created file with URI date_script.sh
+13:22:32 DEBUG [main] org.gridlab.gat.security.cpi.SecurityContextUtils - creating a new security object based on a security context for adaptor gridftp
+13:22:32 DEBUG [main] org.gridlab.gat.security.globus.GlobusContextCreator - CredentialSecurityContext credential is instance of byte[]
+13:22:32 INFO  [main] org.gridlab.gat.engine.AdaptorInvocationHandler - initAdaptor: instantiated GridFTPFileAdaptor for type File
+13:22:32 INFO  [main] org.gridlab.gat.engine.GATEngine - old adaptor order: 
+[org.gridlab.gat.io.cpi.local.LocalFileAdaptor, org.gridlab.gat.io.cpi.globus.GridFTPFileAdaptor, org.gridlab.gat.io.cpi.sftpGanymed.SftpGanymedFileAdaptor, org.gridlab.gat.io.cpi.commandlineSsh.CommandlineSshFileAdaptor, org.gridlab.gat.io.cpi.srcToLocalToDestCopy.SrcToLocalToDestCopyFileAdaptor, org.gridlab.gat.io.cpi.sshtrilead.SshTrileadFileAdaptor, org.gridlab.gat.io.cpi.sftp.SftpFileAdaptor, org.gridlab.gat.io.cpi.streaming.StreamingFileAdaptor, org.gridlab.gat.io.cpi.globus.FTPFileAdaptor, org.gridlab.gat.io.cpi.gt4.GT4GridFTPFileAdaptor, org.gridlab.gat.io.cpi.gt4.GT4LocalFileAdaptor, org.gridlab.gat.io.cpi.rftgt4.RFTGT4FileAdaptor]
+13:22:32 DEBUG [main] org.gridlab.gat.engine.GATEngine - reordering, cpiname: File, preferences: {globus.authenticate.retry=5, file.adaptor.name=gridftp, resourcebroker.adaptor.name=wsgt4new}
+13:22:32 INFO  [main] org.gridlab.gat.engine.GATEngine - new adaptor order: 
+[org.gridlab.gat.io.cpi.globus.GridFTPFileAdaptor]
+13:22:32 DEBUG [main] org.gridlab.gat.engine.AdaptorInvocationHandler - initAdaptor: trying to instantiate GridFTPFileAdaptor for type File
+13:22:32 DEBUG [main] org.gridlab.gat.io.cpi.FileCpi - FileCpi: created file with URI Executable
+13:22:33 DEBUG [main] org.gridlab.gat.security.cpi.SecurityContextUtils - reusing security object for adaptor gridftp
+13:22:33 INFO  [main] org.gridlab.gat.engine.AdaptorInvocationHandler - initAdaptor: instantiated GridFTPFileAdaptor for type File
+13:22:33 DEBUG [main] org.gridlab.gat.engine.AdaptorInvocationHandler - invocation of method hashCode on GridFTPFileAdaptor START
+13:22:33 DEBUG [main] org.gridlab.gat.engine.AdaptorInvocationHandler - invocation of method hashCode on GridFTPFileAdaptor DONE
+13:22:33 INFO  [main] org.gridlab.gat.engine.GATEngine - old adaptor order: 
+[org.gridlab.gat.io.cpi.local.LocalFileAdaptor, org.gridlab.gat.io.cpi.globus.GridFTPFileAdaptor, org.gridlab.gat.io.cpi.sftpGanymed.SftpGanymedFileAdaptor, org.gridlab.gat.io.cpi.commandlineSsh.CommandlineSshFileAdaptor, org.gridlab.gat.io.cpi.srcToLocalToDestCopy.SrcToLocalToDestCopyFileAdaptor, org.gridlab.gat.io.cpi.sshtrilead.SshTrileadFileAdaptor, org.gridlab.gat.io.cpi.sftp.SftpFileAdaptor, org.gridlab.gat.io.cpi.streaming.StreamingFileAdaptor, org.gridlab.gat.io.cpi.globus.FTPFileAdaptor, org.gridlab.gat.io.cpi.gt4.GT4GridFTPFileAdaptor, org.gridlab.gat.io.cpi.gt4.GT4LocalFileAdaptor, org.gridlab.gat.io.cpi.rftgt4.RFTGT4FileAdaptor]
+13:22:33 DEBUG [main] org.gridlab.gat.engine.GATEngine - reordering, cpiname: File, preferences: {globus.authenticate.retry=5, file.adaptor.name=gridftp, resourcebroker.adaptor.name=wsgt4new}
+13:22:33 INFO  [main] org.gridlab.gat.engine.GATEngine - new adaptor order: 
+[org.gridlab.gat.io.cpi.globus.GridFTPFileAdaptor]
+13:22:33 DEBUG [main] org.gridlab.gat.engine.AdaptorInvocationHandler - initAdaptor: trying to instantiate GridFTPFileAdaptor for type File
+13:22:33 DEBUG [main] org.gridlab.gat.io.cpi.FileCpi - FileCpi: created file with URI GATJobRun_STDOUT.tmp
+13:22:33 DEBUG [main] org.gridlab.gat.security.cpi.SecurityContextUtils - reusing security object for adaptor gridftp
+13:22:33 INFO  [main] org.gridlab.gat.engine.AdaptorInvocationHandler - initAdaptor: instantiated GridFTPFileAdaptor for type File
+13:22:33 INFO  [main] org.gridlab.gat.engine.GATEngine - old adaptor order: 
+[org.gridlab.gat.io.cpi.local.LocalFileAdaptor, org.gridlab.gat.io.cpi.globus.GridFTPFileAdaptor, org.gridlab.gat.io.cpi.sftpGanymed.SftpGanymedFileAdaptor, org.gridlab.gat.io.cpi.commandlineSsh.CommandlineSshFileAdaptor, org.gridlab.gat.io.cpi.srcToLocalToDestCopy.SrcToLocalToDestCopyFileAdaptor, org.gridlab.gat.io.cpi.sshtrilead.SshTrileadFileAdaptor, org.gridlab.gat.io.cpi.sftp.SftpFileAdaptor, org.gridlab.gat.io.cpi.streaming.StreamingFileAdaptor, org.gridlab.gat.io.cpi.globus.FTPFileAdaptor, org.gridlab.gat.io.cpi.gt4.GT4GridFTPFileAdaptor, org.gridlab.gat.io.cpi.gt4.GT4LocalFileAdaptor, org.gridlab.gat.io.cpi.rftgt4.RFTGT4FileAdaptor]
+13:22:33 DEBUG [main] org.gridlab.gat.engine.GATEngine - reordering, cpiname: File, preferences: {globus.authenticate.retry=5, file.adaptor.name=gridftp, resourcebroker.adaptor.name=wsgt4new}
+13:22:33 INFO  [main] org.gridlab.gat.engine.GATEngine - new adaptor order: 
+[org.gridlab.gat.io.cpi.globus.GridFTPFileAdaptor]
+13:22:33 DEBUG [main] org.gridlab.gat.engine.AdaptorInvocationHandler - initAdaptor: trying to instantiate GridFTPFileAdaptor for type File
+13:22:33 DEBUG [main] org.gridlab.gat.io.cpi.FileCpi - FileCpi: created file with URI GATJobRun_STDERR.tmp
+13:22:33 DEBUG [main] org.gridlab.gat.security.cpi.SecurityContextUtils - reusing security object for adaptor gridftp
+13:22:33 INFO  [main] org.gridlab.gat.engine.AdaptorInvocationHandler - initAdaptor: instantiated GridFTPFileAdaptor for type File
+13:22:33 INFO  [main] org.gridlab.gat.engine.GATEngine - old adaptor order: 
+[org.gridlab.gat.resources.cpi.local.LocalResourceBrokerAdaptor, org.gridlab.gat.resources.cpi.globus.GlobusResourceBrokerAdaptor, org.gridlab.gat.resources.cpi.wsgt4new.WSGT4newResourceBrokerAdaptor, org.gridlab.gat.resources.cpi.sshtrilead.SshTrileadResourceBrokerAdaptor, org.gridlab.gat.resources.cpi.zorilla.ZorillaResourceBrokerAdaptor, org.gridlab.gat.resources.cpi.localQ.LocalQResourceBrokerAdaptor, org.gridlab.gat.resources.cpi.gridsam.GridSAMResourceBrokerAdaptor, org.gridlab.gat.resources.cpi.gt4.GT4ResourceBrokerAdaptor, org.gridlab.gat.resources.cpi.commandlineSsh.CommandlineSshResourceBrokerAdaptor, org.gridlab.gat.resources.cpi.sge.SgeResourceBrokerAdaptor]
+13:22:33 DEBUG [main] org.gridlab.gat.engine.GATEngine - reordering, cpiname: ResourceBroker, preferences: {globus.authenticate.retry=5, file.adaptor.name=gridftp, resourcebroker.adaptor.name=wsgt4new}
+13:22:33 INFO  [main] org.gridlab.gat.engine.GATEngine - new adaptor order: 
+[org.gridlab.gat.resources.cpi.wsgt4new.WSGT4newResourceBrokerAdaptor]
+13:22:33 DEBUG [main] org.gridlab.gat.engine.AdaptorInvocationHandler - initAdaptor: trying to instantiate WSGT4newResourceBrokerAdaptor for type ResourceBroker
+13:22:33 INFO  [main] org.gridlab.gat.engine.AdaptorInvocationHandler - initAdaptor: instantiated WSGT4newResourceBrokerAdaptor for type ResourceBroker
+13:22:33 DEBUG [main] org.gridlab.gat.engine.AdaptorInvocationHandler - invocation of method submitJob on WSGT4newResourceBrokerAdaptor START
+13:22:33 DEBUG [main] org.gridlab.gat.resources.cpi.wsgt4new.WSGT4newResourceBrokerAdaptor - brokerURI: any://localhost
+13:22:33 INFO  [main] org.gridlab.gat.resources.cpi.Sandbox - creating sandbox name, sandbox root = null
+13:22:33 DEBUG [main] org.gridlab.gat.resources.cpi.Sandbox - sandbox dir: any://localhost/.JavaGAT_SANDBOX_0.14838305633508675
+13:22:33 INFO  [main] org.gridlab.gat.engine.GATEngine - old adaptor order: 
+[org.gridlab.gat.io.cpi.local.LocalFileAdaptor, org.gridlab.gat.io.cpi.globus.GridFTPFileAdaptor, org.gridlab.gat.io.cpi.sftpGanymed.SftpGanymedFileAdaptor, org.gridlab.gat.io.cpi.commandlineSsh.CommandlineSshFileAdaptor, org.gridlab.gat.io.cpi.srcToLocalToDestCopy.SrcToLocalToDestCopyFileAdaptor, org.gridlab.gat.io.cpi.sshtrilead.SshTrileadFileAdaptor, org.gridlab.gat.io.cpi.sftp.SftpFileAdaptor, org.gridlab.gat.io.cpi.streaming.StreamingFileAdaptor, org.gridlab.gat.io.cpi.globus.FTPFileAdaptor, org.gridlab.gat.io.cpi.gt4.GT4GridFTPFileAdaptor, org.gridlab.gat.io.cpi.gt4.GT4LocalFileAdaptor, org.gridlab.gat.io.cpi.rftgt4.RFTGT4FileAdaptor]
+13:22:33 DEBUG [main] org.gridlab.gat.engine.GATEngine - reordering, cpiname: File, preferences: {globus.authenticate.retry=5, resourcebroker.adaptor.name=wsgt4new, file.adaptor.name=gridftp}
+13:22:33 INFO  [main] org.gridlab.gat.engine.GATEngine - new adaptor order: 
+[org.gridlab.gat.io.cpi.globus.GridFTPFileAdaptor]
+13:22:33 DEBUG [main] org.gridlab.gat.engine.AdaptorInvocationHandler - initAdaptor: trying to instantiate GridFTPFileAdaptor for type File
+13:22:33 DEBUG [main] org.gridlab.gat.io.cpi.FileCpi - FileCpi: created file with URI any://localhost/.JavaGAT_SANDBOX_0.14838305633508675
+13:22:33 DEBUG [main] org.gridlab.gat.security.cpi.SecurityContextUtils - reusing security object for adaptor gridftp
+13:22:33 INFO  [main] org.gridlab.gat.engine.AdaptorInvocationHandler - initAdaptor: instantiated GridFTPFileAdaptor for type File
+13:22:33 DEBUG [main] org.gridlab.gat.engine.AdaptorInvocationHandler - invocation of method mkdir on GridFTPFileAdaptor START
+13:22:33 DEBUG [main] org.gridlab.gat.security.cpi.SecurityContextUtils - reusing security object for adaptor gridftp
+13:22:33 DEBUG [main] org.gridlab.gat.io.cpi.globus.GlobusFileAdaptor - open gridftp client to localhost:2811
+13:22:33 DEBUG [main] org.gridlab.gat.io.cpi.globus.GlobusFileAdaptor - setting up a client to host: 'localhost' at port: '2811'
+13:22:33 INFO  [main] org.gridlab.gat.engine.AdaptorInvocationHandler - Method mkdir on GridFTPFileAdaptor failed: 
+--- START OF NESTED EXCEPTION ---
+*** gridftp failed (ConnectException): Connection refused
+--- END OF NESTED EXCEPTION ---
+13:22:33 DEBUG [main] org.gridlab.gat.engine.AdaptorInvocationHandler - 
+--- START OF NESTED EXCEPTION ---
+*** gridftp failed (ConnectException): Connection refused
+--- END OF NESTED EXCEPTION ---
+	at org.gridlab.gat.io.cpi.globus.GridFTPFileAdaptor.doWorkCreateClient(GridFTPFileAdaptor.java:263)
+	at org.gridlab.gat.io.cpi.globus.GridFTPFileAdaptor.createClient(GridFTPFileAdaptor.java:127)
+	at org.gridlab.gat.io.cpi.globus.GlobusFileAdaptor.createClient(GlobusFileAdaptor.java:101)
+	at org.gridlab.gat.io.cpi.globus.GlobusFileAdaptor.mkdir(GlobusFileAdaptor.java:873)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:39)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:25)
+	at java.lang.reflect.Method.invoke(Method.java:597)
+	at org.gridlab.gat.engine.AdaptorInvocationHandler.invoke(AdaptorInvocationHandler.java:170)
+	at $Proxy0.mkdir(Unknown Source)
+	at org.gridlab.gat.resources.cpi.Sandbox.createSandboxDir(Sandbox.java:148)
+	at org.gridlab.gat.resources.cpi.Sandbox.initSandbox(Sandbox.java:192)
+	at org.gridlab.gat.resources.cpi.Sandbox.<init>(Sandbox.java:111)
+	at org.gridlab.gat.resources.cpi.wsgt4new.WSGT4newResourceBrokerAdaptor.submitJob(WSGT4newResourceBrokerAdaptor.java:288)
+	at org.gridlab.gat.resources.cpi.ResourceBrokerCpi.submitJob(ResourceBrokerCpi.java:106)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:39)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:25)
+	at java.lang.reflect.Method.invoke(Method.java:597)
+	at org.gridlab.gat.engine.AdaptorInvocationHandler.invoke(AdaptorInvocationHandler.java:170)
+	at $Proxy1.submitJob(Unknown Source)
+	at job.GATJobSubmit_Stageing_Exec_Sh.main(GATJobSubmit_Stageing_Exec_Sh.java:128)
+
+13:22:33 INFO  [main] org.gridlab.gat.engine.AdaptorInvocationHandler - invoke: No adaptor could be invoked.
+13:22:33 INFO  [main] org.gridlab.gat.engine.AdaptorInvocationHandler - Method submitJob on WSGT4newResourceBrokerAdaptor failed: 
+--- START OF NESTED EXCEPTION ---
+*** sandbox failed (GATInvocationException): 
+    --- START OF NESTED EXCEPTION ---
+    *** Sandbox failed (GATInvocationException): 
+        --- START OF NESTED EXCEPTION ---
+        *** GridFTPFileAdaptor failed (GATInvocationException): 
+            --- START OF NESTED EXCEPTION ---
+            *** gridftp failed (ConnectException): Connection refused
+            --- END OF NESTED EXCEPTION ---
+        --- END OF NESTED EXCEPTION ---
+    --- END OF NESTED EXCEPTION ---
+--- END OF NESTED EXCEPTION ---
+13:22:33 DEBUG [main] org.gridlab.gat.engine.AdaptorInvocationHandler - 
+--- START OF NESTED EXCEPTION ---
+*** sandbox failed (GATInvocationException): 
+    --- START OF NESTED EXCEPTION ---
+    *** Sandbox failed (GATInvocationException): 
+        --- START OF NESTED EXCEPTION ---
+        *** GridFTPFileAdaptor failed (GATInvocationException): 
+            --- START OF NESTED EXCEPTION ---
+            *** gridftp failed (ConnectException): Connection refused
+            --- END OF NESTED EXCEPTION ---
+        --- END OF NESTED EXCEPTION ---
+    --- END OF NESTED EXCEPTION ---
+--- END OF NESTED EXCEPTION ---
+	at org.gridlab.gat.resources.cpi.Sandbox.initSandbox(Sandbox.java:194)
+	at org.gridlab.gat.resources.cpi.Sandbox.<init>(Sandbox.java:111)
+	at org.gridlab.gat.resources.cpi.wsgt4new.WSGT4newResourceBrokerAdaptor.submitJob(WSGT4newResourceBrokerAdaptor.java:288)
+	at org.gridlab.gat.resources.cpi.ResourceBrokerCpi.submitJob(ResourceBrokerCpi.java:106)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:39)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:25)
+	at java.lang.reflect.Method.invoke(Method.java:597)
+	at org.gridlab.gat.engine.AdaptorInvocationHandler.invoke(AdaptorInvocationHandler.java:170)
+	at $Proxy1.submitJob(Unknown Source)
+	at job.GATJobSubmit_Stageing_Exec_Sh.main(GATJobSubmit_Stageing_Exec_Sh.java:128)
+
+13:22:33 INFO  [main] org.gridlab.gat.engine.AdaptorInvocationHandler - invoke: No adaptor could be invoked.
+Could not submit job: 
+--- START OF NESTED EXCEPTION ---
+*** WSGT4newResourceBrokerAdaptor failed (FilePrestageException): 
+    --- START OF NESTED EXCEPTION ---
+    *** sandbox failed (GATInvocationException): 
+        --- START OF NESTED EXCEPTION ---
+        *** Sandbox failed (GATInvocationException): 
+            --- START OF NESTED EXCEPTION ---
+            *** GridFTPFileAdaptor failed (GATInvocationException): 
+                --- START OF NESTED EXCEPTION ---
+                *** gridftp failed (ConnectException): Connection refused
+                --- END OF NESTED EXCEPTION ---
+            --- END OF NESTED EXCEPTION ---
+        --- END OF NESTED EXCEPTION ---
+    --- END OF NESTED EXCEPTION ---
+--- END OF NESTED EXCEPTION ---
+--- START OF NESTED EXCEPTION STACK TRACE ---
+*** stack trace of FilePrestageException
+    --- START OF NESTED EXCEPTION STACK TRACE ---
+    *** stack trace of GATInvocationException
+        --- START OF NESTED EXCEPTION STACK TRACE ---
+        *** stack trace of GATInvocationException
+            --- START OF NESTED EXCEPTION STACK TRACE ---
+            *** stack trace of GATInvocationException
+                --- START OF NESTED EXCEPTION STACK TRACE ---
+                *** stack trace of ConnectException
+                java.net.ConnectException: Connection refused
+	at java.net.PlainSocketImpl.socketConnect(Native Method)
+	at java.net.PlainSocketImpl.doConnect(PlainSocketImpl.java:333)
+	at java.net.PlainSocketImpl.connectToAddress(PlainSocketImpl.java:195)
+	at java.net.PlainSocketImpl.connect(PlainSocketImpl.java:182)
+	at java.net.SocksSocketImpl.connect(SocksSocketImpl.java:366)
+	at java.net.Socket.connect(Socket.java:519)
+	at java.net.Socket.connect(Socket.java:469)
+	at java.net.Socket.<init>(Socket.java:366)
+	at java.net.Socket.<init>(Socket.java:267)
+	at org.globus.net.SocketFactory.createSocket(SocketFactory.java:74)
+	at org.globus.net.SocketFactory.createSocket(SocketFactory.java:53)
+	at org.globus.ftp.vanilla.FTPControlChannel.open(FTPControlChannel.java:160)
+	at org.globus.ftp.GridFTPClient.<init>(GridFTPClient.java:72)
+	at org.gridlab.gat.io.cpi.globus.GridFTPFileAdaptor.doWorkCreateClient(GridFTPFileAdaptor.java:200)
+	at org.gridlab.gat.io.cpi.globus.GridFTPFileAdaptor.createClient(GridFTPFileAdaptor.java:127)
+	at org.gridlab.gat.io.cpi.globus.GlobusFileAdaptor.createClient(GlobusFileAdaptor.java:101)
+	at org.gridlab.gat.io.cpi.globus.GlobusFileAdaptor.mkdir(GlobusFileAdaptor.java:873)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:39)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:25)
+	at java.lang.reflect.Method.invoke(Method.java:597)
+	at org.gridlab.gat.engine.AdaptorInvocationHandler.invoke(AdaptorInvocationHandler.java:170)
+	at $Proxy0.mkdir(Unknown Source)
+	at org.gridlab.gat.resources.cpi.Sandbox.createSandboxDir(Sandbox.java:148)
+	at org.gridlab.gat.resources.cpi.Sandbox.initSandbox(Sandbox.java:192)
+	at org.gridlab.gat.resources.cpi.Sandbox.<init>(Sandbox.java:111)
+	at org.gridlab.gat.resources.cpi.wsgt4new.WSGT4newResourceBrokerAdaptor.submitJob(WSGT4newResourceBrokerAdaptor.java:288)
+	at org.gridlab.gat.resources.cpi.ResourceBrokerCpi.submitJob(ResourceBrokerCpi.java:106)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:39)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:25)
+	at java.lang.reflect.Method.invoke(Method.java:597)
+	at org.gridlab.gat.engine.AdaptorInvocationHandler.invoke(AdaptorInvocationHandler.java:170)
+	at $Proxy1.submitJob(Unknown Source)
+	at job.GATJobSubmit_Stageing_Exec_Sh.main(GATJobSubmit_Stageing_Exec_Sh.java:128)
+
+                --- END OF NESTED EXCEPTION STACK TRACE ---
+            --- END OF NESTED EXCEPTION STACK TRACE ---
+        --- END OF NESTED EXCEPTION STACK TRACE ---
+    --- END OF NESTED EXCEPTION STACK TRACE ---
+--- END OF NESTED EXCEPTION STACK TRACE ---
+13:22:33 DEBUG [main] org.gridlab.gat.engine.GATEngine - shutting down GAT
+13:22:33 DEBUG [main] org.gridlab.gat.io.cpi.globus.GlobusFileAdaptor - end of gridftp adaptor
+13:22:33 DEBUG [main] org.gridlab.gat.resources.cpi.local.LocalResourceBrokerAdaptor - local broker adaptor end
+13:22:33 DEBUG [main] org.gridlab.gat.resources.cpi.globus.GlobusResourceBrokerAdaptor - globus broker adaptor end
+13:22:33 DEBUG [main] org.gridlab.gat.engine.GATEngine - shutting down GAT DONE
+13:24:31 INFO  [main] org.gridlab.gat.engine.GATEngine - Before reading jar files
+13:24:31 DEBUG [main] org.gridlab.gat.engine.GATEngine - register marshaller for: class org.gridlab.gat.resources.cpi.globus.GlobusJob
+13:24:31 INFO  [main] org.gridlab.gat.engine.GATEngine - using default adaptor ordering policy
+13:24:31 INFO  [main] org.gridlab.gat.engine.GATEngine - adaptors ordered!
+13:24:31 INFO  [main] org.gridlab.gat.engine.GATEngine - 
+Adaptor Lists:
+
+	FileInputStream
+		org.gridlab.gat.io.cpi.local.LocalFileInputStreamAdaptor
+		org.gridlab.gat.io.cpi.globus.GridFTPFileInputStreamAdaptor
+		org.gridlab.gat.io.cpi.globus.FTPFileInputStreamAdaptor
+		org.gridlab.gat.io.cpi.sftp.SftpFileInputStreamAdaptor
+		org.gridlab.gat.io.cpi.copyingFileInputStream.CopyingFileInputStreamAdaptor
+		org.gridlab.gat.io.cpi.globus.HTTPFileInputStreamAdaptor
+		org.gridlab.gat.io.cpi.globus.HTTPSFileInputStreamAdaptor
+	LogicalFile
+		org.gridlab.gat.io.cpi.local.LocalLogicalFileAdaptor
+	File
+		org.gridlab.gat.io.cpi.local.LocalFileAdaptor
+		org.gridlab.gat.io.cpi.globus.GridFTPFileAdaptor
+		org.gridlab.gat.io.cpi.sftpGanymed.SftpGanymedFileAdaptor
+		org.gridlab.gat.io.cpi.commandlineSsh.CommandlineSshFileAdaptor
+		org.gridlab.gat.io.cpi.srcToLocalToDestCopy.SrcToLocalToDestCopyFileAdaptor
+		org.gridlab.gat.io.cpi.sshtrilead.SshTrileadFileAdaptor
+		org.gridlab.gat.io.cpi.sftp.SftpFileAdaptor
+		org.gridlab.gat.io.cpi.streaming.StreamingFileAdaptor
+		org.gridlab.gat.io.cpi.globus.FTPFileAdaptor
+		org.gridlab.gat.io.cpi.gt4.GT4GridFTPFileAdaptor
+		org.gridlab.gat.io.cpi.gt4.GT4LocalFileAdaptor
+		org.gridlab.gat.io.cpi.rftgt4.RFTGT4FileAdaptor
+	ResourceBroker
+		org.gridlab.gat.resources.cpi.local.LocalResourceBrokerAdaptor
+		org.gridlab.gat.resources.cpi.globus.GlobusResourceBrokerAdaptor
+		org.gridlab.gat.resources.cpi.wsgt4new.WSGT4newResourceBrokerAdaptor
+		org.gridlab.gat.resources.cpi.sshtrilead.SshTrileadResourceBrokerAdaptor
+		org.gridlab.gat.resources.cpi.zorilla.ZorillaResourceBrokerAdaptor
+		org.gridlab.gat.resources.cpi.localQ.LocalQResourceBrokerAdaptor
+		org.gridlab.gat.resources.cpi.gridsam.GridSAMResourceBrokerAdaptor
+		org.gridlab.gat.resources.cpi.gt4.GT4ResourceBrokerAdaptor
+		org.gridlab.gat.resources.cpi.commandlineSsh.CommandlineSshResourceBrokerAdaptor
+		org.gridlab.gat.resources.cpi.sge.SgeResourceBrokerAdaptor
+	AdvertService
+		org.gridlab.gat.advert.cpi.local.LocalAdvertServiceAdaptor
+		org.gridlab.gat.advert.cpi.globus.GlobusAdvertServiceAdaptor
+	Monitorable
+		org.gridlab.gat.monitoring.cpi.mercury.MercuryMonitorableAdaptor
+	Endpoint
+		org.gridlab.gat.io.cpi.sockets.SocketEndpointAdaptor
+	FileOutputStream
+		org.gridlab.gat.io.cpi.local.LocalFileOutputStreamAdaptor
+		org.gridlab.gat.io.cpi.globus.GridFTPFileOutputStreamAdaptor
+		org.gridlab.gat.io.cpi.sftp.SftpFileOutputStreamAdaptor
+		org.gridlab.gat.io.cpi.globus.FTPFileOutputStreamAdaptor
+		org.gridlab.gat.io.cpi.globus.HTTPFileOutputStreamAdaptor
+		org.gridlab.gat.io.cpi.globus.HTTPSFileOutputStreamAdaptor
+	RandomAccessFile
+		org.gridlab.gat.io.cpi.local.LocalRandomAccessFileAdaptor
+
+13:24:31 INFO  [main] org.gridlab.gat.engine.GATEngine - old adaptor order: 
+[org.gridlab.gat.io.cpi.local.LocalFileAdaptor, org.gridlab.gat.io.cpi.globus.GridFTPFileAdaptor, org.gridlab.gat.io.cpi.sftpGanymed.SftpGanymedFileAdaptor, org.gridlab.gat.io.cpi.commandlineSsh.CommandlineSshFileAdaptor, org.gridlab.gat.io.cpi.srcToLocalToDestCopy.SrcToLocalToDestCopyFileAdaptor, org.gridlab.gat.io.cpi.sshtrilead.SshTrileadFileAdaptor, org.gridlab.gat.io.cpi.sftp.SftpFileAdaptor, org.gridlab.gat.io.cpi.streaming.StreamingFileAdaptor, org.gridlab.gat.io.cpi.globus.FTPFileAdaptor, org.gridlab.gat.io.cpi.gt4.GT4GridFTPFileAdaptor, org.gridlab.gat.io.cpi.gt4.GT4LocalFileAdaptor, org.gridlab.gat.io.cpi.rftgt4.RFTGT4FileAdaptor]
+13:24:31 DEBUG [main] org.gridlab.gat.engine.GATEngine - reordering, cpiname: File, preferences: {globus.authenticate.retry=5, file.adaptor.name=gridftp, resourcebroker.adaptor.name=wsgt4new}
+13:24:31 INFO  [main] org.gridlab.gat.engine.GATEngine - new adaptor order: 
+[org.gridlab.gat.io.cpi.globus.GridFTPFileAdaptor]
+13:24:31 DEBUG [main] org.gridlab.gat.engine.AdaptorInvocationHandler - initAdaptor: trying to instantiate GridFTPFileAdaptor for type File
+13:24:31 DEBUG [main] org.gridlab.gat.io.cpi.FileCpi - FileCpi: created file with URI date_script.sh
+13:24:31 DEBUG [main] org.gridlab.gat.security.cpi.SecurityContextUtils - creating a new security object based on a security context for adaptor gridftp
+13:24:31 DEBUG [main] org.gridlab.gat.security.globus.GlobusContextCreator - CredentialSecurityContext credential is instance of byte[]
+13:24:31 INFO  [main] org.gridlab.gat.engine.AdaptorInvocationHandler - initAdaptor: instantiated GridFTPFileAdaptor for type File
+13:24:31 INFO  [main] org.gridlab.gat.engine.GATEngine - old adaptor order: 
+[org.gridlab.gat.io.cpi.local.LocalFileAdaptor, org.gridlab.gat.io.cpi.globus.GridFTPFileAdaptor, org.gridlab.gat.io.cpi.sftpGanymed.SftpGanymedFileAdaptor, org.gridlab.gat.io.cpi.commandlineSsh.CommandlineSshFileAdaptor, org.gridlab.gat.io.cpi.srcToLocalToDestCopy.SrcToLocalToDestCopyFileAdaptor, org.gridlab.gat.io.cpi.sshtrilead.SshTrileadFileAdaptor, org.gridlab.gat.io.cpi.sftp.SftpFileAdaptor, org.gridlab.gat.io.cpi.streaming.StreamingFileAdaptor, org.gridlab.gat.io.cpi.globus.FTPFileAdaptor, org.gridlab.gat.io.cpi.gt4.GT4GridFTPFileAdaptor, org.gridlab.gat.io.cpi.gt4.GT4LocalFileAdaptor, org.gridlab.gat.io.cpi.rftgt4.RFTGT4FileAdaptor]
+13:24:31 DEBUG [main] org.gridlab.gat.engine.GATEngine - reordering, cpiname: File, preferences: {globus.authenticate.retry=5, file.adaptor.name=gridftp, resourcebroker.adaptor.name=wsgt4new}
+13:24:31 INFO  [main] org.gridlab.gat.engine.GATEngine - new adaptor order: 
+[org.gridlab.gat.io.cpi.globus.GridFTPFileAdaptor]
+13:24:31 DEBUG [main] org.gridlab.gat.engine.AdaptorInvocationHandler - initAdaptor: trying to instantiate GridFTPFileAdaptor for type File
+13:24:31 DEBUG [main] org.gridlab.gat.io.cpi.FileCpi - FileCpi: created file with URI Executable
+13:24:31 DEBUG [main] org.gridlab.gat.security.cpi.SecurityContextUtils - reusing security object for adaptor gridftp
+13:24:31 INFO  [main] org.gridlab.gat.engine.AdaptorInvocationHandler - initAdaptor: instantiated GridFTPFileAdaptor for type File
+13:24:31 DEBUG [main] org.gridlab.gat.engine.AdaptorInvocationHandler - invocation of method hashCode on GridFTPFileAdaptor START
+13:24:31 DEBUG [main] org.gridlab.gat.engine.AdaptorInvocationHandler - invocation of method hashCode on GridFTPFileAdaptor DONE
+13:24:31 INFO  [main] org.gridlab.gat.engine.GATEngine - old adaptor order: 
+[org.gridlab.gat.io.cpi.local.LocalFileAdaptor, org.gridlab.gat.io.cpi.globus.GridFTPFileAdaptor, org.gridlab.gat.io.cpi.sftpGanymed.SftpGanymedFileAdaptor, org.gridlab.gat.io.cpi.commandlineSsh.CommandlineSshFileAdaptor, org.gridlab.gat.io.cpi.srcToLocalToDestCopy.SrcToLocalToDestCopyFileAdaptor, org.gridlab.gat.io.cpi.sshtrilead.SshTrileadFileAdaptor, org.gridlab.gat.io.cpi.sftp.SftpFileAdaptor, org.gridlab.gat.io.cpi.streaming.StreamingFileAdaptor, org.gridlab.gat.io.cpi.globus.FTPFileAdaptor, org.gridlab.gat.io.cpi.gt4.GT4GridFTPFileAdaptor, org.gridlab.gat.io.cpi.gt4.GT4LocalFileAdaptor, org.gridlab.gat.io.cpi.rftgt4.RFTGT4FileAdaptor]
+13:24:31 DEBUG [main] org.gridlab.gat.engine.GATEngine - reordering, cpiname: File, preferences: {globus.authenticate.retry=5, file.adaptor.name=gridftp, resourcebroker.adaptor.name=wsgt4new}
+13:24:31 INFO  [main] org.gridlab.gat.engine.GATEngine - new adaptor order: 
+[org.gridlab.gat.io.cpi.globus.GridFTPFileAdaptor]
+13:24:31 DEBUG [main] org.gridlab.gat.engine.AdaptorInvocationHandler - initAdaptor: trying to instantiate GridFTPFileAdaptor for type File
+13:24:31 DEBUG [main] org.gridlab.gat.io.cpi.FileCpi - FileCpi: created file with URI GATJobRun_STDOUT.tmp
+13:24:31 DEBUG [main] org.gridlab.gat.security.cpi.SecurityContextUtils - reusing security object for adaptor gridftp
+13:24:31 INFO  [main] org.gridlab.gat.engine.AdaptorInvocationHandler - initAdaptor: instantiated GridFTPFileAdaptor for type File
+13:24:31 INFO  [main] org.gridlab.gat.engine.GATEngine - old adaptor order: 
+[org.gridlab.gat.io.cpi.local.LocalFileAdaptor, org.gridlab.gat.io.cpi.globus.GridFTPFileAdaptor, org.gridlab.gat.io.cpi.sftpGanymed.SftpGanymedFileAdaptor, org.gridlab.gat.io.cpi.commandlineSsh.CommandlineSshFileAdaptor, org.gridlab.gat.io.cpi.srcToLocalToDestCopy.SrcToLocalToDestCopyFileAdaptor, org.gridlab.gat.io.cpi.sshtrilead.SshTrileadFileAdaptor, org.gridlab.gat.io.cpi.sftp.SftpFileAdaptor, org.gridlab.gat.io.cpi.streaming.StreamingFileAdaptor, org.gridlab.gat.io.cpi.globus.FTPFileAdaptor, org.gridlab.gat.io.cpi.gt4.GT4GridFTPFileAdaptor, org.gridlab.gat.io.cpi.gt4.GT4LocalFileAdaptor, org.gridlab.gat.io.cpi.rftgt4.RFTGT4FileAdaptor]
+13:24:31 DEBUG [main] org.gridlab.gat.engine.GATEngine - reordering, cpiname: File, preferences: {globus.authenticate.retry=5, file.adaptor.name=gridftp, resourcebroker.adaptor.name=wsgt4new}
+13:24:31 INFO  [main] org.gridlab.gat.engine.GATEngine - new adaptor order: 
+[org.gridlab.gat.io.cpi.globus.GridFTPFileAdaptor]
+13:24:31 DEBUG [main] org.gridlab.gat.engine.AdaptorInvocationHandler - initAdaptor: trying to instantiate GridFTPFileAdaptor for type File
+13:24:31 DEBUG [main] org.gridlab.gat.io.cpi.FileCpi - FileCpi: created file with URI GATJobRun_STDERR.tmp
+13:24:31 DEBUG [main] org.gridlab.gat.security.cpi.SecurityContextUtils - reusing security object for adaptor gridftp
+13:24:31 INFO  [main] org.gridlab.gat.engine.AdaptorInvocationHandler - initAdaptor: instantiated GridFTPFileAdaptor for type File
+13:24:31 INFO  [main] org.gridlab.gat.engine.GATEngine - old adaptor order: 
+[org.gridlab.gat.resources.cpi.local.LocalResourceBrokerAdaptor, org.gridlab.gat.resources.cpi.globus.GlobusResourceBrokerAdaptor, org.gridlab.gat.resources.cpi.wsgt4new.WSGT4newResourceBrokerAdaptor, org.gridlab.gat.resources.cpi.sshtrilead.SshTrileadResourceBrokerAdaptor, org.gridlab.gat.resources.cpi.zorilla.ZorillaResourceBrokerAdaptor, org.gridlab.gat.resources.cpi.localQ.LocalQResourceBrokerAdaptor, org.gridlab.gat.resources.cpi.gridsam.GridSAMResourceBrokerAdaptor, org.gridlab.gat.resources.cpi.gt4.GT4ResourceBrokerAdaptor, org.gridlab.gat.resources.cpi.commandlineSsh.CommandlineSshResourceBrokerAdaptor, org.gridlab.gat.resources.cpi.sge.SgeResourceBrokerAdaptor]
+13:24:31 DEBUG [main] org.gridlab.gat.engine.GATEngine - reordering, cpiname: ResourceBroker, preferences: {globus.authenticate.retry=5, file.adaptor.name=gridftp, resourcebroker.adaptor.name=wsgt4new}
+13:24:31 INFO  [main] org.gridlab.gat.engine.GATEngine - new adaptor order: 
+[org.gridlab.gat.resources.cpi.wsgt4new.WSGT4newResourceBrokerAdaptor]
+13:24:31 DEBUG [main] org.gridlab.gat.engine.AdaptorInvocationHandler - initAdaptor: trying to instantiate WSGT4newResourceBrokerAdaptor for type ResourceBroker
+13:24:31 INFO  [main] org.gridlab.gat.engine.AdaptorInvocationHandler - initAdaptor: instantiated WSGT4newResourceBrokerAdaptor for type ResourceBroker
+13:24:31 DEBUG [main] org.gridlab.gat.engine.AdaptorInvocationHandler - invocation of method submitJob on WSGT4newResourceBrokerAdaptor START
+13:24:31 DEBUG [main] org.gridlab.gat.resources.cpi.wsgt4new.WSGT4newResourceBrokerAdaptor - brokerURI: any://localhost
+13:24:31 INFO  [main] org.gridlab.gat.resources.cpi.Sandbox - creating sandbox name, sandbox root = null
+13:24:31 DEBUG [main] org.gridlab.gat.resources.cpi.Sandbox - sandbox dir: any://localhost/.JavaGAT_SANDBOX_0.16124406863141605
+13:24:31 INFO  [main] org.gridlab.gat.engine.GATEngine - old adaptor order: 
+[org.gridlab.gat.io.cpi.local.LocalFileAdaptor, org.gridlab.gat.io.cpi.globus.GridFTPFileAdaptor, org.gridlab.gat.io.cpi.sftpGanymed.SftpGanymedFileAdaptor, org.gridlab.gat.io.cpi.commandlineSsh.CommandlineSshFileAdaptor, org.gridlab.gat.io.cpi.srcToLocalToDestCopy.SrcToLocalToDestCopyFileAdaptor, org.gridlab.gat.io.cpi.sshtrilead.SshTrileadFileAdaptor, org.gridlab.gat.io.cpi.sftp.SftpFileAdaptor, org.gridlab.gat.io.cpi.streaming.StreamingFileAdaptor, org.gridlab.gat.io.cpi.globus.FTPFileAdaptor, org.gridlab.gat.io.cpi.gt4.GT4GridFTPFileAdaptor, org.gridlab.gat.io.cpi.gt4.GT4LocalFileAdaptor, org.gridlab.gat.io.cpi.rftgt4.RFTGT4FileAdaptor]
+13:24:31 DEBUG [main] org.gridlab.gat.engine.GATEngine - reordering, cpiname: File, preferences: {globus.authenticate.retry=5, resourcebroker.adaptor.name=wsgt4new, file.adaptor.name=gridftp}
+13:24:31 INFO  [main] org.gridlab.gat.engine.GATEngine - new adaptor order: 
+[org.gridlab.gat.io.cpi.globus.GridFTPFileAdaptor]
+13:24:31 DEBUG [main] org.gridlab.gat.engine.AdaptorInvocationHandler - initAdaptor: trying to instantiate GridFTPFileAdaptor for type File
+13:24:31 DEBUG [main] org.gridlab.gat.io.cpi.FileCpi - FileCpi: created file with URI any://localhost/.JavaGAT_SANDBOX_0.16124406863141605
+13:24:31 DEBUG [main] org.gridlab.gat.security.cpi.SecurityContextUtils - reusing security object for adaptor gridftp
+13:24:31 INFO  [main] org.gridlab.gat.engine.AdaptorInvocationHandler - initAdaptor: instantiated GridFTPFileAdaptor for type File
+13:24:31 DEBUG [main] org.gridlab.gat.engine.AdaptorInvocationHandler - invocation of method mkdir on GridFTPFileAdaptor START
+13:24:31 DEBUG [main] org.gridlab.gat.security.cpi.SecurityContextUtils - reusing security object for adaptor gridftp
+13:24:31 DEBUG [main] org.gridlab.gat.io.cpi.globus.GlobusFileAdaptor - open gridftp client to localhost:2811
+13:24:31 DEBUG [main] org.gridlab.gat.io.cpi.globus.GlobusFileAdaptor - setting up a client to host: 'localhost' at port: '2811'
+13:24:31 INFO  [main] org.gridlab.gat.engine.AdaptorInvocationHandler - Method mkdir on GridFTPFileAdaptor failed: 
+--- START OF NESTED EXCEPTION ---
+*** gridftp failed (ConnectException): Connection refused
+--- END OF NESTED EXCEPTION ---
+13:24:31 DEBUG [main] org.gridlab.gat.engine.AdaptorInvocationHandler - 
+--- START OF NESTED EXCEPTION ---
+*** gridftp failed (ConnectException): Connection refused
+--- END OF NESTED EXCEPTION ---
+	at org.gridlab.gat.io.cpi.globus.GridFTPFileAdaptor.doWorkCreateClient(GridFTPFileAdaptor.java:263)
+	at org.gridlab.gat.io.cpi.globus.GridFTPFileAdaptor.createClient(GridFTPFileAdaptor.java:127)
+	at org.gridlab.gat.io.cpi.globus.GlobusFileAdaptor.createClient(GlobusFileAdaptor.java:101)
+	at org.gridlab.gat.io.cpi.globus.GlobusFileAdaptor.mkdir(GlobusFileAdaptor.java:873)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:39)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:25)
+	at java.lang.reflect.Method.invoke(Method.java:597)
+	at org.gridlab.gat.engine.AdaptorInvocationHandler.invoke(AdaptorInvocationHandler.java:170)
+	at $Proxy0.mkdir(Unknown Source)
+	at org.gridlab.gat.resources.cpi.Sandbox.createSandboxDir(Sandbox.java:148)
+	at org.gridlab.gat.resources.cpi.Sandbox.initSandbox(Sandbox.java:192)
+	at org.gridlab.gat.resources.cpi.Sandbox.<init>(Sandbox.java:111)
+	at org.gridlab.gat.resources.cpi.wsgt4new.WSGT4newResourceBrokerAdaptor.submitJob(WSGT4newResourceBrokerAdaptor.java:288)
+	at org.gridlab.gat.resources.cpi.ResourceBrokerCpi.submitJob(ResourceBrokerCpi.java:106)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:39)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:25)
+	at java.lang.reflect.Method.invoke(Method.java:597)
+	at org.gridlab.gat.engine.AdaptorInvocationHandler.invoke(AdaptorInvocationHandler.java:170)
+	at $Proxy1.submitJob(Unknown Source)
+	at job.GATJobSubmit_Stageing_Exec_Sh.main(GATJobSubmit_Stageing_Exec_Sh.java:128)
+
+13:24:31 INFO  [main] org.gridlab.gat.engine.AdaptorInvocationHandler - invoke: No adaptor could be invoked.
+13:24:31 INFO  [main] org.gridlab.gat.engine.AdaptorInvocationHandler - Method submitJob on WSGT4newResourceBrokerAdaptor failed: 
+--- START OF NESTED EXCEPTION ---
+*** sandbox failed (GATInvocationException): 
+    --- START OF NESTED EXCEPTION ---
+    *** Sandbox failed (GATInvocationException): 
+        --- START OF NESTED EXCEPTION ---
+        *** GridFTPFileAdaptor failed (GATInvocationException): 
+            --- START OF NESTED EXCEPTION ---
+            *** gridftp failed (ConnectException): Connection refused
+            --- END OF NESTED EXCEPTION ---
+        --- END OF NESTED EXCEPTION ---
+    --- END OF NESTED EXCEPTION ---
+--- END OF NESTED EXCEPTION ---
+13:24:31 DEBUG [main] org.gridlab.gat.engine.AdaptorInvocationHandler - 
+--- START OF NESTED EXCEPTION ---
+*** sandbox failed (GATInvocationException): 
+    --- START OF NESTED EXCEPTION ---
+    *** Sandbox failed (GATInvocationException): 
+        --- START OF NESTED EXCEPTION ---
+        *** GridFTPFileAdaptor failed (GATInvocationException): 
+            --- START OF NESTED EXCEPTION ---
+            *** gridftp failed (ConnectException): Connection refused
+            --- END OF NESTED EXCEPTION ---
+        --- END OF NESTED EXCEPTION ---
+    --- END OF NESTED EXCEPTION ---
+--- END OF NESTED EXCEPTION ---
+	at org.gridlab.gat.resources.cpi.Sandbox.initSandbox(Sandbox.java:194)
+	at org.gridlab.gat.resources.cpi.Sandbox.<init>(Sandbox.java:111)
+	at org.gridlab.gat.resources.cpi.wsgt4new.WSGT4newResourceBrokerAdaptor.submitJob(WSGT4newResourceBrokerAdaptor.java:288)
+	at org.gridlab.gat.resources.cpi.ResourceBrokerCpi.submitJob(ResourceBrokerCpi.java:106)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:39)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:25)
+	at java.lang.reflect.Method.invoke(Method.java:597)
+	at org.gridlab.gat.engine.AdaptorInvocationHandler.invoke(AdaptorInvocationHandler.java:170)
+	at $Proxy1.submitJob(Unknown Source)
+	at job.GATJobSubmit_Stageing_Exec_Sh.main(GATJobSubmit_Stageing_Exec_Sh.java:128)
+
+13:24:31 INFO  [main] org.gridlab.gat.engine.AdaptorInvocationHandler - invoke: No adaptor could be invoked.
+Could not submit job: 
+--- START OF NESTED EXCEPTION ---
+*** WSGT4newResourceBrokerAdaptor failed (FilePrestageException): 
+    --- START OF NESTED EXCEPTION ---
+    *** sandbox failed (GATInvocationException): 
+        --- START OF NESTED EXCEPTION ---
+        *** Sandbox failed (GATInvocationException): 
+            --- START OF NESTED EXCEPTION ---
+            *** GridFTPFileAdaptor failed (GATInvocationException): 
+                --- START OF NESTED EXCEPTION ---
+                *** gridftp failed (ConnectException): Connection refused
+                --- END OF NESTED EXCEPTION ---
+            --- END OF NESTED EXCEPTION ---
+        --- END OF NESTED EXCEPTION ---
+    --- END OF NESTED EXCEPTION ---
+--- END OF NESTED EXCEPTION ---
+--- START OF NESTED EXCEPTION STACK TRACE ---
+*** stack trace of FilePrestageException
+    --- START OF NESTED EXCEPTION STACK TRACE ---
+    *** stack trace of GATInvocationException
+        --- START OF NESTED EXCEPTION STACK TRACE ---
+        *** stack trace of GATInvocationException
+            --- START OF NESTED EXCEPTION STACK TRACE ---
+            *** stack trace of GATInvocationException
+                --- START OF NESTED EXCEPTION STACK TRACE ---
+                *** stack trace of ConnectException
+                java.net.ConnectException: Connection refused
+	at java.net.PlainSocketImpl.socketConnect(Native Method)
+	at java.net.PlainSocketImpl.doConnect(PlainSocketImpl.java:333)
+	at java.net.PlainSocketImpl.connectToAddress(PlainSocketImpl.java:195)
+	at java.net.PlainSocketImpl.connect(PlainSocketImpl.java:182)
+	at java.net.SocksSocketImpl.connect(SocksSocketImpl.java:366)
+	at java.net.Socket.connect(Socket.java:519)
+	at java.net.Socket.connect(Socket.java:469)
+	at java.net.Socket.<init>(Socket.java:366)
+	at java.net.Socket.<init>(Socket.java:267)
+	at org.globus.net.SocketFactory.createSocket(SocketFactory.java:74)
+	at org.globus.net.SocketFactory.createSocket(SocketFactory.java:53)
+	at org.globus.ftp.vanilla.FTPControlChannel.open(FTPControlChannel.java:160)
+	at org.globus.ftp.GridFTPClient.<init>(GridFTPClient.java:72)
+	at org.gridlab.gat.io.cpi.globus.GridFTPFileAdaptor.doWorkCreateClient(GridFTPFileAdaptor.java:200)
+	at org.gridlab.gat.io.cpi.globus.GridFTPFileAdaptor.createClient(GridFTPFileAdaptor.java:127)
+	at org.gridlab.gat.io.cpi.globus.GlobusFileAdaptor.createClient(GlobusFileAdaptor.java:101)
+	at org.gridlab.gat.io.cpi.globus.GlobusFileAdaptor.mkdir(GlobusFileAdaptor.java:873)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:39)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:25)
+	at java.lang.reflect.Method.invoke(Method.java:597)
+	at org.gridlab.gat.engine.AdaptorInvocationHandler.invoke(AdaptorInvocationHandler.java:170)
+	at $Proxy0.mkdir(Unknown Source)
+	at org.gridlab.gat.resources.cpi.Sandbox.createSandboxDir(Sandbox.java:148)
+	at org.gridlab.gat.resources.cpi.Sandbox.initSandbox(Sandbox.java:192)
+	at org.gridlab.gat.resources.cpi.Sandbox.<init>(Sandbox.java:111)
+	at org.gridlab.gat.resources.cpi.wsgt4new.WSGT4newResourceBrokerAdaptor.submitJob(WSGT4newResourceBrokerAdaptor.java:288)
+	at org.gridlab.gat.resources.cpi.ResourceBrokerCpi.submitJob(ResourceBrokerCpi.java:106)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:39)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:25)
+	at java.lang.reflect.Method.invoke(Method.java:597)
+	at org.gridlab.gat.engine.AdaptorInvocationHandler.invoke(AdaptorInvocationHandler.java:170)
+	at $Proxy1.submitJob(Unknown Source)
+	at job.GATJobSubmit_Stageing_Exec_Sh.main(GATJobSubmit_Stageing_Exec_Sh.java:128)
+
+                --- END OF NESTED EXCEPTION STACK TRACE ---
+            --- END OF NESTED EXCEPTION STACK TRACE ---
+        --- END OF NESTED EXCEPTION STACK TRACE ---
+    --- END OF NESTED EXCEPTION STACK TRACE ---
+--- END OF NESTED EXCEPTION STACK TRACE ---
+13:24:31 DEBUG [main] org.gridlab.gat.engine.GATEngine - shutting down GAT
+13:24:31 DEBUG [main] org.gridlab.gat.io.cpi.globus.GlobusFileAdaptor - end of gridftp adaptor
+13:24:31 DEBUG [main] org.gridlab.gat.resources.cpi.local.LocalResourceBrokerAdaptor - local broker adaptor end
+13:24:31 DEBUG [main] org.gridlab.gat.resources.cpi.globus.GlobusResourceBrokerAdaptor - globus broker adaptor end
+13:24:31 DEBUG [main] org.gridlab.gat.engine.GATEngine - shutting down GAT DONE

@@ -1,0 +1,47 @@
+<project name="GAT-API" default="build" basedir=".">
+    <description>
+      Build file for GAT
+    </description>
+    <!-- Global properties for GAT API-->
+    
+	<property name="gat.location" location=".." />
+	<property name="src" location="src" />
+    <property name="tmp" location="tmp" />
+    <property name="lib" location="${gat.location}/lib" />
+    <property name="doc" location="${gat.location}/doc/javadoc" />
+    <property name="java.debug.value" value="true" />
+
+    <target name="compile" description="compile the source ">
+        <mkdir dir="${tmp}" />
+        <mkdir dir="${lib}" />
+
+        <!-- Compile the java code from ${src} into ${tmp} -->
+        <javac source="1.5" srcdir="${src}" destdir="${tmp}" debug="on" />
+
+        <!-- Put everything in ${tmp} into the GAT.jar file -->
+        <jar jarfile="${lib}/GAT-API.jar" basedir="${tmp}" />
+
+        <delete dir="${tmp}" />
+    </target>
+
+    <target name="build" description="build everything" depends="clean,compile" />
+
+    <target name="javadoc" description="generate javadoc for gat users">
+        <delete dir="${doc}" />
+        <javadoc destdir="${doc}" access="public" use="true" notree="false" nonavbar="false" noindex="false" splitindex="true" version="true" nodeprecatedlist="false" nodeprecated="false" verbose="false" classpath="${lib}/GAT-API.jar">
+            <link href="http://java.sun.com/j2se/1.5/docs/api/" />
+
+            <fileset dir="${src}">
+                <include name="**/*.java" />
+                <exclude name="**/FileInterface.java" />
+                <exclude name="**/RandomAccessFileInterface.java" />
+                <exclude name="**/FileInputStreamInterface.java" />
+                <exclude name="**/FileOutputStreamInterface.java" />
+            </fileset>
+        </javadoc>
+    </target>
+
+    <target name="clean" description="clean up">
+        <delete dir="${tmp}" />
+    </target>
+</project>

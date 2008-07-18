@@ -1,0 +1,222 @@
+<project name    = "GATJobRun"
+         default = "build"
+         basedir = ".">
+
+  <description>
+    Builds the project GATJobRun.
+  </description>
+
+  <!-- Get the path to the JavaGAT engine libraries.
+       For this, GAT_LOCATION must be set. -->
+  <property environment = "env" />
+
+  <!-- getting pwd -->
+  <property name = "currdir" location = "${env.PWD}" />
+
+  <!-- getting SGE_ROOT -->
+  <property name = "sgeroot" location = "${env.SGE_ROOT}" />
+
+
+  <fail message = "Environment variable ${GAT_LOCATION} must be set !">
+    <condition>
+      <equals
+        arg1 = "${env.GAT_LOCATION}"
+        arg2 = "$${env.GAT_LOCATION}"
+      />
+    </condition>
+  </fail>
+
+  <!-- Check that it really points to a JavaGAT installation -->
+  <available file     = "${env.GAT_LOCATION}"
+             type     = "dir"
+             property = "gat_dir"
+             value    = "${env.GAT_LOCATION}" />
+
+  <fail message = "Environment variable ${GAT_LOCATION} doesn't seem to point to a JavaGAT installation !"
+        unless  = "gat_dir" />
+
+  <!-- Check path to external jars -->
+  <available file     = "${env.GAT_LOCATION}/adaptors/external"
+             type     = "dir"
+             property = "gat_adaptors_external_dir"
+             value    = "${env.GAT_LOCATION}/adaptors/external" />
+
+  <fail message = "External jars for the build not found !"
+        unless  = "gat_adaptors_external_dir" />
+
+<!-- <property name = "srcdir"   location = "${currdir}/src/gatjobrun" />
+  <property name = "builddir" location = "${currdir}/build/classes" />
+  <property name = "distdir"  location = "${currdir}/dist" />-->
+
+  <property name = "srcdir"           location = "src" />
+  <property name = "builddir"         location = "build/classes" />
+  <property name = "distdir"          location = "dist" />
+  <property name = "globus_lib"       location ="${env.GLOBUS_LOCATION}/lib" />
+  <property name = "globus_loc"       location ="${env.GLOBUS_LOCATION}" />
+<!--  <property name = "javacog_gt4_lib"  location = "${env.GAT_LOCATION}/cog-4_1_4/lib-gt4_0_0" />
+  <property name = "javacog_lib"      location = "${env.GAT_LOCATION}/cog-4_1_4/lib" />-->
+
+  <property name = "ext_jars"         location = "${env.GAT_LOCATION}/adaptors/external" />
+
+  <path id = "gat_engine_jars_path">
+    <fileset id  = "gat_engine_jars"
+             dir = "${gat_dir}">
+      <include name = "lib/GAT-API.jar" />
+      <include name = "lib/GAT-engine.jar" />
+      <include name = "lib/colobus.jar" />
+      <include name = "lib/commons-logging-1.1.jar" />
+      <include name = "lib/log4j-1.2.13.jar" />
+      <include name = "lib/ibis-util-1.4.jar" />
+      <include name = "lib/castor-1.1.1-xml.jar" />
+      <include name = "lib/xercesImpl.jar" />
+      <include name = "lib/xmlParserAPIs.jar" />
+      <include name = "lib/drmaa.jar" />
+    </fileset>
+  </path>
+
+  <path id = "gat_adaptors_external_jars_path">
+    <fileset id  = "gat_adaptors_external_jars"
+             dir = "${gat_adaptors_external_dir}">
+      <include name = "drmaa.jar" />
+    </fileset>
+  </path>
+
+
+  <target name        = "build"
+          depends     = "clean"
+          description = "build the JARs">
+    <!-- Create the target directory -->
+    <mkdir dir = "${builddir}" />
+
+    <!-- Compile the java code from ${srcdir} into ${builddir} -->
+    <javac srcdir  = "${srcdir}"
+           destdir = "${builddir}"
+           debug   = "on" >
+      <classpath refid = "gat_engine_jars_path" />
+    </javac>
+
+    <!-- Create the distribution directory
+         and copy external libraries into it -->
+    <mkdir dir = "${distdir}" />
+    <copy todir="${distdir}">
+      <fileset refid="gat_engine_jars" />
+    </copy>
+    <copy todir="${distdir}/lib">
+      <fileset refid="gat_adaptors_external_jars" />
+    </copy>
+
+
+ <path id = "gat-libs" >
+     <fileset dir = "${currdir}/dist/lib" >
+        <include name = "GAT-API.jar" />
+        <include name = "GAT-engine.jar" />
+        <include name = "colobus.jar" />
+        <include name = "commons-logging-1.1.jar" />
+        <include name = "log4j-1.2.13.ja" />
+        <include name = "castor-1.1.1-xml.jar" />
+        <include name = "xercesImpl.jar" />
+        <include name = "xmlParserAPIs.jar" />
+        <include name = "drmaa.jar" />
+        <include name = "ibis-util-1.4.jar" />
+     </fileset>
+  </path>
+
+ <!-- <path id = "sge-lib" >
+     <fileset dir = "${sgeroot}/lib" >
+        <include name = "*.jar" />
+     </fileset>
+  </path>-->
+
+ <path id = "gt4-libs" >
+     <fileset dir = "${globus_lib}" >
+        <include name = "*.jar" />
+     </fileset>
+  </path>
+
+<!--  <path id = "cog-libs" >
+     <fileset dir = "${javacog_lib}" >
+        <include name = "*.jar" />
+     </fileset>
+  </path>
+
+  <path id = "gt4cog-libs" >
+     <fileset dir = "${javacog_gt4_lib}" >
+        <include name = "*.jar" />
+     </fileset>
+  </path> -->
+
+  <path id = "external_lib" >
+     <fileset dir = "${ext_jars}" >
+        <include name = "*.jar" />
+     </fileset>
+  </path>
+
+  <!-- pathconvert for having all the jar files as a string variable
+       in the later build... -->
+
+  <pathconvert property="jar-gat" refid="gat-libs" pathsep=" " dirsep="/">
+     <map from="/" to="/"/>
+  </pathconvert>
+
+<!--  <pathconvert property="jar-sge" refid="sge-lib" pathsep=" " dirsep="/">
+     <map from="/" to="/"/>
+  </pathconvert> -->
+
+  <pathconvert property="jar-gt4" refid="gt4-libs" pathsep=" " dirsep="/">
+     <map from="/" to="/"/>
+  </pathconvert>
+
+<!--  <pathconvert property="jar-cog" refid="cog-libs" pathsep=" " dirsep="/">
+     <map from="/" to="/"/>
+  </pathconvert>
+
+  <pathconvert property="jar-gt4cog" refid="gt4cog-libs" pathsep=" " dirsep="/">
+     <map from="/" to="/"/>
+  </pathconvert>-->
+
+  <pathconvert property="jar-external" refid="external_lib" pathsep=" " dirsep="/">
+     <map from="/" to="/"/>
+  </pathconvert>
+
+  <echo>
+      I have as jarfiles
+      ${jar-gat } ${jar-external}
+  </echo>
+
+
+    <!-- Create the JAR from ${builddir} classes -->
+    <jar jarfile = "${distdir}/GATJobRun.jar">
+      <fileset dir = "${builddir}" />
+      <fileset file = "log4j.properties" />
+      <manifest>
+        <attribute name  = "Main-Class"
+                   value = "gatjobrun.Main" />
+        <attribute name  = "Class-Path" value = "${jar-gat} ${jar-external} ${jar-gt4} ${globus_loc}/client-config.wsdd" />
+      </manifest>
+    </jar>
+
+    <!-- Create the JAR for GATJobOperation from ${builddir} classes -->
+    <jar jarfile = "${distdir}/GATJobOperation.jar">
+      <fileset dir = "${builddir}" />
+      <fileset file = "log4j.properties" />
+      <manifest>
+        <attribute name  = "Main-Class"
+                   value = "gatjobstatus.JobStateMain" />
+        <attribute name  = "Class-Path" value = "${jar-gat} ${jar-sge} ${jar-gt4} ${jar-cog} ${jar-gt4cog} ${globus_loc}/client-config.wsdd" />
+      </manifest>
+    </jar>
+
+    <echo level ="info">
+        SGE_ROOT = '${sgeroot}' found. If empty, you can't submit jobs to SGE. 
+        Please set SGE_ROOT and rebuild GATJobRun, if you like to use SGE
+     </echo>
+
+
+  </target>
+
+  <target name = "clean" description = "clean up">
+    <delete dir = "${builddir}"/>
+    <delete dir = "${distdir}"/>
+  </target>
+
+</project>

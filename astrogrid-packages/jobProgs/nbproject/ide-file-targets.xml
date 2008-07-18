@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project basedir=".." name="JobProgs-IDE">
+    <!-- TODO: edit the following target according to your needs -->
+    <!-- (more info: http://www.netbeans.org/kb/41/freeform-config.html#runsingle) -->
+    <target name="debug-selected-file-in-src">
+        <fail unless="debug.class">dist/classes/GATJobSubmit_Stageing_Exec_Sh</fail>
+        <path id="cp">
+            <pathelement path="../../lib/castor-1.1.1-xml.jar:../../lib/commons-logging-1.1.jar:../../lib/GAT-API.jar:../../lib/GAT-engine.jar:../../lib/log4j-1.2.13.jar:../../lib/xercesImpl.jar:../../lib/xmlParserAPIs.jar"/>
+        </path>
+        <nbjpdastart addressproperty="jpda.address" name="JobProgs" transport="dt_socket">
+            <classpath refid="cp"/>
+        </nbjpdastart>
+        <java classname="${debug.class}" fork="true">
+            <classpath refid="cp"/>
+            <jvmarg value="-Xdebug"/>
+            <jvmarg value="-Xrunjdwp:transport=dt_socket,address=${jpda.address}"/>
+        </java>
+    </target>
+    <!-- TODO: edit the following target according to your needs -->
+    <!-- (more info: http://www.netbeans.org/kb/41/freeform-config.html#debugj2se) -->
+    <target name="debug-nb">
+        <path id="cp">
+            <!-- TODO configure the runtime classpath for your project here: -->
+        </path>
+        <nbjpdastart addressproperty="jpda.address" name="JobProgs" transport="dt_socket">
+            <classpath refid="cp"/>
+        </nbjpdastart>
+        <!-- TODO configure the main class for your project here: -->
+        <java classname="some.main.Class" fork="true">
+            <classpath refid="cp"/>
+            <jvmarg value="-Xdebug"/>
+            <jvmarg value="-Xrunjdwp:transport=dt_socket,address=${jpda.address}"/>
+        </java>
+    </target>
+</project>
