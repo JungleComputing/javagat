@@ -78,7 +78,7 @@ public class SshTrileadFileAdaptor extends FileCpi {
                         "aes256-ctr,aes192-ctr,aes128-ctr,blowfish-ctr,aes256-cbc,aes192-cbc,aes128-cbc,blowfish-cbc");
         preferences.put("sshtrilead.tcp.nodelay", "false");
         preferences.put("sshtrilead.use.cached.connections", "true");
-        preferences.put("file.chmod", "0600");
+        preferences.put("file.chmod", DEFAULT_MODE);
         return preferences;
     }
 
@@ -97,6 +97,8 @@ public class SshTrileadFileAdaptor extends FileCpi {
     private static final int SSH_PORT = 22;
 
     private static final int STDOUT = 0, STDERR = 1, EXIT_VALUE = 2;
+
+    private static final String DEFAULT_MODE = "0700";
 
     private static Map<String, Connection> connections = new HashMap<String, Connection>();
 
@@ -259,18 +261,7 @@ public class SshTrileadFileAdaptor extends FileCpi {
             }
         }
         remoteFileName = destinationFile.getName();
-        String mode = "0600";
-        if (gatContext.getPreferences().containsKey("file.chmod")) {
-            mode = (String) gatContext.getPreferences().get("file.chmod");
-            if (mode.length() == 3) {
-                mode = "0" + mode;
-            }
-            if (mode.length() != 4 || !mode.startsWith("0")) {
-                throw new GATInvocationException("invalid mode: '"
-                        + gatContext.getPreferences().get("file.chmod")
-                        + "'. Should be like '0xxx' or 'xxx'");
-            }
-        }
+        String mode = getMode(gatContext, DEFAULT_MODE);
         File sourceFile = GAT.createFile(gatContext, location);
         if (destinationFile.isDirectory() && sourceFile.isFile()) {
             logger.debug("put " + getFixedPath() + ", " + remoteDir + ", "
@@ -292,6 +283,23 @@ public class SshTrileadFileAdaptor extends FileCpi {
         }
     }
 
+    private String getMode(GATContext gatContext, String defaultMode)
+            throws GATInvocationException {
+        String mode = defaultMode;
+        if (gatContext.getPreferences().containsKey("file.chmod")) {
+            mode = (String) gatContext.getPreferences().get("file.chmod");
+            if (mode.length() == 3) {
+                mode = "0" + mode;
+            }
+            if (mode.length() != 4 || !mode.startsWith("0")) {
+                throw new GATInvocationException("invalid mode: '"
+                        + gatContext.getPreferences().get("file.chmod")
+                        + "'. Should be like '0xxx' or 'xxx'");
+            }
+        }
+        return mode;
+    }
+
     private void get(URI destination) throws Exception {
         Connection connection = getConnection(fixedURI, gatContext,
                 connectionCacheEnable, tcpNoDelay, client2serverCiphers,
@@ -310,29 +318,23 @@ public class SshTrileadFileAdaptor extends FileCpi {
             }
         }
 
-        String mode = "0600";
-        // if (!isWindows(gatContext, destination)) {
-        if (java.io.File.separator.equals("/")) {
-            if (mode.length() == 3) {
-                mode = "0" + mode;
-            }
-            if (mode.length() != 4 || !mode.startsWith("0")) {
-                throw new GATInvocationException("invalid mode: '"
-                        + gatContext.getPreferences().get("file.chmod")
-                        + "'. Should be like '0xxx' or 'xxx'");
-            }
-        }
         File sourceFile = GAT.createFile(gatContext, location);
         if (destinationFile.isDirectory() && sourceFile.isFile()) {
-            createNewFile(destination.getPath() + "/" + sourceFile.getName(),
-                    mode);
+            if (java.io.File.separator.equals("/")) {
+                createNewFile(destination.getPath() + "/"
+                        + sourceFile.getName(), getMode(gatContext,
+                        DEFAULT_MODE));
+            }
             client.get(getFixedPath(), new java.io.FileOutputStream(destination
                     .getPath()
                     + "/" + sourceFile.getName()));
         } else if (sourceFile.isDirectory()) {
             copyDir(destination);
         } else if (sourceFile.isFile()) {
-            createNewFile(destination.getPath(), mode);
+            if (java.io.File.separator.equals("/")) {
+                createNewFile(destination.getPath(), getMode(gatContext,
+                        DEFAULT_MODE));
+            }
             client.get(getFixedPath(), new java.io.FileOutputStream(destination
                     .getPath()));
         } else {
@@ -411,7 +413,6 @@ public class SshTrileadFileAdaptor extends FileCpi {
         } else {
             Connection newConnection = new Connection(host, fixedURI
                     .getPort(SSH_PORT));
-
             newConnection.setClient2ServerCiphers(client2server);
             newConnection.setServer2ClientCiphers(server2client);
             newConnection.setTCPNoDelay(tcpNoDelay);
@@ -478,6 +479,17 @@ public class SshTrileadFileAdaptor extends FileCpi {
                 logger.info("putting connection for host " + host
                         + " into cache");
                 connections.put(host, newConnection);
+            }
+            if (logger.isInfoEnabled()) {
+                long start = System.currentTimeMillis();
+                try {
+                    newConnection.ping();
+                    logger.info("ping connection: "
+                            + (System.currentTimeMillis() - start) + " ms");
+                } catch (Exception e) {
+                    logger.info("ping failed: " + e);
+                }
+
             }
             return newConnection;
         }
@@ -599,7 +611,8 @@ public class SshTrileadFileAdaptor extends FileCpi {
             try {
                 result = execCommand("test ! -d " + getFixedPath()
                         + " && test ! -f " + getFixedPath() + " && touch "
-                        + getFixedPath());
+                        + getFixedPath() + " && chmod "
+                        + getMode(gatContext, DEFAULT_MODE));
             } catch (Exception e) {
                 throw new GATInvocationException("sshtrilead", e);
             }
@@ -828,7 +841,9 @@ public class SshTrileadFileAdaptor extends FileCpi {
         } else {
             String[] result;
             try {
-                result = execCommand("mkdir " + getFixedPath());
+                result = execCommand("mkdir -m "
+                        + getMode(gatContext, DEFAULT_MODE) + " "
+                        + getFixedPath());
             } catch (Exception e) {
                 throw new GATInvocationException("sshtrilead", e);
             }
@@ -852,7 +867,9 @@ public class SshTrileadFileAdaptor extends FileCpi {
         } else {
             String[] result;
             try {
-                result = execCommand("mkdir -p " + getFixedPath());
+                result = execCommand("mkdir -m "
+                        + getMode(gatContext, DEFAULT_MODE) + " -p "
+                        + getFixedPath());
             } catch (Exception e) {
                 throw new GATInvocationException("sshtrilead", e);
             }
