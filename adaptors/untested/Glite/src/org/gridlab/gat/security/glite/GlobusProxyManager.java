@@ -48,21 +48,23 @@ public class GlobusProxyManager {
 		this.lifetime = lifetime;
 
 		CoGProperties properties = CoGProperties.getDefault();
+		String userCert = userCertFile;
+		String userKey = userKeyFile;
 		
-		if (userCertFile == null) {
-			userCertFile = properties.getUserCertFile();
+		if (userCert == null) {
+			userCert = properties.getUserCertFile();
 		}
 		
-		if (userKeyFile == null) {
-			userKeyFile = properties.getUserKeyFile();
+		if (userKey == null) {
+			userKey = properties.getUserKeyFile();
 		}
 		
 		// force the CertUtil to initialize
 		CertUtil.init();
 		// get the X509 certificate from the globus directory
-		proxyCerts = CertUtil.loadCertificates(userCertFile);
+		proxyCerts = CertUtil.loadCertificates(userCert);
 		// get the private key from the globus directory
-		proxyKey = new BouncyCastleOpenSSLKey(userKeyFile);
+		proxyKey = new BouncyCastleOpenSSLKey(userKey);
 		
 		// decrypt the proxy key if it is encrypted
 		if (proxyKey.isEncrypted()) {

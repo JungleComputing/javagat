@@ -25,13 +25,12 @@ import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.rmi.RemoteException;
+import java.security.GeneralSecurityException;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 
 import javax.xml.rpc.ServiceException;
 
-import org.apache.axis.types.URI.MalformedURIException;
 import org.glite.security.delegation.GrDPX509Util;
 import org.glite.security.delegation.GrDProxyGenerator;
 import org.glite.security.trustmanager.ContextWrapper;
@@ -54,7 +53,9 @@ import org.gridlab.gat.Preferences;
 import org.gridlab.gat.URI;
 import org.gridlab.gat.engine.GATEngine;
 import org.gridlab.gat.io.File;
+import org.gridlab.gat.monitoring.Metric;
 import org.gridlab.gat.monitoring.MetricDefinition;
+import org.gridlab.gat.monitoring.MetricEvent;
 import org.gridlab.gat.resources.Job;
 import org.gridlab.gat.resources.JobDescription;
 import org.gridlab.gat.resources.ResourceDescription;
@@ -69,6 +70,11 @@ import org.gridsite.www.namespaces.delegation_1.DelegationSoapBindingStub;
 
 public class GliteJob extends JobCpi {
 	
+	private final static int LB_PORT = 9003;
+	private final static int STANDARD_PROXY_LIFETIME = 12*3600;
+	/** If a proxy is going to be reused it should at least have a remaining lifetime of 5 minutes */
+	private final static int MINIMUM_PROXY_REMAINING_LIFETIME=5*60;
+	
 	private LoggingAndBookkeepingPortType lbService = null;
 	private JDL gLiteJobDescription;
 	private JobDescription jobDescription;
@@ -80,68 +86,101 @@ public class GliteJob extends JobCpi {
 	private String gLiteUI = null;
 	private String proxyFile = null;
 	private boolean outputDone = false;
+	private Metric metric;
 
 	private WMProxy_PortType serviceStub = null; 
 	private DelegationSoapBindingStub grstStub = null; 
 	
+	
 	 class JobStatusLookUp extends Thread {
 		private GliteJob polledJob;
+		private int pollIntMilliSec;
 		 
-		public JobStatusLookUp(GliteJob job) {
+		public JobStatusLookUp(final GliteJob job) {
+			super();
+			
 			this.polledJob = job;
+			
+			String pollingIntervalStr = System.getProperty("glite.pollIntervalSecs");
+			
+			if (pollingIntervalStr == null) {
+				this.pollIntMilliSec = 3000;
+			} else {
+				this.pollIntMilliSec = Integer.parseInt(pollingIntervalStr)*1000; 
+			}
+			
 			this.start();
 		}
 
 		public void run() {
 			while (true) {
-				if (state == Job.STOPPED)
+				if (state == Job.STOPPED) {
 					break;
-				if (state == Job.SUBMISSION_ERROR)
+				}
+				if (state == Job.SUBMISSION_ERROR) {
 					break;
-				state = polledJob.getStatus();
+				}
+				
+				polledJob.updateState();
+				
+				Map <String, Object> info = getInfo();
+				MetricEvent event = new MetricEvent(polledJob, info, metric, System.currentTimeMillis());
+				GATEngine.fireMetric(polledJob, event);
+				
+				
 				if (state == Job.POST_STAGING) {
 					polledJob.receiveOutput();
 					polledJob.outputDone = true;
 				}
 				
 				try {
-					sleep(3000);
+					sleep(this.pollIntMilliSec);
 				} catch (InterruptedException e) {
-					e.printStackTrace();
+					logger.error("Error while executing job status poller thread!", e);
 				}
 			}
 		}
 	}
 	 
-	protected GliteJob(GATContext gatContext, JobDescription jobDescription, Sandbox sandbox, String brokerURI)
+	protected GliteJob(final GATContext gatContext, final JobDescription jobDescription, final Sandbox sandbox, final String brokerURI)
 			throws GATInvocationException {
 		super(gatContext, jobDescription, sandbox);
 		
 		this.context = gatContext;
 		this.gLiteUI = brokerURI;
 		
-		createVomsProxy();
+		touchVomsProxy();
 		
-		// Metric not used yet
-		HashMap returnDef = new HashMap();
+		Map<String, Object> returnDef = new HashMap<String, Object>();
 		returnDef.put("status", String.class);
 		MetricDefinition statusMetricDefinition = new MetricDefinition(
-				"job.status", MetricDefinition.DISCRETE, "String", null, null,
+				"job.status", MetricDefinition.DISCRETE, "Map<String, Object>", null, null,
 				returnDef);
-		GATEngine.registerMetric(this, "getJobStatus", statusMetricDefinition);
-	
+		this.metric = new Metric(statusMetricDefinition, null);
+		GATEngine.registerMetric(this, "submitJob", statusMetricDefinition);
 	
 		this.jobDescription = jobDescription;
 		swDescription = this.jobDescription.getSoftwareDescription();
 	
 		// Create Job Description Language File ...
 		jdlFileId = System.currentTimeMillis();
-		String jdlFileName = new String("gatjob_" + jdlFileId + ".jdl");
+		String jdlFileName = "gatjob_" + jdlFileId + ".jdl";
 		gLiteJobDescription = new JDL(jdlFileName, jdlFileId);
 		createGliteJobDescContent();
 	
 		jobID = submitJob(jdlFileName);
-		System.err.println("jobID " + jobID);
+		logger.info("jobID " + jobID);
+		
+		// instantiate the logging and bookkeeping service
+		try {
+			URL jobUrl = new URL(jobID);
+			URL lbURL = new URL(jobUrl.getProtocol(), jobUrl.getHost(), LB_PORT, "/");
+			this.lbService = new LoggingAndBookkeepingLocator().getLoggingAndBookkeeping(lbURL);
+		} catch (MalformedURLException e) {
+			logger.error("Problem instantiating Logging and Bookkeeping service " + e.toString());
+		} catch (ServiceException e) {
+			logger.error(e.toString());
+		}
 
 		// start status lookup thread
 		new JobStatusLookUp(this);
@@ -157,47 +196,53 @@ public class GliteJob extends JobCpi {
 		// ... and add content
 		gLiteJobDescription.setExecutable(swDescription.getExecutable()
 				.toString());
-		if (context.getPreferences().get("VirtualOrganisation") != null)
+		if (context.getPreferences().get("VirtualOrganisation") != null) {
 			gLiteJobDescription.setVirtualOrganisation((String) context
 					.getPreferences().get("VirtualOrganisation"));
-		if (swDescription.getStdin() != null)
-			gLiteJobDescription.setStdInputFile(swDescription.getStdin().getAbsolutePath());
-		try {
-			gLiteJobDescription.addInputFiles(swDescription.getPreStaged());
-		} catch (Exception e1) {
-			System.err.println(e1.toString());
 		}
+		
+		if (swDescription.getStdin() == null) {
+			gLiteJobDescription.addInputFiles(swDescription.getPreStaged());
+		} else {
+			gLiteJobDescription.setStdInputFile(swDescription.getStdin());
+		}
+
 		gLiteJobDescription.addOutputFiles(swDescription.getPostStaged());
 	
-		// add stdOutput files
-		if (swDescription.getStdout() != null)
-			gLiteJobDescription.addOutputFile("std_" + jdlFileId + ".out",
-					swDescription.getStdout().getName());
-		else
-			gLiteJobDescription.addOutputFile("std_" + jdlFileId + ".out");
+		if (swDescription.getStdout() != null) {
+			gLiteJobDescription.setStdOutputFile(swDescription.getStdout());
+		}
 	
-		// add stdError files
-		if (swDescription.getStderr() != null)
-			gLiteJobDescription.addOutputFile("std_" + jdlFileId + ".err",
-					swDescription.getStderr().getName());
-		else
-			gLiteJobDescription.addOutputFile("std_" + jdlFileId + ".err");
-	
-		// add environment and arguments
-		if (swDescription.getEnvironment() != null)
-			gLiteJobDescription.addEnviroment(swDescription.getEnvironment());
-		if (swDescription.getArguments() != null)
+		if (swDescription.getStderr() != null) {
+			gLiteJobDescription.setStdErrorFile(swDescription.getStderr());
+		}
+		
+		if (swDescription.getEnvironment() == null) {
 			gLiteJobDescription.setArguments(swDescription.getArguments());
+		} else {
+			gLiteJobDescription.addEnviroment(swDescription.getEnvironment());
+		}
+		
+		if (swDescription.getAttributes() != null) {
+			gLiteJobDescription.setAttributes(swDescription.getAttributes());
+		}
 	
 		// map GAT resource description to gLite glue schema and add it to
 		// gLiteJobDescription
 		ResourceDescription rd = jobDescription.getResourceDescription();
-		GATResDescription2GlueSchema(rd.getDescription(), gLiteJobDescription);
+		
+		// the resource description can also be null
+		if (rd != null) {
+			gatResDescription2GlueSchema(rd.getDescription());
+		}
 	
 		// creates the .jdl file
 		gLiteJobDescription.create();
+		
 	}
 	
+	
+
 	/**
 	 * Create a VOMS proxy (with ACs) and store on the position on 
 	 * the filesystem indicated by the global X509_USER_PROXY variable.
@@ -233,8 +278,9 @@ public class GliteJob extends JobCpi {
 	 * 
 	 * @author thomas
 	 */
-	private void createVomsProxy() throws GATInvocationException {
-		CoGProperties properties = CoGProperties.getDefault();
+	private void createVomsProxy(int lifetime) throws GATInvocationException {
+		logger.info("Creating new VOMS proxy with lifetime (seconds): " + lifetime);
+		
 		CertificateSecurityContext secContext = null;
 		
 		for (SecurityContext c : context.getSecurityContexts()) {
@@ -246,13 +292,6 @@ public class GliteJob extends JobCpi {
 		Preferences prefs = context.getPreferences();
 		String userkey = secContext.getKeyfile().getPath();
 		String usercert = secContext.getCertfile().getPath();
-		String lifetimeStr = (String) prefs.get("vomsLifetime");
-		
-		int lifetime = 12*3600;
-		
-		if (lifetimeStr != null) {
-			lifetime = Integer.parseInt(lifetimeStr);
-		}
 		
 		String hostDN = (String) prefs.get("vomsHostDN");
 		String serverURI = (String) prefs.get("vomsServerURL");
@@ -270,20 +309,51 @@ public class GliteJob extends JobCpi {
 															serverURI,
 															serverPort);
 			manager.makeProxyCredential(voName);
-			
-			this.proxyFile = System.getenv("X509_USER_PROXY");
-			
-			if (this.proxyFile == null) {
-				this.proxyFile = properties.getProxyFile();
-			}
-			
 			manager.saveProxyToFile(proxyFile);
-			context.addPreference("globusCert", proxyFile); // for gridFTP adaptor
-			System.setProperty("gridProxyFile", proxyFile);  // for glite security JARs
 			
 		} catch (Exception e) {
 			throw new GATInvocationException("Could not create VOMS proxy!", e);
 		}
+	}
+	
+	/**
+	 * Create a new proxy or reuse the old one if the lifetime is still longer than the lifetime specified in
+	 * the vomsLifetime preference OR, if the vomsLifetime preference is not specified, the remaining lifetime is
+	 * longer than the MINIMUM_PROXY_REMAINING_LIFETIME specified in this class
+	 * @throws GATInvocationException
+	 */
+	private void touchVomsProxy() throws GATInvocationException {
+		CoGProperties properties = CoGProperties.getDefault();
+		this.proxyFile = System.getenv("X509_USER_PROXY");
+		
+		if (this.proxyFile == null) {
+			this.proxyFile = properties.getProxyFile();
+		}
+		
+		context.addPreference("globusCert", proxyFile); // for gridFTP adaptor
+		System.setProperty("gridProxyFile", proxyFile);  // for glite security JARs
+		
+		Preferences prefs = context.getPreferences();
+		String lifetimeStr = (String) prefs.get("vomsLifetime");
+		int lifetime = STANDARD_PROXY_LIFETIME;
+		long existingLifetime = VomsProxyManager.getExistingProxyLifetime(proxyFile);
+		
+		if (lifetimeStr == null) { // if a valid proxy exists, create a new one only if the old one is below the minimum lifetime
+			if (existingLifetime < MINIMUM_PROXY_REMAINING_LIFETIME) {
+				createVomsProxy(lifetime);
+			} else {
+				logger.info("Reusing old voms proxy with lifetime (seconds): " + existingLifetime);
+			}
+		} else { // if a valid proxy exists, create a new one only if the old one is below the specified lifetime
+			lifetime = Integer.parseInt(lifetimeStr);
+			
+			if (existingLifetime < lifetime) {
+				createVomsProxy(lifetime);
+			} else  {
+				logger.info("Reusing old voms proxy with lifetime (seconds): " + existingLifetime);
+			}
+		}
+		
 	}
 	
 	/**
@@ -325,7 +395,7 @@ public class GliteJob extends JobCpi {
 	private String submitJob(String jdlfileName)
 			throws GATInvocationException {
 
-		System.out.println("called APIsubmitJob");
+		logger.debug("called submitJob");
 				
 		// set the CA-certificates
 		setCACerticateProperties();
@@ -337,8 +407,7 @@ public class GliteJob extends JobCpi {
 
 		JobIdStructType jobId = null;
 		try {
-			URI wmsURI = new URI(gLiteUI);
-			URL wmsURL = wmsURI.toURL();
+			URL wmsURL = new URL(gLiteUI);
 
 			WMProxyLocator serviceLocator = new WMProxyLocator();
 			serviceStub = serviceLocator.getWMProxy_PortType(wmsURL);
@@ -350,17 +419,9 @@ public class GliteJob extends JobCpi {
 			
 			String certReq = grstStub.getProxyReq(delegationId);
 
-
-			byte[] x509Cert = null;
 			GrDProxyGenerator proxyGenerator = new GrDProxyGenerator();
-
-			try {
-				x509Cert = proxyGenerator
-						.x509MakeProxyCert(certReq.getBytes(), GrDPX509Util
-								.getFilesBytes(new java.io.File(proxyFile)), "");
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
+			byte[] x509Cert = proxyGenerator.x509MakeProxyCert(certReq.getBytes(), GrDPX509Util
+															  .getFilesBytes(new java.io.File(proxyFile)), "");
 
 			String proxyString = new String(x509Cert);
 
@@ -370,265 +431,199 @@ public class GliteJob extends JobCpi {
 
 			StringWriter sw = new StringWriter();
 			int c;
-			while ((c = fr.read()) != -1)
+			
+			while ((c = fr.read()) != -1) {
 				sw.write((char) c);
+			}
+			
 			fr.close();
 			String jdlString = sw.toString();
 			sw.close();
 
-			// jobId = serviceStub.jobSubmit(jdlString, delegationId);
 			jobId = serviceStub.jobRegister(jdlString, delegationId);
 
 			String[] sl = serviceStub
 					.getSandboxDestURI(jobId.getId(), "gsiftp").getItem();
 
-			// copy input files
-			URI tempURI;
-			URI destURI;
-
 			if (swDescription.getStdin() != null) {
-				URI srcURI = new URI(swDescription.getStdin().getName());
-				File f = GAT.createFile(context, srcURI);
-
-				tempURI = new URI(sl[0] + "/"
-						+ swDescription.getStdin().getName());
-				destURI = new URI(tempURI.getScheme() + "://"
-						+ tempURI.getHost() + ":" + tempURI.getPort() + "//"
-						+ tempURI.getPath());
-				File f2 = GAT.createFile(context, destURI);
-				f.copy(f2.toGATURI());
+				File f = GAT.createFile(context, swDescription.getStdin().getName());
+				f.copy(generateGATURI(sl[0], swDescription.getStdin()));
 			}
 
 			Map<File, File> map = swDescription.getPreStaged();
-			System.out.println("traversing prestaged files");
-			Iterator it = map.entrySet().iterator();
-			while (it.hasNext()) {
-				Map.Entry entry = (Map.Entry) it.next();
-				org.gridlab.gat.io.File srcFile = (org.gridlab.gat.io.File) entry
-						.getKey();
-				tempURI = new URI(sl[0] + "/" + srcFile.getName());
-				destURI = new URI(tempURI.getScheme() + "://"
-						+ tempURI.getHost() + ":" + tempURI.getPort() + "//"
-						+ tempURI.getPath());
-				File destFile = GAT.createFile(context, destURI);
-				srcFile.copy(destFile.toGATURI());
+			logger.info("traversing prestaged files");
+			
+			for (File srcFile : map.keySet()) {
+				srcFile.copy(generateGATURI(sl[0], srcFile));
 			}
-
+			
 			serviceStub.jobStart(jobId.getId());
 
 		} catch (IOException e) {
-			e.printStackTrace();
-		} catch (javax.xml.rpc.ServiceException e) {
-			e.printStackTrace();
+			logger.error("Problem while copying input files", e);
 		} catch (URISyntaxException e) {
-			e.printStackTrace();
+			logger.error("URI error while resolving pre-staged file set", e);
 		} catch (GATObjectCreationException e) {
-			e.printStackTrace();
-		}
-		catch (Exception e) {
-			e.printStackTrace();
-		}
+			logger.error("Could not create pre-staged file set", e);
+		} catch (ServiceException e) {
+			logger.error("Could not get a SOAP connection for the required services", e);
+		} catch (GeneralSecurityException e) {
+			logger.error("Could not construct proxy byte sequence", e);
+		}  
+		
 		return jobId.getId();
 	}
+	
+	private org.gridlab.gat.URI generateGATURI(String destFragment, File srcFile) 
+												throws URISyntaxException, GATObjectCreationException {
+		URI tempURI = new URI(destFragment + "/" + srcFile.getName());
+		URI destURI = new URI(tempURI.getScheme() + "://"
+				+ tempURI.getHost() + ":" + tempURI.getPort() + "//"
+				+ tempURI.getPath());
+		File destFile = GAT.createFile(context, destURI);
+		return destFile.toGATURI();
+	}
+	
 
 	// Map the "GAT requirements" to the glue schema and add the requirements to
 	// the gLiteJobDescription
-	private void GATResDescription2GlueSchema(Map map, JDL gliteJobDescription) {
-		Iterator it = map.entrySet().iterator();
-		while (it.hasNext()) {
-			Map.Entry entry = (Map.Entry) it.next();
-			entry.getKey();
-			entry.getValue();
-			if ((String) entry.getKey() == "os.name")
+	private void gatResDescription2GlueSchema(Map<String, Object> map) {
+		
+		for (String resDesc : map.keySet()) {			
+			
+			if (resDesc.equals("os.name")) {
+				gLiteJobDescription.addRequirements("other.GlueHostOperatingSystemName == \"" 
+						+ map.get(resDesc) + "\"");
+			} else if (resDesc.equals("os.release")) {
 				gLiteJobDescription
-						.addRequirements("other.GlueHostOperatingSystemName ==  \""
-								+ (String) entry.getValue() + "\"");
-			if ((String) entry.getKey() == "os.release")
+				.addRequirements("other.GlueHostOperatingSystemRelease ==  \""
+						+ map.get(resDesc) + "\"");
+			} else if (resDesc.equals("os.version")) {
 				gLiteJobDescription
-						.addRequirements("other.GlueHostOperatingSystemRelease ==  \""
-								+ (String) entry.getValue() + "\"");
-			if ((String) entry.getKey() == "os.version")
+				.addRequirements("other.GlueHostOperatingSystemVersion ==  \""
+						+ map.get(resDesc) + "\"");
+			} else if (resDesc.equals("os.type")) {
 				gLiteJobDescription
-						.addRequirements("other.GlueHostOperatingSystemVersion ==  \""
-								+ (String) entry.getValue() + "\"");
-			if ((String) entry.getKey() == "os.type")
+				.addRequirements("other.GlueHostProcessorModel ==  \""
+						+ map.get(resDesc) + "\"");
+			} else if (resDesc.equals("cpu.type")) {
 				gLiteJobDescription
-						.addRequirements("other.GlueHostProcessorModel ==  \""
-								+ (String) entry.getValue() + "\"");
-			if ((String) entry.getKey() == "cpu.type")
+				.addRequirements("other.GlueHostProcessorModel == \""
+						+ map.get(resDesc) + "\"");
+			} else if (resDesc.equals("machine.type")) {
 				gLiteJobDescription
-						.addRequirements("other.GlueHostProcessorModel == \""
-								+ (String) entry.getValue() + "\"");
-			if ((String) entry.getKey() == "machine.type")
-				gLiteJobDescription
-						.addRequirements("other.GlueHostProcessorModel ==  \""
-								+ (String) entry.getValue() + "\"");
-			if ((String) entry.getKey() == "machine.node")
+				.addRequirements("other.GlueHostProcessorModel ==  \""
+						+ map.get(resDesc) + "\"");
+			} else if (resDesc.equals("machine.node")) {
 				// other.GlueCEInfoHostName or other.GlueCEUniqueID ??
 				gLiteJobDescription
 						.addRequirements("other.GlueCEInfoHostName == \""
-								+ (String) entry.getValue() + "\"");
-			if ((String) entry.getKey() == "cpu.speed") {
+								+ map.get(resDesc) + "\"");
+			} else if (resDesc.equals("cpu.speed")) {
 				// gat: float & GHz
 				// gLite: int & Mhz
-				float gatspeed = new Float((String) entry.getValue());
+				float gatspeed = new Float((String) map.get(resDesc));
 				int gLiteSpeed = (int) (gatspeed * 1000);
 				gLiteJobDescription
 						.addRequirements("other.GlueHostProcessorClockSpeed >= "
 								+ gLiteSpeed);
-			}
-			if ((String) entry.getKey() == "memory.size") {
+			} else if (resDesc.equals("memory.size")) {
 				// gat: float & GB
 				// gLite: int & MB
-				float gatRAM = (Float) entry.getValue();
+				float gatRAM = (Float) map.get(resDesc);
 				int gLiteRAM = (int) (gatRAM * 1024);
 				gLiteJobDescription
 						.addRequirements("other.GlueHostMainMemoryRAMSize >= "
 								+ gLiteRAM);
-			}
-			if ((String) entry.getKey() == "disk.size") {
-				float gatDS = new Float((String) entry.getValue());
+			} else if (resDesc.equals("disk.size")) {
+				float gatDS = new Float((String) map.get(resDesc));
 				int gLiteDS = (int) gatDS;
 				gLiteJobDescription.addRequirements("other.GlueSESizeFree >= "
 						+ gLiteDS); // or other.GlueSEUsedOnlineSize
 			}
 		}
+		
 	}
+	
 
-	public Map getInfo() {
-		HashMap<String, String> map = new HashMap<String, String>();
-		map.put("state", getStateString(getState()));
-		map.put("gLiteState", getGliteState());
+	public Map<String, Object> getInfo() {
+		Map<String, Object> map = new HashMap<String, Object>();
+		map.put("JavaGAT-state", getStateString(this.state));
+		map.put("gLiteState", this.gLiteState);
 		map.put("hostname", GATEngine.getLocalHostName());
-		// map.put("resManName", "gLite");
 		map.put("jobID", jobID);
 		return map;
-	}
-
-	private int getStatus() {
-		gLiteState = getGliteStatus();
-
-
-		int state = Job.UNKNOWN;
-		if (gLiteState.equalsIgnoreCase("Waiting"))
-			state = Job.INITIAL;
-		if (gLiteState.equalsIgnoreCase("Ready"))
-			state = Job.INITIAL;
-		if (gLiteState.equalsIgnoreCase("Scheduled"))
-			state = Job.SCHEDULED;
-		if (gLiteState.equalsIgnoreCase("Running"))
-			state = Job.RUNNING;
-		if (gLiteState.equalsIgnoreCase("Done (Failed)"))
-			state = Job.SUBMISSION_ERROR;
-		if (gLiteState.equalsIgnoreCase("Submitted"))
-			state = Job.INITIAL;
-		if (gLiteState.equalsIgnoreCase("Aborted"))
-			state = Job.SUBMISSION_ERROR;
-		if (gLiteState.equalsIgnoreCase("DONE")) // API only
-			state = Job.POST_STAGING;
-		if (gLiteState.equalsIgnoreCase("Done (Success)"))
-			state = Job.POST_STAGING;
-		if (gLiteState.equalsIgnoreCase("Canceled"))
-			state = Job.SUBMISSION_ERROR;
-		if (gLiteState.equalsIgnoreCase("Cleared"))
-			state = Job.STOPPED;
-		return state;
 	}
 
 	public int getState() {
 		return state;
 	}
-
-	// via API
-	private String getGliteStatus() {		
+	
+	private void updateState() {		
 		if (outputDone) { // API is ready with POST STAGING
-			return "Cleared";
-		}
+			this.gLiteState = "Cleared";
+		} else {
 
-		// construct a logging and bookkeeping port type object, if it does not exist yet
-		if (this.lbService == null) {
+			/* (thomas) This has already been done and periodically checking the crls leads to massive heap memory usage
+			 * and eventually to a OutOfMemoryError. Hence, don't check the CRLs again at every status lookup
+			*/
+			System.setProperty(ContextWrapper.CRL_ENABLED, "false");
+			JobStatus js = null;
+				
 			try {
-				/* (thomas) This has already been done and periodically checking the crls leads to massive heap memory usage
-				 * and eventually to a OutOfMemoryError. Hence, don't check the CRLs again at every status lookup
-				*/
-				System.setProperty(ContextWrapper.CRL_ENABLED, "false");
-				URL jobUrl = new URL(jobID);
-				URL lbURL = new URL(jobUrl.getProtocol(), jobUrl.getHost(),
-						9003, "/");
-				LoggingAndBookkeepingLocator locator = new LoggingAndBookkeepingLocator();
-				this.lbService = locator.getLoggingAndBookkeeping(lbURL);
-			} catch (MalformedURLException e) {
-				e.printStackTrace();
-			} catch (ServiceException e) {
-				e.printStackTrace();
-			}
+				js = lbService.jobStatus(jobID, new JobFlags());
+				this.gLiteState = js.getState().toString();
+			} catch (GenericFault e) {
+				logger.error(e.toString());
+			} catch (RemoteException e) {
+				logger.error("gLite Error: LoggingAndBookkeeping service only works in glite 3.1 or higher", e);
+			} 
+		}
+			
+		this.state = Job.UNKNOWN;
+		if ("Waiting".equalsIgnoreCase(gLiteState)) {
+			state = Job.INITIAL;
+		} else if ("Ready".equalsIgnoreCase(gLiteState)) {
+			state = Job.INITIAL;
+		} else if ("Scheduled".equalsIgnoreCase(gLiteState)) {
+			state = Job.SCHEDULED;
+		} else if ("Running".equalsIgnoreCase(gLiteState)) {
+			state = Job.RUNNING;
+		} else if ("Done (Failed)".equalsIgnoreCase(gLiteState)) {
+			state = Job.SUBMISSION_ERROR;
+		} else if ("Submitted".equalsIgnoreCase(gLiteState)) {
+			state = Job.INITIAL;
+		} else if ("Aborted".equalsIgnoreCase(gLiteState)) {
+			state = Job.SUBMISSION_ERROR;
+		} else if ("DONE".equalsIgnoreCase(gLiteState)) {
+			state = Job.POST_STAGING;
+		} else if ("Done (Success)".equalsIgnoreCase(gLiteState)) {
+			state = Job.POST_STAGING;
+		} else if ("Canceled".equalsIgnoreCase(gLiteState)) {
+			state = Job.SUBMISSION_ERROR;
+		} else if ("Cleared".equalsIgnoreCase(gLiteState)) {
+			state = Job.STOPPED;
 		}
 		
-		JobStatus js = null;
-		String gliteState = "";
-			
-		try {
-			js = lbService.jobStatus(jobID, new JobFlags());
-			gLiteState = js.getState().toString();
-			// helps against memory leak?
-			js = null;
-		} catch (GenericFault e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (RemoteException e) {
-			System.err.println("gLite Error: LoggingAndBookkeeping service only works in glite 3.1 or higher");
-			e.printStackTrace();
-		} 
-		
-		return gLiteState;
 	}
-
-	public String getGliteState() {
-		return gLiteState;
-	}
-
 	
 	// via API
 	public void receiveOutput() {
-		StringAndLongList sl;
 		StringAndLongType[] list = null;
 		
 		try {
-
-			String delegationId = "gatjob" + jdlFileId;
-
-			String certReq = grstStub.getProxyReq(delegationId);
-
-			byte[] x509Cert = null;
-			GrDProxyGenerator proxyGenerator = new GrDProxyGenerator();
-
-			try {
-				x509Cert = proxyGenerator
-						.x509MakeProxyCert(certReq.getBytes(), GrDPX509Util
-								.getFilesBytes(new java.io.File(proxyFile)), "");
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-
-			String proxyString = new String(x509Cert);
-
-			grstStub.putProxy(delegationId, proxyString);
-
-			sl = serviceStub.getOutputFileList(jobID, "gsiftp");
+			StringAndLongList sl = serviceStub.getOutputFileList(jobID, "gsiftp");
 			list = (StringAndLongType[]) sl.getFile();
 		} catch (Exception e) {
-			// e.printStackTrace();
+			logger.error("Could not receive output due to security problems", e);
 		}
 		
 		if (list != null) {
 			for (int i = 0; i < list.length; i++) {
-				URI uri1;
-				URI uri2;
 				try {
-					uri1 = new URI(list[i].getName());
-					uri2 = new URI(uri1.getScheme()+"://" + uri1.getHost() + ":"
+					URI uri1 = new URI(list[i].getName());
+					URI uri2 = new URI(uri1.getScheme()+"://" + uri1.getHost() + ":"
 							+ uri1.getPort() + "//" + uri1.getPath());
-					System.out.println(uri2.toString());
 
 					File f = GAT.createFile(context, uri2);
 					int name_begin = uri2.getPath().lastIndexOf('/') + 1;
@@ -636,13 +631,12 @@ public class GliteJob extends JobCpi {
 							.substring(name_begin)));
 					
 					f.copy(destForPostStagedFile(f2));
-					//f.copy(f2.toGATURI());
 				} catch (GATInvocationException e) {
-					e.printStackTrace();
+					logger.error(e.toString());
 				} catch (URISyntaxException e) {
-					e.printStackTrace();
+					logger.error("An error occured when building URIs for the poststaged files", e);
 				} catch (GATObjectCreationException e) {
-					e.printStackTrace();
+					logger.error("Could not create GAT file when retrieving output", e);
 				} 
 			}
 		}
@@ -654,11 +648,12 @@ public class GliteJob extends JobCpi {
 		File stdout = swDescription.getStdout();
 		File stderr = swDescription.getStderr();
 		String outputName = output.getName();
+		URI destURI = null;
 		
 		if (stdout != null && outputName.equals(stdout.getName())) {
-			return stdout.toGATURI();
+			destURI = stdout.toGATURI();
 		} else if (stderr != null && outputName.equals(stderr.getName())) {
-			return stderr.toGATURI();
+			destURI = stderr.toGATURI();
 		} else {
 		
 			for (Map.Entry<File,File> psFile : postStagedFiles.entrySet()) {
@@ -666,12 +661,17 @@ public class GliteJob extends JobCpi {
 					String psFileName = psFile.getKey().getName();
 					
 					if (outputName.equals(psFileName)) {
-						return psFile.getValue().toGATURI();
+						destURI = psFile.getValue().toGATURI();
+						break;
 					}
 				}
 			}
 		}
 		
-		return output.toGATURI();
+		if (destURI == null) {
+			destURI = output.toGATURI();
+		}
+		
+		return destURI;
 	}
 }

@@ -13,13 +13,17 @@
 
 package org.gridlab.gat.resources.cpi.glite;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.GATObjectCreationException;
 import org.gridlab.gat.TimePeriod;
 import org.gridlab.gat.URI;
+import org.gridlab.gat.monitoring.Metric;
+import org.gridlab.gat.monitoring.MetricDefinition;
 import org.gridlab.gat.monitoring.MetricListener;
 import org.gridlab.gat.resources.Job;
 import org.gridlab.gat.resources.JobDescription;
@@ -30,8 +34,8 @@ import org.gridlab.gat.resources.cpi.ResourceBrokerCpi;
 
 
 public class GliteResourceBrokerAdaptor extends ResourceBrokerCpi {
-	GATContext context = null;
-	URI brokerURI = null;
+	private GATContext context = null;
+	private URI brokerURI = null;
 
 	public GliteResourceBrokerAdaptor(GATContext gatContext, URI brokerURI) throws GATObjectCreationException {
 		super(gatContext, brokerURI);
@@ -40,7 +44,6 @@ public class GliteResourceBrokerAdaptor extends ResourceBrokerCpi {
 	}
 
 	public List findResources(ResourceDescription resourceDescription) {
-		String voName = (String) context.getPreferences().get("VirtualOrganisation");
 		throw new UnsupportedOperationException("Not implemented yet!");
 	}
 
@@ -55,7 +58,6 @@ public class GliteResourceBrokerAdaptor extends ResourceBrokerCpi {
 
 	public Job submitJob(JobDescription jobDescription, MetricListener listener, String metricDefinitionName )
 			throws GATInvocationException {
-		GliteJob job = new GliteJob(context, jobDescription, null, brokerURI.toString());
-		return job;
+		return new GliteJob(context, jobDescription, null, brokerURI.toString());
 	}
 }
