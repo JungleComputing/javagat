@@ -313,35 +313,7 @@ public abstract class GlobusFileAdaptor extends FileCpi {
                         ".JavaGAT", null);
                 client.put(emptyFile, dest.getPath(), false); // overwrite
                 emptyFile.deleteOnExit();
-                try {
-                    Reply r = client.site("CHMOD "
-                            + gatContext.getPreferences().get("file.chmod")
-                            + " " + dest.getPath());
-                    if (r.getMessage().startsWith("250")) {
-                        if (logger.isDebugEnabled()) {
-                            logger.debug("CHMOD "
-                                    + gatContext.getPreferences().get(
-                                            "file.chmod") + " "
-                                    + dest.getPath() + " successful");
-                        }
-                    } else {
-                        if (logger.isDebugEnabled()) {
-                            logger
-                                    .debug("CHMOD "
-                                            + gatContext.getPreferences().get(
-                                                    "file.chmod") + " "
-                                            + dest.getPath()
-                                            + " failed (no exception)");
-                        }
-                    }
-                } catch (Exception e) {
-                    if (logger.isDebugEnabled()) {
-                        logger.debug("CHMOD "
-                                + gatContext.getPreferences().get("file.chmod")
-                                + " " + dest.getPath() + " failed (exception: "
-                                + e + ")");
-                    }
-                }
+                chmod(client, dest.getPath(), gatContext);
                 destroyClient(client, dest, gatContext.getPreferences());
             }
             client = createClient(dest);
@@ -469,6 +441,33 @@ public abstract class GlobusFileAdaptor extends FileCpi {
     // destroyClient(client, src, preferences);
     // }
     // }
+
+    private void chmod(FTPClient client, String path, GATContext gatContext) {
+        try {
+            Reply r = client.site("CHMOD "
+                    + gatContext.getPreferences().get("file.chmod") + " "
+                    + path);
+            if (r.getMessage().startsWith("250")) {
+                if (logger.isDebugEnabled()) {
+                    logger.debug("CHMOD "
+                            + gatContext.getPreferences().get("file.chmod")
+                            + " " + path + " successful");
+                }
+            } else {
+                if (logger.isDebugEnabled()) {
+                    logger.debug("CHMOD "
+                            + gatContext.getPreferences().get("file.chmod")
+                            + " " + path + " failed (no exception)");
+                }
+            }
+        } catch (Exception e) {
+            if (logger.isDebugEnabled()) {
+                logger.debug("CHMOD "
+                        + gatContext.getPreferences().get("file.chmod") + " "
+                        + path + " failed (exception: " + e + ")");
+            }
+        }
+    }
 
     public long lastModified() throws GATInvocationException {
         FTPClient client = null;
@@ -966,6 +965,7 @@ public abstract class GlobusFileAdaptor extends FileCpi {
         client = createClient(toURI());
         try {
             client.makeDir(remotePath);
+            chmod(client, remotePath, gatContext);
             setIsDir(toURI(), true);
         } catch (Exception e) {
             if (logger.isDebugEnabled()) {
