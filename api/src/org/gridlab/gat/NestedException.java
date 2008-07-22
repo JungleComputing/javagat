@@ -95,7 +95,7 @@ class NestedException extends Exception {
                     msg = ((NestedException) throwables.get(i)).toString(indent
                             + "    ");
                 } else {
-                    msg = ((Throwable) throwables.get(i)).toString();
+                    msg = ((Throwable) throwables.get(i)).toString()+ " at " + ((Throwable) throwables.get(i)).getStackTrace()[0];
                 }
             }
             res += indent + "*** ";

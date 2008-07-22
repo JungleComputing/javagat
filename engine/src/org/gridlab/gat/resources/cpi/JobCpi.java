@@ -35,7 +35,7 @@ public abstract class JobCpi extends Job {
 
     protected static int globalJobID = 0;
 
-    protected GATContext gatContext;
+    protected GATContext context;
 
     protected int state = INITIAL;
 
@@ -59,7 +59,7 @@ public abstract class JobCpi extends Job {
 
     protected JobCpi(GATContext gatContext, JobDescription jobDescription,
             Sandbox sandbox) {
-        this.gatContext = gatContext;
+        this.context = gatContext;
         this.jobDescription = jobDescription;
         this.sandbox = sandbox;
         // better make this an attribute!

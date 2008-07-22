@@ -18,9 +18,7 @@
 
 package org.gridlab.gat.resources.cpi.glite;
 
-import java.io.FileReader;
 import java.io.IOException;
-import java.io.StringWriter;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -31,6 +29,7 @@ import java.util.Map;
 
 import javax.xml.rpc.ServiceException;
 
+import org.apache.axis.configuration.BasicClientConfig;
 import org.glite.security.delegation.GrDPX509Util;
 import org.glite.security.delegation.GrDProxyGenerator;
 import org.glite.security.trustmanager.ContextWrapper;
@@ -58,7 +57,6 @@ import org.gridlab.gat.monitoring.MetricDefinition;
 import org.gridlab.gat.monitoring.MetricEvent;
 import org.gridlab.gat.resources.Job;
 import org.gridlab.gat.resources.JobDescription;
-import org.gridlab.gat.resources.ResourceDescription;
 import org.gridlab.gat.resources.SoftwareDescription;
 import org.gridlab.gat.resources.cpi.JobCpi;
 import org.gridlab.gat.resources.cpi.Sandbox;
@@ -68,19 +66,17 @@ import org.gridlab.gat.security.glite.VomsProxyManager;
 import org.gridsite.www.namespaces.delegation_1.DelegationSoapBindingStub;
 
 
+@SuppressWarnings("serial")
 public class GliteJob extends JobCpi {
 	
-	private final static int LB_PORT = 9003;
+    private final static int LB_PORT = 9003;
 	private final static int STANDARD_PROXY_LIFETIME = 12*3600;
 	/** If a proxy is going to be reused it should at least have a remaining lifetime of 5 minutes */
 	private final static int MINIMUM_PROXY_REMAINING_LIFETIME=5*60;
 	
 	private LoggingAndBookkeepingPortType lbService = null;
 	private JDL gLiteJobDescription;
-	private JobDescription jobDescription;
 	private SoftwareDescription swDescription;
-	private GATContext context;
-	private long jdlFileId;
 	private String jobID;
 	private String gLiteState;
 	private String gLiteUI = null;
@@ -142,12 +138,20 @@ public class GliteJob extends JobCpi {
 		}
 	}
 	 
-	protected GliteJob(final GATContext gatContext, final JobDescription jobDescription, final Sandbox sandbox, final String brokerURI)
+	protected GliteJob(final GATContext gatContext, 
+					   final JobDescription jobDescription, 
+					   final Sandbox sandbox, 
+					   final String brokerURI)
 			throws GATInvocationException {
-		super(gatContext, jobDescription, sandbox);
 		
-		this.context = gatContext;
+		super(gatContext, jobDescription, sandbox);
 		this.gLiteUI = brokerURI;
+		this.swDescription = this.jobDescription.getSoftwareDescription();
+		
+		if (swDescription.getExecutable() == null) {
+			throw new GATInvocationException(
+					"The Job description does not contain an executable");
+		} 
 		
 		touchVomsProxy();
 		
@@ -159,16 +163,24 @@ public class GliteJob extends JobCpi {
 		this.metric = new Metric(statusMetricDefinition, null);
 		GATEngine.registerMetric(this, "submitJob", statusMetricDefinition);
 	
-		this.jobDescription = jobDescription;
-		swDescription = this.jobDescription.getSoftwareDescription();
-	
+		
 		// Create Job Description Language File ...
-		jdlFileId = System.currentTimeMillis();
-		String jdlFileName = "gatjob_" + jdlFileId + ".jdl";
-		gLiteJobDescription = new JDL(jdlFileName, jdlFileId);
-		createGliteJobDescContent();
-	
-		jobID = submitJob(jdlFileName);
+		long jdlID = System.currentTimeMillis();
+		String voName = (String) context.getPreferences().get("VirtualOrganisation");
+		this.gLiteJobDescription = new JDL(jdlID,
+									  	   swDescription,
+									  	   voName,
+									       jobDescription.getResourceDescription());
+		
+		String deleteOnExitStr = System.getProperty("glite.deleteJDL");
+
+		// save the file only to disk if deleteJDL has not been specified
+		if ((deleteOnExitStr == null) || ("false".equalsIgnoreCase(deleteOnExitStr))) {
+			this.gLiteJobDescription.saveToDisk();
+		}
+		
+		
+		jobID = submitJob();
 		logger.info("jobID " + jobID);
 		
 		// instantiate the logging and bookkeeping service
@@ -185,63 +197,6 @@ public class GliteJob extends JobCpi {
 		// start status lookup thread
 		new JobStatusLookUp(this);
 	}
-
-	private void createGliteJobDescContent() throws GATInvocationException {
-		
-		if (swDescription.getExecutable() == null) {
-			throw new GATInvocationException(
-					"The Job description does not contain an executable");
-		}
-		
-		// ... and add content
-		gLiteJobDescription.setExecutable(swDescription.getExecutable()
-				.toString());
-		if (context.getPreferences().get("VirtualOrganisation") != null) {
-			gLiteJobDescription.setVirtualOrganisation((String) context
-					.getPreferences().get("VirtualOrganisation"));
-		}
-		
-		if (swDescription.getStdin() == null) {
-			gLiteJobDescription.addInputFiles(swDescription.getPreStaged());
-		} else {
-			gLiteJobDescription.setStdInputFile(swDescription.getStdin());
-		}
-
-		gLiteJobDescription.addOutputFiles(swDescription.getPostStaged());
-	
-		if (swDescription.getStdout() != null) {
-			gLiteJobDescription.setStdOutputFile(swDescription.getStdout());
-		}
-	
-		if (swDescription.getStderr() != null) {
-			gLiteJobDescription.setStdErrorFile(swDescription.getStderr());
-		}
-		
-		if (swDescription.getEnvironment() == null) {
-			gLiteJobDescription.setArguments(swDescription.getArguments());
-		} else {
-			gLiteJobDescription.addEnviroment(swDescription.getEnvironment());
-		}
-		
-		if (swDescription.getAttributes() != null) {
-			gLiteJobDescription.setAttributes(swDescription.getAttributes());
-		}
-	
-		// map GAT resource description to gLite glue schema and add it to
-		// gLiteJobDescription
-		ResourceDescription rd = jobDescription.getResourceDescription();
-		
-		// the resource description can also be null
-		if (rd != null) {
-			gatResDescription2GlueSchema(rd.getDescription());
-		}
-	
-		// creates the .jdl file
-		gLiteJobDescription.create();
-		
-	}
-	
-	
 
 	/**
 	 * Create a VOMS proxy (with ACs) and store on the position on 
@@ -392,7 +347,7 @@ public class GliteJob extends JobCpi {
 	}
 	
 	// jobSubmit via API
-	private String submitJob(String jdlfileName)
+	private String submitJob()
 			throws GATInvocationException {
 
 		logger.debug("called submitJob");
@@ -409,37 +364,25 @@ public class GliteJob extends JobCpi {
 		try {
 			URL wmsURL = new URL(gLiteUI);
 
-			WMProxyLocator serviceLocator = new WMProxyLocator();
+			// use engine configuration with settings hardcoded for a client
+			// this seems to resolve multithreading issues
+			WMProxyLocator serviceLocator = new WMProxyLocator(new BasicClientConfig());
 			serviceStub = serviceLocator.getWMProxy_PortType(wmsURL);
 			
 			grstStub = (DelegationSoapBindingStub) serviceLocator
 					.getWMProxyDelegation_PortType(wmsURL);
 
-			String delegationId = "gatjob" + jdlFileId;
-			
+			String delegationId = "gatjob" + gLiteJobDescription.getJdlID();
 			String certReq = grstStub.getProxyReq(delegationId);
-
+			
 			GrDProxyGenerator proxyGenerator = new GrDProxyGenerator();
 			byte[] x509Cert = proxyGenerator.x509MakeProxyCert(certReq.getBytes(), GrDPX509Util
 															  .getFilesBytes(new java.io.File(proxyFile)), "");
 
 			String proxyString = new String(x509Cert);
-
 			grstStub.putProxy(delegationId, proxyString);
 
-			FileReader fr = new FileReader(jdlfileName);
-
-			StringWriter sw = new StringWriter();
-			int c;
-			
-			while ((c = fr.read()) != -1) {
-				sw.write((char) c);
-			}
-			
-			fr.close();
-			String jdlString = sw.toString();
-			sw.close();
-
+			String jdlString = gLiteJobDescription.getJdlString();
 			jobId = serviceStub.jobRegister(jdlString, delegationId);
 
 			String[] sl = serviceStub
@@ -484,68 +427,6 @@ public class GliteJob extends JobCpi {
 		return destFile.toGATURI();
 	}
 	
-
-	// Map the "GAT requirements" to the glue schema and add the requirements to
-	// the gLiteJobDescription
-	private void gatResDescription2GlueSchema(Map<String, Object> map) {
-		
-		for (String resDesc : map.keySet()) {			
-			
-			if (resDesc.equals("os.name")) {
-				gLiteJobDescription.addRequirements("other.GlueHostOperatingSystemName == \"" 
-						+ map.get(resDesc) + "\"");
-			} else if (resDesc.equals("os.release")) {
-				gLiteJobDescription
-				.addRequirements("other.GlueHostOperatingSystemRelease ==  \""
-						+ map.get(resDesc) + "\"");
-			} else if (resDesc.equals("os.version")) {
-				gLiteJobDescription
-				.addRequirements("other.GlueHostOperatingSystemVersion ==  \""
-						+ map.get(resDesc) + "\"");
-			} else if (resDesc.equals("os.type")) {
-				gLiteJobDescription
-				.addRequirements("other.GlueHostProcessorModel ==  \""
-						+ map.get(resDesc) + "\"");
-			} else if (resDesc.equals("cpu.type")) {
-				gLiteJobDescription
-				.addRequirements("other.GlueHostProcessorModel == \""
-						+ map.get(resDesc) + "\"");
-			} else if (resDesc.equals("machine.type")) {
-				gLiteJobDescription
-				.addRequirements("other.GlueHostProcessorModel ==  \""
-						+ map.get(resDesc) + "\"");
-			} else if (resDesc.equals("machine.node")) {
-				// other.GlueCEInfoHostName or other.GlueCEUniqueID ??
-				gLiteJobDescription
-						.addRequirements("other.GlueCEInfoHostName == \""
-								+ map.get(resDesc) + "\"");
-			} else if (resDesc.equals("cpu.speed")) {
-				// gat: float & GHz
-				// gLite: int & Mhz
-				float gatspeed = new Float((String) map.get(resDesc));
-				int gLiteSpeed = (int) (gatspeed * 1000);
-				gLiteJobDescription
-						.addRequirements("other.GlueHostProcessorClockSpeed >= "
-								+ gLiteSpeed);
-			} else if (resDesc.equals("memory.size")) {
-				// gat: float & GB
-				// gLite: int & MB
-				float gatRAM = (Float) map.get(resDesc);
-				int gLiteRAM = (int) (gatRAM * 1024);
-				gLiteJobDescription
-						.addRequirements("other.GlueHostMainMemoryRAMSize >= "
-								+ gLiteRAM);
-			} else if (resDesc.equals("disk.size")) {
-				float gatDS = new Float((String) map.get(resDesc));
-				int gLiteDS = (int) gatDS;
-				gLiteJobDescription.addRequirements("other.GlueSESizeFree >= "
-						+ gLiteDS); // or other.GlueSEUsedOnlineSize
-			}
-		}
-		
-	}
-	
-
 	public Map<String, Object> getInfo() {
 		Map<String, Object> map = new HashMap<String, Object>();
 		map.put("JavaGAT-state", getStateString(this.state));
@@ -674,4 +555,11 @@ public class GliteJob extends JobCpi {
 		
 		return destURI;
 	}
+
+	/** {@inheritDoc} */
+    @Override
+    public String getJobID() throws GATInvocationException {
+        return this.jobID;
+    }
+
 }

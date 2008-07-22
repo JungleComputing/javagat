@@ -19,62 +19,98 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeSet;
 
 import org.apache.log4j.Logger;
+import org.gridlab.gat.resources.ResourceDescription;
+import org.gridlab.gat.resources.SoftwareDescription;
 
 public class JDL {
 	protected static final Logger logger = Logger.getLogger(JDL.class);
 	
-	private final long fileID;
-	private String content;
-	private File file;
+	private String jdlString;
+	private long jdlID;
 	private String virtualOrganisation;
 	private String executable;
-	private List<String> inputFiles;
-	private List<String> outputSrcFiles;
-	private List<String> outputDestFiles;
+	
+	/** Tree Sets have the advantage of containing an entry at most once. Hence, adding input or output files multiple times
+	 * will not lead to exceptions at jobRegister.
+	 */
+	private TreeSet<String> inputFiles;
+	private TreeSet<String> outputSrcFiles;
+	private TreeSet<String> outputDestFiles;
 	private List<String> requirements;
 	private String stdInputFile;
 	private String stdOutputFile;
 	private String stdErrorFile;
 	private List<String> environments;
 	private List<String> arguments;
-
 	private Map<String, Object> attributes;
 
-	public JDL(String filename, long fileID) {
-		virtualOrganisation = "";
-		this.fileID = fileID;
-		file = new File(filename);
+	
+	public JDL(final long jdlID, 
+			   final SoftwareDescription swDescription, 
+			   final String voName,
+			   final ResourceDescription rd) {
 		
-		String deleteOnExitStr = System.getProperty("glite.deleteJDL");
-
-		if ("true".equalsIgnoreCase(deleteOnExitStr)) {
-			file.deleteOnExit();
-		}
-
+		this.jdlID = jdlID;
 		
-		inputFiles = new ArrayList<String>();
-		outputSrcFiles = new ArrayList<String>();
-		outputDestFiles = new ArrayList<String>();
+		inputFiles = new TreeSet<String>();
+		outputSrcFiles = new TreeSet<String>();
+		outputDestFiles = new TreeSet<String>();
 		requirements = new ArrayList<String>();
 		environments = new ArrayList<String>();
 		arguments = new ArrayList<String>();
 		requirements.add("other.GlueCEStateStatus == \"Production\"");
-	}
+			
+		// ... add content
+		this.executable = (swDescription.getExecutable().toString());
+		
+		if (voName != null) {
+			this.virtualOrganisation = voName;
+		}
+		
+		if (swDescription.getStdin() == null) {
+			this.addInputFiles(swDescription.getPreStaged());
+		} else {
+			this.stdInputFile = swDescription.getStdin().getAbsolutePath();
+		}
 
-	public void setVirtualOrganisation(String virtualOrganisation) {
-		this.virtualOrganisation = virtualOrganisation;
+		this.addOutputFiles(swDescription.getPostStaged());
+	
+		if (swDescription.getStdout() != null) {
+			this.stdOutputFile = swDescription.getStdout().getName();
+			addOutputFile(this.stdOutputFile);
+		}
+	
+		if (swDescription.getStderr() != null) {
+			this.stdErrorFile = swDescription.getStderr().getName();
+			addOutputFile(this.stdErrorFile);
+		}
+		
+		if (swDescription.getEnvironment() == null) {
+			this.setArguments(swDescription.getArguments());
+		} else {
+			this.addEnviroment(swDescription.getEnvironment());
+		}
+		
+		if (swDescription.getAttributes() != null) {
+			this.attributes = swDescription.getAttributes();
+		}
+	
+		// map GAT resource description to gLite glue schema and add it to
+		// gLiteJobDescription
+		// the resource description can also be null
+		if (rd != null) {
+			processResourceDescription(rd.getDescription());
+		}
+		
+		this.jdlString = createJDLFileContent();
 	}
-
-	public void setExecutable(String executable) {
-		this.executable = executable;
-	}
-
-	public void addInputFiles(Map<org.gridlab.gat.io.File, org.gridlab.gat.io.File> map) {
+	
+	private void addInputFiles(Map<org.gridlab.gat.io.File, org.gridlab.gat.io.File> map) {
 		
 		for (org.gridlab.gat.io.File file : map.keySet()) {
 			addInputFile(file.getAbsolutePath());
@@ -86,33 +122,29 @@ public class JDL {
 		}
 	}
 
-	public void addRequirements(String requirement) {
-		requirements.add(requirement);
-	}
+//	private void setStdInputFile(File stdInputFile) {
+//		this.stdInputFile = stdInputFile.getAbsolutePath();
+//		addInputFile(this.stdInputFile);
+//	}
 
-	public void setStdInputFile(File stdInputFile) {
-		this.stdInputFile = stdInputFile.getAbsolutePath();
-		addInputFile(this.stdInputFile);
-	}
-
-	public void addEnviroment(Map<String, Object> environment) {
+	private void addEnviroment(Map<String, Object> environment) {
 		for (String varName : environment.keySet()) {
 			String varValue = (String) environment.get(varName);
 			this.environments.add(varName + "=" + varValue);
 		}
 	}
 
-	public void setArguments(String[] args) {
+	private void setArguments(String[] args) {
 		for (int i = 0; i < args.length; i++) {
 			arguments.add(args[i]);
 		}
 	}
 
-	public void addInputFile(String filename) {
+	private void addInputFile(String filename) {
 		this.inputFiles.add(filename);
 	}
 
-	public void addOutputFiles(Map<org.gridlab.gat.io.File, org.gridlab.gat.io.File> map) {
+	private void addOutputFiles(Map<org.gridlab.gat.io.File, org.gridlab.gat.io.File> map) {
 		
 		for (org.gridlab.gat.io.File file : map.keySet()) {
 			if (map.get(file) == null) {
@@ -125,33 +157,28 @@ public class JDL {
 		}
 	}
 
-	public void addOutputFile(String filename) {
+	private void addOutputFile(String filename) {
 		outputSrcFiles.add(filename);
 		outputDestFiles.add(filename);
 	}
-	public void addOutputFile(String srcFilename, String destFilename ) {
-		outputSrcFiles.add(srcFilename);
-		outputDestFiles.add(destFilename);
-	}
+//	private void addOutputFile(String srcFilename, String destFilename ) {
+//		outputSrcFiles.add(srcFilename);
+//		outputDestFiles.add(destFilename);
+//	}
 	
-	public void setStdOutputFile(File stdout) {
-		this.stdOutputFile = stdout.getName();
-		this.addOutputFile(this.stdOutputFile, this.stdOutputFile);
-	}
-	
-	public void setStdErrorFile(File stderr) {
-		this.stdErrorFile = stderr.getName();
-		this.addOutputFile(this.stdErrorFile, this.stdErrorFile);
-	}
-	
-
-	public boolean create() {
+	/**
+	 * Write the JDL content to a file on the harddisk.
+	 * This can be useful for debugging purposes
+	 * @return Boolean that indicates success.
+	 */
+	public boolean saveToDisk() {
 		boolean success = false;
 		
 		try {
+			String jdlFileName = "gatjob_" + this.jdlID + ".jdl";
+			File file = new File(jdlFileName);
 			FileWriter fileWriter = new FileWriter(file);
-			createJDLFileContent();
-			fileWriter.write(content);
+			fileWriter.write(this.jdlString);
 			fileWriter.close();
 			success = true;
 		} catch (IOException e) {
@@ -163,115 +190,178 @@ public class JDL {
 	
 	
 
-	private void createJDLFileContent() {
-		content = "// Auto generated JDL File\n";
-		content += "Rank = -other.GlueCEStateEstimatedResponseTime;\n";
+	private String createJDLFileContent() {
+		StringBuilder builder = new StringBuilder();
+		builder.append("// Auto generated JDL File\n");
+		builder.append("Rank = -other.GlueCEStateEstimatedResponseTime;\n");
 		
 		if (!virtualOrganisation.isEmpty()) {
-			content += "VirtualOrganisation = \"" + virtualOrganisation
-					+ "\";\n";
+			builder.append("VirtualOrganisation = \"").append(virtualOrganisation)
+					.append("\";\n");
 		}
 		
-		content += "Executable = \"" + executable + "\";\n";
+		builder.append("Executable = \"").append(executable).append("\";\n");
 		if (!arguments.isEmpty()) {
-			content += "Arguments = \"";
+			builder.append("Arguments = \"");
 			for (int i = 0; arguments.size() - 1 > i; i++) {
-				content += (String) arguments.get(i) + " ";
+				builder.append(arguments.get(i)).append(" ");
 			}
-			content += (String) arguments.get(arguments.size() - 1) + "\";\n";
+			builder.append(arguments.get(arguments.size() - 1)).append("\";\n");
 		}
 		
 		if (stdInputFile != null) {
-			content += "StdInput =\"" + stdInputFile + "\";\n";
+			builder.append("StdInput =\"").append(stdInputFile).append("\";\n");
 		}
 
-		content += "StdOutput = \"" + this.stdOutputFile + "\";\n";
-		content += "StdError = \"" + this.stdErrorFile + "\";\n";
+		
+		builder.append("StdOutput = \"").append(this.stdOutputFile).append("\";\n");
+		builder.append("StdError = \"").append(this.stdErrorFile).append("\";\n");
 		
 		if (!inputFiles.isEmpty()) {
-			content += "InputSandbox = {\n\t";
-			for (int i = 0; inputFiles.size() - 1 > i; i++) {
-				content += "\"file://" + (String) inputFiles.get(i) + "\",\n\t";
+			builder.append("InputSandbox = {\n\t");
+			String lastInputFile = inputFiles.last();
+			
+			for (String inputFile : inputFiles.headSet(lastInputFile)) {
+				builder.append("\"file://").append(inputFile).append("\",\n\t");
 			}
 			
-			content += "\"file://"
-					+ (String) inputFiles.get(inputFiles.size() - 1) + "\"\n";
-			content += "};\n";
+			builder.append("\"file://")
+				   .append(lastInputFile)
+				   .append("\"\n")
+				   .append("};\n");
 		}
 		
 		if (!outputSrcFiles.isEmpty()) {
-			content += "OutputSandbox = {\n\t";
 			
-			for (int i = 0; outputSrcFiles.size() - 1 > i; i++) {
-				content += "\"" + (String) outputSrcFiles.get(i) + "\",\n\t";
+			builder.append("OutputSandbox = {\n\t");
+			String lastSrcFile = outputSrcFiles.last();
+			
+			for (String srcFile : outputSrcFiles.headSet(lastSrcFile)) {	
+				builder.append("\"").append(srcFile).append("\",\n\t");
 			}
 			
-			content += "\""
-					+ (String) outputSrcFiles.get(outputSrcFiles.size() - 1)
-					+ "\"";
-			content += "\n};\n";
+			builder.append("\"")
+				   .append(lastSrcFile)
+				   .append("\"")
+				   .append("\n};\n");
 			
-			content += "OutputSandboxDestURI = {\n\t";
-			for (int i = 0; outputDestFiles.size() - 1 > i; i++) {
-				content += "\"" + (String) outputDestFiles.get(i) + "\",\n\t";
+			builder.append("OutputSandboxDestURI = {\n\t");
+			String lastDestFile = outputDestFiles.last();
+			
+			for (String destFile : outputDestFiles.headSet(lastDestFile)) {
+				builder.append("\"").append(destFile).append("\",\n\t");
 			}
 			
-			content += "\""
-					+ (String) outputDestFiles.get(outputDestFiles.size() - 1)
-					+ "\"";
-			content += "\n};\n";
+			builder.append("\"")
+				   .append(lastDestFile)
+				   .append("\"")
+				   .append("\n};\n");
 		}
 		
 		if (!attributes.isEmpty()) {
-			processAttributes();
+			processAttributes(builder);
 		}
 
 		if (!requirements.isEmpty()) {
-			content += "Requirements =\n";
+			builder.append("Requirements =\n");
 			for (int i = 0; requirements.size() - 1 > i; i++) {
-				content += "\t" + (String) requirements.get(i) + " &&\n";
+				builder.append("\t").append(requirements.get(i)).append(" &&\n");
 			}
-			content += "\t"
-					+ (String) requirements.get(requirements.size() - 1)
-					+ ";\n";
+			builder.append("\t")
+				   .append(requirements.get(requirements.size() - 1))
+				   .append(";\n");
 		}
 		if (!environments.isEmpty()) {
-			content += "Environment = {\n";
+			builder.append("Environment = {\n");
 			for (int i = 0; environments.size() - 1 > i; i++) {
-				content += "\t\"" + (String) environments.get(i) + "\",\n";
+				builder.append("\t\"").append(environments.get(i)).append("\",\n");
 			}
-			content += "\t\""
-					+ (String) environments.get(environments.size() - 1)
-					+ "\"\n};\n";
+			builder.append("\t\"")
+				   .append(environments.get(environments.size() - 1))
+				   .append("\"\n};\n");
+		}
+		
+		return builder.toString();
+		
+	}
+	
+	// Map the "GAT requirements" to the glue schema and add the requirements to
+	// the gLiteJobDescription
+	private void processResourceDescription(Map<String, Object> map) {
+		
+		for (String resDesc : map.keySet()) {			
+			
+			if (resDesc.equals("os.name")) {
+				requirements.add("other.GlueHostOperatingSystemName == \"" 
+						+ map.get(resDesc) + "\"");
+			} else if (resDesc.equals("os.release")) {
+				requirements.add("other.GlueHostOperatingSystemRelease ==  \""
+						+ map.get(resDesc) + "\"");
+			} else if (resDesc.equals("os.version")) {
+				requirements.add("other.GlueHostOperatingSystemVersion ==  \""
+						+ map.get(resDesc) + "\"");
+			} else if (resDesc.equals("os.type")) {
+				requirements.add("other.GlueHostProcessorModel ==  \""
+						+ map.get(resDesc) + "\"");
+			} else if (resDesc.equals("cpu.type")) {
+				requirements.add("other.GlueHostProcessorModel == \""
+						+ map.get(resDesc) + "\"");
+			} else if (resDesc.equals("machine.type")) {
+				requirements.add("other.GlueHostProcessorModel ==  \""
+						+ map.get(resDesc) + "\"");
+			} else if (resDesc.equals("machine.node")) {
+				// other.GlueCEInfoHostName or other.GlueCEUniqueID ??
+				requirements.add("other.GlueCEInfoHostName == \""
+								+ map.get(resDesc) + "\"");
+			} else if (resDesc.equals("cpu.speed")) {
+				// gat: float & GHz
+				// gLite: int & Mhz
+				float gatspeed = new Float((String) map.get(resDesc));
+				int gLiteSpeed = (int) (gatspeed * 1000);
+				requirements.add("other.GlueHostProcessorClockSpeed >= "
+								+ gLiteSpeed);
+			} else if (resDesc.equals("memory.size")) {
+				// gat: float & GB
+				// gLite: int & MB
+				float gatRAM = (Float) map.get(resDesc);
+				int gLiteRAM = (int) (gatRAM * 1024);
+				requirements.add("other.GlueHostMainMemoryRAMSize >= "
+								+ gLiteRAM);
+			} else if (resDesc.equals("disk.size")) {
+				float gatDS = new Float((String) map.get(resDesc));
+				int gLiteDS = (int) gatDS;
+				requirements.add("other.GlueSESizeFree >= "
+						+ gLiteDS); // or other.GlueSEUsedOnlineSize
+			}
 		}
 		
 	}
 	
 
-	private void processAttributes() {
+	private void processAttributes(StringBuilder builder) {
 		for (String attKey : this.attributes.keySet()) {
 			if ("time.max".equalsIgnoreCase(attKey)) {
 				// object is supposed to be an instance of String or Long
 				Object maxTime = attributes.get(attKey);
-				this.addRequirements("other.GlueCEPolicyMaxWallClockTime ==  \"" + maxTime + "\"");
+				requirements.add("other.GlueCEPolicyMaxWallClockTime ==  \"" + maxTime + "\"");
 			} else if ("walltime.max".equalsIgnoreCase(attKey)) {
 				Object maxTime = attributes.get(attKey);
-				this.addRequirements("other.GlueCEPolicyMaxWallClockTime ==  \"" + maxTime + "\"");
+				requirements.add("other.GlueCEPolicyMaxWallClockTime ==  \"" + maxTime + "\"");
 			} else if ("cputime.max".equalsIgnoreCase(attKey)) {
 				Object maxTime = attributes.get(attKey);
-				this.addRequirements("other.GlueCEPolicyMaxCPUTime == \"" + maxTime + "\"");
+				requirements.add("other.GlueCEPolicyMaxCPUTime == \"" + maxTime + "\"");
 			} else if ("project".equalsIgnoreCase(attKey)) {
 				String project = (String) attributes.get(attKey);
-				this.content += "HLRLocation = \"" + project + "\";\n";
+				builder.append("HLRLocation = \"").append(project).append("\";\n");
 			} else if ("memory.min".equalsIgnoreCase(attKey)) {
 				Object minMemory = attributes.get(attKey);
-				this.addRequirements("other.GlueHostMainMemoryRAMSize >= " + minMemory);
+				requirements.add("other.GlueHostMainMemoryRAMSize >= " + minMemory);
 			} else if ("memory.max".equalsIgnoreCase(attKey)) {
 				Object maxMemory = attributes.get(attKey);
-				this.addRequirements("other.GlueHostMainMemoryRAMSize <= " + maxMemory);
+				requirements.add("other.GlueHostMainMemoryRAMSize <= " + maxMemory);
 			} else if ("glite.retrycount".equalsIgnoreCase(attKey)) {
 				Object retryCount = attributes.get(attKey);
-				this.content += "RetryCount = " + retryCount + ";\n";
+				builder.append("RetryCount = ").append(retryCount).append(";\n");
 			} else {
 				throw new UnsupportedOperationException("Attribute " + attKey + " not supported in gLite-Adaptor");
 			}
@@ -280,8 +370,11 @@ public class JDL {
 		
 	}
 
-	public void setAttributes(Map<String, Object> attributes) {
-		this.attributes = attributes;
-		
+	public String getJdlString() {
+		return jdlString;
+	}
+
+	public long getJdlID() {
+		return jdlID;
 	}
 }
