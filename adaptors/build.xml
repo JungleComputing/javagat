@@ -17,7 +17,7 @@
 		<ant dir="Generic" />
 	</target>
 
-	<target name="build-with-untested" description="build all tested and untested adaptors">
+	<target name="build-with-contributed" description="build all tested and contributed adaptors">
 		<ant dir="CommandlineSsh" />
 		<ant dir="Globus" />
 		<ant dir="Gridsam" />
@@ -29,11 +29,11 @@
 		<ant dir="Sge" />
 		<ant dir="SshTrilead" />
 		<ant dir="Zorilla" />
-		<ant dir="untested" />
+		<ant dir="contributed" />
 	</target>
 
-	<target name="build-only-untested" description="build all untested adaptors">
-		<ant dir="untested" />
+	<target name="build-only-contributed" description="build all contributed adaptors">
+		<ant dir="contributed" />
 	</target>
 
 	<target name="clean" description="clean all adaptors">
@@ -48,7 +48,7 @@
 		<ant dir="SshTrilead" target="clean" />
 		<ant dir="Zorilla" target="clean" />
 		<ant dir="Generic" target="clean" />
-		<ant dir="untested" target="clean" />
+		<ant dir="contributed" target="clean" />
 	</target>
 
 	<target name="commandlinessh" description="build CommandlineSsh adaptors">
