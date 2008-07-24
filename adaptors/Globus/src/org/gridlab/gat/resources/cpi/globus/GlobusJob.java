@@ -346,7 +346,7 @@ public class GlobusJob extends JobCpi implements GramJobListener,
         }
         try {
             if (j != null) {
-                Gram.jobStatus(j); // this call will trigger the listeners if
+                // Gram.jobStatus(j); // this call will trigger the listeners if
                 // the state changed.
             }
         } catch (NullPointerException x) {

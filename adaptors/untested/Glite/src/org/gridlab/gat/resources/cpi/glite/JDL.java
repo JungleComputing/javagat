@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.SortedSet;
 import java.util.TreeSet;
 
 import org.apache.log4j.Logger;
@@ -38,9 +39,9 @@ public class JDL {
 	/** Tree Sets have the advantage of containing an entry at most once. Hence, adding input or output files multiple times
 	 * will not lead to exceptions at jobRegister.
 	 */
-	private TreeSet<String> inputFiles;
-	private TreeSet<String> outputSrcFiles;
-	private TreeSet<String> outputDestFiles;
+	private SortedSet<String> inputFiles;
+	private SortedSet<String> outputSrcFiles;
+	private SortedSet<String> outputDestFiles;
 	private List<String> requirements;
 	private String stdInputFile;
 	private String stdOutputFile;
@@ -287,6 +288,7 @@ public class JDL {
 	
 	// Map the "GAT requirements" to the glue schema and add the requirements to
 	// the gLiteJobDescription
+	@SuppressWarnings("unchecked")
 	private void processResourceDescription(Map<String, Object> map) {
 		
 		for (String resDesc : map.keySet()) {			
@@ -310,9 +312,13 @@ public class JDL {
 				requirements.add("other.GlueHostProcessorModel ==  \""
 						+ map.get(resDesc) + "\"");
 			} else if (resDesc.equals("machine.node")) {
-				// other.GlueCEInfoHostName or other.GlueCEUniqueID ??
-				requirements.add("other.GlueCEInfoHostName == \""
-								+ map.get(resDesc) + "\"");
+				// add requirements for multiple sites
+				if (map.get(resDesc) instanceof List) {
+					addCEListToRequirements((List<Object>) map.get(resDesc));
+				} else {
+					requirements.add("other.GlueCEUniqueID == \""
+									+ map.get(resDesc) + "\"");
+				}
 			} else if (resDesc.equals("cpu.speed")) {
 				// gat: float & GHz
 				// gLite: int & Mhz
@@ -332,11 +338,29 @@ public class JDL {
 				int gLiteDS = (int) gatDS;
 				requirements.add("other.GlueSESizeFree >= "
 						+ gLiteDS); // or other.GlueSEUsedOnlineSize
+				// the user may specify custom resource requirements which will be considered in the GLUE matching
+			} else if (resDesc.equals("glite.other")) {
+				String extraReq = (String) map.get(resDesc);
+				requirements.add(extraReq);
 			}
 		}
 		
 	}
 	
+
+	private void addCEListToRequirements(List<Object> ceList) {
+		StringBuilder ceReqsBuilder = new StringBuilder();
+		
+		for (Object ceElem : ceList.subList(0, ceList.size() - 2)) {
+			ceReqsBuilder.append("(other.GlueCEUniqueID == \"").append(ceElem).append("\") || ");
+		}
+		
+		Object lastElem = ceList.get(ceList.size() - 1);
+		ceReqsBuilder.append("(other.GlueCEUniqueID == \"").append(lastElem).append("\")");
+		
+		this.requirements.add(ceReqsBuilder.toString());
+		
+	}
 
 	private void processAttributes(StringBuilder builder) {
 		for (String attKey : this.attributes.keySet()) {

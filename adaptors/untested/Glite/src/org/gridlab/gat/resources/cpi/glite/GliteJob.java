@@ -175,7 +175,7 @@ public class GliteJob extends JobCpi {
 		String deleteOnExitStr = System.getProperty("glite.deleteJDL");
 
 		// save the file only to disk if deleteJDL has not been specified
-		if ((deleteOnExitStr == null) || ("false".equalsIgnoreCase(deleteOnExitStr))) {
+		if (!Boolean.parseBoolean(deleteOnExitStr)) {
 			this.gLiteJobDescription.saveToDisk();
 		}
 		
