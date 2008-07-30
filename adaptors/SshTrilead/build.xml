@@ -32,7 +32,7 @@
 		<jar jarfile="${lib}/SshTrileadAdaptor.jar" basedir="${tmp}" includes="**">
 			<manifest>
 				<attribute name="FileCpi-class" value="org.gridlab.gat.io.cpi.sshtrilead.SshTrileadFileAdaptor" />
-				<attribute name="ResourceBrokerCpi-class" value="org.gridlab.gat.resources.cpi.sshtrilead.SshTrileadResourceBrokerAdaptor,org.gridlab.gat.resources.cpi.sshtrileadsinglethreaded.SshTrileadSingleThreadedResourceBrokerAdaptor" />
+				<attribute name="ResourceBrokerCpi-class" value="org.gridlab.gat.resources.cpi.sshtrilead.SshTrileadResourceBrokerAdaptor" />
 			</manifest>
 		</jar>
 
