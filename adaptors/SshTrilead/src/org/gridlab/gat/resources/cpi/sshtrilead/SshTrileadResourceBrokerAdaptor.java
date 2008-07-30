@@ -171,7 +171,10 @@ public class SshTrileadResourceBrokerAdaptor extends ResourceBrokerCpi {
 
         // construct the ssh command
         // 1. cd to the execution dir
-        String command = "cd " + sandbox.getSandbox() + " && ";
+        String command = "";
+        if (sandbox.getSandbox() != null) {
+            command += "cd " + sandbox.getSandbox() + " && ";
+        }
         // 2. set necessary env variables using export
         Map<String, Object> env = sd.getEnvironment();
         if (env != null && !env.isEmpty()) {
