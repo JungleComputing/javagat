@@ -178,9 +178,11 @@ public class CommandlineSshResourceBrokerAdaptor extends ResourceBrokerCpi {
             // If we don't, there is no way to kill the remote process.
             command = "ssh -p " + port + " "
                     + "-o BatchMode=yes -o StrictHostKeyChecking=yes -t -t "
-                    + username + "@" + host + " " + "cd "
-                    + sandbox.getSandbox() + " && " + path + " "
-                    + getArguments(description);
+                    + username + "@" + host + " ";
+            if (sandbox.getSandboxPath() != null) {
+                command += "cd " + sandbox.getSandbox() + " && ";
+            }
+            command += path + " " + getArguments(description);
         }
 
         if (logger.isInfoEnabled()) {
