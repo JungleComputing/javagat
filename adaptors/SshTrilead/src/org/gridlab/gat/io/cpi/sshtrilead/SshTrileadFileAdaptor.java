@@ -78,6 +78,8 @@ public class SshTrileadFileAdaptor extends FileCpi {
                         "aes256-ctr,aes192-ctr,aes128-ctr,blowfish-ctr,aes256-cbc,aes192-cbc,aes128-cbc,blowfish-cbc");
         preferences.put("sshtrilead.tcp.nodelay", "false");
         preferences.put("sshtrilead.use.cached.connections", "true");
+        preferences.put("sshtrilead.connect.timeout", "0");
+        preferences.put("sshtrilead.kex.timeout", "0");
         preferences.put("file.chmod", DEFAULT_MODE);
         return preferences;
     }
@@ -427,7 +429,25 @@ public class SshTrileadFileAdaptor extends FileCpi {
             newConnection.setClient2ServerCiphers(client2server);
             newConnection.setServer2ClientCiphers(server2client);
             newConnection.setTCPNoDelay(tcpNoDelay);
-            newConnection.connect();
+            int connectTimeout = 0;
+            try {
+                connectTimeout = Integer.parseInt((String) context
+                        .getPreferences().get("sshtrilead.connect.timeout"));
+            } catch (Throwable t) {
+                logger
+                        .info("'sshtrilead.connect.timeout' set, but could not be parsed: "
+                                + t);
+            }
+            int kexTimeout = 0;
+            try {
+                kexTimeout = Integer.parseInt((String) context.getPreferences()
+                        .get("sshtrilead.kex.timeout"));
+            } catch (Throwable t) {
+                logger
+                        .info("'sshtrilead.kex.timeout' set, but could not be parsed: "
+                                + t);
+            }
+            newConnection.connect(null, connectTimeout, kexTimeout);
             Map<String, Object> securityInfo = SshTrileadSecurityUtils
                     .getSshTrileadCredential(context, "sshtrilead", fixedURI,
                             fixedURI.getPort(SSH_PORT));
