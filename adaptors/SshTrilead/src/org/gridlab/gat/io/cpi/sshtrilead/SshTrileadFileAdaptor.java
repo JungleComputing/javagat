@@ -212,11 +212,16 @@ public class SshTrileadFileAdaptor extends FileCpi {
 
     private void put(URI destination) throws Exception {
         logger.debug("destination: " + destination);
-        Connection connection = getConnection(destination, gatContext,
-                connectionCacheEnable, tcpNoDelay, client2serverCiphers,
-                server2clientCiphers);
-
-        SCPClient client = connection.createSCPClient();
+        SCPClient client = null;
+        try {
+            client = getConnection(destination, gatContext,
+                    connectionCacheEnable, tcpNoDelay, client2serverCiphers,
+                    server2clientCiphers).createSCPClient();
+        } catch (IOException e) {
+            client = getConnection(destination, gatContext, false, tcpNoDelay,
+                    client2serverCiphers, server2clientCiphers)
+                    .createSCPClient();
+        }
 
         FileInterface destinationFile = GAT.createFile(gatContext, destination)
                 .getFileInterface();
@@ -301,10 +306,16 @@ public class SshTrileadFileAdaptor extends FileCpi {
     }
 
     private void get(URI destination) throws Exception {
-        Connection connection = getConnection(fixedURI, gatContext,
-                connectionCacheEnable, tcpNoDelay, client2serverCiphers,
-                server2clientCiphers);
-        SCPClient client = connection.createSCPClient();
+        SCPClient client = null;
+        try {
+            client = getConnection(destination, gatContext,
+                    connectionCacheEnable, tcpNoDelay, client2serverCiphers,
+                    server2clientCiphers).createSCPClient();
+        } catch (IOException e) {
+            client = getConnection(destination, gatContext, false, tcpNoDelay,
+                    client2serverCiphers, server2clientCiphers)
+                    .createSCPClient();
+        }
         FileInterface destinationFile = GAT.createFile(gatContext, destination)
                 .getFileInterface();
 
@@ -498,9 +509,15 @@ public class SshTrileadFileAdaptor extends FileCpi {
     private String[] execCommand(String cmd) throws IOException, Exception {
         logger.info("command: " + cmd + ", uri: " + fixedURI);
         String[] result = new String[3];
-        Session session = getConnection(fixedURI, gatContext,
-                connectionCacheEnable, tcpNoDelay, client2serverCiphers,
-                server2clientCiphers).openSession();
+        Session session = null;
+        try {
+            session = getConnection(fixedURI, gatContext,
+                    connectionCacheEnable, tcpNoDelay, client2serverCiphers,
+                    server2clientCiphers).openSession();
+        } catch (IOException e) {
+            session = getConnection(fixedURI, gatContext, false, tcpNoDelay,
+                    client2serverCiphers, server2clientCiphers).openSession();
+        }
         session.execCommand(cmd);
         // see http://www.trilead.com/Products/Trilead-SSH-2-Java/FAQ/#blocking
         InputStream stdout = new StreamGobbler(session.getStdout());

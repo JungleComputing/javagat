@@ -194,11 +194,18 @@ public class SshTrileadResourceBrokerAdaptor extends ResourceBrokerCpi {
             logger.info("running command: " + command);
         }
 
-        Session session;
+        Session session = null;
         try {
-            session = SshTrileadFileAdaptor.getConnection(brokerURI,
-                    gatContext, connectionCacheEnable, tcpNoDelay,
-                    client2serverCiphers, server2clientCiphers).openSession();
+            try {
+                session = SshTrileadFileAdaptor.getConnection(brokerURI,
+                        gatContext, connectionCacheEnable, tcpNoDelay,
+                        client2serverCiphers, server2clientCiphers)
+                        .openSession();
+            } catch (IOException e) {
+                session = SshTrileadFileAdaptor.getConnection(brokerURI,
+                        gatContext, false, tcpNoDelay, client2serverCiphers,
+                        server2clientCiphers).openSession();
+            }
             if (stoppable) {
                 logger.info("starting dumb pty");
                 session.requestDumbPTY();
