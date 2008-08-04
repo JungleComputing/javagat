@@ -19,6 +19,7 @@
 package org.gridlab.gat.resources.cpi.glite;
 
 import java.io.IOException;
+import java.lang.ref.SoftReference;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -26,9 +27,15 @@ import java.rmi.RemoteException;
 import java.security.GeneralSecurityException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.TimerTask;
+import java.util.WeakHashMap;
 
 import javax.xml.rpc.ServiceException;
 
+import org.apache.axis.AxisEngine;
+import org.apache.axis.AxisProperties;
+import org.apache.axis.client.AxisClient;
+import org.apache.axis.client.Service;
 import org.apache.axis.configuration.BasicClientConfig;
 import org.glite.security.delegation.GrDPX509Util;
 import org.glite.security.delegation.GrDProxyGenerator;
@@ -40,9 +47,11 @@ import org.glite.wms.wmproxy.WMProxyLocator;
 import org.glite.wms.wmproxy.WMProxy_PortType;
 import org.glite.wsdl.services.lb.LoggingAndBookkeepingLocator;
 import org.glite.wsdl.services.lb.LoggingAndBookkeepingPortType;
+import org.glite.wsdl.services.lb.LoggingAndBookkeepingStub;
 import org.glite.wsdl.types.lb.GenericFault;
 import org.glite.wsdl.types.lb.JobFlags;
 import org.glite.wsdl.types.lb.JobStatus;
+import org.glite.wsdl.types.lb.StatName;
 import org.globus.common.CoGProperties;
 import org.gridlab.gat.GAT;
 import org.gridlab.gat.GATContext;
@@ -74,7 +83,7 @@ public class GliteJob extends JobCpi {
 	/** If a proxy is going to be reused it should at least have a remaining lifetime of 5 minutes */
 	private final static int MINIMUM_PROXY_REMAINING_LIFETIME=5*60;
 	
-	private LoggingAndBookkeepingPortType lbService = null;
+	private URL lbURL;
 	private JDL gLiteJobDescription;
 	private SoftwareDescription swDescription;
 	private String jobID;
@@ -86,6 +95,7 @@ public class GliteJob extends JobCpi {
 
 	private WMProxy_PortType serviceStub = null; 
 	private DelegationSoapBindingStub grstStub = null; 
+	private LoggingAndBookkeepingPortType lbPortType = null;
 	
 	
 	 class JobStatusLookUp extends Thread {
@@ -94,6 +104,11 @@ public class GliteJob extends JobCpi {
 		 
 		public JobStatusLookUp(final GliteJob job) {
 			super();
+			
+			/* (thomas) This has already been done and periodically checking the crls leads to massive heap memory usage
+			 * and eventually to a OutOfMemoryError. Hence, don't check the CRLs again at every status lookup
+			*/
+			System.setProperty(ContextWrapper.CRL_ENABLED, "false");
 			
 			this.polledJob = job;
 			
@@ -123,6 +138,7 @@ public class GliteJob extends JobCpi {
 				MetricEvent event = new MetricEvent(polledJob, info, metric, System.currentTimeMillis());
 				GATEngine.fireMetric(polledJob, event);
 				
+				info = null;
 				
 				if (state == Job.POST_STAGING) {
 					polledJob.receiveOutput();
@@ -167,6 +183,7 @@ public class GliteJob extends JobCpi {
 		// Create Job Description Language File ...
 		long jdlID = System.currentTimeMillis();
 		String voName = (String) context.getPreferences().get("VirtualOrganisation");
+		
 		this.gLiteJobDescription = new JDL(jdlID,
 									  	   swDescription,
 									  	   voName,
@@ -186,14 +203,18 @@ public class GliteJob extends JobCpi {
 		// instantiate the logging and bookkeeping service
 		try {
 			URL jobUrl = new URL(jobID);
-			URL lbURL = new URL(jobUrl.getProtocol(), jobUrl.getHost(), LB_PORT, "/");
-			this.lbService = new LoggingAndBookkeepingLocator().getLoggingAndBookkeeping(lbURL);
+			lbURL = new URL(jobUrl.getProtocol(), jobUrl.getHost(), LB_PORT, "/");
+			LoggingAndBookkeepingLocator loc = new LoggingAndBookkeepingLocator();
+			lbPortType = loc.getLoggingAndBookkeeping(lbURL);
 		} catch (MalformedURLException e) {
 			logger.error("Problem instantiating Logging and Bookkeeping service " + e.toString());
 		} catch (ServiceException e) {
-			logger.error(e.toString());
-		}
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} 
 
+		
+		
 		// start status lookup thread
 		new JobStatusLookUp(this);
 	}
@@ -237,6 +258,10 @@ public class GliteJob extends JobCpi {
 		logger.info("Creating new VOMS proxy with lifetime (seconds): " + lifetime);
 		
 		CertificateSecurityContext secContext = null;
+		
+		if (context.getSecurityContexts() == null) {
+			throw new GATInvocationException("Error: found no security contexts in GAT Context!");
+		}
 		
 		for (SecurityContext c : context.getSecurityContexts()) {
 			if (c instanceof CertificateSecurityContext) {
@@ -287,6 +312,7 @@ public class GliteJob extends JobCpi {
 		
 		context.addPreference("globusCert", proxyFile); // for gridFTP adaptor
 		System.setProperty("gridProxyFile", proxyFile);  // for glite security JARs
+		System.setProperty(ContextWrapper.CREDENTIALS_PROXY_FILE, proxyFile);
 		
 		Preferences prefs = context.getPreferences();
 		String lifetimeStr = (String) prefs.get("vomsLifetime");
@@ -320,30 +346,32 @@ public class GliteJob extends JobCpi {
 	 */
 	private void setCACerticateProperties() {
 		
-		Preferences prefs = context.getPreferences();
+		CoGProperties properties = CoGProperties.getDefault();
+		String certLocations = properties.getCaCertLocations();
+		String caCerts[] = certLocations.split(",");
 		
-		// if the CA-Certificates property is not set, deduce it from the cog.properties file
-		// since getCaCertLocations can return more than one location, split around the comma by which they are separated
-		if (prefs.get("CA-Certificates") == null) {
-			CoGProperties properties = CoGProperties.getDefault();
-			String certLocations = properties.getCaCertLocations();
-			String caCerts[] = certLocations.split(",");
-			
-			if (!caCerts[0].endsWith(System.getProperty("file.separator"))) {
-				caCerts[0] = caCerts[0].concat(System.getProperty("file.separator"));
-			}
-			
-			String certsWithoutCRLs = caCerts[0]  + "*.0";
-			String caCRLs = caCerts[0] + "*.r0";
-			context.addPreference("CA-Certificates", certsWithoutCRLs);
-			
-			System.setProperty(ContextWrapper.CA_FILES, certsWithoutCRLs);
-			System.setProperty(ContextWrapper.CRL_FILES, caCRLs);
-			System.setProperty(ContextWrapper.CRL_REQUIRED, "false");
-			// set the credential update interval to two hours
-			System.setProperty(ContextWrapper.CREDENTIALS_UPDATE_INTERVAL, "2h");
-			System.setProperty(ContextWrapper.CRL_UPDATE_INTERVAL, "2h");
+		if (!caCerts[0].endsWith(System.getProperty("file.separator"))) {
+			caCerts[0] = caCerts[0].concat(System.getProperty("file.separator"));
 		}
+		
+		String certsWithoutCRLs = caCerts[0]  + "*.0";
+		String caCRLs = caCerts[0] + "*.r0";
+		context.addPreference("CA-Certificates", certsWithoutCRLs);
+
+			
+		System.setProperty(ContextWrapper.CA_FILES, certsWithoutCRLs);
+		System.setProperty(ContextWrapper.CRL_FILES, caCRLs);
+		System.setProperty(ContextWrapper.CRL_REQUIRED, "false");
+		
+		/* If the crl update interval is not set to 0s, timer tasks for
+		   crl updates will be started in the background which are not terminated appropriately.
+		   This means, each status update will create a new daemon thread which will exist
+		   until the application terminates. Since each such daemon thread requires
+		   ~ 300 KB of heap memory, eventually an OutOfMemory error will be caused.
+		   So it is best to leave this value at 0 seconds.
+	    */
+		System.setProperty(ContextWrapper.CRL_UPDATE_INTERVAL, "0s");
+		
 	}
 	
 	// jobSubmit via API
@@ -428,7 +456,7 @@ public class GliteJob extends JobCpi {
 	}
 	
 	public Map<String, Object> getInfo() {
-		Map<String, Object> map = new HashMap<String, Object>();
+		Map<String, Object> map = new WeakHashMap<String, Object>();
 		map.put("JavaGAT-state", getStateString(this.state));
 		map.put("gLiteState", this.gLiteState);
 		map.put("hostname", GATEngine.getLocalHostName());
@@ -445,15 +473,14 @@ public class GliteJob extends JobCpi {
 			this.gLiteState = "Cleared";
 		} else {
 
-			/* (thomas) This has already been done and periodically checking the crls leads to massive heap memory usage
-			 * and eventually to a OutOfMemoryError. Hence, don't check the CRLs again at every status lookup
-			*/
-			System.setProperty(ContextWrapper.CRL_ENABLED, "false");
 			JobStatus js = null;
 				
 			try {
-				js = lbService.jobStatus(jobID, new JobFlags());
-				this.gLiteState = js.getState().toString();
+				js = lbPortType.jobStatus(jobID, new JobFlags());
+				StatName state = js.getState();
+				this.gLiteState = state.toString();
+				js = null;
+				state = null;
 			} catch (GenericFault e) {
 				logger.error(e.toString());
 			} catch (RemoteException e) {
@@ -487,7 +514,7 @@ public class GliteJob extends JobCpi {
 		}
 		
 	}
-	
+
 	// via API
 	public void receiveOutput() {
 		StringAndLongType[] list = null;
