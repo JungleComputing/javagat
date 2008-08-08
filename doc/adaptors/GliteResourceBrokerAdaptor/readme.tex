@@ -102,6 +102,18 @@ context.addSecurityContext(secContext);
  \end{itemize}
 \end{itemize}
 
+\section{(Not) reusing the VOMS proxy}
+
+If multiple job submissions to the same VO happen in a small time interval, it is not necessary to create
+a new VOMS proxy for every submission. 
+Hence, if the user sets the system property glite.reuseProxy to true, the system will check, whether a valid VOMS-Proxy
+exists. If such a proxy is found, it is determined, whether the proxy lifetime exceeds the one specified in
+the vomsLifetime property. If the vomsLifetime property is unspecified, it is checked wether the proxy is still
+valid for more than 10 minutes.
+Very frequently, all job submissions of an application will happen within the same VO. In case there is the
+need to submit jobs to multiple VOs, it won't be possible to to reuse the old proxy due to the VO-specific
+attribute certificates stored in the proxy file. 
+
 \chapter{The gLite-Adaptor} 
 
 \section{Adaptor-specific system properties}
@@ -118,6 +130,7 @@ The following properties are supported:
 \begin{itemize}
  \item glite.pollIntervalSecs - how often should the job lookup thread poll the WMS for job status updates and fire MetricEvents with status updates (value in seconds, default 3 seconds)
  \item glite.deleteJDL - if this is set to true, the JDL file used for job submission will be deleted when the job is done ("true"/"false", default is "false")
+ \item glite.reuseProxy - if this is set to true, don't create a new proxy if the lifetime of the old one is still sufficient
 \end{itemize}
 
 \section{Supported SoftwareDescription attributes}

@@ -92,7 +92,9 @@ public class JDL {
 		}
 		
 		if (swDescription.getEnvironment() == null) {
-			this.setArguments(swDescription.getArguments());
+			if (swDescription.getArguments() != null) {
+				this.setArguments(swDescription.getArguments());
+			}
 		} else {
 			this.addEnviroment(swDescription.getEnvironment());
 		}
@@ -196,7 +198,7 @@ public class JDL {
 		builder.append("// Auto generated JDL File\n");
 		builder.append("Rank = -other.GlueCEStateEstimatedResponseTime;\n");
 		
-		if (!virtualOrganisation.isEmpty()) {
+		if (!(virtualOrganisation.length() <= 0)) {
 			builder.append("VirtualOrganisation = \"").append(virtualOrganisation)
 					.append("\";\n");
 		}

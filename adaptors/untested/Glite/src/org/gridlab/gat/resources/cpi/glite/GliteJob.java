@@ -19,23 +19,19 @@
 package org.gridlab.gat.resources.cpi.glite;
 
 import java.io.IOException;
-import java.lang.ref.SoftReference;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.rmi.RemoteException;
 import java.security.GeneralSecurityException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
-import java.util.TimerTask;
 import java.util.WeakHashMap;
 
 import javax.xml.rpc.ServiceException;
 
-import org.apache.axis.AxisEngine;
-import org.apache.axis.AxisProperties;
-import org.apache.axis.client.AxisClient;
-import org.apache.axis.client.Service;
 import org.apache.axis.configuration.BasicClientConfig;
 import org.glite.security.delegation.GrDPX509Util;
 import org.glite.security.delegation.GrDProxyGenerator;
@@ -47,7 +43,6 @@ import org.glite.wms.wmproxy.WMProxyLocator;
 import org.glite.wms.wmproxy.WMProxy_PortType;
 import org.glite.wsdl.services.lb.LoggingAndBookkeepingLocator;
 import org.glite.wsdl.services.lb.LoggingAndBookkeepingPortType;
-import org.glite.wsdl.services.lb.LoggingAndBookkeepingStub;
 import org.glite.wsdl.types.lb.GenericFault;
 import org.glite.wsdl.types.lb.JobFlags;
 import org.glite.wsdl.types.lb.JobStatus;
@@ -66,6 +61,7 @@ import org.gridlab.gat.monitoring.MetricDefinition;
 import org.gridlab.gat.monitoring.MetricEvent;
 import org.gridlab.gat.resources.Job;
 import org.gridlab.gat.resources.JobDescription;
+import org.gridlab.gat.resources.ResourceDescription;
 import org.gridlab.gat.resources.SoftwareDescription;
 import org.gridlab.gat.resources.cpi.JobCpi;
 import org.gridlab.gat.resources.cpi.Sandbox;
@@ -82,25 +78,33 @@ public class GliteJob extends JobCpi {
 	private final static int STANDARD_PROXY_LIFETIME = 12*3600;
 	/** If a proxy is going to be reused it should at least have a remaining lifetime of 5 minutes */
 	private final static int MINIMUM_PROXY_REMAINING_LIFETIME=5*60;
+	/** The maximum size in bytes for a file until which the input sandbox should still be used for staging */
+	private final static long INPUT_SANDBOX_MAX_SIZE = 1;
 	
 	private URL lbURL;
 	private JDL gLiteJobDescription;
 	private SoftwareDescription swDescription;
 	private String jobID;
 	private String gLiteState;
-	private String gLiteUI = null;
+	private URL wmsURL = null;
 	private String proxyFile = null;
 	private boolean outputDone = false;
 	private Metric metric;
-
+	
 	private WMProxy_PortType serviceStub = null; 
 	private DelegationSoapBindingStub grstStub = null; 
 	private LoggingAndBookkeepingPortType lbPortType = null;
+	
+	private boolean jobKilled = false;
 	
 	
 	 class JobStatusLookUp extends Thread {
 		private GliteJob polledJob;
 		private int pollIntMilliSec;
+		private long afterJobKillCounter = 0;
+		
+		/** if the job has been stopped, allow the thread to still do update for this time interval terminating */
+		final static long UPDATE_INTV_AFTER_JOB_KILL = 40000;
 		 
 		public JobStatusLookUp(final GliteJob job) {
 			super();
@@ -132,6 +136,16 @@ public class GliteJob extends JobCpi {
 					break;
 				}
 				
+				// if the job has been killed and the maximum time at which the job should be canceled
+				// has been reached, cancel
+				if (jobKilled) {
+					afterJobKillCounter += pollIntMilliSec;
+					
+					if (afterJobKillCounter >= UPDATE_INTV_AFTER_JOB_KILL) {
+						break;
+					}
+				}
+				
 				polledJob.updateState();
 				
 				Map <String, Object> info = getInfo();
@@ -154,6 +168,33 @@ public class GliteJob extends JobCpi {
 		}
 	}
 	 
+	 /**
+	  * Construct the service stubs necessary to communicate with the workload management (WM)
+	  * node
+	  * @param brokerURI The URI of the WM
+	  * @throws GATInvocationException
+	  */
+	private void initWMSoapServices(final String brokerURI) throws GATInvocationException {
+		try {
+			this.wmsURL = new URL(brokerURI);
+			
+			// use engine configuration with settings hardcoded for a client
+			// this seems to resolve multithreading issues
+			WMProxyLocator serviceLocator = new WMProxyLocator(new BasicClientConfig());
+			
+			serviceStub = serviceLocator.getWMProxy_PortType(wmsURL);
+			
+			grstStub = (DelegationSoapBindingStub) serviceLocator
+													.getWMProxyDelegation_PortType(wmsURL);
+			
+		} catch (MalformedURLException e) {
+			throw new GATInvocationException("Broker URI is malformed!", e);
+		} catch (ServiceException e) {
+			throw new GATInvocationException("Could not get service stub for WMS-Node!", e);
+		}
+	}
+	
+ 
 	protected GliteJob(final GATContext gatContext, 
 					   final JobDescription jobDescription, 
 					   final Sandbox sandbox, 
@@ -161,9 +202,10 @@ public class GliteJob extends JobCpi {
 			throws GATInvocationException {
 		
 		super(gatContext, jobDescription, sandbox);
-		this.gLiteUI = brokerURI;
 		this.swDescription = this.jobDescription.getSoftwareDescription();
 		
+		initWMSoapServices(brokerURI);
+				
 		if (swDescription.getExecutable() == null) {
 			throw new GATInvocationException(
 					"The Job description does not contain an executable");
@@ -184,10 +226,12 @@ public class GliteJob extends JobCpi {
 		long jdlID = System.currentTimeMillis();
 		String voName = (String) context.getPreferences().get("VirtualOrganisation");
 		
+		ResourceDescription rd = jobDescription.getResourceDescription();
+		
 		this.gLiteJobDescription = new JDL(jdlID,
 									  	   swDescription,
 									  	   voName,
-									       jobDescription.getResourceDescription());
+									       rd);
 		
 		String deleteOnExitStr = System.getProperty("glite.deleteJDL");
 
@@ -209,11 +253,8 @@ public class GliteJob extends JobCpi {
 		} catch (MalformedURLException e) {
 			logger.error("Problem instantiating Logging and Bookkeeping service " + e.toString());
 		} catch (ServiceException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			logger.error("Problem instantiating Logging and Bookkeeping service " + e.toString());
 		} 
-
-		
 		
 		// start status lookup thread
 		new JobStatusLookUp(this);
@@ -317,7 +358,15 @@ public class GliteJob extends JobCpi {
 		Preferences prefs = context.getPreferences();
 		String lifetimeStr = (String) prefs.get("vomsLifetime");
 		int lifetime = STANDARD_PROXY_LIFETIME;
-		long existingLifetime = VomsProxyManager.getExistingProxyLifetime(proxyFile);
+		
+		boolean reuseProxy = Boolean.parseBoolean(System.getProperty("glite.reuseProxy"));
+		long existingLifetime = -1;
+		
+		// determine the lifetime of the existing proxy only if the user wants to reuse the
+		// old proxy
+		if (reuseProxy) {
+			existingLifetime = VomsProxyManager.getExistingProxyLifetime(proxyFile);
+		} 
 		
 		if (lifetimeStr == null) { // if a valid proxy exists, create a new one only if the old one is below the minimum lifetime
 			if (existingLifetime < MINIMUM_PROXY_REMAINING_LIFETIME) {
@@ -374,6 +423,41 @@ public class GliteJob extends JobCpi {
 		
 	}
 	
+	private void stageInSandboxFiles(String jobID)  {
+		List<File> sandboxFiles = new ArrayList<File>();
+		
+		try {
+			logger.info("Staging in files");
+			if (swDescription.getStdin() != null) {
+				File f = GAT.createFile(context, swDescription.getStdin().getName());
+				sandboxFiles.add(f);
+			}
+			
+			Map<File, File> map = swDescription.getPreStaged();
+			sandboxFiles.addAll(map.keySet());
+		
+			String[] sl = serviceStub
+					.getSandboxDestURI(jobID, "gsiftp").getItem();
+			
+			for (File sandboxFile : sandboxFiles) {
+				URI tempURI = new URI(sl[0] + "/" + sandboxFile.getName());
+				URI destURI = new URI(tempURI.getScheme() + "://"
+					+ tempURI.getHost() + ":" + tempURI.getPort() + "//"
+					+ tempURI.getPath());
+				File destFile = GAT.createFile(context, destURI);
+				sandboxFile.copy(destFile.toGATURI());
+			}
+		} catch (URISyntaxException e) {
+			logger.error("URI error while resolving pre-staged file set", e);
+		} catch (GATObjectCreationException e) {
+			logger.error("Could not create pre-staged file set", e);
+		} catch (RemoteException e) {
+			logger.error("Problem while communicating with SOAP services", e);
+		} catch (GATInvocationException e) {
+			logger.error("Could not copy files to input sandbox", e);
+		}
+	}
+			
 	// jobSubmit via API
 	private String submitJob()
 			throws GATInvocationException {
@@ -389,17 +473,8 @@ public class GliteJob extends JobCpi {
 		
 
 		JobIdStructType jobId = null;
+		
 		try {
-			URL wmsURL = new URL(gLiteUI);
-
-			// use engine configuration with settings hardcoded for a client
-			// this seems to resolve multithreading issues
-			WMProxyLocator serviceLocator = new WMProxyLocator(new BasicClientConfig());
-			serviceStub = serviceLocator.getWMProxy_PortType(wmsURL);
-			
-			grstStub = (DelegationSoapBindingStub) serviceLocator
-					.getWMProxyDelegation_PortType(wmsURL);
-
 			String delegationId = "gatjob" + gLiteJobDescription.getJdlID();
 			String certReq = grstStub.getProxyReq(delegationId);
 			
@@ -412,47 +487,18 @@ public class GliteJob extends JobCpi {
 
 			String jdlString = gLiteJobDescription.getJdlString();
 			jobId = serviceStub.jobRegister(jdlString, delegationId);
-
-			String[] sl = serviceStub
-					.getSandboxDestURI(jobId.getId(), "gsiftp").getItem();
-
-			if (swDescription.getStdin() != null) {
-				File f = GAT.createFile(context, swDescription.getStdin().getName());
-				f.copy(generateGATURI(sl[0], swDescription.getStdin()));
-			}
-
-			Map<File, File> map = swDescription.getPreStaged();
-			logger.info("traversing prestaged files");
 			
-			for (File srcFile : map.keySet()) {
-				srcFile.copy(generateGATURI(sl[0], srcFile));
-			}
+			stageInSandboxFiles(jobId.getId());
 			
 			serviceStub.jobStart(jobId.getId());
 
 		} catch (IOException e) {
 			logger.error("Problem while copying input files", e);
-		} catch (URISyntaxException e) {
-			logger.error("URI error while resolving pre-staged file set", e);
-		} catch (GATObjectCreationException e) {
-			logger.error("Could not create pre-staged file set", e);
-		} catch (ServiceException e) {
-			logger.error("Could not get a SOAP connection for the required services", e);
 		} catch (GeneralSecurityException e) {
 			logger.error("Could not construct proxy byte sequence", e);
 		}  
 		
 		return jobId.getId();
-	}
-	
-	private org.gridlab.gat.URI generateGATURI(String destFragment, File srcFile) 
-												throws URISyntaxException, GATObjectCreationException {
-		URI tempURI = new URI(destFragment + "/" + srcFile.getName());
-		URI destURI = new URI(tempURI.getScheme() + "://"
-				+ tempURI.getHost() + ":" + tempURI.getPort() + "//"
-				+ tempURI.getPath());
-		File destFile = GAT.createFile(context, destURI);
-		return destFile.toGATURI();
 	}
 	
 	public Map<String, Object> getInfo() {
@@ -507,7 +553,7 @@ public class GliteJob extends JobCpi {
 			state = Job.POST_STAGING;
 		} else if ("Done (Success)".equalsIgnoreCase(gLiteState)) {
 			state = Job.POST_STAGING;
-		} else if ("Canceled".equalsIgnoreCase(gLiteState)) {
+		} else if ("Cancelled".equalsIgnoreCase(gLiteState)) {
 			state = Job.SUBMISSION_ERROR;
 		} else if ("Cleared".equalsIgnoreCase(gLiteState)) {
 			state = Job.STOPPED;
@@ -587,6 +633,27 @@ public class GliteJob extends JobCpi {
     @Override
     public String getJobID() throws GATInvocationException {
         return this.jobID;
+    }
+    
+    /**
+     * Stop the job submitted by this class
+     * Independent from whether the WMS will actually cancel the job and report the CANCELLED 
+     * state back, the JobStatus poll thread will terminate after a fixed number of job updates
+     * after this has been called.
+     * The number of updates still done after calling stop()  is defined in the 
+     * UDPATES_AFTER_JOB_KILL variable in the JobStatusLookUp Thread.
+     * This has become necessary because some jobs would hang forever in a state
+     * even after calling the stop method.
+     */
+    public void stop() throws GATInvocationException {;
+    	
+    	try {
+			serviceStub.jobCancel(jobID);
+			jobKilled = true;
+			
+		} catch (Exception e) {
+			throw new GATInvocationException("Could not cancel job!", e);
+		} 
     }
 
 }
