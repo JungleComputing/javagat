@@ -965,7 +965,9 @@ public abstract class GlobusFileAdaptor extends FileCpi {
         client = createClient(toURI());
         try {
             client.makeDir(remotePath);
-            chmod(client, remotePath, gatContext);
+            if (gatContext.getPreferences().containsKey("file.chmod")) {
+                chmod(client, remotePath, gatContext);
+            }
             setIsDir(toURI(), true);
         } catch (Exception e) {
             if (logger.isDebugEnabled()) {
