@@ -7,6 +7,7 @@ import java.util.Map;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.GATObjectCreationException;
+import org.gridlab.gat.Preferences;
 import org.gridlab.gat.URI;
 import org.gridlab.gat.io.cpi.FileInputStreamCpi;
 
@@ -24,6 +25,12 @@ public abstract class GlobusFileInputStreamAdaptor extends FileInputStreamCpi {
         capabilities.put("skip", true);
 
         return capabilities;
+    }
+    
+    public static Preferences getSupportedPreferences() {
+        Preferences preferences = FileInputStreamCpi.getSupportedPreferences();
+        preferences.put("ftp.connection.passive", "false");
+        return preferences;
     }
     
     InputStream in;

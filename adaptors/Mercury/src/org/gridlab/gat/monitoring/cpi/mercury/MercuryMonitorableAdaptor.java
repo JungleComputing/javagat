@@ -20,6 +20,7 @@ import java.util.Vector;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.GATObjectCreationException;
+import org.gridlab.gat.Preferences;
 import org.gridlab.gat.monitoring.Metric;
 import org.gridlab.gat.monitoring.MetricDefinition;
 import org.gridlab.gat.monitoring.MetricEvent;
@@ -272,6 +273,12 @@ public class MercuryMonitorableAdaptor extends MonitorableCpi {
         capabilities.put("getMetricDefinitionByName", true);
 
         return capabilities;
+    }
+
+    public static Preferences getSupportedPreferences() {
+        Preferences preferences = MonitorableCpi.getSupportedPreferences();
+        preferences.put("mercury.producer", "<no default>");
+        return preferences;
     }
 
     public static int MAX_BLOCK_TIME = 5000;
