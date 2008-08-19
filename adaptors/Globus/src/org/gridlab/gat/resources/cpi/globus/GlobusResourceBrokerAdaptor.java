@@ -19,6 +19,7 @@ import org.gridlab.gat.GAT;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.GATObjectCreationException;
+import org.gridlab.gat.Preferences;
 import org.gridlab.gat.URI;
 import org.gridlab.gat.engine.GATEngine;
 import org.gridlab.gat.monitoring.Metric;
@@ -52,6 +53,13 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
         capabilities.put("submitJob", true);
 
         return capabilities;
+    }
+
+    public static Preferences getSupportedPreferences() {
+        Preferences preferences = ResourceBrokerCpi.getSupportedPreferences();
+        preferences.put("globus.sandbox.gram", "false");
+        preferences.put("globus.exitvalue.enable", "false");
+        return preferences;
     }
 
     protected static Logger logger = Logger

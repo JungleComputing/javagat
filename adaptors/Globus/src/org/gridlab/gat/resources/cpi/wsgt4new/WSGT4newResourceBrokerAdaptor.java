@@ -25,6 +25,7 @@ import org.gridlab.gat.AdaptorNotApplicableException;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.GATObjectCreationException;
+import org.gridlab.gat.Preferences;
 import org.gridlab.gat.URI;
 import org.gridlab.gat.io.File;
 import org.gridlab.gat.monitoring.Metric;
@@ -57,6 +58,13 @@ public class WSGT4newResourceBrokerAdaptor extends ResourceBrokerCpi {
         capabilities.put("submitJob", true);
 
         return capabilities;
+    }
+
+    public static Preferences getSupportedPreferences() {
+        Preferences preferences = ResourceBrokerCpi.getSupportedPreferences();
+        preferences.put("wsgt4new.sandbox.gram", "false");
+        preferences.put("wsgt4new.factory.type", "<FORK CONSTANT>");
+        return preferences;
     }
 
     protected static Logger logger = Logger
@@ -282,7 +290,7 @@ public class WSGT4newResourceBrokerAdaptor extends ResourceBrokerCpi {
 
         // test whether gram sandbox should be used
         String s = (String) gatContext.getPreferences().get(
-                "wsgt4.sandbox.gram");
+                "wsgt4new.sandbox.gram");
         boolean useGramSandbox = (s != null && s.equalsIgnoreCase("true"));
         Sandbox sandbox = null;
         if (!useGramSandbox) {
@@ -333,7 +341,7 @@ public class WSGT4newResourceBrokerAdaptor extends ResourceBrokerCpi {
         gramjob.addListener(wsgt4job);
 
         String factoryType = (String) gatContext.getPreferences().get(
-                "wsgt4.factory.type");
+                "wsgt4new.factory.type");
         if (factoryType == null || factoryType.equals("")) {
             factoryType = ManagedJobFactoryConstants.FACTORY_TYPE.FORK;
             if (logger.isDebugEnabled()) {

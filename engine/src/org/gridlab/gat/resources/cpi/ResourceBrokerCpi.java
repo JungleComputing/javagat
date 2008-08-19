@@ -7,6 +7,7 @@ import java.util.Map;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.GATObjectCreationException;
+import org.gridlab.gat.Preferences;
 import org.gridlab.gat.TimePeriod;
 import org.gridlab.gat.URI;
 import org.gridlab.gat.monitoring.MetricListener;
@@ -39,6 +40,11 @@ public abstract class ResourceBrokerCpi implements ResourceBroker {
         capabilities.put("submitJob", false);
 
         return capabilities;
+    }
+
+    public static Preferences getSupportedPreferences() {
+        Preferences preferences = new Preferences();
+        return preferences;
     }
 
     protected GATContext gatContext;

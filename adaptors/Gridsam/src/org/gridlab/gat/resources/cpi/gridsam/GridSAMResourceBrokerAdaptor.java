@@ -44,6 +44,13 @@ public class GridSAMResourceBrokerAdaptor extends ResourceBrokerCpi {
         return capabilities;
     }
 
+    public static Preferences getSupportedPreferences() {
+        Preferences preferences = ResourceBrokerCpi.getSupportedPreferences();
+        preferences.put("gridsam.sandbox.host", "<no default>");
+        preferences.put("gridsam.sandbox.root", "/tmp");
+        return preferences;
+    }
+
     private Logger logger = Logger
             .getLogger(GridSAMResourceBrokerAdaptor.class);
 
@@ -176,7 +183,7 @@ public class GridSAMResourceBrokerAdaptor extends ResourceBrokerCpi {
             // use ssh tunnels. For instance: localhost:4567
             // Fortunately, the sandbox code works with this.
             String sandboxHostname = (String) gatContext.getPreferences().get(
-                    "ResourceBroker.sandbox.host");
+                    "gridsam.sandbox.host");
             if (sandboxHostname == null) {
                 sandboxHostname = getHostname();
                 if (sandboxHostname == null || sandboxHostname.equals("")) {
@@ -276,7 +283,7 @@ public class GridSAMResourceBrokerAdaptor extends ResourceBrokerCpi {
 
     private String getSandboxRoot(Preferences prefs)
             throws GATInvocationException {
-        Object tmp = prefs.get("resourcebroker.sandbox.root");
+        Object tmp = prefs.get("gridsam.sandbox.root");
         if (tmp == null || !(tmp instanceof String)) {
             // Default if user did not set this preference.
             tmp = "/tmp";

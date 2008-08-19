@@ -43,6 +43,23 @@ public class SshTrileadResourceBrokerAdaptor extends ResourceBrokerCpi {
         return capabilities;
     }
 
+    public static Preferences getSupportedPreferences() {
+        Preferences preferences = ResourceBrokerCpi.getSupportedPreferences();
+        preferences
+                .put(
+                        "sshtrilead.cipher.client2server",
+                        "aes256-ctr,aes192-ctr,aes128-ctr,blowfish-ctr,aes256-cbc,aes192-cbc,aes128-cbc,blowfish-cbc");
+        preferences
+                .put(
+                        "sshtrilead.cipher.server2client",
+                        "aes256-ctr,aes192-ctr,aes128-ctr,blowfish-ctr,aes256-cbc,aes192-cbc,aes128-cbc,blowfish-cbc");
+        preferences.put("sshtrilead.tcp.nodelay", "false");
+        preferences.put("sshtrilead.use.cached.connections", "true");
+        preferences.put("sshtrilead.separate.output", "true");
+        preferences.put("sshtrilead.stoppable", "false");
+        return preferences;
+    }
+
     public static String getDescription() {
         return "The SshTrilead ResourceBroker Adaptor implements the ResourceBroker object using the trilead ssh library. Trilead ssh is an open source full java ssh library. The ssh trilead ResourceBroker adaptor can only submit to single machines, however if you invoke a command like 'qsub' on a headnode, it might result in an application running on multiple machines. Connections with a remote ssh server can be made by using the username + password, username + keyfile, or with only a username, depending on the client and server settings.";
     }

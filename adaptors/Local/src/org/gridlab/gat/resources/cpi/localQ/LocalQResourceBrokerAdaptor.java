@@ -8,6 +8,7 @@ import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.GATObjectCreationException;
 import org.gridlab.gat.MethodNotApplicableException;
+import org.gridlab.gat.Preferences;
 import org.gridlab.gat.URI;
 import org.gridlab.gat.engine.GATEngine;
 import org.gridlab.gat.monitoring.Metric;
@@ -58,6 +59,12 @@ import org.gridlab.gat.resources.cpi.WrapperJobCpi;
 public class LocalQResourceBrokerAdaptor extends ResourceBrokerCpi implements
         Runnable {
 
+    public static Preferences getSupportedPreferences() {
+        Preferences preferences = ResourceBrokerCpi.getSupportedPreferences();
+        preferences.put("localq.max.concurrent.jobs", "<number of cores>");
+        return preferences;
+    }
+
     public static Map<String, Boolean> getSupportedCapabilities() {
         Map<String, Boolean> capabilities = ResourceBrokerCpi
                 .getSupportedCapabilities();
@@ -96,7 +103,7 @@ public class LocalQResourceBrokerAdaptor extends ResourceBrokerCpi implements
         queue = new PriorityQueue<LocalQJob>();
 
         Integer maxConcurrentJobs = (Integer) gatContext.getPreferences().get(
-                "maxConcurrentJobs");
+                "localq.max.concurrent.jobs");
 
         if (maxConcurrentJobs == null) {
             maxConcurrentJobs = Runtime.getRuntime().availableProcessors() + 1;
