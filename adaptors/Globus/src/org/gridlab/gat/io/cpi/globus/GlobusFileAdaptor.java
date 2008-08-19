@@ -43,6 +43,7 @@ public abstract class GlobusFileAdaptor extends FileCpi {
         p.put("ftp.connection.protection", "<default taken from globus>");
         p.put("ftp.server.old", "false");
         p.put("ftp.server.noauthentication", "false");
+        p.put("file.chmod", "<default is target umask>");
         return p;
     }
 
