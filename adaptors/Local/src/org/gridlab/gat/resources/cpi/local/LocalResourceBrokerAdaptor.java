@@ -192,7 +192,7 @@ public class LocalResourceBrokerAdaptor extends ResourceBrokerCpi {
 
         String command = exe + " " + getArguments(description);
 
-        java.io.File f = new java.io.File(sandbox.getSandboxURI().getPath());
+        java.io.File f = new java.io.File(sandbox.getSandboxPath());
         if (logger.isInfoEnabled()) {
             logger.info("running command: " + command);
 
