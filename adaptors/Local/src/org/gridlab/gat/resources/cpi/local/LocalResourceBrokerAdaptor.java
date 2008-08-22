@@ -204,8 +204,7 @@ public class LocalResourceBrokerAdaptor extends ResourceBrokerCpi {
             }
 
             if (home != null) {
-                logger.info("working dir is: "
-                        + sandbox.getSandboxURI().getPath());
+                logger.info("working dir is: " + sandbox.getSandboxPath());
             }
         }
 
