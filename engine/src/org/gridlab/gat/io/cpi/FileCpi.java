@@ -847,6 +847,16 @@ public abstract class FileCpi implements FileInterface, java.io.Serializable {
             logger.info("recursive delete dir: " + dir);
         }
 
+        // just try to delete the directory directly, some adaptors might be
+        // able to do this!
+        try {
+            if (dir.delete()) {
+                return;
+            }
+        } catch (Throwable t) {
+            // ignore
+        }
+
         GATInvocationException exception = new GATInvocationException();
         File[] files = (File[]) dir.listFiles();
         if (files != null) {
