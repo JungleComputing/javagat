@@ -651,8 +651,6 @@ public class GliteJob extends JobCpi {
 		}
 	}
 	
-
-	// via API
 	public void receiveOutput() {
 		StringAndLongType[] list = null;
 		
@@ -677,10 +675,13 @@ public class GliteJob extends JobCpi {
 					
 					f.copy(destForPostStagedFile(f2));
 				} catch (GATInvocationException e) {
+					postStageException = e;
 					logger.error(e.toString());
 				} catch (URISyntaxException e) {
+					postStageException = new GATInvocationException(e.toString());
 					logger.error("An error occured when building URIs for the poststaged files", e);
 				} catch (GATObjectCreationException e) {
+					postStageException = new GATInvocationException(e.toString());
 					logger.error("Could not create GAT file when retrieving output", e);
 				} 
 			}
