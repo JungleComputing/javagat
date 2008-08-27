@@ -32,7 +32,10 @@ import java.util.WeakHashMap;
 
 import javax.xml.rpc.ServiceException;
 
+import org.apache.axis.SimpleTargetedChain;
 import org.apache.axis.configuration.BasicClientConfig;
+import org.apache.axis.configuration.SimpleProvider;
+import org.apache.axis.transport.http.HTTPSender;
 import org.glite.security.delegation.GrDPX509Util;
 import org.glite.security.delegation.GrDProxyGenerator;
 import org.glite.security.trustmanager.ContextWrapper;
@@ -47,6 +50,7 @@ import org.glite.wsdl.types.lb.GenericFault;
 import org.glite.wsdl.types.lb.JobFlags;
 import org.glite.wsdl.types.lb.JobStatus;
 import org.glite.wsdl.types.lb.StatName;
+import org.globus.axis.transport.HTTPSSender;
 import org.globus.common.CoGProperties;
 import org.gridlab.gat.GAT;
 import org.gridlab.gat.GATContext;
@@ -96,6 +100,10 @@ public class GliteJob extends JobCpi {
 	private LoggingAndBookkeepingPortType lbPortType = null;
 	
 	private boolean jobKilled = false;
+	private long submissiontime = -1L;
+	private long starttime = -1L;
+	private long stoptime = -1L;
+	private GATInvocationException postStageException = null;
 	
 	
 	 class JobStatusLookUp extends Thread {
@@ -108,11 +116,6 @@ public class GliteJob extends JobCpi {
 		 
 		public JobStatusLookUp(final GliteJob job) {
 			super();
-			
-			/* (thomas) This has already been done and periodically checking the crls leads to massive heap memory usage
-			 * and eventually to a OutOfMemoryError. Hence, don't check the CRLs again at every status lookup
-			*/
-			System.setProperty(ContextWrapper.CRL_ENABLED, "false");
 			
 			this.polledJob = job;
 			
@@ -194,6 +197,36 @@ public class GliteJob extends JobCpi {
 		}
 	}
 	
+	/**
+	 * Instantiate the logging and bookkeeping service classes, which are used for
+	 * status updates
+	 * @param jobID the JobID from which the LB URL will be constructed
+	 */
+	private void initLBSoapService(final String jobID) {
+		// instantiate the logging and bookkeeping service
+		try {
+			java.net.URL jobUrl = new java.net.URL(jobID);
+			lbURL = new java.net.URL(jobUrl.getProtocol(), jobUrl.getHost(), LB_PORT, "/");
+			
+			// Set provider
+			SimpleProvider provider = new SimpleProvider();
+			SimpleTargetedChain c = null;
+			c = new SimpleTargetedChain(new HTTPSSender());
+			provider.deployTransport("https",c);
+			c = new SimpleTargetedChain(new HTTPSender());
+			provider.deployTransport("http",c);
+			
+			// get LB Stub
+			LoggingAndBookkeepingLocator loc = new LoggingAndBookkeepingLocator(provider);
+			
+			lbPortType = loc.getLoggingAndBookkeeping(lbURL);
+		} catch (MalformedURLException e) {
+			logger.error("Problem instantiating Logging and Bookkeeping service " + e.toString());
+		} catch (ServiceException e) {
+			logger.error("Problem instantiating Logging and Bookkeeping service " + e.toString());
+		} 
+	}
+	
  
 	protected GliteJob(final GATContext gatContext, 
 					   final JobDescription jobDescription, 
@@ -240,21 +273,9 @@ public class GliteJob extends JobCpi {
 			this.gLiteJobDescription.saveToDisk();
 		}
 		
-		
 		jobID = submitJob();
 		logger.info("jobID " + jobID);
-		
-		// instantiate the logging and bookkeeping service
-		try {
-			URL jobUrl = new URL(jobID);
-			lbURL = new URL(jobUrl.getProtocol(), jobUrl.getHost(), LB_PORT, "/");
-			LoggingAndBookkeepingLocator loc = new LoggingAndBookkeepingLocator();
-			lbPortType = loc.getLoggingAndBookkeeping(lbURL);
-		} catch (MalformedURLException e) {
-			logger.error("Problem instantiating Logging and Bookkeeping service " + e.toString());
-		} catch (ServiceException e) {
-			logger.error("Problem instantiating Logging and Bookkeeping service " + e.toString());
-		} 
+		initLBSoapService(jobID);
 		
 		// start status lookup thread
 		new JobStatusLookUp(this);
@@ -503,10 +524,28 @@ public class GliteJob extends JobCpi {
 	
 	public Map<String, Object> getInfo() {
 		Map<String, Object> map = new WeakHashMap<String, Object>();
-		map.put("JavaGAT-state", getStateString(this.state));
+		
+		URL idURL = null;
+		
+		if (jobID == null) {
+			map.put("hostname", null);
+		} else {
+			try {
+				idURL = new URL(jobID);
+				map.put("hostname", idURL.getHost());
+			} catch (MalformedURLException e) {
+				logger.error("Could not parse hostname from jobID", e);
+				map.put("hostname", null);
+			}
+		}
+		
+		map.put("state", this.state);
 		map.put("gLiteState", this.gLiteState);
-		map.put("hostname", GATEngine.getLocalHostName());
 		map.put("jobID", jobID);
+		map.put("submissiontime", submissiontime);
+		map.put("starttime", starttime);
+		map.put("stoptime", stoptime);
+		map.put("poststage.exception", postStageException);
 		return map;
 	}
 
@@ -514,7 +553,7 @@ public class GliteJob extends JobCpi {
 		return state;
 	}
 	
-	private void updateState() {		
+	private void queryState() {
 		if (outputDone) { // API is ready with POST STAGING
 			this.gLiteState = "Cleared";
 		} else {
@@ -533,6 +572,11 @@ public class GliteJob extends JobCpi {
 				logger.error("gLite Error: LoggingAndBookkeeping service only works in glite 3.1 or higher", e);
 			} 
 		}
+	}
+	
+	private void updateState() {		
+		
+		queryState();
 			
 		this.state = Job.UNKNOWN;
 		if ("Waiting".equalsIgnoreCase(gLiteState)) {
@@ -540,26 +584,73 @@ public class GliteJob extends JobCpi {
 		} else if ("Ready".equalsIgnoreCase(gLiteState)) {
 			state = Job.INITIAL;
 		} else if ("Scheduled".equalsIgnoreCase(gLiteState)) {
+			
+			// if state appears the first time, set the submission time appropriately
+			if (submissiontime == -1L) {
+				submissiontime = System.currentTimeMillis();
+			}
+			
 			state = Job.SCHEDULED;
 		} else if ("Running".equalsIgnoreCase(gLiteState)) {
+			
+			// sometimes, scheduled state is skipped
+			if (submissiontime == -1L) {
+				submissiontime = System.currentTimeMillis();
+			}
+			
+			// if running for the first time, set the start time appropriately
+			if (starttime == -1L) {
+				starttime = System.currentTimeMillis();
+			}
+			
 			state = Job.RUNNING;
 		} else if ("Done (Failed)".equalsIgnoreCase(gLiteState)) {
+			
+			if (stoptime == -1L) {
+				stoptime = System.currentTimeMillis();
+			}
+			
 			state = Job.SUBMISSION_ERROR;
 		} else if ("Submitted".equalsIgnoreCase(gLiteState)) {
+			
+			if (submissiontime == -1L) {
+				submissiontime = System.currentTimeMillis();
+			}
+			
 			state = Job.INITIAL;
 		} else if ("Aborted".equalsIgnoreCase(gLiteState)) {
+			
+			if (stoptime == -1L) {
+				stoptime = System.currentTimeMillis();
+			}
+			
 			state = Job.SUBMISSION_ERROR;
 		} else if ("DONE".equalsIgnoreCase(gLiteState)) {
 			state = Job.POST_STAGING;
 		} else if ("Done (Success)".equalsIgnoreCase(gLiteState)) {
+			
+			if (stoptime == -1L) {
+				stoptime = System.currentTimeMillis();
+			}
+			
 			state = Job.POST_STAGING;
 		} else if ("Cancelled".equalsIgnoreCase(gLiteState)) {
+			
+			if (stoptime == -1L) {
+				stoptime = System.currentTimeMillis();
+			}
+			
 			state = Job.SUBMISSION_ERROR;
 		} else if ("Cleared".equalsIgnoreCase(gLiteState)) {
+			
+			if (stoptime == -1L) {
+				stoptime = System.currentTimeMillis();
+			}
+			
 			state = Job.STOPPED;
 		}
-		
 	}
+	
 
 	// via API
 	public void receiveOutput() {
@@ -597,6 +688,12 @@ public class GliteJob extends JobCpi {
 		outputDone = true;
 	}
 	
+	/**
+	 * Lookup the (local) destination to where the staged out file should
+	 * be copied
+	 * @param output The staged out file
+	 * @return The URI on the local harddrive to where the file should be copied
+	 */
 	private URI destForPostStagedFile(File output) {
 		Map<File, File> postStagedFiles = swDescription.getPostStaged();
 		File stdout = swDescription.getStdout();
