@@ -15,6 +15,7 @@
 		<ant dir="SshTrilead" />
 		<ant dir="Zorilla" />
 		<ant dir="Generic" />
+		<ant dir="Glite" />
 	</target>
 
 	<target name="build-with-contributed" description="build all tested and contributed adaptors">
@@ -30,6 +31,7 @@
 		<ant dir="SshTrilead" />
 		<ant dir="Zorilla" />
 		<ant dir="contributed" />
+		<ant dir="Glite" />
 	</target>
 
 	<target name="build-only-contributed" description="build all contributed adaptors">
@@ -49,6 +51,7 @@
 		<ant dir="Zorilla" target="clean" />
 		<ant dir="Generic" target="clean" />
 		<ant dir="contributed" target="clean" />
+		<ant dir="Glite" target="clean" />
 	</target>
 
 	<target name="commandlinessh" description="build CommandlineSsh adaptors">
@@ -93,5 +96,9 @@
 
 	<target name="generic" description="build Generic adaptor">
 		<ant dir="Generic" />
+	</target>
+	
+	<target name="Glite" description="build Glite adaptor">
+		<ant dir="Glite" />
 	</target>
 </project>
