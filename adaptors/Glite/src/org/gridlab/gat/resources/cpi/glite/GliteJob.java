@@ -116,12 +116,7 @@ public class GliteJob extends JobCpi {
 		 
 		public JobStatusLookUp(final GliteJob job) {
 			super();
-			
-			/* (thomas) This has already been done and periodically checking the crls leads to massive heap memory usage
-			 * and eventually to a OutOfMemoryError. Hence, don't check the CRLs again at every status lookup
-			*/
-//			System.setProperty(ContextWrapper.CRL_ENABLED, "false");
-			
+					
 			this.polledJob = job;
 			
 			String pollingIntervalStr = System.getProperty("glite.pollIntervalSecs");
