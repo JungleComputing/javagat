@@ -121,8 +121,17 @@ public class CommandlineSshJob extends JobCpi {
     }
 
     public synchronized void stop() throws GATInvocationException {
-        setState(JobState.POST_STAGING);
-        sandbox.retrieveAndCleanup(this);
+        stop(gatContext.getPreferences().containsKey("job.stop.poststage")
+                && gatContext.getPreferences().get("job.stop.poststage")
+                        .equals("false"));
+    }
+
+    private synchronized void stop(boolean skipPostStage)
+            throws GATInvocationException {
+        if (!skipPostStage) {
+            setState(JobState.POST_STAGING);
+            sandbox.retrieveAndCleanup(this);
+        }
         p.destroy();
         setState(JobState.STOPPED);
         finished();

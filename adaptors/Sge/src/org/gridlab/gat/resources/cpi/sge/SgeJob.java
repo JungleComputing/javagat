@@ -310,6 +310,12 @@ public class SgeJob extends JobCpi {
         } else {
             try {
                 session.control(jobID, Session.TERMINATE);
+                if (!(gatContext.getPreferences().containsKey(
+                        "job.stop.poststage") && gatContext.getPreferences()
+                        .get("job.stop.poststage").equals("false"))) {
+                    setState(JobState.POST_STAGING);
+                    sandbox.retrieveAndCleanup(this);
+                }
                 setState(JobState.STOPPED);
             } catch (DrmaaException e) {
                 if (logger.isDebugEnabled()) {

@@ -121,9 +121,18 @@ public class SshTrileadJob extends JobCpi {
     }
 
     public synchronized void stop() throws GATInvocationException {
+        stop(gatContext.getPreferences().containsKey("job.stop.poststage")
+                && gatContext.getPreferences().get("job.stop.poststage")
+                        .equals("false"));
+    }
+
+    private synchronized void stop(boolean skipPostStage)
+            throws GATInvocationException {
         session.close();
-        setState(JobState.POST_STAGING);
-        sandbox.retrieveAndCleanup(this);
+        if (!skipPostStage) {
+            setState(JobState.POST_STAGING);
+            sandbox.retrieveAndCleanup(this);
+        }
         setState(JobState.STOPPED);
         finished();
     }
@@ -175,7 +184,7 @@ public class SshTrileadJob extends JobCpi {
                 }
             }
             try {
-                SshTrileadJob.this.stop();
+                SshTrileadJob.this.stop(false);
             } catch (GATInvocationException e) {
                 if (logger.isDebugEnabled()) {
                     logger.debug("unable to stop job: " + e);

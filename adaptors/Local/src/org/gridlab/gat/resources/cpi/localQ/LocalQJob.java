@@ -127,6 +127,11 @@ public class LocalQJob extends JobCpi implements Runnable,
 
     public void stop() throws GATInvocationException {
         synchronized (this) {
+            if (!(gatContext.getPreferences().containsKey("job.stop.poststage") && gatContext
+                    .getPreferences().get("job.stop.poststage").equals("false"))) {
+                setState(JobState.POST_STAGING);
+                sandbox.retrieveAndCleanup(this);
+            }
             if (p != null) {
                 p.destroy();
             }

@@ -568,6 +568,12 @@ public class ZorillaJob extends JobCpi {
                     .getNodeSocketAddress(), null);
 
             connection.cancelJob(jobID);
+            if (!(gatContext.getPreferences().containsKey("job.stop.poststage") && gatContext
+                    .getPreferences().get("job.stop.poststage").equals("false"))) {
+                state = JobState.POST_STAGING;
+                fireStatusMetric();
+                sandbox.retrieveAndCleanup(this);
+            }
         } catch (Exception e) {
             logger.debug("cannot stop zorilla job", e);
         }

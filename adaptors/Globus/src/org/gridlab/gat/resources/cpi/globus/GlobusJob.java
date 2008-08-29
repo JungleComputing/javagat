@@ -266,6 +266,11 @@ public class GlobusJob extends JobCpi implements GramJobListener,
             // the signal has been sent. Now we wait for the termination to
             // complete. This is indicated when the job enters the STOPPED state
             waitForJobCompletion();
+            if (!(gatContext.getPreferences().containsKey("job.stop.poststage") && gatContext
+                    .getPreferences().get("job.stop.poststage").equals("false"))) {
+                setState(JobState.POST_STAGING);
+                sandbox.retrieveAndCleanup(this);
+            }
         } else {
             // this can happen if an exception is thrown after the creation of
             // this job in the submitjob method, simply remove the job from the

@@ -70,7 +70,7 @@ public class WSGT4newJob extends JobCpi implements GramJobListener, Runnable {
             GATEngine.fireMetric(this, v);
             if (state == JobState.STOPPED || state == JobState.SUBMISSION_ERROR) {
                 try {
-                    stop();
+                    stop(false);
                 } catch (GATInvocationException e) {
                     // ignore
                 }
@@ -79,6 +79,13 @@ public class WSGT4newJob extends JobCpi implements GramJobListener, Runnable {
     }
 
     public synchronized void stop() throws GATInvocationException {
+        stop(gatContext.getPreferences().containsKey("job.stop.poststage")
+                && gatContext.getPreferences().get("job.stop.poststage")
+                        .equals("false"));
+    }
+
+    private synchronized void stop(boolean skipPostStage)
+            throws GATInvocationException {
         if (state != JobState.STOPPED && state != JobState.SUBMISSION_ERROR) {
             try {
                 job.cancel();
@@ -87,7 +94,10 @@ public class WSGT4newJob extends JobCpi implements GramJobListener, Runnable {
                 finished = true;
                 throw new GATInvocationException("WSGT4newJob", e);
             }
-            sandbox.retrieveAndCleanup(this);
+            if (!skipPostStage) {
+                setState(JobState.POST_STAGING);
+                sandbox.retrieveAndCleanup(this);
+            }
         } else {
             if (logger.isDebugEnabled()) {
                 logger.debug("job not running anymore!");

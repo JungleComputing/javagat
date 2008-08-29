@@ -378,18 +378,22 @@ public class GridSAMJob extends JobCpi {
 
         MetricEvent v = null;
 
-        synchronized (this) {
-            state = JobState.POST_STAGING;
-            v = new MetricEvent(this, state, statusMetric, System
-                    .currentTimeMillis());
-        }
+        if (!(gatContext.getPreferences().containsKey("job.stop.poststage") && gatContext
+                .getPreferences().get("job.stop.poststage").equals("false"))) {
 
-        if (logger.isDebugEnabled()) {
-            logger.debug("default job callback: firing event: " + v);
-        }
-        GATEngine.fireMetric(this, v);
+            synchronized (this) {
+                state = JobState.POST_STAGING;
+                v = new MetricEvent(this, state, statusMetric, System
+                        .currentTimeMillis());
+            }
 
-        sandbox.retrieveAndCleanup(this);
+            if (logger.isDebugEnabled()) {
+                logger.debug("default job callback: firing event: " + v);
+            }
+            GATEngine.fireMetric(this, v);
+
+            sandbox.retrieveAndCleanup(this);
+        }
         isStopped = true;
 
         synchronized (this) {

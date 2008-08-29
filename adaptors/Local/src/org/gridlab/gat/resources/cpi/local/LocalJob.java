@@ -132,8 +132,17 @@ public class LocalJob extends JobCpi {
     }
 
     public synchronized void stop() throws GATInvocationException {
-        setState(JobState.POST_STAGING);
-        sandbox.retrieveAndCleanup(this);
+        stop(gatContext.getPreferences().containsKey("job.stop.poststage")
+                && gatContext.getPreferences().get("job.stop.poststage")
+                        .equals("false"));
+    }
+
+    private synchronized void stop(boolean skipPostStage)
+            throws GATInvocationException {
+        if (!skipPostStage) {
+            setState(JobState.POST_STAGING);
+            sandbox.retrieveAndCleanup(this);
+        }
         try {
             p.getErrorStream().close();
             p.getInputStream().close();
@@ -199,7 +208,7 @@ public class LocalJob extends JobCpi {
                 }
             }
             try {
-                LocalJob.this.stop();
+                LocalJob.this.stop(false);
             } catch (GATInvocationException e) {
                 e.printStackTrace();
                 if (logger.isDebugEnabled()) {

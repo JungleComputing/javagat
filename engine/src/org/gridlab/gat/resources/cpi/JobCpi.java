@@ -75,7 +75,7 @@ public abstract class JobCpi implements Job {
         this.sandbox = sandbox;
         // better make this an attribute!
         if (jobDescription.getSoftwareDescription().getBooleanAttribute(
-                "kill.on.exit", true)) {
+                "job.stop.on.exit", true)) {
             synchronized (JobCpi.class) {
                 if (shutdownInProgress) {
                     throw new Error(

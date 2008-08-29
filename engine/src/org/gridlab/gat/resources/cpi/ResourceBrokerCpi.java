@@ -38,12 +38,13 @@ public abstract class ResourceBrokerCpi implements ResourceBroker {
         capabilities.put("findResources", false);
         capabilities.put("reserveResource", false);
         capabilities.put("submitJob", false);
-
         return capabilities;
     }
 
     public static Preferences getSupportedPreferences() {
         Preferences preferences = new Preferences();
+        preferences.put("job.stop.poststage", "true");
+        preferences.put("job.stop.on.exit", "true");
         return preferences;
     }
 
