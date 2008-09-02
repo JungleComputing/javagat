@@ -247,8 +247,10 @@ public abstract class LogicalFileCpi implements LogicalFile, Monitorable {
                     + name + "' to order");
         }
         List<URI> result = new Vector<URI>();
-        for (URI uri : files) {
-            result.add(uri);
+        synchronized (files) {
+            for (URI uri : files) {
+                result.add(uri);
+            }
         }
         return result;
     }
@@ -272,14 +274,14 @@ public abstract class LogicalFileCpi implements LogicalFile, Monitorable {
     public List<File> getFiles() throws GATInvocationException {
         List<File> res = new Vector<File>();
 
-        List<URI> uris = getURIs();
-
-        for (URI uri : uris) {
-            try {
-                File f = GAT.createFile(gatContext, uri);
-                res.add(f);
-            } catch (Exception e) {
-                // Ignore
+        synchronized (files) {
+            for (URI uri : files) {
+                try {
+                    File f = GAT.createFile(gatContext, uri);
+                    res.add(f);
+                } catch (Exception e) {
+                    // Ignore
+                }
             }
         }
 
@@ -343,8 +345,10 @@ public abstract class LogicalFileCpi implements LogicalFile, Monitorable {
 
         Vector<String> fileStrings = new Vector<String>();
 
-        for (int i = 0; i < files.size(); i++) {
-            fileStrings.add(files.get(i).toString());
+        synchronized (files) {
+            for (int i = 0; i < files.size(); i++) {
+                fileStrings.add(files.get(i).toString());
+            }
         }
 
         f.setFiles(fileStrings);
