@@ -1071,19 +1071,21 @@ public abstract class GlobusFileAdaptor extends FileCpi {
      * @see org.gridlab.gat.io.cpi.FileCpi#renameTo(org.gridlab.gat.io.File)
      */
     public boolean renameTo(File dest) throws GATInvocationException {
-        FTPClient client = null;
-
-        try {
-            client = createClient(location);
-            client.rename(getPath(), dest.getPath());
-        } catch (Exception e) {
-            throw new GATInvocationException("gridftp", e);
-        } finally {
-            if (client != null)
-                destroyClient(client, toURI(), gatContext.getPreferences());
+        if (location.getHost().equals(dest.toGATURI().getHost())) {
+            FTPClient client = null;
+            try {
+                client = createClient(location);
+                client.rename(getPath(), dest.getPath());
+            } catch (Exception e) {
+                throw new GATInvocationException("gridftp", e);
+            } finally {
+                if (client != null)
+                    destroyClient(client, toURI(), gatContext.getPreferences());
+            }
+            return true;
+        } else {
+            return super.renameTo(dest);
         }
-
-        return true;
     }
 
     static protected int getProtectionMode(Preferences preferences) {
