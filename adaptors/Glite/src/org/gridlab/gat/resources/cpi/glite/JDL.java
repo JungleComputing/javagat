@@ -25,6 +25,7 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 
 import org.apache.log4j.Logger;
+import org.gridlab.gat.GATObjectCreationException;
 import org.gridlab.gat.resources.ResourceDescription;
 import org.gridlab.gat.resources.SoftwareDescription;
 
@@ -54,7 +55,7 @@ public class JDL {
 	public JDL(final long jdlID, 
 			   final SoftwareDescription swDescription, 
 			   final String voName,
-			   final ResourceDescription rd) {
+			   final ResourceDescription rd) throws GATObjectCreationException {
 		
 		this.jdlID = jdlID;
 		
@@ -115,7 +116,7 @@ public class JDL {
 	
 	private void addInputFiles(Map<org.gridlab.gat.io.File, org.gridlab.gat.io.File> map) {
 		
-		for (org.gridlab.gat.io.File file : map.keySet()) {
+		for (java.io.File file : map.keySet()) {
 			addInputFile(file.getAbsolutePath());
 			
 			if (map.get(file) != null) {
@@ -147,14 +148,20 @@ public class JDL {
 		this.inputFiles.add(filename);
 	}
 
-	private void addOutputFiles(Map<org.gridlab.gat.io.File, org.gridlab.gat.io.File> map) {
+	private void addOutputFiles(Map<org.gridlab.gat.io.File, org.gridlab.gat.io.File> map) throws GATObjectCreationException {
 		
-		for (org.gridlab.gat.io.File file : map.keySet()) {
+		for (java.io.File file : map.keySet()) {
 			if (map.get(file) == null) {
 				addOutputFile(file.getName());
-			} else {
+			} else { // copy poststaged file somewhere after staging out
 				org.gridlab.gat.io.File fileDest = map.get(file);
 				outputSrcFiles.add(file.getName());
+				
+				java.io.File parentFile = new java.io.File(fileDest.getParent());
+				if (!parentFile.exists()) {
+					throw new GATObjectCreationException("The folder for the poststaged file does not exist!");
+				}
+				
 				outputDestFiles.add(fileDest.getName());
 			}
 		}

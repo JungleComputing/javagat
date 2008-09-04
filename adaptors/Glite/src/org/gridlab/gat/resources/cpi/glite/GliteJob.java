@@ -103,8 +103,6 @@ public class GliteJob extends JobCpi {
 	private long stoptime = -1L;
 	private GATInvocationException postStageException = null;
 	
-	private GATContext context = null;
-	
 	
 	 class JobStatusLookUp extends Thread {
 		private GliteJob polledJob;
@@ -119,7 +117,7 @@ public class GliteJob extends JobCpi {
 					
 			this.polledJob = job;
 			
-			String pollingIntervalStr = System.getProperty("glite.pollIntervalSecs");
+			String pollingIntervalStr = (String) gatContext.getPreferences().get("glite.pollIntervalSecs");
 			
 			if (pollingIntervalStr == null) {
 				this.pollIntMilliSec = 3000;
@@ -234,11 +232,10 @@ public class GliteJob extends JobCpi {
 					   final JobDescription jobDescription, 
 					   final Sandbox sandbox, 
 					   final String brokerURI)
-			throws GATInvocationException {
+			throws GATInvocationException, GATObjectCreationException {
 		
 		super(gatContext, jobDescription, sandbox);
 		
-		context = gatContext;
 		this.swDescription = this.jobDescription.getSoftwareDescription();
 		
 		// have to replace brokerURI parts that are not AXIS-compliant
@@ -263,7 +260,7 @@ public class GliteJob extends JobCpi {
 		
 		// Create Job Description Language File ...
 		long jdlID = System.currentTimeMillis();
-		String voName = (String) context.getPreferences().get("VirtualOrganisation");
+		String voName = (String) gatContext.getPreferences().get("VirtualOrganisation");
 		
 		ResourceDescription rd = jobDescription.getResourceDescription();
 		
@@ -272,7 +269,7 @@ public class GliteJob extends JobCpi {
 									  	   voName,
 									       rd);
 		
-		String deleteOnExitStr = System.getProperty("glite.deleteJDL");
+		String deleteOnExitStr = (String) gatContext.getPreferences().get("glite.deleteJDL");
 
 		// save the file only to disk if deleteJDL has not been specified
 		if (!Boolean.parseBoolean(deleteOnExitStr)) {
@@ -328,17 +325,17 @@ public class GliteJob extends JobCpi {
 		
 		CertificateSecurityContext secContext = null;
 		
-		if (context.getSecurityContexts() == null) {
+		if (gatContext.getSecurityContexts() == null) {
 			throw new GATInvocationException("Error: found no security contexts in GAT Context!");
 		}
 		
-		for (SecurityContext c : context.getSecurityContexts()) {
+		for (SecurityContext c : gatContext.getSecurityContexts()) {
 			if (c instanceof CertificateSecurityContext) {
 				secContext = (CertificateSecurityContext) c;
 			}
 		}
 		
-		Preferences prefs = context.getPreferences();
+		Preferences prefs = gatContext.getPreferences();
 		String userkey = secContext.getKeyfile().getPath();
 		String usercert = secContext.getCertfile().getPath();
 		
@@ -379,15 +376,15 @@ public class GliteJob extends JobCpi {
 			this.proxyFile = properties.getProxyFile();
 		}
 		
-		context.addPreference("globusCert", proxyFile); // for gridFTP adaptor
+		gatContext.addPreference("globusCert", proxyFile); // for gridFTP adaptor
 		System.setProperty("gridProxyFile", proxyFile);  // for glite security JARs
 		System.setProperty(ContextWrapper.CREDENTIALS_PROXY_FILE, proxyFile);
 		
-		Preferences prefs = context.getPreferences();
+		Preferences prefs = gatContext.getPreferences();
 		String lifetimeStr = (String) prefs.get("vomsLifetime");
 		int lifetime = STANDARD_PROXY_LIFETIME;
 		
-		boolean createNew = Boolean.parseBoolean(System.getProperty("glite.createNewProxy"));
+		boolean createNew = Boolean.parseBoolean((String) prefs.get("glite.createNewProxy"));
 		long existingLifetime = -1;
 		
 		// determine the lifetime of the existing proxy only if the user wants to reuse the
@@ -432,7 +429,7 @@ public class GliteJob extends JobCpi {
 		
 		String certsWithoutCRLs = caCerts[0]  + "*.0";
 		String caCRLs = caCerts[0] + "*.r0";
-		context.addPreference("CA-Certificates", certsWithoutCRLs);
+		gatContext.addPreference("CA-Certificates", certsWithoutCRLs);
 
 			
 		System.setProperty(ContextWrapper.CA_FILES, certsWithoutCRLs);
@@ -456,7 +453,7 @@ public class GliteJob extends JobCpi {
 		try {
 			logger.info("Staging in files");
 			if (swDescription.getStdin() != null) {
-				File f = GAT.createFile(context, swDescription.getStdin().getName());
+				File f = GAT.createFile(gatContext, swDescription.getStdin().getName());
 				sandboxFiles.add(f);
 			}
 			
@@ -471,7 +468,7 @@ public class GliteJob extends JobCpi {
 				URI destURI = new URI(tempURI.getScheme() + "://"
 					+ tempURI.getHost() + ":" + tempURI.getPort() + "//"
 					+ tempURI.getPath());
-				File destFile = GAT.createFile(context, destURI);
+				File destFile = GAT.createFile(gatContext, destURI);
 				sandboxFile.copy(destFile.toGATURI());
 			}
 		} catch (URISyntaxException e) {
@@ -673,9 +670,9 @@ public class GliteJob extends JobCpi {
 					URI uri2 = new URI(uri1.getScheme()+"://" + uri1.getHost() + ":"
 							+ uri1.getPort() + "//" + uri1.getPath());
 
-					File f = GAT.createFile(context, uri2);
+					File f = GAT.createFile(gatContext, uri2);
 					int name_begin = uri2.getPath().lastIndexOf('/') + 1;
-					File f2 = GAT.createFile(context, new URI(uri2.getPath()
+					File f2 = GAT.createFile(gatContext, new URI(uri2.getPath()
 							.substring(name_begin)));
 					
 					f.copy(destForPostStagedFile(f2));
@@ -688,7 +685,7 @@ public class GliteJob extends JobCpi {
 				} catch (GATObjectCreationException e) {
 					postStageException = new GATInvocationException(e.toString());
 					logger.error("Could not create GAT file when retrieving output", e);
-				} 
+				}
 			}
 		}
 		outputDone = true;
@@ -718,8 +715,8 @@ public class GliteJob extends JobCpi {
 					String psFileName = psFile.getKey().getName();
 					
 					if (outputName.equals(psFileName)) {
-						destURI = psFile.getValue().toGATURI();
-						break;
+							destURI = psFile.getValue().toGATURI();
+							break;
 					}
 				}
 			}
