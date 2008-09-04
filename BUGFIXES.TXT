@@ -1,0 +1,13 @@
+FIXED BUGS in version 2.0.1 with respect to version 2.0
+
+- GlobusFileAdaptor: renameTo failed if the passed URI wasn't on the same host as the file. (Bug reported by Alexander Beck-Ratzka)
+- LogicalFileCpi: underlying storage of the files belonging to the logicalfile is now done in a Vector and is synchronized (previously it wasn't synchronized in an ArrayList). (Bug reported by Enric Tejedor)
+- javagat.properties: updated to reflect all preferences and their defaults.
+- GliteAdaptor: added a GliteAdaptor developed by Thomas Zangerl (Thanks a lot!)
+- added support for preference <"job.stop.poststage", true|false> which controls whether the job should poststage if the stop method is invoked on this job. (request from Keith Cover)
+- FileCpi: improved method recursiveDeleteDirectory, it only does recursive delete if a direct delete fails, this can speed up poststaging and sandbox removal quite a lot.
+- LocalResourceBroker: fixed accessing of the path of the sandbox (Bug reported by Hans-Martin Adorf)
+- GlobusFileAdaptor: mkdir failed if preference file.chmod wasn't set, it did set the mode to 000, now it takes the umask on the remote machine as default (Bug reported by Hans-Martin Adorf and others)
+
+
+ 
