@@ -213,7 +213,9 @@ public class CreateCapabilities {
             out.write("</table>\n".getBytes());
             out.write("</body>\n".getBytes());
             out.write("</html>\n".getBytes());
+            System.out
+                    .println("capabilities written to: " + htmlFile.getPath());
         }
-        System.out.println("capabilities written to: " + htmlFile.getPath());
+
     }
 }
