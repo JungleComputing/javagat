@@ -10,7 +10,7 @@
 // Jun,Jul/2008 - Thomas Zangerl 
 //		for Distributed and Parallel Systems Research Group
 //		University of Innsbruck
-//		some changes and enhancements
+//      major enhancements
 //
 ////////////////////////////////////////////////////////////////////
 
@@ -28,7 +28,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.WeakHashMap;
 
 import javax.xml.rpc.ServiceException;
 
@@ -86,23 +85,23 @@ public class GliteJob extends JobCpi {
 	private java.net.URL lbURL;
 	private JDL gLiteJobDescription;
 	private SoftwareDescription swDescription;
-	private String jobID;
-	private String gLiteState;
+	private volatile String gLiteState;
 	private URL wmsURL = null;
 	private String proxyFile = null;
 	private boolean outputDone = false;
 	private Metric metric;
+	private final String gliteJobID;
 	
 	private WMProxy_PortType serviceStub = null; 
 	private DelegationSoapBindingStub grstStub = null; 
 	private LoggingAndBookkeepingPortType lbPortType = null;
 	
 	private boolean jobKilled = false;
-	private long submissiontime = -1L;
-	private long starttime = -1L;
-	private long stoptime = -1L;
-	private GATInvocationException postStageException = null;
-	
+	private volatile long submissiontime = -1L;
+	private volatile long starttime = -1L;
+	private volatile long stoptime = -1L;
+	private volatile GATInvocationException postStageException = null;
+	private volatile String destination = null;
 	
 	 class JobStatusLookUp extends Thread {
 		private GliteJob polledJob;
@@ -200,12 +199,12 @@ public class GliteJob extends JobCpi {
 	/**
 	 * Instantiate the logging and bookkeeping service classes, which are used for
 	 * status updates
-	 * @param jobID the JobID from which the LB URL will be constructed
+	 * @param jobIDWithLB the JobID from which the LB URL will be constructed
 	 */
-	private void initLBSoapService(final String jobID) {
+	private void initLBSoapService(final String jobIDWithLB) {
 		// instantiate the logging and bookkeeping service
 		try {
-			java.net.URL jobUrl = new java.net.URL(jobID);
+			java.net.URL jobUrl = new java.net.URL(jobIDWithLB);
 			lbURL = new java.net.URL(jobUrl.getProtocol(), jobUrl.getHost(), LB_PORT, "/");
 			
 			// Set provider
@@ -277,9 +276,9 @@ public class GliteJob extends JobCpi {
 		}
 		
 		
-		jobID = submitJob();
-		initLBSoapService(jobID);
-		logger.info("jobID " + jobID);
+		gliteJobID = submitJob();
+		initLBSoapService(gliteJobID);
+		logger.info("jobID " + gliteJobID);
 		// start status lookup thread
 		new JobStatusLookUp(this);
 	}
@@ -447,7 +446,7 @@ public class GliteJob extends JobCpi {
 		
 	}
 	
-	private void stageInSandboxFiles(String jobID)  {
+	private void stageInSandboxFiles(String sandboxJobID)  {
 		List<File> sandboxFiles = new ArrayList<File>();
 		
 		try {
@@ -461,7 +460,7 @@ public class GliteJob extends JobCpi {
 			sandboxFiles.addAll(map.keySet());
 		
 			String[] sl = serviceStub
-					.getSandboxDestURI(jobID, "gsiftp").getItem();
+					.getSandboxDestURI(sandboxJobID, "gsiftp").getItem();
 			
 			for (File sandboxFile : sandboxFiles) {
 				URI tempURI = new URI(sl[0] + "/" + sandboxFile.getName());
@@ -496,7 +495,7 @@ public class GliteJob extends JobCpi {
 		System.setProperty("sslProtocol", "SSLv3");
 		
 
-		JobIdStructType jobId = null;
+		JobIdStructType jobIdStruct = null;
 		
 		try {
 			String delegationId = "gatjob" + gLiteJobDescription.getJdlID();
@@ -510,11 +509,11 @@ public class GliteJob extends JobCpi {
 			grstStub.putProxy(delegationId, proxyString);
 
 			String jdlString = gLiteJobDescription.getJdlString();
-			jobId = serviceStub.jobRegister(jdlString, delegationId);
+			jobIdStruct = serviceStub.jobRegister(jdlString, delegationId);
 			
-			stageInSandboxFiles(jobId.getId());
+			stageInSandboxFiles(jobIdStruct.getId());
 			
-			serviceStub.jobStart(jobId.getId());
+			serviceStub.jobStart(jobIdStruct.getId());
 
 		} catch (IOException e) {
 			logger.error("Problem while copying input files", e);
@@ -522,33 +521,24 @@ public class GliteJob extends JobCpi {
 			logger.error("security problem while copying input files", e);
 		}  
 		
-		return jobId.getId();
+		return jobIdStruct.getId();
 	}
 	
 	public Map<String, Object> getInfo() {
-		Map<String, Object> map = new WeakHashMap<String, Object>();
-		
-		URL idURL = null;
-		
-		if (jobID == null) {
-			map.put("hostname", null);
-		} else {
-			try {
-				idURL = new URL(jobID);
-				map.put("hostname", idURL.getHost());
-			} catch (MalformedURLException e) {
-				logger.error("Could not parse hostname from jobID", e);
-				map.put("hostname", null);
-			}
-		}
+		Map<String, Object> map = new HashMap<String, Object>();
 		
 		map.put("state", this.state);
-		map.put("gLiteState", this.gLiteState);
+		map.put("glite.state", this.gLiteState);
 		map.put("jobID", jobID);
+        map.put("glite.jobID", gliteJobID);
 		map.put("submissiontime", submissiontime);
 		map.put("starttime", starttime);
 		map.put("stoptime", stoptime);
 		map.put("poststage.exception", postStageException);
+        if (state == JobState.RUNNING) {
+            map.put("hostname", destination);
+        }
+        map.put("glite.destination", destination);
 		return map;
 	}
 	
@@ -557,15 +547,11 @@ public class GliteJob extends JobCpi {
 		if (outputDone) { // API is ready with POST STAGING
 			this.gLiteState = "Cleared";
 		} else {
-
-			JobStatus js = null;
-				
 			try {
-				js = lbPortType.jobStatus(jobID, new JobFlags());
-				StatName state = js.getState();
+				final JobStatus js = lbPortType.jobStatus(gliteJobID, new JobFlags());
+				final StatName state = js.getState();
 				this.gLiteState = state.toString();
-				js = null;
-				state = null;
+				this.destination = js.getDestination();
 			} catch (GenericFault e) {
 				logger.error(e.toString());
 			} catch (RemoteException e) {
@@ -578,7 +564,6 @@ public class GliteJob extends JobCpi {
 		
 		queryState();
 			
-		this.state = Job.JobState.UNKNOWN;
 		if ("Waiting".equalsIgnoreCase(gLiteState)) {
 			state = Job.JobState.INITIAL;
 		} else if ("Ready".equalsIgnoreCase(gLiteState)) {
@@ -648,8 +633,9 @@ public class GliteJob extends JobCpi {
 			}
 			
 			state = Job.JobState.STOPPED;
-		}
-		
+		} else {
+	        this.state = Job.JobState.UNKNOWN;
+		}		
 	}
 	
 
@@ -657,7 +643,7 @@ public class GliteJob extends JobCpi {
 		StringAndLongType[] list = null;
 		
 		try {
-			StringAndLongList sl = serviceStub.getOutputFileList(jobID, "gsiftp");
+			StringAndLongList sl = serviceStub.getOutputFileList(gliteJobID, "gsiftp");
 			list = (StringAndLongType[]) sl.getFile();
 		} catch (Exception e) {
 			logger.error("Could not receive output due to security problems", e);
@@ -735,15 +721,15 @@ public class GliteJob extends JobCpi {
      * Independent from whether the WMS will actually cancel the job and report the CANCELLED 
      * state back, the JobStatus poll thread will terminate after a fixed number of job updates
      * after this has been called.
-     * The number of updates still done after calling stop()  is defined in the 
-     * UDPATES_AFTER_JOB_KILL variable in the JobStatusLookUp Thread.
+     * The time interval the lookup thread will still wait till cancelation ater calling stop()  is defined in the 
+     * UDPATE_INTV_AFTER_JOB_KILL variable in the JobStatusLookUp Thread.
      * This has become necessary because some jobs would hang forever in a state
      * even after calling the stop method.
      */
     public void stop() throws GATInvocationException {;
     	
     	try {
-			serviceStub.jobCancel(jobID);
+			serviceStub.jobCancel(gliteJobID);
 			jobKilled = true;
 			
 		} catch (Exception e) {
