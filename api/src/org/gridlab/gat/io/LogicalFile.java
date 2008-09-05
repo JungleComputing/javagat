@@ -155,4 +155,12 @@ public interface LogicalFile extends Monitorable, Serializable, Advertisable {
      * @throws GATInvocationException
      */
     public List<URI> getOrderedURIs(URI location) throws GATInvocationException;
+
+    /**
+     * Returns the name of this logical file
+     * 
+     * @return the name of this logical file
+     * @throws GATInvocationException
+     */
+    public String getName() throws GATInvocationException;
 }
