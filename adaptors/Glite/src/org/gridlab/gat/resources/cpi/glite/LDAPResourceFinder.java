@@ -3,7 +3,6 @@ package org.gridlab.gat.resources.cpi.glite;
 import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.List;
-import java.util.Map;
 
 import javax.naming.Context;
 import javax.naming.NamingEnumeration;
@@ -16,8 +15,6 @@ import javax.naming.ldap.InitialLdapContext;
 
 import org.apache.log4j.Logger;
 import org.gridlab.gat.URI;
-import org.gridlab.gat.resources.HardwareResourceDescription;
-import org.gridlab.gat.resources.SoftwareResourceDescription;
 
 public class LDAPResourceFinder {
 	
