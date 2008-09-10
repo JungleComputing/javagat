@@ -7,13 +7,17 @@
 //     for Max Planck Institute for Gravitational Physics
 //     (Albert Einstein Institute) 
 //     Astrophysical Relativity / eScience
-// 
+// Jun,Jul/2008 - Thomas Zangerl 
+//      for Distributed and Parallel Systems Research Group
+//      University of Innsbruck
+//      major enhancements
 //
 ////////////////////////////////////////////////////////////////////
 
 package org.gridlab.gat.resources.cpi.glite;
 
 import java.net.URISyntaxException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -84,7 +88,7 @@ public class GliteResourceBrokerAdaptor extends ResourceBrokerCpi {
         		LDAPResourceFinder finder = new LDAPResourceFinder(brokerURI);
         		String vo = (String) gatContext.getPreferences().get("VirtualOrganisation");
         		List<String> brokerURIs = finder.fetchWMSServers(vo);
-        		int randomPos = (int) Math.random()*brokerURIs.size();
+        		int randomPos = (int) (Math.random()*brokerURIs.size());
         		String brokerURIStr = brokerURIs.get(randomPos);
         		this.brokerURI = new URI(brokerURIStr);
         	} catch (NamingException e) {

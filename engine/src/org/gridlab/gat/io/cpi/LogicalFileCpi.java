@@ -288,6 +288,10 @@ public abstract class LogicalFileCpi implements LogicalFile, Monitorable {
         return res;
     }
 
+    public String getName() throws GATInvocationException {
+        return name;
+    }
+
     /**
      * This method adds the passed instance of a MetricListener to the
      * java.util.List of MetricListeners which are notified of MetricEvents by

@@ -87,7 +87,7 @@ public class DefaultAdaptorOrderPolicy implements AdaptorOrderPolicy {
             return position;
         }
         l.add(position, l.remove(currentPosition));
-        return position++;
+        return ++position;
     }
 
     private Adaptor getAdaptor(String shortName, String cpiName,
