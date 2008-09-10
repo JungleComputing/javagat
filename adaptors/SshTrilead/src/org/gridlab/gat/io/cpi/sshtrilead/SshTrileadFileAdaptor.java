@@ -310,11 +310,11 @@ public class SshTrileadFileAdaptor extends FileCpi {
     private void get(URI destination) throws Exception {
         SCPClient client = null;
         try {
-            client = getConnection(destination, gatContext,
-                    connectionCacheEnable, tcpNoDelay, client2serverCiphers,
-                    server2clientCiphers).createSCPClient();
+            client = getConnection(fixedURI, gatContext, connectionCacheEnable,
+                    tcpNoDelay, client2serverCiphers, server2clientCiphers)
+                    .createSCPClient();
         } catch (IOException e) {
-            client = getConnection(destination, gatContext, false, tcpNoDelay,
+            client = getConnection(fixedURI, gatContext, false, tcpNoDelay,
                     client2serverCiphers, server2clientCiphers)
                     .createSCPClient();
         }
