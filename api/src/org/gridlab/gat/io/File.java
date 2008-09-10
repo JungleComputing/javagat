@@ -523,9 +523,12 @@ public class File extends java.io.File implements Monitorable, Advertisable,
 
     /**
      * @see java.io.File#toURL()
+     * 
+     * this method does {@link java.io.File#toURI()#toURL()}, because
+     * {@link java.io.File#toURL()} is deprecated.
      */
     public URL toURL() throws MalformedURLException {
-        return f.toURL();
+        return f.toURI().toURL();
     }
 
     /*

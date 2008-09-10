@@ -17,7 +17,6 @@
 package org.gridlab.gat.resources.cpi.glite;
 
 import java.net.URISyntaxException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
