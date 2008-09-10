@@ -588,63 +588,7 @@ public abstract class FileCpi implements FileInterface, java.io.Serializable {
     }
 
     protected void copyDir(URI destination) throws Exception {
-        // copies a dir to the target destination
-        if (logger.isDebugEnabled()) {
-            logger.debug("copyDir '" + location + "' to '" + destination + "'");
-        }
-        FileInterface destinationFile = null;
-        try {
-            destinationFile = GAT.createFile(gatContext, destination)
-                    .getFileInterface();
-        } catch (GATObjectCreationException e) {
-            throw new GATInvocationException("file cpi", e);
-        }
-        // if the target already exists and it's a file, then the copy will fail
-        logger.debug("destination file exist: " + destinationFile.exists());
-        logger.debug("destination file file: " + destinationFile.isFile());
-        logger.debug("destination file dir: " + destinationFile.isDirectory());
-
-        if (destinationFile.exists() && destinationFile.isFile()) {
-            throw new Exception("cannot overwrite non-directory '"
-                    + destination + "' with directory '" + location + "'!");
-        } else if (destinationFile.exists()
-                && destinationFile.isDirectory()
-                && !(gatContext.getPreferences().containsKey(
-                        "file.directory.copy") && ((String) gatContext
-                        .getPreferences().get("file.directory.copy"))
-                        .equalsIgnoreCase("contents"))) {
-            // if the target already exists and it's a directory and we should
-            // copy not only the contents of the dir, but the whole dir.
-            // copy a/b c/d results in c/d/b
-            try {
-                copyDir(new URI(destination + "/" + getName()));
-            } catch (URISyntaxException e) {
-                // should not happen
-            }
-        } else {
-            // destinationFile doesn't exist! we've got to create the dir, or
-            // the destinationFile does exist, but we only have to copy the
-            // contents of the directory.
-            if (!(gatContext.getPreferences()
-                    .containsKey("file.directory.copy") && ((String) gatContext
-                    .getPreferences().get("file.directory.copy"))
-                    .equalsIgnoreCase("contents"))) {
-                if (gatContext.getPreferences().containsKey("file.create")
-                        && ((String) gatContext.getPreferences().get(
-                                "file.create")).equalsIgnoreCase("true")) {
-                    // and if file.create is set also the nonexisting dirs below
-                    destinationFile.mkdirs();
-                } else {
-                    // if source is a dir 'dir1' and dest is a dir 'dir2' then
-                    // the result of dir1.copy(dir2) will be dir2/dir1/.. so
-                    // even if
-                    // the 'file.create' flag isn't set, create the dir1 in dir2
-                    // before copying the files.
-                    destinationFile.mkdir();
-                }
-            }
-            copyDirContents(destination);
-        }
+        copyDirectory(gatContext, null, location, destination);
     }
 
     protected void copyDirContents(URI destination)
