@@ -1,3 +1,9 @@
+FIXED BUGS in version 2.0.2 with respect to version 2.0.1
+- fixed bug in sshtrilead adaptor for getting files from a remote location to a local location (connection attempt to the wrong side, bug reported by Enric Tejedor).
+- modified the File.java toURL method to be compatible with java 1.6 (it's deprecated there)
+- fix in the engine: FileCpi.copyDir, it invokes now just the static copyDirectory
+- fix in default adaptor order policy (adaptors were wrongly ordered, bug reported by Mathijs den Burger)
+
 FIXED BUGS in version 2.0.1 with respect to version 2.0
 
 - GlobusFileAdaptor: renameTo failed if the passed URI wasn't on the same host as the file. (Bug reported by Alexander Beck-Ratzka)
