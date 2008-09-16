@@ -43,8 +43,8 @@ public class LogicalFileAdaptorTest {
         LogicalFile logicalFile = null;
 
         try {
-            logicalFile = GAT.createLogicalFile("test-logical-file",
-                    LogicalFile.CREATE);
+            logicalFile = GAT.createLogicalFile(gatContext, preferences,
+                    "test-logical-file", LogicalFile.CREATE);
         } catch (GATObjectCreationException e) {
             e.printStackTrace();
             GAT.end();

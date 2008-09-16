@@ -33,8 +33,8 @@ public class FileOutputStreamAdaptorTest {
         preferences.put("fileoutputstream.adaptor.name", adaptor);
         FileOutputStream out = null;
         try {
-            out = GAT.createFileOutputStream("any://" + host + "/"
-                    + "JavaGAT-test-fileoutputstream");
+            out = GAT.createFileOutputStream(preferences,
+                    "any://" + host + "/JavaGAT-test-fileoutputstream");
         } catch (GATObjectCreationException e) {
         }
         byte[] large = new byte[10 * 1024 * 1024];

@@ -32,8 +32,9 @@ public class RandomAccessFileAdaptorTest {
 
         RandomAccessFile randomAccessFile = null;
         try {
-            randomAccessFile = GAT.createRandomAccessFile("any://" + host
-                    + "/JavaGAT-random-accessfile", "rw");
+            randomAccessFile = GAT.createRandomAccessFile(gatContext,
+                    preferences,
+                    "any://" + host + "/JavaGAT-random-accessfile", "rw");
         } catch (GATObjectCreationException e) {
             e.printStackTrace();
             GAT.end();

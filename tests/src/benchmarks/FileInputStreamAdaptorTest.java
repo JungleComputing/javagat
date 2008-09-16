@@ -43,8 +43,8 @@ public class FileInputStreamAdaptorTest {
         preferences.put("fileinputstream.adaptor.name", adaptor);
         FileInputStream in = null;
         try {
-            in = GAT.createFileInputStream("any://" + host + "/"
-                    + "JavaGAT-test-fileinputstream");
+            in = GAT.createFileInputStream(gatContext, preferences,
+                    "any://" + host + "/JavaGAT-test-fileinputstream");
         } catch (GATObjectCreationException e) {
         }
         adaptorTestResult.put("markSupported      ", markSupportedTest(in));
