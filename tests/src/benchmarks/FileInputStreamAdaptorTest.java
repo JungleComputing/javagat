@@ -49,7 +49,7 @@ public class FileInputStreamAdaptorTest {
         }
         adaptorTestResult.put("markSupported      ", markSupportedTest(in));
         adaptorTestResult
-                .put("available:         ", availableTest(in, 1, true));
+                .put("available:         ", availableTest(in, 0, true));
         adaptorTestResult.put("read: single char a", readTest(in, 'a', true));
         adaptorTestResult.put("read: single char b", readTest(in, 'b', true));
         adaptorTestResult.put("read: single char c", readTest(in, 'c', true));
