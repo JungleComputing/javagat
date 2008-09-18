@@ -232,6 +232,10 @@ public class ZorillaJob extends JobCpi {
         return stdin;
     }
 
+    public synchronized String getZorillaJobID() {
+        return jobID;
+    }
+
     protected synchronized void startJob(String address,
             CallbackReceiver receiver) throws GATInvocationException {
         if (logger.isDebugEnabled()) {
@@ -334,7 +338,7 @@ public class ZorillaJob extends JobCpi {
                     "cannot submit job to zorilla node", e);
         }
         if (logger.isDebugEnabled()) {
-            logger.debug("done starting zorilla job");
+            logger.debug("done starting zorilla job: " + jobID);
         }
     }
 
@@ -570,9 +574,10 @@ public class ZorillaJob extends JobCpi {
             connection.cancelJob(jobID);
             if (!(gatContext.getPreferences().containsKey("job.stop.poststage") && gatContext
                     .getPreferences().get("job.stop.poststage").equals("false"))) {
-                state = JobState.POST_STAGING;
-                fireStatusMetric();
-                sandbox.retrieveAndCleanup(this);
+                logger.error("zorilla can not do poststage on job.stop()");
+                // state = JobState.POST_STAGING;
+                // fireStatusMetric();
+                // sandbox.retrieveAndCleanup(this);
             }
         } catch (Exception e) {
             logger.debug("cannot stop zorilla job", e);

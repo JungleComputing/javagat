@@ -147,9 +147,11 @@ public class ZorillaResourceBrokerAdaptor extends ResourceBrokerCpi implements
             job.addMetricListener(listener, metric);
         }
         zorillaJob.startJob(getNodeSocketAddress(), getCallbackReceiver());
-
+        
+        logger.debug("ZorillaResourceBroker.submitJob: zorilla job started: " + zorillaJob.getZorillaJobID());
+        
         synchronized (this) {
-            jobs.put("" + zorillaJob.getJobID(), zorillaJob);
+            jobs.put("" + zorillaJob.getZorillaJobID(), zorillaJob);
         }
 
         return job;
@@ -196,8 +198,12 @@ public class ZorillaResourceBrokerAdaptor extends ResourceBrokerCpi implements
                 connection = new ZoniConnection(getNodeSocketAddress(), null);
             }
 
+            if (logger.isDebugEnabled()) {
+                logger.debug("getting new info for " + job);
+            }
+
             try {
-                JobInfo info = connection.getJobInfo("" + job.getJobID());
+                JobInfo info = connection.getJobInfo("" + job.getZorillaJobID());
 
                 if (logger.isDebugEnabled()) {
                     logger.debug("retrieved new info: " + info);
@@ -207,7 +213,7 @@ public class ZorillaResourceBrokerAdaptor extends ResourceBrokerCpi implements
 
                 if (job.hasEnded()) {
                     // no need to update info any longer
-                    removeJob("" + job.getJobID());
+                    removeJob("" + job.getZorillaJobID());
                 }
             } catch (IOException e) {
                 if (connection != null) {
