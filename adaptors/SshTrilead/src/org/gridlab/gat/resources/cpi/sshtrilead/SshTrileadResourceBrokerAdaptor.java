@@ -5,7 +5,6 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
-import org.gridlab.gat.AdaptorNotApplicableException;
 import org.gridlab.gat.GAT;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
@@ -90,11 +89,16 @@ public class SshTrileadResourceBrokerAdaptor extends ResourceBrokerCpi {
             throws Exception {
         super(gatContext, brokerURI);
 
-        // accept if broker URI is compatible with ssh or with file
-        if (!(brokerURI.isCompatible("ssh") || brokerURI.isCompatible("file"))) {
-            throw new AdaptorNotApplicableException("cannot handle this URI: "
-                    + brokerURI);
+        // if wrong scheme, throw exception!
+        if (brokerURI.getScheme() != null) {
+            if (!brokerURI.isCompatible("ssh")) {
+                throw new GATObjectCreationException(
+                        "Unable to handle incompatible scheme '"
+                                + brokerURI.getScheme() + "' in broker uri '"
+                                + brokerURI.toString() + "'");
+            }
         }
+
         // init from preferences
         Preferences p = gatContext.getPreferences();
         String client2serverCipherString = ((String) p

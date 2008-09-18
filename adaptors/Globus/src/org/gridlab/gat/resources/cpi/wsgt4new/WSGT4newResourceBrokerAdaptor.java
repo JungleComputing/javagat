@@ -21,7 +21,6 @@ import org.globus.wsrf.encoding.SerializationException;
 import org.globus.wsrf.impl.SimpleResourceKey;
 import org.globus.wsrf.impl.security.authentication.Constants;
 import org.globus.wsrf.impl.security.authorization.HostAuthorization;
-import org.gridlab.gat.AdaptorNotApplicableException;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.GATObjectCreationException;
@@ -94,10 +93,16 @@ public class WSGT4newResourceBrokerAdaptor extends ResourceBrokerCpi {
             throws GATObjectCreationException {
         super(gatContext, brokerURI);
         // accept if broker URI is compatible with https or with any
-        if (!brokerURI.isCompatible("https")) {
-            throw new AdaptorNotApplicableException("cannot handle this URI: "
-                    + brokerURI);
+        // if wrong scheme, throw exception!
+        if (brokerURI.getScheme() != null) {
+            if (!brokerURI.isCompatible("https")) {
+                throw new GATObjectCreationException(
+                        "Unable to handle incompatible scheme '"
+                                + brokerURI.getScheme() + "' in broker uri '"
+                                + brokerURI.toString() + "'");
+            }
         }
+
         if (System.getProperty("GLOBUS_LOCATION") == null) {
             String globusLocation = System.getProperty("gat.adaptor.path")
                     + java.io.File.separator + "GlobusAdaptor"

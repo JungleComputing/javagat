@@ -77,11 +77,17 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
         if (brokerURI == null) {
             throw new GATObjectCreationException("brokerURI is null");
         }
-        if (!(brokerURI.isCompatible("file") || brokerURI.isCompatible("http") || brokerURI
-                .isCompatible("https"))) {
-            throw new GATObjectCreationException("cannot handle scheme: "
-                    + brokerURI.getScheme());
+        // if wrong scheme, throw exception!
+        if (brokerURI.getScheme() != null) {
+            if (!brokerURI.isCompatible("http")
+                    && !brokerURI.isCompatible("https")) {
+                throw new GATObjectCreationException(
+                        "Unable to handle incompatible scheme '"
+                                + brokerURI.getScheme() + "' in broker uri '"
+                                + brokerURI.toString() + "'");
+            }
         }
+
     }
 
     protected String createRSL(JobDescription description, String host,

@@ -85,6 +85,16 @@ public class LocalResourceBrokerAdaptor extends ResourceBrokerCpi {
             throws GATObjectCreationException {
         super(gatContext, brokerURI);
 
+        // if wrong scheme, throw exception!
+        if (brokerURI.getScheme() != null) {
+            if (!brokerURI.isCompatible("local")) {
+                throw new GATObjectCreationException(
+                        "Unable to handle incompatible scheme '"
+                                + brokerURI.getScheme() + "' in broker uri '"
+                                + brokerURI.toString() + "'");
+            }
+        }
+
         // the brokerURI should point to the local host else throw exception
         if (!brokerURI.refersToLocalHost()) {
             throw new GATObjectCreationException(

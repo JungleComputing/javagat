@@ -41,63 +41,69 @@ import org.gridlab.gat.resources.cpi.ResourceBrokerCpi;
 
 public class GliteResourceBrokerAdaptor extends ResourceBrokerCpi {
 
-	  public static Map<String, Boolean> getSupportedCapabilities() {
-	        Map<String, Boolean> capabilities = ResourceBrokerCpi.getSupportedCapabilities();
-	        capabilities.put("beginMultiJob", false);
-	        capabilities.put("endMultiJob", false);
-	        capabilities.put("findResources", false);
-	        capabilities.put("reserveResource", false);
-	        capabilities.put("submitJob", true);
-	        return capabilities;
-	    }
-	
-	public static Preferences getSupportedPreferences() {
-			Preferences preferences = ResourceBrokerCpi.getSupportedPreferences();
-	        preferences.put("VirtualOrganisation", "true");
-	        preferences.put("vomsHostDN", "true");
-	        preferences.put("vomsServerURL", "true");
-	        preferences.put("vomsServerPort", "true");
-	        preferences.put("vomsLifetime", "true");
-	        preferences.put("glite.createNewProxy", "true");
-	        preferences.put("glite.pollIntervalSecs", "true");
-	        preferences.put("glite.deleteJDL", "true");
-	        preferences.put("job.stop.poststage", "false");
-	        preferences.put("job.stop.on.exit", "false");
-	        return preferences;
-	    }
-	
+    public static Map<String, Boolean> getSupportedCapabilities() {
+        Map<String, Boolean> capabilities = ResourceBrokerCpi
+                .getSupportedCapabilities();
+        capabilities.put("beginMultiJob", false);
+        capabilities.put("endMultiJob", false);
+        capabilities.put("findResources", false);
+        capabilities.put("reserveResource", false);
+        capabilities.put("submitJob", true);
+        return capabilities;
+    }
 
-	/**
-	 * Construct a GliteResourceBrokerAdaptor for the given broker URI
-	 * Instead of a WMS address also an ldap address may be given.
-	 * In this case the resource broker adaptor will pick some random
-	 * suitable WMS for the virtual organisation set in the preference VirtualOrganisation
-	 * @param gatContext
-	 * @param brokerURI
-	 * @throws GATObjectCreationException
-	 */
+    public static Preferences getSupportedPreferences() {
+        Preferences preferences = ResourceBrokerCpi.getSupportedPreferences();
+        preferences.put("VirtualOrganisation", "true");
+        preferences.put("vomsHostDN", "true");
+        preferences.put("vomsServerURL", "true");
+        preferences.put("vomsServerPort", "true");
+        preferences.put("vomsLifetime", "true");
+        preferences.put("glite.createNewProxy", "true");
+        preferences.put("glite.pollIntervalSecs", "true");
+        preferences.put("glite.deleteJDL", "true");
+        preferences.put("job.stop.poststage", "false");
+        preferences.put("job.stop.on.exit", "false");
+        return preferences;
+    }
+
+    /**
+     * Construct a GliteResourceBrokerAdaptor for the given broker URI Instead
+     * of a WMS address also an ldap address may be given. In this case the
+     * resource broker adaptor will pick some random suitable WMS for the
+     * virtual organisation set in the preference VirtualOrganisation
+     * 
+     * @param gatContext
+     * @param brokerURI
+     * @throws GATObjectCreationException
+     */
     public GliteResourceBrokerAdaptor(GATContext gatContext, URI brokerURI)
             throws GATObjectCreationException {
         super(gatContext, brokerURI);
-        
-        // if not a broker URI itself but an LDAP address is given, retrieve a broker URI
-        if (brokerURI.getScheme().equals("ldap") || 
-        		brokerURI.getScheme().equals("ldaps")) {
-        	try {
-        		LDAPResourceFinder finder = new LDAPResourceFinder(brokerURI);
-        		String vo = (String) gatContext.getPreferences().get("VirtualOrganisation");
-        		List<String> brokerURIs = finder.fetchWMSServers(vo);
-        		int randomPos = (int) (Math.random()*brokerURIs.size());
-        		String brokerURIStr = brokerURIs.get(randomPos);
-        		this.brokerURI = new URI(brokerURIStr);
-        	} catch (NamingException e) {
-        		throw new GATObjectCreationException("Could not find suitable WMS!", e);
-        	} catch (URISyntaxException e) {
-        		throw new GATObjectCreationException("Could not find suitable WMS!", e);
-			}
+
+        // if not a broker URI itself but an LDAP address is given, retrieve a
+        // broker URI
+        if (brokerURI.getScheme().equals("ldap")
+                || brokerURI.getScheme().equals("ldaps")) {
+            try {
+                LDAPResourceFinder finder = new LDAPResourceFinder(brokerURI);
+                String vo = (String) gatContext.getPreferences().get(
+                        "VirtualOrganisation");
+                List<String> brokerURIs = finder.fetchWMSServers(vo);
+                int randomPos = (int) (Math.random() * brokerURIs.size());
+                String brokerURIStr = brokerURIs.get(randomPos);
+                this.brokerURI = new URI(brokerURIStr);
+            } catch (NamingException e) {
+                throw new GATObjectCreationException(
+                        "Could not find suitable WMS!", e);
+            } catch (URISyntaxException e) {
+                throw new GATObjectCreationException(
+                        "Could not find suitable WMS!", e);
+            }
         }
-        
-        if (!(this.brokerURI.isCompatible("http") || this.brokerURI.isCompatible("https"))) {
+
+        if (!(this.brokerURI.isCompatible("http") || this.brokerURI
+                .isCompatible("https"))) {
             throw new GATObjectCreationException("cannot handle scheme: "
                     + brokerURI.getScheme());
         }
@@ -121,22 +127,22 @@ public class GliteResourceBrokerAdaptor extends ResourceBrokerCpi {
             MetricListener listener, String metricDefinitionName)
             throws GATInvocationException {
 
-    	try {
-    		
-	        GliteJob job = new GliteJob(gatContext, (JobDescription) jobDescription,
-	                null, brokerURI.toString());
-	        
-	        if (listener != null && metricDefinitionName != null) {
-	            Metric metric = job.getMetricDefinitionByName(metricDefinitionName)
-	                    .createMetric(null);
-	            job.addMetricListener(listener, metric);
-	        }
+        try {
 
-	        return job;
-	        
-    	} catch (GATObjectCreationException e) {
-    		throw new GATInvocationException(e.getMessage());
-    	}
+            GliteJob job = new GliteJob(gatContext,
+                    (JobDescription) jobDescription, null, brokerURI.toString());
+
+            if (listener != null && metricDefinitionName != null) {
+                Metric metric = job.getMetricDefinitionByName(
+                        metricDefinitionName).createMetric(null);
+                job.addMetricListener(listener, metric);
+            }
+
+            return job;
+
+        } catch (GATObjectCreationException e) {
+            throw new GATInvocationException(e.getMessage());
+        }
 
     }
 }

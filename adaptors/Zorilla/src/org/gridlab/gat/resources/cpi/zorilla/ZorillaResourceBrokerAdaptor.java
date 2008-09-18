@@ -10,7 +10,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
-import org.gridlab.gat.AdaptorNotApplicableException;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.GATObjectCreationException;
@@ -78,9 +77,14 @@ public class ZorillaResourceBrokerAdaptor extends ResourceBrokerCpi implements
 
         logger.debug("broker URI = " + brokerURI);
 
-        if (!(brokerURI.isCompatible("zorilla"))) {
-            throw new AdaptorNotApplicableException("cannot handle this URI: "
-                    + brokerURI);
+        // if wrong scheme, throw exception!
+        if (brokerURI.getScheme() != null) {
+            if (!brokerURI.isCompatible("zorilla")) {
+                throw new GATObjectCreationException(
+                        "Unable to handle incompatible scheme '"
+                                + brokerURI.getScheme() + "' in broker uri '"
+                                + brokerURI.toString() + "'");
+            }
         }
 
         nodeSocketAddress = brokerURI.getSchemeSpecificPart();

@@ -100,6 +100,16 @@ public class LocalQResourceBrokerAdaptor extends ResourceBrokerCpi implements
             throws GATObjectCreationException {
         super(gatContext, brokerURI);
 
+        // if wrong scheme, throw exception!
+        if (brokerURI.getScheme() != null) {
+            if (!brokerURI.isCompatible("localq")) {
+                throw new GATObjectCreationException(
+                        "Unable to handle incompatible scheme '"
+                                + brokerURI.getScheme() + "' in broker uri '"
+                                + brokerURI.toString() + "'");
+            }
+        }
+
         queue = new PriorityQueue<LocalQJob>();
 
         Integer maxConcurrentJobs = (Integer) gatContext.getPreferences().get(

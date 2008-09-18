@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
-import org.gridlab.gat.AdaptorNotApplicableException;
 import org.gridlab.gat.GAT;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
@@ -70,10 +69,16 @@ public class GridSAMResourceBrokerAdaptor extends ResourceBrokerCpi {
 
         super(gatContext, brokerURI);
 
-        if (!brokerURI.isCompatible("https")) {
-            throw new AdaptorNotApplicableException("cannot handle this URI: "
-                    + brokerURI);
+        // if wrong scheme, throw exception!
+        if (brokerURI.getScheme() != null) {
+            if (!brokerURI.isCompatible("https")) {
+                throw new GATObjectCreationException(
+                        "Unable to handle incompatible scheme '"
+                                + brokerURI.getScheme() + "' in broker uri '"
+                                + brokerURI.toString() + "'");
+            }
         }
+
     }
 
     URI getBroker() {

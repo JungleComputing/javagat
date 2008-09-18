@@ -65,6 +65,16 @@ public class SgeResourceBrokerAdaptor extends ResourceBrokerCpi {
     public SgeResourceBrokerAdaptor(GATContext gatContext, URI brokerURI)
             throws GATObjectCreationException {
         super(gatContext, brokerURI);
+        // if wrong scheme, throw exception!
+        if (brokerURI.getScheme() != null) {
+            if (!brokerURI.isCompatible("sge")) {
+                throw new GATObjectCreationException(
+                        "Unable to handle incompatible scheme '"
+                                + brokerURI.getScheme() + "' in broker uri '"
+                                + brokerURI.toString() + "'");
+            }
+        }
+
         SessionFactory factory = SessionFactory.getFactory();
         SGEsession = factory.getSession();
     }
