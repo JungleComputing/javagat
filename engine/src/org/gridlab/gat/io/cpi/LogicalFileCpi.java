@@ -221,12 +221,12 @@ public abstract class LogicalFileCpi implements LogicalFile, Monitorable {
 
             try {
                 f = GAT.createFile(gatContext, u).getFileInterface();
+                f.copy(loc);
             } catch (Exception e) {
                 exception.add("default logical file", e);
                 continue;
             }
 
-            f.copy(loc);
             files.add(loc);
             return;
         }
