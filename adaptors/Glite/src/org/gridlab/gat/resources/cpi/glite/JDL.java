@@ -19,6 +19,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.SortedSet;
@@ -371,6 +372,11 @@ public class JDL {
 		
 	}
 
+	/**
+	 * Some attributes that are recommended for processing in javagat plus some additional
+	 * specifically for glite will become interpreted here
+	 * @param builder The StringBuilder to which the generated JDL String fragment will be appended
+	 */
 	private void processAttributes(StringBuilder builder) {
 		for (String attKey : this.attributes.keySet()) {
 			if ("time.max".equalsIgnoreCase(attKey)) {
@@ -395,6 +401,28 @@ public class JDL {
 			} else if ("glite.retrycount".equalsIgnoreCase(attKey)) {
 				Object retryCount = attributes.get(attKey);
 				builder.append("RetryCount = ").append(retryCount).append(";\n");
+			} else if ("glite.DataRequirements.InputData".equalsIgnoreCase(attKey)) {
+				List<String> inputElements = (ArrayList<String>) attributes.get(attKey);
+				
+				builder.append("DataRequirements = {\n\t[\n")
+					   .append("\t\tDataCatalogType = \"RLS\";\n")
+					   .append("\t\tInputData = {");
+				
+				Iterator<String> it = inputElements.listIterator();
+				
+				while (it.hasNext()) {
+					builder.append('\"')
+				       .append(it.next())
+				       .append('\"');
+					
+					if (it.hasNext()) {
+						builder.append(",\n");
+					}
+				}
+				
+				builder.append("};\n\t]\n};\n");
+				
+				builder.append("DataAccessProtocol = {\"https\", \"gsiftp\"};\n");
 			} else {
 				throw new UnsupportedOperationException("Attribute " + attKey + " not supported in gLite-Adaptor");
 			}

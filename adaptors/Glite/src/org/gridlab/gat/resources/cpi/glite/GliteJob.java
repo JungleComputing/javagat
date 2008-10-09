@@ -85,7 +85,7 @@ public class GliteJob extends JobCpi {
 	private java.net.URL lbURL;
 	private JDL gLiteJobDescription;
 	private SoftwareDescription swDescription;
-	private volatile String gLiteState;
+	private volatile String gLiteState = "";
 	private URL wmsURL = null;
 	private String proxyFile = null;
 	private boolean outputDone = false;
