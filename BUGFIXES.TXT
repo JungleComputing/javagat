@@ -1,3 +1,11 @@
+FIXED BUGS in version 2.0.3 with respect to version 2.0.2
+- fixed the compilation of the contributed adaptors (bug reported by Alexander Beck-Ratzka)
+- fixed some tests: preferences were set, but not passed on to GAT.create() methods.
+- resource brokers now accept only proper URIs (using the right scheme for the specific adaptor or the any scheme) (bug reported by Niels Drost)
+- zorilla adaptor updated
+- fault tolerance optimization in LogicalFileCpi.replicate as proposed by Enric Tejedor
+- glite-adaptor: support for inputdata jdl attribute
+
 FIXED BUGS in version 2.0.2 with respect to version 2.0.1
 - fixed bug in sshtrilead adaptor for getting files from a remote location to a local location (connection attempt to the wrong side, bug reported by Enric Tejedor).
 - modified the File.java toURL method to be compatible with java 1.6 (it's deprecated there)
