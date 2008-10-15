@@ -1,7 +1,7 @@
 <project name="SftpNewAdaptor" default="build" basedir=".">
 	<description>Build file for JavaGAT SftpNew Adaptors.</description>
 
-	<property name="gat.location" location="../.." />
+	<property name="gat.location" location="../../.." />
 	<property name="engine_path" location="${gat.location}/lib" />
 
 	<property name="src" location="src" />

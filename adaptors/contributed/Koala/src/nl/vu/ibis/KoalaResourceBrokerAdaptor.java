@@ -5,8 +5,6 @@ import java.net.InetSocketAddress;
 import java.util.Map;
 import java.util.Set;
 
-import nl.vu.ibis.KoalaJob;
-
 import org.apache.log4j.PropertyConfigurator;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
@@ -24,6 +22,7 @@ import org.gridlab.gat.resources.cpi.PreStagedFile;
 import org.gridlab.gat.resources.cpi.PreStagedFileSet;
 import org.gridlab.gat.resources.cpi.ResourceBrokerCpi;
 import org.gridlab.gat.resources.cpi.Sandbox;
+import org.koala.common.Assist;
 
 public class KoalaResourceBrokerAdaptor extends ResourceBrokerCpi {
 
@@ -118,9 +117,9 @@ public class KoalaResourceBrokerAdaptor extends ResourceBrokerCpi {
             rsl += (" (arguments = " + args + ")");
         }
 
-        rsl += " (count = " + getCPUCount(description) + ")";
+        rsl += " (count = " + description.getProcessCount() + ")";
 
-        rsl += " (hostCount = " + getHostCount(description) + ")";
+        rsl += " (hostCount = " + description.getResourceCount() + ")";
 
         String jobType = getStringAttribute(description, "job.type", null);
         if (jobType != null) {

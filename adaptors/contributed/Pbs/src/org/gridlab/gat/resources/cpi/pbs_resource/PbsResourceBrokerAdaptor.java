@@ -138,7 +138,7 @@ public class PbsResourceBrokerAdaptor extends ResourceBrokerCpi implements
                         metricDefinitionName).createMetric(null);
                 pbsJob.addMetricListener(listener, metric);
             }
-            pbsJob.setState(Job.PRE_STAGING);
+            pbsJob.setState(Job.JobState.PRE_STAGING);
             sandbox.prestage();
 
             java.io.File temp = java.io.File.createTempFile("pbs", null);
@@ -329,10 +329,10 @@ public class PbsResourceBrokerAdaptor extends ResourceBrokerCpi implements
         }
     }
 
-    int getState(String id) throws IOException {
+    Job.JobState getState(String id) throws IOException {
         PbsResponse job = getJob(id);
         if (job == null) {
-            return Job.STOPPED;
+            return Job.JobState.STOPPED;
         }
         return job.getState();
     }

@@ -15,16 +15,24 @@ import java.util.StringTokenizer;
 import org.gridlab.gat.resources.Job;
 
 /**
- * @author  doerl
+ * @author doerl
  */
 class PbsResponse implements Serializable {
     private static final long serialVersionUID = -7940226296813758221L;
-    private static final DateFormat sFormatter = new SimpleDateFormat("HH:mm:ss");
+
+    private static final DateFormat sFormatter = new SimpleDateFormat(
+            "HH:mm:ss");
+
     private String mId = "";
+
     private String mName;
+
     private String mUser;
+
     private Date mTimeUse;
+
     private String mState;
+
     private String mQueue;
 
     private PbsResponse() {
@@ -40,17 +48,15 @@ class PbsResponse implements Serializable {
             String timeUse = (String) st.nextElement();
             try {
                 job.mTimeUse = sFormatter.parse(timeUse);
-            }
-            catch (ParseException ex) {
+            } catch (ParseException ex) {
                 job.mTimeUse = new Date(0L);
-                //				System.err.println("DateFormat parse error: " + timeUse);
+                // System.err.println("DateFormat parse error: " + timeUse);
             }
             job.mState = (String) st.nextElement();
             if (st.hasMoreTokens()) {
                 job.mQueue = (String) st.nextElement();
             }
-        }
-        catch (RuntimeException ex) {
+        } catch (RuntimeException ex) {
         }
         return job;
     }
@@ -65,10 +71,11 @@ class PbsResponse implements Serializable {
         try {
             PbsResponse other = (PbsResponse) obj;
             return equalsObj(mId, other.mId) && equalsObj(mName, other.mName)
-                && equalsObj(mUser, other.mUser) && equalsObj(mState, other.mState)
-                && equalsObj(mTimeUse, other.mTimeUse) && equalsObj(mQueue, other.mQueue);
-        }
-        catch (ClassCastException ex) {
+                    && equalsObj(mUser, other.mUser)
+                    && equalsObj(mState, other.mState)
+                    && equalsObj(mTimeUse, other.mTimeUse)
+                    && equalsObj(mQueue, other.mQueue);
+        } catch (ClassCastException ex) {
             return false;
         }
     }
@@ -89,32 +96,33 @@ class PbsResponse implements Serializable {
         return mTimeUse;
     }
 
-    public int getState() {
+    public Job.JobState getState() {
         if (mState == null) {
-            System.err.println("Internal error in sge adaptor, no state returned");
+            System.err
+                    .println("Internal error in sge adaptor, no state returned");
         }
         if (mState.indexOf('W') >= 0) { // waiting
-            return Job.SCHEDULED;
+            return Job.JobState.SCHEDULED;
         }
         if (mState.indexOf('Q') >= 0) { // queued
-            return Job.SCHEDULED;
+            return Job.JobState.SCHEDULED;
         }
         if (mState.indexOf('T') >= 0) { // transition
-            return Job.SCHEDULED;
+            return Job.JobState.SCHEDULED;
         }
-//         if (mState.indexOf('H') >= 0) { 
-//             return Job.HOLD;
-//         }
+        // if (mState.indexOf('H') >= 0) {
+        // return Job.HOLD;
+        // }
         if (mState.indexOf('S') >= 0) { // suspended
-            return Job.RUNNING;
+            return Job.JobState.RUNNING;
         }
         if (mState.indexOf('R') >= 0) { // running
-            return Job.RUNNING;
+            return Job.JobState.RUNNING;
         }
         if (mState.indexOf('E') >= 0) { // exiting
-            return Job.STOPPED;
+            return Job.JobState.STOPPED;
         }
-        return Job.STOPPED;
+        return Job.JobState.STOPPED;
     }
 
     public String getUser() {

@@ -26,7 +26,6 @@
 		<ant dir="Mercury" />
 		<ant dir="Sftp" />
 		<ant dir="SftpGanymed" />
-		<ant dir="SftpNew" />
 		<ant dir="Sge" />
 		<ant dir="SshTrilead" />
 		<ant dir="Zorilla" />

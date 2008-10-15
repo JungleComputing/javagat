@@ -6,7 +6,7 @@
 
 	<property name="src" location="src" />
 	<property name="tmp" location="tmp" />
-	<property name="lib" location="${gat.location}/lib/adaptors/ProActiveAdaptor" />
+	<property name="lib" location="${gat.location}/lib/adaptors/contributed/ProActiveAdaptor" />
 	<property name="external" location="external" />
 	<property name="java.debug.value" value="true" />
 
@@ -41,7 +41,7 @@
 				<include name="*.jar" />
 			</fileset>
 		</copy>
-		
+
 		<delete dir="${tmp}" />
 
 	</target>
