@@ -162,7 +162,7 @@ public class LocalResourceBrokerAdaptor extends ResourceBrokerCpi {
         }
 
         Sandbox sandbox = new Sandbox(gatContext, description, "localhost",
-                home, true, true, true, true);
+                home, true, true, false, false);
 
         LocalJob localJob = new LocalJob(gatContext, description, sandbox);
         Job job = null;
