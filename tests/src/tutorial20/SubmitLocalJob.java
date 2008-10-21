@@ -17,11 +17,14 @@ public class SubmitLocalJob {
         sd.setStdout(stdout);
 
         JobDescription jd = new JobDescription(sd);
-        ResourceBroker broker = GAT.createResourceBroker(new URI("any://localhost"));
+        ResourceBroker broker = GAT.createResourceBroker(new URI(
+                "any://localhost"));
         Job job = broker.submitJob(jd);
 
         while ((job.getState() != JobState.STOPPED)
                 && (job.getState() != JobState.SUBMISSION_ERROR))
             Thread.sleep(1000);
+
+        GAT.end();
     }
 }
