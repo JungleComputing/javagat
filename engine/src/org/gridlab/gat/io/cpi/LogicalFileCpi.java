@@ -378,4 +378,8 @@ public abstract class LogicalFileCpi implements LogicalFile, Monitorable {
             throw new Error("could not create new GAT object");
         }
     }
+
+    public String toString() {
+        return name;
+    }
 }

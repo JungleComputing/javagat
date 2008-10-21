@@ -193,4 +193,8 @@ public abstract class FileOutputStreamCpi implements FileOutputStreamInterface {
         throw new UnsupportedOperationException("Not implemented");
     }
 
+    public String toString() {
+        return location.toString();
+    }
+
 }

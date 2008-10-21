@@ -220,4 +220,8 @@ public abstract class FileInputStreamCpi implements FileInputStreamInterface {
         throw new UnsupportedOperationException("Not implemented");
     }
 
+    public String toString() {
+        return location.toString();
+    }
+
 }

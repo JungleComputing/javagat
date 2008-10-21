@@ -19,6 +19,7 @@ import org.gridlab.gat.Preferences;
 import org.gridlab.gat.URI;
 import org.gridlab.gat.advert.Advertisable;
 import org.gridlab.gat.engine.GATEngine;
+import org.gridlab.gat.engine.util.NoInfoLogging;
 import org.gridlab.gat.io.File;
 import org.gridlab.gat.io.FileInterface;
 import org.gridlab.gat.monitoring.Metric;
@@ -129,6 +130,7 @@ public abstract class FileCpi implements FileInterface, java.io.Serializable {
         }
     }
 
+    @NoInfoLogging
     public final GATContext getGATContext() {
         return gatContext;
     }
@@ -163,6 +165,7 @@ public abstract class FileCpi implements FileInterface, java.io.Serializable {
      * 
      * @return The URI of this File
      */
+    @NoInfoLogging
     public final URI toURI() {
         return location;
     }
@@ -298,6 +301,7 @@ public abstract class FileCpi implements FileInterface, java.io.Serializable {
         throw new UnsupportedOperationException("Not implemented");
     }
 
+    @NoInfoLogging
     public final String getName() {
         String path = getPath();
 
@@ -338,6 +342,7 @@ public abstract class FileCpi implements FileInterface, java.io.Serializable {
         }
     }
 
+    @NoInfoLogging
     public final String getPath() {
         String res = location.getPath();
         if (res == null) {
@@ -545,10 +550,12 @@ public abstract class FileCpi implements FileInterface, java.io.Serializable {
         throw new UnsupportedOperationException("Not implemented");
     }
 
+    @NoInfoLogging
     public final String toString() {
         return "GAT file: " + toURI().toString();
     }
 
+    @NoInfoLogging
     public final URL toURL() throws MalformedURLException {
         return location.toURL();
     }

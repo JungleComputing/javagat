@@ -247,4 +247,8 @@ public abstract class ResourceBrokerCpi implements ResourceBroker {
         return brokerURI.getScheme();
     }
 
+    public String toString() {
+        return brokerURI.toString();
+    }
+
 }

@@ -53,4 +53,8 @@ public class SerializedLogicalFile implements Serializable, Advertisable {
     public String marshal() {
         throw new Error("Should not be called");
     }
+
+    public String toString() {
+        return name;
+    }
 }

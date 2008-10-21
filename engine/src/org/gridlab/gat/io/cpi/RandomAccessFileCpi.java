@@ -252,4 +252,8 @@ public abstract class RandomAccessFileCpi implements RandomAccessFileInterface {
             throws GATInvocationException {
         throw new UnsupportedOperationException("Not implemented");
     }
+
+    public String toString() {
+        return location.toString();
+    }
 }
