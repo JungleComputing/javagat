@@ -236,10 +236,14 @@ public class LocalResourceBrokerAdaptor extends ResourceBrokerCpi {
                 if (sd.getStderr() != null) {
                     // to file
                     new StreamForwarder(p.getErrorStream(), GAT
-                            .createFileOutputStream(sd.getStderr()));
+                            .createFileOutputStream(sd.getStderr()), sd
+                            .getExecutable()
+                            + " [stderr]");
                 } else {
                     // or throw it away
-                    new StreamForwarder(p.getErrorStream(), null);
+                    new StreamForwarder(p.getErrorStream(), null, sd
+                            .getExecutable()
+                            + " [stderr]");
                 }
             } catch (GATObjectCreationException e) {
                 throw new GATInvocationException(
@@ -253,10 +257,14 @@ public class LocalResourceBrokerAdaptor extends ResourceBrokerCpi {
                 if (sd.getStdout() != null) {
                     // to file
                     new StreamForwarder(p.getInputStream(), GAT
-                            .createFileOutputStream(sd.getStdout()));
+                            .createFileOutputStream(sd.getStdout()), sd
+                            .getExecutable()
+                            + " [stdout]");
                 } else {
                     // or throw it away
-                    new StreamForwarder(p.getInputStream(), null);
+                    new StreamForwarder(p.getInputStream(), null, sd
+                            .getExecutable()
+                            + " [stdout]");
                 }
             } catch (GATObjectCreationException e) {
                 throw new GATInvocationException(
@@ -268,7 +276,7 @@ public class LocalResourceBrokerAdaptor extends ResourceBrokerCpi {
             // forward the stdin from file
             try {
                 new StreamForwarder(GAT.createFileInputStream(sd.getStdin()), p
-                        .getOutputStream());
+                        .getOutputStream(), sd.getExecutable() + " [stdin]");
             } catch (GATObjectCreationException e) {
                 throw new GATInvocationException(
                         "Unable to create file input stream for stdin!", e);
