@@ -560,7 +560,7 @@ public abstract class GlobusFileAdaptor extends FileCpi {
             Vector<FileInfo> list = null;
             try {
                 client.changeDir(getPath());
-                list = client.nlist();
+                list = client.list();
             } catch (ServerException e) {
                 destroyClient(client, toURI(), gatContext.getPreferences());
                 throw new GATInvocationException("Generic globus file adaptor",
