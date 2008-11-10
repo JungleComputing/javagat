@@ -58,6 +58,9 @@ public class SshTrileadJob extends JobCpi {
     }
 
     protected synchronized void setState(JobState state) {
+        if (this.state == state) {
+            return;
+        }
         this.state = state;
         MetricEvent v = new MetricEvent(this, state, statusMetric, System
                 .currentTimeMillis());

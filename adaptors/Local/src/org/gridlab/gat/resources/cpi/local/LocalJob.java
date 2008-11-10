@@ -66,6 +66,11 @@ public class LocalJob extends JobCpi {
     }
 
     protected void setState(JobState state) {
+        if(state == this.state) {
+            //state already set to this value
+            return;
+        }
+        
         this.state = state;
         MetricEvent v = new MetricEvent(this, state, statusMetric, System
                 .currentTimeMillis());
