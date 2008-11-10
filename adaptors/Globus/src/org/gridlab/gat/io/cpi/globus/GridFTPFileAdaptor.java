@@ -1,14 +1,23 @@
 package org.gridlab.gat.io.cpi.globus;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.Enumeration;
 import java.util.Hashtable;
 
 import org.apache.log4j.Logger;
+import org.globus.axis.gsi.GSIConstants;
 import org.globus.ftp.DataChannelAuthentication;
 import org.globus.ftp.FTPClient;
 import org.globus.ftp.GridFTPClient;
 import org.globus.ftp.GridFTPSession;
 import org.globus.ftp.exception.ServerException;
+import org.globus.gsi.GlobusCredential;
+import org.globus.gsi.GlobusCredentialException;
+import org.globus.gsi.gssapi.GlobusGSSCredentialImpl;
 import org.gridlab.gat.AdaptorNotApplicableException;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
@@ -18,6 +27,7 @@ import org.gridlab.gat.Preferences;
 import org.gridlab.gat.URI;
 import org.gridlab.gat.security.globus.GlobusSecurityUtils;
 import org.ietf.jgss.GSSCredential;
+import org.ietf.jgss.GSSException;
 
 @SuppressWarnings("serial")
 public class GridFTPFileAdaptor extends GlobusFileAdaptor {
@@ -163,8 +173,18 @@ public class GridFTPFileAdaptor extends GlobusFileAdaptor {
         try {
             GATContext gatContext = (GATContext) context.clone();
             gatContext.addPreferences(additionalPreferences);
-            GSSCredential credential = GlobusSecurityUtils.getGlobusCredential(
-                    gatContext, "gridftp", hostURI, DEFAULT_GRIDFTP_PORT);
+            
+            String proxyFile = System.getProperty("gridProxyFile");
+            GSSCredential credential = null;
+            
+            if (proxyFile == null) {
+            	credential = GlobusSecurityUtils.getGlobusCredential(
+	                    gatContext, "gridftp", hostURI, DEFAULT_GRIDFTP_PORT);
+            } else {
+            	credential = tryGetCredentialFromFilePath(proxyFile);
+            }
+            
+            
             String host = hostURI.resolveHost();
 
             int port = hostURI.getPort(DEFAULT_GRIDFTP_PORT);
@@ -270,7 +290,32 @@ public class GridFTPFileAdaptor extends GlobusFileAdaptor {
         }
     }
 
-    protected void destroyClient(FTPClient c, URI hostURI,
+    private static GSSCredential tryGetCredentialFromFilePath(String proxyPath) throws GSSException {	
+	     ByteArrayOutputStream baos = new ByteArrayOutputStream();
+	     GlobusCredential cred = null;
+	     GSSCredential gssCred = null;
+	        
+	        try {
+				FileInputStream fis = new FileInputStream(proxyPath);
+				byte [] buffer = new byte[1024];
+				while (fis.read(buffer) != (-1)) {
+					baos.write(buffer);
+				}
+				
+				cred = new GlobusCredential(new ByteArrayInputStream(baos.toByteArray()));
+				gssCred = new GlobusGSSCredentialImpl(cred, GSSCredential.INITIATE_AND_ACCEPT); 
+			} catch (FileNotFoundException e2) {
+				logger.error("The file denoted by gridProxyFile does not exist");
+			} catch (IOException e) {
+				logger.error("Error reading the proxy file");
+			} catch (GlobusCredentialException e) {
+				logger.error("Error creating a credential from the proxy file");
+			}
+	        
+	        return gssCred;
+	}
+
+	protected void destroyClient(FTPClient c, URI hostURI,
             Preferences preferences) {
         doWorkDestroyClient(c, hostURI, preferences);
     }

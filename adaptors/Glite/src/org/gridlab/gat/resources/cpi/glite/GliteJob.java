@@ -103,7 +103,7 @@ public class GliteJob extends JobCpi {
 	private volatile GATInvocationException postStageException = null;
 	private volatile String destination = null;
 	
-	 class JobStatusLookUp extends Thread {
+	 class JobStatusLookUp implements Runnable {
 		private GliteJob polledJob;
 		private int pollIntMilliSec;
 		private long afterJobKillCounter = 0;
@@ -123,8 +123,6 @@ public class GliteJob extends JobCpi {
 			} else {
 				this.pollIntMilliSec = Integer.parseInt(pollingIntervalStr)*1000; 
 			}
-			
-			this.start();
 		}
 
 		public void run() {
@@ -157,7 +155,7 @@ public class GliteJob extends JobCpi {
 				}
 				
 				try {
-					sleep(this.pollIntMilliSec);
+					Thread.sleep(this.pollIntMilliSec);
 				} catch (InterruptedException e) {
 					logger.error("Error while executing job status poller thread!", e);
 				}
@@ -280,7 +278,7 @@ public class GliteJob extends JobCpi {
 		initLBSoapService(gliteJobID);
 		logger.info("jobID " + gliteJobID);
 		// start status lookup thread
-		new JobStatusLookUp(this);
+		new Thread(new JobStatusLookUp(this)).start();
 	}
 
 
@@ -375,7 +373,6 @@ public class GliteJob extends JobCpi {
 			this.proxyFile = properties.getProxyFile();
 		}
 		
-		gatContext.addPreference("globusCert", proxyFile); // for gridFTP adaptor
 		System.setProperty("gridProxyFile", proxyFile);  // for glite security JARs
 		System.setProperty(ContextWrapper.CREDENTIALS_PROXY_FILE, proxyFile);
 		
@@ -560,7 +557,7 @@ public class GliteJob extends JobCpi {
 		}
 	}
 	
-	private void updateState() {		
+	private synchronized void updateState() {		
 		
 		queryState();
 			
