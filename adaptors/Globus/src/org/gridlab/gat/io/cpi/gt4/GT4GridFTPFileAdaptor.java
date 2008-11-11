@@ -11,11 +11,13 @@ import org.globus.cog.abstraction.impl.common.task.ServiceImpl;
 import org.globus.cog.abstraction.impl.common.task.TaskImpl;
 import org.globus.cog.abstraction.impl.file.FileNotFoundException;
 import org.globus.cog.abstraction.impl.file.GeneralException;
+import org.globus.cog.abstraction.interfaces.FileResource;
 import org.globus.cog.abstraction.interfaces.FileTransferSpecification;
 import org.globus.cog.abstraction.interfaces.SecurityContext;
 import org.globus.cog.abstraction.interfaces.Service;
 import org.globus.cog.abstraction.interfaces.ServiceContact;
 import org.globus.cog.abstraction.interfaces.Task;
+import org.gridlab.gat.AdaptorNotApplicableException;
 import org.gridlab.gat.GAT;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
@@ -23,17 +25,19 @@ import org.gridlab.gat.GATObjectCreationException;
 import org.gridlab.gat.URI;
 import org.gridlab.gat.engine.GATEngine;
 import org.gridlab.gat.io.File;
+import org.gridlab.gat.io.FileInterface;
 
 //This class only supports the URIs with gsiftp
 @SuppressWarnings("serial")
 public class GT4GridFTPFileAdaptor extends GT4FileAdaptor {
-    
+
     public static Map<String, Boolean> getSupportedCapabilities() {
-        Map<String, Boolean> capabilities = GT4FileAdaptor.getSupportedCapabilities();
+        Map<String, Boolean> capabilities = GT4FileAdaptor
+                .getSupportedCapabilities();
         capabilities.put("copy", true);
         return capabilities;
     }
-    
+
     /**
      * @param gatContext
      * @param location
@@ -151,12 +155,46 @@ public class GT4GridFTPFileAdaptor extends GT4FileAdaptor {
         try {
             resource.getFile(location.getPath(), dest.getPath());
         } catch (FileNotFoundException e) {
-            throw new GATInvocationException(e.getMessage());
+            throw new GATInvocationException("copy to local failed", e);
         } catch (GeneralException e) {
-            throw new GATInvocationException(e.getMessage());
+            throw new GATInvocationException("copy to local failed", e);
         }
         if (logger.isInfoEnabled()) {
             logger.info("GT4GriFTPFileAdaptor: copy2 done.");
+        }
+    }
+
+    protected void copyToRemote(URI dest) throws GATInvocationException {
+        FileResource remoteResource = null;
+        try {
+            remoteResource = AbstractionFactory.newFileResource(srcProvider);
+        } catch (Exception e) {
+            throw new GATInvocationException("gt4gridftp", e);
+        }
+        remoteResource.setName("gt4file: " + Math.random());
+        SecurityContext securityContext = null;
+        try {
+            securityContext = AbstractionFactory
+                    .newSecurityContext(srcProvider);
+            securityContext.setCredentials(getCredential(srcProvider, dest));
+        } catch (Exception e) {
+            throw new GATInvocationException("gt4gridftp", e);
+        }
+        remoteResource.setSecurityContext(securityContext);
+        ServiceContact serviceContact = new ServiceContactImpl(dest.getHost(),
+                dest.getPort());
+        remoteResource.setServiceContact(serviceContact);
+        try {
+            remoteResource.start();
+        } catch (Exception e) {
+            throw new GATInvocationException("gt4gridftp", e);
+        }
+        try {
+            remoteResource.putFile(location.getPath(), dest.getPath());
+        } catch (FileNotFoundException e) {
+            throw new GATInvocationException("gt4gridftp", e);
+        } catch (GeneralException e) {
+            throw new GATInvocationException("gt4gridftp", e);
         }
     }
 
@@ -175,6 +213,11 @@ public class GT4GridFTPFileAdaptor extends GT4FileAdaptor {
     public void copy(URI dest) throws GATInvocationException {
         // determinate dest is a directory, and pass the filename if it is,
         // otherwise it will fail
+        if (determineIsDirectory()) {
+            copyDirectory(gatContext, null, toURI(), dest);
+            return;
+        }
+
         File destinationFile = null;
         try {
             destinationFile = GAT.createFile(gatContext, dest);
@@ -186,7 +229,8 @@ public class GT4GridFTPFileAdaptor extends GT4FileAdaptor {
         // fix the filename, if the destination is a directory
         if (destinationFile != null) {
             try {
-                if (destinationFile.isDirectory()) {
+                if (destinationFile.isDirectory()
+                        || dest.getPath().endsWith("/")) {
                     String destStr = null;
                     if (dest.toString().endsWith("/")) {
                         destStr = dest.toString() + getName();
@@ -205,20 +249,16 @@ public class GT4GridFTPFileAdaptor extends GT4FileAdaptor {
                 // leave everything as it is
             }
         }
-
-        if (determineIsDirectory()) {
-            copyDirectory(gatContext, null, toURI(), dest);
-            return;
-        }
         if (dest.isLocal()) {
-            if (GATEngine.DEBUG) {
+            if (logger.isDebugEnabled()) {
                 logger.debug("GT4GridFTPFileAdaptor: copy remote to local");
             }
             copyToLocal(dest);
             return;
-        }
-        // I do not handle the case, when the source is local
-        if (dest.getScheme().equalsIgnoreCase("any")) {
+        } else if (location.refersToLocalHost()) {
+            copyToRemote(dest);
+            return;
+        } else if (dest.getScheme().equalsIgnoreCase("any")) {
             for (int i = 0; i < providers.length; i++) {
                 try {
                     copyThirdParty(dest, providers[i]);

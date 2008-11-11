@@ -188,7 +188,7 @@ public class URI implements Serializable, Comparable<Object> {
      * @return true if the URI refers to the localhost, false otherwise.
      */
     public boolean isLocal() {
-        return u.getHost() == null;
+        return u.getHost() == null || u.equals("localhost");
     }
 
     /**
