@@ -164,6 +164,16 @@ public class GT4GridFTPFileAdaptor extends GT4FileAdaptor {
         }
     }
 
+    /**
+     * This method fails when the source is a file and the target is a directory
+     * that doesn't exist (it throws an exception).
+     * 
+     * This method fails when the source is a directory and the target doesn't
+     * exist (it throws an exception)
+     * 
+     * @param dest
+     * @throws GATInvocationException
+     */
     protected void copyToRemote(URI dest) throws GATInvocationException {
         FileResource remoteResource = null;
         try {
