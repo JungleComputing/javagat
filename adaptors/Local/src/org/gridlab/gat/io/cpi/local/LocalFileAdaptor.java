@@ -390,9 +390,12 @@ public class LocalFileAdaptor extends FileCpi {
      */
     public org.gridlab.gat.io.File getParentFile()
             throws GATInvocationException {
+        File parent = f.getParentFile();
+        if (parent == null) {
+            return null;
+        }
         try {
-            return GAT.createFile(gatContext, localToURI(f.getParentFile()
-                    .getPath()));
+            return GAT.createFile(gatContext, localToURI(parent.getPath()));
         } catch (Exception e) {
             throw new GATInvocationException("default file", e);
         }
