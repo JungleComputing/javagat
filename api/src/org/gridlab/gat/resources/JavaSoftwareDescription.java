@@ -105,8 +105,8 @@ public class JavaSoftwareDescription extends SoftwareDescription {
      * <TR></TBODY> </TABLE>
      * 
      * @param attributes
-     *                the attributes belonging to this
-     *                {@link JavaSoftwareDescription}.
+     *            the attributes belonging to this
+     *            {@link JavaSoftwareDescription}.
      */
     @SuppressWarnings("unchecked")
     public JavaSoftwareDescription(Map<String, Object> attributes) {
@@ -131,7 +131,7 @@ public class JavaSoftwareDescription extends SoftwareDescription {
      * Sets the jvm options.
      * 
      * @param options
-     *                the jvm options.
+     *            the jvm options.
      */
     public void setJavaOptions(String... options) {
         javaOptions = options;
@@ -152,7 +152,7 @@ public class JavaSoftwareDescription extends SoftwareDescription {
      * the property.
      * 
      * @param systemProperties
-     *                the system properties.
+     *            the system properties.
      */
     public void setJavaSystemProperties(Map<String, String> systemProperties) {
         this.javaSystemProperties = systemProperties;
@@ -163,10 +163,10 @@ public class JavaSoftwareDescription extends SoftwareDescription {
      * of the system property should not start with "-D".
      * 
      * @param key
-     *                the key of the system property to be added
+     *            the key of the system property to be added
      * @param value
-     *                the value belonging to the key of the system property to
-     *                be added
+     *            the value belonging to the key of the system property to be
+     *            added
      */
     public void addJavaSystemProperty(String key, String value) {
         if (javaSystemProperties == null) {
@@ -188,7 +188,7 @@ public class JavaSoftwareDescription extends SoftwareDescription {
      * Sets the main class.
      * 
      * @param main
-     *                the main class.
+     *            the main class.
      */
     public void setJavaMain(String main) {
         this.javaMain = main;
@@ -207,7 +207,7 @@ public class JavaSoftwareDescription extends SoftwareDescription {
      * Sets the arguments of the java main class.
      * 
      * @param javaArguments
-     *                the arguments of the java main class.
+     *            the arguments of the java main class.
      */
     public void setJavaArguments(String... javaArguments) {
         this.javaArguments = javaArguments;
@@ -244,10 +244,12 @@ public class JavaSoftwareDescription extends SoftwareDescription {
             }
         }
         if (getJavaSystemProperties() != null) {
-            Set<String> keys = getJavaSystemProperties().keySet();
-            for (String key : keys) {
-                result.add("-D" + key + "="
-                        + getJavaSystemProperties().get(key));
+            Map<String, String> properties = getJavaSystemProperties();
+            for (String key : properties.keySet()) {
+                //null values ignored
+                if (properties.get(key) != null) {
+                    result.add("-D" + key + "=" + properties.get(key));
+                }
             }
         }
         if (getJavaMain() != null) {
@@ -290,7 +292,7 @@ public class JavaSoftwareDescription extends SoftwareDescription {
      * Sets the java class path.
      * 
      * @param javaClassPath
-     *                the class path to be set.
+     *            the class path to be set.
      */
     public void setJavaClassPath(String javaClassPath) {
         this.javaClassPath = javaClassPath;
