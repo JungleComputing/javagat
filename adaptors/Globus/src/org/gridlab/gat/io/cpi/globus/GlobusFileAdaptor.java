@@ -541,20 +541,14 @@ public abstract class GlobusFileAdaptor extends FileCpi {
     }
 
     @SuppressWarnings("unchecked")
-    private String[] list(boolean passive) throws GATInvocationException {
+    private String[] list(boolean fiddle) throws GATInvocationException {
         if (!isDirectory()) {
             return null;
         }
         FTPClient client = null;
         client = createClient(toURI());
-        if (passive) {
-            try {
-                client.setPassive();
-                client.setLocalActive();
-            } catch (Exception e) {
-                throw new GATInvocationException("Generic globus file adaptor",
-                        e);
-            }
+        if (fiddle) {
+            setActiveOrPassive(client, gatContext.getPreferences());
         }
         if (getPath() != null) {
             Vector<FileInfo> list = null;
