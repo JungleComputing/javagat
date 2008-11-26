@@ -547,8 +547,21 @@ public abstract class GlobusFileAdaptor extends FileCpi {
         }
         FTPClient client = null;
         client = createClient(toURI());
+        setActiveOrPassive(client, gatContext.getPreferences());
         if (fiddle) {
-            setActiveOrPassive(client, gatContext.getPreferences());
+            try {
+                if (client.isPassiveMode()) {
+                    client.setActive();
+                    client.setLocalPassive();
+                } else {
+                    client.setPassive();
+                    client.setLocalActive();
+                }
+            } catch (Exception e) {
+                logger
+                        .debug("failed to fiddle with the active/passive settings for the list operation: "
+                                + e);
+            }
         }
         if (getPath() != null) {
             Vector<FileInfo> list = null;
