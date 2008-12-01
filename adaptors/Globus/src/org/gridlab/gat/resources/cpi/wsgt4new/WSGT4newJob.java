@@ -163,11 +163,14 @@ public class WSGT4newJob extends JobCpi implements GramJobListener, Runnable {
         // don't let the upcall and the poller interfere, so synchronize the
         // state stuff
         synchronized (this) {
+            /* Commented out to avoid recursive calls to doStateChange --Ceriel
+             * (suggestion to do this was by Brian Carpenter).
             try {
                 job.refreshStatus();
             } catch (Exception e) {
                 // ignore
             }
+            */
             StateEnumeration newState = job.getState();
             logger.debug("jobState (upcall): " + newState);
             doStateChange(newState);
@@ -175,7 +178,12 @@ public class WSGT4newJob extends JobCpi implements GramJobListener, Runnable {
     }
 
     private void doStateChange(StateEnumeration newState) {
-        if (newState.equals(jobState)) {
+        // Don't allow "updates" from final states.
+        // These were probably caused by the refreshStatus call in stateChanged(),
+        // but there. It does no harm to test ...
+        if (jobState.equals(StateEnumeration.Done)
+                || jobState.equals(StateEnumeration.Failed)
+                || newState.equals(jobState)) {
             return;
         }
         jobState = newState;
