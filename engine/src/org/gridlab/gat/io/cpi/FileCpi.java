@@ -642,11 +642,16 @@ public abstract class FileCpi implements FileInterface, java.io.Serializable {
 
         // check whether the target is an existing file
         boolean existingFile = false;
+        boolean existingDir = false;
         try {
             destFile = GAT.createFile(gatContext, additionalPreferences, dest)
                     .getFileInterface();
-            if (destFile.exists() && !destFile.isDirectory()) {
-                existingFile = true;
+            if (destFile.exists()) {
+                if ( !destFile.isDirectory()) {            
+                    existingFile = true;
+                } else {
+                    existingDir = true;
+                }
             }
         } catch (GATObjectCreationException e) {
             throw new GATInvocationException("file cpi", e);
@@ -662,14 +667,17 @@ public abstract class FileCpi implements FileInterface, java.io.Serializable {
                     + dest.toString() + "' with directory '"
                     + dirURI.toString() + "'!");
         }
-
-        if (gatContext.getPreferences().containsKey("file.directory.copy")
+        
+        if (! existingDir) {
+            // copy dir a to b will result in a new directory b with contents
+            // that is a copy of the contents of a.
+        } else if (gatContext.getPreferences().containsKey("file.directory.copy")
                 && ((String) gatContext.getPreferences().get(
                         "file.directory.copy")).equalsIgnoreCase("contents")) {
             // don't modify the dest dir, so copy dir a to dir b ends up as
             // copying a/* to b/*, note that a/dir/* also ends up in b/*
         } else {
-            // because copy dir a to dir b ends up as a/b we've to add /b to the
+            // because copy dir a to dir b ends up as b/a we've to add /a to the
             // dest.
             String sourcePath = dirURI.getPath();
             if (sourcePath.endsWith("/")) {
@@ -900,5 +908,4 @@ public abstract class FileCpi implements FileInterface, java.io.Serializable {
             }
         }
     }
-
 }
