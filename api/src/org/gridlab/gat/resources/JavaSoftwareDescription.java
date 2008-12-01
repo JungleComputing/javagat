@@ -7,7 +7,6 @@ package org.gridlab.gat.resources;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * An instance of this class is a description of a piece of java software
