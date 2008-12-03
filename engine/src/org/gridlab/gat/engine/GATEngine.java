@@ -904,13 +904,13 @@ public class GATEngine {
         }
 
         if (gatContext.getPreferences().containsKey(cpiName + ".adaptor.name")) {
-            if (logger.isInfoEnabled()) {
-                logger.info("old adaptor order: \n" + adaptors.toString());
+            if (logger.isDebugEnabled()) {
+                logger.debug("old adaptor order: \n" + adaptors.toString());
             }
             adaptors = reorderAdaptorList(adaptors, cpiName, gatContext
                     .getPreferences());
-            if (logger.isInfoEnabled()) {
-                logger.info("new adaptor order: \n" + adaptors.toString());
+            if (logger.isDebugEnabled()) {
+                logger.debug("new adaptor order: \n" + adaptors.toString());
             }
         }
 

@@ -33,7 +33,7 @@ import org.objectweb.proactive.filetransfer.FileVector;
 /**
  * Internal representation of a job submitted to the JavaGAT.
  * 
- * @see org.gridlab.gat.resources.Job.
+ * @see org.gridlab.gat.resources.Job
  */
 @SuppressWarnings("serial")
 public class ProActiveJob extends JobCpi {
