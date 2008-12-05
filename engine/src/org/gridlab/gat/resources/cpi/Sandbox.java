@@ -209,22 +209,6 @@ public class Sandbox {
      */
     private void doPrestage() throws GATInvocationException {
         if (logger.isInfoEnabled()) {
-            logger.info("deleting post stage files outside sandbox");
-        }
-        try {
-            post.delete(); // only delete files that aren't going in the
-            // sandbox
-        } catch (Exception e) {
-            if (logger.isInfoEnabled()) {
-                logger.info("warning, delete poststage failed: " + e);
-            }
-            // ignore, maybe the files did not exist anyway
-        }
-        if (logger.isInfoEnabled()) {
-            logger.info("deleting post stage files outside sandbox done");
-        }
-
-        if (logger.isInfoEnabled()) {
             logger.info("pre stage starting");
         }
         long start = System.currentTimeMillis();
