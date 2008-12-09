@@ -124,6 +124,9 @@ public class PreStagedFile extends StagedFile {
             logger.info("prestage:\n  copy " + getResolvedSrc().toGATURI()
                     + " to " + getResolvedDest().toGATURI());
         }
+        //HACK
+        //getResolvedDest().getParentFile().mkdirs();
+        
         getResolvedSrc().copy(getResolvedDest().toGATURI());
     }
 
