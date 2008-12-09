@@ -89,23 +89,20 @@ public class AdaptorInvocationHandler implements InvocationHandler {
                 // use the context classloader. (jaxrpc).
                 Thread.currentThread().setContextClassLoader(
                         adaptor.adaptorClass.getClassLoader());
-                if (logger.isInfoEnabled()) {
-                    String paramString = "";
-                    if (params != null) {
-                        for (Object param : params) {
-                            paramString += param + ", ";
-                        }
-                        if (paramString.endsWith(", ")) {
-                            paramString = paramString.substring(0, paramString
-                                    .length() - 2);
-                        }
+                String paramString = "";
+                if (params != null) {
+                    for (Object param : params) {
+                        paramString += param + ", ";
                     }
-                    loggerString += adaptor.getCpi() + " ("
-                            + instantiatedAdaptors.get(adaptor) + ")."
-                            + m.getName() + "(" + paramString + ") -> "
-                            + adaptor.getShortAdaptorClassName();
-
+                    if (paramString.endsWith(", ")) {
+                        paramString = paramString.substring(0, paramString
+                                .length() - 2);
+                    }
                 }
+                loggerString += adaptor.getCpi() + " ("
+                        + instantiatedAdaptors.get(adaptor) + ")."
+                        + m.getName() + "(" + paramString + ") -> "
+                        + adaptor.getShortAdaptorClassName();
 
                 // now invoke the method on the adaptor
                 Object res = m
@@ -126,7 +123,7 @@ public class AdaptorInvocationHandler implements InvocationHandler {
                 while (t instanceof InvocationTargetException) {
                     t = ((InvocationTargetException) t).getTargetException();
                 }
-                e.add(adaptor.getShortAdaptorClassName(), t);
+                e.add(adaptor.getShortAdaptorClassName(), loggerString, t);
                 if (logger.isInfoEnabled()) {
                     if (adaptor.getAdaptorClass().getMethod(m.getName(),
                             m.getParameterTypes()).isAnnotationPresent(

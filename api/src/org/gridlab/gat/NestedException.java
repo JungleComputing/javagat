@@ -26,6 +26,8 @@ class NestedException extends Exception {
 
     ArrayList<String> adaptorNames = new ArrayList<String>();
 
+    private String description;
+
     public NestedException(String s) {
         super(s);
     }
@@ -63,6 +65,35 @@ class NestedException extends Exception {
 
         throwables.add(t);
         adaptorNames.add(shortName);
+    }
+
+    /**
+     * Adds a throwable to this NestedException, which is caused by the given
+     * adaptor
+     * 
+     * @param adaptor
+     *                the adaptor that caused the throwable
+     * @param description
+     *                the description of the activity that caused this exception
+     * @param t
+     *                the throwable that is caused by the adaptor
+     */
+    public void add(String adaptor, String description, Throwable t) {
+        if (t instanceof InvocationTargetException) {
+            t = t.getCause();
+        }
+
+        String shortName = null;
+        int pos = adaptor.lastIndexOf(".");
+        if (pos < 0) {
+            shortName = adaptor;
+        } else {
+            shortName = adaptor.substring(pos + 1);
+        }
+
+        throwables.add(t);
+        adaptorNames.add(shortName);
+        this.description = description;
     }
 
     public String getMessage() {
@@ -114,7 +145,12 @@ class NestedException extends Exception {
     }
 
     public String toString() {
-        return toString("");
+        String result = toString("");
+        if (description != null) {
+            result += "\n--- START OF DESCRIPTION ---\n" + description
+                    + "\n---- END OF DESCRIPTION ----";
+        }
+        return result;
     }
 
     /**
