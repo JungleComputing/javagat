@@ -382,16 +382,9 @@ public abstract class GlobusFileAdaptor extends FileCpi {
                     // failed;
                 }
                 try {
-                    new CommandRunner("/bin/chmod "
-                            + gatContext.getPreferences().get("file.chmod")
-                            + " " + dest.getPath());
-                } catch (Throwable t) {
-                    // ignore
-                }
-                try {
-                    new CommandRunner("/usr/bin/chmod "
-                            + gatContext.getPreferences().get("file.chmod")
-                            + " " + dest.getPath());
+                    new CommandRunner("chmod",
+                            gatContext.getPreferences().get("file.chmod").toString(),
+                            dest.getPath());
                 } catch (Throwable t) {
                     // ignore
                 }

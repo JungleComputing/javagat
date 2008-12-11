@@ -408,8 +408,8 @@ public class SshTrileadFileAdaptor extends FileCpi {
 
     private void createNewFile(String localfile, String mode)
             throws GATInvocationException {
-        new CommandRunner("touch " + localfile);
-        new CommandRunner("chmod " + mode + " " + localfile);
+        new CommandRunner("touch", localfile);
+        new CommandRunner("chmod",  mode, localfile);
     }
 
     public static Connection getConnection(URI fixedURI, GATContext context,
@@ -649,7 +649,7 @@ public class SshTrileadFileAdaptor extends FileCpi {
                 result = execCommand("test ! -d " + getFixedPath()
                         + " && test ! -f " + getFixedPath() + " && touch "
                         + getFixedPath() + " && chmod "
-                        + getMode(gatContext, DEFAULT_MODE));
+                        + getMode(gatContext, DEFAULT_MODE) + " " + getFixedPath());
             } catch (Exception e) {
                 throw new GATInvocationException("sshtrilead", e);
             }

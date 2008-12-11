@@ -1,6 +1,7 @@
 package org.gridlab.gat.resources.cpi.commandlineSsh;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
@@ -166,33 +167,49 @@ public class CommandlineSshResourceBrokerAdaptor extends ResourceBrokerCpi {
                 logger.debug("unable to parse private key slot: " + e);
             }
         }
+        
+        ArrayList<String> command = new ArrayList<String>();
 
-        String command = null;
         if (windows) {
-            command = "sexec " + username + "@" + authority
-                    + " -unat=yes -cmd=" + path + " "
-                    + getArguments(description);
+            command.add("sexec");
+            command.add(username + "@" + authority);
+            command.add("-unat=yes");
             if (password == null) { // public/private key
                 int slot = privateKeySlot;
                 if (slot == -1) { // not set by the user, assume he only has
                     // one key
                     slot = 0;
                 }
-                command += " -pk=" + slot;
+                command.add(" -pk=" + slot);
             } else { // password
-                command += " -pw=" + password;
-            }
+                command.add(" -pw=" + password);
+            } 
+            command.add("-cmd=" + path);
         } else {
             // we must use the -t option to ssh (allocates pseudo TTY).
             // If we don't, there is no way to kill the remote process.
-            command = "ssh -p " + port + " "
-                    + "-o BatchMode=yes -o StrictHostKeyChecking=yes -t -t "
-                    + username + "@" + host + " ";
+            command.add("/usr/bin/ssh");
+            command.add("-p");
+            command.add("" + port);
+            command.add("-o");
+            command.add("BatchMode=yes");
+            command.add("-o");
+            command.add("StrictHostKeyChecking=yes");
+            command.add("-t");
+            command.add(username + "@" + host);
             if (sandbox.getSandboxPath() != null) {
-                command += "cd " + sandbox.getSandboxPath() + " && ";
+                command.add("cd");
+                command.add(sandbox.getSandboxPath());
+                command.add("&&");
             }
-            command += path + " " + getArguments(description);
+            command.add(path);
         }
+        String[] args = getArgumentsArray(description);
+        for (String arg : args) {
+            command.add(arg);
+        }
+        
+        ProcessBuilder builder = new ProcessBuilder(command);
 
         if (logger.isInfoEnabled()) {
             logger.info("running command: " + command);
@@ -200,7 +217,7 @@ public class CommandlineSshResourceBrokerAdaptor extends ResourceBrokerCpi {
 
         Process p = null;
         try {
-            p = Runtime.getRuntime().exec(command.toString());
+            p = builder.start();
         } catch (IOException e) {
             throw new CommandNotFoundException(
                     "CommandlineSshResourceBrokerAdaptor", e);

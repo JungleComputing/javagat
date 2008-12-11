@@ -1,10 +1,7 @@
 package org.gridlab.gat.resources.cpi.local;
 
 import java.io.IOException;
-import java.util.Iterator;
 import java.util.Map;
-import java.util.Set;
-
 import org.apache.log4j.Logger;
 import org.gridlab.gat.CommandNotFoundException;
 import org.gridlab.gat.GAT;
@@ -139,22 +136,6 @@ public class LocalResourceBrokerAdaptor extends ResourceBrokerCpi {
                             + description.getResourceCount());
         }
 
-        // fill in the environment
-        String[] environment = null;
-        Map<String, Object> env = sd.getEnvironment();
-        int index = 0;
-        if (env != null) {
-            environment = new String[env.size()];
-            Set<String> keys = env.keySet();
-            Iterator<String> i = keys.iterator();
-            while (i.hasNext()) {
-                String key = (String) i.next();
-                String val = (String) env.get(key);
-                environment[index] = key + "=" + val;
-                index++;
-            }
-        }
-
         String home = System.getProperty("user.home");
         if (home == null) {
             throw new GATInvocationException(
@@ -188,39 +169,41 @@ public class LocalResourceBrokerAdaptor extends ResourceBrokerCpi {
             exe = getExecutable(description);
         }
 
+        ProcessBuilder builder = new ProcessBuilder();
+        
         // try to set the executable bit, it might be lost
         try {
-            new CommandRunner("/bin/chmod +x " + exe);
-        } catch (Throwable t) {
-            // ignore
-        }
-        try {
-            new CommandRunner("/usr/bin/chmod +x " + exe);
+            new CommandRunner("chmod", "+x", exe);
         } catch (Throwable t) {
             // ignore
         }
 
-        String command = exe + " " + getArguments(description);
+        builder.command().add(exe);
+        String[] args = getArgumentsArray(description);
+        if (args != null) {
+            for (String arg : args) {
+                builder.command().add(arg);
+            }
+        }
 
         java.io.File f = new java.io.File(sandbox.getSandboxPath());
-        if (logger.isInfoEnabled()) {
-            logger.info("running command: " + command);
-
-            if (environment != null) {
-                logger.info("  environment:");
-                for (int i = 0; i < environment.length; i++) {
-                    logger.info("    " + environment[i]);
-                }
-            }
-
-            if (home != null) {
-                logger.info("working dir is: " + sandbox.getSandboxPath());
+               
+        builder.directory(f);
+        
+        // fill in the environment
+        Map<String, Object> env = sd.getEnvironment();
+        if (env != null) {
+            Map<String, String> e = builder.environment();
+            e.clear();
+            for (Map.Entry<String, Object> entry : env.entrySet()) {
+                builder.environment().put(entry.getKey(),
+                        (String) entry.getValue());
             }
         }
 
         Process p = null;
         try {
-            p = Runtime.getRuntime().exec(command, environment, f);
+            p = builder.start();
             localJob.setState(Job.JobState.RUNNING);
             localJob.setProcess(p);
             localJob.setSubmissionTime();

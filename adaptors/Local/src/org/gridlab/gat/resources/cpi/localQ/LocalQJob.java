@@ -181,12 +181,7 @@ public class LocalQJob extends JobCpi implements Runnable,
 
         // try to set the executable bit, it might be lost
         try {
-            new CommandRunner("/bin/chmod +x " + exe);
-        } catch (Throwable t) {
-            // ignore
-        }
-        try {
-            new CommandRunner("/usr/bin/chmod +x " + exe);
+            new CommandRunner("chmod",  "+x", exe);
         } catch (Throwable t) {
             // ignore
         }
