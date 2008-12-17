@@ -56,6 +56,11 @@ class GlobusContextCreator implements SecurityContextCreator {
             CredentialSecurityContext c = (CredentialSecurityContext) inContext;
             Object credentialObject = c.getCredential();
             if (credentialObject != null) {
+                // Added check if it already is a credential object.
+                // If so, just return it. --Ceriel
+                if (credentialObject instanceof GSSCredential) {
+                    return credentialObject;
+                }
                 if (credentialObject instanceof byte[]
                         || credentialObject instanceof String) {
                     // if it is of the type String or byte[] we can try to
