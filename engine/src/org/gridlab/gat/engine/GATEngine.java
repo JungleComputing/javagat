@@ -46,15 +46,30 @@ import org.gridlab.gat.monitoring.MetricListener;
  * @author rob
  */
 /**
- * This class make the various GAT adaptors available to GAT
+ * This class make the various GAT adaptors available to GAT.
  */
 public class GATEngine {
 
     protected static Logger logger = Logger.getLogger(GATEngine.class);
 
+    /**
+     * A helper class to compare file names, so that they can be sorted,
+     * and the order becomes predictable and reproducable.
+     */
     private static class FileComparator implements Comparator<File> {
         public int compare(File f1, File f2) {
             return f1.getName().compareTo(f2.getName());
+        }
+    }
+    
+    /**
+     * A helper class to get the call context. It subclasses SecurityManager
+     * to make getClassContext() accessible. Don't install this as an actual
+     * security manager!
+     */
+    private static final class CallerResolver extends SecurityManager {
+        protected Class<?>[] getClassContext() {
+            return super.getClassContext ();
         }
     }
 
@@ -87,11 +102,12 @@ public class GATEngine {
 
     /** elements are of type MetricNode */
     private Vector<MetricNode> metricTable = new Vector<MetricNode>();
-
-    URLClassLoader gatClassLoader = null;
+    
+    /** Classloader to be used as parent classloader for the URL classloaders. */
+    private final ClassLoader parentLoader;
 
     /**
-     * Constructs a default GATEngine instance
+     * Constructs a default GATEngine instance.
      */
     protected GATEngine() {
         // the commandline parameters -Dgat.debug and -Dgat.verbose override the
@@ -105,10 +121,8 @@ public class GATEngine {
         if (logger.isDebugEnabled()) {
             logger.debug("creating the GAT engine START");
         }
-
-        if (ended) {
-            throw new Error("Getting gat engine while end was already called");
-        }
+        
+        parentLoader = getParentClassLoader();
 
         readJarFiles();
 
@@ -136,6 +150,72 @@ public class GATEngine {
         // on GAT
         // Runtime.getRuntime().addShutdownHook(new EndHook());
     }
+    
+    /**
+     * This method tries to determine a suitable classloader to be used
+     * as parent classloader for the URLClassloaders of the adaptors.
+     * Sometimes, the classloader that loaded the GATEngine class is not
+     * a good candidate because this probably is just the system classloader.
+     * A better candidate might be the classloader of the class that prompted
+     * the loading of javaGAT in the first place, or the context classloader.
+     * 
+     * @return the classloader to be used.
+     */
+    private ClassLoader getParentClassLoader() {
+        // Find the Class instance of the class that prompted the loading
+        // of JavaGAT.
+        Class<?>[] callers = (new CallerResolver()).getClassContext();
+        Class<?> callerClass = null;
+        for (Class<?> c : callers) {
+            String name = c.getCanonicalName();
+            if (name != null && name.startsWith("org.gridlab.gat")) {
+                continue;
+            }
+            callerClass = c;
+            break;
+        }
+        // If we cannot find it, use the GATEngine class instance, for lack of
+        // a better choice.
+        if (callerClass == null) {
+            callerClass = GATEngine.class;
+        }
+        // Now, there are basically two choices: the classloader that loaded the
+        // caller class, or the context classloader. If there is a parent-relation,
+        // choose the child.
+        ClassLoader callerLoader = callerClass.getClassLoader();
+        ClassLoader contextLoader = Thread.currentThread().getContextClassLoader();
+        
+        if (isChild(contextLoader, callerLoader)) {
+            return callerLoader;
+        }
+        if (isChild(callerLoader, contextLoader)) {
+            return contextLoader;
+        }
+        // Apparently there is no relation. The following may not be right,
+        // but then, there is no "right".
+        return contextLoader;
+    }
+    
+    /**
+     * Determines if loader l2 is a child of loader l1.
+     * @param l1
+     * @param l2
+     * @return true if l2 is a child of l1.
+     */
+    private static boolean isChild(ClassLoader l1, ClassLoader l2) {
+        if (l1 == null) {
+            // Primordial loader is parent of all classloaders.
+            return true;
+        }
+        while (l2 != null) {
+            if (l1 == l2) {
+                return true;
+            }
+            l2 = l2.getParent();
+        }
+        return false;
+    }
+
 
     private void orderAdaptorLists() {
         AdaptorOrderPolicy adaptorOrderPolicy;
@@ -364,8 +444,7 @@ public class GATEngine {
                 logger.trace("\tno URLs");
             }
         }
-        URLClassLoader adaptorLoader = new URLClassLoader(urls, this.getClass()
-                .getClassLoader());
+        URLClassLoader adaptorLoader = new URLClassLoader(urls, parentLoader);
         // We've a class loader, now have a look at which adaptors are inside
         // this jar.
         Set<Object> keys = attributes.keySet();
