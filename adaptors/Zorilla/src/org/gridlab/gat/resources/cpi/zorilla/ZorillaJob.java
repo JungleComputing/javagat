@@ -82,13 +82,10 @@ public class ZorillaJob extends JobCpi {
     private static void addInputFile(File src, String sandboxPath,
             ZorillaJobDescription job) throws GATInvocationException {
 
-        if (sandboxPath == null) {
+        if (sandboxPath == null || sandboxPath.equals(".") || sandboxPath.equals("./")) {
             sandboxPath = src.getName();
         }
         
-        if (sandboxPath.endsWith("/"))  {
-            sandboxPath = sandboxPath + src.getName();
-        }
 
         if (src.isDirectory()) {
             for (File child : src.getFileInterface().listFiles()) {
