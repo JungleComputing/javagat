@@ -85,6 +85,10 @@ public class ZorillaJob extends JobCpi {
         if (sandboxPath == null) {
             sandboxPath = src.getName();
         }
+        
+        if (sandboxPath.endsWith("/"))  {
+            sandboxPath = sandboxPath + src.getName();
+        }
 
         if (src.isDirectory()) {
             for (File child : src.getFileInterface().listFiles()) {
