@@ -98,8 +98,9 @@ public class VomsServerCommunicator {
 	/**
 	 * Write a request to the server
 	 * @param oStream Stream obtained through a secure socket on the server
+	 * @throws GATInvocationException 
 	 */
-	public void writeServerRequest(OutputStream oStream) {
+	public void writeServerRequest(OutputStream oStream) throws GATInvocationException {
 		Document requestDocument = buildRequestDocument();
 		DOMSource transSource = new DOMSource(requestDocument);
 		StreamResult result = new StreamResult(oStream);
@@ -110,11 +111,9 @@ public class VomsServerCommunicator {
 			transformer.transform(transSource, result);
 			oStream.flush();
 		} catch (TransformerException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			throw new GATInvocationException("Could not copy to remote server using transformer ", e);
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			throw new GATInvocationException("Could not communicate with remote server", e);
 		}
 	}
 	

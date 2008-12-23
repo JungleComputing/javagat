@@ -70,6 +70,7 @@ import org.gridlab.gat.resources.cpi.JobCpi;
 import org.gridlab.gat.resources.cpi.Sandbox;
 import org.gridlab.gat.security.CertificateSecurityContext;
 import org.gridlab.gat.security.SecurityContext;
+import org.gridlab.gat.security.glite.GliteSecurityUtils;
 import org.gridlab.gat.security.glite.VomsProxyManager;
 import org.gridsite.www.namespaces.delegation_1.DelegationSoapBindingStub;
 
@@ -366,15 +367,7 @@ public class GliteJob extends JobCpi {
 	 * @throws GATInvocationException
 	 */
 	private void touchVomsProxy() throws GATInvocationException {
-		CoGProperties properties = CoGProperties.getDefault();
-		this.proxyFile = System.getenv("X509_USER_PROXY");
-		
-		if (this.proxyFile == null) {
-			this.proxyFile = properties.getProxyFile();
-		}
-		
-		System.setProperty("gridProxyFile", proxyFile);  // for glite security JARs
-		System.setProperty(ContextWrapper.CREDENTIALS_PROXY_FILE, proxyFile);
+	    this.proxyFile = GliteSecurityUtils.getProxyPath();
 		
 		Preferences prefs = gatContext.getPreferences();
 		String lifetimeStr = (String) prefs.get("vomsLifetime");

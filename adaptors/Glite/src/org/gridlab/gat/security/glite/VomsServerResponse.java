@@ -69,7 +69,7 @@ public class VomsServerResponse {
 		return atCert;
 	}
 
-	public byte[] getRawAc() {
+	public byte[] getAcRaw() {
 		return acBytes;
 	}
 
