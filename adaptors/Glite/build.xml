@@ -33,6 +33,7 @@
 			<manifest>
 				<attribute name="ResourceBrokerCpi-class" value="org.gridlab.gat.resources.cpi.glite.GliteResourceBrokerAdaptor" />
 				<attribute name="AdvertServiceCpi-class" value="org.gridlab.gat.advert.cpi.glite.GliteAdvertServiceAdaptor" />
+				<attribute name="FileCpi-class" value="org.gridlab.gat.io.cpi.glite.GliteGuidFileAdaptor,org.gridlab.gat.io.cpi.glite.GliteSrmFileAdaptor" />
 			</manifest>
 		</jar>
 
