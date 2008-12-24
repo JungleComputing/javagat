@@ -86,6 +86,10 @@ public class ZorillaJob extends JobCpi {
             sandboxPath = src.getName();
         }
         
+        if (src.isHidden()) {
+            //hidden files are ignored
+            return;
+        }
 
         if (src.isDirectory()) {
             for (File child : src.getFileInterface().listFiles()) {
