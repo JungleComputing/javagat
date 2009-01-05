@@ -82,12 +82,13 @@ public class ZorillaJob extends JobCpi {
     private static void addInputFile(File src, String sandboxPath,
             ZorillaJobDescription job) throws GATInvocationException {
 
-        if (sandboxPath == null || sandboxPath.equals(".") || sandboxPath.equals("./")) {
+        if (sandboxPath == null || sandboxPath.equals(".")
+                || sandboxPath.equals("./")) {
             sandboxPath = src.getName();
         }
-        
+
         if (src.isHidden()) {
-            //hidden files are ignored
+            // hidden files are ignored
             return;
         }
 
@@ -160,9 +161,11 @@ public class ZorillaJob extends JobCpi {
                 .getEnvironment()));
         zorillaJobDescription.setAttributes(createStringMap(soft
                 .getAttributes()));
-        
-        zorillaJobDescription.getAttributes().put("count", "" + description.getProcessCount());
-        //zorillaJobDescription.getAttributes().put("host.count", "" + description.getResourceCount());
+
+        zorillaJobDescription.getAttributes().put("count",
+            "" + description.getProcessCount());
+        // zorillaJobDescription.getAttributes().put("host.count", "" +
+        // description.getResourceCount());
 
         if (soft instanceof JavaSoftwareDescription) {
             JavaSoftwareDescription javaSoft = (JavaSoftwareDescription) soft;
@@ -196,7 +199,7 @@ public class ZorillaJob extends JobCpi {
                 addInputFile(entry.getKey(), null, zorillaJobDescription);
             } else {
                 addInputFile(entry.getKey(), dst.getPath(),
-                        zorillaJobDescription);
+                    zorillaJobDescription);
             }
         }
 
@@ -250,8 +253,9 @@ public class ZorillaJob extends JobCpi {
             logger.debug("starting zorilla job:" + zorillaJobDescription);
         }
 
+        ZoniConnection connection = null;
         try {
-            ZoniConnection connection = new ZoniConnection(address, null);
+            connection = new ZoniConnection(address, null);
 
             jobID = connection.submitJob(zorillaJobDescription, receiver);
             connection.close();
@@ -344,6 +348,10 @@ public class ZorillaJob extends JobCpi {
         } catch (Exception e) {
             throw new GATInvocationException(
                     "cannot submit job to zorilla node", e);
+        } finally {
+            if (connection != null) {
+                connection.close();
+            }
         }
         if (logger.isDebugEnabled()) {
             logger.debug("done starting zorilla job: " + jobID);
@@ -370,7 +378,7 @@ public class ZorillaJob extends JobCpi {
                         .getGATContext(), childLocation);
 
                 copyPostStageFile(sandboxPath + "/" + child.getName(),
-                        childFile);
+                    childFile);
             }
         } else {
             FileInterface fileInterface = dst.getFileInterface();

@@ -223,6 +223,9 @@ public class ZorillaResourceBrokerAdaptor extends ResourceBrokerCpi implements
                 throw e;
             }
         }
+        if (connection != null) {
+            connection.close();
+        }
     }
 
     public void run() {
@@ -240,7 +243,6 @@ public class ZorillaResourceBrokerAdaptor extends ResourceBrokerCpi implements
                 // IGNORE
             }
         }
-
     }
 
     public CallbackReceiver getCallbackReceiver() {
