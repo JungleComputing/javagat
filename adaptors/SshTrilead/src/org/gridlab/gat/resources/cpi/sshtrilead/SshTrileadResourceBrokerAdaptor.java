@@ -56,6 +56,7 @@ public class SshTrileadResourceBrokerAdaptor extends ResourceBrokerCpi {
         preferences.put("sshtrilead.use.cached.connections", "true");
         preferences.put("sshtrilead.separate.output", "true");
         preferences.put("sshtrilead.stoppable", "false");
+        preferences.put("sshtrilead.caching.iswindows", "true");
         return preferences;
     }
 
@@ -77,6 +78,8 @@ public class SshTrileadResourceBrokerAdaptor extends ResourceBrokerCpi {
     private String[] server2clientCiphers;
 
     private boolean tcpNoDelay;
+    
+    private boolean isWindowsCacheEnable;
 
     /**
      * This method constructs a SshResourceBrokerAdaptor instance corresponding
@@ -116,6 +119,8 @@ public class SshTrileadResourceBrokerAdaptor extends ResourceBrokerCpi {
         connectionCacheEnable = ((String) p.get(
                 "sshtrilead.use.cached.connections", "true"))
                 .equalsIgnoreCase("true");
+        isWindowsCacheEnable = ((String) p.get("sshtrilead.caching.iswindows", "true"))
+                .equalsIgnoreCase("true");
     }
 
     /*
@@ -126,7 +131,12 @@ public class SshTrileadResourceBrokerAdaptor extends ResourceBrokerCpi {
     public Job submitJob(AbstractJobDescription abstractDescription,
             MetricListener listener, String metricDefinitionName)
             throws GATInvocationException {
+        
         // TODO: this broker is not Windows compatible (&&, export)
+        
+        if (SshTrileadFileAdaptor.isWindows(gatContext, brokerURI, isWindowsCacheEnable)) {
+            throw new UnsupportedOperationException("Windows not supported by sshtrilead resource broker adaptor");
+        }
 
         if (!(abstractDescription instanceof JobDescription)) {
             throw new GATInvocationException(
@@ -165,7 +175,7 @@ public class SshTrileadResourceBrokerAdaptor extends ResourceBrokerCpi {
             throw new GATInvocationException(
                     "The preferences 'sshtrilead.separate.output' and 'sshtrilead.stoppable' cannot both be set to 'true'.");
         }
-
+        
         // create the sandbox
         Sandbox sandbox = new Sandbox(gatContext, description, getAuthority(),
                 null, true, false, false, false);
@@ -204,12 +214,20 @@ public class SshTrileadResourceBrokerAdaptor extends ResourceBrokerCpi {
 
             for (int i = 0; i < keys.length; i++) {
                 String val = (String) env.get(keys[i]);
-                command += "export " + keys[i] + "=" + val + " && ";
+                // command += "export " + keys[i] + "=" + val + " && ";
+                // Fix: made to work for regular Bourne shell as well --Ceriel
+                // TODO: does not work for csh.
+                command += keys[i] + "=" + val + " && export " + keys[i] + " && ";
             }
         }
         // 3. and finally add the executable with its arguments
-        command += "exec " + getExecutable(description) + " "
-                + getArguments(description);
+        command += "exec " + protectAgainstShellMetas(getExecutable(description));
+        String[] args = getArgumentsArray(description);
+        if (args != null) {
+            for (String arg : args) {
+                command += " " + protectAgainstShellMetas(arg);
+            }
+        }
 
         if (logger.isInfoEnabled()) {
             logger.info("running command: " + command);
@@ -296,5 +314,21 @@ public class SshTrileadResourceBrokerAdaptor extends ResourceBrokerCpi {
 
         sshJob.setState(Job.JobState.RUNNING);
         return job;
+    }
+    
+    private static String protectAgainstShellMetas(String s) {
+        char[] chars = s.toCharArray();
+        StringBuffer b = new StringBuffer();
+        b.append('\'');
+        for (char c : chars) {
+            if (c == '\'') {
+                b.append('\'');
+                b.append('\\');
+                b.append('\'');
+            }
+            b.append(c);
+        }
+        b.append('\'');
+        return b.toString();
     }
 }

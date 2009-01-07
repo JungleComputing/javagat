@@ -166,6 +166,8 @@ public class SshTrileadFileAdaptor extends FileCpi {
                 .equalsIgnoreCase("true");
         listCacheEnable = ((String) p.get("sshtrilead.caching.list", "true"))
                 .equalsIgnoreCase("true");
+        isWindowsCacheEnable = ((String) p.get("sshtrilead.caching.iswindows", "true"))
+                .equalsIgnoreCase("true");
         String client2serverCipherString = ((String) p
                 .get(
                         "sshtrilead.cipher.client2server",
@@ -361,6 +363,11 @@ public class SshTrileadFileAdaptor extends FileCpi {
 
     private boolean isWindows(GATContext context, URI destination)
             throws GATInvocationException {
+        return isWindows(context, destination, isWindowsCacheEnable);
+    }
+    
+    public static boolean isWindows(GATContext context, URI destination, boolean isWindowsCacheEnable)
+            throws GATInvocationException {
         // if 'ls' gives stderr and 'dir' doesn't then we guess it's Windows
         // else we assume it's non-Windows
 
@@ -393,7 +400,7 @@ public class SshTrileadFileAdaptor extends FileCpi {
             } catch (Exception e) {
                 throw new GATInvocationException("sshtrilead", e);
             }
-            boolean isWindows = result[STDOUT].length() == 0;
+            boolean isWindows = result[STDERR].length() == 0;
             if (isWindowsCacheEnable) {
                 isWindowsCache.put(host, isWindows);
             }
