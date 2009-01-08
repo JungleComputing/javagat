@@ -12,6 +12,7 @@ import org.apache.log4j.Logger;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.engine.GATEngine;
+import org.gridlab.gat.engine.util.StreamForwarder;
 import org.gridlab.gat.monitoring.Metric;
 import org.gridlab.gat.monitoring.MetricDefinition;
 import org.gridlab.gat.monitoring.MetricEvent;
@@ -164,21 +165,34 @@ public class SshTrileadJob extends JobCpi {
         }
     }
 
-    protected void monitorState() {
-        new StateMonitor();
+    protected void monitorState(StreamForwarder stdout, StreamForwarder stderr) {
+        new StateMonitor(stdout, stderr);
     }
 
     class StateMonitor extends Thread {
-
-        StateMonitor() {
+        
+        final StreamForwarder stdout;
+        final StreamForwarder stderr;
+        
+        StateMonitor(StreamForwarder stdout, StreamForwarder stderr) {
             setName("ssh state monitor: "
                     + jobDescription.getSoftwareDescription().getExecutable());
             setDaemon(true);
+            this.stdout = stdout;
+            this.stderr = stderr;
             start();
         }
 
         public void run() {
             session.waitForCondition(ChannelCondition.EXIT_STATUS, 0);
+            if (stdout != null) {
+                stdout.waitUntilFinished();
+                stdout.close();
+            }
+            if (stderr != null) {
+                stderr.waitUntilFinished();
+                stderr.close();
+            }
             try {
                 exitStatus = session.getExitStatus();
             } catch (NullPointerException e) {

@@ -253,14 +253,17 @@ public class SshTrileadResourceBrokerAdaptor extends ResourceBrokerCpi {
         } catch (Exception e) {
             throw new GATInvocationException("Unable to connect!", e);
         }
-
+        
+        StreamForwarder stdout = null;
+        StreamForwarder stderr = null;
+        
         if (!sd.streamingStderrEnabled()) {
             // read away the stderr
 
             try {
                 if (sd.getStderr() != null) {
                     // to file
-                    new StreamForwarder(session.getStderr(), GAT
+                    stderr = new StreamForwarder(session.getStderr(), GAT
                             .createFileOutputStream(sd.getStderr()));
                 } else {
                     // or throw it away
@@ -277,7 +280,7 @@ public class SshTrileadResourceBrokerAdaptor extends ResourceBrokerCpi {
             try {
                 if (sd.getStdout() != null) {
                     // to file
-                    new StreamForwarder(session.getStdout(), GAT
+                    stdout = new StreamForwarder(session.getStdout(), GAT
                             .createFileOutputStream(sd.getStdout()));
                 } else {
                     // or throw it away
@@ -301,7 +304,7 @@ public class SshTrileadResourceBrokerAdaptor extends ResourceBrokerCpi {
         }
 
         sshJob.setSession(session);
-        sshJob.monitorState();
+        sshJob.monitorState(stdout, stderr);
 
         try {
             session.execCommand(command);

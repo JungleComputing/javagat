@@ -133,7 +133,8 @@ public class ResourceBrokerAdaptorTest implements MetricListener {
             String host) {
         SoftwareDescription sd = new SoftwareDescription();
         sd.setExecutable("/bin/echo");
-        sd.setArguments("test", "1", "2", "3");
+        // Arguments modified to test against expansion of shell meta characters --Ceriel
+        sd.setArguments("test", "1", "2", "*");
         try {
             sd.setStdout(GAT.createFile("stdout"));
         } catch (GATObjectCreationException e) {
@@ -173,7 +174,7 @@ public class ResourceBrokerAdaptorTest implements MetricListener {
         } catch (Exception e) {
             return new AdaptorTestResultEntry(false, 0L, e);
         }
-        return new AdaptorTestResultEntry(result.equals("test 1 2 3"),
+        return new AdaptorTestResultEntry("test 1 2 *".equals(result),
                 (stop - start), null);
 
     }

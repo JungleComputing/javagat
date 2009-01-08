@@ -97,5 +97,13 @@ public class StreamForwarder implements Runnable {
             }
         }
     }
+    
+    public void close() {
+        try {
+            out.close();
+        } catch (Throwable e) {
+            // ignored
+        }
+    }
 
 }
