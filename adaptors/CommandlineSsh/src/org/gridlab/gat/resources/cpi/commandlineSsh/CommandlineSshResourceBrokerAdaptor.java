@@ -185,6 +185,12 @@ public class CommandlineSshResourceBrokerAdaptor extends ResourceBrokerCpi {
                 command.add(" -pw=" + password);
             } 
             command.add("-cmd=" + path);
+            String[] args = getArgumentsArray(description);
+            if (args != null) {
+                for (String arg : args) {
+                    command.add(arg);
+                }
+            }
         } else {
             // we must use the -t option to ssh (allocates pseudo TTY).
             // If we don't, there is no way to kill the remote process.
@@ -203,10 +209,12 @@ public class CommandlineSshResourceBrokerAdaptor extends ResourceBrokerCpi {
                 command.add("&&");
             }
             command.add(path);
-        }
-        String[] args = getArgumentsArray(description);
-        for (String arg : args) {
-            command.add(arg);
+            String[] args = getArgumentsArray(description);
+            if (args != null) {
+                for (String arg : args) {
+                    command.add(protectAgainstShellMetas(arg));
+                }
+            }
         }
         
         ProcessBuilder builder = new ProcessBuilder(command);
@@ -276,5 +284,22 @@ public class CommandlineSshResourceBrokerAdaptor extends ResourceBrokerCpi {
         commandlineSshJob.monitorState();
 
         return job;
+    }
+    
+    
+    private static String protectAgainstShellMetas(String s) {
+        char[] chars = s.toCharArray();
+        StringBuffer b = new StringBuffer();
+        b.append('\'');
+        for (char c : chars) {
+            if (c == '\'') {
+                b.append('\'');
+                b.append('\\');
+                b.append('\'');
+            }
+            b.append(c);
+        }
+        b.append('\'');
+        return b.toString();
     }
 }
