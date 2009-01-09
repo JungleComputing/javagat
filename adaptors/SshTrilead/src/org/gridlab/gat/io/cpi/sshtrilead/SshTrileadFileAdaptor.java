@@ -68,6 +68,7 @@ public class SshTrileadFileAdaptor extends FileCpi {
         preferences.put("sshtrilead.caching.length", "true");
         preferences.put("sshtrilead.caching.list", "true");
         preferences.put("sshtrilead.caching.iswindows", "true");
+        preferences.put("sshtrilead.caching.iscsh", "true");
         preferences
                 .put(
                         "sshtrilead.cipher.client2server",
@@ -115,6 +116,8 @@ public class SshTrileadFileAdaptor extends FileCpi {
     private static Map<URI, Boolean> canWriteCache = new HashMap<URI, Boolean>();
 
     private static Map<String, Boolean> isWindowsCache = new HashMap<String, Boolean>();
+    
+    private static Map<String, Boolean> isCshCache = new HashMap<String, Boolean>();
 
     private static Map<URI, String[]> listCache = new HashMap<URI, String[]>();
 
@@ -412,6 +415,44 @@ public class SshTrileadFileAdaptor extends FileCpi {
         }
         return false;
     }
+    
+    
+    public static boolean isCsh(GATContext context, URI destination, boolean isCshCacheEnable)
+            throws GATInvocationException {
+        // if 'echo ________*_______' has the word "match" in its output,
+        // a csh is used.
+
+        String host = destination.getHost();
+        if (host == null) {
+            host = destination.resolveHost();
+        }
+        logger.info("isCsh for host: " + host);
+        if (isCshCacheEnable) {
+            if (isCshCache.containsKey(host)) {
+                logger.debug("got isCsh from cache");
+                return isCshCache.get(host);
+            }
+        }
+        SshTrileadFileAdaptor file;
+        try {
+            file = new SshTrileadFileAdaptor(context, destination);
+        } catch (GATObjectCreationException e) {
+            throw new GATInvocationException("failed to create ssh file", e);
+        }
+        String[] result;
+        try {
+            result = file.execCommand("echo ___________*_____________");
+        } catch (Exception e) {
+            throw new GATInvocationException("sshtrilead", e);
+        }
+        boolean isCsh = result[STDOUT].contains("match");         
+        if (isCshCacheEnable) {
+            isCshCache.put(host, isCsh);
+        }
+        return isCsh;
+    }
+    
+       
 
     private void createNewFile(String localfile, String mode)
             throws GATInvocationException {

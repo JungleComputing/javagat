@@ -57,6 +57,7 @@ public class SshTrileadResourceBrokerAdaptor extends ResourceBrokerCpi {
         preferences.put("sshtrilead.separate.output", "true");
         preferences.put("sshtrilead.stoppable", "false");
         preferences.put("sshtrilead.caching.iswindows", "true");
+        preferences.put("sshtrilead.caching.iscsh", "true");
         return preferences;
     }
 
@@ -77,9 +78,11 @@ public class SshTrileadResourceBrokerAdaptor extends ResourceBrokerCpi {
 
     private String[] server2clientCiphers;
 
-    private boolean tcpNoDelay;
+    private final boolean tcpNoDelay;
     
-    private boolean isWindowsCacheEnable;
+    private final boolean isWindowsCacheEnable;
+    
+    private final boolean isCshCacheEnable;
 
     /**
      * This method constructs a SshResourceBrokerAdaptor instance corresponding
@@ -120,6 +123,8 @@ public class SshTrileadResourceBrokerAdaptor extends ResourceBrokerCpi {
                 "sshtrilead.use.cached.connections", "true"))
                 .equalsIgnoreCase("true");
         isWindowsCacheEnable = ((String) p.get("sshtrilead.caching.iswindows", "true"))
+                .equalsIgnoreCase("true");
+        isCshCacheEnable = ((String) p.get("sshtrilead.caching.iscsh", "true"))
                 .equalsIgnoreCase("true");
     }
 
@@ -211,13 +216,17 @@ public class SshTrileadResourceBrokerAdaptor extends ResourceBrokerCpi {
         if (env != null && !env.isEmpty()) {
             Set<String> s = env.keySet();
             Object[] keys = (Object[]) s.toArray();
+            boolean isCsh = SshTrileadFileAdaptor.isCsh(gatContext, brokerURI, isCshCacheEnable);
 
             for (int i = 0; i < keys.length; i++) {
                 String val = (String) env.get(keys[i]);
                 // command += "export " + keys[i] + "=" + val + " && ";
                 // Fix: made to work for regular Bourne shell as well --Ceriel
-                // TODO: does not work for csh.
-                command += keys[i] + "=" + val + " && export " + keys[i] + " && ";
+                if (isCsh) {
+                    command += "set " + keys[i] + "=" + val + " && ";
+                } else {
+                    command += keys[i] + "=" + val + " && export " + keys[i] + " && ";
+                }
             }
         }
         // 3. and finally add the executable with its arguments
