@@ -321,7 +321,7 @@ public class JDL {
 			} else if (resDesc.equals("machine.type")) {
 				requirements.add("other.GlueHostProcessorModel ==  \""
 						+ map.get(resDesc) + "\"");
-			} else if (resDesc.equals("machine.node")) {
+			} else if (resDesc.equals(GliteConstants.RESOURCE_MACHINE_NODE)) {
 				// add requirements for multiple sites
 				if (map.get(resDesc) instanceof List) {
 					addCEListToRequirements((List<Object>) map.get(resDesc));
@@ -377,7 +377,8 @@ public class JDL {
 	 * specifically for glite will become interpreted here
 	 * @param builder The StringBuilder to which the generated JDL String fragment will be appended
 	 */
-	private void processAttributes(StringBuilder builder) {
+	@SuppressWarnings("unchecked")
+    private void processAttributes(StringBuilder builder) {
 		for (String attKey : this.attributes.keySet()) {
 			if ("time.max".equalsIgnoreCase(attKey)) {
 				// object is supposed to be an instance of String or Long

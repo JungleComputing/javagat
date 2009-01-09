@@ -17,6 +17,7 @@
 package org.gridlab.gat.resources.cpi.glite;
 
 import java.net.URISyntaxException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -41,12 +42,16 @@ import org.gridlab.gat.resources.cpi.ResourceBrokerCpi;
 
 public class GliteResourceBrokerAdaptor extends ResourceBrokerCpi {
 
+    private static final String GLITE_RESOURCE_BROKER_ADAPTOR = "GliteResourceBrokerAdaptor";
+
+    private LDAPResourceFinder ldapResourceFinder;
+    
     public static Map<String, Boolean> getSupportedCapabilities() {
         Map<String, Boolean> capabilities = ResourceBrokerCpi
                 .getSupportedCapabilities();
         capabilities.put("beginMultiJob", false);
         capabilities.put("endMultiJob", false);
-        capabilities.put("findResources", false);
+        capabilities.put("findResources", true);
         capabilities.put("reserveResource", false);
         capabilities.put("submitJob", true);
         return capabilities;
@@ -54,7 +59,7 @@ public class GliteResourceBrokerAdaptor extends ResourceBrokerCpi {
 
     public static Preferences getSupportedPreferences() {
         Preferences preferences = ResourceBrokerCpi.getSupportedPreferences();
-        preferences.put("VirtualOrganisation", "true");
+        preferences.put(GliteConstants.PREFERENCE_VIRTUAL_ORGANISATION, "true");
         preferences.put("vomsHostDN", "true");
         preferences.put("vomsServerURL", "true");
         preferences.put("vomsServerPort", "true");
@@ -86,10 +91,10 @@ public class GliteResourceBrokerAdaptor extends ResourceBrokerCpi {
         if (brokerURI.getScheme().equals("ldap")
                 || brokerURI.getScheme().equals("ldaps")) {
             try {
-                LDAPResourceFinder finder = new LDAPResourceFinder(brokerURI);
+                ldapResourceFinder = new LDAPResourceFinder(brokerURI);
                 String vo = (String) gatContext.getPreferences().get(
-                        "VirtualOrganisation");
-                List<String> brokerURIs = finder.fetchWMSServers(vo);
+                        GliteConstants.PREFERENCE_VIRTUAL_ORGANISATION);
+                List<String> brokerURIs = ldapResourceFinder.fetchWMSServers(vo);
                 int randomPos = (int) (Math.random() * brokerURIs.size());
                 String brokerURIStr = brokerURIs.get(randomPos);
                 this.brokerURI = new URI(brokerURIStr);
@@ -109,9 +114,31 @@ public class GliteResourceBrokerAdaptor extends ResourceBrokerCpi {
         }
     }
 
-    public List<HardwareResource> findResources(
-            ResourceDescription resourceDescription) {
-        throw new UnsupportedOperationException("Not implemented yet!");
+    private void ensureLdapFinderExists() throws NamingException{
+        if (ldapResourceFinder==null) {
+            ldapResourceFinder = new LDAPResourceFinder(null);
+        }
+    }
+    
+    /** {@inheritDoc} */
+    public List<HardwareResource> findResources (
+            ResourceDescription resourceDescription)  throws GATInvocationException{
+        if (resourceDescription!=null) {
+            if (!resourceDescription.getDescription().isEmpty()) throw new GATInvocationException("gLite findResources does not support any arguments");
+        }
+        try {
+            ensureLdapFinderExists();
+            String vo = (String) gatContext.getPreferences().get(
+                    GliteConstants.PREFERENCE_VIRTUAL_ORGANISATION);
+            List<String> queNames = ldapResourceFinder.fetchCEs(vo);
+            List<HardwareResource> retList = new ArrayList<HardwareResource>(queNames.size());
+            for (String queName:queNames) {
+                retList.add(new GliteHardwareResource(this.gatContext,queName));
+            }
+            return retList;
+        } catch (NamingException e) {
+            throw new GATInvocationException(GLITE_RESOURCE_BROKER_ADAPTOR,e);
+        }
     }
 
     public Reservation reserveResource(Resource resource, TimePeriod timePeriod) {
