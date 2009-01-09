@@ -506,8 +506,7 @@ public class ResourceBrokerAdaptorTest implements MetricListener {
                 try {
                     Thread.sleep(1000);
                 } catch (InterruptedException e1) {
-                    // TODO Auto-generated catch block
-                    e1.printStackTrace();
+                    // ignored
                 }
                 continue;
             }
@@ -548,7 +547,6 @@ public class ResourceBrokerAdaptorTest implements MetricListener {
             try {
                 Thread.sleep(500);
             } catch (InterruptedException e) {
-                // TODO Auto-generated catch block
                 exception = e;
             }
         }
