@@ -208,7 +208,7 @@ public class CommandlineSshResourceBrokerAdaptor extends ResourceBrokerCpi {
                 command.add(sandbox.getSandboxPath());
                 command.add("&&");
             }
-            command.add(path);
+            command.add(protectAgainstShellMetas(path));
             String[] args = getArgumentsArray(description);
             if (args != null) {
                 for (String arg : args) {
