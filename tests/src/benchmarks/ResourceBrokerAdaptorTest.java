@@ -223,8 +223,7 @@ public class ResourceBrokerAdaptorTest implements MetricListener {
             return new AdaptorTestResultEntry(false, 0L, e);
         }
         return new AdaptorTestResultEntry(result != null
-                && result.startsWith("/bin/ls:")
-                && result.endsWith(": No such file or directory"),
+                && result.endsWith("floep: No such file or directory"),
                 (stop - start), null);
 
     }
