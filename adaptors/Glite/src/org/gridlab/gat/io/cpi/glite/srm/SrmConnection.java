@@ -198,8 +198,9 @@ public class SrmConnection {
                 transportURL = fileStatus.getTransferURL().toString();
                 logger.info("Received transfer URL: " + transportURL);
             }
-
-        }
+        } else
+            throw new IOException(status.getStatusCode() + ": "
+                    + fileStatus.getStatus().getStatusCode());
         return transportURL;
     }
 
