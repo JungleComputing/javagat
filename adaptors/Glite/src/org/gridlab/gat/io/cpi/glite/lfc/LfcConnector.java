@@ -1,7 +1,6 @@
 package org.gridlab.gat.io.cpi.glite.lfc;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Collection;
 
 import org.gridlab.gat.GATContext;
