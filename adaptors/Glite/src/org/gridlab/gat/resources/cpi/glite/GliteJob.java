@@ -55,7 +55,6 @@ import org.gridlab.gat.GAT;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.GATObjectCreationException;
-import org.gridlab.gat.Preferences;
 import org.gridlab.gat.URI;
 import org.gridlab.gat.engine.GATEngine;
 import org.gridlab.gat.io.File;
@@ -68,10 +67,7 @@ import org.gridlab.gat.resources.ResourceDescription;
 import org.gridlab.gat.resources.SoftwareDescription;
 import org.gridlab.gat.resources.cpi.JobCpi;
 import org.gridlab.gat.resources.cpi.Sandbox;
-import org.gridlab.gat.security.CertificateSecurityContext;
-import org.gridlab.gat.security.SecurityContext;
 import org.gridlab.gat.security.glite.GliteSecurityUtils;
-import org.gridlab.gat.security.glite.VomsProxyManager;
 import org.gridsite.www.namespaces.delegation_1.DelegationSoapBindingStub;
 
 
@@ -79,9 +75,6 @@ import org.gridsite.www.namespaces.delegation_1.DelegationSoapBindingStub;
 public class GliteJob extends JobCpi {
 	
     private final static int LB_PORT = 9003;
-	private final static int STANDARD_PROXY_LIFETIME = 12*3600;
-	/** If a proxy is going to be reused it should at least have a remaining lifetime of 5 minutes */
-	private final static int MINIMUM_PROXY_REMAINING_LIFETIME=5*60;
 	
 	private java.net.URL lbURL;
 	private JDL gLiteJobDescription;
@@ -245,7 +238,7 @@ public class GliteJob extends JobCpi {
 					"The Job description does not contain an executable");
 		} 
 		
-		touchVomsProxy();
+        proxyFile = GliteSecurityUtils.touchVomsProxy(this.gatContext);
 		
 		Map<String, Object> returnDef = new HashMap<String, Object>();
 		returnDef.put("status", String.class);
@@ -282,123 +275,6 @@ public class GliteJob extends JobCpi {
 		new Thread(new JobStatusLookUp(this)).start();
 	}
 
-
-	/**
-	 * Create a VOMS proxy (with ACs) and store on the position on 
-	 * the filesystem indicated by the global X509_USER_PROXY variable.
-	 * All the necessary parameters for the voms proxy creation such as
-	 * path to the user certificate, user key, password, desired lifetime and server
-	 * specific data such as host-dn, URL of the server and server port
-	 * are expected to be given as global preferences to the gat context.
-	 * User key and certificate location, as well as the key's password are expected to be
-	 * given within a CertificateSecurityContext that is part of the GATContext.
-	 * 
-	 * <p>The preferences keys passed in the gatContext are expected to look as follows
-	 * (with String as their datatype, also for port and lifetime):</p>
-	 * 
-	 * <table>
-	 * <tr>
-	 * <td>vomsLifetime</td><td>the desired proxy lifetime in seconds (optional)</td>
-	 * </tr>
-	 * <tr>
-	 * <td>vomsHostDN</td><td>the distinguished name of the VOMS host, 
-	 * (e.g. /DC=cz/DC=cesnet-ca/O=CESNET/CN=skurut19.cesnet.cz)</td>
-	 * </tr>
-	 * <tr>
-	 * <td>vomsServerURL</td><td>the URL of the voms server, without protocol (e.g. skurut19.cesnet.cz)</td>
-	 * </tr>
-	 * <tr>
-	 * <td>vomsServerPort</td><td>the port on which to connect to the voms server</td>
-	 * </tr>
-	 * <tr>
-	 * <td>VirtualOrganisation</td><td>The name of the virtual organisation for which the voms proxy is created
-	 * (e.g. voce)</td>
-	 * </tr>
-	 * </table>
-	 * 
-	 * @author thomas
-	 */
-	private void createVomsProxy(int lifetime) throws GATInvocationException {
-		logger.info("Creating new VOMS proxy with lifetime (seconds): " + lifetime);
-		
-		CertificateSecurityContext secContext = null;
-		
-		if (gatContext.getSecurityContexts() == null) {
-			throw new GATInvocationException("Error: found no security contexts in GAT Context!");
-		}
-		
-		for (SecurityContext c : gatContext.getSecurityContexts()) {
-			if (c instanceof CertificateSecurityContext) {
-				secContext = (CertificateSecurityContext) c;
-			}
-		}
-		
-		Preferences prefs = gatContext.getPreferences();
-		String userkey = secContext.getKeyfile().getPath();
-		String usercert = secContext.getCertfile().getPath();
-		
-		String hostDN = (String) prefs.get("vomsHostDN");
-		String serverURI = (String) prefs.get("vomsServerURL");
-		String serverPortStr = (String) prefs.get("vomsServerPort");
-		int serverPort = Integer.parseInt(serverPortStr);
-		
-		String voName = (String) prefs.get("VirtualOrganisation");
-
-		try {
-			VomsProxyManager manager = new VomsProxyManager(usercert,
-															userkey,
-															secContext.getPassword(),
-															lifetime,
-															hostDN,
-															serverURI,
-															serverPort);
-			manager.makeProxyCredential(voName);
-			manager.saveProxyToFile(proxyFile);
-			
-		} catch (Exception e) {
-			throw new GATInvocationException("Could not create VOMS proxy!", e);
-		}
-	}
-	
-	/**
-	 * Create a new proxy or reuse the old one if the lifetime is still longer than the lifetime specified in
-	 * the vomsLifetime preference OR, if the vomsLifetime preference is not specified, the remaining lifetime is
-	 * longer than the MINIMUM_PROXY_REMAINING_LIFETIME specified in this class
-	 * @throws GATInvocationException
-	 */
-	private void touchVomsProxy() throws GATInvocationException {
-	    this.proxyFile = GliteSecurityUtils.getProxyPath();
-		
-		Preferences prefs = gatContext.getPreferences();
-		String lifetimeStr = (String) prefs.get("vomsLifetime");
-		int lifetime = STANDARD_PROXY_LIFETIME;
-		
-		boolean createNew = Boolean.parseBoolean((String) prefs.get("glite.createNewProxy"));
-		long existingLifetime = -1;
-		
-		// determine the lifetime of the existing proxy only if the user wants to reuse the
-		// old proxy
-		if (!createNew) {
-			existingLifetime = VomsProxyManager.getExistingProxyLifetime(proxyFile);
-		} 
-		
-		if (lifetimeStr == null) { // if a valid proxy exists, create a new one only if the old one is below the minimum lifetime
-			if (existingLifetime < MINIMUM_PROXY_REMAINING_LIFETIME) {
-				createVomsProxy(lifetime);
-			} else {
-				logger.info("Reusing old voms proxy with lifetime (seconds): " + existingLifetime);
-			}
-		} else { // if a valid proxy exists, create a new one only if the old one is below the specified lifetime
-			lifetime = Integer.parseInt(lifetimeStr);
-			
-			if (existingLifetime < lifetime) {
-				createVomsProxy(lifetime);
-			} else  {
-				logger.info("Reusing old voms proxy with lifetime (seconds): " + existingLifetime);
-			}
-		}	
-	}
-	
 	/**
 	 * The CA-certificate path is needed in the glite security JARs 
 	 * Get the certificate path from the cog.properties file
