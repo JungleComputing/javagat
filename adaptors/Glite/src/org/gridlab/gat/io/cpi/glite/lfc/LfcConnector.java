@@ -72,12 +72,17 @@ public class LfcConnector {
      *             if anything goes wrong
      */
     public String create() throws IOException {
-        LfcConnection connection = new LfcConnection(server, port);
         String guid = UUID.randomUUID().toString();
-        String path = "/grid/" + vo + "/generated/" + dateAsPath() + "/file-"
-                + guid;
+        String parent = "/grid/" + vo + "/generated/" + dateAsPath();
+        try {
+            new LfcConnection(server, port).mkdir(parent, UUID.randomUUID()
+                    .toString());
+        } catch (IOException e) {
+            logger.debug("Creating parent", e);
+        }
+        String path = parent + "/file-" + guid;
         logger.info("Creating " + guid + " with path " + path);
-        connection.creat(path, guid);
+        new LfcConnection(server, port).creat(path, guid);
         return guid;
     }
 

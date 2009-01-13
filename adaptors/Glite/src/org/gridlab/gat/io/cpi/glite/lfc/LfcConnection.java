@@ -25,6 +25,7 @@ import org.ietf.jgss.GSSManager;
 
 /**
  * Low-Level connection to an LFC server.
+ * 
  * @author Max Berger
  */
 public class LfcConnection {
@@ -49,6 +50,7 @@ public class LfcConnection {
     private static final int CNS_RESP_MSG_SUMMARY = 11;
 
     private static final int CNS_CREAT = 4;
+    private static final int CNS_MKDIR = 5;
     // private static final int CNS_UNLINK = 9;
     // private static final int CNS_GETREPLICA = 72;
     // private static final int CNS_GETREPLICAX = 77;
@@ -301,6 +303,20 @@ public class LfcConnection {
         putString(guid);
         sendAndReceive(true);
         // TODO: Check status!
+    }
+
+    public void mkdir(String path, String guid) throws IOException {
+        short mask = 0;
+        long cwd = 0L;
+        int mode = 0777;
+        preparePacket(CNS_MAGIC2, CNS_MKDIR);
+        addIDs();
+        sendBuf.putShort(mask);
+        sendBuf.putLong(cwd);
+        putString(path);
+        sendBuf.putInt(mode);
+        putString(guid);
+        sendAndReceive(true);
     }
 
 }

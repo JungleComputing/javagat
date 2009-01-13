@@ -21,7 +21,7 @@ import org.gridlab.gat.resources.cpi.glite.LDAPResourceFinder;
 import org.gridlab.gat.security.glite.GliteSecurityUtils;
 
 /**
- * Adapter for the Glite LFCs, accessed via guid:  for JavaGAT.
+ * Adapter for the Glite LFCs, accessed via guid: for JavaGAT.
  * 
  * @author Max Berger
  */
