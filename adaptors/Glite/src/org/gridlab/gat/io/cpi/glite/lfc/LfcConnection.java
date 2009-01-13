@@ -23,6 +23,10 @@ import org.ietf.jgss.GSSCredential;
 import org.ietf.jgss.GSSException;
 import org.ietf.jgss.GSSManager;
 
+/**
+ * Low-Level connection to an LFC server.
+ * @author Max Berger
+ */
 public class LfcConnection {
     protected static Logger logger = Logger.getLogger(LfcConnection.class);
 
@@ -35,17 +39,21 @@ public class LfcConnection {
     private static final int CSEC_TOKEN_TYPE_PROTOCOL_RESP = 0x2;
     private static final int CSEC_TOKEN_TYPE_HANDSHAKE = 0x3;
     private static final int CSEC_TOKEN_TYPE_HANDSHAKE_FINAL = 0x5;
-    private static final int CSEC_TOKEN_TYPE_ERROR = 0x6;
+    // private static final int CSEC_TOKEN_TYPE_ERROR = 0x6;
 
     private static final int CNS_MAGIC = 0x030E1301;
 
     private static final int CNS_RESP_MSG_DATA = 2;
     private static final int CNS_RESP_RC = 3;
     private static final int CNS_RESP_IRC = 4;
+    private static final int CNS_RESP_MSG_SUMMARY = 11;
 
-    private static final int CNS_GETREPLICA = 72;
-    private static final int CNS_GETREPLICAX = 77;
-    private static final int CNS_PING = 82;
+    private static final int CNS_CREAT = 4;
+    // private static final int CNS_UNLINK = 9;
+    // private static final int CNS_GETREPLICA = 72;
+    // private static final int CNS_GETREPLICAX = 77;
+    // private static final int CNS_PING = 82;
+    private static final int CNS_DELFILES = 83;
 
     private static final int CNS_MAGIC2 = 0x030E1302;
     private static final int CNS_LISTREPLICA = 45;
@@ -123,7 +131,8 @@ public class LfcConnection {
         } else if (magic == CNS_MAGIC) {
             if ((type == CNS_RESP_IRC) || (type == CNS_RESP_RC)) {
                 throw new IOException("Recieved CNS Error " + sizeOrError);
-            } else if (type != CNS_RESP_MSG_DATA) {
+            } else if ((type != CNS_RESP_MSG_DATA)
+                    && (type != CNS_RESP_MSG_SUMMARY)) {
                 throw new IOException("Received invalid CNS Type: " + type);
             }
         } else
@@ -197,7 +206,7 @@ public class LfcConnection {
             sendBuf.put(s.getBytes(Charset.forName("UTF-8")));
         sendBuf.put((byte) 0);
     }
-    
+
     private String getString() throws IOException {
         // TODO: This uses Latin-1!
         StringBuilder builder = new StringBuilder();
@@ -213,12 +222,12 @@ public class LfcConnection {
         return builder.toString();
     }
 
-
-    public Collection<String> srmLookup(String path, String guid) throws IOException {
+    public Collection<String> listReplica(String path, String guid)
+            throws IOException {
         preparePacket(CNS_MAGIC2, CNS_LISTREPLICA);
         addIDs();
         sendBuf.putShort((short) 0); // Size of nbentry
-        long cwd = 0; // Current Working Directory
+        long cwd = 0L; // Current Working Directory
         sendBuf.putLong(cwd);
         putString(path);
         putString(guid);
@@ -226,7 +235,7 @@ public class LfcConnection {
         sendAndReceive(true);
 
         short count = recvBuf.getShort();
-        
+
         Collection<String> srms = new ArrayList<String>(count);
 
         for (short i = 0; i < count; i++) {
@@ -256,6 +265,42 @@ public class LfcConnection {
             srms.add(sfn);
         }
         return srms;
+    }
+
+    public boolean delFiles(String guid, boolean force) throws IOException {
+        preparePacket(CNS_MAGIC, CNS_DELFILES);
+        addIDs();
+        final short argtype = 0;
+        final short sforce;
+        if (force) {
+            sforce = 1;
+        } else {
+            sforce = 0;
+        }
+        sendBuf.putShort(argtype);
+        sendBuf.putShort(sforce);
+        sendBuf.putInt(1); // nbguids
+        putString(guid);
+
+        sendAndReceive(true);
+        int nbstatuses = recvBuf.getInt();
+        logger.info("Statuses: " + nbstatuses);
+        return nbstatuses == 0;
+    }
+
+    public void creat(String path, String guid) throws IOException {
+        short mask = 0;
+        long cwd = 0L;
+        int mode = 0666;
+        preparePacket(CNS_MAGIC2, CNS_CREAT);
+        addIDs();
+        sendBuf.putShort(mask);
+        sendBuf.putLong(cwd);
+        putString(path);
+        sendBuf.putInt(mode);
+        putString(guid);
+        sendAndReceive(true);
+        // TODO: Check status!
     }
 
 }
