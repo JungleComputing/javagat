@@ -58,6 +58,8 @@ import org.ietf.jgss.GSSException;
  * 
  */
 public class SrmConnection {
+    private static final String COULD_NOT_LOAD_CREDENTIALS = "Could not load Credentials";
+    private static final String COULD_NOT_CREATE_SRM_CONNECTION_DUE_TO_MALFORMED_URI = "Could not create SRM connection due to malformed uri";
     protected static Logger logger = Logger.getLogger(SrmConnection.class);
     private final ISRM service;
     private URI activeUploadURI;
@@ -111,17 +113,22 @@ public class SrmConnection {
             ((Stub) service)._setProperty(GSIConstants.GSI_CREDENTIALS,
                     gssCredential);
         } catch (MalformedURIException e) {
+            logger.warn(e.toString());
             throw new IOException(
-                    "Could not create SRM connection due to malformed uri", e);
+                    SrmConnection.COULD_NOT_CREATE_SRM_CONNECTION_DUE_TO_MALFORMED_URI);
         } catch (MalformedURLException e) {
+            logger.warn(e.toString());
             throw new IOException(
-                    "Could not create SRM connection due to malformed uri", e);
+                    SrmConnection.COULD_NOT_CREATE_SRM_CONNECTION_DUE_TO_MALFORMED_URI);
         } catch (ServiceException e) {
-            throw new IOException("Could not connect to SRM endpoint", e);
+            logger.warn(e.toString());
+            throw new IOException("Could not connect to SRM endpoint");
         } catch (GlobusCredentialException e) {
-            throw new IOException("Could not load Credentials", e);
+            logger.warn(e.toString());
+            throw new IOException(SrmConnection.COULD_NOT_LOAD_CREDENTIALS);
         } catch (GSSException e) {
-            throw new IOException("Could not load Credentials", e);
+            logger.warn(e.toString());
+            throw new IOException(SrmConnection.COULD_NOT_LOAD_CREDENTIALS);
         }
     }
 

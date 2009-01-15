@@ -5,7 +5,6 @@ import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.ByteChannel;
 import java.nio.channels.SocketChannel;
-import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
@@ -78,9 +77,11 @@ public class LfcConnection {
             GlobusCredential credential = new GlobusCredential(proxyPath);
             gssCredential = new GlobusGSSCredentialImpl(credential, 0);
         } catch (GSSException e) {
-            throw new IOException("Failed to load credentials", e);
+            logger.warn(e.toString());
+            throw new IOException("Failed to load credentials");
         } catch (GlobusCredentialException e) {
-            throw new IOException("Failed to load credentials", e);
+            logger.warn(e.toString());
+            throw new IOException("Failed to load credentials");
         }
         channel = SocketChannel.open(new InetSocketAddress(host, port));
         logger.info("Establishing Connection with " + host + ":" + port);
@@ -197,15 +198,21 @@ public class LfcConnection {
             }
 
         } catch (GSSException e) {
-            throw new IOException("Error processing credential", e);
+            logger.warn(e.toString());
+            throw new IOException("Error processing credential");
         }
         logger.info("Secure Context established!");
     }
 
     private void putString(String s) {
-        if (s != null)
-            // TODO: Check if UTF-8 is correct!
-            sendBuf.put(s.getBytes(Charset.forName("UTF-8")));
+        try {
+            if (s != null) {
+                // TODO: Check if UTF-8 is correct!
+                sendBuf.put(s.getBytes("UTF-8"));
+            }
+        } catch (java.io.UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
         sendBuf.put((byte) 0);
     }
 
