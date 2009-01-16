@@ -1,8 +1,11 @@
 package org.gridlab.gat.io.cpi.glite;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -10,6 +13,7 @@ import javax.naming.NamingException;
 
 import org.apache.log4j.Logger;
 import org.gridlab.gat.AdaptorNotApplicableException;
+import org.gridlab.gat.GAT;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.GATObjectCreationException;
@@ -18,6 +22,7 @@ import org.gridlab.gat.io.cpi.FileCpi;
 import org.gridlab.gat.io.cpi.glite.lfc.LfcConnector;
 import org.gridlab.gat.resources.cpi.glite.GliteConstants;
 import org.gridlab.gat.resources.cpi.glite.LDAPResourceFinder;
+import org.gridlab.gat.resources.cpi.glite.LDAPResourceFinder.SEInfo;
 import org.gridlab.gat.security.glite.GliteSecurityUtils;
 
 /**
@@ -36,29 +41,42 @@ public class GliteGuidFileAdaptor extends FileCpi {
     protected static Logger logger = Logger
             .getLogger(GliteGuidFileAdaptor.class);
 
-    private final LfcConnector lfcConnector;
+    private LfcConnector lfcConnector;
 
     private boolean localFile;
+
+    private final String vo;
 
     public GliteGuidFileAdaptor(GATContext gatCtx, URI location)
             throws GATObjectCreationException {
         super(gatCtx, location);
-        if (!location.isCompatible(GUID)) {
-            throw new AdaptorNotApplicableException("cannot handle this URI: "
-                    + location);
-        }
-        localFile = false;
-        String vo = (String) gatContext.getPreferences().get(
+        vo = (String) gatContext.getPreferences().get(
                 GliteConstants.PREFERENCE_VIRTUAL_ORGANISATION);
-        String server = fetchServer(vo, gatContext);
-        String portStr = (String) gatContext.getPreferences().get(
-                "LfcServerPort", "5010");
-        int port = Integer.parseInt(portStr);
-        lfcConnector = new LfcConnector(server, port, vo);
-        logger.info("Instantiated gLiteGuidFileAdaptor for " + location);
+
+        if (location.isCompatible("file") && location.refersToLocalHost()) {
+            localFile = true;
+        } else {
+            localFile = false;
+            if (!location.isCompatible(GUID)) {
+                throw new AdaptorNotApplicableException(
+                        "cannot handle this URI: " + location);
+            }
+            initLfcConnector();
+            logger.info("Instantiated gLiteGuidFileAdaptor for " + location);
+        }
     }
 
-    private String fetchServer(String vo, GATContext gatContext)
+    private void initLfcConnector() throws GATObjectCreationException {
+        if (lfcConnector == null) {
+            String server = fetchServer(gatContext);
+            String portStr = (String) gatContext.getPreferences().get(
+                    "LfcServerPort", "5010");
+            int port = Integer.parseInt(portStr);
+            lfcConnector = new LfcConnector(server, port, vo);
+        }
+    }
+
+    private String fetchServer(GATContext gatContext)
             throws GATObjectCreationException {
         String retVal;
         retVal = (String) gatContext.getPreferences().get("LfcServer");
@@ -99,7 +117,44 @@ public class GliteGuidFileAdaptor extends FileCpi {
                     throw new GATInvocationException(GLITE_GUID_FILE_ADAPTOR
                             + ": " + CANNOT_HANDLE_THIS_URI + dest);
                 }
-                throw new UnsupportedOperationException("Uploads are TBD!");
+                final File source = new File(location.getPath());
+                final long filesize = source.length();
+                this.initLfcConnector();
+                List<SEInfo> ses = new LDAPResourceFinder(null).fetchSEs(vo);
+
+                // TEMP SOLUTION
+                Collections.shuffle(ses);
+                // END TEMP SOLUTION
+
+                SEInfo pickedSE = null;
+                Iterator<SEInfo> seIt = ses.iterator();
+                while ((pickedSE == null) && (seIt.hasNext())) {
+                    SEInfo now = seIt.next();
+                    try {
+                        long freeSpace = Long.parseLong(now.getSpace());
+                        if (freeSpace > filesize)
+                            pickedSE = now;
+                    } catch (NumberFormatException e) {
+                        // ignore
+                    }
+                }
+                if (pickedSE == null) {
+                    throw new GATInvocationException(
+                            "Could not find a SE with " + filesize
+                                    + " bytes available!");
+                }
+                String guid = dest.getAuthority();
+                URI target = new URI("srm://" + pickedSE.getSeUniqueId()
+                        + pickedSE.getPath() + "/file-" + guid);
+                logger.info("Uploading " + guid + " to " + target);
+
+                GATContext newContext = (GATContext) gatContext.clone();
+                newContext.addPreference("File.adaptor.name", "GliteSrm");
+                org.gridlab.gat.io.File transportFile = GAT.createFile(
+                        newContext, location);
+                transportFile.copy(target);
+                logger.info("Adding replica...");
+                lfcConnector.addReplica(guid, target);
             } else {
                 String guid = location.getAuthority();
                 GliteSecurityUtils.touchVomsProxy(gatContext);
@@ -118,6 +173,10 @@ public class GliteGuidFileAdaptor extends FileCpi {
 
     /** {@inheritDoc} */
     public boolean createNewFile() throws GATInvocationException {
+        if (localFile) {
+            throw new GATInvocationException(GLITE_GUID_FILE_ADAPTOR + ": "
+                    + CANNOT_HANDLE_THIS_URI + location);
+        }
         logger.info("createNewFile called");
         try {
             GliteSecurityUtils.touchVomsProxy(gatContext);
@@ -143,6 +202,7 @@ public class GliteGuidFileAdaptor extends FileCpi {
             logger.info("Deleting " + guid);
             return lfcConnector.delete(guid);
         } catch (IOException e) {
+            logger.info(e.toString());
             // throw new GATInvocationException(GLITE_GUID_FILE_ADAPTOR, e);
             return false;
         }

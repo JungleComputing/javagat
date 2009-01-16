@@ -2,6 +2,7 @@ package org.gridlab.gat.io.cpi.glite.lfc;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
+import java.net.URI;
 import java.nio.ByteBuffer;
 import java.nio.channels.ByteChannel;
 import java.nio.channels.SocketChannel;
@@ -51,6 +52,7 @@ public class LfcConnection {
     private static final int CNS_CREAT = 4;
     private static final int CNS_MKDIR = 5;
     // private static final int CNS_UNLINK = 9;
+    private static final int CNS_DELREPLICA = 44;
     // private static final int CNS_GETREPLICA = 72;
     // private static final int CNS_GETREPLICAX = 77;
     // private static final int CNS_PING = 82;
@@ -58,6 +60,9 @@ public class LfcConnection {
 
     private static final int CNS_MAGIC2 = 0x030E1302;
     private static final int CNS_LISTREPLICA = 45;
+
+    private static final int CNS_MAGIC4 = 0x030E1304;
+    public static final int CNS_ADDREPLICA = 43;
 
     private static final byte REQUEST_GSI_TOKEN[] = { 0x00, 0x00, 0x00, 0x02,
             0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0x47, 0x53, 0x49,
@@ -133,6 +138,8 @@ public class LfcConnection {
             }
         } else if (magic == CNS_MAGIC) {
             if ((type == CNS_RESP_IRC) || (type == CNS_RESP_RC)) {
+                if (sizeOrError == 0)
+                    return 0;
                 throw new IOException("Recieved CNS Error " + sizeOrError);
             } else if ((type != CNS_RESP_MSG_DATA)
                     && (type != CNS_RESP_MSG_SUMMARY)) {
@@ -211,7 +218,7 @@ public class LfcConnection {
                 sendBuf.put(s.getBytes("UTF-8"));
             }
         } catch (java.io.UnsupportedEncodingException e) {
-            e.printStackTrace();
+            logger.warn(e.toString());
         }
         sendBuf.put((byte) 0);
     }
@@ -324,6 +331,32 @@ public class LfcConnection {
         sendBuf.putInt(mode);
         putString(guid);
         sendAndReceive(true);
+    }
+
+    public void delReplica(String guid, String replicaUri) throws IOException {
+        long id = 0L;
+        preparePacket(CNS_MAGIC, CNS_DELREPLICA);
+        addIDs();
+        sendBuf.putLong(id);
+        putString(guid);
+        putString(replicaUri);
+        sendAndReceive(true);
+    }
+
+    public void addReplica(String guid, URI replicaUri) throws IOException {
+        preparePacket(CNS_MAGIC4, CNS_ADDREPLICA);
+        this.addIDs();
+        sendBuf.putLong(0L); // uniqueId
+        this.putString(guid);
+        this.putString(replicaUri.getHost());
+        this.putString(replicaUri.toString());
+        sendBuf.put((byte) '-'); // status;
+        sendBuf.put((byte) 'P'); // file type
+        this.putString(null); // pool name
+        this.putString(null); // fs
+        sendBuf.put((byte) 'P'); // r_type
+        this.putString(null); // setname
+        this.sendAndReceive(true);
     }
 
 }

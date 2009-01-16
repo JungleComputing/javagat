@@ -1,12 +1,15 @@
 package org.gridlab.gat.io.cpi.glite.lfc;
 
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.GregorianCalendar;
 import java.util.UUID;
 
 import org.apache.log4j.Logger;
+import org.gridlab.gat.URI;
+import org.gridlab.gat.io.cpi.glite.srm.SrmConnector;
 
 /**
  * Provides a High-Level view of an LFC server.
@@ -60,8 +63,23 @@ public class LfcConnector {
      *             if anything goes wrong
      */
     public boolean delete(String guid) throws IOException {
-        LfcConnection connection = new LfcConnection(server, port);
-        return connection.delFiles(guid, false);
+        Collection<String> replicas = new LfcConnection(server, port)
+                .listReplica(null, guid);
+        final SrmConnector connector = new SrmConnector();
+        for (String replicaURI : replicas) {
+            logger.info("Deleting Replica: " + replicaURI);
+            new LfcConnection(server, port).delReplica(guid, replicaURI);
+            try {
+                connector.delete(new URI(replicaURI));
+            } catch (URISyntaxException e) {
+                // ignore.
+            } catch (IOException e) {
+                logger.warn(e.toString());
+                logger.warn("Failed to delete Replica " + replicaURI);
+            }
+        }
+        logger.info("Deleting GUID: " + guid);
+        return new LfcConnection(server, port).delFiles(guid, false);
     }
 
     /**
@@ -102,6 +120,10 @@ public class LfcConnector {
             b.append('0');
         b.append(day);
         return b.toString();
+    }
+
+    public void addReplica(String guid, URI target) throws IOException {
+        new LfcConnection(server, port).addReplica(guid, target.toJavaURI());
     }
 
 }
