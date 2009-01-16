@@ -77,6 +77,7 @@ public class GliteSrmFileAdaptor extends FileCpi {
                 newContext.addPreference("File.adaptor.name", "GridFTP");
                 File transportFile = GAT.createFile(newContext, location);
                 transportFile.copy(new URI(turl));
+                connector.finalizeFileUpload(dest);
             } else {
                 GliteSecurityUtils.touchVomsProxy(gatContext);
                 logger
@@ -87,8 +88,7 @@ public class GliteSrmFileAdaptor extends FileCpi {
                 GATContext newContext = (GATContext) gatContext.clone();
                 newContext.addPreference("File.adaptor.name", "GridFTP");
                 File transportFile = GAT.createFile(newContext, turl);
-                transportFile.copy(dest);
-                connector.finalizeFileUpload(location);
+                transportFile.copy(new URI(dest.getPath()));
             }
         } catch (Exception e) {
             throw new GATInvocationException(GLITE_SRM_FILE_ADAPTOR, e);
