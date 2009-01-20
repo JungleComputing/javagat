@@ -338,7 +338,15 @@ public class WSGT4newResourceBrokerAdaptor extends ResourceBrokerCpi {
         // inform the wsgt4 job of which gram job is related to it.
         wsgt4job.setGramJob(gramjob);
 
-        gramjob.setAuthorization(HostAuthorization.getInstance());
+        GSSCredential cred = getCred();
+        if (cred != null) {
+            gramjob.setCredentials(getCred());
+            if (logger.isDebugEnabled()) {
+                logger.debug("submitJob: credential = " + cred);
+            }
+        } else {
+            gramjob.setAuthorization(HostAuthorization.getInstance());
+        }
         gramjob.setMessageProtectionType(Constants.ENCRYPTION);
         gramjob.setDelegationEnabled(true);
 
