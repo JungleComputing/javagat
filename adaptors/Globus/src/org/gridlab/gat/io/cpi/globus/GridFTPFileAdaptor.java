@@ -183,6 +183,9 @@ public class GridFTPFileAdaptor extends GlobusFileAdaptor {
             	credential = tryGetCredentialFromFilePath(proxyFile);
             }
             
+            if (logger.isDebugEnabled()) {
+                logger.debug("createClient: got credential " + credential);
+            }            
             
             String host = hostURI.resolveHost();
 
@@ -256,7 +259,7 @@ public class GridFTPFileAdaptor extends GlobusFileAdaptor {
                     try {
                         client.authenticate(credential);
                         if (logger.isDebugEnabled()) {
-                            logger.debug("authenticating done");
+                            logger.debug("authenticating done using credential " + credential);
                         }
                     } catch (ServerException se) {
                         if (se.getMessage().contains(
@@ -290,29 +293,29 @@ public class GridFTPFileAdaptor extends GlobusFileAdaptor {
     }
 
     private static GSSCredential tryGetCredentialFromFilePath(String proxyPath) throws GSSException {	
-	     ByteArrayOutputStream baos = new ByteArrayOutputStream();
-	     GlobusCredential cred = null;
-	     GSSCredential gssCred = null;
-	        
-	        try {
-				FileInputStream fis = new FileInputStream(proxyPath);
-				byte [] buffer = new byte[1024];
-				while (fis.read(buffer) != (-1)) {
-					baos.write(buffer);
-				}
-				
-				cred = new GlobusCredential(new ByteArrayInputStream(baos.toByteArray()));
-				gssCred = new GlobusGSSCredentialImpl(cred, GSSCredential.INITIATE_AND_ACCEPT); 
-			} catch (FileNotFoundException e2) {
-				logger.error("The file denoted by gridProxyFile does not exist");
-			} catch (IOException e) {
-				logger.error("Error reading the proxy file");
-			} catch (GlobusCredentialException e) {
-				logger.error("Error creating a credential from the proxy file");
-			}
-	        
-	        return gssCred;
-	}
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        GlobusCredential cred = null;
+        GSSCredential gssCred = null;
+
+        try {
+            FileInputStream fis = new FileInputStream(proxyPath);
+            byte [] buffer = new byte[1024];
+            while (fis.read(buffer) != (-1)) {
+                baos.write(buffer);
+            }
+
+            cred = new GlobusCredential(new ByteArrayInputStream(baos.toByteArray()));
+            gssCred = new GlobusGSSCredentialImpl(cred, GSSCredential.INITIATE_AND_ACCEPT); 
+        } catch (FileNotFoundException e2) {
+            logger.error("The file denoted by gridProxyFile does not exist");
+        } catch (IOException e) {
+            logger.error("Error reading the proxy file");
+        } catch (GlobusCredentialException e) {
+            logger.error("Error creating a credential from the proxy file");
+        }
+
+        return gssCred;
+    }
 
 	protected void destroyClient(FTPClient c, URI hostURI,
             Preferences preferences) {

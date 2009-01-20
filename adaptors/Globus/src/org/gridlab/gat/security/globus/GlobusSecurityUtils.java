@@ -59,6 +59,10 @@ class GlobusContextCreator implements SecurityContextCreator {
                 // Added check if it already is a credential object.
                 // If so, just return it. --Ceriel
                 if (credentialObject instanceof GSSCredential) {
+                    if (logger.isDebugEnabled()) {
+                        logger
+                                .debug("CredentialSecurityContext credential is instance of GSSCredential");
+                    }
                     return credentialObject;
                 }
                 if (credentialObject instanceof byte[]

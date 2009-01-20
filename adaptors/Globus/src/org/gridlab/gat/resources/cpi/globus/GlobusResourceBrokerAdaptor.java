@@ -373,6 +373,9 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
         } catch (CredentialExpiredException e) {
             throw new GATInvocationException("globus", e);
         }
+        if (logger.isDebugEnabled()) {
+            logger.debug("credential = " + (credential != null ? credential : "null"));
+        }
         return credential;
     }
 
@@ -555,6 +558,9 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
         }
 
         String rsl = createRSL(description, host, sandbox, null, null);
+        if (logger.isDebugEnabled()) {
+            logger.debug("submitJob: credential = " + (credential != null ? credential : "null"));
+        }
         GramJob j = new GramJob(credential, rsl);
         globusJob.setGramJob(j);
         j.addListener(globusJob);
