@@ -592,8 +592,12 @@ public class GliteJob extends JobCpi {
      * This has become necessary because some jobs would hang forever in a state
      * even after calling the stop method.
      */
-    public void stop() throws GATInvocationException {;
-    	
+    public void stop() throws GATInvocationException {
+        if (state == JobState.POST_STAGING
+                || state == JobState.STOPPED
+                || state == JobState.SUBMISSION_ERROR) {
+            return;
+        }
     	try {
 			serviceStub.jobCancel(gliteJobID);
 			jobKilled = true;

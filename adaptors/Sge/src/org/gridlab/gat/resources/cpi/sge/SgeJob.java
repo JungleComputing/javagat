@@ -302,9 +302,14 @@ public class SgeJob extends JobCpi {
     }
 
     public void stop() throws GATInvocationException {
-        if ((getState() != JobState.RUNNING)
-                || (getState() != JobState.ON_HOLD)
-                || (getState() != JobState.SCHEDULED)) {
+        if (state == JobState.POST_STAGING
+                || state == JobState.STOPPED
+                || state == JobState.SUBMISSION_ERROR) {
+            return;
+        }
+        if ((state != JobState.RUNNING)
+                || (state != JobState.ON_HOLD)
+                || (state != JobState.SCHEDULED)) {
             throw new GATInvocationException(
                     "Cant stop(): job is not in a running state");
         } else {

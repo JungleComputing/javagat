@@ -239,6 +239,11 @@ public class GlobusJob extends JobCpi implements GramJobListener,
     }
 
     public synchronized void stop() throws GATInvocationException {
+        if (state == JobState.POST_STAGING
+                || state == JobState.STOPPED
+                || state == JobState.SUBMISSION_ERROR) {
+            return;
+        }
         if (j != null) {
             try {
                 j.cancel();

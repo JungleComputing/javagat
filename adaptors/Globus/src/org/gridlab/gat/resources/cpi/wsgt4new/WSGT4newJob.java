@@ -94,7 +94,7 @@ public class WSGT4newJob extends JobCpi implements GramJobListener, Runnable {
                 finished = true;
                 throw new GATInvocationException("WSGT4newJob", e);
             }
-            if (!skipPostStage) {
+            if (state != JobState.POST_STAGING && !skipPostStage) {
                 setState(JobState.POST_STAGING);
                 sandbox.retrieveAndCleanup(this);
             }

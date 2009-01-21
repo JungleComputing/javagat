@@ -128,6 +128,11 @@ public class CommandlineSshJob extends JobCpi {
 
     private synchronized void stop(boolean skipPostStage)
             throws GATInvocationException {
+        if (state == JobState.POST_STAGING
+                || state == JobState.STOPPED
+                || state == JobState.SUBMISSION_ERROR) {
+            return;
+        }
         if (!skipPostStage) {
             setState(JobState.POST_STAGING);
             sandbox.retrieveAndCleanup(this);

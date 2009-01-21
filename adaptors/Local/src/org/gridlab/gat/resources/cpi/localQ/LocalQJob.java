@@ -125,18 +125,21 @@ public class LocalQJob extends JobCpi implements Runnable,
         return exitVal;
     }
 
-    public void stop() throws GATInvocationException {
-        synchronized (this) {
-            if (!(gatContext.getPreferences().containsKey("job.stop.poststage") && gatContext
-                    .getPreferences().get("job.stop.poststage").equals("false"))) {
-                setState(JobState.POST_STAGING);
-                sandbox.retrieveAndCleanup(this);
-            }
-            if (p != null) {
-                p.destroy();
-            }
-            stopped = true;
+    public synchronized void stop() throws GATInvocationException {
+        if (state == JobState.POST_STAGING
+                || state == JobState.STOPPED
+                || state == JobState.SUBMISSION_ERROR) {
+            return;
         }
+        if (!(gatContext.getPreferences().containsKey("job.stop.poststage") && gatContext
+                .getPreferences().get("job.stop.poststage").equals("false"))) {
+            setState(JobState.POST_STAGING);
+            sandbox.retrieveAndCleanup(this);
+        }
+        if (p != null) {
+            p.destroy();
+        }
+        stopped = true;
     }
 
     protected void setState(JobState state) {

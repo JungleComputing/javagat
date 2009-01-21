@@ -132,6 +132,11 @@ public class SshTrileadJob extends JobCpi {
 
     private synchronized void stop(boolean skipPostStage)
             throws GATInvocationException {
+        if (state == JobState.POST_STAGING
+                || state == JobState.STOPPED
+                || state == JobState.SUBMISSION_ERROR) {
+            return;
+        }
         session.close();
         if (!skipPostStage) {
             setState(JobState.POST_STAGING);
@@ -209,39 +214,4 @@ public class SshTrileadJob extends JobCpi {
             }
         }
     }
-
-    // class OutputWaiter extends Thread {
-    //
-    // StreamForwarder outForwarder, errForwarder;
-    //
-    // OutputWaiter(StreamForwarder outForwarder, StreamForwarder errForwarder)
-    // {
-    // setName("SshTrileadJob OutputForwarderWaiter");
-    // setDaemon(true);
-    // this.outForwarder = outForwarder;
-    // this.errForwarder = errForwarder;
-    // start();
-    // }
-    //
-    // public void run() {
-    // outForwarder.waitUntilFinished();
-    // errForwarder.waitUntilFinished();
-    // session.waitForCondition(ChannelCondition.EXIT_STATUS, 5000);
-    // try {
-    // exitStatus = session.getExitStatus();
-    // } catch (NullPointerException e) {
-    // if (logger.isDebugEnabled()) {
-    // logger.debug("unable to retrieve exit status");
-    // }
-    // }
-    // try {
-    // SshTrileadJob.this.stop();
-    // } catch (GATInvocationException e) {
-    // if (logger.isDebugEnabled()) {
-    // logger.debug("unable to stop job: " + e);
-    // }
-    // }
-    // }
-    // }
-
 }
