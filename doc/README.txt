@@ -22,11 +22,11 @@ variable.
 
 For example (depending on the os and shell you use):
 
-export GAT_LOCATION=/home/rob/JavaGAT-1.6
+export GAT_LOCATION=/home/rob/JavaGAT-2.0.4.
 
 or 
 
-set GAT_LOCATION=C:\JavaGAT-1.6
+set GAT_LOCATION=C:\JavaGAT-2.0.4.
 
 you might want to put this line in your .bashrc (or equivalent)
 
@@ -71,6 +71,9 @@ Have fun!
 
 Roelof Kemp
 rkemp@cs.vu.nl
+
+Ceriel Jacobs
+ceriel@cs.vu.nl
 
 Rob van Nieuwpoort
 rob@cs.vu.nl
