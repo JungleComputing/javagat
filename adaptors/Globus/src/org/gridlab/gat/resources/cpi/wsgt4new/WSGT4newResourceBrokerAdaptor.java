@@ -338,6 +338,8 @@ public class WSGT4newResourceBrokerAdaptor extends ResourceBrokerCpi {
         // inform the wsgt4 job of which gram job is related to it.
         wsgt4job.setGramJob(gramjob);
 
+        // Was: gramjob.setAuthorization(HostAuthorization.getInstance());
+        // Modified to use a supplied credential. --Ceriel
         GSSCredential cred = getCred();
         if (cred != null) {
             gramjob.setCredentials(getCred());
@@ -347,6 +349,7 @@ public class WSGT4newResourceBrokerAdaptor extends ResourceBrokerCpi {
         } else {
             gramjob.setAuthorization(HostAuthorization.getInstance());
         }
+        // end modification.
         gramjob.setMessageProtectionType(Constants.ENCRYPTION);
         gramjob.setDelegationEnabled(true);
 
