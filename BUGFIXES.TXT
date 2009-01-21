@@ -1,3 +1,34 @@
+FIXED BUGS in version 2.0.4 with respect to version 2.0.3
+- fixed stop() method of resourcebroker adaptors: the method
+  may now be called in any job state, as promised in the javadoc.
+- fixed wsgt4new resourcebroker adaptor to actually use a user-supplied
+  credential (bug reported by Ralf Groeper).
+- fixed sshtrilead and commandlinessh resource broker adaptors to prevent
+  expansion of shell-meta-characters, and to make them work in case the
+  shell on the server side is a C-shell (bug reported by Kees van Reeuwijk).
+- made resourcebrokeradaptor test work when server is a Solaris machine
+  (which has slightly different error messages).
+- fixed classloader issue: use either the classloader of the class that
+  prompted the loading of JavaGAT or the context classloader, for the
+  parent of the URL classloaders for the adaptors (bug reported by
+  Ralf Groeper).
+- fixed globus security utils: if the CredentialSecurityObject already
+  contains a GSSCredential, just return that instead of ignoring it
+  (bug reported by Ralf Groeper).
+- fixed commandrunner: now uses ProcessBuilder. This protects against local
+  expansion of shell meta characters.
+- fixed a bug reported by Brian Carpenter: wsgt4new resourcebroker adaptor
+  sometimes gave redundant callbacks when the job was already finished,
+  for instance, a redundant POST_STAGING callback, which caused overwriting of
+  initially correct output files.
+- fixed copy method to mimic cp -r behaviour when copying directories.
+  (copy dir a to b ended up as a copy b/a, even if b did not exist,
+  now it only does so when a directory b exists, otherwise a directory b
+  is created with copy of contents of a).
+- fixed bug 221 (getParentFile) in LocalFileAdaptor.
+- various fixes in the Zorilla adaptor.
+- various fixes and updates in the glite adaptor.
+
 FIXED BUGS in version 2.0.3 with respect to version 2.0.2
 - fixed the compilation of the contributed adaptors (bug reported by Alexander Beck-Ratzka)
 - fixed some tests: preferences were set, but not passed on to GAT.create() methods.
