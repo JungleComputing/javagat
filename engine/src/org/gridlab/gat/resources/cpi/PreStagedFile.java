@@ -32,6 +32,7 @@ public class PreStagedFile extends StagedFile {
         this.exe = exe;
 
         resolve();
+        getResolvedDest().getParentFile().mkdirs();
     }
 
     /**
