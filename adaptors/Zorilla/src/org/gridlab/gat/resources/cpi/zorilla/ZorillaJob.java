@@ -162,8 +162,11 @@ public class ZorillaJob extends JobCpi {
         zorillaJobDescription.setAttributes(createStringMap(soft
                 .getAttributes()));
 
-        zorillaJobDescription.getAttributes().put("count",
+        zorillaJobDescription.getAttributes().put("process.count",
             "" + description.getProcessCount());
+        zorillaJobDescription.getAttributes().put("resource.count",
+            "" + description.getResourceCount());
+
         // zorillaJobDescription.getAttributes().put("host.count", "" +
         // description.getResourceCount());
 
