@@ -32,7 +32,6 @@ public class PreStagedFile extends StagedFile {
         this.exe = exe;
 
         resolve();
-        getResolvedDest().getParentFile().mkdirs();
     }
 
     /**
@@ -121,14 +120,16 @@ public class PreStagedFile extends StagedFile {
     }
 
     protected void prestage() throws GATInvocationException {
+        File resolvedDest = getResolvedDest();
+        File resolvedSrc = getResolvedSrc();
         if (logger.isInfoEnabled()) {
-            logger.info("prestage:\n  copy " + getResolvedSrc().toGATURI()
-                    + " to " + getResolvedDest().toGATURI());
+            logger.info("prestage:\n  copy " + resolvedSrc.toGATURI()
+                    + " to " + resolvedDest.toGATURI());
         }
         //HACK
-        //getResolvedDest().getParentFile().mkdirs();
+        resolvedDest.getParentFile().mkdirs();
         
-        getResolvedSrc().copy(getResolvedDest().toGATURI());
+        resolvedSrc.copy(resolvedDest.toGATURI());
     }
 
     protected void delete() throws GATInvocationException {
