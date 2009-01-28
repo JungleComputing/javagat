@@ -225,8 +225,8 @@ public class File extends java.io.File implements Monitorable, Advertisable,
     public java.io.File getAbsoluteFile() {
         try {
             return f.getAbsoluteFile();
-        } catch (Exception e) {
-            return null;
+        } catch (GATInvocationException e) {
+            throw new Error("Got exception", e);
         }
     }
 
@@ -236,8 +236,8 @@ public class File extends java.io.File implements Monitorable, Advertisable,
     public String getAbsolutePath() {
         try {
             return f.getAbsolutePath();
-        } catch (Exception e) {
-            return null;
+        } catch (GATInvocationException e) {
+            throw new Error("Got exception", e);
         }
     }
 
@@ -269,8 +269,8 @@ public class File extends java.io.File implements Monitorable, Advertisable,
     public String getName() {
         try {
             return f.getName();
-        } catch (Exception e) {
-            return null;
+        } catch (GATInvocationException e) {
+            throw new Error("Got exception", e);
         }
     }
 
@@ -280,8 +280,8 @@ public class File extends java.io.File implements Monitorable, Advertisable,
     public String getParent() {
         try {
             return f.getParent();
-        } catch (Exception e) {
-            return null;
+        } catch (GATInvocationException e) {
+            throw new Error("Got exception", e);
         }
     }
 
@@ -292,8 +292,8 @@ public class File extends java.io.File implements Monitorable, Advertisable,
     public java.io.File getParentFile() {
         try {
             return f.getParentFile();
-        } catch (Exception e) {
-            return null;
+        } catch (GATInvocationException e) {
+            throw new Error("Got exception", e);
         }
     }
 
@@ -303,8 +303,8 @@ public class File extends java.io.File implements Monitorable, Advertisable,
     public String getPath() {
         try {
             return f.getPath();
-        } catch (Exception e) {
-            return null;
+        } catch (GATInvocationException e) {
+            throw new Error("Got exception", e);
         }
     }
 
