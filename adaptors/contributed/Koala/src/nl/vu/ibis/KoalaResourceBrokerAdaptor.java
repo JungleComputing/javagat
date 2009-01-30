@@ -1,6 +1,7 @@
 package nl.vu.ibis;
 
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -49,7 +50,7 @@ public class KoalaResourceBrokerAdaptor extends ResourceBrokerCpi {
 	public KoalaResourceBrokerAdaptor(GATContext context, 
     		URI brokerURI) throws GATObjectCreationException {
 
-    	super(context, brokerURI);
+    	super(context, getBrokerURI(brokerURI));
 
         // Prevent recursively using this resourcebroker by checking for a 
         // magic preference.
@@ -59,6 +60,18 @@ public class KoalaResourceBrokerAdaptor extends ResourceBrokerCpi {
         }
     }
     
+	private static URI getBrokerURI(URI brokerURI) throws GATObjectCreationException { 
+		if (brokerURI != null) { 
+			return brokerURI;
+		}
+		
+		// return fake uri!
+		try {
+			return new URI("koala://server.koala.org");
+		} catch (URISyntaxException e) {
+			throw new GATObjectCreationException("Failed to create fake Koala URI", e);
+		}
+	}
     
 //    // NOTE: This is based on the globus resource broker. The main difference is
 //    //       that koala needs some annotations in the RSL which indicate the 

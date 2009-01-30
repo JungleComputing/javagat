@@ -74,7 +74,13 @@ public abstract class JobCpi implements Job {
         this.jobDescription = jobDescription;
         this.sandbox = sandbox;
         // better make this an attribute!
-        if (jobDescription.getSoftwareDescription().getBooleanAttribute(
+        
+        // NOTE: jobDescription may be null, since this class is extended by CoScheduleJob, and 
+        // (for reasons I don't understand) CoScheduleJobDescription does NOT extend JobDescription
+        //
+        // -- Jason
+        //
+        if (jobDescription != null && jobDescription.getSoftwareDescription().getBooleanAttribute(
                 "job.stop.on.exit", true)) {
             synchronized (JobCpi.class) {
                 if (shutdownInProgress) {
