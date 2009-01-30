@@ -102,7 +102,7 @@ public class SshTrileadFileAdaptor extends FileCpi {
     private static final int STDOUT = 0, STDERR = 1, EXIT_VALUE = 2;
 
     private static final String DEFAULT_MODE = "0700";
-
+    
     private static Map<String, Connection> connections = new HashMap<String, Connection>();
 
     private static Map<URI, Boolean> isDirCache = new HashMap<URI, Boolean>();
@@ -120,6 +120,18 @@ public class SshTrileadFileAdaptor extends FileCpi {
     private static Map<String, Boolean> isCshCache = new HashMap<String, Boolean>();
 
     private static Map<URI, String[]> listCache = new HashMap<URI, String[]>();
+    
+    public static void end() {
+        connections.clear();
+        isDirCache.clear();
+        isFileCache.clear();
+        existsCache.clear();
+        canReadCache.clear();
+        canWriteCache.clear();
+        isWindowsCache.clear();
+        isCshCache.clear();
+        listCache.clear();
+    }
 
     private boolean canReadCacheEnable;
 
