@@ -230,31 +230,6 @@ public class Component implements MetricListener {
     }
 
     /**
-     * @return the rsl
-     */
-  /*  public synchronized String getRsl() {
-        return rsl;
-    }
-*/
-    /**
-     * @param rsl the rsl to set
-     */
-  /*  public void setRsl(String rsl) {
-        
-        synchronized (this) {
-            if (this.rsl != null) { 
-                System.err.println("EEK: multiple rsl calls to component!");
-                return;
-            }
-        
-            this.rsl = rsl;
-        }
-        
-        submitComponent();
-    }
-*/
-    
-    /**
      * @return the site
      */
     public synchronized String getSite() {
@@ -275,77 +250,7 @@ public class Component implements MetricListener {
         
             this.site = site;
         }
-        
-    //    submitComponent();
     }
-/*
-    private void submitComponent() { 
-        
-        synchronized (this) {
-            
-            if (start) {
-                System.err.println("EEK: multiple startComponent calls!");
-                return;
-            }
-        
-            if (site == null || rsl == null) { 
-                System.err.println("Component " + identifier + " not ready");
-                return;
-            }
-            
-            start = true;
-        }
-        
-        try { 
-            System.err.println("Start of component: " + identifier 
-            		+ " submitting to site: " + site);;
-
-            // Create a copy of context used to select the next broker.
-            GATContext c = new GATContext();
-            
-            Preferences tmp = context.getPreferences();
-            
-            // Remove the explicit adaptor name. This is either not set, or set 
-            // to the Koala adaptor. Either way, it won't be set after this call.
-            // tmp.remove("ResourceBroker.adaptor.name");
-
-            // Set the target for the submission. 
-            // TODO: don't like that this explicity selects globus!!!
-            tmp.put("ResourceBroker.adaptor.name", "globus");
-      //      tmp.put("ResourceBroker.jobmanagerContact", site);
-            
-            // Add magic preference to prevent recursive calls to Koala broker.
-            tmp.put("postKoala", true);
-
-            c.addPreferences(tmp);
-            
-            for (SecurityContext sc : context.getSecurityContexts()) { 
-            	c.addSecurityContext(sc);
-            }
-        
-            URI brokerURI = new URI("any://" + site + "/jobmanager-sge");
-            
-            // Create a new broker that allows us to perform the real submission.
-            ResourceBroker broker = GAT.createResourceBroker(c, brokerURI);
-        
-            // Submit the job 
-            job = broker.submitJob(description);
-            
-            // Register a state listner
-            MetricDefinition md = job.getMetricDefinitionByName("job.status");
-            metric = md.createMetric(null);
-            job.addMetricListener(this, metric);
-
-            // Fire the state change manually (since there is a race condition 
-            // in GAT.  
-            stateChange("INITIAL");
-            
-        } catch (Exception e) {
-            System.err.println("Failed to start component: " + identifier);
-        }
-    }
-    */
-    
     
     /**
      * @return the description

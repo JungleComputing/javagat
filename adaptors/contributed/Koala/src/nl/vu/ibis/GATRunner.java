@@ -4,6 +4,7 @@ import java.util.Arrays;
 import java.util.List;
 //import java.util.prefs.Preferences;
 
+import org.apache.log4j.Level;
 import org.gridlab.gat.GAT;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.Preferences;
@@ -22,6 +23,7 @@ import org.gridlab.gat.resources.SoftwareDescription;
 import org.gridlab.gat.resources.Job.JobState;
 import org.gridlab.gat.security.SecurityContext;
 import org.koala.internals.JCompRunnerInfo;
+import org.koala.internals.KLogger;
 import org.koala.runnersFramework.AbstractRunner;
 
 public class GATRunner extends AbstractRunner {
@@ -32,17 +34,7 @@ public class GATRunner extends AbstractRunner {
 	private final CoScheduleJobDescription parentDescription;
 	private final String JDS; 
 
-	// TODO: This is wrong with co-scheduling!
-	//private final CoScheduleJobDescription jobDescription;
-	
-	// TODO: This is wrong with co-scheduling!
-	//private Job gatJob;
-	
-	// TODO: This is wrong with co-scheduling!
-	// A metric object used to monitor the status of the job.
-    //private Metric metric; 
-    
-    private final Components components;
+	private final Components components;
     
 	public GATRunner(KoalaJob parent, CoScheduleJobDescription jobDescription, 
 			Components components, GATContext context) {
@@ -62,194 +54,10 @@ public class GATRunner extends AbstractRunner {
 		
 		KoalaResourceBrokerAdaptor.logger.info("GATRunner using JDS: " + JDS);
 		
+		KLogger.setLogging(Level.WARN);
+		
 		job.setJDS(JDS);
 	}
-
-/*	protected String getLabel(JobDescription jobDescription) { 
-		return "gat-job0";
-	}
-
-	private void convertJobDescription(StringBuilder sb, JobDescription job) { 
-		
-		SoftwareDescription sd = job.getSoftwareDescription();
-		
-		// Exectuable
-		sb.append("&( executable = \"");
-		sb.append(sd.getExecutable());
-		sb.append("\")\n");
-
-		String [] arguments = sd.getArguments();
-
-		if (arguments != null && arguments.length > 0) { 
-			// Arguments
-			sb.append(" ( arguments = ");
-
-			for (String a : arguments) { 
-				sb.append("\"");
-				sb.append(a);
-				sb.append("\" ");
-			}
-			sb.append(")\n");
-		}
-
-		// Count 
-		sb.append(" ( count = \"");
-		sb.append(job.getProcessCount());
-		sb.append("\")\n");
-
-		// Directory 
-		// SKIP -- this is not required for GAT
-
-		// Time
-		sb.append(" ( maxWallTime = \"");
-		sb.append(sd.getLongAttribute("time.max", 15));
-		sb.append("\")\n");
-
-		// Label
-		sb.append(" ( label = \"");
-		sb.append(getLabel(job));
-		sb.append("\")\n");
-
-		// Stdout 
-		File stdout = sd.getStdout();
-
-		if (stdout != null) { 
-			sb.append(" ( stdout = \"");
-			sb.append(stdout.getAbsolutePath());
-			sb.append("\")\n");
-		}
-
-		// Stderr 
-		File stderr = sd.getStderr();
-
-		if (stderr != null) { 
-			sb.append(" ( stderr = \"");
-			sb.append(stderr.getAbsolutePath());
-			sb.append("\")\n");
-		}
-
-		// Stdin ?
-		// TODO -- is this supported by koala ? 
-
-		// Stagein
-
-		 Skip for now!!
-
-			Set<File> preStaged = sd.getPreStaged().keySet();
-
-			if (preStaged != null && preStaged.size() > 0) { 
-				sb.append(" ( stagein = ");
-
-				for (File in : preStaged) { 
-					sb.append("\"");
-
-					URI tmp = in.toGATURI();
-
-					if (tmp.isLocal()) { 
-						sb.append(in.getAbsolutePath());
-					} else { 
-						sb.append(tmp);
-					}
-
-					sb.append("\" ");
-				}
-
-				sb.append(")\n");
-			}
-
-			// Stageout
-			Set<File> postStaged = sd.getPostStaged().keySet();
-
-			if (postStaged != null && postStaged.size() > 0) { 
-				sb.append(" ( stageout = ");
-
-				for (File out : postStaged) {
-					sb.append("\"");
-					sb.append(out.toGATURI().toString());
-					sb.append("\" ");
-				}
-
-				sb.append(")\n");
-			}
-
-		 
-	}
-	
-	private String convertJobDescription() { 
-
-		KoalaResourceBrokerAdaptor.logger.info(
-				"KoalaJob converting JobDescription to JDL");
-		
-		 Optional settings: 
-			job.setFlexibleJob(true);
-			job.setOptimizeComm(true);
-			job.setClusterMinimize(true);
-			job.setJDS(Utils.readFile(jdf_file));
-			job.setExcludeClusters();
-			job.setRunnerName("GATRunner");
-			job.setCoallocate(true);
-		 
-
-		 We should now generate a string that looks something like this:
-
-			   +( 
-	 			   &( directory = "/home/jason/koala-test/files" )
-	  				( arguments = "inputfile1 outputfile1" )
-	  				( executable = "/home/jason/koala-test/files/copy.sh" )
-	  				( maxWallTime = "15" )
-	  				( label = "subjob 0" )
-	  				( count = "1" )
-	  				( stagein = "/home/jason/koala-test/files/inputfile1" )
-	  				( filesize-stagein = "/home/jason/koala-test/files/inputfile1=10G" )
-	  				( stageout = "/home/jason/koala-test/files/outputfile1" )
-	  				( filesize-stageout = "/home/jason/koala-test/files/outputfile1=1G" )
-	  				( resourceManagerContact = "fs3.das2.ewi.tudelft.nl" )
-	  				( bandwidth = "subjob 1:30G"
-	                			  "subjob 2:10G")
-					( stdout = "/home/wlammers/demo/standard_out" )
-	  				( stderr = "/home/wlammers/demo/standard_err" )
-					( jobtype = mpi )
-				)
-				( 
-				     next job...
-				) 
-
-				Since GAT will be responsible for the actual deployment of the 
-				application, it is not necessary to do a 'perfect' translation 
-				here. The JDF string should contain enough information to allow 
-				the Koala scheduler to do it's job. The JDF may be incomplete
-				however. For example, if the user does not require Koala to take 
-				the file location into account (this is an option), then there 
-				is no point in providing the stagein information to the 
-				scheduler.
-		 
-
-		StringBuilder sb = new StringBuilder("");
-
-		List<JobDescription> tmp = jobDescription.getJobDescriptions();		
-
-		
-		if (tmp.size() > 1) { 
-			sb.append("+\n");
-			sb.append("(");
-		} 
-		
-		for (JobDescription j : tmp) { 
-			convertJobDescription(sb, j);
-		}
-		
-		if (tmp.size() > 1) { 
-			sb.append(")");
-		}  
-			
-		String result = sb.toString();
-		
-		KoalaResourceBrokerAdaptor.logger.info("KoalaJob generated JDS:\n" 
-				+ result);
-
-		return result;
-	}
-*/
 
 	@Override
 	public void parseParameters(String [] p) {
@@ -281,19 +89,7 @@ public class GATRunner extends AbstractRunner {
 
 	@Override
 	public int submitComponent(JCompRunnerInfo component) {
-		/*
-		KoalaResourceBrokerAdaptor.logger.info("GATRunner.submitComponent(\n" + 
-				component.getComponentNo() + "\n" + 
-				component.getCds()+ "\n" + 
-				component.getEstimatedRuntime()+ "\n" + 
-				component.getExecID()+ "\n" + 
-				component.getExecSite()+ "\n" + 
-				component.getKreservePort()+ "\n" + 
-				component.getSize()+ "\n" + 
-				component.getStatus() +"\n" +
-				component.getTmpData()+ "\n");
-		 */
-
+		
 		try { 
 
 			KoalaResourceBrokerAdaptor.logger.info("GATRunner.submitComponent " 
@@ -357,22 +153,4 @@ public class GATRunner extends AbstractRunner {
 
 		return 0;
 	}
-	
-	/*
-
-	public void processMetricEvent(MetricEvent event) {
-		
-		KoalaResourceBrokerAdaptor.logger.info(
-				"GATRunner.processMetricEvent got " + event);
-		
-		// TODO: this is too simplistic ?
-		try { 	
-			parent.stateChange((Job.JobState) event.getValue(), 
-					event.getEventTime());
-		} catch (Exception e) {
-			KoalaResourceBrokerAdaptor.logger.warn(
-					"GATRunner.processMetricEvent failed to process " +
-					"metric event " + event, e);
-		}
-	}*/
 }

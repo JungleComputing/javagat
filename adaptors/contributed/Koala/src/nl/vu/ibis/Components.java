@@ -218,13 +218,13 @@ public class Components {
 		return state;
 	}
 
-	public synchronized HashMap<Object, Object> getInfo(
-			HashMap<Object, Object> map) {
+	public synchronized HashMap<String, Object> getInfo(
+			HashMap<String, Object> map) {
 
 		String jobSite = null;
 
 		if (map == null) {
-			map = new HashMap<Object, Object>();
+			map = new HashMap<String, Object>();
 		}
 		/*
 		 * if (components.size() == 0) { map.put("state",
