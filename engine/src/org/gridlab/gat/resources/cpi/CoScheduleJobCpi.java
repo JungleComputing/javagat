@@ -6,11 +6,11 @@ import org.gridlab.gat.resources.CoScheduleJobDescription;
 
 public abstract class CoScheduleJobCpi extends JobCpi implements CoScheduleJob {
 
-    protected final CoScheduleJobDescription jobDescription;
+    protected CoScheduleJobDescription jobDescription;
 
     protected CoScheduleJobCpi(GATContext gatContext,
             CoScheduleJobDescription jobDescription) {
-    	super(gatContext, null, null);
         this.jobDescription = jobDescription;
     }
+
 }
