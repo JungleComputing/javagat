@@ -188,7 +188,7 @@ public class LocalQResourceBrokerAdaptor extends ResourceBrokerCpi implements
         LocalQJob result = new LocalQJob(gatContext, this, description, sandbox);
         Job job = null;
         if (description instanceof WrapperJobDescription) {
-            WrapperJobCpi tmp = new WrapperJobCpi(result);
+            WrapperJobCpi tmp = new WrapperJobCpi(gatContext, result);
             listener = tmp;
             job = tmp;
         } else {

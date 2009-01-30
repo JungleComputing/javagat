@@ -137,7 +137,7 @@ public class CommandlineSshResourceBrokerAdaptor extends ResourceBrokerCpi {
                 description, sandbox);
         Job job = null;
         if (description instanceof WrapperJobDescription) {
-            WrapperJobCpi tmp = new WrapperJobCpi(commandlineSshJob);
+            WrapperJobCpi tmp = new WrapperJobCpi(gatContext, commandlineSshJob);
             listener = tmp;
             job = tmp;
         } else {

@@ -56,7 +56,6 @@ import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.GATObjectCreationException;
 import org.gridlab.gat.URI;
-import org.gridlab.gat.engine.GATEngine;
 import org.gridlab.gat.io.File;
 import org.gridlab.gat.monitoring.Metric;
 import org.gridlab.gat.monitoring.MetricDefinition;
@@ -141,7 +140,7 @@ public class GliteJob extends JobCpi {
 				polledJob.updateState();
 				
 				MetricEvent event = new MetricEvent(polledJob, state, metric, System.currentTimeMillis());
-				GATEngine.fireMetric(polledJob, event);
+				polledJob.fireMetric(event);
 				
 				if (state == Job.JobState.POST_STAGING) {
 					polledJob.receiveOutput();
@@ -246,7 +245,7 @@ public class GliteJob extends JobCpi {
 				"job.status", MetricDefinition.DISCRETE, "String", null, null,
 				returnDef);
 		this.metric = new Metric(statusMetricDefinition, null);
-		GATEngine.registerMetric(this, "submitJob", statusMetricDefinition);
+		registerMetric("submitJob", statusMetricDefinition);
 	
 		
 		// Create Job Description Language File ...

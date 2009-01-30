@@ -5,10 +5,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.log4j.Logger;
+// import org.apache.log4j.Logger;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
-import org.gridlab.gat.engine.GATEngine;
 import org.gridlab.gat.monitoring.Metric;
 import org.gridlab.gat.monitoring.MetricDefinition;
 import org.gridlab.gat.monitoring.MetricEvent;
@@ -24,7 +23,7 @@ public class KoalaJob extends CoScheduleJobCpi {
 	private static final long serialVersionUID = 4321647692737044640L;
 
 	//  The logger used for debugging output and warnings.
-	private static Logger logger = Logger.getLogger("KoalaAdaptor.Runner");
+	// private static Logger logger = Logger.getLogger("KoalaAdaptor.Runner");
 
 	private GATRunner runner;    
 	private RunnerListener listner;	
@@ -80,7 +79,7 @@ public class KoalaJob extends CoScheduleJobCpi {
 			statusMetricDefinition = new MetricDefinition("job.status",
 					MetricDefinition.DISCRETE, "String", null, null, definition);
 			statusMetric = statusMetricDefinition.createMetric(null);
-			GATEngine.registerMetric(this, "getJobStatus", statusMetricDefinition);
+			registerMetric("getJobStatus", statusMetricDefinition);
 		} catch (Exception e) { 
 		//	e.printStackTrace(System.err);
 			throw new GATInvocationException("Failed to create KoalaJob", e);
@@ -154,7 +153,7 @@ public class KoalaJob extends CoScheduleJobCpi {
 		return state;
 	}
 
-	public Map<String,Object> getInfo() {
+	public Map<String, Object> getInfo() {
 		return components.getInfo(null);       
 	}
 
@@ -188,7 +187,7 @@ public class KoalaJob extends CoScheduleJobCpi {
 	public void stateChange(JobState state, long time) {
 		setState(state);
 
-		GATEngine.fireMetric(this, new MetricEvent(this, 
+		fireMetric(new MetricEvent(this, 
 				state.toString(), statusMetric, time));
 	}
 

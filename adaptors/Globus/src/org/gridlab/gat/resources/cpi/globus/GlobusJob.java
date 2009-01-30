@@ -93,7 +93,7 @@ public class GlobusJob extends JobCpi implements GramJobListener,
         returnDef.put("status", JobState.class);
         statusMetricDefinition = new MetricDefinition("job.status",
                 MetricDefinition.DISCRETE, "JobState", null, null, returnDef);
-        GATEngine.registerMetric(this, "getJobStatus", statusMetricDefinition);
+        registerMetric("getJobStatus", statusMetricDefinition);
         statusMetric = statusMetricDefinition.createMetric(null);
     }
 
@@ -120,7 +120,7 @@ public class GlobusJob extends JobCpi implements GramJobListener,
         returnDef.put("status", String.class);
         statusMetricDefinition = new MetricDefinition("job.status",
                 MetricDefinition.DISCRETE, "String", null, null, returnDef);
-        GATEngine.registerMetric(this, "getJobStatus", statusMetricDefinition);
+        registerMetric("getJobStatus", statusMetricDefinition);
         statusMetric = statusMetricDefinition.createMetric(null);
 
         j = new GramJob("");
@@ -485,7 +485,7 @@ public class GlobusJob extends JobCpi implements GramJobListener,
         this.state = state;
         MetricEvent v = new MetricEvent(this, state, statusMetric, System
                 .currentTimeMillis());
-        GATEngine.fireMetric(this, v);
+        fireMetric(v);
         return true;
     }
 

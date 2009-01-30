@@ -10,7 +10,7 @@ public abstract class CoScheduleJobCpi extends JobCpi implements CoScheduleJob {
 
     protected CoScheduleJobCpi(GATContext gatContext,
             CoScheduleJobDescription jobDescription) {
-    	super(gatContext, null, null);
+        super(gatContext);
         this.jobDescription = jobDescription;
     }
 }

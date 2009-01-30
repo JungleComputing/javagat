@@ -35,7 +35,7 @@ public class ResourceBrokerAdaptorTest implements MetricListener {
                 host);
         Preferences preferences = new Preferences();
         preferences.put("resourcebroker.adaptor.name", adaptor);
-        preferences.put("file.adaptor.name", "sshtrilead,local");
+        preferences.put("file.adaptor.name", "sshtrilead,commandlinessh,local");
         adaptorTestResult.put("submit job easy  ", submitJobEasy(preferences,
                 host));
         adaptorTestResult.put("submit job parallel", submitJobParallel(

@@ -6,25 +6,22 @@ package org.gridlab.gat.resources.cpi;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
-import org.gridlab.gat.engine.GATEngine;
-import org.gridlab.gat.monitoring.Metric;
-import org.gridlab.gat.monitoring.MetricDefinition;
-import org.gridlab.gat.monitoring.MetricEvent;
-import org.gridlab.gat.monitoring.MetricListener;
+import org.gridlab.gat.monitoring.cpi.MonitorableCpi;
 import org.gridlab.gat.resources.HardwareResource;
 import org.gridlab.gat.resources.HardwareResourceDescription;
 import org.gridlab.gat.resources.Job;
 import org.gridlab.gat.resources.JobDescription;
 
-public abstract class JobCpi implements Job {
+public abstract class JobCpi extends MonitorableCpi implements Job {
 
     protected static Logger logger = Logger.getLogger(JobCpi.class);
+    
+    protected GATContext gatContext;
 
     protected JobDescription jobDescription;
 
@@ -39,8 +36,6 @@ public abstract class JobCpi implements Job {
     protected GATInvocationException removeSandboxException = null;
 
     protected static int globalJobID = 0;
-
-    protected GATContext gatContext;
 
     protected JobState state = JobState.INITIAL;
 
@@ -63,14 +58,14 @@ public abstract class JobCpi implements Job {
     protected static synchronized int allocJobID() {
         return globalJobID++;
     }
-
-    protected JobCpi() {
-
+    
+    protected JobCpi(GATContext gatContext) {
+        this.gatContext = gatContext;
     }
 
     protected JobCpi(GATContext gatContext, JobDescription jobDescription,
             Sandbox sandbox) {
-        this.gatContext = gatContext;
+        this(gatContext);
         this.jobDescription = jobDescription;
         this.sandbox = sandbox;
         // better make this an attribute!
@@ -229,34 +224,4 @@ public abstract class JobCpi implements Job {
             }
         }
     }
-
-    public MetricEvent getMeasurement(Metric metric)
-            throws GATInvocationException {
-        if (metric.getDefinition().getMeasurementType() == MetricDefinition.DISCRETE) {
-            return GATEngine.getMeasurement(this, metric);
-        }
-
-        throw new UnsupportedOperationException("Not implemented");
-    }
-
-    public final List<MetricDefinition> getMetricDefinitions()
-            throws GATInvocationException {
-        return GATEngine.getMetricDefinitions(this);
-    }
-
-    public final MetricDefinition getMetricDefinitionByName(String name)
-            throws GATInvocationException {
-        return GATEngine.getMetricDefinitionByName(this, name);
-    }
-
-    public final void addMetricListener(MetricListener metricListener,
-            Metric metric) throws GATInvocationException {
-        GATEngine.addMetricListener(this, metricListener, metric);
-    }
-
-    public final void removeMetricListener(MetricListener metricListener,
-            Metric metric) throws GATInvocationException {
-        GATEngine.removeMetricListener(this, metricListener, metric);
-    }
-
 }

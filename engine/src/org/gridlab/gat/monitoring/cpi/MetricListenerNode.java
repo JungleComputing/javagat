@@ -1,7 +1,7 @@
 /*
  * Created on Oct 26, 2004
  */
-package org.gridlab.gat.engine;
+package org.gridlab.gat.monitoring.cpi;
 
 import org.gridlab.gat.monitoring.Metric;
 import org.gridlab.gat.monitoring.MetricListener;
@@ -14,13 +14,10 @@ class MetricListenerNode {
 
     Metric metric;
 
-    Object adaptor;
-
-    MetricListenerNode(Object adaptor, MetricListener metricListener,
+    MetricListenerNode(MetricListener metricListener,
             Metric metric) {
         this.metricListener = metricListener;
         this.metric = metric;
-        this.adaptor = adaptor;
     }
 
     public boolean equals(Object o) {
@@ -29,7 +26,7 @@ class MetricListenerNode {
         }
 
         MetricListenerNode other = (MetricListenerNode) o;
-        return (other.adaptor == adaptor) && other.metric.equals(metric)
+        return  other.metric.equals(metric)
                 && other.metricListener.equals(metricListener);
     }
 }

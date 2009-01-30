@@ -12,7 +12,6 @@ import java.util.Map;
 
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
-import org.gridlab.gat.engine.GATEngine;
 import org.gridlab.gat.monitoring.Metric;
 import org.gridlab.gat.monitoring.MetricDefinition;
 import org.gridlab.gat.monitoring.MetricEvent;
@@ -43,7 +42,7 @@ public class PbsJob extends JobCpi {
         returnDef.put("status", JobState.class);
         statusMetricDefinition = new MetricDefinition("job.status",
                 MetricDefinition.DISCRETE, "JobState", null, null, returnDef);
-        GATEngine.registerMetric(this, "getJobStatus", statusMetricDefinition);
+        registerMetric("getJobStatus", statusMetricDefinition);
         statusMetric = statusMetricDefinition.createMetric(null);
     }
 
@@ -59,7 +58,7 @@ public class PbsJob extends JobCpi {
         this.state = state;
         MetricEvent v = new MetricEvent(this, state, statusMetric, System
                 .currentTimeMillis());
-        GATEngine.fireMetric(this, v);
+        fireMetric(v);
     }
 
     public Map<String, Object> getInfo() throws GATInvocationException {

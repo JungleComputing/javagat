@@ -8,7 +8,6 @@ import java.util.Map;
 import org.apache.log4j.Logger;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
-import org.gridlab.gat.engine.GATEngine;
 import org.gridlab.gat.monitoring.Metric;
 import org.gridlab.gat.monitoring.MetricDefinition;
 import org.gridlab.gat.monitoring.MetricEvent;
@@ -49,7 +48,7 @@ public class GridSAMJob extends JobCpi {
         private void fireEvent(JobState state) {
             MetricEvent v = new MetricEvent(this, state, statusMetric, System
                     .currentTimeMillis());
-            GATEngine.fireMetric(parent, v);
+            parent.fireMetric(v);
             if (logger.isDebugEnabled()) {
                 logger.debug("firing event, event=" + v.toString());
             }
@@ -199,7 +198,7 @@ public class GridSAMJob extends JobCpi {
         statusMetricDefinition = new MetricDefinition("job.status",
                 MetricDefinition.DISCRETE, "JobState", null, null, returnDef);
         statusMetric = statusMetricDefinition.createMetric(null);
-        GATEngine.registerMetric(this, "getJobStatus", statusMetricDefinition);
+        registerMetric("getJobStatus", statusMetricDefinition);
 
         pollingThread = new PollingThread(this);
         pollingThread.setDaemon(true);
@@ -323,7 +322,7 @@ public class GridSAMJob extends JobCpi {
         if (logger.isDebugEnabled()) {
             logger.debug("default job callback: firing event: " + v);
         }
-        GATEngine.fireMetric(this, v);
+        fireMetric(v);
 
         sandbox.retrieveAndCleanup(this);
         isStopped = true;
@@ -335,7 +334,7 @@ public class GridSAMJob extends JobCpi {
                     .currentTimeMillis());
         }
 
-        GATEngine.fireMetric(this, v);
+        fireMetric(v);
         finished();
     }
 
@@ -390,7 +389,7 @@ public class GridSAMJob extends JobCpi {
             if (logger.isDebugEnabled()) {
                 logger.debug("default job callback: firing event: " + v);
             }
-            GATEngine.fireMetric(this, v);
+            fireMetric(v);
 
             sandbox.retrieveAndCleanup(this);
         }
@@ -403,7 +402,7 @@ public class GridSAMJob extends JobCpi {
                     .currentTimeMillis());
         }
 
-        GATEngine.fireMetric(this, v);
+        fireMetric(v);
         finished();
     }
 }

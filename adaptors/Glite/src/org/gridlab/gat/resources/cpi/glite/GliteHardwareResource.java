@@ -1,8 +1,6 @@
 package org.gridlab.gat.resources.cpi.glite;
 
 import org.gridlab.gat.GATContext;
-import org.gridlab.gat.GATInvocationException;
-import org.gridlab.gat.monitoring.MetricDefinition;
 import org.gridlab.gat.resources.HardwareResourceDescription;
 import org.gridlab.gat.resources.Reservation;
 import org.gridlab.gat.resources.ResourceDescription;
@@ -38,13 +36,6 @@ public class GliteHardwareResource extends HardwareResourceCpi {
         HardwareResourceDescription hrd = new HardwareResourceDescription();
         hrd.addResourceAttribute(GliteConstants.RESOURCE_MACHINE_NODE, queId);
         return hrd;
-    }
-
-    /** {@inheritDoc} */
-    public MetricDefinition getMetricDefinitionByName(String name)
-            throws GATInvocationException {
-        throw new GATInvocationException(
-                "Metrics are not supported by gLite Resources");
     }
 
     /** {@inheritDoc} */

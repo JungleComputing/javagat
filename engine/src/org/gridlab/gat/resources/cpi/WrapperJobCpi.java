@@ -3,15 +3,14 @@ package org.gridlab.gat.resources.cpi;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
+import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
-import org.gridlab.gat.engine.GATEngine;
-import org.gridlab.gat.monitoring.Metric;
 import org.gridlab.gat.monitoring.MetricDefinition;
 import org.gridlab.gat.monitoring.MetricEvent;
 import org.gridlab.gat.monitoring.MetricListener;
+import org.gridlab.gat.monitoring.cpi.MonitorableCpi;
 import org.gridlab.gat.resources.AbstractJobDescription;
 import org.gridlab.gat.resources.HardwareResource;
 import org.gridlab.gat.resources.HardwareResourceDescription;
@@ -26,21 +25,24 @@ import org.gridlab.gat.resources.WrapperJobDescription.WrappedJobInfo;
  */
 
 @SuppressWarnings("serial")
-public class WrapperJobCpi implements WrapperJob, MetricListener {
+public class WrapperJobCpi extends MonitorableCpi implements WrapperJob, MetricListener {
 
     protected final int jobID = JobCpi.allocJobID();
+    
+    protected GATContext gatContext;
 
     private Job wrapperJob;
 
     private Map<JobDescription, WrappedJobCpi> wrappedJobs = new HashMap<JobDescription, WrappedJobCpi>();
 
-    public WrapperJobCpi(Job wrapperJob) {
+    public WrapperJobCpi(GATContext gatContext, Job wrapperJob) {
+        this.gatContext = gatContext;
         HashMap<String, Object> returnDef = new HashMap<String, Object>();
         returnDef.put("status", JobState.class);
         MetricDefinition statusMetricDefinition = new MetricDefinition(
                 "job.status", MetricDefinition.DISCRETE, "JobState", null,
                 null, returnDef);
-        GATEngine.registerMetric(this, "getJobStatus", statusMetricDefinition);
+        registerMetric("getJobStatus", statusMetricDefinition);
 
         this.wrapperJob = wrapperJob;
 
@@ -69,12 +71,6 @@ public class WrapperJobCpi implements WrapperJob, MetricListener {
         return true;
     }
 
-    public void addMetricListener(MetricListener metricListener, Metric metric)
-            throws GATInvocationException {
-        GATEngine.addMetricListener(this, metricListener, metric);
-
-    }
-
     /**
      * @deprecated
      */
@@ -99,25 +95,6 @@ public class WrapperJobCpi implements WrapperJob, MetricListener {
 
     public AbstractJobDescription getJobDescription() {
         return wrapperJob.getJobDescription();
-    }
-
-    public MetricEvent getMeasurement(Metric metric)
-            throws GATInvocationException {
-        if (metric.getDefinition().getMeasurementType() == MetricDefinition.DISCRETE) {
-            return GATEngine.getMeasurement(this, metric);
-        }
-
-        throw new UnsupportedOperationException("Not implemented");
-    }
-
-    public final MetricDefinition getMetricDefinitionByName(String name)
-            throws GATInvocationException {
-        return GATEngine.getMetricDefinitionByName(this, name);
-    }
-
-    public final List<MetricDefinition> getMetricDefinitions()
-            throws GATInvocationException {
-        return GATEngine.getMetricDefinitions(this);
     }
 
     public JobState getState() {
@@ -155,11 +132,6 @@ public class WrapperJobCpi implements WrapperJob, MetricListener {
         wrapperJob.migrate(hardwareResourceDescription);
     }
 
-    public final void removeMetricListener(MetricListener metricListener,
-            Metric metric) throws GATInvocationException {
-        GATEngine.removeMetricListener(this, metricListener, metric);
-    }
-
     public void resume() throws GATInvocationException {
         wrapperJob.resume();
     }
@@ -181,7 +153,7 @@ public class WrapperJobCpi implements WrapperJob, MetricListener {
 
     public void processMetricEvent(MetricEvent event) {
         // forward the metrics from the wrapperjob
-        GATEngine.fireMetric(this, event);
+        fireMetric(event);
     }
 
 }

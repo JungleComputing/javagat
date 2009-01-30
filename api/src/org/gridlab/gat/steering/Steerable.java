@@ -1,7 +1,7 @@
 package org.gridlab.gat.steering;
 
-import java.util.Map;
 import java.util.List;
+import java.util.Map;
 
 public interface Steerable {
     public Map<String, Object> executeControl(SteeringControl c)

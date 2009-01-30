@@ -189,7 +189,7 @@ public class SshTrileadResourceBrokerAdaptor extends ResourceBrokerCpi {
                 sandbox);
         Job job = null;
         if (description instanceof WrapperJobDescription) {
-            WrapperJobCpi tmp = new WrapperJobCpi(sshJob);
+            WrapperJobCpi tmp = new WrapperJobCpi(gatContext, sshJob);
             listener = tmp;
             job = tmp;
         } else {

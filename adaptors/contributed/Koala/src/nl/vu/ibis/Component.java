@@ -1,21 +1,17 @@
 package nl.vu.ibis;
 
-import org.gridlab.gat.GAT;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.Preferences;
-import org.gridlab.gat.URI;
 import org.gridlab.gat.io.File;
 import org.gridlab.gat.monitoring.Metric;
 import org.gridlab.gat.monitoring.MetricDefinition;
-import org.gridlab.gat.monitoring.MetricListener;
 import org.gridlab.gat.monitoring.MetricEvent;
+import org.gridlab.gat.monitoring.MetricListener;
 import org.gridlab.gat.resources.Job;
 import org.gridlab.gat.resources.JobDescription;
-import org.gridlab.gat.resources.ResourceBroker;
 import org.gridlab.gat.resources.SoftwareDescription;
 import org.gridlab.gat.resources.Job.JobState;
-import org.gridlab.gat.security.SecurityContext;
 
 public class Component implements MetricListener {
 
@@ -41,7 +37,7 @@ public class Component implements MetricListener {
     private String site;
     
     // The job rsl as provided by koala. 
-    private String rsl;
+    // private String rsl;
 
     // The delegated job. 
     private Job job;

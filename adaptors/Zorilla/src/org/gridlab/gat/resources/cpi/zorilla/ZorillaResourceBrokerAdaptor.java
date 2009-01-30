@@ -135,7 +135,7 @@ public class ZorillaResourceBrokerAdaptor extends ResourceBrokerCpi implements
                 this);
         Job job = null;
         if (description instanceof WrapperJobDescription) {
-            WrapperJobCpi tmp = new WrapperJobCpi(zorillaJob);
+            WrapperJobCpi tmp = new WrapperJobCpi(gatContext, zorillaJob);
             listener = tmp;
             job = tmp;
         } else {

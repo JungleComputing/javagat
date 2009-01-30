@@ -1,7 +1,7 @@
 /*
  * Created on Oct 26, 2004
  */
-package org.gridlab.gat.engine;
+package org.gridlab.gat.monitoring.cpi;
 
 import org.gridlab.gat.monitoring.MetricDefinition;
 import org.gridlab.gat.monitoring.MetricEvent;
@@ -10,7 +10,6 @@ import org.gridlab.gat.monitoring.MetricEvent;
  * @author rob
  */
 class MetricNode {
-    Object adaptor;
 
     String methodName;
 
@@ -18,8 +17,7 @@ class MetricNode {
 
     MetricEvent lastValue;
 
-    MetricNode(Object adaptor, String methodName, MetricDefinition definition) {
-        this.adaptor = adaptor;
+    MetricNode(String methodName, MetricDefinition definition) {
         this.methodName = methodName;
         this.definition = definition;
     }

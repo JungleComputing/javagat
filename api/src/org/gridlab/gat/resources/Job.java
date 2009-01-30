@@ -2,15 +2,10 @@ package org.gridlab.gat.resources;
 
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.List;
 import java.util.Map;
 
 import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.advert.Advertisable;
-import org.gridlab.gat.monitoring.Metric;
-import org.gridlab.gat.monitoring.MetricDefinition;
-import org.gridlab.gat.monitoring.MetricEvent;
-import org.gridlab.gat.monitoring.MetricListener;
 import org.gridlab.gat.monitoring.Monitorable;
 
 /**
@@ -285,21 +280,6 @@ public interface Job extends Monitorable, Advertisable {
      * @return the exit status of a job.
      */
     public int getExitStatus() throws GATInvocationException;
-
-    public MetricEvent getMeasurement(Metric metric)
-            throws GATInvocationException;
-
-    public List<MetricDefinition> getMetricDefinitions()
-            throws GATInvocationException;
-
-    public MetricDefinition getMetricDefinitionByName(String name)
-            throws GATInvocationException;
-
-    public void addMetricListener(MetricListener metricListener, Metric metric)
-            throws GATInvocationException;
-
-    public void removeMetricListener(MetricListener metricListener,
-            Metric metric) throws GATInvocationException;
 
     public String toString();
 

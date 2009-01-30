@@ -8,7 +8,6 @@ import org.globus.exec.client.GramJobListener;
 import org.globus.exec.generated.StateEnumeration;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
-import org.gridlab.gat.engine.GATEngine;
 import org.gridlab.gat.monitoring.Metric;
 import org.gridlab.gat.monitoring.MetricDefinition;
 import org.gridlab.gat.monitoring.MetricEvent;
@@ -49,7 +48,7 @@ public class WSGT4newJob extends JobCpi implements GramJobListener, Runnable {
         returnDef.put("status", JobState.class);
         statusMetricDefinition = new MetricDefinition("job.status",
                 MetricDefinition.DISCRETE, "JobState", null, null, returnDef);
-        GATEngine.registerMetric(this, "getJobStatus", statusMetricDefinition);
+        registerMetric("getJobStatus", statusMetricDefinition);
         statusMetric = statusMetricDefinition.createMetric(null);
         poller = new Thread(this);
         poller.setDaemon(true);
@@ -67,7 +66,7 @@ public class WSGT4newJob extends JobCpi implements GramJobListener, Runnable {
             if (logger.isDebugEnabled()) {
                 logger.debug("wsgt4new job callback: firing event: " + v);
             }
-            GATEngine.fireMetric(this, v);
+            fireMetric(v);
             if (state == JobState.STOPPED || state == JobState.SUBMISSION_ERROR) {
                 try {
                     stop(false);

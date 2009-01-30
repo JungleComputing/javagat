@@ -17,7 +17,6 @@ import java.util.Map;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.URI;
-import org.gridlab.gat.engine.GATEngine;
 import org.gridlab.gat.io.File;
 import org.gridlab.gat.monitoring.Metric;
 import org.gridlab.gat.monitoring.MetricDefinition;
@@ -283,7 +282,7 @@ public class ProActiveJob extends JobCpi {
         returnDef.put("status", JobState.class);
         statusMetricDefinition = new MetricDefinition("job.status",
                 MetricDefinition.DISCRETE, "JobState", null, null, returnDef);
-        GATEngine.registerMetric(this, "getJobStatus", statusMetricDefinition);
+        registerMetric("getJobStatus", statusMetricDefinition);
         statusMetric = statusMetricDefinition.createMetric(null);
 
         // Set status and submission time.
@@ -634,7 +633,7 @@ public class ProActiveJob extends JobCpi {
                 jobID = null;
             }
         }
-        GATEngine.fireMetric(this, v);
+        fireMetric(v);
     }
 
     /**

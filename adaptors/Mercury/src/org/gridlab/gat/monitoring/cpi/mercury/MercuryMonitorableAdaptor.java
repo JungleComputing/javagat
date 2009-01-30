@@ -282,6 +282,8 @@ public class MercuryMonitorableAdaptor extends MonitorableCpi {
     }
 
     public static int MAX_BLOCK_TIME = 5000;
+    
+    protected GATContext gatContext;
 
     public Vector<MonitorizedMetric> monitorizedMetrics = new Vector<MonitorizedMetric>();
 
@@ -308,7 +310,7 @@ public class MercuryMonitorableAdaptor extends MonitorableCpi {
      */
     public MercuryMonitorableAdaptor(GATContext gatContext)
             throws GATObjectCreationException {
-        super(gatContext);
+        this.gatContext = gatContext;
 
         if (gatContext.getPreferences().containsKey("mercury.producer")) {
             producer_URL = (String) gatContext.getPreferences().get(

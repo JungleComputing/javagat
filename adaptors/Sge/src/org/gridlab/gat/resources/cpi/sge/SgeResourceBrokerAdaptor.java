@@ -112,7 +112,7 @@ public class SgeResourceBrokerAdaptor extends ResourceBrokerCpi {
         SgeJob sgeJob = new SgeJob(gatContext, description, sandbox);
         Job job = null;
         if (description instanceof WrapperJobDescription) {
-            WrapperJobCpi tmp = new WrapperJobCpi(sgeJob);
+            WrapperJobCpi tmp = new WrapperJobCpi(gatContext, sgeJob);
             listener = tmp;
             job = tmp;
         } else {

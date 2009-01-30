@@ -1,7 +1,6 @@
 package org.gridlab.gat.io.cpi;
 
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Vector;
@@ -18,11 +17,7 @@ import org.gridlab.gat.engine.GATEngine;
 import org.gridlab.gat.io.File;
 import org.gridlab.gat.io.FileInterface;
 import org.gridlab.gat.io.LogicalFile;
-import org.gridlab.gat.monitoring.Metric;
-import org.gridlab.gat.monitoring.MetricDefinition;
-import org.gridlab.gat.monitoring.MetricEvent;
-import org.gridlab.gat.monitoring.MetricListener;
-import org.gridlab.gat.monitoring.Monitorable;
+import org.gridlab.gat.monitoring.cpi.MonitorableCpi;
 
 /**
  * Capability provider interface to the LogicalFile class.
@@ -33,15 +28,10 @@ import org.gridlab.gat.monitoring.Monitorable;
  * method in this LogicalFile class and will be used to implement the
  * corresponding method in the LogicalFile class at runtime.
  */
-public abstract class LogicalFileCpi implements LogicalFile, Monitorable {
+public abstract class LogicalFileCpi extends MonitorableCpi implements LogicalFile {
 
     public static Map<String, Boolean> getSupportedCapabilities() {
-        Map<String, Boolean> capabilities = new HashMap<String, Boolean>();
-        capabilities.put("addMetricListener", false);
-        capabilities.put("getMetricDefinitionsByName", false);
-        capabilities.put("getMetricDefinitions", false);
-        capabilities.put("removeMetricListener", false);
-        capabilities.put("getMeasurement", false);
+        Map<String, Boolean> capabilities = MonitorableCpi.getSupportedCapabilities();
         capabilities.put("addFile", true);
         capabilities.put("addURI", true);
         capabilities.put("removeFile", true);
@@ -53,7 +43,7 @@ public abstract class LogicalFileCpi implements LogicalFile, Monitorable {
     }
 
     protected static Logger logger = Logger.getLogger(LogicalFileCpi.class);
-
+    
     protected GATContext gatContext;
 
     protected String name;
@@ -79,7 +69,7 @@ public abstract class LogicalFileCpi implements LogicalFile, Monitorable {
      * @throws GATObjectCreationException
      *                 Thrown upon creation problems
      */
-    public LogicalFileCpi(GATContext gatContext, String name, Integer mode)
+    protected LogicalFileCpi(GATContext gatContext, String name, Integer mode)
             throws GATObjectCreationException {
         this.gatContext = gatContext;
         files = new Vector<URI>();
@@ -146,11 +136,6 @@ public abstract class LogicalFileCpi implements LogicalFile, Monitorable {
         // + location + "' for existence.", e);
         // }
 
-    }
-
-    public MetricDefinition getMetricDefinitionByName(String myName)
-            throws GATInvocationException {
-        throw new UnsupportedOperationException("Not implemented");
     }
 
     /**
@@ -290,56 +275,6 @@ public abstract class LogicalFileCpi implements LogicalFile, Monitorable {
 
     public String getName() throws GATInvocationException {
         return name;
-    }
-
-    /**
-     * This method adds the passed instance of a MetricListener to the
-     * java.util.List of MetricListeners which are notified of MetricEvents by
-     * an instance of this class. The passed MetricListener is only notified of
-     * MetricEvents which correspond to Metric instance passed to this method.
-     * 
-     * @param metricListener
-     *                The MetricListener to notify of MetricEvents
-     * @param metric
-     *                The Metric corresponding to the MetricEvents for which the
-     *                passed MetricListener will be notified
-     */
-    public void addMetricListener(MetricListener metricListener, Metric metric) {
-        throw new UnsupportedOperationException("Not implemented");
-    }
-
-    /**
-     * Removes the passed MetricListener from the java.util.List of
-     * MetricListeners which are notified of MetricEvents corresponding to the
-     * passed Metric instance.
-     * 
-     * @param metricListener
-     *                The MetricListener to notify of MetricEvents
-     * @param metric
-     *                The Metric corresponding to the MetricEvents for which the
-     *                passed MetricListener will be notified
-     */
-    public void removeMetricListener(MetricListener metricListener,
-            Metric metric) {
-        throw new UnsupportedOperationException("Not implemented");
-    }
-
-    /**
-     * This method returns a java.util.List of Metric instances. Each Metric
-     * instance in this java.util.List is a Metric which can be monitored on
-     * this instance.
-     * 
-     * @return An java.util.List of Metric instances. Each Metric instance in
-     *         this java.util.List is a Metric which can be monitored on this
-     *         instance.
-     */
-    public List<MetricDefinition> getMetricDefinitions() {
-        throw new UnsupportedOperationException("Not implemented");
-    }
-
-    public MetricEvent getMeasurement(Metric metric)
-            throws GATInvocationException {
-        throw new UnsupportedOperationException("Not implemented");
     }
 
     public String marshal() {

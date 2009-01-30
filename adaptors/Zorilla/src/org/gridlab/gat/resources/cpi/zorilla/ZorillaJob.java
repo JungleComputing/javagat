@@ -21,7 +21,6 @@ import org.gridlab.gat.GAT;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.URI;
-import org.gridlab.gat.engine.GATEngine;
 import org.gridlab.gat.engine.util.InputForwarder;
 import org.gridlab.gat.engine.util.OutputForwarder;
 import org.gridlab.gat.io.File;
@@ -150,7 +149,7 @@ public class ZorillaJob extends JobCpi {
         statusMetricDefinition = new MetricDefinition("job.status",
                 MetricDefinition.DISCRETE, "JobState", null, null, returnDef);
         statusMetric = statusMetricDefinition.createMetric(null);
-        GATEngine.registerMetric(this, "getJobStatus", statusMetricDefinition);
+        registerMetric("getJobStatus", statusMetricDefinition);
 
         SoftwareDescription soft = jobDescription.getSoftwareDescription();
 
@@ -577,7 +576,7 @@ public class ZorillaJob extends JobCpi {
             logger.debug("default job callback: firing event: " + v);
         }
 
-        GATEngine.fireMetric(this, v);
+        fireMetric(v);
 
     }
 

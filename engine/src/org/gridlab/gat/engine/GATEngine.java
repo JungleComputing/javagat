@@ -19,7 +19,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.NoSuchElementException;
 import java.util.Properties;
 import java.util.Set;
 import java.util.Vector;
@@ -37,10 +36,6 @@ import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.GATObjectCreationException;
 import org.gridlab.gat.Preferences;
 import org.gridlab.gat.advert.Advertisable;
-import org.gridlab.gat.monitoring.Metric;
-import org.gridlab.gat.monitoring.MetricDefinition;
-import org.gridlab.gat.monitoring.MetricEvent;
-import org.gridlab.gat.monitoring.MetricListener;
 
 /**
  * @author rob
@@ -98,13 +93,7 @@ public class GATEngine {
     /** Keys are cpiClass names, elements are AdaptorLists. */
     // private AdaptorSet adaptors;
     private HashMap<String, List<Adaptor>> adaptorLists = new HashMap<String, List<Adaptor>>();
-
-    /** elements are of type MetricListenerNode */
-    private Vector<MetricListenerNode> metricListeners = new Vector<MetricListenerNode>();
-
-    /** elements are of type MetricNode */
-    private Vector<MetricNode> metricTable = new Vector<MetricNode>();
-    
+   
     /** Classloader to be used as parent classloader for the URL classloaders. */
     private final ClassLoader parentLoader;
 
@@ -782,162 +771,6 @@ public class GATEngine {
         } catch (Exception e) {
             throw new Error("could not unmarshal object: " + e);
         }
-    }
-
-    public static void addMetricListener(Object adaptor,
-            MetricListener metricListener, Metric metric)
-            throws GATInvocationException {
-        GATEngine e = getGATEngine();
-
-        synchronized (e) {
-            // check whether the adaptor actually registered this metric
-            boolean found = false;
-
-            for (int i = 0; i < e.metricTable.size(); i++) {
-                MetricNode n = (MetricNode) e.metricTable.get(i);
-
-                if (n.adaptor == adaptor) {
-                    if (n.definition.equals(metric.getDefinition())) {
-                        found = true;
-
-                        break;
-                    }
-                }
-            }
-
-            if (!found) {
-                throw new GATInvocationException();
-            }
-
-            e.metricListeners.add(new MetricListenerNode(adaptor,
-                    metricListener, metric));
-        }
-    }
-
-    public static void removeMetricListener(Object adaptor,
-            MetricListener metricListener, Metric metric)
-            throws NoSuchElementException {
-        GATEngine e = getGATEngine();
-
-        synchronized (e) {
-            if (!e.metricListeners.remove(new MetricListenerNode(adaptor,
-                    metricListener, metric))) {
-                throw new NoSuchElementException();
-            }
-        }
-    }
-
-    public static void registerMetric(Object adaptor, String methodName,
-            MetricDefinition definition) {
-        GATEngine e = getGATEngine();
-
-        synchronized (e) {
-            e.metricTable.add(new MetricNode(adaptor, methodName, definition));
-        }
-    }
-
-    public static List<MetricDefinition> getMetricDefinitions(Object adaptor) {
-        GATEngine e = getGATEngine();
-
-        synchronized (e) {
-            Vector<MetricDefinition> res = new Vector<MetricDefinition>();
-
-            for (int i = 0; i < e.metricTable.size(); i++) {
-                MetricNode n = (MetricNode) e.metricTable.get(i);
-
-                if (n.adaptor == adaptor) {
-                    res.add(n.definition);
-                }
-            }
-
-            return res;
-        }
-    }
-
-    public static MetricDefinition getMetricDefinitionByName(Object adaptor,
-            String name) throws GATInvocationException {
-        GATEngine e = getGATEngine();
-
-        synchronized (e) {
-            for (int i = 0; i < e.metricTable.size(); i++) {
-                MetricNode n = (MetricNode) e.metricTable.get(i);
-                if ((n.adaptor == adaptor)
-                        && name.equals(n.definition.getMetricName())) {
-                    return n.definition;
-                }
-            }
-
-            throw new GATInvocationException("the metric name is incorrect: "
-                    + name);
-        }
-    }
-
-    public static void fireMetric(Object adaptor, MetricEvent v) {
-        // look for all callbacks that were installed for this metric, call
-        // them.
-        GATEngine e = getGATEngine();
-        MetricListenerNode[] listenerNodes = (MetricListenerNode[]) e.metricListeners
-                .toArray(new MetricListenerNode[e.metricListeners.size()]);
-
-        for (int i = 0; i < listenerNodes.length; i++) {
-            if (listenerNodes[i].adaptor == adaptor) {
-                if (listenerNodes[i].metric.equals(v.getMetric())) {
-                    // hiha, right adaptor and metric
-                    // call the handler
-                    try {
-                        listenerNodes[i].metricListener.processMetricEvent(v);
-                    } catch (Throwable t) {
-                        StringWriter writer = new StringWriter();
-                        t.printStackTrace(new PrintWriter(writer));
-                        logger.warn("WARNING, user callback threw exception: "
-                                + t + "\n" + writer.toString());
-                    }
-                }
-            }
-        }
-
-        // now, also store the last value, a user might poll for it with the
-        // getMeasurement call.
-        for (int i = 0; i < e.metricTable.size(); i++) {
-            MetricNode n = (MetricNode) e.metricTable.get(i);
-
-            if (n.adaptor == adaptor) {
-                if (n.definition.equals(v.getMetric().getDefinition())) {
-                    n.setLastValue(v);
-
-                    return;
-                }
-            }
-        }
-
-        throw new Error("Internal error: event fired for non-registered metric");
-    }
-
-    public static MetricEvent getMeasurement(Object adaptor, Metric metric)
-            throws GATInvocationException {
-        if (metric.getDefinition().getMeasurementType() != MetricDefinition.DISCRETE) {
-            throw new GATInvocationException(
-                    "internal adaptor error: GATEngine.getMeasurement can only handle discrete metrics");
-        }
-
-        GATEngine e = getGATEngine();
-
-        for (int i = 0; i < e.metricTable.size(); i++) {
-            MetricNode n = (MetricNode) e.metricTable.get(i);
-
-            if (n.adaptor == adaptor) {
-                if (n.definition.equals(metric.getDefinition())) {
-                    if (n.lastValue == null) {
-                        throw new GATInvocationException(
-                                "No data available for this metric");
-                    }
-
-                    return n.lastValue;
-                }
-            }
-        }
-
-        throw new GATInvocationException("No data available for this metric");
     }
 
     /**

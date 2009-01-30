@@ -1,26 +1,15 @@
 package nl.vu.ibis;
 
 import java.util.Arrays;
-import java.util.List;
-//import java.util.prefs.Preferences;
 
 import org.apache.log4j.Level;
 import org.gridlab.gat.GAT;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.Preferences;
 import org.gridlab.gat.URI;
-import org.gridlab.gat.io.File;
-import org.gridlab.gat.monitoring.Metric;
-import org.gridlab.gat.monitoring.MetricDefinition;
-import org.gridlab.gat.monitoring.MetricEvent;
-import org.gridlab.gat.monitoring.MetricListener;
-import org.gridlab.gat.resources.AbstractJobDescription;
 import org.gridlab.gat.resources.CoScheduleJobDescription;
 import org.gridlab.gat.resources.Job;
-import org.gridlab.gat.resources.JobDescription;
 import org.gridlab.gat.resources.ResourceBroker;
-import org.gridlab.gat.resources.SoftwareDescription;
-import org.gridlab.gat.resources.Job.JobState;
 import org.gridlab.gat.security.SecurityContext;
 import org.koala.internals.JCompRunnerInfo;
 import org.koala.internals.KLogger;
@@ -30,8 +19,10 @@ public class GATRunner extends AbstractRunner {
 
 	private final GATContext parentContext;
 
-	private final KoalaJob parent;
-	private final CoScheduleJobDescription parentDescription;
+	@SuppressWarnings("unused")
+    private final KoalaJob parent;
+	@SuppressWarnings("unused")
+    private final CoScheduleJobDescription parentDescription;
 	private final String JDS; 
 
 	private final Components components;

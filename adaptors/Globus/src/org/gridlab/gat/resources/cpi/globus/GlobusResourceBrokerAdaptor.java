@@ -505,7 +505,7 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
         GlobusJob globusJob = new GlobusJob(gatContext, description, sandbox);
         Job job = null;
         if (description instanceof WrapperJobDescription) {
-            WrapperJobCpi tmp = new WrapperJobCpi(globusJob);
+            WrapperJobCpi tmp = new WrapperJobCpi(gatContext, globusJob);
             listener = tmp;
             job = tmp;
         } else {

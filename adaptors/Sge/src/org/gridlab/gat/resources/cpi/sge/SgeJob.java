@@ -18,7 +18,6 @@ import org.ggf.drmaa.JobInfo;
 import org.ggf.drmaa.Session;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
-import org.gridlab.gat.engine.GATEngine;
 import org.gridlab.gat.monitoring.Metric;
 import org.gridlab.gat.monitoring.MetricDefinition;
 import org.gridlab.gat.monitoring.MetricEvent;
@@ -150,7 +149,7 @@ public class SgeJob extends JobCpi {
         statusMetricDefinition = new MetricDefinition("job.status",
                 MetricDefinition.DISCRETE, "JobState", null, null, returnDef);
         statusMetric = statusMetricDefinition.createMetric(null);
-        GATEngine.registerMetric(this, "getJobStatus", statusMetricDefinition);
+        registerMetric("getJobStatus", statusMetricDefinition);
     }
 
     protected void setSession(Session session) {
@@ -172,7 +171,7 @@ public class SgeJob extends JobCpi {
         this.state = state;
         MetricEvent v = new MetricEvent(this, state, statusMetric, System
                 .currentTimeMillis());
-        GATEngine.fireMetric(this, v);
+        fireMetric(v);
     }
 
     public String marshal() {

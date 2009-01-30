@@ -1,7 +1,6 @@
 package org.gridlab.gat.io.cpi;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import org.gridlab.gat.GAT;
@@ -9,10 +8,7 @@ import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.URI;
 import org.gridlab.gat.io.RandomAccessFileInterface;
-import org.gridlab.gat.monitoring.Metric;
-import org.gridlab.gat.monitoring.MetricDefinition;
-import org.gridlab.gat.monitoring.MetricEvent;
-import org.gridlab.gat.monitoring.MetricListener;
+import org.gridlab.gat.monitoring.cpi.MonitorableCpi;
 
 /**
  * Capability provider interface to the File class.
@@ -23,15 +19,10 @@ import org.gridlab.gat.monitoring.MetricListener;
  * this File class and will be used to implement the corresponding method in the
  * File class at runtime.
  */
-public abstract class RandomAccessFileCpi implements RandomAccessFileInterface {
+public abstract class RandomAccessFileCpi extends MonitorableCpi implements RandomAccessFileInterface {
 
     public static Map<String, Boolean> getSupportedCapabilities() {
         Map<String, Boolean> capabilities = new HashMap<String, Boolean>();
-        capabilities.put("addMetricListener", false);
-        capabilities.put("getMetricDefinitionsByName", false);
-        capabilities.put("getMetricDefinitions", false);
-        capabilities.put("removeMetricListener", false);
-        capabilities.put("getMeasurement", false);
         capabilities.put("toURI", true);
         capabilities.put("getFile", true);
         capabilities.put("close", false);
@@ -46,7 +37,7 @@ public abstract class RandomAccessFileCpi implements RandomAccessFileInterface {
     }
 
     protected GATContext gatContext;
-
+    
     protected URI location;
 
     protected String mode;
@@ -208,48 +199,6 @@ public abstract class RandomAccessFileCpi implements RandomAccessFileInterface {
      * @see org.gridlab.gat.io.RandomAccessFile#write(int)
      */
     public void write(int arg0) throws GATInvocationException {
-        throw new UnsupportedOperationException("Not implemented");
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.gridlab.gat.monitoring.Monitorable#addMetricListener(org.gridlab.gat.monitoring.MetricListener,
-     *      org.gridlab.gat.monitoring.Metric)
-     */
-    public void addMetricListener(MetricListener metricListener, Metric metric)
-            throws GATInvocationException {
-        throw new UnsupportedOperationException("Not implemented");
-    }
-
-    public MetricDefinition getMetricDefinitionByName(String name)
-            throws GATInvocationException {
-        throw new UnsupportedOperationException("Not implemented");
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.gridlab.gat.monitoring.Monitorable#getMetrics()
-     */
-    public List<MetricDefinition> getMetricDefinitions()
-            throws GATInvocationException {
-        throw new UnsupportedOperationException("Not implemented");
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.gridlab.gat.monitoring.Monitorable#removeMetricListener(org.gridlab.gat.monitoring.MetricListener,
-     *      org.gridlab.gat.monitoring.Metric)
-     */
-    public void removeMetricListener(MetricListener metricListener,
-            Metric metric) throws GATInvocationException {
-        throw new UnsupportedOperationException("Not implemented");
-    }
-
-    public MetricEvent getMeasurement(Metric metric)
-            throws GATInvocationException {
         throw new UnsupportedOperationException("Not implemented");
     }
 

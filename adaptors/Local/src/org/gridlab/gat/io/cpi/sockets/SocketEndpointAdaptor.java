@@ -8,7 +8,6 @@ import java.io.Serializable;
 import java.io.StringWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.List;
 import java.util.Map;
 
 import org.exolab.castor.xml.Marshaller;
@@ -20,7 +19,6 @@ import org.gridlab.gat.engine.GATEngine;
 import org.gridlab.gat.io.Pipe;
 import org.gridlab.gat.io.PipeListener;
 import org.gridlab.gat.io.cpi.EndpointCpi;
-import org.gridlab.gat.monitoring.MetricDefinition;
 
 /**
  * @author rob
@@ -188,12 +186,6 @@ public class SocketEndpointAdaptor extends EndpointCpi implements Serializable {
         return "endpoint: localPort = " + localPort + ", localHost = "
                 + localHost + ", remotePort = " + remotePort
                 + ", remoteHost = " + remoteHost;
-    }
-
-    // For some reason, we need this for castor serialization
-    public List<MetricDefinition> getMetricDefinitions()
-            throws GATInvocationException {
-        return null;
     }
 
     public int getLocalPort() {

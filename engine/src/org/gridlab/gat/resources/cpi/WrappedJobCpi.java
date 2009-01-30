@@ -6,7 +6,6 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.util.HashMap;
 
-import org.gridlab.gat.engine.GATEngine;
 import org.gridlab.gat.monitoring.Metric;
 import org.gridlab.gat.monitoring.MetricDefinition;
 import org.gridlab.gat.monitoring.MetricEvent;
@@ -64,7 +63,7 @@ public class WrappedJobCpi extends JobCpi implements Runnable {
         statusMetricDefinition = new MetricDefinition("job.status",
                 MetricDefinition.DISCRETE, "JobState", null, null, returnDef);
         statusMetric = statusMetricDefinition.createMetric(null);
-        GATEngine.registerMetric(this, "getJobStatus", statusMetricDefinition);
+        registerMetric("getJobStatus", statusMetricDefinition);
 
         // start a thread that monitors the job state, by monitoring a file
         Thread thread = new Thread(this);
@@ -76,7 +75,7 @@ public class WrappedJobCpi extends JobCpi implements Runnable {
     private void fireStateMetric(JobState state) {
         MetricEvent v = new MetricEvent(this, state.toString(), statusMetric,
                 System.currentTimeMillis());
-        GATEngine.fireMetric(this, v);
+        fireMetric(v);
     }
 
     public void run() {

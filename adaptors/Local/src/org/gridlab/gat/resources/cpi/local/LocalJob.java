@@ -48,7 +48,7 @@ public class LocalJob extends JobCpi {
         statusMetricDefinition = new MetricDefinition("job.status",
                 MetricDefinition.DISCRETE, "JobState", null, null, returnDef);
         statusMetric = statusMetricDefinition.createMetric(null);
-        GATEngine.registerMetric(this, "getJobStatus", statusMetricDefinition);
+        registerMetric("getJobStatus", statusMetricDefinition);
     }
 
     protected void setProcess(Process p) {
@@ -74,7 +74,7 @@ public class LocalJob extends JobCpi {
         this.state = state;
         MetricEvent v = new MetricEvent(this, state, statusMetric, System
                 .currentTimeMillis());
-        GATEngine.fireMetric(this, v);
+        fireMetric(v);
     }
 
     /*

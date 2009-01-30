@@ -2,6 +2,7 @@ package org.gridlab.gat.resources.cpi.local;
 
 import java.io.IOException;
 import java.util.Map;
+
 import org.apache.log4j.Logger;
 import org.gridlab.gat.CommandNotFoundException;
 import org.gridlab.gat.GAT;
@@ -148,7 +149,7 @@ public class LocalResourceBrokerAdaptor extends ResourceBrokerCpi {
         LocalJob localJob = new LocalJob(gatContext, description, sandbox);
         Job job = null;
         if (description instanceof WrapperJobDescription) {
-            WrapperJobCpi tmp = new WrapperJobCpi(localJob);
+            WrapperJobCpi tmp = new WrapperJobCpi(gatContext, localJob);
             listener = tmp;
             job = tmp;
         } else {

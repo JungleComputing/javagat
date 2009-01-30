@@ -1,7 +1,5 @@
 package org.gridlab.gat.io.cpi;
 
-import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
@@ -10,10 +8,7 @@ import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.Preferences;
 import org.gridlab.gat.URI;
 import org.gridlab.gat.io.FileOutputStreamInterface;
-import org.gridlab.gat.monitoring.Metric;
-import org.gridlab.gat.monitoring.MetricDefinition;
-import org.gridlab.gat.monitoring.MetricEvent;
-import org.gridlab.gat.monitoring.MetricListener;
+import org.gridlab.gat.monitoring.cpi.MonitorableCpi;
 
 /**
  * Capability provider interface to the FileStream class.
@@ -24,23 +19,18 @@ import org.gridlab.gat.monitoring.MetricListener;
  * method in this FileStream class and will be used to implement the
  * corresponding method in the FileStream class at runtime.
  */
-public abstract class FileOutputStreamCpi implements FileOutputStreamInterface {
+public abstract class FileOutputStreamCpi extends MonitorableCpi implements FileOutputStreamInterface {
 
     public static Map<String, Boolean> getSupportedCapabilities() {
-        Map<String, Boolean> capabilities = new HashMap<String, Boolean>();
-        capabilities.put("addMetricListener", false);
-        capabilities.put("getMetricDefinitionsByName", false);
-        capabilities.put("getMetricDefinitions", false);
-        capabilities.put("removeMetricListener", false);
-        capabilities.put("getMeasurement", false);
+        Map<String, Boolean> capabilities = MonitorableCpi.getSupportedCapabilities();
         capabilities.put("close", false);
         capabilities.put("flush", false);
         capabilities.put("write", false);
         return capabilities;
     }
 
-    protected static Preferences getSupportedPreferences() {
-        Preferences preferences = new Preferences();
+    public static Preferences getSupportedPreferences() {
+        Preferences preferences = MonitorableCpi.getSupportedPreferences();
         preferences.put("FileOutputStream.adaptor.name", "<no default>");
         preferences.put("adaptors.local", "false");
 
@@ -49,7 +39,7 @@ public abstract class FileOutputStreamCpi implements FileOutputStreamInterface {
 
     protected static Logger logger = Logger
             .getLogger(FileOutputStreamCpi.class);
-
+    
     protected GATContext gatContext;
 
     protected URI location;
@@ -148,48 +138,6 @@ public abstract class FileOutputStreamCpi implements FileOutputStreamInterface {
      * @see org.gridlab.gat.io.FileOutputStreamInterface#write(int)
      */
     public void write(int arg0) throws GATInvocationException {
-        throw new UnsupportedOperationException("Not implemented");
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.gridlab.gat.monitoring.Monitorable#addMetricListener(org.gridlab.gat.monitoring.MetricListener,
-     *      org.gridlab.gat.monitoring.Metric)
-     */
-    public void addMetricListener(MetricListener metricListener, Metric metric)
-            throws GATInvocationException {
-        throw new UnsupportedOperationException("Not implemented");
-    }
-
-    public MetricDefinition getMetricDefinitionByName(String name)
-            throws GATInvocationException {
-        throw new UnsupportedOperationException("Not implemented");
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.gridlab.gat.monitoring.Monitorable#getMetrics()
-     */
-    public List<MetricDefinition> getMetricDefinitions()
-            throws GATInvocationException {
-        throw new UnsupportedOperationException("Not implemented");
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.gridlab.gat.monitoring.Monitorable#removeMetricListener(org.gridlab.gat.monitoring.MetricListener,
-     *      org.gridlab.gat.monitoring.Metric)
-     */
-    public void removeMetricListener(MetricListener metricListener,
-            Metric metric) throws GATInvocationException {
-        throw new UnsupportedOperationException("Not implemented");
-    }
-
-    public MetricEvent getMeasurement(Metric metric)
-            throws GATInvocationException {
         throw new UnsupportedOperationException("Not implemented");
     }
 

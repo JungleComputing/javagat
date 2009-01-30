@@ -3,8 +3,6 @@
  */
 package org.gridlab.gat.advert.cpi;
 
-import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 
@@ -14,11 +12,7 @@ import org.gridlab.gat.Preferences;
 import org.gridlab.gat.advert.AdvertService;
 import org.gridlab.gat.advert.Advertisable;
 import org.gridlab.gat.advert.MetaData;
-import org.gridlab.gat.monitoring.Metric;
-import org.gridlab.gat.monitoring.MetricDefinition;
-import org.gridlab.gat.monitoring.MetricEvent;
-import org.gridlab.gat.monitoring.MetricListener;
-import org.gridlab.gat.monitoring.Monitorable;
+import org.gridlab.gat.monitoring.cpi.MonitorableCpi;
 
 /**
  * @author rob
@@ -27,11 +21,10 @@ import org.gridlab.gat.monitoring.Monitorable;
  * queried in an advert directory. Such an advert directory is a meta data
  * directory with an hierarchical namespace attached.
  */
-public class AdvertServiceCpi implements AdvertService, Monitorable {
-    protected GATContext gatContext;
-
+public class AdvertServiceCpi extends MonitorableCpi implements AdvertService {
+    
     public static Map<String, Boolean> getSupportedCapabilities() {
-        Map<String, Boolean> capabilities = new HashMap<String, Boolean>();
+        Map<String, Boolean> capabilities = MonitorableCpi.getSupportedCapabilities();
         capabilities.put("add", false);
         capabilities.put("delete", false);
         capabilities.put("getMetaData", false);
@@ -39,11 +32,6 @@ public class AdvertServiceCpi implements AdvertService, Monitorable {
         capabilities.put("find", false);
         capabilities.put("setPWD", false);
         capabilities.put("getPWD", false);
-        capabilities.put("addMetricListener", false);
-        capabilities.put("removeMetricListener", false);
-        capabilities.put("getMetricDefinitions", false);
-        capabilities.put("getMeasurement", false);
-        capabilities.put("getMetricDefinitionByName", false);
         return capabilities;
     }
 
@@ -51,6 +39,8 @@ public class AdvertServiceCpi implements AdvertService, Monitorable {
         Preferences preferences = new Preferences();
         return preferences;
     }
+    
+    protected GATContext gatContext;
 
     /**
      * Create an instance of the AdvertService using the provided preference.
@@ -60,7 +50,7 @@ public class AdvertServiceCpi implements AdvertService, Monitorable {
      * @param preferences
      *                The user preferences.
      */
-    public AdvertServiceCpi(GATContext gatContext) {
+    protected AdvertServiceCpi(GATContext gatContext) {
         this.gatContext = gatContext;
     }
 
@@ -163,31 +153,6 @@ public class AdvertServiceCpi implements AdvertService, Monitorable {
     }
 
     public void importDataBase(org.gridlab.gat.URI target)
-            throws GATInvocationException {
-        throw new UnsupportedOperationException("Not implemented");
-    }
-
-    public void addMetricListener(MetricListener metricListener, Metric metric)
-            throws GATInvocationException {
-        throw new UnsupportedOperationException("Not implemented");
-    }
-
-    public void removeMetricListener(MetricListener metricListener,
-            Metric metric) throws GATInvocationException {
-        throw new UnsupportedOperationException("Not implemented");
-    }
-
-    public List<MetricDefinition> getMetricDefinitions()
-            throws GATInvocationException {
-        throw new UnsupportedOperationException("Not implemented");
-    }
-
-    public MetricEvent getMeasurement(Metric metric)
-            throws GATInvocationException {
-        throw new UnsupportedOperationException("Not implemented");
-    }
-
-    public MetricDefinition getMetricDefinitionByName(String name)
             throws GATInvocationException {
         throw new UnsupportedOperationException("Not implemented");
     }

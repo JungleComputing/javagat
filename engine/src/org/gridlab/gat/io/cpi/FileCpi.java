@@ -5,8 +5,6 @@ import java.io.FilenameFilter;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Vector;
 
@@ -22,10 +20,7 @@ import org.gridlab.gat.engine.GATEngine;
 import org.gridlab.gat.engine.util.NoInfoLogging;
 import org.gridlab.gat.io.File;
 import org.gridlab.gat.io.FileInterface;
-import org.gridlab.gat.monitoring.Metric;
-import org.gridlab.gat.monitoring.MetricDefinition;
-import org.gridlab.gat.monitoring.MetricEvent;
-import org.gridlab.gat.monitoring.MetricListener;
+import org.gridlab.gat.monitoring.cpi.MonitorableCpi;
 
 /**
  * Capability provider interface to the File class.
@@ -36,19 +31,16 @@ import org.gridlab.gat.monitoring.MetricListener;
  * this File class and will be used to implement the corresponding method in the
  * File class at runtime.
  */
-public abstract class FileCpi implements FileInterface, java.io.Serializable {
+public abstract class FileCpi extends MonitorableCpi implements FileInterface, java.io.Serializable {
 
     public static Map<String, Boolean> getSupportedCapabilities() {
-        Map<String, Boolean> capabilities = new HashMap<String, Boolean>();
+        Map<String, Boolean> capabilities = MonitorableCpi.getSupportedCapabilities();
         capabilities.put("getGATContext", true);
         capabilities.put("equals", true);
         capabilities.put("toURI", true);
         capabilities.put("toURL", true);
         capabilities.put("toString", true);
         capabilities.put("recursivelyDeleteDirectory", true);
-        capabilities.put("addMetricListener", false);
-        capabilities.put("getMetricDefinitions", false);
-        capabilities.put("getMeasurement", false);
         capabilities.put("compareTo", true);
         capabilities.put("deleteOneExit", true);
         capabilities.put("getAbsolutePath", false);
@@ -85,7 +77,7 @@ public abstract class FileCpi implements FileInterface, java.io.Serializable {
     }
 
     public static Preferences getSupportedPreferences() {
-        Preferences preferences = new Preferences();
+        Preferences preferences = MonitorableCpi.getSupportedPreferences();
         preferences.put("file.adaptor.name", "<no default>");
         preferences.put("adaptors.local", "false");
         preferences.put("file.create", "false");
@@ -94,7 +86,7 @@ public abstract class FileCpi implements FileInterface, java.io.Serializable {
     }
 
     protected static Logger logger = Logger.getLogger(FileCpi.class);
-
+    
     protected GATContext gatContext;
 
     protected URI location;
@@ -213,31 +205,6 @@ public abstract class FileCpi implements FileInterface, java.io.Serializable {
     }
 
     public void copy(URI loc) throws GATInvocationException {
-        throw new UnsupportedOperationException("Not implemented");
-    }
-
-    public void addMetricListener(MetricListener metricListener, Metric metric)
-            throws GATInvocationException {
-        throw new UnsupportedOperationException("Not implemented");
-    }
-
-    public List<MetricDefinition> getMetricDefinitions()
-            throws GATInvocationException {
-        throw new UnsupportedOperationException("Not implemented");
-    }
-
-    public void removeMetricListener(MetricListener metricListener,
-            Metric metric) throws GATInvocationException {
-        throw new UnsupportedOperationException("Not implemented");
-    }
-
-    public MetricDefinition getMetricDefinitionByName(String name)
-            throws GATInvocationException {
-        throw new UnsupportedOperationException("Not implemented");
-    }
-
-    public MetricEvent getMeasurement(Metric metric)
-            throws GATInvocationException {
         throw new UnsupportedOperationException("Not implemented");
     }
 

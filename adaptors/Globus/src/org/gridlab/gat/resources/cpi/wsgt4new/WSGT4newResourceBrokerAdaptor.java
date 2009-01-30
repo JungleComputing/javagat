@@ -309,7 +309,7 @@ public class WSGT4newResourceBrokerAdaptor extends ResourceBrokerCpi {
         WSGT4newJob wsgt4job = new WSGT4newJob(gatContext, description, sandbox);
         Job job = null;
         if (description instanceof WrapperJobDescription) {
-            WrapperJobCpi tmp = new WrapperJobCpi(wsgt4job);
+            WrapperJobCpi tmp = new WrapperJobCpi(gatContext, wsgt4job);
             listener = tmp;
             job = tmp;
         } else {

@@ -2,6 +2,7 @@ package org.gridlab.gat.steering;
 
 import java.util.List;
 import java.util.Map;
+
 import org.gridlab.gat.GATInvocationException;
 
 public interface SteeringManager {

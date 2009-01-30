@@ -11,7 +11,7 @@ import org.gridlab.gat.resources.Job.JobState;
 public class Components {
 
 	// The time that we wait for a job to appear. Default is 30 seconds.
-	private static final int DEFAULT_TIMEOUT = 30000;
+	// private static final int DEFAULT_TIMEOUT = 30000;
 
 	// The GAT context (used when executing jobs).
 	private final GATContext context;

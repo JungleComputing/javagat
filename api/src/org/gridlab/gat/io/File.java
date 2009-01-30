@@ -18,8 +18,8 @@ import org.gridlab.gat.URI;
 import org.gridlab.gat.advert.Advertisable;
 import org.gridlab.gat.monitoring.Metric;
 import org.gridlab.gat.monitoring.MetricDefinition;
-import org.gridlab.gat.monitoring.MetricListener;
 import org.gridlab.gat.monitoring.MetricEvent;
+import org.gridlab.gat.monitoring.MetricListener;
 import org.gridlab.gat.monitoring.Monitorable;
 
 /**

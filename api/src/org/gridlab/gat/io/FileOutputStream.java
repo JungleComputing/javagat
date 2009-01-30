@@ -8,8 +8,8 @@ import org.gridlab.gat.GATIOException;
 import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.monitoring.Metric;
 import org.gridlab.gat.monitoring.MetricDefinition;
-import org.gridlab.gat.monitoring.MetricListener;
 import org.gridlab.gat.monitoring.MetricEvent;
+import org.gridlab.gat.monitoring.MetricListener;
 import org.gridlab.gat.monitoring.Monitorable;
 
 /**
