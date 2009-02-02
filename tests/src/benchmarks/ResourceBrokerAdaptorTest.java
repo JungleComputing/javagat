@@ -136,7 +136,7 @@ public class ResourceBrokerAdaptorTest implements MetricListener {
         // Arguments modified to test against expansion of shell meta characters --Ceriel
         sd.setArguments("test", "1", "2", "'*");
         try {
-            sd.setStdout(GAT.createFile("stdout"));
+            sd.setStdout(GAT.createFile(preferences, "stdout"));
         } catch (GATObjectCreationException e) {
             return new AdaptorTestResultEntry(false, 0L, e);
         }
@@ -185,7 +185,7 @@ public class ResourceBrokerAdaptorTest implements MetricListener {
         sd.setExecutable("/bin/ls");
         sd.setArguments("floep");
         try {
-            sd.setStderr(GAT.createFile("stderr"));
+            sd.setStderr(GAT.createFile(preferences, "stderr"));
         } catch (GATObjectCreationException e) {
             return new AdaptorTestResultEntry(false, 0L, e);
         }
@@ -243,8 +243,8 @@ public class ResourceBrokerAdaptorTest implements MetricListener {
             floep.deleteOnExit();
         }
         try {
-            sd.addPreStagedFile(GAT.createFile("floep"));
-            sd.setStdout(GAT.createFile("stdout"));
+            sd.addPreStagedFile(GAT.createFile(preferences, "floep"));
+            sd.setStdout(GAT.createFile(preferences, "stdout"));
         } catch (GATObjectCreationException e) {
             return new AdaptorTestResultEntry(false, 0L, e);
         }
@@ -291,7 +291,7 @@ public class ResourceBrokerAdaptorTest implements MetricListener {
         sd.setExecutable("/bin/touch");
         sd.setArguments("flap.txt");
         try {
-            sd.addPostStagedFile(GAT.createFile("flap.txt"));
+            sd.addPostStagedFile(GAT.createFile(preferences, "flap.txt"));
         } catch (GATObjectCreationException e) {
             return new AdaptorTestResultEntry(false, 0L, e);
         }
@@ -332,7 +332,7 @@ public class ResourceBrokerAdaptorTest implements MetricListener {
         sd.setEnvironment(env);
         sd.setExecutable("/usr/bin/env");
         try {
-            sd.setStdout(GAT.createFile("stdout"));
+            sd.setStdout(GAT.createFile(preferences, "stdout"));
         } catch (GATObjectCreationException e) {
             return new AdaptorTestResultEntry(false, 0L, e);
         }
