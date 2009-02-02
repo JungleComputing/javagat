@@ -801,7 +801,7 @@ public abstract class GlobusFileAdaptor extends FileCpi {
             }
 
             return cachedInfo;
-        } catch (Exception e) {
+        } catch (Throwable e) {
             throw new GATInvocationException("gridftp", e);
         } finally {
             if (client != null)
