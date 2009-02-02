@@ -577,8 +577,8 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
         }
         if (sd.streamingStderrEnabled()) {
             try {
-                globusJob.startStderrForwarder(GAT.createFile(brokerURI
-                        .setPath(sandbox.getSandbox() + "/stderr")));
+                globusJob.startStderrForwarder(GAT.createFile(gatContext,
+                        brokerURI.setPath(sandbox.getSandbox() + "/stderr")));
             } catch (GATObjectCreationException e) {
                 // TODO Auto-generated catch block
                 e.printStackTrace();
@@ -589,8 +589,8 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
         }
         if (sd.streamingStdoutEnabled()) {
             try {
-                globusJob.startStdoutForwarder(GAT.createFile(brokerURI
-                        .setPath(sandbox.getSandbox() + "/stdout")));
+                globusJob.startStdoutForwarder(GAT.createFile(gatContext,
+                        brokerURI.setPath(sandbox.getSandbox() + "/stdout")));
             } catch (GATObjectCreationException e) {
                 // TODO Auto-generated catch block
                 e.printStackTrace();
