@@ -1,5 +1,15 @@
 FIXED BUGS in version 2.0.4 with respect to version 2.0.3
-- fixed stop() method of resourcebroker adaptors: the method
+
+- The glite adaptor has seen various updates and fixes, but its file
+  adaptor is still to be considered "experimental", according to the developers.
+- File.getName() returned null in some cases, which is a no-no. This is fixed,
+  and this also fixes bug 187.
+- re-implemented metrics administration. The old method maintained static lists
+  inside GATEngine which were never cleaned up, so that there was a huge memory
+  leak because the engine kept references to all jobs that were ever run.
+  Now, the lists are maintained within the monitorable object itself and are
+  no longer static. This fixes bug 134.
+- fixed stop() method of almost all resourcebroker adaptors: the method
   may now be called in any job state, as promised in the javadoc.
 - fixed wsgt4new resourcebroker adaptor to actually use a user-supplied
   credential (bug reported by Ralf Groeper).
@@ -30,6 +40,7 @@ FIXED BUGS in version 2.0.4 with respect to version 2.0.3
 - various fixes and updates in the glite adaptor.
 
 FIXED BUGS in version 2.0.3 with respect to version 2.0.2
+
 - fixed the compilation of the contributed adaptors (bug reported by Alexander Beck-Ratzka)
 - fixed some tests: preferences were set, but not passed on to GAT.create() methods.
 - resource brokers now accept only proper URIs (using the right scheme for the specific adaptor or the any scheme) (bug reported by Niels Drost)
@@ -38,6 +49,7 @@ FIXED BUGS in version 2.0.3 with respect to version 2.0.2
 - glite-adaptor: support for inputdata jdl attribute
 
 FIXED BUGS in version 2.0.2 with respect to version 2.0.1
+
 - fixed bug in sshtrilead adaptor for getting files from a remote location to a local location (connection attempt to the wrong side, bug reported by Enric Tejedor).
 - modified the File.java toURL method to be compatible with java 1.6 (it's deprecated there)
 - fix in the engine: FileCpi.copyDir, it invokes now just the static copyDirectory
