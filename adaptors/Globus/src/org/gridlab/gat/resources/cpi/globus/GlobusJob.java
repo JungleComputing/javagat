@@ -271,11 +271,17 @@ public class GlobusJob extends JobCpi implements GramJobListener,
             // the signal has been sent. Now we wait for the termination to
             // complete. This is indicated when the job enters the STOPPED state
             waitForJobCompletion();
+            /* The code below is wrong! waitForJobCompletion waits until the job is
+             * either in state SUBMISSION_ERROR or STOPPED. If in state STOPPED,
+             * poststaging is done if necessary. If in state SUBMISSION_ERROR, no
+             * poststaging should be done. So: commented out the code below. --Ceriel
+             * 
             if (!(gatContext.getPreferences().containsKey("job.stop.poststage") && gatContext
                     .getPreferences().get("job.stop.poststage").equals("false"))) {
                 setState(JobState.POST_STAGING);
                 sandbox.retrieveAndCleanup(this);
             }
+            */
         } else {
             // this can happen if an exception is thrown after the creation of
             // this job in the submitjob method, simply remove the job from the
