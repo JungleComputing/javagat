@@ -166,7 +166,7 @@ public class VomsProxyManager extends GlobusProxyManager {
 				createProxyCredential();
 			}
 
-			logger.info("creating gss name with host-dn "
+			logger.debug("creating gss name with host-dn "
 					+ proxyCred.getIdentity());
 
 			GlobusGSSCredentialImpl gsci = 
@@ -197,7 +197,7 @@ public class VomsProxyManager extends GlobusProxyManager {
 			gssSocket.setWrapMode(2);
 			gssSocket.setAuthorization(auth);
 
-			logger.info("received voce voms gss socket at: "
+			logger.debug("received voce voms gss socket at: "
 					+ gssSocket.getInetAddress());
 
 		} catch (GSSException e) {
