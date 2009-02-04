@@ -70,7 +70,7 @@ public class LfcConnection {
             0x02, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x01 };
 
     private final ByteBuffer sendBuf = ByteBuffer.allocateDirect(BUF_SIZE);
-    private final ByteBuffer recvBuf = ByteBuffer.allocateDirect(BUF_SIZE);
+    private ByteBuffer recvBuf = ByteBuffer.allocateDirect(BUF_SIZE);
     private final ByteChannel channel;
 
     private final GSSCredential gssCredential;
@@ -78,7 +78,7 @@ public class LfcConnection {
     public LfcConnection(String host, int port) throws IOException {
         try {
             final String proxyPath = GliteSecurityUtils.getProxyPath();
-            logger.info("Proxy is " + proxyPath);
+            logger.debug("Proxy is " + proxyPath);
             GlobusCredential credential = new GlobusCredential(proxyPath);
             gssCredential = new GlobusGSSCredentialImpl(credential, 0);
         } catch (GSSException e) {
@@ -125,10 +125,10 @@ public class LfcConnection {
         recvBuf.flip();
         int magic = recvBuf.getInt();
         int type = recvBuf.getInt();
+        // For whatever reason, the reply never includes the size of the Header.
         int sizeOrError = recvBuf.getInt();
-        logger
-                .info("Received M/T/S: " + magic + " " + type + " "
-                        + sizeOrError);
+        logger.debug("Received M/T/S: " + magic + " " + type + " "
+                + sizeOrError);
 
         if (magic == CSEC_TOKEN_MAGIC_1) {
             if ((type != CSEC_TOKEN_TYPE_PROTOCOL_RESP)
@@ -149,10 +149,22 @@ public class LfcConnection {
             throw new IOException("Recieved invalid Magic/Type: " + magic + "/"
                     + type);
 
-        assert sizeOrError < BUF_SIZE : "Buffer size must be at least "
-                + sizeOrError;
-        while (recvBuf.limit() < sizeOrError) {
-            recvBuf.flip();
+        logger.debug("Limit: " + recvBuf.limit() + ", Pos: "
+                + recvBuf.position() + " MinContent: " + sizeOrError
+                + " Avail " + recvBuf.remaining());
+
+        while (recvBuf.remaining() < sizeOrError) {
+            logger.debug("Reading once more: " + recvBuf.remaining() + " < "
+                    + sizeOrError);
+            // TODO: There must be an easier method of reading more data.
+            byte[] temp = new byte[recvBuf.remaining()];
+            recvBuf.get(temp);
+            if (recvBuf.capacity() < sizeOrError) {
+                recvBuf = ByteBuffer.allocateDirect(sizeOrError);
+            } else {
+                recvBuf.clear();
+            }
+            recvBuf.put(temp);
             channel.read(recvBuf);
             recvBuf.flip();
         }
@@ -189,7 +201,7 @@ public class LfcConnection {
             while (!secureContext.isEstablished()) {
                 byte[] sendToken = secureContext.initSecContext(recvToken, 0,
                         recvToken.length);
-                logger.info("called initSecContext, doing another iteration");
+                logger.debug("called initSecContext, doing another iteration");
 
                 if (sendToken != null) {
                     preparePacket(CSEC_TOKEN_MAGIC_1, CSEC_TOKEN_TYPE_HANDSHAKE);
@@ -208,7 +220,7 @@ public class LfcConnection {
             logger.warn(e.toString());
             throw new IOException("Error processing credential");
         }
-        logger.info("Secure Context established!");
+        logger.debug("Secure Context established!");
     }
 
     private void putString(String s) {
