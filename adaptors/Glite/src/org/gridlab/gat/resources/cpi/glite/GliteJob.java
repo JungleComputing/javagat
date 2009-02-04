@@ -250,7 +250,7 @@ public class GliteJob extends JobCpi {
 		
 		// Create Job Description Language File ...
 		long jdlID = System.currentTimeMillis();
-		String voName = (String) gatContext.getPreferences().get("VirtualOrganisation");
+		String voName = ((String) gatContext.getPreferences().get(GliteConstants.PREFERENCE_VIRTUAL_ORGANISATION));
 		
 		ResourceDescription rd = jobDescription.getResourceDescription();
 		
@@ -372,7 +372,7 @@ public class GliteJob extends JobCpi {
 
 			String proxyString = new String(x509Cert);
 			grstStub.putProxy(delegationId, proxyString);
-
+			
 			String jdlString = gLiteJobDescription.getJdlString();
 			jobIdStruct = serviceStub.jobRegister(jdlString, delegationId);
 			

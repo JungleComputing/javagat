@@ -67,9 +67,11 @@ public class GliteResourceBrokerAdaptor extends ResourceBrokerCpi {
     public static Preferences getSupportedPreferences() {
         Preferences preferences = ResourceBrokerCpi.getSupportedPreferences();
         preferences.put(GliteConstants.PREFERENCE_VIRTUAL_ORGANISATION, "true");
-        preferences.put("vomsHostDN", "true");
-        preferences.put("vomsServerURL", "true");
-        preferences.put("vomsServerPort", "true");
+        preferences.put(GliteConstants.PREFERENCE_VIRTUAL_ORGANISATION_GROUP, "true");
+        preferences.put(GliteConstants.PREFERENCE_VIRTUAL_ORGANISATION_ROLE, "true");
+        preferences.put(GliteConstants.PREFERENCE_VIRTUAL_ORGANISATION_HOST_DN, "true");
+        preferences.put(GliteConstants.PREFERENCE_VIRTUAL_ORGANISATION_SERVER_URL, "true");
+        preferences.put(GliteConstants.PREFERENCE_VIRTUAL_ORGANISATION_SERVER_URL, "true");
         preferences.put("vomsLifetime", "true");
         preferences.put("glite.createNewProxy", "true");
         preferences.put("glite.pollIntervalSecs", "true");

@@ -6,6 +6,7 @@ import org.globus.common.CoGProperties;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.Preferences;
+import org.gridlab.gat.resources.cpi.glite.GliteConstants;
 import org.gridlab.gat.security.CertificateSecurityContext;
 import org.gridlab.gat.security.SecurityContext;
 
@@ -135,9 +136,14 @@ public final class GliteSecurityUtils {
      * <td>the port on which to connect to the voms server</td>
      * </tr>
      * <tr>
-     * <td>VirtualOrganisation</td>
-     * <td>The name of the virtual organisation for which the voms proxy is
-     * created (e.g. voce)</td>
+     * <td>VirtualOrganisationGroup</td>
+     * <td>The group inside the virtual organisation for which the voms proxy is
+     * created</td>
+     * </tr>
+     * <tr>
+     * <td>VirtualOrganisationRole</td>
+     * <td>The role inside the virtual organisation or the group of the virtual 
+     * organisation for which the voms proxy is created (e.g. VOAdmin)</td>
      * </tr>
      * </table>
      * 
@@ -165,18 +171,21 @@ public final class GliteSecurityUtils {
         String userkey = secContext.getKeyfile().getPath();
         String usercert = secContext.getCertfile().getPath();
 
-        String hostDN = (String) prefs.get("vomsHostDN");
-        String serverURI = (String) prefs.get("vomsServerURL");
-        String serverPortStr = (String) prefs.get("vomsServerPort");
+        String hostDN = (String) prefs.get(GliteConstants.PREFERENCE_VIRTUAL_ORGANISATION_HOST_DN);
+        String serverURI = (String) prefs.get(GliteConstants.PREFERENCE_VIRTUAL_ORGANISATION_SERVER_URL);
+        String serverPortStr = (String) prefs.get(GliteConstants.PREFERENCE_VIRTUAL_ORGANISATION_SERVER_PORT);
         int serverPort = Integer.parseInt(serverPortStr);
 
-        String voName = (String) prefs.get("VirtualOrganisation");
-
+        String voName = (String) prefs.get(GliteConstants.PREFERENCE_VIRTUAL_ORGANISATION);
+        String voGroup = (String) prefs.get(GliteConstants.PREFERENCE_VIRTUAL_ORGANISATION_GROUP);
+        String voRole = (String) prefs.get(GliteConstants.PREFERENCE_VIRTUAL_ORGANISATION_ROLE);
+        
+        String requestCode = voName+(voGroup == null ? "" : "/"+voGroup)+(voRole == null ? "" : "/Role="+voRole);
         try {
             VomsProxyManager manager = new VomsProxyManager(usercert, userkey,
                     secContext.getPassword(), lifetime, hostDN, serverURI,
                     serverPort);
-            manager.makeProxyCredential(voName);
+            manager.makeProxyCredential(requestCode);
             manager.saveProxyToFile(proxyFile);
 
         } catch (Exception e) {

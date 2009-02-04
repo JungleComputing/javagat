@@ -3,6 +3,7 @@ package org.gridlab.gat.io.cpi.glite;
 import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
@@ -127,11 +128,38 @@ public class GliteGuidFileAdaptor extends FileCpi {
                 final File source = new File(location.getPath());
                 final long filesize = source.length();
                 this.initLfcConnector();
-                List<SEInfo> ses = new LDAPResourceFinder(null).fetchSEs(vo);
-
-                // TEMP SOLUTION
-                Collections.shuffle(ses);
-                // END TEMP SOLUTION
+                
+                //JEROME
+                String bdii = (String) gatContext.getPreferences().get("bdiiURI");
+                URI bdiiURI = null;
+                if(bdii != null){
+                	bdiiURI = new URI(bdii);
+                }
+                
+                List<SEInfo> ses = new LDAPResourceFinder(bdiiURI).fetchSEs(vo);
+                
+                //JEROME: preferred SE
+                String preferredSEID = (String) gatContext.getPreferences().get("preferredSEID");
+                if(preferredSEID != null){
+                	logger.info("A preferred SE was provided in the context, will use it if exists");
+                	Iterator<SEInfo> iterator = ses.iterator();
+                	List<SEInfo> newses = new ArrayList<SEInfo>();
+                	while (iterator.hasNext()) {
+                		SEInfo info = (SEInfo) iterator.next();
+						if(info.getSeUniqueId().equals(preferredSEID)){
+							newses.add(info);
+							break;
+						}
+					}
+                	if(newses.isEmpty()){
+                		throw new GATInvocationException("Unable to find the preferred SE in the BDII!");
+                	}
+                	ses = newses;
+                }else{
+                	// TEMP SOLUTION
+                    Collections.shuffle(ses);
+                    // END TEMP SOLUTION
+                }
 
                 SEInfo pickedSE = null;
                 Iterator<SEInfo> seIt = ses.iterator();

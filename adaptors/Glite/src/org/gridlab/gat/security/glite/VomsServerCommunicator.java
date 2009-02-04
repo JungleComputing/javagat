@@ -37,6 +37,7 @@ public class VomsServerCommunicator {
 	private final static String GROUP_COMMAND = "G";
 	private final static String ROLE_IDENTIFIER = "Role=";
 	private final static String VOMS_ANSWER_EL = "vomsans";
+	private final static String VOMS_VERSION = "version";
 	private final static String BITSTRING_ANSWER_EL = "bitstr";
 	private final static String AC_ANSWER_EL = "ac";
 	private final static String ERROR_ANSWER_EL = "error";
@@ -163,7 +164,11 @@ public class VomsServerCommunicator {
 			Node current =  list.item(i);
 			String nodeName = current.getNodeName();
 
-			if (BITSTRING_ANSWER_EL.equals(nodeName)) {
+			if (VOMS_VERSION.equals(nodeName)) {
+				//The version is now provided
+			}
+			
+			else if (BITSTRING_ANSWER_EL.equals(nodeName)) {
 				response.setBitstr(base64Decode(current.getFirstChild().getNodeValue(), vomsDecodeMap));
 			}
 

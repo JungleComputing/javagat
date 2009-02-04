@@ -99,6 +99,29 @@ public class LfcConnector {
             logger.debug("Creating parent", e);
         }
         String path = parent + "/file-" + guid;
+        URI uri = null;
+        try {
+        	uri = new URI("lfn://"+path);
+		} catch (URISyntaxException e) {}
+		return create(uri);
+    }
+    
+    /**
+     * Create a new File at a specific location
+     * 
+     * @param location The lfn of the file to create (lfn://grid/vo/...) 
+     * @return a GUID to the new file
+     * @throws IOException
+     *             if anything goes wrong
+     */
+    /**
+     * @param location
+     * @return
+     * @throws IOException
+     */
+    public String create(URI location) throws IOException {
+    	String guid = UUID.randomUUID().toString();
+        String path = location.getPath();
         logger.info("Creating " + guid + " with path " + path);
         new LfcConnection(server, port).creat(path, guid);
         return guid;

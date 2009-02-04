@@ -64,7 +64,9 @@ public class LDAPResourceFinder {
             if (host == null) {
                 ldapContact = DEFAULT_LDAP_SERVER_NAME + ":" + port;
             } else {
-                ldapContact = host + ":" + port;
+            	//JEROME
+                ldapContact = "ldap://" + host + ":" + port;
+                //ldapContact = host + ":" + port;
             }
         }
 		
@@ -253,7 +255,6 @@ public class LDAPResourceFinder {
                         + " and space " + space);
                 results.add(new SEInfo(seUniqueId,path,space));
             }
-
         }
 
         return results;
