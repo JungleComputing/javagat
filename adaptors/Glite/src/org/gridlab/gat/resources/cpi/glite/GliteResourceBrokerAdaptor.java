@@ -40,12 +40,19 @@ import org.gridlab.gat.resources.Resource;
 import org.gridlab.gat.resources.ResourceDescription;
 import org.gridlab.gat.resources.cpi.ResourceBrokerCpi;
 
+/**
+ * Adapter for the Glite Job Submission (WMS) for JavaGAT.
+ * <p>
+ * Please read the documentation in <tt>/doc/GliteAdaptor</tt> for further
+ * information!
+ * 
+ */
 public class GliteResourceBrokerAdaptor extends ResourceBrokerCpi {
 
     private static final String GLITE_RESOURCE_BROKER_ADAPTOR = "GliteResourceBrokerAdaptor";
 
     private LDAPResourceFinder ldapResourceFinder;
-    
+
     public static Map<String, Boolean> getSupportedCapabilities() {
         Map<String, Boolean> capabilities = ResourceBrokerCpi
                 .getSupportedCapabilities();
@@ -94,7 +101,8 @@ public class GliteResourceBrokerAdaptor extends ResourceBrokerCpi {
                 ldapResourceFinder = new LDAPResourceFinder(brokerURI);
                 String vo = (String) gatContext.getPreferences().get(
                         GliteConstants.PREFERENCE_VIRTUAL_ORGANISATION);
-                List<String> brokerURIs = ldapResourceFinder.fetchWMSServers(vo);
+                List<String> brokerURIs = ldapResourceFinder
+                        .fetchWMSServers(vo);
                 int randomPos = (int) (Math.random() * brokerURIs.size());
                 String brokerURIStr = brokerURIs.get(randomPos);
                 this.brokerURI = new URI(brokerURIStr);
@@ -114,30 +122,35 @@ public class GliteResourceBrokerAdaptor extends ResourceBrokerCpi {
         }
     }
 
-    private void ensureLdapFinderExists() throws NamingException{
-        if (ldapResourceFinder==null) {
+    private void ensureLdapFinderExists() throws NamingException {
+        if (ldapResourceFinder == null) {
             ldapResourceFinder = new LDAPResourceFinder(null);
         }
     }
-    
+
     /** {@inheritDoc} */
-    public List<HardwareResource> findResources (
-            ResourceDescription resourceDescription)  throws GATInvocationException{
-        if (resourceDescription!=null) {
-            if (!resourceDescription.getDescription().isEmpty()) throw new GATInvocationException("gLite findResources does not support any arguments");
+    public List<HardwareResource> findResources(
+            ResourceDescription resourceDescription)
+            throws GATInvocationException {
+        if (resourceDescription != null) {
+            if (!resourceDescription.getDescription().isEmpty())
+                throw new GATInvocationException(
+                        "gLite findResources does not support any arguments");
         }
         try {
             ensureLdapFinderExists();
             String vo = (String) gatContext.getPreferences().get(
                     GliteConstants.PREFERENCE_VIRTUAL_ORGANISATION);
             List<String> queNames = ldapResourceFinder.fetchCEs(vo);
-            List<HardwareResource> retList = new ArrayList<HardwareResource>(queNames.size());
-            for (String queName:queNames) {
-                retList.add(new GliteHardwareResource(this.gatContext,queName));
+            List<HardwareResource> retList = new ArrayList<HardwareResource>(
+                    queNames.size());
+            for (String queName : queNames) {
+                retList
+                        .add(new GliteHardwareResource(this.gatContext, queName));
             }
             return retList;
         } catch (NamingException e) {
-            throw new GATInvocationException(GLITE_RESOURCE_BROKER_ADAPTOR,e);
+            throw new GATInvocationException(GLITE_RESOURCE_BROKER_ADAPTOR, e);
         }
     }
 

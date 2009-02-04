@@ -27,6 +27,13 @@ import org.gridlab.gat.security.glite.GliteSecurityUtils;
 
 /**
  * Adapter for the Glite LFCs, accessed via guid: for JavaGAT.
+ * <p>
+ * Please note: This adapter is to be considered experimental. It may or may not
+ * work for you, and there is no guarantee that the interface or parameters will
+ * be compatible with future versions.
+ * <p>
+ * Please read the documentation in <tt>/doc/GliteAdaptor</tt> for further
+ * information!
  * 
  * @author Max Berger
  */

@@ -1,15 +1,15 @@
 \documentclass{scrreprt}
 \usepackage[latin1]{inputenc}
 \usepackage[english]{babel}
-\usepackage{listing}
+%\usepackage{listing}
 \usepackage{hyperref}
 
 \begin{document}
-		\title{Glite Resource Broker Adapter Readme}
-		\author{Thomas Zangerl}
-		\maketitle
-		\tableofcontents
-
+\title{Glite Adapter Readme}
+\author{Thomas Zangerl \and Max Berger}
+\maketitle
+\tableofcontents
+		
 \chapter{VOMS-Proxy Creation}
 
 \section{Frequent errors}
@@ -114,7 +114,7 @@ Very frequently, all job submissions of an application will happen within the sa
 need to submit jobs to multiple VOs, it won't be possible to to reuse the old proxy due to the VO-specific
 attribute certificates stored in the proxy file. 
 
-\chapter{The gLite-Adaptor} 
+\chapter{The gLite Resource Broker Adaptor} 
 
 \section{Adaptor-specific system properties}
 
@@ -155,5 +155,38 @@ If you would like to specify any GLUE-Requirements that are not covered by the s
 SoftwareResourceDescription or HardwareResourceDescription keys, you may set glite.other either as
 Software- or HardwareResourceDescription and add a *full* legal GLUE Requirment as entry, such as
 for example \\ \verb+!( other.GlueCEUniqueID == "some_ce_of_your_choice")+.
+
+\chapter{File Management}
+
+Please note that the file management adapters are still to be
+considered experimental. The supported attributes are subject to change!
+
+Supported Schemes are:
+
+\begin{tabular}{ll}
+\bf Schema&\bf Supported\\\hline
+srm&Yes\\
+guid&Yes\\
+lfn&No
+\end{tabular}
+
+Supported attributes are:
+
+\begin{tabular}{lllp{6cm}}
+\bf Preference&\bf Req.&\bf Default&\bf Description\\\hline
+VirtualOrganisation&Yes&& The VO to use\\
+LfcServer&No&from LDAP&Address of the LFC Server\\
+LfcServerPort&No&5010&Port for the LFC Server
+\end{tabular}
+
+Supported operations are:
+
+\begin{tabular}{lllp{6cm}}
+\bf Operation&\bf SRM&\bf Guid&\bf Remarks\\\hline
+copy&Yes&Yes&Supports upload from and download to local files only.\\
+delete&Yes&Yes&\\
+createNewFile&No&Yes&File must be created with {\tt guid:///}. The
+actual guid can be retrieved with the function {\em .toGATURI()}.
+\end{tabular}
 
 \end{document} 
