@@ -454,7 +454,6 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
 
         GramJob j = new GramJob(credential, rsl);
         job.setGramJob(j);
-        j.addListener(job);
         try {
             Gram.request(contact, j);
             if (!new java.io.File(".JavaGAT-wrapper-script-" + random).delete()) {
@@ -467,6 +466,27 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
         } catch (GSSException e2) {
             throw new GATInvocationException("globus",
                     new CouldNotInitializeCredentialException("globus", e2));
+        }
+        // Try if we can contact the job manager. If not, this is a problem, because
+        // we cannot monitor the job. In this case, the job submission fails, but the
+        // job may be running ... we try to kill it ...
+        try {
+            Gram.jobStatus(j);
+        } catch (Exception e) {
+            if (logger.isDebugEnabled()) {
+                logger
+                        .debug("WARNING, could not get state of globus job: "
+                                + e);
+            }
+            if (j.getError() == GramError.GRAM_JOBMANAGER_CONNECTION_FAILURE) {
+                // This means we could not contact the job manager.
+                try {
+                    j.cancel();
+                } catch (Throwable e1) {
+                    // ignored, we tried ...
+                }
+                throw new GATInvocationException("globus: cannot contact job manager.");
+            }
         }
         job.startPoller();
         return job;
@@ -563,8 +583,6 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
         }
         GramJob j = new GramJob(credential, rsl);
         globusJob.setGramJob(j);
-        j.addListener(globusJob);
-        globusJob.startPoller();
         try {
             j.request(contact);
             // Gram.request(contact, j);
@@ -575,6 +593,28 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
             throw new GATInvocationException("globus",
                     new CouldNotInitializeCredentialException("globus", e2));
         }
+        // Try if we can contact the job manager. If not, this is a problem, because
+        // we cannot monitor the job. In this case, the job submission fails, but the
+        // job may be running ... we try to kill it ...
+        try {
+            Gram.jobStatus(j);
+        } catch (Exception e) {
+            if (logger.isDebugEnabled()) {
+                logger
+                        .debug("WARNING, could not get state of globus job: "
+                                + e);
+            }
+            if (j.getError() == GramError.GRAM_JOBMANAGER_CONNECTION_FAILURE) {
+                // This means we could not contact the job manager.
+                try {
+                    j.cancel();
+                } catch (Throwable e1) {
+                    // ignored, we tried ...
+                }
+                throw new GATInvocationException("globus: cannot contact job manager.");
+            }
+        }
+        globusJob.startPoller();
         if (sd.streamingStderrEnabled()) {
             try {
                 globusJob.startStderrForwarder(GAT.createFile(gatContext,
