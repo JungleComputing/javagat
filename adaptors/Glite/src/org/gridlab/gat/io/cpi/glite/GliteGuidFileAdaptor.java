@@ -76,7 +76,7 @@ public class GliteGuidFileAdaptor extends FileCpi {
 
     private void initLfcConnector() throws GATObjectCreationException {
         if (lfcConnector == null) {
-            String server = fetchServer(gatContext);
+            String server = fetchServer();
             String portStr = (String) gatContext.getPreferences().get(
                     GliteConstants.PREFERENCE_LFC_SERVER_PORT, "5010");
             int port = Integer.parseInt(portStr);
@@ -84,14 +84,14 @@ public class GliteGuidFileAdaptor extends FileCpi {
         }
     }
 
-    private String fetchServer(GATContext gatContext)
-            throws GATObjectCreationException {
+    private String fetchServer() throws GATObjectCreationException {
         String retVal;
         retVal = (String) gatContext.getPreferences().get(
                 GliteConstants.PREFERENCE_LFC_SERVER);
         if (retVal == null) {
             try {
-                List<String> lfcs = new LDAPResourceFinder(null).fetchLFCs(vo);
+                List<String> lfcs = new LDAPResourceFinder(gatContext)
+                        .fetchLFCs(vo);
                 if (lfcs == null) {
                     retVal = null;
                 } else if (lfcs.size() < 1)
@@ -130,15 +130,8 @@ public class GliteGuidFileAdaptor extends FileCpi {
                 final long filesize = source.length();
                 this.initLfcConnector();
 
-                // JEROME
-                String bdii = (String) gatContext.getPreferences().get(
-                        GliteConstants.PREFERENCE_BDII_URI);
-                URI bdiiURI = null;
-                if (bdii != null) {
-                    bdiiURI = new URI(bdii);
-                }
-
-                List<SEInfo> ses = new LDAPResourceFinder(bdiiURI).fetchSEs(vo);
+                List<SEInfo> ses = new LDAPResourceFinder(gatContext)
+                        .fetchSEs(vo);
 
                 // JEROME: preferred SE
                 String preferredSEID = (String) gatContext.getPreferences()

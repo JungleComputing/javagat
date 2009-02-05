@@ -29,64 +29,83 @@ import javax.naming.directory.SearchResult;
 import javax.naming.ldap.InitialLdapContext;
 
 import org.apache.log4j.Logger;
+import org.gridlab.gat.GATContext;
 import org.gridlab.gat.URI;
 
 public class LDAPResourceFinder {
-	
-    protected static final Logger logger = Logger.getLogger(LDAPResourceFinder.class);
-	
-	public static final String DEFAULT_LDAP_SERVER_NAME = "ldap://bdii.ce-egee.org";
-	public static final int DEFAULT_LDAP_SERVER_PORT = 2170;
-	
-	private static final String START_DN = "Mds-Vo-name=local,o=Grid";
-	
-	private final DirContext ctx;
 
-	private final SearchControls globalSearchControls;
-	
-	
-	/**
+    protected static final Logger logger = Logger
+            .getLogger(LDAPResourceFinder.class);
+
+    public static final String DEFAULT_LDAP_SERVER_NAME = "ldap://bdii.ce-egee.org";
+    public static final int DEFAULT_LDAP_SERVER_PORT = 2170;
+
+    private static final String START_DN = "Mds-Vo-name=local,o=Grid";
+
+    private final DirContext ctx;
+
+    private final SearchControls globalSearchControls;
+
+    /**
      * Create a new LDAPResourceFinder with the given BDII.
      * 
+     * @param gatContext
+     *            GatContext with additional information.
      * @param ldapResource
      *            URI to a BDII, if null a default value will be used.
      * @throws NamingException
      *             if an LDAP error occurs.
      */
-	public LDAPResourceFinder(URI ldapResource) throws NamingException {
-        final String ldapContact;
+    public LDAPResourceFinder(GATContext gatContext, URI ldapResource)
+            throws NamingException {
+        String ldapContact;
         if (ldapResource == null) {
-            ldapContact = DEFAULT_LDAP_SERVER_NAME + ":"
-                    + DEFAULT_LDAP_SERVER_PORT;
+            ldapContact = (String) gatContext.getPreferences().get(
+                    GliteConstants.PREFERENCE_BDII_URI);
+            if (ldapContact == null) {
+                ldapContact = DEFAULT_LDAP_SERVER_NAME + ":"
+                        + DEFAULT_LDAP_SERVER_PORT;
+            }
         } else {
             final String host = ldapResource.getHost();
             final int port = ldapResource.getPort(DEFAULT_LDAP_SERVER_PORT);
             if (host == null) {
                 ldapContact = DEFAULT_LDAP_SERVER_NAME + ":" + port;
             } else {
-            	//JEROME
                 ldapContact = "ldap://" + host + ":" + port;
-                //ldapContact = host + ":" + port;
             }
         }
-		
-		globalSearchControls = new SearchControls();
-		// search everything within the given context
-		globalSearchControls.setSearchScope(SearchControls.SUBTREE_SCOPE);
-		// return all found elements
-		globalSearchControls.setCountLimit(0);
-		// take as much time as you need
-		globalSearchControls.setTimeLimit(0);
-		// return all attributes
-		globalSearchControls.setReturningAttributes(null);
-		
-		final Hashtable<String, String> env = new Hashtable<String, String>();
-		env.put(Context.INITIAL_CONTEXT_FACTORY, "com.sun.jndi.ldap.LdapCtxFactory");
-		env.put(Context.PROVIDER_URL, ldapContact);
-		
-		// construct the ldap connection from the environment params
-		ctx = new InitialLdapContext(env, null);
-	}
+
+        globalSearchControls = new SearchControls();
+        // search everything within the given context
+        globalSearchControls.setSearchScope(SearchControls.SUBTREE_SCOPE);
+        // return all found elements
+        globalSearchControls.setCountLimit(0);
+        // take as much time as you need
+        globalSearchControls.setTimeLimit(0);
+        // return all attributes
+        globalSearchControls.setReturningAttributes(null);
+
+        final Hashtable<String, String> env = new Hashtable<String, String>();
+        env.put(Context.INITIAL_CONTEXT_FACTORY,
+                "com.sun.jndi.ldap.LdapCtxFactory");
+        env.put(Context.PROVIDER_URL, ldapContact);
+
+        // construct the ldap connection from the environment params
+        ctx = new InitialLdapContext(env, null);
+    }
+
+    /**
+     * Create a new LDAPResourceFinder.
+     * 
+     * @param gatContext
+     *            GatContext with additional information.
+     * @throws NamingException
+     *             if an LDAP error occurs.
+     */
+    public LDAPResourceFinder(GATContext context) throws NamingException {
+        this(context, null);
+    }
 
     private String getSafeStringAttr(SearchResult result, String name)
             throws NamingException {
@@ -97,8 +116,7 @@ public class LDAPResourceFinder {
             return null;
     }
 
-	
-	/**
+    /**
      * Retrieve a list of WMSs for the given VO.
      * 
      * @param voName
@@ -107,22 +125,28 @@ public class LDAPResourceFinder {
      * @throws NamingException
      *             if an LDAP error occurs.
      */
-	public List<String> fetchWMSServers(final String voName) throws NamingException {
-		ArrayList<String> wmsServers = new ArrayList<String>();
-		
-		String filter = "(&(GlueServiceType=org.glite.wms.WMProxy)(GlueServiceOwner=" + voName + "))";
-		NamingEnumeration<SearchResult> results = ctx.search(START_DN, filter, globalSearchControls);
-		
-		while (results.hasMore()) {
-			SearchResult result = (SearchResult) results.nextElement();
-			String wmsServer = getSafeStringAttr(result, "GlueServiceAccessPointURL");
-			logger.info("Retrieved the following WMS server from LDAP: " + wmsServer);
-			if (wmsServer!=null) wmsServers.add(wmsServer);
-		}
-		
-		return wmsServers;
-	}
-	
+    public List<String> fetchWMSServers(final String voName)
+            throws NamingException {
+        ArrayList<String> wmsServers = new ArrayList<String>();
+
+        String filter = "(&(GlueServiceType=org.glite.wms.WMProxy)(GlueServiceOwner="
+                + voName + "))";
+        NamingEnumeration<SearchResult> results = ctx.search(START_DN, filter,
+                globalSearchControls);
+
+        while (results.hasMore()) {
+            SearchResult result = (SearchResult) results.nextElement();
+            String wmsServer = getSafeStringAttr(result,
+                    "GlueServiceAccessPointURL");
+            logger.info("Retrieved the following WMS server from LDAP: "
+                    + wmsServer);
+            if (wmsServer != null)
+                wmsServers.add(wmsServer);
+        }
+
+        return wmsServers;
+    }
+
     /**
      * Retrieve a list of CEs for the given VO.
      * 
@@ -132,23 +156,25 @@ public class LDAPResourceFinder {
      * @throws NamingException
      *             if an LDAP error occurs.
      */
-	public List<String> fetchCEs(final String voName) 
-	throws NamingException {
-		ArrayList<String> results = new ArrayList<String>();	
-		
-		String filter = "(&(objectClass=GlueCE)(GlueCEAccessControlBaseRule=VO:" + voName + "))";
-		NamingEnumeration<SearchResult> clusters = ctx.search(START_DN, filter, globalSearchControls);
-		
-		while (clusters.hasMore()) {
-			SearchResult result = (SearchResult) clusters.nextElement();
-			String ceURL = getSafeStringAttr(result, "GlueCEInfoContactString");
-			logger.info("Retrieved the following CE from LDAP: " + ceURL);
-			if (ceURL!=null) results.add(ceURL);
-		}
-		
-		return results;
-	}
-	
+    public List<String> fetchCEs(final String voName) throws NamingException {
+        ArrayList<String> results = new ArrayList<String>();
+
+        String filter = "(&(objectClass=GlueCE)(GlueCEAccessControlBaseRule=VO:"
+                + voName + "))";
+        NamingEnumeration<SearchResult> clusters = ctx.search(START_DN, filter,
+                globalSearchControls);
+
+        while (clusters.hasMore()) {
+            SearchResult result = (SearchResult) clusters.nextElement();
+            String ceURL = getSafeStringAttr(result, "GlueCEInfoContactString");
+            logger.info("Retrieved the following CE from LDAP: " + ceURL);
+            if (ceURL != null)
+                results.add(ceURL);
+        }
+
+        return results;
+    }
+
     /**
      * Retrieve a list of LFCs for the given VO.
      * 
@@ -164,8 +190,8 @@ public class LDAPResourceFinder {
 
         String filter = "(&(objectClass~=GlueService)(GlueServiceType=lcg-file-catalog)(GlueServiceOwner="
                 + voName + "))";
-        NamingEnumeration<SearchResult> searchResults = ctx.search(START_DN, filter,
-                globalSearchControls);
+        NamingEnumeration<SearchResult> searchResults = ctx.search(START_DN,
+                filter, globalSearchControls);
         while (searchResults.hasMore()) {
             SearchResult result = (SearchResult) searchResults.nextElement();
             String endpoint = getSafeStringAttr(result, "GlueServiceEndpoint");
@@ -182,35 +208,40 @@ public class LDAPResourceFinder {
         final String seUniqueId;
         final String path;
         final String space;
+
         private SEInfo(String id, String pat, String spac) {
             this.seUniqueId = id;
             this.path = pat;
             this.space = spac;
         }
+
         /**
          * @return the uniqieID of the SE.
          */
         public String getSeUniqueId() {
             return seUniqueId;
         }
+
         /**
          * @return the storage path on the SE.
          */
         public String getPath() {
             return path;
         }
+
         /**
          * @return the amount of free space on the SE.
          */
         public String getSpace() {
             return space;
         }
+
         @Override
         public String toString() {
-            return "{"+seUniqueId+","+path+","+space+"}";
-        }        
+            return "{" + seUniqueId + "," + path + "," + space + "}";
+        }
     }
-    
+
     /**
      * Retrieve a list of SEs for the given VO.
      * 
@@ -225,18 +256,19 @@ public class LDAPResourceFinder {
 
         final String filter = "(&(objectClass~=GlueSA)(GlueSALocalID=" + voName
                 + "))";
-        final NamingEnumeration<SearchResult> searchResults = ctx.search(START_DN,
-                filter, globalSearchControls);
+        final NamingEnumeration<SearchResult> searchResults = ctx.search(
+                START_DN, filter, globalSearchControls);
 
         while (searchResults.hasMore()) {
-            final SearchResult result = (SearchResult) searchResults.nextElement();
+            final SearchResult result = (SearchResult) searchResults
+                    .nextElement();
             String pathName = result.getName();
             String seUniqueId = null;
             int pos = pathName.indexOf("GlueSEUniqueID");
             if (pos < 0) {
                 pathName = getSafeStringAttr(result, "GlueChunkKey");
-                if (pathName!=null)
-                pos = pathName.indexOf("GlueSEUniqueID");
+                if (pathName != null)
+                    pos = pathName.indexOf("GlueSEUniqueID");
             }
             if (pos >= 0) {
                 String st = pathName.substring(pos + 15);
@@ -246,43 +278,42 @@ public class LDAPResourceFinder {
                 seUniqueId = st.substring(0, posEnd);
             }
 
-            String path = getSafeStringAttr(result,"GlueSAPath");
-            String space = getSafeStringAttr(result, 
+            String path = getSafeStringAttr(result, "GlueSAPath");
+            String space = getSafeStringAttr(result,
                     "GlueSAStateAvailableSpace");
 
             if (seUniqueId != null) {
                 logger.info("Got SE: " + seUniqueId + " with path " + path
                         + " and space " + space);
-                results.add(new SEInfo(seUniqueId,path,space));
+                results.add(new SEInfo(seUniqueId, path, space));
             }
         }
 
         return results;
     }
-    
-	
-// only used for testing
-//	public static void main(final String [] args) throws Exception {
-//		SoftwareResourceDescription srd = new SoftwareResourceDescription();
-//		HardwareResourceDescription hrd = new HardwareResourceDescription();
-//		
-//		List<String> gliteOSNames = new ArrayList<String>();
-//		gliteOSNames.add("ScientificSL");
-//		gliteOSNames.add("ScientificCERNSLC");
-//		gliteOSNames.add("Scientific Linux CERN");
-//		srd.addResourceAttribute("glite.OS", gliteOSNames);
-//		
-//		List<String> gliteProcessorNames = new ArrayList<String>();
-//		gliteProcessorNames.add("PIV");
-//		gliteProcessorNames.add("P4");
-//		gliteProcessorNames.add("PIII");
-//		srd.addResourceAttribute("glite.Processor", gliteProcessorNames);
-//		
-//		srd.addResourceAttribute("memory.size", new Float(1.0));
-//		
-//		LDAPResourceFinder finder = new LDAPResourceFinder();
-//		//finder.findResources("voce");
-//		finder.fetchCEs("compchem");
-//	}
-	
+
+    // only used for testing
+    // public static void main(final String [] args) throws Exception {
+    // SoftwareResourceDescription srd = new SoftwareResourceDescription();
+    // HardwareResourceDescription hrd = new HardwareResourceDescription();
+    //		
+    // List<String> gliteOSNames = new ArrayList<String>();
+    // gliteOSNames.add("ScientificSL");
+    // gliteOSNames.add("ScientificCERNSLC");
+    // gliteOSNames.add("Scientific Linux CERN");
+    // srd.addResourceAttribute("glite.OS", gliteOSNames);
+    //		
+    // List<String> gliteProcessorNames = new ArrayList<String>();
+    // gliteProcessorNames.add("PIV");
+    // gliteProcessorNames.add("P4");
+    // gliteProcessorNames.add("PIII");
+    // srd.addResourceAttribute("glite.Processor", gliteProcessorNames);
+    //		
+    // srd.addResourceAttribute("memory.size", new Float(1.0));
+    //		
+    // LDAPResourceFinder finder = new LDAPResourceFinder();
+    // //finder.findResources("voce");
+    // finder.fetchCEs("compchem");
+    // }
+
 }

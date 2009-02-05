@@ -67,13 +67,21 @@ public class GliteResourceBrokerAdaptor extends ResourceBrokerCpi {
     public static Preferences getSupportedPreferences() {
         Preferences preferences = ResourceBrokerCpi.getSupportedPreferences();
         preferences.put(GliteConstants.PREFERENCE_VIRTUAL_ORGANISATION, "true");
-        preferences.put(GliteConstants.PREFERENCE_VIRTUAL_ORGANISATION_GROUP, "true");
-        preferences.put(GliteConstants.PREFERENCE_VIRTUAL_ORGANISATION_ROLE, "true");
-        preferences.put(GliteConstants.PREFERENCE_VIRTUAL_ORGANISATION_HOST_DN, "true");
-        preferences.put(GliteConstants.PREFERENCE_VIRTUAL_ORGANISATION_SERVER_URL, "true");
-        preferences.put(GliteConstants.PREFERENCE_VIRTUAL_ORGANISATION_SERVER_URL, "true");
+        preferences.put(GliteConstants.PREFERENCE_VIRTUAL_ORGANISATION_GROUP,
+                "true");
+        preferences.put(GliteConstants.PREFERENCE_VIRTUAL_ORGANISATION_ROLE,
+                "true");
+        preferences.put(GliteConstants.PREFERENCE_VIRTUAL_ORGANISATION_HOST_DN,
+                "true");
+        preferences.put(
+                GliteConstants.PREFERENCE_VIRTUAL_ORGANISATION_SERVER_URL,
+                "true");
+        preferences.put(
+                GliteConstants.PREFERENCE_VIRTUAL_ORGANISATION_SERVER_URL,
+                "true");
         preferences.put(GliteConstants.PREFERENCE_VOMS_LIFETIME, "true");
-        preferences.put(GliteConstants.PREFERENCE_VOMS_CREATE_NEW_PROXY, "true");
+        preferences
+                .put(GliteConstants.PREFERENCE_VOMS_CREATE_NEW_PROXY, "true");
         preferences.put(GliteConstants.PREFERENCE_POLL_INTERVAL_SECS, "true");
         preferences.put(GliteConstants.PREFERENCE_DELETE_JDL, "true");
         preferences.put(GliteConstants.PREFERENCE_JOB_STOP_POSTSTAGE, "false");
@@ -100,7 +108,8 @@ public class GliteResourceBrokerAdaptor extends ResourceBrokerCpi {
         if (brokerURI.getScheme().equals("ldap")
                 || brokerURI.getScheme().equals("ldaps")) {
             try {
-                ldapResourceFinder = new LDAPResourceFinder(brokerURI);
+                ldapResourceFinder = new LDAPResourceFinder(gatContext,
+                        brokerURI);
                 String vo = (String) gatContext.getPreferences().get(
                         GliteConstants.PREFERENCE_VIRTUAL_ORGANISATION);
                 List<String> brokerURIs = ldapResourceFinder
@@ -126,7 +135,7 @@ public class GliteResourceBrokerAdaptor extends ResourceBrokerCpi {
 
     private void ensureLdapFinderExists() throws NamingException {
         if (ldapResourceFinder == null) {
-            ldapResourceFinder = new LDAPResourceFinder(null);
+            ldapResourceFinder = new LDAPResourceFinder(gatContext);
         }
     }
 
