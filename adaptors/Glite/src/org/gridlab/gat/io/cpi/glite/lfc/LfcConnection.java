@@ -9,6 +9,8 @@ import java.nio.channels.SocketChannel;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
+import java.util.Map;
+import java.util.TreeMap;
 
 import org.apache.log4j.Logger;
 import org.globus.gsi.GSIConstants;
@@ -68,6 +70,8 @@ public class LfcConnection {
             0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0x47, 0x53, 0x49,
             0x00, 0x49, 0x44, 0x00, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00,
             0x02, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x01 };
+
+    private static final Map<Integer, String> CNS_ERRORS = new TreeMap<Integer, String>();
 
     private final ByteBuffer sendBuf = ByteBuffer.allocateDirect(BUF_SIZE);
     private ByteBuffer recvBuf = ByteBuffer.allocateDirect(BUF_SIZE);
@@ -140,7 +144,10 @@ public class LfcConnection {
             if ((type == CNS_RESP_IRC) || (type == CNS_RESP_RC)) {
                 if (sizeOrError == 0)
                     return 0;
-                throw new IOException("Recieved CNS Error " + sizeOrError);
+                String errorMessage = CNS_ERRORS.get(sizeOrError);
+                if (errorMessage == null)
+                    errorMessage = "Recieved CNS Error " + sizeOrError;
+                throw new IOException(errorMessage);
             } else if ((type != CNS_RESP_MSG_DATA)
                     && (type != CNS_RESP_MSG_SUMMARY)) {
                 throw new IOException("Received invalid CNS Type: " + type);
@@ -371,4 +378,8 @@ public class LfcConnection {
         this.sendAndReceive(true);
     }
 
+    static {
+        CNS_ERRORS.put(17, "File exists");
+        CNS_ERRORS.put(22, "Invalid argument");
+    }
 }
