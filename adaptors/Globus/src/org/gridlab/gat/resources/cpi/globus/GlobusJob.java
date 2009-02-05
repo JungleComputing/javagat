@@ -142,7 +142,7 @@ public class GlobusJob extends JobCpi implements GramJobListener,
         GSSCredential credential = null;
         try {
             credential = GlobusSecurityUtils.getGlobusCredential(gatContext,
-                    "gram", hostUri, ResourceManagerContact.DEFAULT_PORT);
+                "gram", hostUri, ResourceManagerContact.DEFAULT_PORT);
         } catch (CouldNotInitializeCredentialException e) {
             throw new GATObjectCreationException("globus", e);
         } catch (CredentialExpiredException e) {
@@ -239,8 +239,7 @@ public class GlobusJob extends JobCpi implements GramJobListener,
     }
 
     public synchronized void stop() throws GATInvocationException {
-        if (state == JobState.POST_STAGING
-                || state == JobState.STOPPED
+        if (state == JobState.POST_STAGING || state == JobState.STOPPED
                 || state == JobState.SUBMISSION_ERROR) {
             return;
         }
@@ -271,17 +270,20 @@ public class GlobusJob extends JobCpi implements GramJobListener,
             // the signal has been sent. Now we wait for the termination to
             // complete. This is indicated when the job enters the STOPPED state
             waitForJobCompletion();
-            /* The code below is wrong! waitForJobCompletion waits until the job is
-             * either in state SUBMISSION_ERROR or STOPPED. If in state STOPPED,
-             * poststaging is done if necessary. If in state SUBMISSION_ERROR, no
-             * poststaging should be done. So: commented out the code below. --Ceriel
+            /*
+             * The code below is wrong! waitForJobCompletion waits until the job
+             * is either in state SUBMISSION_ERROR or STOPPED. If in state
+             * STOPPED, poststaging is done if necessary. If in state
+             * SUBMISSION_ERROR, no poststaging should be done. So: commented
+             * out the code below. --Ceriel
              * 
-            if (!(gatContext.getPreferences().containsKey("job.stop.poststage") && gatContext
-                    .getPreferences().get("job.stop.poststage").equals("false"))) {
-                setState(JobState.POST_STAGING);
-                sandbox.retrieveAndCleanup(this);
-            }
-            */
+             * if
+             * (!(gatContext.getPreferences().containsKey("job.stop.poststage")
+             * && gatContext
+             * .getPreferences().get("job.stop.poststage").equals("false"))) {
+             * setState(JobState.POST_STAGING);
+             * sandbox.retrieveAndCleanup(this); }
+             */
         } else {
             // this can happen if an exception is thrown after the creation of
             // this job in the submitjob method, simply remove the job from the
@@ -387,6 +389,12 @@ public class GlobusJob extends JobCpi implements GramJobListener,
     }
 
     private synchronized void handleStatusChanged(GramJob newJob) {
+        if (logger.isDebugEnabled()) {
+            logger.debug("Globus job state changed to : " + newJob.toString()
+                    + ", status now " + newJob.getStatusAsString()
+                    + ", error = " + newJob.getError());
+        }
+
         // if the job is already done, simply return
         // because we remove the listeners will this ever be executed?
         if (state == JobState.STOPPED || state == JobState.SUBMISSION_ERROR) {
@@ -432,7 +440,7 @@ public class GlobusJob extends JobCpi implements GramJobListener,
                 } catch (GATInvocationException e) {
                     logger
                             .info("reading the exit status from file failed: ",
-                                    e);
+                                e);
                 }
             }
             setStopTime();
@@ -535,7 +543,7 @@ public class GlobusJob extends JobCpi implements GramJobListener,
         }
 
         SerializedJob sj = (SerializedJob) GATEngine.defaultUnmarshal(
-                SerializedJob.class, s);
+            SerializedJob.class, s);
 
         // if this job was created within this JVM, just return a reference to
         // the job
