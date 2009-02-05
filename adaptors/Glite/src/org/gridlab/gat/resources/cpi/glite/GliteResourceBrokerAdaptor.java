@@ -72,12 +72,12 @@ public class GliteResourceBrokerAdaptor extends ResourceBrokerCpi {
         preferences.put(GliteConstants.PREFERENCE_VIRTUAL_ORGANISATION_HOST_DN, "true");
         preferences.put(GliteConstants.PREFERENCE_VIRTUAL_ORGANISATION_SERVER_URL, "true");
         preferences.put(GliteConstants.PREFERENCE_VIRTUAL_ORGANISATION_SERVER_URL, "true");
-        preferences.put("vomsLifetime", "true");
-        preferences.put("glite.createNewProxy", "true");
-        preferences.put("glite.pollIntervalSecs", "true");
-        preferences.put("glite.deleteJDL", "true");
-        preferences.put("job.stop.poststage", "false");
-        preferences.put("job.stop.on.exit", "false");
+        preferences.put(GliteConstants.PREFERENCE_VOMS_LIFETIME, "true");
+        preferences.put(GliteConstants.PREFERENCE_VOMS_CREATE_NEW_PROXY, "true");
+        preferences.put(GliteConstants.PREFERENCE_POLL_INTERVAL_SECS, "true");
+        preferences.put(GliteConstants.PREFERENCE_DELETE_JDL, "true");
+        preferences.put(GliteConstants.PREFERENCE_JOB_STOP_POSTSTAGE, "false");
+        preferences.put(GliteConstants.PREFERENCE_JOB_STOP_ON_EXIT, "false");
         return preferences;
     }
 

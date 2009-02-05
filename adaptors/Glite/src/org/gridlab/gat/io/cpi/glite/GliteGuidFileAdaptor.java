@@ -78,7 +78,7 @@ public class GliteGuidFileAdaptor extends FileCpi {
         if (lfcConnector == null) {
             String server = fetchServer(gatContext);
             String portStr = (String) gatContext.getPreferences().get(
-                    "LfcServerPort", "5010");
+                    GliteConstants.PREFERENCE_LFC_SERVER_PORT, "5010");
             int port = Integer.parseInt(portStr);
             lfcConnector = new LfcConnector(server, port, vo);
         }
@@ -87,7 +87,8 @@ public class GliteGuidFileAdaptor extends FileCpi {
     private String fetchServer(GATContext gatContext)
             throws GATObjectCreationException {
         String retVal;
-        retVal = (String) gatContext.getPreferences().get("LfcServer");
+        retVal = (String) gatContext.getPreferences().get(
+                GliteConstants.PREFERENCE_LFC_SERVER);
         if (retVal == null) {
             try {
                 List<String> lfcs = new LDAPResourceFinder(null).fetchLFCs(vo);
@@ -128,35 +129,39 @@ public class GliteGuidFileAdaptor extends FileCpi {
                 final File source = new File(location.getPath());
                 final long filesize = source.length();
                 this.initLfcConnector();
-                
-                //JEROME
-                String bdii = (String) gatContext.getPreferences().get("bdiiURI");
+
+                // JEROME
+                String bdii = (String) gatContext.getPreferences().get(
+                        GliteConstants.PREFERENCE_BDII_URI);
                 URI bdiiURI = null;
-                if(bdii != null){
-                	bdiiURI = new URI(bdii);
+                if (bdii != null) {
+                    bdiiURI = new URI(bdii);
                 }
-                
+
                 List<SEInfo> ses = new LDAPResourceFinder(bdiiURI).fetchSEs(vo);
-                
-                //JEROME: preferred SE
-                String preferredSEID = (String) gatContext.getPreferences().get("preferredSEID");
-                if(preferredSEID != null){
-                	logger.info("A preferred SE was provided in the context, will use it if exists");
-                	Iterator<SEInfo> iterator = ses.iterator();
-                	List<SEInfo> newses = new ArrayList<SEInfo>();
-                	while (iterator.hasNext()) {
-                		SEInfo info = (SEInfo) iterator.next();
-						if(info.getSeUniqueId().equals(preferredSEID)){
-							newses.add(info);
-							break;
-						}
-					}
-                	if(newses.isEmpty()){
-                		throw new GATInvocationException("Unable to find the preferred SE in the BDII!");
-                	}
-                	ses = newses;
-                }else{
-                	// TEMP SOLUTION
+
+                // JEROME: preferred SE
+                String preferredSEID = (String) gatContext.getPreferences()
+                        .get(GliteConstants.PREFERENCE_PREFERRED_SE_ID);
+                if (preferredSEID != null) {
+                    logger
+                            .info("A preferred SE was provided in the context, will use it if exists");
+                    Iterator<SEInfo> iterator = ses.iterator();
+                    List<SEInfo> newses = new ArrayList<SEInfo>();
+                    while (iterator.hasNext()) {
+                        SEInfo info = (SEInfo) iterator.next();
+                        if (info.getSeUniqueId().equals(preferredSEID)) {
+                            newses.add(info);
+                            break;
+                        }
+                    }
+                    if (newses.isEmpty()) {
+                        throw new GATInvocationException(
+                                "Unable to find the preferred SE in the BDII!");
+                    }
+                    ses = newses;
+                } else {
+                    // TEMP SOLUTION
                     Collections.shuffle(ses);
                     // END TEMP SOLUTION
                 }
