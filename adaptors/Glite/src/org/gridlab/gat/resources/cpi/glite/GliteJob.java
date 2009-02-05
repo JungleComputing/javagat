@@ -35,6 +35,7 @@ import org.apache.axis.SimpleTargetedChain;
 import org.apache.axis.configuration.BasicClientConfig;
 import org.apache.axis.configuration.SimpleProvider;
 import org.apache.axis.transport.http.HTTPSender;
+import org.apache.log4j.Logger;
 import org.glite.security.delegation.GrDPX509Util;
 import org.glite.security.delegation.GrDProxyGenerator;
 import org.glite.security.trustmanager.ContextWrapper;
@@ -73,6 +74,7 @@ import org.gridsite.www.namespaces.delegation_1.DelegationSoapBindingStub;
 public class GliteJob extends JobCpi {
 
     private final static int LB_PORT = 9003;
+    private static final Logger LOGGER = Logger.getLogger(GliteJob.class);
 
     private java.net.URL lbURL;
     private JDL gLiteJobDescription;
@@ -155,7 +157,7 @@ public class GliteJob extends JobCpi {
                 try {
                     Thread.sleep(this.pollIntMilliSec);
                 } catch (InterruptedException e) {
-                    logger.error(
+                    LOGGER.error(
                             "Error while executing job status poller thread!",
                             e);
                 }
@@ -228,11 +230,11 @@ public class GliteJob extends JobCpi {
 
             lbPortType = loc.getLoggingAndBookkeeping(lbURL);
         } catch (MalformedURLException e) {
-            logger
+            LOGGER
                     .error("Problem instantiating Logging and Bookkeeping service "
                             + e.toString());
         } catch (ServiceException e) {
-            logger
+            LOGGER
                     .error("Problem instantiating Logging and Bookkeeping service "
                             + e.toString());
         }
@@ -285,7 +287,7 @@ public class GliteJob extends JobCpi {
 
         gliteJobID = submitJob();
         initLBSoapService(gliteJobID);
-        logger.info("jobID " + gliteJobID);
+        LOGGER.info("jobID " + gliteJobID);
         // start status lookup thread
         new Thread(new JobStatusLookUp(this)).start();
     }
@@ -335,7 +337,7 @@ public class GliteJob extends JobCpi {
         List<File> sandboxFiles = new ArrayList<File>();
 
         try {
-            logger.info("Staging in files");
+            LOGGER.debug("Staging in files");
             if (swDescription.getStdin() != null) {
                 File f = GAT.createFile(gatContext, swDescription.getStdin()
                         .getName());
@@ -353,24 +355,25 @@ public class GliteJob extends JobCpi {
                 URI destURI = new URI(tempURI.getScheme() + "://"
                         + tempURI.getHost() + ":" + tempURI.getPort() + "//"
                         + tempURI.getPath());
+                LOGGER.debug("Uploading " + sandboxFile + " to " + destURI);
                 File destFile = GAT.createFile(gatContext, destURI);
                 sandboxFile.copy(destFile.toGATURI());
             }
         } catch (URISyntaxException e) {
-            logger.error("URI error while resolving pre-staged file set", e);
+            LOGGER.error("URI error while resolving pre-staged file set", e);
         } catch (GATObjectCreationException e) {
-            logger.error("Could not create pre-staged file set", e);
+            LOGGER.error("Could not create pre-staged file set", e);
         } catch (RemoteException e) {
-            logger.error("Problem while communicating with SOAP services", e);
+            LOGGER.error("Problem while communicating with SOAP services", e);
         } catch (GATInvocationException e) {
-            logger.error("Could not copy files to input sandbox", e);
+            LOGGER.error("Could not copy files to input sandbox", e);
         }
     }
 
     // jobSubmit via API
     private String submitJob() throws GATInvocationException {
 
-        logger.debug("called submitJob");
+        LOGGER.debug("called submitJob");
 
         // set the CA-certificates
         setCACerticateProperties();
@@ -401,9 +404,9 @@ public class GliteJob extends JobCpi {
             serviceStub.jobStart(jobIdStruct.getId());
 
         } catch (IOException e) {
-            logger.error("Problem while copying input files", e);
+            LOGGER.error("Problem while copying input files", e);
         } catch (GeneralSecurityException e) {
-            logger.error("security problem while copying input files", e);
+            LOGGER.error("security problem while copying input files", e);
         }
 
         return jobIdStruct.getId();
@@ -438,9 +441,9 @@ public class GliteJob extends JobCpi {
                 this.gLiteState = state.toString();
                 this.destination = js.getDestination();
             } catch (GenericFault e) {
-                logger.error(e.toString());
+                LOGGER.error(e.toString());
             } catch (RemoteException e) {
-                logger
+                LOGGER
                         .error(
                                 "gLite Error: LoggingAndBookkeeping service only works in glite 3.1 or higher",
                                 e);
@@ -535,7 +538,7 @@ public class GliteJob extends JobCpi {
                     "gsiftp");
             list = (StringAndLongType[]) sl.getFile();
         } catch (Exception e) {
-            logger
+            LOGGER
                     .error("Could not receive output due to security problems",
                             e);
         }
@@ -556,18 +559,18 @@ public class GliteJob extends JobCpi {
                     f.copy(destForPostStagedFile(f2));
                 } catch (GATInvocationException e) {
                     postStageException = e;
-                    logger.error(e.toString());
+                    LOGGER.error(e.toString());
                 } catch (URISyntaxException e) {
                     postStageException = new GATInvocationException(e
                             .toString());
-                    logger
+                    LOGGER
                             .error(
                                     "An error occured when building URIs for the poststaged files",
                                     e);
                 } catch (GATObjectCreationException e) {
                     postStageException = new GATInvocationException(e
                             .toString());
-                    logger.error(
+                    LOGGER.error(
                             "Could not create GAT file when retrieving output",
                             e);
                 }

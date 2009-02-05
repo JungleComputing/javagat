@@ -17,7 +17,7 @@ import org.gridlab.gat.io.cpi.glite.srm.SrmConnector;
  * @author Max Berger
  */
 public class LfcConnector {
-    protected static Logger logger = Logger.getLogger(LfcConnector.class);
+    private static final Logger LOGGER = Logger.getLogger(LfcConnector.class);
 
     private final String vo;
     private final String server;
@@ -67,18 +67,18 @@ public class LfcConnector {
                 .listReplica(null, guid);
         final SrmConnector connector = new SrmConnector();
         for (String replicaURI : replicas) {
-            logger.info("Deleting Replica: " + replicaURI);
+            LOGGER.info("Deleting Replica: " + replicaURI);
             new LfcConnection(server, port).delReplica(guid, replicaURI);
             try {
                 connector.delete(new URI(replicaURI));
             } catch (URISyntaxException e) {
                 // ignore.
             } catch (IOException e) {
-                logger.warn(e.toString());
-                logger.warn("Failed to delete Replica " + replicaURI);
+                LOGGER.warn(e.toString());
+                LOGGER.warn("Failed to delete Replica " + replicaURI);
             }
         }
-        logger.info("Deleting GUID: " + guid);
+        LOGGER.info("Deleting GUID: " + guid);
         return new LfcConnection(server, port).delFiles(guid, false);
     }
 
@@ -96,7 +96,7 @@ public class LfcConnector {
             new LfcConnection(server, port).mkdir(parent, UUID.randomUUID()
                     .toString());
         } catch (IOException e) {
-            logger.debug("Creating parent", e);
+            LOGGER.debug("Creating parent", e);
         }
         String path = parent + "/file-" + guid;
         URI uri = null;
@@ -121,7 +121,7 @@ public class LfcConnector {
     public String create(URI location) throws IOException {
         String guid = UUID.randomUUID().toString();
         String path = location.getPath();
-        logger.info("Creating " + guid + " with path " + path);
+        LOGGER.info("Creating " + guid + " with path " + path);
         new LfcConnection(server, port).creat(path, guid);
         return guid;
     }

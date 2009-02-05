@@ -31,7 +31,7 @@ import org.ietf.jgss.GSSManager;
  * @author Max Berger
  */
 public class LfcConnection {
-    protected static Logger logger = Logger.getLogger(LfcConnection.class);
+    private static final Logger LOGGER = Logger.getLogger(LfcConnection.class);
 
     private static final int HEADER_SIZE = 12;
 
@@ -82,18 +82,18 @@ public class LfcConnection {
     public LfcConnection(String host, int port) throws IOException {
         try {
             final String proxyPath = GliteSecurityUtils.getProxyPath();
-            logger.debug("Proxy is " + proxyPath);
+            LOGGER.debug("Proxy is " + proxyPath);
             GlobusCredential credential = new GlobusCredential(proxyPath);
             gssCredential = new GlobusGSSCredentialImpl(credential, 0);
         } catch (GSSException e) {
-            logger.warn(e.toString());
+            LOGGER.warn(e.toString());
             throw new IOException("Failed to load credentials");
         } catch (GlobusCredentialException e) {
-            logger.warn(e.toString());
+            LOGGER.warn(e.toString());
             throw new IOException("Failed to load credentials");
         }
         channel = SocketChannel.open(new InetSocketAddress(host, port));
-        logger.info("Establishing Connection with " + host + ":" + port);
+        LOGGER.info("Establishing Connection with " + host + ":" + port);
         authenticate();
     }
 
@@ -131,7 +131,7 @@ public class LfcConnection {
         int type = recvBuf.getInt();
         // For whatever reason, the reply never includes the size of the Header.
         int sizeOrError = recvBuf.getInt();
-        logger.debug("Received M/T/S: " + magic + " " + type + " "
+        LOGGER.debug("Received M/T/S: " + magic + " " + type + " "
                 + sizeOrError);
 
         if (magic == CSEC_TOKEN_MAGIC_1) {
@@ -156,12 +156,12 @@ public class LfcConnection {
             throw new IOException("Recieved invalid Magic/Type: " + magic + "/"
                     + type);
 
-        logger.debug("Limit: " + recvBuf.limit() + ", Pos: "
+        LOGGER.debug("Limit: " + recvBuf.limit() + ", Pos: "
                 + recvBuf.position() + " MinContent: " + sizeOrError
                 + " Avail " + recvBuf.remaining());
 
         while (recvBuf.remaining() < sizeOrError) {
-            logger.debug("Reading once more: " + recvBuf.remaining() + " < "
+            LOGGER.debug("Reading once more: " + recvBuf.remaining() + " < "
                     + sizeOrError);
             // TODO: There must be an easier method of reading more data.
             byte[] temp = new byte[recvBuf.remaining()];
@@ -208,7 +208,7 @@ public class LfcConnection {
             while (!secureContext.isEstablished()) {
                 byte[] sendToken = secureContext.initSecContext(recvToken, 0,
                         recvToken.length);
-                logger.debug("called initSecContext, doing another iteration");
+                LOGGER.debug("called initSecContext, doing another iteration");
 
                 if (sendToken != null) {
                     preparePacket(CSEC_TOKEN_MAGIC_1, CSEC_TOKEN_TYPE_HANDSHAKE);
@@ -224,10 +224,10 @@ public class LfcConnection {
             }
 
         } catch (GSSException e) {
-            logger.warn(e.toString());
+            LOGGER.warn(e.toString());
             throw new IOException("Error processing credential");
         }
-        logger.debug("Secure Context established!");
+        LOGGER.debug("Secure Context established!");
     }
 
     private void putString(String s) {
@@ -237,7 +237,7 @@ public class LfcConnection {
                 sendBuf.put(s.getBytes("UTF-8"));
             }
         } catch (java.io.UnsupportedEncodingException e) {
-            logger.warn(e.toString());
+            LOGGER.warn(e.toString());
         }
         sendBuf.put((byte) 0);
     }
@@ -275,28 +275,28 @@ public class LfcConnection {
 
         for (short i = 0; i < count; i++) {
             long fileId = recvBuf.getLong();
-            logger.debug("FileId: " + fileId);
+            LOGGER.debug("FileId: " + fileId);
             long nbaccesses = recvBuf.getLong();
-            logger.debug("nbaccesses: " + nbaccesses);
+            LOGGER.debug("nbaccesses: " + nbaccesses);
 
             long aTime = recvBuf.getLong();
             long pTime = recvBuf.getLong();
 
-            logger.debug("aTime: " + new Date(aTime * 1000));
-            logger.debug("pTime: " + new Date(pTime * 1000));
+            LOGGER.debug("aTime: " + new Date(aTime * 1000));
+            LOGGER.debug("pTime: " + new Date(pTime * 1000));
 
             byte status = recvBuf.get();
-            logger.debug("Status: " + status);
+            LOGGER.debug("Status: " + status);
             byte f_type = recvBuf.get();
-            logger.debug("fType: " + f_type);
+            LOGGER.debug("fType: " + f_type);
             String poolName = getString();
-            logger.debug("poolName: " + poolName);
+            LOGGER.debug("poolName: " + poolName);
             String host = getString();
-            logger.debug("host: " + host);
+            LOGGER.debug("host: " + host);
             String fs = getString();
-            logger.debug("fs: " + fs);
+            LOGGER.debug("fs: " + fs);
             String sfn = getString();
-            logger.debug("sfn: " + sfn);
+            LOGGER.debug("sfn: " + sfn);
             srms.add(sfn);
         }
         return srms;
@@ -319,7 +319,7 @@ public class LfcConnection {
 
         sendAndReceive(true);
         int nbstatuses = recvBuf.getInt();
-        logger.info("Statuses: " + nbstatuses);
+        LOGGER.info("Statuses: " + nbstatuses);
         return nbstatuses == 0;
     }
 

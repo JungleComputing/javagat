@@ -34,7 +34,7 @@ import org.gridlab.gat.URI;
 
 public class LDAPResourceFinder {
 
-    protected static final Logger logger = Logger
+    private static final Logger LOGGER = Logger
             .getLogger(LDAPResourceFinder.class);
 
     public static final String DEFAULT_LDAP_SERVER_NAME = "ldap://bdii.ce-egee.org";
@@ -138,7 +138,7 @@ public class LDAPResourceFinder {
             SearchResult result = (SearchResult) results.nextElement();
             String wmsServer = getSafeStringAttr(result,
                     "GlueServiceAccessPointURL");
-            logger.info("Retrieved the following WMS server from LDAP: "
+            LOGGER.info("Retrieved the following WMS server from LDAP: "
                     + wmsServer);
             if (wmsServer != null)
                 wmsServers.add(wmsServer);
@@ -167,7 +167,7 @@ public class LDAPResourceFinder {
         while (clusters.hasMore()) {
             SearchResult result = (SearchResult) clusters.nextElement();
             String ceURL = getSafeStringAttr(result, "GlueCEInfoContactString");
-            logger.info("Retrieved the following CE from LDAP: " + ceURL);
+            LOGGER.info("Retrieved the following CE from LDAP: " + ceURL);
             if (ceURL != null)
                 results.add(ceURL);
         }
@@ -196,7 +196,7 @@ public class LDAPResourceFinder {
             SearchResult result = (SearchResult) searchResults.nextElement();
             String endpoint = getSafeStringAttr(result, "GlueServiceEndpoint");
             results.add(endpoint);
-            logger.info("Retrieved the following LFC from LDAP: " + endpoint);
+            LOGGER.info("Retrieved the following LFC from LDAP: " + endpoint);
         }
         return results;
     }
@@ -283,7 +283,7 @@ public class LDAPResourceFinder {
                     "GlueSAStateAvailableSpace");
 
             if (seUniqueId != null) {
-                logger.info("Got SE: " + seUniqueId + " with path " + path
+                LOGGER.info("Got SE: " + seUniqueId + " with path " + path
                         + " and space " + space);
                 results.add(new SEInfo(seUniqueId, path, space));
             }

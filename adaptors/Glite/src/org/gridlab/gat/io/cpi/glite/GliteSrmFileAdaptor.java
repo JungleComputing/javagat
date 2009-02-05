@@ -36,7 +36,7 @@ public class GliteSrmFileAdaptor extends FileCpi {
 
     private static final String GLITE_SRM_FILE_ADAPTOR = "GliteSrmFileAdaptor";
 
-    protected static Logger logger = Logger
+    private static final Logger LOGGER = Logger
             .getLogger(GliteSrmFileAdaptor.class);
 
     private final boolean localFile;
@@ -56,7 +56,7 @@ public class GliteSrmFileAdaptor extends FileCpi {
                         GliteSrmFileAdaptor.CANNOT_HANDLE_THIS_URI + location);
             }
         }
-        logger.info("Instantiated gLiteSrmFileAdaptor for " + location);
+        LOGGER.info("Instantiated gLiteSrmFileAdaptor for " + location);
     }
 
     /** {@inheritDoc} */
@@ -77,9 +77,9 @@ public class GliteSrmFileAdaptor extends FileCpi {
                             + dest);
                 }
                 GliteSecurityUtils.touchVomsProxy(gatContext);
-                logger.info("SRM/Copy: Uploading " + location + " to " + dest);
+                LOGGER.info("SRM/Copy: Uploading " + location + " to " + dest);
                 String turl = connector.getTURLForFileUpload(location, dest);
-                logger.info("SRM/Copy: TURL: " + turl);
+                LOGGER.info("SRM/Copy: TURL: " + turl);
                 GATContext newContext = (GATContext) gatContext.clone();
                 newContext.addPreference("File.adaptor.name", "GridFTP");
                 File transportFile = GAT.createFile(newContext, location);
@@ -87,11 +87,11 @@ public class GliteSrmFileAdaptor extends FileCpi {
                 connector.finalizeFileUpload(dest);
             } else {
                 GliteSecurityUtils.touchVomsProxy(gatContext);
-                logger
+                LOGGER
                         .info("SRM/Copy: Downloading " + location + " to "
                                 + dest);
                 String turl = connector.getTURLForFileDownload(location);
-                logger.info("SRM/Copy: TURL: " + turl);
+                LOGGER.info("SRM/Copy: TURL: " + turl);
                 GATContext newContext = (GATContext) gatContext.clone();
                 newContext.addPreference("File.adaptor.name", "GridFTP");
                 File transportFile = GAT.createFile(newContext, turl);

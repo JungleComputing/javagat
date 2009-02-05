@@ -60,7 +60,7 @@ import org.ietf.jgss.GSSException;
 public class SrmConnection {
     private static final String COULD_NOT_LOAD_CREDENTIALS = "Could not load Credentials";
     private static final String COULD_NOT_CREATE_SRM_CONNECTION_DUE_TO_MALFORMED_URI = "Could not create SRM connection due to malformed uri";
-    protected static Logger logger = Logger.getLogger(SrmConnection.class);
+    private static final Logger LOGGER = Logger.getLogger(SrmConnection.class);
     private final ISRM service;
     private URI activeUploadURI;
     private String activeToken;
@@ -76,7 +76,7 @@ public class SrmConnection {
      */
     public SrmConnection(String host) throws IOException {
         // Set provider
-        logger.info("Registering httpg transport");
+        LOGGER.debug("Registering httpg transport");
         SimpleProvider provider = new SimpleProvider();
         SimpleTargetedChain c = null;
         c = new SimpleTargetedChain(new HTTPSSender());
@@ -91,7 +91,7 @@ public class SrmConnection {
         // System.out.println(org.apache.axis.constants.Style.RPC);
 
         SRMServiceLocator locator = new SRMServiceLocator(provider);
-        logger.info("getting srm service at " + host);
+        LOGGER.info("getting srm service at " + host);
 
         try {
             URL
@@ -105,7 +105,7 @@ public class SrmConnection {
                     null, null);
             this.service = locator.getsrm(new URL(wsEndpoint.toString()));
 
-            logger.info("Delegating proxy credentials");
+            LOGGER.info("Delegating proxy credentials");
             final String proxyPath = GliteSecurityUtils.getProxyPath();
             GlobusCredential credential = new GlobusCredential(proxyPath);
             GSSCredential gssCredential = new GlobusGSSCredentialImpl(
@@ -113,21 +113,21 @@ public class SrmConnection {
             ((Stub) service)._setProperty(GSIConstants.GSI_CREDENTIALS,
                     gssCredential);
         } catch (MalformedURIException e) {
-            logger.warn(e.toString());
+            LOGGER.warn(e.toString());
             throw new IOException(
                     SrmConnection.COULD_NOT_CREATE_SRM_CONNECTION_DUE_TO_MALFORMED_URI);
         } catch (MalformedURLException e) {
-            logger.warn(e.toString());
+            LOGGER.warn(e.toString());
             throw new IOException(
                     SrmConnection.COULD_NOT_CREATE_SRM_CONNECTION_DUE_TO_MALFORMED_URI);
         } catch (ServiceException e) {
-            logger.warn(e.toString());
+            LOGGER.warn(e.toString());
             throw new IOException("Could not connect to SRM endpoint");
         } catch (GlobusCredentialException e) {
-            logger.warn(e.toString());
+            LOGGER.warn(e.toString());
             throw new IOException(SrmConnection.COULD_NOT_LOAD_CREDENTIALS);
         } catch (GSSException e) {
-            logger.warn(e.toString());
+            LOGGER.warn(e.toString());
             throw new IOException(SrmConnection.COULD_NOT_LOAD_CREDENTIALS);
         }
     }
@@ -137,7 +137,7 @@ public class SrmConnection {
         URI uri = new URI(uriSpec);
         String transportURL = "";
 
-        logger.info("Creating get request for URI " + uriSpec);
+        LOGGER.info("Creating get request for URI " + uriSpec);
         SrmPrepareToGetRequest srmPrepToGetReq = new SrmPrepareToGetRequest();
         srmPrepToGetReq.setAuthorizationID("SRMClient");
 
@@ -151,19 +151,19 @@ public class SrmConnection {
         srmPrepToGetReq.setArrayOfFileRequests(new ArrayOfTGetFileRequest(
                 new TGetFileRequest[] { getFileRequest }));
 
-        logger.info("Sending get request");
+        LOGGER.info("Sending get request");
 
         SrmPrepareToGetResponse response = service
                 .srmPrepareToGet(srmPrepToGetReq);
 
         String requestToken = response.getRequestToken();
-        logger.info("Received the following request token: " + requestToken);
+        LOGGER.info("Received the following request token: " + requestToken);
 
         TReturnStatus status = response.getReturnStatus();
         TGetRequestFileStatus fileStatus = response.getArrayOfFileStatuses()
                 .getStatusArray(0);
 
-        logger.info("File status for SURL "
+        LOGGER.info("File status for SURL "
                 + fileStatus.getStatus().getStatusCode() + " "
                 + fileStatus.getStatus().getExplanation());
 
@@ -189,12 +189,12 @@ public class SrmConnection {
             fileStatus = statusResponse.getArrayOfFileStatuses()
                     .getStatusArray(0);
 
-            logger.info("Status: " + status.getStatusCode());
-            logger.info("Status exp: " + status.getExplanation());
-            logger
+            LOGGER.info("Status: " + status.getStatusCode());
+            LOGGER.info("Status exp: " + status.getExplanation());
+            LOGGER
                     .info("FileStatus: "
                             + fileStatus.getStatus().getStatusCode());
-            logger.info("FileStatus exp: "
+            LOGGER.info("FileStatus exp: "
                     + fileStatus.getStatus().getExplanation());
 
         }
@@ -203,7 +203,7 @@ public class SrmConnection {
             if (TStatusCode.SRM_FILE_PINNED.equals(fileStatus.getStatus()
                     .getStatusCode())) {
                 transportURL = fileStatus.getTransferURL().toString();
-                logger.info("Received transfer URL: " + transportURL);
+                LOGGER.info("Received transfer URL: " + transportURL);
             }
         } else
             throw new IOException(status.getStatusCode() + ": "
@@ -216,7 +216,7 @@ public class SrmConnection {
         URI transportURL = null;
         File localFile = new File(src);
 
-        logger.info("Creating put request for URI " + uri);
+        LOGGER.info("Creating put request for URI " + uri);
         SrmPrepareToPutRequest srmPrepToPutReq = new SrmPrepareToPutRequest();
         srmPrepToPutReq.setAuthorizationID("SRMClient");
 
@@ -231,19 +231,19 @@ public class SrmConnection {
         srmPrepToPutReq.setDesiredFileLifeTime(60);
         srmPrepToPutReq.setDesiredPinLifeTime(60);
 
-        logger.info("Sending put request");
+        LOGGER.info("Sending put request");
         SrmPrepareToPutResponse response = service
                 .srmPrepareToPut(srmPrepToPutReq);
 
         String requestToken = response.getRequestToken();
         this.activeToken = requestToken;
 
-        logger.info("Received the following request token: " + requestToken);
+        LOGGER.info("Received the following request token: " + requestToken);
         TPutRequestFileStatus fileStatus = response.getArrayOfFileStatuses()
                 .getStatusArray(0);
         TReturnStatus status = response.getReturnStatus();
 
-        logger.info("Temporary file status for SURL "
+        LOGGER.info("Temporary file status for SURL "
                 + fileStatus.getStatus().getStatusCode());
 
         long period = 1000L;
@@ -264,8 +264,8 @@ public class SrmConnection {
                     .srmStatusOfPutRequest(realRequest);
             status = realResponse.getReturnStatus();
 
-            logger.info("Status: " + status.getStatusCode());
-            logger.info("Status exp: " + status.getExplanation());
+            LOGGER.info("Status: " + status.getStatusCode());
+            LOGGER.info("Status exp: " + status.getExplanation());
 
             if (realResponse.getArrayOfFileStatuses() != null
                     && realResponse.getArrayOfFileStatuses().getStatusArray().length > 0) {
@@ -273,10 +273,10 @@ public class SrmConnection {
                         .getStatusArray(0);
             }
 
-            logger
+            LOGGER
                     .info("FileStatus: "
                             + fileStatus.getStatus().getStatusCode());
-            logger.info("FileStatus exp: "
+            LOGGER.info("FileStatus exp: "
                     + fileStatus.getStatus().getExplanation());
 
         }
@@ -285,7 +285,7 @@ public class SrmConnection {
             if (TStatusCode.SRM_SPACE_AVAILABLE.equals(fileStatus.getStatus()
                     .getStatusCode())) {
                 transportURL = fileStatus.getTransferURL();
-                logger.info("Received transfer URL: " + transportURL);
+                LOGGER.info("Received transfer URL: " + transportURL);
             }
         } else
             throw new IOException(status.getStatusCode() + ": "
@@ -301,7 +301,7 @@ public class SrmConnection {
         putDoneRequest.setAuthorizationID("SRMClient");
         putDoneRequest.setRequestToken(activeToken);
 
-        logger.info("Sending put-done request for URI " + activeUploadURI);
+        LOGGER.info("Sending put-done request for URI " + activeUploadURI);
 
         SrmPutDoneResponse response = service.srmPutDone(putDoneRequest);
 
@@ -309,12 +309,12 @@ public class SrmConnection {
         if (response.getArrayOfFileStatuses() != null
                 && response.getArrayOfFileStatuses().getStatusArray().length > 0) {
             fileStatus = response.getArrayOfFileStatuses().getStatusArray(0);
-            logger.info("Received file status "
+            LOGGER.info("Received file status "
                     + fileStatus.getStatus().getStatusCode());
         }
 
         TReturnStatus status = response.getReturnStatus();
-        logger.info("Received status " + status.getStatusCode());
+        LOGGER.info("Received status " + status.getStatusCode());
         this.activeToken = null;
         this.activeUploadURI = null;
     }
@@ -325,20 +325,20 @@ public class SrmConnection {
                 uri) }));
         SrmRmResponse response = null;
 
-        logger.info("Invoking delete request for URI " + uri);
+        LOGGER.info("Invoking delete request for URI " + uri);
         response = service.srmRm(removalRequest);
 
         if (response.getArrayOfFileStatuses() != null
                 && response.getArrayOfFileStatuses().getStatusArray().length > 0) {
             TSURLReturnStatus fileStatus = response.getArrayOfFileStatuses()
                     .getStatusArray(0);
-            logger.info("file status code "
+            LOGGER.info("file status code "
                     + fileStatus.getStatus().getStatusCode());
         }
 
         TReturnStatus returnStatus = response.getReturnStatus();
 
-        logger.info("Return status code " + returnStatus.getStatusCode());
+        LOGGER.info("Return status code " + returnStatus.getStatusCode());
         if (!returnStatus.getStatusCode().equals(TStatusCode.SRM_SUCCESS)) {
             throw new IOException(returnStatus.getStatusCode().toString());
         }

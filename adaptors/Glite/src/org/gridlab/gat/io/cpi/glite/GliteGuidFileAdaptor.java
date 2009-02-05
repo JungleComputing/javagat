@@ -46,7 +46,7 @@ public class GliteGuidFileAdaptor extends FileCpi {
     private static final String GUID = "guid";
     private static final String CANNOT_HANDLE_THIS_URI = "cannot handle this URI: ";
 
-    protected static Logger logger = Logger
+    private static final Logger LOGGER = Logger
             .getLogger(GliteGuidFileAdaptor.class);
 
     private LfcConnector lfcConnector;
@@ -70,7 +70,7 @@ public class GliteGuidFileAdaptor extends FileCpi {
                         "cannot handle this URI: " + location);
             }
             initLfcConnector();
-            logger.info("Instantiated gLiteGuidFileAdaptor for " + location);
+            LOGGER.info("Instantiated gLiteGuidFileAdaptor for " + location);
         }
     }
 
@@ -137,7 +137,7 @@ public class GliteGuidFileAdaptor extends FileCpi {
                 String preferredSEID = (String) gatContext.getPreferences()
                         .get(GliteConstants.PREFERENCE_PREFERRED_SE_ID);
                 if (preferredSEID != null) {
-                    logger
+                    LOGGER
                             .info("A preferred SE was provided in the context, will use it if exists");
                     Iterator<SEInfo> iterator = ses.iterator();
                     List<SEInfo> newses = new ArrayList<SEInfo>();
@@ -179,21 +179,21 @@ public class GliteGuidFileAdaptor extends FileCpi {
                 String guid = dest.getAuthority();
                 URI target = new URI("srm://" + pickedSE.getSeUniqueId()
                         + pickedSE.getPath() + "/file-" + guid);
-                logger.info("Uploading " + guid + " to " + target);
+                LOGGER.info("Uploading " + guid + " to " + target);
 
                 GATContext newContext = (GATContext) gatContext.clone();
                 newContext.addPreference("File.adaptor.name", "GliteSrm");
                 org.gridlab.gat.io.File transportFile = GAT.createFile(
                         newContext, location);
                 transportFile.copy(target);
-                logger.info("Adding replica...");
+                LOGGER.info("Adding replica...");
                 lfcConnector.addReplica(guid, target);
             } else {
                 String guid = location.getAuthority();
                 GliteSecurityUtils.touchVomsProxy(gatContext);
-                logger.info("Copying " + guid + " to " + dest);
+                LOGGER.info("Copying " + guid + " to " + dest);
                 Collection<String> srmUris = lfcConnector.listReplicas(guid);
-                logger.info("SRM URIs: " + srmUris);
+                LOGGER.info("SRM URIs: " + srmUris);
                 String someSrm = srmUris.iterator().next();
                 GliteSrmFileAdaptor srmFile = new GliteSrmFileAdaptor(
                         gatContext, new URI(someSrm));
@@ -210,7 +210,7 @@ public class GliteGuidFileAdaptor extends FileCpi {
             throw new GATInvocationException(GLITE_GUID_FILE_ADAPTOR + ": "
                     + CANNOT_HANDLE_THIS_URI + location);
         }
-        logger.info("createNewFile called");
+        LOGGER.info("createNewFile called");
         try {
             GliteSecurityUtils.touchVomsProxy(gatContext);
             String guid = lfcConnector.create();
@@ -232,10 +232,10 @@ public class GliteGuidFileAdaptor extends FileCpi {
         try {
             String guid = location.getAuthority();
             GliteSecurityUtils.touchVomsProxy(gatContext);
-            logger.info("Deleting " + guid);
+            LOGGER.info("Deleting " + guid);
             return lfcConnector.delete(guid);
         } catch (IOException e) {
-            logger.info(e.toString());
+            LOGGER.info(e.toString());
             // throw new GATInvocationException(GLITE_GUID_FILE_ADAPTOR, e);
             return false;
         }
