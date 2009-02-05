@@ -485,6 +485,11 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
                 } catch (Throwable e1) {
                     // ignored, we tried ...
                 }
+                try {
+                    Gram.cancel(j);
+                } catch (Throwable e1) {
+                    // ignored, we tried ...
+                }
                 throw new GATInvocationException("globus: cannot contact job manager.");
             }
         }
@@ -608,6 +613,11 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
                 // This means we could not contact the job manager.
                 try {
                     j.cancel();
+                } catch (Throwable e1) {
+                    // ignored, we tried ...
+                }
+                try {
+                    Gram.cancel(j);
                 } catch (Throwable e1) {
                     // ignored, we tried ...
                 }
