@@ -275,28 +275,28 @@ public class LfcConnection {
 
         for (short i = 0; i < count; i++) {
             long fileId = recvBuf.getLong();
-            logger.info("FileId: " + fileId);
+            logger.debug("FileId: " + fileId);
             long nbaccesses = recvBuf.getLong();
-            logger.info("nbaccesses: " + nbaccesses);
+            logger.debug("nbaccesses: " + nbaccesses);
 
             long aTime = recvBuf.getLong();
             long pTime = recvBuf.getLong();
 
-            logger.info("aTime: " + new Date(aTime * 1000));
-            logger.info("pTime: " + new Date(pTime * 1000));
+            logger.debug("aTime: " + new Date(aTime * 1000));
+            logger.debug("pTime: " + new Date(pTime * 1000));
 
             byte status = recvBuf.get();
-            logger.info("Status: " + status);
+            logger.debug("Status: " + status);
             byte f_type = recvBuf.get();
-            logger.info("fType: " + f_type);
+            logger.debug("fType: " + f_type);
             String poolName = getString();
-            logger.info("poolName: " + poolName);
+            logger.debug("poolName: " + poolName);
             String host = getString();
-            logger.info("host: " + host);
+            logger.debug("host: " + host);
             String fs = getString();
-            logger.info("fs: " + fs);
+            logger.debug("fs: " + fs);
             String sfn = getString();
-            logger.info("sfn: " + sfn);
+            logger.debug("sfn: " + sfn);
             srms.add(sfn);
         }
         return srms;
