@@ -101,26 +101,25 @@ public class LfcConnector {
         String path = parent + "/file-" + guid;
         URI uri = null;
         try {
-        	uri = new URI("lfn://"+path);
-		} catch (URISyntaxException e) {}
-		return create(uri);
+            uri = new URI("lfn:///" + path);
+        } catch (URISyntaxException e) {
+        }
+        return create(uri);
     }
-    
+
     /**
      * Create a new File at a specific location
      * 
-     * @param location The lfn of the file to create (lfn://grid/vo/...) 
+     * @param location
+     *            The lfn of the file to create (lfn:////grid/vo/...). Please
+     *            note the 4 (!) slashes. These are required to specify an empty
+     *            hostname and an absolute directory.
      * @return a GUID to the new file
      * @throws IOException
      *             if anything goes wrong
      */
-    /**
-     * @param location
-     * @return
-     * @throws IOException
-     */
     public String create(URI location) throws IOException {
-    	String guid = UUID.randomUUID().toString();
+        String guid = UUID.randomUUID().toString();
         String path = location.getPath();
         logger.info("Creating " + guid + " with path " + path);
         new LfcConnection(server, port).creat(path, guid);
