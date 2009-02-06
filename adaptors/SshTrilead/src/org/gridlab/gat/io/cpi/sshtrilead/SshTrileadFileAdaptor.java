@@ -869,10 +869,14 @@ public class SshTrileadFileAdaptor extends FileCpi {
             String[] result;
             try {
                 result = execCommand("wc -c < " + getFixedPath());
-            } catch (Exception e) {
+            } catch (Throwable e) {
                 throw new GATInvocationException("sshtrilead", e);
             }
-            return Long.parseLong(result[STDOUT].replaceAll("[ \t\n\f\r]", ""));
+            try {
+                return Long.parseLong(result[STDOUT].replaceAll("[ \t\n\f\r]", ""));
+            } catch(Throwable e) {
+                return 0L;
+            }
         }
     }
 
@@ -1077,8 +1081,8 @@ public class SshTrileadFileAdaptor extends FileCpi {
             try {
                 return Long.parseLong(result[STDOUT].substring(0,
                         result[STDOUT].length() - 1)) * 1000;
-            } catch (NumberFormatException e) {
-                throw new GATInvocationException("sshtrilead", e);
+            } catch (Throwable e) {
+                return 0L;
             }
         }
     }
