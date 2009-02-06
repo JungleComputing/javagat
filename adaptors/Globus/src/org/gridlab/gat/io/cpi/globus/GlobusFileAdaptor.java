@@ -559,16 +559,16 @@ public abstract class GlobusFileAdaptor extends FileCpi {
         if (getPath() != null) {
             Vector<FileInfo> list = null;
             try {
-                if (isOldServer(gatContext.getPreferences())) {
-                    list = listNoMinusD(client, getPath());
-                } else {
-                    list = client.list(getPath());
-                }
+                // if (isOldServer(gatContext.getPreferences())) {
+                //     list = listNoMinusD(client, getPath());
+                // } else {
+                //     list = client.list(getPath());
+                // }
                 // list = client.list(getPath()); // this one gives issues on some
                 // gridftp servers (some used by the d-grid project)
                 // list = client.nlist(getPath()); // this one is not guaranteed to be
                 // implemented by the gridftp server.
-                // list = listNoMinusD(client, getPath());
+                list = listNoMinusD(client, getPath());
             } catch (ServerException e) {
                 destroyClient(client, toURI(), gatContext.getPreferences());
                 throw new GATInvocationException("Generic globus file adaptor",
@@ -767,6 +767,9 @@ public abstract class GlobusFileAdaptor extends FileCpi {
 
             client = createClient(toURI());
 
+            if (! client.exists(remotePath)) {
+                throw new GATInvocationException("File not found: " + location);
+            }
             if (logger.isDebugEnabled()) {
                 logger.debug("getINFO: client created");
             }
@@ -782,7 +785,7 @@ public abstract class GlobusFileAdaptor extends FileCpi {
             }
 
             if (v.size() == 0) {
-                throw new GATInvocationException("File not found");
+                throw new GATInvocationException("File not found: " + location);
             } else if (v.size() != 1) {
                 // just use the info for "."
                 for (int i = 0; i < v.size(); i++) {
@@ -944,6 +947,11 @@ public abstract class GlobusFileAdaptor extends FileCpi {
             FileInfo info = getInfo();
 
             return info.userCanRead();
+        } catch(GATInvocationException e) {
+            if (e.getMessage().equals("File not found: " + location)) {
+                return false;
+            }
+            throw e;
         } catch (Exception e) {
             throw new GATInvocationException("gridftp", e);
         }
@@ -957,11 +965,15 @@ public abstract class GlobusFileAdaptor extends FileCpi {
             // Hmm, that did not work.
             // let's assume it is a file, and continue.
         }
-
         try {
             FileInfo info = getInfo();
 
             return info.getSize();
+        } catch(GATInvocationException e) {
+            if (e.getMessage().equals("File not found: " + location)) {
+                return 0L;
+            }
+            throw e;
         } catch (Exception e) {
             throw new GATInvocationException("gridftp", e);
         }
@@ -1018,6 +1030,11 @@ public abstract class GlobusFileAdaptor extends FileCpi {
             FileInfo info = getInfo();
 
             return info.userCanWrite();
+        } catch(GATInvocationException e) {
+            if (e.getMessage().equals("File not found: " + location)) {
+                return false;
+            }
+            throw e;
         } catch (Exception e) {
             throw new GATInvocationException("gridftp", e);
         }
