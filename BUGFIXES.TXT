@@ -2,6 +2,7 @@ FIXED BUGS in version 2.0.4 with respect to version 2.0.3
 
 - The Glite adaptor has seen various updates and fixes, but its file
   adaptor is still to be considered "experimental", according to the developers.
+- various fixes in the Globus File adaptor.
 - File.getName() returned null in some cases, which is a no-no. This is fixed,
   and this also fixes bug 187.
 - re-implemented metrics administration. The old method maintained static lists
@@ -18,6 +19,8 @@ FIXED BUGS in version 2.0.4 with respect to version 2.0.3
   shell on the server side is a C-shell (bug reported by Kees van Reeuwijk).
 - made resourcebrokeradaptor test work when server is a Solaris machine
   (which has slightly different error messages).
+- fixed wsgt4new resourcebroker adaptor to use a supplied GSSCredential (bug
+  reported by Ralf Groeper).
 - fixed classloader issue: use either the classloader of the class that
   prompted the loading of JavaGAT or the context classloader, for the
   parent of the URL classloaders for the adaptors (bug reported by
