@@ -187,7 +187,9 @@ public class FileAdaptorTest {
         sd.setExecutable("/bin/sh");
         sd.setArguments(script);
         try {
-            sd.addPreStagedFile(GAT.createFile("tests" + java.io.File.separator + "src" + java.io.File.separator + "benchmarks" + java.io.File.separator + script));
+            sd.addPreStagedFile(GAT.createFile("tests" + java.io.File.separator
+                    + "src" + java.io.File.separator + "benchmarks"
+                    + java.io.File.separator + script));
         } catch (GATObjectCreationException e) {
             e.printStackTrace();
             System.exit(1);
