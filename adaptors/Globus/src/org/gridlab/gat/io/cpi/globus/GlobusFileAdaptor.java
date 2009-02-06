@@ -922,7 +922,7 @@ public abstract class GlobusFileAdaptor extends FileCpi {
 
             // it can also be a link, so continue with slow method
         } catch (GATInvocationException e) {
-            if (e.getMessage().equals("File not found: " + location)) {
+            if (e.getSuperMessage().equals("File not found: " + location)) {
                 if (logger.isDebugEnabled()) {
                     logger.debug("file not found in isDirectory: " + location);
                 }
@@ -948,7 +948,7 @@ public abstract class GlobusFileAdaptor extends FileCpi {
 
             return info.userCanRead();
         } catch(GATInvocationException e) {
-            if (e.getMessage().equals("File not found: " + location)) {
+            if (e.getSuperMessage().equals("File not found: " + location)) {
                 return false;
             }
             throw e;
@@ -970,7 +970,7 @@ public abstract class GlobusFileAdaptor extends FileCpi {
 
             return info.getSize();
         } catch(GATInvocationException e) {
-            if (e.getMessage().equals("File not found: " + location)) {
+            if (e.getSuperMessage().equals("File not found: " + location)) {
                 return 0L;
             }
             throw e;
@@ -1031,7 +1031,7 @@ public abstract class GlobusFileAdaptor extends FileCpi {
 
             return info.userCanWrite();
         } catch(GATInvocationException e) {
-            if (e.getMessage().equals("File not found: " + location)) {
+            if (e.getSuperMessage().equals("File not found: " + location)) {
                 return false;
             }
             throw e;
