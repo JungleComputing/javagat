@@ -469,6 +469,9 @@ public abstract class GlobusFileAdaptor extends FileCpi {
 
         try {
             client = createClient(toURI());
+            if (! client.exists(getPath())) {
+                return 0L;
+            }
             return client.getLastModified(getPath()).getTime();
         } catch (Exception e) {
             throw new GATInvocationException("gridftp", e);
@@ -939,15 +942,17 @@ public abstract class GlobusFileAdaptor extends FileCpi {
     }
 
     public boolean canRead() throws GATInvocationException {
+        FileInfo info;
+        
         try {
-            FileInfo info = getInfo();
-
-            return info.userCanRead();
+            info = getInfo();
         } catch(FileNotFoundException e) {
             return false;
-        } catch(GATInvocationException e) {
-            throw e;
-        } catch (Exception e) {
+        }
+    
+        try {
+            return info.userCanRead();
+        } catch(Throwable e) {
             throw new GATInvocationException("gridftp", e);
         }
     }
@@ -960,15 +965,17 @@ public abstract class GlobusFileAdaptor extends FileCpi {
             // Hmm, that did not work.
             // let's assume it is a file, and continue.
         }
+        FileInfo info;
+        
         try {
-            FileInfo info = getInfo();
-
-            return info.getSize();
+            info = getInfo();
         } catch(FileNotFoundException e) {
             return 0L;
-        } catch(GATInvocationException e) {
-            throw e;
-        } catch (Exception e) {
+        }
+    
+        try {
+            return info.getSize();
+        } catch(Throwable e) {
             throw new GATInvocationException("gridftp", e);
         }
     }
@@ -1020,15 +1027,17 @@ public abstract class GlobusFileAdaptor extends FileCpi {
     // }
 
     public boolean canWrite() throws GATInvocationException {
+        FileInfo info;
+        
         try {
-            FileInfo info = getInfo();
-
-            return info.userCanWrite();
+            info = getInfo();
         } catch(FileNotFoundException e) {
             return false;
-        } catch(GATInvocationException e) {
-            throw e;
-        } catch (Exception e) {
+        }
+    
+        try {
+            return info.userCanWrite();
+        } catch(Throwable e) {
             throw new GATInvocationException("gridftp", e);
         }
     }
