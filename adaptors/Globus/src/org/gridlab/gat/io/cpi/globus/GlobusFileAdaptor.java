@@ -559,11 +559,16 @@ public abstract class GlobusFileAdaptor extends FileCpi {
         if (getPath() != null) {
             Vector<FileInfo> list = null;
             try {
+                if (isOldServer(gatContext.getPreferences())) {
+                    list = listNoMinusD(client, getPath());
+                } else {
+                    list = client.list(getPath());
+                }
                 // list = client.list(getPath()); // this one gives issues on some
                 // gridftp servers (some used by the d-grid project)
                 // list = client.nlist(getPath()); // this one is not guaranteed to be
                 // implemented by the gridftp server.
-                list = listNoMinusD(client, getPath());
+                // list = listNoMinusD(client, getPath());
             } catch (ServerException e) {
                 destroyClient(client, toURI(), gatContext.getPreferences());
                 throw new GATInvocationException("Generic globus file adaptor",
