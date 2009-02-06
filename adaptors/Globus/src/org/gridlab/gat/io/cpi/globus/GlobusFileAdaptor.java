@@ -2,6 +2,7 @@ package org.gridlab.gat.io.cpi.globus;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.StringReader;
 import java.net.URISyntaxException;
@@ -742,7 +743,7 @@ public abstract class GlobusFileAdaptor extends FileCpi {
     // }
     // }
 
-    protected FileInfo getInfo() throws GATInvocationException {
+    protected FileInfo getInfo() throws GATInvocationException, FileNotFoundException {
         if (cachedInfo != null) {
             return cachedInfo;
         }
@@ -768,7 +769,7 @@ public abstract class GlobusFileAdaptor extends FileCpi {
             client = createClient(toURI());
 
             if (! client.exists(remotePath)) {
-                throw new GATInvocationException("File not found: " + location);
+                throw new FileNotFoundException("File not found: " + location);
             }
             if (logger.isDebugEnabled()) {
                 logger.debug("getINFO: client created");
@@ -785,7 +786,7 @@ public abstract class GlobusFileAdaptor extends FileCpi {
             }
 
             if (v.size() == 0) {
-                throw new GATInvocationException("File not found: " + location);
+                throw new FileNotFoundException("File not found: " + location);
             } else if (v.size() != 1) {
                 // just use the info for "."
                 for (int i = 0; i < v.size(); i++) {
@@ -919,15 +920,10 @@ public abstract class GlobusFileAdaptor extends FileCpi {
                 setIsDir(location, false);
                 return false;
             }
-
             // it can also be a link, so continue with slow method
+        } catch(FileNotFoundException e) {
+            return false;
         } catch (GATInvocationException e) {
-            if (e.getSuperMessage().equals("File not found: " + location)) {
-                if (logger.isDebugEnabled()) {
-                    logger.debug("file not found in isDirectory: " + location);
-                }
-                return false;
-            }
             if (logger.isDebugEnabled()) {
                 logger
                         .debug("fast isDirectory failed, falling back to slower version: "
@@ -947,10 +943,9 @@ public abstract class GlobusFileAdaptor extends FileCpi {
             FileInfo info = getInfo();
 
             return info.userCanRead();
+        } catch(FileNotFoundException e) {
+            return false;
         } catch(GATInvocationException e) {
-            if (e.getSuperMessage().equals("File not found: " + location)) {
-                return false;
-            }
             throw e;
         } catch (Exception e) {
             throw new GATInvocationException("gridftp", e);
@@ -969,10 +964,9 @@ public abstract class GlobusFileAdaptor extends FileCpi {
             FileInfo info = getInfo();
 
             return info.getSize();
+        } catch(FileNotFoundException e) {
+            return 0L;
         } catch(GATInvocationException e) {
-            if (e.getSuperMessage().equals("File not found: " + location)) {
-                return 0L;
-            }
             throw e;
         } catch (Exception e) {
             throw new GATInvocationException("gridftp", e);
@@ -1030,10 +1024,9 @@ public abstract class GlobusFileAdaptor extends FileCpi {
             FileInfo info = getInfo();
 
             return info.userCanWrite();
+        } catch(FileNotFoundException e) {
+            return false;
         } catch(GATInvocationException e) {
-            if (e.getSuperMessage().equals("File not found: " + location)) {
-                return false;
-            }
             throw e;
         } catch (Exception e) {
             throw new GATInvocationException("gridftp", e);
