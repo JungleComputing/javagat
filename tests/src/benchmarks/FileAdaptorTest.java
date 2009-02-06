@@ -135,6 +135,9 @@ public class FileAdaptorTest {
         adaptorTestResult.put("canRead: non-readable file", canReadTest(
                 gatContext, preferences, host, "JavaGAT-test-mode-unreadable",
                 0, false));
+        adaptorTestResult.put("canRead: non-existent file", canReadTest(
+                gatContext, preferences, host, "JavaGAT-test-mode-does-not-exist",
+                0, false));
 
         adaptorTestResult.put("canWrite: writable file", canWriteTest(
                 gatContext, preferences, host, "JavaGAT-test-mode-writable", 0,
@@ -142,21 +145,30 @@ public class FileAdaptorTest {
         adaptorTestResult.put("canWrite: non-writable file", canWriteTest(
                 gatContext, preferences, host, "JavaGAT-test-mode-unwritable",
                 0, false));
+        adaptorTestResult.put("canRead: non-existent file", canWriteTest(
+                gatContext, preferences, host, "JavaGAT-test-mode-does-not-exist",
+                0, false));
 
-        adaptorTestResult.put("length:", lengthTest(gatContext, preferences,
+        adaptorTestResult.put("length, existing file:", lengthTest(gatContext, preferences,
                 host, "JavaGAT-test-length", 1, 6));
+        adaptorTestResult.put("length, non-existent file:", lengthTest(gatContext, preferences,
+                host, "JavaGAT-test-length-nonexistent", 1, 0));
 
         adaptorTestResult.put("list:", listTest(gatContext, preferences, host,
                 "JavaGAT-test-list", 2, "file1", "file2", "dir1"));
 
-        adaptorTestResult.put("lastModified:", lastModifiedTest(gatContext,
+        adaptorTestResult.put("lastModified, existent file:", lastModifiedTest(gatContext,
                 preferences, host, "JavaGAT-test-last-modified", 0,
                 458258400000L));
 
-        adaptorTestResult.put("createNewFile: non-existing file",
+        adaptorTestResult.put("lastModified, non-existent file:", lastModifiedTest(gatContext,
+                preferences, host, "JavaGAT-test-last-modified-nonexist", 0,
+                0L));
+
+        adaptorTestResult.put("createNewFile: non-existent file",
                 createNewFileTest(gatContext, preferences, host,
                         "JavaGAT-test-new-file", 1, true));
-        adaptorTestResult.put("createNewFile: existing file",
+        adaptorTestResult.put("createNewFile: existent file",
                 createNewFileTest(gatContext, preferences, host,
                         "JavaGAT-test-new-file", 1, false));
 
