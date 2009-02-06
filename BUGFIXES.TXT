@@ -3,6 +3,8 @@ FIXED BUGS in version 2.0.4 with respect to version 2.0.3
 - The Glite adaptor has seen various updates and fixes, but its file
   adaptor is still to be considered "experimental", according to the developers.
 - various fixes in the Globus File adaptor.
+- a couple of fixes in the sshtrilead file adaptor, for operations on
+  non-existent files.
 - File.getName() returned null in some cases, which is a no-no. This is fixed,
   and this also fixes bug 187.
 - re-implemented metrics administration. The old method maintained static lists
