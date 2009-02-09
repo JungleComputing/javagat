@@ -1,10 +1,11 @@
 FIXED BUGS in version 2.0.4 with respect to version 2.0.3
 
+- fixed a couple of glitches in the tests.
 - The Glite adaptor has seen various updates and fixes, but its file
   adaptor is still to be considered "experimental", according to the developers.
 - various fixes in the Globus File adaptor.
 - a couple of fixes in the sshtrilead file adaptor, for operations on
-  non-existent files.
+  non-existent files. Also, its getAbsolutePath() implementation was wrong.
 - File.getName() returned null in some cases, which is a no-no. This is fixed,
   and this also fixes bug 187.
 - re-implemented metrics administration. The old method maintained static lists
@@ -70,6 +71,3 @@ FIXED BUGS in version 2.0.1 with respect to version 2.0
 - FileCpi: improved method recursiveDeleteDirectory, it only does recursive delete if a direct delete fails, this can speed up poststaging and sandbox removal quite a lot.
 - LocalResourceBroker: fixed accessing of the path of the sandbox (Bug reported by Hans-Martin Adorf)
 - GlobusFileAdaptor: mkdir failed if preference file.chmod wasn't set, it did set the mode to 000, now it takes the umask on the remote machine as default (Bug reported by Hans-Martin Adorf and others)
-
-
- 
