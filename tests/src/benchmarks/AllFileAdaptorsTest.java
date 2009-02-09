@@ -85,6 +85,10 @@ public class AllFileAdaptorsTest {
             for (AdaptorTestResult result : results) {
                 AdaptorTestResultEntry entry = result.getTestResultEntries()
                         .get(key);
+                if (entry == null) {
+                    out.write("<td align=right>not present</td>\n".getBytes());
+                    continue;
+                }
                 if (entry.getException() == null && !entry.getResult()) {
                     out.write("<td align=right bgcolor=#FFDDDD>".getBytes());
                 } else {
