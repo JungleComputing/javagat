@@ -485,6 +485,10 @@ public class GlobusJob extends JobCpi implements GramJobListener,
         case 0: // unknown (no constant :-( )
             return JobState.UNKNOWN;
         case STATUS_UNSUBMITTED:
+            if (state == JobState.PRE_STAGING) {
+                // Prevent backwards step in job state.
+                return state;
+            }
             return JobState.INITIAL;
         default:
             logger.warn("WARNING: Globus job: unknown state: " + gramStatus);
