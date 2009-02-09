@@ -35,7 +35,6 @@ public class AllFileAdaptorsTest {
         try {
             printResults(results, host);
         } catch (IOException e) {
-            // TODO Auto-generated catch block
             e.printStackTrace();
         }
     }
@@ -99,11 +98,18 @@ public class AllFileAdaptorsTest {
                 } else {
                     if (entry.getException() instanceof GATInvocationException
                             && ((GATInvocationException) entry.getException())
+                                    .getExceptions().length > 0
+                            && ((GATInvocationException) entry.getException())
                                     .getExceptions()[0] instanceof UnsupportedOperationException) {
                         out.write("n.i.".getBytes());
                     } else if (entry.getException() instanceof GATObjectCreationException
+                            && ((GATObjectCreationException) entry.getException())
+                                    .getExceptions().length > 0
                             && ((GATObjectCreationException) entry
                                     .getException()).getExceptions()[0] instanceof GATObjectCreationException
+                            && ((GATObjectCreationException) ((GATObjectCreationException) entry
+                                    .getException()).getExceptions()[0])
+                                    .getExceptions().length > 0
                             && ((GATObjectCreationException) ((GATObjectCreationException) entry
                                     .getException()).getExceptions()[0])
                                     .getExceptions()[0] instanceof AdaptorNotApplicableException) {
