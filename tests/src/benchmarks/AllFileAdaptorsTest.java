@@ -42,7 +42,7 @@ public class AllFileAdaptorsTest {
 
     private static void printResults(AdaptorTestResult[] results, String host)
             throws IOException {
-        File outFile = new File("results-" + host + ".html");
+        File outFile = new File("File-results-" + host + ".html");
         if (!outFile.exists()) {
             outFile.createNewFile();
         }

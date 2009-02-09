@@ -44,7 +44,7 @@ public class AllResourceBrokerAdaptorsTest {
 
     private static void printResults(AdaptorTestResult[] results, String host)
             throws IOException {
-        File outFile = new File("RB-results-" + host + ".html");
+        File outFile = new File("ResourceBroker-results-" + host + ".html");
         if (!outFile.exists()) {
             outFile.createNewFile();
         }
