@@ -113,6 +113,9 @@ public class AllResourceBrokerAdaptorsTest {
                                     .getException()).getExceptions()[0] instanceof GATObjectCreationException
                             && ((GATObjectCreationException) ((GATObjectCreationException) entry
                                     .getException()).getExceptions()[0])
+                                    .getExceptions().length > 0
+                            && ((GATObjectCreationException) ((GATObjectCreationException) entry
+                                    .getException()).getExceptions()[0])
                                     .getExceptions()[0] instanceof AdaptorNotApplicableException) {
                         out.write("n.a.".getBytes());
                     } else {
