@@ -107,7 +107,7 @@ public class AllResourceBrokerAdaptorsTest {
                                     .getExceptions()[0] instanceof UnsupportedOperationException) {
                         out.write("n.i.".getBytes());
                     } else if (entry.getException() instanceof GATObjectCreationException
-                            && ((GATInvocationException) entry.getException())
+                            && ((GATObjectCreationException) entry.getException())
                                     .getExceptions().length > 0
                             && ((GATObjectCreationException) entry
                                     .getException()).getExceptions()[0] instanceof GATObjectCreationException
