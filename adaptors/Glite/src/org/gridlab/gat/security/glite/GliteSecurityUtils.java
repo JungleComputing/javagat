@@ -1,11 +1,14 @@
 package org.gridlab.gat.security.glite;
 
+import java.io.File;
+
 import org.apache.log4j.Logger;
 import org.glite.security.trustmanager.ContextWrapper;
 import org.globus.common.CoGProperties;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.Preferences;
+import org.gridlab.gat.URI;
 import org.gridlab.gat.resources.cpi.glite.GliteConstants;
 import org.gridlab.gat.security.CertificateSecurityContext;
 import org.gridlab.gat.security.SecurityContext;
@@ -54,7 +57,8 @@ public final class GliteSecurityUtils {
      * vomsLifetime preference is not specified, the remaining lifetime is
      * longer than the MINIMUM_PROXY_REMAINING_LIFETIME specified in this class
      * 
-     * @param context GATContext with security parameters.
+     * @param context
+     *            GATContext with security parameters.
      * @return path to the proxy.
      * @throws GATInvocationException
      */
@@ -142,7 +146,7 @@ public final class GliteSecurityUtils {
      * </tr>
      * <tr>
      * <td>VirtualOrganisationRole</td>
-     * <td>The role inside the virtual organisation or the group of the virtual 
+     * <td>The role inside the virtual organisation or the group of the virtual
      * organisation for which the voms proxy is created (e.g. VOAdmin)</td>
      * </tr>
      * </table>
@@ -168,19 +172,38 @@ public final class GliteSecurityUtils {
         }
 
         Preferences prefs = context.getPreferences();
-        String userkey = secContext.getKeyfile().getPath();
-        String usercert = secContext.getCertfile().getPath();
+        final URI userkeyuri = secContext.getKeyfile();
+        final String userkey;
+        if (userkeyuri == null) {
+            userkey = personalGlobusDir() + "userkey.pem";
+        } else {
+            userkey = userkeyuri.getPath();
+        }
+        final URI usercerturi = secContext.getCertfile();
+        final String usercert;
+        if (usercerturi == null) {
+            usercert = personalGlobusDir() + "usercert.pem";
+        } else {
+            usercert = usercerturi.getPath();
+        }
 
-        String hostDN = (String) prefs.get(GliteConstants.PREFERENCE_VIRTUAL_ORGANISATION_HOST_DN);
-        String serverURI = (String) prefs.get(GliteConstants.PREFERENCE_VIRTUAL_ORGANISATION_SERVER_URL);
-        String serverPortStr = (String) prefs.get(GliteConstants.PREFERENCE_VIRTUAL_ORGANISATION_SERVER_PORT);
+        String hostDN = (String) prefs
+                .get(GliteConstants.PREFERENCE_VIRTUAL_ORGANISATION_HOST_DN);
+        String serverURI = (String) prefs
+                .get(GliteConstants.PREFERENCE_VIRTUAL_ORGANISATION_SERVER_URL);
+        String serverPortStr = (String) prefs
+                .get(GliteConstants.PREFERENCE_VIRTUAL_ORGANISATION_SERVER_PORT);
         int serverPort = Integer.parseInt(serverPortStr);
 
-        String voName = (String) prefs.get(GliteConstants.PREFERENCE_VIRTUAL_ORGANISATION);
-        String voGroup = (String) prefs.get(GliteConstants.PREFERENCE_VIRTUAL_ORGANISATION_GROUP);
-        String voRole = (String) prefs.get(GliteConstants.PREFERENCE_VIRTUAL_ORGANISATION_ROLE);
-        
-        String requestCode = voName+(voGroup == null ? "" : "/"+voGroup)+(voRole == null ? "" : "/Role="+voRole);
+        String voName = (String) prefs
+                .get(GliteConstants.PREFERENCE_VIRTUAL_ORGANISATION);
+        String voGroup = (String) prefs
+                .get(GliteConstants.PREFERENCE_VIRTUAL_ORGANISATION_GROUP);
+        String voRole = (String) prefs
+                .get(GliteConstants.PREFERENCE_VIRTUAL_ORGANISATION_ROLE);
+
+        String requestCode = voName + (voGroup == null ? "" : "/" + voGroup)
+                + (voRole == null ? "" : "/Role=" + voRole);
         try {
             VomsProxyManager manager = new VomsProxyManager(usercert, userkey,
                     secContext.getPassword(), lifetime, hostDN, serverURI,
@@ -193,4 +216,11 @@ public final class GliteSecurityUtils {
         }
     }
 
+    /**
+     * @return the default personal globus directory.
+     */
+    private static String personalGlobusDir() {
+        return System.getProperty("user.home") + File.separatorChar + ".globus"
+                + File.separatorChar;
+    }
 }
