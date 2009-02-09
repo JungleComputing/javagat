@@ -3,6 +3,8 @@ package org.gridlab.gat;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Hashtable;
+import java.util.Locale;
+import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
@@ -18,7 +20,7 @@ public class Preferences implements java.io.Serializable {
      */
     private static final long serialVersionUID = 1L;
 
-    Hashtable<String, Object> t = new Hashtable<String, Object>();
+    Map<String, Object> t = new Hashtable<String, Object>();
 
     /**
      * Constructs a new Preferences with no mappings.
@@ -109,7 +111,7 @@ public class Preferences implements java.io.Serializable {
      *                 and the specified key or value is <tt>null</tt>.
      */
     public Object put(String key, Object value) {
-        return t.put(key.toLowerCase(), value);
+        return t.put(key.toLowerCase(Locale.ENGLISH), value);
     }
 
     /**
@@ -124,7 +126,7 @@ public class Preferences implements java.io.Serializable {
      *                 if the key or value is <tt>null</tt>.
      */
     public Object get(String key) {
-        return t.get(key.toLowerCase());
+        return t.get(key.toLowerCase(Locale.ENGLISH));
     }
 
     /**
@@ -139,8 +141,8 @@ public class Preferences implements java.io.Serializable {
      *                 if the key or value is <tt>null</tt>.
      */
     public Object get(String key, Object defaultValue) {
-        if (t.get(key.toLowerCase()) != null) {
-            return t.get(key.toLowerCase());
+        if (t.get(key.toLowerCase(Locale.ENGLISH)) != null) {
+            return t.get(key.toLowerCase(Locale.ENGLISH));
         } else {
             return defaultValue;
         }
@@ -177,7 +179,7 @@ public class Preferences implements java.io.Serializable {
     public void putAll(Properties properties) {
         Set<Object> keys = properties.keySet();
         for (Object key : keys) {
-            t.put((String) key, properties.get(key));
+            t.put(key.toString().toLowerCase(Locale.ENGLISH), properties.get(key));
         }
     }
 
@@ -203,7 +205,7 @@ public class Preferences implements java.io.Serializable {
      * @return whatever the key mapped to, if present
      */
     public Object remove(String key) {
-        return t.remove(key.toLowerCase());
+        return t.remove(key.toLowerCase(Locale.ENGLISH));
     }
 
     /**
@@ -217,7 +219,7 @@ public class Preferences implements java.io.Serializable {
      *                 if key is null
      */
     public boolean containsKey(String key) {
-        return t.containsKey(key.toLowerCase());
+        return t.containsKey(key.toLowerCase(Locale.ENGLISH));
     }
 
     /**
