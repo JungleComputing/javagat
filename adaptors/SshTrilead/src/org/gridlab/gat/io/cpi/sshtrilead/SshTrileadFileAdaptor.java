@@ -784,13 +784,17 @@ public class SshTrileadFileAdaptor extends FileCpi {
         if (isWindows(gatContext, location)) {
             throw new UnsupportedOperationException("Not implemented");
         } else {
+            String fixed = getFixedPath();
+            if (fixed.startsWith("/")) {
+                return fixed;
+            }
             String[] result;
             try {
                 result = execCommand("echo ~");
             } catch (Exception e) {
                 throw new GATInvocationException("sshtrilead", e);
             }
-            return result[STDOUT].replace("\n", "") + "/" + getFixedPath();
+            return result[STDOUT].replace("\n", "") + "/" + fixed;
         }
     }
 
