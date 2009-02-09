@@ -203,7 +203,7 @@ public class FileInputStreamAdaptorTest {
         long start = System.currentTimeMillis();
         boolean markSupported = in.markSupported();
         long stop = System.currentTimeMillis();
-        return new AdaptorTestResultEntry(markSupported, (stop - start),
+        return new AdaptorTestResultEntry(true, (stop - start),
                 markSupported ? new Exception("mark supported")
                         : new Exception("mark not supported"));
     }
