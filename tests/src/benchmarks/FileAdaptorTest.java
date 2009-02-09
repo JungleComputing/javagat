@@ -145,7 +145,7 @@ public class FileAdaptorTest {
         adaptorTestResult.put("canWrite: non-writable file", canWriteTest(
                 gatContext, preferences, host, "JavaGAT-test-mode-unwritable",
                 0, false));
-        adaptorTestResult.put("canRead: non-existent file", canWriteTest(
+        adaptorTestResult.put("canWrite: non-existent file", canWriteTest(
                 gatContext, preferences, host, "JavaGAT-test-mode-does-not-exist",
                 0, false));
 
@@ -231,8 +231,7 @@ public class FileAdaptorTest {
             try {
                 Thread.sleep(500);
             } catch (InterruptedException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
+                // ignored
             }
         }
     }
