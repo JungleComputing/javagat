@@ -1,4 +1,15 @@
+/*
+ * Created 02 Feb. 2009 by Bas Boterman.
+ */
+
 package ibis.advert;
+
+/**
+ * This class contains the main functionality for using the service which
+ * runs at the Google App Engine.
+ * 
+ * @author bbn230
+ */
 
 import java.util.NoSuchElementException;
 
@@ -17,7 +28,7 @@ public class Advert {
 	 * @param path
 	 *                Absolute path of the new entry.
 	 * @throws AppEngineResourcesException
-	 *                This exception is thrown when the App Engine ran out
+	 *                This exception is thrown when the App Engine runs out
 	 *                of resources.
 	 */
 	public void add(byte[] bytes, MetaData metaData, String path)
