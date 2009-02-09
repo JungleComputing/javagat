@@ -36,6 +36,9 @@ public class FileOutputStreamAdaptorTest {
             out = GAT.createFileOutputStream(preferences,
                     "any://" + host + "/JavaGAT-test-fileoutputstream");
         } catch (GATObjectCreationException e) {
+            adaptorTestResult.put("create         ", new AdaptorTestResultEntry(false, 0, e));
+            run(host, "fileoutputstream-adaptor-test-clean.sh");
+            return adaptorTestResult;
         }
         byte[] large = new byte[10 * 1024 * 1024];
         for (int i = 0; i < large.length; i++) {
@@ -90,8 +93,7 @@ public class FileOutputStreamAdaptorTest {
             try {
                 Thread.sleep(500);
             } catch (InterruptedException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
+                // ignored
             }
         }
     }

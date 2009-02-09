@@ -46,6 +46,9 @@ public class FileInputStreamAdaptorTest {
             in = GAT.createFileInputStream(gatContext, preferences,
                     "any://" + host + "/JavaGAT-test-fileinputstream");
         } catch (GATObjectCreationException e) {
+            adaptorTestResult.put("create         ", new AdaptorTestResultEntry(false, 0, e));
+            run(host, "fileinputstream-adaptor-test-clean.sh");
+            return adaptorTestResult;
         }
         adaptorTestResult.put("markSupported      ", markSupportedTest(in));
         adaptorTestResult
@@ -118,8 +121,7 @@ public class FileInputStreamAdaptorTest {
             try {
                 Thread.sleep(500);
             } catch (InterruptedException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
+                // ignored
             }
         }
     }
