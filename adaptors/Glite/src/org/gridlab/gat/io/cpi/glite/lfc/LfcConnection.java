@@ -379,6 +379,7 @@ public class LfcConnection {
     }
 
     static {
+        CNS_ERRORS.put(2, "No such file or directory");
         CNS_ERRORS.put(17, "File exists");
         CNS_ERRORS.put(22, "Invalid argument");
     }
