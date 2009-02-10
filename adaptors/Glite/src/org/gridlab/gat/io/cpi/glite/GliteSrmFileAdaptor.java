@@ -9,10 +9,12 @@ import org.gridlab.gat.GAT;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.GATObjectCreationException;
+import org.gridlab.gat.Preferences;
 import org.gridlab.gat.URI;
 import org.gridlab.gat.io.File;
 import org.gridlab.gat.io.cpi.FileCpi;
 import org.gridlab.gat.io.cpi.glite.srm.SrmConnector;
+import org.gridlab.gat.resources.cpi.ResourceBrokerCpi;
 import org.gridlab.gat.security.glite.GliteSecurityUtils;
 
 /**
@@ -67,6 +69,18 @@ public class GliteSrmFileAdaptor extends FileCpi {
         return capabilities;
     }
 
+    /**
+     * Used by CreateDefaultPropertiesFile to generate default
+     * javagat.properties.
+     * 
+     * @return Properties and their default values.
+     */
+    public static Preferences getSupportedPreferences() {
+        Preferences preferences = ResourceBrokerCpi.getSupportedPreferences();
+        GliteSecurityUtils.addGliteSecurityPreferences(preferences);
+        return preferences;
+    }
+    
     /** {@inheritDoc} */
     public void copy(URI dest) throws GATInvocationException {
         try {

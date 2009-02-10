@@ -39,6 +39,7 @@ import org.gridlab.gat.resources.Reservation;
 import org.gridlab.gat.resources.Resource;
 import org.gridlab.gat.resources.ResourceDescription;
 import org.gridlab.gat.resources.cpi.ResourceBrokerCpi;
+import org.gridlab.gat.security.glite.GliteSecurityUtils;
 
 /**
  * Adapter for the Glite Job Submission (WMS) for JavaGAT.
@@ -64,25 +65,16 @@ public class GliteResourceBrokerAdaptor extends ResourceBrokerCpi {
         return capabilities;
     }
 
+    /**
+     * Used by CreateDefaultPropertiesFile to generate default
+     * javagat.properties.
+     * 
+     * @return Properties and their default values.
+     */
     public static Preferences getSupportedPreferences() {
         Preferences preferences = ResourceBrokerCpi.getSupportedPreferences();
-        preferences.put(GliteConstants.PREFERENCE_VIRTUAL_ORGANISATION, "true");
-        preferences.put(GliteConstants.PREFERENCE_VIRTUAL_ORGANISATION_GROUP,
-                "true");
-        preferences.put(GliteConstants.PREFERENCE_VIRTUAL_ORGANISATION_ROLE,
-                "true");
-        preferences.put(GliteConstants.PREFERENCE_VIRTUAL_ORGANISATION_HOST_DN,
-                "true");
-        preferences.put(
-                GliteConstants.PREFERENCE_VIRTUAL_ORGANISATION_SERVER_URL,
-                "true");
-        preferences.put(
-                GliteConstants.PREFERENCE_VIRTUAL_ORGANISATION_SERVER_URL,
-                "true");
-        preferences.put(GliteConstants.PREFERENCE_VOMS_LIFETIME, "true");
-        preferences
-                .put(GliteConstants.PREFERENCE_VOMS_CREATE_NEW_PROXY, "true");
-        preferences.put(GliteConstants.PREFERENCE_POLL_INTERVAL_SECS, "true");
+        GliteSecurityUtils.addGliteSecurityPreferences(preferences);
+        preferences.put(GliteConstants.PREFERENCE_POLL_INTERVAL_SECS, "30");
         preferences.put(GliteConstants.PREFERENCE_DELETE_JDL, "true");
         preferences.put(GliteConstants.PREFERENCE_JOB_STOP_POSTSTAGE, "false");
         preferences.put(GliteConstants.PREFERENCE_JOB_STOP_ON_EXIT, "false");

@@ -67,11 +67,12 @@ public final class GliteSecurityUtils {
         String proxyFile = GliteSecurityUtils.getProxyPath();
 
         Preferences prefs = context.getPreferences();
-        String lifetimeStr = (String) prefs.get("vomsLifetime");
+        String lifetimeStr = (String) prefs
+                .get(GliteConstants.PREFERENCE_VOMS_LIFETIME);
         int lifetime = STANDARD_PROXY_LIFETIME;
 
         boolean createNew = Boolean.parseBoolean((String) prefs
-                .get("glite.createNewProxy"));
+                .get(GliteConstants.PREFERENCE_VOMS_CREATE_NEW_PROXY));
         long existingLifetime = -1;
 
         // determine the lifetime of the existing proxy only if the user wants
@@ -222,5 +223,26 @@ public final class GliteSecurityUtils {
     private static String personalGlobusDir() {
         return System.getProperty("user.home") + File.separatorChar + ".globus"
                 + File.separatorChar;
+    }
+
+    public static void addGliteSecurityPreferences(Preferences preferences) {
+        preferences.put(GliteConstants.PREFERENCE_VIRTUAL_ORGANISATION,
+                "<no default>");
+        preferences.put(GliteConstants.PREFERENCE_VIRTUAL_ORGANISATION_GROUP,
+                "");
+        preferences
+                .put(GliteConstants.PREFERENCE_VIRTUAL_ORGANISATION_ROLE, "");
+        preferences.put(GliteConstants.PREFERENCE_VIRTUAL_ORGANISATION_HOST_DN,
+                "<no default>");
+        preferences.put(
+                GliteConstants.PREFERENCE_VIRTUAL_ORGANISATION_SERVER_URL,
+                "<no default>");
+        preferences.put(
+                GliteConstants.PREFERENCE_VIRTUAL_ORGANISATION_SERVER_PORT,
+                "<no default>");
+        preferences.put(GliteConstants.PREFERENCE_VOMS_LIFETIME, Integer
+                .toString(STANDARD_PROXY_LIFETIME));
+        preferences.put(GliteConstants.PREFERENCE_VOMS_CREATE_NEW_PROXY,
+                "false");
     }
 }

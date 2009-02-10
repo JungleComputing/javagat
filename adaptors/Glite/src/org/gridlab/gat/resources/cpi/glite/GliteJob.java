@@ -117,7 +117,7 @@ public class GliteJob extends JobCpi {
                     .get(GliteConstants.PREFERENCE_POLL_INTERVAL_SECS);
 
             if (pollingIntervalStr == null) {
-                this.pollIntMilliSec = 3000;
+                this.pollIntMilliSec = 30000;
             } else {
                 this.pollIntMilliSec = Integer.parseInt(pollingIntervalStr) * 1000;
             }
