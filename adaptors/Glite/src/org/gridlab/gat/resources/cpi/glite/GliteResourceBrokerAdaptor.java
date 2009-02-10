@@ -106,6 +106,10 @@ public class GliteResourceBrokerAdaptor extends ResourceBrokerCpi {
                         GliteConstants.PREFERENCE_VIRTUAL_ORGANISATION);
                 List<String> brokerURIs = ldapResourceFinder
                         .fetchWMSServers(vo);
+                if (brokerURIs.isEmpty()) {
+                    throw new GATObjectCreationException(
+                            "Could not find WMS in LDAP for VO: " + vo);
+                }
                 int randomPos = (int) (Math.random() * brokerURIs.size());
                 String brokerURIStr = brokerURIs.get(randomPos);
                 this.brokerURI = new URI(brokerURIStr);
