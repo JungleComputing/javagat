@@ -335,11 +335,13 @@ public class GliteJob extends JobCpi {
 
     private void stageInSandboxFiles(String sandboxJobID) {
         List<File> sandboxFiles = new ArrayList<File>();
+        GATContext newContext = (GATContext) gatContext.clone();
+        newContext.addPreference("File.adaptor.name", "GridFTP");
 
         try {
             LOGGER.debug("Staging in files");
             if (swDescription.getStdin() != null) {
-                File f = GAT.createFile(gatContext, swDescription.getStdin()
+                File f = GAT.createFile(newContext, swDescription.getStdin()
                         .getName());
                 sandboxFiles.add(f);
             }
@@ -356,7 +358,7 @@ public class GliteJob extends JobCpi {
                         + tempURI.getHost() + ":" + tempURI.getPort() + "//"
                         + tempURI.getPath());
                 LOGGER.debug("Uploading " + sandboxFile + " to " + destURI);
-                File destFile = GAT.createFile(gatContext, destURI);
+                File destFile = GAT.createFile(newContext, destURI);
                 sandboxFile.copy(destFile.toGATURI());
             }
         } catch (URISyntaxException e) {
@@ -544,6 +546,8 @@ public class GliteJob extends JobCpi {
         }
 
         if (list != null) {
+            GATContext newContext = (GATContext) gatContext.clone();
+            newContext.addPreference("File.adaptor.name", "GridFTP");
             for (int i = 0; i < list.length; i++) {
                 try {
                     URI uri1 = new URI(list[i].getName());
@@ -551,9 +555,9 @@ public class GliteJob extends JobCpi {
                             + uri1.getHost() + ":" + uri1.getPort() + "//"
                             + uri1.getPath());
 
-                    File f = GAT.createFile(gatContext, uri2);
+                    File f = GAT.createFile(newContext, uri2);
                     int name_begin = uri2.getPath().lastIndexOf('/') + 1;
-                    File f2 = GAT.createFile(gatContext, new URI(uri2.getPath()
+                    File f2 = GAT.createFile(newContext, new URI(uri2.getPath()
                             .substring(name_begin)));
 
                     f.copy(destForPostStagedFile(f2));
