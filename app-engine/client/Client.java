@@ -14,7 +14,11 @@ import java.net.*;
 import java.io.*;
 
 public class Client {
-	public static void main(String argv[]) throws Exception {
+	private static void makeHttpsConnection() throws Exception {
+		/* TODO: make HTTPS connection here. */
+	}
+	
+	private static void makeHttpConnection() throws Exception {
 		/* Setting up a new connection. */		
 		URL url = new URL("http://daraja.appspot.com/");
         URLConnection urlc = url.openConnection();
@@ -34,5 +38,10 @@ public class Client {
             System.out.println(inputLine);
         }
         in.close();
+	}
+	
+	public static void main(String argv[]) throws Exception {
+		makeHttpConnection();
+		makeHttpsConnection();
 	}
 }
