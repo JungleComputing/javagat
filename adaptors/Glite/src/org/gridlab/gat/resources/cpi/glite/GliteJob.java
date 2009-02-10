@@ -404,11 +404,14 @@ public class GliteJob extends JobCpi {
             stageInSandboxFiles(jobIdStruct.getId());
 
             serviceStub.jobStart(jobIdStruct.getId());
-
         } catch (IOException e) {
             LOGGER.error("Problem while copying input files", e);
+            throw new GATInvocationException(
+                    GliteResourceBrokerAdaptor.GLITE_RESOURCE_BROKER_ADAPTOR, e);
         } catch (GeneralSecurityException e) {
             LOGGER.error("security problem while copying input files", e);
+            throw new GATInvocationException(
+                    GliteResourceBrokerAdaptor.GLITE_RESOURCE_BROKER_ADAPTOR, e);
         }
 
         return jobIdStruct.getId();

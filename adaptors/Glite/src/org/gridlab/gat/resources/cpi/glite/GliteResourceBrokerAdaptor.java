@@ -49,7 +49,7 @@ import org.gridlab.gat.resources.cpi.ResourceBrokerCpi;
  */
 public class GliteResourceBrokerAdaptor extends ResourceBrokerCpi {
 
-    private static final String GLITE_RESOURCE_BROKER_ADAPTOR = "GliteResourceBrokerAdaptor";
+    public static final String GLITE_RESOURCE_BROKER_ADAPTOR = "GliteResourceBrokerAdaptor";
 
     private LDAPResourceFinder ldapResourceFinder;
 
