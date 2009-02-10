@@ -15,6 +15,7 @@ package ibis.advert;
 import java.util.HashMap;
 import java.util.Set;
 import java.util.Collection;
+import java.util.Iterator;
 
 @SuppressWarnings("serial")
 public class MetaData {
@@ -110,7 +111,23 @@ public class MetaData {
 	 *     False</code> otherwise.
 	 */
 	public boolean match(MetaData query) {
-		
-		return false;
+	    Iterator<String> itr = query.getAllKeys().iterator();
+	    
+	    while (itr.hasNext()) {
+            String key = itr.next();
+            String myData = get(key);
+
+            if (myData == null) {
+                return false;
+            }
+
+            String queryData = query.get(key);
+
+            if (!myData.matches(queryData)) {
+                return false;
+            }
+        }
+
+        return true;
 	}
 }
