@@ -5,9 +5,9 @@
 package ibis.advert;
 
 /**
- * This class describes meta data that can be attached to any instance
- * stored in the App Engine. MetaData consists of a number of key-value
- * pairs, which both are of type {@link String}. 
+ * This class describes meta data that can be attached to any instance stored in
+ * the App Engine. MetaData consists of a number of key-value pairs, which both
+ * are of type {@link String}.
  * 
  * @author bbn230
  */
@@ -32,24 +32,21 @@ public class MetaData {
 	 * Adds a key-value pair to the {@link MetaData} object.
 	 * 
 	 * @param key
-	 *     The key that corresponds to a given value.
+	 *            The key that corresponds to a given value.
 	 * @param value
-	 *     The value that corresponds to a given key.
+	 *            The value that corresponds to a given key.
 	 */
 	public void put(String key, String value) {
 		hMap.put(key, value);
-		return;
 	}
 
 	/**
-	 * Fetches a value from the {@link MetaData} object, given a certain
-	 * key.
+	 * Fetches a value from the {@link MetaData} object, given a certain key.
 	 * 
 	 * @param key
-	 *     The key for which the associated value should be fetched.
-	 * @return
-	 *     A {@link String} containing the associated value of the given 
-	 *     key.
+	 *            The key for which the associated value should be fetched.
+	 * @return A {@link String} containing the associated value of the given
+	 *         key.
 	 */
 	public String get(String key) {
 		return (String) hMap.get(key);
@@ -59,75 +56,71 @@ public class MetaData {
 	 * Removes a key-value pair from the {@link MetaData} object.
 	 * 
 	 * @param key
-	 *     The key for which the key-value pair should be removed.
-	 * @return
-	 *     The associated value of the key given.
+	 *            The key for which the key-value pair should be removed.
+	 * @return The associated value of the key given.
 	 */
 	public String remove(String key) {
 		return (String) hMap.remove(key);
 	}
 
 	/**
-	 * Gets a {@link Set} of all keys stored in the {@link MetaData}
-	 * object.
+	 * Gets a {@link Set} of all keys stored in the {@link MetaData} object.
 	 * 
-	 * @return
-	 *     A {@link Set} of all keys stored in the {@link MetaData} object.
+	 * @return A {@link Set} of all keys stored in the {@link MetaData} object.
 	 */
 	public Set<String> getAllKeys() {
 		return hMap.keySet();
 	}
-	
+
 	/**
 	 * Gets a {@link Collection} of all values stored in the {@link MetaData}
 	 * object.
 	 * 
-	 * @return
-	 *     A {@link Collection} of all keys stored in the {@link MetaData} 
-	 *     object.
+	 * @return A {@link Collection} of all keys stored in the {@link MetaData}
+	 *         object.
 	 */
 	public Collection<String> getAllValues() {
 		return hMap.values();
 	}
 
-    /**
-     * Returns the number of entries in the {@link MetaData} object.
-     * 
-     * @return The number of entries in the {@link MetaData} object.
-     */
+	/**
+	 * Returns the number of entries in the {@link MetaData} object.
+	 * 
+	 * @return The number of entries in the {@link MetaData} object.
+	 */
 	public int size() {
 		return hMap.size();
 	}
 
 	/**
-	 * Matches two {@link MetaData} objects by a given query.<b>Used 
-	 * internally by the GAT. GAT users should not call this method.</b>
+	 * Matches two {@link MetaData} objects by a given query.<b>Used internally
+	 * by the GAT. GAT users should not call this method.</b>
 	 * 
 	 * @param query
-	 *     A {@link MetaData} object that should be matched with with 
-	 *     the current object.
-	 * @return
-	 *     Returns <code>True</code> if the two objects match; <code>
-	 *     False</code> otherwise.
+	 *            A {@link MetaData} object that should be matched with with the
+	 *            current object.
+	 * @return Returns <code>True</code> if the two objects match; <code>
+	 *     False</code>
+	 *         otherwise.
 	 */
 	public boolean match(MetaData query) {
-	    Iterator<String> itr = query.getAllKeys().iterator();
-	    
-	    while (itr.hasNext()) {
-            String key = itr.next();
-            String myData = get(key);
+		Iterator<String> itr = query.getAllKeys().iterator();
 
-            if (myData == null) {
-                return false;
-            }
+		while (itr.hasNext()) {
+			String key = itr.next();
+			String myData = get(key);
 
-            String queryData = query.get(key);
+			if (myData == null) {
+				return false;
+			}
 
-            if (!myData.matches(queryData)) {
-                return false;
-            }
-        }
+			String queryData = query.get(key);
 
-        return true;
+			if (!myData.matches(queryData)) {
+				return false;
+			}
+		}
+
+		return true;
 	}
 }
