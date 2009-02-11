@@ -8,9 +8,13 @@
 	<property name="tmp" location="tmp" />
 	<property name="lib" location="${gat.location}/lib/adaptors/GlobusAdaptor" />
 	<property name="external" location="external" />
+	<property name="shared" location="../shared" />
 	<property name="java.debug.value" value="true" />
 
 	<path id="external_jars">
+		<fileset dir="${shared}">
+			<include name="*.jar" />
+		</fileset>
 		<fileset dir="${external}">
 			<include name="*.jar" />
 		</fileset>

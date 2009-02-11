@@ -113,9 +113,17 @@ public class GATEngine {
             logger.debug("creating the GAT engine START");
         }
         
-        parentLoader = getParentClassLoader();
-
-        readJarFiles();
+        File adaptorRoot = getAdaptorRoot();        
+        ClassLoader superparentLoader = getParentClassLoader();
+        ClassLoader sharedLoader;
+        try {
+            sharedLoader = loadDirectory(new File(adaptorRoot, "shared"),
+                    superparentLoader, false);
+        } catch (Exception e) {
+            sharedLoader = superparentLoader;
+        }
+        parentLoader = sharedLoader;
+        readJarFiles(adaptorRoot);
 
         if (adaptorLists.size() == 0) {
             throw new Error("GAT: No adaptors could be loaded");
@@ -346,62 +354,72 @@ public class GATEngine {
         }
         return result;
     }
-
-    protected void readJarFiles() {
+    
+    private File getAdaptorRoot() {
         // retrieve the path where the adaptors are located.
         String adaptorPath = System.getProperty("gat.adaptor.path");
         if (logger.isTraceEnabled()) {
             logger.trace("loading adaptors from adaptor path: " + adaptorPath);
         }
-
-        if (adaptorPath != null) {
-            File adaptorRoot = new File(adaptorPath);
-            if (!adaptorRoot.exists()) {
-                throw new Error("gat.adaptor.path set to '" + adaptorPath
-                        + "', but it doesn't exist!");
-            }
-            // now get the adaptor dirs from the adaptor path, adaptor dirs are
-            // of course directories and further will end with "Adaptor"
-            File[] adaptorDirs = adaptorRoot.listFiles(new FileFilter() {
-                public boolean accept(File file) {
-                    return file.isDirectory()
-                            && file.getName().endsWith("Adaptor");
-                }
-            });
-            if (adaptorDirs.length == 0) {
-                throw new Error("gat.adaptor.path set to '" + adaptorPath
-                        + "', but it doesn't contain any adaptor");
-            }
-            HashMap<String, ClassLoader> adaptorClassLoaders = new HashMap<String, ClassLoader>();
-            for (File adaptorDir : adaptorDirs) {
-                try {
-                    adaptorClassLoaders.put(adaptorDir.getName(),
-                            loadDirectory(adaptorDir));
-                    if (logger.isDebugEnabled()) {
-                        logger.debug("loading adaptor SUCCESS: " + adaptorDir);
-                    }
-                } catch (Exception e) {
-                    if (logger.isDebugEnabled()) {
-                        logger.debug("loading adaptor FAILED: " + adaptorDir
-                                + " (" + e + ")");
-                    }
-                }
-            }
-        } else {
+        if (adaptorPath == null) {
             throw new Error("gat.adaptor.path not set!");
+        }
+        File adaptorRoot = new File(adaptorPath);
+        if (!adaptorRoot.exists()) {
+            throw new Error("gat.adaptor.path set to '" + adaptorPath
+                    + "', but it doesn't exist!");
+        }
+        return adaptorRoot;
+    }
+
+    protected void readJarFiles(File adaptorRoot) {
+        // now get the adaptor dirs from the adaptor path, adaptor dirs are
+        // of course directories and further will end with "Adaptor"
+        File[] adaptorDirs = adaptorRoot.listFiles(new FileFilter() {
+            public boolean accept(File file) {
+                return file.isDirectory() && file.getName().endsWith("Adaptor");
+            }
+        });
+        if (adaptorDirs.length == 0) {
+            throw new Error("gat.adaptor.path set to '" + adaptorRoot
+                    + "', but it doesn't contain any adaptor");
+        }
+        HashMap<String, ClassLoader> adaptorClassLoaders = new HashMap<String, ClassLoader>();
+        for (File adaptorDir : adaptorDirs) {
+            try {
+                adaptorClassLoaders.put(adaptorDir.getName(), loadDirectory(
+                        adaptorDir, parentLoader, true));
+                if (logger.isDebugEnabled()) {
+                    logger.debug("loading adaptor SUCCESS: " + adaptorDir);
+                }
+            } catch (Exception e) {
+                if (logger.isDebugEnabled()) {
+                    logger.debug("loading adaptor FAILED: " + adaptorDir + " ("
+                            + e + ")");
+                }
+            }
         }
     }
 
-    private ClassLoader loadDirectory(File adaptorDir) throws Exception {
-        File adaptorJarFile = new File(adaptorDir.getPath() + File.separator
-                + adaptorDir.getName() + ".jar");
-        if (!adaptorJarFile.exists()) {
-            throw new Exception("found adaptor dir '" + adaptorDir.getPath()
-                    + "' that doesn't contain an adaptor named '"
-                    + adaptorJarFile.getPath() + "'");
+    private ClassLoader loadDirectory(File adaptorDir, ClassLoader parentForDir, boolean mustContainAdaptorJar) throws Exception {
+        List<URL> adaptorPathURLs = new ArrayList<URL>();
+        final Attributes attributes;
+        if (mustContainAdaptorJar) {
+            File adaptorJarFile = new File(adaptorDir.getPath()
+                    + File.separator + adaptorDir.getName() + ".jar");
+            if (!adaptorJarFile.exists()) {
+                throw new Exception("found adaptor dir '"
+                        + adaptorDir.getPath()
+                        + "' that doesn't contain an adaptor named '"
+                        + adaptorJarFile.getPath() + "'");
+            }
+            JarFile adaptorJar = new JarFile(adaptorJarFile, true);
+            attributes = adaptorJar.getManifest()
+                    .getMainAttributes();
+            adaptorPathURLs.add(adaptorJarFile.toURI().toURL());
+        } else {
+            attributes = new Attributes();
         }
-        JarFile adaptorJar = new JarFile(adaptorJarFile, true);
-        Attributes attributes = adaptorJar.getManifest().getMainAttributes();
         String[] externalJars = adaptorDir.list(new java.io.FilenameFilter() {
             public boolean accept(File file, String name) {
                 return name.endsWith(".jar");
@@ -419,19 +437,13 @@ public class GATEngine {
                                 + " doesn't contain external jar files");
             }
         }
-        ArrayList<URL> adaptorPathURLs = new ArrayList<URL>();
-        adaptorPathURLs.add(adaptorJarFile.toURI().toURL());
         if (externalJars != null) {
             for (String externalJar : externalJars) {
-                adaptorPathURLs.add(new URL(adaptorJarFile.getParentFile()
-                        .toURI().toURL().toString()
-                        + externalJar));
+                adaptorPathURLs.add(new File(adaptorDir, externalJar).toURI()
+                        .toURL());
             }
         }
-        URL[] urls = new URL[adaptorPathURLs.size()];
-        for (int i = 0; i < adaptorPathURLs.size(); i++) {
-            urls[i] = (URL) adaptorPathURLs.get(i);
-        }
+        URL[] urls = adaptorPathURLs.toArray(new URL[adaptorPathURLs.size()]); 
         if (logger.isTraceEnabled()) {
             logger
                     .trace("URLs used for the URL class loader constructed from: "
@@ -444,7 +456,7 @@ public class GATEngine {
                 logger.trace("\tno URLs");
             }
         }
-        URLClassLoader adaptorLoader = new URLClassLoader(urls, parentLoader);
+        URLClassLoader adaptorLoader = new URLClassLoader(urls, parentForDir);
         // We've a class loader, now have a look at which adaptors are inside
         // this jar.
         Set<Object> keys = attributes.keySet();

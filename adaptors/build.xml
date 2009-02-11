@@ -4,6 +4,7 @@
         </description>
 
 	<target name="build" description="build all tested adaptors">
+		<ant dir="shared" />
 		<ant dir="CommandlineSsh" />
 		<ant dir="Globus" />
 		<ant dir="Gridsam" />
@@ -18,18 +19,7 @@
 		<ant dir="Glite" />
 	</target>
 
-	<target name="build-with-contributed" description="build all tested and contributed adaptors">
-		<ant dir="CommandlineSsh" />
-		<ant dir="Globus" />
-		<ant dir="Gridsam" />
-		<ant dir="Local" />
-		<ant dir="Mercury" />
-		<ant dir="Sftp" />
-		<ant dir="SftpGanymed" />
-		<ant dir="Sge" />
-		<ant dir="SshTrilead" />
-		<ant dir="Zorilla" />
-		<ant dir="Glite" />
+	<target name="build-with-contributed" description="build all tested and contributed adaptors" depends="build">
 		<ant dir="contributed" />
 	</target>
 

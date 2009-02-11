@@ -1,0 +1,25 @@
+<project name="Shared Libraries" default="build" basedir=".">
+	<description>Copy shared libraries for JavaGAT Adaptors.</description>
+
+	<property name="gat.location" location="../../" />
+	<property name="engine_path" location="${gat.location}/lib" />
+
+	<property name="lib" location="${gat.location}/lib/adaptors/shared" />
+
+	<target name="build" depends="clean" description="build the JARs and documentation">
+		<mkdir dir="${lib}" />
+
+		<!-- Copy libraries to lib directory -->
+		<copy todir="${lib}">
+			<fileset dir=".">
+				<include name="*.jar" />
+			</fileset>
+		</copy>
+
+	</target>
+
+	<target name="clean" description="clean up">
+		<!-- nothing to do -->
+	</target>
+
+</project>
