@@ -24,7 +24,6 @@ public class MetaData {
 	/**
 	 * Constructor.
 	 */
-
 	public MetaData() {
 	}
 
