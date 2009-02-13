@@ -27,7 +27,6 @@ import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.GATObjectCreationException;
 import org.gridlab.gat.Preferences;
-import org.gridlab.gat.TimePeriod;
 import org.gridlab.gat.URI;
 import org.gridlab.gat.monitoring.Metric;
 import org.gridlab.gat.monitoring.MetricListener;
@@ -35,8 +34,6 @@ import org.gridlab.gat.resources.AbstractJobDescription;
 import org.gridlab.gat.resources.HardwareResource;
 import org.gridlab.gat.resources.Job;
 import org.gridlab.gat.resources.JobDescription;
-import org.gridlab.gat.resources.Reservation;
-import org.gridlab.gat.resources.Resource;
 import org.gridlab.gat.resources.ResourceDescription;
 import org.gridlab.gat.resources.cpi.ResourceBrokerCpi;
 import org.gridlab.gat.security.glite.GliteSecurityUtils;
@@ -159,15 +156,6 @@ public class GliteResourceBrokerAdaptor extends ResourceBrokerCpi {
         } catch (NamingException e) {
             throw new GATInvocationException(GLITE_RESOURCE_BROKER_ADAPTOR, e);
         }
-    }
-
-    public Reservation reserveResource(Resource resource, TimePeriod timePeriod) {
-        throw new UnsupportedOperationException("Not implemented yet!");
-    }
-
-    public Reservation reserveResource(ResourceDescription resourceDescription,
-            TimePeriod timePeriod) {
-        throw new UnsupportedOperationException("Not implemented yet!");
     }
 
     public synchronized Job submitJob(AbstractJobDescription jobDescription,
