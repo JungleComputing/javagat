@@ -19,6 +19,7 @@ import org.gridlab.gat.io.cpi.glite.srm.SrmConnector;
  * Provides a High-Level view of an LFC server.
  * 
  * @author Max Berger
+ * @author Jerome Revillard
  */
 public class LfcConnector {
     private static final Logger LOGGER = Logger.getLogger(LfcConnector.class);
@@ -106,57 +107,6 @@ public class LfcConnector {
 			throw e;
 		}
 		return true;
-//        LFCFile file = new LfcConnection(server, port).lstat(path);
-//        
-//        String proxyPath = GliteSecurityUtils.getProxyPath();
-//        
-//        //Test if the owner has read access
-//        boolean usercan = file.canOwnerRead();
-//        //Test if the group has read access
-//        boolean groupcan = file.canGroupRead();
-//        //Test if the others have read access
-//        boolean othercan = file.canOtherRead();
-//        
-//        boolean owner = false;
-//        boolean group = false;
-//       
-//    	//Test if the user is the owner of the file
-//        String usrName = new LfcConnection(server, port).getUsrByGid(file.getUid());
-//        String certificateHeader = VomsProxyManager.getExistingVOMSProxyHeader(proxyPath);
-//        if(usrName.equals(certificateHeader)){
-//        	owner = true;
-//        }
-//        //Test if the user is the owner and if the owner can read
-//        if(usercan && owner){
-//        	return true;
-//        }
-//        
-//        //Test if the user is part of the group of the file
-//    	String groupName = new LfcConnection(server, port).getGrpByGid(file.getGid());
-//    	List<FullyQualifiedAttributeName> fqans = VomsProxyManager.getExistingVOMSExtensions(proxyPath);
-//    	for (Iterator<FullyQualifiedAttributeName> iterator = fqans.iterator(); iterator.hasNext();) {
-//			FullyQualifiedAttributeName fullyQualifiedAttributeName = (FullyQualifiedAttributeName) iterator.next();
-//			if(fullyQualifiedAttributeName.hasGroups()){
-//				for (Iterator<FqanGroupElement> iterator2 = fullyQualifiedAttributeName.getGroupsPart().iterator(); iterator2.hasNext();) {
-//					FqanGroupElement fqanGroupElement = (FqanGroupElement) iterator2.next();
-//					if(groupName.equals(vo+"/"+fqanGroupElement.getValue())){
-//						return true;
-//					}
-//				}
-//				
-//			}
-//		}
-//    	//Test if the user is in the group and if the group can read
-//        if(groupcan && group){
-//        	return true;
-//        }
-//        
-//        //Test if the others have read access and if the user is nor the owner nor in the group
-//        if(othercan && !owner && !group){
-//        	return true;
-//        }
-//        
-//        return false;
     }
     
     /**
@@ -177,57 +127,6 @@ public class LfcConnector {
 			throw e;
 		}
 		return true;
-//        LFCFile file = new LfcConnection(server, port).lstat(path);
-//        
-//        String proxyPath = GliteSecurityUtils.getProxyPath();
-//        
-//        //Test if the owner has write access
-//        boolean usercan = file.canOwnerWrite();
-//        //Test if the group has write access
-//        boolean groupcan = file.canGroupWrite();
-//        //Test if the others have write access
-//        boolean othercan = file.canOtherWrite();
-//        
-//        boolean owner = false;
-//        boolean group = false;
-//       
-//    	//Test if the user is the owner of the file
-//        String usrName = new LfcConnection(server, port).getUsrByGid(file.getUid());
-//        String certificateHeader = VomsProxyManager.getExistingVOMSProxyHeader(proxyPath);
-//        if(usrName.equals(certificateHeader)){
-//        	owner = true;
-//        }
-//        //Test if the user is the owner and if the owner can write
-//        if(usercan && owner){
-//        	return true;
-//        }
-//        
-//        //Test if the user is part of the group of the file
-//    	String groupName = new LfcConnection(server, port).getGrpByGid(file.getGid());
-//    	List<FullyQualifiedAttributeName> fqans = VomsProxyManager.getExistingVOMSExtensions(proxyPath);
-//    	for (Iterator<FullyQualifiedAttributeName> iterator = fqans.iterator(); iterator.hasNext();) {
-//			FullyQualifiedAttributeName fullyQualifiedAttributeName = (FullyQualifiedAttributeName) iterator.next();
-//			if(fullyQualifiedAttributeName.hasGroups()){
-//				for (Iterator<FqanGroupElement> iterator2 = fullyQualifiedAttributeName.getGroupsPart().iterator(); iterator2.hasNext();) {
-//					FqanGroupElement fqanGroupElement = (FqanGroupElement) iterator2.next();
-//					if(groupName.equals(vo+"/"+fqanGroupElement.getValue())){
-//						return true;
-//					}
-//				}
-//				
-//			}
-//		}
-//    	//Test if the user is in the group and if the group can write
-//        if(groupcan && group){
-//        	return true;
-//        }
-//        
-//        //Test if the others have write access and if the user is nor the owner nor in the group
-//        if(othercan && !owner && !group){
-//        	return true;
-//        }
-//        
-//        return false;
     }
     
     /**

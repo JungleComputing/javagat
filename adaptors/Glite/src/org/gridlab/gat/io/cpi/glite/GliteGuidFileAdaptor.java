@@ -3,10 +3,8 @@ package org.gridlab.gat.io.cpi.glite;
 import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -145,52 +143,20 @@ public class GliteGuidFileAdaptor extends FileCpi {
                 final long filesize = source.length();
                 this.initLfcConnector();
 
-                List<SEInfo> ses = new LDAPResourceFinder(gatContext)
-                        .fetchSEs(vo);
-
-                // JEROME: preferred SE
-                String preferredSEID = (String) gatContext.getPreferences()
-                        .get(GliteConstants.PREFERENCE_PREFERRED_SE_ID);
-                if (preferredSEID != null) {
-                    LOGGER
-                            .info("A preferred SE was provided in the context, will use it if exists");
-                    Iterator<SEInfo> iterator = ses.iterator();
-                    List<SEInfo> newses = new ArrayList<SEInfo>();
-                    while (iterator.hasNext()) {
-                        SEInfo info = (SEInfo) iterator.next();
-                        if (info.getSeUniqueId().equals(preferredSEID)) {
-                            newses.add(info);
-                            break;
-                        }
-                    }
-                    if (newses.isEmpty()) {
-                        throw new GATInvocationException(
-                                "Unable to find the preferred SE in the BDII!");
-                    }
-                    ses = newses;
-                } else {
-                    // TEMP SOLUTION
-                    Collections.shuffle(ses);
-                    // END TEMP SOLUTION
+                List<SEInfo> ses = new LDAPResourceFinder(gatContext).fetchSEs(vo, filesize);
+                if(ses.isEmpty()){
+                	throw new GATInvocationException(
+                			"Could not find any usable SE in the BDII " +
+                				"(Possible reasons can be: no available SE, " +
+                					"not enougth free space in the available SEs " +
+                						"or available SEs are not part of the GATContext)!");
                 }
-
-                SEInfo pickedSE = null;
-                Iterator<SEInfo> seIt = ses.iterator();
-                while ((pickedSE == null) && (seIt.hasNext())) {
-                    SEInfo now = seIt.next();
-                    try {
-                        long freeSpace = Long.parseLong(now.getSpace());
-                        if (freeSpace > filesize)
-                            pickedSE = now;
-                    } catch (NumberFormatException e) {
-                        // ignore
-                    }
-                }
-                if (pickedSE == null) {
-                    throw new GATInvocationException(
-                            "Could not find a SE with " + filesize
-                                    + " bytes available!");
-                }
+                // TEMP SOLUTION
+                Collections.shuffle(ses);
+                // END TEMP SOLUTION
+                
+                SEInfo pickedSE = ses.get(0);
+                
                 String guid = dest.getAuthority();
                 URI target = new URI("srm://" + pickedSE.getSeUniqueId()
                         + pickedSE.getPath() + "/file-" + guid);

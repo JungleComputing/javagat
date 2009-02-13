@@ -45,6 +45,8 @@ public class LDAPResourceFinder {
     private final DirContext ctx;
 
     private final SearchControls globalSearchControls;
+    
+    private final String preferredSEID;
 
     /**
      * Create a new LDAPResourceFinder with the given BDII.
@@ -58,6 +60,9 @@ public class LDAPResourceFinder {
      */
     public LDAPResourceFinder(GATContext gatContext, URI ldapResource)
             throws NamingException {
+    	
+    	this.preferredSEID = (String) gatContext.getPreferences().get(GliteConstants.PREFERENCE_PREFERRED_SE_ID);
+    	
         String ldapContact;
         if (ldapResource == null) {
             ldapContact = (String) gatContext.getPreferences().get(
@@ -243,16 +248,18 @@ public class LDAPResourceFinder {
     }
 
     /**
-     * Retrieve a list of SEs for the given VO.
-     * 
+     * Retrieve a list of SEs for the given VO that have 
+     * a minimal free space.
      * @param voName
      *            name of the VO. Must not be null.
+     * @param fileSize
+     *            The minimal size that must be available in the SEs
      * @return a List&lt;{@link SEInfo}&gt; of SEs
      * @throws NamingException
      *             if an LDAP error occurs.
      */
-    public List<SEInfo> fetchSEs(final String voName) throws NamingException {
-        final ArrayList<SEInfo> results = new ArrayList<SEInfo>();
+    public List<SEInfo> fetchSEs(final String voName,final long fileSize) throws NamingException {
+        ArrayList<SEInfo> results = new ArrayList<SEInfo>();
 
         final String filter = "(&(objectClass~=GlueSA)(GlueSALocalID=" + voName
                 + "))";
@@ -260,8 +267,7 @@ public class LDAPResourceFinder {
                 START_DN, filter, globalSearchControls);
 
         while (searchResults.hasMore()) {
-            final SearchResult result = (SearchResult) searchResults
-                    .nextElement();
+            final SearchResult result = (SearchResult) searchResults.nextElement();
             String pathName = result.getName();
             String seUniqueId = null;
             int pos = pathName.indexOf("GlueSEUniqueID");
@@ -285,10 +291,11 @@ public class LDAPResourceFinder {
             if (seUniqueId != null) {
                 LOGGER.info("Got SE: " + seUniqueId + " with path " + path
                         + " and space " + space);
-                results.add(new SEInfo(seUniqueId, path, space));
+                if(seUniqueId.equals(preferredSEID) && Long.parseLong(space) > fileSize){
+                	results.add(new SEInfo(seUniqueId, path, space));
+                }
             }
         }
-
         return results;
     }
 

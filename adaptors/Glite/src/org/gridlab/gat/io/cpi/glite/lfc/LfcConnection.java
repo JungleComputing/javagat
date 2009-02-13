@@ -152,10 +152,14 @@ public class LfcConnection {
             0x02, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x01 };
     
     
-    //Messages that are returned when CNS_RESP_IRC or CNS_RESP_RC are received
+    /**
+     * Messages that are returned when CNS_RESP_IRC or CNS_RESP_RC are received
+     */
     private static final Map<Integer, String> CNS_ERRORS = new TreeMap<Integer, String>();
     
-    //Values that can be passed to the access function.
+    /**
+     * Values that can be passed to the access function.
+     */
     public static enum AccessType{
     	READ_OK(4),		/* Test for read permission.  */
     	WRITE_OK(2),	/* Test for write permission.  */
@@ -360,7 +364,6 @@ public class LfcConnection {
         return builder.toString();
     }
     
-    //OK
     public LFCFile lstat(String path) throws IOException {
     	preparePacket(CNS_MAGIC, CNS_LSTAT);
         addIDs();
@@ -377,7 +380,6 @@ public class LfcConnection {
         return file;
     }
     
-    //OK
     public long opendir(String path, String guid) throws IOException {
     	if(guid == null){
     		preparePacket(CNS_MAGIC, CNS_OPENDIR);
@@ -396,14 +398,12 @@ public class LfcConnection {
         return fileId;
     }
     
-    //OK
     public void closedir() throws IOException {
     	preparePacket(CNS_MAGIC2, CNS_CLOSEDIR);
         sendAndReceive(false);
         LOGGER.debug("Directory closed");
     }
     
-    //OK
     public int getGrpByName(String grpName) throws IOException {
     	if("root".equals(grpName)){
     		return 0;
@@ -415,8 +415,7 @@ public class LfcConnection {
         int s = recvBuf.getInt();
         return s;
     }
-    
-    //OK
+
     public String getGrpByGid(int gid) throws IOException {
     	if(gid == 0){
     		return "root";
@@ -429,7 +428,7 @@ public class LfcConnection {
         return getString();
     }
     
-    //OK - remains to test if the gid 0 is part of the gids and to escape it.
+    // TODO: Remains to test if the gid 0 is part of the gids and to escape it.
     public Collection<String> getGrpByGids(int[] gids) throws IOException {
     	preparePacket(CNS_MAGIC, CNS_GETGRPNAMES);
     	sendBuf.putShort((short) 0);
@@ -446,7 +445,6 @@ public class LfcConnection {
         return grpNames;
     }
     
-    //OK 
     public int getUsrByName(String usrName) throws IOException {
     	if("root".equals(usrName)){
     		return 0;
@@ -458,8 +456,7 @@ public class LfcConnection {
         int s = recvBuf.getInt();
         return s;
     }
-    
-    //OK
+
     public String getUsrByGid(int uid) throws IOException {
     	if(uid == 0){
     		return "root";

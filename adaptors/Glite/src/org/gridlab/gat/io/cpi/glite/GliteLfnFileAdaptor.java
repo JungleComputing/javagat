@@ -18,12 +18,14 @@ import org.gridlab.gat.GAT;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.GATObjectCreationException;
+import org.gridlab.gat.Preferences;
 import org.gridlab.gat.URI;
 import org.gridlab.gat.io.File;
 import org.gridlab.gat.io.cpi.FileCpi;
 import org.gridlab.gat.io.cpi.glite.lfc.LfcConnector;
 import org.gridlab.gat.io.cpi.glite.lfc.LfcConnection.LFCFile;
 import org.gridlab.gat.io.cpi.glite.lfc.LfcConnection.LFCReplica;
+import org.gridlab.gat.resources.cpi.ResourceBrokerCpi;
 import org.gridlab.gat.resources.cpi.glite.GliteConstants;
 import org.gridlab.gat.resources.cpi.glite.LDAPResourceFinder;
 import org.gridlab.gat.resources.cpi.glite.LDAPResourceFinder.SEInfo;
@@ -42,7 +44,7 @@ public class GliteLfnFileAdaptor extends FileCpi {
     private static final String LFN = "lfn";
     private static final String CANNOT_HANDLE_THIS_URI = "cannot handle this URI: ";
 
-    protected static Logger logger = Logger.getLogger(GliteLfnFileAdaptor.class);
+    protected static final Logger LOGGER = Logger.getLogger(GliteLfnFileAdaptor.class);
 
     private LfcConnector lfcConnector;
 
@@ -123,24 +125,36 @@ public class GliteLfnFileAdaptor extends FileCpi {
         capabilities.put("getAbsolutePath", false);
         capabilities.put("getCanonicalPath", false);
         capabilities.put("copy", true);
-        capabilities.put("canRead", false);
-        capabilities.put("canWrite", false);
+        capabilities.put("canRead", true);
+        capabilities.put("canWrite", true);
         capabilities.put("createNewFile", true);
-        capabilities.put("delete", false);
-        capabilities.put("exists", false);
+        capabilities.put("delete", true);
+        capabilities.put("exists", true);
         capabilities.put("getAbsoluteFile", false);
         capabilities.put("getCanonicalFile", false);
         capabilities.put("isDirectory", true);
         capabilities.put("isFile", true);
         capabilities.put("isHidden", true);
-        capabilities.put("lastModified", false);
-        capabilities.put("length", false);
+        capabilities.put("lastModified", true);
+        capabilities.put("length", true);
         capabilities.put("list", true);
         capabilities.put("mkdir", true);
-        capabilities.put("renameTo", false);
+        capabilities.put("renameTo", true);
         capabilities.put("setLastModified", false);
         capabilities.put("setReadOnly", false);
         return capabilities;
+    }
+    
+    /**
+     * Used by CreateDefaultPropertiesFile to generate default
+     * javagat.properties.
+     * 
+     * @return Properties and their default values.
+     */
+    public static Preferences getSupportedPreferences() {
+        Preferences preferences = ResourceBrokerCpi.getSupportedPreferences();
+        GliteSecurityUtils.addGliteSecurityPreferences(preferences);
+        return preferences;
     }
 
     /** {@inheritDoc} */
@@ -154,48 +168,20 @@ public class GliteLfnFileAdaptor extends FileCpi {
                 final java.io.File source = new java.io.File(location.getPath());
                 final long filesize = source.length();
                 
-                List<SEInfo> ses = new LDAPResourceFinder(gatContext).fetchSEs(vo);
+                List<SEInfo> ses = new LDAPResourceFinder(gatContext).fetchSEs(vo, filesize);
+                if(ses.isEmpty()){
+                	throw new GATInvocationException(
+                			"Could not find any usable SE in the BDII " +
+                				"(Possible reasons can be: no available SE, " +
+                					"not enougth free space in the available SEs " +
+                						"or available SEs are not part of the GATContext)!");
+                }
+                // TEMP SOLUTION
+                Collections.shuffle(ses);
+                // END TEMP SOLUTION
                 
-                //JEROME: preferred SE
-                String preferredSEID = (String) gatContext.getPreferences().get(GliteConstants.PREFERENCE_PREFERRED_SE_ID);
-                if(preferredSEID != null){
-                	logger.info("A preferred SE was provided in the context, will use it if exists");
-                	Iterator<SEInfo> iterator = ses.iterator();
-                	List<SEInfo> newses = new ArrayList<SEInfo>();
-                	while (iterator.hasNext()) {
-                		SEInfo info = (SEInfo) iterator.next();
-						if(info.getSeUniqueId().equals(preferredSEID)){
-							newses.add(info);
-							break;
-						}
-					}
-                	if(newses.isEmpty()){
-                		throw new GATInvocationException("Unable to find the preferred SE in the BDII!");
-                	}
-                	ses = newses;
-                }else{
-                	// TEMP SOLUTION
-                    Collections.shuffle(ses);
-                    // END TEMP SOLUTION
-                }
-
-                SEInfo pickedSE = null;
-                Iterator<SEInfo> seIt = ses.iterator();
-                while ((pickedSE == null) && (seIt.hasNext())) {
-                    SEInfo now = seIt.next();
-                    try {
-                        long freeSpace = Long.parseLong(now.getSpace());
-                        if (freeSpace > filesize)
-                            pickedSE = now;
-                    } catch (NumberFormatException e) {
-                        // ignore
-                    }
-                }
-                if (pickedSE == null) {
-                    throw new GATInvocationException(
-                            "Could not find a SE with " + filesize
-                                    + " bytes available!");
-                }
+                SEInfo pickedSE = ses.get(0);
+                
                 String guid = UUID.randomUUID().toString();
                 URI target = new URI("srm://" + pickedSE.getSeUniqueId()
                         + pickedSE.getPath() + "/file-" + guid);
