@@ -36,7 +36,7 @@
 		<jar jarfile="${lib}/GliteAdaptor.jar" basedir="${tmp}" includes="**">
 			<manifest>
 				<attribute name="ResourceBrokerCpi-class" value="org.gridlab.gat.resources.cpi.glite.GliteResourceBrokerAdaptor" />
-				<attribute name="FileCpi-class" value="org.gridlab.gat.io.cpi.glite.GliteGuidFileAdaptor,org.gridlab.gat.io.cpi.glite.GliteSrmFileAdaptor" />
+				<attribute name="FileCpi-class" value="org.gridlab.gat.io.cpi.glite.GliteGuidFileAdaptor,org.gridlab.gat.io.cpi.glite.GliteSrmFileAdaptor,org.gridlab.gat.io.cpi.glite.GliteLfnFileAdaptor" />
 			</manifest>
 		</jar>
 

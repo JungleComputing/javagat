@@ -22,6 +22,7 @@ import org.gridlab.gat.Preferences;
 import org.gridlab.gat.URI;
 import org.gridlab.gat.io.cpi.FileCpi;
 import org.gridlab.gat.io.cpi.glite.lfc.LfcConnector;
+import org.gridlab.gat.io.cpi.glite.lfc.LfcConnection.LFCReplica;
 import org.gridlab.gat.resources.cpi.ResourceBrokerCpi;
 import org.gridlab.gat.resources.cpi.glite.GliteConstants;
 import org.gridlab.gat.resources.cpi.glite.LDAPResourceFinder;
@@ -206,11 +207,11 @@ public class GliteGuidFileAdaptor extends FileCpi {
                 String guid = location.getAuthority();
                 GliteSecurityUtils.touchVomsProxy(gatContext);
                 LOGGER.info("Copying " + guid + " to " + dest);
-                Collection<String> srmUris = lfcConnector.listReplicas(guid);
-                LOGGER.info("SRM URIs: " + srmUris);
-                String someSrm = srmUris.iterator().next();
+                Collection<LFCReplica> replicas = lfcConnector.listReplicas(null,guid);
+                LOGGER.info("SRM URIs: " + replicas);
+                LFCReplica replica = replicas.iterator().next();
                 GliteSrmFileAdaptor srmFile = new GliteSrmFileAdaptor(
-                        gatContext, new URI(someSrm));
+                        gatContext, new URI(replica.getSfn()));
                 srmFile.copy(dest);
             }
         } catch (Exception e) {
