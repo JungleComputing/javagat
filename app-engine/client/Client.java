@@ -16,8 +16,59 @@ import java.security.Security;
 import java.util.Properties;
 
 public class Client {
+	
+	private static void makeHttpCookies(String uri) throws Exception {
+		/* TODO: finish */
+	}
+
+	private static void makeHttpBinaryPost(String uri) throws Exception {
+		/* Setting up a new connection. */
+		String protocol = "http://";
+		URL url = new URL(protocol.concat(uri));
+		URLConnection urlc = url.openConnection();
+		
+		/* TODO: finish */
+	}
+	
+	/**
+	 * This function makes an HTTP connection using the POST method.
+	 * 
+	 * @param uri
+	 *     {@link String} to make the connection to.
+	 * @throws Exception
+	 *     The connection can't be established.
+	 */
+	private static void makeHttpPost(String uri) throws Exception {
+		/* Setting up a new connection. */
+		String protocol = "http://";
+		URL url = new URL(protocol.concat(uri));
+		URLConnection urlc = url.openConnection();
+		
+		System.out.println("*** Making an HTTP connection (POST) to http://" + uri + " ***");
+
+		/* Setting up POST environment. */
+		urlc.setDoOutput(true);
+		OutputStreamWriter out = 
+			new OutputStreamWriter(urlc.getOutputStream());
+		
+		/* Writing POST data. */
+		out.write("author=bbn230&content=test");
+		out.close();
+		
+		/* Retrieving body. */	
+		BufferedReader in = 
+			new BufferedReader(new InputStreamReader(urlc.getInputStream()));
+		String inputLine;
+
+		while ((inputLine = in.readLine()) != null) {
+			System.out.println(inputLine);
+		}
+		in.close();
+	}
+	
 	/**
 	 * This function makes an HTTPS connection to an URL defined by uri.
+	 * 
 	 * @param uri
 	 *     {@link String} to make the connection to.
 	 * @throws Exception
@@ -70,6 +121,7 @@ public class Client {
 
 	/**
 	 * This function makes an HTTP connection to an URL defined by uri.
+	 * 
 	 * @param uri
 	 *     {@link String} to make the connection to.
 	 * @throws Exception
@@ -92,7 +144,8 @@ public class Client {
 		}
 
 		/* Retrieving body. */
-		BufferedReader in = new BufferedReader(new InputStreamReader(urlc.getInputStream()));
+		BufferedReader in = 
+			new BufferedReader(new InputStreamReader(urlc.getInputStream()));
 		String inputLine;
 
 		while ((inputLine = in.readLine()) != null) {
@@ -101,9 +154,28 @@ public class Client {
 		in.close();
 	}
 
+	/**
+	 * Main function; calls various local functions.
+	 * 
+	 * @param argv
+	 *     Not used.
+	 * @throws Exception
+	 *     The connection can't be established. 
+	 */
 	public static void main(String argv[]) throws Exception {
-		String uri = "bbn230.appspot.com/";
+		/* Making a standard connection in HTTP(S). */
+		String uri = "bbn230.appspot.com/helloworld/";
 		makeHttpConnection(uri);
 		makeHttpsConnection(uri);
+		
+		/* Making a connection using POST forms in HTTP(S). */
+		uri = "bbn230.appspot.com/forms/sign";
+		makeHttpPost(uri);
+		uri = "bbn230.appspot.com/binary/";
+		//makeHttpBinaryPost(uri);
+		
+		/* Making a connection using cookes. */
+		uri = "bbn230.appspot.com/cookies/";
+		//makeHttpCookies(uri);
 	}
 }
