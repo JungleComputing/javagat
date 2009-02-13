@@ -62,7 +62,7 @@ public final class GliteSecurityUtils {
      * @return path to the proxy.
      * @throws GATInvocationException
      */
-    public static String touchVomsProxy(GATContext context)
+    public static synchronized String touchVomsProxy(GATContext context)
             throws GATInvocationException {
         String proxyFile = GliteSecurityUtils.getProxyPath();
 

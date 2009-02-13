@@ -129,7 +129,7 @@ public class GliteResourceBrokerAdaptor extends ResourceBrokerCpi {
         }
     }
 
-    private void ensureLdapFinderExists() throws NamingException {
+    private synchronized void ensureLdapFinderExists() throws NamingException {
         if (ldapResourceFinder == null) {
             ldapResourceFinder = new LDAPResourceFinder(gatContext);
         }
@@ -170,7 +170,7 @@ public class GliteResourceBrokerAdaptor extends ResourceBrokerCpi {
         throw new UnsupportedOperationException("Not implemented yet!");
     }
 
-    public Job submitJob(AbstractJobDescription jobDescription,
+    public synchronized Job submitJob(AbstractJobDescription jobDescription,
             MetricListener listener, String metricDefinitionName)
             throws GATInvocationException {
 
