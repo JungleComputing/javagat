@@ -373,17 +373,21 @@ public class GliteLfnFileAdaptor extends FileCpi {
         Collection<String> lfnUris = null;;
 		try {
 			Collection<LFCFile> files = lfcConnector.list(location.getPath());
-			lfnUris = new ArrayList<String>(files.size());
-			for (Iterator<LFCFile> iterator = files.iterator(); iterator.hasNext();) {
-				lfnUris.add("lfn://"+location.getHost()+":"+location.getPort()+"/"+location.getPath() + (location.getPath().endsWith("/") ? "" : "/") + iterator.next().getFileName());
+			if(files != null){
+				lfnUris = new ArrayList<String>(files.size());
+				for (Iterator<LFCFile> iterator = files.iterator(); iterator.hasNext();) {
+					lfnUris.add("lfn://"+location.getHost()+":"+location.getPort()+"/"+location.getPath() + (location.getPath().endsWith("/") ? "" : "/") + iterator.next().getFileName());
+				}
+				logger.info("LFN URIs: " + lfnUris);
+		        String[] content = new String[lfnUris.size()];
+		        return lfnUris.toArray(content);
+			}else{
+				return null;
 			}
 		} catch (IOException e) {
 			logger.error("",e);
 			throw new GATInvocationException(GLITE_LFC_FILE_ADAPTOR, e);
 		}
-        logger.info("LFN URIs: " + lfnUris);
-        String[] content = new String[lfnUris.size()];
-        return lfnUris.toArray(content);
     }
 
     /** {@inheritDoc} */
