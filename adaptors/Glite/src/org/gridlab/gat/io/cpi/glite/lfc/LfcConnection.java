@@ -493,12 +493,16 @@ public class LfcConnection {
      * @throws IOException if something wrong occurs
      */
     public Collection<LFCFile> readdir(long fileID) throws IOException {
-    	preparePacket(CNS_MAGIC, CNS_READDIR);
+        preparePacket(CNS_MAGIC, CNS_READDIR);
         addIDs();
         sendBuf.putShort( (short) 1 ); // 1 = full list (w/o comments), 0 = names only
-        sendBuf.putShort( (short) 50 );
+        sendBuf.putShort( (short) 0 );
         sendBuf.putLong(fileID);
         sendBuf.putShort((short) 1);
+        sendAndReceive(true);
+        
+        //Jerome: I don't know why I have to do that but at least it works....
+        preparePacket(CNS_MAGIC, CNS_READDIR);
         sendAndReceive(true);
         
         short count = recvBuf.getShort();
@@ -512,7 +516,7 @@ public class LfcConnection {
         		if(i == 0){
         			debug = "\nDirectory content (fileID: "+fileID+"):";
         		}
-        		debug+="\n\t- "+(i+1)+"\t:"+file.toString();
+        		debug+="\n\t- "+(i+1)+")\t"+file.toString();
         	}
         }
         if(LOGGER.isDebugEnabled()){
