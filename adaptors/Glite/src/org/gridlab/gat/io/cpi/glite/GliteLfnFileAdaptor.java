@@ -52,9 +52,9 @@ public class GliteLfnFileAdaptor extends FileCpi {
 
     private final String vo;
     
-    public GliteLfnFileAdaptor(GATContext gatCtx, URI location)
+    public GliteLfnFileAdaptor(GATContext gatCtx, URI _location)
             throws GATObjectCreationException {
-    	super(gatCtx, location);
+    	super(gatCtx, _location);
     	
     	//Get all the needed information to fill location URI if needed
     	String server = fetchServer(gatContext);
