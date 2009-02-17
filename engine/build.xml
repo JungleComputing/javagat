@@ -7,7 +7,9 @@
 	<property name="api" location="${gat.location}/lib/GAT-API.jar" />
 
 	<property name="src" location="src" />
+	<property name="src-android" location="src-android" />
 	<property name="tmp" location="tmp" />
+	<property name="tmp-android" location="tmp-android" />
 	<property name="lib" location="${gat.location}/lib" />
 	<property name="java.debug.value" value="true" />
 	<property name="external" location="external" />
@@ -40,7 +42,40 @@
 		<delete dir="${tmp}" />
 	</target>
 
+	<target name="compile-android" description="compile the source ">
+		<mkdir dir="${tmp}" />
+		<mkdir dir="${tmp-android}" />
+		<mkdir dir="${lib}" />
+
+		<copy todir="${tmp-android}">
+			<fileset dir="${src-android}" />
+		</copy>
+
+		<copy todir="${tmp-android}">
+			<fileset dir="${src}" />
+		</copy>
+
+		<!-- Compile the java code from ${src} into ${tmp} -->
+		<javac source="1.5" srcdir="${tmp-android}" destdir="${tmp}" debug="on">
+			<classpath refid="external_jars" />
+		</javac>
+
+		<!-- Put everything in ${tmp} into the GAT.jar file -->
+		<jar jarfile="${lib}/GAT-engine-android.jar" basedir="${tmp}" />
+
+		<!-- Copy external libraries to lib directory -->
+		<copy todir="${lib}">
+			<fileset dir="${external}" />
+		</copy>
+
+		<delete dir="${tmp-android}" />
+		<delete dir="${tmp}" />
+	</target>
+
+
 	<target name="build" description="build everything" depends="clean,compile" />
+
+	<target name="android" description="build everything for Android" depends="clean,compile-android" />
 
 	<target name="clean" description="clean up">
 		<delete dir="${tmp}" />
