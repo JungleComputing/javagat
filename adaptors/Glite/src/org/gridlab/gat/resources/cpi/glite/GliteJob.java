@@ -35,7 +35,8 @@ import org.apache.axis.SimpleTargetedChain;
 import org.apache.axis.configuration.BasicClientConfig;
 import org.apache.axis.configuration.SimpleProvider;
 import org.apache.axis.transport.http.HTTPSender;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.glite.security.delegation.GrDPX509Util;
 import org.glite.security.delegation.GrDProxyGenerator;
 import org.glite.security.trustmanager.ContextWrapper;
@@ -74,7 +75,7 @@ import org.gridsite.www.namespaces.delegation_1.DelegationSoapBindingStub;
 public class GliteJob extends JobCpi {
 
     private final static int LB_PORT = 9003;
-    private static final Logger LOGGER = Logger.getLogger(GliteJob.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(GliteJob.class);
 
     private java.net.URL lbURL;
     private JDL gLiteJobDescription;

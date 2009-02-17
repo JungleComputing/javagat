@@ -3,7 +3,8 @@ package org.gridlab.gat.resources.cpi.localQ;
 import java.util.Map;
 import java.util.PriorityQueue;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.GATObjectCreationException;
@@ -73,7 +74,7 @@ public class LocalQResourceBrokerAdaptor extends ResourceBrokerCpi implements
         return capabilities;
     }
 
-    protected static Logger logger = Logger
+    protected static Logger logger = LoggerFactory
             .getLogger(LocalQResourceBrokerAdaptor.class);
 
     private static boolean ended = false;

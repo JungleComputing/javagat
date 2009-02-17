@@ -87,7 +87,7 @@ public class WrappedJobCpi extends JobCpi implements Runnable {
                 newstate = (JobState) in.readObject();
             } catch (Exception e) {
                 if (logger.isInfoEnabled()) {
-                    logger.info(e);
+                    logger.info("", e);
                 }
             }
             if (in != null) {
@@ -95,14 +95,14 @@ public class WrappedJobCpi extends JobCpi implements Runnable {
                     in.close();
                 } catch (IOException e) {
                     if (logger.isInfoEnabled()) {
-                        logger.info(e);
+                        logger.info("", e);
                     }
                 }
             }
             if (newstate != null) {
                 File monitorFile = new File(statusFileName);
                 if (!monitorFile.delete()) {
-                    logger.fatal("Could not delete job status file!");
+                    logger.error("Could not delete job status file!");
                 }
 
                 state = newstate;
@@ -113,7 +113,7 @@ public class WrappedJobCpi extends JobCpi implements Runnable {
                 Thread.sleep(1000);
             } catch (InterruptedException e) {
                 if (logger.isInfoEnabled()) {
-                    logger.info(e);
+                    logger.info("", e);
                 }
             }
         } while (state != JobState.STOPPED

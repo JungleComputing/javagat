@@ -8,7 +8,8 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Vector;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.Preferences;
 import org.gridlab.gat.monitoring.Metric;
@@ -24,7 +25,7 @@ import org.gridlab.gat.monitoring.Monitorable;
  */
 public abstract class MonitorableCpi implements Monitorable {
 
-    protected static Logger logger = Logger.getLogger(MonitorableCpi.class);
+    protected static Logger logger = LoggerFactory.getLogger(MonitorableCpi.class);
 
     public static Map<String, Boolean> getSupportedCapabilities() {
         Map<String, Boolean> capabilities = new HashMap<String, Boolean>();

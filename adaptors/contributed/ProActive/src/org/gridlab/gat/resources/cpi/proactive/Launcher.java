@@ -5,7 +5,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.objectweb.proactive.Body;
 import org.objectweb.proactive.ProActive;
 import org.objectweb.proactive.RunActive;
@@ -30,7 +31,7 @@ public class Launcher implements Serializable, RunActive {
     private HashMap<String, Watcher> jobs = new HashMap<String, Watcher>();
 
     /** For debugging and error messages. */
-    private final Logger logger = Logger.getLogger(Launcher.class);
+    private final Logger logger = LoggerFactory.getLogger(Launcher.class);
 
     /** For making callbacks to maintain job administration. */
     final JobWatcher jobWatcher;

@@ -10,7 +10,8 @@ import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.engine.GATEngine;
@@ -27,7 +28,7 @@ import org.gridlab.gat.resources.cpi.Sandbox;
 @SuppressWarnings("serial")
 public class LocalJob extends JobCpi {
 
-    protected static Logger logger = Logger.getLogger(LocalJob.class);
+    protected static Logger logger = LoggerFactory.getLogger(LocalJob.class);
 
     private Process p;
 

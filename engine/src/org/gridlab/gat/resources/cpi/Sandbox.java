@@ -6,7 +6,8 @@ package org.gridlab.gat.resources.cpi;
 import java.net.URISyntaxException;
 import java.util.Map;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.gridlab.gat.FilePrestageException;
 import org.gridlab.gat.GAT;
 import org.gridlab.gat.GATContext;
@@ -20,7 +21,7 @@ import org.gridlab.gat.resources.SoftwareDescription;
 
 public class Sandbox {
 
-    protected static Logger logger = Logger.getLogger(Sandbox.class);
+    protected static Logger logger = LoggerFactory.getLogger(Sandbox.class);
 
     private GATContext gatContext;
 

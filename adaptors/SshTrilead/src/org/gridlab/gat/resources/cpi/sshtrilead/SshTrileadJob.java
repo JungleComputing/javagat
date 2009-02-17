@@ -8,7 +8,8 @@ import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.engine.util.StreamForwarder;
@@ -29,7 +30,7 @@ public class SshTrileadJob extends JobCpi {
 
     private static final long serialVersionUID = -4510717445792377245L;
 
-    protected static Logger logger = Logger.getLogger(SshTrileadJob.class);
+    protected static Logger logger = LoggerFactory.getLogger(SshTrileadJob.class);
 
     MetricDefinition statusMetricDefinition;
 

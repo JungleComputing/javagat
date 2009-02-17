@@ -8,7 +8,8 @@ import java.io.IOException;
 import java.util.Enumeration;
 import java.util.Hashtable;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.globus.ftp.DataChannelAuthentication;
 import org.globus.ftp.FTPClient;
 import org.globus.ftp.GridFTPClient;
@@ -37,7 +38,7 @@ public class GridFTPFileAdaptor extends GlobusFileAdaptor {
         return p;
     }
 
-    protected static Logger logger = Logger.getLogger(GridFTPFileAdaptor.class);
+    protected static Logger logger = LoggerFactory.getLogger(GridFTPFileAdaptor.class);
 
     static boolean USE_CLIENT_CACHING = false;
 

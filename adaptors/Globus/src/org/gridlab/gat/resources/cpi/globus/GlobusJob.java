@@ -9,7 +9,8 @@ import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.globus.common.ResourceManagerContact;
 import org.globus.gram.Gram;
 import org.globus.gram.GramJob;
@@ -44,7 +45,7 @@ import org.ietf.jgss.GSSCredential;
 public class GlobusJob extends JobCpi implements GramJobListener,
         org.globus.gram.internal.GRAMConstants {
 
-    protected static Logger logger = Logger.getLogger(GlobusJob.class);
+    protected static Logger logger = LoggerFactory.getLogger(GlobusJob.class);
 
     private static int jobsAlive = 0;
 

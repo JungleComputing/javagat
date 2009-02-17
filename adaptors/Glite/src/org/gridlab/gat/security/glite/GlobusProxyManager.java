@@ -4,7 +4,8 @@ import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.security.cert.X509Certificate;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.globus.common.CoGProperties;
 import org.globus.gsi.CertUtil;
 import org.globus.gsi.GSIConstants;
@@ -23,7 +24,7 @@ import org.ietf.jgss.GSSException;
  *
  */
 public class GlobusProxyManager {
-	protected static final Logger logger = Logger.getLogger(GlobusProxyManager.class);
+	protected static final Logger logger = LoggerFactory.getLogger(GlobusProxyManager.class);
 	
 	protected GlobusGSSCredentialImpl gsci = null;	/** The GSS-implemented globus credential */
 	protected int lifetime = -1;					/** The lifetime of the the proxy */

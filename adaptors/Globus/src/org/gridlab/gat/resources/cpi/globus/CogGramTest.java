@@ -3,7 +3,8 @@
  */
 package org.gridlab.gat.resources.cpi.globus;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.globus.gram.Gram;
 import org.globus.gram.GramException;
 import org.globus.gram.GramJob;
@@ -17,7 +18,7 @@ import org.ietf.jgss.GSSException;
 public class CogGramTest implements GramJobListener,
         org.globus.gram.internal.GRAMConstants {
 
-    protected static Logger logger = Logger.getLogger(CogGramTest.class);
+    protected static Logger logger = LoggerFactory.getLogger(CogGramTest.class);
 
     boolean exit = false;
 

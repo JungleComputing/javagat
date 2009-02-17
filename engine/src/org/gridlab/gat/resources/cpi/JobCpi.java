@@ -8,7 +8,8 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Map;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.monitoring.cpi.MonitorableCpi;
@@ -19,7 +20,7 @@ import org.gridlab.gat.resources.JobDescription;
 
 public abstract class JobCpi extends MonitorableCpi implements Job {
 
-    protected static Logger logger = Logger.getLogger(JobCpi.class);
+    protected static Logger logger = LoggerFactory.getLogger(JobCpi.class);
     
     protected GATContext gatContext;
 

@@ -5,7 +5,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Vector;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.gridlab.gat.GAT;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
@@ -42,7 +43,7 @@ public abstract class LogicalFileCpi extends MonitorableCpi implements LogicalFi
         return capabilities;
     }
 
-    protected static Logger logger = Logger.getLogger(LogicalFileCpi.class);
+    protected static Logger logger = LoggerFactory.getLogger(LogicalFileCpi.class);
     
     protected GATContext gatContext;
 

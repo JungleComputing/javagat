@@ -3,7 +3,8 @@ package org.gridlab.gat.io.cpi.glite;
 import java.io.IOException;
 import java.util.Map;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.gridlab.gat.AdaptorNotApplicableException;
 import org.gridlab.gat.GAT;
 import org.gridlab.gat.GATContext;
@@ -38,7 +39,7 @@ public class GliteSrmFileAdaptor extends FileCpi {
 
     private static final String GLITE_SRM_FILE_ADAPTOR = "GliteSrmFileAdaptor";
 
-    private static final Logger LOGGER = Logger
+    private static final Logger LOGGER = LoggerFactory
             .getLogger(GliteSrmFileAdaptor.class);
 
     private final boolean localFile;

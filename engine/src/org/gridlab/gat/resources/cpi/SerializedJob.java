@@ -2,14 +2,15 @@ package org.gridlab.gat.resources.cpi;
 
 import java.io.Serializable;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.gridlab.gat.advert.Advertisable;
 import org.gridlab.gat.resources.JobDescription;
 
 @SuppressWarnings("serial")
 public class SerializedJob implements Serializable, Advertisable {
 
-    protected static Logger logger = Logger.getLogger(SerializedJob.class);
+    protected static Logger logger = LoggerFactory.getLogger(SerializedJob.class);
 
     private JobDescription jobDescription;
 

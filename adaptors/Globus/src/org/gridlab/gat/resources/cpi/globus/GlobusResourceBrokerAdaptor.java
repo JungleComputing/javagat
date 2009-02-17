@@ -7,7 +7,8 @@ import java.net.URISyntaxException;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.globus.common.ResourceManagerContact;
 import org.globus.gram.Gram;
 import org.globus.gram.GramException;
@@ -62,7 +63,7 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
         return preferences;
     }
 
-    protected static Logger logger = Logger
+    protected static Logger logger = LoggerFactory
             .getLogger(GlobusResourceBrokerAdaptor.class);
 
     static boolean shutdownInProgress = false;

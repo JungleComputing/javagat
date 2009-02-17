@@ -3,7 +3,8 @@
  */
 package org.gridlab.gat.resources.cpi;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.io.File;
@@ -11,7 +12,7 @@ import org.gridlab.gat.io.cpi.FileCpi;
 
 public class PreStagedFile extends StagedFile {
 
-    protected static Logger logger = Logger.getLogger(PreStagedFile.class);
+    protected static Logger logger = LoggerFactory.getLogger(PreStagedFile.class);
 
     private boolean isExecutable;
 

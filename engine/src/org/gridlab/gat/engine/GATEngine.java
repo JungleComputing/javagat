@@ -26,8 +26,8 @@ import java.util.jar.Attributes;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
 
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.exolab.castor.xml.Marshaller;
 import org.exolab.castor.xml.Unmarshaller;
 import org.gridlab.gat.AdaptorInfo;
@@ -45,7 +45,7 @@ import org.gridlab.gat.advert.Advertisable;
  */
 public class GATEngine {
 
-    protected static Logger logger = Logger.getLogger(GATEngine.class);
+    protected static Logger logger = LoggerFactory.getLogger(GATEngine.class);
 
     /**
      * A helper class to compare file names, so that they can be sorted,
@@ -67,11 +67,6 @@ public class GATEngine {
             return super.getClassContext ();
         }
     }
-
-    public static final boolean DEBUG = propertySet("gat.debug");
-
-    public static final boolean VERBOSE = propertySet("gat.debug")
-            || propertySet("gat.verbose");
 
     public static final boolean TIMING = propertySet("gat.timing");
 
@@ -104,10 +99,13 @@ public class GATEngine {
         // the commandline parameters -Dgat.debug and -Dgat.verbose override the
         // settings in log4j.properties, so change the level of the parent
         // logger
+        /*
+         * Not supported by slf4j.
         if (VERBOSE)
             logger.getParent().setLevel(Level.INFO);
         if (DEBUG)
             logger.getParent().setLevel(Level.DEBUG);
+        */
 
         if (logger.isDebugEnabled()) {
             logger.debug("creating the GAT engine START");

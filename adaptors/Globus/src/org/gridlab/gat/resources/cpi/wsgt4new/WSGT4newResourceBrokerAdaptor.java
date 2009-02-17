@@ -11,7 +11,8 @@ import org.apache.axis.message.addressing.Address;
 import org.apache.axis.message.addressing.EndpointReferenceType;
 import org.apache.axis.message.addressing.ReferencePropertiesType;
 import org.apache.axis.types.URI.MalformedURIException;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.globus.common.ResourceManagerContact;
 import org.globus.exec.client.GramJob;
 import org.globus.exec.utils.ManagedJobConstants;
@@ -66,7 +67,7 @@ public class WSGT4newResourceBrokerAdaptor extends ResourceBrokerCpi {
         return preferences;
     }
 
-    protected static Logger logger = Logger
+    protected static Logger logger = LoggerFactory
             .getLogger(WSGT4newResourceBrokerAdaptor.class);
 
     protected GSSCredential getCred() throws GATInvocationException {

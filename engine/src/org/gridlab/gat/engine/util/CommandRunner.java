@@ -5,13 +5,14 @@ import java.io.IOException;
 import java.util.List;
 import java.util.StringTokenizer;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.gridlab.gat.CommandNotFoundException;
 import org.gridlab.gat.GATInvocationException;
 
 public class CommandRunner {
 
-    protected static Logger logger = Logger.getLogger(CommandRunner.class);
+    protected static Logger logger = LoggerFactory.getLogger(CommandRunner.class);
 
     private int exitCode;
 

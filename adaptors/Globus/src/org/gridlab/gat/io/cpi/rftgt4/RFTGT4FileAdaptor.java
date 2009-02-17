@@ -20,7 +20,8 @@ import javax.xml.soap.SOAPElement;
 
 import org.apache.axis.message.addressing.EndpointReferenceType;
 import org.apache.axis.types.URI.MalformedURIException;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.globus.axis.util.Util;
 import org.globus.delegation.DelegationConstants;
 import org.globus.delegation.DelegationException;
@@ -97,7 +98,7 @@ class RFTGT4NotifyCallback implements NotifyCallback {
         return capabilities;
     }
 
-    protected static Logger logger = Logger
+    protected static Logger logger = LoggerFactory
             .getLogger(RFTGT4NotifyCallback.class);
 
     RFTGT4FileAdaptor transfer;

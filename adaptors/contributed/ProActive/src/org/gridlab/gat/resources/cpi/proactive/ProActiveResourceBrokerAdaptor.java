@@ -5,7 +5,8 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.StringTokenizer;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.GATObjectCreationException;
@@ -57,7 +58,7 @@ public class ProActiveResourceBrokerAdaptor extends ResourceBrokerCpi implements
     private int remainingCalls;
 
     /** Logger. */
-    static final Logger logger = Logger
+    static final Logger logger = LoggerFactory
             .getLogger(ProActiveResourceBrokerAdaptor.class);
 
     /**

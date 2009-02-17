@@ -3,7 +3,8 @@ package org.gridlab.gat.resources.cpi.gridsam;
 import java.math.BigDecimal;
 import java.util.Map;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.xmlbeans.XmlCursor;
 import org.gridlab.gat.io.File;
 import org.gridlab.gat.resources.JobDescription;
@@ -67,7 +68,7 @@ public class GridSAMJSDLGeneratorImpl implements GridSAMJSDLGenerator {
         javaGatStderr = conf.getJavaGATStderr();
     }
 
-    private Logger logger = Logger.getLogger(GridSAMJSDLGeneratorImpl.class);
+    private Logger logger = LoggerFactory.getLogger(GridSAMJSDLGeneratorImpl.class);
 
     public JobDefinitionDocument generate(JobDescription description, Sandbox sandbox) {
         

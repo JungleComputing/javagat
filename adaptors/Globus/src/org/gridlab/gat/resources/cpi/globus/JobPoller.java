@@ -3,7 +3,8 @@
  */
 package org.gridlab.gat.resources.cpi.globus;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.gridlab.gat.resources.Job;
 
 /**
@@ -15,7 +16,7 @@ import org.gridlab.gat.resources.Job;
  */
 class JobPoller extends Thread {
 
-    protected static Logger logger = Logger.getLogger(JobPoller.class);
+    protected static Logger logger = LoggerFactory.getLogger(JobPoller.class);
 
     private GlobusJob j;
 

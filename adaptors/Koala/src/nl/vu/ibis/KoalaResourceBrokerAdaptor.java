@@ -5,7 +5,8 @@ import java.net.URISyntaxException;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.GATObjectCreationException;
@@ -35,7 +36,7 @@ public class KoalaResourceBrokerAdaptor extends ResourceBrokerCpi {
         return capabilities;
     }
 	
-	protected static Logger logger = Logger.getLogger(KoalaResourceBrokerAdaptor.class);
+	protected static Logger logger = LoggerFactory.getLogger(KoalaResourceBrokerAdaptor.class);
 	
 	static { 
 		

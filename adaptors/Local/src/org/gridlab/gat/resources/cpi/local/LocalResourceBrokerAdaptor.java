@@ -3,7 +3,8 @@ package org.gridlab.gat.resources.cpi.local;
 import java.io.IOException;
 import java.util.Map;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.gridlab.gat.CommandNotFoundException;
 import org.gridlab.gat.GAT;
 import org.gridlab.gat.GATContext;
@@ -69,7 +70,7 @@ public class LocalResourceBrokerAdaptor extends ResourceBrokerCpi {
         return capabilities;
     }
 
-    protected static Logger logger = Logger
+    protected static Logger logger = LoggerFactory
             .getLogger(LocalResourceBrokerAdaptor.class);
 
     /**

@@ -2,7 +2,8 @@ package org.gridlab.gat.io.cpi;
 
 import java.util.Map;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.Preferences;
@@ -37,7 +38,7 @@ public abstract class FileOutputStreamCpi extends MonitorableCpi implements File
         return preferences;
     }
 
-    protected static Logger logger = Logger
+    protected static Logger logger = LoggerFactory
             .getLogger(FileOutputStreamCpi.class);
     
     protected GATContext gatContext;

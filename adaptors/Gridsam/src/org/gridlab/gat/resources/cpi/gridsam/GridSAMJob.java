@@ -5,7 +5,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.monitoring.Metric;
@@ -30,7 +31,7 @@ public class GridSAMJob extends JobCpi {
     private static final long serialVersionUID = 1L;
 
     private class PollingThread extends Thread {
-        private Logger logger = Logger.getLogger(PollingThread.class);
+        private Logger logger = LoggerFactory.getLogger(PollingThread.class);
 
         private GridSAMJob parent;
 
@@ -157,7 +158,7 @@ public class GridSAMJob extends JobCpi {
         }
     }
 
-    private Logger logger = Logger.getLogger(GridSAMJob.class);
+    private Logger logger = LoggerFactory.getLogger(GridSAMJob.class);
 
     private int exitVal = -1;
 

@@ -19,8 +19,10 @@ import java.util.Set;
 import java.util.Vector;
 import java.util.jar.Attributes;
 
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.exolab.castor.xml.Marshaller;
 import org.exolab.castor.xml.Unmarshaller;
 import org.gridlab.gat.AdaptorInfo;
@@ -184,7 +186,7 @@ public class GATEngine {
         adaptors.put("sge", attributes);
     }
 
-    protected static Logger logger = Logger.getLogger(GATEngine.class);
+    protected static Logger logger = LoggerFactory.getLogger(GATEngine.class);
 
     /**
      * A helper class to compare file names, so that they can be sorted, and the

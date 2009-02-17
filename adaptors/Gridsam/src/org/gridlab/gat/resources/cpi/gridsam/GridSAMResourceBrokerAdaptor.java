@@ -4,7 +4,8 @@ import java.io.File;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.gridlab.gat.GAT;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
@@ -50,7 +51,7 @@ public class GridSAMResourceBrokerAdaptor extends ResourceBrokerCpi {
         return preferences;
     }
 
-    private Logger logger = Logger
+    private Logger logger = LoggerFactory
             .getLogger(GridSAMResourceBrokerAdaptor.class);
 
     private ClientSideJobManager jobManager;

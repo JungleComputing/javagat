@@ -2,7 +2,8 @@ package org.gridlab.gat.security.glite;
 
 import java.io.File;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.glite.security.trustmanager.ContextWrapper;
 import org.globus.common.CoGProperties;
 import org.gridlab.gat.GATContext;
@@ -28,7 +29,7 @@ public final class GliteSecurityUtils {
      */
     private final static int MINIMUM_PROXY_REMAINING_LIFETIME = 5 * 60;
 
-    protected static Logger logger = Logger.getLogger(GliteSecurityUtils.class);
+    protected static Logger logger = LoggerFactory.getLogger(GliteSecurityUtils.class);
 
     private GliteSecurityUtils() {
         // Empty on purpose.

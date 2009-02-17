@@ -6,7 +6,8 @@ package org.gridlab.gat.security.globus;
 import java.io.ByteArrayInputStream;
 import java.io.UnsupportedEncodingException;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.globus.gsi.GlobusCredential;
 import org.globus.gsi.GlobusCredentialException;
 import org.globus.gsi.gssapi.GlobusGSSCredentialImpl;
@@ -31,7 +32,7 @@ import org.ietf.jgss.GSSException;
 
 class GlobusContextCreator implements SecurityContextCreator {
 
-    protected static Logger logger = Logger
+    protected static Logger logger = LoggerFactory
             .getLogger(GlobusContextCreator.class);
 
     public SecurityContext createDefaultSecurityContext(GATContext gatContext,
@@ -79,7 +80,7 @@ class GlobusContextCreator implements SecurityContextCreator {
                                     .getBytes("UTF-8");
                         } catch (UnsupportedEncodingException e) {
                             if (logger.isDebugEnabled()) {
-                                logger.debug(e);
+                                logger.debug("Got exception", e);
                             }
                             return null;
                         }
@@ -97,12 +98,12 @@ class GlobusContextCreator implements SecurityContextCreator {
                         return result;
                     } catch (GlobusCredentialException e) {
                         if (logger.isDebugEnabled()) {
-                            logger.debug(e);
+                            logger.debug("Got exception", e);
                         }
                         return null;
                     } catch (GSSException e) {
                         if (logger.isDebugEnabled()) {
-                            logger.debug(e);
+                            logger.debug("Got exception", e);
                         }
                         return null;
                     }
@@ -149,7 +150,7 @@ class GlobusContextCreator implements SecurityContextCreator {
  */
 public class GlobusSecurityUtils {
 
-    protected static Logger logger = Logger
+    protected static Logger logger = LoggerFactory
             .getLogger(GlobusSecurityUtils.class);
 
     /**

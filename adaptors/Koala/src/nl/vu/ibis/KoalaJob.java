@@ -5,7 +5,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-// import org.apache.log4j.Logger;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.monitoring.Metric;
@@ -23,7 +22,7 @@ public class KoalaJob extends CoScheduleJobCpi {
 	private static final long serialVersionUID = 4321647692737044640L;
 
 	//  The logger used for debugging output and warnings.
-	// private static Logger logger = Logger.getLogger("KoalaAdaptor.Runner");
+	// private static Logger logger = LoggerFactory.getLogger("KoalaAdaptor.Runner");
 
 	private GATRunner runner;    
 	private RunnerListener listner;	

@@ -25,13 +25,14 @@ import java.util.Map;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.gridlab.gat.GATObjectCreationException;
 import org.gridlab.gat.resources.ResourceDescription;
 import org.gridlab.gat.resources.SoftwareDescription;
 
 public class JDL {
-    private static final Logger LOGGER = Logger.getLogger(JDL.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(JDL.class);
 
     private String jdlString;
     private long jdlID;

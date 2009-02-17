@@ -6,7 +6,8 @@ package org.gridlab.gat.security.commandlinessh;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.gridlab.gat.CouldNotInitializeCredentialException;
 import org.gridlab.gat.CredentialExpiredException;
 import org.gridlab.gat.GATContext;
@@ -24,7 +25,7 @@ import org.gridlab.gat.security.cpi.SecurityContextUtils;
  */
 class CommandlineSshContextCreator implements SecurityContextCreator {
 
-    protected static Logger logger = Logger
+    protected static Logger logger = LoggerFactory
             .getLogger(CommandlineSshSecurityUtils.class);
 
     public SecurityContext createDefaultSecurityContext(GATContext gatContext,
@@ -86,7 +87,7 @@ class CommandlineSshContextCreator implements SecurityContextCreator {
 
 public class CommandlineSshSecurityUtils {
 
-    protected static Logger logger = Logger
+    protected static Logger logger = LoggerFactory
             .getLogger(CommandlineSshSecurityUtils.class);
 
     @SuppressWarnings("unchecked")

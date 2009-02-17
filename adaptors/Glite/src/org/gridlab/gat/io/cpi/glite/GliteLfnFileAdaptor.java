@@ -12,7 +12,8 @@ import java.util.UUID;
 
 import javax.naming.NamingException;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.gridlab.gat.AdaptorNotApplicableException;
 import org.gridlab.gat.GAT;
 import org.gridlab.gat.GATContext;
@@ -44,7 +45,7 @@ public class GliteLfnFileAdaptor extends FileCpi {
     private static final String LFN = "lfn";
     private static final String CANNOT_HANDLE_THIS_URI = "cannot handle this URI: ";
 
-    protected static final Logger LOGGER = Logger.getLogger(GliteLfnFileAdaptor.class);
+    protected static final Logger LOGGER = LoggerFactory.getLogger(GliteLfnFileAdaptor.class);
 
     private LfcConnector lfcConnector;
 

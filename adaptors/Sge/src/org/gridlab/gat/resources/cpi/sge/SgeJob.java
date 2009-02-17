@@ -264,9 +264,7 @@ public class SgeJob extends JobCpi {
         } catch (DrmaaException e) {
             if (logger.isDebugEnabled()) {
                 logger.debug("-- SGEJob EXCEPTION --");
-                logger
-                        .debug("Got an exception while retrieving resource manager status:");
-                logger.debug(e);
+                logger.debug("Got an exception while retrieving resource manager status:", e);
             }
         }
         return m;
@@ -286,8 +284,7 @@ public class SgeJob extends JobCpi {
             /* This kind of exception is NOT OK - something ugly happened... */
             if (logger.isDebugEnabled()) {
                 logger.debug("-- SGEJob EXCEPTION --");
-                logger.debug("Got an exception while retrieving JobInfo:");
-                logger.debug(e);
+                logger.debug("Got an exception while retrieving JobInfo:", e);
             }
         }
         if (info != null) {
@@ -324,9 +321,7 @@ public class SgeJob extends JobCpi {
             } catch (DrmaaException e) {
                 if (logger.isDebugEnabled()) {
                     logger.debug("-- SGEJob EXCEPTION --");
-                    logger
-                            .debug("Got an exception while trying to TERMINATE job:");
-                    logger.debug(e);
+                    logger.debug("Got an exception while trying to TERMINATE job:", e);
                 }
             }
         }

@@ -13,7 +13,8 @@ import java.util.Hashtable;
 import java.util.Map;
 import java.util.Vector;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.gridlab.gat.AdaptorNotApplicableException;
 import org.gridlab.gat.CouldNotInitializeCredentialException;
 import org.gridlab.gat.CredentialExpiredException;
@@ -50,7 +51,7 @@ public class SftpGanymedFileAdaptor extends FileCpi {
         return capabilities;
     }
 
-    protected static Logger logger = Logger
+    protected static Logger logger = LoggerFactory
             .getLogger(SftpGanymedFileAdaptor.class);
 
     static final int SSH_PORT = 22;

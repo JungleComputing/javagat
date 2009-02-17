@@ -3,7 +3,8 @@ package org.gridlab.gat.io.cpi.commandlineSsh;
 import java.util.ArrayList;
 import java.util.Map;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.gridlab.gat.AdaptorNotApplicableException;
 import org.gridlab.gat.GAT;
 import org.gridlab.gat.GATContext;
@@ -37,7 +38,7 @@ public class CommandlineSshFileAdaptor extends FileCpi {
         return p;
     }
 
-    protected static Logger logger = Logger
+    protected static Logger logger = LoggerFactory
             .getLogger(CommandlineSshFileAdaptor.class);
 
     public static final int SSH_PORT = 22;

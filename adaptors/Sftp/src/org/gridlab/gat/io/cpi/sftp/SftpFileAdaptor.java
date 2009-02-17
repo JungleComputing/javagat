@@ -8,7 +8,8 @@ import java.util.Hashtable;
 import java.util.Map;
 import java.util.Vector;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.gridlab.gat.AdaptorNotApplicableException;
 import org.gridlab.gat.CouldNotInitializeCredentialException;
 import org.gridlab.gat.CredentialExpiredException;
@@ -55,7 +56,7 @@ public class SftpFileAdaptor extends FileCpi {
         return "The Sftp File Adaptor implements the File object using the j2ssh library. ";
     }
 
-    protected static Logger logger = Logger.getLogger(SftpFileAdaptor.class);
+    protected static Logger logger = LoggerFactory.getLogger(SftpFileAdaptor.class);
 
     public static final int SSH_PORT = 22;
 

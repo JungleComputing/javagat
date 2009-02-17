@@ -13,7 +13,8 @@ import java.util.Map;
 import java.util.StringTokenizer;
 import java.util.Vector;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.globus.ftp.Buffer;
 import org.globus.ftp.DataSink;
 import org.globus.ftp.FTPClient;
@@ -66,7 +67,7 @@ public abstract class GlobusFileAdaptor extends FileCpi {
         return capabilities;
     }
 
-    protected static Logger logger = Logger.getLogger(GlobusFileAdaptor.class);
+    protected static Logger logger = LoggerFactory.getLogger(GlobusFileAdaptor.class);
 
     static final int DEFAULT_GRIDFTP_PORT = 2811;
 

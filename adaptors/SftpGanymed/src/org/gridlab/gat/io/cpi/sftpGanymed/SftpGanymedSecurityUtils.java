@@ -5,7 +5,8 @@ package org.gridlab.gat.io.cpi.sftpGanymed;
 
 import java.io.File;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.gridlab.gat.CouldNotInitializeCredentialException;
 import org.gridlab.gat.CredentialExpiredException;
 import org.gridlab.gat.GATContext;
@@ -23,7 +24,7 @@ import org.gridlab.gat.security.cpi.SecurityContextUtils;
  */
 class SftpGanymedContextCreator implements SecurityContextCreator {
 
-    protected static Logger logger = Logger
+    protected static Logger logger = LoggerFactory
             .getLogger(SftpGanymedContextCreator.class);
 
     public SecurityContext createDefaultSecurityContext(GATContext gatContext,
@@ -87,7 +88,7 @@ class SftpGanymedContextCreator implements SecurityContextCreator {
 
 public class SftpGanymedSecurityUtils {
 
-    protected static Logger logger = Logger
+    protected static Logger logger = LoggerFactory
             .getLogger(SftpGanymedSecurityUtils.class);
 
     protected static SftpGanymedUserInfo getSftpCredential(GATContext context,

@@ -28,13 +28,14 @@ import javax.naming.directory.SearchControls;
 import javax.naming.directory.SearchResult;
 import javax.naming.ldap.InitialLdapContext;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.URI;
 
 public class LDAPResourceFinder {
 
-    private static final Logger LOGGER = Logger
+    private static final Logger LOGGER = LoggerFactory
             .getLogger(LDAPResourceFinder.class);
 
     public static final String DEFAULT_LDAP_SERVER_NAME = "ldap://bdii.ce-egee.org";

@@ -11,7 +11,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.GATObjectCreationException;
@@ -22,7 +23,7 @@ import org.gridlab.gat.engine.util.NoInfoLogging;
  */
 public class AdaptorInvocationHandler implements InvocationHandler {
 
-    protected static Logger logger = Logger
+    protected static Logger logger = LoggerFactory
             .getLogger(AdaptorInvocationHandler.class);
 
     static final boolean OPTIMIZE_ADAPTOR_POLICY = true;

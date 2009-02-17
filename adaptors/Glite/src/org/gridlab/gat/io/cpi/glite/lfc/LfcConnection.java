@@ -12,7 +12,8 @@ import java.util.Date;
 import java.util.Map;
 import java.util.TreeMap;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.globus.gsi.GSIConstants;
 import org.globus.gsi.GlobusCredential;
 import org.globus.gsi.GlobusCredentialException;
@@ -32,7 +33,7 @@ import org.ietf.jgss.GSSManager;
  * @author Jerome Revillard
  */
 public class LfcConnection {
-    private static final Logger LOGGER = Logger.getLogger(LfcConnection.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(LfcConnection.class);
 
     private static final int HEADER_SIZE = 12;
 

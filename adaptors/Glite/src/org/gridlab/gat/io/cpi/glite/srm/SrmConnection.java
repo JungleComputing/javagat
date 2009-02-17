@@ -40,7 +40,8 @@ import org.apache.axis.transport.http.HTTPSender;
 import org.apache.axis.types.URI;
 import org.apache.axis.types.UnsignedLong;
 import org.apache.axis.types.URI.MalformedURIException;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.globus.axis.gsi.GSIConstants;
 import org.globus.axis.transport.HTTPSSender;
 import org.globus.axis.util.Util;
@@ -60,7 +61,7 @@ import org.ietf.jgss.GSSException;
 public class SrmConnection {
     private static final String COULD_NOT_LOAD_CREDENTIALS = "Could not load Credentials";
     private static final String COULD_NOT_CREATE_SRM_CONNECTION_DUE_TO_MALFORMED_URI = "Could not create SRM connection due to malformed uri";
-    private static final Logger LOGGER = Logger.getLogger(SrmConnection.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(SrmConnection.class);
     private final ISRM service;
     private URI activeUploadURI;
     private String activeToken;

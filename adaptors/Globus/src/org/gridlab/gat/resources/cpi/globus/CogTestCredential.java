@@ -5,7 +5,8 @@ package org.gridlab.gat.resources.cpi.globus;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.gridforum.jgss.ExtendedGSSManager;
 import org.gridlab.gat.GAT;
 import org.gridlab.gat.GATContext;
@@ -23,7 +24,7 @@ import org.ietf.jgss.GSSException;
 
 public class CogTestCredential implements MetricListener {
 
-    protected static Logger logger = Logger.getLogger(CogTestCredential.class);
+    protected static Logger logger = LoggerFactory.getLogger(CogTestCredential.class);
 
     boolean exit = false;
 

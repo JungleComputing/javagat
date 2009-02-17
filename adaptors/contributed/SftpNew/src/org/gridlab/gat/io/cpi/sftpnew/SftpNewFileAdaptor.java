@@ -6,7 +6,8 @@ import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Vector;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.gridlab.gat.AdaptorNotApplicableException;
 import org.gridlab.gat.GAT;
 import org.gridlab.gat.GATContext;
@@ -32,7 +33,7 @@ import com.jcraft.jsch.ChannelSftp.LsEntry;
 @SuppressWarnings("serial")
 public class SftpNewFileAdaptor extends FileCpi {
 
-    protected static Logger logger = Logger.getLogger(SftpNewFileAdaptor.class);
+    protected static Logger logger = LoggerFactory.getLogger(SftpNewFileAdaptor.class);
 
     public static final int SSH_PORT = 22;
 

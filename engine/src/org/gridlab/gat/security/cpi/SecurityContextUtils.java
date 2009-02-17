@@ -6,7 +6,8 @@ package org.gridlab.gat.security.cpi;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.gridlab.gat.CouldNotInitializeCredentialException;
 import org.gridlab.gat.CredentialExpiredException;
 import org.gridlab.gat.GATContext;
@@ -23,7 +24,7 @@ import org.gridlab.gat.security.SecurityContext;
  */
 public class SecurityContextUtils {
 
-    protected static Logger logger = Logger
+    protected static Logger logger = LoggerFactory
             .getLogger(SecurityContextUtils.class);
 
     /**

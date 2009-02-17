@@ -11,7 +11,8 @@ package org.gridlab.gat.resources.cpi.sge;
 import java.util.Map;
 import java.util.Properties;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.ggf.drmaa.AlreadyActiveSessionException;
 import org.ggf.drmaa.DrmaaException;
 import org.ggf.drmaa.JobTemplate;
@@ -57,7 +58,7 @@ public class SgeResourceBrokerAdaptor extends ResourceBrokerCpi {
         return "This ResourceBroker uses the DRMAA interface to speak to the Sun Grid Engine. It can only be used on a machine, that has SGE installed. There might be link problems using this adaptor, because the adaptor depends on the SGE installation. In particular, the drmaa.jar that's included in the source (adaptors/Sge/external/drmaa.jar) should be compatible with the $SGE_ROOT/lib/$ARCH/libdrmaa.so, which means that they should be compiled for the same java version (also the 32/64 bit should be equal). Furthermore, this adaptor only works if it's executed using the same java version as the one used for compiling drmaa.jar. A small note about the arguments of the executable: the SGE adaptor automatically puts quotes around each argument.";
     }
 
-    protected static Logger logger = Logger
+    protected static Logger logger = LoggerFactory
             .getLogger(SgeResourceBrokerAdaptor.class);
 
     private Session SGEsession;

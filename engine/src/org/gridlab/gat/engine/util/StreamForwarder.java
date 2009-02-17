@@ -6,11 +6,12 @@ import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class StreamForwarder implements Runnable {
 
-    private static final Logger logger = Logger
+    private static final Logger logger = LoggerFactory
             .getLogger(StreamForwarder.class);
 
     private final InputStream in;

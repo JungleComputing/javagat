@@ -12,7 +12,8 @@ import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Map;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.gridlab.gat.AdaptorNotApplicableException;
 import org.gridlab.gat.GAT;
 import org.gridlab.gat.GATContext;
@@ -26,7 +27,7 @@ import org.gridlab.gat.io.cpi.FileCpi;
 @SuppressWarnings("serial")
 public class LocalFileAdaptor extends FileCpi {
 
-    protected static Logger logger = Logger.getLogger(LocalFileAdaptor.class);
+    protected static Logger logger = LoggerFactory.getLogger(LocalFileAdaptor.class);
 
     public static Map<String, Boolean> getSupportedCapabilities() {
         Map<String, Boolean> capabilities = FileCpi.getSupportedCapabilities();

@@ -10,7 +10,8 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.gridlab.gat.AdaptorNotApplicableException;
 import org.gridlab.gat.GAT;
 import org.gridlab.gat.GATContext;
@@ -94,7 +95,7 @@ public class SshTrileadFileAdaptor extends FileCpi {
      */
     private static final long serialVersionUID = 7343449503574566274L;
 
-    private static Logger logger = Logger
+    private static Logger logger = LoggerFactory
             .getLogger(SshTrileadFileAdaptor.class);
 
     private static final int SSH_PORT = 22;

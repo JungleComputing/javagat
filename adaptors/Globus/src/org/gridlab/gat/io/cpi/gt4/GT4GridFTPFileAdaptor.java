@@ -22,7 +22,6 @@ import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.GATObjectCreationException;
 import org.gridlab.gat.URI;
-import org.gridlab.gat.engine.GATEngine;
 import org.gridlab.gat.io.File;
 
 //This class only supports the URIs with gsiftp
@@ -65,9 +64,8 @@ public class GT4GridFTPFileAdaptor extends GT4FileAdaptor {
      */
     synchronized protected void copyThirdParty(URI dest, String destProvider)
             throws GATInvocationException {
-        if (GATEngine.DEBUG) {
-            logger
-                    .debug("GT4GridFileAdaptor file: start file copy with destination provider "
+        if (logger.isDebugEnabled()) {
+            logger.debug("GT4GridFileAdaptor file: start file copy with destination provider "
                             + destProvider);
         }
         Task task = new TaskImpl("my3rdpartycopy" + Math.random(),

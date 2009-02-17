@@ -9,7 +9,8 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.GATObjectCreationException;
@@ -43,7 +44,7 @@ public class ZorillaResourceBrokerAdaptor extends ResourceBrokerCpi implements
     // update status of each job every minute
     public static final int TIMEOUT = 5000;
 
-    private static final Logger logger = Logger
+    private static final Logger logger = LoggerFactory
             .getLogger(ZorillaResourceBrokerAdaptor.class);
 
     private static boolean ended = false;

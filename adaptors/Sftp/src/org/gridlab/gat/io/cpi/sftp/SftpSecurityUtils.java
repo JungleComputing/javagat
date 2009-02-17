@@ -6,7 +6,8 @@ package org.gridlab.gat.io.cpi.sftp;
 import java.io.File;
 import java.io.IOException;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.gridlab.gat.CouldNotInitializeCredentialException;
 import org.gridlab.gat.CredentialExpiredException;
 import org.gridlab.gat.GATContext;
@@ -27,7 +28,7 @@ import com.sshtools.j2ssh.transport.publickey.SshPrivateKeyFile;
  */
 class SftpContextCreator implements SecurityContextCreator {
 
-    protected static Logger logger = Logger.getLogger(SftpSecurityUtils.class);
+    protected static Logger logger = LoggerFactory.getLogger(SftpSecurityUtils.class);
 
     public SecurityContext createDefaultSecurityContext(GATContext gatContext,
             URI location) throws CouldNotInitializeCredentialException,
@@ -95,7 +96,7 @@ class SftpContextCreator implements SecurityContextCreator {
 
 public class SftpSecurityUtils {
 
-    protected static Logger logger = Logger.getLogger(SftpSecurityUtils.class);
+    protected static Logger logger = LoggerFactory.getLogger(SftpSecurityUtils.class);
 
     protected static SftpUserInfo getSftpCredential(GATContext context,
             String adaptorName, URI location, int defaultPort)

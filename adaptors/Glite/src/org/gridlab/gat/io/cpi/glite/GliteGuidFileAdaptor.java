@@ -10,7 +10,8 @@ import java.util.Map;
 
 import javax.naming.NamingException;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.gridlab.gat.AdaptorNotApplicableException;
 import org.gridlab.gat.GAT;
 import org.gridlab.gat.GATContext;
@@ -47,7 +48,7 @@ public class GliteGuidFileAdaptor extends FileCpi {
     private static final String GUID = "guid";
     private static final String CANNOT_HANDLE_THIS_URI = "cannot handle this URI: ";
 
-    private static final Logger LOGGER = Logger
+    private static final Logger LOGGER = LoggerFactory
             .getLogger(GliteGuidFileAdaptor.class);
 
     private LfcConnector lfcConnector;

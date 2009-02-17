@@ -8,7 +8,8 @@ import java.net.URL;
 import java.util.Map;
 import java.util.Vector;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.gridlab.gat.GAT;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
@@ -85,7 +86,7 @@ public abstract class FileCpi extends MonitorableCpi implements FileInterface, j
         return preferences;
     }
 
-    protected static Logger logger = Logger.getLogger(FileCpi.class);
+    protected static Logger logger = LoggerFactory.getLogger(FileCpi.class);
     
     protected GATContext gatContext;
 

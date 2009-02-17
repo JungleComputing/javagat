@@ -7,7 +7,8 @@ import java.util.Collection;
 import java.util.GregorianCalendar;
 import java.util.UUID;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.gridlab.gat.URI;
 import org.gridlab.gat.io.cpi.glite.lfc.LfcConnection.AccessType;
 import org.gridlab.gat.io.cpi.glite.lfc.LfcConnection.LFCFile;
@@ -22,7 +23,7 @@ import org.gridlab.gat.io.cpi.glite.srm.SrmConnector;
  * @author Jerome Revillard
  */
 public class LfcConnector {
-    private static final Logger LOGGER = Logger.getLogger(LfcConnector.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(LfcConnector.class);
 
     private final String vo;
     private final String server;

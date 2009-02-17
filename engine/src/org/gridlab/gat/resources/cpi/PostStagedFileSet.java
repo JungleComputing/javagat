@@ -9,7 +9,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.gridlab.gat.GAT;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
@@ -20,7 +21,7 @@ import org.gridlab.gat.resources.SoftwareDescription;
 
 public class PostStagedFileSet {
 
-    protected static Logger logger = Logger.getLogger(PostStagedFileSet.class);
+    protected static Logger logger = LoggerFactory.getLogger(PostStagedFileSet.class);
 
     private GATContext gatContext;
 
@@ -53,7 +54,7 @@ public class PostStagedFileSet {
         resolve();
 
         if (logger.isInfoEnabled()) {
-            logger.info(this);
+            logger.info(this.toString());
         }
     }
 

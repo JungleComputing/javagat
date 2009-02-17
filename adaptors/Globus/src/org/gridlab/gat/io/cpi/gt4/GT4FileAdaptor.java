@@ -7,7 +7,8 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.Map;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.globus.cog.abstraction.impl.common.AbstractionFactory;
 import org.globus.cog.abstraction.impl.common.task.ServiceContactImpl;
 import org.globus.cog.abstraction.impl.file.DirectoryNotFoundException;
@@ -71,7 +72,7 @@ abstract public class GT4FileAdaptor extends FileCpi {
     String[] providers = { "gsiftp", "local", "gt2ft", "condor", "ssh",
             "gt4ft", "gt4", "gsiftp-old", "gt3.2.1", "gt2", "ftp", "webdav" };
 
-    protected static Logger logger = Logger.getLogger(GT4FileAdaptor.class);
+    protected static Logger logger = LoggerFactory.getLogger(GT4FileAdaptor.class);
 
     /**
      * Creates new GAT GT4 file object. The constructor is called by the
@@ -458,7 +459,7 @@ abstract public class GT4FileAdaptor extends FileCpi {
                 resource.createDirectory(location.getPath());
             } catch (GeneralException e) {
                 if (logger.isDebugEnabled()) {
-                    logger.debug(e);
+                    logger.debug("", e);
                 }
                 return false;
             }

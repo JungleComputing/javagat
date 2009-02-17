@@ -8,7 +8,8 @@ import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.engine.GATEngine;
@@ -30,7 +31,7 @@ import org.gridlab.gat.resources.cpi.Sandbox;
 public class LocalQJob extends JobCpi implements Runnable,
         Comparable<LocalQJob> {
 
-    private final static Logger logger = Logger.getLogger(LocalQJob.class);
+    private final static Logger logger = LoggerFactory.getLogger(LocalQJob.class);
 
     private final MetricDefinition statusMetricDefinition;
 
@@ -223,7 +224,7 @@ public class LocalQJob extends JobCpi implements Runnable,
                 this.p = p;
                 setStartTime();
             } catch (IOException e) {
-                logger.error(e);
+                logger.error("Got exception, setting state to SUBMISSION_ERROR", e);
                 setState(JobState.SUBMISSION_ERROR);
 
                 // FIXME: also cleanup sandbox?
@@ -250,7 +251,7 @@ public class LocalQJob extends JobCpi implements Runnable,
                 OutputStream out = p.getOutputStream();
                 new InputForwarder(out, fin);
             } catch (Exception e) {
-                logger.error(e);
+                logger.error("Got exception, setting state to SUBMISSION_ERROR", e);
                 setState(JobState.SUBMISSION_ERROR);
                 return;
             }
@@ -267,7 +268,7 @@ public class LocalQJob extends JobCpi implements Runnable,
                         stdout.getAbsolutePath(), true);
                 outForwarder = new OutputForwarder(p.getInputStream(), out);
             } catch (Exception e) {
-                logger.error(e);
+                logger.error("Got exception, setting state to SUBMISSION_ERROR", e);
                 setState(JobState.SUBMISSION_ERROR);
                 return;
             }
