@@ -14,6 +14,7 @@ public final class GliteConstants {
     public static final String PREFERENCE_VIRTUAL_ORGANISATION = "VirtualOrganisation";
     public static final String PREFERENCE_VIRTUAL_ORGANISATION_GROUP = "VirtualOrganisationGroup";
     public static final String PREFERENCE_VIRTUAL_ORGANISATION_ROLE = "VirtualOrganisationRole";
+    public static final String PREFERENCE_VIRTUAL_ORGANISATION_CAPABILITY = "VirtualOrganisationCapability";
     public static final String PREFERENCE_VIRTUAL_ORGANISATION_HOST_DN = "vomsHostDN";
     public static final String PREFERENCE_VIRTUAL_ORGANISATION_SERVER_URL = "vomsServerURL";
     public static final String PREFERENCE_VIRTUAL_ORGANISATION_SERVER_PORT = "vomsServerPort";
@@ -23,7 +24,7 @@ public final class GliteConstants {
     public static final String PREFERENCE_PREFERRED_SE_ID = "preferredSEID";
     public static final String PREFERENCE_POLL_INTERVAL_SECS = "glite.pollIntervalSecs";
     public static final String PREFERENCE_VOMS_LIFETIME = "vomsLifetime";
-    public static final String PREFERENCE_VOMS_CREATE_NEW_PROXY = "glite.createNewProxy";
+    public static final String PREFERENCE_VOMS_CREATE_NEW_PROXY = "glite.proxycreation";
     public static final String PREFERENCE_DELETE_JDL = "glite.deleteJDL";
     public static final String PREFERENCE_JOB_STOP_POSTSTAGE = "job.stop.poststage";
     public static final String PREFERENCE_JOB_STOP_ON_EXIT = "job.stop.on.exit";

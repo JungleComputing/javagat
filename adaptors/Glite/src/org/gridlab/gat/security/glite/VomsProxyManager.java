@@ -327,7 +327,7 @@ public class VomsProxyManager extends GlobusProxyManager {
 	 * Get the string representation of the full qualified attribute names of a VOMS proxy
 	 * @param path
 	 * 				The path which points to the proxy
-	 * @return The list of fqans of the voms proxy
+	 * @return The list of fqans of the voms proxy or <code>null</code> if the proxy is not voms enabled
 	 */
 	public static List<String> getExistingVOMSExtensions(String path) {
 		try {

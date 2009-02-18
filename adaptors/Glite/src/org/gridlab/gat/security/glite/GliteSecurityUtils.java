@@ -1,6 +1,7 @@
 package org.gridlab.gat.security.glite;
 
 import java.io.File;
+import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -53,10 +54,7 @@ public final class GliteSecurityUtils {
     }
 
     /**
-     * Create a new proxy or reuse the old one if the lifetime is still longer
-     * than the lifetime specified in the vomsLifetime preference OR, if the
-     * vomsLifetime preference is not specified, the remaining lifetime is
-     * longer than the MINIMUM_PROXY_REMAINING_LIFETIME specified in this class
+     * Create a new proxy or reuse the old one if needed.
      * 
      * @param context
      *            GATContext with security parameters.
@@ -68,42 +66,100 @@ public final class GliteSecurityUtils {
         String proxyFile = GliteSecurityUtils.getProxyPath();
 
         Preferences prefs = context.getPreferences();
-        String lifetimeStr = (String) prefs
-                .get(GliteConstants.PREFERENCE_VOMS_LIFETIME);
+        String lifetimeStr = (String) prefs.get(GliteConstants.PREFERENCE_VOMS_LIFETIME);
         int lifetime = STANDARD_PROXY_LIFETIME;
-
-        boolean createNew = Boolean.parseBoolean((String) prefs
-                .get(GliteConstants.PREFERENCE_VOMS_CREATE_NEW_PROXY));
-        long existingLifetime = -1;
-
-        // determine the lifetime of the existing proxy only if the user wants
-        // to reuse the
-        // old proxy
-        if (!createNew) {
-            existingLifetime = VomsProxyManager
-                    .getExistingProxyLifetime(proxyFile);
+        
+        //If the preference's lifetime is specified and greater than the minimal one, use it.
+        if(lifetimeStr != null){
+        	int newLifetime = Integer.parseInt(lifetimeStr);
+        	if(newLifetime > MINIMUM_PROXY_REMAINING_LIFETIME){
+        		lifetime = newLifetime;
+        	}else{
+        		lifetime = MINIMUM_PROXY_REMAINING_LIFETIME;
+        	}
+        }
+        
+        //Check the "glite.proxycreation" value
+        String proxyCreation = (String) prefs.get(GliteConstants.PREFERENCE_VOMS_CREATE_NEW_PROXY); 
+        if(proxyCreation == null){
+        	proxyCreation = "ondemand";
+        }
+        
+        if(proxyCreation.equalsIgnoreCase("never")){
+        	//JavaGAT must not generate voms proxy
+        	logger.info("Always reuse old voms proxy");
+        	return proxyFile;
+        }else if(proxyCreation.equalsIgnoreCase("ondemand")){ 
+        	//JavaGAT will generate a new proxy if it these cases:
+        	//	* The current proxy doesn't correspond anymore to javaGat preferences (VO, VO group, VO role, etc... )
+        	//	* The current proxy lifetime is inferior to the requested lifetime
+        	logger.info("Checking whether the VOMS proxy extensions correspond to the JavaGAT preferences.");
+        	List<String> currentVomsProxyExtensionsList = VomsProxyManager.getExistingVOMSExtensions(""+ proxyFile);
+        	boolean currentExtensionsOk = true;
+        	if(currentVomsProxyExtensionsList != null){//There is an existing voms proxy
+        		//Extensions order is important for gLite. Currently, javaGAT is only able to specify 1 extension (1 vo, 1 group, 1 role maximum)
+        		//This JavaGAT extension must be the first one in the voms proxy.
+        		if(currentVomsProxyExtensionsList.size() != 0){
+        			String currentVomsProxyExtension = currentVomsProxyExtensionsList.get(0);
+        			String currentJavaGATVo = (String) prefs.get(GliteConstants.PREFERENCE_VIRTUAL_ORGANISATION);
+        			String currentJavaGATVoGroup = (String) prefs.get(GliteConstants.PREFERENCE_VIRTUAL_ORGANISATION_GROUP);
+        			String currentJavaGATVoRole = (String) prefs.get(GliteConstants.PREFERENCE_VIRTUAL_ORGANISATION_ROLE);
+        			String currentJavaGATVoCapability = (String) prefs.get(GliteConstants.PREFERENCE_VIRTUAL_ORGANISATION_CAPABILITY);
+        			
+        			if(currentJavaGATVoGroup == null){
+        				currentJavaGATVoGroup = "NULL";
+        			}
+        			if(currentJavaGATVoRole == null){
+        				currentJavaGATVoRole = "NULL";
+        			}
+        			if(currentJavaGATVoCapability == null){
+        				currentJavaGATVoCapability = "NULL";
+        			}
+        			String currentProxyVo = currentVomsProxyExtension.substring(1, currentVomsProxyExtension.indexOf("/Role=")).split("/")[0];
+        			String currentProxyVoGroup = currentVomsProxyExtension.substring(1,currentVomsProxyExtension.indexOf("/Role=")).replaceFirst(currentProxyVo+"/", "");
+        			String currentProxyVoRole =	currentVomsProxyExtension.substring(currentVomsProxyExtension.indexOf("/Role=")+6, currentVomsProxyExtension.indexOf("/Capability="));
+        			String currentProxyVoCapability = currentVomsProxyExtension.substring(currentVomsProxyExtension.indexOf("/Capability=")+12, currentVomsProxyExtension.length());
+        			
+        			if(!currentProxyVo.equals(currentJavaGATVo)){
+        				currentExtensionsOk = false;
+        			}
+        			if(!currentProxyVoGroup.equals(currentJavaGATVoGroup)){
+        				currentExtensionsOk = false;
+        			}
+        			if(!currentProxyVoRole.equals(currentJavaGATVoRole)){
+        				currentExtensionsOk = false;
+        			}
+        			if(!currentProxyVoCapability.equals(currentJavaGATVoCapability)){
+        				currentExtensionsOk = false;
+        			}
+        		}else{
+        			currentExtensionsOk = false;
+        		}
+        	}else{
+        		currentExtensionsOk = false;
+        	}
+        	
+        	if(currentExtensionsOk == false){
+        		logger.info("Current VOMS proxy extensions doesn't correspond to the JavaGAT preference. Creation of a new proxy");
+        		createVomsProxy(lifetime, context, proxyFile);
+        	}else{
+	        	logger.info("Checking the current proxy lifetime and generate a new one if needed");
+	        	long existingLifetime = VomsProxyManager.getExistingProxyLifetime(proxyFile);
+	        	if (existingLifetime < lifetime) {
+	        		logger.info("Current VOMS proxy lifetime not sufficient. Creation of a new proxy");
+	                createVomsProxy(lifetime, context, proxyFile);
+	            } else {
+	                logger.info("Reusing old voms proxy with lifetime (seconds): "+ existingLifetime);
+	            }
+        	}
+        }else if(proxyCreation.equalsIgnoreCase("always")){
+        	//JavaGAT will always generate a new proxy
+        	createVomsProxy(lifetime, context, proxyFile);
+        }else{
+        	throw new GATInvocationException("Unknown "+ GliteConstants.PREFERENCE_VOMS_CREATE_NEW_PROXY + " value ("+proxyCreation+")" +
+        			" Accepted values are: \"never\", \"ondemand\" and \"always\" (case-insensitive)");
         }
 
-        if (lifetimeStr == null) { // if a valid proxy exists, create a new one
-            // only if the old one is below the minimum
-            // lifetime
-            if (existingLifetime < MINIMUM_PROXY_REMAINING_LIFETIME) {
-                createVomsProxy(lifetime, context, proxyFile);
-            } else {
-                logger.info("Reusing old voms proxy with lifetime (seconds): "
-                        + existingLifetime);
-            }
-        } else { // if a valid proxy exists, create a new one only if the old
-            // one is below the specified lifetime
-            lifetime = Integer.parseInt(lifetimeStr);
-
-            if (existingLifetime < lifetime) {
-                createVomsProxy(lifetime, context, proxyFile);
-            } else {
-                logger.info("Reusing old voms proxy with lifetime (seconds): "
-                        + existingLifetime);
-            }
-        }
         return proxyFile;
     }
 
@@ -143,13 +199,14 @@ public final class GliteSecurityUtils {
      * </tr>
      * <tr>
      * <td>VirtualOrganisationGroup</td>
-     * <td>The group inside the virtual organisation for which the voms proxy is
-     * created</td>
+     * <td>The group inside the virtual organisation for which the voms proxy is created</td>
      * </tr>
      * <tr>
      * <td>VirtualOrganisationRole</td>
-     * <td>The role inside the virtual organisation or the group of the virtual
-     * organisation for which the voms proxy is created (e.g. VOAdmin)</td>
+     * <td>The role inside the virtual organisation for which the voms proxy is created (e.g. VOAdmin)</td>
+     * </tr>
+     * <td>VirtualOrganisationCapability</td>
+     * <td>The capability inside the virtual organisation for which the voms proxy is created</td>
      * </tr>
      * </table>
      * 
@@ -203,9 +260,12 @@ public final class GliteSecurityUtils {
                 .get(GliteConstants.PREFERENCE_VIRTUAL_ORGANISATION_GROUP);
         String voRole = (String) prefs
                 .get(GliteConstants.PREFERENCE_VIRTUAL_ORGANISATION_ROLE);
+        String voCapability = (String) prefs
+        		.get(GliteConstants.PREFERENCE_VIRTUAL_ORGANISATION_CAPABILITY);
 
         String requestCode = voName + (voGroup == null ? "" : "/" + voGroup)
-                + (voRole == null ? "" : "/Role=" + voRole);
+                + (voRole == null ? "" : "/Role=" + voRole)
+        		+ (voCapability == null ? "" : "/Capability=" + voCapability);
         try {
             VomsProxyManager manager = new VomsProxyManager(usercert, userkey,
                     secContext.getPassword(), lifetime, hostDN, serverURI,
@@ -244,6 +304,6 @@ public final class GliteSecurityUtils {
         preferences.put(GliteConstants.PREFERENCE_VOMS_LIFETIME, Integer
                 .toString(STANDARD_PROXY_LIFETIME));
         preferences.put(GliteConstants.PREFERENCE_VOMS_CREATE_NEW_PROXY,
-                "false");
+                "ondemand");
     }
 }
