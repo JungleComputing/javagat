@@ -243,11 +243,11 @@ public class GATEngine {
         // the commandline parameters -Dgat.debug and -Dgat.verbose override the
         // settings in log4j.properties, so change the level of the parent
         // logger
-        if (VERBOSE)
-            logger.getParent().setLevel(Level.INFO);
-        if (DEBUG)
-            logger.getParent().setLevel(Level.DEBUG);
-
+        /*
+         * Not supported by slf4j. if (VERBOSE)
+         * logger.getParent().setLevel(Level.INFO); if (DEBUG)
+         * logger.getParent().setLevel(Level.DEBUG);
+         */
         if (logger.isDebugEnabled()) {
             logger.debug("creating the GAT engine START");
         }
