@@ -19,18 +19,14 @@ import java.util.Set;
 import java.util.Vector;
 import java.util.jar.Attributes;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.exolab.castor.xml.Marshaller;
-import org.exolab.castor.xml.Unmarshaller;
 import org.gridlab.gat.AdaptorInfo;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.GATObjectCreationException;
 import org.gridlab.gat.Preferences;
 import org.gridlab.gat.advert.Advertisable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * This class make the various GAT adaptors available to GAT.
@@ -590,53 +586,12 @@ public class GATEngine {
     }
 
     public static String defaultMarshal(Object o) {
-        if (o == null) {
-            throw new Error("cannot marshal a null object");
-        }
+        throw new Error("cannot marshal");
 
-        StringWriter sw = new StringWriter();
-
-        try {
-            Marshaller.marshal(o, sw);
-        } catch (Throwable e) {
-            throw new Error("could not marshal object: ", e);
-        }
-
-        return sw.toString();
     }
 
     public static Advertisable defaultUnmarshal(Class<?> type, String s) {
-        if (s == null) {
-            throw new Error("cannot unmarshal a null object");
-        }
-
-        StringReader sr = new StringReader(s);
-
-        try {
-            if (logger.isDebugEnabled()) {
-                logger.debug("default unmarshaller start, type = " + type
-                        + " string = " + s);
-            }
-
-            Unmarshaller unmarshaller = new Unmarshaller(type);
-            unmarshaller.setIgnoreExtraAttributes(false);
-            unmarshaller.setIgnoreExtraElements(false);
-            unmarshaller.setValidation(true);
-
-            Advertisable res = (Advertisable) unmarshaller.unmarshal(sr);
-
-            if (res == null) {
-                throw new Error("cannot unmarshal this object");
-            }
-
-            if (logger.isDebugEnabled()) {
-                logger.debug("default unmarshaller returning " + res);
-            }
-
-            return res;
-        } catch (Exception e) {
-            throw new Error("could not unmarshal object: " + e);
-        }
+        throw new Error("cannot unmarshal");
     }
 
     /**
