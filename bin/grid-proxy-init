@@ -18,4 +18,4 @@ add_to_gat_classpath () {
 
 add_to_gat_classpath ${GAT_LOCATION}/lib/adaptors/shared
 
-java -verbose:class -DUID=${UID} -classpath ${GAT_LOCATION}/lib/adaptors/GlobusAdaptor/cog-jglobus.jar:${GAT_CLASSPATH} org.globus.tools.ProxyInit "$@"
+java -DUID=${UID} -classpath ${GAT_LOCATION}/lib/adaptors/GlobusAdaptor/cog-jglobus.jar:${GAT_CLASSPATH} org.globus.tools.ProxyInit "$@"
