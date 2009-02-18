@@ -293,6 +293,7 @@ public final class GliteSecurityUtils {
                 "");
         preferences
                 .put(GliteConstants.PREFERENCE_VIRTUAL_ORGANISATION_ROLE, "");
+        preferences.put(GliteConstants.PREFERENCE_VIRTUAL_ORGANISATION_CAPABILITY, "");
         preferences.put(GliteConstants.PREFERENCE_VIRTUAL_ORGANISATION_HOST_DN,
                 "<no default>");
         preferences.put(
