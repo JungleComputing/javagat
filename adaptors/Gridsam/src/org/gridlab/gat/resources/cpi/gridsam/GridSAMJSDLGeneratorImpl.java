@@ -139,7 +139,7 @@ public class GridSAMJSDLGeneratorImpl implements GridSAMJSDLGenerator {
                     .newInstance();
             POSIXApplicationType posixAppl = posixDoc.addNewPOSIXApplication();
             FileNameType f = posixAppl.addNewExecutable();
-            f.setStringValue(sd.getExecutable());
+            f.setStringValue(protectAgainstShellMetas(sd.getExecutable()));
             
             if (sd.getArguments() != null) {
                 logger.debug("arguments count=" + sd.getArguments().length);
@@ -154,7 +154,7 @@ public class GridSAMJSDLGeneratorImpl implements GridSAMJSDLGenerator {
                         logger.debug("argument=" + argument);
                     }
                     ArgumentType arg = posixAppl.addNewArgument();
-                    arg.setStringValue(argument);
+                    arg.setStringValue(protectAgainstShellMetas(argument));
                 }
             }
             
@@ -217,7 +217,7 @@ public class GridSAMJSDLGeneratorImpl implements GridSAMJSDLGenerator {
 
         // copy whole sandbox
         addDataStage(jobDescr, ".", DataStageType.SOURCE, sandbox.getSandboxPath(),
-                true);
+                false);
 
         // we have to copy all the files back by ourselves
         Map<File, File> postStaged = sd.getPostStaged();
@@ -228,7 +228,7 @@ public class GridSAMJSDLGeneratorImpl implements GridSAMJSDLGenerator {
             }
             addDataStage(jobDescr, file.getPath(), DataStageType.TARGET, sandbox
                     .getSandboxPath()
-                    + SLASH + file.getPath(), true);
+                    + SLASH + file.getPath(), false);
         }
     }
 
@@ -251,5 +251,21 @@ public class GridSAMJSDLGeneratorImpl implements GridSAMJSDLGenerator {
             LimitsType timeLimit = posixAppl.addNewCPUTimeLimit();
             timeLimit.setBigDecimalValue(v);
         }
+    }
+
+    private static String protectAgainstShellMetas(String s) {
+        char[] chars = s.toCharArray();
+        StringBuffer b = new StringBuffer();
+        b.append('\'');
+        for (char c : chars) {
+            if (c == '\'') {
+                b.append('\'');
+                b.append('\\');
+                b.append('\'');
+            }
+            b.append(c);
+        }
+        b.append('\'');
+        return b.toString();
     }
 }
