@@ -54,7 +54,7 @@ public class MetaData implements Serializable {
      * @return the associated value of the provided key
      */
     public String remove(String key) {
-        return (String) data.remove(key);
+        return data.remove(key);
     }
 
     /**
@@ -77,7 +77,7 @@ public class MetaData implements Serializable {
      */
     @SuppressWarnings("unchecked")
     public String getData(int i) {
-        return (String) ((Map.Entry<String, String>) (data.entrySet())
+        return ((Map.Entry<String, String>) (data.entrySet())
                 .toArray()[i]).getValue();
     }
 

@@ -593,7 +593,7 @@ public class GATEngine {
         Vector<JarFile> jarFiles = new Vector<JarFile>();
 
         while (iterator.hasNext()) {
-            nextFile = (File) iterator.next();
+            nextFile = iterator.next();
 
             if (nextFile.isFile()) {
                 try {
@@ -635,7 +635,7 @@ public class GATEngine {
         }
 
         for (int i = 0; i < unmarshallers.size(); i++) {
-            Class<?> c = (Class<?>) unmarshallers.get(i);
+            Class<?> c = unmarshallers.get(i);
 
             try {
                 Method m = c.getMethod("unmarshal", new Class[] {

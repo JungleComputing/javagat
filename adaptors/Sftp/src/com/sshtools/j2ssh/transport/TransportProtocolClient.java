@@ -154,7 +154,7 @@ public class TransportProtocolClient extends TransportProtocolCommon {
 
         while (it.hasNext()) {
             entry = it.next();
-            ((Service) entry.getValue()).stop();
+            entry.getValue().stop();
         }
 
         services.clear();

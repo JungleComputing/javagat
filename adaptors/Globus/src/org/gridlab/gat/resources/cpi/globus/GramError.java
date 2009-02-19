@@ -343,7 +343,7 @@ public class GramError {
     }
 
     public static String getGramErrorString(int errorCode) {
-        Descriptor d = (Descriptor) errors.get(errorCode);
+        Descriptor d = errors.get(errorCode);
 
         if (d == null) {
             return "UNKNOWN_ERROR (" + errorCode + ")";

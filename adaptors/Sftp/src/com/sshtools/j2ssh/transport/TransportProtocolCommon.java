@@ -331,7 +331,7 @@ public abstract class TransportProtocolCommon implements TransportProtocol,
      * @return
      */
     public byte[] getSessionIdentifier() {
-        return (byte[]) sessionIdentifier.clone();
+        return sessionIdentifier.clone();
     }
 
     /**
@@ -368,12 +368,12 @@ public abstract class TransportProtocolCommon implements TransportProtocol,
                     SshMsgNewKeys.class);
             registerTransportMessages();
 
-            List<String> list = (List<String>) SshKeyExchangeFactory
+            List<String> list = SshKeyExchangeFactory
                     .getSupportedKeyExchanges();
             Iterator<String> it = list.iterator();
 
             while (it.hasNext()) {
-                String keyExchange = (String) it.next();
+                String keyExchange = it.next();
                 SshKeyExchange kex = SshKeyExchangeFactory
                         .newInstance(keyExchange);
                 kex.init(this);
@@ -523,7 +523,7 @@ public abstract class TransportProtocolCommon implements TransportProtocol,
             throw new MessageNotRegisteredException(messageId);
         }
 
-        SshMessageStore actual = (SshMessageStore) messageNotifications
+        SshMessageStore actual = messageNotifications
                 .get(messageId);
 
         if (!store.equals(actual)) {
@@ -699,7 +699,7 @@ public abstract class TransportProtocolCommon implements TransportProtocol,
             }
 
             // Get an instance of the key exchange algortihm
-            SshKeyExchange kex = (SshKeyExchange) kexs.get(kexAlgorithm);
+            SshKeyExchange kex = kexs.get(kexAlgorithm);
 
             // Do the key exchange
             performKeyExchange(kex);
@@ -955,12 +955,12 @@ public abstract class TransportProtocolCommon implements TransportProtocol,
         Iterator<String> itClient = clientAlgorithms.iterator();
 
         while (itClient.hasNext()) {
-            algorithmClient = (String) itClient.next();
+            algorithmClient = itClient.next();
 
             Iterator<String> itServer = serverAlgorithms.iterator();
 
             while (itServer.hasNext()) {
-                algorithmServer = (String) itServer.next();
+                algorithmServer = itServer.next();
 
                 if (algorithmClient.equals(algorithmServer)) {
                     log.debug("Returning " + algorithmClient);
@@ -1057,7 +1057,7 @@ public abstract class TransportProtocolCommon implements TransportProtocol,
 
         for (Iterator<SshMessageStore> it2 = messageStores.iterator(); (it2 != null)
                 && it2.hasNext();) {
-            ms = (SshMessageStore) it2.next();
+            ms = it2.next();
 
             try {
                 ms.close();
@@ -1375,8 +1375,7 @@ public abstract class TransportProtocolCommon implements TransportProtocol,
                     TransportProtocolEventHandler eventHandler;
 
                     while (it.hasNext()) {
-                        eventHandler = (TransportProtocolEventHandler) it
-                                .next();
+                        eventHandler = it.next();
                         eventHandler.onSocketTimeout(this /*
                                                              * ,
                                                              * provider.isConnected()
@@ -1429,7 +1428,7 @@ public abstract class TransportProtocolCommon implements TransportProtocol,
 
         for (Iterator<SshMessageStore> it = messageStores.iterator(); (it != null)
                 && it.hasNext();) {
-            ms = (SshMessageStore) it.next();
+            ms = it.next();
 
             if (ms.isRegisteredMessage(messageId)) {
                 return ms;

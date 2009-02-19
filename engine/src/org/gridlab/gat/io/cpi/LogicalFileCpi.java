@@ -306,7 +306,7 @@ public abstract class LogicalFileCpi extends MonitorableCpi implements LogicalFi
                     .getName(), f.getMode());
 
             for (int i = 0; i < f.getFiles().size(); i++) {
-                lf.addURI(new URI((String) f.getFiles().get(i)));
+                lf.addURI(new URI(f.getFiles().get(i)));
             }
 
             return lf;

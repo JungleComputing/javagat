@@ -56,6 +56,6 @@ public class Environment {
 
     /** Gets the value of an environment variable */
     public String getVar(String var) {
-        return (String) env.get(var);
+        return env.get(var);
     }
 }

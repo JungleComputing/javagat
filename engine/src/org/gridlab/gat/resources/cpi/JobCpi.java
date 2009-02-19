@@ -212,7 +212,7 @@ public abstract class JobCpi extends MonitorableCpi implements Job {
                 synchronized (JobCpi.class) {
                     if (jobList.size() == 0)
                         break;
-                    j = (Job) jobList.remove(0);
+                    j = jobList.remove(0);
                 }
                 if (logger.isInfoEnabled()) {
                     logger.info("stopping job: " + j);

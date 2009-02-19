@@ -77,7 +77,7 @@ public class SftpGanymedFileAdaptor extends FileCpi {
     private static synchronized SftpGanymedConnection getFromCache(String key) {
         SftpGanymedConnection client = null;
         if (clienttable.containsKey(key)) {
-            client = (SftpGanymedConnection) clienttable.remove(key);
+            client = clienttable.remove(key);
         }
         return client;
     }
@@ -340,7 +340,7 @@ public class SftpGanymedFileAdaptor extends FileCpi {
 
             String[] res = new String[newRes.size()];
             for (int i = 0; i < newRes.size(); i++) {
-                res[i] = (String) newRes.get(i);
+                res[i] = newRes.get(i);
             }
             return res;
         } catch (IOException e) {

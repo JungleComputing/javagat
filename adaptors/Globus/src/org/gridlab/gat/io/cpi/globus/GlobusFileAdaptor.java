@@ -1306,7 +1306,7 @@ public abstract class GlobusFileAdaptor extends FileCpi {
      * @return 1 if dir, 0 if not, -1 if unknown
      */
     private synchronized static int isDir(URI location) {
-        Integer val = (Integer) isDirCache.get(location);
+        Integer val = isDirCache.get(location);
         if (val == null)
             return -1;
 

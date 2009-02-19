@@ -87,7 +87,7 @@ public class SecurityContextUtils {
         }
 
         for (int i = 0; i < l.size(); i++) {
-            SecurityContext c = (SecurityContext) l.get(i);
+            SecurityContext c = l.get(i);
 
             if (c.isValidFor(adaptorName, host, port)) {
                 result.add(c);
@@ -136,7 +136,7 @@ public class SecurityContextUtils {
         if (l != null) {
             // ok, we found a valid certificate context in the list
             for (int i = 0; i < l.size(); i++) {
-                SecurityContext c = (SecurityContext) l.get(i);
+                SecurityContext c = l.get(i);
                 Object userData = c.getDataObject(dataObjectKey);
 
                 if (userData != null) {

@@ -237,7 +237,7 @@ public class MonitorConsumer extends Thread {
     @SuppressWarnings("unused")
 	private void commandCallback(int commandId, int status, int dataId) {
         Integer id = new Integer(commandId);
-        CommandResult res = (CommandResult) pendingCommands.get(id);
+        CommandResult res = pendingCommands.get(id);
 
         if (res != null) {
             pendingCommands.remove(id);
@@ -314,7 +314,7 @@ public class MonitorConsumer extends Thread {
             Iterator<MetricListener> i = metricListeners.iterator();
 
             while (i.hasNext()) {
-                MetricListener l = (MetricListener) i.next();
+                MetricListener l = i.next();
                 l.processError(this, e);
             }
         }
@@ -377,7 +377,7 @@ public class MonitorConsumer extends Thread {
             throws UnknownMetricException {
         /* First try to get the definition from our cache */
         Integer key = new Integer(metricId);
-        MetricDefinition result = (MetricDefinition) defCache.get(key);
+        MetricDefinition result = defCache.get(key);
 
         if (result != null) {
             return result;

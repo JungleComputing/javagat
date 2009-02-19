@@ -153,7 +153,7 @@ public abstract class SecurityContext implements Cloneable {
      * @return the note attached to this key
      */
     public final String getNoteValue(String key) {
-        return (String) this.notes.get(key);
+        return this.notes.get(key);
     }
 
     /**
@@ -175,7 +175,7 @@ public abstract class SecurityContext implements Cloneable {
 
         // check if the context is limited to a set of adaptors.
         boolean allowed = false;
-        String adaptorList = (String) notes.get("adaptors");
+        String adaptorList = notes.get("adaptors");
 
         if (adaptorList != null) {
             StringTokenizer tokens = new StringTokenizer(adaptorList, ",");
@@ -208,7 +208,7 @@ public abstract class SecurityContext implements Cloneable {
         // now check if this host is
         allowed = false;
 
-        String hostList = (String) notes.get("hosts");
+        String hostList = notes.get("hosts");
 
         if (hostList != null) {
             StringTokenizer tokens = new StringTokenizer(hostList, ",");

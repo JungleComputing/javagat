@@ -337,7 +337,7 @@ public class Buffer {
      */
     public long getUnsigned() {
         return ((long) getByte() << 24) + ((long) getByte() << 16)
-            + ((long) getByte() << 8) + (long) getByte();
+            + ((long) getByte() << 8) + getByte();
     }
 
     /**

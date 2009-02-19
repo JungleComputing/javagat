@@ -201,11 +201,10 @@ class LocalMetricListener implements hu.sztaki.lpds.monitor.MetricListener {
         int index = mma.monitorizedMetrics.indexOf(lookup);
 
         if (index > -1) {
-            MonitorizedMetric mm = (MonitorizedMetric) mma.monitorizedMetrics
-                    .get(index);
+            MonitorizedMetric mm = mma.monitorizedMetrics.get(index);
 
             for (int i = 0; i < mm.getListeners().size(); i++)
-                ((MetricListener) (mm.getListeners().get(i)))
+                (mm.getListeners().get(i))
                         .processMetricEvent(new MetricEvent("localhost", value
                                 .getValue(), mm.metric, value.getTimeStamp()
                                 .getTime()));
@@ -348,9 +347,9 @@ public class MercuryMonitorableAdaptor extends MonitorableCpi {
 
     public MonitorizedMetric lookupMonitorizedMetricByMetric(Metric metric) {
         for (int i = 0; i < monitorizedMetrics.size(); i++) {
-            if (((MonitorizedMetric) monitorizedMetrics.get(i)).getMetric()
+            if (monitorizedMetrics.get(i).getMetric()
                     .equals(metric)) {
-                return (MonitorizedMetric) monitorizedMetrics.get(i);
+                return monitorizedMetrics.get(i);
             }
         }
 
@@ -644,8 +643,7 @@ public class MercuryMonitorableAdaptor extends MonitorableCpi {
         for (int i = 0; i < no_responded; i++) {
             // look for result placed in the "results" HashMap by the listener
             // (indexed by result ID):
-            responses[i] = (hu.sztaki.lpds.monitor.MetricValue) results
-                    .get(responded[i]);
+            responses[i] = results.get(responded[i]);
 
             // System.err.println("crt_mv1 = " + crt_mv1);
             while (responses[i] == null) {
@@ -655,8 +653,7 @@ public class MercuryMonitorableAdaptor extends MonitorableCpi {
                     e.printStackTrace();
                 }
 
-                responses[i] = (hu.sztaki.lpds.monitor.MetricValue) results
-                        .get(responded[i]);
+                responses[i] = results.get(responded[i]);
 
                 // System.err.println("crt_mv1 = " + crt_mv1);
             }
@@ -754,7 +751,7 @@ public class MercuryMonitorableAdaptor extends MonitorableCpi {
 
         for (int i = 0; i < arg.size(); i++) {
             args[i] = new MonitorArg(
-                    (String) ((Map.Entry<String, Object>) entries[i]).getKey(),
+                    ((Map.Entry<String, Object>) entries[i]).getKey(),
                     ((Map.Entry<String, Object>) entries[i]).getValue());
         }
 
@@ -787,8 +784,7 @@ public class MercuryMonitorableAdaptor extends MonitorableCpi {
 
         // look for result placed in the "results" HashMap by the listener
         // (indexed by result ID):
-        hu.sztaki.lpds.monitor.MetricValue crt_mv1 = (hu.sztaki.lpds.monitor.MetricValue) results
-                .get(id);
+        hu.sztaki.lpds.monitor.MetricValue crt_mv1 = results.get(id);
 
         // System.err.println("crt_mv1 = " + crt_mv1);
         while (crt_mv1 == null) {
@@ -798,7 +794,7 @@ public class MercuryMonitorableAdaptor extends MonitorableCpi {
                 e.printStackTrace();
             }
 
-            crt_mv1 = (hu.sztaki.lpds.monitor.MetricValue) results.get(id);
+            crt_mv1 = results.get(id);
 
             // System.err.println("crt_mv1 = " + crt_mv1);
         }
@@ -817,7 +813,7 @@ public class MercuryMonitorableAdaptor extends MonitorableCpi {
 
         // return definition if already cached:
         if (definitions.containsKey(name)) {
-            return (MetricDefinition) definitions.get(name);
+            return definitions.get(name);
         }
 
         // ... or else produce it now, using a query of the standard

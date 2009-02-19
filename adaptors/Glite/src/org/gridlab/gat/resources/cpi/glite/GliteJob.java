@@ -542,7 +542,7 @@ public class GliteJob extends JobCpi {
         try {
             StringAndLongList sl = serviceStub.getOutputFileList(gliteJobID,
                     "gsiftp");
-            list = (StringAndLongType[]) sl.getFile();
+            list = sl.getFile();
         } catch (Exception e) {
             LOGGER
                     .error("Could not receive output due to security problems",

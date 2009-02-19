@@ -89,7 +89,7 @@ public class GenericAdvertServiceAdaptor extends AdvertServiceCpi {
         path = normalizePath(path);
         // load();
 
-        Entry entry = (Entry) database.get(path);
+        Entry entry = database.get(path);
 
         if (entry == null) {
             throw new NoSuchElementException("No such element: " + path);
@@ -157,8 +157,8 @@ public class GenericAdvertServiceAdaptor extends AdvertServiceCpi {
         Enumeration<Entry> data = database.elements();
 
         while (data.hasMoreElements()) {
-            Entry entry = (Entry) data.nextElement();
-            String key = (String) keys.nextElement();
+            Entry entry = data.nextElement();
+            String key = keys.nextElement();
             MetaData m = entry.metadata;
 
             if (m.match(query)) {
@@ -180,7 +180,7 @@ public class GenericAdvertServiceAdaptor extends AdvertServiceCpi {
 
         // load();
 
-        return ((Entry) database.get(path)).getMetaData();
+        return database.get(path).getMetaData();
     }
 
     /*

@@ -464,7 +464,7 @@ public class LocalFileAdaptor extends FileCpi {
             }
         }
 
-        return (String[]) l.toArray(new String[l.size()]);
+        return l.toArray(new String[l.size()]);
     }
 
     /*
@@ -484,7 +484,7 @@ public class LocalFileAdaptor extends FileCpi {
             }
         }
 
-        return (String[]) l.toArray(new String[l.size()]);
+        return l.toArray(new String[l.size()]);
     }
 
     /*
@@ -514,7 +514,7 @@ public class LocalFileAdaptor extends FileCpi {
         for (int i = 0; i < res.length; i++) {
             try {
                 res[i] = GAT.createFile(gatContext,
-                        localToURI(((File) l.get(i)).getPath()));
+                        localToURI(l.get(i).getPath()));
             } catch (Exception e) {
                 throw new GATInvocationException("default file", e);
             }
@@ -544,7 +544,7 @@ public class LocalFileAdaptor extends FileCpi {
         for (int i = 0; i < res.length; i++) {
             try {
                 res[i] = GAT.createFile(gatContext,
-                        localToURI(((File) l.get(i)).getPath()));
+                        localToURI(l.get(i).getPath()));
             } catch (Exception e) {
                 throw new GATInvocationException("default file", e);
             }
@@ -574,7 +574,7 @@ public class LocalFileAdaptor extends FileCpi {
         for (int i = 0; i < res.length; i++) {
             try {
                 res[i] = GAT.createFile(gatContext,
-                        localToURI(((File) l.get(i)).getPath()));
+                        localToURI(l.get(i).getPath()));
             } catch (Exception e) {
                 throw new GATInvocationException("default file", e);
             }

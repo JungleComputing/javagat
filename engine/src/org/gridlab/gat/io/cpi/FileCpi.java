@@ -409,7 +409,7 @@ public abstract class FileCpi extends MonitorableCpi implements FileInterface, j
             String[] res = new String[v.size()];
 
             for (int i = 0; i < res.length; i++) {
-                res[i] = (String) v.get(i);
+                res[i] = v.get(i);
             }
 
             return res;
@@ -442,7 +442,7 @@ public abstract class FileCpi extends MonitorableCpi implements FileInterface, j
             File[] res = new File[v.size()];
 
             for (int i = 0; i < res.length; i++) {
-                res[i] = (File) v.get(i);
+                res[i] = v.get(i);
             }
 
             return res;
@@ -476,7 +476,7 @@ public abstract class FileCpi extends MonitorableCpi implements FileInterface, j
             File[] res = new File[v.size()];
 
             for (int i = 0; i < res.length; i++) {
-                res[i] = (File) v.get(i);
+                res[i] = v.get(i);
             }
 
             return res;
@@ -698,7 +698,7 @@ public abstract class FileCpi extends MonitorableCpi implements FileInterface, j
             throw new GATInvocationException("file cpi", e);
         }
         // list all the files and copy recursively.
-        File[] files = (File[]) dir.listFiles();
+        File[] files = dir.listFiles();
         if (files == null) {
             if (logger.isDebugEnabled()) {
                 logger.debug("copyDirectory: no files in src directory: "
@@ -785,7 +785,7 @@ public abstract class FileCpi extends MonitorableCpi implements FileInterface, j
         }
 
         GATInvocationException exception = new GATInvocationException();
-        File[] files = (File[]) dir.listFiles();
+        File[] files = dir.listFiles();
         if (files != null) {
             for (int i = 0; i < files.length; i++) {
                 try {

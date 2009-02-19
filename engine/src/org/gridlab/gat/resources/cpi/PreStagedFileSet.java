@@ -92,8 +92,8 @@ public class PreStagedFileSet {
             Iterator<File> i = keys.iterator();
 
             while (i.hasNext()) {
-                File srcFile = (File) i.next();
-                File destFile = (File) pre.get(srcFile);
+                File srcFile = i.next();
+                File destFile = pre.get(srcFile);
                 tmp.add(new PreStagedFile(gatContext, srcFile, destFile, host,
                         sandbox, false, exe));
             }
@@ -121,7 +121,7 @@ public class PreStagedFileSet {
             }
         }
 
-        files = (PreStagedFile[]) tmp.toArray(new PreStagedFile[] {});
+        files = tmp.toArray(new PreStagedFile[] {});
     }
 
     protected void prestage() throws GATInvocationException {

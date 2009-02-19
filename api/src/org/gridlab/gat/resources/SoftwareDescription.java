@@ -249,7 +249,7 @@ public class SoftwareDescription implements java.io.Serializable {
         Set<String> s = attributes.keySet();
         Iterator<String> i = s.iterator();
         while (i.hasNext()) {
-            String key = (String) i.next();
+            String key = i.next();
             Object tmp = attributes.get(key);
             if (!(tmp instanceof String))
                 continue;
@@ -877,7 +877,7 @@ public class SoftwareDescription implements java.io.Serializable {
      * @return the int value of the attribute indicated by the <code>name</code>.
      */
     public int getIntAttribute(String name, int defaultVal) {
-        Object val = (Integer) attributes.get(name);
+        Object val = attributes.get(name);
         if (val == null)
             return defaultVal;
 

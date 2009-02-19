@@ -82,7 +82,7 @@ public class GATContext implements Cloneable, Serializable {
         Enumeration<SecurityContext> enumeration = securityContexts.elements();
 
         while (enumeration.hasMoreElements()) {
-            nextSecurityContext = (SecurityContext) enumeration.nextElement();
+            nextSecurityContext = enumeration.nextElement();
 
             if (type.equals(nextSecurityContext.getClass().getName())) {
                 typedSecurityContexts.add(nextSecurityContext);

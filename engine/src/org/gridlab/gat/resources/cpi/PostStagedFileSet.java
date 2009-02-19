@@ -85,8 +85,8 @@ public class PostStagedFileSet {
             Iterator<File> i = keys.iterator();
 
             while (i.hasNext()) {
-                File srcFile = (File) i.next();
-                File destFile = (File) post.get(srcFile);
+                File srcFile = i.next();
+                File destFile = post.get(srcFile);
 
                 tmp.add(new PostStagedFile(gatContext, srcFile, destFile, host,
                         sandbox, false, false));
@@ -140,7 +140,7 @@ public class PostStagedFileSet {
         // }
         // // }
 
-        files = (PostStagedFile[]) tmp.toArray(new PostStagedFile[] {});
+        files = tmp.toArray(new PostStagedFile[] {});
     }
 
     private void resolveFiles(List<File> f) throws GATInvocationException {
@@ -159,7 +159,7 @@ public class PostStagedFileSet {
             files = tmp;
         }
         for (int i = 0; i < f.size(); i++) {
-            File srcFile = (File) f.get(i);
+            File srcFile = f.get(i);
             files[startPos + i] = new PostStagedFile(gatContext, srcFile, null,
                     host, sandbox, false, false);
         }

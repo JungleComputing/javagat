@@ -137,7 +137,7 @@ public class WSGT4newResourceBrokerAdaptor extends ResourceBrokerCpi {
         Map<String, Object> env = sd.getEnvironment();
         if (env != null && !env.isEmpty()) {
             Set<String> s = env.keySet();
-            Object[] keys = (Object[]) s.toArray();
+            Object[] keys = s.toArray();
 
             for (int i = 0; i < keys.length; i++) {
                 String val = (String) env.get(keys[i]);
@@ -198,8 +198,8 @@ public class WSGT4newResourceBrokerAdaptor extends ResourceBrokerCpi {
                 Iterator<File> i = keys.iterator();
                 rsl += "<fileStageIn>";
                 while (i.hasNext()) {
-                    File srcFile = (File) i.next();
-                    File destFile = (File) preStaged.get(srcFile);
+                    File srcFile = i.next();
+                    File destFile = preStaged.get(srcFile);
                     if (destFile == null) {
                         logger
                                 .debug("ignoring prestaged file, no destination set!");
@@ -235,8 +235,8 @@ public class WSGT4newResourceBrokerAdaptor extends ResourceBrokerCpi {
                 Iterator<File> i = keys.iterator();
                 rsl += "<fileStageOut>";
                 while (i.hasNext()) {
-                    File srcFile = (File) i.next();
-                    File destFile = (File) postStaged.get(srcFile);
+                    File srcFile = i.next();
+                    File destFile = postStaged.get(srcFile);
                     if (destFile == null) {
                         logger
                                 .debug("ignoring poststaged file, no destination set!");

@@ -141,7 +141,7 @@ public class LDAPResourceFinder {
                 globalSearchControls);
 
         while (results.hasMore()) {
-            SearchResult result = (SearchResult) results.nextElement();
+            SearchResult result = results.nextElement();
             String wmsServer = getSafeStringAttr(result,
                     "GlueServiceAccessPointURL");
             LOGGER.info("Retrieved the following WMS server from LDAP: "
@@ -171,7 +171,7 @@ public class LDAPResourceFinder {
                 globalSearchControls);
 
         while (clusters.hasMore()) {
-            SearchResult result = (SearchResult) clusters.nextElement();
+            SearchResult result = clusters.nextElement();
             String ceURL = getSafeStringAttr(result, "GlueCEInfoContactString");
             LOGGER.info("Retrieved the following CE from LDAP: " + ceURL);
             if (ceURL != null)
@@ -199,7 +199,7 @@ public class LDAPResourceFinder {
         NamingEnumeration<SearchResult> searchResults = ctx.search(START_DN,
                 filter, globalSearchControls);
         while (searchResults.hasMore()) {
-            SearchResult result = (SearchResult) searchResults.nextElement();
+            SearchResult result = searchResults.nextElement();
             String endpoint = getSafeStringAttr(result, "GlueServiceEndpoint");
             results.add(endpoint);
             LOGGER.info("Retrieved the following LFC from LDAP: " + endpoint);
@@ -268,7 +268,7 @@ public class LDAPResourceFinder {
                 START_DN, filter, globalSearchControls);
 
         while (searchResults.hasMore()) {
-            final SearchResult result = (SearchResult) searchResults.nextElement();
+            final SearchResult result = searchResults.nextElement();
             String pathName = result.getName();
             String seUniqueId = null;
             int pos = pathName.indexOf("GlueSEUniqueID");

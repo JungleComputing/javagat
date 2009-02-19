@@ -122,14 +122,14 @@ class NestedException extends Exception {
         	
         	throwables.get(i).printStackTrace();
         	
-            String msg = ((Throwable) throwables.get(i)).getMessage();
+            String msg = throwables.get(i).getMessage();
 
             if (msg == null) {
                 if (throwables.get(i) instanceof NestedException) {
                     msg = ((NestedException) throwables.get(i)).toString(indent
                             + "    ");
                 } else {
-                    msg = ((Throwable) throwables.get(i)).toString();
+                    msg = throwables.get(i).toString();
                 }
             }
             res += indent + "*** ";

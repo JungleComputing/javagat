@@ -56,7 +56,7 @@ public abstract class MonitorableCpi implements Monitorable {
         boolean found = false;
 
         for (int i = 0; i < metricTable.size(); i++) {
-            MetricNode n = (MetricNode) metricTable.get(i);
+            MetricNode n = metricTable.get(i);
 
             if (n.definition.equals(metric.getDefinition())) {
                 found = true;
@@ -121,7 +121,7 @@ public abstract class MonitorableCpi implements Monitorable {
     public MetricDefinition getMetricDefinitionByName(String name)
             throws GATInvocationException {
         for (int i = 0; i < metricTable.size(); i++) {
-            MetricNode n = (MetricNode) metricTable.get(i);
+            MetricNode n = metricTable.get(i);
             if (name.equals(n.definition.getMetricName())) {
                 return n.definition;
             }
@@ -134,7 +134,7 @@ public abstract class MonitorableCpi implements Monitorable {
     public void fireMetric(MetricEvent v) {
         // look for all callbacks that were installed for this metric, call
         // them.
-        MetricListenerNode[] listenerNodes = (MetricListenerNode[]) metricListeners
+        MetricListenerNode[] listenerNodes = metricListeners
                 .toArray(new MetricListenerNode[metricListeners.size()]);
 
         for (int i = 0; i < listenerNodes.length; i++) {
