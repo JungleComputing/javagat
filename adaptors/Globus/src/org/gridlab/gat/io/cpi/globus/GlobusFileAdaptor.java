@@ -565,16 +565,12 @@ public abstract class GlobusFileAdaptor extends FileCpi {
         if (getPath() != null) {
             Vector<FileInfo> list = null;
             try {
-                // if (isOldServer(gatContext.getPreferences())) {
-                //     list = listNoMinusD(client, getPath());
-                // } else {
-                //     list = client.list(getPath());
-                // }
-                // list = client.list(getPath()); // this one gives issues on some
+                client.changeDir(getPath());
+                // list = client.list(); // this one gives issues on some
                 // gridftp servers (some used by the d-grid project)
-                // list = client.nlist(getPath()); // this one is not guaranteed to be
+                // list = client.nlist(); // this one is not guaranteed to be
                 // implemented by the gridftp server.
-                list = listNoMinusD(client, getPath());
+                list = listNoMinusD(client, null);
             } catch (ServerException e) {
                 destroyClient(client, toURI(), gatContext.getPreferences());
                 throw new GATInvocationException("Generic globus file adaptor",
@@ -1217,7 +1213,7 @@ public abstract class GlobusFileAdaptor extends FileCpi {
             };
         };
 
-        c.list(filter, "", sink);
+        c.list(filter, "",  sink);
 
         // transfer done. Data is in received stream.
         // convert it to a vector.
