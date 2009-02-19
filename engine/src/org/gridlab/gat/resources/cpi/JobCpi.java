@@ -190,7 +190,7 @@ public abstract class JobCpi extends MonitorableCpi implements Job {
      * @see org.gridlab.gat.advert.Advertisable#marshal()
      */
     public String marshal() {
-        throw new Error(
+        throw new UnsupportedOperationException(
                 "marshalling of this object is not supported by this adaptor");
     }
 

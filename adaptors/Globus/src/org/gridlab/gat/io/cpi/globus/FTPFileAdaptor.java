@@ -99,9 +99,9 @@ public class FTPFileAdaptor extends GlobusFileAdaptor {
             if (isPassive(gatContext.getPreferences())) {
                 setChannelOptions(client);
             }
-
+            
             return client;
-        } catch (Exception e) {
+        } catch (Throwable e) {
             if (e instanceof ServerException) {
                 if (((ServerException) e).getCode() == ServerException.SERVER_REFUSED) {
                     if (e

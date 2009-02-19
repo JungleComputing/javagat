@@ -67,6 +67,9 @@ public abstract class GlobusFileAdaptor extends FileCpi {
         return capabilities;
     }
 
+    // Unfortunately, FTPClient.exists() does not give a reliable answer, depending on
+    // the FTP server used. So, we cannot use it.
+    
     protected static Logger logger = LoggerFactory.getLogger(GlobusFileAdaptor.class);
 
     static final int DEFAULT_GRIDFTP_PORT = 2811;
@@ -470,10 +473,12 @@ public abstract class GlobusFileAdaptor extends FileCpi {
 
         try {
             client = createClient(toURI());
-            if (! client.exists(getPath())) {
+            return client.getLastModified(getPath()).getTime();
+        } catch(ServerException e) {
+            if (e.getCode() == ServerException.SERVER_REFUSED) {
                 return 0L;
             }
-            return client.getLastModified(getPath()).getTime();
+            throw new GATInvocationException("gridftp", e);
         } catch (Exception e) {
             throw new GATInvocationException("gridftp", e);
         } finally {
@@ -488,10 +493,6 @@ public abstract class GlobusFileAdaptor extends FileCpi {
         try {
             String remotePath = getPath();
             client = createClient(toURI());
-
-            if (!client.exists(remotePath)) {
-                return false;
-            }
 
             if (isDirectory()) {
                 client.deleteDir(remotePath);
@@ -771,10 +772,7 @@ public abstract class GlobusFileAdaptor extends FileCpi {
             }
 
             client = createClient(toURI());
-
-            if (! client.exists(remotePath)) {
-                throw new FileNotFoundException("File not found: " + location);
-            }
+            
             if (logger.isDebugEnabled()) {
                 logger.debug("getINFO: client created");
             }
@@ -1066,7 +1064,13 @@ public abstract class GlobusFileAdaptor extends FileCpi {
             if (logger.isDebugEnabled()) {
                 logger.debug("getINFO: client created");
             }
-            return client.exists(remotePath);
+            client.getLastModified(remotePath);
+            return true;
+        } catch(ServerException e) {
+            if (e.getCode() == ServerException.SERVER_REFUSED) {
+                return false;
+            }
+            throw new GATInvocationException("globus", e);
         } catch (Exception e) {
             throw new GATInvocationException("globus", e);
         } finally {

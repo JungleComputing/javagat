@@ -16,7 +16,7 @@ public class InvalidUsernameOrPasswordException extends GATInvocationException {
         super(s);
     }
 
-    public InvalidUsernameOrPasswordException(Exception e) {
+    public InvalidUsernameOrPasswordException(Throwable e) {
         super(e.getMessage());
     }
 }
