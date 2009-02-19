@@ -768,7 +768,7 @@ public class ProActiveJob extends JobCpi {
             throws GATInvocationException {
         infoMap.put("state", state);
         if (jobID != null) {
-            infoMap.put("id", jobID);
+            infoMap.put("adaptor.job.id", jobID);
         }
         if (postStageException != null) {
             infoMap.put("postStageError", postStageException);

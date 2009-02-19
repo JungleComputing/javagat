@@ -5,6 +5,7 @@ package org.gridlab.gat.resources.cpi.localQ;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -46,6 +47,8 @@ public class LocalQJob extends JobCpi implements Runnable,
     private boolean stopped = false;
 
     private Process p = null;
+    
+    private String processID = "";
 
     LocalQJob(GATContext gatContext, LocalQResourceBrokerAdaptor broker,
             JobDescription description, Sandbox sandbox) {
@@ -88,6 +91,7 @@ public class LocalQJob extends JobCpi implements Runnable,
         if (state == JobState.INITIAL || state == JobState.UNKNOWN) {
             m.put("submissiontime", null);
         } else {
+            m.put("adaptor.job.id", processID);
             m.put("submissiontime", submissiontime);
         }
         if (state == JobState.INITIAL || state == JobState.UNKNOWN
@@ -231,6 +235,16 @@ public class LocalQJob extends JobCpi implements Runnable,
 
                 return;
             }
+        }
+        Field f = null;
+        try {
+            f = p.getClass().getDeclaredField("pid");
+            f.setAccessible(true);
+            processID = f.get(p).toString(); // toString
+            // ignore exceptions // necessary?
+        } catch (SecurityException e) {
+        } catch (NoSuchFieldException e) {
+        } catch (IllegalAccessException e) {
         }
 
         org.gridlab.gat.io.File stdin = sandbox.getResolvedStdin();

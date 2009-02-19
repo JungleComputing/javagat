@@ -424,7 +424,7 @@ public class GliteJob extends JobCpi {
         map.put("state", this.state);
         map.put("glite.state", this.gLiteState);
         map.put("jobID", jobID);
-        map.put("glite.jobID", gliteJobID);
+        map.put("adaptor.job.id", gliteJobID);
         map.put("submissiontime", submissiontime);
         map.put("starttime", starttime);
         map.put("stoptime", stoptime);

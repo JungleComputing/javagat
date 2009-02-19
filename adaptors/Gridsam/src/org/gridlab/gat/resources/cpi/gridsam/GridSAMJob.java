@@ -270,6 +270,8 @@ public class GridSAMJob extends JobCpi {
         if (exitVal != -1) {
             m.put("exitvalue", exitVal);
         }
+        
+        m.put("adaptor.job.id", jobID);
 
         m.put("resourcebroker", "GridSAM");
 

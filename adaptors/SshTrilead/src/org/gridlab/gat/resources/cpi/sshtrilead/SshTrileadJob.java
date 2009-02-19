@@ -81,7 +81,8 @@ public class SshTrileadJob extends JobCpi {
         if (state == JobState.INITIAL || state == JobState.UNKNOWN) {
             m.put("submissiontime", null);
         } else {
-            m.put("id", jobID);
+            // Only the GAT job id is available.
+            m.put("adaptor.job.id", "" + jobID);
             m.put("submissiontime", submissiontime);
         }
         if (state == JobState.INITIAL || state == JobState.UNKNOWN

@@ -481,7 +481,7 @@ public class ZorillaJob extends JobCpi {
         if (state == JobState.INITIAL || state == JobState.UNKNOWN) {
             result.put("submissiontime", null);
         } else {
-            result.put("id", jobID);
+            result.put("adaptor.job.id", jobID);
             result.put("submissiontime", submissiontime);
         }
         if (state == JobState.INITIAL || state == JobState.UNKNOWN

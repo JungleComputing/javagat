@@ -5,6 +5,7 @@ package org.gridlab.gat.resources.cpi.commandlineSsh;
 
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -29,9 +30,9 @@ public class CommandlineSshJob extends JobCpi {
 
     JobDescription description;
 
-    int jobID;
-
     Process p;
+    
+    String processID = "";
 
     int exitStatus = 0;
 
@@ -53,6 +54,16 @@ public class CommandlineSshJob extends JobCpi {
 
     protected void setProcess(Process p) {
         this.p = p;
+        Field f = null;
+        try {
+            f = p.getClass().getDeclaredField("pid");
+            f.setAccessible(true);
+            processID = f.get(p).toString(); // toString
+            // ignore exceptions // necessary?
+        } catch (SecurityException e) {
+        } catch (NoSuchFieldException e) {
+        } catch (IllegalAccessException e) {
+        }
     }
 
     protected synchronized void setState(JobState state) {
@@ -61,6 +72,8 @@ public class CommandlineSshJob extends JobCpi {
                 .currentTimeMillis());
         fireMetric(v);
     }
+    
+    
 
     /*
      * (non-Javadoc)
@@ -79,7 +92,9 @@ public class CommandlineSshJob extends JobCpi {
         if (state == JobState.INITIAL || state == JobState.UNKNOWN) {
             m.put("submissiontime", null);
         } else {
-            m.put("id", jobID);
+            // This is actually the job ID of the ssh process, not the ID of the
+            // remote process.
+            m.put("adaptor.job.id", processID);
             m.put("submissiontime", submissiontime);
         }
         if (state == JobState.INITIAL || state == JobState.UNKNOWN
