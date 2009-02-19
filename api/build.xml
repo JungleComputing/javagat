@@ -16,7 +16,7 @@
         <mkdir dir="${lib}" />
 
         <!-- Compile the java code from ${src} into ${tmp} -->
-        <javac source="1.5" srcdir="${src}" destdir="${tmp}" debug="on" />
+        <javac source="1.5" target="1.5" srcdir="${src}" destdir="${tmp}" debug="on" />
 
         <!-- Put everything in ${tmp} into the GAT.jar file -->
         <jar jarfile="${lib}/GAT-API.jar" basedir="${tmp}" />
