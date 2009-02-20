@@ -46,7 +46,7 @@ public class LDAPResourceFinder {
     private final DirContext ctx;
 
     private final SearchControls globalSearchControls;
-    
+
     private final String preferredSEID;
 
     /**
@@ -61,9 +61,10 @@ public class LDAPResourceFinder {
      */
     public LDAPResourceFinder(GATContext gatContext, URI ldapResource)
             throws NamingException {
-    	
-    	this.preferredSEID = (String) gatContext.getPreferences().get(GliteConstants.PREFERENCE_PREFERRED_SE_ID);
-    	
+
+        this.preferredSEID = (String) gatContext.getPreferences().get(
+                GliteConstants.PREFERENCE_PREFERRED_SE_ID);
+
         String ldapContact;
         if (ldapResource == null) {
             ldapContact = (String) gatContext.getPreferences().get(
@@ -249,8 +250,8 @@ public class LDAPResourceFinder {
     }
 
     /**
-     * Retrieve a list of SEs for the given VO that have 
-     * a minimal free space.
+     * Retrieve a list of SEs for the given VO that have a minimal free space.
+     * 
      * @param voName
      *            name of the VO. Must not be null.
      * @param fileSize
@@ -259,7 +260,8 @@ public class LDAPResourceFinder {
      * @throws NamingException
      *             if an LDAP error occurs.
      */
-    public List<SEInfo> fetchSEs(final String voName,final long fileSize) throws NamingException {
+    public List<SEInfo> fetchSEs(final String voName, final long fileSize)
+            throws NamingException {
         ArrayList<SEInfo> results = new ArrayList<SEInfo>();
 
         final String filter = "(&(objectClass~=GlueSA)(GlueSALocalID=" + voName
@@ -290,10 +292,15 @@ public class LDAPResourceFinder {
                     "GlueSAStateAvailableSpace");
 
             if (seUniqueId != null) {
-                LOGGER.info("Got SE: " + seUniqueId + " with path " + path
-                        + " and space " + space);
-                if(seUniqueId.equals(preferredSEID) && Long.parseLong(space) > fileSize){
-                	results.add(new SEInfo(seUniqueId, path, space));
+                boolean valid;
+                valid = Long.parseLong(space) > fileSize;
+                if (preferredSEID != null) {
+                    valid &= seUniqueId.equals(preferredSEID);
+                }
+                LOGGER.debug("Found SE: " + seUniqueId + " with path " + path
+                        + " and space " + space+" Valid: "+valid);
+                if (valid) {
+                    results.add(new SEInfo(seUniqueId, path, space));
                 }
             }
         }
