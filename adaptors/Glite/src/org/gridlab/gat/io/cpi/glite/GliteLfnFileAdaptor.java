@@ -89,7 +89,7 @@ public class GliteLfnFileAdaptor extends FileCpi {
 
     private void initLfcConnector(String server, int port) throws GATObjectCreationException {
         if (lfcConnector == null) {
-            lfcConnector = new LfcConnector(server, port, vo);
+            lfcConnector = new LfcConnector(server, port, vo, GliteSecurityUtils.getProxyPath(gatContext));
         }
     }
 

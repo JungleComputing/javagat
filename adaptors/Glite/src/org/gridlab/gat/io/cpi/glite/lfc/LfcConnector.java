@@ -28,6 +28,7 @@ public class LfcConnector {
     private final String vo;
     private final String server;
     private final int port;
+    private final String proxyPath;
 
     /**
      * Create a new LfcConector
@@ -39,10 +40,11 @@ public class LfcConnector {
      * @param vo
      *            VO of this server
      */
-    public LfcConnector(String server, int port, String vo) {
+    public LfcConnector(String server, int port, String vo, String proxyPath) {
         this.server = server;
         this.port = port;
         this.vo = vo;
+        this.proxyPath = proxyPath;
     }
 
     /**
@@ -58,7 +60,7 @@ public class LfcConnector {
      *             if anything goes wrong
      */
     public Collection<LFCReplica> listReplicas(String path, String guid) throws IOException {
-        LfcConnection connection = new LfcConnection(server, port);
+        LfcConnection connection = new LfcConnection(server, port,proxyPath);
         return connection.listReplica(path, guid);
     }
     
@@ -72,7 +74,7 @@ public class LfcConnector {
      *             if anything goes wrong
      */
     public boolean isDirectory(String path) throws IOException {
-        LFCFile file = new LfcConnection(server, port).lstat(path);
+        LFCFile file = new LfcConnection(server, port, proxyPath).lstat(path);
         return file.isDirectory();
     }
     
@@ -86,7 +88,7 @@ public class LfcConnector {
      *             if anything goes wrong
      */
     public boolean isFile(String path) throws IOException {
-        LFCFile file = new LfcConnection(server, port).lstat(path);
+        LFCFile file = new LfcConnection(server, port, proxyPath).lstat(path);
         return file.isFile();
     }
     
@@ -98,7 +100,7 @@ public class LfcConnector {
      */
     public boolean canRead(String path) throws IOException {
     	try {
-			new LfcConnection(server, port).access(path, AccessType.READ_OK);
+			new LfcConnection(server, port, proxyPath).access(path, AccessType.READ_OK);
 		} catch (IOException e) {
 			if(e instanceof ReceiveException){
 				if(((ReceiveException)e).getError() == 13){ //Permission denied
@@ -118,7 +120,7 @@ public class LfcConnector {
      */
     public boolean canWrite(String path) throws IOException {
     	try {
-			new LfcConnection(server, port).access(path, AccessType.WRITE_OK);
+			new LfcConnection(server, port, proxyPath).access(path, AccessType.WRITE_OK);
 		} catch (IOException e) {
 			if(e instanceof ReceiveException){
 				if(((ReceiveException)e).getError() == 13){ //Permission denied
@@ -138,7 +140,7 @@ public class LfcConnector {
      */
     public boolean exist(String path) throws IOException {
     	try {
-			new LfcConnection(server, port).access(path, AccessType.EXIST_OK);
+			new LfcConnection(server, port, proxyPath).access(path, AccessType.EXIST_OK);
 		} catch (IOException e) {
 			if(e instanceof ReceiveException){
 				if(((ReceiveException)e).getError() == 2){ //No such file or directory
@@ -157,7 +159,7 @@ public class LfcConnector {
      * @throws IOException	If anything goes wrong
      */
     public long lastModified(String path) throws IOException {
-    	LFCFile file = new LfcConnection(server, port).lstat(path);
+    	LFCFile file = new LfcConnection(server, port, proxyPath).lstat(path);
     	return file.getMDate().getTime();
 	}
     
@@ -168,7 +170,7 @@ public class LfcConnector {
      * @throws IOException	If anything goes wrong
      */
     public long length(String path) throws IOException {
-    	LFCFile file = new LfcConnection(server, port).lstat(path);
+    	LFCFile file = new LfcConnection(server, port, proxyPath).lstat(path);
     	return file.getFileSize();
 	}
     
@@ -183,12 +185,12 @@ public class LfcConnector {
      *             if anything goes wrong
      */
     public Collection<LFCFile> list(String path) throws IOException {
-        LFCFile file = new LfcConnection(server, port).lstat(path);
+        LFCFile file = new LfcConnection(server, port, proxyPath).lstat(path);
         if(!file.isDirectory()){
         	return null;
         }
         
-        LfcConnection lfcConnection = new LfcConnection(server, port);
+        LfcConnection lfcConnection = new LfcConnection(server, port, proxyPath);
         long fileID = lfcConnection.opendir(path,null);
         Collection<LFCFile> files = lfcConnection.readdir(fileID);
         lfcConnection.closedir();
@@ -202,7 +204,7 @@ public class LfcConnector {
      * @throws IOException	if anything goes wrong
      */
     public void mkdir(String path) throws IOException {
-        new LfcConnection(server, port).mkdir(path, UUID.randomUUID().toString());
+        new LfcConnection(server, port, proxyPath).mkdir(path, UUID.randomUUID().toString());
     }
     
     /**
@@ -213,16 +215,16 @@ public class LfcConnector {
      * @throws IOException	if anything goes wrong
      */
     public boolean deletepath(String path) throws IOException {
-    	if(new LfcConnection(server,port).lstat(path).isDirectory()){
-    		if(new LfcConnection(server, port).delete(path) == 0){
+    	if(new LfcConnection(server,port, proxyPath).lstat(path).isDirectory()){
+    		if(new LfcConnection(server, port, proxyPath).delete(path) == 0){
         		return true;
         	}
     	}else{
-	    	Collection<LFCReplica> replicas = new LfcConnection(server, port).listReplica(path, null);
-	        final SrmConnector connector = new SrmConnector();
+	    	Collection<LFCReplica> replicas = new LfcConnection(server, port, proxyPath).listReplica(path, null);
+	        final SrmConnector connector = new SrmConnector(proxyPath);
 	        for (LFCReplica replica : replicas) {
 	            LOGGER.info("Deleting Replica: " + replica.getSfn());
-	            new LfcConnection(server, port).delReplica(replica.getGuid(), replica.getSfn());
+	            new LfcConnection(server, port, proxyPath).delReplica(replica.getGuid(), replica.getSfn());
 	            try {
 	                connector.delete(new URI(replica.getSfn()));
 	            } catch (URISyntaxException e) {
@@ -231,7 +233,7 @@ public class LfcConnector {
 	                LOGGER.warn("Failed to delete Replica " + replica.getSfn(),e);
 	            }
 	            LOGGER.info("Deleting path: " +path);
-		        if(!new LfcConnection(server, port).delFiles(replica.getGuid(), false)){
+		        if(!new LfcConnection(server, port, proxyPath).delFiles(replica.getGuid(), false)){
 		        	return false;
 		        }
 	        }
@@ -250,11 +252,11 @@ public class LfcConnector {
      *             if anything goes wrong
      */
     public boolean delete(String guid) throws IOException {
-        Collection<LFCReplica> replicas = new LfcConnection(server, port).listReplica(null, guid);
-        final SrmConnector connector = new SrmConnector();
+        Collection<LFCReplica> replicas = new LfcConnection(server, port, proxyPath).listReplica(null, guid);
+        final SrmConnector connector = new SrmConnector(proxyPath);
         for (LFCReplica replica : replicas) {
             LOGGER.info("Deleting Replica: " + replica.getSfn());
-            new LfcConnection(server, port).delReplica(guid, replica.getSfn());
+            new LfcConnection(server, port, proxyPath).delReplica(guid, replica.getSfn());
             try {
                 connector.delete(new URI(replica.getSfn()));
             } catch (URISyntaxException e) {
@@ -264,7 +266,7 @@ public class LfcConnector {
             }
         }
         LOGGER.info("Deleting GUID: " + guid);
-        return new LfcConnection(server, port).delFiles(guid, false);
+        return new LfcConnection(server, port, proxyPath).delFiles(guid, false);
     }
 
     /**
@@ -278,7 +280,7 @@ public class LfcConnector {
         String guid = UUID.randomUUID().toString();
         String parent = "/grid/" + vo + "/generated/" + dateAsPath();
         try {
-            new LfcConnection(server, port).mkdir(parent, UUID.randomUUID()
+            new LfcConnection(server, port, proxyPath).mkdir(parent, UUID.randomUUID()
                     .toString());
         } catch (IOException e) {
             LOGGER.debug("Creating parent", e);
@@ -307,7 +309,7 @@ public class LfcConnector {
         String guid = UUID.randomUUID().toString();
         String path = location.getPath();
         LOGGER.info("Creating " + guid + " with path " + path);
-        new LfcConnection(server, port).creat(path, guid);
+        new LfcConnection(server, port, proxyPath).creat(path, guid);
         return guid;
     }
 
@@ -330,7 +332,7 @@ public class LfcConnector {
     }
 
     public void addReplica(String guid, URI target) throws IOException {
-        new LfcConnection(server, port).addReplica(guid, target.toJavaURI());
+        new LfcConnection(server, port, proxyPath).addReplica(guid, target.toJavaURI());
     }
 
 }

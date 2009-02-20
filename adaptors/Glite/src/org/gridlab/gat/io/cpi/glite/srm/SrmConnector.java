@@ -15,10 +15,12 @@ public class SrmConnector {
 
     private final Map<URI, SrmConnection> activeUploads = new TreeMap<URI, SrmConnection>();
 
+    private final String proxyPath;
     /**
      * Default constructor.
      */
-    public SrmConnector() {
+    public SrmConnector(final String proxyPath) {
+    	this.proxyPath = proxyPath;
     }
 
     /**
@@ -31,7 +33,7 @@ public class SrmConnector {
      *             if no TURL can be created.
      */
     public String getTURLForFileDownload(URI srmURI) throws IOException {
-        SrmConnection connection = new SrmConnection(srmURI.getHost());
+        SrmConnection connection = new SrmConnection(srmURI.getHost(), proxyPath);
         return connection.getTURLForFileDownload(srmURI.toString());
     }
 
@@ -49,7 +51,7 @@ public class SrmConnector {
      *             if no TURL can be created.
      */
     public String getTURLForFileUpload(URI source, URI dest) throws IOException {
-        SrmConnection connection = new SrmConnection(dest.getHost());
+        SrmConnection connection = new SrmConnection(dest.getHost(), proxyPath);
         activeUploads.put(dest, connection);
         return connection.getTURLForFileUpload(source.getPath(),
                 dest.toString()).toString();
@@ -82,7 +84,7 @@ public class SrmConnector {
      *             if the file cannot be deleted (e.g. it does not exist).
      */
     public void delete(URI srmURI) throws IOException {
-        SrmConnection connection = new SrmConnection(srmURI.getHost());
+        SrmConnection connection = new SrmConnection(srmURI.getHost(), proxyPath);
         connection.removeFile(srmURI.toString());
     }
 }

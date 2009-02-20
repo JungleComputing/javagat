@@ -39,11 +39,15 @@ public final class GliteSecurityUtils {
     /**
      * @return the file path for the gLite Proxy.
      */
-    public static String getProxyPath() {
-        CoGProperties properties = CoGProperties.getDefault();
-        String proxyFile = System.getenv("X509_USER_PROXY");
+    public static String getProxyPath(GATContext context) {
+    	String proxyFile = (String) context.getPreferences().get(GliteConstants.PREFERENCE_PROXY_PATH);
+    	
+    	if (proxyFile == null) {
+	        proxyFile = System.getenv("X509_USER_PROXY");
+    	}
 
         if (proxyFile == null) {
+        	CoGProperties properties = CoGProperties.getDefault();
             proxyFile = properties.getProxyFile();
         }
 
@@ -63,7 +67,7 @@ public final class GliteSecurityUtils {
      */
     public static synchronized String touchVomsProxy(GATContext context)
             throws GATInvocationException {
-        String proxyFile = GliteSecurityUtils.getProxyPath();
+        String proxyFile = GliteSecurityUtils.getProxyPath(context);
 
         Preferences prefs = context.getPreferences();
         String lifetimeStr = (String) prefs.get(GliteConstants.PREFERENCE_VOMS_LIFETIME);

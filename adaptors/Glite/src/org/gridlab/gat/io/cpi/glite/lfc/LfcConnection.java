@@ -21,7 +21,6 @@ import org.globus.gsi.gssapi.GSSConstants;
 import org.globus.gsi.gssapi.GlobusGSSCredentialImpl;
 import org.globus.gsi.gssapi.GlobusGSSManagerImpl;
 import org.gridforum.jgss.ExtendedGSSContext;
-import org.gridlab.gat.security.glite.GliteSecurityUtils;
 import org.ietf.jgss.GSSCredential;
 import org.ietf.jgss.GSSException;
 import org.ietf.jgss.GSSManager;
@@ -183,9 +182,8 @@ public class LfcConnection {
 
     private final GSSCredential gssCredential;
 
-    public LfcConnection(String host, int port) throws IOException {
+    public LfcConnection(String host, int port, final String proxyPath) throws IOException {
         try {
-            final String proxyPath = GliteSecurityUtils.getProxyPath();
             LOGGER.debug("Proxy is " + proxyPath);
             GlobusCredential credential = new GlobusCredential(proxyPath);
             gssCredential = new GlobusGSSCredentialImpl(credential, 0);

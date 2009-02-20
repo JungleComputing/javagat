@@ -44,12 +44,14 @@ public class GliteSrmFileAdaptor extends FileCpi {
 
     private final boolean localFile;
 
-    private final SrmConnector connector = new SrmConnector();
+    private final SrmConnector connector;
 
     public GliteSrmFileAdaptor(GATContext gatCtx, URI location)
             throws GATObjectCreationException {
         super(gatCtx, location);
-
+        
+        this.connector = new SrmConnector(GliteSecurityUtils.getProxyPath(gatContext));
+        
         if (location.isCompatible("file") && location.refersToLocalHost()) {
             localFile = true;
         } else {

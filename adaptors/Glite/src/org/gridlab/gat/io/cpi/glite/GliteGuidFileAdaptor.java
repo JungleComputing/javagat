@@ -82,7 +82,7 @@ public class GliteGuidFileAdaptor extends FileCpi {
             String portStr = (String) gatContext.getPreferences().get(
                     GliteConstants.PREFERENCE_LFC_SERVER_PORT, "5010");
             int port = Integer.parseInt(portStr);
-            lfcConnector = new LfcConnector(server, port, vo);
+            lfcConnector = new LfcConnector(server, port, vo, GliteSecurityUtils.getProxyPath(gatContext));
         }
     }
 

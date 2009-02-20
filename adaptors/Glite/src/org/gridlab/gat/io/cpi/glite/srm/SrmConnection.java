@@ -48,7 +48,6 @@ import org.globus.axis.util.Util;
 import org.globus.gsi.GlobusCredential;
 import org.globus.gsi.GlobusCredentialException;
 import org.globus.gsi.gssapi.GlobusGSSCredentialImpl;
-import org.gridlab.gat.security.glite.GliteSecurityUtils;
 import org.ietf.jgss.GSSCredential;
 import org.ietf.jgss.GSSException;
 
@@ -75,7 +74,7 @@ public class SrmConnection {
      * @throws IOException
      *             if the connection fails.
      */
-    public SrmConnection(String host) throws IOException {
+    public SrmConnection(String host, final String proxyPath) throws IOException {
         // Set provider
         LOGGER.debug("Registering httpg transport");
         SimpleProvider provider = new SimpleProvider();
@@ -107,7 +106,6 @@ public class SrmConnection {
             this.service = locator.getsrm(new URL(wsEndpoint.toString()));
 
             LOGGER.info("Delegating proxy credentials");
-            final String proxyPath = GliteSecurityUtils.getProxyPath();
             GlobusCredential credential = new GlobusCredential(proxyPath);
             GSSCredential gssCredential = new GlobusGSSCredentialImpl(
                     credential, 0);

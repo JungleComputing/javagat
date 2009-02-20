@@ -25,6 +25,7 @@ public final class GliteConstants {
     public static final String PREFERENCE_POLL_INTERVAL_SECS = "glite.pollIntervalSecs";
     public static final String PREFERENCE_VOMS_LIFETIME = "vomsLifetime";
     public static final String PREFERENCE_VOMS_CREATE_NEW_PROXY = "glite.proxycreation";
+    public static final String PREFERENCE_PROXY_PATH = "glite.vomsproxypath";
     public static final String PREFERENCE_DELETE_JDL = "glite.deleteJDL";
     public static final String PREFERENCE_JOB_STOP_POSTSTAGE = "job.stop.poststage";
     public static final String PREFERENCE_JOB_STOP_ON_EXIT = "job.stop.on.exit";
