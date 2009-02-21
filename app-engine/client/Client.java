@@ -25,9 +25,38 @@ public class Client {
 		/* Setting up a new connection. */
 		String protocol = "http://";
 		URL url = new URL(protocol.concat(uri));
-		URLConnection urlc = url.openConnection();
+		//URLConnection urlc = url.openConnection();
+		HttpURLConnection httpc = (HttpURLConnection) url.openConnection();
 		
-		/* TODO: finish */
+	    DataInputStream is = new DataInputStream(new FileInputStream("E:/Documents/Documents/Eclipse/workspace/app-engine/app-engine/client/appengine.gif"));;
+	    byte[] b = new byte[7000];
+	    int size = 0;
+	    
+	    try {
+	    	size = is.read(b);
+	        System.out.println("Bytes read: " + size);
+		} 
+	    catch (EOFException eof) {
+			System.out.println("EOF reached."); 
+		}
+		catch (IOException ioe) {
+			System.out.println("IO error: " + ioe);
+		}
+		
+		httpc.setRequestMethod("POST");
+		httpc.setDoInput(true);
+		httpc.setDoOutput(true);
+		httpc.connect();
+		DataOutputStream out = new DataOutputStream(httpc.getOutputStream());
+		
+		try {
+			out.write(b, 0, size);
+			out.flush();
+			out.close();
+		}
+		catch (IOException ioe) {
+			System.out.println("IO error: " + ioe);
+		}
 	}
 	
 	/**
@@ -165,14 +194,14 @@ public class Client {
 	public static void main(String argv[]) throws Exception {
 		/* Making a standard connection in HTTP(S). */
 		String uri = "bbn230.appspot.com/helloworld/";
-		makeHttpConnection(uri);
-		makeHttpsConnection(uri);
+		//makeHttpConnection(uri);
+		//makeHttpsConnection(uri);
 		
 		/* Making a connection using POST forms in HTTP(S). */
 		uri = "bbn230.appspot.com/forms/sign";
-		makeHttpPost(uri);
-		uri = "bbn230.appspot.com/binary/";
-		//makeHttpBinaryPost(uri);
+		//makeHttpPost(uri);
+		uri = "bbn230.appspot.com/binary/get";
+		makeHttpBinaryPost(uri);
 		
 		/* Making a connection using cookes. */
 		uri = "bbn230.appspot.com/cookies/";
