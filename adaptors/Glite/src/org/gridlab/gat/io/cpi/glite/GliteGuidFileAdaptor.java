@@ -8,8 +8,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-import javax.naming.NamingException;
-
 import org.gridlab.gat.AdaptorNotApplicableException;
 import org.gridlab.gat.GAT;
 import org.gridlab.gat.GATContext;
@@ -19,6 +17,7 @@ import org.gridlab.gat.Preferences;
 import org.gridlab.gat.URI;
 import org.gridlab.gat.io.cpi.FileCpi;
 import org.gridlab.gat.io.cpi.glite.lfc.LfcConnector;
+import org.gridlab.gat.io.cpi.glite.lfc.LfcUtil;
 import org.gridlab.gat.io.cpi.glite.lfc.LfcConnection.LFCReplica;
 import org.gridlab.gat.resources.cpi.ResourceBrokerCpi;
 import org.gridlab.gat.resources.cpi.glite.GliteConstants;
@@ -36,7 +35,7 @@ import org.slf4j.LoggerFactory;
  * <p>
  * <tt>guid://&lt;lfcserver&gt;&lt;:lfcport&gt;/&lt;guid&gt;</tt>
  * </p>
- * The LFC server / port is optional. It is not supported yet.
+ * The LFC server / port is optional.
  * <p>
  * Please note: This adapter is to be considered experimental. It may or may not
  * work for you, and there is no guarantee that the interface or parameters will
@@ -78,45 +77,10 @@ public class GliteGuidFileAdaptor extends FileCpi {
                 throw new AdaptorNotApplicableException(
                         "cannot handle this URI: " + location);
             }
-            initLfcConnector();
+            this.lfcConnector = LfcUtil.initLfcConnector(gatContext, location,
+                    vo);
             LOGGER.info("Instantiated gLiteGuidFileAdaptor for " + location);
         }
-    }
-
-    private void initLfcConnector() throws GATObjectCreationException {
-        if (lfcConnector == null) {
-            String server = fetchServer();
-            String portStr = (String) gatContext.getPreferences().get(
-                    GliteConstants.PREFERENCE_LFC_SERVER_PORT, "5010");
-            int port = Integer.parseInt(portStr);
-            lfcConnector = new LfcConnector(server, port, vo,
-                    GliteSecurityUtils.getProxyPath(gatContext));
-        }
-    }
-
-    private String fetchServer() throws GATObjectCreationException {
-        String retVal;
-        retVal = (String) gatContext.getPreferences().get(
-                GliteConstants.PREFERENCE_LFC_SERVER);
-        if (retVal == null) {
-            try {
-                List<String> lfcs = new LDAPResourceFinder(gatContext)
-                        .fetchLFCs(vo);
-                if (lfcs == null) {
-                    retVal = null;
-                } else if (lfcs.size() < 1)
-                    retVal = null;
-                else
-                    retVal = lfcs.get(0);
-            } catch (NamingException e) {
-                retVal = null;
-            }
-        }
-        if (retVal == null) {
-            throw new GATObjectCreationException(
-                    "Failed to find LFC in preferences!");
-        }
-        return retVal;
     }
 
     /** {@inheritDoc} */
@@ -150,8 +114,10 @@ public class GliteGuidFileAdaptor extends FileCpi {
                 }
                 final File source = new File(location.getPath());
                 final long filesize = source.length();
-                this.initLfcConnector();
-
+                if (this.lfcConnector == null) {
+                    this.lfcConnector = LfcUtil.initLfcConnector(gatContext,
+                            dest, vo);
+                }
                 List<SEInfo> ses = new LDAPResourceFinder(gatContext).fetchSEs(
                         vo, filesize);
                 if (ses.isEmpty()) {
@@ -207,7 +173,7 @@ public class GliteGuidFileAdaptor extends FileCpi {
             GliteSecurityUtils.touchVomsProxy(gatContext);
             String guid = lfcConnector.create();
             this.location = new URI(GUID, null, lfcConnector.getServer(),
-                    lfcConnector.getPort(), '/'+guid, null, null);
+                    lfcConnector.getPort(), '/' + guid, null, null);
         } catch (URISyntaxException e) {
             throw new GATInvocationException(GLITE_GUID_FILE_ADAPTOR, e);
         } catch (IOException e) {

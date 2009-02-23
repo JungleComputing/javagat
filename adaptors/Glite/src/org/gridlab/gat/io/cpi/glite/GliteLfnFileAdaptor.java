@@ -24,6 +24,7 @@ import org.gridlab.gat.URI;
 import org.gridlab.gat.io.File;
 import org.gridlab.gat.io.cpi.FileCpi;
 import org.gridlab.gat.io.cpi.glite.lfc.LfcConnector;
+import org.gridlab.gat.io.cpi.glite.lfc.LfcUtil;
 import org.gridlab.gat.io.cpi.glite.lfc.LfcConnection.LFCFile;
 import org.gridlab.gat.io.cpi.glite.lfc.LfcConnection.LFCReplica;
 import org.gridlab.gat.resources.cpi.ResourceBrokerCpi;
@@ -57,21 +58,6 @@ public class GliteLfnFileAdaptor extends FileCpi {
             throws GATObjectCreationException {
     	super(gatCtx, _location);
     	
-    	//Get all the needed information to fill location URI if needed
-    	String server = fetchServer(gatContext);
-        String portStr = (String) gatContext.getPreferences().get("LfcServerPort", "5010");
-        int port = Integer.parseInt(portStr);
-    	try{
-            if(location.getHost() == null){
-            	location = location.setHost(server);
-        	}
-            if (location.getPort() == -1) {
-            	location = location.setPort(port);
-			}
-        } catch (URISyntaxException e) {
-        	throw new GATObjectCreationException(GLITE_LFC_FILE_ADAPTOR, e);
-		}
-    	
         vo = (String) gatContext.getPreferences().get(GliteConstants.PREFERENCE_VIRTUAL_ORGANISATION);
         
         if (location.isCompatible("file") && location.refersToLocalHost()) {
@@ -82,39 +68,15 @@ public class GliteLfnFileAdaptor extends FileCpi {
                 throw new AdaptorNotApplicableException(
                         "cannot handle this URI: " + location);
             }
-            this.initLfcConnector(server, port);
+            lfcConnector = LfcUtil.initLfcConnector(gatContext, location, vo);
+            try {
+                this.location.setHost(lfcConnector.getServer());
+                this.location.setPort(lfcConnector.getPort());
+            } catch (URISyntaxException e) {
+                LOGGER.warn(e.getMessage());
+            }
             logger.info("Instantiated gliteLfnFileAdaptor for " + location);
         }
-    }
-
-    private void initLfcConnector(String server, int port) throws GATObjectCreationException {
-        if (lfcConnector == null) {
-            lfcConnector = new LfcConnector(server, port, vo, GliteSecurityUtils.getProxyPath(gatContext));
-        }
-    }
-
-    private String fetchServer(GATContext gatContext)
-            throws GATObjectCreationException {
-        String retVal;
-        retVal = (String) gatContext.getPreferences().get("LfcServer");
-        if (retVal == null) {
-            try {
-                List<String> lfcs = new LDAPResourceFinder(null).fetchLFCs(vo);
-                if (lfcs == null) {
-                    retVal = null;
-                } else if (lfcs.size() < 1)
-                    retVal = null;
-                else
-                    retVal = lfcs.get(0);
-            } catch (NamingException e) {
-                retVal = null;
-            }
-        }
-        if (retVal == null) {
-            throw new GATObjectCreationException(
-                    "Failed to find LFC in preferences!");
-        }
-        return retVal;
     }
 
     /** {@inheritDoc} */
@@ -165,6 +127,10 @@ public class GliteLfnFileAdaptor extends FileCpi {
                 if (!dest.isCompatible(LFN)) {
                     throw new GATInvocationException(GLITE_LFC_FILE_ADAPTOR
                             + ": " + CANNOT_HANDLE_THIS_URI + dest);
+                }
+                if (lfcConnector == null) {
+                    lfcConnector = LfcUtil.initLfcConnector(gatContext, dest,
+                            vo);
                 }
                 final java.io.File source = new java.io.File(location.getPath());
                 final long filesize = source.length();
