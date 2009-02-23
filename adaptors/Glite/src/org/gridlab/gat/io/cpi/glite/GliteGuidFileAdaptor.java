@@ -10,8 +10,6 @@ import java.util.Map;
 
 import javax.naming.NamingException;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.gridlab.gat.AdaptorNotApplicableException;
 import org.gridlab.gat.GAT;
 import org.gridlab.gat.GATContext;
@@ -27,9 +25,18 @@ import org.gridlab.gat.resources.cpi.glite.GliteConstants;
 import org.gridlab.gat.resources.cpi.glite.LDAPResourceFinder;
 import org.gridlab.gat.resources.cpi.glite.LDAPResourceFinder.SEInfo;
 import org.gridlab.gat.security.glite.GliteSecurityUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Adapter for the Glite LFCs, accessed via guid: for JavaGAT.
+ * <p>
+ * To follow the URI standard, the GUID URI is specified as:
+ * </p>
+ * <p>
+ * <tt>guid://&lt;lfcserver&gt;&lt;:lfcport&gt;/&lt;guid&gt;</tt>
+ * </p>
+ * The LFC server / port is optional. It is not supported yet.
  * <p>
  * Please note: This adapter is to be considered experimental. It may or may not
  * work for you, and there is no guarantee that the interface or parameters will
@@ -82,7 +89,8 @@ public class GliteGuidFileAdaptor extends FileCpi {
             String portStr = (String) gatContext.getPreferences().get(
                     GliteConstants.PREFERENCE_LFC_SERVER_PORT, "5010");
             int port = Integer.parseInt(portStr);
-            lfcConnector = new LfcConnector(server, port, vo, GliteSecurityUtils.getProxyPath(gatContext));
+            lfcConnector = new LfcConnector(server, port, vo,
+                    GliteSecurityUtils.getProxyPath(gatContext));
         }
     }
 
@@ -131,7 +139,7 @@ public class GliteGuidFileAdaptor extends FileCpi {
         GliteSecurityUtils.addGliteSecurityPreferences(preferences);
         return preferences;
     }
-    
+
     /** {@inheritDoc} */
     public void copy(URI dest) throws GATInvocationException {
         try {
@@ -144,21 +152,22 @@ public class GliteGuidFileAdaptor extends FileCpi {
                 final long filesize = source.length();
                 this.initLfcConnector();
 
-                List<SEInfo> ses = new LDAPResourceFinder(gatContext).fetchSEs(vo, filesize);
-                if(ses.isEmpty()){
-                	throw new GATInvocationException(
-                			"Could not find any usable SE in the BDII " +
-                				"(Possible reasons can be: no available SE, " +
-                					"not enougth free space in the available SEs " +
-                						"or available SEs are not part of the GATContext)!");
+                List<SEInfo> ses = new LDAPResourceFinder(gatContext).fetchSEs(
+                        vo, filesize);
+                if (ses.isEmpty()) {
+                    throw new GATInvocationException(
+                            "Could not find any usable SE in the BDII "
+                                    + "(Possible reasons can be: no available SE, "
+                                    + "not enougth free space in the available SEs "
+                                    + "or available SEs are not part of the GATContext)!");
                 }
                 // TEMP SOLUTION
                 Collections.shuffle(ses);
                 // END TEMP SOLUTION
-                
+
                 SEInfo pickedSE = ses.get(0);
-                
-                String guid = dest.getAuthority();
+
+                String guid = dest.getPath();
                 URI target = new URI("srm://" + pickedSE.getSeUniqueId()
                         + pickedSE.getPath() + "/file-" + guid);
                 LOGGER.info("Uploading " + guid + " to " + target);
@@ -171,10 +180,11 @@ public class GliteGuidFileAdaptor extends FileCpi {
                 LOGGER.info("Adding replica...");
                 lfcConnector.addReplica(guid, target);
             } else {
-                String guid = location.getAuthority();
+                String guid = location.getPath();
                 GliteSecurityUtils.touchVomsProxy(gatContext);
                 LOGGER.info("Copying " + guid + " to " + dest);
-                Collection<LFCReplica> replicas = lfcConnector.listReplicas(null,guid);
+                Collection<LFCReplica> replicas = lfcConnector.listReplicas(
+                        null, guid);
                 LOGGER.info("SRM URIs: " + replicas);
                 LFCReplica replica = replicas.iterator().next();
                 GliteSrmFileAdaptor srmFile = new GliteSrmFileAdaptor(
@@ -196,7 +206,8 @@ public class GliteGuidFileAdaptor extends FileCpi {
         try {
             GliteSecurityUtils.touchVomsProxy(gatContext);
             String guid = lfcConnector.create();
-            this.location = new URI(GUID + "://" + guid + "/");
+            this.location = new URI(GUID, null, lfcConnector.getServer(),
+                    lfcConnector.getPort(), '/'+guid, null, null);
         } catch (URISyntaxException e) {
             throw new GATInvocationException(GLITE_GUID_FILE_ADAPTOR, e);
         } catch (IOException e) {
@@ -212,7 +223,7 @@ public class GliteGuidFileAdaptor extends FileCpi {
                     + CANNOT_HANDLE_THIS_URI + location);
         }
         try {
-            String guid = location.getAuthority();
+            String guid = location.getPath();
             GliteSecurityUtils.touchVomsProxy(gatContext);
             LOGGER.info("Deleting " + guid);
             return lfcConnector.delete(guid);

@@ -335,4 +335,18 @@ public class LfcConnector {
         new LfcConnection(server, port, proxyPath).addReplica(guid, target.toJavaURI());
     }
 
+    /**
+     * @return the server used by this connector.
+     */
+    public String getServer() {
+        return server;
+    }
+    
+    /**
+     * @return the port used by this connector.
+     */
+    public int getPort() {
+        return port;
+    }
+    
 }
