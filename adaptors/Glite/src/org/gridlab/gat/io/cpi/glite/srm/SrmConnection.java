@@ -48,6 +48,7 @@ import org.globus.axis.util.Util;
 import org.globus.gsi.GlobusCredential;
 import org.globus.gsi.GlobusCredentialException;
 import org.globus.gsi.gssapi.GlobusGSSCredentialImpl;
+import org.globus.gsi.gssapi.auth.NoAuthorization;
 import org.ietf.jgss.GSSCredential;
 import org.ietf.jgss.GSSException;
 
@@ -107,10 +108,10 @@ public class SrmConnection {
 
             LOGGER.info("Delegating proxy credentials");
             GlobusCredential credential = new GlobusCredential(proxyPath);
-            GSSCredential gssCredential = new GlobusGSSCredentialImpl(
-                    credential, 0);
-            ((Stub) service)._setProperty(GSIConstants.GSI_CREDENTIALS,
-                    gssCredential);
+            GSSCredential gssCredential = new GlobusGSSCredentialImpl(credential, GSSCredential.INITIATE_AND_ACCEPT);
+            ((Stub)this.service)._setProperty(GSIConstants.GSI_CREDENTIALS,gssCredential);
+            ((Stub)this.service)._setProperty( GSIConstants.GSI_AUTHORIZATION, NoAuthorization.getInstance());
+            ((Stub)this.service)._setProperty( GSIConstants.GSI_MODE, GSIConstants.GSI_MODE_NO_DELEG );
         } catch (MalformedURIException e) {
             LOGGER.warn(e.toString());
             throw new IOException(
