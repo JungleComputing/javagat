@@ -57,9 +57,7 @@ public class GliteLfnFileAdaptor extends FileCpi {
     public GliteLfnFileAdaptor(GATContext gatCtx, URI _location)
             throws GATObjectCreationException {
     	super(gatCtx, _location);
-    	
-        vo = (String) gatContext.getPreferences().get(GliteConstants.PREFERENCE_VIRTUAL_ORGANISATION);
-        
+        vo = GliteConstants.getVO(gatContext);
         if (location.isCompatible("file") && location.refersToLocalHost()) {
             localFile = true;
         } else {

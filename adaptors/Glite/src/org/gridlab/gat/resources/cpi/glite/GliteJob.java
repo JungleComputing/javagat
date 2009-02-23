@@ -271,8 +271,7 @@ public class GliteJob extends JobCpi {
 
         // Create Job Description Language File ...
         long jdlID = System.currentTimeMillis();
-        String voName = ((String) gatContext.getPreferences().get(
-                GliteConstants.PREFERENCE_VIRTUAL_ORGANISATION));
+        String voName = GliteConstants.getVO(gatContext);
 
         ResourceDescription rd = jobDescription.getResourceDescription();
 

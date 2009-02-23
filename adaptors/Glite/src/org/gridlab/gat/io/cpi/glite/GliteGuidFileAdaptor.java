@@ -66,8 +66,7 @@ public class GliteGuidFileAdaptor extends FileCpi {
     public GliteGuidFileAdaptor(GATContext gatCtx, URI location)
             throws GATObjectCreationException {
         super(gatCtx, location);
-        vo = (String) gatContext.getPreferences().get(
-                GliteConstants.PREFERENCE_VIRTUAL_ORGANISATION);
+        vo = GliteConstants.getVO(gatContext);
 
         if (location.isCompatible("file") && location.refersToLocalHost()) {
             localFile = true;

@@ -105,7 +105,7 @@ public final class GliteSecurityUtils {
         		//This JavaGAT extension must be the first one in the voms proxy.
         		if(currentVomsProxyExtensionsList.size() != 0){
         			String currentVomsProxyExtension = currentVomsProxyExtensionsList.get(0);
-        			String currentJavaGATVo = (String) prefs.get(GliteConstants.PREFERENCE_VIRTUAL_ORGANISATION);
+        			String currentJavaGATVo = GliteConstants.getVO(context);
         			String currentJavaGATVoGroup = (String) prefs.get(GliteConstants.PREFERENCE_VIRTUAL_ORGANISATION_GROUP);
         			String currentJavaGATVoRole = (String) prefs.get(GliteConstants.PREFERENCE_VIRTUAL_ORGANISATION_ROLE);
         			String currentJavaGATVoCapability = (String) prefs.get(GliteConstants.PREFERENCE_VIRTUAL_ORGANISATION_CAPABILITY);
@@ -258,8 +258,7 @@ public final class GliteSecurityUtils {
                 .get(GliteConstants.PREFERENCE_VIRTUAL_ORGANISATION_SERVER_PORT);
         int serverPort = Integer.parseInt(serverPortStr);
 
-        String voName = (String) prefs
-                .get(GliteConstants.PREFERENCE_VIRTUAL_ORGANISATION);
+        String voName = GliteConstants.getVO(context);
         String voGroup = (String) prefs
                 .get(GliteConstants.PREFERENCE_VIRTUAL_ORGANISATION_GROUP);
         String voRole = (String) prefs

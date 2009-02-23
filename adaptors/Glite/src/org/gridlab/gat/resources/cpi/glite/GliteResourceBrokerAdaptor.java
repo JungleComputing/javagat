@@ -99,8 +99,7 @@ public class GliteResourceBrokerAdaptor extends ResourceBrokerCpi {
             try {
                 ldapResourceFinder = new LDAPResourceFinder(gatContext,
                         brokerURI);
-                String vo = (String) gatContext.getPreferences().get(
-                        GliteConstants.PREFERENCE_VIRTUAL_ORGANISATION);
+                String vo = GliteConstants.getVO(gatContext);
                 List<String> brokerURIs = ldapResourceFinder
                         .fetchWMSServers(vo);
                 if (brokerURIs.isEmpty()) {
@@ -143,8 +142,7 @@ public class GliteResourceBrokerAdaptor extends ResourceBrokerCpi {
         }
         try {
             ensureLdapFinderExists();
-            String vo = (String) gatContext.getPreferences().get(
-                    GliteConstants.PREFERENCE_VIRTUAL_ORGANISATION);
+            String vo = GliteConstants.getVO(gatContext);
             List<String> queNames = ldapResourceFinder.fetchCEs(vo);
             List<HardwareResource> retList = new ArrayList<HardwareResource>(
                     queNames.size());

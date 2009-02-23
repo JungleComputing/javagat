@@ -1,5 +1,7 @@
 package org.gridlab.gat.resources.cpi.glite;
 
+import org.gridlab.gat.GATContext;
+
 /**
  * Constants for values used by the gLite adapter.
  * 
@@ -29,4 +31,17 @@ public final class GliteConstants {
     public static final String PREFERENCE_DELETE_JDL = "glite.deleteJDL";
     public static final String PREFERENCE_JOB_STOP_POSTSTAGE = "job.stop.poststage";
     public static final String PREFERENCE_JOB_STOP_ON_EXIT = "job.stop.on.exit";
+
+    private GliteConstants() {
+        // do not instantiate.
+    }
+
+    public static String getVO(GATContext context) {
+        String vo = (String) context.getPreferences().get(
+                GliteConstants.PREFERENCE_VIRTUAL_ORGANISATION);
+        if (vo == null) {
+            vo = System.getenv("LCG_GFAL_VO");
+        }
+        return vo;
+    }
 }
