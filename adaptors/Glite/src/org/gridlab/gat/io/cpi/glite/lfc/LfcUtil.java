@@ -24,11 +24,15 @@ public final class LfcUtil {
 
     public static LfcConnector initLfcConnector(GATContext gatContext, URI uri,
             String vo) throws GATObjectCreationException {
-        LfcConnector lfcConnector;
-        String server = uri.getHost();
-        if (server == null) {
-            server = fetchServer(gatContext, vo);
-        }
+        LfcConnector lfcConnector;        
+        String host = detectLfcHost(gatContext, uri, vo);        
+        int port = detectLfcPort(gatContext, uri);        
+        lfcConnector = new LfcConnector(host, port, vo, GliteSecurityUtils
+                .getProxyPath(gatContext));
+        return lfcConnector;
+    }
+
+    private static int detectLfcPort(GATContext gatContext, URI uri) {
         int port;
         port = uri.getPort();
         if (port < 0) {
@@ -40,9 +44,22 @@ public final class LfcUtil {
                 port = 5010;
             }
         }
-        lfcConnector = new LfcConnector(server, port, vo, GliteSecurityUtils
-                .getProxyPath(gatContext));
-        return lfcConnector;
+        return port;
+    }
+
+    private static String detectLfcHost(GATContext gatContext, URI uri,
+            String vo) throws GATObjectCreationException {
+        String server = uri.getHost();
+        if (server == null) {
+            server = fetchServer(gatContext, vo);
+        }
+        if (server==null) {
+            server = System.getenv("LFC_HOST");
+        }
+        if (server==null) {
+            throw new GATObjectCreationException("Could not find any information about LFC server to use.");
+        }
+        return server;
     }
 
     private static String fetchServer(GATContext gatContext, String vo)
@@ -63,10 +80,6 @@ public final class LfcUtil {
             } catch (NamingException e) {
                 retVal = null;
             }
-        }
-        if (retVal == null) {
-            throw new GATObjectCreationException(
-                    "Failed to find LFC in preferences!");
         }
         return retVal;
     }
