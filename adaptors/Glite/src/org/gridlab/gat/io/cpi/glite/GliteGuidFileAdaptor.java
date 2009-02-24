@@ -102,7 +102,7 @@ public class GliteGuidFileAdaptor extends FileCpi {
     }
 
     /** {@inheritDoc} */
-    public void copy(URI dest) throws GATInvocationException {
+    public synchronized void copy(URI dest) throws GATInvocationException {
         try {
             if (localFile) {
                 if (!dest.isCompatible(GUID)) {
@@ -146,7 +146,7 @@ public class GliteGuidFileAdaptor extends FileCpi {
     }
 
     /** {@inheritDoc} */
-    public boolean createNewFile() throws GATInvocationException {
+    public synchronized boolean createNewFile() throws GATInvocationException {
         if (localFile) {
             throw new GATInvocationException(GLITE_GUID_FILE_ADAPTOR + ": "
                     + CANNOT_HANDLE_THIS_URI + location);
@@ -166,7 +166,7 @@ public class GliteGuidFileAdaptor extends FileCpi {
     }
 
     /** {@inheritDoc} */
-    public boolean delete() throws GATInvocationException {
+    public synchronized boolean delete() throws GATInvocationException {
         if (localFile) {
             throw new GATInvocationException(GLITE_GUID_FILE_ADAPTOR + ": "
                     + CANNOT_HANDLE_THIS_URI + location);
