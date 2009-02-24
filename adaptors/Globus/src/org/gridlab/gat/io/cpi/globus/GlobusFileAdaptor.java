@@ -1058,15 +1058,13 @@ public abstract class GlobusFileAdaptor extends FileCpi {
             client = createClient(toURI());
 
             if (logger.isDebugEnabled()) {
-                logger.debug("getINFO: client created");
+                logger.debug("exists: client created");
             }
-            client.getLastModified(remotePath);
-            return true;
-        } catch(ServerException e) {
-            if (e.getCode() == ServerException.SERVER_REFUSED) {
-                return false;
-            }
-            throw new GATInvocationException("globus", e);
+            // Note: this is the only place where we can use client.exists!
+            // It does NOT work for a regular FTP client! Note that the FTPFileAdaptor
+            // reimplements the exists method. But, other methods in the GlobusFileAdaptor
+            // ARE used by a regular FTP client, so don't use client.exists there!!!
+            return client.exists(remotePath);
         } catch (Exception e) {
             throw new GATInvocationException("globus", e);
         } finally {
@@ -1213,7 +1211,7 @@ public abstract class GlobusFileAdaptor extends FileCpi {
             };
         };
 
-        c.list(filter, "",  sink);
+        c.list(filter, null,  sink);
 
         // transfer done. Data is in received stream.
         // convert it to a vector.
