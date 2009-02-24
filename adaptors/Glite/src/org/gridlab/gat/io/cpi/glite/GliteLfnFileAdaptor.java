@@ -4,16 +4,11 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-import javax.naming.NamingException;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.gridlab.gat.AdaptorNotApplicableException;
 import org.gridlab.gat.GAT;
 import org.gridlab.gat.GATContext;
@@ -32,6 +27,8 @@ import org.gridlab.gat.resources.cpi.glite.GliteConstants;
 import org.gridlab.gat.resources.cpi.glite.LDAPResourceFinder;
 import org.gridlab.gat.resources.cpi.glite.LDAPResourceFinder.SEInfo;
 import org.gridlab.gat.security.glite.GliteSecurityUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Adapter for the Glite LFCs, accessed via lfn:// for JavaGAT.
