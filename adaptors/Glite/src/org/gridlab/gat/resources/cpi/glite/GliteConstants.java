@@ -25,7 +25,8 @@ public final class GliteConstants {
     public static final String PREFERENCE_BDII_URI = "bdiiURI";
     public static final String PREFERENCE_PREFERRED_SE_ID = "preferredSEID";
     public static final String PREFERENCE_POLL_INTERVAL_SECS = "glite.pollIntervalSecs";
-    public static final String PREFERENCE_VOMS_LIFETIME = "vomsLifetime";
+    public static final String PREFERENCE_VOMS_MIN_LIFETIME = "glite.minproxytime";
+    public static final String PREFERENCE_VOMS_NEW_LIFETIME = "glite.newproxytime";
     public static final String PREFERENCE_VOMS_CREATE_NEW_PROXY = "glite.proxycreation";
     public static final String PREFERENCE_PROXY_PATH = "glite.vomsproxypath";
     public static final String PREFERENCE_DELETE_JDL = "glite.deleteJDL";

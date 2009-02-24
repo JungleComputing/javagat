@@ -23,7 +23,7 @@ import org.gridlab.gat.security.SecurityContext;
  */
 public final class GliteSecurityUtils {
 
-    private final static int STANDARD_PROXY_LIFETIME = 12 * 3600;
+    private final static int STANDARD_NEW_PROXY_LIFETIME = 12 * 3600;
     /**
      * If a proxy is going to be reused it should at least have a remaining
      * lifetime of 5 minutes
@@ -70,18 +70,13 @@ public final class GliteSecurityUtils {
         String proxyFile = GliteSecurityUtils.getProxyPath(context);
 
         Preferences prefs = context.getPreferences();
-        String lifetimeStr = (String) prefs.get(GliteConstants.PREFERENCE_VOMS_LIFETIME);
-        int lifetime = STANDARD_PROXY_LIFETIME;
-        
-        //If the preference's lifetime is specified and greater than the minimal one, use it.
-        if(lifetimeStr != null){
-        	int newLifetime = Integer.parseInt(lifetimeStr);
-        	if(newLifetime > MINIMUM_PROXY_REMAINING_LIFETIME){
-        		lifetime = newLifetime;
-        	}else{
-        		lifetime = MINIMUM_PROXY_REMAINING_LIFETIME;
-        	}
-        }
+
+        int minLifetime = parseIntPref(prefs,
+                GliteConstants.PREFERENCE_VOMS_MIN_LIFETIME,
+                MINIMUM_PROXY_REMAINING_LIFETIME);
+        int newLifetime = Math.max(minLifetime, parseIntPref(prefs,
+                GliteConstants.PREFERENCE_VOMS_NEW_LIFETIME,
+                STANDARD_NEW_PROXY_LIFETIME));
         
         //Check the "glite.proxycreation" value
         String proxyCreation = (String) prefs.get(GliteConstants.PREFERENCE_VOMS_CREATE_NEW_PROXY); 
@@ -100,6 +95,7 @@ public final class GliteSecurityUtils {
         	logger.info("Checking whether the VOMS proxy extensions correspond to the JavaGAT preferences.");
         	List<String> currentVomsProxyExtensionsList = VomsProxyManager.getExistingVOMSExtensions(""+ proxyFile);
         	boolean currentExtensionsOk = true;
+        	StringBuilder reason = new StringBuilder();
         	if(currentVomsProxyExtensionsList != null){//There is an existing voms proxy
         		//Extensions order is important for gLite. Currently, javaGAT is only able to specify 1 extension (1 vo, 1 group, 1 role maximum)
         		//This JavaGAT extension must be the first one in the voms proxy.
@@ -111,7 +107,7 @@ public final class GliteSecurityUtils {
         			String currentJavaGATVoCapability = (String) prefs.get(GliteConstants.PREFERENCE_VIRTUAL_ORGANISATION_CAPABILITY);
         			
         			if(currentJavaGATVoGroup == null){
-        				currentJavaGATVoGroup = "NULL";
+        				currentJavaGATVoGroup = currentJavaGATVo;
         			}
         			if(currentJavaGATVoRole == null){
         				currentJavaGATVoRole = "NULL";
@@ -126,18 +122,23 @@ public final class GliteSecurityUtils {
         			
         			if(!currentProxyVo.equals(currentJavaGATVo)){
         				currentExtensionsOk = false;
+        				reason.append("VO proxy ").append(currentProxyVo).append(" vs ").append(currentJavaGATVo).append(' ');
         			}
         			if(!currentProxyVoGroup.equals(currentJavaGATVoGroup)){
         				currentExtensionsOk = false;
+                        reason.append("VoGroup proxy ").append(currentProxyVoGroup).append(" vs ").append(currentJavaGATVoGroup).append(' ');
         			}
         			if(!currentProxyVoRole.equals(currentJavaGATVoRole)){
         				currentExtensionsOk = false;
+                        reason.append("VoRole proxy ").append(currentProxyVoRole).append(" vs ").append(currentJavaGATVoRole).append(' ');
         			}
         			if(!currentProxyVoCapability.equals(currentJavaGATVoCapability)){
         				currentExtensionsOk = false;
+                        reason.append("VoCapability proxy ").append(currentProxyVoCapability).append(" vs ").append(currentJavaGATVoCapability).append(' ');
         			}
         		}else{
         			currentExtensionsOk = false;
+        			reason.append("No VOMS extensions");
         		}
         	}else{
         		currentExtensionsOk = false;
@@ -145,26 +146,45 @@ public final class GliteSecurityUtils {
         	
         	if(currentExtensionsOk == false){
         		logger.info("Current VOMS proxy extensions doesn't correspond to the JavaGAT preference. Creation of a new proxy");
-        		createVomsProxy(lifetime, context, proxyFile);
+        		logger.info("Reason: "+reason.toString());
+        		createVomsProxy(newLifetime, context, proxyFile);
         	}else{
 	        	logger.info("Checking the current proxy lifetime and generate a new one if needed");
 	        	long existingLifetime = VomsProxyManager.getExistingProxyLifetime(proxyFile);
-	        	if (existingLifetime < lifetime) {
-	        		logger.info("Current VOMS proxy lifetime not sufficient. Creation of a new proxy");
-	                createVomsProxy(lifetime, context, proxyFile);
+	        	if (existingLifetime < minLifetime) {
+	        		logger.info("Current VOMS proxy lifetime not sufficient ("
+                            + existingLifetime + " < " + minLifetime
+                            + "). Creation of a new proxy");
+	                createVomsProxy(newLifetime, context, proxyFile);
 	            } else {
 	                logger.info("Reusing old voms proxy with lifetime (seconds): "+ existingLifetime);
 	            }
         	}
         }else if(proxyCreation.equalsIgnoreCase("always")){
         	//JavaGAT will always generate a new proxy
-        	createVomsProxy(lifetime, context, proxyFile);
+        	createVomsProxy(newLifetime, context, proxyFile);
         }else{
         	throw new GATInvocationException("Unknown "+ GliteConstants.PREFERENCE_VOMS_CREATE_NEW_PROXY + " value ("+proxyCreation+")" +
         			" Accepted values are: \"never\", \"ondemand\" and \"always\" (case-insensitive)");
         }
 
         return proxyFile;
+    }
+
+    private static int parseIntPref(Preferences prefs, String preferenceName,
+            int defaultValue) {
+        int retVal;
+        String prefStr = (String) prefs.get(preferenceName);
+        if (prefStr == null) {
+            retVal = defaultValue;
+        } else {
+            try {
+                retVal = Integer.parseInt(prefStr);
+            } catch (NumberFormatException nfe) {
+                retVal = defaultValue;
+            }
+        }
+        return retVal;
     }
 
     /**
@@ -305,8 +325,10 @@ public final class GliteSecurityUtils {
         preferences.put(
                 GliteConstants.PREFERENCE_VIRTUAL_ORGANISATION_SERVER_PORT,
                 "<no default>");
-        preferences.put(GliteConstants.PREFERENCE_VOMS_LIFETIME, Integer
-                .toString(STANDARD_PROXY_LIFETIME));
+        preferences.put(GliteConstants.PREFERENCE_VOMS_MIN_LIFETIME, Integer
+                .toString(MINIMUM_PROXY_REMAINING_LIFETIME));
+        preferences.put(GliteConstants.PREFERENCE_VOMS_NEW_LIFETIME, Integer
+                .toString(STANDARD_NEW_PROXY_LIFETIME));
         preferences.put(GliteConstants.PREFERENCE_VOMS_CREATE_NEW_PROXY,
                 "ondemand");
     }
