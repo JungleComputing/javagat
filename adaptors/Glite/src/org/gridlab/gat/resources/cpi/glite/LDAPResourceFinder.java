@@ -16,8 +16,11 @@
 package org.gridlab.gat.resources.cpi.glite;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Hashtable;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 
 import javax.naming.Context;
 import javax.naming.NamingEnumeration;
@@ -251,17 +254,54 @@ public class LDAPResourceFinder {
 
     /**
      * Retrieve a list of SEs for the given VO that have a minimal free space.
+     * The list is ordered in terms of preference:
+     * <ol>
+     * <li>The SE given by the {@link GliteConstants#PREFERENCE_PREFERRED_SE_ID}
+     * Gat context property.</li>
+     * <li>The SE given by the VO_VONAME_DEFAULT_SE environment variable</li>
+     * <li>All other SEs for the given VO.</li>
+     * </ol>
      * 
      * @param voName
      *            name of the VO. Must not be null.
      * @param fileSize
      *            The minimal size that must be available in the SEs
-     * @return a List&lt;{@link SEInfo}&gt; of SEs
+     * @return a List&lt;{@link SEInfo}&gt; of SEs.
      * @throws NamingException
      *             if an LDAP error occurs.
      */
     public List<SEInfo> fetchSEs(final String voName, final long fileSize)
             throws NamingException {
+        List<SEInfo> unsortedList = fetchAllSEs(voName, fileSize);
+        List<SEInfo> orderedList = new ArrayList<SEInfo>(unsortedList.size());
+        findAndMoveSE(preferredSEID, unsortedList, orderedList);
+        findAndMoveSE(System.getenv("VO_" + voName.toUpperCase(Locale.ENGLISH)
+                + "_DEFAULT_SE"), unsortedList, orderedList);
+        Collections.shuffle(unsortedList);
+        orderedList.addAll(unsortedList);
+        return orderedList;
+    }
+
+    private void findAndMoveSE(String seid, List<SEInfo> sourceList,
+            List<SEInfo> targetList) {
+        if (seid == null) {
+            return;
+        }
+        Iterator<SEInfo> it = sourceList.iterator();
+        while (it.hasNext()) {
+            SEInfo info = it.next();
+            if (seid.equalsIgnoreCase(info.getSeUniqueId())) {
+                targetList.add(info);
+                it.remove();
+                return;
+            }
+            it.next();
+        }
+    }
+
+    private List<SEInfo> fetchAllSEs(final String voName, final long fileSize)
+            throws NamingException {
+
         ArrayList<SEInfo> results = new ArrayList<SEInfo>();
 
         final String filter = "(&(objectClass~=GlueSA)(GlueSALocalID=" + voName
@@ -294,11 +334,8 @@ public class LDAPResourceFinder {
             if (seUniqueId != null) {
                 boolean valid;
                 valid = Long.parseLong(space) > fileSize;
-                if (preferredSEID != null) {
-                    valid &= seUniqueId.equals(preferredSEID);
-                }
                 LOGGER.debug("Found SE: " + seUniqueId + " with path " + path
-                        + " and space " + space+" Valid: "+valid);
+                        + " and space " + space + " Valid: " + valid);
                 if (valid) {
                     results.add(new SEInfo(seUniqueId, path, space));
                 }

@@ -141,31 +141,18 @@ public class GliteLfnFileAdaptor extends FileCpi {
                 					"not enougth free space in the available SEs " +
                 						"or available SEs are not part of the GATContext)!");
                 }
-                // TEMP SOLUTION
-                Collections.shuffle(ses);
-                // END TEMP SOLUTION
-                
-                SEInfo pickedSE = ses.get(0);
-                
                 String guid = UUID.randomUUID().toString();
-                URI target = new URI("srm://" + pickedSE.getSeUniqueId()
-                        + pickedSE.getPath() + "/file-" + guid);
-                logger.info("Uploading " + guid + " to " + target);
-
-                GATContext newContext = (GATContext) gatContext.clone();
-                newContext.addPreference("File.adaptor.name", "GliteSrm");
-                org.gridlab.gat.io.File transportFile = GAT.createFile(
-                        newContext, location);
-                transportFile.copy(target);
+                URI target = LfcUtil.upload(location, guid, ses, gatContext);
                 logger.info("Registering file in the LFC...");
-                try{
-                	lfcConnector.create(dest);
-                }catch (Exception e) {
-                	//If an error occurs, remove the created file from the SE
-                	org.gridlab.gat.io.File toDeleteFile = GAT.createFile(newContext, target);
-                	toDeleteFile.delete();
-                	throw e;
-				}
+                try {
+                    lfcConnector.create(dest);
+                } catch (IOException e) {
+                    // If an error occurs, remove the created file from the SE
+                    org.gridlab.gat.io.File toDeleteFile = GAT.createFile(
+                            LfcUtil.getSRMContext(gatContext), target);
+                    toDeleteFile.delete();
+                    throw e;
+                }
             } else {
                 String lfnPath = location.getPath();
                 GliteSecurityUtils.touchVomsProxy(gatContext);

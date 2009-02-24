@@ -126,22 +126,8 @@ public class GliteGuidFileAdaptor extends FileCpi {
                                     + "not enougth free space in the available SEs "
                                     + "or available SEs are not part of the GATContext)!");
                 }
-                // TEMP SOLUTION
-                Collections.shuffle(ses);
-                // END TEMP SOLUTION
-
-                SEInfo pickedSE = ses.get(0);
-
                 String guid = dest.getPath();
-                URI target = new URI("srm://" + pickedSE.getSeUniqueId()
-                        + pickedSE.getPath() + "/file-" + guid);
-                LOGGER.info("Uploading " + guid + " to " + target);
-
-                GATContext newContext = (GATContext) gatContext.clone();
-                newContext.addPreference("File.adaptor.name", "GliteSrm");
-                org.gridlab.gat.io.File transportFile = GAT.createFile(
-                        newContext, location);
-                transportFile.copy(target);
+                URI target = LfcUtil.upload(location,guid,ses,gatContext);                
                 LOGGER.info("Adding replica...");
                 lfcConnector.addReplica(guid, target);
             } else {
