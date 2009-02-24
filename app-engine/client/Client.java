@@ -16,11 +16,151 @@ import java.security.Security;
 import java.util.Properties;
 
 public class Client {
-	
-	private static void makeHttpCookies(String uri) throws Exception {
-		/* TODO: finish */
+	private static void makeHttpsClientLogin(String uri) throws Exception {
+		String protocol = "https://";
+		Security.addProvider(new com.sun.net.ssl.internal.ssl.Provider());
+
+		Properties properties = System.getProperties();
+
+		String handlers = System.getProperty("java.protocol.handler.pkgs");
+		if (handlers == null) {
+			/* nothing specified yet (expected case) */
+			properties.put("java.protocol.handler.pkgs",
+					"com.sun.net.ssl.internal.www.protocol");
+		} 
+		else {
+			/* something already there, put ourselves out front */
+			properties.put("java.protocol.handler.pkgs",
+					"com.sun.net.ssl.internal.www.protocol|".concat(handlers));
+		}
+		System.setProperties(properties); 		
+		
+		URL url = new URL(protocol.concat(uri)); 
+		URLConnection urlc = url.openConnection();
+		HttpURLConnection httpc = (HttpURLConnection) url.openConnection();
+		
+		String authString = "accountType=HOSTED_OR_GOOGLE&Email=johndoe@gmail.com&Passwd=north23AZ&service=ah&source=Gulp-CalGulp-1.05";
+		
+		httpc.setRequestMethod("POST");
+		urlc.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
+		urlc.setRequestProperty("Content-Length", authString.length() + "");
+		urlc.setUseCaches(false);
+		urlc.setDoOutput(true);
+		OutputStreamWriter out = 
+			new OutputStreamWriter(urlc.getOutputStream());
+		
+		/* Writing POST data. */
+		out.write(authString);
+		out.close();
+
+		/* Retrieving headers. */
+//		System.out.println(httpc.getResponseCode());
+//		System.out.println(httpc.getResponseMessage());
+//		System.out.println(httpc.getRequestMethod());
+		for (int i = 0; httpc.getHeaderField(i) != null; i++) {
+			System.out.println((httpc.getHeaderFieldKey(i)==null?"":httpc.getHeaderFieldKey(i) + ": ") + httpc.getHeaderField(i));
+		}
+		
+		/* Retrieving body. */	
+//		BufferedReader in = 
+//			new BufferedReader(new InputStreamReader(urlc.getInputStream()));
+//		String inputLine;
+//
+//		while ((inputLine = in.readLine()) != null) {
+//			System.out.println(inputLine);
+//		}
+//		in.close();				
 	}
 
+	private static void makeHttpsLogin(String uri) throws Exception {
+		String protocol = "http://";
+//		Security.addProvider(new com.sun.net.ssl.internal.ssl.Provider());
+//
+//		Properties properties = System.getProperties();
+//
+//		String handlers = System.getProperty("java.protocol.handler.pkgs");
+//		if (handlers == null) {
+//			/* nothing specified yet (expected case) */
+//			properties.put("java.protocol.handler.pkgs",
+//					"com.sun.net.ssl.internal.www.protocol");
+//		} 
+//		else {
+//			/* something already there, put ourselves out front */
+//			properties.put("java.protocol.handler.pkgs",
+//					"com.sun.net.ssl.internal.www.protocol|".concat(handlers));
+//		}
+//		System.setProperties(properties); 
+
+		try {
+			URL page = new URL(protocol.concat(uri)); 
+			URLConnection urlc = page.openConnection();
+
+			System.out.println("*** Logging into https://" + uri + " ***");
+			
+//			urlc.setUseCaches(false);
+//			urlc.setDoOutput(true);
+//			OutputStreamWriter out = 
+//				new OutputStreamWriter(urlc.getOutputStream());
+//			
+//			/* Writing POST data. */
+//			out.write("");
+//			out.close();
+			
+			/* Retrieving body. */	
+			BufferedReader in = 
+				new BufferedReader(new InputStreamReader(urlc.getInputStream()));
+			String inputLine;
+
+			while ((inputLine = in.readLine()) != null) {
+				System.out.println(inputLine);
+			}
+			in.close();		
+		} 
+		catch (MalformedURLException mue) {
+			System.out.println("URL cannot be resolved");
+		}
+	}
+	
+	/**
+	 * This function makes an HTTP connection, and sends a cookie once the
+	 * connection is established.
+	 * 
+	 * @param uri
+	 *     {@link String} to make the connection to.
+	 * @throws Exception
+	 *     The connection can't be established.
+	 */	
+	private static void makeHttpCookies(String uri) throws Exception {
+		String protocol = "http://";
+		URL url = new URL(protocol.concat(uri));
+		URLConnection urlc = url.openConnection();
+		//HttpURLConnection httpc = (HttpURLConnection) url.openConnection();
+		
+		System.out.println("*** Making an HTTP connection with cookies to http://" + uri + " ***");
+		
+		/* Setting cookies. */
+		urlc.setRequestProperty("Cookie", "dev_appserver_login=test@example.com:False");
+		
+		/* Retrieving body. */
+		BufferedReader in = 
+			new BufferedReader(new InputStreamReader(urlc.getInputStream()));
+		String inputLine;
+
+		while ((inputLine = in.readLine()) != null) {
+			System.out.println(inputLine);
+		}
+		in.close();
+	}
+
+	/**
+	 * This function makes an HTTP connection using the POST method, and
+	 * sends a binary file as the message body.
+	 * 
+	 * @param uri
+	 *     {@link String} to make the connection to.
+	 * @throws Exception
+	 *     The connection can't be established.
+	 */
 	private static void makeHttpBinaryPost(String uri) throws Exception {
 		/* Setting up a new connection. */
 		String protocol = "http://";
@@ -196,8 +336,8 @@ public class Client {
 	 *     The connection can't be established. 
 	 */
 	public static void main(String argv[]) throws Exception {
-		String server = "bbn230.appspot.com/";
-//		String server = "localhost:8081/";
+//		String server = "bbn230.appspot.com/";
+		String server = "localhost:8081/";
 		String uri = null;
 		
 		/* Making a standard connection in HTTP(S). */
@@ -209,10 +349,18 @@ public class Client {
 		uri = server.concat("forms/sign");
 		//makeHttpPost(uri);
 		uri = server.concat("binary/get");
-		makeHttpBinaryPost(uri);
+		//makeHttpBinaryPost(uri);
 		
 		/* Making a connection using cookes. */
 		uri = server.concat("cookies/");
 		//makeHttpCookies(uri);
+		
+		/* Logging in on a Google login page (using HTTPS). */
+		uri = server.concat("_ah/login?email=test?example.com&action=Login&continue=http://localhost:8081/cookies/");
+		//makeHttpsLogin(uri);
+		
+		/* Logging in to Google's ClientLogin. */
+		uri = "www.google.com/accounts/ClientLogin";
+		makeHttpsClientLogin(uri);
 	}
 }

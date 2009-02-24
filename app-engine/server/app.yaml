@@ -15,6 +15,10 @@ handlers:
 - url: /binary/.*
   script: binary.py
   secure: optional
+  
+- url: /cookies/.*
+  script: cookies.py
+  secure: optional
 
 - url: /.*
   script: bbn230.py
