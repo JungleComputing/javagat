@@ -28,7 +28,9 @@ public class Client {
 		//URLConnection urlc = url.openConnection();
 		HttpURLConnection httpc = (HttpURLConnection) url.openConnection();
 		
-	    DataInputStream is = new DataInputStream(new FileInputStream("E:/Documents/Documents/Eclipse/workspace/app-engine/app-engine/client/appengine.gif"));;
+//	    DataInputStream is = new DataInputStream(new FileInputStream("E:/Documents/Documents/Eclipse/workspace/app-engine/app-engine/client/appengine.gif")); /* Windows location */
+	    DataInputStream is = new DataInputStream(new FileInputStream("/Volumes/Users/bbn230/Documents/workspace/app-engine/app-engine/client/appengine.gif")); /* OSX location */
+	    
 	    byte[] b = new byte[7000];
 	    int size = 0;
 	    
@@ -57,6 +59,8 @@ public class Client {
 		catch (IOException ioe) {
 			System.out.println("IO error: " + ioe);
 		}
+		
+		System.out.println("done. HTTP Response: " + httpc.getResponseCode());
 	}
 	
 	/**
@@ -192,19 +196,23 @@ public class Client {
 	 *     The connection can't be established. 
 	 */
 	public static void main(String argv[]) throws Exception {
+		String server = "bbn230.appspot.com/";
+//		String server = "localhost:8081/";
+		String uri = null;
+		
 		/* Making a standard connection in HTTP(S). */
-		String uri = "bbn230.appspot.com/helloworld/";
+		uri = server.concat("helloworld/");
 		//makeHttpConnection(uri);
 		//makeHttpsConnection(uri);
 		
 		/* Making a connection using POST forms in HTTP(S). */
-		uri = "bbn230.appspot.com/forms/sign";
+		uri = server.concat("forms/sign");
 		//makeHttpPost(uri);
-		uri = "bbn230.appspot.com/binary/get";
+		uri = server.concat("binary/get");
 		makeHttpBinaryPost(uri);
 		
 		/* Making a connection using cookes. */
-		uri = "bbn230.appspot.com/cookies/";
+		uri = server.concat("cookies/");
 		//makeHttpCookies(uri);
 	}
 }
