@@ -1228,4 +1228,26 @@ public class LfcConnection {
 		}
 		
 	}
+	
+	/**
+	 * Try to close the connection to free resources.
+	 */
+	public void close() {
+	    try {
+            this.channel.close();
+        } catch (IOException e) {
+            LOGGER.warn(e.toString());
+        }
+	}
+	
+	/** {@inheritDoc} */
+    @Override
+    protected void finalize() throws Throwable {
+        try {
+            this.channel.close();
+        } catch (IOException e) {
+            // ignore
+        }
+        super.finalize();
+    }
 }

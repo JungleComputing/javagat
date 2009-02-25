@@ -175,7 +175,7 @@ public class GliteGuidFileAdaptor extends FileCpi {
             String guid = location.getPath();
             GliteSecurityUtils.touchVomsProxy(gatContext);
             LOGGER.info("Deleting " + guid);
-            return lfcConnector.delete(guid);
+            return lfcConnector.deleteGuid(guid);
         } catch (IOException e) {
             LOGGER.info(e.toString());
             // throw new GATInvocationException(GLITE_GUID_FILE_ADAPTOR, e);

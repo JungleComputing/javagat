@@ -221,7 +221,7 @@ public class GliteLfnFileAdaptor extends FileCpi {
             String lfn = location.getPath();
             GliteSecurityUtils.touchVomsProxy(gatContext);
             logger.info("Deleting " + lfn);
-            return lfcConnector.deletepath(lfn);
+            return lfcConnector.deletePath(lfn);
         } catch (IOException e) {
             logger.error(e.toString());
             return false;
