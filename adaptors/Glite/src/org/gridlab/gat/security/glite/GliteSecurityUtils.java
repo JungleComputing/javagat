@@ -51,7 +51,6 @@ public final class GliteSecurityUtils {
             proxyFile = properties.getProxyFile();
         }
 
-        System.setProperty("gridProxyFile", proxyFile); // for glite security
         // JARs
         System.setProperty(ContextWrapper.CREDENTIALS_PROXY_FILE, proxyFile);
         return proxyFile;

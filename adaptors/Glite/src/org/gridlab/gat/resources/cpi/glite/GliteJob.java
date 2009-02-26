@@ -337,8 +337,10 @@ public class GliteJob extends JobCpi {
         List<File> sandboxFiles = new ArrayList<File>();
         GATContext newContext = (GATContext) gatContext.clone();
         newContext.addPreference("File.adaptor.name", "GridFTP");
+        String saved = System.getProperty("gridProxyInit");
 
         try {
+            System.setProperty("gridProxyInit", proxyFile);
             LOGGER.debug("Staging in files");
             if (swDescription.getStdin() != null) {
                 File f = GAT.createFile(newContext, swDescription.getStdin()
@@ -369,6 +371,12 @@ public class GliteJob extends JobCpi {
             LOGGER.error("Problem while communicating with SOAP services", e);
         } catch (GATInvocationException e) {
             LOGGER.error("Could not copy files to input sandbox", e);
+        } finally {
+            if (saved != null) {
+                System.setProperty("gridProxyInit", saved);
+            } else {
+                System.clearProperty("gridProxyInit");
+            }
         }
     }
 
@@ -551,7 +559,9 @@ public class GliteJob extends JobCpi {
         if (list != null) {
             GATContext newContext = (GATContext) gatContext.clone();
             newContext.addPreference("File.adaptor.name", "GridFTP");
+            String saved = System.getProperty("gridProxyInit");
             for (int i = 0; i < list.length; i++) {
+                System.setProperty("gridProxyInit", proxyFile);
                 try {
                     URI uri1 = new URI(list[i].getName());
                     URI uri2 = new URI(uri1.getScheme() + "://"
@@ -580,6 +590,12 @@ public class GliteJob extends JobCpi {
                     LOGGER.error(
                             "Could not create GAT file when retrieving output",
                             e);
+                } finally {
+                    if (saved != null) {
+                        System.setProperty("gridProxyInit", saved);
+                    } else {
+                        System.clearProperty("gridProxyInit");
+                    }
                 }
             }
         }

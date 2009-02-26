@@ -49,9 +49,7 @@ public class GliteSrmFileAdaptor extends FileCpi {
     public GliteSrmFileAdaptor(GATContext gatCtx, URI location)
             throws GATObjectCreationException {
         super(gatCtx, location);
-        
-        this.connector = new SrmConnector(GliteSecurityUtils.getProxyPath(gatContext));
-        
+             
         if (location.isCompatible("file") && location.refersToLocalHost()) {
             localFile = true;
         } else {
@@ -61,6 +59,9 @@ public class GliteSrmFileAdaptor extends FileCpi {
                         GliteSrmFileAdaptor.CANNOT_HANDLE_THIS_URI + location);
             }
         }
+        
+        this.connector = new SrmConnector(GliteSecurityUtils.getProxyPath(gatContext));        
+        
         LOGGER.info("Instantiated gLiteSrmFileAdaptor for " + location);
     }
 
@@ -86,6 +87,7 @@ public class GliteSrmFileAdaptor extends FileCpi {
     
     /** {@inheritDoc} */
     public void copy(URI dest) throws GATInvocationException {
+        String saved = System.getProperty("gridProxyInit");
         try {
             if (localFile) {
                 if (!dest.isCompatible(GliteSrmFileAdaptor.SRM_PROTOCOL)) {
@@ -93,7 +95,8 @@ public class GliteSrmFileAdaptor extends FileCpi {
                             + ": " + GliteSrmFileAdaptor.CANNOT_HANDLE_THIS_URI
                             + dest);
                 }
-                GliteSecurityUtils.touchVomsProxy(gatContext);
+                String proxyFile = GliteSecurityUtils.touchVomsProxy(gatContext);
+                System.setProperty("gridProxyInit", proxyFile);
                 LOGGER.info("SRM/Copy: Uploading " + location + " to " + dest);
                 String turl = connector.getTURLForFileUpload(location, dest);
                 LOGGER.info("SRM/Copy: TURL: " + turl);
@@ -103,7 +106,8 @@ public class GliteSrmFileAdaptor extends FileCpi {
                 transportFile.copy(new URI(turl));
                 connector.finalizeFileUpload(dest);
             } else {
-                GliteSecurityUtils.touchVomsProxy(gatContext);
+                String proxyFile = GliteSecurityUtils.touchVomsProxy(gatContext);
+                System.setProperty("gridProxyInit", proxyFile);
                 LOGGER
                         .info("SRM/Copy: Downloading " + location + " to "
                                 + dest);
@@ -116,6 +120,12 @@ public class GliteSrmFileAdaptor extends FileCpi {
             }
         } catch (Exception e) {
             throw new GATInvocationException(GLITE_SRM_FILE_ADAPTOR, e);
+        } finally {
+            if (saved != null) {
+                System.setProperty("gridProxyInit", saved);
+            } else {
+                System.clearProperty("gridProxyInit");
+            }
         }
     }
 
