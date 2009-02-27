@@ -319,7 +319,7 @@ public class LDAPResourceFinder {
                 if (pathName != null)
                     pos = pathName.indexOf("GlueSEUniqueID");
             }
-            if (pos >= 0) {
+            if (pathName != null && pos >= 0) {
                 String st = pathName.substring(pos + 15);
                 int posEnd = st.indexOf(',');
                 if (posEnd < 0)

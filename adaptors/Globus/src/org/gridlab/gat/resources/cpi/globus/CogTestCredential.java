@@ -74,6 +74,7 @@ public class CogTestCredential implements MetricListener {
             broker = GAT.createResourceBroker(prefs, new URI("any://" + host));
         } catch (Throwable e) {
             System.err.println("Got exception " + e);
+            return;
         }
         try {
             broker.submitJob(jd, this, "job.status");

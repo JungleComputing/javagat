@@ -252,6 +252,11 @@ public final class GliteSecurityUtils {
                 secContext = (CertificateSecurityContext) c;
             }
         }
+        
+        if (secContext == null) {
+            throw new GATInvocationException(
+                    "Error: found no CertificateSecurityContext in GAT Context!");
+        }
 
         Preferences prefs = context.getPreferences();
         final URI userkeyuri = secContext.getKeyfile();

@@ -265,6 +265,7 @@ public class Wrapper {
             setName(info.getJobStateFileName());
         }
 
+        @SuppressWarnings("null")
         public void run() {
             // if already max jobs running -> wait
             ResourceBroker broker = null;
@@ -274,6 +275,7 @@ public class Wrapper {
             } catch (GATObjectCreationException e) {
                 // TODO Auto-generated catch block
                 e.printStackTrace();
+                System.exit(1);
             }
 
             synchronized (Wrapper.this) {
@@ -298,6 +300,7 @@ public class Wrapper {
             } catch (GATInvocationException e) {
                 // TODO Auto-generated catch block
                 e.printStackTrace();
+                System.exit(1);
             }
         }
     }

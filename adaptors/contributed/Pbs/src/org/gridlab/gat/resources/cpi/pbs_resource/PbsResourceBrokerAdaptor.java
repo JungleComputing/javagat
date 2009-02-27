@@ -139,7 +139,9 @@ public class PbsResourceBrokerAdaptor extends ResourceBrokerCpi implements
                 pbsJob.addMetricListener(listener, metric);
             }
             pbsJob.setState(Job.JobState.PRE_STAGING);
-            sandbox.prestage();
+            if (sandbox != null) {
+                sandbox.prestage();
+            }
 
             java.io.File temp = java.io.File.createTempFile("pbs", null);
             try {

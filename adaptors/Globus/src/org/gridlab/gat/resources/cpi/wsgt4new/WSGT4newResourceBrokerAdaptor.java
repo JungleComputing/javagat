@@ -322,7 +322,7 @@ public class WSGT4newResourceBrokerAdaptor extends ResourceBrokerCpi {
             job.addMetricListener(listener, metric);
         }
 
-        if (!useGramSandbox) {
+        if (sandbox != null) {
             wsgt4job.setState(Job.JobState.PRE_STAGING);
             sandbox.prestage();
         }

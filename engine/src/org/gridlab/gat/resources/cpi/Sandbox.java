@@ -118,15 +118,17 @@ public class Sandbox {
         post = new PostStagedFileSet(gatContext, jobDescription, authority,
                 sandbox, postStageStdout, postStageStderr);
 
-        wipePreStaged = sd.wipePreStaged();
-        wipePostStaged = sd.wipePostStaged();
-        toWipe = new PostStagedFileSet(gatContext, sd.getWipedFiles(),
-                authority, sandbox);
+        if (sd != null) {
+            wipePreStaged = sd.wipePreStaged();
+            wipePostStaged = sd.wipePostStaged();
+            toWipe = new PostStagedFileSet(gatContext, sd.getWipedFiles(),
+                    authority, sandbox);
 
-        deletePreStaged = sd.deletePreStaged();
-        deletePostStaged = sd.deletePostStaged();
-        toDelete = new PostStagedFileSet(gatContext, sd.getDeletedFiles(),
-                authority, sandbox);
+            deletePreStaged = sd.deletePreStaged();
+            deletePostStaged = sd.deletePostStaged();
+            toDelete = new PostStagedFileSet(gatContext, sd.getDeletedFiles(),
+                    authority, sandbox);
+        }
 
         // createSandbox();
     }

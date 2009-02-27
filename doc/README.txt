@@ -51,9 +51,10 @@ this script, it is just an easy example script that works in simple cases.
 If you don't use this script, you have to specify the directory that
 contains the .jar files of the adaptors with:
 -Dgat.adaptor.path=<PATH>.
+Also, you'll have to make sure that all jar-files in the lib directory
+are on your classpath.
 
-If you provide the -Dgat.verbose (or even -Dgat.debug), you will get
-information on which adaptors are loaded. You can also control the logging
+You can also control the logging
 of JavaGAT using log4j.properties (see http://logging.apache.org/log4j/)
 
 

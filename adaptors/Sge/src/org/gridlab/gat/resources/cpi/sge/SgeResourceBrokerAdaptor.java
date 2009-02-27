@@ -128,7 +128,9 @@ public class SgeResourceBrokerAdaptor extends ResourceBrokerCpi {
         sgeJob.setHostname(getHostname());
         sgeJob.setState(Job.JobState.PRE_STAGING);
         sgeJob.setSession(SGEsession);
-        sandbox.prestage();
+        if (sandbox != null) {
+            sandbox.prestage();
+        }
 
         if (sd == null) {
             throw new GATInvocationException(
@@ -139,7 +141,9 @@ public class SgeResourceBrokerAdaptor extends ResourceBrokerCpi {
             SGEsession.init(brokerURI.toString());
         } catch (DrmaaException e) {
             if (!(e instanceof AlreadyActiveSessionException)) {
-                sandbox.retrieveAndCleanup(sgeJob);
+                if (sandbox != null) {
+                    sandbox.retrieveAndCleanup(sgeJob);
+                }
                 sgeJob.setState(Job.JobState.SUBMISSION_ERROR);
                 throw new GATInvocationException("SGEResourceBrokerAdaptor", e);
             }
@@ -147,8 +151,10 @@ public class SgeResourceBrokerAdaptor extends ResourceBrokerCpi {
         try {
             JobTemplate jt = SGEsession.createJobTemplate();
             jt.setRemoteCommand(getExecutable(description));
-            jt.setWorkingDirectory(System.getProperty("user.home") + "/"
-                    + sandbox.getSandbox());
+            if (sandbox != null) {
+                jt.setWorkingDirectory(System.getProperty("user.home") + "/"
+                        + sandbox.getSandbox());
+            }
             if (logger.isInfoEnabled()) {
                 logger.info("Remote command: " + jt.getRemoteCommand());
             }

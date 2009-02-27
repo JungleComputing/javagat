@@ -579,7 +579,10 @@ public abstract class FileCpi extends MonitorableCpi implements FileInterface, j
         } catch (GATObjectCreationException e1) {
             // should not happen
         }
-        File[] files = (File[]) source.listFiles();
+        File[] files = null;
+        if (source != null) {
+            files = (File[]) source.listFiles();
+        }
         if (files == null) {
             if (logger.isDebugEnabled()) {
                 logger.debug("copyDirectory: no files in src directory: "

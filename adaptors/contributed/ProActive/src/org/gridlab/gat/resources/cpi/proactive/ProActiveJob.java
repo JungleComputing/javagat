@@ -250,6 +250,7 @@ public class ProActiveJob extends JobCpi {
      * @exception GATInvocationException
      *                    when something goes wrong.
      */
+    @SuppressWarnings("null")
     public ProActiveJob(GATContext gatContext, JobDescription jobDescription,
             ProActiveResourceBrokerAdaptor broker)
             throws GATInvocationException {

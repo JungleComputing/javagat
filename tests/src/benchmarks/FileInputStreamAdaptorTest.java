@@ -84,6 +84,7 @@ public class FileInputStreamAdaptorTest {
 
     }
 
+    @SuppressWarnings("null")
     private void run(String host, String script) {
         SoftwareDescription sd = new SoftwareDescription();
         sd.setExecutable("/bin/sh");
