@@ -115,6 +115,18 @@ public class JavaSoftwareDescription extends SoftwareDescription {
         javaSystemProperties = (Map<String, String>) attributes
                 .get("java.system.properties");
         javaArguments = (String[]) attributes.get("java.arguments");
+        checkArguments();
+    }
+    
+    private void checkArguments() {
+        if (javaArguments != null) {
+            // Check the individual arguments.
+            for (int i = 0; i < javaArguments.length; i++) {
+                if (javaArguments[i] == null) {
+                    throw new NullPointerException("Argument " + i + " is null");
+                }
+            }
+        }
     }
 
     /**
@@ -210,6 +222,7 @@ public class JavaSoftwareDescription extends SoftwareDescription {
      */
     public void setJavaArguments(String... javaArguments) {
         this.javaArguments = javaArguments;
+        checkArguments();
     }
 
     /**

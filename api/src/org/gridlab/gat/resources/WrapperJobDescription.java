@@ -332,6 +332,9 @@ public class WrapperJobDescription extends JobDescription {
             // TODO ignore, but should log or throw an exception
         }
         try {
+            if (f == null) {
+                return null;
+            }
             return GAT.createFile(f.getPath());
         } catch (GATObjectCreationException e) {
             // TODO ignore, but should log or throw an exception

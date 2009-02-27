@@ -177,11 +177,23 @@ public class SoftwareDescription implements java.io.Serializable {
 
         executable = (String) attributes.get("executable");
         arguments = (String[]) attributes.get("arguments");
+        checkArguments();
         environment = new HashMap<String, Object>(
                 (Map<String, Object>) attributes.get("environment"));
         stdinFile = (File) attributes.get("stdin");
         stdoutFile = (File) attributes.get("stdout");
         stderrFile = (File) attributes.get("stderr");
+    }
+    
+    private void checkArguments() {
+        if (arguments != null) {
+            // Check the individual arguments.
+            for (int i = 0; i < arguments.length; i++) {
+                if (arguments[i] == null) {
+                    throw new NullPointerException("Argument " + i + " is null");
+                }
+            }
+        }
     }
 
     /**
@@ -225,14 +237,15 @@ public class SoftwareDescription implements java.io.Serializable {
 
     /**
      * Sets the arguments of the executable. For the following commandline
-     * <code>"/bin/cat hello world > out"</code> the {@link String}[]{"hello",
-     * "world", ">", "out"} contains the arguments.
+     * <code>"/bin/cat hello world"</code> the {@link String}[]{"hello",
+     * "world"} contains the arguments.
      * 
      * @param arguments
      *                The commandline arguments to set.
      */
     public void setArguments(String... arguments) {
         this.arguments = arguments;
+        checkArguments();
     }
 
     /**
@@ -582,6 +595,9 @@ public class SoftwareDescription implements java.io.Serializable {
      *                the file to be deleted after the run.
      */
     public void addDeletedFile(File file) {
+        if (file == null) {
+            throw new NullPointerException("addDeletedFile(): argument is null");
+        }
         deletedFiles.add(file);
     }
 
@@ -609,6 +625,9 @@ public class SoftwareDescription implements java.io.Serializable {
      *                run.
      */
     public void addWipedFile(File file) {
+        if (file == null) {
+            throw new NullPointerException("addWipedFile(): argument is null");
+        }
         wipedFiles.add(file);
     }
 
