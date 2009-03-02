@@ -184,12 +184,15 @@ public class CommandlineSshResourceBrokerAdaptor extends ResourceBrokerCpi {
                 command.add(" -pk=" + slot);
             } else { // password
                 command.add(" -pw=" + password);
-            } 
-            command.add("-cmd=" + path);
+            }
+            // Protection is against expansion on the remote host,
+            // which (for now) is assumed to be a unix machine.
+            // TODO: add detection and support for windows ssh servers.
+            command.add("-cmd=" + protectAgainstShellMetas(path));
             String[] args = getArgumentsArray(description);
             if (args != null) {
                 for (String arg : args) {
-                    command.add(arg);
+                    command.add(protectAgainstShellMetas(arg));
                 }
             }
         } else {
@@ -287,7 +290,7 @@ public class CommandlineSshResourceBrokerAdaptor extends ResourceBrokerCpi {
         return job;
     }
     
-    
+    // Protect against special characters for (most) unix shells.
     private static String protectAgainstShellMetas(String s) {
         char[] chars = s.toCharArray();
         StringBuffer b = new StringBuffer();
@@ -303,4 +306,19 @@ public class CommandlineSshResourceBrokerAdaptor extends ResourceBrokerCpi {
         b.append('\'');
         return b.toString();
     }
+    
+    /* Not now. We'll need this when we start supporting windows ssh servers.
+    // Protect against special characters for the windows command line interpreter.
+    private static String protectAgainstWindowsMetas(String s) {
+        char[] chars = s.toCharArray();
+        StringBuffer b = new StringBuffer();
+        for (char c : chars) {
+            if ("\"&()^;| ".indexOf(c) >= 0) {
+                b.append('^');
+            }
+            b.append(c);
+        }
+        return b.toString();
+    }
+    */
 }
