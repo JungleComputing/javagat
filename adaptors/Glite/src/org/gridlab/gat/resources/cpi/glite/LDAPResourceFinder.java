@@ -295,7 +295,6 @@ public class LDAPResourceFinder {
                 it.remove();
                 return;
             }
-            it.next();
         }
     }
 
