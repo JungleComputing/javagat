@@ -100,6 +100,51 @@ import org.gridlab.gat.io.File;
  */
 @SuppressWarnings("serial")
 public class SoftwareDescription implements java.io.Serializable {
+    
+    /** Indicates the working directory. */
+    public static final String DIRECTORY = "directory";
+    
+    /** Indicates the number of hosts to distribute on. */
+    public static final String HOST_COUNT = "host.count";
+    
+    /** 
+     * Indicates the maximum walltime or cputime for a single execution of the
+     * executable. The units is in minutes.
+     */
+    public static final String TIME_MAX = "time.max";
+    
+    /** 
+     * Indicates the maximum walltime for a single execution of the
+     * executable. The units is in minutes.
+     */    
+    public static final String WALLTIME_MAX = "walltime.max";
+    
+    /** 
+     * Indicates the maximum cputime for a single execution of the
+     * executable. The units is in minutes.
+     */    
+    public static final String CPUTIME_MAX = "cputime.max";
+
+    /** Indicates the job type: single|multiple|mpi|condor|... */
+    public static final String JOB_TYPE = "job.type";
+    
+    /** Indicates the project to use, for accounting purposes. */
+    public static final String PROJECT = "project";
+   
+    /** If set, don't submit but return success. */
+    public static final String DRY_RUN = "dry.run";
+    
+    /** Indicates the minimal required memory in MB. */
+    public static final String MEMORY_MIN = "memory.min";
+    
+    /** Indicates the minimal required memory in MB. */
+    public static final String MEMORY_MAX = "memory.max";
+    
+    /** Indicates that the job data must be kept persistent for restart. */
+    public static final String SAVE_STATE = "save.state";
+    
+    /** Indicates the job id of a to-be-restarted job. */
+    public static final String RESTART = "restart";
 
     private String executable;
 

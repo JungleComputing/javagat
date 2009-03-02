@@ -52,6 +52,30 @@ import java.util.Map;
  */
 @SuppressWarnings("serial")
 public class JavaSoftwareDescription extends SoftwareDescription {
+    /**
+     * Attribute name: indicates the main class that should be executed.
+     * See {@link #JavaSoftwareDescription(Map<String, Object>)}.
+     */
+    public static final String JAVA_MAIN = "java.main";
+    
+    /**
+     * Attribute name: indicates the jvm options for this java application.
+     * See {@link #JavaSoftwareDescription(Map<String, Object>)}.
+     */
+    public static final String JAVA_OPTIONS = "java.options";
+    
+    /**
+     * Attribute name: indicates the java system properties.
+     * See {@link #JavaSoftwareDescription(Map<String, Object>)}.
+     */    
+    public static final String JAVA_SYSTEM_PROPERTIES = "java.system.properties";
+    
+    /**
+     * Attribute name: indicates the java arguments for the main class of
+     * the java application.
+     * See {@link #JavaSoftwareDescription(Map<String, Object>)}.
+     */   
+    public static final String JAVA_ARGUMENTS = "java.arguments";    
 
     private String[] javaOptions;
 
@@ -110,11 +134,11 @@ public class JavaSoftwareDescription extends SoftwareDescription {
     @SuppressWarnings("unchecked")
     public JavaSoftwareDescription(Map<String, Object> attributes) {
         super(attributes);
-        javaMain = (String) attributes.get("java.main");
-        setJavaOptions((String[]) attributes.get("java.options"));
+        javaMain = (String) attributes.get(JAVA_MAIN);
+        setJavaOptions((String[]) attributes.get(JAVA_OPTIONS));
         javaSystemProperties = (Map<String, String>) attributes
-                .get("java.system.properties");
-        javaArguments = (String[]) attributes.get("java.arguments");
+                .get(JAVA_SYSTEM_PROPERTIES);
+        javaArguments = (String[]) attributes.get(JAVA_ARGUMENTS);
         checkArguments();
     }
     

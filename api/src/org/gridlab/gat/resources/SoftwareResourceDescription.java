@@ -75,6 +75,19 @@ import java.util.Map;
  */
 @SuppressWarnings("serial")
 public class SoftwareResourceDescription extends ResourceDescription {
+    
+    /** The os name as returned from <code>uname -s</code>. */
+    public static final String OS_NAME = "os.name";
+    
+    /** The os type as returned from <code>uname -p</code>. */
+    public static final String OS_TYPE = "os.type";
+    
+    /** The os version as returned from <code>uname -v</code>. */
+    public static final String OS_VERSION = "os.version";
+    
+    /** The os release as returned from <code>uname -r</code>. */
+    public static final String OS_RELEASE = "os.release";
+    
     /**
      * Constructs a {@link SoftwareResourceDescription} associated without
      * attributes and dependencies.

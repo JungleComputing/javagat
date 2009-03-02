@@ -107,6 +107,44 @@ import java.util.Map;
  */
 @SuppressWarnings("serial")
 public class HardwareResourceDescription extends ResourceDescription {
+    
+    /** The minimum memory in GB. */
+    public static final String MEMORY_SIZE = "memory.size";
+    
+    /** The minimum memory access time in ns. */
+    public static final String MEMORY_ACCESS_TIME = "memory.accesstime";
+    
+    /** The minimum sustained transfer rate in GB/s. */
+    public static final String MEMORY_STR = "memory.str";
+
+    /** The machine type as returned from <code>uname -m</code>. */
+    public static final String MACHINE_TYPE = "machine.type";
+    
+    /**
+     * The machine node as returned from <code>uname -n</code>. 
+     * Alternatively, this can be an array of {@link java.lang.String}s, if the job
+     * can run on multiple hosts.
+     */
+    public static final String MACHINE_NODE = "machine.node";
+    
+    /** The generic cpu type as returned from <code>uname -p</code>. */
+    public static final String CPU_TYPE = "cpu.type";
+    
+    /** the number of proccessors to use. */
+    public static final String CPU_COUNT = "cpu.count";
+    
+    /** The minimum cpu speed in GHz. */
+    public static final String CPU_SPEED = "cpu.speed";
+
+    /** The minimum size of the hard drive in GB. */
+    public static final String DISK_SIZE = "disk.size";
+    
+    /** The minimum disk access time in ms. */
+    public static final String DISK_ACCESSTIME = "disk.accesstime";
+    
+    /** The minimum sustained transfer rate in MB/s. */
+    public static final String DISK_STR = "disk.str";
+
     /**
      * Constructs a {@link HardwareResourceDescription} associated without
      * attributes and dependencies.

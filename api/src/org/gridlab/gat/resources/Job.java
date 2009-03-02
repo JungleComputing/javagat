@@ -50,7 +50,65 @@ import org.gridlab.gat.monitoring.Monitorable;
  * Note that adaptors might not implement the whole functionality.
  */
 public interface Job extends Monitorable, Advertisable {
+    
+    /**
+     * Key corresponding to a value which is the name of the state the job is in.
+     * The state strings are literally the same as the name of the constants used,
+     * e.g., "RUNNING", or "STOPPED".
+     * See {@link #getInfo()}.
+     */
+    public static final String STATE = "state";
+    
+    /**
+     * Key corresponding to a String value which is the name of the host on which the
+     * physical job is running, if the job is in the RUNNING state. If the
+     * associated job is not in the RUNNING state, the value is null.
+     * See {@link #getInfo()}.
+     */
+    public static final String HOSTNAME = "hostname";
+    
+    /**
+     * Key corresponding to a long value which is the number of milliseconds
+     * after January 1, 1970, 00:00:00 GMT when the associated physical job
+     * was submitted. This value is null for a job in the INITIAL state,
+     * otherwise it is not null.
+     * See {@link #getInfo()}.
+     */
+    public static final String SUBMISSIONTIME = "submissiontime";
+    
+    /**
+     * Key corresponding to a long value which is the number of milliseconds
+     * after January 1, 1970, 00:00:00 GMT when the associated physical job was started.
+     * This value is null for a job in the SCHEDULED or INITIAL states,
+     * otherwise it is not null.
+     * See {@link #getInfo()}.
+     */
+    public static final String STARTTIME = "starttime";
+    
+    /**
+     * Key corresponding to a long value which is the number of milliseconds
+     * after January 1, 1970, 00:00:00 GMT when the associated physical job stopped.
+     * This value is not null for a job in the STOPPED state,
+     * otherwise it is null.
+     * See {@link #getInfo()}.
+     */
+    public static final String STOPTIME = "stoptime";
+    
+    /**
+     * Key corresponding to an exception value that occurred while poststaging.
+     * This key is only present if the application did run but one or more files
+     * could not be poststaged.
+     * See {@link #getInfo()}.
+     */
+    public static final String POSTSTAGE_EXCEPTION = "poststage.exception";
 
+    /**
+     * Key corresponding to a String value which indicates an adaptor-specific
+     * job-id. Present if provided by the adaptor.
+     * See {@link #getInfo()}.
+     */
+    public static final String ADAPTOR_JOB_ID = "adaptor.job.id";
+    
     /**
      * An instance of this enumeration indicates the state of a {@link Job}.
      * 
