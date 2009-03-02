@@ -31,10 +31,12 @@ public class CommandlineSshFileAdaptor extends FileCpi {
         capabilities.put("exists", true);
         return capabilities;
     }
+    
+    private static final String SSH_PORT_STRING = "commandlinesshfile.ssh.port";
 
     public static Preferences getSupportedPreferences() {
         Preferences p = FileCpi.getSupportedPreferences();
-        p.put("commandlinesshfile.ssh.port", "22");
+        p.put(SSH_PORT_STRING, "22");
         return p;
     }
 
@@ -67,8 +69,7 @@ public class CommandlineSshFileAdaptor extends FileCpi {
 
         // Allow different port, so that this adaptor can be used over an
         // ssh tunnel. --Ceriel
-        String port = (String) gatContext.getPreferences().get(
-                "CommandlineSshFile.ssh.port");
+        String port = (String) gatContext.getPreferences().get(SSH_PORT_STRING);
         if (port != null) {
             ssh_port = Integer.parseInt(port);
         } else {
