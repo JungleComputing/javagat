@@ -23,7 +23,6 @@ import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.GATObjectCreationException;
 import org.gridlab.gat.InvalidUsernameOrPasswordException;
-import org.gridlab.gat.Preferences;
 import org.gridlab.gat.URI;
 import org.gridlab.gat.advert.Advertisable;
 import org.gridlab.gat.engine.GATEngine;
@@ -114,8 +113,6 @@ public class GlobusJob extends JobCpi implements GramJobListener,
         this.stoptime = sj.getStoptime();
         this.submissiontime = sj.getSubmissiontime();
 
-        jobsAlive++;
-
         // Tell the engine that we provide job.status events
         HashMap<String, Object> returnDef = new HashMap<String, Object>();
         returnDef.put("status", String.class);
@@ -151,6 +148,8 @@ public class GlobusJob extends JobCpi implements GramJobListener,
         } catch (InvalidUsernameOrPasswordException e) {
             throw new GATObjectCreationException("globus", e);
         }
+        
+        jobsAlive++;
 
         j.setCredentials(credential);
         j.addListener(this);
@@ -540,8 +539,7 @@ public class GlobusJob extends JobCpi implements GramJobListener,
         return res;
     }
 
-    public static Advertisable unmarshal(GATContext context,
-            Preferences preferences, String s)
+    public static Advertisable unmarshal(GATContext context, String s)
             throws GATObjectCreationException {
         if (logger.isDebugEnabled()) {
             logger.debug("unmarshalled seralized job: " + s);
