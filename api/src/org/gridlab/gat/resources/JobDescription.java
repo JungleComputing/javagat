@@ -27,6 +27,13 @@ public class JobDescription extends AbstractJobDescription {
     ResourceDescription resourceDescription;
 
     Resource resource;
+    
+    /**
+     * Needed for castor serialization. Don't use.
+     */
+    public JobDescription() {
+        super();
+    }
 
     /**
      * Create a job description with no resource description. I.e., we don't
