@@ -40,6 +40,7 @@ import org.ietf.jgss.GSSCredential;
  * @version 1.0
  * @since 1.0
  */
+@SuppressWarnings("serial")
 abstract public class GT4FileAdaptor extends FileCpi {
 
     public static Map<String, Boolean> getSupportedCapabilities() {

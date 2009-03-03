@@ -5,6 +5,8 @@ import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.globus.gsi.GlobusCredential;
+import org.globus.gsi.gssapi.GlobusGSSCredentialImpl;
 import org.gridlab.gat.AdaptorNotApplicableException;
 import org.gridlab.gat.GAT;
 import org.gridlab.gat.GATContext;
@@ -16,7 +18,9 @@ import org.gridlab.gat.io.File;
 import org.gridlab.gat.io.cpi.FileCpi;
 import org.gridlab.gat.io.cpi.glite.srm.SrmConnector;
 import org.gridlab.gat.resources.cpi.ResourceBrokerCpi;
+import org.gridlab.gat.security.CredentialSecurityContext;
 import org.gridlab.gat.security.glite.GliteSecurityUtils;
+import org.ietf.jgss.GSSCredential;
 
 /**
  * Adapter for the SRM (v2) protocol for JavaGAT.
@@ -87,7 +91,6 @@ public class GliteSrmFileAdaptor extends FileCpi {
     
     /** {@inheritDoc} */
     public void copy(URI dest) throws GATInvocationException {
-        String saved = System.getProperty("gridProxyInit");
         try {
             if (localFile) {
                 if (!dest.isCompatible(GliteSrmFileAdaptor.SRM_PROTOCOL)) {
@@ -96,18 +99,19 @@ public class GliteSrmFileAdaptor extends FileCpi {
                             + dest);
                 }
                 String proxyFile = GliteSecurityUtils.touchVomsProxy(gatContext);
-                System.setProperty("gridProxyInit", proxyFile);
                 LOGGER.info("SRM/Copy: Uploading " + location + " to " + dest);
                 String turl = connector.getTURLForFileUpload(location, dest);
                 LOGGER.info("SRM/Copy: TURL: " + turl);
                 GATContext newContext = (GATContext) gatContext.clone();
                 newContext.addPreference("File.adaptor.name", "GridFTP");
+                //Remove all the existing contexts and use the new one...
+                newContext.removeSecurityContexts();
+                newContext.addSecurityContext(new CredentialSecurityContext(new GlobusGSSCredentialImpl(new GlobusCredential(proxyFile),GSSCredential.INITIATE_AND_ACCEPT)));
                 File transportFile = GAT.createFile(newContext, location);
                 transportFile.copy(new URI(turl));
                 connector.finalizeFileUpload(dest);
             } else {
                 String proxyFile = GliteSecurityUtils.touchVomsProxy(gatContext);
-                System.setProperty("gridProxyInit", proxyFile);
                 LOGGER
                         .info("SRM/Copy: Downloading " + location + " to "
                                 + dest);
@@ -115,17 +119,14 @@ public class GliteSrmFileAdaptor extends FileCpi {
                 LOGGER.info("SRM/Copy: TURL: " + turl);
                 GATContext newContext = (GATContext) gatContext.clone();
                 newContext.addPreference("File.adaptor.name", "GridFTP");
+                //Remove all the existing contexts and use the new one...
+                newContext.removeSecurityContexts();
+                newContext.addSecurityContext(new CredentialSecurityContext(new GlobusGSSCredentialImpl(new GlobusCredential(proxyFile),GSSCredential.INITIATE_AND_ACCEPT)));
                 File transportFile = GAT.createFile(newContext, turl);
                 transportFile.copy(new URI(dest.getPath()));
             }
         } catch (Exception e) {
             throw new GATInvocationException(GLITE_SRM_FILE_ADAPTOR, e);
-        } finally {
-            if (saved != null) {
-                System.setProperty("gridProxyInit", saved);
-            } else {
-                System.clearProperty("gridProxyInit");
-            }
         }
     }
 

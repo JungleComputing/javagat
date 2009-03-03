@@ -61,7 +61,7 @@ public class LfcConnection {
     private static final int CNS_CREAT			= 4;
     private static final int CNS_MKDIR			= 5;
 //    private static final int CNS_RENAME			= 6;
-//    private static final int CNS_RMDIR			= 7;
+    private static final int CNS_RMDIR			= 7;
 //    private static final int CNS_STAT			= 8;
 //    private static final int CNS_UNLINK			= 9;
     private static final int CNS_OPENDIR		= 10;
@@ -577,7 +577,7 @@ public class LfcConnection {
         return srms;
     }
 
-    public boolean delFiles(String guid, boolean force) throws IOException {
+    public boolean delFiles(String[] guids, boolean force) throws IOException {
         preparePacket(CNS_MAGIC, CNS_DELFILES);
         addIDs();
         final short argtype = 0;
@@ -589,13 +589,23 @@ public class LfcConnection {
         }
         sendBuf.putShort(argtype);
         sendBuf.putShort(sforce);
-        sendBuf.putInt(1); // nbguids
-        putString(guid);
-
+        sendBuf.putInt(guids.length); // nbguids
+        for (int i = 0; i < guids.length; i++) {
+        	putString(guids[i]);
+		}
         sendAndReceive(true);
         int nbstatuses = recvBuf.getInt();
         LOGGER.info("Statuses: " + nbstatuses);
         return nbstatuses == 0;
+    }
+    
+    public void rmdir(String path) throws IOException {
+    	long cwd = 0L;
+    	preparePacket(CNS_MAGIC, CNS_RMDIR);
+        addIDs();
+        sendBuf.putLong(cwd);
+        putString(path);
+        sendAndReceive(true);
     }
 
     public void creat(String path, String guid) throws IOException {

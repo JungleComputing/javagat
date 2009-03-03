@@ -65,12 +65,12 @@ public class GliteLfnFileAdaptor extends FileCpi {
             }
             lfcConnector = LfcUtil.initLfcConnector(gatContext, location, vo);
             try {
-                this.location.setHost(lfcConnector.getServer());
-                this.location.setPort(lfcConnector.getPort());
+            	this.location = this.location.setHost(lfcConnector.getServer());
+                this.location = this.location.setPort(lfcConnector.getPort());
             } catch (URISyntaxException e) {
                 LOGGER.warn(e.getMessage());
             }
-            logger.info("Instantiated gliteLfnFileAdaptor for " + location);
+            LOGGER.info("Instantiated gliteLfnFileAdaptor for " + location);
         }
     }
 
@@ -118,7 +118,7 @@ public class GliteLfnFileAdaptor extends FileCpi {
     /** {@inheritDoc} */
     public void copy(URI dest) throws GATInvocationException {
         try {
-            if (localFile) {
+            if (localFile) { //UPLOAD
                 if (!dest.isCompatible(LFN)) {
                     throw new GATInvocationException(GLITE_LFC_FILE_ADAPTOR
                             + ": " + CANNOT_HANDLE_THIS_URI + dest);
@@ -140,26 +140,30 @@ public class GliteLfnFileAdaptor extends FileCpi {
                 }
                 String guid = UUID.randomUUID().toString();
                 URI target = LfcUtil.upload(location, guid, ses, gatContext);
-                logger.info("Registering file in the LFC...");
+                LOGGER.info("Registering file in the LFC...");
                 try {
-                    lfcConnector.create(dest);
+                    lfcConnector.create(dest,guid);
                 } catch (IOException e) {
                     // If an error occurs, remove the created file from the SE
-                    org.gridlab.gat.io.File toDeleteFile = GAT.createFile(
-                            LfcUtil.getSRMContext(gatContext), target);
+                    org.gridlab.gat.io.File toDeleteFile = GAT.createFile(LfcUtil.getSRMContext(gatContext), target);
                     toDeleteFile.delete();
                     throw e;
                 }
-            } else {
+            } else { //DOWNLOAD
                 String lfnPath = location.getPath();
                 GliteSecurityUtils.touchVomsProxy(gatContext);
-                logger.info("Copying " + lfnPath + " to " + dest);
+                LOGGER.info("Copying " + lfnPath + " to " + dest);
                 Collection<LFCReplica> replicas = lfcConnector.listReplicas(lfnPath, null);
-                logger.info("Replicas: " + replicas);
+                LOGGER.info("Replicas: " + replicas);
+                if(replicas.isEmpty()){
+                	throw new GATInvocationException(GLITE_LFC_FILE_ADAPTOR + ": No replicas found for "+ location);
+                }
                 LFCReplica someReplica = replicas.iterator().next(); //Choose the first replica from the collection
                 GliteSrmFileAdaptor srmFile = new GliteSrmFileAdaptor(gatContext, new URI(someReplica.getSfn()));
                 srmFile.copy(dest);
             }
+        } catch (GATInvocationException e) {
+			throw e;
         } catch (Exception e) {
             throw new GATInvocationException(GLITE_LFC_FILE_ADAPTOR, e);
         }
@@ -171,12 +175,17 @@ public class GliteLfnFileAdaptor extends FileCpi {
             throw new GATInvocationException(GLITE_LFC_FILE_ADAPTOR + ": "
                     + CANNOT_HANDLE_THIS_URI + location);
         }
-        logger.info("create new file: "+location);
+        LOGGER.info("create new file: "+location);
         try {
             GliteSecurityUtils.touchVomsProxy(gatContext);
-            lfcConnector.create(location);
+            String guid = UUID.randomUUID().toString();
+            lfcConnector.create(location, guid);
+            this.location = new URI(GliteGuidFileAdaptor.GUID, null, lfcConnector.getServer(),
+                    lfcConnector.getPort(), '/' + guid, null, null);
         } catch (IOException e) {
             throw new GATInvocationException(GLITE_LFC_FILE_ADAPTOR, e);
+		} catch (URISyntaxException e) {
+			throw new GATInvocationException(GLITE_LFC_FILE_ADAPTOR, e);
 		}
         return true;
     }
@@ -220,10 +229,10 @@ public class GliteLfnFileAdaptor extends FileCpi {
         try {
             String lfn = location.getPath();
             GliteSecurityUtils.touchVomsProxy(gatContext);
-            logger.info("Deleting " + lfn);
+            LOGGER.info("Deleting " + lfn);
             return lfcConnector.deletePath(lfn);
         } catch (IOException e) {
-            logger.error(e.toString());
+            LOGGER.error(e.toString());
             return false;
         }
     }
@@ -318,7 +327,7 @@ public class GliteLfnFileAdaptor extends FileCpi {
     	//Create the VOMS proxy if needed
     	GliteSecurityUtils.touchVomsProxy(gatContext);
     	
-        logger.debug("listing the content of " + location.getPath());
+        LOGGER.debug("listing the content of " + location.getPath());
         Collection<String> lfnUris = null;;
 		try {
 			Collection<LFCFile> files = lfcConnector.list(location.getPath());
@@ -327,15 +336,15 @@ public class GliteLfnFileAdaptor extends FileCpi {
 				for (Iterator<LFCFile> iterator = files.iterator(); iterator.hasNext();) {
 					lfnUris.add("lfn://"+location.getHost()+":"+location.getPort()+"/"+location.getPath() + (location.getPath().endsWith("/") ? "" : "/") + iterator.next().getFileName());
 				}
-				logger.info("LFN URIs: " + lfnUris);
+				LOGGER.info("LFN URIs: " + lfnUris);
 		        String[] content = new String[lfnUris.size()];
 		        return lfnUris.toArray(content);
 			}else{
 				return null;
 			}
 		} catch (IOException e) {
-			logger.error("",e);
-			throw new GATInvocationException(GLITE_LFC_FILE_ADAPTOR, e);
+			LOGGER.error("Unable to list the directory "+location+": "+e.getMessage());
+			return null;
 		}
     }
 
@@ -351,7 +360,8 @@ public class GliteLfnFileAdaptor extends FileCpi {
 			lfcConnector.mkdir(location.getPath());
 			return true;
 		} catch (IOException e) {
-			throw new GATInvocationException(GLITE_LFC_FILE_ADAPTOR, e);
+			LOGGER.error(GLITE_LFC_FILE_ADAPTOR + ": Unable to create the "+location+" directory:" + e.getMessage());
+			return false;
 		}
     }
 

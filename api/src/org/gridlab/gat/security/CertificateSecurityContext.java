@@ -74,9 +74,10 @@ public class CertificateSecurityContext extends SecurityContext {
 
         CertificateSecurityContext other = (CertificateSecurityContext) obj;
 
-        return other.password.equals(password) && other.keyfile.equals(keyfile)
-                && other.username.equals(username)
-                && other.certfile.equals(certfile);
+        return (other.password == null ? password == null : other.password.equals(password))
+        		&& (other.keyfile == null ? keyfile == null : other.keyfile.equals(keyfile))
+                && (other.username == null ? username == null : other.username.equals(username))
+                && (other.certfile == null ? certfile == null : other.certfile.equals(certfile));
     }
 
     /**

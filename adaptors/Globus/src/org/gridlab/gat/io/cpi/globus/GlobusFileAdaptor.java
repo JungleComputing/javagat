@@ -37,6 +37,7 @@ import org.gridlab.gat.io.File;
 import org.gridlab.gat.io.FileInterface;
 import org.gridlab.gat.io.cpi.FileCpi;
 
+@SuppressWarnings("serial")
 public abstract class GlobusFileAdaptor extends FileCpi {
 
     public static Preferences getSupportedPreferences() {
@@ -539,7 +540,6 @@ public abstract class GlobusFileAdaptor extends FileCpi {
         }
     }
 
-    @SuppressWarnings("unchecked")
     private String[] list(boolean fiddle) throws GATInvocationException {
         if (!isDirectory()) {
             return null;

@@ -258,9 +258,8 @@ public class LfcConnector {
             final LfcConnection connection = new LfcConnection(server, port,
                     proxyPath);
             try {
-                if (connection.delete(path) == 0) {
-                    return true;
-                }
+                connection.rmdir(path);
+                return true;
             } finally {
                 connection.close();
             }
@@ -292,7 +291,7 @@ public class LfcConnector {
                 final LfcConnection connection3 = new LfcConnection(server,
                         port, proxyPath);
                 try {
-                    if (!connection3.delFiles(replica.getGuid(), false)) {
+                    if (!connection3.delFiles(new String[]{replica.getGuid()}, false)) {
                         return false;
                     }
                 } finally {
@@ -301,7 +300,6 @@ public class LfcConnector {
             }
 	        return true;
     	}
-    	return false;
     }
 
     /**
@@ -344,7 +342,7 @@ public class LfcConnector {
         final LfcConnection connection3 = new LfcConnection(server, port,
                 proxyPath);
         try {
-            return connection3.delFiles(guid, false);
+            return connection3.delFiles(new String[]{guid}, false);
         } finally {
             connection3.close();
         }
@@ -375,7 +373,7 @@ public class LfcConnector {
             uri = new URI("lfn:///" + path);
         } catch (URISyntaxException e) {
         }
-        return create(uri);
+        return create(uri,guid);
     }
 
     /**
@@ -389,8 +387,7 @@ public class LfcConnector {
      * @throws IOException
      *             if anything goes wrong
      */
-    public String create(URI location) throws IOException {
-        String guid = UUID.randomUUID().toString();
+    public String create(URI location, String guid) throws IOException {
         String path = location.getPath();
         LOGGER.info("Creating " + guid + " with path " + path);
         final LfcConnection connection = new LfcConnection(server, port,

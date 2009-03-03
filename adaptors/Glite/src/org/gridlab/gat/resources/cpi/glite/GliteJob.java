@@ -53,6 +53,9 @@ import org.glite.wsdl.types.lb.JobStatus;
 import org.glite.wsdl.types.lb.StatName;
 import org.globus.axis.transport.HTTPSSender;
 import org.globus.common.CoGProperties;
+import org.globus.gsi.GlobusCredential;
+import org.globus.gsi.GlobusCredentialException;
+import org.globus.gsi.gssapi.GlobusGSSCredentialImpl;
 import org.gridlab.gat.GAT;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
@@ -68,8 +71,11 @@ import org.gridlab.gat.resources.ResourceDescription;
 import org.gridlab.gat.resources.SoftwareDescription;
 import org.gridlab.gat.resources.cpi.JobCpi;
 import org.gridlab.gat.resources.cpi.Sandbox;
+import org.gridlab.gat.security.CredentialSecurityContext;
 import org.gridlab.gat.security.glite.GliteSecurityUtils;
 import org.gridsite.www.namespaces.delegation_1.DelegationSoapBindingStub;
+import org.ietf.jgss.GSSCredential;
+import org.ietf.jgss.GSSException;
 
 @SuppressWarnings("serial")
 public class GliteJob extends JobCpi {
@@ -337,10 +343,16 @@ public class GliteJob extends JobCpi {
         List<File> sandboxFiles = new ArrayList<File>();
         GATContext newContext = (GATContext) gatContext.clone();
         newContext.addPreference("File.adaptor.name", "GridFTP");
-        String saved = System.getProperty("gridProxyInit");
-
+        //Remove all the existing contexts and use the new one..
+        newContext.removeSecurityContexts();
         try {
-            System.setProperty("gridProxyInit", proxyFile);
+			newContext.addSecurityContext(new CredentialSecurityContext(new GlobusGSSCredentialImpl(new GlobusCredential(proxyFile),GSSCredential.INITIATE_AND_ACCEPT)));
+        } catch (GlobusCredentialException e1) {
+			// ignore
+		} catch (GSSException e1) {
+			// ignore
+		}
+        try {
             LOGGER.debug("Staging in files");
             if (swDescription.getStdin() != null) {
                 File f = GAT.createFile(newContext, swDescription.getStdin()
@@ -371,12 +383,6 @@ public class GliteJob extends JobCpi {
             LOGGER.error("Problem while communicating with SOAP services", e);
         } catch (GATInvocationException e) {
             LOGGER.error("Could not copy files to input sandbox", e);
-        } finally {
-            if (saved != null) {
-                System.setProperty("gridProxyInit", saved);
-            } else {
-                System.clearProperty("gridProxyInit");
-            }
         }
     }
 
@@ -559,9 +565,17 @@ public class GliteJob extends JobCpi {
         if (list != null) {
             GATContext newContext = (GATContext) gatContext.clone();
             newContext.addPreference("File.adaptor.name", "GridFTP");
-            String saved = System.getProperty("gridProxyInit");
+            //Remove all the existing contexts and use the new one..
+            newContext.removeSecurityContexts();
+            try {
+				newContext.addSecurityContext(new CredentialSecurityContext(new GlobusGSSCredentialImpl(new GlobusCredential(proxyFile),GSSCredential.INITIATE_AND_ACCEPT)));
+			} catch (GlobusCredentialException e1) {
+				// ignore
+			} catch (GSSException e1) {
+				// ignore
+			}
+			
             for (int i = 0; i < list.length; i++) {
-                System.setProperty("gridProxyInit", proxyFile);
                 try {
                     URI uri1 = new URI(list[i].getName());
                     URI uri2 = new URI(uri1.getScheme() + "://"
@@ -590,12 +604,6 @@ public class GliteJob extends JobCpi {
                     LOGGER.error(
                             "Could not create GAT file when retrieving output",
                             e);
-                } finally {
-                    if (saved != null) {
-                        System.setProperty("gridProxyInit", saved);
-                    } else {
-                        System.clearProperty("gridProxyInit");
-                    }
                 }
             }
         }

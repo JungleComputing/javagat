@@ -56,8 +56,7 @@ public class CredentialSecurityContext extends SecurityContext {
      */
     public boolean equals(Object obj) {
         if (obj instanceof CredentialSecurityContext) {
-            return credential
-                    .equals(((CredentialSecurityContext) obj).credential);
+            return (credential == null ? ((CredentialSecurityContext) obj).credential == null : credential.equals(((CredentialSecurityContext) obj).credential));
         }
         return false;
     }

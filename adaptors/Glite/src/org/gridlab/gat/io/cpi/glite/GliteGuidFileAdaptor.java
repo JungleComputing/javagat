@@ -49,7 +49,7 @@ public class GliteGuidFileAdaptor extends FileCpi {
 
     private static final String GLITE_GUID_FILE_ADAPTOR = "GliteGuidFileAdaptor";
 
-    private static final String GUID = "guid";
+    public static final String GUID = "guid";
     private static final String CANNOT_HANDLE_THIS_URI = "cannot handle this URI: ";
 
     private static final Logger LOGGER = LoggerFactory

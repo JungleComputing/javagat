@@ -91,6 +91,14 @@ public class GATContext implements Cloneable, Serializable {
 
         return typedSecurityContexts;
     }
+    
+    /**
+     * Remove all the {@link SecurityContext}s associated
+     * with this {@link GATContext}.
+     */
+    public void removeSecurityContexts() {
+        securityContexts = new Vector<SecurityContext>();
+    }
 
     /**
      * Adds a {@link Preferences} object to the {@link GATContext} which will be
