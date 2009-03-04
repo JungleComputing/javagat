@@ -124,8 +124,7 @@ public class GliteLfnFileAdaptor extends FileCpi {
                             + ": " + CANNOT_HANDLE_THIS_URI + dest);
                 }
                 if (lfcConnector == null) {
-                    lfcConnector = LfcUtil.initLfcConnector(gatContext, dest,
-                            vo);
+                    lfcConnector = LfcUtil.initLfcConnector(gatContext, dest, vo);
                 }
                 final java.io.File source = new java.io.File(location.getPath());
                 final long filesize = source.length();
@@ -142,8 +141,10 @@ public class GliteLfnFileAdaptor extends FileCpi {
                 URI target = LfcUtil.upload(location, guid, ses, gatContext);
                 LOGGER.info("Registering file in the LFC...");
                 try {
-                    lfcConnector.create(dest,guid);
+                	lfcConnector.create(dest, guid);
+                    lfcConnector.addReplica(guid, target);
                 } catch (IOException e) {
+                	LOGGER.error(GLITE_LFC_FILE_ADAPTOR + ": Unable to add the replica to the LFC - "+e.getMessage());
                     // If an error occurs, remove the created file from the SE
                     org.gridlab.gat.io.File toDeleteFile = GAT.createFile(LfcUtil.getSRMContext(gatContext), target);
                     toDeleteFile.delete();
@@ -158,9 +159,22 @@ public class GliteLfnFileAdaptor extends FileCpi {
                 if(replicas.isEmpty()){
                 	throw new GATInvocationException(GLITE_LFC_FILE_ADAPTOR + ": No replicas found for "+ location);
                 }
-                LFCReplica someReplica = replicas.iterator().next(); //Choose the first replica from the collection
-                GliteSrmFileAdaptor srmFile = new GliteSrmFileAdaptor(gatContext, new URI(someReplica.getSfn()));
-                srmFile.copy(dest);
+                Iterator<LFCReplica> iterator = replicas.iterator();
+                boolean success = false;
+                while(iterator.hasNext() && !success){
+                	LFCReplica someReplica = iterator.next();
+                	try{
+	                    GliteSrmFileAdaptor srmFile = new GliteSrmFileAdaptor(gatContext, new URI(someReplica.getSfn()));
+	                    srmFile.copy(dest);
+	                    success = true;
+                	}catch (GATInvocationException e) {
+                		LOGGER.error(GLITE_LFC_FILE_ADAPTOR + ": Unable to donwload "+ location + " from: "+someReplica.toString()+" - "+e.getMessage());
+					}
+                }
+                if(!success){
+                	LOGGER.error(GLITE_LFC_FILE_ADAPTOR + ": Unable to donwload "+ location + " from any replica location");
+                	throw new GATInvocationException(GLITE_LFC_FILE_ADAPTOR + ": Unable to donwload "+ location + " any replica location");
+                }
             }
         } catch (GATInvocationException e) {
 			throw e;
