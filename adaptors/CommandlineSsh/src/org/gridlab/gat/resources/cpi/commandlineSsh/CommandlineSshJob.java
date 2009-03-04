@@ -13,12 +13,17 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
+import org.gridlab.gat.GATObjectCreationException;
+import org.gridlab.gat.Preferences;
+import org.gridlab.gat.advert.Advertisable;
+import org.gridlab.gat.engine.GATEngine;
 import org.gridlab.gat.monitoring.Metric;
 import org.gridlab.gat.monitoring.MetricDefinition;
 import org.gridlab.gat.monitoring.MetricEvent;
 import org.gridlab.gat.resources.JobDescription;
 import org.gridlab.gat.resources.cpi.JobCpi;
 import org.gridlab.gat.resources.cpi.Sandbox;
+import org.gridlab.gat.resources.cpi.SerializedJob;
 
 /**
  * @author rob
@@ -31,8 +36,8 @@ public class CommandlineSshJob extends JobCpi {
     JobDescription description;
 
     Process p;
-    
-    String processID = "";
+
+    private String processID = null;
 
     int exitStatus = 0;
 
@@ -52,6 +57,27 @@ public class CommandlineSshJob extends JobCpi {
         registerMetric("getJobStatus", statusMetricDefinition);
     }
 
+    /**
+     * Constuctor for unmarshalled jobs.
+     */
+    CommandlineSshJob(GATContext gatContext, SerializedJob sj) {
+        super(gatContext, sj.getJobDescription(), sj.getSandbox());
+
+
+        this.processID = sj.getJobId().toString();
+        this.starttime = sj.getStarttime();
+        this.stoptime = sj.getStoptime();
+        this.submissiontime = sj.getSubmissiontime();
+
+        HashMap<String, Object> returnDef = new HashMap<String, Object>();
+        returnDef.put("status", JobState.class);
+        statusMetricDefinition = new MetricDefinition("job.status",
+                MetricDefinition.DISCRETE, "JobState", null, null, returnDef);
+        statusMetric = statusMetricDefinition.createMetric(null);
+        registerMetric("getJobStatus", statusMetricDefinition);
+    }
+
+
     protected void setProcess(Process p) {
         this.p = p;
         Field f = null;
@@ -59,6 +85,10 @@ public class CommandlineSshJob extends JobCpi {
             f = p.getClass().getDeclaredField("pid");
             f.setAccessible(true);
             processID = f.get(p).toString(); // toString
+            synchronized(this) {
+                // For if a marshaler is waiting.
+                notifyAll();
+            }
             // ignore exceptions // necessary?
         } catch (SecurityException e) {
         } catch (NoSuchFieldException e) {
@@ -72,8 +102,8 @@ public class CommandlineSshJob extends JobCpi {
                 .currentTimeMillis());
         fireMetric(v);
     }
-    
-    
+
+
 
     /*
      * (non-Javadoc)
@@ -94,7 +124,9 @@ public class CommandlineSshJob extends JobCpi {
         } else {
             // This is actually the job ID of the ssh process, not the ID of the
             // remote process.
-            m.put("adaptor.job.id", processID);
+            if (processID != null) {
+                m.put("adaptor.job.id", processID);
+            }
             m.put("submissiontime", submissiontime);
         }
         if (state == JobState.INITIAL || state == JobState.UNKNOWN
@@ -138,11 +170,11 @@ public class CommandlineSshJob extends JobCpi {
     public synchronized void stop() throws GATInvocationException {
         stop(gatContext.getPreferences().containsKey("job.stop.poststage")
                 && gatContext.getPreferences().get("job.stop.poststage")
-                        .equals("false"));
+                .equals("false"));
     }
 
     private synchronized void stop(boolean skipPostStage)
-            throws GATInvocationException {
+    throws GATInvocationException {
         if (state == JobState.POST_STAGING
                 || state == JobState.STOPPED
                 || state == JobState.SUBMISSION_ERROR) {
@@ -218,6 +250,61 @@ public class CommandlineSshJob extends JobCpi {
             }
         }
     }
+
+    /*
+     * @see org.gridlab.gat.advert.Advertisable#marshal()
+     */
+    public String marshal() {
+        SerializedJob sj;
+        synchronized (this) {
+
+            // we have to wait until the job is in a safe state
+            // we cannot marshal it if it is halfway during the poststage
+            // process
+            while (processID == null) {
+                 try {
+                    wait();
+                } catch (Exception e) {
+                    // ignore
+                }
+            }
+
+            sj = new SerializedJob(jobDescription, sandbox, processID,
+                    submissiontime, starttime, stoptime);
+        }
+        String res = GATEngine.defaultMarshal(sj);
+        if (logger.isDebugEnabled()) {
+            logger.debug("marshalled seralized job: " + res);
+        }
+        return res;
+    }
+
+    public static Advertisable unmarshal(GATContext context,
+            Preferences preferences, String s)
+    throws GATObjectCreationException {
+        if (logger.isDebugEnabled()) {
+            logger.debug("unmarshalled seralized job: " + s);
+        }
+
+        SerializedJob sj = (SerializedJob) GATEngine.defaultUnmarshal(
+                SerializedJob.class, s);
+
+        // if this job was created within this JVM, just return a reference to
+        // the job
+        synchronized (JobCpi.class) {
+            for (int i = 0; i < jobList.size(); i++) {
+                JobCpi j = (JobCpi) jobList.get(i);
+                if (j instanceof CommandlineSshJob) {
+                    CommandlineSshJob gj = (CommandlineSshJob) j;
+                    if (sj.getJobId().equals(gj.processID)) {
+                        return gj;
+                    }
+                }
+            }
+        }
+        return new CommandlineSshJob(context, sj);
+    }
+
 
     // public void startOutputWaiter(StreamForwarder outForwarder,
     // StreamForwarder errForwarder) {

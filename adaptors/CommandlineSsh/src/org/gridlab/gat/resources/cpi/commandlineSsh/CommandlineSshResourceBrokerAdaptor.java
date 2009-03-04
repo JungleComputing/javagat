@@ -13,6 +13,7 @@ import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.GATObjectCreationException;
 import org.gridlab.gat.MethodNotApplicableException;
 import org.gridlab.gat.URI;
+import org.gridlab.gat.engine.GATEngine;
 import org.gridlab.gat.engine.util.StreamForwarder;
 import org.gridlab.gat.monitoring.Metric;
 import org.gridlab.gat.monitoring.MetricListener;
@@ -42,6 +43,10 @@ public class CommandlineSshResourceBrokerAdaptor extends ResourceBrokerCpi {
     public static final int SSH_PORT = 22;
 
     private boolean windows = false;
+
+    public static void init() {
+        GATEngine.registerUnmarshaller(CommandlineSshJob.class);
+    }
 
     /**
      * This method constructs a CommandlineSshResourceBrokerAdaptor instance
