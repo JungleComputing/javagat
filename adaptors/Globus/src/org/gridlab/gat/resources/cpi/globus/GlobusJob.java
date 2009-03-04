@@ -517,11 +517,7 @@ public class GlobusJob extends JobCpi implements GramJobListener,
             // we have to wait until the job is in a safe state
             // we cannot marshal it if it is halfway during the poststage
             // process
-            while (true) {
-                if (globusJobID != null) {
-                    break;
-                }
-
+            while (globusJobID == null) {
                 try {
                     wait();
                 } catch (Exception e) {
@@ -555,7 +551,7 @@ public class GlobusJob extends JobCpi implements GramJobListener,
                 JobCpi j = (JobCpi) jobList.get(i);
                 if (j instanceof GlobusJob) {
                     GlobusJob gj = (GlobusJob) j;
-                    if (gj.globusJobID.equals(sj.getJobId())) {
+                    if (sj.getJobId().equals(gj.globusJobID)) {
                         if (logger.isDebugEnabled()) {
                             logger.debug("returning existing job: " + gj);
                         }
