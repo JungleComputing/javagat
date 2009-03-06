@@ -54,26 +54,26 @@ import java.util.Map;
 public class JavaSoftwareDescription extends SoftwareDescription {
     /**
      * Attribute name: indicates the main class that should be executed.
-     * See {@link #JavaSoftwareDescription(Map<String, Object>)}.
+     * See {@link #JavaSoftwareDescription(Map)}.
      */
     public static final String JAVA_MAIN = "java.main";
     
     /**
      * Attribute name: indicates the jvm options for this java application.
-     * See {@link #JavaSoftwareDescription(Map<String, Object>)}.
+     * See {@link #JavaSoftwareDescription(Map)}.
      */
     public static final String JAVA_OPTIONS = "java.options";
     
     /**
      * Attribute name: indicates the java system properties.
-     * See {@link #JavaSoftwareDescription(Map<String, Object>)}.
+     * See {@link #JavaSoftwareDescription(Map)}.
      */    
     public static final String JAVA_SYSTEM_PROPERTIES = "java.system.properties";
     
     /**
      * Attribute name: indicates the java arguments for the main class of
      * the java application.
-     * See {@link #JavaSoftwareDescription(Map<String, Object>)}.
+     * See {@link #JavaSoftwareDescription(Map)}.
      */   
     public static final String JAVA_ARGUMENTS = "java.arguments";    
 
