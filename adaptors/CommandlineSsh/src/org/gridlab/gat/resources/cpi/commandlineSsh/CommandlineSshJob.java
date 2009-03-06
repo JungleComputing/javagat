@@ -279,15 +279,17 @@ public class CommandlineSshJob extends JobCpi {
         return res;
     }
 
-    public static Advertisable unmarshal(GATContext context,
-            Preferences preferences, String s)
-    throws GATObjectCreationException {
+    public static Advertisable unmarshal(GATContext context, String s)
+            throws GATObjectCreationException {
         if (logger.isDebugEnabled()) {
-            logger.debug("unmarshalled seralized job: " + s);
+            logger.debug("serialized job to unmarshal: " + s);
         }
 
         SerializedJob sj = (SerializedJob) GATEngine.defaultUnmarshal(
                 SerializedJob.class, s);
+        if (logger.isDebugEnabled()) {
+            logger.debug("unmarshalled serialized job: " + sj);
+        }
 
         // if this job was created within this JVM, just return a reference to
         // the job
