@@ -12,6 +12,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
+import org.gridlab.gat.Preferences;
 import org.gridlab.gat.monitoring.cpi.MonitorableCpi;
 import org.gridlab.gat.resources.HardwareResource;
 import org.gridlab.gat.resources.HardwareResourceDescription;
@@ -69,15 +70,27 @@ public abstract class JobCpi extends MonitorableCpi implements Job {
         this(gatContext);
         this.jobDescription = jobDescription;
         this.sandbox = sandbox;
+        boolean stopOnExit = true;
+        Preferences prefs = gatContext.getPreferences();
+
+        if (prefs.containsKey("job.stop.on.exit")
+                && prefs.get("job.stop.on.exit").equals("false")) {
+            stopOnExit = false;
+        }
+
         // better make this an attribute!
-        
         // NOTE: jobDescription may be null, since this class is extended by CoScheduleJob, and 
         // (for reasons I don't understand) CoScheduleJobDescription does NOT extend JobDescription
         //
         // -- Jason
         //
-        if (jobDescription != null && jobDescription.getSoftwareDescription().getBooleanAttribute(
+
+        if (jobDescription != null
+                && !jobDescription.getSoftwareDescription().getBooleanAttribute(
                 "job.stop.on.exit", true)) {
+            stopOnExit = false;
+        }
+        if (stopOnExit) {
             synchronized (JobCpi.class) {
                 if (shutdownInProgress) {
                     throw new Error(
