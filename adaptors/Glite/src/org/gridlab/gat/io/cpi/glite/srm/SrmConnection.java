@@ -65,6 +65,8 @@ public class SrmConnection {
     private final ISRM service;
     private URI activeUploadURI;
     private String activeToken;
+    
+    private static final int MAX_SRM_REQUEST_TRY = 8;
 
     /**
      * Create a new SRM connection to the given host. All operations called
@@ -167,47 +169,54 @@ public class SrmConnection {
                 + fileStatus.getStatus().getStatusCode() + " "
                 + fileStatus.getStatus().getExplanation());
 
-        long period = 1000;
+        long period = 500;
 
         SrmStatusOfGetRequestRequest statusRequest = new SrmStatusOfGetRequestRequest();
         statusRequest.setRequestToken(requestToken);
-
-        statusRequest
-                .setArrayOfSourceSURLs(new ArrayOfAnyURI(new URI[] { uri }));
-
-        while ((status.getStatusCode().equals(TStatusCode.SRM_REQUEST_QUEUED))
-                || (status.getStatusCode()
-                        .equals(TStatusCode.SRM_REQUEST_INPROGRESS))) {
-            try {
-                Thread.sleep(period);
-            } catch (InterruptedException e) {
-            }
-
-            SrmStatusOfGetRequestResponse statusResponse = service
-                    .srmStatusOfGetRequest(statusRequest);
-            status = statusResponse.getReturnStatus();
-            fileStatus = statusResponse.getArrayOfFileStatuses()
-                    .getStatusArray(0);
-
-            LOGGER.info("Status: " + status.getStatusCode());
-            LOGGER.info("Status exp: " + status.getExplanation());
-            LOGGER
-                    .info("FileStatus: "
-                            + fileStatus.getStatus().getStatusCode());
-            LOGGER.info("FileStatus exp: "
-                    + fileStatus.getStatus().getExplanation());
-
+        statusRequest.setArrayOfSourceSURLs(new ArrayOfAnyURI(new URI[] { uri }));
+        
+        if ( !status.getStatusCode().equals( TStatusCode.SRM_REQUEST_QUEUED ) ) {
+        	String log= "Status: " + status.getStatusCode()+
+    		"\n"+"Status exp: " + status.getExplanation()+
+    		"\n"+"FileStatus: " + fileStatus.getStatus().getStatusCode()+
+    		"\n"+"FileStatus exp: "+ fileStatus.getStatus().getExplanation();
+        	throw new IOException("SRM Get Request error: "+log);
         }
 
+        int retryCount = 0;
+        do {
+        	if(retryCount > 0){
+	        	try {
+	                Thread.sleep(period * retryCount);
+	            } catch (InterruptedException e) {}
+            }
+        	SrmStatusOfGetRequestResponse statusResponse = service.srmStatusOfGetRequest(statusRequest);
+            status = statusResponse.getReturnStatus();
+            fileStatus = statusResponse.getArrayOfFileStatuses().getStatusArray(0);
+
+            String log= "Status: " + status.getStatusCode()+
+            		"\n"+"Status exp: " + status.getExplanation()+
+            		"\n"+"FileStatus: " + fileStatus.getStatus().getStatusCode()+
+            		"\n"+"FileStatus exp: "+ fileStatus.getStatus().getExplanation();
+            		
+            LOGGER.info(log);
+        	
+            retryCount++;
+		} while ((!( status.getStatusCode().equals( TStatusCode.SRM_DONE ) || status.getStatusCode().equals( TStatusCode.SRM_SUCCESS ))) 
+				&& retryCount <= MAX_SRM_REQUEST_TRY);
+        
         if (status.getStatusCode().equals(TStatusCode.SRM_SUCCESS)) {
-            if (TStatusCode.SRM_FILE_PINNED.equals(fileStatus.getStatus()
-                    .getStatusCode())) {
+            if (TStatusCode.SRM_FILE_PINNED.equals(fileStatus.getStatus().getStatusCode())) {
                 transportURL = fileStatus.getTransferURL().toString();
                 LOGGER.info("Received transfer URL: " + transportURL);
             }
-        } else
-            throw new IOException(status.getStatusCode() + ": "
-                    + fileStatus.getStatus().getStatusCode());
+        } else{
+        	String log= "Status: " + status.getStatusCode()+
+    		"\n"+"Status exp: " + status.getExplanation()+
+    		"\n"+"FileStatus: " + fileStatus.getStatus().getStatusCode()+
+    		"\n"+"FileStatus exp: "+ fileStatus.getStatus().getExplanation();
+            throw new IOException("SRM Get Request error: "+log);
+        }
         return transportURL;
     }
 
