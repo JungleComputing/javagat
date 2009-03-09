@@ -221,7 +221,7 @@ public class Components {
 	public synchronized HashMap<String, Object> getInfo(
 			HashMap<String, Object> map) {
 
-		String jobSite = null;
+		// String jobSite = null;
 
 		if (map == null) {
 			map = new HashMap<String, Object>();
