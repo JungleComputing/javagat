@@ -17,7 +17,12 @@ import java.util.Properties;
 
 public class Client {
 	private static void makeHttpsClientLogin(String uri) throws Exception {
-		String protocol = "https://";
+	    // Create a login request. A login request is a POST request that looks like
+	    // POST /accounts/ClientLogin HTTP/1.0
+	    // Content-type: application/x-www-form-urlencoded
+	    // Email=johndoe@gmail.com&Passwd=north23AZ&service=gbase&source=Insert Example
+		
+		//Setting up SSL
 		Security.addProvider(new com.sun.net.ssl.internal.ssl.Provider());
 
 		Properties properties = System.getProperties();
@@ -27,49 +32,59 @@ public class Client {
 			/* nothing specified yet (expected case) */
 			properties.put("java.protocol.handler.pkgs",
 					"com.sun.net.ssl.internal.www.protocol");
-		} 
-		else {
+		} else {
 			/* something already there, put ourselves out front */
 			properties.put("java.protocol.handler.pkgs",
 					"com.sun.net.ssl.internal.www.protocol|".concat(handlers));
 		}
-		System.setProperties(properties); 		
+		System.setProperties(properties); 	
 		
-		URL url = new URL(protocol.concat(uri)); 
-		URLConnection urlc = url.openConnection();
-		HttpURLConnection httpc = (HttpURLConnection) url.openConnection();
+		// Create URL object
+		URL url = new URL(uri);
 		
-		String authString = "accountType=HOSTED_OR_GOOGLE&Email=johndoe@gmail.com&Passwd=north23AZ&service=ah&source=Gulp-CalGulp-1.05";
-		
-		httpc.setRequestMethod("POST");
-		urlc.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
-		urlc.setRequestProperty("Content-Length", authString.length() + "");
-		urlc.setUseCaches(false);
-		urlc.setDoOutput(true);
-		OutputStreamWriter out = 
-			new OutputStreamWriter(urlc.getOutputStream());
-		
-		/* Writing POST data. */
-		out.write(authString);
-		out.close();
-
-		/* Retrieving headers. */
-//		System.out.println(httpc.getResponseCode());
-//		System.out.println(httpc.getResponseMessage());
-//		System.out.println(httpc.getRequestMethod());
-		for (int i = 0; httpc.getHeaderField(i) != null; i++) {
-			System.out.println((httpc.getHeaderFieldKey(i)==null?"":httpc.getHeaderFieldKey(i) + ": ") + httpc.getHeaderField(i));
+	    // Open connection
+	    HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
+	  
+	    // Set properties of the connection
+	    urlConnection.setRequestMethod("POST");
+	    urlConnection.setDoInput(true);
+	    urlConnection.setDoOutput(true);
+	    urlConnection.setUseCaches(false);
+	    urlConnection.setRequestProperty("Content-Type",
+	                                     "application/x-www-form-urlencoded");
+	  
+	    // Form the POST parameters
+	    StringBuilder content = new StringBuilder();
+	    content.append("Email=").append(URLEncoder.encode("johndoe@gmail.com", "UTF-8"));
+	    content.append("&Passwd=").append(URLEncoder.encode("north23AZ", "UTF-8"));
+	    content.append("&service=").append(URLEncoder.encode("xapi", "UTF-8"));
+	    content.append("&source=").append(URLEncoder.encode("Google Base data API example", "UTF-8"));
+	
+	    OutputStream outputStream = urlConnection.getOutputStream();
+	    outputStream.write(content.toString().getBytes("UTF-8"));
+	    outputStream.close();
+	  
+	    // Retrieve the output
+	    int responseCode = urlConnection.getResponseCode();
+	    InputStream inputStream;
+	    if (responseCode == HttpURLConnection.HTTP_OK) {
+	      inputStream = urlConnection.getInputStream();
+	    } else {
+	      inputStream = urlConnection.getErrorStream();
+	    }
+	    
+		for (int i = 0; urlConnection.getHeaderField(i) != null; i++) {
+			System.out.println((urlConnection.getHeaderFieldKey(i)==null?"":urlConnection.getHeaderFieldKey(i) + ": ") + urlConnection.getHeaderField(i));
 		}
+	    
+		System.out.println("----");
 		
-		/* Retrieving body. */	
-//		BufferedReader in = 
-//			new BufferedReader(new InputStreamReader(urlc.getInputStream()));
-//		String inputLine;
-//
-//		while ((inputLine = in.readLine()) != null) {
-//			System.out.println(inputLine);
-//		}
-//		in.close();				
+		BufferedReader in = 
+			new BufferedReader(new InputStreamReader(inputStream));
+		String inputLine;
+	    while ((inputLine = in.readLine()) != null) {
+			System.out.println(inputLine);
+		}
 	}
 
 	private static void makeHttpsLogin(String uri) throws Exception {
@@ -360,7 +375,7 @@ public class Client {
 		//makeHttpsLogin(uri);
 		
 		/* Logging in to Google's ClientLogin. */
-		uri = "www.google.com/accounts/ClientLogin";
+		uri = "https://www.google.com/accounts/ClientLogin";
 		makeHttpsClientLogin(uri);
 	}
 }
