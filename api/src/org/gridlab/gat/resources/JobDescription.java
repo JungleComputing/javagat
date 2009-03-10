@@ -40,6 +40,7 @@ public class JobDescription extends AbstractJobDescription {
      *                the {@link SoftwareDescription} of the executable.
      */
     public JobDescription(SoftwareDescription softwareDescription) {
+        this();
         this.softwareDescription = softwareDescription;
     }
 
@@ -55,6 +56,7 @@ public class JobDescription extends AbstractJobDescription {
      */
     public JobDescription(SoftwareDescription softwareDescription,
             ResourceDescription resourceDescription) {
+        this();
         this.softwareDescription = softwareDescription;
         this.resourceDescription = resourceDescription;
     }
@@ -70,6 +72,7 @@ public class JobDescription extends AbstractJobDescription {
      */
     public JobDescription(SoftwareDescription softwareDescription,
             Resource resource) {
+        this();
         this.softwareDescription = softwareDescription;
         this.resource = resource;
     }
