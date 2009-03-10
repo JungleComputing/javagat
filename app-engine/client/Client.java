@@ -16,6 +16,15 @@ import java.security.Security;
 import java.util.Properties;
 
 public class Client {
+
+	/**
+	 * This function makes a login attempt to Google's ClientLogin API.
+	 * 
+	 * @param uri
+	 *     {@link String} to make the connection to.
+	 * @throws Exception
+	 *     The connection can't be established.
+	 */		
 	private static void makeHttpsClientLogin(String uri) throws Exception {
 	    // Create a login request. A login request is a POST request that looks like
 	    // POST /accounts/ClientLogin HTTP/1.0
@@ -87,39 +96,31 @@ public class Client {
 		}
 	}
 
-	private static void makeHttpsLogin(String uri) throws Exception {
+	/**
+	 * This function emulates the Google login page over and HTTP 
+	 * connection.
+	 * 
+	 * @param uri
+	 *     {@link String} to make the connection to.
+	 * @throws Exception
+	 *     The connection can't be established.
+	 */	
+	private static void makeHttpLogin(String uri) throws Exception {
 		String protocol = "http://";
-//		Security.addProvider(new com.sun.net.ssl.internal.ssl.Provider());
-//
-//		Properties properties = System.getProperties();
-//
-//		String handlers = System.getProperty("java.protocol.handler.pkgs");
-//		if (handlers == null) {
-//			/* nothing specified yet (expected case) */
-//			properties.put("java.protocol.handler.pkgs",
-//					"com.sun.net.ssl.internal.www.protocol");
-//		} 
-//		else {
-//			/* something already there, put ourselves out front */
-//			properties.put("java.protocol.handler.pkgs",
-//					"com.sun.net.ssl.internal.www.protocol|".concat(handlers));
-//		}
-//		System.setProperties(properties); 
 
 		try {
 			URL page = new URL(protocol.concat(uri)); 
 			URLConnection urlc = page.openConnection();
 
-			System.out.println("*** Logging into https://" + uri + " ***");
+			System.out.println("*** Logging into http://" + uri + " ***");
 			
-//			urlc.setUseCaches(false);
-//			urlc.setDoOutput(true);
-//			OutputStreamWriter out = 
-//				new OutputStreamWriter(urlc.getOutputStream());
-//			
-//			/* Writing POST data. */
-//			out.write("");
-//			out.close();
+			urlc.setDoOutput(true);
+			OutputStreamWriter out = 
+				new OutputStreamWriter(urlc.getOutputStream());
+			
+			/* Writing POST data. */
+			out.write("");
+			out.close();
 			
 			/* Retrieving body. */	
 			BufferedReader in = 
@@ -166,7 +167,112 @@ public class Client {
 		}
 		in.close();
 	}
+	
+	/**
+	 * This function does an HTTP POST request, sending multiple data items
+	 * to a server. In this case it is one string of text, and one binary
+	 * file.
+	 * 
+	 * @param uri
+	 *     {@link String} to make the connection to.
+	 * @throws Exception
+	 *     The connection can't be established.
+	 */
+	private static void makeHttpMultipartPost(String uri) throws Exception {
+		/* Setting up a new connection. */
+		String protocol = "http://";
+		String filename = "/Volumes/Users/bbn230/Documents/workspace/app-engine/app-engine/client/appengine.gif"; /* OSX location */
+		//String filename = "E:/Documents/Documents/Eclipse/workspace/app-engine/app-engine/client/appengine.gif";  /* Win location */
+		String boundary = "AaB03x"; /* Part boundaries should not occur in any of the data; how this is done lies outside the scope of this specification. */
+		
+		/* Setting up URL */
+		URL url = new URL(protocol.concat(uri));
+		//URLConnection urlc = url.openConnection();
+		HttpURLConnection httpc = (HttpURLConnection) url.openConnection();
+		
+		/* Reading file into buffer */
+		File file = new File(filename);
+		
+	    DataInputStream is = new DataInputStream(new FileInputStream(file));
+	    
+	    byte[] b = new byte[(int) file.length()];
+	    int size = 0;
+	    
+	    try {
+	    	size = is.read(b);
+	        System.out.println("Bytes read: " + size);
+		} 
+	    catch (EOFException eof) {
+			System.out.println("EOF reached."); 
+		}
+		catch (IOException ioe) {
+			System.out.println("IO error: " + ioe);
+		}
+		
+		/* Setting up request headers */
+		httpc.setRequestMethod("POST");
+	    httpc.setDoInput(true);
+	    httpc.setDoOutput(true);
+	    httpc.setRequestProperty("Content-Type", "multipart/form-data; boundary=" + boundary);
+			    
+	    /* Connecting and POSTing */
+		httpc.connect();
+		DataOutputStream dos = new DataOutputStream(httpc.getOutputStream());
+		OutputStreamWriter osw = new OutputStreamWriter(httpc.getOutputStream());
+		
+		/*
+		 * Content-Type: multipart/form-data; boundary=AaB03x
+		 * 
+		 * --AaB03x
+   		 * Content-Disposition: form-data; name="submit-name"
+		 * 
+		 * Larry
+		 * --AaB03x
+         * Content-Disposition: form-data; name="object"; filename="appengine.gif"
+         * Content-Type: image/gif
+         * 
+         * ... contents of file1.txt ...
+         * --AaB03x--
+         *
+		 */
+		
+		/* Building POST message */
+		osw.write("--" + boundary + "\r\n");
+		osw.write("Content-Disposition: form-data; name=\"path\"\r\n\r\n");
+		osw.write("abcdefgh" + "\r\n");
+		osw.write("--" + boundary + "\r\n");
+		osw.write("Content-Disposition: form-data; name=\"object\"; filename=\"appengine.gif\"\r\n");
+		osw.write("Content-Type: image/gif\r\n\r\n");
+		osw.flush();
+		
+		try {
+			dos.write(b, 0, size);
+			dos.flush();
+		}
+		catch (IOException ioe) {
+			System.out.println("IO error: " + ioe);
+		}
 
+		osw.write("\r\n");
+		osw.write("--" + boundary + "--");
+		osw.flush();
+		
+		dos.close();
+		osw.close();
+		
+		System.out.println("done. HTTP Response: " + httpc.getResponseCode());	
+		
+		/* Retrieving body. */
+		BufferedReader in = 
+			new BufferedReader(new InputStreamReader(httpc.getInputStream()));
+		String inputLine;
+
+		while ((inputLine = in.readLine()) != null) {
+			System.out.println(inputLine);
+		}
+		in.close();
+	}
+	
 	/**
 	 * This function makes an HTTP connection using the POST method, and
 	 * sends a binary file as the message body.
@@ -365,17 +471,19 @@ public class Client {
 		//makeHttpPost(uri);
 		uri = server.concat("binary/get");
 		//makeHttpBinaryPost(uri);
+		uri = server.concat("binary/multipart");
+		makeHttpMultipartPost(uri);
 		
 		/* Making a connection using cookes. */
 		uri = server.concat("cookies/");
 		//makeHttpCookies(uri);
 		
-		/* Logging in on a Google login page (using HTTPS). */
+		/* Logging in on a Google login page (using HTTP). */
 		uri = server.concat("_ah/login?email=test?example.com&action=Login&continue=http://localhost:8081/cookies/");
-		//makeHttpsLogin(uri);
+		//makeHttpLogin(uri);
 		
 		/* Logging in to Google's ClientLogin. */
 		uri = "https://www.google.com/accounts/ClientLogin";
-		makeHttpsClientLogin(uri);
+		//makeHttpsClientLogin(uri);
 	}
 }
