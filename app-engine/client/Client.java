@@ -18,6 +18,41 @@ import java.util.Properties;
 public class Client {
 
 	/**
+	 * This function tests a response of any binary data.
+	 * 
+	 * @param uri
+	 *     {@link String} to make the connection to.
+	 * @throws Exception
+	 *     The connection can't be established.
+	 */
+	private static void makeHttpBinaryResponse(String uri) throws Exception {
+		/* Setting up a new connection. */
+		String protocol = "http://";
+		URL url = new URL(protocol.concat(uri));
+//		URLConnection urlc = url.openConnection();
+		HttpURLConnection httpc = (HttpURLConnection) url.openConnection();
+		
+		System.out.println("*** Making an HTTP connection to http://" + uri + " ***");
+
+		/* Retrieving headers. */
+		System.out.println(httpc.getResponseCode());
+		System.out.println(httpc.getRequestMethod());
+		for (int i = 0; httpc.getHeaderField(i) != null; i++) {
+			System.out.println((httpc.getHeaderFieldKey(i)==null?"":httpc.getHeaderFieldKey(i) + ": ") + httpc.getHeaderField(i));
+		}
+
+		/* Retrieving body. */
+		BufferedReader in = 
+			new BufferedReader(new InputStreamReader(httpc.getInputStream()));
+		String inputLine;
+
+		while ((inputLine = in.readLine()) != null) {
+			System.out.println(inputLine);
+		}
+		in.close();		
+	}
+	
+	/**
 	 * This function makes a login attempt to Google's ClientLogin API.
 	 * 
 	 * @param uri
@@ -109,28 +144,32 @@ public class Client {
 		String protocol = "http://";
 
 		try {
-			URL page = new URL(protocol.concat(uri)); 
-			URLConnection urlc = page.openConnection();
+			URL url = new URL(protocol.concat(uri)); 
+			HttpURLConnection httpc = (HttpURLConnection) url.openConnection();
 
 			System.out.println("*** Logging into http://" + uri + " ***");
 			
-			urlc.setDoOutput(true);
-			OutputStreamWriter out = 
-				new OutputStreamWriter(urlc.getOutputStream());
+		    httpc.setRequestMethod("GET");
+		    httpc.setDoInput(true);
+		    httpc.setDoOutput(true);
+		    httpc.setUseCaches(false);
 			
-			/* Writing POST data. */
-			out.write("");
-			out.close();
-			
+			/* Retrieving headers. */
+			System.out.println(httpc.getResponseCode());
+			System.out.println(httpc.getRequestMethod());
+			for (int i = 0; httpc.getHeaderField(i) != null; i++) {
+				System.out.println((httpc.getHeaderFieldKey(i)==null?"":httpc.getHeaderFieldKey(i) + ": ") + httpc.getHeaderField(i));
+			}
+
 			/* Retrieving body. */	
 			BufferedReader in = 
-				new BufferedReader(new InputStreamReader(urlc.getInputStream()));
+				new BufferedReader(new InputStreamReader(httpc.getInputStream()));
 			String inputLine;
 
 			while ((inputLine = in.readLine()) != null) {
 				System.out.println(inputLine);
 			}
-			in.close();		
+			in.close();
 		} 
 		catch (MalformedURLException mue) {
 			System.out.println("URL cannot be resolved");
@@ -458,7 +497,7 @@ public class Client {
 	 */
 	public static void main(String argv[]) throws Exception {
 //		String server = "bbn230.appspot.com/";
-		String server = "localhost:8081/";
+		String server = "localhost:8080/";
 		String uri = null;
 		
 		/* Making a standard connection in HTTP(S). */
@@ -472,18 +511,22 @@ public class Client {
 		uri = server.concat("binary/get");
 		//makeHttpBinaryPost(uri);
 		uri = server.concat("binary/multipart");
-		makeHttpMultipartPost(uri);
+		//makeHttpMultipartPost(uri);
 		
 		/* Making a connection using cookes. */
 		uri = server.concat("cookies/");
 		//makeHttpCookies(uri);
 		
 		/* Logging in on a Google login page (using HTTP). */
-		uri = server.concat("_ah/login?email=test?example.com&action=Login&continue=http://localhost:8081/cookies/");
+		uri = server.concat("_ah/login?email=test@example.com&action=Login");
 		//makeHttpLogin(uri);
 		
 		/* Logging in to Google's ClientLogin. */
 		uri = "https://www.google.com/accounts/ClientLogin";
 		//makeHttpsClientLogin(uri);
+		
+		/* Getting a binary response. */
+		uri = server.concat("binary/display");
+		//makeHttpBinaryResponse(uri);
 	}
 }
