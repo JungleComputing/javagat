@@ -48,7 +48,9 @@ public class CommandlineSshFileAdaptor extends FileCpi {
     private boolean windows = false;
 
     private final int ssh_port;
-
+    
+    private URI fixedURI;
+    
     /**
      * @param gatContext
      * @param preferences
@@ -62,6 +64,8 @@ public class CommandlineSshFileAdaptor extends FileCpi {
             throw new AdaptorNotApplicableException("cannot handle this URI: "
                     + location);
         }
+        
+        fixedURI = fixURI(location, null);
 
         String osname = System.getProperty("os.name");
         if (osname.startsWith("Windows"))
@@ -120,17 +124,7 @@ public class CommandlineSshFileAdaptor extends FileCpi {
     }
 
     public boolean mkdir() throws GATInvocationException {
-        return runSshCommand(true, "mkdir", getPathFixed());
-    }
-
-    // This method modifies the path if the path is on the local host and is
-    // relative, any ssh command would be relative to the ssh entry point
-    // ($HOME), but we want it to be relative to the cwd of the user. --roelof
-    private String getPathFixed() {
-        if (isAbsolute() || !location.refersToLocalHost()) {
-            return getPath();
-        }
-        return System.getProperty("user.dir") + File.separator + getPath();
+        return runSshCommand(true, "mkdir", fixedURI.getPath());
     }
 
     public boolean delete() throws GATInvocationException {
@@ -140,28 +134,28 @@ public class CommandlineSshFileAdaptor extends FileCpi {
         if (!exists()) {
             return false;
         }
-        return runSshCommand(true, "rm",  "-rf",  getPathFixed());
+        return runSshCommand(true, "rm",  "-rf", fixedURI.getPath());
     }
 
     public boolean isDirectory() throws GATInvocationException {
         if (windows) {
             throw new UnsupportedOperationException("Not implemented");
         }
-        return runSshCommand(true, "test",  "-d", getPathFixed());
+        return runSshCommand(true, "test",  "-d", fixedURI.getPath());
     }
 
     public boolean isFile() throws GATInvocationException {
         if (windows) {
             throw new UnsupportedOperationException("Not implemented");
         }
-        return runSshCommand(true, "test",  "-f",  getPathFixed());
+        return runSshCommand(true, "test",  "-f", fixedURI.getPath());
     }
 
     public boolean exists() throws GATInvocationException {
         if (windows) {
             throw new UnsupportedOperationException("Not implemented");
         }
-        return runSshCommand(true, "test", "-e", getPathFixed());
+        return runSshCommand(true, "test", "-e", fixedURI.getPath());
     }
 
     private ArrayList<String> getSshCommand() throws GATInvocationException {
@@ -190,7 +184,7 @@ public class CommandlineSshFileAdaptor extends FileCpi {
     public void copy(URI dest) throws GATInvocationException {
         // We don't have to handle the local case, the GAT engine will select
         // the local adaptor.
-        if (dest.refersToLocalHost() && (toURI().refersToLocalHost())) {
+        if (dest.getAuthority() == null && (toURI().getAuthority() == null)) {
             if (logger.isDebugEnabled()) {
                 logger.debug("commandlineSsh file: copy local to local");
             }
@@ -198,7 +192,7 @@ public class CommandlineSshFileAdaptor extends FileCpi {
             return;
         }
 
-        if (dest.refersToLocalHost()) {
+        if (dest.getAuthority() == null) {
             if (logger.isDebugEnabled()) {
                 logger.debug("commandlineSsh file: copy remote to local");
             }
@@ -207,7 +201,7 @@ public class CommandlineSshFileAdaptor extends FileCpi {
             return;
         }
 
-        if (toURI().refersToLocalHost()) {
+        if (toURI().getAuthority() == null) {
             if (logger.isDebugEnabled()) {
                 logger.debug("commandlineSsh file: copy local to remote");
             }

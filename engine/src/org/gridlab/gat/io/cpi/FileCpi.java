@@ -529,8 +529,9 @@ public abstract class FileCpi extends MonitorableCpi implements FileInterface, j
     }
 
     protected static URI fixURI(URI in, String destScheme) {
-        // if destscheme != null replaces or adds destscheme to in
-        // if local relative file, add "user.dir" in front of it
+        // if destscheme != null replaces or adds destscheme to in.
+        // if local relative file, add "user.dir" in front of it,
+        // but only if there is no Authority part in the URI.
         String uriString = in.toString();
         if (destScheme != null) {
             if (in.getScheme() != null) {
@@ -543,7 +544,7 @@ public abstract class FileCpi extends MonitorableCpi implements FileInterface, j
                 }
             }
         }
-        if (in.refersToLocalHost() && !isAbsolute(in)) {
+        if (in.getAuthority() == null && !isAbsolute(in)) {
             if (destScheme == null && in.getScheme() == null) {
                 uriString = "file:" + uriString;
             }

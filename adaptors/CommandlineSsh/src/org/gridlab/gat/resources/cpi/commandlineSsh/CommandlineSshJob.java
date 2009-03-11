@@ -74,6 +74,8 @@ public class CommandlineSshJob extends JobCpi {
                 MetricDefinition.DISCRETE, "JobState", null, null, returnDef);
         statusMetric = statusMetricDefinition.createMetric(null);
         registerMetric("getJobStatus", statusMetricDefinition);
+        
+        // TODO: How to obtain a Process for it? Not possible, I think. --Ceriel
     }
 
 

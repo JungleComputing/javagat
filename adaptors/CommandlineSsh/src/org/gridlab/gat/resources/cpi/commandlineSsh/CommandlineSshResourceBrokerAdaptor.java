@@ -166,8 +166,10 @@ public class CommandlineSshResourceBrokerAdaptor extends ResourceBrokerCpi {
         String password = securityInfo.get("password");
         int privateKeySlot = -1;
         try {
-            privateKeySlot = Integer.parseInt(securityInfo
-                    .get("privatekeyslot"));
+            String v = securityInfo.get("privatekeyslot");
+            if (v != null) {
+                privateKeySlot = Integer.parseInt(v);
+            }
         } catch (NumberFormatException e) {
             if (logger.isDebugEnabled()) {
                 logger.debug("unable to parse private key slot: " + e);
