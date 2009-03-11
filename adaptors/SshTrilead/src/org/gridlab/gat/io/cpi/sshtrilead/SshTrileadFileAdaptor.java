@@ -668,7 +668,8 @@ public class SshTrileadFileAdaptor extends FileCpi {
             } catch (Exception e) {
                 throw new GATInvocationException("sshtrilead", e);
             }
-            if (result[STDERR].length() != 0) {
+            if (result[STDERR].length() != 0
+                    && ! result[STDERR].startsWith("Warning:")) {
                 throw new GATInvocationException(
                         "Third party transfer failed: " + result[STDERR]);
             }
