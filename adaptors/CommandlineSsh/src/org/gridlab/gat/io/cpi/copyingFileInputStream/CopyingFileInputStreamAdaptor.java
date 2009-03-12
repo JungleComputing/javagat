@@ -37,7 +37,7 @@ public class CopyingFileInputStreamAdaptor extends FileInputStreamCpi {
         return capabilities;
     }
 
-    private static final int MAX_SIZE = 1 * 1024 * 1024;
+    // private static final int MAX_SIZE = 1 * 1024 * 1024;
 
     FileInputStream in;
 
@@ -55,19 +55,21 @@ public class CopyingFileInputStreamAdaptor extends FileInputStreamCpi {
         }
 
         // See if we can read the file, and get the size.
-        long size = 0;
+        // size stuff commented out because the CommandlineSshFileAdaptor does not
+        // support f.length! --Ceriel
+        // long size = 0;
         CommandlineSshFileAdaptor f = null;
         try {
             f = new CommandlineSshFileAdaptor(gatContext, location);
-            size = f.length();
+            // size = f.length();
         } catch (Exception e) {
             throw new GATObjectCreationException("copying inputstream", e);
         }
 
-        if (size > MAX_SIZE) {
-            throw new GATObjectCreationException(
-                    "copying inputstream: file to large to copy");
-        }
+//        if (size > MAX_SIZE) {
+//            throw new GATObjectCreationException(
+//                    "copying inputstream: file to large to copy");
+//        }
 
         // now try to create a stream.
         try {
