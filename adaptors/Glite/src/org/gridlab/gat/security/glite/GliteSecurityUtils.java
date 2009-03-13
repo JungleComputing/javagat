@@ -336,4 +336,47 @@ public final class GliteSecurityUtils {
         preferences.put(GliteConstants.PREFERENCE_VOMS_CREATE_NEW_PROXY,
                 "ondemand");
     }
+
+    /**
+     * Ensure the gatContext contains only a gLite compatible security context.
+     * It does so by removing the old context and adding a single security
+     * context containing the voms proxy.
+     * <p>
+     * The security context is passed as byte array with the contents of the
+     * proxy. The reasons behind this are:
+     * <ul>
+     * <li>the original credentials do not gave the gLite specific extensions
+     * and will fail on some WMS servers (while working on others).
+     * <li>If the globus credentials would be created here, the class would be
+     * incompatible to the globus credentials class loaded in the context of the
+     * globus adaptor's classloader.
+     * <li>The globus adaper is fully capable of re-creating the credential
+     * information from a byte array.
+     * </ul>
+     * 
+     * @param gatContext
+     *            GATContext in which to replace the security information.
+     */
+    public static void replaceSecurityContextWithGliteContext(
+            GATContext gatContext) {
+        CredentialSecurityContext gsc = null;
+        try {
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            FileInputStream fis = new FileInputStream(getProxyPath(gatContext));
+            byte[] buffer = new byte[1024];
+            while (fis.read(buffer) != (-1)) {
+                baos.write(buffer);
+            }
+            gsc = new CredentialSecurityContext(baos.toByteArray());
+        } catch (FileNotFoundException e2) {
+            logger.error("The file denoted by gridProxyFile does not exist");
+        } catch (IOException e) {
+            logger.error("Error reading the proxy file");
+        }
+        if (gsc != null) {
+            gatContext.removeSecurityContexts();
+            gatContext.addSecurityContext(gsc);
+        }
+    }
+
 }

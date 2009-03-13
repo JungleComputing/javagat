@@ -35,8 +35,6 @@ import org.apache.axis.SimpleTargetedChain;
 import org.apache.axis.configuration.BasicClientConfig;
 import org.apache.axis.configuration.SimpleProvider;
 import org.apache.axis.transport.http.HTTPSender;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.glite.security.delegation.GrDPX509Util;
 import org.glite.security.delegation.GrDProxyGenerator;
 import org.glite.security.trustmanager.ContextWrapper;
@@ -53,9 +51,6 @@ import org.glite.wsdl.types.lb.JobStatus;
 import org.glite.wsdl.types.lb.StatName;
 import org.globus.axis.transport.HTTPSSender;
 import org.globus.common.CoGProperties;
-import org.globus.gsi.GlobusCredential;
-import org.globus.gsi.GlobusCredentialException;
-import org.globus.gsi.gssapi.GlobusGSSCredentialImpl;
 import org.gridlab.gat.GAT;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
@@ -71,17 +66,17 @@ import org.gridlab.gat.resources.ResourceDescription;
 import org.gridlab.gat.resources.SoftwareDescription;
 import org.gridlab.gat.resources.cpi.JobCpi;
 import org.gridlab.gat.resources.cpi.Sandbox;
-import org.gridlab.gat.security.CredentialSecurityContext;
 import org.gridlab.gat.security.glite.GliteSecurityUtils;
 import org.gridsite.www.namespaces.delegation_1.DelegationSoapBindingStub;
-import org.ietf.jgss.GSSCredential;
-import org.ietf.jgss.GSSException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @SuppressWarnings("serial")
 public class GliteJob extends JobCpi {
 
     private final static int LB_PORT = 9003;
-    private static final Logger LOGGER = LoggerFactory.getLogger(GliteJob.class);
+    private static final Logger LOGGER = LoggerFactory
+            .getLogger(GliteJob.class);
 
     private java.net.URL lbURL;
     private JDL gLiteJobDescription;
@@ -343,15 +338,7 @@ public class GliteJob extends JobCpi {
         List<File> sandboxFiles = new ArrayList<File>();
         GATContext newContext = (GATContext) gatContext.clone();
         newContext.addPreference("File.adaptor.name", "GridFTP");
-        //Remove all the existing contexts and use the new one..
-        newContext.removeSecurityContexts();
-        try {
-			newContext.addSecurityContext(new CredentialSecurityContext(new GlobusGSSCredentialImpl(new GlobusCredential(proxyFile),GSSCredential.INITIATE_AND_ACCEPT)));
-        } catch (GlobusCredentialException e1) {
-			// ignore
-		} catch (GSSException e1) {
-			// ignore
-		}
+        GliteSecurityUtils.replaceSecurityContextWithGliteContext(newContext);
         try {
             LOGGER.debug("Staging in files");
             if (swDescription.getStdin() != null) {
@@ -361,7 +348,11 @@ public class GliteJob extends JobCpi {
             }
 
             Map<File, File> map = swDescription.getPreStaged();
-            sandboxFiles.addAll(map.keySet());
+
+            for (File orig : map.keySet()) {
+                File newF = GAT.createFile(newContext, orig.toGATURI());
+                sandboxFiles.add(newF);
+            }
 
             String[] sl = serviceStub.getSandboxDestURI(sandboxJobID, "gsiftp")
                     .getItem();
@@ -565,16 +556,9 @@ public class GliteJob extends JobCpi {
         if (list != null) {
             GATContext newContext = (GATContext) gatContext.clone();
             newContext.addPreference("File.adaptor.name", "GridFTP");
-            //Remove all the existing contexts and use the new one..
-            newContext.removeSecurityContexts();
-            try {
-				newContext.addSecurityContext(new CredentialSecurityContext(new GlobusGSSCredentialImpl(new GlobusCredential(proxyFile),GSSCredential.INITIATE_AND_ACCEPT)));
-			} catch (GlobusCredentialException e1) {
-				// ignore
-			} catch (GSSException e1) {
-				// ignore
-			}
-			
+            // Remove all the existing contexts and use the new one..
+            GliteSecurityUtils.replaceSecurityContextWithGliteContext(newContext);
+
             for (int i = 0; i < list.length; i++) {
                 try {
                     URI uri1 = new URI(list[i].getName());

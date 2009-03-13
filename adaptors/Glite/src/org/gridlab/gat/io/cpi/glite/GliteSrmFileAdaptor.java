@@ -104,9 +104,7 @@ public class GliteSrmFileAdaptor extends FileCpi {
                 LOGGER.info("SRM/Copy: TURL: " + turl);
                 GATContext newContext = (GATContext) gatContext.clone();
                 newContext.addPreference("File.adaptor.name", "GridFTP");
-                //Remove all the existing contexts and use the new one...
-                newContext.removeSecurityContexts();
-                newContext.addSecurityContext(new CredentialSecurityContext(new GlobusGSSCredentialImpl(new GlobusCredential(proxyFile),GSSCredential.INITIATE_AND_ACCEPT)));
+                GliteSecurityUtils.replaceSecurityContextWithGliteContext(newContext);
                 File transportFile = GAT.createFile(newContext, location);
                 transportFile.copy(new URI(turl));
                 connector.finalizeFileUpload(dest);
@@ -119,9 +117,7 @@ public class GliteSrmFileAdaptor extends FileCpi {
                 LOGGER.info("SRM/Copy: TURL: " + turl);
                 GATContext newContext = (GATContext) gatContext.clone();
                 newContext.addPreference("File.adaptor.name", "GridFTP");
-                //Remove all the existing contexts and use the new one...
-                newContext.removeSecurityContexts();
-                newContext.addSecurityContext(new CredentialSecurityContext(new GlobusGSSCredentialImpl(new GlobusCredential(proxyFile),GSSCredential.INITIATE_AND_ACCEPT)));
+                GliteSecurityUtils.replaceSecurityContextWithGliteContext(newContext);
                 File transportFile = GAT.createFile(newContext, turl);
                 transportFile.copy(new URI(dest.getPath()));
             }
