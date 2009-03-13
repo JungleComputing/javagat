@@ -117,8 +117,8 @@ public class CertificateSecurityContext extends SecurityContext {
     public String toString() {
         return "CertificateSecurityContext(keyfile = " + keyfile
                 + " certfile = " + certfile
-                + ((username == null) ? "" : ("username = " + username))
-                + ((dataObjects == null) ? "" : ("userdata = " + dataObjects))
+                + ((username == null) ? "" : (" username = " + username))
+                + ((dataObjects == null) ? "" : (" userdata = " + dataObjects))
                 + ")";
     }
 
