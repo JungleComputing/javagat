@@ -51,6 +51,18 @@ class Display(webapp.RequestHandler):
       self.response.headers['Content-Type'] = "image/gif"
       self.response.out.write(bin.data)
       break
+  
+class Modify(webapp.RequestHandler):
+  def get(self):
+    binlist = db.GqlQuery("SELECT * FROM Bin")
+    
+    for bin in binlist:
+      bytes = bin.data
+      break
+    
+    self.response.out.write(ord(bytes[0:1]))
+    #self.response.headers['Content-Type'] = "image/gif"
+    #self.response.out.write(bytes[10:])
 
 class Listing(webapp.RequestHandler):
   def get(self):
@@ -67,6 +79,7 @@ application = webapp.WSGIApplication(
                                       ('/binary/get', Download),
                                       ('/binary/multipart', MultiPart),
                                       ('/binary/display', Display),
+                                      ('/binary/modify', Modify),
                                       ('/binary/list', Listing)],
                                      debug=True)
 

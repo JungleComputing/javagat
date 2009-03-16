@@ -13,6 +13,7 @@ package client;
 import java.net.*;
 import java.io.*;
 import java.security.Security;
+import java.util.Iterator;
 import java.util.Properties;
 
 public class Client {
@@ -60,7 +61,7 @@ public class Client {
 	 * @throws Exception
 	 *     The connection can't be established.
 	 */		
-	private static void makeHttpsClientLogin(String uri) throws Exception {
+	private static void makeHttpsClientLogin(String uri, String password) throws Exception {
 	    // Create a login request. A login request is a POST request that looks like
 	    // POST /accounts/ClientLogin HTTP/1.0
 	    // Content-type: application/x-www-form-urlencoded
@@ -99,8 +100,8 @@ public class Client {
 	  
 	    // Form the POST parameters
 	    StringBuilder content = new StringBuilder();
-	    content.append("Email=").append(URLEncoder.encode("johndoe@gmail.com", "UTF-8"));
-	    content.append("&Passwd=").append(URLEncoder.encode("north23AZ", "UTF-8"));
+	    content.append("Email=").append(URLEncoder.encode("ibisadvert@gmail.com", "UTF-8"));
+	    content.append("&Passwd=").append(URLEncoder.encode(password, "UTF-8"));
 	    content.append("&service=").append(URLEncoder.encode("xapi", "UTF-8"));
 	    content.append("&source=").append(URLEncoder.encode("Google Base data API example", "UTF-8"));
 	
@@ -205,6 +206,82 @@ public class Client {
 			System.out.println(inputLine);
 		}
 		in.close();
+	}
+
+	/**
+	 * This function does a binary post, with self-encoded data.
+	 * 
+	 * @param uri
+	 *     {@link String} to make the connection to.
+	 * @throws Exception
+	 *     The connection can't be established.
+	 */	
+	private static void makeOwnPost(String uri) throws Exception {
+		String protocol = "http://";
+		String filename = "/Volumes/Users/bbn230/Documents/workspace/app-engine/app-engine/client/appengine.gif"; /* OSX location */
+		//String filename = "E:/Documents/Documents/Eclipse/workspace/app-engine/app-engine/client/appengine.gif";  /* Win location */
+		String prefix = "0123456789";
+		
+		/* Setting up URL */
+		URL url = new URL(protocol.concat(uri));
+		HttpURLConnection httpc = (HttpURLConnection) url.openConnection();
+		
+		/* Reading file into buffer */
+		File file = new File(filename);
+		
+	    DataInputStream is = new DataInputStream(new FileInputStream(file));
+
+		Integer pathLength = new Integer(prefix.length());
+		System.out.println();
+	    
+	    byte[] a = new byte[1];
+	    a[0] = pathLength.byteValue();
+	    byte[] b = new byte[(int) file.length()];
+ 	    byte[] c = new byte [a.length + b.length];
+ 	    
+	    int size = 0;
+	    
+	    try {
+	    	size = is.read(b);
+	        System.out.println("Bytes read: " + size);
+		} 
+	    catch (EOFException eof) {
+			System.out.println("EOF reached."); 
+		}
+		catch (IOException ioe) {
+			System.out.println("IO error: " + ioe);
+		}
+
+		System.arraycopy(a, 0, c, 0,        a.length);
+		System.arraycopy(b, 0, c, a.length, b.length);
+		
+		/* Setting up request headers */
+		httpc.setRequestMethod("POST");
+		httpc.setDoInput(true);
+		httpc.setDoOutput(true);
+		httpc.connect();
+		DataOutputStream out = new DataOutputStream(httpc.getOutputStream());
+		
+		try {
+			out.write(c, 0, a.length + b.length);
+			out.flush();
+			out.close();
+		}
+		catch (IOException ioe) {
+			System.out.println("IO error: " + ioe);
+		}
+		
+		System.out.println("done. HTTP Response: " + httpc.getResponseCode());	
+		
+		/* Retrieving body. */
+		BufferedReader in = 
+			new BufferedReader(new InputStreamReader(httpc.getInputStream()));
+		String inputLine;
+
+		while ((inputLine = in.readLine()) != null) {
+			System.out.println(inputLine);
+		}
+		in.close();		
 	}
 	
 	/**
@@ -497,7 +574,7 @@ public class Client {
 	 */
 	public static void main(String argv[]) throws Exception {
 //		String server = "bbn230.appspot.com/";
-		String server = "localhost:8080/";
+		String server = "localhost:8081/";
 		String uri = null;
 		
 		/* Making a standard connection in HTTP(S). */
@@ -512,6 +589,8 @@ public class Client {
 		//makeHttpBinaryPost(uri);
 		uri = server.concat("binary/multipart");
 		//makeHttpMultipartPost(uri);
+		uri = server.concat("binary/get");
+		//makeOwnPost(uri);
 		
 		/* Making a connection using cookes. */
 		uri = server.concat("cookies/");
@@ -523,7 +602,10 @@ public class Client {
 		
 		/* Logging in to Google's ClientLogin. */
 		uri = "https://www.google.com/accounts/ClientLogin";
-		//makeHttpsClientLogin(uri);
+		if (argv.length != 1) {
+			System.out.println("***Usage: provide password as first and only argument!");
+		}
+		//makeHttpsClientLogin(uri, argv[0]);
 		
 		/* Getting a binary response. */
 		uri = server.concat("binary/display");

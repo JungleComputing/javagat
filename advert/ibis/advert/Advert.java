@@ -11,7 +11,11 @@ package ibis.advert;
  * @author bbn230
  */
 
-import java.util.NoSuchElementException;
+import java.io.OutputStream;
+import java.net.URLEncoder;
+import java.util.*;
+import java.text.StringCharacterIterator;
+import java.text.CharacterIterator;
 
 public class Advert {
 	/**
@@ -31,7 +35,74 @@ public class Advert {
 	 */
 	public void add(byte[] bytes, MetaData metaData, String path)
 			throws AppEngineResourcesException {
+		
+		byte   pathSize  = new Integer(path.length()).byteValue(); 
+		byte[] pathBytes = path.getBytes();
 
+		Iterator<String> itr  = metaData.getAllKeys().iterator();
+		StringBuilder content = new StringBuilder();
+		StringCharacterIterator scitr = null;
+		char c = ' ';
+	
+		while (itr.hasNext()) {
+			String key = itr.next();
+			String value = metaData.get(key);
+
+			if (value == null) {
+				continue;
+			}
+
+			scitr = new StringCharacterIterator(key);
+			c =  scitr.current();
+			
+			while (c != CharacterIterator.DONE ) {
+				if (c == ':') {
+					content.append("\\:");
+				}
+				else if (c == '=') {
+					content.append("\\=");
+				}
+
+				else {
+					content.append(c);
+				}
+				
+				c = scitr.next();
+			}
+			
+			content.append('=');
+			
+			scitr = new StringCharacterIterator(value);
+			c =  scitr.current();
+			
+			while (c != CharacterIterator.DONE ) {
+				if (c == ':') {
+					content.append("\\:");
+				}
+				else if (c == '=') {
+					content.append("\\=");
+				}
+
+				else {
+					content.append(c);
+				}
+				
+				c = scitr.next();
+			}
+			
+			content.append(':');
+		}
+					
+		byte   metaDataSize  = new Integer(content.length()).byteValue();
+		byte[] metaDataBytes = content.toString().getBytes();
+		
+        /* TODO: Send in following order:
+         * pathSize pathBytes metaDataSize metaDataBytes bytes
+         * 
+         * TODO: What if there is no MetaData? Tell server (e.g. metaDataSize=0).
+         * TODO: Escape delimiters in MetaData.
+         * TODO: Return TTL of data stored at server (optional)?
+         */
 	}
 
 	/**
