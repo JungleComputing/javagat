@@ -871,6 +871,9 @@ public class GATEngine {
     private static List<Adaptor> reorderAdaptorList(List<Adaptor> adaptors,
             String cpiName, Preferences preferences)
             throws GATObjectCreationException {
+        
+        int removed = 0;
+        
         logger.debug("reordering, cpiname: " + cpiName + ", preferences: "
                 + preferences);
 
@@ -902,6 +905,7 @@ public class GATEngine {
             names[i] = names[i].trim(); // remove the whitespace
             // names of adaptors that should not be used start with a '!'
             if (names[i].startsWith("!")) {
+                removed++;
                 names[i] = names[i].substring(1); // remove the '!'
                 int pos = result
                         .indexOf(getAdaptor(names[i], cpiName, adaptors));
@@ -934,6 +938,11 @@ public class GATEngine {
                     // place the adaptor on the proper position
                     result.add(insertPosition, result.remove(currentPosition));
                     insertPosition++;
+                } else if (currentPosition < 0) {
+                    if (logger.isInfoEnabled()) {
+                        logger.info("Found non existing adaptor in " + cpiName
+                                + ".adaptor.name preference: " + names[i]);
+                    }
                 }
             }
         }
@@ -945,7 +954,8 @@ public class GATEngine {
             for (int i = insertPosition; i < endPosition; i++) {
                 result.remove(insertPosition);
             }
-        } else if (insertPosition == 0) {
+        } else if (insertPosition == 0 && removed < names.length) {
+            // nothing inserted, but it was not all removals ...
             throw new GATObjectCreationException(
                     "no adaptors available for preference: \"" + cpiName
                             + ".adaptor.name\", \"" + nameString + "\"");
