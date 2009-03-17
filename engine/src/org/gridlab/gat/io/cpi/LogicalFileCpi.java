@@ -11,7 +11,6 @@ import org.gridlab.gat.GAT;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.GATObjectCreationException;
-import org.gridlab.gat.Preferences;
 import org.gridlab.gat.URI;
 import org.gridlab.gat.advert.Advertisable;
 import org.gridlab.gat.engine.GATEngine;
@@ -297,13 +296,13 @@ public abstract class LogicalFileCpi extends MonitorableCpi implements LogicalFi
     }
 
     public static Advertisable unmarshal(GATContext context,
-            Preferences preferences, String s) {
+            String s) {
         SerializedLogicalFile f = (SerializedLogicalFile) GATEngine
                 .defaultUnmarshal(SerializedFile.class, s);
 
         try {
-            LogicalFile lf = GAT.createLogicalFile(context, preferences, f
-                    .getName(), f.getMode());
+            LogicalFile lf = GAT.createLogicalFile(context, f.getName(),
+                    f.getMode());
 
             for (int i = 0; i < f.getFiles().size(); i++) {
                 lf.addURI(new URI(f.getFiles().get(i)));
