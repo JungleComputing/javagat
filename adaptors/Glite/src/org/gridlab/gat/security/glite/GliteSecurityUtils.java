@@ -1,6 +1,10 @@
 package org.gridlab.gat.security.glite;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.List;
 
 import org.slf4j.Logger;
@@ -13,6 +17,7 @@ import org.gridlab.gat.Preferences;
 import org.gridlab.gat.URI;
 import org.gridlab.gat.resources.cpi.glite.GliteConstants;
 import org.gridlab.gat.security.CertificateSecurityContext;
+import org.gridlab.gat.security.CredentialSecurityContext;
 import org.gridlab.gat.security.SecurityContext;
 
 /**

@@ -3,10 +3,6 @@ package org.gridlab.gat.io.cpi.glite;
 import java.io.IOException;
 import java.util.Map;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.globus.gsi.GlobusCredential;
-import org.globus.gsi.gssapi.GlobusGSSCredentialImpl;
 import org.gridlab.gat.AdaptorNotApplicableException;
 import org.gridlab.gat.GAT;
 import org.gridlab.gat.GATContext;
@@ -18,9 +14,9 @@ import org.gridlab.gat.io.File;
 import org.gridlab.gat.io.cpi.FileCpi;
 import org.gridlab.gat.io.cpi.glite.srm.SrmConnector;
 import org.gridlab.gat.resources.cpi.ResourceBrokerCpi;
-import org.gridlab.gat.security.CredentialSecurityContext;
 import org.gridlab.gat.security.glite.GliteSecurityUtils;
-import org.ietf.jgss.GSSCredential;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Adapter for the SRM (v2) protocol for JavaGAT.
@@ -98,6 +94,7 @@ public class GliteSrmFileAdaptor extends FileCpi {
                             + ": " + GliteSrmFileAdaptor.CANNOT_HANDLE_THIS_URI
                             + dest);
                 }
+                @SuppressWarnings("unused")
                 String proxyFile = GliteSecurityUtils.touchVomsProxy(gatContext);
                 LOGGER.info("SRM/Copy: Uploading " + location + " to " + dest);
                 String turl = connector.getTURLForFileUpload(location, dest);
@@ -109,6 +106,7 @@ public class GliteSrmFileAdaptor extends FileCpi {
                 transportFile.copy(new URI(turl));
                 connector.finalizeFileUpload(dest);
             } else {
+                @SuppressWarnings("unused")
                 String proxyFile = GliteSecurityUtils.touchVomsProxy(gatContext);
                 LOGGER
                         .info("SRM/Copy: Downloading " + location + " to "
