@@ -27,6 +27,7 @@ public class CommandlineSshFileAdaptor extends FileCpi {
         capabilities.put("delete", true);
         capabilities.put("isDirectory", true);
         capabilities.put("isFile", true);
+        capabilities.put("list", true);
         capabilities.put("mkdir", true);
         capabilities.put("exists", true);
         return capabilities;
@@ -68,8 +69,12 @@ public class CommandlineSshFileAdaptor extends FileCpi {
         fixedURI = fixURI(location, null);
 
         String osname = System.getProperty("os.name");
+        
+        // local machine is windows?
         if (osname.startsWith("Windows"))
             windows = true;
+        
+        // TODO: test if remote machine is windows, and if so, fail.
 
         // Allow different port, so that this adaptor can be used over an
         // ssh tunnel. --Ceriel
@@ -92,25 +97,11 @@ public class CommandlineSshFileAdaptor extends FileCpi {
      */
     private boolean runSshCommand(String[] params, boolean writeError,
             boolean nonEmptyOutputMeansSuccess) throws GATInvocationException {
-        ArrayList<String> command = getSshCommand();
-        for (String p : params) {
-            command.add(p);
-        }
-        CommandRunner runner = new CommandRunner(command);
-        if (logger.isDebugEnabled()) {
-            logger.debug("running command = " + command);
-        }
+        
+        CommandRunner runner = runSshCommand(params);
+
         int exitVal = runner.getExitCode();
-        if (logger.isDebugEnabled()) {
-            logger.debug("exitCode=" + exitVal);
-        }
-        if (exitVal > 1) {
-            // bigger than 1 means ssh error and not false as command response
-            if (logger.isInfoEnabled()) {
-                logger.info("command failed, error=" + runner.getStderr());
-            }
-            throw new GATInvocationException("invocation error");
-        }
+
         if (exitVal == 1 && writeError) {
             if (logger.isInfoEnabled()) {
                 logger.info("command failed, error=" + runner.getStderr());
@@ -121,6 +112,77 @@ public class CommandlineSshFileAdaptor extends FileCpi {
                     || runner.getStderr().length() != 0;
         }
         return exitVal == 0;
+    }
+    
+    private CommandRunner runSshCommand(String... params) throws GATInvocationException {
+        ArrayList<String> command = getSshCommand();
+        for (String p : params) {
+            command.add(p);
+        }
+        
+        if (logger.isDebugEnabled()) {
+            logger.debug("running command = " + command);
+        }
+        
+        CommandRunner runner = new CommandRunner(command);
+
+        int exitVal = runner.getExitCode();
+        
+        if (logger.isDebugEnabled()) {
+            logger.debug("exitCode=" + exitVal);
+        }
+        
+        if (exitVal > 1) {
+            // bigger than 1 means ssh error and not false as command response
+            if (logger.isInfoEnabled()) {
+                logger.info("command failed, error=" + runner.getStderr());
+            }
+            throw new GATInvocationException("invocation error");
+        }
+        
+        return runner;
+    }
+    
+    public String[] list() throws GATInvocationException {
+        CommandRunner command = runSshCommand("ls","-1", fixedURI.getPath());
+        if (command.getExitCode() != 0) {
+            if (logger.isInfoEnabled()) {
+                logger.info("command failed, error = " + command.getStderr());
+            }
+            // command failed, but ssh did not --> assume non-directory.
+            return null;
+        }
+
+        String result = command.getStdout();
+        if (result == null || result.equals("")) {
+            return new String[0];
+        }
+        return result.split("\n");
+    }
+    
+    public File[] listFiles() throws GATInvocationException {
+        try {
+            String[] f = list();
+            if (f == null) {
+                return null;
+            }
+            File[] res = new File[f.length];
+
+            for (int i = 0; i < f.length; i++) {
+                String uri = fixedURI.toString();
+
+                if (!uri.endsWith("/")) {
+                    uri += "/";
+                }
+
+                uri += f[i];
+                res[i] = GAT.createFile(gatContext, new URI(uri));
+            }
+
+            return res;
+        } catch (Exception e) {
+            throw new GATInvocationException("file cpi", e);
+        }
     }
 
     public boolean mkdir() throws GATInvocationException {
