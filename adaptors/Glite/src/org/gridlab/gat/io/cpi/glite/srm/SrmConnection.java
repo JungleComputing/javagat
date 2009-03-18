@@ -55,7 +55,7 @@ import org.ietf.jgss.GSSException;
 /**
  * Non-GAT specific functionality to connect with SRM v2.
  * 
- * @author Max Berger, Thomas Zangerl
+ * @author Max Berger, Thomas Zangerl, Jerome Revillard
  * 
  */
 public class SrmConnection {
@@ -97,8 +97,7 @@ public class SrmConnection {
         LOGGER.info("getting srm service at " + host);
 
         try {
-            URL
-                    .setURLStreamHandlerFactory(new org.globus.net.GlobusURLStreamHandlerFactory());
+            URL.setURLStreamHandlerFactory(new org.globus.net.GlobusURLStreamHandlerFactory());
         } catch (Error e) {
             // ignore
         }
