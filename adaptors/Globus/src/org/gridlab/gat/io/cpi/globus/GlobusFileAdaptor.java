@@ -760,7 +760,11 @@ public abstract class GlobusFileAdaptor extends FileCpi {
         FTPClient client = null;
 
         try {
+            String parent = getParent();
             String remotePath = getPath();
+            if (parent == null) {
+                parent = "/";
+            }
 
             if (logger.isDebugEnabled()) {
                 logger.debug("getINFO: remotePath = " + remotePath
@@ -778,32 +782,25 @@ public abstract class GlobusFileAdaptor extends FileCpi {
             Vector<?> v = null;
 
             if (isOldServer(gatContext.getPreferences())) {
-                v = listNoMinusD(client, remotePath);
+                v = listNoMinusD(client, parent);
             } else {
-                v = client.list(remotePath);
+                v = client.list(parent);
             }
 
             if (v.size() == 0) {
                 throw new FileNotFoundException("File not found: " + location);
-            } else if (v.size() != 1) {
-                // just use the info for "."
-                for (int i = 0; i < v.size(); i++) {
-                    FileInfo tmp = (FileInfo) v.get(i);
-                    if (tmp.getName().equals(".")) {
-                        tmp.setName(getName());
-                        cachedInfo = tmp;
-                        break;
-                    }
+            }
+            
+            for (int i = 0; i < v.size(); i++) {
+                FileInfo tmp = (FileInfo) v.get(i);
+                if (tmp.getName().equals(getName())) {
+                    cachedInfo = tmp;
+                    break;
                 }
-
-                if (cachedInfo == null) {
-                    throw new GATInvocationException(
-                            "Internal error: size of list is not 1 and could not find \".\", remotePath = "
-                                    + remotePath + ", list is: " + v);
-                }
-
-            } else {
-                cachedInfo = (FileInfo) v.get(0);
+            }
+            
+            if (cachedInfo == null) {
+                throw new FileNotFoundException("File not found: " + location);
             }
 
             return cachedInfo;
@@ -924,12 +921,10 @@ public abstract class GlobusFileAdaptor extends FileCpi {
             // it can also be a link, so continue with slow method
         } catch(FileNotFoundException e) {
             return false;
-        } catch (GATInvocationException e) {
-            if (logger.isDebugEnabled()) {
-                logger
-                        .debug("fast isDirectory failed, falling back to slower version: "
-                                + e);
-            }
+        }
+        if (logger.isDebugEnabled()) {
+            logger
+            .debug("fast isDirectory failed, falling back to slower version");
         }
 
         return isDirectorySlow();
