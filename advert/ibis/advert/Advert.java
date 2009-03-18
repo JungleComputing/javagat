@@ -33,7 +33,7 @@ public class Advert {
 	 *             This exception is thrown when the App Engine runs out of
 	 *             resources.
 	 */
-	public void add(byte[] bytes, MetaData metaData, String path)
+	public void add(byte[] object, MetaData metaData, String path)
 			throws AppEngineResourcesException {
 		
 		byte   pathSize  = new Integer(path.length()).byteValue(); 
@@ -62,11 +62,9 @@ public class Advert {
 				else if (c == '=') {
 					content.append("\\=");
 				}
-
 				else {
 					content.append(c);
 				}
-				
 				c = scitr.next();
 			}
 			
@@ -82,11 +80,9 @@ public class Advert {
 				else if (c == '=') {
 					content.append("\\=");
 				}
-
 				else {
 					content.append(c);
 				}
-				
 				c = scitr.next();
 			}
 			
@@ -96,11 +92,11 @@ public class Advert {
 		byte   metaDataSize  = new Integer(content.length()).byteValue();
 		byte[] metaDataBytes = content.toString().getBytes();
 		
+		byte   objectSize    = new Integer(object.length).byteValue();
+		
         /* TODO: Send in following order:
-         * pathSize pathBytes metaDataSize metaDataBytes bytes
+         * pathSize pathBytes metaDataSize metaDataBytes objectSize object
          * 
-         * TODO: What if there is no MetaData? Tell server (e.g. metaDataSize=0).
-         * TODO: Escape delimiters in MetaData.
          * TODO: Return TTL of data stored at server (optional)?
          */
 	}

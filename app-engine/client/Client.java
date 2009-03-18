@@ -122,14 +122,25 @@ public class Client {
 			System.out.println((urlConnection.getHeaderFieldKey(i)==null?"":urlConnection.getHeaderFieldKey(i) + ": ") + urlConnection.getHeaderField(i));
 		}
 	    
-		System.out.println("----");
-		
 		BufferedReader in = 
 			new BufferedReader(new InputStreamReader(inputStream));
-		String inputLine;
-	    while ((inputLine = in.readLine()) != null) {
-			System.out.println(inputLine);
-		}
+		
+		String sid = in.readLine();
+		String lsid = in.readLine();
+		String auth = in.readLine();
+		
+		in.close();
+
+		System.out.println("----Retrieved Values----");
+		urlConnection.disconnect();
+		
+		System.out.println(sid);
+		System.out.println(lsid);
+		System.out.println(auth);
+		
+		System.out.println("----Calling Cookie Function----");
+		
+		makeHttpCookies("bbn230.appspot.com/cookies/", sid, lsid, auth);
 	}
 
 	/**
@@ -186,7 +197,7 @@ public class Client {
 	 * @throws Exception
 	 *     The connection can't be established.
 	 */	
-	private static void makeHttpCookies(String uri) throws Exception {
+	private static void makeHttpCookies(String uri, String sid, String lsid, String auth) throws Exception {
 		String protocol = "http://";
 		URL url = new URL(protocol.concat(uri));
 		URLConnection urlc = url.openConnection();
@@ -195,7 +206,7 @@ public class Client {
 		System.out.println("*** Making an HTTP connection with cookies to http://" + uri + " ***");
 		
 		/* Setting cookies. */
-		urlc.setRequestProperty("Cookie", "dev_appserver_login=test@example.com:False");
+		urlc.setRequestProperty("Cookie", sid + ":" + lsid + ":" + auth);
 		
 		/* Retrieving body. */
 		BufferedReader in = 
@@ -573,8 +584,8 @@ public class Client {
 	 *     The connection can't be established. 
 	 */
 	public static void main(String argv[]) throws Exception {
-//		String server = "bbn230.appspot.com/";
-		String server = "localhost:8081/";
+		String server = "bbn230.appspot.com/";
+//		String server = "localhost:8081/";
 		String uri = null;
 		
 		/* Making a standard connection in HTTP(S). */
@@ -594,7 +605,8 @@ public class Client {
 		
 		/* Making a connection using cookes. */
 		uri = server.concat("cookies/");
-		//makeHttpCookies(uri);
+		uri = "www.gmail.com/";
+		makeHttpCookies(uri, null, null, null);
 		
 		/* Logging in on a Google login page (using HTTP). */
 		uri = server.concat("_ah/login?email=test@example.com&action=Login");
@@ -605,7 +617,9 @@ public class Client {
 		if (argv.length != 1) {
 			System.out.println("***Usage: provide password as first and only argument!");
 		}
-		//makeHttpsClientLogin(uri, argv[0]);
+		else {
+		//	makeHttpsClientLogin(uri, argv[0]);
+		}
 		
 		/* Getting a binary response. */
 		uri = server.concat("binary/display");
