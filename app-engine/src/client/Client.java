@@ -10,14 +10,45 @@ package client;
  * @author bbn230
  */
 
-import java.net.*;
-import java.io.*;
+import ibis.advert.MetaData;
+
+import java.io.BufferedReader;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.EOFException;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLConnection;
+import java.net.URLEncoder;
 import java.security.Security;
-import java.util.Iterator;
 import java.util.Properties;
+
+import net.sf.json.JSONObject;
 
 public class Client {
 
+	private static void makeHttpJson(String uri) throws Exception {
+		MetaData metadata = new MetaData();
+		
+		metadata.put("akey", "avalue");
+		metadata.put("anotherkey", "anothervalue");
+		
+		JSONObject json = new JSONObject();
+		
+		json.put("akey", "avalue");
+		json.put("anotherkey", "anothervalue");
+		
+		System.out.println(json.toString());
+	}
+	
 	/**
 	 * This function tests a response of any binary data.
 	 * 
@@ -605,8 +636,7 @@ public class Client {
 		
 		/* Making a connection using cookes. */
 		uri = server.concat("cookies/");
-		uri = "www.gmail.com/";
-		makeHttpCookies(uri, null, null, null);
+		//makeHttpCookies(uri, null, null, null);
 		
 		/* Logging in on a Google login page (using HTTP). */
 		uri = server.concat("_ah/login?email=test@example.com&action=Login");
@@ -624,5 +654,8 @@ public class Client {
 		/* Getting a binary response. */
 		uri = server.concat("binary/display");
 		//makeHttpBinaryResponse(uri);
+		
+		/* Tests with JSON. */
+		makeHttpJson(uri);
 	}
 }
