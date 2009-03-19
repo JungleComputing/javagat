@@ -20,6 +20,10 @@ handlers:
   script: cookies.py
   secure: optional
 
+- url: /json/.*
+  script: json.py
+  secure: optional
+
 - url: /.*
   script: bbn230.py
   secure: optional

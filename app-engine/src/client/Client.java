@@ -10,8 +10,6 @@ package client;
  * @author bbn230
  */
 
-import ibis.advert.MetaData;
-
 import java.io.BufferedReader;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -30,7 +28,7 @@ import java.net.URLConnection;
 import java.net.URLEncoder;
 import java.security.Security;
 import java.util.Properties;
-
+import ibis.advert.MetaData;
 import net.sf.json.JSONObject;
 
 public class Client {
@@ -47,6 +45,47 @@ public class Client {
 		json.put("anotherkey", "anothervalue");
 		
 		System.out.println(json.toString());
+		
+		/* Setting up a new connection. */
+		String protocol = "http://";
+		URL url = new URL(protocol.concat(uri));
+		HttpURLConnection httpc = (HttpURLConnection) url.openConnection();
+		
+		System.out.println("*** Making an HTTP connection to http://" + uri + " ***");
+
+		/* Setting headers. */
+		httpc.setRequestMethod("POST");
+	    httpc.setDoInput(true);
+	    httpc.setDoOutput(true);
+			    
+	    /* Connecting and POSTing. */
+		httpc.connect();
+		//DataOutputStream dos = new DataOutputStream(httpc.getOutputStream());
+		OutputStreamWriter osw = new OutputStreamWriter(httpc.getOutputStream());
+		
+		/* Writing JSON data. */
+		osw.write(json.toString());
+		osw.flush();
+		osw.close();
+		
+		/* Retrieving headers. */
+		System.out.println(httpc.getResponseCode());
+		System.out.println(httpc.getRequestMethod());
+		for (int i = 0; httpc.getHeaderField(i) != null; i++) {
+			System.out.println((httpc.getHeaderFieldKey(i)==null?"":httpc.getHeaderFieldKey(i) + ": ") + httpc.getHeaderField(i));
+		}
+
+		System.out.println("----");
+		
+		/* Retrieving body. */
+		BufferedReader in = 
+			new BufferedReader(new InputStreamReader(httpc.getInputStream()));
+		String inputLine;
+
+		while ((inputLine = in.readLine()) != null) {
+			System.out.println(inputLine);
+		}
+		in.close();				
 	}
 	
 	/**
@@ -615,8 +654,8 @@ public class Client {
 	 *     The connection can't be established. 
 	 */
 	public static void main(String argv[]) throws Exception {
-		String server = "bbn230.appspot.com/";
-//		String server = "localhost:8081/";
+//		String server = "bbn230.appspot.com/";
+		String server = "localhost:8080/";
 		String uri = null;
 		
 		/* Making a standard connection in HTTP(S). */
@@ -656,6 +695,7 @@ public class Client {
 		//makeHttpBinaryResponse(uri);
 		
 		/* Tests with JSON. */
+		uri = server.concat("json/get");
 		makeHttpJson(uri);
 	}
 }
