@@ -565,7 +565,11 @@ public abstract class GlobusFileAdaptor extends FileCpi {
         if (getPath() != null) {
             Vector<FileInfo> list = null;
             try {
-                client.changeDir(getPath());
+                String path = getPath();
+                if (path.equals("")) {
+                    path = "/";
+                }
+                client.changeDir(path);
                 // list = client.list(); // this one gives issues on some
                 // gridftp servers (some used by the d-grid project)
                 // list = client.nlist(); // this one is not guaranteed to be
