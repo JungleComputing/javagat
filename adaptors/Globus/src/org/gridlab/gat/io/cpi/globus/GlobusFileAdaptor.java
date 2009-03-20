@@ -749,22 +749,11 @@ public abstract class GlobusFileAdaptor extends FileCpi {
             return cachedInfo;
         }
 
-        if (isOldServer(gatContext.getPreferences())) {
-            if (isDirectorySlow()) {
-                throw new GATInvocationException(
-                        "an old server cannot get info for a directory because it does not "
-                                + "support the \"list -d\" command\n"
-                                + "If you need this functionality, please upgrade your server.");
-            }
-        }
         FTPClient client = null;
 
         try {
             String parent = getParent();
             String remotePath = getPath();
-            if (parent == null) {
-                parent = "/";
-            }
 
             if (logger.isDebugEnabled()) {
                 logger.debug("getINFO: remotePath = " + remotePath
@@ -778,14 +767,40 @@ public abstract class GlobusFileAdaptor extends FileCpi {
             }
 
             setActiveOrPassive(client, gatContext.getPreferences());
-
-            Vector<?> v = null;
-
+            
+            Vector<?> v;
+            
+            if (remotePath.equals("") || remotePath.equals("/")) {
+                // See if LIST -d can find "."
+                v = client.list(parent);
+                for (Object o : v) {
+                    FileInfo f = (FileInfo) o;
+                    if (f.getName().equals(".")) {
+                        cachedInfo = f;
+                        return cachedInfo;
+                    }
+                }
+                // O well, then we cheat ...
+                if (logger.isDebugEnabled()) {
+                    logger.debug("getINFO: cheat root directory");
+                }
+                cachedInfo = new FileInfo("drwxr-xr-x 2 guest other 1536 Jan 31 15:15 .");
+                return cachedInfo;
+            }
+            
+            v = listNoMinusD(client, parent);
+/*
             if (isOldServer(gatContext.getPreferences())) {
                 v = listNoMinusD(client, parent);
             } else {
+                if (parent == null) {
+                    parent = "*";
+                } else {
+                    parent = parent + "/*";
+                }
                 v = client.list(parent);
             }
+*/
 
             if (v.size() == 0) {
                 throw new FileNotFoundException("File not found: " + location);
@@ -795,7 +810,7 @@ public abstract class GlobusFileAdaptor extends FileCpi {
                 FileInfo tmp = (FileInfo) v.get(i);
                 if (tmp.getName().equals(getName())) {
                     cachedInfo = tmp;
-                    break;
+                    return cachedInfo;
                 }
             }
             
