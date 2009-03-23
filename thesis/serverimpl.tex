@@ -1,0 +1,244 @@
+\section{Server Implementation}
+Below we describe our (advert) server in more detail.
+
+\subsection{User Authentication}
+As described in the Server Design we will implement two servers, one without user
+authentication (i.e. a public server without any guarantees), and a server which
+requires authentication through Google Accounts.
+
+\subsubsection{Google Accounts}
+The most basic and obvious way to achieve authentication is single user
+authentication (through Google Accounts). Basically only the owner is allowed to
+use the advert service. According to the documentation provided by Google, there
+is no variable that indicates if a user is owner of the application. Nonetheless
+there is another function called \texttt{is\_current\_user\_admin()}, which is
+available in the google.appengine.api.users package. By default the owner of the
+application is administrator, and additional administrators can be added through
+the administration panel. This fits our needs perfectly.Once a client logged in through the Google login procedure (e.g. a Google login
+page), the request handler at the server returns a user object, as shown inFigure \ref{serverimpl-get-user}. This object can then be used to identify auser.
+\begin{figure*}[ht] %[placement] where placement is h,t,b,p
+\begin{center}
+\begin{code}
+user = users.get_current_user()
+
+if user:
+  echo 'Hello, ' + user.nickname()
+if users.is_current_user_admin():
+  echo 'You are administrator'
+\end{code}
+\caption{Retrieving the user that's currently logged
+in.\label{serverimpl-get-user}}
+\end{center}
+\end{figure*}
+
+Other functions included in the \texttt{google.appengine.api.users} package are:
+
+\begin{itemize} 
+\item \texttt{create\_login\_url(dest\_url)}; which returns a URL that, when
+visited, will prompt the user to sign in using a Google account, then redirect
+the user back to the URL given as \texttt{dest\_url}.\item \texttt{create\_logout\_url(dest\_url)}; which returns a URL that, when
+visited, will sign the user out, then redirect the user back to the URL given as
+\texttt{dest\_url}.\end{itemize}
+\subsection{The Datastore}
+\subsubsection{Storing Binary Data}
+\label{serverimpl-storing-bin}
+An important function of the Advert Service is to accept and store binary data.
+For accepting just binary data, we can receive the entire message body and write
+it to a variable, which is stored in the datastore accordingly. A sample code of
+this function is shown in the code segment of Figure \ref{serverimpl-download}.
+The first line identifies the class, which is called by the RequestHandler
+(depending on the given URL). The second line says that we are expecting a POST
+request. Then, a new \texttt{Bin()} data model is created (which in our case only
+contains a field \texttt{data = db.BlobProperty()}). Then we fetch the body and
+put in a temporary variable, before we store it as a \texttt{db.BlobProperty()}in
+the database by calling \texttt{bin.put()}.
+\begin{figure*}[ht] %[placement] where placement is h,t,b,p
+\begin{center}
+\begin{code}
+class Download(webapp.RequestHandler):
+  def post(self):
+    bin = Bin()
+    uploaded_file = self.request.body
+    bin.data = db.Blob(uploaded_file)
+    bin.put()
+    self.redirect('/')
+\end{code}
+\caption{Accepting Binary Data.\label{serverimpl-download}}
+\end{center}
+\end{figure*}
+\subsubsection{Datastore Layout}
+The Google App Engine datastore is not like a traditional relational database.
+Data objects, or ``entities'', have a kind and a set of properties. For our
+server we need a set of different data objects to store in our datastore.
+\paragraph{Storing (Advert) Objects}
+Obviously, the main purpose of our server is to store binary (advert) objects.
+For this purpose we designed the following entity to represent our advert data(Figure \ref{serverimpl-advert}). First of all we will store an id, which will be used for
+reference of a unique object (i.e. a key). This way we can link our objects to
+other data in the datastore. The path can be structured as a directory structure
+if necessary. Secondly, we will store the author's name, for legal issues. Next
+is the actual Advert object, which is stored as binary data. Finally we add a TTL
+as will be discussed below.
+\begin{figure*}[ht] %[placement] where placement is h,t,b,p
+\begin{center}
+\begin{code}
+class Advert(db.Model):
+  path    = db.Key()
+  author  = db.UserProperty()
+  advert  = db.BlobProperty()
+  ttl     = db.DateTimeProperty()
+\end{code}
+\caption{An Advert Object.\label{serverimpl-advert}}
+\end{center}
+\end{figure*}
+
+\paragraph{Storing Meta Data}
+At our server, we would like to store meta data not as a binary object, but as
+readable strings of data. This way, we can search meta data when it is queried.
+According to the AdvertService API, a MetaData object should look like Figure\ref{serverimpl-metadata}. First of all the parent field corresponds with thepath of the Advert object stored in the datastore. Finally we just need to store
+key-value pairs, which are String properties.
+\begin{figure*}[ht] %[placement] where placement is h,t,b,p
+\begin{center}
+\begin{code}
+class MetaData(db.Model):
+  parent  = db.Key()
+  keystr  = db.StringProperty()
+  valstr  = db.StringProperty()
+\end{code}
+\caption{A MetaData Object.\label{serverimpl-metadata}}
+\end{center}
+\end{figure*}
+
+\subsubsection{Path Encoding}
+To have the AdvertService work properly, we need some path encoding to save
+Advert objects in the datastore. The Google App Engine itself provides one
+solution, because every entity in the datastore has a key. When the application
+creates an entity, it can assign another entity as the parent of the new entity.
+Assigning a parent to a new entity puts the new entity in the same entity group
+as the parent entity. Every entity belongs to an entity group, a set of one or
+more entities that can be manipulated in a single transaction. An entity without
+a parent is a root entity. An entity that is a parent for another entity can also
+have a parent. A chain of parent entities from an entity up to the root is the
+path for the entity, and members of the path are the entity's ancestors. The
+parent of an entity is defined when the entity is created, and cannot be changed
+later. The downside of this solution is that we have to create empty MetaData
+objects for path nodes that are empty.
+Another option is to save our own paths, using a namespace that identifies a
+path, something like the UNIX system does (e.g. \texttt{/home/bboterm/.}). The
+advantage of this model is that it works exactly analogue to the JavaGAT
+AdvertService. The disadvantage of this is that we have to parse our own
+pathnames, and keep track of them by means of a non-existing mechanism (i.e.
+something that we need to build ourselves). Since this is not a major obstacle,
+we will stick with the second approach.
+\subsection{Public Server Functions}
+Below we will list some of the major functions the advert server will offer to
+the client. These functions will be used by, for example, the JavaGAT
+AdvertService adaptor for the App Engine.
+\subsubsection{Logging In}
+Since we are using ClientLogin service (as described above) to authenticate
+ourselves to the App Engine, we won't need a separate login page. Sending our
+credentials (session IDs) to the Appe Engine should be enough to authenticate
+ourselves. For every request, our server will use a small section of code, which
+looks like the code segment stated in Figure \ref{serverimpl-login}, toauthenticate the user.
+\begin{figure*}[ht] %[placement] where placement is h,t,b,p
+\begin{center}
+\begin{code}
+class AnyClass(webapp.RequestHandler):
+  def get(self):
+    user = users.get_current_user()
+
+    if user and users.is_current_user_admin():
+      self.response.headers['Content-Type'] = 'text/plain'
+      self.response.out.write('Hello, ' + user.nickname())
+    else:
+      self.response.http_status_message(401)
+      self.response.out.write('Some error.')
+\end{code}
+\caption{A MetaData Object.\label{serverimpl-login}}
+\end{center}
+\end{figure*}
+      
+\subsubsection{Receiving (Binary) Objects}
+As stated above, the main functionality is to receive binary objects (along with
+MetaData) to store in the datastore, provided by the App Engine. These objects
+need to be stored at a certain path, with certain MetaData. As shown earlier, we
+will make two classes, one for storing the actual object and one for storing the
+MetaData.
+When receiving our binary object, it will be received as one stream of bytes (as
+shown in Section \ref{serverimpl-storing-bin}). This means that we will have to
+dismember the message ourselves, which is difficult, since the Google App Engine
+currently only supports Python 2.5, which does not support bytes or byte arrays.
+We still managed to extract data using string manipulation. Essentially when the
+App Engine receives the entire body as shown Section
+\ref{serverimpl-storing-bin}, it is stored as a raw string (no encoding) before
+it is stored as BLOB in the datastore. We made use of that raw string as shownin Figure \ref{serverimpl-raw-string}. In this example, we receive the messagebody and store it into the raw string called `bytes'. After this we read the
+first byte (\texttt{bytes[0:1]}), we use \texttt{ord()} to make it an integer,
+knowing the length of the data sent. After that we send our Content-Type headers
+and write the rest of the body to the standard output.
+\begin{figure*}[ht] %[placement] where placement is h,t,b,p
+\begin{center}
+\begin{code}
+bytes = self.request.body
+length = ord(bytes[0:1])
+self.response.headers['Content-Type'] = "image/gif"
+self.response.out.write(bytes[2:length])
+\end{code}
+\caption{Manipulating a Raw String.\label{serverimpl-raw-string}}
+\end{center}
+\end{figure*}
+
+Although meta data will be stored in a different class, we won't apply a
+different function to store MetaData objects, for the simple reason that if one
+of these transfers would fail, it could lead to inconsistencies (see Section\ref{clientimpl-sending-both}).
+Since MetaData needs to be searchable at the server-side, we will have to extract
+the key-value pairs from the POST request and store them in the datastore
+accordingly. This will be done in the opposite way of sending them at the Client
+side (see Section \ref{clientimpl-sending-both}).
+As of yet, the Google App Engine does not support Tuples, or key-value pairs as a
+data type. Therefore we created our own MetaData class as described above. Also,
+this MetaData cannot be stored into a list, because lists only supports primary
+data types like integer and string. For that matter, we add an ID to the
+MetaData, which is a child of the binary object stored in the datastore.
+Another option would be to maintain two lists of strings, where the indexes of
+the lists link the key and the value of the MetaData. However, we are not sure of
+those lists maintain order (which could mess up the MetaData).
+Finally, we could also append all data in two strings and have them separated by
+special delimiter. Downside of this method is that we could run out of the
+maximum length of strings (which is 500 bytes).
+\subsubsection{Finding MetaData}
+When the MetaData has been stored in the datastore, we should be able to process
+find() requests by clients. First a MetaData object is received, which is then
+tried to be matched with MetaData already present in the datastore. For this
+purpose we will use the GQL as described above.%TODO: <something about GQL queries>
+
+The return value of all metadata found is a String array, which again needs to be
+formatted in a way that it can be sent as one String. 
+%TODO: <more to follow>
+\subsubsection{Returning an Object from the Datastore}
+This function will send binary data back to client. Basically, this function only
+sends an Object to the standard output (the HTTP connection), which looks like
+Figure \ref{serverimpl-bin-response}. Of Course, we first need to fetch therequested object from the datastore, which will be done using GQL Queries. 
+%TODO: <more to follow>
+\begin{figure*}[ht] %[placement] where placement is h,t,b,p
+\begin{center}
+\begin{code}
+self.response.headers['Content-Type'] = "application/octet-stream"
+self.response.out.write(bin.data)
+\end{code}
+\caption{HTTP Response with Binary Data.\label{serverimpl-bin-response}}
+\end{center}
+\end{figure*}
+
+\subsection{Private Server Functions}
+Below we will describe some of the private server functions provided for the
+advert service.
+\subsubsection{Garbage Collector}
+As described above, we will use some form of TTL to determine whether a data item
+stored is still needed in the datastorage. When a data item is expired, it will
+be removed automatically using a mechanism called the Garbage Collector.
+%TODO: <more to follow>
+Data Matching
+For our \texttt{find()} function, we will need some internal `match' function,
+which can query the database to see if the specified data item is present in the
+datastore. For this matching, we will have an internal function which is able to
+match data received from the client with data present in the datastore. 
+%TODO: <more to follow>

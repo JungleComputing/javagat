@@ -1,0 +1,53 @@
+\section{The App Engine}
+Before \ldots
+
+\subsection{Limitations}
+Although the Google App Engine provides us with resources, it also has some
+limitations we should consider. All applications hosted on the App Engine
+servers, are run within a sandbox. An application can only access other computers
+on the Internet through the provided URL fetch and email services and APIs. Other
+computers can only connect to the application by making HTTP (or HTTPS) requests
+on the standard ports. An application cannot write to the file system. An app can
+read files, but only files uploaded with the application code. The app must use
+the App Engine \emph{datastore} for all data that persists between requests.
+Application code only runs in response to a web request, and must return response
+data within thirty seconds. A request handler cannot spawn a sub-process or
+execute code after the response has been sent.
+
+\subsection{Quotas}
+\label{appengine-quotas}
+The Google App Engine is free of use up to a certain level of used resources,
+after which fees are charged for additional storage, bandwidth or CPU cycles
+required by the application. Currently the following quotas, for using the free
+version of the Google App Engine, are maintained:
+\begin{itemize}
+\item \textbf{CPU Time} - 46.30 hours/24h
+\item \textbf{Outgoing Bandwidth} - 10.00 Gbytes/24h
+\item \textbf{Incoming Bandwidth} - 10.00 Gbytes/24h
+\item \textbf{Data Storage} - 0.50 Gbytes
+\item \textbf{Secure Outgoing Bandwidth} - 2.00 Gbytes/24h
+\item \textbf{Secure Incoming Bandwidth} - 2.00 Gbytes/24h
+\item \textbf{Request size} - 10 MB per request
+\item \textbf{Response time} - 30 seconds per request
+\item \textbf{Data Sent to datastore} - 12.00 Gbytes/24h
+\item \textbf{Data Received from datastore} - 116.00 Gbytes /24h
+\item \textbf{Datastore CPU Time} - 62.11 hours/24h
+\end{itemize}
+From May 25th, new quotas will take effect \cite{app-engine-quotas}, which are:
+\begin{itemize} 
+\item \textbf{CPU Time} - 6.5 hours/24h (\$0.10 for every additional hour)
+\item \textbf{Bandwidth} - 1 Gbyte (in and out)/24h (\$0.10/\$0.12 for every additional
+GByte in/out)
+\item \textbf{Stored Data \& Email Recipients} - these quotas will remain
+unchanged (\$0.15 for every additional GB stored per month)
+\end{itemize}
+
+\subsection{Monitoring}
+For us to monitor the quota already used by the various Ibis services, we can
+login to the administration panel. All quotas as described above can be
+monitored from this website, and additionally, we can see when our quotas will be
+reset (being midnight, Pacific time). Historical note: The 24-hour replenishment
+cycle was introduced in December 2008. It replaced a more complicated system of
+``continuous'' replenishment, to make it easier to report and control resource
+usage. Besides the monitoring of quotas, also various logs are available (e.g.
+error logs, debug logs, and access logs).
