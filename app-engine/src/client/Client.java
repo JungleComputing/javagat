@@ -44,6 +44,24 @@ public class Client {
 		return result;
 	}
 	
+	private static void setupSsl() {
+		Security.addProvider(new com.sun.net.ssl.internal.ssl.Provider());
+
+		Properties properties = System.getProperties();
+
+		String handlers = System.getProperty("java.protocol.handler.pkgs");
+		if (handlers == null) {
+			/* nothing specified yet (expected case) */
+			properties.put("java.protocol.handler.pkgs",
+					"com.sun.net.ssl.internal.www.protocol");
+		} else {
+			/* something already there, put ourselves out front */
+			properties.put("java.protocol.handler.pkgs",
+					"com.sun.net.ssl.internal.www.protocol|".concat(handlers));
+		}
+		System.setProperties(properties); 	
+	}
+	
 	private static void makeHttpJson(String uri) throws Exception {
 		File file = readFile();
 		JSONObject jsonobj = new JSONObject();
@@ -167,35 +185,21 @@ public class Client {
 	 *     The connection can't be established.
 	 */		
 	private static void makeHttpsClientLogin(String uri, String password) throws Exception {
-	    // Create a login request. A login request is a POST request that looks like
-	    // POST /accounts/ClientLogin HTTP/1.0
-	    // Content-type: application/x-www-form-urlencoded
-	    // Email=johndoe@gmail.com&Passwd=north23AZ&service=gbase&source=Insert Example
+	    /**
+	     * Create a login request. A login request is a POST request that looks like
+	     * POST /accounts/ClientLogin HTTP/1.0
+	     * Content-type: application/x-www-form-urlencoded
+	     * Email=johndoe@gmail.com&Passwd=north23AZ&service=gbase&source=Insert Example
+	     */
 		
-		//Setting up SSL
-		Security.addProvider(new com.sun.net.ssl.internal.ssl.Provider());
-
-		Properties properties = System.getProperties();
-
-		String handlers = System.getProperty("java.protocol.handler.pkgs");
-		if (handlers == null) {
-			/* nothing specified yet (expected case) */
-			properties.put("java.protocol.handler.pkgs",
-					"com.sun.net.ssl.internal.www.protocol");
-		} else {
-			/* something already there, put ourselves out front */
-			properties.put("java.protocol.handler.pkgs",
-					"com.sun.net.ssl.internal.www.protocol|".concat(handlers));
-		}
-		System.setProperties(properties); 	
+		/* Setting up SSL. */
+		setupSsl();
 		
-		// Create URL object
+		/* Create URL object and open connection. */
 		URL url = new URL(uri);
-		
-	    // Open connection
 	    HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
 	  
-	    // Set properties of the connection
+	    /* Set properties of the connection. */
 	    urlConnection.setRequestMethod("POST");
 	    urlConnection.setDoInput(true);
 	    urlConnection.setDoOutput(true);
@@ -203,18 +207,19 @@ public class Client {
 	    urlConnection.setRequestProperty("Content-Type",
 	                                     "application/x-www-form-urlencoded");
 	  
-	    // Form the POST parameters
+	    /* Form the POST parameters. */
 	    StringBuilder content = new StringBuilder();
 	    content.append("Email=").append(URLEncoder.encode("ibisadvert@gmail.com", "UTF-8"));
 	    content.append("&Passwd=").append(URLEncoder.encode(password, "UTF-8"));
 	    content.append("&service=").append(URLEncoder.encode("ah", "UTF-8"));
 	    content.append("&source=").append(URLEncoder.encode("Google Base data API example", "UTF-8"));
 	
+	    /* Write output. */
 	    OutputStream outputStream = urlConnection.getOutputStream();
 	    outputStream.write(content.toString().getBytes("UTF-8"));
 	    outputStream.close();
 	  
-	    // Retrieve the output
+	    /* Retrieve the output. */
 	    int responseCode = urlConnection.getResponseCode();
 	    InputStream inputStream;
 	    if (responseCode == HttpURLConnection.HTTP_OK) {
@@ -255,7 +260,6 @@ public class Client {
 		
 	    urlConnection.setRequestMethod("GET");
 	    urlConnection.setUseCaches(false);
-//	    urlConnection.addRequestProperty("Authorization", "GoogleLogin auth=" + authid[1]);
 	    
 		/* Retrieving headers. */
 		System.out.println(urlConnection.getResponseCode());
@@ -273,15 +277,30 @@ public class Client {
 			}
 		}
 		System.out.println(cookie);
-
+		
+		System.out.println("----Logging in----");
+		
+		url = new URL("http://bbn230.appspot.com/cookies/");
+		urlConnection = (HttpURLConnection) url.openConnection();
+		
+	    urlConnection.setRequestMethod("GET");
+	    urlConnection.setUseCaches(false);
+	    urlConnection.setRequestProperty("Cookie", cookie);
+	    
+		System.out.println(urlConnection.getResponseCode());
+		System.out.println(urlConnection.getRequestMethod());
+		for (int i = 0; urlConnection.getHeaderField(i) != null; i++) {
+			System.out.println((urlConnection.getHeaderFieldKey(i)==null?"":urlConnection.getHeaderFieldKey(i) + ": ") + urlConnection.getHeaderField(i));
+		}	    
+	    
 		/* Retrieving body. */	
-//		in = new BufferedReader(new InputStreamReader(urlConnection.getInputStream()));
-//		String inputLine;
-//
-//		while ((inputLine = in.readLine()) != null) {
-//			System.out.println(inputLine);
-//		}
-//		in.close();
+		in = new BufferedReader(new InputStreamReader(urlConnection.getInputStream()));
+		String inputLine;
+
+		while ((inputLine = in.readLine()) != null) {
+			System.out.println(inputLine);
+		}
+		in.close();
 	}
 
 	/**
@@ -632,20 +651,8 @@ public class Client {
 		String protocol = "https://";
 		Security.addProvider(new com.sun.net.ssl.internal.ssl.Provider());
 
-		Properties properties = System.getProperties();
-
-		String handlers = System.getProperty("java.protocol.handler.pkgs");
-		if (handlers == null) {
-			/* nothing specified yet (expected case) */
-			properties.put("java.protocol.handler.pkgs",
-					"com.sun.net.ssl.internal.www.protocol");
-		} 
-		else {
-			/* something already there, put ourselves out front */
-			properties.put("java.protocol.handler.pkgs",
-					"com.sun.net.ssl.internal.www.protocol|".concat(handlers));
-		}
-		System.setProperties(properties); 
+		/* Setting up SSL. */
+		setupSsl();
 
 		try {
 			URL page = new URL(protocol.concat(uri)); 
