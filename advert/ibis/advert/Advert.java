@@ -11,11 +11,11 @@ package ibis.advert;
  * @author bbn230
  */
 
-import java.io.OutputStream;
-import java.net.URLEncoder;
-import java.util.*;
-import java.text.StringCharacterIterator;
-import java.text.CharacterIterator;
+import java.util.Iterator;
+import java.util.NoSuchElementException;
+
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
 
 public class Advert {
 	/**
@@ -35,69 +35,31 @@ public class Advert {
 	 */
 	public void add(byte[] object, MetaData metaData, String path)
 			throws AppEngineResourcesException {
-		
-		byte   pathSize  = new Integer(path.length()).byteValue(); 
-		byte[] pathBytes = path.getBytes();
+		JSONArray  jsonarr = new JSONArray();
+		JSONObject jsonobj = new JSONObject();
 
 		Iterator<String> itr  = metaData.getAllKeys().iterator();
-		StringBuilder content = new StringBuilder();
-		StringCharacterIterator scitr = null;
-		char c = ' ';
 	
 		while (itr.hasNext()) {
 			String key = itr.next();
 			String value = metaData.get(key);
 
-			if (value == null) {
-				continue;
-			}
-
-			scitr = new StringCharacterIterator(key);
-			c =  scitr.current();
-			
-			while (c != CharacterIterator.DONE ) {
-				if (c == ':') {
-					content.append("\\:");
-				}
-				else if (c == '=') {
-					content.append("\\=");
-				}
-				else {
-					content.append(c);
-				}
-				c = scitr.next();
+			if (key == null || value == null) {
+				continue; //TODO: (?)
 			}
 			
-			content.append('=');
-			
-			scitr = new StringCharacterIterator(value);
-			c =  scitr.current();
-			
-			while (c != CharacterIterator.DONE ) {
-				if (c == ':') {
-					content.append("\\:");
-				}
-				else if (c == '=') {
-					content.append("\\=");
-				}
-				else {
-					content.append(c);
-				}
-				c = scitr.next();
-			}
-			
-			content.append(':');
+			jsonobj.put(key,value);
 		}
-					
-		byte   metaDataSize  = new Integer(content.length()).byteValue();
-		byte[] metaDataBytes = content.toString().getBytes();
 		
-		byte   objectSize    = new Integer(object.length).byteValue();
+		String base64 = new sun.misc.BASE64Encoder().encode(object);
 		
-        /* TODO: Send in following order:
-         * pathSize pathBytes metaDataSize metaDataBytes objectSize object
-         * 
-         * TODO: Return TTL of data stored at server (optional)?
+		jsonarr.add(path);
+		jsonarr.add(jsonobj);
+		jsonarr.add(base64);
+		
+        /*
+         * TODO: make HTTP connection to GAE and send JSON Array to it 
+         * TODO: return TTL of data stored at server (optional)?
          */
 	}
 

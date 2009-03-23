@@ -28,23 +28,57 @@ import java.net.URLConnection;
 import java.net.URLEncoder;
 import java.security.Security;
 import java.util.Properties;
-import ibis.advert.MetaData;
+import java.util.StringTokenizer;
+
+import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
 public class Client {
 
+	private static File readFile() {
+		String filename = "/Volumes/Users/bbn230/Documents/workspace/app-engine/app-engine/src/client/appengine.gif"; /* OSX location */
+		//String filename = "E:/Documents/Documents/Eclipse/workspace/app-engine/app-engine/src/client/appengine.gif";  /* Win location */
+		
+		File result = new File(filename);
+		
+		return result;
+	}
+	
 	private static void makeHttpJson(String uri) throws Exception {
-		MetaData metadata = new MetaData();
+		File file = readFile();
+		JSONObject jsonobj = new JSONObject();
+		JSONArray  jsonarr = new JSONArray();
+
+		String path = "/home/bboterm/app-engine/";
 		
-		metadata.put("akey", "avalue");
-		metadata.put("anotherkey", "anothervalue");
+	    byte[] b = new byte[(int) file.length()];
+	    int size = 0;
+	    
+	    DataInputStream is = new DataInputStream(new FileInputStream(file));	    
+	    
+	    try {
+	    	size = is.read(b);
+	        System.out.println("Bytes read: " + size);
+		} 
+	    catch (EOFException eof) {
+			System.out.println("EOF reached."); 
+		}
+		catch (IOException ioe) {
+			System.out.println("IO error: " + ioe);
+		}		
 		
-		JSONObject json = new JSONObject();
+		String base64 = new sun.misc.BASE64Encoder().encode(b);
 		
-		json.put("akey", "avalue");
-		json.put("anotherkey", "anothervalue");
+		jsonobj.put("key1", "value1");
+		jsonobj.put("key2", "value2");
+		jsonobj.put("key3", "value3");
 		
-		System.out.println(json.toString());
+		jsonarr.add(path);
+		jsonarr.add(jsonobj);
+		jsonarr.add(base64);
+		
+		System.out.println("Base64 encoding: " + base64.length());
+		System.out.println(jsonarr.toString());
 		
 		/* Setting up a new connection. */
 		String protocol = "http://";
@@ -60,13 +94,14 @@ public class Client {
 			    
 	    /* Connecting and POSTing. */
 		httpc.connect();
-		//DataOutputStream dos = new DataOutputStream(httpc.getOutputStream());
 		OutputStreamWriter osw = new OutputStreamWriter(httpc.getOutputStream());
 		
 		/* Writing JSON data. */
-		osw.write(json.toString());
+		osw.write(jsonarr.toString());
 		osw.flush();
 		osw.close();
+		
+		System.out.println("*** Done. HTTP Repsonse... ***");
 		
 		/* Retrieving headers. */
 		System.out.println(httpc.getResponseCode());
@@ -172,7 +207,7 @@ public class Client {
 	    StringBuilder content = new StringBuilder();
 	    content.append("Email=").append(URLEncoder.encode("ibisadvert@gmail.com", "UTF-8"));
 	    content.append("&Passwd=").append(URLEncoder.encode(password, "UTF-8"));
-	    content.append("&service=").append(URLEncoder.encode("xapi", "UTF-8"));
+	    content.append("&service=").append(URLEncoder.encode("ah", "UTF-8"));
 	    content.append("&source=").append(URLEncoder.encode("Google Base data API example", "UTF-8"));
 	
 	    OutputStream outputStream = urlConnection.getOutputStream();
@@ -200,17 +235,53 @@ public class Client {
 		String auth = in.readLine();
 		
 		in.close();
-
-		System.out.println("----Retrieved Values----");
 		urlConnection.disconnect();
+		
+		System.out.println("----Retrieved Values----");
 		
 		System.out.println(sid);
 		System.out.println(lsid);
 		System.out.println(auth);
+
+		String authid[] = auth.split("=");
 		
-		System.out.println("----Calling Cookie Function----");
+		System.out.println(authid[0]);
+		System.out.println(authid[1]);
 		
-		makeHttpCookies("bbn230.appspot.com/cookies/", sid, lsid, auth);
+		System.out.println("----Calling Auth Page----");
+		
+		url = new URL("http://bbn230.appspot.com/_ah/login?continue=https://bbn230.appspot.com/cookies/&auth=" + authid[1]);
+		urlConnection = (HttpURLConnection) url.openConnection();
+		
+	    urlConnection.setRequestMethod("GET");
+	    urlConnection.setUseCaches(false);
+//	    urlConnection.addRequestProperty("Authorization", "GoogleLogin auth=" + authid[1]);
+	    
+		/* Retrieving headers. */
+		System.out.println(urlConnection.getResponseCode());
+		System.out.println(urlConnection.getRequestMethod());
+		
+		String cookie = null;
+		
+		for (int i = 0; urlConnection.getHeaderField(i) != null; i++) {
+			String hfk = urlConnection.getHeaderFieldKey(i);
+			if (hfk != null && hfk.equals("Set-Cookie")) {
+				cookie = urlConnection.getHeaderField(i);
+			}
+			else {
+				System.out.println((hfk==null?"":hfk + ": ") + urlConnection.getHeaderField(i));
+			}
+		}
+		System.out.println(cookie);
+
+		/* Retrieving body. */	
+//		in = new BufferedReader(new InputStreamReader(urlConnection.getInputStream()));
+//		String inputLine;
+//
+//		while ((inputLine = in.readLine()) != null) {
+//			System.out.println(inputLine);
+//		}
+//		in.close();
 	}
 
 	/**
@@ -299,16 +370,12 @@ public class Client {
 	 */	
 	private static void makeOwnPost(String uri) throws Exception {
 		String protocol = "http://";
-		String filename = "/Volumes/Users/bbn230/Documents/workspace/app-engine/app-engine/client/appengine.gif"; /* OSX location */
-		//String filename = "E:/Documents/Documents/Eclipse/workspace/app-engine/app-engine/client/appengine.gif";  /* Win location */
 		String prefix = "0123456789";
+		File file = readFile();
 		
 		/* Setting up URL */
 		URL url = new URL(protocol.concat(uri));
 		HttpURLConnection httpc = (HttpURLConnection) url.openConnection();
-		
-		/* Reading file into buffer */
-		File file = new File(filename);
 		
 	    DataInputStream is = new DataInputStream(new FileInputStream(file));
 
@@ -378,17 +445,13 @@ public class Client {
 	private static void makeHttpMultipartPost(String uri) throws Exception {
 		/* Setting up a new connection. */
 		String protocol = "http://";
-		String filename = "/Volumes/Users/bbn230/Documents/workspace/app-engine/app-engine/client/appengine.gif"; /* OSX location */
-		//String filename = "E:/Documents/Documents/Eclipse/workspace/app-engine/app-engine/client/appengine.gif";  /* Win location */
 		String boundary = "AaB03x"; /* Part boundaries should not occur in any of the data; how this is done lies outside the scope of this specification. */
+		File file = readFile();
 		
 		/* Setting up URL */
 		URL url = new URL(protocol.concat(uri));
 		//URLConnection urlc = url.openConnection();
 		HttpURLConnection httpc = (HttpURLConnection) url.openConnection();
-		
-		/* Reading file into buffer */
-		File file = new File(filename);
 		
 	    DataInputStream is = new DataInputStream(new FileInputStream(file));
 	    
@@ -485,12 +548,12 @@ public class Client {
 		URL url = new URL(protocol.concat(uri));
 		//URLConnection urlc = url.openConnection();
 		HttpURLConnection httpc = (HttpURLConnection) url.openConnection();
-		
-//	    DataInputStream is = new DataInputStream(new FileInputStream("E:/Documents/Documents/Eclipse/workspace/app-engine/app-engine/client/appengine.gif")); /* Windows location */
-	    DataInputStream is = new DataInputStream(new FileInputStream("/Volumes/Users/bbn230/Documents/workspace/app-engine/app-engine/client/appengine.gif")); /* OSX location */
+		File file = readFile();
 	    
-	    byte[] b = new byte[7000];
+	    byte[] b = new byte[(int) file.length()];
 	    int size = 0;
+	    
+	    DataInputStream is = new DataInputStream(new FileInputStream(file));	    
 	    
 	    try {
 	    	size = is.read(b);
@@ -687,7 +750,7 @@ public class Client {
 			System.out.println("***Usage: provide password as first and only argument!");
 		}
 		else {
-		//	makeHttpsClientLogin(uri, argv[0]);
+			makeHttpsClientLogin(uri, argv[0]);
 		}
 		
 		/* Getting a binary response. */
@@ -696,6 +759,6 @@ public class Client {
 		
 		/* Tests with JSON. */
 		uri = server.concat("json/get");
-		makeHttpJson(uri);
+		//makeHttpJson(uri);
 	}
 }

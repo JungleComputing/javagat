@@ -17,7 +17,10 @@ class Download(webapp.RequestHandler):
   def post(self):
     data = self.request.body
     json = simplejson.loads(data)
-    self.response.out.write(json['akey'])
+    self.response.out.write(json[0] + '\n')
+    for key in json[1].keys():
+      self.response.out.write(key + " - " + json[1][key] + '\n')
+    #self.response.out.write(json[2] + '\n')
 
 class Display(webapp.RequestHandler):
   def get(self):
