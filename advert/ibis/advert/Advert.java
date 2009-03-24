@@ -18,6 +18,16 @@ import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
 public class Advert {
+	
+	private String server       = null;
+	private String cookie       = null;
+	private static Communications comm = new Communications();
+	
+	public Advert(String server, String user, String passwd) throws Exception {
+		this.server = server;
+		this.cookie = comm.authenticate(server, user, passwd);
+	}
+	
 	/**
 	 * Add a {@link byte}[] to the App Engine, at an absolute path, with
 	 * {@link MetaData} included, to the datastore. If an entry exists at the
@@ -33,8 +43,8 @@ public class Advert {
 	 *             This exception is thrown when the App Engine runs out of
 	 *             resources.
 	 */
-	public void add(byte[] object, MetaData metaData, String path)
-			throws AppEngineResourcesException {
+	public void add(byte[] object, MetaData metaData, String path) 
+	  throws Exception {
 		JSONArray  jsonarr = new JSONArray();
 		JSONObject jsonobj = new JSONObject();
 
@@ -57,11 +67,13 @@ public class Advert {
 		jsonarr.add(jsonobj);
 		jsonarr.add(base64);
 		
+		comm.httpSend("http://" + server + "/add", this.cookie, jsonarr);
+		
         /*
-         * TODO: make HTTP connection to GAE and send JSON Array to it 
          * TODO: return TTL of data stored at server (optional)?
          */
 	}
+	
 
 	/**
 	 * Remove an instance and related {@link MetaData} from the datastore at an

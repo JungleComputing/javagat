@@ -42,30 +42,45 @@ class MainPage(webapp.RequestHandler):
       </body>
       </html>""")
 
-class PutObject(webapp.RequestHandler):
+class AddObject(webapp.RequestHandler):
   def post(self):
-    advert   = Advert()
-    metadata = MetaData(parent=advert)
+    advert = Advert()
+    user   = users.get_current_user()
+    
+    if not user:
+        self.error(403)
+        self.response.headers['Content-Type'] = 'text/plain'
+        self.response.out.write('Not Authenticated')
+        return
+    
+    if users.is_current_user_admin():
+        self.error(403)
+        self.response.headers['Content-Type'] = 'text/plain'
+        self.response.out.write('No Administrator')
+        return
     
     body = self.request.body
     json = simplejson.loads(body)
     
-    advert.path   = json[0]; #extract path from message
-    advert.author = users.get_current_user() #store author
-    advert.object = json[2]; #extract (base64) object from message
+    advert.path   = json[0] #extract path from message
+    advert.author = user    #store author
+    advert.object = json[2] #extract (base64) object from message
     
     advert.put() #store object in database
     
     for k in json[1].keys():
+      metadata        = MetaData(parent=advert)
       metadata.keystr = k
       metadata.value  = json[1][k]
       metadata.put()
     
-    self.response.out.write('OK')
+    self.response.headers['Content-Type'] = 'text/plain'
+    self.response.out.write('TTL') #TODO: insert actual TTL
+    return
 
 application = webapp.WSGIApplication(
                                      [('/', MainPage),
-                                      ('/put', PutObject)],
+                                      ('/add', AddObject)],
                                      debug=True)
 
 def main():

@@ -10,6 +10,9 @@ package client;
  * @author bbn230
  */
 
+import ibis.advert.Advert;
+import ibis.advert.MetaData;
+
 import java.io.BufferedReader;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -28,7 +31,6 @@ import java.net.URLConnection;
 import java.net.URLEncoder;
 import java.security.Security;
 import java.util.Properties;
-import java.util.StringTokenizer;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -60,6 +62,36 @@ public class Client {
 					"com.sun.net.ssl.internal.www.protocol|".concat(handlers));
 		}
 		System.setProperties(properties); 	
+	}
+	
+	private static void testAdvertAdd(String password) throws Exception {
+		Advert advert = new Advert("bbn230.appspot.com", "ibisadvert@gmail.com", password);
+		MetaData metaData = new MetaData();
+		
+		File file = readFile();
+	    byte[] b = new byte[(int) file.length()];
+	    int size = 0;
+	    
+	    DataInputStream is = new DataInputStream(new FileInputStream(file));	    
+	    
+	    try {
+	    	size = is.read(b);
+	        System.out.println("Bytes read: " + size);
+		} 
+	    catch (EOFException eof) {
+			System.out.println("EOF reached."); 
+		}
+		catch (IOException ioe) {
+			System.out.println("IO error: " + ioe);
+		}
+		
+		metaData.put("key1", "value1");
+		metaData.put("key2", "value2");
+		metaData.put("key3", "value3");
+		
+		String path = "/home/bboterm/advert";
+		
+		advert.add(b, metaData, path);
 	}
 	
 	private static void makeHttpJson(String uri) throws Exception {
@@ -130,9 +162,14 @@ public class Client {
 
 		System.out.println("----");
 		
+		BufferedReader in = null;
 		/* Retrieving body. */
-		BufferedReader in = 
-			new BufferedReader(new InputStreamReader(httpc.getInputStream()));
+		if(httpc.getResponseCode() != 200) {
+			in = new BufferedReader(new InputStreamReader(httpc.getErrorStream()));
+		}
+		else {
+			in = new BufferedReader(new InputStreamReader(httpc.getInputStream()));
+		}
 		String inputLine;
 
 		while ((inputLine = in.readLine()) != null) {
@@ -757,7 +794,8 @@ public class Client {
 			System.out.println("***Usage: provide password as first and only argument!");
 		}
 		else {
-			makeHttpsClientLogin(uri, argv[0]);
+			//makeHttpsClientLogin(uri, argv[0]);
+			testAdvertAdd(argv[0]);
 		}
 		
 		/* Getting a binary response. */

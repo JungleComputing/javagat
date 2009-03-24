@@ -24,6 +24,10 @@ handlers:
   script: json.py
   secure: optional
 
+- url: /queries/.*
+  script: queries.py
+  secure: optional
+
 - url: /.*
   script: bbn230.py
   secure: optional
