@@ -1,125 +1,112 @@
 \section{Source/API}
-\subsection{MetaData.java}
-\begin{Verbatim}[fontsize=\small]
-package ibis.advert;
-
-/**
- * This class describes meta data that can be attached to any instance stored in
- * the App Engine. MetaData consists of a number of key-value pairs, which both
- * are of type {@link String}.
- * 
- * @author bbn230
- */
-
-import java.util.HashMap;
-import java.util.Set;
-import java.util.Collection;
-import java.util.Iterator;
-
-@SuppressWarnings("serial")
-public class MetaData {
-	private HashMap<String, String> hMap = new HashMap<String, String>();
-
-	/**
-	 * Constructor.
-	 */
-	public MetaData() {
+\subsection{Advert.java}
+\begin{code}
+public class Advert {
+	
+	private String server       = null;
+	private String cookie       = null;
+	private static Communications comm = new Communications();
+	
+	public Advert(String server, String user, String passwd) 
+	  throws Exception {
+		this.server = server;
+		this.cookie = comm.authenticate(server, user, passwd);
 	}
-
+	
 	/**
-	 * Adds a key-value pair to the {@link MetaData} object.
+	 * Add a {@link byte}[] to the App Engine, at an absolute path, with
+	 * {@link MetaData} included, to the datastore. If an entry exists at 
+	 * the specified path, that entry gets overwritten, and a warning is 
+	 * issued.
 	 * 
-	 * @param key
-	 *            The key that corresponds to a given value.
-	 * @param value
-	 *            The value that corresponds to a given key.
+	 * @param bytes
+	 *     {@link byte}[] to be stored.
+	 * @param metaData
+	 *     {@link MetaData} to be associated with the passed bytes.
+	 * @param path
+	 *     Absolute path of the new entry.
+	 * @throws AppEngineResourcesException
+	 *     This exception is thrown when the App Engine runs out of
+	 *     resources.
 	 */
-	public void put(String key, String value) {
-		hMap.put(key, value);
-	}
+	public void add(byte[] object, MetaData metaData, String path) 
+	  throws Exception {
+		JSONArray  jsonarr = new JSONArray();
+		JSONObject jsonobj = new JSONObject();
 
-	/**
-	 * Fetches a value from the {@link MetaData} object, given a certain key.
-	 * 
-	 * @param key
-	 *            The key for which the associated value should be fetched.
-	 * @return A {@link String} containing the associated value of the given
-	 *         key.
-	 */
-	public String get(String key) {
-		return (String) hMap.get(key);
-	}
-
-	/**
-	 * Removes a key-value pair from the {@link MetaData} object.
-	 * 
-	 * @param key
-	 *            The key for which the key-value pair should be removed.
-	 * @return The associated value of the key given.
-	 */
-	public String remove(String key) {
-		return (String) hMap.remove(key);
-	}
-
-	/**
-	 * Gets a {@link Set} of all keys stored in the {@link MetaData} object.
-	 * 
-	 * @return A {@link Set} of all keys stored in the {@link MetaData} object.
-	 */
-	public Set<String> getAllKeys() {
-		return hMap.keySet();
-	}
-
-	/**
-	 * Gets a {@link Collection} of all values stored in the {@link MetaData}
-	 * object.
-	 * 
-	 * @return A {@link Collection} of all keys stored in the {@link MetaData}
-	 *         object.
-	 */
-	public Collection<String> getAllValues() {
-		return hMap.values();
-	}
-
-	/**
-	 * Returns the number of entries in the {@link MetaData} object.
-	 * 
-	 * @return The number of entries in the {@link MetaData} object.
-	 */
-	public int size() {
-		return hMap.size();
-	}
-
-	/**
-	 * Matches two {@link MetaData} objects by a given query.<b>Used internally
-	 * by the GAT. GAT users should not call this method.</b>
-	 * 
-	 * @param query
-	 *            A {@link MetaData} object that should be matched with with the
-	 *            current object.
-	 * @return Returns <code>True</code> if the two objects match; <code>
-	 *     False</code>
-	 *         otherwise.
-	 */
-	public boolean match(MetaData query) {
-		Iterator<String> itr = query.getAllKeys().iterator();
-
+		Iterator<String> itr  = metaData.getAllKeys().iterator();
+	
 		while (itr.hasNext()) {
 			String key = itr.next();
-			String myData = get(key);
+			String value = metaData.get(key);
 
-			if (myData == null) {
-				return false;
+			if (key == null || value == null) {
+				continue; //TODO: (?)
 			}
-
-			String queryData = query.get(key);
-
-			if (!myData.matches(queryData)) {
-				return false;
-			}
+			
+			jsonobj.put(key,value);
 		}
-
-		return true;
+		
+		String base64 = new sun.misc.BASE64Encoder().encode(object);
+		
+		jsonarr.add(path);
+		jsonarr.add(jsonobj);
+		jsonarr.add(base64);
+		
+		comm.httpSend("http://" + server + "/add", this.cookie, 
+			jsonarr);
+		
+        /*
+         * TODO: return TTL of data stored at server (optional)?
+         */
 	}
 }
-\end{Verbatim}
+\end{code}
+
+\subsection{Communications.java}
+\begin{code}
+class Communications {
+
+	/**
+	 * Function to set up SSL in the system properties. 
+	 */
+	private static void setupSsl() {
+
+	}
+	
+	/**
+	 * Function to authenticate to the Google App Engine
+	 * @param server
+	 *     Server to connect to.
+	 * @param user
+	 *     User's email address for identification.
+	 * @param passwd
+	 *     User's password for identification.
+	 * @return a {@link String} which contains a cookie with a session ID.
+	 * @throws Exception
+	 *     Failed to authenticate to the App Engine.
+	 */
+	String authenticate(String server, String user, String passwd) 
+	  throws Exception {
+
+	}
+	
+	/**
+	 * Function to send an object over HTTP.
+	 * @param server
+	 *     Server to send the object to.
+	 * @param cookie
+	 *     Cookie for identification.
+	 * @param object
+	 *     Object to be send to the server.
+	 * @return
+	 *     Returns the response body in {@link String} format.
+	 * @throws Exception
+	 *     Failed to send object to server.
+	 */
+	String httpSend(String server, String cookie, Object object) 
+	  throws Exception {
+
+	}
+}
+\end{code}

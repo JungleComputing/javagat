@@ -9,7 +9,6 @@ App Engine. By creating an URL object like shown in Figure \ref{clientimpl-url}.
 \begin{center}
 \begin{code}
 URL url = new URL("http://ibis-advert.appspot.com/");
-
 HttpURLConnection httpc = (HttpURLConnection) url.openConnection();
 \end{code}
 \caption{Opening an HTTP Connection.\label{clientimpl-url}}
@@ -35,19 +34,17 @@ Security.addProvider(new com.sun.net.ssl.internal.ssl.Provider());
 Properties properties = System.getProperties();
 
 String handlers = System.getProperty("java.protocol.handler.pkgs");
-if (handlers == null) {
-    /* nothing specified yet (expected case) */
+if (handlers == null) { //nothing specified yet (expected case)
     properties.put("java.protocol.handler.pkgs",
         "com.sun.net.ssl.internal.www.protocol");
 } 
-else {
-    /* something already there, put ourselves out front */
+else { //something already there, put ourselves out front
     properties.put("java.protocol.handler.pkgs",
         "com.sun.net.ssl.internal.www.protocol|".concat(handlers));
 }
 System.setProperties(properties);
 \end{code}
-\caption{Opening an HTTP Connection.\label{clientimpl-https}}
+\caption{Setting up an HTTPS Connection.\label{clientimpl-https}}
 \end{center}
 \end{figure*}
 
@@ -67,8 +64,9 @@ POST request.
 \begin{center}
 \begin{code}
 /* Setting up POST environment. */
-urlc.setDoOutput(true);
-OutputStreamWriter out = new OutputStreamWriter(urlc.getOutputStream());
+httpc.setRequestMethod("POST");
+httpc.setDoOutput(true);
+OutputStreamWriter out = new OutputStreamWriter(httpc.getOutputStream());
 
 /* Writing POST data. */
 out.write("author=bbn230&content=test");
@@ -96,43 +94,79 @@ urlc.setRequestProperty("Content-Type", "application/octet-stream");
 
 \subsubsection{Sending a Combination of Both}
 \label{clientimpl-sending-both}
-HTTP natively supports a standard for sending a combination of both URL encoded
-Strings and binary data. This is specified in \emph{RFC1867}. Although this
-would seem perfect for our purposes, we decided not to use this standard for
-sending a combination of URL encoded Strings and binary data. RFC1867 specifies
-that every part of the message should be seperated by a boundary, chosen by the
-client. The downside is that this boundary cannot appear in the content of the
-payload. Since our payload can be virtually anything, we decided to go a
-different direction, because otherwise we would have to perform a linear search
-on all our data to see if a boundary token would accidentally appear in our
-payload.
 
-Instead of using boundaries to define the start/end of our payload, we will make
-use of special bytes which define the length of our payload. The layout of our
-payload is shown in Figure \ldots. To begin with we start by sending the length
-of the path, which is our first four bytes. Now the server knows how many bytes
-the path will be (which is variable n), after which it knows the meta data will
-follow. The meta data also starts with four bytes, indicating the length
-(variable m). Finally, the object is sent, again, by sending the object length
-as the first four bytes and the object (variable size p) right after that.
+\paragraph{Multipart/Form-Data}
+HTTP natively supports a standard for sending a combination of both URL encoded
+Strings and binary data. This is specified in \emph{RFC1867} as
+\emph{multipart/form-data}. Although this would seem perfect for our purposes, we
+decided not to use this standard for sending a combination of URL encoded Strings
+and binary data. RFC1867 specifies that every part of the message should be
+seperated by a boundary, chosen by the client. The downside is that this boundary
+cannot appear in the content of the payload. Since our payload can be virtually
+anything, we decided to go a different direction, because otherwise we would have
+to perform a linear search on all our data to see if a boundary token would
+accidentally appear in our payload.
+\paragraph{Custom Scheme}
+Instead of using boundaries to define the start/end of our payload, we could make
+use of special bytes which define the length of our payload. The layout of this
+scheme is shown in Figure \ref{clientimpl-custom}. To begin with we start by
+sending the length of the path, which is our first four bytes. Now the server
+knows how many bytes the path will be (which is variable n), after which it knows
+the meta data will follow. The meta data also starts with four bytes, indicating
+the length (variable m). Finally, the object is sent, again, by sending the
+object length as the first four bytes and the object (variable size p) right
+after that.
+\begin{figure*}[ht] %[placement] where placement is h,t,b,p
+\begin{center}
+\includegraphics[width=12cm]{custom_payload.pdf} 
+\caption{Custom Payload for Sending Binary Data.\label{clientimpl-custom}}
+\end{center}
+\end{figure*}
 
 Our first attempt of sending the meta data was to structure it like this:
 key1=value1: key2=value2: key3=value3: etc. At the client side, we would have to
 escape actual content containing the equals sign or a colon, by placing a
-backslash in front of them. We had to decode this again at the server side, tomake successful searches. Instead, we will now use the earlier mentioned JSON,which can serialize a MetaData object for us, after which it will look like theString shown in Figure \ref{clientimpl-json}. We can decode this String usingsimplejson at the server side.\begin{figure*}[ht] %[placement] where placement is h,t,b,p
+backslash in front of them. We had to decode this again at the server side, tomake successful searches. Note that the earlier mentioned JSON is designed,
+hence very effective, in sending such key-value pairs. If we take this even
+further, JSON can do a lot more than just encoding key-value pairs.
+
+\paragraph{JSON}
+\dashline{
+Besides serializing a MetaData object, JSON can actually serialize our wholepayload for us. This means that we don't have to work with neither boundaries,as used in multipart/from-data, nor with payload sizes. Since both Java andPython can use libraries which implements all JSON functionality, we won't
+have to program a new mechanism of sending multiple Strings and binary data
+in one request. 
+}
+
+\dashline{
+To give the reader a small idea of how JSON works, we will try to encode te
+payload above into a serial JSON String. The message consists out of three parts:
+a path, meta data, and a binary object. So we will make a JSON array, with each
+entry containing a part. The first part is just a String, which is a value for
+the first entry. The second part is something more complicated, which we will
+encode as a JSON obect, storing key-value pairs. The third entry again is a bit
+more difficult, since we can only store Strings, numbers, booleans, and null.
+That's why we formatted the binary object into a \emph{Base64} encoded
+String}\footnote{Base64 refers to a specific MIME content transfer encoding. It
+encodes binary data by treating it numerically and translating it into a base 64
+representation.}. \dashline{The only downside is that Base64 encoding has a
+overhead of about 137\% of the original data length, plus 814 bytes for headers.
+For more information about the JSON format, we refer to \cite{json-www}.
+}
+
+\dashline{Once encoded, we can serialize the JSON array to a String (see Figure
+\ref{clientimpl-json}, after which it will be sent to the server. We can decode
+this String using simplejson at the server side, retrieving our JSON array back(see Section \ref{serverimpl-simplejson}). 
+}
+\begin{figure*}[ht] %[placement] where placement is h,t,b,p
 \begin{center}
 \begin{code}
-{"key1":"value1","key2":"value2","key3":"value3"}
+["/home/bboterm/app-engine/",{"key1":"value1","key2":"value2","key3":"value3"},
+  "R0lGODlh(...)KSAAOw=="]
 \end{code}
-\caption{An example of a serial JSON object.\label{clientimpl-json}}
+\caption{An example of a serial JSON array.\label{clientimpl-json}}
 \end{center}
 \end{figure*}
 
-After the package is successfully sent, we will receive either a status code 200
-(see below), with optionally the TTL as message body. If the transmission failed,
-a status code 4xx/5xx will be received, depending on the failure (for example 4xx
-can be used if we received a malformed data stream, and 5xx can be used if the
-datastore is full).
 Note that all three parts need to be sent in one request, because suppose we send
 all three parts in separate requests, requests could get lost, which would then
 lead to inconsistencies.
@@ -150,20 +184,23 @@ which we did not expect to find.
 \begin{center}
 \begin{code}
 <form id="gaia_loginform" 
-action="https://www.google.com/accounts/ServiceLoginAuth?service=ah&amp;sig=d71ef8b8d6150b23958ad03b3bf546b7" 
+action="https://www.google.com/accounts/ServiceLoginAuth?service=ah
+    &amp;sig=d71ef8b8d6150b23958ad03b3bf546b7" 
   method="post"
   onsubmit="return(gaia_onLoginSubmit());">
 
 <input type="hidden" name="ltmpl" value="gm">
 <input type="hidden" name="continue" id="continue"
-  value="http:// bbn230.appspot.com/_ah/login?continue=http://bbn230.appspot.com/" />
+  value="http:// bbn230.appspot.com/_ah/login?
+  continue=http://bbn230.appspot.com/" />
 <input type="hidden" name="service" id="service" value="ah" />
 <input type="hidden" name="ltmpl" id="ltmpl" value="gm" />
 <input type="hidden" name="ltmpl" id="ltmpl" value="gm" />
 <input type="hidden" name="ahname" id="ahname" value="Personal" />
 <input type="text" name="Email"  id="Email" size="18" value="" />
 <input type="password" name="Passwd" id="Passwd" size="18" />
-<input type="checkbox" name="PersistentCookie" id="PersistentCookie" value="yes" />
+<input type="checkbox" name="PersistentCookie" id="PersistentCookie" 
+  value="yes" />
 <input type="hidden" name='rmShown' value="1" />
 <input type="submit" class="gaia le button" name="signIn" value="Sign in" />
 <input type="hidden" name="asts" id="asts" value="">
@@ -192,10 +229,11 @@ credentials as shown in Figure \ref{clientimpl-clientlogin}.
 \begin{center}
 \begin{code}
 StringBuilder content = new StringBuilder();
-content.append("Email=").append(URLEncoder.encode("johndoe@gmail.com", "UTF-8"));
+content.append("Email=").append(URLEncoder.encode("johndoe@gmail.com", 
+  "UTF-8"));
 content.append("&Passwd=").append(URLEncoder.encode("north23AZ", "UTF-8"));
-content.append("&service=").append(URLEncoder.encode("xapi", "UTF-8"));
-content.append("&source=").append(URLEncoder.encode("Google Base data API example", 
+content.append("&service=").append(URLEncoder.encode("ah", "UTF-8"));
+content.append("&source=").append(URLEncoder.encode("Google App Engine", 
   "UTF-8"));
 \end{code}
 \caption{Preparing our ClientLogin credentials.\label{clientimpl-clientlogin}}
@@ -289,9 +327,9 @@ which we can retrieve the body.
 How to recieve the headers of an HTTP response is shown in Figure
 \ref{clientimpl-headers}. Already, by receiving the response code, we can
 distinguish errors from successful requests. Response codes starting with a 1 are
-informational and those starting with a 2 mean success. If the response code is
-starting with a 3 are used for redirection, and 4 and 5 are used for errors
-(client and server respectively). For example: 200 stands for success, 403 for
+informational and those starting with a 2xx mean success. If the response code
+is starting with a 3xx are used for redirection, and 4xx and 5xx are used for
+errors (client and server respectively). For example: 200 stands for success, 403 for
 authentication required, and 404 for not found.
 \begin{figure*}[ht] %[placement] where placement is h,t,b,p
 \begin{center}
@@ -309,10 +347,10 @@ for (int i = 0; httpc.getHeaderField(i) != null; i++) {
 
 After checking the response code, we can retrieve additional headers. In our case
 (using the App Engine as our web server), we have listed an example of receiving
-a succesful response (Figure \ref{clientimpl-200}), and a not succesful response
-(Figure \ref{clientimpl-403}). Again, a status header is sent, followed by the
-server type, the date, and some other info. Note that ``Content-Length'' can be
-really useful to determine our buffer size in the next step.
+a succesful response (Figure \ref{clientimpl-200}). Again, a status header is
+sent, followed by the server type, the date, and some other info. Note that
+``Content-Length'' can be really useful to determine our buffer size in the next
+step.
 \begin{figure*}[ht] %[placement] where placement is h,t,b,p
 \begin{center}
 \begin{code}
@@ -324,19 +362,6 @@ Content-Type: image/gif
 Content-Length: 18006
 \end{code}
 \caption{Example of HTTP response headers.\label{clientimpl-200}}
-\end{center}
-\end{figure*}
-
-\begin{figure*}[ht] %[placement] where placement is h,t,b,p
-\begin{center}
-\begin{code}
-HTTP/1.0 403 Forbidden
-Server: Development/1.0
-Date: Wed, 11 Mar 2009 11:28:58 GMT
-Content-Type: text/html
-Content-Length: 394
-\end{code}
-\caption{Another example of HTTP response headers.\label{clientimpl-403}}
 \end{center}
 \end{figure*}
 

@@ -18,17 +18,15 @@ simultaneously. Our application can execute multiple datastore operations in a
 single transaction, which either all succeed or all fail, ensuring the integrity
 of data. 
 
-Google provides us with an \emph{SQL}\footnote{Structured Query Language}
-alternative, called the \emph{Google Query Language} (GQL). An example GQL query
-is shown in figure \ref{gql-example}. These queries are rather powerful when
-using functions like find(), as described below. Also, some security issues are
-triggered using the GQL. Those are described in Section
-\ref{server-design-security}.
+Google provides us with an \emph{SQL} (Structured Query Language) alternative,
+called the \emph{Google Query Language} (GQL). An example GQL query is shown in
+figure \ref{gql-example}. These queries are rather powerful when using functions
+like find(), as described below. Also, some security issues are triggered using
+the GQL. Those are described in Section \ref{server-design-security}.
 \begin{figure*}[ht] %[placement] where placement is h,t,b,p
 \begin{center}
 \begin{code}
-db.GqlQuery("SELECT * FROM MyModel WHERE s1 >= :1 AND s2 < :2", 
-            "foo", "bar")
+db.GqlQuery("SELECT * FROM MyModel WHERE s1 >= :1 AND s2 < :2", "foo", "bar")
 \end{code}
 \caption{GQL Query example.\label{gql-example}}
 \end{center}
@@ -136,9 +134,9 @@ such as images. It takes a String value, but this value is stored as a byte
 string and is not encoded as text, which is exactly what we need.
 \subsubsection{Datastore Functions}
 Besides traditional functions that Google provides to manipulate the datastore
-(provided by the data modeling API, defined in google.appengine.ext.db); Google
-also provides an SQL like way to communicate with the datastore, called the GQL.
-
+(provided by the data modeling API, defined in \texttt{google.appengine.ext.db});
+Google also provides an SQL like way to communicate with the datastore, called
+the GQL.
 \subsubsection{Garbage Collection}
 Since the capacity of the datastore is limited to 500MB, we need some sort of
 garbage collection to keep our service usable for storing new data. This is only
