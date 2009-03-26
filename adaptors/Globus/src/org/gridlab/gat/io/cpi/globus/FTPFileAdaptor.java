@@ -1,8 +1,8 @@
 package org.gridlab.gat.io.cpi.globus;
 
-import java.io.FileNotFoundException;
 import java.util.List;
 import java.util.Map;
+import java.util.Vector;
 
 import org.globus.ftp.FTPClient;
 import org.globus.ftp.exception.ServerException;
@@ -131,11 +131,40 @@ public class FTPFileAdaptor extends GlobusFileAdaptor {
     }
 
     public boolean exists() throws GATInvocationException {
+        FTPClient client = null;
+
         try {
-            getInfo();
-        } catch (FileNotFoundException e) {
-            return false;
+            String remotePath = getPath();
+
+            if (logger.isDebugEnabled()) {
+                logger.debug("getINFO: remotePath = " + remotePath
+                        + ", creating client to: " + toURI());
+            }
+
+            client = createClient(toURI());
+
+            if (logger.isDebugEnabled()) {
+                logger.debug("getINFO: client created");
+            }
+
+            setActiveOrPassive(client, gatContext.getPreferences());
+
+            Vector<?> v = client.list(remotePath);
+            if (v.size() > 0) {
+                // Is OK, either for directory list or file list.
+                return true;
+            }
+            // Here, it could still be an empty directory.
+            return isDirectory();
+        } catch (Exception e) {
+            if (e instanceof GATInvocationException) {
+                throw (GATInvocationException) e;
+            }
+            throw new GATInvocationException("FTPFileAdaptor", e);
+        } finally {
+            if (client != null)
+                destroyClient(client, toURI(), gatContext.getPreferences());
         }
-        return true;
+
     }
 }

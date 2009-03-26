@@ -546,63 +546,62 @@ public abstract class GlobusFileAdaptor extends FileCpi {
         }
         FTPClient client = null;
         client = createClient(toURI());
-        setActiveOrPassive(client, gatContext.getPreferences());
-        if (fiddle) {
-            try {
-                if (client.isPassiveMode()) {
-                    client.setActive();
-                    client.setLocalPassive();
-                } else {
-                    client.setPassive();
-                    client.setLocalActive();
-                }
-            } catch (Exception e) {
-                logger
-                        .debug("failed to fiddle with the active/passive settings for the list operation: "
-                                + e);
-            }
-        }
-        if (getPath() != null) {
-            Vector<FileInfo> list = null;
-            try {
-                String path = getPath();
-                if (path.equals("")) {
-                    path = "/";
-                }
-                client.changeDir(path);
-                // list = client.list(); // this one gives issues on some
-                // gridftp servers (some used by the d-grid project)
-                // list = client.nlist(); // this one is not guaranteed to be
-                // implemented by the gridftp server.
-                list = listNoMinusD(client, null);
-            } catch (ServerException e) {
-                destroyClient(client, toURI(), gatContext.getPreferences());
-                throw new GATInvocationException("Generic globus file adaptor",
-                        e);
-            } catch (ClientException e) {
-                destroyClient(client, toURI(), gatContext.getPreferences());
-                throw new GATInvocationException("Generic globus file adaptor",
-                        e);
-            } catch (IOException e) {
-                destroyClient(client, toURI(), gatContext.getPreferences());
-                throw new GATInvocationException("Generic globus file adaptor",
-                        e);
-            }
-            if (list != null) {
-                List<String> result = new ArrayList<String>();
-                for (int i = 0; i < list.size(); i++) {
-                    if (list.get(i).getName().equals(".")
-                            || list.get(i).getName().equals("..")) {
-                        continue;
+        try {
+            setActiveOrPassive(client, gatContext.getPreferences());
+            if (fiddle) {
+                try {
+                    if (client.isPassiveMode()) {
+                        client.setActive();
+                        client.setLocalPassive();
                     } else {
-                        result.add(list.get(i).getName());
+                        client.setPassive();
+                        client.setLocalActive();
                     }
+                } catch (Exception e) {
+                    logger
+                    .debug("failed to fiddle with the active/passive settings for the list operation: "
+                            + e);
                 }
-                destroyClient(client, toURI(), gatContext.getPreferences());
-                return result.toArray(new String[result.size()]);
             }
+            if (getPath() != null) {
+                Vector<FileInfo> list = null;
+                try {
+                    String path = getPath();
+                    if (path.equals("")) {
+                        path = "/";
+                    }
+                    client.changeDir(path);
+                    // list = client.list(); // this one gives issues on some
+                    // gridftp servers (some used by the d-grid project)
+                    // list = client.nlist(); // this one is not guaranteed to be
+                    // implemented by the gridftp server.
+                    list = listNoMinusD(client, null);
+                } catch (ServerException e) {
+                    throw new GATInvocationException("Generic globus file adaptor",
+                            e);
+                } catch (ClientException e) {
+                    throw new GATInvocationException("Generic globus file adaptor",
+                            e);
+                } catch (IOException e) {
+                    throw new GATInvocationException("Generic globus file adaptor",
+                            e);
+                }
+                if (list != null) {
+                    List<String> result = new ArrayList<String>();
+                    for (int i = 0; i < list.size(); i++) {
+                        if (list.get(i).getName().equals(".")
+                                || list.get(i).getName().equals("..")) {
+                            continue;
+                        } else {
+                            result.add(list.get(i).getName());
+                        }
+                    }
+                    return result.toArray(new String[result.size()]);
+                }
+            }
+        } finally {
+            destroyClient(client, toURI(), gatContext.getPreferences());
         }
-        destroyClient(client, toURI(), gatContext.getPreferences());
         return null;
 
     }
@@ -769,68 +768,120 @@ public abstract class GlobusFileAdaptor extends FileCpi {
             if (logger.isDebugEnabled()) {
                 logger.debug("getINFO: client created");
             }
-
-            setActiveOrPassive(client, gatContext.getPreferences());
             
             Vector<?> v;
             
             if (remotePath.equals("") || remotePath.equals("/")) {
                 // See if LIST -d can find "."
+                setActiveOrPassive(client, gatContext.getPreferences());
                 v = client.list(parent);
                 for (Object o : v) {
                     FileInfo f = (FileInfo) o;
                     if (f.getName().equals(".")) {
+                        f.setName(getName());
                         cachedInfo = f;
                         return cachedInfo;
                     }
                 }
-                // O well, then we cheat ...
-                if (logger.isDebugEnabled()) {
-                    logger.debug("getINFO: cheat root directory");
+                throw new GATInvocationException("gridftp: cannot obtain info for " + location);
+            }
+            
+            setActiveOrPassive(client, gatContext.getPreferences());         
+            v = client.list(remotePath);
+            if (logger.isDebugEnabled()) {
+                logger.debug("client.list() size = " + v.size());
+            }
+            if (v.size() > 1) {
+                // Now we're sure that remotePath was a directory, and
+                // the server does not support the -d option.
+                // Maybe it has '.'?
+                for (int i = 0; i < v.size(); i++) {
+                    FileInfo tmp = (FileInfo) v.get(i);
+                    if (tmp.getName().equals(".")) {
+                        tmp.setName(getName());
+                        cachedInfo = tmp;
+                        return tmp;
+                    }
                 }
-                cachedInfo = new FileInfo("drwxr-xr-x 2 guest other 1536 Jan 31 15:15 .");
+
+                // Last resort: try to list the parent directory.
+                cachedInfo = tryParent(client, parent);
+                if (cachedInfo == null) {
+                    throw new GATInvocationException(
+                        "gridftp: size of list is not 1 and could not find \".\", remotePath = "
+                                + remotePath + ", list is: " + v);
+                }
                 return cachedInfo;
             }
-            
-            v = listNoMinusD(client, parent);
-/*
-            if (isOldServer(gatContext.getPreferences())) {
-                v = listNoMinusD(client, parent);
-            } else {
-                if (parent == null) {
-                    parent = "*";
-                } else {
-                    parent = parent + "/*";
-                }
-                v = client.list(parent);
-            }
-*/
-
-            if (v.size() == 0) {
-                throw new FileNotFoundException("File not found: " + location);
-            }
-            
-            for (int i = 0; i < v.size(); i++) {
-                FileInfo tmp = (FileInfo) v.get(i);
-                if (tmp.getName().equals(getName())) {
+            if (v.size() == 1) {
+                // Now, what does this mean? If the server recognizes the -d
+                // flag, we have the right entry. But we could also have listed
+                // the contents of a directory which contains a single entry.
+                FileInfo tmp = (FileInfo) v.get(0);
+                if (tmp.getName().equals(remotePath)) {
                     cachedInfo = tmp;
-                    return cachedInfo;
+                    return tmp;
+                }
+                // Some servers don't include the path in the result.
+                if (tmp.getName().equals(getName())) {
+                    // This might be the right entry, but it also might indicate
+                    // a file or directory within the listed one, with the same name.
+                    // TODO! Fix this. But how?
+                    cachedInfo = tmp;
+                    return tmp;
                 }
             }
-            
+            // Here, v.size() <= 1 and we have, as a last resort, to list the
+            // parent directory. If v.size() == 0, this could mean that
+            // remotePath indicates an empty directory, or that it does not
+            // exist.
+            cachedInfo = tryParent(client, parent);
             if (cachedInfo == null) {
-                throw new FileNotFoundException("File not found: " + location);
+                throw new GATInvocationException(
+                    "gridftp: size of list <= 1 and could not list parent, remotePath = "
+                            + remotePath);
             }
-
             return cachedInfo;
         } catch (Throwable e) {
+            logger.debug("getInfo() got exception", e);
             if (e instanceof FileNotFoundException) {
                 throw (FileNotFoundException) e;
+            }
+            if (e instanceof GATInvocationException) {
+                throw (GATInvocationException) e;
             }
             throw new GATInvocationException("gridftp", e);
         } finally {
             if (client != null)
                 destroyClient(client, toURI(), gatContext.getPreferences());
+        }
+    }
+
+    private FileInfo tryParent(FTPClient client, String parent)
+            throws FileNotFoundException {
+        if (logger.isDebugEnabled()) {
+            logger.debug("tryParent " + parent);
+        }
+        try {
+            setActiveOrPassive(client, gatContext.getPreferences());
+            Vector<FileInfo> v = listNoMinusD(client, parent);
+
+            if (v.size() == 0) {
+                throw new FileNotFoundException("File not found: " + location);
+            }
+        
+            for (int i = 0; i < v.size(); i++) {
+                FileInfo tmp = v.get(i);
+                if (tmp.getName().equals(getName())) {
+                    return tmp;
+                }
+            }
+            throw new FileNotFoundException("File not found: " + location);
+        } catch(Throwable e) {
+            if (e instanceof FileNotFoundException) {
+                throw (FileNotFoundException) e;
+            }
+            return null;
         }
     }
 
@@ -846,6 +897,9 @@ public abstract class GlobusFileAdaptor extends FileCpi {
 
         boolean dir = true;
         String remotePath = getPath();
+        if (remotePath.equals("")) {
+            remotePath = "/";
+        }
 
         if (logger.isDebugEnabled()) {
             logger.debug("getINFO: remotePath = " + remotePath
@@ -940,6 +994,8 @@ public abstract class GlobusFileAdaptor extends FileCpi {
             // it can also be a link, so continue with slow method
         } catch(FileNotFoundException e) {
             return false;
+        } catch(GATInvocationException e) {
+            // ignored, try the slow method.
         }
         if (logger.isDebugEnabled()) {
             logger
@@ -1225,7 +1281,7 @@ public abstract class GlobusFileAdaptor extends FileCpi {
             };
         };
 
-        c.list(filter, null,  sink);
+        c.list(filter, null, sink);
 
         // transfer done. Data is in received stream.
         // convert it to a vector.
