@@ -33,31 +33,31 @@ class MetaData(db.Model):
   keystr = db.StringProperty()
   value  = db.StringProperty()
 
+def auth(self):
+  if not users.get_current_user():
+    self.error(403)
+    self.response.headers['Content-Type'] = 'text/plain'
+    self.response.out.write('Not Authenticated')
+    return -1
+
+  if not users.is_current_user_admin():
+    self.error(403)
+    self.response.headers['Content-Type'] = 'text/plain'
+    self.response.out.write('No Administrator')
+    return -1
+
+  return 0
+
 class MainPage(webapp.RequestHandler):
   def get(self):
-    self.response.out.write("""
-      <html>
-      <body>
-        GAE, attaboy!
-      </body>
-      </html>""")
+    self.redirect(users.create_login_url(self.request.uri))
 
 class AddObject(webapp.RequestHandler):
   def post(self):
     advert = Advert()
     user   = users.get_current_user()
     
-    if not user:
-        self.error(403)
-        self.response.headers['Content-Type'] = 'text/plain'
-        self.response.out.write('Not Authenticated')
-        return
-    
-    if users.is_current_user_admin():
-        self.error(403)
-        self.response.headers['Content-Type'] = 'text/plain'
-        self.response.out.write('No Administrator')
-        return
+    if auth(self) < 0: return
     
     body = self.request.body
     json = simplejson.loads(body)
@@ -79,8 +79,12 @@ class AddObject(webapp.RequestHandler):
     return
 
 application = webapp.WSGIApplication(
-                                     [('/', MainPage),
-                                      ('/add', AddObject)],
+                                     [('/',      MainPage),
+                                      ('/add',   AddObject),
+                                      ('/del',   DelObject),
+                                      ('/get',   GetObject),
+                                      ('/getmd', GetMetaData),
+                                      ('/find',  FindMetaData)],
                                      debug=True)
 
 def main():

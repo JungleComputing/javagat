@@ -28,6 +28,10 @@ handlers:
   script: queries.py
   secure: optional
 
+- url: /func/.*
+  script: functions.py
+  secure: optional
+
 - url: /.*
   script: bbn230.py
   secure: optional

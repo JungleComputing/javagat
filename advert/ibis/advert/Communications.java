@@ -16,6 +16,7 @@ import java.net.ProtocolException;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.security.Security;
+import java.util.NoSuchElementException;
 import java.util.Properties;
 
 /**
@@ -31,7 +32,8 @@ class Communications {
 	private String server;
 	
 	Communications(String server, String user, String passwd) 
-	  throws MalformedURLException, ProtocolException, IOException, AuthenticationException {
+	  throws MalformedURLException, ProtocolException, IOException, 
+	  AuthenticationException {
 		this.server = server;
 		authenticate(user, passwd);
 	}
@@ -72,8 +74,9 @@ class Communications {
 	 * @throws Exception
 	 * 				Failed to authenticate to the App Engine.
 	 */
-	String authenticate(String user, String passwd) 
-	  throws MalformedURLException, ProtocolException, IOException, AuthenticationException {
+	void authenticate(String user, String passwd) 
+	  throws MalformedURLException, ProtocolException, IOException, 
+	  AuthenticationException {
 		URL url                 = null;
 	    HttpURLConnection httpc = null;
 		
@@ -151,7 +154,9 @@ class Communications {
 			}
 		}
 		
-		return null;
+		if (cookie == null) {
+			throw new AuthenticationException();
+		}
 	}
 	
 	/**
@@ -167,8 +172,10 @@ class Communications {
 	 * @throws Exception
 	 * 				Failed to send object to server.
 	 */
-	String httpSend(String server, Object object) throws MalformedURLException, IOException {
-	    URL url = new URL(server);
+	String httpSend(String ext, Object object) 
+	  throws MalformedURLException, IOException, AuthenticationException,
+	  AppEngineResourcesException, NoSuchElementException {
+	    URL url = new URL("http://" + server + ext);
 		HttpURLConnection httpc = (HttpURLConnection) url.openConnection();
 		
 		/* Setting headers. */
@@ -189,8 +196,16 @@ class Communications {
 		
 		/* Retrieving response headers. */
 		if (httpc.getResponseCode() != HttpURLConnection.HTTP_OK) {
-			/* TODO: Check error code and throw appropriate exception. */
-			//throw new Exception();
+			if (httpc.getResponseCode() == HttpURLConnection.HTTP_FORBIDDEN) {
+				throw new AuthenticationException();
+			}
+			if (httpc.getResponseCode() == HttpURLConnection.HTTP_NOT_FOUND) {
+				throw new NoSuchElementException();
+			}
+			if (httpc.getResponseCode() == HttpURLConnection.HTTP_REQ_TOO_LONG) {
+				throw new AppEngineResourcesException();
+			}
+			//TODO: throw generic Exception?
 		}
 		
 		/* Retrieving body. */

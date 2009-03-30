@@ -23,7 +23,8 @@ public class Advert {
 	
 	private Communications comm = null;
 	
-	public Advert(String server, String user, String passwd) throws Exception {
+	public Advert(String server, String user, String passwd) 
+	  throws AuthenticationException, IOException {
 		comm = new Communications(server, user, passwd);
 	}
 	
@@ -43,7 +44,8 @@ public class Advert {
 	 *             resources.
 	 */
 	public void add(byte[] object, MetaData metaData, String path) 
-	  throws Exception {
+	  throws MalformedURLException, IOException, AuthenticationException,
+	  AppEngineResourcesException, NoSuchElementException {
 		JSONArray  jsonarr = new JSONArray();
 		JSONObject jsonobj = new JSONObject();
 
@@ -57,7 +59,7 @@ public class Advert {
 				continue; //TODO: (?)
 			}
 			
-			jsonobj.put(key,value);
+			jsonobj.put(key, value);
 		}
 		
 		String base64 = new sun.misc.BASE64Encoder().encode(object);
@@ -83,9 +85,10 @@ public class Advert {
 	 * @throws NoSuchElementException
 	 *             The path is incorrect.
 	 */
-	public void delete(String path) throws Exception {
-		/* Throws NoSuchElementException. */
-		comm.httpSend("/del", null);
+	public void delete(String path) 
+	  throws MalformedURLException, IOException, AuthenticationException,
+	  AppEngineResourcesException, NoSuchElementException {
+		comm.httpSend("/del", path);
 	}
 
 	/**
@@ -97,8 +100,12 @@ public class Advert {
 	 * @throws NoSuchElementException
 	 *             The path is incorrect.
 	 */
-	public byte[] get(String path) throws NoSuchElementException {
-		return null;
+	public byte[] get(String path) 
+	  throws MalformedURLException, IOException, AuthenticationException,
+	  AppEngineResourcesException, NoSuchElementException {
+		String base64 = comm.httpSend("/get", path);
+		
+		return new sun.misc.BASE64Decoder().decodeBuffer(base64);
 	}
 
 	/**
@@ -110,12 +117,12 @@ public class Advert {
 	 * @throws NoSuchElementException
 	 *             The path is incorrect.
 	 */
-	public MetaData getMetaData(String path) throws NoSuchElementException, MalformedURLException, IOException { 
+	public MetaData getMetaData(String path) 
+	  throws MalformedURLException, IOException, AuthenticationException,
+	  AppEngineResourcesException, NoSuchElementException {
 		MetaData   metadata = new MetaData();
 		
 		String result = comm.httpSend("/getmd", path);
-		
-		/* TODO, check response code */
 		
 		JSONObject jsonobj = JSONObject.fromObject(result);
 		Iterator<?> itr    = jsonobj.keys();
@@ -140,15 +147,34 @@ public class Advert {
 	 * 
 	 * @param metaData
 	 *            {@link MetaData} describing the entries to be searched for.
+	 *            No wildcards allowed.
 	 * @param pwd
 	 *            Current working path.
 	 * @return a {@link String}[] of absolute paths, each pointing to a
 	 *         matching entry. If no matches are found, null is returned.
 	 */
-	public String[] find(MetaData metaData, String pwd) {
-		JSONArray jsonarr = new JSONArray();
+	public String[] find(MetaData metaData, String pwd)
+	  throws MalformedURLException, IOException, AuthenticationException,
+	  AppEngineResourcesException, NoSuchElementException {
+		JSONObject metadata = new JSONObject();
+		JSONArray  jsonarr  = new JSONArray();
 		
+		Iterator<String> itr  = metaData.getAllKeys().iterator();
 		
+		while (itr.hasNext()) {
+			String key   = itr.next();
+			String value = metaData.get(key);
+
+			if (key == null || value == null) {
+				continue; //TODO: (?)
+			}
+			
+			metadata.put(key, value);
+		}
+				
+		String result = comm.httpSend("/find", metadata);
+		
+		jsonarr = JSONArray.fromObject(result);
 		
 		return (String[]) jsonarr.toArray();
 	}
