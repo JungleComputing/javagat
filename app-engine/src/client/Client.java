@@ -64,6 +64,19 @@ public class Client {
 		System.setProperties(properties); 	
 	}
 	
+	private static void base64test() throws Exception {
+		byte[] b = new byte[5000];
+		
+		for (int i = 0; i<5000; i++) {
+			b[i] = (byte)i;
+		}
+		
+		String base64 = new sun.misc.BASE64Encoder().encode(b);
+		
+		System.out.println(base64.length());
+		
+	}
+	
 	private static void testAdvertAdd(String password) throws Exception {
 		Advert advert = new Advert("bbn230.appspot.com", "ibisadvert@gmail.com", password);
 		MetaData metaData = new MetaData();
@@ -795,7 +808,7 @@ public class Client {
 		}
 		else {
 			//makeHttpsClientLogin(uri, argv[0]);
-			testAdvertAdd(argv[0]);
+			//testAdvertAdd(argv[0]);
 		}
 		
 		/* Getting a binary response. */
@@ -805,5 +818,8 @@ public class Client {
 		/* Tests with JSON. */
 		uri = server.concat("json/get");
 		//makeHttpJson(uri);
+		
+		/* Base64 tests. */
+		base64test();
 	}
 }

@@ -11,6 +11,8 @@ package ibis.advert;
  * @author bbn230
  */
 
+import java.io.IOException;
+import java.net.MalformedURLException;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
@@ -19,13 +21,10 @@ import net.sf.json.JSONObject;
 
 public class Advert {
 	
-	private String server       = null;
-	private String cookie       = null;
-	private static Communications comm = new Communications();
+	private Communications comm = null;
 	
 	public Advert(String server, String user, String passwd) throws Exception {
-		this.server = server;
-		this.cookie = comm.authenticate(server, user, passwd);
+		comm = new Communications(server, user, passwd);
 	}
 	
 	/**
@@ -51,7 +50,7 @@ public class Advert {
 		Iterator<String> itr  = metaData.getAllKeys().iterator();
 	
 		while (itr.hasNext()) {
-			String key = itr.next();
+			String key   = itr.next();
 			String value = metaData.get(key);
 
 			if (key == null || value == null) {
@@ -67,7 +66,7 @@ public class Advert {
 		jsonarr.add(jsonobj);
 		jsonarr.add(base64);
 		
-		comm.httpSend("http://" + server + "/add", this.cookie, jsonarr);
+		comm.httpSend("/add", jsonarr);
 		
         /*
          * TODO: return TTL of data stored at server (optional)?
@@ -84,8 +83,9 @@ public class Advert {
 	 * @throws NoSuchElementException
 	 *             The path is incorrect.
 	 */
-	public void delete(String path) throws NoSuchElementException {
-
+	public void delete(String path) throws Exception {
+		/* Throws NoSuchElementException. */
+		comm.httpSend("/del", null);
 	}
 
 	/**
@@ -98,7 +98,6 @@ public class Advert {
 	 *             The path is incorrect.
 	 */
 	public byte[] get(String path) throws NoSuchElementException {
-
 		return null;
 	}
 
@@ -111,9 +110,28 @@ public class Advert {
 	 * @throws NoSuchElementException
 	 *             The path is incorrect.
 	 */
-	public MetaData getMetaData(String path) throws NoSuchElementException {
+	public MetaData getMetaData(String path) throws NoSuchElementException, MalformedURLException, IOException { 
+		MetaData   metadata = new MetaData();
+		
+		String result = comm.httpSend("/getmd", path);
+		
+		/* TODO, check response code */
+		
+		JSONObject jsonobj = JSONObject.fromObject(result);
+		Iterator<?> itr    = jsonobj.keys();
+		
+		while (itr.hasNext()) {
+			String key   = (String)itr.next();
+			String value = (String)jsonobj.get(key);
 
-		return null;
+			if (key == null || value == null) {
+				continue; //TODO: (?)
+			}
+			
+			metadata.put(key,value);
+		}
+
+		return metadata;
 	}
 
 	/**
@@ -128,7 +146,10 @@ public class Advert {
 	 *         matching entry. If no matches are found, null is returned.
 	 */
 	public String[] find(MetaData metaData, String pwd) {
-
-		return null;
+		JSONArray jsonarr = new JSONArray();
+		
+		
+		
+		return (String[]) jsonarr.toArray();
 	}
 }

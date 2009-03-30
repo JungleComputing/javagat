@@ -5,11 +5,14 @@
 package ibis.advert;
 
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.ProtocolException;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.security.Security;
@@ -23,6 +26,15 @@ import java.util.Properties;
  */
 
 class Communications {
+	
+	private String cookie;
+	private String server;
+	
+	Communications(String server, String user, String passwd) 
+	  throws MalformedURLException, ProtocolException, IOException, AuthenticationException {
+		this.server = server;
+		authenticate(user, passwd);
+	}
 	
 	private static final String CLIENTLOGIN = 
 		"https://www.google.com/accounts/ClientLogin";
@@ -60,9 +72,8 @@ class Communications {
 	 * @throws Exception
 	 * 				Failed to authenticate to the App Engine.
 	 */
-	String authenticate(String server, String user, String passwd) 
-	  throws Exception {
-		String cookie           = null;
+	String authenticate(String user, String passwd) 
+	  throws MalformedURLException, ProtocolException, IOException, AuthenticationException {
 		URL url                 = null;
 	    HttpURLConnection httpc = null;
 		
@@ -140,7 +151,7 @@ class Communications {
 			}
 		}
 		
-		return cookie;
+		return null;
 	}
 	
 	/**
@@ -156,8 +167,8 @@ class Communications {
 	 * @throws Exception
 	 * 				Failed to send object to server.
 	 */
-	String httpSend(String server, String cookie, Object object) throws Exception {
-	  URL url = new URL(server);
+	String httpSend(String server, Object object) throws MalformedURLException, IOException {
+	    URL url = new URL(server);
 		HttpURLConnection httpc = (HttpURLConnection) url.openConnection();
 		
 		/* Setting headers. */
