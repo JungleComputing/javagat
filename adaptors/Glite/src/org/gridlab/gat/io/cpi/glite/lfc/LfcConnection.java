@@ -63,7 +63,7 @@ public class LfcConnection {
 //    private static final int CNS_RENAME			= 6;
     private static final int CNS_RMDIR			= 7;
 //    private static final int CNS_STAT			= 8;
-//    private static final int CNS_UNLINK			= 9;
+    private static final int CNS_UNLINK			= 9;
     private static final int CNS_OPENDIR		= 10;
     private static final int CNS_READDIR		= 11;
     private static final int CNS_CLOSEDIR		= 12;
@@ -525,10 +525,8 @@ public class LfcConnection {
     }
     
     /**
-     * Soft delete a directory entry
-     * @param path
-     * @return 
-     * @throws IOException
+     * Use UNLINK command instead of DELETE to remove files. DELETE command
+	 * is for CASTOR entries only
      */
     public int delete(String path)throws IOException {
     	preparePacket(CNS_MAGIC, CNS_DELETE);
@@ -541,6 +539,18 @@ public class LfcConnection {
         int execResult = recvBuf.getInt();
         LOGGER.debug("delete result: " + execResult);
         return execResult;
+    }
+    /**
+     * Use this command instead of DELETE to remove files. DELETE command
+	 * is for CASTOR entries only
+     */
+    public void unlink(String path) throws IOException{
+        preparePacket(CNS_MAGIC, CNS_UNLINK);
+        addIDs();
+        long cwd = 0L; // Current Working Directory
+        sendBuf.putLong(cwd);
+        putString(path);
+        sendAndReceive(true);
     }
     
 
@@ -577,6 +587,9 @@ public class LfcConnection {
         return srms;
     }
 
+    /**
+     * Use UNLINK command instead of DELFILES to remove files.
+     */
     public boolean delFiles(String[] guids, boolean force) throws IOException {
         preparePacket(CNS_MAGIC, CNS_DELFILES);
         addIDs();
@@ -637,6 +650,10 @@ public class LfcConnection {
         sendAndReceive(true);
     }
 
+    /**
+     * It removes replica information from catalog, data stored
+     * on Storage Element stays intact
+     */
     public void delReplica(String guid, String replicaUri) throws IOException {
         long id = 0L;
         preparePacket(CNS_MAGIC, CNS_DELREPLICA);

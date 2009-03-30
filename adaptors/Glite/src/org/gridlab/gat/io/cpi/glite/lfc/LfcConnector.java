@@ -287,16 +287,14 @@ public class LfcConnector {
 	            } catch (IOException e) {
 	                LOGGER.warn("Failed to delete Replica " + replica.getSfn(),e);
 	            }
-                LOGGER.info("Deleting path: " + path);
-                final LfcConnection connection3 = new LfcConnection(server,
-                        port, proxyPath);
-                try {
-                    if (!connection3.delFiles(new String[]{replica.getGuid()}, false)) {
-                        return false;
-                    }
-                } finally {
-                    connection3.close();
-                }
+            }
+	        LOGGER.info("Deleting path: " + path);
+            final LfcConnection connection3 = new LfcConnection(server,
+                    port, proxyPath);
+            try {
+                connection3.unlink(path);
+            } finally {
+                connection3.close();
             }
 	        return true;
     	}

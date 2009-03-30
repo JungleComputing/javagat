@@ -307,9 +307,23 @@ public class VomsProxyManager extends GlobusProxyManager {
 	 *         proxy is available, return <code>null</code>
 	 */
 	public static String getExistingVOMSProxyHeader(String path) {
-		try {
+		try{
 			GlobusCredential globCred = new GlobusCredential(path);
-
+			return getExistingVOMSProxyHeader(globCred);
+		}catch (Exception e) {
+			return null;
+		}
+	}
+	
+	/**
+	 * Get the header of the proxy stored at path
+	 * @param globCred
+	 *            The proxy certificate
+	 * @return The certificate header. If no proxy exists, or if a simple grid
+	 *         proxy is available, return <code>null</code>
+	 */
+	public static String getExistingVOMSProxyHeader(GlobusCredential globCred) {
+		try {
 			// check whether the proxy is a VOMS proxy and not only a globus
 			// proxy
 			if (globCred.getCertificateChain()[0].getExtensionValue(AC_OID) != null) {
@@ -332,6 +346,20 @@ public class VomsProxyManager extends GlobusProxyManager {
 	public static List<String> getExistingVOMSExtensions(String path) {
 		try {
 			GlobusCredential credential = new GlobusCredential(path);
+			return getExistingVOMSExtensions(credential);
+		}catch (Exception e) {
+			return null;
+		}
+	}
+	
+	/**
+	 * Get the string representation of the full qualified attribute names of a VOMS proxy
+	 * @param credential
+	 * 				The proxy certificate
+	 * @return The list of fqans of the voms proxy or <code>null</code> if the proxy is not voms enabled
+	 */
+	public static List<String> getExistingVOMSExtensions(GlobusCredential credential) {
+		try {
 			List<String> voNames = new ArrayList<String>();
 			List<String> fqans = new ArrayList<String>();
 
