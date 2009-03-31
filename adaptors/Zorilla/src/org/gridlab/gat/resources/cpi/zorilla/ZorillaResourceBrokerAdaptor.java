@@ -59,6 +59,8 @@ public class ZorillaResourceBrokerAdaptor extends ResourceBrokerCpi implements
     }
 
     private final String nodeSocketAddress;
+    
+    private final String hub;
 
     private final Map<String, ZorillaJob> jobs;
 
@@ -89,6 +91,8 @@ public class ZorillaResourceBrokerAdaptor extends ResourceBrokerCpi implements
         }
 
         nodeSocketAddress = brokerURI.getSchemeSpecificPart();
+        
+        hub  = (String)gatContext.getPreferences().get("zorilla.hub.addresses");
 
         logger.debug("zorilla node address = " + nodeSocketAddress);
 
@@ -96,11 +100,11 @@ public class ZorillaResourceBrokerAdaptor extends ResourceBrokerCpi implements
 
         try {
             ZoniConnection connection = new ZoniConnection(
-                    getNodeSocketAddress(), null);
+                    getNodeSocketAddress(), getHub(), null);
             connection.close();
         } catch (IOException e) {
             throw new GATObjectCreationException(
-                    "could not reach zorilla node", e);
+                    "could not reach zorilla node: ", e);
         }
 
         // start a thread to monitor jobs
@@ -147,7 +151,7 @@ public class ZorillaResourceBrokerAdaptor extends ResourceBrokerCpi implements
                     .createMetric(null);
             job.addMetricListener(listener, metric);
         }
-        zorillaJob.startJob(getNodeSocketAddress(), getCallbackReceiver());
+        zorillaJob.startJob(getNodeSocketAddress(), getHub(),getCallbackReceiver());
         
         logger.debug("ZorillaResourceBroker.submitJob: zorilla job started: " + zorillaJob.getZorillaJobID());
         
@@ -160,6 +164,10 @@ public class ZorillaResourceBrokerAdaptor extends ResourceBrokerCpi implements
 
     String getNodeSocketAddress() {
         return nodeSocketAddress;
+    }
+    
+    String getHub() {
+        return hub;
     }
 
     // zoni callback with update of job info
@@ -190,13 +198,13 @@ public class ZorillaResourceBrokerAdaptor extends ResourceBrokerCpi implements
         jobs.remove(jobID);
     }
 
-    private void updateJobInfos() throws IOException {
+    private void updateJobInfos() throws Exception {
         logger.debug("updating job info for all jobs");
         ZoniConnection connection = null;
 
         for (ZorillaJob job : getJobs()) {
             if (connection == null) {
-                connection = new ZoniConnection(getNodeSocketAddress(), null);
+                connection = new ZoniConnection(getNodeSocketAddress(), getHub(), null);
             }
 
             if (logger.isDebugEnabled()) {
@@ -233,7 +241,7 @@ public class ZorillaResourceBrokerAdaptor extends ResourceBrokerCpi implements
         while (!hasEnded()) {
             try {
                 updateJobInfos();
-            } catch (IOException e) {
+            } catch (Exception e) {
                 logger.warn("could not update job infos of "
                         + nodeSocketAddress, e);
             }
