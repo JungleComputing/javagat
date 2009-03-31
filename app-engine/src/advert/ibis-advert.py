@@ -27,7 +27,7 @@ class Advert(db.Model):
   path   = db.StringProperty()
   author = db.UserProperty()
   ttl    = db.DateTimeProperty(auto_now_add=True)
-  object = db.BlobProperty()
+  object = db.TextProperty() #base64
   
 class MetaData(db.Model):
   keystr = db.StringProperty()
@@ -77,6 +77,76 @@ class AddObject(webapp.RequestHandler):
     self.response.headers['Content-Type'] = 'text/plain'
     self.response.out.write('TTL') #TODO: insert actual TTL
     return
+
+class DelObject(webapp.RequestHandler):
+  def post(self):
+    if auth(self) < 0: return
+    
+    body  = self.request.body
+    query = db.GqlQuery("SELECT * FROM Advert WHERE path = :1", body)
+    
+    if query.count() < 1: #no matching object found
+      self.error(404)
+      self.response.headers['Content-Type'] = 'text/plain'
+      self.response.out.write('No Such Element')
+      return      
+    
+    for advert in query:
+      advert.delete() #deleting the first entry we find
+      break #and stop
+  
+    self.response.headers['Content-Type'] = 'text/plain'
+    self.response.out.write('OK')
+    
+class GetObject(webapp.RequestHandler):
+  def post(self):
+    if auth(self) < 0: return
+    
+    body  = self.request.body
+    query = db.GqlQuery("SELECT * FROM Advert WHERE path = :1", body)
+    
+    if query.count() < 1: #no matching object found
+      self.error(404)
+      self.response.headers['Content-Type'] = 'text/plain'
+      self.response.out.write('No Such Element')
+      return      
+    
+    for advert in query:
+      self.response.headers['Content-Type'] = 'text/plain'
+      self.response.out.write(advert.object) #returning the first entry we find
+      break #and stop
+    
+    return;
+  
+class GetMetaData(webapp.RequestHandler):
+  def post(self):
+    if auth(self) < 0: return
+    
+    body  = self.request.body
+    query = db.GqlQuery("SELECT * FROM MetaData WHERE path = :1", body)
+    
+    if query.count() < 1: #no matching object found
+      self.error(404)
+      self.response.headers['Content-Type'] = 'text/plain'
+      self.response.out.write('No Such Element')
+      return
+    
+    jsonObject = {}
+    
+    for metadata in query:
+      jsonObject[metadata.keystr] = metadata.value
+      
+    self.response.headers['Content-Type'] = 'text/plain'
+    self.response.out.write(simplejson.dumps(jsonObject))   
+
+class FindMetaData(webapp.RequestHandler):
+  def post(self):
+    if auth(self) < 0: return
+    
+    body = self.request.body
+    json = simplejson.loads(body)
+    
+    
 
 application = webapp.WSGIApplication(
                                      [('/',      MainPage),

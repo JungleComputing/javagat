@@ -28,6 +28,9 @@ import java.util.Properties;
 
 class Communications {
 	
+	private static final int MAX_REQ_SIZE = 10^7;
+	private static final int MAX_DB_SIZE  = 10^6;
+	
 	private String cookie;
 	private String server;
 	
@@ -172,9 +175,14 @@ class Communications {
 	 * @throws Exception
 	 * 				Failed to send object to server.
 	 */
-	String httpSend(String ext, Object object) 
+	String httpSend(String ext, String payload) 
 	  throws MalformedURLException, IOException, AuthenticationException,
-	  AppEngineResourcesException, NoSuchElementException {
+	  AppEngineResourcesException, NoSuchElementException, 
+	  RequestTooLargeException {
+		if (payload.length() > MAX_REQ_SIZE) {
+			throw new RequestTooLargeException();
+		}
+		
 	    URL url = new URL("http://" + server + ext);
 		HttpURLConnection httpc = (HttpURLConnection) url.openConnection();
 		
@@ -190,7 +198,7 @@ class Communications {
 		OutputStreamWriter osw = new OutputStreamWriter(httpc.getOutputStream());
 		
 		/* Writing JSON data. */
-		osw.write(object.toString());
+		osw.write(payload);
 		osw.flush();
 		osw.close();
 		
@@ -203,6 +211,9 @@ class Communications {
 				throw new NoSuchElementException();
 			}
 			if (httpc.getResponseCode() == HttpURLConnection.HTTP_REQ_TOO_LONG) {
+				throw new RequestTooLargeException();
+			}
+			if (httpc.getResponseCode() == HttpURLConnection.HTTP_UNAVAILABLE) {
 				throw new AppEngineResourcesException();
 			}
 			//TODO: throw generic Exception?

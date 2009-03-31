@@ -45,7 +45,8 @@ public class Advert {
 	 */
 	public void add(byte[] object, MetaData metaData, String path) 
 	  throws MalformedURLException, IOException, AuthenticationException,
-	  AppEngineResourcesException, NoSuchElementException {
+	  AppEngineResourcesException, NoSuchElementException, 
+	  RequestTooLargeException {
 		JSONArray  jsonarr = new JSONArray();
 		JSONObject jsonobj = new JSONObject();
 
@@ -55,8 +56,8 @@ public class Advert {
 			String key   = itr.next();
 			String value = metaData.get(key);
 
-			if (key == null || value == null) {
-				continue; //TODO: (?)
+			if (key == null) {
+				continue; //key can't be null (value can)
 			}
 			
 			jsonobj.put(key, value);
@@ -68,7 +69,7 @@ public class Advert {
 		jsonarr.add(jsonobj);
 		jsonarr.add(base64);
 		
-		comm.httpSend("/add", jsonarr);
+		comm.httpSend("/add", jsonarr.toString());
 		
         /*
          * TODO: return TTL of data stored at server (optional)?
@@ -87,7 +88,8 @@ public class Advert {
 	 */
 	public void delete(String path) 
 	  throws MalformedURLException, IOException, AuthenticationException,
-	  AppEngineResourcesException, NoSuchElementException {
+	  AppEngineResourcesException, NoSuchElementException, 
+	  RequestTooLargeException {
 		comm.httpSend("/del", path);
 	}
 
@@ -102,7 +104,8 @@ public class Advert {
 	 */
 	public byte[] get(String path) 
 	  throws MalformedURLException, IOException, AuthenticationException,
-	  AppEngineResourcesException, NoSuchElementException {
+	  AppEngineResourcesException, NoSuchElementException, 
+	  RequestTooLargeException {
 		String base64 = comm.httpSend("/get", path);
 		
 		return new sun.misc.BASE64Decoder().decodeBuffer(base64);
@@ -119,7 +122,8 @@ public class Advert {
 	 */
 	public MetaData getMetaData(String path) 
 	  throws MalformedURLException, IOException, AuthenticationException,
-	  AppEngineResourcesException, NoSuchElementException {
+	  AppEngineResourcesException, NoSuchElementException, 
+	  RequestTooLargeException {
 		MetaData   metadata = new MetaData();
 		
 		String result = comm.httpSend("/getmd", path);
@@ -131,8 +135,8 @@ public class Advert {
 			String key   = (String)itr.next();
 			String value = (String)jsonobj.get(key);
 
-			if (key == null || value == null) {
-				continue; //TODO: (?)
+			if (key == null) {
+				continue; //key can't be null (value can)
 			}
 			
 			metadata.put(key,value);
@@ -155,7 +159,8 @@ public class Advert {
 	 */
 	public String[] find(MetaData metaData, String pwd)
 	  throws MalformedURLException, IOException, AuthenticationException,
-	  AppEngineResourcesException, NoSuchElementException {
+	  AppEngineResourcesException, NoSuchElementException, 
+	  RequestTooLargeException {
 		JSONObject metadata = new JSONObject();
 		JSONArray  jsonarr  = new JSONArray();
 		
@@ -165,14 +170,14 @@ public class Advert {
 			String key   = itr.next();
 			String value = metaData.get(key);
 
-			if (key == null || value == null) {
-				continue; //TODO: (?)
+			if (key == null) {
+				continue; //key can't be null (value can)
 			}
 			
 			metadata.put(key, value);
 		}
 				
-		String result = comm.httpSend("/find", metadata);
+		String result = comm.httpSend("/find", metadata.toString());
 		
 		jsonarr = JSONArray.fromObject(result);
 		
