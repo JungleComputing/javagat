@@ -3,6 +3,7 @@
  */
 package org.gridlab.gat;
 
+import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.lang.reflect.InvocationTargetException;
@@ -216,30 +217,44 @@ class NestedException extends Exception {
 
         return res;
     }
-
-    public void printStackTrace() {
-        printStackTrace("");
+    
+    public void printStackTrace(PrintStream stream) {
+        PrintWriter writer = new PrintWriter(stream);
+        
+        printStackTrace("", writer);
+    }
+    
+    public void printStackTrace(PrintWriter writer) {
+        printStackTrace("", writer);
     }
 
+    public void printStackTrace() {
+        printStackTrace("", new PrintWriter(System.err));
+    }
+    
+    public void printStackTrace(String indent) {
+        printStackTrace(indent, new PrintWriter(System.err));
+    }
+    
     /**
      * prints the stacktrace of the NestedException, where each line of the
      * exception is indented by the supplied indentation String.
      * 
      * @param indent
      */
-    public void printStackTrace(String indent) {
+    public void printStackTrace(String indent, PrintWriter writer) {
         if (throwables.size() == 0) {
             super.printStackTrace();
 
             return;
         }
 
-        System.err.println(indent
+        writer.println(indent
                 + "--- START OF NESTED EXCEPTION STACK TRACE ---");
 
         for (int i = 0; i < throwables.size(); i++) {
             if (adaptorNames.get(i) != null) {
-                System.err.println(indent + "*** stack trace of "
+                writer.println(indent + "*** stack trace of "
                         + throwables.get(i).getClass().getSimpleName());
             }
 
@@ -247,13 +262,13 @@ class NestedException extends Exception {
                 ((NestedException) throwables.get(i)).printStackTrace(indent
                         + "    ");
             } else {
-                StringWriter writer = new StringWriter();
-                throwables.get(i).printStackTrace(new PrintWriter(writer));
-                System.err.println(indent + writer.toString());
+                StringWriter sWriter = new StringWriter();
+                throwables.get(i).printStackTrace(new PrintWriter(sWriter));
+                writer.println(indent + sWriter.toString());
             }
         }
 
-        System.err.println(indent
+        writer.println(indent
                 + "--- END OF NESTED EXCEPTION STACK TRACE ---");
     }
 
