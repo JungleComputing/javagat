@@ -3,6 +3,7 @@
  */
 package org.gridlab.gat.resources.cpi.zorilla;
 
+import ibis.smartsockets.virtual.VirtualSocketFactory;
 import ibis.zorilla.zoni.CallbackReceiver;
 import ibis.zorilla.zoni.JobInfo;
 import ibis.zorilla.zoni.ZoniConnection;
@@ -15,6 +16,8 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.Map;
+
+import javax.net.SocketFactory;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -250,7 +253,7 @@ public class ZorillaJob extends JobCpi {
         return jobID;
     }
 
-    protected synchronized void startJob(String address, String hub,
+    protected synchronized void startJob(String address, VirtualSocketFactory factory,
             CallbackReceiver receiver) throws GATInvocationException {
         if (logger.isDebugEnabled()) {
             logger.debug("starting zorilla job:" + zorillaJobDescription);
@@ -258,7 +261,7 @@ public class ZorillaJob extends JobCpi {
 
         ZoniConnection connection = null;
         try {
-            connection = new ZoniConnection(address, hub, null);
+            connection = new ZoniConnection(address, factory, null);
 
             jobID = connection.submitJob(zorillaJobDescription, receiver);
             connection.close();
@@ -270,14 +273,14 @@ public class ZorillaJob extends JobCpi {
                 inputFile = GAT.createFileInputStream(stdinFile
                         .getFileInterface().getGATContext(), stdinFile);
 
-                ZoniConnection stdinConnection = new ZoniConnection(address, hub,
+                ZoniConnection stdinConnection = new ZoniConnection(address, factory,
                         null);
 
                 OutputStream target = stdinConnection.getInput(jobID);
 
                 new InputForwarder(target, inputFile);
             } else if (soft.streamingStdinEnabled()) {
-                ZoniConnection stdinConnection = new ZoniConnection(address,hub,
+                ZoniConnection stdinConnection = new ZoniConnection(address,factory,
                         null);
 
                 stdin = stdinConnection.getInput(jobID);
@@ -289,7 +292,7 @@ public class ZorillaJob extends JobCpi {
                 outputFile = GAT.createFileOutputStream(stderrFile
                         .getFileInterface().getGATContext(), stderrFile);
 
-                ZoniConnection stderrConnection = new ZoniConnection(address,hub,
+                ZoniConnection stderrConnection = new ZoniConnection(address,factory,
                         null);
 
                 InputStream source = stderrConnection.getOutput(jobID, true);
@@ -297,7 +300,7 @@ public class ZorillaJob extends JobCpi {
                 new OutputForwarder(source, outputFile);
 
             } else if (soft.streamingStderrEnabled()) {
-                ZoniConnection stderrConnection = new ZoniConnection(address,hub,
+                ZoniConnection stderrConnection = new ZoniConnection(address,factory,
                         null);
 
                 stdout = stderrConnection.getOutput(jobID, true);
@@ -309,7 +312,7 @@ public class ZorillaJob extends JobCpi {
                 outputFile = GAT.createFileOutputStream(stdoutFile
                         .getFileInterface().getGATContext(), stdoutFile);
 
-                ZoniConnection stdoutConnection = new ZoniConnection(address,hub,
+                ZoniConnection stdoutConnection = new ZoniConnection(address,factory,
                         null);
 
                 InputStream source = stdoutConnection.getOutput(jobID, false);
@@ -317,7 +320,7 @@ public class ZorillaJob extends JobCpi {
                 new OutputForwarder(source, outputFile);
 
             } else if (soft.streamingStdoutEnabled()) {
-                ZoniConnection stdoutConnection = new ZoniConnection(address,hub,
+                ZoniConnection stdoutConnection = new ZoniConnection(address,factory,
                         null);
 
                 stdout = stdoutConnection.getOutput(jobID, false);
@@ -367,7 +370,7 @@ public class ZorillaJob extends JobCpi {
         logger.debug("copying: " + sandboxPath + " to file " + dst);
 
         ZoniConnection connection = new ZoniConnection(broker
-                .getNodeSocketAddress(),broker.getHub(), null);
+                .getNodeSocketAddress(),broker.getSocketFactory(), null);
 
         ZoniFileInfo info = connection.getFileInfo(sandboxPath, jobID);
 
@@ -587,7 +590,7 @@ public class ZorillaJob extends JobCpi {
 
         try {
             ZoniConnection connection = new ZoniConnection(broker
-                    .getNodeSocketAddress(),broker.getHub(), null);
+                    .getNodeSocketAddress(),broker.getSocketFactory(), null);
 
             connection.cancelJob(jobID);
             if (!(gatContext.getPreferences().containsKey("job.stop.poststage") && gatContext
@@ -600,6 +603,5 @@ public class ZorillaJob extends JobCpi {
         } catch (Exception e) {
             logger.debug("cannot stop zorilla job", e);
         }
-
     }
 }

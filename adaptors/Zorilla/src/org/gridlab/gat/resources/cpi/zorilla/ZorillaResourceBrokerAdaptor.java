@@ -1,5 +1,6 @@
 package org.gridlab.gat.resources.cpi.zorilla;
 
+import ibis.smartsockets.virtual.VirtualSocketFactory;
 import ibis.zorilla.zoni.Callback;
 import ibis.zorilla.zoni.CallbackReceiver;
 import ibis.zorilla.zoni.JobInfo;
@@ -60,7 +61,7 @@ public class ZorillaResourceBrokerAdaptor extends ResourceBrokerCpi implements
 
     private final String nodeSocketAddress;
     
-    private final String hub;
+    private final VirtualSocketFactory socketFactory;
 
     private final Map<String, ZorillaJob> jobs;
 
@@ -92,7 +93,9 @@ public class ZorillaResourceBrokerAdaptor extends ResourceBrokerCpi implements
 
         nodeSocketAddress = brokerURI.getSchemeSpecificPart();
         
-        hub  = (String)gatContext.getPreferences().get("zorilla.hub.addresses");
+        String hub  = (String)gatContext.getPreferences().get("zorilla.hub.addresses");
+        
+        socketFactory = ZoniConnection.getFactory(hub);
 
         logger.debug("zorilla node address = " + nodeSocketAddress);
 
@@ -100,7 +103,7 @@ public class ZorillaResourceBrokerAdaptor extends ResourceBrokerCpi implements
 
         try {
             ZoniConnection connection = new ZoniConnection(
-                    getNodeSocketAddress(), getHub(), null);
+                    getNodeSocketAddress(), socketFactory, null);
             connection.close();
         } catch (IOException e) {
             throw new GATObjectCreationException(
@@ -151,7 +154,7 @@ public class ZorillaResourceBrokerAdaptor extends ResourceBrokerCpi implements
                     .createMetric(null);
             job.addMetricListener(listener, metric);
         }
-        zorillaJob.startJob(getNodeSocketAddress(), getHub(),getCallbackReceiver());
+        zorillaJob.startJob(getNodeSocketAddress(), socketFactory,getCallbackReceiver());
         
         logger.debug("ZorillaResourceBroker.submitJob: zorilla job started: " + zorillaJob.getZorillaJobID());
         
@@ -166,8 +169,8 @@ public class ZorillaResourceBrokerAdaptor extends ResourceBrokerCpi implements
         return nodeSocketAddress;
     }
     
-    String getHub() {
-        return hub;
+    VirtualSocketFactory getSocketFactory() {
+        return socketFactory;
     }
 
     // zoni callback with update of job info
@@ -204,7 +207,7 @@ public class ZorillaResourceBrokerAdaptor extends ResourceBrokerCpi implements
 
         for (ZorillaJob job : getJobs()) {
             if (connection == null) {
-                connection = new ZoniConnection(getNodeSocketAddress(), getHub(), null);
+                connection = new ZoniConnection(getNodeSocketAddress(), socketFactory, null);
             }
 
             if (logger.isDebugEnabled()) {
@@ -252,6 +255,7 @@ public class ZorillaResourceBrokerAdaptor extends ResourceBrokerCpi implements
                 // IGNORE
             }
         }
+        socketFactory.end();
     }
 
     public CallbackReceiver getCallbackReceiver() {

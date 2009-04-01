@@ -260,7 +260,7 @@ class NestedException extends Exception {
 
             if (throwables.get(i) instanceof NestedException) {
                 ((NestedException) throwables.get(i)).printStackTrace(indent
-                        + "    ");
+                        + "    ", writer);
             } else {
                 StringWriter sWriter = new StringWriter();
                 throwables.get(i).printStackTrace(new PrintWriter(sWriter));
