@@ -30,6 +30,7 @@ class Advert(db.Model):
   object = db.TextProperty() #base64
   
 class MetaData(db.Model):
+  path   = db.StringProperty()
   keystr = db.StringProperty()
   value  = db.StringProperty()
 
@@ -62,6 +63,8 @@ class AddObject(webapp.RequestHandler):
     body = self.request.body
     json = simplejson.loads(body)
     
+    #TODO check if path already exists
+    
     advert.path   = json[0] #extract path from message
     advert.author = user    #store author
     advert.object = json[2] #extract (base64) object from message
@@ -70,6 +73,7 @@ class AddObject(webapp.RequestHandler):
     
     for k in json[1].keys():
       metadata        = MetaData(parent=advert)
+      metadata.path   = json[0]
       metadata.keystr = k
       metadata.value  = json[1][k]
       metadata.put()
@@ -146,7 +150,30 @@ class FindMetaData(webapp.RequestHandler):
     body = self.request.body
     json = simplejson.loads(body)
     
+    query = db.GqlQuery("SELECT * FROM MetaData")
     
+    paths = []
+    
+    for bin in query:
+      paths.append(bin.path)
+      
+    paths  = list(Set(paths))
+    self.response.out.write(paths)
+    
+    for path in paths[:]:
+      for k in json.keys():
+        query = db.GqlQuery("SELECT * FROM MetaData WHERE path = :1 AND keystr = :2 AND val = :3", path, k, json[k])
+        if query.count() < 1:
+          paths.remove(path)
+          break
+    
+    if len(paths) < 1:
+      self.error(404)
+      self.response.headers['Content-Type'] = 'text/plain'
+      self.response.out.write('Not Found')
+      return
+    
+    self.response.out.write(simplejson.dumps(paths))  
 
 application = webapp.WSGIApplication(
                                      [('/',      MainPage),

@@ -64,6 +64,65 @@ public class Client {
 		System.setProperties(properties); 	
 	}
 	
+	private static void testFind(String uri) throws Exception {
+		JSONObject jsonobj = new JSONObject();
+
+		jsonobj.put("key4", "val4");
+		jsonobj.put("key2", "val2");
+		jsonobj.put("key1", "val1");
+		
+		System.out.println(jsonobj.toString());
+		
+		/* Setting up a new connection. */
+		String protocol = "http://";
+		URL url = new URL(protocol.concat(uri));
+		HttpURLConnection httpc = (HttpURLConnection) url.openConnection();
+		
+		System.out.println("*** Making an HTTP connection to http://" + uri + " ***");
+
+		/* Setting headers. */
+		httpc.setRequestMethod("POST");
+	    httpc.setDoInput(true);
+	    httpc.setDoOutput(true);
+			    
+	    /* Connecting and POSTing. */
+		httpc.connect();
+		OutputStreamWriter osw = new OutputStreamWriter(httpc.getOutputStream());
+		
+		/* Writing JSON data. */
+		osw.write(jsonobj.toString());
+		osw.flush();
+		osw.close();
+		
+		System.out.println("*** Done. HTTP Repsonse... ***");
+		
+		/* Retrieving headers. */
+		System.out.println(httpc.getResponseCode());
+		System.out.println(httpc.getRequestMethod());
+		for (int i = 0; httpc.getHeaderField(i) != null; i++) {
+			System.out.println((httpc.getHeaderFieldKey(i)==null?"":httpc.getHeaderFieldKey(i) + ": ") + httpc.getHeaderField(i));
+		}
+
+		System.out.println("----");
+		
+		BufferedReader in = null;
+		/* Retrieving body. */
+		if(httpc.getResponseCode() != 200) {
+			in = new BufferedReader(new InputStreamReader(httpc.getErrorStream()));
+		}
+		else {
+			in = new BufferedReader(new InputStreamReader(httpc.getInputStream()));
+		}
+		String inputLine;
+
+		while ((inputLine = in.readLine()) != null) {
+			System.out.println(inputLine);
+		}
+		in.close();						
+		
+		
+	}
+	
 	private static void base64test() throws Exception {
 		byte[] b = new byte[5000];
 		
@@ -774,8 +833,8 @@ public class Client {
 	 *     The connection can't be established. 
 	 */
 	public static void main(String argv[]) throws Exception {
-//		String server = "bbn230.appspot.com/";
-		String server = "localhost:8080/";
+		String server = "bbn230.appspot.com/";
+//		String server = "localhost:8080/";
 		String uri = null;
 		
 		/* Making a standard connection in HTTP(S). */
@@ -808,7 +867,7 @@ public class Client {
 		}
 		else {
 			//makeHttpsClientLogin(uri, argv[0]);
-			//testAdvertAdd(argv[0]);
+			testAdvertAdd(argv[0]);
 		}
 		
 		/* Getting a binary response. */
@@ -820,6 +879,9 @@ public class Client {
 		//makeHttpJson(uri);
 		
 		/* Base64 tests. */
-		base64test();
+		//base64test();
+		
+		uri = server.concat("queries/test");
+		//testFind(uri);
 	}
 }

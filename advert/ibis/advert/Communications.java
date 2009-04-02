@@ -28,8 +28,8 @@ import java.util.Properties;
 
 class Communications {
 	
-	private static final int MAX_REQ_SIZE = 10^7;
-	private static final int MAX_DB_SIZE  = 10^6;
+	private static final int MAX_REQ_SIZE = 10000000;
+	private static final int MAX_DB_SIZE  = 1000000;
 	
 	private String cookie;
 	private String server;
