@@ -93,13 +93,13 @@ public class ZorillaResourceBrokerAdaptor extends ResourceBrokerCpi implements
 
         nodeSocketAddress = brokerURI.getSchemeSpecificPart();
         
-        String hub  = (String)gatContext.getPreferences().get("zorilla.hub.addresses");
+        String hubs  = (String)gatContext.getPreferences().get("ibis.hub.addresses");
         
-        socketFactory = ZoniConnection.getFactory(hub);
+        socketFactory = ZoniConnection.getFactory(hubs);
 
         logger.debug("zorilla node address = " + nodeSocketAddress);
 
-        callbackReceiver = new CallbackReceiver(this);
+        callbackReceiver = new CallbackReceiver(this, socketFactory);
 
         try {
             ZoniConnection connection = new ZoniConnection(
