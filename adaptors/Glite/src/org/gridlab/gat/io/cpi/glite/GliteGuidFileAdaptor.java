@@ -154,7 +154,7 @@ public class GliteGuidFileAdaptor extends FileCpi {
         LOGGER.info("createNewFile called");
         try {
             GliteSecurityUtils.touchVomsProxy(gatContext);
-            String guid = lfcConnector.create();
+            String guid = lfcConnector.create(0);
             this.location = new URI(GUID, null, lfcConnector.getServer(),
                     lfcConnector.getPort(), '/' + guid, null, null);
         } catch (URISyntaxException e) {

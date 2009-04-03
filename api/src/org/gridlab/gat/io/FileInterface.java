@@ -10,6 +10,7 @@ import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.URI;
 import org.gridlab.gat.advert.Advertisable;
+import org.gridlab.gat.io.permissions.attribute.FileAttributeView;
 import org.gridlab.gat.monitoring.Monitorable;
 
 /**
@@ -125,6 +126,34 @@ public interface FileInterface extends Monitorable, Advertisable,
     /** See {@link java.io.File#getCanonicalPath()}. */
     public String getCanonicalPath() throws GATInvocationException;
 
+    /**
+     * Returns a file attribute view of a given type.
+     *
+     * <p> A file attribute view provides a read-only or updatable view of a
+     * set of file attributes. This method is intended to be used where the file
+     * attribute view defines type-safe methods to read or update the file
+     * attributes. The {@code type} parameter is the type of the attribute view
+     * required and the method returns an instance of that type if supported.
+     * The {@link BasicFileAttributeView} type supports access to the basic
+     * attributes of a file. Invoking this method to select a file attribute
+     * view of that type will always return an instance of that class.
+     *
+     * <p> The {@code followSymbLinks} option may be used to indicate how symbolic links
+     * are handled by the resulting file attribute view for the case that the
+     * file is a symbolic link. By default, symbolic links are followed. If the
+     * option is set to {@code false} then symbolic links are not followed.
+	 * This option is ignored by implementations that do not support symbolic links.
+     *
+     * @param   type
+     *          The {@code Class} object corresponding to the file attribute view
+     * @param   followSymbLinks
+     *          boolean indicating how symbolic links are handled
+     *
+     * @return  A file attribute view of the specified type, or {@code null} if
+     *          the attribute view type is not available
+     */
+    public <V extends FileAttributeView> V getFileAttributeView(Class<V> type, boolean followSymbLinks)  throws GATInvocationException;
+    
     /** See {@link java.io.File#getName()}. */
     public String getName() throws GATInvocationException;
 

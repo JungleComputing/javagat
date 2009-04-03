@@ -1,5 +1,11 @@
 package org.gridlab.gat.io.cpi.glite.srm;
 
+import gov.lbl.srm.StorageResourceManager.ArrayOfTGroupPermission;
+import gov.lbl.srm.StorageResourceManager.ArrayOfTUserPermission;
+import gov.lbl.srm.StorageResourceManager.TPermissionMode;
+import gov.lbl.srm.StorageResourceManager.TPermissionReturn;
+import gov.lbl.srm.StorageResourceManager.TPermissionType;
+
 import java.io.IOException;
 import java.util.Map;
 import java.util.TreeMap;
@@ -67,12 +73,17 @@ public class SrmConnector {
      *             if the file upload cannot be finalized.
      */
     public void finalizeFileUpload(URI dest) throws IOException {
-        SrmConnection connection = activeUploads.get(dest);
-        if (connection == null) {
-            throw new IOException("No active upload to " + dest);
-        } else {
-            connection.finalizeFileUpload();
-        }
+    	try{
+	        SrmConnection connection = activeUploads.get(dest);
+	        if (connection == null) {
+	            throw new IOException("No active upload to " + dest);
+	        } else {
+	            connection.finalizeFileUpload();
+	        }
+    	}finally{
+    		//Jerome:TODO activeUploads can induce an OutOfMemorryException ...
+    		activeUploads.remove(dest);
+    	}
     }
 
     /**
@@ -86,5 +97,38 @@ public class SrmConnector {
     public void delete(URI srmURI) throws IOException {
         SrmConnection connection = new SrmConnection(srmURI.getHost(), proxyPath);
         connection.removeFile(srmURI.toString());
+    }
+    
+    /**
+     * Get the permissions associated to a file.
+     * @param srmURI
+     * 			the URI for the file.
+     * @return the permissions
+     * @throws IOException if a problem occurs
+     */
+    public TPermissionReturn[] getPermissions(URI srmURI) throws IOException {
+    	SrmConnection connection = new SrmConnection(srmURI.getHost(), proxyPath);
+        return connection.getPermissions(srmURI.toString());
+    }
+    
+    /**
+     * @param srmURI
+     * 			the URI for the file.
+     * @param tPermissionType
+     * 			How do we set the following permissions (add, delete or change them).
+     * @param ownerTPermissionMode
+     * 			The owner permission
+     * @param arrayOfTUserPermissions
+     * 			Array of user permissions
+     * @param arrayOfTGroupPermissions
+     * 			Array of group permissions
+     * @throws IOException If a problem occurs
+     */
+    public void setPermissions(URI srmURI, TPermissionType tPermissionType, 
+    		TPermissionMode ownerTPermissionMode, 
+    		ArrayOfTUserPermission arrayOfTUserPermissions,
+    		ArrayOfTGroupPermission arrayOfTGroupPermissions) throws IOException {
+    	SrmConnection connection = new SrmConnection(srmURI.getHost(), proxyPath);
+        connection.setPermissions(srmURI.toString(),tPermissionType,ownerTPermissionMode,arrayOfTUserPermissions,arrayOfTGroupPermissions);
     }
 }

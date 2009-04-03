@@ -8,9 +8,11 @@ import java.nio.channels.ByteChannel;
 import java.nio.channels.SocketChannel;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Date;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
+import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,6 +23,7 @@ import org.globus.gsi.gssapi.GSSConstants;
 import org.globus.gsi.gssapi.GlobusGSSCredentialImpl;
 import org.globus.gsi.gssapi.GlobusGSSManagerImpl;
 import org.gridforum.jgss.ExtendedGSSContext;
+import org.gridlab.gat.io.permissions.attribute.*;
 import org.ietf.jgss.GSSCredential;
 import org.ietf.jgss.GSSException;
 import org.ietf.jgss.GSSManager;
@@ -33,6 +36,72 @@ import org.ietf.jgss.GSSManager;
  */
 public class LfcConnection {
     private static final Logger LOGGER = LoggerFactory.getLogger(LfcConnection.class);
+    /**
+	 * Bitmask for <b>file mode</b>
+	 */
+    public static final int S_IFMT = 0xF000;
+    /**
+	 * Bitmask for <b>symbolic link</b>
+	 */
+	public static final int S_IFLNK = 0xA000;
+	/**
+	 * Bitmask for <b>regular file</b>
+	 */
+	public static final int S_IFREG = 0x8000;
+	/**
+	 * Bitmask for <b>directory</b>
+	 */
+	public static final int S_IFDIR = 0x4000;
+	/**
+	 * Bitmask for <b>set user ID on execution</b>
+	 */
+	public static final int S_ISUID = 0004000;
+	/**
+	 * Bitmask for <b>set group ID on execution</b>
+	 */
+	public static final int S_ISGID = 0002000;
+	/**
+	 * Bitmask for <b>sticky bit</b>
+	 */
+	public static final int S_ISVTX = 0001000;
+	/**
+	 * Bitmask for <b>read by owner</b>
+	 */
+	public static final int S_IRUSR = 0000400;
+	/**
+	 * Bitmask for <b>write by owner</b>
+	 */
+	public static final int S_IWUSR = 0000200;
+	/**
+	 * Bitmask for <b>execute/search by owner</b>
+	 */
+	public static final int S_IXUSR = 0000100;
+	/**
+	 * Bitmask for <b>read by group</b>
+	 */
+	public static final int S_IRGRP = 0000040;
+	/**
+	 * Bitmask for <b>write by group</b>
+	 */
+	public static final int S_IWGRP = 0000020;
+	/**
+	 * Bitmask for <b>execute/search by group</b>
+	 */
+	public static final int S_IXGRP = 0000010;
+	/**
+	 * Bitmask for <b>read by others</b>
+	 */
+	public static final int S_IROTH = 0000004;
+	/**
+	 * Bitmask for <b>write by others</b>
+	 */
+	public static final int S_IWOTH = 0000002;
+	/**
+	 * Bitmask for <b>execute/search by others</b>
+	 */
+	public static final int S_IXOTH = 0000001;
+
+    
 
     private static final int HEADER_SIZE = 12;
 
@@ -56,13 +125,13 @@ public class LfcConnection {
 
     private static final int CNS_ACCESS			= 0;
 //    private static final int CNS_CHDIR			= 1;
-//    private static final int CNS_CHMOD			= 2;
-//    private static final int CNS_CHOWN			= 3;
+    private static final int CNS_CHMOD			= 2;
+    private static final int CNS_CHOWN			= 3;
     private static final int CNS_CREAT			= 4;
     private static final int CNS_MKDIR			= 5;
-//    private static final int CNS_RENAME			= 6;
+    private static final int CNS_RENAME			= 6;
     private static final int CNS_RMDIR			= 7;
-//    private static final int CNS_STAT			= 8;
+    private static final int CNS_STAT			= 8;
     private static final int CNS_UNLINK			= 9;
     private static final int CNS_OPENDIR		= 10;
     private static final int CNS_READDIR		= 11;
@@ -70,7 +139,7 @@ public class LfcConnection {
 //    private static final int CNS_OPEN			= 13;
 //    private static final int CNS_CLOSE			= 14;
 //    private static final int CNS_SETATIME		= 15;
-//    private static final int CNS_SETFSIZE		= 16;
+    private static final int CNS_SETFSIZE		= 16;
 //    private static final int CNS_SHUTDOWN		= 17;
 //    private static final int CNS_GETSEGAT		= 18;
 //    private static final int CNS_SETSEGAT		= 19;
@@ -92,7 +161,7 @@ public class LfcConnection {
 //    private static final int CNS_REPLACESEG		= 35;
 //    private static final int CNS_GETACL			= 37;
 //    private static final int CNS_SETACL			= 38;
-//    private static final int CNS_LCHOWN			= 39;
+    private static final int CNS_LCHOWN			= 39;
     private static final int CNS_LSTAT			= 40;
 //    private static final int CNS_READLINK		= 41;
 //    private static final int CNS_SYMLINK		= 42;
@@ -181,8 +250,14 @@ public class LfcConnection {
     private final ByteChannel channel;
 
     private final GSSCredential gssCredential;
+    private final String host;
+    private final int port;
+    private final String proxyPath;
 
     public LfcConnection(String host, int port, final String proxyPath) throws IOException {
+    	this.host = host;
+    	this.port = port;
+    	this.proxyPath = proxyPath;
         try {
             LOGGER.debug("Proxy is " + proxyPath);
             GlobusCredential credential = new GlobusCredential(proxyPath);
@@ -363,6 +438,25 @@ public class LfcConnection {
         return builder.toString();
     }
     
+    /**
+     * 
+     */
+    public LFCFile stat(String path) throws IOException {
+    	preparePacket(CNS_MAGIC, CNS_STAT);
+        addIDs();
+        long cwd = 0L;
+        sendBuf.putLong(cwd);
+        sendBuf.putLong(0L); //0
+        putString(path);
+        sendAndReceive(true);
+        
+        LFCFile file = new LFCFile(recvBuf, false, false, false, false);
+        if(LOGGER.isDebugEnabled()){
+        	LOGGER.debug(file.toString());
+        }
+        return file;
+    }
+    
     public LFCFile lstat(String path) throws IOException {
     	preparePacket(CNS_MAGIC, CNS_LSTAT);
         addIDs();
@@ -427,8 +521,22 @@ public class LfcConnection {
         return getString();
     }
     
-    // TODO: Remains to test if the gid 0 is part of the gids and to escape it.
     public Collection<String> getGrpByGids(int[] gids) throws IOException {
+    	ArrayList<Integer> rootGIDIndexes = new ArrayList<Integer>();
+    	ArrayList<Integer> newGids = new ArrayList<Integer>();
+    	for (int i = 0; i < gids.length; i++) {
+    		if(gids[i] == 0){
+    			rootGIDIndexes.add(i);
+        	}else{
+        		newGids.add(gids[i]);
+        	}
+		}
+    	
+    	gids = new int[newGids.size()];
+    	for (int i = 0; i < newGids.size(); i++) {
+    		gids[i] = newGids.get(i);
+		}
+    	
     	preparePacket(CNS_MAGIC, CNS_GETGRPNAMES);
     	sendBuf.putShort((short) 0);
     	sendBuf.putShort((short) gids.length);
@@ -439,7 +547,11 @@ public class LfcConnection {
         
         Collection<String> grpNames = new ArrayList<String>(gids.length);
         for (int i = 0; i < gids.length; i++) {
-			grpNames.add(getString());
+        	if(rootGIDIndexes.contains(i)){
+        		grpNames.add("root");
+        	}else{
+        		grpNames.add(getString());
+        	}
 		}
         return grpNames;
     }
@@ -456,7 +568,7 @@ public class LfcConnection {
         return s;
     }
 
-    public String getUsrByGid(int uid) throws IOException {
+    public String getUsrByUid(int uid) throws IOException {
     	if(uid == 0){
     		return "root";
     	}
@@ -553,7 +665,84 @@ public class LfcConnection {
         sendAndReceive(true);
     }
     
-
+    /**
+     * Set the file size
+     */
+    public void setfsize(String path,long fileSize) throws IOException{
+        preparePacket(CNS_MAGIC2, CNS_SETFSIZE);
+        addIDs();
+        long cwd = 0L; // Current Working Directory
+        sendBuf.putLong(cwd);
+        sendBuf.putLong(0L);
+        putString(path);
+        sendBuf.putLong(fileSize);
+        putString(null);
+        putString(null);
+        sendAndReceive(true);
+    }
+    
+    /**
+     * Rename a file or a directory
+     */
+    public void rename(String oldPath, String newPath) throws IOException{
+    	preparePacket(CNS_MAGIC, CNS_RENAME);
+        addIDs();
+        long cwd = 0L; // Current Working Directory
+        sendBuf.putLong(cwd);
+        putString(oldPath);
+        putString(newPath);
+        sendAndReceive(true);
+    }
+    
+    /**
+     * Change the permissions of a file or a directory. If the path represent a
+     * symbolic link, the pointed file/directory will be modified, not the symbolic link itself.
+     * TODO: Check the symbolic link behavior.
+     */
+    public void chmod(String path, int mode) throws IOException {
+    	preparePacket(CNS_MAGIC, CNS_CHMOD);
+        addIDs();
+        long cwd = 0L; // Current Working Directory
+        sendBuf.putLong(cwd);
+        putString(path);
+        mode &= 07777;
+        sendBuf.putInt(mode);
+        sendAndReceive(true);
+    }
+    
+    /**
+     * Change the owner and the group of a file or a directory. If the path represent a
+     * symbolic link, the pointed file/directory will be modified, not the symbolic link itself.
+     */
+    public void chown(String path, int new_uid, int new_gid) throws IOException {
+    	preparePacket(CNS_MAGIC, CNS_CHOWN);
+        addIDs();
+        long cwd = 0L; // Current Working Directory
+        sendBuf.putLong(cwd);
+        putString(path);
+        sendBuf.putInt(new_uid);
+        sendBuf.putInt(new_gid);
+        sendAndReceive(true);
+    }
+    
+    /**
+     * Change the owner and the group of a file or a directory. If the path represent a 
+     * symbolic link, this later itself will be modified
+     */
+    public void lchown(String path, int new_uid, int new_gid) throws IOException {
+    	preparePacket(CNS_MAGIC, CNS_LCHOWN);
+        addIDs();
+        long cwd = 0L; // Current Working Directory
+        sendBuf.putLong(cwd);
+        putString(path);
+        sendBuf.putInt(new_uid);
+        sendBuf.putInt(new_gid);
+        sendAndReceive(true);
+    }
+    
+    /**
+     * List all the file replicas
+     */
     public Collection<LFCReplica> listReplica(String path, String guid)
             throws IOException {
         preparePacket(CNS_MAGIC2, CNS_LISTREPLICA);
@@ -719,80 +908,21 @@ public class LfcConnection {
     
     /**
      * Representation of a File or a Directory in the file catalog
-     * @author Jerome Revillard / inspired by the gEclipse project
+     * @author Jerome Revillard
      *
      */
-    public class LFCFile {
-    	  /**
-    	   * Bitmask for <b>symbolic link</b>
-    	   */
-    	  static final int S_IFLNK = 0xA000;
-    	  /**
-    	   * Bitmask for <b>regular file</b>
-    	   */
-    	  static final int S_IFREG = 0x8000;
-    	  /**
-    	   * Bitmask for <b>directory</b>
-    	   */
-    	  static final int S_IFDIR = 0x4000;
-    	  /**
-    	   * Bitmask for <b>set user ID on execution</b>
-    	   */
-    	  static final int S_ISUID = 0004000;
-    	  /**
-    	   * Bitmask for <b>set group ID on execution</b>
-    	   */
-    	  static final int S_ISGID = 0002000;
-    	  /**
-    	   * Bitmask for <b>sticky bit</b>
-    	   */
-    	   static final int S_ISVTX = 0001000;
-    	  /**
-    	   * Bitmask for <b>read by owner</b>
-    	   */
-    	  static final int S_IRUSR = 0000400;
-    	  /**
-    	   * Bitmask for <b>write by owner</b>
-    	   */
-    	  static final int S_IWUSR = 0000200;
-    	  /**
-    	   * Bitmask for <b>execute/search by owner</b>
-    	   */
-    	  static final int S_IXUSR = 0000100;
-    	  /**
-    	   * Bitmask for <b>read by group</b>
-    	   */
-    	  static final int S_IRGRP = 0000040;
-    	  /**
-    	   * Bitmask for <b>write by group</b>
-    	   */
-    	  static final int S_IWGRP = 0000020;
-    	  /**
-    	   * Bitmask for <b>execute/search by group</b>
-    	   */
-    	  static final int S_IXGRP = 0000010;
-    	  /**
-    	   * Bitmask for <b>read by others</b>
-    	   */
-    	  static final int S_IROTH = 0000004;
-    	  /**
-    	   * Bitmask for <b>write by others</b>
-    	   */
-    	  static final int S_IWOTH = 0000002;
-    	  /**
-    	   * Bitmask for <b>execute/search by others</b>
-    	   */
-    	  static final int S_IXOTH = 0000001;
-    	
+    public class LFCFile implements PosixFileAttributes{	
     	private String fileName;  // name of the file/dir
     	private String guid;      // global unique id
     	private String comment;   // user comment of the file
     	private String chksumType; // checksum type
     	private String chksumValue; // checksum value
-    	  
-    	private Date aDate;		// last access time
-    	private Date mDate;		// last modification
-    	private Date cDate;		// last meta-data modification
+    	private String userName;
+    	private String groupName;
+    	
+    	private long aDate;		// last access time
+    	private long mDate;		// last modification
+    	private long cDate;		// last meta-data modification
     	
     	private long fileId;      // unique id
     	private long fileSize;    // size of the file (dirs are sized 0)
@@ -816,10 +946,9 @@ public class LfcConnection {
     	    this.gid = byteBuffer.getInt();
     	    this.fileSize = byteBuffer.getLong();
     	    
-    	    // convert C/UNIX 64 bit timestamps to Java Date
-    	    this.aDate = new Date( byteBuffer.getLong()*1000 );
-    	    this.mDate = new Date( byteBuffer.getLong()*1000 );
-    	    this.cDate = new Date( byteBuffer.getLong()*1000 );
+    	    this.aDate = byteBuffer.getLong()*1000;
+    	    this.mDate = byteBuffer.getLong()*1000;
+    	    this.cDate = byteBuffer.getLong()*1000;
     	    
     	    this.fileClass = ( byteBuffer.getShort() );
     	    this.status = ( byteBuffer.get() );
@@ -833,8 +962,22 @@ public class LfcConnection {
     	    if( readComment ) {
     	    	this.comment = getString();
     	    }
+    	    
+    	    LfcConnection lfcConnection = new LfcConnection(host,port,proxyPath);
+    	    try{
+    	    	this.userName = lfcConnection.getUsrByUid(uid);
+    	    }finally{
+    	    	lfcConnection.close();
+    	    }
+    	    lfcConnection = new LfcConnection(host,port,proxyPath);
+    	    try{
+    	    	this.groupName = lfcConnection.getGrpByGid(gid);
+    	    }finally{
+    	    	lfcConnection.close();
+    	    }
+    	    
     	}
-
+    	    
     	public String getFileName() {
 			return fileName;
 		}
@@ -855,50 +998,11 @@ public class LfcConnection {
 			return chksumValue;
 		}
 
-		/**
-		 * @return the last access date
-		 */
-		public Date getADate() {
-			return aDate;
-		}
-
-		/**
-		 * @return the last modifications date
-		 */
-		public Date getMDate() {
-			return mDate;
-		}
-
-		/**
-		 * @return the last metadata modifications date
-		 */
-		public Date getCDate() {
-			return cDate;
-		}
 
 		public long getFileId() {
 			return fileId;
 		}
 
-		public long getFileSize() {
-			return fileSize;
-		}
-
-		public int getNLink() {
-			return nLink;
-		}
-
-		public int getUid() {
-			return uid;
-		}
-
-		public int getGid() {
-			return gid;
-		}
-
-		public short getFileMode() {
-			return fileMode;
-		}
 
 		public short getFileClass() {
 			return fileClass;
@@ -908,95 +1012,13 @@ public class LfcConnection {
 			return status;
 		}
 		
-		/**
-		 * @return true if this is a directory, false in other cases
-		 */
-		public boolean isDirectory() {
-			return ( ( this.fileMode & S_IFDIR) != 0 );
-		}
-		
-		/**
-		 * @return true if this is a symbolic link, false in other cases
-		 */
-		public boolean isSymbolicLink() {
-			return ( ( this.fileMode & S_IFLNK ) != 0);
-		}
-		/**
-		 * @return true if this is a file, false in other cases
-		 */
-		public boolean isFile() {
-			return ( ( this.fileMode & S_IFREG ) != 0);
-		}
-		
-		/**
-		 * @return true if the owner have read permission
-		 */
-		public boolean canOwnerRead() {
-			return ( ( this.fileMode & S_IRUSR ) != 0);
-		}
-		
-		/**
-		 * @return true if the owner have write permission
-		 */
-		public boolean canOwnerWrite() {
-			return ( ( this.fileMode & S_IWUSR ) != 0);
-		}
-		
-		/**
-		 * @return true if the owner have execute permission
-		 */
-		public boolean canOwnerExecute() {
-			return ( ( this.fileMode & S_IXUSR ) != 0);
-		}
-		
-		/**
-		 * @return true if the group have read permission
-		 */
-		public boolean canGroupRead() {
-			return ( ( this.fileMode & S_IRGRP ) != 0);
-		}
-		
-		/**
-		 * @return true if the group have write permission
-		 */
-		public boolean canGroupWrite() {
-			return ( ( this.fileMode & S_IWGRP ) != 0);
-		}
-		
-		/**
-		 * @return true if the group have execute permission
-		 */
-		public boolean canGroupExecute() {
-			return ( ( this.fileMode & S_IXGRP ) != 0);
-		}
-		
-		/**
-		 * @return true if the others have read permission
-		 */
-		public boolean canOtherRead() {
-			return ( ( this.fileMode & S_IROTH ) != 0);
-		}
-		
-		/**
-		 * @return true if the others have write permission
-		 */
-		public boolean canOtherWrite() {
-			return ( ( this.fileMode & S_IWOTH ) != 0);
-		}
-		
-		/**
-		 * @return true if the others have execute permission
-		 */
-		public boolean canOtherExecute() {
-			return ( ( this.fileMode & S_IXOTH ) != 0);
-		}
 		
 		/**
 		 * Creates <code>String</code> with linux-like permissions of this file.
 		 * @return linux-like permission description
 		 */
-		public String getPermissions() {
-			StringBuilder permisions = new StringBuilder( 128 );
+		private String getPermissions() {
+			StringBuilder permisions = new StringBuilder( 10 );
 			int mode = this.fileMode;
 
 			if ( ( mode & S_IFDIR ) != 0 ) {
@@ -1095,6 +1117,84 @@ public class LfcConnection {
 			
     		return tostring;
     	}
+
+		public GroupPrincipal group() {
+			return new LFCGroup(gid,groupName);
+		}
+
+		public UserPrincipal owner() {
+			return new LFCUser(uid,userName);
+		}
+
+		public Set<PosixFilePermission> permissions() {
+	        HashSet<PosixFilePermission> perms = new HashSet<PosixFilePermission>();
+	        if ((this.fileMode & S_IRUSR ) != 0)
+	            perms.add(PosixFilePermission.OWNER_READ);
+	        if ((this.fileMode & S_IWUSR ) != 0)
+	            perms.add(PosixFilePermission.OWNER_WRITE);
+	        if ((this.fileMode & S_IXUSR ) != 0)
+	            perms.add(PosixFilePermission.OWNER_EXECUTE);
+
+	        if ((this.fileMode & S_IRGRP ) != 0)
+	            perms.add(PosixFilePermission.GROUP_READ);
+	        if ((this.fileMode & S_IWGRP ) != 0)
+	            perms.add(PosixFilePermission.GROUP_WRITE);
+	        if ((this.fileMode & S_IXGRP ) != 0)
+	            perms.add(PosixFilePermission.GROUP_EXECUTE);
+
+	        if ((this.fileMode & S_IROTH ) != 0)
+	            perms.add(PosixFilePermission.OTHERS_READ);
+	        if ((this.fileMode & S_IWOTH ) != 0)
+	            perms.add(PosixFilePermission.OTHERS_WRITE);
+	        if ((this.fileMode & S_IXOTH ) != 0)
+	            perms.add(PosixFilePermission.OTHERS_EXECUTE);
+
+	        return perms;
+		}
+
+		public long creationTime() {
+			return mDate;
+		}
+
+		public Object fileKey() {
+			return null;
+		}
+
+		public boolean isOther() {
+	        return (!isRegularFile() && !isDirectory() && !isSymbolicLink());
+		}
+
+		public boolean isRegularFile() {
+			return ((this.fileMode & S_IFMT) == S_IFREG);
+		}
+		
+		public boolean isDirectory() {
+			return ((this.fileMode & S_IFMT) == S_IFDIR);
+		}
+		
+		public boolean isSymbolicLink() {
+			return ((this.fileMode & S_IFMT) == S_IFLNK);
+		}
+
+		public long lastAccessTime() {
+			return aDate;
+		}
+
+		public long lastModifiedTime() {
+			return cDate;
+		}
+
+		public int linkCount() {
+			return nLink;
+		}
+
+		public TimeUnit resolution() {
+			return TimeUnit.MILLISECONDS;
+		}
+
+		public long size() {
+			return this.fileSize;
+		}
     }
     
     /**
@@ -1110,8 +1210,8 @@ public class LfcConnection {
 		private String fs;			// filesystem type
 		private String sfn;			// sfn value
 
-		private Date aDate;			// last access time
-		private Date pDate;			// pin time
+		private long aDate;			// last access time
+		private long pDate;			// pin time
 
 		private long fileId;		// unique id
 		private long nbaccesses;	// number of accesses???
@@ -1123,9 +1223,8 @@ public class LfcConnection {
 			this.fileId = byteBuffer.getLong();
 			this.nbaccesses = byteBuffer.getLong();
 
-			// convert C/UNIX 64 bit timestamps to Java Date
-			this.aDate = new Date(byteBuffer.getLong() * 1000);
-			this.pDate = new Date(byteBuffer.getLong() * 1000);
+			this.aDate = byteBuffer.getLong() * 1000;
+			this.pDate = byteBuffer.getLong() * 1000;
 			this.status = byteBuffer.get();
 			this.f_type = byteBuffer.get();
 
@@ -1152,14 +1251,14 @@ public class LfcConnection {
 		/**
 		 * @return last access time
 		 */
-		public Date getADate() {
+		public long getADate() {
 			return this.aDate;
 		}
 
 		/**
 		 * @return replica pin time
 		 */
-		public Date getPDate() {
+		public long getPDate() {
 			return this.pDate;
 		}
 

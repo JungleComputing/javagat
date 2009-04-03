@@ -2,9 +2,13 @@ package org.gridlab.gat.io.cpi.glite.srm;
 
 import gov.lbl.srm.StorageResourceManager.ArrayOfAnyURI;
 import gov.lbl.srm.StorageResourceManager.ArrayOfTGetFileRequest;
+import gov.lbl.srm.StorageResourceManager.ArrayOfTGroupPermission;
 import gov.lbl.srm.StorageResourceManager.ArrayOfTPutFileRequest;
+import gov.lbl.srm.StorageResourceManager.ArrayOfTUserPermission;
 import gov.lbl.srm.StorageResourceManager.ISRM;
 import gov.lbl.srm.StorageResourceManager.SRMServiceLocator;
+import gov.lbl.srm.StorageResourceManager.SrmGetPermissionRequest;
+import gov.lbl.srm.StorageResourceManager.SrmGetPermissionResponse;
 import gov.lbl.srm.StorageResourceManager.SrmPrepareToGetRequest;
 import gov.lbl.srm.StorageResourceManager.SrmPrepareToGetResponse;
 import gov.lbl.srm.StorageResourceManager.SrmPrepareToPutRequest;
@@ -13,6 +17,8 @@ import gov.lbl.srm.StorageResourceManager.SrmPutDoneRequest;
 import gov.lbl.srm.StorageResourceManager.SrmPutDoneResponse;
 import gov.lbl.srm.StorageResourceManager.SrmRmRequest;
 import gov.lbl.srm.StorageResourceManager.SrmRmResponse;
+import gov.lbl.srm.StorageResourceManager.SrmSetPermissionRequest;
+import gov.lbl.srm.StorageResourceManager.SrmSetPermissionResponse;
 import gov.lbl.srm.StorageResourceManager.SrmStatusOfGetRequestRequest;
 import gov.lbl.srm.StorageResourceManager.SrmStatusOfGetRequestResponse;
 import gov.lbl.srm.StorageResourceManager.SrmStatusOfPutRequestRequest;
@@ -20,6 +26,9 @@ import gov.lbl.srm.StorageResourceManager.SrmStatusOfPutRequestResponse;
 import gov.lbl.srm.StorageResourceManager.TDirOption;
 import gov.lbl.srm.StorageResourceManager.TGetFileRequest;
 import gov.lbl.srm.StorageResourceManager.TGetRequestFileStatus;
+import gov.lbl.srm.StorageResourceManager.TPermissionMode;
+import gov.lbl.srm.StorageResourceManager.TPermissionReturn;
+import gov.lbl.srm.StorageResourceManager.TPermissionType;
 import gov.lbl.srm.StorageResourceManager.TPutFileRequest;
 import gov.lbl.srm.StorageResourceManager.TPutRequestFileStatus;
 import gov.lbl.srm.StorageResourceManager.TReturnStatus;
@@ -352,4 +361,39 @@ public class SrmConnection {
         }
     }
 
+    public TPermissionReturn[] getPermissions(String uri) throws IOException {
+    	SrmGetPermissionRequest getPermissionRequest = new SrmGetPermissionRequest();
+    	getPermissionRequest.setArrayOfSURLs(new ArrayOfAnyURI(new URI[] { new URI(uri) }));
+    	LOGGER.info("Invoking getPermissions request for URI " + uri);
+    	SrmGetPermissionResponse response = service.srmGetPermission(getPermissionRequest);
+    	TReturnStatus returnStatus = response.getReturnStatus();
+    	LOGGER.info("Return status code " + returnStatus.getStatusCode());
+    	if (!returnStatus.getStatusCode().equals(TStatusCode.SRM_SUCCESS)){
+    		throw new IOException(returnStatus.getExplanation()+" ("+returnStatus.getStatusCode()+")");
+    	}
+    	return response.getArrayOfPermissionReturns().getPermissionArray();
+    }
+    
+    public void setPermissions(String uri, TPermissionType tPermissionType, 
+    		TPermissionMode ownerTPermissionMode, 
+    		ArrayOfTUserPermission arrayOfTUserPermissions,
+    		ArrayOfTGroupPermission arrayOfTGroupPermissions) throws IOException {
+        SrmSetPermissionRequest setPermissionRequest = new SrmSetPermissionRequest();
+        setPermissionRequest.setSURL(new URI(uri));
+        setPermissionRequest.setPermissionType(tPermissionType);
+        setPermissionRequest.setOwnerPermission(ownerTPermissionMode);
+        setPermissionRequest.setArrayOfUserPermissions(arrayOfTUserPermissions);
+        setPermissionRequest.setArrayOfGroupPermissions(arrayOfTGroupPermissions);
+        
+        SrmSetPermissionResponse response = null;
+
+        LOGGER.info("Invoking setPermissions request for URI " + uri);
+        response = service.srmSetPermission(setPermissionRequest);
+        
+        TReturnStatus returnStatus = response.getReturnStatus();
+    	LOGGER.info("Return status code " + returnStatus.getStatusCode());
+    	if (!returnStatus.getStatusCode().equals(TStatusCode.SRM_SUCCESS)){
+    		throw new IOException(returnStatus.getExplanation()+" ("+returnStatus.getStatusCode()+")");
+    	}
+    }
 }

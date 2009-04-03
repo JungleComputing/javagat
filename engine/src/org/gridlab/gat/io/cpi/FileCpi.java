@@ -21,6 +21,7 @@ import org.gridlab.gat.engine.GATEngine;
 import org.gridlab.gat.engine.util.NoInfoLogging;
 import org.gridlab.gat.io.File;
 import org.gridlab.gat.io.FileInterface;
+import org.gridlab.gat.io.permissions.attribute.FileAttributeView;
 import org.gridlab.gat.monitoring.cpi.MonitorableCpi;
 
 /**
@@ -56,6 +57,7 @@ public abstract class FileCpi extends MonitorableCpi implements FileInterface, j
         capabilities.put("exists", false);
         capabilities.put("getAbsoluteFile", false);
         capabilities.put("getCanonicalFile", false);
+        capabilities.put("getFileAttributeView", false);
         capabilities.put("getName", true);
         capabilities.put("getParent", true);
         capabilities.put("getParentFile", true);
@@ -73,7 +75,6 @@ public abstract class FileCpi extends MonitorableCpi implements FileInterface, j
         capabilities.put("renameTo", false);
         capabilities.put("setLastModified", false);
         capabilities.put("setReadOnly", false);
-
         return capabilities;
     }
 
@@ -269,6 +270,10 @@ public abstract class FileCpi extends MonitorableCpi implements FileInterface, j
         throw new UnsupportedOperationException("Not implemented");
     }
 
+    public <V extends FileAttributeView> V getFileAttributeView(Class<V> type, boolean followSymbLinks)  throws GATInvocationException {
+    	throw new UnsupportedOperationException("Not implemented");
+    }
+    
     @NoInfoLogging
     public final String getName() {
         String path = getPath();

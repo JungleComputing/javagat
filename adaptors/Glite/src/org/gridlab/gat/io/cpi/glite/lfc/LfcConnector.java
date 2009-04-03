@@ -72,44 +72,30 @@ public class LfcConnector {
         return retVal;
     }
     
-    private LFCFile lstat(String path) throws IOException {
-        final LfcConnection connection = new LfcConnection(server, port,
-                proxyPath);
+    /**
+     * Get the different file/directory/symbolic link attributes
+     * @param path
+     * 				The file path
+     * @param followSymbolicLink
+     * 				If <code>true</code> and If the path represent a symbolic link,
+     * 				return the pointed file/directory attributes, otherwise, return the
+     * 				symbolic link attributes 
+     * @return
+     * @throws IOException
+     */
+    public LFCFile stat(String path, boolean followSymbolicLink) throws IOException {
+        final LfcConnection connection = new LfcConnection(server, port, proxyPath);
         final LFCFile file;
         try {
-            file = connection.lstat(path);
+        	if(followSymbolicLink){
+        		file = connection.stat(path);
+        	}else{
+        		file = connection.lstat(path);
+        	}
         } finally {
             connection.close();
         }
         return file;
-    }
-    
-    /**
-     * Test if the given path is a directory
-     * 
-     * @param path
-     *            path of the directory
-     * @return true if the given path is a directory
-     * @throws IOException
-     *             if anything goes wrong
-     */
-    public boolean isDirectory(String path) throws IOException {
-        final LFCFile file = this.lstat(path);
-        return file.isDirectory();
-    }
-    
-    /**
-     * Test if the given path is a file
-     * 
-     * @param path
-     *            path of the file
-     * @return true if the given path is a regular file
-     * @throws IOException
-     *             if anything goes wrong
-     */
-    public boolean isFile(String path) throws IOException {
-        final LFCFile file = this.lstat(path);
-        return file.isFile();
     }
     
     /**
@@ -182,26 +168,25 @@ public class LfcConnector {
 	}
     
     /**
-     * Get the last modified date in millisecond
-     * @param path	Path of the file/directory
-     * @return Returns the last modified date in millisecond
-     * @throws IOException	If anything goes wrong
+     * Get the group names which correspond to specific gids.
      */
-    public long lastModified(String path) throws IOException {
-        final LFCFile file = this.lstat(path);
-    	return file.getMDate().getTime();
-	}
+    public Collection<String> getGrpByGids(int[] gids) throws IOException {
+    	final LfcConnection connection = new LfcConnection(server, port, proxyPath);
+        try {
+            return connection.getGrpByGids(gids);
+        } finally {
+            connection.close();
+        }
+    }
     
-    /**
-     * Get the length of a file in bytes
-     * @param path	Path of the file
-     * @return Returns the size of the file in bytes.
-     * @throws IOException	If anything goes wrong
-     */
-    public long length(String path) throws IOException {
-        final LFCFile file = this.lstat(path);
-    	return file.getFileSize();
-	}
+    public String getUsrByUid(int uid) throws IOException {
+    	final LfcConnection connection = new LfcConnection(server, port, proxyPath);
+        try {
+            return connection.getUsrByUid(uid);
+        } finally {
+            connection.close();
+        }
+    }    
     
     /**
      * Get the content of a directory. If the given path is not a directory
@@ -213,8 +198,8 @@ public class LfcConnector {
      * @throws IOException
      *             if anything goes wrong
      */
-    public Collection<LFCFile> list(String path) throws IOException {
-        final LFCFile file = this.lstat(path);
+    public Collection<LFCFile> list(String path, boolean followSymbolicLink) throws IOException {
+        final LFCFile file = this.stat(path,followSymbolicLink);
         if (!file.isDirectory()) {
             return null;
         }
@@ -254,7 +239,7 @@ public class LfcConnector {
      * @throws IOException	if anything goes wrong
      */
     public boolean deletePath(String path) throws IOException {
-        if (this.lstat(path).isDirectory()) {
+        if (this.stat(path,true).isDirectory()) {
             final LfcConnection connection = new LfcConnection(server, port,
                     proxyPath);
             try {
@@ -347,16 +332,142 @@ public class LfcConnector {
     }
 
     /**
-     * Create a new File
+     * Change  access   mode   of  a  LFC  directory/file.
+	 * Symbolic link are not supported yet
+     * @param path
+     * 			File path
+     * @param mode 
+     * 			Absolute UNIX like mode (octal value)
+     * @throws IOException
+     * 			If anything goes wrong
+     */
+    public void chmod(String path, int mode) throws IOException {
+    	LfcConnection connection = new LfcConnection(server, port, proxyPath);
+    	try {
+			connection.chmod(path, mode);
+		}finally {
+            connection.close();
+        }
+    }
+    
+    /**
+     * Change owner and group of a file or a directory.
+     * At least user name or group name need to be specified (both can be specified)
+     * If a name is <code>null</code> then the name is ignored.
      * 
+     * @param path 
+     * 				Current file name
+     * @param recursive 
+     * 				Recursive mode
+     * @param followSymbolicLinks 
+     * 				If the path is a symbolic link, changes the owner‐ship of the linked file or directory
+     * 				instead of the symbolic link itself
+     * @param usrName 
+     * 				The new owner of the file
+     * @param grpName 
+     * 				The new group of the file
+     * @throws IOException If a problem occurs
+     */
+    public void chown(String path,  boolean recursive, boolean followSymbolicLinks, String usrName, String grpName) throws IOException {
+    	LfcConnection connection;
+    	int new_uid = -1;
+    	int new_gid = -1;
+    	if(usrName != null){
+	    	if(usrName.equals("root")){
+	    		new_uid  = 0;
+	    	}else{
+	    		connection = new LfcConnection(server, port, proxyPath);
+	    		try {
+	    			new_uid  = connection.getUsrByName(usrName);
+	            }catch (Exception e) {
+	            	throw new IOException("Unable to find the uid of "+usrName+" in the LFC");
+	    		}finally {
+	                connection.close();
+	            } 
+	    	}
+    	}
+    	if(grpName != null){
+	    	if(grpName.equals("root")){
+	    		new_gid  = 0;
+	    	}else{
+	    		connection = new LfcConnection(server, port, proxyPath);
+	    		try {
+	    			new_gid  = connection.getGrpByName(grpName);
+	    		}catch (IOException e) {
+	    			throw new IOException("Unable to find the gid of "+grpName+" in the LFC");
+	            } finally {
+	                connection.close();
+	            }
+	    	}
+    	}
+    	chown(path, recursive, followSymbolicLinks, new_uid, new_gid);
+    }
+    
+    /**
+     * Change owner and group of a file or a directory.
+     * At least user ID or group ID need to be specified (both can be specified)
+     * If an ID value is inferior to 0 then the ID is ignored.
+     * 
+     * @param path 
+     * 				Current file name
+     * @param recursive 
+     * 				Recursive mode
+     * @param followSymbolicLinks 
+     * 				If the path is a symbolic link, changes the owner‐ship of the linked file or directory
+     * 				instead of the symbolic link itself
+     * @param new_uid 
+     * 				New owner ID
+     * @param new gid 
+     * 				New group ID
+     * @throws IOException If a problem occurs
+     */
+    public void chown(String path,  boolean recursive, boolean followSymbolicLinks, int new_uid, int new_gid) throws IOException {
+    	if(recursive == true){
+    		//TODO ....
+    		throw new UnsupportedOperationException("not implemented");
+    	}
+    	if(new_uid < 0 && new_gid < 0){
+    		throw new IllegalArgumentException("You must specify at least a new owner or a new group");
+    	}
+    	LfcConnection connection = new LfcConnection(server, port, proxyPath);
+        try {
+        	if(followSymbolicLinks){
+        		connection.chown(path, new_uid, new_gid);
+        	}else{
+        		connection.lchown(path, new_uid, new_gid);
+        	}
+        } finally {
+            connection.close();
+        }
+    }
+    
+    /**
+     * Rename a file
+     * @param oldPath current file name
+     * @param newPath new file name
+     * @throws IOException If a problem occurs
+     */
+    public void rename(String oldPath, String newPath) throws IOException {
+    	LfcConnection connection = new LfcConnection(server, port,
+                proxyPath);
+        try {
+            connection.rename(oldPath, newPath);
+        } finally {
+            connection.close();
+        }
+    }
+    
+    /**
+     * Create a new File
+     * @param fileSize the size of the file. If <0 then 0 will be set
      * @return a GUID to the new file
      * @throws IOException
      *             if anything goes wrong
      */
-    public String create() throws IOException {
+    public String create(long fileSize) throws IOException {
         String guid = UUID.randomUUID().toString();
         String parent = "/grid/" + vo + "/generated/" + dateAsPath();
-        final LfcConnection connection = new LfcConnection(server, port,
+        LfcConnection connection = new LfcConnection(server, port,
                 proxyPath);
         try {
             connection.mkdir(parent, UUID.randomUUID().toString());
@@ -371,7 +482,7 @@ public class LfcConnector {
             uri = new URI("lfn:///" + path);
         } catch (URISyntaxException e) {
         }
-        return create(uri,guid);
+        return create(uri,guid,fileSize);
     }
 
     /**
@@ -381,19 +492,33 @@ public class LfcConnector {
      *            The lfn of the file to create (lfn:////grid/vo/...). Please
      *            note the 4 (!) slashes. These are required to specify an empty
      *            hostname and an absolute directory.
+     * @param guid
+     * 			  The guid of the file
+     * @param fileSize
+     * 			  The size of the file.If <0 then 0 will be set
      * @return a GUID to the new file
      * @throws IOException
      *             if anything goes wrong
      */
-    public String create(URI location, String guid) throws IOException {
+    public String create(URI location, String guid, long fileSize) throws IOException {
         String path = location.getPath();
         LOGGER.info("Creating " + guid + " with path " + path);
-        final LfcConnection connection = new LfcConnection(server, port,
+        LfcConnection connection = new LfcConnection(server, port,
                 proxyPath);
         try {
             connection.creat(path, guid);
         } finally {
             connection.close();
+        }
+        if(fileSize > 0L){
+	        connection = new LfcConnection(server, port,proxyPath);
+	        try {
+	            connection.setfsize(location.getPath(), fileSize);
+	        } catch (IOException e) {
+	            LOGGER.debug("Creating parent", e);
+	        } finally {
+	            connection.close();
+	        }
         }
         return guid;
     }

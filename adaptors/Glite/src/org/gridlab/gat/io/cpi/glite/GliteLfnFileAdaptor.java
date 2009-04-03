@@ -22,6 +22,7 @@ import org.gridlab.gat.io.cpi.glite.lfc.LfcConnector;
 import org.gridlab.gat.io.cpi.glite.lfc.LfcUtil;
 import org.gridlab.gat.io.cpi.glite.lfc.LfcConnection.LFCFile;
 import org.gridlab.gat.io.cpi.glite.lfc.LfcConnection.LFCReplica;
+import org.gridlab.gat.io.permissions.attribute.*;
 import org.gridlab.gat.resources.cpi.ResourceBrokerCpi;
 import org.gridlab.gat.resources.cpi.glite.GliteConstants;
 import org.gridlab.gat.resources.cpi.glite.LDAPResourceFinder;
@@ -90,6 +91,7 @@ public class GliteLfnFileAdaptor extends FileCpi {
         capabilities.put("exists", true);
         capabilities.put("getAbsoluteFile", false);
         capabilities.put("getCanonicalFile", false);
+        capabilities.put("getFileAttributeView", true);
         capabilities.put("isDirectory", true);
         capabilities.put("isFile", true);
         capabilities.put("isHidden", true);
@@ -141,7 +143,7 @@ public class GliteLfnFileAdaptor extends FileCpi {
                 URI target = LfcUtil.upload(location, guid, ses, gatContext);
                 LOGGER.info("Registering file in the LFC...");
                 try {
-                	lfcConnector.create(dest, guid);
+                	lfcConnector.create(dest, guid, filesize);
                     lfcConnector.addReplica(guid, target);
                 } catch (IOException e) {
                 	LOGGER.error(GLITE_LFC_FILE_ADAPTOR + ": Unable to add the replica to the LFC - "+e.getMessage());
@@ -193,7 +195,9 @@ public class GliteLfnFileAdaptor extends FileCpi {
         try {
             GliteSecurityUtils.touchVomsProxy(gatContext);
             String guid = UUID.randomUUID().toString();
-            lfcConnector.create(location, guid);
+            final java.io.File source = new java.io.File(location.getPath());
+            final long filesize = source.length();
+            lfcConnector.create(location, guid, filesize);
             this.location = new URI(GliteGuidFileAdaptor.GUID, null, lfcConnector.getServer(),
                     lfcConnector.getPort(), '/' + guid, null, null);
         } catch (IOException e) {
@@ -267,6 +271,19 @@ public class GliteLfnFileAdaptor extends FileCpi {
     }
     
     /** {@inheritDoc} */
+    @SuppressWarnings("unchecked")
+	public <V extends FileAttributeView> V getFileAttributeView(Class<V> type, boolean followSymbolicLinks)  throws GATInvocationException {
+    	if (localFile) {
+            throw new GATInvocationException(GLITE_LFC_FILE_ADAPTOR + ": "
+                    + CANNOT_HANDLE_THIS_URI + location);
+        }
+    	if(PosixFileAttributeView.class.equals(type)){
+    		return (V) new PosixLfnFileAttributeView(location, followSymbolicLinks, lfcConnector, gatContext);
+    	}
+    	return null;
+    }
+    
+    /** {@inheritDoc} */
     public boolean isDirectory() throws GATInvocationException {
     	if (localFile) {
             throw new GATInvocationException(GLITE_LFC_FILE_ADAPTOR + ": "
@@ -278,7 +295,7 @@ public class GliteLfnFileAdaptor extends FileCpi {
         //Create the VOMS proxy if needed
     	GliteSecurityUtils.touchVomsProxy(gatContext);
     	try {
-			return lfcConnector.isDirectory(location.getPath());
+			return lfcConnector.stat(location.getPath(), false).isDirectory();
 		} catch (IOException e) {
 			throw new GATInvocationException(GLITE_LFC_FILE_ADAPTOR, e);
 		}
@@ -296,7 +313,7 @@ public class GliteLfnFileAdaptor extends FileCpi {
         //Create the VOMS proxy if needed
     	GliteSecurityUtils.touchVomsProxy(gatContext);
     	try {
-			return lfcConnector.isFile(location.getPath());
+			return lfcConnector.stat(location.getPath(), false).isRegularFile();
 		} catch (IOException e) {
 			throw new GATInvocationException(GLITE_LFC_FILE_ADAPTOR, e);
 		}
@@ -311,7 +328,7 @@ public class GliteLfnFileAdaptor extends FileCpi {
     	//Create the VOMS proxy if needed
     	GliteSecurityUtils.touchVomsProxy(gatContext);
     	try {
-			return lfcConnector.lastModified(location.getPath());
+			return lfcConnector.stat(location.getPath(), false).lastModifiedTime();
 		} catch (IOException e) {
 			throw new GATInvocationException(GLITE_LFC_FILE_ADAPTOR, e);
 		}
@@ -326,7 +343,7 @@ public class GliteLfnFileAdaptor extends FileCpi {
     	//Create the VOMS proxy if needed
     	GliteSecurityUtils.touchVomsProxy(gatContext);
     	try {
-			return lfcConnector.length(location.getPath());
+			return lfcConnector.stat(location.getPath(), false).size();
 		} catch (IOException e) {
 			throw new GATInvocationException(GLITE_LFC_FILE_ADAPTOR, e);
 		}
@@ -344,7 +361,7 @@ public class GliteLfnFileAdaptor extends FileCpi {
         LOGGER.debug("listing the content of " + location.getPath());
         Collection<String> lfnUris = null;;
 		try {
-			Collection<LFCFile> files = lfcConnector.list(location.getPath());
+			Collection<LFCFile> files = lfcConnector.list(location.getPath(),false);
 			if(files != null){
 				lfnUris = new ArrayList<String>(files.size());
 				for (Iterator<LFCFile> iterator = files.iterator(); iterator.hasNext();) {
@@ -380,34 +397,24 @@ public class GliteLfnFileAdaptor extends FileCpi {
     }
 
     /** {@inheritDoc} */
-    public boolean renameTo(File arg0) throws GATInvocationException {
+    public boolean renameTo(File newFile) throws GATInvocationException {
     	if (localFile) {
             throw new GATInvocationException(GLITE_LFC_FILE_ADAPTOR + ": "
                     + CANNOT_HANDLE_THIS_URI + location);
         }
-    	//TODO
-        throw new UnsupportedOperationException("Not implemented");
-    }
-
-    /** {@inheritDoc} */
-    public boolean setLastModified(long arg0) throws GATInvocationException {
-    	if (localFile) {
-            throw new GATInvocationException(GLITE_LFC_FILE_ADAPTOR + ": "
-                    + CANNOT_HANDLE_THIS_URI + location);
+    	if (!newFile.toGATURI().isCompatible(LFN)) {
+            throw new GATInvocationException(GLITE_LFC_FILE_ADAPTOR
+                    + ": " + CANNOT_HANDLE_THIS_URI + newFile.toGATURI());
         }
-    	//TODO
-        throw new UnsupportedOperationException("Not implemented");
+    	
+    	//Create the VOMS proxy if needed
+    	GliteSecurityUtils.touchVomsProxy(gatContext);
+    	try {
+			lfcConnector.rename(location.getPath(), newFile.toGATURI().getPath());
+			return true;
+		} catch (IOException e) {
+			LOGGER.error(GLITE_LFC_FILE_ADAPTOR + ": Unable to create the "+location+" directory:" + e.getMessage());
+			return false;
+		}
     }
-
-    /** {@inheritDoc} */
-    public boolean setReadOnly() throws GATInvocationException {
-    	if (localFile) {
-            throw new GATInvocationException(GLITE_LFC_FILE_ADAPTOR + ": "
-                    + CANNOT_HANDLE_THIS_URI + location);
-        }
-    	//TODO
-        throw new UnsupportedOperationException("Not implemented");
-    }
-    
-
 }
