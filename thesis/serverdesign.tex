@@ -139,10 +139,10 @@ Google also provides an SQL like way to communicate with the datastore, called
 the GQL.
 \subsubsection{Garbage Collection}
 Since the capacity of the datastore is limited to 500MB, we need some sort of
-garbage collection to keep our service usable for storing new data. This is only
-possible by overwriting old data with new data (i.e. removing non-used items to
-make room for new data). Removing old items is called garbage collection.
-
+\emph{garbage collection} to keep our service usable for storing new data. This
+is only possible by overwriting old data with new data (i.e. removing non-used
+items to make room for new data). Removing old items is called garbage
+collection.
 \paragraph{TTL}
 Initially we could give every data item stored in the server a Time to live
 (TTL). This TTL could have a fixed value (for example 10 days), after which the

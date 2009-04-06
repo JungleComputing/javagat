@@ -15,9 +15,9 @@ there is another function called \texttt{is\_current\_user\_admin()}, which is
 available in the \texttt{google.appengine.api.users} package. By default the
 owner of the application is administrator, and additional administrators can be
 added through the administration panel. This fits our needs perfectly.
-\dashline{Once a client logged in through the Google login procedure (e.g. a Google login
+Once a client logged in through the Google login procedure (e.g. a Google login
 page), the request handler at the server returns a user object, as shown inFigure \ref{serverimpl-auth}. This object can then be used to identify auser.
-}
+
 \begin{figure*}[ht] %[placement] where placement is h,t,b,p
 \begin{center}
 \begin{code}
@@ -82,7 +82,8 @@ class MetaData(db.Model):
 At our server, we would like to store meta data not as a binary object, but as
 readable strings of data. This way, we can search meta data when it is queried.
 According to the AdvertService API, a MetaData object should look like Figure\ref{serverimpl-ds}. In this object, we just need to store key-value pairs,
-which are String properties. Every object will be linked to a parent (Advertobject), as soon as it's created.
+which are String properties. Every object will be linked to a parent (Advertobject), as soon as it's created.
+
 \subsubsection{Path Encoding}
 To have the AdvertService work properly, we need some path encoding to save
 Advert objects in the datastore. The Google App Engine itself provides one
@@ -198,7 +199,6 @@ self.response.out.write(bytes[5:length])
 
 \paragraph{Simplejson}
 \label{serverimpl-simplejson}
-\dashline{
 Instead of using our own representation of unicode Strings and binary data, we
 could also use a JSON representation. Once a serial JSON array or object has
 been sent (see Section \ref{clientimpl-sending-both}), we are able to load it
@@ -206,7 +206,6 @@ into a server-side JSON object and decode it according to Figure
 \ref{serverimpl-json}. The \texttt{simplejson.loads()} function decodes a
 serial JSON String representation into a JSON array, after which we can access
 its array entries like a regular array. 
-} 
 
 \begin{figure*}[ht] %[placement] where placement is h,t,b,p
 \begin{center}
@@ -227,20 +226,16 @@ for k in json[1].keys():
 \end{center}
 \end{figure*}
 
-\dashline{
 The same goes for a JSON object. We can construct a for loop like shown in
 Figure \ref{serverimpl-json}, by iterating through all the keys and retrieving
 their key-value pairs.
-}
 
-\dashline{
 For reasons mentioned in Section \ref{clientimpl-sending-both}, the object is
 not send in binary, but in unicode String format. For this reason, we can't
 store it as a \texttt{db.BlobProperty()}, since this property expects unencoded
 binary data only. The only option is to use the \texttt{db.TextProperty()},
 since it is not limited to 500 characters, like the \texttt{db.StringProperty()}
 is.
-}
 
 \subsubsection{Storing Meta Data}
 Since MetaData needs to be searchable at the server-side, we will have to extract
@@ -257,16 +252,98 @@ the lists link the key and the value of the MetaData. However, we are not sure o
 those lists maintain order (which could mess up the MetaData).
 Finally, we could also append all data in two strings and have them separated by
 special delimiter. Downside of this method is that we could run out of the
-maximum length of strings (which is 500 bytes).
+maximum length of strings (which is 500 bytes).
+
+\dashline{
+Once data has been stored successfully, we send an HTTP 201 (Created) status
+code, and return the TTL in the message body. If an entry already exists at the
+specified path, that entry gets overwritten, and a warning is issued. This is
+done by sending an HTTP 205 (Reset Content) Status Code and a warning in the
+message body.
+}
 \subsubsection{Finding MetaData}
 When the MetaData has been stored in the datastore, we should be able to process
 find() requests by clients. First a MetaData object is received, which is then
 tried to be matched with MetaData already present in the datastore. For this
-purpose we will use the GQL as described above.%TODO: <something about GQL queries>
+purpose we will use the GQL as described above.
+\dashline{
+To process the find() request, we have to check all the key-value pairs given
+by the client and compare them to the key-value pairs of all MetaData objects
+in the datastore. Since all key-value pairs are stored in one `table', we
+have to group them by path, after which we can check all key-value pairs per
+MetaData object.}
 
+\dashline{
+Comparing the MetaData object sent by the user with the MetaData present in the
+datastore can be achieved in two ways. One approach is to make a selection of
+all paths available and check the key-value pairs on a per path basis. This
+is done by the GQL query shown in Figure \ref{serverimpl-find}.}
+
+\begin{figure*}[ht] %[placement] where placement is h,t,b,p
+\begin{center}
+\begin{code}
+query = db.GqlQuery("SELECT * FROM MetaData")
+
+paths = Set()
+
+for bin in query:
+  paths.add(bin.path)
+  
+paths  = list(paths)
+self.response.out.write(paths)
+
+for path in paths[:]:
+  for k in json.keys():
+    query = db.GqlQuery("SELECT * FROM MetaData WHERE path = :1 AND keystr = :2
+                         AND val = :3", path, k, json[k])
+    if query.count() < 1:
+      paths.remove(path)
+      break
+
+if len(paths) < 1:
+  self.error(404)
+  self.response.headers['Content-Type'] = 'text/plain'
+  self.response.out.write('Not Found')
+  return
+
+self.response.out.write(simplejson.dumps(paths))  
+\end{code}
+\caption{Functionality of \texttt{find()} Function.\label{serverimpl-find}}
+\end{center}
+\end{figure*}
+
+\dashline{
+To obtain an array of all paths (without duplicates), we would usually use the
+`DISTINCT' keyword from SQL. Since the GQL does not support the `DISTINCT'
+keyword we have to make our own unique array of keys. We do this by using the
+\texttt{Set()} data type, which maintains a unique set of paths (duplicates are
+automatically overwritten).}
+
+\dashline{
+After we have a distinct set of all paths, we iterate through the list and
+match every key-value pair with the key-value pair given by the user. If one
+pair does not match, we remove the path from the list, and start over
+inspecting the next path in the list. Eventually we will have a list of paths
+which contains all paths that meet all requirements given by the user. 
+}
+
+\dashline{
 The return value of all metadata found is a String array, which again needs to be
-formatted in a way that it can be sent as one String. 
-%TODO: <more to follow>
+formatted in such a way that it can be sent as one String. Obviously we will
+use simplejson to do so. If no entry is found, we will send a 404 response
+code, accompanied by the text `Not Found' in the message body. }
+
+\dashline{
+A second option to implement the \texttt{find()} function would be to first
+find all paths that meet the requirements given by the first key-value pair.
+Then do the same for the second key-value pair and accordingly take the
+intersection between the two search results. This process should be repeated
+until all key-value pairs have been checked. The downside of this approach is
+that there is no obvious method to perform the intersection between two search
+results at the Google App Engine. This approach requires a \emph{for-loop} to
+iterate through all items in the first search result and check them with the
+second. }
+
 \subsubsection{Returning an Object from the Datastore}
 This function will send binary data back to client. Basically, this function only
 sends an Object to the standard output (the HTTP connection), which looks like
@@ -288,11 +365,46 @@ advert service.
 \subsubsection{Garbage Collector}
 As described above, we will use some form of TTL to determine whether a data item
 stored is still needed in the datastorage. When a data item is expired, it will
-be removed automatically using a mechanism called the Garbage Collector.
-%TODO: <more to follow>
-\subsubsection{Data Matching}
-For our \texttt{find()} function, we will need some internal `match' function,
-which can query the database to see if the specified data item is present in the
-datastore. For this matching, we will have an internal function which is able to
-match data received from the client with data present in the datastore. 
-%TODO: <more to follow>
+be removed automatically using a mechanism called the garbage collector.
+\dashline{The source code of our garbage collector can be found in Figure
+\ref{serverimpl-gc}.}
+
+\begin{figure*}[ht] %[placement] where placement is h,t,b,p
+\begin{center}
+\begin{code}
+def gc(): #garbage collector
+  query = db.GqlQuery("SELECT * FROM Advert WHERE ttl < :1", 
+                      datetime.datetime.today() + datetime.timedelta(days=-10))
+  
+  for advert in query: #all entities that can be deleted
+    advert.delmd()     #delete all associated metadata
+    advert.delete()    #delete the object itself
+\end{code}
+\caption{The Garbage Collector.\label{serverimpl-gc}}
+\end{center}
+\end{figure*}
+
+\dashline{
+By calling \texttt{gc()}, we activate our garbage collector, which, in turn,
+executes a GQL query, selecting all data that has been added to the datastore
+earlier than ten days ago. To achieve this we use the \texttt{timedelta()}
+object, provided by the \texttt{datetime} class. A timedelta object
+represents a duration, the difference between two dates or times, and is ideal
+for our garbage collector.
+}
+
+\dashline{
+The query results in an iterable list of advert objects that can be removed
+from the datastore. We should not forget that also all the MetaData
+associated with the Advert object should be removed alongside the object itself.
+Therefore we wrote a function inside the advert class, called \texttt{delmd()},
+that automatically deletes all its metadata. Once this is done, the object
+itself is deleted and the garbage collection process is finished.
+}
+
+% \subsubsection{Data Matching}
+% For our \texttt{find()} function, we will need some internal `match' function,
+% which can query the database to see if the specified data item is present in the
+% datastore. For this matching, we will have an internal function which is able to
+% match data received from the client with data present in the datastore. 
+% %TODO: <more to follow>

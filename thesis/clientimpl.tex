@@ -131,13 +131,10 @@ hence very effective, in sending such key-value pairs. If we take this even
 further, JSON can do a lot more than just encoding key-value pairs.
 
 \paragraph{JSON}
-\dashline{
 Besides serializing a MetaData object, JSON can actually serialize our wholepayload for us. This means that we don't have to work with neither boundaries,as used in multipart/from-data, nor with payload sizes. Since both Java andPython can use libraries which implements all JSON functionality, we won't
 have to program a new mechanism of sending multiple Strings and binary data
 in one request. 
-}
 
-\dashline{
 To give the reader a small idea of how JSON works, we will try to encode te
 payload above into a serial JSON String. The message consists out of three parts:
 a path, meta data, and a binary object. So we will make a JSON array, with each
@@ -146,17 +143,14 @@ the first entry. The second part is something more complicated, which we will
 encode as a JSON obect, storing key-value pairs. The third entry again is a bit
 more difficult, since we can only store Strings, numbers, booleans, and null.
 That's why we formatted the binary object into a \emph{Base64} encoded
-String}\footnote{Base64 refers to a specific MIME content transfer encoding. It
+String\footnote{Base64 refers to a specific MIME content transfer encoding. It
 encodes binary data by treating it numerically and translating it into a base 64
-representation.}. \dashline{The only downside is that Base64 encoding has a
-overhead of about 137\% of the original data length, plus 814 bytes for headers.
-For more information about the JSON format, we refer to \cite{json-www}.
-}
-
-\dashline{Once encoded, we can serialize the JSON array to a String (see Figure
-\ref{clientimpl-json}, after which it will be sent to the server. We can decode
+representation.}. The only downside is that Base64 encoding has a overhead of
+about 1.35 of the original data length. For more information about the JSON
+format, we refer to \cite{json-www}.
+Once encoded, we can serialize the JSON array to a String (see Figure
+\ref{clientimpl-json}), after which it will be sent to the server. We can decode
 this String using simplejson at the server side, retrieving our JSON array back(see Section \ref{serverimpl-simplejson}). 
-}
 \begin{figure*}[ht] %[placement] where placement is h,t,b,p
 \begin{center}
 \begin{code}
@@ -264,7 +258,6 @@ Auth=DQA(...)ub4
 \end{center}
 \end{figure*}
 
-\dashline{
 Currently, `SID' and `LSID' are not used by the \emph{Google API}, so we just
 need to extract the `Auth' value. Usually this value can be used directly on a
 service its API (when providing a developer key), but unfortunately, the Google
@@ -273,7 +266,6 @@ There is a workaround for still being able to connect to the App Engine, by
 connecting to a App Engine's login page like Figure \ref{clientimpl-aelogin}.
 In this example, \texttt{Auth} is a variable that contains the token acquired
 by the example of Figure \ref{clientimpl-clientlogin-response}. 
-}
 
 \begin{figure*}[ht] %[placement] where placement is h,t,b,p
 \begin{center}
@@ -284,12 +276,10 @@ url = new URL("http://bbn230.appspot.com/_ah/login?auth="+ Auth);
 \end{center}
 \end{figure*}
 
-\dashline{
 Connecting to this page will return a cookie with a session ID, just like the
 one described in Section \ref{clientimpl-cookies}, only with a token called
 `ACSID', with which we can identify ourselves to the App Engine for every
 subsequent request.
-}
 
 \paragraph{AuthSub}
 Web applications that need to access services protected by a user's Google or
