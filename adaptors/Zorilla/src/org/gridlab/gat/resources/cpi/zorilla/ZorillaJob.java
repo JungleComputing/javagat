@@ -17,8 +17,6 @@ import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.net.SocketFactory;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.gridlab.gat.GAT;
@@ -41,7 +39,7 @@ import org.gridlab.gat.resources.cpi.JobCpi;
 import org.gridlab.gat.resources.cpi.Sandbox;
 
 /**
- * @author ndrost
+ * @author Niels Drost
  */
 public class ZorillaJob extends JobCpi {
 

@@ -244,7 +244,7 @@ class NestedException extends Exception {
      */
     public void printStackTrace(String indent, PrintWriter writer) {
         if (throwables.size() == 0) {
-            super.printStackTrace();
+            super.printStackTrace(writer);
 
             return;
         }
