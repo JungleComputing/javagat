@@ -6,11 +6,15 @@ from google.appengine.ext.webapp.util import run_wsgi_app
 from google.appengine.ext import db
 from django.utils import simplejson 
 from sets import Set 
+import datetime
 
 class Bin(db.Model):
   path = db.StringProperty()
   val = db.StringProperty()
   data = db.StringProperty()
+  
+class Ttl(db.Model):
+  date = db.DateTimeProperty()
  
 class MainPage(webapp.RequestHandler):
   def get(self):
@@ -83,20 +87,22 @@ class TestQueries(webapp.RequestHandler):
     self.response.out.write(simplejson.dumps(fooDict))
     
     self.response.out.write("**********<br />\n")
+    
+    query = db.GqlQuery("SELECT * FROM Bin WHERE ANCESTOR IS :1", bin)
 
 class TestFind(webapp.RequestHandler):
-  def post(self):    
+  def post(self):
     body = self.request.body
     json = simplejson.loads(body)
     
     query = db.GqlQuery("SELECT * FROM Bin")
     
-    paths = []
+    paths = Set()
     
     for bin in query:
-      paths.append(bin.path)
+      paths.add(bin.path)
       
-    paths  = list(Set(paths))
+    paths  = list(paths)
     self.response.out.write(paths)
     
     for path in paths[:]:
@@ -113,12 +119,25 @@ class TestFind(webapp.RequestHandler):
       return
     
     self.response.out.write(simplejson.dumps(paths))    
+    
+class TestDate(webapp.RequestHandler):
+  def get(self):
+    #ttl = Ttl()
+    #ttl.date = datetime.datetime.today() + datetime.timedelta(days=-10)
+    #ttl.put()
+    
+    self.response.out.write('Done.<br />\n')
+
+    query = db.GqlQuery("SELECT * FROM Ttl WHERE date < :1", datetime.datetime.today() + datetime.timedelta(days=-10))
+    for d in query:
+      self.response.out.write("%s<br />\n" % d.date)
 
 application = webapp.WSGIApplication(
                                      [('/queries/', MainPage),
                                       ('/queries/find', TestFind),
                                       ('/queries/load', Load),
-                                      ('/queries/test', TestQueries)],
+                                      ('/queries/test', TestQueries),
+                                      ('/queries/date', TestDate)],
                                      debug=True)
 
 def main():

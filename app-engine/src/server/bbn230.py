@@ -152,12 +152,12 @@ class FindMetaData(webapp.RequestHandler):
     
     query = db.GqlQuery("SELECT * FROM MetaData")
     
-    paths = []
+    paths = Set()
     
     for bin in query:
-      paths.append(bin.path)
+      paths.add(bin.path)
       
-    paths  = list(Set(paths))
+    paths  = list(paths)
     self.response.out.write(paths)
     
     for path in paths[:]:

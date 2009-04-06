@@ -67,7 +67,6 @@ public class Client {
 	private static void testFind(String uri) throws Exception {
 		JSONObject jsonobj = new JSONObject();
 
-		jsonobj.put("key4", "val4");
 		jsonobj.put("key2", "val2");
 		jsonobj.put("key1", "val1");
 		
@@ -833,8 +832,8 @@ public class Client {
 	 *     The connection can't be established. 
 	 */
 	public static void main(String argv[]) throws Exception {
-		String server = "bbn230.appspot.com/";
-//		String server = "localhost:8080/";
+//		String server = "bbn230.appspot.com/";
+		String server = "localhost:8080/";
 		String uri = null;
 		
 		/* Making a standard connection in HTTP(S). */
@@ -881,7 +880,7 @@ public class Client {
 		/* Base64 tests. */
 		//base64test();
 		
-		uri = server.concat("queries/test");
-		//testFind(uri);
+		uri = server.concat("queries/find");
+//		testFind(uri);
 	}
 }

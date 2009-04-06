@@ -29,12 +29,18 @@ class Advert(db.Model):
   ttl    = db.DateTimeProperty(auto_now_add=True)
   object = db.TextProperty() #base64
   
+  def delmd(self): #delete all metadata of some object
+    query = db.GqlQuery("SELECT * FROM MetaData WHERE path = :1", self.path)
+    
+    for md in query:
+      md.delete()
+
 class MetaData(db.Model):
   path   = db.StringProperty()
   keystr = db.StringProperty()
   value  = db.StringProperty()
 
-def auth(self):
+def auth(self): #authentication
   if not users.get_current_user():
     self.error(403)
     self.response.headers['Content-Type'] = 'text/plain'
@@ -49,7 +55,14 @@ def auth(self):
 
   return 0
 
-class MainPage(webapp.RequestHandler):
+def gc(): #garbage collector
+  query = db.GqlQuery("SELECT * FROM Advert WHERE ttl < :1", datetime.datetime.today() + datetime.timedelta(days=-10))
+  
+  for advert in query: #all entities that can be deleted
+    advert.delmd()     #delete all associated metadata
+    advert.delete()    #delete the object itself
+
+class MainPage(weba0pp.RequestHandler):
   def get(self):
     self.redirect(users.create_login_url(self.request.uri))
 
@@ -63,7 +76,10 @@ class AddObject(webapp.RequestHandler):
     body = self.request.body
     json = simplejson.loads(body)
     
-    #TODO check if path already exists
+    query = db.GqlQuery("SELECT * FROM Advert WHERE path = :1", json[0])
+    if query.count() > 0: #this entry already exists; overwrite
+      query.delmd()  #delete all associated metadata
+      query.delete() #delete the object itself
     
     advert.path   = json[0] #extract path from message
     advert.author = user    #store author
@@ -96,6 +112,7 @@ class DelObject(webapp.RequestHandler):
       return      
     
     for advert in query:
+      advert.delmd()  #delete all associated metadata
       advert.delete() #deleting the first entry we find
       break #and stop
   
@@ -152,12 +169,12 @@ class FindMetaData(webapp.RequestHandler):
     
     query = db.GqlQuery("SELECT * FROM MetaData")
     
-    paths = []
+    paths = Set()
     
     for bin in query:
-      paths.append(bin.path)
+      paths.add(bin.path)
       
-    paths  = list(Set(paths))
+    paths  = list(paths)
     self.response.out.write(paths)
     
     for path in paths[:]:
