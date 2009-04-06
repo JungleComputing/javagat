@@ -80,6 +80,7 @@ class AddObject(webapp.RequestHandler):
     if query.count() > 0: #this entry already exists; overwrite
       query.delmd()  #delete all associated metadata
       query.delete() #delete the object itself
+      self.response.http_status_message(205) #reset content
     
     advert.path   = json[0] #extract path from message
     advert.author = user    #store author
@@ -94,8 +95,9 @@ class AddObject(webapp.RequestHandler):
       metadata.value  = json[1][k]
       metadata.put()
     
+    self.response.http_status_message(201) #Created
     self.response.headers['Content-Type'] = 'text/plain'
-    self.response.out.write('TTL') #TODO: insert actual TTL
+    self.response.out.write('Expires: %s', datetime.datetime.today() + datetime.timedelta(days=10)) 
     return
 
 class DelObject(webapp.RequestHandler):
