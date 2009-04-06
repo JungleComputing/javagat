@@ -340,6 +340,7 @@ public final class GliteSecurityUtils {
                 .toString(STANDARD_NEW_PROXY_LIFETIME));
         preferences.put(GliteConstants.PREFERENCE_VOMS_CREATE_NEW_PROXY,
                 "ondemand");
+        preferences.put(GliteConstants.PREFERENCE_SYNCH_LFC_DPM_PERMS, "false");
     }
 
     /**

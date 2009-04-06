@@ -1,6 +1,8 @@
 package org.gridlab.gat.io.permissions;
 
 import java.io.IOException;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
@@ -57,6 +59,37 @@ public abstract class AbstractPosixFileAttributeView extends AbstractBasicFileAt
 
 	public UserPrincipal getOwner() throws IOException {
 		return (UserPrincipal) getAttribute(OWNER_NAME);
+	}
+	
+	public Map<String, ?> readAttributes(String first, String... rest) throws IOException {
+		Set<String> requestedAttributesNames = new HashSet<String>();
+		boolean copyAll = false;
+		if (first.equals("*")) {
+            copyAll = true;
+        } else {
+        	requestedAttributesNames.add(first);
+            for (String attribute: rest) {
+                if (attribute.equals("*")) {
+                    copyAll = true;
+                    break;
+                }
+                requestedAttributesNames.add(attribute);
+            }
+        }
+		
+		PosixFileAttributes posixFileAttributes = readAttributes();
+		Map<String, Object> attributes = getAttributesMap(posixFileAttributes);
+		if(copyAll){
+			return attributes;
+		}
+		
+		for (Iterator<String> iterator = attributes.keySet().iterator(); iterator.hasNext();) {
+			String attributeName = (String) iterator.next();
+			if(!requestedAttributesNames.contains(attributeName)){
+				iterator.remove();
+			}
+		}
+		return attributes;
 	}
 
 	protected Map<String, Object> getAttributesMap(PosixFileAttributes posixFileAttributes) {

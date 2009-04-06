@@ -13,6 +13,8 @@ import org.gridlab.gat.URI;
 import org.gridlab.gat.io.File;
 import org.gridlab.gat.io.cpi.FileCpi;
 import org.gridlab.gat.io.cpi.glite.srm.SrmConnector;
+import org.gridlab.gat.io.permissions.attribute.FileAttributeView;
+import org.gridlab.gat.io.permissions.attribute.PosixFileAttributeView;
 import org.gridlab.gat.resources.cpi.ResourceBrokerCpi;
 import org.gridlab.gat.security.glite.GliteSecurityUtils;
 import org.slf4j.Logger;
@@ -139,4 +141,16 @@ public class GliteSrmFileAdaptor extends FileCpi {
         return true;
     }
 
+    /** {@inheritDoc} */
+    @SuppressWarnings("unchecked")
+	public <V extends FileAttributeView> V getFileAttributeView(Class<V> type, boolean followSymbolicLinks)  throws GATInvocationException {
+    	if (localFile) {
+            throw new GATInvocationException(GLITE_SRM_FILE_ADAPTOR + ": "
+                    + CANNOT_HANDLE_THIS_URI + location);
+        }
+    	if(PosixFileAttributeView.class.equals(type)){
+    		return (V) new PosixSrmFileAttributeView(location, followSymbolicLinks, connector, gatContext);
+    	}
+    	return null;
+    }
 }

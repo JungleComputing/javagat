@@ -32,6 +32,7 @@ public final class GliteConstants {
     public static final String PREFERENCE_DELETE_JDL = "glite.deleteJDL";
     public static final String PREFERENCE_JOB_STOP_POSTSTAGE = "job.stop.poststage";
     public static final String PREFERENCE_JOB_STOP_ON_EXIT = "job.stop.on.exit";
+    public static final String PREFERENCE_SYNCH_LFC_DPM_PERMS = "glite.synch.lfc.dpm.permissions";
 
     private GliteConstants() {
         // do not instantiate.

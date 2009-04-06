@@ -7,8 +7,8 @@ import gov.lbl.srm.StorageResourceManager.ArrayOfTPutFileRequest;
 import gov.lbl.srm.StorageResourceManager.ArrayOfTUserPermission;
 import gov.lbl.srm.StorageResourceManager.ISRM;
 import gov.lbl.srm.StorageResourceManager.SRMServiceLocator;
-import gov.lbl.srm.StorageResourceManager.SrmGetPermissionRequest;
-import gov.lbl.srm.StorageResourceManager.SrmGetPermissionResponse;
+import gov.lbl.srm.StorageResourceManager.SrmLsRequest;
+import gov.lbl.srm.StorageResourceManager.SrmLsResponse;
 import gov.lbl.srm.StorageResourceManager.SrmPrepareToGetRequest;
 import gov.lbl.srm.StorageResourceManager.SrmPrepareToGetResponse;
 import gov.lbl.srm.StorageResourceManager.SrmPrepareToPutRequest;
@@ -24,10 +24,11 @@ import gov.lbl.srm.StorageResourceManager.SrmStatusOfGetRequestResponse;
 import gov.lbl.srm.StorageResourceManager.SrmStatusOfPutRequestRequest;
 import gov.lbl.srm.StorageResourceManager.SrmStatusOfPutRequestResponse;
 import gov.lbl.srm.StorageResourceManager.TDirOption;
+import gov.lbl.srm.StorageResourceManager.TFileType;
 import gov.lbl.srm.StorageResourceManager.TGetFileRequest;
 import gov.lbl.srm.StorageResourceManager.TGetRequestFileStatus;
+import gov.lbl.srm.StorageResourceManager.TMetaDataPathDetail;
 import gov.lbl.srm.StorageResourceManager.TPermissionMode;
-import gov.lbl.srm.StorageResourceManager.TPermissionReturn;
 import gov.lbl.srm.StorageResourceManager.TPermissionType;
 import gov.lbl.srm.StorageResourceManager.TPutFileRequest;
 import gov.lbl.srm.StorageResourceManager.TPutRequestFileStatus;
@@ -39,6 +40,9 @@ import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 import javax.xml.rpc.ServiceException;
 
@@ -58,6 +62,10 @@ import org.globus.gsi.GlobusCredential;
 import org.globus.gsi.GlobusCredentialException;
 import org.globus.gsi.gssapi.GlobusGSSCredentialImpl;
 import org.globus.gsi.gssapi.auth.NoAuthorization;
+import org.gridlab.gat.io.permissions.attribute.GroupPrincipal;
+import org.gridlab.gat.io.permissions.attribute.PosixFileAttributes;
+import org.gridlab.gat.io.permissions.attribute.PosixFilePermission;
+import org.gridlab.gat.io.permissions.attribute.UserPrincipal;
 import org.ietf.jgss.GSSCredential;
 import org.ietf.jgss.GSSException;
 
@@ -361,27 +369,31 @@ public class SrmConnection {
         }
     }
 
-    public TPermissionReturn[] getPermissions(String uri) throws IOException {
-    	SrmGetPermissionRequest getPermissionRequest = new SrmGetPermissionRequest();
-    	getPermissionRequest.setArrayOfSURLs(new ArrayOfAnyURI(new URI[] { new URI(uri) }));
+    public SRMPosixFile ls(String uri) throws IOException {
+    	SrmLsRequest srmLsRequest = new SrmLsRequest();
+    	srmLsRequest.setArrayOfSURLs(new ArrayOfAnyURI(new URI[] { new URI(uri) }));
+    	srmLsRequest.setAllLevelRecursive(false);
+    	srmLsRequest.setFullDetailedList(true);
     	LOGGER.info("Invoking getPermissions request for URI " + uri);
-    	SrmGetPermissionResponse response = service.srmGetPermission(getPermissionRequest);
+    	SrmLsResponse response = service.srmLs(srmLsRequest);
     	TReturnStatus returnStatus = response.getReturnStatus();
     	LOGGER.info("Return status code " + returnStatus.getStatusCode());
     	if (!returnStatus.getStatusCode().equals(TStatusCode.SRM_SUCCESS)){
     		throw new IOException(returnStatus.getExplanation()+" ("+returnStatus.getStatusCode()+")");
     	}
-    	return response.getArrayOfPermissionReturns().getPermissionArray();
+    	return new SRMPosixFile(response.getDetails().getPathDetailArray()[0]);
     }
     
     public void setPermissions(String uri, TPermissionType tPermissionType, 
-    		TPermissionMode ownerTPermissionMode, 
-    		ArrayOfTUserPermission arrayOfTUserPermissions,
-    		ArrayOfTGroupPermission arrayOfTGroupPermissions) throws IOException {
+    		TPermissionMode ownerTPermissionMode,
+    		ArrayOfTGroupPermission arrayOfTGroupPermissions, 
+    		TPermissionMode otherTPermissionMode,
+    		ArrayOfTUserPermission arrayOfTUserPermissions) throws IOException {
         SrmSetPermissionRequest setPermissionRequest = new SrmSetPermissionRequest();
         setPermissionRequest.setSURL(new URI(uri));
         setPermissionRequest.setPermissionType(tPermissionType);
         setPermissionRequest.setOwnerPermission(ownerTPermissionMode);
+        setPermissionRequest.setOtherPermission(otherTPermissionMode);
         setPermissionRequest.setArrayOfUserPermissions(arrayOfTUserPermissions);
         setPermissionRequest.setArrayOfGroupPermissions(arrayOfTGroupPermissions);
         
@@ -395,5 +407,125 @@ public class SrmConnection {
     	if (!returnStatus.getStatusCode().equals(TStatusCode.SRM_SUCCESS)){
     		throw new IOException(returnStatus.getExplanation()+" ("+returnStatus.getStatusCode()+")");
     	}
+    }
+    
+    public static class SRMPosixFile implements PosixFileAttributes{
+    	final private TMetaDataPathDetail tMetaDataPathDetail;
+    	final private Set<PosixFilePermission> perms;
+    	final private String owner;
+    	final private String group;
+    	final private TPermissionMode ownerTPermissionMode;
+    	final private TPermissionMode groupTPermissionMode;
+    	final private TPermissionMode otherTPermissionMode;
+
+		protected SRMPosixFile(TMetaDataPathDetail tMetaDataPathDetail) throws IOException {    
+    		this.tMetaDataPathDetail = tMetaDataPathDetail;
+    		
+    		this.perms = new HashSet<PosixFilePermission>();
+    		
+    		this.owner = tMetaDataPathDetail.getOwnerPermission().getUserID();
+    		ownerTPermissionMode = tMetaDataPathDetail.getOwnerPermission().getMode();
+    		if(ownerTPermissionMode.toString().contains("R")){
+    			perms.add(PosixFilePermission.OWNER_READ);
+    		}
+    		if(ownerTPermissionMode.toString().contains("W")){
+    			perms.add(PosixFilePermission.OWNER_WRITE);
+    		}
+    		if(ownerTPermissionMode.toString().contains("X")){
+    			perms.add(PosixFilePermission.OWNER_EXECUTE);
+    		}
+    		
+    		this.group = tMetaDataPathDetail.getGroupPermission().getGroupID();
+    		groupTPermissionMode = tMetaDataPathDetail.getGroupPermission().getMode();
+    		if(groupTPermissionMode.toString().contains("R")){
+    			perms.add(PosixFilePermission.GROUP_READ);
+    		}
+    		if(groupTPermissionMode.toString().contains("W")){
+    			perms.add(PosixFilePermission.GROUP_WRITE);
+    		}
+    		if(groupTPermissionMode.toString().contains("X")){
+    			perms.add(PosixFilePermission.GROUP_EXECUTE);
+    		}
+    		
+    		otherTPermissionMode = tMetaDataPathDetail.getOtherPermission();
+    		if(otherTPermissionMode.toString().contains("R")){
+    			perms.add(PosixFilePermission.OTHERS_READ);
+    		}
+    		if(otherTPermissionMode.toString().contains("W")){
+    			perms.add(PosixFilePermission.OTHERS_WRITE);
+    		}
+    		if(otherTPermissionMode.toString().contains("X")){
+    			perms.add(PosixFilePermission.OTHERS_EXECUTE);
+    		}
+		}
+
+		public GroupPrincipal group() {
+			return new SRMGroup(group);
+		}
+
+		public UserPrincipal owner() {
+			return new SRMUser(owner);
+		}
+
+		public Set<PosixFilePermission> permissions() {
+			return perms;
+		}
+
+		public long creationTime() {
+			return (tMetaDataPathDetail.getCreatedAtTime() != null ? tMetaDataPathDetail.getCreatedAtTime().getTimeInMillis(): -1L);
+		}
+
+		public Object fileKey() {
+			return null;
+		}
+
+		public boolean isDirectory() {
+			return tMetaDataPathDetail.getType().equals(TFileType.DIRECTORY);
+		}
+
+		public boolean isOther() {
+			return (!isDirectory() && !isRegularFile() && !isOther());
+		}
+
+		public boolean isRegularFile() {
+			return tMetaDataPathDetail.getType().equals(TFileType.FILE);
+		}
+
+		public boolean isSymbolicLink() {
+			return tMetaDataPathDetail.getType().equals(TFileType.LINK);
+		}
+
+		public long lastAccessTime() {
+			return -1L;
+		}
+
+		public long lastModifiedTime() {
+			return (tMetaDataPathDetail.getLastModificationTime() != null ? tMetaDataPathDetail.getLastModificationTime().getTimeInMillis(): -1L);
+		}
+
+		public int linkCount() {
+			return 0;
+		}
+
+		public TimeUnit resolution() {
+			return TimeUnit.MILLISECONDS;
+		}
+
+		public long size() {
+			return (tMetaDataPathDetail.getSize() != null ? tMetaDataPathDetail.getSize().longValue(): -1L);
+		}
+    	
+		public TPermissionMode getOwnerTPermissionMode() {
+			return ownerTPermissionMode;
+		}
+
+		public TPermissionMode getGroupTPermissionMode() {
+			return groupTPermissionMode;
+		}
+
+		public TPermissionMode getOtherTPermissionMode() {
+			return otherTPermissionMode;
+		}
+		
     }
 }

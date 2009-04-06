@@ -3,8 +3,9 @@ package org.gridlab.gat.io.cpi.glite.srm;
 import gov.lbl.srm.StorageResourceManager.ArrayOfTGroupPermission;
 import gov.lbl.srm.StorageResourceManager.ArrayOfTUserPermission;
 import gov.lbl.srm.StorageResourceManager.TPermissionMode;
-import gov.lbl.srm.StorageResourceManager.TPermissionReturn;
 import gov.lbl.srm.StorageResourceManager.TPermissionType;
+
+import org.gridlab.gat.io.cpi.glite.srm.SrmConnection.SRMPosixFile;
 
 import java.io.IOException;
 import java.util.Map;
@@ -106,9 +107,9 @@ public class SrmConnector {
      * @return the permissions
      * @throws IOException if a problem occurs
      */
-    public TPermissionReturn[] getPermissions(URI srmURI) throws IOException {
+    public SRMPosixFile ls(URI srmURI) throws IOException {
     	SrmConnection connection = new SrmConnection(srmURI.getHost(), proxyPath);
-        return connection.getPermissions(srmURI.toString());
+        return connection.ls(srmURI.toString());
     }
     
     /**
@@ -117,18 +118,21 @@ public class SrmConnector {
      * @param tPermissionType
      * 			How do we set the following permissions (add, delete or change them).
      * @param ownerTPermissionMode
-     * 			The owner permission
-     * @param arrayOfTUserPermissions
-     * 			Array of user permissions
+     * 			The owner permissions
      * @param arrayOfTGroupPermissions
      * 			Array of group permissions
+     * @param otherTPermissionMode
+     * 			The other permissions
+     * @param arrayOfTUserPermissions
+     * 			Array of user permissions
      * @throws IOException If a problem occurs
      */
     public void setPermissions(URI srmURI, TPermissionType tPermissionType, 
-    		TPermissionMode ownerTPermissionMode, 
-    		ArrayOfTUserPermission arrayOfTUserPermissions,
-    		ArrayOfTGroupPermission arrayOfTGroupPermissions) throws IOException {
+    		TPermissionMode ownerTPermissionMode,
+    		ArrayOfTGroupPermission arrayOfTGroupPermissions,
+    		TPermissionMode otherTPermissionMode,
+    		ArrayOfTUserPermission arrayOfTUserPermissions) throws IOException {
     	SrmConnection connection = new SrmConnection(srmURI.getHost(), proxyPath);
-        connection.setPermissions(srmURI.toString(),tPermissionType,ownerTPermissionMode,arrayOfTUserPermissions,arrayOfTGroupPermissions);
+        connection.setPermissions(srmURI.toString(), tPermissionType, ownerTPermissionMode, arrayOfTGroupPermissions, otherTPermissionMode, arrayOfTUserPermissions);
     }
 }
