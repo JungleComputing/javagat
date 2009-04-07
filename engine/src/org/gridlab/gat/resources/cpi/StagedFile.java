@@ -89,7 +89,7 @@ public abstract class StagedFile {
             }
         }
         logger.info("scheme done: " + uri);
-        if (useNameOnly && !uri.hasAbsolutePath()) {
+        if (useNameOnly) {
             if (f.isDirectory()) {
                 try {
                     uri = uri.setPath("");
