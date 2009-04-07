@@ -84,7 +84,7 @@ public abstract class AbstractPosixFileAttributeView extends AbstractBasicFileAt
 		}
 		
 		for (Iterator<String> iterator = attributes.keySet().iterator(); iterator.hasNext();) {
-			String attributeName = (String) iterator.next();
+			String attributeName = iterator.next();
 			if(!requestedAttributesNames.contains(attributeName)){
 				iterator.remove();
 			}
