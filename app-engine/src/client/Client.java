@@ -63,6 +63,90 @@ public class Client {
 		}
 		System.setProperties(properties); 	
 	}
+
+	private static void testFunc(String uri) throws Exception {
+		File file = readFile();
+		JSONObject jsonobj = new JSONObject();
+		JSONArray  jsonarr = new JSONArray();
+
+		String path = "/home/bboterm/app-engine/";
+		
+	    byte[] b = new byte[(int) file.length()];
+	    int size = 0;
+	    
+	    DataInputStream is = new DataInputStream(new FileInputStream(file));	    
+	    
+	    try {
+	    	size = is.read(b);
+	        System.out.println("Bytes read: " + size);
+		} 
+	    catch (EOFException eof) {
+			System.out.println("EOF reached."); 
+		}
+		catch (IOException ioe) {
+			System.out.println("IO error: " + ioe);
+		}		
+		
+		String base64 = new sun.misc.BASE64Encoder().encode(b);
+		
+		jsonobj.put("key1", "value1");
+		jsonobj.put("key2", "value2");
+		jsonobj.put("key3", "value3");
+		
+		jsonarr.add(path);
+		jsonarr.add(jsonobj);
+		jsonarr.add(base64);
+		
+		System.out.println("Base64 encoding: " + base64.length());
+		System.out.println(jsonarr.toString());
+		
+		/* Setting up a new connection. */
+		String protocol = "http://";
+		URL url = new URL(protocol.concat(uri));
+		HttpURLConnection httpc = (HttpURLConnection) url.openConnection();
+		
+		System.out.println("*** Making an HTTP connection to http://" + uri + " ***");
+
+		/* Setting headers. */
+		httpc.setRequestMethod("POST");
+	    httpc.setDoInput(true);
+	    httpc.setDoOutput(true);
+			    
+	    /* Connecting and POSTing. */
+		httpc.connect();
+		OutputStreamWriter osw = new OutputStreamWriter(httpc.getOutputStream());
+		
+		/* Writing JSON data. */
+		osw.write(jsonarr.toString());
+		osw.flush();
+		osw.close();
+		
+		System.out.println("*** Done. HTTP Repsonse... ***");
+		
+		/* Retrieving headers. */
+		System.out.println(httpc.getResponseCode());
+		System.out.println(httpc.getRequestMethod());
+		for (int i = 0; httpc.getHeaderField(i) != null; i++) {
+			System.out.println((httpc.getHeaderFieldKey(i)==null?"":httpc.getHeaderFieldKey(i) + ": ") + httpc.getHeaderField(i));
+		}
+
+		System.out.println("----");
+		
+		BufferedReader in = null;
+		/* Retrieving body. */
+		if(httpc.getResponseCode() != 200) {
+			in = new BufferedReader(new InputStreamReader(httpc.getErrorStream()));
+		}
+		else {
+			in = new BufferedReader(new InputStreamReader(httpc.getInputStream()));
+		}
+		String inputLine;
+
+		while ((inputLine = in.readLine()) != null) {
+			System.out.println(inputLine);
+		}
+		in.close();						
+	}
 	
 	private static void testFind(String uri) throws Exception {
 		JSONObject jsonobj = new JSONObject();
@@ -866,7 +950,7 @@ public class Client {
 		}
 		else {
 			//makeHttpsClientLogin(uri, argv[0]);
-			testAdvertAdd(argv[0]);
+//			testAdvertAdd(argv[0]);
 		}
 		
 		/* Getting a binary response. */
@@ -882,5 +966,8 @@ public class Client {
 		
 		uri = server.concat("queries/find");
 //		testFind(uri);
+		
+		uri = server.concat("func/");
+		testFunc(uri);
 	}
 }

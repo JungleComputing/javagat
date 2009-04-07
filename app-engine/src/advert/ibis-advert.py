@@ -16,6 +16,8 @@
 #
 
 import cgi
+import datetime
+import logging
 
 from google.appengine.api import users
 from google.appengine.ext import webapp
@@ -23,13 +25,15 @@ from google.appengine.ext.webapp.util import run_wsgi_app
 from google.appengine.ext import db
 from django.utils import simplejson 
 
+#Data types (Models)
 class Advert(db.Model):
   path   = db.StringProperty()
   author = db.UserProperty()
   ttl    = db.DateTimeProperty(auto_now_add=True)
   object = db.TextProperty() #base64
   
-  def delmd(self): #delete all metadata of some object
+  #Delete all MetaData associated to this object
+  def delmd(self): 
     query = db.GqlQuery("SELECT * FROM MetaData WHERE path = :1", self.path)
     
     for md in query:
@@ -40,7 +44,10 @@ class MetaData(db.Model):
   keystr = db.StringProperty()
   value  = db.StringProperty()
 
-def auth(self): #authentication
+#Private Functions
+
+#Authentication
+def auth(self): 
   if not users.get_current_user():
     self.error(403)
     self.response.headers['Content-Type'] = 'text/plain'
@@ -55,24 +62,45 @@ def auth(self): #authentication
 
   return 0
 
-def gc(): #garbage collector
+#Storing a JSON object 
+def store(json):
+  advert = Advert()
+  user   = users.get_current_user()
+  
+  advert.path   = json[0] #extract path from message
+  advert.author = user    #store author
+  advert.object = json[2] #extract (base64) object from message
+
+  advert.put() #store object in database
+
+  for k in json[1].keys():
+    metadata        = MetaData(parent=advert)
+    metadata.path   = json[0]
+    metadata.keystr = k
+    metadata.value  = json[1][k]
+    metadata.put() #store metadata
+  
+  return
+
+#Garbage Collector
+def gc(): 
   query = db.GqlQuery("SELECT * FROM Advert WHERE ttl < :1", datetime.datetime.today() + datetime.timedelta(days=-10))
   
   for advert in query: #all entities that can be deleted
     advert.delmd()     #delete all associated metadata
     advert.delete()    #delete the object itself
 
-class MainPage(weba0pp.RequestHandler):
+#Public Functions
+
+class MainPage(webapp.RequestHandler):
   def get(self):
     self.redirect(users.create_login_url(self.request.uri))
 
 class AddObject(webapp.RequestHandler):
   def post(self):
-    advert = Advert()
-    user   = users.get_current_user()
-    
     if auth(self) < 0: return
     
+    response = 201 #standard response
     body = self.request.body
     json = simplejson.loads(body)
     
@@ -80,22 +108,24 @@ class AddObject(webapp.RequestHandler):
     if query.count() > 0: #this entry already exists; overwrite
       query.delmd()  #delete all associated metadata
       query.delete() #delete the object itself
-      self.response.http_status_message(205) #reset content
+      response = 205 #reset content
+
+    try: #try storing the JSON object (in transaction)
+      db.run_in_transaction(store, json) 
+    except db.TransactionFailedError, message:
+      logging.error(message) #log error message
+      gc()                   #run garbage collector
+      
+      try: #second try
+        db.run_in_transaction(store, json)
+      except db.TransactionFailedError, message:
+        logging.error(message) #log the error
+        self.error(503)        #send response to client
+        self.response.headers['Content-Type'] = 'text/plain'
+        self.response.out.write(message)
+        return
     
-    advert.path   = json[0] #extract path from message
-    advert.author = user    #store author
-    advert.object = json[2] #extract (base64) object from message
-    
-    advert.put() #store object in database
-    
-    for k in json[1].keys():
-      metadata        = MetaData(parent=advert)
-      metadata.path   = json[0]
-      metadata.keystr = k
-      metadata.value  = json[1][k]
-      metadata.put()
-    
-    self.response.http_status_message(201) #Created
+    self.response.http_status_message(response) #created/overwritten
     self.response.headers['Content-Type'] = 'text/plain'
     self.response.out.write('Expires: %s', datetime.datetime.today() + datetime.timedelta(days=10)) 
     return
@@ -116,7 +146,6 @@ class DelObject(webapp.RequestHandler):
     for advert in query:
       advert.delmd()  #delete all associated metadata
       advert.delete() #deleting the first entry we find
-      break #and stop
   
     self.response.headers['Content-Type'] = 'text/plain'
     self.response.out.write('OK')

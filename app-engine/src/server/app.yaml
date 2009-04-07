@@ -32,6 +32,10 @@ handlers:
   script: functions.py
   secure: optional
 
+- url: /trans/.*
+  script: transactions.py
+  secure: optional
+
 - url: /.*
   script: bbn230.py
   secure: optional

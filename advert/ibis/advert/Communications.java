@@ -203,20 +203,26 @@ class Communications {
 		osw.close();
 		
 		/* Retrieving response headers. */
-		if (httpc.getResponseCode() != HttpURLConnection.HTTP_OK) {
-			if (httpc.getResponseCode() == HttpURLConnection.HTTP_FORBIDDEN) {
+		switch (httpc.getResponseCode()) {
+			case HttpURLConnection.HTTP_OK:
+				/*fall through*/
+			case HttpURLConnection.HTTP_CREATED:
+			  	/*fall through*/
+			case HttpURLConnection.HTTP_RESET:
+				/*resume*/
+				break;
+			case HttpURLConnection.HTTP_FORBIDDEN:
 				throw new AuthenticationException();
-			}
-			if (httpc.getResponseCode() == HttpURLConnection.HTTP_NOT_FOUND) {
+				/* Resources depleted? */
+			case HttpURLConnection.HTTP_NOT_FOUND:
 				throw new NoSuchElementException();
-			}
-			if (httpc.getResponseCode() == HttpURLConnection.HTTP_REQ_TOO_LONG) {
+			case HttpURLConnection.HTTP_REQ_TOO_LONG:
 				throw new RequestTooLargeException();
-			}
-			if (httpc.getResponseCode() == HttpURLConnection.HTTP_UNAVAILABLE) {
+			case HttpURLConnection.HTTP_UNAVAILABLE:
 				throw new AppEngineResourcesException();
-			}
-			//TODO: throw generic Exception?
+			default:
+				//TODO: throw generic Exception?
+				break;
 		}
 		
 		/* Retrieving body. */

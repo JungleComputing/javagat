@@ -18,6 +18,23 @@ class Bla(db.Model):
 class Joh(db.Model):
   path = db.StringProperty()
   data = db.StringProperty()
+  
+class Advert(db.Model):
+  path   = db.StringProperty()
+  author = db.UserProperty()
+  ttl    = db.DateTimeProperty(auto_now_add=True)
+  object = db.TextProperty() #base64
+  
+  def delmd(self): #delete all metadata of some object
+    query = db.GqlQuery("SELECT * FROM MetaData WHERE path = :1", self.path)
+    
+    for md in query:
+      md.delete()
+
+class MetaData(db.Model):
+  path   = db.StringProperty()
+  keystr = db.StringProperty()
+  value  = db.StringProperty()
 
 def auth(self):
     if not users.get_current_user():
@@ -34,19 +51,29 @@ def auth(self):
     
     return 0
 
+def store(json):
+  advert = Advert()
+  user   = users.get_current_user()
+
+  advert.path   = json[0] #extract path from message
+  advert.author = user    #store author
+  advert.object = json[2] #extract (base64) object from message
+  
+  advert.put() #store object in database
+  
+  for k in json[1].keys():
+    metadata        = MetaData(parent=advert)
+    metadata.path   = json[0]
+    metadata.keystr = k
+    metadata.value  = json[1][k]
+    metadata.put()
+
 class MainPage(webapp.RequestHandler):
-  def get(self):
-    #print auth(self)
+  def post(self):
+    body = self.request.body
+    json = simplejson.loads(body)
     
-    #bla = Joh()
-    #bla.path = "BLA"
-    #bla.data = "DE DATA"
-    #bla.put()
-    
-    query = db.GqlQuery("SELECT * FROM Bla")
-    
-    for q in query:
-      q.funct()
+    store(json)
 
 application = webapp.WSGIApplication(
                                      [('/func/', MainPage)],
