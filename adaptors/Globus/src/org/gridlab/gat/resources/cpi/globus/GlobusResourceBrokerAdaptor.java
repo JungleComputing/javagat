@@ -75,9 +75,6 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
     public GlobusResourceBrokerAdaptor(GATContext gatContext, URI brokerURI)
             throws GATObjectCreationException {
         super(gatContext, brokerURI);
-        if (brokerURI == null) {
-            throw new GATObjectCreationException("brokerURI is null");
-        }
         // if wrong scheme, throw exception!
         if (brokerURI.getScheme() != null) {
             if (!brokerURI.isCompatible("http")

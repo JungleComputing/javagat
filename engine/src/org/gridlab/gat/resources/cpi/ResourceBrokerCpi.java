@@ -65,6 +65,9 @@ public abstract class ResourceBrokerCpi implements ResourceBroker {
             throws GATObjectCreationException {
         this.gatContext = gatContext;
         this.brokerURI = brokerURI;
+        if (brokerURI == null) {
+            throw new GATObjectCreationException("brokerURI is null");
+        }
     }
 
     /*

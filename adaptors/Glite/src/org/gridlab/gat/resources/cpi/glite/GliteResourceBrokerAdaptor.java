@@ -94,8 +94,9 @@ public class GliteResourceBrokerAdaptor extends ResourceBrokerCpi {
 
         // if not a broker URI itself but an LDAP address is given, retrieve a
         // broker URI
-        if (brokerURI.getScheme().equals("ldap")
-                || brokerURI.getScheme().equals("ldaps")) {
+        if ((brokerURI.getScheme() != null)
+                && ((brokerURI.getScheme().equals("ldap") || brokerURI
+                        .getScheme().equals("ldaps")))) {
             try {
                 ldapResourceFinder = new LDAPResourceFinder(gatContext,
                         brokerURI);
