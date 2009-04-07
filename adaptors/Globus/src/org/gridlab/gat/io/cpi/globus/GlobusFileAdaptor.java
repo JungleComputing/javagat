@@ -818,6 +818,10 @@ public abstract class GlobusFileAdaptor extends FileCpi {
                 // flag, we have the right entry. But we could also have listed
                 // the contents of a directory which contains a single entry.
                 FileInfo tmp = (FileInfo) v.get(0);
+                // Device files get ? as name.
+                if (tmp.isDevice()) {
+                    tmp.setName(remotePath);
+                }
                 if (tmp.getName().equals(remotePath)) {
                     cachedInfo = tmp;
                     return tmp;
