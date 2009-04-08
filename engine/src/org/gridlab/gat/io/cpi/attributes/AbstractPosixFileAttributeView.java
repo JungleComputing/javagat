@@ -1,4 +1,4 @@
-package org.gridlab.gat.io.permissions;
+package org.gridlab.gat.io.cpi.attributes;
 
 import java.io.IOException;
 import java.util.HashSet;
