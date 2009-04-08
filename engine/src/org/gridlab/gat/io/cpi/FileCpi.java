@@ -21,7 +21,7 @@ import org.gridlab.gat.engine.GATEngine;
 import org.gridlab.gat.engine.util.NoInfoLogging;
 import org.gridlab.gat.io.File;
 import org.gridlab.gat.io.FileInterface;
-import org.gridlab.gat.io.permissions.attribute.FileAttributeView;
+import org.gridlab.gat.io.attributes.FileAttributeView;
 import org.gridlab.gat.monitoring.cpi.MonitorableCpi;
 
 /**

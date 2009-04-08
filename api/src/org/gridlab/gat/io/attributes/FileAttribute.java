@@ -23,7 +23,7 @@
  * have any questions.
  */
 
-package org.gridlab.gat.io.permissions.attribute;
+package org.gridlab.gat.io.attributes;
 
 /**
  * An object that encapsulates the value of a file attribute that can be set

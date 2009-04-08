@@ -7,7 +7,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.gridlab.gat.URI;
-import org.gridlab.gat.io.permissions.attribute.*;
+import org.gridlab.gat.io.attributes.*;
 
 /**
  * @author Jerome Revillard

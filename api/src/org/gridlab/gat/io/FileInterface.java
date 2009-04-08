@@ -10,7 +10,7 @@ import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.URI;
 import org.gridlab.gat.advert.Advertisable;
-import org.gridlab.gat.io.permissions.attribute.FileAttributeView;
+import org.gridlab.gat.io.attributes.FileAttributeView;
 import org.gridlab.gat.monitoring.Monitorable;
 
 /**

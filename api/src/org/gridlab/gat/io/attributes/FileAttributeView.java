@@ -23,7 +23,7 @@
  * have any questions.
  */
 
-package org.gridlab.gat.io.permissions.attribute;
+package org.gridlab.gat.io.attributes;
 
 /**
  * An attribute view that is a read-only or updatable view of non-opaque

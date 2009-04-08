@@ -23,7 +23,7 @@ import org.globus.gsi.gssapi.GSSConstants;
 import org.globus.gsi.gssapi.GlobusGSSCredentialImpl;
 import org.globus.gsi.gssapi.GlobusGSSManagerImpl;
 import org.gridforum.jgss.ExtendedGSSContext;
-import org.gridlab.gat.io.permissions.attribute.*;
+import org.gridlab.gat.io.attributes.*;
 import org.ietf.jgss.GSSCredential;
 import org.ietf.jgss.GSSException;
 import org.ietf.jgss.GSSManager;

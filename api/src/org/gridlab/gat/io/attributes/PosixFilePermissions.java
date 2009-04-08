@@ -23,9 +23,9 @@
  * have any questions.
  */
 
-package org.gridlab.gat.io.permissions.attribute;
+package org.gridlab.gat.io.attributes;
 
-import static org.gridlab.gat.io.permissions.attribute.PosixFilePermission.*;
+import static org.gridlab.gat.io.attributes.PosixFilePermission.*;
 
 import java.util.*;
 

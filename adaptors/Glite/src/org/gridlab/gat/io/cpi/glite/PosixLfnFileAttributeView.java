@@ -9,13 +9,13 @@ import java.util.concurrent.TimeUnit;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.URI;
+import org.gridlab.gat.io.attributes.*;
 import org.gridlab.gat.io.cpi.attributes.AbstractPosixFileAttributeView;
 import org.gridlab.gat.io.cpi.glite.lfc.LfcConnection;
 import org.gridlab.gat.io.cpi.glite.lfc.LfcConnector;
 import org.gridlab.gat.io.cpi.glite.lfc.LfcUtil;
 import org.gridlab.gat.io.cpi.glite.lfc.LfcConnection.LFCReplica;
 import org.gridlab.gat.io.cpi.glite.srm.SrmConnector;
-import org.gridlab.gat.io.permissions.attribute.*;
 import org.gridlab.gat.resources.cpi.glite.GliteConstants;
 import org.gridlab.gat.security.glite.GliteSecurityUtils;
 

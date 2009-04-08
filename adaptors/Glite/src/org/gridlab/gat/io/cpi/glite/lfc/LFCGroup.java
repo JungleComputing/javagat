@@ -1,6 +1,6 @@
 package org.gridlab.gat.io.cpi.glite.lfc;
 
-import org.gridlab.gat.io.permissions.attribute.GroupPrincipal;
+import org.gridlab.gat.io.attributes.GroupPrincipal;
 
 /**
  * @author Jerome Revillard

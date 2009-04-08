@@ -23,7 +23,7 @@
  * have any questions.
  */
 
-package org.gridlab.gat.io.permissions.attribute;
+package org.gridlab.gat.io.attributes;
 
 /**
  * A {@code UserPrincipal} representing a <em>group identity</em>, used to

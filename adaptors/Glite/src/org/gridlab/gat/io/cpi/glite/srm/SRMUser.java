@@ -1,6 +1,6 @@
 package org.gridlab.gat.io.cpi.glite.srm;
 
-import org.gridlab.gat.io.permissions.attribute.UserPrincipal;
+import org.gridlab.gat.io.attributes.UserPrincipal;
 
 /**
  * @author Jerome Revillard

@@ -6,8 +6,8 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import org.gridlab.gat.URI;
-import org.gridlab.gat.io.permissions.attribute.BasicFileAttributeView;
-import org.gridlab.gat.io.permissions.attribute.BasicFileAttributes;
+import org.gridlab.gat.io.attributes.BasicFileAttributeView;
+import org.gridlab.gat.io.attributes.BasicFileAttributes;
 
 /**
  * @author Jerome Revillar

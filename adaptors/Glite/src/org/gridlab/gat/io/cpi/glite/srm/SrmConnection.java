@@ -62,10 +62,10 @@ import org.globus.gsi.GlobusCredential;
 import org.globus.gsi.GlobusCredentialException;
 import org.globus.gsi.gssapi.GlobusGSSCredentialImpl;
 import org.globus.gsi.gssapi.auth.NoAuthorization;
-import org.gridlab.gat.io.permissions.attribute.GroupPrincipal;
-import org.gridlab.gat.io.permissions.attribute.PosixFileAttributes;
-import org.gridlab.gat.io.permissions.attribute.PosixFilePermission;
-import org.gridlab.gat.io.permissions.attribute.UserPrincipal;
+import org.gridlab.gat.io.attributes.GroupPrincipal;
+import org.gridlab.gat.io.attributes.PosixFileAttributes;
+import org.gridlab.gat.io.attributes.PosixFilePermission;
+import org.gridlab.gat.io.attributes.UserPrincipal;
 import org.ietf.jgss.GSSCredential;
 import org.ietf.jgss.GSSException;
 
