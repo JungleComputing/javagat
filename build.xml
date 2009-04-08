@@ -10,7 +10,6 @@
 		<ant dir="tests" />
 		<ant dir="engine" />
 		<ant dir="adaptors" />
-		<ant dir="api" target="javadoc" />
 	</target>
 
 	<target name="android" depends="clean" description="build everything">
@@ -18,9 +17,11 @@
 		<ant dir="tests" />
 		<ant dir="engine" target="android" />
 		<ant dir="adaptors" />
-		<ant dir="api" target="javadoc" />
 	</target>
 
+	<target name="javadoc" description="build javadoc">
+		<ant dir="api" target="javadoc" />
+	</target>
 
 	<target name="api" description="build the api">
 		<ant dir="api" />
@@ -43,6 +44,9 @@
 		<ant dir="tests" target="clean" />
 		<ant dir="adaptors" target="clean" />
 		<delete dir="lib" />
+	</target>
+
+	<target name="allclean" depends="clean" description="clean up everything">
 		<delete dir="doc/javadoc" />
 	</target>
 
