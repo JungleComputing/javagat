@@ -9,7 +9,7 @@ cd api; ant clean; rm -rf tmp_eclipse*; cd -
 cd engine; ant clean; rm -rf tmp_eclipse*; cd -
 cd adaptors; ant clean; rm -rf tmp_eclipse*; cd -
 cd tests; ant clean; rm -rf tmp_eclipse*; cd -
-ant
+ant build javadoc
 rm -rf JavaGAT-$1
 mkdir JavaGAT-$1
 cp -R lib JavaGAT-$1

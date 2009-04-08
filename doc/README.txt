@@ -22,11 +22,11 @@ variable.
 
 For example (depending on the os and shell you use):
 
-export GAT_LOCATION=/home/rob/JavaGAT-2.0.4.
+export GAT_LOCATION=/home/rob/JavaGAT-2.0.5.
 
 or 
 
-set GAT_LOCATION=C:\JavaGAT-2.0.4.
+set GAT_LOCATION=C:\JavaGAT-2.0.5.
 
 you might want to put this line in your .bashrc (or equivalent)
 
@@ -39,7 +39,7 @@ To build the JavaGAT, you need the Ant tool.
 Ant is open source software and can be downloaded from www.apache.org.
 
 You can build the JavaGAT engine by typing "ant" in the Java GAT root
-directory.
+directory. To build the javadoc of the JavaGAT API, type "ant javadoc".
 
 
 RUNNING GAT APPLICATIONS
