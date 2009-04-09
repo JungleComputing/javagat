@@ -38,9 +38,9 @@ public class CommandlineSshResourceBrokerAdaptor extends ResourceBrokerCpi {
         return capabilities;
     }
     
-    private static final String SSH_STRICT_HOST_KEY_CHECKING = "commandlinesshresourcebroker.StrictHostKeyChecking";
+    private static final String SSH_STRICT_HOST_KEY_CHECKING = "commandlinessh.StrictHostKeyChecking";
     
-    private static final String SSH_PORT_STRING = "commandlinesshresourcebroker.ssh.port";    
+    private static final String SSH_PORT_STRING = "commandlinessh.ssh.port";    
 
     public static final int SSH_PORT = 22;
     

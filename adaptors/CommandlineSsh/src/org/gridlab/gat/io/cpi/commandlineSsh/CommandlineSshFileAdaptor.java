@@ -33,9 +33,9 @@ public class CommandlineSshFileAdaptor extends FileCpi {
         return capabilities;
     }
     
-    private static final String SSH_PORT_STRING = "commandlinesshfile.ssh.port";
+    private static final String SSH_PORT_STRING = "commandlinessh.ssh.port";
     
-    private static final String SSH_STRICT_HOST_KEY_CHECKING = "commandlinesshfile.StrictHostKeyChecking";
+    private static final String SSH_STRICT_HOST_KEY_CHECKING = "commandlinessh.StrictHostKeyChecking";
     
     public static final int SSH_PORT = 22;
    
