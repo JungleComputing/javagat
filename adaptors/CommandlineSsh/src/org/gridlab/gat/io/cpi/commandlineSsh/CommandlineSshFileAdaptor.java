@@ -34,23 +34,30 @@ public class CommandlineSshFileAdaptor extends FileCpi {
     }
     
     private static final String SSH_PORT_STRING = "commandlinesshfile.ssh.port";
-
+    
+    private static final String SSH_STRICT_HOST_KEY_CHECKING = "commandlinesshfile.StrictHostKeyChecking";
+    
+    public static final int SSH_PORT = 22;
+   
     public static Preferences getSupportedPreferences() {
         Preferences p = FileCpi.getSupportedPreferences();
-        p.put(SSH_PORT_STRING, "22");
+        p.put(SSH_PORT_STRING, "" + SSH_PORT);
+        p.put(SSH_STRICT_HOST_KEY_CHECKING, "yes");
         return p;
     }
 
     protected static Logger logger = LoggerFactory
             .getLogger(CommandlineSshFileAdaptor.class);
 
-    public static final int SSH_PORT = 22;
-
     private boolean windows = false;
 
     private final int ssh_port;
     
+    private final String strictHostKeyChecking;
+    
     private URI fixedURI;
+    
+    private Map<String, String> securityInfo = null;
     
     /**
      * @param gatContext
@@ -76,14 +83,52 @@ public class CommandlineSshFileAdaptor extends FileCpi {
         
         // TODO: test if remote machine is windows, and if so, fail.
 
-        // Allow different port, so that this adaptor can be used over an
-        // ssh tunnel. --Ceriel
-        String port = (String) gatContext.getPreferences().get(SSH_PORT_STRING);
-        if (port != null) {
-            ssh_port = Integer.parseInt(port);
+        /* allow port override */
+        if (location.getPort() != -1) {
+            ssh_port = location.getPort();
         } else {
-            ssh_port = SSH_PORT;
+            String port = (String) gatContext.getPreferences().get(SSH_PORT_STRING);
+            if (port != null) {
+                ssh_port = Integer.parseInt(port);
+            } else {
+                ssh_port = SSH_PORT;
+            }
         }
+        
+        String chking = (String) gatContext.getPreferences().get(SSH_STRICT_HOST_KEY_CHECKING);
+        if (chking != null) {
+            if ("yes".equals(chking) || "no".equals(chking)) {
+                strictHostKeyChecking = chking;
+            } else {
+                logger.warn("Unrecognized value for preference "
+                        + SSH_STRICT_HOST_KEY_CHECKING + ": " + chking
+                        + ", using default: yes");
+                strictHostKeyChecking = "yes";
+            }
+        } else {
+            strictHostKeyChecking = "yes";
+        }
+        
+        try {
+            securityInfo = CommandlineSshSecurityUtils.getSshCredential(
+                    gatContext, "commandlinessh", fixedURI, ssh_port);
+        } catch (Exception e) {
+            logger
+                    .info("CommandlineSshFileAdaptor: failed to retrieve credentials"
+                            + e);
+        }
+
+        if (securityInfo == null) {
+            throw new GATObjectCreationException(
+                    "Unable to retrieve user info for authentication");
+        }
+
+        if (securityInfo.containsKey("privatekeyfile")) {
+            if (logger.isDebugEnabled()) {
+                logger.debug("key file argument not supported yet");
+            }
+        }
+
     }
 
     private boolean runSshCommand(boolean writeError, String... params)
@@ -190,9 +235,6 @@ public class CommandlineSshFileAdaptor extends FileCpi {
     }
 
     public boolean delete() throws GATInvocationException {
-        if (windows) {
-            throw new UnsupportedOperationException("Not implemented");
-        }
         if (!exists()) {
             return false;
         }
@@ -200,37 +242,38 @@ public class CommandlineSshFileAdaptor extends FileCpi {
     }
 
     public boolean isDirectory() throws GATInvocationException {
-        if (windows) {
-            throw new UnsupportedOperationException("Not implemented");
-        }
         return runSshCommand(true, "test",  "-d", fixedURI.getPath());
     }
 
     public boolean isFile() throws GATInvocationException {
-        if (windows) {
-            throw new UnsupportedOperationException("Not implemented");
-        }
         return runSshCommand(true, "test",  "-f", fixedURI.getPath());
     }
 
     public boolean exists() throws GATInvocationException {
-        if (windows) {
-            throw new UnsupportedOperationException("Not implemented");
-        }
         return runSshCommand(true, "test", "-e", fixedURI.getPath());
     }
 
     private ArrayList<String> getSshCommand() throws GATInvocationException {
-        ArrayList<String> cmd = new ArrayList<String>();
-        int p = location.getPort();
-        String portString = "" + ssh_port;
-        if (p != -1) {
-            portString = "" + p;
+        
+        if (windows) {
+            throw new UnsupportedOperationException("Not implemented");
         }
+        ArrayList<String> cmd = new ArrayList<String>();
+
         cmd.add("ssh");
         cmd.add("-p");
-        cmd.add("" + portString);
-        cmd.add(location.resolveHost());
+        cmd.add("" + ssh_port);
+        cmd.add("-o");
+        cmd.add("BatchMode=yes");
+        cmd.add("-o");
+        cmd.add("StrictHostKeyChecking=" + strictHostKeyChecking);
+        
+        String username = securityInfo.get("username");
+        if (location.getUserInfo() != null) {
+            username = location.getUserInfo();
+        }
+
+        cmd.add(username + "@" + location.resolveHost());
         return cmd;
     }
 
@@ -279,36 +322,6 @@ public class CommandlineSshFileAdaptor extends FileCpi {
 
     protected void copyLocaltoLocal(URI src, URI dest)
             throws GATInvocationException {
-        Map<String, String> securityInfo = null;
-
-        try {
-            securityInfo = CommandlineSshSecurityUtils.getSshCredential(
-                    gatContext, "commandlinessh", dest, ssh_port);
-        } catch (Exception e) {
-            logger
-                    .info("CommandlineSshFileAdaptor: failed to retrieve credentials"
-                            + e);
-        }
-
-        if (securityInfo == null) {
-            throw new GATInvocationException(
-                    "Unable to retrieve user info for authentication");
-        }
-
-        if (securityInfo.containsKey("privatekeyfile")) {
-            if (logger.isDebugEnabled()) {
-                logger.debug("key file argument not supported yet");
-            }
-        }
-
-        String username = securityInfo.get("username");
-
-        /* allow port override */
-        int port = src.getPort();
-        /* it will always return -1 for user@host:path */
-        if (port == -1) {
-            port = ssh_port;
-        }
 
         if (gatContext.getPreferences().containsKey("file.create")) {
             if (((String) gatContext.getPreferences().get("file.create"))
@@ -330,7 +343,7 @@ public class CommandlineSshFileAdaptor extends FileCpi {
 
         if (logger.isDebugEnabled()) {
             logger.debug("CommandlineSsh: Prepared session for location " + src
-                    + " with username: " + username + "; host: localhost");
+                    + "; host: localhost");
         }
 
         ArrayList<String> command = new ArrayList<String>();
@@ -340,7 +353,7 @@ public class CommandlineSshFileAdaptor extends FileCpi {
         if (windows) {
             command.add("-unat=yes");
             command.add("-P");
-            command.add("" + port);
+            command.add("" + ssh_port);
             
             if (!securityInfo.containsKey("password")) { // public/private
                 // key
@@ -387,11 +400,11 @@ public class CommandlineSshFileAdaptor extends FileCpi {
                 command.add("-r");
             }
             command.add("-P");
-            command.add("" + port);
+            command.add("" + ssh_port);
             command.add("-o");
             command.add("BatchMode=yes");
             command.add("-o");
-            command.add("StrictHostKeyChecking=yes");
+            command.add("StrictHostKeyChecking=" + strictHostKeyChecking);
         }
         command.add(src.getPath());
         command.add(dest.getPath());
@@ -414,35 +427,10 @@ public class CommandlineSshFileAdaptor extends FileCpi {
     }
 
     protected void copyToLocal(URI src, URI dest) throws GATInvocationException {
-        Map<String, String> securityInfo = null;
-
-        try {
-            securityInfo = CommandlineSshSecurityUtils.getSshCredential(
-                    gatContext, "commandlinessh", dest, ssh_port);
-        } catch (Exception e) {
-            logger
-                    .info("CommandlineSshFileAdaptor: failed to retrieve credentials"
-                            + e);
-        }
-
-        if (securityInfo == null) {
-            throw new GATInvocationException(
-                    "Unable to retrieve user info for authentication");
-        }
-
-        if (securityInfo.containsKey("privatekeyfile")) {
-            if (logger.isDebugEnabled()) {
-                logger.debug("key file argument not supported yet");
-            }
-        }
 
         String username = securityInfo.get("username");
-
-        /* allow port override */
-        int port = src.getPort();
-        /* it will always return -1 for user@host:path */
-        if (port == -1) {
-            port = ssh_port;
+        if (src.getUserInfo() != null) {
+            username = src.getUserInfo();
         }
 
         if (gatContext.getPreferences().containsKey("file.create")) {
@@ -473,7 +461,7 @@ public class CommandlineSshFileAdaptor extends FileCpi {
         if (windows) {
             command.add("-unat=yes");           
             command.add("-P");
-            command.add("" + port);
+            command.add("" + ssh_port);
             if (!securityInfo.containsKey("password")) { // public/private
                 // key
                 int slot = 0;
@@ -519,11 +507,11 @@ public class CommandlineSshFileAdaptor extends FileCpi {
                 command.add("-r");
             }
             command.add("-P");
-            command.add("" + port);
+            command.add("" + ssh_port);
             command.add("-o");
             command.add("BatchMode=yes");
             command.add("-o");
-            command.add("StrictHostKeyChecking=yes");
+            command.add("StrictHostKeyChecking=" + strictHostKeyChecking);
         }
         command.add(username + "@" + src.resolveHost() + ":" + src.getPath());
         command.add(dest.getPath());
@@ -548,10 +536,10 @@ public class CommandlineSshFileAdaptor extends FileCpi {
 
     protected void copyToRemote(URI src, URI dest)
             throws GATInvocationException {
-        Map<String, String> securityInfo = null;
+        Map<String, String> destSecurityInfo = null;
 
         try {
-            securityInfo = CommandlineSshSecurityUtils.getSshCredential(
+            destSecurityInfo = CommandlineSshSecurityUtils.getSshCredential(
                     gatContext, "commandlinessh", dest, ssh_port);
         } catch (Exception e) {
             logger
@@ -559,19 +547,19 @@ public class CommandlineSshFileAdaptor extends FileCpi {
                             + e);
         }
 
-        if (securityInfo == null) {
+        if (destSecurityInfo == null) {
             throw new GATInvocationException(
                     "Unable to retrieve user info for authentication");
         }
 
-        if (securityInfo.containsKey("privatekeyfile")) {
+        if (destSecurityInfo.containsKey("privatekeyfile")) {
             if (logger.isDebugEnabled()) {
                 logger.debug("key file argument not supported yet");
             }
         }
 
         // overwrite the username with the username of the dest, if possible.
-        String username = securityInfo.get("username");
+        String username = destSecurityInfo.get("username");
         if (dest.getUserInfo() != null) {
             username = dest.getUserInfo();
         }
@@ -612,17 +600,17 @@ public class CommandlineSshFileAdaptor extends FileCpi {
             command.add("-unat=yes");           
             command.add("-P");
             command.add("" + port);
-            if (!securityInfo.containsKey("password")) { // public/private
+            if (!destSecurityInfo.containsKey("password")) { // public/private
                 // key
                 int slot = 0;
                 try {
-                    slot = Integer.parseInt(securityInfo.get("privatekeyslot"));
+                    slot = Integer.parseInt(destSecurityInfo.get("privatekeyslot"));
                 } catch (Exception e) {
                     // ignore, use the default value.
                 }
                 command.add("-pk=" + slot);
             } else { // password               
-                command.add(" -pw=" + securityInfo.get("password"));
+                command.add(" -pw=" + destSecurityInfo.get("password"));
             }
         } else {
             if (determineIsDirectory()) {
@@ -650,7 +638,7 @@ public class CommandlineSshFileAdaptor extends FileCpi {
             command.add("-o");
             command.add("BatchMode=yes");
             command.add("-o");
-            command.add("StrictHostKeyChecking=yes");
+            command.add("StrictHostKeyChecking=" + strictHostKeyChecking);
         }
         command.add(src.getPath());
         command.add(username + "@" + dest.resolveHost() + ":" + dest.getPath());

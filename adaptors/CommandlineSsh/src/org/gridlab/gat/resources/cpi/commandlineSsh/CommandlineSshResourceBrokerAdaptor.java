@@ -12,6 +12,7 @@ import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.GATObjectCreationException;
 import org.gridlab.gat.MethodNotApplicableException;
+import org.gridlab.gat.Preferences;
 import org.gridlab.gat.URI;
 import org.gridlab.gat.engine.GATEngine;
 import org.gridlab.gat.engine.util.StreamForwarder;
@@ -36,13 +37,30 @@ public class CommandlineSshResourceBrokerAdaptor extends ResourceBrokerCpi {
 
         return capabilities;
     }
+    
+    private static final String SSH_STRICT_HOST_KEY_CHECKING = "commandlinesshresourcebroker.StrictHostKeyChecking";
+    
+    private static final String SSH_PORT_STRING = "commandlinesshresourcebroker.ssh.port";    
+
+    public static final int SSH_PORT = 22;
+    
+    public static Preferences getSupportedPreferences() {
+        Preferences p = ResourceBrokerCpi.getSupportedPreferences();
+        p.put(SSH_STRICT_HOST_KEY_CHECKING, "yes");
+        p.put(SSH_PORT_STRING, "" + SSH_PORT);
+        return p;
+    }
 
     protected static Logger logger = LoggerFactory
             .getLogger(CommandlineSshResourceBrokerAdaptor.class);
-
-    public static final int SSH_PORT = 22;
+    
+    private final int ssh_port;
 
     private boolean windows = false;
+    
+    private final String strictHostKeyChecking;
+    
+    private Map<String, String> securityInfo;
 
     public static void init() {
         GATEngine.registerUnmarshaller(CommandlineSshJob.class);
@@ -79,6 +97,54 @@ public class CommandlineSshResourceBrokerAdaptor extends ResourceBrokerCpi {
         String osname = System.getProperty("os.name");
         if (osname.startsWith("Windows")) {
             windows = true;
+        }
+        
+        /* allow port override */
+        if (brokerURI.getPort() != -1) {
+            ssh_port = brokerURI.getPort();
+        } else {
+            String port = (String) gatContext.getPreferences().get(SSH_PORT_STRING);
+            if (port != null) {
+                ssh_port = Integer.parseInt(port);
+            } else {
+                ssh_port = SSH_PORT;
+            }
+        }
+        
+        String chking = (String) gatContext.getPreferences().get(SSH_STRICT_HOST_KEY_CHECKING);
+        if (chking != null) {
+            if ("yes".equals(chking) || "no".equals(chking)) {
+                strictHostKeyChecking = chking;
+            } else {
+                logger.warn("Unrecognized value for preference "
+                        + SSH_STRICT_HOST_KEY_CHECKING + ": " + chking
+                        + ", using default: yes");
+                strictHostKeyChecking = "yes";
+            }
+        } else {
+            strictHostKeyChecking = "yes";
+        }
+        
+        
+        try {
+            securityInfo = CommandlineSshSecurityUtils.getSshCredential(
+                    gatContext, "commandlinessh", brokerURI, ssh_port);
+        } catch (Throwable e) {
+            logger
+                    .info("CommandlineSshFileAdaptor: failed to retrieve credentials"
+                            + e);
+            securityInfo = null;
+        }
+
+        if (securityInfo == null) {
+            throw new GATObjectCreationException(
+                    "Unable to retrieve user info for authentication");
+        }
+
+        if (securityInfo.containsKey("privatekeyfile")) {
+            if (logger.isDebugEnabled()) {
+                logger.debug("key file argument not supported yet");
+            }
         }
     }
 
@@ -128,13 +194,6 @@ public class CommandlineSshResourceBrokerAdaptor extends ResourceBrokerCpi {
             host = "localhost";
         }
 
-        /* allow port override */
-        int port = brokerURI.getPort();
-        /* it will always return -1 for user@host:path */
-        if (port == -1) {
-            port = SSH_PORT;
-        }
-
         // create the sandbox
         Sandbox sandbox = new Sandbox(gatContext, description, authority, null,
                 true, false, false, false);
@@ -159,9 +218,6 @@ public class CommandlineSshResourceBrokerAdaptor extends ResourceBrokerCpi {
         // and let the sandbox prestage the files!
         sandbox.prestage();
 
-        Map<String, String> securityInfo = CommandlineSshSecurityUtils
-                .getSshCredential(gatContext, "commandlinessh", brokerURI,
-                        SSH_PORT);
         String username = securityInfo.get("username");
         String password = securityInfo.get("password");
         int privateKeySlot = -1;
@@ -182,6 +238,8 @@ public class CommandlineSshResourceBrokerAdaptor extends ResourceBrokerCpi {
             command.add("sexec");
             command.add(username + "@" + authority);
             command.add("-unat=yes");
+            command.add("-P");
+            command.add("" + ssh_port);
             if (password == null) { // public/private key
                 int slot = privateKeySlot;
                 if (slot == -1) { // not set by the user, assume he only has
@@ -207,11 +265,11 @@ public class CommandlineSshResourceBrokerAdaptor extends ResourceBrokerCpi {
             // If we don't, there is no way to kill the remote process.
             command.add("/usr/bin/ssh");
             command.add("-p");
-            command.add("" + port);
+            command.add("" + ssh_port);
             command.add("-o");
             command.add("BatchMode=yes");
             command.add("-o");
-            command.add("StrictHostKeyChecking=yes");
+            command.add("StrictHostKeyChecking=" + strictHostKeyChecking);
             command.add("-t");
             command.add(username + "@" + host);
             if (sandbox.getSandboxPath() != null) {
