@@ -24,6 +24,7 @@ import org.gridlab.gat.resources.WrapperJobDescription;
 import org.gridlab.gat.resources.cpi.ResourceBrokerCpi;
 import org.gridlab.gat.resources.cpi.Sandbox;
 import org.gridlab.gat.resources.cpi.WrapperJobCpi;
+import org.gridlab.gat.security.sshtrilead.HostKeyVerifier;
 
 import com.trilead.ssh2.Session;
 
@@ -59,6 +60,10 @@ public class SshTrileadResourceBrokerAdaptor extends ResourceBrokerCpi {
         preferences.put("sshtrilead.stoppable", "false");
         preferences.put("sshtrilead.caching.iswindows", "true");
         preferences.put("sshtrilead.caching.iscsh", "true");
+        
+        // Added: preferences for hostkey checking. Defaults are what used to be ....
+        preferences.put("sshtrilead.strictHostKeyChecking", "false");
+        preferences.put("sshtrilead.noHostKeyChecking", "true");
         return preferences;
     }
 
@@ -84,6 +89,8 @@ public class SshTrileadResourceBrokerAdaptor extends ResourceBrokerCpi {
     private final boolean isWindowsCacheEnable;
     
     private final boolean isCshCacheEnable;
+    
+    private HostKeyVerifier verifier;
 
     /**
      * This method constructs a SshResourceBrokerAdaptor instance corresponding
@@ -95,6 +102,10 @@ public class SshTrileadResourceBrokerAdaptor extends ResourceBrokerCpi {
     public SshTrileadResourceBrokerAdaptor(GATContext gatContext, URI brokerURI)
             throws Exception {
         super(gatContext, brokerURI);
+        
+        // These used to be the defaults, so there.
+        boolean noHostKeyChecking = true;
+        boolean strictHostKeyChecking = false;
 
         // if wrong scheme, throw exception!
         if (brokerURI.getScheme() != null) {
@@ -127,6 +138,14 @@ public class SshTrileadResourceBrokerAdaptor extends ResourceBrokerCpi {
                 .equalsIgnoreCase("true");
         isCshCacheEnable = ((String) p.get("sshtrilead.caching.iscsh", "true"))
                 .equalsIgnoreCase("true");
+        noHostKeyChecking = ((String) p.get("sshtrilead.noHostKeyChecking", "true"))
+                .equalsIgnoreCase("true");
+        strictHostKeyChecking = ((String) p.get("sshtrilead.strictHostKeyChecking", "true"))
+                .equalsIgnoreCase("true");
+        
+        verifier = new HostKeyVerifier(false, strictHostKeyChecking, noHostKeyChecking);
+        
+        
     }
 
     /*
@@ -248,12 +267,12 @@ public class SshTrileadResourceBrokerAdaptor extends ResourceBrokerCpi {
             try {
                 session = SshTrileadFileAdaptor.getConnection(brokerURI,
                         gatContext, connectionCacheEnable, tcpNoDelay,
-                        client2serverCiphers, server2clientCiphers)
+                        client2serverCiphers, server2clientCiphers, verifier)
                         .openSession();
             } catch (IOException e) {
                 session = SshTrileadFileAdaptor.getConnection(brokerURI,
                         gatContext, false, tcpNoDelay, client2serverCiphers,
-                        server2clientCiphers).openSession();
+                        server2clientCiphers, verifier).openSession();
             }
             if (stoppable) {
                 logger.info("starting dumb pty");

@@ -42,7 +42,7 @@ public class CommandlineSshFileAdaptor extends FileCpi {
     public static Preferences getSupportedPreferences() {
         Preferences p = FileCpi.getSupportedPreferences();
         p.put(SSH_PORT_STRING, "" + SSH_PORT);
-        p.put(SSH_STRICT_HOST_KEY_CHECKING, "yes");
+        p.put(SSH_STRICT_HOST_KEY_CHECKING, "true");
         return p;
     }
 
@@ -53,7 +53,7 @@ public class CommandlineSshFileAdaptor extends FileCpi {
 
     private final int ssh_port;
     
-    private final String strictHostKeyChecking;
+    private final boolean strictHostKeyChecking;
     
     private URI fixedURI;
     
@@ -95,19 +95,8 @@ public class CommandlineSshFileAdaptor extends FileCpi {
             }
         }
         
-        String chking = (String) gatContext.getPreferences().get(SSH_STRICT_HOST_KEY_CHECKING);
-        if (chking != null) {
-            if ("yes".equals(chking) || "no".equals(chking)) {
-                strictHostKeyChecking = chking;
-            } else {
-                logger.warn("Unrecognized value for preference "
-                        + SSH_STRICT_HOST_KEY_CHECKING + ": " + chking
-                        + ", using default: yes");
-                strictHostKeyChecking = "yes";
-            }
-        } else {
-            strictHostKeyChecking = "yes";
-        }
+        strictHostKeyChecking = ((String) gatContext.getPreferences().get(SSH_STRICT_HOST_KEY_CHECKING, "true"))
+                .equalsIgnoreCase("true");
         
         try {
             securityInfo = CommandlineSshSecurityUtils.getSshCredential(
@@ -266,7 +255,7 @@ public class CommandlineSshFileAdaptor extends FileCpi {
         cmd.add("-o");
         cmd.add("BatchMode=yes");
         cmd.add("-o");
-        cmd.add("StrictHostKeyChecking=" + strictHostKeyChecking);
+        cmd.add("StrictHostKeyChecking=" + (strictHostKeyChecking ? "yes" : "no"));
         
         String username = securityInfo.get("username");
         if (location.getUserInfo() != null) {
@@ -404,7 +393,7 @@ public class CommandlineSshFileAdaptor extends FileCpi {
             command.add("-o");
             command.add("BatchMode=yes");
             command.add("-o");
-            command.add("StrictHostKeyChecking=" + strictHostKeyChecking);
+            command.add("StrictHostKeyChecking=" + (strictHostKeyChecking ? "yes" : "no"));
         }
         command.add(src.getPath());
         command.add(dest.getPath());
@@ -511,7 +500,7 @@ public class CommandlineSshFileAdaptor extends FileCpi {
             command.add("-o");
             command.add("BatchMode=yes");
             command.add("-o");
-            command.add("StrictHostKeyChecking=" + strictHostKeyChecking);
+            command.add("StrictHostKeyChecking=" + (strictHostKeyChecking ? "yes" : "no"));
         }
         command.add(username + "@" + src.resolveHost() + ":" + src.getPath());
         command.add(dest.getPath());
@@ -638,7 +627,7 @@ public class CommandlineSshFileAdaptor extends FileCpi {
             command.add("-o");
             command.add("BatchMode=yes");
             command.add("-o");
-            command.add("StrictHostKeyChecking=" + strictHostKeyChecking);
+            command.add("StrictHostKeyChecking=" + (strictHostKeyChecking ? "yes" : "no"));
         }
         command.add(src.getPath());
         command.add(username + "@" + dest.resolveHost() + ":" + dest.getPath());

@@ -23,6 +23,7 @@ import org.gridlab.gat.engine.util.CommandRunner;
 import org.gridlab.gat.io.File;
 import org.gridlab.gat.io.FileInterface;
 import org.gridlab.gat.io.cpi.FileCpi;
+import org.gridlab.gat.security.sshtrilead.HostKeyVerifier;
 import org.gridlab.gat.security.sshtrilead.SshTrileadSecurityUtils;
 
 import com.trilead.ssh2.Connection;
@@ -82,6 +83,11 @@ public class SshTrileadFileAdaptor extends FileCpi {
         preferences.put("sshtrilead.use.cached.connections", "true");
         preferences.put("sshtrilead.connect.timeout", "0");
         preferences.put("sshtrilead.kex.timeout", "0");
+        
+        // Added: preferences for hostkey checking. Defaults are what used to be ....
+        preferences.put("sshtrilead.strictHostKeyChecking", "false");
+        preferences.put("sshtrilead.noHostKeyChecking", "true");
+        
         preferences.put("file.chmod", DEFAULT_MODE);
         return preferences;
     }
@@ -157,6 +163,8 @@ public class SshTrileadFileAdaptor extends FileCpi {
     private boolean tcpNoDelay;
 
     private URI fixedURI;
+    
+    private HostKeyVerifier verifier;
 
     public SshTrileadFileAdaptor(GATContext gatContext, URI location)
             throws GATObjectCreationException, GATInvocationException {
@@ -166,6 +174,10 @@ public class SshTrileadFileAdaptor extends FileCpi {
             throw new AdaptorNotApplicableException("cannot handle this URI: "
                     + location);
         }
+
+        boolean noHostKeyChecking;
+        boolean strictHostKeyChecking;
+        
         // init from preferences ...
         Preferences p = gatContext.getPreferences();
         canReadCacheEnable = ((String) p.get("sshtrilead.caching.canread",
@@ -199,6 +211,12 @@ public class SshTrileadFileAdaptor extends FileCpi {
         connectionCacheEnable = ((String) p.get(
                 "sshtrilead.use.cached.connections", "true"))
                 .equalsIgnoreCase("true");
+        noHostKeyChecking = ((String) p.get("sshtrilead.noHostKeyChecking", "true"))
+                .equalsIgnoreCase("true");
+        strictHostKeyChecking = ((String) p.get("sshtrilead.strictHostKeyChecking", "true"))
+                .equalsIgnoreCase("true");
+
+        verifier = new HostKeyVerifier(false, strictHostKeyChecking, noHostKeyChecking);
     }
 
     public void copy(URI destination) throws GATInvocationException {
@@ -236,10 +254,10 @@ public class SshTrileadFileAdaptor extends FileCpi {
         try {
             client = getConnection(destination, gatContext,
                     connectionCacheEnable, tcpNoDelay, client2serverCiphers,
-                    server2clientCiphers).createSCPClient();
+                    server2clientCiphers, verifier).createSCPClient();
         } catch (IOException e) {
             client = getConnection(destination, gatContext, false, tcpNoDelay,
-                    client2serverCiphers, server2clientCiphers)
+                    client2serverCiphers, server2clientCiphers, verifier)
                     .createSCPClient();
         }
 
@@ -329,11 +347,11 @@ public class SshTrileadFileAdaptor extends FileCpi {
         SCPClient client = null;
         try {
             client = getConnection(fixedURI, gatContext, connectionCacheEnable,
-                    tcpNoDelay, client2serverCiphers, server2clientCiphers)
+                    tcpNoDelay, client2serverCiphers, server2clientCiphers, verifier)
                     .createSCPClient();
         } catch (IOException e) {
             client = getConnection(fixedURI, gatContext, false, tcpNoDelay,
-                    client2serverCiphers, server2clientCiphers)
+                    client2serverCiphers, server2clientCiphers, verifier)
                     .createSCPClient();
         }
         FileInterface destinationFile = GAT.createFile(gatContext, destination)
@@ -475,7 +493,8 @@ public class SshTrileadFileAdaptor extends FileCpi {
 
     public static Connection getConnection(URI fixedURI, GATContext context,
             boolean useCachedConnection, boolean tcpNoDelay,
-            String[] client2server, String[] server2client) throws Exception {
+            String[] client2server, String[] server2client,
+            HostKeyVerifier verifier) throws Exception {
         String host = fixedURI.getHost();
         if (host == null) {
             host = fixedURI.resolveHost();
@@ -594,10 +613,10 @@ public class SshTrileadFileAdaptor extends FileCpi {
         try {
             session = getConnection(fixedURI, gatContext,
                     connectionCacheEnable, tcpNoDelay, client2serverCiphers,
-                    server2clientCiphers).openSession();
+                    server2clientCiphers, verifier).openSession();
         } catch (IOException e) {
             session = getConnection(fixedURI, gatContext, false, tcpNoDelay,
-                    client2serverCiphers, server2clientCiphers).openSession();
+                    client2serverCiphers, server2clientCiphers, verifier).openSession();
         }
         session.execCommand(cmd);
         // see http://www.trilead.com/Products/Trilead-SSH-2-Java/FAQ/#blocking

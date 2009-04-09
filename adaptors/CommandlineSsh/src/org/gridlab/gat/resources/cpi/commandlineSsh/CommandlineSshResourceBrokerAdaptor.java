@@ -58,7 +58,7 @@ public class CommandlineSshResourceBrokerAdaptor extends ResourceBrokerCpi {
 
     private boolean windows = false;
     
-    private final String strictHostKeyChecking;
+    private final boolean strictHostKeyChecking;
     
     private Map<String, String> securityInfo;
 
@@ -111,21 +111,9 @@ public class CommandlineSshResourceBrokerAdaptor extends ResourceBrokerCpi {
             }
         }
         
-        String chking = (String) gatContext.getPreferences().get(SSH_STRICT_HOST_KEY_CHECKING);
-        if (chking != null) {
-            if ("yes".equals(chking) || "no".equals(chking)) {
-                strictHostKeyChecking = chking;
-            } else {
-                logger.warn("Unrecognized value for preference "
-                        + SSH_STRICT_HOST_KEY_CHECKING + ": " + chking
-                        + ", using default: yes");
-                strictHostKeyChecking = "yes";
-            }
-        } else {
-            strictHostKeyChecking = "yes";
-        }
-        
-        
+        strictHostKeyChecking = ((String) gatContext.getPreferences().get(SSH_STRICT_HOST_KEY_CHECKING, "true"))
+                .equalsIgnoreCase("true");
+               
         try {
             securityInfo = CommandlineSshSecurityUtils.getSshCredential(
                     gatContext, "commandlinessh", brokerURI, ssh_port);
@@ -269,7 +257,7 @@ public class CommandlineSshResourceBrokerAdaptor extends ResourceBrokerCpi {
             command.add("-o");
             command.add("BatchMode=yes");
             command.add("-o");
-            command.add("StrictHostKeyChecking=" + strictHostKeyChecking);
+            command.add("StrictHostKeyChecking=" + (strictHostKeyChecking ? "yes" : "no"));
             command.add("-t");
             command.add(username + "@" + host);
             if (sandbox.getSandboxPath() != null) {
