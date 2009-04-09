@@ -18,6 +18,8 @@ import java.net.URLEncoder;
 import java.security.Security;
 import java.util.NoSuchElementException;
 import java.util.Properties;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * This class contains the main functionality for communication from and to the
@@ -27,7 +29,8 @@ import java.util.Properties;
  */
 
 class Communications {
-	
+	final static Logger logger = LoggerFactory.getLogger(Communications.class);
+
 	private static final int MAX_REQ_SIZE = 10000000;
 	private static final int MAX_DB_SIZE  = 1000000;
 	
@@ -39,6 +42,7 @@ class Communications {
 	  AuthenticationException {
 		this.server = server;
 		authenticate(user, passwd);
+		logger.info("Authenticated to {}.", server);
 	}
 	
 	private static final String CLIENTLOGIN = 
@@ -113,6 +117,8 @@ class Communications {
 	  
 	    /* Retrieve the output. */
 	    InputStream inputStream;
+	    logger.debug("ClientLogin response code: {}.", 
+	    		httpc.getResponseCode());
 	    if (httpc.getResponseCode() == HttpURLConnection.HTTP_OK) {
 	    	inputStream = httpc.getInputStream();
 	    } 
@@ -127,8 +133,10 @@ class Communications {
 		String inputLine = null;
 		String authid    = null;
 
+	    logger.debug("ClientLogin response body:");
 		/* Extract auth token. */
-		while ((inputLine = in.readLine()) != null) {
+	    while ((inputLine = in.readLine()) != null) {
+		    logger.debug(inputLine);
 			if (inputLine.startsWith("Auth")) {
 				authid = inputLine.split("=")[1];
 				break;
@@ -138,19 +146,24 @@ class Communications {
 		in.close();
 		
 		/* Setting up a new connection to App Engine. */
-		url = new URL("http://" + server + "/_ah/login?continue=https://" + server + "/&auth=" + authid);
+		url = new URL("http://" + server + "/_ah/login?continue=https://" + 
+				server + "/&auth=" + authid);
 		httpc = (HttpURLConnection) url.openConnection();
 		
 	    httpc.setRequestMethod("GET");
 	    httpc.setUseCaches(false);
 	    
+	    logger.debug("GAE response code: {}.", httpc.getResponseCode());	    
 	    if (!(httpc.getResponseCode() == HttpURLConnection.HTTP_MOVED_TEMP || 
 	    	  httpc.getResponseCode() == HttpURLConnection.HTTP_OK)) {
 	    	throw new AuthenticationException();
 	    }
 		
 		/* Retrieving cookie. */
+	    logger.debug("GAE header fields:");
 		for (int i = 0; httpc.getHeaderField(i) != null; i++) {
+			logger.debug("{} - {}", httpc.getHeaderFieldKey(i), 
+					httpc.getHeaderField(i));
 			if (httpc.getHeaderFieldKey(i) != null && 
 				httpc.getHeaderFieldKey(i).equals("Set-Cookie")) {
 				cookie = httpc.getHeaderField(i);
@@ -178,9 +191,11 @@ class Communications {
 	String httpSend(String ext, String payload) 
 	  throws MalformedURLException, IOException, AuthenticationException,
 	  AppEngineResourcesException, NoSuchElementException, 
-	  RequestTooLargeException {
-		if (payload.length() > MAX_REQ_SIZE) {
-			throw new RequestTooLargeException();
+	  RequestTooLargeException, Exception {
+		if (payload.length() > MAX_DB_SIZE) {
+			//TODO: for now, otherwise we have to split up at server side
+			throw new RequestTooLargeException("Payload max " + MAX_DB_SIZE +
+				" (currently " + payload.length() + ")");
 		}
 		
 	    URL url = new URL("http://" + server + ext);
@@ -202,33 +217,43 @@ class Communications {
 		osw.flush();
 		osw.close();
 		
+		BufferedReader in = null;
+		
 		/* Retrieving response headers. */
-		switch (httpc.getResponseCode()) {
+		int httpc_rc = httpc.getResponseCode();
+		logger.info("HTTP Send() response code: {}", httpc_rc);
+	    if (httpc_rc < HttpURLConnection.HTTP_BAD_REQUEST) { /* success */
+	    	in = new 
+	    		BufferedReader(new InputStreamReader(httpc.getInputStream()));
+		} else { /* client/server error */
+			in = new 
+				BufferedReader(new InputStreamReader(httpc.getErrorStream()));
+		}
+	    
+	    String result = in.readLine();
+	    httpc.disconnect();
+	    
+	    logger.debug("HTTP Send() response body:");
+	    logger.debug(result);
+
+	    /* Check status codes. */
+		switch (httpc_rc) {
 			case HttpURLConnection.HTTP_OK:
 				/*fall through*/
 			case HttpURLConnection.HTTP_CREATED:
 			  	/*fall through*/
 			case HttpURLConnection.HTTP_RESET:
-				/*resume*/
-				break;
+				return result;
 			case HttpURLConnection.HTTP_FORBIDDEN:
-				throw new AuthenticationException();
-				/* Resources depleted? */
+				throw new AuthenticationException(result);
 			case HttpURLConnection.HTTP_NOT_FOUND:
-				throw new NoSuchElementException();
+				throw new NoSuchElementException(result);
 			case HttpURLConnection.HTTP_REQ_TOO_LONG:
-				throw new RequestTooLargeException();
+				throw new RequestTooLargeException(result);
 			case HttpURLConnection.HTTP_UNAVAILABLE:
-				throw new AppEngineResourcesException();
+				throw new AppEngineResourcesException(result);
 			default:
-				//TODO: throw generic Exception?
-				break;
+				throw new Exception(result);
 		}
-		
-		/* Retrieving body. */
-		BufferedReader in = 
-			new BufferedReader(new InputStreamReader(httpc.getInputStream()));
-
-		return in.readLine();
 	}
 }

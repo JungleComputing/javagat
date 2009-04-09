@@ -10,9 +10,6 @@ package client;
  * @author bbn230
  */
 
-import ibis.advert.Advert;
-import ibis.advert.MetaData;
-
 import java.io.BufferedReader;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -35,8 +32,15 @@ import java.util.Properties;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
-public class Client {
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import org.apache.log4j.BasicConfigurator;
+
+
+public class SimpleTests {
+	final static Logger logger = LoggerFactory.getLogger(SimpleTests.class);
+	
 	private static File readFile() {
 		String filename = "/Volumes/Users/bbn230/Documents/workspace/app-engine/app-engine/src/client/appengine.gif"; /* OSX location */
 		//String filename = "E:/Documents/Documents/Eclipse/workspace/app-engine/app-engine/src/client/appengine.gif";  /* Win location */
@@ -64,6 +68,16 @@ public class Client {
 		System.setProperties(properties); 	
 	}
 
+	private static void testLogger() {
+		
+		System.out.println("TEST");
+		
+		logger.error("DEBUG1");
+		logger.info("INFO2");
+		logger.warn("WARN3");
+		logger.trace("TRACE4");
+	}
+	
 	private static void testFunc(String uri) throws Exception {
 		File file = readFile();
 		JSONObject jsonobj = new JSONObject();
@@ -218,37 +232,7 @@ public class Client {
 		System.out.println(base64.length());
 		
 	}
-	
-	private static void testAdvertAdd(String password) throws Exception {
-		Advert advert = new Advert("bbn230.appspot.com", "ibisadvert@gmail.com", password);
-		MetaData metaData = new MetaData();
-		
-		File file = readFile();
-	    byte[] b = new byte[(int) file.length()];
-	    int size = 0;
-	    
-	    DataInputStream is = new DataInputStream(new FileInputStream(file));	    
-	    
-	    try {
-	    	size = is.read(b);
-	        System.out.println("Bytes read: " + size);
-		} 
-	    catch (EOFException eof) {
-			System.out.println("EOF reached."); 
-		}
-		catch (IOException ioe) {
-			System.out.println("IO error: " + ioe);
-		}
-		
-		metaData.put("key1", "value1");
-		metaData.put("key2", "value2");
-		metaData.put("key3", "value3");
-		
-		String path = "/home/bboterm/advert";
-		
-		advert.add(b, metaData, path);
-	}
-	
+
 	private static void makeHttpJson(String uri) throws Exception {
 		File file = readFile();
 		JSONObject jsonobj = new JSONObject();
@@ -922,26 +906,26 @@ public class Client {
 		
 		/* Making a standard connection in HTTP(S). */
 		uri = server.concat("helloworld/");
-		//makeHttpConnection(uri);
-		//makeHttpsConnection(uri);
+//		makeHttpConnection(uri);
+//		makeHttpsConnection(uri);
 		
 		/* Making a connection using POST forms in HTTP(S). */
 		uri = server.concat("forms/sign");
-		//makeHttpPost(uri);
+//		makeHttpPost(uri);
 		uri = server.concat("binary/get");
-		//makeHttpBinaryPost(uri);
+//		makeHttpBinaryPost(uri);
 		uri = server.concat("binary/multipart");
-		//makeHttpMultipartPost(uri);
+//		makeHttpMultipartPost(uri);
 		uri = server.concat("binary/get");
-		//makeOwnPost(uri);
+//		makeOwnPost(uri);
 		
 		/* Making a connection using cookes. */
 		uri = server.concat("cookies/");
-		//makeHttpCookies(uri, null, null, null);
+//		makeHttpCookies(uri, null, null, null);
 		
 		/* Logging in on a Google login page (using HTTP). */
 		uri = server.concat("_ah/login?email=test@example.com&action=Login");
-		//makeHttpLogin(uri);
+//		makeHttpLogin(uri);
 		
 		/* Logging in to Google's ClientLogin. */
 		uri = "https://www.google.com/accounts/ClientLogin";
@@ -949,25 +933,26 @@ public class Client {
 			System.out.println("***Usage: provide password as first and only argument!");
 		}
 		else {
-			//makeHttpsClientLogin(uri, argv[0]);
-//			testAdvertAdd(argv[0]);
+//			makeHttpsClientLogin(uri, argv[0]);
 		}
 		
 		/* Getting a binary response. */
 		uri = server.concat("binary/display");
-		//makeHttpBinaryResponse(uri);
+//		makeHttpBinaryResponse(uri);
 		
 		/* Tests with JSON. */
 		uri = server.concat("json/get");
-		//makeHttpJson(uri);
+//		makeHttpJson(uri);
 		
 		/* Base64 tests. */
-		//base64test();
+//		base64test();
 		
 		uri = server.concat("queries/find");
 //		testFind(uri);
 		
 		uri = server.concat("func/");
-		testFunc(uri);
+//		testFunc(uri);
+		
+		testLogger();
 	}
 }

@@ -10,5 +10,11 @@ package ibis.advert;
 
 @SuppressWarnings("serial")
 public class RequestTooLargeException extends Exception {
-
+	public RequestTooLargeException() {
+		super();
+	}
+	
+	public RequestTooLargeException(String message) {
+		super(message);
+	}
 }

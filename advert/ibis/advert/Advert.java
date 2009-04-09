@@ -19,13 +19,18 @@ import java.util.NoSuchElementException;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class Advert {
 	
+	final static Logger logger = LoggerFactory.getLogger(Advert.class);
 	private Communications comm = null;
 	
 	public Advert(String server, String user, String passwd) 
 	  throws AuthenticationException, IOException {
 		comm = new Communications(server, user, passwd);
+		logger.info("Communications class created.");
 	}
 	
 	/**
@@ -46,7 +51,7 @@ public class Advert {
 	public void add(byte[] object, MetaData metaData, String path) 
 	  throws MalformedURLException, IOException, AuthenticationException,
 	  AppEngineResourcesException, NoSuchElementException, 
-	  RequestTooLargeException {
+	  RequestTooLargeException, Exception {
 		JSONArray  jsonarr = new JSONArray();
 		JSONObject jsonobj = new JSONObject();
 
@@ -69,6 +74,7 @@ public class Advert {
 		jsonarr.add(jsonobj);
 		jsonarr.add(base64);
 		
+		logger.info("Calling httpSend() /add...");
 		comm.httpSend("/add", jsonarr.toString());
 		
         /*
@@ -89,7 +95,8 @@ public class Advert {
 	public void delete(String path) 
 	  throws MalformedURLException, IOException, AuthenticationException,
 	  AppEngineResourcesException, NoSuchElementException, 
-	  RequestTooLargeException {
+	  RequestTooLargeException, Exception {
+		logger.info("Calling httpSend() /del...");
 		comm.httpSend("/del", path);
 	}
 
@@ -105,7 +112,8 @@ public class Advert {
 	public byte[] get(String path) 
 	  throws MalformedURLException, IOException, AuthenticationException,
 	  AppEngineResourcesException, NoSuchElementException, 
-	  RequestTooLargeException {
+	  RequestTooLargeException,Exception {
+		logger.info("Calling httpSend() /get...");
 		String base64 = comm.httpSend("/get", path);
 		
 		return new sun.misc.BASE64Decoder().decodeBuffer(base64);
@@ -123,9 +131,10 @@ public class Advert {
 	public MetaData getMetaData(String path) 
 	  throws MalformedURLException, IOException, AuthenticationException,
 	  AppEngineResourcesException, NoSuchElementException, 
-	  RequestTooLargeException {
+	  RequestTooLargeException, Exception {
 		MetaData   metadata = new MetaData();
 		
+		logger.info("Calling httpSend() /getmd...");
 		String result = comm.httpSend("/getmd", path);
 		
 		JSONObject jsonobj = JSONObject.fromObject(result);
@@ -160,7 +169,7 @@ public class Advert {
 	public String[] find(MetaData metaData, String pwd)
 	  throws MalformedURLException, IOException, AuthenticationException,
 	  AppEngineResourcesException, NoSuchElementException, 
-	  RequestTooLargeException {
+	  RequestTooLargeException, Exception {
 		JSONObject metadata = new JSONObject();
 		JSONArray  jsonarr  = new JSONArray();
 		
@@ -176,7 +185,8 @@ public class Advert {
 			
 			metadata.put(key, value);
 		}
-				
+		
+		logger.info("Calling httpSend() /find...");
 		String result = comm.httpSend("/find", metadata.toString());
 		
 		jsonarr = JSONArray.fromObject(result);

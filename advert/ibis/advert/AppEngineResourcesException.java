@@ -9,5 +9,11 @@ package ibis.advert;
 
 @SuppressWarnings("serial")
 public class AppEngineResourcesException extends Exception {
-
+	public AppEngineResourcesException() {
+		super();
+	}
+	
+	public AppEngineResourcesException(String message) {
+		super(message);
+	}
 }
