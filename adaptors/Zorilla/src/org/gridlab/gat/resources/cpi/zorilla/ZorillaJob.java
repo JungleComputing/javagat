@@ -588,7 +588,7 @@ public class ZorillaJob extends JobCpi {
 
         try {
             ZoniConnection connection = new ZoniConnection(broker
-                    .getNodeSocketAddress(),broker.getSocketFactory(), null);
+                    .getNodeSocketAddress(),broker.getSocketFactory(), null, 5000, false);
 
             connection.cancelJob(jobID);
             if (!(gatContext.getPreferences().containsKey("job.stop.poststage") && gatContext
