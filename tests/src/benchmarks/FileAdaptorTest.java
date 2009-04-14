@@ -16,6 +16,7 @@ import org.gridlab.gat.resources.Job;
 import org.gridlab.gat.resources.JobDescription;
 import org.gridlab.gat.resources.ResourceBroker;
 import org.gridlab.gat.resources.SoftwareDescription;
+import org.gridlab.gat.security.CertificateSecurityContext;
 import org.gridlab.gat.security.PasswordSecurityContext;
 
 public class FileAdaptorTest {
@@ -33,10 +34,13 @@ public class FileAdaptorTest {
                 host);
 
         GATContext gatContext = new GATContext();
+        CertificateSecurityContext ctxt = new CertificateSecurityContext(null, null, "ceriel",
+                "Misteek");
         PasswordSecurityContext password = new PasswordSecurityContext(
                 "username", "TeMpPaSsWoRd");
         password.addNote("adaptors", "ftp");
         gatContext.addSecurityContext(password);
+        gatContext.addSecurityContext(ctxt);
 
         Preferences preferences = new Preferences();
         preferences.put("file.adaptor.name", adaptor + ",local");
@@ -196,19 +200,21 @@ public class FileAdaptorTest {
 
     @SuppressWarnings("null")
     private void run(String host, String script) {
+        Preferences preferences = new Preferences();
+        preferences.put("resourcebroker.adaptor.name", "local,commandlinessh");
+        preferences.put("file.adaptor.name", "local,commandlinessh");
+        
         SoftwareDescription sd = new SoftwareDescription();
         sd.setExecutable("/bin/sh");
         sd.setArguments(script);
         try {
-            sd.addPreStagedFile(GAT.createFile("tests" + java.io.File.separator
+            sd.addPreStagedFile(GAT.createFile(preferences, "tests" + java.io.File.separator
                     + "src" + java.io.File.separator + "benchmarks"
                     + java.io.File.separator + script));
         } catch (GATObjectCreationException e) {
             e.printStackTrace();
             System.exit(1);
         }
-        Preferences preferences = new Preferences();
-        preferences.put("resourcebroker.adaptor.name", "sshtrilead,local");
         ResourceBroker broker = null;
         try {
             broker = GAT.createResourceBroker(preferences, new URI("any://"
