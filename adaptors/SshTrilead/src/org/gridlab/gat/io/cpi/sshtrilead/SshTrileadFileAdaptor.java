@@ -544,8 +544,8 @@ public class SshTrileadFileAdaptor extends FileCpi {
                 } catch (IOException e) {
                     if (logger.isDebugEnabled()) {
                         logger
-                                .debug("exception caught during authentication with password: "
-                                        + e);
+                                .debug("exception caught during authentication with password: ",
+                                        e);
                     }
                 }
                 if (logger.isDebugEnabled()) {
@@ -559,8 +559,8 @@ public class SshTrileadFileAdaptor extends FileCpi {
                 } catch (IOException e) {
                     if (logger.isDebugEnabled()) {
                         logger
-                                .debug("exception caught during authentication with public key: "
-                                        + e);
+                                .debug("exception caught during authentication with public key: ",
+                                        e);
                     }
                 }
                 if (logger.isDebugEnabled()) {
