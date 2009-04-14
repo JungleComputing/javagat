@@ -1,14 +1,14 @@
 /*
  * Created on Aug 2, 2005
  */
-package org.gridlab.gat.io.cpi.sftpGanymed;
+package org.gridlab.gat.io.cpi.sftpTrilead;
 
 import java.io.File;
 
 /**
  * @author rob
  */
-public class SftpGanymedUserInfo {
+public class SftpTrileadUserInfo {
     String username;
 
     String password;

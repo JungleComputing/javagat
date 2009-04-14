@@ -12,6 +12,7 @@
 		<ant dir="Mercury" />
 		<ant dir="Sftp" />
 		<ant dir="SftpGanymed" />
+		<ant dir="SftpTrilead" />
 		<ant dir="Sge" />
 		<ant dir="SshTrilead" />
 		<ant dir="Zorilla" />
@@ -36,6 +37,7 @@
 		<ant dir="Mercury" target="clean" />
 		<ant dir="Sftp" target="clean" />
 		<ant dir="SftpGanymed" target="clean" />
+		<ant dir="SftpTrilead" target="clean" />
 		<ant dir="Sge" target="clean" />
 		<ant dir="SshTrilead" target="clean" />
 		<ant dir="Zorilla" target="clean" />
@@ -71,6 +73,10 @@
 
 	<target name="sftpganymed" description="build SftpGanymed adaptor">
 		<ant dir="SftpGanymed" />
+	</target>
+
+	<target name="sftptrilead" description="build SftpTrilead adaptor">
+		<ant dir="SftpTrilead" />
 	</target>
 
 	<target name="sge" description="build Sge adaptor">
