@@ -1,5 +1,29 @@
 \section{The App Engine}
-Before \ldots
+\ldots
+
+\subsection{The Runtime Environment}
+\dashline{
+As of April 8th 2009 \cite{app-engine-java} the Google App Engine provides two
+programming languages to build and run web applications. Besides \emph{Python}
+\cite{python-www}, also the \emph{Java} \cite{java-www} programming language is
+featured to develop web applications and run them on Google's resources. Since
+the feature of running your applications in Java is still relatively new, we
+focused on writing our server in Python.}
+
+\dashline{
+A Python web application interacts with the App Engine web server using the CGI
+protocol. An application can use a WSGI-compatible web application framework
+using a CGI adapter. App Engine includes a simple web application framework,
+called \emph{webapp}, to make it easy to get started. For larger applications,
+mature third-party frameworks, such as \emph{Django} \cite{django-www}, workwell with App Engine.
+}
+\dashline{
+The App Engine currently only supports Python 2.5.3. The Python interpreter runs
+in a secured ``sandbox'' environment to isolate your application for service and
+security. The interpreter can run any Python code, including Python modules you
+include with your application, as well as the Python standard library. The
+interpreter cannot load Python modules with C code; it is a ``pure'' Python
+environment.}
 
 \subsection{Limitations}
 Although the Google App Engine provides us with resources, it also has some
@@ -24,7 +48,7 @@ version of the Google App Engine, are maintained:
 \item \textbf{CPU Time} - 46.30 hours/24h
 \item \textbf{Outgoing Bandwidth} - 10.00 Gbytes/24h
 \item \textbf{Incoming Bandwidth} - 10.00 Gbytes/24h
-\item \textbf{Data Storage} - 0.50 Gbytes
+\item \textbf{Data Storage} - 1.00 Gbytes
 \item \textbf{Secure Outgoing Bandwidth} - 2.00 Gbytes/24h
 \item \textbf{Secure Incoming Bandwidth} - 2.00 Gbytes/24h
 \item \textbf{Request size} - 10 MB per request

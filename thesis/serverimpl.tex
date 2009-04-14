@@ -54,7 +54,7 @@ visited, will sign the user out, then redirect the user back to the URL given as
 The Google App Engine datastore is not like a traditional relational database.
 Data objects, or ``entities'', have a kind and a set of properties. For our
 server we need a set of different data objects to store in our datastore.
-\paragraph{Storing (Advert) Objects}
+\paragraph{(Advert) Objects}
 Obviously, the main purpose of our server is to store binary (advert) objects.
 For this purpose we designed the following entity to represent our advert data(Figure \ref{serverimpl-ds}). First of all we will store a path, which will be
 used for reference of a unique object (i.e. a key), which will be structured as a
@@ -71,6 +71,7 @@ class Advert(db.Model):
   object = db.BlobProperty()
   
 class MetaData(db.Model):
+  path   = db.StringProperty()
   keystr = db.StringProperty()
   value  = db.StringProperty()
 \end{code}
@@ -78,11 +79,55 @@ class MetaData(db.Model):
 \end{center}
 \end{figure*}
 
-\paragraph{Storing Meta Data}
+\paragraph{MetaData}
 At our server, we would like to store meta data not as a binary object, but as
 readable strings of data. This way, we can search meta data when it is queried.
 According to the AdvertService API, a MetaData object should look like Figure\ref{serverimpl-ds}. In this object, we just need to store key-value pairs,
-which are String properties. Every object will be linked to a parent (Advertobject), as soon as it's created.
+which are String properties. Every object will be linked to a parent (Advertobject), as soon as it's created. \dashline{Note that there is redundant
+information inside this object, being the \texttt{path} value. We did this to
+simplify our GQL queries as described in Section \ref{serverimpl-findmd}.}
+
+\subsubsection{Transactions}
+\label{serverimpl-trans}
+\dashline{
+Since the (Advert) object and the MetaData object are stored sequentially, it is
+essential that they are stored either both, or neither of them, to ensure
+consistency. Fortunately, the Google App Engine datastore provides a mechanism
+for ensuring both are stored or, if the datastore fails, nothing is stored.
+Using transactions, we can call a function and maintain atomicity. All
+functionality of the App Engine can be used inside a function that is called in
+transaction, except for GQL functions. }
+
+\begin{figure*}[ht] %[placement] where placement is h,t,b,p
+\begin{center}
+\begin{code}
+try:
+  db.run_in_transaction(store, json) 
+except db.TransactionFailedError, message:
+  logging.error(message)
+  ...
+\end{code}
+\caption{Transactions.\label{serverimpl-transfun}}
+\end{center}
+\end{figure*}
+
+\dashline{
+A small example of how transactions work inside the App Engine is shown in Figure
+\ref{serverimpl-transfun}. In this example we encapsulated the transaction
+function \texttt{store}, with arguments \texttt{json}, into a \texttt{try},
+\texttt{except} statement. If the transaction fails, the operation's effects are not
+applied, and the datastore API raises an exception, which in turn is caught bythe \texttt{except} statement and an error message is attached. The transction
+could fail due to a high rate of contention, with too many users trying
+to modify an entity at the same time. Or an operation may fail due to the
+application reaching a quota limit. Or there may be an internal error with thedatastore.}
+
+\dashline{
+Note that to ensure consistency of the datastore, we will also use transactions
+to remove objects from the datstore. Again this is done sequentially. If one
+delete function would fail, we would end op with an inconsistent copy of the
+datastore. Hence we will again use transactions for atomicity and thus
+consistency.
+}
 
 \subsubsection{Path Encoding}
 To have the AdvertService work properly, we need some path encoding to save
@@ -237,6 +282,11 @@ binary data only. The only option is to use the \texttt{db.TextProperty()},
 since it is not limited to 500 characters, like the \texttt{db.StringProperty()}
 is.
 
+\dashline{
+Note that storing a JSON object is done in an atomic transaction, as described
+in section \ref{serverimpl-trans}.
+} 
+
 \subsubsection{Storing Meta Data}
 Since MetaData needs to be searchable at the server-side, we will have to extract
 the key-value pairs from the POST request and store them in the datastore
@@ -254,30 +304,28 @@ Finally, we could also append all data in two strings and have them separated by
 special delimiter. Downside of this method is that we could run out of the
 maximum length of strings (which is 500 bytes).
 
-\dashline{
 Once data has been stored successfully, we send an HTTP 201 (Created) status
 code, and return the TTL in the message body. If an entry already exists at the
 specified path, that entry gets overwritten, and a warning is issued. This is
 done by sending an HTTP 205 (Reset Content) Status Code and a warning in the
 message body.
-}
+
 \subsubsection{Finding MetaData}
+\label{serverimpl-findmd}
 When the MetaData has been stored in the datastore, we should be able to process
 find() requests by clients. First a MetaData object is received, which is then
 tried to be matched with MetaData already present in the datastore. For this
 purpose we will use the GQL as described above.
-\dashline{
 To process the find() request, we have to check all the key-value pairs given
 by the client and compare them to the key-value pairs of all MetaData objects
 in the datastore. Since all key-value pairs are stored in one `table', we
 have to group them by path, after which we can check all key-value pairs per
-MetaData object.}
+MetaData object.
 
-\dashline{
 Comparing the MetaData object sent by the user with the MetaData present in the
 datastore can be achieved in two ways. One approach is to make a selection of
 all paths available and check the key-value pairs on a per path basis. This
-is done by the GQL query shown in Figure \ref{serverimpl-find}.}
+is done by the GQL query shown in Figure \ref{serverimpl-find}.
 
 \begin{figure*}[ht] %[placement] where placement is h,t,b,p
 \begin{center}
@@ -312,28 +360,23 @@ self.response.out.write(simplejson.dumps(paths))
 \end{center}
 \end{figure*}
 
-\dashline{
 To obtain an array of all paths (without duplicates), we would usually use the
 `DISTINCT' keyword from SQL. Since the GQL does not support the `DISTINCT'
 keyword we have to make our own unique array of keys. We do this by using the
 \texttt{Set()} data type, which maintains a unique set of paths (duplicates are
-automatically overwritten).}
+automatically overwritten).
 
-\dashline{
 After we have a distinct set of all paths, we iterate through the list and
 match every key-value pair with the key-value pair given by the user. If one
 pair does not match, we remove the path from the list, and start over
 inspecting the next path in the list. Eventually we will have a list of paths
 which contains all paths that meet all requirements given by the user. 
-}
 
-\dashline{
 The return value of all metadata found is a String array, which again needs to be
 formatted in such a way that it can be sent as one String. Obviously we will
 use simplejson to do so. If no entry is found, we will send a 404 response
-code, accompanied by the text `Not Found' in the message body. }
+code, accompanied by the text `Not Found' in the message body.
 
-\dashline{
 A second option to implement the \texttt{find()} function would be to first
 find all paths that meet the requirements given by the first key-value pair.
 Then do the same for the second key-value pair and accordingly take the
@@ -342,9 +385,9 @@ until all key-value pairs have been checked. The downside of this approach is
 that there is no obvious method to perform the intersection between two search
 results at the Google App Engine. This approach requires a \emph{for-loop} to
 iterate through all items in the first search result and check them with the
-second. }
+second. 
 
-\subsubsection{Returning an Object from the Datastore}
+\subsubsection{Returning an Object From the Datastore}
 This function will send binary data back to client. Basically, this function only
 sends an Object to the standard output (the HTTP connection), which looks like
 Figure \ref{serverimpl-bin-response}. Of Course, we first need to fetch therequested object from the datastore, which will be done using GQL Queries. 
@@ -359,6 +402,27 @@ self.response.out.write(bin.data)
 \end{center}
 \end{figure*}
 
+\subsubsection{Removing an Object From the Datastore}
+\dashline{
+To remove an (Advert) object from the datastore, a user calls the
+\texttt{delete()} function, with a pathname as argument. Obviously, the most
+straightforward way to remove an item from the datastore is to query all
+objects and meta data that match the pathname given. Naturally, we want to
+perform the removal of the object and associated meta data in transaction,
+because we do not want inconsistencies in our datastore (i.e. querying meta
+data of which the associated object does not exist anymore).
+}
+
+\dashline{
+The only problem we have now is that we cannot perform queries inside a
+transaction, since the Google App Engine does not allow us to do so. The
+solution that Google provides is either to work with keys (which is not
+feasible in our case), or prepare your queries before performing the
+transaction. We adapted this solution by sending our query results to a
+\texttt{remove()} function, which iterates through the query results and
+deletes all objects and meta data given to the function.
+}
+
 \subsection{Private Server Functions}
 Below we will describe some of the private server functions provided for the
 advert service.
@@ -366,8 +430,8 @@ advert service.
 As described above, we will use some form of TTL to determine whether a data item
 stored is still needed in the datastorage. When a data item is expired, it will
 be removed automatically using a mechanism called the garbage collector.
-\dashline{The source code of our garbage collector can be found in Figure
-\ref{serverimpl-gc}.}
+The source code of our garbage collector can be found in Figure
+\ref{serverimpl-gc}.
 
 \begin{figure*}[ht] %[placement] where placement is h,t,b,p
 \begin{center}
@@ -384,23 +448,20 @@ def gc(): #garbage collector
 \end{center}
 \end{figure*}
 
-\dashline{
 By calling \texttt{gc()}, we activate our garbage collector, which, in turn,
 executes a GQL query, selecting all data that has been added to the datastore
 earlier than ten days ago. To achieve this we use the \texttt{timedelta()}
 object, provided by the \texttt{datetime} class. A timedelta object
 represents a duration, the difference between two dates or times, and is ideal
 for our garbage collector.
-}
 
-\dashline{
 The query results in an iterable list of advert objects that can be removed
 from the datastore. We should not forget that also all the MetaData
 associated with the Advert object should be removed alongside the object itself.
 Therefore we wrote a function inside the advert class, called \texttt{delmd()},
 that automatically deletes all its metadata. Once this is done, the object
 itself is deleted and the garbage collection process is finished.
-}
+
 
 % \subsubsection{Data Matching}
 % For our \texttt{find()} function, we will need some internal `match' function,
