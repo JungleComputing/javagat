@@ -213,7 +213,7 @@ public class SshTrileadFileAdaptor extends FileCpi {
                 .equalsIgnoreCase("true");
         noHostKeyChecking = ((String) p.get("sshtrilead.noHostKeyChecking", "true"))
                 .equalsIgnoreCase("true");
-        strictHostKeyChecking = ((String) p.get("sshtrilead.strictHostKeyChecking", "true"))
+        strictHostKeyChecking = ((String) p.get("sshtrilead.strictHostKeyChecking", "false"))
                 .equalsIgnoreCase("true");
 
         verifier = new HostKeyVerifier(false, strictHostKeyChecking, noHostKeyChecking);
@@ -527,7 +527,7 @@ public class SshTrileadFileAdaptor extends FileCpi {
                         .info("'sshtrilead.kex.timeout' set, but could not be parsed: "
                                 + t);
             }
-            newConnection.connect(null, connectTimeout, kexTimeout);
+            newConnection.connect(verifier, connectTimeout, kexTimeout);
             Map<String, Object> securityInfo = SshTrileadSecurityUtils
                     .getSshTrileadCredential(context, "sshtrilead", fixedURI,
                             fixedURI.getPort(SSH_PORT));
