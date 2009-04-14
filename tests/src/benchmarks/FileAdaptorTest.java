@@ -34,13 +34,10 @@ public class FileAdaptorTest {
                 host);
 
         GATContext gatContext = new GATContext();
-        CertificateSecurityContext ctxt = new CertificateSecurityContext(null, null, "ceriel",
-                "Misteek");
         PasswordSecurityContext password = new PasswordSecurityContext(
                 "username", "TeMpPaSsWoRd");
         password.addNote("adaptors", "ftp");
         gatContext.addSecurityContext(password);
-        gatContext.addSecurityContext(ctxt);
 
         Preferences preferences = new Preferences();
         preferences.put("file.adaptor.name", adaptor + ",local");
