@@ -15,7 +15,14 @@ class Bin(db.Model):
   
 class Ttl(db.Model):
   date = db.DateTimeProperty()
- 
+
+def iterate(bin1, bin2):
+  for b1 in bin1:
+    print b1.val
+    
+  for b2 in bin2:
+    print b2.val
+
 class MainPage(webapp.RequestHandler):
   def get(self):
     self.response.out.write("""
@@ -27,7 +34,7 @@ class MainPage(webapp.RequestHandler):
 
 class Load(webapp.RequestHandler):
   def get(self):
-    bin1 = Bin()
+    bin1 = Bin(key_name="abc")
     
     bin1.path = 'abc'
     bin1.val = 'key1'
@@ -131,13 +138,26 @@ class TestDate(webapp.RequestHandler):
     query = db.GqlQuery("SELECT * FROM Ttl WHERE date < :1", datetime.datetime.today() + datetime.timedelta(days=-10))
     for d in query:
       self.response.out.write("%s<br />\n" % d.date)
+      
+class TestFunc(webapp.RequestHandler):
+  def get(self):
+    query = db.GqlQuery("SELECT * FROM Bin WHERE path = :1", "abc")
+    
+    keys = []
+    
+    for q in query:
+      keys.append(q.key())
+      
+    db.delete(keys)
+      
 
 application = webapp.WSGIApplication(
                                      [('/queries/', MainPage),
                                       ('/queries/find', TestFind),
                                       ('/queries/load', Load),
                                       ('/queries/test', TestQueries),
-                                      ('/queries/date', TestDate)],
+                                      ('/queries/date', TestDate),
+                                      ('/queries/func', TestFunc)],
                                      debug=True)
 
 def main():

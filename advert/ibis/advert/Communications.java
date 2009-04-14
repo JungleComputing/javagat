@@ -31,8 +31,10 @@ import org.slf4j.LoggerFactory;
 class Communications {
 	final static Logger logger = LoggerFactory.getLogger(Communications.class);
 
-	private static final int MAX_REQ_SIZE = 10000000;
-	private static final int MAX_DB_SIZE  = 1000000;
+	private static final int MAX_REQ_SIZE = 10000000; /* 10e7 */
+	private static final int MAX_DB_SIZE  = 1000000;  /* 10e6 */
+	private static final String CLIENTLOGIN = 
+		"https://www.google.com/accounts/ClientLogin";
 	
 	private String cookie;
 	private String server;
@@ -44,9 +46,6 @@ class Communications {
 		authenticate(user, passwd);
 		logger.info("Authenticated to {}.", server);
 	}
-	
-	private static final String CLIENTLOGIN = 
-		"https://www.google.com/accounts/ClientLogin";
 	
 	/**
 	 * Function to set up SSL in the system properties. 

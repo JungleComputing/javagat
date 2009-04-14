@@ -16,6 +16,8 @@
 #
 
 import cgi
+import datetime
+import logging
 
 from google.appengine.api import users
 from google.appengine.ext import webapp
@@ -23,44 +25,90 @@ from google.appengine.ext.webapp.util import run_wsgi_app
 from google.appengine.ext import db
 from django.utils import simplejson 
 
+##Data types (Models)
+
 class Advert(db.Model):
   path   = db.StringProperty()
   author = db.UserProperty()
   ttl    = db.DateTimeProperty(auto_now_add=True)
   object = db.TextProperty() #base64
   
-  def delmd(self): #delete all metadata of some object
-    query = db.GqlQuery("SELECT * FROM MetaData WHERE path = :1", self.path)
-    
-    for md in query:
-      md.delete()
-
 class MetaData(db.Model):
   path   = db.StringProperty()
   keystr = db.StringProperty()
   value  = db.StringProperty()
 
-def auth(self): #authentication
-  if not users.get_current_user():
-    self.error(403)
-    self.response.headers['Content-Type'] = 'text/plain'
-    self.response.out.write('Not Authenticated')
-    return -1
+##Private Functions
 
-  if not users.is_current_user_admin():
-    self.error(403)
-    self.response.headers['Content-Type'] = 'text/plain'
-    self.response.out.write('No Administrator')
-    return -1
+#Authentication
+def auth(self): 
+#  if not users.get_current_user():
+#    self.error(403)
+#    self.response.headers['Content-Type'] = 'text/plain'
+#    self.response.out.write('Not Authenticated')
+#    return -1
+#
+#  if not users.is_current_user_admin():
+#    self.error(403)
+#    self.response.headers['Content-Type'] = 'text/plain'
+#    self.response.out.write('No Administrator')
+#    return -1
 
   return 0
 
-def gc(): #garbage collector
+#Storing a JSON object 
+def store(json):
+  advert = Advert()
+  user   = users.get_current_user()
+  
+  advert.path   = json[0] #extract path from message
+  advert.author = user    #store author
+  advert.object = json[2] #extract (base64) object from message
+
+  advert.put() #store object in database
+
+  for k in json[1].keys():
+    metadata        = MetaData(parent=advert)
+    metadata.path   = json[0]
+    metadata.keystr = k
+    metadata.value  = json[1][k]
+    metadata.put() #store metadata
+  
+  return
+  
+#Deleting an Object including MetaData
+def remove(path):
+  query1 = db.GqlQuery("SELECT * FROM Advert WHERE path = :1", path)
+  query2 = db.GqlQuery("SELECT * FROM MetaData WHERE path = :1", path)
+  
+  keys = []
+  
+  for q1 in query1:
+    keys.append(q1.key())
+  
+  for q2 in query2:
+    keys.append(q2.key())
+    
+  try: #transaction remove
+    db.run_in_transaction(db.delete, keys)
+  except db.TransactionFailedError, message:
+    logging.error(message) #log the error
+    self.error(503)        #send response to client
+    self.response.headers['Content-Type'] = 'text/plain'
+    self.response.out.write(message)
+    return -1
+  
+  return 0 #successful remove
+
+#Garbage Collector
+def gc(): 
   query = db.GqlQuery("SELECT * FROM Advert WHERE ttl < :1", datetime.datetime.today() + datetime.timedelta(days=-10))
   
   for advert in query: #all entities that can be deleted
     advert.delmd()     #delete all associated metadata
     advert.delete()    #delete the object itself
+
+##Public Functions
 
 class MainPage(webapp.RequestHandler):
   def get(self):
@@ -68,39 +116,36 @@ class MainPage(webapp.RequestHandler):
 
 class AddObject(webapp.RequestHandler):
   def post(self):
-    advert = Advert()
-    user   = users.get_current_user()
-    
     if auth(self) < 0: return
     
+    response = 201 #standard response
     body = self.request.body
     json = simplejson.loads(body)
-
-    if len(body) > 1000000:
-      break #it does not fit into the datastore in once piece
     
     query = db.GqlQuery("SELECT * FROM Advert WHERE path = :1", json[0])
     if query.count() > 0: #this entry already exists; overwrite
-      query.delmd()  #delete all associated metadata
-      query.delete() #delete the object itself
-      self.response.http_status_message(205) #reset content
+      if remove(json[0]) is 0: #remove went well
+        response = 205 #reset content
+
+    try: #try storing the JSON object (in transaction)
+      db.run_in_transaction(store, json) 
+    except db.TransactionFailedError, message:
+      logging.error(message) #log error message
+      gc()                   #run garbage collector
+      
+      try: #second try
+        db.run_in_transaction(store, json)
+      except db.TransactionFailedError, message:
+        logging.error(message) #log the error
+        self.error(503)        #send response to client
+        self.response.headers['Content-Type'] = 'text/plain'
+        self.response.out.write(message)
+        return
     
-    advert.path   = json[0] #extract path from message
-    advert.author = user    #store author
-    advert.object = json[2] #extract (base64) object from message
-    
-    advert.put() #store object in database
-    
-    for k in json[1].keys():
-      metadata        = MetaData(parent=advert)
-      metadata.path   = json[0]
-      metadata.keystr = k
-      metadata.value  = json[1][k]
-      metadata.put()
-    
-    self.response.http_status_message(201) #Created
+    self.response.http_status_message(response) #created/overwritten
     self.response.headers['Content-Type'] = 'text/plain'
-    self.response.out.write('Expires: %s', datetime.datetime.today() + datetime.timedelta(days=10)) 
+    self.response.out.write('Expires: ') 
+    self.response.out.write(datetime.datetime.today() + datetime.timedelta(days=10)) 
     return
 
 class DelObject(webapp.RequestHandler):
@@ -108,21 +153,18 @@ class DelObject(webapp.RequestHandler):
     if auth(self) < 0: return
     
     body  = self.request.body
-    query = db.GqlQuery("SELECT * FROM Advert WHERE path = :1", body)
+    query1 = db.GqlQuery("SELECT * FROM Advert WHERE path = :1", body)
+    query2 = db.GqlQuery("SELECT * FROM MetaData WHERE path = :1", body)
     
-    if query.count() < 1: #no matching object found
+    if query1.count() < 1: #no matching object found
       self.error(404)
       self.response.headers['Content-Type'] = 'text/plain'
       self.response.out.write('No Such Element')
       return      
     
-    for advert in query:
-      advert.delmd()  #delete all associated metadata
-      advert.delete() #deleting the first entry we find
-      break #and stop
-  
-    self.response.headers['Content-Type'] = 'text/plain'
-    self.response.out.write('OK')
+    if remove(body) is 0: #remove went well
+      self.response.headers['Content-Type'] = 'text/plain'
+      self.response.out.write('OK')
     
 class GetObject(webapp.RequestHandler):
   def post(self):

@@ -29,6 +29,13 @@ public class AdvertTests {
 		return result;
 	}
 	
+	private static void testDelete(Advert advert) throws Exception {
+		String path = "/home/bboterm/advert";
+		
+		logger.info("Calling advert.delete()");
+		advert.delete(path);
+	}
+	
 	private static void testAdd(Advert advert) throws Exception {
 		MetaData metaData = new MetaData();
 		
@@ -79,10 +86,12 @@ public class AdvertTests {
 		}
 		
 		/* add() */
-		logger.info("Testing add()...");
-		testAdd(advert);
+//		logger.info("Testing add()...");
+//		testAdd(advert);
 		
 		/* delete() */
+		logger.info("Testing delete()...");
+		testDelete(advert);
 		
 		/* find() */
 		
