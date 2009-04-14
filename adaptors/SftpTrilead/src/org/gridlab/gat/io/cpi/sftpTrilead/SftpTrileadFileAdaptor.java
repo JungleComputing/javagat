@@ -22,6 +22,7 @@ import org.gridlab.gat.GAT;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.GATObjectCreationException;
+import org.gridlab.gat.Preferences;
 import org.gridlab.gat.URI;
 import org.gridlab.gat.io.FileInterface;
 import org.gridlab.gat.io.cpi.FileCpi;
@@ -32,6 +33,7 @@ import com.trilead.ssh2.SFTPv3Client;
 import com.trilead.ssh2.SFTPv3DirectoryEntry;
 import com.trilead.ssh2.SFTPv3FileAttributes;
 import com.trilead.ssh2.SFTPv3FileHandle;
+import com.trilead.ssh2.ServerHostKeyVerifier;
 import com.trilead.ssh2.sftp.ErrorCodes;
 
 @SuppressWarnings("serial")
@@ -50,23 +52,42 @@ public class SftpTrileadFileAdaptor extends FileCpi {
         return capabilities;
     }
 
+    public static Preferences getSupportedPreferences() {
+        Preferences preferences = FileCpi.getSupportedPreferences();
+
+        preferences.put("sftptrilead.strictHostKeyChecking", "false");
+        preferences.put("sftptrilead.noHostKeyChecking", "true");
+        return preferences;
+    }
+
     protected static Logger logger = LoggerFactory
             .getLogger(SftpTrileadFileAdaptor.class);
 
     static final int SSH_PORT = 22;
 
     static final boolean USE_CLIENT_CACHING = true;
+    
+    private final SftpTrileadHostVerifier verifier;
 
     private static Hashtable<String, SftpTrileadConnection> clienttable = new Hashtable<String, SftpTrileadConnection>();
 
     public SftpTrileadFileAdaptor(GATContext gatContext, URI location)
             throws GATObjectCreationException {
-        super(gatContext, location);
 
+        super(gatContext, location);
+      
         if (!location.isCompatible("sftp") && !location.isCompatible("file")) {
             throw new AdaptorNotApplicableException("cannot handle this URI: "
                     + location);
         }
+        
+        Preferences p = gatContext.getPreferences();
+        boolean noHostKeyChecking = ((String) p.get("sftptrilead.noHostKeyChecking", "true"))
+                .equalsIgnoreCase("true");
+        boolean strictHostKeyChecking = ((String) p.get("sftptrilead.strictHostKeyChecking", "false"))
+                .equalsIgnoreCase("true");
+        
+        verifier = new SftpTrileadHostVerifier(false, strictHostKeyChecking, noHostKeyChecking);
     }
 
     private static String getClientKey(URI hostURI) {
@@ -93,7 +114,7 @@ public class SftpTrileadFileAdaptor extends FileCpi {
     private SftpTrileadConnection openConnection(GATContext gatContext,
             URI location) throws GATInvocationException {
         if (!USE_CLIENT_CACHING) {
-            return doWorkcreateConnection(gatContext, location);
+            return doWorkcreateConnection(gatContext, location,  verifier);
         }
 
         SftpTrileadConnection c = null;
@@ -120,14 +141,14 @@ public class SftpTrileadFileAdaptor extends FileCpi {
         }
 
         if (c == null) {
-            c = doWorkcreateConnection(gatContext, location);
+            c = doWorkcreateConnection(gatContext, location, verifier);
         }
 
         return c;
     }
 
-    private static SftpTrileadConnection doWorkcreateConnection(
-            GATContext gatContext, URI location) throws GATInvocationException {
+    private static synchronized SftpTrileadConnection doWorkcreateConnection(
+            GATContext gatContext, URI location, ServerHostKeyVerifier verifier) throws GATInvocationException {
         SftpTrileadConnection res = new SftpTrileadConnection();
         res.remoteMachine = location;
         try {
@@ -146,7 +167,7 @@ public class SftpTrileadFileAdaptor extends FileCpi {
         res.connection = new Connection(location.resolveHost(), port);
 
         try {
-            res.connection.connect();
+            res.connection.connect(verifier);
         } catch (IOException e) {
             throw new GATInvocationException("sftpTrilead", e);
         }
