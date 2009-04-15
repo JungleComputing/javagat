@@ -1,0 +1,46 @@
+<project name="IbisAdvertClient" default="build" basedir=".">
+	<description>Build file for Advert Service Client Adaptor.</description>
+
+	<property name="src" location="src" />
+	<property name="tmp" location="tmp" />
+	<property name="lib" location="lib" />
+	<property name="external" location="external" />
+	<property name="java.debug.value" value="true" />
+
+	<path id="external_jars">
+		<fileset dir="${external}">
+			<include name="*.jar" />
+		</fileset>
+	</path>
+
+	<target name="build" depends="clean" description="build the JARs and documentation">
+		<!-- Create the distribution end tmp directory -->
+		<mkdir dir="${lib}" />
+		<mkdir dir="${tmp}" />
+
+		<!-- Compile the java code from ${src} into ${tmp} -->
+		<javac source="1.5" srcdir="${src}" destdir="${tmp}" debug="on">
+			<classpath refid="external_jars" />
+		</javac>
+		
+		<jar jarfile="${lib}/ibis-advert-client.jar" basedir="${tmp}" includes="**/advert/*.class">
+		</jar>
+		<jar jarfile="${lib}/ibis-advert-client-test.jar" basedir="${tmp}" includes="**/test/*.class">
+		</jar>
+
+		<!-- Copy external libraries to lib directory -->
+		<copy todir="${lib}">
+			<fileset dir="${external}">
+				<include name="*.jar" />
+			</fileset>
+		</copy>
+
+		<delete dir="${tmp}" />
+	</target>
+
+	<target name="clean" description="clean up">
+		<delete dir="${tmp}" />
+		<delete dir="${lib}" />
+	</target>
+
+</project>

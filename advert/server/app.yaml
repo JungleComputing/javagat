@@ -1,0 +1,8 @@
+application: ibis-advert
+version: 0.1
+runtime: python
+api_version: 0.1
+
+handlers:
+- url: .*
+  script: ibis-advert.py

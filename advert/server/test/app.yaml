@@ -1,0 +1,41 @@
+application: bbn230
+version: 1
+runtime: python
+api_version: 1
+
+handlers:
+- url: /helloworld/.*
+  script: helloworld.py
+  secure: optional
+
+- url: /forms/.*
+  script: forms.py
+  secure: optional
+
+- url: /binary/.*
+  script: binary.py
+  secure: optional
+  
+- url: /cookies/.*
+  script: cookies.py
+  secure: optional
+
+- url: /json/.*
+  script: json.py
+  secure: optional
+
+- url: /queries/.*
+  script: queries.py
+  secure: optional
+
+- url: /func/.*
+  script: functions.py
+  secure: optional
+
+- url: /trans/.*
+  script: transactions.py
+  secure: optional
+
+- url: /.*
+  script: bbn230.py
+  secure: optional
