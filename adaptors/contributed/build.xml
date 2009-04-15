@@ -6,14 +6,12 @@
 	<target name="build" description="build all untested adaptors">
 		<ant dir="Pbs" />
 		<ant dir="ProActive" />
-		<ant dir="SftpNew" />
 	</target>
 
 
 	<target name="clean" description="clean all adaptors">
 		<ant dir="Pbs" target="clean" />
 		<ant dir="ProActive" target="clean" />
-		<ant dir="SftpNew" target="clean" />
 	</target>
 
 	<target name="pbs" description="build Pbs adaptors">
@@ -22,10 +20,6 @@
 
 	<target name="proactive" description="build ProActive adaptors">
 		<ant dir="ProActive" />
-	</target>
-
-	<target name="sftpnew" description="build SftpNew adaptor">
-		<ant dir="SftpNew" />
 	</target>
 
 </project>

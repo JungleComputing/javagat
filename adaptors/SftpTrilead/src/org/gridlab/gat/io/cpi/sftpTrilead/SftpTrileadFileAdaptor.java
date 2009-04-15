@@ -111,8 +111,8 @@ public class SftpTrileadFileAdaptor extends FileCpi {
         return false;
     }
 
-    private SftpTrileadConnection openConnection(GATContext gatContext,
-            URI location) throws GATInvocationException {
+    public static SftpTrileadConnection openConnection(GATContext gatContext,
+            URI location, SftpTrileadHostVerifier verifier) throws GATInvocationException {
         if (!USE_CLIENT_CACHING) {
             return doWorkcreateConnection(gatContext, location,  verifier);
         }
@@ -151,17 +151,17 @@ public class SftpTrileadFileAdaptor extends FileCpi {
             GATContext gatContext, URI location, ServerHostKeyVerifier verifier) throws GATInvocationException {
         SftpTrileadConnection res = new SftpTrileadConnection();
         res.remoteMachine = location;
+        int port = location.getPort();
+        if (port == -1) {
+            port = SSH_PORT;
+        }
         try {
             res.userInfo = SftpTrileadSecurityUtils.getSftpCredential(
-                    gatContext, "sftpTrilead", location, SSH_PORT);
+                    gatContext, "sftpTrilead", location, port);
         } catch (CouldNotInitializeCredentialException e) {
             throw new GATInvocationException("sftpTrilead", e);
         } catch (CredentialExpiredException e2) {
             throw new GATInvocationException("sftpTrilead", e2);
-        }
-        int port = location.getPort();
-        if (port == -1) {
-            port = SSH_PORT;
         }
 
         res.connection = new Connection(location.resolveHost(), port);
@@ -234,7 +234,7 @@ public class SftpTrileadFileAdaptor extends FileCpi {
         }
     }
 
-    public static void doWorkCloseConnection(SftpTrileadConnection c) {
+    private static void doWorkCloseConnection(SftpTrileadConnection c) {
         c.sftpClient.close();
         c.sftpClient = null;
         c.connection.close();
@@ -242,7 +242,7 @@ public class SftpTrileadFileAdaptor extends FileCpi {
     }
 
     public boolean mkdir() throws GATInvocationException {
-        SftpTrileadConnection c = openConnection(gatContext, location);
+        SftpTrileadConnection c = openConnection(gatContext, location, verifier);
         try {
             c.sftpClient.mkdir(fixURI(location, null).getPath(), 0700);
         } catch (IOException e) {
@@ -262,7 +262,7 @@ public class SftpTrileadFileAdaptor extends FileCpi {
         if (!exists()) {
             return false;
         }
-        SftpTrileadConnection c = openConnection(gatContext, location);
+        SftpTrileadConnection c = openConnection(gatContext, location, verifier);
         try {
             SFTPv3FileAttributes attr = c.sftpClient
                     .stat(fixURI(location, null).getPath());
@@ -280,7 +280,7 @@ public class SftpTrileadFileAdaptor extends FileCpi {
      * @see org.gridlab.gat.io.cpi.FileCpi#delete()
      */
     public boolean delete() throws GATInvocationException {
-        SftpTrileadConnection c = openConnection(gatContext, location);
+        SftpTrileadConnection c = openConnection(gatContext, location, verifier);
 
         try {
             SFTPv3FileAttributes attr = c.sftpClient
@@ -310,7 +310,7 @@ public class SftpTrileadFileAdaptor extends FileCpi {
      * @see org.gridlab.gat.io.cpi.FileCpi#exists()
      */
     public boolean exists() throws GATInvocationException {
-        SftpTrileadConnection c = openConnection(gatContext, location);
+        SftpTrileadConnection c = openConnection(gatContext, location, verifier);
         try {
             c.sftpClient.stat(fixURI(location, null).getPath());
         } catch (SFTPException x) {
@@ -333,7 +333,7 @@ public class SftpTrileadFileAdaptor extends FileCpi {
      * @see org.gridlab.gat.io.cpi.FileCpi#list()
      */
     public String[] list() throws GATInvocationException {
-        SftpTrileadConnection c = openConnection(gatContext, location);
+        SftpTrileadConnection c = openConnection(gatContext, location, verifier);
         try {
             SFTPv3FileAttributes attr = c.sftpClient
                     .stat(fixURI(location, null).getPath());
@@ -373,7 +373,7 @@ public class SftpTrileadFileAdaptor extends FileCpi {
         if (!exists()) {
             return false;
         }
-        SftpTrileadConnection c = openConnection(gatContext, location);
+        SftpTrileadConnection c = openConnection(gatContext, location, verifier);
         try {
             SFTPv3FileAttributes attr = c.sftpClient
                     .stat(fixURI(location, null).getPath());
@@ -391,7 +391,7 @@ public class SftpTrileadFileAdaptor extends FileCpi {
      * @see org.gridlab.gat.io.cpi.FileCpi#length()
      */
     public long length() throws GATInvocationException {
-        SftpTrileadConnection c = openConnection(gatContext, location);
+        SftpTrileadConnection c = openConnection(gatContext, location, verifier);
         try {
             SFTPv3FileAttributes attr = c.sftpClient
                     .stat(fixURI(location, null).getPath());
@@ -494,7 +494,7 @@ public class SftpTrileadFileAdaptor extends FileCpi {
             outBuf = new BufferedOutputStream(out);
 
             long length = length();
-            c = openConnection(gatContext, location);
+            c = openConnection(gatContext, location, verifier);
             handle = c.sftpClient.openFileRO(src.getPath());
 
             long bytesWritten = 0;
@@ -544,7 +544,7 @@ public class SftpTrileadFileAdaptor extends FileCpi {
             FileInputStream in = new FileInputStream(src.getPath());
             inBuf = new BufferedInputStream(in);
             long length = new java.io.File(src.getPath()).length();
-            c = openConnection(gatContext, dest);
+            c = openConnection(gatContext, dest, verifier);
             String destPath = dest.getPath();
             FileInterface destFile = GAT.createFile(gatContext, dest)
                     .getFileInterface();

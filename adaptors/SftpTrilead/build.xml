@@ -32,6 +32,8 @@
 		<jar jarfile="${lib}/SftpTrileadAdaptor.jar" basedir="${tmp}" includes="**">
 			<manifest>
 				<attribute name="FileCpi-class" value="org.gridlab.gat.io.cpi.sftpTrilead.SftpTrileadFileAdaptor" />
+				<attribute name="FileInputStreamCpi-class" value="org.gridlab.gat.io.cpi.sftpTrilead.SftpTrileadFileInputStreamAdaptor" />
+				<attribute name="FileOutputStreamCpi-class" value="org.gridlab.gat.io.cpi.sftpTrilead.SftpTrileadFileOutputStreamAdaptor" />
 			</manifest>
 		</jar>
 

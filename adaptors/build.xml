@@ -10,7 +10,6 @@
 		<ant dir="Gridsam" />
 		<ant dir="Local" />
 		<ant dir="Mercury" />
-		<ant dir="Sftp" />
 		<ant dir="SftpTrilead" />
 		<ant dir="Sge" />
 		<ant dir="SshTrilead" />
@@ -34,7 +33,6 @@
 		<ant dir="Gridsam" target="clean" />
 		<ant dir="Local" target="clean" />
 		<ant dir="Mercury" target="clean" />
-		<ant dir="Sftp" target="clean" />
 		<ant dir="SftpTrilead" target="clean" />
 		<ant dir="Sge" target="clean" />
 		<ant dir="SshTrilead" target="clean" />
@@ -63,10 +61,6 @@
 
 	<target name="mercury" description="build Mercury adaptors">
 		<ant dir="Mercury" />
-	</target>
-
-	<target name="sftp" description="build Sftp adaptors">
-		<ant dir="Sftp" />
 	</target>
 
 	<target name="sftptrilead" description="build SftpTrilead adaptor">
