@@ -848,6 +848,14 @@ public abstract class GlobusFileAdaptor extends FileCpi {
             return cachedInfo;
         } catch (Throwable e) {
             logger.debug("getInfo() got exception", e);
+            if (e instanceof ServerException) {
+                if (((ServerException) e).getCode() == ServerException.SERVER_REFUSED) {
+                    // This may happen when the file does not exist ...
+                    FileNotFoundException e1 = new FileNotFoundException("Got exception");
+                    e1.initCause(e);
+                    throw e1;
+                }
+            }
             if (e instanceof FileNotFoundException) {
                 throw (FileNotFoundException) e;
             }
@@ -1339,27 +1347,30 @@ public abstract class GlobusFileAdaptor extends FileCpi {
         if (tokens.countTokens() < 10) {
             return reply;
         }
-
-        if (logger.isDebugEnabled()) {
-            logger.debug("COG workaround parsing old ftp server list reply.");
-        }
+        
+        // We also get here if the file name itself contains spaces! --Ceriel
 
         String res = "";
 
         res += tokens.nextToken(); // permissions
-        res += " " + tokens.nextToken(); // ???
+        res += " " + tokens.nextToken(); // number of links
         res += " " + tokens.nextToken(); // owner
-        tokens.nextToken(); // skip
-        tokens.nextToken(); // skip
-
-        /*
-         * res += " " + tokens.nextToken(); // group res += " " +
-         * tokens.nextToken(); // size res += " " + tokens.nextToken(); // month
-         * res += " " + tokens.nextToken(); // day res += " " +
-         * tokens.nextToken(); // time res += " " + tokens.nextToken(); //
-         * filename
-         */
-
+        
+        String tok1 = tokens.nextToken();
+        String tok2 = tokens.nextToken();
+        
+        // So, if tok2 consists of digits only, we don't change
+        // the reply. --Ceriel
+        
+        if (! onlyDigits(tok2)) {
+            if (logger.isDebugEnabled()) {
+                logger.debug("COG workaround parsing old ftp server list reply.");
+            }
+        } else {
+            res += " " + tok1;
+            res += " " + tok2;
+        }
+        
         // if there are more tokens, just add them
         while (tokens.hasMoreTokens()) {
             res += " " + tokens.nextToken();
@@ -1370,6 +1381,16 @@ public abstract class GlobusFileAdaptor extends FileCpi {
         }
 
         return res;
+    }
+    
+    private boolean onlyDigits(String token) {
+        char[] chars = token.toCharArray();
+        for (char c : chars) {
+            if (! Character.isDigit(c)) {
+                return false;
+            }
+        }
+        return true;
     }
 
     /**
