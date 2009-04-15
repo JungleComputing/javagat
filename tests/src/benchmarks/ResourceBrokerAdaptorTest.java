@@ -8,6 +8,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.gridlab.gat.GAT;
+import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.GATObjectCreationException;
 import org.gridlab.gat.Preferences;
@@ -33,32 +34,34 @@ public class ResourceBrokerAdaptorTest implements MetricListener {
     public AdaptorTestResult test(String adaptor, String host) {
         AdaptorTestResult adaptorTestResult = new AdaptorTestResult(adaptor,
                 host);
+        GATContext gatContext = new GATContext();
+        // Add security contexts to gatContext here.
         Preferences preferences = new Preferences();
         preferences.put("resourcebroker.adaptor.name", adaptor);
-        preferences.put("file.adaptor.name", "sshtrilead,commandlinessh,local");
-        adaptorTestResult.put("submit job easy  ", submitJobEasy(preferences,
-                host));
+        // preferences.put("file.adaptor.name", "sshtrilead,commandlinessh,local");
+        adaptorTestResult.put("submit job easy  ", submitJobEasy(
+                gatContext, preferences, host));
         adaptorTestResult.put("submit job parallel", submitJobParallel(
-                preferences, host));
-        adaptorTestResult.put("submit job stdout", submitJobStdout(preferences,
-                host));
-        adaptorTestResult.put("submit job stderr", submitJobStderr(preferences,
-                host));
+                gatContext, preferences, host));
+        adaptorTestResult.put("submit job stdout", submitJobStdout(
+                gatContext, preferences, host));
+        adaptorTestResult.put("submit job stderr", submitJobStderr(
+                gatContext, preferences, host));
         adaptorTestResult.put("submit job prestage", submitJobPreStage(
-                preferences, host));
+                gatContext, preferences, host));
         adaptorTestResult.put("submit job poststage", submitJobPostStage(
-                preferences, host));
+                gatContext, preferences, host));
         adaptorTestResult.put("submit job environment", submitJobEnvironment(
-                preferences, host));
+                gatContext, preferences, host));
         adaptorTestResult.put("job state consistency",
-                submitJobStateConsistency(preferences, host));
+                submitJobStateConsistency(gatContext, preferences, host));
         adaptorTestResult.put("job get info        ", submitJobGetInfo(
-                preferences, host));
+                gatContext, preferences, host));
         return adaptorTestResult;
     }
 
-    private AdaptorTestResultEntry submitJobEasy(Preferences preferences,
-            String host) {
+    private AdaptorTestResultEntry submitJobEasy(GATContext gatContext,
+            Preferences preferences, String host) {
         SoftwareDescription sd = new SoftwareDescription();
         sd.setExecutable("/bin/echo");
         sd.setArguments("test", "1", "2", "3");
@@ -68,8 +71,8 @@ public class ResourceBrokerAdaptorTest implements MetricListener {
         JobDescription jd = new JobDescription(sd);
         ResourceBroker broker;
         try {
-            broker = GAT.createResourceBroker(preferences, new URI("any://"
-                    + host));
+            broker = GAT.createResourceBroker(gatContext, preferences,
+                    new URI("any://" + host));
         } catch (GATObjectCreationException e) {
             return new AdaptorTestResultEntry(false, 0L, e);
         } catch (URISyntaxException e) {
@@ -94,8 +97,8 @@ public class ResourceBrokerAdaptorTest implements MetricListener {
 
     }
 
-    private AdaptorTestResultEntry submitJobParallel(Preferences preferences,
-            String host) {
+    private AdaptorTestResultEntry submitJobParallel(GATContext gatContext,
+            Preferences preferences, String host) {
         SoftwareDescription sd = new SoftwareDescription();
         sd.setExecutable("/bin/echo");
         sd.setArguments("test", "1", "2", "3");
@@ -104,8 +107,8 @@ public class ResourceBrokerAdaptorTest implements MetricListener {
         jd.setResourceCount(1);
         ResourceBroker broker;
         try {
-            broker = GAT.createResourceBroker(preferences, new URI("any://"
-                    + host));
+            broker = GAT.createResourceBroker(gatContext, preferences,
+                    new URI("any://" + host));
         } catch (GATObjectCreationException e) {
             return new AdaptorTestResultEntry(false, 0L, e);
         } catch (URISyntaxException e) {
@@ -129,22 +132,22 @@ public class ResourceBrokerAdaptorTest implements MetricListener {
 
     }
 
-    private AdaptorTestResultEntry submitJobStdout(Preferences preferences,
-            String host) {
+    private AdaptorTestResultEntry submitJobStdout(GATContext gatContext,
+            Preferences preferences, String host) {
         SoftwareDescription sd = new SoftwareDescription();
         sd.setExecutable("/bin/echo");
         // Arguments modified to test against expansion of shell meta characters --Ceriel
         sd.setArguments("test", "1", "2", "'*");
         try {
-            sd.setStdout(GAT.createFile(preferences, "stdout"));
+            sd.setStdout(GAT.createFile(gatContext, preferences, "stdout"));
         } catch (GATObjectCreationException e) {
             return new AdaptorTestResultEntry(false, 0L, e);
         }
         JobDescription jd = new JobDescription(sd);
         ResourceBroker broker;
         try {
-            broker = GAT.createResourceBroker(preferences, new URI("any://"
-                    + host));
+            broker = GAT.createResourceBroker(gatContext, preferences,
+                    new URI("any://" + host));
         } catch (GATObjectCreationException e) {
             return new AdaptorTestResultEntry(false, 0L, e);
         } catch (URISyntaxException e) {
@@ -179,21 +182,21 @@ public class ResourceBrokerAdaptorTest implements MetricListener {
 
     }
 
-    private AdaptorTestResultEntry submitJobStderr(Preferences preferences,
-            String host) {
+    private AdaptorTestResultEntry submitJobStderr(GATContext gatContext,
+            Preferences preferences, String host) {
         SoftwareDescription sd = new SoftwareDescription();
         sd.setExecutable("/bin/ls");
         sd.setArguments("floep");
         try {
-            sd.setStderr(GAT.createFile(preferences, "stderr"));
+            sd.setStderr(GAT.createFile(gatContext, preferences, "stderr"));
         } catch (GATObjectCreationException e) {
             return new AdaptorTestResultEntry(false, 0L, e);
         }
         JobDescription jd = new JobDescription(sd);
         ResourceBroker broker;
         try {
-            broker = GAT.createResourceBroker(preferences, new URI("any://"
-                    + host));
+            broker = GAT.createResourceBroker(gatContext, preferences,
+                    new URI("any://" + host));
         } catch (GATObjectCreationException e) {
             return new AdaptorTestResultEntry(false, 0L, e);
         } catch (URISyntaxException e) {
@@ -228,8 +231,8 @@ public class ResourceBrokerAdaptorTest implements MetricListener {
 
     }
 
-    private AdaptorTestResultEntry submitJobPreStage(Preferences preferences,
-            String host) {
+    private AdaptorTestResultEntry submitJobPreStage(GATContext gatContext,
+            Preferences preferences, String host) {
         SoftwareDescription sd = new SoftwareDescription();
         sd.setExecutable("/bin/ls");
         sd.setArguments("floep");
@@ -243,16 +246,16 @@ public class ResourceBrokerAdaptorTest implements MetricListener {
             floep.deleteOnExit();
         }
         try {
-            sd.addPreStagedFile(GAT.createFile(preferences, "floep"));
-            sd.setStdout(GAT.createFile(preferences, "stdout"));
+            sd.addPreStagedFile(GAT.createFile(gatContext, preferences, "floep"));
+            sd.setStdout(GAT.createFile(gatContext, preferences, "stdout"));
         } catch (GATObjectCreationException e) {
             return new AdaptorTestResultEntry(false, 0L, e);
         }
         JobDescription jd = new JobDescription(sd);
         ResourceBroker broker;
         try {
-            broker = GAT.createResourceBroker(preferences, new URI("any://"
-                    + host));
+            broker = GAT.createResourceBroker(gatContext, preferences,
+                    new URI("any://" + host));
         } catch (GATObjectCreationException e) {
             return new AdaptorTestResultEntry(false, 0L, e);
         } catch (URISyntaxException e) {
@@ -285,21 +288,21 @@ public class ResourceBrokerAdaptorTest implements MetricListener {
 
     }
 
-    private AdaptorTestResultEntry submitJobPostStage(Preferences preferences,
-            String host) {
+    private AdaptorTestResultEntry submitJobPostStage(GATContext gatContext,
+            Preferences preferences, String host) {
         SoftwareDescription sd = new SoftwareDescription();
         sd.setExecutable("/bin/touch");
         sd.setArguments("flap.txt");
         try {
-            sd.addPostStagedFile(GAT.createFile(preferences, "flap.txt"));
+            sd.addPostStagedFile(GAT.createFile(gatContext, preferences, "flap.txt"));
         } catch (GATObjectCreationException e) {
             return new AdaptorTestResultEntry(false, 0L, e);
         }
         JobDescription jd = new JobDescription(sd);
         ResourceBroker broker;
         try {
-            broker = GAT.createResourceBroker(preferences, new URI("any://"
-                    + host));
+            broker = GAT.createResourceBroker(gatContext, preferences,
+                    new URI("any://" + host));
         } catch (GATObjectCreationException e) {
             return new AdaptorTestResultEntry(false, 0L, e);
         } catch (URISyntaxException e) {
@@ -325,22 +328,22 @@ public class ResourceBrokerAdaptorTest implements MetricListener {
     }
 
     private AdaptorTestResultEntry submitJobEnvironment(
-            Preferences preferences, String host) {
+            GATContext gatContext, Preferences preferences, String host) {
         SoftwareDescription sd = new SoftwareDescription();
         Map<String, Object> env = new HashMap<String, Object>();
         env.put("JAVAGAT_TEST_KEY", "javagat-test-value");
         sd.setEnvironment(env);
         sd.setExecutable("/usr/bin/env");
         try {
-            sd.setStdout(GAT.createFile(preferences, "stdout"));
+            sd.setStdout(GAT.createFile(gatContext, preferences, "stdout"));
         } catch (GATObjectCreationException e) {
             return new AdaptorTestResultEntry(false, 0L, e);
         }
         JobDescription jd = new JobDescription(sd);
         ResourceBroker broker;
         try {
-            broker = GAT.createResourceBroker(preferences, new URI("any://"
-                    + host));
+            broker = GAT.createResourceBroker(gatContext, preferences,
+                    new URI("any://" + host));
         } catch (GATObjectCreationException e) {
             return new AdaptorTestResultEntry(false, 0L, e);
         } catch (URISyntaxException e) {
@@ -383,15 +386,15 @@ public class ResourceBrokerAdaptorTest implements MetricListener {
     }
 
     private AdaptorTestResultEntry submitJobStateConsistency(
-            Preferences preferences, String host) {
+            GATContext gatContext, Preferences preferences, String host) {
         SoftwareDescription sd = new SoftwareDescription();
         sd.setExecutable("/bin/sleep");
         sd.setArguments("2");
         JobDescription jd = new JobDescription(sd);
         ResourceBroker broker;
         try {
-            broker = GAT.createResourceBroker(preferences, new URI("any://"
-                    + host));
+            broker = GAT.createResourceBroker(gatContext, preferences,
+                    new URI("any://" + host));
         } catch (GATObjectCreationException e) {
             return new AdaptorTestResultEntry(false, 0L, e);
         } catch (URISyntaxException e) {
@@ -473,16 +476,16 @@ public class ResourceBrokerAdaptorTest implements MetricListener {
         }
     }
 
-    private AdaptorTestResultEntry submitJobGetInfo(Preferences preferences,
-            String host) {
+    private AdaptorTestResultEntry submitJobGetInfo(GATContext gatContext,
+            Preferences preferences, String host) {
         SoftwareDescription sd = new SoftwareDescription();
         sd.setExecutable("/bin/sleep");
         sd.setArguments("2");
         JobDescription jd = new JobDescription(sd);
         ResourceBroker broker;
         try {
-            broker = GAT.createResourceBroker(preferences, new URI("any://"
-                    + host));
+            broker = GAT.createResourceBroker(gatContext, preferences,
+                    new URI("any://" + host));
         } catch (GATObjectCreationException e) {
             return new AdaptorTestResultEntry(false, 0L, e);
         } catch (URISyntaxException e) {
