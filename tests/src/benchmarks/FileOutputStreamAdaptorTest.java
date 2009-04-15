@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 
 import org.gridlab.gat.GAT;
+import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.GATObjectCreationException;
 import org.gridlab.gat.Preferences;
@@ -16,6 +17,8 @@ import org.gridlab.gat.resources.Job;
 import org.gridlab.gat.resources.JobDescription;
 import org.gridlab.gat.resources.ResourceBroker;
 import org.gridlab.gat.resources.SoftwareDescription;
+// import org.gridlab.gat.security.CertificateSecurityContext;
+import org.gridlab.gat.security.PasswordSecurityContext;
 
 public class FileOutputStreamAdaptorTest {
 
@@ -29,11 +32,20 @@ public class FileOutputStreamAdaptorTest {
         AdaptorTestResult adaptorTestResult = new AdaptorTestResult(adaptor,
                 host);
 
+        GATContext gatContext = new GATContext();
+        PasswordSecurityContext password = new PasswordSecurityContext(
+                "username", "TeMpPaSsWoRd");
+        password.addNote("adaptors", "ftp");
+        gatContext.addSecurityContext(password);
+        // CertificateSecurityContext ctxt = new CertificateSecurityContext(null, null, "username", "passphrase");
+        // gatContext.addSecurityContext(ctxt);
+        
         Preferences preferences = new Preferences();
         preferences.put("fileoutputstream.adaptor.name", adaptor);
+        
         FileOutputStream out = null;
         try {
-            out = GAT.createFileOutputStream(preferences,
+            out = GAT.createFileOutputStream(gatContext, preferences,
                     "any://" + host + "/JavaGAT-test-fileoutputstream");
         } catch (GATObjectCreationException e) {
             adaptorTestResult.put("create         ", new AdaptorTestResultEntry(false, 0, e));
@@ -58,19 +70,23 @@ public class FileOutputStreamAdaptorTest {
 
     @SuppressWarnings("null")
     private void run(String host, String script) {
+        
+        Preferences preferences = new Preferences();
+        preferences.put("resourcebroker.adaptor.name", "commandlinessh,sshtrilead,local");
+        preferences.put("file.adaptor.name", "commandlinessh,sshtrilead,local");
+        
         SoftwareDescription sd = new SoftwareDescription();
         sd.setExecutable("/bin/sh");
         sd.setArguments(script);
         try {
-            sd.addPreStagedFile(GAT.createFile("tests" + java.io.File.separator
+            sd.addPreStagedFile(GAT.createFile(preferences, "tests" + java.io.File.separator
                     + "src" + java.io.File.separator + "benchmarks"
                     + java.io.File.separator + script));
         } catch (GATObjectCreationException e) {
             e.printStackTrace();
             System.exit(1);
         }
-        Preferences preferences = new Preferences();
-        preferences.put("resourcebroker.adaptor.name", "sshtrilead,local");
+
         ResourceBroker broker = null;
         try {
             broker = GAT.createResourceBroker(preferences, new URI("any://"

@@ -16,7 +16,7 @@ import org.gridlab.gat.resources.Job;
 import org.gridlab.gat.resources.JobDescription;
 import org.gridlab.gat.resources.ResourceBroker;
 import org.gridlab.gat.resources.SoftwareDescription;
-import org.gridlab.gat.security.CertificateSecurityContext;
+// import org.gridlab.gat.security.CertificateSecurityContext;
 import org.gridlab.gat.security.PasswordSecurityContext;
 
 public class FileAdaptorTest {
@@ -38,6 +38,8 @@ public class FileAdaptorTest {
                 "username", "TeMpPaSsWoRd");
         password.addNote("adaptors", "ftp");
         gatContext.addSecurityContext(password);
+        // CertificateSecurityContext ctxt = new CertificateSecurityContext(null, null, "username", "passphrase");
+        // gatContext.addSecurityContext(ctxt);
 
         Preferences preferences = new Preferences();
         preferences.put("file.adaptor.name", adaptor + ",local");
@@ -197,9 +199,10 @@ public class FileAdaptorTest {
 
     @SuppressWarnings("null")
     private void run(String host, String script) {
+        
         Preferences preferences = new Preferences();
-        preferences.put("resourcebroker.adaptor.name", "local,commandlinessh");
-        preferences.put("file.adaptor.name", "local,commandlinessh");
+        preferences.put("resourcebroker.adaptor.name", "commandlinessh,sshtrilead,local");
+        preferences.put("file.adaptor.name", "commandlinessh,sshtrilead,local");
         
         SoftwareDescription sd = new SoftwareDescription();
         sd.setExecutable("/bin/sh");

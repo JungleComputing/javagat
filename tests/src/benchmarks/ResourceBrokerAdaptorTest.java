@@ -19,6 +19,7 @@ import org.gridlab.gat.resources.Job;
 import org.gridlab.gat.resources.JobDescription;
 import org.gridlab.gat.resources.ResourceBroker;
 import org.gridlab.gat.resources.SoftwareDescription;
+// import org.gridlab.gat.security.CertificateSecurityContext;
 
 public class ResourceBrokerAdaptorTest implements MetricListener {
 
@@ -35,10 +36,12 @@ public class ResourceBrokerAdaptorTest implements MetricListener {
         AdaptorTestResult adaptorTestResult = new AdaptorTestResult(adaptor,
                 host);
         GATContext gatContext = new GATContext();
+        // CertificateSecurityContext ctxt = new CertificateSecurityContext(null, null, "username", "passphrase");
+        // gatContext.addSecurityContext(ctxt);
         // Add security contexts to gatContext here.
         Preferences preferences = new Preferences();
         preferences.put("resourcebroker.adaptor.name", adaptor);
-        // preferences.put("file.adaptor.name", "sshtrilead,commandlinessh,local");
+        // preferences.put("file.adaptor.name", "commandlinessh,sshtrilead,local");
         adaptorTestResult.put("submit job easy  ", submitJobEasy(
                 gatContext, preferences, host));
         adaptorTestResult.put("submit job parallel", submitJobParallel(
