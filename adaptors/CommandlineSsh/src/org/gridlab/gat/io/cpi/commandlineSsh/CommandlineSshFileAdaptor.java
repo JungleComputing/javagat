@@ -239,7 +239,9 @@ public class CommandlineSshFileAdaptor extends FileCpi {
     }
 
     public boolean exists() throws GATInvocationException {
-        return runSshCommand(true, "test", "-e", fixedURI.getPath());
+        // Use "/usr/bin/test", not "test". Solaris version of /bin/sh does not
+        // recognize the -e option ... --Ceriel
+        return runSshCommand(true, "/usr/bin/test", "-e", fixedURI.getPath());
     }
 
     private ArrayList<String> getSshCommand() throws GATInvocationException {
