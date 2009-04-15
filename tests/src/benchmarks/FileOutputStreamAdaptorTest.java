@@ -76,7 +76,7 @@ public class FileOutputStreamAdaptorTest {
         preferences.put("file.adaptor.name", "commandlinessh,sshtrilead,local");
         
         SoftwareDescription sd = new SoftwareDescription();
-        sd.setExecutable("/bin/sh");
+        sd.setExecutable("/bin/bash");
         sd.setArguments(script);
         try {
             sd.addPreStagedFile(GAT.createFile(preferences, "tests" + java.io.File.separator
