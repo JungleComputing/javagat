@@ -55,7 +55,7 @@ public class LocalFileOutputStreamAdaptor extends FileOutputStreamCpi {
         try {
             out.close();
         } catch (IOException e) {
-            throw new GATInvocationException("local output stream", e);
+            throw new GATInvocationException("LocalFileOutputStream", e);
         }
     }
 
@@ -68,7 +68,7 @@ public class LocalFileOutputStreamAdaptor extends FileOutputStreamCpi {
         try {
             out.flush();
         } catch (IOException e) {
-            throw new GATInvocationException("local output stream", e);
+            throw new GATInvocationException("LocalFileOutputStream", e);
         }
     }
 
@@ -82,7 +82,7 @@ public class LocalFileOutputStreamAdaptor extends FileOutputStreamCpi {
         try {
             out.write(b, offset, len);
         } catch (IOException e) {
-            throw new GATInvocationException("local output stream", e);
+            throw new GATInvocationException("LocalFileOutputStream", e);
         }
     }
 
@@ -95,7 +95,7 @@ public class LocalFileOutputStreamAdaptor extends FileOutputStreamCpi {
         try {
             out.write(arg0);
         } catch (IOException e) {
-            throw new GATInvocationException("local output stream", e);
+            throw new GATInvocationException("LocalFileOutputStream", e);
         }
     }
 
@@ -108,7 +108,7 @@ public class LocalFileOutputStreamAdaptor extends FileOutputStreamCpi {
         try {
             out.write(arg0);
         } catch (IOException e) {
-            throw new GATInvocationException("local output stream", e);
+            throw new GATInvocationException("LocalFileOutputStream", e);
         }
     }
 }

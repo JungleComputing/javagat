@@ -44,7 +44,7 @@ public class LocalRandomAccessFileAdaptor extends RandomAccessFileCpi {
 
         if (!location.refersToLocalHost()) {
             throw new AdaptorNotApplicableException(
-                    "Cannot use remote files with the local file adaptor");
+                    "Cannot use remote files with the local random access file adaptor");
         }
 
         if (!location.isCompatible("file")) {
@@ -56,7 +56,7 @@ public class LocalRandomAccessFileAdaptor extends RandomAccessFileCpi {
             rf = new RandomAccessFile(new java.io.File(location.getPath()),
                     mode);
         } catch (FileNotFoundException e) {
-            throw new GATObjectCreationException("local randomaccess file", e);
+            throw new GATObjectCreationException("LocalRandomAccessFile", e);
         }
     }
 
@@ -78,7 +78,7 @@ public class LocalRandomAccessFileAdaptor extends RandomAccessFileCpi {
         try {
             rf.close();
         } catch (Exception e) {
-            throw new GATInvocationException("local random access file", e);
+            throw new GATInvocationException("LocalRandomAccessFile", e);
         }
     }
 
@@ -91,7 +91,7 @@ public class LocalRandomAccessFileAdaptor extends RandomAccessFileCpi {
         try {
             return rf.getFilePointer();
         } catch (Exception e) {
-            throw new GATInvocationException("local random access file", e);
+            throw new GATInvocationException("LocalRandomAccessFile", e);
         }
     }
 
@@ -104,7 +104,7 @@ public class LocalRandomAccessFileAdaptor extends RandomAccessFileCpi {
         try {
             return rf.length();
         } catch (Exception e) {
-            throw new GATInvocationException("local random access file", e);
+            throw new GATInvocationException("LocalRandomAccessFile", e);
         }
     }
 
@@ -117,7 +117,7 @@ public class LocalRandomAccessFileAdaptor extends RandomAccessFileCpi {
         try {
             return rf.read();
         } catch (Exception e) {
-            throw new GATInvocationException("local random access file", e);
+            throw new GATInvocationException("LocalRandomAccessFile", e);
         }
     }
 
@@ -131,7 +131,7 @@ public class LocalRandomAccessFileAdaptor extends RandomAccessFileCpi {
         try {
             return rf.read(arg0, arg1, arg2);
         } catch (Exception e) {
-            throw new GATInvocationException("local random access file", e);
+            throw new GATInvocationException("LocalRandomAccessFile", e);
         }
     }
 
@@ -144,7 +144,7 @@ public class LocalRandomAccessFileAdaptor extends RandomAccessFileCpi {
         try {
             return rf.read(arg0);
         } catch (Exception e) {
-            throw new GATInvocationException("local random access file", e);
+            throw new GATInvocationException("LocalRandomAccessFile", e);
         }
     }
 
@@ -157,7 +157,7 @@ public class LocalRandomAccessFileAdaptor extends RandomAccessFileCpi {
         try {
             rf.seek(arg0);
         } catch (Exception e) {
-            throw new GATInvocationException("local random access file", e);
+            throw new GATInvocationException("LocalRandomAccessFile", e);
         }
     }
 
@@ -170,7 +170,7 @@ public class LocalRandomAccessFileAdaptor extends RandomAccessFileCpi {
         try {
             rf.setLength(arg0);
         } catch (Exception e) {
-            throw new GATInvocationException("local random access file", e);
+            throw new GATInvocationException("LocalRandomAccessFile", e);
         }
     }
 
@@ -183,7 +183,7 @@ public class LocalRandomAccessFileAdaptor extends RandomAccessFileCpi {
         try {
             return rf.skipBytes(arg0);
         } catch (Exception e) {
-            throw new GATInvocationException("local random access file", e);
+            throw new GATInvocationException("LocalRandomAccessFile", e);
         }
     }
 
@@ -197,7 +197,7 @@ public class LocalRandomAccessFileAdaptor extends RandomAccessFileCpi {
         try {
             rf.write(arg0, arg1, arg2);
         } catch (Exception e) {
-            throw new GATInvocationException("local random access file", e);
+            throw new GATInvocationException("LocalRandomAccessFile", e);
         }
     }
 
@@ -210,7 +210,7 @@ public class LocalRandomAccessFileAdaptor extends RandomAccessFileCpi {
         try {
             rf.write(arg0);
         } catch (Exception e) {
-            throw new GATInvocationException("local random access file", e);
+            throw new GATInvocationException("LocalRandomAccessFile", e);
         }
     }
 
@@ -223,7 +223,7 @@ public class LocalRandomAccessFileAdaptor extends RandomAccessFileCpi {
         try {
             rf.write(arg0);
         } catch (Exception e) {
-            throw new GATInvocationException("local random access file", e);
+            throw new GATInvocationException("LocalRandomAccessFile", e);
         }
     }
 }

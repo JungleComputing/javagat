@@ -58,7 +58,7 @@ public class LocalFileInputStreamAdaptor extends FileInputStreamCpi {
         try {
             return in.available();
         } catch (IOException e) {
-            throw new GATInvocationException("DefaultFileInputStream", e);
+            throw new GATInvocationException("LocalFileInputStream", e);
         }
     }
 
@@ -71,7 +71,7 @@ public class LocalFileInputStreamAdaptor extends FileInputStreamCpi {
         try {
             in.close();
         } catch (IOException e) {
-            throw new GATInvocationException("DefaultFileInputStream", e);
+            throw new GATInvocationException("LocalFileInputStream", e);
         }
     }
 
@@ -102,7 +102,7 @@ public class LocalFileInputStreamAdaptor extends FileInputStreamCpi {
         try {
             return in.read();
         } catch (IOException e) {
-            throw new GATInvocationException("DefaultFileInputStream", e);
+            throw new GATInvocationException("LocalFileInputStream", e);
         }
     }
 
@@ -116,7 +116,7 @@ public class LocalFileInputStreamAdaptor extends FileInputStreamCpi {
         try {
             return in.read(b, offset, len);
         } catch (IOException e) {
-            throw new GATInvocationException("DefaultFileInputStream", e);
+            throw new GATInvocationException("LocalFileInputStream", e);
         }
     }
 
@@ -129,7 +129,7 @@ public class LocalFileInputStreamAdaptor extends FileInputStreamCpi {
         try {
             return in.read(arg0);
         } catch (IOException e) {
-            throw new GATInvocationException("DefaultFileInputStream", e);
+            throw new GATInvocationException("LocalFileInputStream", e);
         }
     }
 
@@ -142,7 +142,7 @@ public class LocalFileInputStreamAdaptor extends FileInputStreamCpi {
         try {
             in.reset();
         } catch (IOException e) {
-            throw new GATInvocationException("DefaultFileInputStream", e);
+            throw new GATInvocationException("LocalFileInputStream", e);
         }
     }
 
@@ -155,7 +155,7 @@ public class LocalFileInputStreamAdaptor extends FileInputStreamCpi {
         try {
             return in.skip(arg0);
         } catch (IOException e) {
-            throw new GATInvocationException("DefaultFileInputStream", e);
+            throw new GATInvocationException("LocalFileInputStream", e);
         }
     }
 }

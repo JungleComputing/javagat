@@ -258,18 +258,18 @@ public class LocalFileAdaptor extends FileCpi {
                 bytesWritten += len;
             }
         } catch (IOException e) {
-            throw new GATInvocationException("default file", e);
+            throw new GATInvocationException("LocalFile", e);
         } finally {
             try {
                 outBuf.close();
             } catch (IOException e) {
-                throw new GATInvocationException("default file", e);
+                throw new GATInvocationException("LocalFile", e);
             }
 
             try {
                 inBuf.close();
             } catch (IOException e) {
-                throw new GATInvocationException("default file", e);
+                throw new GATInvocationException("LocalFile", e);
             }
         }
     }
@@ -301,7 +301,7 @@ public class LocalFileAdaptor extends FileCpi {
         try {
             return f.createNewFile();
         } catch (IOException e) {
-            throw new GATInvocationException("local file", e);
+            throw new GATInvocationException("LocalFile", e);
         }
     }
 
@@ -371,7 +371,7 @@ public class LocalFileAdaptor extends FileCpi {
         try {
             return f.getCanonicalPath();
         } catch (IOException e) {
-            throw new GATInvocationException("local file", e);
+            throw new GATInvocationException("LocalFile", e);
         }
     }
 
@@ -516,7 +516,7 @@ public class LocalFileAdaptor extends FileCpi {
                 res[i] = GAT.createFile(gatContext,
                         localToURI(l.get(i).getPath()));
             } catch (Exception e) {
-                throw new GATInvocationException("default file", e);
+                throw new GATInvocationException("LocalFile", e);
             }
         }
 
@@ -546,7 +546,7 @@ public class LocalFileAdaptor extends FileCpi {
                 res[i] = GAT.createFile(gatContext,
                         localToURI(l.get(i).getPath()));
             } catch (Exception e) {
-                throw new GATInvocationException("default file", e);
+                throw new GATInvocationException("LocalFile", e);
             }
         }
 
@@ -576,7 +576,7 @@ public class LocalFileAdaptor extends FileCpi {
                 res[i] = GAT.createFile(gatContext,
                         localToURI(l.get(i).getPath()));
             } catch (Exception e) {
-                throw new GATInvocationException("default file", e);
+                throw new GATInvocationException("LocalFile", e);
             }
         }
 
@@ -609,7 +609,7 @@ public class LocalFileAdaptor extends FileCpi {
     public void move(URI destination) throws GATInvocationException {
         if (!destination.refersToLocalHost()) {
             throw new MethodNotApplicableException(
-                    "default file: cannot move to remote destination");
+                    "LocalFile: cannot move to remote destination");
         }
 
         if (logger.isInfoEnabled()) {
