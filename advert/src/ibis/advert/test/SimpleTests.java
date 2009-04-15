@@ -66,9 +66,13 @@ public class SimpleTests {
 	}
 
 	private static void testLogger() {
+		String[] roseindia = {"chanan","tapan","Amar","santosh","deepak"};
 		
 		System.out.println("TEST");
 		
+		for (int i = 0; i < roseindia.length; i++) {
+			logger.debug("S[] {}", roseindia[i]);
+		}
 		logger.error("DEBUG1");
 		logger.info("INFO2");
 		logger.warn("WARN3");

@@ -1,3 +1,7 @@
+/*
+ * Created 02 Apr. 2009 by Bas Boterman.
+ */
+
 package ibis.advert.test;
 
 import ibis.advert.Advert;
@@ -20,27 +24,49 @@ public class AdvertTests {
 
 	final static Logger logger = LoggerFactory.getLogger(AdvertTests.class);
 	
-	private static File readFile() {
-//		String filename = "/Volumes/Users/bbn230/Documents/workspace/app-engine/app-engine/src/client/appengine.gif"; /* OSX location */
-		String filename = "E:/Documents/Documents/Eclipse/workspace/app-engine/app-engine/src/client/appengine.gif";  /* Win location */
-		
-		File result = new File(filename);
-		
-		return result;
-	}
-	
-	private static void testDelete(Advert advert) throws Exception {
-		String path = "/home/bboterm/advert";
-		
+	private static void testDelete(Advert advert, String path) throws Exception {
 		logger.info("Calling advert.delete()");
 		advert.delete(path);
 	}
 	
-	private static void testAdd(Advert advert) throws Exception {
+	private static void testFind(Advert advert) throws Exception {
 		MetaData metaData = new MetaData();
+		String[] result   = null;
 		
-		File file = readFile();
-	    byte[] b = new byte[(int) file.length()];
+		metaData.put("key1", "value1");
+		metaData.put("key3", "value3");
+		
+		logger.info("Calling advert.find()");
+		result = advert.find(metaData);
+		
+		for (int i = 0; i < result.length; i++) {
+			logger.debug("Find result: {}", result[i]);
+		}
+	}
+	
+	private static void testGetMD(Advert advert, String path) throws Exception {
+		MetaData metaData = null;
+		
+		logger.info("Calling advert.getMetaData()");
+		metaData = advert.getMetaData(path);
+		
+		logger.debug("Get result: {}", metaData.toString());
+	}
+	
+	private static void testGet(Advert advert, String path) throws Exception {
+		byte[] b = null;
+		
+		logger.info("Calling advert.get()");
+		b = advert.get(path);
+		
+		logger.debug("Get result: {}", b.toString());
+	}
+	
+	private static void testAdd(Advert advert, String path, String filename) throws Exception {
+		MetaData metaData = new MetaData();
+		File file = new File(filename);;
+
+		byte[] b = new byte[(int) file.length()];
 	    int size = 0;
 	    DataInputStream is = null;
 	    
@@ -66,37 +92,48 @@ public class AdvertTests {
 		metaData.put("key2", "value2");
 		metaData.put("key3", "value3");
 		
-		String path = "/home/bboterm/advert";
-		
 		logger.info("Calling advert.add()");
 		advert.add(b, metaData, path);
 	}
 	
 	public static void main(String argv[]) throws Exception {
 		logger.info("Starting test class...");
-		Advert advert = null;
+		Advert advert   = null;
+		String path     = null;
+		String filename = null;
 		
-		if (argv.length != 1) {
-			logger.error("***Usage: provide password as first and only argument!");
+		if (argv.length != 3) {
+			logger.error("***Usage: AdvertTests <passwd> <pathname> <filename>");
 		}
 		else {
 			/* Create a new Advert object. */
 			advert = new Advert(server, user, argv[0]);
 			logger.info("Advert object created.");
+			
+			path     = argv[1];
+			filename = argv[2];
+			logger.debug("Path: {}", path);
+			logger.debug("File: {}", filename);
 		}
 		
 		/* add() */
-//		logger.info("Testing add()...");
-//		testAdd(advert);
+		logger.info("Testing add()...");
+		testAdd(advert, path, filename);
+
+		/* get() */
+		logger.info("Testing get()...");
+		testGet(advert, path);
+		
+		/* getMetaData() */
+		logger.info("Testing getMetaData()...");
+		testGetMD(advert, path);
+		
+		/* find() */
+		logger.info("Testing find()...");
+		testFind(advert);
 		
 		/* delete() */
 		logger.info("Testing delete()...");
-		testDelete(advert);
-		
-		/* find() */
-		
-		/* get() */
-		
-		/* getMetaData() */
+		testDelete(advert, path);
 	}
 }

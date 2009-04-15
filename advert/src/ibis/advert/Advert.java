@@ -161,12 +161,10 @@ public class Advert {
 	 * @param metaData
 	 *            {@link MetaData} describing the entries to be searched for.
 	 *            No wildcards allowed.
-	 * @param pwd
-	 *            Current working path.
 	 * @return a {@link String}[] of absolute paths, each pointing to a
 	 *         matching entry. If no matches are found, null is returned.
 	 */
-	public String[] find(MetaData metaData, String pwd)
+	public String[] find(MetaData metaData)
 	  throws MalformedURLException, IOException, AuthenticationException,
 	  AppEngineResourcesException, NoSuchElementException, 
 	  RequestTooLargeException, Exception {
