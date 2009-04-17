@@ -32,20 +32,20 @@ public class AdaptorTestResult {
 
         for (String key : testResultEntries.keySet()) {
             System.out.print(key);
-            if (testResultEntries.get(key).getResult()) {
+            AdaptorTestResultEntry result = testResultEntries.get(key);
+            if (result.getResult()) {
                 System.out.print("\t SUCCESS \t"
                         + testResultEntries.get(key).getTime() + " msec");
-                if (testResultEntries.get(key).getException() != null) {
+                if (result.getException() != null) {
                     System.out.println("\t"
-                            + testResultEntries.get(key).getException());
+                            + result.getException());
                 } else {
                     System.out.println();
                 }
             } else {
-                System.out.println("\t FAILURE \t"
-                        + testResultEntries.get(key).getException());
-                if (testResultEntries.get(key).getException() != null) {
-//                    testResultEntries.get(key).getException().printStackTrace();
+                System.out.println("\t FAILURE \t");
+                if (result.getException() != null) {
+                    result.getException().printStackTrace();
                 }
             }
         }
