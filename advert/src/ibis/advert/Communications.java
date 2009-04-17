@@ -15,6 +15,7 @@ import java.net.MalformedURLException;
 import java.net.ProtocolException;
 import java.net.URL;
 import java.net.URLEncoder;
+import java.nio.CharBuffer;
 import java.security.Security;
 import java.util.NoSuchElementException;
 import java.util.Properties;
@@ -33,6 +34,7 @@ class Communications {
 
 	private static final int MAX_REQ_SIZE = 10000000; /* 10e7 */
 	private static final int MAX_DB_SIZE  = 1000000;  /* 10e6 */
+	private static final int MAX_RETRIES  = 3; /* max number of retries */
 	private static final String CLIENTLOGIN = 
 		"https://www.google.com/accounts/ClientLogin";
 	
@@ -197,62 +199,86 @@ class Communications {
 				" (currently " + payload.length() + ")");
 		}
 		
-	    URL url = new URL("http://" + server + ext);
-		HttpURLConnection httpc = (HttpURLConnection) url.openConnection();
+		String  result  = null;
+		Boolean timeout = false;
+		int     retries = 0;
 		
-		/* Setting headers. */
-		httpc.setRequestMethod("POST");
-	    httpc.setRequestProperty("Cookie", cookie);
-		httpc.setDoInput(true);
-	    httpc.setDoOutput(true);
-	    httpc.setUseCaches(false);
-	    
-	    /* Connecting and POSTing. */
-		httpc.connect();
-		OutputStreamWriter osw = new OutputStreamWriter(httpc.getOutputStream());
-		
-		/* Writing JSON data. */
-		osw.write(payload);
-		osw.flush();
-		osw.close();
-		
-		BufferedReader in = null;
-		
-		/* Retrieving response headers. */
-		int httpc_rc = httpc.getResponseCode();
-		logger.info("HTTP Send() response code: {}", httpc_rc);
-	    if (httpc_rc < HttpURLConnection.HTTP_BAD_REQUEST) { /* success */
-	    	in = new 
-	    		BufferedReader(new InputStreamReader(httpc.getInputStream()));
-		} else { /* client/server error */
-			in = new 
-				BufferedReader(new InputStreamReader(httpc.getErrorStream()));
-		}
-	    
-	    String result = in.readLine();
-	    httpc.disconnect();
-	    
-	    logger.debug("HTTP Send() response body:");
-	    logger.debug(result);
-
-	    /* Check status codes. */
-		switch (httpc_rc) {
-			case HttpURLConnection.HTTP_OK:
-				/*fall through*/
-			case HttpURLConnection.HTTP_CREATED:
-			  	/*fall through*/
-			case HttpURLConnection.HTTP_RESET:
-				return result;
-			case HttpURLConnection.HTTP_FORBIDDEN:
-				throw new AuthenticationException(result);
-			case HttpURLConnection.HTTP_NOT_FOUND:
-				throw new NoSuchElementException(result);
-			case HttpURLConnection.HTTP_REQ_TOO_LONG:
-				throw new RequestTooLargeException(result);
-			case HttpURLConnection.HTTP_UNAVAILABLE:
-				throw new AppEngineResourcesException(result);
-			default:
-				throw new Exception(result);
-		}
+		do {
+		    URL url = new URL("http://" + server + ext);
+			HttpURLConnection httpc = (HttpURLConnection) url.openConnection();
+			
+			/* Setting headers. */
+			httpc.setRequestMethod("POST");
+		    httpc.setRequestProperty("Cookie", cookie);
+			httpc.setDoInput(true);
+		    httpc.setDoOutput(true);
+		    httpc.setUseCaches(false);
+		    
+		    /* Connecting and POSTing. */
+			httpc.connect();
+			OutputStreamWriter osw = new OutputStreamWriter(httpc.getOutputStream());
+			
+			/* Writing JSON data. */
+			osw.write(payload);
+			osw.flush();
+			osw.close();
+			
+			BufferedReader in = null;
+			
+			/* Retrieving response headers. */
+			int httpc_rc = httpc.getResponseCode();
+			logger.info("HTTP Send() response code: {}", httpc_rc);
+		    if (httpc_rc < HttpURLConnection.HTTP_BAD_REQUEST) { /* success */
+		    	in = new 
+		    		BufferedReader(new InputStreamReader(httpc.getInputStream()));
+			} else { /* client/server error */
+				in = new 
+					BufferedReader(new InputStreamReader(httpc.getErrorStream()));
+			}
+		    
+		    StringBuilder body = new StringBuilder();
+	        String inputLine;
+	        
+	        while ((inputLine = in.readLine()) != null) {
+	        	body.append(inputLine);
+	        	if (inputLine.startsWith("Timeout")) {
+	        		timeout = true;
+	        	}
+	        }
+		    
+		    httpc.disconnect();
+		    
+		    result = body.toString();
+		    
+		    logger.debug("HTTP Send() response body:");
+		    logger.debug(result);
+	
+		    /* Check status codes. */
+			switch (httpc_rc) {
+				case HttpURLConnection.HTTP_OK:
+					/*fall through*/
+				case HttpURLConnection.HTTP_CREATED:
+				  	/*fall through*/
+				case HttpURLConnection.HTTP_RESET:
+					return result;
+				case HttpURLConnection.HTTP_FORBIDDEN:
+					throw new AuthenticationException(result);
+				case HttpURLConnection.HTTP_NOT_FOUND:
+					throw new NoSuchElementException(result);
+				case HttpURLConnection.HTTP_REQ_TOO_LONG:
+					throw new RequestTooLargeException(result);
+				case HttpURLConnection.HTTP_UNAVAILABLE:
+					throw new AppEngineResourcesException(result);
+				case HttpURLConnection.HTTP_INTERNAL_ERROR:
+					if (timeout) {
+						timeout = false; /* reset timeout */
+						retries++;       /* increment number of retries */
+						break;
+					}
+				default: /* anything else */
+					throw new Exception(result);
+			}
+		} while (retries < MAX_RETRIES); /* timed out MAX_RETRIES times */
+		throw new Exception(result);
 	}
 }

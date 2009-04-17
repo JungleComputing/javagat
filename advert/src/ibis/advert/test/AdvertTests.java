@@ -13,6 +13,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.Iterator;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -50,7 +51,18 @@ public class AdvertTests {
 		logger.info("Calling advert.getMetaData()");
 		metaData = advert.getMetaData(path);
 		
-		logger.debug("Get result: {}", metaData.toString());
+		Iterator<String> itr  = metaData.getAllKeys().iterator();
+		
+		while (itr.hasNext()) {
+			String key   = itr.next();
+			String value = metaData.get(key);
+
+			if (key == null) {
+				continue; //key can't be null (value can)
+			}
+			
+			logger.debug("GetMD result: {} - {}", key, value);
+		}
 	}
 	
 	private static void testGet(Advert advert, String path) throws Exception {
@@ -117,23 +129,23 @@ public class AdvertTests {
 		}
 		
 		/* add() */
-		logger.info("Testing add()...");
-		testAdd(advert, path, filename);
-
+//		logger.info("Testing add()...");
+//		testAdd(advert, path, filename);
+		
 		/* get() */
-		logger.info("Testing get()...");
-		testGet(advert, path);
+//		logger.info("Testing get()...");
+//		testGet(advert, path);
 		
-		/* getMetaData() */
-		logger.info("Testing getMetaData()...");
-		testGetMD(advert, path);
-		
-		/* find() */
+//		/* getMetaData() */
+//		logger.info("Testing getMetaData()...");
+//		testGetMD(advert, path);
+//		
+//		/* find() */
 		logger.info("Testing find()...");
 		testFind(advert);
-		
-		/* delete() */
-		logger.info("Testing delete()...");
-		testDelete(advert, path);
+//		
+//		/* delete() */
+//		logger.info("Testing delete()...");
+//		testDelete(advert, path);
 	}
 }

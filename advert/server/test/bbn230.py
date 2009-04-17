@@ -19,6 +19,7 @@ import cgi
 import datetime
 import logging
 
+from sets import Set
 from google.appengine.api import users
 from google.appengine.ext import webapp
 from google.appengine.ext.webapp.util import run_wsgi_app
@@ -214,6 +215,8 @@ class FindMetaData(webapp.RequestHandler):
     body = self.request.body
     json = simplejson.loads(body)
     
+    logging.info(body)
+    
     query = db.GqlQuery("SELECT * FROM MetaData")
     
     paths = Set()
@@ -222,11 +225,10 @@ class FindMetaData(webapp.RequestHandler):
       paths.add(bin.path)
       
     paths  = list(paths)
-    self.response.out.write(paths)
     
     for path in paths[:]:
       for k in json.keys():
-        query = db.GqlQuery("SELECT * FROM MetaData WHERE path = :1 AND keystr = :2 AND val = :3", path, k, json[k])
+        query = db.GqlQuery("SELECT * FROM MetaData WHERE path = :1 AND keystr = :2 AND value = :3", path, k, json[k])
         if query.count() < 1:
           paths.remove(path)
           break
