@@ -1,7 +1,7 @@
 <project name="UnicoreAdaptor" default="build" basedir=".">
 	<description>Build file for JavaGAT Unicore Adaptors.</description>
 
-	<property name="gat.location" location="../../.." />
+	<property name="gat.location" location="../.." />
 	<property name="engine_path" location="${gat.location}/lib" />
 
 	<property name="src" location="src" />
