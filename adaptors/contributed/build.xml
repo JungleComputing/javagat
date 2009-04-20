@@ -36,9 +36,5 @@
 		<ant dir="SgeScript" />
 	</target>
 
-	<target name="unicore" description="build Unicore adaptor">
-		<ant dir="Unicore" />
-	</target>
-
 
 </project>
