@@ -16,7 +16,7 @@
 		<ant dir="Zorilla" />
 		<ant dir="Generic" />
 		<ant dir="Glite" />
-		<ant dir="Koala" />
+	<!--	<ant dir="Koala" /> -->
 	</target>
 
 	<target name="build-with-contributed" description="build all tested and contributed adaptors" depends="build">
@@ -39,7 +39,7 @@
 		<ant dir="Zorilla" target="clean" />
 		<ant dir="Generic" target="clean" />
 		<ant dir="Glite" target="clean" />
-		<ant dir="Koala" target="clean" />
+		<!-- <ant dir="Koala" target="clean" /> -->
 		<ant dir="contributed" target="clean" />
 	</target>
 
@@ -87,8 +87,8 @@
 		<ant dir="Glite" />
 	</target>
 
-	<target name="koala" description="build Koala adaptors">
+	<!-- <target name="koala" description="build Koala adaptors">
 		<ant dir="Koala" />
-	</target>
+	</target> -->
 
 </project>

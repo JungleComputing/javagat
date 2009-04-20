@@ -171,6 +171,7 @@ public class CommandlineSshResourceBrokerAdaptor extends ResourceBrokerCpi {
             throw new MethodNotApplicableException("cannot handle environment");
         }
 
+//        System.out.println("env:" + env.toString());
         String path = getExecutable(description);
         String authority = getAuthority();
         if (authority == null) {
@@ -280,6 +281,7 @@ public class CommandlineSshResourceBrokerAdaptor extends ResourceBrokerCpi {
             logger.info("running command: " + command);
         }
 
+        
         Process p = null;
         try {
             p = builder.start();

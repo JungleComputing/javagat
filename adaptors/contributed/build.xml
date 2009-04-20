@@ -1,18 +1,28 @@
-<project name="untested GAT Adaptors" default="build" basedir=".">
+<project name="contributed GAT Adaptors" default="build" basedir=".">
 	<description>
-        Build file for untested Java GAT Adaptors.
+        Build file for contributed Java GAT Adaptors.
         </description>
 
-	<target name="build" description="build all untested adaptors">
+	<target name="build" description="build all contributed adaptors">
+		<!-- <ant dir="Koala" /> -->
 		<ant dir="Pbs" />
 		<ant dir="ProActive" />
+		<ant dir="SgeScript" />
+                <ant dir="Unicore" />
 	</target>
 
 
 	<target name="clean" description="clean all adaptors">
+		<!-- <ant dir="Koala" target="clean" /> -->
 		<ant dir="Pbs" target="clean" />
 		<ant dir="ProActive" target="clean" />
+		<ant dir="SgeScript" target="clean" />
+		<ant dir="Unicore" target="clean" />
 	</target>
+
+	<!-- <target name="koala" description="build Koala adaptors">
+		<ant dir="Koala" />
+	</target> -->
 
 	<target name="pbs" description="build Pbs adaptors">
 		<ant dir="Pbs" />
@@ -21,5 +31,14 @@
 	<target name="proactive" description="build ProActive adaptors">
 		<ant dir="ProActive" />
 	</target>
+
+	<target name="sgescript" description="build SgeScript adaptor">
+		<ant dir="SgeScript" />
+	</target>
+
+	<target name="unicore" description="build Unicore adaptor">
+		<ant dir="Unicore" />
+	</target>
+
 
 </project>
