@@ -64,6 +64,33 @@ public class SimpleTests {
 		}
 		System.setProperties(properties); 	
 	}
+	
+	private static void testJSON() {
+		String[] roseindia = null;
+		
+		JSONArray json = new JSONArray();
+		JSONArray jsonarr = new JSONArray();
+		
+		json.add("chanan");
+		json.add("tapan");
+		json.add("Amar");
+		json.add("Santosh");
+		json.add("deepak");
+		
+		String s = json.toString();
+		
+		logger.debug(s);
+		
+		jsonarr = JSONArray.fromObject(s);
+
+		logger.debug(jsonarr.toString());
+		
+		roseindia = (String[]) jsonarr.toArray(new String[0]);
+		
+		for (int i = 0; i < roseindia.length; i++) {
+			logger.debug("S[] {}", roseindia[i]);
+		}
+	}
 
 	private static void testLogger() {
 		String[] roseindia = {"chanan","tapan","Amar","santosh","deepak"};
@@ -954,6 +981,8 @@ public class SimpleTests {
 		uri = server.concat("func/");
 //		testFunc(uri);
 		
-		testLogger();
+//		testLogger();
+		
+		testJSON();
 	}
 }

@@ -189,6 +189,6 @@ public class Advert {
 		
 		jsonarr = JSONArray.fromObject(result);
 		
-		return (String[]) jsonarr.toArray();
+		return (String[]) jsonarr.toArray(new String[0]);
 	}
 }

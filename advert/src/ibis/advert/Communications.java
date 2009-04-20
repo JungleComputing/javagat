@@ -200,7 +200,6 @@ class Communications {
 		}
 		
 		String  result  = null;
-		Boolean timeout = false;
 		int     retries = 0;
 		
 		do {
@@ -241,9 +240,6 @@ class Communications {
 	        
 	        while ((inputLine = in.readLine()) != null) {
 	        	body.append(inputLine);
-	        	if (inputLine.startsWith("Timeout")) {
-	        		timeout = true;
-	        	}
 	        }
 		    
 		    httpc.disconnect();
@@ -270,15 +266,12 @@ class Communications {
 				case HttpURLConnection.HTTP_UNAVAILABLE:
 					throw new AppEngineResourcesException(result);
 				case HttpURLConnection.HTTP_INTERNAL_ERROR:
-					if (timeout) {
-						timeout = false; /* reset timeout */
-						retries++;       /* increment number of retries */
-						break;
-					}
+					retries++; /* increment number of retries */
+					break;
 				default: /* anything else */
 					throw new Exception(result);
 			}
-		} while (retries < MAX_RETRIES); /* timed out MAX_RETRIES times */
+		} while (retries < MAX_RETRIES); /* done MAX_RETRIES times */
 		throw new Exception(result);
 	}
 }

@@ -141,11 +141,11 @@ public class AdvertTests {
 //		testGetMD(advert, path);
 //		
 //		/* find() */
-		logger.info("Testing find()...");
-		testFind(advert);
+//		logger.info("Testing find()...");
+//		testFind(advert);
 //		
 //		/* delete() */
-//		logger.info("Testing delete()...");
-//		testDelete(advert, path);
+		logger.info("Testing delete()...");
+		testDelete(advert, path);
 	}
 }
