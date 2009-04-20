@@ -63,8 +63,16 @@ import de.fzj.hila.exceptions.HiLALocationSyntaxException;
 
 public class UnicoreResourceBrokerAdaptor extends ResourceBrokerCpi {
 	
-	protected static Logger logger = LoggerFactory.getLogger(UnicoreResourceBrokerAdaptor.class);
+    protected static Logger logger = LoggerFactory.getLogger(UnicoreResourceBrokerAdaptor.class);
 	
+    public static Map<String, Boolean> getSupportedCapabilities() {
+        Map<String, Boolean> capabilities = ResourceBrokerCpi
+                .getSupportedCapabilities();
+        capabilities.put("submitJob", true);
+
+        return capabilities;
+    }
+
     public UnicoreResourceBrokerAdaptor(GATContext gatContext, URI brokerURI) throws GATObjectCreationException, AdaptorNotApplicableException {
     	
     	super(gatContext, brokerURI);
