@@ -17,7 +17,6 @@
 		<fileset dir="${engine_path}">
 			<include name="GAT-API.jar" />
 			<include name="GAT-engine.jar" />
-			<include name="log4j-1.2.13.jar" />
 			<include name="xercesImpl.jar" />
 			<include name="xmlParserAPIs.jar" />
 			<include name="castor-1.1.1-xml.jar" />

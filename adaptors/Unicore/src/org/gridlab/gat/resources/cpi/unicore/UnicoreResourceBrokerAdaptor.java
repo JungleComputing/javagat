@@ -20,7 +20,8 @@ import java.io.OutputStream;
 import java.io.ByteArrayOutputStream ;
 import java.io.UnsupportedEncodingException;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.xmlbeans.XmlException;
 
 /**
@@ -85,7 +86,7 @@ import org.ggf.schemas.jsdl.x2005.x11.jsdl.JobDefinitionDocument;
 
 public class UnicoreResourceBrokerAdaptor extends ResourceBrokerCpi {
 	
-	protected static Logger logger = Logger.getLogger(UnicoreResourceBrokerAdaptor.class);
+	protected static Logger logger = LoggerFactory.getLogger(UnicoreResourceBrokerAdaptor.class);
 	
     public UnicoreResourceBrokerAdaptor(GATContext gatContext, URI brokerURI) throws GATObjectCreationException, AdaptorNotApplicableException {
     	
