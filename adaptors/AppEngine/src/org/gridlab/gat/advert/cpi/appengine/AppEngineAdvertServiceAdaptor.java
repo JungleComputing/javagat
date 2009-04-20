@@ -21,11 +21,17 @@ import org.gridlab.gat.advert.cpi.AdvertServiceCpi;
 import org.gridlab.gat.engine.GATEngine;
 import org.gridlab.gat.security.PasswordSecurityContext;
 
+/**
+ * The adaptor for use with the Google App Engine.
+ * 
+ * @author Bas Boterman
+ */
+
 public class AppEngineAdvertServiceAdaptor extends AdvertServiceCpi {
 
     public static Map<String, Boolean> getSupportedCapabilities() {
-        Map<String, Boolean> capabilities = AdvertServiceCpi
-                .getSupportedCapabilities();
+        Map<String, Boolean> capabilities = 
+          AdvertServiceCpi.getSupportedCapabilities();
         capabilities.put("add", true);
         capabilities.put("delete", true);
         capabilities.put("getMetaData", true);
@@ -225,121 +231,14 @@ public class AppEngineAdvertServiceAdaptor extends AdvertServiceCpi {
 		}
 	}
 
-//	public void exportDataBase(org.gridlab.gat.URI target)
-//			throws GATInvocationException {
-//		FileInterface sourceFile = null;
-//		try {
-//			sourceFile = GAT.createFile(gatContext,
-//					new org.gridlab.gat.URI(save())).getFileInterface();
-//		} catch (GATObjectCreationException e) {
-//			throw new GATInvocationException("failed to create source file", e);
-//		} catch (URISyntaxException e) {
-//			throw new GATInvocationException("failed to create source file", e);
-//		}
-//		sourceFile.copy(target);
-//		sourceFile.delete();
-//	}
-//
-//	public synchronized void importDataBase(org.gridlab.gat.URI source)
-//			throws GATInvocationException {
-//		FileInterface sourceFile = null;
-//		try {
-//			sourceFile = GAT.createFile(gatContext, source).getFileInterface();
-//		} catch (GATObjectCreationException e) {
-//			throw new GATInvocationException("failed to create source file", e);
-//		}
-//		try {
-//			File tempLocalFile = File.createTempFile("JavaGAT",
-//					"advert-database");
-//			sourceFile.copy(new org.gridlab.gat.URI(tempLocalFile.getPath()));
-//			load(tempLocalFile);
-//			tempLocalFile.delete();
-//
-//		} catch (URISyntaxException e) {
-//			throw new GATInvocationException("failed to copy", e);
-//		} catch (IOException e) {
-//			throw new GATInvocationException("failed to copy", e);
-//		}
-//	}
-//
-//	private synchronized String save() throws GATInvocationException {
-//		ObjectOutputStream out = null;
-//		FileLock lock = null;
-//		File f = null;
-//		try {
-//			f = File.createTempFile("JavaGAT", "advert-database");
-//		} catch (IOException e) {
-//			throw new GATInvocationException("local advert", e);
-//		}
-//		try {
-//			FileOutputStream fout = new FileOutputStream(f);
-//			FileChannel fc = fout.getChannel();
-//			lock = fc.lock();
-//
-//			BufferedOutputStream bout = new BufferedOutputStream(fout);
-//			out = new ObjectOutputStream(bout);
-//
-//			out.writeObject(database);
-//		} catch (Exception e) {
-//			throw new GATInvocationException("local advert", e);
-//		} finally {
-//			if (lock != null) {
-//				try {
-//					lock.release();
-//				} catch (Exception e) {
-//					// Ignore.
-//				}
-//			}
-//			if (out != null) {
-//				try {
-//					out.close();
-//				} catch (Exception e) {
-//					// Ignore.
-//				}
-//			}
-//		}
-//		return f.getPath();
-//	}
-//
-//	@SuppressWarnings("unchecked")
-//	private synchronized void load(File f) throws GATInvocationException {
-//		if (!f.exists()) {
-//			return;
-//		}
-//
-//		ObjectInputStream in = null;
-//		FileLock lock = null;
-//
-//		try {
-//			RandomAccessFile rf = new RandomAccessFile(f, "rw");
-//			FileChannel fc = rf.getChannel();
-//			lock = fc.lock();
-//
-//			FileInputStream fin = new FileInputStream(rf.getFD());
-//			BufferedInputStream bin = new BufferedInputStream(fin);
-//			in = new ObjectInputStream(bin);
-//
-//			database = (Hashtable<String, Entry>) in.readObject();
-//		} catch (Exception e) {
-//			throw new GATInvocationException("local advert", e);
-//		} finally {
-//			if (lock != null) {
-//				try {
-//					lock.release();
-//				} catch (Exception e) {
-//					// Ignore.
-//				}
-//			}
-//			if (in != null) {
-//				try {
-//					in.close();
-//				} catch (Exception e) {
-//					// Ignore.
-//				}
-//			}
-//		}
-//	}
-
+	/**
+	 * Private function to normalize relative path and PWD to absolute path.
+	 * 
+	 * @param path
+	 *   The relative path that needs to be formatted to an absolute path.
+	 * @throws GATInvocationException
+	 *   The path can't be normalized.
+	 */
 	private String normalizePath(String path) throws GATInvocationException {
 		try {
 			if (!path.startsWith(SEPARATOR)) {
@@ -356,6 +255,15 @@ public class AppEngineAdvertServiceAdaptor extends AdvertServiceCpi {
 		}
 	}
 	
+	/**
+	 * Private function to convert any {@link MetaData} object from 
+	 * org.gridlab.gat to a {@link ibis.advert.MetaData} object.
+	 * 
+	 * @param metadata
+	 *   The {@link MetaData} to be converted.
+	 * @return
+	 *   An {@link ibis.advert.MetaData} object.
+	 */
 	private ibis.advert.MetaData toAdvertMetaData(MetaData metadata) {
 		ibis.advert.MetaData result = new ibis.advert.MetaData();
 		
@@ -365,7 +273,16 @@ public class AppEngineAdvertServiceAdaptor extends AdvertServiceCpi {
 		
 		return result;
 	}
-	
+
+	/**
+	 * Private function to convert any {@link ibis.advert.MetaData} object 
+	 * from org.gridlab.gat to a {@link MetaData} object.
+	 * 
+	 * @param metadata
+	 *   The {@link ibis.advert.MetaData} to be converted.
+	 * @return
+	 *   An {@link MetaData} object.
+	 */
 	private MetaData fromAdvertMetaData(ibis.advert.MetaData metadata) {
 		MetaData result = new MetaData();
 		
@@ -383,25 +300,4 @@ public class AppEngineAdvertServiceAdaptor extends AdvertServiceCpi {
 		}
 		return result;
 	}
-
-//	@SuppressWarnings("serial")
-//	static class Entry implements Serializable {
-//
-//		private String path;
-//
-//		private MetaData metadata;
-//
-//		public Entry(String path, MetaData metadata) {
-//			this.path = path;
-//			this.metadata = metadata;
-//		}
-//
-//		public String getPath() {
-//			return path;
-//		}
-//
-//		public MetaData getMetaData() {
-//			return metadata;
-//		}
-//	}
 }

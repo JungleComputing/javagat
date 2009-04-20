@@ -71,7 +71,7 @@ class Communications {
 	}
 	
 	/**
-	 * Function to authenticate to the Google App Engine
+	 * Function to authenticate to the Google App Engine.
 	 * @param server
 	 * 				Server to connect to.
 	 * @param user
