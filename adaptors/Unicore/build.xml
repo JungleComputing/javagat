@@ -24,43 +24,43 @@
 		</fileset>
 	</path>
 
-        <!-- Create the distribution end tmp directory -->
-        <mkdir dir="${lib}" />
 
-        <!-- Copy external libraries to lib directory -->
-	<copy todir="${lib}">
+	<target name="build" depends="clean" description="build the JARs and documentation">
+	    <!-- Create the distribution end tmp directory -->
+	    <mkdir dir="${lib}" />
+
+	    <!-- Copy external libraries to lib directory -->
+	    <copy todir="${lib}">
 		<fileset dir="${external}">
 			<include name="*.jar" />
 		</fileset>
-	</copy>
+	    </copy>
 
-        <!-- create a list with necessary jar files for the classpaths manifest -->
-        
-        <path id = "hila-libs" >
-            <fileset dir = "${lib}" >
-               <include name = "dom4j-1.6.1.jar" />
-               <include name = "hila-api-1.0-SNAPSHOT.jar" />
-               <include name = "hila-common-1.0-SNAPSHOT.jar" />
-               <include name = "hila-unicore6-1.0-SNAPSHOT-jar-with-dependencies.jar" />
-            </fileset>
-        </path>
-
-        <!-- pathconvert for having all the jar files as a string variable in the later build... -->
-
-        <pathconvert property="hila-jars" refid="hila-libs" pathsep=" " dirsep="/">
-            <map from="/" to="/"/>
-        </pathconvert>
-
-
-	<target name="build" depends="clean" description="build the JARs and documentation">
 		<!-- Create the tmp directory -->
 		<mkdir dir="${tmp}" />
 		
 
 		<!-- Compile the java code from ${src} into ${tmp} -->
-		<javac source="1.5" srcdir="${src}" destdir="${tmp}" debug="on">
+		<javac source="1.5" target="1.5" srcdir="${src}" destdir="${tmp}" debug="on">
 			<classpath refid="external_jars" />
 		</javac>
+
+        <!-- create a list with necessary jar files for the classpaths manifest -->
+        
+	    <path id = "hila-libs" >
+		<fileset dir = "${lib}" >
+		   <include name = "dom4j-1.6.1.jar" />
+		   <include name = "hila-api-1.0-SNAPSHOT.jar" />
+		   <include name = "hila-common-1.0-SNAPSHOT.jar" />
+		   <include name = "hila-unicore6-1.0-SNAPSHOT-jar-with-dependencies.jar" />
+		</fileset>
+	    </path>
+
+	    <!-- pathconvert for having all the jar files as a string variable in the later build... -->
+
+	    <pathconvert property="hila-jars" refid="hila-libs" pathsep=" " dirsep="/">
+		<map from="/" to="/"/>
+	    </pathconvert>
 
 		<jar jarfile="${lib}/UnicoreAdaptor.jar" basedir="${tmp}" includes="**">
 			<manifest>
