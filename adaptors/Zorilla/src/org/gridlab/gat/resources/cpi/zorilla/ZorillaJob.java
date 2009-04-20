@@ -550,6 +550,7 @@ public class ZorillaJob extends JobCpi {
             this.info = info;
         }
         if (hasEnded()) {
+            finished();
             postStage();
         }
 
