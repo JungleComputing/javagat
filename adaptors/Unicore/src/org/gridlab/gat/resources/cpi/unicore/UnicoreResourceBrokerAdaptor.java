@@ -8,73 +8,50 @@
 package org.gridlab.gat.resources.cpi.unicore;
 
 
-import java.util.Iterator;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.ByteArrayInputStream;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.ByteArrayOutputStream ;
-import java.io.UnsupportedEncodingException;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.apache.xmlbeans.XmlException;
-
-/**
- * xml stuff
- */
-
 import org.dom4j.Document;
-import org.dom4j.DocumentException;
 import org.dom4j.DocumentFactory;
-import org.dom4j.Namespace;
 import org.dom4j.DocumentHelper;
 import org.dom4j.Element;
+import org.dom4j.Namespace;
 import org.dom4j.io.XMLWriter;
-import org.dom4j.io.SAXReader;
-import org.dom4j.io.OutputFormat;
-
-/**
- * GAT stuff
- */
-
+import org.gridlab.gat.AdaptorNotApplicableException;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.GATObjectCreationException;
-import org.gridlab.gat.AdaptorNotApplicableException;
-import org.gridlab.gat.Preferences;
 import org.gridlab.gat.TimePeriod;
 import org.gridlab.gat.URI;
 import org.gridlab.gat.io.File;
 import org.gridlab.gat.monitoring.Metric;
 import org.gridlab.gat.monitoring.MetricListener;
+import org.gridlab.gat.resources.AbstractJobDescription;
 import org.gridlab.gat.resources.HardwareResource;
 import org.gridlab.gat.resources.Job;
 import org.gridlab.gat.resources.JobDescription;
-import org.gridlab.gat.resources.AbstractJobDescription;
 import org.gridlab.gat.resources.Reservation;
 import org.gridlab.gat.resources.Resource;
 import org.gridlab.gat.resources.ResourceDescription;
 import org.gridlab.gat.resources.SoftwareDescription;
 import org.gridlab.gat.resources.cpi.ResourceBrokerCpi;
 import org.gridlab.gat.resources.cpi.Sandbox;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-//import org.gridlab.gat.resources.cpi.sge.SgeJob;
-
-/**
- * The Unicore / HiLA staff
- */
-
-import de.fzj.hila.*;
+import de.fzj.hila.HiLAFactory;
+import de.fzj.hila.HiLAFactoryException;
+import de.fzj.hila.Site;
+import de.fzj.hila.Storage;
+import de.fzj.hila.Task;
 import de.fzj.hila.common.jsdl.JSDL;
 import de.fzj.hila.exceptions.HiLAException;
 import de.fzj.hila.exceptions.HiLALocationSyntaxException;
-
-import org.ggf.schemas.jsdl.x2005.x11.jsdl.JobDefinitionDocument;
 
 
 
@@ -111,7 +88,7 @@ public class UnicoreResourceBrokerAdaptor extends ResourceBrokerCpi {
         throw new UnsupportedOperationException("Not implemented");
     }
 
-    public List findResources(
+    public List<HardwareResource> findResources(
             ResourceDescription resourceDescription) {
         throw new UnsupportedOperationException("Not implemented");
     }
@@ -123,17 +100,14 @@ public class UnicoreResourceBrokerAdaptor extends ResourceBrokerCpi {
     	 * necessary name space definitions
     	 */
     	
-    	String nameSpaceUri  = "http://schemas.ogf.org/jsdl/2005/11/jsdl";
+    	// String nameSpaceUri  = "http://schemas.ogf.org/jsdl/2005/11/jsdl";
      	String nameSpaceJsdl="jsdl";
     	String nameSpaceJsdlPosix="jsdl-posix";
     	String nameSpaceJsdlHead = nameSpaceJsdl +":";
     	String nameSpaceJsdlPosixHead = nameSpaceJsdlPosix +":";
     	
 		String rootElement   = "JobDefinition";
-
-    	Map preStaged=null;
-    	Map postStaged=null;
-    	
+   	
     	DocumentFactory docJsdl = new DocumentFactory();
 		Namespace jsdlNs = new Namespace(nameSpaceJsdl, "http://schemas.ggf.org/jsdl/2005/11/jsdl");
 		Namespace jsdlNsPosix = new Namespace(nameSpaceJsdlPosix, "http://schemas.ggf.org/jsdl/2005/11/jsdl-posix");
@@ -275,7 +249,7 @@ public class UnicoreResourceBrokerAdaptor extends ResourceBrokerCpi {
         JobDescription description = (JobDescription) abstractDescription;
 
         SoftwareDescription sd = description.getSoftwareDescription();
-        ResourceDescription testDescr=description.getResourceDescription();
+        // ResourceDescription testDescr=description.getResourceDescription();
         String host = "unicore6:" + brokerURI.getPath();
 //        String host = testDescr.getDescription().get("execHost").toString();
         System.out.println("found as exec host in resource description: " + host);
@@ -348,17 +322,14 @@ public class UnicoreResourceBrokerAdaptor extends ResourceBrokerCpi {
     	
     	java.io.File locFile;
 //    	de.fzj.hila.File remFile;
-    	Map preStaged=null;
+    	Map<org.gridlab.gat.io.File, org.gridlab.gat.io.File> preStaged=null;
     	/**
     	 * 	    	 * fill in with elements of software description. Right now this concerns pre and poststaging dataset.
     	*/
     	preStaged=sd.getPreStaged();
     	if (preStaged!=null) {
-    		Set keys = preStaged.keySet();
-    		Iterator i = keys.iterator();
-    		while (i.hasNext()) {
-    			File srcFile = (File) i.next();
-    			File destFile = (File) preStaged.get(srcFile);
+    	    for (java.io.File srcFile : preStaged.keySet()) {
+    			File destFile = preStaged.get(srcFile);
     			
 	            String srcName = srcFile.getPath();
 	                

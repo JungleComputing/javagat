@@ -15,36 +15,25 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Hashtable;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
-import org.gridlab.gat.Preferences;
-import org.gridlab.gat.engine.GATEngine;
 import org.gridlab.gat.monitoring.Metric;
 import org.gridlab.gat.monitoring.MetricDefinition;
 import org.gridlab.gat.resources.JobDescription;
-import org.gridlab.gat.resources.Job.JobState;
+import org.gridlab.gat.resources.SoftwareDescription;
 import org.gridlab.gat.resources.cpi.JobCpi;
 import org.gridlab.gat.resources.cpi.Sandbox;
-import org.gridlab.gat.resources.SoftwareDescription;
 
-//import org.gridlab.gat.resources.cpi.sge.Unicore.jobStartListener;
-import org.gridlab.gat.resources.cpi.unicore.UnicoreResourceBrokerAdaptor;
-
-//import org.gridlab.gat.resources.cpi.sge.SgeJob.jobStopListener;
-
-/**
- * The Unicore / HiLA staff
- */
-
-import de.fzj.hila.*;
+import de.fzj.hila.Location;
+import de.fzj.hila.Site;
+import de.fzj.hila.Storage;
+import de.fzj.hila.Task;
+import de.fzj.hila.TaskStatus;
 import de.fzj.hila.common.jsdl.JSDL;
 import de.fzj.hila.exceptions.HiLAException;
-import de.fzj.hila.exceptions.HiLALocationSyntaxException;
 
 /**
  * @author  Alexander Beck-Ratzka, AEI.
@@ -52,7 +41,9 @@ import de.fzj.hila.exceptions.HiLALocationSyntaxException;
 
 public class UnicoreJob extends JobCpi {
 
-	private final String homeDir = System.getProperty("user.home");
+    private static final long serialVersionUID = 1L;
+    
+    private final String homeDir = System.getProperty("user.home");
     private String jobID;
     private String hostname;
     private MetricDefinition statusMetricDefinition;
@@ -61,7 +52,7 @@ public class UnicoreJob extends JobCpi {
     JSDL jsdl;
     private Task task;
     private SoftwareDescription Soft;
-    private Hashtable time = new Hashtable();
+    private Hashtable<String, Long> time = new Hashtable<String, Long>();
 
     /**
      * constructor of UnicoreJob 
@@ -75,7 +66,7 @@ public class UnicoreJob extends JobCpi {
 
         state = JobState.INITIAL;
 
-        HashMap returnDef = new HashMap();
+        HashMap<String, Object> returnDef = new HashMap<String, Object>();
         returnDef.put("status", JobState.class);
         statusMetricDefinition = new MetricDefinition("job.status",
                 MetricDefinition.DISCRETE, "String", null, null, returnDef);
@@ -124,19 +115,19 @@ public class UnicoreJob extends JobCpi {
 
         public void run() {
         	try {
-        		while (!task.status().equals(Status.RUNNING)) {
-        			if (task.status().equals(Status.FAILED)) {
+        		while (!task.status().equals(TaskStatus.RUNNING)) {
+        			if (task.status().equals(TaskStatus.FAILED)) {
         				logger.warn("Job submission failed");
         				task.getOutcomeFiles();
         				break;
-                    } else if (task.status().equals(Status.CANCELLED)) {
+                    } else if (task.status().equals(TaskStatus.CANCELLED)) {
                     	logger.info("Job submission cancelled");
                     	task.getOutcomeFiles();
                         break;
-                    }  else if (task.status().equals(Status.FINISHED)) {
+                    }  else if (task.status().equals(TaskStatus.FINISHED)) {
                     	Thread.sleep(500);
                     	setState();
-                    	if (task.status().equals(Status.FINISHED)) {
+                    	if (task.status().equals(TaskStatus.FINISHED)) {
                         	logger.debug("Job finished suddenly");
                         	task.getOutcomeFiles();
                         	break;
@@ -158,7 +149,7 @@ public class UnicoreJob extends JobCpi {
             time.put("start_time", new Long(System.currentTimeMillis()));
 
             try {
-                if (!task.status().equals(Status.FINISHED)) {
+                if (!task.status().equals(TaskStatus.FINISHED)) {
                     jobStopListener jsl = new jobStopListener(this.task, this.jobID,  this.Soft, time);
                     new Thread(jsl).start();
                 }
@@ -202,12 +193,12 @@ public class UnicoreJob extends JobCpi {
 
         public void run() {
         	try {
-        		while (!task.status().equals(Status.FINISHED)) {
-        			if (task.status().equals(Status.FAILED)) {
+        		while (!task.status().equals(TaskStatus.FINISHED)) {
+        			if (task.status().equals(TaskStatus.FAILED)) {
         				logger.error("HilA job " + jobID + "failed");
         				break;
         				}
-        			else if (task.status().equals(Status.CANCELLED)) {
+        			else if (task.status().equals(TaskStatus.CANCELLED)) {
         				logger.debug("HilA job " + jobID + "cancelled");
         				break;
         			    }
@@ -287,31 +278,31 @@ public class UnicoreJob extends JobCpi {
 
 
     protected synchronized void  setState() {
-    	TaskStatus Status=null;
-    	logger.debug("Getting task status in setState()");
+
+        logger.debug("Getting task status in setState()");
    
         try {
             TaskStatus status = task.status();
 
-            if (status.equals(Status.RUNNING)) {
+            if (status.equals(TaskStatus.RUNNING)) {
             	state = JobState.RUNNING;
             }
 
-           if (status.equals(Status.FAILED)) {
+           if (status.equals(TaskStatus.FAILED)) {
         	  state = JobState.SUBMISSION_ERROR;
            }
 
-           if (status.equals(Status.FINISHED)) {
+           if (status.equals(TaskStatus.FINISHED)) {
          	  state = JobState.STOPPED;
             }
 
             /* Job is active but suspended */
 
-           if (status.equals(Status.NEW)) {
+           if (status.equals(TaskStatus.NEW)) {
           	  state = JobState.SCHEDULED;
              }
            
-           if (status.equals(Status.PENDING)) {
+           if (status.equals(TaskStatus.PENDING)) {
            	  state = JobState.SCHEDULED;
               }
          } catch (HiLAException e) {
@@ -356,7 +347,7 @@ public class UnicoreJob extends JobCpi {
 
     	//    	File localStderrFile=new File("/home/alibeck/.hila/strderr-gat.test");
    	
-    	Map postStaged=null;
+    	Map<org.gridlab.gat.io.File, org.gridlab.gat.io.File> postStaged=null;
 		Storage wd;
 		try {
 			
@@ -392,11 +383,8 @@ public class UnicoreJob extends JobCpi {
 				de.fzj.hila.File wdFile = wd.asFile("/");
 				List<de.fzj.hila.File> wdFiles = wdFile.ls();
 				for (de.fzj.hila.File file : wdFiles) {
-					Set keys = postStaged.keySet();
-			    	Iterator i = keys.iterator();
-			    	while (i.hasNext()) {
-			    		java.io.File srcFile = (java.io.File) i.next();
-			    		java.io.File destFile = (java.io.File) postStaged.get(srcFile);
+				    for (java.io.File srcFile : postStaged.keySet()) {
+			    		java.io.File destFile = postStaged.get(srcFile);
 			    		logger.debug("PoststageFiles: srcFile: '" + srcFile.getName() + "' destFile (name , path): '" + destFile.getName() + "', " + destFile.getAbsolutePath() + "'");
 			    		if (file.getName().compareTo(srcFile.getName()) == 0 ) { // maybe getName should be used here
 			    			file.exportToLocalFile(destFile, true).block();
@@ -422,9 +410,6 @@ public class UnicoreJob extends JobCpi {
     	 * 
     	 * That's the way of how to do it within HiLA
     	 */
-    	
-    	Storage wd;
-		String line=null;
 
 		int rc=-1;
 
