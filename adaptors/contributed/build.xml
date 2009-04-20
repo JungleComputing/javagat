@@ -7,8 +7,7 @@
 		<!-- <ant dir="Koala" /> -->
 		<ant dir="Pbs" />
 		<ant dir="ProActive" />
-		<ant dir="SgeScript" />
-                <ant dir="Unicore" />
+		<!-- <ant dir="SgeScript" /> -->
 	</target>
 
 
@@ -16,13 +15,8 @@
 		<!-- <ant dir="Koala" target="clean" /> -->
 		<ant dir="Pbs" target="clean" />
 		<ant dir="ProActive" target="clean" />
-		<ant dir="SgeScript" target="clean" />
-		<ant dir="Unicore" target="clean" />
+		<!-- <ant dir="SgeScript" target="clean" /> -->
 	</target>
-
-	<!-- <target name="koala" description="build Koala adaptors">
-		<ant dir="Koala" />
-	</target> -->
 
 	<target name="pbs" description="build Pbs adaptors">
 		<ant dir="Pbs" />
@@ -32,9 +26,10 @@
 		<ant dir="ProActive" />
 	</target>
 
+	<!--
 	<target name="sgescript" description="build SgeScript adaptor">
 		<ant dir="SgeScript" />
 	</target>
-
+	-->
 
 </project>
