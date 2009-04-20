@@ -104,6 +104,7 @@ public class SimpleTests {
 		logger.info("INFO2");
 		logger.warn("WARN3");
 		logger.trace("TRACE4");
+		logger.debug("User Home {}", System.getProperty("user.home"));
 	}
 	
 	private static void testFunc(String uri) throws Exception {
@@ -981,8 +982,8 @@ public class SimpleTests {
 		uri = server.concat("func/");
 //		testFunc(uri);
 		
-//		testLogger();
+		testLogger();
 		
-		testJSON();
+//		testJSON();
 	}
 }
