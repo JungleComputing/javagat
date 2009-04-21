@@ -1,6 +1,6 @@
-<project name="GenericAdaptor" default="build" basedir=".">
+<project name="AppEngineAdaptor" default="build" basedir=".">
 <!-- TODO: nog aanpassen -->
-	<description>Build file for JavaGAT Generic Adaptors.</description>
+	<description>Build file for JavaGAT App Engine Adaptors.</description>
 
 	<property name="gat.location" location="../.." />
 	<property name="engine_path" location="${gat.location}/lib" />

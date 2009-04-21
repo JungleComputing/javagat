@@ -79,6 +79,13 @@ class Load(webapp.RequestHandler):
     
     self.response.out.write('done.')
 
+class Multiple(webapp.RequestHandler):
+  def get(self):
+    query = db.GqlQuery("SELECT * FROM BIN; SELECT * FROM Bin WHERE path = :1", "abc")
+    for bin in query:
+       self.response.out.write("Key: %s<br />\n" % bin.val)
+       self.response.out.write("Value: %s<br />\n" % bin.data)
+
 class TestQueries(webapp.RequestHandler):
   def get(self):
     query = db.GqlQuery("SELECT * FROM Bin")
@@ -157,7 +164,8 @@ application = webapp.WSGIApplication(
                                       ('/queries/load', Load),
                                       ('/queries/test', TestQueries),
                                       ('/queries/date', TestDate),
-                                      ('/queries/func', TestFunc)],
+                                      ('/queries/func', TestFunc),
+                                      ('/queries/mul', Multiple)],
                                      debug=True)
 
 def main():

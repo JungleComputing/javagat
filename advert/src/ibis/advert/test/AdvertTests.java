@@ -20,8 +20,8 @@ import org.slf4j.LoggerFactory;
 
 public class AdvertTests {
 
-	private static final String server = "bbn230.appspot.com";
-	private static final String user   = "ibisadvert@gmail.com";
+	private static final String SERVER = "bbn230.appspot.com";
+	private static final String USER   = "ibisadvert@gmail.com";
 
 	final static Logger logger = LoggerFactory.getLogger(AdvertTests.class);
 	
@@ -119,7 +119,7 @@ public class AdvertTests {
 		}
 		else {
 			/* Create a new Advert object. */
-			advert = new Advert(server, user, argv[0]);
+			advert = new Advert(SERVER, USER, argv[0]);
 			logger.info("Advert object created.");
 			
 			path     = argv[1];

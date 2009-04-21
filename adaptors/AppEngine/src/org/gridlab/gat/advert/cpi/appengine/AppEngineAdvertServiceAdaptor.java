@@ -43,7 +43,6 @@ public class AppEngineAdvertServiceAdaptor extends AdvertServiceCpi {
     }
 
     static final String SEPARATOR = "/";
-    static final String DEFAULT_SERVER = "bbn230.appspot.com";
 
     String pwd = SEPARATOR;
 
@@ -64,6 +63,7 @@ public class AppEngineAdvertServiceAdaptor extends AdvertServiceCpi {
       throws GATObjectCreationException {
     	super(gatContext);
     	
+    	String server = null;
     	String user = null; 
     	String pass = null;
     	
@@ -77,7 +77,7 @@ public class AppEngineAdvertServiceAdaptor extends AdvertServiceCpi {
 	    		  gatContext.getSecurityContexts().get(i)).getPassword();
 	    		
 	    		try {
-	    			advertService = new Advert(DEFAULT_SERVER, user, pass);
+	    			advertService = new Advert(server, user, pass);
 	    			break;
 	    		}
 	    		catch (Exception e) {

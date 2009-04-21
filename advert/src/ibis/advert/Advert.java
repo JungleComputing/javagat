@@ -25,10 +25,23 @@ import org.slf4j.LoggerFactory;
 public class Advert {
 	
 	final static Logger logger = LoggerFactory.getLogger(Advert.class);
+	
+	private static final String DEFAULT_SERVER     = "bbn230.appspot.com";
+	private static final String DEFAULT_PUB_SERVER = "";
+	
 	private Communications comm = null;
 	
 	public Advert(String server, String user, String passwd) 
 	  throws AuthenticationException, IOException {
+		if (server == null) {
+			if (user == null || passwd == null) {
+				server = DEFAULT_PUB_SERVER;
+			}
+			else {
+				server = DEFAULT_SERVER;
+			}
+		}
+
 		comm = new Communications(server, user, passwd);
 		logger.info("Communications class created.");
 	}
@@ -52,9 +65,13 @@ public class Advert {
 	  throws MalformedURLException, IOException, AuthenticationException,
 	  AppEngineResourcesException, NoSuchElementException, 
 	  RequestTooLargeException, Exception {
+		if (path == null) {
+			throw new NullPointerException("Path can't be null.");
+		}
+		
 		JSONArray  jsonarr = new JSONArray();
 		JSONObject jsonobj = new JSONObject();
-
+		
 		Iterator<String> itr  = metaData.getAllKeys().iterator();
 	
 		while (itr.hasNext()) {
@@ -96,6 +113,10 @@ public class Advert {
 	  throws MalformedURLException, IOException, AuthenticationException,
 	  AppEngineResourcesException, NoSuchElementException, 
 	  RequestTooLargeException, Exception {
+		if (path == null) {
+			throw new NullPointerException("Path can't be null.");
+		}
+		
 		logger.info("Calling httpSend() /del...");
 		comm.httpSend("/del", path);
 	}
@@ -113,6 +134,10 @@ public class Advert {
 	  throws MalformedURLException, IOException, AuthenticationException,
 	  AppEngineResourcesException, NoSuchElementException, 
 	  RequestTooLargeException,Exception {
+		if (path == null) {
+			throw new NullPointerException("Path can't be null.");
+		}
+		
 		logger.info("Calling httpSend() /get...");
 		String base64 = comm.httpSend("/get", path);
 		
@@ -132,6 +157,10 @@ public class Advert {
 	  throws MalformedURLException, IOException, AuthenticationException,
 	  AppEngineResourcesException, NoSuchElementException, 
 	  RequestTooLargeException, Exception {
+		if (path == null) {
+			throw new NullPointerException("Path can't be null.");
+		}
+		
 		MetaData   metadata = new MetaData();
 		
 		logger.info("Calling httpSend() /getmd...");
