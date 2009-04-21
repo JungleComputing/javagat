@@ -7,7 +7,7 @@
 
 	<property name="src" location="src" />
 	<property name="tmp" location="tmp" />
-	<property name="lib" location="${gat.location}/lib/adaptors/GenericAdaptor" />
+	<property name="lib" location="${gat.location}/lib/adaptors/AppEngine" /> <!-- AppEngineAdaptor? -->
 	<property name="external" location="external" />
 	<property name="java.debug.value" value="true" />
 
@@ -30,10 +30,9 @@
 			<classpath refid="external_jars" />
 		</javac>
 
-		<jar jarfile="${lib}/GenericAdaptor.jar" basedir="${tmp}" includes="**">
+		<jar jarfile="${lib}/AppEngineAdaptor.jar" basedir="${tmp}" includes="**">
 			<manifest>
-				<attribute name="LogicalFileCpi-class" value="org.gridlab.gat.io.cpi.generic.GenericLogicalFileAdaptor" />
-				<attribute name="AdvertServiceCpi-class" value="org.gridlab.gat.advert.cpi.generic.GenericAdvertServiceAdaptor" />
+				<attribute name="AdvertServiceCpi-class" value="org.gridlab.gat.advert.cpi.appengine.AppEngineAdvertServiceAdaptor" />
 			</manifest>
 		</jar>
 

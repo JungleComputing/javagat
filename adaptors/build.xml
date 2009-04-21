@@ -4,6 +4,7 @@
         </description>
 
 	<target name="build" description="build all tested adaptors">
+		<ant dir="AppEngine" />
 		<ant dir="CommandlineSsh" />
 		<ant dir="Globus" />
 		<ant dir="Gridsam" />
@@ -19,6 +20,7 @@
 	</target>
 
 	<target name="build-with-contributed" description="build all tested and contributed adaptors">
+		<ant dir="AppEngine" />
 		<ant dir="CommandlineSsh" />
 		<ant dir="Globus" />
 		<ant dir="Gridsam" />
@@ -38,6 +40,7 @@
 	</target>
 
 	<target name="clean" description="clean all adaptors">
+		<ant dir="AppEngine" />
 		<ant dir="CommandlineSsh" target="clean" />
 		<ant dir="Globus" target="clean" />
 		<ant dir="Gridsam" target="clean" />
@@ -53,6 +56,10 @@
 		<ant dir="contributed" target="clean" />
 	</target>
 
+	<target name="appengine" description="build AppEngine adaptors">
+		<ant dir="AppEngine" />
+	</target>
+	
 	<target name="commandlinessh" description="build CommandlineSsh adaptors">
 		<ant dir="CommandlineSsh" />
 	</target>
