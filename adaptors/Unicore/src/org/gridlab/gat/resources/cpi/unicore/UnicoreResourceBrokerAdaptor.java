@@ -304,9 +304,9 @@ public class UnicoreResourceBrokerAdaptor extends ResourceBrokerCpi {
 			
             task.startASync(); // FIXME: startsync richtig machen...
             job.setState(Job.JobState.SCHEDULED);
-            job.setJobID(task.getID());
             job.setTask(task);
             job.setSoft(sd);
+            job.setJobID(task.getID());
             job.startListener();
 
 			

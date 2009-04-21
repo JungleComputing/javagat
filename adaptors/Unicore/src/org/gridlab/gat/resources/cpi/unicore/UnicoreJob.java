@@ -14,19 +14,23 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.HashMap;
-import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
 
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
+import org.gridlab.gat.GATObjectCreationException;
+import org.gridlab.gat.advert.Advertisable;
+import org.gridlab.gat.engine.GATEngine;
 import org.gridlab.gat.monitoring.Metric;
 import org.gridlab.gat.monitoring.MetricDefinition;
 import org.gridlab.gat.resources.JobDescription;
 import org.gridlab.gat.resources.SoftwareDescription;
 import org.gridlab.gat.resources.cpi.JobCpi;
 import org.gridlab.gat.resources.cpi.Sandbox;
+import org.gridlab.gat.resources.cpi.SerializedJob;
 
+import de.fzj.hila.HiLAFactory;
 import de.fzj.hila.Location;
 import de.fzj.hila.Site;
 import de.fzj.hila.Storage;
@@ -43,7 +47,8 @@ public class UnicoreJob extends JobCpi {
 
     private static final long serialVersionUID = 1L;
     
-    private final String homeDir = System.getProperty("user.home");
+    private static final String homeDir = System.getProperty("user.home");
+    
     private String jobID;
     private String hostname;
     private MetricDefinition statusMetricDefinition;
@@ -52,7 +57,6 @@ public class UnicoreJob extends JobCpi {
     JSDL jsdl;
     private Task task;
     private SoftwareDescription Soft;
-    private Hashtable<String, Long> time = new Hashtable<String, Long>();
 
     /**
      * constructor of UnicoreJob 
@@ -73,6 +77,45 @@ public class UnicoreJob extends JobCpi {
         statusMetric = statusMetricDefinition.createMetric(null);
         registerMetric("getJobStatus", statusMetricDefinition);
     }
+    
+    /**
+     * Constructor for unmarshalled jobs.
+     */
+    private UnicoreJob(GATContext gatContext, SerializedJob sj)
+            throws GATObjectCreationException {
+        super(gatContext, sj.getJobDescription(), sj.getSandbox());
+
+        if (logger.isDebugEnabled()) {
+            logger.debug("reconstructing UnicoreJob: " + sj);
+        }
+
+        this.starttime = sj.getStarttime();
+        this.stoptime = sj.getStoptime();
+        this.submissiontime = sj.getSubmissiontime();
+        
+        try {
+            // Note: the job id used here is actually a Location.
+            this.task = (Task) HiLAFactory.getInstance().locate(new de.fzj.hila.Location(sj.getJobId()));
+            if (this.task == null) {
+                throw new GATObjectCreationException("Unmarshalling UnicoreJob: task = null");
+            }
+
+            this.jobID = this.task.getID();
+        } catch(HiLAException e) {
+            throw new GATObjectCreationException("Got HiLAException: ", e);
+        }
+
+        // Tell the engine that we provide job.status events
+        HashMap<String, Object> returnDef = new HashMap<String, Object>();
+        returnDef.put("status", JobState.class);
+        statusMetricDefinition = new MetricDefinition("job.status",
+                MetricDefinition.DISCRETE, "String", null, null, returnDef);
+        registerMetric("getJobStatus", statusMetricDefinition);
+        statusMetric = statusMetricDefinition.createMetric(null);
+        Soft = jobDescription.getSoftwareDescription();
+        startListener();
+    }
+
     
     /**
 	 * @param hostname
@@ -100,70 +143,67 @@ public class UnicoreJob extends JobCpi {
         String jobID = null;
         Task task = null;
         SoftwareDescription Soft=null;
-        
-        Hashtable<String, Long> time;
 
         public jobStartListener(Task task, String jobID,
-                SoftwareDescription Soft, Hashtable<String, Long>  time) {
+                SoftwareDescription Soft) {
 //            this.session = session;
         	
             this.jobID = jobID;
-            this.time = time;
             this.task = task;
             this.Soft = Soft;
         }
 
         public void run() {
-        	try {
-        		while (!task.status().equals(TaskStatus.RUNNING)) {
-        			if (task.status().equals(TaskStatus.FAILED)) {
-        				logger.warn("Job submission failed");
-        				task.getOutcomeFiles();
-        				break;
+            try {
+                while (!task.status().equals(TaskStatus.RUNNING)) {
+                    if (task.status().equals(TaskStatus.FAILED)) {
+                        logger.warn("Job submission failed");
+                        task.getOutcomeFiles();
+                        break;
                     } else if (task.status().equals(TaskStatus.CANCELLED)) {
-                    	logger.info("Job submission cancelled");
-                    	task.getOutcomeFiles();
+                        logger.info("Job submission cancelled");
+                        task.getOutcomeFiles();
                         break;
                     }  else if (task.status().equals(TaskStatus.FINISHED)) {
-                    	Thread.sleep(500);
-                    	setState();
-                    	if (task.status().equals(TaskStatus.FINISHED)) {
-                        	logger.debug("Job finished suddenly");
-                        	task.getOutcomeFiles();
-                        	break;
-                    	}
+                        Thread.sleep(500);
+                        setState();
+                        if (task.status().equals(TaskStatus.FINISHED)) {
+                            logger.debug("Job finished suddenly");
+                            task.getOutcomeFiles();
+                            break;
+                        }
                     }
-        			task.status();
-        			setState();
-        			Thread.sleep(SLEEP);
-        		} 
-        	} catch (HiLAException e) {
-        		logger.error("HilaException caught in thread jobStartListener");
-        		e.printStackTrace();
-        	} catch (InterruptedException e) {
-        		logger.error("InterruptedException caught in thread jobStartListener");
-        		e.printStackTrace();
-        	}
+                    task.status();
+                    setState();
+                    Thread.sleep(SLEEP);
+                } 
+            } catch (HiLAException e) {
+                logger.error("HilaException caught in thread jobStartListener");
+                e.printStackTrace();
+            } catch (InterruptedException e) {
+                logger.error("InterruptedException caught in thread jobStartListener");
+                e.printStackTrace();
+            }
             // Now we're in RUNNING state - set the time and start the
             // jobStopListener
-            time.put("start_time", new Long(System.currentTimeMillis()));
+            starttime = System.currentTimeMillis();
 
             try {
                 if (!task.status().equals(TaskStatus.FINISHED)) {
-                    jobStopListener jsl = new jobStopListener(this.task, this.jobID,  this.Soft, time);
+                    jobStopListener jsl = new jobStopListener(this.task, this.jobID,  this.Soft);
                     new Thread(jsl).start();
                 }
                 else
                 {
-                	logger.debug("will get poststagefiles from jobstartlistener");
-                	poststageFiles(Soft,task);
+                    logger.debug("will get poststagefiles from jobstartlistener");
+                    poststageFiles(Soft,task);
                 }
             } catch (HiLAException e) {
-        		logger.error("HilaException caught in thread jobStartListener");
-        		e.printStackTrace();
+                logger.error("HilaException caught in thread jobStartListener");
+                e.printStackTrace();
             } catch (GATInvocationException ee) {
-        		logger.error("GATInvocationException caught in thread jobStartListener");
-        		ee.printStackTrace();
+                logger.error("GATInvocationException caught in thread jobStartListener");
+                ee.printStackTrace();
             }
         }
     }
@@ -181,13 +221,11 @@ public class UnicoreJob extends JobCpi {
         SoftwareDescription Soft=null;
 
         String jobID = null;
-        Hashtable<String, Long> time;
 
         public jobStopListener(Task task, String jobID, 
-                SoftwareDescription Soft, Hashtable<String, Long> time) {
+                SoftwareDescription Soft) {
             this.task = task;
             this.jobID = jobID;
-            this.time = time;
             this.Soft= Soft;
         }
 
@@ -212,7 +250,7 @@ public class UnicoreJob extends JobCpi {
 //				task.getOutcomeFiles();
 				logger.debug("will get poststagefiles from jobstoplistener");
         		poststageFiles(Soft, task);
-        		time.put("stop_time", new Long(System.currentTimeMillis()));
+        		stoptime = System.currentTimeMillis();
         		setState(JobState.STOPPED);
         		
         		} catch  (HiLAException e) {
@@ -240,13 +278,14 @@ public class UnicoreJob extends JobCpi {
 	 * @param jobID
 	 * @uml.property  name="jobID"
 	 */
-    protected void setJobID(String jobID) {
+    protected synchronized void setJobID(String jobID) {
         this.jobID = jobID;
+        notifyAll();
     }
 
     protected void startListener() {
         jobStartListener jsl = new jobStartListener(this.task, this.jobID,
-                this.Soft, time);
+                this.Soft);
         new Thread(jsl).start();
     }
 
@@ -255,8 +294,60 @@ public class UnicoreJob extends JobCpi {
         return state;
     }
 
+    /*
+     * @see org.gridlab.gat.advert.Advertisable#marshal()
+     */
     public String marshal() {
-        throw new Error("Not implemented");
+        SerializedJob sj;
+        synchronized (this) {
+
+            // Wait until initial stages are passed.
+            while (state == JobState.INITIAL || state == JobState.PRE_STAGING
+                  || state == JobState.SCHEDULED) {
+                try {
+                    wait();
+                } catch (Exception e) {
+                    // ignore
+                }
+            }
+
+            sj = new SerializedJob(jobDescription, sandbox, task.getLocation().toString(),
+                    submissiontime, starttime, stoptime);
+        }
+        String res = GATEngine.defaultMarshal(sj);
+        if (logger.isDebugEnabled()) {
+            logger.debug("marshalled seralized job: " + res);
+        }
+        return res;
+    }
+
+
+    public static Advertisable unmarshal(GATContext context, String s)
+            throws GATObjectCreationException {
+        if (logger.isDebugEnabled()) {
+            logger.debug("unmarshalled seralized job: " + s);
+        }
+
+        SerializedJob sj = (SerializedJob) GATEngine.defaultUnmarshal(
+            SerializedJob.class, s);
+
+        // if this job was created within this JVM, just return a reference to
+        // the job
+        synchronized (JobCpi.class) {
+            for (int i = 0; i < jobList.size(); i++) {
+                JobCpi j = (JobCpi) jobList.get(i);
+                if (j instanceof UnicoreJob) {
+                    UnicoreJob gj = (UnicoreJob) j;
+                    if (sj.getJobId().equals(gj.task.getLocation().toString())) {
+                        if (logger.isDebugEnabled()) {
+                            logger.debug("returning existing job: " + gj);
+                        }
+                        return gj;
+                    }
+                }
+            }
+        }
+        return new UnicoreJob(context, sj);
     }
 
     /**
@@ -278,6 +369,8 @@ public class UnicoreJob extends JobCpi {
 
 
     protected synchronized void  setState() {
+        
+        JobState oldState = state;
 
         logger.debug("Getting task status in setState()");
    
@@ -312,6 +405,9 @@ public class UnicoreJob extends JobCpi {
                 logger.error("", e);
             }
         }
+         if (state != oldState) {
+             notifyAll();
+         }
     }
     
     public synchronized void stop() throws GATInvocationException {
@@ -532,12 +628,12 @@ public class UnicoreJob extends JobCpi {
                     || state == JobState.SCHEDULED) {
                 m.put("starttime", null);
             } else {
-                m.put("starttime", time.get("start_time"));
+                m.put("starttime", starttime);
             }
             if (state != JobState.STOPPED) {
                 m.put("stoptime", null);
             } else {
-                m.put("stoptime", time.get("stop_time"));
+                m.put("stoptime", stoptime);
             }
             
             m.put("state", state.toString());
