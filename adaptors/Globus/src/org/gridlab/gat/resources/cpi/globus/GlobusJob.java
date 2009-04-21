@@ -115,7 +115,7 @@ public class GlobusJob extends JobCpi implements GramJobListener,
 
         // Tell the engine that we provide job.status events
         HashMap<String, Object> returnDef = new HashMap<String, Object>();
-        returnDef.put("status", String.class);
+        returnDef.put("status", JobState.class);
         statusMetricDefinition = new MetricDefinition("job.status",
                 MetricDefinition.DISCRETE, "String", null, null, returnDef);
         registerMetric("getJobStatus", statusMetricDefinition);
