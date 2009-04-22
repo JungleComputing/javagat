@@ -4,7 +4,7 @@
 
 package org.gridlab.gat.advert.cpi.appengine;
 
-import ibis.advert.Advert;
+import ibis.advert.*;
 
 import java.net.URI;
 import java.net.URISyntaxException;

@@ -14,6 +14,7 @@ import org.gridlab.gat.URI;
 import org.gridlab.gat.advert.AdvertService;
 import org.gridlab.gat.io.Endpoint;
 import org.gridlab.gat.io.Pipe;
+import org.gridlab.gat.security.PasswordSecurityContext;
 
 public class EndpointExample {
 
@@ -46,25 +47,27 @@ public class EndpointExample {
     public static void main(String[] args) throws GATObjectCreationException,
             GATInvocationException, URISyntaxException, IOException,
             InterruptedException {
-        boolean local = args.length > 0;
+        boolean local = args.length > 2;
         if (local) {
-            new EndpointExample().local(args[0]);
+            new EndpointExample().local(args[0], args[1], args[2]);
         } else {
-            new EndpointExample().remote();
+            new EndpointExample().remote(args[0], args[1]);
         }
         GAT.end();
     }
 
-    public void local(String remoteHost) throws GATObjectCreationException,
-            GATInvocationException, URISyntaxException, IOException {
+    public void local(String username, String password, String remoteHost) 
+      throws GATObjectCreationException, GATInvocationException, 
+      URISyntaxException, IOException {
         System.err.println("Starting the 'local' instance.");
         Endpoint endpoint = GAT.createEndpoint();
+        GAT.getDefaultGATContext().addSecurityContext(new PasswordSecurityContext(username, password));
         AdvertService advert = GAT.createAdvertService();
         advert.add(endpoint, null, "examples/endpoint");
-        advert.exportDataBase(new URI("any://" + remoteHost
-                + "/example-advert.db"));
-        System.err.println("Advert database exported to: '" + "any://"
-                + remoteHost + "/example-advert.db" + "'.");
+//        advert.exportDataBase(new URI("any://" + remoteHost
+//                + "/example-advert.db"));
+//        System.err.println("Advert database exported to: '" + "any://"
+//                + remoteHost + "/example-advert.db" + "'.");
         System.err
                 .println("Setup ready. Listening for incoming connection from 'remote' instance");
         Pipe p = endpoint.listen();
@@ -80,9 +83,9 @@ public class EndpointExample {
             InterruptedException {
         System.err.println("Starting the 'remote' instance.");
         AdvertService advert = GAT.createAdvertService();
-        advert.importDataBase(new URI("any://localhost/example-advert.db"));
-        System.err
-                .println("Advert database imported from 'any://localhost/example-advert.db'.");
+//        advert.importDataBase(new URI("any://localhost/example-advert.db"));
+//        System.err
+//                .println("Advert database imported from 'any://localhost/example-advert.db'.");
         Endpoint endpoint = (Endpoint) advert
                 .getAdvertisable("examples/endpoint");
         System.err.println("Endpoint retrieved from the advert service.");

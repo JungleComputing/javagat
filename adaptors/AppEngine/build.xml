@@ -1,5 +1,4 @@
 <project name="AppEngineAdaptor" default="build" basedir=".">
-<!-- TODO: nog aanpassen -->
 	<description>Build file for JavaGAT App Engine Adaptors.</description>
 
 	<property name="gat.location" location="../.." />
@@ -7,7 +6,7 @@
 
 	<property name="src" location="src" />
 	<property name="tmp" location="tmp" />
-	<property name="lib" location="${gat.location}/lib/adaptors/AppEngine" /> <!-- AppEngineAdaptor? -->
+	<property name="lib" location="${gat.location}/lib/adaptors/AppEngineAdaptor" />
 	<property name="external" location="external" />
 	<property name="java.debug.value" value="true" />
 

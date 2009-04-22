@@ -33,6 +33,7 @@ public class DefaultAdaptorOrderPolicy implements AdaptorOrderPolicy {
             } else if (adaptorType.equalsIgnoreCase("resourcebroker")) {
                 orderResourceList(adaptors.get(adaptorType));
             } else if (adaptorType.equalsIgnoreCase("advertservice")) {
+            	orderAdvertServiceList(adaptors.get(adaptorType));
             } else if (adaptorType.equalsIgnoreCase("monitorable")) {
             } else {
                 System.err
@@ -77,6 +78,13 @@ public class DefaultAdaptorOrderPolicy implements AdaptorOrderPolicy {
         pos = placeAdaptor(pos, "globus", "resourcebroker", l);
         pos = placeAdaptor(pos, "wsgt4new", "resourcebroker", l);
         pos = placeAdaptor(pos, "sshtrilead", "resourcebroker", l);
+        // rest in random order
+    }
+    
+    private void orderAdvertServiceList(List<Adaptor> l) {
+        int pos = 0;
+        pos = placeAdaptor(pos, "appengine", "advertservice", l);
+        pos = placeAdaptor(pos, "generic", "advertservice", l);
         // rest in random order
     }
 
