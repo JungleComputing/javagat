@@ -191,7 +191,9 @@ public class UnicoreJob extends JobCpi {
             try {
                 if (!task.status().equals(TaskStatus.FINISHED)) {
                     jobStopListener jsl = new jobStopListener(this.task, this.jobID,  this.Soft);
-                    new Thread(jsl).start();
+                    Thread t = new Thread(jsl);
+                    t.setDaemon(true);
+                    t.start();
                 }
                 else
                 {
@@ -286,7 +288,9 @@ public class UnicoreJob extends JobCpi {
     protected void startListener() {
         jobStartListener jsl = new jobStartListener(this.task, this.jobID,
                 this.Soft);
-        new Thread(jsl).start();
+        Thread t = new Thread(jsl);
+        t.setDaemon(true);
+        t.start();
     }
 
     public synchronized JobState getState() {
