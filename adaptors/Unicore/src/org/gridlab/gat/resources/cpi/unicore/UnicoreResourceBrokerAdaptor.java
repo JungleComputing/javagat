@@ -28,6 +28,7 @@ import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.GATObjectCreationException;
 import org.gridlab.gat.TimePeriod;
 import org.gridlab.gat.URI;
+import org.gridlab.gat.engine.GATEngine;
 import org.gridlab.gat.io.File;
 import org.gridlab.gat.monitoring.Metric;
 import org.gridlab.gat.monitoring.MetricListener;
@@ -86,6 +87,11 @@ public class UnicoreResourceBrokerAdaptor extends ResourceBrokerCpi {
     	
     	
     }
+    
+    public static void init() {
+        GATEngine.registerUnmarshaller(UnicoreJob.class);
+    }
+
     
     public Reservation reserveResource(ResourceDescription resourceDescription,
             TimePeriod timePeriod) {
