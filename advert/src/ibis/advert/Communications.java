@@ -40,11 +40,44 @@ class Communications {
 	
 	private String cookie;
 	private String server;
+	private Boolean pub;
 	
+	/**
+	 * Constructor of Communications class for connecting to a public server.
+	 * 
+	 * @param server
+	 * 		Location of server to make connections to.
+	 */
+	Communications(String server) {
+		this.server = server;
+		pub = true;
+		logger.info("Connected to {}.", server);
+	}
+	
+	/**
+	 * Constructor of communications class for connecting to an authenticated
+	 * server.
+	 * 
+	 * @param server
+	 * 		Location of server to make connections to.
+	 * @param user
+	 * 		Username to authenticate with.
+	 * @param passwd
+	 * 		Corresponding password.
+	 * @throws MalformedURLException
+	 * 		URL is malformed.
+	 * @throws ProtocolException
+	 * 		Wrong protocol is applied.
+	 * @throws IOException
+	 * 		I/O to server failed.
+	 * @throws AuthenticationException
+	 * 		Authentication to server failed.
+	 */
 	Communications(String server, String user, String passwd) 
 	  throws MalformedURLException, ProtocolException, IOException, 
 	  AuthenticationException {
 		this.server = server;
+		pub = false;
 		authenticate(user, passwd);
 		logger.info("Authenticated to {}.", server);
 	}
@@ -208,7 +241,9 @@ class Communications {
 			
 			/* Setting headers. */
 			httpc.setRequestMethod("POST");
-		    httpc.setRequestProperty("Cookie", cookie);
+			if (!pub) { /* Authenticated server. */
+				httpc.setRequestProperty("Cookie", cookie);
+			}
 			httpc.setDoInput(true);
 		    httpc.setDoOutput(true);
 		    httpc.setUseCaches(false);

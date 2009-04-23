@@ -11,6 +11,7 @@ import java.util.NoSuchElementException;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.Preferences;
+import org.gridlab.gat.URI;
 import org.gridlab.gat.advert.AdvertService;
 import org.gridlab.gat.advert.Advertisable;
 import org.gridlab.gat.advert.MetaData;
@@ -29,6 +30,7 @@ import org.gridlab.gat.monitoring.Monitorable;
  */
 public class AdvertServiceCpi implements AdvertService, Monitorable {
     protected GATContext gatContext;
+	protected URI advertServiceUri;
 
     public static Map<String, Boolean> getSupportedCapabilities() {
         Map<String, Boolean> capabilities = new HashMap<String, Boolean>();
@@ -60,8 +62,9 @@ public class AdvertServiceCpi implements AdvertService, Monitorable {
      * @param preferences
      *                The user preferences.
      */
-    public AdvertServiceCpi(GATContext gatContext) {
+    public AdvertServiceCpi(GATContext gatContext, URI advertServiceUri) {
         this.gatContext = gatContext;
+        this.advertServiceUri = advertServiceUri;
     }
 
     /**

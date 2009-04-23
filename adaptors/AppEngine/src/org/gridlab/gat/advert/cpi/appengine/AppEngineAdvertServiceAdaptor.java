@@ -56,16 +56,39 @@ public class AppEngineAdvertServiceAdaptor extends AdvertServiceCpi {
      * 
      * @param gatContext
      * 	Preferences for using the {@link AppEngineAdvertServiceAdaptor}.
+     * @param advertServiceUri
+     *  Host name to connect to. This host name cannot be <code>null</code> and
+     *  has to end on <code>appspot.com</code>.
      * @throws GATObjectCreationException
      * 	Failed to create an {@link AppEngineAdvertServiceAdaptor}.
      */
-    public AppEngineAdvertServiceAdaptor(GATContext gatContext)
+    public AppEngineAdvertServiceAdaptor(GATContext gatContext, org.gridlab.gat.URI advertServiceUri)
       throws GATObjectCreationException {
-    	super(gatContext);
-    	
+    	super(gatContext, advertServiceUri);
+
     	String server = null;
     	String user = null; 
     	String pass = null;
+    	
+    	/* Check for valid server address. */
+    	if (advertServiceUri == null || advertServiceUri.getHost() == null) {
+    		throw new GATObjectCreationException("No AdvertService location specified.");
+    	}
+    	else if (!advertServiceUri.getHost().endsWith("appspot.com")){
+    		throw new GATObjectCreationException("AdvertService should be an appspot.com domain.");
+    	}
+    	else {
+    		server = advertServiceUri.getHost();
+    	}
+    	
+    	/* Fetch user's home dir. */
+		String home = System.getProperty("user.home");
+        if (home == null) {
+            throw new GATObjectCreationException("Could not get user home dir.");
+        }
+        else {
+            pwd = home;    	
+        }
     	
     	/* Try to fetch username/password from gatContext. */
     	for (int i = 0; i < gatContext.getSecurityContexts().size(); i++) {
@@ -75,25 +98,23 @@ public class AppEngineAdvertServiceAdaptor extends AdvertServiceCpi {
 	    		  gatContext.getSecurityContexts().get(i)).getUsername();
 	    		pass = ((PasswordSecurityContext) 
 	    		  gatContext.getSecurityContexts().get(i)).getPassword();
-	    		
-	    		try {
-	    			advertService = new Advert(server, user, pass);
-	    			break;
-	    		}
-	    		catch (Exception e) {
-	    			throw new GATObjectCreationException("Constructor failed", 
-	    			  e);
-	    		}
+    		}
+        	try {
+    			advertService = new Advert(server, user, pass);
+    			return;
+    		}
+        	catch (AuthenticationException ae) {
+        		/* Authentication failed, use next user/pass. */
+        		continue;
+        	}
+    		catch (Exception e) {
+    			throw new GATObjectCreationException("Connection to server " +
+    					"failed", e);
     		}
     	}
-    	
-        String home = System.getProperty("user.home");
 
-        if (home == null) {
-            throw new GATObjectCreationException("Could not get user home dir.");
-        }
-        
-        pwd = home;
+    	/* Connect to public server. */
+    	advertService = new Advert(server);
     }
 
     /*

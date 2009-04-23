@@ -1329,14 +1329,84 @@ public class GAT {
      *                rights.
      * @param preferences
      *                the additional {@link Preferences}
+     * @param advertServiceUri
+     * 				  {@link URI} where the AdvertService is located.
+     * @return The {@link AdvertService} object
+     * @throws GATObjectCreationException
+     *                 Thrown upon creation problems
+     */
+    public static AdvertService createAdvertService(GATContext gatContext,
+            Preferences preferences, URI advertServiceUri) throws GATObjectCreationException {
+        return (AdvertService) getAdaptorProxy("AdvertService",
+                AdvertService.class, gatContext, preferences, new Class[] {URI.class}, new Object[] {advertServiceUri});
+    }
+
+    /**
+     * Create an {@link AdvertService} object using the passed
+     * {@link GATContext}.
+     * 
+     * @param gatContext
+     *                A {@link GATContext} which is used to determine the access
+     *                rights.
+     * @param advertServiceUri
+     * 				  {@link URI} where the AdvertService is located.
+     * @return The {@link AdvertService} object
+     * @throws GATObjectCreationException
+     *                 Thrown upon creation problems
+     */
+    public static AdvertService createAdvertService(GATContext gatContext, URI advertServiceUri)
+            throws GATObjectCreationException {
+        return createAdvertService(gatContext, null, advertServiceUri);
+    }
+
+    /**
+     * Create an {@link AdvertService} object using the default
+     * {@link GATContext} and additional {@link Preferences}.
+     * 
+     * @param preferences
+     *                the additional {@link Preferences}
+     * @param advertServiceUri
+     * 				  {@link URI} where the AdvertService is located.
+     * @return The {@link AdvertService} object
+     * @throws GATObjectCreationException
+     *                 Thrown upon creation problems
+     */
+    public static AdvertService createAdvertService(Preferences preferences, URI advertServiceUri)
+            throws GATObjectCreationException {
+        return createAdvertService(defaultContext, preferences, advertServiceUri);
+    }
+
+    /**
+     * Create an {@link AdvertService} object using the default
+     * {@link GATContext}.
+     * 
+     * @param advertServiceUri
+     * 				  {@link URI} where the AdvertService is located.
+     * @return The {@link AdvertService} object
+     * @throws GATObjectCreationException
+     *                 Thrown upon creation problems
+     */
+    public static AdvertService createAdvertService(URI advertServiceUri)
+            throws GATObjectCreationException {
+        return createAdvertService(defaultContext, null, advertServiceUri);
+    }
+    
+    /**
+     * Create an {@link AdvertService} object using the passed
+     * {@link GATContext} and additional {@link Preferences}.
+     * 
+     * @param gatContext
+     *                A {@link GATContext} which is used to determine the access
+     *                rights.
+     * @param preferences
+     *                the additional {@link Preferences}
      * @return The {@link AdvertService} object
      * @throws GATObjectCreationException
      *                 Thrown upon creation problems
      */
     public static AdvertService createAdvertService(GATContext gatContext,
             Preferences preferences) throws GATObjectCreationException {
-        return (AdvertService) getAdaptorProxy("AdvertService",
-                AdvertService.class, gatContext, preferences, null, null);
+    	 return createAdvertService(gatContext, preferences, null);
     }
 
     /**
@@ -1352,7 +1422,7 @@ public class GAT {
      */
     public static AdvertService createAdvertService(GATContext gatContext)
             throws GATObjectCreationException {
-        return createAdvertService(gatContext, null);
+        return createAdvertService(gatContext, null, null);
     }
 
     /**
@@ -1380,7 +1450,7 @@ public class GAT {
      */
     public static AdvertService createAdvertService()
             throws GATObjectCreationException {
-        return createAdvertService(defaultContext, null);
+        return createAdvertService(defaultContext, null, null);
     }
 
     /**

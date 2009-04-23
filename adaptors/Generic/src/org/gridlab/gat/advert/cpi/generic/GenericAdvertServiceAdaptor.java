@@ -13,8 +13,6 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.RandomAccessFile;
 import java.io.Serializable;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.nio.channels.FileChannel;
 import java.nio.channels.FileLock;
 import java.util.Enumeration;
@@ -27,6 +25,7 @@ import org.gridlab.gat.GAT;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.GATObjectCreationException;
+import org.gridlab.gat.URI;
 import org.gridlab.gat.advert.Advertisable;
 import org.gridlab.gat.advert.MetaData;
 import org.gridlab.gat.advert.cpi.AdvertServiceCpi;
@@ -61,11 +60,12 @@ public class GenericAdvertServiceAdaptor extends AdvertServiceCpi {
 
     /**
      * @param gatContext
-     * @param preferences
+     * @param advertServiceUri
+     * 			Since this is a local AdvertService, no {@link URI} is needed.
      */
-    public GenericAdvertServiceAdaptor(GATContext gatContext)
+    public GenericAdvertServiceAdaptor(GATContext gatContext, URI advertServiceUri)
             throws GATObjectCreationException {
-        super(gatContext);
+        super(gatContext, advertServiceUri);
 
         String home = System.getProperty("user.home");
 
@@ -203,7 +203,7 @@ public class GenericAdvertServiceAdaptor extends AdvertServiceCpi {
         } else {
             try {
                 pwd = new java.net.URI(pwd + path).normalize().getPath();
-            } catch (URISyntaxException e) {
+            } catch (java.net.URISyntaxException e) {
                 // ignore
             }
         }
@@ -217,7 +217,7 @@ public class GenericAdvertServiceAdaptor extends AdvertServiceCpi {
                     new org.gridlab.gat.URI(save())).getFileInterface();
         } catch (GATObjectCreationException e) {
             throw new GATInvocationException("failed to create source file", e);
-        } catch (URISyntaxException e) {
+        } catch (java.net.URISyntaxException e) {
             throw new GATInvocationException("failed to create source file", e);
         }
         sourceFile.copy(target);
@@ -239,7 +239,7 @@ public class GenericAdvertServiceAdaptor extends AdvertServiceCpi {
             load(tempLocalFile);
             tempLocalFile.delete();
 
-        } catch (URISyntaxException e) {
+        } catch (java.net.URISyntaxException e) {
             throw new GATInvocationException("failed to copy", e);
         } catch (IOException e) {
             throw new GATInvocationException("failed to copy", e);
@@ -333,7 +333,7 @@ public class GenericAdvertServiceAdaptor extends AdvertServiceCpi {
                     path = pwd + SEPARATOR + path;
                 }
             }
-            URI u = new URI(path);
+            java.net.URI u = new java.net.URI(path);
             return u.normalize().getPath();
         } catch (Exception e) {
             throw new GATInvocationException("local advert", e);
