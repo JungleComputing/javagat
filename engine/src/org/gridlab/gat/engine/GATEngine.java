@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.StringTokenizer;
 import java.util.Vector;
 import java.util.jar.Attributes;
 import java.util.jar.JarFile;
@@ -90,7 +91,7 @@ public class GATEngine {
     private HashMap<String, List<Adaptor>> adaptorLists = new HashMap<String, List<Adaptor>>();
    
     /** Classloader to be used as parent classloader for the URL classloaders. */
-    private final ClassLoader parentLoader;
+    private ClassLoader parentLoader;
 
     /**
      * Constructs a default GATEngine instance.
@@ -111,17 +112,38 @@ public class GATEngine {
             logger.debug("creating the GAT engine START");
         }
         
-        File adaptorRoot = getAdaptorRoot();        
         ClassLoader superparentLoader = getParentClassLoader();
-        ClassLoader sharedLoader;
-        try {
-            sharedLoader = loadDirectory(new File(adaptorRoot, "shared"),
-                    superparentLoader, false);
-        } catch (Exception e) {
-            sharedLoader = superparentLoader;
+        
+        String adaptorPath = System.getProperty("gat.adaptor.path");
+        if (logger.isTraceEnabled()) {
+            logger.trace("loading adaptors from adaptor path: " + adaptorPath);
         }
-        parentLoader = sharedLoader;
-        readJarFiles(adaptorRoot);
+        if (adaptorPath == null) {
+            throw new Error("gat.adaptor.path not set!");
+        }
+        StringTokenizer st = new StringTokenizer(adaptorPath,
+                File.pathSeparator);
+        while (st.hasMoreTokens()) {
+            String dir = st.nextToken();
+            logger.debug("readJarFiles: dir = " + dir);
+
+            File adaptorRoot = new File(dir);
+            if (!adaptorRoot.isDirectory()) {
+                logger.warn("Specified gat.adaptor.path entry " + dir
+                        + " is not a directory");
+                continue;
+            }
+       
+            ClassLoader sharedLoader;
+            try {
+                sharedLoader = loadDirectory(new File(adaptorRoot, "shared"),
+                        superparentLoader, false);
+            } catch (Exception e) {
+                sharedLoader = superparentLoader;
+            }
+            parentLoader = sharedLoader;
+            readJarFiles(adaptorRoot);
+        }
 
         if (adaptorLists.size() == 0) {
             throw new Error("GAT: No adaptors could be loaded");
@@ -352,23 +374,6 @@ public class GATEngine {
         }
         return result;
     }
-    
-    private File getAdaptorRoot() {
-        // retrieve the path where the adaptors are located.
-        String adaptorPath = System.getProperty("gat.adaptor.path");
-        if (logger.isTraceEnabled()) {
-            logger.trace("loading adaptors from adaptor path: " + adaptorPath);
-        }
-        if (adaptorPath == null) {
-            throw new Error("gat.adaptor.path not set!");
-        }
-        File adaptorRoot = new File(adaptorPath);
-        if (!adaptorRoot.exists()) {
-            throw new Error("gat.adaptor.path set to '" + adaptorPath
-                    + "', but it doesn't exist!");
-        }
-        return adaptorRoot;
-    }
 
     protected void readJarFiles(File adaptorRoot) {
         // now get the adaptor dirs from the adaptor path, adaptor dirs are
@@ -379,7 +384,7 @@ public class GATEngine {
             }
         });
         if (adaptorDirs.length == 0) {
-            throw new Error("gat.adaptor.path set to '" + adaptorRoot
+            logger.warn("gat.adaptor.path contains '" + adaptorRoot
                     + "', but it doesn't contain any adaptor");
         }
         HashMap<String, ClassLoader> adaptorClassLoaders = new HashMap<String, ClassLoader>();
