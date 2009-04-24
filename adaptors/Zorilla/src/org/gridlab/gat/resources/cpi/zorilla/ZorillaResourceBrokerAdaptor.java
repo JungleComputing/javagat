@@ -101,10 +101,10 @@ public class ZorillaResourceBrokerAdaptor extends ResourceBrokerCpi implements
 
         callbackReceiver = new CallbackReceiver(this, socketFactory);
 
-        //try to connect to zorilla, 30 second delay if needed...
+        //try to connect to zorilla
         try {
             ZoniConnection connection = new ZoniConnection(
-                    getNodeSocketAddress(), socketFactory, null, 30000, true);
+                    getNodeSocketAddress(), socketFactory, null, 30000, false);
             connection.close();
         } catch (IOException e) {
             throw new GATObjectCreationException(
