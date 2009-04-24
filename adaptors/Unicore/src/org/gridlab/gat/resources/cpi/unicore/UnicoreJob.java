@@ -17,6 +17,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.gridlab.gat.GAT;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.GATObjectCreationException;
@@ -28,7 +29,6 @@ import org.gridlab.gat.resources.JobDescription;
 import org.gridlab.gat.resources.SoftwareDescription;
 import org.gridlab.gat.resources.cpi.JobCpi;
 import org.gridlab.gat.resources.cpi.Sandbox;
-import org.gridlab.gat.resources.cpi.SerializedJob;
 
 import de.fzj.hila.HiLAFactory;
 import de.fzj.hila.Location;
@@ -81,7 +81,7 @@ public class UnicoreJob extends JobCpi {
     /**
      * Constructor for unmarshalled jobs.
      */
-    private UnicoreJob(GATContext gatContext, SerializedJob sj)
+    private UnicoreJob(GATContext gatContext, SerializedUnicoreJob sj)
             throws GATObjectCreationException {
         super(gatContext, sj.getJobDescription(), sj.getSandbox());
 
@@ -104,7 +104,28 @@ public class UnicoreJob extends JobCpi {
         } catch(HiLAException e) {
             throw new GATObjectCreationException("Got HiLAException: ", e);
         }
-
+        
+        // reconstruct enough of the software description to be able to
+        // poststage.
+        Soft = new SoftwareDescription();
+        String s = sj.getStdout();
+        if (s != null) {
+            Soft.setStdout(GAT.createFile(gatContext, s));
+        }
+        s = sj.getStderr();
+        if (s != null) {
+            Soft.setStderr(GAT.createFile(gatContext, s));
+        }
+        
+        String[] toStageOut = sj.getToStageOut();
+        String[] stagedOut = sj.getStagedOut();
+        if (toStageOut != null) {
+            for (int i = 0; i < toStageOut.length; i++) {
+                Soft.addPostStagedFile(GAT.createFile(gatContext, toStageOut[i]),
+                        GAT.createFile(gatContext, stagedOut[i]));
+            }
+        }
+       
         // Tell the engine that we provide job.status events
         HashMap<String, Object> returnDef = new HashMap<String, Object>();
         returnDef.put("status", JobState.class);
@@ -302,7 +323,7 @@ public class UnicoreJob extends JobCpi {
      * @see org.gridlab.gat.advert.Advertisable#marshal()
      */
     public String marshal() {
-        SerializedJob sj;
+        SerializedUnicoreJob sj;
         synchronized (this) {
 
             // Wait until initial stages are passed.
@@ -315,8 +336,8 @@ public class UnicoreJob extends JobCpi {
                 }
             }
 
-            sj = new SerializedJob(jobDescription, sandbox, task.getLocation().toString(),
-                    submissiontime, starttime, stoptime);
+            sj = new SerializedUnicoreJob(jobDescription, sandbox, task.getLocation().toString(),
+                    submissiontime, starttime, stoptime, Soft);
         }
         String res = GATEngine.defaultMarshal(sj);
         if (logger.isDebugEnabled()) {
@@ -332,8 +353,8 @@ public class UnicoreJob extends JobCpi {
             logger.debug("unmarshalled seralized job: " + s);
         }
 
-        SerializedJob sj = (SerializedJob) GATEngine.defaultUnmarshal(
-            SerializedJob.class, s);
+        SerializedUnicoreJob sj = (SerializedUnicoreJob) GATEngine.defaultUnmarshal(
+            SerializedUnicoreJob.class, s);
 
         // if this job was created within this JVM, just return a reference to
         // the job
@@ -381,7 +402,13 @@ public class UnicoreJob extends JobCpi {
         try {
             TaskStatus status = task.status();
 
+            if (submissiontime == 0L) {
+                setSubmissionTime();
+            }
             if (status.equals(TaskStatus.RUNNING)) {
+                if (starttime == 0L) {
+                    setStartTime();
+                }
             	state = JobState.RUNNING;
             }
 
@@ -390,6 +417,9 @@ public class UnicoreJob extends JobCpi {
            }
 
            if (status.equals(TaskStatus.FINISHED)) {
+               if (stoptime == 0L) {
+                   setStopTime();
+               }
          	  state = JobState.STOPPED;
             }
 
@@ -402,6 +432,7 @@ public class UnicoreJob extends JobCpi {
            if (status.equals(TaskStatus.PENDING)) {
            	  state = JobState.SCHEDULED;
               }
+
          } catch (HiLAException e) {
             if (logger.isDebugEnabled()) {
                 logger.error("-- UNICOREJob EXCEPTION --");
@@ -423,6 +454,9 @@ public class UnicoreJob extends JobCpi {
             try {
             	task.abort();
                 state = JobState.STOPPED;
+                if (stoptime == 0L) {
+                    stoptime = System.currentTimeMillis();
+                }
                 logger.debug("Unicore Job " + task.getID() + " stopped by user");
             } catch (HiLAException e) {
                 if (logger.isDebugEnabled()) {
@@ -454,15 +488,20 @@ public class UnicoreJob extends JobCpi {
 			/**
 			 * poststage stderr and stdout, if desired...
 			 */
-			
-			stdoutFileName = sd.getStdout().getAbsolutePath();
-			stderrFileName = sd.getStderr().getAbsolutePath();
+			File stdout = sd.getStdout();
+			if (stdout != null) {
+			    stdoutFileName = stdout.getAbsolutePath();
+			    localStdoutFile = new File(stdoutFileName);
+			    logger.debug("stdout: " + stdoutFileName + "||" + localStdoutFile.getName());      
+			}
+			File stderr = sd.getStderr();
+			if (stderr != null) {
+			    stderrFileName = sd.getStderr().getAbsolutePath();
+			    localStderrFile = new File(stderrFileName);
+			    logger.debug("stderr: " + stderrFileName + "||" + localStderrFile.getName());
+			}
 
-			localStdoutFile = new File(stdoutFileName);
-			localStderrFile = new File(stderrFileName);
-			logger.debug("stdout: " +localStdoutFile.getAbsolutePath() + "||" + localStdoutFile.getName());		
-			logger.debug("stderr: " +localStderrFile.getAbsolutePath() + "||" + localStderrFile.getName());
-
+			// Why make file objects if you only use the AbsolutePath? --Ceriel
 			if (localStdoutFile!=null) {
 				remoteStdoutFile = task.getStdOut();
 				if (remoteStdoutFile!=null) {
