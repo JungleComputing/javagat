@@ -304,12 +304,22 @@ public abstract class FileCpi extends MonitorableCpi implements FileInterface, j
             return null;
         }
         try {
-            String dest = location.toString().replace(getPath(), getParent());
+            // String dest = location.toString().replace(getPath(), getParent());
+            // No, this is not correct in case of an absolute URI referring to
+            // the local host, with a relative path, because in that case getPath()
+            // delivers an absolute path which does not occur in the URI itself.
+            // --Ceriel
+            URI dest = new URI(location.toString());
+            String parent = getParent();
+            if (parent == null) {
+                parent = "";
+            }
+            dest.setPath(parent);
             if (logger.isDebugEnabled()) {
                 logger.debug("GET PARENTFILE: orig = " + location + " new* = "
                         + dest);
             }
-            return GAT.createFile(gatContext, new URI(dest));
+            return GAT.createFile(gatContext, dest);
         } catch (Exception e) {
             throw new GATInvocationException("file cpi", e);
         }

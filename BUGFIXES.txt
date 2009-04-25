@@ -1,5 +1,14 @@
-FIXED BUGS AND ADDITIONS in version 2.0.5 with respect to version 2.0.4
+FIXED BUGS AND ADDITIONS in trunk version with respect to version 2.0.5
+- FileCpi.getParentFile() was wrong in case of an absolute URI with a
+  relative path where the host part refers to the local host.
+- Zorilla adaptor now sets up connection lazily and not in the resource broker
+  constructor --> avoids 30-second delay.
+- gat.adaptor.path System property now again indicates a File.pathSeparator-
+  separated path of directories (as it used to do in version 1.7).
+- work in progress on the Unicore adaptor to make a unicore job advertisable,
+  so that another javaGAT instance can later obtain the results.
 
+FIXED BUGS AND ADDITIONS in version 2.0.5 with respect to version 2.0.4
 - Alexander Beck-Ratzka contributed a Unicore resourcebroker adaptor.
 - the Ganymed sftp adaptor has been replaced with a Trilead sftp adaptor.
 - removed sftp and sftpnew adaptors as they are obsoleted by the
