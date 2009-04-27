@@ -558,7 +558,7 @@ public class ZorillaJob extends JobCpi {
     }
 
     synchronized boolean hasEnded() {
-        return info.getPhase() >= ZoniProtocol.PHASE_COMPLETED;
+        return info != null && info.getPhase() >= ZoniProtocol.PHASE_COMPLETED;
     }
 
     private void fireStatusMetric() {

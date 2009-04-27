@@ -60,7 +60,7 @@ public class ZorillaResourceBrokerAdaptor extends ResourceBrokerCpi implements
     }
 
     private final String nodeSocketAddress;
-    
+
     private final VirtualSocketFactory socketFactory;
 
     private final Map<String, ZorillaJob> jobs;
@@ -92,12 +92,31 @@ public class ZorillaResourceBrokerAdaptor extends ResourceBrokerCpi implements
         }
 
         nodeSocketAddress = brokerURI.getSchemeSpecificPart();
-        
-        String hubs  = (String)gatContext.getPreferences().get("ibis.hub.addresses");
-        
+
+        String hubs = (String) gatContext.getPreferences().get(
+                "ibis.hub.addresses");
+
         socketFactory = ZoniConnection.getFactory(hubs);
 
         logger.debug("zorilla node address = " + nodeSocketAddress);
+
+        String wait = gatContext.getPreferences().get("zorilla.wait.for.node")
+                .toString();
+
+        if (wait != null && wait.equalsIgnoreCase("true")) {
+            logger.info("Checking if node " + getNodeSocketAddress()
+                    + " exists");
+            // try to connect to zorilla
+            try {
+                ZoniConnection connection = new ZoniConnection(
+                        getNodeSocketAddress(), socketFactory, null, 30000,
+                        true);
+                connection.close();
+            } catch (IOException e) {
+                throw new GATObjectCreationException(
+                        "could not reach zorilla node: ", e);
+            }
+        }
 
         callbackReceiver = new CallbackReceiver(this, socketFactory);
 
@@ -111,7 +130,9 @@ public class ZorillaResourceBrokerAdaptor extends ResourceBrokerCpi implements
     /*
      * (non-Javadoc)
      * 
-     * @see org.gridlab.gat.resources.ResourceBroker#submitJob(org.gridlab.gat.resources.JobDescription)
+     * @see
+     * org.gridlab.gat.resources.ResourceBroker#submitJob(org.gridlab.gat.resources
+     * .JobDescription)
      */
     public Job submitJob(AbstractJobDescription abstractDescription,
             MetricListener listener, String metricDefinitionName)
@@ -145,10 +166,12 @@ public class ZorillaResourceBrokerAdaptor extends ResourceBrokerCpi implements
                     .createMetric(null);
             job.addMetricListener(listener, metric);
         }
-        zorillaJob.startJob(getNodeSocketAddress(), socketFactory,getCallbackReceiver());
-        
-        logger.debug("ZorillaResourceBroker.submitJob: zorilla job started: " + zorillaJob.getZorillaJobID());
-        
+        zorillaJob.startJob(getNodeSocketAddress(), socketFactory,
+                getCallbackReceiver());
+
+        logger.debug("ZorillaResourceBroker.submitJob: zorilla job started: "
+                + zorillaJob.getZorillaJobID());
+
         synchronized (this) {
             jobs.put("" + zorillaJob.getZorillaJobID(), zorillaJob);
         }
@@ -159,7 +182,7 @@ public class ZorillaResourceBrokerAdaptor extends ResourceBrokerCpi implements
     String getNodeSocketAddress() {
         return nodeSocketAddress;
     }
-    
+
     VirtualSocketFactory getSocketFactory() {
         return socketFactory;
     }
@@ -198,26 +221,27 @@ public class ZorillaResourceBrokerAdaptor extends ResourceBrokerCpi implements
 
         for (ZorillaJob job : getJobs()) {
             if (connection == null) {
-                connection = new ZoniConnection(getNodeSocketAddress(), socketFactory, null);
+                connection = new ZoniConnection(getNodeSocketAddress(),
+                        socketFactory, null);
             }
 
             if (logger.isDebugEnabled()) {
                 logger.debug("getting new info for " + job);
             }
 
+            if (job.hasEnded()) {
+                // no need to update info any longer
+                removeJob(job.getZorillaJobID());
+            }
+
             try {
-                JobInfo info = connection.getJobInfo("" + job.getZorillaJobID());
+                JobInfo info = connection.getJobInfo(job.getZorillaJobID());
 
                 if (logger.isDebugEnabled()) {
                     logger.debug("retrieved new info: " + info);
                 }
 
                 job.setInfo(info);
-
-                if (job.hasEnded()) {
-                    // no need to update info any longer
-                    removeJob("" + job.getZorillaJobID());
-                }
             } catch (IOException e) {
                 if (connection != null) {
                     connection.close();
