@@ -49,6 +49,7 @@ public class EndpointExample {
             InterruptedException {
     	if (args.length < 3) {
     		System.err.println("***Usage: AdvertServer Username Password [Endpoint]");
+    		System.exit(1);
     	}
         boolean local = args.length > 3;
         if (local) {
