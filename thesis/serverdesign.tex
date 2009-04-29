@@ -258,28 +258,35 @@ Section \ref{appengine-quotas}). Plus we don't give any guarantees. If we run
 out of HTTPS, we just have to wait another 24 hours and it will work again. Either way
 configuration is done beforehand , when it comes to secure connections.
 \subsubsection{GQL Queries}
-Although the GQL provided by Google is really useful for lookup functions, they
-also have a downside. SQL queries are generally vulnerable to SQL injection ,
+\dashline{
+SQL queries are generally vulnerable to SQL injection,
 which is a technique that exploits a security vulnerability occurring in the
 database layer of an application. Basically it would make it possible to insert
-an SQL statement within a statement, and execute custom code. For example, if we
-take the query from Figure \ref{gql-example}, and ``foo'' or ``bar'' were to be variables, then they could be replaced by
-code, such as shown in Figure \ref{gql-injection}.
+an SQL statement within a statement, and execute custom code. Usually this
+custom code exists of malicious statements like \texttt{DROP}. Since the Google
+App Engine's GQL Syntax only supports the \texttt{SELECT} stament, we do not
+have to prevent this (see Figure \ref{gql-syntax}).
+}
 
 \begin{figure*}[ht] %[placement] where placement is h,t,b,p
 \begin{center}
 \begin{code}
-`foo';DROP TABLE users;SELECT * FROM MyModel WHERE s2 LIKE `
+  SELECT * FROM <kind>
+    [WHERE <condition> [AND <condition> ...]]
+    [ORDER BY <property> [ASC | DESC] [, <property> [ASC | DESC] ...]]
+    [LIMIT [<offset>,]<count>]
+    [OFFSET <offset>]
+
+  <condition> := <property> {< | <= | > | >= | = | != } <value>
+  <condition> := <property> IN <list>
+  <condition> := ANCESTOR IS <entity or key>
 \end{code}
-\caption{GQL Injection example.\label{gql-injection}}
+\caption{GQL Syntax.\label{gql-syntax}}
 \end{center}
 \end{figure*}
 
-This would effectively execute three statements, of which the middle one could do
-serious damage to the database. Since there is nothing in Google's documentation
-about SQL (or GQL) injection, and we haven't tested it ourselves, we don't know
-if it will work with GQL. Although we don't provide any guarantees towards the
-user, it is something we should consider whilst implementing lookup functions,
-needed for our services. The most obvious solution will be to check for `;' in
-our find queries, before executing them. Checking will be done at both client and
-server side (in case, someone writes a malicious client).
+\dashline{
+In addition, the App Engine does not support multiple queries seperated by a
+semi-colon (``\texttt{;}''), because it raises a parse error. Only one query at
+a time can be executed and there is no support for nested queries also.
+}

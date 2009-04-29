@@ -96,7 +96,20 @@ consistency. Fortunately, the Google App Engine datastore provides a mechanism
 for ensuring both are stored or, if the datastore fails, nothing is stored.
 Using transactions, we can call a function and maintain atomicity. All
 functionality of the App Engine can be used inside a function that is called in
-transaction, except for GQL functions. }
+transaction, except for GQL functions.}
+
+\dashline{
+Another prequisite of transactions is that all data operated on must be in the
+same entity group (this includes retrieving entities by key, updating entities, and
+deleting entities). Entity group relationships tell App Engine to store several
+entities in the same part of the distributed network. When the application
+creates an entity, it can assign another entity as the parent of the new entity,
+using the parent argument in the Model constructor. Assigning a parent to a new
+entity puts the new entity in the same entity group as the parent entity. This is
+exactly what we do when storing an object with meta data attached to it (all
+meta data which belongs to a certain object have the same parent, being the
+object itself). Notice that each root entity belongs to a separate entity group,so a single transaction cannot create or operate on more than one root entity. 
+}
 
 \begin{figure*}[ht] %[placement] where placement is h,t,b,p
 \begin{center}
@@ -149,7 +162,7 @@ advantage of this model is that it works exactly analogue to the JavaGAT
 AdvertService. The disadvantage of this is that we have to parse our own
 pathnames, and keep track of them by means of a non-existing mechanism (i.e.
 something that we need to build ourselves). Since this is not a major obstacle,
-we will stick with the second approach.
+we will stick with the second approach. \dashline{Note that all pathnames areallowed at the server side. They are just used as identifiers of objects, notactual paths.}
 \subsection{Public Server Functions}
 Below we will list some of the major functions the advert server will offer to
 the client. These functions will be used by, for example, the JavaGAT
