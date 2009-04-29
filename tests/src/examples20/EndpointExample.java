@@ -47,22 +47,29 @@ public class EndpointExample {
     public static void main(String[] args) throws GATObjectCreationException,
             GATInvocationException, URISyntaxException, IOException,
             InterruptedException {
-        boolean local = args.length > 2;
+    	if (args.length < 3) {
+    		System.err.println("***Usage: AdvertServer Username Password [Endpoint]");
+    	}
+        boolean local = args.length > 3;
         if (local) {
-            new EndpointExample().local(args[0], args[1], args[2]);
+            new EndpointExample().local(args[0], args[1], args[2], args[3]);
         } else {
-            new EndpointExample().remote(args[0], args[1]);
+            new EndpointExample().remote(args[0], args[1], args[2]);
         }
         GAT.end();
     }
 
-    public void local(String username, String password, String remoteHost) 
-      throws GATObjectCreationException, GATInvocationException, 
-      URISyntaxException, IOException {
+    public void local(String advertServer, String username, String password,
+			String remoteHost) throws GATObjectCreationException,
+			GATInvocationException, URISyntaxException, IOException {
         System.err.println("Starting the 'local' instance.");
+        
         Endpoint endpoint = GAT.createEndpoint();
         GAT.getDefaultGATContext().addSecurityContext(new PasswordSecurityContext(username, password));
-        AdvertService advert = GAT.createAdvertService();
+        URI uri = new URI(advertServer);
+        
+        AdvertService advert = GAT.createAdvertService(uri);
+        
         advert.add(endpoint, null, "examples/endpoint");
 //        advert.exportDataBase(new URI("any://" + remoteHost
 //                + "/example-advert.db"));
@@ -78,11 +85,14 @@ public class EndpointExample {
         p.close();
     }
 
-    public void remote() throws GATObjectCreationException,
-            GATInvocationException, URISyntaxException, IOException,
-            InterruptedException {
+    public void remote(String advertServer, String username, String password)
+			throws GATObjectCreationException, GATInvocationException,
+			URISyntaxException, IOException, InterruptedException {
         System.err.println("Starting the 'remote' instance.");
-        AdvertService advert = GAT.createAdvertService();
+        
+        GAT.getDefaultGATContext().addSecurityContext(new PasswordSecurityContext(username, password));
+        URI uri = new URI(advertServer);
+        AdvertService advert = GAT.createAdvertService(uri);
 //        advert.importDataBase(new URI("any://localhost/example-advert.db"));
 //        System.err
 //                .println("Advert database imported from 'any://localhost/example-advert.db'.");
