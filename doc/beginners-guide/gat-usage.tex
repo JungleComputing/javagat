@@ -97,13 +97,13 @@ Grid.
 \end{figure}
 
 
-\section{How to get and install GAT}
+\section{How to get and install GAT\label{gatinst}}
 \subsection{Download and installation of GAT}
 GAT can be checked out from:
 
 {\tt https://svn.aei.mpg.de/eScience/GridAPI/trunk/JavaGAT}
 
-Wiht the user \texttt{anonymous} and an empty password.
+With the user \texttt{anonymous} and an empty password.
 
 Before installing GAT, extract it to a directory of your choice.
 The installation of GAT requires a Java SUN JDK version 6 or newer. There are two ways to install GAT:
@@ -769,14 +769,8 @@ configuration stuff is also described in this document.
 
 \subsubsection{Installation}
 
-The Unicore adaptor is part of the "contributed" adaptors, and these
-adaptors need to be built separately by:
-\begin{enumerate}
-\item change into the directory \$GAT\_LOCATION/adaptors,
-\item all ant -f build-with-contributed'
-\end{enumerate}
-
-This will install the Unicore adaptor in \$GAT\_LOCATION/lib/adaptors
+The Unicore adaptor is now part of the regularly distributed adaptors, so
+it is build during the default build process (see section \ref{gatinst}).
 
 \subsubsection{Configuration of the HiLA}
 
