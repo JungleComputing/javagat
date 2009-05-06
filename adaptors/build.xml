@@ -40,7 +40,7 @@
 	</target>
 
 	<target name="clean" description="clean all adaptors">
-		<ant dir="AppEngine" />
+		<ant dir="AppEngine" target="clean" />
 		<ant dir="CommandlineSsh" target="clean" />
 		<ant dir="Globus" target="clean" />
 		<ant dir="Gridsam" target="clean" />

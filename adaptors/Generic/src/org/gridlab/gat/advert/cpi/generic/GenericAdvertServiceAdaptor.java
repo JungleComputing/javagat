@@ -66,7 +66,10 @@ public class GenericAdvertServiceAdaptor extends AdvertServiceCpi {
     public GenericAdvertServiceAdaptor(GATContext gatContext, URI advertServiceUri)
             throws GATObjectCreationException {
         super(gatContext, advertServiceUri);
-
+        if (advertServiceUri != null) {
+        	throw new GATObjectCreationException("doesn't support advert service URI");
+        }
+        
         String home = System.getProperty("user.home");
 
         if (home == null) {

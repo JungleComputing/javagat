@@ -4,7 +4,8 @@
 
 package org.gridlab.gat.advert.cpi.appengine;
 
-import ibis.advert.*;
+import ibis.advert.Advert;
+import ibis.advert.AuthenticationException;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -62,9 +63,10 @@ public class AppEngineAdvertServiceAdaptor extends AdvertServiceCpi {
      * @throws GATObjectCreationException
      * 	Failed to create an {@link AppEngineAdvertServiceAdaptor}.
      */
-    public AppEngineAdvertServiceAdaptor(GATContext gatContext, org.gridlab.gat.URI advertServiceUri)
-      throws GATObjectCreationException {
-    	super(gatContext, advertServiceUri);
+    public AppEngineAdvertServiceAdaptor(GATContext gatContext,
+			org.gridlab.gat.URI advertServiceUri)
+			throws GATObjectCreationException {
+		super(gatContext, advertServiceUri);
 
     	String server = null;
     	String user = null; 
@@ -162,6 +164,7 @@ public class AppEngineAdvertServiceAdaptor extends AdvertServiceCpi {
 				}
 			}
 			
+			System.out.println("###Calling Advert-lib's add");
 			advertService.add(advertString.getBytes(), 
 			  toAdvertMetaData(metadata), path);
 		} catch (Exception e) {
@@ -286,6 +289,10 @@ public class AppEngineAdvertServiceAdaptor extends AdvertServiceCpi {
 	 *   An {@link ibis.advert.MetaData} object.
 	 */
 	private ibis.advert.MetaData toAdvertMetaData(MetaData metadata) {
+		if (metadata == null) {
+			return null;
+		}
+		
 		ibis.advert.MetaData result = new ibis.advert.MetaData();
 		
 		for (int i = 0; i < metadata.size(); i++) {
@@ -305,6 +312,10 @@ public class AppEngineAdvertServiceAdaptor extends AdvertServiceCpi {
 	 *   An {@link MetaData} object.
 	 */
 	private MetaData fromAdvertMetaData(ibis.advert.MetaData metadata) {
+		if (metadata == null) {
+			return null;
+		}
+		
 		MetaData result = new MetaData();
 		
 		Iterator<String> itr  = metadata.getAllKeys().iterator();
