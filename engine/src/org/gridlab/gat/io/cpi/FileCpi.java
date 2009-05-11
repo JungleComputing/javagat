@@ -309,45 +309,17 @@ public abstract class FileCpi extends MonitorableCpi implements FileInterface, j
             // the local host, with a relative path, because in that case getPath()
             // delivers an absolute path which does not occur in the URI itself.
             // --Ceriel
-            
-            /* This is not correct ? 
-             * 
-             * The java.io.File spec says that getParent() and getParentFile()
-             * should both return a URI -without the last element-. This 
-             * implementation seems to skip this last bit ??  
-             * 
-             * -- Jason
-             */
-            
-            /*
-            URI dest = new URI(location.toString());
+ 
             String parent = getParent();
             if (parent == null) {
                 parent = "";
             }
-            dest.setPath(parent);
+            URI dest = location.setPath(parent);
             if (logger.isDebugEnabled()) {
                 logger.debug("GET PARENTFILE: orig = " + location + " new* = "
                         + dest);
             }
-            return GAT.createFile(gatContext, dest);
-            */
-            
-            String parent = getParent();
-
-            if (parent == null) {
-                parent = "";
-            }
-
-            URI dest = new URI(parent);
-            
-            if (logger.isDebugEnabled()) {
-                logger.debug("GET PARENTFILE: orig = " + location + " new** = "
-                        + dest);
-            }
-            
-            return GAT.createFile(gatContext, dest);
-            
+            return GAT.createFile(gatContext, dest);            
         } catch (Exception e) {
             throw new GATInvocationException("file cpi", e);
         }
