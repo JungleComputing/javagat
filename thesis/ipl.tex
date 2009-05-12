@@ -1,0 +1,36 @@
+\section{IPL Registry Bootstrap}
+\label{ipl}
+Besides implementing a AdvertService adaptor for the Google App Engine, we
+found another use for our advert service library, within Ibis. Our advert
+server could very well function as a bootstrap server for an \texttt{IPL} (Ibis
+Portability Layer) \cite{ipl-www} registry.
+
+\subsection{IPL Server}
+The Ibis Portability layer is a communication library is specifically
+designed for usage in a grid environment. It has a number of properties which
+help to achieve its goal of providing programmers with an easy to use, reliable
+grid communication infrastructure \cite{ipl-www}.
+
+A central concept in Ibis is the \emph{pool}. A pool consists of one or more Ibis
+instances, usually running on different machines. Each pool is generally made up
+of Ibises running a single distributed application. Ibises in a pool can
+communicate with each other, and, using the registry mechanism present in Ibis,
+can search for other Ibises in the same pool, get notified of Ibises joining the
+pool, etc. To coordinate Ibis pools a socalled \emph{Ibis server} is used\cite{ipl-usersguide}.
+Services can be dynamically added to the server. By default, the Ibis
+communication library comes with a \emph{registry service}. This registry
+service manages pools, possibly multiple pools at the same time. Before starting
+an Ibis application, an Ibis server needs to be running on a machine that is
+accessible from all nodes participating in the Ibis run. Starting suchapplication requires the user to specify the server's address to theapplication, in order to join a pool. Specifying such address can be well doneby means of a \emph{Bootstrap Service}, in which addresses are specified,described by an identifier and (optional) meta data.
+
+\subsection{Bootstrap Service Design}
+Mapping our requirements of an IPL Registry Bootstrap service on our existingAdvert service, we have to make some design decisions. First of all, the usershould be able to decide whether a service is to be advertised or not. This canbe specified once the server is started, by using an extra argument whencalling \texttt{ipl-server}. For example, we could add \texttt{--adv ADVERT\_URL[ID]} as parameter, after which we store the server's address at a certain
+advert service , under a specific identifier (indicated by \texttt{ADVERT\_URL}
+and \texttt{ID} respectively).
+
+Secondly, we have to find a useful way to make use of meta data. Storingkey-value pairs can be really useful, if structured properly. Some exampleswould be an \texttt{author} field (the user that started the IPL server), afield with some sort of \texttt{time of creation} (supplying the time theserver was created), etc. We still need a means to properly structureand pass metadata as soon as the server is created. Right now, the most obvious
+method is to specify our meta data in the \texttt{ibis.properties} file.
+
+Once a server is started using the \texttt{--adv} suffix, the server is addedto the Advert server (using the \texttt{add()} functionality already present).Once a server is stopped, it will be removed (using the \texttt{del()}function).\subsection{Ibis Application Design}
+Subsequently, when we start an Ibis application to join a certain pool, wecould not-specify \texttt{-Dibis.server.address}, but specify something like\texttt{-Dibis.advert.address} instead. Also we have to add propertieslike \texttt{-Dibis.advert.id} and \texttt{-Dibis.advert.md}, in order tolocate a running IPL server. Again, meta data would be best specified in the 
+\texttt{ibis.properties} file.To be continued\ldots
