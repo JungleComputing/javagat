@@ -45,11 +45,10 @@ public class DefaultAdaptorOrderPolicy implements AdaptorOrderPolicy {
         int pos = 0;
         pos = placeAdaptor(pos, "local", "file", l);
         pos = placeAdaptor(pos, "gridftp", "file", l);
-        pos = placeAdaptor(pos, "sftpganymed", "file", l);
+        pos = placeAdaptor(pos, "sftptrilead", "file", l);
         pos = placeAdaptor(pos, "commandlinessh", "file", l);
-        pos = placeAdaptor(pos, "sftpnew", "file", l);
         pos = placeAdaptor(pos, "sshtrilead", "file", l);
-        pos = placeAdaptor(pos, "sftp", "file", l);
+        pos = placeAdaptor(pos, "ftp", "file", l);
         // rest in random order
     }
 
@@ -57,8 +56,8 @@ public class DefaultAdaptorOrderPolicy implements AdaptorOrderPolicy {
         int pos = 0;
         pos = placeAdaptor(pos, "local", "fileinputstream", l);
         pos = placeAdaptor(pos, "gridftp", "fileinputstream", l);
-        pos = placeAdaptor(pos, "sftpnew", "fileinputstream", l);
-        pos = placeAdaptor(pos, "sftp", "fileinputstream", l);
+        pos = placeAdaptor(pos, "sftptrilead", "fileinputstream", l);
+        pos = placeAdaptor(pos, "ftp", "fileinputstream", l);
         pos = placeAdaptor(pos, "copying", "fileinputstream", l);
         // rest in random order
     }
@@ -67,7 +66,8 @@ public class DefaultAdaptorOrderPolicy implements AdaptorOrderPolicy {
         int pos = 0;
         pos = placeAdaptor(pos, "local", "fileoutputstream", l);
         pos = placeAdaptor(pos, "gridftp", "fileoutputstream", l);
-        pos = placeAdaptor(pos, "sftp", "fileoutputstream", l);
+        pos = placeAdaptor(pos, "sftptrilead", "fileoutputstream", l);
+        pos = placeAdaptor(pos, "ftp", "fileoutputstream", l);
         // rest in random order
     }
 

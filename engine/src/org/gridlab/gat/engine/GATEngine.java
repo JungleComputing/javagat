@@ -50,7 +50,7 @@ public class GATEngine {
 
     /**
      * A helper class to compare file names, so that they can be sorted,
-     * and the order becomes predictable and reproducable.
+     * and the order becomes predictable and reproducible.
      */
     private static class FileComparator implements Comparator<File> {
         public int compare(File f1, File f2) {
@@ -387,6 +387,10 @@ public class GATEngine {
             logger.warn("gat.adaptor.path contains '" + adaptorRoot
                     + "', but it doesn't contain any adaptor");
         }
+        
+        // Sort the list of directories, to make sure that the order is deterministic.
+        Arrays.sort(adaptorDirs, new FileComparator());
+        
         HashMap<String, ClassLoader> adaptorClassLoaders = new HashMap<String, ClassLoader>();
         for (File adaptorDir : adaptorDirs) {
             try {
