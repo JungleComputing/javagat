@@ -1,4 +1,7 @@
 FIXED BUGS AND ADDITIONS in trunk version with respect to version 2.0.5
+- adaptor order was not quite deterministic yet, so that different copies
+  of the same javagat release could have different behaviour.
+- FTP file adaptor copy method did CR-LF translation on copy.
 - FileCpi.getParentFile() was wrong in case of an absolute URI with a
   relative path where the host part refers to the local host.
 - Zorilla adaptor now sets up connection lazily and not in the resource broker
