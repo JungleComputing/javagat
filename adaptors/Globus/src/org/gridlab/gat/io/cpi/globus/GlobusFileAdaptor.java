@@ -312,6 +312,7 @@ public abstract class GlobusFileAdaptor extends FileCpi {
             }
             if (gatContext.getPreferences().containsKey("file.chmod")) {
                 client = createClient(dest);
+                setImage(client);
                 // removed line below, seems to make the copy fail...
                 // client.getCurrentDir(); // to ensure a command has been
                 // executed
@@ -324,6 +325,7 @@ public abstract class GlobusFileAdaptor extends FileCpi {
                 destroyClient(client, dest, gatContext.getPreferences());
             }
             client = createClient(dest);
+            setImage(client);
             // removed line below, seems to make the copy fail...
             // client.getCurrentDir(); // to ensure a command has been executed
             setActiveOrPassive(client, gatContext.getPreferences());
@@ -396,6 +398,8 @@ public abstract class GlobusFileAdaptor extends FileCpi {
                 }
             }
             client = createClient(src);
+            setImage(client);
+            
             setActiveOrPassive(client, gatContext.getPreferences());
             client.get(src.getPath(), new java.io.File(dest.getPath()));
         } catch (Exception e) {
@@ -408,6 +412,10 @@ public abstract class GlobusFileAdaptor extends FileCpi {
                 destroyClient(client, dest, gatContext.getPreferences());
             }
         }
+    }
+    
+    protected void setImage(FTPClient client) throws GATInvocationException {
+        // default version is empty.
     }
 
     // /*

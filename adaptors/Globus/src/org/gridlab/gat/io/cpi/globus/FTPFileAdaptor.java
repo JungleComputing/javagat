@@ -5,6 +5,7 @@ import java.util.Map;
 import java.util.Vector;
 
 import org.globus.ftp.FTPClient;
+import org.globus.ftp.Session;
 import org.globus.ftp.exception.ServerException;
 import org.gridlab.gat.AdaptorNotApplicableException;
 import org.gridlab.gat.GATContext;
@@ -95,7 +96,7 @@ public class FTPFileAdaptor extends GlobusFileAdaptor {
         try {
             FTPClient client = new FTPClient(host, port);
             client.authorize(user, password);
-
+            
             if (isPassive(gatContext.getPreferences())) {
                 setChannelOptions(client);
             }
@@ -117,6 +118,14 @@ public class FTPFileAdaptor extends GlobusFileAdaptor {
                 }
             }
             // ouch, both failed.
+            throw new GATInvocationException("FTPFileAdaptor", e);
+        }
+    }
+    
+    protected void setImage(FTPClient client) throws GATInvocationException {
+        try {
+            client.setType(Session.TYPE_IMAGE);
+        } catch (Throwable e) {
             throw new GATInvocationException("FTPFileAdaptor", e);
         }
     }
