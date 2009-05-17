@@ -21,6 +21,8 @@ import org.gridlab.gat.advert.MetaData;
 import org.gridlab.gat.advert.cpi.AdvertServiceCpi;
 import org.gridlab.gat.engine.GATEngine;
 import org.gridlab.gat.security.PasswordSecurityContext;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * The adaptor for use with the Google App Engine.
@@ -48,6 +50,8 @@ public class AppEngineAdvertServiceAdaptor extends AdvertServiceCpi {
     String pwd = SEPARATOR;
 
     Advert advertService = null;
+    
+    final static Logger logger = LoggerFactory.getLogger(AppEngineAdvertServiceAdaptor.class);
 
     /**
      * Constructor creates a new {@link AppEngineAdvertServiceAdaptor}. 
@@ -139,8 +143,10 @@ public class AppEngineAdvertServiceAdaptor extends AdvertServiceCpi {
 			throw new GATInvocationException("Get failed", e);
 		}
 		
+		logger.debug("Unmarshalling advert.");
 		Advertisable advert = GATEngine.getGATEngine().unmarshalAdvertisable(
 		  gatContext, b.toString());
+		logger.debug("Advert unmarshalled.");
 
 		return advert;
 	}
@@ -158,15 +164,16 @@ public class AppEngineAdvertServiceAdaptor extends AdvertServiceCpi {
 			String advertString = null;
 			if (advert != null) {
 				advertString = advert.marshal();
+				logger.debug("Marshalled Advert: {}", advertString);
 				if (advertString == null) {
 					throw new 
 					  GATInvocationException("Could not marshal object.");
 				}
 			}
 			
-			System.out.println("###Calling Advert-lib's add");
 			advertService.add(advertString.getBytes(), 
 			  toAdvertMetaData(metadata), path);
+			logger.debug("Advert stored.");
 		} catch (Exception e) {
 			throw new GATInvocationException("Local advert", e);
 		}
