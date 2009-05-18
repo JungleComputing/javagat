@@ -143,9 +143,9 @@ public class AppEngineAdvertServiceAdaptor extends AdvertServiceCpi {
 			throw new GATInvocationException("Get failed", e);
 		}
 		
-		logger.debug("Unmarshalling advert.");
+		logger.debug("Unmarshalling advert: {}", new String(b));
 		Advertisable advert = GATEngine.getGATEngine().unmarshalAdvertisable(
-		  gatContext, b.toString());
+		  gatContext, new String(b));
 		logger.debug("Advert unmarshalled.");
 
 		return advert;
