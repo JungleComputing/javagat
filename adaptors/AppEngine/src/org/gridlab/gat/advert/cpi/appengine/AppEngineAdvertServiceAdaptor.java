@@ -6,6 +6,7 @@ package org.gridlab.gat.advert.cpi.appengine;
 
 import ibis.advert.Advert;
 import ibis.advert.AuthenticationException;
+import ibis.advert.UriNotSupportedException;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -72,19 +73,12 @@ public class AppEngineAdvertServiceAdaptor extends AdvertServiceCpi {
 			throws GATObjectCreationException {
 		super(gatContext, advertServiceUri);
 
-    	String server = null;
     	String user = null; 
     	String pass = null;
     	
     	/* Check for valid server address. */
-    	if (advertServiceUri == null || advertServiceUri.getHost() == null) {
+    	if (advertServiceUri == null) {
     		throw new GATObjectCreationException("No AdvertService location specified.");
-    	}
-    	else if (!advertServiceUri.getHost().endsWith("appspot.com")){
-    		throw new GATObjectCreationException("AdvertService should be an appspot.com domain.");
-    	}
-    	else {
-    		server = advertServiceUri.getHost();
     	}
     	
     	/* Fetch user's home dir. */
@@ -106,7 +100,7 @@ public class AppEngineAdvertServiceAdaptor extends AdvertServiceCpi {
 	    		  gatContext.getSecurityContexts().get(i)).getPassword();
     		}
         	try {
-    			advertService = new Advert(server, user, pass);
+    			advertService = new Advert(advertServiceUri.toJavaURI(), user, pass);
     			return;
     		}
         	catch (AuthenticationException ae) {
@@ -120,7 +114,13 @@ public class AppEngineAdvertServiceAdaptor extends AdvertServiceCpi {
     	}
 
     	/* Connect to public server. */
-    	advertService = new Advert(server);
+    	try {
+    		advertService = new Advert(advertServiceUri.toJavaURI());
+    	}
+    	catch (UriNotSupportedException unse) {
+			throw new GATObjectCreationException("Connection to server failed", 
+					unse);
+    	}
     }
 
     /*
