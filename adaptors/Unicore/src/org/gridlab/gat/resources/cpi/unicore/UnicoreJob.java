@@ -84,7 +84,7 @@ public class UnicoreJob extends JobCpi {
     private UnicoreJob(GATContext gatContext, SerializedUnicoreJob sj)
             throws GATObjectCreationException {
         super(gatContext, sj.getJobDescription(), sj.getSandbox());
-
+        
         if (logger.isDebugEnabled()) {
             logger.debug("reconstructing UnicoreJob: " + sj);
         }
@@ -93,7 +93,12 @@ public class UnicoreJob extends JobCpi {
         this.stoptime = sj.getStoptime();
         this.submissiontime = sj.getSubmissiontime();
         
-        try {
+        // Set the context classloader to the classloader that loaded the UnicoreJob
+        // class, otherwise the HiLA libraries will not find any HiLA implementations.
+        // --Ceriel
+        ClassLoader saved = Thread.currentThread().getContextClassLoader();
+        Thread.currentThread().setContextClassLoader(this.getClass().getClassLoader());
+        try {            
             // Note: the job id used here is actually a Location.
             this.task = (Task) HiLAFactory.getInstance().locate(new de.fzj.hila.Location(sj.getJobId()));
             if (this.task == null) {
@@ -103,6 +108,8 @@ public class UnicoreJob extends JobCpi {
             this.jobID = this.task.getID();
         } catch(HiLAException e) {
             throw new GATObjectCreationException("Got HiLAException: ", e);
+        } finally {
+            Thread.currentThread().setContextClassLoader(saved);
         }
         
         // reconstruct enough of the software description to be able to
