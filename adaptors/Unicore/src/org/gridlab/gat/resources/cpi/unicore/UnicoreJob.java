@@ -140,7 +140,6 @@ public class UnicoreJob extends JobCpi {
                 MetricDefinition.DISCRETE, "String", null, null, returnDef);
         registerMetric("getJobStatus", statusMetricDefinition);
         statusMetric = statusMetricDefinition.createMetric(null);
-        Soft = jobDescription.getSoftwareDescription();
         startListener();
     }
 
