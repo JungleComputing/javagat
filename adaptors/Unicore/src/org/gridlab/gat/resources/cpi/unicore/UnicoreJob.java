@@ -101,17 +101,16 @@ public class UnicoreJob extends JobCpi {
         try {            
             // Note: the job id used here is actually a Location.
             this.task = (Task) HiLAFactory.getInstance().locate(new de.fzj.hila.Location(sj.getJobId()));
-            if (this.task == null) {
-                throw new GATObjectCreationException("Unmarshalling UnicoreJob: task = null");
-            }
-
             this.jobID = this.task.getID();
-        } catch(HiLAException e) {
-            throw new GATObjectCreationException("Got HiLAException: ", e);
+        } catch(Throwable e) {
+            throw new GATObjectCreationException("Got exception from HiLA: ", e);
         } finally {
             Thread.currentThread().setContextClassLoader(saved);
         }
-        
+        if (this.task == null) {
+            throw new GATObjectCreationException("Unmarshalling UnicoreJob: task = null");
+        }
+             
         // reconstruct enough of the software description to be able to
         // poststage.
         Soft = new SoftwareDescription();
