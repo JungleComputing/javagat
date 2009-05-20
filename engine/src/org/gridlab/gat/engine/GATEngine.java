@@ -3,7 +3,6 @@ package org.gridlab.gat.engine;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.lang.reflect.InvocationTargetException;
@@ -664,19 +663,14 @@ public class GATEngine {
                 if (logger.isDebugEnabled()) {
                     logger.debug("unmarshaller for "
                             + c.getName()
-                            + " failed:"
-                            + e1.getTargetException()
-                            + "\n"
-                            + e1.getTargetException().getStackTrace()
-                                    .toString());
+                            + " failed:", e1.getTargetException());
                 }
                 // ignore and try next unmarshaller
-            } catch (Exception e) {
+            } catch (Throwable e) {
                 if (logger.isDebugEnabled()) {
-                    StringWriter writer = new StringWriter();
-                    e.printStackTrace(new PrintWriter(writer));
-                    logger.debug("unmarshaller for " + c.getName() + " failed:"
-                            + e + "\n" + writer.toString());
+                    logger.debug("unmarshaller for "
+                            + c.getName()
+                            + " failed:", e);
                 }
                 // ignore and try next unmarshaller
             }
