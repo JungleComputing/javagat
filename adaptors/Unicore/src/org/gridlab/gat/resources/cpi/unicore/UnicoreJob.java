@@ -100,6 +100,7 @@ public class UnicoreJob extends JobCpi {
         Thread.currentThread().setContextClassLoader(this.getClass().getClassLoader());
         try {            
             // Note: the job id used here is actually a Location.
+        	
             this.task = (Task) HiLAFactory.getInstance().locate(new de.fzj.hila.Location(sj.getJobId()));
             this.jobID = this.task.getID();
         } catch(Throwable e) {
@@ -320,7 +321,7 @@ public class UnicoreJob extends JobCpi {
     }
 
     public synchronized JobState getState() {
-//        setState();
+        setState();
         return state;
     }
 
@@ -343,6 +344,7 @@ public class UnicoreJob extends JobCpi {
 
             sj = new SerializedUnicoreJob(jobDescription, sandbox, task.getLocation().toString(),
                     submissiontime, starttime, stoptime, Soft);
+            
         }
         String res = GATEngine.defaultMarshal(sj);
         if (logger.isDebugEnabled()) {
@@ -388,6 +390,14 @@ public class UnicoreJob extends JobCpi {
         this.task = task;
     }
     
+    /**
+     * try to get the task from UnicoreJob
+     */
+    
+ /*   public Task getTask() {
+    	Task rTask = task;
+    	return rTask;
+    }*/
 
     /**
 	 * @param Soft
@@ -453,7 +463,7 @@ public class UnicoreJob extends JobCpi {
     public synchronized void stop() throws GATInvocationException {
         if ((getState() != JobState.RUNNING) && (getState() != JobState.ON_HOLD)
                 && (getState() != JobState.SCHEDULED)) {
-            throw new GATInvocationException(
+        	throw new GATInvocationException(
                     "Cant stop(): job is not in a running state");
         } else {
             try {
