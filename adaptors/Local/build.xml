@@ -1,0 +1,58 @@
+<project name="LocalAdaptor" default="build" basedir=".">
+	<description>Build file for JavaGAT Local Adaptors.</description>
+
+	<property name="gat.location" location="../.." />
+	<property name="engine_path" location="${gat.location}/lib" />
+
+	<property name="src" location="src" />
+	<property name="tmp" location="tmp" />
+	<property name="lib" location="${gat.location}/lib/adaptors/LocalAdaptor" />
+	<property name="external" location="external" />
+	<property name="java.debug.value" value="true" />
+
+	<path id="external_jars">
+		<fileset dir="${external}">
+			<include name="*.jar" />
+		</fileset>
+		<fileset dir="${engine_path}">
+			<include name="*.jar" />
+		</fileset>
+	</path>
+
+	<target name="build" depends="clean" description="build the JARs and documentation">
+		<!-- Create the distribution end tmp directory -->
+		<mkdir dir="${lib}" />
+		<mkdir dir="${tmp}" />
+
+		<!-- Compile the java code from ${src} into ${tmp} -->
+		<javac source="1.5" target="1.5" srcdir="${src}" destdir="${tmp}" debug="on">
+			<classpath refid="external_jars" />
+		</javac>
+
+		<jar jarfile="${lib}/LocalAdaptor.jar" basedir="${tmp}" includes="**">
+			<manifest>
+				<attribute name="FileCpi-class" value="org.gridlab.gat.io.cpi.local.LocalFileAdaptor,org.gridlab.gat.io.cpi.srcToLocalToDestCopy.SrcToLocalToDestCopyFileAdaptor,org.gridlab.gat.io.cpi.streaming.StreamingFileAdaptor" />
+				<attribute name="FileInputStreamCpi-class" value="org.gridlab.gat.io.cpi.local.LocalFileInputStreamAdaptor" />
+				<attribute name="FileOutputStreamCpi-class" value="org.gridlab.gat.io.cpi.local.LocalFileOutputStreamAdaptor" />
+				<attribute name="RandomAccessFileCpi-class" value="org.gridlab.gat.io.cpi.local.LocalRandomAccessFileAdaptor" />
+				<attribute name="ResourceBrokerCpi-class" value="org.gridlab.gat.resources.cpi.local.LocalResourceBrokerAdaptor,org.gridlab.gat.resources.cpi.localQ.LocalQResourceBrokerAdaptor" />
+				<attribute name="EndpointCpi-class" value="org.gridlab.gat.io.cpi.sockets.SocketEndpointAdaptor" />
+			</manifest>
+		</jar>
+
+		<!-- Copy external libraries to lib directory -->
+		<copy todir="${lib}">
+			<fileset dir="${external}">
+				<include name="*.jar" />
+			</fileset>
+		</copy>
+		
+		<delete dir="${tmp}" />
+
+	</target>
+
+	<target name="clean" description="clean up">
+		<delete dir="${tmp}" />
+	</target>
+
+</project>

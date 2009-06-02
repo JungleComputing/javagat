@@ -1,0 +1,126 @@
+FIXED BUGS AND ADDITIONS in trunk version with respect to version 2.0.5
+- adaptor order was not quite deterministic yet, so that different copies
+  of the same javagat release could have different behaviour.
+- FTP file adaptor copy method did CR-LF translation on copy.
+- FileCpi.getParentFile() was wrong in case of an absolute URI with a
+  relative path where the host part refers to the local host.
+- Zorilla adaptor now sets up connection lazily and not in the resource broker
+  constructor --> avoids 30-second delay.
+- gat.adaptor.path System property now again indicates a File.pathSeparator-
+  separated path of directories (as it used to do in version 1.7).
+- work in progress on the Unicore adaptor to make a unicore job advertisable,
+  so that another javaGAT instance can later obtain the results.
+
+FIXED BUGS AND ADDITIONS in version 2.0.5 with respect to version 2.0.4
+- Alexander Beck-Ratzka contributed a Unicore resourcebroker adaptor.
+- the Ganymed sftp adaptor has been replaced with a Trilead sftp adaptor.
+- removed sftp and sftpnew adaptors as they are obsoleted by the
+  Trilead sftp adaptor.
+- JavaGAT now uses slf4j as logging system. This means that you can use
+  your favorite logging system, as long as there is an slf4j implementation
+  for it. To accomplish that, you need to put the appropriate slf4j jar-file
+  in front of your classpath. If, like before, you want to use log4j, you
+  don't have to do anything, since this is the default.
+- the GATEngine now supports a "shared" jar-file directory, which allows
+  adaptors to share some of their dependencies, so that these are loaded
+  with the same classloader. This is useful for for instance security
+  objects that need to be shared by several adaptors.
+  See the file doc/adaptors/whySharedDirectory.txt.
+- there was an error in the unmarshal method of the LogicalFileCpi, which
+  made it impossible to unmarshal an advertized logicalfile.
+- there was a bug in the fixURI method of the FileCpi which sometimes made
+  it refer to a wrong location.
+- when staging in a file with an absolute source path and no explicit
+  destination, the file was staged to the wrong location (not the sandbox).
+- an explicit check for null job arguments was added, so that an exception
+  is thrown when the job description is created, instead of further on when
+  the job is run.
+- fixed various problems in the Globus and FTP file adaptor. This is tricky
+  stuff because different servers behave differently! We have tested with
+  various servers, and it seems to work now, but your mileage may vary!
+- the Koala adaptor is now functional.
+- the sshtrilead file adaptor sometimes failed because warnings were printed
+  on stderr. Now, these warnings are ignored (see bug #256).
+- added a list method for the CommandlineSshFileAdaptor.
+- protect executable and arguments against shell meta character expansion
+  in the Gridsam resource broker adaptor.
+- some API has been added for file permissions. This basically is jdk7 stuff.
+  For now, gLite is the only adaptor that implements (some of) it.
+  org.gridlab.gat.io.File now has a method getFileAttributeView().
+- a special version of the GATEngine has been added for Android.
+- there has been a lot of development on the various gLite adaptors.
+- the Zorilla adaptor has been improved considerably.
+
+FIXED BUGS in version 2.0.4 with respect to version 2.0.3
+
+- fixed a couple of glitches in the tests.
+- The Glite adaptor has seen various updates and fixes, but its file
+  adaptor is still to be considered "experimental", according to the developers.
+- various fixes in the Globus File adaptor.
+- a couple of fixes in the sshtrilead file adaptor, for operations on
+  non-existent files. Also, its getAbsolutePath() implementation was wrong.
+- File.getName() returned null in some cases, which is a no-no. This is fixed,
+  and this also fixes bug 187.
+- re-implemented metrics administration. The old method maintained static lists
+  inside GATEngine which were never cleaned up, so that there was a huge memory
+  leak because the engine kept references to all jobs that were ever run.
+  Now, the lists are maintained within the monitorable object itself and are
+  no longer static. This fixes bug 134.
+- fixed stop() method of almost all resourcebroker adaptors: the method
+  may now be called in any job state, as promised in the javadoc.
+- fixed wsgt4new resourcebroker adaptor to actually use a user-supplied
+  credential (bug reported by Ralf Groeper).
+- fixed sshtrilead and commandlinessh resource broker adaptors to prevent
+  expansion of shell-meta-characters, and to make them work in case the
+  shell on the server side is a C-shell (bug reported by Kees van Reeuwijk).
+- made resourcebrokeradaptor test work when server is a Solaris machine
+  (which has slightly different error messages).
+- fixed wsgt4new resourcebroker adaptor to use a supplied GSSCredential (bug
+  reported by Ralf Groeper).
+- fixed classloader issue: use either the classloader of the class that
+  prompted the loading of JavaGAT or the context classloader, for the
+  parent of the URL classloaders for the adaptors (bug reported by
+  Ralf Groeper).
+- fixed globus security utils: if the CredentialSecurityObject already
+  contains a GSSCredential, just return that instead of ignoring it
+  (bug reported by Ralf Groeper).
+- fixed commandrunner: now uses ProcessBuilder. This protects against local
+  expansion of shell meta characters.
+- fixed a bug reported by Brian Carpenter: wsgt4new resourcebroker adaptor
+  sometimes gave redundant callbacks when the job was already finished,
+  for instance, a redundant POST_STAGING callback, which caused overwriting of
+  initially correct output files.
+- fixed copy method to mimic cp -r behaviour when copying directories.
+  (copy dir a to b ended up as a copy b/a, even if b did not exist,
+  now it only does so when a directory b exists, otherwise a directory b
+  is created with copy of contents of a).
+- fixed bug 221 (getParentFile) in LocalFileAdaptor.
+- various fixes in the Zorilla adaptor.
+- various fixes and updates in the glite adaptor.
+
+FIXED BUGS in version 2.0.3 with respect to version 2.0.2
+
+- fixed the compilation of the contributed adaptors (bug reported by Alexander Beck-Ratzka)
+- fixed some tests: preferences were set, but not passed on to GAT.create() methods.
+- resource brokers now accept only proper URIs (using the right scheme for the specific adaptor or the any scheme) (bug reported by Niels Drost)
+- zorilla adaptor updated
+- fault tolerance optimization in LogicalFileCpi.replicate as proposed by Enric Tejedor
+- glite-adaptor: support for inputdata jdl attribute
+
+FIXED BUGS in version 2.0.2 with respect to version 2.0.1
+
+- fixed bug in sshtrilead adaptor for getting files from a remote location to a local location (connection attempt to the wrong side, bug reported by Enric Tejedor).
+- modified the File.java toURL method to be compatible with java 1.6 (it's deprecated there)
+- fix in the engine: FileCpi.copyDir, it invokes now just the static copyDirectory
+- fix in default adaptor order policy (adaptors were wrongly ordered, bug reported by Mathijs den Burger)
+
+FIXED BUGS in version 2.0.1 with respect to version 2.0
+
+- GlobusFileAdaptor: renameTo failed if the passed URI wasn't on the same host as the file. (Bug reported by Alexander Beck-Ratzka)
+- LogicalFileCpi: underlying storage of the files belonging to the logicalfile is now done in a Vector and is synchronized (previously it wasn't synchronized in an ArrayList). (Bug reported by Enric Tejedor)
+- javagat.properties: updated to reflect all preferences and their defaults.
+- GliteAdaptor: added a GliteAdaptor developed by Thomas Zangerl (Thanks a lot!)
+- added support for preference <"job.stop.poststage", true|false> which controls whether the job should poststage if the stop method is invoked on this job. (request from Keith Cover)
+- FileCpi: improved method recursiveDeleteDirectory, it only does recursive delete if a direct delete fails, this can speed up poststaging and sandbox removal quite a lot.
+- LocalResourceBroker: fixed accessing of the path of the sandbox (Bug reported by Hans-Martin Adorf)
+- GlobusFileAdaptor: mkdir failed if preference file.chmod wasn't set, it did set the mode to 000, now it takes the umask on the remote machine as default (Bug reported by Hans-Martin Adorf and others)
