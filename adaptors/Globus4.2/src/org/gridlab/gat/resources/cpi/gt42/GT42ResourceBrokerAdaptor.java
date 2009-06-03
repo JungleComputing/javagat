@@ -11,8 +11,11 @@ import org.gridlab.gat.monitoring.MetricListener;
 import org.gridlab.gat.resources.AbstractJobDescription;
 import org.gridlab.gat.resources.Job;
 import org.gridlab.gat.resources.cpi.ResourceBrokerCpi;
+import org.ietf.jgss.GSSCredential;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.gridlab.gat.security.globus.GlobusSecurityUtils;
+
 
 public class GT42ResourceBrokerAdaptor extends ResourceBrokerCpi {
 
@@ -33,8 +36,28 @@ public class GT42ResourceBrokerAdaptor extends ResourceBrokerCpi {
 	        return preferences;
 	    }
 
-//	   protected static Logger logger = LoggerFactory
- //      .getLogger(GT42newResourceBrokerAdaptor.class);
+	   protected static Logger logger = LoggerFactory
+       .getLogger(GT42newResourceBrokerAdaptor.class);
+	   
+	   protected GSSCredential getCred() throws GATInvocationException {
+	        GSSCredential cred = null;
+	        URI location = null;
+	        try {
+	            location = new URI(getHostname());
+	        } catch (Exception e) {
+	            throw new GATInvocationException(
+	                    "GT4.2 Job: getSecurityContext, initialization of location failed, "
+	                            + e);
+	        }
+	        try {
+	            cred = GlobusSecurityUtils.getGlobusCredential(gatContext,
+	                    "ws-gram", location, ResourceManagerContact.DEFAULT_PORT);
+	        } catch (Exception e) {
+	            throw new GATInvocationException(
+	                    "WSGT4Job: could not initialize credentials, " + e);
+	        }
+	        return cred;
+	    }
 	   
 	
 	protected GT42ResourceBrokerAdaptor(GATContext gatContext, URI brokerURI)
