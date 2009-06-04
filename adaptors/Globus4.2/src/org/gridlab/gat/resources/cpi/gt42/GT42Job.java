@@ -3,10 +3,11 @@ package org.gridlab.gat.resources.cpi.gt42;
 import java.util.HashMap;
 import java.util.Map;
 
+//Attenzione---> Sono le librerie del GT4.2
 import org.globus.exec.client.GramJob;
 import org.globus.exec.client.GramJobListener;
 import org.globus.exec.generated.StateEnumeration;
-
+//------------------------------------------
 
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
@@ -35,6 +36,7 @@ public class GT42Job extends JobCpi implements GramJobListener, Runnable{
 
     private String submissionID;
 	
+    // Penso nn vada toccato
     protected GT42Job(GATContext gatContext, JobDescription jobDescription,
             Sandbox sandbox) {
         super(gatContext, jobDescription, sandbox);
@@ -51,6 +53,7 @@ public class GT42Job extends JobCpi implements GramJobListener, Runnable{
         poller.start();
     }
     
+    // Penso nn vada toccato
     protected synchronized void setState(JobState state) {
         if (this.state != state) {
             this.state = state;
@@ -71,12 +74,14 @@ public class GT42Job extends JobCpi implements GramJobListener, Runnable{
         }
     }
     
+    //Penso non vada toccato
     public synchronized void stop() throws GATInvocationException {
         stop(gatContext.getPreferences().containsKey("job.stop.poststage")
                 && gatContext.getPreferences().get("job.stop.poststage")
                         .equals("false"));
     }
     
+    //Controllare quel job.cancel
     private synchronized void stop(boolean skipPostStage)
     	throws GATInvocationException {
     	if (state != JobState.STOPPED && state != JobState.SUBMISSION_ERROR) {
@@ -99,7 +104,8 @@ public class GT42Job extends JobCpi implements GramJobListener, Runnable{
     	finished = true;
     	finished();
     }
-
+    
+    //penso non vada toccato
     public synchronized int getExitStatus() throws GATInvocationException {
         if (getState() != JobState.STOPPED
                 && getState() != JobState.SUBMISSION_ERROR) {
@@ -108,7 +114,7 @@ public class GT42Job extends JobCpi implements GramJobListener, Runnable{
         return exitStatus;
     }
     
-    
+    //penso non vada toccato
     public synchronized Map<String, Object> getInfo()
 		    throws GATInvocationException {
 		HashMap<String, Object> m = new HashMap<String, Object>();
@@ -152,7 +158,7 @@ public class GT42Job extends JobCpi implements GramJobListener, Runnable{
 		}
 		return m;
 }
-    
+    //penso non vada toccato
     public void stateChanged(GramJob job) {
         // don't let the upcall and the poller interfere, so synchronize the
         // state stuff
@@ -170,7 +176,7 @@ public class GT42Job extends JobCpi implements GramJobListener, Runnable{
             doStateChange(newState);
         }
     }
-
+//questo e gli altri sotto nemmeno
     private void doStateChange(StateEnumeration newState) {
         // Don't allow "updates" from final states.
         // These were probably caused by the refreshStatus call in stateChanged(),
