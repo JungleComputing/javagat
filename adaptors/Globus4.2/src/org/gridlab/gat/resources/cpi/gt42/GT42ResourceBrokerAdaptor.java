@@ -1,25 +1,32 @@
 package org.gridlab.gat.resources.cpi.gt42;
 
-import Address;
-import EndpointReferenceType;
-import MalformedURIException;
-import RSLParseException;
-import WSGT4newJob;
+
+
+
 
 import java.net.MalformedURLException;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 // Attenzione ------> Librerie GT 4.2
+import org.globus.common.ResourceManagerContact;
 import org.globus.exec.client.GramJob;
+
+import org.apache.axis.types.URI.MalformedURIException;
 
 // queste due classi prima stavano in addressing-1.0.jar
 import org.globus.axis.message.addressing.Address;
+import org.globus.axis.message.addressing.AttributedURIType;
 import org.globus.axis.message.addressing.EndpointReferenceType;
 
 /*l'import della classe org.apache.axis.message.addressing.ReferencePropertiesType;
  *è cambiato con org.globus.axis.message.addressing.ReferenceParametersType;
 */
+
+import org.globus.exec.utils.rsl.RSLParseException;
+import org.globus.gsi.gssapi.auth.Authorization;
+import org.globus.gsi.gssapi.auth.HostAuthorization;
+
 //-----------------------------------
 
 import org.gridlab.gat.GATContext;
@@ -307,7 +314,13 @@ public class GT42ResourceBrokerAdaptor extends ResourceBrokerCpi {
 	        try {
 	            
 	        	// il metodo setAddress è cambiato!! ora riceve un AttributedUriType 
-	        	endpoint.setAddress(new Address(createAddressString()));
+	        	// AttributedURIType non ha documentazione!
+	        	String address=createAddressString();
+	        	AttributedURIType attributedAddress=new AttributedURIType(address);
+	           	endpoint.setAddress(attributedAddress);
+	        	
+	        	//endpoint.setAddress(new Address(createAddressString()));
+	        
 	        } catch (MalformedURIException e) {
 	            throw new GATInvocationException("WSGT4newResourceBrokerAdaptor", e);
 	        }
@@ -378,7 +391,10 @@ public class GT42ResourceBrokerAdaptor extends ResourceBrokerCpi {
 	                logger.debug("submitJob: credential = " + cred);
 	            }
 	        } else {
-	            gramjob.setAuthorization(HostAuthorization.getInstance());
+	        	HostAuthorization ha=HostAuthorization.getInstance();
+	        	//Authorization c;
+	        	gramjob.setAuthorization(ha);
+	           // gramjob.setAuthorization(HostAuthorization.getInstance());
 	        }
 	        // end modification.
 	        gramjob.setMessageProtectionType(Constants.ENCRYPTION);
