@@ -1,31 +1,36 @@
 package org.gridlab.gat.resources.cpi.gt42;
 
-
-
-
-
 import java.net.MalformedURLException;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 // Attenzione ------> Librerie GT 4.2
+
 import org.globus.common.ResourceManagerContact;
 import org.globus.exec.client.GramJob;
 
-import org.apache.axis.types.URI.MalformedURIException;
+import org.apache.axis.components.uuid.UUIDGen;
+import org.apache.axis.components.uuid.UUIDGenFactory;
 
 // queste due classi prima stavano in addressing-1.0.jar
-import org.globus.axis.message.addressing.Address;
 import org.globus.axis.message.addressing.AttributedURIType;
 import org.globus.axis.message.addressing.EndpointReferenceType;
+import org.globus.axis.message.addressing.ReferenceParametersType;
 
-/*l'import della classe org.apache.axis.message.addressing.ReferencePropertiesType;
+/*
+ * l'import della classe org.apache.axis.message.addressing.ReferencePropertiesType;
  *è cambiato con org.globus.axis.message.addressing.ReferenceParametersType;
 */
 
+import org.globus.exec.utils.ManagedJobConstants;
+import org.globus.exec.utils.ManagedJobFactoryConstants;
 import org.globus.exec.utils.rsl.RSLParseException;
-import org.globus.gsi.gssapi.auth.Authorization;
-import org.globus.gsi.gssapi.auth.HostAuthorization;
+
+
+import org.globus.wsrf.encoding.SerializationException;
+import org.globus.wsrf.impl.SimpleResourceKey;
+import org.globus.wsrf.impl.security.authentication.Constants;
+import org.globus.wsrf.impl.security.authorization.HostAuthorization;
 
 //-----------------------------------
 
@@ -319,9 +324,10 @@ public class GT42ResourceBrokerAdaptor extends ResourceBrokerCpi {
 	        	AttributedURIType attributedAddress=new AttributedURIType(address);
 	           	endpoint.setAddress(attributedAddress);
 	        	
+	           	//Il codice originale era il seguente
 	        	//endpoint.setAddress(new Address(createAddressString()));
 	        
-	        } catch (MalformedURIException e) {
+	        } catch (Exception e) {// Ho modificato anche il tipo di eccezione sollevata
 	            throw new GATInvocationException("WSGT4newResourceBrokerAdaptor", e);
 	        }
 
@@ -339,7 +345,7 @@ public class GT42ResourceBrokerAdaptor extends ResourceBrokerCpi {
 	            }
 	        }
 	        //creo un nuovo GT42Job e gli passo il gatcotext, la descrizione e la sandbox
-	        GT42Job wsgt4job = new GT42Job(gatContext, description, sandbox);
+	        GT42Job gt42job = new GT42Job(gatContext, description, sandbox);
 	        
 	        //inizializzo a null un oggetto Job che è una interfaccia
 	        Job job = null;
@@ -347,11 +353,11 @@ public class GT42ResourceBrokerAdaptor extends ResourceBrokerCpi {
 	         * WrapperJobCpi e lo assegna al job, altrimenti assegna direttamente il job
 	        */
 	        if (description instanceof WrapperJobDescription) {
-	            WrapperJobCpi tmp = new WrapperJobCpi(gatContext, wsgt4job);
+	            WrapperJobCpi tmp = new WrapperJobCpi(gatContext, gt42job);
 	            listener = tmp;
 	            job = tmp;
 	        } else {
-	            job = wsgt4job;
+	            job = gt42job;
 	        }
 	        
 	        /*Se i parametri ricevuti in input listener e metricDefinitionName 
@@ -367,7 +373,7 @@ public class GT42ResourceBrokerAdaptor extends ResourceBrokerCpi {
 
 	        // se c'e la sandbox fa qualcosa
 	        if (sandbox != null) {
-	            wsgt4job.setState(Job.JobState.PRE_STAGING);
+	            gt42job.setState(Job.JobState.PRE_STAGING);
 	            sandbox.prestage();
 	        }
 
@@ -376,11 +382,11 @@ public class GT42ResourceBrokerAdaptor extends ResourceBrokerCpi {
 	        try {
 	            gramjob = new GramJob(createRSL(description, sandbox,useGramSandbox));
 	        } catch (RSLParseException e) {
-	            throw new GATInvocationException("WSGT4newResourceBrokerAdaptor", e);
+	            throw new GATInvocationException("GT42newResourceBrokerAdaptor", e);
 	        }
 
 	        // inform the wsgt4 job of which gram job is related to it.
-	        wsgt4job.setGramJob(gramjob);
+	        gt42job.setGramJob(gramjob);
 
 	        // Was: gramjob.setAuthorization(HostAuthorization.getInstance());
 	        // Modified to use a supplied credential. --Ceriel
@@ -391,17 +397,14 @@ public class GT42ResourceBrokerAdaptor extends ResourceBrokerCpi {
 	                logger.debug("submitJob: credential = " + cred);
 	            }
 	        } else {
-	        	HostAuthorization ha=HostAuthorization.getInstance();
-	        	//Authorization c;
-	        	gramjob.setAuthorization(ha);
-	           // gramjob.setAuthorization(HostAuthorization.getInstance());
+	            gramjob.setAuthorization(HostAuthorization.getInstance());
 	        }
 	        // end modification.
 	        gramjob.setMessageProtectionType(Constants.ENCRYPTION);
 	        gramjob.setDelegationEnabled(true);
 
 	        // wsgt4 job object listens to the gram job
-	        gramjob.addListener(wsgt4job);
+	        gramjob.addListener(gt42job);
 
 	        String factoryType = (String) gatContext.getPreferences().get(
 	                "wsgt4new.factory.type");
@@ -413,26 +416,30 @@ public class GT42ResourceBrokerAdaptor extends ResourceBrokerCpi {
 	            }
 	        }
 
-	        ReferencePropertiesType props = new ReferencePropertiesType();
+	        ReferenceParametersType params = new ReferenceParametersType();
 	        SimpleResourceKey key = new SimpleResourceKey(
 	                ManagedJobConstants.RESOURCE_KEY_QNAME, factoryType);
 	        try {
-	            props.add(key.toSOAPElement());
+	            params.add(key.toSOAPElement());
 	        } catch (SerializationException e) {
 	            throw new GATInvocationException("WSGT4newResourceBrokerAdaptor", e);
 	        }
-	        endpoint.setProperties(props);
+	       
+	        // modifica effettuata da me. Prima era cosi:
+	        //endpoint.setProperties(props);
 
+	        endpoint.setParameters(params);
+	        
 	        UUIDGen uuidgen = UUIDGenFactory.getUUIDGen();
 	        String submissionID = "uuid:" + uuidgen.nextUUID();
 
 	        if (logger.isDebugEnabled()) {
 	            logger.debug("submission id for job: " + submissionID);
 	        }
-	        wsgt4job.setSubmissionID(submissionID);
+	        gt42job.setSubmissionID(submissionID);
 	        try {
 	            gramjob.submit(endpoint, false, false, submissionID);
-	            wsgt4job.submitted();
+	            gt42job.submitted();
 	        } catch (Exception e) {
 	            throw new GATInvocationException("WSGT4newResourceBrokerAdaptor", e);
 	        }
