@@ -1,3 +1,4 @@
+
 package org.gridlab.gat.resources.cpi.gt42;
 
 import java.net.MalformedURLException;
@@ -94,7 +95,7 @@ public class GT42ResourceBrokerAdaptor extends ResourceBrokerCpi {
 	                    "ws-gram", location, ResourceManagerContact.DEFAULT_PORT);//è una classe COG
 	        } catch (Exception e) {
 	            throw new GATInvocationException(
-	                    "WSGT4Job: could not initialize credentials, " + e);
+	                    "GT4Job: could not initialize credentials, " + e);
 	        }
 	        return cred;
 	    }
@@ -238,7 +239,7 @@ public class GT42ResourceBrokerAdaptor extends ResourceBrokerCpi {
 	                                + "</destinationUrl>";
 	                    } catch (MalformedURLException e) {
 	                        throw new GATInvocationException(
-	                                "WSGT4ResourceBrokerAdaptor", e);
+	                                "GT42ResourceBrokerAdaptor", e);
 	                    }
 	                    rsl += "</transfer>";
 	                }
@@ -266,7 +267,7 @@ public class GT42ResourceBrokerAdaptor extends ResourceBrokerCpi {
 	                        // ${GLOBUS_USER_HOME}
 	                    } catch (MalformedURLException e) {
 	                        throw new GATInvocationException(
-	                                "WSGT4ResourceBrokerAdaptor", e);
+	                                "GT42ResourceBrokerAdaptor", e);
 	                    }
 	                    rsl += "</transfer>";
 	                }
@@ -328,12 +329,12 @@ public class GT42ResourceBrokerAdaptor extends ResourceBrokerCpi {
 	        	//endpoint.setAddress(new Address(createAddressString()));
 	        
 	        } catch (Exception e) {// Ho modificato anche il tipo di eccezione sollevata
-	            throw new GATInvocationException("WSGT4newResourceBrokerAdaptor", e);
+	            throw new GATInvocationException("GT42ResourceBrokerAdaptor", e);
 	        }
 
 	        // test whether gram sandbox should be used
 	        String s = (String) gatContext.getPreferences().get(
-	                "wsgt4new.sandbox.gram");
+	                "GT42.sandbox.gram");
 	        boolean useGramSandbox = (s != null && s.equalsIgnoreCase("true"));
 	        Sandbox sandbox = null;
 	        if (!useGramSandbox) {
@@ -382,7 +383,7 @@ public class GT42ResourceBrokerAdaptor extends ResourceBrokerCpi {
 	        try {
 	            gramjob = new GramJob(createRSL(description, sandbox,useGramSandbox));
 	        } catch (RSLParseException e) {
-	            throw new GATInvocationException("GT42newResourceBrokerAdaptor", e);
+	            throw new GATInvocationException("GT42ResourceBrokerAdaptor", e);
 	        }
 
 	        // inform the wsgt4 job of which gram job is related to it.
@@ -407,7 +408,7 @@ public class GT42ResourceBrokerAdaptor extends ResourceBrokerCpi {
 	        gramjob.addListener(gt42job);
 
 	        String factoryType = (String) gatContext.getPreferences().get(
-	                "wsgt4new.factory.type");
+	                "GT42.factory.type");// ricordarsi di capire come funziona questo metodo get per farsi ritornare la prop giusta
 	        if (factoryType == null || factoryType.equals("")) {
 	            factoryType = ManagedJobFactoryConstants.FACTORY_TYPE.FORK;
 	            if (logger.isDebugEnabled()) {
@@ -422,12 +423,11 @@ public class GT42ResourceBrokerAdaptor extends ResourceBrokerCpi {
 	        try {
 	            params.add(key.toSOAPElement());
 	        } catch (SerializationException e) {
-	            throw new GATInvocationException("WSGT4newResourceBrokerAdaptor", e);
+	            throw new GATInvocationException("GT42ResourceBrokerAdaptor", e);
 	        }
 	       
 	        // modifica effettuata da me. Prima era cosi:
 	        //endpoint.setProperties(props);
-
 	        endpoint.setParameters(params);
 	        
 	        UUIDGen uuidgen = UUIDGenFactory.getUUIDGen();
@@ -441,7 +441,7 @@ public class GT42ResourceBrokerAdaptor extends ResourceBrokerCpi {
 	            gramjob.submit(endpoint, false, false, submissionID);
 	            gt42job.submitted();
 	        } catch (Exception e) {
-	            throw new GATInvocationException("WSGT4newResourceBrokerAdaptor", e);
+	            throw new GATInvocationException("GT42ResourceBrokerAdaptor", e);
 	        }
 
 	        // second parameter is batch, should be set to false.
