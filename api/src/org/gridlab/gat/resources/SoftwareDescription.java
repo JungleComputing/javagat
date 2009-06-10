@@ -220,7 +220,6 @@ public class SoftwareDescription implements java.io.Serializable {
     public SoftwareDescription(Map<String, Object> attributes) {
         this.attributes = new HashMap<String, Object>(attributes);
 
-        // controllare se sn gli stessi campi del Create RSL
         executable = (String) attributes.get("executable");
         arguments = (String[]) attributes.get("arguments");
         checkArguments();

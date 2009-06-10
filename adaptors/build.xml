@@ -18,8 +18,6 @@
 		<ant dir="Glite" />
 		<ant dir="Unicore" />
 		<ant dir="Koala" />
-		<ant dir="GT42" />
-		
 	</target>
 
 	<target name="build-with-contributed" description="build all tested and contributed adaptors" depends="build">
@@ -44,7 +42,6 @@
 		<ant dir="Glite" target="clean" />
 		<ant dir="Unicore" target="clean" />
 		<ant dir="Koala" target="clean" />
-		<ant dir="GT42" target="clean"/>
 		<ant dir="contributed" target="clean" />
 	</target>
 
@@ -99,9 +96,5 @@
 	<target name="koala" description="build Koala adaptors">
 		<ant dir="Koala" />
 	</target>
-	
-	<target name="gt42" description="build globus 4.2 adaptors">
-			<ant dir="Globus4.2" />
-		</target>
 
 </project>
