@@ -135,10 +135,24 @@ public class GT42ResourceBrokerAdaptor extends ResourceBrokerCpi {
 }
 
 //------------------------------------------------------------------
-	
-	    protected String createRSL(JobDescription description, Sandbox sandbox,
+	   protected String myCreateRSL(JobDescription description, Sandbox sandbox,
 	            boolean useGramSandbox) throws GATInvocationException {
-	        String rsl = new String("<job>");
+       	    	String rsl = new String("<job>");
+	   
+       	    	SoftwareDescription sd = description.getSoftwareDescription();
+    	        rsl += "<executable>";
+    	        rsl += getExecutable(description);//metodo di ResourceBrokerCPI che va  a chiamare un metodo della classe SoftwareDescription
+    	        rsl += "</executable>";
+    	        
+    	        rsl += "</job>";
+	    return rsl;
+	   }
+	   
+	   protected String createRSL(JobDescription description, Sandbox sandbox,
+	            boolean useGramSandbox) throws GATInvocationException {
+        	System.out.println("sto creando l rsl");
+
+	    	String rsl = new String("<job>");
 	        
 	        //Controllare se il metodo getSoftwareDescription va modificato
 	        SoftwareDescription sd = description.getSoftwareDescription();
@@ -146,6 +160,8 @@ public class GT42ResourceBrokerAdaptor extends ResourceBrokerCpi {
 	        if (sd == null) {
 	            throw new GATInvocationException(
 	                    "The job description does not contain a software description");
+	             
+	        
 	        }
 
 	        rsl += "<executable>";
@@ -281,6 +297,7 @@ public class GT42ResourceBrokerAdaptor extends ResourceBrokerCpi {
 	        if (logger.isInfoEnabled()) {
 	            logger.info("RSL: " + rsl);
 	        }
+        	System.out.println("ho creato l rsl");
 
 	        return rsl;
 	    }
@@ -383,9 +400,12 @@ public class GT42ResourceBrokerAdaptor extends ResourceBrokerCpi {
 	        // create a gramjob according to the jobdescription
 	        GramJob gramjob = null;
 	        try {
-	            gramjob = new GramJob(createRSL(description, sandbox,useGramSandbox));
+	        	System.out.println("prima di creare l rsl");
+	            gramjob = new GramJob(myCreateRSL(description, sandbox,useGramSandbox));
+	        	//gramjob = new GramJob();
 	        } catch (RSLParseException e) {
-	            throw new GATInvocationException("GT42ResourceBrokerAdaptor", e);
+	        
+	                  throw new GATInvocationException("GT42ResourceBrokerAdaptor", e);
 	        }
 
 	        // inform the wsgt4 job of which gram job is related to it.
