@@ -34,30 +34,27 @@ parameter, after which we store the server's address at a certain advert service
 the \texttt{ADVERT\_URL} as follows:
 \begin{center}
 \begin{code}
-aeas://servername.appspot.com/some_identifier
+gae://servername.appspot.com/some_identifier
 \end{code}
 \end{center}
 
-In this schema \texttt{aeas://} refers to an App Engine Advert Service. The
-server needs to run on Google's \texttt{appspot.com} domain. Everyting after
-the trailing \texttt{/} is considered the identifier at which the IPL Registry
-is stored.
-
+In this schema \texttt{gae://} refers to the Goole App Engine. The server needs
+to run on Google's \texttt{appspot.com} domain. Everyting after the trailing
+\texttt{/} is considered the identifier at which the IPL Registry is stored.
 Secondly, we have to find a useful way to make use of meta data. Storingkey-value pairs can be really useful, if structured properly. Some exampleswould be an \texttt{author} field (the user that started the IPL server), afield with some sort of \texttt{time-of-creation} (supplying the time theserver was created), etc. We still need a means to properly structureand pass meta data as soon as the server is created. The easiest way is to pass
 an additional parameter like \texttt{--metadata}, after which we specify our
 meta data as follows:
 
 \begin{center}
 \begin{code}
-key1:value1,key2:value2,key3:value3
+key1=value1,key2=value2,key3=value3
 \end{code}
 \end{center}
 
 This way, our meta data is almost specified as it would be in JSON, which makes
 it relatively easy to convert to a \texttt{MetaData} Object. No spaces or
-special characters are allowed. Optionally we could implement meta data being
-present in a separate file, which would require a file parser of some kind.
-This is a future feature to implement.
-
+special characters (i.e. \texttt{=} or \texttt{,}) are allowed. Optionally we
+could implement meta data being present in a separate file, which would require a
+file parser of some kind. This is a future feature to implement.
 Once a server is started using the \texttt{--advert} suffix, the server is addedto the Advert server (using the \texttt{add()} functionality already present).Once a server is stopped, it will be removed (using the \texttt{del()}function).\subsection{Ibis Application Design}
 Subsequently, when we start an Ibis application to join a certain pool, wecould not-specify \texttt{-Dibis.server.address}, but specify something like\texttt{-Dibis.advert.address} instead. Also we have to add propertieslike \texttt{-Dibis.advert.id} and \texttt{-Dibis.advert.md}, in order tolocate a running IPL server.To be continued\ldots
