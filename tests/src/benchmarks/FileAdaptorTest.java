@@ -28,7 +28,7 @@ public class FileAdaptorTest {
 
     public AdaptorTestResult test(String adaptor, String host) {
 
-        run(host, "adaptor-test-init.sh");
+        //run(host, "adaptor-test-init.sh");
 
         AdaptorTestResult adaptorTestResult = new AdaptorTestResult(adaptor,
                 host);
@@ -43,7 +43,9 @@ public class FileAdaptorTest {
 
         Preferences preferences = new Preferences();
         preferences.put("file.adaptor.name", adaptor + ",local");
-
+      //  preferences.put("file.adaptor.name", adaptor);
+        
+        
         adaptorTestResult.put("exists: absolute existing file", existTest(
                 gatContext, preferences, host, "/tmp/JavaGAT-test-exists-file",
                 0, true));
@@ -191,7 +193,7 @@ public class FileAdaptorTest {
                 gatContext, preferences, host, "/tmp/JavaGAT-test-copy-large",
                 1, true));
 
-        run(host, "adaptor-test-clean.sh");
+        //run(host, "adaptor-test-clean.sh");
 
         return adaptorTestResult;
 
@@ -313,10 +315,12 @@ public class FileAdaptorTest {
             Preferences preferences, String host, String filename, int tabs,
             boolean correctValue) {
         FileInterface file = null;
+        String s="any://" + host + "/" + filename;
         try {
             file = GAT.createFile(gatContext, preferences,
                     "any://" + host + "/" + filename).getFileInterface();
         } catch (GATObjectCreationException e) {
+        	System.out.println("Eccezione sollevata alla creazione del file "+s);
             return new AdaptorTestResultEntry(false, 0, e);
         }
         long start = System.currentTimeMillis();
@@ -324,9 +328,12 @@ public class FileAdaptorTest {
         try {
             delete = file.delete();
         } catch (GATInvocationException e) {
+        	 System.out.println("Eccezione sollevata alla cancellazione del file "+s);
             return new AdaptorTestResultEntry(false, 0, e);
+           
         }
         long stop = System.currentTimeMillis();
+        //System.out.println("Arrivo alla return");
         return new AdaptorTestResultEntry(delete == correctValue,
                 (stop - start), null);
     }
@@ -378,11 +385,13 @@ public class FileAdaptorTest {
     private AdaptorTestResultEntry canReadTest(GATContext gatContext,
             Preferences preferences, String host, String filename, int tabs,
             boolean correctValue) {
-        FileInterface file = null;
+        String s="any://" + host + "/" + filename;
+    	FileInterface file = null;
         try {
             file = GAT.createFile(gatContext, preferences,
                     "any://" + host + "/" + filename).getFileInterface();
         } catch (GATObjectCreationException e) {
+        	 System.out.println("Eccezione sollevata alla creazione del file: "+s);
             return new AdaptorTestResultEntry(false, 0, e);
         }
         long start = System.currentTimeMillis();
@@ -390,9 +399,11 @@ public class FileAdaptorTest {
         try {
             readable = file.canRead();
         } catch (GATInvocationException e) {
-            return new AdaptorTestResultEntry(false, 0, e);
+        	 System.out.println("Eccezione sollevata alla lettura del file: "+s);
+        	return new AdaptorTestResultEntry(false, 0, e);
         }
         long stop = System.currentTimeMillis();
+        System.out.println("Arrivo alla retun della canRead "+s);
         return new AdaptorTestResultEntry(readable == correctValue,
                 (stop - start), null);
     }
@@ -400,18 +411,21 @@ public class FileAdaptorTest {
     private AdaptorTestResultEntry canWriteTest(GATContext gatContext,
             Preferences preferences, String host, String filename, int tabs,
             boolean correctValue) {
-        FileInterface file = null;
+        String s="any://" + host + "/" + filename;
+    	FileInterface file = null;
         try {
             file = GAT.createFile(gatContext, preferences,
                     "any://" + host + "/" + filename).getFileInterface();
         } catch (GATObjectCreationException e) {
-            return new AdaptorTestResultEntry(false, 0, e);
+	 System.out.println("Eccezione sollevata alla creazione del file: "+s);
+        	return new AdaptorTestResultEntry(false, 0, e);
         }
         long start = System.currentTimeMillis();
         boolean writable;
         try {
             writable = file.canWrite();
         } catch (GATInvocationException e) {
+        	 System.out.println("Eccezione sollevata alla scrittura del file: "+s);
             return new AdaptorTestResultEntry(false, 0, e);
         }
         long stop = System.currentTimeMillis();
@@ -423,17 +437,20 @@ public class FileAdaptorTest {
             Preferences preferences, String host, String filename, int tabs,
             long correctValue) {
         FileInterface file = null;
+       String s="any://" + host + "/" + filename;
         try {
             file = GAT.createFile(gatContext, preferences,
                     "any://" + host + "/" + filename).getFileInterface();
         } catch (GATObjectCreationException e) {
-            return new AdaptorTestResultEntry(false, 0, e);
+            
+        	return new AdaptorTestResultEntry(false, 0, e);
         }
         long start = System.currentTimeMillis();
         long length;
         try {
             length = file.length();
         } catch (GATInvocationException e) {
+        	 System.out.println("Eccezione sollevata alla lunghezza del file: "+s);
             return new AdaptorTestResultEntry(false, 0, e);
         }
         long stop = System.currentTimeMillis();
@@ -497,6 +514,7 @@ public class FileAdaptorTest {
             Preferences preferences, String host, String filename, int tabs,
             long correctValue) {
         FileInterface file = null;
+        String s="any://" + host + "/" + filename;
         try {
             file = GAT.createFile(gatContext, preferences,
                     "any://" + host + "/" + filename).getFileInterface();
@@ -508,6 +526,7 @@ public class FileAdaptorTest {
         try {
             time = file.lastModified();
         } catch (GATInvocationException e) {
+       	 System.out.println("Eccezione sollevata alla last del file: "+s);
             return new AdaptorTestResultEntry(false, 0, e);
         }
         long stop = System.currentTimeMillis();
@@ -519,6 +538,7 @@ public class FileAdaptorTest {
             Preferences preferences, String host, String filename, int tabs,
             boolean correctValue) {
         FileInterface file = null;
+        String s="any://" + host + "/" + filename;
         try {
             file = GAT.createFile(gatContext, preferences,
                     "any://" + host + "/" + filename).getFileInterface();
@@ -530,7 +550,8 @@ public class FileAdaptorTest {
         try {
             created = file.createNewFile();
         } catch (GATInvocationException e) {
-            return new AdaptorTestResultEntry(false, 0, e);
+        	 System.out.println("Eccezione sollevata alla new del file: "+s);
+        	return new AdaptorTestResultEntry(false, 0, e);
         }
         long stop = System.currentTimeMillis();
         return new AdaptorTestResultEntry(created == correctValue,

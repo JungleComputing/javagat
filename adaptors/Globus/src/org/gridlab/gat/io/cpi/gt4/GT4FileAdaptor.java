@@ -24,10 +24,13 @@ import org.gridlab.gat.GAT;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.GATObjectCreationException;
+import org.gridlab.gat.Preferences;
 import org.gridlab.gat.URI;
 import org.gridlab.gat.io.cpi.FileCpi;
 import org.gridlab.gat.security.globus.GlobusSecurityUtils;
 import org.ietf.jgss.GSSCredential;
+
+import benchmarks.AdaptorTestResultEntry;
 
 /**
  * This abstract class implementes the
@@ -173,7 +176,10 @@ abstract public class GT4FileAdaptor extends FileCpi {
      * @see org.gridlab.gat.io.File#canRead()
      */
     public boolean canRead() throws GATInvocationException {
-        if (!localFile) {
+    	 if (!exists()) {
+         	return false;
+         }    	
+    	if (!localFile) {
             GridFile gf = null;
             try {
                 gf = resource.getGridFile(location.getPath());
@@ -194,7 +200,10 @@ abstract public class GT4FileAdaptor extends FileCpi {
      * @see org.gridlab.gat.io.File#canWrite()
      */
     public boolean canWrite() throws GATInvocationException {
-        if (!localFile) {
+        if (!exists()) {
+        	return false;
+        }
+    	if (!localFile) {
             GridFile gf = null;
             try {
                 gf = resource.getGridFile(location.getPath());
@@ -226,7 +235,7 @@ abstract public class GT4FileAdaptor extends FileCpi {
                 }
             } else {
                 try {
-                    resource.deleteFile(location.getPath());
+                       resource.deleteFile(location.getPath());
                 } catch (Exception e) {
                     return false;
                 }
@@ -370,7 +379,8 @@ abstract public class GT4FileAdaptor extends FileCpi {
      * {@link java.io.File#lastModified()} will return 10 July 1984, 00:00.
      */
     public long lastModified() throws GATInvocationException {
-        if (!localFile) {
+    	if (!exists())return 0L;
+    	if (!localFile) {
             GridFile gf = null;
             SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmss");
             Date d;
@@ -399,7 +409,8 @@ abstract public class GT4FileAdaptor extends FileCpi {
      * @see org.gridlab.gat.io.File#length()
      */
     public long length() throws GATInvocationException {
-        if (!localFile) {
+        if(!exists())return 0L;
+    	if (!localFile) {
             GridFile gf = null;
             try {
                 gf = resource.getGridFile(location.getPath());
@@ -449,6 +460,17 @@ abstract public class GT4FileAdaptor extends FileCpi {
         }
     }
 
+    public boolean createNewFile(){
+    	System.out.println("------------------------------------------------");
+    	System.out.println("------------------------------------------------");
+    	System.out.println("------------------------------------------------");
+    	System.out.println("------------------------------------------------");
+    return false;
+    }
+    
+    
+    
+    
     /*
      * (non-Javadoc)
      * 

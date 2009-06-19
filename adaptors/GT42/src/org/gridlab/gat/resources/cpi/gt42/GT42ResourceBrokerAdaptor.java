@@ -2,7 +2,6 @@
 package org.gridlab.gat.resources.cpi.gt42;
 
 
-
 import java.net.MalformedURLException;
 import java.util.Iterator;
 import java.util.Map;
@@ -135,25 +134,32 @@ public class GT42ResourceBrokerAdaptor extends ResourceBrokerCpi {
 }
 
 //------------------------------------------------------------------
-	   protected String myCreateRSL(JobDescription description, Sandbox sandbox,
-	            boolean useGramSandbox) throws GATInvocationException {
-       	    	String rsl = new String("<job>");
-	   
-       	    	SoftwareDescription sd = description.getSoftwareDescription();
-    	        rsl += "<executable>";
-    	        rsl += getExecutable(description);//metodo di ResourceBrokerCPI che va  a chiamare un metodo della classe SoftwareDescription
-    	        rsl += "</executable>";
-    	        
-    	        rsl += "</job>";
+
+	protected String myCreateRSL(JobDescription description, Sandbox sandbox,
+    boolean useGramSandbox) throws GATInvocationException {
+		String rsl = new String("<job>");
+	    SoftwareDescription sd = description.getSoftwareDescription();
+	    rsl += "<executable>";
+        //rsl += getExecutable(description);//metodo di ResourceBrokerCPI che va  a chiamare un metodo della classe SoftwareDescription
+        rsl += "/bin/hostname"; 
+        rsl += "</executable>";
+        rsl += "</job>";
 	    return rsl;
-	   }
+	}
+	   
+	   
+	   
+	
 	   
 	   protected String createRSL(JobDescription description, Sandbox sandbox,
-	            boolean useGramSandbox) throws GATInvocationException {
-        	System.out.println("sto creando l rsl");
 
+	            boolean useGramSandbox) throws GATInvocationException {
+
+	    	System.out.println("sto creando  l'rsl");
+	    	
 	    	String rsl = new String("<job>");
-	        
+
+        	
 	        //Controllare se il metodo getSoftwareDescription va modificato
 	        SoftwareDescription sd = description.getSoftwareDescription();
 
@@ -297,6 +303,9 @@ public class GT42ResourceBrokerAdaptor extends ResourceBrokerCpi {
 	        if (logger.isInfoEnabled()) {
 	            logger.info("RSL: " + rsl);
 	        }
+
+	        System.out.println("finisco di creare  l'rsl");
+
         	System.out.println("ho creato l rsl");
 
 	        return rsl;
@@ -400,12 +409,25 @@ public class GT42ResourceBrokerAdaptor extends ResourceBrokerCpi {
 	        // create a gramjob according to the jobdescription
 	        GramJob gramjob = null;
 	        try {
+
+	        	
+	        	String rsl=myCreateRSL(description, sandbox,useGramSandbox);
+	        	System.out.println("-------------RSL-------------------");
+	        	System.out.println(rsl);
+	             	
+	        	
+	        	gramjob = new GramJob(rsl);
+	        	System.out.println("finito111111111111");
+
 	        	System.out.println("prima di creare l rsl");
 	            gramjob = new GramJob(myCreateRSL(description, sandbox,useGramSandbox));
 	        	//gramjob = new GramJob();
+
 	        } catch (RSLParseException e) {
-	        
-	                  throw new GATInvocationException("GT42ResourceBrokerAdaptor", e);
+
+	        	throw new GATInvocationException("GT42ResourceBrokerAdaptor", e);
+
+
 	        }
 
 	        // inform the wsgt4 job of which gram job is related to it.
