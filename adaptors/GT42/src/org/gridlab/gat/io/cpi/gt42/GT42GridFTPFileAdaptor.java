@@ -149,11 +149,18 @@ public class GT42GridFTPFileAdaptor extends GT42FileAdaptor {
      */
     protected void copyToLocal(URI dest) throws GATInvocationException {
         try {
+        	System.out.println("loc "+location.getPath());
+        	System.out.println("dest "+dest.getPath());
+        	
             resource.getFile(location.getPath(), dest.getPath());
         } catch (FileNotFoundException e) {
-            throw new GATInvocationException("copy to local failed", e);
+            throw new GATInvocationException("copy to local failed1", e);
         } catch (GeneralException e) {
-            throw new GATInvocationException("copy to local failed", e);
+        	System.out.println("--------------------------------------- ");
+        	//e.printStackTrace();
+        	System.out.println("----------------------------------------");
+        	throw new GATInvocationException("copy to local failed2", e);
+            
         }
         if (logger.isInfoEnabled()) {
             logger.info("GT42GriFTPFileAdaptor: copy2 done.");

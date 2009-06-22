@@ -118,7 +118,7 @@ public class GT42ResourceBrokerAdaptor extends ResourceBrokerCpi {
 
    if (System.getProperty("GLOBUS_LOCATION") == null) {//se non c'è la globus location la crea lui
        String globusLocation = System.getProperty("gat.adaptor.path")
-               + java.io.File.separator + "GlobusAdaptor"
+               + java.io.File.separator + "GT42Adaptor"
                + java.io.File.separator;
        System.setProperty("GLOBUS_LOCATION", globusLocation);
    }
@@ -412,14 +412,12 @@ public class GT42ResourceBrokerAdaptor extends ResourceBrokerCpi {
 
 	        	
 	        	String rsl=myCreateRSL(description, sandbox,useGramSandbox);
-	        	System.out.println("-------------RSL-------------------");
-	        	System.out.println(rsl);
+	        //	System.out.println("-------------RSL-------------------");
+	        //	System.out.println(rsl);
 	             	
 	        	
 	        	gramjob = new GramJob(rsl);
-	        	System.out.println("finito111111111111");
-
-	        	System.out.println("prima di creare l rsl");
+	        
 	            gramjob = new GramJob(myCreateRSL(description, sandbox,useGramSandbox));
 	        	//gramjob = new GramJob();
 
