@@ -127,7 +127,7 @@ public class GT42ResourceBrokerAdaptor extends ResourceBrokerCpi {
        String axisClientConfigFile = System
                .getProperty("gat.adaptor.path")
                + java.io.File.separator
-               + "GlobusAdaptor"
+               + "GT42Adaptor"
                + java.io.File.separator + "client-config.wsdd";
        System.setProperty("axis.ClientConfigFile", axisClientConfigFile);
    }
