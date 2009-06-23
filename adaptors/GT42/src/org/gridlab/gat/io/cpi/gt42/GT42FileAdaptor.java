@@ -461,7 +461,9 @@ abstract public class GT42FileAdaptor extends FileCpi {
     }
 
     public boolean createNewFile(){
+    	System.out.println("");
     	System.out.println("------createNewFile GT4FileAdaptor does not exist-----");
+    	System.out.println("");
     	return false;
     }
     

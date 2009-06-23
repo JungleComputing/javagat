@@ -156,9 +156,9 @@ public class GT42GridFTPFileAdaptor extends GT42FileAdaptor {
         } catch (FileNotFoundException e) {
             throw new GATInvocationException("copy to local failed1", e);
         } catch (GeneralException e) {
-        	System.out.println("--------------------------------------- ");
-        	//e.printStackTrace();
-        	System.out.println("----------------------------------------");
+        	System.out.println("---------printStackTrace---------- ");
+        	e.printStackTrace();
+        	System.out.println("-----end of----printStackTrace----------------");
         	throw new GATInvocationException("copy to local failed2", e);
             
         }

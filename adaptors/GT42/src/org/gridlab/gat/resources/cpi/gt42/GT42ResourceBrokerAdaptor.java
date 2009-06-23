@@ -418,7 +418,7 @@ public class GT42ResourceBrokerAdaptor extends ResourceBrokerCpi {
 	        	
 	        	gramjob = new GramJob(rsl);
 	        
-	            gramjob = new GramJob(myCreateRSL(description, sandbox,useGramSandbox));
+	            gramjob = new GramJob(createRSL(description, sandbox,useGramSandbox));
 	        	//gramjob = new GramJob();
 
 	        } catch (RSLParseException e) {
