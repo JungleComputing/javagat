@@ -96,7 +96,7 @@ public class GT42ResourceBrokerAdaptor extends ResourceBrokerCpi {
 	                    "ws-gram", location, ResourceManagerContact.DEFAULT_PORT);//è una classe COG
 	        } catch (Exception e) {
 	            throw new GATInvocationException(
-	                    "GT4Job: could not initialize credentials, " + e);
+	                    "GT42Job: could not initialize credentials, " + e);
 	        }
 	        return cred;
 	    }
@@ -133,31 +133,13 @@ public class GT42ResourceBrokerAdaptor extends ResourceBrokerCpi {
    }
 }
 
-//------------------------------------------------------------------
-
-	protected String myCreateRSL(JobDescription description, Sandbox sandbox,
-    boolean useGramSandbox) throws GATInvocationException {
-		String rsl = new String("<job>");
-	    SoftwareDescription sd = description.getSoftwareDescription();
-	    rsl += "<executable>";
-        //rsl += getExecutable(description);//metodo di ResourceBrokerCPI che va  a chiamare un metodo della classe SoftwareDescription
-        rsl += "/bin/hostname"; 
-        rsl += "</executable>";
-        rsl += "</job>";
-	    return rsl;
-	}
-	   
-	   
-	   
 	
 	   
 	   protected String createRSL(JobDescription description, Sandbox sandbox,
 
 	            boolean useGramSandbox) throws GATInvocationException {
 
-	    	System.out.println("sto creando  l'rsl");
-	    	
-	    	String rsl = new String("<job>");
+	       	String rsl = new String("<job>");
 
         	
 	        //Controllare se il metodo getSoftwareDescription va modificato
@@ -165,9 +147,7 @@ public class GT42ResourceBrokerAdaptor extends ResourceBrokerCpi {
 
 	        if (sd == null) {
 	            throw new GATInvocationException(
-	                    "The job description does not contain a software description");
-	             
-	        
+	                   "The job description does not contain a software description");
 	        }
 
 	        rsl += "<executable>";
@@ -304,11 +284,7 @@ public class GT42ResourceBrokerAdaptor extends ResourceBrokerCpi {
 	            logger.info("RSL: " + rsl);
 	        }
 
-	        System.out.println("finisco di creare  l'rsl");
-
-        	System.out.println("ho creato l rsl");
-
-	        return rsl;
+	             return rsl;
 	    }
 	   
 	   
@@ -409,17 +385,8 @@ public class GT42ResourceBrokerAdaptor extends ResourceBrokerCpi {
 	        // create a gramjob according to the jobdescription
 	        GramJob gramjob = null;
 	        try {
-
-	        	
-	        	String rsl=myCreateRSL(description, sandbox,useGramSandbox);
-	        //	System.out.println("-------------RSL-------------------");
-	        //	System.out.println(rsl);
-	             	
-	        	
-	        	gramjob = new GramJob(rsl);
-	        
+	                	        
 	            gramjob = new GramJob(createRSL(description, sandbox,useGramSandbox));
-	        	//gramjob = new GramJob();
 
 	        } catch (RSLParseException e) {
 

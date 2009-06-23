@@ -118,9 +118,9 @@ abstract public class GT42FileAdaptor extends FileCpi {
                 resource = AbstractionFactory.newFileResource(srcProvider);
             } catch (Exception e) {
                 throw new AdaptorNotApplicableException(
-                        "GT4FileAdaptor: cannot create FileResource, " + e);
+                        "GT42FileAdaptor: cannot create FileResource, " + e);
             }
-            resource.setName("gt4file: " + Math.random());
+            resource.setName("gt42file: " + Math.random());
             SecurityContext securityContext = null;
             try {
                 securityContext = AbstractionFactory
@@ -129,7 +129,7 @@ abstract public class GT42FileAdaptor extends FileCpi {
                         location));
             } catch (Exception e) {
                 throw new AdaptorNotApplicableException(
-                        "GT4FileAdaptor: getSecurityContext failed, " + e);
+                        "GT42FileAdaptor: getSecurityContext failed, " + e);
             }
             resource.setSecurityContext(securityContext);
             ServiceContact serviceContact = new ServiceContactImpl(location
@@ -139,7 +139,7 @@ abstract public class GT42FileAdaptor extends FileCpi {
                 resource.start();
             } catch (Exception e) {
                 throw new AdaptorNotApplicableException(
-                        "GT4FileAdaptor: resource.start failed, " + e);
+                        "GT42FileAdaptor: resource.start failed, " + e);
             }
         }
     }
@@ -161,10 +161,10 @@ abstract public class GT42FileAdaptor extends FileCpi {
         }
         try {
             cred = GlobusSecurityUtils.getGlobusCredential(gatContext,
-                    "gt4gridftp", loc, DEFAULT_GRIDFTP_PORT);
+                    "gt42gridftp", loc, DEFAULT_GRIDFTP_PORT);
         } catch (Exception e) {
             throw new GATInvocationException(
-                    "GT4GridFTPFileAdaptor: could not initialize credentials, "
+                    "GT42GridFTPFileAdaptor: could not initialize credentials, "
                             + e);
         }
         return cred;
@@ -256,9 +256,9 @@ abstract public class GT42FileAdaptor extends FileCpi {
             try {
                 return resource.exists(location.getPath());
             } catch (GeneralException e) {
-                throw new GATInvocationException("gt4file", e);
+                throw new GATInvocationException("gt42file", e);
             } catch (FileNotFoundException e) {
-                throw new GATInvocationException("gt4file", e);
+                throw new GATInvocationException("gt42file", e);
             }
         } else {
             return super.exists();
@@ -371,11 +371,11 @@ abstract public class GT42FileAdaptor extends FileCpi {
      * 
      * @see org.gridlab.gat.io.File#lastModified()
      * 
-     * Please note there's an issue with the gt4 file adaptor (gt4gridftp). It
+     * Please note there's an issue with the gt42 file adaptor (gt42gridftp). It
      * takes time zones into account where as the
      * {@link java.io.File#lastModified()} doesn't. For instance a file that's
      * last modified on 10 July 1984 at 00:00 GMT +2:00 will have a last
-     * modified time of 9 July 1984 at 22:00 using the gt4 file adaptor. The
+     * modified time of 9 July 1984 at 22:00 using the gt42 file adaptor. The
      * {@link java.io.File#lastModified()} will return 10 July 1984, 00:00.
      */
     public long lastModified() throws GATInvocationException {
@@ -462,7 +462,7 @@ abstract public class GT42FileAdaptor extends FileCpi {
 
     public boolean createNewFile(){
     	System.out.println("");
-    	System.out.println("------createNewFile GT4FileAdaptor does not exist-----");
+    	System.out.println("------createNewFile GT42FileAdaptor does not exist-----");
     	System.out.println("");
     	return false;
     }

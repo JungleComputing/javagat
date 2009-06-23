@@ -65,7 +65,7 @@ public class GT42GridFTPFileAdaptor extends GT42FileAdaptor {
     synchronized protected void copyThirdParty(URI dest, String destProvider)
             throws GATInvocationException {
         if (logger.isDebugEnabled()) {
-            logger.debug("GT4GridFileAdaptor file: start file copy with destination provider "
+            logger.debug("GT42GridFileAdaptor file: start file copy with destination provider "
                             + destProvider);
         }
         Task task = new TaskImpl("my3rdpartycopy" + Math.random(),
@@ -184,14 +184,14 @@ public class GT42GridFTPFileAdaptor extends GT42FileAdaptor {
         } catch (Exception e) {
             throw new GATInvocationException("gt42gridftp", e);
         }
-        remoteResource.setName("gt4file: " + Math.random());
+        remoteResource.setName("gt42file: " + Math.random());
         SecurityContext securityContext = null;
         try {
             securityContext = AbstractionFactory
                     .newSecurityContext(srcProvider);
             securityContext.setCredentials(getCredential(srcProvider, dest));
         } catch (Exception e) {
-            throw new GATInvocationException("gt4gridftp", e);
+            throw new GATInvocationException("gt42gridftp", e);
         }
         remoteResource.setSecurityContext(securityContext);
         ServiceContact serviceContact = new ServiceContactImpl(dest.getHost(),
