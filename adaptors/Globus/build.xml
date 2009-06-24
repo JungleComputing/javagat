@@ -1,0 +1,83 @@
+<project name="GlobusAdaptor" default="build" basedir=".">
+	<description>Build file for JavaGAT Globus Adaptors.</description>
+
+	<property name="gat.location" location="../.." />
+	<property name="engine_path" location="${gat.location}/lib" />
+
+	<property name="src" location="src" />
+	<property name="tmp" location="tmp" />
+	<property name="lib" location="${gat.location}/lib/adaptors/GlobusAdaptor" />
+	<property name="external" location="external" />
+	<property name="shared" location="../shared" />
+	<property name="java.debug.value" value="true" />
+
+	<path id="external_jars">
+		<fileset dir="${shared}">
+			<include name="*.jar" />
+		</fileset>
+		<fileset dir="${external}">
+			<include name="*.jar" />
+		</fileset>
+		<fileset dir="${engine_path}">
+			<include name="*.jar" />
+		</fileset>
+	</path>
+
+	<target name="build" depends="clean" description="build the JARs and documentation">
+		<!-- Create the distribution end tmp directory -->
+		<mkdir dir="${lib}" />
+		<mkdir dir="${tmp}" />
+
+		<!-- Compile the java code from ${src} into ${tmp} -->
+		<javac source="1.5" target="1.5" srcdir="${src}" destdir="${tmp}" debug="on">
+			<classpath refid="external_jars" />
+		</javac>
+
+		<jar jarfile="${lib}/GlobusAdaptor.jar" basedir="${tmp}" includes="**">
+			<manifest>
+				<!--<attribute name="FileCpi-class" value="org.gridlab.gat.io.cpi.globus.FTPFileAdaptor,org.gridlab.gat.io.cpi.globus.GridFTPFileAdaptor,org.gridlab.gat.io.cpi.gt4.GT4GridFTPFileAdaptor,org.gridlab.gat.io.cpi.gt4.GT4LocalFileAdaptor,org.gridlab.gat.io.cpi.rftgt4.RFTGT4FileAdaptor" />-->
+				<attribute name="FileCpi-class" value="org.gridlab.gat.io.cpi.globus.FTPFileAdaptor,org.gridlab.gat.io.cpi.globus.GridFTPFileAdaptor,org.gridlab.gat.io.cpi.gt4.GT4GridFTPFileAdaptor,org.gridlab.gat.io.cpi.rftgt4.RFTGT4FileAdaptor" />
+				<attribute name="FileInputStreamCpi-class" value="org.gridlab.gat.io.cpi.globus.FTPFileInputStreamAdaptor,org.gridlab.gat.io.cpi.globus.GridFTPFileInputStreamAdaptor,org.gridlab.gat.io.cpi.globus.HTTPFileInputStreamAdaptor,org.gridlab.gat.io.cpi.globus.HTTPSFileInputStreamAdaptor" />
+				<attribute name="FileOutputStreamCpi-class" value="org.gridlab.gat.io.cpi.globus.FTPFileOutputStreamAdaptor,org.gridlab.gat.io.cpi.globus.GridFTPFileOutputStreamAdaptor,org.gridlab.gat.io.cpi.globus.HTTPFileOutputStreamAdaptor,org.gridlab.gat.io.cpi.globus.HTTPSFileOutputStreamAdaptor" />
+				<!--<attribute name="ResourceBrokerCpi-class" value="org.gridlab.gat.resources.cpi.globus.GlobusResourceBrokerAdaptor,org.gridlab.gat.resources.cpi.gt4.GT4ResourceBrokerAdaptor,org.gridlab.gat.resources.cpi.wsgt4.WSGT4ResourceBrokerAdaptor,org.gridlab.gat.resources.cpi.wsgt4new.WSGT4newResourceBrokerAdaptor" />-->
+				<!--<attribute name="ResourceBrokerCpi-class" value="org.gridlab.gat.resources.cpi.globus.GlobusResourceBrokerAdaptor,org.gridlab.gat.resources.cpi.gt4.GT4ResourceBrokerAdaptor,org.gridlab.gat.resources.cpi.wsgt4new.WSGT4newResourceBrokerAdaptor" />-->
+				<attribute name="ResourceBrokerCpi-class" value="org.gridlab.gat.resources.cpi.globus.GlobusResourceBrokerAdaptor,org.gridlab.gat.resources.cpi.wsgt4new.WSGT4newResourceBrokerAdaptor" />
+				<!--<attribute name="AdvertServiceCpi-class" value="org.gridlab.gat.advert.cpi.globus.GlobusAdvertServiceAdaptor" />-->
+			</manifest>
+		</jar>
+
+		<!-- Copy external libraries to lib directory -->
+		<copy todir="${lib}">
+			<fileset dir="${external}">
+				<include name="*.jar" />
+			</fileset>
+		</copy>
+
+		<delete dir="${tmp}" />
+
+
+
+		<!-- Copy the cog lib gt4 stuff for globus 4 -->
+		<copy todir="${gat.location}/lib/lib-gt4_0_0">
+			<fileset dir="${external}/lib-gt4_0_0">
+				<include name="*.jar" />
+			</fileset>
+		</copy>
+
+		<!-- Copy the globus files for globus 4 -->
+		<copy todir="${lib}">
+			<fileset dir="${external}">
+				<include name="share/**" />
+				<include name="etc/**" />
+				<include name="client-config.wsdd" />
+			</fileset>
+
+		</copy>
+
+	</target>
+
+	<target name="clean" description="clean up">
+		<delete dir="${tmp}" />
+	</target>
+
+</project>
