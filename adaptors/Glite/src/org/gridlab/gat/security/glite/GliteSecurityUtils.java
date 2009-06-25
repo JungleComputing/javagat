@@ -285,7 +285,6 @@ public final class GliteSecurityUtils {
                 .get(GliteConstants.PREFERENCE_VIRTUAL_ORGANISATION_SERVER_URL);
         String serverPortStr = (String) prefs
                 .get(GliteConstants.PREFERENCE_VIRTUAL_ORGANISATION_SERVER_PORT);
-        int serverPort = Integer.parseInt(serverPortStr);
 
         String voName = GliteConstants.getVO(context);
         String voGroup = (String) prefs
@@ -299,6 +298,7 @@ public final class GliteSecurityUtils {
                 + (voRole == null ? "" : "/Role=" + voRole)
         		+ (voCapability == null ? "" : "/Capability=" + voCapability);
         try {
+            int serverPort = Integer.parseInt(serverPortStr);
             VomsProxyManager manager = new VomsProxyManager(usercert, userkey,
                     secContext.getPassword(), lifetime, hostDN, serverURI,
                     serverPort);
@@ -306,7 +306,11 @@ public final class GliteSecurityUtils {
             manager.saveProxyToFile(proxyFile);
 
         } catch (Exception e) {
-            throw new GATInvocationException("Could not create VOMS proxy!", e);
+            throw new GATInvocationException(
+                    "Could not create VOMS proxy. hostDN: " + hostDN
+                            + ", serverURI: " + serverURI + ", serverPort: "
+                            + serverPortStr + ", requestCode: " + requestCode,
+                    e);
         }
     }
 
