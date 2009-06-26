@@ -146,12 +146,16 @@ public class LDAPResourceFinder {
 
         while (results.hasMore()) {
             SearchResult result = results.nextElement();
-            String wmsServer = getSafeStringAttr(result,
-                    "GlueServiceAccessPointURL");
-            LOGGER.info("Retrieved the following WMS server from LDAP: "
-                    + wmsServer);
-            if (wmsServer != null)
+            String wmsServer = getSafeStringAttr(result, "GlueServiceEndpoint");
+            if (wmsServer == null) {
+                wmsServer = getSafeStringAttr(result,
+                        "GlueServiceAccessPointURL");
+            }
+            if (wmsServer != null) {
                 wmsServers.add(wmsServer);
+                LOGGER.info("Retrieved the following WMS server from LDAP: "
+                        + wmsServer);
+            }
         }
 
         return wmsServers;
