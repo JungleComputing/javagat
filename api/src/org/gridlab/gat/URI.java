@@ -572,7 +572,9 @@ public class URI implements Serializable, Comparable<Object> {
      * @return true if this URI has an absolute path, false otherwise.
      */
     public boolean hasAbsolutePath() {
-        if (u.toString().startsWith("/")) {
+        System.out.println("toString hasAbsPath:  "+u.toString());
+        System.out.println("get Path:  "+u.getPath());
+    	if (u.toString().startsWith("/")) {
             return true;
         }
         if (u.getPath() == null) {

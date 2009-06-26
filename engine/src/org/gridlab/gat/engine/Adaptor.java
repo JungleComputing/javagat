@@ -46,7 +46,8 @@ class Adaptor {
                 adaptorClass.getClassLoader());
         try {
             Constructor<?> ctor = adaptorClass.getConstructor(parameterTypes);
-
+            System.out.println("getName:  "+ctor.getName());
+            System.out.println("toString:  "+ctor.toString());
             if (ctor == null) {
                 throw new GATObjectCreationException(
                         "No correct contructor exists in adaptor");
@@ -56,10 +57,11 @@ class Adaptor {
                 throw new GATObjectCreationException(
                         "Parameters array is null (internal error)");
             }
-
+           
             return ctor.newInstance(parameters);
         } catch (InvocationTargetException e) {
             // rethrow original exception
+        	e.printStackTrace();
             t = e.getTargetException();
         } catch (Throwable e) {
             t = e;
