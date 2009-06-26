@@ -18,6 +18,7 @@ package org.gridlab.gat.resources.cpi.glite;
 
 import java.net.URISyntaxException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -37,6 +38,8 @@ import org.gridlab.gat.resources.JobDescription;
 import org.gridlab.gat.resources.ResourceDescription;
 import org.gridlab.gat.resources.cpi.ResourceBrokerCpi;
 import org.gridlab.gat.security.glite.GliteSecurityUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Adapter for the Glite Job Submission (WMS) for JavaGAT.
@@ -49,7 +52,44 @@ public class GliteResourceBrokerAdaptor extends ResourceBrokerCpi {
 
     public static final String GLITE_RESOURCE_BROKER_ADAPTOR = "GliteResourceBrokerAdaptor";
 
+    private static final Logger LOGGER = LoggerFactory
+            .getLogger(ResourceBrokerCpi.class);
+
     private LDAPResourceFinder ldapResourceFinder;
+
+    private final List<UriAndCount> resourceBrokerURIs = new ArrayList<UriAndCount>();
+
+    private static class UriAndCount implements Comparable<UriAndCount> {
+        private static final int LIMIT = 3;
+        private final URI uri;
+        private int count;
+
+        public UriAndCount(URI uri) {
+            this.uri = uri;
+            this.count = 0;
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public int compareTo(UriAndCount o) {
+            return o.count - this.count;
+        }
+
+        public URI getURI() {
+            return uri;
+        }
+
+        public void increaseCount() {
+            if (count < LIMIT)
+                count++;
+        }
+
+        public void decreaseCount() {
+            if (count > -LIMIT)
+                count--;
+        }
+
+    }
 
     public static Map<String, Boolean> getSupportedCapabilities() {
         Map<String, Boolean> capabilities = ResourceBrokerCpi
@@ -91,36 +131,42 @@ public class GliteResourceBrokerAdaptor extends ResourceBrokerCpi {
     public GliteResourceBrokerAdaptor(GATContext gatContext, URI brokerURI)
             throws GATObjectCreationException {
         super(gatContext, brokerURI);
-
-        // if not a broker URI itself but an LDAP address is given, retrieve a
-        // broker URI
-        if ((brokerURI.getScheme() != null)
+        if (brokerURI == null) {
+            throw new GATObjectCreationException("brokerURI is null!");
+        } else if ((brokerURI.getScheme() != null)
                 && ((brokerURI.getScheme().equals("ldap") || brokerURI
                         .getScheme().equals("ldaps")))) {
+            // if not a broker URI itself but an LDAP address is given, retrieve
+            // a broker URI
+            String vo = GliteConstants.getVO(gatContext);
             try {
                 ldapResourceFinder = new LDAPResourceFinder(gatContext,
                         brokerURI);
-                String vo = GliteConstants.getVO(gatContext);
                 List<String> brokerURIs = ldapResourceFinder
                         .fetchWMSServers(vo);
-                if (brokerURIs.isEmpty()) {
-                    throw new GATObjectCreationException(
-                            "Could not find WMS in LDAP for VO: " + vo);
+
+                for (String uriStr : brokerURIs) {
+                    try {
+                        URI uri = new URI(uriStr);
+                        resourceBrokerURIs.add(new UriAndCount(uri));
+                    } catch (URISyntaxException use) {
+                        LOGGER.warn("Invalid WMS URI in LDAP: " + uriStr);
+                    }
                 }
-                int randomPos = (int) (Math.random() * brokerURIs.size());
-                String brokerURIStr = brokerURIs.get(randomPos);
-                this.brokerURI = new URI(brokerURIStr);
+
+                if (resourceBrokerURIs.isEmpty()) {
+                    throw new GATObjectCreationException(
+                            "Could not find suitable WMS in LDAP for VO: " + vo);
+                }
+
             } catch (NamingException e) {
                 throw new GATObjectCreationException(
-                        "Could not find suitable WMS!", e);
-            } catch (URISyntaxException e) {
-                throw new GATObjectCreationException(
-                        "Could not find suitable WMS!", e);
+                        "Could connect to LDAP for VO: " + vo, e);
             }
-        }
-
-        if (!(this.brokerURI.isCompatible("http") || this.brokerURI
+        } else if ((brokerURI.isCompatible("http") || brokerURI
                 .isCompatible("https"))) {
+            resourceBrokerURIs.add(new UriAndCount(brokerURI));
+        } else {
             throw new GATObjectCreationException("cannot handle scheme: "
                     + brokerURI.getScheme());
         }
@@ -160,23 +206,27 @@ public class GliteResourceBrokerAdaptor extends ResourceBrokerCpi {
     public synchronized Job submitJob(AbstractJobDescription jobDescription,
             MetricListener listener, String metricDefinitionName)
             throws GATInvocationException {
+        GATInvocationException ex = new GATInvocationException("No Resource Brokers given");
+        Collections.sort(this.resourceBrokerURIs);
+        for (UriAndCount uac : resourceBrokerURIs) {
+            try {
+                GliteJob job = new GliteJob(gatContext,
+                        (JobDescription) jobDescription, null, uac.getURI()
+                                .toString());
 
-        try {
-
-            GliteJob job = new GliteJob(gatContext,
-                    (JobDescription) jobDescription, null, brokerURI.toString());
-
-            if (listener != null && metricDefinitionName != null) {
-                Metric metric = job.getMetricDefinitionByName(
-                        metricDefinitionName).createMetric(null);
-                job.addMetricListener(listener, metric);
-            }
-
-            return job;
-
-        } catch (GATObjectCreationException e) {
-            throw new GATInvocationException(e.getMessage());
+                if (listener != null && metricDefinitionName != null) {
+                    Metric metric = job.getMetricDefinitionByName(
+                            metricDefinitionName).createMetric(null);
+                    job.addMetricListener(listener, metric);
+                }
+                uac.increaseCount();
+                return job;
+            } catch (GATObjectCreationException e) {
+                uac.decreaseCount();
+                LOGGER.info("Failed to submit to "+uac.getURI());
+                ex = new GATInvocationException("Failed to submit Job", e);
+            }            
         }
-
+        throw ex;
     }
 }
