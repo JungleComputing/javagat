@@ -68,6 +68,7 @@ public class GT42GridFTPFileAdaptor extends GT42FileAdaptor {
             logger.debug("GT42GridFileAdaptor file: start file copy with destination provider "
                             + destProvider);
         }
+        System.out.println("\n COPYthirdPART INVOCATA \n");
         Task task = new TaskImpl("my3rdpartycopy" + Math.random(),
                 Task.FILE_TRANSFER);
         FileTransferSpecification spec = new FileTransferSpecificationImpl();
@@ -149,16 +150,15 @@ public class GT42GridFTPFileAdaptor extends GT42FileAdaptor {
      */
     protected void copyToLocal(URI dest) throws GATInvocationException {
         try {
-        	System.out.println("loc "+location.getPath());
-        	System.out.println("dest "+dest.getPath());
+        	System.out.println("\n COPYTOLOCAL INVOCATA \n");
         	
             resource.getFile(location.getPath(), dest.getPath());
         } catch (FileNotFoundException e) {
             throw new GATInvocationException("copy to local failed1", e);
         } catch (GeneralException e) {
-        	System.out.println("---------printStackTrace---------- ");
+        	System.out.println("\n---------printStackTrace---------- ");
         	e.printStackTrace();
-        	System.out.println("-----end of----printStackTrace----------------");
+        	System.out.println("-----end of----printStackTrace----------------\n");
         	throw new GATInvocationException("copy to local failed2", e);
             
         }
@@ -178,7 +178,8 @@ public class GT42GridFTPFileAdaptor extends GT42FileAdaptor {
      * @throws GATInvocationException
      */
     protected void copyToRemote(URI dest) throws GATInvocationException {
-        FileResource remoteResource = null;
+        System.out.println("\n COPYTOREMOTE INVOCATA \n");
+    	FileResource remoteResource = null;
         try {
             remoteResource = AbstractionFactory.newFileResource(srcProvider);
         } catch (Exception e) {

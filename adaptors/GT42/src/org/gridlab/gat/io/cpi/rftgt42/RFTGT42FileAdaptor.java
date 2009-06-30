@@ -48,9 +48,7 @@ import org.globus.rft.generated.TransferRequestType;
 import org.globus.rft.generated.TransferStatusTypeEnumeration;
 import org.globus.rft.generated.TransferType;
 import org.globus.rft.generated.service.ReliableFileTransferFactoryServiceLocator;
-import org.globus.rft.generated.service.ReliableFileTransferServiceLocator;
-//import org.globus.transfer.reliable.client.BaseRFTClient;
-// L'ho cambiato con:
+import org.globus.rft.generated.service.ReliableFileTransferServiceAddressingLocator;
 import org.globus.transfer.reliable.service.RFTConstants;
 import org.globus.wsrf.NotificationConsumerManager;
 import org.globus.wsrf.NotifyCallback;
@@ -100,7 +98,7 @@ import org.oasis.wsrf.properties.GetMultipleResourcePropertiesResponse;
 import org.oasis.wsrf.properties.GetMultipleResourceProperties_Element;
 import org.oasis.wsrf.properties.ResourcePropertyValueChangeNotificationType;
 
-class RFTGT4NotifyCallback implements NotifyCallback {
+class RFTGT42NotifyCallback implements NotifyCallback {
 
     public static Map<String, Boolean> getSupportedCapabilities() {
         Map<String, Boolean> capabilities = FileCpi.getSupportedCapabilities();
@@ -110,11 +108,11 @@ class RFTGT4NotifyCallback implements NotifyCallback {
     }
 
     protected static Logger logger = LoggerFactory
-            .getLogger(RFTGT4NotifyCallback.class);
+            .getLogger(RFTGT42NotifyCallback.class);
 
     RFTGT42FileAdaptor transfer;
 
-    public RFTGT4NotifyCallback(RFTGT42FileAdaptor transfer) {
+    public RFTGT42NotifyCallback(RFTGT42FileAdaptor transfer) {
         super();
         this.transfer = transfer;
     }
@@ -233,15 +231,11 @@ public class RFTGT42FileAdaptor extends FileCpi {
         }
         System.out.println("RFTGT42FileAdaptor location URI:  "+location);
         // TODO: may be it is possible on the local host...
-      /*  if (!location.hasAbsolutePath()) {
+        if (!location.hasAbsolutePath()) {
             throw new AdaptorNotApplicableException(
                     "cannot handle relative paths: " + location.getPath());
-        }*/
-
-    /*      if (!location.isAbsolute()) {
-        throw new AdaptorNotApplicableException(
-                "cannot handle not absolute paths: " + location.getPath());
-    } */      
+        }
+ 
         
         try {
            rftgt42Location = URItoRFTGT42String(location);
@@ -309,8 +303,7 @@ public class RFTGT42FileAdaptor extends FileCpi {
      */
     protected synchronized boolean copy2(String destStr)
             throws GATInvocationException {
-        EndpointReferenceType credentialEndpoint = getCredentialEPR();
-
+    	EndpointReferenceType credentialEndpoint = getCredentialEPR();
         TransferType[] transferArray = new TransferType[1];
         transferArray[0] = new TransferType();
         transferArray[0].setSourceUrl(rftgt42Location);
@@ -323,7 +316,6 @@ public class RFTGT42FileAdaptor extends FileCpi {
         request.setTransfer(transferArray);
         request.setTransferCredentialEndpoint(credentialEndpoint);
         setRequest(request);
-
         return status.equals(RequestStatusTypeEnumeration.Done.toString())
                 || status.equals(TransferStatusTypeEnumeration.Finished
                         .toString());
@@ -361,8 +353,7 @@ public class RFTGT42FileAdaptor extends FileCpi {
     }
 
     public void copy(URI dest) throws GATInvocationException {
-        // System.out.println("\ncopy " + location + " -> " + dest);
-        try {
+           try {
             if (!copy2(URItoRFTGT42String(dest))) {
                 throw new GATInvocationException(
                         "RFTGT42FileAdaptor: file copy failed");
@@ -449,7 +440,7 @@ public class RFTGT42FileAdaptor extends FileCpi {
                     "RFTGT42FileAdaptor: setAuthMethods failed, " + e);
         }
 
-        RFTGT4NotifyCallback notifyCallback = new RFTGT4NotifyCallback(this);
+        RFTGT42NotifyCallback notifyCallback = new RFTGT42NotifyCallback(this);
         try {
             notificationConsumerEPR = notificationConsumerManager
                     .createNotificationConsumer(topicPath, notifyCallback,
@@ -508,15 +499,10 @@ public class RFTGT42FileAdaptor extends FileCpi {
            Questo codice è stato sostituito dal codice seguente
             */
         	
-        	//Il costrutture deve ricevere un qualche parametro!!
-        	//probabilmente il client-config.wsdd
         	ReliableFileTransferFactoryServiceLocator rftFSL= new ReliableFileTransferFactoryServiceLocator();
-        	
-        	
+        	         
         	factoryPort=rftFSL.getReliableFileTransferFactoryPortTypePort(factoryURL);
-        	
-        
-        
+           
         } catch (ServiceException e) {
             throw new GATInvocationException(
                     "RFTGT42FileAdaptor: set factoryPort failed, " + e);
@@ -526,33 +512,6 @@ public class RFTGT42FileAdaptor extends FileCpi {
     }
     
     
-    
-    /*public static EndpointReferenceType createRFT(String rftFactoryAddress,
-            BaseRequestType request) 
-    throws Exception {
-        endpoint = new URL(rftFactoryAddress);
-        factoryPort = rftFactoryLocator
-                .getReliableFileTransferFactoryPortTypePort(endpoint);
-        CreateReliableFileTransferInputType input =
-            new CreateReliableFileTransferInputType();
-        //input.setTransferJob(transferType);
-        if(request instanceof TransferRequestType) {
-            input.setTransferRequest((TransferRequestType)request);
-        } else {
-            input.setDeleteRequest((DeleteRequestType)request);
-        }
-        Calendar termTime = Calendar.getInstance();
-        termTime.add(Calendar.HOUR, 1);
-        input.setInitialTerminationTime(termTime);
-        setSecurity((Stub)factoryPort);
-        CreateReliableFileTransferOutputType response = factoryPort
-                .createReliableFileTransfer(input);
-
-        return response.getReliableTransferEPR();
-    }
-    */
-   
-
     protected void setRequest(BaseRequestType request)
             throws GATInvocationException {
         CreateReliableFileTransferInputType input = new CreateReliableFileTransferInputType();
@@ -572,27 +531,36 @@ public class RFTGT42FileAdaptor extends FileCpi {
                     "RFTGT42FileAdaptor: set createReliableFileTransfer failed, "
                             + e);
         }
-        EndpointReferenceType reliableRFTEndpoint = response
-                .getReliableTransferEPR();
-      
+        EndpointReferenceType reliableRFTEndpoint = response.getReliableTransferEPR();
+       
         // Codice aggiunto da me
         ReliableFileTransferPortType rft = null;
         try {
-        	
-        ReliableFileTransferServiceLocator rftFSL= new ReliableFileTransferServiceLocator();
-        	
-        String stringEndpoint=reliableRFTEndpoint.toString();
+               
+       /* String stringEndpoint=reliableRFTEndpoint.toString();
+        System.out.println("string Endpoint:  "+stringEndpoint);
+        AttributedURIType uu=reliableRFTEndpoint.getAddress(); 
+        String path=uu.getPath();
+        String host =uu.getHost();
+        int port=uu.getPort();
+        String scheme=uu.getScheme();*/
+      //  System.out.println(scheme+"://"+host+":"+port+""+path);
         
-        URL endpointURL=null;
+        
+      /*  URL endpointURL=null;
 		try {
-			endpointURL = new URL(stringEndpoint);
+			endpointURL = new URL(scheme+"://"+host+":"+port+""+path);
 		} catch (MalformedURLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} 
+		System.out.println(endpointURL.toString());
+		*/
+        ReliableFileTransferServiceAddressingLocator rftFSL= new ReliableFileTransferServiceAddressingLocator();
         
-        rft= rftFSL.getReliableFileTransferPortTypePort(endpointURL);	
-        	
+        rft= rftFSL.getReliableFileTransferPortTypePort(reliableRFTEndpoint);	
+      
+        
         /*    rft = BaseRFTClient.rftLocator
                     .getReliableFileTransferPortTypePort(reliableRFTEndpoint);*/
         } catch (ServiceException e) {
@@ -609,6 +577,7 @@ public class RFTGT42FileAdaptor extends FileCpi {
         try {
             rft.setTerminationTime(reqTermTime);
         } catch (RemoteException e) {
+        	e.printStackTrace();
             throw new GATInvocationException(
                     "RFTGT42FileAdaptor: setTerminationTime failed, " + e);
         }

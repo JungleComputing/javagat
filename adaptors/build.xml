@@ -6,7 +6,7 @@
 	<target name="build" description="build all tested adaptors">
 		<ant dir="shared" />
 	<!--	<ant dir="CommandlineSsh" /> -->
-	<!--	<ant dir="Globus" /> --> 
+	<!--	<ant dir="Globus" /> -->
 		<ant dir="Gridsam" />
 		<ant dir="Local" />
 		<ant dir="Mercury" />
@@ -51,11 +51,11 @@
 		<ant dir="CommandlineSsh" />
 	</target>
 	-->
-<!--
-	<target name="globus" description="build Globus adaptors">
+
+	<!--<target name="globus" description="build Globus adaptors">
 		<ant dir="Globus" />
-	</target>
--->
+	</target>-->
+
 	<target name="gridsam" description="build Gridsam adaptors">
 		<ant dir="Gridsam" />
 	</target>

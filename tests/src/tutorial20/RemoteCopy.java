@@ -1,6 +1,7 @@
 package tutorial20;
 
 import org.gridlab.gat.GAT;
+import org.gridlab.gat.Preferences;
 import org.gridlab.gat.URI;
 
 public class RemoteCopy {
@@ -14,6 +15,8 @@ public class RemoteCopy {
 	 * @throws Exception
 	 */
 	public static void main(String[] args) throws Exception {
+	    //Preferences preferences = new Preferences();
+        //preferences.put("file.adaptor.name", "rftgt42");		
 		GAT.createFile(args[0]).copy(new URI(args[1]));
 		GAT.end();
 	}

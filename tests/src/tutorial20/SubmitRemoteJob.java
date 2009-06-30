@@ -19,6 +19,7 @@ public class SubmitRemoteJob {
         
         Preferences preferences = new Preferences();
         preferences.put("resourcebroker.adaptor.name", "gt42"); // "wsgt4new"
+       // preferences.put("file.adaptor.name", "rftgt42");
 // provare se posso scegliere anche il file adaptor
         JobDescription jd = new JobDescription(sd);
         ResourceBroker broker = GAT.createResourceBroker(preferences, new URI(args[0]));

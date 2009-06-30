@@ -36,8 +36,8 @@
 		<jar jarfile="${lib}/GT42Adaptor.jar" basedir="${tmp}" includes="**">
 			<manifest>
 				<!--<attribute name="FileCpi-class" value="org.gridlab.gat.io.cpi.globus.FTPFileAdaptor,org.gridlab.gat.io.cpi.globus.GridFTPFileAdaptor,org.gridlab.gat.io.cpi.gt4.GT4GridFTPFileAdaptor,org.gridlab.gat.io.cpi.gt4.GT4LocalFileAdaptor,org.gridlab.gat.io.cpi.rftgt4.RFTGT4FileAdaptor" />-->
+				<!--<attribute name="FileCpi-class" value="org.gridlab.gat.io.cpi.rftgt42.RFTGT42FileAdaptor,org.gridlab.gat.io.cpi.gt42.GT42GridFTPFileAdaptor"/>-->
 				<attribute name="FileCpi-class" value="org.gridlab.gat.io.cpi.rftgt42.RFTGT42FileAdaptor"/>
-				<!--<attribute name="FileCpi-class" value="org.gridlab.gat.io.cpi.gt42.GT42GridFTPFileAdaptor,org.gridlab.gat.io.cpi.rftgt42.RFTGT42FileAdaptor"/>-->
 				<attribute name="ResourceBrokerCpi-class" value="org.gridlab.gat.resources.cpi.gt42.GT42ResourceBrokerAdaptor" />
 			</manifest>
 		</jar>
