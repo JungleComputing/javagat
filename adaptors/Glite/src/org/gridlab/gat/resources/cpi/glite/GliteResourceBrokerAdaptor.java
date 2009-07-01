@@ -70,7 +70,6 @@ public class GliteResourceBrokerAdaptor extends ResourceBrokerCpi {
         }
 
         /** {@inheritDoc} */
-        @Override
         public int compareTo(UriAndCount o) {
             return o.count - this.count;
         }
