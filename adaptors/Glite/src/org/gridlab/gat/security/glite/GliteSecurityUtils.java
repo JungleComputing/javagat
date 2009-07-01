@@ -5,10 +5,18 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.List;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.FactoryConfigurationError;
+import javax.xml.parsers.ParserConfigurationException;
+
+import org.apache.commons.httpclient.HttpClient;
+import org.apache.commons.httpclient.HttpException;
+import org.apache.commons.httpclient.HttpStatus;
+import org.apache.commons.httpclient.methods.GetMethod;
 import org.glite.security.trustmanager.ContextWrapper;
 import org.globus.common.CoGProperties;
 import org.gridlab.gat.GATContext;
@@ -19,6 +27,12 @@ import org.gridlab.gat.resources.cpi.glite.GliteConstants;
 import org.gridlab.gat.security.CertificateSecurityContext;
 import org.gridlab.gat.security.CredentialSecurityContext;
 import org.gridlab.gat.security.SecurityContext;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
+import org.xml.sax.SAXException;
 
 /**
  * Contains helper function to deal with gLite security.
@@ -35,7 +49,10 @@ public final class GliteSecurityUtils {
      */
     private final static int MINIMUM_PROXY_REMAINING_LIFETIME = 5 * 60;
 
-    protected static Logger logger = LoggerFactory.getLogger(GliteSecurityUtils.class);
+    private static final Logger LOGGER = LoggerFactory
+            .getLogger(GliteSecurityUtils.class);
+
+    private static DocumentBuilder documentBuilder;
 
     private GliteSecurityUtils() {
         // Empty on purpose.
@@ -44,15 +61,16 @@ public final class GliteSecurityUtils {
     /**
      * @return the file path for the gLite Proxy.
      */
-    public static String getProxyPath(GATContext context) {
-    	String proxyFile = (String) context.getPreferences().get(GliteConstants.PREFERENCE_PROXY_PATH);
-    	
-    	if (proxyFile == null) {
-	        proxyFile = System.getenv("X509_USER_PROXY");
-    	}
+    public static String getProxyPath(final GATContext context) {
+        String proxyFile = (String) context.getPreferences().get(
+                GliteConstants.PREFERENCE_PROXY_PATH);
 
         if (proxyFile == null) {
-        	CoGProperties properties = CoGProperties.getDefault();
+            proxyFile = System.getenv("X509_USER_PROXY");
+        }
+
+        if (proxyFile == null) {
+            final CoGProperties properties = CoGProperties.getDefault();
             proxyFile = properties.getProxyFile();
         }
 
@@ -69,126 +87,252 @@ public final class GliteSecurityUtils {
      * @return path to the proxy.
      * @throws GATInvocationException
      */
-    public static synchronized String touchVomsProxy(GATContext context)
+    public static synchronized String touchVomsProxy(final GATContext context)
             throws GATInvocationException {
-        String proxyFile = GliteSecurityUtils.getProxyPath(context);
+        final String proxyFile = GliteSecurityUtils.getProxyPath(context);
 
-        Preferences prefs = context.getPreferences();
+        final Preferences prefs = context.getPreferences();
 
-        int minLifetime = parseIntPref(prefs,
+        final int minLifetime = GliteSecurityUtils.parseIntPref(prefs,
                 GliteConstants.PREFERENCE_VOMS_MIN_LIFETIME,
-                MINIMUM_PROXY_REMAINING_LIFETIME);
-        int newLifetime = Math.max(minLifetime, parseIntPref(prefs,
-                GliteConstants.PREFERENCE_VOMS_NEW_LIFETIME,
-                STANDARD_NEW_PROXY_LIFETIME));
-        
-        //Check the "glite.proxycreation" value
-        String proxyCreation = (String) prefs.get(GliteConstants.PREFERENCE_VOMS_CREATE_NEW_PROXY); 
-        if(proxyCreation == null){
-        	proxyCreation = "ondemand";
+                GliteSecurityUtils.MINIMUM_PROXY_REMAINING_LIFETIME);
+        final int newLifetime = Math.max(minLifetime, GliteSecurityUtils
+                .parseIntPref(prefs,
+                        GliteConstants.PREFERENCE_VOMS_NEW_LIFETIME,
+                        GliteSecurityUtils.STANDARD_NEW_PROXY_LIFETIME));
+
+        // Check the "glite.proxycreation" value
+        String proxyCreation = (String) prefs
+                .get(GliteConstants.PREFERENCE_VOMS_CREATE_NEW_PROXY);
+        if (proxyCreation == null) {
+            proxyCreation = "ondemand";
         }
-        
-        if(proxyCreation.equalsIgnoreCase("never")){
-        	//JavaGAT must not generate voms proxy
-        	logger.info("Always reuse old voms proxy");
-        	return proxyFile;
-        }else if(proxyCreation.equalsIgnoreCase("ondemand")){ 
-        	//JavaGAT will generate a new proxy if it these cases:
-        	//	* The current proxy doesn't correspond anymore to javaGat preferences (VO, VO group, VO role, etc... )
-        	//	* The current proxy lifetime is inferior to the requested lifetime
-        	logger.info("Checking whether the VOMS proxy extensions correspond to the JavaGAT preferences.");
-        	List<String> currentVomsProxyExtensionsList = VomsProxyManager.getExistingVOMSExtensions(""+ proxyFile);
-        	boolean currentExtensionsOk = true;
-        	StringBuilder reason = new StringBuilder();
-        	if(currentVomsProxyExtensionsList != null){//There is an existing voms proxy
-        		//Extensions order is important for gLite. Currently, javaGAT is only able to specify 1 extension (1 vo, 1 group, 1 role maximum)
-        		//This JavaGAT extension must be the first one in the voms proxy.
-        		if(currentVomsProxyExtensionsList.size() != 0){
-        			String currentVomsProxyExtension = currentVomsProxyExtensionsList.get(0);
-        			String currentJavaGATVo = GliteConstants.getVO(context);
-        			String currentJavaGATVoGroup = (String) prefs.get(GliteConstants.PREFERENCE_VIRTUAL_ORGANISATION_GROUP);
-        			String currentJavaGATVoRole = (String) prefs.get(GliteConstants.PREFERENCE_VIRTUAL_ORGANISATION_ROLE);
-        			String currentJavaGATVoCapability = (String) prefs.get(GliteConstants.PREFERENCE_VIRTUAL_ORGANISATION_CAPABILITY);
-        			
-        			if(currentJavaGATVoGroup == null){
-        				currentJavaGATVoGroup = currentJavaGATVo;
-        			}
-        			if(currentJavaGATVoRole == null){
-        				currentJavaGATVoRole = "NULL";
-        			}
-        			if(currentJavaGATVoCapability == null){
-        				currentJavaGATVoCapability = "NULL";
-        			}
-        			String currentProxyVo = currentVomsProxyExtension.substring(1, currentVomsProxyExtension.indexOf("/Role=")).split("/")[0];
-        			String currentProxyVoGroup = currentVomsProxyExtension.substring(1,currentVomsProxyExtension.indexOf("/Role=")).replaceFirst(currentProxyVo+"/", "");
-        			String currentProxyVoRole =	currentVomsProxyExtension.substring(currentVomsProxyExtension.indexOf("/Role=")+6, currentVomsProxyExtension.indexOf("/Capability="));
-        			String currentProxyVoCapability = currentVomsProxyExtension.substring(currentVomsProxyExtension.indexOf("/Capability=")+12, currentVomsProxyExtension.length());
-        			
-        			if(!currentProxyVo.equals(currentJavaGATVo)){
-        				currentExtensionsOk = false;
-        				reason.append("VO proxy ").append(currentProxyVo).append(" vs ").append(currentJavaGATVo).append(' ');
-        			}
-        			if(!currentProxyVoGroup.equals(currentJavaGATVoGroup)){
-        				currentExtensionsOk = false;
-                        reason.append("VoGroup proxy ").append(currentProxyVoGroup).append(" vs ").append(currentJavaGATVoGroup).append(' ');
-        			}
-        			if(!currentProxyVoRole.equals(currentJavaGATVoRole)){
-        				currentExtensionsOk = false;
-                        reason.append("VoRole proxy ").append(currentProxyVoRole).append(" vs ").append(currentJavaGATVoRole).append(' ');
-        			}
-        			if(!currentProxyVoCapability.equals(currentJavaGATVoCapability)){
-        				currentExtensionsOk = false;
-                        reason.append("VoCapability proxy ").append(currentProxyVoCapability).append(" vs ").append(currentJavaGATVoCapability).append(' ');
-        			}
-        		}else{
-        			currentExtensionsOk = false;
-        			reason.append("No VOMS extensions");
-        		}
-        	}else{
-        		currentExtensionsOk = false;
-        	}
-        	
-        	if(currentExtensionsOk == false){
-        		logger.info("Current VOMS proxy extensions doesn't correspond to the JavaGAT preference. Creation of a new proxy");
-        		logger.info("Reason: "+reason.toString());
-        		createVomsProxy(newLifetime, context, proxyFile);
-        	}else{
-	        	logger.info("Checking the current proxy lifetime and generate a new one if needed");
-	        	long existingLifetime = VomsProxyManager.getExistingProxyLifetime(proxyFile);
-	        	if (existingLifetime < minLifetime) {
-	        		logger.info("Current VOMS proxy lifetime not sufficient ("
-                            + existingLifetime + " < " + minLifetime
-                            + "). Creation of a new proxy");
-	                createVomsProxy(newLifetime, context, proxyFile);
-	            } else {
-	                logger.info("Reusing old voms proxy with lifetime (seconds): "+ existingLifetime);
-	            }
-        	}
-        }else if(proxyCreation.equalsIgnoreCase("always")){
-        	//JavaGAT will always generate a new proxy
-        	createVomsProxy(newLifetime, context, proxyFile);
-        }else{
-        	throw new GATInvocationException("Unknown "+ GliteConstants.PREFERENCE_VOMS_CREATE_NEW_PROXY + " value ("+proxyCreation+")" +
-        			" Accepted values are: \"never\", \"ondemand\" and \"always\" (case-insensitive)");
+
+        if (proxyCreation.equalsIgnoreCase("never")) {
+            // JavaGAT must not generate voms proxy
+            GliteSecurityUtils.LOGGER.info("Always reuse old voms proxy");
+            return proxyFile;
+        } else if (proxyCreation.equalsIgnoreCase("ondemand")) {
+            // JavaGAT will generate a new proxy if it these cases:
+            // * The current proxy doesn't correspond anymore to javaGat
+            // preferences (VO, VO group, VO role, etc... )
+            // * The current proxy lifetime is inferior to the requested
+            // lifetime
+            GliteSecurityUtils.LOGGER
+                    .info("Checking whether the VOMS proxy extensions correspond to the JavaGAT preferences.");
+            final List<String> currentVomsProxyExtensionsList = VomsProxyManager
+                    .getExistingVOMSExtensions("" + proxyFile);
+            boolean currentExtensionsOk = true;
+            final StringBuilder reason = new StringBuilder();
+            if (currentVomsProxyExtensionsList != null) {// There is an existing
+                // voms proxy
+                // Extensions order is important for gLite. Currently, javaGAT
+                // is only able to specify 1 extension (1 vo, 1 group, 1 role
+                // maximum)
+                // This JavaGAT extension must be the first one in the voms
+                // proxy.
+                if (currentVomsProxyExtensionsList.size() != 0) {
+                    final String currentVomsProxyExtension = currentVomsProxyExtensionsList
+                            .get(0);
+                    final String currentJavaGATVo = GliteConstants
+                            .getVO(context);
+                    String currentJavaGATVoGroup = (String) prefs
+                            .get(GliteConstants.PREFERENCE_VIRTUAL_ORGANISATION_GROUP);
+                    String currentJavaGATVoRole = (String) prefs
+                            .get(GliteConstants.PREFERENCE_VIRTUAL_ORGANISATION_ROLE);
+                    String currentJavaGATVoCapability = (String) prefs
+                            .get(GliteConstants.PREFERENCE_VIRTUAL_ORGANISATION_CAPABILITY);
+
+                    if (currentJavaGATVoGroup == null) {
+                        currentJavaGATVoGroup = currentJavaGATVo;
+                    }
+                    if (currentJavaGATVoRole == null) {
+                        currentJavaGATVoRole = "NULL";
+                    }
+                    if (currentJavaGATVoCapability == null) {
+                        currentJavaGATVoCapability = "NULL";
+                    }
+                    final String currentProxyVo = currentVomsProxyExtension
+                            .substring(1,
+                                    currentVomsProxyExtension.indexOf("/Role="))
+                            .split("/")[0];
+                    final String currentProxyVoGroup = currentVomsProxyExtension
+                            .substring(1,
+                                    currentVomsProxyExtension.indexOf("/Role="))
+                            .replaceFirst(currentProxyVo + "/", "");
+                    final String currentProxyVoRole = currentVomsProxyExtension
+                            .substring(currentVomsProxyExtension
+                                    .indexOf("/Role=") + 6,
+                                    currentVomsProxyExtension
+                                            .indexOf("/Capability="));
+                    final String currentProxyVoCapability = currentVomsProxyExtension
+                            .substring(currentVomsProxyExtension
+                                    .indexOf("/Capability=") + 12,
+                                    currentVomsProxyExtension.length());
+
+                    if (!currentProxyVo.equals(currentJavaGATVo)) {
+                        currentExtensionsOk = false;
+                        reason.append("VO proxy ").append(currentProxyVo)
+                                .append(" vs ").append(currentJavaGATVo)
+                                .append(' ');
+                    }
+                    if (!currentProxyVoGroup.equals(currentJavaGATVoGroup)) {
+                        currentExtensionsOk = false;
+                        reason.append("VoGroup proxy ").append(
+                                currentProxyVoGroup).append(" vs ").append(
+                                currentJavaGATVoGroup).append(' ');
+                    }
+                    if (!currentProxyVoRole.equals(currentJavaGATVoRole)) {
+                        currentExtensionsOk = false;
+                        reason.append("VoRole proxy ").append(
+                                currentProxyVoRole).append(" vs ").append(
+                                currentJavaGATVoRole).append(' ');
+                    }
+                    if (!currentProxyVoCapability
+                            .equals(currentJavaGATVoCapability)) {
+                        currentExtensionsOk = false;
+                        reason.append("VoCapability proxy ").append(
+                                currentProxyVoCapability).append(" vs ")
+                                .append(currentJavaGATVoCapability).append(' ');
+                    }
+                } else {
+                    currentExtensionsOk = false;
+                    reason.append("No VOMS extensions");
+                }
+            } else {
+                currentExtensionsOk = false;
+            }
+
+            if (currentExtensionsOk == false) {
+                GliteSecurityUtils.LOGGER
+                        .info("Current VOMS proxy extensions doesn't correspond to the JavaGAT preference. Creation of a new proxy");
+                GliteSecurityUtils.LOGGER.info("Reason: " + reason.toString());
+                GliteSecurityUtils.createVomsProxy(newLifetime, context,
+                        proxyFile);
+            } else {
+                GliteSecurityUtils.LOGGER
+                        .info("Checking the current proxy lifetime and generate a new one if needed");
+                final long existingLifetime = VomsProxyManager
+                        .getExistingProxyLifetime(proxyFile);
+                if (existingLifetime < minLifetime) {
+                    GliteSecurityUtils.LOGGER
+                            .info("Current VOMS proxy lifetime not sufficient ("
+                                    + existingLifetime
+                                    + " < "
+                                    + minLifetime
+                                    + "). Creation of a new proxy");
+                    GliteSecurityUtils.createVomsProxy(newLifetime, context,
+                            proxyFile);
+                } else {
+                    GliteSecurityUtils.LOGGER
+                            .info("Reusing old voms proxy with lifetime (seconds): "
+                                    + existingLifetime);
+                }
+            }
+        } else if (proxyCreation.equalsIgnoreCase("always")) {
+            // JavaGAT will always generate a new proxy
+            GliteSecurityUtils.createVomsProxy(newLifetime, context, proxyFile);
+        } else {
+            throw new GATInvocationException(
+                    "Unknown "
+                            + GliteConstants.PREFERENCE_VOMS_CREATE_NEW_PROXY
+                            + " value ("
+                            + proxyCreation
+                            + ")"
+                            + " Accepted values are: \"never\", \"ondemand\" and \"always\" (case-insensitive)");
         }
 
         return proxyFile;
     }
 
-    private static int parseIntPref(Preferences prefs, String preferenceName,
-            int defaultValue) {
+    private static int parseIntPref(final Preferences prefs,
+            final String preferenceName, final int defaultValue) {
         int retVal;
-        String prefStr = (String) prefs.get(preferenceName);
+        final String prefStr = (String) prefs.get(preferenceName);
         if (prefStr == null) {
             retVal = defaultValue;
         } else {
             try {
                 retVal = Integer.parseInt(prefStr);
-            } catch (NumberFormatException nfe) {
+            } catch (final NumberFormatException nfe) {
                 retVal = defaultValue;
             }
         }
         return retVal;
+    }
+
+    private static class VOInfo {
+        private String hostDN;
+        private String hostName;
+        private Integer port;
+
+        public VOInfo() {
+            // Empty on purpose;
+        }
+
+        /**
+         * @return the hostDN
+         */
+        public String getHostDN() {
+            return this.hostDN;
+        }
+
+        /**
+         * @return the hostName
+         */
+        public String getHostName() {
+            return this.hostName;
+        }
+
+        /**
+         * @return the port
+         */
+        public Integer getPort() {
+            return this.port;
+        }
+
+        public boolean isValid() {
+            return this.hostDN != null && this.hostName != null
+                    && this.port != null;
+        }
+
+        public void setHostDNIfUnset(final String newHostDN) {
+            if (this.hostDN == null) {
+                this.hostDN = newHostDN;
+            }
+        }
+
+        public void setHostNameIfUnset(final String newHostName) {
+            if (this.hostName == null) {
+                this.hostName = newHostName;
+            }
+        }
+
+        public void setPortIfUnset(final String newPort) {
+            try {
+                if ((this.port == null) && (newPort != null)) {
+                    this.port = Integer.valueOf(newPort);
+                }
+            } catch (final NumberFormatException e) {
+                GliteSecurityUtils.LOGGER.warn("Invalid Port Number: "
+                        + newPort, e);
+            }
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public String toString() {
+            final StringBuilder builder = new StringBuilder();
+            builder.append("VOInfo [hostDN=");
+            builder.append(this.hostDN);
+            builder.append(", hostName=");
+            builder.append(this.hostName);
+            builder.append(", port=");
+            builder.append(this.port);
+            builder.append("]");
+            return builder.toString();
+        }
+
     }
 
     /**
@@ -227,23 +371,28 @@ public final class GliteSecurityUtils {
      * </tr>
      * <tr>
      * <td>VirtualOrganisationGroup</td>
-     * <td>The group inside the virtual organisation for which the voms proxy is created</td>
+     * <td>The group inside the virtual organisation for which the voms proxy is
+     * created</td>
      * </tr>
      * <tr>
      * <td>VirtualOrganisationRole</td>
-     * <td>The role inside the virtual organisation for which the voms proxy is created (e.g. VOAdmin)</td>
+     * <td>The role inside the virtual organisation for which the voms proxy is
+     * created (e.g. VOAdmin)</td>
      * </tr>
      * <td>VirtualOrganisationCapability</td>
-     * <td>The capability inside the virtual organisation for which the voms proxy is created</td>
+     * <td>The capability inside the virtual organisation for which the voms
+     * proxy is created</td>
      * </tr>
      * </table>
      * 
      * @author thomas
      */
-    private static void createVomsProxy(int lifetime, GATContext context,
-            String proxyFile) throws GATInvocationException {
-        logger.info("Creating new VOMS proxy with lifetime (seconds): "
-                + lifetime);
+    private static void createVomsProxy(final int lifetime,
+            final GATContext context, final String proxyFile)
+            throws GATInvocationException {
+        GliteSecurityUtils.LOGGER
+                .info("Creating new VOMS proxy with lifetime (seconds): "
+                        + lifetime);
 
         CertificateSecurityContext secContext = null;
 
@@ -252,65 +401,83 @@ public final class GliteSecurityUtils {
                     "Error: found no security contexts in GAT Context!");
         }
 
-        for (SecurityContext c : context.getSecurityContexts()) {
+        for (final SecurityContext c : context.getSecurityContexts()) {
             if (c instanceof CertificateSecurityContext) {
                 secContext = (CertificateSecurityContext) c;
             }
         }
-        
+
         if (secContext == null) {
             throw new GATInvocationException(
                     "Error: found no CertificateSecurityContext in GAT Context!");
         }
 
-        Preferences prefs = context.getPreferences();
+        final Preferences prefs = context.getPreferences();
         final URI userkeyuri = secContext.getKeyfile();
         final String userkey;
         if (userkeyuri == null) {
-            userkey = personalGlobusDir() + "userkey.pem";
+            userkey = GliteSecurityUtils.personalGlobusDir() + "userkey.pem";
         } else {
             userkey = userkeyuri.getPath();
         }
         final URI usercerturi = secContext.getCertfile();
         final String usercert;
         if (usercerturi == null) {
-            usercert = personalGlobusDir() + "usercert.pem";
+            usercert = GliteSecurityUtils.personalGlobusDir() + "usercert.pem";
         } else {
             usercert = usercerturi.getPath();
         }
 
-        String hostDN = (String) prefs
-                .get(GliteConstants.PREFERENCE_VIRTUAL_ORGANISATION_HOST_DN);
-        String serverURI = (String) prefs
-                .get(GliteConstants.PREFERENCE_VIRTUAL_ORGANISATION_SERVER_URL);
-        String serverPortStr = (String) prefs
-                .get(GliteConstants.PREFERENCE_VIRTUAL_ORGANISATION_SERVER_PORT);
+        final String voName = GliteConstants.getVO(context);
+        if (voName == null) {
+            throw new GATInvocationException(
+                    GliteConstants.PREFERENCE_VIRTUAL_ORGANISATION
+                            + " must be set for gLite adaptor");
+        }
+        final VOInfo voInfo = new VOInfo();
 
-        String voName = GliteConstants.getVO(context);
-        String voGroup = (String) prefs
+        voInfo.setHostDNIfUnset((String) prefs
+                .get(GliteConstants.PREFERENCE_VIRTUAL_ORGANISATION_HOST_DN));
+        voInfo
+                .setHostNameIfUnset((String) prefs
+                        .get(GliteConstants.PREFERENCE_VIRTUAL_ORGANISATION_SERVER_URL));
+        voInfo
+                .setPortIfUnset((String) prefs
+                        .get(GliteConstants.PREFERENCE_VIRTUAL_ORGANISATION_SERVER_PORT));
+
+        if (!voInfo.isValid()) {
+            GliteSecurityUtils.loadVoCard(voName, voInfo);
+        }
+
+        if (!voInfo.isValid()) {
+            throw new GATInvocationException(
+                    "Could not determine settings for VO: " + voName + ". "
+                            + voInfo + " Please set them in preferences.");
+        }
+
+        final String voGroup = (String) prefs
                 .get(GliteConstants.PREFERENCE_VIRTUAL_ORGANISATION_GROUP);
-        String voRole = (String) prefs
+        final String voRole = (String) prefs
                 .get(GliteConstants.PREFERENCE_VIRTUAL_ORGANISATION_ROLE);
-        String voCapability = (String) prefs
-        		.get(GliteConstants.PREFERENCE_VIRTUAL_ORGANISATION_CAPABILITY);
+        final String voCapability = (String) prefs
+                .get(GliteConstants.PREFERENCE_VIRTUAL_ORGANISATION_CAPABILITY);
 
-        String requestCode = voName + (voGroup == null ? "" : "/" + voGroup)
+        final String requestCode = voName
+                + (voGroup == null ? "" : "/" + voGroup)
                 + (voRole == null ? "" : "/Role=" + voRole)
-        		+ (voCapability == null ? "" : "/Capability=" + voCapability);
+                + (voCapability == null ? "" : "/Capability=" + voCapability);
         try {
-            int serverPort = Integer.parseInt(serverPortStr);
-            VomsProxyManager manager = new VomsProxyManager(usercert, userkey,
-                    secContext.getPassword(), lifetime, hostDN, serverURI,
-                    serverPort);
+            final VomsProxyManager manager = new VomsProxyManager(usercert,
+                    userkey, secContext.getPassword(), lifetime, voInfo
+                            .getHostDN(), voInfo.getHostName(), voInfo
+                            .getPort());
             manager.makeProxyCredential(requestCode);
             manager.saveProxyToFile(proxyFile);
 
-        } catch (Exception e) {
+        } catch (final Exception e) {
             throw new GATInvocationException(
-                    "Could not create VOMS proxy. hostDN: " + hostDN
-                            + ", serverURI: " + serverURI + ", serverPort: "
-                            + serverPortStr + ", requestCode: " + requestCode,
-                    e);
+                    "Could not create VOMS proxy. VO: " + voName + " voInfo: "
+                            + voInfo + ", requestCode: " + requestCode, e);
         }
     }
 
@@ -322,14 +489,15 @@ public final class GliteSecurityUtils {
                 + File.separatorChar;
     }
 
-    public static void addGliteSecurityPreferences(Preferences preferences) {
+    public static void addGliteSecurityPreferences(final Preferences preferences) {
         preferences.put(GliteConstants.PREFERENCE_VIRTUAL_ORGANISATION,
                 "<no default>");
         preferences.put(GliteConstants.PREFERENCE_VIRTUAL_ORGANISATION_GROUP,
                 "");
         preferences
                 .put(GliteConstants.PREFERENCE_VIRTUAL_ORGANISATION_ROLE, "");
-        preferences.put(GliteConstants.PREFERENCE_VIRTUAL_ORGANISATION_CAPABILITY, "");
+        preferences.put(
+                GliteConstants.PREFERENCE_VIRTUAL_ORGANISATION_CAPABILITY, "");
         preferences.put(GliteConstants.PREFERENCE_VIRTUAL_ORGANISATION_HOST_DN,
                 "<no default>");
         preferences.put(
@@ -339,9 +507,9 @@ public final class GliteSecurityUtils {
                 GliteConstants.PREFERENCE_VIRTUAL_ORGANISATION_SERVER_PORT,
                 "<no default>");
         preferences.put(GliteConstants.PREFERENCE_VOMS_MIN_LIFETIME, Integer
-                .toString(MINIMUM_PROXY_REMAINING_LIFETIME));
+                .toString(GliteSecurityUtils.MINIMUM_PROXY_REMAINING_LIFETIME));
         preferences.put(GliteConstants.PREFERENCE_VOMS_NEW_LIFETIME, Integer
-                .toString(STANDARD_NEW_PROXY_LIFETIME));
+                .toString(GliteSecurityUtils.STANDARD_NEW_PROXY_LIFETIME));
         preferences.put(GliteConstants.PREFERENCE_VOMS_CREATE_NEW_PROXY,
                 "ondemand");
         preferences.put(GliteConstants.PREFERENCE_SYNCH_LFC_DPM_PERMS, "false");
@@ -368,24 +536,92 @@ public final class GliteSecurityUtils {
      *            GATContext in which to replace the security information.
      */
     public static void replaceSecurityContextWithGliteContext(
-            GATContext gatContext) {
+            final GATContext gatContext) {
         CredentialSecurityContext gsc = null;
         try {
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            FileInputStream fis = new FileInputStream(getProxyPath(gatContext));
-            byte[] buffer = new byte[1024];
-            while (fis.read(buffer) != (-1)) {
+            final ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            final FileInputStream fis = new FileInputStream(GliteSecurityUtils
+                    .getProxyPath(gatContext));
+            final byte[] buffer = new byte[1024];
+            while (fis.read(buffer) != -1) {
                 baos.write(buffer);
             }
             gsc = new CredentialSecurityContext(baos.toByteArray());
-        } catch (FileNotFoundException e2) {
-            logger.error("The file denoted by gridProxyFile does not exist");
-        } catch (IOException e) {
-            logger.error("Error reading the proxy file");
+        } catch (final FileNotFoundException e2) {
+            GliteSecurityUtils.LOGGER
+                    .error("The file denoted by gridProxyFile does not exist");
+        } catch (final IOException e) {
+            GliteSecurityUtils.LOGGER.error("Error reading the proxy file");
         }
         if (gsc != null) {
             gatContext.removeSecurityContexts();
             gatContext.addSecurityContext(gsc);
+        }
+    }
+
+    private static DocumentBuilder getDocumentBuilder() {
+        synchronized (GliteSecurityUtils.class) {
+            if (GliteSecurityUtils.documentBuilder == null) {
+                try {
+                    GliteSecurityUtils.documentBuilder = DocumentBuilderFactory
+                            .newInstance().newDocumentBuilder();
+                } catch (final ParserConfigurationException e) {
+                    GliteSecurityUtils.LOGGER.warn(
+                            "Failed to create DOM Parser", e);
+                } catch (final FactoryConfigurationError e) {
+                    GliteSecurityUtils.LOGGER.warn(
+                            "Failed to create DOM Parser", e);
+                }
+            }
+        }
+        return GliteSecurityUtils.documentBuilder;
+    }
+
+    private static Element getChild(final Element e, final String name) {
+        final NodeList list = e.getElementsByTagName(name);
+        return (Element) list.item(0);
+    }
+
+    private static void loadVoCard(final String voname, final VOInfo voInfo) {
+
+        final String BASE_URL = "http://cic.gridops.org/downloadRP.php?section=lavoisier&rpname=vocard&vo=";
+
+        final HttpClient client = new HttpClient();
+        final GetMethod method = new GetMethod(BASE_URL + voname);
+
+        try {
+            final int statusCode = client.executeMethod(method);
+
+            if (statusCode != HttpStatus.SC_OK) {
+                throw new HttpException("Status Code: " + statusCode);
+            }
+
+            final InputStream response = method.getResponseBodyAsStream();
+            final DocumentBuilder b = GliteSecurityUtils.getDocumentBuilder();
+            final Document d = b.parse(response);
+            final Element root = d.getDocumentElement();
+            final Element vomsServer = GliteSecurityUtils.getChild(
+                    GliteSecurityUtils.getChild(root, "VOMSServers"),
+                    "VOMSServer");
+            final String hostname = GliteSecurityUtils.getChild(vomsServer,
+                    "HOSTNAME").getFirstChild().getNodeValue();
+            final String port = GliteSecurityUtils.getChild(vomsServer,
+                    "VOMS_PORT").getFirstChild().getNodeValue();
+            final String dn = GliteSecurityUtils.getChild(vomsServer, "DN")
+                    .getFirstChild().getNodeValue();
+            LOGGER.info("Loaded VO-info from CIC: " + hostname + " " + dn + " "
+                    + port);
+            voInfo.setHostNameIfUnset(hostname);
+            voInfo.setHostDNIfUnset(dn);
+            voInfo.setPortIfUnset(port);
+        } catch (final IOException io) {
+            GliteSecurityUtils.LOGGER.warn("Failed to load VO Data", io);
+        } catch (final SAXException e) {
+            GliteSecurityUtils.LOGGER.warn(
+                    "Failed to load VO Data, VOCard could not be parsed", e);
+        } catch (final NullPointerException e) {
+            GliteSecurityUtils.LOGGER.warn(
+                    "Failed to load VO Data, VOCard is malformed", e);
         }
     }
 
