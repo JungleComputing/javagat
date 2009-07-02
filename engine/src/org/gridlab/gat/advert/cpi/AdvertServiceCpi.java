@@ -59,8 +59,8 @@ public class AdvertServiceCpi implements AdvertService, Monitorable {
      * 
      * @param gatContext
      *                The context to use.
-     * @param preferences
-     *                The user preferences.
+     * @param advertServiceUri
+     *                {@link Uri} containing the AdvertService's location.
      */
     public AdvertServiceCpi(GATContext gatContext, URI advertServiceUri) {
         this.gatContext = gatContext;

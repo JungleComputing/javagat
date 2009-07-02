@@ -123,10 +123,18 @@ public class AppEngineAdvertServiceAdaptor extends AdvertServiceCpi {
     	}
     }
 
-    /*
-     * (non-Javadoc)
+    /**
+     * Function to get an {@link Advertisable} object from the AdvertService at
+     * a given path.
      * 
-     * @see org.gridlab.gat.advert.AdvertService#getAdvertisable(java.lang.String).
+     * @param path
+     * 		{@link String} containing the path of the object to be returned.
+     * @return
+     * 		The requested {@link Advertisable} object.
+     * @throws GATInvocationException 
+     * 		Calling the function failed.
+     * @throws NoSuchElementException 
+     * 		The object could not be found. 
      */
     public Advertisable getAdvertisable(String path)
 	  throws GATInvocationException, NoSuchElementException {
@@ -151,12 +159,19 @@ public class AppEngineAdvertServiceAdaptor extends AdvertServiceCpi {
 		return advert;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.gridlab.gat.advert.AdvertService#add(org.gridlab.gat.advert.Advertisable,
-	 *      java.util.Map, java.lang.String)
-	 */
+    /**
+     * Function to add an {@link Advertisable} object with additional 
+     * {@link MetaData} to the AdvertService at a given path.
+     * 
+     * @param advert
+     * 		The {@link Advertisable} object to add. 
+     * @param metadata
+     * 		{@link MetaData} associated.
+     * @param path
+     * 		A {@link String} containing the path of the object to be stored.
+     * @throws GATInvocationException 
+     * 		Calling the function failed.
+     */
 	public void add(Advertisable advert, MetaData metadata, String path)
 	  throws GATInvocationException {
 		path = normalizePath(path);
@@ -179,11 +194,19 @@ public class AppEngineAdvertServiceAdaptor extends AdvertServiceCpi {
 		}
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.gridlab.gat.advert.AdvertService#delete(java.lang.String)
-	 */
+    /**
+     * Function to delete an {@link Advertisable} object from the AdvertService
+     * at a given path.
+     * 
+     * @param advert
+     * 		The {@link Advertisable} object to delete. 
+     * @param path
+     * 		A {@link String} containing the path of the object to be deleted.
+     * @throws GATInvocationException 
+     * 		Calling the function failed.
+     * @throws NoSuchElementException 
+     * 		The object could not be found. 
+     */
 	public void delete(String path) throws NoSuchElementException,
 	  GATInvocationException {
 		path = normalizePath(path);
@@ -199,11 +222,19 @@ public class AppEngineAdvertServiceAdaptor extends AdvertServiceCpi {
 		}
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.gridlab.gat.advert.AdvertService#find(java.util.Map)
-	 */
+    /**
+     * Function to find {@link MetaData} which matches a specific set of
+     * {@link MetaData}.
+     * 
+     * @param metadata
+     * 		{@link MetaData} to be matched.
+     * @return
+     * 		A {@link String[]} conaining pathnames of objects which match the
+     * 		given set of {@link MetaData}, or <code>null</code> if none was 
+     * 		found.
+     * @throws GATInvocationException 
+     * 		Calling the function failed.
+     */
 	public String[] find(MetaData query) throws GATInvocationException {
 		try {
 			return advertService.find(toAdvertMetaData(query));
@@ -216,11 +247,20 @@ public class AppEngineAdvertServiceAdaptor extends AdvertServiceCpi {
 		}
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.gridlab.gat.advert.AdvertService#getMetaData(java.lang.String)
-	 */
+    /**
+     * Function to get associated {@link MetaData} from the AdvertService at
+     * a given path.
+     * 
+     * @param path
+     * 		{@link String} containing the path of the {@link MetaData} to be 
+     * 		returned.
+     * @return
+     * 		The requested {@link MetaData}.
+     * @throws GATInvocationException 
+     * 		Calling the function failed.
+     * @throws NoSuchElementException 
+     * 		The object could not be found. 
+     */
 	public MetaData getMetaData(String path) throws NoSuchElementException,
 	  GATInvocationException {
 		path = normalizePath(path);
@@ -236,19 +276,21 @@ public class AppEngineAdvertServiceAdaptor extends AdvertServiceCpi {
 		}
 	}
 
-	/*
-	 * (non-Javadoc)
+	/**
+	 * Function to return the current working directory.
 	 * 
-	 * @see org.gridlab.gat.advert.AdvertService#getPWD()
+	 *  @return
+	 *  	A {@link String} containing the current working directory.
 	 */
 	public String getPWD() {
 		return pwd;
 	}
 
-	/*
-	 * (non-Javadoc)
+	/**
+	 * Function to set the current working directory.
 	 * 
-	 * @see org.gridlab.gat.advert.AdvertService#setPWD(java.lang.String)
+	 *  @param path
+	 *  	A {@link String} containing the working directory to be.
 	 */
 	public void setPWD(String path) {
 		if (path.startsWith(SEPARATOR)) {
