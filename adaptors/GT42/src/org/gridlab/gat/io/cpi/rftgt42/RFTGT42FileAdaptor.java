@@ -18,7 +18,10 @@ import javax.xml.rpc.ServiceException;
 import javax.xml.rpc.Stub;
 import javax.xml.soap.SOAPElement;
 
+import org.globus.axis.configuration.ClientConfigUtil;
 import org.globus.axis.message.addressing.EndpointReferenceType;
+import org.apache.axis.configuration.EngineConfigurationFactoryDefault;
+import org.apache.axis.deployment.wsdd.WSDDDeployment;
 import org.apache.axis.message.MessageElement;
 import org.apache.axis.types.URI.MalformedURIException;
 import org.slf4j.Logger;
@@ -75,6 +78,16 @@ import org.globus.wsrf.impl.security.descriptor.ContainerSecurityDescriptor;
 import org.globus.wsrf.impl.security.descriptor.GSISecureMsgAuthMethod;
 import org.globus.wsrf.impl.security.descriptor.GSITransportAuthMethod;
 import org.globus.wsrf.impl.security.descriptor.ResourceSecurityDescriptor;
+
+
+
+import org.globus.wsrf.config.ContainerConfig;
+import org.apache.axis.AxisEngine;
+import org.apache.axis.ConfigurationException;
+import org.apache.axis.EngineConfiguration;
+
+
+
 //import org.globus.wsrf.impl.security.descriptor.SecurityDescriptorException; questa eccezione nn esiste piu
 import org.globus.wsrf.security.SecurityManager;
 import org.gridlab.gat.AdaptorNotApplicableException;
@@ -229,7 +242,7 @@ public class RFTGT42FileAdaptor extends FileCpi {
             throw new AdaptorNotApplicableException("cannot handle this URI: "
                     + location);
         }
-        System.out.println("RFTGT42FileAdaptor location URI:  "+location);
+    
         // TODO: may be it is possible on the local host...
         if (!location.hasAbsolutePath()) {
             throw new AdaptorNotApplicableException(
@@ -239,27 +252,50 @@ public class RFTGT42FileAdaptor extends FileCpi {
         
         try {
            rftgt42Location = URItoRFTGT42String(location);
+      
+     //   System.out.println("\n rftgt42Location "+rftgt42Location+"\n");
+        
         } catch (URISyntaxException e) {
             throw new GATObjectCreationException(
                     "unable to create a valid rft URI: " + location, e);
         }
 
-        if (System.getProperty("GLOBUS_LOCATION") == null) {
-            String globusLocation = System.getProperty("gat.adaptor.path")
+        System.out.println("\n config file: "+System.getProperty("org.globus.config.file"));
+      	  
+        
+   	 if (System.getProperty("GT42_LOCATION") == null  )	 {
+            String gt42_Location = System.getProperty("gat.adaptor.path")
                     + java.io.File.separator + "GT42Adaptor"
                     + java.io.File.separator;
-            System.setProperty("GLOBUS_LOCATION", globusLocation);
-        }
-
-        if (System.getProperty("axis.ClientConfigFile") == null) {
-            String axisClientConfigFile = System
+            
+            System.setProperty("GT42_LOCATION", gt42_Location);
+            System.out.println("gt4222222222222222222222222222222222222");
+       }
+      
+   	 if (System.getProperty("axis.ClientConfigFileGT42") == null ) {
+             	
+   		WSDDDeployment wsdd=new WSDDDeployment();
+        //wsdd.se
+        AxisEngine en=  ContainerConfig.getClientEngine(); 
+    	        
+        System.out.println("EngineConfigurationFactoryDefault   "+EngineConfigurationFactoryDefault.OPTION_CLIENT_CONFIG_FILE);
+   		  		 
+   		 EngineConfiguration e=ClientConfigUtil.getClientEngineConfig();
+   		   		 
+   		 String axisClientConfigFileGT42 = System
                     .getProperty("gat.adaptor.path")
                     + java.io.File.separator
                     + "GT42Adaptor"
-                    + java.io.File.separator + "client-config.wsdd";
-            System.setProperty("axis.ClientConfigFile", axisClientConfigFile);
-        }
+                    + java.io.File.separator + "client-configGT42.wsdd";
+            System.out.println("globus location gt42 "+ContainerConfig.getGlobusLocation());
+        	System.setProperty("axis.ClientConfigFileGT42", axisClientConfigFileGT42);
+        		
+        	System.out.println("GT42 axis file: "+System.getProperty("axis.ClientConfigFileGT42"));
+   	 
+   	 }
+ 
 
+          
         this.host = location.getHost();
         if (this.host == null) {
             this.host = getLocalHost();
@@ -270,13 +306,13 @@ public class RFTGT42FileAdaptor extends FileCpi {
 
         try {
             proxy = GlobusSecurityUtils.getGlobusCredential(gatContext,
-                    "globus", location, DEFAULT_GRIDFTP_PORT);
+                    "rftgt42", location, DEFAULT_GRIDFTP_PORT);
         } catch (CouldNotInitializeCredentialException e) {
-            throw new GATObjectCreationException("globus", e);
+            throw new GATObjectCreationException("gt42", e);
         } catch (CredentialExpiredException e) {
-            throw new GATObjectCreationException("globus", e);
+            throw new GATObjectCreationException("gt42", e);
         } catch (InvalidUsernameOrPasswordException e) {
-            throw new GATObjectCreationException("globus", e);
+            throw new GATObjectCreationException("gt42", e);
         }
 
         this.notificationConsumerManager = null;
@@ -289,6 +325,44 @@ public class RFTGT42FileAdaptor extends FileCpi {
                 + BASE_SERVICE_PATH + RFTConstants.FACTORY_NAME;
     }
 
+   
+   /* public void changeEnvVariables(){
+    	
+    	 if (System.getProperty("GLOBUS_LOCATION") == null  ||
+		System.getProperty("GLOBUS_LOCATION").toString().equals(
+		System.getProperty("gat.adaptor.path") + 
+		java.io.File.separator + "GlobusAdaptor"
+        + java.io.File.separator)	
+    	 	) {
+    		 String gt42_Location = System.getProperty("gat.adaptor.path")
+            + java.io.File.separator + "GT42Adaptor"
+            + java.io.File.separator;
+    		 System.setProperty("GLOBUS_LOCATION", gt42_Location);
+    	 		}
+             
+    	 if (System.getProperty("axis.ClientConfigFile") == null ||
+    			 System.getProperty("axis.ClientConfigFile").toString().equals(
+        		System.getProperty("gat.adaptor.path") + 
+        		java.io.File.separator  + "GlobusAdaptor"
+                + java.io.File.separator + "client-config.wsdd")	
+    	 		) {
+     	
+    		 String axisClientConfigFileGT42 = System
+            .getProperty("gat.adaptor.path")
+            + java.io.File.separator
+            + "GT42Adaptor"
+            + java.io.File.separator + "client-config.wsdd";
+    		 System.setProperty("axis.ClientConfigFile", axisClientConfigFileGT42);
+    	 	}
+    	 System.out.println("\n GLOBUS_LOCATION in RFTGT42 "+System.getProperty("GLOBUS_LOCATION")+"\n"
+         		+" axis file "+System.getProperty("axis.ClientConfigFile")+"\n");
+         
+    	 
+    	   	
+    }
+    */
+       
+    
     /**
      * Copies the file to the location represented by <code>URI dest</code>.
      * If the destination is on the local machine is calls the
@@ -303,6 +377,8 @@ public class RFTGT42FileAdaptor extends FileCpi {
      */
     protected synchronized boolean copy2(String destStr)
             throws GATInvocationException {
+    	
+    	//changeEnvVariables();   	
     	EndpointReferenceType credentialEndpoint = getCredentialEPR();
         TransferType[] transferArray = new TransferType[1];
         transferArray[0] = new TransferType();
@@ -316,6 +392,10 @@ public class RFTGT42FileAdaptor extends FileCpi {
         request.setTransfer(transferArray);
         request.setTransferCredentialEndpoint(credentialEndpoint);
         setRequest(request);
+        System.out.println("RequestStatusTypeEnumeration  "+RequestStatusTypeEnumeration.Done.toString());
+        System.out.println("TransferStatusTypeEnumeration  "+TransferStatusTypeEnumeration.Finished.toString());
+        System.out.println("Status  "+status.toString());
+               
         return status.equals(RequestStatusTypeEnumeration.Done.toString())
                 || status.equals(TransferStatusTypeEnumeration.Finished
                         .toString());
@@ -487,6 +567,7 @@ public class RFTGT42FileAdaptor extends FileCpi {
             throws GATInvocationException {
         this.status = null;
         URL factoryURL = null;
+      
         try {
             factoryURL = new URL(factoryUrl);
         } catch (MalformedURLException e) {
@@ -532,8 +613,7 @@ public class RFTGT42FileAdaptor extends FileCpi {
                             + e);
         }
         EndpointReferenceType reliableRFTEndpoint = response.getReliableTransferEPR();
-       
-        // Codice aggiunto da me
+         // Codice aggiunto da me
         ReliableFileTransferPortType rft = null;
         try {
                
@@ -559,8 +639,7 @@ public class RFTGT42FileAdaptor extends FileCpi {
         ReliableFileTransferServiceAddressingLocator rftFSL= new ReliableFileTransferServiceAddressingLocator();
         
         rft= rftFSL.getReliableFileTransferPortTypePort(reliableRFTEndpoint);	
-      
-        
+              
         /*    rft = BaseRFTClient.rftLocator
                     .getReliableFileTransferPortTypePort(reliableRFTEndpoint);*/
         } catch (ServiceException e) {
@@ -590,7 +669,7 @@ public class RFTGT42FileAdaptor extends FileCpi {
 
         // wait until status is either 'Done' or 'Failed', wait for upcall and
         // do active polling.
-        GetStatus parameters = new GetStatus(rftgt42Location);
+         GetStatus parameters = new GetStatus(rftgt42Location);
         while (status == null
                 || !(status
                         .equals(RequestStatusTypeEnumeration.Done.toString())
@@ -602,10 +681,12 @@ public class RFTGT42FileAdaptor extends FileCpi {
                                 .toString()))) {
             synchronized (this) {
                 try {
-                    TransferStatusTypeEnumeration newStatus = rft.getStatus(
+                   TransferStatusTypeEnumeration newStatus = rft.getStatus(
                             parameters).getTransferStatus().getStatus();
                     if (newStatus != null) {
-                        status = newStatus.toString();
+                        
+                    	status = newStatus.toString();
+                        System.out.println("status within while "+status);
                     }
                     Thread.sleep(1000);
                 } catch (InterruptedException e) {

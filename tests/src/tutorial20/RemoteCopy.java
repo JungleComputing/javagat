@@ -15,9 +15,9 @@ public class RemoteCopy {
 	 * @throws Exception
 	 */
 	public static void main(String[] args) throws Exception {
-	    //Preferences preferences = new Preferences();
-        //preferences.put("file.adaptor.name", "rftgt42");		
-		GAT.createFile(args[0]).copy(new URI(args[1]));
+	    Preferences preferences = new Preferences();
+        preferences.put("file.adaptor.name", "rftgt4,rftgt42");		
+		GAT.createFile(preferences,args[0]).copy(new URI(args[1]));
 		GAT.end();
 	}
 }

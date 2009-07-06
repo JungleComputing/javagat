@@ -52,6 +52,7 @@ import org.globus.wsrf.NotificationConsumerManager;
 import org.globus.wsrf.NotifyCallback;
 import org.globus.wsrf.ResourceException;
 import org.globus.wsrf.WSNConstants;
+import org.globus.wsrf.config.ContainerConfig;
 import org.globus.wsrf.container.ContainerException;
 import org.globus.wsrf.container.ServiceContainer;
 import org.globus.wsrf.core.notification.ResourcePropertyValueChangeNotificationElementType;
@@ -223,25 +224,32 @@ public class RFTGT4FileAdaptor extends FileCpi {
 
         try {
             rftgt4Location = URItoRFTGT4String(location);
+    //        System.out.println("\n rftgt4Location "+rftgt4Location+"\n");
+        
+        
         } catch (URISyntaxException e) {
             throw new GATObjectCreationException(
                     "unable to create a valid rft URI: " + location, e);
         }
 
-        if (System.getProperty("GLOBUS_LOCATION") == null) {
+      
+            if (System.getProperty("GLOBUS_LOCATION") == null) {
             String globusLocation = System.getProperty("gat.adaptor.path")
                     + java.io.File.separator + "GlobusAdaptor"
                     + java.io.File.separator;
             System.setProperty("GLOBUS_LOCATION", globusLocation);
-        }
+       System.out.println("gt444444444444444444444444");
+            }
 
-        if (System.getProperty("axis.ClientConfigFile") == null) {
+        if (System.getProperty("axis.ClientConfigFile") == null  ) {
             String axisClientConfigFile = System
                     .getProperty("gat.adaptor.path")
                     + java.io.File.separator
                     + "GlobusAdaptor"
                     + java.io.File.separator + "client-config.wsdd";
             System.setProperty("axis.ClientConfigFile", axisClientConfigFile);
+            System.out.println("globus location gt4 "+ContainerConfig.getGlobusLocation());
+            System.out.println("GT4 axis file: "+System.getProperty("axis.ClientConfigFile"));
         }
 
         this.host = location.getHost();
@@ -273,6 +281,43 @@ public class RFTGT4FileAdaptor extends FileCpi {
                 + BASE_SERVICE_PATH + RFTConstants.FACTORY_NAME;
     }
 
+    
+   /* public void changeEnvVariables(){
+    	
+    	if (System.getProperty("GLOBUS_LOCATION") == null ||
+        		System.getProperty("GLOBUS_LOCATION").toString().equals(
+        		System.getProperty("gat.adaptor.path") + 
+        		java.io.File.separator + "GT42Adaptor"
+                + java.io.File.separator)	
+        
+        ) {
+            String globusLocation = System.getProperty("gat.adaptor.path")
+                    + java.io.File.separator + "GlobusAdaptor"
+                    + java.io.File.separator;
+            System.setProperty("GLOBUS_LOCATION", globusLocation);
+        }
+       
+        if (System.getProperty("axis.ClientConfigFile") == null ||
+        		System.getProperty("axis.ClientConfigFile").toString().equals(
+                		System.getProperty("gat.adaptor.path") + 
+                		java.io.File.separator  + "GT42Adaptor"
+                        + java.io.File.separator + "client-config.wsdd")		
+        
+        ) {
+            String axisClientConfigFile = System
+                    .getProperty("gat.adaptor.path")
+                    + java.io.File.separator
+                    + "GlobusAdaptor"
+                    + java.io.File.separator + "client-config.wsdd";
+            System.setProperty("axis.ClientConfigFile", axisClientConfigFile);
+        }
+     System.out.println("\n GLOBUS_LOCATION in RFTGT4 "+System.getProperty("GLOBUS_LOCATION")+"\n"
+     		+" axis file "+System.getProperty("axis.ClientConfigFile")+"\n");
+     
+   }*/   
+    
+    
+    
     /**
      * Copies the file to the location represented by <code>URI dest</code>.
      * If the destination is on the local machine is calls the
@@ -287,7 +332,9 @@ public class RFTGT4FileAdaptor extends FileCpi {
      */
     protected synchronized boolean copy2(String destStr)
             throws GATInvocationException {
-        EndpointReferenceType credentialEndpoint = getCredentialEPR();
+        //changeEnvVariables();
+    	
+    	EndpointReferenceType credentialEndpoint = getCredentialEPR();
 
         TransferType[] transferArray = new TransferType[1];
         transferArray[0] = new TransferType();
@@ -449,6 +496,7 @@ public class RFTGT4FileAdaptor extends FileCpi {
             throws GATInvocationException {
         this.status = null;
         URL factoryURL = null;
+               
         try {
             factoryURL = new URL(factoryUrl);
         } catch (MalformedURLException e) {
