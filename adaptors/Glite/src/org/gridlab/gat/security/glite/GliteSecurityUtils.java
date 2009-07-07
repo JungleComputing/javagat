@@ -1,7 +1,6 @@
 package org.gridlab.gat.security.glite;
 
 import java.io.ByteArrayOutputStream;
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -415,15 +414,18 @@ public final class GliteSecurityUtils {
         final Preferences prefs = context.getPreferences();
         final URI userkeyuri = secContext.getKeyfile();
         final String userkey;
+        // CoGProperties also searches in paths given by X509_USER_CERT and
+        // X509_USER_KEY
+        final CoGProperties properties = CoGProperties.getDefault();
         if (userkeyuri == null) {
-            userkey = GliteSecurityUtils.personalGlobusDir() + "userkey.pem";
+            userkey = properties.getUserKeyFile();
         } else {
             userkey = userkeyuri.getPath();
         }
         final URI usercerturi = secContext.getCertfile();
         final String usercert;
         if (usercerturi == null) {
-            usercert = GliteSecurityUtils.personalGlobusDir() + "usercert.pem";
+            usercert = properties.getUserCertFile();
         } else {
             usercert = usercerturi.getPath();
         }
@@ -479,14 +481,6 @@ public final class GliteSecurityUtils {
                     "Could not create VOMS proxy. VO: " + voName + " voInfo: "
                             + voInfo + ", requestCode: " + requestCode, e);
         }
-    }
-
-    /**
-     * @return the default personal globus directory.
-     */
-    private static String personalGlobusDir() {
-        return System.getProperty("user.home") + File.separatorChar + ".globus"
-                + File.separatorChar;
     }
 
     public static void addGliteSecurityPreferences(final Preferences preferences) {
