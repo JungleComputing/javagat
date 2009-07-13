@@ -115,21 +115,21 @@ public class GT42ResourceBrokerAdaptor extends ResourceBrokerCpi {
                            + brokerURI.toString() + "'");
        }
    }
-
-   if (System.getProperty("GLOBUS_LOCATION") == null) {//se non c'è la globus location la crea lui
-       String globusLocation = System.getProperty("gat.adaptor.path")
+System.out.println("\n GT42_LOCATION \n"+System.getProperty("GT42_LOCATION"));
+   if (System.getProperty("GT42_LOCATION") == null) {//se non c'è la globus location la crea lui
+       String gt42Location = System.getProperty("gat.adaptor.path")
                + java.io.File.separator + "GT42Adaptor"
                + java.io.File.separator;
-       System.setProperty("GLOBUS_LOCATION", globusLocation);
+       System.setProperty("GT42_LOCATION", gt42Location);
    }
 
-   if (System.getProperty("axis.ClientConfigFile") == null) {//se non c'è la file di configurazione di axis lo crea lui
-       String axisClientConfigFile = System
+   if (System.getProperty("axis.ClientConfigFileGT42") == null) {//se non c'è la file di configurazione di axis lo crea lui
+       String axisClientConfigFileGT42 = System
                .getProperty("gat.adaptor.path")
                + java.io.File.separator
                + "GT42Adaptor"
-               + java.io.File.separator + "client-config.wsdd";
-       System.setProperty("axis.ClientConfigFile", axisClientConfigFile);
+               + java.io.File.separator + "client-configGT42.wsdd";
+       System.setProperty("axis.ClientConfigFileGT42", axisClientConfigFileGT42);
    }
 }
 

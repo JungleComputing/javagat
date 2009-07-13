@@ -9,6 +9,7 @@ import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URISyntaxException;
+import java.util.Iterator;
 import java.util.Properties;
 import java.util.Set;
 
@@ -1874,8 +1875,10 @@ public class GAT {
         GATContext newContext = (GATContext) gatContext.clone();
 
         // add the overriding preferences to the cloned context
+            
+        
         newContext.addPreferences(additionalPreferences);
-
+    
         try {
             return createProxyMethod.invoke(null, new Object[] { cpiClassName,
                     interfaceClass, newContext, parameterTypes, tmpParams });

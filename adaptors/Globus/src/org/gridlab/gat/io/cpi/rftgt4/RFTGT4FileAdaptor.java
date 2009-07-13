@@ -233,12 +233,12 @@ public class RFTGT4FileAdaptor extends FileCpi {
         }
 
       
-            if (System.getProperty("GLOBUS_LOCATION") == null) {
+           if (System.getProperty("GLOBUS_LOCATION") == null) {
             String globusLocation = System.getProperty("gat.adaptor.path")
                     + java.io.File.separator + "GlobusAdaptor"
                     + java.io.File.separator;
             System.setProperty("GLOBUS_LOCATION", globusLocation);
-       System.out.println("gt444444444444444444444444");
+       System.out.println("GLOBUS_LOCATION settata con il valore: "+globusLocation);
             }
 
         if (System.getProperty("axis.ClientConfigFile") == null  ) {

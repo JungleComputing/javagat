@@ -103,7 +103,7 @@ public class WSGT4newResourceBrokerAdaptor extends ResourceBrokerCpi {
                                 + brokerURI.toString() + "'");
             }
         }
-
+        System.out.println("\n GLOBUS_LOCATION \n"+System.getProperty("GLOBUS_LOCATION"));
         if (System.getProperty("GLOBUS_LOCATION") == null) {
             String globusLocation = System.getProperty("gat.adaptor.path")
                     + java.io.File.separator + "GlobusAdaptor"
@@ -118,7 +118,10 @@ public class WSGT4newResourceBrokerAdaptor extends ResourceBrokerCpi {
                     + "GlobusAdaptor"
                     + java.io.File.separator + "client-config.wsdd";
             System.setProperty("axis.ClientConfigFile", axisClientConfigFile);
+            System.out.println("\n axis.ClientConfigFile in  inside  WSGT4newBroker..  \n"+System.getProperty("axis.ClientConfigFile")+"\n");
         }
+        System.out.println("\n axis.ClientConfigFile in WSGT4newBroker..  \n"+System.getProperty("axis.ClientConfigFile")+"\n");
+        
     }
 
     protected String createRSL(JobDescription description, Sandbox sandbox,
@@ -288,6 +291,8 @@ public class WSGT4newResourceBrokerAdaptor extends ResourceBrokerCpi {
 
         // create an endpoint reference type
         EndpointReferenceType endpoint = new EndpointReferenceType();
+      
+        
         try {
             endpoint.setAddress(new Address(createAddressString()));
         } catch (MalformedURIException e) {
@@ -326,8 +331,7 @@ public class WSGT4newResourceBrokerAdaptor extends ResourceBrokerCpi {
             wsgt4job.setState(Job.JobState.PRE_STAGING);
             sandbox.prestage();
         }
-
-        // create a gramjob according to the jobdescription
+           // create a gramjob according to the jobdescription
         GramJob gramjob = null;
         try {
             gramjob = new GramJob(createRSL(description, sandbox,
@@ -335,7 +339,6 @@ public class WSGT4newResourceBrokerAdaptor extends ResourceBrokerCpi {
         } catch (RSLParseException e) {
             throw new GATInvocationException("WSGT4newResourceBrokerAdaptor", e);
         }
-
         // inform the wsgt4 job of which gram job is related to it.
         wsgt4job.setGramJob(gramjob);
 
@@ -379,8 +382,8 @@ public class WSGT4newResourceBrokerAdaptor extends ResourceBrokerCpi {
 
         UUIDGen uuidgen = UUIDGenFactory.getUUIDGen();
         String submissionID = "uuid:" + uuidgen.nextUUID();
-
-        if (logger.isDebugEnabled()) {
+        System.out.println("\n Enpoint \n"+endpoint.toString());
+        		if (logger.isDebugEnabled()) {
             logger.debug("submission id for job: " + submissionID);
         }
         wsgt4job.setSubmissionID(submissionID);

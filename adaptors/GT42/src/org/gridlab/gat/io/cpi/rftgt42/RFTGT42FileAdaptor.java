@@ -260,27 +260,17 @@ public class RFTGT42FileAdaptor extends FileCpi {
                     "unable to create a valid rft URI: " + location, e);
         }
 
-        System.out.println("\n config file: "+System.getProperty("org.globus.config.file"));
-      	  
-        
-   	 if (System.getProperty("GT42_LOCATION") == null  )	 {
+   //     System.out.println("\n config file: "+System.getProperty("org.globus.config.file"));
+   	 if (System.getProperty("GT42_LOCATION") == null )	 {
             String gt42_Location = System.getProperty("gat.adaptor.path")
                     + java.io.File.separator + "GT42Adaptor"
                     + java.io.File.separator;
             
             System.setProperty("GT42_LOCATION", gt42_Location);
-            System.out.println("gt4222222222222222222222222222222222222");
+            System.out.println("GT42_LOCATION settata con valore: "+gt42_Location);
        }
-      
-   	 if (System.getProperty("axis.ClientConfigFileGT42") == null ) {
-             	
-   		WSDDDeployment wsdd=new WSDDDeployment();
-        //wsdd.se
-        AxisEngine en=  ContainerConfig.getClientEngine(); 
-    	        
-        System.out.println("EngineConfigurationFactoryDefault   "+EngineConfigurationFactoryDefault.OPTION_CLIENT_CONFIG_FILE);
-   		  		 
-   		 EngineConfiguration e=ClientConfigUtil.getClientEngineConfig();
+  
+   	 if (System.getProperty("axis.ClientConfigFileGT42") == null ) {	
    		   		 
    		 String axisClientConfigFileGT42 = System
                     .getProperty("gat.adaptor.path")
@@ -289,12 +279,18 @@ public class RFTGT42FileAdaptor extends FileCpi {
                     + java.io.File.separator + "client-configGT42.wsdd";
             System.out.println("globus location gt42 "+ContainerConfig.getGlobusLocation());
         	System.setProperty("axis.ClientConfigFileGT42", axisClientConfigFileGT42);
-        		
-        	System.out.println("GT42 axis file: "+System.getProperty("axis.ClientConfigFileGT42"));
+           	System.out.println("GT42 axis file: "+System.getProperty("axis.ClientConfigFileGT42"));
    	 
    	 }
- 
-
+   /*
+   	 WSDDDeployment wsdd=new WSDDDeployment();
+    //wsdd.se
+    AxisEngine en=  ContainerConfig.getClientEngine(); 
+	        
+    System.out.println("EngineConfigurationFactoryDefault   "+EngineConfigurationFactoryDefault.OPTION_CLIENT_CONFIG_FILE);
+		  		 
+		 EngineConfiguration e=ClientConfigUtil.getClientEngineConfig();
+*/
           
         this.host = location.getHost();
         if (this.host == null) {
@@ -392,8 +388,8 @@ public class RFTGT42FileAdaptor extends FileCpi {
         request.setTransfer(transferArray);
         request.setTransferCredentialEndpoint(credentialEndpoint);
         setRequest(request);
-        System.out.println("RequestStatusTypeEnumeration  "+RequestStatusTypeEnumeration.Done.toString());
-        System.out.println("TransferStatusTypeEnumeration  "+TransferStatusTypeEnumeration.Finished.toString());
+      //  System.out.println("RequestStatusTypeEnumeration  "+RequestStatusTypeEnumeration.Done.toString());
+       // System.out.println("TransferStatusTypeEnumeration  "+TransferStatusTypeEnumeration.Finished.toString());
         System.out.println("Status  "+status.toString());
                
         return status.equals(RequestStatusTypeEnumeration.Done.toString())

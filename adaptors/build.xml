@@ -5,20 +5,20 @@
 
 	<target name="build" description="build all tested adaptors">
 		<ant dir="shared" />
-	<!--	<ant dir="CommandlineSsh" /> -->
-		<ant dir="Globus" />  
+		<ant dir="CommandlineSsh" /> 
+	    <ant dir="Globus" /> 
 		<ant dir="Gridsam" />
 		<ant dir="Local" />
 		<ant dir="Mercury" />
-	<!--	<ant dir="SftpTrilead" /> -->
+		<ant dir="SftpTrilead" /> 
 		<ant dir="Sge" />
-	<!--	<ant dir="SshTrilead" /> -->
+		<ant dir="SshTrilead" /> 
 		<ant dir="Zorilla" />
 		<ant dir="Generic" />
-	<!--<ant dir="Glite" /> -->
+	    <ant dir="Glite" /> 
 		<ant dir="Unicore" />
 		<ant dir="Koala" />
-		<ant dir="GT42" />
+		<ant dir="GT42" /> 
 	</target>
 
 	<target name="build-with-contributed" description="build all tested and contributed adaptors" depends="build">
@@ -30,27 +30,27 @@
 	</target>
 
 	<target name="clean" description="clean all adaptors">
-		<!--<ant dir="CommandlineSsh" target="clean" /> -->
-		<ant dir="Globus" target="clean" />
+		<ant dir="CommandlineSsh" target="clean" /> 
+		<ant dir="Globus" target="clean" /> 
 		<ant dir="Gridsam" target="clean" />
 		<ant dir="Local" target="clean" />
 		<ant dir="Mercury" target="clean" />
-		<!--<ant dir="SftpTrilead" target="clean" />-->
+		<ant dir="SftpTrilead" target="clean" />
 		<ant dir="Sge" target="clean" />
-		<!--<ant dir="SshTrilead" target="clean" /> -->
+		<ant dir="SshTrilead" target="clean" /> 
 		<ant dir="Zorilla" target="clean" />
 		<ant dir="Generic" target="clean" />
-		<!--<ant dir="Glite" target="clean" />-->
+		<ant dir="Glite" target="clean" />
 		<ant dir="Unicore" target="clean" />
 		<ant dir="Koala" target="clean" />
 		<ant dir="GT42" target= "clean"/>
 		<ant dir="contributed" target="clean" />
 	</target>
-<!--
+
 	<target name="commandlinessh" description="build CommandlineSsh adaptors">
 		<ant dir="CommandlineSsh" />
 	</target>
-	-->
+	
 
 	<target name="globus" description="build Globus adaptors">
 		<ant dir="Globus" />
@@ -68,17 +68,17 @@
 		<ant dir="Mercury" />
 	</target>
 
-	<!--<target name="sftptrilead" description="build SftpTrilead adaptor">
+	<target name="sftptrilead" description="build SftpTrilead adaptor">
 		<ant dir="SftpTrilead" />
-	</target>-->
+	</target>
 
 	<target name="sge" description="build Sge adaptor">
 		<ant dir="Sge" />
 	</target>
 
-	<!--<target name="sshtrilead" description="build SshTrilead adaptor">
+	<target name="sshtrilead" description="build SshTrilead adaptor">
 		<ant dir="SshTrilead" />
-	</target>-->
+	</target>
 
 	<target name="zorilla" description="build Zorilla adaptor">
 		<ant dir="Zorilla" />
@@ -88,9 +88,9 @@
 		<ant dir="Generic" />
 	</target>
 
-	<!--<target name="glite" description="build Glite adaptor">
+	<target name="glite" description="build Glite adaptor">
 		<ant dir="Glite" />
-	</target>-->
+	</target>
 
 	<target name="unicore" description="build Unicore adaptor">
 		<ant dir="Unicore" />
@@ -102,6 +102,6 @@
 	
 	<target name="gt42" description="build Globus 4.2 adaptors">
 		<ant dir="GT42" />
-	</target>
+	</target> 
 
 </project>
