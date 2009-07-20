@@ -120,7 +120,7 @@ public class WSGT4newResourceBrokerAdaptor extends ResourceBrokerCpi {
             System.setProperty("axis.ClientConfigFile", axisClientConfigFile);
             System.out.println("\n axis.ClientConfigFile in  inside  WSGT4newBroker..  \n"+System.getProperty("axis.ClientConfigFile")+"\n");
         }
-        System.out.println("\n axis.ClientConfigFile in WSGT4newBroker..  \n"+System.getProperty("axis.ClientConfigFile")+"\n");
+     
         
     }
 
@@ -382,8 +382,7 @@ public class WSGT4newResourceBrokerAdaptor extends ResourceBrokerCpi {
 
         UUIDGen uuidgen = UUIDGenFactory.getUUIDGen();
         String submissionID = "uuid:" + uuidgen.nextUUID();
-        System.out.println("\n Enpoint \n"+endpoint.toString());
-        		if (logger.isDebugEnabled()) {
+        if (logger.isDebugEnabled()) {
             logger.debug("submission id for job: " + submissionID);
         }
         wsgt4job.setSubmissionID(submissionID);

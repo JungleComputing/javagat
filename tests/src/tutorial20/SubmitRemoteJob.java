@@ -18,7 +18,7 @@ public class SubmitRemoteJob {
         sd.setStdout(stdout);
         
         Preferences preferences = new Preferences();
-        preferences.put("resourcebroker.adaptor.name", "wsgt4new"); // "gt42"
+        preferences.put("resourcebroker.adaptor.name", "gt42"); // "gt42"wsgt4new
         //preferences.put("file.adaptor.name", "gt4gridftp");
 // provare se posso scegliere anche il file adaptor
         JobDescription jd = new JobDescription(sd);

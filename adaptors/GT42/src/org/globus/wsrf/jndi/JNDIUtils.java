@@ -122,21 +122,27 @@ public class JNDIUtils {
             logger.debug(i18n.getMessage("initialContextFactorySet", value));
         }
 	*/
-        
+        value = System.getProperty(
+                javax.naming.Context.INITIAL_CONTEXT_FACTORY);
       
-            System.setProperty(javax.naming.Context.INITIAL_CONTEXT_FACTORY,
+        System.out.println("\n\n\n "+value+" \n\n\n"); 
+        
+       System.setProperty(javax.naming.Context.INITIAL_CONTEXT_FACTORY,
                     DEFAULT_CONTEXT_FACTORY);
-            value = System.getProperty(
-                    javax.naming.Context.INITIAL_CONTEXT_FACTORY);
+       /* System.setProperty("java.naming.factory.initialGT42",
+                DEFAULT_CONTEXT_FACTORY);*/
+        value = System.getProperty(
+        		"java.naming.factory.initialGT42");
            logger.debug(i18n.getMessage("initialContextFactorySet", value));
             
         
         
         Hashtable env = new Hashtable();
         env.put(SynchronizedContext.SYNCHRONIZED, "true");
-        env.put(javax.naming.Context.INITIAL_CONTEXT_FACTORY,
+       /* env.put("java.naming.factory.initialGT42",
+                DEFAULT_CONTEXT_FACTORY);*/
+        env.put("javax.naming.Context.INITIAL_CONTEXT_FACTORY",
                 DEFAULT_CONTEXT_FACTORY);
-
         result = new InitialContext(env);
         if (!ContextBindings.isClassLoaderBound()) {
             ContextBindings.bindContext(CONTEXT_NAME, result);

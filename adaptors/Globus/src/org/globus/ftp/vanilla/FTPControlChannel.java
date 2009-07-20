@@ -318,7 +318,7 @@ public class FTPControlChannel extends BasicClientControlChannel {
             throw new IllegalArgumentException("null argument: cmd");
         }
         if (logger.isDebugEnabled()) {
-            logger.debug("Control channel sending: " + cmd);
+            logger.debug("Control channel sending : " + cmd);
         }
         writeStr(cmd.toString());
     }

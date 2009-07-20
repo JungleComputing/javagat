@@ -635,7 +635,8 @@ public class RFTGT42FileAdaptor extends FileCpi {
         ReliableFileTransferServiceAddressingLocator rftFSL= new ReliableFileTransferServiceAddressingLocator();
         
         rft= rftFSL.getReliableFileTransferPortTypePort(reliableRFTEndpoint);	
-              
+             
+        System.out.println("\n\n -------------"+reliableRFTEndpoint.toString());
         /*    rft = BaseRFTClient.rftLocator
                     .getReliableFileTransferPortTypePort(reliableRFTEndpoint);*/
         } catch (ServiceException e) {
@@ -666,7 +667,8 @@ public class RFTGT42FileAdaptor extends FileCpi {
         // wait until status is either 'Done' or 'Failed', wait for upcall and
         // do active polling.
          GetStatus parameters = new GetStatus(rftgt42Location);
-        while (status == null
+                
+         while (status == null
                 || !(status
                         .equals(RequestStatusTypeEnumeration.Done.toString())
                         || status.equals(RequestStatusTypeEnumeration.Failed
@@ -679,9 +681,15 @@ public class RFTGT42FileAdaptor extends FileCpi {
                 try {
                    TransferStatusTypeEnumeration newStatus = rft.getStatus(
                             parameters).getTransferStatus().getStatus();
-                    if (newStatus != null) {
-                        
-                    	status = newStatus.toString();
+                   String dest = rft.getStatus(
+                           parameters).getTransferStatus().getDestinationUrl();
+                   String src = rft.getStatus(
+                           parameters).getTransferStatus().getSourceUrl();
+                   System.out.println("src "+src+" dest "+dest);
+                   
+                   
+                   if (newStatus != null) {
+                       	status = newStatus.getValue();
                         System.out.println("status within while "+status);
                     }
                     Thread.sleep(1000);

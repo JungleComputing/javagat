@@ -19,7 +19,7 @@ public class Submit2RemoteJobs {
         sd.setStdout(stdout);
         
         Preferences preferences = new Preferences();
-        preferences.put("resourcebroker.adaptor.name", "wsgt4new"); // ""
+        preferences.put("resourcebroker.adaptor.name", "gt42"); // ""
         //preferences.put("file.adaptor.name", "gt4gridftp");
         JobDescription jd = new JobDescription(sd);
         ResourceBroker broker = GAT.createResourceBroker(preferences, new URI(args[0]));
@@ -40,7 +40,7 @@ public class Submit2RemoteJobs {
         sd1.setStdout(stdout1);
         
         Preferences preferences1 = new Preferences();
-        preferences1.put("resourcebroker.adaptor.name", "gt42"); // ""wsgt4new
+        preferences1.put("resourcebroker.adaptor.name", "wsgt4new"); // ""wsgt4new
         //preferences.put("file.adaptor.name", "gt4gridftp");
         JobDescription jd1 = new JobDescription(sd1);
         ResourceBroker broker1 = GAT.createResourceBroker(preferences1, new URI(args[1]));
