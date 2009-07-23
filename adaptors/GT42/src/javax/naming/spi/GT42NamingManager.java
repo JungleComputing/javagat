@@ -44,14 +44,17 @@ import com.sun.naming.internal.FactoryEnumeration;
  * @since 1.3
  */
 
-public class NamingManager {
+public class GT42NamingManager {
 
     /*
      * Disallow anyone from creating one of these.
      * Made package private so that DirectoryManager can subclass.
      */
 
-    NamingManager() {}
+     GT42NamingManager() {
+    	System.out.println("dsssssssssssdsdwrefefbv");
+    	
+    }
 
     // should be protected and package private
     static final VersionHelper helper = VersionHelper.getVersionHelper();
@@ -632,8 +635,8 @@ public class NamingManager {
      */
     public static Context getInitialContext(Hashtable<?,?> env)
 	throws NamingException {
-	InitialContextFactory factory;
-    System.out.println("\n\n\n\n\n\n\n Right Class Invoked\n\n\n\n\n\n\n\n\n\n\n");
+	GT42InitialContextFactory factory;
+    System.out.println("\n\n Right Class Invoked\n\n");
 	InitialContextFactoryBuilder builder = getInitialContextFactoryBuilder();
 	if (builder == null) {
 	    // No factory installed, use property
@@ -641,11 +644,13 @@ public class NamingManager {
 
 	  /*  String className = env != null ?
 	        (String)env.get(Context.INITIAL_CONTEXT_FACTORY) : null;*/
-	   String className = env != null ?
+	 
+		String className = env != null ?
 	        (String)env.get("java.naming.factory.initialGT42") : null;
-	   if (className == null) {
+	 System.out.println(className);
+	        if (className == null) {
 		NoInitialContextException ne = new NoInitialContextException(
-		    "Neeeeeed to specify class name in environment or system " +
+		    "Neeed to specify class name in environment or system " +
 		    "property, or as an applet parameter, or in an " +
 		    "application resource file:  " +
 		    "java.naming.factory.initialGT42");
@@ -653,20 +658,20 @@ public class NamingManager {
 	    }
 
 	    try {
-		factory = (InitialContextFactory)
+		factory = (GT42InitialContextFactory)
 		    helper.loadClass(className).newInstance();
-	    } catch(Exception e) {
-		NoInitialContextException ne =
+		   } catch(Exception e) {
+			NoInitialContextException ne =
 		    new NoInitialContextException(
 			"Cannot instantiate class: " + className);
 		ne.setRootCause(e);
 		throw ne;
 	    }
 	} else {
-	    factory = builder.createInitialContextFactory(env);
-	}
-
-	return factory.getInitialContext(env);
+	      factory = (GT42InitialContextFactory) builder.createInitialContextFactory(env);
+	  	}
+	
+	return factory.getGT42InitialContext(env);
     }
 
 
@@ -728,7 +733,7 @@ public class NamingManager {
      * @since 1.3
      */
     public static final String CPE = "java.naming.spi.CannotProceedException";
-
+    public static final String CP = "lalalala";
     /**
      * Creates a context in which to continue a context operation.
      *<p>

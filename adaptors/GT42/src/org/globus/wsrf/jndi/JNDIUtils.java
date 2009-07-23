@@ -29,7 +29,6 @@ import org.globus.tools.DeployConstants;
 import org.globus.util.I18n;
 import org.globus.wsrf.config.ContainerConfig;
 import org.globus.wsrf.tools.jndi.*;
-import org.globus.wsrf.tools.jndi.ResourceRule;
 import org.globus.wsrf.utils.Resources;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
@@ -37,6 +36,7 @@ import org.xml.sax.Attributes;
 
 import javax.naming.Binding;
 import javax.naming.Context;
+import javax.naming.GT42InitialContext;
 import javax.naming.InitialContext;
 import javax.naming.NameClassPair;
 import javax.naming.NameNotFoundException;
@@ -76,7 +76,9 @@ public class JNDIUtils {
 
     static {
         ENV = new Hashtable();
-        ENV.put(javax.naming.Context.INITIAL_CONTEXT_FACTORY,
+        /*ENV.put(javax.naming.Context.INITIAL_CONTEXT_FACTORY,
+                DEFAULT_CONTEXT_FACTORY);*/
+        ENV.put("java.naming.factory.initialGT42",
                 DEFAULT_CONTEXT_FACTORY);
     }
 
@@ -113,8 +115,6 @@ public class JNDIUtils {
 
         System.setProperty(javax.naming.Context.URL_PKG_PREFIXES, value);
 
-       
-
     /*    if (value == null) {
             System.setProperty(javax.naming.Context.INITIAL_CONTEXT_FACTORY,
                     DEFAULT_CONTEXT_FACTORY);
@@ -122,28 +122,30 @@ public class JNDIUtils {
             logger.debug(i18n.getMessage("initialContextFactorySet", value));
         }
 	*/
-        value = System.getProperty(
-                javax.naming.Context.INITIAL_CONTEXT_FACTORY);
-      
-        System.out.println("\n\n\n "+value+" \n\n\n"); 
+       
         
-       System.setProperty(javax.naming.Context.INITIAL_CONTEXT_FACTORY,
-                    DEFAULT_CONTEXT_FACTORY);
-       /* System.setProperty("java.naming.factory.initialGT42",
-                DEFAULT_CONTEXT_FACTORY);*/
-        value = System.getProperty(
-        		"java.naming.factory.initialGT42");
+      /* System.setProperty(javax.naming.Context.INITIAL_CONTEXT_FACTORY,
+                    DEFAULT_CONTEXT_FACTORY);*/
+       
+        System.setProperty("java.naming.factory.initialGT42",
+                DEFAULT_CONTEXT_FACTORY);
+       value = System.getProperty(
+               "java.naming.factory.initialGT42");
+     
+       System.out.println("\n\n INITIAL_CONTEXT_FACTORY GT42: "+value+" \n\n"); 
+          
+       
            logger.debug(i18n.getMessage("initialContextFactorySet", value));
-            
-        
+               
         
         Hashtable env = new Hashtable();
         env.put(SynchronizedContext.SYNCHRONIZED, "true");
-       /* env.put("java.naming.factory.initialGT42",
+     
+        /*env.put("javax.naming.Context.INITIAL_CONTEXT_FACTORY",
                 DEFAULT_CONTEXT_FACTORY);*/
-        env.put("javax.naming.Context.INITIAL_CONTEXT_FACTORY",
+        env.put("java.naming.factory.initialGT42",
                 DEFAULT_CONTEXT_FACTORY);
-        result = new InitialContext(env);
+        result = new GT42InitialContext(env);
         if (!ContextBindings.isClassLoaderBound()) {
             ContextBindings.bindContext(CONTEXT_NAME, result);
             ContextBindings.bindClassLoader(CONTEXT_NAME);

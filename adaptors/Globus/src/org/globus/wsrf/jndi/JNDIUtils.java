@@ -113,6 +113,8 @@ public class JNDIUtils
         value = System.getProperty(
                 javax.naming.Context.INITIAL_CONTEXT_FACTORY);
        
+        System.out.println("\n\n INITIAL_CONTEXT_FACTORY wsgt4: "+value+"\n" );
+        
         logger.debug(i18n.getMessage("initialContextFactorySet", value));
         
         
