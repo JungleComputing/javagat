@@ -304,34 +304,6 @@ System.out.println("\n GT42_LOCATION \n"+System.getProperty("GT42_LOCATION"));
 	                            + abstractDescription.getClass());
 	        }
 	      
-	        /*Un oggetto di tipo Job Description contiene: Software Description,
-	        Resource e Resource Description*/
-	     /*   Thread t = Thread.currentThread();
-			ClassLoader cl = t.getContextClassLoader();
-		    System.out.println("Thread RB------> "+cl.toString());	        
-		    ClassLoader c1=cl.getParent();
-		    ClassLoader c2=cl.getParent();
-		    while (c1!=null){
-		    System.out.println("Parent RB------> "+c1.toString());
-		    c1=c1.getParent();
-		    }
-		    try {
-		   		Class toRun=Class.forName("javax.naming.spi.NamingManager",false,cl);
-		    	//Class toRun=cl.loadClass("javax.naming.spi.NamingManager");
-		    	toRun.getField("CP");
-		    } catch (ClassNotFoundException e1) {
-				// TODO Auto-generated catch block
-				e1.printStackTrace();
-			} catch (SecurityException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (NoSuchFieldException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		    
-		    System.out.println("System RB--->  "+ClassLoader.getSystemClassLoader().toString());
-	       */
 		    JobDescription description = (JobDescription) abstractDescription;
 
 	        // if wrapper is enabled, do the wrapper stuff

@@ -76,8 +76,10 @@ public class JNDIUtils {
 
     static {
         ENV = new Hashtable();
+        
         /*ENV.put(javax.naming.Context.INITIAL_CONTEXT_FACTORY,
                 DEFAULT_CONTEXT_FACTORY);*/
+        /*I changed the value of the key to put*/
         ENV.put("java.naming.factory.initialGT42",
                 DEFAULT_CONTEXT_FACTORY);
     }
@@ -114,35 +116,24 @@ public class JNDIUtils {
         }
 
         System.setProperty(javax.naming.Context.URL_PKG_PREFIXES, value);
-
-    /*    if (value == null) {
-            System.setProperty(javax.naming.Context.INITIAL_CONTEXT_FACTORY,
+       
+        value = System.getProperty("java.naming.factory.initialGT42");
+       
+        if (value == null) {
+            System.setProperty("java.naming.factory.initialGT42",
                     DEFAULT_CONTEXT_FACTORY);
         } else {
             logger.debug(i18n.getMessage("initialContextFactorySet", value));
         }
-	*/
-       
-        
-      /* System.setProperty(javax.naming.Context.INITIAL_CONTEXT_FACTORY,
-                    DEFAULT_CONTEXT_FACTORY);*/
-       
-        System.setProperty("java.naming.factory.initialGT42",
-                DEFAULT_CONTEXT_FACTORY);
-       value = System.getProperty(
-               "java.naming.factory.initialGT42");
-     
-       System.out.println("\n\n INITIAL_CONTEXT_FACTORY GT42: "+value+" \n\n"); 
-          
-       
-           logger.debug(i18n.getMessage("initialContextFactorySet", value));
-               
+        value = System.getProperty("java.naming.factory.initialGT42");
+        System.out.println("\n INITIAL_CONTEXT_FACTORY GT42: "+value+" \n"); 
         
         Hashtable env = new Hashtable();
         env.put(SynchronizedContext.SYNCHRONIZED, "true");
      
         /*env.put("javax.naming.Context.INITIAL_CONTEXT_FACTORY",
                 DEFAULT_CONTEXT_FACTORY);*/
+        /*I changed the value of the key to put*/
         env.put("java.naming.factory.initialGT42",
                 DEFAULT_CONTEXT_FACTORY);
         result = new GT42InitialContext(env);

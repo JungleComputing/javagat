@@ -636,21 +636,22 @@ public class GT42NamingManager {
     public static Context getInitialContext(Hashtable<?,?> env)
 	throws NamingException {
 	GT42InitialContextFactory factory;
-    System.out.println("\n\n Right Class Invoked\n\n");
+    System.out.println("\n Right Class Invoked\n");
 	InitialContextFactoryBuilder builder = getInitialContextFactoryBuilder();
 	if (builder == null) {
 	    // No factory installed, use property
 	    // Get initial context factory class name
-
-	  /*  String className = env != null ?
-	        (String)env.get(Context.INITIAL_CONTEXT_FACTORY) : null;*/
-	 
+  
+		/*I changed the name of the environment variable to get */
 		String className = env != null ?
 	        (String)env.get("java.naming.factory.initialGT42") : null;
-	 System.out.println(className);
+	    /*String className = env != null ?
+	        (String)env.get(Context.INITIAL_CONTEXT_FACTORY) : null;*/
+	 
+	        System.out.println(className);
 	        if (className == null) {
 		NoInitialContextException ne = new NoInitialContextException(
-		    "Neeed to specify class name in environment or system " +
+		    "Need to specify class name in environment or system " +
 		    "property, or as an applet parameter, or in an " +
 		    "application resource file:  " +
 		    "java.naming.factory.initialGT42");
