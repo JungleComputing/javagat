@@ -83,37 +83,32 @@ public class AuthorizationProvider extends Provider {
     private AuthorizationProvider() throws ConfigException {
 
         super(PROVIDER_NAME, PROVIDER_VERSION, PROVIDER_INFO);
-        System.out.println("----------");
         String authzFileName = System.getProperty(AUTHZ_CONFIG_PROPERTY);
-        System.out.println("Config property "+System.getProperty(AUTHZ_CONFIG_PROPERTY));
         if (authzFileName == null) {
             authzFileName = AUTHZ_CONFIG_FILE;
         }
         
         InputStream input = null;
         File file = new File(authzFileName);
-        System.out.println("authzFileName  "+authzFileName);
         if (file.isAbsolute()) {
             try {
-            	System.out.println("1111111111111111111");
-                input = new FileInputStream(file);
+            	  input = new FileInputStream(file);
             } catch (FileNotFoundException exp) {
                 String err = i18n.getMessage("authzConfigFile", authzFileName);
                 throw new ConfigException(err, exp);
             }
         } else {
             if (!file.exists()) {
-            	System.out.println("222222222222222");
                 input = ClassLoaderUtils.getResourceAsStream(authzFileName);
          
-                if (input == null) {System.out.println("3333333333333333");
+                if (input == null) {
                     String configPath = ContainerConfig.getBaseDirectory();
                     System.out.println("base directory  "+configPath);
                     if (configPath == null) {
                         configPath = ".";
                     }
                     file = new File(configPath, authzFileName);
-                    try {System.out.println("444444444444444444444444");
+                    try {
                         input = new FileInputStream(file);
                     } catch (FileNotFoundException exp) {
                         String err = i18n.getMessage("authzConfigFile", 
@@ -122,7 +117,7 @@ public class AuthorizationProvider extends Provider {
                     }
                 }
             } else {
-                try {System.out.println("555555555555555555555555555");
+                try {
                     input = new FileInputStream(file);
                 } catch (FileNotFoundException exp) {
                     String err = i18n.getMessage("authzConfigFile", 

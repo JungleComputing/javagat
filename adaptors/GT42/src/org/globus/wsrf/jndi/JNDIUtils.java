@@ -133,7 +133,7 @@ public class JNDIUtils {
      
         /*env.put("javax.naming.Context.INITIAL_CONTEXT_FACTORY",
                 DEFAULT_CONTEXT_FACTORY);*/
-        /*I changed the value of the key to put*/
+        /*I changed the value of the key to put and result now is GT42InitialContext object*/
         env.put("java.naming.factory.initialGT42",
                 DEFAULT_CONTEXT_FACTORY);
         result = new GT42InitialContext(env);

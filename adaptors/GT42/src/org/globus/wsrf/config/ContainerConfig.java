@@ -43,7 +43,7 @@ import org.globus.wsrf.utils.Resources;
  * the application.
  */
 public class ContainerConfig extends BaseContainerConfig {
-
+// The method getGlobusLocation is modified
     static I18n i18n = I18n.getI18n(Resources.class.getName());
 
     public static final String WSRF_LOCATION = "wsrfLocation";

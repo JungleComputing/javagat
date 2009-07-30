@@ -136,11 +136,12 @@ class RFTGT42NotifyCallback implements NotifyCallback {
         try {
             ResourcePropertyValueChangeNotificationType message = ((ResourcePropertyValueChangeNotificationElementType) messageWrapper)
                     .getResourcePropertyValueChangeNotification();
-            /*RequestStatusType status = (RequestStatusType) message
+            /*Code from WSGT4ResourceBroker
+             * RequestStatusType status = (RequestStatusType) message
                     .getNewValue().get_any()[0].getValueAsType(
                     RFTConstants.REQUEST_STATUS_RESOURCE,
                     RequestStatusType.class);*/
-            //getNewValue() cambia con getNewValues()
+            //getNewValue() changed with con getNewValues()
             RequestStatusType status = (RequestStatusType) message
             .getNewValues().get_any()[0].getValueAsType(
             RFTConstants.REQUEST_STATUS_RESOURCE,
@@ -253,45 +254,31 @@ public class RFTGT42FileAdaptor extends FileCpi {
         try {
            rftgt42Location = URItoRFTGT42String(location);
       
-     //   System.out.println("\n rftgt42Location "+rftgt42Location+"\n");
-        
+          
         } catch (URISyntaxException e) {
             throw new GATObjectCreationException(
                     "unable to create a valid rft URI: " + location, e);
         }
 
-   //     System.out.println("\n config file: "+System.getProperty("org.globus.config.file"));
-   	 if (System.getProperty("GT42_LOCATION") == null )	 {
+  	 if (System.getProperty("GT42_LOCATION") == null )	 {
             String gt42_Location = System.getProperty("gat.adaptor.path")
                     + java.io.File.separator + "GT42Adaptor"
                     + java.io.File.separator;
             
             System.setProperty("GT42_LOCATION", gt42_Location);
-            System.out.println("GT42_LOCATION settata con valore: "+gt42_Location);
+            
        }
   
-   	 if (System.getProperty("axis.ClientConfigFileGT42") == null ) {	
-   		   		 
+   	 if (System.getProperty("axis.ClientConfigFileGT42") == null ) {	   		   		 
    		 String axisClientConfigFileGT42 = System
                     .getProperty("gat.adaptor.path")
                     + java.io.File.separator
                     + "GT42Adaptor"
                     + java.io.File.separator + "client-configGT42.wsdd";
-            System.out.println("globus location gt42 "+ContainerConfig.getGlobusLocation());
-        	System.setProperty("axis.ClientConfigFileGT42", axisClientConfigFileGT42);
-           	System.out.println("GT42 axis file: "+System.getProperty("axis.ClientConfigFileGT42"));
-   	 
+           	System.setProperty("axis.ClientConfigFileGT42", axisClientConfigFileGT42);
+           	 
    	 }
-   /*
-   	 WSDDDeployment wsdd=new WSDDDeployment();
-    //wsdd.se
-    AxisEngine en=  ContainerConfig.getClientEngine(); 
-	        
-    System.out.println("EngineConfigurationFactoryDefault   "+EngineConfigurationFactoryDefault.OPTION_CLIENT_CONFIG_FILE);
-		  		 
-		 EngineConfiguration e=ClientConfigUtil.getClientEngineConfig();
-*/
-          
+           
         this.host = location.getHost();
         if (this.host == null) {
             this.host = getLocalHost();
@@ -322,42 +309,7 @@ public class RFTGT42FileAdaptor extends FileCpi {
     }
 
    
-   /* public void changeEnvVariables(){
-    	
-    	 if (System.getProperty("GLOBUS_LOCATION") == null  ||
-		System.getProperty("GLOBUS_LOCATION").toString().equals(
-		System.getProperty("gat.adaptor.path") + 
-		java.io.File.separator + "GlobusAdaptor"
-        + java.io.File.separator)	
-    	 	) {
-    		 String gt42_Location = System.getProperty("gat.adaptor.path")
-            + java.io.File.separator + "GT42Adaptor"
-            + java.io.File.separator;
-    		 System.setProperty("GLOBUS_LOCATION", gt42_Location);
-    	 		}
-             
-    	 if (System.getProperty("axis.ClientConfigFile") == null ||
-    			 System.getProperty("axis.ClientConfigFile").toString().equals(
-        		System.getProperty("gat.adaptor.path") + 
-        		java.io.File.separator  + "GlobusAdaptor"
-                + java.io.File.separator + "client-config.wsdd")	
-    	 		) {
-     	
-    		 String axisClientConfigFileGT42 = System
-            .getProperty("gat.adaptor.path")
-            + java.io.File.separator
-            + "GT42Adaptor"
-            + java.io.File.separator + "client-config.wsdd";
-    		 System.setProperty("axis.ClientConfigFile", axisClientConfigFileGT42);
-    	 	}
-    	 System.out.println("\n GLOBUS_LOCATION in RFTGT42 "+System.getProperty("GLOBUS_LOCATION")+"\n"
-         		+" axis file "+System.getProperty("axis.ClientConfigFile")+"\n");
-         
-    	 
-    	   	
-    }
-    */
-       
+      
     
     /**
      * Copies the file to the location represented by <code>URI dest</code>.
@@ -374,8 +326,7 @@ public class RFTGT42FileAdaptor extends FileCpi {
     protected synchronized boolean copy2(String destStr)
             throws GATInvocationException {
     	
-    	//changeEnvVariables();   	
-    	EndpointReferenceType credentialEndpoint = getCredentialEPR();
+       	EndpointReferenceType credentialEndpoint = getCredentialEPR();
         TransferType[] transferArray = new TransferType[1];
         transferArray[0] = new TransferType();
         transferArray[0].setSourceUrl(rftgt42Location);
@@ -388,10 +339,7 @@ public class RFTGT42FileAdaptor extends FileCpi {
         request.setTransfer(transferArray);
         request.setTransferCredentialEndpoint(credentialEndpoint);
         setRequest(request);
-      //  System.out.println("RequestStatusTypeEnumeration  "+RequestStatusTypeEnumeration.Done.toString());
-       // System.out.println("TransferStatusTypeEnumeration  "+TransferStatusTypeEnumeration.Finished.toString());
-        System.out.println("Status  "+status.toString());
-               
+                   
         return status.equals(RequestStatusTypeEnumeration.Done.toString())
                 || status.equals(TransferStatusTypeEnumeration.Finished
                         .toString());
@@ -506,7 +454,7 @@ public class RFTGT42FileAdaptor extends FileCpi {
         }
         try {
         	//2)securityDescriptor.setAuthMethods(authMethod);
-            /*ho sostituito i due metodi 1 e 2 con questo unico metodo*/  
+            /*I substituted the methods 1 e 2 with the one below*/  
         	
         	securityDescriptor.setAuthMethods(authz, authMethod);
         
@@ -539,7 +487,7 @@ public class RFTGT42FileAdaptor extends FileCpi {
 	                "RFTGT42FileAdaptor: create TopicExpressionType failed, "
 	                        + e);
 	    }
-	    /* Il seguente metodo è stato sostituito dal codice sottostante 
+	    /* The method below has been substituted. 
 		 * 
 		 * subscriptionRequest.setTopicExpression(topicExpression);
 	     */		

@@ -45,6 +45,10 @@ import java.util.Hashtable;
  * <BR>
  * This is based on <code>org.apache.naming.java.javaURLContextFactory</code>.
  */
+/*Now it extends GT42InitialContextFactory interface and the method is 
+ * getGT42InitialContext instead of getInitialContext
+ * */
+
 public class javaURLContextFactory
     implements ObjectFactory, GT42InitialContextFactory {
 

@@ -30,10 +30,8 @@ public class Submit2RemoteJobs {
             Thread.sleep(1000);
         }
    
-        System.out.println("\n\n " +"PRIMO JOB TERMINATO \n\n");
-      
-     //   System.setProperty(javax.naming.Context.INITIAL_CONTEXT_FACTORY,"org.apache.naming.java.javaURLContextFactory");
-        
+        System.out.println("\n " +"FIRTST JOB TERMINATED \n");
+     
         SoftwareDescription sd1 = new SoftwareDescription();
         sd1.setExecutable("/bin/hostname");
         File stdout1 = GAT.createFile("hostname1.txt");

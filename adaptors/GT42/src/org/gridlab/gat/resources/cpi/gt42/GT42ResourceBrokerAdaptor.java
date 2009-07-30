@@ -60,7 +60,7 @@ import org.gridlab.gat.security.globus.GlobusSecurityUtils;
 
 public class GT42ResourceBrokerAdaptor extends ResourceBrokerCpi {
 
-	   //penso non vada toccato
+	  
 	   public static Map<String, Boolean> getSupportedCapabilities() {
 	        Map<String, Boolean> capabilities = ResourceBrokerCpi
 	                .getSupportedCapabilities();
@@ -70,7 +70,7 @@ public class GT42ResourceBrokerAdaptor extends ResourceBrokerCpi {
 
 	        return capabilities;
 	    }
-	   //penso non vada toccato
+	  
 	   public static Preferences getSupportedPreferences() {
 	        Preferences preferences = ResourceBrokerCpi.getSupportedPreferences();
 	        preferences.put("GT42.sandbox.gram", "false");
@@ -93,7 +93,7 @@ public class GT42ResourceBrokerAdaptor extends ResourceBrokerCpi {
 	        }
 	        try {
 	            cred = GlobusSecurityUtils.getGlobusCredential(gatContext,
-	                    "ws-gram", location, ResourceManagerContact.DEFAULT_PORT);//è una classe COG
+	                    "ws-gram", location, ResourceManagerContact.DEFAULT_PORT);
 	        } catch (Exception e) {
 	            throw new GATInvocationException(
 	                    "GT42Job: could not initialize credentials, " + e);
@@ -102,7 +102,7 @@ public class GT42ResourceBrokerAdaptor extends ResourceBrokerCpi {
 	    }
 	   
 	
-	   public GT42ResourceBrokerAdaptor(GATContext gatContext, URI brokerURI)
+ public GT42ResourceBrokerAdaptor(GATContext gatContext, URI brokerURI)
        throws GATObjectCreationException {
    super(gatContext, brokerURI);
    // accept if broker URI is compatible with https or with any
@@ -115,25 +115,23 @@ public class GT42ResourceBrokerAdaptor extends ResourceBrokerCpi {
                            + brokerURI.toString() + "'");
        }
    }
-System.out.println("\n GT42_LOCATION \n"+System.getProperty("GT42_LOCATION"));
    
 
-if (System.getProperty("GT42_LOCATION") == null) {//se non c'è la globus location la crea lui
+if (System.getProperty("GT42_LOCATION") == null) {
        String gt42Location = System.getProperty("gat.adaptor.path")
                + java.io.File.separator + "GT42Adaptor"
                + java.io.File.separator;
        System.setProperty("GT42_LOCATION", gt42Location);
-       System.out.println("--------------> "+System.getProperty("gat.adaptor.path"));
+      
    }
 
-   if (System.getProperty("axis.ClientConfigFileGT42") == null) {//se non c'è la file di configurazione di axis lo crea lui
+   if (System.getProperty("axis.ClientConfigFileGT42") == null) {
        String axisClientConfigFileGT42 = System
                .getProperty("gat.adaptor.path")
                + java.io.File.separator
                + "GT42Adaptor"
                + java.io.File.separator + "client-configGT42.wsdd";
-       System.setProperty("axis.ClientConfigFileGT42", axisClientConfigFileGT42);
-   }
+       }
 }
 
 	
@@ -144,9 +142,7 @@ if (System.getProperty("GT42_LOCATION") == null) {//se non c'è la globus locati
 
 	       	String rsl = new String("<job>");
 
-        	
-	        //Controllare se il metodo getSoftwareDescription va modificato
-	        SoftwareDescription sd = description.getSoftwareDescription();
+            SoftwareDescription sd = description.getSoftwareDescription();
 
 	        if (sd == null) {
 	            throw new GATInvocationException(
@@ -154,7 +150,7 @@ if (System.getProperty("GT42_LOCATION") == null) {//se non c'è la globus locati
 	        }
 
 	        rsl += "<executable>";
-	        rsl += getExecutable(description);//metodo di ResourceBrokerCPI che va  a chiamare un metodo della classe SoftwareDescription
+	        rsl += getExecutable(description);
 	        rsl += "</executable>";
 	        Map<String, Object> env = sd.getEnvironment();
 	        if (env != null && !env.isEmpty()) {
@@ -213,10 +209,9 @@ if (System.getProperty("GT42_LOCATION") == null) {//se non c'è la globus locati
 	            rsl += "</stdin>";
 	        }
 
-	        // se si una una gram sandbox allora aggiungi altre cose all RSL
+	      
 	        if (useGramSandbox) {
-	           //creo un campo <fileStagedIn>
-	        	Map<File, File> preStaged = sd.getPreStaged();
+	           	Map<File, File> preStaged = sd.getPreStaged();
 	            if (preStaged != null) {
 	                Set<File> keys = preStaged.keySet();
 	                Iterator<File> i = keys.iterator();
@@ -252,7 +247,6 @@ if (System.getProperty("GT42_LOCATION") == null) {//se non c'è la globus locati
 	                }
 	                rsl += "</fileStageIn>";
 	            }
-	          //creo un campo <fileStageOut>
 	            Map<File, File> postStaged = sd.getPostStaged();
 	            if (preStaged != null) {
 	                Set<File> keys = postStaged.keySet();
@@ -290,13 +284,9 @@ if (System.getProperty("GT42_LOCATION") == null) {//se non c'è la globus locati
 	             return rsl;
 	    }
 	   
+
 	   
-	   
-	  //----------------------------------------------------------------------------------------------- 
-	   
-	   
-	   
-	   
+   
 	    public Job submitJob(AbstractJobDescription abstractDescription,
 	            MetricListener listener, String metricDefinitionName)
 	            throws GATInvocationException {
@@ -312,7 +302,6 @@ if (System.getProperty("GT42_LOCATION") == null) {//se non c'è la globus locati
 	        // if wrapper is enabled, do the wrapper stuff
 	        String host = getHostname();
 	        
-	        //mi procuro il softwareDescription dall oggetto JobDescription
 	        SoftwareDescription sd = description.getSoftwareDescription();
 	        if (sd == null) {
 	            throw new GATInvocationException(
@@ -323,13 +312,13 @@ if (System.getProperty("GT42_LOCATION") == null) {//se non c'è la globus locati
 	        EndpointReferenceType endpoint = new EndpointReferenceType();
 	        try {
 	            
-	        	// il metodo setAddress è cambiato!! ora riceve un AttributedUriType 
-	        	// AttributedURIType non ha documentazione!
+	        	// setAddress method is changed. His parameter is an AttributedUriType 
+	        	// AttributedURIType doesn't have any documentation
 	        	String address=createAddressString();
 	        	AttributedURIType attributedAddress=new AttributedURIType(address);
 	           	endpoint.setAddress(attributedAddress);
 	        	
-	           	//Il codice originale era il seguente
+	           	//The original code from WSGT4ResourceBroker was
 	        	//endpoint.setAddress(new Address(createAddressString()));
 	        
 	        } catch (Exception e) {// Ho modificato anche il tipo di eccezione sollevata
@@ -349,14 +338,10 @@ if (System.getProperty("GT42_LOCATION") == null) {//se non c'è la globus locati
 	                logger.debug("using gram sandbox");
 	            }
 	        }
-	        //creo un nuovo GT42Job e gli passo il gatcotext, la descrizione e la sandbox
 	        GT42Job gt42job = new GT42Job(gatContext, description, sandbox);
 	        
-	        //inizializzo a null un oggetto Job che è una interfaccia
-	        Job job = null;
-	        /*se la descrizione è un istanza di WrapperJobDescription allora crea un
-	         * WrapperJobCpi e lo assegna al job, altrimenti assegna direttamente il job
-	        */
+	         Job job = null;
+	     
 	        if (description instanceof WrapperJobDescription) {
 	            WrapperJobCpi tmp = new WrapperJobCpi(gatContext, gt42job);
 	            listener = tmp;
@@ -365,24 +350,17 @@ if (System.getProperty("GT42_LOCATION") == null) {//se non c'è la globus locati
 	            job = gt42job;
 	        }
 	        
-	        /*Se i parametri ricevuti in input listener e metricDefinitionName 
-	         * sono entrambi non nulli allora aggiungo un Metric listener al job;
-	         * esso è costituito dal listener passato come parametro e da un oggetto
-	         * di tipo metric creato dalla stringa metricDefinitionName
-	        */
 	        if (listener != null && metricDefinitionName != null) {
 	            Metric metric = job.getMetricDefinitionByName(metricDefinitionName)
 	                    .createMetric(null);
 	            job.addMetricListener(listener, metric);
 	        }
 
-	        // se c'e la sandbox fa qualcosa
 	        if (sandbox != null) {
 	            gt42job.setState(Job.JobState.PRE_STAGING);
 	            sandbox.prestage();
 	        }
 
-	        // create a gramjob according to the jobdescription
 	        GramJob gramjob = null;
 	        try {
 	                	        
@@ -417,7 +395,7 @@ if (System.getProperty("GT42_LOCATION") == null) {//se non c'è la globus locati
 	        gramjob.addListener(gt42job);
 
 	        String factoryType = (String) gatContext.getPreferences().get(
-	                "GT42.factory.type");// ricordarsi di capire come funziona questo metodo get per farsi ritornare la prop giusta
+	                "GT42.factory.type");
 	        if (factoryType == null || factoryType.equals("")) {
 	            factoryType = ManagedJobFactoryConstants.FACTORY_TYPE.FORK;
 	            if (logger.isDebugEnabled()) {
@@ -425,7 +403,7 @@ if (System.getProperty("GT42_LOCATION") == null) {//se non c'è la globus locati
 	                        + ManagedJobFactoryConstants.FACTORY_TYPE.FORK);
 	            }
 	        }
-	        /*ReferencePropertiesType non esiste piu!!
+	        /*ReferencePropertiesType doen't exist anymore
 	        ReferencePropertiesType props = new ReferencePropertiesType();
 	        */
 	        
@@ -438,8 +416,6 @@ if (System.getProperty("GT42_LOCATION") == null) {//se non c'è la globus locati
 	            throw new GATInvocationException("GT42ResourceBrokerAdaptor", e);
 	        }
 	       
-	        // modifica effettuata da me. Prima era cosi:
-	        //endpoint.setProperties(props);
 	        endpoint.setParameters(params);
 	        
 	        UUIDGen uuidgen = UUIDGenFactory.getUUIDGen();

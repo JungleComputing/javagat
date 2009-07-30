@@ -29,7 +29,6 @@ public class NewWSGT4JobThread extends Thread{
 	
 	public void run() {
 	
-	System.out.println("\n NewWSGT4JobThread STARTED \n");
 	SoftwareDescription sd = new SoftwareDescription();
     sd.setExecutable("/bin/hostname");
     File stdout;
@@ -51,8 +50,7 @@ public class NewWSGT4JobThread extends Thread{
             && (job.getState() != JobState.SUBMISSION_ERROR)) {
         Thread.sleep(1000);
     }
-    System.out.println("\n NewWSGT4JobThread TERMINATED \n");
-    
+       
 	} catch (GATObjectCreationException e) {
 		// TODO Auto-generated catch block
 		e.printStackTrace();

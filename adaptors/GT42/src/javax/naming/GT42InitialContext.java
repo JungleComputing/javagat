@@ -12,7 +12,7 @@ import java.util.Hashtable;
 import javax.naming.spi.GT42NamingManager;
 import javax.naming.spi.NamingManager;
 import com.sun.naming.internal.ResourceManager;
-
+//The getDefaultInitCtx has been modified
 /**
  * This class is the starting context for performing naming operations.
  *<p>
@@ -286,7 +286,8 @@ public class GT42InitialContext implements Context {
      * @exception NamingException If a naming exception was encountered.
      */
     protected Context getDefaultInitCtx() throws NamingException{
-	if (!gotDefault) {
+	//Now it calls the static method from GT42NamingManager
+    	if (!gotDefault) {
 	    defaultInitCtx = GT42NamingManager.getInitialContext(myProps);
 	    gotDefault = true;
 	}

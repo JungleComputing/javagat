@@ -16,7 +16,8 @@ import javax.naming.*;
 import com.sun.naming.internal.VersionHelper;
 import com.sun.naming.internal.ResourceManager;
 import com.sun.naming.internal.FactoryEnumeration;
-
+/*The method getInitialContext has been modified
+ * */
 /**
  * This class contains methods for creating context objects
  * and objects referred to by location information in the naming
@@ -52,8 +53,7 @@ public class GT42NamingManager {
      */
 
      GT42NamingManager() {
-    	System.out.println("dsssssssssssdsdwrefefbv");
-    	
+       	
     }
 
     // should be protected and package private
@@ -636,8 +636,7 @@ public class GT42NamingManager {
     public static Context getInitialContext(Hashtable<?,?> env)
 	throws NamingException {
 	GT42InitialContextFactory factory;
-    System.out.println("\n Right Class Invoked\n");
-	InitialContextFactoryBuilder builder = getInitialContextFactoryBuilder();
+    InitialContextFactoryBuilder builder = getInitialContextFactoryBuilder();
 	if (builder == null) {
 	    // No factory installed, use property
 	    // Get initial context factory class name
@@ -647,8 +646,7 @@ public class GT42NamingManager {
 	        (String)env.get("java.naming.factory.initialGT42") : null;
 	    /*String className = env != null ?
 	        (String)env.get(Context.INITIAL_CONTEXT_FACTORY) : null;*/
-	 
-	        System.out.println(className);
+	     
 	        if (className == null) {
 		NoInitialContextException ne = new NoInitialContextException(
 		    "Need to specify class name in environment or system " +

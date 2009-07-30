@@ -35,8 +35,7 @@ public class GT42JobThread extends Thread{
 	
 	public void run() {
 	
-	System.out.println("\n GT42JobThread STARTED \n");
-		
+    
 	SoftwareDescription sd = new SoftwareDescription();
     sd.setExecutable("/bin/hostname");
     File stdout;
@@ -57,8 +56,7 @@ public class GT42JobThread extends Thread{
             && (job.getState() != JobState.SUBMISSION_ERROR)) {
         Thread.sleep(1000);
     }
-    System.out.println("\n GT42JobThread TERMINATED \n");
-    
+       
 	} catch (GATObjectCreationException e) {
 		// TODO Auto-generated catch block
 		e.printStackTrace();
