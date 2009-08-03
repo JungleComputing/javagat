@@ -6,6 +6,9 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.util.HashMap;
 
+import org.gridlab.gat.GAT;
+import org.gridlab.gat.GATContext;
+import org.gridlab.gat.engine.GATEngine;
 import org.gridlab.gat.monitoring.Metric;
 import org.gridlab.gat.monitoring.MetricDefinition;
 import org.gridlab.gat.monitoring.MetricEvent;
@@ -38,85 +41,85 @@ import org.gridlab.gat.resources.WrapperJobDescription.WrappedJobInfo;
 @SuppressWarnings("serial")
 public class WrappedJobCpi extends JobCpi implements Runnable {
 
-    private MetricDefinition statusMetricDefinition;
+	private MetricDefinition statusMetricDefinition;
 
-    private Metric statusMetric;
+	private Metric statusMetric;
 
-    private String statusFileName;
+	private String statusFileName;
 
-    /**
-     * Creates a new WrappedJob.
-     * 
-     * This constructor is used by the WrapperSubmitter.
-     * 
-     * @param gatContext
-     * @param jobDescription
-     */
-    public WrappedJobCpi(WrappedJobInfo info) {
-        super(null, info.getJobDescription(), null);
+	/**
+	 * Creates a new WrappedJob.
+	 * 
+	 * This constructor is used by the WrapperSubmitter.
+	 * 
+	 * @param gatContext
+	 * @param jobDescription
+	 */
+	public WrappedJobCpi(GATContext gatContext, WrappedJobInfo info) {
+		super(gatContext, info.getJobDescription(), null);
 
-        this.statusFileName = info.getJobStateFileName();
+		this.statusFileName = info.getJobStateFileName();
 
-        // Tell the engine that we provide job.status events
-        HashMap<String, Object> returnDef = new HashMap<String, Object>();
-        returnDef.put("status", JobState.class);
-        statusMetricDefinition = new MetricDefinition("job.status",
-                MetricDefinition.DISCRETE, "JobState", null, null, returnDef);
-        statusMetric = statusMetricDefinition.createMetric(null);
-        registerMetric("getJobStatus", statusMetricDefinition);
+		// Tell the engine that we provide job.status events
+		HashMap<String, Object> returnDef = new HashMap<String, Object>();
+		returnDef.put("status", JobState.class);
+		statusMetricDefinition = new MetricDefinition("job.status",
+				MetricDefinition.DISCRETE, "JobState", null, null, returnDef);
+		statusMetric = statusMetricDefinition.createMetric(null);
+		registerMetric("getJobStatus", statusMetricDefinition);
 
-        // start a thread that monitors the job state, by monitoring a file
-        Thread thread = new Thread(this);
-        thread.setDaemon(true);
-        thread.setName("Wrapped Job State Monitor " + getJobID());
-        thread.start();
-    }
+		// start a thread that monitors the job state, by monitoring a file
+		Thread thread = new Thread(this);
+		thread.setDaemon(true);
+		thread.setName("Wrapped Job State Monitor " + getJobID());
+		thread.start();
+	}
 
-    private void fireStateMetric(JobState state) {
-        MetricEvent v = new MetricEvent(this, state.toString(), statusMetric,
-                System.currentTimeMillis());
-        fireMetric(v);
-    }
+	private void fireStateMetric(JobState state) {
+		MetricEvent v = new MetricEvent(this, state.toString(), statusMetric,
+				System.currentTimeMillis());
+		fireMetric(v);
+	}
 
-    public void run() {
-        do {
-            JobState newstate = null;
-            ObjectInputStream in = null;
-            try {
-                in = new ObjectInputStream(new FileInputStream(statusFileName));
-                newstate = (JobState) in.readObject();
-            } catch (Exception e) {
-                if (logger.isInfoEnabled()) {
-                    logger.info("", e);
-                }
-            }
-            if (in != null) {
-                try {
-                    in.close();
-                } catch (IOException e) {
-                    if (logger.isInfoEnabled()) {
-                        logger.info("", e);
-                    }
-                }
-            }
-            if (newstate != null) {
-                File monitorFile = new File(statusFileName);
-                if (!monitorFile.delete()) {
-                    logger.error("Could not delete job status file!");
-                }
+	public void run() {
+		do {
+			JobState newstate = null;
+			ObjectInputStream in = null;
+			try {
+				in = new ObjectInputStream(new FileInputStream(statusFileName));
+				newstate = (JobState) in.readObject();
+			} catch (Exception e) {
+				if (logger.isInfoEnabled()) {
+					logger.info("", e);
+				}
+			}
+			if (in != null) {
+				try {
+					in.close();
+				} catch (IOException e) {
+					if (logger.isInfoEnabled()) {
+						logger.info("", e);
+					}
+				}
+			}
+			if (newstate != null) {
+				File monitorFile = new File(statusFileName);
+				if (!monitorFile.delete()) {
+					logger.error("Could not delete job status file!");
+				}
 
-                state = newstate;
-                fireStateMetric(state);
-            }
+				state = newstate;
+				fireStateMetric(state);
+			}
 
-            try {
-                Thread.sleep(1000);
-            } catch (InterruptedException e) {
-                if (logger.isInfoEnabled()) {
-                    logger.info("", e);
-                }
-            }
-        } while (state != JobState.STOPPED
-                && state != JobState.SUBMISSION_ERROR);
-    }
+			try {
+				Thread.sleep(1000);
+			} catch (InterruptedException e) {
+				if (logger.isInfoEnabled()) {
+					logger.info("", e);
+				}
+			}
+		} while (state != JobState.STOPPED
+				&& state != JobState.SUBMISSION_ERROR);
+	}
 }
