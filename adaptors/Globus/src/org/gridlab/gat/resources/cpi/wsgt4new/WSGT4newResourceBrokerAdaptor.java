@@ -541,8 +541,7 @@ public class WSGT4newResourceBrokerAdaptor extends ResourceBrokerCpi {
 					Map description=s.getDescription();	
 					resourcesList=XMLUtil.matchResources(description);
 					System.out.println("size: "+resourcesList.size());
-					for(int j=0;j<resourcesList.size();j++)
-					System.out.println(resourcesList.get(j).toString());
+				
 					//String a=entries[i].getAttribute("ns1:UniqueID");
 							
 
