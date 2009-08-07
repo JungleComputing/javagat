@@ -28,10 +28,10 @@ public class Submit2RemoteJobs {
         while ((job.getState() != JobState.STOPPED)
                 && (job.getState() != JobState.SUBMISSION_ERROR)) {
             Thread.sleep(1000);
-        }
-   
-        System.out.println("\n " +"FIRTST JOB TERMINATED \n");
-     
+        }   
+
+        System.out.println("\n\n " +"FIRST JOB TERMINATED \n\n");
+        
         SoftwareDescription sd1 = new SoftwareDescription();
         sd1.setExecutable("/bin/hostname");
         File stdout1 = GAT.createFile("hostname1.txt");

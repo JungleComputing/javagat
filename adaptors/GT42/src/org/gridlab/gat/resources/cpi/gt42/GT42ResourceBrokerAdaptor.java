@@ -3,9 +3,14 @@ package org.gridlab.gat.resources.cpi.gt42;
 
 
 import java.net.MalformedURLException;
+import java.rmi.RemoteException;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import javax.xml.rpc.ServiceException;
+import javax.xml.rpc.Stub;
 // Attenzione ------> Librerie GT 4.2
 
 import org.globus.common.ResourceManagerContact;
@@ -15,6 +20,7 @@ import org.apache.axis.components.uuid.UUIDGen;
 import org.apache.axis.components.uuid.UUIDGenFactory;
 
 // queste due classi prima stavano in addressing-1.0.jar
+import org.globus.axis.message.addressing.Address;
 import org.globus.axis.message.addressing.AttributedURIType;
 import org.globus.axis.message.addressing.EndpointReferenceType;
 import org.globus.axis.message.addressing.ReferenceParametersType;
@@ -29,10 +35,12 @@ import org.globus.exec.utils.ManagedJobFactoryConstants;
 import org.globus.exec.utils.rsl.RSLParseException;
 
 
+import org.globus.wsrf.WSRFConstants;
 import org.globus.wsrf.encoding.SerializationException;
 import org.globus.wsrf.impl.SimpleResourceKey;
 import org.globus.wsrf.impl.security.authentication.Constants;
 import org.globus.wsrf.impl.security.authorization.HostAuthorization;
+import org.globus.wsrf.impl.security.authorization.NoAuthorization;
 
 //-----------------------------------
 
@@ -45,14 +53,21 @@ import org.gridlab.gat.io.File;
 import org.gridlab.gat.monitoring.Metric;
 import org.gridlab.gat.monitoring.MetricListener;
 import org.gridlab.gat.resources.AbstractJobDescription;
+import org.gridlab.gat.resources.HardwareResource;
 import org.gridlab.gat.resources.Job;
 import org.gridlab.gat.resources.JobDescription;
+import org.gridlab.gat.resources.ResourceDescription;
 import org.gridlab.gat.resources.SoftwareDescription;
 import org.gridlab.gat.resources.WrapperJobDescription;
 import org.gridlab.gat.resources.cpi.ResourceBrokerCpi;
 import org.gridlab.gat.resources.cpi.Sandbox;
 import org.gridlab.gat.resources.cpi.WrapperJobCpi;
 import org.ietf.jgss.GSSCredential;
+import org.oasis.wsrf.properties.QueryExpressionType;
+import org.oasis.wsrf.properties.QueryResourcePropertiesResponse;
+import org.oasis.wsrf.properties.QueryResourceProperties_Element;
+import org.oasis.wsrf.properties.QueryResourceProperties_PortType;
+import org.oasis.wsrf.properties.WSResourcePropertiesServiceAddressingLocator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.gridlab.gat.security.globus.GlobusSecurityUtils;
@@ -131,6 +146,8 @@ if (System.getProperty("GT42_LOCATION") == null) {
                + java.io.File.separator
                + "GT42Adaptor"
                + java.io.File.separator + "client-configGT42.wsdd";
+       System.setProperty("axis.ClientConfigFileGT42", axisClientConfigFileGT42);
+       
        }
 }
 
@@ -467,5 +484,97 @@ if (System.getProperty("GT42_LOCATION") == null) {
     }
 	
 	
+ public List<HardwareResource> findResources(ResourceDescription s){
+		
+
+		// Create index service EPR
+	
+		String indexURI = "https://fs0.das3.cs.vu.nl:8443/wsrf/services/DefaultIndexService";
+	 
+		 //String indexURI = "https://gt4test.lrz-muenchen.de:8443/wsrf/services/DefaultIndexService";
+		 EndpointReferenceType indexEPR = new EndpointReferenceType();
+		try {
+			indexEPR.setAddress(new Address(indexURI));
+		} catch (Exception e) {
+			logger.error("ERROR: Malformed index URI '" + indexURI + "'");
+			try {
+				throw new RemoteException("ERROR: Malformed index URI '" + indexURI
+						+ "'", e);
+			} catch (RemoteException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+		}
+
+		// Get QueryResourceProperties portType
+		WSResourcePropertiesServiceAddressingLocator queryLocator;
+		queryLocator = new WSResourcePropertiesServiceAddressingLocator();
+		QueryResourceProperties_PortType query = null;
+		try {
+			query = queryLocator.getQueryResourcePropertiesPort(indexEPR);
+		} catch (ServiceException e) {
+			logger.error("ERROR: Unable to obtain query portType.");
+			try {
+				throw new RemoteException(
+						"ERROR: Unable to obtain query portType.", e);
+			} catch (RemoteException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+		}
+	// Setup security options
+		((Stub) query)._setProperty(Constants.GSI_TRANSPORT,
+				Constants.SIGNATURE);
+		((Stub) query)._setProperty(Constants.AUTHORIZATION, NoAuthorization
+				.getInstance());
+
+		// The following XPath query retrieves all the files with the specified
+		// name
+		String xpathQuery = "/*";
+		// Create request to QueryResourceProperties
+		QueryExpressionType queryExpr = new QueryExpressionType();
+		String dialect=WSRFConstants.XPATH_1_DIALECT;
+		System.out.println("----> "+dialect);
+		try {// Ho aggiunto il to string!!!
+			queryExpr.setDialect(new org.apache.axis.types.URI(WSRFConstants.XPATH_1_DIALECT));
+			//queryExpr.setDialect(dialect);
+		} catch (Exception e) {
+			logger
+					.error("ERROR: Malformed URI (WSRFConstants.XPATH_1_DIALECT)");
+			try {
+				throw new RemoteException(
+						"ERROR: Malformed URI (WSRFConstants.XPATH_1_DIALECT)", e);
+			} catch (RemoteException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+		}
+		queryExpr.setValue(xpathQuery);
+		QueryResourceProperties_Element queryRequest = new QueryResourceProperties_Element(
+				queryExpr);
+		System.out.println("5555555555555555555");
+		// Invoke QueryResourceProperties
+		QueryResourcePropertiesResponse queryResponse = null;
+		try {
+			queryResponse = query.queryResourceProperties(queryRequest);
+			System.out.println("66665555555555");
+		} catch (RemoteException e) {
+			logger.error("ERROR: Unable to invoke QueryRP operation.");
+			try {
+				System.out.println("66666pppppp");
+				throw new RemoteException(
+						"ERROR: Unable to invoke QueryRP operation.", e);
+			} catch (RemoteException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+		}
+		System.out.println("777777777777777777777777");
+		System.out.println(queryResponse.toString());
+		System.out.println("88888888888888888888888");
+		return null;
+	}
+    
+    
 	
 }

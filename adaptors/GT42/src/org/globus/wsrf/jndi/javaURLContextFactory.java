@@ -104,7 +104,6 @@ public class javaURLContextFactory
             if (SynchronizedContext.isSynchronized(environment)) {
                 ctx =  new SynchronizedContext(ctx);
             }
-            System.out.println("--> getGT42InitialContext() correttamente invocato");
             return ctx;
         }
     }                                                                                                       

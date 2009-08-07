@@ -1,27 +1,53 @@
 package org.gridlab.gat.resources.cpi.wsgt4new;
 
 import java.net.MalformedURLException;
+import java.rmi.RemoteException;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javax.xml.rpc.ServiceException;
+import javax.xml.rpc.Stub;
+
 import org.apache.axis.components.uuid.UUIDGen;
 import org.apache.axis.components.uuid.UUIDGenFactory;
+import org.apache.axis.message.MessageElement;
+import org.apache.axis.message.PrefixedQName;
 import org.apache.axis.message.addressing.Address;
 import org.apache.axis.message.addressing.EndpointReferenceType;
 import org.apache.axis.message.addressing.ReferencePropertiesType;
 import org.apache.axis.types.URI.MalformedURIException;
+import org.oasis.wsrf.properties.QueryExpressionType;
+import org.oasis.wsrf.properties.QueryResourcePropertiesResponse;
+import org.oasis.wsrf.properties.QueryResourceProperties_Element;
+import org.oasis.wsrf.properties.QueryResourceProperties_PortType;
+import org.oasis.wsrf.properties.WSResourcePropertiesServiceAddressingLocator;
+import org.oasis.wsrf.servicegroup.EntryType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+
 import org.globus.common.ResourceManagerContact;
 import org.globus.exec.client.GramJob;
 import org.globus.exec.utils.ManagedJobConstants;
 import org.globus.exec.utils.ManagedJobFactoryConstants;
 import org.globus.exec.utils.rsl.RSLParseException;
+import org.globus.mds.aggregator.types.AggregatorContent;
+import org.globus.mds.aggregator.types.AggregatorData;
+import org.globus.wsrf.WSRFConstants;
+import org.globus.wsrf.encoding.ObjectDeserializer;
 import org.globus.wsrf.encoding.SerializationException;
 import org.globus.wsrf.impl.SimpleResourceKey;
 import org.globus.wsrf.impl.security.authentication.Constants;
 import org.globus.wsrf.impl.security.authorization.HostAuthorization;
+import org.globus.wsrf.impl.security.authorization.NoAuthorization;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.GATObjectCreationException;
@@ -31,15 +57,20 @@ import org.gridlab.gat.io.File;
 import org.gridlab.gat.monitoring.Metric;
 import org.gridlab.gat.monitoring.MetricListener;
 import org.gridlab.gat.resources.AbstractJobDescription;
+import org.gridlab.gat.resources.HardwareResource;
 import org.gridlab.gat.resources.Job;
 import org.gridlab.gat.resources.JobDescription;
+import org.gridlab.gat.resources.ResourceDescription;
 import org.gridlab.gat.resources.SoftwareDescription;
 import org.gridlab.gat.resources.WrapperJobDescription;
 import org.gridlab.gat.resources.cpi.ResourceBrokerCpi;
 import org.gridlab.gat.resources.cpi.Sandbox;
 import org.gridlab.gat.resources.cpi.WrapperJobCpi;
+import org.gridlab.gat.resources.cpi.wsgt4new.WSGT4newJob;
+import org.gridlab.gat.resources.util.XMLUtil;
 import org.gridlab.gat.security.globus.GlobusSecurityUtils;
 import org.ietf.jgss.GSSCredential;
+
 
 /**
  * Implements the <code>ResourceBrokerCpi</code> abstract class.
@@ -118,7 +149,7 @@ public class WSGT4newResourceBrokerAdaptor extends ResourceBrokerCpi {
                     + "GlobusAdaptor"
                     + java.io.File.separator + "client-config.wsdd";
             System.setProperty("axis.ClientConfigFile", axisClientConfigFile);
-            System.out.println("\n axis.ClientConfigFile in  inside  WSGT4newBroker..  \n"+System.getProperty("axis.ClientConfigFile")+"\n");
+           
         }
      
         
@@ -420,4 +451,108 @@ public class WSGT4newResourceBrokerAdaptor extends ResourceBrokerCpi {
 
         return scheme + "://" + brokerURI.getHost() + ":" + port + path;
     }
-}
+    
+ public List<HardwareResource> findResources(ResourceDescription s){
+	
+	/*Prima di fare la query posso verificare quali sono gli attributi richiesti 
+	 Se sono tutti del tipo che non variano come ad esempio la velocita' della
+	 CPU, allora posso evitare di fare la query se gia ne ho fatta una in precedenza.
+	 Devo controllare se il valore del document e' diverso da null
+	 */
+	    LinkedList<HardwareResource> resourcesList=new LinkedList<HardwareResource>();
+	    String indexURI = "https://fs0.das3.cs.vu.nl:8443/wsrf/services/DefaultIndexService";
+		EndpointReferenceType indexEPR = new EndpointReferenceType();
+		try {
+			indexEPR.setAddress(new Address(indexURI));
+		} catch (Exception e) {			
+				e.printStackTrace();
+			}
+				
+		System.setProperty("javax.net.ssl.trustStore","/home/gni200/cacerts"); 
+		System.setProperty("javax.net.ssl.trustStorePassword","changeit");
+		// Get QueryResourceProperties portType
+		WSResourcePropertiesServiceAddressingLocator queryLocator;
+		queryLocator = new WSResourcePropertiesServiceAddressingLocator();
+		QueryResourceProperties_PortType query = null;
+		try {
+			query = queryLocator.getQueryResourcePropertiesPort(indexEPR);
+		} catch (ServiceException e) {
+			logger.error("ERROR: Unable to obtain query portType.");
+			try {
+				throw new RemoteException(
+						"ERROR: Unable to obtain query portType.", e);
+			} catch (RemoteException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+		}
+	   // Setup security options
+		((Stub) query)._setProperty(Constants.GSI_TRANSPORT,
+				Constants.SIGNATURE);
+		((Stub) query)._setProperty(Constants.AUTHORIZATION, NoAuthorization
+				.getInstance());
+
+	
+	    String xpathQuery = "/*/*/*/*/*/*/*[local-name()='SubCluster']";
+		//String xpathQuery = "/*/*/*/*/*[local-name()='GLUECE'][1]/*[local-name()='Cluster'][1]";
+		// Create request to QueryResourceProperties
+		QueryExpressionType queryExpr = new QueryExpressionType();
+		try {
+			queryExpr.setDialect(new org.apache.axis.types.URI(WSRFConstants.XPATH_1_DIALECT));
+			//queryExpr.setDialect(dialect);
+		} catch (Exception e) {			
+				e.printStackTrace();
+			}
+		
+		queryExpr.setValue(xpathQuery);
+		QueryResourceProperties_Element queryRequest = new QueryResourceProperties_Element(
+				queryExpr);
+		// Invoke QueryResourceProperties
+		QueryResourcePropertiesResponse queryResponse = null;
+		try {
+			queryResponse = query.queryResourceProperties(queryRequest);
+			} catch (RemoteException e) {
+							e.printStackTrace();
+			}
+		
+		// The response includes 0 or more entries from the index service.
+		MessageElement[] entries = queryResponse.get_any();
+		
+		if (entries == null || entries.length == 0) {
+			System.out.println("Lunghezza 0 e mo so cazzi");
+		} else {
+			
+			System.out.println("\n Number of entries: "+entries.length);
+			
+			for (int i = 0; i <1; i++) {
+
+				try {
+					Element root=entries[i].getAsDOM();
+					NodeList hosts=root.getChildNodes();
+									
+					/*Qui invoco un metodo createXMLFile che mi crea il file
+					 * con la struttura che decido io. Successivamente vado a 
+					 * leggerlo per vedere se c'e matching con i parametri ricevuti.
+					 * E' consigliabile che il nome dei parametri siano uguali ai
+					 * nomi dei campi Hedware e SoftwareResource
+					 * */
+					XMLUtil.createXMLDocument(hosts);
+					// qui con un istance of posso capire se creare una lista di soft o hard resources
+					Map description=s.getDescription();	
+					resourcesList=XMLUtil.matchResources(description);
+					System.out.println("size: "+resourcesList.size());
+					for(int j=0;j<resourcesList.size();j++)
+					System.out.println(resourcesList.get(j).toString());
+					//String a=entries[i].getAttribute("ns1:UniqueID");
+							
+
+				} catch (Exception e) {
+					logger.error("Error when accessing index service entry.");
+					e.printStackTrace();
+				}
+			}
+		System.out.println("88888888888888888888888");
+		
+	}
+		return resourcesList;
+}}

@@ -309,7 +309,7 @@ public class RFTGT42FileAdaptor extends FileCpi {
     }
 
    
-      
+
     
     /**
      * Copies the file to the location represented by <code>URI dest</code>.
@@ -561,31 +561,11 @@ public class RFTGT42FileAdaptor extends FileCpi {
         ReliableFileTransferPortType rft = null;
         try {
                
-       /* String stringEndpoint=reliableRFTEndpoint.toString();
-        System.out.println("string Endpoint:  "+stringEndpoint);
-        AttributedURIType uu=reliableRFTEndpoint.getAddress(); 
-        String path=uu.getPath();
-        String host =uu.getHost();
-        int port=uu.getPort();
-        String scheme=uu.getScheme();*/
-      //  System.out.println(scheme+"://"+host+":"+port+""+path);
-        
-        
-      /*  URL endpointURL=null;
-		try {
-			endpointURL = new URL(scheme+"://"+host+":"+port+""+path);
-		} catch (MalformedURLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} 
-		System.out.println(endpointURL.toString());
-		*/
-        ReliableFileTransferServiceAddressingLocator rftFSL= new ReliableFileTransferServiceAddressingLocator();
+         ReliableFileTransferServiceAddressingLocator rftFSL= new ReliableFileTransferServiceAddressingLocator();
         
         rft= rftFSL.getReliableFileTransferPortTypePort(reliableRFTEndpoint);	
              
-        System.out.println("\n\n -------------"+reliableRFTEndpoint.toString());
-        /*    rft = BaseRFTClient.rftLocator
+         /*    rft = BaseRFTClient.rftLocator
                     .getReliableFileTransferPortTypePort(reliableRFTEndpoint);*/
         } catch (ServiceException e) {
             throw new GATInvocationException(
@@ -637,8 +617,7 @@ public class RFTGT42FileAdaptor extends FileCpi {
                    
                    
                    if (newStatus != null) {
-                       	status = newStatus.getValue();
-                        System.out.println("status within while "+status);
+                       	status = newStatus.getValue();                       
                     }
                     Thread.sleep(1000);
                 } catch (InterruptedException e) {
@@ -821,32 +800,7 @@ public class RFTGT42FileAdaptor extends FileCpi {
         notifyAll();
     }
 
-    /*
-     * private BaseFaultType getFaultFromRP(RFTFaultResourcePropertyType fault) {
-     * if (fault == null) { return null; }
-     * 
-     * if (fault.getRftTransferFaultType() != null) { return
-     * fault.getRftTransferFaultType(); } else if
-     * (fault.getDelegationEPRMissingFaultType() != null) { return
-     * fault.getDelegationEPRMissingFaultType(); } else if
-     * (fault.getRftAuthenticationFaultType() != null) { return
-     * fault.getRftAuthenticationFaultType(); } else if
-     * (fault.getRftAuthorizationFaultType() != null) { return
-     * fault.getRftAuthorizationFaultType(); } else if
-     * (fault.getRftDatabaseFaultType() != null) { return
-     * fault.getRftDatabaseFaultType(); } else if
-     * (fault.getRftRepeatedlyStartedFaultType() != null) { return
-     * fault.getRftRepeatedlyStartedFaultType(); } else if
-     * (fault.getTransferTransientFaultType() != null) { return
-     * fault.getTransferTransientFaultType(); } else { return null; } }
-     */
-
-    /*
-     * private BaseFaultType deserializeFaultRP(SOAPElement any) throws
-     * Exception { return getFaultFromRP((RFTFaultResourcePropertyType)
-     * ObjectDeserializer .toObject(any, RFTFaultResourcePropertyType.class)); }
-     */
-
+ 
     void setFault(BaseFaultType fault) {
         this.fault = fault;
     }

@@ -126,7 +126,6 @@ public class JNDIUtils {
             logger.debug(i18n.getMessage("initialContextFactorySet", value));
         }
         value = System.getProperty("java.naming.factory.initialGT42");
-        System.out.println("\n INITIAL_CONTEXT_FACTORY GT42: "+value+" \n"); 
         
         Hashtable env = new Hashtable();
         env.put(SynchronizedContext.SYNCHRONIZED, "true");
