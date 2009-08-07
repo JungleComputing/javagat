@@ -10,14 +10,11 @@ import java.util.List;
 import java.util.Map;
 
 
-import org.gridlab.gat.resource.gt4.GlobusHardwareResource;
+import org.gridlab.gat.resources.gt4.GlobusHardwareResource;
 import org.gridlab.gat.resources.HardwareResource;
 import org.jdom.Attribute;
 import org.jdom.Document;
 import org.jdom.Element;
-import org.jdom.JDOMException;
-import org.jdom.input.SAXBuilder;
-import org.jdom.output.XMLOutputter;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 

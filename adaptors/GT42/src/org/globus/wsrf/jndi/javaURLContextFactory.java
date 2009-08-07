@@ -21,7 +21,6 @@ import org.apache.naming.SelectorContext;
 import org.apache.naming.SynchronizedContext;
 
 import javax.naming.Context;
-import javax.naming.Context;
 import javax.naming.Name;
 import javax.naming.NamingException;
 import javax.naming.spi.GT42InitialContextFactory;
