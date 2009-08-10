@@ -238,7 +238,7 @@ public class RFTGT4FileAdaptor extends FileCpi {
                     + java.io.File.separator + "GlobusAdaptor"
                     + java.io.File.separator;
             System.setProperty("GLOBUS_LOCATION", globusLocation);
-       System.out.println("GLOBUS_LOCATION settata con il valore: "+globusLocation);
+      
             }
 
         if (System.getProperty("axis.ClientConfigFile") == null  ) {
@@ -248,9 +248,7 @@ public class RFTGT4FileAdaptor extends FileCpi {
                     + "GlobusAdaptor"
                     + java.io.File.separator + "client-config.wsdd";
             System.setProperty("axis.ClientConfigFile", axisClientConfigFile);
-            System.out.println("globus location gt4 "+ContainerConfig.getGlobusLocation());
-            System.out.println("GT4 axis file: "+System.getProperty("axis.ClientConfigFile"));
-        }
+            }
 
         this.host = location.getHost();
         if (this.host == null) {

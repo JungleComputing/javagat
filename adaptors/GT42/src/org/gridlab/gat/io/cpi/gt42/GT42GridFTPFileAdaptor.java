@@ -68,7 +68,6 @@ public class GT42GridFTPFileAdaptor extends GT42FileAdaptor {
             logger.debug("GT42GridFileAdaptor file: start file copy with destination provider "
                             + destProvider);
         }
-        System.out.println("\n COPYthirdPART INVOCATA \n");
         Task task = new TaskImpl("my3rdpartycopy" + Math.random(),
                 Task.FILE_TRANSFER);
         FileTransferSpecification spec = new FileTransferSpecificationImpl();

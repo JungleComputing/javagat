@@ -16,7 +16,7 @@ public class RemoteCopy {
 	 */
 	public static void main(String[] args) throws Exception {
 	    Preferences preferences = new Preferences();//rftgt4  gt42gridftp
-        preferences.put("file.adaptor.name", "gt42gridftp");		
+        preferences.put("file.adaptor.name", "gt4gridftp");		
 		GAT.createFile(preferences,args[0]).copy(new URI(args[1]));
 		GAT.end();
 	}

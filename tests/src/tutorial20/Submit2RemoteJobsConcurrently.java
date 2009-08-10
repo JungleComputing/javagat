@@ -8,9 +8,9 @@ public class Submit2RemoteJobsConcurrently {
 		GT42JobThread job1=new GT42JobThread(args[0]);
 	    NewWSGT4JobThread job2=new NewWSGT4JobThread(args[1]);
 	    
-	    
-	    job2.start();
 	    job1.start(); 
+	    job2.start();
+	   
 	             
 	}	
 }

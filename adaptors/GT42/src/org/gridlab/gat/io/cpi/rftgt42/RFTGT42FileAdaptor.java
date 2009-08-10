@@ -613,8 +613,7 @@ public class RFTGT42FileAdaptor extends FileCpi {
                            parameters).getTransferStatus().getDestinationUrl();
                    String src = rft.getStatus(
                            parameters).getTransferStatus().getSourceUrl();
-                   System.out.println("src "+src+" dest "+dest);
-                   
+                                      
                    
                    if (newStatus != null) {
                        	status = newStatus.getValue();                       

@@ -134,7 +134,7 @@ public class WSGT4newResourceBrokerAdaptor extends ResourceBrokerCpi {
                                 + brokerURI.toString() + "'");
             }
         }
-        System.out.println("\n GLOBUS_LOCATION \n"+System.getProperty("GLOBUS_LOCATION"));
+        
         if (System.getProperty("GLOBUS_LOCATION") == null) {
             String globusLocation = System.getProperty("gat.adaptor.path")
                     + java.io.File.separator + "GlobusAdaptor"
