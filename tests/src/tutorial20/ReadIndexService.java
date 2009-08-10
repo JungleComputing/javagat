@@ -33,7 +33,7 @@ public class ReadIndexService {
 	        hd.addResourceAttribute("MEMORY_AVAILABLE", 1900);
 	        broker.findResources(hd);
 
-	        
+	        broker.findResources(hd);
 	    }
 	}
 

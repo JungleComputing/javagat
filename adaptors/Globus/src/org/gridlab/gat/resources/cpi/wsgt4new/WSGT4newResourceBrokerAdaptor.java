@@ -459,6 +459,9 @@ public class WSGT4newResourceBrokerAdaptor extends ResourceBrokerCpi {
 	 CPU, allora posso evitare di fare la query se gia ne ho fatta una in precedenza.
 	 Devo controllare se il valore del document e' diverso da null
 	 */
+	 if(XMLUtil.getDocument()==null) System.out.println("Document null");
+	 else System.out.println("Document presente");
+	 
 	    LinkedList<HardwareResource> resourcesList=new LinkedList<HardwareResource>();
 	    String indexURI = "https://fs0.das3.cs.vu.nl:8443/wsrf/services/DefaultIndexService";
 		EndpointReferenceType indexEPR = new EndpointReferenceType();
@@ -541,7 +544,7 @@ public class WSGT4newResourceBrokerAdaptor extends ResourceBrokerCpi {
 					Map description=s.getDescription();	
 					resourcesList=XMLUtil.matchResources(description);
 					System.out.println("size: "+resourcesList.size());
-				
+			
 					//String a=entries[i].getAttribute("ns1:UniqueID");
 							
 
