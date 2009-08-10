@@ -67,7 +67,7 @@ import org.gridlab.gat.resources.cpi.ResourceBrokerCpi;
 import org.gridlab.gat.resources.cpi.Sandbox;
 import org.gridlab.gat.resources.cpi.WrapperJobCpi;
 import org.gridlab.gat.resources.cpi.wsgt4new.WSGT4newJob;
-import org.gridlab.gat.resources.util.XMLUtil;
+import org.gridlab.gat.resources.utils.XMLUtil;
 import org.gridlab.gat.security.globus.GlobusSecurityUtils;
 import org.ietf.jgss.GSSCredential;
 
@@ -459,18 +459,24 @@ public class WSGT4newResourceBrokerAdaptor extends ResourceBrokerCpi {
 	 CPU, allora posso evitare di fare la query se gia ne ho fatta una in precedenza.
 	 Devo controllare se il valore del document e' diverso da null
 	 */
-	 if(XMLUtil.getDocument()==null) System.out.println("Document null");
-	 else System.out.println("Document presente");
-	 
-	    LinkedList<HardwareResource> resourcesList=new LinkedList<HardwareResource>();
-	    String indexURI = "https://fs0.das3.cs.vu.nl:8443/wsrf/services/DefaultIndexService";
-		EndpointReferenceType indexEPR = new EndpointReferenceType();
+	
+	 boolean allStatic=areAllStaticAttributes(s);
+	 LinkedList<HardwareResource> resourcesList=new LinkedList<HardwareResource>();
+	
+	 if(XMLUtil.getDocument()==null || !allStatic) {
+		
+		System.out.println("\n I'm querying the Index Service \n"); 
+		
+	    //String indexURI = "https://fs0.das3.cs.vu.nl:8443/wsrf/services/DefaultIndexService";
+		 String indexURI = this.brokerURI.toString();
+		 System.out.println(indexURI);
+		 
+	    EndpointReferenceType indexEPR = new EndpointReferenceType();
 		try {
 			indexEPR.setAddress(new Address(indexURI));
 		} catch (Exception e) {			
 				e.printStackTrace();
 			}
-				
 		System.setProperty("javax.net.ssl.trustStore","/home/gni200/cacerts"); 
 		System.setProperty("javax.net.ssl.trustStorePassword","changeit");
 		// Get QueryResourceProperties portType
@@ -524,11 +530,7 @@ public class WSGT4newResourceBrokerAdaptor extends ResourceBrokerCpi {
 		if (entries == null || entries.length == 0) {
 			System.out.println("Lunghezza 0 e mo so cazzi");
 		} else {
-			
-			System.out.println("\n Number of entries: "+entries.length);
-			
 			for (int i = 0; i <1; i++) {
-
 				try {
 					Element root=entries[i].getAsDOM();
 					NodeList hosts=root.getChildNodes();
@@ -551,10 +553,30 @@ public class WSGT4newResourceBrokerAdaptor extends ResourceBrokerCpi {
 				} catch (Exception e) {
 					logger.error("Error when accessing index service entry.");
 					e.printStackTrace();
-				}
+				}}
 			}
-		System.out.println("88888888888888888888888");
+		
 		
 	}
+	 else{	 
+		     System.out.println("\n I dont need to query the Index Service \n");
+		     Map description=s.getDescription();	
+			 resourcesList=XMLUtil.matchResources(description);
+	 }
+	 
+	 
+	 
 		return resourcesList;
+}
+
+private boolean areAllStaticAttributes(ResourceDescription s) {
+	 int numberofResources=s.getDescription().size();
+	 int count=0;
+	 if(s.getResourceAttribute("CPU_SPEED")!=null)count++;
+	 if(s.getResourceAttribute("CPU_COUNT")!=null)count++;
+	 if(s.getResourceAttribute("MEMORY_SIZE")!=null)count++;
+	 if(s.getResourceAttribute("DISK_SIZE")!=null)count++;
+	 if (count==numberofResources) return true;
+	 return false;
+	 
 }}

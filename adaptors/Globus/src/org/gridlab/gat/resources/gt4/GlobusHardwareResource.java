@@ -1,4 +1,4 @@
-package org.gridlab.gat.resource.gt4;
+package org.gridlab.gat.resources.gt4;
 
 import java.util.Collection;
 import java.util.Iterator;
@@ -23,7 +23,6 @@ public class GlobusHardwareResource implements HardwareResource{
 	 * 
 	 * */
 	
-	private String HOST_NAME;
 	
 	private HardwareResourceDescription description= new HardwareResourceDescription(); 
 	
@@ -57,6 +56,13 @@ public class GlobusHardwareResource implements HardwareResource{
 
 	public GlobusHardwareResource(Element host) {
 		List hostParameters=host.getChildren();
+		description.addResourceAttribute(host.getName(), host.getValue());
+		List hostAttributes=host.getAttributes();
+		Iterator<Attribute> it3=hostAttributes.iterator();
+		while(it3.hasNext()){
+		Attribute att3=it3.next();
+		description.addResourceAttribute(att3.getName(), att3.getValue());
+		//System.out.println(att3.getName()+" Value: "+att3.getValue());
 		Iterator<Element> it1=hostParameters.iterator();
 		while(it1.hasNext()){
 			Element parameter=it1.next();
@@ -65,11 +71,11 @@ public class GlobusHardwareResource implements HardwareResource{
 			while(it2.hasNext()){
 				Attribute att=it2.next();	
 				String attribute=att.getName();
-				System.out.println("Name "+att.getName()+" Value "+att.getValue());
+				//System.out.println(att.getName()+" Value: "+att.getValue());
 				description.addResourceAttribute(att.getName(), att.getValue());
 			
 			}
-		}
+		}}
 		}
 	
 	
@@ -115,15 +121,14 @@ public class GlobusHardwareResource implements HardwareResource{
 	}
 	public String toString(){
 		Map p=description.getDescription();
-		String s=(String)p.get("CPU_SPEED");
-		String r=(String)p.get("MEMORY_AVAILABLE");
-		return r +"  ---- "+ s;
-		/*Collection c=p.values();
-		Iterator it=c.iterator();
-		while(it.hasNext()){
-			it.next();
-		}*/
-			
+		String hostName="HOST_NAME "+(String)p.get("HOST_NAME");
+		String cpuSpeed="CPU_SPEED "+(String)p.get("CPU_SPEED");
+		String cpuCount="CPU_COUNT "+(String)p.get("CPU_COUNT");
+		String memoryAvailable="MEMORY_AVAILABLE "+(String)p.get("MEMORY_AVAILABLE");
+		String availableDiskSize="AVAILABLE_DISK_SIZE "+(String)p.get("AVAILABLE_DISK_SIZE");
+		
+		return hostName+"\n"+cpuSpeed+"\n"+cpuCount+"\n"+memoryAvailable+"\n"+availableDiskSize+"\n";
+				
 	}
 	
 

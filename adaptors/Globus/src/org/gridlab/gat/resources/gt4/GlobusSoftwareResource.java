@@ -1,4 +1,4 @@
-package org.gridlab.gat.resource.gt4;
+package org.gridlab.gat.resources.gt4;
 
 import java.util.List;
 

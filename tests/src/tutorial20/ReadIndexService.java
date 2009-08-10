@@ -14,8 +14,6 @@ import java.util.LinkedList;
 
 public class ReadIndexService {
 
-
-
 	    public static void main(String[] args) throws Exception {
 	        SoftwareDescription sd = new SoftwareDescription();
 	        sd.setExecutable("/bin/hostname");
@@ -24,14 +22,13 @@ public class ReadIndexService {
 	        
 	        Preferences preferences = new Preferences();
 	        preferences.put("resourcebroker.adaptor.name", "wsgt4new"); // "gt42"wsgt4new
-	        //preferences.put("file.adaptor.name", "gt4gridftp");
-//	 provare se posso scegliere anche il file adaptor
+	       
 	        JobDescription jd = new JobDescription(sd);
 	        ResourceBroker broker = GAT.createResourceBroker(preferences, new URI(args[0]));
 	        HardwareResourceDescription hd=new HardwareResourceDescription();
 	        hd.addResourceAttribute("CPU_SPEED", 2300);
 	        hd.addResourceAttribute("AVAILABLE_DISK_SIZE", 200000);
-	    //    hd.addResourceAttribute("MEMORY_AVAILABLE", 1900);
+	    //  hd.addResourceAttribute("MEMORY_AVAILABLE", 1900);
 	        hd.addResourceAttribute("CPU_COUNT", 4);
 	        
 	        LinkedList<HardwareResource> resources= new LinkedList<HardwareResource>();
