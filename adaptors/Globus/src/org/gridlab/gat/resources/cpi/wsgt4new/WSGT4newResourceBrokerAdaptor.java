@@ -81,6 +81,10 @@ import org.ietf.jgss.GSSCredential;
  */
 public class WSGT4newResourceBrokerAdaptor extends ResourceBrokerCpi {
 
+	
+	private String indexPath="/wsrf/services/DefaultIndexService";
+	private XMLUtil xmlUtil= new XMLUtil();
+	
     public static Map<String, Boolean> getSupportedCapabilities() {
         Map<String, Boolean> capabilities = ResourceBrokerCpi
                 .getSupportedCapabilities();
@@ -462,13 +466,12 @@ public class WSGT4newResourceBrokerAdaptor extends ResourceBrokerCpi {
 	
 	 boolean allStatic=areAllStaticAttributes(s);
 	 LinkedList<HardwareResource> resourcesList=new LinkedList<HardwareResource>();
-	
-	 if(XMLUtil.getDocument()==null || !allStatic) {
+
+	 if(xmlUtil.getDocument()==null || !allStatic) {
 		
 		System.out.println("\n I'm querying the Index Service \n"); 
 		
-	    //String indexURI = "https://fs0.das3.cs.vu.nl:8443/wsrf/services/DefaultIndexService";
-		 String indexURI = this.brokerURI.toString();
+	     String indexURI = this.brokerURI.toString()+this.indexPath;
 		 System.out.println(indexURI);
 		 
 	    EndpointReferenceType indexEPR = new EndpointReferenceType();
@@ -541,17 +544,16 @@ public class WSGT4newResourceBrokerAdaptor extends ResourceBrokerCpi {
 					 * E' consigliabile che il nome dei parametri siano uguali ai
 					 * nomi dei campi Hedware e SoftwareResource
 					 * */
-					XMLUtil.createXMLDocument(hosts);
+					xmlUtil.createXMLDocument(hosts);
 					// qui con un istance of posso capire se creare una lista di soft o hard resources
 					Map description=s.getDescription();	
-					resourcesList=XMLUtil.matchResources(description);
+					resourcesList=xmlUtil.matchResources(description);
 					System.out.println("size: "+resourcesList.size());
 			
 					//String a=entries[i].getAttribute("ns1:UniqueID");
 							
 
 				} catch (Exception e) {
-					logger.error("Error when accessing index service entry.");
 					e.printStackTrace();
 				}}
 			}
@@ -561,7 +563,7 @@ public class WSGT4newResourceBrokerAdaptor extends ResourceBrokerCpi {
 	 else{	 
 		     System.out.println("\n I dont need to query the Index Service \n");
 		     Map description=s.getDescription();	
-			 resourcesList=XMLUtil.matchResources(description);
+			 resourcesList=xmlUtil.matchResources(description);
 	 }
 	 
 	 
@@ -572,6 +574,7 @@ public class WSGT4newResourceBrokerAdaptor extends ResourceBrokerCpi {
 private boolean areAllStaticAttributes(ResourceDescription s) {
 	 int numberofResources=s.getDescription().size();
 	 int count=0;
+	 //ricordarsi di aggiungere le altre
 	 if(s.getResourceAttribute("CPU_SPEED")!=null)count++;
 	 if(s.getResourceAttribute("CPU_COUNT")!=null)count++;
 	 if(s.getResourceAttribute("MEMORY_SIZE")!=null)count++;

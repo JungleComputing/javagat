@@ -4,6 +4,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.monitoring.Metric;
@@ -18,42 +19,9 @@ import org.jdom.Attribute;
 import org.jdom.Element;
 
 public class GlobusHardwareResource implements HardwareResource{
-
-	/*Ci devo mettere anche tutti gli i campi di HardwareResourceDescription??
-	 * 
-	 * */
-	
 	
 	private HardwareResourceDescription description= new HardwareResourceDescription(); 
 	
-	
-	/*private String CPU_CACHE_L1;
-	
-	private String CPU_CACHE_L1D;
-	
-	private String CPU_CACHE_L1I;
-	
-	private String CPU_CACHE_L2;
-	
-	private String AVAILABLE_MEMORY;
-	
-	private String VIRTUAL_MEMORY_SIZE;
-	
-	private String VIRTUAL_AVAILABLE__MEMORY_SIZE;
-	
-	private String FILE_SYSTEM_ROOT;
-	
-	private boolean FILE_SYSTEM_READ_ONLY;
-	
-	private String IP_ADDRESS;
-	
-	private boolean INBOUND_IP;
-	
-	private boolean OUTBOUND_IP;
-	*/
-	
-
-
 	public GlobusHardwareResource(Element host) {
 		List hostParameters=host.getChildren();
 		description.addResourceAttribute(host.getName(), host.getValue());
@@ -62,7 +30,6 @@ public class GlobusHardwareResource implements HardwareResource{
 		while(it3.hasNext()){
 		Attribute att3=it3.next();
 		description.addResourceAttribute(att3.getName(), att3.getValue());
-		//System.out.println(att3.getName()+" Value: "+att3.getValue());
 		Iterator<Element> it1=hostParameters.iterator();
 		while(it1.hasNext()){
 			Element parameter=it1.next();
@@ -92,7 +59,19 @@ public class GlobusHardwareResource implements HardwareResource{
 
 	public void addMetricListener(MetricListener metricListener, Metric metric) throws GATInvocationException {
 		// TODO Auto-generated method stub
-		
+	/*	this.listener = metricListener;
+		this.metric = metric;
+		// start a thread to monitor the metric
+		new Thread() {
+			public void run() {
+				while (true) {
+					sleep(interval);
+					updateInfo();
+					listener.processMetricEvent();
+				}
+			}
+		}
+		*/
 	}
 
 	public MetricEvent getMeasurement(Metric metric) throws GATInvocationException {
@@ -119,16 +98,52 @@ public class GlobusHardwareResource implements HardwareResource{
 		// TODO Auto-generated method stub
 		return null;
 	}
-	public String toString(){
+	public String toString(){// Attenzione: SMPSize e' il CPUCOUNT??
 		Map p=description.getDescription();
-		String hostName="HOST_NAME "+(String)p.get("HOST_NAME");
+	/*
+		Iterator it=p.keySet().iterator();
+		String output="";
+		while(it.hasNext()){
+			String s=(String) it.next();
+			Object o=p.get(s);
+			output+=s+"  "+o+" ";
+			
+		}
+		return output;
+	*/
+	    String hostName="HOST_NAME "+(String)p.get("NAME");
 		String cpuSpeed="CPU_SPEED "+(String)p.get("CPU_SPEED");
+		String cacheL1="CACHE_L1 "+(String)p.get("CACHE_L1");
+		String cacheL1D="CACHE_L1D "+(String)p.get("CACHE_L1D");
+		String cacheL1I="CACHE_L1I "+(String)p.get("CACHE_L1I");
+		String cacheL2="CACHE_L2 "+(String)p.get("CACHE_L2");
 		String cpuCount="CPU_COUNT "+(String)p.get("CPU_COUNT");
-		String memoryAvailable="MEMORY_AVAILABLE "+(String)p.get("MEMORY_AVAILABLE");
-		String availableDiskSize="AVAILABLE_DISK_SIZE "+(String)p.get("AVAILABLE_DISK_SIZE");
 		
-		return hostName+"\n"+cpuSpeed+"\n"+cpuCount+"\n"+memoryAvailable+"\n"+availableDiskSize+"\n";
+		String memorySize="MEMORY_SIZE "+(String)p.get("MEMORY_SIZE");
+		String memoryAvailable="MEMORY_AVAILABLE "+(String)p.get("MEMORY_AVAILABLE");
+		String virtualAvailable="VIRTUAL_AVAILABLE_MEMORY "+(String)p.get("VIRTUAL_AVAILABLE_MEMORY");
+		String virtualSize="VIRTUAL_MEMORY_SIZE "+(String)p.get("VIRTUAL_MEMORY_SIZE");
 				
+		String diskSize="DISK_SIZE "+(String)p.get("DISK_SIZE");
+		String availableDiskSize="AVAILABLE_DISK_SIZE "+(String)p.get("AVAILABLE_DISK_SIZE");
+		String readOnlyDisk="READ_ONLY_DISK "+(String)p.get("READ_ONLY_DISK");
+		String diskRoot="ROOT_DISK "+(String)p.get("DISK_ROOT");
+		
+		String ipAddress="IP_ADDRESS "+(String)p.get("IP_ADDRESS");
+		String inboundIP="INBOUND_IP "+(String)p.get("INBOUND_IP");
+		String outboundIP="OUTBOUND_IP "+(String)p.get("OUTBOUND_IP");
+		String MTU="MTU "+(String)p.get("MTU");
+		
+		String prLoad1="PROCESSOR_LOAD_LAST_1_MIN "+(String)p.get("PROCESSOR_LOAD_LAST_1_MIN");
+		String prLoad5="PROCESSOR_LOAD_LAST_5_MIN "+(String)p.get("PROCESSOR_LOAD_LAST_5_MIN");
+		String prLoad15="PROCESSOR_LOAD_LAST_15_MIN "+(String)p.get("PROCESSOR_LOAD_LAST_15_MIN");
+		
+		return hostName+"\n"+cpuSpeed+"\n"+cpuCount+"\n"+cacheL1+"\n"+cacheL1D+"\n"
+		+cacheL1I+"\n"+cacheL2+"\n"+memorySize+"\n"+memoryAvailable+"\n"+virtualAvailable+"\n"
+		+virtualSize+"\n"+diskSize+"\n"+availableDiskSize+"\n"+readOnlyDisk+"\n"
+		+diskRoot+"\n"+ipAddress+"\n"+inboundIP+"\n"+outboundIP+"\n"+MTU+"\n"+prLoad1
+		+"\n"+prLoad5+"\n"+prLoad15;
+		
 	}
 	
 
