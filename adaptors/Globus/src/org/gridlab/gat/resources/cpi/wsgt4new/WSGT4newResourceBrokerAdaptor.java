@@ -55,6 +55,8 @@ import org.gridlab.gat.Preferences;
 import org.gridlab.gat.URI;
 import org.gridlab.gat.io.File;
 import org.gridlab.gat.monitoring.Metric;
+import org.gridlab.gat.monitoring.MetricDefinition;
+import org.gridlab.gat.monitoring.MetricEvent;
 import org.gridlab.gat.monitoring.MetricListener;
 import org.gridlab.gat.resources.AbstractJobDescription;
 import org.gridlab.gat.resources.HardwareResource;
@@ -84,6 +86,7 @@ public class WSGT4newResourceBrokerAdaptor extends ResourceBrokerCpi {
 	
 	private String indexPath="/wsrf/services/DefaultIndexService";
 	private XMLUtil xmlUtil= new XMLUtil();
+	private LinkedList<HardwareResource> resourcesList;
 	
     public static Map<String, Boolean> getSupportedCapabilities() {
         Map<String, Boolean> capabilities = ResourceBrokerCpi
@@ -465,7 +468,7 @@ public class WSGT4newResourceBrokerAdaptor extends ResourceBrokerCpi {
 	 */
 	
 	 boolean allStatic=areAllStaticAttributes(s);
-	 LinkedList<HardwareResource> resourcesList=new LinkedList<HardwareResource>();
+	 resourcesList=new LinkedList<HardwareResource>();
 
 	 if(xmlUtil.getDocument()==null || !allStatic) {
 		
@@ -537,13 +540,7 @@ public class WSGT4newResourceBrokerAdaptor extends ResourceBrokerCpi {
 				try {
 					Element root=entries[i].getAsDOM();
 					NodeList hosts=root.getChildNodes();
-									
-					/*Qui invoco un metodo createXMLFile che mi crea il file
-					 * con la struttura che decido io. Successivamente vado a 
-					 * leggerlo per vedere se c'e matching con i parametri ricevuti.
-					 * E' consigliabile che il nome dei parametri siano uguali ai
-					 * nomi dei campi Hedware e SoftwareResource
-					 * */
+							
 					xmlUtil.createXMLDocument(hosts);
 					// qui con un istance of posso capire se creare una lista di soft o hard resources
 					Map description=s.getDescription();	
@@ -566,8 +563,7 @@ public class WSGT4newResourceBrokerAdaptor extends ResourceBrokerCpi {
 			 resourcesList=xmlUtil.matchResources(description);
 	 }
 	 
-	 
-	 
+		 
 		return resourcesList;
 }
 
@@ -581,5 +577,7 @@ private boolean areAllStaticAttributes(ResourceDescription s) {
 	 if(s.getResourceAttribute("DISK_SIZE")!=null)count++;
 	 if (count==numberofResources) return true;
 	 return false;
-	 
-}}
+	}
+
+
+}

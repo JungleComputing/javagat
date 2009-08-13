@@ -32,13 +32,9 @@ public class XMLUtil {
 
 	private Element PrLoad;
 
-	public XMLUtil() {
-		rootElement = new Element("ROOT");
-		
-	}
 
 	public void createXMLDocument(org.w3c.dom.NodeList hostsList) {
-		
+		rootElement = new Element("ROOT");
 		document = new Document(rootElement);
 	
 		for (int i = 0; i < hostsList.getLength(); i++) {

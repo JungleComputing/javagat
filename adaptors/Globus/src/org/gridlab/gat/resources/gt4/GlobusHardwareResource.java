@@ -15,12 +15,17 @@ import org.gridlab.gat.resources.HardwareResource;
 import org.gridlab.gat.resources.HardwareResourceDescription;
 import org.gridlab.gat.resources.Reservation;
 import org.gridlab.gat.resources.ResourceDescription;
+import org.gridlab.gat.resources.cpi.wsgt4new.NotifierThread;
 import org.jdom.Attribute;
 import org.jdom.Element;
 
 public class GlobusHardwareResource implements HardwareResource{
 	
 	private HardwareResourceDescription description= new HardwareResourceDescription(); 
+	
+	//private MetricListener metricListener=null;
+	//private Metric metric=null;
+	private List<MetricDefinition> listMetricDefinition=null;
 	
 	public GlobusHardwareResource(Element host) {
 		List hostParameters=host.getChildren();
@@ -51,13 +56,13 @@ public class GlobusHardwareResource implements HardwareResource{
 		// TODO Auto-generated method stub
 		return null;
 	}
-//capire bene cosa fa questo metodo
+
 	public ResourceDescription getResourceDescription() {
-		// TODO Auto-generated method stub
-		return description;
+		
+		return this.description;
 	}
 
-	public void addMetricListener(MetricListener metricListener, Metric metric) throws GATInvocationException {
+	public void addMetricListener( MetricListener metricListener,  Metric metric) throws GATInvocationException {
 		// TODO Auto-generated method stub
 	/*	this.listener = metricListener;
 		this.metric = metric;
@@ -72,21 +77,33 @@ public class GlobusHardwareResource implements HardwareResource{
 			}
 		}
 		*/
+		//this.metricListener = metricListener;
+		//this.metric = metric;
+		NotifierThread notifier=new NotifierThread(this,metricListener,metric);
+	    notifier.start();
+	    		
 	}
 
+
+	
+	
+	
 	public MetricEvent getMeasurement(Metric metric) throws GATInvocationException {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	public MetricDefinition getMetricDefinitionByName(String name) throws GATInvocationException {
-		// TODO Auto-generated method stub
+		for(int i=0;i<this.listMetricDefinition.size();i++){
+			if(this.listMetricDefinition.get(i).getMetricName().equals(name))
+				return listMetricDefinition.get(i);
+		}
 		return null;
 	}
 
 	public List<MetricDefinition> getMetricDefinitions() throws GATInvocationException {
-		// TODO Auto-generated method stub
-		return null;
+		 
+		return this.listMetricDefinition;
 	}
 
 	public void removeMetricListener(MetricListener metricListener, Metric metric) throws GATInvocationException {
@@ -142,7 +159,7 @@ public class GlobusHardwareResource implements HardwareResource{
 		+cacheL1I+"\n"+cacheL2+"\n"+memorySize+"\n"+memoryAvailable+"\n"+virtualAvailable+"\n"
 		+virtualSize+"\n"+diskSize+"\n"+availableDiskSize+"\n"+readOnlyDisk+"\n"
 		+diskRoot+"\n"+ipAddress+"\n"+inboundIP+"\n"+outboundIP+"\n"+MTU+"\n"+prLoad1
-		+"\n"+prLoad5+"\n"+prLoad15;
+		+"\n"+prLoad5+"\n"+prLoad15+"\n";
 		
 	}
 	
