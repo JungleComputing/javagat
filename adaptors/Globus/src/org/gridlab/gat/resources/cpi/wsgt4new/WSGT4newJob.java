@@ -1,19 +1,33 @@
 package org.gridlab.gat.resources.cpi.wsgt4new;
 
+import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.globus.common.ResourceManagerContact;
 import org.globus.exec.client.GramJob;
 import org.globus.exec.client.GramJobListener;
 import org.globus.exec.generated.StateEnumeration;
+import org.globus.wsrf.impl.security.authentication.Constants;
+import org.globus.wsrf.impl.security.authorization.HostAuthorization;
+import org.gridlab.gat.CouldNotInitializeCredentialException;
+import org.gridlab.gat.CredentialExpiredException;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
+import org.gridlab.gat.GATObjectCreationException;
+import org.gridlab.gat.InvalidUsernameOrPasswordException;
+import org.gridlab.gat.URI;
+import org.gridlab.gat.advert.Advertisable;
+import org.gridlab.gat.engine.GATEngine;
 import org.gridlab.gat.monitoring.Metric;
 import org.gridlab.gat.monitoring.MetricDefinition;
 import org.gridlab.gat.monitoring.MetricEvent;
 import org.gridlab.gat.resources.JobDescription;
 import org.gridlab.gat.resources.cpi.JobCpi;
 import org.gridlab.gat.resources.cpi.Sandbox;
+import org.gridlab.gat.resources.cpi.SerializedJob;
+import org.gridlab.gat.security.globus.GlobusSecurityUtils;
+import org.ietf.jgss.GSSCredential;
 
 /**
  * Implements JobCpi abstract class.
@@ -56,6 +70,97 @@ public class WSGT4newJob extends JobCpi implements GramJobListener, Runnable {
                 + jobDescription.getSoftwareDescription().getExecutable());
         poller.start();
     }
+    
+    /**
+     * constructor for unmarshalled jobs
+     */
+    public WSGT4newJob(GATContext gatContext, SerializedJob sj)
+            throws GATObjectCreationException {
+        super(gatContext, sj.getJobDescription(), sj.getSandbox());
+
+        if (System.getProperty("GLOBUS_LOCATION") == null) {
+            String globusLocation = System.getProperty("gat.adaptor.path")
+                    + java.io.File.separator + "GlobusAdaptor"
+                    + java.io.File.separator;
+            System.setProperty("GLOBUS_LOCATION", globusLocation);
+        }
+
+        if (System.getProperty("axis.ClientConfigFile") == null) {
+            String axisClientConfigFile = System
+                    .getProperty("gat.adaptor.path")
+                    + java.io.File.separator
+                    + "GlobusAdaptor"
+                    + java.io.File.separator + "client-config.wsdd";
+            System.setProperty("axis.ClientConfigFile", axisClientConfigFile);
+        }
+        
+        if (logger.isDebugEnabled()) {
+            logger.debug("reconstructing globusjob: " + sj);
+        }
+
+        this.submissionID = sj.getJobId();
+        this.starttime = sj.getStarttime();
+        this.stoptime = sj.getStoptime();
+        this.submissiontime = sj.getSubmissiontime();
+
+        // Tell the engine that we provide job.status events
+        HashMap<String, Object> returnDef = new HashMap<String, Object>();
+        returnDef.put("status", JobState.class);
+        statusMetricDefinition = new MetricDefinition("job.status",
+                MetricDefinition.DISCRETE, "String", null, null, returnDef);
+        registerMetric("getJobStatus", statusMetricDefinition);
+        statusMetric = statusMetricDefinition.createMetric(null);
+
+        job = new GramJob();
+
+        try {
+            job.setHandle("");
+        } catch (Exception e) {
+            throw new GATObjectCreationException("globus job", e);
+        }
+
+        URI hostUri;
+        try {
+            URL u = new URL(submissionID);
+            hostUri = new URI(u.getHost());
+        } catch (Exception e) {
+            throw new GATObjectCreationException("globus job", e);
+        }
+
+        GSSCredential credential = null;
+        try {
+            credential = GlobusSecurityUtils.getGlobusCredential(gatContext,
+                "ws-gram", hostUri, ResourceManagerContact.DEFAULT_PORT);
+        } catch (CouldNotInitializeCredentialException e) {
+            throw new GATObjectCreationException("globus", e);
+        } catch (CredentialExpiredException e) {
+            throw new GATObjectCreationException("globus", e);
+        } catch (InvalidUsernameOrPasswordException e) {
+            throw new GATObjectCreationException("globus", e);
+        }
+        if (credential != null) {
+            job.setCredentials(credential);
+        } else {
+            job.setAuthorization(HostAuthorization.getInstance());
+        }
+        
+        job.setMessageProtectionType(Constants.ENCRYPTION);
+        job.setDelegationEnabled(true);
+
+        job.addListener(this);
+        try {
+            job.refreshStatus();
+        } catch(Throwable e) {
+            logger.debug("refreshStatus gave exception: ", e);
+        }
+        StateEnumeration newState = job.getState();
+        logger.debug("jobState: " + newState);
+        doStateChange(newState);
+        poller = new Thread(this);
+        poller.setDaemon(true);
+        poller.start();
+    }
+
 
     protected synchronized void setState(JobState state) {
         if (this.state != state) {
@@ -232,6 +337,62 @@ public class WSGT4newJob extends JobCpi implements GramJobListener, Runnable {
                 && state != JobState.PRE_STAGING) {
             setState(JobState.INITIAL);
         }
+    }
+
+    /*
+     * @see org.gridlab.gat.advert.Advertisable#marshal()
+     */
+    public String marshal() {
+        SerializedJob sj;
+        synchronized (this) {
+
+            // we have to wait until the job is in a safe state
+            // we cannot marshal it if it is halfway during the poststage
+            // process
+            while (submissionID == null) {
+                try {
+                    wait();
+                } catch (Exception e) {
+                    // ignore
+                }
+            }
+
+            sj = new SerializedJob(jobDescription, sandbox, submissionID,
+                    submissiontime, starttime, stoptime);
+        }
+        String res = GATEngine.defaultMarshal(sj);
+        if (logger.isDebugEnabled()) {
+            logger.debug("marshalled seralized job: " + res);
+        }
+        return res;
+    }
+
+    public static Advertisable unmarshal(GATContext context, String s)
+            throws GATObjectCreationException {
+        if (logger.isDebugEnabled()) {
+            logger.debug("unmarshalled seralized job: " + s);
+        }
+
+        SerializedJob sj = (SerializedJob) GATEngine.defaultUnmarshal(
+            SerializedJob.class, s);
+
+        // if this job was created within this JVM, just return a reference to
+        // the job
+        synchronized (JobCpi.class) {
+            for (int i = 0; i < jobList.size(); i++) {
+                JobCpi j = (JobCpi) jobList.get(i);
+                if (j instanceof WSGT4newJob) {
+                    WSGT4newJob gj = (WSGT4newJob) j;
+                    if (sj.getJobId().equals(gj.submissionID)) {
+                        if (logger.isDebugEnabled()) {
+                            logger.debug("returning existing job: " + gj);
+                        }
+                        return gj;
+                    }
+                }
+            }
+        }
+        return new WSGT4newJob(context, sj);
     }
 
     protected void setGramJob(GramJob job) {

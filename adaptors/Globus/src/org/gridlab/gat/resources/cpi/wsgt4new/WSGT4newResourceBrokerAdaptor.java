@@ -27,6 +27,7 @@ import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.GATObjectCreationException;
 import org.gridlab.gat.Preferences;
 import org.gridlab.gat.URI;
+import org.gridlab.gat.engine.GATEngine;
 import org.gridlab.gat.io.File;
 import org.gridlab.gat.monitoring.Metric;
 import org.gridlab.gat.monitoring.MetricListener;
@@ -70,6 +71,10 @@ public class WSGT4newResourceBrokerAdaptor extends ResourceBrokerCpi {
     protected static Logger logger = LoggerFactory
             .getLogger(WSGT4newResourceBrokerAdaptor.class);
 
+    public static void init() {
+        GATEngine.registerUnmarshaller(WSGT4newJob.class);
+    }
+    
     protected GSSCredential getCred() throws GATInvocationException {
         GSSCredential cred = null;
         URI location = null;
@@ -335,6 +340,8 @@ public class WSGT4newResourceBrokerAdaptor extends ResourceBrokerCpi {
         } catch (RSLParseException e) {
             throw new GATInvocationException("WSGT4newResourceBrokerAdaptor", e);
         }
+        
+        System.out.println("GramJob.handle = " + gramjob.getHandle());
 
         // inform the wsgt4 job of which gram job is related to it.
         wsgt4job.setGramJob(gramjob);
