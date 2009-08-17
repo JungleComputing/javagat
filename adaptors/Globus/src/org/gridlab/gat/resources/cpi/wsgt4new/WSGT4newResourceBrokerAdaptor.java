@@ -400,7 +400,7 @@ public class WSGT4newResourceBrokerAdaptor extends ResourceBrokerCpi {
         String handle = gramjob.getHandle();
         try {
             String handleHost = new URI(handle).getHost();
-            handle.replace(handleHost, host);
+            handle = handle.replace(handleHost, host);
         } catch (URISyntaxException e) {
             // ignored
         }
