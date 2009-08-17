@@ -1,6 +1,7 @@
 package org.gridlab.gat.resources.cpi.wsgt4new;
 
 import java.net.MalformedURLException;
+import java.net.URISyntaxException;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
@@ -340,8 +341,6 @@ public class WSGT4newResourceBrokerAdaptor extends ResourceBrokerCpi {
         } catch (RSLParseException e) {
             throw new GATInvocationException("WSGT4newResourceBrokerAdaptor", e);
         }
-        
-        System.out.println("GramJob.handle = " + gramjob.getHandle());
 
         // inform the wsgt4 job of which gram job is related to it.
         wsgt4job.setGramJob(gramjob);
@@ -390,13 +389,24 @@ public class WSGT4newResourceBrokerAdaptor extends ResourceBrokerCpi {
         if (logger.isDebugEnabled()) {
             logger.debug("submission id for job: " + submissionID);
         }
-        wsgt4job.setSubmissionID(submissionID);
+
         try {
             gramjob.submit(endpoint, false, false, submissionID);
             wsgt4job.submitted();
         } catch (Exception e) {
             throw new GATInvocationException("WSGT4newResourceBrokerAdaptor", e);
         }
+        
+        String handle = gramjob.getHandle();
+        try {
+            String handleHost = new URI(handle).getHost();
+            handle.replace(handleHost, host);
+        } catch (URISyntaxException e) {
+            // ignored
+        }
+        
+        wsgt4job.setSubmissionID(handle);
+        System.out.println("Handle = " + handle);
 
         // second parameter is batch, should be set to false.
         // third parameter is limitedDelegation, currently hardcoded to false

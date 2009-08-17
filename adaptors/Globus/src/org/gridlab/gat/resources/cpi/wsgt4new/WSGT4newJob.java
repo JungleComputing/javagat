@@ -114,7 +114,7 @@ public class WSGT4newJob extends JobCpi implements GramJobListener, Runnable {
         job = new GramJob();
 
         try {
-            job.setHandle("");
+            job.setHandle(submissionID);
         } catch (Exception e) {
             throw new GATObjectCreationException("globus job", e);
         }
