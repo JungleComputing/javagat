@@ -163,6 +163,19 @@ public class WSGT4newJob extends JobCpi implements GramJobListener, Runnable {
 
 
     protected synchronized void setState(JobState state) {
+        if (submissiontime == 0L) {
+            setSubmissionTime();
+        }
+        if (state.equals(JobState.RUNNING)) {
+            if (starttime == 0L) {
+                setStartTime();
+            }
+        }
+        else if (state.equals(JobState.STOPPED)) {
+            if (stoptime == 0L) {
+                setStopTime();
+            }
+        }
         if (this.state != state) {
             this.state = state;
             MetricEvent v = new MetricEvent(this, state, statusMetric, System
