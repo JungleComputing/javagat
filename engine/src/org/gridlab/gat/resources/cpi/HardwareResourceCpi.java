@@ -12,8 +12,8 @@ import org.gridlab.gat.resources.HardwareResource;
  * @author rob
  */
 public abstract class HardwareResourceCpi extends MonitorableCpi implements HardwareResource {
-    protected GATContext gatContext;
-    protected HardwareResourceCpi(GATContext gatContext) {
-        this.gatContext = gatContext;
+   protected GATContext gatContext;
+   protected HardwareResourceCpi(GATContext gatContext) {
+       this.gatContext = gatContext;
     }
 }

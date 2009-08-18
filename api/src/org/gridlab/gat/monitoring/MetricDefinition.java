@@ -175,10 +175,11 @@ public class MetricDefinition implements Serializable {
         }
 
         MetricDefinition other = (MetricDefinition) o;
-
+               
         return metricName.equals(other.metricName)
                 && (measurementType == other.measurementType)
-                && dataType.equals(other.dataType) && unit.equals(other.unit);
+                //&& dataType.equals(other.dataType) I commented this line coz dataType is null 
+                && unit.equals(other.unit);
     }
 
     /**

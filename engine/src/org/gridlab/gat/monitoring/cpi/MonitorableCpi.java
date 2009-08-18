@@ -57,7 +57,6 @@ public abstract class MonitorableCpi implements Monitorable {
 
         for (int i = 0; i < metricTable.size(); i++) {
             MetricNode n = metricTable.get(i);
-
             if (n.definition.equals(metric.getDefinition())) {
                 found = true;
 

@@ -34,36 +34,52 @@ public class ReadIndexService {
 		ResourceBroker broker = GAT.createResourceBroker(preferences, new URI(
 				args[0]));
 		HardwareResourceDescription hd = new HardwareResourceDescription();
-		hd.addResourceAttribute("CPU_SPEED", 2300);
+		//hd.addResourceAttribute("CPU_SPEED", 2300);
 		hd.addResourceAttribute("AVAILABLE_DISK_SIZE", 216000);
 		// hd.addResourceAttribute("MEMORY_AVAILABLE", 1900);
-		hd.addResourceAttribute("CPU_COUNT", 4);
+	//	hd.addResourceAttribute("CPU_COUNT", 4);
 
 		List<HardwareResource> resources = broker.findResources(hd);
 		for (int i = 0; i < resources.size(); i++)
 			System.out.println(resources.get(i));
 		resources = broker.findResources(hd);
-	//	for (int i = 0; i < resources.size(); i++)
-	//		System.out.println(resources.get(i));
-		
-		Map p= new HashMap();    
-	    p.put("MEMORY_AVAILABLE", 8000000);
-	    MetricDefinition metricDefinition= 
-	    	         new MetricDefinition("host.memory",2,"MB",null,null,null);
-		Metric metric=metricDefinition.createMetric(p);
-		for(int i=0; i<resources.size();i++){
+		// for (int i = 0; i < resources.size(); i++)
+		// System.out.println(resources.get(i));
+
+		// Map p = new HashMap();
+		// p.put("MEMORY_AVAILABLE", 8000000);
+		// MetricDefinition metricDefinition = new
+		// MetricDefinition("host.memory",
+		// 2, "MB", null, null, null);
+		// Metric metric = metricDefinition.createMetric(p);
+		for (int i = 0; i < resources.size(); i++) {
+			Map<String, Object> p = new HashMap<String, Object>();
+			p.put("minimum", 500);
+			Metric metric = resources.get(i).getMetricDefinitionByName(
+					"disk.size.available").createMetric(p, 15000);
+
 			try {
-				resources.get(i).addMetricListener(new MetricListener(){
-					public void processMetricEvent(MetricEvent e){
-				System.out.println("\n"+e.getValue()+"\n"+e.getSource()+" "
-						+e.getMetric()+"\n"+"MEM AVAILABLE  "+e.getMetric().getMetricParameterByName("MEMORY_AVAILABLE"))		
-					  ;
+				resources.get(i).addMetricListener(new MetricListener() {
+					public void processMetricEvent(MetricEvent e) {
+						System.out.println("\n -----------------------"
+								//+ e.getValue()
+								//+ "\n"
+								+ e.getSource()
+							
+//								+ e.getMetric()
+//								+ "\n"
+//								+ "MEM AVAILABLE  "
+//								+ e.getMetric().getMetricParameterByName(
+//										"MEMORY_AVAILABLE")
+								);
+						// the new event has to update the old
+						// Globushardwareresource?
 					}
 				}, metric);
 			} catch (GATInvocationException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-	}System.out.println("Metric listeners added");
+		}
 		}
 }

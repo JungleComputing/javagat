@@ -4,8 +4,10 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import org.gridlab.gat.resources.gt4.GlobusHardwareResource;
+
 import org.gridlab.gat.resources.HardwareResource;
+import org.gridlab.gat.resources.ResourceBroker;
+import org.gridlab.gat.resources.gt4.GlobusHardwareResource;
 import org.jdom.Attribute;
 import org.jdom.Document;
 import org.jdom.Element;
@@ -160,7 +162,7 @@ public class XMLUtil {
 			 */
 	}
 
-	public LinkedList<HardwareResource> matchResources(Map description) {
+	public LinkedList<HardwareResource> matchResources(Map description, ResourceBroker broker) {
 
 		LinkedList<HardwareResource> matchedResources = new LinkedList();
 		int number_of_resources = description.size();
@@ -205,7 +207,7 @@ public class XMLUtil {
 				}
 			}
 			if (count == number_of_resources) {
-				GlobusHardwareResource hd = new GlobusHardwareResource(host);
+				GlobusHardwareResource hd = new GlobusHardwareResource(host, broker);
 				// Aggiungi tutti i dati dell host
 				matchedResources.add(hd);
 			}

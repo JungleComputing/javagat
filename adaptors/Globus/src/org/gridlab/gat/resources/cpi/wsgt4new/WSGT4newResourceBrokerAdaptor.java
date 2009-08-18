@@ -469,82 +469,24 @@ public class WSGT4newResourceBrokerAdaptor extends ResourceBrokerCpi {
 	
 	 boolean allStatic=areAllStaticAttributes(s);
 	 resourcesList=new LinkedList<HardwareResource>();
-
+	 
+	
 	 if(xmlUtil.getDocument()==null || !allStatic) {
 		
-		System.out.println("\n I'm querying the Index Service \n"); 
-		
-	     String indexURI = this.brokerURI.toString()+this.indexPath;
-		 System.out.println(indexURI);
-		 
-	    EndpointReferenceType indexEPR = new EndpointReferenceType();
-		try {
-			indexEPR.setAddress(new Address(indexURI));
-		} catch (Exception e) {			
-				e.printStackTrace();
-			}
-		System.setProperty("javax.net.ssl.trustStore","/home/gni200/cacerts"); 
-		System.setProperty("javax.net.ssl.trustStorePassword","changeit");
-		// Get QueryResourceProperties portType
-		WSResourcePropertiesServiceAddressingLocator queryLocator;
-		queryLocator = new WSResourcePropertiesServiceAddressingLocator();
-		QueryResourceProperties_PortType query = null;
-		try {
-			query = queryLocator.getQueryResourcePropertiesPort(indexEPR);
-		} catch (ServiceException e) {
-			logger.error("ERROR: Unable to obtain query portType.");
-			try {
-				throw new RemoteException(
-						"ERROR: Unable to obtain query portType.", e);
-			} catch (RemoteException e1) {
-				// TODO Auto-generated catch block
-				e1.printStackTrace();
-			}
-		}
-	   // Setup security options
-		((Stub) query)._setProperty(Constants.GSI_TRANSPORT,
-				Constants.SIGNATURE);
-		((Stub) query)._setProperty(Constants.AUTHORIZATION, NoAuthorization
-				.getInstance());
-
-	
-	    String xpathQuery = "/*/*/*/*/*/*/*[local-name()='SubCluster']";
-		//String xpathQuery = "/*/*/*/*/*[local-name()='GLUECE'][1]/*[local-name()='Cluster'][1]";
-		// Create request to QueryResourceProperties
-		QueryExpressionType queryExpr = new QueryExpressionType();
-		try {
-			queryExpr.setDialect(new org.apache.axis.types.URI(WSRFConstants.XPATH_1_DIALECT));
-			//queryExpr.setDialect(dialect);
-		} catch (Exception e) {			
-				e.printStackTrace();
-			}
-		
-		queryExpr.setValue(xpathQuery);
-		QueryResourceProperties_Element queryRequest = new QueryResourceProperties_Element(
-				queryExpr);
-		// Invoke QueryResourceProperties
-		QueryResourcePropertiesResponse queryResponse = null;
-		try {
-			queryResponse = query.queryResourceProperties(queryRequest);
-			} catch (RemoteException e) {
-							e.printStackTrace();
-			}
-		
-		// The response includes 0 or more entries from the index service.
-		MessageElement[] entries = queryResponse.get_any();
-		
+		MessageElement[] entries = queryDefaultIndexService();
+				
 		if (entries == null || entries.length == 0) {
 			System.out.println("Lunghezza 0 e mo so cazzi");
 		} else {
-			for (int i = 0; i <1; i++) {
+		//	for (int i = 0; i <1; i++) {
 				try {
-					Element root=entries[i].getAsDOM();
+					Element root=entries[0].getAsDOM();
 					NodeList hosts=root.getChildNodes();
 							
 					xmlUtil.createXMLDocument(hosts);
 					// qui con un istance of posso capire se creare una lista di soft o hard resources
 					Map description=s.getDescription();	
-					resourcesList=xmlUtil.matchResources(description);
+					resourcesList=xmlUtil.matchResources(description, this);
 					System.out.println("size: "+resourcesList.size());
 			
 					//String a=entries[i].getAttribute("ns1:UniqueID");
@@ -552,7 +494,8 @@ public class WSGT4newResourceBrokerAdaptor extends ResourceBrokerCpi {
 
 				} catch (Exception e) {
 					e.printStackTrace();
-				}}
+				}
+				//}
 			}
 		
 		
@@ -560,11 +503,80 @@ public class WSGT4newResourceBrokerAdaptor extends ResourceBrokerCpi {
 	 else{	 
 		     System.out.println("\n I dont need to query the Index Service \n");
 		     Map description=s.getDescription();	
-			 resourcesList=xmlUtil.matchResources(description);
+			 resourcesList=xmlUtil.matchResources(description, this);
 	 }
 	 
 		 
 		return resourcesList;
+}
+
+ 
+ 
+ 
+ 
+public MessageElement[] queryDefaultIndexService() {
+	System.out.println("\n I'm querying the Index Service \n"); 
+	String indexURI = this.brokerURI.toString()+this.indexPath;
+	 System.out.println(indexURI);
+	
+   EndpointReferenceType indexEPR = new EndpointReferenceType();
+	try {
+		indexEPR.setAddress(new Address(indexURI));
+	} catch (Exception e) {			
+			e.printStackTrace();
+		}
+	System.setProperty("javax.net.ssl.trustStore","/home/gni200/cacerts"); 
+	System.setProperty("javax.net.ssl.trustStorePassword","changeit");
+	// Get QueryResourceProperties portType
+	WSResourcePropertiesServiceAddressingLocator queryLocator;
+	queryLocator = new WSResourcePropertiesServiceAddressingLocator();
+	QueryResourceProperties_PortType query = null;
+	try {
+		query = queryLocator.getQueryResourcePropertiesPort(indexEPR);
+	} catch (ServiceException e) {
+		logger.error("ERROR: Unable to obtain query portType.");
+		try {
+			throw new RemoteException(
+					"ERROR: Unable to obtain query portType.", e);
+		} catch (RemoteException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+	}
+  // Setup security options
+	((Stub) query)._setProperty(Constants.GSI_TRANSPORT,
+			Constants.SIGNATURE);
+	((Stub) query)._setProperty(Constants.AUTHORIZATION, NoAuthorization
+			.getInstance());
+
+
+   String xpathQuery = "/*/*/*/*/*/*/*[local-name()='SubCluster']";
+	//String xpathQuery = "/*/*/*/*/*[local-name()='GLUECE'][1]/*[local-name()='Cluster'][1]";
+	// Create request to QueryResourceProperties
+	QueryExpressionType queryExpr = new QueryExpressionType();
+	try {
+		queryExpr.setDialect(new org.apache.axis.types.URI(WSRFConstants.XPATH_1_DIALECT));
+		//queryExpr.setDialect(dialect);
+	} catch (Exception e) {			
+			e.printStackTrace();
+		}
+	
+	queryExpr.setValue(xpathQuery);
+	QueryResourceProperties_Element queryRequest = new QueryResourceProperties_Element(
+			queryExpr);
+	// Invoke QueryResourceProperties
+	QueryResourcePropertiesResponse queryResponse = null;
+	try {
+		queryResponse = query.queryResourceProperties(queryRequest);
+		} catch (RemoteException e) {
+						e.printStackTrace();
+		}
+	
+	// The response includes 0 or more entries from the index service.
+	MessageElement[] entries = queryResponse.get_any();
+	
+	return entries;
+	
 }
 
 private boolean areAllStaticAttributes(ResourceDescription s) {
