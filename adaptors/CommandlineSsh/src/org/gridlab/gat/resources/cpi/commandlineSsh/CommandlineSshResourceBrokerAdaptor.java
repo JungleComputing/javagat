@@ -259,6 +259,8 @@ public class CommandlineSshResourceBrokerAdaptor extends ResourceBrokerCpi {
             command.add("BatchMode=yes");
             command.add("-o");
             command.add("StrictHostKeyChecking=" + (strictHostKeyChecking ? "yes" : "no"));
+            // Forcing pseudo tty requires more than one -t option ... --Ceriel
+            command.add("-t");
             command.add("-t");
             command.add(username + "@" + host);
             if (sandbox.getSandboxPath() != null) {

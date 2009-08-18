@@ -181,11 +181,14 @@ public class CommandlineSshJob extends JobCpi {
                 || state == JobState.SUBMISSION_ERROR) {
             return;
         }
+                     
+        p.destroy();
+        
         if (!skipPostStage) {
             setState(JobState.POST_STAGING);
             sandbox.retrieveAndCleanup(this);
         }
-        p.destroy();
+
         setState(JobState.STOPPED);
         finished();
     }
