@@ -69,6 +69,7 @@ import org.gridlab.gat.resources.cpi.ResourceBrokerCpi;
 import org.gridlab.gat.resources.cpi.Sandbox;
 import org.gridlab.gat.resources.cpi.WrapperJobCpi;
 import org.gridlab.gat.resources.cpi.wsgt4new.WSGT4newJob;
+import org.gridlab.gat.resources.gt4.GlobusHardwareResource;
 import org.gridlab.gat.resources.utils.XMLUtil;
 import org.gridlab.gat.security.globus.GlobusSecurityUtils;
 import org.ietf.jgss.GSSCredential;
@@ -87,6 +88,8 @@ public class WSGT4newResourceBrokerAdaptor extends ResourceBrokerCpi {
 	private String indexPath="/wsrf/services/DefaultIndexService";
 	private XMLUtil xmlUtil= new XMLUtil();
 	private LinkedList<HardwareResource> resourcesList;
+	private QueryingThread queryingThread;
+
 	
     public static Map<String, Boolean> getSupportedCapabilities() {
         Map<String, Boolean> capabilities = ResourceBrokerCpi
@@ -94,7 +97,7 @@ public class WSGT4newResourceBrokerAdaptor extends ResourceBrokerCpi {
         capabilities.put("beginMultiJob", true);
         capabilities.put("endMultiJob", true);
         capabilities.put("submitJob", true);
-
+        
         return capabilities;
     }
 
@@ -510,14 +513,16 @@ public class WSGT4newResourceBrokerAdaptor extends ResourceBrokerCpi {
 		return resourcesList;
 }
 
- 
+ public void updateXMLDocument (NodeList hosts){
+	 xmlUtil.createXMLDocument(hosts);
+ }
  
  
  
 public MessageElement[] queryDefaultIndexService() {
-	System.out.println("\n I'm querying the Index Service \n"); 
+	
 	String indexURI = this.brokerURI.toString()+this.indexPath;
-	 System.out.println(indexURI);
+	System.out.println("\n I'm querying the Index Service "+indexURI+"\n");
 	
    EndpointReferenceType indexEPR = new EndpointReferenceType();
 	try {
@@ -525,7 +530,12 @@ public MessageElement[] queryDefaultIndexService() {
 	} catch (Exception e) {			
 			e.printStackTrace();
 		}
-	System.setProperty("javax.net.ssl.trustStore","/home/gni200/cacerts"); 
+	
+    String sslTrustStore = System.getProperty("gat.adaptor.path")
+    + java.io.File.separator + "GlobusAdaptor"
+    + java.io.File.separator + "cacerts";
+	
+	System.setProperty("javax.net.ssl.trustStore",sslTrustStore); 
 	System.setProperty("javax.net.ssl.trustStorePassword","changeit");
 	// Get QueryResourceProperties portType
 	WSResourcePropertiesServiceAddressingLocator queryLocator;
@@ -591,5 +601,37 @@ private boolean areAllStaticAttributes(ResourceDescription s) {
 	 return false;
 	}
 
+public HardwareResource findResourceByName(String hostname) {
 
+	HardwareResource resource=null;
+	//retrive the resource passed like parameter				
+	resource=xmlUtil.getResourceByName(hostname, this);
+	return resource;
+	
+}
+ 
+	public boolean queryingThreadIsCreated(){
+	if(queryingThread==null)return false;
+	return true;
+	
+}
+
+	public void startQueryingThread() {
+	queryingThread= new QueryingThread(this);
+	queryingThread.start();
+	
+	}
+	public void stopQueryingThread() {
+	queryingThread= new QueryingThread(this);
+	queryingThread.stop();
+	}
+	
+	public void addListenerToQueryingThread() {
+		queryingThread.addListener();
+	}
+	public void removeListenerToQueryingThread() {
+		queryingThread.removeListener();
+		if(queryingThread.getNumberOfListeners()==0)
+			stopQueryingThread();
+	}
 }

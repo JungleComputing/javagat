@@ -15,6 +15,7 @@ import org.gridlab.gat.resources.ResourceBroker;
 import org.gridlab.gat.resources.ResourceDescription;
 import org.gridlab.gat.resources.cpi.HardwareResourceCpi;
 import org.gridlab.gat.resources.cpi.wsgt4new.NotifierThread;
+import org.gridlab.gat.resources.cpi.wsgt4new.WSGT4newResourceBrokerAdaptor;
 import org.jdom.Attribute;
 import org.jdom.Element;
 
@@ -28,29 +29,35 @@ public class GlobusHardwareResource extends HardwareResourceCpi {
 	private MetricDefinition diskSizeDefinition;
 
 	private MetricDefinition diskSizeAvailableDefinition;
-
+	
+	private MetricDefinition memorySizeAvailableDefinition;
+	
+	private MetricDefinition memoryVirtualSizeAvailableDefinition;
+	
+	private MetricDefinition cpuSpeedDefinition;
+	
+	private MetricDefinition cpuCountDefinition;
+	
+	private MetricDefinition cpuCacheL1Definition;
+	
+	private MetricDefinition cpuCacheL1DDefinition;
+	
+	private MetricDefinition cpuCacheL1IDefinition;
+	
+	private MetricDefinition cpuCacheL2Definition;
+	
+	private MetricDefinition memorySizeDefinition;
+	
+	private MetricDefinition memoryVirtualSizeDefinition;
+	
 	private NotifierThread notifierThread;
 	
-	private ResourceBroker broker;
+	private WSGT4newResourceBrokerAdaptor broker;
 
-	public GlobusHardwareResource(Element host, ResourceBroker broker) {
+	public GlobusHardwareResource(Element host, WSGT4newResourceBrokerAdaptor broker) {
 		super(null);// it needs to invoke the superclass's constructor
 		this.broker = broker;
-		HashMap<String, Object> diskSizeReturnDefinition = new HashMap<String, Object>();
-		diskSizeReturnDefinition.put("disk.size", Integer.class);
-		diskSizeDefinition = new MetricDefinition("disk.size",
-				MetricDefinition.CONTINUOUS, null, "MB", null,
-				diskSizeReturnDefinition);
-		registerMetric("getDiskSize", diskSizeDefinition);
-
-		HashMap<String, Object> diskSizeAvailableReturnDefinition = new HashMap<String, Object>();
-		diskSizeAvailableReturnDefinition.put("disk.size.available",
-				Integer.class);
-		diskSizeAvailableDefinition = new MetricDefinition(
-				"disk.size.available", MetricDefinition.CONTINUOUS, null, "MB",
-				null, diskSizeAvailableReturnDefinition);
-		registerMetric("getAvailableDiskSize", diskSizeAvailableDefinition);
-
+		createReturnDefinitions();		
 		List hostParameters = host.getChildren();
 		description.addResourceAttribute(host.getName(), host.getValue());
 		List hostAttributes = host.getAttributes();
@@ -76,6 +83,100 @@ public class GlobusHardwareResource extends HardwareResourceCpi {
 		}
 	}
 
+	private void createReturnDefinitions() {
+		
+		HashMap<String, Object> cpuSpeedReturnDefinition = new HashMap<String, Object>();
+		cpuSpeedReturnDefinition.put("cpu.speed", Integer.class);
+		cpuSpeedDefinition= new MetricDefinition("cpu.speed",
+				MetricDefinition.CONTINUOUS, null, "MHZ", null,
+				cpuSpeedReturnDefinition);
+		registerMetric("getCpuSpeed", cpuSpeedDefinition);
+		
+		HashMap<String, Object> cpuCountReturnDefinition = new HashMap<String, Object>();
+		cpuCountReturnDefinition.put("cpu.count", Integer.class);
+	     cpuCountDefinition= new MetricDefinition("cpu.count",
+				MetricDefinition.CONTINUOUS, null, "", null,
+				cpuCountReturnDefinition);
+		registerMetric("getCpuCount", cpuCountDefinition);
+		
+		HashMap<String, Object> cacheL1ReturnDefinition = new HashMap<String, Object>();
+		cacheL1ReturnDefinition.put("cpu.cacheL1", Integer.class);
+	    cpuCacheL1Definition= new MetricDefinition("cpu.cacheL1",
+				MetricDefinition.CONTINUOUS, null, "MB", null,
+				cacheL1ReturnDefinition);
+		registerMetric("getCpuCacheL1", cpuCacheL1Definition);
+		
+		HashMap<String, Object> cacheL1DReturnDefinition = new HashMap<String, Object>();
+		cacheL1DReturnDefinition.put("cpu.cacheL1D", Integer.class);
+	    cpuCacheL1DDefinition= new MetricDefinition("cpu.cacheL1D",
+				MetricDefinition.CONTINUOUS, null, "MB", null,
+				cacheL1DReturnDefinition);
+		registerMetric("getCpuCacheL1D", cpuCacheL1DDefinition);
+		
+		HashMap<String, Object> cacheL2ReturnDefinition = new HashMap<String, Object>();
+		cacheL2ReturnDefinition.put("cpu.cacheL2", Integer.class);
+	    cpuCacheL2Definition= new MetricDefinition("cpu.cacheL2",
+				MetricDefinition.CONTINUOUS, null, "MB", null,
+				cacheL2ReturnDefinition);
+		registerMetric("getCpuCacheL2", cpuCacheL2Definition);
+		
+		HashMap<String, Object> cacheL1IReturnDefinition = new HashMap<String, Object>();
+		cacheL1IReturnDefinition.put("cpu.cacheL1I", Integer.class);
+	    cpuCacheL1IDefinition= new MetricDefinition("cpu.cacheL1I",
+				MetricDefinition.CONTINUOUS, null, "MB", null,
+				cacheL1IReturnDefinition);
+		registerMetric("getCpuCacheL1I", cpuCacheL1IDefinition);
+		
+		HashMap<String, Object> memorySizeReturnDefinition = new HashMap<String, Object>();
+		memorySizeReturnDefinition.put("memory.size", Integer.class);
+	    memorySizeDefinition= new MetricDefinition("memory.size",
+				MetricDefinition.CONTINUOUS, null, "MB", null,
+				memorySizeReturnDefinition);
+		registerMetric("getMemorySize", memorySizeDefinition);
+		
+		HashMap<String, Object> memorySizeAvailableReturnDefinition = new HashMap<String, Object>();
+		memorySizeAvailableReturnDefinition.put("memory.size.available",
+				Integer.class);
+		memorySizeAvailableDefinition = new MetricDefinition(
+				"memory.size.available", MetricDefinition.CONTINUOUS, null, "MB",
+				null, memorySizeAvailableReturnDefinition);
+		registerMetric("getAvailableMemorySize", memorySizeAvailableDefinition);
+		
+		HashMap<String, Object> memoryVirtualSizeAvailableReturnDefinition = new HashMap<String, Object>();
+		memoryVirtualSizeAvailableReturnDefinition.put("memory.virtual.size.available",
+				Integer.class);
+		memoryVirtualSizeAvailableDefinition = new MetricDefinition(
+				"memory.virtual.size.available", MetricDefinition.CONTINUOUS, null, "MB",
+				null, memoryVirtualSizeAvailableReturnDefinition);
+		registerMetric("getAvailableVirtualMemorySize", memoryVirtualSizeAvailableDefinition);
+			
+		HashMap<String, Object> memoryVirtualSizeReturnDefinition = new HashMap<String, Object>();
+		memoryVirtualSizeReturnDefinition.put("memory.virtual.size",
+				Integer.class);
+		memoryVirtualSizeDefinition = new MetricDefinition(
+				"memory.virtual.size", MetricDefinition.CONTINUOUS, null, "MB",
+				null, memoryVirtualSizeReturnDefinition);
+		registerMetric("getVirtualMemorySize", memoryVirtualSizeDefinition);
+			
+		HashMap<String, Object> diskSizeReturnDefinition = new HashMap<String, Object>();
+		diskSizeReturnDefinition.put("disk.size", Integer.class);
+		diskSizeDefinition = new MetricDefinition("disk.size",
+				MetricDefinition.CONTINUOUS, null, "MB", null,
+				diskSizeReturnDefinition);
+		registerMetric("getDiskSize", diskSizeDefinition);
+
+		HashMap<String, Object> diskSizeAvailableReturnDefinition = new HashMap<String, Object>();
+		diskSizeAvailableReturnDefinition.put("disk.size.available",
+				Integer.class);
+		diskSizeAvailableDefinition = new MetricDefinition(
+				"disk.size.available", MetricDefinition.CONTINUOUS, null, "MB",
+				null, diskSizeAvailableReturnDefinition);
+		registerMetric("getAvailableDiskSize", diskSizeAvailableDefinition);
+	
+		
+		
+	}
+
 	public Reservation getReservation() {
 		// TODO Auto-generated method stub
 		return null;
@@ -89,11 +190,18 @@ public class GlobusHardwareResource extends HardwareResourceCpi {
 	public void addMetricListener(MetricListener metricListener, Metric metric)
 			throws GATInvocationException {
 		super.addMetricListener(metricListener, metric);
+		if(!broker.queryingThreadIsCreated()){
+	       	broker.startQueryingThread();
+	       	System.out.println("\n Querying ThreadStarted\n");
+		}
 		if (notifierThread == null) {
 			notifierThread = new NotifierThread(this, broker);
-			notifierThread.start();
+			
 		}
+		broker.addListenerToQueryingThread();
 		notifierThread.add(metric, metricListener);
+		if(!notifierThread.isAlive())
+		notifierThread.start();
 	}
 
 	public synchronized void removeMetricListener(
@@ -101,11 +209,17 @@ public class GlobusHardwareResource extends HardwareResourceCpi {
 			throws GATInvocationException {
 		super.removeMetricListener(metricListener, metric);
 		notifierThread.remove(metric, metricListener);
+		broker.removeListenerToQueryingThread();
 	}
 
 	public String marshal() {
 		// TODO Auto-generated method stub
 		return null;
+	}
+	
+	public String getResourceName(){
+		Map p = description.getDescription();
+		return (String) p.get("NAME");
 	}
 
 	public String toString() {// Attenzione: SMPSize e' il CPUCOUNT??
@@ -124,10 +238,10 @@ public class GlobusHardwareResource extends HardwareResourceCpi {
 		String cpuCount = "CPU_COUNT " + (String) p.get("CPU_COUNT");
 
 		String memorySize = "MEMORY_SIZE " + (String) p.get("MEMORY_SIZE");
-		String memoryAvailable = "MEMORY_AVAILABLE "
-				+ (String) p.get("MEMORY_AVAILABLE");
-		String virtualAvailable = "VIRTUAL_AVAILABLE_MEMORY "
-				+ (String) p.get("VIRTUAL_AVAILABLE_MEMORY");
+		String memoryAvailable = "memory.size.available"
+				+ (String) p.get("memory.size.available");
+		String virtualAvailable = "memory.virtual.size.available"
+				+ (String) p.get("memory.virtual.size.available");
 		String virtualSize = "VIRTUAL_MEMORY_SIZE "
 				+ (String) p.get("VIRTUAL_MEMORY_SIZE");
 
@@ -150,9 +264,9 @@ public class GlobusHardwareResource extends HardwareResourceCpi {
 		String prLoad15 = "PROCESSOR_LOAD_LAST_15_MIN "
 				+ (String) p.get("PROCESSOR_LOAD_LAST_15_MIN");
 
-		return hostName + "\n" + cpuSpeed + "\n" + cpuCount + "\n" + cacheL1
+		return hostName + "\n\n" + cpuSpeed + "\n" + cpuCount + "\n" + cacheL1
 //				+ "\n" + cacheL1D + "\n" + cacheL1I + "\n" + cacheL2 + "\n"
-				+ memorySize + "\n" + memoryAvailable + "\n" + virtualAvailable;
+				+ memorySize + " \n " + memoryAvailable + " \n " + virtualAvailable;
 //				+ "\n" + virtualSize + "\n" + diskSize + "\n"
 //				+ availableDiskSize + "\n" + readOnlyDisk + "\n" + diskRoot
 //				+ "\n" + ipAddress + "\n" + inboundIP + "\n" + outboundIP

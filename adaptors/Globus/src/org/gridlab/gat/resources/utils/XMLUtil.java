@@ -7,6 +7,7 @@ import java.util.Map;
 
 import org.gridlab.gat.resources.HardwareResource;
 import org.gridlab.gat.resources.ResourceBroker;
+import org.gridlab.gat.resources.cpi.wsgt4new.WSGT4newResourceBrokerAdaptor;
 import org.gridlab.gat.resources.gt4.GlobusHardwareResource;
 import org.jdom.Attribute;
 import org.jdom.Document;
@@ -35,7 +36,7 @@ public class XMLUtil {
 	private Element PrLoad;
 
 
-	public void createXMLDocument(org.w3c.dom.NodeList hostsList) {
+	public  void createXMLDocument(org.w3c.dom.NodeList hostsList) {
 		rootElement = new Element("ROOT");
 		document = new Document(rootElement);
 	
@@ -61,12 +62,12 @@ public class XMLUtil {
 					"ns1:CacheL2");
 
 			CPU = new Element("CPU");
-			CPU.setAttribute("CPU_SPEED", CPU_Speed.getTextContent());
-			CPU.setAttribute("CPU_COUNT", CPU_Count.getTextContent());
-			CPU.setAttribute("CACHE_L1", Cache_L1.getTextContent());
-			CPU.setAttribute("CACHE_L1D", Cache_L1D.getTextContent());
-			CPU.setAttribute("CACHE_L1I", Cache_L1I.getTextContent());
-			CPU.setAttribute("CACHE_L2", CacheL2.getTextContent());
+			CPU.setAttribute("cpu.speed", CPU_Speed.getTextContent());
+			CPU.setAttribute("cpu.count", CPU_Count.getTextContent());
+			CPU.setAttribute("cpu.cache.l1", Cache_L1.getTextContent());
+			CPU.setAttribute("cpu.cache.l1d", Cache_L1D.getTextContent());
+			CPU.setAttribute("cpu.cache.l1i", Cache_L1I.getTextContent());
+			CPU.setAttribute("cpu.cache.l2", CacheL2.getTextContent());
 
 			Node Memory_Size = hostParameters.item(1).getAttributes()
 					.getNamedItem("ns1:RAMSize");
@@ -78,12 +79,12 @@ public class XMLUtil {
 					.getNamedItem("ns1:VirtualSize");
 
 			Memory = new Element("MEMORY");
-			Memory.setAttribute("MEMORY_SIZE", Memory_Size.getTextContent());
-			Memory.setAttribute("MEMORY_AVAILABLE", Memory_Available
-					.getTextContent());
-			Memory.setAttribute("VIRTUAL_AVAILABLE_MEMORY",
+			Memory.setAttribute("memory.size", Memory_Size.getTextContent());
+			Memory.setAttribute("memory.size.available", Memory_Available
+					  		.getTextContent());
+			Memory.setAttribute("memory.virtual.size.available",
 					Virtual_Available_Memory.getTextContent());
-			Memory.setAttribute("VIRTUAL_MEMORY_SIZE", Virtual_Size
+			Memory.setAttribute("memory.virtual.size", Virtual_Size
 					.getTextContent());
 
 			Node OS_Name = hostParameters.item(2).getAttributes().getNamedItem(
@@ -94,9 +95,9 @@ public class XMLUtil {
 					"ns1:InstructionSet");
 
 			OS = new Element("OS");
-			OS.setAttribute("OS_NAME", OS_Name.getTextContent());
-			OS.setAttribute("OS_RELEASE", OS_Release.getTextContent());
-			OS.setAttribute("OS_TYPE", OS_Type.getTextContent());
+			OS.setAttribute("os.name", OS_Name.getTextContent());
+			OS.setAttribute("os.release", OS_Release.getTextContent());
+			OS.setAttribute("os.type", OS_Type.getTextContent());
 
 			Node Disk_Size = hostParameters.item(4).getAttributes()
 					.getNamedItem("ns1:Size");
@@ -108,13 +109,12 @@ public class XMLUtil {
 					.getNamedItem("ns1:Root");
 
 			Disk = new Element("DISK");
-			Disk.setAttribute("DISK_SIZE", Disk_Size.getTextContent());
-			Disk.setAttribute("AVAILABLE_DISK_SIZE", Available_Disk_Size
+			Disk.setAttribute("disk.size", Disk_Size.getTextContent());
+			Disk.setAttribute("disk.size.available", Available_Disk_Size
 					.getTextContent());
-			Disk
-					.setAttribute("READ_ONLY_DISK", Read_Only_Disk
+			Disk.setAttribute("disk.readonly", Read_Only_Disk
 							.getTextContent());
-			Disk.setAttribute("DISK_ROOT", Disk_Root.getTextContent());
+			Disk.setAttribute("disk.root", Disk_Root.getTextContent());
 
 			Node IP_Address = hostParameters.item(5).getAttributes()
 					.getNamedItem("ns1:IPAddress");
@@ -125,11 +125,11 @@ public class XMLUtil {
 			Node MTU = hostParameters.item(5).getAttributes().getNamedItem(
 					"ns1:MTU");
 
-			Network = new Element("DISK");
-			Network.setAttribute("IP_ADDRESS", IP_Address.getTextContent());
-			Network.setAttribute("INBOUND_IP", Inbound_IP.getTextContent());
-			Network.setAttribute("OUTBOUND_IP", Outbound_IP.getTextContent());
-			Network.setAttribute("MTU", MTU.getTextContent());
+			Network = new Element("NETWORK");
+			Network.setAttribute("network.ip", IP_Address.getTextContent());
+			Network.setAttribute("network.inboundip", Inbound_IP.getTextContent());
+			Network.setAttribute("network.outboundip", Outbound_IP.getTextContent());
+			Network.setAttribute("network.mtu", MTU.getTextContent());
 
 			Node prLoad1Min = hostParameters.item(6).getAttributes()
 					.getNamedItem("ns1:Last1Min");
@@ -138,12 +138,12 @@ public class XMLUtil {
 			Node prLoad15Min = hostParameters.item(6).getAttributes()
 					.getNamedItem("ns1:Last15Min");
 
-			PrLoad = new Element("DISK");
-			Network.setAttribute("PROCESSOR_LOAD_LAST_1_MIN", prLoad1Min
+			PrLoad = new Element("PROCESSOR_LOAD");
+			Network.setAttribute("processor.load.1min", prLoad1Min
 					.getTextContent());
-			Network.setAttribute("PROCESSOR_LOAD_LAST_5_MIN", prLoad5Min
+			Network.setAttribute("processor.load.5min", prLoad5Min
 					.getTextContent());
-			Network.setAttribute("PROCESSOR_LOAD_LAST_15_MIN", prLoad15Min
+			Network.setAttribute("processor.load.15min", prLoad15Min
 					.getTextContent());
 
 			Host.addContent(CPU);
@@ -162,7 +162,7 @@ public class XMLUtil {
 			 */
 	}
 
-	public LinkedList<HardwareResource> matchResources(Map description, ResourceBroker broker) {
+	public LinkedList<HardwareResource> matchResources(Map description, WSGT4newResourceBrokerAdaptor broker) {
 
 		LinkedList<HardwareResource> matchedResources = new LinkedList();
 		int number_of_resources = description.size();
@@ -221,4 +221,23 @@ public class XMLUtil {
 		return this.document;
 	}
 
+	public HardwareResource getResourceByName(String hostname, WSGT4newResourceBrokerAdaptor broker) {
+		Element root = document.getRootElement();
+		List hosts = root.getChildren();
+		Iterator<Element> hostIterator = hosts.iterator();
+	
+		while (hostIterator.hasNext()) {
+			
+			Element host = hostIterator.next();
+			String name=host.getAttributeValue("NAME");
+			if(name.equals(hostname)){
+				//I have found the host to retrieve
+			GlobusHardwareResource hd = new GlobusHardwareResource(host, broker);
+			return hd;
+				 
+			}
+		}
+		//host not found then return null
+		return null;		
+	}
 }

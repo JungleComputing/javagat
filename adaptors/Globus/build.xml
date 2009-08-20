@@ -71,6 +71,7 @@
 				<include name="share/**" />
 				<include name="etc/**" />
 				<include name="client-config.wsdd" />
+				<include name="cacerts" />
 			</fileset>
 
 		</copy>

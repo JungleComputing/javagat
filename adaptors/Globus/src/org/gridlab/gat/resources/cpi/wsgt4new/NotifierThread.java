@@ -1,8 +1,11 @@
 package org.gridlab.gat.resources.cpi.wsgt4new;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
+import org.apache.axis.message.MessageElement;
 import org.gridlab.gat.monitoring.Metric;
 import org.gridlab.gat.monitoring.MetricEvent;
 import org.gridlab.gat.monitoring.MetricListener;
@@ -28,7 +31,6 @@ public class NotifierThread extends Thread {
 	}
 
 	public synchronized void add(Metric metric, MetricListener listener) {
-		System.out.println("metric added --");
 		metrics.add(metric);
 		metricListeners.add(listener);
 		updates.add(System.currentTimeMillis()); // 1.51
@@ -50,25 +52,18 @@ public class NotifierThread extends Thread {
 		while (true) {
 			
 			// get the results
+			//System.out.println("metric size of Thread "+this.getId()+" "+metricListeners.size());
 			for (int i = 0; i < metricListeners.size(); i++) {
 				// do we need to fire an event for this metric?
-				System.out.println("do we need to fire an event for the metric "+i);
-				if (updates.get(i) < System.currentTimeMillis()) {
-					System.out.println("I have to create a new Event");
+			//	System.out.println("sono dentro il for "+this.getId()+"  "+metricListeners.size());
+				if (updates.get(i) <= System.currentTimeMillis()) {
+		//			System.out.println("I have to check if it needs to fire a new Event  "+this.getId());
 					// use the broker to get the new information!
-				
-					broker.queryDefaultIndexService();
-					/*Selezionare i nomi degli ost di interesse
-					 * dopo di che fare cio che si desidera
-					 * 
-					 * */
-					
-					// metrics.get(i).getMetricParameterByName("maximum"));
-					
-					MetricEvent event = new MetricEvent(resource, "200",
-							metrics.get(i), System.currentTimeMillis());
-					resource.fireMetric(event);
-					// update the time when we need our next update
+									
+					Map h=metrics.get(i).getMetricParameters();//prendere i valori della mappa e fare lo switch
+					checkKeys(h,i);
+
+                    //update the time when we need our next update
 					updates.set(i, updates.get(i)
 							+ metrics.get(i).getFrequency());
 				}
@@ -82,13 +77,48 @@ public class NotifierThread extends Thread {
 
 			try {
 				long time=nextUpdateTime - System.currentTimeMillis();
-				System.out.println("I m going to sleep for "+time);
+				System.out.println("Thread Id "+this.getId()+" I m going to sleep for "+time);
+				if(time>0)//no negative values are allowed
 				sleep(time);
+				else sleep(5000);//standard sleep time
 			    
 			} catch (InterruptedException e) {
 				}
 
 		}
+	}
+
+	private void checkKeys(Map h,int i) {
+		String hostname=resource.getResourceName();
+		GlobusHardwareResource matchedResource=(GlobusHardwareResource) broker.findResourceByName(hostname);					
+		
+		if(h.containsKey("minimum")){
+			Integer minimumValue= (Integer) h.get("minimum");
+			matchedResource.getResourceName();
+			Integer value=Integer.parseInt(matchedResource.getResourceDescription().getResourceAttribute(metrics.get(i).getDefinition().getMetricName()).toString());
+		System.out.println("valore minimo: "+minimumValue.intValue()+" valore ottenuto:"+ value.intValue());
+		if(minimumValue.intValue()>value.intValue()){
+		//I have to fire the metric
+		MetricEvent event = new MetricEvent(resource, value,
+		metrics.get(i), System.currentTimeMillis());
+		resource.fireMetric(event);
+		
+		          }
+			}
+		if(h.containsKey("maximum")){//h contains maximun
+		Integer maximumValue= (Integer) h.get("maximum");
+		matchedResource.getResourceName();
+		Integer value=Integer.parseInt(matchedResource.getResourceDescription().getResourceAttribute(metrics.get(i).getDefinition().getMetricName()).toString());
+		System.out.println("valore massimo: "+maximumValue.intValue()+" valore ottenuto:"+ value.intValue());
+		if(maximumValue.intValue()<value.intValue()){
+		//I have to fire the metric
+		MetricEvent event = new MetricEvent(resource, value,
+		metrics.get(i), System.currentTimeMillis());
+		resource.fireMetric(event);
+		
+		          }	
+		}
+		
 	}
 
 }
