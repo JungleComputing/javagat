@@ -10,8 +10,11 @@ public class QueryingThread extends Thread{
 	
 	int numberOfListeners;
 	
+	boolean death=false; 
+	
 	public QueryingThread(WSGT4newResourceBrokerAdaptor broker){
 		this.broker=broker;
+		setDaemon(true);
 	}
 	
 	public  synchronized void addListener(){
@@ -25,7 +28,7 @@ public class QueryingThread extends Thread{
 	}
 	
 	public void run(){
-		while(true){
+		while(!death){
 				MessageElement[] entries = broker.queryDefaultIndexService();
 				
 				if (entries == null || entries.length == 0) {
@@ -49,8 +52,13 @@ public class QueryingThread extends Thread{
 				} catch (InterruptedException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
-				}//Query the Index Service every 60 seconds
+				}//Query the Index Service every 5 minutes
 				
 		}
 		}
+
+	public void killQueryingThread() {
+		this.death=true;
+		System.out.println("Querying Thread Killed");
+	}
 	}

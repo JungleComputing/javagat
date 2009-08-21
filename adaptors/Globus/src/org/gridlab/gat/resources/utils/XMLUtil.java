@@ -139,11 +139,11 @@ public class XMLUtil {
 					.getNamedItem("ns1:Last15Min");
 
 			PrLoad = new Element("PROCESSOR_LOAD");
-			Network.setAttribute("processor.load.1min", prLoad1Min
+			PrLoad.setAttribute("processor.load.1min", prLoad1Min
 					.getTextContent());
-			Network.setAttribute("processor.load.5min", prLoad5Min
+			PrLoad.setAttribute("processor.load.5min", prLoad5Min
 					.getTextContent());
-			Network.setAttribute("processor.load.15min", prLoad15Min
+			PrLoad.setAttribute("processor.load.15min", prLoad15Min
 					.getTextContent());
 
 			Host.addContent(CPU);

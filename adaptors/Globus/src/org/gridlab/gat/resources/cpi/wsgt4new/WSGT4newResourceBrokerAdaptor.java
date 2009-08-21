@@ -481,8 +481,7 @@ public class WSGT4newResourceBrokerAdaptor extends ResourceBrokerCpi {
 		if (entries == null || entries.length == 0) {
 			System.out.println("Lunghezza 0 e mo so cazzi");
 		} else {
-		//	for (int i = 0; i <1; i++) {
-				try {
+			try {
 					Element root=entries[0].getAsDOM();
 					NodeList hosts=root.getChildNodes();
 							
@@ -490,15 +489,11 @@ public class WSGT4newResourceBrokerAdaptor extends ResourceBrokerCpi {
 					// qui con un istance of posso capire se creare una lista di soft o hard resources
 					Map description=s.getDescription();	
 					resourcesList=xmlUtil.matchResources(description, this);
-					System.out.println("size: "+resourcesList.size());
-			
-					//String a=entries[i].getAttribute("ns1:UniqueID");
-							
+									
 
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
-				//}
 			}
 		
 		
@@ -592,11 +587,21 @@ public MessageElement[] queryDefaultIndexService() {
 private boolean areAllStaticAttributes(ResourceDescription s) {
 	 int numberofResources=s.getDescription().size();
 	 int count=0;
-	 //ricordarsi di aggiungere le altre
-	 if(s.getResourceAttribute("CPU_SPEED")!=null)count++;
-	 if(s.getResourceAttribute("CPU_COUNT")!=null)count++;
-	 if(s.getResourceAttribute("MEMORY_SIZE")!=null)count++;
-	 if(s.getResourceAttribute("DISK_SIZE")!=null)count++;
+	
+	 if(s.getResourceAttribute("cpu.speed")!=null)count++;
+	 if(s.getResourceAttribute("cpu.count")!=null)count++;
+	 if(s.getResourceAttribute("cpu.cache.l1")!=null)count++;
+	 if(s.getResourceAttribute("cpu.cache.l1d")!=null)count++;
+	 if(s.getResourceAttribute("cpu.cache.l1i")!=null)count++;
+	 if(s.getResourceAttribute("cpu.cache.l2")!=null)count++;
+	 if(s.getResourceAttribute("memory.size")!=null)count++;
+	 if(s.getResourceAttribute("memory.virtual.size")!=null)count++;
+	 if(s.getResourceAttribute("os.name")!=null)count++;
+	 if(s.getResourceAttribute("os.release")!=null)count++;
+	 if(s.getResourceAttribute("os.type")!=null)count++;
+	 if(s.getResourceAttribute("disk.size")!=null)count++;
+	 if(s.getResourceAttribute("disk.root")!=null)count++;
+	 
 	 if (count==numberofResources) return true;
 	 return false;
 	}
@@ -621,9 +626,8 @@ public HardwareResource findResourceByName(String hostname) {
 	queryingThread.start();
 	
 	}
-	public void stopQueryingThread() {
-	queryingThread= new QueryingThread(this);
-	queryingThread.stop();
+	private void killQueryingThread() {
+	queryingThread.killQueryingThread();
 	}
 	
 	public void addListenerToQueryingThread() {
@@ -632,6 +636,6 @@ public HardwareResource findResourceByName(String hostname) {
 	public void removeListenerToQueryingThread() {
 		queryingThread.removeListener();
 		if(queryingThread.getNumberOfListeners()==0)
-			stopQueryingThread();
+			killQueryingThread();
 	}
 }

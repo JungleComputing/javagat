@@ -23,46 +23,47 @@ public class NotifierThread extends Thread {
 	private List<Metric> metrics = new ArrayList<Metric>();
 
 	private List<Long> updates = new ArrayList<Long>();
+	
+	private boolean death=false;
 
 	public NotifierThread(GlobusHardwareResource resource, WSGT4newResourceBrokerAdaptor broker) {
 		this.broker = broker;
 		this.resource = resource;
-		//setDaemon(true);
+		setDaemon(true);
 	}
 
 	public synchronized void add(Metric metric, MetricListener listener) {
+		
+		updates.add(System.currentTimeMillis()); // this add is the first coz there can be problem at if at line 64
 		metrics.add(metric);
 		metricListeners.add(listener);
-		updates.add(System.currentTimeMillis()); // 1.51
+		
 		notifyAll();
 	}
 
 	public synchronized void remove(Metric metric, MetricListener metricListener) {
 		for (int i = 0; i < metrics.size(); i++) {
-			if (metrics.get(i) == metric
-					&& metricListeners.get(i) == metricListener) {
+			if (metrics.get(i).equals(metric)
+					&& metricListeners.get(i).equals(metricListener)) {
 				metrics.remove(i);
 				metricListeners.remove(i);
 				updates.remove(i);
 			}
 		}
+		
+       if(metrics.size()==0){//all the metrics have been removed
+    	   this.death=true;
+       System.out.println("Notifier Thread Killed");
+       }
 	}
 
 	public void run() {
-		while (true) {
-			
+		while (!this.death) {
 			// get the results
-			//System.out.println("metric size of Thread "+this.getId()+" "+metricListeners.size());
 			for (int i = 0; i < metricListeners.size(); i++) {
-				// do we need to fire an event for this metric?
-			//	System.out.println("sono dentro il for "+this.getId()+"  "+metricListeners.size());
 				if (updates.get(i) <= System.currentTimeMillis()) {
-		//			System.out.println("I have to check if it needs to fire a new Event  "+this.getId());
-					// use the broker to get the new information!
-									
-					Map h=metrics.get(i).getMetricParameters();//prendere i valori della mappa e fare lo switch
+							Map h=metrics.get(i).getMetricParameters();//prendere i valori della mappa e fare lo switch
 					checkKeys(h,i);
-
                     //update the time when we need our next update
 					updates.set(i, updates.get(i)
 							+ metrics.get(i).getFrequency());
@@ -78,9 +79,7 @@ public class NotifierThread extends Thread {
 			try {
 				long time=nextUpdateTime - System.currentTimeMillis();
 				System.out.println("Thread Id "+this.getId()+" I m going to sleep for "+time);
-				if(time>0)//no negative values are allowed
-				sleep(time);
-				else sleep(5000);//standard sleep time
+				sleep(time);			
 			    
 			} catch (InterruptedException e) {
 				}
