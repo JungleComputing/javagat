@@ -48,8 +48,8 @@ public class QueryingThread extends Thread{
 				
 				}
 				try {
-					sleep(5*60000);
-				} catch (InterruptedException e) {
+					sleep(5*58000);// I give the time to the method to query the IndexService and update the XML document
+					} catch (InterruptedException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}//Query the Index Service every 5 minutes

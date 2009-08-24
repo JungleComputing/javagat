@@ -517,7 +517,7 @@ public class WSGT4newResourceBrokerAdaptor extends ResourceBrokerCpi {
 public MessageElement[] queryDefaultIndexService() {
 	
 	String indexURI = this.brokerURI.toString()+this.indexPath;
-	System.out.println("\n I'm querying the Index Service "+indexURI+"\n");
+	System.out.println("\n I'm querying the Index Service: "+indexURI+"\n");
 	
    EndpointReferenceType indexEPR = new EndpointReferenceType();
 	try {

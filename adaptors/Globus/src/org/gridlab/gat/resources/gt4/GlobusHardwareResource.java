@@ -11,7 +11,6 @@ import org.gridlab.gat.monitoring.MetricDefinition;
 import org.gridlab.gat.monitoring.MetricListener;
 import org.gridlab.gat.resources.HardwareResourceDescription;
 import org.gridlab.gat.resources.Reservation;
-import org.gridlab.gat.resources.ResourceBroker;
 import org.gridlab.gat.resources.ResourceDescription;
 import org.gridlab.gat.resources.cpi.HardwareResourceCpi;
 import org.gridlab.gat.resources.cpi.wsgt4new.MetricFrequencyException;
@@ -24,50 +23,13 @@ public class GlobusHardwareResource extends HardwareResourceCpi {
 
 	private HardwareResourceDescription description = new HardwareResourceDescription();
 
-	// private MetricListener metricListener=null;
-	// private Metric metric=null;
-
-	private MetricDefinition diskSizeDefinition;
-
 	private MetricDefinition diskSizeAvailableDefinition;
 	
 	private MetricDefinition memorySizeAvailableDefinition;
 	
 	private MetricDefinition memoryVirtualSizeAvailableDefinition;
 	
-	private MetricDefinition cpuSpeedDefinition;
-	
-	private MetricDefinition cpuCountDefinition;
-	
-	private MetricDefinition cpuCacheL1Definition;
-	
-	private MetricDefinition cpuCacheL1DDefinition;
-	
-	private MetricDefinition cpuCacheL1IDefinition;
-	
-	private MetricDefinition cpuCacheL2Definition;
-	
-	private MetricDefinition memorySizeDefinition;
-	
-	private MetricDefinition memoryVirtualSizeDefinition;
-	
-	private MetricDefinition osNameDefinition;
-	
-	private MetricDefinition osReleaseDefinition;
-	
-	private MetricDefinition osTypeDefinition;
-	
 	private MetricDefinition diskReadOnlyDefinition;
-	
-	private MetricDefinition diskRootDefinition;
-	
-	private MetricDefinition networkIpDefinition;
-	
-	private MetricDefinition networkInboundIpDefinition;
-	
-	private MetricDefinition networkOutboundIpDefinition;
-	
-	private MetricDefinition networkMtuDefinition;
 	
 	private MetricDefinition processorLoadLast1MinDefinition;
 	
@@ -106,59 +68,7 @@ public class GlobusHardwareResource extends HardwareResourceCpi {
 	}
 
 	private void createReturnDefinitions() {
-		/*
-		HashMap<String, Object> cpuSpeedReturnDefinition = new HashMap<String, Object>();
-		cpuSpeedReturnDefinition.put("cpu.speed", Integer.class);
-		cpuSpeedDefinition= new MetricDefinition("cpu.speed",
-				MetricDefinition.CONTINUOUS, null, "MHZ", null,
-				cpuSpeedReturnDefinition);
-		registerMetric("getCpuSpeed", cpuSpeedDefinition);
-		*/
 		
-		/*
-		HashMap<String, Object> cpuCountReturnDefinition = new HashMap<String, Object>();
-		cpuCountReturnDefinition.put("cpu.count", Integer.class);
-	     cpuCountDefinition= new MetricDefinition("cpu.count",
-				MetricDefinition.CONTINUOUS, null, "", null,
-				cpuCountReturnDefinition);
-		registerMetric("getCpuCount", cpuCountDefinition);
-		*/
-		/*
-		HashMap<String, Object> cacheL1ReturnDefinition = new HashMap<String, Object>();
-		cacheL1ReturnDefinition.put("cpu.cacheL1", Integer.class);
-	    cpuCacheL1Definition= new MetricDefinition("cpu.cacheL1",
-				MetricDefinition.CONTINUOUS, null, "MB", null,
-				cacheL1ReturnDefinition);
-		registerMetric("getCpuCacheL1", cpuCacheL1Definition);
-		
-		HashMap<String, Object> cacheL1DReturnDefinition = new HashMap<String, Object>();
-		cacheL1DReturnDefinition.put("cpu.cacheL1D", Integer.class);
-	    cpuCacheL1DDefinition= new MetricDefinition("cpu.cacheL1D",
-				MetricDefinition.CONTINUOUS, null, "MB", null,
-				cacheL1DReturnDefinition);
-		registerMetric("getCpuCacheL1D", cpuCacheL1DDefinition);
-		
-		HashMap<String, Object> cacheL2ReturnDefinition = new HashMap<String, Object>();
-		cacheL2ReturnDefinition.put("cpu.cacheL2", Integer.class);
-	    cpuCacheL2Definition= new MetricDefinition("cpu.cacheL2",
-				MetricDefinition.CONTINUOUS, null, "MB", null,
-				cacheL2ReturnDefinition);
-		registerMetric("getCpuCacheL2", cpuCacheL2Definition);
-		
-		HashMap<String, Object> cacheL1IReturnDefinition = new HashMap<String, Object>();
-		cacheL1IReturnDefinition.put("cpu.cacheL1I", Integer.class);
-	    cpuCacheL1IDefinition= new MetricDefinition("cpu.cacheL1I",
-				MetricDefinition.CONTINUOUS, null, "MB", null,
-				cacheL1IReturnDefinition);
-		registerMetric("getCpuCacheL1I", cpuCacheL1IDefinition);
-		
-		HashMap<String, Object> memorySizeReturnDefinition = new HashMap<String, Object>();
-		memorySizeReturnDefinition.put("memory.size", Integer.class);
-	    memorySizeDefinition= new MetricDefinition("memory.size",
-				MetricDefinition.CONTINUOUS, null, "MB", null,
-				memorySizeReturnDefinition);
-		registerMetric("getMemorySize", memorySizeDefinition);
-		*/
 		HashMap<String, Object> memorySizeAvailableReturnDefinition = new HashMap<String, Object>();
 		memorySizeAvailableReturnDefinition.put("memory.size.available",
 				Integer.class);
@@ -174,46 +84,7 @@ public class GlobusHardwareResource extends HardwareResourceCpi {
 				"memory.virtual.size.available", MetricDefinition.CONTINUOUS, null, "MB",
 				null, memoryVirtualSizeAvailableReturnDefinition);
 		registerMetric("getAvailableVirtualMemorySize", memoryVirtualSizeAvailableDefinition);
-		/*	
-		HashMap<String, Object> memoryVirtualSizeReturnDefinition = new HashMap<String, Object>();
-		memoryVirtualSizeReturnDefinition.put("memory.virtual.size",
-				Integer.class);
-		memoryVirtualSizeDefinition = new MetricDefinition(
-				"memory.virtual.size", MetricDefinition.CONTINUOUS, null, "MB",
-				null, memoryVirtualSizeReturnDefinition);
-		registerMetric("getVirtualMemorySize", memoryVirtualSizeDefinition);
-			
-		HashMap<String, Object> osNameReturnDefinition = new HashMap<String, Object>();
-		osNameReturnDefinition.put("os.name",
-				String.class);
-		osNameDefinition = new MetricDefinition(
-				"os.name", MetricDefinition.CONTINUOUS, null, "",
-				null, osNameReturnDefinition);
-		registerMetric("getOsName", osNameDefinition);
 		
-		HashMap<String, Object> osReleaseReturnDefinition = new HashMap<String, Object>();
-		osReleaseReturnDefinition.put("os.release",
-				String.class);
-		osReleaseDefinition = new MetricDefinition(
-				"os.release", MetricDefinition.CONTINUOUS, null, "",
-				null, osReleaseReturnDefinition);
-		registerMetric("getOsRelease", osReleaseDefinition);
-		
-		HashMap<String, Object> osTypeReturnDefinition = new HashMap<String, Object>();
-		osTypeReturnDefinition.put("os.type",
-				String.class);
-		osTypeDefinition = new MetricDefinition(
-				"os.type", MetricDefinition.CONTINUOUS, null, "",
-				null, osTypeReturnDefinition);
-		registerMetric("getOsType", osTypeDefinition);		
-		
-		HashMap<String, Object> diskSizeReturnDefinition = new HashMap<String, Object>();
-		diskSizeReturnDefinition.put("disk.size", Integer.class);
-		diskSizeDefinition = new MetricDefinition("disk.size",
-				MetricDefinition.CONTINUOUS, null, "MB", null,
-				diskSizeReturnDefinition);
-		registerMetric("getDiskSize", diskSizeDefinition);
-        */
 		HashMap<String, Object> diskSizeAvailableReturnDefinition = new HashMap<String, Object>();
 		diskSizeAvailableReturnDefinition.put("disk.size.available",
 				Integer.class);
@@ -230,47 +101,7 @@ public class GlobusHardwareResource extends HardwareResourceCpi {
 				"disk.readOnly", MetricDefinition.CONTINUOUS, null, "",
 				null, diskReadOnlyReturnDefinition);
 		registerMetric("getAvailableDiskSize", diskReadOnlyDefinition);
-		/*
-		HashMap<String, Object> diskRootReturnDefinition = new HashMap<String, Object>();
-		diskRootReturnDefinition.put("disk.root",
-				String.class);
-		diskRootDefinition = new MetricDefinition(
-				"disk.root", MetricDefinition.CONTINUOUS, null, "",
-				null, diskReadOnlyReturnDefinition);
-		registerMetric("getAvailableDiskSize", diskRootDefinition);
 		
-		HashMap<String, Object> networkIPReturnDefinition = new HashMap<String, Object>();
-		networkIPReturnDefinition.put("network.ip",
-				String.class);
-		networkIpDefinition = new MetricDefinition(
-				"network.ip", MetricDefinition.CONTINUOUS, null, "",
-				null, networkIPReturnDefinition);
-		registerMetric("getNetworkIp", networkIpDefinition);
-		
-		HashMap<String, Object> networkInboundIPReturnDefinition = new HashMap<String, Object>();
-		networkInboundIPReturnDefinition.put("network.inboundip",
-				Boolean.class);
-		networkInboundIpDefinition = new MetricDefinition(
-				"network.inboundip", MetricDefinition.CONTINUOUS, null, "",
-				null, networkInboundIPReturnDefinition);
-		registerMetric("getNetworkInboundIp", networkInboundIpDefinition);
-		
-		HashMap<String, Object> networkOutboundIPReturnDefinition = new HashMap<String, Object>();
-		networkOutboundIPReturnDefinition.put("network.outboundip",
-				Boolean.class);
-		networkOutboundIpDefinition = new MetricDefinition(
-				"network.outboundip", MetricDefinition.CONTINUOUS, null, "",
-				null, networkOutboundIPReturnDefinition);
-		registerMetric("getNetworkOutboundIp", networkOutboundIpDefinition);
-		
-		HashMap<String, Object> networkMtuReturnDefinition = new HashMap<String, Object>();
-		networkMtuReturnDefinition.put("network.mtu",
-				Integer.class);
-		networkMtuDefinition = new MetricDefinition(
-				"network.mtu", MetricDefinition.CONTINUOUS, null, "",
-				null, networkMtuReturnDefinition);
-		registerMetric("getNetworkMtu", networkMtuDefinition);
-		*/
 		HashMap<String, Object> processorLoadLast1MinReturnDefinition = new HashMap<String, Object>();
 		processorLoadLast1MinReturnDefinition.put("processor.load.1min",
 				Integer.class);
@@ -310,7 +141,7 @@ public class GlobusHardwareResource extends HardwareResourceCpi {
 	public void addMetricListener(MetricListener metricListener, Metric metric)
 			throws GATInvocationException {
 		if(metric.getFrequency()% (5*60000)!=0)
-			throw new MetricFrequencyException("The frequency must be a multiple of 300000 milliseconds");
+			throw new MetricFrequencyException("The frequency must be a multiple of 5 minutes");
 		super.addMetricListener(metricListener, metric);
 		if(!broker.queryingThreadIsCreated()){
 	       	broker.startQueryingThread();
