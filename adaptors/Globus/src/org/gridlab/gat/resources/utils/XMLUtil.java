@@ -35,11 +35,10 @@ public class XMLUtil {
 
 	private Element PrLoad;
 
-
-	public  void createXMLDocument(org.w3c.dom.NodeList hostsList) {
+	public void createXMLDocument(org.w3c.dom.NodeList hostsList) {
 		rootElement = new Element("ROOT");
 		document = new Document(rootElement);
-	
+
 		for (int i = 0; i < hostsList.getLength(); i++) {
 			Node host = hostsList.item(i);
 			Node hostName = host.getAttributes().getNamedItem("ns1:Name");
@@ -51,7 +50,8 @@ public class XMLUtil {
 			Node CPU_Speed = hostParameters.item(0).getAttributes()
 					.getNamedItem("ns1:ClockSpeed");
 			Node CPU_Count = hostParameters.item(3).getAttributes()
-					.getNamedItem("ns1:SMPSize");
+					.getNamedItem("ns1:SMPSize");// Let Op!!: SMPSize is the
+			// CPUCOUNT??
 			Node Cache_L1 = hostParameters.item(0).getAttributes()
 					.getNamedItem("ns1:CacheL1");
 			Node Cache_L1D = hostParameters.item(0).getAttributes()
@@ -81,7 +81,7 @@ public class XMLUtil {
 			Memory = new Element("MEMORY");
 			Memory.setAttribute("memory.size", Memory_Size.getTextContent());
 			Memory.setAttribute("memory.size.available", Memory_Available
-					  		.getTextContent());
+					.getTextContent());
 			Memory.setAttribute("memory.virtual.size.available",
 					Virtual_Available_Memory.getTextContent());
 			Memory.setAttribute("memory.virtual.size", Virtual_Size
@@ -112,8 +112,7 @@ public class XMLUtil {
 			Disk.setAttribute("disk.size", Disk_Size.getTextContent());
 			Disk.setAttribute("disk.size.available", Available_Disk_Size
 					.getTextContent());
-			Disk.setAttribute("disk.readonly", Read_Only_Disk
-							.getTextContent());
+			Disk.setAttribute("disk.readonly", Read_Only_Disk.getTextContent());
 			Disk.setAttribute("disk.root", Disk_Root.getTextContent());
 
 			Node IP_Address = hostParameters.item(5).getAttributes()
@@ -127,8 +126,10 @@ public class XMLUtil {
 
 			Network = new Element("NETWORK");
 			Network.setAttribute("network.ip", IP_Address.getTextContent());
-			Network.setAttribute("network.inboundip", Inbound_IP.getTextContent());
-			Network.setAttribute("network.outboundip", Outbound_IP.getTextContent());
+			Network.setAttribute("network.inboundip", Inbound_IP
+					.getTextContent());
+			Network.setAttribute("network.outboundip", Outbound_IP
+					.getTextContent());
 			Network.setAttribute("network.mtu", MTU.getTextContent());
 
 			Node prLoad1Min = hostParameters.item(6).getAttributes()
@@ -154,6 +155,7 @@ public class XMLUtil {
 			Host.addContent(PrLoad);
 
 		}/*
+			 * If you want an output file just decomment the code below!
 			 * XMLOutputter outputter=new XMLOutputter(); try {
 			 * outputter.output(document, new FileOutputStream(path)); } catch
 			 * (FileNotFoundException e1) { // TODO Auto-generated catch block
@@ -162,12 +164,20 @@ public class XMLUtil {
 			 */
 	}
 
-	public LinkedList<HardwareResource> matchResources(Map description, WSGT4newResourceBrokerAdaptor broker) {
+	/*
+	 * This method reads the XML document created by the query to the index
+	 * service and finds out if some resource matches the features received in
+	 * input
+	 */
+
+	public LinkedList<HardwareResource> matchResources(Map description,
+			WSGT4newResourceBrokerAdaptor broker) {
 
 		LinkedList<HardwareResource> matchedResources = new LinkedList();
-		int number_of_resources = description.size();
+		int numberOfResourceAttributes = description.size();
 
 		/*
+		 * If you want to read from an XML file just decomment the code below!
 		 * try { Document document= saxBuilder.build(path); } catch
 		 * (JDOMException e) { // TODO Auto-generated catch block
 		 * e.printStackTrace(); } catch (IOException e) { // TODO Auto-generated
@@ -179,7 +189,6 @@ public class XMLUtil {
 		int i = 1;
 		while (it.hasNext()) {
 			int count = 0;
-
 			Element host = it.next();
 			List hostParameters = host.getChildren();
 			Iterator<Element> it1 = hostParameters.iterator();
@@ -206,9 +215,10 @@ public class XMLUtil {
 					}
 				}
 			}
-			if (count == number_of_resources) {
-				GlobusHardwareResource hd = new GlobusHardwareResource(host, broker);
-				// Aggiungi tutti i dati dell host
+			if (count == numberOfResourceAttributes) {
+				GlobusHardwareResource hd = new GlobusHardwareResource(host,
+						broker);
+				// add the resource to the list of matched host
 				matchedResources.add(hd);
 			}
 			i++;
@@ -221,23 +231,27 @@ public class XMLUtil {
 		return this.document;
 	}
 
-	public HardwareResource getResourceByName(String hostname, WSGT4newResourceBrokerAdaptor broker) {
+	/*
+	 * This method retrieves a resource by his name. (The host name).
+	 */
+	public HardwareResource getResourceByName(String hostname,
+			WSGT4newResourceBrokerAdaptor broker) {
 		Element root = document.getRootElement();
 		List hosts = root.getChildren();
 		Iterator<Element> hostIterator = hosts.iterator();
-	
+
 		while (hostIterator.hasNext()) {
-			
 			Element host = hostIterator.next();
-			String name=host.getAttributeValue("NAME");
-			if(name.equals(hostname)){
-				//I have found the host to retrieve
-			GlobusHardwareResource hd = new GlobusHardwareResource(host, broker);
-			return hd;
-				 
+			String name = host.getAttributeValue("NAME");
+			if (name.equals(hostname)) {
+				// I have found the host to retrieve
+				GlobusHardwareResource hd = new GlobusHardwareResource(host,
+						broker);
+				return hd;
+
 			}
 		}
-		//host not found then return null
-		return null;		
+		// host not found then return null
+		return null;
 	}
 }

@@ -41,6 +41,9 @@ public class GlobusHardwareResource extends HardwareResourceCpi {
 	
 	private WSGT4newResourceBrokerAdaptor broker;
 
+	/*
+	 * The Globus Hardware Resource is created from a JDOM Element
+	 * */
 	public GlobusHardwareResource(Element host, WSGT4newResourceBrokerAdaptor broker) {
 		super(null);// it needs to invoke the superclass's constructor
 		this.broker = broker;
@@ -67,6 +70,11 @@ public class GlobusHardwareResource extends HardwareResourceCpi {
 		}
 	}
 
+	
+	/*
+	 * The method creates the return definition that are needed for to implement 
+	 * the metric listeners
+	 * */
 	private void createReturnDefinitions() {
 		
 		HashMap<String, Object> memorySizeAvailableReturnDefinition = new HashMap<String, Object>();
@@ -93,10 +101,9 @@ public class GlobusHardwareResource extends HardwareResourceCpi {
 				null, diskSizeAvailableReturnDefinition);
 		registerMetric("getAvailableDiskSize", diskSizeAvailableDefinition);
 	 
-		//inserire un altra condizione oltre maximum e minumum??
 		HashMap<String, Object> diskReadOnlyReturnDefinition = new HashMap<String, Object>();
 		diskReadOnlyReturnDefinition.put("disk.readOnly",
-				Boolean.class);
+				String.class);
 		diskReadOnlyDefinition = new MetricDefinition(
 				"disk.readOnly", MetricDefinition.CONTINUOUS, null, "",
 				null, diskReadOnlyReturnDefinition);
@@ -175,7 +182,7 @@ public class GlobusHardwareResource extends HardwareResourceCpi {
 		return (String) p.get("NAME");
 	}
 
-	public String toString() {// Attenzione: SMPSize e' il CPUCOUNT??
+	public String toString() {
 		Map p = description.getDescription();
 		 
 		/*
@@ -185,7 +192,7 @@ public class GlobusHardwareResource extends HardwareResourceCpi {
 		 return output;
 			
 		*/
-		String hostName = "HOST_NAME " + (String) p.get("NAME");
+		String hostName = "Host Name: " + (String) p.get("NAME");
 		String cpuSpeed = "cpu.speed " + (String) p.get("cpu.speed");
 		String cacheL1 = "cpu.cache.l1 " + (String) p.get("cpu.cache.l1");
 		String cacheL1D = "cpu.cache.l1d " + (String) p.get("cpu.cache.l1d");

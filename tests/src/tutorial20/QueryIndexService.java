@@ -17,7 +17,7 @@ import org.gridlab.gat.resources.HardwareResourceDescription;
 import org.gridlab.gat.resources.ResourceBroker;
 import org.gridlab.gat.resources.SoftwareDescription;
 
-public class ReadIndexService {
+public class QueryIndexService {
 
 	public static void main(String[] args) throws Exception {
 		SoftwareDescription sd = new SoftwareDescription();
@@ -31,11 +31,9 @@ public class ReadIndexService {
 		ResourceBroker broker = GAT.createResourceBroker(preferences, new URI(
 				args[0]));
 		HardwareResourceDescription hd = new HardwareResourceDescription();
-		hd.addResourceAttribute("cpu.speed", 2412);// Aggisustare sto coso qua
-		//hd.addResourceAttribute("memory.size.available", 1800);
-		// hd.addResourceAttribute("MEMORY_AVAILABLE", 1900);
-		// hd.addResourceAttribute("CPU_COUNT", 4);
-
+		//hd.addResourceAttribute("cpu.speed", 2411);
+		hd.addResourceAttribute("memory.size.available", 1800);
+		
 		List<HardwareResource> resources = broker.findResources(hd);
 		for (int i = 0; i < resources.size(); i++)
 			System.out.println(resources.get(i));
@@ -60,17 +58,11 @@ public class ReadIndexService {
 		for (int i = 0; i < resources.size(); i++) {
 			Map<String, Object> metricsValues1 = new HashMap<String, Object>();
 			Map<String, Object> metricsValues2 = new HashMap<String, Object>();
-			metricsValues1.put("moreThen", 1800);
-			metricsValues1.put("lessThen", 2400);
+			//I want to be notified when the value is more than 1800 and less than 2400
+			metricsValues1.put("moreThan", 1800);
+			metricsValues1.put("lessThan", 2400);
 
-			metricsValues2.put("moreThen", 10);
-			// E' il caso di mettere un ritardo standard nel thread della
-			// metrica
-			// per evitare che il querying thred non faccia in tempo ad
-			// aggiornare i dati
-			// prima di essere letti dal notifier thread?? oppure si puo ridorre
-			// a meno di 5 minuti
-			// lupdate. bisogna vedere se prende i dati aggiornati
+			metricsValues2.put("moreThan", 10);
 			metric = resources.get(i).getMetricDefinitionByName(
 					"memory.size.available").createMetric(metricsValues1,
 					5 * 60000);
@@ -96,9 +88,8 @@ public class ReadIndexService {
 
 		boolean end = false;
 		while (!end) {
-			System.out.println("I m gonna sleeppppp");
-			Thread.sleep(30 * 60000);
 			System.out.println("I m gonna die!!");
+			Thread.sleep(10000);			
 			end = true;
 		}
 	}

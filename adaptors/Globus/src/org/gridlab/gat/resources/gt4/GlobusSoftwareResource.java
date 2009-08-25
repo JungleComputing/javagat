@@ -17,11 +17,7 @@ public class GlobusSoftwareResource extends SoftwareResource{
 	
 	
 	public GlobusSoftwareResource(){
-	/*Questo costruttore dovra ricevere un elemento di JDOM
-	 * che in pratica sara l'HOST, con il solo campo Operatyng System. 
-	 * Da questo elemento si otterranno tutti i valori per le varibili
-	 * di questa classe e per le variabili di classe di SoftwareResource.
-	 * */	
+
 	}
 	
 	public Reservation getReservation() {

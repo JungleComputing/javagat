@@ -4,61 +4,68 @@ import org.apache.axis.message.MessageElement;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
-public class QueryingThread extends Thread{
+/*
+ * This is the thread that queries the Thread almost every 5 minutes
+ * */
+public class QueryingThread extends Thread {
 
 	WSGT4newResourceBrokerAdaptor broker;
-	
+
 	int numberOfListeners;
-	
-	boolean death=false; 
-	
-	public QueryingThread(WSGT4newResourceBrokerAdaptor broker){
-		this.broker=broker;
+
+	boolean death = false;
+
+	public QueryingThread(WSGT4newResourceBrokerAdaptor broker) {
+		this.broker = broker;
 		setDaemon(true);
 	}
-	
-	public  synchronized void addListener(){
+
+	public synchronized void addListener() {
 		numberOfListeners++;
 	}
-	public  synchronized void removeListener(){
+
+	public synchronized void removeListener() {
 		numberOfListeners--;
 	}
-	public  synchronized int getNumberOfListeners(){
+
+	public synchronized int getNumberOfListeners() {
 		return numberOfListeners;
 	}
-	
-	public void run(){
-		while(!death){
-				MessageElement[] entries = broker.queryDefaultIndexService();
-				
-				if (entries == null || entries.length == 0) {
-					System.out.println("Lunghezza 0 e mo so cazzi");
-				} else {
-							
-							Element root=null;
-							try {
-								root = entries[0].getAsDOM();
-							} catch (Exception e) {
-								// TODO Auto-generated catch block
-								e.printStackTrace();
-							}
-							NodeList hosts=root.getChildNodes();
-							broker.updateXMLDocument(hosts);
-							System.out.println("\nXML Document Updated\n");
-				
-				}
+
+	public void run() {
+		while (!death) {
+			MessageElement[] entries = broker.queryDefaultIndexService();
+
+			if (entries == null || entries.length == 0) {
+				System.out.println("Lunghezza 0 e mo so cazzi");
+			} else {
+
+				Element root = null;
 				try {
-					sleep(5*58000);// I give the time to the method to query the IndexService and update the XML document
-					} catch (InterruptedException e) {
+					root = entries[0].getAsDOM();
+				} catch (Exception e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
-				}//Query the Index Service every 5 minutes
-				
+				}
+				NodeList hosts = root.getChildNodes();
+				broker.updateXMLDocument(hosts);
+				System.out.println("\nXML Document Updated\n");
+
+			}
+			try {
+				sleep(5 * 58000);// The value is not 5*60000 because I give
+									// the time to the method to query the
+									// IndexService and update the XML document
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}// Query the Index Service every 5 minutes
+
 		}
-		}
+	}
 
 	public void killQueryingThread() {
-		this.death=true;
+		this.death = true;
 		System.out.println("Querying Thread Killed");
 	}
-	}
+}

@@ -74,7 +74,6 @@ import org.gridlab.gat.resources.utils.XMLUtil;
 import org.gridlab.gat.security.globus.GlobusSecurityUtils;
 import org.ietf.jgss.GSSCredential;
 
-
 /**
  * Implements the <code>ResourceBrokerCpi</code> abstract class.
  * 
@@ -84,558 +83,564 @@ import org.ietf.jgss.GSSCredential;
  */
 public class WSGT4newResourceBrokerAdaptor extends ResourceBrokerCpi {
 
-	
-	private String indexPath="/wsrf/services/DefaultIndexService";
-	private XMLUtil xmlUtil= new XMLUtil();
+	private String indexPath = "/wsrf/services/DefaultIndexService";
+
+	private XMLUtil xmlUtil = new XMLUtil();
+
 	private LinkedList<HardwareResource> resourcesList;
+
 	private QueryingThread queryingThread;
 
-	
-    public static Map<String, Boolean> getSupportedCapabilities() {
-        Map<String, Boolean> capabilities = ResourceBrokerCpi
-                .getSupportedCapabilities();
-        capabilities.put("beginMultiJob", true);
-        capabilities.put("endMultiJob", true);
-        capabilities.put("submitJob", true);
-        
-        return capabilities;
-    }
+	public static Map<String, Boolean> getSupportedCapabilities() {
+		Map<String, Boolean> capabilities = ResourceBrokerCpi
+				.getSupportedCapabilities();
+		capabilities.put("beginMultiJob", true);
+		capabilities.put("endMultiJob", true);
+		capabilities.put("submitJob", true);
 
-    public static Preferences getSupportedPreferences() {
-        Preferences preferences = ResourceBrokerCpi.getSupportedPreferences();
-        preferences.put("wsgt4new.sandbox.gram", "false");
-        preferences.put("wsgt4new.factory.type", "<FORK CONSTANT>");
-        return preferences;
-    }
+		return capabilities;
+	}
 
-    protected static Logger logger = LoggerFactory
-            .getLogger(WSGT4newResourceBrokerAdaptor.class);
+	public static Preferences getSupportedPreferences() {
+		Preferences preferences = ResourceBrokerCpi.getSupportedPreferences();
+		preferences.put("wsgt4new.sandbox.gram", "false");
+		preferences.put("wsgt4new.factory.type", "<FORK CONSTANT>");
+		return preferences;
+	}
 
-    protected GSSCredential getCred() throws GATInvocationException {
-        GSSCredential cred = null;
-        URI location = null;
-        try {
-            location = new URI(getHostname());
-        } catch (Exception e) {
-            throw new GATInvocationException(
-                    "WSGT4Job: getSecurityContext, initialization of location failed, "
-                            + e);
-        }
-        try {
-            cred = GlobusSecurityUtils.getGlobusCredential(gatContext,
-                    "ws-gram", location, ResourceManagerContact.DEFAULT_PORT);
-        } catch (Exception e) {
-            throw new GATInvocationException(
-                    "WSGT4Job: could not initialize credentials, " + e);
-        }
-        return cred;
-    }
+	protected static Logger logger = LoggerFactory
+			.getLogger(WSGT4newResourceBrokerAdaptor.class);
 
-    public WSGT4newResourceBrokerAdaptor(GATContext gatContext, URI brokerURI)
-            throws GATObjectCreationException {
-        super(gatContext, brokerURI);
-        // accept if broker URI is compatible with https or with any
-        // if wrong scheme, throw exception!
-        if (brokerURI.getScheme() != null) {
-            if (!brokerURI.isCompatible("https")) {
-                throw new GATObjectCreationException(
-                        "Unable to handle incompatible scheme '"
-                                + brokerURI.getScheme() + "' in broker uri '"
-                                + brokerURI.toString() + "'");
-            }
-        }
-        
-        if (System.getProperty("GLOBUS_LOCATION") == null) {
-            String globusLocation = System.getProperty("gat.adaptor.path")
-                    + java.io.File.separator + "GlobusAdaptor"
-                    + java.io.File.separator;
-            System.setProperty("GLOBUS_LOCATION", globusLocation);
-        }
+	protected GSSCredential getCred() throws GATInvocationException {
+		GSSCredential cred = null;
+		URI location = null;
+		try {
+			location = new URI(getHostname());
+		} catch (Exception e) {
+			throw new GATInvocationException(
+					"WSGT4Job: getSecurityContext, initialization of location failed, "
+							+ e);
+		}
+		try {
+			cred = GlobusSecurityUtils.getGlobusCredential(gatContext,
+					"ws-gram", location, ResourceManagerContact.DEFAULT_PORT);
+		} catch (Exception e) {
+			throw new GATInvocationException(
+					"WSGT4Job: could not initialize credentials, " + e);
+		}
+		return cred;
+	}
 
-        if (System.getProperty("axis.ClientConfigFile") == null) {
-            String axisClientConfigFile = System
-                    .getProperty("gat.adaptor.path")
-                    + java.io.File.separator
-                    + "GlobusAdaptor"
-                    + java.io.File.separator + "client-config.wsdd";
-            System.setProperty("axis.ClientConfigFile", axisClientConfigFile);
-           
-        }
-     
-        
-    }
+	public WSGT4newResourceBrokerAdaptor(GATContext gatContext, URI brokerURI)
+			throws GATObjectCreationException {
+		super(gatContext, brokerURI);
+		// accept if broker URI is compatible with https or with any
+		// if wrong scheme, throw exception!
+		if (brokerURI.getScheme() != null) {
+			if (!brokerURI.isCompatible("https")) {
+				throw new GATObjectCreationException(
+						"Unable to handle incompatible scheme '"
+								+ brokerURI.getScheme() + "' in broker uri '"
+								+ brokerURI.toString() + "'");
+			}
+		}
 
-    protected String createRSL(JobDescription description, Sandbox sandbox,
-            boolean useGramSandbox) throws GATInvocationException {
-        String rsl = new String("<job>");
-        SoftwareDescription sd = description.getSoftwareDescription();
+		if (System.getProperty("GLOBUS_LOCATION") == null) {
+			String globusLocation = System.getProperty("gat.adaptor.path")
+					+ java.io.File.separator + "GlobusAdaptor"
+					+ java.io.File.separator;
+			System.setProperty("GLOBUS_LOCATION", globusLocation);
+		}
 
-        if (sd == null) {
-            throw new GATInvocationException(
-                    "The job description does not contain a software description");
-        }
+		if (System.getProperty("axis.ClientConfigFile") == null) {
+			String axisClientConfigFile = System
+					.getProperty("gat.adaptor.path")
+					+ java.io.File.separator
+					+ "GlobusAdaptor"
+					+ java.io.File.separator + "client-config.wsdd";
+			System.setProperty("axis.ClientConfigFile", axisClientConfigFile);
 
-        rsl += "<executable>";
-        rsl += getExecutable(description);
-        rsl += "</executable>";
-        Map<String, Object> env = sd.getEnvironment();
-        if (env != null && !env.isEmpty()) {
-            Set<String> s = env.keySet();
-            Object[] keys = s.toArray();
+		}
 
-            for (int i = 0; i < keys.length; i++) {
-                String val = (String) env.get(keys[i]);
-                rsl += "<environment>";
-                rsl += "<name>" + keys[i] + "</name>";
-                rsl += "<value>" + val + "</value>";
-                rsl += "</environment>";
-            }
-        }
+	}
 
-        String[] argsA = getArgumentsArray(description);
+	protected String createRSL(JobDescription description, Sandbox sandbox,
+			boolean useGramSandbox) throws GATInvocationException {
+		String rsl = new String("<job>");
+		SoftwareDescription sd = description.getSoftwareDescription();
 
-        if (argsA != null) {
-            for (int i = 0; i < argsA.length; i++) {
-                rsl += "<argument>";
-                rsl += argsA[i];
-                rsl += "</argument>";
-            }
-        }
+		if (sd == null) {
+			throw new GATInvocationException(
+					"The job description does not contain a software description");
+		}
 
-        // set the environment
-        rsl += "<count>";
-        rsl += description.getProcessCount();
-        rsl += "</count>";
-        rsl += "<directory>";
-        if (sandbox.getSandbox().startsWith(File.separator)) {
-            rsl += sandbox.getSandbox();
-        } else {
-            rsl += "${GLOBUS_USER_HOME}/" + sandbox.getSandbox();
-        }
-        rsl += "</directory>";
+		rsl += "<executable>";
+		rsl += getExecutable(description);
+		rsl += "</executable>";
+		Map<String, Object> env = sd.getEnvironment();
+		if (env != null && !env.isEmpty()) {
+			Set<String> s = env.keySet();
+			Object[] keys = s.toArray();
 
-        File stdout = sd.getStdout();
-        if (stdout != null) {
-            rsl += "<stdout>";
-            rsl += sandbox.getRelativeStdout().getPath();
-            rsl += "</stdout>";
-        }
+			for (int i = 0; i < keys.length; i++) {
+				String val = (String) env.get(keys[i]);
+				rsl += "<environment>";
+				rsl += "<name>" + keys[i] + "</name>";
+				rsl += "<value>" + val + "</value>";
+				rsl += "</environment>";
+			}
+		}
 
-        File stderr = sd.getStderr();
-        if (stderr != null) {
-            rsl += "<stderr>";
-            rsl += sandbox.getRelativeStderr().getPath();
-            rsl += "</stderr>";
-        }
+		String[] argsA = getArgumentsArray(description);
 
-        File stdin = sd.getStdin();
-        if (stdin != null) {
-            rsl += "<stdin>";
-            rsl += sandbox.getRelativeStdin().getPath();
-            rsl += "</stdin>";
-        }
+		if (argsA != null) {
+			for (int i = 0; i < argsA.length; i++) {
+				rsl += "<argument>";
+				rsl += argsA[i];
+				rsl += "</argument>";
+			}
+		}
 
-        if (useGramSandbox) {
-            Map<File, File> preStaged = sd.getPreStaged();
-            if (preStaged != null) {
-                Set<File> keys = preStaged.keySet();
-                Iterator<File> i = keys.iterator();
-                rsl += "<fileStageIn>";
-                while (i.hasNext()) {
-                    File srcFile = i.next();
-                    File destFile = preStaged.get(srcFile);
-                    if (destFile == null) {
-                        logger
-                                .debug("ignoring prestaged file, no destination set!");
-                        continue;
-                    }
-                    rsl += "<transfer>";
-                    try {
-                        rsl += "<sourceUrl>" + srcFile.toURL() + "</sourceUrl>";
-                        String destUrlString = null;
-                        if (destFile.isAbsolute()) {
-                            destUrlString = destFile.toURL().toString();
-                        } else {
-                            destUrlString = destFile.toURL().toString()
-                                    .replace(
-                                            destFile.getPath(),
-                                            "${GLOBUS_USER_HOME}/"
-                                                    + destFile.getPath());
-                        }
-                        rsl += "<destinationUrl>" + destUrlString
-                                + "</destinationUrl>";
-                    } catch (MalformedURLException e) {
-                        throw new GATInvocationException(
-                                "WSGT4ResourceBrokerAdaptor", e);
-                    }
-                    rsl += "</transfer>";
-                }
-                rsl += "</fileStageIn>";
-            }
-
-            Map<File, File> postStaged = sd.getPostStaged();
-            if (preStaged != null) {
-                Set<File> keys = postStaged.keySet();
-                Iterator<File> i = keys.iterator();
-                rsl += "<fileStageOut>";
-                while (i.hasNext()) {
-                    File srcFile = i.next();
-                    File destFile = postStaged.get(srcFile);
-                    if (destFile == null) {
-                        logger
-                                .debug("ignoring poststaged file, no destination set!");
-                        continue;
-                    }
-                    rsl += "<transfer>";
-                    try {
-                        rsl += "<sourceUrl>" + srcFile.toURL() + "</sourceUrl>";
-                        rsl += "<destinationUrl>" + destFile.toURL()
-                                + "</destinationUrl>"; // TODO: Add
-                        // ${GLOBUS_USER_HOME}
-                    } catch (MalformedURLException e) {
-                        throw new GATInvocationException(
-                                "WSGT4ResourceBrokerAdaptor", e);
-                    }
-                    rsl += "</transfer>";
-                }
-                rsl += "</fileStageOut>";
-            }
-        }
-        rsl += "</job>";
-
-        if (logger.isInfoEnabled()) {
-            logger.info("RSL: " + rsl);
-        }
-
-        return rsl;
-    }
-
-    public Job submitJob(AbstractJobDescription abstractDescription,
-            MetricListener listener, String metricDefinitionName)
-            throws GATInvocationException {
-
-        if (!(abstractDescription instanceof JobDescription)) {
-            throw new GATInvocationException(
-                    "can only handle JobDescriptions: "
-                            + abstractDescription.getClass());
-        }
-
-        JobDescription description = (JobDescription) abstractDescription;
-
-        // if wrapper is enabled, do the wrapper stuff
-        String host = getHostname();
-        SoftwareDescription sd = description.getSoftwareDescription();
-        if (sd == null) {
-            throw new GATInvocationException(
-                    "WSGT4ResourceBroker: the job description does not contain a software description");
-        }
-
-        // create an endpoint reference type
-        EndpointReferenceType endpoint = new EndpointReferenceType();
-      
-        
-        try {
-            endpoint.setAddress(new Address(createAddressString()));
-        } catch (MalformedURIException e) {
-            throw new GATInvocationException("WSGT4newResourceBrokerAdaptor", e);
-        }
-
-        // test whether gram sandbox should be used
-        String s = (String) gatContext.getPreferences().get(
-                "wsgt4new.sandbox.gram");
-        boolean useGramSandbox = (s != null && s.equalsIgnoreCase("true"));
-        Sandbox sandbox = null;
-        if (!useGramSandbox) {
-            sandbox = new Sandbox(gatContext, description, host, null, true,
-                    true, true, true);
-        } else {
-            if (logger.isDebugEnabled()) {
-                logger.debug("using gram sandbox");
-            }
-        }
-        WSGT4newJob wsgt4job = new WSGT4newJob(gatContext, description, sandbox);
-        Job job = null;
-        if (description instanceof WrapperJobDescription) {
-            WrapperJobCpi tmp = new WrapperJobCpi(gatContext, wsgt4job);
-            listener = tmp;
-            job = tmp;
-        } else {
-            job = wsgt4job;
-        }
-        if (listener != null && metricDefinitionName != null) {
-            Metric metric = job.getMetricDefinitionByName(metricDefinitionName)
-                    .createMetric(null);
-            job.addMetricListener(listener, metric);
-        }
-
-        if (sandbox != null) {
-            wsgt4job.setState(Job.JobState.PRE_STAGING);
-            sandbox.prestage();
-        }
-           // create a gramjob according to the jobdescription
-        GramJob gramjob = null;
-        try {
-            gramjob = new GramJob(createRSL(description, sandbox,
-                    useGramSandbox));
-        } catch (RSLParseException e) {
-            throw new GATInvocationException("WSGT4newResourceBrokerAdaptor", e);
-        }
-        // inform the wsgt4 job of which gram job is related to it.
-        wsgt4job.setGramJob(gramjob);
-
-        // Was: gramjob.setAuthorization(HostAuthorization.getInstance());
-        // Modified to use a supplied credential. --Ceriel
-        GSSCredential cred = getCred();
-        if (cred != null) {
-            gramjob.setCredentials(getCred());
-            if (logger.isDebugEnabled()) {
-                logger.debug("submitJob: credential = " + cred);
-            }
-        } else {
-            gramjob.setAuthorization(HostAuthorization.getInstance());
-        }
-        // end modification.
-        gramjob.setMessageProtectionType(Constants.ENCRYPTION);
-        gramjob.setDelegationEnabled(true);
-
-        // wsgt4 job object listens to the gram job
-        gramjob.addListener(wsgt4job);
-
-        String factoryType = (String) gatContext.getPreferences().get(
-                "wsgt4new.factory.type");
-        if (factoryType == null || factoryType.equals("")) {
-            factoryType = ManagedJobFactoryConstants.FACTORY_TYPE.FORK;
-            if (logger.isDebugEnabled()) {
-                logger.debug("no factory type supplied, using default: "
-                        + ManagedJobFactoryConstants.FACTORY_TYPE.FORK);
-            }
-        }
-
-        ReferencePropertiesType props = new ReferencePropertiesType();
-        SimpleResourceKey key = new SimpleResourceKey(
-                ManagedJobConstants.RESOURCE_KEY_QNAME, factoryType);
-        try {
-            props.add(key.toSOAPElement());
-        } catch (SerializationException e) {
-            throw new GATInvocationException("WSGT4newResourceBrokerAdaptor", e);
-        }
-        endpoint.setProperties(props);
-
-        UUIDGen uuidgen = UUIDGenFactory.getUUIDGen();
-        String submissionID = "uuid:" + uuidgen.nextUUID();
-        if (logger.isDebugEnabled()) {
-            logger.debug("submission id for job: " + submissionID);
-        }
-        wsgt4job.setSubmissionID(submissionID);
-        try {
-            gramjob.submit(endpoint, false, false, submissionID);
-            wsgt4job.submitted();
-        } catch (Exception e) {
-            throw new GATInvocationException("WSGT4newResourceBrokerAdaptor", e);
-        }
-
-        // second parameter is batch, should be set to false.
-        // third parameter is limitedDelegation, currently hardcoded to false
-        return job;
-    }
-
-    private String createAddressString() {
-        // default scheme: https
-        // default port: 8443
-        // default path: /wsrf/services/ManagedJobFactoryService
-        logger.debug("brokerURI: " + brokerURI);
-        String scheme = "https";
-        if (brokerURI == null || !brokerURI.getScheme().equals("any")) {
-            scheme = brokerURI.getScheme();
-        }
-
-        int port = brokerURI.getPort(8443);
-
-        String path = "/wsrf/services/ManagedJobFactoryService";
-        if (brokerURI.getUnresolvedPath() != null) {
-            path = brokerURI.getUnresolvedPath();
-            if (!path.startsWith("/")) {
-                path = "/" + path;
-            }
-        }
-
-        return scheme + "://" + brokerURI.getHost() + ":" + port + path;
-    }
-    
- public List<HardwareResource> findResources(ResourceDescription s){
-	
-	/*Prima di fare la query posso verificare quali sono gli attributi richiesti 
-	 Se sono tutti del tipo che non variano come ad esempio la velocita' della
-	 CPU, allora posso evitare di fare la query se gia ne ho fatta una in precedenza.
-	 Devo controllare se il valore del document e' diverso da null
-	 */
-	
-	 boolean allStatic=areAllStaticAttributes(s);
-	 resourcesList=new LinkedList<HardwareResource>();
-	 
-	
-	 if(xmlUtil.getDocument()==null || !allStatic) {
-		
-		MessageElement[] entries = queryDefaultIndexService();
-				
-		if (entries == null || entries.length == 0) {
-			System.out.println("Lunghezza 0 e mo so cazzi");
+		// set the environment
+		rsl += "<count>";
+		rsl += description.getProcessCount();
+		rsl += "</count>";
+		rsl += "<directory>";
+		if (sandbox.getSandbox().startsWith(File.separator)) {
+			rsl += sandbox.getSandbox();
 		} else {
-			try {
-					Element root=entries[0].getAsDOM();
-					NodeList hosts=root.getChildNodes();
-							
+			rsl += "${GLOBUS_USER_HOME}/" + sandbox.getSandbox();
+		}
+		rsl += "</directory>";
+
+		File stdout = sd.getStdout();
+		if (stdout != null) {
+			rsl += "<stdout>";
+			rsl += sandbox.getRelativeStdout().getPath();
+			rsl += "</stdout>";
+		}
+
+		File stderr = sd.getStderr();
+		if (stderr != null) {
+			rsl += "<stderr>";
+			rsl += sandbox.getRelativeStderr().getPath();
+			rsl += "</stderr>";
+		}
+
+		File stdin = sd.getStdin();
+		if (stdin != null) {
+			rsl += "<stdin>";
+			rsl += sandbox.getRelativeStdin().getPath();
+			rsl += "</stdin>";
+		}
+
+		if (useGramSandbox) {
+			Map<File, File> preStaged = sd.getPreStaged();
+			if (preStaged != null) {
+				Set<File> keys = preStaged.keySet();
+				Iterator<File> i = keys.iterator();
+				rsl += "<fileStageIn>";
+				while (i.hasNext()) {
+					File srcFile = i.next();
+					File destFile = preStaged.get(srcFile);
+					if (destFile == null) {
+						logger
+								.debug("ignoring prestaged file, no destination set!");
+						continue;
+					}
+					rsl += "<transfer>";
+					try {
+						rsl += "<sourceUrl>" + srcFile.toURL() + "</sourceUrl>";
+						String destUrlString = null;
+						if (destFile.isAbsolute()) {
+							destUrlString = destFile.toURL().toString();
+						} else {
+							destUrlString = destFile.toURL().toString()
+									.replace(
+											destFile.getPath(),
+											"${GLOBUS_USER_HOME}/"
+													+ destFile.getPath());
+						}
+						rsl += "<destinationUrl>" + destUrlString
+								+ "</destinationUrl>";
+					} catch (MalformedURLException e) {
+						throw new GATInvocationException(
+								"WSGT4ResourceBrokerAdaptor", e);
+					}
+					rsl += "</transfer>";
+				}
+				rsl += "</fileStageIn>";
+			}
+
+			Map<File, File> postStaged = sd.getPostStaged();
+			if (preStaged != null) {
+				Set<File> keys = postStaged.keySet();
+				Iterator<File> i = keys.iterator();
+				rsl += "<fileStageOut>";
+				while (i.hasNext()) {
+					File srcFile = i.next();
+					File destFile = postStaged.get(srcFile);
+					if (destFile == null) {
+						logger
+								.debug("ignoring poststaged file, no destination set!");
+						continue;
+					}
+					rsl += "<transfer>";
+					try {
+						rsl += "<sourceUrl>" + srcFile.toURL() + "</sourceUrl>";
+						rsl += "<destinationUrl>" + destFile.toURL()
+								+ "</destinationUrl>"; // TODO: Add
+						// ${GLOBUS_USER_HOME}
+					} catch (MalformedURLException e) {
+						throw new GATInvocationException(
+								"WSGT4ResourceBrokerAdaptor", e);
+					}
+					rsl += "</transfer>";
+				}
+				rsl += "</fileStageOut>";
+			}
+		}
+		rsl += "</job>";
+
+		if (logger.isInfoEnabled()) {
+			logger.info("RSL: " + rsl);
+		}
+
+		return rsl;
+	}
+
+	public Job submitJob(AbstractJobDescription abstractDescription,
+			MetricListener listener, String metricDefinitionName)
+			throws GATInvocationException {
+
+		if (!(abstractDescription instanceof JobDescription)) {
+			throw new GATInvocationException(
+					"can only handle JobDescriptions: "
+							+ abstractDescription.getClass());
+		}
+
+		JobDescription description = (JobDescription) abstractDescription;
+
+		// if wrapper is enabled, do the wrapper stuff
+		String host = getHostname();
+		SoftwareDescription sd = description.getSoftwareDescription();
+		if (sd == null) {
+			throw new GATInvocationException(
+					"WSGT4ResourceBroker: the job description does not contain a software description");
+		}
+
+		// create an endpoint reference type
+		EndpointReferenceType endpoint = new EndpointReferenceType();
+
+		try {
+			endpoint.setAddress(new Address(createAddressString()));
+		} catch (MalformedURIException e) {
+			throw new GATInvocationException("WSGT4newResourceBrokerAdaptor", e);
+		}
+
+		// test whether gram sandbox should be used
+		String s = (String) gatContext.getPreferences().get(
+				"wsgt4new.sandbox.gram");
+		boolean useGramSandbox = (s != null && s.equalsIgnoreCase("true"));
+		Sandbox sandbox = null;
+		if (!useGramSandbox) {
+			sandbox = new Sandbox(gatContext, description, host, null, true,
+					true, true, true);
+		} else {
+			if (logger.isDebugEnabled()) {
+				logger.debug("using gram sandbox");
+			}
+		}
+		WSGT4newJob wsgt4job = new WSGT4newJob(gatContext, description, sandbox);
+		Job job = null;
+		if (description instanceof WrapperJobDescription) {
+			WrapperJobCpi tmp = new WrapperJobCpi(gatContext, wsgt4job);
+			listener = tmp;
+			job = tmp;
+		} else {
+			job = wsgt4job;
+		}
+		if (listener != null && metricDefinitionName != null) {
+			Metric metric = job.getMetricDefinitionByName(metricDefinitionName)
+					.createMetric(null);
+			job.addMetricListener(listener, metric);
+		}
+
+		if (sandbox != null) {
+			wsgt4job.setState(Job.JobState.PRE_STAGING);
+			sandbox.prestage();
+		}
+		// create a gramjob according to the jobdescription
+		GramJob gramjob = null;
+		try {
+			gramjob = new GramJob(createRSL(description, sandbox,
+					useGramSandbox));
+		} catch (RSLParseException e) {
+			throw new GATInvocationException("WSGT4newResourceBrokerAdaptor", e);
+		}
+		// inform the wsgt4 job of which gram job is related to it.
+		wsgt4job.setGramJob(gramjob);
+
+		// Was: gramjob.setAuthorization(HostAuthorization.getInstance());
+		// Modified to use a supplied credential. --Ceriel
+		GSSCredential cred = getCred();
+		if (cred != null) {
+			gramjob.setCredentials(getCred());
+			if (logger.isDebugEnabled()) {
+				logger.debug("submitJob: credential = " + cred);
+			}
+		} else {
+			gramjob.setAuthorization(HostAuthorization.getInstance());
+		}
+		// end modification.
+		gramjob.setMessageProtectionType(Constants.ENCRYPTION);
+		gramjob.setDelegationEnabled(true);
+
+		// wsgt4 job object listens to the gram job
+		gramjob.addListener(wsgt4job);
+
+		String factoryType = (String) gatContext.getPreferences().get(
+				"wsgt4new.factory.type");
+		if (factoryType == null || factoryType.equals("")) {
+			factoryType = ManagedJobFactoryConstants.FACTORY_TYPE.FORK;
+			if (logger.isDebugEnabled()) {
+				logger.debug("no factory type supplied, using default: "
+						+ ManagedJobFactoryConstants.FACTORY_TYPE.FORK);
+			}
+		}
+
+		ReferencePropertiesType props = new ReferencePropertiesType();
+		SimpleResourceKey key = new SimpleResourceKey(
+				ManagedJobConstants.RESOURCE_KEY_QNAME, factoryType);
+		try {
+			props.add(key.toSOAPElement());
+		} catch (SerializationException e) {
+			throw new GATInvocationException("WSGT4newResourceBrokerAdaptor", e);
+		}
+		endpoint.setProperties(props);
+
+		UUIDGen uuidgen = UUIDGenFactory.getUUIDGen();
+		String submissionID = "uuid:" + uuidgen.nextUUID();
+		if (logger.isDebugEnabled()) {
+			logger.debug("submission id for job: " + submissionID);
+		}
+		wsgt4job.setSubmissionID(submissionID);
+		try {
+			gramjob.submit(endpoint, false, false, submissionID);
+			wsgt4job.submitted();
+		} catch (Exception e) {
+			throw new GATInvocationException("WSGT4newResourceBrokerAdaptor", e);
+		}
+
+		// second parameter is batch, should be set to false.
+		// third parameter is limitedDelegation, currently hardcoded to false
+		return job;
+	}
+
+	private String createAddressString() {
+		// default scheme: https
+		// default port: 8443
+		// default path: /wsrf/services/ManagedJobFactoryService
+		logger.debug("brokerURI: " + brokerURI);
+		String scheme = "https";
+		if (brokerURI == null || !brokerURI.getScheme().equals("any")) {
+			scheme = brokerURI.getScheme();
+		}
+
+		int port = brokerURI.getPort(8443);
+
+		String path = "/wsrf/services/ManagedJobFactoryService";
+		if (brokerURI.getUnresolvedPath() != null) {
+			path = brokerURI.getUnresolvedPath();
+			if (!path.startsWith("/")) {
+				path = "/" + path;
+			}
+		}
+
+		return scheme + "://" + brokerURI.getHost() + ":" + port + path;
+	}
+
+	public List<HardwareResource> findResources(ResourceDescription s) {
+
+		boolean allStatic = areAllStaticAttributes(s);
+		resourcesList = new LinkedList<HardwareResource>();
+
+		/*
+		 * I need to query the IndexService only if it has not been queried
+		 * already or if the attributes are not static (static attributes are
+		 * cpu speed,disk size,..the ones that will not change between 2 invocations
+		 */
+		if (xmlUtil.getDocument() == null || !allStatic) {
+			MessageElement[] entries = queryDefaultIndexService();
+			if (entries == null || entries.length == 0) {
+				throw new QueryIndexServiceException(
+						"Query Result null or with no message Elements");
+			} else {
+				try {
+					Element root = entries[0].getAsDOM();
+					NodeList hosts = root.getChildNodes();
 					xmlUtil.createXMLDocument(hosts);
-					// qui con un istance of posso capire se creare una lista di soft o hard resources
-					Map description=s.getDescription();	
-					resourcesList=xmlUtil.matchResources(description, this);
-									
+					Map description = s.getDescription();
+					resourcesList = xmlUtil.matchResources(description, this);
 
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
 			}
-		
-		
-	}
-	 else{	 
-		     System.out.println("\n I dont need to query the Index Service \n");
-		     Map description=s.getDescription();	
-			 resourcesList=xmlUtil.matchResources(description, this);
-	 }
-	 
-		 
+
+		} else {
+			System.out.println("\n I dont need to query the Index Service \n");
+			Map description = s.getDescription();
+			resourcesList = xmlUtil.matchResources(description, this);
+		}
+
 		return resourcesList;
-}
+	}
 
- public void updateXMLDocument (NodeList hosts){
-	 xmlUtil.createXMLDocument(hosts);
- }
- 
- 
- 
-public MessageElement[] queryDefaultIndexService() {
-	
-	String indexURI = this.brokerURI.toString()+this.indexPath;
-	System.out.println("\n I'm querying the Index Service: "+indexURI+"\n");
-	
-   EndpointReferenceType indexEPR = new EndpointReferenceType();
-	try {
-		indexEPR.setAddress(new Address(indexURI));
-	} catch (Exception e) {			
-			e.printStackTrace();
-		}
-	
-    String sslTrustStore = System.getProperty("gat.adaptor.path")
-    + java.io.File.separator + "GlobusAdaptor"
-    + java.io.File.separator + "cacerts";
-	
-	System.setProperty("javax.net.ssl.trustStore",sslTrustStore); 
-	System.setProperty("javax.net.ssl.trustStorePassword","changeit");
-	// Get QueryResourceProperties portType
-	WSResourcePropertiesServiceAddressingLocator queryLocator;
-	queryLocator = new WSResourcePropertiesServiceAddressingLocator();
-	QueryResourceProperties_PortType query = null;
-	try {
-		query = queryLocator.getQueryResourcePropertiesPort(indexEPR);
-	} catch (ServiceException e) {
-		logger.error("ERROR: Unable to obtain query portType.");
+	public void updateXMLDocument(NodeList hosts) {
+		xmlUtil.createXMLDocument(hosts);
+	}
+
+	public MessageElement[] queryDefaultIndexService() {
+
+		String indexURI = this.brokerURI.toString() + this.indexPath;
+		System.out.println("\n I'm querying the Index Service: " + indexURI
+				+ "\n");
+
+		EndpointReferenceType indexEPR = new EndpointReferenceType();
 		try {
-			throw new RemoteException(
-					"ERROR: Unable to obtain query portType.", e);
-		} catch (RemoteException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		}
-	}
-  // Setup security options
-	((Stub) query)._setProperty(Constants.GSI_TRANSPORT,
-			Constants.SIGNATURE);
-	((Stub) query)._setProperty(Constants.AUTHORIZATION, NoAuthorization
-			.getInstance());
-
-
-   String xpathQuery = "/*/*/*/*/*/*/*[local-name()='SubCluster']";
-	//String xpathQuery = "/*/*/*/*/*[local-name()='GLUECE'][1]/*[local-name()='Cluster'][1]";
-	// Create request to QueryResourceProperties
-	QueryExpressionType queryExpr = new QueryExpressionType();
-	try {
-		queryExpr.setDialect(new org.apache.axis.types.URI(WSRFConstants.XPATH_1_DIALECT));
-		//queryExpr.setDialect(dialect);
-	} catch (Exception e) {			
+			indexEPR.setAddress(new Address(indexURI));
+		} catch (Exception e) {
 			e.printStackTrace();
 		}
-	
-	queryExpr.setValue(xpathQuery);
-	QueryResourceProperties_Element queryRequest = new QueryResourceProperties_Element(
-			queryExpr);
-	// Invoke QueryResourceProperties
-	QueryResourcePropertiesResponse queryResponse = null;
-	try {
-		queryResponse = query.queryResourceProperties(queryRequest);
-		} catch (RemoteException e) {
-						e.printStackTrace();
-		}
-	
-	// The response includes 0 or more entries from the index service.
-	MessageElement[] entries = queryResponse.get_any();
-	
-	return entries;
-	
-}
 
-private boolean areAllStaticAttributes(ResourceDescription s) {
-	 int numberofResources=s.getDescription().size();
-	 int count=0;
-	
-	 if(s.getResourceAttribute("cpu.speed")!=null)count++;
-	 if(s.getResourceAttribute("cpu.count")!=null)count++;
-	 if(s.getResourceAttribute("cpu.cache.l1")!=null)count++;
-	 if(s.getResourceAttribute("cpu.cache.l1d")!=null)count++;
-	 if(s.getResourceAttribute("cpu.cache.l1i")!=null)count++;
-	 if(s.getResourceAttribute("cpu.cache.l2")!=null)count++;
-	 if(s.getResourceAttribute("memory.size")!=null)count++;
-	 if(s.getResourceAttribute("memory.virtual.size")!=null)count++;
-	 if(s.getResourceAttribute("os.name")!=null)count++;
-	 if(s.getResourceAttribute("os.release")!=null)count++;
-	 if(s.getResourceAttribute("os.type")!=null)count++;
-	 if(s.getResourceAttribute("disk.size")!=null)count++;
-	 if(s.getResourceAttribute("disk.root")!=null)count++;
-	 
-	 if (count==numberofResources) return true;
-	 return false;
+		String sslTrustStore = System.getProperty("gat.adaptor.path")
+				+ java.io.File.separator + "GlobusAdaptor"
+				+ java.io.File.separator + "cacerts";
+
+		System.setProperty("javax.net.ssl.trustStore", sslTrustStore);
+		System.setProperty("javax.net.ssl.trustStorePassword", "changeit");
+		// Get QueryResourceProperties portType
+		WSResourcePropertiesServiceAddressingLocator queryLocator;
+		queryLocator = new WSResourcePropertiesServiceAddressingLocator();
+		QueryResourceProperties_PortType query = null;
+		try {
+			query = queryLocator.getQueryResourcePropertiesPort(indexEPR);
+		} catch (ServiceException e) {
+			logger.error("ERROR: Unable to obtain query portType.");
+			try {
+				throw new RemoteException(
+						"ERROR: Unable to obtain query portType.", e);
+			} catch (RemoteException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+		}
+		// Setup security options
+		((Stub) query)._setProperty(Constants.GSI_TRANSPORT,
+				Constants.SIGNATURE);
+		((Stub) query)._setProperty(Constants.AUTHORIZATION, NoAuthorization
+				.getInstance());
+
+		String xpathQuery = "/*/*/*/*/*/*/*[local-name()='SubCluster']";
+
+		// Create request to QueryResourceProperties
+		QueryExpressionType queryExpr = new QueryExpressionType();
+		try {
+			queryExpr.setDialect(new org.apache.axis.types.URI(
+					WSRFConstants.XPATH_1_DIALECT));
+			// queryExpr.setDialect(dialect);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
+		queryExpr.setValue(xpathQuery);
+		QueryResourceProperties_Element queryRequest = new QueryResourceProperties_Element(
+				queryExpr);
+		// Invoke QueryResourceProperties
+		QueryResourcePropertiesResponse queryResponse = null;
+		try {
+			queryResponse = query.queryResourceProperties(queryRequest);
+		} catch (RemoteException e) {
+			e.printStackTrace();
+		}
+
+		// The response includes 0 or more entries from the index service.
+		MessageElement[] entries = queryResponse.get_any();
+
+		return entries;
+
 	}
 
-public HardwareResource findResourceByName(String hostname) {
+	// Checks if the attributes are not variable
+	private boolean areAllStaticAttributes(ResourceDescription s) {
+		int numberofResources = s.getDescription().size();
+		int count = 0;
 
-	HardwareResource resource=null;
-	//retrive the resource passed like parameter				
-	resource=xmlUtil.getResourceByName(hostname, this);
-	return resource;
-	
-}
- 
-	public boolean queryingThreadIsCreated(){
-	if(queryingThread==null)return false;
-	return true;
-	
-}
+		if (s.getResourceAttribute("cpu.speed") != null)
+			count++;
+		if (s.getResourceAttribute("cpu.count") != null)
+			count++;
+		if (s.getResourceAttribute("cpu.cache.l1") != null)
+			count++;
+		if (s.getResourceAttribute("cpu.cache.l1d") != null)
+			count++;
+		if (s.getResourceAttribute("cpu.cache.l1i") != null)
+			count++;
+		if (s.getResourceAttribute("cpu.cache.l2") != null)
+			count++;
+		if (s.getResourceAttribute("memory.size") != null)
+			count++;
+		if (s.getResourceAttribute("memory.virtual.size") != null)
+			count++;
+		if (s.getResourceAttribute("os.name") != null)
+			count++;
+		if (s.getResourceAttribute("os.release") != null)
+			count++;
+		if (s.getResourceAttribute("os.type") != null)
+			count++;
+		if (s.getResourceAttribute("disk.size") != null)
+			count++;
+		if (s.getResourceAttribute("disk.root") != null)
+			count++;
+
+		if (count == numberofResources)
+			return true;
+		return false;
+	}
+
+	public HardwareResource findResourceByName(String hostname) {
+		HardwareResource resource = null;
+		// retrieve the resource passed like parameter
+		resource = xmlUtil.getResourceByName(hostname, this);
+		return resource;
+
+	}
+
+	public boolean queryingThreadIsCreated() {
+		if (queryingThread == null)
+			return false;
+		return true;
+
+	}
 
 	public void startQueryingThread() {
-	queryingThread= new QueryingThread(this);
-	queryingThread.start();
-	
+		queryingThread = new QueryingThread(this);
+		queryingThread.start();
+
 	}
+
 	private void killQueryingThread() {
-	queryingThread.killQueryingThread();
+		queryingThread.killQueryingThread();
 	}
-	
+
 	public void addListenerToQueryingThread() {
 		queryingThread.addListener();
 	}
+
 	public void removeListenerToQueryingThread() {
 		queryingThread.removeListener();
-		if(queryingThread.getNumberOfListeners()==0)
+		if (queryingThread.getNumberOfListeners() == 0)
 			killQueryingThread();
 	}
 }

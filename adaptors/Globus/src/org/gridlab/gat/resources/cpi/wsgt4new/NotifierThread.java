@@ -9,6 +9,10 @@ import org.gridlab.gat.monitoring.MetricEvent;
 import org.gridlab.gat.monitoring.MetricListener;
 import org.gridlab.gat.resources.gt4.GlobusHardwareResource;
 
+/* This class keeps monitoring the value of the metrics of the resource.
+ * If the value changes and iy satisfies the values of the metrics received
+ * in input then an event is fired 
+ * */
 public class NotifierThread extends Thread {
 
 	private WSGT4newResourceBrokerAdaptor broker;
@@ -38,25 +42,24 @@ public class NotifierThread extends Thread {
 			NotifierThread.this.notifyAll();
 
 		}
-		// some other code
 	}
 
 	public void remove(Metric metric, MetricListener metricListener) {
-		 synchronized (NotifierThread.this) {
-		for (int i = 0; i < metrics.size(); i++) {
-			if (metrics.get(i).equals(metric)
-					&& metricListeners.get(i).equals(metricListener)) {
-				metrics.remove(i);
-				metricListeners.remove(i);
-				updates.remove(i);// should I move this before the others?
+		synchronized (NotifierThread.this) {
+			for (int i = 0; i < metrics.size(); i++) {
+				if (metrics.get(i).equals(metric)
+						&& metricListeners.get(i).equals(metricListener)) {
+					metrics.remove(i);
+					metricListeners.remove(i);
+					updates.remove(i);
+				}
+			}
+
+			if (metrics.size() == 0) {// all the metrics have been removed
+				this.death = true;
+				System.out.println("Notifier Thread Killed");
 			}
 		}
-
-		if (metrics.size() == 0) {// all the metrics have been removed
-			this.death = true;
-			System.out.println("Notifier Thread Killed");
-		}
-	  }
 	}
 
 	public void run() {
@@ -72,7 +75,9 @@ public class NotifierThread extends Thread {
 								+ metrics.get(i).getFrequency());
 					}
 				}
-			}//the synchonized block ends here! if the sleep is synchronized, the remove method will never acquire the resource
+			}// the synchonized block ends here! if the sleep is
+			// synchronized, the remove method will never acquire the
+			// resource
 			// find out how long we have to sleep for the next update
 			long nextUpdateTime = Long.MAX_VALUE;
 			for (Long update : updates) {
@@ -91,22 +96,28 @@ public class NotifierThread extends Thread {
 		}
 	}
 
+	/*
+	 * This method finds out if we have to fire an event
+	 */
+
 	private void checkKeys(Map mapValues, int i) {
 		String hostname = resource.getResourceName();
 		GlobusHardwareResource matchedResource = (GlobusHardwareResource) broker
 				.findResourceByName(hostname);
-		Integer moreThen = (Integer) mapValues.get("moreThen");
-		Integer lessThen = (Integer) mapValues.get("lessThen");
+		Integer moreThen = (Integer) mapValues.get("moreThan");
+		Integer lessThen = (Integer) mapValues.get("lessThan");
 		Integer value = Integer.parseInt(matchedResource
 				.getResourceDescription().getResourceAttribute(
 						metrics.get(i).getDefinition().getMetricName())
 				.toString());
 
-		if (moreThen != null && lessThen != null) {
+		if (moreThen != null && lessThen != null) {// The user asked for a
+													// range value
 			if (value > moreThen && value < lessThen) {
 				// I have to fire the metric
-				System.out.println("Input less Then Value: "
-						+ lessThen.intValue() +" - Input more Then Value: "+ moreThen.intValue() +" - Resource's Value: "
+				System.out.println("Input less Than Value: "
+						+ lessThen.intValue() + " - Input more Then Value: "
+						+ moreThen.intValue() + " - Resource's Value: "
 						+ value.intValue());
 				MetricEvent event = new MetricEvent(resource, value, metrics
 						.get(i), System.currentTimeMillis());
@@ -114,8 +125,7 @@ public class NotifierThread extends Thread {
 			}
 		} else {
 			if (moreThen != null) {
-				// matchedResource.getResourceName();
-				System.out.println("Input more Then Value: "
+				System.out.println("Input more Than Value: "
 						+ moreThen.intValue() + " - Resource's Value: "
 						+ value.intValue());
 				if (moreThen.intValue() < value.intValue()) {
@@ -126,8 +136,7 @@ public class NotifierThread extends Thread {
 
 				}
 			}
-			if (lessThen != null) {// h contains maximun
-				// matchedResource.getResourceName();
+			if (lessThen != null) {
 				System.out.println("Input less Then Value: "
 						+ lessThen.intValue() + " - Resource's Value: "
 						+ value.intValue());
