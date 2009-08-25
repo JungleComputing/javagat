@@ -760,6 +760,10 @@ public class URI implements Serializable, Comparable<Object> {
     }
 
     public URI setPath(String path) throws URISyntaxException {
+        if (getScheme() != null && getHost() == null) {
+            return new URI(getScheme(), getUserInfo(), getHost(), getPort(-1), "///"
+                    + path, getQuery(), getFragment());
+        }
         return new URI(getScheme(), getUserInfo(), getHost(), getPort(-1), "/"
                 + path, getQuery(), getFragment());
     }
