@@ -89,6 +89,10 @@ public class CommandlineSshSecurityUtils {
 
     protected static Logger logger = LoggerFactory
             .getLogger(CommandlineSshSecurityUtils.class);
+    
+    private static String defaultPrivateKeyfile = null;
+    
+    private static boolean didDefaultPrivateKeyfile = false;
 
     @SuppressWarnings("unchecked")
     public static Map<String, String> getSshCredential(GATContext context,
@@ -112,52 +116,58 @@ public class CommandlineSshSecurityUtils {
         return credential;
     }
 
-    private static String getDefaultPrivateKeyfile(GATContext context) {
-        String keyfile = null;
+    private static synchronized String getDefaultPrivateKeyfile(GATContext context) {
+        if ( ! didDefaultPrivateKeyfile) {
 
-        // no key file given, try id_dsa and id_rsa
-        String home = System.getProperty("user.home");
-        String fileSep = System.getProperty("file.separator");
+            didDefaultPrivateKeyfile = true;
 
-        if (home == null) {
-            home = "";
-        } else {
-            home += fileSep;
-        }
+            String keyfile = null;
 
-        keyfile = home + ".ssh" + fileSep + "id_dsa";
+            // no key file given, try id_dsa and id_rsa
+            String home = System.getProperty("user.home");
+            String fileSep = System.getProperty("file.separator");
 
-        java.io.File keyf = new java.io.File(keyfile);
+            if (home == null) {
+                home = "";
+            } else {
+                home += fileSep;
+            }
 
-        if (!keyf.exists()) {
-            keyfile = home + ".ssh" + fileSep + "id_rsa";
-            keyf = new java.io.File(keyfile);
+            keyfile = home + ".ssh" + fileSep + "id_dsa";
+
+            java.io.File keyf = new java.io.File(keyfile);
 
             if (!keyf.exists()) {
-                keyfile = home + ".ssh" + fileSep + "identity";
+                keyfile = home + ".ssh" + fileSep + "id_rsa";
                 keyf = new java.io.File(keyfile);
 
                 if (!keyf.exists()) {
-                    keyfile = home + "ssh" + fileSep + "id_dsa";
+                    keyfile = home + ".ssh" + fileSep + "identity";
                     keyf = new java.io.File(keyfile);
 
                     if (!keyf.exists()) {
-                        keyfile = home + "ssh" + fileSep + "id_rsa";
+                        keyfile = home + "ssh" + fileSep + "id_dsa";
                         keyf = new java.io.File(keyfile);
 
                         if (!keyf.exists()) {
-                            keyfile = home + "ssh" + fileSep + "identity";
+                            keyfile = home + "ssh" + fileSep + "id_rsa";
                             keyf = new java.io.File(keyfile);
 
                             if (!keyf.exists()) {
-                                return null;
+                                keyfile = home + "ssh" + fileSep + "identity";
+                                keyf = new java.io.File(keyfile);
+
+                                if (!keyf.exists()) {
+                                    keyfile = null;
+                                }
                             }
                         }
                     }
                 }
             }
-        }
 
-        return keyfile;
+            defaultPrivateKeyfile = keyfile;
+        }
+        return defaultPrivateKeyfile;
     }
 }
