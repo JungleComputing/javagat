@@ -525,7 +525,8 @@ public class GlobusJob extends JobCpi implements GramJobListener,
                 }
             }
 
-            sj = new SerializedJob(jobDescription, sandbox, globusJobID,
+            sj = new SerializedJob(getClass().getName(),
+                    jobDescription, sandbox, globusJobID,
                     submissiontime, starttime, stoptime);
         }
         String res = GATEngine.defaultMarshal(sj);
@@ -538,12 +539,12 @@ public class GlobusJob extends JobCpi implements GramJobListener,
     public static Advertisable unmarshal(GATContext context, String s)
             throws GATObjectCreationException {
         if (logger.isDebugEnabled()) {
-            logger.debug("unmarshalled seralized job: " + s);
+            logger.debug("unmarshalled serialized job: " + s);
         }
 
         SerializedJob sj = (SerializedJob) GATEngine.defaultUnmarshal(
-            SerializedJob.class, s);
-
+            SerializedJob.class, s, GlobusJob.class.getName());
+        
         // if this job was created within this JVM, just return a reference to
         // the job
         synchronized (JobCpi.class) {

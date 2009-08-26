@@ -140,7 +140,7 @@ public class WSGT4newJob extends JobCpi implements GramJobListener, Runnable {
         }
         if (credential != null) {
             job.setCredentials(credential);
-        } else {
+        } else {        
             job.setAuthorization(HostAuthorization.getInstance());
         }
         
@@ -370,7 +370,8 @@ public class WSGT4newJob extends JobCpi implements GramJobListener, Runnable {
                 }
             }
 
-            sj = new SerializedJob(jobDescription, sandbox, submissionID,
+            sj = new SerializedJob(getClass().getName(),
+                    jobDescription, sandbox, submissionID,
                     submissiontime, starttime, stoptime);
         }
         String res = GATEngine.defaultMarshal(sj);
@@ -383,12 +384,12 @@ public class WSGT4newJob extends JobCpi implements GramJobListener, Runnable {
     public static Advertisable unmarshal(GATContext context, String s)
             throws GATObjectCreationException {
         if (logger.isDebugEnabled()) {
-            logger.debug("unmarshalled seralized job: " + s);
+            logger.debug("unmarshalled serialized job: " + s);
         }
 
         SerializedJob sj = (SerializedJob) GATEngine.defaultUnmarshal(
-            SerializedJob.class, s);
-
+            SerializedJob.class, s, WSGT4newJob.class.getName());
+        
         // if this job was created within this JVM, just return a reference to
         // the job
         synchronized (JobCpi.class) {

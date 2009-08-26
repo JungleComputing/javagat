@@ -159,7 +159,7 @@ public class GlobusSecurityUtils {
 
 
     /**
-     * Handling of all globus certicicates goes through this method
+     * Handling of all globus certificates goes through this method.
      * 
      * @param context
      * @param preferences
@@ -177,8 +177,12 @@ public class GlobusSecurityUtils {
         Object data = SecurityContextUtils.getSecurityUserData(context,
                 adaptorName, "globus", location, defaultPort,
                 new GlobusContextCreator());
-
+        
         GSSCredential c = (GSSCredential) data;
+
+        if (logger.isDebugEnabled()) {
+            logger.debug("getGlobusCredential: got credential: \n" + (c == null ? "NULL" : ((GlobusGSSCredentialImpl)c).getGlobusCredential().toString()));
+        }
 
         int remaining = 0;
         try {

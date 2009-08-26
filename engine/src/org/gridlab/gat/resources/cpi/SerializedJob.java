@@ -5,10 +5,11 @@ import java.io.Serializable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.gridlab.gat.advert.Advertisable;
+import org.gridlab.gat.advert.cpi.SerializedBase;
 import org.gridlab.gat.resources.JobDescription;
 
 @SuppressWarnings("serial")
-public class SerializedJob implements Serializable, Advertisable {
+public class SerializedJob extends SerializedBase implements Serializable, Advertisable {
 
     protected static Logger logger = LoggerFactory.getLogger(SerializedJob.class);
 
@@ -24,8 +25,9 @@ public class SerializedJob implements Serializable, Advertisable {
     public SerializedJob() {
     }
 
-    public SerializedJob(JobDescription jobDescription, Sandbox sandbox,
+    public SerializedJob(String classname, JobDescription jobDescription, Sandbox sandbox,
             String jobId, long submissiontime, long starttime, long stoptime) {
+        super(classname);
         this.jobDescription = jobDescription;
         this.sandbox = sandbox;
         this.jobId = jobId;

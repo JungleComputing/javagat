@@ -23,10 +23,10 @@ public class SerializedUnicoreJob extends SerializedJob {
     public SerializedUnicoreJob() {
     }
 
-    public SerializedUnicoreJob(JobDescription jobDescription, Sandbox sandbox,
+    public SerializedUnicoreJob(String classname, JobDescription jobDescription, Sandbox sandbox,
             String jobId, long submissiontime, long starttime, long stoptime,
             SoftwareDescription sd) {
-        super(jobDescription, sandbox, jobId, submissiontime, starttime,
+        super(classname, jobDescription, sandbox, jobId, submissiontime, starttime,
                 stoptime);
         
         // Get what is needed from the software description to deal with

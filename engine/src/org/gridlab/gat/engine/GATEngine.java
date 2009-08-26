@@ -36,6 +36,7 @@ import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.GATObjectCreationException;
 import org.gridlab.gat.Preferences;
 import org.gridlab.gat.advert.Advertisable;
+import org.gridlab.gat.advert.cpi.SerializedBase;
 
 /**
  * @author rob
@@ -784,6 +785,18 @@ public class GATEngine {
         } catch (Exception e) {
             throw new Error("could not unmarshal object: " + e);
         }
+    }
+    
+    public static Advertisable defaultUnmarshal(Class<?> type, String s, String expectedClass) {
+        Advertisable a = defaultUnmarshal(type, s);
+        if (! (a instanceof SerializedBase)) {
+            throw new Error("could not unmarshal object: not a SerializedBase.");
+        }
+        if (!((SerializedBase)a).checkClassname(expectedClass)) {
+            throw new Error("could not unmarshal object: found " + ((SerializedBase)a).getClassname()
+                    + " instead of " + expectedClass);
+        }
+        return a;
     }
 
     /**

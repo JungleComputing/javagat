@@ -349,7 +349,7 @@ public class WSGT4newResourceBrokerAdaptor extends ResourceBrokerCpi {
         // Modified to use a supplied credential. --Ceriel
         GSSCredential cred = getCred();
         if (cred != null) {
-            gramjob.setCredentials(getCred());
+            gramjob.setCredentials(cred);
             if (logger.isDebugEnabled()) {
                 logger.debug("submitJob: credential = " + cred);
             }

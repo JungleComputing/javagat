@@ -273,7 +273,8 @@ public class CommandlineSshJob extends JobCpi {
                 }
             }
 
-            sj = new SerializedJob(jobDescription, sandbox, processID,
+            sj = new SerializedJob(this.getClass().getName(),
+                    jobDescription, sandbox, processID,
                     submissiontime, starttime, stoptime);
         }
         String res = GATEngine.defaultMarshal(sj);
@@ -290,7 +291,8 @@ public class CommandlineSshJob extends JobCpi {
         }
 
         SerializedJob sj = (SerializedJob) GATEngine.defaultUnmarshal(
-                SerializedJob.class, s);
+                SerializedJob.class, s, CommandlineSshJob.class.getName());
+         
         if (logger.isDebugEnabled()) {
             logger.debug("unmarshalled serialized job: " + sj);
         }

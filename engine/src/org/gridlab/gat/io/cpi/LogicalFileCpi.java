@@ -298,7 +298,7 @@ public abstract class LogicalFileCpi extends MonitorableCpi implements LogicalFi
     public static Advertisable unmarshal(GATContext context,
             String s) {
         SerializedLogicalFile f = (SerializedLogicalFile) GATEngine
-                .defaultUnmarshal(SerializedFile.class, s);
+                .defaultUnmarshal(SerializedLogicalFile.class, s);
 
         try {
             LogicalFile lf = GAT.createLogicalFile(context, f.getName(),

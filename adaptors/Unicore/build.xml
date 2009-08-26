@@ -65,7 +65,9 @@
 		<jar jarfile="${lib}/UnicoreAdaptor.jar" basedir="${tmp}" includes="**">
 			<manifest>
 				<attribute name="ResourceBrokerCpi-class" value="org.gridlab.gat.resources.cpi.unicore.UnicoreResourceBrokerAdaptor" />
+				<!--
                                 <attribute name="Class-Path" value = "${hila-jars}" />
+				-->
 			</manifest>
 		</jar>
 

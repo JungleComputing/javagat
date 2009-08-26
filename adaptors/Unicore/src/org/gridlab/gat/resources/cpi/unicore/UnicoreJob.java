@@ -342,7 +342,9 @@ public class UnicoreJob extends JobCpi {
                 }
             }
 
-            sj = new SerializedUnicoreJob(jobDescription, sandbox, task.getLocation().toString(),
+            sj = new SerializedUnicoreJob(
+                    getClass().getName(),
+                    jobDescription, sandbox, task.getLocation().toString(),
                     submissiontime, starttime, stoptime, Soft);
             
         }
@@ -357,7 +359,7 @@ public class UnicoreJob extends JobCpi {
     public static Advertisable unmarshal(GATContext context, String s)
             throws GATObjectCreationException {
         if (logger.isDebugEnabled()) {
-            logger.debug("unmarshalled seralized job: " + s);
+            logger.debug("unmarshalled serialized job: " + s);
         }
 
         SerializedUnicoreJob sj = (SerializedUnicoreJob) GATEngine.defaultUnmarshal(
