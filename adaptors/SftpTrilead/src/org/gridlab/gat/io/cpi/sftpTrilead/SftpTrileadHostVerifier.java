@@ -19,24 +19,19 @@ public class SftpTrileadHostVerifier implements ServerHostKeyVerifier {
     // Set when no host key checking is to be enforced.
     private boolean noHostKeyChecking;
     
-    private File knownHosts = new File(System.getProperty("user.home")
+    private static File knownHosts = new File(System.getProperty("user.home")
             + File.separator + ".ssh" + File.separator
             + "known_hosts");
-
+    
+    private static boolean knownHostsExists = knownHosts.exists();
+    
+    private boolean knownHostsAdded = false;
 
     public SftpTrileadHostVerifier(boolean writeKnownHosts, boolean strictHostKeyChecking,
             boolean noHostKeyChecking) {
         this.writeKnownHosts = writeKnownHosts;
         this.strictHostKeyChecking = strictHostKeyChecking;
         this.noHostKeyChecking = noHostKeyChecking;
-        if (knownHosts.exists()) {
-            try {
-                database.addHostkeys(knownHosts);
-            } catch (IOException e) {
-                this.writeKnownHosts = false;
-                // O well, we tried.
-            }
-        }
     }
 
     public boolean verifyServerHostKey(String hostname, int port,
@@ -47,6 +42,19 @@ public class SftpTrileadHostVerifier implements ServerHostKeyVerifier {
             return true;
         }
         
+        if (knownHostsExists) {
+            synchronized(this) {
+                if (! knownHostsAdded) {
+                    knownHostsAdded = true;
+                    try {
+                        database.addHostkeys(knownHosts);
+                    } catch (IOException e) {
+                        writeKnownHosts = false;
+                        // O well, we tried.
+                    }
+                }
+            }
+        }
         int result = database.verifyHostkey(hostname, serverHostKeyAlgorithm,
                 serverHostKey);
 
