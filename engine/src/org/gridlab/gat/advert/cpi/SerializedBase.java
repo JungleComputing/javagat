@@ -25,6 +25,6 @@ public abstract class SerializedBase implements Serializable, Advertisable {
     }
     
     public boolean checkClassname(String classname) {
-        return classname.equals(classname);
+        return this.classname.equals(classname);
     }
 }
