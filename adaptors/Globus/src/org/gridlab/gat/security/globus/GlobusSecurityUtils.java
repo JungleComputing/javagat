@@ -34,7 +34,7 @@ class GlobusContextCreator implements SecurityContextCreator {
 
     protected static Logger logger = LoggerFactory
             .getLogger(GlobusContextCreator.class);
-
+    
     public SecurityContext createDefaultSecurityContext(GATContext gatContext,
             URI location) throws CouldNotInitializeCredentialException,
             CredentialExpiredException, InvalidUsernameOrPasswordException {
@@ -152,6 +152,11 @@ public class GlobusSecurityUtils {
 
     protected static Logger logger = LoggerFactory
             .getLogger(GlobusSecurityUtils.class);
+    
+    private static GSSCredential cachedDefaultCredential = null;
+    
+    private static boolean didDefaultCredential = false;
+
 
     /**
      * Handling of all globus certicicates goes through this method
@@ -206,61 +211,66 @@ public class GlobusSecurityUtils {
      * <P>
      * Finally, it tries to get the default proxy from the default location.
      */
-    protected static GSSCredential getDefaultCredential(GATContext gatContext)
+    protected static synchronized GSSCredential getDefaultCredential(GATContext gatContext)
             throws CouldNotInitializeCredentialException,
             CredentialExpiredException {
-        GSSCredential credential = null;
+        
+        if (! didDefaultCredential) {
+            didDefaultCredential = true;
 
-        // Now, try to get the credential from the specified environment
-        // variable
-        if (logger.isDebugEnabled()) {
-            logger
-                    .debug("trying to get credential from location specified in environment");
-        }
 
-        Environment e = new Environment();
-        String proxyLocation = e.getVar("X509_USER_PROXY");
-
-        if (proxyLocation == null) {
+            // Now, try to get the credential from the specified environment
+            // variable
             if (logger.isDebugEnabled()) {
-                logger.debug("no credential location found in environment");
-            }
-        } else {
-            credential = getCredential(proxyLocation);
-        }
-        if (credential != null) {
-            return credential;
-        }
-
-        // next try to get default credential
-        if (logger.isDebugEnabled()) {
-            logger.debug("trying to get default credential");
-        }
-
-        try {
-            // Get the user credential
-            ExtendedGSSManager manager = (ExtendedGSSManager) ExtendedGSSManager
-                    .getInstance();
-
-            // try to get default user proxy certificate from file in /tmp
-            credential = manager
-                    .createCredential(GSSCredential.INITIATE_AND_ACCEPT);
-        } catch (GSSException x) {
-            if (logger.isDebugEnabled()) {
-                logger.debug("default credential failed: " + x);
+                logger
+                .debug("trying to get credential from location specified in environment");
             }
 
-            // handled below
+            Environment e = new Environment();
+            String proxyLocation = e.getVar("X509_USER_PROXY");
+
+            if (proxyLocation == null) {
+                if (logger.isDebugEnabled()) {
+                    logger.debug("no credential location found in environment");
+                }
+            } else {
+                cachedDefaultCredential = getCredential(proxyLocation);
+            }
+            if (cachedDefaultCredential != null) {
+                return cachedDefaultCredential;
+            }
+
+            // next try to get default credential
+            if (logger.isDebugEnabled()) {
+                logger.debug("trying to get default credential");
+            }
+
+            try {
+                // Get the user credential
+                ExtendedGSSManager manager = (ExtendedGSSManager) ExtendedGSSManager
+                .getInstance();
+
+                // try to get default user proxy certificate from file in /tmp
+                cachedDefaultCredential = manager
+                .createCredential(GSSCredential.INITIATE_AND_ACCEPT);
+            } catch (GSSException x) {
+                if (logger.isDebugEnabled()) {
+                    logger.debug("default credential failed: " + x);
+                }
+
+                // handled below
+            }
         }
 
-        if (credential == null) {
+        if (cachedDefaultCredential == null) {
             throw new CouldNotInitializeCredentialException(
                     "globus",
                     new CouldNotInitializeCredentialException(
                             "can't get proxy credential (did you do a grid-proxy-init?)"));
         }
+        
 
-        return credential;
+        return cachedDefaultCredential;
     }
 
     public static GSSCredential getCredential(String file) {
