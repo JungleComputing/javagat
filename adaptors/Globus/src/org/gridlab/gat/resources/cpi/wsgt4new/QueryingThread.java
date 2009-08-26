@@ -35,11 +35,7 @@ public class QueryingThread extends Thread {
 	public void run() {
 		while (!death) {
 			MessageElement[] entries = broker.queryDefaultIndexService();
-
-			if (entries == null || entries.length == 0) {
-				System.out.println("Lunghezza 0 e mo so cazzi");
-			} else {
-
+		
 				Element root = null;
 				try {
 					root = entries[0].getAsDOM();
@@ -51,11 +47,11 @@ public class QueryingThread extends Thread {
 				broker.updateXMLDocument(hosts);
 				System.out.println("\nXML Document Updated\n");
 
-			}
+			
 			try {
 				sleep(5 * 58000);// The value is not 5*60000 because I give
-									// the time to the method to query the
-									// IndexService and update the XML document
+							// the time to the method to query the
+							// IndexService and update the XML document
 			} catch (InterruptedException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();

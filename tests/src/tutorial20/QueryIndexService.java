@@ -65,10 +65,10 @@ public class QueryIndexService {
 			metricsValues2.put("moreThan", 10);
 			metric = resources.get(i).getMetricDefinitionByName(
 					"memory.size.available").createMetric(metricsValues1,
-					5 * 60000);
+					5*60000);
 			metric1 = resources.get(i).getMetricDefinitionByName(
 					"processor.load.5min").createMetric(metricsValues2,
-					5 * 60000);
+					5*60000);
 			try {
 				resources.get(i).addMetricListener(ml, metric);
 				resources.get(i).addMetricListener(ml, metric1);
@@ -79,8 +79,10 @@ public class QueryIndexService {
 			}
 		}
 
-		Thread.sleep(15*60000);
-
+		Thread.sleep(15*62000);
+		
+		
+		
 		for (int i = 0; i < resources.size(); i++) {
 			resources.get(i).removeMetricListener(ml, metric);
 			resources.get(i).removeMetricListener(ml, metric1);
@@ -89,7 +91,7 @@ public class QueryIndexService {
 		boolean end = false;
 		while (!end) {
 			System.out.println("I m gonna die!!");
-			Thread.sleep(10000);			
+			Thread.sleep(5000);			
 			end = true;
 		}
 	}

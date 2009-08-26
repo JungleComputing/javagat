@@ -472,10 +472,6 @@ public class WSGT4newResourceBrokerAdaptor extends ResourceBrokerCpi {
 		 */
 		if (xmlUtil.getDocument() == null || !allStatic) {
 			MessageElement[] entries = queryDefaultIndexService();
-			if (entries == null || entries.length == 0) {
-				throw new QueryIndexServiceException(
-						"Query Result null or with no message Elements");
-			} else {
 				try {
 					Element root = entries[0].getAsDOM();
 					NodeList hosts = root.getChildNodes();
@@ -486,7 +482,7 @@ public class WSGT4newResourceBrokerAdaptor extends ResourceBrokerCpi {
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
-			}
+			
 
 		} else {
 			System.out.println("\n I dont need to query the Index Service \n");
@@ -517,7 +513,9 @@ public class WSGT4newResourceBrokerAdaptor extends ResourceBrokerCpi {
 		String sslTrustStore = System.getProperty("gat.adaptor.path")
 				+ java.io.File.separator + "GlobusAdaptor"
 				+ java.io.File.separator + "cacerts";
-
+        //I need to set the truststore because sslTrustStore path contains the file
+		// with the authorization for to access to the DAS 3 (see the 
+		//Instructions for more details)
 		System.setProperty("javax.net.ssl.trustStore", sslTrustStore);
 		System.setProperty("javax.net.ssl.trustStorePassword", "changeit");
 		// Get QueryResourceProperties portType
@@ -568,6 +566,11 @@ public class WSGT4newResourceBrokerAdaptor extends ResourceBrokerCpi {
 		// The response includes 0 or more entries from the index service.
 		MessageElement[] entries = queryResponse.get_any();
 
+		if (entries == null || entries.length == 0) {
+			throw new QueryIndexServiceException(
+					"Query Result null or with no message Elements");
+		}	
+		
 		return entries;
 
 	}

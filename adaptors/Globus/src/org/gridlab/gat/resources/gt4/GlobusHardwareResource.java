@@ -164,7 +164,7 @@ public class GlobusHardwareResource extends HardwareResourceCpi {
 		notifierThread.start();
 	}
 
-	public synchronized void removeMetricListener(
+	public  void removeMetricListener(
 			MetricListener metricListener, Metric metric)
 			throws GATInvocationException {
 		super.removeMetricListener(metricListener, metric);
