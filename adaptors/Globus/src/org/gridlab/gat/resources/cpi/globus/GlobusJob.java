@@ -425,31 +425,34 @@ public class GlobusJob extends JobCpi implements GramJobListener,
                 } catch (InterruptedException e) {
                 }
             }
-            setState(JobState.POST_STAGING);
-            if (sandbox != null) {
-                sandbox.retrieveAndCleanup(this);
-            }
-            if (globusJobState == GLOBUS_JOB_STOPPED) {
-                setState(JobState.STOPPED);
-            } else {
-                setState(JobState.SUBMISSION_ERROR);
-            }
-            if (exitStatusEnabled && globusJobState == GLOBUS_JOB_STOPPED) {
-                try {
-                    readExitStatus();
-                } catch (GATInvocationException e) {
-                    logger
-                            .info("reading the exit status from file failed: ",
-                                e);
+            if (state != JobState.STOPPED && state != JobState.SUBMISSION_ERROR) {
+                setState(JobState.POST_STAGING);
+                if (sandbox != null) {
+                    sandbox.retrieveAndCleanup(this);
                 }
+                if (globusJobState == GLOBUS_JOB_STOPPED) {
+                    setState(JobState.STOPPED);
+                } else {
+                    setState(JobState.SUBMISSION_ERROR);
+                }
+            
+                if (exitStatusEnabled && globusJobState == GLOBUS_JOB_STOPPED) {
+                    try {
+                        readExitStatus();
+                    } catch (GATInvocationException e) {
+                        logger
+                        .info("reading the exit status from file failed: ",
+                                e);
+                    }
+                }
+                setStopTime();
+                globusJobState = 0;
+                stopHandlers();
+                if (poller != null) {
+                    poller.die();
+                }
+                finished();
             }
-            setStopTime();
-            globusJobState = 0;
-            stopHandlers();
-            if (poller != null) {
-                poller.die();
-            }
-            finished();
         }
         if (GATEngine.TIMING) {
             System.err.println("TIMING: job " + getJobID() + ":"
