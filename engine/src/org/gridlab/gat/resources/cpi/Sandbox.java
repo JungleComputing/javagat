@@ -168,6 +168,10 @@ public class Sandbox {
         } catch (URISyntaxException e) {
             throw new GATInvocationException("sandbox", e);
         }
+        if (gatContext == null) {
+            // Can happen when jobs are deserialized.
+            gatContext = GAT.getDefaultGATContext();
+        }
 
         FileCpi.recursiveDeleteDirectory(gatContext, location);
     }
@@ -691,5 +695,13 @@ public class Sandbox {
      */
     public void setWipePreStaged(boolean wipePreStaged) {
         this.wipePreStaged = wipePreStaged;
+    }
+    
+    public void setDeleteSandboxDir(boolean b) {
+        deleteSandboxDir = b;
+    }
+    
+    public boolean getDeleteSandboxDir() {
+        return deleteSandboxDir;
     }
 }
