@@ -168,6 +168,9 @@ public class WSGT4newJob extends JobCpi implements GramJobListener, Runnable {
 
 
     protected synchronized void setState(JobState state) {
+        if (logger.isDebugEnabled() && state.equals(JobState.POST_STAGING)) {
+            logger.debug("setState POST_STAGING", new Throwable());
+        }
         if (submissiontime == 0L) {
             setSubmissionTime();
         }
@@ -415,11 +418,11 @@ public class WSGT4newJob extends JobCpi implements GramJobListener, Runnable {
         return new WSGT4newJob(context, sj);
     }
 
-    protected void setGramJob(GramJob job) {
+    protected synchronized void setGramJob(GramJob job) {
         this.job = job;
     }
 
-    protected void submitted() {
+    protected synchronized void submitted() {
         setSubmissionTime();
     }
 
@@ -429,25 +432,33 @@ public class WSGT4newJob extends JobCpi implements GramJobListener, Runnable {
     }
 
     public void run() {
+        int count = 0;
+    
         while (!finished) {
             synchronized (this) {
-                try {
-                    job.refreshStatus();
-                } catch(Throwable e) {
-                    // ignored
-                }
-
-                try {
-                    // TODO
-                    StateEnumeration newState = job.getState();
-                    logger.debug("jobState (poller): " + newState);
-                    if (newState == null) {
-                        doStateChange(StateEnumeration.Done);
-                    } else {
-                        doStateChange(newState);
+                if (submissiontime != 0) {
+                    try {
+                        job.refreshStatus();
+                    } catch(Throwable e) {
+                        // ignored
                     }
-                } catch (Exception e) {
-                    // ignore
+
+                    try {
+                        // TODO
+                        StateEnumeration newState = job.getState();
+                        logger.debug("jobState (poller): " + newState);
+                        if (newState == null) {
+                            if (count > 3) {
+                                doStateChange(StateEnumeration.Done);
+                            } else {
+                                count++;
+                            }
+                        } else {
+                            doStateChange(newState);
+                        }
+                    } catch (Exception e) {
+                        // ignore
+                    }
                 }
             }
             try {

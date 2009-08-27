@@ -425,7 +425,8 @@ public class GlobusJob extends JobCpi implements GramJobListener,
                 } catch (InterruptedException e) {
                 }
             }
-            if (state != JobState.STOPPED && state != JobState.SUBMISSION_ERROR) {
+            if (state != JobState.STOPPED && state != JobState.SUBMISSION_ERROR
+                    && state != JobState.POST_STAGING) {
                 setState(JobState.POST_STAGING);
                 if (sandbox != null) {
                     sandbox.retrieveAndCleanup(this);

@@ -342,9 +342,6 @@ public class WSGT4newResourceBrokerAdaptor extends ResourceBrokerCpi {
             throw new GATInvocationException("WSGT4newResourceBrokerAdaptor", e);
         }
 
-        // inform the wsgt4 job of which gram job is related to it.
-        wsgt4job.setGramJob(gramjob);
-
         // Was: gramjob.setAuthorization(HostAuthorization.getInstance());
         // Modified to use a supplied credential. --Ceriel
         GSSCredential cred = getCred();
@@ -359,6 +356,9 @@ public class WSGT4newResourceBrokerAdaptor extends ResourceBrokerCpi {
         // end modification.
         gramjob.setMessageProtectionType(Constants.ENCRYPTION);
         gramjob.setDelegationEnabled(true);
+        
+        // inform the wsgt4 job of which gram job is related to it.
+        wsgt4job.setGramJob(gramjob);
 
         // wsgt4 job object listens to the gram job
         gramjob.addListener(wsgt4job);
@@ -406,7 +406,6 @@ public class WSGT4newResourceBrokerAdaptor extends ResourceBrokerCpi {
         }
         
         wsgt4job.setSubmissionID(handle);
-        System.out.println("Handle = " + handle);
 
         // second parameter is batch, should be set to false.
         // third parameter is limitedDelegation, currently hardcoded to false
