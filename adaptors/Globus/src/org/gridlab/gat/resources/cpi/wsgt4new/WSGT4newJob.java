@@ -95,7 +95,7 @@ public class WSGT4newJob extends JobCpi implements GramJobListener, Runnable {
         }
         
         if (logger.isDebugEnabled()) {
-            logger.debug("reconstructing globusjob: " + sj);
+            logger.debug("reconstructing wsgt4newjob: " + sj);
         }
 
         this.submissionID = sj.getJobId();
@@ -155,10 +155,15 @@ public class WSGT4newJob extends JobCpi implements GramJobListener, Runnable {
         }
         StateEnumeration newState = job.getState();
         logger.debug("jobState: " + newState);
-        doStateChange(newState);
-        poller = new Thread(this);
-        poller.setDaemon(true);
-        poller.start();
+        if (newState == null) {
+            // happens if the job is already done ...
+            doStateChange(StateEnumeration.Done);
+        } else {
+            doStateChange(newState);
+            poller = new Thread(this);
+            poller.setDaemon(true);
+            poller.start();
+        }
     }
 
 
@@ -298,9 +303,10 @@ public class WSGT4newJob extends JobCpi implements GramJobListener, Runnable {
         // Don't allow "updates" from final states.
         // These were probably caused by the refreshStatus call in stateChanged(),
         // but there. It does no harm to test ...
-        if (jobState.equals(StateEnumeration.Done)
+        if (jobState != null && 
+                (jobState.equals(StateEnumeration.Done)
                 || jobState.equals(StateEnumeration.Failed)
-                || newState.equals(jobState)) {
+                || jobState.equals(newState))) {
             return;
         }
         jobState = newState;
@@ -427,11 +433,19 @@ public class WSGT4newJob extends JobCpi implements GramJobListener, Runnable {
             synchronized (this) {
                 try {
                     job.refreshStatus();
+                } catch(Throwable e) {
+                    // ignored
+                }
 
+                try {
                     // TODO
                     StateEnumeration newState = job.getState();
                     logger.debug("jobState (poller): " + newState);
-                    doStateChange(newState);
+                    if (newState == null) {
+                        doStateChange(StateEnumeration.Done);
+                    } else {
+                        doStateChange(newState);
+                    }
                 } catch (Exception e) {
                     // ignore
                 }
