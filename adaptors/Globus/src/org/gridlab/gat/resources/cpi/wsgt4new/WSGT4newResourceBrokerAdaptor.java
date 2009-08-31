@@ -136,6 +136,30 @@ public class WSGT4newResourceBrokerAdaptor extends ResourceBrokerCpi {
             throw new GATInvocationException(
                     "The job description does not contain a software description");
         }
+        
+        String queue = (String) sd.getAttributes().get("machine.queue");
+        if (null != queue) {
+          rsl += "<queue>" + queue + "</queue>";
+        }
+
+        String scheduler = (String) sd.getAttributes().get("machine.scheduler"); 
+        String wsa =  (String) sd.getAttributes().get("machine.wsa");
+        if (null != scheduler && null != wsa) {
+            rsl += "<factoryEndpoint ";
+            rsl += "xmlns:gram=\"http://www.globus.org/namespaces/2004/10/gram/job\" ";
+            rsl += "xmlns:wsa=\"http://schemas.xmlsoap.org/ws/2004/03/addressing\">";
+            rsl += "<wsa:Address>";
+            rsl += wsa;
+            //rsl += "https://iwrgt4.fzk.de:8443/wsrf/services/ManagedJobFactoryService";
+            rsl += "</wsa:Address>";
+            rsl += "<wsa:ReferenceProperties>";
+            rsl += "<gram:ResourceID>";
+            rsl += scheduler;
+            //rsl += "PBS";
+            rsl += "</gram:ResourceID>";
+            rsl += "</wsa:ReferenceProperties>";
+            rsl += "</factoryEndpoint>";
+        }
 
         rsl += "<executable>";
         rsl += getExecutable(description);
