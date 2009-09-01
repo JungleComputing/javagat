@@ -405,6 +405,7 @@ public class GlobusJob extends JobCpi implements GramJobListener,
         if (newJob.getError() == GramError.GRAM_JOBMANAGER_CONNECTION_FAILURE) {
             if (globusJobState != GLOBUS_JOB_SUBMISSION_ERROR
                     && globusJobState != GLOBUS_JOB_STOPPED) {
+                stateChanged = true;
                 globusJobState = GLOBUS_JOB_STOPPED;
             }
         } else {
