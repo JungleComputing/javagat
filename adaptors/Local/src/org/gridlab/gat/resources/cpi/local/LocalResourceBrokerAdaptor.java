@@ -100,6 +100,12 @@ public class LocalResourceBrokerAdaptor extends ResourceBrokerCpi {
                     "The LocalResourceBrokerAdaptor doesn't refer to localhost, but to a remote host: "
                             + brokerURI.toString());
         }
+        
+        String path = brokerURI.getPath();
+        if (path != null && ! path.equals("")) {
+            throw new GATObjectCreationException(
+                    "The LocalResourceBrokerAdaptor does not understand the specified path: " + path);
+        }
     }
 
     /*

@@ -162,6 +162,7 @@ public class LocalJob extends JobCpi {
             // ignore
         }
         p.destroy();
+        setStopTime();
         setState(JobState.STOPPED);
         finished();
     }

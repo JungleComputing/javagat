@@ -8,10 +8,8 @@ import org.slf4j.LoggerFactory;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.GATObjectCreationException;
-import org.gridlab.gat.MethodNotApplicableException;
 import org.gridlab.gat.Preferences;
 import org.gridlab.gat.URI;
-import org.gridlab.gat.engine.GATEngine;
 import org.gridlab.gat.monitoring.Metric;
 import org.gridlab.gat.monitoring.MetricListener;
 import org.gridlab.gat.resources.AbstractJobDescription;
@@ -110,6 +108,19 @@ public class LocalQResourceBrokerAdaptor extends ResourceBrokerCpi implements
                                 + brokerURI.toString() + "'");
             }
         }
+        
+        // the brokerURI should point to the local host else throw exception
+        if (!brokerURI.refersToLocalHost()) {
+            throw new GATObjectCreationException(
+                    "The LocalQResourceBrokerAdaptor doesn't refer to localhost, but to a remote host: "
+                            + brokerURI.toString());
+        }
+        
+        String path = brokerURI.getPath();
+        if (path != null && ! path.equals("")) {
+            throw new GATObjectCreationException(
+                    "The LocalQResourceBrokerAdaptor does not understand the specified path: " + path);
+        }
 
         queue = new PriorityQueue<LocalQJob>();
 
@@ -117,7 +128,7 @@ public class LocalQResourceBrokerAdaptor extends ResourceBrokerCpi implements
                 "localq.max.concurrent.jobs");
 
         if (maxConcurrentJobs == null) {
-            maxConcurrentJobs = Runtime.getRuntime().availableProcessors() + 1;
+            maxConcurrentJobs = Runtime.getRuntime().availableProcessors();
         }
 
         if (maxConcurrentJobs <= 0) {
@@ -166,15 +177,6 @@ public class LocalQResourceBrokerAdaptor extends ResourceBrokerCpi implements
             throw new GATInvocationException(
                     "Adaptor cannot handle: resource count > 1: "
                             + description.getResourceCount());
-        }
-
-        String host = getHostname();
-        if (host != null) {
-            if (!host.equals("localhost")
-                    && !host.equals(GATEngine.getLocalHostName())) {
-                throw new MethodNotApplicableException(
-                        "cannot run jobs on remote machines with the local adaptor");
-            }
         }
 
         String home = System.getProperty("user.home");
