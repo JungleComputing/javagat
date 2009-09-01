@@ -432,6 +432,7 @@ public class GlobusJob extends JobCpi implements GramJobListener,
                 if (sandbox != null) {
                     sandbox.retrieveAndCleanup(this);
                 }
+                setStopTime();
                 if (globusJobState == GLOBUS_JOB_STOPPED) {
                     setState(JobState.STOPPED);
                 } else {
@@ -447,7 +448,7 @@ public class GlobusJob extends JobCpi implements GramJobListener,
                                 e);
                     }
                 }
-                setStopTime();
+                
                 globusJobState = 0;
                 stopHandlers();
                 if (poller != null) {
