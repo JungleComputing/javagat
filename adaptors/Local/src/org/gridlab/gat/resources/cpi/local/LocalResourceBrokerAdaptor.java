@@ -211,11 +211,11 @@ public class LocalResourceBrokerAdaptor extends ResourceBrokerCpi {
 
         Process p = null;
         try {
-            p = builder.start();
-            localJob.setState(Job.JobState.RUNNING);
-            localJob.setProcess(p);
             localJob.setSubmissionTime();
             localJob.setStartTime();
+            p = builder.start();
+            localJob.setProcess(p);
+            localJob.setState(Job.JobState.RUNNING);
         } catch (IOException e) {
             throw new CommandNotFoundException("LocalResourceBrokerAdaptor", e);
         }
