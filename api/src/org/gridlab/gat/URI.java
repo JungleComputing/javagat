@@ -253,6 +253,10 @@ public class URI implements Serializable, Comparable<Object> {
         /* this is where the magic happens to fix SUNs bug.. */
         String path = getUnresolvedPath();
 
+        if (path == null) {
+            return null;
+        }
+
         if (u.getHost() != null
                 && (u.getHost().equals("localhost") || getLocalHostName()
                         .equals(u.getHost()))) {
