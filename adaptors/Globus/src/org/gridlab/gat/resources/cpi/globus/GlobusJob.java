@@ -415,9 +415,6 @@ public class GlobusJob extends JobCpi implements GramJobListener,
             return;
         } else if (stateChanged && state == JobState.SCHEDULED) {
             globusJobID = j.getIDAsString();
-            setSubmissionTime();
-        } else if (stateChanged && state == JobState.RUNNING) {
-            setStartTime();
         } else if (globusJobState == GLOBUS_JOB_STOPPED
                 || globusJobState == GLOBUS_JOB_SUBMISSION_ERROR) {
             while (streamingOutputs > 0) {
@@ -432,7 +429,6 @@ public class GlobusJob extends JobCpi implements GramJobListener,
                 if (sandbox != null) {
                     sandbox.retrieveAndCleanup(this);
                 }
-                setStopTime();
                 if (globusJobState == GLOBUS_JOB_STOPPED) {
                     setState(JobState.STOPPED);
                 } else {
@@ -505,6 +501,13 @@ public class GlobusJob extends JobCpi implements GramJobListener,
     protected boolean setState(JobState state) {
         if (this.state == state) {
             return false;
+        }
+        if (state == JobState.SCHEDULED) {
+            setSubmissionTime();
+        } else if (state == JobState.RUNNING) {
+            setStartTime();
+        } else if (state == JobState.STOPPED || state == JobState.SUBMISSION_ERROR) {
+            setStopTime();
         }
         this.state = state;
         MetricEvent v = new MetricEvent(this, state, statusMetric, System
