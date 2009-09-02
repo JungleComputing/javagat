@@ -53,6 +53,15 @@ public class KoalaResourceBrokerAdaptor extends ResourceBrokerCpi {
 
     	super(context, getBrokerURI(brokerURI));
 
+        // if wrong scheme, throw exception!
+        String scheme = this.brokerURI.getScheme();
+        if (scheme != null) {
+            if (!this.brokerURI.isCompatible("koala")) {
+                throw new GATObjectCreationException("Unable to handle incompatible scheme '"
+                    + scheme + "' in broker uri '" + this.brokerURI.toString() + "'");
+            }
+        }
+
         // Prevent recursively using this resourcebroker by checking for a 
         // magic preference.
         if (context.getPreferences().containsKey("postKoala")) { 
