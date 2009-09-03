@@ -1,5 +1,0 @@
-changed to 2.0-rc1
---This line, and those below, will be ignored--
-
-M    job/GATJobSubmit_Stageing_Exec_Sh.java
-M    job/GATJobSubmit.java

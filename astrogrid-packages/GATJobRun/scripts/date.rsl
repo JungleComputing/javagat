@@ -1,5 +1,0 @@
- &(executable="/bin/sh")
-  (arguments="date_script.sh")
-  (file_stage_in=("date_script.sh" "gsiftp://hydra.ari.uni-heidelberg.de/~/date_script.sh"))
-  (stdout="date.out")
-  (stderr="date.err")
