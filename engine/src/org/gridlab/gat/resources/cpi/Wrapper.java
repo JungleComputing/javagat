@@ -132,6 +132,7 @@ public class Wrapper {
                         + "' to appear...");
                 Thread.sleep(10000);
             }
+            prestageWaitFile.delete();
         }
         for (WrappedJobInfo info : infos) {
             new Submitter(info).start();
