@@ -303,6 +303,7 @@ public class WrapperJobDescription extends JobDescription {
         java.io.File f = null;
         try {
             f = File.createTempFile("GAT", "jobDescription");
+            f.deleteOnExit();
             FileOutputStream tmp = new FileOutputStream(f);
             ObjectOutputStream out = new ObjectOutputStream(tmp);
             out.writeObject(new URI("any://"
