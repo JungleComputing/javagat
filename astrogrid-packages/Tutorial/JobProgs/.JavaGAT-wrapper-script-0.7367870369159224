@@ -1,0 +1,9 @@
+#!/bin/sh
+# wrapper script for /bin/sh
+typeset int rc
+rcfile=.JavaGAT-exit-value-0.7367870369159224
+cmd="/bin/sh Executable date_script.sh 2 a2 a3"
+$cmd
+rc=$?
+echo $rc > $rcfile
+exit $rc

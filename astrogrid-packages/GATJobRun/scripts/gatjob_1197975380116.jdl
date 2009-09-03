@@ -1,0 +1,16 @@
+// Auto generate JDL File
+Rank = -other.GlueCEStateEstimatedResponseTime;
+Executable = "/bin/date";
+StdOutput = "std_1197975380116.out";
+StdError = "std_1197975380116.err";
+OutputSandbox = {
+	"std_1197975380116.out",
+	"std_1197975380116.err"
+};
+OutputSandboxDestURI = {
+	"GATJobRun_STDOUT.tmp",
+	"GATJobRun_STDERR.tmp"
+};
+Requirements =
+	other.GlueCEStateStatus == "Production" &&
+	other.GlueCEInfoHostName == "iwrce.fzk.de";

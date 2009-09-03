@@ -61,6 +61,8 @@ public class Wrapper {
     int jobsPreStaging = 0;
 
     int jobsDonePreStaging = 0;
+    
+    int totalWrapperJobs;
 
     int maxConcurrentJobs;
 
@@ -115,6 +117,7 @@ public class Wrapper {
         stagingType = (StagingType) in.readObject();
         System.out.println("staging type:   " + stagingType);
         List<WrappedJobInfo> infos = (List<WrappedJobInfo>) in.readObject();
+        totalWrapperJobs = in.readInt();
         in.close();
         System.out.println("# wrapped jobs:" + infos.size());
         for (WrappedJobInfo info : infos) {
@@ -373,7 +376,9 @@ public class Wrapper {
                     jobsDonePreStaging++;
                     Wrapper.this.notifyAll();
                 }
-                if (jobsDonePreStaging == numberPreStageJobs) {
+                if ((totalWrapperJobs < 0 
+                        || totalWrapperJobs-1 > preStageIdentifier)
+                        && jobsDonePreStaging == numberPreStageJobs) {
                     try {
                         File preStageDoneFile = GAT
                                 .createFile(rewriteURI(new URI(

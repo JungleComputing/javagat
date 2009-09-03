@@ -1,0 +1,6 @@
+This is script 'date_script'
+I was called with: date_script.sh 1 2 3 bla bla
+will sleep 10 seconds
+Thu Jan  8 11:45:57 CET 2009
+Current job state: Done 
+bla bla

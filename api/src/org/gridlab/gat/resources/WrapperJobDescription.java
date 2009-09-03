@@ -147,6 +147,8 @@ public class WrapperJobDescription extends JobDescription {
     private int maxConcurrentJobs;
 
     private int jobsUntilPreStageDone;
+    
+    private int totalWrapperJobs = -1;
 
     /**
      * Creates a {@link WrapperJobDescription} based on the given
@@ -328,6 +330,7 @@ public class WrapperJobDescription extends JobDescription {
                 jobInfo.generateJobStateFileName();
             }
             out.writeObject(jobInfos);
+            out.writeInt(totalWrapperJobs);
             out.close();
         } catch (Exception e) {
             // TODO ignore, but should log or throw an exception
@@ -411,6 +414,14 @@ public class WrapperJobDescription extends JobDescription {
             }
             preStageDoneDirectory = preStageDoneDirectoryFile.getPath();
         }
+    }
+
+    public int getTotalWrapperJobs() {
+        return totalWrapperJobs;
+    }
+
+    public void setTotalWrapperJobs(int totalWrapperJobs) {
+        this.totalWrapperJobs = totalWrapperJobs;
     }
 
 }
