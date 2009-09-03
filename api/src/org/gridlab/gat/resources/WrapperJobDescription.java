@@ -416,10 +416,20 @@ public class WrapperJobDescription extends JobDescription {
         }
     }
 
+    /**
+     * Returns the total number of wrapper jobs.
+     * 
+     * @return the total number of wrapper jobs.
+     */
     public int getTotalWrapperJobs() {
         return totalWrapperJobs;
     }
 
+    /**
+     * Sets the total number of wrapper jobs.
+     * 
+     * @param totalWrapperJobs the total number of wrapper jobs.
+     */
     public void setTotalWrapperJobs(int totalWrapperJobs) {
         this.totalWrapperJobs = totalWrapperJobs;
     }
