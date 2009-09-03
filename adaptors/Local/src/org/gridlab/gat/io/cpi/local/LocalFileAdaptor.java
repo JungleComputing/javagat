@@ -36,6 +36,7 @@ public class LocalFileAdaptor extends FileCpi {
         capabilities.put("canWrite", true);
         capabilities.put("createNewFile", true);
         capabilities.put("delete", true);
+        capabilities.put("deleteOnExit", true);
         capabilities.put("exists", true);
         capabilities.put("getAbsoluteFile", true);
         capabilities.put("getCanonicalFile", true);
@@ -312,6 +313,15 @@ public class LocalFileAdaptor extends FileCpi {
      */
     public boolean delete() {
         return f.delete();
+    }
+    
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.gridlab.gat.io.File#deleteOnExit()
+     */
+    public void deleteOnExit() {
+        f.deleteOnExit();
     }
 
     /*
