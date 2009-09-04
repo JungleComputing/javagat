@@ -168,10 +168,6 @@ public class Sandbox {
         } catch (URISyntaxException e) {
             throw new GATInvocationException("sandbox", e);
         }
-        if (gatContext == null) {
-            // Can happen when jobs are deserialized.
-            gatContext = GAT.getDefaultGATContext();
-        }
 
         FileCpi.recursiveDeleteDirectory(gatContext, location);
     }
@@ -335,6 +331,11 @@ public class Sandbox {
         GATInvocationException wipeException = null;
         GATInvocationException deleteException = null;
         GATInvocationException removeSandboxException = null;
+
+        if (gatContext == null) {
+            // Can happen when jobs are deserialized.
+            gatContext = GAT.getDefaultGATContext();
+        }
 
         if (logger.isInfoEnabled()) {
             logger.info("post stage starting");
