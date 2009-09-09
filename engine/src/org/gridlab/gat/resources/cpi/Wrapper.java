@@ -10,6 +10,7 @@ import java.util.List;
 import org.gridlab.gat.GAT;
 import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.GATObjectCreationException;
+import org.gridlab.gat.Preferences;
 import org.gridlab.gat.URI;
 import org.gridlab.gat.io.File;
 import org.gridlab.gat.monitoring.MetricEvent;
@@ -61,8 +62,6 @@ public class Wrapper {
     int jobsPreStaging = 0;
 
     int jobsDonePreStaging = 0;
-    
-    int totalWrapperJobs;
 
     int maxConcurrentJobs;
 
@@ -75,6 +74,8 @@ public class Wrapper {
     private int numberPreStageJobs;
 
     private String preStageDoneDirectory;
+    
+    private boolean jobsWaitUntilPrestageDone;
 
     /**
      * Starts a wrapper with given arguments
@@ -117,7 +118,7 @@ public class Wrapper {
         stagingType = (StagingType) in.readObject();
         System.out.println("staging type:   " + stagingType);
         List<WrappedJobInfo> infos = (List<WrappedJobInfo>) in.readObject();
-        totalWrapperJobs = in.readInt();
+        jobsWaitUntilPrestageDone = in.readBoolean();
         in.close();
         System.out.println("# wrapped jobs:" + infos.size());
         for (WrappedJobInfo info : infos) {
@@ -126,6 +127,7 @@ public class Wrapper {
                     + "\t" + info.getJobDescription());
         }
         this.numberJobs = infos.size();
+
         if (preStageIdentifier > 0) {
             File prestageWaitFile = GAT.createFile(rewriteURI(new URI(
                     preStageDoneDirectory + "/" + preStageIdentifier),
@@ -135,7 +137,6 @@ public class Wrapper {
                         + "' to appear...");
                 Thread.sleep(10000);
             }
-            prestageWaitFile.delete();
         }
         for (WrappedJobInfo info : infos) {
             new Submitter(info).start();
@@ -148,6 +149,9 @@ public class Wrapper {
             }
         }
         System.out.println("DONE!");
+        // Sleep a bit to give other wrappers time to detect my generated
+        // prestageWaitFile, which is deleted on my exit.
+        Thread.sleep(10000);
         System.exit(0);
     }
 
@@ -273,11 +277,23 @@ public class Wrapper {
         public void run() {
             // if already max jobs running -> wait
             ResourceBroker broker = null;
+            Preferences prefs = info.getPreferences();
+            if (jobsWaitUntilPrestageDone
+                    && stagingType== StagingType.SEQUENTIAL) {
+                try {
+                    prefs.put("local.waitForFile", rewriteURI(new URI(
+                            preStageDoneDirectory + "/"
+                            + (preStageIdentifier + 1)),
+                    initiator)
+                            );
+                } catch (URISyntaxException e) {
+                    e.printStackTrace();
+                }
+            }
             try {
-                broker = GAT.createResourceBroker(info.getPreferences(), info
+                broker = GAT.createResourceBroker(prefs, info
                         .getBrokerURI());
             } catch (GATObjectCreationException e) {
-                // TODO Auto-generated catch block
                 e.printStackTrace();
                 System.exit(1);
             }
@@ -302,7 +318,6 @@ public class Wrapper {
                         new JobListener(info.getJobStateFileName()),
                         "job.status");
             } catch (GATInvocationException e) {
-                // TODO Auto-generated catch block
                 e.printStackTrace();
                 System.exit(1);
             }
@@ -376,9 +391,7 @@ public class Wrapper {
                     jobsDonePreStaging++;
                     Wrapper.this.notifyAll();
                 }
-                if ((totalWrapperJobs < 0 
-                        || totalWrapperJobs-1 > preStageIdentifier)
-                        && jobsDonePreStaging == numberPreStageJobs) {
+                if (jobsDonePreStaging == numberPreStageJobs) {
                     try {
                         File preStageDoneFile = GAT
                                 .createFile(rewriteURI(new URI(
@@ -386,6 +399,7 @@ public class Wrapper {
                                                 + (preStageIdentifier + 1)),
                                         initiator));
                         preStageDoneFile.createNewFile();
+                        preStageDoneFile.deleteOnExit();
                     } catch (GATObjectCreationException e) {
                         System.err
                                 .println("Done pre staging: failed to create file at '"

@@ -148,7 +148,7 @@ public class WrapperJobDescription extends JobDescription {
 
     private int jobsUntilPreStageDone;
     
-    private int totalWrapperJobs = -1;
+    private boolean jobsWaitUntilPrestageDone;
 
     /**
      * Creates a {@link WrapperJobDescription} based on the given
@@ -330,7 +330,7 @@ public class WrapperJobDescription extends JobDescription {
                 jobInfo.generateJobStateFileName();
             }
             out.writeObject(jobInfos);
-            out.writeInt(totalWrapperJobs);
+            out.writeBoolean(jobsWaitUntilPrestageDone);
             out.close();
         } catch (Exception e) {
             // TODO ignore, but should log or throw an exception
@@ -416,22 +416,11 @@ public class WrapperJobDescription extends JobDescription {
         }
     }
 
-    /**
-     * Returns the total number of wrapper jobs.
-     * 
-     * @return the total number of wrapper jobs.
-     */
-    public int getTotalWrapperJobs() {
-        return totalWrapperJobs;
+    public boolean getJobsWaitUntilPrestageDone() {
+        return jobsWaitUntilPrestageDone;
     }
 
-    /**
-     * Sets the total number of wrapper jobs.
-     * 
-     * @param totalWrapperJobs the total number of wrapper jobs.
-     */
-    public void setTotalWrapperJobs(int totalWrapperJobs) {
-        this.totalWrapperJobs = totalWrapperJobs;
+    public void setJobsWaitUntilPrestageDone(boolean jobsWaitUntilPrestageDone) {
+        this.jobsWaitUntilPrestageDone = jobsWaitUntilPrestageDone;
     }
-
 }
