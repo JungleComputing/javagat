@@ -1,27 +1,19 @@
 package org.gridlab.gat.resources.cpi.gridsam;
 
 import java.io.File;
-import java.util.List;
 import java.util.Map;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.gridlab.gat.GAT;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.GATObjectCreationException;
 import org.gridlab.gat.Preferences;
-import org.gridlab.gat.TimePeriod;
 import org.gridlab.gat.URI;
 import org.gridlab.gat.monitoring.Metric;
 import org.gridlab.gat.monitoring.MetricListener;
 import org.gridlab.gat.resources.AbstractJobDescription;
-import org.gridlab.gat.resources.HardwareResource;
 import org.gridlab.gat.resources.Job;
 import org.gridlab.gat.resources.JobDescription;
-import org.gridlab.gat.resources.Reservation;
-import org.gridlab.gat.resources.Resource;
-import org.gridlab.gat.resources.ResourceDescription;
 import org.gridlab.gat.resources.SoftwareDescription;
 import org.gridlab.gat.resources.WrapperJobDescription;
 import org.gridlab.gat.resources.cpi.ResourceBrokerCpi;
@@ -33,6 +25,8 @@ import org.icenigrid.gridsam.core.JobManagerException;
 import org.icenigrid.gridsam.core.SubmissionException;
 import org.icenigrid.gridsam.core.UnsupportedFeatureException;
 import org.icenigrid.schema.jsdl.y2005.m11.JobDefinitionDocument;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class GridSAMResourceBrokerAdaptor extends ResourceBrokerCpi {
 
@@ -84,40 +78,6 @@ public class GridSAMResourceBrokerAdaptor extends ResourceBrokerCpi {
 
     URI getBroker() {
         return brokerURI;
-    }
-
-    /**
-     * This method attempts to reserve the specified hardware resource for the
-     * specified time period. Upon reserving the specified hardware resource
-     * this method returns a Reservation. Upon failing to reserve the specified
-     * hardware resource this method returns an error.
-     * 
-     * @param resourceDescription
-     *                A description, a HardwareResourceDescription, of the
-     *                hardware resource to reserve
-     * @param timePeriod
-     *                The time period, a TimePeriod , for which to reserve the
-     *                hardware resource
-     */
-    public Reservation reserveResource(ResourceDescription resourceDescription,
-            TimePeriod timePeriod) {
-        throw new UnsupportedOperationException("Not implemented");
-    }
-
-    /**
-     * This method attempts to find one or more matching hardware resources.
-     * Upon finding the specified hardware resource(s) this method returns a
-     * java.util.List of HardwareResource instances. Upon failing to find the
-     * specified hardware resource this method returns an error.
-     * 
-     * @param resourceDescription
-     *                A description, a HardwareResoucreDescription, of the
-     *                hardware resource(s) to find
-     * @return java.util.List of HardwareResources upon success
-     */
-    public List<HardwareResource> findResources(
-            ResourceDescription resourceDescription) {
-        throw new UnsupportedOperationException("Not implemented");
     }
 
     public ClientSideJobManager getJobManager() throws ConfigurationException {
@@ -302,16 +262,6 @@ public class GridSAMResourceBrokerAdaptor extends ResourceBrokerCpi {
                     "resourcebroker.sandbox.root has to be an absolute path");
         }
         return tmp.toString();
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.gridlab.gat.resources.ResourceBroker#reserveResource(org.gridlab.gat.resources.Resource,
-     *      org.gridlab.gat.engine.util.TimePeriod)
-     */
-    public Reservation reserveResource(Resource resource, TimePeriod timePeriod) {
-        throw new UnsupportedOperationException("Not implemented");
     }
 
 }

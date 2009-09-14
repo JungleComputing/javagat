@@ -12,7 +12,6 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
-import java.util.List;
 import java.util.Map;
 
 import org.apache.xmlbeans.XmlException;
@@ -26,19 +25,14 @@ import org.gridlab.gat.AdaptorNotApplicableException;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.GATObjectCreationException;
-import org.gridlab.gat.TimePeriod;
 import org.gridlab.gat.URI;
 import org.gridlab.gat.engine.GATEngine;
 import org.gridlab.gat.io.File;
 import org.gridlab.gat.monitoring.Metric;
 import org.gridlab.gat.monitoring.MetricListener;
 import org.gridlab.gat.resources.AbstractJobDescription;
-import org.gridlab.gat.resources.HardwareResource;
 import org.gridlab.gat.resources.Job;
 import org.gridlab.gat.resources.JobDescription;
-import org.gridlab.gat.resources.Reservation;
-import org.gridlab.gat.resources.Resource;
-import org.gridlab.gat.resources.ResourceDescription;
 import org.gridlab.gat.resources.SoftwareDescription;
 import org.gridlab.gat.resources.cpi.ResourceBrokerCpi;
 import org.gridlab.gat.resources.cpi.Sandbox;
@@ -91,21 +85,7 @@ public class UnicoreResourceBrokerAdaptor extends ResourceBrokerCpi {
     public static void init() {
         GATEngine.registerUnmarshaller(UnicoreJob.class);
     }
-
     
-    public Reservation reserveResource(ResourceDescription resourceDescription,
-            TimePeriod timePeriod) {
-        throw new UnsupportedOperationException("Not implemented");
-    }
-
-    public Reservation reserveResource(Resource resource, TimePeriod timePeriod) {
-        throw new UnsupportedOperationException("Not implemented");
-    }
-
-    public List<HardwareResource> findResources(
-            ResourceDescription resourceDescription) {
-        throw new UnsupportedOperationException("Not implemented");
-    }
 
 //    public synchronized JSDL createUnicoreJsdl (SoftwareDescription sd) throws GATInvocationException  {
     public synchronized JSDL createUnicoreJsdl (SoftwareDescription sd) throws GATInvocationException  {
