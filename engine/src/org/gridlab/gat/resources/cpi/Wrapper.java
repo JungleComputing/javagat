@@ -55,17 +55,19 @@ public class Wrapper {
 
     private URI initiator;
 
-    int jobsSubmitted = 0;
+    private int jobsSubmitted = 0;
 
-    int jobsDone = 0;
+    private int jobsDone = 0;
+    
+    private int jobsEnabled = 0;
 
-    int jobsPreStaging = 0;
+    private int jobsPreStaging = 0;
 
-    int jobsDonePreStaging = 0;
+    private int jobsDonePreStaging = 0;
 
-    int maxConcurrentJobs;
+    private int maxConcurrentJobs;
 
-    StagingType stagingType;
+    private StagingType stagingType;
 
     private int numberJobs;
 
@@ -138,11 +140,25 @@ public class Wrapper {
                 Thread.sleep(10000);
             }
         }
-        for (WrappedJobInfo info : infos) {
-            new Submitter(info).start();
+        for (int i = 0; i < infos.size(); i++) {
+            WrappedJobInfo info = infos.get(i);
+            new Submitter(info, i).start();
         }
         synchronized (this) {
             while (jobsDone < numberJobs) {
+                if (jobsWaitUntilPrestageDone
+                        && jobsEnabled - jobsDone < maxConcurrentJobs
+                        && jobsEnabled < numberJobs) {
+                    for (int i = jobsEnabled - jobsDone; i < maxConcurrentJobs; i++) {
+                        File enableFile = GAT.createFile(
+                                rewriteURI(new URI(preStageDoneDirectory + "/"
+                                        + preStageIdentifier + "." + jobsEnabled),
+                                    initiator));
+                        enableFile.createNewFile();
+                        enableFile.deleteOnExit();                   
+                        jobsEnabled++;
+                    }
+                }
                 System.out.println("waiting for " + (numberJobs - jobsDone)
                         + " jobs");
                 wait();
@@ -266,9 +282,11 @@ public class Wrapper {
     class Submitter extends Thread {
 
         private WrappedJobInfo info;
+        private final int jobno;
 
-        public Submitter(WrappedJobInfo info) {
+        public Submitter(WrappedJobInfo info, int jobno) {
             this.info = info;
+            this.jobno = jobno;
             setDaemon(false);
             setName(info.getJobStateFileName());
         }
@@ -278,14 +296,14 @@ public class Wrapper {
             // if already max jobs running -> wait
             ResourceBroker broker = null;
             Preferences prefs = info.getPreferences();
-            if (jobsWaitUntilPrestageDone
-                    && stagingType== StagingType.SEQUENTIAL) {
+            if (jobsWaitUntilPrestageDone) {
                 try {
-                    prefs.put("local.waitForFile", rewriteURI(new URI(
-                            preStageDoneDirectory + "/"
-                            + (preStageIdentifier + 1)),
-                    initiator)
-                            );
+                    prefs.put("local.waitForFile",
+                            rewriteURI(new URI(
+                                    preStageDoneDirectory + "/"
+                                    + preStageIdentifier + "." + jobno),
+                                    initiator)
+                    );
                 } catch (URISyntaxException e) {
                     e.printStackTrace();
                 }
