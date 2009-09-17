@@ -24,6 +24,7 @@ public class CommandlineSshFileAdaptor extends FileCpi {
     public static Map<String, Boolean> getSupportedCapabilities() {
         Map<String, Boolean> capabilities = FileCpi.getSupportedCapabilities();
         capabilities.put("copy", true);
+        capabilities.put("createNewFile", true);  
         capabilities.put("delete", true);
         capabilities.put("isDirectory", true);
         capabilities.put("isFile", true);
@@ -221,6 +222,14 @@ public class CommandlineSshFileAdaptor extends FileCpi {
 
     public boolean mkdir() throws GATInvocationException {
         return runSshCommand(true, "mkdir", fixedURI.getPath());
+    }
+    
+    public boolean createNewFile() throws GATInvocationException {
+        // TODO: this is not atomic.
+        if (exists()) {
+            return false;
+        }
+        return runSshCommand(true, "touch", fixedURI.getPath());
     }
 
     public boolean delete() throws GATInvocationException {
