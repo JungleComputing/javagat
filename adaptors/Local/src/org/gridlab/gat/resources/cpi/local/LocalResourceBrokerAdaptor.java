@@ -218,7 +218,7 @@ public class LocalResourceBrokerAdaptor extends ResourceBrokerCpi {
             try {
                 File wf = GAT.createFile(waitForFile);
                 while (! wf.exists()) {
-                    Thread.sleep(10000);
+                    Thread.sleep(1000);
                 }
             } catch(Throwable e) {
                 logger.error("Error while waiting for file", e);
