@@ -144,6 +144,16 @@ public class Wrapper {
             WrappedJobInfo info = infos.get(i);
             new Submitter(info, i).start();
         }
+        if (jobsWaitUntilPrestageDone) {
+            File prestageWaitFile = GAT.createFile(rewriteURI(new URI(
+                    preStageDoneDirectory + "/" + (preStageIdentifier+1)),
+                    initiator));
+            while (!prestageWaitFile.exists()) {
+                System.out.println("waiting for '" + prestageWaitFile
+                        + "' to appear...");
+                Thread.sleep(10000);
+            }
+        }
         synchronized (this) {
             while (jobsDone < numberJobs) {
                 if (jobsWaitUntilPrestageDone
@@ -317,8 +327,8 @@ public class Wrapper {
             }
 
             synchronized (Wrapper.this) {
-                while (jobsSubmitted - jobsDone == maxConcurrentJobs
-                        || (jobsPreStaging - jobsDonePreStaging > 0 && stagingType == StagingType.SEQUENTIAL)) {
+                while (jobsPreStaging - jobsDonePreStaging > 0 
+                        && stagingType == StagingType.SEQUENTIAL) {
                     try {
                         Wrapper.this.wait();
                     } catch (InterruptedException e) {
