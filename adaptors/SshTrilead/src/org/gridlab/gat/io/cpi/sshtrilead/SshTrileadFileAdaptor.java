@@ -722,6 +722,7 @@ public class SshTrileadFileAdaptor extends FileCpi {
         if (exists()) {
             return false;
         }
+        // TODO: this is not atomic.
         if (isWindows(gatContext, location)) {
             throw new UnsupportedOperationException("Not implemented");
         } else {
