@@ -131,13 +131,14 @@ public class Wrapper {
         this.numberJobs = infos.size();
 
         if (preStageIdentifier > 0) {
+            // Wait for previous wrapper job
             File prestageWaitFile = GAT.createFile(rewriteURI(new URI(
                     preStageDoneDirectory + "/" + preStageIdentifier),
                     initiator));
             while (!prestageWaitFile.exists()) {
                 System.out.println("waiting for '" + prestageWaitFile
                         + "' to appear...");
-                Thread.sleep(10000);
+                Thread.sleep(1000);
             }
         }
         for (int i = 0; i < infos.size(); i++) {
@@ -151,7 +152,7 @@ public class Wrapper {
             while (!prestageWaitFile.exists()) {
                 System.out.println("waiting for '" + prestageWaitFile
                         + "' to appear...");
-                Thread.sleep(10000);
+                Thread.sleep(1000);
             }
         }
         synchronized (this) {
@@ -177,7 +178,7 @@ public class Wrapper {
         System.out.println("DONE!");
         // Sleep a bit to give other wrappers time to detect my generated
         // prestageWaitFile, which is deleted on my exit.
-        Thread.sleep(10000);
+        Thread.sleep(5000);
         System.exit(0);
     }
 
