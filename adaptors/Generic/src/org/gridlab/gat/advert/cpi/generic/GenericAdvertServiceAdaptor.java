@@ -214,7 +214,7 @@ public class GenericAdvertServiceAdaptor extends AdvertServiceCpi {
         FileInterface sourceFile = null;
         try {
             sourceFile = GAT.createFile(gatContext,
-                    new org.gridlab.gat.URI(save())).getFileInterface();
+                    new org.gridlab.gat.URI("file:///" + save())).getFileInterface();
         } catch (GATObjectCreationException e) {
             throw new GATInvocationException("failed to create source file", e);
         } catch (URISyntaxException e) {
@@ -235,7 +235,7 @@ public class GenericAdvertServiceAdaptor extends AdvertServiceCpi {
         try {
             File tempLocalFile = File.createTempFile("JavaGAT",
                     "advert-database");
-            sourceFile.copy(new org.gridlab.gat.URI(tempLocalFile.getPath()));
+            sourceFile.copy(new org.gridlab.gat.URI("file:///" + tempLocalFile.getPath()));
             load(tempLocalFile);
             tempLocalFile.delete();
 
