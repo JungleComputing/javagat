@@ -124,6 +124,12 @@ public class AdaptorInvocationHandler implements InvocationHandler {
                 while (t instanceof InvocationTargetException) {
                     t = ((InvocationTargetException) t).getTargetException();
                 }
+                if (t instanceof java.util.NoSuchElementException) {
+                    System.out.println("" + instantiatedAdaptors.get(adaptor));
+                    if (instantiatedAdaptors.get(adaptor) instanceof org.gridlab.gat.advert.AdvertService) {
+                        throw t;
+                    }
+                }
                 e.add(adaptor.getShortAdaptorClassName(), loggerString, t);
                 if (logger.isInfoEnabled()) {
                     if (adaptor.getAdaptorClass().getMethod(m.getName(),
