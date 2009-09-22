@@ -207,7 +207,9 @@ public class GT42Job extends JobCpi implements GramJobListener, Runnable {
             throws GATInvocationException {
         if (state != JobState.STOPPED && state != JobState.SUBMISSION_ERROR) {
             try {
-                job.cancel();
+                // Equivalent of job.cancel, which is deprecated.
+                job.terminate(true, false, job.isDelegationEnabled());
+                job.unbind();
             } catch (Exception e) {
                 finished();
                 finished = true;
