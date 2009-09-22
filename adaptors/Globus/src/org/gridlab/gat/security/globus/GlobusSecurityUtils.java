@@ -136,7 +136,7 @@ class GlobusContextCreator implements SecurityContextCreator {
             MyProxyServerCredentialSecurityContext c = (MyProxyServerCredentialSecurityContext) inContext;
 
             GSSCredential cred = GlobusSecurityUtils
-                    .getCredentialFromMyProxyServer(c.getHost(), c.getPort(), c
+                    .getCredentialFromMyProxyServer(gatContext, c.getHost(), c.getPort(), c
                             .getUsername(), c.getPassword());
 
             return cred;
@@ -197,6 +197,7 @@ public class GlobusSecurityUtils {
 
         return (GSSCredential) data;
     }
+
 
     /**
      * This method returns the default globus credential. The strategy used is
@@ -300,8 +301,42 @@ public class GlobusSecurityUtils {
         return credential;
     }
 
-    // try to get user credential from MyProxyServer
+    
+    /**
+     * try to get a GSSCredential from a MyProxyServer
+     * 
+     * @deprecated this method is deprecated please use 
+     * {@link #getCredentialFromMyProxyServer(GATContext, String, int, String, String)}
+     * 
+     * @param host hostname of the MyProxy Server
+     * @param port port of the MyProxy Server
+     * @param user username under which the credential is stored
+     * @param password associated password
+     * @return retrieved GSSCredential
+     * @throws CouldNotInitializeCredentialException
+     */
     public static GSSCredential getCredentialFromMyProxyServer(String host,
+            int port, String user, String password)
+            throws CouldNotInitializeCredentialException {
+    		return getCredentialFromMyProxyServer(null, host, port, user, password);
+    }
+    	
+    /**
+     * try to get a GSSCredential from a MyProxyServer
+     * to use host authentification the context need two parameters:
+     *      myproxy.hostcertfile   absolute path on local machine to the cert file
+     *      myproxy.hostkeyfile    absolute path on local machine to the key file
+     * @param gatContext the {@link GATContext} (needed if the MyProxy Server 
+     *                requires host authentification). If null the MyProxy Server 
+     *                is accessed anonymous
+     * @param host hostname of the MyProxy Server
+     * @param port port of the MyProxy Server
+     * @param user username under which the credential is stored
+     * @param password associated password
+     * @return retrieved GSSCredential
+     * @throws CouldNotInitializeCredentialException
+     */
+    public static GSSCredential getCredentialFromMyProxyServer(GATContext gatContext, String host,
             int port, String user, String password)
             throws CouldNotInitializeCredentialException {
         if (logger.isDebugEnabled()) {
@@ -317,7 +352,26 @@ public class GlobusSecurityUtils {
             proxy.setHost(host);
             proxy.setPort(port);
 
-            return proxy.get(user, password, 2 /* lifetime */);
+            GSSCredential hostGSSCred = null;
+            if (gatContext != null) {
+                String portalCertFile = (String) gatContext.getPreferences().get("myproxy.hostcertfile");
+                String portalKeyFile = (String) gatContext.getPreferences().get("myproxy.hostkeyfile");
+                if ((portalCertFile != null) && (portalKeyFile != null)) {
+                    try {
+                        GlobusCredential hostCred = new GlobusCredential(portalCertFile, portalKeyFile);
+                        hostGSSCred = new GlobusGSSCredentialImpl(hostCred, GSSCredential.INITIATE_AND_ACCEPT);
+                    } catch (GlobusCredentialException e) {
+                        throw new CouldNotInitializeCredentialException(e.getMessage(), e);				
+                    } catch (GSSException e) {
+                        throw new CouldNotInitializeCredentialException(e.getMessage(), e);				
+                    }
+                }
+            }
+            GSSCredential credRetrieved = proxy.get(hostGSSCred, user, password, 2 /* lifetime */);
+            return credRetrieved;
+
+            
+//            return proxy.get(user, password, 2 /* lifetime */);
         } catch (MyProxyException e) {
             if (logger.isDebugEnabled()) {
                 logger.debug("getting credential from MyProxyServer failed: "
