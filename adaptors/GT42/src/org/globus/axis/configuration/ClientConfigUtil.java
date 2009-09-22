@@ -15,27 +15,25 @@
  */
 package org.globus.axis.configuration;
 
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.OutputStreamWriter;
-import java.io.BufferedWriter;
 import java.io.PrintWriter;
 import java.io.Writer;
 
-import org.apache.axis.AxisProperties;
-import org.apache.axis.EngineConfiguration;
 import org.apache.axis.ConfigurationException;
+import org.apache.axis.EngineConfiguration;
+import org.apache.axis.client.AxisClient;
 import org.apache.axis.configuration.DirProvider;
 import org.apache.axis.configuration.EngineConfigurationFactoryFinder;
 import org.apache.axis.utils.Admin;
 import org.apache.axis.utils.XMLUtils;
-import org.apache.axis.client.AxisClient;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.w3c.dom.Document;
-
 import org.globus.tools.DeployConstants;
 import org.globus.wsrf.config.ContainerConfig;
+import org.w3c.dom.Document;
 
 public class ClientConfigUtil 
 {

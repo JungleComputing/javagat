@@ -15,17 +15,18 @@
  */
 package org.globus.wsrf.jndi;
 
-import org.apache.naming.ContextBindings;
-import org.apache.naming.NamingContext;
-import org.apache.naming.SelectorContext;
-import org.apache.naming.SynchronizedContext;
+import java.util.Hashtable;
 
 import javax.naming.Context;
 import javax.naming.Name;
 import javax.naming.NamingException;
 import javax.naming.spi.GT42InitialContextFactory;
 import javax.naming.spi.ObjectFactory;
-import java.util.Hashtable;
+
+import org.apache.naming.ContextBindings;
+import org.apache.naming.NamingContext;
+import org.apache.naming.SelectorContext;
+import org.apache.naming.SynchronizedContext;
 
 /**
  * Context factory for the "java:" namespace.

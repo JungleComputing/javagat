@@ -11,6 +11,7 @@ import java.util.Hashtable;
 
 import javax.naming.spi.GT42NamingManager;
 import javax.naming.spi.NamingManager;
+
 import com.sun.naming.internal.ResourceManager;
 //The getDefaultInitCtx has been modified
 /**

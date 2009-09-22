@@ -6,8 +6,6 @@ package org.gridlab.gat.security.gt42;
 import java.io.ByteArrayInputStream;
 import java.io.UnsupportedEncodingException;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.globus.gsi.GlobusCredential;
 import org.globus.gsi.GlobusCredentialException;
 import org.globus.gsi.gssapi.GlobusGSSCredentialImpl;
@@ -29,6 +27,8 @@ import org.gridlab.gat.security.cpi.SecurityContextCreator;
 import org.gridlab.gat.security.cpi.SecurityContextUtils;
 import org.ietf.jgss.GSSCredential;
 import org.ietf.jgss.GSSException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 class GlobusContextCreator implements SecurityContextCreator {
 

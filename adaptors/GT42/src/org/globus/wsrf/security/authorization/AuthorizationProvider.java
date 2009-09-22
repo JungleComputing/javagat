@@ -21,29 +21,24 @@ package org.globus.wsrf.security.authorization;
  * javaGAT. Now it is possible to keep it inside the external folder.
  * */
 
-import java.security.Provider;
-import java.security.Security;
-
-import java.util.Set;
-import java.util.Iterator;
-import java.util.Properties;
-
 import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-
-import org.globus.wsrf.config.ContainerConfig;
-import org.globus.wsrf.config.ConfigException;
-import org.globus.wsrf.security.authorization.client.Authorization;
-
-import org.globus.util.I18n;
-
-import org.globus.util.ClassLoaderUtils;  
+import java.io.IOException;
+import java.io.InputStream;
+import java.security.Provider;
+import java.security.Security;
+import java.util.Iterator;
+import java.util.Properties;
+import java.util.Set;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.globus.util.ClassLoaderUtils;
+import org.globus.util.I18n;
+import org.globus.wsrf.config.ConfigException;
+import org.globus.wsrf.config.ContainerConfig;
+import org.globus.wsrf.security.authorization.client.Authorization;
 
 /**
  * Provider class that initializes authorization provider from a
@@ -51,6 +46,8 @@ import org.apache.commons.logging.LogFactory;
  * GLOBUS_LOCATION/etc/globus_wsrf_core/authz-algorithm-config
  */ 
 public class AuthorizationProvider extends Provider {
+
+    private static final long serialVersionUID = 1L;
 
     private static I18n i18n =
         I18n.getI18n(Authorization.RESOURCE,
@@ -141,9 +138,9 @@ public class AuthorizationProvider extends Provider {
             throw new ConfigException(err, ioe);
         }
         
-        Set set = properties.keySet();
+        Set<?> set = properties.keySet();
         if (set != null) {
-            Iterator iterator = set.iterator();
+            Iterator<?> iterator = set.iterator();
             while (iterator.hasNext()) {
                 String name = (String)iterator.next();
                 String className = properties.getProperty(name);

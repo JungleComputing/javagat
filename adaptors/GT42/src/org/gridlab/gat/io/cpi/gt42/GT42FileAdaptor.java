@@ -7,8 +7,6 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.Map;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.globus.cog.abstraction.impl.common.AbstractionFactory;
 import org.globus.cog.abstraction.impl.common.task.ServiceContactImpl;
 import org.globus.cog.abstraction.impl.file.DirectoryNotFoundException;
@@ -24,13 +22,12 @@ import org.gridlab.gat.GAT;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.GATObjectCreationException;
-import org.gridlab.gat.Preferences;
 import org.gridlab.gat.URI;
 import org.gridlab.gat.io.cpi.FileCpi;
 import org.gridlab.gat.security.gt42.GlobusSecurityUtils;
 import org.ietf.jgss.GSSCredential;
-
-import benchmarks.AdaptorTestResultEntry;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * This abstract class implementes the

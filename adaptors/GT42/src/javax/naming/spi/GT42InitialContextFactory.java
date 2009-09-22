@@ -8,7 +8,9 @@
 package javax.naming.spi;
 
 import java.util.Hashtable;
-import javax.naming.*;
+
+import javax.naming.Context;
+import javax.naming.NamingException;
 
 /**
   * This interface represents a factory that creates an initial context.

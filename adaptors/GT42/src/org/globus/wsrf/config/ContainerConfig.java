@@ -15,27 +15,25 @@
  */
 package org.globus.wsrf.config;
 
-import java.util.Hashtable;
 import java.io.IOException;
 import java.net.URL;
-
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import java.util.Hashtable;
 
 import org.apache.axis.AxisEngine;
 import org.apache.axis.EngineConfiguration;
-import org.apache.axis.WSDDEngineConfiguration;
 import org.apache.axis.MessageContext;
+import org.apache.axis.WSDDEngineConfiguration;
 import org.apache.axis.client.AxisClient;
 import org.apache.axis.configuration.FileProvider;
 import org.apache.axis.deployment.wsdd.WSDDDeployment;
 import org.apache.axis.deployment.wsdd.WSDDGlobalConfiguration;
 import org.apache.axis.server.AxisServer;
-
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.globus.util.I18n;
 import org.globus.wsrf.Constants;
-import org.globus.wsrf.container.ServiceHost;
 import org.globus.wsrf.container.BaseContainerConfig;
+import org.globus.wsrf.container.ServiceHost;
 import org.globus.wsrf.utils.Resources;
 
 /**

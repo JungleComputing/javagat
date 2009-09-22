@@ -18,14 +18,9 @@ import javax.xml.rpc.ServiceException;
 import javax.xml.rpc.Stub;
 import javax.xml.soap.SOAPElement;
 
-import org.globus.axis.configuration.ClientConfigUtil;
-import org.globus.axis.message.addressing.EndpointReferenceType;
-import org.apache.axis.configuration.EngineConfigurationFactoryDefault;
-import org.apache.axis.deployment.wsdd.WSDDDeployment;
 import org.apache.axis.message.MessageElement;
 import org.apache.axis.types.URI.MalformedURIException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.globus.axis.message.addressing.EndpointReferenceType;
 import org.globus.axis.util.Util;
 import org.globus.delegation.DelegationConstants;
 import org.globus.delegation.DelegationException;
@@ -66,10 +61,6 @@ import org.globus.wsrf.encoding.ObjectDeserializer;
 import org.globus.wsrf.encoding.ObjectSerializer;
 import org.globus.wsrf.encoding.SerializationException;
 import org.globus.wsrf.impl.security.authentication.Constants;
-//import org.globus.wsrf.impl.security.authorization.Authorization;
-//Moved to:
-import org.globus.wsrf.security.authorization.client.Authorization;
-
 import org.globus.wsrf.impl.security.authorization.HostAuthorization;
 import org.globus.wsrf.impl.security.authorization.IdentityAuthorization;
 import org.globus.wsrf.impl.security.authorization.SelfAuthorization;
@@ -78,18 +69,8 @@ import org.globus.wsrf.impl.security.descriptor.ContainerSecurityDescriptor;
 import org.globus.wsrf.impl.security.descriptor.GSISecureMsgAuthMethod;
 import org.globus.wsrf.impl.security.descriptor.GSITransportAuthMethod;
 import org.globus.wsrf.impl.security.descriptor.ResourceSecurityDescriptor;
-
-
-
-import org.globus.wsrf.config.ContainerConfig;
-import org.apache.axis.AxisEngine;
-import org.apache.axis.ConfigurationException;
-import org.apache.axis.EngineConfiguration;
-
-
-
-//import org.globus.wsrf.impl.security.descriptor.SecurityDescriptorException; questa eccezione nn esiste piu
 import org.globus.wsrf.security.SecurityManager;
+import org.globus.wsrf.security.authorization.client.Authorization;
 import org.gridlab.gat.AdaptorNotApplicableException;
 import org.gridlab.gat.CouldNotInitializeCredentialException;
 import org.gridlab.gat.CredentialExpiredException;
@@ -110,6 +91,8 @@ import org.oasis.wsrf.lifetime.SetTerminationTime;
 import org.oasis.wsrf.properties.GetMultipleResourcePropertiesResponse;
 import org.oasis.wsrf.properties.GetMultipleResourceProperties_Element;
 import org.oasis.wsrf.properties.ResourcePropertyValueChangeNotificationType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 class RFTGT42NotifyCallback implements NotifyCallback {
 
@@ -609,10 +592,10 @@ public class RFTGT42FileAdaptor extends FileCpi {
                 try {
                    TransferStatusTypeEnumeration newStatus = rft.getStatus(
                             parameters).getTransferStatus().getStatus();
-                   String dest = rft.getStatus(
-                           parameters).getTransferStatus().getDestinationUrl();
-                   String src = rft.getStatus(
-                           parameters).getTransferStatus().getSourceUrl();
+     //              String dest = rft.getStatus(
+     //                      parameters).getTransferStatus().getDestinationUrl();
+     //              String src = rft.getStatus(
+     //                      parameters).getTransferStatus().getSourceUrl();
                                       
                    
                    if (newStatus != null) {

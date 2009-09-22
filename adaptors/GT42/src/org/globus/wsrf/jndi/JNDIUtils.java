@@ -15,24 +15,14 @@
  */
 package org.globus.wsrf.jndi;
 
-import org.apache.axis.AxisEngine;
-import org.apache.axis.Constants;
-import org.apache.axis.MessageContext;
-import org.apache.commons.digester.Digester;
-import org.apache.commons.digester.AbstractObjectCreationFactory;
-import org.apache.commons.digester.Rule;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.apache.naming.ContextBindings;
-import org.apache.naming.SynchronizedContext;
-import org.globus.tools.DeployConstants;
-import org.globus.util.I18n;
-import org.globus.wsrf.config.ContainerConfig;
-import org.globus.wsrf.tools.jndi.*;
-import org.globus.wsrf.utils.Resources;
-import org.xml.sax.SAXException;
-import org.xml.sax.SAXParseException;
-import org.xml.sax.Attributes;
+import java.io.File;
+import java.io.FileFilter;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Hashtable;
+import java.util.StringTokenizer;
 
 import javax.naming.Binding;
 import javax.naming.Context;
@@ -42,14 +32,26 @@ import javax.naming.NameClassPair;
 import javax.naming.NameNotFoundException;
 import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
-import java.io.File;
-import java.io.FileFilter;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Hashtable;
-import java.util.StringTokenizer;
+
+import org.apache.axis.AxisEngine;
+import org.apache.axis.Constants;
+import org.apache.axis.MessageContext;
+import org.apache.commons.digester.AbstractObjectCreationFactory;
+import org.apache.commons.digester.Digester;
+import org.apache.commons.digester.Rule;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.apache.naming.ContextBindings;
+import org.apache.naming.SynchronizedContext;
+import org.globus.tools.DeployConstants;
+import org.globus.util.I18n;
+import org.globus.wsrf.config.ContainerConfig;
+import org.globus.wsrf.tools.jndi.DigesterDefinitionDiscoverer;
+import org.globus.wsrf.tools.jndi.ResourceRule;
+import org.globus.wsrf.utils.Resources;
+import org.xml.sax.Attributes;
+import org.xml.sax.SAXException;
+import org.xml.sax.SAXParseException;
 
 /**
  * A utility class containing methods for setting up the JNDI environment and
@@ -205,9 +207,9 @@ public class JNDIUtils {
 
     private static void destroyAll(Context context, String name)
             throws NamingException {
-        NamingEnumeration enumeration = context.listBindings(name);
+        NamingEnumeration<Binding> enumeration = context.listBindings(name);
         while (enumeration.hasMore()) {
-            Binding binding = (Binding) enumeration.next();
+            Binding binding = enumeration.next();
             Object object = binding.getObject();
             if (object instanceof Context) {
                 try {
@@ -304,7 +306,7 @@ public class JNDIUtils {
 
         digester.setNamespaceAware(true);
 //        digester.setValidating(true);
-        String ruleClassName = (org.apache.commons.digester.Rule.class).getName();
+//        String ruleClassName = (org.apache.commons.digester.Rule.class).getName();
         DigesterDefinitionDiscoverer ddd = new DigesterDefinitionDiscoverer(digester);
         ddd.loadDefinitions();
 
@@ -334,7 +336,7 @@ public class JNDIUtils {
     public static Object lookup(
             Context context,
             String name,
-            Class type)
+            Class<?> type)
             throws NamingException {
         if (context == null) {
             throw new IllegalArgumentException(i18n.getMessage(
@@ -519,9 +521,9 @@ public class JNDIUtils {
                                  String name, String tab)
             throws NamingException {
         buf.append(tab).append("context: ").append(name).append("\n");
-        NamingEnumeration list = ctx.list(name);
+        NamingEnumeration<NameClassPair> list = ctx.list(name);
         while (list.hasMore()) {
-            NameClassPair nc = (NameClassPair) list.next();
+            NameClassPair nc = list.next();
             if (nc.getClassName().equals("org.apache.naming.NamingContext") ||
                     nc.getClassName().equals("org.apache.naming.SynchronizedContext")) {
                 toString(buf, ctx, name + "/" + nc.getName(), tab + "  ");

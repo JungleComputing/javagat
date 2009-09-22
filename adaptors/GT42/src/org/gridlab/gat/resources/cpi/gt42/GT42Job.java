@@ -1,26 +1,40 @@
 package org.gridlab.gat.resources.cpi.gt42;
 
+import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 
-//Attenzione---> Sono le librerie del GT4.2
+import org.globus.common.ResourceManagerContact;
 import org.globus.exec.client.GramJob;
 import org.globus.exec.client.GramJobListener;
 import org.globus.exec.generated.StateEnumeration;
-//------------------------------------------
+import org.globus.wsrf.impl.security.authentication.Constants;
+import org.globus.wsrf.impl.security.authorization.HostAuthorization;
 
+import org.gridlab.gat.CouldNotInitializeCredentialException;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
+import org.gridlab.gat.GATObjectCreationException;
+import org.gridlab.gat.InvalidUsernameOrPasswordException;
+import org.gridlab.gat.CredentialExpiredException;
+import org.gridlab.gat.URI;
+import org.gridlab.gat.advert.Advertisable;
+import org.gridlab.gat.engine.GATEngine;
 import org.gridlab.gat.monitoring.Metric;
 import org.gridlab.gat.monitoring.MetricDefinition;
 import org.gridlab.gat.monitoring.MetricEvent;
 import org.gridlab.gat.resources.JobDescription;
 import org.gridlab.gat.resources.cpi.JobCpi;
 import org.gridlab.gat.resources.cpi.Sandbox;
+import org.gridlab.gat.resources.cpi.SerializedJob;
+import org.gridlab.gat.security.gt42.GlobusSecurityUtils;
+import org.ietf.jgss.GSSCredential;
 
-public class GT42Job extends JobCpi implements GramJobListener, Runnable{
+public class GT42Job extends JobCpi implements GramJobListener, Runnable {
 
-	private MetricDefinition statusMetricDefinition;
+    private static final long serialVersionUID = 1L;
+
+    private MetricDefinition statusMetricDefinition;
 
     private GramJob job;
 
@@ -35,7 +49,7 @@ public class GT42Job extends JobCpi implements GramJobListener, Runnable{
     private StateEnumeration jobState = StateEnumeration.Unsubmitted;
 
     private String submissionID;
-	
+
     protected GT42Job(GATContext gatContext, JobDescription jobDescription,
             Sandbox sandbox) {
         super(gatContext, jobDescription, sandbox);
@@ -52,7 +66,118 @@ public class GT42Job extends JobCpi implements GramJobListener, Runnable{
         poller.start();
     }
     
+    /**
+     * constructor for unmarshalled jobs
+     */
+    public GT42Job(GATContext gatContext, SerializedJob sj)
+            throws GATObjectCreationException {
+        super(gatContext, sj.getJobDescription(), sj.getSandbox());
+  
+        if (System.getProperty("GT42_LOCATION") == null) {
+            String globusLocation = System.getProperty("gat.adaptor.path")
+                    + java.io.File.separator + "GT42Adaptor"
+                    + java.io.File.separator;
+            System.setProperty("GT42_LOCATION", globusLocation);
+        }
+
+        if (System.getProperty("axis.ClientConfigFileGT42") == null) {
+            String axisClientConfigFile = System
+                    .getProperty("gat.adaptor.path")
+                    + java.io.File.separator
+                    + "GT42Adaptor"
+                    + java.io.File.separator + "client-config.wsdd";
+            System.setProperty("axis.ClientConfigFileGT42", axisClientConfigFile);
+        }
+        
+        if (logger.isDebugEnabled()) {
+            logger.debug("reconstructing wsgt4newjob: " + sj);
+        }
+
+        this.submissionID = sj.getJobId();
+        this.starttime = sj.getStarttime();
+        this.stoptime = sj.getStoptime();
+        this.submissiontime = sj.getSubmissiontime();
+
+        // Tell the engine that we provide job.status events
+        HashMap<String, Object> returnDef = new HashMap<String, Object>();
+        returnDef.put("status", JobState.class);
+        statusMetricDefinition = new MetricDefinition("job.status",
+                MetricDefinition.DISCRETE, "String", null, null, returnDef);
+        registerMetric("getJobStatus", statusMetricDefinition);
+        statusMetric = statusMetricDefinition.createMetric(null);
+
+        job = new GramJob();
+
+        try {
+            job.setHandle(submissionID);
+        } catch (Exception e) {
+            throw new GATObjectCreationException("globus job", e);
+        }
+
+        URI hostUri;
+        try {
+            URL u = new URL(submissionID);
+            hostUri = new URI(u.getHost());
+        } catch (Exception e) {
+            throw new GATObjectCreationException("globus job", e);
+        }
+
+        GSSCredential credential = null;
+        try {
+            credential = GlobusSecurityUtils.getGlobusCredential(gatContext,
+                "ws-gram", hostUri, ResourceManagerContact.DEFAULT_PORT);
+        } catch (CouldNotInitializeCredentialException e) {
+            throw new GATObjectCreationException("globus", e);
+        } catch (CredentialExpiredException e) {
+            throw new GATObjectCreationException("globus", e);
+        } catch (InvalidUsernameOrPasswordException e) {
+            throw new GATObjectCreationException("globus", e);
+        }
+        if (credential != null) {
+            job.setCredentials(credential);
+        } else {        
+            job.setAuthorization(HostAuthorization.getInstance());
+        }
+        
+        job.setMessageProtectionType(Constants.ENCRYPTION);
+        job.setDelegationEnabled(true);
+
+        job.addListener(this);
+        try {
+            job.refreshStatus();
+        } catch(Throwable e) {
+            logger.debug("refreshStatus gave exception: ", e);
+        }
+        StateEnumeration newState = job.getState();
+        logger.debug("jobState: " + newState);
+        if (newState == null) {
+            // happens if the job is already done ...
+            doStateChange(StateEnumeration.Done);
+        } else {
+            doStateChange(newState);
+            poller = new Thread(this);
+            poller.setDaemon(true);
+            poller.start();
+        }
+    }
+
+
+
     protected synchronized void setState(JobState state) {
+        if (submissiontime == 0L) {
+            setSubmissionTime();
+        }
+        if (state.equals(JobState.RUNNING)) {
+            if (starttime == 0L) {
+                setStartTime();
+            }
+        }
+        else if (state.equals(JobState.STOPPED)) {
+            if (stoptime == 0L) {
+                setStopTime();
+            }
+        }
+
         if (this.state != state) {
             this.state = state;
             MetricEvent v = new MetricEvent(this, state, statusMetric, System
@@ -71,37 +196,36 @@ public class GT42Job extends JobCpi implements GramJobListener, Runnable{
             }
         }
     }
-    
+
     public synchronized void stop() throws GATInvocationException {
         stop(gatContext.getPreferences().containsKey("job.stop.poststage")
                 && gatContext.getPreferences().get("job.stop.poststage")
                         .equals("false"));
     }
-    
+
     private synchronized void stop(boolean skipPostStage)
-    	throws GATInvocationException {
-    	if (state != JobState.STOPPED && state != JobState.SUBMISSION_ERROR) {
-    		try {
-    			job.cancel();
-    		} catch (Exception e) {
-    			finished();
-    			finished = true;
-        throw new GATInvocationException("GT4.2 Job", e);
-    		}
-    		if (state != JobState.POST_STAGING && !skipPostStage) {
-    			setState(JobState.POST_STAGING);
-    			sandbox.retrieveAndCleanup(this);
-    		}
-    	} else {
-    		if (logger.isDebugEnabled()) {
-    			logger.debug("job not running anymore!");
-    		}
-    	}
-    	finished = true;
-    	finished();
+            throws GATInvocationException {
+        if (state != JobState.STOPPED && state != JobState.SUBMISSION_ERROR) {
+            try {
+                job.cancel();
+            } catch (Exception e) {
+                finished();
+                finished = true;
+                throw new GATInvocationException("GT4.2 Job", e);
+            }
+            if (state != JobState.POST_STAGING && !skipPostStage) {
+                setState(JobState.POST_STAGING);
+                sandbox.retrieveAndCleanup(this);
+            }
+        } else {
+            if (logger.isDebugEnabled()) {
+                logger.debug("job not running anymore!");
+            }
+        }
+        finished = true;
+        finished();
     }
-    
-  
+
     public synchronized int getExitStatus() throws GATInvocationException {
         if (getState() != JobState.STOPPED
                 && getState() != JobState.SUBMISSION_ERROR) {
@@ -109,62 +233,60 @@ public class GT42Job extends JobCpi implements GramJobListener, Runnable{
         }
         return exitStatus;
     }
-    
-     public synchronized Map<String, Object> getInfo()
-		    throws GATInvocationException {
-		HashMap<String, Object> m = new HashMap<String, Object>();
-		
-		m.put("adaptor.job.id", submissionID);
-		m.put("state", state.toString());
-		m.put("globus.state", jobState);
-		if (state != JobState.RUNNING) {
-		    m.put("hostname", null);
-		} else {
-		    m.put("hostname", job.getEndpoint().getAddress().getHost());
-		}
-		if (state == JobState.INITIAL || state == JobState.UNKNOWN) {
-		    m.put("submissiontime", null);
-		} else {
-		    m.put("submissiontime", submissiontime);
-		}
-		if (state == JobState.INITIAL || state == JobState.UNKNOWN
-		        || state == JobState.SCHEDULED) {
-		    m.put("starttime", null);
-		} else {
-		    m.put("starttime", starttime);
-		}
-		if (state != JobState.STOPPED) {
-		    m.put("stoptime", null);
-		} else {
-		    m.put("stoptime", stoptime);
-		}
-		m.put("poststage.exception", postStageException);
-		m.put("resourcebroker", "WSGT4new");
-		m
-		        .put(
-		                "exitvalue",
-		                (getState() != JobState.STOPPED && getState() != JobState.SUBMISSION_ERROR) ? null
-		                        : "" + getExitStatus());
-		if (deleteException != null) {
-		    m.put("delete.exception", deleteException);
-		}
-		if (wipeException != null) {
-		    m.put("wipe.exception", wipeException);
-		}
-		return m;
-}
-     public void stateChanged(GramJob job) {
+
+    public synchronized Map<String, Object> getInfo()
+            throws GATInvocationException {
+        HashMap<String, Object> m = new HashMap<String, Object>();
+
+        m.put("adaptor.job.id", submissionID);
+        m.put("state", state.toString());
+        m.put("globus.state", jobState);
+        if (state != JobState.RUNNING) {
+            m.put("hostname", null);
+        } else {
+            m.put("hostname", job.getEndpoint().getAddress().getHost());
+        }
+        if (state == JobState.INITIAL || state == JobState.UNKNOWN) {
+            m.put("submissiontime", null);
+        } else {
+            m.put("submissiontime", submissiontime);
+        }
+        if (state == JobState.INITIAL || state == JobState.UNKNOWN
+                || state == JobState.SCHEDULED) {
+            m.put("starttime", null);
+        } else {
+            m.put("starttime", starttime);
+        }
+        if (state != JobState.STOPPED) {
+            m.put("stoptime", null);
+        } else {
+            m.put("stoptime", stoptime);
+        }
+        m.put("poststage.exception", postStageException);
+        m.put("resourcebroker", "WSGT4new");
+        m
+                .put(
+                        "exitvalue",
+                        (getState() != JobState.STOPPED && getState() != JobState.SUBMISSION_ERROR) ? null
+                                : "" + getExitStatus());
+        if (deleteException != null) {
+            m.put("delete.exception", deleteException);
+        }
+        if (wipeException != null) {
+            m.put("wipe.exception", wipeException);
+        }
+        return m;
+    }
+
+    public void stateChanged(GramJob job) {
         // don't let the upcall and the poller interfere, so synchronize the
         // state stuff
         synchronized (this) {
-            /* Commented out to avoid recursive calls to doStateChange --Ceriel
-             * (suggestion to do this was by Brian Carpenter).
-            try {
-                job.refreshStatus();
-            } catch (Exception e) {
-                // ignore
-            }
-            */
+            /*
+             * Commented out to avoid recursive calls to doStateChange --Ceriel
+             * (suggestion to do this was by Brian Carpenter). try {
+             * job.refreshStatus(); } catch (Exception e) { // ignore }
+             */
             StateEnumeration newState = job.getState();
             logger.debug("jobState (upcall): " + newState);
             doStateChange(newState);
@@ -173,17 +295,18 @@ public class GT42Job extends JobCpi implements GramJobListener, Runnable{
 
     private void doStateChange(StateEnumeration newState) {
         // Don't allow "updates" from final states.
-        // These were probably caused by the refreshStatus call in stateChanged(),
+        // These were probably caused by the refreshStatus call in
+        // stateChanged(),
         // but there. It does no harm to test ...
-        if (jobState.equals(StateEnumeration.Done)
+        if (jobState != null && jobState.equals(StateEnumeration.Done)
                 || jobState.equals(StateEnumeration.Failed)
-                || newState.equals(jobState)) {
+                || jobState.equals(newState)) {
             return;
         }
         jobState = newState;
 
         boolean holding = job.isHolding();
-        if (jobState.equals(StateEnumeration.Done)
+        if (jobState != null && jobState.equals(StateEnumeration.Done)
                 || jobState.equals(StateEnumeration.Failed)) {
             this.exitStatus = job.getExitCode();
         }
@@ -228,12 +351,71 @@ public class GT42Job extends JobCpi implements GramJobListener, Runnable{
             setState(JobState.INITIAL);
         }
     }
+    
+    /*
+     * @see org.gridlab.gat.advert.Advertisable#marshal()
+     */
+    public String marshal() {
+        SerializedJob sj;
+        synchronized (this) {
+
+            // we have to wait until the job is in a safe state
+            // we cannot marshal it if it is halfway during the poststage
+            // process
+            while (submissionID == null) {
+                try {
+                    wait();
+                } catch (Exception e) {
+                    // ignore
+                }
+            }
+
+            sj = new SerializedJob(getClass().getName(),
+                    jobDescription, sandbox, submissionID,
+                    submissiontime, starttime, stoptime);
+        }
+        String res = GATEngine.defaultMarshal(sj);
+        if (logger.isDebugEnabled()) {
+            logger.debug("marshalled seralized job: " + res);
+        }
+        return res;
+    }
+
+    public static Advertisable unmarshal(GATContext context, String s)
+            throws GATObjectCreationException {
+        if (logger.isDebugEnabled()) {
+            logger.debug("unmarshalled serialized job: " + s);
+        }
+
+        SerializedJob sj = (SerializedJob) GATEngine.defaultUnmarshal(
+            SerializedJob.class, s, GT42Job.class.getName());
+        
+        // if this job was created within this JVM, just return a reference to
+        // the job
+        synchronized (JobCpi.class) {
+            for (int i = 0; i < jobList.size(); i++) {
+                JobCpi j = (JobCpi) jobList.get(i);
+                if (j instanceof GT42Job) {
+                    GT42Job gj = (GT42Job) j;
+                    if (sj.getJobId().equals(gj.submissionID)) {
+                        if (logger.isDebugEnabled()) {
+                            logger.debug("returning existing job: " + gj);
+                        }
+                        return gj;
+                    }
+                }
+            }
+        }
+        return new GT42Job(context, sj);
+    }
+
+
 
     protected void setGramJob(GramJob job) {
         this.job = job;
     }
 
-    protected void submitted() {
+    protected synchronized void submitted() {
         setSubmissionTime();
     }
 
@@ -243,17 +425,33 @@ public class GT42Job extends JobCpi implements GramJobListener, Runnable{
     }
 
     public void run() {
+        int count = 0;
+        
         while (!finished) {
             synchronized (this) {
-                try {
-                    job.refreshStatus();
+                if (submissiontime != 0) {
+                    try {
+                        job.refreshStatus();
+                    } catch(Throwable e) {
+                        // ignored
+                    }
 
-                    // TODO
-                    StateEnumeration newState = job.getState();
-                    logger.debug("jobState (poller): " + newState);
-                    doStateChange(newState);
-                } catch (Exception e) {
-                    // ignore
+                    try {
+                        // TODO
+                        StateEnumeration newState = job.getState();
+                        logger.debug("jobState (poller): " + newState);
+                        if (newState == null) {
+                            if (count > 3) {
+                                doStateChange(StateEnumeration.Done);
+                            } else {
+                                count++;
+                            }
+                        } else {
+                            doStateChange(newState);
+                        }
+                    } catch (Exception e) {
+                        // ignore
+                    }
                 }
             }
             try {
