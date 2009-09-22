@@ -4,6 +4,7 @@
 package benchmarks;
 
 import java.net.URISyntaxException;
+import java.util.NoSuchElementException;
 
 import org.gridlab.gat.GAT;
 import org.gridlab.gat.GATInvocationException;
@@ -67,7 +68,7 @@ public class AdvertServiceAdaptorTest {
         adaptorTestResult.put("import                    ", importTest(
                 advertService, "any://" + host + "/exported-advert-database"));
         adaptorTestResult.put("test path 'c' (INCORRECT) ",
-                getAdvertisableTest(advertService, "c", "3", false));
+                getAdvertisableTest(advertService, "c", null, true));
         meta = new MetaData();
         meta.put("price", "50");
         adaptorTestResult.put("find price=50             ", findTest(
@@ -157,6 +158,8 @@ public class AdvertServiceAdaptorTest {
         try {
             correct = ((File) advert.getAdvertisable(path)).getPath().equals(
                     correctValue);
+        } catch(NoSuchElementException e) {
+            correct = correctValue == null;
         } catch (GATInvocationException e) {
             return new AdaptorTestResultEntry(false, 0, e);
         }
