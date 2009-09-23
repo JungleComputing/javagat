@@ -101,6 +101,9 @@ public class SerializedUnicoreJob extends SerializedJob {
 		if (pathBegin != -1 ) {
 			path = stringURI.substring(pathBegin+3);
 		}
+		else {
+			path=stringURI;
+		}
 		
 		if (isWindowsPath(path)) {
 			return path;

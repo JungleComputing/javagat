@@ -421,6 +421,7 @@ public class UnicoreJob extends JobCpi {
    
         try {
             TaskStatus status = task.status();
+            logger.debug("Task status in setState: " + status.toString());
 
             if (submissiontime == 0L) {
                 setSubmissionTime();
@@ -436,7 +437,7 @@ public class UnicoreJob extends JobCpi {
         	  state = JobState.SUBMISSION_ERROR;
            }
 
-           if (status.equals(TaskStatus.FINISHED)) {
+           if (status.equals(TaskStatus.FINISHED) || status.equals(TaskStatus.CANCELLED)) {
                if (stoptime == 0L) {
                    setStopTime();
                }
