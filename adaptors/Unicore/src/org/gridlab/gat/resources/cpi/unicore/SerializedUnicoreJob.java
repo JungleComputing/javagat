@@ -1,6 +1,8 @@
 package org.gridlab.gat.resources.cpi.unicore;
 
+import java.io.IOException;
 import java.util.Map;
+import java.net.URI;
 
 import org.gridlab.gat.io.File;
 import org.gridlab.gat.resources.JobDescription;
@@ -47,12 +49,78 @@ public class SerializedUnicoreJob extends SerializedJob {
             stagedOut = new String[sz];
             int index = 0;
             for (java.io.File srcFile : postStaged.keySet()) {
-                java.io.File destFile = postStaged.get(srcFile);
+                File destFile = postStaged.get(srcFile);
                 toStageOut[index] = srcFile.getName();
-                stagedOut[index] = destFile.getName();
+                
+                /**
+                 * destFile = srcFile if no destFile has been given.
+                 */
+                
+                if (destFile == null ) {
+                	stagedOut[index] = srcFile.getName();
+                }
+                else {
+                	stagedOut[index] = realPath(destFile.toGATURI());
+                }
+                
+                /**
+                 * some logs here...
+                 */
+                
+                logger.debug("srcFile.getName " + srcFile.getName().toString());
+                if (destFile!=null) {
+                	logger.debug("destFile.toString() " + destFile.toString());
+                    logger.debug("realpath(destFile.toURI() " + realPath(destFile.toGATURI()));
+                }
+
                 index++;                  
             }
         }
+    }
+
+	/**
+	 * The method String windowsPath extracts the full windows path of an URI. If it is no
+	 * windows path, the path name retrieved by the getPath method of the class URI is returned.
+	 *  
+	 * @param uri
+	 * @return path name as a string
+	 */
+
+	public static String realPath(org.gridlab.gat.URI uri) {
+		
+		String path=null;
+		String stringURI = null;
+			
+		/**
+		 * assume that the URI has the protocol definition ended with '//:'
+		 */
+		
+		stringURI = uri.toString();
+		int pathBegin = stringURI.indexOf("://");
+		
+		if (pathBegin != -1 ) {
+			path = stringURI.substring(pathBegin+3);
+		}
+		
+		if (isWindowsPath(path)) {
+			return path;
+		}
+		else {
+			return uri.getPath();
+		}
+		
+		
+	}
+	
+    private static boolean isWindowsPath(String s) {
+    	String subStr = s.substring(0, 2);
+    	
+    	if (subStr.matches("[a-zA-Z][:]")) {
+    		return true;
+    	}
+    	else {
+    		return false;
+    	}
     }
 
     public String getStdout() {

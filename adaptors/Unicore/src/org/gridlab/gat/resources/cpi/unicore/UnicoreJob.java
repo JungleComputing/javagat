@@ -18,6 +18,8 @@ import java.util.List;
 import java.util.Map;
 
 import org.gridlab.gat.GAT;
+import org.gridlab.gat.URI;
+
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.GATObjectCreationException;
@@ -182,7 +184,8 @@ public class UnicoreJob extends JobCpi {
 
         public void run() {
             try {
-                while (!task.status().equals(TaskStatus.RUNNING)) {
+                while (!task.status().equals(TaskStatus.RUNNING) && !task.status().equals(TaskStatus.PENDING)) {
+                	logger.debug("task Status is:  " + task.status().toString());
                     if (task.status().equals(TaskStatus.FAILED)) {
                         logger.warn("Job submission failed");
                         task.getOutcomeFiles();
@@ -333,8 +336,8 @@ public class UnicoreJob extends JobCpi {
         synchronized (this) {
 
             // Wait until initial stages are passed.
-            while (state == JobState.INITIAL || state == JobState.PRE_STAGING
-                  || state == JobState.SCHEDULED) {
+            while (state == JobState.INITIAL || state == JobState.PRE_STAGING) {
+//                  || state == JobState.SCHEDULED) {
                 try {
                     wait();
                 } catch (Exception e) {
@@ -359,7 +362,7 @@ public class UnicoreJob extends JobCpi {
     public static Advertisable unmarshal(GATContext context, String s)
             throws GATObjectCreationException {
         if (logger.isDebugEnabled()) {
-            logger.debug("unmarshalled serialized job: " + s);
+            logger.debug("unmarshalled seralized job: " + s);
         }
 
         SerializedUnicoreJob sj = (SerializedUnicoreJob) GATEngine.defaultUnmarshal(
@@ -505,30 +508,29 @@ public class UnicoreJob extends JobCpi {
 			/**
 			 * poststage stderr and stdout, if desired...
 			 */
+			
 			File stdout = sd.getStdout();
 			if (stdout != null) {
 			    stdoutFileName = stdout.getAbsolutePath();
-			    localStdoutFile = new File(stdoutFileName);
-			    logger.debug("stdout: " + stdoutFileName + "||" + localStdoutFile.getName());      
+			    logger.debug("stdout: " + stdoutFileName);
 			}
 			File stderr = sd.getStderr();
 			if (stderr != null) {
 			    stderrFileName = sd.getStderr().getAbsolutePath();
-			    localStderrFile = new File(stderrFileName);
-			    logger.debug("stderr: " + stderrFileName + "||" + localStderrFile.getName());
+			    logger.debug("stderr: " + stderrFileName);
 			}
 
 			// Why make file objects if you only use the AbsolutePath? --Ceriel
 			if (localStdoutFile!=null) {
 				remoteStdoutFile = task.getStdOut();
 				if (remoteStdoutFile!=null) {
-					moveFile (remoteStdoutFile.getAbsolutePath(), localStdoutFile.getAbsolutePath());
+					moveFile (remoteStdoutFile.getAbsolutePath(), stdoutFileName);
 				}
 			}
 			if (localStderrFile!=null) {
 				remoteStderrFile = task.getStdErr();
 				if (remoteStderrFile!=null) { 
-					moveFile (remoteStderrFile.getAbsolutePath(), localStderrFile.getAbsolutePath());
+					moveFile (remoteStderrFile.getAbsolutePath(), stderrFileName);
 				}
 			}
 			
@@ -541,9 +543,10 @@ public class UnicoreJob extends JobCpi {
 				for (de.fzj.hila.File file : wdFiles) {
 				    for (java.io.File srcFile : postStaged.keySet()) {
 			    		java.io.File destFile = postStaged.get(srcFile);
-			    		logger.debug("PoststageFiles: srcFile: '" + srcFile.getName() + "' destFile (name , path): '" + destFile.getName() + "', " + destFile.getAbsolutePath() + "'");
+			    		logger.debug("PoststageFiles: srcFile: '" + srcFile.getName() + "' destFile (name , path): '" + destFile.getName() + "', " + SerializedUnicoreJob.realPath(((org.gridlab.gat.io.File) destFile).toGATURI()) + "'");
 			    		if (file.getName().compareTo(srcFile.getName()) == 0 ) { // maybe getName should be used here
-			    			file.exportToLocalFile(destFile, true).block();
+			    			java.io.File realDestFile=new java.io.File (SerializedUnicoreJob.realPath(((org.gridlab.gat.io.File) destFile).toGATURI()));
+			    			file.exportToLocalFile(realDestFile, true).block();
 							}
 							
 						}
@@ -732,4 +735,3 @@ public class UnicoreJob extends JobCpi {
     }
 }
 
-            	
