@@ -7,7 +7,9 @@
 		<ant dir="shared" />
 		<ant dir="CommandlineSsh" />
 		<ant dir="Globus" />
+		<!-- No, not as long as it does not work ...
 		<ant dir="GT42" />
+		-->
 		<ant dir="Gridsam" />
 		<ant dir="Local" />
 		<ant dir="Mercury" />
