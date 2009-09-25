@@ -60,6 +60,7 @@
 
 	    <pathconvert property="hila-jars" refid="hila-libs" pathsep=" " dirsep="/">
 		<map from="/" to="/"/>
+            <map from="${gat.location}/lib/adaptors/UnicoreAdaptor/" to=""/>
 	    </pathconvert>
 
 		<jar jarfile="${lib}/UnicoreAdaptor.jar" basedir="${tmp}" includes="**">
