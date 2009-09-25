@@ -1,8 +1,6 @@
 package org.gridlab.gat.resources.cpi.unicore;
 
-import java.io.IOException;
 import java.util.Map;
-import java.net.URI;
 
 import org.gridlab.gat.io.File;
 import org.gridlab.gat.resources.JobDescription;
