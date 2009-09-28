@@ -510,22 +510,28 @@ public class SshTrileadFileAdaptor extends FileCpi {
             newConnection.setServer2ClientCiphers(server2client);
             newConnection.setTCPNoDelay(tcpNoDelay);
             int connectTimeout = 0;
-            try {
-                connectTimeout = Integer.parseInt((String) context
-                        .getPreferences().get("sshtrilead.connect.timeout"));
-            } catch (Throwable t) {
-                logger
-                        .info("'sshtrilead.connect.timeout' set, but could not be parsed: "
-                                + t);
+            String connectTimeoutString = (String) context.getPreferences().get(
+                    "sshtrilead.connect.timeout");
+            if (connectTimeoutString != null) {
+                try {
+                    connectTimeout = Integer.parseInt(connectTimeoutString);
+                } catch (Throwable t) {
+                    logger
+                    .info("'sshtrilead.connect.timeout' set, but could not be parsed: "
+                            + t);
+                }
             }
             int kexTimeout = 0;
-            try {
-                kexTimeout = Integer.parseInt((String) context.getPreferences()
-                        .get("sshtrilead.kex.timeout"));
-            } catch (Throwable t) {
-                logger
-                        .info("'sshtrilead.kex.timeout' set, but could not be parsed: "
-                                + t);
+            String kexTimeoutString = (String) context.getPreferences().get(
+                    "sshtrilead.kex.timeout");
+            if (kexTimeoutString != null) {
+                try {
+                    kexTimeout = Integer.parseInt(kexTimeoutString);
+                } catch (Throwable t) {
+                    logger
+                    .info("'sshtrilead.kex.timeout' set, but could not be parsed: "
+                            + t);
+                }
             }
             newConnection.connect(verifier, connectTimeout, kexTimeout);
             Map<String, Object> securityInfo = SshTrileadSecurityUtils
