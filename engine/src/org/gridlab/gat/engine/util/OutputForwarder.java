@@ -81,7 +81,9 @@ public class OutputForwarder extends Thread {
 
                 if (res < 0) {
                     synchronized (this) {
-                        destination.flush();
+                        if (destination != null) {
+                            destination.flush();
+                        }
                         // roelof: don't close destination, should be done by
                         // the user of the OutputForwarder, because he might
                         // want to write other things to it (for instance if

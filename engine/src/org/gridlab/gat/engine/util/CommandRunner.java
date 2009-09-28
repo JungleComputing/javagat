@@ -2,6 +2,7 @@ package org.gridlab.gat.engine.util;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.List;
 import java.util.StringTokenizer;
 
@@ -94,7 +95,7 @@ public class CommandRunner {
         }
         command[0] = getExeFile(command[0]);
         if (logger.isDebugEnabled()) {
-            logger.debug("CommandRunner running: " + command);
+            logger.debug("CommandRunner running: " + Arrays.toString(command));
         }
         ProcessBuilder builder = new ProcessBuilder(command);
         if (dir != null) {
