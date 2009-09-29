@@ -52,6 +52,11 @@ public final class GliteSecurityUtils {
             .getLogger(GliteSecurityUtils.class);
 
     private static DocumentBuilder documentBuilder;
+    
+    /** Cached result of CoGProperties.getDefault().getProxyFile(). */
+    private static String cogPropertiesProxyFile;
+    
+    private static boolean cogPropertiesProxyFileDone = false;
 
     private GliteSecurityUtils() {
         // Empty on purpose.
@@ -69,8 +74,16 @@ public final class GliteSecurityUtils {
         }
 
         if (proxyFile == null) {
-            final CoGProperties properties = CoGProperties.getDefault();
-            proxyFile = properties.getProxyFile();
+            synchronized(GliteSecurityUtils.class) {
+                // getProxyFile() turns out to be a performance killer, so
+                // cache the result. --Ceriel
+                if (! cogPropertiesProxyFileDone) {
+                    final CoGProperties properties = CoGProperties.getDefault();
+                    cogPropertiesProxyFile = properties.getProxyFile();
+                    cogPropertiesProxyFileDone = true;
+                }
+            }
+            proxyFile = cogPropertiesProxyFile;
         }
 
         // JARs
