@@ -93,6 +93,9 @@ public class GATEngine {
     /** Classloader to be used as parent classloader for the URL classloaders. */
     private ClassLoader parentLoader;
 
+    /** Set when the unmarshallers have been added to the list. */
+    private boolean unmarshallersAdded;
+
     /**
      * Constructs a default GATEngine instance.
      */
@@ -138,7 +141,10 @@ public class GATEngine {
             try {
                 sharedLoader = loadDirectory(new File(adaptorRoot, "shared"),
                         superparentLoader, false);
-            } catch (Exception e) {
+            } catch (Throwable e) {
+                if (logger.isDebugEnabled()) {
+                    logger.debug("Got exception when loading shared directory", e);
+                }
                 sharedLoader = superparentLoader;
             }
             parentLoader = sharedLoader;
@@ -399,7 +405,7 @@ public class GATEngine {
                 if (logger.isDebugEnabled()) {
                     logger.debug("loading adaptor SUCCESS: " + adaptorDir);
                 }
-            } catch (Exception e) {
+            } catch (Throwable e) {
                 if (logger.isDebugEnabled()) {
                     logger.debug("loading adaptor FAILED: " + adaptorDir + " ("
                             + e + ")");
@@ -488,18 +494,9 @@ public class GATEngine {
                         Thread.currentThread().setContextClassLoader(
                                 adaptorLoader);
                         Class<?> clazz = adaptorLoader.loadClass(adaptorClass);
-
-                        if (containsUnmarshaller(clazz)) {
-                            if (logger.isTraceEnabled()) {
-                                logger.trace("\t\tadaptor " + adaptorClass
-                                        + " contains unmarshaller");
-                            }
-                            unmarshallers.add(clazz);
-                        }
-
-                        if (containsInitializer(clazz)) {
-                            callInitializer(clazz);
-                        }
+                       
+                        callInitializer(clazz);
+                        
 
                         // if there are no adaptors loaded for this cpi name,
                         // make a new list of adaptors that are loaded for this
@@ -642,13 +639,27 @@ public class GATEngine {
         if (input == null) {
             throw new NullPointerException("cannot unmarshal null String");
         }
+        synchronized(this) {
+            if (! unmarshallersAdded) {
+                unmarshallersAdded = true;
+                // Find out which adaptors actually have unmarshallers, if we have
+                // not done this yet.
+                for (List<Adaptor> adaptorList : adaptorLists.values()) {
+                    for (Adaptor adaptor : adaptorList) {
+                        Class<?> c = adaptor.adaptorClass;
+                        if (containsUnmarshaller(c)) {
+                            unmarshallers.add(c);
+                        }
+                    }
+                }
+            }            
+        }
 
         for (int i = 0; i < unmarshallers.size(); i++) {
             Class<?> c = unmarshallers.get(i);
 
             try {
-                Method m = c.getMethod("unmarshal", new Class[] {
-                        GATContext.class, String.class });
+                Method m = c.getMethod("unmarshal", unmarshalParams);
                 Advertisable res = (Advertisable) m.invoke(null, new Object[] {
                         gatContext, input });
 
@@ -703,12 +714,14 @@ public class GATEngine {
          * marshaller");
          */
     }
+    
+    private static Class<?>[] unmarshalParams = new Class[] { GATContext.class,
+        String.class };
 
     private static boolean containsUnmarshaller(Class<?> clazz) {
         // test for marshal and unmarshal methods.
         try {
-            clazz.getMethod("unmarshal", new Class[] { GATContext.class,
-                    String.class });
+            clazz.getMethod("unmarshal", unmarshalParams);
 
             return true;
         } catch (Throwable t) {
@@ -716,19 +729,14 @@ public class GATEngine {
         }
     }
 
-    private static boolean containsInitializer(Class<?> clazz) {
-        // test for marshal and unmarshal methods.
+    private static void callInitializer(Class<?> clazz) {
+        Method m;
         try {
-            clazz.getMethod("init", (Class[]) null);
-            return true;
-        } catch (Throwable t) {
-            return false;
+            m = clazz.getMethod("init", (Class[]) null);
+        } catch(Throwable e) {
+            return;
         }
-    }
-
-    private void callInitializer(Class<?> clazz) {
         try {
-            Method m = clazz.getMethod("init", (Class[]) null);
             m.invoke((Object) null, (Object[]) null);
         } catch (Throwable t) {
             if (logger.isInfoEnabled()) {
