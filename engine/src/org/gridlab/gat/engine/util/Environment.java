@@ -10,6 +10,9 @@ import java.util.StringTokenizer;
 /**
  * This class allows you to access environment variables. It is for internal gat
  * use.
+ * Why is this here??? What is wrong with System.getenv(String)???
+ * Deprecated. --Ceriel
+ * @deprecated
  * 
  * @author rob
  */
