@@ -58,8 +58,15 @@ public class GridFTPFileAdaptor extends GlobusFileAdaptor {
         }
 
         /*
+         * Don't try to get the credential if we are dealing with a local file.
+         * In that case, getting the credential here is too expensive.
+         */
+        if (location.isCompatible("file") && location.refersToLocalHost()) {
+            return;
+        }
+        /*
          * try to get the credential to see whether we need to instantiate this
-         * adaptor alltogether
+         * adaptor alltogether.
          */
         try {
             GlobusSecurityUtils.getGlobusCredential(gatContext, "gridftp",
