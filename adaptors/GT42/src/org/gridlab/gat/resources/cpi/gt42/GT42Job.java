@@ -72,21 +72,23 @@ public class GT42Job extends JobCpi implements GramJobListener, Runnable {
     public GT42Job(GATContext gatContext, SerializedJob sj)
             throws GATObjectCreationException {
         super(gatContext, sj.getJobDescription(), sj.getSandbox());
-  
+
         if (System.getProperty("GT42_LOCATION") == null) {
-            String globusLocation = System.getProperty("gat.adaptor.path")
+            String gt42Location = System.getProperty("gat.adaptor.path")
                     + java.io.File.separator + "GT42Adaptor"
                     + java.io.File.separator;
-            System.setProperty("GT42_LOCATION", globusLocation);
+            System.setProperty("GT42_LOCATION", gt42Location);
+
         }
 
         if (System.getProperty("axis.ClientConfigFileGT42") == null) {
-            String axisClientConfigFile = System
+            String axisClientConfigFileGT42 = System
                     .getProperty("gat.adaptor.path")
                     + java.io.File.separator
                     + "GT42Adaptor"
-                    + java.io.File.separator + "client-config.wsdd";
-            System.setProperty("axis.ClientConfigFileGT42", axisClientConfigFile);
+                    + java.io.File.separator + "client-configGT42.wsdd";
+            System.setProperty("axis.ClientConfigFileGT42",
+                    axisClientConfigFileGT42);
         }
         
         if (logger.isDebugEnabled()) {

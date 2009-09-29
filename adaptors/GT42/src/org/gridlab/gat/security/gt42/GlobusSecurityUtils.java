@@ -18,7 +18,6 @@ import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.InvalidUsernameOrPasswordException;
 import org.gridlab.gat.URI;
-import org.gridlab.gat.engine.util.Environment;
 import org.gridlab.gat.security.CertificateSecurityContext;
 import org.gridlab.gat.security.CredentialSecurityContext;
 import org.gridlab.gat.security.MyProxyServerCredentialSecurityContext;
@@ -218,8 +217,7 @@ public class GlobusSecurityUtils {
                     .debug("trying to get credential from location specified in environment");
         }
 
-        Environment e = new Environment();
-        String proxyLocation = e.getVar("X509_USER_PROXY");
+        String proxyLocation = System.getenv("X509_USER_PROXY");
 
         if (proxyLocation == null) {
             if (logger.isDebugEnabled()) {
