@@ -95,7 +95,7 @@ public class GT42ResourceBrokerAdaptor extends ResourceBrokerCpi {
         }
         try {
             cred = GlobusSecurityUtils.getGlobusCredential(gatContext,
-                    "ws-gram", location, ResourceManagerContact.DEFAULT_PORT);
+                    "ws-gram42", location, ResourceManagerContact.DEFAULT_PORT);
         } catch (Exception e) {
             throw new GATInvocationException(
                     "GT42Job: could not initialize credentials, " + e);

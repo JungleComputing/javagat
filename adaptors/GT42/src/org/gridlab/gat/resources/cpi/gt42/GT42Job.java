@@ -125,7 +125,7 @@ public class GT42Job extends JobCpi implements GramJobListener, Runnable {
         GSSCredential credential = null;
         try {
             credential = GlobusSecurityUtils.getGlobusCredential(gatContext,
-                "ws-gram", hostUri, ResourceManagerContact.DEFAULT_PORT);
+                "ws-gram42", hostUri, ResourceManagerContact.DEFAULT_PORT);
         } catch (CouldNotInitializeCredentialException e) {
             throw new GATObjectCreationException("globus", e);
         } catch (CredentialExpiredException e) {
