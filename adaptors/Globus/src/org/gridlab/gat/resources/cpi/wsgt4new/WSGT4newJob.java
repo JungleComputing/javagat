@@ -208,6 +208,19 @@ public class WSGT4newJob extends JobCpi implements GramJobListener, Runnable {
                 && gatContext.getPreferences().get("job.stop.poststage")
                         .equals("false"));
     }
+    
+    synchronized void finishJob() {
+        // To be called when submit fails ...
+        finished();
+        finished = true;
+        if (sandbox != null) {
+            try {
+                sandbox.removeSandboxDir();
+            } catch(Throwable e) {
+                // ignored
+            }
+        }
+    }
 
     private synchronized void stop(boolean skipPostStage)
             throws GATInvocationException {

@@ -415,11 +415,13 @@ public class WSGT4newResourceBrokerAdaptor extends ResourceBrokerCpi {
         }
 
         try {
-            gramjob.submit(endpoint, false, false, submissionID);
-            wsgt4job.submitted();
-        } catch (Exception e) {
+            gramjob.submit(endpoint, false, false, submissionID);            
+        } catch (Throwable e) {
+            wsgt4job.finishJob();
             throw new GATInvocationException("WSGT4newResourceBrokerAdaptor", e);
         }
+        
+        wsgt4job.submitted();
         
         String handle = gramjob.getHandle();
         try {
