@@ -161,7 +161,7 @@ public class Sandbox {
         throw new GATInvocationException("could not create a sandbox directory");
     }
 
-    private void removeSandboxDir() throws GATInvocationException {
+    public void removeSandboxDir() throws GATInvocationException {
         URI location = null;
         try {
             location = new URI("any://" + authority + "/" + sandbox);
