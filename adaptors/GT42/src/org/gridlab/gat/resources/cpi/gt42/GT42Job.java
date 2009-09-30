@@ -198,7 +198,13 @@ public class GT42Job extends JobCpi implements GramJobListener, Runnable {
             }
         }
     }
-
+    
+    synchronized void finishJob() {
+        // To be called when submit fails ...
+        finished();
+        finished = true;
+    }
+    
     public synchronized void stop() throws GATInvocationException {
         stop(gatContext.getPreferences().containsKey("job.stop.poststage")
                 && gatContext.getPreferences().get("job.stop.poststage")

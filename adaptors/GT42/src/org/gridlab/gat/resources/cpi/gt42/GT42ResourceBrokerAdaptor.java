@@ -138,8 +138,7 @@ public class GT42ResourceBrokerAdaptor extends ResourceBrokerCpi {
     }
 
     protected String createRSL(JobDescription description, Sandbox sandbox,
-
-    boolean useGramSandbox) throws GATInvocationException {
+            boolean useGramSandbox) throws GATInvocationException {
 
         String rsl = new String("<job>");
 
@@ -452,11 +451,13 @@ public class GT42ResourceBrokerAdaptor extends ResourceBrokerCpi {
         }
         try {
             gramjob.submit(endpoint, false, false, submissionID);
-            gt42job.submitted();
         } catch (Exception e) {
+            gt42job.finishJob();
             throw new GATInvocationException("GT42ResourceBrokerAdaptor", e);
         }
 
+        gt42job.submitted();
+        
         String handle = gramjob.getHandle();
         try {
             String handleHost = new URI(handle).getHost();
