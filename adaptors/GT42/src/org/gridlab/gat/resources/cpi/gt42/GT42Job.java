@@ -203,6 +203,13 @@ public class GT42Job extends JobCpi implements GramJobListener, Runnable {
         // To be called when submit fails ...
         finished();
         finished = true;
+        if (sandbox != null) {
+            try {
+                sandbox.removeSandboxDir();
+            } catch(Throwable e) {
+                // ignored
+            }
+        }
     }
     
     public synchronized void stop() throws GATInvocationException {
