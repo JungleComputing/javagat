@@ -137,7 +137,8 @@ public class UnicoreResourceBrokerAdaptor extends ResourceBrokerCpi {
 		
 		String execFile = new String (sd.getExecutable());
 		if (execFile.indexOf("/") == -1 ) {
-			posixAppl.addElement(nameSpaceJsdlPosixHead + "Executable").addText("./" + execFile);
+		//	posixAppl.addElement(nameSpaceJsdlPosixHead + "Executable").addText("./" + execFile);
+			posixAppl.addElement(nameSpaceJsdlPosixHead + "Executable").addText(execFile);
 		} else {
 			posixAppl.addElement(nameSpaceJsdlPosixHead + "Executable").addText(sd.getExecutable());			
 		}

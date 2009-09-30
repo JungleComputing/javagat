@@ -84,7 +84,7 @@ public class SerializedUnicoreJob extends SerializedJob {
 	 * @return path name as a string
 	 */
 
-	public static String realPath(org.gridlab.gat.URI uri) {
+	public synchronized static String realPath(org.gridlab.gat.URI uri) {
 		
 		String path=null;
 		String stringURI = null;
