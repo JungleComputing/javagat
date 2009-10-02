@@ -5,8 +5,8 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
 import java.util.List;
-
 import org.gridlab.gat.GAT;
 import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.GATObjectCreationException;
@@ -188,9 +188,11 @@ public class Wrapper {
             return description;
         }
         JobDescription jobDescription = (JobDescription) description;
+        
         if (jobDescription.getSoftwareDescription().getPreStaged() != null) {
-            for (File file : jobDescription.getSoftwareDescription()
-                    .getPreStaged().keySet()) {
+            ArrayList<File> keys = new ArrayList<File>(jobDescription.getSoftwareDescription()
+                    .getPreStaged().keySet());
+            for (File file : keys) {
                 if (file.toGATURI().refersToLocalHost()) {
                     File target = jobDescription.getSoftwareDescription()
                             .getPreStaged().get(file);
@@ -212,12 +214,13 @@ public class Wrapper {
             }
         }
         if (jobDescription.getSoftwareDescription().getPostStaged() != null) {
-            for (File file : jobDescription.getSoftwareDescription()
-                    .getPostStaged().keySet()) {
+            ArrayList<File> keys = new ArrayList<File>(jobDescription.getSoftwareDescription()
+                    .getPostStaged().keySet());
+            for (File file : keys) {
                 if (jobDescription.getSoftwareDescription().getPostStaged()
                         .get(file) == null) {
                     try {
-                        jobDescription.getSoftwareDescription().getPreStaged()
+                        jobDescription.getSoftwareDescription().getPostStaged()
                                 .put(
                                         file,
                                         GAT.createFile(origin + "/"
@@ -229,11 +232,11 @@ public class Wrapper {
                         .getPostStaged().get(file).toGATURI()
                         .refersToLocalHost()) {
                     File target = jobDescription.getSoftwareDescription()
-                            .getPreStaged().get(file);
-                    jobDescription.getSoftwareDescription().getPreStaged()
+                            .getPostStaged().get(file);
+                    jobDescription.getSoftwareDescription().getPostStaged()
                             .remove(file);
                     try {
-                        jobDescription.getSoftwareDescription().getPreStaged()
+                        jobDescription.getSoftwareDescription().getPostStaged()
                                 .put(
                                         file,
                                         GAT.createFile(rewriteURI(target
