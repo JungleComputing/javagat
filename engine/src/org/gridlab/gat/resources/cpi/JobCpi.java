@@ -99,6 +99,10 @@ public abstract class JobCpi extends MonitorableCpi implements Job {
                 jobList.add(this);
             }
         }
+        if (logger.isDebugEnabled()) {
+            logger.debug("Created job " + this);
+        }
+        
     }
 
     public final int getJobID() {
@@ -162,7 +166,7 @@ public abstract class JobCpi extends MonitorableCpi implements Job {
     }
 
     public String toString() {
-        return "gat job, id is " + jobID;
+        return "job " + getClass().getName() + ", id is " + jobID;
     }
 
     public InputStream getStdout() throws GATInvocationException {
