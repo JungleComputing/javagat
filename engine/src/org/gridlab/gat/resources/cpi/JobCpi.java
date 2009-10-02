@@ -211,6 +211,11 @@ public abstract class JobCpi extends MonitorableCpi implements Job {
         synchronized (JobCpi.class) {
             if (jobList.contains(this)) {
                 jobList.remove(this);
+                if (logger.isDebugEnabled()) {
+                    logger.debug("Finished job " + this);
+                }
+            } else if (logger.isDebugEnabled()) {
+                logger.debug("Finished non-existent job? " + this);
             }
         }
     }
