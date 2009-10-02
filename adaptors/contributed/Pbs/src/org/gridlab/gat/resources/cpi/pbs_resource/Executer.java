@@ -13,8 +13,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Vector;
 
-import org.gridlab.gat.engine.util.Environment;
-
 /**
  * @author  doerl
  */
@@ -24,11 +22,19 @@ public class Executer implements IParameter {
     private static String[] sExport;
 
     static {
-        Environment env = new Environment();
-        String appPath = (env.getVar(PATH) != null) ? env.getVar(PATH)
-            : "/bin:/usr/bin:/usr/X11R6/bin";
-        String pbsExec = (env.getVar(PBS_EXEC) != null) ? env.getVar(PBS_EXEC) : "/usr/local/pbs";
-        String pbsHome = (env.getVar(PBS_HOME) != null) ? env.getVar(PBS_HOME) : "/var/spool/pbs";
+        String appPath = System.getenv(PATH);
+        if (appPath == null) {
+            appPath = "/bin:/usr/bin:/usr/X11R6/bin";
+        }
+        String pbsExec = System.getenv(PBS_EXEC);
+        if (pbsExec == null) {
+            pbsExec = "/usr/local/pbs";
+        }
+        String pbsHome = System.getenv(PBS_HOME);
+        if (pbsHome == null) {
+            pbsHome = "/var/spool/pbs";
+        }
+        
         Vector<String> exp = new Vector<String>();
         exp.add(PBS_EXEC + "=" + pbsExec);
         exp.add(PBS_HOME + "=" + pbsHome);
