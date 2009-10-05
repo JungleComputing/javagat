@@ -156,7 +156,6 @@ public class ZorillaResourceBrokerAdaptor extends ResourceBrokerCpi implements
         Job job = null;
         if (description instanceof WrapperJobDescription) {
             WrapperJobCpi tmp = new WrapperJobCpi(gatContext, zorillaJob);
-            listener = tmp;
             job = tmp;
         } else {
             job = zorillaJob;
@@ -165,7 +164,13 @@ public class ZorillaResourceBrokerAdaptor extends ResourceBrokerCpi implements
             Metric metric = job.getMetricDefinitionByName(metricDefinitionName)
                     .createMetric(null);
             job.addMetricListener(listener, metric);
+            if (job instanceof WrapperJobCpi) {
+                 metric = zorillaJob.getMetricDefinitionByName(metricDefinitionName)
+                .createMetric(null);
+                 zorillaJob.addMetricListener((WrapperJobCpi) job, metric);
+            }
         }
+
         zorillaJob.startJob(getNodeSocketAddress(), socketFactory,
                 getCallbackReceiver());
 

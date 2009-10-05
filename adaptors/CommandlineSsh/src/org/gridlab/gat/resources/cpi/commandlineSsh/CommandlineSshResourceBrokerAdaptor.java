@@ -192,7 +192,6 @@ public class CommandlineSshResourceBrokerAdaptor extends ResourceBrokerCpi {
         Job job = null;
         if (description instanceof WrapperJobDescription) {
             WrapperJobCpi tmp = new WrapperJobCpi(gatContext, commandlineSshJob);
-            listener = tmp;
             job = tmp;
         } else {
             job = commandlineSshJob;
@@ -201,7 +200,13 @@ public class CommandlineSshResourceBrokerAdaptor extends ResourceBrokerCpi {
             Metric metric = job.getMetricDefinitionByName(metricDefinitionName)
                     .createMetric(null);
             job.addMetricListener(listener, metric);
+            if (job instanceof WrapperJobCpi) {
+                 metric = commandlineSshJob.getMetricDefinitionByName(metricDefinitionName)
+                .createMetric(null);
+                 commandlineSshJob.addMetricListener((WrapperJobCpi) job, metric);
+            }
         }
+
         // set the state to prestaging
         commandlineSshJob.setState(Job.JobState.PRE_STAGING);
         // and let the sandbox prestage the files!

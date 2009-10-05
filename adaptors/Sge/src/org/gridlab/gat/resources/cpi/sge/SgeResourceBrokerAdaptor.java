@@ -114,7 +114,6 @@ public class SgeResourceBrokerAdaptor extends ResourceBrokerCpi {
         Job job = null;
         if (description instanceof WrapperJobDescription) {
             WrapperJobCpi tmp = new WrapperJobCpi(gatContext, sgeJob);
-            listener = tmp;
             job = tmp;
         } else {
             job = sgeJob;
@@ -123,6 +122,11 @@ public class SgeResourceBrokerAdaptor extends ResourceBrokerCpi {
             Metric metric = job.getMetricDefinitionByName(metricDefinitionName)
                     .createMetric(null);
             job.addMetricListener(listener, metric);
+            if (job instanceof WrapperJobCpi) {
+                 metric = sgeJob.getMetricDefinitionByName(metricDefinitionName)
+                .createMetric(null);
+                 sgeJob.addMetricListener((WrapperJobCpi) job, metric);
+            }
         }
 
         sgeJob.setHostname(getHostname());

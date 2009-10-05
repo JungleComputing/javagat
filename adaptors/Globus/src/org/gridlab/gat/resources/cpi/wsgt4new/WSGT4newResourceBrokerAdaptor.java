@@ -354,7 +354,6 @@ public class WSGT4newResourceBrokerAdaptor extends ResourceBrokerCpi {
         Job job = null;
         if (description instanceof WrapperJobDescription) {
             WrapperJobCpi tmp = new WrapperJobCpi(gatContext, wsgt4job);
-            listener = tmp;
             job = tmp;
         } else {
             job = wsgt4job;
@@ -363,6 +362,11 @@ public class WSGT4newResourceBrokerAdaptor extends ResourceBrokerCpi {
             Metric metric = job.getMetricDefinitionByName(metricDefinitionName)
                     .createMetric(null);
             job.addMetricListener(listener, metric);
+            if (job instanceof WrapperJobCpi) {
+                 metric = wsgt4job.getMetricDefinitionByName(metricDefinitionName)
+                .createMetric(null);
+                 wsgt4job.addMetricListener((WrapperJobCpi) job, metric);
+            }
         }
 
         if (sandbox != null) {

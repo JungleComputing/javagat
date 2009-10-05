@@ -158,7 +158,6 @@ public class LocalResourceBrokerAdaptor extends ResourceBrokerCpi {
         Job job = null;
         if (description instanceof WrapperJobDescription) {
             WrapperJobCpi tmp = new WrapperJobCpi(gatContext, localJob);
-            listener = tmp;
             job = tmp;
         } else {
             job = localJob;
@@ -167,7 +166,13 @@ public class LocalResourceBrokerAdaptor extends ResourceBrokerCpi {
             Metric metric = job.getMetricDefinitionByName(metricDefinitionName)
                     .createMetric(null);
             job.addMetricListener(listener, metric);
+            if (job instanceof WrapperJobCpi) {
+                 metric = localJob.getMetricDefinitionByName(metricDefinitionName)
+                .createMetric(null);
+                 localJob.addMetricListener((WrapperJobCpi) job, metric);
+            }
         }
+
         localJob.setState(Job.JobState.PRE_STAGING);
         sandbox.prestage();
 

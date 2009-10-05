@@ -192,11 +192,21 @@ public class LocalQResourceBrokerAdaptor extends ResourceBrokerCpi implements
         Job job = null;
         if (description instanceof WrapperJobDescription) {
             WrapperJobCpi tmp = new WrapperJobCpi(gatContext, result);
-            listener = tmp;
             job = tmp;
         } else {
             job = result;
         }
+        if (listener != null && metricDefinitionName != null) {
+            Metric metric = job.getMetricDefinitionByName(metricDefinitionName)
+                    .createMetric(null);
+            job.addMetricListener(listener, metric);
+            if (job instanceof WrapperJobCpi) {
+                 metric = result.getMetricDefinitionByName(metricDefinitionName)
+                .createMetric(null);
+                 result.addMetricListener((WrapperJobCpi) job, metric);
+            }
+        }
+       
         if (listener != null && metricDefinitionName != null) {
             Metric metric = job.getMetricDefinitionByName(metricDefinitionName)
                     .createMetric(null);
