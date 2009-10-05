@@ -153,6 +153,7 @@ public class WrapperJobCpi extends MonitorableCpi implements WrapperJob, MetricL
 
     public void processMetricEvent(MetricEvent event) {
         // forward the metrics from the wrapperjob
+        System.out.println("forwarding metric event " + event);
         fireMetric(event);
     }
 
