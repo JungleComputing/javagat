@@ -550,7 +550,7 @@ public class WSGT4newResourceBrokerAdaptor extends ResourceBrokerCpi {
         System.out.println("777777777777777777777777");
         System.out.println(queryResponse.toString());
         System.out.println("88888888888888888888888");
-        return null;
+        throw new UnsupportedOperationException("Not implemented");
     }
 
 }
