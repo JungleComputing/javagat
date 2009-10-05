@@ -3,15 +3,26 @@ package org.gridlab.gat.resources.cpi.wsgt4new;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javax.xml.rpc.ServiceException;
+import javax.xml.rpc.Stub;
+
+import org.globus.wsrf.WSRFConstants;
+import org.globus.wsrf.impl.security.authorization.NoAuthorization;
 import org.apache.axis.components.uuid.UUIDGen;
 import org.apache.axis.components.uuid.UUIDGenFactory;
 import org.apache.axis.message.addressing.Address;
 import org.apache.axis.message.addressing.EndpointReferenceType;
 import org.apache.axis.message.addressing.ReferencePropertiesType;
 import org.apache.axis.types.URI.MalformedURIException;
+import org.oasis.wsrf.properties.QueryExpressionType;
+import org.oasis.wsrf.properties.QueryResourcePropertiesResponse;
+import org.oasis.wsrf.properties.QueryResourceProperties_Element;
+import org.oasis.wsrf.properties.QueryResourceProperties_PortType;
+import org.oasis.wsrf.properties.WSResourcePropertiesServiceAddressingLocator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.globus.common.ResourceManagerContact;
@@ -33,8 +44,10 @@ import org.gridlab.gat.io.File;
 import org.gridlab.gat.monitoring.Metric;
 import org.gridlab.gat.monitoring.MetricListener;
 import org.gridlab.gat.resources.AbstractJobDescription;
+import org.gridlab.gat.resources.HardwareResource;
 import org.gridlab.gat.resources.Job;
 import org.gridlab.gat.resources.JobDescription;
+import org.gridlab.gat.resources.ResourceDescription;
 import org.gridlab.gat.resources.SoftwareDescription;
 import org.gridlab.gat.resources.WrapperJobDescription;
 import org.gridlab.gat.resources.cpi.ResourceBrokerCpi;
@@ -444,7 +457,7 @@ public class WSGT4newResourceBrokerAdaptor extends ResourceBrokerCpi {
         // default path: /wsrf/services/ManagedJobFactoryService
         logger.debug("brokerURI: " + brokerURI);
         String scheme = "https";
-        if (brokerURI == null || !brokerURI.getScheme().equals("any")) {
+        if (brokerURI.getScheme() != null && !brokerURI.getScheme().equals("any")) {
             scheme = brokerURI.getScheme();
         }
 
@@ -460,4 +473,84 @@ public class WSGT4newResourceBrokerAdaptor extends ResourceBrokerCpi {
 
         return scheme + "://" + brokerURI.getHost() + ":" + port + path;
     }
+    
+    public List<HardwareResource> findResources(ResourceDescription s)
+            throws GATInvocationException {
+
+        // Create index service EPR
+        
+        int port = brokerURI.getPort(8443);
+        String scheme = "https";
+        if (brokerURI.getScheme() != null && !brokerURI.getScheme().equals("any")) {
+            scheme = brokerURI.getScheme();
+        }
+        String path = "/wsrf/services/DefaultIndexService";
+
+        String indexURI = scheme + "://" + brokerURI.getHost() + ":" + port + path;
+        // String indexURI =
+        // "https://gt4test.lrz-muenchen.de:8443/wsrf/services/DefaultIndexService";
+        EndpointReferenceType indexEPR = new EndpointReferenceType();
+        try {
+            indexEPR.setAddress(new Address(indexURI));
+        } catch (Throwable e) {
+            logger.error("ERROR: Malformed index URI '" + indexURI + "'");
+            throw new GATInvocationException("ERROR: Malformed index URI '"
+                        + indexURI + "'", e);
+        }
+
+        // Get QueryResourceProperties portType
+        WSResourcePropertiesServiceAddressingLocator queryLocator;
+        queryLocator = new WSResourcePropertiesServiceAddressingLocator();
+        QueryResourceProperties_PortType query = null;
+        try {
+            query = queryLocator.getQueryResourcePropertiesPort(indexEPR);
+        } catch (ServiceException e) {
+            logger.error("ERROR: Unable to obtain query portType.", e);
+            throw new GATInvocationException(
+                    "ERROR: Unable to obtain query portType.", e);
+        }
+        // Setup security options
+        ((Stub) query)._setProperty(Constants.GSI_TRANSPORT,
+                Constants.SIGNATURE);
+        ((Stub) query)._setProperty(Constants.AUTHORIZATION, NoAuthorization
+                .getInstance());
+
+        // The following XPath query retrieves all the files with the specified
+        // name
+        String xpathQuery = "/*";
+        // Create request to QueryResourceProperties
+        QueryExpressionType queryExpr = new QueryExpressionType();
+        String dialect = WSRFConstants.XPATH_1_DIALECT;
+        System.out.println("----> " + dialect);
+        try {// Ho aggiunto il to string!!!
+            queryExpr.setDialect(new org.apache.axis.types.URI(
+                    WSRFConstants.XPATH_1_DIALECT));
+            // queryExpr.setDialect(dialect);
+        } catch (Throwable e) {
+            logger.error("ERROR: Malformed URI (WSRFConstants.XPATH_1_DIALECT)", e);
+            throw new GATInvocationException(
+                    "ERROR: Malformed URI (WSRFConstants.XPATH_1_DIALECT)",
+                    e);
+        }
+        queryExpr.setValue(xpathQuery);
+        QueryResourceProperties_Element queryRequest
+                = new QueryResourceProperties_Element(queryExpr);
+        System.out.println("5555555555555555555");
+        // Invoke QueryResourceProperties
+        QueryResourcePropertiesResponse queryResponse = null;
+        try {
+            queryResponse = query.queryResourceProperties(queryRequest);
+            System.out.println("66665555555555");
+        } catch (Throwable e) {
+            logger.error("ERROR: Unable to invoke QueryRP operation.");
+
+            throw new GATInvocationException(
+                    "ERROR: Unable to invoke QueryRP operation.", e);
+        }
+        System.out.println("777777777777777777777777");
+        System.out.println(queryResponse.toString());
+        System.out.println("88888888888888888888888");
+        return null;
+    }
+
 }
