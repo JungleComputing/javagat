@@ -529,7 +529,6 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
         Job job = null;
         if (description instanceof WrapperJobDescription) {
             WrapperJobCpi tmp = new WrapperJobCpi(gatContext, globusJob);
-            listener = tmp;
             job = tmp;
         } else {
             job = globusJob;
@@ -538,6 +537,11 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
             Metric metric = job.getMetricDefinitionByName(metricDefinitionName)
                     .createMetric(null);
             job.addMetricListener(listener, metric);
+            if (job instanceof WrapperJobCpi) {
+                 metric = globusJob.getMetricDefinitionByName(metricDefinitionName)
+                .createMetric(null);
+                 globusJob.addMetricListener((WrapperJobCpi) job, metric);
+            }
         }
 
         if (isExitValueEnabled(description)) {
