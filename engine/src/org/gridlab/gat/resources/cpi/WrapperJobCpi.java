@@ -49,10 +49,10 @@ public class WrapperJobCpi extends MonitorableCpi implements WrapperJob, MetricL
         WrapperJobDescription wrapperDescription = (WrapperJobDescription) wrapperJob
                 .getJobDescription();
         for (WrappedJobInfo info : wrapperDescription.getJobInfos()) {
-            wrappedJobs.put(info.getJobDescription(), new WrappedJobCpi(gatContext, info));
+            WrappedJobCpi wrappedJob = new WrappedJobCpi(gatContext, info, this);
+            wrappedJobs.put(info.getJobDescription(), wrappedJob);
         }
     }
-
     public int getJobID() {
         return jobID;
     }

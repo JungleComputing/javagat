@@ -7,6 +7,7 @@ import java.io.ObjectInputStream;
 import java.util.HashMap;
 
 import org.gridlab.gat.GATContext;
+import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.monitoring.Metric;
 import org.gridlab.gat.monitoring.MetricDefinition;
 import org.gridlab.gat.monitoring.MetricEvent;
@@ -53,7 +54,7 @@ public class WrappedJobCpi extends JobCpi implements Runnable {
 	 * @param gatContext
 	 * @param jobDescription
 	 */
-	public WrappedJobCpi(GATContext gatContext, WrappedJobInfo info) {
+	public WrappedJobCpi(GATContext gatContext, WrappedJobInfo info, WrapperJobCpi wrapper) {
 		super(gatContext, info.getJobDescription(), null);
 
 		this.statusFileName = info.getJobStateFileName();
@@ -65,6 +66,11 @@ public class WrappedJobCpi extends JobCpi implements Runnable {
 				MetricDefinition.DISCRETE, "JobState", null, null, returnDef);
 		statusMetric = statusMetricDefinition.createMetric(null);
 		registerMetric("getJobStatus", statusMetricDefinition);
+		try {
+            addMetricListener(wrapper, statusMetric);
+        } catch (GATInvocationException e) {
+            // ignored
+        }
 
 		// start a thread that monitors the job state, by monitoring a file
 		Thread thread = new Thread(this);
