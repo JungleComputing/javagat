@@ -74,6 +74,9 @@ public class WrappedJobCpi extends JobCpi implements Runnable {
 	}
 
 	private void fireStateMetric(JobState state) {
+	    if (logger.isInfoEnabled()) {
+	        logger.info("WrappedJob firing metric " + state);
+	    }
 		MetricEvent v = new MetricEvent(this, state.toString(), statusMetric,
 				System.currentTimeMillis());
 		fireMetric(v);
@@ -87,16 +90,16 @@ public class WrappedJobCpi extends JobCpi implements Runnable {
 				in = new ObjectInputStream(new FileInputStream(statusFileName));
 				newstate = (JobState) in.readObject();
 			} catch (Exception e) {
-				if (logger.isInfoEnabled()) {
-					logger.info("", e);
+				if (logger.isDebugEnabled()) {
+					logger.debug("", e);
 				}
 			}
 			if (in != null) {
 				try {
 					in.close();
 				} catch (IOException e) {
-					if (logger.isInfoEnabled()) {
-						logger.info("", e);
+					if (logger.isDebugEnabled()) {
+						logger.debug("", e);
 					}
 				}
 			}

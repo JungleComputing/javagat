@@ -398,6 +398,7 @@ public class Wrapper {
                     }
                 }
                 localFile.copy(dest);
+                System.err.println("Created status file " + dest.getPath());
                 tmp.delete();
             } catch (GATObjectCreationException e) {
                 e.printStackTrace();
