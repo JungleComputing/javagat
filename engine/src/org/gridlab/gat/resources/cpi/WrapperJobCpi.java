@@ -60,9 +60,9 @@ public class WrapperJobCpi extends MonitorableCpi implements WrapperJob, MetricL
             wrapperJobIndex = info.getWrapperJobIndex();
         }
         if (listener != null && metricDefinitionName != null) {
-            metric = wrapperJob.getMetricDefinitionByName(metricDefinitionName)
+            metric = getMetricDefinitionByName(metricDefinitionName)
                 .createMetric(null);
-            wrapperJob.addMetricListener(this, metric);
+            addMetricListener(listener, metric);
         }
     }
     public int getJobID() {
@@ -165,9 +165,14 @@ public class WrapperJobCpi extends MonitorableCpi implements WrapperJob, MetricL
 
     public void processMetricEvent(MetricEvent event) {
         // forward the metrics from the wrapperjob
-        MetricEvent e = new MetricEvent(this, event.getValue(), metric, event.getEventTime());
+        MetricEvent e;
+        if (event.getSource() == wrapperJob) {
+            e = new MetricEvent(this, event.getValue(), metric, event.getEventTime());
+        } else {
+            e = event;
+        }
         if (logger.isDebugEnabled()) {
-            logger.debug("forwarding metric event " + event);
+            logger.debug("forwarding metric event " + e);
         }
         fireMetric(e);
     }
