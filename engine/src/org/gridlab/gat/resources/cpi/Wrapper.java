@@ -1,5 +1,8 @@
 package org.gridlab.gat.resources.cpi;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -52,6 +55,8 @@ import org.gridlab.gat.resources.WrapperJobDescription.WrappedJobInfo;
  */
 
 public class Wrapper {
+    
+    private static Logger logger = LoggerFactory.getLogger(Wrapper.class);
 
     private URI initiator;
 
@@ -97,36 +102,36 @@ public class Wrapper {
 
     @SuppressWarnings("unchecked")
     public void start(String[] args) throws Exception {
-        System.out.println("Starting JavaGAT Wrapper Application");
+        if (logger.isDebugEnabled()) {
+            logger.debug("Starting JavaGAT Wrapper Application");
+        }
         ObjectInputStream in = new ObjectInputStream(new FileInputStream(
                 "wrapper.info"));
         this.initiator = (URI) in.readObject();
-        System.out.println("wrapper application");
-        System.out.println("original host:  " + initiator);
         int level = in.readInt();
-        System.out.println("debug level:    " + level);
-
         preStageIdentifier = in.readInt();
-        System.out.println("pre stage id:   " + preStageIdentifier);
-
         preStageDoneDirectory = (String) in.readObject();
-        System.out.println("pre stage done dir: " + preStageDoneDirectory);
-
-        numberPreStageJobs = in.readInt();
-        System.out.println("#pre stage jobs:" + numberPreStageJobs);
-
-        maxConcurrentJobs = in.readInt();
-        System.out.println("max concurrent: " + maxConcurrentJobs);
-        stagingType = (StagingType) in.readObject();
-        System.out.println("staging type:   " + stagingType);
+        numberPreStageJobs = in.readInt();        
+        maxConcurrentJobs = in.readInt();        
+        stagingType = (StagingType) in.readObject();       
         List<WrappedJobInfo> infos = (List<WrappedJobInfo>) in.readObject();
         jobsWaitUntilPrestageDone = in.readBoolean();
         in.close();
-        System.out.println("# wrapped jobs:" + infos.size());
-        for (WrappedJobInfo info : infos) {
-            System.out.println("  * " + info.getBrokerURI() + "\t"
-                    + info.getJobStateFileName() + "\t" + info.getPreferences()
-                    + "\t" + info.getJobDescription());
+        
+        if (logger.isDebugEnabled()) {
+            logger.debug("original host:  " + initiator);
+            logger.debug("debug level:    " + level);
+            logger.debug("pre stage id:   " + preStageIdentifier);
+            logger.debug("pre stage done dir: " + preStageDoneDirectory);
+            logger.debug("#pre stage jobs:" + numberPreStageJobs);
+            logger.debug("max concurrent: " + maxConcurrentJobs);
+            logger.debug("staging type:   " + stagingType);
+            logger.debug("# wrapped jobs:" + infos.size());
+            for (WrappedJobInfo info : infos) {
+                logger.debug("  * " + info.getBrokerURI() + "\t"
+                        + info.getJobStateFileName() + "\t" + info.getPreferences()
+                        + "\t" + info.getJobDescription());
+            }
         }
         this.numberJobs = infos.size();
 
@@ -136,8 +141,10 @@ public class Wrapper {
                     preStageDoneDirectory + "/" + preStageIdentifier),
                     initiator));
             while (!prestageWaitFile.exists()) {
-                System.out.println("waiting for '" + prestageWaitFile
+                if (logger.isDebugEnabled()) {
+                    logger.debug("waiting for '" + prestageWaitFile
                         + "' to appear...");
+                }
                 Thread.sleep(1000);
             }
         }
@@ -150,8 +157,10 @@ public class Wrapper {
                     preStageDoneDirectory + "/" + (preStageIdentifier+1)),
                     initiator));
             while (!prestageWaitFile.exists()) {
-                System.out.println("waiting for '" + prestageWaitFile
+                if (logger.isDebugEnabled()) {
+                    logger.debug("waiting for '" + prestageWaitFile
                         + "' to appear...");
+                }
                 Thread.sleep(1000);
             }
         }
@@ -170,12 +179,16 @@ public class Wrapper {
                         jobsEnabled++;
                     }
                 }
-                System.out.println("waiting for " + (numberJobs - jobsDone)
+                if (logger.isDebugEnabled()) {
+                    logger.debug("waiting for " + (numberJobs - jobsDone)
                         + " jobs");
+                }
                 wait();
             }
         }
-        System.out.println("DONE!");
+        if (logger.isDebugEnabled()) {
+            logger.debug("DONE!");
+        }
         // Sleep a bit to give other wrappers time to detect my generated
         // prestageWaitFile, which is deleted on my exit.
         Thread.sleep(5000);
@@ -207,7 +220,7 @@ public class Wrapper {
                                         GAT.createFile(rewriteURI(file
                                                 .toGATURI(), origin)), target);
                     } catch (GATObjectCreationException e) {
-                        e.printStackTrace();
+                        logger.error("Got Exception", e);
                     }
                 }
 
@@ -226,7 +239,7 @@ public class Wrapper {
                                         GAT.createFile(origin + "/"
                                                 + file.getName()));
                     } catch (GATObjectCreationException e) {
-                        e.printStackTrace();
+                        logger.error("Got Exception", e);
                     }
                 } else if (jobDescription.getSoftwareDescription()
                         .getPostStaged().get(file).toGATURI()
@@ -242,7 +255,7 @@ public class Wrapper {
                                         GAT.createFile(rewriteURI(target
                                                 .toGATURI(), origin)));
                     } catch (GATObjectCreationException e) {
-                        e.printStackTrace();
+                        logger.error("Got Exception", e);
                     }
                 }
             }
@@ -254,7 +267,7 @@ public class Wrapper {
                                 .getSoftwareDescription().getStdout()
                                 .toGATURI(), origin)));
             } catch (GATObjectCreationException e) {
-                e.printStackTrace();
+                logger.error("Got Exception", e);
             }
         }
         if (jobDescription.getSoftwareDescription().getStderr() != null) {
@@ -264,7 +277,7 @@ public class Wrapper {
                                 .getSoftwareDescription().getStderr()
                                 .toGATURI(), origin)));
             } catch (GATObjectCreationException e) {
-                e.printStackTrace();
+                logger.error("Got Exception", e);
             }
         }
         if (jobDescription.getSoftwareDescription().getStdin() != null) {
@@ -274,7 +287,7 @@ public class Wrapper {
                                 jobDescription.getSoftwareDescription()
                                         .getStdin().toGATURI(), origin)));
             } catch (GATObjectCreationException e) {
-                e.printStackTrace();
+                logger.error("Got Exception", e);
             }
         }
         return description;
@@ -288,7 +301,7 @@ public class Wrapper {
                 uri = origin.setPath(origin.getPath() + "/" + uri.getPath());
             }
         } catch (URISyntaxException e) {
-            e.printStackTrace();
+            logger.error("Got Exception", e);
         }
         return uri;
     }
@@ -319,14 +332,14 @@ public class Wrapper {
                                     initiator)
                     );
                 } catch (URISyntaxException e) {
-                    e.printStackTrace();
+                    logger.error("Got Exception", e);
                 }
             }
             try {
                 broker = GAT.createResourceBroker(prefs, info
                         .getBrokerURI());
             } catch (GATObjectCreationException e) {
-                e.printStackTrace();
+                logger.error("Got Exception", e);
                 System.exit(1);
             }
 
@@ -336,13 +349,15 @@ public class Wrapper {
                     try {
                         Wrapper.this.wait();
                     } catch (InterruptedException e) {
-                        e.printStackTrace();
+                        logger.error("Got Exception", e);
                     }
                 }
                 jobsSubmitted++;
                 jobsPreStaging++;
-                System.out.println("jobs running now: "
+                if (logger.isDebugEnabled()) {
+                    logger.debug("jobs running now: "
                         + (jobsSubmitted - jobsDone));
+                }
             }
 
             try {
@@ -350,7 +365,7 @@ public class Wrapper {
                         new JobListener(info.getJobStateFileName()),
                         "job.status");
             } catch (GATInvocationException e) {
-                e.printStackTrace();
+                logger.error("Got Exception", e);
                 System.exit(1);
             }
         }
@@ -398,23 +413,21 @@ public class Wrapper {
                     }
                 }
                 localFile.copy(dest);
-                System.err.println("Created status file " + dest.getPath());
+                if (logger.isDebugEnabled()) {
+                    logger.debug("Created status file " + dest.getPath());
+                }
                 tmp.delete();
             } catch (GATObjectCreationException e) {
-                e.printStackTrace();
-            } catch (IOException e) {
+                logger.error("Got Exception", e);
+            } catch (Throwable e) {
                 if (out != null) {
                     try {
                         out.close();
                     } catch (IOException e1) {
-                        e1.printStackTrace();
+                        logger.error("Got Exception", e1);
                     }
                 }
-                e.printStackTrace();
-            } catch (URISyntaxException e) {
-                e.printStackTrace();
-            } catch (GATInvocationException e) {
-                e.printStackTrace();
+                logger.error("Got Exception", e);
             }
             // in case the previous state was pre staging and the current state
             // is something different (e.g. this job finished its pre staging).
@@ -433,33 +446,12 @@ public class Wrapper {
                                         initiator));
                         preStageDoneFile.createNewFile();
                         preStageDoneFile.deleteOnExit();
-                    } catch (GATObjectCreationException e) {
-                        System.err
-                                .println("Done pre staging: failed to create file at '"
+                    } catch (Throwable e) {
+                        logger.error("Done pre staging: failed to create file at '"
                                         + initiator
                                         + " ("
                                         + (preStageIdentifier + 1)
-                                        + ") ': "
-                                        + e);
-                        e.printStackTrace();
-                    } catch (IOException e) {
-                        System.err
-                                .println("Done pre staging: failed to create file at '"
-                                        + initiator
-                                        + " ("
-                                        + (preStageIdentifier + 1)
-                                        + ") ': "
-                                        + e);
-                        e.printStackTrace();
-                    } catch (URISyntaxException e) {
-                        System.err
-                                .println("Done pre staging: failed to create file at '"
-                                        + initiator
-                                        + " ("
-                                        + (preStageIdentifier + 1)
-                                        + ") ': "
-                                        + e);
-                        e.printStackTrace();
+                                        + ") ': ", e);
                     }
                 }
             }

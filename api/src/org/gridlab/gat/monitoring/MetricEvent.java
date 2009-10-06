@@ -82,6 +82,6 @@ public class MetricEvent extends EventObject {
 
     public String toString() {
         return "MetricValue(time = " + eventTime + ", val =" + value
-                + ", metric =" + metric;
+                + ", metric =" + metric + ", source =" + getSource();
     }
 }

@@ -109,15 +109,15 @@ public class PreStagedFileSet {
         }
 
         if (description instanceof WrapperJobDescription) {
-            File wrapperInfoFile = ((WrapperJobDescription) description)
-                    .getInfoFile();
             try {
-                tmp
-                        .add(new PreStagedFile(gatContext, wrapperInfoFile, GAT
-                                .createFile("wrapper.info"), host, sandbox,
-                                false, exe));
+                File wrapperInfoFile = ((WrapperJobDescription) description)
+                        .getInfoFile();
+                tmp.add(new PreStagedFile(gatContext, wrapperInfoFile,
+                        GAT.createFile("wrapper.info"), host, sandbox,
+                        false, exe));
             } catch (GATObjectCreationException e) {
-                // ignore
+                throw new GATInvocationException(
+                        "Could not create prestage description for wrapper info", e);
             }
         }
 

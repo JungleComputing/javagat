@@ -55,6 +55,10 @@ public class WrapperJobDescription extends JobDescription {
         private Preferences preferences;
 
         private String jobStateFileName;
+        
+        private int wrappedJobIndex;
+        
+        private int wrapperJobIndex;
 
         /**
          * Creates a {@link WrappedJobInfo}.
@@ -70,10 +74,12 @@ public class WrapperJobDescription extends JobDescription {
          *                this {@link Job}.
          */
         public WrappedJobInfo(JobDescription jobDescription, URI brokerURI,
-                Preferences preferences) {
+                Preferences preferences, int wrappedJobIndex, int wrapperJobIndex) {
             this.jobDescription = jobDescription;
             this.brokerURI = brokerURI;
             this.preferences = preferences;
+            this.wrappedJobIndex = wrappedJobIndex;
+            this.wrapperJobIndex = wrapperJobIndex;
         }
 
         /**
@@ -119,6 +125,22 @@ public class WrapperJobDescription extends JobDescription {
         public String getJobStateFileName() {
             return jobStateFileName;
         }
+        
+        /**
+         * Returns the index of this wrapped job.
+         * @return the index.
+         */
+        public int getWrappedJobIndex() {
+            return wrappedJobIndex;
+        }
+        
+        /**
+         * Returns the index of the wrapper job encapsulating this wrapped job.
+         * @return the index.
+         */
+        public int getWrapperJobIndex() {
+            return wrapperJobIndex;
+        }
 
         public void generateJobStateFileName() {
             try {
@@ -149,6 +171,8 @@ public class WrapperJobDescription extends JobDescription {
     private int jobsUntilPreStageDone;
     
     private boolean jobsWaitUntilPrestageDone;
+    
+    private int wrapperJobIndex;
 
     /**
      * Creates a {@link WrapperJobDescription} based on the given
@@ -160,6 +184,9 @@ public class WrapperJobDescription extends JobDescription {
      */
     public WrapperJobDescription(WrapperSoftwareDescription softwareDescription) {
         super(softwareDescription);
+        synchronized(WrapperJobDescription.class) {
+            wrapperJobIndex = preStageIdentifier++;
+        }
     }
 
     /**
@@ -241,8 +268,8 @@ public class WrapperJobDescription extends JobDescription {
      */
     public void add(JobDescription jobDescription, URI brokerURI,
             Preferences preferences) {
-        jobInfos
-                .add(new WrappedJobInfo(jobDescription, brokerURI, preferences));
+        jobInfos.add(new WrappedJobInfo(jobDescription, brokerURI,
+                preferences, jobInfos.size(), wrapperJobIndex));
     }
 
     /**
@@ -300,8 +327,9 @@ public class WrapperJobDescription extends JobDescription {
      * 
      * @return a {@link File} containing all the information needed by the
      *         Wrapper application.
+     * @throws GATObjectCreationException 
      */
-    public File getInfoFile() {
+    public File getInfoFile() throws GATObjectCreationException {
         java.io.File f = null;
         try {
             f = File.createTempFile("GAT", "jobDescription");
@@ -312,9 +340,7 @@ public class WrapperJobDescription extends JobDescription {
                     + InetAddress.getLocalHost().getCanonicalHostName() + "/"
                     + System.getProperty("user.dir")));
             out.writeInt(level);
-            synchronized (WrapperJobDescription.class) {
-                out.writeInt(preStageIdentifier++);
-            }
+            out.writeInt(wrapperJobIndex);
             synchronized (WrapperJobDescription.class) {
                 if (preStageDoneDirectory == null) {
                     preStageDoneDirectory = System.getProperty("user.dir");
@@ -333,17 +359,9 @@ public class WrapperJobDescription extends JobDescription {
             out.writeBoolean(jobsWaitUntilPrestageDone);
             out.close();
         } catch (Exception e) {
-            // TODO ignore, but should log or throw an exception
+            throw new GATObjectCreationException("Failed to create wrapper info file", e);
         }
-        try {
-            if (f == null) {
-                return null;
-            }
-            return GAT.createFile(f.getPath());
-        } catch (GATObjectCreationException e) {
-            // TODO ignore, but should log or throw an exception
-        }
-        return null;
+        return GAT.createFile(f.getPath());
     }
 
     /**

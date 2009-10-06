@@ -32,6 +32,8 @@ public class WrapperJobCpi extends MonitorableCpi implements WrapperJob, MetricL
     protected GATContext gatContext;
 
     private Job wrapperJob;
+    
+    private int wrapperJobIndex = -1;
 
     private Map<JobDescription, WrappedJobCpi> wrappedJobs = new HashMap<JobDescription, WrappedJobCpi>();
 
@@ -51,6 +53,7 @@ public class WrapperJobCpi extends MonitorableCpi implements WrapperJob, MetricL
         for (WrappedJobInfo info : wrapperDescription.getJobInfos()) {
             WrappedJobCpi wrappedJob = new WrappedJobCpi(gatContext, info, this);
             wrappedJobs.put(info.getJobDescription(), wrappedJob);
+            wrapperJobIndex = info.getWrapperJobIndex();
         }
     }
     public int getJobID() {
@@ -153,8 +156,14 @@ public class WrapperJobCpi extends MonitorableCpi implements WrapperJob, MetricL
 
     public void processMetricEvent(MetricEvent event) {
         // forward the metrics from the wrapperjob
-        System.out.println("forwarding metric event " + event);
+        if (logger.isDebugEnabled()) {
+            logger.debug("forwarding metric event " + event);
+        }
         fireMetric(event);
+    }
+    
+    public String toString() {
+        return "Wrapper job, index " + wrapperJobIndex + ", id is " + jobID;
     }
 
 }
