@@ -23,8 +23,6 @@ import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import org.gridlab.gat.engine.util.Environment;
-
 public class Executer implements IParameter {
 	private static final Logger LOGGER = Logger.getLogger( Executer.class.getName());
 	private static final String DEBUG_LEVEL = System.getProperty( "planck.sge.adaptor.execute.debug", "OFF");
@@ -36,12 +34,11 @@ public class Executer implements IParameter {
 
 	static {
 		LOGGER.setLevel( Level.parse( DEBUG_LEVEL));
-		Environment env = new Environment();
-		String appPath = (env.getVar( PATH) != null) ? env.getVar( PATH) : "/bin:/usr/bin";
-		String sgeCell = (env.getVar( SGE_CELL) != null) ? env.getVar( SGE_CELL) : "default";
-		String sgeRoot = (env.getVar( SGE_ROOT) != null) ? env.getVar( SGE_ROOT) : "/usr";
-		String sgePort = env.getVar( SGE_QMASTER_PORT);
-		String sgeExec = env.getVar( SGE_EXECD_PORT);
+		String appPath = (System.getenv( PATH) != null) ? System.getenv( PATH) : "/bin:/usr/bin";
+		String sgeCell = (System.getenv( SGE_CELL) != null) ? System.getenv( SGE_CELL) : "default";
+		String sgeRoot = (System.getenv( SGE_ROOT) != null) ? System.getenv( SGE_ROOT) : "/usr";
+		String sgePort = System.getenv( SGE_QMASTER_PORT);
+		String sgeExec = System.getenv( SGE_EXECD_PORT);
 		Vector exp = new Vector();
 		exp.add( SGE_ROOT + "=" + sgeRoot);
 		exp.add( SGE_CELL + "=" + sgeCell);
