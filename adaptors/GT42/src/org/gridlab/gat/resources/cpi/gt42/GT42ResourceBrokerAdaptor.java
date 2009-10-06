@@ -367,7 +367,8 @@ public class GT42ResourceBrokerAdaptor extends ResourceBrokerCpi {
         Job job = null;
 
         if (description instanceof WrapperJobDescription) {
-            WrapperJobCpi tmp = new WrapperJobCpi(gatContext, gt42job);
+            WrapperJobCpi tmp = new WrapperJobCpi(gatContext, gt42job, listener,
+                    metricDefinitionName);
             listener = tmp;
             job = tmp;
         } else {
@@ -375,9 +376,9 @@ public class GT42ResourceBrokerAdaptor extends ResourceBrokerCpi {
         }
 
         if (listener != null && metricDefinitionName != null) {
-            Metric metric = job.getMetricDefinitionByName(metricDefinitionName)
+            Metric metric = gt42job.getMetricDefinitionByName(metricDefinitionName)
                     .createMetric(null);
-            job.addMetricListener(listener, metric);
+            gt42job.addMetricListener(listener, metric);
         }
 
         if (sandbox != null) {
