@@ -528,20 +528,17 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
         GlobusJob globusJob = new GlobusJob(gatContext, description, sandbox);
         Job job = null;
         if (description instanceof WrapperJobDescription) {
-            WrapperJobCpi tmp = new WrapperJobCpi(gatContext, globusJob);
+            WrapperJobCpi tmp = new WrapperJobCpi(gatContext, globusJob,
+                    listener, metricDefinitionName);
             job = tmp;
+            listener = tmp;
         } else {
             job = globusJob;
         }
         if (listener != null && metricDefinitionName != null) {
-            Metric metric = job.getMetricDefinitionByName(metricDefinitionName)
+            Metric metric = globusJob.getMetricDefinitionByName(metricDefinitionName)
                     .createMetric(null);
-            job.addMetricListener(listener, metric);
-            if (job instanceof WrapperJobCpi) {
-                 metric = globusJob.getMetricDefinitionByName(metricDefinitionName)
-                .createMetric(null);
-                 globusJob.addMetricListener((WrapperJobCpi) job, metric);
-            }
+            globusJob.addMetricListener(listener, metric);
         }
 
         if (isExitValueEnabled(description)) {

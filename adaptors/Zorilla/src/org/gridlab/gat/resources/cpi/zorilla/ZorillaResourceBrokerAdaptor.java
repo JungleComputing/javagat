@@ -153,22 +153,19 @@ public class ZorillaResourceBrokerAdaptor extends ResourceBrokerCpi implements
 
         ZorillaJob zorillaJob = new ZorillaJob(gatContext, description, null,
                 this);
-        Job job = null;
+        Job job;
         if (description instanceof WrapperJobDescription) {
-            WrapperJobCpi tmp = new WrapperJobCpi(gatContext, zorillaJob);
+            WrapperJobCpi tmp = new WrapperJobCpi(gatContext, zorillaJob,
+                    listener, metricDefinitionName);
+            listener = tmp;
             job = tmp;
         } else {
             job = zorillaJob;
         }
         if (listener != null && metricDefinitionName != null) {
-            Metric metric = job.getMetricDefinitionByName(metricDefinitionName)
+            Metric metric = zorillaJob.getMetricDefinitionByName(metricDefinitionName)
                     .createMetric(null);
-            job.addMetricListener(listener, metric);
-            if (job instanceof WrapperJobCpi) {
-                 metric = zorillaJob.getMetricDefinitionByName(metricDefinitionName)
-                .createMetric(null);
-                 zorillaJob.addMetricListener((WrapperJobCpi) job, metric);
-            }
+            zorillaJob.addMetricListener(listener, metric);
         }
 
         zorillaJob.startJob(getNodeSocketAddress(), socketFactory,

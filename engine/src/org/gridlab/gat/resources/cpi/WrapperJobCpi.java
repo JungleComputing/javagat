@@ -7,6 +7,7 @@ import java.util.Map;
 
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
+import org.gridlab.gat.monitoring.Metric;
 import org.gridlab.gat.monitoring.MetricDefinition;
 import org.gridlab.gat.monitoring.MetricEvent;
 import org.gridlab.gat.monitoring.MetricListener;
@@ -34,10 +35,13 @@ public class WrapperJobCpi extends MonitorableCpi implements WrapperJob, MetricL
     private Job wrapperJob;
     
     private int wrapperJobIndex = -1;
+    
+    private Metric metric = null;
 
     private Map<JobDescription, WrappedJobCpi> wrappedJobs = new HashMap<JobDescription, WrappedJobCpi>();
 
-    public WrapperJobCpi(GATContext gatContext, Job wrapperJob) {
+    public WrapperJobCpi(GATContext gatContext, Job wrapperJob, MetricListener listener,
+            String metricDefinitionName) throws GATInvocationException {
         this.gatContext = gatContext;
         HashMap<String, Object> returnDef = new HashMap<String, Object>();
         returnDef.put("status", JobState.class);
@@ -54,6 +58,11 @@ public class WrapperJobCpi extends MonitorableCpi implements WrapperJob, MetricL
             WrappedJobCpi wrappedJob = new WrappedJobCpi(gatContext, info, this);
             wrappedJobs.put(info.getJobDescription(), wrappedJob);
             wrapperJobIndex = info.getWrapperJobIndex();
+        }
+        if (listener != null && metricDefinitionName != null) {
+            metric = wrapperJob.getMetricDefinitionByName(metricDefinitionName)
+                .createMetric(null);
+            wrapperJob.addMetricListener(this, metric);
         }
     }
     public int getJobID() {
@@ -156,10 +165,11 @@ public class WrapperJobCpi extends MonitorableCpi implements WrapperJob, MetricL
 
     public void processMetricEvent(MetricEvent event) {
         // forward the metrics from the wrapperjob
+        MetricEvent e = new MetricEvent(this, event.getValue(), metric, event.getEventTime());
         if (logger.isDebugEnabled()) {
             logger.debug("forwarding metric event " + event);
         }
-        fireMetric(event);
+        fireMetric(e);
     }
     
     public String toString() {

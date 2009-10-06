@@ -191,20 +191,17 @@ public class CommandlineSshResourceBrokerAdaptor extends ResourceBrokerCpi {
                 description, sandbox);
         Job job = null;
         if (description instanceof WrapperJobDescription) {
-            WrapperJobCpi tmp = new WrapperJobCpi(gatContext, commandlineSshJob);
+            WrapperJobCpi tmp = new WrapperJobCpi(gatContext, commandlineSshJob,
+                    listener, metricDefinitionName);
+            listener = tmp;
             job = tmp;
         } else {
             job = commandlineSshJob;
         }
         if (listener != null && metricDefinitionName != null) {
-            Metric metric = job.getMetricDefinitionByName(metricDefinitionName)
+            Metric metric = commandlineSshJob.getMetricDefinitionByName(metricDefinitionName)
                     .createMetric(null);
-            job.addMetricListener(listener, metric);
-            if (job instanceof WrapperJobCpi) {
-                 metric = commandlineSshJob.getMetricDefinitionByName(metricDefinitionName)
-                .createMetric(null);
-                 commandlineSshJob.addMetricListener((WrapperJobCpi) job, metric);
-            }
+            commandlineSshJob.addMetricListener(listener, metric);
         }
 
         // set the state to prestaging

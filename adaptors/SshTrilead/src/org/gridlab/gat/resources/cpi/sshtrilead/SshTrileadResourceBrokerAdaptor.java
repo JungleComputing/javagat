@@ -209,20 +209,17 @@ public class SshTrileadResourceBrokerAdaptor extends ResourceBrokerCpi {
                 sandbox);
         Job job = null;
         if (description instanceof WrapperJobDescription) {
-            WrapperJobCpi tmp = new WrapperJobCpi(gatContext, sshJob);
+            WrapperJobCpi tmp = new WrapperJobCpi(gatContext, sshJob,
+                    listener, metricDefinitionName);
+            listener = tmp;
             job = tmp;
         } else {
             job = sshJob;
         }
         if (listener != null && metricDefinitionName != null) {
-            Metric metric = job.getMetricDefinitionByName(metricDefinitionName)
+            Metric metric = sshJob.getMetricDefinitionByName(metricDefinitionName)
                     .createMetric(null);
-            job.addMetricListener(listener, metric);
-            if (job instanceof WrapperJobCpi) {
-                 metric = sshJob.getMetricDefinitionByName(metricDefinitionName)
-                .createMetric(null);
-                 sshJob.addMetricListener((WrapperJobCpi) job, metric);
-            }
+            sshJob.addMetricListener(listener, metric);
         }
 
         // and now do the prestaging
