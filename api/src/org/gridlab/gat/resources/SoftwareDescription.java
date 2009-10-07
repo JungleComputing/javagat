@@ -312,19 +312,19 @@ public class SoftwareDescription implements java.io.Serializable {
             if (!(tmp instanceof String))
                 continue;
             String val = (String) tmp;
-            if (key.equalsIgnoreCase("time.max")) {
+            if (key.equalsIgnoreCase(TIME_MAX)) {
                 attributes.put(key, new Long(val));
-            } else if (key.equalsIgnoreCase("walltime.max")) {
+            } else if (key.equalsIgnoreCase(WALLTIME_MAX)) {
                 attributes.put(key, new Long(val));
-            } else if (key.equalsIgnoreCase("cputime.max")) {
+            } else if (key.equalsIgnoreCase(CPUTIME_MAX)) {
                 attributes.put(key, new Long(val));
-            } else if (key.equalsIgnoreCase("dry.run")) {
+            } else if (key.equalsIgnoreCase(DRY_RUN)) {
                 attributes.put(key, new Boolean(val));
-            } else if (key.equalsIgnoreCase("memory.min")) {
+            } else if (key.equalsIgnoreCase(MEMORY_MIN)) {
                 attributes.put(key, new Integer(val));
-            } else if (key.equalsIgnoreCase("memory.max")) {
+            } else if (key.equalsIgnoreCase(MEMORY_MAX)) {
                 attributes.put(key, new Integer(val));
-            } else if (key.equalsIgnoreCase("save.state")) {
+            } else if (key.equalsIgnoreCase(SAVE_STATE)) {
                 attributes.put(key, new Boolean(val));
             }
         }

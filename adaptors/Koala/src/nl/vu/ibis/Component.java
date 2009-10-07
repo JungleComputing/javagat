@@ -105,7 +105,7 @@ public class Component implements MetricListener {
 
 		// Time
 		sb.append(" ( maxWallTime = \"");
-		sb.append(sd.getLongAttribute("time.max", 15));
+		sb.append(sd.getLongAttribute(SoftwareDescription.TIME_MAX, 15));
 		sb.append("\")\n");
 
 		// Label

@@ -169,7 +169,7 @@ public class ZorillaJob extends JobCpi {
         zorillaJobDescription.getAttributes().put("resource.count",
                 "" + description.getResourceCount());
 
-        // zorillaJobDescription.getAttributes().put("host.count", "" +
+        // zorillaJobDescription.getAttributes().put(SoftwareDescription.HOST_COUNT, "" +
         // description.getResourceCount());
 
         if (soft instanceof JavaSoftwareDescription) {

@@ -382,12 +382,12 @@ public class ProActiveJob extends JobCpi {
             for (Iterator<String> i = attributes.keySet().iterator(); i
                     .hasNext();) {
                 String key = (String) i.next();
-                if (key.equalsIgnoreCase("memory.min")) {
+                if (key.equalsIgnoreCase(SoftwareDescription.MEMORY_MIN)) {
                     Integer minMem = (Integer) attributes.get(key);
                     if (minMem != null) {
                         jvmArgs = jvmArgs + " -Xms" + minMem.intValue() + "M";
                     }
-                } else if (key.equalsIgnoreCase("memory.max")) {
+                } else if (key.equalsIgnoreCase(SoftwareDescription.MEMORY_MAX)) {
                     Integer maxMem = (Integer) attributes.get(key);
                     if (maxMem != null) {
                         jvmArgs = jvmArgs + " -Xmx" + maxMem.intValue() + "M";

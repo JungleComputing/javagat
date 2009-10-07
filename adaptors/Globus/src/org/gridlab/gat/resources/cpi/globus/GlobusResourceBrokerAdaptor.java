@@ -119,7 +119,7 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
 
         rsl += " (hostCount = " + description.getResourceCount() + ")";
 
-        String jobType = getStringAttribute(description, "job.type", null);
+        String jobType = getStringAttribute(description, SoftwareDescription.JOB_TYPE, null);
         if (jobType != null) {
             rsl += " (jobType = " + jobType + ")";
         }
@@ -128,17 +128,17 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
             rsl += " (directory = " + sandbox.getSandbox() + ")";
         }
 
-        long maxTime = getLongAttribute(description, "time.max", -1);
+        long maxTime = getLongAttribute(description, SoftwareDescription.TIME_MAX, -1);
         if (maxTime > 0) {
             rsl += " (maxTime = " + maxTime + ")";
         }
 
-        long maxWallTime = getLongAttribute(description, "walltime.max", -1);
+        long maxWallTime = getLongAttribute(description, SoftwareDescription.WALLTIME_MAX, -1);
         if (maxWallTime > 0) {
             rsl += " (maxWallTime = " + maxWallTime + ")";
         }
 
-        long maxCPUTime = getLongAttribute(description, "cputime.max", -1);
+        long maxCPUTime = getLongAttribute(description, SoftwareDescription.CPUTIME_MAX, -1);
         if (maxCPUTime > 0) {
             rsl += " (maxCPUTime = " + maxCPUTime + ")";
         }

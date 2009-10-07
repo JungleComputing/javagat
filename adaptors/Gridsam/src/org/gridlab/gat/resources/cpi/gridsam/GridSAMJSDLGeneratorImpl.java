@@ -30,10 +30,6 @@ import org.icenigrid.schema.jsdl.y2005.m11.SourceTargetType;
 
 public class GridSAMJSDLGeneratorImpl implements GridSAMJSDLGenerator {
 
-    private static final String MAX_MEMORY_ATTRIBUTE = "memory.max";
-
-    private static final String MAX_CPU_TIME_ATTRIBUTE = "cputime.max";
-
     private static final String STDIN_ATTRIBUTE = "stdin";
 
     private static final String SLASH = "/";
@@ -241,13 +237,13 @@ public class GridSAMJSDLGeneratorImpl implements GridSAMJSDLGenerator {
     private void addLimitsInfo(POSIXApplicationType posixAppl, SoftwareDescription sd) {
         Map<String, Object> attrs = sd.getAttributes();
 
-        if (attrs.get(MAX_MEMORY_ATTRIBUTE) != null) {
-            BigDecimal v = new BigDecimal(attrs.get(MAX_MEMORY_ATTRIBUTE).toString());
+        if (attrs.get(SoftwareDescription.MEMORY_MAX) != null) {
+            BigDecimal v = new BigDecimal(attrs.get(SoftwareDescription.MEMORY_MAX).toString());
             LimitsType memLimit = posixAppl.addNewMemoryLimit();
             memLimit.setBigDecimalValue(v);
         }
-        if (attrs.get(MAX_CPU_TIME_ATTRIBUTE) != null) {
-            BigDecimal v = new BigDecimal(attrs.get(MAX_CPU_TIME_ATTRIBUTE).toString());
+        if (attrs.get(SoftwareDescription.CPUTIME_MAX) != null) {
+            BigDecimal v = new BigDecimal(attrs.get(SoftwareDescription.CPUTIME_MAX).toString());
             LimitsType timeLimit = posixAppl.addNewCPUTimeLimit();
             timeLimit.setBigDecimalValue(v);
         }

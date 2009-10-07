@@ -387,28 +387,28 @@ public class JDL {
     @SuppressWarnings("unchecked")
     private void processAttributes(StringBuilder builder) {
         for (String attKey : this.attributes.keySet()) {
-            if ("time.max".equalsIgnoreCase(attKey)) {
+            if (SoftwareDescription.TIME_MAX.equalsIgnoreCase(attKey)) {
                 // object is supposed to be an instance of String or Long
                 Object maxTime = attributes.get(attKey);
                 requirements.add("other.GlueCEPolicyMaxWallClockTime ==  \""
                         + maxTime + "\"");
-            } else if ("walltime.max".equalsIgnoreCase(attKey)) {
+            } else if (SoftwareDescription.WALLTIME_MAX.equalsIgnoreCase(attKey)) {
                 Object maxTime = attributes.get(attKey);
                 requirements.add("other.GlueCEPolicyMaxWallClockTime ==  \""
                         + maxTime + "\"");
-            } else if ("cputime.max".equalsIgnoreCase(attKey)) {
+            } else if (SoftwareDescription.CPUTIME_MAX.equalsIgnoreCase(attKey)) {
                 Object maxTime = attributes.get(attKey);
                 requirements.add("other.GlueCEPolicyMaxCPUTime == \"" + maxTime
                         + "\"");
-            } else if ("project".equalsIgnoreCase(attKey)) {
+            } else if (SoftwareDescription.PROJECT.equalsIgnoreCase(attKey)) {
                 String project = (String) attributes.get(attKey);
                 builder.append("HLRLocation = \"").append(project).append(
                         "\";\n");
-            } else if ("memory.min".equalsIgnoreCase(attKey)) {
+            } else if (SoftwareDescription.MEMORY_MIN.equalsIgnoreCase(attKey)) {
                 Object minMemory = attributes.get(attKey);
                 requirements.add("other.GlueHostMainMemoryRAMSize >= "
                         + minMemory);
-            } else if ("memory.max".equalsIgnoreCase(attKey)) {
+            } else if (SoftwareDescription.MEMORY_MAX.equalsIgnoreCase(attKey)) {
                 Object maxMemory = attributes.get(attKey);
                 requirements.add("other.GlueHostMainMemoryRAMSize <= "
                         + maxMemory);
