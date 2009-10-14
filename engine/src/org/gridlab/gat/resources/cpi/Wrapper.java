@@ -10,6 +10,8 @@ import java.io.ObjectOutputStream;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+
 import org.gridlab.gat.GAT;
 import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.GATObjectCreationException;
@@ -201,23 +203,16 @@ public class Wrapper {
             return description;
         }
         JobDescription jobDescription = (JobDescription) description;
+        Map<File, File> preStaged = jobDescription.getSoftwareDescription().getPreStaged();
         
-        if (jobDescription.getSoftwareDescription().getPreStaged() != null) {
-            ArrayList<File> keys = new ArrayList<File>(jobDescription.getSoftwareDescription()
-                    .getPreStaged().keySet());
+        if (preStaged != null) {
+            ArrayList<File> keys = new ArrayList<File>(preStaged.keySet());
             for (File file : keys) {
                 if (file.toGATURI().refersToLocalHost()) {
-                    File target = jobDescription.getSoftwareDescription()
-                            .getPreStaged().get(file);
-                    if (target == null) {
-                        target = file;
-                    }
-                    jobDescription.getSoftwareDescription().getPreStaged()
-                            .remove(file);
+                    File target = preStaged.get(file);
+                    preStaged.remove(file);
                     try {
-                        jobDescription.getSoftwareDescription().getPreStaged()
-                                .put(
-                                        GAT.createFile(rewriteURI(file
+                        preStaged.put(GAT.createFile(rewriteURI(file
                                                 .toGATURI(), origin)), target);
                     } catch (GATObjectCreationException e) {
                         logger.error("Got Exception", e);
@@ -226,32 +221,24 @@ public class Wrapper {
 
             }
         }
-        if (jobDescription.getSoftwareDescription().getPostStaged() != null) {
-            ArrayList<File> keys = new ArrayList<File>(jobDescription.getSoftwareDescription()
-                    .getPostStaged().keySet());
+        
+        Map<File, File> postStaged = jobDescription.getSoftwareDescription().getPostStaged();
+        if (postStaged != null) {
+            ArrayList<File> keys = new ArrayList<File>(postStaged.keySet());
             for (File file : keys) {
-                if (jobDescription.getSoftwareDescription().getPostStaged()
-                        .get(file) == null) {
+                File target = postStaged.get(file);
+                if (target == null) {
                     try {
-                        jobDescription.getSoftwareDescription().getPostStaged()
-                                .put(
-                                        file,
+                        postStaged.put(file,
                                         GAT.createFile(origin + "/"
                                                 + file.getName()));
                     } catch (GATObjectCreationException e) {
                         logger.error("Got Exception", e);
                     }
-                } else if (jobDescription.getSoftwareDescription()
-                        .getPostStaged().get(file).toGATURI()
-                        .refersToLocalHost()) {
-                    File target = jobDescription.getSoftwareDescription()
-                            .getPostStaged().get(file);
-                    jobDescription.getSoftwareDescription().getPostStaged()
-                            .remove(file);
+                } else if (target.toGATURI().refersToLocalHost()) {
+                    postStaged.remove(file);
                     try {
-                        jobDescription.getSoftwareDescription().getPostStaged()
-                                .put(
-                                        file,
+                        postStaged.put(file,
                                         GAT.createFile(rewriteURI(target
                                                 .toGATURI(), origin)));
                     } catch (GATObjectCreationException e) {
