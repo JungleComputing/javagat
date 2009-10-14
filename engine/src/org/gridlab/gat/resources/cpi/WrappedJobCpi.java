@@ -133,6 +133,9 @@ public class WrappedJobCpi extends JobCpi implements Runnable {
     }
     
     public String toString() {
+        if (info == null) {
+            return super.toString();
+        }
         return "Wrapped job, index " + info.getWrappedJobIndex()
                 + ", wrapper job index " + info.getWrapperJobIndex()
                 + ", id is " + jobID;
