@@ -100,6 +100,7 @@ public class Sandbox {
                 // be deleted, unless you overwrite it using the
                 // 'sandbox.delete' preference.
                 this.deleteSandboxDir = false;
+                this.sandboxNameWithoutRoot = sandboxRootPref;
             }
         }
 
