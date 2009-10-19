@@ -26,6 +26,7 @@ import org.gridlab.gat.InvalidUsernameOrPasswordException;
 import org.gridlab.gat.URI;
 import org.gridlab.gat.advert.Advertisable;
 import org.gridlab.gat.engine.GATEngine;
+import org.gridlab.gat.engine.util.ScheduledExecutor;
 import org.gridlab.gat.io.File;
 import org.gridlab.gat.monitoring.Metric;
 import org.gridlab.gat.monitoring.MetricDefinition;
@@ -42,7 +43,7 @@ import org.ietf.jgss.GSSCredential;
  */
 @SuppressWarnings("serial")
 public class GlobusJob extends JobCpi implements GramJobListener,
-        org.globus.gram.internal.GRAMConstants {
+        org.globus.gram.internal.GRAMConstants, Runnable {
 
     protected static Logger logger = LoggerFactory.getLogger(GlobusJob.class);
 
@@ -60,8 +61,6 @@ public class GlobusJob extends JobCpi implements GramJobListener,
 
     private String globusJobID;
 
-    private JobPoller poller;
-
     private int globusJobState = 0;
 
     private boolean exitStatusEnabled = false;
@@ -78,8 +77,7 @@ public class GlobusJob extends JobCpi implements GramJobListener,
     private static final int GLOBUS_JOB_SUBMISSION_ERROR = 1985;
 
     protected void startPoller() {
-        poller = new JobPoller(this);
-        poller.start();
+        ScheduledExecutor.schedule(this, 5000, 5000);
     }
 
     protected GlobusJob(GATContext gatContext, JobDescription jobDescription,
@@ -155,9 +153,8 @@ public class GlobusJob extends JobCpi implements GramJobListener,
         j.addListener(this);
 
         getStateActive();
-
-        poller = new JobPoller(this);
-        poller.start();
+        
+        startPoller();
     }
 
     protected void setGramJob(GramJob j) {
@@ -447,9 +444,7 @@ public class GlobusJob extends JobCpi implements GramJobListener,
                 
                 globusJobState = 0;
                 stopHandlers();
-                if (poller != null) {
-                    poller.die();
-                }
+                ScheduledExecutor.remove(this);
                 finished();
             }
         }
@@ -699,6 +694,13 @@ public class GlobusJob extends JobCpi implements GramJobListener,
                 streamingOutputs--;
                 GlobusJob.this.notifyAll();
             }
+        }
+    }
+    
+    public void run() {
+        getStateActive();
+        if (getState() == JobState.STOPPED || getState() == JobState.SUBMISSION_ERROR) {
+            ScheduledExecutor.remove(this);
         }
     }
 }

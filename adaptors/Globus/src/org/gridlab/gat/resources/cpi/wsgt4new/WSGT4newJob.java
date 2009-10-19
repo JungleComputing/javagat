@@ -19,6 +19,7 @@ import org.gridlab.gat.InvalidUsernameOrPasswordException;
 import org.gridlab.gat.URI;
 import org.gridlab.gat.advert.Advertisable;
 import org.gridlab.gat.engine.GATEngine;
+import org.gridlab.gat.engine.util.ScheduledExecutor;
 import org.gridlab.gat.monitoring.Metric;
 import org.gridlab.gat.monitoring.MetricDefinition;
 import org.gridlab.gat.monitoring.MetricEvent;
@@ -47,10 +48,6 @@ public class WSGT4newJob extends JobCpi implements GramJobListener, Runnable {
 
     private Metric statusMetric;
 
-    private Thread poller;
-
-    private boolean finished = false;
-
     private StateEnumeration jobState = StateEnumeration.Unsubmitted;
 
     private String submissionID;
@@ -64,11 +61,7 @@ public class WSGT4newJob extends JobCpi implements GramJobListener, Runnable {
                 MetricDefinition.DISCRETE, "JobState", null, null, returnDef);
         registerMetric("getJobStatus", statusMetricDefinition);
         statusMetric = statusMetricDefinition.createMetric(null);
-        poller = new Thread(this);
-        poller.setDaemon(true);
-        poller.setName("WSGT4 Job - "
-                + jobDescription.getSoftwareDescription().getExecutable());
-        poller.start();
+        ScheduledExecutor.schedule(this, 1000, 1000);
     }
     
     /**
@@ -160,9 +153,7 @@ public class WSGT4newJob extends JobCpi implements GramJobListener, Runnable {
             doStateChange(StateEnumeration.Done);
         } else {
             doStateChange(newState);
-            poller = new Thread(this);
-            poller.setDaemon(true);
-            poller.start();
+            ScheduledExecutor.schedule(this, 1000, 1000);
         }
     }
 
@@ -212,7 +203,7 @@ public class WSGT4newJob extends JobCpi implements GramJobListener, Runnable {
     synchronized void finishJob() {
         // To be called when submit fails ...
         finished();
-        finished = true;
+        ScheduledExecutor.remove(this);
         if (sandbox != null) {
             try {
                 sandbox.removeSandboxDir();
@@ -229,7 +220,7 @@ public class WSGT4newJob extends JobCpi implements GramJobListener, Runnable {
                 job.cancel();
             } catch (Exception e) {
                 finished();
-                finished = true;
+                ScheduledExecutor.remove(this);
                 throw new GATInvocationException("WSGT4newJob", e);
             }
             if (state != JobState.POST_STAGING && !skipPostStage) {
@@ -241,8 +232,8 @@ public class WSGT4newJob extends JobCpi implements GramJobListener, Runnable {
                 logger.debug("job not running anymore!");
             }
         }
-        finished = true;
         finished();
+        ScheduledExecutor.remove(this);
     }
 
     public synchronized int getExitStatus() throws GATInvocationException {
@@ -444,40 +435,35 @@ public class WSGT4newJob extends JobCpi implements GramJobListener, Runnable {
 
     }
 
-    public void run() {
-        int count = 0;
+    private int count = 0;
     
-        while (!finished) {
-            synchronized (this) {
-                if (submissiontime != 0) {
-                    try {
-                        job.refreshStatus();
-                    } catch(Throwable e) {
-                        // ignored
-                    }
+    public void run() {
 
-                    try {
-                        // TODO
-                        StateEnumeration newState = job.getState();
-                        logger.debug("jobState (poller): " + newState);
-                        if (newState == null) {
-                            if (count > 3) {
-                                doStateChange(StateEnumeration.Done);
-                            } else {
-                                count++;
-                            }
-                        } else {
-                            doStateChange(newState);
-                        }
-                    } catch (Exception e) {
-                        // ignore
-                    }
+        synchronized (this) {
+            if (submissiontime != 0) {
+                try {
+                    job.refreshStatus();
+                } catch(Throwable e) {
+                    // ignored
                 }
-            }
-            try {
-                Thread.sleep(1000);
-            } catch (InterruptedException e) {
-                // ignore
+
+                try {
+                    // TODO
+                    StateEnumeration newState = job.getState();
+                    logger.debug("jobState (poller): " + newState);
+                    if (newState == null) {
+                        if (count > 3) {
+                            doStateChange(StateEnumeration.Done);
+                        } else {
+                            count++;
+                        }
+                    } else {
+                        count = 0;
+                        doStateChange(newState);
+                    }
+                } catch (Exception e) {
+                    // ignore
+                }
             }
         }
     }

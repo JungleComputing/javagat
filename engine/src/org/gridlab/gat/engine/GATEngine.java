@@ -37,6 +37,7 @@ import org.gridlab.gat.GATObjectCreationException;
 import org.gridlab.gat.Preferences;
 import org.gridlab.gat.advert.Advertisable;
 import org.gridlab.gat.advert.cpi.SerializedBase;
+import org.gridlab.gat.engine.util.ScheduledExecutor;
 
 /**
  * @author rob
@@ -844,6 +845,8 @@ public class GATEngine {
                 }
             }
         }
+        
+        ScheduledExecutor.end();
 
         if (logger.isInfoEnabled()) {
             logger.info("shutting down the GAT engine DONE");

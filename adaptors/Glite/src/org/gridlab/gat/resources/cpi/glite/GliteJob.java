@@ -56,6 +56,7 @@ import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.GATObjectCreationException;
 import org.gridlab.gat.URI;
+import org.gridlab.gat.engine.util.ScheduledExecutor;
 import org.gridlab.gat.io.File;
 import org.gridlab.gat.monitoring.Metric;
 import org.gridlab.gat.monitoring.MetricDefinition;
@@ -111,7 +112,7 @@ public class GliteJob extends JobCpi {
         final static long UPDATE_INTV_AFTER_JOB_KILL = 40000;
 
         public JobStatusLookUp(final GliteJob job) {
-            super();
+            // super();
 
             this.polledJob = job;
 
@@ -123,46 +124,37 @@ public class GliteJob extends JobCpi {
             } else {
                 this.pollIntMilliSec = Integer.parseInt(pollingIntervalStr) * 1000;
             }
+            ScheduledExecutor.schedule(this, 1000, pollIntMilliSec);
         }
 
         public void run() {
-            while (true) {
-                if (state == Job.JobState.STOPPED) {
-                    break;
+            if (state == Job.JobState.STOPPED
+                    || state == Job.JobState.SUBMISSION_ERROR) {
+                ScheduledExecutor.remove(this);
+                return;
+            }
+
+            // if the job has been killed and the maximum time at which the
+            // job should be canceled
+            // has been reached, cancel
+            if (jobKilled) {
+                afterJobKillCounter += pollIntMilliSec;
+
+                if (afterJobKillCounter >= UPDATE_INTV_AFTER_JOB_KILL) {
+                    ScheduledExecutor.remove(this);
+                    return;
                 }
-                if (state == Job.JobState.SUBMISSION_ERROR) {
-                    break;
-                }
+            }
 
-                // if the job has been killed and the maximum time at which the
-                // job should be canceled
-                // has been reached, cancel
-                if (jobKilled) {
-                    afterJobKillCounter += pollIntMilliSec;
+            polledJob.updateState();
 
-                    if (afterJobKillCounter >= UPDATE_INTV_AFTER_JOB_KILL) {
-                        break;
-                    }
-                }
+            MetricEvent event = new MetricEvent(polledJob, state, metric,
+                    System.currentTimeMillis());
+            polledJob.fireMetric(event);
 
-                polledJob.updateState();
-
-                MetricEvent event = new MetricEvent(polledJob, state, metric,
-                        System.currentTimeMillis());
-                polledJob.fireMetric(event);
-
-                if (state == Job.JobState.POST_STAGING) {
-                    polledJob.receiveOutput();
-                    polledJob.outputDone = true;
-                }
-
-                try {
-                    Thread.sleep(this.pollIntMilliSec);
-                } catch (InterruptedException e) {
-                    LOGGER.error(
-                            "Error while executing job status poller thread!",
-                            e);
-                }
+            if (state == Job.JobState.POST_STAGING) {
+                polledJob.receiveOutput();
+                polledJob.outputDone = true;
             }
         }
     }
@@ -290,7 +282,8 @@ public class GliteJob extends JobCpi {
         initLBSoapService(gliteJobID);
         LOGGER.info("jobID " + gliteJobID);
         // start status lookup thread
-        new Thread(new JobStatusLookUp(this)).start();
+        // new Thread(new JobStatusLookUp(this)).start();
+        new JobStatusLookUp(this);
     }
 
     /**

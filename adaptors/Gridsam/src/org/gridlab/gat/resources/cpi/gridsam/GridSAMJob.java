@@ -30,6 +30,8 @@ public class GridSAMJob extends JobCpi {
      */
     private static final long serialVersionUID = 1L;
 
+    // TODO: replace polling thread with call to ScheduledExecutor.
+    
     private class PollingThread extends Thread {
         private Logger logger = LoggerFactory.getLogger(PollingThread.class);
 
