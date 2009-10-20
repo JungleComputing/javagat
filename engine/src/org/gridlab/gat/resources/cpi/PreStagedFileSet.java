@@ -212,4 +212,13 @@ public class PreStagedFileSet {
         }
         return res;
     }
+    
+    void setGatContext(GATContext gatContext) {
+        this.gatContext = gatContext;
+        for (PreStagedFile file : files) {
+            file.setGatContext(gatContext);
+        }
+        // TODO Auto-generated method stub
+        
+    }
 }

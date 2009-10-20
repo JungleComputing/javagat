@@ -324,4 +324,8 @@ public abstract class StagedFile {
     public void setResolvedSrcURIString(String resolvedSrcURIString) {
         this.resolvedSrcURIString = resolvedSrcURIString;
     }
+    
+    void setGatContext(GATContext gatContext) {
+        this.gatContext = gatContext;
+    }
 }

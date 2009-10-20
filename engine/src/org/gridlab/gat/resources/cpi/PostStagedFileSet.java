@@ -293,4 +293,13 @@ public class PostStagedFileSet {
     public void setPostStageStdout(boolean postStageStdout) {
         this.postStageStdout = postStageStdout;
     }
+
+    void setGatContext(GATContext gatContext) {
+        this.gatContext = gatContext;
+        for (PostStagedFile file : files) {
+            file.setGatContext(gatContext);
+        }
+        // TODO Auto-generated method stub
+        
+    }
 }

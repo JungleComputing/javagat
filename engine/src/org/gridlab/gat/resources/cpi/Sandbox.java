@@ -336,6 +336,12 @@ public class Sandbox {
         if (gatContext == null) {
             // Can happen when jobs are deserialized.
             gatContext = GAT.getDefaultGATContext();
+            if (post != null) {
+                post.setGatContext(gatContext);
+            }
+            if (pre != null) {
+                pre.setGatContext(gatContext);
+            }
         }
 
         if (logger.isInfoEnabled()) {
