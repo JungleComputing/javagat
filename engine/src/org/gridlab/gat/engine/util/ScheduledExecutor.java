@@ -2,14 +2,16 @@ package org.gridlab.gat.engine.util;
 
 import java.util.HashMap;
 import java.util.concurrent.Future;
+import java.util.concurrent.RejectedExecutionHandler;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 /**
  * Simplified interface to a single <code>ScheduledThreadPoolExecutor</code>,
  * to be used for f.i. job polling.
  */
-public class ScheduledExecutor {
+public class ScheduledExecutor implements RejectedExecutionHandler {
       
     /** The executor, to be created lazily. */
     private ScheduledThreadPoolExecutor executor = null;
@@ -31,15 +33,23 @@ public class ScheduledExecutor {
      */
     public static synchronized void schedule(Runnable r, long initialDelay, long delay) {
         if (scheduledExecutor == null) {
-            scheduledExecutor = new ScheduledExecutor();
+            int sz = 16;
+            String poolSize = System.getProperty("gat.threadpool.size");
+            if (poolSize != null) {
+                try {
+                    sz = Integer.parseInt(poolSize);
+                } catch(Throwable e) {
+                    System.err.println("Warning: could not parse value of gat.threadpool.size property");
+                }
+            }
+            scheduledExecutor = new ScheduledExecutor(sz);
         }
         scheduledExecutor.addJob(r, initialDelay, delay);
     }
     
-    private ScheduledExecutor() {
-        executor = new ScheduledThreadPoolExecutor(0);
+    private ScheduledExecutor(int size) {
+        executor = new ScheduledThreadPoolExecutor(size, this);
         map = new HashMap<Runnable, Future<?>>();
-        executor.setKeepAliveTime(5, TimeUnit.SECONDS);
     }
     
     private void addJob(Runnable r, long initialDelay, long delay) {
@@ -63,7 +73,9 @@ public class ScheduledExecutor {
     
     private void cancel(Runnable r) {
         Future<?> f = map.get(r);
-        f.cancel(true);
+        if (f != null) {
+            f.cancel(true);
+        }
         executor.remove(r);
     }
 
@@ -75,5 +87,9 @@ public class ScheduledExecutor {
         if (scheduledExecutor != null) {
             scheduledExecutor.cancel(r);
         }
+    }
+
+    public void rejectedExecution(Runnable r, ThreadPoolExecutor executor) {
+        System.err.println("Warning: rejected scheduled execution of " + r);
     }
 }
