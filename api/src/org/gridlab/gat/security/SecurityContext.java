@@ -179,8 +179,9 @@ public abstract class SecurityContext implements Cloneable {
 
         if (adaptorList != null) {
             StringTokenizer tokens = new StringTokenizer(adaptorList, ",");
+            int count = tokens.countTokens();
 
-            for (int i = 0; i < tokens.countTokens(); i++) {
+            for (int i = 0; i < count; i++) {
                 String allowedAdaptor = tokens.nextToken();
 
                 if (allowedAdaptor.equalsIgnoreCase(adaptorName)) {
