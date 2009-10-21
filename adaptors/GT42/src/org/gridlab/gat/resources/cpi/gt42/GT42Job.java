@@ -65,6 +65,7 @@ public class GT42Job extends JobCpi implements GramJobListener, Runnable {
     public GT42Job(GATContext gatContext, SerializedJob sj)
         throws GATObjectCreationException {
         super(gatContext, sj.getJobDescription(), sj.getSandbox());
+        sandbox.setContext(gatContext);
 
         if (System.getProperty("GT42_LOCATION") == null) {
             String gt42Location = System.getProperty("gat.adaptor.path")
@@ -153,8 +154,6 @@ public class GT42Job extends JobCpi implements GramJobListener, Runnable {
             ScheduledExecutor.schedule(this, 1000, 1000);
         }
     }
-
-
 
     protected synchronized void setState(JobState state) {
         if (submissiontime == 0L) {
