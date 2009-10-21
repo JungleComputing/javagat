@@ -5,6 +5,7 @@ package org.gridlab.gat.advert;
 
 import java.util.NoSuchElementException;
 
+import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.URI;
 import org.gridlab.gat.monitoring.Monitorable;
@@ -59,7 +60,8 @@ public interface AdvertService extends Monitorable {
 
     /**
      * Gets an {@link Advertisable} instance from the given path (absolute or
-     * relative to PWD).
+     * relative to PWD). The context used to create the Advertisable object is
+     * the context that was used to create this AdvertService.
      * 
      * @param path
      *                Path (either absolute or relative to PWD) of the entry.
@@ -74,6 +76,25 @@ public interface AdvertService extends Monitorable {
     public Advertisable getAdvertisable(String path)
             throws GATInvocationException, NoSuchElementException;
 
+    /**
+     * Gets an {@link Advertisable} instance from the given path (absolute or
+     * relative to PWD).
+     * 
+     * @param context The context to create the Advertisable object with.
+     * @param path
+     *                Path (either absolute or relative to PWD) of the entry.
+     * @return The {@link Advertisable} instance at the given path
+     * @throws NoSuchElementException
+     *                 The path is incorrect.
+     * @throws GATInvocationException
+     *                 this exception is thrown when all adaptors fail on this
+     *                 method it contains a tree of exceptions that were the
+     *                 causes.
+     */
+    public Advertisable getAdvertisable(GATContext context, String path)
+            throws GATInvocationException, NoSuchElementException;
+
+    
     /**
      * Gets the {@link MetaData} of an {@link Advertisable} instance from the
      * given path (absolute or relative to the PWD).

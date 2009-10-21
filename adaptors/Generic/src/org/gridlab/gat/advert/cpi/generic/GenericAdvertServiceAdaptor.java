@@ -78,13 +78,8 @@ public class GenericAdvertServiceAdaptor extends AdvertServiceCpi {
         // f = new File(filename);
         // f.deleteOnExit();
     }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.gridlab.gat.advert.AdvertService#getAdvertisable(java.lang.String).
-     */
-    public Advertisable getAdvertisable(String path)
+    
+    public Advertisable getAdvertisable(GATContext context, String path)
             throws GATInvocationException, NoSuchElementException {
         path = normalizePath(path);
         // load();
@@ -99,10 +94,8 @@ public class GenericAdvertServiceAdaptor extends AdvertServiceCpi {
             throw new NoSuchElementException("No such element: " + path);
         }
 
-        Advertisable advert = GATEngine.getGATEngine().unmarshalAdvertisable(
-                gatContext, entry.getPath());
-
-        return advert;
+        return GATEngine.getGATEngine().unmarshalAdvertisable(
+                context, entry.getPath());
     }
 
     /*

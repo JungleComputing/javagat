@@ -104,11 +104,26 @@ public class AdvertServiceCpi extends MonitorableCpi implements AdvertService {
     /**
      * @param path
      *                Path (either absolute or relative to PWD) of the entry.
-     * @return A MetaData containing the metadata.
+     * @return An Advertisable containing the advertisable.
+     * @throws GATInvocationException 
      * @throws NoSuchElementException
      *                 The path is incorrect.
      */
     public Advertisable getAdvertisable(String path)
+            throws GATInvocationException, NoSuchElementException {
+        return getAdvertisable(gatContext, path);
+    }
+    
+
+    /**
+     * @param path
+     *                Path (either absolute or relative to PWD) of the entry.
+     * @param context The context with which to create the advertisable object.
+     * @return An Advertisable containing the advertisable.
+     * @throws NoSuchElementException
+     *                 The path is incorrect.
+     */
+    public Advertisable getAdvertisable(GATContext context, String path)
             throws GATInvocationException, NoSuchElementException {
         throw new UnsupportedOperationException("Not implemented");
     }
