@@ -84,7 +84,7 @@ public class UnicoreJob extends JobCpi {
     private UnicoreJob(GATContext gatContext, SerializedUnicoreJob sj)
             throws GATObjectCreationException {
         super(gatContext, sj.getJobDescription(), sj.getSandbox());
-        
+        sandbox.setContext(gatContext);
         if (logger.isDebugEnabled()) {
             logger.debug("reconstructing UnicoreJob: " + sj);
         }
