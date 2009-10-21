@@ -327,5 +327,7 @@ public abstract class StagedFile {
     
     void setGatContext(GATContext gatContext) {
         this.gatContext = gatContext;
+        resolvedDest = null;
+        resolvedSrc = null;
     }
 }

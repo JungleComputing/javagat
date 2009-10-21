@@ -100,7 +100,10 @@ public class GlobusJob extends JobCpi implements GramJobListener,
      */
     public GlobusJob(GATContext gatContext, SerializedJob sj)
             throws GATObjectCreationException {
+        
         super(gatContext, sj.getJobDescription(), sj.getSandbox());
+               
+        sandbox.setContext(gatContext);
 
         if (logger.isDebugEnabled()) {
             logger.debug("reconstructing globusjob: " + sj);

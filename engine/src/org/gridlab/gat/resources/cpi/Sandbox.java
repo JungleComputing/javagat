@@ -712,4 +712,17 @@ public class Sandbox {
     public boolean getDeleteSandboxDir() {
         return deleteSandboxDir;
     }
+    
+    public void setContext(GATContext context) {
+        gatContext = context;
+        if (post != null) {
+            post.setGatContext(gatContext);
+        }
+        if (pre != null) {
+            pre.setGatContext(gatContext);
+        }
+        if (toWipe != null) {
+            toWipe.setGatContext(gatContext);
+        }
+    }
 }

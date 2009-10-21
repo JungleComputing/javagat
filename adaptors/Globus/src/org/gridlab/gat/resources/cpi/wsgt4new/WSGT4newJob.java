@@ -70,6 +70,8 @@ public class WSGT4newJob extends JobCpi implements GramJobListener, Runnable {
     public WSGT4newJob(GATContext gatContext, SerializedJob sj)
             throws GATObjectCreationException {
         super(gatContext, sj.getJobDescription(), sj.getSandbox());
+        
+        sandbox.setContext(gatContext);
 
         if (System.getProperty("GLOBUS_LOCATION") == null) {
             String globusLocation = System.getProperty("gat.adaptor.path")
@@ -156,7 +158,6 @@ public class WSGT4newJob extends JobCpi implements GramJobListener, Runnable {
             ScheduledExecutor.schedule(this, 1000, 1000);
         }
     }
-
 
     protected synchronized void setState(JobState state) {
         if (logger.isDebugEnabled() && state.equals(JobState.POST_STAGING)) {
