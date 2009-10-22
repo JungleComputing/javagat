@@ -160,9 +160,6 @@ public class WSGT4newJob extends JobCpi implements GramJobListener, Runnable {
     }
 
     protected synchronized void setState(JobState state) {
-        if (logger.isDebugEnabled() && state.equals(JobState.POST_STAGING)) {
-            logger.debug("setState POST_STAGING", new Throwable());
-        }
         if (submissiontime == 0L) {
             setSubmissionTime();
         }
