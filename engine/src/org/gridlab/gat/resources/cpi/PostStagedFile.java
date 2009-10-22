@@ -57,21 +57,15 @@ public class PostStagedFile extends StagedFile {
                 throw new GATInvocationException("poststagedFile", e);
             }
         } else {
-            if (origDest.isAbsolute()) {
+            URI destURI = origDest.toGATURI();
+            if (origDest.isAbsolute() || destURI.isAbsolute()) {
+                // If the destination has an absolute path or is an absolute URI
+                // (with a scheme), we leave it alone.
                 setResolvedDest(origDest);
             } else {
-                // TODO: check for post staging to other machine
-
-                // file with same name in CWD
+                // Otherwise, we give it an absolute path and use the "any" scheme.
                 try {
-                    String destURIString = "any://";
-                    if (origDest.toGATURI().getHost() == null) {
-                        destURIString += "/" + cwd;
-                    } else {
-                        destURIString += origDest.toGATURI().getHost() + "/";
-                    }
-
-                    destURIString += origDest.getPath();
+                    String destURIString = "any:///" + cwd + origDest.getPath();
                     setResolvedDest(GAT.createFile(origSrc.getFileInterface()
                             .getGATContext(), new URI(destURIString)));
                 } catch (Exception e) {
