@@ -64,6 +64,10 @@ public class GT4GridFTPFileAdaptor extends GT4FileAdaptor {
      */
     synchronized protected void copyThirdParty(URI dest, String destProvider)
             throws GATInvocationException {
+        if (destProvider.equals("gridftp")) {
+            // Maybe this helps, I don't know.
+            destProvider = "gsiftp";
+        }
         if (logger.isDebugEnabled()) {
             logger.debug("GT4GridFileAdaptor file: start file copy with destination provider "
                             + destProvider);
@@ -89,7 +93,7 @@ public class GT4GridFTPFileAdaptor extends GT4FileAdaptor {
             sourceSecurityContext = AbstractionFactory
                     .newSecurityContext(srcProvider);
         } catch (Exception e) {
-            throw new GATInvocationException(e.getMessage());
+            throw new GATInvocationException(e.getMessage(), e);
         }
         sourceSecurityContext.setCredentials(getCredential(destProvider, dest));
         sourceService.setSecurityContext(sourceSecurityContext);
@@ -107,7 +111,7 @@ public class GT4GridFTPFileAdaptor extends GT4FileAdaptor {
             destinationSecurityContext = AbstractionFactory
                     .newSecurityContext(destProvider);
         } catch (Exception e) {
-            throw new GATInvocationException(e.getMessage());
+            throw new GATInvocationException(e.getMessage(), e);
         }
         destinationSecurityContext.setCredentials(getCredential(destProvider,
                 dest));
@@ -123,12 +127,12 @@ public class GT4GridFTPFileAdaptor extends GT4FileAdaptor {
         try {
             handler.submit(task);
         } catch (Exception e) {
-            throw new GATInvocationException(e.getMessage());
+            throw new GATInvocationException(e.getMessage(), e);
         }
         try {
             task.waitFor();
         } catch (InterruptedException e) {
-            throw new GATInvocationException(e.getMessage());
+            throw new GATInvocationException(e.getMessage(), e);
         }
         if (!task.isCompleted()) {
             throw new GATInvocationException(
