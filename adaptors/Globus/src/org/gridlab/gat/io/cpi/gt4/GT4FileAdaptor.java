@@ -103,7 +103,8 @@ abstract public class GT4FileAdaptor extends FileCpi {
         } else if (prov.equals("gsiftp")) {
             if (location.isCompatible("file") && location.refersToLocalHost()) {
                 localFile = true;
-            } else if (!location.isCompatible("gridftp")) {
+            } else if (!location.isCompatible("gridftp")
+                    && ! location.isCompatible("gsiftp")) {
                 throw new AdaptorNotApplicableException(
                         "cannot handle this URI: " + location);
             }
