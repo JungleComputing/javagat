@@ -44,6 +44,8 @@ public class LocalJob extends JobCpi {
     private int processID;
     
     private final String triggerDirectory;
+    
+    private final String jobName;
 
     protected LocalJob(GATContext gatContext, JobDescription description,
             Sandbox sandbox) {
@@ -57,6 +59,8 @@ public class LocalJob extends JobCpi {
         registerMetric("getJobStatus", statusMetricDefinition);
         triggerDirectory = description.getSoftwareDescription().getStringAttribute(
                 "triggerDirectory", null);
+        jobName = description.getSoftwareDescription().getStringAttribute(
+                "job.name", null);
     }
     
     // Wait for the creation of a special file (by the application).
@@ -65,9 +69,12 @@ public class LocalJob extends JobCpi {
         if (triggerDirectory == null) {
             return;
         }
+        if (jobName == null) {
+            return;
+        }
         File file;
         try {
-            file = GAT.createFile(new URI(triggerDirectory + "/" + getJobID() + "." + state.toString()));
+            file = GAT.createFile(new URI(triggerDirectory + "/" + jobName + "." + state.toString()));
         } catch (Throwable e) {
             throw new GATInvocationException("Could not wait for trigger base", e);
         }
