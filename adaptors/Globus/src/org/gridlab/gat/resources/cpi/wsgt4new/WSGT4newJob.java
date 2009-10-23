@@ -153,7 +153,9 @@ public class WSGT4newJob extends JobCpi implements GramJobListener, Runnable {
         if (newState == null) {
             // happens if the job is already done ...
             doStateChange(StateEnumeration.Done);
-        } else {
+        } else if (jobState != null && 
+                !(jobState.equals(StateEnumeration.Done)
+                        || jobState.equals(StateEnumeration.Failed))) {
             doStateChange(newState);
             ScheduledExecutor.schedule(this, 5000, 5000);
         }
@@ -312,11 +314,14 @@ public class WSGT4newJob extends JobCpi implements GramJobListener, Runnable {
         // but there. It does no harm to test ...
         if (jobState != null && 
                 (jobState.equals(StateEnumeration.Done)
-                || jobState.equals(StateEnumeration.Failed)
-                || jobState.equals(newState))) {
+                || jobState.equals(StateEnumeration.Failed))) {
             ScheduledExecutor.remove(this);
             return;
+        } else if (jobState != null && jobState.equals(newState)) {
+        	return;
         }
+        
+        
         jobState = newState;
 
         boolean holding = job.isHolding();
