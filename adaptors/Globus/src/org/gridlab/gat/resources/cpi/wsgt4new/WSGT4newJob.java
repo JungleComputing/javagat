@@ -61,7 +61,7 @@ public class WSGT4newJob extends JobCpi implements GramJobListener, Runnable {
                 MetricDefinition.DISCRETE, "JobState", null, null, returnDef);
         registerMetric("getJobStatus", statusMetricDefinition);
         statusMetric = statusMetricDefinition.createMetric(null);
-        ScheduledExecutor.schedule(this, 1000, 1000);
+        ScheduledExecutor.schedule(this, 5000, 5000);
     }
     
     /**
@@ -155,7 +155,7 @@ public class WSGT4newJob extends JobCpi implements GramJobListener, Runnable {
             doStateChange(StateEnumeration.Done);
         } else {
             doStateChange(newState);
-            ScheduledExecutor.schedule(this, 1000, 1000);
+            ScheduledExecutor.schedule(this, 5000, 5000);
         }
     }
 
@@ -288,7 +288,9 @@ public class WSGT4newJob extends JobCpi implements GramJobListener, Runnable {
 
     public void stateChanged(GramJob job) {
         // don't let the upcall and the poller interfere, so synchronize the
-        // state stuff
+        // state stuff.
+        // If we get here, we apparently get upcalls, so maybe we can cancel
+        // the poller here? TODO!
         synchronized (this) {
             /* Commented out to avoid recursive calls to doStateChange --Ceriel
              * (suggestion to do this was by Brian Carpenter).

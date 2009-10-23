@@ -398,9 +398,6 @@ public class WSGT4newResourceBrokerAdaptor extends ResourceBrokerCpi {
         // inform the wsgt4 job of which gram job is related to it.
         wsgt4job.setGramJob(gramjob);
 
-        // wsgt4 job object listens to the gram job
-        gramjob.addListener(wsgt4job);
-
         String factoryType = (String) gatContext.getPreferences().get(
                 "wsgt4new.factory.type");
         if (factoryType == null || factoryType.equals("")) {
@@ -429,6 +426,8 @@ public class WSGT4newResourceBrokerAdaptor extends ResourceBrokerCpi {
         }
 
         try {
+            // second parameter is batch, should be set to false.
+            // third parameter is limitedDelegation, currently hardcoded to false.
             gramjob.submit(endpoint, false, false, submissionID);            
         } catch (Throwable e) {
             wsgt4job.finishJob();
@@ -446,10 +445,11 @@ public class WSGT4newResourceBrokerAdaptor extends ResourceBrokerCpi {
         }
         
         wsgt4job.setSubmissionID(handle);
-
-        // second parameter is batch, should be set to false.
-        // third parameter is limitedDelegation, currently hardcoded to false
-        return job;
+        
+        // wsgt4 job object listens to the gram job
+        gramjob.addListener(wsgt4job);
+        
+         return job;
     }
 
     private String createAddressString() {
