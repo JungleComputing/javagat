@@ -56,7 +56,7 @@ public class GT42Job extends JobCpi implements GramJobListener, Runnable {
                 MetricDefinition.DISCRETE, "JobState", null, null, returnDef);
         registerMetric("getJobStatus", statusMetricDefinition);
         statusMetric = statusMetricDefinition.createMetric(null);
-        ScheduledExecutor.schedule(this, 1000, 1000);
+        ScheduledExecutor.schedule(this, 5000, 5000);
     }
 
     /**
@@ -151,7 +151,7 @@ public class GT42Job extends JobCpi implements GramJobListener, Runnable {
             doStateChange(StateEnumeration.Done);
         } else {
             doStateChange(newState);
-            ScheduledExecutor.schedule(this, 1000, 1000);
+            ScheduledExecutor.schedule(this, 5000, 5000);
         }
     }
 

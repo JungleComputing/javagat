@@ -416,9 +416,6 @@ public class GT42ResourceBrokerAdaptor extends ResourceBrokerCpi {
         // inform the wsgt4 job of which gram job is related to it.
         gt42job.setGramJob(gramjob);
 
-        // wsgt4 job object listens to the gram job
-        gramjob.addListener(gt42job);
-
         String factoryType = (String) gatContext.getPreferences().get(
                 "GT42.factory.type");
         if (factoryType == null || factoryType.equals("")) {
@@ -451,6 +448,8 @@ public class GT42ResourceBrokerAdaptor extends ResourceBrokerCpi {
             logger.debug("submission id for job: " + submissionID);
         }
         try {
+            // second parameter is batch, should be set to false.
+            // third parameter is limitedDelegation, currently hardcoded to false
             gramjob.submit(endpoint, false, false, submissionID);
         } catch (Exception e) {
             gt42job.finishJob();
@@ -468,8 +467,10 @@ public class GT42ResourceBrokerAdaptor extends ResourceBrokerCpi {
         }
 
         gt42job.setSubmissionID(handle);
-        // second parameter is batch, should be set to false.
-        // third parameter is limitedDelegation, currently hardcoded to false
+
+        // wsgt4 job object listens to the gram job
+        gramjob.addListener(gt42job);
+
         return job;
     }
 
