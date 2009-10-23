@@ -13,7 +13,6 @@ import org.gridlab.gat.GATObjectCreationException;
 import org.gridlab.gat.URI;
 import org.gridlab.gat.engine.util.CommandRunner;
 import org.gridlab.gat.engine.util.StreamForwarder;
-import org.gridlab.gat.io.File;
 import org.gridlab.gat.monitoring.Metric;
 import org.gridlab.gat.monitoring.MetricListener;
 import org.gridlab.gat.resources.AbstractJobDescription;
@@ -171,6 +170,7 @@ public class LocalResourceBrokerAdaptor extends ResourceBrokerCpi {
         }
 
         localJob.setState(Job.JobState.PRE_STAGING);
+        localJob.waitForTrigger(Job.JobState.PRE_STAGING);
         sandbox.prestage();
 
         String exe;
@@ -215,23 +215,13 @@ public class LocalResourceBrokerAdaptor extends ResourceBrokerCpi {
         Process p = null;
         localJob.setSubmissionTime();
         localJob.setState(Job.JobState.SCHEDULED);
-        URI waitForFile = (URI) gatContext.getPreferences().get("local.waitForFile");
-        if (waitForFile != null) {
-            try {
-                File wf = GAT.createFile(waitForFile);
-                while (! wf.exists()) {
-                    Thread.sleep(1000);
-                }
-            } catch(Throwable e) {
-                logger.error("Error while waiting for file", e);
-            }
-        }
         try {
+            localJob.setState(Job.JobState.RUNNING);
+            localJob.waitForTrigger(Job.JobState.RUNNING);
             localJob.setStartTime();
             p = builder.start();
             localJob.setProcess(p);
-            localJob.setState(Job.JobState.RUNNING);
-        } catch (IOException e) {
+                    } catch (IOException e) {
             throw new CommandNotFoundException("LocalResourceBrokerAdaptor", e);
         }
 

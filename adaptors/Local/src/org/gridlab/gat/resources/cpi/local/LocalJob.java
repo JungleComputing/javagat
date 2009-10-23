@@ -12,9 +12,12 @@ import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.gridlab.gat.GAT;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
+import org.gridlab.gat.URI;
 import org.gridlab.gat.engine.GATEngine;
+import org.gridlab.gat.io.File;
 import org.gridlab.gat.monitoring.Metric;
 import org.gridlab.gat.monitoring.MetricDefinition;
 import org.gridlab.gat.monitoring.MetricEvent;
@@ -39,6 +42,8 @@ public class LocalJob extends JobCpi {
     private Metric statusMetric;
 
     private int processID;
+    
+    private final String triggerDirectory;
 
     protected LocalJob(GATContext gatContext, JobDescription description,
             Sandbox sandbox) {
@@ -50,6 +55,36 @@ public class LocalJob extends JobCpi {
                 MetricDefinition.DISCRETE, "JobState", null, null, returnDef);
         statusMetric = statusMetricDefinition.createMetric(null);
         registerMetric("getJobStatus", statusMetricDefinition);
+        triggerDirectory = description.getSoftwareDescription().getStringAttribute(
+                "triggerDirectory", null);
+    }
+    
+    // Wait for the creation of a special file (by the application).
+    void waitForTrigger(JobState state) throws GATInvocationException {
+        
+        if (triggerDirectory == null) {
+            return;
+        }
+        File file;
+        try {
+            file = GAT.createFile(new URI(triggerDirectory + "/" + getJobID() + "." + state.toString()));
+        } catch (Throwable e) {
+            throw new GATInvocationException("Could not wait for trigger base", e);
+        }
+
+        long interval = 1000;
+        
+        while (! file.exists()) {
+            try {
+                Thread.sleep(interval);
+            } catch(InterruptedException e) {
+                // ignored
+            }
+            if (interval < 32000) {
+                interval += interval;
+            }
+        }
+        file.delete();
     }
 
     protected void setProcess(Process p) {
@@ -152,6 +187,7 @@ public class LocalJob extends JobCpi {
         }
         if (!skipPostStage) {
             setState(JobState.POST_STAGING);
+            waitForTrigger(JobState.POST_STAGING);
             sandbox.retrieveAndCleanup(this);
         }
         try {

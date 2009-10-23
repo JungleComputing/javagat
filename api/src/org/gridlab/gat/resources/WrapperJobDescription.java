@@ -18,22 +18,19 @@ import org.gridlab.gat.resources.Job.JobState;
 public class WrapperJobDescription extends JobDescription {
 
     /**
-     * An instance of this enumeration indicates the staging type of the
+     * An instance of this enumeration indicates the scheduled type of the
      * {@link WrapperJobDescription}.
      * 
      * @author rkemp
      */
-    public enum StagingType {
+    public enum ScheduledType {
         /**
-         * Sequential staging. At any given moment there will be max one of the
-         * wrapped jobs be busy staging. Post staging and pre staging can happen
-         * together.
+         * Wrapped jobs are scheduled by the application, by creating files that
+         * trigger the next phase, be it pre-staging, running, or post-staging.
          */
-        SEQUENTIAL,
+        SCHEDULED,
         /**
-         * Parallel staging. All wrapped jobs can stage in parallel. This might
-         * overload the host where the data is located, if many wrapped jobs
-         * stage in parallel.
+         * Parallel run. No special scheduling.
          */
         PARALLEL
     }
@@ -156,21 +153,15 @@ public class WrapperJobDescription extends JobDescription {
 
     private static final long serialVersionUID = -3241293801064308501L;
 
-    private static int preStageIdentifier = 0;
+    private static int wrapperJobCount = 0;
 
-    private static String preStageDoneDirectory;
+    private static String triggerDirectory;
 
     private List<WrappedJobInfo> jobInfos = new ArrayList<WrappedJobInfo>();
 
-    private StagingType prestagingType;
+    private ScheduledType scheduledType;
 
     private int level;
-
-    private int maxConcurrentJobs;
-
-    private int jobsUntilPreStageDone;
-    
-    private boolean jobsWaitUntilPrestageDone;
     
     private int wrapperJobIndex;
 
@@ -185,7 +176,7 @@ public class WrapperJobDescription extends JobDescription {
     public WrapperJobDescription(WrapperSoftwareDescription softwareDescription) {
         super(softwareDescription);
         synchronized(WrapperJobDescription.class) {
-            wrapperJobIndex = preStageIdentifier++;
+            wrapperJobIndex = wrapperJobCount++;
         }
     }
 
@@ -223,24 +214,13 @@ public class WrapperJobDescription extends JobDescription {
     }
 
     /**
-     * Sets the {@link StagingType} for the pre staging phase.
+     * Sets the {@link ScheduledType} for the pre staging phase.
      * 
-     * @param stagingType
-     *                a {@link StagingType}
+     * @param scheduledType
+     *                a {@link ScheduledType}
      */
-    public void setPreStagingType(StagingType stagingType) {
-        this.prestagingType = stagingType;
-    }
-
-    /**
-     * Sets the number of jobs that should be finished pre staging before the
-     * wrapper will write it's prestage done file.
-     * 
-     * @param jobsUntilPreStageDone
-     *                the number of jobs that should be finished pre staging
-     */
-    public void setNumberOfJobsUntilPreStageDone(int jobsUntilPreStageDone) {
-        this.jobsUntilPreStageDone = jobsUntilPreStageDone;
+    public void setScheduledType(ScheduledType scheduledType) {
+        this.scheduledType = scheduledType;
     }
 
     /**
@@ -304,12 +284,12 @@ public class WrapperJobDescription extends JobDescription {
     }
 
     /**
-     * Returns the {@link StagingType} for the {@link WrapperJob}.
+     * Returns the {@link ScheduledType} for the {@link WrapperJob}.
      * 
-     * @return the {@link StagingType} for the {@link WrapperJob}.
+     * @return the {@link ScheduledType} for the {@link WrapperJob}.
      */
-    public StagingType getPrestagingType() {
-        return prestagingType;
+    public ScheduledType getScheduledType() {
+        return scheduledType;
     }
 
     /**
@@ -342,21 +322,16 @@ public class WrapperJobDescription extends JobDescription {
             out.writeInt(level);
             out.writeInt(wrapperJobIndex);
             synchronized (WrapperJobDescription.class) {
-                if (preStageDoneDirectory == null) {
-                    preStageDoneDirectory = System.getProperty("user.dir");
+                if (triggerDirectory == null) {
+                    triggerDirectory = System.getProperty("user.dir");
                 }
             }
-            out.writeObject(preStageDoneDirectory);
-            out.writeInt(jobsUntilPreStageDone <= 0 ? jobInfos.size()
-                    : jobsUntilPreStageDone);
-            out.writeInt(maxConcurrentJobs <= 0 ? jobInfos.size()
-                    : maxConcurrentJobs);
-            out.writeObject(prestagingType);
+            out.writeObject(triggerDirectory);
+            out.writeObject(scheduledType);
             for (WrappedJobInfo jobInfo : jobInfos) {
                 jobInfo.generateJobStateFileName();
             }
             out.writeObject(jobInfos);
-            out.writeBoolean(jobsWaitUntilPrestageDone);
             out.close();
         } catch (Exception e) {
             throw new GATObjectCreationException("Failed to create wrapper info file", e);
@@ -383,62 +358,31 @@ public class WrapperJobDescription extends JobDescription {
         }
         return null;
     }
-
+    
     /**
-     * Returns the maximum number of concurrent {@link Job}s that runs at a
-     * given moment in the Wrapper.
-     * 
-     * @return the maximum number of concurrent {@link Job}s that runs at a
-     *         given moment in the Wrapper.
-     */
-    public int getMaxConcurrentJobs() {
-        return maxConcurrentJobs;
-    }
-
-    /**
-     * Sets the maximum number of concurrent {@link Job}s that runs at a given
-     * moment in the Wrapper.
-     * 
-     * @param maxConcurrentJobs
-     *                the maximum number of concurrent {@link Job}s that runs
-     *                at a given moment in the Wrapper.
-     */
-    public void setMaxConcurrentJobs(int maxConcurrentJobs) {
-        this.maxConcurrentJobs = maxConcurrentJobs;
-    }
-
-    /**
-     * Sets the (local) directory where the pre stage done files will be written
+     * Sets the (local) directory where the trigger files will be written
      * to. If the directory doesn't exists, it will be created. If it does
-     * exists, but it isn't a directory an Exception will be thrown. This method
-     * can only be invoked once. The user has to delete the pre stage done files
+     * exist, but it isn't a directory an Exception will be thrown. This method
+     * can only be invoked once. The user has to create the trigger files
      * itself.
      * 
      * @param location
      * @throws Exception
      */
-    public static void setPreStageDoneDirectory(String location)
+    public static void setTriggerDirectory(String location)
             throws Exception {
         synchronized (WrapperJobDescription.class) {
-            if (preStageDoneDirectory != null) {
-                throw new Exception("pre stage done directory already set!");
+            if (triggerDirectory != null) {
+                throw new Exception("triggerdirectory already set!");
             }
-            java.io.File preStageDoneDirectoryFile = new java.io.File(location);
-            if (!preStageDoneDirectoryFile.exists()) {
-                preStageDoneDirectoryFile.mkdirs();
-            } else if (!preStageDoneDirectoryFile.isDirectory()) {
+            java.io.File triggerDirectoryFile = new java.io.File(location);
+            if (!triggerDirectoryFile.exists()) {
+                triggerDirectoryFile.mkdirs();
+            } else if (!triggerDirectoryFile.isDirectory()) {
                 throw new Exception(
-                        "pre stage done directory exists, but isn't a directory");
+                        "triggerdirectory exists, but isn't a directory");
             }
-            preStageDoneDirectory = preStageDoneDirectoryFile.getPath();
+            triggerDirectory = triggerDirectoryFile.getPath();
         }
-    }
-
-    public boolean getJobsWaitUntilPrestageDone() {
-        return jobsWaitUntilPrestageDone;
-    }
-
-    public void setJobsWaitUntilPrestageDone(boolean jobsWaitUntilPrestageDone) {
-        this.jobsWaitUntilPrestageDone = jobsWaitUntilPrestageDone;
     }
 }

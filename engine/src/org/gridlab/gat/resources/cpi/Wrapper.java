@@ -23,8 +23,9 @@ import org.gridlab.gat.monitoring.MetricListener;
 import org.gridlab.gat.resources.AbstractJobDescription;
 import org.gridlab.gat.resources.JobDescription;
 import org.gridlab.gat.resources.ResourceBroker;
+import org.gridlab.gat.resources.SoftwareDescription;
 import org.gridlab.gat.resources.Job.JobState;
-import org.gridlab.gat.resources.WrapperJobDescription.StagingType;
+import org.gridlab.gat.resources.WrapperJobDescription.ScheduledType;
 import org.gridlab.gat.resources.WrapperJobDescription.WrappedJobInfo;
 
 /**
@@ -62,29 +63,15 @@ public class Wrapper {
 
     private URI initiator;
 
-    private int jobsSubmitted = 0;
-
-    private int jobsDone = 0;
-    
-    private int jobsEnabled = 0;
-
-    private int jobsPreStaging = 0;
-
-    private int jobsDonePreStaging = 0;
-
-    private int maxConcurrentJobs;
-
-    private StagingType stagingType;
+    private ScheduledType scheduledType;
 
     private int numberJobs;
 
-    private int preStageIdentifier;
+    private int wrapperId;
 
-    private int numberPreStageJobs;
-
-    private String preStageDoneDirectory;
+    private int jobsDone;
     
-    private boolean jobsWaitUntilPrestageDone;
+    private String triggerDirectory;
 
     /**
      * Starts a wrapper with given arguments
@@ -111,23 +98,18 @@ public class Wrapper {
                 "wrapper.info"));
         this.initiator = (URI) in.readObject();
         int level = in.readInt();
-        preStageIdentifier = in.readInt();
-        preStageDoneDirectory = (String) in.readObject();
-        numberPreStageJobs = in.readInt();        
-        maxConcurrentJobs = in.readInt();        
-        stagingType = (StagingType) in.readObject();       
+        wrapperId = in.readInt();
+        triggerDirectory = (String) in.readObject();      
+        scheduledType = (ScheduledType) in.readObject();       
         List<WrappedJobInfo> infos = (List<WrappedJobInfo>) in.readObject();
-        jobsWaitUntilPrestageDone = in.readBoolean();
         in.close();
         
         if (logger.isDebugEnabled()) {
             logger.debug("original host:  " + initiator);
             logger.debug("debug level:    " + level);
-            logger.debug("pre stage id:   " + preStageIdentifier);
-            logger.debug("pre stage done dir: " + preStageDoneDirectory);
-            logger.debug("#pre stage jobs:" + numberPreStageJobs);
-            logger.debug("max concurrent: " + maxConcurrentJobs);
-            logger.debug("staging type:   " + stagingType);
+            logger.debug("wrapperId:   " + wrapperId);
+            logger.debug("triggerdir: " + triggerDirectory);
+            logger.debug("staging type:   " + scheduledType);
             logger.debug("# wrapped jobs:" + infos.size());
             for (WrappedJobInfo info : infos) {
                 logger.debug("  * " + info.getBrokerURI() + "\t"
@@ -135,52 +117,22 @@ public class Wrapper {
                         + "\t" + info.getJobDescription());
             }
         }
+        
         this.numberJobs = infos.size();
 
-        if (preStageIdentifier > 0) {
-            // Wait for previous wrapper job
-            File prestageWaitFile = GAT.createFile(rewriteURI(new URI(
-                    preStageDoneDirectory + "/" + preStageIdentifier),
-                    initiator));
-            while (!prestageWaitFile.exists()) {
-                if (logger.isDebugEnabled()) {
-                    logger.debug("waiting for '" + prestageWaitFile
-                        + "' to appear...");
-                }
-                Thread.sleep(1000);
-            }
-        }
+        String triggerDirURI = rewriteURI(new URI(triggerDirectory), initiator).toString();
         for (int i = 0; i < infos.size(); i++) {
             WrappedJobInfo info = infos.get(i);
-            new Submitter(info, i).start();
-        }
-        if (jobsWaitUntilPrestageDone) {
-            File prestageWaitFile = GAT.createFile(rewriteURI(new URI(
-                    preStageDoneDirectory + "/" + (preStageIdentifier+1)),
-                    initiator));
-            while (!prestageWaitFile.exists()) {
-                if (logger.isDebugEnabled()) {
-                    logger.debug("waiting for '" + prestageWaitFile
-                        + "' to appear...");
-                }
-                Thread.sleep(1000);
+            if (scheduledType == ScheduledType.SCHEDULED) {
+                SoftwareDescription sd 
+                        = info.getJobDescription().getSoftwareDescription();
+                sd.addAttribute("triggerDirectory", triggerDirURI);
             }
+            new Submitter(info).start();
         }
+
         synchronized (this) {
             while (jobsDone < numberJobs) {
-                if (jobsWaitUntilPrestageDone
-                        && jobsEnabled - jobsDone < maxConcurrentJobs
-                        && jobsEnabled < numberJobs) {
-                    for (int i = jobsEnabled - jobsDone; i < maxConcurrentJobs; i++) {
-                        File enableFile = GAT.createFile(
-                                rewriteURI(new URI(preStageDoneDirectory + "/"
-                                        + preStageIdentifier + "." + jobsEnabled),
-                                    initiator));
-                        enableFile.createNewFile();
-                        enableFile.deleteOnExit();                   
-                        jobsEnabled++;
-                    }
-                }
                 if (logger.isDebugEnabled()) {
                     logger.debug("waiting for " + (numberJobs - jobsDone)
                         + " jobs");
@@ -191,10 +143,6 @@ public class Wrapper {
         if (logger.isDebugEnabled()) {
             logger.debug("DONE!");
         }
-        // Sleep a bit to give other wrappers time to detect my generated
-        // prestageWaitFile, which is deleted on my exit.
-        Thread.sleep(5000);
-        System.exit(0);
     }
 
     private AbstractJobDescription modify(AbstractJobDescription description,
@@ -282,6 +230,12 @@ public class Wrapper {
 
     private URI rewriteURI(URI uri, URI origin) {
         try {
+            if (uri.isAbsolute()) {
+                String auth = uri.getAuthority();
+                if (auth != null && ! "".equals(auth)) {
+                    return uri;
+                }
+            }
             if (uri.hasAbsolutePath()) {
                 uri = origin.setPath(uri.getPath());
             } else {
@@ -296,55 +250,23 @@ public class Wrapper {
     class Submitter extends Thread {
 
         private WrappedJobInfo info;
-        private final int jobno;
-
-        public Submitter(WrappedJobInfo info, int jobno) {
+        
+        public Submitter(WrappedJobInfo info) {
             this.info = info;
-            this.jobno = jobno;
             setDaemon(false);
             setName(info.getJobStateFileName());
         }
 
         @SuppressWarnings("null")
         public void run() {
-            // if already max jobs running -> wait
             ResourceBroker broker = null;
             Preferences prefs = info.getPreferences();
-            if (jobsWaitUntilPrestageDone) {
-                try {
-                    prefs.put("local.waitForFile",
-                            rewriteURI(new URI(
-                                    preStageDoneDirectory + "/"
-                                    + preStageIdentifier + "." + jobno),
-                                    initiator)
-                    );
-                } catch (URISyntaxException e) {
-                    logger.error("Got Exception", e);
-                }
-            }
             try {
                 broker = GAT.createResourceBroker(prefs, info
                         .getBrokerURI());
             } catch (GATObjectCreationException e) {
                 logger.error("Got Exception", e);
                 System.exit(1);
-            }
-
-            synchronized (Wrapper.this) {
-                while (jobsPreStaging - jobsDonePreStaging > 0 
-                        && stagingType == StagingType.SEQUENTIAL) {
-                    try {
-                        Wrapper.this.wait();
-                    } catch (InterruptedException e) {
-                        logger.error("Got Exception", e);
-                    }
-                }
-                jobsSubmitted++;
-                jobsPreStaging++;
-                if (logger.isDebugEnabled()) {
-                    logger.debug("jobs running now: "
-                        + (jobsSubmitted - jobsDone));
-                }
             }
 
             try {
@@ -361,8 +283,6 @@ public class Wrapper {
     class JobListener implements MetricListener {
 
         private String filename;
-
-        private JobState lastState = JobState.INITIAL;
 
         public JobListener(String filename) {
             this.filename = filename;
@@ -416,32 +336,7 @@ public class Wrapper {
                 }
                 logger.error("Got Exception", e);
             }
-            // in case the previous state was pre staging and the current state
-            // is something different (e.g. this job finished its pre staging).
-            if (event.getValue() != JobState.PRE_STAGING
-                    && lastState == JobState.PRE_STAGING) {
-                synchronized (Wrapper.this) {
-                    jobsDonePreStaging++;
-                    Wrapper.this.notifyAll();
-                }
-                if (jobsDonePreStaging == numberPreStageJobs) {
-                    try {
-                        File preStageDoneFile = GAT
-                                .createFile(rewriteURI(new URI(
-                                        preStageDoneDirectory + "/"
-                                                + (preStageIdentifier + 1)),
-                                        initiator));
-                        preStageDoneFile.createNewFile();
-                        preStageDoneFile.deleteOnExit();
-                    } catch (Throwable e) {
-                        logger.error("Done pre staging: failed to create file at '"
-                                        + initiator
-                                        + " ("
-                                        + (preStageIdentifier + 1)
-                                        + ") ': ", e);
-                    }
-                }
-            }
+
             // if the metric indicates that a job has stopped, increment the
             // jobsDone.
             if (event.getValue() == JobState.STOPPED
@@ -451,7 +346,6 @@ public class Wrapper {
                     Wrapper.this.notifyAll();
                 }
             }
-            lastState = (JobState) event.getValue();
         }
     }
 }

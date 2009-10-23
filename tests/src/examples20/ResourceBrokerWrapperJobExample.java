@@ -10,7 +10,6 @@ import org.gridlab.gat.resources.WrapperJob;
 import org.gridlab.gat.resources.WrapperJobDescription;
 import org.gridlab.gat.resources.WrapperSoftwareDescription;
 import org.gridlab.gat.resources.Job.JobState;
-import org.gridlab.gat.resources.WrapperJobDescription.StagingType;
 
 public class ResourceBrokerWrapperJobExample {
 
@@ -23,14 +22,6 @@ public class ResourceBrokerWrapperJobExample {
     }
 
     public void start() throws Exception {
-        // this is a static method that can only be invoke once, before any
-        // wrapper job has been submitted. It sets the directory on the
-        // submission machine where the (administrative) files, indicating that
-        // a particular wrapper is done pre staging, are put. In this case we
-        // want to put the files in a directory called 'donedir' relative to the
-        // current working directory
-        WrapperJobDescription.setPreStageDoneDirectory("donedir");
-
         // First we create a wrapper software description. It describes the
         // executable that's used for the wrapper. We only need to specify the
         // executable, and possibly the stdout and stderr location. The other
@@ -46,13 +37,7 @@ public class ResourceBrokerWrapperJobExample {
                 "any://fs0.das3.cs.vu.nl/JavaGatVersions/JavaGAT-2.0-rc2"));
 
         // Now we create a job description out of the software description.
-        // We'll set the max number of concurrent jobs to 4 and do the same for
-        // the number of jobs, after which a pre stage done file is produced.
-        // The wrapper internally uses sequential prestaging.
         WrapperJobDescription wjd = new WrapperJobDescription(wsd);
-        wjd.setMaxConcurrentJobs(4);
-        wjd.setNumberOfJobsUntilPreStageDone(4);
-        wjd.setPreStagingType(StagingType.SEQUENTIAL);
 
         // Now we're going to construct 30 wrapped jobs. We add these wrapped
         // jobs to the wrapper job.
