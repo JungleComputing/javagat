@@ -177,6 +177,10 @@ abstract public class GT4FileAdaptor extends FileCpi {
             GridFile gf = null;
             try {
                 gf = resource.getGridFile(location.getPath());
+                if (gf == null) {
+                    // Apparently, this happens for non-existing files.
+                    return false;
+                }
                 return gf.userCanRead();
             } catch (FileNotFoundException e) {
                 throw new GATInvocationException(e.getMessage());
@@ -202,6 +206,10 @@ abstract public class GT4FileAdaptor extends FileCpi {
                 throw new GATInvocationException();
             } catch (GeneralException e) {
                 throw new GATInvocationException(e.getMessage());
+            }
+            if (gf == null) {
+                // Apparently happens for non-existing files.
+                return false;
             }
             return gf.userCanWrite();
         } else {
@@ -376,6 +384,9 @@ abstract public class GT4FileAdaptor extends FileCpi {
             Date d;
             try {
                 gf = resource.getGridFile(location.getPath());
+                if (gf == null) {
+                    return 0;
+                }
                 d = sdf.parse(gf.getLastModified());
                 if (logger.isInfoEnabled()) {
                     logger.info("Last modified: " + gf.getLastModified());
@@ -403,6 +414,10 @@ abstract public class GT4FileAdaptor extends FileCpi {
             GridFile gf = null;
             try {
                 gf = resource.getGridFile(location.getPath());
+                if (gf == null) {
+                    // Apparently can happen for non-existing files.
+                    return 0;
+                }
                 return gf.getSize();
             } catch (FileNotFoundException e) {
                 throw new GATInvocationException(e.getMessage());
