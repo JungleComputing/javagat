@@ -221,6 +221,12 @@ public class GT4GridFTPFileAdaptor extends GT4FileAdaptor {
      * 
      */
     public void copy(URI dest) throws GATInvocationException {
+        
+        if (! exists()) {
+            throw new GATInvocationException(
+                    "the source file does not exist, location = " + location);
+        }
+        
         // determinate dest is a directory, and pass the filename if it is,
         // otherwise it will fail
         if (determineIsDirectory()) {
