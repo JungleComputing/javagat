@@ -314,6 +314,7 @@ public class WSGT4newJob extends JobCpi implements GramJobListener, Runnable {
                 (jobState.equals(StateEnumeration.Done)
                 || jobState.equals(StateEnumeration.Failed)
                 || jobState.equals(newState))) {
+            ScheduledExecutor.remove(this);
             return;
         }
         jobState = newState;
@@ -345,11 +346,13 @@ public class WSGT4newJob extends JobCpi implements GramJobListener, Runnable {
             // setState(STOPPED);
             // setStopTime();
         } else if (jobState.equals(StateEnumeration.Done)) {
+            ScheduledExecutor.remove(this);
             setState(JobState.POST_STAGING);
             sandbox.retrieveAndCleanup(this);
             setState(JobState.STOPPED);
             setStopTime();
         } else if (jobState.equals(StateEnumeration.Failed)) {
+            ScheduledExecutor.remove(this);
             setState(JobState.POST_STAGING);
             sandbox.retrieveAndCleanup(this);
             setState(JobState.SUBMISSION_ERROR);
