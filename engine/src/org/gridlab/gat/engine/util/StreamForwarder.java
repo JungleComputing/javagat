@@ -81,6 +81,7 @@ public class StreamForwarder implements Runnable {
             StringWriter writer = new StringWriter();
             e.printStackTrace(new PrintWriter(writer));
             logger.debug("stacktrace: \n" + writer.toString());
+            ScheduledExecutor.remove(this);
         }
     }
 
