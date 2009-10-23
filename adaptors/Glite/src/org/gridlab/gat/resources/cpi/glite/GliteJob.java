@@ -371,7 +371,7 @@ public class GliteJob extends JobCpi {
     }
 
     // jobSubmit via API
-    private String submitJob() throws GATInvocationException {
+    private String submitJob() throws GATInvocationException, GATObjectCreationException {
 
         LOGGER.debug("called submitJob");
 
@@ -403,8 +403,9 @@ public class GliteJob extends JobCpi {
 
             serviceStub.jobStart(jobIdStruct.getId());
         } catch (IOException e) {
-            LOGGER.error("Problem while copying input files", e);
-            throw new GATInvocationException(
+            LOGGER.error("Problem while copying input files to " + this.wmsURL,
+                    e);
+            throw new GATObjectCreationException(
                     GliteResourceBrokerAdaptor.GLITE_RESOURCE_BROKER_ADAPTOR, e);
         } catch (GeneralSecurityException e) {
             LOGGER.error("security problem while copying input files", e);
