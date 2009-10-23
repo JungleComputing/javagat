@@ -24,6 +24,7 @@ public class FileAdaptorTest {
     public static void main(String[] args) {
         FileAdaptorTest a = new FileAdaptorTest();
         a.test(args[0], args[1]).print();
+        GAT.end();
     }
 
     public AdaptorTestResult test(String adaptor, String host) {

@@ -25,6 +25,7 @@ public class FileInputStreamAdaptorTest {
     public static void main(String[] args) {
         FileInputStreamAdaptorTest a = new FileInputStreamAdaptorTest();
         a.test(args[0], args[1]).print();
+        GAT.end();
     }
 
     public AdaptorTestResult test(String adaptor, String host) {

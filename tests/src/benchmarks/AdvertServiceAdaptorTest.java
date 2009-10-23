@@ -21,6 +21,7 @@ public class AdvertServiceAdaptorTest {
     public static void main(String[] args) {
         AdvertServiceAdaptorTest a = new AdvertServiceAdaptorTest();
         a.test(args[0], args[1]).print();
+        GAT.end();
     }
 
     public AdaptorTestResult test(String adaptor, String host) {
