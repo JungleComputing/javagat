@@ -88,7 +88,7 @@ public class LocalJob extends JobCpi {
             } catch(InterruptedException e) {
                 // ignored
             }
-            if (interval < 32000) {
+            if (interval < 8000) {
                 interval += interval;
             }
         }
