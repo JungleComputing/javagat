@@ -74,7 +74,8 @@ public class LocalJob extends JobCpi {
         }
         File file;
         try {
-            file = GAT.createFile(new URI(triggerDirectory + "/" + jobName + "." + state.toString()));
+            file = GAT.createFile(new URI(triggerDirectory + "/" + jobName + "."
+                    + state.toString().substring(0,3)));
         } catch (Throwable e) {
             throw new GATInvocationException("Could not wait for trigger base", e);
         }
