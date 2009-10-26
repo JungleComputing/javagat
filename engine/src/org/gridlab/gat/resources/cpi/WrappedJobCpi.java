@@ -84,7 +84,7 @@ public class WrappedJobCpi extends JobCpi implements Runnable {
         if (logger.isInfoEnabled()) {
             logger.info("WrappedJob firing metric " + state);
         }
-        MetricEvent v = new MetricEvent(this, state.toString(), statusMetric,
+        MetricEvent v = new MetricEvent(this, state, statusMetric,
                 System.currentTimeMillis());
         fireMetric(v);
     }
