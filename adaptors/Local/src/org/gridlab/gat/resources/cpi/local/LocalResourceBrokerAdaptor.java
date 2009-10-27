@@ -1,6 +1,8 @@
 package org.gridlab.gat.resources.cpi.local;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.Map;
 
 import org.slf4j.Logger;
@@ -230,11 +232,12 @@ public class LocalResourceBrokerAdaptor extends ResourceBrokerCpi {
 
             try {
                 if (sd.getStderr() != null) {
+                    OutputStream err = GAT.createFileOutputStream(sd.getStderr());
                     // to file
-                    new StreamForwarder(p.getErrorStream(), GAT
-                            .createFileOutputStream(sd.getStderr()), sd
+                    new StreamForwarder(p.getErrorStream(), err, sd
                             .getExecutable()
                             + " [stderr]");
+                    localJob.setErrorStream(err);
                 } else {
                     // or throw it away
                     new StreamForwarder(p.getErrorStream(), null, sd
@@ -252,10 +255,11 @@ public class LocalResourceBrokerAdaptor extends ResourceBrokerCpi {
             try {
                 if (sd.getStdout() != null) {
                     // to file
-                    new StreamForwarder(p.getInputStream(), GAT
-                            .createFileOutputStream(sd.getStdout()), sd
+                    OutputStream out = GAT.createFileOutputStream(sd.getStdout());
+                    new StreamForwarder(p.getInputStream(), out, sd
                             .getExecutable()
                             + " [stdout]");
+                    localJob.setOutputStream(out);
                 } else {
                     // or throw it away
                     new StreamForwarder(p.getInputStream(), null, sd
@@ -271,8 +275,9 @@ public class LocalResourceBrokerAdaptor extends ResourceBrokerCpi {
         if (!sd.streamingStdinEnabled() && sd.getStdin() != null) {
             // forward the stdin from file
             try {
-                new StreamForwarder(GAT.createFileInputStream(sd.getStdin()), p
-                        .getOutputStream(), sd.getExecutable() + " [stdin]");
+                InputStream in = GAT.createFileInputStream(sd.getStdin());
+                new StreamForwarder(in, p.getOutputStream(),
+                        sd.getExecutable() + " [stdin]");
             } catch (GATObjectCreationException e) {
                 throw new GATInvocationException(
                         "Unable to create file input stream for stdin!", e);

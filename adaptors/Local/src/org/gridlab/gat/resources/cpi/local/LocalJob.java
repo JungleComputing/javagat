@@ -46,7 +46,11 @@ public class LocalJob extends JobCpi {
     private final String triggerDirectory;
     
     private final String jobName;
-
+    
+    private OutputStream outputStreamFile;
+    
+    private OutputStream errorStreamFile;
+    
     protected LocalJob(GATContext gatContext, JobDescription description,
             Sandbox sandbox) {
         super(gatContext, description, sandbox);
@@ -61,6 +65,14 @@ public class LocalJob extends JobCpi {
                 "triggerDirectory", null);
         jobName = description.getSoftwareDescription().getStringAttribute(
                 "job.name", null);
+    }
+    
+    void setErrorStream(OutputStream err) {
+        errorStreamFile = err;
+    }
+        
+    void setOutputStream(OutputStream out) {
+        outputStreamFile = out;
     }
     
     // Wait for the creation of a special file (by the application).
@@ -205,7 +217,21 @@ public class LocalJob extends JobCpi {
         } catch (IOException e) {
             // ignore
         }
-        p.destroy();
+        if (outputStreamFile != null) {
+            try {
+                outputStreamFile.close();
+            } catch(Throwable e) {
+                // ignored
+            }
+        }
+        if (errorStreamFile != null) {
+            try {
+                errorStreamFile.close();
+            } catch(Throwable e) {
+                // ignored
+            }
+        }
+        p.destroy(); 
         setStopTime();
         setState(JobState.STOPPED);
         finished();
