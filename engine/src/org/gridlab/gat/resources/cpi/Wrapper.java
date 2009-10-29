@@ -123,7 +123,7 @@ public class Wrapper {
         String triggerDirURI = rewriteURI(new URI(triggerDirectory), initiator).toString();
         for (int i = 0; i < infos.size(); i++) {
             WrappedJobInfo info = infos.get(i);
-            if (scheduledType == ScheduledType.SCHEDULED) {
+            if (scheduledType == ScheduledType.COORDINATED) {
                 SoftwareDescription sd 
                         = info.getJobDescription().getSoftwareDescription();
                 sd.addAttribute("triggerDirectory", triggerDirURI);

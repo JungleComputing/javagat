@@ -25,10 +25,10 @@ public class WrapperJobDescription extends JobDescription {
      */
     public enum ScheduledType {
         /**
-         * Wrapped jobs are scheduled by the application, by creating files that
+         * Wrapped jobs are coordinated by the application, by creating files that
          * trigger the next phase, be it pre-staging, running, or post-staging.
          */
-        SCHEDULED,
+        COORDINATED,
         /**
          * Parallel run. No special scheduling.
          */
