@@ -224,9 +224,16 @@ public abstract class JobCpi extends MonitorableCpi implements Job {
         }
     }
 
+    public static void end() {
+        new JobShutdownHook().run();
+    }
+
     static class JobShutdownHook extends Thread {
         public void run() {
             synchronized (JobCpi.class) {
+                if (shutdownInProgress) {
+                    return;
+                }
                 shutdownInProgress = true;
             }
             while (true) {

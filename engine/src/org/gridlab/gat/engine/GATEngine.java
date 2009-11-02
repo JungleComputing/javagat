@@ -38,6 +38,7 @@ import org.gridlab.gat.Preferences;
 import org.gridlab.gat.advert.Advertisable;
 import org.gridlab.gat.advert.cpi.SerializedBase;
 import org.gridlab.gat.engine.util.ScheduledExecutor;
+import org.gridlab.gat.resources.cpi.JobCpi;
 
 /**
  * @author rob
@@ -845,6 +846,8 @@ public class GATEngine {
                 }
             }
         }
+
+        JobCpi.end();
         
         ScheduledExecutor.end();
 
