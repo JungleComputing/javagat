@@ -293,9 +293,13 @@ public class GlobusJob extends JobCpi implements GramJobListener,
     }
 
     private synchronized void waitForJobCompletion() {
+        ScheduledExecutor.remove(this);
         while (state != JobState.STOPPED && state != JobState.SUBMISSION_ERROR) {
             try {
-                wait();
+                run();
+                if (state != JobState.STOPPED && state != JobState.SUBMISSION_ERROR) {
+                    wait(5000);
+                }
             } catch (InterruptedException e) {
                 // ignore
             }
