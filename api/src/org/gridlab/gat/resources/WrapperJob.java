@@ -28,16 +28,4 @@ public interface WrapperJob extends Job {
      */
     public Job getJob(JobDescription description) throws GATInvocationException;
 
-    /**
-     * Returns a boolean indicating whether all wrapped jobs are finished pre
-     * staging. This is a convenience method and iterates over all wrapped jobs
-     * to see if they're not in state INITIAL or PRE_STAGING.
-     * 
-     * @return a boolean indicating whether all wrapped jobs are finished pre
-     *         staging.
-     * @throws GATInvocationException
-     */
-    public boolean wrappedJobsFinishedPreStaging()
-            throws GATInvocationException;
-
 }

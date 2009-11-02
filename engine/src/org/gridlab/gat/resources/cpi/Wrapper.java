@@ -312,7 +312,14 @@ public class Wrapper {
                 out.close();
                 File remoteFile = GAT.createFile(dest);
                 File localFile = GAT.createFile(tmp.getPath());
+                int count = 0;
                 while (remoteFile.exists()) {
+                    if (count > 30) {
+                        // Something wrong with submitter???
+                        // Just continue.
+                        break;
+                    }
+                    count++;
                     try {
                         Thread.sleep(1000);
                     } catch (InterruptedException e) {

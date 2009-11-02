@@ -73,16 +73,6 @@ public class WrapperJobCpi extends MonitorableCpi implements WrapperJob, MetricL
         return wrappedJobs.get(description);
     }
 
-    public boolean wrappedJobsFinishedPreStaging() {
-        for (WrappedJobCpi job : wrappedJobs.values()) {
-            JobState state = job.getState();
-            if (state == JobState.PRE_STAGING || state == JobState.INITIAL) {
-                return false;
-            }
-        }
-        return true;
-    }
-
     /**
      * @deprecated
      */
