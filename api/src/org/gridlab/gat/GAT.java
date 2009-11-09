@@ -311,6 +311,9 @@ public class GAT {
     public static org.gridlab.gat.io.File createFile(GATContext gatContext,
             Preferences preferences, URI location)
             throws GATObjectCreationException {
+        if (gatContext == null) {
+            throw new NullPointerException("null specified for gatContext");
+        }
         Object[] array = { location };
         FileInterface f = (FileInterface) getAdaptorProxy("File",
                 FileInterface.class, gatContext, preferences,
@@ -403,6 +406,11 @@ public class GAT {
     public static LogicalFile createLogicalFile(GATContext gatContext,
             Preferences preferences, String name, int mode)
             throws GATObjectCreationException {
+        
+        if (gatContext == null) {
+            throw new NullPointerException("null specified for gatContext");
+        }
+        
         Integer modeTmp = new Integer(mode);
         Object[] array = { name, modeTmp };
 
@@ -488,6 +496,9 @@ public class GAT {
     public static FileInputStream createFileInputStream(GATContext gatContext,
             Preferences preferences, URI location)
             throws GATObjectCreationException {
+        if (gatContext == null) {
+            throw new NullPointerException("null specified for gatContext");
+        }
         Object[] array = { location };
         FileInputStreamInterface res = (FileInputStreamInterface) getAdaptorProxy(
                 "FileInputStream", FileInputStreamInterface.class, gatContext,
@@ -1249,6 +1260,9 @@ public class GAT {
     public static FileOutputStream createFileOutputStream(
             GATContext gatContext, Preferences preferences, URI location,
             boolean append) throws GATObjectCreationException {
+        if (gatContext == null) {
+            throw new NullPointerException("null specified for gatContext");
+        }
         Object[] array = { location, new Boolean(append) };
         FileOutputStreamInterface res = (FileOutputStreamInterface) getAdaptorProxy(
                 "FileOutputStream", FileOutputStreamInterface.class,
@@ -1273,6 +1287,9 @@ public class GAT {
      */
     public static Endpoint createEndpoint(GATContext gatContext,
             Preferences preferences) throws GATObjectCreationException {
+        if (gatContext == null) {
+            throw new NullPointerException("null specified for gatContext");
+        }
         return (Endpoint) getAdaptorProxy("Endpoint", Endpoint.class,
                 gatContext, preferences, null, null);
     }
@@ -1335,6 +1352,9 @@ public class GAT {
      */
     public static AdvertService createAdvertService(GATContext gatContext,
             Preferences preferences) throws GATObjectCreationException {
+        if (gatContext == null) {
+            throw new NullPointerException("null specified for gatContext");
+        }
         return (AdvertService) getAdaptorProxy("AdvertService",
                 AdvertService.class, gatContext, preferences, null, null);
     }
@@ -1441,6 +1461,9 @@ public class GAT {
      */
     public static Monitorable createMonitorable(GATContext gatContext,
             Preferences preferences) throws GATObjectCreationException {
+        if (gatContext == null) {
+            throw new NullPointerException("null specified for gatContext");
+        }
         return (Monitorable) getAdaptorProxy("Monitorable", Monitorable.class,
                 gatContext, preferences, null, null);
     }
@@ -1502,6 +1525,9 @@ public class GAT {
      */
     public static SteeringManager createSteeringManager(GATContext gatContext,
             Preferences preferences) throws GATObjectCreationException {
+        if (gatContext == null) {
+            throw new NullPointerException("null specified for gatContext");
+        }
         return (SteeringManager) getAdaptorProxy("SteeringManager",
                 SteeringManager.class, gatContext, preferences, null, null);
     }
@@ -1706,6 +1732,9 @@ public class GAT {
     public static RandomAccessFile createRandomAccessFile(
             GATContext gatContext, Preferences preferences, URI location,
             String mode) throws GATObjectCreationException {
+        if (gatContext == null) {
+            throw new NullPointerException("null specified for gatContext");
+        }
         Object[] array = { location, mode };
 
         RandomAccessFileInterface f = (RandomAccessFileInterface) getAdaptorProxy(
@@ -1779,6 +1808,9 @@ public class GAT {
     public static ResourceBroker createResourceBroker(GATContext gatContext,
             Preferences preferences, URI brokerURI)
             throws GATObjectCreationException {
+        if (gatContext == null) {
+            throw new NullPointerException("null specified for gatContext");
+        }
         Object[] array = { brokerURI };
         return (ResourceBroker) getAdaptorProxy("ResourceBroker",
                 ResourceBroker.class, gatContext, preferences,
