@@ -230,7 +230,7 @@ public class WSGT4newResourceBrokerAdaptor extends ResourceBrokerCpi {
             rsl += "</stdout>";
         } else if(wsgt4Stdout != null && wsgt4Stdout.length() > 0) {
             rsl += "<stdout>";
-            rsl += "${GLOBUS_USER_HOME}/" + wsgt4Stdout;
+            rsl += wsgt4Stdout;
             rsl += "</stdout>";        	
         }
 
@@ -241,7 +241,7 @@ public class WSGT4newResourceBrokerAdaptor extends ResourceBrokerCpi {
             rsl += "</stderr>";
         } else if(wsgt4Stderr != null && wsgt4Stderr.length() > 0) {
             rsl += "<stderr>";
-            rsl += "${GLOBUS_USER_HOME}/" + wsgt4Stderr;
+            rsl += wsgt4Stderr;
             rsl += "</stderr>";        	
         }
 
@@ -252,7 +252,7 @@ public class WSGT4newResourceBrokerAdaptor extends ResourceBrokerCpi {
             rsl += "</stdin>";
         } else if(wsgt4Stdin != null && wsgt4Stdin.length() > 0) {
             rsl += "<stdin>";
-            rsl += "${GLOBUS_USER_HOME}/" + wsgt4Stdin;
+            rsl += wsgt4Stdin;
             rsl += "</stdin>";        	
         }
 
