@@ -157,6 +157,11 @@ public class WSGT4newResourceBrokerAdaptor extends ResourceBrokerCpi {
 
         String scheduler = (String) sd.getAttributes().get("machine.scheduler"); 
         String wsa =  (String) sd.getAttributes().get("machine.wsa");
+        String wsgt4Stdout = (String) sd.getAttributes().get("gt4new.stdout");
+        String wsgt4Stderr = (String) sd.getAttributes().get("gt4new.stderr");
+        String wsgt4Stdin = (String) sd.getAttributes().get("gt4new.stdin");
+        String wsgt4Directory = (String) sd.getAttributes().get("gt4new.directory");
+        
         if (null != scheduler && null != wsa) {
             rsl += "<factoryEndpoint ";
             rsl += "xmlns:gram=\"http://www.globus.org/namespaces/2004/10/gram/job\" ";
@@ -205,8 +210,13 @@ public class WSGT4newResourceBrokerAdaptor extends ResourceBrokerCpi {
         rsl += "<count>";
         rsl += description.getProcessCount();
         rsl += "</count>";
+        
+        	
         rsl += "<directory>";
-        if (sandbox.getSandbox().startsWith(File.separator)) {
+
+        if (null != wsgt4Directory) {
+        	rsl += wsgt4Directory;
+        } else if (sandbox.getSandbox().startsWith(File.separator)) {
             rsl += sandbox.getSandbox();
         } else {
             rsl += "${GLOBUS_USER_HOME}/" + sandbox.getSandbox();
@@ -218,6 +228,10 @@ public class WSGT4newResourceBrokerAdaptor extends ResourceBrokerCpi {
             rsl += "<stdout>";
             rsl += sandbox.getRelativeStdout().getPath();
             rsl += "</stdout>";
+        } else if(wsgt4Stdout != null && wsgt4Stdout.length() > 0) {
+            rsl += "<stdout>";
+            rsl += "${GLOBUS_USER_HOME}/" + wsgt4Stdout;
+            rsl += "</stdout>";        	
         }
 
         File stderr = sd.getStderr();
@@ -225,6 +239,10 @@ public class WSGT4newResourceBrokerAdaptor extends ResourceBrokerCpi {
             rsl += "<stderr>";
             rsl += sandbox.getRelativeStderr().getPath();
             rsl += "</stderr>";
+        } else if(wsgt4Stderr != null && wsgt4Stderr.length() > 0) {
+            rsl += "<stderr>";
+            rsl += "${GLOBUS_USER_HOME}/" + wsgt4Stderr;
+            rsl += "</stderr>";        	
         }
 
         File stdin = sd.getStdin();
@@ -232,6 +250,10 @@ public class WSGT4newResourceBrokerAdaptor extends ResourceBrokerCpi {
             rsl += "<stdin>";
             rsl += sandbox.getRelativeStdin().getPath();
             rsl += "</stdin>";
+        } else if(wsgt4Stdin != null && wsgt4Stdin.length() > 0) {
+            rsl += "<stdin>";
+            rsl += "${GLOBUS_USER_HOME}/" + wsgt4Stdin;
+            rsl += "</stdin>";        	
         }
 
         if (useGramSandbox) {
@@ -338,13 +360,22 @@ public class WSGT4newResourceBrokerAdaptor extends ResourceBrokerCpi {
         }
 
         // test whether gram sandbox should be used
-        String s = (String) gatContext.getPreferences().get(
-                "wsgt4new.sandbox.gram");
-        boolean useGramSandbox = (s != null && s.equalsIgnoreCase("true"));
+        String sandboxType = (String) gatContext.getPreferences().get("wsgt4new.sandbox.type");
+
+        boolean useGramSandbox = false;
+        boolean useGatSandbox = false;
+        
+        if (sandboxType != null && sandboxType.equals("gram")) {
+        	useGramSandbox = true;
+        } else if (sandboxType != null && sandboxType.equals("gat")) {
+        	useGatSandbox = true;
+        }
+                    
+        
         Sandbox sandbox = null;
-        if (!useGramSandbox) {
+        if (useGatSandbox) {
             sandbox = new Sandbox(gatContext, description, host, null, true,
-                    true, true, true);
+                    true, false, false);
         } else {
             if (logger.isDebugEnabled()) {
                 logger.debug("using gram sandbox");
