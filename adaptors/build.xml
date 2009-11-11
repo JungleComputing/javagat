@@ -5,22 +5,22 @@
 
 	<target name="build" description="build all tested adaptors">
 		<ant dir="shared" />
-		<ant dir="CommandlineSsh" />
+		<!-- ant dir="CommandlineSsh" /-->
 		<ant dir="Globus" />
 		<!-- No, not as long as it does not work ...
 		<ant dir="GT42" />
 		-->
-		<ant dir="Gridsam" />
+		<!-- ant dir="Gridsam" / -->
 		<ant dir="Local" />
-		<ant dir="Mercury" />
-		<ant dir="SftpTrilead" />
-		<ant dir="Sge" />
-		<ant dir="SshTrilead" />
-		<ant dir="Zorilla" />
+		<!-- ant dir="Mercury" / -->
+		<!-- ant dir="SftpTrilead" / -->
+		<!-- ant dir="Sge" / -->
+		<!-- ant dir="SshTrilead" / -->
+		<!-- ant dir="Zorilla" / -->
 		<ant dir="Generic" />
-		<ant dir="Glite" />
-		<ant dir="Unicore" />
-		<ant dir="Koala" />
+		<!-- ant dir="Glite" / -->
+		<!-- ant dir="Unicore" / -->
+		<!-- ant dir="Koala" / -->
 	</target>
 
 	<target name="build-with-contributed" description="build all tested and contributed adaptors" depends="build">
