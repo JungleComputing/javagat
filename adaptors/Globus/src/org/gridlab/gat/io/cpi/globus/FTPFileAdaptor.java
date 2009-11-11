@@ -130,7 +130,7 @@ public class FTPFileAdaptor extends GlobusFileAdaptor {
         }
     }
 
-    protected void destroyClient(FTPClient c, URI hostURI,
+    protected void destroyClient(GATContext context, FTPClient c, URI hostURI,
             Preferences preferences) {
         try {
             c.close(true);

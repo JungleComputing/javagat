@@ -10,6 +10,8 @@ import org.globus.ftp.GridFTPSession;
 import org.globus.ftp.exception.ServerException;
 import org.globus.gsi.gssapi.GlobusGSSCredentialImpl;
 import org.gridlab.gat.AdaptorNotApplicableException;
+import org.gridlab.gat.CouldNotInitializeCredentialException;
+import org.gridlab.gat.CredentialExpiredException;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.GATObjectCreationException;
@@ -18,6 +20,8 @@ import org.gridlab.gat.Preferences;
 import org.gridlab.gat.URI;
 import org.gridlab.gat.security.globus.GlobusSecurityUtils;
 import org.ietf.jgss.GSSCredential;
+import org.ietf.jgss.GSSException;
+import org.ietf.jgss.GSSName;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -129,7 +133,7 @@ public class GridFTPFileAdaptor extends GlobusFileAdaptor {
 	 */
 	@Override
 	public boolean mkdirs() throws GATInvocationException {
-		System.out.println(Thread.currentThread().getName() + " mkdirs()");
+		logger.debug(Thread.currentThread().getName() + " mkdirs()");
 
 		boolean retVal;
 		URI src = fixURI(toURI());
@@ -150,7 +154,7 @@ public class GridFTPFileAdaptor extends GlobusFileAdaptor {
 	 */
 	@Override
 	public void copy(URI dest) throws GATInvocationException {
-		System.out.println(Thread.currentThread().getName() + " copy()");
+		logger.debug(Thread.currentThread().getName() + " copy(URI dest)");
 
 		URI src = fixURI(toURI());
 		ReentrantLock srcLock = null;
@@ -228,20 +232,25 @@ public class GridFTPFileAdaptor extends GlobusFileAdaptor {
 	 */
 	protected FTPClient createClient(GATContext gatContext, Preferences additionalPreferences, URI hostURI)
 			throws GATInvocationException, InvalidUsernameOrPasswordException {
-		System.out.println(Thread.currentThread().getName() + " createClient");
+		logger.debug(Thread.currentThread().getName() + " createClient");
 		return doWorkCreateClient(gatContext, additionalPreferences, hostURI);
 	}
 
-	private static GridFTPClient getFromCache(String key) {
+	private static GridFTPClient getFromCache(String key) {		
+		logger.debug("getFromCache: " + key);
 		GridFTPClient client = null;
 		if (clienttable.containsKey(key)) {
-			System.out.println(Thread.currentThread() + " getFromCache!");
+			logger.debug(Thread.currentThread() + " getFromCache=true");
 			client = (GridFTPClient) clienttable.remove(key);
+		} else {
+			logger.debug(Thread.currentThread() + " getFromCache=false");
 		}
 		return client;
 	}
 
 	private static boolean putInCache(String key, FTPClient c) {
+		logger.debug("putInCache: " + key);
+		
 		if (!clienttable.containsKey(key)) {
 			clienttable.put(key, c);
 			return true;
@@ -257,6 +266,7 @@ public class GridFTPFileAdaptor extends GlobusFileAdaptor {
 			GSSCredential credential = GlobusSecurityUtils.getGlobusCredential(gatContext, "gridftp", hostURI,
 					DEFAULT_GRIDFTP_PORT);
 
+			
 			if (logger.isDebugEnabled()) {
 				logger.debug("createClient: got credential: \n"
 						+ (credential == null ? "NULL" : ((GlobusGSSCredentialImpl) credential).getGlobusCredential()
@@ -271,11 +281,10 @@ public class GridFTPFileAdaptor extends GlobusFileAdaptor {
 			}
 
 			GridFTPClient client = null;
-			// String key = getClientKey(hostURI, gatContext.getPreferences());
-			String key = hostURI.getHost();
 
-			if (USE_CLIENT_CACHING) {
-				client = getFromCache(key);
+			if (USE_CLIENT_CACHING) {				
+				String cacheKey = getCacheKey(hostURI, credential.getName().toString());
+				client = getFromCache(cacheKey);
 				if (client != null) {
 					try {
 						// test if the client is still alive
@@ -305,6 +314,21 @@ public class GridFTPFileAdaptor extends GlobusFileAdaptor {
 		}
 	}
 
+	
+	/**
+	 * The key of the caching table is build up from the hostUri and the User-DN-Name. 
+	 * 
+	 * @param hostURI the {@link URI} of the host to connect to
+	 * @param credential the user credential
+	 * @return the key for the connection cache
+	 * @throws GSSException 
+	 */
+	private static String getCacheKey(URI hostURI, String userName) throws GSSException {
+		//TODO maybe the connection type (active or passive) has to be included in the Key to!
+		return hostURI.getHost() + "_" + userName;
+	}
+	
+	
 	/**
 	 * Creates a new instance of {@link GridFTPClient}.
 	 * 
@@ -379,22 +403,31 @@ public class GridFTPFileAdaptor extends GlobusFileAdaptor {
 		return client;
 	}
 
-	protected void destroyClient(FTPClient c, URI hostURI, Preferences preferences) {
-		System.out.println(Thread.currentThread().getName() + " destroyClient");
-		doWorkDestroyClient(c, hostURI, preferences);
+	protected void destroyClient(GATContext context, FTPClient c, URI hostURI, Preferences preferences) throws CouldNotInitializeCredentialException, CredentialExpiredException, InvalidUsernameOrPasswordException {
+		logger.debug(Thread.currentThread().getName() + " destroyClient");
+		doWorkDestroyClient(context, c, hostURI, preferences);
 	}
 
-	protected static void doWorkDestroyClient(FTPClient c, URI hostURI, Preferences preferences) {
-		// String key = getClientKey(hostURI, preferences);
-		String key = hostURI.getHost();
+	protected static void doWorkDestroyClient(GATContext context, FTPClient c, URI hostURI, Preferences preferences) throws CouldNotInitializeCredentialException, CredentialExpiredException, InvalidUsernameOrPasswordException {
+		GATContext gatContext = (GATContext) context.clone();
+		gatContext.addPreferences(preferences);
+		GSSCredential credential = GlobusSecurityUtils.getGlobusCredential(gatContext, "gridftp", hostURI,
+				DEFAULT_GRIDFTP_PORT);
+		
+		String cacheKey = null;
 
-		if (!USE_CLIENT_CACHING || !putInCache(key, c)) {
+		try {
+			cacheKey = getCacheKey(hostURI, credential.getName().toString());
+		} catch (GSSException e1) {
+			logger.error("Cannot obtain credential to create cache key.", e1);
+		}		
+		
+		if (!USE_CLIENT_CACHING || null == cacheKey  || !putInCache(cacheKey, c)) {
 			try {
 				if (logger.isDebugEnabled()) {
-					logger.debug("closing gridftp client");
+					logger.debug(Thread.currentThread() + " close FTPClient!");
 				}
 				c.close(true);
-				System.out.println(Thread.currentThread() + " close FTPClient!");
 			} catch (Exception e) {
 				if (logger.isDebugEnabled()) {
 					logger.debug("doWorkDestroyClient, closing client, got exception (ignoring): " + e);

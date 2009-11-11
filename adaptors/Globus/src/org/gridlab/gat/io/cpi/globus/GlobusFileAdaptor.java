@@ -25,6 +25,8 @@ import org.globus.ftp.exception.ClientException;
 import org.globus.ftp.exception.FTPException;
 import org.globus.ftp.exception.ServerException;
 import org.globus.ftp.vanilla.Reply;
+import org.gridlab.gat.CouldNotInitializeCredentialException;
+import org.gridlab.gat.CredentialExpiredException;
 import org.gridlab.gat.GAT;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
@@ -153,9 +155,19 @@ public abstract class GlobusFileAdaptor extends FileCpi {
      * Destroy a client that was created with a createClient call. This might,
      * for instance, put the client back in a cache.
      */
-    protected abstract void destroyClient(FTPClient c, URI hostURI,
-            Preferences preferences);
+    protected void destroyClient(FTPClient c, URI hostURI,
+            Preferences preferences) throws CouldNotInitializeCredentialException, CredentialExpiredException, InvalidUsernameOrPasswordException {
+    	destroyClient(gatContext, c , hostURI, preferences);
+    }
 
+    /**
+     * Destroy a client that was created with a createClient call. This might,
+     * for instance, put the client back in a cache.
+     */
+    protected abstract void destroyClient(GATContext context, FTPClient c, URI hostURI,
+            Preferences preferences) throws CouldNotInitializeCredentialException, CredentialExpiredException, InvalidUsernameOrPasswordException ;
+    	
+    
     /*
      * (non-Javadoc)
      * 

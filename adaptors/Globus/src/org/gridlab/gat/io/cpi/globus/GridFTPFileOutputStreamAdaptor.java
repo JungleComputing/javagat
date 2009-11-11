@@ -71,7 +71,7 @@ public class GridFTPFileOutputStreamAdaptor extends
 
     public void close() throws GATInvocationException {
         super.close();
-        GridFTPFileAdaptor.doWorkDestroyClient(c, location, gatContext
+        GridFTPFileAdaptor.doWorkDestroyClient(gatContext, c, location, gatContext
                 .getPreferences());
     }
 }
