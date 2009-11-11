@@ -173,7 +173,10 @@ public class PostStagedFileSet {
                 if (!(files[i].isStdout() && !postStageStdout || files[i]
                         .isStderr()
                         && !postStageStderr)) {
-                    files[i].poststage();
+                	if (files[i].gatContext != null) {
+                		files[i].poststage();
+                	}
+                    
                 }
             } catch (Throwable e) {
                 exceptions.add("resource broker cpi", e);
