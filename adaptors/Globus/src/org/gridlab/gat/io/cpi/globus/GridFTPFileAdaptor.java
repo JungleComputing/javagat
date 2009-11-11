@@ -2,7 +2,6 @@ package org.gridlab.gat.io.cpi.globus;
 
 import java.util.Enumeration;
 import java.util.Hashtable;
-import java.util.concurrent.Semaphore;
 
 import org.globus.ftp.DataChannelAuthentication;
 import org.globus.ftp.FTPClient;
@@ -22,6 +21,8 @@ import org.ietf.jgss.GSSCredential;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import edu.emory.mathcs.backport.java.util.concurrent.locks.ReentrantLock;
+
 @SuppressWarnings("serial")
 public class GridFTPFileAdaptor extends GlobusFileAdaptor {
 
@@ -37,7 +38,7 @@ public class GridFTPFileAdaptor extends GlobusFileAdaptor {
 
 	private static Hashtable<String, FTPClient> clienttable = new Hashtable<String, FTPClient>();
 
-	private static Hashtable<String, Semaphore> semaphoretable = new Hashtable<String, Semaphore>();
+	private static Hashtable<String, ReentrantLock> lockTable = new Hashtable<String, ReentrantLock>();
 
 	/**
 	 * Constructs a LocalFileAdaptor instance which corresponds to the physical
@@ -122,73 +123,103 @@ public class GridFTPFileAdaptor extends GlobusFileAdaptor {
 		// c.setType(GridFTPSession.TYPE_IMAGE); //transfertype
 		// c.setMode(GridFTPSession.MODE_EBLOCK); //transfermode
 	}
-	
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.gridlab.gat.io.File#copy(java.net.URI)
-     */
-    public void copy(URI dest) throws GATInvocationException {
+
+	/**
+	 * @see GlobusFileAdaptor#mkdirs
+	 */
+	@Override
+	public boolean mkdirs() throws GATInvocationException {
+		System.out.println(Thread.currentThread().getName() + " mkdirs()");
+
+		boolean retVal;
+		URI src = fixURI(toURI());
+
+		// try to get the lock for this host
+		ReentrantLock lock = getHostLock(src);
+		lock.lock();
+
+		retVal = super.mkdirs();
+
+		// release the lock for this host
+		lock.unlock();
+		return retVal;
+	}
+
+	/**
+	 * @see GlobusFileAdaptor#copy(URI)
+	 */
+	@Override
+	public void copy(URI dest) throws GATInvocationException {
 		System.out.println(Thread.currentThread().getName() + " copy()");
 
-		URI src = fixURI(toURI());		
-		
-		// acquire Semaphore for Source
-		String sourceHost = src.getHost();
-		Semaphore semaphoreSrc;
-		
-		synchronized(GridFTPFileAdaptor.class) {
-			semaphoreSrc = semaphoretable.get(sourceHost);
-			
-			if (semaphoreSrc == null) {
-				semaphoreSrc = new Semaphore(1, true);
-				semaphoretable.put(sourceHost, semaphoreSrc);
-			}
-		}
-		
-		try {
-			semaphoreSrc.acquire();
-			System.out.println(Thread.currentThread().getName() + " src acquire");
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+		URI src = fixURI(toURI());
+		ReentrantLock srcLock = null;
+		ReentrantLock destLock = null;
 
-		// acquire Semaphore for Destination
-		String destHost = src.getHost();
-		Semaphore semaphoreDest = null;
-		
-		if (sourceHost.equals(destHost) == false) {
-			
-			synchronized(GridFTPFileAdaptor.class) {
-				semaphoreDest = semaphoretable.get(destHost);
-	
-				if (semaphoreDest == null) {
-					semaphoreDest = new Semaphore(1, true);
-					semaphoretable.put(destHost, semaphoreDest);
+		// try to obtain the locks for both hosts
+		boolean srcCanLock = false;
+		boolean destCanLock = false;
+
+		boolean copyDone = false;
+
+		// Retry this operation every second
+		while (copyDone == false) {
+			try {
+				synchronized (GridFTPFileAdaptor.class) {
+					srcLock = getHostLock(src);
+					destLock = getHostLock(dest);
+
+					srcCanLock = srcLock.tryLock();
+					destCanLock = srcLock.tryLock();
+				}
+			} finally {
+				// we cannot obtain both locks
+				if (!(srcCanLock && destCanLock)) {
+					if (srcCanLock) {
+						srcLock.unlock();
+					}
+
+					if (destCanLock) {
+						destLock.unlock();
+					}
+
+					try {
+						Thread.sleep(1000);
+					} catch (InterruptedException e) {
+						e.printStackTrace();
+					}
+				} else {
+					try {
+						super.copy(dest);
+						copyDone = true;
+					} finally {
+						srcLock.unlock();
+						destLock.unlock();
+					}
 				}
 			}
-			
-			try {
-				semaphoreDest.acquire();
-				System.out.println(Thread.currentThread().getName() + " dest acquire");
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
+		}
+	}
+
+	/**
+	 * Gets the {@link ReentrantLock} to a given host.
+	 * 
+	 * @return the monitor object
+	 * @param uri the uri of the host
+	 */
+	private static synchronized ReentrantLock getHostLock(URI uri) {
+		final String host = uri.getHost();
+		ReentrantLock lock;
+
+		lock = lockTable.get(host);
+
+		if (lock == null) {
+			lock = new ReentrantLock(true);
+			lockTable.put(host, lock);
 		}
 
-		super.copyThirdParty(src, dest);
-		
-		if (null != semaphoreSrc) {
-			semaphoreSrc.release();
-			System.out.println(Thread.currentThread().getName() + " semaphore src release");
-		}
-		
-		if (null != semaphoreDest) {
-			semaphoreDest.release();
-			System.out.println(Thread.currentThread().getName() + " semaphore dest release");			
-		}    	
-    }
-	
+		return lock;
+	}
 
 	/**
 	 * Create an FTP Client.
@@ -199,13 +230,6 @@ public class GridFTPFileAdaptor extends GlobusFileAdaptor {
 			throws GATInvocationException, InvalidUsernameOrPasswordException {
 		System.out.println(Thread.currentThread().getName() + " createClient");
 		return doWorkCreateClient(gatContext, additionalPreferences, hostURI);
-	}
-
-	private static String getClientKey(URI hostURI, Preferences preferences) {
-		return hostURI.resolveHost() + ":" + hostURI.getPort(DEFAULT_GRIDFTP_PORT) + preferences; // include
-		// preferences
-		// in
-		// key
 	}
 
 	private static GridFTPClient getFromCache(String key) {
@@ -247,9 +271,9 @@ public class GridFTPFileAdaptor extends GlobusFileAdaptor {
 			}
 
 			GridFTPClient client = null;
-			//String key = getClientKey(hostURI, gatContext.getPreferences());
+			// String key = getClientKey(hostURI, gatContext.getPreferences());
 			String key = hostURI.getHost();
-			
+
 			if (USE_CLIENT_CACHING) {
 				client = getFromCache(key);
 				if (client != null) {
@@ -361,7 +385,7 @@ public class GridFTPFileAdaptor extends GlobusFileAdaptor {
 	}
 
 	protected static void doWorkDestroyClient(FTPClient c, URI hostURI, Preferences preferences) {
-		//String key = getClientKey(hostURI, preferences);
+		// String key = getClientKey(hostURI, preferences);
 		String key = hostURI.getHost();
 
 		if (!USE_CLIENT_CACHING || !putInCache(key, c)) {
@@ -370,7 +394,7 @@ public class GridFTPFileAdaptor extends GlobusFileAdaptor {
 					logger.debug("closing gridftp client");
 				}
 				c.close(true);
-				System.out.println(Thread.currentThread() +  " close FTPClient!");
+				System.out.println(Thread.currentThread() + " close FTPClient!");
 			} catch (Exception e) {
 				if (logger.isDebugEnabled()) {
 					logger.debug("doWorkDestroyClient, closing client, got exception (ignoring): " + e);
