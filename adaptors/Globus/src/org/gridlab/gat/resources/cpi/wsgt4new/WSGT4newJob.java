@@ -19,7 +19,6 @@ import org.gridlab.gat.InvalidUsernameOrPasswordException;
 import org.gridlab.gat.URI;
 import org.gridlab.gat.advert.Advertisable;
 import org.gridlab.gat.engine.GATEngine;
-import org.gridlab.gat.engine.util.ScheduledExecutor;
 import org.gridlab.gat.monitoring.Metric;
 import org.gridlab.gat.monitoring.MetricDefinition;
 import org.gridlab.gat.monitoring.MetricEvent;
@@ -38,7 +37,7 @@ import org.ietf.jgss.GSSCredential;
  * @since 1.0
  */
 @SuppressWarnings("serial")
-public class WSGT4newJob extends JobCpi implements GramJobListener, Runnable {
+public class WSGT4newJob extends JobCpi implements GramJobListener {
 
     private MetricDefinition statusMetricDefinition;
 
@@ -61,7 +60,6 @@ public class WSGT4newJob extends JobCpi implements GramJobListener, Runnable {
                 MetricDefinition.DISCRETE, "JobState", null, null, returnDef);
         registerMetric("getJobStatus", statusMetricDefinition);
         statusMetric = statusMetricDefinition.createMetric(null);
-        ScheduledExecutor.schedule(this, 5000, 5000);
     }
     
     /**
@@ -71,7 +69,9 @@ public class WSGT4newJob extends JobCpi implements GramJobListener, Runnable {
             throws GATObjectCreationException {
         super(gatContext, sj.getJobDescription(), sj.getSandbox());
         
-        sandbox.setContext(gatContext);
+        if (sandbox != null) {
+        	sandbox.setContext(gatContext);
+        }
 
         if (System.getProperty("GLOBUS_LOCATION") == null) {
             String globusLocation = System.getProperty("gat.adaptor.path")
@@ -143,22 +143,8 @@ public class WSGT4newJob extends JobCpi implements GramJobListener, Runnable {
         job.setDelegationEnabled(true);
 
         job.addListener(this);
-        try {
-            job.refreshStatus();
-        } catch(Throwable e) {
-            logger.debug("refreshStatus gave exception: ", e);
-        }
         StateEnumeration newState = job.getState();
         logger.debug("jobState: " + newState);
-        if (newState == null) {
-            // happens if the job is already done ...
-            doStateChange(StateEnumeration.Done);
-        } else if (jobState != null && 
-                !(jobState.equals(StateEnumeration.Done)
-                        || jobState.equals(StateEnumeration.Failed))) {
-            doStateChange(newState);
-            ScheduledExecutor.schedule(this, 5000, 5000);
-        }
     }
 
     protected synchronized void setState(JobState state) {
@@ -203,7 +189,6 @@ public class WSGT4newJob extends JobCpi implements GramJobListener, Runnable {
     synchronized void finishJob() {
         // To be called when submit fails ...
         finished();
-        ScheduledExecutor.remove(this);
         if (sandbox != null) {
             try {
                 sandbox.removeSandboxDir();
@@ -220,7 +205,6 @@ public class WSGT4newJob extends JobCpi implements GramJobListener, Runnable {
                 job.cancel();
             } catch (Exception e) {
                 finished();
-                ScheduledExecutor.remove(this);
                 throw new GATInvocationException("WSGT4newJob", e);
             }
             if (state != JobState.POST_STAGING && !skipPostStage) {
@@ -233,7 +217,6 @@ public class WSGT4newJob extends JobCpi implements GramJobListener, Runnable {
             }
         }
         finished();
-        ScheduledExecutor.remove(this);
     }
 
     public synchronized int getExitStatus() throws GATInvocationException {
@@ -309,15 +292,7 @@ public class WSGT4newJob extends JobCpi implements GramJobListener, Runnable {
     }
 
     private void doStateChange(StateEnumeration newState) {
-        // Don't allow "updates" from final states.
-        // These were probably caused by the refreshStatus call in stateChanged(),
-        // but there. It does no harm to test ...
-        if (jobState != null && 
-                (jobState.equals(StateEnumeration.Done)
-                || jobState.equals(StateEnumeration.Failed))) {
-            ScheduledExecutor.remove(this);
-            return;
-        } else if (jobState != null && jobState.equals(newState)) {
+    	if (jobState != null && jobState.equals(newState)) {
         	return;
         }
         
@@ -351,15 +326,13 @@ public class WSGT4newJob extends JobCpi implements GramJobListener, Runnable {
             // setState(STOPPED);
             // setStopTime();
         } else if (jobState.equals(StateEnumeration.Done)) {
-            ScheduledExecutor.remove(this);
-            setState(JobState.POST_STAGING);
-            sandbox.retrieveAndCleanup(this);
+//            setState(JobState.POST_STAGING);
+//            sandbox.retrieveAndCleanup(this);
             setState(JobState.STOPPED);
             setStopTime();
         } else if (jobState.equals(StateEnumeration.Failed)) {
-            ScheduledExecutor.remove(this);
-            setState(JobState.POST_STAGING);
-            sandbox.retrieveAndCleanup(this);
+//            setState(JobState.POST_STAGING);
+//            sandbox.retrieveAndCleanup(this);
             setState(JobState.SUBMISSION_ERROR);
         } else if (jobState.equals(StateEnumeration.StageIn)) {
             setState(JobState.PRE_STAGING);
@@ -443,36 +416,22 @@ public class WSGT4newJob extends JobCpi implements GramJobListener, Runnable {
 
     }
 
-    private int count = 0;
-    
-    public void run() {
 
-        synchronized (this) {
-            if (submissiontime != 0) {
-                try {
-                    job.refreshStatus();
-                } catch(Throwable e) {
-                    // ignored
-                }
-
-                try {
-                    // TODO
-                    StateEnumeration newState = job.getState();
-                    logger.debug("jobState (poller): " + newState);
-                    if (newState == null) {
-                        if (count > 3) {
-                            doStateChange(StateEnumeration.Done);
-                        } else {
-                            count++;
-                        }
-                    } else {
-                        count = 0;
-                        doStateChange(newState);
-                    }
-                } catch (Exception e) {
-                    // ignore
-                }
-            }
-        }
+    @Override
+    public synchronized org.gridlab.gat.resources.Job.JobState getState() {    	    	
+    	logger.debug("Refresh status for job!");    
+    		try {
+				job.refreshStatus();				
+				StateEnumeration newState = job.getState();
+				
+				if (null != newState) {
+					doStateChange(newState);
+				}
+			} catch (Exception e) {
+				logger.error("Cannot refresh status for job!", e);
+			}
+    	return this.state;
     }
+    
+
 }

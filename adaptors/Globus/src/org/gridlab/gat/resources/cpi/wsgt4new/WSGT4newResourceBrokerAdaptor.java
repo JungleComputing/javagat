@@ -377,7 +377,9 @@ public class WSGT4newResourceBrokerAdaptor extends ResourceBrokerCpi {
             sandbox = new Sandbox(gatContext, description, host, null, true,
                     true, false, false);
         } else {
-            if (logger.isDebugEnabled()) {
+        	sandbox = new Sandbox(gatContext, description, host, null, false,
+                    false, false, false);
+        	if (logger.isDebugEnabled()) {
                 logger.debug("using gram sandbox");
             }
         }
