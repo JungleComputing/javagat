@@ -34,6 +34,8 @@ public class DefaultAdaptorOrderPolicy implements AdaptorOrderPolicy {
                 orderResourceList(adaptors.get(adaptorType));
             } else if (adaptorType.equalsIgnoreCase("advertservice")) {
             } else if (adaptorType.equalsIgnoreCase("monitorable")) {
+            } else if (adaptorType.equalsIgnoreCase("scheduler")) {
+            	orderSchedulerList(adaptors.get(adaptorType));
             } else {
                 System.err
                         .println("WARNING, unknown GAT type in DefaultAdaptorOrderPolicy");
@@ -80,6 +82,11 @@ public class DefaultAdaptorOrderPolicy implements AdaptorOrderPolicy {
         // rest in random order
     }
 
+    private void orderSchedulerList(List<Adaptor> l) {
+        int pos = 0;
+        pos = placeAdaptor(pos, "wsgt4", "scheduler", l);
+    }    
+    
     private int placeAdaptor(int position, String adaptorName, String cpiName,
             List<Adaptor> l) {
         int currentPosition = l.indexOf(getAdaptor(adaptorName, cpiName, l));

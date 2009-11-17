@@ -43,6 +43,7 @@
 				<!--<attribute name="ResourceBrokerCpi-class" value="org.gridlab.gat.resources.cpi.globus.GlobusResourceBrokerAdaptor,org.gridlab.gat.resources.cpi.gt4.GT4ResourceBrokerAdaptor,org.gridlab.gat.resources.cpi.wsgt4new.WSGT4newResourceBrokerAdaptor" />-->
 				<attribute name="ResourceBrokerCpi-class" value="org.gridlab.gat.resources.cpi.globus.GlobusResourceBrokerAdaptor,org.gridlab.gat.resources.cpi.wsgt4new.WSGT4newResourceBrokerAdaptor" />
 				<!--<attribute name="AdvertServiceCpi-class" value="org.gridlab.gat.advert.cpi.globus.GlobusAdvertServiceAdaptor" />-->
+				<attribute name="SchedulerCpi-class" value="org.gridlab.gat.scheduler.cpi.gt4.WSGT4SchedulerAdaptor" />
 			</manifest>
 		</jar>
 

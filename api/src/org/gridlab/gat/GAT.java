@@ -26,6 +26,7 @@ import org.gridlab.gat.io.RandomAccessFile;
 import org.gridlab.gat.io.RandomAccessFileInterface;
 import org.gridlab.gat.monitoring.Monitorable;
 import org.gridlab.gat.resources.ResourceBroker;
+import org.gridlab.gat.scheduler.Scheduler;
 import org.gridlab.gat.steering.SteeringManager;
 
 /**
@@ -1817,6 +1818,32 @@ public class GAT {
                 new Class[] { URI.class }, array);
     }
 
+    /**
+     * This method constructs a {@link Scheduler} instance corresponding to
+     * the passed {@link GATContext} and additional {@link Preferences}.
+     * 
+     * @param gatContext
+     *                A {@link GATContext} which will be used to scheduler
+     *                resources
+     * @param preferences
+     *                The additional {@link Preferences}
+     * @return The {@link Scheduler} object
+     * @throws GATObjectCreationException
+     *                 Thrown upon creation problems
+     */    
+    public static Scheduler createScheduler(GATContext gatContext, Preferences preferences, URI schedulerURI) 
+    	throws GATObjectCreationException {
+        if (gatContext == null) {
+            throw new IllegalArgumentException("null specified for gatContext");
+        }
+        Object[] array = { schedulerURI };
+        return (Scheduler) getAdaptorProxy("Scheduler",
+        		Scheduler.class, gatContext, preferences,
+                new Class[] { URI.class }, array);
+    	
+    }
+    
+    
     /**
      * Returns for a given type the information of the adaptors implementing
      * this type.
