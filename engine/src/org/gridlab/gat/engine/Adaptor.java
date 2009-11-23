@@ -11,7 +11,7 @@ import org.gridlab.gat.GATObjectCreationException;
 /**
  * @author rob
  */
-class Adaptor {
+public class Adaptor {
     /** The fully qualified class name of the api we implement. */
     String cpi;
 

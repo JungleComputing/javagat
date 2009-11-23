@@ -32,9 +32,11 @@ import org.gridlab.gat.URI;
 import org.gridlab.gat.monitoring.Metric;
 import org.gridlab.gat.monitoring.MetricListener;
 import org.gridlab.gat.resources.AbstractJobDescription;
+import org.gridlab.gat.resources.CoScheduleJobDescription;
 import org.gridlab.gat.resources.HardwareResource;
 import org.gridlab.gat.resources.Job;
 import org.gridlab.gat.resources.JobDescription;
+import org.gridlab.gat.resources.OrderedCoScheduleJobDescription;
 import org.gridlab.gat.resources.ResourceDescription;
 import org.gridlab.gat.resources.cpi.ResourceBrokerCpi;
 import org.gridlab.gat.security.glite.GliteSecurityUtils;
@@ -209,10 +211,19 @@ public class GliteResourceBrokerAdaptor extends ResourceBrokerCpi {
         Collections.sort(this.resourceBrokerURIs);
         for (UriAndCount uac : resourceBrokerURIs) {
             try {
-                GliteJob job = new GliteJob(gatContext,
-                        (JobDescription) jobDescription, null, uac.getURI()
-                                .toString());
-
+            	Job job = null;
+            	//Basic Job
+            	if(jobDescription instanceof JobDescription){
+            		job = new GliteJobBasic(gatContext, (JobDescription) jobDescription, uac.getURI().toString());
+            	//DAG
+            	}else if(jobDescription instanceof OrderedCoScheduleJobDescription){
+            		job = new GliteJobDAG(gatContext, (OrderedCoScheduleJobDescription) jobDescription, uac.getURI().toString());
+            	//Collection
+            	}else if(jobDescription instanceof CoScheduleJobDescription){
+            		throw new UnsupportedOperationException("Not implemented");
+            	}else{
+            		throw new GATInvocationException("This job description is not recognized by the gLite adaptor.");
+            	}
                 if (listener != null && metricDefinitionName != null) {
                     Metric metric = job.getMetricDefinitionByName(
                             metricDefinitionName).createMetric(null);

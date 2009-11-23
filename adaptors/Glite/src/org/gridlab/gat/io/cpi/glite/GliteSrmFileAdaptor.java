@@ -15,7 +15,6 @@ import org.gridlab.gat.io.attributes.FileAttributeView;
 import org.gridlab.gat.io.attributes.PosixFileAttributeView;
 import org.gridlab.gat.io.cpi.FileCpi;
 import org.gridlab.gat.io.cpi.glite.srm.SrmConnector;
-import org.gridlab.gat.resources.cpi.ResourceBrokerCpi;
 import org.gridlab.gat.security.glite.GliteSecurityUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -82,7 +81,7 @@ public class GliteSrmFileAdaptor extends FileCpi {
      * @return Properties and their default values.
      */
     public static Preferences getSupportedPreferences() {
-        Preferences preferences = ResourceBrokerCpi.getSupportedPreferences();
+        Preferences preferences = FileCpi.getSupportedPreferences();
         GliteSecurityUtils.addGliteSecurityPreferences(preferences);
         return preferences;
     }

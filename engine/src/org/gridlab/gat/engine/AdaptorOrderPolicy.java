@@ -10,6 +10,6 @@ import java.util.Map;
  * @author rob
  * 
  */
-interface AdaptorOrderPolicy {
+public interface AdaptorOrderPolicy {
     void order(Map<String, List<Adaptor>> adaptors);
 }

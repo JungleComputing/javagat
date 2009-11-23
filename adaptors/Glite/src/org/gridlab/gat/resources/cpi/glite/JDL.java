@@ -31,7 +31,7 @@ import org.gridlab.gat.GATObjectCreationException;
 import org.gridlab.gat.resources.ResourceDescription;
 import org.gridlab.gat.resources.SoftwareDescription;
 
-public class JDL {
+public class JDL implements JDLInterface{
     private static final Logger LOGGER = LoggerFactory.getLogger(JDL.class);
 
     private String jdlString;
@@ -209,6 +209,7 @@ public class JDL {
 
     private String createJDLFileContent() {
         StringBuilder builder = new StringBuilder();
+        builder.append("[\n");
         builder.append("// Auto generated JDL File\n");
         builder.append("Rank = -other.GlueCEStateEstimatedResponseTime;\n");
 
@@ -293,7 +294,7 @@ public class JDL {
                     environments.get(environments.size() - 1)).append(
                     "\"\n};\n");
         }
-
+        builder.append("];");
         return builder.toString();
 
     }

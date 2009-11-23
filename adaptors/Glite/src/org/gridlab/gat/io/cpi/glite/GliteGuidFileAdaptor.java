@@ -17,7 +17,6 @@ import org.gridlab.gat.io.cpi.FileCpi;
 import org.gridlab.gat.io.cpi.glite.lfc.LfcConnector;
 import org.gridlab.gat.io.cpi.glite.lfc.LfcUtil;
 import org.gridlab.gat.io.cpi.glite.lfc.LfcConnection.LFCReplica;
-import org.gridlab.gat.resources.cpi.ResourceBrokerCpi;
 import org.gridlab.gat.resources.cpi.glite.GliteConstants;
 import org.gridlab.gat.resources.cpi.glite.LDAPResourceFinder;
 import org.gridlab.gat.resources.cpi.glite.LDAPResourceFinder.SEInfo;
@@ -96,7 +95,7 @@ public class GliteGuidFileAdaptor extends FileCpi {
      * @return Properties and their default values.
      */
     public static Preferences getSupportedPreferences() {
-        Preferences preferences = ResourceBrokerCpi.getSupportedPreferences();
+        Preferences preferences = FileCpi.getSupportedPreferences();
         GliteSecurityUtils.addGliteSecurityPreferences(preferences);
         return preferences;
     }
