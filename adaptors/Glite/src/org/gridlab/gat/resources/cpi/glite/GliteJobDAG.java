@@ -129,7 +129,12 @@ public class GliteJobDAG extends CoScheduleJobCpi implements GliteJobInterface {
 		}
 		
 		gLiteState = jobStatus.getState().getValue();
-		state = gliteJobHelper.generateJobStateFromGLiteState(gLiteState);
+		JobState s = gliteJobHelper.generateJobStateFromGLiteState(gLiteState);
+                if (s == state) {
+                    // Don't generate event for unchanged state.
+                    return;
+                }
+                state = s;
 		
 		for (int i = 0; i < jobStatus.getStateEnterTimes().length; i++) {
 			if (jobStatus.getStateEnterTimes(i).getTime().getTimeInMillis() != 0) {

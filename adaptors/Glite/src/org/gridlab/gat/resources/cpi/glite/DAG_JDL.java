@@ -101,7 +101,7 @@ public class DAG_JDL implements JDLInterface{
         builder.append("];\n");
         builder.append("dependencies = {\n");
         for (Iterator<JobLink> iterator = jobLinks.iterator(); iterator.hasNext();) {
-        	JobLink jobLink = (JobLink) iterator.next();
+        	JobLink jobLink = iterator.next();
         	builder.append("\t{ NODE_" + jobLink.getFirstJob().hashCode() + ", NODE_" + jobLink.getSecondJob().hashCode() + "}");
         	if(iterator.hasNext()){
         		builder.append(",\n");
