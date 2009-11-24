@@ -216,6 +216,10 @@ public class GT42Job extends JobCpi implements GramJobListener, Runnable {
                 job.terminate(true, false, job.isDelegationEnabled());
                 job.unbind();
             } catch (Exception e) {
+                if (state != JobState.POST_STAGING && !skipPostStage) {
+                    sandbox.retrieveAndCleanup(this);
+                }
+                setState(JobState.SUBMISSION_ERROR);
                 finished();
                 ScheduledExecutor.remove(this);
                 throw new GATInvocationException("GT4.2 Job", e);
@@ -223,6 +227,7 @@ public class GT42Job extends JobCpi implements GramJobListener, Runnable {
             if (state != JobState.POST_STAGING && !skipPostStage) {
                 setState(JobState.POST_STAGING);
                 sandbox.retrieveAndCleanup(this);
+                setState(JobState.STOPPED);
             }
         } else {
             if (logger.isDebugEnabled()) {
