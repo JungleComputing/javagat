@@ -138,7 +138,9 @@ public class SshTrileadJob extends JobCpi {
                 || state == JobState.SUBMISSION_ERROR) {
             return;
         }
-        session.close();
+        if (session != null) {
+            session.close();
+        }
         if (!skipPostStage) {
             setState(JobState.POST_STAGING);
             sandbox.retrieveAndCleanup(this);
