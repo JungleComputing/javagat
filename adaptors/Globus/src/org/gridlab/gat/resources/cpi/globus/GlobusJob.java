@@ -288,6 +288,11 @@ public class GlobusJob extends JobCpi implements GramJobListener,
             // this can happen if an exception is thrown after the creation of
             // this job in the submitjob method, simply remove the job from the
             // list.
+            setState(JobState.POST_STAGING);
+            if (sandbox != null) {
+                sandbox.retrieveAndCleanup(this);
+            }
+            setState(JobState.SUBMISSION_ERROR);
             finished();
         }
     }

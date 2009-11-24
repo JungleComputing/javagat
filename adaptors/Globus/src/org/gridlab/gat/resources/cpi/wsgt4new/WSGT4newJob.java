@@ -218,7 +218,11 @@ public class WSGT4newJob extends JobCpi implements GramJobListener, Runnable {
         if (state != JobState.STOPPED && state != JobState.SUBMISSION_ERROR) {
             try {
                 job.cancel();
-            } catch (Exception e) {
+            } catch (Throwable e) {
+                if (state != JobState.POST_STAGING && !skipPostStage) {
+                    sandbox.retrieveAndCleanup(this);
+                }
+                setState(JobState.SUBMISSION_ERROR);
                 finished();
                 ScheduledExecutor.remove(this);
                 throw new GATInvocationException("WSGT4newJob", e);
@@ -226,6 +230,7 @@ public class WSGT4newJob extends JobCpi implements GramJobListener, Runnable {
             if (state != JobState.POST_STAGING && !skipPostStage) {
                 setState(JobState.POST_STAGING);
                 sandbox.retrieveAndCleanup(this);
+                setState(JobState.STOPPED);
             }
         } else {
             if (logger.isDebugEnabled()) {
