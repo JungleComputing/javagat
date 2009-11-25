@@ -25,33 +25,78 @@ import org.gridlab.gat.GATObjectCreationException;
 import org.gridlab.gat.InvalidUsernameOrPasswordException;
 import org.gridlab.gat.Preferences;
 import org.gridlab.gat.URI;
+import org.gridlab.gat.io.File;
 import org.gridlab.gat.security.globus.GlobusSecurityUtils;
 import org.ietf.jgss.GSSCredential;
 import org.ietf.jgss.GSSException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * This class provides {@link File} operations via an {@link GridFTPClient} to GAT.
+ * Because of a limited number of open gridftp-connections (this is defined by the administrator of the resource) per resource, this adaptor
+ * allows only one File-operation per client. This will be forced by using an {@link ReentrantLock} per Host.
+ * 
+ * To optimize the Connection Handling, this class provieds a Cache for opened {@link GridFTPClient}. The cache will cleanup unused {@link GridFTPClient}
+ * every {@literal GridFTPFileAdaptor#CLEANUP_INTERVALL} by a special thread.
+ * 
+ * Its important to call GAT.end() to be sure that all 
+ * 
+ * @author Stefan Bozic
+ */
 @SuppressWarnings("serial")
 public class GridFTPFileAdaptor extends GlobusFileAdaptor {
 
+	/** The logger instance. */
 	protected static Logger logger = LoggerFactory.getLogger(GridFTPFileAdaptor.class);
 
+	/** Flag that indicated that this adaptor is configured to cache {@link FTPClient} */
 	static boolean USE_CLIENT_CACHING = true;
 
+	/** CONSTANT  */
 	public static final String HOSTNAME_USER_SEPARATOR = "@@";
 
+	/** The cache. */
 	private static Hashtable<String, CachedFTPClient> clienttable = new Hashtable<String, CachedFTPClient>();
 
+	/** This map is used to synchronize file operation per host. */
 	private static Hashtable<String, ReentrantLock> lockTable = new Hashtable<String, ReentrantLock>();
 
+	/** Indicated that {@link GAT#end()} has been called.*/
 	private static boolean end = false;
 
 	/** Perform cleanup in this intervall */
-	public static final int CLEANUP_INTERVALL = 10 * 1000;
+	public static final int CLEANUP_INTERVALL = 60 * 1000;
 
-	/** Connection lifetime */
-	public static final int CONNECTION_LIFETIME_IN_CACHE = 10 * 1000;
+	/** Connection lifetime in the Cache */
+	public static final int CONNECTION_LIFETIME_IN_CACHE = 120 * 1000;
 
+	
+	/**
+	 * Shutdown hook for closing all open 
+	 */
+	private static Runnable shutdownRunnable = new Runnable() {
+
+		@Override
+		public void run() {
+			logger.info("ShutdownHook: Delete the cache and close all opened FTPClients.");
+			deleteCache();
+		}
+		
+	};
+	
+	// Add a shuitdown hook to the Runtime
+	static {
+		if (USE_CLIENT_CACHING) {
+			Thread shutdownThread = new Thread(shutdownRunnable, "ShutdownHookGridFTPFileAdaptor");
+			Runtime.getRuntime().addShutdownHook(shutdownThread);
+		}
+	}
+	
+	
+	/**
+	 * Runnable that perform cleanup operation on the Client cache.
+	 */
 	private static Runnable cacheCleanupRunnable = new Runnable() {
 
 		public void run() {
@@ -111,6 +156,7 @@ public class GridFTPFileAdaptor extends GlobusFileAdaptor {
 		}
 	};
 
+	/** This thread perform cache cleanup operations. */
 	private static Thread cacheCleaner = null;
 
 	// Start the cache-cleanup-thread.
@@ -130,10 +176,11 @@ public class GridFTPFileAdaptor extends GlobusFileAdaptor {
 	 *            physical file.
 	 * @param gatContext A GATContext which is used to determine the access
 	 *            rights for this LocalFileAdaptor.
+	 * @throws GATObjectCreationException An exception that might occurs.
 	 */
 	public GridFTPFileAdaptor(GATContext gatContext, URI location) throws GATObjectCreationException {
-		super(gatContext, location);
-
+		super(gatContext, location);	
+		
 		if (!location.isCompatible("gsiftp") && !location.isCompatible("file")) {
 			throw new AdaptorNotApplicableException("cannot handle this URI: " + location);
 		}
@@ -160,6 +207,13 @@ public class GridFTPFileAdaptor extends GlobusFileAdaptor {
 		return fixURI(in, "gsiftp");
 	}
 
+	/**
+	 * Sets connection options to a {@link GridFTPClient}.
+	 * @param c the client to configure
+	 * @param preferences configuration attributes 
+	 * 
+	 * @throws Exception An exception that might occurs.
+	 */
 	private static void setConnectionOptions(GridFTPClient c, Preferences preferences) throws Exception {
 		c.setType(GridFTPSession.TYPE_IMAGE);
 
@@ -170,7 +224,7 @@ public class GridFTPFileAdaptor extends GlobusFileAdaptor {
 	 * Returns a {@link Preferences} instance with the supported attributes,
 	 * e.g. the number of authentication retries.
 	 * 
-	 * @returna {@link Preferences} instance with the supported attributes.
+	 * @return a {@link Preferences} instance with the supported attributes.
 	 */
 	public static Preferences getSupportedPreferences() {
 		Preferences p = GlobusFileAdaptor.getSupportedPreferences();
@@ -182,6 +236,11 @@ public class GridFTPFileAdaptor extends GlobusFileAdaptor {
 	 * Set security parameters such as data channel authentication (defined by
 	 * the GridFTP protocol) and data channel protection (defined by RFC 2228).
 	 * If you do not specify these, data channels are authenticated by default.
+	 * 
+	 * @param c the client 
+	 * @param preferences might include configuration settings
+	 * 
+	 * @throws Exception An exception that might occurs.
 	 */
 	private static void setSecurityOptions(GridFTPClient c, Preferences preferences) throws Exception {
 		if (isOldServer(preferences)) {
@@ -332,6 +391,13 @@ public class GridFTPFileAdaptor extends GlobusFileAdaptor {
 		return doWorkCreateClient(gatContext, additionalPreferences, hostURI);
 	}
 
+	/**
+	 * Return a {@link GridFTPClient} instance from the cache if an entry to the key exists.
+	 * Return <code>null</code> if there is no cache value for the given key. 
+	 * 
+	 * @param key indicates an instance in the cache.
+	 * @return a {@link GridFTPClient} instance from the cache.
+	 */
 	private static GridFTPClient getFromCache(String key) {
 		logger.debug("getFromCache( " + key + " )");
 		CachedFTPClient cachedClient;
@@ -348,6 +414,17 @@ public class GridFTPFileAdaptor extends GlobusFileAdaptor {
 		return null;
 	}
 
+	
+	
+	/**
+	 * Puts a {@link GridFTPClient} instance inside the cache, but only if the cache contains no other value for key.
+	 * Returns <code>true</code> if the client has been successfully stored inside the cache, returns <code>false</code> otherwise.
+	 * 
+	 * 
+	 * @param key indicates an instance in the cache.
+	 * @param c the client to put inside the cache.
+	 * @return <code>true</code> if the client has been successfully stored inside the cache, returns <code>false</code> otherwise.
+	 */
 	private static boolean putInCache(String key, FTPClient c) {
 		logger.debug("putInCache( " + key + " )");
 
@@ -364,6 +441,16 @@ public class GridFTPFileAdaptor extends GlobusFileAdaptor {
 		return false;
 	}
 
+	/**
+	 * Returns a {@link GridFTPClient} instance, configured for the given parameters.
+	 * 
+	 * @param context the context with security option etc.
+	 * @param additionalPreferences attributes for the connection
+	 * @param hostURI the host to connect to
+	 * @return an instance of {@link GridFTPClient} to the given parameters
+	 * @throws GATInvocationException
+	 * @throws InvalidUsernameOrPasswordException
+	 */
 	protected static GridFTPClient doWorkCreateClient(GATContext context, Preferences additionalPreferences, URI hostURI)
 			throws GATInvocationException, InvalidUsernameOrPasswordException {
 		try {
@@ -424,7 +511,7 @@ public class GridFTPFileAdaptor extends GlobusFileAdaptor {
 	 * User-DN-Name.
 	 * 
 	 * @param hostURI the {@link URI} of the host to connect to
-	 * @param credential the user credential
+	 * @param userName the user name 
 	 * @return the key for the connection cache
 	 * @throws GSSException
 	 */
@@ -581,20 +668,30 @@ public class GridFTPFileAdaptor extends GlobusFileAdaptor {
 	 * {@link HashMap} to null.
 	 */
 	public static void end() {
-		logger.debug("Cleanup GridFTPAdaptor");
 		end = true;
 
 		if (logger.isDebugEnabled()) {
-			logger.debug("end of gridftp adaptor");
+			logger.debug("GridFtpAdaptor.end()");
 		}
 
-		USE_CLIENT_CACHING = false;
-
 		// destroy the cache
+		USE_CLIENT_CACHING = false;		
+		deleteCache();
+	}
+
+	/**
+	 * Delete the {@link GridFTPClient} cache.
+	 * Closes all open {@link GridFTPClient} and remove the from the {@link HashMap}.
+	 * At last set the instance to <code>null</code>
+	 */
+	private static void deleteCache() {		
+		if (logger.isDebugEnabled()) {
+			logger.debug("deleteCache()");
+		}		
 		if (clienttable == null) {
 			return;
 		}
-
+		
 		synchronized (clienttable) {
 			Enumeration<CachedFTPClient> e = clienttable.elements();
 
@@ -619,9 +716,9 @@ public class GridFTPFileAdaptor extends GlobusFileAdaptor {
 
 			clienttable.clear();
 			clienttable = null;
-		}
+		}		
 	}
-
+	
 	/**
 	 * Static inner class that wraps a {@link FTPClient} for caching usage.
 	 * 
@@ -636,22 +733,24 @@ public class GridFTPFileAdaptor extends GlobusFileAdaptor {
 		private Date lastUsage = new Date();
 
 		/**
-		 * 
-		 * @param client
+		 * Constructor 
+		 * @param client the instance to wrap.
 		 */
 		public CachedFTPClient(FTPClient client) {
 			this.client = client;
 		}
 
 		/**
-		 * 
-		 * @return
+		 * Return the {@link Date} of the last usage of the client
+		 * @return the {@link Date} of the last usage of the client
 		 */
 		public Date getLastUsage() {
 			return lastUsage;
 		}
 
 		/**
+		 * Return the wrapped {@link FTPClient} instance.
+		 * 
 		 * @return the client
 		 */
 		public FTPClient getClient() {
