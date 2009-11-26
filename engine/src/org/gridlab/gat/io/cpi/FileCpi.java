@@ -300,7 +300,8 @@ public abstract class FileCpi extends MonitorableCpi implements FileInterface, j
     }
 
     public File getParentFile() throws GATInvocationException {
-        if (getParent() == null) {
+        String parent = getParent();
+        if (parent == null) {
             return null;
         }
         try {
@@ -309,11 +310,6 @@ public abstract class FileCpi extends MonitorableCpi implements FileInterface, j
             // the local host, with a relative path, because in that case getPath()
             // delivers an absolute path which does not occur in the URI itself.
             // --Ceriel
- 
-            String parent = getParent();
-            if (parent == null) {
-                parent = "";
-            }
             URI dest = location.setPath(parent);
             if (logger.isDebugEnabled()) {
                 logger.debug("GET PARENTFILE: orig = " + location + " new* = "
