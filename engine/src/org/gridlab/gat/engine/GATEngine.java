@@ -38,7 +38,6 @@ import org.gridlab.gat.Preferences;
 import org.gridlab.gat.advert.Advertisable;
 import org.gridlab.gat.advert.cpi.SerializedBase;
 import org.gridlab.gat.engine.util.ScheduledExecutor;
-import org.gridlab.gat.resources.cpi.JobCpi;
 
 /**
  * @author rob
@@ -836,6 +835,7 @@ public class GATEngine {
         for (List<Adaptor> adaptorList : engine.adaptorLists.values()) {
             for (Adaptor adaptor : adaptorList) {
                 Class<?> c = adaptor.adaptorClass;
+                
 
                 // invoke the "end" static method of the class
                 try {
@@ -846,8 +846,6 @@ public class GATEngine {
                 }
             }
         }
-
-        JobCpi.end();
         
         ScheduledExecutor.end();
 
