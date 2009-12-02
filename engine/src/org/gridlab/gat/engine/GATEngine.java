@@ -38,6 +38,7 @@ import org.gridlab.gat.Preferences;
 import org.gridlab.gat.advert.Advertisable;
 import org.gridlab.gat.advert.cpi.SerializedBase;
 import org.gridlab.gat.engine.util.ScheduledExecutor;
+import org.gridlab.gat.resources.cpi.JobCpi;
 
 /**
  * @author rob
@@ -845,6 +846,13 @@ public class GATEngine {
                     // ignore
                 }
             }
+        }
+
+        try {
+            JobCpi.end();
+        } catch(Throwable e) {
+            // ignore, could be because JobCpi has never been instantiated and
+            // GAT.end() is called from within shutdown hook.
         }
         
         ScheduledExecutor.end();
