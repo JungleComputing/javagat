@@ -15,7 +15,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -24,7 +23,6 @@ import java.util.StringTokenizer;
 import java.util.Vector;
 import java.util.jar.Attributes;
 import java.util.jar.JarFile;
-import java.util.jar.Manifest;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -431,6 +429,7 @@ public class GATEngine {
             JarFile adaptorJar = new JarFile(adaptorJarFile, true);
             attributes = adaptorJar.getManifest()
                     .getMainAttributes();
+            adaptorJar.close();
             adaptorPathURLs.add(adaptorJarFile.toURI().toURL());
         } else {
             attributes = new Attributes();
@@ -579,46 +578,6 @@ public class GATEngine {
             vector.add(files[count]);
 
         return vector;
-    }
-
-    /**
-     * Obtains JarFile's in the optional directory that are GAT jar's
-     * 
-     * @param dir
-     *                the directory to get the jar files from
-     * @return a list of JarFile objects
-     */
-    protected List<JarFile> getJarFiles(String dir) {
-        File nextFile = null;
-        JarFile jarFile = null;
-        Manifest manifest = null;
-
-        // Obtain files in the optional directory.
-        List<File> files = getFiles(new File(dir));
-
-        Iterator<File> iterator = files.iterator();
-
-        Vector<JarFile> jarFiles = new Vector<JarFile>();
-
-        while (iterator.hasNext()) {
-            nextFile = iterator.next();
-
-            if (nextFile.isFile()) {
-                try {
-                    jarFile = new JarFile(nextFile, true);
-                    manifest = jarFile.getManifest();
-
-                    if (null != manifest) {
-                        manifest.getMainAttributes();
-                        jarFiles.add(jarFile);
-                    }
-                } catch (IOException ioException) {
-                    // Ignore IOException
-                }
-            }
-        }
-
-        return jarFiles;
     }
 
     public static void registerUnmarshaller(Class<?> clazz) {
