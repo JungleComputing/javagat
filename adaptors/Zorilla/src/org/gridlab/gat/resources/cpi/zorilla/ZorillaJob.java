@@ -84,6 +84,13 @@ public class ZorillaJob extends JobCpi {
     private static void addInputFile(File src, String sandboxPath,
             ZorillaJobDescription job) throws GATInvocationException {
 
+        URI uri = src.toGATURI();
+
+        if (!uri.refersToLocalHost()) {
+            throw new GATInvocationException(
+                    "Zorilla can only handle local files as input");
+        }
+
         if (sandboxPath == null || sandboxPath.equals(".")
                 || sandboxPath.equals("./")) {
             sandboxPath = src.getName();
@@ -100,10 +107,8 @@ public class ZorillaJob extends JobCpi {
             }
         } else {
             try {
-                job.addInputFile(new ZoniInputFile(sandboxPath, GAT
-                        .createFileInputStream(src.getFileInterface()
-                                .getGATContext(), src), src.getFileInterface()
-                        .length()));
+                job.addInputFile(new ZoniInputFile(sandboxPath,
+                        new java.io.File(src.getAbsolutePath())));
             } catch (Exception e) {
                 throw new GATInvocationException(
                         "could not create input file for " + sandboxPath, e);
@@ -169,7 +174,8 @@ public class ZorillaJob extends JobCpi {
         zorillaJobDescription.getAttributes().put("resource.count",
                 "" + description.getResourceCount());
 
-        // zorillaJobDescription.getAttributes().put(SoftwareDescription.HOST_COUNT, "" +
+        // zorillaJobDescription.getAttributes().put(SoftwareDescription.HOST_COUNT,
+        // "" +
         // description.getResourceCount());
 
         if (soft instanceof JavaSoftwareDescription) {
