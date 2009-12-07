@@ -112,8 +112,29 @@ class GlobusContextCreator implements SecurityContextCreator {
         if (inContext instanceof CertificateSecurityContext) {
             CertificateSecurityContext c = (CertificateSecurityContext) inContext;
             String passphrase = c.getPassword();
-            String keyFile = c.getKeyfile().toString();
-            String certFile = c.getCertfile().toString();
+            String keyFile;
+            String certFile;
+            
+            String home = System.getProperty("user.home");
+            String fileSep = System.getProperty("file.separator");
+
+            if (home == null) {
+                home = "";
+            } else {
+                home += fileSep;
+            }
+            
+            if (c.getKeyfile() == null) {
+                keyFile = home + ".globus" + fileSep + "userkey.pem";
+            } else {
+                keyFile = c.getKeyfile().toString();
+            }
+            
+            if (c.getCertfile() == null) {
+                certFile = home + ".globus" + fileSep + "usercert.pem";
+            } else {
+                certFile = c.getCertfile().toString();
+            }
             try {
                 GATGridProxyModel model = new GATGridProxyModel();
                 GlobusCredential globusCred = model.createProxy(passphrase,
