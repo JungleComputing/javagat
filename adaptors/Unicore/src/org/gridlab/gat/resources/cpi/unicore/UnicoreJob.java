@@ -93,7 +93,9 @@ public class UnicoreJob extends JobCpi {
     private UnicoreJob(GATContext gatContext, SerializedUnicoreJob sj)
             throws GATObjectCreationException {
         super(gatContext, sj.getJobDescription(), sj.getSandbox());
-        sandbox.setContext(gatContext);
+        if (sandbox != null) {
+            sandbox.setContext(gatContext);
+        }
         if (logger.isDebugEnabled()) {
             logger.debug("reconstructing UnicoreJob: " + sj);
         }
@@ -610,7 +612,7 @@ public class UnicoreJob extends JobCpi {
 	private static synchronized void stageDir(de.fzj.hila.File src, java.io.File dest, String remoteParent, String localParent) throws HiLAException {
 
 		String dirName = null;
-		List<de.fzj.hila.File> list1 = src.ls();
+		// List<de.fzj.hila.File> list1 = src.ls();
 		if (!src.isDirectory()) {
 			src.exportToLocalFile(dest, true).block();
 			return;
@@ -681,10 +683,10 @@ public class UnicoreJob extends JobCpi {
 		String newPath=null;
 		String sep = File.separator;
 		
-		if ( File.separator.compareTo( "/")==0 ) { // we are on Unix or Linux
+		if ( sep.compareTo( "/")==0 ) { // we are on Unix or Linux
 			newPath=name.replace('\\', '/');
 		}
-		else if ( File.separator.compareTo("\\") == 0 ) { // we are on a windows system
+		else if ( sep.compareTo("\\") == 0 ) { // we are on a windows system
 			newPath=name.replace('/', '\\');
 		}
 		return newPath;
