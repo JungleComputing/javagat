@@ -134,14 +134,8 @@ public class UnicoreResourceBrokerAdaptor extends ResourceBrokerCpi {
 		 * only put ./ before the executable, if the name its name doesn't contain any path delimiter, 
 		 * so that is only to be found in the local directory..
 		 */
-		
-		String execFile = new String (sd.getExecutable());
-		if (execFile.indexOf("/") == -1 ) {
-		//	posixAppl.addElement(nameSpaceJsdlPosixHead + "Executable").addText("./" + execFile);
-			posixAppl.addElement(nameSpaceJsdlPosixHead + "Executable").addText(execFile);
-		} else {
-			posixAppl.addElement(nameSpaceJsdlPosixHead + "Executable").addText(sd.getExecutable());			
-		}
+
+		posixAppl.addElement(nameSpaceJsdlPosixHead + "Executable").addText(sd.getExecutable());			
 		
 		String [] jobArgs = sd.getArguments();
 		

@@ -18,6 +18,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.gridlab.gat.GAT;
+import org.gridlab.gat.URI;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.GATObjectCreationException;
@@ -48,6 +49,14 @@ public class UnicoreJob extends JobCpi {
     private static final long serialVersionUID = 1L;
     
     private static final String homeDir = System.getProperty("user.home");
+    
+    /**
+     * the global boolean b_PostStage is used for marking the poststage for a job having taken 
+     * place. This is necessary to avoid a secondary poststaging which will occur with offline monitoring,
+     * because the unmarschalling and the getInfo method try to poststage.
+     */
+    
+    private boolean b_PostStage = false; 
     
     private String jobID;
     private String hostname;
@@ -197,7 +206,7 @@ public class UnicoreJob extends JobCpi {
                         setState();
                         if (task.status().equals(TaskStatus.FINISHED)) {
                             logger.debug("Job finished suddenly");
-                            task.getOutcomeFiles();
+                          //  task.getOutcomeFiles();
                             break;
                         }
                     }
@@ -490,6 +499,11 @@ public class UnicoreJob extends JobCpi {
     
     private synchronized void poststageFiles (SoftwareDescription sd, Task task) throws GATInvocationException {
     	
+    	if (b_PostStage) {
+    		logger.debug("no post staging. b_PostStage = " + b_PostStage);
+    		return;
+    	}
+    	
     	File remoteStdoutFile=null;
     	File remoteStderrFile=null;
     	File localStdoutFile=null;
@@ -497,6 +511,8 @@ public class UnicoreJob extends JobCpi {
     	
     	String stdoutFileName = null;
     	String stderrFileName = null;
+    	String remoteParent   = null;
+    	String localParent    = null;
 
     	//    	File localStderrFile=new File("/home/alibeck/.hila/strderr-gat.test");
    	
@@ -541,16 +557,38 @@ public class UnicoreJob extends JobCpi {
 				List<de.fzj.hila.File> wdFiles = wdFile.ls();
 				for (de.fzj.hila.File file : wdFiles) {
 				    for (java.io.File srcFile : postStaged.keySet()) {
-			    		java.io.File destFile = postStaged.get(srcFile);
-			    		logger.debug("PoststageFiles: srcFile: '" + srcFile.getName() + "' destFile (name , path): '" + destFile.getName() + "', " + SerializedUnicoreJob.realPath(((org.gridlab.gat.io.File) destFile).toGATURI()) + "'");
+				    	URI destURI = postStaged.get(srcFile).toGATURI();
+				    	String path = destURI.toString();
+				    	path.replaceAll("/", java.io.File.pathSeparator);
+				    	
+			    		java.io.File destFile = new java.io.File(path);
+			    		logger.debug("PoststageFiles: srcFile: '" + srcFile.getName() + "' destFile (name , path): '" + destFile.getName() + "', " + SerializedUnicoreJob.realPath(destFile.toString()) + "'");
 			    		if (file.getName().compareTo(srcFile.getName()) == 0 ) { // maybe getName should be used here
-			    			java.io.File realDestFile=new java.io.File (SerializedUnicoreJob.realPath(((org.gridlab.gat.io.File) destFile).toGATURI()));
-			    			file.exportToLocalFile(realDestFile, true).block();
+//			    			java.io.File realDestFile=new java.io.File (SerializedUnicoreJob.realPath(((org.gridlab.gat.io.File) destFile).toGATURI()));
+			    			java.io.File realDestFile=new java.io.File (SerializedUnicoreJob.realPath(destFile.toString()));
+			    			de.fzj.hila.File parFile = file.getParentFile();
+			    			
+			    			if (parFile!=null) {
+			    				remoteParent = parFile.toString();
+			    			}
+			    			if (remoteParent==null) remoteParent="";
+			    			
+//			    			localParent = destFile.getAbsolutePath();
+			    			localParent = destFile.toString();
+			    			
+			    			stageDir(file, realDestFile, remoteParent, localParent);
 							}
 							
 						}
 					}
+				
+				/**
+				 * PostStage was successful. Set the b_PostStage boolean to true...
+				 */
+				
+				b_PostStage = true;
 			}
+			
 		} catch (HiLAException e) {
 			e.printStackTrace();
 			throw new GATInvocationException("UNICORE Adptor: loading Storage for poststaging failes");
@@ -559,6 +597,150 @@ public class UnicoreJob extends JobCpi {
 		}
 
     }
+    
+	/*
+	 * @method dirList (File, String)
+	 * 
+	 *  When called first, then called with the parentPath of the which is in case of the File argument
+	 *  to be a directory the parent path. This parent path is used afterwards in order to create in the 
+	 *  stageout directory only directories starting at the stageout directory, and not starting w+ File.separatorith the 
+	 *  full parent path of the files / dirs to be staged out.
+	 */
+	
+	private static synchronized void stageDir(de.fzj.hila.File src, java.io.File dest, String remoteParent, String localParent) throws HiLAException {
+
+		String dirName = null;
+		List<de.fzj.hila.File> list1 = src.ls();
+		if (!src.isDirectory()) {
+			src.exportToLocalFile(dest, true).block();
+			return;
+		}
+		else {
+			
+			/**
+			 * extract the name for the new directory after the parent directory. 
+			 */
+			
+			if (remoteParent.isEmpty()) {
+				dirName = src.getPath();
+			}
+			else {
+				dirName = src.getPath().replaceFirst(remoteParent, "").substring(1);
+			}
+			
+			
+			/*
+			 * Contruct the name of the local diretory
+			 */
+			
+			String localDirName = constructLocalDirName(dirName,dest.getName().toString(), localParent);
+			
+			if (new java.io.File(localDirName).mkdirs()) {
+				logger.debug("Directory '" + localDirName + "' created");
+				} 
+			else {
+				logger.error("Failed to create directory '" + localDirName + "'");
+				}
+				
+/*			if (dirName.compareTo(dest.getName().toString())!=0) {
+				if (dest.mkdirs()) {
+					logger.debug("Directory '" + dest.getName().toString() + "' created");
+				} 
+				else {
+					logger.debug("Failed to create directory '" + dest.getName().toString() + "'");
+				}
+			}
+			else {
+				if (new File (new File(dirName).getPath()).mkdirs()) {
+					logger.debug("Directory '" + dirName + "' created");
+					} 
+				else {
+					logger.debug("Failed to create directory '" + dirName + "'");
+					}
+				}*/
+			
+			List<de.fzj.hila.File> list = src.ls();
+			
+			for (de.fzj.hila.File file : list) {
+				
+				if (file.isDirectory()) {
+					logger.debug("The File '" + file.getName() + "' is a directory");
+					stageDir(file,new File(file.getPath()), remoteParent, localParent);
+				} 
+				else {
+					File outfile = new File(localDirName +  File.separator + file.getName());
+					file.exportToLocalFile(outfile, true).block();
+					logger.debug("Found File '" + file.getName() + "'in Dir '" + dirName  + "'");
+				}
+			}
+		}
+	}
+	
+	private static String adaptPathName (String name) {
+		
+		String newPath=null;
+		String sep = File.separator;
+		
+		if ( File.separator.compareTo( "/")==0 ) { // we are on Unix or Linux
+			newPath=name.replace('\\', '/');
+		}
+		else if ( File.separator.compareTo("\\") == 0 ) { // we are on a windows system
+			newPath=name.replace('/', '\\');
+		}
+		return newPath;
+	}
+
+	/**
+	 * The Method constructLocalDirName creates the path name of a local poststage directory. Because the name
+	 * of such a local stageout directory might differ from those on remote machines, the path name must be constructed.
+	 * 
+	 * As an example see the following: 
+	 * 
+	 * The remote stageout file data 
+	 * 
+	 * is a directory, and date shall be staged out to 
+	 * 
+	 * /home/user/progs/results
+	 * 
+	 * If now data contains a sub directory ".../data/subdir", we need to create on the local host the directory:
+	 * 
+	 * /home/user/progs/results/subir
+	 * 
+	 * This method constructs this local directory name, and returns it. 
+	 * 
+	 * Important help: the path part /home/user/progs is stored in the string Parent.
+	 * 
+	 * @param remote the remote name  of the stageout file/dir
+	 * @param local the local name of the stageout file/dir
+	 * @param localParent the primary parent path of the local stageout file/dir
+	 * @return localDirName
+	 */
+	private static synchronized String constructLocalDirName(String remote, String local, String localParent) {
+		
+		String localDirName = null;
+		String realdirName  = null;
+		
+		/**
+		 * First possibility: no path delimiter can be found, this means we have not nested path.
+		 * Note: the path name must be adapted to the local system first!
+		 */
+		
+		realdirName = adaptPathName(remote);
+		if (realdirName.indexOf(java.io.File.separator) == -1) {
+			localDirName = localParent;
+		}
+		else {
+			
+			/**
+			 * now we have a path name -> nested path found.
+			 */
+			
+			localDirName = localParent + realdirName.substring(realdirName.indexOf(java.io.File.separator));
+			
+		}
+		
+		return localDirName;
+		}
  
     public int getExitStatus() throws GATInvocationException {
     	
@@ -696,11 +878,13 @@ public class UnicoreJob extends JobCpi {
                 m.put("stoptime", null);
             } else {
                 m.put("stoptime", stoptime);
+                poststageFiles(Soft,task);
+               // task.getOutcomeFiles();
             }
             
             m.put("state", state.toString());
                 
-            task.getOutcomeFiles();    
+           // task.getOutcomeFiles();    
 
         } catch (HiLAException e) {
         	logger.error("HilaException in getInfo()");

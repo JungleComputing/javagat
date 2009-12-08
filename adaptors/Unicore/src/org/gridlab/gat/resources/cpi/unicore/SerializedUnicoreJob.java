@@ -90,7 +90,7 @@ public class SerializedUnicoreJob extends SerializedJob {
 		String stringURI = null;
 			
 		/**
-		 * assume that the URI has the protocol definition ended with '//:'
+		 * assume that the URI has the protocol definition ended with '://'
 		 */
 		
 		stringURI = uri.toString();
@@ -108,6 +108,41 @@ public class SerializedUnicoreJob extends SerializedJob {
 		}
 		else {
 			return uri.getPath();
+		}
+		
+		
+	}
+	
+	/**
+	 * The method String windowsPath extracts the full windows path of an URI, which
+	 * is represented as a String.
+	 *  
+	 * @param String uriPath
+	 * @return path name as a string
+	 */
+
+	public synchronized static String realPath(String uriPath) {
+		
+		String path=null;
+			
+		/**
+		 * assume that the URI has the protocol definition ended with '://'
+		 */
+		
+		int pathBegin = uriPath.indexOf("://");
+		
+		if (pathBegin != -1 ) {
+			path = uriPath.substring(pathBegin+3);
+		}
+		else {
+			path=uriPath;
+		}
+		
+		if (isWindowsPath(path)) {
+			return path;
+		}
+		else {
+			return uriPath;
 		}
 		
 		
