@@ -45,6 +45,9 @@ public class WritableInputStream extends InputStream {
             bytesWritten++;
             buf[i] = (byte) read;
         }
+        if (bytesWritten == 0) {
+            return -1;
+        }
         return bytesWritten;
     }
 
@@ -60,6 +63,9 @@ public class WritableInputStream extends InputStream {
             }
             bytesWritten++;
             buf[i] = (byte) read;
+        }
+        if (bytesWritten == 0) {
+            return -1;
         }
         return bytesWritten;
     }
