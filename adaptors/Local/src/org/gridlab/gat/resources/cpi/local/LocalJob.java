@@ -92,7 +92,8 @@ public class LocalJob extends JobCpi {
             throw new GATInvocationException("Could not wait for trigger base", e);
         }
 
-        long interval = 1000;
+        long interval = 500;
+        int count = 0;
         
         while (! file.exists()) {
             try {
@@ -100,8 +101,13 @@ public class LocalJob extends JobCpi {
             } catch(InterruptedException e) {
                 // ignored
             }
-            if (interval < 8000) {
-                interval += interval;
+            count++;
+            if (count == 10) {
+                // back-off a bit every 10 attempts.
+                if (interval < 8000) {
+                    interval += interval;
+                }
+                count = 0;
             }
         }
         file.delete();
