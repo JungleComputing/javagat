@@ -633,78 +633,81 @@ public class GlobusJob extends JobCpi implements GramJobListener,
         }
 
         public void run() {
-            int totalBytesRead = 0;
-            byte[] buffer = new byte[1024];
-            // wait until the remote output file exists
-            while (!source.exists()
-                    && GlobusJob.this.getState() != GlobusJob.JobState.STOPPED
-                    && GlobusJob.this.getState() != GlobusJob.JobState.SUBMISSION_ERROR) {
-                try {
-                    sleep(1000);
-                } catch (InterruptedException e) {
-
-                }
-            }
-            // now continuously check if there's new data to read
-            while (true) {
-                int bytesRead;
-                // remember the state before you read, because if the job is
-                // already stopped before the read AND there's no new data to be
-                // read, we're done
-                int globusStateBeforeRead = globusJobState;
-                InputStream inStream = null;
-                try {
-                    inStream = GAT.createFileInputStream(source);
-                } catch (GATObjectCreationException e2) {
-                    logger.debug("unable to stream output/error: " + e2);
-                    return;
-                }
-                try {
-                    logger
-                            .debug("before skipping " + totalBytesRead
-                                    + " bytes");
-                    inStream.skip(totalBytesRead);
-                    logger.debug("before reading");
-                    bytesRead = inStream.read(buffer);
-                    logger.debug("bytes read: " + bytesRead);
-                    logger.debug("before closing");
-                    inStream.close();
-                    logger.debug("after closing");
-                } catch (IOException e) {
-                    if (logger.isDebugEnabled()) {
-                        logger.debug("failed to read: " + e);
-                    }
+            try {
+                int totalBytesRead = 0;
+                byte[] buffer = new byte[1024];
+                // wait until the remote output file exists
+                while (!source.exists()
+                        && GlobusJob.this.getState() != GlobusJob.JobState.STOPPED
+                        && GlobusJob.this.getState() != GlobusJob.JobState.SUBMISSION_ERROR) {
                     try {
                         sleep(1000);
-                    } catch (InterruptedException e1) {
-                        if (logger.isDebugEnabled()) {
-                            logger.debug("failed to sleep: " + e1);
-                        }
+                    } catch (InterruptedException e) {
+                        // ignored
                     }
-                    continue;
                 }
-                if (bytesRead == -1) {
-                    if (globusStateBeforeRead == GLOBUS_JOB_STOPPED
-                            || globusStateBeforeRead == GLOBUS_JOB_SUBMISSION_ERROR) {
-                        break;
-                    } else {
+                // now continuously check if there's new data to read
+                while (true) {
+                    int bytesRead;
+                    // remember the state before you read, because if the job is
+                    // already stopped before the read AND there's no new data to be
+                    // read, we're done
+                    int globusStateBeforeRead = globusJobState;
+                    InputStream inStream = null;
+                    try {
+                        inStream = GAT.createFileInputStream(source);
+                    } catch (GATObjectCreationException e2) {
+                        logger.debug("unable to stream output/error: " + e2);
+                        return;
+                    }
+                    try {
+                        logger
+                        .debug("before skipping " + totalBytesRead
+                                + " bytes");
+                        inStream.skip(totalBytesRead);
+                        logger.debug("before reading");
+                        bytesRead = inStream.read(buffer);
+                        logger.debug("bytes read: " + bytesRead);
+                        logger.debug("before closing");
+                        inStream.close();
+                        logger.debug("after closing");
+                    } catch (IOException e) {
+                        if (logger.isDebugEnabled()) {
+                            logger.debug("failed to read: " + e);
+                        }
                         try {
                             sleep(1000);
-                        } catch (InterruptedException e) {
+                        } catch (InterruptedException e1) {
                             if (logger.isDebugEnabled()) {
-                                logger.debug("failed to sleep: " + e);
+                                logger.debug("failed to sleep: " + e1);
                             }
                         }
+                        continue;
                     }
-                } else {
-                    totalBytesRead += bytesRead;
-                    target.write(buffer, 0, bytesRead);
+                    if (bytesRead == -1) {
+                        if (globusStateBeforeRead == GLOBUS_JOB_STOPPED
+                                || globusStateBeforeRead == GLOBUS_JOB_SUBMISSION_ERROR) {
+                            break;
+                        } else {
+                            try {
+                                sleep(1000);
+                            } catch (InterruptedException e) {
+                                if (logger.isDebugEnabled()) {
+                                    logger.debug("failed to sleep: " + e);
+                                }
+                            }
+                        }
+                    } else {
+                        totalBytesRead += bytesRead;
+                        target.write(buffer, 0, bytesRead);
+                    }
                 }
-            }
-            target.finished();
-            synchronized (GlobusJob.this) {
-                streamingOutputs--;
-                GlobusJob.this.notifyAll();
+            } finally {
+                target.finished();
+                synchronized (GlobusJob.this) {
+                    streamingOutputs--;
+                    GlobusJob.this.notifyAll();
+                }
             }
         }
     }
