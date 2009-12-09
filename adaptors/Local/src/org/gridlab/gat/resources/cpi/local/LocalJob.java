@@ -93,7 +93,8 @@ public class LocalJob extends JobCpi {
         }
 
         long interval = 500;
-        int count = 0;
+        int  maxcount = 64;
+        int count = maxcount;
         
         while (! file.exists()) {
             try {
@@ -102,9 +103,10 @@ public class LocalJob extends JobCpi {
                 // ignored
             }
             count++;
-            if (count == 100) {
-                // back-off a bit every 100 attempts.
+            if (count == maxcount) {
+                // back-off a bit.
                 if (interval < 8000) {
+                    maxcount += maxcount;
                     interval += interval;
                 }
                 count = 0;
