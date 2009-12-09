@@ -106,10 +106,8 @@ public class SgeResourceBrokerAdaptor extends ResourceBrokerCpi {
         Sandbox sandbox = null;
 
         /* Handle pre-/poststaging */
-        if (host != null) {
-            sandbox = new Sandbox(gatContext, description, host, null, true,
+        sandbox = new Sandbox(gatContext, description, host, null, true,
                     true, true, true);
-        }
         SgeJob sgeJob = new SgeJob(gatContext, description, sandbox);
         Job job = null;
         if (description instanceof WrapperJobDescription) {
@@ -139,7 +137,7 @@ public class SgeResourceBrokerAdaptor extends ResourceBrokerCpi {
         }
 
         try {
-            SGEsession.init(brokerURI.toString());
+            SGEsession.init("");
         } catch (DrmaaException e) {
             if (!(e instanceof AlreadyActiveSessionException)) {
                 if (sandbox != null) {
