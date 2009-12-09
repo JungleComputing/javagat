@@ -271,7 +271,7 @@ public class Wrapper {
 
             try {
                 broker.submitJob(modify(info.getJobDescription(), initiator),
-                        new JobListener(info.getJobStateFileName()),
+                        new JobListener(info),
                         "job.status");
             } catch (GATInvocationException e) {
                 logger.error("Got Exception", e);
@@ -283,9 +283,11 @@ public class Wrapper {
     class JobListener implements MetricListener {
 
         private String filename;
+        private Preferences prefs;
 
-        public JobListener(String filename) {
-            this.filename = filename;
+        public JobListener(WrappedJobInfo info) {
+            this.filename = info.getJobStateFileName();  
+            this.prefs = info.getPreferences();
         }
 
         public void processMetricEvent(MetricEvent event) {
@@ -310,8 +312,8 @@ public class Wrapper {
                 out.writeObject(event.getValue());
                 out.flush();
                 out.close();
-                File remoteFile = GAT.createFile(dest);
-                File localFile = GAT.createFile(tmp.getPath());
+                File remoteFile = GAT.createFile(prefs, dest);
+                File localFile = GAT.createFile(prefs, tmp.getPath());
                 int count = 0;
                 while (remoteFile.exists()) {
                     if (count > 30) {
