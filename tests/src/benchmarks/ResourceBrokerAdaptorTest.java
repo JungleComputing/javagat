@@ -33,6 +33,10 @@ public class ResourceBrokerAdaptorTest implements MetricListener {
     }
 
     public AdaptorTestResult test(String adaptor, String host) {
+        if (! host.equals("")) {
+            host = "any://" + host;
+        }
+
         AdaptorTestResult adaptorTestResult = new AdaptorTestResult(adaptor,
                 host);
         GATContext gatContext = new GATContext();
@@ -75,7 +79,7 @@ public class ResourceBrokerAdaptorTest implements MetricListener {
         ResourceBroker broker;
         try {
             broker = GAT.createResourceBroker(gatContext, preferences,
-                    new URI("any://" + host));
+                        new URI(host));
         } catch (GATObjectCreationException e) {
             return new AdaptorTestResultEntry(false, 0L, e);
         } catch (URISyntaxException e) {
@@ -111,7 +115,7 @@ public class ResourceBrokerAdaptorTest implements MetricListener {
         ResourceBroker broker;
         try {
             broker = GAT.createResourceBroker(gatContext, preferences,
-                    new URI("any://" + host));
+                    new URI(host));
         } catch (GATObjectCreationException e) {
             return new AdaptorTestResultEntry(false, 0L, e);
         } catch (URISyntaxException e) {
@@ -150,7 +154,7 @@ public class ResourceBrokerAdaptorTest implements MetricListener {
         ResourceBroker broker;
         try {
             broker = GAT.createResourceBroker(gatContext, preferences,
-                    new URI("any://" + host));
+                    new URI(host));
         } catch (GATObjectCreationException e) {
             return new AdaptorTestResultEntry(false, 0L, e);
         } catch (URISyntaxException e) {
@@ -199,7 +203,7 @@ public class ResourceBrokerAdaptorTest implements MetricListener {
         ResourceBroker broker;
         try {
             broker = GAT.createResourceBroker(gatContext, preferences,
-                    new URI("any://" + host));
+                    new URI(host));
         } catch (GATObjectCreationException e) {
             return new AdaptorTestResultEntry(false, 0L, e);
         } catch (URISyntaxException e) {
@@ -258,7 +262,7 @@ public class ResourceBrokerAdaptorTest implements MetricListener {
         ResourceBroker broker;
         try {
             broker = GAT.createResourceBroker(gatContext, preferences,
-                    new URI("any://" + host));
+                    new URI(host));
         } catch (GATObjectCreationException e) {
             return new AdaptorTestResultEntry(false, 0L, e);
         } catch (URISyntaxException e) {
@@ -305,7 +309,7 @@ public class ResourceBrokerAdaptorTest implements MetricListener {
         ResourceBroker broker;
         try {
             broker = GAT.createResourceBroker(gatContext, preferences,
-                    new URI("any://" + host));
+                    new URI(host));
         } catch (GATObjectCreationException e) {
             return new AdaptorTestResultEntry(false, 0L, e);
         } catch (URISyntaxException e) {
@@ -346,7 +350,7 @@ public class ResourceBrokerAdaptorTest implements MetricListener {
         ResourceBroker broker;
         try {
             broker = GAT.createResourceBroker(gatContext, preferences,
-                    new URI("any://" + host));
+                    new URI(host));
         } catch (GATObjectCreationException e) {
             return new AdaptorTestResultEntry(false, 0L, e);
         } catch (URISyntaxException e) {
@@ -397,7 +401,7 @@ public class ResourceBrokerAdaptorTest implements MetricListener {
         ResourceBroker broker;
         try {
             broker = GAT.createResourceBroker(gatContext, preferences,
-                    new URI("any://" + host));
+                    new URI(host));
         } catch (GATObjectCreationException e) {
             return new AdaptorTestResultEntry(false, 0L, e);
         } catch (URISyntaxException e) {
@@ -488,7 +492,7 @@ public class ResourceBrokerAdaptorTest implements MetricListener {
         ResourceBroker broker;
         try {
             broker = GAT.createResourceBroker(gatContext, preferences,
-                    new URI("any://" + host));
+                    new URI(host));
         } catch (GATObjectCreationException e) {
             return new AdaptorTestResultEntry(false, 0L, e);
         } catch (URISyntaxException e) {
