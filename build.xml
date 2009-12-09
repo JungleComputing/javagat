@@ -7,16 +7,16 @@
 
 	<target name="build" depends="clean" description="build everything">
 		<ant dir="api" />
-		<ant dir="tests" />
 		<ant dir="engine" />
 		<ant dir="adaptors" />
+		<ant dir="tests" />
 	</target>
 
 	<target name="android" depends="clean" description="build everything">
 		<ant dir="api" />
-		<ant dir="tests" />
 		<ant dir="engine" target="android" />
 		<ant dir="adaptors" />
+		<ant dir="tests" />
 	</target>
 
 	<target name="javadoc" description="build javadoc">
@@ -40,9 +40,10 @@
 	</target>
 
 	<target name="clean" description="clean up">
+		<ant dir="api" target="clean" />
 		<ant dir="engine" target="clean" />
-		<ant dir="tests" target="clean" />
 		<ant dir="adaptors" target="clean" />
+		<ant dir="tests" target="clean" />
 		<delete dir="lib" />
 	</target>
 
