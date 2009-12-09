@@ -102,8 +102,8 @@ public class LocalJob extends JobCpi {
                 // ignored
             }
             count++;
-            if (count == 10) {
-                // back-off a bit every 10 attempts.
+            if (count == 100) {
+                // back-off a bit every 100 attempts.
                 if (interval < 8000) {
                     interval += interval;
                 }
