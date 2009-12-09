@@ -25,6 +25,5 @@ cp *.properties JavaGAT-$1
 find JavaGAT-$1 -name .svn -exec rm -rf {} \; 2> /dev/null
 find JavaGAT-$1 -name \*~ -exec rm -rf {} \; 2> /dev/null
 find JavaGAT-$1 -name .??\* -exec rm -rf {} \; 2> /dev/null
-tar czf JavaGAT-$1.tgz JavaGAT-$1
 zip -r JavaGAT-$1.zip JavaGAT-$1
 rm -rf JavaGAT-$1
