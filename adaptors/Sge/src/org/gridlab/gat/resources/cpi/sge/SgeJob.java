@@ -133,7 +133,9 @@ public class SgeJob extends JobCpi {
                 }
             }
             setState(JobState.POST_STAGING);
-            sandbox.retrieveAndCleanup(SgeJob.this);
+            if (sandbox != null) {
+                sandbox.retrieveAndCleanup(SgeJob.this);
+            }
             setState(JobState.STOPPED);
             // Now we're in STOPPED state - set the time and exit
             time.put("stop", new Long(System.currentTimeMillis()));
