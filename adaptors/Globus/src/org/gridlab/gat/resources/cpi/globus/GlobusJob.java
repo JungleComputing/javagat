@@ -32,6 +32,7 @@ import org.gridlab.gat.monitoring.Metric;
 import org.gridlab.gat.monitoring.MetricDefinition;
 import org.gridlab.gat.monitoring.MetricEvent;
 import org.gridlab.gat.resources.JobDescription;
+import org.gridlab.gat.resources.SoftwareDescription;
 import org.gridlab.gat.resources.cpi.JobCpi;
 import org.gridlab.gat.resources.cpi.Sandbox;
 import org.gridlab.gat.resources.cpi.SerializedJob;
@@ -49,9 +50,9 @@ public class GlobusJob extends JobCpi implements GramJobListener,
 
     private static int jobsAlive = 0;
 
-    private WritableInputStream stderrStream = new WritableInputStream();
-
-    private WritableInputStream stdoutStream = new WritableInputStream();
+    private WritableInputStream stderrStream = null;
+    
+    private WritableInputStream stdoutStream = null;
 
     private GramJob j;
 
@@ -83,6 +84,7 @@ public class GlobusJob extends JobCpi implements GramJobListener,
     protected GlobusJob(GATContext gatContext, JobDescription jobDescription,
             Sandbox sandbox) {
         super(gatContext, jobDescription, sandbox);
+        SoftwareDescription sd = jobDescription.getSoftwareDescription();
         state = JobState.SCHEDULED;
         jobsAlive++;
 
@@ -93,6 +95,12 @@ public class GlobusJob extends JobCpi implements GramJobListener,
                 MetricDefinition.DISCRETE, "JobState", null, null, returnDef);
         registerMetric("getJobStatus", statusMetricDefinition);
         statusMetric = statusMetricDefinition.createMetric(null);
+        if (sd.streamingStderrEnabled()) {
+            stderrStream = new WritableInputStream();
+        }
+        if (sd.streamingStdoutEnabled()) {
+            stdoutStream = new WritableInputStream();
+        }
     }
 
     /**
