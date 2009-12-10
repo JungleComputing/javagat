@@ -7,6 +7,7 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 
 import org.gridlab.gat.GATObjectCreationException;
+import org.gridlab.gat.URI;
 
 /**
  * @author rob
@@ -20,6 +21,9 @@ public class Adaptor {
 
     /** The actual class of this adaptor, must be a subclass of cpiClass. */
     Class<?> adaptorClass;
+    
+    /** The schemes recognized by this adaptor. */
+    private String[] schemes;
 
     /**
      * @param cpiClass
@@ -27,8 +31,10 @@ public class Adaptor {
      * @param adaptorClass
      *                The actual class of this adaptor, must be a subclass of
      *                cpiClass.
+     * @param schemes
+     *                The schemes recognized by this adaptor.
      */
-    public Adaptor(String cpiName, Class<?> adaptorClass) {
+    public Adaptor(String cpiName, Class<?> adaptorClass, String[] schemes) {
         this.cpi = cpiName;
         this.adaptorName = adaptorClass.getName();
         this.adaptorClass = adaptorClass;
@@ -94,5 +100,32 @@ public class Adaptor {
         }
 
         return shortAdaptorClassName;
+    }
+
+    /**
+     * Match the specified URI with the recognized schemes of this adaptor.
+     * Quite liberal: if the specified URI is null, or the adaptor does not
+     * explicitly specify its recognized schemes, return <code>true</code>.
+     * 
+     * @param param the URI to match against the recognized schemes.
+     * @return whether there is a match.
+     */
+    public boolean matchScheme(URI param) {
+        if (param == null) {
+            return true;
+        }
+        if (schemes == null) {
+            return true;
+        }
+        String scheme = param.getScheme();
+        if (scheme == null) {
+            scheme = "";
+        }
+        for (String s : schemes) {
+            if (s.equalsIgnoreCase(scheme)) {
+                return true;
+            }
+        }
+        return false;
     }
 }

@@ -13,9 +13,11 @@ import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.gridlab.gat.AdaptorNotApplicableException;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.GATObjectCreationException;
+import org.gridlab.gat.URI;
 import org.gridlab.gat.engine.util.NoInfoLogging;
 
 /**
@@ -43,19 +45,31 @@ public class AdaptorInvocationHandler implements InvocationHandler {
 
         GATObjectCreationException e = new GATObjectCreationException(
                 "No adaptors could be successfully instantiated");
+        
+        URI param = null;
+        for (Object p : params) {
+            if (p instanceof URI) {
+                param = (URI) p;
+                break;
+            }
+        }
 
         for (Adaptor adaptor : adaptors) {
             try {
-                instantiatedAdaptors.put(adaptor, initAdaptor(adaptor, context,
-                        parameterTypes, params));
-                this.adaptors.add(adaptor);
-                // this test keeps the number of instantiated adaptors for
-                // objects that contain internal state, like the
-                // FileInputStream, to a fixed size of 1, in order to prevent
-                // multiple adaptors operating on one object, while all the
-                // adaptors have a different internal state.
-                if (singleInstance) {
-                    break;
+                if (adaptor.matchScheme(param)) {
+                    instantiatedAdaptors.put(adaptor, initAdaptor(adaptor, context,
+                            parameterTypes, params));
+                    this.adaptors.add(adaptor);
+                    // this test keeps the number of instantiated adaptors for
+                    // objects that contain internal state, like the
+                    // FileInputStream, to a fixed size of 1, in order to prevent
+                    // multiple adaptors operating on one object, while all the
+                    // adaptors have a different internal state.
+                    if (singleInstance) {
+                        break;
+                    }
+                } else {
+                    e.add(adaptor.adaptorName, new AdaptorNotApplicableException("cannot handle this URI: " + param));
                 }
             } catch (Throwable t) {
                 e.add(adaptor.adaptorName, t);

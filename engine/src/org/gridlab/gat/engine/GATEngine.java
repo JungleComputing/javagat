@@ -498,6 +498,8 @@ public class GATEngine {
                        
                         callInitializer(clazz);
                         
+                        String[] schemes = callGetRecognizedSchemes(clazz);
+                        
 
                         // if there are no adaptors loaded for this cpi name,
                         // make a new list of adaptors that are loaded for this
@@ -510,7 +512,7 @@ public class GATEngine {
                         // the new adaptor to it. Also pass through the
                         // attributes in a preferences object.
                         adaptorLists.get(cpiName).add(
-                                new Adaptor(cpiName, clazz));
+                                new Adaptor(cpiName, clazz, schemes));
                     } catch (Exception e) {
                         if (logger.isTraceEnabled()) {
                             logger.trace("\t\tfailed loading adaptor: "
@@ -703,6 +705,23 @@ public class GATEngine {
             if (logger.isInfoEnabled()) {
                 logger.info("initialization of " + clazz + " failed: " + t);
             }
+        }
+    }
+    
+    private static String[] callGetRecognizedSchemes(Class<?> clazz) {
+        Method m;
+        try {
+            m = clazz.getMethod("getRecognizedSchemes", (Class[]) null);
+        } catch(Throwable e) {
+            return null;
+        }
+        try {
+            return (String[]) m.invoke((Object) null, (Object[]) null);
+        } catch (Throwable t) {
+            if (logger.isInfoEnabled()) {
+                logger.info("getRecognizedSchemes of " + clazz + " failed: " + t);
+            }
+            return null;
         }
     }
 
