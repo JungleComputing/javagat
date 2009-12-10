@@ -5,7 +5,8 @@ import java.io.InputStream;
 
 public class WritableInputStream extends InputStream {
 
-    private byte[] queue = new byte[1024 * 1024];
+    private byte[] queue = new byte[64 * 1024];         // Was: 1024 * 1024 but that is just
+                                                        // too much when you have many jobs.
 
     private int readPos = 0;
 
