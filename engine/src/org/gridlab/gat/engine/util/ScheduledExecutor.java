@@ -75,6 +75,7 @@ public class ScheduledExecutor implements RejectedExecutionHandler {
         Future<?> f = map.get(r);
         if (f != null) {
             f.cancel(true);
+            map.remove(r);
         }
         executor.remove(r);
     }
@@ -91,5 +92,6 @@ public class ScheduledExecutor implements RejectedExecutionHandler {
 
     public void rejectedExecution(Runnable r, ThreadPoolExecutor executor) {
         System.err.println("Warning: rejected scheduled execution of " + r);
+        map.remove(r);
     }
 }
