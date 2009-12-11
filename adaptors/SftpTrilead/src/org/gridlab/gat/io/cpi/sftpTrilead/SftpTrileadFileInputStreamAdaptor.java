@@ -3,7 +3,6 @@ package org.gridlab.gat.io.cpi.sftpTrilead;
 import java.io.IOException;
 import java.util.Map;
 
-import org.gridlab.gat.AdaptorNotApplicableException;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.GATObjectCreationException;
