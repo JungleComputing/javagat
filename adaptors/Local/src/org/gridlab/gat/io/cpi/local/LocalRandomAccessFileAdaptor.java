@@ -35,6 +35,10 @@ public class LocalRandomAccessFileAdaptor extends RandomAccessFileCpi {
         capabilities.put("write", true);
         return capabilities;
     }
+    
+    public static String[] getSupportedSchemes() {
+        return new String[] { "local", "file", ""};
+    }
 
     RandomAccessFile rf;
 
@@ -45,11 +49,6 @@ public class LocalRandomAccessFileAdaptor extends RandomAccessFileCpi {
         if (!location.refersToLocalHost()) {
             throw new AdaptorNotApplicableException(
                     "Cannot use remote files with the local random access file adaptor");
-        }
-
-        if (!location.isCompatible("file")) {
-            throw new AdaptorNotApplicableException("cannot handle this URI: "
-                    + location);
         }
 
         try {

@@ -7,7 +7,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
-import org.gridlab.gat.AdaptorNotApplicableException;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.GATObjectCreationException;
@@ -53,7 +52,11 @@ public class GliteGuidFileAdaptor extends FileCpi {
 
     private static final Logger LOGGER = LoggerFactory
             .getLogger(GliteGuidFileAdaptor.class);
-
+    
+    public static String[] getSupportedSchemes() {
+        return new String[] { "gliteguid", GUID, "file", ""};
+    }
+    
     private LfcConnector lfcConnector;
 
     private boolean localFile;
@@ -69,10 +72,6 @@ public class GliteGuidFileAdaptor extends FileCpi {
             localFile = true;
         } else {
             localFile = false;
-            if (!location.isCompatible(GUID)) {
-                throw new AdaptorNotApplicableException(
-                        "cannot handle this URI: " + location);
-            }
             this.lfcConnector = LfcUtil.initLfcConnector(gatContext, location,
                     vo);
             LOGGER.info("Instantiated gLiteGuidFileAdaptor for " + location);

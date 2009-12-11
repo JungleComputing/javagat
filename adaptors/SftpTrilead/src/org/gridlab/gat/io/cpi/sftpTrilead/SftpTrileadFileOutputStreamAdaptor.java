@@ -3,7 +3,6 @@ package org.gridlab.gat.io.cpi.sftpTrilead;
 import java.io.IOException;
 import java.util.Map;
 
-import org.gridlab.gat.AdaptorNotApplicableException;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.GATObjectCreationException;
@@ -43,6 +42,10 @@ public class SftpTrileadFileOutputStreamAdaptor extends FileOutputStreamCpi {
         return preferences;
     }
     
+    public static String[] getSupportedSchemes() {
+        return new String[] { "sftptrilead", "sftp", "file"};
+    }
+    
     private final SftpTrileadConnection connection;
     
     private final SFTPv3FileHandle handle;
@@ -56,11 +59,6 @@ public class SftpTrileadFileOutputStreamAdaptor extends FileOutputStreamCpi {
                 
         super(gatContext, location, append);
        
-        if (!location.isCompatible("sftp")) {
-            throw new AdaptorNotApplicableException("cannot handle this URI: "
-                    + location);
-        }
-
 //      We don't have to handle the local case, the GAT engine will select
 //      the local adaptor.
         if (location.getHost() == null) {

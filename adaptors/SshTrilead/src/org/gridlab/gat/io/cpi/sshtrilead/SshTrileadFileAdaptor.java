@@ -12,7 +12,6 @@ import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.gridlab.gat.AdaptorNotApplicableException;
 import org.gridlab.gat.GAT;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
@@ -100,7 +99,11 @@ public class SshTrileadFileAdaptor extends FileCpi {
      * On the server side, the "scp" program must be in the PATH.
      */
     private static final long serialVersionUID = 7343449503574566274L;
-
+    
+    public static String[] getSupportedSchemes() {
+        return new String[] { "sshtrilead", "ssh", "file", ""};
+    }
+    
     private static Logger logger = LoggerFactory
             .getLogger(SshTrileadFileAdaptor.class);
 
@@ -170,10 +173,6 @@ public class SshTrileadFileAdaptor extends FileCpi {
             throws GATObjectCreationException, GATInvocationException {
         super(gatContext, location);
         fixedURI = fixURI(location, null);
-        if (!location.isCompatible("ssh") && !location.isCompatible("file")) {
-            throw new AdaptorNotApplicableException("cannot handle this URI: "
-                    + location);
-        }
 
         boolean noHostKeyChecking;
         boolean strictHostKeyChecking;

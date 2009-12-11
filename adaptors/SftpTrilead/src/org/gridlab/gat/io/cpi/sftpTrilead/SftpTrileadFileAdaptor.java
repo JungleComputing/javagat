@@ -15,7 +15,6 @@ import java.util.Vector;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.gridlab.gat.AdaptorNotApplicableException;
 import org.gridlab.gat.CouldNotInitializeCredentialException;
 import org.gridlab.gat.CredentialExpiredException;
 import org.gridlab.gat.GAT;
@@ -59,7 +58,11 @@ public class SftpTrileadFileAdaptor extends FileCpi {
         preferences.put("sftptrilead.noHostKeyChecking", "true");
         return preferences;
     }
-
+    
+    public static String[] getSupportedSchemes() {
+        return new String[] { "sftptrilead", "sftp", "file"};
+    }
+    
     protected static Logger logger = LoggerFactory
             .getLogger(SftpTrileadFileAdaptor.class);
 
@@ -75,11 +78,6 @@ public class SftpTrileadFileAdaptor extends FileCpi {
             throws GATObjectCreationException {
 
         super(gatContext, location);
-      
-        if (!location.isCompatible("sftp") && !location.isCompatible("file")) {
-            throw new AdaptorNotApplicableException("cannot handle this URI: "
-                    + location);
-        }
         
         Preferences p = gatContext.getPreferences();
         boolean noHostKeyChecking = ((String) p.get("sftptrilead.noHostKeyChecking", "true"))

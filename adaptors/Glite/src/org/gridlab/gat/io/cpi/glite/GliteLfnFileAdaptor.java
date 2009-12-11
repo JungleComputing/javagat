@@ -9,7 +9,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-import org.gridlab.gat.AdaptorNotApplicableException;
 import org.gridlab.gat.GAT;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
@@ -42,7 +41,11 @@ public class GliteLfnFileAdaptor extends FileCpi {
 
     private static final String LFN = "lfn";
     private static final String CANNOT_HANDLE_THIS_URI = "cannot handle this URI: ";
-
+    
+    public static String[] getSupportedSchemes() {
+        return new String[] { "glitelfn", LFN, "file", ""};
+    }
+    
     protected static final Logger LOGGER = LoggerFactory.getLogger(GliteLfnFileAdaptor.class);
 
     private LfcConnector lfcConnector;
@@ -59,10 +62,6 @@ public class GliteLfnFileAdaptor extends FileCpi {
             localFile = true;
         } else {
             localFile = false;
-            if (!location.isCompatible(LFN)) {
-                throw new AdaptorNotApplicableException(
-                        "cannot handle this URI: " + location);
-            }
             lfcConnector = LfcUtil.initLfcConnector(gatContext, location, vo);
             try {
             	this.location = this.location.setHost(lfcConnector.getServer());

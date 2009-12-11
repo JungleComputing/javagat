@@ -61,6 +61,10 @@ public class LocalFileAdaptor extends FileCpi {
     public static String getDescription() {
         return "The Local File Adaptor is a simple wrapper around the java.io.File object.";
     }
+    
+    public static String[] getSupportedSchemes() {
+        return new String[] { "local", "file", ""};
+    }
 
     private File f;
 
@@ -75,11 +79,6 @@ public class LocalFileAdaptor extends FileCpi {
             throw new AdaptorNotApplicableException(
                     "Cannot use remote files with the local file adaptor, URI is: "
                             + location);
-        }
-
-        if (!location.isCompatible("file")) {
-            throw new AdaptorNotApplicableException("cannot handle this URI: "
-                    + location);
         }
 
         URI correctedURI = newcorrectURI(location);

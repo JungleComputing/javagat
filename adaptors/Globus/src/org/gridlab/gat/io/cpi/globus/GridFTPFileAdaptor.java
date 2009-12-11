@@ -11,7 +11,6 @@ import org.globus.ftp.GridFTPClient;
 import org.globus.ftp.GridFTPSession;
 import org.globus.ftp.exception.ServerException;
 import org.globus.gsi.gssapi.GlobusGSSCredentialImpl;
-import org.gridlab.gat.AdaptorNotApplicableException;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.GATObjectCreationException;
@@ -29,7 +28,11 @@ public class GridFTPFileAdaptor extends GlobusFileAdaptor {
         p.put("gridftp.authentication.retry", "0");
         return p;
     }
-
+    
+    public static String[] getSupportedSchemes() {
+        return new String[] { "gsiftp", "file", ""};
+    }
+    
     protected static Logger logger = LoggerFactory.getLogger(GridFTPFileAdaptor.class);
 
     static boolean USE_CLIENT_CACHING = false;
@@ -51,11 +54,6 @@ public class GridFTPFileAdaptor extends GlobusFileAdaptor {
     public GridFTPFileAdaptor(GATContext gatContext, URI location)
             throws GATObjectCreationException {
         super(gatContext, location);
-
-        if (!location.isCompatible("gsiftp") && !location.isCompatible("file")) {
-            throw new AdaptorNotApplicableException("cannot handle this URI: "
-                    + location);
-        }
 
         /*
          * Don't try to get the credential if we are dealing with a local file.

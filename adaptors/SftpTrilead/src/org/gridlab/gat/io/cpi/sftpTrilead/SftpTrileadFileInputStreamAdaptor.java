@@ -46,6 +46,10 @@ public class SftpTrileadFileInputStreamAdaptor extends FileInputStreamCpi {
         return preferences;
     }
     
+    public static String[] getSupportedSchemes() {
+        return new String[] { "sftptrilead", "sftp", "file"};
+    }
+        
     private final SftpTrileadConnection connection;
     
     private final SFTPv3FileHandle handle;
@@ -62,11 +66,6 @@ public class SftpTrileadFileInputStreamAdaptor extends FileInputStreamCpi {
         throws GATObjectCreationException {
                 
         super(gatContext, location);
-       
-        if (!location.isCompatible("sftp")) {
-            throw new AdaptorNotApplicableException("cannot handle this URI: "
-                    + location);
-        }
 
 //      We don't have to handle the local case, the GAT engine will select
 //      the local adaptor.

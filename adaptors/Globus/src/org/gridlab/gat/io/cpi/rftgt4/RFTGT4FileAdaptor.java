@@ -100,7 +100,11 @@ class RFTGT4NotifyCallback implements NotifyCallback {
 
     protected static Logger logger = LoggerFactory
             .getLogger(RFTGT4NotifyCallback.class);
-
+    
+    public static String[] getSupportedSchemes() {
+        return new String[] { "rftgt4", "gsiftp", "gridftp", "file", ""};
+    }
+    
     RFTGT4FileAdaptor transfer;
 
     public RFTGT4NotifyCallback(RFTGT4FileAdaptor transfer) {

@@ -22,6 +22,10 @@ public class LocalFileOutputStreamAdaptor extends FileOutputStreamCpi {
 
         return capabilities;
     }
+    
+    public static String[] getSupportedSchemes() {
+        return new String[] { "local", "file", ""};
+    }
 
     FileOutputStream out;
 
@@ -32,11 +36,6 @@ public class LocalFileOutputStreamAdaptor extends FileOutputStreamCpi {
         if (!location.refersToLocalHost()) {
             throw new AdaptorNotApplicableException(
                     "Cannot use remote files with the local file output stream adaptor");
-        }
-
-        if (!location.isCompatible("file")) {
-            throw new AdaptorNotApplicableException("cannot handle this URI: "
-                    + location);
         }
 
         String path = location.getPath();

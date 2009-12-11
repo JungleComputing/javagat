@@ -5,7 +5,6 @@ import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.gridlab.gat.AdaptorNotApplicableException;
 import org.gridlab.gat.GAT;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
@@ -46,7 +45,11 @@ public class CommandlineSshFileAdaptor extends FileCpi {
         p.put(SSH_STRICT_HOST_KEY_CHECKING, "true");
         return p;
     }
-
+    
+    public static String[] getSupportedSchemes() {
+        return new String[] { "commandlinessh", "ssh", "file", ""};
+    }
+    
     protected static Logger logger = LoggerFactory
             .getLogger(CommandlineSshFileAdaptor.class);
 
@@ -69,11 +72,6 @@ public class CommandlineSshFileAdaptor extends FileCpi {
             throws GATObjectCreationException {
         super(gatContext, location);
 
-        if (!location.isCompatible("ssh") && !location.isCompatible("file")) {
-            throw new AdaptorNotApplicableException("cannot handle this URI: "
-                    + location);
-        }
-        
         fixedURI = fixURI(location, null);
 
         String osname = System.getProperty("os.name");

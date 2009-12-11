@@ -3,7 +3,6 @@ package org.gridlab.gat.io.cpi.glite;
 import java.io.IOException;
 import java.util.Map;
 
-import org.gridlab.gat.AdaptorNotApplicableException;
 import org.gridlab.gat.GAT;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
@@ -39,7 +38,11 @@ public class GliteSrmFileAdaptor extends FileCpi {
     private static final String CANNOT_HANDLE_THIS_URI = "cannot handle this URI: ";
 
     private static final String GLITE_SRM_FILE_ADAPTOR = "GliteSrmFileAdaptor";
-
+    
+    public static String[] getSupportedSchemes() {
+        return new String[] { "glitesrm", SRM_PROTOCOL, "file", ""};
+    }
+    
     private static final Logger LOGGER = LoggerFactory
             .getLogger(GliteSrmFileAdaptor.class);
 
@@ -55,10 +58,6 @@ public class GliteSrmFileAdaptor extends FileCpi {
             localFile = true;
         } else {
             localFile = false;
-            if (!location.isCompatible(GliteSrmFileAdaptor.SRM_PROTOCOL)) {
-                throw new AdaptorNotApplicableException(
-                        GliteSrmFileAdaptor.CANNOT_HANDLE_THIS_URI + location);
-            }
         }
         
         this.connector = new SrmConnector(GliteSecurityUtils.getProxyPath(gatContext));        

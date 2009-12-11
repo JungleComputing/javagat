@@ -26,6 +26,10 @@ public class LocalFileInputStreamAdaptor extends FileInputStreamCpi {
 
         return capabilities;
     }
+    
+    public static String[] getSupportedSchemes() {
+        return new String[] { "local", "file", ""};
+    }
 
     FileInputStream in;
 
@@ -36,11 +40,6 @@ public class LocalFileInputStreamAdaptor extends FileInputStreamCpi {
         if (!location.refersToLocalHost()) {
             throw new AdaptorNotApplicableException(
                     "Cannot use remote files with the local file input stream adaptor");
-        }
-
-        if (!location.isCompatible("file")) {
-            throw new AdaptorNotApplicableException("cannot handle this URI: "
-                    + location);
         }
 
         String path = location.getPath();

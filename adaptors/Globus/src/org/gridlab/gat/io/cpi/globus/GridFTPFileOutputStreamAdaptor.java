@@ -7,7 +7,6 @@ import org.globus.ftp.GridFTPClient;
 import org.globus.ftp.GridFTPSession;
 import org.globus.ftp.exception.FTPException;
 import org.globus.io.streams.FTPOutputStream;
-import org.gridlab.gat.AdaptorNotApplicableException;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.GATObjectCreationException;
@@ -26,16 +25,16 @@ class GridFTPOutputStream extends FTPOutputStream {
 
 public class GridFTPFileOutputStreamAdaptor extends
         GlobusFileOutputStreamAdaptor {
+    
+    public static String[] getSupportedSchemes() {
+        return new String[] { "gsiftp", "file", ""};
+    }
+    
     GridFTPClient c;
 
     public GridFTPFileOutputStreamAdaptor(GATContext gatContext, URI location,
             Boolean append) throws GATObjectCreationException {
         super(gatContext, location, append);
-
-        if (!location.isCompatible("gsiftp")) {
-            throw new AdaptorNotApplicableException("cannot handle this URI: "
-                    + location);
-        }
 
         // now try to create a stream.
         try {

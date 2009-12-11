@@ -3,7 +3,6 @@ package org.gridlab.gat.io.cpi.globus;
 import java.io.InputStream;
 
 import org.globus.io.streams.HTTPInputStream;
-import org.gridlab.gat.AdaptorNotApplicableException;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.GATObjectCreationException;
@@ -24,14 +23,14 @@ import org.gridlab.gat.URI;
  * call.
  */
 public class HTTPFileInputStreamAdaptor extends GlobusFileInputStreamAdaptor {
+    
+    public static String[] getSupportedSchemes() {
+        return new String[] { "http", "file", ""};
+    }
+    
     public HTTPFileInputStreamAdaptor(GATContext gatContext, URI location)
             throws GATObjectCreationException {
         super(gatContext, location);
-
-        if (!location.isCompatible("http")) {
-            throw new AdaptorNotApplicableException("cannot handle this URI: "
-                    + location);
-        }
 
         // now try to create a stream.
         try {

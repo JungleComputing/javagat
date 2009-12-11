@@ -4,7 +4,6 @@ import java.io.InputStream;
 
 import org.globus.gsi.gssapi.auth.SelfAuthorization;
 import org.globus.io.streams.GassInputStream;
-import org.gridlab.gat.AdaptorNotApplicableException;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.GATObjectCreationException;
@@ -13,14 +12,14 @@ import org.gridlab.gat.security.globus.GlobusSecurityUtils;
 import org.ietf.jgss.GSSCredential;
 
 public class HTTPSFileInputStreamAdaptor extends GlobusFileInputStreamAdaptor {
+    
+    public static String[] getSupportedSchemes() {
+        return new String[] { "https", "file", ""};
+    }
+    
     public HTTPSFileInputStreamAdaptor(GATContext gatContext, URI location)
             throws GATObjectCreationException {
         super(gatContext, location);
-
-        if (!location.isCompatible("https")) {
-            throw new AdaptorNotApplicableException("cannot handle this URI: "
-                    + location);
-        }
 
         // now try to create a stream.
         try {

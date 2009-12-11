@@ -7,7 +7,6 @@ import java.util.Vector;
 import org.globus.ftp.FTPClient;
 import org.globus.ftp.Session;
 import org.globus.ftp.exception.ServerException;
-import org.gridlab.gat.AdaptorNotApplicableException;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.GATObjectCreationException;
@@ -27,7 +26,11 @@ public class FTPFileAdaptor extends GlobusFileAdaptor {
         capabilities.put("exists", true);
         return capabilities;
     }
-
+    
+    public static String[] getSupportedSchemes() {
+        return new String[] { "ftp", "file", ""};
+    }
+    
     String user;
 
     String password;
@@ -47,10 +50,6 @@ public class FTPFileAdaptor extends GlobusFileAdaptor {
     public FTPFileAdaptor(GATContext gatContext, URI location)
             throws GATObjectCreationException {
         super(gatContext, location);
-
-        if (!location.isCompatible("ftp") && !location.isCompatible("file")) {
-            throw new AdaptorNotApplicableException("cannot handle this URI");
-        }
 
         List<SecurityContext> l = SecurityContextUtils
                 .getValidSecurityContextsByType(gatContext,
