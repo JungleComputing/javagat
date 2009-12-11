@@ -266,7 +266,10 @@ public class SgeJob extends JobCpi {
         } catch (DrmaaException e) {
             if (logger.isDebugEnabled()) {
                 logger.debug("-- SGEJob EXCEPTION --");
-                logger.debug("Got an exception while retrieving resource manager status:", e);
+                logger
+                        .debug(
+                                "Got an exception while retrieving resource manager status:",
+                                e);
             }
         }
         return m;
@@ -300,14 +303,12 @@ public class SgeJob extends JobCpi {
     }
 
     public void stop() throws GATInvocationException {
-        if (state == JobState.POST_STAGING
-                || state == JobState.STOPPED
+        if (state == JobState.POST_STAGING || state == JobState.STOPPED
                 || state == JobState.SUBMISSION_ERROR) {
             return;
         }
-        if ((state != JobState.RUNNING)
-                || (state != JobState.ON_HOLD)
-                || (state != JobState.SCHEDULED)) {
+        if (!(state == JobState.RUNNING) || (state == JobState.ON_HOLD)
+                || (state == JobState.SCHEDULED)) {
             throw new GATInvocationException(
                     "Cant stop(): job is not in a running state");
         } else {
@@ -323,7 +324,9 @@ public class SgeJob extends JobCpi {
             } catch (DrmaaException e) {
                 if (logger.isDebugEnabled()) {
                     logger.debug("-- SGEJob EXCEPTION --");
-                    logger.debug("Got an exception while trying to TERMINATE job:", e);
+                    logger.debug(
+                            "Got an exception while trying to TERMINATE job:",
+                            e);
                 }
             }
         }
