@@ -58,6 +58,11 @@ public class SgeResourceBrokerAdaptor extends ResourceBrokerCpi {
         return "This ResourceBroker uses the DRMAA interface to speak to the Sun Grid Engine. It can only be used on a machine, that has SGE installed. There might be link problems using this adaptor, because the adaptor depends on the SGE installation. In particular, the drmaa.jar that's included in the source (adaptors/Sge/external/drmaa.jar) should be compatible with the $SGE_ROOT/lib/$ARCH/libdrmaa.so, which means that they should be compiled for the same java version (also the 32/64 bit should be equal). Furthermore, this adaptor only works if it's executed using the same java version as the one used for compiling drmaa.jar. A small note about the arguments of the executable: the SGE adaptor automatically puts quotes around each argument.";
     }
 
+    
+    public static String[] getSupportedSchemes() {
+        return new String[] { "sge", ""};
+    }
+    
     protected static Logger logger = LoggerFactory
             .getLogger(SgeResourceBrokerAdaptor.class);
 
@@ -66,17 +71,7 @@ public class SgeResourceBrokerAdaptor extends ResourceBrokerCpi {
     public SgeResourceBrokerAdaptor(GATContext gatContext, URI brokerURI)
             throws GATObjectCreationException {
         super(gatContext, brokerURI);
-        // if wrong scheme, throw exception!
-        if (brokerURI.getScheme() != null) {
-            if (!brokerURI.isCompatible("sge")) {
-                throw new GATObjectCreationException(
-                        "Unable to handle incompatible scheme '"
-                                + brokerURI.getScheme() + "' in broker uri '"
-                                + brokerURI.toString() + "'");
-            }
-        }
-
-        SessionFactory factory = SessionFactory.getFactory();
+         SessionFactory factory = SessionFactory.getFactory();
         SGEsession = factory.getSession();
     }
 

@@ -56,7 +56,11 @@ public class ProActiveResourceBrokerAdaptor extends ResourceBrokerCpi implements
      * expected.
      */
     private int remainingCalls;
-
+    
+    public static String[] getSupportedSchemes() {
+        return new String[] { "proactive"};
+    }
+    
     /** Logger. */
     static final Logger logger = LoggerFactory
             .getLogger(ProActiveResourceBrokerAdaptor.class);

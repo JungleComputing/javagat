@@ -41,6 +41,10 @@ public class ZorillaResourceBrokerAdaptor extends ResourceBrokerCpi implements
 
         return capabilities;
     }
+    
+    public static String[] getSupportedSchemes() {
+        return new String[] { "zorilla"};
+    }
 
     // update status of each job every minute
     public static final int TIMEOUT = 5000;
@@ -80,16 +84,6 @@ public class ZorillaResourceBrokerAdaptor extends ResourceBrokerCpi implements
         }
 
         logger.debug("broker URI = " + brokerURI);
-
-        // if wrong scheme, throw exception!
-        if (brokerURI.getScheme() != null) {
-            if (!brokerURI.isCompatible("zorilla")) {
-                throw new GATObjectCreationException(
-                        "Unable to handle incompatible scheme '"
-                                + brokerURI.getScheme() + "' in broker uri '"
-                                + brokerURI.toString() + "'");
-            }
-        }
 
         nodeSocketAddress = brokerURI.getSchemeSpecificPart();
 

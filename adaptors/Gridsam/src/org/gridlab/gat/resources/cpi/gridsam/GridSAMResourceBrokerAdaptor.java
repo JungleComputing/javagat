@@ -44,6 +44,10 @@ public class GridSAMResourceBrokerAdaptor extends ResourceBrokerCpi {
         preferences.put("gridsam.sandbox.root", "/tmp");
         return preferences;
     }
+    
+    public static String[] getSupportedSchemes() {
+        return new String[] { "gridsam", "https"};
+    }
 
     private Logger logger = LoggerFactory
             .getLogger(GridSAMResourceBrokerAdaptor.class);
@@ -61,19 +65,7 @@ public class GridSAMResourceBrokerAdaptor extends ResourceBrokerCpi {
      */
     public GridSAMResourceBrokerAdaptor(GATContext gatContext,
             org.gridlab.gat.URI brokerURI) throws GATObjectCreationException {
-
         super(gatContext, brokerURI);
-
-        // if wrong scheme, throw exception!
-        if (brokerURI.getScheme() != null) {
-            if (!brokerURI.isCompatible("https")) {
-                throw new GATObjectCreationException(
-                        "Unable to handle incompatible scheme '"
-                                + brokerURI.getScheme() + "' in broker uri '"
-                                + brokerURI.toString() + "'");
-            }
-        }
-
     }
 
     URI getBroker() {

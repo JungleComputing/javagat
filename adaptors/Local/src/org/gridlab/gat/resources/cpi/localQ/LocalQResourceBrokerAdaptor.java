@@ -71,6 +71,10 @@ public class LocalQResourceBrokerAdaptor extends ResourceBrokerCpi implements
 
         return capabilities;
     }
+    
+    public static String[] getSupportedSchemes() {
+        return new String[] { "localq", ""};
+    }
 
     protected static Logger logger = LoggerFactory
             .getLogger(LocalQResourceBrokerAdaptor.class);
@@ -98,16 +102,6 @@ public class LocalQResourceBrokerAdaptor extends ResourceBrokerCpi implements
     public LocalQResourceBrokerAdaptor(GATContext gatContext, URI brokerURI)
             throws GATObjectCreationException {
         super(gatContext, brokerURI);
-
-        // if wrong scheme, throw exception!
-        if (brokerURI.getScheme() != null) {
-            if (!brokerURI.isCompatible("localq")) {
-                throw new GATObjectCreationException(
-                        "Unable to handle incompatible scheme '"
-                                + brokerURI.getScheme() + "' in broker uri '"
-                                + brokerURI.toString() + "'");
-            }
-        }
         
         // the brokerURI should point to the local host else throw exception
         if (!brokerURI.refersToLocalHost()) {

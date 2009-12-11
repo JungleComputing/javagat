@@ -23,6 +23,8 @@ import org.gridlab.gat.resources.SoftwareDescription;
 
 public class ResourceBrokerAdaptorTest implements MetricListener {
 
+    private boolean jobFinished;
+    
     /**
      * @param args
      */
@@ -33,8 +35,13 @@ public class ResourceBrokerAdaptorTest implements MetricListener {
     }
 
     public AdaptorTestResult test(String adaptor, String host) {
-        if (! host.equals("")) {
-            host = "any://" + host;
+        try {
+            URI temp = new URI(host);
+            if (temp.getScheme() == null && ! host.equals("")) {
+                host = "any://" + host;
+            }
+        } catch (URISyntaxException e) {
+            // ignored
         }
 
         AdaptorTestResult adaptorTestResult = new AdaptorTestResult(adaptor,
@@ -46,25 +53,45 @@ public class ResourceBrokerAdaptorTest implements MetricListener {
         Preferences preferences = new Preferences();
         preferences.put("resourcebroker.adaptor.name", adaptor);
         // preferences.put("file.adaptor.name", "commandlinessh,sshtrilead,local");
+        jobFinished = false;
         adaptorTestResult.put("submit job easy  ", submitJobEasy(
                 gatContext, preferences, host));
+        jobFinished = false;
         adaptorTestResult.put("submit job parallel", submitJobParallel(
                 gatContext, preferences, host));
+        jobFinished = false;
         adaptorTestResult.put("submit job stdout", submitJobStdout(
                 gatContext, preferences, host));
+        jobFinished = false;
         adaptorTestResult.put("submit job stderr", submitJobStderr(
                 gatContext, preferences, host));
+        jobFinished = false;
         adaptorTestResult.put("submit job prestage", submitJobPreStage(
                 gatContext, preferences, host));
+        jobFinished = false;
         adaptorTestResult.put("submit job poststage", submitJobPostStage(
                 gatContext, preferences, host));
+        jobFinished = false;
         adaptorTestResult.put("submit job environment", submitJobEnvironment(
                 gatContext, preferences, host));
+        jobFinished = false;
         adaptorTestResult.put("job state consistency",
                 submitJobStateConsistency(gatContext, preferences, host));
+        jobFinished = false;
         adaptorTestResult.put("job get info        ", submitJobGetInfo(
                 gatContext, preferences, host));
+        jobFinished = false;
         return adaptorTestResult;
+    }
+    
+    private synchronized void waitForJob() {
+        while (! jobFinished) {
+            try {
+                wait();
+            } catch(Throwable e) {
+                // ignored
+            }
+        }
     }
 
     private AdaptorTestResultEntry submitJobEasy(GATContext gatContext,
@@ -92,13 +119,7 @@ public class ResourceBrokerAdaptorTest implements MetricListener {
             e.printStackTrace();
             return new AdaptorTestResultEntry(false, 0L, e);
         }
-        synchronized (this) {
-            try {
-                wait();
-            } catch (InterruptedException e) {
-
-            }
-        }
+        waitForJob();
         long stop = System.currentTimeMillis();
         return new AdaptorTestResultEntry(true, (stop - start), null);
 
@@ -127,13 +148,8 @@ public class ResourceBrokerAdaptorTest implements MetricListener {
         } catch (GATInvocationException e) {
             return new AdaptorTestResultEntry(false, 0L, e);
         }
-        synchronized (this) {
-            try {
-                wait();
-            } catch (InterruptedException e) {
+        waitForJob();
 
-            }
-        }
         long stop = System.currentTimeMillis();
         return new AdaptorTestResultEntry(true, (stop - start), null);
 
@@ -167,13 +183,8 @@ public class ResourceBrokerAdaptorTest implements MetricListener {
             e.printStackTrace();
             return new AdaptorTestResultEntry(false, 0L, e);
         }
-        synchronized (this) {
-            try {
-                wait();
-            } catch (InterruptedException e) {
+        waitForJob();
 
-            }
-        }
         long stop = System.currentTimeMillis();
         String result;
         try {
@@ -215,13 +226,8 @@ public class ResourceBrokerAdaptorTest implements MetricListener {
         } catch (GATInvocationException e) {
             return new AdaptorTestResultEntry(false, 0L, e);
         }
-        synchronized (this) {
-            try {
-                wait();
-            } catch (InterruptedException e) {
+        waitForJob();
 
-            }
-        }
         long stop = System.currentTimeMillis();
         String result;
         try {
@@ -274,13 +280,7 @@ public class ResourceBrokerAdaptorTest implements MetricListener {
         } catch (GATInvocationException e) {
             return new AdaptorTestResultEntry(false, 0L, e);
         }
-        synchronized (this) {
-            try {
-                wait();
-            } catch (InterruptedException e) {
-
-            }
-        }
+        waitForJob();
         long stop = System.currentTimeMillis();
         String result;
         try {
@@ -321,13 +321,7 @@ public class ResourceBrokerAdaptorTest implements MetricListener {
         } catch (GATInvocationException e) {
             return new AdaptorTestResultEntry(false, 0L, e);
         }
-        synchronized (this) {
-            try {
-                wait();
-            } catch (InterruptedException e) {
-
-            }
-        }
+        waitForJob();
         long stop = System.currentTimeMillis();
         return new AdaptorTestResultEntry(
                 new java.io.File("flap.txt").exists(), (stop - start), null);
@@ -362,13 +356,7 @@ public class ResourceBrokerAdaptorTest implements MetricListener {
         } catch (GATInvocationException e) {
             return new AdaptorTestResultEntry(false, 0L, e);
         }
-        synchronized (this) {
-            try {
-                wait();
-            } catch (InterruptedException e) {
-
-            }
-        }
+        waitForJob();
         long stop = System.currentTimeMillis();
         boolean success = false;
         try {
@@ -407,20 +395,14 @@ public class ResourceBrokerAdaptorTest implements MetricListener {
         } catch (URISyntaxException e) {
             return new AdaptorTestResultEntry(false, 0L, e);
         }
-        JobStateMetricListener listener = new JobStateMetricListener();
+        JobStateMetricListener listener = new JobStateMetricListener(this);
         long start = System.currentTimeMillis();
         try {
             broker.submitJob(jd, listener, "job.status");
         } catch (GATInvocationException e) {
             return new AdaptorTestResultEntry(false, 0L, e);
         }
-        synchronized (listener) {
-            try {
-                listener.wait();
-            } catch (InterruptedException e) {
-
-            }
-        }
+        waitForJob();
         long stop = System.currentTimeMillis();
         return new AdaptorTestResultEntry(listener.getException() == null,
                 (stop - start), listener.getException());
@@ -432,6 +414,13 @@ public class ResourceBrokerAdaptorTest implements MetricListener {
         private Job.JobState state = Job.JobState.INITIAL;
 
         private Exception e;
+        
+        ResourceBrokerAdaptorTest resourceBrokerAdaptorTest;
+
+        public JobStateMetricListener(
+                ResourceBrokerAdaptorTest resourceBrokerAdaptorTest) {
+            this.resourceBrokerAdaptorTest = resourceBrokerAdaptorTest;
+        }
 
         public void processMetricEvent(MetricEvent val) {
             Job.JobState newState = (Job.JobState) val.getValue();
@@ -472,8 +461,9 @@ public class ResourceBrokerAdaptorTest implements MetricListener {
             }
             state = newState;
             if (state.equals(Job.JobState.STOPPED)) {
-                synchronized (this) {
-                    notifyAll();
+                synchronized (resourceBrokerAdaptorTest) {
+                    resourceBrokerAdaptorTest.jobFinished = true;
+                    resourceBrokerAdaptorTest.notifyAll();
                 }
             }
         }
@@ -570,6 +560,7 @@ public class ResourceBrokerAdaptorTest implements MetricListener {
     public void processMetricEvent(MetricEvent val) {
         if (val.getValue().equals(Job.JobState.STOPPED)) {
             synchronized (this) {
+                jobFinished = true;
                 notifyAll();
             }
         }

@@ -76,6 +76,11 @@ public class GT42ResourceBrokerAdaptor extends ResourceBrokerCpi {
         return preferences;
     }
 
+       
+    public static String[] getSupportedSchemes() {
+        return new String[] { "gt42", "https"};
+    }
+
     protected static Logger logger = LoggerFactory
             .getLogger(GT42ResourceBrokerAdaptor.class);
 
@@ -106,16 +111,6 @@ public class GT42ResourceBrokerAdaptor extends ResourceBrokerCpi {
     public GT42ResourceBrokerAdaptor(GATContext gatContext, URI brokerURI)
             throws GATObjectCreationException {
         super(gatContext, brokerURI);
-        // accept if broker URI is compatible with https or with any
-        // if wrong scheme, throw exception!
-        if (brokerURI.getScheme() != null) {
-            if (!brokerURI.isCompatible("https")) {
-                throw new GATObjectCreationException(
-                        "Unable to handle incompatible scheme '"
-                                + brokerURI.getScheme() + "' in broker uri '"
-                                + brokerURI.toString() + "'");
-            }
-        }
 
         if (System.getProperty("GT42_LOCATION") == null) {
             String gt42Location = System.getProperty("gat.adaptor.path")

@@ -81,6 +81,10 @@ public class WSGT4newResourceBrokerAdaptor extends ResourceBrokerCpi {
         preferences.put("wsgt4new.factory.type", "<FORK CONSTANT>");
         return preferences;
     }
+    
+    public static String[] getSupportedSchemes() {
+        return new String[] { "wsgt4new", "https"};
+    }
 
     protected static Logger logger = LoggerFactory
             .getLogger(WSGT4newResourceBrokerAdaptor.class);
@@ -112,16 +116,6 @@ public class WSGT4newResourceBrokerAdaptor extends ResourceBrokerCpi {
     public WSGT4newResourceBrokerAdaptor(GATContext gatContext, URI brokerURI)
             throws GATObjectCreationException {
         super(gatContext, brokerURI);
-        // accept if broker URI is compatible with https or with any
-        // if wrong scheme, throw exception!
-        if (brokerURI.getScheme() != null) {
-            if (!brokerURI.isCompatible("https")) {
-                throw new GATObjectCreationException(
-                        "Unable to handle incompatible scheme '"
-                                + brokerURI.getScheme() + "' in broker uri '"
-                                + brokerURI.toString() + "'");
-            }
-        }
 
         if (System.getProperty("GLOBUS_LOCATION") == null) {
             String globusLocation = System.getProperty("gat.adaptor.path")

@@ -38,6 +38,7 @@ public class Adaptor {
         this.cpi = cpiName;
         this.adaptorName = adaptorClass.getName();
         this.adaptorClass = adaptorClass;
+        this.schemes = schemes;
     }
 
     Object newInstance(Class<?>[] parameterTypes, Object[] parameters)
@@ -120,6 +121,9 @@ public class Adaptor {
         String scheme = param.getScheme();
         if (scheme == null) {
             scheme = "";
+        }
+        if (scheme.equalsIgnoreCase("any")) {
+            return true;
         }
         for (String s : schemes) {
             if (s.equalsIgnoreCase(scheme)) {

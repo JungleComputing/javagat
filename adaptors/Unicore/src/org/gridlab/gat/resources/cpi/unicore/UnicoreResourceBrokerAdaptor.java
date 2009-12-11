@@ -67,12 +67,16 @@ public class UnicoreResourceBrokerAdaptor extends ResourceBrokerCpi {
 
         return capabilities;
     }
-
+    
+    public static String[] getSupportedSchemes() {
+        return new String[] { "unicore6"};
+    }
+    
     public UnicoreResourceBrokerAdaptor(GATContext gatContext, URI brokerURI) throws GATObjectCreationException, AdaptorNotApplicableException {
     	
     	super(gatContext, brokerURI);
 
-    	if (!brokerURI.isCompatible("unicore6")) {
+    	if (brokerURI.getScheme() == null) {
     		throw new AdaptorNotApplicableException("cannot handle this URI: " + brokerURI);
     		}
     	if (!brokerURI.refersToLocalHost()) {

@@ -30,7 +30,10 @@ public class StreamForwarder implements Runnable {
         this.in = in;
         this.out = out;
         this.name = name;
-        ScheduledExecutor.schedule(this, 50, 50);
+        ScheduledExecutor.schedule(this, 0, 50);
+        if (logger.isDebugEnabled()) {
+            logger.debug(name + ": in = " + in);
+        }
     }
 
     public void run() {
@@ -38,9 +41,15 @@ public class StreamForwarder implements Runnable {
 
         try {
             int read;
+            if (logger.isDebugEnabled()) {
+                logger.debug(name + ": reading from " + in);
+            }
             read = in.read(buffer);
 
             if (read == -1) {
+                if (logger.isDebugEnabled()) {
+                    logger.debug(name + ": StreamForwarder got EOF");
+                }
                 if (out != null) {
                     out.flush();
                 }
@@ -62,7 +71,7 @@ public class StreamForwarder implements Runnable {
             }
             if (logger.isTraceEnabled()) {
                 for (int i = 0; i < read; i++) {
-                    logger.trace("read byte: " + buffer[i] + " ("
+                    logger.trace(name + ": read byte: " + buffer[i] + " ("
                             + ((char) buffer[i]) + ")");
                 }
             }
@@ -70,18 +79,26 @@ public class StreamForwarder implements Runnable {
             if (out != null) {
                 out.write(buffer, 0, read);
                 out.flush();
-                logger.info("Forwarder '" + name + "' forwarded: "
+                if (logger.isInfoEnabled()) {
+                    logger.info(name + " forwarded: "
                         + new String(buffer, 0, read));
+                }
             } else {
-                logger.info("forwarding impossible, outputstream closed");
+                if (logger.isInfoEnabled()) {
+                    logger.info(name + ": forwarding impossible, outputstream closed");
+                }
             }
 
         } catch (IOException e) {
-            logger.info("caught exception: " + e);
+            logger.info(name + ": caught exception: " + e);
             StringWriter writer = new StringWriter();
             e.printStackTrace(new PrintWriter(writer));
-            logger.debug("stacktrace: \n" + writer.toString());
-            ScheduledExecutor.remove(this);
+            logger.debug(name + ": stacktrace: \n" + writer.toString());
+            synchronized (this) {
+                finished = true;
+                notifyAll();
+                ScheduledExecutor.remove(this);
+            }
         }
     }
 

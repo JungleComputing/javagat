@@ -31,8 +31,13 @@ public class WMSService {
 			// make it work with the axis services
 			// the axis service will only accept the uri if the protocol is
 			// known to them
-			// while any:// is not known to them, https:// will work
-			String axisBrokerURI = brokerURI.replaceFirst("any://", "https://");
+			// while any:// is not known to them, https:// will work.
+			String axisBrokerURI;
+			if (brokerURI.startsWith("glite://")) {
+			    axisBrokerURI = brokerURI.replaceFirst("glite://", "https://");
+			} else {
+			    axisBrokerURI = brokerURI.replaceFirst("any://", "https://");
+			}
 			this.wmsURL = new URL(axisBrokerURI);
 
 			// use engine configuration with settings hardcoded for a client

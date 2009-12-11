@@ -50,6 +50,10 @@ public class CommandlineSshResourceBrokerAdaptor extends ResourceBrokerCpi {
         p.put(SSH_PORT_STRING, "" + SSH_PORT);
         return p;
     }
+    
+    public static String[] getSupportedSchemes() {
+        return new String[] { "commandlinessh", "ssh"};
+    }
 
     protected static Logger logger = LoggerFactory
             .getLogger(CommandlineSshResourceBrokerAdaptor.class);
@@ -76,23 +80,6 @@ public class CommandlineSshResourceBrokerAdaptor extends ResourceBrokerCpi {
     public CommandlineSshResourceBrokerAdaptor(GATContext gatContext,
             URI brokerURI) throws GATObjectCreationException {
         super(gatContext, brokerURI);
-
-        // if wrong scheme, throw exception!
-        if (brokerURI.getScheme() != null) {
-            if (!brokerURI.isCompatible("ssh")) {
-                throw new GATObjectCreationException(
-                        "Unable to handle incompatible scheme '"
-                                + brokerURI.getScheme() + "' in broker uri '"
-                                + brokerURI.toString() + "'");
-            }
-        }
-
-        // if (!brokerURI.isCompatible("ssh") && brokerURI.getScheme() != null
-        // || (brokerURI.refersToLocalHost() && (brokerURI == null))) {
-        // throw new AdaptorNotApplicableException(
-        // "cannot handle the scheme, scheme is: "
-        // + brokerURI.getScheme());
-        // }
 
         String osname = System.getProperty("os.name");
         if (osname.startsWith("Windows")) {

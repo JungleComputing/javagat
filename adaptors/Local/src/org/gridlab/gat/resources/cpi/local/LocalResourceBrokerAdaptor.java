@@ -71,6 +71,10 @@ public class LocalResourceBrokerAdaptor extends ResourceBrokerCpi {
 
         return capabilities;
     }
+    
+    public static String[] getSupportedSchemes() {
+        return new String[] { "local", ""};
+    }
 
     protected static Logger logger = LoggerFactory
             .getLogger(LocalResourceBrokerAdaptor.class);
@@ -85,16 +89,6 @@ public class LocalResourceBrokerAdaptor extends ResourceBrokerCpi {
     public LocalResourceBrokerAdaptor(GATContext gatContext, URI brokerURI)
             throws GATObjectCreationException {
         super(gatContext, brokerURI);
-
-        // if wrong scheme, throw exception!
-        if (brokerURI.getScheme() != null) {
-            if (!brokerURI.isCompatible("local")) {
-                throw new GATObjectCreationException(
-                        "Unable to handle incompatible scheme '"
-                                + brokerURI.getScheme() + "' in broker uri '"
-                                + brokerURI.toString() + "'");
-            }
-        }
 
         // the brokerURI should point to the local host else throw exception
         if (!brokerURI.refersToLocalHost()) {
@@ -223,7 +217,7 @@ public class LocalResourceBrokerAdaptor extends ResourceBrokerCpi {
             localJob.setStartTime();
             p = builder.start();
             localJob.setProcess(p);
-                    } catch (IOException e) {
+        } catch (IOException e) {
             throw new CommandNotFoundException("LocalResourceBrokerAdaptor", e);
         }
 
@@ -234,10 +228,10 @@ public class LocalResourceBrokerAdaptor extends ResourceBrokerCpi {
                 if (sd.getStderr() != null) {
                     OutputStream err = GAT.createFileOutputStream(sd.getStderr());
                     // to file
-                    new StreamForwarder(p.getErrorStream(), err, sd
+                    StreamForwarder forwarder = new StreamForwarder(p.getErrorStream(), err, sd
                             .getExecutable()
                             + " [stderr]");
-                    localJob.setErrorStream(err);
+                    localJob.setErrorStream(forwarder);
                 } else {
                     // or throw it away
                     new StreamForwarder(p.getErrorStream(), null, sd
@@ -256,10 +250,10 @@ public class LocalResourceBrokerAdaptor extends ResourceBrokerCpi {
                 if (sd.getStdout() != null) {
                     // to file
                     OutputStream out = GAT.createFileOutputStream(sd.getStdout());
-                    new StreamForwarder(p.getInputStream(), out, sd
+                    StreamForwarder forwarder = new StreamForwarder(p.getInputStream(), out, sd
                             .getExecutable()
                             + " [stdout]");
-                    localJob.setOutputStream(out);
+                    localJob.setOutputStream(forwarder);
                 } else {
                     // or throw it away
                     new StreamForwarder(p.getInputStream(), null, sd

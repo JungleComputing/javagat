@@ -70,7 +70,11 @@ public class SshTrileadResourceBrokerAdaptor extends ResourceBrokerCpi {
     public static String getDescription() {
         return "The SshTrilead ResourceBroker Adaptor implements the ResourceBroker object using the trilead ssh library. Trilead ssh is an open source full java ssh library. The ssh trilead ResourceBroker adaptor can only submit to single machines, however if you invoke a command like 'qsub' on a headnode, it might result in an application running on multiple machines. Connections with a remote ssh server can be made by using the username + password, username + keyfile, or with only a username, depending on the client and server settings.";
     }
-
+    
+    public static String[] getSupportedSchemes() {
+        return new String[] { "sshtrilead", "ssh"};
+    }
+    
     protected static Logger logger = LoggerFactory
             .getLogger(SshTrileadResourceBrokerAdaptor.class);
 
@@ -106,16 +110,6 @@ public class SshTrileadResourceBrokerAdaptor extends ResourceBrokerCpi {
         // These used to be the defaults, so there.
         boolean noHostKeyChecking = true;
         boolean strictHostKeyChecking = false;
-
-        // if wrong scheme, throw exception!
-        if (brokerURI.getScheme() != null) {
-            if (!brokerURI.isCompatible("ssh")) {
-                throw new GATObjectCreationException(
-                        "Unable to handle incompatible scheme '"
-                                + brokerURI.getScheme() + "' in broker uri '"
-                                + brokerURI.toString() + "'");
-            }
-        }
 
         // init from preferences
         Preferences p = gatContext.getPreferences();

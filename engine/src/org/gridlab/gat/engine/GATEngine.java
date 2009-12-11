@@ -498,7 +498,7 @@ public class GATEngine {
                        
                         callInitializer(clazz);
                         
-                        String[] schemes = callGetRecognizedSchemes(clazz);
+                        String[] schemes = callGetSupportedSchemes(clazz);
                         
 
                         // if there are no adaptors loaded for this cpi name,
@@ -708,18 +708,22 @@ public class GATEngine {
         }
     }
     
-    private static String[] callGetRecognizedSchemes(Class<?> clazz) {
+    private static String[] callGetSupportedSchemes(Class<?> clazz) {
         Method m;
         try {
-            m = clazz.getMethod("getRecognizedSchemes", (Class[]) null);
+            m = clazz.getMethod("getSupportedSchemes", (Class[]) null);
         } catch(Throwable e) {
             return null;
         }
         try {
-            return (String[]) m.invoke((Object) null, (Object[]) null);
+            String[] result = (String[]) m.invoke((Object) null, (Object[]) null);
+            if (logger.isInfoEnabled()) {
+                logger.info("Supported schemes of class " + clazz.getName() + ": " + result);
+            }
+            return result;
         } catch (Throwable t) {
             if (logger.isInfoEnabled()) {
-                logger.info("getRecognizedSchemes of " + clazz + " failed: " + t);
+                logger.info("getSupportedSchemes of " + clazz + " failed: " + t);
             }
             return null;
         }

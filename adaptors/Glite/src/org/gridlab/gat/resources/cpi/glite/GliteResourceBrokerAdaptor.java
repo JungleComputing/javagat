@@ -118,6 +118,13 @@ public class GliteResourceBrokerAdaptor extends ResourceBrokerCpi {
         preferences.put(GliteConstants.PREFERENCE_JOB_STOP_ON_EXIT, "false");
         return preferences;
     }
+    
+    /**
+     * @return a list of the supported schemes.
+     */
+    public static String[] getSupportedSchemes() {
+        return new String[] { "ldap", "ldaps", "http", "https", "glite"};
+    }
 
     /**
      * Construct a GliteResourceBrokerAdaptor for the given broker URI Instead

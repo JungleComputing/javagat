@@ -35,7 +35,11 @@ public class KoalaResourceBrokerAdaptor extends ResourceBrokerCpi {
 
         return capabilities;
     }
-	
+    
+    public static String[] getSupportedSchemes() {
+        return new String[] { "koala"};
+    }	
+    
 	protected static Logger logger = LoggerFactory.getLogger(KoalaResourceBrokerAdaptor.class);
 	
 	static { 
@@ -52,15 +56,6 @@ public class KoalaResourceBrokerAdaptor extends ResourceBrokerCpi {
     		URI brokerURI) throws GATObjectCreationException {
 
     	super(context, getBrokerURI(brokerURI));
-
-        // if wrong scheme, throw exception!
-        String scheme = this.brokerURI.getScheme();
-        if (scheme != null) {
-            if (!this.brokerURI.isCompatible("koala")) {
-                throw new GATObjectCreationException("Unable to handle incompatible scheme '"
-                    + scheme + "' in broker uri '" + this.brokerURI.toString() + "'");
-            }
-        }
 
         // Prevent recursively using this resourcebroker by checking for a 
         // magic preference.

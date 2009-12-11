@@ -17,6 +17,7 @@ import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.URI;
 import org.gridlab.gat.engine.GATEngine;
+import org.gridlab.gat.engine.util.StreamForwarder;
 import org.gridlab.gat.io.File;
 import org.gridlab.gat.monitoring.Metric;
 import org.gridlab.gat.monitoring.MetricDefinition;
@@ -47,9 +48,9 @@ public class LocalJob extends JobCpi {
     
     private final String jobName;
     
-    private OutputStream outputStreamFile;
+    private StreamForwarder outputStreamFile;
     
-    private OutputStream errorStreamFile;
+    private StreamForwarder errorStreamFile;
     
     protected LocalJob(GATContext gatContext, JobDescription description,
             Sandbox sandbox) {
@@ -67,11 +68,11 @@ public class LocalJob extends JobCpi {
                 "job.name", null);
     }
     
-    void setErrorStream(OutputStream err) {
+    void setErrorStream(StreamForwarder err) {
         errorStreamFile = err;
     }
         
-    void setOutputStream(OutputStream out) {
+    void setOutputStream(StreamForwarder out) {
         outputStreamFile = out;
     }
     
@@ -219,13 +220,12 @@ public class LocalJob extends JobCpi {
             sandbox.retrieveAndCleanup(this);
         }
         try {
-            p.getErrorStream().close();
-            p.getInputStream().close();
             p.getOutputStream().close();
         } catch (IOException e) {
             // ignore
         }
         if (outputStreamFile != null) {
+            outputStreamFile.waitUntilFinished();
             try {
                 outputStreamFile.close();
             } catch(Throwable e) {
@@ -233,6 +233,7 @@ public class LocalJob extends JobCpi {
             }
         }
         if (errorStreamFile != null) {
+            errorStreamFile.waitUntilFinished();
             try {
                 errorStreamFile.close();
             } catch(Throwable e) {

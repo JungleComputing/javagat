@@ -34,6 +34,10 @@ import org.gridlab.gat.resources.cpi.Sandbox;
 public class PbsResourceBrokerAdaptor extends ResourceBrokerCpi implements
         IParameter {
     private static final String PREFIX = "#PBS";
+    
+    public static String[] getSupportedSchemes() {
+        return new String[] { "pbs", ""};
+    }
 
     public PbsResourceBrokerAdaptor(GATContext context, URI brokerURI)
             throws GATObjectCreationException {

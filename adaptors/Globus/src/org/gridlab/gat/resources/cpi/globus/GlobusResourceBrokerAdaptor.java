@@ -62,6 +62,10 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
         preferences.put("globus.exitvalue.enable", "false");
         return preferences;
     }
+    
+    public static String[] getSupportedSchemes() {
+        return new String[] { "globus", "http", "https"};
+    }
 
     protected static Logger logger = LoggerFactory
             .getLogger(GlobusResourceBrokerAdaptor.class);
@@ -75,17 +79,6 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
     public GlobusResourceBrokerAdaptor(GATContext gatContext, URI brokerURI)
             throws GATObjectCreationException {
         super(gatContext, brokerURI);
-        // if wrong scheme, throw exception!
-        if (brokerURI.getScheme() != null) {
-            if (!brokerURI.isCompatible("http")
-                    && !brokerURI.isCompatible("https")) {
-                throw new GATObjectCreationException(
-                        "Unable to handle incompatible scheme '"
-                                + brokerURI.getScheme() + "' in broker uri '"
-                                + brokerURI.toString() + "'");
-            }
-        }
-
     }
 
     protected String createRSL(JobDescription description, String host,
