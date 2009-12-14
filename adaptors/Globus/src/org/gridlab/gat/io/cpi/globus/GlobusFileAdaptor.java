@@ -37,6 +37,7 @@ import org.gridlab.gat.URI;
 import org.gridlab.gat.engine.util.CommandRunner;
 import org.gridlab.gat.io.File;
 import org.gridlab.gat.io.FileInterface;
+import org.gridlab.gat.io.FileInfo.FileType;
 import org.gridlab.gat.io.cpi.FileCpi;
 
 @SuppressWarnings("serial")
@@ -626,6 +627,113 @@ public abstract class GlobusFileAdaptor extends FileCpi {
 
     }
 
+    // first time, don't fiddle with active/passive settings, if it fails, then
+    // change it the second time.
+    /**
+     * Returns the file informations (e.g. name, size, isDir, isFile, permissions).
+     * @see #listFileInfo()
+     */
+    public org.gridlab.gat.io.FileInfo[] listFileInfo() throws GATInvocationException {
+        try {
+            return listFileInfo(false);
+        } catch (GATInvocationException e) {
+            return listFileInfo(true);
+        }
+    } // public org.gridlab.gat.io.FileInfo[] listFileInfo() throws GATInvocationException
+
+    /**
+     * Returns the file informations (e.g. isDir, isFile, size, name).
+     * @param fiddle
+     * @return
+     * @throws GATInvocationException
+     */
+    private org.gridlab.gat.io.FileInfo[] listFileInfo(boolean fiddle) throws GATInvocationException {
+        if (!isDirectory()) {
+            return null;
+        }
+        FTPClient client = null;
+        client = createClient(toURI());
+        try {
+            setActiveOrPassive(client, gatContext.getPreferences());
+            if (fiddle) {
+                try {
+                    if (client.isPassiveMode()) {
+                        client.setActive();
+                        client.setLocalPassive();
+                    } else {
+                        client.setPassive();
+                        client.setLocalActive();
+                    }
+                } catch (Exception e) {
+                    logger
+                    .debug("failed to fiddle with the active/passive settings for the list operation: "
+                            + e);
+                }
+            }
+            if (getPath() != null) {
+                Vector<FileInfo> list = null;
+                try {
+                    String path = getPath();
+                    if (path.equals("")) {
+                        path = "/";
+                    }
+                    client.changeDir(path);
+                    // list = client.list(); // this one gives issues on some
+                    // gridftp servers (some used by the d-grid project)
+                    // list = client.nlist(); // this one is not guaranteed to be
+                    // implemented by the gridftp server.
+                    list = listNoMinusD(client, null);
+                } catch (ServerException e) {
+                    throw new GATInvocationException("Generic globus file adaptor",
+                            e);
+                } catch (ClientException e) {
+                    throw new GATInvocationException("Generic globus file adaptor",
+                            e);
+                } catch (IOException e) {
+                    throw new GATInvocationException("Generic globus file adaptor",
+                            e);
+                }
+                if (list != null) {
+                    List<org.gridlab.gat.io.FileInfo> result = new Vector<org.gridlab.gat.io.FileInfo>();
+
+                    for (int i = 0; i < list.size(); i++) {
+                        if (list.get(i).getName().equals(".")
+                                || list.get(i).getName().equals("..")) {
+                            continue;
+                        } else {
+                        	FileInfo tempFileInfo = list.get(i);
+                        	org.gridlab.gat.io.FileInfo fileInfo = new org.gridlab.gat.io.FileInfo(tempFileInfo.getName());
+                        	fileInfo.setSize(tempFileInfo.getSize());
+                        	if (tempFileInfo.isDirectory()) {
+                        		fileInfo.setFileType(FileType.directory);
+                        	} else if (tempFileInfo.isFile()) {
+                        		fileInfo.setFileType(FileType.file);
+                        	} else if (tempFileInfo.isSoftLink()) {
+                        		fileInfo.setFileType(FileType.softlink);
+                        	}
+                        	fileInfo.setDateTime(tempFileInfo.getDate(), tempFileInfo.getTime());
+                        	fileInfo.setUserPermissions(tempFileInfo.userCanRead(), tempFileInfo.userCanWrite(), tempFileInfo.userCanExecute());
+                        	fileInfo.setGroupPermissions(tempFileInfo.groupCanRead(), tempFileInfo.groupCanWrite(), tempFileInfo.groupCanExecute());
+                        	fileInfo.setAllPermissions(tempFileInfo.allCanRead(), tempFileInfo.allCanWrite(), tempFileInfo.allCanExecute());
+                        	result.add(fileInfo);
+                        }
+                    }
+                    return result.toArray(new org.gridlab.gat.io.FileInfo[result.size()]);
+                }
+            }
+        } finally {
+            destroyClient(client, toURI(), gatContext.getPreferences());
+        }
+        return null;
+
+    }
+
+    
+    
+    
+    
+    
+    
     // public String[] oldlist() throws GATInvocationException {
     // FTPClient client = null;
     //

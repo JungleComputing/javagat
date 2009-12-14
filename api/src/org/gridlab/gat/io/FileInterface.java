@@ -190,6 +190,13 @@ public interface FileInterface extends Monitorable, Advertisable,
     /** See {@link java.io.File#list()}. */
     public String[] list() throws GATInvocationException;
 
+    /**
+     * returns the file informations
+     * @return file Informations
+     * @throws GATInvocationException
+     */
+    public FileInfo[] listFileInfo() throws GATInvocationException;
+    
     /** See {@link java.io.File#list(java.io.FilenameFilter)}. */
     public String[] list(FilenameFilter arg0) throws GATInvocationException;
 

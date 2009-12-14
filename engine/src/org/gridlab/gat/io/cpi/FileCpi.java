@@ -20,6 +20,7 @@ import org.gridlab.gat.advert.Advertisable;
 import org.gridlab.gat.engine.GATEngine;
 import org.gridlab.gat.engine.util.NoInfoLogging;
 import org.gridlab.gat.io.File;
+import org.gridlab.gat.io.FileInfo;
 import org.gridlab.gat.io.FileInterface;
 import org.gridlab.gat.io.attributes.FileAttributeView;
 import org.gridlab.gat.monitoring.cpi.MonitorableCpi;
@@ -372,6 +373,15 @@ public abstract class FileCpi extends MonitorableCpi implements FileInterface, j
     public String[] list() throws GATInvocationException {
         throw new UnsupportedOperationException("Not implemented");
     }
+
+    /**
+     * Returns the file informations (e.g. name, size, isDir, isFile, permissions).
+     * @return Array with informations about the files.
+     * @throws GATInvocationException
+     */
+    public FileInfo[] listFileInfo() throws GATInvocationException {
+        throw new UnsupportedOperationException("Not implemented");
+    } // public FileInfo[] listFileInfo() throws GATInvocationException
 
     public File[] listFiles() throws GATInvocationException {
         if (!isDirectory()) {

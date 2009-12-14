@@ -447,6 +447,18 @@ public class File extends java.io.File implements Monitorable, Advertisable,
     }
 
     /**
+     * returns the file informations
+     * @return file informations
+     */
+    public FileInfo[] listFileInfo() {
+    	try {
+			return f.listFileInfo();
+		} catch (GATInvocationException e) {
+			return null;
+		}
+    } // public FileInfo[] listFileInfo()
+    
+    /**
      * @see java.io.File#listFiles()
      */
     public java.io.File[] listFiles() {

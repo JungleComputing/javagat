@@ -77,7 +77,6 @@ public class GridFTPFileAdaptor extends GlobusFileAdaptor {
 	 */
 	private static Runnable shutdownRunnable = new Runnable() {
 
-		@Override
 		public void run() {
 			logger.info("ShutdownHook: Delete the cache and close all opened FTPClients.");
 			deleteCache();
@@ -85,7 +84,7 @@ public class GridFTPFileAdaptor extends GlobusFileAdaptor {
 		
 	};
 	
-	// Add a shuitdown hook to the Runtime
+	// Add a shutdown hook to the Runtime
 	static {
 		if (USE_CLIENT_CACHING) {
 			Thread shutdownThread = new Thread(shutdownRunnable, "ShutdownHookGridFTPFileAdaptor");
@@ -100,7 +99,7 @@ public class GridFTPFileAdaptor extends GlobusFileAdaptor {
 	private static Runnable cacheCleanupRunnable = new Runnable() {
 
 		public void run() {
-			List<String> clientToremove = new ArrayList<String>();
+			List<String> clientToRemove = new ArrayList<String>();
 			Date now;
 
 			// Do this until end() has been called
@@ -109,25 +108,24 @@ public class GridFTPFileAdaptor extends GlobusFileAdaptor {
 				synchronized (clienttable) {
 					Set<String> keys = clienttable.keySet();
 					now = new Date();
-					clientToremove.clear();
+					clientToRemove.clear();
 
 					for (String key : keys) {
 						CachedFTPClient cachedClient = clienttable.get(key);
-
 						if (cachedClient != null) {
 							long timespan = now.getTime() - cachedClient.getLastUsage().getTime();
 
 							if (timespan > CONNECTION_LIFETIME_IN_CACHE) {
-								clientToremove.add(key);
+								clientToRemove.add(key);
 							}
 						}
 					}
 
-					if (clientToremove.size() == 0) {
+					if (clientToRemove.size() == 0) {
 						logger.debug("No FTPClients need to remove from the cache!");
 					}
 					
-					for (String key : clientToremove) {
+					for (String key : clientToRemove) {
 						CachedFTPClient cachedClient = clienttable.remove(key);
 						logger.debug("Remove client from cache: " + key);
 

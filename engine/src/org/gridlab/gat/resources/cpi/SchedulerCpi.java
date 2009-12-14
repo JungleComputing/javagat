@@ -64,7 +64,6 @@ public abstract class SchedulerCpi extends MonitorableCpi implements Scheduler {
 	/**
 	 * @see Scheduler#getQueues()
 	 */
-	@Override
 	public List<Queue> getQueues() throws GATInvocationException{
 		throw new UnsupportedOperationException("getQueues() is not supported by this adaptor");
 	}
@@ -72,12 +71,10 @@ public abstract class SchedulerCpi extends MonitorableCpi implements Scheduler {
 	/**
 	 * @see Scheduler#getSchedulerType()
 	 */
-	@Override
 	public String getSchedulerType() throws GATInvocationException{
 		throw new UnsupportedOperationException("getSchedulerType() is not supported by this adaptor");
 	}
 
-	@Override
 	/*
 	 * (non-Javadoc)
 	 * 
