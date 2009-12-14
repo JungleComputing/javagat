@@ -261,9 +261,11 @@ abstract public class GT4FileAdaptor extends FileCpi {
                 throw new GATInvocationException("gt4file", e);
             }
         } else {
-            return super.exists();
+            // Should implement the local case as well, because it is used
+            // in copy().
+            java.io.File f = new java.io.File(location.getPath());
+            return f.exists();
         }
-
     }
 
     /*
@@ -314,9 +316,6 @@ abstract public class GT4FileAdaptor extends FileCpi {
     public boolean isDirectory() throws GATInvocationException {
         // How should be handled the / in the in the end of the location?
         // Probably a bug in the Cog Toolkit?
-        if (!exists()) {
-            return false;
-        }
         if (!localFile) {
 
             GridFile gf = null;
@@ -347,9 +346,6 @@ abstract public class GT4FileAdaptor extends FileCpi {
      * @see org.gridlab.gat.io.File#isFile()
      */
     public boolean isFile() throws GATInvocationException {
-        if (!exists()) {
-            return false;
-        }
         if (!localFile) {
 
             GridFile gf = null;
