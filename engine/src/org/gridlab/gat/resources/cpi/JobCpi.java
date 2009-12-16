@@ -185,19 +185,19 @@ public abstract class JobCpi extends MonitorableCpi implements Job {
         return jobDescription;
     }
 
-    public JobState getState() {
+    public synchronized JobState getState() {
         return state;
     }
 
-    public void setStartTime() {
+    public synchronized void setStartTime() {
         starttime = System.currentTimeMillis();
     }
 
-    public void setSubmissionTime() {
+    public synchronized void setSubmissionTime() {
         submissiontime = System.currentTimeMillis();
     }
 
-    public void setStopTime() {
+    public synchronized void setStopTime() {
         stoptime = System.currentTimeMillis();
     }
 
