@@ -481,7 +481,7 @@ public class GlobusJob extends JobCpi implements GramJobListener,
         notifyAll();
     }
 
-    private JobState convertGram2Gat(int gramStatus) {
+    private synchronized JobState convertGram2Gat(int gramStatus) {
         switch (gramStatus) {
         case STATUS_ACTIVE:
             return JobState.RUNNING;
@@ -660,7 +660,10 @@ public class GlobusJob extends JobCpi implements GramJobListener,
                     // remember the state before you read, because if the job is
                     // already stopped before the read AND there's no new data to be
                     // read, we're done
-                    int globusStateBeforeRead = globusJobState;
+                    int globusStateBeforeRead;
+                    synchronized (GlobusJob.this) {
+                        globusStateBeforeRead = globusJobState;
+                    }
                     InputStream inStream = null;
                     try {
                         inStream = GAT.createFileInputStream(source);
