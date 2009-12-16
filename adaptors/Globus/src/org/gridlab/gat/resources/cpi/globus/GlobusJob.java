@@ -513,7 +513,7 @@ public class GlobusJob extends JobCpi implements GramJobListener,
         }
     }
 
-    protected boolean setState(JobState state) {
+    protected synchronized boolean setState(JobState state) {
         if (this.state == state) {
             return false;
         }
