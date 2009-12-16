@@ -175,16 +175,16 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
             }
         }
 
-        if (sd.getStdout() != null) {
-            rsl += (" (stdout = " + sd.getStdout().getName() + ")");
-        } else if (sd.streamingStdoutEnabled()) {
+        if (sd.streamingStdoutEnabled()) {
             rsl += (" (stdout = stdout)");
+        } else if (sd.getStdout() != null) {
+            rsl += (" (stdout = " + sd.getStdout().getName() + ")");
         }
 
-        if (sd.getStderr() != null) {
-            rsl += (" (stderr = " + sd.getStderr().getName() + ")");
-        } else if (sd.streamingStderrEnabled()) {
+        if (sd.streamingStderrEnabled()) {
             rsl += (" (stderr = stderr)");
+        } else if (sd.getStderr() != null) {
+            rsl += (" (stderr = " + sd.getStderr().getName() + ")");
         }
 
         if (sd.getStdin() != null) {
