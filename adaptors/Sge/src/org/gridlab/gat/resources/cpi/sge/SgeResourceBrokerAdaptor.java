@@ -13,7 +13,6 @@ import java.util.Properties;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.ggf.drmaa.AlreadyActiveSessionException;
 import org.ggf.drmaa.DrmaaException;
 import org.ggf.drmaa.JobTemplate;
 import org.ggf.drmaa.Session;
@@ -37,11 +36,11 @@ import org.gridlab.gat.resources.cpi.WrapperJobCpi;
  * 
  * @author ole.weidner
  * 
- * renamed to SGEResourceBrokerAdaptor by Roelof Kemp in order to be consistent
- * with JavaGAT naming
+ *         renamed to SGEResourceBrokerAdaptor by Roelof Kemp in order to be
+ *         consistent with JavaGAT naming
  * 
- * added functionality (correct state notification, pre/poststaging,
- * environment, working directory)
+ *         added functionality (correct state notification, pre/poststaging,
+ *         environment, working directory)
  */
 
 public class SgeResourceBrokerAdaptor extends ResourceBrokerCpi {
@@ -58,21 +57,36 @@ public class SgeResourceBrokerAdaptor extends ResourceBrokerCpi {
         return "This ResourceBroker uses the DRMAA interface to speak to the Sun Grid Engine. It can only be used on a machine, that has SGE installed. There might be link problems using this adaptor, because the adaptor depends on the SGE installation. In particular, the drmaa.jar that's included in the source (adaptors/Sge/external/drmaa.jar) should be compatible with the $SGE_ROOT/lib/$ARCH/libdrmaa.so, which means that they should be compiled for the same java version (also the 32/64 bit should be equal). Furthermore, this adaptor only works if it's executed using the same java version as the one used for compiling drmaa.jar. A small note about the arguments of the executable: the SGE adaptor automatically puts quotes around each argument.";
     }
 
-    
     public static String[] getSupportedSchemes() {
-        return new String[] { "sge", ""};
+        return new String[] { "sge", "" };
     }
-    
+
     protected static Logger logger = LoggerFactory
             .getLogger(SgeResourceBrokerAdaptor.class);
 
-    private Session SGEsession;
+    private static Session SGEsession;
+
+    private synchronized static Session getSession()
+            throws GATObjectCreationException {
+
+        if (SGEsession == null) {
+            SessionFactory factory = SessionFactory.getFactory();
+            SGEsession = factory.getSession();
+            try {
+                SGEsession.init("");
+            } catch (DrmaaException e) {
+                throw new GATObjectCreationException(
+                        "SGEResourceBrokerAdaptor", e);
+            }
+        }
+
+        return SGEsession;
+    }
 
     public SgeResourceBrokerAdaptor(GATContext gatContext, URI brokerURI)
             throws GATObjectCreationException {
         super(gatContext, brokerURI);
-         SessionFactory factory = SessionFactory.getFactory();
-        SGEsession = factory.getSession();
+        SGEsession = getSession();
     }
 
     public Job submitJob(AbstractJobDescription abstractDescription,
@@ -101,21 +115,21 @@ public class SgeResourceBrokerAdaptor extends ResourceBrokerCpi {
         Sandbox sandbox = null;
 
         /* Handle pre-/poststaging */
-        sandbox = new Sandbox(gatContext, description, host, null, true,
-                    true, true, true);
+        sandbox = new Sandbox(gatContext, description, host, null, true, true,
+                true, true);
         SgeJob sgeJob = new SgeJob(gatContext, description, sandbox);
         Job job = null;
         if (description instanceof WrapperJobDescription) {
-            WrapperJobCpi tmp = new WrapperJobCpi(gatContext, sgeJob,
-                    listener, metricDefinitionName);
+            WrapperJobCpi tmp = new WrapperJobCpi(gatContext, sgeJob, listener,
+                    metricDefinitionName);
             listener = tmp;
             job = tmp;
         } else {
             job = sgeJob;
         }
         if (listener != null && metricDefinitionName != null) {
-            Metric metric = sgeJob.getMetricDefinitionByName(metricDefinitionName)
-                    .createMetric(null);
+            Metric metric = sgeJob.getMetricDefinitionByName(
+                    metricDefinitionName).createMetric(null);
             sgeJob.addMetricListener(listener, metric);
         }
 
@@ -131,17 +145,6 @@ public class SgeResourceBrokerAdaptor extends ResourceBrokerCpi {
                     "The job description does not contain a software description");
         }
 
-        try {
-            SGEsession.init("");
-        } catch (DrmaaException e) {
-            if (!(e instanceof AlreadyActiveSessionException)) {
-                if (sandbox != null) {
-                    sandbox.retrieveAndCleanup(sgeJob);
-                }
-                sgeJob.setState(Job.JobState.SUBMISSION_ERROR);
-                throw new GATInvocationException("SGEResourceBrokerAdaptor", e);
-            }
-        }
         try {
             JobTemplate jt = SGEsession.createJobTemplate();
             jt.setRemoteCommand(getExecutable(description));
