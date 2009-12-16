@@ -645,9 +645,13 @@ public class GlobusJob extends JobCpi implements GramJobListener,
                 int totalBytesRead = 0;
                 byte[] buffer = new byte[1024];
                 // wait until the remote output file exists
-                while (!source.exists()
-                        && GlobusJob.this.getState() != GlobusJob.JobState.STOPPED
-                        && GlobusJob.this.getState() != GlobusJob.JobState.SUBMISSION_ERROR) {
+                while (!source.exists()) {
+                    synchronized (GlobusJob.this) {
+                        if (globusJobState == GLOBUS_JOB_STOPPED
+                                || globusJobState == GLOBUS_JOB_SUBMISSION_ERROR) {
+                            return;
+                        }
+                    }
                     try {
                         sleep(1000);
                     } catch (InterruptedException e) {
