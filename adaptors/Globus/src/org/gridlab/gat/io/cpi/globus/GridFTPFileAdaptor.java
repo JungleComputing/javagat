@@ -147,7 +147,8 @@ public class GridFTPFileAdaptor extends GlobusFileAdaptor {
 					logger.debug("Sleep " + CLEANUP_INTERVALL + " ms");
 					Thread.sleep(CLEANUP_INTERVALL);
 				} catch (InterruptedException e) {
-					e.printStackTrace();
+					logger.debug("Sleeping Interrupted! Stop Cleanup Thread.");
+					return;
 				}
 			}
 
@@ -675,6 +676,8 @@ public class GridFTPFileAdaptor extends GlobusFileAdaptor {
 		// destroy the cache
 		USE_CLIENT_CACHING = false;		
 		deleteCache();
+		
+		cacheCleaner.interrupt();
 	}
 
 	/**
