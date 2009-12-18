@@ -47,10 +47,12 @@ public class AdaptorInvocationHandler implements InvocationHandler {
                 "No adaptors could be successfully instantiated");
         
         URI param = null;
-        for (Object p : params) {
-            if (p instanceof URI) {
-                param = (URI) p;
-                break;
+        if (params != null) {
+            for (Object p : params) {
+                if (p instanceof URI) {
+                    param = (URI) p;
+                    break;
+                }
             }
         }
 
