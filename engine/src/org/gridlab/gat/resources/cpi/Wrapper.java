@@ -153,6 +153,8 @@ public class Wrapper {
         JobDescription jobDescription = (JobDescription) description;
         Map<File, File> preStaged = jobDescription.getSoftwareDescription().getPreStaged();
         
+        Map<String, Object> env = jobDescription.getSoftwareDescription().getEnvironment();
+        env.put("WRAPPER_SANDBOX", System.getenv("user.dir"));
         if (preStaged != null) {
             ArrayList<File> keys = new ArrayList<File>(preStaged.keySet());
             for (File file : keys) {
