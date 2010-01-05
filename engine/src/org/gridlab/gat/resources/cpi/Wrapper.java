@@ -135,7 +135,9 @@ public class Wrapper {
                         "sandbox.copy directory already exists!");
             }
             sandboxCopy = sandboxCopyFile.getPath();
-            File sandbox = GAT.createFile(".");
+            Preferences preferences = new Preferences();
+            preferences.put("file.adaptor.name", "local");
+            File sandbox = GAT.createFile(preferences, ".");
             sandbox.copy(new URI(sandboxCopy));
         }
 
@@ -163,7 +165,9 @@ public class Wrapper {
             logger.debug("DONE!");
         }
         if (sandboxCopy != null) {
-            File sandboxCopyFile = GAT.createFile(sandboxCopy);
+            Preferences preferences = new Preferences();
+            preferences.put("file.adaptor.name", "local");
+            File sandboxCopyFile = GAT.createFile(preferences, sandboxCopy);
             sandboxCopyFile.recursivelyDeleteDirectory();
         }
     }
