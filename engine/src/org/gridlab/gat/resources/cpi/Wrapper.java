@@ -9,6 +9,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -72,6 +73,8 @@ public class Wrapper {
     private int jobsDone;
     
     private String triggerDirectory;
+    
+    private String sandboxCopy;
 
     /**
      * Starts a wrapper with given arguments
@@ -99,6 +102,7 @@ public class Wrapper {
         this.initiator = (URI) in.readObject();
         int level = in.readInt();
         wrapperId = in.readInt();
+        sandboxCopy = (String) in.readObject();
         triggerDirectory = (String) in.readObject();      
         scheduledType = (ScheduledType) in.readObject();       
         List<WrappedJobInfo> infos = (List<WrappedJobInfo>) in.readObject();
@@ -119,6 +123,21 @@ public class Wrapper {
         }
         
         this.numberJobs = infos.size();
+        
+        if (sandboxCopy != null) {
+            java.io.File sandboxCopyFile = new java.io.File(sandboxCopy);
+            if (!sandboxCopyFile.exists()) {
+                if (! sandboxCopyFile.mkdirs()) {
+                    throw new Exception("Could not create sandbox.copy directory.");
+                }
+            } else {
+                throw new Exception(
+                        "sandbox.copy directory already exists!");
+            }
+            sandboxCopy = sandboxCopyFile.getPath();
+            File sandbox = GAT.createFile(".");
+            sandbox.copy(new URI(sandboxCopy));
+        }
 
         String triggerDirURI = rewriteURI(new URI(triggerDirectory), initiator).toString();
         for (int i = 0; i < infos.size(); i++) {
@@ -143,6 +162,10 @@ public class Wrapper {
         if (logger.isDebugEnabled()) {
             logger.debug("DONE!");
         }
+        if (sandboxCopy != null) {
+            File sandboxCopyFile = GAT.createFile(sandboxCopy);
+            sandboxCopyFile.recursivelyDeleteDirectory();
+        }
     }
 
     private AbstractJobDescription modify(AbstractJobDescription description,
@@ -154,7 +177,12 @@ public class Wrapper {
         Map<File, File> preStaged = jobDescription.getSoftwareDescription().getPreStaged();
         
         Map<String, Object> env = jobDescription.getSoftwareDescription().getEnvironment();
-        env.put("WRAPPER_SANDBOX", System.getenv("user.dir"));
+        if (env == null) {
+            env = new HashMap<String, Object>();
+            jobDescription.getSoftwareDescription().setEnvironment(env);
+            env = jobDescription.getSoftwareDescription().getEnvironment();
+        }
+        env.put("SANDBOX_COPY", sandboxCopy);
         if (preStaged != null) {
             ArrayList<File> keys = new ArrayList<File>(preStaged.keySet());
             for (File file : keys) {

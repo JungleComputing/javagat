@@ -174,7 +174,15 @@ public class WrapperSoftwareDescription extends JavaSoftwareDescription {
     }
 
     public Map<String, Object> getEnvironment() {
-        Map<String, Object> result = new HashMap<String, Object>();
+        Map<String, Object> result = super.getEnvironment();
+        if (result == null) {
+            result = new HashMap<String, Object>();
+            super.setEnvironment(result);
+            result = super.getEnvironment();    // because setEnvironment creates a copy.
+        }
+        if (result.containsKey("GAT_LOCATION")) {
+            return result;
+        }
         if (gatLocation == null) {
             result.put("GAT_LOCATION", ".");
         } else {

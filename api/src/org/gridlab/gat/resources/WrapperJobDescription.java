@@ -321,6 +321,8 @@ public class WrapperJobDescription extends JobDescription {
                     + System.getProperty("user.dir")));
             out.writeInt(level);
             out.writeInt(wrapperJobIndex);
+            String sandboxCopy = (String) softwareDescription.getAttributes().get("sandbox.copy");
+            out.writeObject(sandboxCopy);
             synchronized (WrapperJobDescription.class) {
                 if (triggerDirectory == null) {
                     triggerDirectory = System.getProperty("user.dir");
