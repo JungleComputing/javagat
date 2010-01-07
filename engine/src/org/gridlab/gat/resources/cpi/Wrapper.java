@@ -179,14 +179,14 @@ public class Wrapper {
         }
         JobDescription jobDescription = (JobDescription) description;
         Map<File, File> preStaged = jobDescription.getSoftwareDescription().getPreStaged();
-        
-        Map<String, Object> env = jobDescription.getSoftwareDescription().getEnvironment();
-        if (env == null) {
-            env = new HashMap<String, Object>();
-            jobDescription.getSoftwareDescription().setEnvironment(env);
-            env = jobDescription.getSoftwareDescription().getEnvironment();
-        }
+
         if (sandboxCopy != null) {
+            Map<String, Object> env = jobDescription.getSoftwareDescription().getEnvironment();
+            if (env == null) {
+                env = new HashMap<String, Object>();
+                jobDescription.getSoftwareDescription().setEnvironment(env);
+                env = jobDescription.getSoftwareDescription().getEnvironment();
+            }
             env.put("SANDBOX_COPY", sandboxCopy);
         }
         if (preStaged != null) {
