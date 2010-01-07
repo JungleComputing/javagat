@@ -186,7 +186,9 @@ public class Wrapper {
             jobDescription.getSoftwareDescription().setEnvironment(env);
             env = jobDescription.getSoftwareDescription().getEnvironment();
         }
-        env.put("SANDBOX_COPY", sandboxCopy);
+        if (sandboxCopy != null) {
+            env.put("SANDBOX_COPY", sandboxCopy);
+        }
         if (preStaged != null) {
             ArrayList<File> keys = new ArrayList<File>(preStaged.keySet());
             for (File file : keys) {
