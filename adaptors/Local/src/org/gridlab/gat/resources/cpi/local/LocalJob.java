@@ -95,9 +95,15 @@ public class LocalJob extends JobCpi {
 
         long interval = 500;
         int  maxcount = 64;
-        int count = maxcount;
+        int count = 0;
         
-        while (! file.exists()) {
+        for (;;) {
+            synchronized(this.getClass()) {
+                // avoid simultaneous access
+                if (file.exists()) {
+                    break;
+                }
+            }    
             try {
                 Thread.sleep(interval);
             } catch(InterruptedException e) {
@@ -113,7 +119,9 @@ public class LocalJob extends JobCpi {
                 count = 0;
             }
         }
-        file.delete();
+        synchronized(this.getClass()) {
+            file.delete();
+        }
     }
 
     protected void setProcess(Process p) {
