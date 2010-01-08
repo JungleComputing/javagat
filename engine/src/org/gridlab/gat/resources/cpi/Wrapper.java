@@ -351,20 +351,22 @@ public class Wrapper {
                 File remoteFile = GAT.createFile(prefs, dest);
                 File localFile = GAT.createFile(prefs, tmp.getPath());
                 int count = 0;
-                while (remoteFile.exists()) {
-                    if (count > 30) {
-                        // Something wrong with submitter???
-                        // Just continue.
-                        break;
+                while (count < 30) {
+                    synchronized(this.getClass()) {
+                        if (! remoteFile.exists()) {
+                            break;
+                        }
                     }
                     count++;
-                    try {
+                     try {
                         Thread.sleep(1000);
                     } catch (InterruptedException e) {
                         // ignore
                     }
                 }
-                localFile.copy(dest);
+                synchronized(this.getClass()) {
+                    localFile.copy(dest);
+                }
                 if (logger.isDebugEnabled()) {
                     logger.debug("Created status file " + dest.getPath());
                 }
