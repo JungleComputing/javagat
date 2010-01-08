@@ -170,13 +170,7 @@ public class GridFTPFileAdaptor extends GlobusFileAdaptor {
         try {
             GATContext gatContext = (GATContext) context.clone();
             gatContext.addPreferences(additionalPreferences);
-            GSSCredential credential = GlobusSecurityUtils.getGlobusCredential(
-                    gatContext, "gridftp", hostURI, DEFAULT_GRIDFTP_PORT);
-            
-            if (logger.isDebugEnabled()) {
-                logger.debug("createClient: got credential: \n" + (credential == null ? "NULL" : ((GlobusGSSCredentialImpl)credential).getGlobusCredential().toString()));
-            }            
-            
+
             String host = hostURI.resolveHost();
 
             int port = hostURI.getPort(DEFAULT_GRIDFTP_PORT);
@@ -247,6 +241,14 @@ public class GridFTPFileAdaptor extends GlobusFileAdaptor {
                 }
                 for (int i = 0; i < retry; i++) {
                     try {
+                        
+                        GSSCredential credential = GlobusSecurityUtils.getGlobusCredential(
+                                gatContext, "gridftp", hostURI, DEFAULT_GRIDFTP_PORT);
+                        
+                        if (logger.isDebugEnabled()) {
+                            logger.debug("createClient: got credential: \n" + (credential == null ? "NULL" : ((GlobusGSSCredentialImpl)credential).getGlobusCredential().toString()));
+                        }            
+                        
                         client.authenticate(credential);
                         if (logger.isDebugEnabled()) {
                             logger.debug("authenticating done using credential " + credential);
