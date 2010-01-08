@@ -312,17 +312,21 @@ public abstract class GlobusFileAdaptor extends FileCpi {
             }
             if (gatContext.getPreferences().containsKey("file.chmod")) {
                 client = createClient(dest);
-                setImage(client);
-                // removed line below, seems to make the copy fail...
-                // client.getCurrentDir(); // to ensure a command has been
-                // executed
-                setActiveOrPassive(client, gatContext.getPreferences());
-                java.io.File emptyFile = java.io.File.createTempFile(
-                        ".JavaGAT", null);
-                client.put(emptyFile, dest.getPath(), false); // overwrite
-                emptyFile.deleteOnExit();
-                chmod(client, dest.getPath(), gatContext);
-                destroyClient(client, dest, gatContext.getPreferences());
+                try {
+                    setImage(client);
+                    // removed line below, seems to make the copy fail...
+                    // client.getCurrentDir(); // to ensure a command has been
+                    // executed
+                    setActiveOrPassive(client, gatContext.getPreferences());
+                    java.io.File emptyFile = java.io.File.createTempFile(
+                            ".JavaGAT", null);
+                    client.put(emptyFile, dest.getPath(), false); // overwrite
+                    emptyFile.deleteOnExit();
+                    chmod(client, dest.getPath(), gatContext);
+                } finally {
+                    destroyClient(client, dest, gatContext.getPreferences());
+                    client = null;
+                }
             }
             client = createClient(dest);
             setImage(client);
@@ -331,9 +335,6 @@ public abstract class GlobusFileAdaptor extends FileCpi {
             setActiveOrPassive(client, gatContext.getPreferences());
             client.put(sourceFile, dest.getPath(), false); // overwrite
         } catch (Exception e) {
-            if (client != null) {
-                destroyClient(client, dest, gatContext.getPreferences());
-            }
             throw new GATInvocationException("gridftp", e);
         } finally {
             if (client != null) {
@@ -403,9 +404,6 @@ public abstract class GlobusFileAdaptor extends FileCpi {
             setActiveOrPassive(client, gatContext.getPreferences());
             client.get(src.getPath(), new java.io.File(dest.getPath()));
         } catch (Exception e) {
-            if (client != null) {
-                destroyClient(client, dest, gatContext.getPreferences());
-            }
             throw new GATInvocationException("gridftp", e);
         } finally {
             if (client != null) {
@@ -927,38 +925,38 @@ public abstract class GlobusFileAdaptor extends FileCpi {
         }
 
         FTPClient client = createClient(toURI());
-
-        if (logger.isDebugEnabled()) {
-            logger.debug("getINFO: client created");
-        }
-
-        String cwd = null;
-
+        
         try {
-            cwd = client.getCurrentDir();
-        } catch (Exception e) {
+    
+            if (logger.isDebugEnabled()) {
+                logger.debug("getINFO: client created");
+            }
+    
+            String cwd = null;
+    
+            try {
+                cwd = client.getCurrentDir();
+            } catch (Exception e) {
+                throw new GATInvocationException("gridftp", e);
+            }
+    
+            try {
+                client.changeDir(remotePath);
+            } catch (Exception e) {
+                // ok, it was not a dir :-)
+                dir = false;
+            }
+    
+            try {
+                client.changeDir(cwd);
+            } catch (Exception e) {
+                throw new GATInvocationException("gridftp", e);
+            }
+ 
+        } finally {
             if (client != null)
                 destroyClient(client, toURI(), gatContext.getPreferences());
-            throw new GATInvocationException("gridftp", e);
         }
-
-        try {
-            client.changeDir(remotePath);
-        } catch (Exception e) {
-            // ok, it was not a dir :-)
-            dir = false;
-        }
-
-        try {
-            client.changeDir(cwd);
-        } catch (Exception e) {
-            if (client != null)
-                destroyClient(client, toURI(), gatContext.getPreferences());
-            throw new GATInvocationException("gridftp", e);
-        }
-
-        if (client != null)
-            destroyClient(client, toURI(), gatContext.getPreferences());
 
         setIsDir(location, dir);
         return dir;

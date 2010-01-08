@@ -148,22 +148,27 @@ public class FTPFileAdaptor extends GlobusFileAdaptor {
                 logger.debug("getINFO: remotePath = " + remotePath
                         + ", creating client to: " + toURI());
             }
-
+            
             client = createClient(toURI());
 
-            if (logger.isDebugEnabled()) {
-                logger.debug("getINFO: client created");
-            }
+            try {
 
-            setActiveOrPassive(client, gatContext.getPreferences());
+                if (logger.isDebugEnabled()) {
+                    logger.debug("getINFO: client created");
+                }
 
-            Vector<?> v = client.list(remotePath);
-            if (v.size() > 0) {
-                // Is OK, either for directory list or file list.
-                return true;
+                setActiveOrPassive(client, gatContext.getPreferences());
+
+                Vector<?> v = client.list(remotePath);
+                if (v.size() > 0) {
+                    // Is OK, either for directory list or file list.
+                    return true;
+                }
+                // Here, it could still be an empty directory.
+                return isDirectory();
+            } finally {
+                destroyClient(client, toURI(), gatContext.getPreferences());   
             }
-            // Here, it could still be an empty directory.
-            return isDirectory();
         } catch (Exception e) {
             if (e instanceof GATInvocationException) {
                 throw (GATInvocationException) e;
