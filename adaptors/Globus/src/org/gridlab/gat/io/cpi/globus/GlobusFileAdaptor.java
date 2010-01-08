@@ -278,7 +278,7 @@ public abstract class GlobusFileAdaptor extends FileCpi {
             FileInterface destFile = GAT.createFile(gatContext, dest)
                     .getFileInterface();
 
-            if ((destFile.exists() && destFile.isDirectory())
+            if (destFile.isDirectory()
                     || (dest.toString().endsWith(File.separator))) {
                 String sourcePath = src.getPath();
                 if (sourcePath.endsWith(File.separator)) {
