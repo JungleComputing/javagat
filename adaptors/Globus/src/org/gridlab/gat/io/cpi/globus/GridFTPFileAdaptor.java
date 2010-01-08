@@ -1,5 +1,6 @@
 package org.gridlab.gat.io.cpi.globus;
 
+import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.Hashtable;
 
@@ -35,9 +36,9 @@ public class GridFTPFileAdaptor extends GlobusFileAdaptor {
     
     protected static Logger logger = LoggerFactory.getLogger(GridFTPFileAdaptor.class);
 
-    static boolean USE_CLIENT_CACHING = false;
+    static boolean USE_CLIENT_CACHING = true;
 
-    private static Hashtable<String, FTPClient> clienttable = new Hashtable<String, FTPClient>();
+    private static Hashtable<String, ArrayList<GridFTPClient>> clienttable = new Hashtable<String, ArrayList<GridFTPClient>>();
 
     /**
      * Constructs a LocalFileAdaptor instance which corresponds to the physical
@@ -151,17 +152,25 @@ public class GridFTPFileAdaptor extends GlobusFileAdaptor {
     private static synchronized GridFTPClient getFromCache(String key) {
         GridFTPClient client = null;
         if (clienttable.containsKey(key)) {
-            client = (GridFTPClient) clienttable.remove(key);
+            ArrayList<GridFTPClient> list = clienttable.get(key);
+            client = list.remove(0);
+            if (list.size() == 0) {
+                clienttable.remove(key);
+            }
         }
         return client;
     }
 
     private static synchronized boolean putInCache(String key, FTPClient c) {
-        if (!clienttable.containsKey(key)) {
-            clienttable.put(key, c);
-            return true;
+        ArrayList<GridFTPClient> list;
+        if (clienttable.containsKey(key)) {
+            list = clienttable.get(key);
+        } else {
+            list = new ArrayList<GridFTPClient>();
+            clienttable.put(key, list);
         }
-        return false;
+        list.add((GridFTPClient) c);
+        return true;
     }
 
     protected static GridFTPClient doWorkCreateClient(GATContext context,
@@ -327,25 +336,27 @@ public class GridFTPFileAdaptor extends GlobusFileAdaptor {
             return;
         }
 
-        Enumeration<FTPClient> e = clienttable.elements();
+        Enumeration<ArrayList<GridFTPClient>> e = clienttable.elements();
 
         while (e.hasMoreElements()) {
-            GridFTPClient c = (GridFTPClient) e.nextElement();
+            ArrayList<GridFTPClient> list = e.nextElement();
+            for (GridFTPClient c : list) {
 
-            try {
-                if (logger.isDebugEnabled()) {
-                    logger.debug("end of gridftp adaptor, closing client");
+                try {
+                    if (logger.isDebugEnabled()) {
+                        logger.debug("end of gridftp adaptor, closing client");
+                    }
+
+                    c.close(true);
+                } catch (Exception x) {
+                    if (logger.isDebugEnabled()) {
+                        logger
+                        .debug("end of gridftp adaptor, closing client, got exception (ignoring): "
+                                + x);
+                    }
+
+                    // ignore
                 }
-
-                c.close(true);
-            } catch (Exception x) {
-                if (logger.isDebugEnabled()) {
-                    logger
-                            .debug("end of gridftp adaptor, closing client, got exception (ignoring): "
-                                    + x);
-                }
-
-                // ignore
             }
         }
 
