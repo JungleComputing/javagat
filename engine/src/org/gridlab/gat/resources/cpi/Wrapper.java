@@ -234,31 +234,37 @@ public class Wrapper {
         }
         if (jobDescription.getSoftwareDescription().getStdout() != null) {
             try {
-                jobDescription.getSoftwareDescription().setStdout(
+                File out = GAT.createFile(prefs, new URI(".stdout"));
+                jobDescription.getSoftwareDescription().setStdout(out);
+                postStaged.put(out,
                         GAT.createFile(prefs, rewriteURI(jobDescription
                                 .getSoftwareDescription().getStdout()
                                 .toGATURI(), origin)));
-            } catch (GATObjectCreationException e) {
+            } catch (Throwable e) {
                 logger.error("Got Exception", e);
             }
         }
         if (jobDescription.getSoftwareDescription().getStderr() != null) {
             try {
-                jobDescription.getSoftwareDescription().setStderr(
+                File err = GAT.createFile(prefs, new URI(".stderr"));
+                jobDescription.getSoftwareDescription().setStderr(err);
+                postStaged.put(err,
                         GAT.createFile(prefs, rewriteURI(jobDescription
                                 .getSoftwareDescription().getStderr()
                                 .toGATURI(), origin)));
-            } catch (GATObjectCreationException e) {
+            } catch (Throwable e) {
                 logger.error("Got Exception", e);
             }
         }
         if (jobDescription.getSoftwareDescription().getStdin() != null) {
             try {
-                jobDescription.getSoftwareDescription().setStdin(
+                File in = GAT.createFile(prefs, new URI(".stdin"));
+                jobDescription.getSoftwareDescription().setStdin(in);
+                preStaged.put(
                         GAT.createFile(prefs, rewriteURI(
                                 jobDescription.getSoftwareDescription()
-                                        .getStdin().toGATURI(), origin)));
-            } catch (GATObjectCreationException e) {
+                                        .getStdin().toGATURI(), origin)), in);
+            } catch (Throwable e) {
                 logger.error("Got Exception", e);
             }
         }
