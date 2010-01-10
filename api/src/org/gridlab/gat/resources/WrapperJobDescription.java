@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.gridlab.gat.GAT;
+import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATObjectCreationException;
 import org.gridlab.gat.Preferences;
 import org.gridlab.gat.URI;
@@ -309,7 +310,7 @@ public class WrapperJobDescription extends JobDescription {
      *         Wrapper application.
      * @throws GATObjectCreationException 
      */
-    public File getInfoFile() throws GATObjectCreationException {
+    public File getInfoFile(GATContext context) throws GATObjectCreationException {
         java.io.File f = null;
         try {
             f = File.createTempFile("GAT", "jobDescription");
@@ -338,7 +339,7 @@ public class WrapperJobDescription extends JobDescription {
         } catch (Exception e) {
             throw new GATObjectCreationException("Failed to create wrapper info file", e);
         }
-        return GAT.createFile(f.getPath());
+        return GAT.createFile(context, f.getPath());
     }
 
     /**

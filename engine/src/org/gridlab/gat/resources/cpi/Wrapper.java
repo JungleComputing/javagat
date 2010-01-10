@@ -197,7 +197,7 @@ public class Wrapper {
                     File target = preStaged.get(file);
                     preStaged.remove(file);
                     try {
-                        preStaged.put(GAT.createFile(rewriteURI(file
+                        preStaged.put(GAT.createFile(prefs, rewriteURI(file
                                                 .toGATURI(), origin)), target);
                     } catch (GATObjectCreationException e) {
                         logger.error("Got Exception", e);

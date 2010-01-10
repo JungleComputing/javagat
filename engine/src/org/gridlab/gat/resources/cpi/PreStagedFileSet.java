@@ -111,9 +111,9 @@ public class PreStagedFileSet {
         if (description instanceof WrapperJobDescription) {
             try {
                 File wrapperInfoFile = ((WrapperJobDescription) description)
-                        .getInfoFile();
+                        .getInfoFile(gatContext);
                 tmp.add(new PreStagedFile(gatContext, wrapperInfoFile,
-                        GAT.createFile("wrapper.info"), host, sandbox,
+                        GAT.createFile(gatContext, "wrapper.info"), host, sandbox,
                         false, exe));
             } catch (GATObjectCreationException e) {
                 throw new GATInvocationException(
