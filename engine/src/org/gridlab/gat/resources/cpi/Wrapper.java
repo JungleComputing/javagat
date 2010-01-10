@@ -172,12 +172,13 @@ public class Wrapper {
         }
     }
 
-    private AbstractJobDescription modify(AbstractJobDescription description,
-            URI origin) {
+    private AbstractJobDescription modify(Preferences prefs,
+            AbstractJobDescription description, URI origin) {
         if (!(description instanceof JobDescription)) {
             return description;
         }
         JobDescription jobDescription = (JobDescription) description;
+        
         Map<File, File> preStaged = jobDescription.getSoftwareDescription().getPreStaged();
 
         if (sandboxCopy != null) {
@@ -214,7 +215,7 @@ public class Wrapper {
                 if (target == null) {
                     try {
                         postStaged.put(file,
-                                        GAT.createFile(origin + "/"
+                                        GAT.createFile(prefs, origin + "/"
                                                 + file.getName()));
                     } catch (GATObjectCreationException e) {
                         logger.error("Got Exception", e);
@@ -223,7 +224,7 @@ public class Wrapper {
                     postStaged.remove(file);
                     try {
                         postStaged.put(file,
-                                        GAT.createFile(rewriteURI(target
+                                        GAT.createFile(prefs, rewriteURI(target
                                                 .toGATURI(), origin)));
                     } catch (GATObjectCreationException e) {
                         logger.error("Got Exception", e);
@@ -234,7 +235,7 @@ public class Wrapper {
         if (jobDescription.getSoftwareDescription().getStdout() != null) {
             try {
                 jobDescription.getSoftwareDescription().setStdout(
-                        GAT.createFile(rewriteURI(jobDescription
+                        GAT.createFile(prefs, rewriteURI(jobDescription
                                 .getSoftwareDescription().getStdout()
                                 .toGATURI(), origin)));
             } catch (GATObjectCreationException e) {
@@ -244,7 +245,7 @@ public class Wrapper {
         if (jobDescription.getSoftwareDescription().getStderr() != null) {
             try {
                 jobDescription.getSoftwareDescription().setStderr(
-                        GAT.createFile(rewriteURI(jobDescription
+                        GAT.createFile(prefs, rewriteURI(jobDescription
                                 .getSoftwareDescription().getStderr()
                                 .toGATURI(), origin)));
             } catch (GATObjectCreationException e) {
@@ -254,7 +255,7 @@ public class Wrapper {
         if (jobDescription.getSoftwareDescription().getStdin() != null) {
             try {
                 jobDescription.getSoftwareDescription().setStdin(
-                        GAT.createFile(rewriteURI(
+                        GAT.createFile(prefs, rewriteURI(
                                 jobDescription.getSoftwareDescription()
                                         .getStdin().toGATURI(), origin)));
             } catch (GATObjectCreationException e) {
@@ -306,7 +307,7 @@ public class Wrapper {
             }
 
             try {
-                broker.submitJob(modify(info.getJobDescription(), initiator),
+                broker.submitJob(modify(prefs, info.getJobDescription(), initiator),
                         new JobListener(info),
                         "job.status");
             } catch (GATInvocationException e) {
