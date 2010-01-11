@@ -226,7 +226,7 @@ public class LocalResourceBrokerAdaptor extends ResourceBrokerCpi {
 
             try {
                 if (sd.getStderr() != null) {
-                    OutputStream err = GAT.createFileOutputStream(sd.getStderr());
+                    OutputStream err = GAT.createFileOutputStream(gatContext, sd.getStderr());
                     // to file
                     StreamForwarder forwarder = new StreamForwarder(p.getErrorStream(), err, sd
                             .getExecutable()
@@ -249,7 +249,7 @@ public class LocalResourceBrokerAdaptor extends ResourceBrokerCpi {
             try {
                 if (sd.getStdout() != null) {
                     // to file
-                    OutputStream out = GAT.createFileOutputStream(sd.getStdout());
+                    OutputStream out = GAT.createFileOutputStream(gatContext, sd.getStdout());
                     StreamForwarder forwarder = new StreamForwarder(p.getInputStream(), out, sd
                             .getExecutable()
                             + " [stdout]");
@@ -269,7 +269,7 @@ public class LocalResourceBrokerAdaptor extends ResourceBrokerCpi {
         if (!sd.streamingStdinEnabled() && sd.getStdin() != null) {
             // forward the stdin from file
             try {
-                InputStream in = GAT.createFileInputStream(sd.getStdin());
+                InputStream in = GAT.createFileInputStream(gatContext, sd.getStdin());
                 new StreamForwarder(in, p.getOutputStream(),
                         sd.getExecutable() + " [stdin]");
             } catch (GATObjectCreationException e) {
