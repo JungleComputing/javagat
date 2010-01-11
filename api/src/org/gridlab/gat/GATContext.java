@@ -134,7 +134,7 @@ public class GATContext implements Cloneable, Serializable {
      * {@link GATContext}.
      */
     public void removePreferences() {
-        preferences = null;
+        preferences = new Preferences();
     }
 
     /**
@@ -163,10 +163,10 @@ public class GATContext implements Cloneable, Serializable {
     }
 
     /**
-     * Deserialize this {@link GATContext}, by reading the {@link Preferences}
+     * Deserialize this {@link GATContext}, by reading the {@link Preferences}.
      * 
      * @param stream
-     *                the stream to write to
+     *                the stream to read from.
      * @throws IOException
      * @throws ClassNotFoundException
      */
@@ -177,7 +177,7 @@ public class GATContext implements Cloneable, Serializable {
     }
 
     /**
-     * Serialize this {@link ContextNotEmptyException}, by just writing only
+     * Serialize this {@link ContextNotEmptyException}, by writing only
      * the {@link Preferences}.
      * 
      * Don't write the {@link SecurityContext}s because of security issues.
@@ -189,5 +189,18 @@ public class GATContext implements Cloneable, Serializable {
     private void writeObject(java.io.ObjectOutputStream stream)
             throws IOException {
         stream.writeObject(preferences);
+    }
+    
+    public int hashCode() {
+        return preferences.hashCode();
+    }
+
+    public boolean equals(Object o) {
+        if (! (o instanceof GATContext)) {
+            return false;
+        }
+        GATContext c = (GATContext) o;
+        return c.preferences.equals(preferences)
+                && c.securityContexts.equals(securityContexts);
     }
 }
