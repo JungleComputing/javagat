@@ -304,7 +304,7 @@ public class SshTrileadFileAdaptor extends FileCpi {
         }
         remoteFileName = destinationFile.getName();
         String mode = getMode(gatContext, DEFAULT_MODE);
-        File sourceFile = GAT.createFile(gatContext, location);
+        java.io.File sourceFile = new java.io.File(getFixedPath());
         if (destinationFile.isDirectory() && sourceFile.isFile()) {
             logger.debug("put " + getFixedPath() + ", " + remoteDir + ", "
                     + mode);
@@ -366,19 +366,18 @@ public class SshTrileadFileAdaptor extends FileCpi {
             }
         }
 
-        File sourceFile = GAT.createFile(gatContext, location);
-        if (destinationFile.isDirectory() && sourceFile.isFile()) {
+        if (destinationFile.isDirectory() && isFile()) {
             if (java.io.File.separator.equals("/")) {
                 createNewFile(destination.getPath() + "/"
-                        + sourceFile.getName(), getMode(gatContext,
+                        + getName(), getMode(gatContext,
                         DEFAULT_MODE));
             }
             client.get(getFixedPath(), new java.io.FileOutputStream(destination
                     .getPath()
-                    + "/" + sourceFile.getName()));
-        } else if (sourceFile.isDirectory()) {
+                    + "/" + getName()));
+        } else if (isDirectory()) {
             copyDir(destination);
-        } else if (sourceFile.isFile()) {
+        } else if (isFile()) {
             if (java.io.File.separator.equals("/")) {
                 createNewFile(destination.getPath(), getMode(gatContext,
                         DEFAULT_MODE));
@@ -388,8 +387,8 @@ public class SshTrileadFileAdaptor extends FileCpi {
         } else {
             throw new GATInvocationException("cannot copy this file '"
                     + fixedURI + "' to '" + destination
-                    + "'! (Reason: target is file: " + sourceFile.isFile()
-                    + ", target is dir: " + sourceFile.isDirectory()
+                    + "'! (Reason: target is file: " + isFile()
+                    + ", target is dir: " + isDirectory()
                     + ", src is dir: " + destinationFile.isDirectory());
         }
     }
