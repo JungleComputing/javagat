@@ -22,6 +22,7 @@ import org.gridlab.gat.resources.cpi.CoScheduleJobCpi;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+
 public class GliteJobDAG extends CoScheduleJobCpi implements GliteJobInterface {
 
 	private static final long serialVersionUID = 1L;
@@ -29,6 +30,7 @@ public class GliteJobDAG extends CoScheduleJobCpi implements GliteJobInterface {
 	private static final Logger LOGGER = LoggerFactory.getLogger(GliteJobDAG.class);
 
 	private DAG_JDL gLiteJobDescription = null;
+//	private OrderedCoScheduleJobDescription dagJobDescription = null;
 	private SoftwareDescription[] swDescriptions = null;
 	private volatile String gLiteState = "";
 	
@@ -47,12 +49,16 @@ public class GliteJobDAG extends CoScheduleJobCpi implements GliteJobInterface {
 	private GliteJobHelper gliteJobHelper = null;
 	private LBService lbService = null;
 	
+	private HashMap<JobDescription,GliteJobDAGTask> childJobs = null;
+	private HashMap<String,GliteJobDAGTask> jobIDs = null;
+	
 	protected GliteJobDAG(final GATContext gatContext, final OrderedCoScheduleJobDescription dagJobDescription, final String brokerURI) throws GATInvocationException, GATObjectCreationException {
 		super(gatContext, dagJobDescription);
 
 		if(dagJobDescription.getJobDescriptions().size() == 0){
 			throw new GATInvocationException("The DAG Job description does not contain any sub job!");
 		}
+//		this.dagJobDescription = dagJobDescription;
 		
 		this.swDescriptions = new SoftwareDescription[dagJobDescription.getJobDescriptions().size()];
 		for (int i = 0; i < dagJobDescription.getJobDescriptions().size(); i++) {
@@ -82,12 +88,23 @@ public class GliteJobDAG extends CoScheduleJobCpi implements GliteJobInterface {
 		String delegationId = gliteJobHelper.delegateCredential();
 		//Register the new Job inside WMS
 		this.jobIdStructType = gliteJobHelper.registerNewJob(gLiteJobDescription, delegationId);
+		
+		//Populate the child nodes
+		childJobs = new HashMap<JobDescription, GliteJobDAGTask>();
+		jobIDs = new HashMap<String, GliteJobDAGTask>();
+		for (int i = 0; i < jobIdStructType.getChildrenJob().length; i++) {
+			JobDescription jobDescriptionChild = gLiteJobDescription.getJobDescription(jobIdStructType.getChildrenJob(i).getName());
+			GliteJobDAGTask gliteJobDAGTask = new GliteJobDAGTask(gatContext, jobDescriptionChild, jobIdStructType.getChildrenJob(i),gliteJobHelper);
+			childJobs.put(jobDescriptionChild, gliteJobDAGTask);
+			jobIDs.put(gliteJobDAGTask.getJobIdStructType().getId(), gliteJobDAGTask);
+		}
+		
 		//Upload the needed InputSandBoxFiles
 		gliteJobHelper.stageInSandboxFiles(jobIdStructType.getId(), swDescriptions);
 		//Start the Job
 		gliteJobHelper.submitJob(jobIdStructType);	
 		
-		LOGGER.info("jobID " + jobIdStructType.getId());
+		LOGGER.info("jobID " + jobIdStructType.getId()+" submitted");
 
 		//Creation of the LB stub for the job monitoring
 		this.lbService = new LBService(jobIdStructType.getId());
@@ -99,8 +116,8 @@ public class GliteJobDAG extends CoScheduleJobCpi implements GliteJobInterface {
 	public Map<String, Object> getInfo() {
 		Map<String, Object> map = new HashMap<String, Object>();
 
-		map.put("state", this.state);
-		map.put("glite.state", this.gLiteState);
+		map.put("state", state);
+		map.put("glite.state", gLiteState);
 		map.put("jobID", jobID);
 		map.put("adaptor.job.id", jobIdStructType.getId());
 		map.put("submissiontime", submissiontime);
@@ -128,33 +145,48 @@ public class GliteJobDAG extends CoScheduleJobCpi implements GliteJobInterface {
 			return;
 		}
 		
-		gLiteState = jobStatus.getState().getValue();
-		JobState s = gliteJobHelper.generateJobStateFromGLiteState(gLiteState);
-                if (s == state) {
-                    // Don't generate event for unchanged state.
-                    return;
-                }
-                state = s;
-		
-		for (int i = 0; i < jobStatus.getStateEnterTimes().length; i++) {
-			if (jobStatus.getStateEnterTimes(i).getTime().getTimeInMillis() != 0) {
-				if(StatName.SUBMITTED.equals(jobStatus.getStateEnterTimes(i).getState())) {
-					if (submissiontime == -1L) {
-						submissiontime = jobStatus.getStateEnterTimes(i).getTime().getTimeInMillis();
-					}
-				}else if(StatName.RUNNING.equals(jobStatus.getStateEnterTimes(i).getState())) {
-					if (starttime == -1L) {
-						starttime = jobStatus.getStateEnterTimes(i).getTime().getTimeInMillis();
-					}
-				}else if(StatName.DONE.equals(jobStatus.getStateEnterTimes(i).getState()) ||
-						StatName.CANCELLED.equals(jobStatus.getStateEnterTimes(i).getState()) ||
-						StatName.ABORTED.equals(jobStatus.getStateEnterTimes(i).getState())) {
-					if (stoptime == -1L) {
-						stoptime = jobStatus.getStateEnterTimes(i).getTime().getTimeInMillis();
-					}
+		boolean updated = false;
+		if(jobStatus.getChildrenStates() != null){
+			for (int i = 0; i < jobStatus.getChildrenStates().length; i++) {
+				JobStatus jobStatusChild = jobStatus.getChildrenStates(i);
+				GliteJobDAGTask gliteJobDAGTask = this.jobIDs.get(jobStatusChild.getJobId());
+				boolean isUpdated = gliteJobDAGTask.processJobStatus(jobStatusChild);
+				if(!updated && isUpdated){
+					updated = true;
 				}
 			}
 		}
+		
+		gLiteState = jobStatus.getState().getValue();
+		JobState s = gliteJobHelper.generateJobStateFromGLiteState(gLiteState);
+        if (s == state && !updated) {
+            // Don't generate event for unchanged state.
+            return;
+        }
+        if(s != state){
+        	state = s;
+			for (int i = 0; i < jobStatus.getStateEnterTimes().length; i++) {
+				if (jobStatus.getStateEnterTimes(i).getTime().getTimeInMillis() != 0) {
+					if(StatName.SUBMITTED.equals(jobStatus.getStateEnterTimes(i).getState())) {
+						if (submissiontime == -1L) {
+							submissiontime = jobStatus.getStateEnterTimes(i).getTime().getTimeInMillis();
+						}
+					}else if(StatName.RUNNING.equals(jobStatus.getStateEnterTimes(i).getState())) {
+						if (starttime == -1L) {
+							starttime = jobStatus.getStateEnterTimes(i).getTime().getTimeInMillis();
+						}
+					}else if(StatName.DONE.equals(jobStatus.getStateEnterTimes(i).getState()) ||
+							StatName.CANCELLED.equals(jobStatus.getStateEnterTimes(i).getState()) ||
+							StatName.ABORTED.equals(jobStatus.getStateEnterTimes(i).getState())) {
+						if (stoptime == -1L) {
+							stoptime = jobStatus.getStateEnterTimes(i).getTime().getTimeInMillis();
+						}
+					}
+				}
+			}
+			destination = jobStatus.getDestination();
+        }
+		
 		MetricEvent event = new MetricEvent(this, state, statusMetric, System.currentTimeMillis());
 		fireMetric(event);
 	}
@@ -190,7 +222,28 @@ public class GliteJobDAG extends CoScheduleJobCpi implements GliteJobInterface {
 	}
 
 	public Job getJob(JobDescription description) {
-		throw new UnsupportedOperationException("Not implemented");
+		if(!childJobs.containsKey(description)){
+			return null;
+		}
+		return childJobs.get(description);
+	}
+	
+	private class GliteJobDAGTask extends GliteJobBasic {
+
+		protected GliteJobDAGTask(GATContext gatContext, final JobDescription jobDescription,JobIdStructType jobIdStructType, GliteJobHelper gliteJobHelper) {
+			super(gatContext,jobDescription,jobIdStructType, gliteJobHelper);
+		}
+
+		private static final long serialVersionUID = 1L;
+
+		public JobIdStructType getJobIdStructType(){
+			return jobIdStructType;
+		}
+		
+		public void updateState() {
+			GliteJobDAG.this.updateState();
+		}
+		
 	}
 
 }

@@ -10,6 +10,7 @@ import org.glite.wsdl.services.lb.LoggingAndBookkeepingLocator;
 import org.glite.wsdl.services.lb.LoggingAndBookkeepingPortType;
 import org.glite.wsdl.types.lb.GenericFault;
 import org.glite.wsdl.types.lb.JobFlags;
+import org.glite.wsdl.types.lb.JobFlagsValue;
 import org.glite.wsdl.types.lb.JobStatus;
 import org.globus.axis.transport.HTTPSSender;
 import org.gridlab.gat.GATInvocationException;
@@ -56,7 +57,19 @@ public class LBService {
 	}
 	
 	public JobStatus queryJobState(JobIdStructType jobIdStructType) throws GenericFault, RemoteException{
-		return loggingAndBookkeepingPortType.jobStatus(jobIdStructType.getId(), new JobFlags());
-	}
+	    /* JobFlags: flags Specify details of the query. Determines which status
+	     * fields are actually retrieved.
+	     * Possible values:
+	     * CLASSADS - Include the job description in the query result.</li>
+	     * CHILDREN - Include the list of subjob id's in the query result.</li>
+	     * CHILDSTAT - Apply the flags recursively to subjobs.</li>
+	     * CHILDHIST_FAST - Include partially complete histogram of child job states.</li>
+	     * CHILDHIST_THOROUGH - Include full and up-to date histogram of child job states.</li>
+	     */
+		JobFlagsValue[] jobFlagsValues = new JobFlagsValue[]{JobFlagsValue.CLASSADS, JobFlagsValue.CHILDREN, JobFlagsValue.CHILDSTAT}; 
+		JobFlags jobFlags = new JobFlags();
+		jobFlags.setFlag(jobFlagsValues);
+		return loggingAndBookkeepingPortType.jobStatus(jobIdStructType.getId(), jobFlags);
+	}	
 
 }

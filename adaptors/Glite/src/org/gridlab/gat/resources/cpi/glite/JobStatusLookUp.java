@@ -25,7 +25,9 @@ class JobStatusLookUp implements Runnable {
 		} else {
 			this.pollIntMilliSec = Integer.parseInt(pollingIntervalStr) * 1000;
 		}
-		ScheduledExecutor.schedule(this, 1000, pollIntMilliSec);
+		//update at least properly the status 1 time before returning to the client the job.
+		this.run();
+		ScheduledExecutor.schedule(this, pollIntMilliSec, pollIntMilliSec);
 	}
 
 	public void run() {

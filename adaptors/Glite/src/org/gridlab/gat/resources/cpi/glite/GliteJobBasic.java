@@ -50,7 +50,7 @@ public class GliteJobBasic extends JobCpi implements GliteJobInterface {
 	private volatile String gLiteState = "";
 	
 	private Metric statusMetric = null;
-	private final JobIdStructType jobIdStructType;
+	protected final JobIdStructType jobIdStructType;
 
 	private boolean jobKilled = false;
 
@@ -63,6 +63,13 @@ public class GliteJobBasic extends JobCpi implements GliteJobInterface {
 	
 	private GliteJobHelper gliteJobHelper = null;
 	private LBService lbService = null;
+	
+	protected GliteJobBasic(final GATContext gatContext, final JobDescription jobDescription, JobIdStructType jobIdStructType, GliteJobHelper gliteJobHelper){
+		super(gatContext, jobDescription, null);
+		this.jobIdStructType = jobIdStructType;
+		this.swDescription = this.jobDescription.getSoftwareDescription();
+		this.gliteJobHelper = gliteJobHelper;
+	}
 	
 	protected GliteJobBasic(final GATContext gatContext, final JobDescription jobDescription, final String brokerURI) throws GATInvocationException, GATObjectCreationException {
 
@@ -142,9 +149,16 @@ public class GliteJobBasic extends JobCpi implements GliteJobInterface {
 		} catch (RemoteException e) {
 			LOGGER.error("gLite Error: LoggingAndBookkeeping service only works in glite 3.1 or higher", e);
 		}
+		if(processJobStatus(jobStatus)){
+			MetricEvent event = new MetricEvent(this, state, statusMetric, System.currentTimeMillis());
+			fireMetric(event);
+		}
+	}
+	
+	protected synchronized boolean processJobStatus(JobStatus jobStatus){
 		
 		if(jobStatus == null){
-			return;
+			return false;
 		}
 		
 		gLiteState = jobStatus.getState().getValue();
@@ -152,7 +166,7 @@ public class GliteJobBasic extends JobCpi implements GliteJobInterface {
 		JobState s = gliteJobHelper.generateJobStateFromGLiteState(gLiteState);
                 if (s == state) {
                     // Don't generate events for unchanged state.
-                    return;
+                    return false;
                 }
 
                 state = s;
@@ -176,8 +190,9 @@ public class GliteJobBasic extends JobCpi implements GliteJobInterface {
 				}
 			}
 		}
-		MetricEvent event = new MetricEvent(this, state, statusMetric, System.currentTimeMillis());
-		fireMetric(event);
+		destination = jobStatus.getDestination();
+		
+		return true;
 	}
 
 	public synchronized void receiveOutput() {

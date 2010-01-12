@@ -3,6 +3,7 @@ package org.gridlab.gat.resources.cpi.glite;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -29,6 +30,7 @@ public class DAG_JDL implements JDLInterface{
      */
     private SortedSet<String> inputFiles;
     private List<JobDescription> jobDescriptions;
+	private List<JDL> jdls;
     private HashSet<JobLink> jobLinks;
 
     public DAG_JDL(final OrderedCoScheduleJobDescription orderedCoScheduleJobDescription, final String voName)throws GATObjectCreationException {
@@ -91,11 +93,13 @@ public class DAG_JDL implements JDLInterface{
         }
         
         builder.append("nodes = [\n");
+        jdls = new ArrayList<JDL>();
         for (int i = 0; i < jobDescriptions.size(); i++) {
 			JobDescription description = jobDescriptions.get(i);
 			builder.append("\tNODE_"+description.hashCode()+" = [\n");
 			builder.append("\t\tdescription = \n");
-			builder.append(new JDL(0, description.getSoftwareDescription(), virtualOrganisation, description.getResourceDescription()).getJdlString().replaceAll("^", "\t\t\t").replaceAll("\n", "\n\t\t\t")+"\n");
+			jdls.add(new JDL(0, description.getSoftwareDescription(), virtualOrganisation, description.getResourceDescription()));
+			builder.append(jdls.get(i).getJdlString().replaceAll("^", "\t\t\t").replaceAll("\n", "\n\t\t\t")+"\n");
 			builder.append("\t];\n");
 		}
         builder.append("];\n");
@@ -115,6 +119,23 @@ public class DAG_JDL implements JDLInterface{
 
     }
 
+    public List<JDL> getJdls() {
+		return jdls;
+	}
+
+	public List<JobDescription> getJobDescriptions() {
+		return jobDescriptions;
+	}
+	
+	public JobDescription getJobDescription(String nodeName) {
+		for (int i = 0; i < jobDescriptions.size(); i++) {
+			if(("NODE_"+jobDescriptions.get(i).hashCode()).equals(nodeName)){
+				return jobDescriptions.get(i);
+			}
+		}
+		return null;
+	}
+    
     public String getJdlString() {
         return jdlString;
     }
