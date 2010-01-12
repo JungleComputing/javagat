@@ -630,21 +630,27 @@ public class SshTrileadFileAdaptor extends FileCpi {
         BufferedReader br = new BufferedReader(new InputStreamReader(stdout));
         result[STDOUT] = "";
         result[STDERR] = "";
+        StringBuffer out = new StringBuffer();
         while (true) {
             String line = br.readLine();
             if (line == null) {
                 break;
             }
-            result[STDOUT] += line + "\n";
+            out.append(line);
+            out.append("\n");
         }
+        result[STDOUT] = out.toString();
         br = new BufferedReader(new InputStreamReader(stderr));
+        StringBuffer err = new StringBuffer();
         while (true) {
             String line = br.readLine();
             if (line == null) {
                 break;
             }
-            result[STDERR] += line + "\n";
+            err.append(line);
+            err.append("\n");
         }
+        result[STDERR] = err.toString();
         while (session.getExitStatus() == null) {
             Thread.sleep(500);
         }
@@ -770,7 +776,7 @@ public class SshTrileadFileAdaptor extends FileCpi {
     }
 
     public boolean exists() throws GATInvocationException {
-        logger.info("exists: ls " + getFixedPath());
+        logger.info("exists: ls -d " + getFixedPath());
 
         if (existsCacheEnable) {
             if (existsCache.containsKey(fixedURI)) {
@@ -782,13 +788,13 @@ public class SshTrileadFileAdaptor extends FileCpi {
         } else {
             String[] result;
             try {
-                result = execCommand("ls " + getFixedPath());
+                result = execCommand("ls -d " + getFixedPath());
             } catch (Exception e) {
                 throw new GATInvocationException("sshtrilead", e);
             }
-            // no stderr, and >=0 stdout mean that the file exists
+            // no stderr, and >0 stdout mean that the file exists
             boolean exists = result[STDERR].length() == 0
-                    && result[STDOUT].length() >= 0;
+                    && result[STDOUT].length() > 0;
             if (existsCacheEnable) {
                 existsCache.put(fixedURI, exists);
             }
