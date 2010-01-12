@@ -64,7 +64,7 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
     }
     
     public static String[] getSupportedSchemes() {
-        return new String[] { "globus", "http", "https"};
+        return new String[] { "globus", "http", "https", "gram"};
     }
 
     protected static Logger logger = LoggerFactory
