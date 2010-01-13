@@ -27,6 +27,7 @@ public class CommandlineSshFileAdaptor extends FileCpi {
         capabilities.put("delete", true);
         capabilities.put("isDirectory", true);
         capabilities.put("isFile", true);
+        capabilities.put("length", true);
         capabilities.put("list", true);
         capabilities.put("mkdir", true);
         capabilities.put("exists", true);
@@ -174,6 +175,21 @@ public class CommandlineSshFileAdaptor extends FileCpi {
         }
         
         return runner;
+    }
+ 
+    
+    public long length() throws GATInvocationException {
+        CommandRunner command = runSshCommand("wc","-c", fixedURI.getPath());
+        if (command.getExitCode() != 0) {
+            if (logger.isInfoEnabled()) {
+                logger.info("command failed, error = " + command.getStderr());
+            }
+            // command failed, but ssh did not --> assume non-existing.
+            return 0;
+        }
+
+        String result = command.getStdout();
+        return Long.parseLong(result.replaceAll(" .*\\s?", ""));
     }
     
     public String[] list() throws GATInvocationException {
