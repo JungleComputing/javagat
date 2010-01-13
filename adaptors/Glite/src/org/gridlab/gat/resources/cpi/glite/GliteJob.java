@@ -56,13 +56,12 @@ import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.GATObjectCreationException;
 import org.gridlab.gat.URI;
-import org.gridlab.gat.engine.util.ScheduledExecutor;
 import org.gridlab.gat.io.File;
 import org.gridlab.gat.monitoring.Metric;
 import org.gridlab.gat.monitoring.MetricDefinition;
-import org.gridlab.gat.monitoring.MetricEvent;
 import org.gridlab.gat.resources.Job;
 import org.gridlab.gat.resources.JobDescription;
+import org.gridlab.gat.resources.ResourceBroker;
 import org.gridlab.gat.resources.ResourceDescription;
 import org.gridlab.gat.resources.SoftwareDescription;
 import org.gridlab.gat.resources.cpi.JobCpi;
@@ -75,89 +74,79 @@ import org.slf4j.LoggerFactory;
 @SuppressWarnings("serial")
 public class GliteJob extends JobCpi {
 
+    /**
+     *  Logging and Bookkeeping service port
+     */
     private final static int LB_PORT = 9003;
+    
+    /**
+     * The Logger 
+     */
     private static final Logger LOGGER = LoggerFactory
             .getLogger(GliteJob.class);
 
+    /**
+     * Logging and Bookkeeping service url
+     */
     private java.net.URL lbURL;
+    
+    /**
+     * The job description
+     */
     private JDL gLiteJobDescription;
+    
+    /**
+     * The job software description
+     */
     private SoftwareDescription swDescription;
+    
+    /**
+     * The job state
+     */
     private volatile String gLiteState = "";
+    
+    /** The {@link URL} to the Workload Management System (WMS) */
     private URL wmsURL = null;
+    
+    /** Path to the voms proxy certificate */
     private String proxyFile = null;
+    
+    /** is <code>true</code> if the Job is done and the poststaging has been done. */
     private boolean outputDone = false;
+    
+    /** A Metric for Monitoring */
     private Metric metric;
+    
+    /** The id of the job. */
     private final String gliteJobID;
 
+    /** Web Service Port_Type */
     private WMProxy_PortType serviceStub = null;
+    
+    /** Web Service Stub */    
     private DelegationSoapBindingStub grstStub = null;
+    
+    /** Web Service Port_Type */    
     private LoggingAndBookkeepingPortType lbPortType = null;
 
+    /** is <code>true</code> if the Job has been killed. */
     private boolean jobKilled = false;
+    
+    /** The submission-time of the job */
     private volatile long submissiontime = -1L;
+    
+    /** The start-time of the job */    
     private volatile long starttime = -1L;
+    
+    /** The stop-time of the job */    
     private volatile long stoptime = -1L;
+
+    /** An exception that might occurs. */    
     private volatile GATInvocationException postStageException = null;
+    
+    /** The address of the CE where the job will be executed. */
     private volatile String destination = null;
 
-    class JobStatusLookUp implements Runnable {
-        private GliteJob polledJob;
-        private int pollIntMilliSec;
-        private long afterJobKillCounter = 0;
-
-        /**
-         * if the job has been stopped, allow the thread to still do update for
-         * this time interval terminating
-         */
-        final static long UPDATE_INTV_AFTER_JOB_KILL = 40000;
-
-        public JobStatusLookUp(final GliteJob job) {
-            // super();
-
-            this.polledJob = job;
-
-            String pollingIntervalStr = (String) gatContext.getPreferences()
-                    .get(GliteConstants.PREFERENCE_POLL_INTERVAL_SECS);
-
-            if (pollingIntervalStr == null) {
-                this.pollIntMilliSec = 30000;
-            } else {
-                this.pollIntMilliSec = Integer.parseInt(pollingIntervalStr) * 1000;
-            }
-            ScheduledExecutor.schedule(this, 1000, pollIntMilliSec);
-        }
-
-        public void run() {
-            if (state == Job.JobState.STOPPED
-                    || state == Job.JobState.SUBMISSION_ERROR) {
-                ScheduledExecutor.remove(this);
-                return;
-            }
-
-            // if the job has been killed and the maximum time at which the
-            // job should be canceled
-            // has been reached, cancel
-            if (jobKilled) {
-                afterJobKillCounter += pollIntMilliSec;
-
-                if (afterJobKillCounter >= UPDATE_INTV_AFTER_JOB_KILL) {
-                    ScheduledExecutor.remove(this);
-                    return;
-                }
-            }
-
-            polledJob.updateState();
-
-            MetricEvent event = new MetricEvent(polledJob, state, metric,
-                    System.currentTimeMillis());
-            polledJob.fireMetric(event);
-
-            if (state == Job.JobState.POST_STAGING) {
-                polledJob.receiveOutput();
-                polledJob.outputDone = true;
-            }
-        }
-    }
 
     /**
      * Construct the service stubs necessary to communicate with the workload
@@ -234,6 +223,14 @@ public class GliteJob extends JobCpi {
         }
     }
 
+    /**
+     * @param gatContext
+     * @param jobDescription
+     * @param sandbox
+     * @param brokerURI
+     * @throws GATInvocationException
+     * @throws GATObjectCreationException
+     */
     protected GliteJob(final GATContext gatContext,
             final JobDescription jobDescription, final Sandbox sandbox,
             final String brokerURI) throws GATInvocationException,
@@ -283,7 +280,7 @@ public class GliteJob extends JobCpi {
         LOGGER.info("jobID " + gliteJobID);
         // start status lookup thread
         // new Thread(new JobStatusLookUp(this)).start();
-        new JobStatusLookUp(this);
+        //new JobStatusLookUp(this);
     }
 
     /**
@@ -291,8 +288,6 @@ public class GliteJob extends JobCpi {
      * certificate path from the cog.properties file So the path to the CA
      * certificats should only be given once, in the cog.properties file
      * 
-     * @param context
-     *            The GATContext
      * @author thomas
      */
     private void setCACerticateProperties() {
@@ -327,6 +322,9 @@ public class GliteJob extends JobCpi {
 
     }
 
+    /**
+     * @param sandboxJobID
+     */
     private void stageInSandboxFiles(String sandboxJobID) {
         List<File> sandboxFiles = new ArrayList<File>();
         GATContext newContext = (GATContext) gatContext.clone();
@@ -370,7 +368,13 @@ public class GliteJob extends JobCpi {
         }
     }
 
-    // jobSubmit via API
+    /**
+     * JobSubmit via API {@link ResourceBroker#submitJob(org.gridlab.gat.resources.AbstractJobDescription)}
+     * 
+     * @return the id of the job
+     * @throws GATInvocationException An exception that migt occurs
+     * @throws GATObjectCreationException An exception that might occurs
+     */
     private String submitJob() throws GATInvocationException, GATObjectCreationException {
 
         LOGGER.debug("called submitJob");
@@ -416,6 +420,9 @@ public class GliteJob extends JobCpi {
         return jobIdStruct.getId();
     }
 
+    /**
+     * @see JobCpi#getInfo()
+     */
     public Map<String, Object> getInfo() {
         Map<String, Object> map = new HashMap<String, Object>();
 
@@ -434,6 +441,10 @@ public class GliteJob extends JobCpi {
         return map;
     }
 
+    
+    /**
+     * Queries the current state of the job via WebService.
+     */
     private void queryState() {
         if (outputDone) { // API is ready with POST STAGING
             this.gLiteState = "Cleared";
@@ -455,7 +466,11 @@ public class GliteJob extends JobCpi {
         }
     }
 
-    private synchronized void updateState() {
+    /**
+	 * Update the status of the job.
+	 * Depended on the requested state some action, like file staging or sandbox cleanup, has to be done. 
+	 */
+	private synchronized void updateState() {
 
         queryState();
 
@@ -534,6 +549,9 @@ public class GliteJob extends JobCpi {
         }
     }
 
+    /**
+     * Copies the output files like stdout and stderr to the defined URI via gridftp. 
+     */
     public void receiveOutput() {
         StringAndLongType[] list = null;
 
