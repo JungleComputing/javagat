@@ -287,7 +287,8 @@ public class CommandlineSshFileAdaptor extends FileCpi {
     public void copy(URI dest) throws GATInvocationException {
         // We don't have to handle the local case, the GAT engine will select
         // the local adaptor.
-        if (dest.getAuthority() == null && (toURI().getAuthority() == null)) {
+        dest = fixURI(dest, null);
+        if (fixedURI.refersToLocalHost() && dest.refersToLocalHost()) {
             if (logger.isDebugEnabled()) {
                 logger.debug("commandlineSsh file: copy local to local");
             }
@@ -295,7 +296,7 @@ public class CommandlineSshFileAdaptor extends FileCpi {
             return;
         }
 
-        if (dest.getAuthority() == null) {
+        if (dest.refersToLocalHost()) {
             if (logger.isDebugEnabled()) {
                 logger.debug("commandlineSsh file: copy remote to local");
             }
@@ -304,7 +305,7 @@ public class CommandlineSshFileAdaptor extends FileCpi {
             return;
         }
 
-        if (toURI().getAuthority() == null) {
+        if (fixedURI.refersToLocalHost()) {
             if (logger.isDebugEnabled()) {
                 logger.debug("commandlineSsh file: copy local to remote");
             }
