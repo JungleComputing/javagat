@@ -222,11 +222,7 @@ public class LocalJob extends JobCpi {
                 || state == JobState.SUBMISSION_ERROR) {
             return;
         }
-        if (!skipPostStage) {
-            setState(JobState.POST_STAGING);
-            waitForTrigger(JobState.POST_STAGING);
-            sandbox.retrieveAndCleanup(this);
-        }
+        
         try {
             p.getOutputStream().close();
         } catch (IOException e) {
@@ -248,6 +244,13 @@ public class LocalJob extends JobCpi {
                 // ignored
             }
         }
+        
+        if (!skipPostStage) {
+            setState(JobState.POST_STAGING);
+            waitForTrigger(JobState.POST_STAGING);
+            sandbox.retrieveAndCleanup(this);
+        }
+
         p.destroy(); 
         setStopTime();
         setState(JobState.STOPPED);
