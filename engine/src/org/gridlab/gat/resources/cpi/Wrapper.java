@@ -75,6 +75,8 @@ public class Wrapper {
     private String triggerDirectory;
     
     private String sandboxCopy;
+    
+    private String sandboxPath;
 
     /**
      * Starts a wrapper with given arguments
@@ -124,6 +126,11 @@ public class Wrapper {
         
         this.numberJobs = infos.size();
         
+        Preferences preferences = new Preferences();
+        preferences.put("file.adaptor.name", "local");
+        File sandbox = GAT.createFile(preferences, ".");
+        sandboxPath = sandbox.getAbsolutePath();
+        
         if (sandboxCopy != null) {
             java.io.File sandboxCopyFile = new java.io.File(sandboxCopy);
             if (!sandboxCopyFile.exists()) {
@@ -135,9 +142,6 @@ public class Wrapper {
                         "sandbox.copy directory already exists!");
             }
             sandboxCopy = sandboxCopyFile.getPath();
-            Preferences preferences = new Preferences();
-            preferences.put("file.adaptor.name", "local");
-            File sandbox = GAT.createFile(preferences, ".");
             sandbox.copy(new URI(sandboxCopy));
         }
 
@@ -149,7 +153,7 @@ public class Wrapper {
                         = info.getJobDescription().getSoftwareDescription();
                 sd.addAttribute("triggerDirectory", triggerDirURI);
             }
-            new Submitter(info).start();
+            new Submitter(info, i).start();
         }
 
         synchronized (this) {
@@ -165,21 +169,17 @@ public class Wrapper {
             logger.debug("DONE!");
         }
         if (sandboxCopy != null) {
-            Preferences preferences = new Preferences();
-            preferences.put("file.adaptor.name", "local");
             File sandboxCopyFile = GAT.createFile(preferences, sandboxCopy);
             sandboxCopyFile.recursivelyDeleteDirectory();
         }
     }
 
     private AbstractJobDescription modify(Preferences prefs,
-            AbstractJobDescription description, URI origin) {
+            AbstractJobDescription description, URI origin, int id) {
         if (!(description instanceof JobDescription)) {
             return description;
         }
         JobDescription jobDescription = (JobDescription) description;
-        
-        Map<File, File> preStaged = jobDescription.getSoftwareDescription().getPreStaged();
 
         if (sandboxCopy != null) {
             Map<String, Object> env = jobDescription.getSoftwareDescription().getEnvironment();
@@ -190,6 +190,8 @@ public class Wrapper {
             }
             env.put("SANDBOX_COPY", sandboxCopy);
         }
+        
+        Map<File, File> preStaged = jobDescription.getSoftwareDescription().getPreStaged();
         if (preStaged != null) {
             ArrayList<File> keys = new ArrayList<File>(preStaged.keySet());
             for (File file : keys) {
@@ -235,7 +237,7 @@ public class Wrapper {
         File stdout = jobDescription.getSoftwareDescription().getStdout();
         if (stdout != null) {
             try {
-                File out = GAT.createFile(prefs, new URI(".stdout"));
+                File out = GAT.createFile(prefs, new URI(sandboxPath + "/.stdout_" + id));
                 jobDescription.getSoftwareDescription().setStdout(out);
                 postStaged.put(out,
                         GAT.createFile(prefs, rewriteURI(stdout.toGATURI(), origin)));
@@ -246,7 +248,7 @@ public class Wrapper {
         File stderr = jobDescription.getSoftwareDescription().getStderr();
         if (stderr != null) {
             try {
-                File err = GAT.createFile(prefs, new URI(".stderr"));
+                File err = GAT.createFile(prefs, new URI(sandboxPath + "/.stderr_" + id));
                 jobDescription.getSoftwareDescription().setStderr(err);
                 postStaged.put(err,
                         GAT.createFile(prefs, rewriteURI(stderr.toGATURI(), origin)));
@@ -257,7 +259,7 @@ public class Wrapper {
         File stdin = jobDescription.getSoftwareDescription().getStdin();
         if (stdin != null) {
             try {
-                File in = GAT.createFile(prefs, new URI(".stdin"));
+                File in = GAT.createFile(prefs, new URI(sandboxPath + "/.stdin_" + id));
                 jobDescription.getSoftwareDescription().setStdin(in);
                 preStaged.put(
                         GAT.createFile(prefs,
@@ -291,9 +293,11 @@ public class Wrapper {
     class Submitter extends Thread {
 
         private WrappedJobInfo info;
+        private int wrappedId;
         
-        public Submitter(WrappedJobInfo info) {
+        public Submitter(WrappedJobInfo info, int wrappedId) {
             this.info = info;
+            this.wrappedId = wrappedId;
             setDaemon(false);
             setName(info.getJobStateFileName());
         }
@@ -311,7 +315,7 @@ public class Wrapper {
             }
 
             try {
-                broker.submitJob(modify(prefs, info.getJobDescription(), initiator),
+                broker.submitJob(modify(prefs, info.getJobDescription(), initiator, wrappedId),
                         new JobListener(info),
                         "job.status");
             } catch (GATInvocationException e) {
