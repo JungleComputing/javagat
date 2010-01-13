@@ -232,38 +232,36 @@ public class Wrapper {
                 }
             }
         }
-        if (jobDescription.getSoftwareDescription().getStdout() != null) {
+        File stdout = jobDescription.getSoftwareDescription().getStdout();
+        if (stdout != null) {
             try {
                 File out = GAT.createFile(prefs, new URI(".stdout"));
                 jobDescription.getSoftwareDescription().setStdout(out);
                 postStaged.put(out,
-                        GAT.createFile(prefs, rewriteURI(jobDescription
-                                .getSoftwareDescription().getStdout()
-                                .toGATURI(), origin)));
+                        GAT.createFile(prefs, rewriteURI(stdout.toGATURI(), origin)));
             } catch (Throwable e) {
                 logger.error("Got Exception", e);
             }
         }
-        if (jobDescription.getSoftwareDescription().getStderr() != null) {
+        File stderr = jobDescription.getSoftwareDescription().getStderr();
+        if (stderr != null) {
             try {
                 File err = GAT.createFile(prefs, new URI(".stderr"));
                 jobDescription.getSoftwareDescription().setStderr(err);
                 postStaged.put(err,
-                        GAT.createFile(prefs, rewriteURI(jobDescription
-                                .getSoftwareDescription().getStderr()
-                                .toGATURI(), origin)));
+                        GAT.createFile(prefs, rewriteURI(stderr.toGATURI(), origin)));
             } catch (Throwable e) {
                 logger.error("Got Exception", e);
             }
         }
-        if (jobDescription.getSoftwareDescription().getStdin() != null) {
+        File stdin = jobDescription.getSoftwareDescription().getStdin();
+        if (stdin != null) {
             try {
                 File in = GAT.createFile(prefs, new URI(".stdin"));
                 jobDescription.getSoftwareDescription().setStdin(in);
                 preStaged.put(
-                        GAT.createFile(prefs, rewriteURI(
-                                jobDescription.getSoftwareDescription()
-                                        .getStdin().toGATURI(), origin)), in);
+                        GAT.createFile(prefs,
+                                rewriteURI(stdin.toGATURI(), origin)), in);
             } catch (Throwable e) {
                 logger.error("Got Exception", e);
             }
