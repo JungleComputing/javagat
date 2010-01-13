@@ -3,6 +3,7 @@ package org.gridlab.gat.io.cpi.globus;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.Hashtable;
+import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,6 +33,14 @@ public class GridFTPFileAdaptor extends GlobusFileAdaptor {
     
     public static String[] getSupportedSchemes() {
         return new String[] { "gsiftp", "file", ""};
+    }
+    
+    public static Map<String, Boolean> getSupportedCapabilities() {
+        Map<String, Boolean> capabilities = GlobusFileAdaptor
+                .getSupportedCapabilities();
+        capabilities.put("createNewFile", true);
+        capabilities.put("exists", true);
+        return capabilities;
     }
     
     protected static Logger logger = LoggerFactory.getLogger(GridFTPFileAdaptor.class);
@@ -74,11 +83,59 @@ public class GridFTPFileAdaptor extends GlobusFileAdaptor {
             throw new GATObjectCreationException("gridftp", e);
         }
     }
+    
+    
+    public boolean createNewFile() throws GATInvocationException {
+        if (exists()) {
+            return false;
+        }
+
+        GridFTPFileOutputStreamAdaptor o;
+        try {
+            o = new GridFTPFileOutputStreamAdaptor(
+                    gatContext, location, false);
+        } catch (GATObjectCreationException e) {
+            throw new GATInvocationException("Could not create file " + location, e);
+        }
+        o.close();
+
+        return true;
+    }
+
 
     protected URI fixURI(URI in) {
         return fixURI(in, "gsiftp");
     }
 
+
+    public boolean exists() throws GATInvocationException {
+        if (cachedInfo != null) {
+            return true;
+        }
+
+        FTPClient client = null;
+
+        try {
+            String remotePath = getPath();
+
+            if (logger.isDebugEnabled()) {
+                logger.debug("getINFO: remotePath = " + remotePath
+                        + ", creating client to: " + toURI());
+            }
+
+            client = createClient(toURI());
+
+            if (logger.isDebugEnabled()) {
+                logger.debug("exists: client created");
+            }
+            return client.exists(remotePath);
+        } catch (Exception e) {
+            throw new GATInvocationException("globus", e);
+        } finally {
+            if (client != null)
+                destroyClient(client, toURI(), gatContext.getPreferences());
+        }
+    }
     private static void setConnectionOptions(GridFTPClient c,
             Preferences preferences) throws Exception {
         c.setType(GridFTPSession.TYPE_IMAGE);

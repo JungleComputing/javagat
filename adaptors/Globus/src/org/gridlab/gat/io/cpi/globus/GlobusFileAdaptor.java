@@ -87,7 +87,7 @@ public abstract class GlobusFileAdaptor extends FileCpi {
     // old servers.
     private static HashMap<URI, Integer> isDirCache = new HashMap<URI, Integer>();
 
-    private FileInfo cachedInfo = null;
+    protected FileInfo cachedInfo = null;
 
     /**
      * Constructs a LocalFileAdaptor instance which corresponds to the physical
@@ -1128,38 +1128,6 @@ public abstract class GlobusFileAdaptor extends FileCpi {
         }
     }
 
-    public boolean exists() throws GATInvocationException {
-        if (cachedInfo != null) {
-            return true;
-        }
-
-        FTPClient client = null;
-
-        try {
-            String remotePath = getPath();
-
-            if (logger.isDebugEnabled()) {
-                logger.debug("getINFO: remotePath = " + remotePath
-                        + ", creating client to: " + toURI());
-            }
-
-            client = createClient(toURI());
-
-            if (logger.isDebugEnabled()) {
-                logger.debug("exists: client created");
-            }
-            // Note: this is the only place where we can use client.exists!
-            // It does NOT work for a regular FTP client! Note that the FTPFileAdaptor
-            // reimplements the exists method. But, other methods in the GlobusFileAdaptor
-            // ARE used by a regular FTP client, so don't use client.exists there!!!
-            return client.exists(remotePath);
-        } catch (Exception e) {
-            throw new GATInvocationException("globus", e);
-        } finally {
-            if (client != null)
-                destroyClient(client, toURI(), gatContext.getPreferences());
-        }
-    }
 
     public String getAbsolutePath() throws GATInvocationException {
         if (getPath().startsWith("/")) {

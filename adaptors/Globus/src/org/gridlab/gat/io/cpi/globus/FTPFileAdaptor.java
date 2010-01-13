@@ -23,6 +23,7 @@ public class FTPFileAdaptor extends GlobusFileAdaptor {
     public static Map<String, Boolean> getSupportedCapabilities() {
         Map<String, Boolean> capabilities = GlobusFileAdaptor
                 .getSupportedCapabilities();
+        capabilities.put("createNewFile", true);
         capabilities.put("exists", true);
         return capabilities;
     }
@@ -67,6 +68,24 @@ public class FTPFileAdaptor extends GlobusFileAdaptor {
         PasswordSecurityContext c = (PasswordSecurityContext) l.get(0);
         user = c.getUsername();
         password = c.getPassword();
+    }
+    
+    
+    public boolean createNewFile() throws GATInvocationException {
+        if (exists()) {
+            return false;
+        }
+
+        FTPFileOutputStreamAdaptor o;
+        try {
+            o = new FTPFileOutputStreamAdaptor(
+                    gatContext, location, false);
+        } catch (GATObjectCreationException e) {
+            throw new GATInvocationException("Could not create file " + location, e);
+        }
+        o.close();
+
+        return true;
     }
 
     protected URI fixURI(URI in) {
