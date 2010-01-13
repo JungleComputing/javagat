@@ -232,6 +232,9 @@ public class LocalResourceBrokerAdaptor extends ResourceBrokerCpi {
                             .getExecutable()
                             + " [stderr]");
                     localJob.setErrorStream(forwarder);
+                    if (logger.isDebugEnabled()) {
+                        logger.debug("Created stderr forwarder to file " + sd.getStderr());
+                    }
                 } else {
                     // or throw it away
                     new StreamForwarder(p.getErrorStream(), null, sd
@@ -254,6 +257,9 @@ public class LocalResourceBrokerAdaptor extends ResourceBrokerCpi {
                             .getExecutable()
                             + " [stdout]");
                     localJob.setOutputStream(forwarder);
+                    if (logger.isDebugEnabled()) {
+                        logger.debug("Created stdout forwarder to file " + sd.getStdout());
+                    }
                 } else {
                     // or throw it away
                     new StreamForwarder(p.getInputStream(), null, sd
