@@ -180,18 +180,18 @@ public class SshTrileadFileAdaptor extends FileCpi {
         // init from preferences ...
         Preferences p = gatContext.getPreferences();
         canReadCacheEnable = ((String) p.get("sshtrilead.caching.canread",
-                "true")).equalsIgnoreCase("true");
+                "false")).equalsIgnoreCase("true");
         canWriteCacheEnable = ((String) p.get("sshtrilead.caching.canwrite",
-                "true")).equalsIgnoreCase("true");
+                "false")).equalsIgnoreCase("true");
         existsCacheEnable = ((String) p
-                .get("sshtrilead.caching.exists", "true"))
+                .get("sshtrilead.caching.exists", "false"))
                 .equalsIgnoreCase("true");
         isDirCacheEnable = ((String) p.get("sshtrilead.caching.isdirectory",
-                "true")).equalsIgnoreCase("true");
+                "false")).equalsIgnoreCase("true");
         isFileCacheEnable = ((String) p
-                .get("sshtrilead.caching.isfile", "true"))
+                .get("sshtrilead.caching.isfile", "false"))
                 .equalsIgnoreCase("true");
-        listCacheEnable = ((String) p.get("sshtrilead.caching.list", "true"))
+        listCacheEnable = ((String) p.get("sshtrilead.caching.list", "false"))
                 .equalsIgnoreCase("true");
         isWindowsCacheEnable = ((String) p.get("sshtrilead.caching.iswindows", "true"))
                 .equalsIgnoreCase("true");
