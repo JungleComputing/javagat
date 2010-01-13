@@ -74,7 +74,7 @@ public class Wrapper {
     
     private String triggerDirectory;
     
-    private String sandboxCopy;
+    private String sandboxExtra;
     
     private String sandboxPath;
 
@@ -104,7 +104,7 @@ public class Wrapper {
         this.initiator = (URI) in.readObject();
         int level = in.readInt();
         wrapperId = in.readInt();
-        sandboxCopy = (String) in.readObject();
+        sandboxExtra = (String) in.readObject();
         triggerDirectory = (String) in.readObject();      
         scheduledType = (ScheduledType) in.readObject();       
         List<WrappedJobInfo> infos = (List<WrappedJobInfo>) in.readObject();
@@ -131,18 +131,15 @@ public class Wrapper {
         File sandbox = GAT.createFile(preferences, ".");
         sandboxPath = sandbox.getAbsolutePath();
         
-        if (sandboxCopy != null) {
-            java.io.File sandboxCopyFile = new java.io.File(sandboxCopy);
-            if (!sandboxCopyFile.exists()) {
-                if (! sandboxCopyFile.mkdirs()) {
-                    throw new Exception("Could not create sandbox.copy directory.");
-                }
-            } else {
-                throw new Exception(
-                        "sandbox.copy directory already exists!");
+        if (sandboxExtra != null) {
+            sandboxExtra = sandboxExtra + java.io.File.separator
+                    + ".JavaGAT_SANDBOX_" + Math.random();
+            java.io.File sandboxCopyFile = new java.io.File(sandboxExtra);
+            if (! sandboxCopyFile.mkdirs()) {
+                throw new Exception("Could not create extra sandbox directory " + sandboxExtra);
             }
-            sandboxCopy = sandboxCopyFile.getPath();
-            sandbox.copy(new URI(sandboxCopy));
+            sandboxExtra = sandboxCopyFile.getPath();
+            sandbox.copy(new URI(sandboxExtra));
         }
 
         String triggerDirURI = rewriteURI(new URI(triggerDirectory), initiator).toString();
@@ -168,8 +165,8 @@ public class Wrapper {
         if (logger.isDebugEnabled()) {
             logger.debug("DONE!");
         }
-        if (sandboxCopy != null) {
-            File sandboxCopyFile = GAT.createFile(preferences, sandboxCopy);
+        if (sandboxExtra != null) {
+            File sandboxCopyFile = GAT.createFile(preferences, sandboxExtra);
             sandboxCopyFile.recursivelyDeleteDirectory();
         }
     }
@@ -181,14 +178,14 @@ public class Wrapper {
         }
         JobDescription jobDescription = (JobDescription) description;
 
-        if (sandboxCopy != null) {
+        if (sandboxExtra != null) {
             Map<String, Object> env = jobDescription.getSoftwareDescription().getEnvironment();
             if (env == null) {
                 env = new HashMap<String, Object>();
                 jobDescription.getSoftwareDescription().setEnvironment(env);
                 env = jobDescription.getSoftwareDescription().getEnvironment();
             }
-            env.put("SANDBOX_COPY", sandboxCopy);
+            env.put("WRAPPER_EXTRA_SANDBOX", sandboxExtra);
         }
         
         Map<File, File> preStaged = jobDescription.getSoftwareDescription().getPreStaged();
