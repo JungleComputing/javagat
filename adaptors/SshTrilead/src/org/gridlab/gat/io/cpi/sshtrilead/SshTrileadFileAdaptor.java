@@ -917,6 +917,9 @@ public class SshTrileadFileAdaptor extends FileCpi {
     }
 
     public String[] list() throws GATInvocationException {
+        if (!isDirectory()) {
+            return null;
+        }
         if (listCacheEnable) {
             if (listCache.containsKey(fixedURI)) {
                 return listCache.get(fixedURI);
@@ -932,7 +935,7 @@ public class SshTrileadFileAdaptor extends FileCpi {
                 throw new GATInvocationException("sshtrilead", e);
             }
             if (result[STDOUT].equals("")) {
-                return null;
+                return new String[0];
             }
             String[] list = result[STDOUT].split("\n");
             if (listCacheEnable) {
@@ -943,11 +946,6 @@ public class SshTrileadFileAdaptor extends FileCpi {
     }
 
     public File[] listFiles() throws GATInvocationException {
-        if (!isDirectory()) {
-            throw new GATInvocationException("this is not a directory: "
-                    + fixedURI);
-        }
-
         try {
             String[] f = list();
             if (f == null) {
