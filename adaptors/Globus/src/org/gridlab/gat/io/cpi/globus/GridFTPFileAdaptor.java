@@ -290,12 +290,15 @@ public class GridFTPFileAdaptor extends GlobusFileAdaptor {
 		// try to get the lock for this host
 		lock = getHostLock(src);
 		lock.lock();
+		logger.debug("called lock() in mkdirs");		
 		retVal = super.mkdirs();
 
 		} finally {
+			logger.debug("try to call unlock() in mkdirs");			
 			// release the lock for this host
 			if (lock != null && lock.isLocked()) {
 				lock.unlock();
+				logger.debug("called unlock() in mkdirs");				
 			}
 		}
 		return retVal;
