@@ -284,15 +284,20 @@ public class GridFTPFileAdaptor extends GlobusFileAdaptor {
 
 		boolean retVal;
 		URI src = fixURI(toURI());
-
+		ReentrantLock lock = null;
+		
+		try {
 		// try to get the lock for this host
-		ReentrantLock lock = getHostLock(src);
+		lock = getHostLock(src);
 		lock.lock();
-
 		retVal = super.mkdirs();
 
-		// release the lock for this host
-		lock.unlock();
+		} finally {
+			// release the lock for this host
+			if (lock != null && lock.isLocked()) {
+				lock.unlock();
+			}
+		}
 		return retVal;
 	}
 
