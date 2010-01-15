@@ -269,7 +269,8 @@ public class SftpTrileadFileAdaptor extends FileCpi {
             throw new GATInvocationException("sftpTrilead", e);
         }
         try {
-            c.sftpClient.createFileTruncate(location.getPath());
+            SFTPv3FileHandle handle = c.sftpClient.createFileTruncate(location.getPath());
+            c.sftpClient.closeFile(handle);
         } catch (IOException e) {
             return false;
         } finally {
