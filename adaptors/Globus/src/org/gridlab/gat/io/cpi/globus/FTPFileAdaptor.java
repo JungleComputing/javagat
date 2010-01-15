@@ -23,7 +23,6 @@ public class FTPFileAdaptor extends GlobusFileAdaptor {
     public static Map<String, Boolean> getSupportedCapabilities() {
         Map<String, Boolean> capabilities = GlobusFileAdaptor
                 .getSupportedCapabilities();
-        capabilities.put("createNewFile", true);
         capabilities.put("exists", true);
         return capabilities;
     }
@@ -70,24 +69,6 @@ public class FTPFileAdaptor extends GlobusFileAdaptor {
         password = c.getPassword();
     }
     
-    
-    public boolean createNewFile() throws GATInvocationException {
-        if (exists()) {
-            return false;
-        }
-
-        FTPFileOutputStreamAdaptor o;
-        try {
-            o = new FTPFileOutputStreamAdaptor(
-                    gatContext, location, false);
-        } catch (GATObjectCreationException e) {
-            throw new GATInvocationException("Could not create file " + location, e);
-        }
-        o.close();
-
-        return true;
-    }
-
     protected URI fixURI(URI in) {
         return fixURI(in, "ftp");
     }
@@ -105,8 +86,12 @@ public class FTPFileAdaptor extends GlobusFileAdaptor {
     protected FTPClient createClient(GATContext context,
             Preferences additionalPreferences, URI hostURI)
             throws GATInvocationException {
-        GATContext gatContext = (GATContext) context.clone();
-        gatContext.addPreferences(additionalPreferences);
+        GATContext gatContext = context;
+        
+        if (additionalPreferences != null) {
+            gatContext = (GATContext) context.clone();
+            gatContext.addPreferences(additionalPreferences);
+        }
         String host = hostURI.resolveHost();
 
         int port = hostURI.getPort(DEFAULT_FTP_PORT);

@@ -5,8 +5,6 @@ import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Map;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.globus.ftp.DataChannelAuthentication;
 import org.globus.ftp.FTPClient;
 import org.globus.ftp.GridFTPClient;
@@ -21,6 +19,8 @@ import org.gridlab.gat.Preferences;
 import org.gridlab.gat.URI;
 import org.gridlab.gat.security.globus.GlobusSecurityUtils;
 import org.ietf.jgss.GSSCredential;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @SuppressWarnings("serial")
 public class GridFTPFileAdaptor extends GlobusFileAdaptor {
@@ -32,13 +32,12 @@ public class GridFTPFileAdaptor extends GlobusFileAdaptor {
     }
     
     public static String[] getSupportedSchemes() {
-        return new String[] { "gsiftp", "file", ""};
+        return new String[] { "globus", "gsiftp", "file", ""};
     }
     
     public static Map<String, Boolean> getSupportedCapabilities() {
         Map<String, Boolean> capabilities = GlobusFileAdaptor
                 .getSupportedCapabilities();
-        capabilities.put("createNewFile", true);
         capabilities.put("exists", true);
         return capabilities;
     }
@@ -83,30 +82,10 @@ public class GridFTPFileAdaptor extends GlobusFileAdaptor {
             throw new GATObjectCreationException("gridftp", e);
         }
     }
-    
-    
-    public boolean createNewFile() throws GATInvocationException {
-        if (exists()) {
-            return false;
-        }
-
-        GridFTPFileOutputStreamAdaptor o;
-        try {
-            o = new GridFTPFileOutputStreamAdaptor(
-                    gatContext, location, false);
-        } catch (GATObjectCreationException e) {
-            throw new GATInvocationException("Could not create file " + location, e);
-        }
-        o.close();
-
-        return true;
-    }
-
 
     protected URI fixURI(URI in) {
         return fixURI(in, "gsiftp");
     }
-
 
     public boolean exists() throws GATInvocationException {
         if (cachedInfo != null) {
@@ -132,14 +111,14 @@ public class GridFTPFileAdaptor extends GlobusFileAdaptor {
         } catch (Exception e) {
             throw new GATInvocationException("globus", e);
         } finally {
-            if (client != null)
+            if (client != null) {
                 destroyClient(client, toURI(), gatContext.getPreferences());
+            }
         }
     }
     private static void setConnectionOptions(GridFTPClient c,
             Preferences preferences) throws Exception {
         c.setType(GridFTPSession.TYPE_IMAGE);
-
         // c.setMode(GridFTPSession.MODE_BLOCK);
     }
 
@@ -233,9 +212,14 @@ public class GridFTPFileAdaptor extends GlobusFileAdaptor {
     protected static GridFTPClient doWorkCreateClient(GATContext context,
             Preferences additionalPreferences, URI hostURI)
             throws GATInvocationException, InvalidUsernameOrPasswordException {
+        GridFTPClient client = null;
+        GATContext gatContext = context;
+        
         try {
-            GATContext gatContext = (GATContext) context.clone();
-            gatContext.addPreferences(additionalPreferences);
+            if (additionalPreferences != null) {
+                gatContext = (GATContext) context.clone();
+                gatContext.addPreferences(additionalPreferences);
+            }
 
             String host = hostURI.resolveHost();
 
@@ -244,8 +228,7 @@ public class GridFTPFileAdaptor extends GlobusFileAdaptor {
             if (logger.isDebugEnabled()) {
                 logger.debug("open gridftp client to " + host + ":" + port);
             }
-
-            GridFTPClient client = null;
+          
             String key = getClientKey(hostURI, gatContext.getPreferences());
 
             if (USE_CLIENT_CACHING) {
@@ -346,11 +329,14 @@ public class GridFTPFileAdaptor extends GlobusFileAdaptor {
 
             return client;
         } catch (Exception e) {
+            if (client != null) {
+                doWorkDestroyClient(client, hostURI, gatContext.getPreferences());
+            }
             throw new GATInvocationException("gridftp", e);
         }
     }
 
-	protected void destroyClient(FTPClient c, URI hostURI,
+    protected void destroyClient(FTPClient c, URI hostURI,
             Preferences preferences) {
         doWorkDestroyClient(c, hostURI, preferences);
     }
@@ -365,11 +351,11 @@ public class GridFTPFileAdaptor extends GlobusFileAdaptor {
                     logger.debug("closing gridftp client");
                 }
 
-                c.close(true);
+                c.close(false);
             } catch (Exception e) {
-                if (logger.isDebugEnabled()) {
+                if (logger.isInfoEnabled()) {
                     logger
-                            .debug("doWorkDestroyClient, closing client, got exception (ignoring): "
+                            .info("doWorkDestroyClient, closing client, got exception (ignoring): "
                                     + e);
                 }
 

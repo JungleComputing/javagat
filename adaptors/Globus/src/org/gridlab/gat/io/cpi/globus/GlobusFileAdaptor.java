@@ -58,6 +58,7 @@ public abstract class GlobusFileAdaptor extends FileCpi {
         capabilities.put("list", true);
         capabilities.put("isDirectory", true);
         capabilities.put("isFile", true);
+        capabilities.put("createNewFile", true);
         capabilities.put("canRead", true);
         capabilities.put("canWrite", true);
         capabilities.put("length", true);
@@ -279,10 +280,20 @@ public abstract class GlobusFileAdaptor extends FileCpi {
                 throw oops;
             }
         } finally {
-            if (srcClient != null)
-                destroyClient(srcClient, src, additionalPreferences);
-            if (destClient != null)
-                destroyClient(destClient, dest, additionalPreferences);
+            if (srcClient != null) {
+                try {
+                    srcClient.close(true);
+                } catch(Throwable e) {
+                    logger.info("closing client, got ignored exception", e);
+                }
+            }
+            if (destClient != null) {
+                try {
+                    destClient.close(true);
+                } catch(Throwable e) {
+                    logger.info("closing client, got ignored exception", e);
+                }
+            }
             if (tmpFile != null) {
                 try {
                     tmpFile.delete();
@@ -291,6 +302,36 @@ public abstract class GlobusFileAdaptor extends FileCpi {
                 }
             }
         }
+    }
+    
+    public boolean createNewFile() throws GATInvocationException {
+        if (exists()) {
+            return false;
+        }
+        URI dest = toURI();
+        FTPClient client = createClient(dest);
+        java.io.File emptyFile = null;
+        try {
+            setImage(client);
+            setActiveOrPassive(client, gatContext.getPreferences());
+            emptyFile = java.io.File.createTempFile(".JavaGAT", null);
+            client.put(emptyFile, dest.getPath(), false); // overwrite
+            emptyFile.delete();
+            emptyFile = null;
+            if (gatContext.getPreferences().containsKey("file.chmod")) {
+                chmod(client, dest.getPath(), gatContext);
+            }
+            setIsDir(dest, false);
+        } catch (Exception e) {
+            throw new GATInvocationException("gridftp", e);
+        } finally {
+            if (emptyFile != null) {
+                emptyFile.delete();
+            }
+            destroyClient(client, dest, gatContext.getPreferences());
+        }
+        return true;
+        
     }
 
     protected void copyToRemote(URI src, URI dest)
@@ -341,27 +382,24 @@ public abstract class GlobusFileAdaptor extends FileCpi {
             }
             if (gatContext.getPreferences().containsKey("file.chmod")) {
                 client = createClient(dest);
+                java.io.File emptyFile = null;
                 try {
                     setImage(client);
-                    // removed line below, seems to make the copy fail...
-                    // client.getCurrentDir(); // to ensure a command has been
-                    // executed
                     setActiveOrPassive(client, gatContext.getPreferences());
-                    java.io.File emptyFile = java.io.File.createTempFile(
-                            ".JavaGAT", null);
+                    emptyFile = java.io.File.createTempFile(".JavaGAT", null);
                     client.put(emptyFile, dest.getPath(), false); // overwrite
-                    emptyFile.deleteOnExit();
+                    
                     chmod(client, dest.getPath(), gatContext);
                 } finally {
+                    if (emptyFile != null) {
+                        emptyFile.delete();
+                    }
                     destroyClient(client, dest, gatContext.getPreferences());
                     client = null;
                 }
             }
             client = createClient(dest);
             setImage(client);
-            // removed line below, seems to make the copy fail...
-            // client.getCurrentDir(); // to ensure a command has been executed
-            setActiveOrPassive(client, gatContext.getPreferences());
             client.put(sourceFile, dest.getPath(), false); // overwrite
         } catch (Exception e) {
             throw new GATInvocationException("gridftp", e);
@@ -429,7 +467,6 @@ public abstract class GlobusFileAdaptor extends FileCpi {
             }
             client = createClient(src);
             setImage(client);
-            
             setActiveOrPassive(client, gatContext.getPreferences());
             client.get(src.getPath(), new java.io.File(dest.getPath()));
         } catch (Exception e) {
@@ -466,7 +503,6 @@ public abstract class GlobusFileAdaptor extends FileCpi {
     //
     // client = createClient(src);
     // client.getCurrentDir(); // to ensure a command has been executed
-    // setActiveOrPassive(client, preferences);
     //
     // client.get(remotePath, localFile);
     // } catch (Exception e) {
@@ -589,8 +625,8 @@ public abstract class GlobusFileAdaptor extends FileCpi {
                         client.setActive();
                         client.setLocalPassive();
                     } else {
-                        client.setPassive();
                         client.setLocalActive();
+                        client.setPassive();
                     }
                 } catch (Exception e) {
                     logger
@@ -635,6 +671,9 @@ public abstract class GlobusFileAdaptor extends FileCpi {
                 }
             }
         } finally {
+            if (fiddle) {
+                setActiveOrPassive(client, gatContext.getPreferences());
+            }
             destroyClient(client, toURI(), gatContext.getPreferences());
         }
         return null;
@@ -655,8 +694,6 @@ public abstract class GlobusFileAdaptor extends FileCpi {
     // if (!remotePath.equals("")) {
     // client.changeDir(remotePath);
     // }
-    //
-    // setActiveOrPassive(client, gatContext.getPreferences());
     //
     // Vector<FileInfo> v = null;
     //
@@ -722,7 +759,6 @@ public abstract class GlobusFileAdaptor extends FileCpi {
     // client.changeDir(remotePath);
     // }
     //
-    // setActiveOrPassive(client, gatContext.getPreferences());
     //
     // Vector<?> v = null;
     //
@@ -800,15 +836,16 @@ public abstract class GlobusFileAdaptor extends FileCpi {
 
             client = createClient(toURI());
             
+            setActiveOrPassive(client, gatContext.getPreferences());
+
             if (logger.isDebugEnabled()) {
                 logger.debug("getINFO: client created");
             }
-            
+
             Vector<?> v;
             
             if (remotePath.equals("") || remotePath.equals("/")) {
                 // See if LIST -d can find "."
-                setActiveOrPassive(client, gatContext.getPreferences());
                 v = client.list(parent);
                 for (Object o : v) {
                     FileInfo f = (FileInfo) o;
@@ -821,7 +858,6 @@ public abstract class GlobusFileAdaptor extends FileCpi {
                 throw new GATInvocationException("gridftp: cannot obtain info for " + location);
             }
             
-            setActiveOrPassive(client, gatContext.getPreferences());         
             v = client.list(remotePath);
             if (logger.isDebugEnabled()) {
                 logger.debug("client.list() size = " + v.size());

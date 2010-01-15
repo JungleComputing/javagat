@@ -29,7 +29,7 @@ class GridFTPInputStream extends FTPInputStream {
 public class GridFTPFileInputStreamAdaptor extends GlobusFileInputStreamAdaptor {
     
     public static String[] getSupportedSchemes() {
-        return new String[] { "gsiftp", "file", ""};
+        return new String[] { "globus", "gsiftp", "file", ""};
     }
     
     GridFTPClient c;
