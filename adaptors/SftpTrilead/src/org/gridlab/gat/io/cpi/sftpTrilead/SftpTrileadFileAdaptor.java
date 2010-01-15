@@ -498,14 +498,16 @@ public class SftpTrileadFileAdaptor extends FileCpi {
             if (logger.isDebugEnabled()) {
                 logger.debug("sftpTrilead file: copy local to remote");
             }
+            if (recognizedScheme(dest.getScheme(), getSupportedSchemes())) {
+                copyToRemote(fixURI(toURI(), null), fixURI(dest, null));
 
-            copyToRemote(fixURI(toURI(), null), fixURI(dest, null));
-
-            return;
+                return;
+            }
+            throw new GATInvocationException("sftptrilead: remote scheme not recognized: " + dest.getScheme());
         }
 
         // source is remote, dest is remote.
-        throw new GATInvocationException("sftpNew: cannot do third party copy");
+        throw new GATInvocationException("sftptrilead: cannot do third party copy");
     }
 
     protected void copyToLocal(URI src, URI dest) throws GATInvocationException {

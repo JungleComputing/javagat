@@ -214,15 +214,20 @@ public abstract class GlobusFileAdaptor extends FileCpi {
 
             return;
         }
-
+        
         if (toURI().refersToLocalHost()) {
             if (logger.isDebugEnabled()) {
                 logger.debug("Globus file: copy local to remote");
             }
-
-            copyToRemote(fixURI(toURI()), fixURI(dest));
-
-            return;
+            if (recognizedScheme(dest.getScheme(), 
+                    (this instanceof GridFTPFileAdaptor
+                            ? GridFTPFileAdaptor.getSupportedSchemes()
+                                    : FTPFileAdaptor.getSupportedSchemes()
+                                    ))) {
+                copyToRemote(fixURI(toURI()), fixURI(dest));
+                return;
+            }
+            throw new GATInvocationException("Globus file: remote scheme not recognized: " + dest.getScheme());
         }
 
         // source is remote, dest is remote.

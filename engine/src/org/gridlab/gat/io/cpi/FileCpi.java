@@ -850,6 +850,18 @@ public abstract class FileCpi extends MonitorableCpi implements FileInterface, j
             throw new Error("could not create new GAT object");
         }
     }
+    
+    protected static boolean recognizedScheme(String scheme, String[] recognized) {
+        if ("any".equals(scheme)) {
+            return true;
+        }
+        for (String r : recognized) {
+            if (r.equals(scheme)) {
+                return true;
+            }
+        }
+        return false;
+    }
 
     protected boolean determineIsDirectory() throws GATInvocationException {
         // create a seperate file object to determine whether this file
