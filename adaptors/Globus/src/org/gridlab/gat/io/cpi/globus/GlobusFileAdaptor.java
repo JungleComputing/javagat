@@ -62,6 +62,7 @@ public abstract class GlobusFileAdaptor extends FileCpi {
         capabilities.put("canWrite", true);
         capabilities.put("length", true);
         capabilities.put("mkdir", true);
+        capabilities.put("move", true);
         capabilities.put("exists", true);
         capabilities.put("getAbsolutePath", true);
         capabilities.put("renameTo", true);
@@ -156,6 +157,34 @@ public abstract class GlobusFileAdaptor extends FileCpi {
     protected abstract void destroyClient(FTPClient c, URI hostURI,
             Preferences preferences);
 
+    public void move(URI dest) throws GATInvocationException {
+        URI uri = toURI();
+        if (! uri.refersToLocalHost() && ! dest.refersToLocalHost()) {
+            if (uri.getScheme().equals(dest.getScheme()) &&
+                    uri.getAuthority().equals(dest.getAuthority())) {
+                try {
+                    File destFile = GAT.createFile(gatContext, dest);
+                    if (destFile.isDirectory()) {
+                        dest = dest.setPath(dest.getPath() + "/" + getName());
+                        destFile = GAT.createFile(gatContext, dest);
+                    }
+                } catch(Throwable e) {
+                    throw new GATInvocationException("move", e);
+                }
+                FTPClient client = createClient(uri);
+                try {
+                    setActiveOrPassive(client, gatContext.getPreferences());
+                    client.rename(getPath(), dest.getPath());
+                } catch(Throwable e) {
+                    throw new GATInvocationException("move", e);
+                } finally {
+                    destroyClient(client, uri, gatContext.getPreferences());
+                }
+            }
+        }
+        
+    }
+    
     /*
      * (non-Javadoc)
      * 

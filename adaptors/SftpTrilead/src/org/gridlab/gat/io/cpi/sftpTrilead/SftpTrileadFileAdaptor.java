@@ -409,6 +409,34 @@ public class SftpTrileadFileAdaptor extends FileCpi {
             closeConnection(c);
         }
     }
+    
+    public void move(URI dest) throws GATInvocationException {
+        URI uri = toURI();
+        if (! uri.refersToLocalHost() && ! dest.refersToLocalHost()) {
+            if (uri.getScheme().equals(dest.getScheme()) &&
+                    uri.getAuthority().equals(dest.getAuthority())) {
+                try {
+                    File destFile = GAT.createFile(gatContext, dest);
+                    if (destFile.isDirectory()) {
+                        dest = dest.setPath(dest.getPath() + "/" + getName());
+                        destFile = GAT.createFile(gatContext, dest);
+                    }
+                } catch(Throwable e) {
+                    throw new GATInvocationException("move", e);
+                }
+                SftpTrileadConnection c = openConnection(gatContext, location, verifier);
+                try {
+                    c.sftpClient.mv(getPath(), dest.getPath());
+                } catch(Throwable e) {
+                    throw new GATInvocationException("move", e);
+                } finally {
+                    closeConnection(c);
+                }
+            }
+        }
+        
+    }
+    
 
     /*
      * (non-Javadoc)
