@@ -40,6 +40,7 @@ public class SftpTrileadFileAdaptor extends FileCpi {
 
     public static Map<String, Boolean> getSupportedCapabilities() {
         Map<String, Boolean> capabilities = FileCpi.getSupportedCapabilities();
+        capabilities.put("createNewFile", true);
         capabilities.put("copy", true);
         capabilities.put("delete", true);
         capabilities.put("exists", true);
@@ -243,6 +244,32 @@ public class SftpTrileadFileAdaptor extends FileCpi {
         SftpTrileadConnection c = openConnection(gatContext, location, verifier);
         try {
             c.sftpClient.mkdir(fixURI(location, null).getPath(), 0700);
+        } catch (IOException e) {
+            return false;
+        } finally {
+            closeConnection(c);
+        }
+        return true;
+    }
+
+    public boolean createNewFile() throws GATInvocationException {
+        SftpTrileadConnection c = openConnection(gatContext, location, verifier);
+        try {
+            c.sftpClient.stat(fixURI(location, null).getPath());
+            closeConnection(c);
+            return false;   // stat did not give an exception --> already exists.
+        } catch (SFTPException x) {
+            if (x.getServerErrorCode() == ErrorCodes.SSH_FX_NO_SUCH_FILE) {
+            } else {
+                closeConnection(c);
+                throw new GATInvocationException("sftpTrilead", x);
+            }
+        } catch (IOException e) {
+            closeConnection(c);
+            throw new GATInvocationException("sftpTrilead", e);
+        }
+        try {
+            c.sftpClient.createFileTruncate(location.getPath());
         } catch (IOException e) {
             return false;
         } finally {
