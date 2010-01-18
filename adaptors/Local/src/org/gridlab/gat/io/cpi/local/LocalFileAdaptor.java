@@ -673,6 +673,10 @@ public class LocalFileAdaptor extends FileCpi {
      * @return a URI representing the path
      */
     private URI localToURI(String path) throws URISyntaxException {
-        return new URI("file:///" + path.replace(File.separatorChar, '/'));
+        String scheme = location.getScheme();
+        if (scheme == null || scheme.equals("")) {
+            scheme = "file";
+        }
+        return new URI(scheme + ":///" + path.replace(File.separatorChar, '/'));
     }
 }
