@@ -68,7 +68,7 @@ public class SftpTrileadFileInputStreamAdaptor extends FileInputStreamCpi {
 
 //      We don't have to handle the local case, the GAT engine will select
 //      the local adaptor.
-        if (location.getHost() == null) {
+        if (location.refersToLocalHost()) {
             throw new GATObjectCreationException(
             "this adaptor cannot read local files");
         }
