@@ -109,9 +109,9 @@ public class SshTrileadFileAdaptor extends FileCpi {
 
     private static final int SSH_PORT = 22;
 
-    private static final int STDOUT = 0, STDERR = 1, EXIT_VALUE = 2;
+    static final int STDOUT = 0, STDERR = 1, EXIT_VALUE = 2;
 
-    private static final String DEFAULT_MODE = "0700";
+    static final String DEFAULT_MODE = "0700";
     
     private static Map<String, Connection> connections = new HashMap<String, Connection>();
 
@@ -165,7 +165,7 @@ public class SshTrileadFileAdaptor extends FileCpi {
 
     private boolean tcpNoDelay;
 
-    private URI fixedURI;
+    URI fixedURI;
     
     private HostKeyVerifier verifier;
 
@@ -488,7 +488,18 @@ public class SshTrileadFileAdaptor extends FileCpi {
         new CommandRunner("touch", localfile);
         new CommandRunner("chmod",  mode, localfile);
     }
-
+    
+    Session getSession() throws Exception {
+        try {
+            return getConnection(fixedURI, gatContext,
+                    connectionCacheEnable, tcpNoDelay, client2serverCiphers,
+                    server2clientCiphers, verifier).openSession();
+        } catch (IOException e) {
+            return getConnection(fixedURI, gatContext, false, tcpNoDelay,
+                    client2serverCiphers, server2clientCiphers, verifier).openSession();
+        }
+    }
+ 
     public static Connection getConnection(URI fixedURI, GATContext context,
             boolean useCachedConnection, boolean tcpNoDelay,
             String[] client2server, String[] server2client,
@@ -857,7 +868,7 @@ public class SshTrileadFileAdaptor extends FileCpi {
         }
     }
 
-    private final String getFixedPath() {
+    final String getFixedPath() {
         String res = fixedURI.getPath();
         if (res == null) {
             throw new Error("path not specified correctly in URI: " + fixedURI);
