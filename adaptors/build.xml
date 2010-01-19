@@ -19,6 +19,7 @@
 		<!-- ant dir="Zorilla" / -->
 		<ant dir="Generic" />
 		<!-- ant dir="Glite" / -->
+		<ant dir="GliteMultiUser" />
 		<!-- ant dir="Unicore" / -->
 		<!-- ant dir="Koala" / -->
 	</target>
@@ -47,6 +48,7 @@
 		<ant dir="Unicore" target="clean" />
 		<ant dir="Koala" target="clean" />
 		<ant dir="contributed" target="clean" />
+		<ant dir="GliteMultiUser" target="clean" />
 	</target>
 
 	<target name="commandlinessh" description="build CommandlineSsh adaptors">
@@ -97,6 +99,10 @@
 		<ant dir="Glite" />
 	</target>
 
+	<target name="gliteMultiUser" description="build Glite Multiuser adaptor">
+		<ant dir="GliteMultiUser" />
+	</target>	
+	
 	<target name="unicore" description="build Unicore adaptor">
 		<ant dir="Unicore" />
 	</target>
