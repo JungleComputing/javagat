@@ -164,7 +164,7 @@ public class CommandlineSshJob extends JobCpi {
      */
     public synchronized int getExitStatus() throws GATInvocationException {
         if (state != JobState.STOPPED)
-            throw new GATInvocationException("not in RUNNING state");
+            throw new GATInvocationException("not in STOPPED state");
         return exitStatus;
     }
 
@@ -190,8 +190,12 @@ public class CommandlineSshJob extends JobCpi {
             setState(JobState.POST_STAGING);
             sandbox.retrieveAndCleanup(this);
         }
-
-        setState(JobState.STOPPED);
+        
+        if (exitStatus == 255) {
+            setState(JobState.SUBMISSION_ERROR);
+        } else {
+            setState(JobState.STOPPED);
+        }
         finished();
     }
 
