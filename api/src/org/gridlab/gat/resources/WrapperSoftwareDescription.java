@@ -130,8 +130,11 @@ public class WrapperSoftwareDescription extends JavaSoftwareDescription {
     }
 
     public Map<File, File> getPreStaged() {
+        Map<File, File> result = super.getPreStaged();
         if (gatLocation == null) {
-            Map<File, File> result = new HashMap<File, File>();
+            if (result == null) {
+                result = new HashMap<File, File>();
+            }
             try {
                 result.put(GAT.createFile(System.getenv("GAT_LOCATION")
                         + java.io.File.separator + "lib"), GAT.createFile("."));
@@ -139,12 +142,10 @@ public class WrapperSoftwareDescription extends JavaSoftwareDescription {
                         + java.io.File.separator + "log4j.properties"), GAT
                         .createFile("log4j.properties"));
             } catch (GATObjectCreationException e) {
-                return null;
+                // ignored
             }
-            return result;
-        } else {
-            return null;
         }
+        return result;
     }
 
     public Map<String, String> getJavaSystemProperties() {
