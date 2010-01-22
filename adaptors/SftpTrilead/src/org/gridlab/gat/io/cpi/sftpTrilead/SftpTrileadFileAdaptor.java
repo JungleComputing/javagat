@@ -285,14 +285,17 @@ public class SftpTrileadFileAdaptor extends FileCpi {
      * @see org.gridlab.gat.io.cpi.FileCpi#isDirectory()
      */
     public boolean isDirectory() throws GATInvocationException {
-        if (!exists()) {
-            return false;
-        }
         SftpTrileadConnection c = openConnection(gatContext, location, verifier);
         try {
             SFTPv3FileAttributes attr = c.sftpClient
                     .stat(fixURI(location, null).getPath());
             return attr.isDirectory();
+        } catch (SFTPException x) {
+            if (x.getServerErrorCode() == ErrorCodes.SSH_FX_NO_SUCH_FILE) {
+                return false;
+            } else {
+                throw new GATInvocationException("sftpTrilead", x);
+            }
         } catch (IOException e) {
             throw new GATInvocationException("sftpTrilead", e);
         } finally {
@@ -396,14 +399,17 @@ public class SftpTrileadFileAdaptor extends FileCpi {
      * @see org.gridlab.gat.io.cpi.FileCpi#isFile()
      */
     public boolean isFile() throws GATInvocationException {
-        if (!exists()) {
-            return false;
-        }
         SftpTrileadConnection c = openConnection(gatContext, location, verifier);
         try {
             SFTPv3FileAttributes attr = c.sftpClient
                     .stat(fixURI(location, null).getPath());
             return attr.isRegularFile();
+        } catch (SFTPException x) {
+            if (x.getServerErrorCode() == ErrorCodes.SSH_FX_NO_SUCH_FILE) {
+                return false;
+            } else {
+                throw new GATInvocationException("sftpTrilead", x);
+            }
         } catch (IOException e) {
             throw new GATInvocationException("sftpTrilead", e);
         } finally {
@@ -468,23 +474,49 @@ public class SftpTrileadFileAdaptor extends FileCpi {
      * @see org.gridlab.gat.io.File#copy(java.net.URI)
      */
     public void copy(URI dest) throws GATInvocationException {
-        // We don't have to handle the local case, the GAT engine will select
-        // the local adaptor.
-        if (dest.refersToLocalHost() && (toURI().refersToLocalHost())) {
-            throw new GATInvocationException(
-                    "sftpTrilead cannot copy local files");
-        }
+        if (toURI().refersToLocalHost()) {
+            // We don't have to handle the local case, the GAT engine will select
+            // the local adaptor.
+            if (dest.refersToLocalHost()) {
+                throw new GATInvocationException(
+                        "sftpTrilead cannot copy local files");
+            }
 
-        // create a seperate file object to determine whether the source
-        // is a directory. This is needed, because the source might be a local
-        // file, and sftp might not be installed locally.
-        // This goes wrong for local -> remote copies.
-        if (determineIsDirectory()) {
-            copyDirectory(gatContext, null, toURI(), dest);
-            return;
+            // create a seperate file object to determine whether the source
+            // is a directory. This is needed, because the source might be a local
+            // file, and sftp might not be installed locally.
+            // This goes wrong for local -> remote copies.
+            if (determineIsDirectory()) {
+                copyDirectory(gatContext, null, toURI(), dest);
+                return;
+            }
+            if (recognizedScheme(dest.getScheme(), getSupportedSchemes())) {
+                if (logger.isDebugEnabled()) {
+                    logger.debug("sftpTrilead file: copy local to remote");
+                }
+                copyToRemote(fixURI(toURI(), null), fixURI(dest, null));
+
+                return;
+            }
+            throw new GATInvocationException("sftptrilead: remote scheme not recognized: " + dest.getScheme());
         }
 
         if (dest.refersToLocalHost()) {
+            SftpTrileadConnection c = openConnection(gatContext, location, verifier);
+            boolean isDir = false;
+            try {
+                SFTPv3FileAttributes attr = c.sftpClient
+                        .stat(fixURI(location, null).getPath());
+                isDir = attr.isDirectory();
+            } catch (IOException e) {
+                throw new GATInvocationException("sftpTrilead", e);
+            } finally {
+                closeConnection(c);
+            }
+            if (isDir) {
+                copyDirectory(gatContext, null, toURI(), dest);
+                return;
+            }
             if (logger.isDebugEnabled()) {
                 logger.debug("sftpTrilead file: copy remote to local");
             }
@@ -494,17 +526,6 @@ public class SftpTrileadFileAdaptor extends FileCpi {
             return;
         }
 
-        if (toURI().refersToLocalHost()) {
-            if (logger.isDebugEnabled()) {
-                logger.debug("sftpTrilead file: copy local to remote");
-            }
-            if (recognizedScheme(dest.getScheme(), getSupportedSchemes())) {
-                copyToRemote(fixURI(toURI(), null), fixURI(dest, null));
-
-                return;
-            }
-            throw new GATInvocationException("sftptrilead: remote scheme not recognized: " + dest.getScheme());
-        }
 
         // source is remote, dest is remote.
         throw new GATInvocationException("sftptrilead: cannot do third party copy");
