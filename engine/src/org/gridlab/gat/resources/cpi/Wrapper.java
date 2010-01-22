@@ -59,6 +59,8 @@ import org.gridlab.gat.resources.WrapperJobDescription.WrappedJobInfo;
  */
 
 public class Wrapper {
+
+    public static final String WRAPPER_SANDBOX_COPY_ENV_NAME = "WRAPPER_COMMON_SANDBOX";
     
     private static Logger logger = LoggerFactory.getLogger(Wrapper.class);
 
@@ -185,7 +187,7 @@ public class Wrapper {
                 jobDescription.getSoftwareDescription().setEnvironment(env);
                 env = jobDescription.getSoftwareDescription().getEnvironment();
             }
-            env.put("WRAPPER_EXTRA_SANDBOX", sandboxExtra);
+            env.put(WRAPPER_SANDBOX_COPY_ENV_NAME, sandboxExtra);
         }
         
         Map<File, File> preStaged = jobDescription.getSoftwareDescription().getPreStaged();

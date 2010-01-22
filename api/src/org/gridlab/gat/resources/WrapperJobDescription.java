@@ -37,6 +37,19 @@ public class WrapperJobDescription extends JobDescription {
     }
 
     /**
+     * Attribute name of common sandbox directory for wrapped jobs.
+     * When set, it specifies a directory in which a copy is made of
+     * the wrapper sandbox. This copy should be on the machine on which
+     * the wrapper runs. This may be useful for wrapped jobs which may all
+     * need common files. Using sandbox.common, these common files can be
+     * staged-in once instead of for each wrapped job.
+     * The actual location of the sandbox (which is a directory inside
+     * the sandbox.common directory) is made available to the wrapped jobs
+     * by means of an environment variable <code>WRAPPER_COMMON_SANDBOX</code>.
+     */
+    public static final String SANDBOX_COMMON = "sandbox.common";
+
+    /**
      * This object contains all the information necessary to describe a wrapped
      * {@link Job}.
      * 
@@ -322,7 +335,7 @@ public class WrapperJobDescription extends JobDescription {
                     + System.getProperty("user.dir")));
             out.writeInt(level);
             out.writeInt(wrapperJobIndex);
-            String sandboxCopy = (String) softwareDescription.getAttributes().get("sandbox.extra");
+            String sandboxCopy = (String) softwareDescription.getAttributes().get(SANDBOX_COMMON);
             out.writeObject(sandboxCopy);
             synchronized (WrapperJobDescription.class) {
                 if (triggerDirectory == null) {
