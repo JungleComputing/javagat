@@ -370,11 +370,6 @@ public abstract class FileCpi extends MonitorableCpi implements FileInterface, j
     }
 
     public File[] listFiles() throws GATInvocationException {
-        if (!isDirectory()) {
-            throw new GATInvocationException("this is not a directory: "
-                    + location);
-        }
-
         try {
             String[] f = list();
             File[] res = new File[f.length];
