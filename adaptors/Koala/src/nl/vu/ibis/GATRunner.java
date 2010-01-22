@@ -19,10 +19,8 @@ public class GATRunner extends AbstractRunner {
 
 	private final GATContext parentContext;
 
-	@SuppressWarnings("unused")
-    private final KoalaJob parent;
-	@SuppressWarnings("unused")
-    private final CoScheduleJobDescription parentDescription;
+	private final KoalaJob parent;
+	private final CoScheduleJobDescription parentDescription;
 	private final String JDS; 
 
 	private final Components components;

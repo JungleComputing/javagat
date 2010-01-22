@@ -123,7 +123,6 @@ public class GridSAMJSDLGeneratorImpl implements GridSAMJSDLGenerator {
         }
     }
 
-    @SuppressWarnings("unchecked")
     private void addApplication(JobDescriptionType jobDescr,
             SoftwareDescription sd, Sandbox sandbox) {
         if (sd.getExecutable() != null) {

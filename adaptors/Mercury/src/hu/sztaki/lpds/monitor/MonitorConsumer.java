@@ -174,8 +174,7 @@ public class MonitorConsumer extends Thread {
      * @param timestamp        the timestamp of the metric value.
      * @param value                the encoded metric value.
      */
-    @SuppressWarnings("unused")
-	private void metricCallback(int mid, long timestamp, byte[] value) {
+    private void metricCallback(int mid, long timestamp, byte[] value) {
         MetricDefinition def;
 
         try {
@@ -218,8 +217,7 @@ public class MonitorConsumer extends Thread {
      * @param result        the result object to notify when the command
      *                        completes.
      */
-    @SuppressWarnings("unused")
-	private void addCommandResult(CommandResult result) {
+    private void addCommandResult(CommandResult result) {
         pendingCommands.put(new Integer(result.getSeq()), result);
     }
 
@@ -234,8 +232,7 @@ public class MonitorConsumer extends Thread {
      * @param status        the command's result.
      * @param dataId        the (optional) ID returned by the command.
      */
-    @SuppressWarnings("unused")
-	private void commandCallback(int commandId, int status, int dataId) {
+    private void commandCallback(int commandId, int status, int dataId) {
         Integer id = new Integer(commandId);
         CommandResult res = pendingCommands.get(id);
 
