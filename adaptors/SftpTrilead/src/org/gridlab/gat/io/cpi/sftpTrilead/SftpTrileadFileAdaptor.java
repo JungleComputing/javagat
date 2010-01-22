@@ -75,6 +75,10 @@ public class SftpTrileadFileAdaptor extends FileCpi {
 
     private static Hashtable<String, SftpTrileadConnection> clienttable = new Hashtable<String, SftpTrileadConnection>();
 
+    private boolean haveAttrs;
+
+    private SFTPv3FileAttributes attrs;
+    
     public SftpTrileadFileAdaptor(GATContext gatContext, URI location)
             throws GATObjectCreationException {
 
@@ -207,6 +211,9 @@ public class SftpTrileadFileAdaptor extends FileCpi {
 
     public static void closeConnection(SftpTrileadConnection c)
             throws GATInvocationException {
+        if (c == null) {
+            return;
+        }
         if (!USE_CLIENT_CACHING) {
             doWorkCloseConnection(c);
             return;
@@ -239,9 +246,37 @@ public class SftpTrileadFileAdaptor extends FileCpi {
         c.connection.close();
         c.connection = null;
     }
+    
+    private SFTPv3FileAttributes getAttrs() throws GATInvocationException {
+        if (! haveAttrs) {
+            SftpTrileadConnection c = openConnection(gatContext, location, verifier);
+            try {
+                attrs = c.sftpClient
+                        .stat(fixURI(location, null).getPath());
+            } catch (SFTPException x) {
+                if (x.getServerErrorCode() == ErrorCodes.SSH_FX_NO_SUCH_FILE) {
+                } else {
+                    throw new GATInvocationException("sftpTrilead", x);
+                }
+            } catch (IOException e) {
+                throw new GATInvocationException("sftpTrilead", e);
+            } finally {
+                closeConnection(c);
+            }
+        }
+        haveAttrs = true;
+        return attrs;        
+    }
+    
 
+    
     public boolean mkdir() throws GATInvocationException {
+        SFTPv3FileAttributes a = getAttrs();
+        if (a != null) {
+            return false;
+        }
         SftpTrileadConnection c = openConnection(gatContext, location, verifier);
+        haveAttrs = false;
         try {
             c.sftpClient.mkdir(fixURI(location, null).getPath(), 0700);
         } catch (IOException e) {
@@ -253,21 +288,12 @@ public class SftpTrileadFileAdaptor extends FileCpi {
     }
 
     public boolean createNewFile() throws GATInvocationException {
-        SftpTrileadConnection c = openConnection(gatContext, location, verifier);
-        try {
-            c.sftpClient.stat(fixURI(location, null).getPath());
-            closeConnection(c);
-            return false;   // stat did not give an exception --> already exists.
-        } catch (SFTPException x) {
-            if (x.getServerErrorCode() == ErrorCodes.SSH_FX_NO_SUCH_FILE) {
-            } else {
-                closeConnection(c);
-                throw new GATInvocationException("sftpTrilead", x);
-            }
-        } catch (IOException e) {
-            closeConnection(c);
-            throw new GATInvocationException("sftpTrilead", e);
+        SFTPv3FileAttributes a = getAttrs();
+        if (a != null) {
+            return false;
         }
+        haveAttrs = false;
+        SftpTrileadConnection c = openConnection(gatContext, location, verifier);
         try {
             SFTPv3FileHandle handle = c.sftpClient.createFileTruncate(location.getPath());
             c.sftpClient.closeFile(handle);
@@ -285,22 +311,8 @@ public class SftpTrileadFileAdaptor extends FileCpi {
      * @see org.gridlab.gat.io.cpi.FileCpi#isDirectory()
      */
     public boolean isDirectory() throws GATInvocationException {
-        SftpTrileadConnection c = openConnection(gatContext, location, verifier);
-        try {
-            SFTPv3FileAttributes attr = c.sftpClient
-                    .stat(fixURI(location, null).getPath());
-            return attr.isDirectory();
-        } catch (SFTPException x) {
-            if (x.getServerErrorCode() == ErrorCodes.SSH_FX_NO_SUCH_FILE) {
-                return false;
-            } else {
-                throw new GATInvocationException("sftpTrilead", x);
-            }
-        } catch (IOException e) {
-            throw new GATInvocationException("sftpTrilead", e);
-        } finally {
-            closeConnection(c);
-        }
+        SFTPv3FileAttributes a = getAttrs();
+        return (a != null && a.isDirectory());
     }
 
     /*
@@ -309,12 +321,15 @@ public class SftpTrileadFileAdaptor extends FileCpi {
      * @see org.gridlab.gat.io.cpi.FileCpi#delete()
      */
     public boolean delete() throws GATInvocationException {
+        SFTPv3FileAttributes a = getAttrs();
+        if (a == null) {
+            return false;
+        }
+        
         SftpTrileadConnection c = openConnection(gatContext, location, verifier);
 
         try {
-            SFTPv3FileAttributes attr = c.sftpClient
-                    .stat(fixURI(location, null).getPath());
-            if (attr.isDirectory()) {
+            if (a.isDirectory()) {
                 c.sftpClient.rmdir(fixURI(location, null).getPath());
             } else {
                 c.sftpClient.rm(fixURI(location, null).getPath());
@@ -329,7 +344,7 @@ public class SftpTrileadFileAdaptor extends FileCpi {
         } finally {
             closeConnection(c);
         }
-
+        haveAttrs = false;
         return true;
     }
 
@@ -339,21 +354,7 @@ public class SftpTrileadFileAdaptor extends FileCpi {
      * @see org.gridlab.gat.io.cpi.FileCpi#exists()
      */
     public boolean exists() throws GATInvocationException {
-        SftpTrileadConnection c = openConnection(gatContext, location, verifier);
-        try {
-            c.sftpClient.stat(fixURI(location, null).getPath());
-        } catch (SFTPException x) {
-            if (x.getServerErrorCode() == ErrorCodes.SSH_FX_NO_SUCH_FILE) {
-                return false;
-            } else {
-                throw new GATInvocationException("sftpTrilead", x);
-            }
-        } catch (IOException e) {
-            throw new GATInvocationException("sftpTrilead", e);
-        } finally {
-            closeConnection(c);
-        }
-        return true;
+        return getAttrs() != null;
     }
 
     /*
@@ -362,14 +363,12 @@ public class SftpTrileadFileAdaptor extends FileCpi {
      * @see org.gridlab.gat.io.cpi.FileCpi#list()
      */
     public String[] list() throws GATInvocationException {
+        SFTPv3FileAttributes a = getAttrs();
+        if (a == null || ! a.isDirectory()) {
+            return null;
+        }
         SftpTrileadConnection c = openConnection(gatContext, location, verifier);
         try {
-            SFTPv3FileAttributes attr = c.sftpClient
-                    .stat(fixURI(location, null).getPath());
-            if (!attr.isDirectory()) {
-                return null;
-            }
-
             Vector<?> result = c.sftpClient
                     .ls(fixURI(location, null).getPath());
             Vector<String> newRes = new Vector<String>();
@@ -399,22 +398,8 @@ public class SftpTrileadFileAdaptor extends FileCpi {
      * @see org.gridlab.gat.io.cpi.FileCpi#isFile()
      */
     public boolean isFile() throws GATInvocationException {
-        SftpTrileadConnection c = openConnection(gatContext, location, verifier);
-        try {
-            SFTPv3FileAttributes attr = c.sftpClient
-                    .stat(fixURI(location, null).getPath());
-            return attr.isRegularFile();
-        } catch (SFTPException x) {
-            if (x.getServerErrorCode() == ErrorCodes.SSH_FX_NO_SUCH_FILE) {
-                return false;
-            } else {
-                throw new GATInvocationException("sftpTrilead", x);
-            }
-        } catch (IOException e) {
-            throw new GATInvocationException("sftpTrilead", e);
-        } finally {
-            closeConnection(c);
-        }
+        SFTPv3FileAttributes a = getAttrs();
+        return a != null && a.isRegularFile();
     }
     
     public void move(URI dest) throws GATInvocationException {
@@ -436,6 +421,7 @@ public class SftpTrileadFileAdaptor extends FileCpi {
                 SftpTrileadConnection c = openConnection(gatContext, location, verifier);
                 try {
                     c.sftpClient.mv(getPath(), dest.getPath());
+                    haveAttrs = false;
                 } catch(Throwable e) {
                     if (logger.isDebugEnabled()) {
                         logger.debug("move: got exception", e);
@@ -456,16 +442,11 @@ public class SftpTrileadFileAdaptor extends FileCpi {
      * @see org.gridlab.gat.io.cpi.FileCpi#length()
      */
     public long length() throws GATInvocationException {
-        SftpTrileadConnection c = openConnection(gatContext, location, verifier);
-        try {
-            SFTPv3FileAttributes attr = c.sftpClient
-                    .stat(fixURI(location, null).getPath());
-            return attr.size.longValue();
-        } catch (IOException e) {
-            throw new GATInvocationException("sftpTrilead", e);
-        } finally {
-            closeConnection(c);
+        SFTPv3FileAttributes a = getAttrs();
+        if (a == null) {
+            return -1;
         }
+        return a.size.longValue();
     }
 
     /*
@@ -500,20 +481,13 @@ public class SftpTrileadFileAdaptor extends FileCpi {
             }
             throw new GATInvocationException("sftptrilead: remote scheme not recognized: " + dest.getScheme());
         }
-
+       
         if (dest.refersToLocalHost()) {
-            SftpTrileadConnection c = openConnection(gatContext, location, verifier);
-            boolean isDir = false;
-            try {
-                SFTPv3FileAttributes attr = c.sftpClient
-                        .stat(fixURI(location, null).getPath());
-                isDir = attr.isDirectory();
-            } catch (IOException e) {
-                throw new GATInvocationException("sftpTrilead", e);
-            } finally {
-                closeConnection(c);
+            SFTPv3FileAttributes a = getAttrs();
+            if (a == null) {
+                throw new GATInvocationException("sftptrilead: file does not exist");
             }
-            if (isDir) {
+            if (a.isDirectory()) {
                 copyDirectory(gatContext, null, toURI(), dest);
                 return;
             }
@@ -525,7 +499,6 @@ public class SftpTrileadFileAdaptor extends FileCpi {
 
             return;
         }
-
 
         // source is remote, dest is remote.
         throw new GATInvocationException("sftptrilead: cannot do third party copy");
