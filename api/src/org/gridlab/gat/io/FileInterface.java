@@ -2,7 +2,6 @@ package org.gridlab.gat.io;
 
 import java.io.FileFilter;
 import java.io.FilenameFilter;
-import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 
@@ -46,8 +45,6 @@ public interface FileInterface extends Monitorable, Advertisable,
      *                The new location
      * @throws GATInvocationException
      *                 Thrown upon problems accessing the remote instance
-     * @throws java.io.IOException
-     *                 Upon non-remote IO problem
      */
     public void copy(URI loc) throws GATInvocationException;
 
@@ -60,8 +57,6 @@ public interface FileInterface extends Monitorable, Advertisable,
      *                to this File instance
      * @throws GATInvocationException
      *                 Thrown upon problems accessing the remote instance
-     * @throws IOException
-     *                 Upon non-remote IO problem
      */
     public void move(URI location) throws GATInvocationException;
 
