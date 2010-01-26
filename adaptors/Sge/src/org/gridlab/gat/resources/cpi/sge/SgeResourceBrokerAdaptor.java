@@ -82,6 +82,20 @@ public class SgeResourceBrokerAdaptor extends ResourceBrokerCpi {
 
         return SGEsession;
     }
+    
+    public static void end() {
+        if (logger.isDebugEnabled()) {
+            logger.debug("SGEResourceBrokerAdaptor end");
+        }
+
+        if (SGEsession != null) {
+            try {
+                SGEsession.exit();
+            } catch (DrmaaException e) {
+                logger.debug("SGEsesion.exit gave exception", e);
+            }
+        }
+    }
 
     public SgeResourceBrokerAdaptor(GATContext gatContext, URI brokerURI)
             throws GATObjectCreationException {
