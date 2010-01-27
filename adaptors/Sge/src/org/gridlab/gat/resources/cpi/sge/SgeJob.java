@@ -280,6 +280,13 @@ public class SgeJob extends JobCpi {
         int retVal = -255;
         try {
             info = session.wait(jobID, Session.TIMEOUT_NO_WAIT);
+            if (info != null) {
+                if (info.hasExited()) {
+                    retVal = info.getExitStatus();
+                } else {
+                    retVal = -255;
+                }
+            }
         } catch (ExitTimeoutException ete) {
             /*
              * This exception is OK - it's always thrown, when the job is still
@@ -292,13 +299,7 @@ public class SgeJob extends JobCpi {
                 logger.debug("Got an exception while retrieving JobInfo:", e);
             }
         }
-        if (info != null) {
-            if (info.hasExited()) {
-                retVal = info.getExitStatus();
-            } else {
-                retVal = -255;
-            }
-        }
+
         return retVal;
     }
 
