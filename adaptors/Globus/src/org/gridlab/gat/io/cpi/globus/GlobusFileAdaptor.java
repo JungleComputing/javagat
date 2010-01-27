@@ -17,6 +17,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.globus.ftp.Buffer;
 import org.globus.ftp.DataSink;
+import org.globus.ftp.DataSource;
 import org.globus.ftp.FTPClient;
 import org.globus.ftp.FileInfo;
 import org.globus.ftp.GridFTPSession;
@@ -90,6 +91,22 @@ public abstract class GlobusFileAdaptor extends FileCpi {
     private static HashMap<URI, Integer> isDirCache = new HashMap<URI, Integer>();
 
     protected FileInfo cachedInfo = null;
+    
+    private static class EmptySource implements DataSource {
+
+        public void close() {          
+        }
+
+        public Buffer read() {
+            return null;
+        }
+        
+        public long totalSize() {
+            return 0L;
+        }       
+    }
+    
+    private static final EmptySource emptySource = new EmptySource();
 
     /**
      * Constructs a LocalFileAdaptor instance which corresponds to the physical
@@ -163,27 +180,32 @@ public abstract class GlobusFileAdaptor extends FileCpi {
         if (! uri.refersToLocalHost() && ! dest.refersToLocalHost()) {
             if (uri.getScheme().equals(dest.getScheme()) &&
                     uri.getAuthority().equals(dest.getAuthority())) {
+                FTPClient client = null;
                 try {
-                    File destFile = GAT.createFile(gatContext, dest);
-                    if (destFile.isDirectory()) {
-                        dest = dest.setPath(dest.getPath() + "/" + getName());
-                        destFile = GAT.createFile(gatContext, dest);
-                    }
-                } catch(Throwable e) {
-                    throw new GATInvocationException("move", e);
-                }
-                FTPClient client = createClient(uri);
-                try {
+                    client = createClient(uri);
                     setActiveOrPassive(client, gatContext.getPreferences());
+                    if (client.exists(dest.getPath())) {
+                        String dir = client.getCurrentDir();
+                        try {
+                            client.changeDir(dest.getPath());
+                            client.changeDir(dir);
+                            // Success, so dest was a directory.
+                            dest = dest.setPath(dest.getPath() + "/" + getName());
+                        } catch(Throwable e) {
+                            // ignored
+                        }
+                    }
                     client.rename(getPath(), dest.getPath());
+                    isDirCache.remove(uri);
                 } catch(Throwable e) {
                     throw new GATInvocationException("move", e);
                 } finally {
-                    destroyClient(client, uri, gatContext.getPreferences());
+                    if (client != null) {
+                        destroyClient(client, uri, gatContext.getPreferences());
+                    }
                 }
             }
         }
-        
     }
     
     /*
@@ -236,33 +258,61 @@ public abstract class GlobusFileAdaptor extends FileCpi {
         }
 
         copyThirdParty(fixURI(toURI()), fixURI(dest));
+        setIsDir(fixURI(dest), false);
     }
 
     // first try efficient 3rd party transfer.
     // If that fails, try copying using temp file.
     protected void copyThirdParty(URI src, URI dest)
             throws GATInvocationException {
-        // this only works with passive = false
-        Preferences additionalPreferences = new Preferences();
-        additionalPreferences.put("ftp.connection.passive", "false");
-
+        
+        /*
+        // First, see if src and dest are on the same host, so that we can
+        // try to copy with a single client.
+        if (! src.refersToLocalHost() && ! dest.refersToLocalHost()) {
+            if (src.getScheme().equals(dest.getScheme()) &&
+                    src.getAuthority().equals(dest.getAuthority())) {
+                FTPClient client = null;
+                java.io.File tmp = null;
+                try {
+                    client = createClient(src);
+                    setActiveOrPassive(client, gatContext.getPreferences());
+                    setImage(client);
+                    tmp = java.io.File.createTempFile("GATgridFTP", ".tmp");
+                    client.get(src.getPath(), tmp);
+                    setActiveOrPassive(client, gatContext.getPreferences());
+                    client.put(tmp, dest.getPath(), false);
+                    return;
+                } catch(Exception e) {
+                    // Did not work ...
+                } finally {
+                    if (tmp != null) {
+                        tmp.delete();
+                    }
+                    if (client != null) {
+                        destroyClient(client, src, gatContext.getPreferences());
+                    }
+                }
+            }
+        }
+        */
+                    
         FTPClient srcClient = null;
         FTPClient destClient = null;
         File tmpFile = null;
 
         try {
-            srcClient = createClient(gatContext, additionalPreferences, src);
-            destClient = createClient(gatContext, additionalPreferences, dest);
+            srcClient = createClient(src);
+            destClient = createClient(dest);
 
             HostPort hp = destClient.setPassive();
             srcClient.setActive(hp);
 
-            boolean append = true;
             String remoteSrcFile = src.getPath();
             String remoteDestFile = dest.getPath();
 
             srcClient.transfer(remoteSrcFile, destClient, remoteDestFile,
-                    append, null);
+                    false, null);
         } catch (Exception e) {
             try {
                 // use a local tmp file.
@@ -271,7 +321,7 @@ public abstract class GlobusFileAdaptor extends FileCpi {
                 URI u = new URI("any:///" + tmp.getPath());
                 if (logger.isDebugEnabled()) {
                     logger.debug("thirdparty copy failed, using temp file: "
-                            + u);
+                            + u, e);
                 }
                 tmpFile = GAT.createFile(gatContext, u);
 
@@ -286,18 +336,10 @@ public abstract class GlobusFileAdaptor extends FileCpi {
             }
         } finally {
             if (srcClient != null) {
-                try {
-                    srcClient.close(true);
-                } catch(Throwable e) {
-                    logger.info("closing client, got ignored exception", e);
-                }
+                destroyClient(srcClient, src, gatContext.getPreferences());
             }
             if (destClient != null) {
-                try {
-                    destClient.close(true);
-                } catch(Throwable e) {
-                    logger.info("closing client, got ignored exception", e);
-                }
+                destroyClient(destClient, dest, gatContext.getPreferences());
             }
             if (tmpFile != null) {
                 try {
@@ -315,14 +357,10 @@ public abstract class GlobusFileAdaptor extends FileCpi {
         }
         URI dest = toURI();
         FTPClient client = createClient(dest);
-        java.io.File emptyFile = null;
         try {
             setImage(client);
             setActiveOrPassive(client, gatContext.getPreferences());
-            emptyFile = java.io.File.createTempFile(".JavaGAT", null);
-            client.put(emptyFile, dest.getPath(), false); // overwrite
-            emptyFile.delete();
-            emptyFile = null;
+            client.put(dest.getPath(), emptySource, null);
             if (gatContext.getPreferences().containsKey("file.chmod")) {
                 chmod(client, dest.getPath(), gatContext);
             }
@@ -330,9 +368,6 @@ public abstract class GlobusFileAdaptor extends FileCpi {
         } catch (Exception e) {
             throw new GATInvocationException("gridftp", e);
         } finally {
-            if (emptyFile != null) {
-                emptyFile.delete();
-            }
             destroyClient(client, dest, gatContext.getPreferences());
         }
         return true;
@@ -563,7 +598,47 @@ public abstract class GlobusFileAdaptor extends FileCpi {
                 destroyClient(client, toURI(), gatContext.getPreferences());
         }
     }
+    
+    private void removeDir(FTPClient client, String path) throws Exception {
 
+        setActiveOrPassive(client, gatContext.getPreferences());
+
+        Vector<?> v = client.list(path);
+
+        for (Object f : v) {
+            FileInfo finfo = (FileInfo) f;
+            String name = finfo.getName();
+            if (name.equals(".") || name.equals("..")) {
+                continue;
+            }
+            name = path + "/" + name;
+            if (! finfo.isDirectory()) {
+                client.deleteFile(name);
+            } else {
+                removeDir(client, name);
+            }
+        }
+        client.deleteDir(path);
+    }
+
+    public void recursivelyDeleteDirectory() throws GATInvocationException {
+        if (! isDirectory()) {
+            throw new GATInvocationException("Not a directory!");
+        }
+        
+        FTPClient client = createClient(toURI());
+        
+        try {
+            removeDir(client, toURI().getPath());
+        } catch(GATInvocationException e) {
+            throw e;
+        } catch(Exception e) {
+            throw new GATInvocationException("recursivelyDeleteDirectory", e);
+        } finally {
+            destroyClient(client, toURI(), gatContext.getPreferences());
+        }
+    }
+    
     public boolean delete() throws GATInvocationException {
         FTPClient client = null;
 
@@ -1114,6 +1189,16 @@ public abstract class GlobusFileAdaptor extends FileCpi {
     }
 
     public long length() throws GATInvocationException {
+        
+        if (cachedInfo != null) {
+            if (cachedInfo.isDirectory()) {
+                return 0L;
+            }
+            return cachedInfo.getSize();
+        }
+        
+        FTPClient client = null;
+
         try {
             if (isDirectory())
                 return 0;
@@ -1121,18 +1206,16 @@ public abstract class GlobusFileAdaptor extends FileCpi {
             // Hmm, that did not work.
             // let's assume it is a file, and continue.
         }
-        FileInfo info;
         
+        client = createClient(toURI());
         try {
-            info = getInfo();
+            return client.getSize(getPath());
         } catch(FileNotFoundException e) {
             return 0L;
-        }
-    
-        try {
-            return info.getSize();
-        } catch(Throwable e) {
-            throw new GATInvocationException("gridftp", e);
+        } catch(Exception e) {
+            throw new GATInvocationException("length()", e);
+        } finally {
+            destroyClient(client, toURI(), gatContext.getPreferences());
         }
     }
 

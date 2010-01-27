@@ -49,7 +49,7 @@ public class GridFTPFileAdaptor extends GlobusFileAdaptor {
     private static Hashtable<String, ArrayList<GridFTPClient>> clienttable = new Hashtable<String, ArrayList<GridFTPClient>>();
 
     /**
-     * Constructs a LocalFileAdaptor instance which corresponds to the physical
+     * Constructs a GridFTPFileAdaptor instance which corresponds to the physical
      * file identified by the passed URI and whose access rights are determined
      * by the passed GATContext.
      * 
@@ -58,7 +58,7 @@ public class GridFTPFileAdaptor extends GlobusFileAdaptor {
      *                physical file.
      * @param gatContext
      *                A GATContext which is used to determine the access rights
-     *                for this LocalFileAdaptor.
+     *                for this GridFTPFileAdaptor.
      */
     public GridFTPFileAdaptor(GATContext gatContext, URI location)
             throws GATObjectCreationException {
@@ -116,6 +116,7 @@ public class GridFTPFileAdaptor extends GlobusFileAdaptor {
             }
         }
     }
+    
     private static void setConnectionOptions(GridFTPClient c,
             Preferences preferences) throws Exception {
         c.setType(GridFTPSession.TYPE_IMAGE);
