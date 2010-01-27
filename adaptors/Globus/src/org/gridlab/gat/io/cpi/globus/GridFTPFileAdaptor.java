@@ -39,6 +39,7 @@ public class GridFTPFileAdaptor extends GlobusFileAdaptor {
         Map<String, Boolean> capabilities = GlobusFileAdaptor
                 .getSupportedCapabilities();
         capabilities.put("exists", true);
+        capabilities.put("move", true);
         return capabilities;
     }
     
@@ -85,6 +86,39 @@ public class GridFTPFileAdaptor extends GlobusFileAdaptor {
 
     protected URI fixURI(URI in) {
         return fixURI(in, "gsiftp");
+    }
+    
+    public void move(URI dest) throws GATInvocationException {
+        URI uri = toURI();
+        if (! uri.refersToLocalHost() && ! dest.refersToLocalHost()) {
+            if (uri.getScheme().equals(dest.getScheme()) &&
+                    uri.getAuthority().equals(dest.getAuthority())) {
+                FTPClient client = null;
+                try {
+                    client = createClient(uri);
+                    // setActiveOrPassive(client, gatContext.getPreferences());
+                    if (client.exists(dest.getPath())) {
+                        String dir = client.getCurrentDir();
+                        try {
+                            client.changeDir(dest.getPath());
+                            client.changeDir(dir);
+                            // Success, so dest was a directory.
+                            dest = dest.setPath(dest.getPath() + "/" + getName());
+                        } catch(Throwable e) {
+                            // ignored
+                        }
+                    }
+                    client.rename(getPath(), dest.getPath());
+                    isDirCache.remove(uri);
+                } catch(Throwable e) {
+                    super.move(dest);
+                } finally {
+                    if (client != null) {
+                        destroyClient(client, uri, gatContext.getPreferences());
+                    }
+                }
+            }
+        }
     }
 
     public boolean exists() throws GATInvocationException {

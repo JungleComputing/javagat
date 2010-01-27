@@ -64,7 +64,6 @@ public abstract class GlobusFileAdaptor extends FileCpi {
         capabilities.put("canWrite", true);
         capabilities.put("length", true);
         capabilities.put("mkdir", true);
-        capabilities.put("move", true);
         capabilities.put("exists", true);
         capabilities.put("getAbsolutePath", true);
         capabilities.put("renameTo", true);
@@ -88,7 +87,7 @@ public abstract class GlobusFileAdaptor extends FileCpi {
 
     // cache dir info, getting it can be an expensive operation, especially on
     // old servers.
-    private static HashMap<URI, Integer> isDirCache = new HashMap<URI, Integer>();
+    static HashMap<URI, Integer> isDirCache = new HashMap<URI, Integer>();
 
     protected FileInfo cachedInfo = null;
     
@@ -174,40 +173,6 @@ public abstract class GlobusFileAdaptor extends FileCpi {
      */
     protected abstract void destroyClient(FTPClient c, URI hostURI,
             Preferences preferences);
-
-    public void move(URI dest) throws GATInvocationException {
-        URI uri = toURI();
-        if (! uri.refersToLocalHost() && ! dest.refersToLocalHost()) {
-            if (uri.getScheme().equals(dest.getScheme()) &&
-                    uri.getAuthority().equals(dest.getAuthority())) {
-                FTPClient client = null;
-                try {
-                    client = createClient(uri);
-                    setActiveOrPassive(client, gatContext.getPreferences());
-                    if (client.exists(dest.getPath())) {
-                        String dir = client.getCurrentDir();
-                        try {
-                            client.changeDir(dest.getPath());
-                            client.changeDir(dir);
-                            // Success, so dest was a directory.
-                            dest = dest.setPath(dest.getPath() + "/" + getName());
-                        } catch(Throwable e) {
-                            // ignored
-                        }
-                    }
-                    client.rename(getPath(), dest.getPath());
-                    isDirCache.remove(uri);
-                } catch(Throwable e) {
-                    throw new GATInvocationException("move", e);
-                } finally {
-                    if (client != null) {
-                        destroyClient(client, uri, gatContext.getPreferences());
-                    }
-                }
-            }
-        }
-    }
-    
     /*
      * (non-Javadoc)
      * 
