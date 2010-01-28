@@ -579,11 +579,13 @@ public abstract class GlobusFileAdaptor extends FileCpi {
             name = path + "/" + name;
             if (! finfo.isDirectory()) {
                 client.deleteFile(name);
+                isDirCache.remove(toURI().setPath(name));
             } else {
                 removeDir(client, name);
             }
         }
         client.deleteDir(path);
+        isDirCache.remove(toURI().setPath(path));
     }
 
     public void recursivelyDeleteDirectory() throws GATInvocationException {
@@ -616,6 +618,7 @@ public abstract class GlobusFileAdaptor extends FileCpi {
             } else {
                 client.deleteFile(remotePath);
             }
+            isDirCache.remove(toURI());
         } catch (ServerException s) {
             if (s.getCode() == ServerException.SERVER_REFUSED) { // file not
                 // found
@@ -1029,11 +1032,6 @@ public abstract class GlobusFileAdaptor extends FileCpi {
             remotePath = "/";
         }
 
-        if (logger.isDebugEnabled()) {
-            logger.debug("getINFO: remotePath = " + remotePath
-                    + ", creating client to: " + toURI());
-        }
-
         FTPClient client = createClient(toURI());
         
         try {
@@ -1121,6 +1119,7 @@ public abstract class GlobusFileAdaptor extends FileCpi {
             }
             // it can also be a link, so continue with slow method
         } catch(FileNotFoundException e) {
+            setIsDir(location, false);
             return false;
         } catch(GATInvocationException e) {
             // ignored, try the slow method.
