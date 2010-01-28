@@ -251,6 +251,10 @@ public class CommandlineSshResourceBrokerAdaptor extends ResourceBrokerCpi {
             // Forcing pseudo tty requires more than one -t option ... --Ceriel
             command.add("-t");
             command.add("-t");
+            if (!sd.streamingStdinEnabled() && sd.getStdin() == null) {
+                // Redirect stdin from the job to /dev/null.
+                command.add("-n");
+            }
             command.add(username + "@" + host);
             if (sandbox.getSandboxPath() != null) {
                 command.add("cd");
