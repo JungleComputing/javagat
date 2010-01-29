@@ -85,7 +85,7 @@ public class GlobusJob extends JobCpi implements GramJobListener,
             Sandbox sandbox) {
         super(gatContext, jobDescription, sandbox);
         SoftwareDescription sd = jobDescription.getSoftwareDescription();
-        state = JobState.SCHEDULED;
+        state = JobState.INITIAL;
         jobsAlive++;
 
         // Tell the engine that we provide job.status events

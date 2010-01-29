@@ -580,6 +580,7 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
         }
         GramJob j = new GramJob(credential, rsl);
         globusJob.setGramJob(j);
+        globusJob.setState(Job.JobState.SCHEDULED);
         try {
             j.request(contact);
             // Gram.request(contact, j);
@@ -590,6 +591,7 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
             throw new GATInvocationException("globus",
                     new CouldNotInitializeCredentialException("globus", e2));
         }
+
         // Try if we can contact the job manager. If not, this is a problem, because
         // we cannot monitor the job. In this case, the job submission fails, but the
         // job may be running ... we try to kill it ...
