@@ -36,7 +36,11 @@ public class CopyingFileInputStreamAdaptor extends FileInputStreamCpi {
 
         return capabilities;
     }
-
+    
+    public static String[] getSupportedSchemes() {
+        return new String[] { "commandlinessh", "ssh", "file", ""};
+    }
+    
     // private static final int MAX_SIZE = 1 * 1024 * 1024;
 
     FileInputStream in;
