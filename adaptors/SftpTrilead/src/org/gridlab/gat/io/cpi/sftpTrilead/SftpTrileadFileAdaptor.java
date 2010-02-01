@@ -553,7 +553,7 @@ public class SftpTrileadFileAdaptor extends FileCpi {
             handle = c.sftpClient.openFileRO(src.getPath());
 
             long bytesWritten = 0;
-            byte[] buf = new byte[32000];
+            byte[] buf = new byte[32768];
 
             while (bytesWritten != length) {
                 int len = c.sftpClient.read(handle, bytesWritten, buf, 0,
@@ -638,7 +638,7 @@ public class SftpTrileadFileAdaptor extends FileCpi {
             handle = c.sftpClient.createFileTruncate(destPath);
 
             long bytesWritten = 0;
-            byte[] buf = new byte[32000];
+            byte[] buf = new byte[32768];
 
             while (bytesWritten != length) {
                 int len = inBuf.read(buf, 0, buf.length);
