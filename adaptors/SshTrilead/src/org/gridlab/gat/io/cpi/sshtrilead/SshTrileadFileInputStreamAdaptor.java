@@ -16,7 +16,7 @@ import org.gridlab.gat.io.cpi.FileInputStreamCpi;
 import com.trilead.ssh2.Session;
 import com.trilead.ssh2.StreamGobbler;
 
-public class SshTrileadFileInputStream extends FileInputStreamCpi {
+public class SshTrileadFileInputStreamAdaptor extends FileInputStreamCpi {
 
     public static Map<String, Boolean> getSupportedCapabilities() {
         Map<String, Boolean> capabilities = FileInputStreamCpi.getSupportedCapabilities();
@@ -66,7 +66,7 @@ public class SshTrileadFileInputStream extends FileInputStreamCpi {
     
     private InputStreamRunner job;
         
-    public SshTrileadFileInputStream(GATContext gatContext, URI location) throws GATObjectCreationException, GATInvocationException {
+    public SshTrileadFileInputStreamAdaptor(GATContext gatContext, URI location) throws GATObjectCreationException, GATInvocationException {
         super(gatContext, location);
         
         if (location.refersToLocalHost()) {
