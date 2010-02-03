@@ -23,8 +23,6 @@ public class LocalRandomAccessFileAdaptor extends RandomAccessFileCpi {
     public static Map<String, Boolean> getSupportedCapabilities() {
         Map<String, Boolean> capabilities = RandomAccessFileCpi
                 .getSupportedCapabilities();
-        capabilities.put("toURI", true);
-        capabilities.put("getFile", true);
         capabilities.put("close", true);
         capabilities.put("getFilePointer", true);
         capabilities.put("length", true);
@@ -57,15 +55,6 @@ public class LocalRandomAccessFileAdaptor extends RandomAccessFileCpi {
         } catch (FileNotFoundException e) {
             throw new GATObjectCreationException("LocalRandomAccessFile", e);
         }
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.gridlab.gat.io.RandomAccessFile#toURI()
-     */
-    public URI toURI() {
-        return location;
     }
 
     /*
