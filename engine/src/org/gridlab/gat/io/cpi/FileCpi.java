@@ -895,7 +895,11 @@ public abstract class FileCpi extends MonitorableCpi implements FileInterface, j
 
         public void run() {
             try {
-                f.delete();
+                // Not f.delete(), because that may cause a delete() call on the
+                // wrong adaptor. We need to try all adaptors here, until one
+                // succeeds. --Ceriel
+                File file = GAT.createFile(f.gatContext, f.toURI());
+                file.delete();
             } catch (Throwable t) {
                 // Ignore
             }

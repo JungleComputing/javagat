@@ -54,6 +54,23 @@ import org.gridlab.gat.monitoring.Monitorable;
 @SuppressWarnings("serial")
 public class File extends java.io.File implements Monitorable, Advertisable,
         java.io.Serializable {
+    
+    private static class DeleteHook extends Thread {
+        File f;
+
+        DeleteHook(File f) {
+            this.f = f;
+        }
+
+        public void run() {
+            try {              
+                f.delete();
+            } catch (Throwable t) {
+                //  O well, we tried.
+            }
+        }
+    }
+    
     org.gridlab.gat.io.FileInterface f;
 
     /**
@@ -200,7 +217,8 @@ public class File extends java.io.File implements Monitorable, Advertisable,
      * @see java.io.File#deleteOnExit()
      */
     public void deleteOnExit() {
-        f.deleteOnExit();
+        Runtime.getRuntime().addShutdownHook(new DeleteHook(this));
+        // f.deleteOnExit();
     }
 
     /**
