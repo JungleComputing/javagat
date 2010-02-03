@@ -240,6 +240,10 @@ public class GridFTPFileAdaptor extends GlobusFileAdaptor {
             list = new ArrayList<GridFTPClient>();
             clienttable.put(key, list);
         }
+        if (list.size() >= 3) {
+            // Enough clients cached!
+            return false;
+        }
         list.add((GridFTPClient) c);
         return true;
     }
