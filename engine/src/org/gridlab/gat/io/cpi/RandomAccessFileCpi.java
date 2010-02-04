@@ -125,7 +125,12 @@ public abstract class RandomAccessFileCpi extends MonitorableCpi implements Rand
      * @see org.gridlab.gat.io.RandomAccessFile#read()
      */
     public int read() throws GATInvocationException {
-        throw new UnsupportedOperationException("Not implemented");
+        byte[] buf = new byte[1];
+        int len = read(buf);
+        if (len <= 0) {
+            return -1;
+        }
+        return buf[0] & 0377;
     }
 
     /*
@@ -144,7 +149,7 @@ public abstract class RandomAccessFileCpi extends MonitorableCpi implements Rand
      * @see org.gridlab.gat.io.RandomAccessFile#read(byte[])
      */
     public int read(byte[] arg0) throws GATInvocationException {
-        throw new UnsupportedOperationException("Not implemented");
+        return read(arg0, 0, arg0.length);
     }
 
     /*
@@ -190,7 +195,7 @@ public abstract class RandomAccessFileCpi extends MonitorableCpi implements Rand
      * @see org.gridlab.gat.io.RandomAccessFile#write(byte[])
      */
     public void write(byte[] arg0) throws GATInvocationException {
-        throw new UnsupportedOperationException("Not implemented");
+        write(arg0, 0, arg0.length);
     }
 
     /*
@@ -199,7 +204,9 @@ public abstract class RandomAccessFileCpi extends MonitorableCpi implements Rand
      * @see org.gridlab.gat.io.RandomAccessFile#write(int)
      */
     public void write(int arg0) throws GATInvocationException {
-        throw new UnsupportedOperationException("Not implemented");
+        byte[] buf = new byte[1];
+        buf[0] = (byte) arg0;
+        write(buf);
     }
 
     public String toString() {
