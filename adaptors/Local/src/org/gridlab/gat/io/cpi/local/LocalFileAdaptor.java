@@ -1,7 +1,5 @@
 package org.gridlab.gat.io.cpi.local;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.FileInputStream;
@@ -12,8 +10,6 @@ import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Map;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.gridlab.gat.AdaptorNotApplicableException;
 import org.gridlab.gat.GAT;
 import org.gridlab.gat.GATContext;
@@ -22,6 +18,8 @@ import org.gridlab.gat.GATObjectCreationException;
 import org.gridlab.gat.MethodNotApplicableException;
 import org.gridlab.gat.URI;
 import org.gridlab.gat.io.cpi.FileCpi;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @SuppressWarnings("serial")
 public class LocalFileAdaptor extends FileCpi {
@@ -327,23 +325,22 @@ public class LocalFileAdaptor extends FileCpi {
         copy(f, destFile);
     }
     
-    private void copy(File in, File out) throws GATInvocationException {
+    private static void copy(File in, File out) throws GATInvocationException {
         
-        BufferedInputStream inBuf = null;
-        BufferedOutputStream outBuf = null;
+        FileInputStream inBuf = null;
+        FileOutputStream outBuf = null;
 
         try {
             out.createNewFile();
 
             // Copy source to destination
-            inBuf = new BufferedInputStream(new FileInputStream(in));
-            outBuf = new BufferedOutputStream(new FileOutputStream(out));
+            inBuf = new FileInputStream(in);
+            outBuf = new FileOutputStream(out);
         } catch (IOException e) {
             throw new GATInvocationException("LocalFile", e);
         }
 
         try {
-            long bytesWritten = 0;
             byte[] buf = new byte[8192];
 
             for (;;) {
@@ -352,7 +349,6 @@ public class LocalFileAdaptor extends FileCpi {
                     break;
                 }
                 outBuf.write(buf, 0, len);
-                bytesWritten += len;
             }
         } catch (IOException e) {
             throw new GATInvocationException("LocalFile", e);
