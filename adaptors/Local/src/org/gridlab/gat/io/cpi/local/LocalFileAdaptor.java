@@ -21,7 +21,6 @@ import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.GATObjectCreationException;
 import org.gridlab.gat.MethodNotApplicableException;
 import org.gridlab.gat.URI;
-import org.gridlab.gat.io.FileInterface;
 import org.gridlab.gat.io.cpi.FileCpi;
 
 @SuppressWarnings("serial")
@@ -142,6 +141,112 @@ public class LocalFileAdaptor extends FileCpi {
 
         return in;
     }
+    
+    protected void copyDir(String sourcePath, String destPath) throws GATInvocationException {
+        
+        if (logger.isDebugEnabled()) {
+            logger.debug("copyDir '" + sourcePath + "' to '" + destPath + "'");
+        }
+
+        boolean existingDir = false;
+
+        java.io.File destFile = new File(destPath);
+        if (destFile.exists()) {
+            // check whether the target is an existing file
+            if ( !destFile.isDirectory()) {   
+                throw new GATInvocationException("cannot overwrite non-directory '"
+                        + destPath + "' with directory '"
+                        + sourcePath + "'!");
+            } else {
+                existingDir = true;
+            }
+        }
+
+        if (! existingDir) {
+            // copy dir a to b will result in a new directory b with contents
+            // that is a copy of the contents of a.
+        } else if (gatContext.getPreferences().containsKey("file.directory.copy")
+                && ((String) gatContext.getPreferences().get(
+                        "file.directory.copy")).equalsIgnoreCase("contents")) {
+            // don't modify the dest dir, so copy dir a to dir b ends up as
+            // copying a/* to b/*, note that a/dir/* also ends up in b/*
+        } else {
+            // because copy dir a to dir b ends up as b/a we've to add /a to the
+            // dest.
+            if (sourcePath.endsWith("/")) {
+                sourcePath = sourcePath.substring(0, sourcePath.length() - 1);
+            }
+            if (sourcePath.length() > 0) {
+                int start = sourcePath.lastIndexOf(File.separator) + 1;
+                String separator = "";
+                if (!destPath.endsWith(File.separator)) {
+                    separator = File.separator;
+                }
+                destPath = destPath + separator
+                            + sourcePath.substring(start);
+                destFile = new File(destPath);
+            }
+        }
+        if (logger.isDebugEnabled()) {
+            logger.debug("destPath = " + destPath);
+        }
+        
+        // create destination dir
+        
+        if (gatContext.getPreferences().containsKey("file.create")
+                && ((String) gatContext.getPreferences().get("file.create"))
+                            .equalsIgnoreCase("true")) {
+            destFile.mkdirs();
+        } else {
+            // if source is a dir 'dir1' and dest is a dir 'dir2' then the
+            // result of dir1.copy(dir2) will be dir2/dir1/.. so even if the
+            // 'file.create' flag isn't set, create the dir1 in dir2 before
+            // copying the files.
+            boolean mkdir = destFile.mkdir();
+            if (logger.isDebugEnabled()) {
+                logger.debug("mkdir: " + mkdir);
+            }
+        }
+
+        // list all the files and copy recursively.
+        File[] files = new File(sourcePath).listFiles();
+        if (files == null) {
+            if (logger.isDebugEnabled()) {
+                logger.debug("copyDirectory: no files in src directory: "
+                        + sourcePath);
+            }
+            return;
+        }
+        
+        for (File file : files) {
+            
+            if (logger.isDebugEnabled()) {
+                logger.debug("copyDirectory: file to copy = " + file);
+            }
+
+            String newDestString = destPath;
+            newDestString += File.separator + file.getName();
+
+            if (logger.isDebugEnabled()) {
+                logger.debug("new dest: " + newDestString);
+                logger.debug("src is file: " + file.isFile());
+                logger.debug("src is dir: " + file.isDirectory());
+            }
+
+            if (file.isFile()) {
+                if (logger.isDebugEnabled()) {
+                    logger.debug("copyDir: copying " + file);
+                }
+                copy(file, new File(newDestString));
+            } else if (file.isDirectory()) {
+                copyDir(file.getPath(), newDestString);
+            } else {
+                throw new GATInvocationException(
+                        "don't know how to handle file: " + file.getPath()
+                                + " (links are not supported).");
+            }
+        }
+    }
 
     /**
      * This method copies the physical file represented by this File instance to
@@ -157,13 +262,17 @@ public class LocalFileAdaptor extends FileCpi {
             throw new MethodNotApplicableException(
                     "default file: cannot copy to remote destination");
         }
+        
+        destination = newcorrectURI(destination);
+        
+        String path = getPath();
+        String destPath = destination.getPath();
 
         if (logger.isInfoEnabled()) {
-            logger.info("local copy of " + getPath() + " to "
-                    + destination.getPath());
+            logger.info("local copy of " + path + " to " + destPath);
         }
 
-        if (destination.getPath().equals(toURI().getPath())) {
+        if (destPath.equals(path)) {
             if (logger.isInfoEnabled()) {
                 logger.info("local copy, source is the same file as dest.");
             }
@@ -172,7 +281,7 @@ public class LocalFileAdaptor extends FileCpi {
 
         if (!exists()) {
             throw new GATInvocationException(
-                    "the local source file does not exist, path = " + getPath());
+                    "the local source file does not exist, path = " + path);
         }
 
         if (isDirectory()) {
@@ -180,7 +289,7 @@ public class LocalFileAdaptor extends FileCpi {
                 logger.debug("local copy, it is a dir");
             }
 
-            copyDirectory(gatContext, null, toURI(), destination);
+            copyDir(path, destPath);
 
             return;
         }
@@ -189,86 +298,78 @@ public class LocalFileAdaptor extends FileCpi {
             logger.debug("local copy, it is a file");
         }
 
+        File destFile = new File(destPath);
         if (gatContext.getPreferences().containsKey("file.create")) {
             if (((String) gatContext.getPreferences().get("file.create"))
                     .equalsIgnoreCase("true")) {
-                try {
-                    FileInterface destFile = GAT.createFile(gatContext,
-                            destination).getFileInterface();
-                    org.gridlab.gat.io.File destinationParentFile = destFile
-                            .getParentFile();
-                    if (destinationParentFile != null) {
-                        boolean result = destinationParentFile
-                                .getFileInterface().mkdirs();
-                        if (logger.isDebugEnabled()) {
-                            logger.debug("new dirs created: " + result);
-                        }
+               
+                File destinationParentFile = destFile.getParentFile();
+                if (destinationParentFile != null) {
+                    boolean result = destinationParentFile.mkdirs();
+                    if (logger.isDebugEnabled()) {
+                        logger.debug("new dirs created: " + result);
                     }
-
-                } catch (GATObjectCreationException e) {
-                    throw new GATInvocationException("LocalFileAdaptor", e);
                 }
             }
         }
 
-        File tmp = new File(correctURI(destination).getPath());
-
         // if the destination URI is a dir, append the file name.
-        if (tmp.isDirectory()) {
-            String u = destination.toString() + "/" + getName();
-
-            try {
-                destination = new URI(u);
-            } catch (URISyntaxException e) {
-                throw new GATInvocationException("default file", e);
-            }
+        if (destFile.isDirectory()) {
+            destPath = destPath + File.separator + getName();
+            destFile = new File(destPath);
         }
-
-        // Create destination file
-        File destinationFile = new File(correctURI(destination).getPath());
-
-        if (logger.isDebugEnabled()) {
-            logger.debug("creating local file " + destinationFile);
-        }
-        // TODO close Files in all cases
-        BufferedInputStream inBuf;
-        BufferedOutputStream outBuf;
 
         try {
-            destinationFile.createNewFile();
+            destFile.createNewFile();
+        } catch (IOException e) {
+            throw new GATInvocationException("Creating local file failed", e);
+        }
+        copy(f, destFile);
+    }
+    
+    private void copy(File in, File out) throws GATInvocationException {
+        
+        BufferedInputStream inBuf = null;
+        BufferedOutputStream outBuf = null;
+
+        try {
+            out.createNewFile();
 
             // Copy source to destination
-            FileInputStream in = new FileInputStream(f);
-            inBuf = new BufferedInputStream(in);
-
-            FileOutputStream out = new FileOutputStream(destinationFile);
-            outBuf = new BufferedOutputStream(out);
+            inBuf = new BufferedInputStream(new FileInputStream(in));
+            outBuf = new BufferedOutputStream(new FileOutputStream(out));
         } catch (IOException e) {
-            throw new GATInvocationException("local file", e);
+            throw new GATInvocationException("LocalFile", e);
         }
 
         try {
             long bytesWritten = 0;
-            byte[] buf = new byte[1024];
+            byte[] buf = new byte[8192];
 
-            while (bytesWritten != f.length()) {
+            for (;;) {
                 int len = inBuf.read(buf);
+                if (len < 0) {
+                    break;
+                }
                 outBuf.write(buf, 0, len);
                 bytesWritten += len;
             }
         } catch (IOException e) {
             throw new GATInvocationException("LocalFile", e);
         } finally {
-            try {
-                outBuf.close();
-            } catch (IOException e) {
-                throw new GATInvocationException("LocalFile", e);
+            if (outBuf != null) {
+                try {
+                    outBuf.close();
+                } catch (IOException e) {
+                    throw new GATInvocationException("LocalFile", e);
+                }
             }
-
-            try {
-                inBuf.close();
-            } catch (IOException e) {
-                throw new GATInvocationException("LocalFile", e);
+            if (inBuf != null) {
+                try {
+                    inBuf.close();
+                } catch (IOException e) {
+                    throw new GATInvocationException("LocalFile", e);
+                }
             }
         }
     }
@@ -610,13 +711,16 @@ public class LocalFileAdaptor extends FileCpi {
             throw new MethodNotApplicableException(
                     "LocalFile: cannot move to remote destination");
         }
+        
+        destination = newcorrectURI(destination);
+        String path = getPath();
+        String destPath = destination.getPath();
 
         if (logger.isInfoEnabled()) {
-            logger.info("local move of " + getPath() + " to "
-                    + destination.getPath());
+            logger.info("local move of " + path + " to " + destPath);
         }
 
-        if (destination.getPath().equals(toURI().getPath())) {
+        if (destPath.equals(path)) {
             if (logger.isInfoEnabled()) {
                 logger.info("local move, source is the same file as dest.");
             }
@@ -626,10 +730,10 @@ public class LocalFileAdaptor extends FileCpi {
 
         if (!exists()) {
             throw new GATInvocationException(
-                    "the local source file does not exist, path = " + getPath());
+                    "the local source file does not exist, path = " + path);
         }
 
-        File tmp = new File(destination.getPath());
+        File tmp = new File(destPath);
         boolean res = f.renameTo(tmp);
 
         if (!res) {
