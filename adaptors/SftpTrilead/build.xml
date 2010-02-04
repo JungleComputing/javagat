@@ -34,6 +34,7 @@
 				<attribute name="FileCpi-class" value="org.gridlab.gat.io.cpi.sftpTrilead.SftpTrileadFileAdaptor" />
 				<attribute name="FileInputStreamCpi-class" value="org.gridlab.gat.io.cpi.sftpTrilead.SftpTrileadFileInputStreamAdaptor" />
 				<attribute name="FileOutputStreamCpi-class" value="org.gridlab.gat.io.cpi.sftpTrilead.SftpTrileadFileOutputStreamAdaptor" />
+				<attribute name="RandomAccessFileCpi-class" value="org.gridlab.gat.io.cpi.sftpTrilead.SftpTrileadRandomAccessFileAdaptor" />
 			</manifest>
 		</jar>
 
