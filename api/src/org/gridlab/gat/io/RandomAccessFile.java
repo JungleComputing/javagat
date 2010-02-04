@@ -29,6 +29,7 @@ public class RandomAccessFile extends java.io.RandomAccessFile {
         try {
             java.io.File tmp = java.io.File.createTempFile("JavaGATDummy",
                     "tmp");
+            tmp.deleteOnExit();
             return tmp;
         } catch (IOException e) {
             throw new Error("could not create dummy file: " + e);
@@ -48,6 +49,11 @@ public class RandomAccessFile extends java.io.RandomAccessFile {
      * @see java.io.RandomAccessFile#close()
      */
     public void close() throws IOException {
+        try {
+            super.close();
+        } catch(Throwable e) {
+            // ignored
+        }
         try {
             f.close();
         } catch (Exception e) {
