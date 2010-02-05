@@ -223,9 +223,15 @@ public class GridFTPRandomAccessFileAdaptor extends RandomAccessFileCpi {
         }
 
         public void write(Buffer buffer) throws IOException {
+            if (logger.isDebugEnabled()) {
+                
+            }
             byte[] b = buffer.getBuffer();
             int l = buffer.getLength();
             long o = buffer.getOffset();
+            if (logger.isDebugEnabled()) {
+                logger.debug("Read buffer, len = " + l + ", fileOffset = " + o);
+            }
             System.arraycopy(b, 0, buf, (int)(o - fileOffset), l);
             synchronized(this) {
                 writtenLen += l;
