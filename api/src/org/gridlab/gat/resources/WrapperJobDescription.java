@@ -193,6 +193,14 @@ public class WrapperJobDescription extends JobDescription {
             wrapperJobIndex = wrapperJobCount++;
         }
     }
+    
+    /**
+     * Gets the wrapper job index.
+     * @return the wrapper job index.
+     */
+    public int getWrapperJobIndex() {
+        return wrapperJobIndex;
+    }
 
     /**
      * Creates a {@link WrapperJobDescription} based on the given
@@ -228,7 +236,7 @@ public class WrapperJobDescription extends JobDescription {
     }
 
     /**
-     * Sets the {@link ScheduledType} for the pre staging phase.
+     * Sets the {@link ScheduledType}.
      * 
      * @param scheduledType
      *                a {@link ScheduledType}
