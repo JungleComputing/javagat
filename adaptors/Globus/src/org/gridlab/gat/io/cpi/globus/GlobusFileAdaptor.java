@@ -20,7 +20,6 @@ import org.globus.ftp.DataSink;
 import org.globus.ftp.DataSource;
 import org.globus.ftp.FTPClient;
 import org.globus.ftp.FileInfo;
-import org.globus.ftp.GridFTPSession;
 import org.globus.ftp.HostPort;
 import org.globus.ftp.exception.ClientException;
 import org.globus.ftp.exception.FTPException;
@@ -44,7 +43,6 @@ public abstract class GlobusFileAdaptor extends FileCpi {
     public static Preferences getSupportedPreferences() {
         Preferences p = FileCpi.getSupportedPreferences();
         p.put("ftp.connection.passive", "false");
-        p.put("ftp.connection.protection", "<default taken from globus>");
         p.put("ftp.server.old", "false");
         p.put("ftp.server.noauthentication", "false");
         p.put("file.chmod", "<default is target umask>");
@@ -105,7 +103,7 @@ public abstract class GlobusFileAdaptor extends FileCpi {
         }       
     }
     
-    private static final EmptySource emptySource = new EmptySource();
+    static final EmptySource emptySource = new EmptySource();
 
     /**
      * Constructs a LocalFileAdaptor instance which corresponds to the physical
@@ -518,7 +516,7 @@ public abstract class GlobusFileAdaptor extends FileCpi {
     // }
     // }
 
-    private void chmod(FTPClient client, String path, GATContext gatContext) {
+    static void chmod(FTPClient client, String path, GATContext gatContext) {
         try {
             Reply r = client.site("CHMOD "
                     + gatContext.getPreferences().get("file.chmod") + " "
@@ -1287,26 +1285,6 @@ public abstract class GlobusFileAdaptor extends FileCpi {
             return true;
         } else {
             return super.renameTo(dest);
-        }
-    }
-
-    static protected int getProtectionMode(Preferences preferences) {
-        String mode = (String) preferences.get("ftp.connection.protection");
-
-        if (mode == null) {
-            return -1;
-        }
-
-        if (mode.equalsIgnoreCase("clear")) {
-            return GridFTPSession.PROTECTION_CLEAR;
-        } else if (mode.equalsIgnoreCase("confidential")) {
-            return GridFTPSession.PROTECTION_CONFIDENTIAL;
-        } else if (mode.equalsIgnoreCase("private")) {
-            return GridFTPSession.PROTECTION_PRIVATE;
-        } else if (mode.equalsIgnoreCase("safe")) {
-            return GridFTPSession.PROTECTION_SAFE;
-        } else {
-            throw new Error("Illegal channel protection mode: " + mode);
         }
     }
 

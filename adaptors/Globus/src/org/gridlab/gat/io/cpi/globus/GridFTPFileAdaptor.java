@@ -27,6 +27,7 @@ public class GridFTPFileAdaptor extends GlobusFileAdaptor {
 
     public static Preferences getSupportedPreferences() {
         Preferences p = GlobusFileAdaptor.getSupportedPreferences();
+        p.put("ftp.connection.protection", "<default taken from globus>");
         p.put("gridftp.authentication.retry", "0");
         return p;
     }
@@ -155,6 +156,27 @@ public class GridFTPFileAdaptor extends GlobusFileAdaptor {
             Preferences preferences) throws Exception {
         c.setType(GridFTPSession.TYPE_IMAGE);
         // c.setMode(GridFTPSession.MODE_BLOCK);
+    }
+    
+
+    private static int getProtectionMode(Preferences preferences) {
+        String mode = (String) preferences.get("ftp.connection.protection");
+
+        if (mode == null) {
+            return -1;
+        }
+
+        if (mode.equalsIgnoreCase("clear")) {
+            return GridFTPSession.PROTECTION_CLEAR;
+        } else if (mode.equalsIgnoreCase("confidential")) {
+            return GridFTPSession.PROTECTION_CONFIDENTIAL;
+        } else if (mode.equalsIgnoreCase("private")) {
+            return GridFTPSession.PROTECTION_PRIVATE;
+        } else if (mode.equalsIgnoreCase("safe")) {
+            return GridFTPSession.PROTECTION_SAFE;
+        } else {
+            throw new Error("Illegal channel protection mode: " + mode);
+        }
     }
 
     /**
