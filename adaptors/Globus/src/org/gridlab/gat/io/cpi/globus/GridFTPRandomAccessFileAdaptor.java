@@ -58,8 +58,6 @@ public class GridFTPRandomAccessFileAdaptor extends RandomAccessFileCpi {
         
         try {
             ftpClient = (GridFTPClient) GridFTPFileAdaptor.doWorkCreateClient(gatContext, null, location);
-            // setImage(ftpClient); TODO
-            GlobusFileAdaptor.setActiveOrPassive(ftpClient, gatContext.getPreferences());
         } catch (InvalidUsernameOrPasswordException e) {
             throw new GATObjectCreationException("Could not create ftp client");
         }
@@ -76,6 +74,7 @@ public class GridFTPRandomAccessFileAdaptor extends RandomAccessFileCpi {
                 size = ftpClient.getSize(path);
             } else if ("rw".equals(mode) || "rws".equals(mode) || "rwd".equals(mode)) {
                 if (! exists) {
+                    GlobusFileAdaptor.setActiveOrPassive(ftpClient, gatContext.getPreferences());
                     ftpClient.put(path, GlobusFileAdaptor.emptySource, null);
                     if (gatContext.getPreferences().containsKey("file.chmod")) {
                         GlobusFileAdaptor.chmod(ftpClient, path, gatContext);
@@ -148,6 +147,7 @@ public class GridFTPRandomAccessFileAdaptor extends RandomAccessFileCpi {
            
         MyDataSink sink = new MyDataSink(buf, off, len, currentPos);
         try {
+            GlobusFileAdaptor.setActiveOrPassive(ftpClient, gatContext.getPreferences());
             ftpClient.extendedGet(path, currentPos, len, sink, null);
         } catch(Throwable e) {
             throw new GATInvocationException("read failed", e);
@@ -192,6 +192,7 @@ public class GridFTPRandomAccessFileAdaptor extends RandomAccessFileCpi {
         
         MyDataSource source = new MyDataSource(buf, off, len, currentPos);
         try {
+            GlobusFileAdaptor.setActiveOrPassive(ftpClient, gatContext.getPreferences());
             ftpClient.extendedPut(path, currentPos, source, null);
         } catch(Throwable e) {
             throw new GATInvocationException("read failed", e);
