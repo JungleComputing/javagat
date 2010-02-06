@@ -6,10 +6,10 @@ import org.globus.ftp.Buffer;
 import org.globus.ftp.DataSink;
 import org.globus.ftp.DataSource;
 import org.globus.ftp.GridFTPClient;
+import org.globus.ftp.GridFTPSession;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.GATObjectCreationException;
-import org.gridlab.gat.InvalidUsernameOrPasswordException;
 import org.gridlab.gat.Preferences;
 import org.gridlab.gat.URI;
 import org.gridlab.gat.io.cpi.RandomAccessFileCpi;
@@ -45,6 +45,8 @@ public class GridFTPRandomAccessFileAdaptor extends RandomAccessFileCpi {
     
     private final String path;
     
+    private final Preferences prefs;
+    
     public GridFTPRandomAccessFileAdaptor(GATContext gatContext, URI location,
             String mode) throws GATObjectCreationException, GATInvocationException {
         super(gatContext, location, mode);
@@ -56,9 +58,14 @@ public class GridFTPRandomAccessFileAdaptor extends RandomAccessFileCpi {
             "this adaptor cannot deal with local files");
         }
         
+        prefs = gatContext.getPreferences();
+        prefs.put("gridftp.mode", "eblock");
         try {
-            ftpClient = (GridFTPClient) GridFTPFileAdaptor.doWorkCreateClient(gatContext, null, location);
-        } catch (InvalidUsernameOrPasswordException e) {
+            ftpClient = (GridFTPClient) GridFTPFileAdaptor.doWorkCreateClient(gatContext, prefs, location);
+            ftpClient.setMode(GridFTPSession.MODE_EBLOCK);
+        } catch(GATInvocationException e) {
+            throw e;
+        } catch(Throwable e) {
             throw new GATObjectCreationException("Could not create ftp client");
         }
         
@@ -74,7 +81,7 @@ public class GridFTPRandomAccessFileAdaptor extends RandomAccessFileCpi {
                 size = ftpClient.getSize(path);
             } else if ("rw".equals(mode) || "rws".equals(mode) || "rwd".equals(mode)) {
                 if (! exists) {
-                    GlobusFileAdaptor.setActiveOrPassive(ftpClient, gatContext.getPreferences());
+                    GlobusFileAdaptor.setActiveOrPassive(ftpClient, prefs);
                     ftpClient.put(path, GlobusFileAdaptor.emptySource, null);
                     if (gatContext.getPreferences().containsKey("file.chmod")) {
                         GlobusFileAdaptor.chmod(ftpClient, path, gatContext);
@@ -90,7 +97,7 @@ public class GridFTPRandomAccessFileAdaptor extends RandomAccessFileCpi {
         } catch (Throwable e) {
             logger.debug("Could not open file", e);
             try {
-                GridFTPFileAdaptor.doWorkDestroyClient(ftpClient, location, gatContext.getPreferences());
+                GridFTPFileAdaptor.doWorkDestroyClient(ftpClient, location, prefs);
             } catch (Throwable e1) {
                 // ignored
             }   
@@ -102,7 +109,7 @@ public class GridFTPRandomAccessFileAdaptor extends RandomAccessFileCpi {
     public void close() throws GATInvocationException {
         closed = true;
         try {
-            GridFTPFileAdaptor.doWorkDestroyClient(ftpClient, location, gatContext.getPreferences());
+            GridFTPFileAdaptor.doWorkDestroyClient(ftpClient, location, prefs);
         } catch (Throwable e1) {
             logger.debug("GlobusRandomAccessFileAdaptor.close()", e1);
             // ignored
@@ -147,7 +154,7 @@ public class GridFTPRandomAccessFileAdaptor extends RandomAccessFileCpi {
            
         MyDataSink sink = new MyDataSink(buf, off, len, currentPos);
         try {
-            GlobusFileAdaptor.setActiveOrPassive(ftpClient, gatContext.getPreferences());
+            GlobusFileAdaptor.setActiveOrPassive(ftpClient, prefs);
             ftpClient.extendedGet(path, currentPos, len, sink, null);
         } catch(Throwable e) {
             throw new GATInvocationException("read failed", e);
@@ -192,7 +199,7 @@ public class GridFTPRandomAccessFileAdaptor extends RandomAccessFileCpi {
         
         MyDataSource source = new MyDataSource(buf, off, len, currentPos);
         try {
-            GlobusFileAdaptor.setActiveOrPassive(ftpClient, gatContext.getPreferences());
+            GlobusFileAdaptor.setActiveOrPassive(ftpClient, prefs);
             ftpClient.extendedPut(path, currentPos, source, null);
         } catch(Throwable e) {
             throw new GATInvocationException("read failed", e);
