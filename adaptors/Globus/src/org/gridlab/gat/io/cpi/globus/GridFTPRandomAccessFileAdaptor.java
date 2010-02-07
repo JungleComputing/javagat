@@ -20,7 +20,7 @@ public class GridFTPRandomAccessFileAdaptor extends RandomAccessFileCpi {
     
     public static Preferences getSupportedPreferences() {
         Preferences p = RandomAccessFileCpi.getSupportedPreferences();
-        p.put("ftp.connection.passive", "false");
+
         p.put("ftp.server.old", "false");
         p.put("ftp.server.noauthentication", "false");
         p.put("file.chmod", "<default is target umask>");
@@ -33,7 +33,9 @@ public class GridFTPRandomAccessFileAdaptor extends RandomAccessFileCpi {
     
     protected static Logger logger = LoggerFactory.getLogger(GridFTPRandomAccessFileAdaptor.class);
     
-    private GridFTPClient ftpClient;
+    private GridFTPClient writeFtpClient = null;
+    
+    private GridFTPClient readFtpClient = null;
     
     private long currentPos;
     
@@ -45,7 +47,9 @@ public class GridFTPRandomAccessFileAdaptor extends RandomAccessFileCpi {
     
     private final String path;
     
-    private final Preferences prefs;
+    private Preferences writePrefs = null;
+    
+    private Preferences readPrefs = null;
     
     public GridFTPRandomAccessFileAdaptor(GATContext gatContext, URI location,
             String mode) throws GATObjectCreationException, GATInvocationException {
@@ -58,11 +62,14 @@ public class GridFTPRandomAccessFileAdaptor extends RandomAccessFileCpi {
             "this adaptor cannot deal with local files");
         }
         
-        prefs = gatContext.getPreferences();
-        prefs.put("gridftp.mode", "eblock");
+        readPrefs = gatContext.getPreferences();
+        readPrefs.put("gridftp.mode", "eblock");
+        readPrefs.put("ftp.connection.passive", "false");
+    
         try {
-            ftpClient = (GridFTPClient) GridFTPFileAdaptor.doWorkCreateClient(gatContext, prefs, location);
-            ftpClient.setMode(GridFTPSession.MODE_EBLOCK);
+            readFtpClient = (GridFTPClient)  GridFTPFileAdaptor.doWorkCreateClient(gatContext, readPrefs, location);
+            readFtpClient.setMode(GridFTPSession.MODE_EBLOCK);
+            GlobusFileAdaptor.setActiveOrPassive(readFtpClient, readPrefs);
         } catch(GATInvocationException e) {
             throw e;
         } catch(Throwable e) {
@@ -72,46 +79,59 @@ public class GridFTPRandomAccessFileAdaptor extends RandomAccessFileCpi {
         path = location.getPath();
         
         try {
-            boolean exists = ftpClient.exists(path);
+            boolean exists = readFtpClient.exists(path);
             if ("r".equals(mode)) {
                 if (! exists) {
                     throw new GATInvocationException("file does not exist");
                 }
                 readOnly = true;
-                size = ftpClient.getSize(path);
+                size = readFtpClient.getSize(path);
             } else if ("rw".equals(mode) || "rws".equals(mode) || "rwd".equals(mode)) {
+                
+                writePrefs = gatContext.getPreferences();
+                writePrefs.put("gridftp.mode", "eblock");
+                writePrefs.put("ftp.connection.passive", "true");
+                
+                writeFtpClient = (GridFTPClient) GridFTPFileAdaptor.doWorkCreateClient(gatContext, writePrefs, location);
+                
                 if (! exists) {
-                    GlobusFileAdaptor.setActiveOrPassive(ftpClient, prefs);
-                    ftpClient.put(path, GlobusFileAdaptor.emptySource, null);
+                    GlobusFileAdaptor.setActiveOrPassive(writeFtpClient, writePrefs);
+                    writeFtpClient.put(path, GlobusFileAdaptor.emptySource, null);
                     if (gatContext.getPreferences().containsKey("file.chmod")) {
-                        GlobusFileAdaptor.chmod(ftpClient, path, gatContext);
+                        GlobusFileAdaptor.chmod(writeFtpClient, path, gatContext);
                     }                   
                     size = 0;
                 } else {
-                    size = ftpClient.getSize(path);
+                    size = writeFtpClient.getSize(path);
                 }
+                writeFtpClient.setMode(GridFTPSession.MODE_EBLOCK);
+                GlobusFileAdaptor.setActiveOrPassive(writeFtpClient, writePrefs);
                 readOnly = false;
             } else {
                 throw new GATObjectCreationException("Illegal mode: " + mode);
             }
         } catch (Throwable e) {
             logger.debug("Could not open file", e);
-            try {
-                GridFTPFileAdaptor.doWorkDestroyClient(ftpClient, location, prefs);
-            } catch (Throwable e1) {
-                // ignored
-            }   
+            close();
             throw new GATObjectCreationException("Could not open file", e);
         }
         currentPos = 0;
     }
     
-    public void close() throws GATInvocationException {
+    public void close() {
         closed = true;
         try {
-            GridFTPFileAdaptor.doWorkDestroyClient(ftpClient, location, prefs);
-        } catch (Throwable e1) {
-            logger.debug("GlobusRandomAccessFileAdaptor.close()", e1);
+            if (writeFtpClient != null) {
+                GridFTPFileAdaptor.doWorkDestroyClient(writeFtpClient, location, writePrefs);
+            }
+        } catch (Throwable e) {
+            logger.debug("GlobusRandomAccessFileAdaptor.close()", e);
+            // ignored
+        }
+        try {
+            GridFTPFileAdaptor.doWorkDestroyClient(readFtpClient, location, readPrefs);
+        } catch (Throwable e) {
+            logger.debug("GlobusRandomAccessFileAdaptor.close()", e);
             // ignored
         }
     }
@@ -152,10 +172,10 @@ public class GridFTPRandomAccessFileAdaptor extends RandomAccessFileCpi {
             len = (int)(size - currentPos);
         } 
            
-        MyDataSink sink = new MyDataSink(buf, off, len, currentPos);
+        MyDataSink sink = new MyDataSink(buf, off, len);
         try {
-            GlobusFileAdaptor.setActiveOrPassive(ftpClient, prefs);
-            ftpClient.extendedGet(path, currentPos, len, sink, null);
+            // GlobusFileAdaptor.setActiveOrPassive(readFtpClient, readPrefs);
+            readFtpClient.extendedGet(path, currentPos, len, sink, null);
         } catch(Throwable e) {
             throw new GATInvocationException("read failed", e);
         }
@@ -197,10 +217,10 @@ public class GridFTPRandomAccessFileAdaptor extends RandomAccessFileCpi {
             throw new IndexOutOfBoundsException("write: illegal parameters");
         }
         
-        MyDataSource source = new MyDataSource(buf, off, len, currentPos);
+        MyDataSource source = new MyDataSource(buf, off, len);
         try {
-            GlobusFileAdaptor.setActiveOrPassive(ftpClient, prefs);
-            ftpClient.extendedPut(path, currentPos, source, null);
+            // GlobusFileAdaptor.setActiveOrPassive(writeFtpClient, writePrefs);
+            writeFtpClient.extendedPut(path, currentPos, source, null);
         } catch(Throwable e) {
             throw new GATInvocationException("read failed", e);
         }
@@ -216,13 +236,11 @@ public class GridFTPRandomAccessFileAdaptor extends RandomAccessFileCpi {
         int off;
         int len;
         int writtenLen = 0;
-        long fileOffset;
         
-        MyDataSink(byte[] buf, int off, int len, long fileOffset) {
+        MyDataSink(byte[] buf, int off, int len) {
             this.buf = buf;
             this.off = off;
             this.len = len;
-            this.fileOffset = fileOffset;
         }
 
         public void close() throws IOException {
@@ -230,16 +248,15 @@ public class GridFTPRandomAccessFileAdaptor extends RandomAccessFileCpi {
         }
 
         public void write(Buffer buffer) throws IOException {
-            if (logger.isDebugEnabled()) {
-                
-            }
-            byte[] b = buffer.getBuffer();
+             byte[] b = buffer.getBuffer();
             int l = buffer.getLength();
             long o = buffer.getOffset();
             if (logger.isDebugEnabled()) {
-                logger.debug("Read buffer, len = " + l + ", fileOffset = " + o);
+                logger.debug("Read buffer, b.length = " + b.length + ", l = " + l + ", o = " + o);
+                logger.debug("buf.length = " + buf.length + ", off = " + off
+                        + ", len = " + len);
             }
-            System.arraycopy(b, 0, buf, (int)(o - fileOffset), l);
+            System.arraycopy(b, 0, buf, off + (int) o, l);
             synchronized(this) {
                 writtenLen += l;
             }
@@ -254,13 +271,13 @@ public class GridFTPRandomAccessFileAdaptor extends RandomAccessFileCpi {
 
         Buffer buffer;
         
-        MyDataSource(byte[] buf, int off, int len, long fileOffset) {
+        MyDataSource(byte[] buf, int off, int len) {
             if (off != 0) {
                 byte[] b = new byte[len];
                 System.arraycopy(buf, off, b, 0, len);
                 buf = b;
             }
-            buffer = new Buffer(buf, len, fileOffset);
+            buffer = new Buffer(buf, len, 0);
         }
         
         public void close() throws IOException {
