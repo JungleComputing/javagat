@@ -76,7 +76,7 @@ public class Wrapper {
     
     private String triggerDirectory;
     
-    private String sandboxExtra;
+    private String sandboxCommon;
     
     private String sandboxPath;
 
@@ -98,6 +98,9 @@ public class Wrapper {
 
     @SuppressWarnings("unchecked")
     public void start(String[] args) throws Exception {
+        
+        String sandboxCommonTrigger;
+        
         if (logger.isDebugEnabled()) {
             logger.debug("Starting JavaGAT Wrapper Application");
         }
@@ -106,7 +109,8 @@ public class Wrapper {
         this.initiator = (URI) in.readObject();
         int level = in.readInt();
         wrapperId = in.readInt();
-        sandboxExtra = (String) in.readObject();
+        sandboxCommon = (String) in.readObject();
+        sandboxCommonTrigger = (String) in.readObject();
         triggerDirectory = (String) in.readObject();      
         scheduledType = (ScheduledType) in.readObject();       
         List<WrappedJobInfo> infos = (List<WrappedJobInfo>) in.readObject();
@@ -133,18 +137,21 @@ public class Wrapper {
         File sandbox = GAT.createFile(preferences, ".");
         sandboxPath = sandbox.getAbsolutePath();
         
-        if (sandboxExtra != null) {
-            sandboxExtra = sandboxExtra + java.io.File.separator
+        String triggerDirURI = rewriteURI(new URI(triggerDirectory), initiator).toString();
+        if (infos.size() != 0 && sandboxCommon != null) {
+            sandboxCommon = sandboxCommon + java.io.File.separator
                     + ".JavaGAT_SANDBOX_" + Math.random();
-            java.io.File sandboxCopyFile = new java.io.File(sandboxExtra);
+            java.io.File sandboxCopyFile = new java.io.File(sandboxCommon);
             if (! sandboxCopyFile.mkdirs()) {
-                throw new Exception("Could not create extra sandbox directory " + sandboxExtra);
+                throw new Exception("Could not create extra sandbox directory " + sandboxCommon);
             }
-            sandboxExtra = sandboxCopyFile.getPath();
-            sandbox.copy(new URI(sandboxExtra));
+            sandboxCommon = sandboxCopyFile.getPath();
+            if ("true".equals(sandboxCommonTrigger)) {                
+                waitForTrigger(infos.get(0).getPreferences());
+            }
+            sandbox.copy(new URI(sandboxCommon));
         }
 
-        String triggerDirURI = rewriteURI(new URI(triggerDirectory), initiator).toString();
         for (int i = 0; i < infos.size(); i++) {
             WrappedJobInfo info = infos.get(i);
             if (scheduledType == ScheduledType.COORDINATED) {
@@ -167,11 +174,53 @@ public class Wrapper {
         if (logger.isDebugEnabled()) {
             logger.debug("DONE!");
         }
-        if (sandboxExtra != null) {
-            File sandboxCopyFile = GAT.createFile(preferences, sandboxExtra);
+        if (sandboxCommon != null) {
+            File sandboxCopyFile = GAT.createFile(preferences, sandboxCommon);
             sandboxCopyFile.recursivelyDeleteDirectory();
         }
     }
+    
+    void waitForTrigger(Preferences preferences) {
+        
+        if (triggerDirectory == null) {
+            return;
+        }
+
+        File file;
+        try {
+            file = GAT.createFile(preferences, new URI(triggerDirectory + "/SandboxCopy." + 
+                    + wrapperId));
+        } catch (Throwable e) {
+            logger.warn("Could not wait for trigger", e);
+            return;
+        }
+
+        long interval = 500;
+        int  maxcount = 64;
+        int count = 0;
+        
+        for (;;) {
+            if (file.exists()) {
+                break;
+            }
+            try {
+                Thread.sleep(interval);
+            } catch(InterruptedException e) {
+                // ignored
+            }
+            count++;
+            if (count == maxcount) {
+                // back-off a bit.
+                if (interval < 8000) {
+                    maxcount += maxcount;
+                    interval += interval;
+                }
+                count = 0;
+            }
+        }
+        file.delete();
+    }
+
 
     private AbstractJobDescription modify(Preferences prefs,
             AbstractJobDescription description, URI origin, int id) {
@@ -180,14 +229,14 @@ public class Wrapper {
         }
         JobDescription jobDescription = (JobDescription) description;
 
-        if (sandboxExtra != null) {
+        if (sandboxCommon != null) {
             Map<String, Object> env = jobDescription.getSoftwareDescription().getEnvironment();
             if (env == null) {
                 env = new HashMap<String, Object>();
                 jobDescription.getSoftwareDescription().setEnvironment(env);
                 env = jobDescription.getSoftwareDescription().getEnvironment();
             }
-            env.put(WRAPPER_SANDBOX_COPY_ENV_NAME, sandboxExtra);
+            env.put(WRAPPER_SANDBOX_COPY_ENV_NAME, sandboxCommon);
         }
         
         Map<File, File> preStaged = jobDescription.getSoftwareDescription().getPreStaged();

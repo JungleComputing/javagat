@@ -42,13 +42,24 @@ public class WrapperJobDescription extends JobDescription {
      * the wrapper sandbox. This copy should be on the machine on which
      * the wrapper runs. This may be useful for wrapped jobs which may all
      * need common files. Using sandbox.common, these common files can be
-     * staged-in once instead of for each wrapped job.
+     * copied to the wrapped-job node once instead of for each wrapped job.
      * The actual location of the sandbox (which is a directory inside
      * the sandbox.common directory) is made available to the wrapped jobs
      * by means of an environment variable <code>WRAPPER_COMMON_SANDBOX</code>.
      */
+    
     public static final String SANDBOX_COMMON = "sandbox.common";
 
+    /** The copying of the wrapper sandbox can be coordinated, in which
+     * case the attribute "sandbox.common.trigger" should be set to
+     * "true". In that case, the trigger directory is used for trigger files
+     * with the name "SandboxCopy_WRAPPERNO", where WRAPPERNO stands for the
+     * wrapper number. The existence of this file will enable wrapper WRAPPERNO
+     * to copy its sandbox and continue the run. It is up to the JavaGAT application
+     * to produce the trigger files.
+     */
+    public static final String SANDBOX_COMMON_TRIGGER = "sandbox.common.trigger";
+    
     /**
      * This object contains all the information necessary to describe a wrapped
      * {@link Job}.
@@ -345,6 +356,8 @@ public class WrapperJobDescription extends JobDescription {
             out.writeInt(wrapperJobIndex);
             String sandboxCopy = (String) softwareDescription.getAttributes().get(SANDBOX_COMMON);
             out.writeObject(sandboxCopy);
+            String sandboxTrigger = (String) softwareDescription.getAttributes().get(SANDBOX_COMMON_TRIGGER);
+            out.writeObject(sandboxTrigger);
             synchronized (WrapperJobDescription.class) {
                 if (triggerDirectory == null) {
                     triggerDirectory = System.getProperty("user.dir");
