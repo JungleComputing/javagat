@@ -146,8 +146,18 @@ public class Wrapper {
                 throw new Exception("Could not create extra sandbox directory " + sandboxCommon);
             }
             sandboxCommon = sandboxCopyFile.getPath();
-            if ("true".equals(sandboxCommonTrigger)) {                
-                waitForTrigger(infos.get(0).getPreferences());
+            if ("true".equals(sandboxCommonTrigger)) {
+                File file = null;
+                try {
+                    file = GAT.createFile(preferences, new URI(triggerDirURI + "/SandboxCopy." + 
+                            + wrapperId));
+                } catch (Throwable e) {
+                    logger.warn("Could not wait for trigger", e);
+                }
+
+                if (file != null) {
+                    waitForTrigger(file);
+                }
             }
             sandbox.copy(new URI(sandboxCommon));
         }
@@ -180,19 +190,14 @@ public class Wrapper {
         }
     }
     
-    void waitForTrigger(Preferences preferences) {
+    void waitForTrigger(File file) {
         
         if (triggerDirectory == null) {
             return;
         }
 
-        File file;
-        try {
-            file = GAT.createFile(preferences, new URI(triggerDirectory + "/SandboxCopy." + 
-                    + wrapperId));
-        } catch (Throwable e) {
-            logger.warn("Could not wait for trigger", e);
-            return;
+        if (logger.isDebugEnabled()) {
+            logger.debug("Waiting for trigger " + file.toGATURI());
         }
 
         long interval = 500;
