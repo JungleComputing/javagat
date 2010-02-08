@@ -53,7 +53,7 @@ public class WrapperJobDescription extends JobDescription {
     /** The copying of the wrapper sandbox can be coordinated, in which
      * case the attribute "sandbox.common.trigger" should be set to
      * "true". In that case, the trigger directory is used for trigger files
-     * with the name "SandboxCopy.WRAPPERNO", where WRAPPERNO stands for the
+     * with the name "SandboxCommonTrigger.WRAPPERNO", where WRAPPERNO stands for the
      * wrapper number. The existence of this file will enable wrapper WRAPPERNO
      * to copy its sandbox and continue the run. It is up to the JavaGAT application
      * to produce the trigger files.

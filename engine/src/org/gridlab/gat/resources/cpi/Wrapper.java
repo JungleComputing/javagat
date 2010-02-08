@@ -149,7 +149,7 @@ public class Wrapper {
             if ("true".equals(sandboxCommonTrigger)) {
                 File file = null;
                 try {
-                    file = GAT.createFile(infos.get(0).getPreferences(), new URI(triggerDirURI + "/SandboxCopy." + 
+                    file = GAT.createFile(infos.get(0).getPreferences(), new URI(triggerDirURI + "/SandboxCommonTrigger." + 
                             + wrapperId));
                 } catch (Throwable e) {
                     logger.warn("Could not wait for trigger", e);
