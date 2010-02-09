@@ -67,7 +67,7 @@ public class GridFTPRandomAccessFileAdaptor extends RandomAccessFileCpi {
         readPrefs.put("ftp.connection.passive", "false");
     
         try {
-            readFtpClient = (GridFTPClient)  GridFTPFileAdaptor.doWorkCreateClient(gatContext, readPrefs, location);
+            readFtpClient = GridFTPFileAdaptor.doWorkCreateClient(gatContext, readPrefs, location);
             readFtpClient.setMode(GridFTPSession.MODE_EBLOCK);
             GlobusFileAdaptor.setActiveOrPassive(readFtpClient, readPrefs);
         } catch(GATInvocationException e) {
@@ -92,7 +92,7 @@ public class GridFTPRandomAccessFileAdaptor extends RandomAccessFileCpi {
                 writePrefs.put("gridftp.mode", "eblock");
                 writePrefs.put("ftp.connection.passive", "true");
                 
-                writeFtpClient = (GridFTPClient) GridFTPFileAdaptor.doWorkCreateClient(gatContext, writePrefs, location);
+                writeFtpClient = GridFTPFileAdaptor.doWorkCreateClient(gatContext, writePrefs, location);
                 
                 if (! exists) {
                     GlobusFileAdaptor.setActiveOrPassive(writeFtpClient, writePrefs);
