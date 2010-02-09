@@ -1,12 +1,14 @@
 package org.gridlab.gat.io.cpi.globus;
 
 import java.io.IOException;
+import java.util.LinkedList;
 
 import org.globus.ftp.Buffer;
 import org.globus.ftp.DataSink;
 import org.globus.ftp.DataSource;
 import org.globus.ftp.GridFTPClient;
 import org.globus.ftp.GridFTPSession;
+import org.globus.ftp.RetrieveOptions;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.GATObjectCreationException;
@@ -33,6 +35,18 @@ public class GridFTPRandomAccessFileAdaptor extends RandomAccessFileCpi {
     
     protected static Logger logger = LoggerFactory.getLogger(GridFTPRandomAccessFileAdaptor.class);
     
+    private static final int NEW = 0;
+    
+    private static final int CLOSED = 1;
+    
+    private static final int READING = 2;
+    
+    private static final int WRITING = 3;
+    
+    private static final int SEEKING = 4;
+    
+    private int state = NEW;
+    
     private GridFTPClient writeFtpClient = null;
     
     private GridFTPClient readFtpClient = null;
@@ -41,8 +55,6 @@ public class GridFTPRandomAccessFileAdaptor extends RandomAccessFileCpi {
     
     private long size;
     
-    private boolean closed = false;
-    
     private final boolean readOnly; 
     
     private final String path;
@@ -50,6 +62,8 @@ public class GridFTPRandomAccessFileAdaptor extends RandomAccessFileCpi {
     private Preferences writePrefs = null;
     
     private Preferences readPrefs = null;
+    
+    private DataWriter dataWriter = null;
     
     public GridFTPRandomAccessFileAdaptor(GATContext gatContext, URI location,
             String mode) throws GATObjectCreationException, GATInvocationException {
@@ -69,6 +83,8 @@ public class GridFTPRandomAccessFileAdaptor extends RandomAccessFileCpi {
         try {
             readFtpClient = GridFTPFileAdaptor.doWorkCreateClient(gatContext, readPrefs, location);
             readFtpClient.setMode(GridFTPSession.MODE_EBLOCK);
+            readFtpClient.setType(GridFTPSession.TYPE_IMAGE);
+            readFtpClient.setOptions(new RetrieveOptions(1));
             GlobusFileAdaptor.setActiveOrPassive(readFtpClient, readPrefs);
         } catch(GATInvocationException e) {
             throw e;
@@ -105,6 +121,8 @@ public class GridFTPRandomAccessFileAdaptor extends RandomAccessFileCpi {
                     size = writeFtpClient.getSize(path);
                 }
                 writeFtpClient.setMode(GridFTPSession.MODE_EBLOCK);
+                writeFtpClient.setType(GridFTPSession.TYPE_IMAGE);
+                writeFtpClient.setOptions(new RetrieveOptions(1));
                 GlobusFileAdaptor.setActiveOrPassive(writeFtpClient, writePrefs);
                 readOnly = false;
             } else {
@@ -119,7 +137,10 @@ public class GridFTPRandomAccessFileAdaptor extends RandomAccessFileCpi {
     }
     
     public void close() {
-        closed = true;
+        if (state == WRITING) {
+            dataWriter.finish();
+        }
+        state = CLOSED;
         try {
             if (writeFtpClient != null) {
                 GridFTPFileAdaptor.doWorkDestroyClient(writeFtpClient, location, writePrefs);
@@ -145,17 +166,21 @@ public class GridFTPRandomAccessFileAdaptor extends RandomAccessFileCpi {
     }
     
     public void seek(long arg0) throws GATInvocationException {
-        if (closed) {
+        if (state == CLOSED) {
             throw new GATInvocationException("seek: file is closed");
         }
         if (arg0 < 0) {
             throw new GATInvocationException("seek: arg < 0");
         }
+        if (state == WRITING) {
+            dataWriter.finish();
+        }
+        state = SEEKING;
         currentPos = arg0;
     }
     
     public int read(byte[] buf, int off, int len) throws GATInvocationException {
-        if (closed) {
+        if (state == CLOSED) {
             throw new GATInvocationException("read: file is closed");
         }
         if (len == 0) {
@@ -171,7 +196,10 @@ public class GridFTPRandomAccessFileAdaptor extends RandomAccessFileCpi {
         if (len > size - currentPos) {
             len = (int)(size - currentPos);
         } 
-           
+        if (state == WRITING) {
+            dataWriter.finish();
+        }
+        state = READING;
         MyDataSink sink = new MyDataSink(buf, off, len);
         try {
             // GlobusFileAdaptor.setActiveOrPassive(readFtpClient, readPrefs);
@@ -185,7 +213,7 @@ public class GridFTPRandomAccessFileAdaptor extends RandomAccessFileCpi {
     }
     
     public int skipBytes(int len) throws GATInvocationException {
-        if (closed) {
+        if (state == CLOSED) {
             throw new GATInvocationException("skipBytes: file is closed");
         }
         if (len <= 0) {
@@ -196,15 +224,17 @@ public class GridFTPRandomAccessFileAdaptor extends RandomAccessFileCpi {
                 return 0;
             }
             len = (int)(size - currentPos);
-            currentPos = size;
-            return len;
         }
+        if (state == WRITING) {
+            dataWriter.finish();
+        }
+        state = SEEKING;
         currentPos += len;
         return len;
     }
        
     public void write(byte[] buf, int off, int len) throws GATInvocationException {
-        if (closed) {
+        if (state == CLOSED) {
             throw new GATInvocationException("write: file is closed");
         }
         if (readOnly) {
@@ -216,13 +246,15 @@ public class GridFTPRandomAccessFileAdaptor extends RandomAccessFileCpi {
         if (len < 0 || off + len > buf.length) {
             throw new IndexOutOfBoundsException("write: illegal parameters");
         }
-        
-        MyDataSource source = new MyDataSource(buf, off, len);
-        try {
-            // GlobusFileAdaptor.setActiveOrPassive(writeFtpClient, writePrefs);
-            writeFtpClient.extendedPut(path, currentPos, source, null);
-        } catch(Throwable e) {
-            throw new GATInvocationException("read failed", e);
+        if (state != WRITING) {
+            dataWriter = new DataWriter(writeFtpClient, currentPos, path);
+        }
+        state = WRITING;
+        dataWriter.add(buf, off, len);
+        Throwable e = dataWriter.waitForEmptyList();
+        if (e != null) {
+            dataWriter.finish();
+            throw new GATInvocationException("write failed", e);
         }
         currentPos += len;     
         if (currentPos > size) {
@@ -248,7 +280,7 @@ public class GridFTPRandomAccessFileAdaptor extends RandomAccessFileCpi {
         }
 
         public void write(Buffer buffer) throws IOException {
-             byte[] b = buffer.getBuffer();
+            byte[] b = buffer.getBuffer();
             int l = buffer.getLength();
             long o = buffer.getOffset();
             if (logger.isDebugEnabled()) {
@@ -266,28 +298,112 @@ public class GridFTPRandomAccessFileAdaptor extends RandomAccessFileCpi {
             return writtenLen;
         }
     }
+  
     
-    private static class MyDataSource implements DataSource {
+    private static class DataWriter implements DataSource, Runnable {
 
-        Buffer buffer;
+        private LinkedList<Buffer> list = new LinkedList<Buffer>();
         
-        MyDataSource(byte[] buf, int off, int len) {
-            if (off != 0) {
-                byte[] b = new byte[len];
-                System.arraycopy(buf, off, b, 0, len);
-                buf = b;
+        private final GridFTPClient client;
+        
+        private long offset = 0;
+        
+        private final long baseOffset;
+
+        private boolean finished = false;
+        
+        private boolean done = false;
+        
+        private final String fileName;
+        
+        private Throwable exception = null;
+        
+        private boolean readerWaiting = false;
+        
+        public DataWriter(GridFTPClient client, long baseOffset, String fileName) {
+            this.client = client;
+            this.baseOffset = baseOffset;
+            this.fileName = fileName;
+            Thread t = new Thread(this);
+            t.setDaemon(true);
+            t.start();
+        }
+
+        public void add(byte[] buf, int off, int len) {
+
+            // Copy, because we don't know when we can touch the buffer again.
+            byte[] b = new byte[len];
+            System.arraycopy(buf, off, b, 0, len);
+
+            synchronized(this) {
+                Buffer buffer = new Buffer(b, len, offset);
+                offset += len;
+                list.add(buffer);
+                notifyAll();
             }
-            buffer = new Buffer(buf, len, 0);
         }
         
-        public void close() throws IOException {
-            // No resources to remove.
+        public synchronized Throwable waitForEmptyList() {
+            // Wait until client is ready to read the next buffer. Can we get
+            // closer to actually knowing that the buffer is written?
+            while (! finished && ! readerWaiting) {
+                try {
+                    wait();
+                } catch (InterruptedException e) {
+                    // ignored
+                }
+            }
+            return getException();
+        }
+        
+        public synchronized void finish() {
+            finished = true;
+            notifyAll();
+            while (! done) {
+                try {
+                    wait();
+                } catch (InterruptedException e) {
+                    // ignored
+                }
+            }
+        }
+
+        public void close() {
         }
 
         public synchronized Buffer read() throws IOException {
-            Buffer b = buffer;
-            buffer = null;
-            return b;
+            while (! finished && list.isEmpty()) {
+                readerWaiting = true;
+                notifyAll();
+                try {
+                    wait();
+                } catch(InterruptedException e) {
+                    // ignored
+                }
+                readerWaiting = false;
+            }
+            if (! list.isEmpty()) {
+                return list.remove();
+            }
+            return null;
+        }
+        
+        public synchronized Throwable getException() {
+            return exception;
+        }
+
+        public void run() {
+            try {
+                client.extendedPut(fileName, baseOffset, this, null);
+            } catch(Throwable e) {
+                synchronized(this) {
+                    exception = e;
+                }
+            }
+            synchronized(this) {
+                done = true;
+                notifyAll();
+            }
         }
     }
 }
