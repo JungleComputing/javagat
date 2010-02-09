@@ -51,6 +51,16 @@ public class RandomAccessFileAdaptorTest {
                 preferences, randomAccessFile, 0));
         adaptorTestResult.put("read              ", readTest(gatContext,
                 preferences, randomAccessFile, "lorem ipsum"));
+        adaptorTestResult.put("write 'lorem ipsum' 2", writeTest(gatContext,
+                preferences, randomAccessFile, "lorem ipsum"));
+        adaptorTestResult.put("length after write 2", lengthTest(gatContext,
+                preferences, randomAccessFile, 26));
+        adaptorTestResult.put("seek 2              ", seekTest(gatContext,
+                preferences, randomAccessFile, 0));
+        adaptorTestResult.put("read 2              ", readTest(gatContext,
+                preferences, randomAccessFile, "lorem ipsum"));
+        adaptorTestResult.put("read 3              ", readTest(gatContext,
+                preferences, randomAccessFile, "lorem ipsum"));
 
         return adaptorTestResult;
 
