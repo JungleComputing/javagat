@@ -210,7 +210,7 @@ public class WSGT4newJob extends JobCpi implements GramJobListener {
 	}
 
 	public synchronized int getExitStatus() throws GATInvocationException {
-		if (getState() != JobState.STOPPED && getState() != JobState.SUBMISSION_ERROR) {
+		if (getState() != JobState.DONE_FAILURE && getState() != JobState.DONE_SUCCESS && getState() != JobState.SUBMISSION_ERROR) {
 			throw new GATInvocationException("exit status not yet available");
 		}
 		return exitStatus;
@@ -294,24 +294,18 @@ public class WSGT4newJob extends JobCpi implements GramJobListener {
 				logger.debug(errorMessage, e);
 			}
 		}
+		
 		if (jobState.equals(StateEnumeration.Pending)) {
 			setState(JobState.SCHEDULED);
 		} else if (jobState.equals(StateEnumeration.Active)) {
 			setStartTime();
 			setState(JobState.RUNNING);
 		} else if (jobState.equals(StateEnumeration.CleanUp)) {
-			// setState(POST_STAGING);
-			// sandbox.retrieveAndCleanup(this);
-			// setState(STOPPED);
-			// setStopTime();
+			//Do nothing			
 		} else if (jobState.equals(StateEnumeration.Done)) {
-			// setState(JobState.POST_STAGING);
-			// sandbox.retrieveAndCleanup(this);
-			setState(JobState.STOPPED);
+			setState(JobState.DONE_SUCCESS);
 			setStopTime();
 		} else if (jobState.equals(StateEnumeration.Failed)) {
-			// setState(JobState.POST_STAGING);
-			// sandbox.retrieveAndCleanup(this);
 			setState(JobState.SUBMISSION_ERROR);
 		} else if (jobState.equals(StateEnumeration.StageIn)) {
 			setState(JobState.PRE_STAGING);

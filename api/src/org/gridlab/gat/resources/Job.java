@@ -147,7 +147,7 @@ public interface Job extends Monitorable, Advertisable {
          * The {@link Job} hasn't properly run. All the cleanup and
          * administration of the {@link Job} is completely done.
          */
-        SUBMISSION_ERROR,
+        SUBMISSION_ERROR,      
         /**
          * The {@link Job} has been paused.
          * 
@@ -166,7 +166,15 @@ public interface Job extends Monitorable, Advertisable {
          * The {@link Job} state is unknown for some reason. It might be a
          * network problem.
          */
-        UNKNOWN
+        UNKNOWN,
+        /**
+         * The {@link Job} has properly run.
+         */
+        DONE_SUCCESS,
+        /**
+         * The {@link Job} terminated with an error.
+         */
+        DONE_FAILURE
     };
 
     /**
