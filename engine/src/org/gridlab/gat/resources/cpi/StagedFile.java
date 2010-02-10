@@ -33,7 +33,7 @@ public abstract class StagedFile {
 
     private String resolvedDestURIString;
 
-    protected String host;
+    protected String authority;
 
     protected String sandbox;
 
@@ -46,12 +46,12 @@ public abstract class StagedFile {
     }
 
     public StagedFile(GATContext context, File origSrc, File origDest,
-            String host, String sandbox) {
+            String authority, String sandbox) {
         super();
         this.gatContext = context;
         this.origSrc = origSrc;
         this.origDest = origDest;
-        this.host = host;
+        this.authority = authority;
         this.sandbox = sandbox;
     }
 
@@ -73,14 +73,14 @@ public abstract class StagedFile {
             throws GATInvocationException {
         URI uri = f.toGATURI();
         logger.info("resolving uri: " + uri);
-        if (uri.getHost() == null || useNameOnly) {
+        if (uri.getAuthority() == null || useNameOnly) {
             try {
-                uri = uri.setHost(host);
+                uri = uri.setAuthority(authority);
             } catch (URISyntaxException e) {
                 throw new GATInvocationException("StageFile", e);
             }
         }
-        logger.info("host done: " + uri);
+        logger.info("authority done: " + uri);
         if (uri.getScheme() == null) {
             try {
                 uri = uri.setScheme("any");

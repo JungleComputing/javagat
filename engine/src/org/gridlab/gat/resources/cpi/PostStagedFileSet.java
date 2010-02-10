@@ -27,7 +27,7 @@ public class PostStagedFileSet {
 
     private JobDescription description;
 
-    private String host;
+    private String authority;
 
     private String sandbox;
 
@@ -42,11 +42,11 @@ public class PostStagedFileSet {
     }
 
     public PostStagedFileSet(GATContext gatContext, JobDescription description,
-            String host, String sandbox, boolean postStageStdout,
+            String authority, String sandbox, boolean postStageStdout,
             boolean postStageStderr) throws GATInvocationException {
         this.gatContext = gatContext;
         this.description = description;
-        this.host = host;
+        this.authority = authority;
         this.sandbox = sandbox;
         this.postStageStdout = postStageStdout;
         this.postStageStderr = postStageStderr;
@@ -59,9 +59,9 @@ public class PostStagedFileSet {
     }
 
     public PostStagedFileSet(GATContext gatContext, List<File> files,
-            String host, String sandbox) throws GATInvocationException {
-        this.gatContext = gatContext;
-        this.host = host;
+            String authority, String sandbox) throws GATInvocationException {
+        this.gatContext = gatContext; 
+        this.authority = authority;
         this.sandbox = sandbox;
 
         resolveFiles(files);
@@ -88,7 +88,7 @@ public class PostStagedFileSet {
                 File srcFile = i.next();
                 File destFile = post.get(srcFile);
 
-                tmp.add(new PostStagedFile(gatContext, srcFile, destFile, host,
+                tmp.add(new PostStagedFile(gatContext, srcFile, destFile, authority,
                         sandbox, false, false));
             }
         }
@@ -106,7 +106,7 @@ public class PostStagedFileSet {
         }
         if (resolvedStdout != null) {
             tmp.add(new PostStagedFile(gatContext, resolvedStdout, sd
-                    .getStdout(), host, sandbox, true, false));
+                    .getStdout(), authority, sandbox, true, false));
         }
 
         File resolvedStderr = null;
@@ -121,7 +121,7 @@ public class PostStagedFileSet {
         }
         if (resolvedStderr != null) {
             tmp.add(new PostStagedFile(gatContext, resolvedStderr, sd
-                    .getStderr(), host, sandbox, false, true));
+                    .getStderr(), authority, sandbox, false, true));
         }
 
         // }
@@ -133,7 +133,7 @@ public class PostStagedFileSet {
         // File f = GAT.createFile(gatContext, preferences, new URI(
         // "any:///" + stderr.getName()));
         // tmp.add(new PostStagedFile(gatContext, preferences, f, stderr,
-        // host, sandbox, false, true));
+        // authority, sandbox, false, true));
         // } catch (Exception e) {
         // throw new GATInvocationException("postStagedFileSet", e);
         // }
@@ -161,7 +161,7 @@ public class PostStagedFileSet {
         for (int i = 0; i < f.size(); i++) {
             File srcFile = f.get(i);
             files[startPos + i] = new PostStagedFile(gatContext, srcFile, null,
-                    host, sandbox, false, false);
+                    authority, sandbox, false, false);
         }
     }
 

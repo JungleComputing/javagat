@@ -24,9 +24,9 @@ public class PostStagedFile extends StagedFile {
     }
 
     public PostStagedFile(GATContext context, File origSrc, File origDest,
-            String host, String sandbox, boolean isStdOut, boolean isStderr)
+            String authority, String sandbox, boolean isStdOut, boolean isStderr)
             throws GATInvocationException {
-        super(context, origSrc, origDest, host, sandbox);
+        super(context, origSrc, origDest, authority, sandbox);
         this.isStdout = isStdOut;
         this.isStderr = isStderr;
         this.inSandbox = inSandbox(origSrc.getPath());

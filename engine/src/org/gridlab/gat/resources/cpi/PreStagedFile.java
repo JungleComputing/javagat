@@ -24,10 +24,10 @@ public class PreStagedFile extends StagedFile {
         // constructor needed for castor marshalling, do *not* use
     }
 
-    public PreStagedFile(GATContext context, File src, File dest, String host,
+    public PreStagedFile(GATContext context, File src, File dest, String authority,
             String sandbox, boolean isStdIn, String exe)
             throws GATInvocationException {
-        super(context, src, dest, host, sandbox);
+        super(context, src, dest, authority, sandbox);
 
         this.isStdIn = isStdIn;
         this.exe = exe;

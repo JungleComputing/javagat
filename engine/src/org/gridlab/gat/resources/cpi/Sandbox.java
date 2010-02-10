@@ -139,7 +139,7 @@ public class Sandbox {
         if (authority == null) {
             throw new FilePrestageException("Sandbox",
                     new GATInvocationException(
-                            "cannot create a sandbox without a host name"));
+                            "cannot create a sandbox without a authority"));
         }
 
         for (int i = 0; i < 10; i++) {

@@ -27,7 +27,7 @@ public class PreStagedFileSet {
 
     private JobDescription description;
 
-    private String host;
+    private String authority;
 
     private String sandbox;
 
@@ -55,11 +55,11 @@ public class PreStagedFileSet {
     }
 
     public PreStagedFileSet(GATContext gatContext, JobDescription description,
-            String host, String sandbox, boolean preStageStdin)
+            String authority, String sandbox, boolean preStageStdin)
             throws GATInvocationException {
         this.gatContext = gatContext;
         this.description = description;
-        this.host = host;
+        this.authority = authority;
         this.sandbox = sandbox;
         this.preStageStdin = preStageStdin;
 
@@ -94,7 +94,7 @@ public class PreStagedFileSet {
             while (i.hasNext()) {
                 File srcFile = i.next();
                 File destFile = pre.get(srcFile);
-                tmp.add(new PreStagedFile(gatContext, srcFile, destFile, host,
+                tmp.add(new PreStagedFile(gatContext, srcFile, destFile, authority,
                         sandbox, false, exe));
             }
         }
@@ -103,7 +103,7 @@ public class PreStagedFileSet {
             File stdin = sd.getStdin();
 
             if (stdin != null) {
-                tmp.add(new PreStagedFile(gatContext, stdin, null, host,
+                tmp.add(new PreStagedFile(gatContext, stdin, null, authority,
                         sandbox, true, exe));
             }
         }
@@ -113,7 +113,7 @@ public class PreStagedFileSet {
                 File wrapperInfoFile = ((WrapperJobDescription) description)
                         .getInfoFile(gatContext);
                 tmp.add(new PreStagedFile(gatContext, wrapperInfoFile,
-                        GAT.createFile(gatContext, "wrapper.info"), host, sandbox,
+                        GAT.createFile(gatContext, "wrapper.info"), authority, sandbox,
                         false, exe));
             } catch (GATObjectCreationException e) {
                 throw new GATInvocationException(
