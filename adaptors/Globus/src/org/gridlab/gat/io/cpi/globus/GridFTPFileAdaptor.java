@@ -382,6 +382,24 @@ public class GridFTPFileAdaptor extends GlobusFileAdaptor {
                 }
 
                 setConnectionOptions(client, gatContext.getPreferences());
+                tmp = (String) gatContext.getPreferences().get("ftp.clientwaitinterval");
+                int waitinterval = DEFAULT_WAIT_INTERVAL;
+                if (logger.isDebugEnabled()) {
+                    logger.debug("ftp.clientwaitinterval=" + tmp);
+                }
+                if ((tmp != null)) {
+                    try {
+                        waitinterval = Integer.parseInt(tmp);
+                    } catch (NumberFormatException e) {
+                        if (logger.isDebugEnabled()) {
+                            logger.debug("failed to parse value '" + tmp
+                                    + "' for key 'ftp.clientwaitinterval'");
+                        }
+                        waitinterval = DEFAULT_WAIT_INTERVAL;
+                    }
+                }
+
+                client.setClientWaitParams(30000, waitinterval);
 
                 if (logger.isDebugEnabled()) {
                     logger.debug("done");

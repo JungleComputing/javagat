@@ -1,7 +1,9 @@
 package org.gridlab.gat.io.cpi.globus;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.Map;
 
 import org.globus.ftp.Buffer;
 import org.globus.ftp.DataSink;
@@ -22,11 +24,25 @@ public class GridFTPRandomAccessFileAdaptor extends RandomAccessFileCpi {
     
     public static Preferences getSupportedPreferences() {
         Preferences p = RandomAccessFileCpi.getSupportedPreferences();
-
+        p.put("ftp.connection.protection", "<default taken from globus>");
         p.put("ftp.server.old", "false");
         p.put("ftp.server.noauthentication", "false");
         p.put("file.chmod", "<default is target umask>");
+        p.put("gridftp.authentication.retry", "0");
+        p.put("ftp.clientwaitinterval", "" + GlobusFileAdaptor.DEFAULT_WAIT_INTERVAL);
         return p;
+    }
+    
+    public static Map<String, Boolean> getSupportedCapabilities() {
+        Map<String, Boolean> capabilities = new HashMap<String, Boolean>();
+        capabilities.put("close", true);
+        capabilities.put("getFilePointer", true);
+        capabilities.put("length", true);
+        capabilities.put("read", true);
+        capabilities.put("seek", true);
+        capabilities.put("skipBytes", true);
+        capabilities.put("write", true);
+        return capabilities;
     }
     
     public static String[] getSupportedSchemes() {
@@ -201,11 +217,17 @@ public class GridFTPRandomAccessFileAdaptor extends RandomAccessFileCpi {
         }
         state = READING;
         MyDataSink sink = new MyDataSink(buf, off, len);
+        if (logger.isDebugEnabled()) {
+            logger.debug("Doing extendedGet ...");
+        }
         try {
             // GlobusFileAdaptor.setActiveOrPassive(readFtpClient, readPrefs);
             readFtpClient.extendedGet(path, currentPos, len, sink, null);
         } catch(Throwable e) {
             throw new GATInvocationException("read failed", e);
+        }
+        if (logger.isDebugEnabled()) {
+            logger.debug("ExtendedGet done");
         }
         len = sink.getSize();
         currentPos += len;

@@ -39,6 +39,8 @@ import org.gridlab.gat.io.cpi.FileCpi;
 
 @SuppressWarnings("serial")
 public abstract class GlobusFileAdaptor extends FileCpi {
+    
+    public static final int DEFAULT_WAIT_INTERVAL = 10;
 
     public static Preferences getSupportedPreferences() {
         Preferences p = FileCpi.getSupportedPreferences();
@@ -46,6 +48,7 @@ public abstract class GlobusFileAdaptor extends FileCpi {
         p.put("ftp.server.old", "false");
         p.put("ftp.server.noauthentication", "false");
         p.put("file.chmod", "<default is target umask>");
+        p.put("ftp.clientwaitinterval", "" + DEFAULT_WAIT_INTERVAL);
         return p;
     }
 
