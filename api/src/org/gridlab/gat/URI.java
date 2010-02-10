@@ -165,6 +165,17 @@ public class URI implements Serializable, Comparable<Object> {
         this.u = new java.net.URI(scheme, userInfo, host, port, path, query,
                 fragment);
     }
+    
+
+    public URI(String scheme, String authority, 
+            String path, String query, String fragment)
+            throws URISyntaxException {
+        // add an extra slash if the scheme is not null!
+        // this.u = new java.net.URI(scheme, userInfo, host, port,
+        // (scheme == null) ? path : "/" + path, query, fragment);
+        this.u = new java.net.URI(scheme, authority, path, query,
+                fragment);
+    }
 
     /**
      * Creates a URI by parsing the given string.
@@ -757,6 +768,17 @@ public class URI implements Serializable, Comparable<Object> {
         return new URI(getScheme(), getUserInfo(), host, getPort(-1), u
                 .getPath(), getQuery(), getFragment());
     }
+    
+
+    public URI setAuthority(String authority) throws URISyntaxException {
+        // host = "" like in any:///bla returns also null
+        if (getAuthority() == null && !getSchemeSpecificPart().startsWith("///")) {
+            return new URI(getScheme(), authority, "/"
+                    + u.getPath(), getQuery(), getFragment());
+        }
+        return new URI(getScheme(), authority, u
+                .getPath(), getQuery(), getFragment());
+    }
 
     public URI setPort(int port) throws URISyntaxException {
         return new URI(getScheme(), getUserInfo(), getHost(), port,
@@ -764,11 +786,11 @@ public class URI implements Serializable, Comparable<Object> {
     }
 
     public URI setPath(String path) throws URISyntaxException {
-        if (getScheme() != null && getHost() == null) {
-            return new URI(getScheme(), getUserInfo(), getHost(), getPort(-1), "///"
+        if (getScheme() != null && getAuthority() == null) {
+            return new URI(getScheme(), null, "///"
                     + path, getQuery(), getFragment());
         }
-        return new URI(getScheme(), getUserInfo(), getHost(), getPort(-1), "/"
+        return new URI(getScheme(), getAuthority(), "/"
                 + path, getQuery(), getFragment());
     }
 
