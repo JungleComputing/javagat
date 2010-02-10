@@ -97,10 +97,9 @@ public final class GliteSecurityUtils {
      * @param context
      *            GATContext with security parameters.
      * @return path to the proxy.
-     * @throws GATInvocationException
+     * @throws GATInvocationException 
      */
-    public static synchronized String touchVomsProxy(final GATContext context)
-            throws GATInvocationException {
+    public static synchronized String touchVomsProxy(final GATContext context) throws GATInvocationException {
         final String proxyFile = GliteSecurityUtils.getProxyPath(context);
 
         final Preferences prefs = context.getPreferences();
@@ -135,7 +134,7 @@ public final class GliteSecurityUtils {
             final List<String> currentVomsProxyExtensionsList = VomsProxyManager
                     .getExistingVOMSExtensions("" + proxyFile);
             boolean currentExtensionsOk = true;
-            final StringBuilder reason = new StringBuilder();
+            final StringBuilder reason = new StringBuilder("Proxy "+proxyFile+" -> ");
             if (currentVomsProxyExtensionsList != null) {// There is an existing
                 // voms proxy
                 // Extensions order is important for gLite. Currently, javaGAT
@@ -213,14 +212,14 @@ public final class GliteSecurityUtils {
                 }
             } else {
                 currentExtensionsOk = false;
+                reason.append("No VOMS extensions");
             }
 
             if (currentExtensionsOk == false) {
                 GliteSecurityUtils.LOGGER
                         .info("Current VOMS proxy extensions doesn't correspond to the JavaGAT preference. Creation of a new proxy");
                 GliteSecurityUtils.LOGGER.info("Reason: " + reason.toString());
-                GliteSecurityUtils.createVomsProxy(newLifetime, context,
-                        proxyFile);
+                GliteSecurityUtils.createVomsProxy(newLifetime, context, proxyFile);
             } else {
                 GliteSecurityUtils.LOGGER
                         .info("Checking the current proxy lifetime and generate a new one if needed");
@@ -409,6 +408,7 @@ public final class GliteSecurityUtils {
         CertificateSecurityContext secContext = null;
 
         if (context.getSecurityContexts() == null) {
+        	GliteSecurityUtils.LOGGER.error("Error: found no security contexts in GAT Context!");
             throw new GATInvocationException(
                     "Error: found no security contexts in GAT Context!");
         }
@@ -420,6 +420,7 @@ public final class GliteSecurityUtils {
         }
 
         if (secContext == null) {
+        	GliteSecurityUtils.LOGGER.error("Error: found no CertificateSecurityContext in GAT Context!");
             throw new GATInvocationException(
                     "Error: found no CertificateSecurityContext in GAT Context!");
         }
@@ -445,6 +446,7 @@ public final class GliteSecurityUtils {
 
         final String voName = GliteConstants.getVO(context);
         if (voName == null) {
+        	GliteSecurityUtils.LOGGER.error(GliteConstants.PREFERENCE_VIRTUAL_ORGANISATION + " must be set for gLite adaptor");
             throw new GATInvocationException(
                     GliteConstants.PREFERENCE_VIRTUAL_ORGANISATION
                             + " must be set for gLite adaptor");
@@ -465,6 +467,8 @@ public final class GliteSecurityUtils {
         }
 
         if (!voInfo.isValid()) {
+        	GliteSecurityUtils.LOGGER.error("Could not determine settings for VO: " + voName + ". "
+                    + voInfo + " Please set them in preferences.");
             throw new GATInvocationException(
                     "Could not determine settings for VO: " + voName + ". "
                             + voInfo + " Please set them in preferences.");
@@ -490,6 +494,8 @@ public final class GliteSecurityUtils {
             manager.saveProxyToFile(proxyFile);
 
         } catch (final Exception e) {
+        	GliteSecurityUtils.LOGGER.error("Could not create VOMS proxy. VO: " + voName + " voInfo: "
+                    + voInfo + ", requestCode: " + requestCode, e);
             throw new GATInvocationException(
                     "Could not create VOMS proxy. VO: " + voName + " voInfo: "
                             + voInfo + ", requestCode: " + requestCode, e);
