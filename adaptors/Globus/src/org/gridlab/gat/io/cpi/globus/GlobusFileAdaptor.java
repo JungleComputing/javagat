@@ -145,7 +145,7 @@ public abstract class GlobusFileAdaptor extends FileCpi {
      * Create an FTP Client
      * 
      * @param hostURI
-     *                the uri of the FTP host with the fiven preferences
+     *                the uri of the FTP host with the given preferences
      * 
      */
     protected abstract FTPClient createClient(GATContext gatContext,

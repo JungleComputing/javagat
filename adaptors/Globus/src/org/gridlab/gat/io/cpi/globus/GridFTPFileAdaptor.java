@@ -487,7 +487,8 @@ public class GridFTPFileAdaptor extends GlobusFileAdaptor {
 				if (client != null) {
 					try {
 						// test if the client is still alive
-						// client.getCurrentDir();
+						// this is needed to check if the socket is still open
+						client.getCurrentDir();
 
 						if (logger.isDebugEnabled()) {
 							logger.debug("using cached client");

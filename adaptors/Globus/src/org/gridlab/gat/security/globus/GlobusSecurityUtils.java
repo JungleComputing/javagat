@@ -354,10 +354,12 @@ public class GlobusSecurityUtils {
             if (gatContext != null) {
                 String portalCertFile = (String) gatContext.getPreferences().get("myproxy.hostcertfile");
                 String portalKeyFile = (String) gatContext.getPreferences().get("myproxy.hostkeyfile");
+                logger.info("checking server credential: " + portalCertFile + " /// " + portalKeyFile);
                 if ((portalCertFile != null) && (portalKeyFile != null)) {
                     try {
                         GlobusCredential hostCred = new GlobusCredential(portalCertFile, portalKeyFile);
                         hostGSSCred = new GlobusGSSCredentialImpl(hostCred, GSSCredential.INITIATE_AND_ACCEPT);
+                        logger.info("using Server credential: " + hostGSSCred);
                     } catch (GlobusCredentialException e) {
                         throw new CouldNotInitializeCredentialException(e.getMessage(), e);				
                     } catch (GSSException e) {
