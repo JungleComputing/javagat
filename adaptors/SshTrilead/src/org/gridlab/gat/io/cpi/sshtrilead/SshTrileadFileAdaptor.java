@@ -78,7 +78,7 @@ public class SshTrileadFileAdaptor extends FileCpi {
                 .put(
                         "sshtrilead.cipher.server2client",
                         "aes256-ctr,aes192-ctr,aes128-ctr,blowfish-ctr,aes256-cbc,aes192-cbc,aes128-cbc,blowfish-cbc");
-        preferences.put("sshtrilead.tcp.nodelay", "false");
+        preferences.put("sshtrilead.tcp.nodelay", "true");
         preferences.put("sshtrilead.use.cached.connections", "true");
         preferences.put("sshtrilead.connect.timeout", "0");
         preferences.put("sshtrilead.kex.timeout", "0");
