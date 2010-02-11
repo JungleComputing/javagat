@@ -47,6 +47,8 @@ public class GridFTPFileAdaptor extends GlobusFileAdaptor {
     protected static Logger logger = LoggerFactory.getLogger(GridFTPFileAdaptor.class);
 
     static boolean USE_CLIENT_CACHING = true;
+    
+    private static int cacheSize = 0;
 
     private static Hashtable<String, ArrayList<GridFTPClient>> clienttable = new Hashtable<String, ArrayList<GridFTPClient>>();
 
@@ -250,21 +252,22 @@ public class GridFTPFileAdaptor extends GlobusFileAdaptor {
             if (list.size() == 0) {
                 clienttable.remove(key);
             }
+            cacheSize--;
         }
         return client;
     }
 
     private static synchronized boolean putInCache(String key, FTPClient c) {
+        if (cacheSize > 3) {
+            return false;
+        }
+        cacheSize++;
         ArrayList<GridFTPClient> list;
         if (clienttable.containsKey(key)) {
             list = clienttable.get(key);
         } else {
             list = new ArrayList<GridFTPClient>();
             clienttable.put(key, list);
-        }
-        if (list.size() >= 3) {
-            // Enough clients cached!
-            return false;
         }
         list.add((GridFTPClient) c);
         return true;
@@ -307,6 +310,11 @@ public class GridFTPFileAdaptor extends GlobusFileAdaptor {
                             logger.debug("could not reuse cached client: "
                                     + except);
                             except.printStackTrace();
+                            try {
+                                client.close();
+                            } catch(Throwable e) {
+                                // ignored
+                            }
                         }
 
                         client = null;

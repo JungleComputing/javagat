@@ -579,11 +579,17 @@ public abstract class GlobusFileAdaptor extends FileCpi {
             }
             name = path + "/" + name;
             if (! finfo.isDirectory()) {
+                if (logger.isDebugEnabled()) {
+                    logger.debug("Removing " + name);
+                }
                 client.deleteFile(name);
                 isDirCache.remove(toURI().setPath(name));
             } else {
                 removeDir(client, name);
             }
+        }
+        if (logger.isDebugEnabled()) {
+            logger.debug("Removing directory " + path);
         }
         client.deleteDir(path);
         isDirCache.remove(toURI().setPath(path));
@@ -613,6 +619,10 @@ public abstract class GlobusFileAdaptor extends FileCpi {
         try {
             String remotePath = getPath();
             client = createClient(toURI());
+            
+            if (logger.isDebugEnabled()) {
+                logger.debug("Globus: deleting " + remotePath);
+            }
 
             if (isDirectory()) {
                 client.deleteDir(remotePath);
@@ -623,6 +633,9 @@ public abstract class GlobusFileAdaptor extends FileCpi {
         } catch (ServerException s) {
             if (s.getCode() == ServerException.SERVER_REFUSED) { // file not
                 // found
+                if (logger.isDebugEnabled()) {
+                    logger.debug("delete failed?", s);
+                }
                 return false;
             } else {
                 throw new GATInvocationException("gridftp", s);
@@ -666,8 +679,14 @@ public abstract class GlobusFileAdaptor extends FileCpi {
         }
         FTPClient client = null;
         client = createClient(toURI());
+        String cwd = null;
         try {
             setActiveOrPassive(client, gatContext.getPreferences());
+            try {
+                cwd = client.getCurrentDir();
+            } catch (Exception e) {
+                throw new GATInvocationException("gridftp", e);
+            }
             if (fiddle) {
                 try {
                     if (client.isPassiveMode()) {
@@ -690,6 +709,12 @@ public abstract class GlobusFileAdaptor extends FileCpi {
                     if (path.equals("")) {
                         path = "/";
                     }
+                    try {
+                        cwd = client.getCurrentDir();
+                    } catch (Exception e) {
+                        throw new GATInvocationException("gridftp", e);
+                    }
+
                     client.changeDir(path);
                     // list = client.list(); // this one gives issues on some
                     // gridftp servers (some used by the d-grid project)
@@ -723,7 +748,20 @@ public abstract class GlobusFileAdaptor extends FileCpi {
             if (fiddle) {
                 setActiveOrPassive(client, gatContext.getPreferences());
             }
-            destroyClient(client, toURI(), gatContext.getPreferences());
+            if (cwd != null) {
+                try {
+                    client.changeDir(cwd);
+                    destroyClient(client, toURI(), gatContext.getPreferences());
+                } catch(Throwable e) {
+                    try {
+                        client.close();
+                    } catch(Throwable e1) {
+                        // ignored
+                    }
+                }
+            } else {
+                destroyClient(client, toURI(), gatContext.getPreferences());
+            }
         }
         return null;
 

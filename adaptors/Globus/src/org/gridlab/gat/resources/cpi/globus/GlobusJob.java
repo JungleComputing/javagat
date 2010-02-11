@@ -341,6 +341,8 @@ public class GlobusJob extends JobCpi implements GramJobListener,
     }
 
     private void stopHandlers() {
+
+        /* Seems to always fail??? --Ceriel
         try {
             Gram.unregisterListener(j);
         } catch (Throwable t) {
@@ -348,7 +350,8 @@ public class GlobusJob extends JobCpi implements GramJobListener,
                 logger.info("WARNING, globus job could not unbind: " + t);
             }
         }
-
+        */
+        
         jobsAlive--;
 
         if (jobsAlive == 0) {
@@ -370,28 +373,36 @@ public class GlobusJob extends JobCpi implements GramJobListener,
      * 
      */
     protected void getStateActive() {
-        if (logger.isDebugEnabled()) {
-            logger.debug("polling state of globus job");
+        if (state == JobState.STOPPED || state == JobState.SUBMISSION_ERROR) {
+            return;
         }
-        try {
-            if (j != null) {
-                Gram.jobStatus(j); // this call will trigger the listeners if
-                // the state changed.
+        if (j != null) {
+            int status = j.getStatus();
+            if (status == STATUS_DONE || status == STATUS_FAILED) {
+                return;
             }
-        } catch (NullPointerException x) {
-            // ignore, fore some reason the first time, gram throws a null
-            // pointer exception.
-        } catch (Exception e) {
+
             if (logger.isDebugEnabled()) {
-                logger
-                        .debug("WARNING, could not get state of globus job: "
-                                + e);
+                logger.debug("polling state of globus job");
             }
-            if (j.getError() == GramError.GRAM_JOBMANAGER_CONNECTION_FAILURE) {
-                // this means we could not contact the job manager, assume the
-                // job has been finished.
-                // report that the status has changed
-                statusChanged(j);
+            try {
+                Gram.jobStatus(j); // this call will trigger the listeners if
+                    // the state changed.
+            } catch (NullPointerException x) {
+                // ignore, fore some reason the first time, gram throws a null
+                // pointer exception.
+            } catch (Exception e) {
+                if (logger.isDebugEnabled()) {
+                    logger
+                    .debug("WARNING, could not get state of globus job: "
+                            + e);
+                }
+                if (j.getError() == GramError.GRAM_JOBMANAGER_CONNECTION_FAILURE) {
+                    // this means we could not contact the job manager, assume the
+                    // job has been finished.
+                    // report that the status has changed
+                    handleStatusChanged(j);
+                }
             }
         }
     }
@@ -401,7 +412,10 @@ public class GlobusJob extends JobCpi implements GramJobListener,
      * 
      * @see org.globus.gram.GramJobListener#statusChanged(org.globus.gram.GramJob)
      */
-    public void statusChanged(GramJob newJob) {
+    public synchronized void statusChanged(GramJob newJob) {
+        if (logger.isDebugEnabled()) {
+            logger.debug("Got upcall from Globus!");
+        }
         handleStatusChanged(newJob);
     }
 
@@ -502,7 +516,7 @@ public class GlobusJob extends JobCpi implements GramJobListener,
         case 0: // unknown (no constant :-( )
             return JobState.UNKNOWN;
         case STATUS_UNSUBMITTED:
-            if (state == JobState.PRE_STAGING) {
+            if (state == JobState.PRE_STAGING || state == JobState.SCHEDULED) {
                 // Prevent backwards step in job state.
                 return state;
             }
@@ -728,9 +742,11 @@ public class GlobusJob extends JobCpi implements GramJobListener,
     }
     
     public void run() {
-        getStateActive();
-        if (getState() == JobState.STOPPED || getState() == JobState.SUBMISSION_ERROR) {
-            ScheduledExecutor.remove(this);
+        synchronized(this) {
+            getStateActive();
+            if (getState() == JobState.STOPPED || getState() == JobState.SUBMISSION_ERROR) {
+                ScheduledExecutor.remove(this);
+            }
         }
     }
 }
