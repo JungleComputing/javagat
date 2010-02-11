@@ -23,6 +23,9 @@ public class SftpTrileadRandomAccessFileAdaptor extends RandomAccessFileCpi {
 
         preferences.put("sftptrilead.strictHostKeyChecking", "false");
         preferences.put("sftptrilead.noHostKeyChecking", "true");
+        preferences.put("sftptrilead.cipher.client2server", "<sftp default>");
+        preferences.put("sftptrilead.cipher.server2client", "<sftp default>");
+        preferences.put("sftptrilead.tcp.nodelay", "true");
         return preferences;
     }
     
@@ -74,11 +77,21 @@ public class SftpTrileadRandomAccessFileAdaptor extends RandomAccessFileCpi {
                 .equalsIgnoreCase("true");
         boolean strictHostKeyChecking = ((String) p.get("sftptrilead.strictHostKeyChecking", "false"))
                 .equalsIgnoreCase("true");
+        String client2serverCipherString = (String) p.get("sftptrilead.cipher.client2server");
+        String[] client2serverCiphers = client2serverCipherString == null ? null 
+                : client2serverCipherString.split(",");
+        String server2clientCipherString = (String) p.get("sftptrilead.cipher.server2client");
+        String[] server2clientCiphers = server2clientCipherString == null ? null
+                : server2clientCipherString.split(",");          
+
+        boolean tcpNoDelay = ((String) p.get("sftptrilead.tcp.nodelay", "true"))
+                .equalsIgnoreCase("true");
         
         SftpTrileadHostVerifier verifier = new SftpTrileadHostVerifier(false, strictHostKeyChecking, noHostKeyChecking);
         
         try {
-            connection = SftpTrileadFileAdaptor.openConnection(gatContext, location, verifier);
+            connection = SftpTrileadFileAdaptor.getConnection(gatContext, location, verifier,
+                    client2serverCiphers, server2clientCiphers, tcpNoDelay);
         } catch (GATInvocationException e) {
             logger.debug("Could not create connection", e);
             throw new GATObjectCreationException("Could not create connection", e);
@@ -110,7 +123,7 @@ public class SftpTrileadRandomAccessFileAdaptor extends RandomAccessFileCpi {
         } catch (IOException e) {
             logger.debug("Could not open file", e);
             try {
-                SftpTrileadFileAdaptor.closeConnection(connection);
+                SftpTrileadFileAdaptor.closeConnection(connection, gatContext.getPreferences());
             } catch (Throwable e1) {
                 // ignored
             }   
@@ -128,7 +141,7 @@ public class SftpTrileadRandomAccessFileAdaptor extends RandomAccessFileCpi {
             // ignored
         }
         try {
-            SftpTrileadFileAdaptor.closeConnection(connection);
+            SftpTrileadFileAdaptor.closeConnection(connection, gatContext.getPreferences());
         } catch (Throwable e) {
             logger.debug("SftpTrileadFileAdaptor.closeConnection: ", e);
             // ignored
