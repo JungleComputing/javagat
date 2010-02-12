@@ -581,6 +581,32 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
         GramJob j = new GramJob(credential, rsl);
         globusJob.setGramJob(j);
         globusJob.setState(Job.JobState.SCHEDULED);
+        if (sd.streamingStderrEnabled()) {
+            try {
+                URI err = brokerURI.setScheme("gsiftp");
+                err = err.setPath(sandbox.getSandbox() + "/stderr");
+                globusJob.startStderrForwarder(GAT.createFile(gatContext, err));
+            } catch (GATObjectCreationException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            } catch (URISyntaxException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+        }
+        if (sd.streamingStdoutEnabled()) {
+            try {
+                URI out = brokerURI.setScheme("gsiftp");
+                out = out.setPath(sandbox.getSandbox() + "/stdout");
+                globusJob.startStdoutForwarder(GAT.createFile(gatContext, out));
+            } catch (GATObjectCreationException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            } catch (URISyntaxException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+        }
         try {
             j.request(contact);
             // Gram.request(contact, j);
@@ -619,32 +645,6 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
             }
         }
         globusJob.startPoller();
-        if (sd.streamingStderrEnabled()) {
-            try {
-                URI err = brokerURI.setScheme("gsiftp");
-                err = err.setPath(sandbox.getSandbox() + "/stderr");
-                globusJob.startStderrForwarder(GAT.createFile(gatContext, err));
-            } catch (GATObjectCreationException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            } catch (URISyntaxException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            }
-        }
-        if (sd.streamingStdoutEnabled()) {
-            try {
-                URI out = brokerURI.setScheme("gsiftp");
-                out = out.setPath(sandbox.getSandbox() + "/stdout");
-                globusJob.startStdoutForwarder(GAT.createFile(gatContext, out));
-            } catch (GATObjectCreationException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            } catch (URISyntaxException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            }
-        }
         return job;
     }
 
