@@ -16,7 +16,6 @@ import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpException;
 import org.apache.commons.httpclient.HttpStatus;
 import org.apache.commons.httpclient.methods.GetMethod;
-import org.glite.security.trustmanager.ContextWrapper;
 import org.globus.common.CoGProperties;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
@@ -86,8 +85,9 @@ public final class GliteSecurityUtils {
             proxyFile = cogPropertiesProxyFile;
         }
 
-        // JARs
-        System.setProperty(ContextWrapper.CREDENTIALS_PROXY_FILE, proxyFile);
+//Try to avoid global properties for mutli-threaded environment !!!
+//      // JARs
+//      System.setProperty(ContextWrapper.CREDENTIALS_PROXY_FILE, proxyFile);
         return proxyFile;
     }
 

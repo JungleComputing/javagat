@@ -2,6 +2,8 @@ package org.gridlab.gat.resources.cpi.glite;
 
 import java.rmi.RemoteException;
 
+import javax.xml.rpc.Stub;
+
 import org.apache.axis.SimpleTargetedChain;
 import org.apache.axis.configuration.SimpleProvider;
 import org.apache.axis.transport.http.HTTPSender;
@@ -12,8 +14,12 @@ import org.glite.wsdl.types.lb.GenericFault;
 import org.glite.wsdl.types.lb.JobFlags;
 import org.glite.wsdl.types.lb.JobFlagsValue;
 import org.glite.wsdl.types.lb.JobStatus;
+import org.globus.axis.gsi.GSIConstants;
 import org.globus.axis.transport.HTTPSSender;
+import org.globus.wsrf.impl.security.authorization.NoAuthorization;
+import org.globus.wsrf.security.Constants;
 import org.gridlab.gat.GATInvocationException;
+import org.ietf.jgss.GSSCredential;
 
 public class LBService {
 	private final static int LB_PORT = 9003;
@@ -27,14 +33,15 @@ public class LBService {
 	 * 
 	 * @param jobIDWithLB
 	 *            the JobID from which the LB URL will be constructed
+	 * @param userCredential
+	 *            the Credential to use to contact the service       
 	 * @throws GATInvocationException 
 	 */
-	public LBService(final String jobIDWithLB) throws GATInvocationException {
+	public LBService(final String jobIDWithLB, GSSCredential userCredential) throws GATInvocationException {
 		// instantiate the logging and bookkeeping service
 		try {
 			java.net.URL jobUrl = new java.net.URL(jobIDWithLB);
 			lbURL = new java.net.URL(jobUrl.getProtocol(), jobUrl.getHost(), LB_PORT, "/");
-
 			// Set provider
 			SimpleProvider provider = new SimpleProvider();
 			SimpleTargetedChain c = null;
@@ -47,6 +54,9 @@ public class LBService {
 			LoggingAndBookkeepingLocator loc = new LoggingAndBookkeepingLocator(provider);
 
 			loggingAndBookkeepingPortType = loc.getLoggingAndBookkeeping(lbURL);
+            ((Stub)this.loggingAndBookkeepingPortType)._setProperty(GSIConstants.GSI_CREDENTIALS,userCredential);
+            ((Stub)this.loggingAndBookkeepingPortType)._setProperty(Constants.GSI_TRANSPORT, Constants.ENCRYPTION);
+            ((Stub)this.loggingAndBookkeepingPortType)._setProperty(Constants.AUTHORIZATION, NoAuthorization.getInstance());
 		} catch (Exception e) {
 			throw new GATInvocationException("Problem instantiating Logging and Bookkeeping service ", e);
 		}

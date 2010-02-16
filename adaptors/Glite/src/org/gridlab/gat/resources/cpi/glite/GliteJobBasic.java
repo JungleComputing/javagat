@@ -26,6 +26,9 @@ import org.glite.wms.wmproxy.JobIdStructType;
 import org.glite.wsdl.types.lb.GenericFault;
 import org.glite.wsdl.types.lb.JobStatus;
 import org.glite.wsdl.types.lb.StatName;
+import org.globus.gsi.GlobusCredential;
+import org.globus.gsi.GlobusCredentialException;
+import org.globus.gsi.gssapi.GlobusGSSCredentialImpl;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.GATObjectCreationException;
@@ -36,6 +39,9 @@ import org.gridlab.gat.resources.JobDescription;
 import org.gridlab.gat.resources.ResourceDescription;
 import org.gridlab.gat.resources.SoftwareDescription;
 import org.gridlab.gat.resources.cpi.JobCpi;
+import org.gridlab.gat.security.glite.GliteSecurityUtils;
+import org.ietf.jgss.GSSCredential;
+import org.ietf.jgss.GSSException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -101,8 +107,24 @@ public class GliteJobBasic extends JobCpi implements GliteJobInterface {
 		if (deleteOnExitStr != null && !Boolean.parseBoolean(deleteOnExitStr)) {
 			this.gLiteJobDescription.saveToDisk();
 		}
-
-		this.gliteJobHelper = new GliteJobHelper(gatContext, brokerURI);
+		String proxyFile = null;
+		try{
+			proxyFile = GliteSecurityUtils.touchVomsProxy(gatContext);
+		}catch (GATInvocationException e) {
+			throw e;
+		}
+		GSSCredential userCredential;
+		try {
+			userCredential = new GlobusGSSCredentialImpl(new GlobusCredential(proxyFile), GSSCredential.INITIATE_AND_ACCEPT);
+		} catch (GSSException e) {
+            LOGGER.error(e.toString());
+            throw new GATInvocationException("Failed to load credentials");
+        } catch (GlobusCredentialException e) {
+            LOGGER.error(e.toString());
+            throw new GATInvocationException("Failed to load credentials");
+        }
+		
+		this.gliteJobHelper = new GliteJobHelper(gatContext, brokerURI, proxyFile, userCredential);
 		
 		//Delegate the certificate to WMS
 		String delegationId = gliteJobHelper.delegateCredential();
@@ -116,7 +138,7 @@ public class GliteJobBasic extends JobCpi implements GliteJobInterface {
 		LOGGER.info("jobID " + jobIdStructType.getId());
 
 		//Creation of the LB stub for the job monitoring
-		this.lbService = new LBService(jobIdStructType.getId());
+		this.lbService = new LBService(jobIdStructType.getId(), userCredential);
 		
 		//Start status lookup
 		new JobStatusLookUp(this,gatContext);

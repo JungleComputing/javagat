@@ -1,19 +1,24 @@
 package org.gridlab.gat.resources.cpi.glite;
 
+import java.io.ByteArrayInputStream;
 import java.net.URISyntaxException;
 import java.rmi.RemoteException;
+import java.security.PrivateKey;
+import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import org.glite.security.delegation.GrDPConstants;
 import org.glite.security.delegation.GrDPX509Util;
-import org.glite.security.delegation.GrDProxyGenerator;
-import org.glite.security.trustmanager.ContextWrapper;
 import org.glite.wms.wmproxy.JobIdStructType;
 import org.glite.wms.wmproxy.StringAndLongList;
 import org.glite.wms.wmproxy.StringAndLongType;
-import org.globus.common.CoGProperties;
+import org.globus.gsi.CertUtil;
+import org.globus.gsi.GSIConstants;
+import org.globus.gsi.bc.BouncyCastleCertProcessingFactory;
+import org.globus.gsi.bc.BouncyCastleOpenSSLKey;
 import org.gridlab.gat.GAT;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
@@ -24,6 +29,7 @@ import org.gridlab.gat.resources.Job;
 import org.gridlab.gat.resources.SoftwareDescription;
 import org.gridlab.gat.resources.Job.JobState;
 import org.gridlab.gat.security.glite.GliteSecurityUtils;
+import org.ietf.jgss.GSSCredential;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -36,48 +42,48 @@ public class GliteJobHelper {
 	private final WMSService wmsService;
 
 	
-	public GliteJobHelper(GATContext gatContext, String brokerURI) throws GATInvocationException {
+	public GliteJobHelper(GATContext gatContext, String brokerURI, String proxyFile, GSSCredential userCredential) throws GATInvocationException {
 		this.gatContext = gatContext;
-		this.wmsService = new WMSService(brokerURI);
-		
-		this.proxyFile = GliteSecurityUtils.touchVomsProxy(this.gatContext);
+		this.wmsService = new WMSService(brokerURI, proxyFile, userCredential);
+		this.proxyFile = proxyFile;
 	}
-	
-	/**
-	 * The CA-certificate path is needed in the glite security JARs Get the
-	 * certificate path from the cog.properties file So the path to the CA
-	 * certificates should only be given once, in the cog.properties file
-	 */
-	public void setCACerticateProperties() {
 
-		CoGProperties properties = CoGProperties.getDefault();
-		String certLocations = properties.getCaCertLocations();
-		String caCerts[] = certLocations.split(",");
-
-		if (!caCerts[0].endsWith(System.getProperty("file.separator"))) {
-			caCerts[0] = caCerts[0].concat(System.getProperty("file.separator"));
-		}
-
-		String certsWithoutCRLs = caCerts[0] + "*.0";
-		String caCRLs = caCerts[0] + "*.r0";
-		gatContext.addPreference("CA-Certificates", certsWithoutCRLs);
-
-		System.setProperty(ContextWrapper.CA_FILES, certsWithoutCRLs);
-		System.setProperty(ContextWrapper.CRL_FILES, caCRLs);
-		System.setProperty(ContextWrapper.CRL_REQUIRED, "false");
-
-		/*
-		 * If the crl update interval is not set to 0s, timer tasks for crl
-		 * updates will be started in the background which are not terminated
-		 * appropriately. This means, each status update will create a new
-		 * daemon thread which will exist until the application terminates.
-		 * Since each such daemon thread requires ~ 300 KB of heap memory,
-		 * eventually an OutOfMemory error will be caused. So it is best to
-		 * leave this value at 0 seconds.
-		 */
-		System.setProperty(ContextWrapper.CRL_UPDATE_INTERVAL, "0s");
-
-	}
+//Try to avoid global system properties that cause a lot of problem in a multi-threaded environment!
+//	/**
+//	 * The CA-certificate path is needed in the glite security JARs Get the
+//	 * certificate path from the cog.properties file So the path to the CA
+//	 * certificates should only be given once, in the cog.properties file
+//	 */
+//	private void setCACerticateProperties() {
+//
+//		CoGProperties properties = CoGProperties.getDefault();
+//		String certLocations = properties.getCaCertLocations();
+//		String caCerts[] = certLocations.split(",");
+//
+//		if (!caCerts[0].endsWith(System.getProperty("file.separator"))) {
+//			caCerts[0] = caCerts[0].concat(System.getProperty("file.separator"));
+//		}
+//
+//		String certsWithoutCRLs = caCerts[0] + "*.0";
+//		String caCRLs = caCerts[0] + "*.r0";
+//		gatContext.addPreference("CA-Certificates", certsWithoutCRLs);
+//
+//		System.setProperty(ContextWrapper.CA_FILES, certsWithoutCRLs);
+//		System.setProperty(ContextWrapper.CRL_FILES, caCRLs);
+//		System.setProperty(ContextWrapper.CRL_REQUIRED, "false");
+//
+//		/*
+//		 * If the crl update interval is not set to 0s, timer tasks for crl
+//		 * updates will be started in the background which are not terminated
+//		 * appropriately. This means, each status update will create a new
+//		 * daemon thread which will exist until the application terminates.
+//		 * Since each such daemon thread requires ~ 300 KB of heap memory,
+//		 * eventually an OutOfMemory error will be caused. So it is best to
+//		 * leave this value at 0 seconds.
+//		 */
+//		System.setProperty(ContextWrapper.CRL_UPDATE_INTERVAL, "0s");
+//
+//	}
 	
 	public void stageInSandboxFiles(String gliteJobID, SoftwareDescription[] softwareDescriptions) throws GATInvocationException {
 		List<File> sandboxFiles = new ArrayList<File>();
@@ -122,21 +128,40 @@ public class GliteJobHelper {
 	
 	public String delegateCredential() throws GATObjectCreationException{
 		LOGGER.debug("Delegating credential for Job submition");
-		// set the CA-certificates
-		setCACerticateProperties();
+//Try to avoid global system properties that cause a lot of problem in a multi-threaded environment!
+//		// set the CA-certificates
+//		setCACerticateProperties();
 		
-		System.setProperty("axis.socketSecureFactory", "org.glite.security.trustmanager.axis.AXISSocketFactory");
-		System.setProperty("sslProtocol", "SSLv3");
-
+//		System.setProperty("axis.socketSecureFactory", "org.glite.security.trustmanager.axis.AXISSocketFactory");
+//		System.setProperty("sslProtocol", "SSLv3");
+		
 		String delegationId = "gatjob-"+UUID.randomUUID().toString();
 		try {
 			String certReq = wmsService.getDelegationServiceStub().getProxyReq(delegationId);
 
-			GrDProxyGenerator proxyGenerator = new GrDProxyGenerator();
-			byte[] x509Cert = proxyGenerator.x509MakeProxyCert(certReq.getBytes(), GrDPX509Util.getFilesBytes(new java.io.File(proxyFile)), "");
+// This was not working properly if javaGAT is used inside a Globus container... 
+// I don't know why so I bypassed it.
+//			GrDProxyGenerator proxyGenerator = new GrDProxyGenerator();
+//			byte[] x509Cert = proxyGenerator.x509MakeProxyCert(certReq.getBytes(), GrDPX509Util.getFilesBytes(new java.io.File(proxyFile)), "");
+//
+//			String proxyString = new String(x509Cert);
+//			wmsService.getDelegationServiceStub().putProxy(delegationId, proxyString);
+			
+			X509Certificate[] userCerts = CertUtil.loadCertificates(proxyFile);
+			PrivateKey key = new BouncyCastleOpenSSLKey(proxyFile).getPrivateKey();
+			
+			BouncyCastleCertProcessingFactory factory = BouncyCastleCertProcessingFactory.getDefault();
+			
+			X509Certificate certificate = factory.createCertificate(new ByteArrayInputStream(GrDPX509Util.readPEM(
+                    new ByteArrayInputStream(certReq.getBytes()), GrDPConstants.CRH,
+                    GrDPConstants.CRF)),userCerts[0], key, 0, GSIConstants.GSI_2_PROXY);
 
-			String proxyString = new String(x509Cert);
-			wmsService.getDelegationServiceStub().putProxy(delegationId, proxyString);
+			X509Certificate[] finalCerts = new X509Certificate[userCerts.length+1];
+			finalCerts[0] = certificate;
+			for (int index = 1; index <= userCerts.length; ++index){
+				finalCerts[index] = userCerts[index - 1];
+			}
+			wmsService.getDelegationServiceStub().putProxy(delegationId, new String(GrDPX509Util.certChainToByte(finalCerts)));
 
 		} catch (Exception e) {
 			LOGGER.error("Problem while delegating a certificate to WMS: " + wmsService.getWmsURL(), e);
