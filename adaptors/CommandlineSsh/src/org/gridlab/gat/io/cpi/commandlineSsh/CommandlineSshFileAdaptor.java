@@ -275,8 +275,10 @@ public class CommandlineSshFileAdaptor extends FileCpi {
         ArrayList<String> cmd = new ArrayList<String>();
 
         cmd.add("ssh");
-        cmd.add("-p");
-        cmd.add("" + ssh_port);
+        if (ssh_port != SSH_PORT) {
+            cmd.add("-p");
+            cmd.add("" + ssh_port);
+        }
         cmd.add("-o");
         cmd.add("BatchMode=yes");
         cmd.add("-o");
@@ -367,8 +369,10 @@ public class CommandlineSshFileAdaptor extends FileCpi {
         
         if (windows) {
             command.add("-unat=yes");
-            command.add("-P");
-            command.add("" + ssh_port);
+            if (ssh_port != SSH_PORT) {
+                command.add("-P");
+                command.add("" + ssh_port);
+            }
             
             if (!securityInfo.containsKey("password")) { // public/private
                 // key
@@ -414,8 +418,10 @@ public class CommandlineSshFileAdaptor extends FileCpi {
                 }
                 command.add("-r");
             }
-            command.add("-P");
-            command.add("" + ssh_port);
+            if (ssh_port != SSH_PORT) {
+                command.add("-P");
+                command.add("" + ssh_port);
+            }
             command.add("-o");
             command.add("BatchMode=yes");
             command.add("-o");
@@ -475,8 +481,10 @@ public class CommandlineSshFileAdaptor extends FileCpi {
         command.add("scp");
         if (windows) {
             command.add("-unat=yes");           
-            command.add("-P");
-            command.add("" + ssh_port);
+            if (ssh_port != SSH_PORT) {
+                command.add("-P");
+                command.add("" + ssh_port);
+            }
             if (!securityInfo.containsKey("password")) { // public/private
                 // key
                 int slot = 0;
@@ -521,8 +529,10 @@ public class CommandlineSshFileAdaptor extends FileCpi {
                 }
                 command.add("-r");
             }
-            command.add("-P");
-            command.add("" + ssh_port);
+            if (ssh_port != SSH_PORT) {
+                command.add("-P");
+                command.add("" + ssh_port);
+            }
             command.add("-o");
             command.add("BatchMode=yes");
             command.add("-o");
