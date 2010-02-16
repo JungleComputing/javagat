@@ -216,8 +216,10 @@ public class CommandlineSshResourceBrokerAdaptor extends ResourceBrokerCpi {
             command.add("sexec");
             command.add(username + "@" + authority);
             command.add("-unat=yes");
-            command.add("-P");
-            command.add("" + ssh_port);
+            if (ssh_port != SSH_PORT) {
+                command.add("-P");
+                command.add("" + ssh_port);
+            }
             if (password == null) { // public/private key
                 int slot = privateKeySlot;
                 if (slot == -1) { // not set by the user, assume he only has
@@ -242,8 +244,10 @@ public class CommandlineSshResourceBrokerAdaptor extends ResourceBrokerCpi {
             // we must use the -t option to ssh (allocates pseudo TTY).
             // If we don't, there is no way to kill the remote process.
             command.add("/usr/bin/ssh");
-            command.add("-p");
-            command.add("" + ssh_port);
+            if (ssh_port != SSH_PORT) {
+                command.add("-p");
+                command.add("" + ssh_port);
+            }
             command.add("-o");
             command.add("BatchMode=yes");
             command.add("-o");
