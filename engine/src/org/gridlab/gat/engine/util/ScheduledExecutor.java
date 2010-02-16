@@ -4,8 +4,10 @@ import java.util.HashMap;
 import java.util.concurrent.Future;
 import java.util.concurrent.RejectedExecutionHandler;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Simplified interface to a single <code>ScheduledThreadPoolExecutor</code>,
@@ -48,7 +50,7 @@ public class ScheduledExecutor implements RejectedExecutionHandler {
     }
     
     private ScheduledExecutor(int size) {
-        executor = new ScheduledThreadPoolExecutor(size, this);
+        executor = new ScheduledThreadPoolExecutor(size, new MyThreadFactory(), this);
         map = new HashMap<Runnable, Future<?>>();
     }
     
@@ -93,5 +95,25 @@ public class ScheduledExecutor implements RejectedExecutionHandler {
     public void rejectedExecution(Runnable r, ThreadPoolExecutor executor) {
         System.err.println("Warning: rejected scheduled execution of " + r);
         map.remove(r);
+    }
+    
+    // Thread factory that creates daemon threads.
+    static class MyThreadFactory implements ThreadFactory {
+        static final AtomicInteger poolNumber = new AtomicInteger(1);
+        final AtomicInteger threadNumber = new AtomicInteger(1);
+        final String namePrefix;
+
+        MyThreadFactory() {
+            namePrefix = "pool-" +
+                          poolNumber.getAndIncrement() +
+                         "-thread-";
+        }
+
+        public Thread newThread(Runnable r) {
+            Thread t = new Thread(r,
+                                  namePrefix + threadNumber.getAndIncrement());
+            t.setDaemon(true);
+            return t;
+        }
     }
 }
