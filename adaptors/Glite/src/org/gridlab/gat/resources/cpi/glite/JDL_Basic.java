@@ -15,9 +15,6 @@
 
 package org.gridlab.gat.resources.cpi.glite;
 
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -31,11 +28,9 @@ import org.gridlab.gat.GATObjectCreationException;
 import org.gridlab.gat.resources.ResourceDescription;
 import org.gridlab.gat.resources.SoftwareDescription;
 
-public class JDL implements JDLInterface{
-    private static final Logger LOGGER = LoggerFactory.getLogger(JDL.class);
+public class JDL_Basic extends AbstractJDL{
+    private static final Logger LOGGER = LoggerFactory.getLogger(JDL_Basic.class);
 
-    private String jdlString;
-    private long jdlID;
     private String virtualOrganisation;
     private String executable;
 
@@ -55,11 +50,9 @@ public class JDL implements JDLInterface{
     private List<String> arguments;
     private Map<String, Object> attributes;
 
-    public JDL(final long jdlID, final SoftwareDescription swDescription,
+    public JDL_Basic(final SoftwareDescription swDescription,
             final String voName, final ResourceDescription rd)
             throws GATObjectCreationException {
-
-        this.jdlID = jdlID;
 
         inputFiles = new TreeSet<String>();
         outputSrcFiles = new TreeSet<String>();
@@ -76,12 +69,10 @@ public class JDL implements JDLInterface{
             this.virtualOrganisation = voName;
         }
 
-        if (swDescription.getStdin() == null) {
-            this.addInputFiles(swDescription.getPreStaged());
-        } else {
+        if (swDescription.getStdin() != null) {
             this.stdInputFile = swDescription.getStdin().getAbsolutePath();
         }
-
+        this.addInputFiles(swDescription.getPreStaged());
         this.addOutputFiles(swDescription.getPostStaged());
 
         if (swDescription.getStdout() != null) {
@@ -120,7 +111,13 @@ public class JDL implements JDLInterface{
             Map<org.gridlab.gat.io.File, org.gridlab.gat.io.File> map) {
 
         for (java.io.File file : map.keySet()) {
-            addInputFile(file.getAbsolutePath());
+        	//Test if it is a file that comes from another job.
+        	if(file.getName().toLowerCase().startsWith("root.nodes.") 
+        			|| file.getName().toLowerCase().startsWith("root.inputsandbox")){
+        		addInputFile(file.getName());
+        	}else{
+        		addInputFile("\""+file.getAbsolutePath()+"\"");
+        	}
 
             if (map.get(file) != null) {
                 LOGGER
@@ -130,10 +127,7 @@ public class JDL implements JDLInterface{
         }
     }
 
-    // private void setStdInputFile(File stdInputFile) {
-    // this.stdInputFile = stdInputFile.getAbsolutePath();
-    // addInputFile(this.stdInputFile);
-    // }
+    // private void setStdInputFile(File stdInputFile) 
 
     private void addEnviroment(Map<String, Object> environment) {
         for (String varName : environment.keySet()) {
@@ -176,35 +170,7 @@ public class JDL implements JDLInterface{
 
     private void addOutputFile(String filename) {
         outputSrcFiles.add(filename);
-        outputDestFiles.add(filename);
-    }
-
-    // private void addOutputFile(String srcFilename, String destFilename ) {
-    // outputSrcFiles.add(srcFilename);
-    // outputDestFiles.add(destFilename);
-    // }
-
-    /**
-     * Write the JDL content to a file on the harddisk. This can be useful for
-     * debugging purposes
-     * 
-     * @return Boolean that indicates success.
-     */
-    public boolean saveToDisk() {
-        boolean success = false;
-
-        try {
-            String jdlFileName = "gatjob_" + this.jdlID + ".jdl";
-            File file = new File(jdlFileName);
-            FileWriter fileWriter = new FileWriter(file);
-            fileWriter.write(this.jdlString);
-            fileWriter.close();
-            success = true;
-        } catch (IOException e) {
-            LOGGER.error(e.getMessage());
-        }
-
-        return success;
+//        outputDestFiles.add(filename);
     }
 
     private String createJDLFileContent() {
@@ -241,10 +207,10 @@ public class JDL implements JDLInterface{
             String lastInputFile = inputFiles.last();
 
             for (String inputFile : inputFiles.headSet(lastInputFile)) {
-                builder.append("\"file://").append(inputFile).append("\",\n\t");
+                builder.append(inputFile).append(",\n\t");
             }
 
-            builder.append("\"file://").append(lastInputFile).append("\"\n")
+            builder.append(lastInputFile).append("\n")
                     .append("};\n");
         }
 
@@ -260,15 +226,17 @@ public class JDL implements JDLInterface{
             builder.append("\"").append(lastSrcFile).append("\"").append(
                     "\n};\n");
 
-            builder.append("OutputSandboxDestURI = {\n\t");
-            String lastDestFile = outputDestFiles.last();
-
-            for (String destFile : outputDestFiles.headSet(lastDestFile)) {
-                builder.append("\"").append(destFile).append("\",\n\t");
+            if(!outputDestFiles.isEmpty()){
+	            builder.append("OutputSandboxDestURI = {\n\t");
+	            String lastDestFile = outputDestFiles.last();
+	
+	            for (String destFile : outputDestFiles.headSet(lastDestFile)) {
+	                builder.append("\"").append(destFile).append("\",\n\t");
+	            }
+	
+	            builder.append("\"").append(lastDestFile).append("\"").append(
+	                    "\n};\n");
             }
-
-            builder.append("\"").append(lastDestFile).append("\"").append(
-                    "\n};\n");
         }
 
         if (!attributes.isEmpty()) {
@@ -449,11 +417,4 @@ public class JDL implements JDLInterface{
 
     }
 
-    public String getJdlString() {
-        return jdlString;
-    }
-
-    public long getJdlID() {
-        return jdlID;
-    }
 }

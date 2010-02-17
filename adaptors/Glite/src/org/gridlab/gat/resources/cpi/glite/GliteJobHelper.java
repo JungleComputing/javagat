@@ -101,8 +101,12 @@ public class GliteJobHelper {
 				Map<File, File> map = softwareDescriptions[i].getPreStaged();
 	
 				for (File orig : map.keySet()) {
-					File newF = GAT.createFile(newContext, orig.toGATURI());
-					sandboxFiles.add(newF);
+					//Test if it is a file that comes from another job.
+		        	if(!orig.getName().toLowerCase().startsWith("root.nodes.") 
+		        			&& !orig.getName().toLowerCase().startsWith("root.inputsandbox")){
+		        		File newF = GAT.createFile(newContext, orig.toGATURI());
+						sandboxFiles.add(newF);
+		        	}
 				}
 			}
 
@@ -172,9 +176,12 @@ public class GliteJobHelper {
 			
 	}
 	
-	public JobIdStructType registerNewJob(JDLInterface gLiteJobDescription, String delegationId) throws GATInvocationException{
+	public JobIdStructType registerNewJob(AbstractJDL gLiteJobDescription, String delegationId) throws GATInvocationException{
 		LOGGER.debug("Registering a new job with Delegation ID: "+ delegationId);
 		String jdlString = gLiteJobDescription.getJdlString();
+		
+		LOGGER.debug("Register JDL Job: \n"+ jdlString);
+		
 		JobIdStructType jobIdStructType= null;
 		try {
 			jobIdStructType = wmsService.getWMProxyServiceStub().jobRegister(jdlString, delegationId);

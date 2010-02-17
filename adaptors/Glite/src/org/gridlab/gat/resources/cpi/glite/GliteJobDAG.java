@@ -35,7 +35,7 @@ public class GliteJobDAG extends CoScheduleJobCpi implements GliteJobInterface {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(GliteJobDAG.class);
 
-	private DAG_JDL gLiteJobDescription = null;
+	private JDL_DAG gLiteJobDescription = null;
 //	private OrderedCoScheduleJobDescription dagJobDescription = null;
 	private SoftwareDescription[] swDescriptions = null;
 	private volatile String gLiteState = "";
@@ -51,6 +51,11 @@ public class GliteJobDAG extends CoScheduleJobCpi implements GliteJobInterface {
 	
 	private volatile GATInvocationException postStageException = null;
 	private volatile String destination = null;
+	private volatile String statusSuspendReason = null;
+	private volatile String statusCancelReason = null;
+	private volatile String statusFailureReason = null;
+	private volatile String statusCondorReason = null;
+	private volatile String statusPBSReason = null;
 	
 	private GliteJobHelper gliteJobHelper = null;
 	private LBService lbService = null;
@@ -79,7 +84,7 @@ public class GliteJobDAG extends CoScheduleJobCpi implements GliteJobInterface {
 
 		String voName = GliteConstants.getVO(gatContext);
 
-		this.gLiteJobDescription = new DAG_JDL(dagJobDescription, voName);
+		this.gLiteJobDescription = new JDL_DAG(dagJobDescription, voName);
 
 		String deleteOnExitStr = (String) gatContext.getPreferences().get("glite.deleteJDL");
 
@@ -135,18 +140,33 @@ public class GliteJobDAG extends CoScheduleJobCpi implements GliteJobInterface {
 	public Map<String, Object> getInfo() {
 		Map<String, Object> map = new HashMap<String, Object>();
 
-		map.put("state", state);
+		map.put(Job.STATE, state);
 		map.put("glite.state", gLiteState);
 		map.put("jobID", jobID);
-		map.put("adaptor.job.id", jobIdStructType.getId());
-		map.put("submissiontime", submissiontime);
-		map.put("starttime", starttime);
-		map.put("stoptime", stoptime);
-		map.put("poststage.exception", postStageException);
+		map.put(Job.ADAPTOR_JOB_ID, jobIdStructType.getId());
+		map.put(Job.SUBMISSIONTIME, submissiontime);
+		map.put(Job.STARTTIME, starttime);
+		map.put(Job.STOPTIME, stoptime);
+		map.put(Job.POSTSTAGE_EXCEPTION, postStageException);
 		if (state == JobState.RUNNING) {
-			map.put("hostname", destination);
+			map.put(Job.HOSTNAME, destination);
 		}
 		map.put("glite.destination", destination);
+		if(statusCancelReason != null){
+			map.put("glite.status.cancel.reason", statusCancelReason);
+		}
+		if(statusFailureReason != null){
+			map.put("glite.status.failure.reason", statusFailureReason);
+		}
+		if(statusSuspendReason != null){
+			map.put("glite.status.suspend.reason", statusSuspendReason);
+		}
+		if(statusCondorReason != null){
+			map.put("glite.status.condor.reason", statusCondorReason);
+		}
+		if(statusPBSReason != null){
+			map.put("glite.status.pbs.reason", statusPBSReason);
+		}
 		return map;
 	}
 
@@ -203,6 +223,11 @@ public class GliteJobDAG extends CoScheduleJobCpi implements GliteJobInterface {
 					}
 				}
 			}
+			statusCancelReason = jobStatus.getCancelReason();
+			statusFailureReason = jobStatus.getFailureReasons();
+			statusSuspendReason = jobStatus.getSuspendReason();
+			statusCondorReason = jobStatus.getCondorReason();
+			statusPBSReason = jobStatus.getPbsReason();
 			destination = jobStatus.getDestination();
         }
 		

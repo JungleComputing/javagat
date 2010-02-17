@@ -14,13 +14,15 @@ import java.util.List;
  */
 public class CoScheduleJobDescription extends AbstractJobDescription {
 
-    /**
-     * 
-     */
     private static final long serialVersionUID = -6670271235157948175L;
 
-    private List<JobDescription> jobDescriptions = new ArrayList<JobDescription>();
+    protected List<JobDescription> jobDescriptions = new ArrayList<JobDescription>();
 
+   /**
+    * Creates a {@link CoScheduleJobDescription} without {@link JobDescription}
+    */
+    public CoScheduleJobDescription() {}
+    
     /**
      * Creates a {@link CoScheduleJobDescription} with one
      * {@link JobDescription} of a job that will be included in the

@@ -35,6 +35,7 @@ import org.gridlab.gat.GATObjectCreationException;
 import org.gridlab.gat.monitoring.Metric;
 import org.gridlab.gat.monitoring.MetricDefinition;
 import org.gridlab.gat.monitoring.MetricEvent;
+import org.gridlab.gat.resources.Job;
 import org.gridlab.gat.resources.JobDescription;
 import org.gridlab.gat.resources.ResourceDescription;
 import org.gridlab.gat.resources.SoftwareDescription;
@@ -51,7 +52,7 @@ public class GliteJobBasic extends JobCpi implements GliteJobInterface {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(GliteJobBasic.class);
 
-	private JDL gLiteJobDescription = null;
+	private JDL_Basic gLiteJobDescription = null;
 	private SoftwareDescription swDescription = null;
 	private volatile String gLiteState = "";
 	
@@ -66,6 +67,11 @@ public class GliteJobBasic extends JobCpi implements GliteJobInterface {
 	
 	private volatile GATInvocationException postStageException = null;
 	private volatile String destination = null;
+	private volatile String statusSuspendReason = null;
+	private volatile String statusCancelReason = null;
+	private volatile String statusFailureReason = null;
+	private volatile String statusCondorReason = null;
+	private volatile String statusPBSReason = null;
 	
 	private GliteJobHelper gliteJobHelper = null;
 	private LBService lbService = null;
@@ -94,12 +100,11 @@ public class GliteJobBasic extends JobCpi implements GliteJobInterface {
 		registerMetric("submitJob", statusMetricDefinition);
 
 		// Create Job Description Language File ...
-		long jdlID = System.currentTimeMillis();
 		String voName = GliteConstants.getVO(gatContext);
 
 		ResourceDescription rd = jobDescription.getResourceDescription();
 
-		this.gLiteJobDescription = new JDL(jdlID, swDescription, voName, rd);
+		this.gLiteJobDescription = new JDL_Basic(swDescription, voName, rd);
 
 		String deleteOnExitStr = (String) gatContext.getPreferences().get("glite.deleteJDL");
 
@@ -147,18 +152,33 @@ public class GliteJobBasic extends JobCpi implements GliteJobInterface {
 	public Map<String, Object> getInfo() {
 		Map<String, Object> map = new HashMap<String, Object>();
 
-		map.put("state", this.state);
-		map.put("glite.state", this.gLiteState);
+		map.put(Job.STATE, state);
+		map.put("glite.state", gLiteState);
 		map.put("jobID", jobID);
-		map.put("adaptor.job.id", jobIdStructType.getId());
-		map.put("submissiontime", submissiontime);
-		map.put("starttime", starttime);
-		map.put("stoptime", stoptime);
-		map.put("poststage.exception", postStageException);
+		map.put(Job.ADAPTOR_JOB_ID, jobIdStructType.getId());
+		map.put(Job.SUBMISSIONTIME, submissiontime);
+		map.put(Job.STARTTIME, starttime);
+		map.put(Job.STOPTIME, stoptime);
+		map.put(Job.POSTSTAGE_EXCEPTION, postStageException);
 		if (state == JobState.RUNNING) {
-			map.put("hostname", destination);
+			map.put(Job.HOSTNAME, destination);
 		}
 		map.put("glite.destination", destination);
+		if(statusCancelReason != null){
+			map.put("glite.status.cancel.reason", statusCancelReason);
+		}
+		if(statusFailureReason != null){
+			map.put("glite.status.failure.reason", statusFailureReason);
+		}
+		if(statusSuspendReason != null){
+			map.put("glite.status.suspend.reason", statusSuspendReason);
+		}
+		if(statusCondorReason != null){
+			map.put("glite.status.condor.reason", statusCondorReason);
+		}
+		if(statusPBSReason != null){
+			map.put("glite.status.pbs.reason", statusPBSReason);
+		}
 		return map;
 	}
 
@@ -212,6 +232,11 @@ public class GliteJobBasic extends JobCpi implements GliteJobInterface {
 				}
 			}
 		}
+		statusCancelReason = jobStatus.getCancelReason();
+		statusFailureReason = jobStatus.getFailureReasons();
+		statusSuspendReason = jobStatus.getSuspendReason();
+		statusCondorReason = jobStatus.getCondorReason();
+		statusPBSReason = jobStatus.getPbsReason();
 		destination = jobStatus.getDestination();
 		
 		return true;

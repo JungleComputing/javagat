@@ -14,7 +14,11 @@ public class OrderedCoScheduleJobDescription extends CoScheduleJobDescription {
     private HashSet<JobLink> links = new HashSet<JobLink>();
 
     public OrderedCoScheduleJobDescription(JobDescription jobDescription) {
-		super(jobDescription);
+		add(jobDescription);
+	}
+    
+    public OrderedCoScheduleJobDescription(JobDescription[] jobDescriptions) {
+		add(jobDescriptions);
 	}
     
     /**
@@ -27,7 +31,13 @@ public class OrderedCoScheduleJobDescription extends CoScheduleJobDescription {
      * @param nextjob
      *                the description of the job that will be started once the previous job will be completed
      */
-    public void addLink(JobDescription firstjob, JobDescription nextjob){
+    public void addLink(JobDescription firstjob, JobDescription nextjob) throws IllegalArgumentException{
+    	if(!jobDescriptions.contains(firstjob)){
+    		throw new IllegalArgumentException("The first job description is not part of the actual OrderedCoScheduleJobDescription object");
+    	}
+    	if(!jobDescriptions.contains(nextjob)){
+    		throw new IllegalArgumentException("The second job description is not part of the actual OrderedCoScheduleJobDescription object");
+    	}
 		this.links.add(new JobLink(firstjob, nextjob));
 	}
     
