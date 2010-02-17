@@ -199,7 +199,7 @@ public class URI implements Serializable, Comparable<Object> {
      * @return true if the URI refers to the localhost, false otherwise.
      */
     public boolean isLocal() {
-        return u.getHost() == null || u.equals("localhost");
+        return u.getHost() == null || u.getHost().equals("localhost");
     }
 
     /**
@@ -268,9 +268,7 @@ public class URI implements Serializable, Comparable<Object> {
             return null;
         }
 
-        if (u.getHost() != null
-                && (u.getHost().equals("localhost") || getLocalHostName()
-                        .equals(u.getHost()))) {
+        if (u.getHost() != null && refersToLocalHost()) {
             if (!path.startsWith("/")) {
                 // a relative path for a URI that has a hostname that is the
                 // local host
