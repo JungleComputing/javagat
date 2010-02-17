@@ -156,11 +156,9 @@ public class GlobusSecurityUtils {
      * Handling of all globus certicicates goes through this method
      * 
      * @param context
-     * @param preferences
      * @param adaptorName
-     * @param securityContextType
-     * @param host
-     * @param port
+     * @param location
+     * @param defaultPort
      * @return
      * @throws GATInvocationException
      */
