@@ -154,6 +154,8 @@ public interface FileInterface extends Monitorable, Advertisable,
      */
     public <V extends FileAttributeView> V getFileAttributeView(Class<V> type, boolean followSymbLinks)  throws GATInvocationException;
     
+    public String getHomeDirectory() throws GATInvocationException;
+    
     /** See {@link java.io.File#getName()}. */
     public String getName() throws GATInvocationException;
 

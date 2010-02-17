@@ -1306,6 +1306,26 @@ public abstract class GlobusFileAdaptor extends FileCpi {
 
     /*
      * (non-Javadoc)
+     * @see org.gridlab.gat.io.cpi.FileCpi#getHomeDirectory()
+     */
+    @Override
+    public String getHomeDirectory() throws GATInvocationException {
+        FTPClient client = null;
+
+        try {
+            client = createClient(toURI());
+            client.changeDir("~");
+            return client.getCurrentDir();
+        } catch (Exception e) {
+            throw new GATInvocationException("gridftp", e);
+        } finally {
+            if (client != null)
+                destroyClient(client, toURI(), gatContext.getPreferences());
+        }
+    }
+    
+    /*
+     * (non-Javadoc)
      * 
      * @see org.gridlab.gat.io.cpi.FileCpi#renameTo(org.gridlab.gat.io.File)
      */

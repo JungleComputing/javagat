@@ -274,7 +274,16 @@ public abstract class FileCpi extends MonitorableCpi implements FileInterface, j
     public <V extends FileAttributeView> V getFileAttributeView(Class<V> type, boolean followSymbLinks)  throws GATInvocationException {
     	throw new UnsupportedOperationException("Not implemented");
     }
-    
+
+    /**
+     * Returns the home directory of the current location
+     * @return
+     * @throws GATInvocationException
+     */
+    public String getHomeDirectory() throws GATInvocationException {
+        throw new UnsupportedOperationException("Not implemented");
+    }
+
     @NoInfoLogging
     public final String getName() {
         String path = getPath();

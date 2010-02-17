@@ -265,6 +265,15 @@ public class File extends java.io.File implements Monitorable, Advertisable,
         }
     }
 
+    public String getHomeDirectory() throws IOException {
+        try {
+            return f.getHomeDirectory();
+        } catch (GATInvocationException e) {
+            throw new GATIOException(e);
+        }
+    } // public String getHomeDirectory() throws IOException {
+
+    
     /**
      * Returns a file attribute view of a given type.
      *
