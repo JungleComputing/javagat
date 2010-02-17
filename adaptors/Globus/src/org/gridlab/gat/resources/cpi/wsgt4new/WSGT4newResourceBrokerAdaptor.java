@@ -537,7 +537,7 @@ public class WSGT4newResourceBrokerAdaptor extends ResourceBrokerCpi {
             queryResponse = query.queryResourceProperties(queryRequest);
             System.out.println("66665555555555");
         } catch (Throwable e) {
-            logger.error("ERROR: Unable to invoke QueryRP operation.");
+            logger.error("ERROR: Unable to invoke QueryRP operation.", e);
 
             throw new GATInvocationException(
                     "ERROR: Unable to invoke QueryRP operation.", e);
