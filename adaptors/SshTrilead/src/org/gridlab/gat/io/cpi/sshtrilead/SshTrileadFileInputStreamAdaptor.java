@@ -6,6 +6,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.Map;
 
+import org.gridlab.gat.AdaptorNotApplicableException;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.GATObjectCreationException;
@@ -57,6 +58,10 @@ public class SshTrileadFileInputStreamAdaptor extends FileInputStreamCpi {
         preferences.put("sftptrilead.noHostKeyChecking", "true");
         return preferences;
     }
+       
+    public static String[] getSupportedSchemes() {
+        return SshTrileadFileAdaptor.getSupportedSchemes();
+    }
     
     private SshTrileadFileAdaptor file;
     
@@ -70,7 +75,7 @@ public class SshTrileadFileInputStreamAdaptor extends FileInputStreamCpi {
         super(gatContext, location);
         
         if (location.refersToLocalHost()) {
-            throw new GATObjectCreationException("this adaptor cannot write local files");
+            throw new AdaptorNotApplicableException("this adaptor cannot read local files");
         }
         
         file = new SshTrileadFileAdaptor(gatContext, location);
@@ -159,7 +164,6 @@ public class SshTrileadFileInputStreamAdaptor extends FileInputStreamCpi {
             }
             session = null;
         }
-        // TODO Auto-generated constructor stub
     }
     
     
