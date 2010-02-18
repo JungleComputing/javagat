@@ -345,105 +345,109 @@ public class WSGT4newResourceBrokerAdaptor extends ResourceBrokerCpi {
             }
         }
         WSGT4newJob wsgt4job = new WSGT4newJob(gatContext, description, sandbox);
-        Job job = null;
-        if (description instanceof WrapperJobDescription) {
-            WrapperJobCpi tmp = new WrapperJobCpi(gatContext, wsgt4job,
-                    listener, metricDefinitionName);
-            job = tmp;
-            listener = tmp;
-        } else {
-            job = wsgt4job;
-        }
-        if (listener != null && metricDefinitionName != null) {
-            Metric metric = wsgt4job.getMetricDefinitionByName(metricDefinitionName)
-                    .createMetric(null);
-            wsgt4job.addMetricListener(listener, metric);
-        }
-
-        if (sandbox != null) {
-            wsgt4job.setState(Job.JobState.PRE_STAGING);
-            sandbox.prestage();
-        }
-
-        // create a gramjob according to the jobdescription
-        GramJob gramjob = null;
         try {
-            gramjob = new GramJob(createRSL(description, sandbox,
-                    useGramSandbox));
-        } catch (RSLParseException e) {
-            throw new GATInvocationException("WSGT4newResourceBrokerAdaptor", e);
-        }
-
-        // Was: gramjob.setAuthorization(HostAuthorization.getInstance());
-        // Modified to use a supplied credential. --Ceriel
-        GSSCredential cred = getCred();
-        if (cred != null) {
-            gramjob.setCredentials(cred);
-            if (logger.isDebugEnabled()) {
-                logger.debug("submitJob: credential = " + cred);
+            Job job = null;
+            if (description instanceof WrapperJobDescription) {
+                WrapperJobCpi tmp = new WrapperJobCpi(gatContext, wsgt4job,
+                        listener, metricDefinitionName);
+                job = tmp;
+                listener = tmp;
+            } else {
+                job = wsgt4job;
             }
-        } else {
-            gramjob.setAuthorization(HostAuthorization.getInstance());
-        }
-        // end modification.
-        gramjob.setMessageProtectionType(Constants.ENCRYPTION);
-        gramjob.setDelegationEnabled(true);
-        
-        // inform the wsgt4 job of which gram job is related to it.
-        wsgt4job.setGramJob(gramjob);
-
-        String factoryType = (String) gatContext.getPreferences().get(
-                "wsgt4new.factory.type");
-        if (factoryType == null || factoryType.equals("")) {
-            factoryType = ManagedJobFactoryConstants.FACTORY_TYPE.FORK;
-            if (logger.isDebugEnabled()) {
-                logger.debug("no factory type supplied, using default: "
-                        + ManagedJobFactoryConstants.FACTORY_TYPE.FORK);
+            if (listener != null && metricDefinitionName != null) {
+                Metric metric = wsgt4job.getMetricDefinitionByName(metricDefinitionName)
+                .createMetric(null);
+                wsgt4job.addMetricListener(listener, metric);
             }
-        }
 
-        ReferencePropertiesType props = new ReferencePropertiesType();
-        SimpleResourceKey key = new SimpleResourceKey(
-                ManagedJobConstants.RESOURCE_KEY_QNAME, factoryType);
-        try {
-            props.add(key.toSOAPElement());
-        } catch (SerializationException e) {
-            throw new GATInvocationException("WSGT4newResourceBrokerAdaptor", e);
-        }
-        endpoint.setProperties(props);
+            if (sandbox != null) {
+                wsgt4job.setState(Job.JobState.PRE_STAGING);
+                sandbox.prestage();
+            }
 
-        UUIDGen uuidgen = UUIDGenFactory.getUUIDGen();
-        String submissionID = "uuid:" + uuidgen.nextUUID();
+            // create a gramjob according to the jobdescription
+            GramJob gramjob = null;
+            try {
+                gramjob = new GramJob(createRSL(description, sandbox,
+                        useGramSandbox));
+            } catch (RSLParseException e) {
+                throw new GATInvocationException("WSGT4newResourceBrokerAdaptor", e);
+            }
 
-        if (logger.isDebugEnabled()) {
-            logger.debug("submission id for job: " + submissionID);
-        }
+            // Was: gramjob.setAuthorization(HostAuthorization.getInstance());
+            // Modified to use a supplied credential. --Ceriel
+            GSSCredential cred = getCred();
+            if (cred != null) {
+                gramjob.setCredentials(cred);
+                if (logger.isDebugEnabled()) {
+                    logger.debug("submitJob: credential = " + cred);
+                }
+            } else {
+                gramjob.setAuthorization(HostAuthorization.getInstance());
+            }
+            // end modification.
+            gramjob.setMessageProtectionType(Constants.ENCRYPTION);
+            gramjob.setDelegationEnabled(true);
 
-        try {
-            // second parameter is batch, should be set to false.
-            // third parameter is limitedDelegation, currently hardcoded to false.
-            gramjob.submit(endpoint, false, false, submissionID);            
-        } catch (Throwable e) {
+            // inform the wsgt4 job of which gram job is related to it.
+            wsgt4job.setGramJob(gramjob);
+
+            // wsgt4 job object listens to the gram job
+            gramjob.addListener(wsgt4job);
+
+            String factoryType = (String) gatContext.getPreferences().get(
+            "wsgt4new.factory.type");
+            if (factoryType == null || factoryType.equals("")) {
+                factoryType = ManagedJobFactoryConstants.FACTORY_TYPE.FORK;
+                if (logger.isDebugEnabled()) {
+                    logger.debug("no factory type supplied, using default: "
+                            + ManagedJobFactoryConstants.FACTORY_TYPE.FORK);
+                }
+            }
+
+            ReferencePropertiesType props = new ReferencePropertiesType();
+            SimpleResourceKey key = new SimpleResourceKey(
+                    ManagedJobConstants.RESOURCE_KEY_QNAME, factoryType);
+            try {
+                props.add(key.toSOAPElement());
+            } catch (SerializationException e) {
+                throw new GATInvocationException("WSGT4newResourceBrokerAdaptor", e);
+            }
+            endpoint.setProperties(props);
+
+            UUIDGen uuidgen = UUIDGenFactory.getUUIDGen();
+            String submissionID = "uuid:" + uuidgen.nextUUID();
+
+            if (logger.isDebugEnabled()) {
+                logger.debug("submission id for job: " + submissionID);
+            }
+
+            try {
+                // second parameter is batch, should be set to false.
+                // third parameter is limitedDelegation, currently hardcoded to false.
+                gramjob.submit(endpoint, false, false, submissionID);            
+            } catch (Throwable e) {
+                throw new GATInvocationException("WSGT4newResourceBrokerAdaptor", e);
+            }
+
+            wsgt4job.submitted();
+
+            String handle = gramjob.getHandle();
+            try {
+                String handleHost = new URI(handle).getHost();
+                handle = handle.replace(handleHost, host);
+            } catch (URISyntaxException e) {
+                // ignored
+            }
+
+            wsgt4job.setSubmissionID(handle);
+
+            return job;
+        } catch(GATInvocationException e) {
             wsgt4job.finishJob();
-            throw new GATInvocationException("WSGT4newResourceBrokerAdaptor", e);
+            throw e;
         }
-        
-        wsgt4job.submitted();
-        
-        String handle = gramjob.getHandle();
-        try {
-            String handleHost = new URI(handle).getHost();
-            handle = handle.replace(handleHost, host);
-        } catch (URISyntaxException e) {
-            // ignored
-        }
-        
-        wsgt4job.setSubmissionID(handle);
-        
-        // wsgt4 job object listens to the gram job
-        gramjob.addListener(wsgt4job);
-        
-         return job;
     }
 
     private String createAddressString() {
