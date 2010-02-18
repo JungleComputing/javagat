@@ -408,7 +408,7 @@ public final class GliteSecurityUtils {
         CertificateSecurityContext secContext = null;
 
         if (context.getSecurityContexts() == null) {
-        	GliteSecurityUtils.LOGGER.error("Error: found no security contexts in GAT Context!");
+        	GliteSecurityUtils.LOGGER.info("Error: found no security contexts in GAT Context!");
             throw new GATInvocationException(
                     "Error: found no security contexts in GAT Context!");
         }
@@ -420,7 +420,7 @@ public final class GliteSecurityUtils {
         }
 
         if (secContext == null) {
-        	GliteSecurityUtils.LOGGER.error("Error: found no CertificateSecurityContext in GAT Context!");
+        	GliteSecurityUtils.LOGGER.info("Error: found no CertificateSecurityContext in GAT Context!");
             throw new GATInvocationException(
                     "Error: found no CertificateSecurityContext in GAT Context!");
         }
