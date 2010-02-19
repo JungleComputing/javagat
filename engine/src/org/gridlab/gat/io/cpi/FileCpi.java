@@ -755,7 +755,7 @@ public abstract class FileCpi extends MonitorableCpi implements FileInterface, j
                                 "file.directory.copy"))
                                 .equalsIgnoreCase("contents")) {
                     Preferences newPrefs = new Preferences();
-                    newPrefs.remove("file.directory.copy");
+                    newPrefs.put("file.directory.copy", "dirs");
                     copyDirectory(gatContext, newPrefs, f.toURI(), dest);
                 } else {
                     copyDirectory(gatContext, null, f.toURI(), dest);
