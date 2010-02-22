@@ -145,6 +145,12 @@ public class SoftwareDescription implements java.io.Serializable {
     
     /** Indicates the job id of a to-be-restarted job. */
     public static final String RESTART = "restart";
+    
+    /**
+     * Boolean attribute that indicates if the job needs to be terminated when
+     * GAT exits. Default is true.
+     */
+    public static final String STOP_ON_EXIT = "job.stop.on.exit";
 
     private String executable;
 

@@ -18,6 +18,7 @@ import org.gridlab.gat.resources.HardwareResource;
 import org.gridlab.gat.resources.HardwareResourceDescription;
 import org.gridlab.gat.resources.Job;
 import org.gridlab.gat.resources.JobDescription;
+import org.gridlab.gat.resources.SoftwareDescription;
 
 public abstract class JobCpi extends MonitorableCpi implements Job {
 
@@ -87,7 +88,7 @@ public abstract class JobCpi extends MonitorableCpi implements Job {
 
         if (jobDescription != null
                 && !jobDescription.getSoftwareDescription().getBooleanAttribute(
-                "job.stop.on.exit", true)) {
+                SoftwareDescription.STOP_ON_EXIT, true)) {
             stopOnExit = false;
         }
         if (stopOnExit) {
