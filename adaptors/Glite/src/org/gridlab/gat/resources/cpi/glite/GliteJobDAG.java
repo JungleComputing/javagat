@@ -236,7 +236,7 @@ public class GliteJobDAG extends CoScheduleJobCpi implements GliteJobInterface {
 	}
 
 	public synchronized void receiveOutput() {
-		this.postStageException = gliteJobHelper.receiveOutput(jobIdStructType, swDescriptions);
+		this.postStageException = gliteJobHelper.receiveOutput(jobIdStructType.getChildrenJob(), swDescriptions);
 	}
 
 	public Metric getStatusMetric() {

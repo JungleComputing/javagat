@@ -243,7 +243,7 @@ public class GliteJobBasic extends JobCpi implements GliteJobInterface {
 	}
 
 	public synchronized void receiveOutput() {
-		this.postStageException = gliteJobHelper.receiveOutput(jobIdStructType, new SoftwareDescription[]{swDescription});
+		this.postStageException = gliteJobHelper.receiveOutput(new JobIdStructType[]{jobIdStructType}, new SoftwareDescription[]{swDescription});
 	}
 
 	public Metric getStatusMetric() {

@@ -158,7 +158,7 @@ public class GliteJobHelper {
 			
 			X509Certificate certificate = factory.createCertificate(new ByteArrayInputStream(GrDPX509Util.readPEM(
                     new ByteArrayInputStream(certReq.getBytes()), GrDPConstants.CRH,
-                    GrDPConstants.CRF)),userCerts[0], key, 0, GSIConstants.GSI_2_PROXY);
+                    GrDPConstants.CRF)),userCerts[0], key, 12*3600, GSIConstants.GSI_2_PROXY); //12 hours proxy
 
 			X509Certificate[] finalCerts = new X509Certificate[userCerts.length+1];
 			finalCerts[0] = certificate;
@@ -205,49 +205,53 @@ public class GliteJobHelper {
 		LOGGER.debug("Job started: "+ jobIdStructType.getId());
 	}
 	
-	public synchronized GATInvocationException receiveOutput(JobIdStructType jobIdStructType, SoftwareDescription[] softwareDescriptions) {
+	public synchronized GATInvocationException receiveOutput(JobIdStructType[] jobIdStructTypes, SoftwareDescription[] softwareDescriptions) {
 		StringAndLongType[] list = null;
 		GATInvocationException postStageException = null;
-		try {
-			StringAndLongList sl = wmsService.getWMProxyServiceStub().getOutputFileList(jobIdStructType.getId(), "gsiftp");
-			list = sl.getFile();
-		} catch (Exception e) {
-			LOGGER.error("Could not receive output due to security problems", e);
-		}
-	
-		if (list != null) {
-			GATContext newContext = (GATContext) gatContext.clone();
-			newContext.addPreference("File.adaptor.name", "GridFTP");
-			// Remove all the existing contexts and use the new one..
-			GliteSecurityUtils.replaceSecurityContextWithGliteContext(newContext);
-	
-			for (int i = 0; i < list.length; i++) {
-				try {
-					URI uri1 = new URI(list[i].getName());
-					URI uri2 = new URI(uri1.getScheme() + "://" + uri1.getHost() + ":" + uri1.getPort() + "//" + uri1.getPath());
-	
-					File f = GAT.createFile(newContext, uri2);
-					int name_begin = uri2.getPath().lastIndexOf('/') + 1;
-					File f2 = GAT.createFile(newContext, new URI(uri2.getPath().substring(name_begin)));
-	
-					f.copy(destForPostStagedFile(f2,softwareDescriptions));
-				} catch (GATInvocationException e) {
-					postStageException = e;
-					LOGGER.error(e.toString());
-				} catch (URISyntaxException e) {
-					postStageException = new GATInvocationException(e.toString());
-					LOGGER.error("An error occured when building URIs for the poststaged files", e);
-				} catch (GATObjectCreationException e) {
-					postStageException = new GATInvocationException(e.toString());
-					LOGGER.error("Could not create GAT file when retrieving output", e);
+		for (int i = 0; i < jobIdStructTypes.length; i++) {
+			try {
+				StringAndLongList sl = wmsService.getWMProxyServiceStub().getOutputFileList(jobIdStructTypes[i].getId(), "gsiftp");
+				list = sl.getFile();
+			} catch (Exception e) {
+				LOGGER.error("Could not receive output due to security problems", e);
+			}
+		
+			if (list != null) {
+				GATContext newContext = (GATContext) gatContext.clone();
+				newContext.addPreference("File.adaptor.name", "GridFTP");
+				// Remove all the existing contexts and use the new one..
+				GliteSecurityUtils.replaceSecurityContextWithGliteContext(newContext);
+		
+				for (int j = 0; j < list.length; j++) {
+					try {
+						URI uri1 = new URI(list[j].getName());
+						URI uri2 = new URI(uri1.getScheme() + "://" + uri1.getHost() + ":" + uri1.getPort() + "//" + uri1.getPath());
+		
+						File f = GAT.createFile(newContext, uri2);
+						int name_begin = uri2.getPath().lastIndexOf('/') + 1;
+						File f2 = GAT.createFile(newContext, new URI(uri2.getPath().substring(name_begin)));
+		
+						f.copy(destForPostStagedFile(f2,softwareDescriptions));
+					} catch (GATInvocationException e) {
+						postStageException = e;
+						LOGGER.error(e.toString());
+					} catch (URISyntaxException e) {
+						postStageException = new GATInvocationException(e.toString());
+						LOGGER.error("An error occured when building URIs for the poststaged files", e);
+					} catch (GATObjectCreationException e) {
+						postStageException = new GATInvocationException(e.toString());
+						LOGGER.error("Could not create GAT file when retrieving output", e);
+					}
 				}
 			}
 		}
-		if(postStageException == null){
-			try {
-				wmsService.getWMProxyServiceStub().jobPurge(jobIdStructType.getId());
-			} catch (Exception e) {
-				LOGGER.error("Unable to purge the job!", e);
+		for (int i = 0; i < jobIdStructTypes.length; i++) {
+			if(postStageException == null){
+				try {
+					wmsService.getWMProxyServiceStub().jobPurge(jobIdStructTypes[i].getId());
+				} catch (Exception e) {
+					LOGGER.error("Unable to purge the job!", e);
+				}
 			}
 		}
 		return postStageException;

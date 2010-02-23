@@ -13,8 +13,7 @@ public class OrderedCoScheduleJobDescription extends CoScheduleJobDescription {
 
     private HashSet<JobLink> links = new HashSet<JobLink>();
 
-    public OrderedCoScheduleJobDescription(JobDescription jobDescription) {
-		add(jobDescription);
+    public OrderedCoScheduleJobDescription() {
 	}
     
     public OrderedCoScheduleJobDescription(JobDescription[] jobDescriptions) {
