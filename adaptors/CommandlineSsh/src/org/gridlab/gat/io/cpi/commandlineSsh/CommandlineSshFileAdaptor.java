@@ -43,7 +43,7 @@ public class CommandlineSshFileAdaptor extends FileCpi {
     public static Preferences getSupportedPreferences() {
         Preferences p = FileCpi.getSupportedPreferences();
         p.put(SSH_PORT_STRING, "" + SSH_PORT);
-        p.put(SSH_STRICT_HOST_KEY_CHECKING, "true");
+        p.put(SSH_STRICT_HOST_KEY_CHECKING, "false");
         return p;
     }
     
@@ -95,8 +95,8 @@ public class CommandlineSshFileAdaptor extends FileCpi {
             }
         }
         
-        strictHostKeyChecking = ((String) gatContext.getPreferences().get(SSH_STRICT_HOST_KEY_CHECKING, "true"))
-                .equalsIgnoreCase("true");
+        strictHostKeyChecking = ((String) gatContext.getPreferences().get(SSH_STRICT_HOST_KEY_CHECKING, "false"))
+                .equalsIgnoreCase("");
         
         try {
             securityInfo = CommandlineSshSecurityUtils.getSshCredential(
