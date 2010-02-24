@@ -46,7 +46,7 @@ public class CommandlineSshResourceBrokerAdaptor extends ResourceBrokerCpi {
     
     public static Preferences getSupportedPreferences() {
         Preferences p = ResourceBrokerCpi.getSupportedPreferences();
-        p.put(SSH_STRICT_HOST_KEY_CHECKING, "yes");
+        p.put(SSH_STRICT_HOST_KEY_CHECKING, "false");
         p.put(SSH_PORT_STRING, "" + SSH_PORT);
         return p;
     }
@@ -98,7 +98,7 @@ public class CommandlineSshResourceBrokerAdaptor extends ResourceBrokerCpi {
             }
         }
         
-        strictHostKeyChecking = ((String) gatContext.getPreferences().get(SSH_STRICT_HOST_KEY_CHECKING, "true"))
+        strictHostKeyChecking = ((String) gatContext.getPreferences().get(SSH_STRICT_HOST_KEY_CHECKING, "false"))
                 .equalsIgnoreCase("true");
                
         try {
