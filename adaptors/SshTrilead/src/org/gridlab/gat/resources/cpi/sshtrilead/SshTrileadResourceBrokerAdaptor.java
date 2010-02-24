@@ -94,6 +94,8 @@ public class SshTrileadResourceBrokerAdaptor extends ResourceBrokerCpi {
     
     private final boolean isCshCacheEnable;
     
+    private boolean isWindows;
+    
     private HostKeyVerifier verifier;
 
     /**
@@ -139,7 +141,7 @@ public class SshTrileadResourceBrokerAdaptor extends ResourceBrokerCpi {
         
         verifier = new HostKeyVerifier(false, strictHostKeyChecking, noHostKeyChecking);
         
-        
+        isWindows = SshTrileadFileAdaptor.isWindows(gatContext, brokerURI, isWindowsCacheEnable);
     }
 
     /*
@@ -150,12 +152,6 @@ public class SshTrileadResourceBrokerAdaptor extends ResourceBrokerCpi {
     public Job submitJob(AbstractJobDescription abstractDescription,
             MetricListener listener, String metricDefinitionName)
             throws GATInvocationException {
-        
-        // TODO: this broker is not Windows compatible (&&, export)
-        
-        if (SshTrileadFileAdaptor.isWindows(gatContext, brokerURI, isWindowsCacheEnable)) {
-            throw new UnsupportedOperationException("Windows not supported by sshtrilead resource broker adaptor");
-        }
 
         if (!(abstractDescription instanceof JobDescription)) {
             throw new GATInvocationException(
@@ -224,32 +220,41 @@ public class SshTrileadResourceBrokerAdaptor extends ResourceBrokerCpi {
         // 1. cd to the execution dir
         String command = "";
         if (sandbox.getSandboxPath() != null) {
-            command += "cd " + sandbox.getSandboxPath() + " && ";
+            command += "cd " + sandbox.getSandboxPath() + (isWindows ? " & " : " && ");
         }
         // 2. set necessary env variables using export
         Map<String, Object> env = sd.getEnvironment();
         if (env != null && !env.isEmpty()) {
-            Set<String> s = env.keySet();
-            Object[] keys = s.toArray();
-            boolean isCsh = SshTrileadFileAdaptor.isCsh(gatContext, brokerURI, isCshCacheEnable);
-
-            for (int i = 0; i < keys.length; i++) {
-                String val = (String) env.get(keys[i]);
-                // command += "export " + keys[i] + "=" + val + " && ";
-                // Fix: made to work for regular Bourne shell as well --Ceriel
-                if (isCsh) {
-                    command += "set " + keys[i] + "=" + val + " && ";
-                } else {
-                    command += keys[i] + "=" + val + " && export " + keys[i] + " && ";
+            if (isWindows) {
+                throw new GATInvocationException("environment not supported for windows");
+            } else {
+                Set<String> s = env.keySet();
+                Object[] keys = s.toArray();
+                boolean isCsh = SshTrileadFileAdaptor.isCsh(gatContext, brokerURI, isCshCacheEnable);
+    
+                for (int i = 0; i < keys.length; i++) {
+                    String val = (String) env.get(keys[i]);
+                    // command += "export " + keys[i] + "=" + val + " && ";
+                    // Fix: made to work for regular Bourne shell as well --Ceriel
+                    if (isCsh) {
+                        command += "set " + keys[i] + "=" + val + " && ";
+                    } else {
+                        command += keys[i] + "=" + val + " && export " + keys[i] + " && ";
+                    }
                 }
             }
         }
         // 3. and finally add the executable with its arguments
-        command += "exec " + protectAgainstShellMetas(getExecutable(description));
+        command += isWindows ? getExecutable(description)
+                : ("exec " + protectAgainstShellMetas(getExecutable(description)));
         String[] args = getArgumentsArray(description);
         if (args != null) {
             for (String arg : args) {
-                command += " " + protectAgainstShellMetas(arg);
+                if (isWindows) {
+                    command += " " + arg;
+                } else {
+                    command += " " + protectAgainstShellMetas(arg);
+                }
             }
         }
 
