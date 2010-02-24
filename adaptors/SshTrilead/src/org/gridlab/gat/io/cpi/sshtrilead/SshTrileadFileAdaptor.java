@@ -387,9 +387,9 @@ public class SshTrileadFileAdaptor extends FileCpi {
         } else {
             throw new GATInvocationException("cannot copy this file '"
                     + fixedURI + "' to '" + destination
-                    + "'! (Reason: target is file: " + isFile()
-                    + ", target is dir: " + isDirectory()
-                    + ", src is dir: " + destinationFile.isDirectory());
+                    + "'! (Reason: src is file: " + isFile()
+                    + ", src is dir: " + isDirectory()
+                    + ", target is dir: " + destinationFile.isDirectory());
         }
     }
 
