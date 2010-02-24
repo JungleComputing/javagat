@@ -245,12 +245,19 @@ public class SshTrileadResourceBrokerAdaptor extends ResourceBrokerCpi {
             }
         }
         // 3. and finally add the executable with its arguments
-        command += isWindows ? ("\"" + getExecutable(description) + "\"" )
-                : ("exec " + protectAgainstShellMetas(getExecutable(description)));
+        String exec = getExecutable(description);
+        if (isWindows && exec.contains(" ")) {
+            exec = "\"" + exec + "\"";
+        }
+        command += isWindows ? exec
+                : ("exec " + protectAgainstShellMetas(exec));
         String[] args = getArgumentsArray(description);
         if (args != null) {
             for (String arg : args) {
                 if (isWindows) {
+                    if (arg.contains(" ")) {
+                        arg = "\"" + arg + "\"";
+                    }
                     command += " " + arg;
                 } else {
                     command += " " + protectAgainstShellMetas(arg);
