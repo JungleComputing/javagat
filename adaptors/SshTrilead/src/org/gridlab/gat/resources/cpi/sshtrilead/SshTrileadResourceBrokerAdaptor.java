@@ -245,7 +245,7 @@ public class SshTrileadResourceBrokerAdaptor extends ResourceBrokerCpi {
             }
         }
         // 3. and finally add the executable with its arguments
-        command += isWindows ? getExecutable(description)
+        command += isWindows ? ("\"" + getExecutable(description) + "\"" )
                 : ("exec " + protectAgainstShellMetas(getExecutable(description)));
         String[] args = getArgumentsArray(description);
         if (args != null) {
