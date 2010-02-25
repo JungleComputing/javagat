@@ -17,19 +17,18 @@ package org.gridlab.gat.resources.cpi.glite;
 
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import java.util.Map.Entry;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.gridlab.gat.GATObjectCreationException;
 import org.gridlab.gat.resources.ResourceDescription;
 import org.gridlab.gat.resources.SoftwareDescription;
 
 public class JDL_Basic extends AbstractJDL{
-    private static final Logger LOGGER = LoggerFactory.getLogger(JDL_Basic.class);
 
     private String virtualOrganisation;
     private String executable;
@@ -40,8 +39,7 @@ public class JDL_Basic extends AbstractJDL{
      * at jobRegister.
      */
     private SortedSet<String> inputFiles;
-    private SortedSet<String> outputSrcFiles;
-    private SortedSet<String> outputDestFiles;
+    private LinkedHashMap<String,String> outputFiles;
     private List<String> requirements;
     private String stdInputFile;
     private String stdOutputFile;
@@ -55,8 +53,7 @@ public class JDL_Basic extends AbstractJDL{
             throws GATObjectCreationException {
 
         inputFiles = new TreeSet<String>();
-        outputSrcFiles = new TreeSet<String>();
-        outputDestFiles = new TreeSet<String>();
+        outputFiles = new LinkedHashMap<String,String>();
         requirements = new ArrayList<String>();
         environments = new ArrayList<String>();
         arguments = new ArrayList<String>();
@@ -77,12 +74,12 @@ public class JDL_Basic extends AbstractJDL{
 
         if (swDescription.getStdout() != null) {
             this.stdOutputFile = swDescription.getStdout().getName();
-            addOutputFile(this.stdOutputFile);
+            outputFiles.put(this.stdOutputFile, null);
         }
 
         if (swDescription.getStderr() != null) {
             this.stdErrorFile = swDescription.getStderr().getName();
-            addOutputFile(this.stdErrorFile);
+            outputFiles.put(this.stdErrorFile, null);
         }
 
         if (swDescription.getEnvironment() == null) {
@@ -116,14 +113,18 @@ public class JDL_Basic extends AbstractJDL{
         			|| file.getName().toLowerCase().startsWith("root.inputsandbox")){
         		addInputFile(file.getName());
         	}else{
-        		addInputFile("\""+file.getAbsolutePath()+"\"");
+        		if (map.get(file) != null) {
+        			addInputFile("\""+map.get(file).getPath()+"\"");
+        		}else{
+        			addInputFile("\""+file.getAbsolutePath()+"\"");
+        		}
         	}
-
-            if (map.get(file) != null) {
-                LOGGER
-                        .warn("gLite does not support renaming inputfiles in the sandbox.\n"
-                                + "addPreStagedFile(src, dest), dest file will be ignored");
-            }
+// But JavaGAT does ;-)
+//            if (map.get(file) != null) {
+//                LOGGER
+//                        .warn("gLite does not support renaming inputfiles in the sandbox.\n"
+//                                + "addPreStagedFile(src, dest), dest file will be ignored");
+//            }
         }
     }
 
@@ -152,26 +153,23 @@ public class JDL_Basic extends AbstractJDL{
 
         for (java.io.File file : map.keySet()) {
             if (map.get(file) == null) {
-                addOutputFile(file.getName());
+                outputFiles.put(file.getPath(),null);
             } else { // copy poststaged file somewhere after staging out
                 org.gridlab.gat.io.File fileDest = map.get(file);
-                outputSrcFiles.add(file.getName());
-
                 java.io.File parentFile = new java.io.File(fileDest.getParent());
                 if (!parentFile.exists()) {
                     throw new GATObjectCreationException(
                             "The folder for the poststaged file does not exist!");
                 }
-
-                outputDestFiles.add(fileDest.getName());
+                outputFiles.put(file.getPath(), fileDest.getName());
             }
         }
     }
 
-    private void addOutputFile(String filename) {
-        outputSrcFiles.add(filename);
+//    private void addOutputFile(String filename) {
+//        outputSrcFiles.add(filename);
 //        outputDestFiles.add(filename);
-    }
+//    }
 
     private String createJDLFileContent() {
         StringBuilder builder = new StringBuilder();
@@ -209,33 +207,39 @@ public class JDL_Basic extends AbstractJDL{
             for (String inputFile : inputFiles.headSet(lastInputFile)) {
                 builder.append(inputFile).append(",\n\t");
             }
-
-            builder.append(lastInputFile).append("\n")
-                    .append("};\n");
+            builder.append(lastInputFile).append("\n");
+            builder.append("};\n");
         }
 
-        if (!outputSrcFiles.isEmpty()) {
-
-            builder.append("OutputSandbox = {\n\t");
-            String lastSrcFile = outputSrcFiles.last();
-
-            for (String srcFile : outputSrcFiles.headSet(lastSrcFile)) {
-                builder.append("\"").append(srcFile).append("\",\n\t");
-            }
-
-            builder.append("\"").append(lastSrcFile).append("\"").append(
-                    "\n};\n");
-
-            if(!outputDestFiles.isEmpty()){
-	            builder.append("OutputSandboxDestURI = {\n\t");
-	            String lastDestFile = outputDestFiles.last();
-	
-	            for (String destFile : outputDestFiles.headSet(lastDestFile)) {
-	                builder.append("\"").append(destFile).append("\",\n\t");
-	            }
-	
-	            builder.append("\"").append(lastDestFile).append("\"").append(
-	                    "\n};\n");
+        if (!outputFiles.isEmpty()) {
+        	boolean outputSandboxDestURINeeded = false;
+        	StringBuilder outputSandboxBuilder = new StringBuilder("OutputSandbox = {\n\t");
+        	StringBuilder outputSandboxDestURIBuilder = new StringBuilder("OutputSandboxDestURI = {\n\t");
+        	for (Iterator<Entry<String, String>> iterator = outputFiles.entrySet().iterator(); iterator.hasNext();) {
+        		Entry<String, String> entry = iterator.next();
+        		outputSandboxBuilder.append("\"");
+        		outputSandboxDestURIBuilder.append("\"");
+        		outputSandboxBuilder.append(entry.getKey());
+        		if(entry.getValue() != null){
+        			outputSandboxDestURINeeded = true;
+        			outputSandboxDestURIBuilder.append(entry.getValue());
+        		}else{
+        			outputSandboxDestURIBuilder.append(entry.getKey());
+        		}
+        		outputSandboxBuilder.append("\"");
+        		outputSandboxDestURIBuilder.append("\"");
+        		if(iterator.hasNext()){
+        			outputSandboxBuilder.append(",\n\t");
+        			outputSandboxDestURIBuilder.append(",\n\t");
+        		}else{
+        			outputSandboxBuilder.append("\n};\n");
+        			outputSandboxDestURIBuilder.append("\n};\n");
+        		}
+			}
+        	
+            builder.append(outputSandboxBuilder.toString());
+            if(outputSandboxDestURINeeded){
+            	builder.append(outputSandboxDestURIBuilder.toString());
             }
         }
 

@@ -5,8 +5,7 @@ import java.net.URISyntaxException;
 import java.rmi.RemoteException;
 import java.security.PrivateKey;
 import java.security.cert.X509Certificate;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
@@ -86,7 +85,7 @@ public class GliteJobHelper {
 //	}
 	
 	public void stageInSandboxFiles(String gliteJobID, SoftwareDescription[] softwareDescriptions) throws GATInvocationException {
-		List<File> sandboxFiles = new ArrayList<File>();
+		HashMap<File,String> sandboxFiles = new HashMap<File,String>();
 		GATContext newContext = (GATContext) gatContext.clone();
 		newContext.addPreference("File.adaptor.name", "GridFTP");
 		GliteSecurityUtils.replaceSecurityContextWithGliteContext(newContext);
@@ -95,7 +94,7 @@ public class GliteJobHelper {
 			for (int i = 0; i < softwareDescriptions.length; i++) {
 				if (softwareDescriptions[i].getStdin() != null) {
 					File f = GAT.createFile(newContext, softwareDescriptions[i].getStdin().getName());
-					sandboxFiles.add(f);
+					sandboxFiles.put(f,null);
 				}
 	
 				Map<File, File> map = softwareDescriptions[i].getPreStaged();
@@ -104,16 +103,25 @@ public class GliteJobHelper {
 					//Test if it is a file that comes from another job.
 		        	if(!orig.getName().toLowerCase().startsWith("root.nodes.") 
 		        			&& !orig.getName().toLowerCase().startsWith("root.inputsandbox")){
-		        		File newF = GAT.createFile(newContext, orig.toGATURI());
-						sandboxFiles.add(newF);
+		        		File origFile = GAT.createFile(newContext, orig.toGATURI());
+		        		String dest = null;
+		        		if (map.get(orig) != null) {
+		        			dest = map.get(orig).getPath();
+		        		}
+						sandboxFiles.put(origFile,dest);
 		        	}
 				}
 			}
 
 			String[] sl = wmsService.getWMProxyServiceStub().getSandboxDestURI(gliteJobID, "gsiftp").getItem();
 
-			for (File sandboxFile : sandboxFiles) {
-				URI tempURI = new URI(sl[0] + "/" + sandboxFile.getName());
+			for (File sandboxFile : sandboxFiles.keySet()) {
+				URI tempURI;
+				if(sandboxFiles.get(sandboxFile) == null){
+					tempURI = new URI(sl[0] + "/" + sandboxFile.getName());
+				}else{
+					tempURI = new URI(sl[0] + "/" + sandboxFiles.get(sandboxFile));
+				}
 				URI destURI = new URI(tempURI.getScheme() + "://" + tempURI.getHost() + ":" + tempURI.getPort() + "//" + tempURI.getPath());
 				LOGGER.debug("Uploading " + sandboxFile + " to " + destURI);
 				File destFile = GAT.createFile(newContext, destURI);
@@ -272,17 +280,16 @@ public class GliteJobHelper {
 			File stdout = softwareDescriptions[i].getStdout();
 			File stderr = softwareDescriptions[i].getStderr();
 			String outputName = output.getName();
-			
 	
 			if (stdout != null && outputName.equals(stdout.getName())) {
 				destURI = stdout.toGATURI();
 			} else if (stderr != null && outputName.equals(stderr.getName())) {
 				destURI = stderr.toGATURI();
 			} else {
-	
+				
 				for (Map.Entry<File, File> psFile : postStagedFiles.entrySet()) {
 					if (psFile != null && psFile.getValue() != null && psFile.getKey() != null) {
-						String psFileName = psFile.getKey().getName();
+						String psFileName = psFile.getValue().getName();
 	
 						if (outputName.equals(psFileName)) {
 							destURI = psFile.getValue().toGATURI();
