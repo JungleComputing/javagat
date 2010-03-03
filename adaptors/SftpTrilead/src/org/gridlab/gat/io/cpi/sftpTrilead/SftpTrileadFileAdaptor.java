@@ -46,6 +46,7 @@ public class SftpTrileadFileAdaptor extends FileCpi {
         capabilities.put("exists", true);
         capabilities.put("isDirectory", true);
         capabilities.put("isFile", true);
+        capabilities.put("lastModified", true);
         capabilities.put("length", true);
         capabilities.put("list", true);
         capabilities.put("mkdir", true);
@@ -340,6 +341,15 @@ public class SftpTrileadFileAdaptor extends FileCpi {
         }
         return true;
     }
+    
+    public long lastModified() throws GATInvocationException {
+        SFTPv3FileAttributes a = getAttrs();
+        if (a == null) {
+            return 0L;
+        }
+        return a.mtime;
+    }
+
 
     /*
      * (non-Javadoc)
@@ -686,6 +696,15 @@ public class SftpTrileadFileAdaptor extends FileCpi {
                 outBuf.write(buf, 0, len);
                 bytesWritten += len;
             }
+            outBuf.flush();
+            try {
+                long l = lastModified();
+                if (l != 0L) {
+                    destinationFile.setLastModified(l);
+                }
+            } catch(Throwable e) {
+                // O well, we tried
+            }
         } catch (IOException e) {
             throw new GATInvocationException("sftpTrilead", e);
         } finally {
@@ -708,6 +727,7 @@ public class SftpTrileadFileAdaptor extends FileCpi {
             if (c != null) {
                 closeConnection(c, gatContext.getPreferences());
             }
+            
         }
     }
 

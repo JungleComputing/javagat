@@ -537,6 +537,7 @@ public class CommandlineSshFileAdaptor extends FileCpi {
             command.add("BatchMode=yes");
             command.add("-o");
             command.add("StrictHostKeyChecking=" + (strictHostKeyChecking ? "yes" : "no"));
+            command.add("-p");  // preserve time/mode
         }
         command.add(username + "@" + src.resolveHost() + ":" + src.getPath());
         command.add(dest.getPath());
@@ -664,6 +665,7 @@ public class CommandlineSshFileAdaptor extends FileCpi {
             command.add("BatchMode=yes");
             command.add("-o");
             command.add("StrictHostKeyChecking=" + (strictHostKeyChecking ? "yes" : "no"));
+            command.add("-p");  // preserve time/mode
         }
         command.add(src.getPath());
         command.add(username + "@" + dest.resolveHost() + ":" + dest.getPath());
