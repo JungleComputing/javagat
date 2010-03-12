@@ -405,6 +405,7 @@ public abstract class GlobusFileAdaptor extends FileCpi {
                 }
             }
             client = createClient(dest);
+            setActiveOrPassive(client, gatContext.getPreferences());
             setImage(client);
             client.put(sourceFile, dest.getPath(), false); // overwrite
         } catch (Exception e) {
