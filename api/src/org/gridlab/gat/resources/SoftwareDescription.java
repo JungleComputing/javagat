@@ -1087,8 +1087,9 @@ public class SoftwareDescription implements java.io.Serializable {
             sb.append(newline);
             sb.append("cmd=\"");
             sb.append(executable);
-            if (arguments != null) {
-                for (String argument : arguments) {
+            String[] args = getArguments();
+            if (args != null) {
+                for (String argument : args) {
                     sb.append(" ");
                     sb.append(argument);
                 }
