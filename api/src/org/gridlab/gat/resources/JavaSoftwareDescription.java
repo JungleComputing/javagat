@@ -269,6 +269,9 @@ public class JavaSoftwareDescription extends SoftwareDescription {
      * @return the command line arguments
      */
     public String[] getArguments() {
+        if (toWrapper) {
+            return super.getArguments();
+        }
         ArrayList<String> result = new ArrayList<String>();
         if (getJavaOptions() != null) {
             for (String option : getJavaOptions()) {

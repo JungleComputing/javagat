@@ -194,6 +194,8 @@ public class SoftwareDescription implements java.io.Serializable {
     private boolean streamingStdout = false;
 
     private boolean streamingStdin = false;
+    
+    protected boolean toWrapper = false;
 
     /**
      * Create a {@link SoftwareDescription}, which describes the application
@@ -1135,6 +1137,7 @@ public class SoftwareDescription implements java.io.Serializable {
         } catch (URISyntaxException e) {
             throw new GATInvocationException("SoftwareDescription toWrapper", e);
         }
+        toWrapper = true;
     }
 
     @SuppressWarnings("unchecked")
