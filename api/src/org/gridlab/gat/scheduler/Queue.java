@@ -4,6 +4,7 @@ package org.gridlab.gat.scheduler;
  * DTO-Bean for Queues.
  * 
  * @author Stefan Bozic
+ * @author Bastian Boegel
  */
 public class Queue {
 
@@ -28,6 +29,16 @@ public class Queue {
 	private long freeCpus = 0;
 	
 	private String status = null;
+	
+	private int maxCPUTime = -2;
+	
+	private int maxWallTime = -2;
+	
+	private int maxRunningJobs = -2;
+	
+	private int MaxTotalJobs = -2;
+	
+	private int priority = -2;
 	
 	/**
 	 * @return the status
@@ -183,4 +194,53 @@ public class Queue {
 	public void setLrm(String lrm) {
 		this.lrm = lrm;
 	}
-}
+	
+	/**
+	 * Getter for the maximum CPU time of a job in this queue (in minutes).
+	 * @return {@link #maxCPUTime}.
+	 */
+	public int getMaxCPUTime() {
+		return maxCPUTime;
+	} // public int getMaxCPUTime()
+	
+	/**
+	 * Setter for the maximum CPU time of a job (in minutes)
+	 * @param maxCPUTime
+	 */
+	public void setMaxCPUTime(int maxCPUTime) {
+		this.maxCPUTime = maxCPUTime;
+	} // public void setMaxCPUTime(int maxCPUTime)
+	
+	public int getMaxWallTime() {
+		return maxWallTime;
+	} // public int getMaxWallTime()
+	
+	public void setMaxWallTime(int maxWallTime) {
+		this.maxWallTime = maxWallTime;
+	} // public void setMaxWallTime(int maxWallTime)
+	
+	public int getMaxRunningJobs() {
+		return maxRunningJobs;
+	} // public int getMaxRunningJobs()
+	
+	public void setMaxRunningJobs(int maxRunningJobs) {
+		this.maxRunningJobs = maxRunningJobs;
+	} // public void setMaxRunningJobs(int maxRunningJobs)
+	
+	public int getMaxTotalJobs() {
+		return MaxTotalJobs;
+	} // public int getMaxTotalJobs()
+	
+	public void setMaxTotalJobs(int maxTotalJobs) {
+		MaxTotalJobs = maxTotalJobs;
+	} // public void setMaxTotalJobs(int maxTotalJobs)
+	
+	public int getPriority() {
+		return priority;
+	} // public int getPriority()
+	
+	public void setPriority(int priority) {
+		this.priority = priority;
+	} // public void setPriority(int priority)
+	
+} // public class Queue

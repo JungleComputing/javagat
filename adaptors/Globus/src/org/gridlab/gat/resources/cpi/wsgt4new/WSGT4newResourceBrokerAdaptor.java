@@ -162,6 +162,14 @@ public class WSGT4newResourceBrokerAdaptor extends ResourceBrokerCpi {
         String wsgt4Stdin = (String) sd.getAttributes().get("gt4new.stdin");
         String wsgt4Directory = (String) sd.getAttributes().get("gt4new.directory");
         
+        String jobType = (String) sd.getAttributes().get("gt4new.jobType");
+        
+        String maxTime = (String) sd.getAttributes().get("gt4new.maxTime");
+        String maxWallTime = (String) sd.getAttributes().get("gt4new.maxWallTime");
+        String maxCpuTime = (String) sd.getAttributes().get("gt4new.maxCpuTime");
+        String maxMemory = (String) sd.getAttributes().get("gt4new.maxMemory");
+        String minMemory = (String) sd.getAttributes().get("gt4new.minMemory");
+        
         if (null != scheduler && null != wsa) {
             rsl += "<factoryEndpoint ";
             rsl += "xmlns:gram=\"http://www.globus.org/namespaces/2004/10/gram/job\" ";
@@ -206,12 +214,39 @@ public class WSGT4newResourceBrokerAdaptor extends ResourceBrokerCpi {
             }
         }
 
-        // set the environment
+        // set process count
         rsl += "<count>";
         rsl += description.getProcessCount();
         rsl += "</count>";
+        // set node count
+        rsl += "<hostCount>";
+        rsl += description.getResourceCount();
+        rsl += "</hostCount>";
+        // set job type
+        if (jobType != null) {
+        	rsl += "<jobType>";
+        	rsl += jobType;
+        	rsl += "</jobType>";
+        }
         
-        	
+        // set times
+        if (maxTime != null) {
+        	rsl += "<maxTime>" + maxTime + "</maxTime>";
+        }
+        if (maxWallTime != null) {
+        	rsl += "<maxWallTime>" + maxWallTime + "</maxWallTime>";
+        }
+        if (maxCpuTime != null) {
+        	rsl += "<maxCpuTime>" + maxCpuTime + "</maxCpuTime>";
+        }
+        // set memory
+        if (maxMemory != null) {
+        	rsl += "<maxMemory>" + maxMemory + "</maxMemory>";
+        }
+        if (minMemory != null) {
+        	rsl += "<minMemory>" + minMemory + "</minMemory>";
+        }
+        
         rsl += "<directory>";
 
         if (null != wsgt4Directory) {

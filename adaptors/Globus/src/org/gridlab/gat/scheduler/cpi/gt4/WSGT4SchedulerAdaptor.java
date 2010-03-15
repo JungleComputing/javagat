@@ -18,6 +18,7 @@ import org.globus.mds.glue.ComputingElementType;
 import org.globus.mds.glue.GLUECERPType;
 import org.globus.mds.glue.HostType;
 import org.globus.mds.glue.InfoType;
+import org.globus.mds.glue.PolicyType;
 import org.globus.mds.glue.StateType;
 import org.globus.mds.glue.SubClusterType;
 import org.globus.wsrf.WSRFConstants;
@@ -243,7 +244,7 @@ public class WSGT4SchedulerAdaptor extends SchedulerCpi implements Scheduler {
 			AggregatorContent content = (AggregatorContent) entryType.getContent();
 			AggregatorData data = content.getAggregatorData();
 
-			if (data != null) {
+			if ((data != null) && (data.get_any() != null) && (data.get_any().length > 0)) {
 				gluece = (GLUECERPType) ObjectDeserializer.toObject(data.get_any()[0], GLUECERPType.class);
 			}
 		} catch (Exception ex) {
@@ -327,6 +328,15 @@ public class WSGT4SchedulerAdaptor extends SchedulerCpi implements Scheduler {
 						}
 					}
 
+					PolicyType policy = computingElements[i].getPolicy();
+					if (policy != null) {
+						currentQueue.setMaxCPUTime(policy.getMaxCPUTime());
+						currentQueue.setMaxWallTime(policy.getMaxWallClockTime());
+						currentQueue.setMaxRunningJobs(policy.getMaxRunningJobs());
+						currentQueue.setMaxTotalJobs(policy.getMaxTotalJobs());
+						currentQueue.setPriority(policy.getPriority());
+					}
+					
 					queues.add(currentQueue);
 				}
 			}

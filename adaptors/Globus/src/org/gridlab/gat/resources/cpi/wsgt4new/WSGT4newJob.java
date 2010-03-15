@@ -237,7 +237,7 @@ public class WSGT4newJob extends JobCpi implements GramJobListener {
 		} else {
 			m.put("starttime", starttime);
 		}
-		if (state != JobState.STOPPED) {
+		if ((state != JobState.STOPPED) && (state != JobState.DONE_FAILURE) && (state != JobState.DONE_SUCCESS)) {
 			m.put("stoptime", null);
 		} else {
 			m.put("stoptime", stoptime);
