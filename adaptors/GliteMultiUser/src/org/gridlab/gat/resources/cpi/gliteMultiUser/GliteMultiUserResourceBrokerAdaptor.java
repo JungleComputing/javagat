@@ -132,7 +132,7 @@ public class GliteMultiUserResourceBrokerAdaptor extends ResourceBrokerCpi {
 	 * 
 	 * @throws NamingException
 	 */
-	private synchronized void ensureLdapFinderExists() throws NamingException {
+	private void ensureLdapFinderExists() throws NamingException {
 		if (ldapResourceFinder == null) {
 			ldapResourceFinder = new LDAPResourceFinder(gatContext);
 		}
@@ -190,10 +190,21 @@ public class GliteMultiUserResourceBrokerAdaptor extends ResourceBrokerCpi {
 	 * @author Stefan Bozic
 	 */
 	private static class UriAndCount implements Comparable<UriAndCount> {
+		
+		/** Constant. Defines the counter threshold. */
 		private static final int LIMIT = 3;
+		
+		/** The {@link URI} to store */
 		private final URI uri;
+		
+		/** The counting value */
 		private int count;
 
+		/**
+		 * Constructor.
+		 * 
+		 * @param uri The {@link URI}
+		 */
 		public UriAndCount(URI uri) {
 			this.uri = uri;
 			this.count = 0;
@@ -204,15 +215,26 @@ public class GliteMultiUserResourceBrokerAdaptor extends ResourceBrokerCpi {
 			return o.count - this.count;
 		}
 
+		/**
+		 * The {@link URI} of this instance
+		 * 
+		 * @return the {@link URI} of this instance
+		 */
 		public URI getURI() {
 			return uri;
 		}
 
+		/**
+		 * Increase the counter for this instance.
+		 */
 		public void increaseCount() {
 			if (count < LIMIT)
 				count++;
 		}
 
+		/**
+		 * Decrease the counter for this instance.
+		 */
 		public void decreaseCount() {
 			if (count > -LIMIT)
 				count--;

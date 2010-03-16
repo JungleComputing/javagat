@@ -24,6 +24,11 @@ import org.gridlab.gat.resources.security.gliteMultiUser.GliteSecurityUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * This class represents gLite 3.1 job instance.
+ * 
+ * @author Stefan Bozic
+ */
 @SuppressWarnings("serial")
 public class GliteJob extends JobCpi {
 
@@ -225,6 +230,7 @@ public class GliteJob extends JobCpi {
 	 * Update the status of the job. Depended on the requested state some
 	 * action, like file staging or sandbox cleanup, has to be done.
 	 */
+	@SuppressWarnings("unused")
 	private synchronized void updateState() {
 
 		queryState();
@@ -362,6 +368,7 @@ public class GliteJob extends JobCpi {
 	 * @param output The staged out file
 	 * @return The URI on the local harddrive to where the file should be copied
 	 */
+	@SuppressWarnings("unused")
 	private URI destForPostStagedFile(File output) {
 		Map<File, File> postStagedFiles = swDescription.getPostStaged();
 		File stdout = swDescription.getStdout();

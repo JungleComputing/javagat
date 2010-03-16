@@ -12,15 +12,17 @@ import org.gridlab.gat.resources.cpi.gliteMultiUser.GliteConstants;
  * 
  * @author Max Berger
  */
+@SuppressWarnings("serial")
 public class GliteHardwareResource extends HardwareResourceCpi {
 
-    /**
-     * 
-     */
-    private static final long serialVersionUID = 1L;
-
+	/** The queue id */
     private final String queId;
 
+    /**
+     * Constructor
+     * @param gatContext the gat context
+     * @param queName the queue name
+     */
     public GliteHardwareResource(GATContext gatContext, String queName) {
         super(gatContext);
         this.queId = queName;
