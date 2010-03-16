@@ -74,8 +74,10 @@ public class SgeJob extends JobCpi {
                     state = session.getJobProgramStatus(jobID);
                     if (state == Session.FAILED) {
                         // TODO
+                        break;
                     } else if (state == Session.DONE) {
                         // TODO
+                        break;
                     }
                     Thread.sleep(SLEEP);
                 } catch (DrmaaException e) {
@@ -101,15 +103,13 @@ public class SgeJob extends JobCpi {
      */
     private class jobStopListener implements Runnable {
 
-        int state = 0x00;
+        private final Session session;
 
-        final int SLEEP = 250;
+        private final String jobID;
 
-        Session session = null;
-
-        String jobID = null;
-
-        Hashtable<String, Long> time = null;
+        private final Hashtable<String, Long> time;
+        
+        private JobInfo info = null;
 
         public jobStopListener(Session session, String jobID,
                 Hashtable<String, Long> time) {
@@ -119,25 +119,28 @@ public class SgeJob extends JobCpi {
         }
 
         public void run() {
-            while (state != Session.DONE) {
-                try {
-                    state = session.getJobProgramStatus(jobID);
-                    if (state == Session.FAILED) {
-                        // TODO
-                    }
-                    Thread.sleep(SLEEP);
-                } catch (DrmaaException e) {
-                    // TODO
-                } catch (InterruptedException e) {
-                    // TODO
+            try {
+                info = session.wait(jobID, Session.TIMEOUT_WAIT_FOREVER);
+            } catch (DrmaaException e) {
+                if (logger.isDebugEnabled()) {
+                    logger.debug("-- SGEJob EXCEPTION --");
+                    logger.debug("Got an exception while waiting", e);
                 }
             }
+
             setState(JobState.POST_STAGING);
             if (sandbox != null) {
                 sandbox.retrieveAndCleanup(SgeJob.this);
             }
-            setState(JobState.STOPPED);
-            // Now we're in STOPPED state - set the time and exit
+            if (info == null) {
+                setState(JobState.STOPPED);
+            }
+            else if (info.wasAborted()) {
+                setState(JobState.SUBMISSION_ERROR);
+            } else {
+                setState(JobState.STOPPED);
+            }
+            // Now we're in a final state - set the time and exit
             time.put("stop", new Long(System.currentTimeMillis()));
         }
     }
