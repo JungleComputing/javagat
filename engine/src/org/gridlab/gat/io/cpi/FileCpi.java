@@ -504,12 +504,9 @@ public abstract class FileCpi extends MonitorableCpi implements FileInterface, j
         }
 
         FileInterface parent = getParentFile().getFileInterface();
-
-        if (parent == null) {
-            return false;
-        }
-
-        return parent.mkdirs() && mkdir();
+        
+        return parent != null && (parent.mkdirs() || parent.exists()) &&
+                mkdir();
     }
 
     public boolean renameTo(File arg0) throws GATInvocationException {
