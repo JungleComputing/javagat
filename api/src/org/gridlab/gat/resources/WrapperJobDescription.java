@@ -35,30 +35,39 @@ public class WrapperJobDescription extends JobDescription {
          */
         PARALLEL
     }
-
+    
     /**
-     * Attribute name of common sandbox directory for wrapped jobs.
-     * When set, it specifies a directory in which a copy is made of
-     * the wrapper sandbox. This copy should be on the machine on which
-     * the wrapper runs. This may be useful for wrapped jobs which may all
-     * need common files. Using sandbox.common, these common files can be
-     * copied to the wrapped-job node once instead of for each wrapped job.
-     * The actual location of the sandbox (which is a directory inside
-     * the sandbox.common directory) is made available to the wrapped jobs
-     * by means of an environment variable <code>WRAPPER_COMMON_SANDBOX</code>.
+     * Attribute name of the source directory for common files for
+     * wrapped jobs. When set, it specifies a directory that is copied
+     * to the destination directory specified with the WRAPPER_COMMON_DEST
+     * attribute. If either WRAPPER_COMMON_SRC or WRAPPER_COMMON_DEST is
+     * not specified, the wrapper DOES NOT COPY.
+     * This mechanism may be used to copy files to the remote machine once
+     * (by the wrapper), instead of multiple times (for the wrapped jobs).
+     */   
+    public static final String WRAPPER_COMMON_SRC = "wrapper.common.src";
+    
+    /**
+     * Attribute name of the destination directory for common files for
+     * wrapped jobs. See {@link #WRAPPER_COMMON_SRC}.
+     * If either WRAPPER_COMMON_SRC or WRAPPER_COMMON_DEST is
+     * not specified, the wrapper DOES NOT COPY.
+     * This mechanism may be used to copy files to the remote machine once
+     * (by the wrapper), instead of multiple times (for the wrapped jobs).
      */
     
-    public static final String SANDBOX_COMMON = "sandbox.common";
+    public static final String WRAPPER_COMMON_DEST = "wrapper.common.dest";
 
-    /** The copying of the wrapper sandbox can be coordinated, in which
-     * case the attribute "sandbox.common.trigger" should be set to
+    /**
+     * The copying of the wrapper common directory can be coordinated, in which
+     * case the attribute "wrapper.common.trigger" should be set to
      * "true". In that case, the trigger directory is used for trigger files
-     * with the name "SandboxCommonTrigger.WRAPPERNO", where WRAPPERNO stands for the
+     * with the name "WrapperCommonTrigger.WRAPPERNO", where WRAPPERNO stands for the
      * wrapper number. The existence of this file will enable wrapper WRAPPERNO
-     * to copy its sandbox and continue the run. It is up to the JavaGAT application
-     * to produce the trigger files.
+     * to copy its {@link #WRAPPER_COMMON_SRC} directory and continue the run.
+     * It is up to the JavaGAT application to produce the trigger files.
      */
-    public static final String SANDBOX_COMMON_TRIGGER = "sandbox.common.trigger";
+    public static final String WRAPPER_COMMON_TRIGGER = "wrapper.common.trigger";
     
     /**
      * This object contains all the information necessary to describe a wrapped
@@ -354,9 +363,11 @@ public class WrapperJobDescription extends JobDescription {
                     + System.getProperty("user.dir")));
             out.writeInt(level);
             out.writeInt(wrapperJobIndex);
-            String sandboxCopy = (String) softwareDescription.getAttributes().get(SANDBOX_COMMON);
-            out.writeObject(sandboxCopy);
-            String sandboxTrigger = (String) softwareDescription.getAttributes().get(SANDBOX_COMMON_TRIGGER);
+            String wrapperCommonSrc = (String) softwareDescription.getAttributes().get(WRAPPER_COMMON_SRC);
+            out.writeObject(wrapperCommonSrc);
+            String wrapperCommonDest = (String) softwareDescription.getAttributes().get(WRAPPER_COMMON_DEST);
+            out.writeObject(wrapperCommonDest);
+            String sandboxTrigger = (String) softwareDescription.getAttributes().get(WRAPPER_COMMON_TRIGGER);
             out.writeObject(sandboxTrigger);
             synchronized (WrapperJobDescription.class) {
                 if (triggerDirectory == null) {
