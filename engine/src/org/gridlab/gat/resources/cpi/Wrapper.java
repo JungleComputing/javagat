@@ -135,6 +135,7 @@ public class Wrapper {
         
         Preferences preferences = new Preferences();
         preferences.put("file.adaptor.name", "local");
+        preferences.put("file.directory.copy", "contents");
                
         String triggerDirURI = rewriteURI(new URI(triggerDirectory), initiator).toString();
         
@@ -188,8 +189,8 @@ public class Wrapper {
             logger.debug("DONE!");
         }
         if (wrapperCommonDest != null) {
-            File sandboxCopyFile = GAT.createFile(preferences, wrapperCommonDest);
-            sandboxCopyFile.recursivelyDeleteDirectory();
+            File wrapperCommonDestFile = GAT.createFile(preferences, wrapperCommonDest);
+            wrapperCommonDestFile.recursivelyDeleteDirectory();
         }
     }
     
