@@ -1,11 +1,14 @@
 package org.gridlab.gat.io.cpi.gt42;
 
+import java.io.File;
+import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.TimeZone;
 
 import org.globus.cog.abstraction.impl.common.AbstractionFactory;
 import org.globus.cog.abstraction.impl.common.task.ServiceContactImpl;
@@ -47,6 +50,7 @@ abstract public class GT42FileAdaptor extends FileCpi {
         Map<String, Boolean> capabilities = FileCpi.getSupportedCapabilities();
         capabilities.put("canRead", true);
         capabilities.put("canWrite", true);
+        capabilities.put("createNewFile", true);
         capabilities.put("delete", true);
         capabilities.put("exists", true);
         capabilities.put("getAbsoluteFile", true);
@@ -255,7 +259,7 @@ abstract public class GT42FileAdaptor extends FileCpi {
             } catch (GeneralException e) {
                 throw new GATInvocationException("gt42file", e);
             } catch (FileNotFoundException e) {
-                throw new GATInvocationException("gt42file", e);
+                return false;
             }
         } else {
             return super.exists();
@@ -315,10 +319,12 @@ abstract public class GT42FileAdaptor extends FileCpi {
             return false;
         }
         if (!localFile) {
-
             GridFile gf = null;
             try {
                 String path = location.getPath();
+                if (! resource.exists(path)) {
+                    return false;
+                }
                 gf = resource.getGridFile(path);
                 if (gf == null && path.endsWith("/")) {
                     gf = resource.getGridFile(path + '.');
@@ -351,7 +357,11 @@ abstract public class GT42FileAdaptor extends FileCpi {
 
             GridFile gf = null;
             try {
-                gf = resource.getGridFile(location.getPath());
+                String path = location.getPath();
+                if (! resource.exists(path)) {
+                    return false;
+                }
+                gf = resource.getGridFile(path);
                 return gf.isFile();
             } catch (FileNotFoundException e) {
                 return false;
@@ -380,9 +390,16 @@ abstract public class GT42FileAdaptor extends FileCpi {
     	if (!localFile) {
             GridFile gf = null;
             SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmss");
+            // Compensate, see comment above, although I think the comment is
+            // wrong, it is exactly the other way around: the cog returns GMT time.
+            // --Ceriel
+            sdf.setTimeZone(TimeZone.getTimeZone("GMT"));
             Date d;
             try {
                 gf = resource.getGridFile(location.getPath());
+                if (gf == null) {
+                    return 0L;
+                }
                 d = sdf.parse(gf.getLastModified());
                 if (logger.isInfoEnabled()) {
                     logger.info("Last modified: " + gf.getLastModified());
@@ -398,6 +415,26 @@ abstract public class GT42FileAdaptor extends FileCpi {
         } else {
             return super.lastModified();
         }
+    }
+    
+    public boolean createNewFile() throws GATInvocationException {
+        if (exists()) {
+            return false;
+        }
+        java.io.File empty;
+        try {
+            empty = File.createTempFile("GAT", "tmp");
+        } catch (IOException e) {
+            return false;
+        }
+        try {
+            resource.putFile(empty.getAbsolutePath(), location.getPath());
+        } catch (FileNotFoundException e) {
+            throw new GATInvocationException(e.getMessage());
+        } catch (GeneralException e) {
+            throw new GATInvocationException(e.getMessage());
+        }
+        return true;
     }
 
     /*
@@ -457,16 +494,6 @@ abstract public class GT42FileAdaptor extends FileCpi {
         }
     }
 
-    public boolean createNewFile(){
-    	System.out.println("");
-    	System.out.println("------createNewFile GT42FileAdaptor does not exist-----");
-    	System.out.println("");
-    	return false;
-    }
-    
-    
-    
-    
     /*
      * (non-Javadoc)
      * 

@@ -1,11 +1,14 @@
 package org.gridlab.gat.io.cpi.gt4;
 
+import java.io.File;
+import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.TimeZone;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -47,6 +50,7 @@ abstract public class GT4FileAdaptor extends FileCpi {
         Map<String, Boolean> capabilities = FileCpi.getSupportedCapabilities();
         capabilities.put("canRead", true);
         capabilities.put("canWrite", true);
+        capabilities.put("createNewFile", true);
         capabilities.put("delete", true);
         capabilities.put("exists", true);
         capabilities.put("getAbsoluteFile", true);
@@ -258,7 +262,7 @@ abstract public class GT4FileAdaptor extends FileCpi {
             } catch (GeneralException e) {
                 throw new GATInvocationException("gt4file", e);
             } catch (FileNotFoundException e) {
-                throw new GATInvocationException("gt4file", e);
+                return false;
             }
         } else {
             // Should implement the local case as well, because it is used
@@ -317,10 +321,12 @@ abstract public class GT4FileAdaptor extends FileCpi {
         // How should be handled the / in the in the end of the location?
         // Probably a bug in the Cog Toolkit?
         if (!localFile) {
-
             GridFile gf = null;
             try {
                 String path = location.getPath();
+                if (! resource.exists(path)) {
+                    return false;
+                }
                 gf = resource.getGridFile(path);
                 if (gf == null && path.endsWith("/")) {
                     gf = resource.getGridFile(path + '.');
@@ -350,7 +356,11 @@ abstract public class GT4FileAdaptor extends FileCpi {
 
             GridFile gf = null;
             try {
-                gf = resource.getGridFile(location.getPath());
+                String path = location.getPath();
+                if (! resource.exists(path)) {
+                    return false;
+                }
+                gf = resource.getGridFile(path);
                 return gf.isFile();
             } catch (FileNotFoundException e) {
                 return false;
@@ -378,16 +388,21 @@ abstract public class GT4FileAdaptor extends FileCpi {
         if (!localFile) {
             GridFile gf = null;
             SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmss");
+            // Compensate, see comment above, although I think the comment is
+            // wrong, it is exactly the other way around: the cog returns GMT time.
+            // --Ceriel
+            sdf.setTimeZone(TimeZone.getTimeZone("GMT"));
             Date d;
             try {
                 gf = resource.getGridFile(location.getPath());
                 if (gf == null) {
                     return 0;
                 }
-                d = sdf.parse(gf.getLastModified());
+                String lastModified = gf.getLastModified();
                 if (logger.isInfoEnabled()) {
-                    logger.info("Last modified: " + gf.getLastModified());
+                    logger.info("Last modified: " + lastModified);
                 }
+                d = sdf.parse(lastModified);
                 return d.getTime();
             } catch (FileNotFoundException e) {
                 throw new GATInvocationException(e.getMessage());
@@ -399,6 +414,26 @@ abstract public class GT4FileAdaptor extends FileCpi {
         } else {
             return super.lastModified();
         }
+    }
+    
+    public boolean createNewFile() throws GATInvocationException {
+        if (exists()) {
+            return false;
+        }
+        java.io.File empty;
+        try {
+            empty = File.createTempFile("GAT", "tmp");
+        } catch (IOException e) {
+            return false;
+        }
+        try {
+            resource.putFile(empty.getAbsolutePath(), location.getPath());
+        } catch (FileNotFoundException e) {
+            throw new GATInvocationException(e.getMessage());
+        } catch (GeneralException e) {
+            throw new GATInvocationException(e.getMessage());
+        }
+        return true;
     }
 
     /*
