@@ -613,6 +613,12 @@ public abstract class FileCpi extends MonitorableCpi implements FileInterface, j
     protected static void copyDirectory(GATContext gatContext,
             Preferences additionalPreferences, URI dirURI, URI dest)
             throws GATInvocationException {
+        copyDirectory(gatContext, additionalPreferences, false, dirURI, dest);
+    }
+    
+    private static void copyDirectory(GATContext gatContext,
+            Preferences additionalPreferences, boolean nested, URI dirURI, URI dest)
+            throws GATInvocationException {
         if (logger.isDebugEnabled()) {
             logger.debug("copyDirectory '" + dirURI + "' to '" + dest + "'");
         }
@@ -649,7 +655,7 @@ public abstract class FileCpi extends MonitorableCpi implements FileInterface, j
         if (! existingDir) {
             // copy dir a to b will result in a new directory b with contents
             // that is a copy of the contents of a.
-        } else if (gatContext.getPreferences().containsKey("file.directory.copy")
+        } else if (! nested && gatContext.getPreferences().containsKey("file.directory.copy")
                 && ((String) gatContext.getPreferences().get(
                         "file.directory.copy")).equalsIgnoreCase("contents")) {
             // don't modify the dest dir, so copy dir a to dir b ends up as
@@ -746,17 +752,9 @@ public abstract class FileCpi extends MonitorableCpi implements FileInterface, j
                 if (logger.isDebugEnabled()) {
                     logger.debug("copyDirectory: copying dir " + f);
                 }
-                if (gatContext.getPreferences().containsKey(
-                        "file.directory.copy")
-                        && ((String) gatContext.getPreferences().get(
-                                "file.directory.copy"))
-                                .equalsIgnoreCase("contents")) {
-                    Preferences newPrefs = new Preferences();
-                    newPrefs.put("file.directory.copy", "dirs");
-                    copyDirectory(gatContext, newPrefs, f.toURI(), dest);
-                } else {
-                    copyDirectory(gatContext, null, f.toURI(), dest);
-                }
+
+                copyDirectory(gatContext, additionalPreferences, true, f.toURI(), dest);
+                
             } else {
                 throw new GATInvocationException(
                         "file cpi, don't know how to handle file: " + f
