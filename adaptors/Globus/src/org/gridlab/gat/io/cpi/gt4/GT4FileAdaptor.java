@@ -533,6 +533,7 @@ abstract public class GT4FileAdaptor extends FileCpi {
         if (!localFile) {
             GridFile gf = null;
             SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmss");
+            sdf.setTimeZone(TimeZone.getTimeZone("GMT"));
             Date d = new Date(arg0);
             try {
                 gf = resource.getGridFile(location.getPath());
