@@ -99,7 +99,7 @@ public class GT4GridFTPFileAdaptor extends GT4FileAdaptor {
         } catch (Exception e) {
             throw new GATInvocationException(e.getMessage(), e);
         }
-        sourceSecurityContext.setCredentials(getCredential(destProvider, dest));
+        sourceSecurityContext.setCredentials(getCredential(srcProvider, location));
         sourceService.setSecurityContext(sourceSecurityContext);
 
         ServiceContact sourceServiceContact = new ServiceContactImpl();
