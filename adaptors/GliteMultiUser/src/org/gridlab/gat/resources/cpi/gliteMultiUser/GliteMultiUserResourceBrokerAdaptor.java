@@ -13,6 +13,7 @@ import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.GATObjectCreationException;
 import org.gridlab.gat.Preferences;
 import org.gridlab.gat.URI;
+import org.gridlab.gat.engine.GATEngine;
 import org.gridlab.gat.monitoring.Metric;
 import org.gridlab.gat.monitoring.MetricListener;
 import org.gridlab.gat.resources.AbstractJobDescription;
@@ -44,6 +45,13 @@ public class GliteMultiUserResourceBrokerAdaptor extends ResourceBrokerCpi {
 	/** ResourceBroker Collection */
 	private final List<UriAndCount> resourceBrokerURIs = new ArrayList<UriAndCount>();
 
+	/**
+	 * Initialize the ResourceBroker
+	 */
+    public static void init() {
+        GATEngine.registerUnmarshaller(GliteJob.class);
+    }
+	
 	/**
 	 * Defines a Map, that holds the information which capabilities are
 	 * supported by this adaptor.
