@@ -107,9 +107,6 @@ abstract public class GT42FileAdaptor extends FileCpi {
         } else if (prov.equals("gsiftp")) {
             if (location.isCompatible("file") && location.refersToLocalHost()) {
                 localFile = true;
-            } else if (!location.isCompatible("gridftp")) {
-                throw new AdaptorNotApplicableException(
-                        "cannot handle this URI: " + location);
             }
         }
 

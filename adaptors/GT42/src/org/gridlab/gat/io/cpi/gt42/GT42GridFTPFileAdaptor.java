@@ -27,6 +27,10 @@ import org.gridlab.gat.io.File;
 //This class only supports the URIs with gsiftp
 @SuppressWarnings("serial")
 public class GT42GridFTPFileAdaptor extends GT42FileAdaptor {
+    
+    public static String[] getSupportedSchemes() {
+        return new String[] { "gt42", "gridftp", "gsiftp", "file", ""};
+    }
 
     public static Map<String, Boolean> getSupportedCapabilities() {
         Map<String, Boolean> capabilities = GT42FileAdaptor
