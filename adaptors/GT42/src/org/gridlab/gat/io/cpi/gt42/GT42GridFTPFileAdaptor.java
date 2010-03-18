@@ -95,7 +95,7 @@ public class GT42GridFTPFileAdaptor extends GT42FileAdaptor {
         } catch (Exception e) {
             throw new GATInvocationException(e.getMessage());
         }
-        sourceSecurityContext.setCredentials(getCredential(destProvider, dest));
+        sourceSecurityContext.setCredentials(getCredential(srcProvider, location));
         sourceService.setSecurityContext(sourceSecurityContext);
 
         ServiceContact sourceServiceContact = new ServiceContactImpl();

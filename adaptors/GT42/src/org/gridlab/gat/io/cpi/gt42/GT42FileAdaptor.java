@@ -571,4 +571,14 @@ abstract public class GT42FileAdaptor extends FileCpi {
             return super.setReadOnly();
         }
     }
+    
+    protected void finalize() {
+        if (resource != null) {
+            try {
+                resource.stop();
+            } catch (GeneralException e) {
+                // ignored
+            }
+        }
+    }
 }
