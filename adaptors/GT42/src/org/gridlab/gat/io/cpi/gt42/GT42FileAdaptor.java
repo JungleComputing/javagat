@@ -433,6 +433,8 @@ abstract public class GT42FileAdaptor extends FileCpi {
             throw new GATInvocationException(e.getMessage());
         } catch (GeneralException e) {
             throw new GATInvocationException(e.getMessage());
+        } finally {
+            empty.delete();
         }
         return true;
     }
