@@ -29,7 +29,7 @@ import org.gridlab.gat.io.File;
 public class GT4GridFTPFileAdaptor extends GT4FileAdaptor {
         
     public static String[] getSupportedSchemes() {
-        return new String[] { "gridftp", "gsiftp", "file", ""};
+        return new String[] { "gt4", "gridftp", "gsiftp", "file", ""};
     }
 
     public static Map<String, Boolean> getSupportedCapabilities() {
