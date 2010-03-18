@@ -432,6 +432,8 @@ abstract public class GT4FileAdaptor extends FileCpi {
             throw new GATInvocationException(e.getMessage());
         } catch (GeneralException e) {
             throw new GATInvocationException(e.getMessage());
+        } finally {
+            empty.delete();
         }
         return true;
     }
