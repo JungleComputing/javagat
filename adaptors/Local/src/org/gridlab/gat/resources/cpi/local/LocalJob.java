@@ -228,6 +228,9 @@ public class LocalJob extends JobCpi {
         } catch (IOException e) {
             // ignore
         }
+        
+        p.destroy();
+        
         if (outputStreamFile != null) {
             outputStreamFile.waitUntilFinished();
             try {
@@ -251,7 +254,6 @@ public class LocalJob extends JobCpi {
             sandbox.retrieveAndCleanup(this);
         }
 
-        p.destroy(); 
         setStopTime();
         setState(JobState.STOPPED);
         finished();

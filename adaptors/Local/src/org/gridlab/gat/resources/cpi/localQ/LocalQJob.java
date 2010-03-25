@@ -136,14 +136,15 @@ public class LocalQJob extends JobCpi implements Runnable,
                 || state == JobState.SUBMISSION_ERROR) {
             return;
         }
+        
+        p.destroy();
+        
         if (!(gatContext.getPreferences().containsKey("job.stop.poststage") && gatContext
                 .getPreferences().get("job.stop.poststage").equals("false"))) {
             setState(JobState.POST_STAGING);
             sandbox.retrieveAndCleanup(this);
         }
-        if (p != null) {
-            p.destroy();
-        }
+
         stopped = true;
     }
 

@@ -56,7 +56,7 @@ public class SshTrileadResourceBrokerAdaptor extends ResourceBrokerCpi {
                         "aes256-ctr,aes192-ctr,aes128-ctr,blowfish-ctr,aes256-cbc,aes192-cbc,aes128-cbc,blowfish-cbc");
         preferences.put("sshtrilead.tcp.nodelay", "false");
         preferences.put("sshtrilead.use.cached.connections", "true");
-        preferences.put("sshtrilead.separate.output", "true");
+        preferences.put("sshtrilead.separate.output", "false");
         preferences.put("sshtrilead.stoppable", "false");
         preferences.put("sshtrilead.caching.iswindows", "true");
         preferences.put("sshtrilead.caching.iscsh", "true");
@@ -136,7 +136,7 @@ public class SshTrileadResourceBrokerAdaptor extends ResourceBrokerCpi {
                 .equalsIgnoreCase("true");
         noHostKeyChecking = ((String) p.get("sshtrilead.noHostKeyChecking", "true"))
                 .equalsIgnoreCase("true");
-        strictHostKeyChecking = ((String) p.get("sshtrilead.strictHostKeyChecking", "true"))
+        strictHostKeyChecking = ((String) p.get("sshtrilead.strictHostKeyChecking", "false"))
                 .equalsIgnoreCase("true");
         
         verifier = new HostKeyVerifier(false, strictHostKeyChecking, noHostKeyChecking);
@@ -190,6 +190,8 @@ public class SshTrileadResourceBrokerAdaptor extends ResourceBrokerCpi {
             throw new GATInvocationException(
                     "The preferences 'sshtrilead.separate.output' and 'sshtrilead.stoppable' cannot both be set to 'true'.");
         }
+        
+        // TODO: separateOutput is never used! --Ceriel
         
         // create the sandbox
         Sandbox sandbox = new Sandbox(gatContext, description, getAuthority(),
