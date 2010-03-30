@@ -21,6 +21,8 @@ public class SerializedJob extends SerializedBase implements Serializable, Adver
 
     private long starttime, stoptime, submissiontime;
 
+    private String brokerUri;
+    
     // we need this constructor for castor
     public SerializedJob() {
     }
@@ -111,4 +113,18 @@ public class SerializedJob extends SerializedBase implements Serializable, Adver
     public void setSubmissiontime(long submissiontime) {
         this.submissiontime = submissiontime;
     }
+
+	/**
+	 * @param brokerUri the brokerUri to set
+	 */
+	public void setBrokerUri(String brokerUri) {
+		this.brokerUri = brokerUri;
+	}
+
+	/**
+	 * @return the brokerUri
+	 */
+	public String getBrokerUri() {
+		return brokerUri;
+	}
 }

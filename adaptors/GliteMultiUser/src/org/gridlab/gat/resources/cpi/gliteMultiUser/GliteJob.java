@@ -1,5 +1,6 @@
 package org.gridlab.gat.resources.cpi.gliteMultiUser;
 
+import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.rmi.RemoteException;
@@ -8,10 +9,15 @@ import java.util.Map;
 
 import javax.xml.rpc.ServiceException;
 
+import org.apache.axis.AxisProperties;
+import org.apache.axis.EngineConfigurationFactory;
 import org.apache.axis.SimpleTargetedChain;
 import org.apache.axis.configuration.SimpleProvider;
 import org.apache.axis.transport.http.HTTPSender;
 import org.glite.wms.wmproxy.JobIdStructType;
+import org.glite.wms.wmproxy.OperationNotAllowedFaultException;
+import org.glite.wms.wmproxy.StringAndLongList;
+import org.glite.wms.wmproxy.StringAndLongType;
 import org.glite.wms.wmproxy.WMProxyAPI;
 import org.glite.wsdl.services.lb.LoggingAndBookkeepingLocator;
 import org.glite.wsdl.services.lb.LoggingAndBookkeepingPortType;
@@ -21,11 +27,14 @@ import org.glite.wsdl.types.lb.JobStatus;
 import org.glite.wsdl.types.lb.StatName;
 import org.globus.axis.transport.HTTPSSender;
 import org.globus.gsi.GlobusCredential;
+import org.gridlab.gat.GAT;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.GATObjectCreationException;
+import org.gridlab.gat.URI;
 import org.gridlab.gat.advert.Advertisable;
 import org.gridlab.gat.engine.GATEngine;
+import org.gridlab.gat.io.FileInputStream;
 import org.gridlab.gat.resources.Job;
 import org.gridlab.gat.resources.JobDescription;
 import org.gridlab.gat.resources.ResourceBroker;
@@ -80,9 +89,6 @@ public class GliteJob extends JobCpi {
 	/** The id of the job. */
 	private String gliteJobID;
 
-	/** The WMProxy client */
-	private WMProxyAPI api;
-
 	/** The submission-time of the job */
 	private volatile long submissiontime = -1L;
 
@@ -97,9 +103,6 @@ public class GliteJob extends JobCpi {
 
 	/** The address of the CE where the job will be executed. */
 	private volatile String destination = null;
-
-	/** An id for the delegated voms-proxy-certificate */
-	private final static String DELEGATION_ID = "delegationId";
 
 	/** The path to the voms-proxy */
 	private String vomsProxyPath = "";
@@ -126,7 +129,9 @@ public class GliteJob extends JobCpi {
 	protected GliteJob(final GATContext gatContext, final JobDescription jobDescription, final Sandbox sandbox,
 			final String brokerURI) throws GATInvocationException, GATObjectCreationException {
 		super(gatContext, jobDescription, sandbox);
-		System.setProperty("sslProtocol", "SSLv3");
+
+		initProperties();
+
 		// make it work with the axis services
 		// the axis service will only accept the uri if the protocol is
 		// known to them while any:// is not known to them, https:// will work
@@ -165,22 +170,8 @@ public class GliteJob extends JobCpi {
 	 */
 	public GliteJob(GATContext gatContext, SerializedJob sj) throws GATObjectCreationException, GATInvocationException {
 		super(gatContext, sj.getJobDescription(), sj.getSandbox());
-		System.setProperty("sslProtocol", "SSLv3");
-		if (sandbox != null) {
-			sandbox.setContext(gatContext);
-		}
 
-		if (System.getProperty("GLOBUS_LOCATION") == null) {
-			String globusLocation = System.getProperty("gat.adaptor.path") + java.io.File.separator + "GlobusAdaptor"
-					+ java.io.File.separator;
-			System.setProperty("GLOBUS_LOCATION", globusLocation);
-		}
-
-		if (System.getProperty("axis.ClientConfigFile") == null) {
-			String axisClientConfigFile = System.getProperty("gat.adaptor.path") + java.io.File.separator
-					+ "GlobusAdaptor" + java.io.File.separator + "client-config.wsdd";
-			System.setProperty("axis.ClientConfigFile", axisClientConfigFile);
-		}
+		initProperties();
 
 		if (logger.isDebugEnabled()) {
 			logger.debug("reconstructing wsgt4newjob: " + sj);
@@ -191,12 +182,36 @@ public class GliteJob extends JobCpi {
 		this.stoptime = sj.getStoptime();
 		this.submissiontime = sj.getSubmissiontime();
 
+		try {
+			this.wmsURL = new URL(sj.getBrokerUri());
+		} catch (MalformedURLException e) {
+			throw new GATInvocationException("Could not create WMS URL", e);
+		}
+
 		// Tell the engine that we provide job.status events
 		HashMap<String, Object> returnDef = new HashMap<String, Object>();
 		returnDef.put("status", JobState.class);
 
 		initSecurity(gatContext);
 		jobDescription = sj.getJobDescription();
+	}
+
+	/**
+	 * Initialize the system properties
+	 */
+	private void initProperties() {
+		if (sandbox != null) {
+			sandbox.setContext(gatContext);
+		}
+
+		if (System.getProperty("axis.socketSecureFactory") == null) {
+			System.setProperty("axis.socketSecureFactory", "org.glite.security.trustmanager.axis.AXISSocketFactory");
+		}
+        
+		if (System.getProperty("sslProtocol") == null) {
+			System.setProperty("sslProtocol", "SSLv3");
+		}
+
 	}
 
 	/**
@@ -220,21 +235,31 @@ public class GliteJob extends JobCpi {
 	 * @throws GATInvocationException an exception that might occurs.
 	 */
 	private WMProxyAPI getWmProxy() throws GATInvocationException {
-		if (api == null) {
-			try {
+		WMProxyAPI api = null;
+		
+		try {
+			final String caDirectory = System.getProperty("CADIR");
 
-				final String caDirectory = System.getProperty("CADIR");
-
-				if (null == caDirectory || caDirectory.isEmpty()) {
-					throw new GATInvocationException("No CA directory is specified as System property!");
-				}
-
-				api = new WMProxyAPI(wmsURL.toString(), vomsProxyPath, caDirectory);
-				String proxy = api.grstGetProxyReq(DELEGATION_ID);
-				api.grstPutProxy(DELEGATION_ID, proxy);
-			} catch (Exception e) {
-				throw new GATInvocationException("An error occurs during creating a new instance of GLiteJob.");
+			if (null == caDirectory || caDirectory.isEmpty()) {
+				throw new GATInvocationException("No CA directory is specified as System property!");
 			}
+
+			Object o = AxisProperties.getProperty(EngineConfigurationFactory.SYSTEM_PROPERTY_NAME);
+			if (AxisProperties.getProperty(EngineConfigurationFactory.SYSTEM_PROPERTY_NAME) == null) {
+//				AxisProperties. (EngineConfigurationFactory.SYSTEM_PROPERTY_NAME,
+//						"org.gridlab.gat.resources.cpi.wsgt4new.GlobusEngineConfigurationFactory");
+			}			
+			
+			String delegationId = getDelegationId(); 
+			
+			api = new WMProxyAPI(wmsURL.toString(), vomsProxyPath, caDirectory);
+
+			String proxy = api.grstGetProxyReq(delegationId);
+			api.grstPutProxy(delegationId, proxy);
+			
+			api.getVersion();
+		} catch (Exception e) {
+			throw new GATInvocationException("An error occurs during creating a new instance of GLiteJob.");
 		}
 
 		return api;
@@ -276,8 +301,8 @@ public class GliteJob extends JobCpi {
 	 */
 	public String submitJob() throws GATInvocationException, GATObjectCreationException {
 		try {
-			JobIdStructType jobIds = getWmProxy().jobSubmit(gLiteJobDescription.getJdlString(), DELEGATION_ID);
-
+			WMProxyAPI api = getWmProxy();
+			JobIdStructType jobIds = api.jobSubmit(gLiteJobDescription.getJdlString(), getDelegationId());
 			gliteJobID = jobIds.getId();
 
 			LOGGER.info("Job sucessfully submitted with id: " + gliteJobID);
@@ -286,6 +311,15 @@ public class GliteJob extends JobCpi {
 		} catch (Exception e) {
 			throw new GATInvocationException("Ann error occurs during submitting the job.", e);
 		}
+	}
+
+	/**
+	 * Returns the delegation id for this job
+	 * 
+	 * @return the delegation id for this job
+	 */
+	private String getDelegationId() {
+		return "gatjob";// + gLiteJobDescription.getJdlID();
 	}
 
 	/**
@@ -347,7 +381,7 @@ public class GliteJob extends JobCpi {
 		if ("Waiting".equalsIgnoreCase(gLiteState)) {
 			state = Job.JobState.INITIAL;
 		} else if ("Ready".equalsIgnoreCase(gLiteState)) {
-			state = Job.JobState.INITIAL;
+			state = Job.JobState.READY;
 		} else if ("Scheduled".equalsIgnoreCase(gLiteState)) {
 			// if state appears the first time, set the submission time
 			// appropriately
@@ -425,7 +459,7 @@ public class GliteJob extends JobCpi {
 		}
 
 		try {
-			getWmProxy().jobCancel(DELEGATION_ID);
+			getWmProxy().jobCancel(getDelegationId());
 		} catch (Exception e) {
 			throw new GATInvocationException("Could not cancel job!", e);
 		}
@@ -440,6 +474,7 @@ public class GliteJob extends JobCpi {
 		sj = new SerializedJob(getClass().getName(), jobDescription, sandbox, gliteJobID, submissiontime, starttime,
 				stoptime);
 
+		sj.setBrokerUri(wmsURL.toString());
 		String res = GATEngine.defaultMarshal(sj);
 		if (logger.isDebugEnabled()) {
 			logger.debug("marshalled seralized job: " + res);
@@ -516,5 +551,33 @@ public class GliteJob extends JobCpi {
 			throw new RuntimeException(e);
 		}
 		return this.state;
+	}
+
+	@Override
+	public InputStream getStdout() throws GATInvocationException {
+		FileInputStream retVal = null;
+
+		StringAndLongType[] list = null;
+		try {
+			StringAndLongList sl = getWmProxy().getOutputFileList(gliteJobID, "gsiftp");
+			list = sl.getFile();
+
+			GATContext newContext = (GATContext) gatContext.clone();
+			newContext.addPreference("File.adaptor.name", "GridFTP");
+
+			for (int i = 0; i < list.length; i++) {
+				URI uri1 = new URI(list[i].getName());
+				URI uri2 = new URI(uri1.getScheme() + "://" + uri1.getHost() + ":" + uri1.getPort() + "//"
+						+ uri1.getPath());
+
+				retVal = GAT.createFileInputStream(newContext, uri2);
+			}
+		} catch (OperationNotAllowedFaultException e) {
+			throw new GATInvocationException("The job has the wrong state to perform this action.", e);
+		} catch (Exception e) {
+			throw new GATInvocationException("An error occurs during receifing the StdOut.", e);
+		}
+
+		return retVal;
 	}
 }

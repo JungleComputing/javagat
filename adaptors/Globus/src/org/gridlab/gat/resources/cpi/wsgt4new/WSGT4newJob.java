@@ -4,6 +4,8 @@ import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.axis.AxisProperties;
+import org.apache.axis.EngineConfigurationFactory;
 import org.globus.common.ResourceManagerContact;
 import org.globus.exec.client.GramJob;
 import org.globus.exec.client.GramJobListener;
@@ -51,6 +53,20 @@ public class WSGT4newJob extends JobCpi implements GramJobListener {
 
 	private String submissionID;
 
+	// instance initializer sets personalized EngineConfigurationFactory for the axis client
+	{
+		if (System.getProperty("GLOBUS_LOCATION") == null) {
+			String globusLocation = System.getProperty("gat.adaptor.path") + java.io.File.separator + "GlobusAdaptor"
+					+ java.io.File.separator;
+			System.setProperty("GLOBUS_LOCATION", globusLocation);
+		}
+
+		if (AxisProperties.getProperty(EngineConfigurationFactory.SYSTEM_PROPERTY_NAME) == null) {
+			AxisProperties.setProperty(EngineConfigurationFactory.SYSTEM_PROPERTY_NAME,
+					"org.gridlab.gat.resources.cpi.wsgt4new.GlobusEngineConfigurationFactory");
+		}
+	}
+
 	protected WSGT4newJob(GATContext gatContext, JobDescription jobDescription, Sandbox sandbox) {
 		super(gatContext, jobDescription, sandbox);
 		HashMap<String, Object> returnDef = new HashMap<String, Object>();
@@ -69,18 +85,6 @@ public class WSGT4newJob extends JobCpi implements GramJobListener {
 
 		if (sandbox != null) {
 			sandbox.setContext(gatContext);
-		}
-
-		if (System.getProperty("GLOBUS_LOCATION") == null) {
-			String globusLocation = System.getProperty("gat.adaptor.path") + java.io.File.separator + "GlobusAdaptor"
-					+ java.io.File.separator;
-			System.setProperty("GLOBUS_LOCATION", globusLocation);
-		}
-
-		if (System.getProperty("axis.ClientConfigFile") == null) {
-			String axisClientConfigFile = System.getProperty("gat.adaptor.path") + java.io.File.separator
-					+ "GlobusAdaptor" + java.io.File.separator + "client-config.wsdd";
-			System.setProperty("axis.ClientConfigFile", axisClientConfigFile);
 		}
 
 		if (logger.isDebugEnabled()) {
@@ -210,7 +214,8 @@ public class WSGT4newJob extends JobCpi implements GramJobListener {
 	}
 
 	public synchronized int getExitStatus() throws GATInvocationException {
-		if (getState() != JobState.DONE_FAILURE && getState() != JobState.DONE_SUCCESS && getState() != JobState.SUBMISSION_ERROR) {
+		if (getState() != JobState.DONE_FAILURE && getState() != JobState.DONE_SUCCESS
+				&& getState() != JobState.SUBMISSION_ERROR) {
 			throw new GATInvocationException("exit status not yet available");
 		}
 		return exitStatus;
@@ -262,9 +267,8 @@ public class WSGT4newJob extends JobCpi implements GramJobListener {
 		// the poller here? TODO!
 		synchronized (this) {
 			/*
-			 * Commented out to avoid recursive calls to doStateChange --Ceriel
-			 * (suggestion to do this was by Brian Carpenter). try {
-			 * job.refreshStatus(); } catch (Exception e) { // ignore }
+			 * Commented out to avoid recursive calls to doStateChange --Ceriel (suggestion to do this was by Brian
+			 * Carpenter). try { job.refreshStatus(); } catch (Exception e) { // ignore }
 			 */
 			StateEnumeration newState = job.getState();
 			logger.debug("jobState (upcall): " + newState);
@@ -294,14 +298,14 @@ public class WSGT4newJob extends JobCpi implements GramJobListener {
 				logger.debug(errorMessage, e);
 			}
 		}
-		
+
 		if (jobState.equals(StateEnumeration.Pending)) {
 			setState(JobState.SCHEDULED);
 		} else if (jobState.equals(StateEnumeration.Active)) {
 			setStartTime();
 			setState(JobState.RUNNING);
 		} else if (jobState.equals(StateEnumeration.CleanUp)) {
-			//Do nothing			
+			// Do nothing
 		} else if (jobState.equals(StateEnumeration.Done)) {
 			setState(JobState.DONE_SUCCESS);
 			setStopTime();
@@ -367,8 +371,8 @@ public class WSGT4newJob extends JobCpi implements GramJobListener {
 						}
 
 						try {
-							//Its not possible to reset the credentials to a job object.
-							//So create a WSGT4 instance if the credential is getting expired.
+							// Its not possible to reset the credentials to a job object.
+							// So create a WSGT4 instance if the credential is getting expired.
 							GSSCredential credential = gj.job.getCredentials();
 							if (credential.getRemainingLifetime() == 0) {
 								logger.debug("Credential expired. Create a new Job instance.");

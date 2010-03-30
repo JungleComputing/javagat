@@ -122,6 +122,12 @@ public interface Job extends Monitorable, Advertisable {
          */
         INITIAL,
         /**
+         * Initial state indicator.
+         * 
+         * The {@link Job} has been assigned to a computing element but not yet transfered to it.
+         */
+        READY,
+        /**
          * Scheduled state indicator.
          * 
          * The {@link Job} has been submitted to a resource broker and is

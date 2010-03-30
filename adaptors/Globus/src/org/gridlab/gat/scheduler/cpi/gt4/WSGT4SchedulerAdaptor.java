@@ -7,6 +7,8 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.axis.AxisProperties;
+import org.apache.axis.EngineConfigurationFactory;
 import org.apache.axis.client.Stub;
 import org.apache.axis.message.MessageElement;
 import org.apache.axis.message.addressing.AttributedURI;
@@ -40,9 +42,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * GAT-Adaptor for retrieving Scheduler Informations from a Globus-MDS4-Service.
- * The Adaptor retrieves the scheduler informations by querying the MDS with a
- * WebService call.
+ * GAT-Adaptor for retrieving Scheduler Informations from a Globus-MDS4-Service. The Adaptor retrieves the scheduler
+ * informations by querying the MDS with a WebService call.
  * 
  * @author Stefan Bozic
  */
@@ -61,6 +62,20 @@ public class WSGT4SchedulerAdaptor extends SchedulerCpi implements Scheduler {
 			+ "     child::*[local-name()=\"ReferenceProperties\" and"
 			+ "        child::*[local-name()=\"ResourceID\"]" + "     ]" + "  ]" + "]";
 
+	// instance initializer sets personalized EngineConfigurationFactory for the axis client
+	{
+		if (System.getProperty("GLOBUS_LOCATION") == null) {
+			String globusLocation = System.getProperty("gat.adaptor.path") + java.io.File.separator + "GlobusAdaptor"
+					+ java.io.File.separator;
+			System.setProperty("GLOBUS_LOCATION", globusLocation);
+		}
+
+		if (AxisProperties.getProperty(EngineConfigurationFactory.SYSTEM_PROPERTY_NAME) == null) {
+			AxisProperties.setProperty(EngineConfigurationFactory.SYSTEM_PROPERTY_NAME,
+					"org.gridlab.gat.resources.cpi.wsgt4new.GlobusEngineConfigurationFactory");
+		}
+	}
+
 	/**
 	 * Constructor. Initialize the path to the axis client-config file.
 	 * 
@@ -69,12 +84,6 @@ public class WSGT4SchedulerAdaptor extends SchedulerCpi implements Scheduler {
 	 */
 	public WSGT4SchedulerAdaptor(final GATContext gatContext, final URI uri) {
 		super(gatContext, uri);
-
-		if (System.getProperty("axis.ClientConfigFile") == null) {
-			String axisClientConfigFile = System.getProperty("gat.adaptor.path") + java.io.File.separator
-					+ "GlobusAdaptor" + java.io.File.separator + "client-config.wsdd";
-			System.setProperty("axis.ClientConfigFile", axisClientConfigFile);
-		}
 	}
 
 	/*
@@ -87,8 +96,10 @@ public class WSGT4SchedulerAdaptor extends SchedulerCpi implements Scheduler {
 		List<Queue> queueList = new ArrayList<Queue>();
 
 		try {
-			final String myURL = "https://" + getInformationSystemUri().getHost() + ":8443/wsrf/services/DefaultIndexService";
+			final String myURL = "https://" + getInformationSystemUri().getHost()
+					+ ":8443/wsrf/services/DefaultIndexService";
 			final WSResourcePropertiesServiceAddressingLocator locator = new WSResourcePropertiesServiceAddressingLocator();
+
 			final QueryResourceProperties_PortType port;
 			final EndpointReferenceType endpoint = new EndpointReferenceType();
 			endpoint.setAddress(new AttributedURI(myURL));
@@ -134,8 +145,7 @@ public class WSGT4SchedulerAdaptor extends SchedulerCpi implements Scheduler {
 	}
 
 	/**
-	 * Handles the given {@link EntryType} and call methods to gain detailed
-	 * informations.
+	 * Handles the given {@link EntryType} and call methods to gain detailed informations.
 	 * 
 	 * @param entryType the {@link EntryType} to handle
 	 * @throws Exception an {@link Exception} that might occurs
@@ -228,8 +238,7 @@ public class WSGT4SchedulerAdaptor extends SchedulerCpi implements Scheduler {
 	}
 
 	/**
-	 * Retrieves all JobQueue-Informations from a {@link EntryType} and map them
-	 * to a {@link List} of {@link Queue}.
+	 * Retrieves all JobQueue-Informations from a {@link EntryType} and map them to a {@link List} of {@link Queue}.
 	 * 
 	 * @param entryType the given {@link EntryType}
 	 * 
@@ -336,7 +345,7 @@ public class WSGT4SchedulerAdaptor extends SchedulerCpi implements Scheduler {
 						currentQueue.setMaxTotalJobs(policy.getMaxTotalJobs());
 						currentQueue.setPriority(policy.getPriority());
 					}
-					
+
 					queues.add(currentQueue);
 				}
 			}
