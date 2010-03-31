@@ -26,6 +26,7 @@ import org.glite.wsdl.types.lb.GenericFault;
 import org.glite.wsdl.types.lb.JobFlags;
 import org.glite.wsdl.types.lb.JobStatus;
 import org.glite.wsdl.types.lb.StatName;
+import org.glite.wsdl.types.lb.StateEnterTimesItem;
 import org.globus.axis.transport.HTTPSSender;
 import org.globus.gsi.GlobusCredential;
 import org.gridlab.gat.GAT;
@@ -92,6 +93,15 @@ public class GliteJob extends JobCpi {
 	/** The id of the job. */
 	private String gliteJobID;
 
+	/** The exit status */
+	private int exitStatus;
+
+	/** the spended cputime */
+	private volatile long cpuTime = -1L;
+
+	/** The location of the sandbox */
+	private String sandboxUri = null;
+
 	/** The submission-time of the job */
 	private volatile long submissiontime = -1L;
 
@@ -101,6 +111,9 @@ public class GliteJob extends JobCpi {
 	/** The stop-time of the job */
 	private volatile long stoptime = -1L;
 
+	/** The cancel-time of the job */
+	private volatile long canceltime = -1L;	
+	
 	/** An exception that might occurs. */
 	private volatile GATInvocationException postStageException = null;
 
@@ -303,11 +316,14 @@ public class GliteJob extends JobCpi {
 	public String submitJob() throws GATInvocationException, GATObjectCreationException {
 		try {
 			WMProxyAPI api = getWmProxy();
+
 			JobIdStructType jobIds = api.jobSubmit(gLiteJobDescription.getJdlString(), getDelegationId());
 			gliteJobID = jobIds.getId();
-
 			LOGGER.info("Job sucessfully submitted with id: " + gliteJobID);
+			submissiontime = System.currentTimeMillis();
+			sandboxUri = api.getSandboxDestURI(gliteJobID, "gsiftp").getItem(0);
 
+			LOGGER.info("Sandbox created at : " + sandboxUri);
 			return gliteJobID;
 		} catch (Exception e) {
 			throw new GATInvocationException("Ann error occurs during submitting the job.", e);
@@ -320,8 +336,16 @@ public class GliteJob extends JobCpi {
 	 * @return the delegation id for this job
 	 */
 	private String getDelegationId() {
-		return "gatjob";// + gLiteJobDescription.getJdlID();
+		return "gatjob" + submissiontime;
 	}
+
+	/**
+	 * @see Job#getExitStatus()
+	 */
+	@Override
+	public int getExitStatus() throws GATInvocationException {
+		return exitStatus;
+	};
 
 	/**
 	 * @see JobCpi#getInfo()
@@ -333,14 +357,19 @@ public class GliteJob extends JobCpi {
 		map.put("glite.state", this.gLiteState);
 		map.put("jobID", jobID);
 		map.put("adaptor.job.id", gliteJobID);
-		map.put("submissiontime", submissiontime);
-		map.put("starttime", starttime);
-		map.put("stoptime", stoptime);
+		map.put("submissionTime", submissiontime);
+		map.put("startTime", starttime);
+		map.put("stopTime", stoptime);
+		map.put("cancelTime", canceltime);
 		map.put("poststage.exception", postStageException);
 		if (state == JobState.RUNNING) {
 			map.put("hostname", destination);
 		}
-		map.put("glite.destination", destination);
+		map.put("destination", destination);
+		map.put("exitStatus", exitStatus);
+		map.put("sandBoxUri", sandboxUri);
+		map.put("cpuTime", cpuTime);
+
 		return map;
 	}
 
@@ -366,6 +395,12 @@ public class GliteJob extends JobCpi {
 					LOGGER.error(failure);
 				}
 
+				processStateTimes(js.getStateEnterTimes());
+
+				if (state == StatName.DONE) {
+					exitStatus = js.getExitCode();
+					cpuTime = js.getCpuTime();
+				}
 			} catch (GenericFault e) {
 				LOGGER.error(e.toString());
 			} catch (RemoteException e) {
@@ -384,66 +419,45 @@ public class GliteJob extends JobCpi {
 		} else if ("Ready".equalsIgnoreCase(gLiteState)) {
 			state = Job.JobState.READY;
 		} else if ("Scheduled".equalsIgnoreCase(gLiteState)) {
-			// if state appears the first time, set the submission time
-			// appropriately
-			if (submissiontime == -1L) {
-				submissiontime = System.currentTimeMillis();
-			}
-
 			state = Job.JobState.SCHEDULED;
 		} else if ("Running".equalsIgnoreCase(gLiteState)) {
-			// sometimes, scheduled state is skipped
-			if (submissiontime == -1L) {
-				submissiontime = System.currentTimeMillis();
-			}
-
-			// if running for the first time, set the start time appropriately
-			if (starttime == -1L) {
-				starttime = System.currentTimeMillis();
-			}
-
 			state = Job.JobState.RUNNING;
 		} else if ("Done (Failed)".equalsIgnoreCase(gLiteState)) {
-			if (stoptime == -1L) {
-				stoptime = System.currentTimeMillis();
-			}
-
 			state = Job.JobState.DONE_FAILURE;
 		} else if ("Submitted".equalsIgnoreCase(gLiteState)) {
-			if (submissiontime == -1L) {
-				submissiontime = System.currentTimeMillis();
-			}
-
 			state = Job.JobState.INITIAL;
 		} else if ("Aborted".equalsIgnoreCase(gLiteState)) {
-			if (stoptime == -1L) {
-				stoptime = System.currentTimeMillis();
-			}
-
 			state = Job.JobState.SUBMISSION_ERROR;
 		} else if ("DONE".equalsIgnoreCase(gLiteState)) {
 			state = Job.JobState.DONE_SUCCESS;
 		} else if ("Done (Success)".equalsIgnoreCase(gLiteState)) {
-			if (stoptime == -1L) {
-				stoptime = System.currentTimeMillis();
-			}
-
 			state = Job.JobState.DONE_SUCCESS;
 		} else if ("Cancelled".equalsIgnoreCase(gLiteState)) {
-			if (stoptime == -1L) {
-				stoptime = System.currentTimeMillis();
-			}
-
 			state = Job.JobState.STOPPED;
 		} else if ("Cleared".equalsIgnoreCase(gLiteState)) {
-
-			if (stoptime == -1L) {
-				stoptime = System.currentTimeMillis();
-			}
-
 			state = Job.JobState.STOPPED;
 		} else {
 			this.state = Job.JobState.UNKNOWN;
+		}
+	}
+
+	/**
+	 * Retrieves the times for the interesting states
+	 * 
+	 * @param stateTimes
+	 */
+	private void processStateTimes(StateEnterTimesItem[] stateTimes) {
+		for (StateEnterTimesItem item : stateTimes) {
+			if (item.getState().equals(StatName.DONE)) {
+				stoptime = item.getTime().getTimeInMillis();
+			} else if (item.getState().equals(StatName.RUNNING)) {
+				starttime = item.getTime().getTimeInMillis();
+			} else if (item.getState().equals(StatName.SUBMITTED)) {
+				submissiontime = item.getTime().getTimeInMillis();
+			} else if (item.getState().equals(StatName.CANCELLED)) {
+				canceltime = item.getTime().getTimeInMillis();
+			}
+
 		}
 	}
 
@@ -476,6 +490,11 @@ public class GliteJob extends JobCpi {
 				stoptime);
 
 		sj.setBrokerUri(wmsURL.toString());
+
+		Sandbox sandbox = new Sandbox();
+		sandbox.setSandbox(sandboxUri);
+		sj.setSandbox(sandbox);
+
 		String res = GATEngine.defaultMarshal(sj);
 		if (logger.isDebugEnabled()) {
 			logger.debug("marshalled seralized job: " + res);
