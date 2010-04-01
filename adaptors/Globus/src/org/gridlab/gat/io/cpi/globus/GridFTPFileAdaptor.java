@@ -113,8 +113,8 @@ public class GridFTPFileAdaptor extends GlobusFileAdaptor {
                     }
                     client.rename(getPath(), dest.getPath());
                     isDirCache.remove(uri);
+                    return;
                 } catch(Throwable e) {
-                    super.move(dest);
                 } finally {
                     if (client != null) {
                         destroyClient(client, uri, gatContext.getPreferences());
@@ -122,6 +122,7 @@ public class GridFTPFileAdaptor extends GlobusFileAdaptor {
                 }
             }
         }
+        super.move(dest);
     }
 
     public boolean exists() throws GATInvocationException {
