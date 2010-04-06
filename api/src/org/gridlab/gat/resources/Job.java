@@ -116,11 +116,16 @@ public interface Job extends Monitorable, Advertisable {
      */
     public enum JobState {
         /**
+         * job processing was aborted (waiting in the Workload Manager queue or Computing
+		 * Element for too long, over-use of quotas, expiration of user credentials, etc.).
+         */
+        ABORTED,
+    	/**
          * Initial state indicator.
          * 
          * The {@link Job} has been constructed.
          */
-        INITIAL,
+        INITIAL,        
         /**
          * Initial state indicator.
          * 
@@ -180,7 +185,11 @@ public interface Job extends Monitorable, Advertisable {
         /**
          * The {@link Job} terminated with an error.
          */
-        DONE_FAILURE
+        DONE_FAILURE,        
+        /**
+         * output sandbox was transferred to the user or removed due to the timeout
+         */
+        CLEARED
     };
 
     /**

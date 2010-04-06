@@ -427,7 +427,7 @@ public class GliteJob extends JobCpi {
 		} else if ("Submitted".equalsIgnoreCase(gLiteState)) {
 			state = Job.JobState.INITIAL;
 		} else if ("Aborted".equalsIgnoreCase(gLiteState)) {
-			state = Job.JobState.SUBMISSION_ERROR;
+			state = Job.JobState.ABORTED;
 		} else if ("DONE".equalsIgnoreCase(gLiteState)) {
 			state = Job.JobState.DONE_SUCCESS;
 		} else if ("Done (Success)".equalsIgnoreCase(gLiteState)) {
@@ -435,8 +435,9 @@ public class GliteJob extends JobCpi {
 		} else if ("Cancelled".equalsIgnoreCase(gLiteState)) {
 			state = Job.JobState.STOPPED;
 		} else if ("Cleared".equalsIgnoreCase(gLiteState)) {
-			state = Job.JobState.STOPPED;
-		} else {
+			state = Job.JobState.CLEARED;
+		}		
+		else {
 			this.state = Job.JobState.UNKNOWN;
 		}
 	}
