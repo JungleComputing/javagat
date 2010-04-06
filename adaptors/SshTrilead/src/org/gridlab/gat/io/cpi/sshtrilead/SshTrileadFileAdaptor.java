@@ -309,12 +309,25 @@ public class SshTrileadFileAdaptor extends FileCpi {
             logger.debug("put " + getFixedPath() + ", " + remoteDir + ", "
                     + mode);
             client.put(getFixedPath(), remoteDir, mode);
+            try {
+                String path = remoteDir + "/" + getName();
+                URI d = destination.setPath(path);
+                destinationFile = GAT.createFile(gatContext, d).getFileInterface();
+                destinationFile.setLastModified(lastModified());
+            } catch(Throwable e) {
+                // ignored
+            }
         } else if (sourceFile.isDirectory()) {
             copyDir(destination);
         } else if (sourceFile.isFile()) {
             logger.debug("put " + getFixedPath() + ", " + remoteFileName + ", "
                     + remoteDir + ", " + mode);
             client.put(getFixedPath(), remoteFileName, remoteDir, mode);
+            try {
+                destinationFile.setLastModified(lastModified());
+            } catch(Throwable e) {
+                // ignored
+            }
         } else {
             throw new GATInvocationException("cannot copy this file '"
                     + fixedURI + "' to '" + remoteFileName + "' in dir '"
