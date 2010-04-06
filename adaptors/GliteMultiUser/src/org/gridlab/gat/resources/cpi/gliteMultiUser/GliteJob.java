@@ -272,7 +272,7 @@ public class GliteJob extends JobCpi {
 
 				this.api = api;
 			} catch (Exception e) {
-				throw new GATInvocationException("An error occurs during creating a new instance of GLiteJob.");
+				throw new GATInvocationException("An error occurs during creating a new instance of GLiteJob.", e);
 			}
 		}
 
