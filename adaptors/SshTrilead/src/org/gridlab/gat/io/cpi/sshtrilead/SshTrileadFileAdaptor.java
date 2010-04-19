@@ -113,7 +113,29 @@ public class SshTrileadFileAdaptor extends FileCpi {
 
     static final String DEFAULT_MODE = "0700";
     
-    private static Map<String, Connection> connections = new HashMap<String, Connection>();
+    private static class ConnectionKey {
+        final String host;
+        final GATContext context;
+        
+        public ConnectionKey(String host, GATContext context) {
+            this.host = host;
+            this.context = context;
+        }
+        
+        public int hashCode() {
+            return host.hashCode();
+        }
+        
+        public boolean equals(Object o) {
+            if (! (o instanceof ConnectionKey)) {
+                return false;
+            }
+            ConnectionKey k = (ConnectionKey) o;
+            return k.host.equals(host) && k.context.equals(context);
+        }
+    }
+    
+    private static Map<ConnectionKey, Connection> connections = new HashMap<ConnectionKey, Connection>();
 
     private static Map<URI, Boolean> isDirCache = new HashMap<URI, Boolean>();
 
@@ -529,116 +551,119 @@ public class SshTrileadFileAdaptor extends FileCpi {
             host = fixedURI.resolveHost();
         }
         logger.info("getting connection for host: " + host);
-        if (connections.containsKey(host) && useCachedConnection) {
-            logger.info("returning cached connection");
-            return connections.get(host);
-        } else {
-            Connection newConnection = new Connection(host, fixedURI
-                    .getPort(SSH_PORT));
-            newConnection.setClient2ServerCiphers(client2server);
-            newConnection.setServer2ClientCiphers(server2client);
-            newConnection.setTCPNoDelay(tcpNoDelay);
-            int connectTimeout = 0;
-            String connectTimeoutString = (String) context.getPreferences().get(
-                    "sshtrilead.connect.timeout");
-            if (connectTimeoutString != null) {
-                try {
-                    connectTimeout = Integer.parseInt(connectTimeoutString);
-                } catch (Throwable t) {
-                    logger
-                    .info("'sshtrilead.connect.timeout' set, but could not be parsed: "
-                            + t);
-                }
+        ConnectionKey key = new ConnectionKey(host, (GATContext) context.clone());
+        if (useCachedConnection) {
+            Connection c = connections.get(key);
+            if (c != null) {
+                logger.info("returning cached connection");
+                return c;
             }
-            int kexTimeout = 0;
-            String kexTimeoutString = (String) context.getPreferences().get(
-                    "sshtrilead.kex.timeout");
-            if (kexTimeoutString != null) {
-                try {
-                    kexTimeout = Integer.parseInt(kexTimeoutString);
-                } catch (Throwable t) {
-                    logger
-                    .info("'sshtrilead.kex.timeout' set, but could not be parsed: "
-                            + t);
-                }
-            }
-            newConnection.connect(verifier, connectTimeout, kexTimeout);
-            Map<String, Object> securityInfo = SshTrileadSecurityUtils
-                    .getSshTrileadCredential(context, "sshtrilead", fixedURI,
-                            fixedURI.getPort(SSH_PORT));
-            String username = (String) securityInfo.get("username");
-            String password = (String) securityInfo.get("password");
-            java.io.File keyFile = (java.io.File) securityInfo.get("keyfile");
-
-            boolean connected = false;
-
-            if (username != null && password != null) {
-                try {
-                    connected = newConnection.authenticateWithPassword(
-                            username, password);
-                } catch (IOException e) {
-                    if (logger.isDebugEnabled()) {
-                        logger
-                                .debug("exception caught during authentication with password: ",
-                                        e);
-                    }
-                }
-                if (logger.isDebugEnabled()) {
-                    logger.debug("authentication with password: " + connected);
-                }
-            }
-            if (!connected && username != null && keyFile != null) {
-                try {
-                    connected = newConnection.authenticateWithPublicKey(
-                            username, keyFile, password);
-                } catch (IOException e) {
-                    if (logger.isDebugEnabled()) {
-                        logger
-                                .debug("exception caught during authentication with public key: ",
-                                        e);
-                    }
-                }
-                if (logger.isDebugEnabled()) {
-                    logger
-                            .debug("authentication with public key: "
-                                    + connected);
-                }
-            }
-            if (!connected && username != null) {
-                try {
-                    connected = newConnection.authenticateWithNone(username);
-                } catch (IOException e) {
-                    if (logger.isDebugEnabled()) {
-                        logger
-                                .debug("exception caught during authentication with username: "
-                                        + e);
-                    }
-                }
-                if (logger.isDebugEnabled()) {
-                    logger.debug("authentication with username: " + connected);
-                }
-            }
-            // TODO: add interactive authentication?
-            if (!connected) {
-                throw new Exception("unable to authenticate");
-            } else {
-                logger.info("putting connection for host " + host
-                        + " into cache");
-                connections.put(host, newConnection);
-            }
-            if (logger.isInfoEnabled()) {
-                long start = System.currentTimeMillis();
-                try {
-                    newConnection.ping();
-                    logger.info("ping connection: "
-                            + (System.currentTimeMillis() - start) + " ms");
-                } catch (Exception e) {
-                    logger.info("ping failed: " + e);
-                }
-
-            }
-            return newConnection;
         }
+        Connection newConnection = new Connection(host, fixedURI
+                .getPort(SSH_PORT));
+        newConnection.setClient2ServerCiphers(client2server);
+        newConnection.setServer2ClientCiphers(server2client);
+        newConnection.setTCPNoDelay(tcpNoDelay);
+        int connectTimeout = 0;
+        String connectTimeoutString = (String) context.getPreferences().get(
+                "sshtrilead.connect.timeout");
+        if (connectTimeoutString != null) {
+            try {
+                connectTimeout = Integer.parseInt(connectTimeoutString);
+            } catch (Throwable t) {
+                logger
+                .info("'sshtrilead.connect.timeout' set, but could not be parsed: "
+                        + t);
+            }
+        }
+        int kexTimeout = 0;
+        String kexTimeoutString = (String) context.getPreferences().get(
+        "sshtrilead.kex.timeout");
+        if (kexTimeoutString != null) {
+            try {
+                kexTimeout = Integer.parseInt(kexTimeoutString);
+            } catch (Throwable t) {
+                logger
+                .info("'sshtrilead.kex.timeout' set, but could not be parsed: "
+                        + t);
+            }
+        }
+        newConnection.connect(verifier, connectTimeout, kexTimeout);
+        Map<String, Object> securityInfo = SshTrileadSecurityUtils
+        .getSshTrileadCredential(context, "sshtrilead", fixedURI,
+                fixedURI.getPort(SSH_PORT));
+        String username = (String) securityInfo.get("username");
+        String password = (String) securityInfo.get("password");
+        java.io.File keyFile = (java.io.File) securityInfo.get("keyfile");
+
+        boolean connected = false;
+
+        if (username != null && password != null) {
+            try {
+                connected = newConnection.authenticateWithPassword(
+                        username, password);
+            } catch (IOException e) {
+                if (logger.isDebugEnabled()) {
+                    logger
+                    .debug("exception caught during authentication with password: ",
+                            e);
+                }
+            }
+            if (logger.isDebugEnabled()) {
+                logger.debug("authentication with password: " + connected);
+            }
+        }
+        if (!connected && username != null && keyFile != null) {
+            try {
+                connected = newConnection.authenticateWithPublicKey(
+                        username, keyFile, password);
+            } catch (IOException e) {
+                if (logger.isDebugEnabled()) {
+                    logger
+                    .debug("exception caught during authentication with public key: ",
+                            e);
+                }
+            }
+            if (logger.isDebugEnabled()) {
+                logger
+                .debug("authentication with public key: "
+                        + connected);
+            }
+        }
+        if (!connected && username != null) {
+            try {
+                connected = newConnection.authenticateWithNone(username);
+            } catch (IOException e) {
+                if (logger.isDebugEnabled()) {
+                    logger
+                    .debug("exception caught during authentication with username: "
+                            + e);
+                }
+            }
+            if (logger.isDebugEnabled()) {
+                logger.debug("authentication with username: " + connected);
+            }
+        }
+        // TODO: add interactive authentication?
+        if (!connected) {
+            throw new Exception("unable to authenticate");
+        } else {
+            logger.info("putting connection for host " + host
+                    + " into cache");
+            connections.put(key, newConnection);
+        }
+        if (logger.isInfoEnabled()) {
+            long start = System.currentTimeMillis();
+            try {
+                newConnection.ping();
+                logger.info("ping connection: "
+                        + (System.currentTimeMillis() - start) + " ms");
+            } catch (Exception e) {
+                logger.info("ping failed: " + e);
+            }
+
+        }
+        return newConnection;
     }
 
     private String[] execCommand(String cmd) throws IOException, Exception {
