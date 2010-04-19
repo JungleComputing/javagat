@@ -122,7 +122,17 @@ public class GridFTPFileAdaptor extends GlobusFileAdaptor {
                 }
             }
         }
-        super.move(dest);
+        if (uri.refersToLocalHost() && ! dest.refersToLocalHost()) {
+            if (recognizedScheme(dest.getScheme(), getSupportedSchemes())) {
+                super.move(dest);
+                return;
+            }
+        }
+        if (! uri.refersToLocalHost() && dest.refersToLocalHost()) {
+            super.move(dest);
+            return;
+        }
+        throw new GATInvocationException("GridFTP: cannot do third party move");
     }
 
     public boolean exists() throws GATInvocationException {

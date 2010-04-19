@@ -514,7 +514,17 @@ public class SftpTrileadFileAdaptor extends FileCpi {
                 }
             }
         }
-        super.move(dest);
+        if (uri.refersToLocalHost() && ! dest.refersToLocalHost()) {
+            if (recognizedScheme(dest.getScheme(), getSupportedSchemes())) {
+                super.move(dest);
+                return;
+            }
+        }
+        if (! uri.refersToLocalHost() && dest.refersToLocalHost()) {
+            super.move(dest);
+            return;
+        }
+        throw new GATInvocationException("sftptrilead: cannot do third party move");
     }
     
 
