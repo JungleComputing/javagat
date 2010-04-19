@@ -6,7 +6,7 @@
 
 	<property name="src" location="src" />
 	<property name="tmp" location="tmp" />
-	<property name="lib" location="${gat.location}/lib/adaptors/GliteMultiuserAdaptor" />
+	<property name="lib" location="${gat.location}/lib/adaptors/GliteMultiUserAdaptor" />
 	<property name="external" location="external" />
 	<property name="shared" location="../shared" />
 	<property name="java.debug.value" value="true" />
