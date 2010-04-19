@@ -263,4 +263,15 @@ public class Preferences implements java.io.Serializable {
     public String toString() {
         return t.toString();
     }
+    
+    public int hashCode() {
+        return t.hashCode();
+    }
+    
+    public boolean equals(Object o) {
+        if (! (o instanceof Preferences)) {
+            return false;
+        }
+        return t.equals(((Preferences) o).t);
+    }
 }
