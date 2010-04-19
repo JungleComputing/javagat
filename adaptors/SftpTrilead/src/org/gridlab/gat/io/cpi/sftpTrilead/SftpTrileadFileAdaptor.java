@@ -503,6 +503,7 @@ public class SftpTrileadFileAdaptor extends FileCpi {
                 try {
                     c.sftpClient.mv(getPath(), dest.getPath());
                     haveAttrs = false;
+                    return;
                 } catch(Throwable e) {
                     if (logger.isDebugEnabled()) {
                         logger.debug("move: got exception", e);
@@ -513,7 +514,7 @@ public class SftpTrileadFileAdaptor extends FileCpi {
                 }
             }
         }
-        
+        super.move(dest);
     }
     
 
