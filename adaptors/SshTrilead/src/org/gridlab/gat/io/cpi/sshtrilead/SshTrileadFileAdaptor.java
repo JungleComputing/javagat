@@ -644,7 +644,7 @@ public class SshTrileadFileAdaptor extends FileCpi {
                 logger.debug("authentication with username: " + connected);
             }
         }
-        // TODO: add interactive authentication?
+
         if (!connected) {
             throw new Exception("unable to authenticate");
         } else {
@@ -730,7 +730,7 @@ public class SshTrileadFileAdaptor extends FileCpi {
         } else {
             String[] result;
             try {
-                result = execCommand("test -r " + getFixedPath() + " && echo 0");
+                result = execCommand("test -r " + protectAgainstShellMetas(getFixedPath()) + " && echo 0");
             } catch (Exception e) {
                 throw new GATInvocationException("sshtrilead", e);
             }
@@ -748,8 +748,8 @@ public class SshTrileadFileAdaptor extends FileCpi {
         } else {
             String[] result;
             try {
-                result = execCommand("scp -r " + getFixedPath() + " ${USER}@"
-                        + dest.getHost() + ":" + dest.getPath());
+                result = execCommand("scp -r " + protectAgainstShellMetas(getFixedPath()) + " ${USER}@"
+                        + dest.getHost() + ":" + protectAgainstShellMetas(dest.getPath()));
             } catch (Exception e) {
                 throw new GATInvocationException("sshtrilead", e);
             }
@@ -793,11 +793,12 @@ public class SshTrileadFileAdaptor extends FileCpi {
             throw new UnsupportedOperationException("Not implemented");
         } else {
             String[] result;
+            String path = protectAgainstShellMetas(getFixedPath());
             try {
-                result = execCommand("test ! -d " + getFixedPath()
-                        + " && test ! -f " + getFixedPath() + " && touch "
-                        + getFixedPath() + " && chmod "
-                        + getMode(gatContext, DEFAULT_MODE) + " " + getFixedPath());
+                result = execCommand("test ! -d " + path
+                        + " && test ! -f " + path + " && touch "
+                        + path + " && chmod "
+                        + getMode(gatContext, DEFAULT_MODE) + " " + path);
             } catch (Exception e) {
                 throw new GATInvocationException("sshtrilead", e);
             }
@@ -822,7 +823,7 @@ public class SshTrileadFileAdaptor extends FileCpi {
         } else {
             String[] result;
             try {
-                result = execCommand("rm -rf " + getFixedPath());
+                result = execCommand("rm -rf " + protectAgainstShellMetas(getFixedPath()));
             } catch (Exception e) {
                 throw new GATInvocationException("sshtrilead", e);
             }
@@ -843,7 +844,7 @@ public class SshTrileadFileAdaptor extends FileCpi {
         } else {
             String[] result;
             try {
-                result = execCommand("ls -d " + getFixedPath());
+                result = execCommand("ls -d " + protectAgainstShellMetas(getFixedPath()));
             } catch (Exception e) {
                 throw new GATInvocationException("sshtrilead", e);
             }
@@ -900,7 +901,7 @@ public class SshTrileadFileAdaptor extends FileCpi {
         } else {
             String[] result;
             try {
-                result = execCommand("test -d " + getFixedPath());
+                result = execCommand("test -d " + protectAgainstShellMetas(getFixedPath()));
             } catch (Exception e) {
                 throw new GATInvocationException("sshtrilead", e);
             }
@@ -933,7 +934,7 @@ public class SshTrileadFileAdaptor extends FileCpi {
         } else {
             String[] result;
             try {
-                result = execCommand("test -f " + getFixedPath());
+                result = execCommand("test -f " + protectAgainstShellMetas(getFixedPath()));
             } catch (Exception e) {
                 throw new GATInvocationException("sshtrilead", e);
             }
@@ -960,7 +961,7 @@ public class SshTrileadFileAdaptor extends FileCpi {
         } else {
             String[] result;
             try {
-                result = execCommand("wc -c < " + getFixedPath());
+                result = execCommand("wc -c < " + protectAgainstShellMetas(getFixedPath()));
             } catch (Throwable e) {
                 throw new GATInvocationException("sshtrilead", e);
             }
@@ -986,7 +987,7 @@ public class SshTrileadFileAdaptor extends FileCpi {
         } else {
             String[] result;
             try {
-                result = execCommand("ls -1 " + getFixedPath());
+                result = execCommand("ls -1 " + protectAgainstShellMetas(getFixedPath()));
             } catch (Exception e) {
                 throw new GATInvocationException("sshtrilead", e);
             }
@@ -1034,7 +1035,7 @@ public class SshTrileadFileAdaptor extends FileCpi {
             try {
                 result = execCommand("mkdir -m "
                         + getMode(gatContext, DEFAULT_MODE) + " "
-                        + getFixedPath());
+                        + protectAgainstShellMetas(getFixedPath()));
             } catch (Exception e) {
                 throw new GATInvocationException("sshtrilead", e);
             }
@@ -1060,7 +1061,7 @@ public class SshTrileadFileAdaptor extends FileCpi {
             try {
                 result = execCommand("mkdir -m "
                         + getMode(gatContext, DEFAULT_MODE) + " -p "
-                        + getFixedPath());
+                        + protectAgainstShellMetas(getFixedPath()));
             } catch (Exception e) {
                 throw new GATInvocationException("sshtrilead", e);
             }
@@ -1149,7 +1150,7 @@ public class SshTrileadFileAdaptor extends FileCpi {
             try {
                 result = execCommand("touch -t "
                         + toTouchDateFormat(lastModified) + " "
-                        + getFixedPath());
+                        + protectAgainstShellMetas(getFixedPath()));
             } catch (Exception e) {
                 throw new GATInvocationException("sshtrilead", e);
             }
@@ -1164,7 +1165,7 @@ public class SshTrileadFileAdaptor extends FileCpi {
             String[] result;
             try {
                 result = execCommand("perl -e 'print ((stat $ARGV[0])[9]);' "
-                        + getFixedPath());
+                        + protectAgainstShellMetas(getFixedPath()));
             } catch (Exception e) {
                 throw new GATInvocationException("sshtrilead", e);
             }
@@ -1190,11 +1191,27 @@ public class SshTrileadFileAdaptor extends FileCpi {
         } else {
             String[] result;
             try {
-                result = execCommand("chmod a-w " + getFixedPath());
+                result = execCommand("chmod a-w " + protectAgainstShellMetas(getFixedPath()));
             } catch (Exception e) {
                 throw new GATInvocationException("sshtrilead", e);
             }
             return result[STDERR].length() == 0;
         }
+    }
+    
+    private static String protectAgainstShellMetas(String s) {
+        char[] chars = s.toCharArray();
+        StringBuffer b = new StringBuffer();
+        b.append('\'');
+        for (char c : chars) {
+            if (c == '\'') {
+                b.append('\'');
+                b.append('\\');
+                b.append('\'');
+            }
+            b.append(c);
+        }
+        b.append('\'');
+        return b.toString();
     }
 }
