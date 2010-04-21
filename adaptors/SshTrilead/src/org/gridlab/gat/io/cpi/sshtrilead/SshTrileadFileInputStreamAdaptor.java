@@ -96,7 +96,7 @@ public class SshTrileadFileInputStreamAdaptor extends FileInputStreamCpi {
             throw new GATObjectCreationException("Could not create stream", e);
         }
         sessionOutputStream = session.getStdout();
-        String command = "cat < " + file.getFixedPath();
+        String command = "cat < " + SshTrileadFileAdaptor.protectAgainstShellMetas(file.getFixedPath());
         job = new InputStreamRunner(command);
         job.setDaemon(true);
         job.start();

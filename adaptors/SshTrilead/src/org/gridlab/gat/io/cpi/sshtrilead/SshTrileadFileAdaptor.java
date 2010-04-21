@@ -1199,7 +1199,7 @@ public class SshTrileadFileAdaptor extends FileCpi {
         }
     }
     
-    private static String protectAgainstShellMetas(String s) {
+    static String protectAgainstShellMetas(String s) {
         char[] chars = s.toCharArray();
         StringBuffer b = new StringBuffer();
         b.append('\'');

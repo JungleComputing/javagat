@@ -110,7 +110,7 @@ public class SshTrileadFileOutputStreamAdaptor extends FileOutputStreamCpi {
         }
         sessionInputStream = session.getStdin();
         String command = "cat " + (append ? ">>" : ">")
-            + file.getFixedPath();
+            + SshTrileadFileAdaptor.protectAgainstShellMetas(file.getFixedPath());
         job = new OutputStreamRunner(command);
         job.setDaemon(true);
         job.start();
