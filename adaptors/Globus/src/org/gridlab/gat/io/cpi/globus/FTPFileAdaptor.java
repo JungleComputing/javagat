@@ -156,8 +156,7 @@ public class FTPFileAdaptor extends GlobusFileAdaptor {
         }
     }
 
-    protected void destroyClient(FTPClient c, URI hostURI,
-            Preferences preferences) {
+    protected void destroyClient(GATContext context, FTPClient c, URI hostURI) {
         try {
             c.close(true);
         } catch (Exception e) {
@@ -194,7 +193,7 @@ public class FTPFileAdaptor extends GlobusFileAdaptor {
                 // Here, it could still be an empty directory.
                 return isDirectory();
             } finally {
-                destroyClient(client, toURI(), gatContext.getPreferences());   
+                destroyClient(client, toURI());
             }
         } catch (Exception e) {
             if (e instanceof GATInvocationException) {
@@ -203,7 +202,7 @@ public class FTPFileAdaptor extends GlobusFileAdaptor {
             throw new GATInvocationException("FTPFileAdaptor", e);
         } finally {
             if (client != null)
-                destroyClient(client, toURI(), gatContext.getPreferences());
+                destroyClient(client, toURI());
         }
 
     }

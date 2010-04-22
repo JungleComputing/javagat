@@ -4,6 +4,8 @@ import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.axis.AxisProperties;
+import org.apache.axis.EngineConfigurationFactory;
 import org.globus.common.ResourceManagerContact;
 import org.globus.exec.client.GramJob;
 import org.globus.exec.client.GramJobListener;
@@ -39,6 +41,21 @@ import org.ietf.jgss.GSSCredential;
  */
 @SuppressWarnings("serial")
 public class WSGT4newJob extends JobCpi implements GramJobListener, Runnable {
+    
+    // instance initializer sets personalized
+    // EngineConfigurationFactory for the axis client.
+    static {
+        if (System.getProperty("GLOBUS_LOCATION") == null) {
+            String globusLocation = System.getProperty("gat.adaptor.path")
+                    + java.io.File.separator + "GlobusAdaptor"
+                    + java.io.File.separator;
+            System.setProperty("GLOBUS_LOCATION", globusLocation);
+        }
+        if (AxisProperties.getProperty(EngineConfigurationFactory.SYSTEM_PROPERTY_NAME) == null) {
+            AxisProperties.setProperty(EngineConfigurationFactory.SYSTEM_PROPERTY_NAME,
+            "org.gridlab.gat.resources.cpi.wsgt4new.GlobusEngineConfigurationFactory");
+        }
+    }
 
     private MetricDefinition statusMetricDefinition;
 
@@ -65,28 +82,14 @@ public class WSGT4newJob extends JobCpi implements GramJobListener, Runnable {
     }
     
     /**
-     * constructor for unmarshalled jobs
+     * Constructor for unmarshalled jobs.
      */
     public WSGT4newJob(GATContext gatContext, SerializedJob sj)
             throws GATObjectCreationException {
         super(gatContext, sj.getJobDescription(), sj.getSandbox());
         
-        sandbox.setContext(gatContext);
-
-        if (System.getProperty("GLOBUS_LOCATION") == null) {
-            String globusLocation = System.getProperty("gat.adaptor.path")
-                    + java.io.File.separator + "GlobusAdaptor"
-                    + java.io.File.separator;
-            System.setProperty("GLOBUS_LOCATION", globusLocation);
-        }
-
-        if (System.getProperty("axis.ClientConfigFile") == null) {
-            String axisClientConfigFile = System
-                    .getProperty("gat.adaptor.path")
-                    + java.io.File.separator
-                    + "GlobusAdaptor"
-                    + java.io.File.separator + "client-config.wsdd";
-            System.setProperty("axis.ClientConfigFile", axisClientConfigFile);
+        if (sandbox != null) {
+            sandbox.setContext(gatContext);
         }
         
         if (logger.isDebugEnabled()) {
@@ -253,31 +256,31 @@ public class WSGT4newJob extends JobCpi implements GramJobListener, Runnable {
             throws GATInvocationException {
         HashMap<String, Object> m = new HashMap<String, Object>();
 
-        m.put("adaptor.job.id", submissionID);
-        m.put("state", state.toString());
+        m.put(ADAPTOR_JOB_ID, submissionID);
+        m.put(STATE, state.toString());
         m.put("globus.state", jobState);
         if (state != JobState.RUNNING) {
-            m.put("hostname", null);
+            m.put(HOSTNAME, null);
         } else {
-            m.put("hostname", job.getEndpoint().getAddress().getHost());
+            m.put(HOSTNAME, job.getEndpoint().getAddress().getHost());
         }
         if (state == JobState.INITIAL || state == JobState.UNKNOWN) {
-            m.put("submissiontime", null);
+            m.put(SUBMISSIONTIME, null);
         } else {
-            m.put("submissiontime", submissiontime);
+            m.put(SUBMISSIONTIME, submissiontime);
         }
         if (state == JobState.INITIAL || state == JobState.UNKNOWN
                 || state == JobState.SCHEDULED) {
-            m.put("starttime", null);
+            m.put(STARTTIME, null);
         } else {
-            m.put("starttime", starttime);
+            m.put(STARTTIME, starttime);
         }
         if (state != JobState.STOPPED) {
-            m.put("stoptime", null);
+            m.put(STOPTIME, null);
         } else {
-            m.put("stoptime", stoptime);
+            m.put(STOPTIME, stoptime);
         }
-        m.put("poststage.exception", postStageException);
+        m.put(POSTSTAGE_EXCEPTION, postStageException);
         m.put("resourcebroker", "WSGT4new");
         m
                 .put(
@@ -297,7 +300,7 @@ public class WSGT4newJob extends JobCpi implements GramJobListener, Runnable {
         // don't let the upcall and the poller interfere, so synchronize the
         // state stuff.
         // If we get here, we apparently get upcalls, so maybe we can cancel
-        // the poller here? TODO!
+        // the poller here? NO! We also get here if poller finds a state change.
         synchronized (this) {
             /* Commented out to avoid recursive calls to doStateChange --Ceriel
              * (suggestion to do this was by Brian Carpenter).
@@ -427,6 +430,20 @@ public class WSGT4newJob extends JobCpi implements GramJobListener, Runnable {
                         if (logger.isDebugEnabled()) {
                             logger.debug("returning existing job: " + gj);
                         }
+                        try {
+                            // Its not possible to reset the credentials to a job object.
+                            // So create a WSGT4 instance if the credential is getting expired.
+                            GSSCredential credential = gj.job.getCredentials();
+                            if (credential.getRemainingLifetime() == 0) {
+                                logger.debug("Credential expired. Create a new Job instance.");
+                                jobList.remove(gj);
+                                gj = null;
+                                return new WSGT4newJob(context, sj);
+                            }
+                        } catch (Exception e) {
+                            throw new RuntimeException("Cannot retrieve new credentials for job.", e);
+                        }                          
+                            
                         return gj;
                     }
                 }

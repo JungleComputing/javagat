@@ -3,6 +3,7 @@ package org.gridlab.gat.io.cpi.globus;
 import java.io.IOException;
 import java.io.OutputStream;
 
+import org.globus.common.ChainedIOException;
 import org.globus.ftp.GridFTPClient;
 import org.globus.ftp.GridFTPSession;
 import org.globus.ftp.exception.FTPException;
@@ -21,6 +22,24 @@ class GridFTPOutputStream extends FTPOutputStream {
 
         put(passive, type, file, append);
     }
+    
+    @Override
+    // Special version that does not close the FTP client.
+    public void close() throws IOException {
+        if (this.output != null) {
+            try {
+                this.output.close();
+            } catch(Exception e) {}
+        }
+        
+        try {
+            if (this.state != null) {
+                this.state.waitForEnd();
+            }
+        } catch (FTPException e) {
+            throw new ChainedIOException("close failed.", e);
+        }
+    }       
 }
 
 public class GridFTPFileOutputStreamAdaptor extends
@@ -70,7 +89,6 @@ public class GridFTPFileOutputStreamAdaptor extends
 
     public void close() throws GATInvocationException {
         super.close();
-        GridFTPFileAdaptor.doWorkDestroyClient(c, location, gatContext
-                .getPreferences());
+        GridFTPFileAdaptor.doWorkDestroyClient(gatContext, c, location);
     }
 }

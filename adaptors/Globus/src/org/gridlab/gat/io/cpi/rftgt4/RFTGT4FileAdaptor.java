@@ -18,6 +18,8 @@ import javax.xml.rpc.ServiceException;
 import javax.xml.rpc.Stub;
 import javax.xml.soap.SOAPElement;
 
+import org.apache.axis.AxisProperties;
+import org.apache.axis.EngineConfigurationFactory;
 import org.apache.axis.message.addressing.EndpointReferenceType;
 import org.apache.axis.types.URI.MalformedURIException;
 import org.slf4j.Logger;
@@ -91,20 +93,9 @@ import org.oasis.wsrf.properties.ResourcePropertyValueChangeNotificationType;
 
 class RFTGT4NotifyCallback implements NotifyCallback {
 
-    public static Map<String, Boolean> getSupportedCapabilities() {
-        Map<String, Boolean> capabilities = FileCpi.getSupportedCapabilities();
-        capabilities.put("delete", true);
-        capabilities.put("copy", true);
-        return capabilities;
-    }
-
     protected static Logger logger = LoggerFactory
             .getLogger(RFTGT4NotifyCallback.class);
-    
-    public static String[] getSupportedSchemes() {
-        return new String[] { "rftgt4", "gsiftp", "gridftp", "file", ""};
-    }
-    
+       
     RFTGT4FileAdaptor transfer;
 
     public RFTGT4NotifyCallback(RFTGT4FileAdaptor transfer) {
@@ -138,17 +129,6 @@ class RFTGT4NotifyCallback implements NotifyCallback {
     }
 }
 
-/**
- * This abstract class implements the
- * {@link org.gridlab.gat.io.cpi.FileCpi FileCpi} class. Represents an Globus
- * file. That implementation uses the JavaCog abstraction layer. The subclasses
- * represent different File adaptors, using different JavaCog abstraction layer
- * providers.
- * 
- * @author Balazs Bokodi
- * @version 1.0
- * @since 1.0
- */
 @SuppressWarnings("serial")
 public class RFTGT4FileAdaptor extends FileCpi {
     public static final Authorization DEFAULT_AUTHZ = HostAuthorization
@@ -169,6 +149,32 @@ public class RFTGT4FileAdaptor extends FileCpi {
     public static final String DEFAULT_FACTORY_PORT = "8443";
 
     private static final int DEFAULT_GRIDFTP_PORT = 2811;
+    
+    public static String[] getSupportedSchemes() {
+        return new String[] { "rftgt4", "gsiftp", "gridftp", "file", ""};
+    }
+    
+    public static Map<String, Boolean> getSupportedCapabilities() {
+        Map<String, Boolean> capabilities = FileCpi.getSupportedCapabilities();
+        capabilities.put("delete", true);
+        capabilities.put("copy", true);
+        return capabilities;
+    }
+    
+    // instance initializer sets personalized
+    // EngineConfigurationFactory for the axis client.
+    static {
+        if (System.getProperty("GLOBUS_LOCATION") == null) {
+            String globusLocation = System.getProperty("gat.adaptor.path")
+                    + java.io.File.separator + "GlobusAdaptor"
+                    + java.io.File.separator;
+            System.setProperty("GLOBUS_LOCATION", globusLocation);
+        }
+        if (AxisProperties.getProperty(EngineConfigurationFactory.SYSTEM_PROPERTY_NAME) == null) {
+            AxisProperties.setProperty(EngineConfigurationFactory.SYSTEM_PROPERTY_NAME,
+            "org.gridlab.gat.resources.cpi.wsgt4new.GlobusEngineConfigurationFactory");
+        }
+    }
 
     NotificationConsumerManager notificationConsumerManager;
 
@@ -195,29 +201,16 @@ public class RFTGT4FileAdaptor extends FileCpi {
     ReliableFileTransferFactoryPortType factoryPort;
 
     /**
-     * Creates new GAT GT4 file object. The constructor is called by the
-     * subclasses.
+     * Creates new GAT RFTGT4 file object.
      * 
      * @param gatContext
      *                GAT context
      * @param location
      *                FILE location URI
-     * @param prov
-     *                marks the JavaCog provider, possible values are: gt2ft,
-     *                gsiftp, condor, ssh, gt4ft, local, gt4, gsiftp-old,
-     *                gt3.2.1, gt2, ftp, webdav. Aliases: webdav <-> http; local
-     *                <-> file; gsiftp-old <-> gridftp-old; gsiftp <-> gridftp;
-     *                gt4 <-> gt3.9.5, gt4.0.2, gt4.0.1, gt4.0.0
      */
     public RFTGT4FileAdaptor(GATContext gatContext, URI location)
             throws GATObjectCreationException {
         super(gatContext, location);
-        if (!location.isCompatible("gsiftp")
-                && !location.isCompatible("gridftp")
-                && !location.isCompatible("file")) {
-            throw new AdaptorNotApplicableException("cannot handle this URI: "
-                    + location);
-        }
 
         // TODO: may be it is possible on the local host...
         if (!location.hasAbsolutePath()) {
@@ -230,22 +223,6 @@ public class RFTGT4FileAdaptor extends FileCpi {
         } catch (URISyntaxException e) {
             throw new GATObjectCreationException(
                     "unable to create a valid rft URI: " + location, e);
-        }
-
-        if (System.getProperty("GLOBUS_LOCATION") == null) {
-            String globusLocation = System.getProperty("gat.adaptor.path")
-                    + java.io.File.separator + "GlobusAdaptor"
-                    + java.io.File.separator;
-            System.setProperty("GLOBUS_LOCATION", globusLocation);
-        }
-
-        if (System.getProperty("axis.ClientConfigFile") == null) {
-            String axisClientConfigFile = System
-                    .getProperty("gat.adaptor.path")
-                    + java.io.File.separator
-                    + "GlobusAdaptor"
-                    + java.io.File.separator + "client-config.wsdd";
-            System.setProperty("axis.ClientConfigFile", axisClientConfigFile);
         }
 
         this.host = location.getHost();
@@ -277,18 +254,6 @@ public class RFTGT4FileAdaptor extends FileCpi {
                 + BASE_SERVICE_PATH + RFTConstants.FACTORY_NAME;
     }
 
-    /**
-     * Copies the file to the location represented by <code>URI dest</code>.
-     * If the destination is on the local machine is calls the
-     * <code>copyToLocal</code> method. In other cases the
-     * <code>copyThirdParty</code> method is called. It passes a provider
-     * string to the call, and it tries the copy with all JavaCog provider.
-     * 
-     * @param dest
-     *                destination location of the file copy
-     * @throws GATInvocationException
-     * 
-     */
     protected synchronized boolean copy2(String destStr)
             throws GATInvocationException {
         EndpointReferenceType credentialEndpoint = getCredentialEPR();

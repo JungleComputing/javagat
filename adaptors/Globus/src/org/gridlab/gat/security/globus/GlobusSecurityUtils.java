@@ -212,7 +212,21 @@ public class GlobusSecurityUtils {
         }
 
         if (remaining == 0) {
-            throw new CredentialExpiredException("globus credential expired");
+            // Try getting it again, it may be refreshed.
+            SecurityContextUtils.killSecurityUserData(context,
+                    adaptorName, "globus", location, defaultPort);
+            data = SecurityContextUtils.getSecurityUserData(context,
+                    adaptorName, "globus", location, defaultPort,
+                    new GlobusContextCreator());
+            c = (GSSCredential) data;
+            try {
+                remaining = c.getRemainingLifetime();
+            } catch (Exception e) {
+                throw new CouldNotInitializeCredentialException("globus", e);
+            }
+            if (remaining == 0) {
+                throw new CredentialExpiredException("globus credential expired");
+            }
         }
 
         return (GSSCredential) data;
@@ -375,10 +389,16 @@ public class GlobusSecurityUtils {
             if (gatContext != null) {
                 String portalCertFile = (String) gatContext.getPreferences().get("myproxy.hostcertfile");
                 String portalKeyFile = (String) gatContext.getPreferences().get("myproxy.hostkeyfile");
+                if (logger.isInfoEnabled()) {
+                    logger.info("checking server credential: " + portalCertFile + " /// " + portalKeyFile);
+                }
                 if ((portalCertFile != null) && (portalKeyFile != null)) {
                     try {
                         GlobusCredential hostCred = new GlobusCredential(portalCertFile, portalKeyFile);
                         hostGSSCred = new GlobusGSSCredentialImpl(hostCred, GSSCredential.INITIATE_AND_ACCEPT);
+                        if (logger.isInfoEnabled()) {
+                            logger.info("using Server credential: " + hostGSSCred);
+                        }
                     } catch (GlobusCredentialException e) {
                         throw new CouldNotInitializeCredentialException(e.getMessage(), e);				
                     } catch (GSSException e) {

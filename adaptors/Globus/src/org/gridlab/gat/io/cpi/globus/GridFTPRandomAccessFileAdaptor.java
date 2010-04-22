@@ -159,14 +159,14 @@ public class GridFTPRandomAccessFileAdaptor extends RandomAccessFileCpi {
         state = CLOSED;
         try {
             if (writeFtpClient != null) {
-                GridFTPFileAdaptor.doWorkDestroyClient(writeFtpClient, location, writePrefs);
+                GridFTPFileAdaptor.doWorkDestroyClient(gatContext, writeFtpClient, location);
             }
         } catch (Throwable e) {
             logger.debug("GlobusRandomAccessFileAdaptor.close()", e);
             // ignored
         }
         try {
-            GridFTPFileAdaptor.doWorkDestroyClient(readFtpClient, location, readPrefs);
+            GridFTPFileAdaptor.doWorkDestroyClient(gatContext, readFtpClient, location);
         } catch (Throwable e) {
             logger.debug("GlobusRandomAccessFileAdaptor.close()", e);
             // ignored

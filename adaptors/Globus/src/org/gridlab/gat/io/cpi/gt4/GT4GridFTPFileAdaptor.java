@@ -90,6 +90,7 @@ public class GT4GridFTPFileAdaptor extends GT4FileAdaptor {
         /* } */
         task.setSpecification(spec);
 
+        // Source Service
         Service sourceService = new ServiceImpl(Service.FILE_TRANSFER);
         sourceService.setProvider(srcProvider);
         SecurityContext sourceSecurityContext = null;
@@ -108,6 +109,7 @@ public class GT4GridFTPFileAdaptor extends GT4FileAdaptor {
         sourceService.setServiceContact(sourceServiceContact);
         task.setService(Service.FILE_TRANSFER_SOURCE_SERVICE, sourceService);
 
+        // Destination Service
         Service destinationService = new ServiceImpl(Service.FILE_TRANSFER);
         destinationService.setProvider(destProvider);
         SecurityContext destinationSecurityContext = null;
@@ -126,6 +128,8 @@ public class GT4GridFTPFileAdaptor extends GT4FileAdaptor {
         destinationService.setServiceContact(destinationServiceContact);
         task.setService(Service.FILE_TRANSFER_DESTINATION_SERVICE,
                 destinationService);
+        
+        // File Transfer
         FileTransferTaskHandler handler = new FileTransferTaskHandler();
 
         try {
@@ -157,11 +161,14 @@ public class GT4GridFTPFileAdaptor extends GT4FileAdaptor {
      */
     protected void copyToLocal(URI dest) throws GATInvocationException {
         try {
+            resourceStart();
             resource.getFile(location.getPath(), dest.getPath());
         } catch (FileNotFoundException e) {
             throw new GATInvocationException("copy to local failed", e);
         } catch (GeneralException e) {
             throw new GATInvocationException("copy to local failed", e);
+        } finally {
+            resourceStop();
         }
         if (logger.isInfoEnabled()) {
             logger.info("GT4GriFTPFileAdaptor: copy2 done.");
@@ -293,5 +300,4 @@ public class GT4GridFTPFileAdaptor extends GT4FileAdaptor {
         throw new GATInvocationException(
                 "GT4GridFTP file: thirdparty copy failed.");
     }
-
 }

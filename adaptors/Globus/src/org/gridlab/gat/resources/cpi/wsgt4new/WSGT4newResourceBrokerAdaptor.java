@@ -12,6 +12,8 @@ import javax.xml.rpc.Stub;
 
 import org.globus.wsrf.WSRFConstants;
 import org.globus.wsrf.impl.security.authorization.NoAuthorization;
+import org.apache.axis.AxisProperties;
+import org.apache.axis.EngineConfigurationFactory;
 import org.apache.axis.components.uuid.UUIDGen;
 import org.apache.axis.components.uuid.UUIDGenFactory;
 import org.apache.axis.message.addressing.Address;
@@ -88,6 +90,21 @@ public class WSGT4newResourceBrokerAdaptor extends ResourceBrokerCpi {
 
     protected static Logger logger = LoggerFactory
             .getLogger(WSGT4newResourceBrokerAdaptor.class);
+   
+    // instance initializer sets personalized
+    // EngineConfigurationFactory for the axis client.
+    static {
+        if (System.getProperty("GLOBUS_LOCATION") == null) {
+            String globusLocation = System.getProperty("gat.adaptor.path")
+                    + java.io.File.separator + "GlobusAdaptor"
+                    + java.io.File.separator;
+            System.setProperty("GLOBUS_LOCATION", globusLocation);
+        }
+        if (AxisProperties.getProperty(EngineConfigurationFactory.SYSTEM_PROPERTY_NAME) == null) {
+            AxisProperties.setProperty(EngineConfigurationFactory.SYSTEM_PROPERTY_NAME,
+            "org.gridlab.gat.resources.cpi.wsgt4new.GlobusEngineConfigurationFactory");
+        }
+    }
 
     public static void init() {
         GATEngine.registerUnmarshaller(WSGT4newJob.class);
@@ -116,22 +133,6 @@ public class WSGT4newResourceBrokerAdaptor extends ResourceBrokerCpi {
     public WSGT4newResourceBrokerAdaptor(GATContext gatContext, URI brokerURI)
             throws GATObjectCreationException {
         super(gatContext, brokerURI);
-
-        if (System.getProperty("GLOBUS_LOCATION") == null) {
-            String globusLocation = System.getProperty("gat.adaptor.path")
-                    + java.io.File.separator + "GlobusAdaptor"
-                    + java.io.File.separator;
-            System.setProperty("GLOBUS_LOCATION", globusLocation);
-        }
-
-        if (System.getProperty("axis.ClientConfigFile") == null) {
-            String axisClientConfigFile = System
-                    .getProperty("gat.adaptor.path")
-                    + java.io.File.separator
-                    + "GlobusAdaptor"
-                    + java.io.File.separator + "client-config.wsdd";
-            System.setProperty("axis.ClientConfigFile", axisClientConfigFile);
-        }
     }
 
     protected String createRSL(JobDescription description, Sandbox sandbox,
@@ -151,6 +152,13 @@ public class WSGT4newResourceBrokerAdaptor extends ResourceBrokerCpi {
 
         String scheduler = (String) sd.getAttributes().get("machine.scheduler"); 
         String wsa =  (String) sd.getAttributes().get("machine.wsa");
+        String maxTime = (String) sd.getAttributes().get(SoftwareDescription.TIME_MAX);
+        String maxWallTime = (String) sd.getAttributes().get(SoftwareDescription.WALLTIME_MAX);
+        String maxCpuTime = (String) sd.getAttributes().get(SoftwareDescription.CPUTIME_MAX);
+        String maxMemory = (String) sd.getAttributes().get(SoftwareDescription.MEMORY_MAX);
+        String minMemory = (String) sd.getAttributes().get(SoftwareDescription.MEMORY_MIN);
+        String jobType = (String) sd.getAttributes().get(SoftwareDescription.JOB_TYPE);
+
         if (null != scheduler && null != wsa) {
             rsl += "<factoryEndpoint ";
             rsl += "xmlns:gram=\"http://www.globus.org/namespaces/2004/10/gram/job\" ";
@@ -195,10 +203,42 @@ public class WSGT4newResourceBrokerAdaptor extends ResourceBrokerCpi {
             }
         }
 
-        // set the environment
+        // set process count
         rsl += "<count>";
         rsl += description.getProcessCount();
         rsl += "</count>";
+        
+        // set node count
+        rsl += "<hostCount>";
+        rsl += description.getResourceCount();
+        rsl += "</hostCount>";
+
+        // set job type
+        if (jobType != null) {
+            rsl += "<jobType>";
+            rsl += jobType;
+            rsl += "</jobType>";
+        }
+        
+        // set times
+        if (maxTime != null) {
+            rsl += "<maxTime>" + maxTime + "</maxTime>";
+        }
+        if (maxWallTime != null) {
+            rsl += "<maxWallTime>" + maxWallTime + "</maxWallTime>";
+        }
+        if (maxCpuTime != null) {
+            rsl += "<maxCpuTime>" + maxCpuTime + "</maxCpuTime>";
+        }
+        
+        // set memory
+        if (maxMemory != null) {
+            rsl += "<maxMemory>" + maxMemory + "</maxMemory>";
+        }
+        if (minMemory != null) {
+            rsl += "<minMemory>" + minMemory + "</minMemory>";
+        }
+        
         rsl += "<directory>";
         if (sandbox.getSandbox().startsWith(File.separator)) {
             rsl += sandbox.getSandbox();
@@ -281,10 +321,19 @@ public class WSGT4newResourceBrokerAdaptor extends ResourceBrokerCpi {
                     }
                     rsl += "<transfer>";
                     try {
-                        rsl += "<sourceUrl>" + srcFile.toURL() + "</sourceUrl>";
+                        String srcUrlString = null;
+                        if (srcFile.isAbsolute()) {
+                            srcUrlString = srcFile.toURL().toString();
+                        } else {
+                            srcUrlString = srcFile.toURL().toString()
+                                    .replace(
+                                            srcFile.getPath(),
+                                            "${GLOBUS_USER_HOME}/"
+                                                    + srcFile.getPath());
+                        }
+                        rsl += "<sourceUrl>" + srcUrlString + "</sourceUrl>";
                         rsl += "<destinationUrl>" + destFile.toURL()
-                                + "</destinationUrl>"; // TODO: Add
-                        // ${GLOBUS_USER_HOME}
+                                + "</destinationUrl>";
                     } catch (MalformedURLException e) {
                         throw new GATInvocationException(
                                 "WSGT4ResourceBrokerAdaptor", e);
