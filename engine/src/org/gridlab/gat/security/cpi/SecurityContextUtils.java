@@ -184,6 +184,52 @@ public class SecurityContextUtils {
 
         return userData;
     }
+    
+
+    /**
+     * Removes the adaptor-specific data object that is associated with a
+     * security context. 
+     * @param context
+     * @param adaptorName
+     *                the name of the adaptor that calls this method
+     * @param dataObjectKey
+     *                the key used to store the adaptor-specific data in the
+     *                security context
+     * @param location
+     *                destination machine/port used for the security data
+     * @param defaultPort
+     *                the default port for the protocol used by the adaptor
+     * @return the adaptor-specific data object that was associated with a
+     *         security context that is valid for this adaptor
+     * @throws GATInvocationException
+     */
+    public static void killSecurityUserData(GATContext context,
+            String adaptorName, String dataObjectKey, URI location,
+            int defaultPort) {
+        // get the list of securityContext that might be valid for this adaptor
+        List<SecurityContext> l = SecurityContextUtils
+                .getValidSecurityContexts(context, adaptorName, location
+                        .resolveHost(), location.getPort(defaultPort));
+
+        if (l != null) {
+            // ok, we found a valid certificate context in the list
+            for (int i = 0; i < l.size(); i++) {
+                SecurityContext c = l.get(i);
+                Object userData = c.getDataObject(dataObjectKey);
+
+                if (userData != null) {
+                    c.putDataObject(dataObjectKey, null);
+                    if (logger.isDebugEnabled()) {
+                        logger.debug("killing security object for adaptor "
+                                + adaptorName);
+                    }
+
+                    return;
+                }
+            }
+        }
+    }
+
 
     public static String getUser(GATContext context,
             SecurityContext securityContext, URI location)
