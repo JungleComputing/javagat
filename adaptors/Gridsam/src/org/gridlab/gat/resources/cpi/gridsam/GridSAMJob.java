@@ -73,11 +73,6 @@ public class GridSAMJob extends JobCpi {
         public void run() {
             while (true) {
 
-                String saved = System.getProperty("axis.ClientConfigFile");
-                if (saved != null) {
-                    System.clearProperty("axis.ClientConfigFile");
-                }
-
                 // update the manager state of the job
                 try {
                     jobInstance = adaptor.getJobManager()
@@ -88,10 +83,6 @@ public class GridSAMJob extends JobCpi {
                 } catch (UnknownJobException e) {
                     logger.error("caught exception", e);
                     throw new RuntimeException(e);
-                } finally {
-                    if (saved != null) {
-                        System.setProperty("axis.ClientConfigFile", saved);
-                    }
                 }
 
                 if (logger.isDebugEnabled()) {

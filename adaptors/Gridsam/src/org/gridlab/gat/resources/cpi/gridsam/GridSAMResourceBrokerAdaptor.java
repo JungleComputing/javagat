@@ -1,6 +1,5 @@
 package org.gridlab.gat.resources.cpi.gridsam;
 
-import java.io.File;
 import java.util.Map;
 
 import org.gridlab.gat.GAT;
@@ -120,11 +119,9 @@ public class GridSAMResourceBrokerAdaptor extends ResourceBrokerCpi {
         }
 
         String gridSAMWebServiceURL = uri.toString();
-        String sandboxRoot = getSandboxRoot(gatContext.getPreferences());
 
         if (logger.isInfoEnabled()) {
             logger.info("url='" + gridSAMWebServiceURL + "'");
-            logger.info("sandboxRoot=" + sandboxRoot);
         }
 
         JobInstance jobInstance = null;
@@ -157,7 +154,7 @@ public class GridSAMResourceBrokerAdaptor extends ResourceBrokerCpi {
             }
 
             sandbox = new Sandbox(gatContext, description, sandboxHostname,
-                    sandboxRoot, true, false, false, false);
+                    "/tmp", true, false, false, false);
 
             JobDefinitionDocument jobDefinitionDocument = jsdlGenerator
                     .generate(description, sandbox);
@@ -167,21 +164,9 @@ public class GridSAMResourceBrokerAdaptor extends ResourceBrokerCpi {
                         + jobDefinitionDocument.toString());
             }
 
-            // Take care of axis.ClientConfigFile system property: it may
-            // be set by some Globus adaptor, but GridSAM cannot stand that.
-            // So, save and restore it.
-            String saved = System.getProperty("axis.ClientConfigFile");
-            if (saved != null) {
-                System.clearProperty("axis.ClientConfigFile");
-            }
-
             sandbox.prestage();
 
             jobInstance = jobManager.submitJob(jobDefinitionDocument);
-
-            if (saved != null) {
-                System.setProperty("axis.ClientConfigFile", saved);
-            }
 
             String jobID = jobInstance.getID();
             if (logger.isInfoEnabled()) {
@@ -238,22 +223,4 @@ public class GridSAMResourceBrokerAdaptor extends ResourceBrokerCpi {
         }
 
     }
-
-    private String getSandboxRoot(Preferences prefs)
-            throws GATInvocationException {
-        Object tmp = prefs.get("gridsam.sandbox.root");
-        if (tmp == null || !(tmp instanceof String)) {
-            // Default if user did not set this preference.
-            tmp = "/tmp";
-        }
-        File fTmp = new File(tmp.toString());
-        if (!fTmp.isAbsolute()) {
-            logger
-                    .info("resourcebroker.sandbox.root has to be an absolute path");
-            throw new GATInvocationException(
-                    "resourcebroker.sandbox.root has to be an absolute path");
-        }
-        return tmp.toString();
-    }
-
 }
