@@ -76,13 +76,19 @@ public class Sandbox {
         String sandboxRootPref = null;
         String sandboxUseRootPref = null;
         String sandboxDeletePref = null;
+        String sandboxPrestageStdInPref = null;
+        String sandboxPoststageStdOutPref = null;
+        String sandboxPoststageStdErrPref = null;
         SoftwareDescription sd = jobDescription.getSoftwareDescription();
         if (sd != null) {
             Map<String, Object> attr = sd.getAttributes();
             if (attr != null) {
-                sandboxRootPref = (String) attr.get("sandbox.root");
-                sandboxUseRootPref = (String) attr.get("sandbox.useroot");
-                sandboxDeletePref = (String) attr.get("sandbox.delete");
+                sandboxRootPref = (String) attr.get(SoftwareDescription.SANDBOX_ROOT);
+                sandboxUseRootPref = (String) attr.get(SoftwareDescription.SANDBOX_USEROOT);
+                sandboxDeletePref = (String) attr.get(SoftwareDescription.SANDBOX_DELETE);
+                sandboxPrestageStdInPref = (String) attr.get(SoftwareDescription.SANDBOX_PRESTAGE_STDIN);
+                sandboxPoststageStdOutPref = (String) attr.get(SoftwareDescription.SANDBOX_POSTSTAGE_STDOUT);
+                sandboxPoststageStdErrPref = (String) attr.get(SoftwareDescription.SANDBOX_POSTSTAGE_STDERR);
             }
         }
 
@@ -111,6 +117,30 @@ public class Sandbox {
                 this.deleteSandboxDir = true;
             }
         }
+        if (sandboxPrestageStdInPref != null) {
+            if (sandboxPrestageStdInPref.equalsIgnoreCase("false")) {
+                preStageStdin = false;
+            } else if (sandboxPrestageStdInPref.equalsIgnoreCase("true")) {
+                preStageStdin = true;
+            }
+        }
+
+        if (sandboxPoststageStdOutPref != null) {
+            if (sandboxPoststageStdOutPref.equalsIgnoreCase("false")) {
+                postStageStdout = false;
+            } else if (sandboxPoststageStdOutPref.equalsIgnoreCase("true")) {
+                postStageStdout = true;
+            }
+        }
+
+        if (sandboxPoststageStdErrPref != null) {
+            if (sandboxPoststageStdErrPref.equalsIgnoreCase("false")) {
+                postStageStderr = false;
+            } else if (sandboxPoststageStdErrPref.equalsIgnoreCase("true")) {
+                postStageStderr = true;
+            }
+        }
+
 
         initSandbox();
 
