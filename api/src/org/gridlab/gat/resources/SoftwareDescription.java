@@ -127,7 +127,7 @@ public class SoftwareDescription implements java.io.Serializable {
 
     /** Indicates the job type: single|multiple|mpi|condor|... */
     public static final String JOB_TYPE = "job.type";
-    
+     
     /** Indicates the project to use, for accounting purposes. */
     public static final String PROJECT = "project";
    
@@ -151,6 +151,43 @@ public class SoftwareDescription implements java.io.Serializable {
      * GAT exits. Default is true.
      */
     public static final String STOP_ON_EXIT = "job.stop.on.exit";
+
+    /**
+     * When set, defines a path to the root where sandbox directories
+     * are created. Default is adaptor-dependent.
+     */
+    public static final String SANDBOX_ROOT = "sandbox.root";
+
+    /**
+     * Boolean attribute that indicates that the directory specified with
+     * the SANDBOX_ROOT attribute should itself be used as a sandbox
+     * (instead of creating the sandbox in this directory).
+     */
+    public static final String SANDBOX_USEROOT = "sandbox.useroot";
+
+    /**
+     * Boolean attribute that indicates if the sandbox is to be deleted after
+     * the run. Default is true.
+     */
+    public static final String SANDBOX_DELETE = "sandbox.delete";
+
+    /**
+     * Boolean attribute that indicates if the stdin file should be prestaged
+     * before the job is submitted. The default is adaptor-dependent.
+     */
+    public static final String SANDBOX_PRESTAGE_STDIN = "sandbox.prestage.stdin";
+
+    /**
+     * Boolean attribute that indicates if the stdout file should be poststaged
+     * when the job is finished. The default is adaptor-dependent.
+     */
+    public static final String SANDBOX_POSTSTAGE_STDOUT = "sandbox.poststage.stdout";
+
+    /**
+     * Boolean attribute that indicates if the stderr file should be poststaged
+     * when the job is finished. The default is adaptor-dependent.
+     */
+    public static final String SANDBOX_POSTSTAGE_STDERR = "sandbox.poststage.stderr";
 
     private String executable;
 
@@ -639,7 +676,7 @@ public class SoftwareDescription implements java.io.Serializable {
      * explicitly added to be deleted using this method.
      * <p>
      * Second, it's possible to specify that sandbox isn't deleted after the job
-     * run, using the attribute "sandbox.delete" set to "false". In the case
+     * run, using the attribute SANDBOX_DELETE set to "false". In the case
      * that sandbox isn't deleted but some files inside the sandbox should be
      * deleted, use this method.
      * 
