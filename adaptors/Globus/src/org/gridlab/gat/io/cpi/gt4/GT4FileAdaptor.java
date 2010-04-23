@@ -707,7 +707,7 @@ abstract public class GT4FileAdaptor extends FileCpi {
                 // System.out.println("Exception in try " + i + " for location " + location.toString());
                 continue;
             } else
-                throw new GATInvocationException("ERROR");
+                throw error;
         }
     } // protected void resourceStart() throws GATInvocationException
 
