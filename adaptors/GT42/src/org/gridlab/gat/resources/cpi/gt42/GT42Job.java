@@ -4,6 +4,8 @@ import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.axis.AxisProperties;
+import org.apache.axis.EngineConfigurationFactory;
 import org.globus.common.ResourceManagerContact;
 import org.globus.exec.client.GramJob;
 import org.globus.exec.client.GramJobListener;

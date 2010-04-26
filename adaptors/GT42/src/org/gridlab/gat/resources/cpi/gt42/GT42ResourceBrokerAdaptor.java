@@ -11,6 +11,8 @@ import java.util.Set;
 import javax.xml.rpc.ServiceException;
 import javax.xml.rpc.Stub;
 
+import org.apache.axis.AxisProperties;
+import org.apache.axis.EngineConfigurationFactory;
 import org.apache.axis.components.uuid.UUIDGen;
 import org.apache.axis.components.uuid.UUIDGenFactory;
 import org.globus.axis.message.addressing.Address;

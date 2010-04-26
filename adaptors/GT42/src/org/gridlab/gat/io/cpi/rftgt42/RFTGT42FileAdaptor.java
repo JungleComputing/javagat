@@ -18,6 +18,8 @@ import javax.xml.rpc.ServiceException;
 import javax.xml.rpc.Stub;
 import javax.xml.soap.SOAPElement;
 
+import org.apache.axis.AxisProperties;
+import org.apache.axis.EngineConfigurationFactory;
 import org.apache.axis.message.MessageElement;
 import org.apache.axis.types.URI.MalformedURIException;
 import org.globus.axis.message.addressing.EndpointReferenceType;

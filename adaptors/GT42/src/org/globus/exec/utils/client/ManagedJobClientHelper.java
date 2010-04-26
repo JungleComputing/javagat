@@ -2,7 +2,7 @@ package org.globus.exec.utils.client;
 
 import org.apache.axis.AxisProperties;
 import org.apache.axis.EngineConfigurationFactory;
-import org.apache.axis.message.addressing.EndpointReferenceType;
+import org.globus.axis.message.addressing.EndpointReferenceType;
 import org.globus.exec.generated.ManagedJobPortType;
 import org.globus.exec.generated.service.ManagedJobServiceAddressingLocator;
 import org.globus.exec.utils.service.ManagedJobHelper;
