@@ -8,13 +8,18 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Random;
 import java.util.TimeZone;
 
 import org.globus.cog.abstraction.impl.common.AbstractionFactory;
+import org.globus.cog.abstraction.impl.common.ProviderMethodException;
+import org.globus.cog.abstraction.impl.common.task.InvalidProviderException;
+import org.globus.cog.abstraction.impl.common.task.InvalidSecurityContextException;
 import org.globus.cog.abstraction.impl.common.task.ServiceContactImpl;
 import org.globus.cog.abstraction.impl.file.DirectoryNotFoundException;
 import org.globus.cog.abstraction.impl.file.FileNotFoundException;
 import org.globus.cog.abstraction.impl.file.GeneralException;
+import org.globus.cog.abstraction.impl.file.IllegalHostException;
 import org.globus.cog.abstraction.interfaces.FileResource;
 import org.globus.cog.abstraction.interfaces.GridFile;
 import org.globus.cog.abstraction.interfaces.Permissions;
@@ -40,6 +45,7 @@ import org.slf4j.LoggerFactory;
  * providers.
  * 
  * @author Balazs Bokodi
+ * @author Bastian Boegel
  * @version 1.0
  * @since 1.0
  */
@@ -134,7 +140,8 @@ abstract public class GT42FileAdaptor extends FileCpi {
                     .getHost(), location.getPort());
             resource.setServiceContact(serviceContact);
             try {
-                resource.start();
+                resourceStart();
+                resourceStop();
             } catch (Exception e) {
                 throw new AdaptorNotApplicableException(
                         "GT42FileAdaptor: resource.start failed, " + e);
@@ -180,12 +187,15 @@ abstract public class GT42FileAdaptor extends FileCpi {
     	if (!localFile) {
             GridFile gf = null;
             try {
+                resourceStart();
                 gf = resource.getGridFile(location.getPath());
                 return gf.userCanRead();
             } catch (FileNotFoundException e) {
                 throw new GATInvocationException(e.getMessage());
             } catch (GeneralException e) {
                 throw new GATInvocationException(e.getMessage());
+            } finally {
+                resourceStop();
             }
         } else {
             return super.canRead();
@@ -204,13 +214,20 @@ abstract public class GT42FileAdaptor extends FileCpi {
     	if (!localFile) {
             GridFile gf = null;
             try {
+                resourceStart();
                 gf = resource.getGridFile(location.getPath());
+                if (gf == null) {
+                    // Apparently can happen for non-existing files.
+                    return false;
+                }
+                return gf.userCanWrite();
             } catch (FileNotFoundException e) {
                 throw new GATInvocationException();
             } catch (GeneralException e) {
                 throw new GATInvocationException(e.getMessage());
+            } finally {
+                resourceStop();
             }
-            return gf.userCanWrite();
         } else {
             return super.canWrite();
         }
@@ -225,17 +242,23 @@ abstract public class GT42FileAdaptor extends FileCpi {
         if (!localFile) {
             if (isDirectory()) {
                 try {
+                    resourceStart();
                     resource.deleteDirectory(location.getPath(), true);
                 } catch (DirectoryNotFoundException e) {
                     return false;
                 } catch (GeneralException e) {
                     throw new GATInvocationException(e.getMessage());
+                } finally {
+                    resourceStop();
                 }
             } else {
                 try {
-                       resource.deleteFile(location.getPath());
+                    resourceStart();
+                    resource.deleteFile(location.getPath());
                 } catch (Exception e) {
                     return false;
+                } finally {
+                    resourceStop();
                 }
             }
             return true;
@@ -252,16 +275,21 @@ abstract public class GT42FileAdaptor extends FileCpi {
     public boolean exists() throws GATInvocationException {
         if (!localFile) {
             try {
+                resourceStart();
                 return resource.exists(location.getPath());
             } catch (GeneralException e) {
                 throw new GATInvocationException("gt42file", e);
             } catch (FileNotFoundException e) {
                 return false;
+            } finally {
+                resourceStop();
             }
         } else {
-            return super.exists();
+            // Should implement the local case as well, because it is used
+            // in copy().
+            java.io.File f = new java.io.File(location.getPath());
+            return f.exists();
         }
-
     }
 
     /*
@@ -292,12 +320,15 @@ abstract public class GT42FileAdaptor extends FileCpi {
 
             GridFile gf = null;
             try {
+                resourceStart();
                 gf = resource.getGridFile(location.getPath());
                 return gf.getAbsolutePathName();
             } catch (FileNotFoundException e) {
                 throw new GATInvocationException();
             } catch (GeneralException e) {
                 throw new GATInvocationException(e.getMessage());
+            } finally {
+                resourceStop();
             }
         } else {
             return super.getAbsolutePath();
@@ -319,6 +350,7 @@ abstract public class GT42FileAdaptor extends FileCpi {
             GridFile gf = null;
             try {
                 String path = location.getPath();
+                resourceStart();
                 if (! resource.exists(path)) {
                     return false;
                 }
@@ -335,6 +367,8 @@ abstract public class GT42FileAdaptor extends FileCpi {
                 // throw new GATInvocationException();
             } catch (GeneralException e) {
                 throw new GATInvocationException(e.getMessage());
+            } finally {
+                resourceStop();
             }
         } else {
             return super.isDirectory();
@@ -355,6 +389,7 @@ abstract public class GT42FileAdaptor extends FileCpi {
             GridFile gf = null;
             try {
                 String path = location.getPath();
+                resourceStart();
                 if (! resource.exists(path)) {
                     return false;
                 }
@@ -364,6 +399,8 @@ abstract public class GT42FileAdaptor extends FileCpi {
                 return false;
             } catch (GeneralException e) {
                 throw new GATInvocationException(e.getMessage());
+            } finally {
+                resourceStop();
             }
         } else {
             return super.isFile();
@@ -393,6 +430,7 @@ abstract public class GT42FileAdaptor extends FileCpi {
             sdf.setTimeZone(TimeZone.getTimeZone("GMT"));
             Date d;
             try {
+                resourceStart();
                 gf = resource.getGridFile(location.getPath());
                 if (gf == null) {
                     return 0L;
@@ -408,6 +446,8 @@ abstract public class GT42FileAdaptor extends FileCpi {
                 throw new GATInvocationException(e.getMessage());
             } catch (GeneralException e) {
                 throw new GATInvocationException(e.getMessage());
+            } finally {
+                resourceStop();
             }
         } else {
             return super.lastModified();
@@ -425,6 +465,7 @@ abstract public class GT42FileAdaptor extends FileCpi {
             return false;
         }
         try {
+            resourceStart();
             resource.putFile(empty.getAbsolutePath(), location.getPath());
         } catch (FileNotFoundException e) {
             throw new GATInvocationException(e.getMessage());
@@ -432,6 +473,7 @@ abstract public class GT42FileAdaptor extends FileCpi {
             throw new GATInvocationException(e.getMessage());
         } finally {
             empty.delete();
+            resourceStop();
         }
         return true;
     }
@@ -446,12 +488,15 @@ abstract public class GT42FileAdaptor extends FileCpi {
     	if (!localFile) {
             GridFile gf = null;
             try {
+                resourceStart();
                 gf = resource.getGridFile(location.getPath());
                 return gf.getSize();
             } catch (FileNotFoundException e) {
                 throw new GATInvocationException(e.getMessage());
             } catch (GeneralException e) {
                 throw new GATInvocationException(e.getMessage());
+            } finally {
+                resourceStop();
             }
         } else {
             return super.length();
@@ -470,11 +515,14 @@ abstract public class GT42FileAdaptor extends FileCpi {
                 return null;
             }
             try {
+                resourceStart();
                 c = resource.list(location.getPath());
             } catch (DirectoryNotFoundException e) {
                 throw new GATInvocationException(e.getMessage());
             } catch (GeneralException e) {
                 throw new GATInvocationException(e.getMessage());
+            } finally {
+                resourceStop();
             }
             String[] res = new String[c.size() - 2];
             Iterator<?> iterator = c.iterator();
@@ -501,12 +549,15 @@ abstract public class GT42FileAdaptor extends FileCpi {
     public boolean mkdir() throws GATInvocationException {
         if (!localFile) {
             try {
+                resourceStart();
                 resource.createDirectory(location.getPath());
             } catch (GeneralException e) {
                 if (logger.isDebugEnabled()) {
                     logger.debug("", e);
                 }
                 return false;
+            } finally {
+                resourceStop();
             }
             return true;
         } else {
@@ -535,13 +586,16 @@ abstract public class GT42FileAdaptor extends FileCpi {
             sdf.setTimeZone(TimeZone.getTimeZone("GMT"));
             Date d = new Date(arg0);
             try {
+                resourceStart();
                 gf = resource.getGridFile(location.getPath());
+                gf.setLastModified(sdf.format(d));
             } catch (GeneralException e) {
                 throw new GATInvocationException(e.getMessage());
             } catch (FileNotFoundException e) {
                 throw new GATInvocationException(e.getMessage());
+            } finally {
+                resourceStop();
             }
-            gf.setLastModified(sdf.format(d));
             return true;
         } else {
             return super.setLastModified(arg0);
@@ -557,28 +611,126 @@ abstract public class GT42FileAdaptor extends FileCpi {
         if (!localFile) {
             GridFile gf = null;
             try {
+                resourceStart();
                 gf = resource.getGridFile(location.getPath());
+                Permissions perm = gf.getUserPermissions();
+                perm.setWrite(false);
+                gf.setUserPermissions(perm);
             } catch (FileNotFoundException e) {
                 throw new GATInvocationException(e.getMessage());
             } catch (GeneralException e) {
                 throw new GATInvocationException(e.getMessage());
+            } finally {
+                resourceStop();
             }
-            Permissions perm = gf.getUserPermissions();
-            perm.setWrite(false);
-            gf.setUserPermissions(perm);
+
             return true;
         } else {
             return super.setReadOnly();
         }
     }
-    
-    protected void finalize() {
-        if (resource != null) {
+      
+    /**
+     * opens a connection to the resource
+     * 
+     * @throws GATInvocationException
+     */
+    protected void resourceStart() throws GATInvocationException {
+        int max_tries = 100;
+        int i = 0;
+        GATInvocationException error = null;
+        while (true) {
+            i++;
+            try {
+                if ((resource != null) && (resource.isStarted())) {
+                    try {
+                        resource.stop();
+                    } catch (Exception e) {
+                        // ignore exception on closing
+                    }
+                    resource = null;
+                }
+                if ((resource == null) || (!resource.isStarted())) {
+                    resource = AbstractionFactory.newFileResource(srcProvider);
+                    resource.setName("gt4file: " + Math.random());
+                    ServiceContact serviceContact = new ServiceContactImpl(location.getHost(), location.getPort());
+                    resource.setServiceContact(serviceContact);
+
+                    SecurityContext securityContext = null;
+                    securityContext = AbstractionFactory.newSecurityContext(srcProvider);
+                    GSSCredential cred = null;
+                    try {
+                        cred = getCredential(srcProvider, location);
+                        if (cred != null) {
+                            if (cred.getRemainingLifetime() <= 0)
+                                cred = null;
+                        }
+                    } catch (Exception e) {
+                        // ignore --> try again with the original context
+                        logger.info("cannot find valid credential", e);
+                    }
+                    if (cred == null) {
+                        throw new GATInvocationException("Cannot find valid credential");
+                    }
+                    securityContext.setCredentials(cred);
+                    resource.setSecurityContext(securityContext);
+
+                    resource.start();
+                    if (resource.isStarted())
+                        return;
+                    logger.info("resource Started (" + location.getPath() + "/try " + i + "): " + resource.isStarted());
+                }
+            } catch (IllegalHostException e) {
+                logger.error("XXXXX_EX IllegalHostException raised (" + location.getPath() + "/try " + i + "): "
+                        + e.getMessage(), e);
+                error = new GATInvocationException(e.getMessage(), e);
+            } catch (InvalidSecurityContextException e) {
+                logger.error("XXXXX_EX InvalidSecurityContextException raised (" + location.getPath() + "/try " + i
+                        + "): " + e.getMessage(), e);
+                error = new GATInvocationException(e.getMessage(), e);
+            } catch (GeneralException e) {
+                logger.error("XXXXX_EX GeneralException raised(" + location.getPath() + "/try " + i + "): "
+                        + e.getMessage(), e);
+                error = new GATInvocationException(e.getMessage(), e); 
+            } catch (InvalidProviderException e) {
+                logger.error("XXXXX_EX GATInvocationException raised(" + location.getPath() + "/try " + i + "): "
+                        + e.getMessage(), e);
+                error = new GATInvocationException(e.getMessage(), e);
+            } catch (ProviderMethodException e) {
+                logger.error("XXXXX_EX ProviderMethodException raised(" + location.getPath() + "/try " + i + "): "
+                        + e.getMessage(), e);
+                error = new GATInvocationException(e.getMessage(), e);
+            }
+            if (i < max_tries) {
+                try {
+                    Random generator = new Random();
+                    // waiting a random time (1..6 seconds)
+                    Thread.sleep(generator.nextInt(6000) + 1000);
+                } catch (InterruptedException e1) {
+                    // ignore
+                }
+                // System.out.println("Exception in try " + i + " for location " + location.toString());
+                continue;
+            } else
+                throw error;
+        }
+    } // protected void resourceStart() throws GATInvocationException
+
+    /**
+     * closes the connection to the resource
+     * 
+     * @throws GATInvocationException
+     */
+    protected void resourceStop() throws GATInvocationException {
+        if (resource.isStarted()) {
             try {
                 resource.stop();
             } catch (GeneralException e) {
-                // ignored
+                logger.error("XXXXX error while closing socket: " + e.getMessage(), e);
+                throw new GATInvocationException(e.getMessage());
             }
         }
-    }
+    } // protected void resourceStop() throws GATInvocationException
+
+
 }

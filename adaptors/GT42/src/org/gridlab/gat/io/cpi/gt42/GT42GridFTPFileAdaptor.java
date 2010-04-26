@@ -86,6 +86,7 @@ public class GT42GridFTPFileAdaptor extends GT42FileAdaptor {
         /* } */
         task.setSpecification(spec);
 
+        // Source Service
         Service sourceService = new ServiceImpl(Service.FILE_TRANSFER);
         sourceService.setProvider(srcProvider);
         SecurityContext sourceSecurityContext = null;
@@ -104,6 +105,7 @@ public class GT42GridFTPFileAdaptor extends GT42FileAdaptor {
         sourceService.setServiceContact(sourceServiceContact);
         task.setService(Service.FILE_TRANSFER_SOURCE_SERVICE, sourceService);
 
+        // Destination Service
         Service destinationService = new ServiceImpl(Service.FILE_TRANSFER);
         destinationService.setProvider(destProvider);
         SecurityContext destinationSecurityContext = null;
@@ -122,6 +124,8 @@ public class GT42GridFTPFileAdaptor extends GT42FileAdaptor {
         destinationService.setServiceContact(destinationServiceContact);
         task.setService(Service.FILE_TRANSFER_DESTINATION_SERVICE,
                 destinationService);
+        
+        // File Transfer
         FileTransferTaskHandler handler = new FileTransferTaskHandler();
 
         try {
@@ -153,13 +157,15 @@ public class GT42GridFTPFileAdaptor extends GT42FileAdaptor {
      */
     protected void copyToLocal(URI dest) throws GATInvocationException {
         try {
-        	resource.getFile(location.getPath(), dest.getPath());
+            resourceStart();
+            resource.getFile(location.getPath(), dest.getPath());
         } catch (FileNotFoundException e) {
             throw new GATInvocationException("copy to local failed1", e);
         } catch (GeneralException e) {
-           	e.printStackTrace();
-           	throw new GATInvocationException("copy to local failed2", e);
-            
+            e.printStackTrace();
+            throw new GATInvocationException("copy to local failed2", e);
+        } finally {
+            resourceStop():
         }
         if (logger.isInfoEnabled()) {
             logger.info("GT42GriFTPFileAdaptor: copy2 done.");
@@ -286,5 +292,4 @@ public class GT42GridFTPFileAdaptor extends GT42FileAdaptor {
         throw new GATInvocationException(
                 "GT42GridFTP file: thirdparty copy failed.");
     }
-
 }
