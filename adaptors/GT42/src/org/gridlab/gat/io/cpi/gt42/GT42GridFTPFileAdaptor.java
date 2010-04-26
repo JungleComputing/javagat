@@ -165,7 +165,7 @@ public class GT42GridFTPFileAdaptor extends GT42FileAdaptor {
             e.printStackTrace();
             throw new GATInvocationException("copy to local failed2", e);
         } finally {
-            resourceStop():
+            resourceStop();
         }
         if (logger.isInfoEnabled()) {
             logger.info("GT42GriFTPFileAdaptor: copy2 done.");

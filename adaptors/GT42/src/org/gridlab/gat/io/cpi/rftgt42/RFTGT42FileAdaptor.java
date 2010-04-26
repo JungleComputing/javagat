@@ -159,6 +159,22 @@ class RFTGT42NotifyCallback implements NotifyCallback {
  */
 @SuppressWarnings("serial")
 public class RFTGT42FileAdaptor extends FileCpi {
+
+    // instance initializer sets personalized
+    // EngineConfigurationFactory for the axis client.
+    static {
+        if (System.getProperty("GT42_LOCATION") == null) {
+            String globusLocation = System.getProperty("gat.adaptor.path")
+                    + java.io.File.separator + "GT42Adaptor"
+                    + java.io.File.separator;
+            System.setProperty("GT42_LOCATION", globusLocation);
+        }
+        if (AxisProperties.getProperty(EngineConfigurationFactory.SYSTEM_PROPERTY_NAME) == null) {
+            AxisProperties.setProperty(EngineConfigurationFactory.SYSTEM_PROPERTY_NAME,
+            "org.gridlab.gat.resources.cpi.gt42.GlobusEngineConfigurationFactory");
+        }
+    }
+
     public static final Authorization DEFAULT_AUTHZ = HostAuthorization
             .getInstance();
 
@@ -243,25 +259,6 @@ public class RFTGT42FileAdaptor extends FileCpi {
                     "unable to create a valid rft URI: " + location, e);
         }
 
-  	 if (System.getProperty("GT42_LOCATION") == null )	 {
-            String gt42_Location = System.getProperty("gat.adaptor.path")
-                    + java.io.File.separator + "GT42Adaptor"
-                    + java.io.File.separator;
-            
-            System.setProperty("GT42_LOCATION", gt42_Location);
-            
-       }
-  
-   	 if (System.getProperty("axis.ClientConfigFileGT42") == null ) {	   		   		 
-   		 String axisClientConfigFileGT42 = System
-                    .getProperty("gat.adaptor.path")
-                    + java.io.File.separator
-                    + "GT42Adaptor"
-                    + java.io.File.separator + "client-configGT42.wsdd";
-           	System.setProperty("axis.ClientConfigFileGT42", axisClientConfigFileGT42);
-           	 
-   	 }
-           
         this.host = location.getHost();
         if (this.host == null) {
             this.host = getLocalHost();

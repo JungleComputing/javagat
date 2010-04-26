@@ -35,6 +35,20 @@ public class GT42Job extends JobCpi implements GramJobListener, Runnable {
 
     private static final long serialVersionUID = 1L;
 
+    // instance initializer sets personalized
+    // EngineConfigurationFactory for the axis client.
+    static {
+        if (System.getProperty("GT42_LOCATION") == null) {
+            String globusLocation = System.getProperty("gat.adaptor.path")
+                    + java.io.File.separator + "GT42Adaptor"
+                    + java.io.File.separator;
+            System.setProperty("GT42_LOCATION", globusLocation);
+        }
+        if (AxisProperties.getProperty(EngineConfigurationFactory.SYSTEM_PROPERTY_NAME) == null) {
+            AxisProperties.setProperty(EngineConfigurationFactory.SYSTEM_PROPERTY_NAME,
+            "org.gridlab.gat.resources.cpi.gt42.GlobusEngineConfigurationFactory");
+        }
+    }
     private MetricDefinition statusMetricDefinition;
 
     private GramJob job;
@@ -66,24 +80,6 @@ public class GT42Job extends JobCpi implements GramJobListener, Runnable {
         throws GATObjectCreationException {
         super(gatContext, sj.getJobDescription(), sj.getSandbox());
         sandbox.setContext(gatContext);
-
-        if (System.getProperty("GT42_LOCATION") == null) {
-            String gt42Location = System.getProperty("gat.adaptor.path")
-                + java.io.File.separator + "GT42Adaptor"
-                + java.io.File.separator;
-            System.setProperty("GT42_LOCATION", gt42Location);
-
-        }
-
-        if (System.getProperty("axis.ClientConfigFileGT42") == null) {
-            String axisClientConfigFileGT42 = System
-                .getProperty("gat.adaptor.path")
-                + java.io.File.separator
-                + "GT42Adaptor"
-                + java.io.File.separator + "client-configGT42.wsdd";
-            System.setProperty("axis.ClientConfigFileGT42",
-                    axisClientConfigFileGT42);
-        }
 
         if (logger.isDebugEnabled()) {
             logger.debug("reconstructing wsgt4newjob: " + sj);

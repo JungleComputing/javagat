@@ -84,6 +84,20 @@ public class GT42ResourceBrokerAdaptor extends ResourceBrokerCpi {
     protected static Logger logger = LoggerFactory
             .getLogger(GT42ResourceBrokerAdaptor.class);
 
+    // instance initializer sets personalized
+    // EngineConfigurationFactory for the axis client.
+    static {
+        if (System.getProperty("GT42_LOCATION") == null) {
+            String globusLocation = System.getProperty("gat.adaptor.path")
+                    + java.io.File.separator + "GT42Adaptor"
+                    + java.io.File.separator;
+            System.setProperty("GT42_LOCATION", globusLocation);
+        }
+        if (AxisProperties.getProperty(EngineConfigurationFactory.SYSTEM_PROPERTY_NAME) == null) {
+            AxisProperties.setProperty(EngineConfigurationFactory.SYSTEM_PROPERTY_NAME,
+            "org.gridlab.gat.resources.cpi.gt42.GlobusEngineConfigurationFactory");
+        }
+    }
     public static void init() {
         GATEngine.registerUnmarshaller(GT42Job.class);
     }
@@ -111,25 +125,6 @@ public class GT42ResourceBrokerAdaptor extends ResourceBrokerCpi {
     public GT42ResourceBrokerAdaptor(GATContext gatContext, URI brokerURI)
             throws GATObjectCreationException {
         super(gatContext, brokerURI);
-
-        if (System.getProperty("GT42_LOCATION") == null) {
-            String gt42Location = System.getProperty("gat.adaptor.path")
-                    + java.io.File.separator + "GT42Adaptor"
-                    + java.io.File.separator;
-            System.setProperty("GT42_LOCATION", gt42Location);
-
-        }
-
-        if (System.getProperty("axis.ClientConfigFileGT42") == null) {
-            String axisClientConfigFileGT42 = System
-                    .getProperty("gat.adaptor.path")
-                    + java.io.File.separator
-                    + "GT42Adaptor"
-                    + java.io.File.separator + "client-configGT42.wsdd";
-            System.setProperty("axis.ClientConfigFileGT42",
-                    axisClientConfigFileGT42);
-
-        }
     }
 
     protected String createRSL(JobDescription description, Sandbox sandbox,
