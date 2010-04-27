@@ -475,7 +475,7 @@ public class GliteJob extends JobCpi {
 		}
 
 		try {
-			getWmProxy().jobCancel(getDelegationId());
+			getWmProxy().jobCancel(gliteJobID);
 		} catch (Exception e) {
 			throw new GATInvocationException("Could not cancel job!", e);
 		}
