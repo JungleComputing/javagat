@@ -604,7 +604,7 @@ abstract public class GT4FileAdaptor extends FileCpi {
 		while (true) {
 			i++;
 			try {
-				System.out.println("resource status (try " + i + "): "
+				logger.debug("resource status (try " + i + "): "
 						+ (resource == null ? "null" : "" + resource.isStarted()));
 				if ((resource != null) && (resource.isStarted())) {
 					try {
@@ -625,7 +625,7 @@ abstract public class GT4FileAdaptor extends FileCpi {
 					GSSCredential cred = null;
 					try {
 						cred = getCredential(srcProvider, location);
-						System.out.println("old cred");
+						logger.debug("old cred");
 						if (cred != null) {
 							if (cred.getRemainingLifetime() <= 0)
 								cred = null;
@@ -636,14 +636,14 @@ abstract public class GT4FileAdaptor extends FileCpi {
 					}
 					if (cred == null) {
 						// try with the original context
-						System.out.println("new Cred");
+						logger.debug("new Cred");
 						gatContext = (GATContext) gatContextCopy.clone();
 						cred = getCredential(srcProvider, location);
 					}
 					try {
-						System.out.println("Remaining Lifetime: " + cred.getRemainingLifetime());
+						logger.debug("Remaining Lifetime: " + cred.getRemainingLifetime());
 					} catch (GSSException e) {
-						System.out.println("ERROR getting remaining Lifetime");
+						logger.debug("ERROR getting remaining Lifetime");
 					}
 					securityContext.setCredentials(cred);
 					resource.setSecurityContext(securityContext);
@@ -654,40 +654,39 @@ abstract public class GT4FileAdaptor extends FileCpi {
 					logger.info("resource Started (" + location.getPath() + "/try " + i + "): " + resource.isStarted());
 				}
 			} catch (IllegalHostException e) {
-				logger.error("XXXXX_EX IllegalHostException raised (" + location.getPath() + "/try " + i + "): "
+				logger.warn("XXXXX_EX IllegalHostException raised (" + location.getPath() + "/try " + i + "): "
 						+ e.getMessage(), e);
 				error = new GATInvocationException(e.getMessage());
-				System.out.println("XXXXX_EX IllegalHostException raised (" + location.getPath() + "/try " + i + "): "
+				logger.warn("XXXXX_EX IllegalHostException raised (" + location.getPath() + "/try " + i + "): "
 						+ e.getMessage());
 			} catch (InvalidSecurityContextException e) {
 				logger.error("XXXXX_EX InvalidSecurityContextException raised (" + location.getPath() + "/try " + i
 						+ "): " + e.getMessage(), e);
 				error = new GATInvocationException(e.getMessage());
-				System.out.println("XXXXX_EX InvalidSecurityContextException raised (" + location.getPath() + "/try "
+				logger.warn("XXXXX_EX InvalidSecurityContextException raised (" + location.getPath() + "/try "
 						+ i + "): " + e.getMessage());
 			} catch (GeneralException e) {
 				logger.error("XXXXX_EX GeneralException raised(" + location.getPath() + "/try " + i + "): "
 						+ e.getMessage(), e);
 				error = new GATInvocationException(e.getMessage());
 				if (e.getCause() instanceof EOFException) {
-					System.out.println("EOFException");
+					logger.warn("EOFException");
 				} else {
-					System.out.println("XXXXX_EX GeneralException raised(" + location.getPath() + "/try " + i + "): "
-							+ e.getMessage() + "START STACKTRACE -----");
-					e.printStackTrace(System.out);
-					System.out.println("---------- END STACKTRACE ---------");
+					logger.warn("XXXXX_EX GeneralException raised(" + location.getPath() + "/try " + i + "): "
+							+ e.getMessage() + "START STACKTRACE -----");					
+					logger.warn("---------- END STACKTRACE ---------");
 				}
 			} catch (InvalidProviderException e) {
-				logger.error("XXXXX_EX GATInvocationException raised(" + location.getPath() + "/try " + i + "): "
+				logger.warn("XXXXX_EX GATInvocationException raised(" + location.getPath() + "/try " + i + "): "
 						+ e.getMessage(), e);
 				error = new GATInvocationException(e.getMessage());
-				System.out.println("XXXXX_EX GATInvocationException raised(" + location.getPath() + "/try " + i + "): "
+				logger.warn("XXXXX_EX GATInvocationException raised(" + location.getPath() + "/try " + i + "): "
 						+ e.getMessage());
 			} catch (ProviderMethodException e) {
-				logger.error("XXXXX_EX ProviderMethodException raised(" + location.getPath() + "/try " + i + "): "
+				logger.warn("XXXXX_EX ProviderMethodException raised(" + location.getPath() + "/try " + i + "): "
 						+ e.getMessage(), e);
 				error = new GATInvocationException(e.getMessage());
-				System.out.println("XXXXX_EX ProviderMethodException raised(" + location.getPath() + "/try " + i
+				logger.warn("XXXXX_EX ProviderMethodException raised(" + location.getPath() + "/try " + i
 						+ "): " + e.getMessage());
 			}
 			if (i < max_tries) {
@@ -698,7 +697,7 @@ abstract public class GT4FileAdaptor extends FileCpi {
 				} catch (InterruptedException e1) {
 					// ignore
 				}
-				System.out.println("Exception in try " + i + " for location " + location.toString());
+				logger.warn("Exception in try " + i + " for location " + location.toString());
 				continue;
 			} else
 				throw new GATInvocationException("ERROR");

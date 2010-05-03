@@ -25,11 +25,17 @@ import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.GATObjectCreationException;
 import org.gridlab.gat.URI;
 import org.gridlab.gat.io.File;
+import org.gridlab.gat.io.cpi.globus.GridFTPFileAdaptor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 //This class only supports the URIs with gsiftp
 @SuppressWarnings("serial")
 public class GT4GridFTPFileAdaptor extends GT4FileAdaptor {
 
+	/** The logger instance. */
+	protected static Logger logger = LoggerFactory.getLogger(GT4GridFTPFileAdaptor.class);	
+	
 	public static Map<String, Boolean> getSupportedCapabilities() {
 		Map<String, Boolean> capabilities = GT4FileAdaptor.getSupportedCapabilities();
 		capabilities.put("copy", true);
@@ -42,7 +48,7 @@ public class GT4GridFTPFileAdaptor extends GT4FileAdaptor {
 	 */
 	public GT4GridFTPFileAdaptor(GATContext gatContext, URI location) throws GATObjectCreationException {
 		super(gatContext, location, "gsiftp");
-		System.err.println("New instance of GT4GridFTPFileAdaptor");
+		logger.debug("New instance of GT4GridFTPFileAdaptor");
 	}
 
 	/**
