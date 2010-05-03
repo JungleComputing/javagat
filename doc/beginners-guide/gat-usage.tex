@@ -1,5 +1,6 @@
 \documentclass[a4paper,11pt]{article}
 \usepackage{url}
+\usepackage{alltt}
 \usepackage{fancyhdr}
 \usepackage{multirow}
 \usepackage{graphicx}
@@ -52,15 +53,16 @@ AEI\footnote{AEI stands for Albert--Einstein--Institute, which is the
   second name of the Max--Planck--Institute for Gravitational Physics
   in Potsdam--Golm}. Later on the Vrije Universiteit Amsterdam
 developed the Java implementation of GAT. Due to the "Early Adaptor
-Binding" in C--GAT, and also due to the fact that C--GAT doesn't
+Binding" in C--GAT, and also due to the fact that C--GAT does not
 provide all client operations of the Grid middlewares Globus, gLite,
 and Unicore by itself, and also because it is written in
 C\footnote{Most of the Workflow engines which could use GAT to get
   access to the Grid are written in Java, e.g. Triana, ProC} C--GAT
-isn't used at all. Therefore C--GAT isn't supported anymore, instead
-of that, SAGA\footnote{SAGA: Simple API for Grid Application is a
+is only scarcely used in D--Grid. Therefore C--GAT is not supported anymore, instead
+of that, the C++ implementation of SAGA\footnote{SAGA: Simple API for Grid Application is a
   common OGF effort, written in C++ and Java, and thought to be the
-  follow up of GAT. For more information see https://forge.gridforum.org/projects/saga-rg/}
+  follow up of GAT. For more information see
+  https://forge.gridforum.org/projects/saga-rg/} is the substitute of C--GAT.
 
 JavaGAT (simply called GAT later on) offers all the client operations
 of the Grid middlewares  Globus, gLite, and Unicore without the
@@ -72,15 +74,15 @@ installation, which usualy takes several hours.
 Beside that it is much easier to code against the GAT--API then
 against the API of a Grid--Middleware\footnote{see
   http://www.cs.vu.nl/~rob/JavaGAT-tutorial.pdf for example}. An user
-which want to run his applications on the Grid needs only to porgran
+which want to run his applications on the Grid needs only to program
 against the GAT--API, and all the difficult stuff of coding against
 the middleware itself is left over to GAT. GAT contacts the middleware
 with its corresponding adaptor. 
 
-Another advantage of programming against GAT then ageinst a middleware
+Another advantage of programming against GAT then against a middleware
 directly is that one needs not to change the code again, if another
 middleware should be accessed. In such a case GAT uses internally
-the adaptor for the other middleware, and the user even doesn't
+the adaptor for the other middleware, and the user even does not
 recognize it.
 
 GAT provides adaptors for Globus (GRAM as WSGRAM), gLite, Unicore 6,
@@ -320,24 +322,26 @@ submission.
 If you like to copy a file from one URI (or file) to another, your
 class might look as follows:
 
+\small
 {\tt
-1\hspace*{1cm} import org.gridlab.gat.*;\hfill\newline
-2\hspace*{1cm}  import org.gridlab.gat.io.File;\hfill\newline
+1\hspace*{0,5cm} import org.gridlab.gat.*;\hfill\newline
+2\hspace*{0,5cm}  import org.gridlab.gat.io.File;\hfill\newline
 3\hfill\newline
-4\hspace*{1cm}  public class RemoteCopy \{\hfill\newline
-5\hspace*{2cm}      public static void main(String[] args) throws Exception \{\hfill\newline
-6\hspace*{3cm}         GATContext context = new GATContext();\hfill\newline
+4\hspace*{0,5cm}  public class RemoteCopy \{\hfill\newline
+5\hspace*{1cm}      public static void main(String[] args) throws Exception \{\hfill\newline
+6\hspace*{1,5cm}         GATContext context = new GATContext();\hfill\newline
 7\hfill\newline
-8\hspace*{3cm}          URI src = new URI(args[0]);\hfill\newline
-9\hspace*{3cm}          URI dest = new URI(args[1]);\hfill\newline
-10\hspace*{2,8cm}         File file = GAT.createFile(context, src);                // create file object\hfill\newline
+8\hspace*{1,5cm}          URI src = new URI("file://src\_host.grid.org//home/griduser/data/file1");\hfill\newline
+9\hspace*{1,5cm}          URI dest = new URI("file://dest\_host.grid.org//home/griduser1/data/file2");\hfill\newline
+10\hspace*{1,3cm}         File file = GAT.createFile(context, src);                // create file object\hfill\newline
 11\hfill\newline
-12\hspace*{2,8cm}         file.copy(dest);                                         // and copy it\hfill\newline
-13\hspace*{2,8cm}         GAT.end();\hfill\newline
-14\hspace*{1,8cm}      \}\hfill\newline
-15\hspace*{0.8cm}\} \hfill\newline
+12\hspace*{1,3cm}         file.copy(dest);                                         // and copy it\hfill\newline
+13\hspace*{1,3cm}         GAT.end();\hfill\newline
+14\hspace*{0,8cm}      \}\hfill\newline
+15\hspace*{0.3cm}\} \hfill\newline
 }
 
+\normalsize
 Some comments to the code. To enable any further GAT operation, e.~g.~
 the creation of GATFile or a GATResourceBroker (the latter is required
 for the submission of jobs, you
@@ -368,6 +372,7 @@ class. This terminates all threads which might be still alive.
 At the begin again a screenshot of an example class, which enables to
 submit a job.
 
+\small
 {\tt 
 1\hspace*{1cm}import org.gridlab.gat.*;\hfill\newline
 2\hspace*{1cm}import org.gridlab.gat.io.File;\hfill\newline
@@ -379,10 +384,12 @@ submit a job.
 8\hspace*{3cm}        GATContext context = new GATContext();\hfill\newline
 9\hfill\newline
 10\hfill\newline
-11\hspace*{2,8cm}         URI LocalFile=new URI(args[0]);\hfill\newline
-12\hspace*{2,8cm}         URI RemoteFile=new URI(args[0]);\hfill\newline
-13\hspace*{2,8cm}         URI PostRemoteFile=new URI(args[0]);\hfill\newline
-14\hspace*{2,8cm}        URI PostLocalFile=new URI(args[0]);\hfill\newline
+11\hspace*{2,8cm}         URI LocalFile=new URI("file:///\~\//file1");\hfill\newline
+12\hspace*{2,8cm}         URI RemoteFile=new
+URI("file://host.grid.org/\~\//file2");\hfill\newline
+13\hspace*{2,8cm}         URI PostRemoteFile=new
+URI("file://host.grid.org/\~\//result");\hfill\newline
+14\hspace*{2,8cm}         URI PostLocalFile=new URI("file:///\~\//result");\hfill\newline
 15\hfill\newline
 16\hspace*{2,8cm}         SoftwareDescription sd = new SoftwareDescription();\hfill\newline
 17\hspace*{2,8cm}         sd.setExecutable("/bin/hostname");\hfill\newline
@@ -409,6 +416,7 @@ submit a job.
 38\hspace*{0,8cm}\}
 }
 
+\normalsize
 To submit a job, you need to create a {\tt SoftwareDescription}, which
 is required for the later creation of a 
 {\tt JobDescription}, and the {\tt JobDescription} is the only argument
@@ -508,7 +516,7 @@ cacert=/home/alibeck/.globus/cog-certificates
 The single parameters have the following meaning:
 \begin{itemize}
 \item {\tt {\bf usercert}}: The path to the file containing your
-  drid certificate.
+  grid certificate.
 \item {\tt {\bf userkey}}: The path to the file containing your
   Grid key.
 \item {\tt {\bf proxy}}: The name under which your proxy
@@ -585,14 +593,15 @@ To be able to make the VOMS-proxy request on behalf of the user, the gLite adapt
 	\item The port at which the VOMS server is listening to requests
 	\item The distinguished name (DN) of the VOMS Host. If you are
           unsure about this, you can usually find the information on
-          the "Configuration" page in the VOMS admin server application. (Fig. \ref{vomsDN})
+          the "Configuration" page in the VOMS admin server application. (Fig.~\ref{vomsDN})
 \end{itemize}
 
-\begin{figure}\label{vomsDN}
+\begin{figure}
 	\begin{center}
 	\includegraphics{vomsDN_small.png}
 	\caption{The membership details page in the VOMS Admin gives you the DN of the VOMS host}
-	\end{center}
+        \label{vomsDN}
+     \end{center}
 \end{figure}
 
 These values have to be specified as preferences of the current GAT context. Additionally, a CertificateSecurityContext with the path to the user certificate and key must be given. 
@@ -617,7 +626,8 @@ An example configuration of all the necessary parameters for the gLite adaptor c
 	context.addSecurityContext(secContext);
 \end{verbatim}
 
-Please also note that a correct \verb+cog.properties+ file as in $<$insert reference to section about globus configuration here$>$ should be present.
+Please also note that a correct \verb+cog.properties+ file as
+described in 5.1 should be present.
 
 \subsubsection{Optional configuration parameters}
 
@@ -667,7 +677,7 @@ SoftwareResourceDescription and HardwareResourceDescription properties
 are translated to the JDL. If not noted otherwise, input parameters in
 form of attributes or resource description properties are always strings and the comparison operator in the JDL is equality.
 
-\begin{table}\label{attributes_JDL_table}
+\begin{table}
 \begin{tabular}{|l|l|}
 \hline
 \textbf{SD attribute} & \textbf{Mapping to JDL} \\
@@ -693,9 +703,10 @@ glite.retrycount & RetryCount \\
 \hline
 \end{tabular}
 \caption{List of SoftwareDescription attributes and their mapping to JDL}
+\label{attributes_JDL_table}
 \end{table}
 
-\begin{table}\label{resource_JDL_table}
+\begin{table}
 \begin{tabular}{|l|l|}
 \hline
 \textbf{ResourceRequirement} & \textbf{Mapping to JDL} \\
@@ -724,6 +735,7 @@ disk.size & other.GlueSESizeFree \\
 \hline 
 \end{tabular}
 \caption{List of SoftwareResourceRequirements and HardwareResourceRequirements and their mapping to JDL}
+\label{resource_JDL_table}
 \end{table}
 
 In gLite, matchmaking is supposed to be performed at the level of the workload management server (WMS), which acts as a meta-scheduling server. The WMS uses information stored in the information supermarket, which is usually also accessible from outside the WMS and can be used to perform manual preselections by the adaptor. For example, if you don't know the address of an WMS, but instead the address of your VOs LDAP information service, you can do:
