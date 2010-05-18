@@ -5,7 +5,6 @@ import java.util.Map;
 
 import org.gridlab.gat.GAT;
 import org.gridlab.gat.GATObjectCreationException;
-import org.gridlab.gat.URI;
 import org.gridlab.gat.io.File;
 
 /**
@@ -60,7 +59,7 @@ public class WrapperSoftwareDescription extends JavaSoftwareDescription {
      */
     private static final long serialVersionUID = -8066795059038763966L;
 
-    private URI gatLocation;
+    private String gatLocation;
 
     /**
      * Creates a new WrapperSoftwareDescription.
@@ -84,7 +83,7 @@ public class WrapperSoftwareDescription extends JavaSoftwareDescription {
      *                the GAT location that can be used to run the wrapper
      *                application.
      */
-    public void setGATLocation(URI gatLocation) {
+    public void setGATLocation(String gatLocation) {
         this.gatLocation = gatLocation;
     }
 
@@ -93,7 +92,7 @@ public class WrapperSoftwareDescription extends JavaSoftwareDescription {
      * 
      * @return the GAT location that can be used to run the wrapper application.
      */
-    public URI getGATLocation() {
+    public String getGATLocation() {
         return gatLocation;
     }
 
@@ -119,11 +118,10 @@ public class WrapperSoftwareDescription extends JavaSoftwareDescription {
             // like lib/*
             return ".:lib/*";
         } else {
-            if (gatLocation.hasAbsolutePath()) {
-                return ".:" + gatLocation.getUnresolvedPath() + "/lib/*";
+            if (gatLocation.startsWith("/")) {
+                return ".:" + gatLocation + "/lib/*";
             } else {
-                return ".:" + "../" + gatLocation.getUnresolvedPath()
-                        + "/lib/*";
+                return ".:" + "../" + gatLocation + "/lib/*";
             }
         }
 
@@ -154,21 +152,21 @@ public class WrapperSoftwareDescription extends JavaSoftwareDescription {
             result.put("log4j.configuration", "file:log4j.properties");
             result.put("gat.adaptor.path", "lib/adaptors");
         } else {
-            if (gatLocation.hasAbsolutePath()) {
+            if (gatLocation.startsWith("/")) {
                 result
                         .put("log4j.configuration", "file:"
-                                + gatLocation.getUnresolvedPath()
+                                + gatLocation
                                 + "/log4j.properties");
-                result.put("gat.adaptor.path", gatLocation.getUnresolvedPath()
+                result.put("gat.adaptor.path", gatLocation
                         + "/lib/adaptors");
 
             } else {
                 result
                         .put("log4j.configuration", "file:../"
-                                + gatLocation.getUnresolvedPath()
+                                + gatLocation
                                 + "/log4j.properties");
                 result.put("gat.adaptor.path", "../"
-                        + gatLocation.getUnresolvedPath() + "/lib/adaptors");
+                        + gatLocation + "/lib/adaptors");
             }
         }
         return result;
@@ -187,11 +185,11 @@ public class WrapperSoftwareDescription extends JavaSoftwareDescription {
         if (gatLocation == null) {
             result.put("GAT_LOCATION", ".");
         } else {
-            if (gatLocation.hasAbsolutePath()) {
-                result.put("GAT_LOCATION", gatLocation.getUnresolvedPath());
+            if (gatLocation.startsWith("/")) {
+                result.put("GAT_LOCATION", gatLocation);
             } else {
                 result.put("GAT_LOCATION", "../"
-                        + gatLocation.getUnresolvedPath());
+                        + gatLocation);
             }
         }
         return result;

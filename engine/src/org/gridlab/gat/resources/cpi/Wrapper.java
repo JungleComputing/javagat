@@ -74,7 +74,7 @@ public class Wrapper {
 
     private int jobsDone;
     
-    private String triggerDirectory;
+    private URI triggerDirectory;
     
     private String wrapperCommonSrc;
     
@@ -112,7 +112,7 @@ public class Wrapper {
         wrapperCommonSrc = (String) in.readObject();
         wrapperCommonDest = (String) in.readObject();
         wrapperCommonTrigger = (String) in.readObject();
-        triggerDirectory = (String) in.readObject();      
+        triggerDirectory = (URI) in.readObject();      
         scheduledType = (ScheduledType) in.readObject();       
         List<WrappedJobInfo> infos = (List<WrappedJobInfo>) in.readObject();
         in.close();
@@ -137,7 +137,7 @@ public class Wrapper {
         preferences.put("file.adaptor.name", "local");
         preferences.put("file.directory.copy", "contents");
                
-        String triggerDirURI = rewriteURI(new URI(triggerDirectory), initiator).toString();
+        URI triggerDirURI = rewriteURI(triggerDirectory, initiator);
         
         if (infos.size() != 0 && wrapperCommonSrc != null && wrapperCommonDest != null) {            
             File wrapperCommonSrcFile = GAT.createFile(preferences, wrapperCommonSrc);
@@ -151,7 +151,8 @@ public class Wrapper {
             if ("true".equals(wrapperCommonTrigger)) {
                 File file = null;
                 try {
-                    file = GAT.createFile(infos.get(0).getPreferences(), new URI(triggerDirURI + "/WrapperCommonTrigger." + 
+                    file = GAT.createFile(infos.get(0).getPreferences(), 
+                            triggerDirURI.setPath(triggerDirURI.getPath() + "/WrapperCommonTrigger." + 
                             + wrapperId));
                 } catch (Throwable e) {
                     logger.warn("Could not wait for trigger", e);

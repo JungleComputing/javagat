@@ -33,8 +33,7 @@ public class ResourceBrokerWrapperJobExample {
         wsd.setStdout(GAT.createFile("wrapper.stdout"));
         wsd.setStderr(GAT.createFile("wrapper.stderr"));
         wsd.setExecutable("/usr/local/package/jdk1.6.0/bin/java");
-        wsd.setGATLocation(new URI(
-                "any://fs0.das3.cs.vu.nl/JavaGatVersions/JavaGAT-2.0-rc2"));
+        wsd.setGATLocation(System.getenv("user.home") + "/JavaGatVersions/JavaGAT-2.0-rc2");
 
         // Now we create a job description out of the software description.
         WrapperJobDescription wjd = new WrapperJobDescription(wsd);

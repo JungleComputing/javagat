@@ -189,7 +189,7 @@ public class WrapperJobDescription extends JobDescription {
 
     private static int wrapperJobCount = 0;
 
-    private static String triggerDirectory;
+    private static URI triggerDirectory;
 
     private List<WrappedJobInfo> jobInfos = new ArrayList<WrappedJobInfo>();
 
@@ -371,7 +371,16 @@ public class WrapperJobDescription extends JobDescription {
             out.writeObject(sandboxTrigger);
             synchronized (WrapperJobDescription.class) {
                 if (triggerDirectory == null) {
-                    triggerDirectory = System.getProperty("user.dir");
+                    triggerDirectory = new URI(System.getProperty("user.dir"));
+                }
+                File triggerDir = GAT.createFile(context, triggerDirectory);
+                if (triggerDir.exists()) {
+                    if (! triggerDir.isDirectory()) {
+                        throw new GATObjectCreationException("specified trigger directory " + triggerDirectory
+                                + " exists and is not a directory");
+                    }
+                } else if (! triggerDir.mkdirs()) {
+                    throw new GATObjectCreationException("could not create specified trigger directory " + triggerDirectory);
                 }
             }
             out.writeObject(triggerDirectory);
@@ -409,28 +418,19 @@ public class WrapperJobDescription extends JobDescription {
     
     /**
      * Sets the (local) directory where the trigger files will be written
-     * to. If the directory doesn't exists, it will be created. If it does
-     * exist, but it isn't a directory an Exception will be thrown. This method
-     * can only be invoked once. The user has to create the trigger files
-     * itself.
+     * to. This method can only be invoked once. 
+     * The user has to create the trigger files itself.
      * 
      * @param location
      * @throws Exception
      */
-    public static void setTriggerDirectory(String location)
+    public static void setTriggerDirectory(URI location)
             throws Exception {
         synchronized (WrapperJobDescription.class) {
             if (triggerDirectory != null) {
                 throw new Exception("triggerdirectory already set!");
             }
-            java.io.File triggerDirectoryFile = new java.io.File(location);
-            if (!triggerDirectoryFile.exists()) {
-                triggerDirectoryFile.mkdirs();
-            } else if (!triggerDirectoryFile.isDirectory()) {
-                throw new Exception(
-                        "triggerdirectory exists, but isn't a directory");
-            }
-            triggerDirectory = triggerDirectoryFile.getPath();
+            triggerDirectory = location;
         }
     }
 }
