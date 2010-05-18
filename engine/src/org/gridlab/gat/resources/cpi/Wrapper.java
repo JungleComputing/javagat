@@ -172,7 +172,7 @@ public class Wrapper {
             if (scheduledType == ScheduledType.COORDINATED) {
                 SoftwareDescription sd 
                         = info.getJobDescription().getSoftwareDescription();
-                sd.addAttribute("triggerDirectory", triggerDirURI);
+                sd.addAttribute("triggerDirectory", triggerDirURI.toString());
             }
             new Submitter(info, i).start();
         }

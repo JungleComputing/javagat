@@ -383,7 +383,7 @@ public class WrapperJobDescription extends JobDescription {
                     throw new GATObjectCreationException("could not create specified trigger directory " + triggerDirectory);
                 }
             }
-            out.writeObject(triggerDirectory.toString());
+            out.writeObject(triggerDirectory);
             out.writeObject(scheduledType);
             for (WrappedJobInfo jobInfo : jobInfos) {
                 jobInfo.generateJobStateFileName();
