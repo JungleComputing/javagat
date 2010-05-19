@@ -61,7 +61,6 @@ public class GenericAdvertServiceAdaptor extends AdvertServiceCpi {
 
     /**
      * @param gatContext
-     * @param preferences
      */
     public GenericAdvertServiceAdaptor(GATContext gatContext)
             throws GATObjectCreationException {

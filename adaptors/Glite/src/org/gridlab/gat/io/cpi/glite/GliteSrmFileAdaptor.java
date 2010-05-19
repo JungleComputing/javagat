@@ -65,7 +65,6 @@ public class GliteSrmFileAdaptor extends FileCpi {
         LOGGER.info("Instantiated gLiteSrmFileAdaptor for " + location);
     }
 
-    /** {@inheritDoc} */
     public static Map<String, Boolean> getSupportedCapabilities() {
         Map<String, Boolean> capabilities = FileCpi.getSupportedCapabilities();
         capabilities.put("copy", true);

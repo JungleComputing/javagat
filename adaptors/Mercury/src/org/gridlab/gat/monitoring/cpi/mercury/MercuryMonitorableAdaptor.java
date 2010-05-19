@@ -305,7 +305,6 @@ public class MercuryMonitorableAdaptor extends MonitorableCpi {
 
     /**
      * @param gatContext
-     * @param preferences
      */
     public MercuryMonitorableAdaptor(GATContext gatContext)
             throws GATObjectCreationException {

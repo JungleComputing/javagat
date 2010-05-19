@@ -9,6 +9,7 @@ import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.URI;
 import org.gridlab.gat.advert.Advertisable;
+import org.gridlab.gat.io.attributes.BasicFileAttributeView;
 import org.gridlab.gat.io.attributes.FileAttributeView;
 import org.gridlab.gat.monitoring.Monitorable;
 
@@ -94,7 +95,7 @@ public interface FileInterface extends Monitorable, Advertisable,
     /** See {@link java.io.File#compareTo(java.io.File)}. */
     public int compareTo(org.gridlab.gat.io.File arg0);
 
-    /** See {@link java.io.File#compareTo(Object)}. */
+    /** See {@link java.io.File#compareTo(java.io.File)}. */
     public int compareTo(Object arg0);
 
     /** See {@link java.io.File#createNewFile}. */

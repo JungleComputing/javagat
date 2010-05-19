@@ -11,7 +11,6 @@ import org.slf4j.LoggerFactory;
 import org.gridlab.gat.CouldNotInitializeCredentialException;
 import org.gridlab.gat.CredentialExpiredException;
 import org.gridlab.gat.GATContext;
-import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.InvalidUsernameOrPasswordException;
 import org.gridlab.gat.URI;
 import org.gridlab.gat.security.SecurityContext;
@@ -35,9 +34,6 @@ public class SecurityContextUtils {
      *                the gatContext that contains the securityContexts
      * @param adaptorName
      *                The name of the adaptor that needs the contexts
-     * @param securityContextType
-     *                the type of security context, e.g.
-     *                org.gridlab.gat.security.PasswordSecurityContext
      * @param host
      *                the host which needs to support the context
      * @param port
@@ -60,9 +56,6 @@ public class SecurityContextUtils {
      *                the fully qualified type name of the security context
      * @param adaptorName
      *                The name of the adaptor that needs the contexts
-     * @param securityContextType
-     *                the type of security context, e.g.
-     *                org.gridlab.gat.security.PasswordSecurityContext
      * @param host
      *                the host which needs to support the context
      * @param port
@@ -121,7 +114,6 @@ public class SecurityContextUtils {
      *                new security data for the adaptor
      * @return the adaptor-specific data object that was associated with a
      *         security context that is valid for this adaptor
-     * @throws GATInvocationException
      */
     public static Object getSecurityUserData(GATContext context,
             String adaptorName, String dataObjectKey, URI location,
@@ -199,9 +191,6 @@ public class SecurityContextUtils {
      *                destination machine/port used for the security data
      * @param defaultPort
      *                the default port for the protocol used by the adaptor
-     * @return the adaptor-specific data object that was associated with a
-     *         security context that is valid for this adaptor
-     * @throws GATInvocationException
      */
     public static void killSecurityUserData(GATContext context,
             String adaptorName, String dataObjectKey, URI location,

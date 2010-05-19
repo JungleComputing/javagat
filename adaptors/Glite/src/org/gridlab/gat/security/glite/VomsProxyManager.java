@@ -104,14 +104,12 @@ public class VomsProxyManager extends GlobusProxyManager {
     /**
      * Basically this follows the factory design pattern. Hence the concrete
      * credential depends on whether the MyProxyManagement is a
-     * MyProxyManagement class or a MyVomsProxyManagement class
+     * MyProxyManagement class or a MyVomsProxyManagement class.
      * 
      * @param ac
      *            The attribute certificate containing the "visa" given by the
      *            voms server
-     * @return The stored credential or a new one if there doesn't exist one
-     * @throws GeneralSecurityException
-     * @throws GSSException
+     * @throws GATInvocationException
      */
     protected void createProxyCredential(AttributeCertificate ac)
             throws GATInvocationException {
@@ -152,8 +150,7 @@ public class VomsProxyManager extends GlobusProxyManager {
      * Get a VOMS (Attribute Certificate) proxy credential
      * 
      * @param requestCode
-     * @throws GeneralSecurityException
-     * @throws GSSException
+     * @throws GATInvocationException
      */
     public void makeProxyCredential(String requestCode)
             throws GATInvocationException {

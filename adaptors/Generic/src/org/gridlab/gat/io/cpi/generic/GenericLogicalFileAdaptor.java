@@ -15,12 +15,6 @@ public class GenericLogicalFileAdaptor extends LogicalFileCpi {
     /**
      * This constructor creates a LocalLogicalFileAdaptor corresponding to the
      * passed URI instance and uses the passed GATContext to broker resources.
-     * 
-     * @param location
-     *                The URI of one physical file in this
-     *                LocalLogicalFileAdaptor
-     * @param gatContext
-     *                The GATContext used to broker resources
      * @throws java.lang.Exception
      *                 Thrown upon creation problems
      */

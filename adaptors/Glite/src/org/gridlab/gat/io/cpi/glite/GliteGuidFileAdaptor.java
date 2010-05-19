@@ -78,7 +78,6 @@ public class GliteGuidFileAdaptor extends FileCpi {
         }
     }
 
-    /** {@inheritDoc} */
     public static Map<String, Boolean> getSupportedCapabilities() {
         Map<String, Boolean> capabilities = FileCpi.getSupportedCapabilities();
         capabilities.put("copy", true);

@@ -73,14 +73,14 @@ public class LfcConnector {
     }
     
     /**
-     * Get the different file/directory/symbolic link attributes
+     * Get the different file/directory/symbolic link attributes.
      * @param path
      * 				The file path
      * @param followSymbolicLink
      * 				If <code>true</code> and If the path represent a symbolic link,
      * 				return the pointed file/directory attributes, otherwise, return the
      * 				symbolic link attributes 
-     * @return
+     * @return the attributes
      * @throws IOException
      */
     public LFCFile stat(String path, boolean followSymbolicLink) throws IOException {
@@ -417,7 +417,7 @@ public class LfcConnector {
      * 				instead of the symbolic link itself
      * @param new_uid 
      * 				New owner ID
-     * @param new gid 
+     * @param new_gid 
      * 				New group ID
      * @throws IOException If a problem occurs
      */

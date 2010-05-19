@@ -117,7 +117,7 @@ public class SerializedUnicoreJob extends SerializedJob {
 	 * The method String windowsPath extracts the full windows path of an URI, which
 	 * is represented as a String.
 	 *  
-	 * @param String uriPath
+	 * @param uriPath
 	 * @return path name as a string
 	 */
 

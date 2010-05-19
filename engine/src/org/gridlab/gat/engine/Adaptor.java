@@ -26,8 +26,6 @@ public class Adaptor {
     private String[] schemes;
 
     /**
-     * @param cpiClass
-     *                The class of the api this adaptor implements.
      * @param adaptorClass
      *                The actual class of this adaptor, must be a subclass of
      *                cpiClass.

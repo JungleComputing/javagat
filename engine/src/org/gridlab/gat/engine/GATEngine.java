@@ -594,7 +594,7 @@ public class GATEngine {
      * must be registered first
      * 
      * @param input
-     * @return
+     * @return the advertisable
      * @throws GATInvocationException
      */
     public Advertisable unmarshalAdvertisable(GATContext gatContext,

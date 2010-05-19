@@ -50,7 +50,6 @@ public class VomsServerResponse {
 	/**
 	 * Get the attribute certificate from the bytes received from the server
 	 * @return The attribute certificate
-	 * @throws VomsProxyException If the DER object found in the server bytestream response is invalid (not properly decoded)
 	 * @throws IOException 
 	 */
 	public AttributeCertificate getAc() throws GATInvocationException, IOException {

@@ -106,7 +106,6 @@ import java.io.IOException;
  * converted to the precision supported by the file system.
  *
  * @since 1.7
- * @see Attributes
  */
 
 public interface BasicFileAttributeView

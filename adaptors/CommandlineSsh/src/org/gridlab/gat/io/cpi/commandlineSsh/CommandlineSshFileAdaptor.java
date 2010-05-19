@@ -66,7 +66,6 @@ public class CommandlineSshFileAdaptor extends FileCpi {
     
     /**
      * @param gatContext
-     * @param preferences
      * @param location
      */
     public CommandlineSshFileAdaptor(GATContext gatContext, URI location)
@@ -297,10 +296,8 @@ public class CommandlineSshFileAdaptor extends FileCpi {
      * This method copies the physical file represented by this File instance to
      * a physical file identified by the passed URI.
      * 
-     * @param destination
+     * @param dest
      *                The new location
-     * @throws java.io.IOException
-     *                 Upon non-remote IO problem
      */
     public void copy(URI dest) throws GATInvocationException {
         // We don't have to handle the local case, the GAT engine will select

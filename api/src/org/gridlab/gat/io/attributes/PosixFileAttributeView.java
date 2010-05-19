@@ -134,7 +134,6 @@ import java.io.IOException;
  *
  * @since 1.7
  *
- * @see Attributes#readPosixFileAttributes
  */
 
 public interface PosixFileAttributeView

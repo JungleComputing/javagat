@@ -1,6 +1,5 @@
 package org.gridlab.gat.resources;
 
-import java.io.IOException;
 import java.util.List;
 
 import org.gridlab.gat.GAT;
@@ -66,8 +65,6 @@ public interface ResourceBroker {
      *                reserve the {@link HardwareResource}
      * @return the {@link Reservation} object that describes the reserved
      *         {@link Resource}
-     * @throws java.io.IOException
-     *                 Upon non-remote IO problem
      * @throws GATInvocationException
      *                 a remote problem occurred
      */
@@ -89,8 +86,6 @@ public interface ResourceBroker {
      *         {@link Resource}
      * @throws GATInvocationException
      *                 Thrown upon problems accessing the remote instance
-     * @throws java.io.IOException
-     *                 Upon non-remote IO problem
      * @throws GATInvocationException
      *                 a remote problem occurred
      */
@@ -110,8 +105,6 @@ public interface ResourceBroker {
      * @return {@link java.util.List} of {@link Resource}s upon success
      * @throws GATInvocationException
      *                 Thrown upon problems accessing the remote instance
-     * @throws java.io.IOException
-     *                 Upon non-remote IO problem
      */
     public abstract List<HardwareResource> findResources(
             ResourceDescription resourceDescription)
@@ -133,8 +126,6 @@ public interface ResourceBroker {
      *                The job description ({@link JobDescription}).
      * @return a {@link Job} object that is a handle to the task that was
      *         submitted
-     * @throws IOException
-     *                 Upon non-remote IO problem
      * @throws GATInvocationException
      *                 a remote problem occurred
      */
@@ -170,8 +161,6 @@ public interface ResourceBroker {
      * @param metricDefinitionName
      *                The name of the metric the listener listens to
      * @return a job object that is a handle to the task that was submitted
-     * @throws IOException
-     *                 Upon non-remote IO problem
      * @throws GATInvocationException
      *                 a remote problem occurred
      */

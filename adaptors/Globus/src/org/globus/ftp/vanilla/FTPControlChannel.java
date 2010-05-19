@@ -308,10 +308,10 @@ public class FTPControlChannel extends BasicClientControlChannel {
     /**
      * Sends the command over the control channel. Do not wait for reply.
      * 
-     * @throws java.io.IOException
-     *                 on I/O error
      * @param cmd
      *                FTP command
+     * @throws java.io.IOException
+     *                 on I/O error
      */
     public void write(Command cmd) throws IOException, IllegalArgumentException {
         if (cmd == null) {
@@ -329,12 +329,12 @@ public class FTPControlChannel extends BasicClientControlChannel {
      * replies are waiting on the control channel. Otherwise the reply returned
      * may not be the reply to this command.
      * 
+     * @param cmd
+     *                FTP command
      * @throws java.io.IOException
      *                 on I/O error
      * @throws FTPReplyParseException
      *                 on bad reply format
-     * @param cmd
-     *                FTP command
      * @return the first reply that waits in the control channel
      */
     public Reply exchange(Command cmd) throws ServerException, IOException,
@@ -351,15 +351,14 @@ public class FTPControlChannel extends BasicClientControlChannel {
      * return the reply, otherwise throw exception. Before calling this method
      * make sure that no old replies are waiting on the control channel.
      * Otherwise the reply returned may not be the reply to this command.
-     * 
+     * @param cmd
+     *                FTP command
      * @throws java.io.IOException
      *                 on I/O error
      * @throws FTPReplyParseException
      *                 on bad reply format
      * @throws UnexpectedReplyCodeException
      *                 if reply is not a positive completion reply (code 200)
-     * @param cmd
-     *                FTP command
      * @return the first reply that waits in the control channel
      */
     public Reply execute(Command cmd) throws ServerException, IOException,

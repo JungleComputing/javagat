@@ -54,7 +54,6 @@ public class SocketEndpointAdaptor extends EndpointCpi implements Serializable {
 
     /**
      * @param gatContext
-     * @param preferences
      * @throws GATObjectCreationException
      */
     public SocketEndpointAdaptor(GATContext gatContext)

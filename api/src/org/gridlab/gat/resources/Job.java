@@ -292,8 +292,6 @@ public interface Job extends Monitorable, Advertisable {
      * 
      * @throws GATInvocationException
      *                 Thrown upon problems accessing the remote instance
-     * @throws java.io.IOException
-     *                 Upon non-remote IO problem
      */
     public void migrate() throws GATInvocationException;
 

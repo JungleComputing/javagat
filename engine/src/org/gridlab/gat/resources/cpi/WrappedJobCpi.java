@@ -52,7 +52,6 @@ public class WrappedJobCpi extends JobCpi implements Runnable {
      * This constructor is used by the WrapperSubmitter.
      * 
      * @param gatContext
-     * @param jobDescription
      */
     public WrappedJobCpi(GATContext gatContext, WrappedJobInfo info,
             WrapperJobCpi wrapper) {

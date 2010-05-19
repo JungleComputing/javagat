@@ -50,7 +50,7 @@ public abstract class RandomAccessFileCpi extends MonitorableCpi implements Rand
      * @param gatContext
      *                A GATContext which is used to determine the access rights
      *                for this FileCpi.
-     * @param file
+     * @param location
      *                the file to create this random access file on
      * @param mode
      *                see RandomAccessFile

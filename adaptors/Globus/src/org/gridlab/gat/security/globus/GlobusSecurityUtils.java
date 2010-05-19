@@ -17,7 +17,6 @@ import org.gridforum.jgss.ExtendedGSSManager;
 import org.gridlab.gat.CouldNotInitializeCredentialException;
 import org.gridlab.gat.CredentialExpiredException;
 import org.gridlab.gat.GATContext;
-import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.InvalidUsernameOrPasswordException;
 import org.gridlab.gat.URI;
 import org.gridlab.gat.security.CertificateSecurityContext;
@@ -182,13 +181,8 @@ public class GlobusSecurityUtils {
      * Handling of all globus certificates goes through this method.
      * 
      * @param context
-     * @param preferences
      * @param adaptorName
-     * @param securityContextType
-     * @param host
-     * @param port
-     * @return
-     * @throws GATInvocationException
+     * @return the credential
      */
     public static GSSCredential getGlobusCredential(GATContext context,
             String adaptorName, URI location, int defaultPort)

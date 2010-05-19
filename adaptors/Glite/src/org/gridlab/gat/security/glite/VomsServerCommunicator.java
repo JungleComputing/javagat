@@ -72,7 +72,7 @@ public class VomsServerCommunicator {
 	 * 
 	 * @param requestString Request string for VO, groups and roles separated by the / character
 	 * @param lifetime The desired lifetime of the extended proxy part
-	 * @throws VomsProxyException If trouble with parser or transformer creation occurs
+	 * @throws GATInvocationException If trouble with parser or transformer creation occurs
 	 */
 	public VomsServerCommunicator(String requestString, int lifetime) throws GATInvocationException {
 
@@ -119,10 +119,10 @@ public class VomsServerCommunicator {
 	}
 	
 	/**
-	 * Read the response that is given back after a request from the server
+	 * Read the response that is given back after a request from the server.
 	 * @param iStream The input stream which was obtained through a secure socket to the server
 	 * @return VomsServerResponse data structure with received ACs and/or error messages
-	 * @throws VomsProxyException If there are problems during parsing and I/O
+	 * @throws GATInvocationException If there are problems during parsing and I/O
 	 */
 	public VomsServerResponse readServerResponse(InputStream iStream) throws GATInvocationException {
 		
@@ -284,7 +284,7 @@ public class VomsServerCommunicator {
   *
   * Base64 decode a given string using the lookup-table of VomsServerResponse
   * 
-  * @param encodedString The base64-encoded String
+  * @param s The base64-encoded String
   * @return decoded byte sequence
   */
 	public static byte[] base64Decode(String s , byte[] decoding_map ) {

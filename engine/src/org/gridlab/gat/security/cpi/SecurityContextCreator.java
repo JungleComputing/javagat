@@ -6,7 +6,6 @@ package org.gridlab.gat.security.cpi;
 import org.gridlab.gat.CouldNotInitializeCredentialException;
 import org.gridlab.gat.CredentialExpiredException;
 import org.gridlab.gat.GATContext;
-import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.InvalidUsernameOrPasswordException;
 import org.gridlab.gat.URI;
 import org.gridlab.gat.security.SecurityContext;
@@ -24,7 +23,6 @@ public interface SecurityContextCreator {
      *                the security context that can be used to construct the
      *                adaptor-specific data
      * @return the adaptor specific security token
-     * @throws GATInvocationException
      */
     public Object createUserData(GATContext gatContext, URI location,
             SecurityContext c) throws CouldNotInitializeCredentialException,
@@ -40,7 +38,6 @@ public interface SecurityContextCreator {
      * @param location
      *                the host/port to create the object for
      * @return the new default security context
-     * @throws GATInvocationException
      */
     public SecurityContext createDefaultSecurityContext(GATContext gatContext,
             URI location) throws CouldNotInitializeCredentialException,

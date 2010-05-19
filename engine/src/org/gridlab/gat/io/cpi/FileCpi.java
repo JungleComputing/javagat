@@ -173,8 +173,6 @@ public abstract class FileCpi extends MonitorableCpi implements FileInterface, j
      *                to this File instance
      * @throws GATInvocationException
      *                 Thrown upon problems accessing the remote instance
-     * @throws java.io.IOException
-     *                 Upon non-remote IO problem
      */
     public void move(URI destination) throws GATInvocationException {
         // Step 1: Copy the original file

@@ -89,8 +89,6 @@ public class File extends java.io.File implements Monitorable, Advertisable,
      *                The new location
      * @throws GATInvocationException
      *                 Thrown upon problems accessing the remote instance
-     * @throws java.io.IOException
-     *                 Upon non-remote IO problem
      */
     public void copy(URI loc) throws GATInvocationException {
         f.copy(loc);
@@ -144,8 +142,6 @@ public class File extends java.io.File implements Monitorable, Advertisable,
      *                to this File instance
      * @throws GATInvocationException
      *                 Thrown upon problems accessing the remote instance
-     * @throws IOException
-     *                 Upon non-remote IO problem
      */
     public void move(URI location) throws GATInvocationException {
         f.move(location);
@@ -578,7 +574,7 @@ public class File extends java.io.File implements Monitorable, Advertisable,
     /**
      * @see java.io.File#toURL()
      * 
-     * this method does {@link java.io.File#toURI()#toURL()}, because
+     * this method does {@link java.io.File#toURI()}.toURL(), because
      * {@link java.io.File#toURL()} is deprecated.
      */
     public URL toURL() throws MalformedURLException {

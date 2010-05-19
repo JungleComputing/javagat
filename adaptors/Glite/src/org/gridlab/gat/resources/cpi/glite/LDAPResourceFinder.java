@@ -108,7 +108,7 @@ public class LDAPResourceFinder {
     /**
      * Create a new LDAPResourceFinder.
      * 
-     * @param gatContext
+     * @param context
      *            GatContext with additional information.
      * @throws NamingException
      *             if an LDAP error occurs.
