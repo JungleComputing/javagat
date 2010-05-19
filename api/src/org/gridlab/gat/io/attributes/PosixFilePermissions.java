@@ -142,9 +142,7 @@ public class PosixFilePermissions {
 
     /**
      * Creates a {@link FileAttribute}, encapsulating a copy of the given file
-     * permissions, suitable for passing to the {@link java.nio.file.Path#createFile
-     * createFile} or {@link java.nio.file.Path#createDirectory createDirectory}
-     * methods.
+     * permissions.
      *
      * @param   perms
      *          the set of permissions

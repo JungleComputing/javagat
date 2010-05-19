@@ -41,11 +41,10 @@ import java.security.Principal;
  *
  * <p> A {@code UserPrincipal} object is an abstract representation of an
  * identity. It has a {@link #getName() name} that is typically the username or
- * account name that it represents. User principal objects may be obtained using
- * a {@link UserPrincipalLookupService}, or returned by {@link
+ * account name that it represents. User principal objects may be  returned by {@link
  * FileAttributeView} implementations that provide access to identity related
- * attributes. For example, the {@link AclFileAttributeView} and {@link
- * PosixFileAttributeView} provide access to a file's {@link
+ * attributes. For example, the {@link
+ * PosixFileAttributeView} provides access to a file's {@link
  * PosixFileAttributes#owner owner}.
  *
  * @since 1.7

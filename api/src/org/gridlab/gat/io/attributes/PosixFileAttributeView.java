@@ -102,36 +102,6 @@ import java.io.IOException;
  * #setPermissions setPermissions}, {@link #setOwner setOwner}, and {@link
  * #setGroup setGroup} methods respectively.
  *
- * <h4> Setting Initial Permissions </h4>
- * <p> Implementations supporting this attribute view may also support setting
- * the initial permissions when creating a file or directory. The
- * initial permissions are provided to the  {@link Path#createFile createFile}
- * or {@link Path#createDirectory createDirectory} methods as a {@link
- * FileAttribute} with {@link FileAttribute#name name} {@code "posix:permissions"}
- * and a {@link FileAttribute#value value} that is the set of permissions. The
- * following example uses the {@link PosixFilePermissions#asFileAttribute
- * asFileAttribute} method to construct a {@code FileAttribute} when creating a
- * file:
- *
- * <pre>
- *     Path path = ...
- *     Set&lt;PosixFilePermission&gt; perms =
- *         EnumSet.of(OWNER_READ, OWNER_WRITE, OWNER_EXECUTE, GROUP_READ);
- *     path.createFile(PosixFilePermissions.asFileAttribute(perms));
- * </pre>
- *
- * <p> When the access permissions are set at file creation time then the actual
- * value of the permissions may differ that the value of the attribute object.
- * The reasons for this are implementation specific. On UNIX systems, for
- * example, a process has a <em>umask</em> that impacts the permission bits
- * of newly created files. Where an implementation supports the setting of
- * the access permissions, and the underlying file system supports access
- * permissions, then it is required that the value of the actual access
- * permissions will be equal or less than the value of the attribute
- * provided to the {@link java.nio.file.Path#createFile createFile} or
- * {@link java.nio.file.Path#createDirectory createDirectory} methods. In
- * other words, the file may be more secure than requested.
- *
  * @since 1.7
  *
  */

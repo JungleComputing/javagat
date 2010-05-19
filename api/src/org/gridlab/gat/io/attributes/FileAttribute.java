@@ -26,10 +26,7 @@
 package org.gridlab.gat.io.attributes;
 
 /**
- * An object that encapsulates the value of a file attribute that can be set
- * atomically when creating a new file or directory by invoking the {@link
- * java.nio.file.Path#createFile createFile} or {@link
- * java.nio.file.Path#createDirectory createDirectory} methods.
+ * An object that encapsulates the value of a file attribute.
  *
  * @param <T> The type of the file attribute value
  *

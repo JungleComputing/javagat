@@ -132,8 +132,6 @@ public interface BasicFileAttributes {
      * the link count is the number of directory entries for the file. The return
      * value is {@code 1} on file systems that only allow a file to have a
      * single name in a single directory.
-     *
-     * @see java.nio.file.Path#createLink
      */
     int linkCount();
 
@@ -154,11 +152,7 @@ public interface BasicFileAttributes {
      * therefore unspecified.
      *
      * <p> File keys returned by this method can be compared for equality and are
-     * suitable for use in collections. If the file system and files remain static,
-     * and two files are the {@link java.nio.file.FileRef#isSameFile same} with
-     * non-{@code null} file keys, then their file keys are equal.
-     *
-     * @see java.nio.file.Files#walkFileTree
+     * suitable for use in collections.
      */
     Object fileKey();
 }

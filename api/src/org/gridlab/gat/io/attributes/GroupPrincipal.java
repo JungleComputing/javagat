@@ -35,8 +35,6 @@ package org.gridlab.gat.io.attributes;
  * therefore not specified.
  *
  * @since 1.7
- *
- * @see UserPrincipalLookupService#lookupPrincipalByGroupName
  */
 
 public interface GroupPrincipal extends UserPrincipal { }

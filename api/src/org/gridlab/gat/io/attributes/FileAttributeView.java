@@ -32,9 +32,6 @@ package org.gridlab.gat.io.attributes;
  * and/or update the attributes of a file.
  *
  * @since 1.7
- *
- * @see java.nio.file.FileRef#getFileAttributeView(Class,java.nio.file.LinkOption[])
- * @see java.nio.file.FileRef#getFileAttributeView(String,java.nio.file.LinkOption[])
  */
 
 public interface FileAttributeView
