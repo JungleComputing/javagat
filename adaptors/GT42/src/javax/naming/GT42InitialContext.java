@@ -172,7 +172,7 @@ public class GT42InitialContext implements Context {
      *
      * @throws	NamingException if a naming exception is encountered
      *
-     * @see #InitialContext(Hashtable)
+     * @see #GT42InitialContext(Hashtable)
      */
     public GT42InitialContext() throws NamingException {
 	init(null);

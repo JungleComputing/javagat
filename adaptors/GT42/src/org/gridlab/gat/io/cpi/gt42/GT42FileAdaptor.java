@@ -91,8 +91,6 @@ abstract public class GT42FileAdaptor extends FileCpi {
      * 
      * @param gatContext
      *                GAT context
-     * @param preferences
-     *                GAT preferences
      * @param location
      *                FILE location URI
      * @param prov

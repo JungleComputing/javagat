@@ -228,12 +228,6 @@ public class RFTGT42FileAdaptor extends FileCpi {
      *                GAT context
      * @param location
      *                FILE location URI
-     * @param prov
-     *                marks the JavaCog provider, possible values are: gt2ft,
-     *                gsiftp, condor, ssh, gt4ft, local, gt4, gsiftp-old,
-     *                gt3.2.1, gt2, ftp, webdav. Aliases: webdav <-> http; local
-     *                <-> file; gsiftp-old <-> gridftp-old; gsiftp <-> gridftp;
-     *                gt4 <-> gt3.9.5, gt4.0.2, gt4.0.1, gt4.0.0
      */
     public RFTGT42FileAdaptor(GATContext gatContext, URI location)
             throws GATObjectCreationException {
