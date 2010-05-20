@@ -629,7 +629,7 @@ abstract public class GT4FileAdaptor extends FileCpi {
      * @throws GATInvocationException
      */
     protected void resourceStart() throws GATInvocationException {
-        int max_tries = 100;
+        int max_tries = 2;
         int i = 0;
         GATInvocationException error = null;
         while (true) {
@@ -674,25 +674,25 @@ abstract public class GT4FileAdaptor extends FileCpi {
                     logger.info("resource Started (" + location.getPath() + "/try " + i + "): " + resource.isStarted());
                 }
             } catch (IllegalHostException e) {
-                logger.error("XXXXX_EX IllegalHostException raised (" + location.getPath() + "/try " + i + "): "
+                logger.info("XXXXX_EX IllegalHostException raised (" + location.getPath() + "/try " + i + "): "
                         + e.getMessage(), e);
-                error = new GATInvocationException(e.getMessage(), e);
+                throw new GATInvocationException(e.getMessage(), e);
             } catch (InvalidSecurityContextException e) {
-                logger.error("XXXXX_EX InvalidSecurityContextException raised (" + location.getPath() + "/try " + i
+                logger.info("XXXXX_EX InvalidSecurityContextException raised (" + location.getPath() + "/try " + i
                         + "): " + e.getMessage(), e);
-                error = new GATInvocationException(e.getMessage(), e);
+                throw new GATInvocationException(e.getMessage(), e);
             } catch (GeneralException e) {
-                logger.error("XXXXX_EX GeneralException raised(" + location.getPath() + "/try " + i + "): "
+                logger.info("XXXXX_EX GeneralException raised(" + location.getPath() + "/try " + i + "): "
                         + e.getMessage(), e);
                 error = new GATInvocationException(e.getMessage(), e); 
             } catch (InvalidProviderException e) {
-                logger.error("XXXXX_EX GATInvocationException raised(" + location.getPath() + "/try " + i + "): "
+                logger.info("XXXXX_EX GATInvocationException raised(" + location.getPath() + "/try " + i + "): "
                         + e.getMessage(), e);
-                error = new GATInvocationException(e.getMessage(), e);
+                throw new GATInvocationException(e.getMessage(), e);
             } catch (ProviderMethodException e) {
-                logger.error("XXXXX_EX ProviderMethodException raised(" + location.getPath() + "/try " + i + "): "
+                logger.info("XXXXX_EX ProviderMethodException raised(" + location.getPath() + "/try " + i + "): "
                         + e.getMessage(), e);
-                error = new GATInvocationException(e.getMessage(), e);
+                throw new GATInvocationException(e.getMessage(), e);
             }
             if (i < max_tries) {
                 try {
@@ -719,7 +719,7 @@ abstract public class GT4FileAdaptor extends FileCpi {
             try {
                 resource.stop();
             } catch (GeneralException e) {
-                logger.error("XXXXX error while closing socket: " + e.getMessage(), e);
+                logger.info("XXXXX error while closing socket: " + e.getMessage(), e);
                 throw new GATInvocationException(e.getMessage());
             }
         }
