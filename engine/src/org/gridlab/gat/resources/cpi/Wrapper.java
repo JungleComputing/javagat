@@ -362,7 +362,6 @@ public class Wrapper {
             setName(info.getJobStateFileName());
         }
 
-        @SuppressWarnings("null")
         public void run() {
             ResourceBroker broker = null;
             Preferences prefs = info.getPreferences();
