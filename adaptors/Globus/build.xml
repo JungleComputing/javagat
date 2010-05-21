@@ -33,6 +33,12 @@
 			<classpath refid="external_jars" />
 		</javac>
 
+		<copy todir="${tmp}">
+			<fileset dir="${src}">
+				<include name="jndi.properties" />
+			</fileset>
+		</copy>
+
 		<jar jarfile="${lib}/GlobusAdaptor.jar" basedir="${tmp}" includes="**">
 			<manifest>
 				<!--<attribute name="FileCpi-class" value="org.gridlab.gat.io.cpi.globus.FTPFileAdaptor,org.gridlab.gat.io.cpi.globus.GridFTPFileAdaptor,org.gridlab.gat.io.cpi.gt4.GT4GridFTPFileAdaptor,org.gridlab.gat.io.cpi.gt4.GT4LocalFileAdaptor,org.gridlab.gat.io.cpi.rftgt4.RFTGT4FileAdaptor" />-->
