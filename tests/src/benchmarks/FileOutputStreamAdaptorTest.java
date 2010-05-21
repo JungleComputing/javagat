@@ -69,7 +69,6 @@ public class FileOutputStreamAdaptorTest {
 
     }
 
-    @SuppressWarnings("null")
     private void run(String host, String script) {
         
         Preferences preferences = new Preferences();
