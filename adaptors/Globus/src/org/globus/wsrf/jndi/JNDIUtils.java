@@ -111,7 +111,7 @@ public class JNDIUtils
         }
         */
 
-        Hashtable env = new Hashtable();
+        Hashtable<String,String> env = new Hashtable<String,String>();
         env.put(SynchronizedContext.SYNCHRONIZED, "true");
 
         result = new InitialContext(env);
@@ -218,7 +218,7 @@ public class JNDIUtils
     public static Object lookup(
         Context context,
         String name,
-        Class type)
+        Class<?> type)
         throws NamingException
     {
         if(context == null)
@@ -404,10 +404,10 @@ public class JNDIUtils
         throws NamingException
     {
         buf.append(tab).append("context: ").append(name).append("\n");
-        NamingEnumeration list = ctx.list(name);
+        NamingEnumeration<NameClassPair> list = ctx.list(name);
         while (list.hasMore()) 
         {
-            NameClassPair nc = (NameClassPair)list.next();
+            NameClassPair nc = list.next();
             if (nc.getClassName().equals("org.apache.naming.NamingContext") ||
                 nc.getClassName().equals("org.apache.naming.SynchronizedContext"))
             {
