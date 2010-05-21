@@ -26,7 +26,7 @@ import java.util.StringTokenizer;
 
 import javax.naming.Binding;
 import javax.naming.Context;
-import javax.naming.GT42InitialContext;
+import javax.naming.InitialContext;
 import javax.naming.InitialContext;
 import javax.naming.NameClassPair;
 import javax.naming.NameNotFoundException;
@@ -82,7 +82,7 @@ public class JNDIUtils {
         /*ENV.put(javax.naming.Context.INITIAL_CONTEXT_FACTORY,
                 DEFAULT_CONTEXT_FACTORY);*/
         /*I changed the value of the key to put*/
-        ENV.put("java.naming.factory.initialGT42",
+        ENV.put("java.naming.factory.initial",
                 DEFAULT_CONTEXT_FACTORY);
     }
 
@@ -119,25 +119,24 @@ public class JNDIUtils {
 
         System.setProperty(javax.naming.Context.URL_PKG_PREFIXES, value);
        
-        value = System.getProperty("java.naming.factory.initialGT42");
+        /* Commented out. Use jndi.properties file instead. --Ceriel
+        value = System.getProperty("java.naming.factory.initial");
        
         if (value == null) {
-            System.setProperty("java.naming.factory.initialGT42",
+            System.setProperty("java.naming.factory.initial",
                     DEFAULT_CONTEXT_FACTORY);
         } else {
             logger.debug(i18n.getMessage("initialContextFactorySet", value));
         }
-        value = System.getProperty("java.naming.factory.initialGT42");
+        value = System.getProperty("java.naming.factory.initial");
+        */
         
         Hashtable<String,String> env = new Hashtable<String,String>();
         env.put(SynchronizedContext.SYNCHRONIZED, "true");
      
-        /*env.put("javax.naming.Context.INITIAL_CONTEXT_FACTORY",
-                DEFAULT_CONTEXT_FACTORY);*/
-        /*I changed the value of the key to put and result now is GT42InitialContext object*/
-        env.put("java.naming.factory.initialGT42",
+        env.put("javax.naming.Context.INITIAL_CONTEXT_FACTORY",
                 DEFAULT_CONTEXT_FACTORY);
-        result = new GT42InitialContext(env);
+        result = new InitialContext(env);
         if (!ContextBindings.isClassLoaderBound()) {
             ContextBindings.bindContext(CONTEXT_NAME, result);
             ContextBindings.bindClassLoader(CONTEXT_NAME);

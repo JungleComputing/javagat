@@ -1,5 +1,10 @@
 #!/bin/bash
 
+if [ -z "$GAT_LOCATION" ] ; then
+#        echo GAT_LOCATION variable not set, using $PWD
+	GAT_LOCATION=$PWD
+fi
+
 add_to_gat_classpath () {
 	DIRLIBS=${1}/*.jar
 	for i in ${DIRLIBS}
