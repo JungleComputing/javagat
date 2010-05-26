@@ -27,7 +27,6 @@ import java.util.StringTokenizer;
 import javax.naming.Binding;
 import javax.naming.Context;
 import javax.naming.InitialContext;
-import javax.naming.InitialContext;
 import javax.naming.NameClassPair;
 import javax.naming.NameNotFoundException;
 import javax.naming.NamingEnumeration;
