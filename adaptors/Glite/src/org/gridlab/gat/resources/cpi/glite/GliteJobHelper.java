@@ -222,6 +222,7 @@ public class GliteJobHelper {
 				list = sl.getFile();
 			} catch (Exception e) {
 				LOGGER.error("Could not receive output due to security problems", e);
+				postStageException = new GATInvocationException(e.toString());
 			}
 		
 			if (list != null) {
@@ -323,7 +324,7 @@ public class GliteJobHelper {
 			state = Job.JobState.INITIAL;
 		} else if ("Aborted".equalsIgnoreCase(gliteState)) {
 			state = Job.JobState.SUBMISSION_ERROR;
-		} else if ("DONE".equalsIgnoreCase(gliteState)) {
+		} else if ("Done".equalsIgnoreCase(gliteState)) {
 			state = Job.JobState.POST_STAGING;
 		} else if ("Done (Success)".equalsIgnoreCase(gliteState)) {
 			state = Job.JobState.POST_STAGING;

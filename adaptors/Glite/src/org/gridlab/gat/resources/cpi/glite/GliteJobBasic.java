@@ -54,7 +54,7 @@ public class GliteJobBasic extends JobCpi implements GliteJobInterface {
 
 	private JDL_Basic gLiteJobDescription = null;
 	private SoftwareDescription swDescription = null;
-	private volatile String gLiteState = "";
+	protected volatile String gLiteState = "";
 	
 	private Metric statusMetric = null;
 	protected final JobIdStructType jobIdStructType;
@@ -206,12 +206,12 @@ public class GliteJobBasic extends JobCpi implements GliteJobInterface {
 		gLiteState = jobStatus.getState().getValue();
 
 		JobState s = gliteJobHelper.generateJobStateFromGLiteState(gLiteState);
-                if (s == state) {
-                    // Don't generate events for unchanged state.
-                    return false;
-                }
+        if (s == state) {
+            // Don't generate events for unchanged state.
+            return false;
+        }
 
-                state = s;
+        state = s;
 
 		for (int i = 0; i < jobStatus.getStateEnterTimes().length; i++) {
 			if (jobStatus.getStateEnterTimes(i).getTime().getTimeInMillis() != 0) {

@@ -1,6 +1,7 @@
 package org.gridlab.gat.resources.cpi.glite;
 
 import java.rmi.RemoteException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -236,7 +237,19 @@ public class GliteJobDAG extends CoScheduleJobCpi implements GliteJobInterface {
 	}
 
 	public synchronized void receiveOutput() {
-		this.postStageException = gliteJobHelper.receiveOutput(jobIdStructType.getChildrenJob(), swDescriptions);
+		ArrayList<JobIdStructType> jobIdStructTypes = new ArrayList<JobIdStructType>();
+		for (int i = 0; i < jobIdStructType.getChildrenJob().length; i++) {
+			String jobID = jobIdStructType.getChildrenJob(i).getId();
+			if(jobIDs.get(jobID).getGliteState().toLowerCase().startsWith("done")){
+				jobIdStructTypes.add(jobIdStructType.getChildrenJob(i));
+			}else{
+				LOGGER.warn("Job "+jobID+" state: "+jobIDs.get(jobID).getGliteState()+" => Nothing to retrieve");
+			}
+		}
+		if(jobIdStructTypes.isEmpty()){
+			LOGGER.info("None of the Jobs terminated successfully, nothing to retrieve.");
+		}
+		this.postStageException = gliteJobHelper.receiveOutput(jobIdStructTypes.toArray(new JobIdStructType[jobIdStructTypes.size()]), swDescriptions);
 	}
 
 	public Metric getStatusMetric() {
@@ -286,6 +299,10 @@ public class GliteJobDAG extends CoScheduleJobCpi implements GliteJobInterface {
 		
 		public void updateState() {
 			GliteJobDAG.this.updateState();
+		}
+		
+		public String getGliteState(){
+			return this.gLiteState;
 		}
 		
 	}
