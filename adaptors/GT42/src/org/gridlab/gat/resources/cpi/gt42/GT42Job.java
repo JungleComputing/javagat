@@ -51,6 +51,7 @@ public class GT42Job extends JobCpi implements GramJobListener, Runnable {
             "org.gridlab.gat.resources.cpi.gt42.GlobusEngineConfigurationFactory");
         }
     }
+
     private MetricDefinition statusMetricDefinition;
 
     private GramJob job;
@@ -440,6 +441,8 @@ public class GT42Job extends JobCpi implements GramJobListener, Runnable {
 
         synchronized (this) {
             if (submissiontime != 0) {
+                Thread.currentThread().setContextClassLoader(
+                                                this.getClass().getClassLoader());
                 try {
                     job.refreshStatus();
                 } catch(Throwable e) {

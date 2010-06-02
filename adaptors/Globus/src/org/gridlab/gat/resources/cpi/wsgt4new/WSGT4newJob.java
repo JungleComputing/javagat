@@ -471,6 +471,7 @@ public class WSGT4newJob extends JobCpi implements GramJobListener, Runnable {
 
         synchronized (this) {
             if (submissiontime != 0) {
+                Thread.currentThread().setContextClassLoader(this.getClass().getClassLoader());
                 try {
                     job.refreshStatus();
                 } catch(Throwable e) {

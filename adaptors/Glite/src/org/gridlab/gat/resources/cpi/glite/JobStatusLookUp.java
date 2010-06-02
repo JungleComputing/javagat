@@ -31,6 +31,7 @@ class JobStatusLookUp implements Runnable {
 	}
 
 	public void run() {
+            Thread.currentThread().setContextClassLoader(this.getClass().getClassLoader());
 		if (polledJob.getState() == Job.JobState.STOPPED || polledJob.getState() == Job.JobState.SUBMISSION_ERROR) {
 			ScheduledExecutor.remove(this);
 			return;

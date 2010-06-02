@@ -128,6 +128,8 @@ public class GridFTPFileAdaptor extends GlobusFileAdaptor {
                     return;
                 }
 
+                Thread.currentThread().setContextClassLoader(this.getClass().getClassLoader());
+
                 logger.debug("Run Cache Cleanup");
                 synchronized (clienttable) {
                     Set<String> keys = clienttable.keySet();

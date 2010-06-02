@@ -309,7 +309,7 @@ public class GlobusJob extends JobCpi implements GramJobListener,
         ScheduledExecutor.remove(this);
         while (state != JobState.STOPPED && state != JobState.SUBMISSION_ERROR) {
             try {
-                run();
+                getStateActive();
                 if (state != JobState.STOPPED && state != JobState.SUBMISSION_ERROR) {
                     wait(5000);
                 }
@@ -742,6 +742,8 @@ public class GlobusJob extends JobCpi implements GramJobListener,
     }
     
     public void run() {
+        Thread.currentThread().setContextClassLoader(this.getClass().getClassLoader());
+
         synchronized(this) {
             getStateActive();
             if (getState() == JobState.STOPPED || getState() == JobState.SUBMISSION_ERROR) {
