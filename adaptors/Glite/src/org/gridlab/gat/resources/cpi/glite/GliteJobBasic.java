@@ -136,7 +136,7 @@ public class GliteJobBasic extends JobCpi implements GliteJobInterface {
 		//Register the new Job inside WMS
 		this.jobIdStructType = gliteJobHelper.registerNewJob(gLiteJobDescription, delegationId);
 		//Upload the needed InputSandBoxFiles
-		gliteJobHelper.stageInSandboxFiles(jobIdStructType.getId(), new SoftwareDescription[]{swDescription});
+		gliteJobHelper.stageInSandboxFiles(jobIdStructType.getId(), swDescription);
 		//Start the Job
 		gliteJobHelper.submitJob(jobIdStructType);	
 		

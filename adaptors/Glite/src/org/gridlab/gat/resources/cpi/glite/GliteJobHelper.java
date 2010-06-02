@@ -84,33 +84,31 @@ public class GliteJobHelper {
 //
 //	}
 	
-	public void stageInSandboxFiles(String gliteJobID, SoftwareDescription[] softwareDescriptions) throws GATInvocationException {
+	public void stageInSandboxFiles(String gliteJobID, SoftwareDescription softwareDescription) throws GATInvocationException {
 		HashMap<File,String> sandboxFiles = new HashMap<File,String>();
 		GATContext newContext = (GATContext) gatContext.clone();
 		newContext.addPreference("File.adaptor.name", "GridFTP");
 		GliteSecurityUtils.replaceSecurityContextWithGliteContext(newContext);
 		try {
 			LOGGER.debug("Staging in files");
-			for (int i = 0; i < softwareDescriptions.length; i++) {
-				if (softwareDescriptions[i].getStdin() != null) {
-					File f = GAT.createFile(newContext, softwareDescriptions[i].getStdin().getName());
-					sandboxFiles.put(f,null);
-				}
-	
-				Map<File, File> map = softwareDescriptions[i].getPreStaged();
-	
-				for (File orig : map.keySet()) {
-					//Test if it is a file that comes from another job.
-		        	if(!orig.getName().toLowerCase().startsWith("root.nodes.") 
-		        			&& !orig.getName().toLowerCase().startsWith("root.inputsandbox")){
-		        		File origFile = GAT.createFile(newContext, orig.toGATURI());
-		        		String dest = null;
-		        		if (map.get(orig) != null) {
-		        			dest = map.get(orig).getPath();
-		        		}
-						sandboxFiles.put(origFile,dest);
-		        	}
-				}
+			if (softwareDescription.getStdin() != null) {
+				File f = GAT.createFile(newContext, softwareDescription.getStdin().getName());
+				sandboxFiles.put(f,null);
+			}
+
+			Map<File, File> map = softwareDescription.getPreStaged();
+
+			for (File orig : map.keySet()) {
+				//Test if it is a file that comes from another job.
+	        	if(!orig.getName().toLowerCase().startsWith("root.nodes.") 
+	        			&& !orig.getName().toLowerCase().startsWith("root.inputsandbox")){
+	        		File origFile = GAT.createFile(newContext, orig.toGATURI());
+	        		String dest = null;
+	        		if (map.get(orig) != null) {
+	        			dest = map.get(orig).getPath();
+	        		}
+					sandboxFiles.put(origFile,dest);
+	        	}
 			}
 
 			String[] sl = wmsService.getWMProxyServiceStub().getSandboxDestURI(gliteJobID, "gsiftp").getItem();

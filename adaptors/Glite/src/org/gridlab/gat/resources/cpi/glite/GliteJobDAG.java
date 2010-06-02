@@ -3,7 +3,9 @@ package org.gridlab.gat.resources.cpi.glite;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import org.glite.wms.wmproxy.JobIdStructType;
 import org.glite.wsdl.types.lb.GenericFault;
@@ -124,8 +126,12 @@ public class GliteJobDAG extends CoScheduleJobCpi implements GliteJobInterface {
 			jobIDs.put(gliteJobDAGTask.getJobIdStructType().getId(), gliteJobDAGTask);
 		}
 		
-		//Upload the needed InputSandBoxFiles
-		gliteJobHelper.stageInSandboxFiles(jobIdStructType.getId(), swDescriptions);
+		//Upload InputSandBoxFiles in the correct InputSandBox of each job
+		for (Iterator<Entry<String, GliteJobDAGTask>> iterator = jobIDs.entrySet().iterator(); iterator.hasNext();) {
+			Entry<String, GliteJobDAGTask> entry =  iterator.next();
+			gliteJobHelper.stageInSandboxFiles(entry.getKey(), entry.getValue().getJobDescription().getSoftwareDescription());
+		}
+		
 		//Start the Job
 		gliteJobHelper.submitJob(jobIdStructType);	
 		
