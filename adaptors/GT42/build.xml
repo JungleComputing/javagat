@@ -64,7 +64,7 @@
 			<fileset dir="${external}">
 				<include name="share/**" />
 				<include name="etc/**" />
-				<include name="client-configGT42.wsdd" />
+				<include name="client-config.wsdd" />
 			</fileset>
 
 		</copy>

@@ -31,7 +31,7 @@ public class GlobusEngineConfigurationFactory implements
     public EngineConfiguration getClientEngineConfig() {
         String wsddPath = System.getProperty("gat.adaptor.path")
                 + java.io.File.separator + "GT42Adaptor"
-                + java.io.File.separator + "client-configGT42.wsdd";
+                + java.io.File.separator + "client-config.wsdd";
 
         FileProvider cfg = new FileProvider(wsddPath);
 
