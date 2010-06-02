@@ -116,7 +116,6 @@ public class ResourceBrokerAdaptorTest implements MetricListener {
         try {
             broker.submitJob(jd, this, "job.status");
         } catch (GATInvocationException e) {
-            e.printStackTrace();
             return new AdaptorTestResultEntry(false, 0L, e);
         }
         waitForJob();
@@ -180,7 +179,6 @@ public class ResourceBrokerAdaptorTest implements MetricListener {
         try {
             broker.submitJob(jd, this, "job.status");
         } catch (GATInvocationException e) {
-            e.printStackTrace();
             return new AdaptorTestResultEntry(false, 0L, e);
         }
         waitForJob();
