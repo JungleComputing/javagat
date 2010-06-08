@@ -94,8 +94,8 @@ public class ZorillaResourceBrokerAdaptor extends ResourceBrokerCpi implements
 
         logger.debug("zorilla node address = " + nodeSocketAddress);
 
-        String wait = gatContext.getPreferences().get("zorilla.wait.for.node")
-                .toString();
+        Object o = gatContext.getPreferences().get("zorilla.wait.for.node");
+        String wait = o != null ? o.toString() : null;
 
         if (wait != null && wait.equalsIgnoreCase("true")) {
             logger.info("Checking if node " + getNodeSocketAddress()
