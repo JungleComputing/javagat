@@ -172,7 +172,7 @@ public class GliteResourceBrokerAdaptor extends ResourceBrokerCpi {
                         "Could connect to LDAP for VO: " + vo, e);
             }
         } else if ((brokerURI.isCompatible("http") || brokerURI
-                .isCompatible("https"))) {
+                .isCompatible("https") || brokerURI.isCompatible("glite"))) {
             resourceBrokerURIs.add(new UriAndCount(brokerURI));
         } else {
             throw new GATObjectCreationException("cannot handle scheme: "
