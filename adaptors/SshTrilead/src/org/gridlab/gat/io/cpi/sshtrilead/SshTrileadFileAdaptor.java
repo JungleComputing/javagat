@@ -743,15 +743,26 @@ public class SshTrileadFileAdaptor extends FileCpi {
     }
 
     private void remoteScp(URI dest) throws GATInvocationException {
-        if (isWindows(gatContext, location)) {
+        if (isWindows(gatContext, location) || ! dest.getScheme().equals(location.getScheme())) {
             throw new UnsupportedOperationException("Not implemented");
         } else {
             String[] result;
-            try {
-                result = execCommand("scp -r " + protectAgainstShellMetas(getFixedPath()) + " ${USER}@"
-                        + dest.getHost() + ":" + protectAgainstShellMetas(dest.getPath()));
-            } catch (Exception e) {
-                throw new GATInvocationException("sshtrilead", e);
+            if (dest.getAuthority().equals(location.getAuthority())) {
+                try {
+                    result = execCommand("cp -r " +protectAgainstShellMetas(getFixedPath())
+                            + " " + protectAgainstShellMetas(dest.getPath()));
+                } catch (Exception e) {
+                    throw new GATInvocationException("sshtrilead", e);
+                }
+            } else {
+                try {
+                    // We can try scp, but there are various reasons why it might fail.
+                    // Anyway, 3rdparty copy should deal with that case.
+                    result = execCommand("scp -r " + protectAgainstShellMetas(getFixedPath()) + " ${USER}@"
+                            + dest.getHost() + ":" + protectAgainstShellMetas(dest.getPath()));
+                } catch (Exception e) {
+                    throw new GATInvocationException("sshtrilead", e);
+                }
             }
             if (result[STDERR].length() != 0
                     && ! result[STDERR].startsWith("Warning:")) {
