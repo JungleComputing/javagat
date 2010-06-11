@@ -743,7 +743,7 @@ public class SshTrileadFileAdaptor extends FileCpi {
     }
 
     private void remoteScp(URI dest) throws GATInvocationException {
-        if (isWindows(gatContext, location) || ! dest.getScheme().equals(location.getScheme())) {
+        if (isWindows(gatContext, location) || ! recognizedScheme(dest.getScheme(), getSupportedSchemes())) {
             throw new UnsupportedOperationException("Not implemented");
         } else {
             String[] result;
