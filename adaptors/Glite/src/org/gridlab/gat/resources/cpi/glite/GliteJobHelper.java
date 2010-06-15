@@ -308,6 +308,9 @@ public class GliteJobHelper {
 	
 	public JobState generateJobStateFromGLiteState(String gliteState){
 		JobState state = null;
+                if (LOGGER.isDebugEnabled()) {
+                    LOGGER.debug("gLite job state: " + gliteState);
+                }
 		if ("Waiting".equalsIgnoreCase(gliteState)) {
 			state = Job.JobState.INITIAL;
 		} else if ("Ready".equalsIgnoreCase(gliteState)) {
