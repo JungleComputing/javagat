@@ -93,7 +93,7 @@ Grid.
 
 \begin{figure}[h]
   \centering
-  \includegraphics[width=.8\textwidth]{gat-arch}
+  \includegraphics[width=.8\textwidth]{gat-arch.png}
   \caption{GAT Architecture}
   \label{abb:GATArchitecture}
 \end{figure}
@@ -540,7 +540,7 @@ property is not set, the value defaults to
 \item If the {\tt cacert} property is not set, first the
 {\tt X509\_CERT\_DIR} system property is checked. If the system
 property is not set, then the {\tt \$HOME/.globus/certificates}
- irectory is checked. If the directory does not exist, and
+directory is checked. If the directory does not exist, and
 on a Unix/Linux machine, the directory with the name \linebreak[4] {\tt /etc/grid-security/certificates} is checked next.
 If one of these directories with certificates is found, all
 the certificates in that directory will be loaded and
@@ -558,6 +558,52 @@ not set, the username will be used instead of the {\tt UID}.
 That is, it returns {\tt \$\{tempdir\}/x509up\_u\_\$\{username\}}.
 \end{itemize}
 
+\subsubsection{Using a MyProxy server}
+
+MyProxy is an online credential repository. You can store X.509 proxy
+credentials in the repository, protected by a passphrase. These credentials
+can then be retrieved over the network when needed, eliminating the need to
+manually copy private key and certificate files between machines. When using
+a MyProxy server, you don't need {\tt userkey.pem}
+and/or {\tt usercert.pem} files. Instead, you must supply a username and
+a passphrase to the MyProxy server, which then returns the associated
+credential.
+
+JavaGAT allows access to a credential stored in a MyProxy
+server by means of the
+\begin{quote}
+{\tt MyProxyServerCredentialSecurityContext}
+\end{quote}
+security context. To use this security context, you need
+
+\begin{itemize}
+\item a credential stored at a MyProxy server,
+\item the MyProxy server hostname,
+\item the port number for the MyProxy server,
+\item the username for the MyProxy server,
+\item the passphrase associated with the required credential. Note: this is
+the passphrase that was used to store the credential in the MyProxy server,
+which is not neccessarily the same as the credential passphrase, which was
+also supplied while storing the credential in the MyProxy server.
+\end{itemize}
+
+A {\tt MyProxyServerCredentialSecurityContext} is created by
+calling the corresponding constructor. Here is a code fragment:
+
+\small
+{\tt
+\hspace*{0,5cm} SecurityContext ctxt = new MyProxyServerCredentialSecurityContext(\hfill\newline
+\hspace*{1cm} "MyProxy host", MYPROXY\_PORT\_NO, "username", "passphrase");\hfill\newline
+\hspace*{0,5cm} gatContext.addContext(ctxt);\hfill\newline
+}
+
+Here, {\tt "MyProxy host"} stands for the MyProxy server host name,
+{\tt MYPROXY\_PORT\_NO} for the port number of the MyProxy server, and
+{\tt "username"} and {\tt "passphrase"} stand for the username and
+passphrase to be supplied to the MyProxy server.
+
+The {\tt MyProxyServerCredentialSecurityContext} security context
+can be used by/for the various Globus adaptors.
 
 \subsection{How to use the GAT-gLite Adaptor}
 
