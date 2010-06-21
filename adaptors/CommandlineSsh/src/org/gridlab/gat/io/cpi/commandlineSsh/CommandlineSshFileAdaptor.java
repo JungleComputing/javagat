@@ -560,7 +560,9 @@ public class CommandlineSshFileAdaptor extends FileCpi {
     protected void copyToRemote(URI src, URI dest)
             throws GATInvocationException {
         Map<String, String> destSecurityInfo = null;
-
+        if (! recognizedScheme(dest.getScheme(), getSupportedSchemes())) {
+            throw new GATInvocationException("CommandlineSshFileAdaptor: unrecognized scheme");
+        }
         try {
             destSecurityInfo = CommandlineSshSecurityUtils.getSshCredential(
                     gatContext, "commandlinessh", dest, ssh_port);

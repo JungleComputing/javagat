@@ -270,6 +270,12 @@ public class SshTrileadFileAdaptor extends FileCpi {
     }
 
     private void put(URI destination) throws Exception {
+        if (destination.refersToLocalHost()) {
+            throw new GATInvocationException("SshTrileadFileAdaptor cannot copy local to local");
+        }
+        if (! recognizedScheme(destination.getScheme(), getSupportedSchemes())) {
+            throw new GATInvocationException("SshTrileadFileAdaptor.copy: unrecognized scheme");
+        }
         logger.debug("destination: " + destination);
         SCPClient client = null;
         try {

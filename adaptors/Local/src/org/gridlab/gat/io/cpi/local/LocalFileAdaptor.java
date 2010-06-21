@@ -742,7 +742,11 @@ public class LocalFileAdaptor extends FileCpi {
      */
     public boolean renameTo(org.gridlab.gat.io.File arg0)
             throws GATInvocationException {
-        File tmp = new File(arg0.toGATURI().toJavaURI());
+        URI arg = arg0.toGATURI();
+        if (! arg.refersToLocalHost()) {
+            throw new GATInvocationException("LocalFile: cannot rename to remote destination");
+        }
+        File tmp = new File(arg.toJavaURI());
 
         return f.renameTo(tmp);
     }
