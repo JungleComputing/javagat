@@ -4,6 +4,7 @@ import java.util.Map;
 
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
+import org.gridlab.gat.Preferences;
 import org.gridlab.gat.io.Endpoint;
 import org.gridlab.gat.io.Pipe;
 import org.gridlab.gat.io.PipeListener;
@@ -25,6 +26,13 @@ public abstract class EndpointCpi extends MonitorableCpi implements Endpoint {
         capabilities.put("connect", false);
         capabilities.put("listen", false);
         return capabilities;
+    }   
+    
+    public static Preferences getSupportedPreferences() {
+        Preferences preferences = MonitorableCpi.getSupportedPreferences();
+        preferences.put("Endpoint.adaptor.name", "<no default>");
+        preferences.put("adaptors.local", "false");
+        return preferences;
     }
     
     protected GATContext gatContext;

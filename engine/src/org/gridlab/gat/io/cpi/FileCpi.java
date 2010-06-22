@@ -83,6 +83,8 @@ public abstract class FileCpi extends MonitorableCpi implements FileInterface, j
         preferences.put("file.adaptor.name", "<no default>");
         preferences.put("adaptors.local", "false");
         preferences.put("file.create", "false");
+        preferences.put("file.hiddenfiles.ignore", "false");
+        preferences.put("file.directory.copy", "<no default>");
 
         return preferences;
     }

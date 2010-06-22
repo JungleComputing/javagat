@@ -8,7 +8,6 @@ import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.GATObjectCreationException;
 import org.gridlab.gat.Preferences;
 import org.gridlab.gat.URI;
-import org.gridlab.gat.io.cpi.FileCpi;
 import org.gridlab.gat.io.cpi.RandomAccessFileCpi;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,7 +18,7 @@ import com.trilead.ssh2.SFTPv3FileHandle;
 public class SftpTrileadRandomAccessFileAdaptor extends RandomAccessFileCpi {
 
     public static Preferences getSupportedPreferences() {
-        Preferences preferences = FileCpi.getSupportedPreferences();
+        Preferences preferences = RandomAccessFileCpi.getSupportedPreferences();
 
         preferences.put("sftptrilead.strictHostKeyChecking", "false");
         preferences.put("sftptrilead.noHostKeyChecking", "true");

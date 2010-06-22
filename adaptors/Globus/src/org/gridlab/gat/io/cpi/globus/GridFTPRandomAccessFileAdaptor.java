@@ -1,7 +1,6 @@
 package org.gridlab.gat.io.cpi.globus;
 
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
 
@@ -34,7 +33,7 @@ public class GridFTPRandomAccessFileAdaptor extends RandomAccessFileCpi {
     }
     
     public static Map<String, Boolean> getSupportedCapabilities() {
-        Map<String, Boolean> capabilities = new HashMap<String, Boolean>();
+        Map<String, Boolean> capabilities = RandomAccessFileCpi.getSupportedCapabilities();
         capabilities.put("close", true);
         capabilities.put("getFilePointer", true);
         capabilities.put("length", true);

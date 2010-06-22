@@ -4,7 +4,6 @@ package org.gridlab.gat.io.cpi.generic;
 
 import java.util.ArrayList;
 import java.util.List;
-
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.URI;
@@ -12,6 +11,7 @@ import org.gridlab.gat.io.cpi.LogicalFileCpi;
 
 @SuppressWarnings("serial")
 public class GenericLogicalFileAdaptor extends LogicalFileCpi {
+    
     /**
      * This constructor creates a LocalLogicalFileAdaptor corresponding to the
      * passed URI instance and uses the passed GATContext to broker resources.

@@ -1,11 +1,11 @@
 package org.gridlab.gat.io.cpi;
 
-import java.util.HashMap;
 import java.util.Map;
 
 import org.gridlab.gat.GAT;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
+import org.gridlab.gat.Preferences;
 import org.gridlab.gat.URI;
 import org.gridlab.gat.io.RandomAccessFileInterface;
 import org.gridlab.gat.monitoring.cpi.MonitorableCpi;
@@ -22,7 +22,7 @@ import org.gridlab.gat.monitoring.cpi.MonitorableCpi;
 public abstract class RandomAccessFileCpi extends MonitorableCpi implements RandomAccessFileInterface {
 
     public static Map<String, Boolean> getSupportedCapabilities() {
-        Map<String, Boolean> capabilities = new HashMap<String, Boolean>();
+        Map<String, Boolean> capabilities = MonitorableCpi.getSupportedCapabilities();
         capabilities.put("toURI", true);
         capabilities.put("getFile", true);
         capabilities.put("close", false);
@@ -34,6 +34,13 @@ public abstract class RandomAccessFileCpi extends MonitorableCpi implements Rand
         capabilities.put("skipBytes", false);
         capabilities.put("write", false);
         return capabilities;
+    }
+    
+    public static Preferences getSupportedPreferences() {
+        Preferences preferences = MonitorableCpi.getSupportedPreferences();
+        preferences.put("RandomAccessFile.adaptor.name", "<no default>");
+        preferences.put("adaptors.local", "false");
+        return preferences;
     }
 
     protected GATContext gatContext;

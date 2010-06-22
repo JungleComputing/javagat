@@ -26,7 +26,7 @@ public class SocketPipe extends PipeCpi {
         capabilities.put("getOutputStream", true);
         return capabilities;
     }
-    
+       
     public SocketPipe(GATContext gatContext, Socket s) {
         super(gatContext);
         this.s = s;

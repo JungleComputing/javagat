@@ -21,8 +21,7 @@ import org.gridlab.gat.io.cpi.RandomAccessFileCpi;
 public class LocalRandomAccessFileAdaptor extends RandomAccessFileCpi {
 
     public static Map<String, Boolean> getSupportedCapabilities() {
-        Map<String, Boolean> capabilities = RandomAccessFileCpi
-                .getSupportedCapabilities();
+        Map<String, Boolean> capabilities = RandomAccessFileCpi.getSupportedCapabilities();
         capabilities.put("close", true);
         capabilities.put("getFilePointer", true);
         capabilities.put("length", true);

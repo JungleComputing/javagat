@@ -11,6 +11,7 @@ import org.gridlab.gat.GAT;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.GATObjectCreationException;
+import org.gridlab.gat.Preferences;
 import org.gridlab.gat.URI;
 import org.gridlab.gat.advert.Advertisable;
 import org.gridlab.gat.engine.GATEngine;
@@ -40,6 +41,14 @@ public abstract class LogicalFileCpi extends MonitorableCpi implements LogicalFi
         capabilities.put("getURIs", true);
         capabilities.put("getFiles", true);
         return capabilities;
+    }
+    
+    public static Preferences getSupportedPreferences() {
+        Preferences preferences = MonitorableCpi.getSupportedPreferences();
+        preferences.put("LogicalFile.adaptor.name", "<no default>");
+        preferences.put("adaptors.local", "false");
+
+        return preferences;
     }
 
     protected static Logger logger = LoggerFactory.getLogger(LogicalFileCpi.class);
