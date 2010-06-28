@@ -5,18 +5,28 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.rmi.RemoteException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.xml.rpc.ServiceException;
 
+import org.apache.axis.AxisProperties;
+import org.apache.axis.EngineConfigurationFactory;
 import org.apache.axis.SimpleTargetedChain;
 import org.apache.axis.configuration.SimpleProvider;
 import org.apache.axis.transport.http.HTTPSender;
+import org.glite.wms.wmproxy.AuthenticationFaultException;
+import org.glite.wms.wmproxy.AuthorizationFaultException;
+import org.glite.wms.wmproxy.InvalidArgumentFaultException;
 import org.glite.wms.wmproxy.JobIdStructType;
+import org.glite.wms.wmproxy.JobUnknownFaultException;
 import org.glite.wms.wmproxy.OperationNotAllowedFaultException;
+import org.glite.wms.wmproxy.ServerOverloadedFaultException;
 import org.glite.wms.wmproxy.StringAndLongList;
 import org.glite.wms.wmproxy.StringAndLongType;
 import org.glite.wms.wmproxy.WMProxyAPI;
@@ -112,8 +122,8 @@ public class GliteJob extends JobCpi {
 	private volatile long stoptime = -1L;
 
 	/** The cancel-time of the job */
-	private volatile long canceltime = -1L;	
-	
+	private volatile long canceltime = -1L;
+
 	/** An exception that might occurs. */
 	private volatile GATInvocationException postStageException = null;
 
@@ -230,7 +240,9 @@ public class GliteJob extends JobCpi {
 		if (System.getProperty("sslProtocol") == null) {
 			System.setProperty("sslProtocol", "SSLv3");
 		}
-
+		
+		AxisProperties.setProperty(EngineConfigurationFactory.SYSTEM_PROPERTY_NAME, GLiteEngineConfigurationFactory.class.getName());
+		logger.info("set axis.EngineConfigFactory: " + GLiteEngineConfigurationFactory.class.getName());
 	}
 
 	/**
@@ -315,18 +327,85 @@ public class GliteJob extends JobCpi {
 	 */
 	public String submitJob() throws GATInvocationException, GATObjectCreationException {
 		try {
+			submissiontime = System.currentTimeMillis();
 			WMProxyAPI api = getWmProxy();
 
-			JobIdStructType jobIds = api.jobSubmit(gLiteJobDescription.getJdlString(), getDelegationId());
-			gliteJobID = jobIds.getId();
-			LOGGER.info("Job sucessfully submitted with id: " + gliteJobID);
-			submissiontime = System.currentTimeMillis();
-			sandboxUri = api.getSandboxDestURI(gliteJobID, "gsiftp").getItem(0);
+			JobIdStructType jobIdStruct = api.jobRegister(gLiteJobDescription.getJdlString(), getDelegationId());
 
-			LOGGER.info("Sandbox created at : " + sandboxUri);
+			stageInSandboxFiles(jobIdStruct.getId());
+
+			api.jobStart(jobIdStruct.getId());
+
+			gliteJobID = jobIdStruct.getId();
+			LOGGER.info("Job sucessfully submitted with id: " + gliteJobID);
+
 			return gliteJobID;
 		} catch (Exception e) {
 			throw new GATInvocationException("Ann error occurs during submitting the job.", e);
+		}
+	}
+
+	/**
+	 * Stage in the files that are described in the swDescription of the job.
+	 * 
+	 * @param sandboxJobID
+	 */
+	private void stageInSandboxFiles(String sandboxJobID) {
+		List<File> sandboxFiles = new ArrayList<File>();
+		GATContext newContext = (GATContext) gatContext.clone();
+		newContext.addPreference("File.adaptor.name", "GridFTP");
+
+		replaceSecurityContextWithGliteContext(newContext);
+		try {
+			LOGGER.debug("Staging in files");
+			if (swDescription.getStdin() != null) {
+				File f = GAT.createFile(newContext, swDescription.getStdin().getName());
+				sandboxFiles.add(f);
+			}
+
+			Map<File, File> map = swDescription.getPreStaged();
+
+			for (File orig : map.keySet()) {
+				File newF = GAT.createFile(newContext, orig.toGATURI());
+				sandboxFiles.add(newF);
+			}
+
+			String[] sl;
+
+			sl = api.getSandboxDestURI(sandboxJobID, "gsiftp").getItem();
+			if (sl.length > 0) {
+				sandboxUri = sl[0];
+				LOGGER.info("Sandbox located at : " + sandboxUri);
+			}
+
+			for (File sandboxFile : sandboxFiles) {
+				URI tempURI = new URI(sl[0] + "/" + sandboxFile.getName());
+				URI destURI = new URI(tempURI.getScheme() + "://" + tempURI.getHost() + ":" + tempURI.getPort() + "//"
+						+ tempURI.getPath());
+				LOGGER.debug("Uploading " + sandboxFile + " to " + destURI);
+				File destFile = GAT.createFile(newContext, destURI);
+				sandboxFile.copy(destFile.toGATURI());
+			}
+		} catch (URISyntaxException e) {
+			LOGGER.error("URI error while resolving pre-staged file set", e);
+		} catch (GATObjectCreationException e) {
+			LOGGER.error("Could not create pre-staged file set", e);
+		} catch (GATInvocationException e) {
+			LOGGER.error("Could not copy files to input sandbox", e);
+		} catch (AuthorizationFaultException e) {
+			LOGGER.error("Could not authorize to job resource", e);
+		} catch (AuthenticationFaultException e) {
+			LOGGER.error("Could not autheticate to input sandbox", e);
+		} catch (OperationNotAllowedFaultException e) {
+			LOGGER.error("Operation not allowed on input sandbox", e);
+		} catch (InvalidArgumentFaultException e) {
+			LOGGER.error("Invalid Argument while accessing sandbox", e);
+		} catch (JobUnknownFaultException e) {
+			LOGGER.error("Job unknown for sandbox", e);
+		} catch (org.glite.wms.wmproxy.ServiceException e) {
+			LOGGER.error("WMS Service exception", e);
+		} catch (ServerOverloadedFaultException e) {
+			LOGGER.error("Server overload exception", e);
 		}
 	}
 
@@ -436,8 +515,7 @@ public class GliteJob extends JobCpi {
 			state = Job.JobState.STOPPED;
 		} else if ("Cleared".equalsIgnoreCase(gLiteState)) {
 			state = Job.JobState.CLEARED;
-		}		
-		else {
+		} else {
 			this.state = Job.JobState.UNKNOWN;
 		}
 	}
