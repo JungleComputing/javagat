@@ -311,12 +311,15 @@ public class JDL {
 		if (!inputFiles.isEmpty()) {
 			builder.append("InputSandbox = {\n\t");
 			String lastInputFile = inputFiles.last();
-
+			String filteredPath;
+			
 			for (String inputFile : inputFiles.headSet(lastInputFile)) {
-				builder.append("\"file://").append(inputFile).append("\",\n\t");
+				filteredPath = inputFile.replace('\\', '/');
+				builder.append("\"file://").append(filteredPath).append("\",\n\t");
 			}
-
-			builder.append("\"file://").append(lastInputFile).append("\"\n").append("};\n");
+		
+			filteredPath = lastInputFile.replace('\\', '/');
+			builder.append("\"file://").append(filteredPath).append("\"\n").append("};\n");
 		}
 
 		if (!outputSrcFiles.isEmpty()) {
@@ -332,11 +335,14 @@ public class JDL {
 
 			builder.append("OutputSandboxDestURI = {\n\t");
 			String lastDestFile = outputDestFiles.last();
-
+			String filteredPath;
+			
 			for (String destFile : outputDestFiles.headSet(lastDestFile)) {
-				builder.append("\"").append(destFile).append("\",\n\t");
+				filteredPath = destFile.replace('\\', '/');
+				builder.append("\"").append(filteredPath).append("\",\n\t");
 			}
 
+			filteredPath = lastDestFile.replace('\\', '/');
 			builder.append("\"").append(lastDestFile).append("\"").append("\n};\n");
 		}
 
