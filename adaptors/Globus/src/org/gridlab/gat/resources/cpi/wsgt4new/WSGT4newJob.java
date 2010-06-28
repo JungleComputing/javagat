@@ -61,10 +61,7 @@ public class WSGT4newJob extends JobCpi implements GramJobListener {
 			System.setProperty("GLOBUS_LOCATION", globusLocation);
 		}
 
-		if (AxisProperties.getProperty(EngineConfigurationFactory.SYSTEM_PROPERTY_NAME) == null) {
-			AxisProperties.setProperty(EngineConfigurationFactory.SYSTEM_PROPERTY_NAME,
-					"org.gridlab.gat.resources.cpi.wsgt4new.GlobusEngineConfigurationFactory");
-		}
+		AxisProperties.setProperty(EngineConfigurationFactory.SYSTEM_PROPERTY_NAME,	GlobusEngineConfigurationFactory.class.getName());
 	}
 
 	protected WSGT4newJob(GATContext gatContext, JobDescription jobDescription, Sandbox sandbox) {

@@ -67,16 +67,14 @@ public class WSGT4newResourceBrokerAdaptor extends ResourceBrokerCpi {
 
 	// instance initializer sets personalized EngineConfigurationFactory for the axis client
 	{
-		if (System.getProperty("GLOBUS_LOCATION") == null) {
-			String globusLocation = System.getProperty("gat.adaptor.path") + java.io.File.separator + "GlobusAdaptor"
+		String globusLocation = System.getProperty("GLOBUS_LOCATION");
+		if (globusLocation == null) {
+			globusLocation = System.getProperty("gat.adaptor.path") + java.io.File.separator + "GlobusAdaptor"
 					+ java.io.File.separator;
 			System.setProperty("GLOBUS_LOCATION", globusLocation);
 		}
 
-		if (AxisProperties.getProperty(EngineConfigurationFactory.SYSTEM_PROPERTY_NAME) == null) {
-			AxisProperties.setProperty(EngineConfigurationFactory.SYSTEM_PROPERTY_NAME,
-					"org.gridlab.gat.resources.cpi.wsgt4new.GlobusEngineConfigurationFactory");
-		}
+		AxisProperties.setProperty(EngineConfigurationFactory.SYSTEM_PROPERTY_NAME,	GlobusEngineConfigurationFactory.class.getName());
 	}
 
 	public static Map<String, Boolean> getSupportedCapabilities() {
@@ -372,7 +370,7 @@ public class WSGT4newResourceBrokerAdaptor extends ResourceBrokerCpi {
 		}
 
 		// test whether gram sandbox should be used
-		String sandboxType = (String) gatContext.getPreferences().get("wsgt4new.sandbox.type");
+		String sandboxType = (String) sd.getAttributes().get("wsgt4new.sandbox.type");
 
 		boolean useGramSandbox = false;
 		boolean useGatSandbox = false;
@@ -385,7 +383,8 @@ public class WSGT4newResourceBrokerAdaptor extends ResourceBrokerCpi {
 
 		Sandbox sandbox = null;
 		if (useGatSandbox) {
-			sandbox = new Sandbox(gatContext, description, host, null, true, true, false, false);
+			String sandboxDirectory = (String) sd.getAttributes().get("gt4new.directory");
+			sandbox = new Sandbox(gatContext, description, host, sandboxDirectory, false, true, false, false);
 		} else {
 			sandbox = new Sandbox(gatContext, description, host, null, false, false, false, false);
 			if (logger.isDebugEnabled()) {

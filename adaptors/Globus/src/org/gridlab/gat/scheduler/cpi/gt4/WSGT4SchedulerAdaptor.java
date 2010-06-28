@@ -30,6 +30,7 @@ import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.URI;
 import org.gridlab.gat.resources.cpi.SchedulerCpi;
+import org.gridlab.gat.resources.cpi.wsgt4new.GlobusEngineConfigurationFactory;
 import org.gridlab.gat.scheduler.Queue;
 import org.gridlab.gat.scheduler.Scheduler;
 import org.oasis.wsrf.properties.QueryExpressionType;
@@ -70,17 +71,16 @@ public class WSGT4SchedulerAdaptor extends SchedulerCpi implements Scheduler {
 			System.setProperty("GLOBUS_LOCATION", globusLocation);
 		}
 
-		if (AxisProperties.getProperty(EngineConfigurationFactory.SYSTEM_PROPERTY_NAME) == null) {
-			AxisProperties.setProperty(EngineConfigurationFactory.SYSTEM_PROPERTY_NAME,
-					"org.gridlab.gat.resources.cpi.wsgt4new.GlobusEngineConfigurationFactory");
-		}
+		AxisProperties.setProperty(EngineConfigurationFactory.SYSTEM_PROPERTY_NAME,	GlobusEngineConfigurationFactory.class.getName());
 	}
 
 	/**
 	 * Constructor. Initialize the path to the axis client-config file.
 	 * 
-	 * @param gatContext the {@link GATContext}
-	 * @param uri the {@link URI} of the MDS.
+	 * @param gatContext
+	 *            the {@link GATContext}
+	 * @param uri
+	 *            the {@link URI} of the MDS.
 	 */
 	public WSGT4SchedulerAdaptor(final GATContext gatContext, final URI uri) {
 		super(gatContext, uri);
@@ -147,8 +147,10 @@ public class WSGT4SchedulerAdaptor extends SchedulerCpi implements Scheduler {
 	/**
 	 * Handles the given {@link EntryType} and call methods to gain detailed informations.
 	 * 
-	 * @param entryType the {@link EntryType} to handle
-	 * @throws Exception an {@link Exception} that might occurs
+	 * @param entryType
+	 *            the {@link EntryType} to handle
+	 * @throws Exception
+	 *             an {@link Exception} that might occurs
 	 */
 	private List<Queue> handleEntryType(final EntryType entryType) throws Exception {
 		final List<Queue> queues = new ArrayList<Queue>();
@@ -181,8 +183,10 @@ public class WSGT4SchedulerAdaptor extends SchedulerCpi implements Scheduler {
 	/**
 	 * Trace the Hardware-Infos to a given {@link EntryType}.
 	 * 
-	 * @param entryType the {@link EntryType}
-	 * @param hostName the name of the host
+	 * @param entryType
+	 *            the {@link EntryType}
+	 * @param hostName
+	 *            the name of the host
 	 */
 	private void getHardwareInformationsfromEntry(final EntryType entryType, final String hostName) {
 		GLUECERPType gluece = null; // it is not required - if null then we have
@@ -240,7 +244,8 @@ public class WSGT4SchedulerAdaptor extends SchedulerCpi implements Scheduler {
 	/**
 	 * Retrieves all JobQueue-Informations from a {@link EntryType} and map them to a {@link List} of {@link Queue}.
 	 * 
-	 * @param entryType the given {@link EntryType}
+	 * @param entryType
+	 *            the given {@link EntryType}
 	 * 
 	 * @return a {@link List} of {@link Queue}
 	 */
@@ -357,7 +362,8 @@ public class WSGT4SchedulerAdaptor extends SchedulerCpi implements Scheduler {
 	/**
 	 * Returns the canonical name of the host for a given {@link AttributedURI}
 	 * 
-	 * @param uri the {@link AttributedURI}
+	 * @param uri
+	 *            the {@link AttributedURI}
 	 * @return name the canonical name of the host
 	 */
 	private String getFQDNHostName(final AttributedURI uri) {
