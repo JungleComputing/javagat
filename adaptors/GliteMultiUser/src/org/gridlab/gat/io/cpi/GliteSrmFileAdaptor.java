@@ -1,4 +1,4 @@
-package org.gridlab.gat.io.cpi.glite;
+package org.gridlab.gat.io.cpi;
 
 import java.io.IOException;
 import java.util.List;
@@ -14,11 +14,9 @@ import org.gridlab.gat.URI;
 import org.gridlab.gat.io.File;
 import org.gridlab.gat.io.attributes.FileAttributeView;
 import org.gridlab.gat.io.attributes.PosixFileAttributeView;
-import org.gridlab.gat.io.cpi.FileCpi;
 import org.gridlab.gat.io.cpi.gliteMultiUser.srm.SrmConnector;
-import org.gridlab.gat.io.cpi.gliteMultiUser.srm.SrmConnection.SRMPosixFile;
 import org.gridlab.gat.resources.cpi.ResourceBrokerCpi;
-import org.gridlab.gat.security.glite.GliteSecurityUtils;
+import org.gridlab.gat.resources.security.gliteMultiUser.GliteSecurityUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -64,8 +62,8 @@ public class GliteSrmFileAdaptor extends FileCpi {
             }
         }
         
-        this.connector = new SrmConnector(GliteSecurityUtils.getProxyPath(gatContext));        
-        
+        //this.connector = new SrmConnector(GliteSecurityUtils.getProxyPath(gatContext));//FIXME 
+        this.connector =  null;//FIXME
         LOGGER.info("Instantiated gLiteSrmFileAdaptor for " + location);
     }
 
@@ -85,7 +83,7 @@ public class GliteSrmFileAdaptor extends FileCpi {
      */
     public static Preferences getSupportedPreferences() {
         Preferences preferences = ResourceBrokerCpi.getSupportedPreferences();
-        GliteSecurityUtils.addGliteSecurityPreferences(preferences);
+        //GliteSecurityUtils.addGliteSecurityPreferences(preferences);//FIXME
         return preferences;
     }
     
@@ -98,20 +96,20 @@ public class GliteSrmFileAdaptor extends FileCpi {
                             + ": " + GliteSrmFileAdaptor.CANNOT_HANDLE_THIS_URI
                             + dest);
                 }
-                @SuppressWarnings("unused")
-                String proxyFile = GliteSecurityUtils.touchVomsProxy(gatContext);
+                //@SuppressWarnings("unused")
+                //String proxyFile = GliteSecurityUtils.touchVomsProxy(gatContext);//FIXME
                 LOGGER.info("SRM/Copy: Uploading " + location + " to " + dest);
                 String turl = connector.getTURLForFileUpload(location, dest);
                 LOGGER.info("SRM/Copy: TURL: " + turl);
                 GATContext newContext = (GATContext) gatContext.clone();
                 newContext.addPreference("File.adaptor.name", "GridFTP");
-                GliteSecurityUtils.replaceSecurityContextWithGliteContext(newContext);
+                //GliteSecurityUtils.replaceSecurityContextWithGliteContext(newContext);//FIXME
                 File transportFile = GAT.createFile(newContext, location);
                 transportFile.copy(new URI(turl));
                 connector.finalizeFileUpload(dest);
             } else {
-                @SuppressWarnings("unused")
-                String proxyFile = GliteSecurityUtils.touchVomsProxy(gatContext);
+                //@SuppressWarnings("unused")
+                //String proxyFile = GliteSecurityUtils.touchVomsProxy(gatContext);//FIXME
                 LOGGER
                         .info("SRM/Copy: Downloading " + location + " to "
                                 + dest);
@@ -119,7 +117,7 @@ public class GliteSrmFileAdaptor extends FileCpi {
                 LOGGER.info("SRM/Copy: TURL: " + turl);
                 GATContext newContext = (GATContext) gatContext.clone();
                 newContext.addPreference("File.adaptor.name", "GridFTP");
-                GliteSecurityUtils.replaceSecurityContextWithGliteContext(newContext);
+                //GliteSecurityUtils.replaceSecurityContextWithGliteContext(newContext);//FIXME
                 File transportFile = GAT.createFile(newContext, turl);
                 transportFile.copy(new URI(dest.getPath()));
             }
@@ -162,7 +160,7 @@ public class GliteSrmFileAdaptor extends FileCpi {
                     + CANNOT_HANDLE_THIS_URI + location);
         }
     	if(PosixFileAttributeView.class.equals(type)){
-    		return (V) new PosixSrmFileAttributeView(location, followSymbolicLinks, connector, gatContext);
+    		//return (V) new PosixSrmFileAttributeView(location, followSymbolicLinks, connector, gatContext);//FIXME
     	}
     	return null;
     }
