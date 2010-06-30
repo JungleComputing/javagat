@@ -219,7 +219,7 @@ OPTIONS:\hfill\newline
 
 Some comments to the options / arguments.
 \begin{itemize}
-\item \begin{verbatim}hostname, executable\end{verbatim}: The name of the execution host, and
+\item {\tt hostname, executable}: The name of the execution host, and
   the name of the executable. It is mandatory, to enter them.
 \item {\tt -SubmitOnly}: The default behaviour of {\tt gat-job-run} is
   to submit a job, and to poll after the status of the job until it
@@ -476,6 +476,141 @@ submission allows operations on the job, e.g.\ as:
 \end{itemize}
 
 However, the final job scheduler must support these operations.
+\newpage
+
+\section{Available JavaGAT adaptors}
+Beside Grid adaptors there are also a lot of other adaptors
+available, e.~g.~ adptors for SGE or PBS. The following table shows
+all available adaptors.
+
+\begin{tabular}{|c|c|c|}\hline
+ \multicolumn{3}{|c|}{\textbf{File Adaptor matrix JavaGAT}} \\
+ \hline\hline
+ File Adaptors & Preferences Name & Product \\ 
+ \hline
+ CommandLineSshFileAdaptor & commandlinessh for file & ssh \\
+ CopyingFileInputStreamAdaptor & copying for fileinputstream & ssh \\
+ \hline 
+ PosixSrmFileAttributeView & & gLite \\
+ PosixLfnFileAttributeView & & gLite \\
+ GliteSrmFileAdaptor  &  glitesrm for file & gLite \\
+ GliteLfnFileAdaptor & glitelfn for file & gLite \\
+ GliteGuidFileAdaptor & gliteguid for file & gLite \\
+ \hline
+ FTPFileAdaptor & ftp for file & globus \\
+ FTPFileInputStreamAdaptor & ftpfile for fileinputstream & globus \\
+ FTPFileOutputStreamAdaptor & ftpfile for fileoutputstream & globus \\
+ GlobusFileAdaptor & globus for file & globus \\
+ GlobusFileInputStreamAdaptor & globus for fileinputstream & globus \\
+ GlobusFileOutputStreamAdaptor & globus for fileoutputstream & globus \\
+ GridFTPFileAdaptor & gridftp for file & globus \\
+ GridFTPFileInputStreamAdaptor & gridftp for fileinputstream & globus \\
+ GridFTPFileOutputStreamAdaptor & gridftp for fileoutputstream & globus \\
+ GridFTPRandomAccessFileAdaptor & gridftprandomaccess for file & globus \\
+ HTTPFileInputStreamAdaptor & http for fileinputstream & globus \\
+ HTTPFileOutputStreamAdaptor & http for fileoutputstream & globus \\
+ HTTPSFileInputStreamAdaptor & https for fileinputstream & globus \\
+ HTTPSFileOutputStreamAdaptor & https for fileoutputstream & globus \\
+ GT4GridFTPFileAdaptor & gt4gridftp for file & globus \\
+ GT4FileAdaptor & gt4 for file & globus \\
+ RFTGT4FileAdaptor & rftgt4 for file & globus \\
+ GT42GridFTPFileAdaptor & gt42gridftp for file & globus \\
+ GT42FileAdaptor & gt42 for file & globus \\
+ RFTGT42FileAdaptor & rftgt42 for file & globus \\ 
+ \hline
+ LocalFileInputStreamAdaptor & local for fileinputstream & local \\
+ LocalFileOutputStreamAdaptor & local for fileoutputstream & local \\
+ LocalFileAdaptor & local for file & local \\
+ \hline
+ \hline
+\end{tabular}
+\newpage
+
+\begin{tabular}{|c|c|c|}\hline
+ \multicolumn{3}{|c|}{\textbf{Job Adaptor matrix JavaGAT}} \\
+ \hline\hline
+ Job Adaptors & Preferences Name & Product \\ 
+ \hline
+ CommandLineSshResourceBrokerAdaptor & commandlinessh for
+ resourcebroker & ssh \\
+ \hline
+ GliteResourceBrokerAdaptor & glite for resourcebroker & gLite
+ \\
+ \hline
+ GlobusResourceBrokerAdaptor & globus for resourcebroker &
+ Globus 4.0.x gram \\
+ WSGT4newResourceBrokerAdaptor & wsgt4new for resourcebroker &
+ Globus 4.0.x wsgram \\
+ GT42ResourceBrokerAdaptor & gt42 for resourcebroker & Globus
+ 4.2 wsgram \\
+ \hline
+ GridSAMResourceBrokerAdaptor & gridsam for resourcebroker &
+ GridSAM \\
+ \hline
+ KoalaResourceBrokerAdaptor & koala for resourcebroker & Koala
+ \\
+ \hline
+ LocalResourceBrokerAdaptor & local for resourcebroker & processes
+ on localhost \\
+ \hline
+ PbsResourceBrokerAdaptor & pbs for resourcebroker & PBS \\
+ \hline
+ ProActiveResourceBrokerAdaptor & proactive for resourcebroker & ProActive \\
+ \hline
+ SgeResourceBrokerAdaptor & sge for resourcebroker & SGE with
+ DRMAA \\
+ SgeScriptResourceBrokerAdapto & sge for resourcebroker & SGE with
+ job scripts \\ 
+ \hline
+ UnicoreResourceBrokerAdadptor & unicore for resourcebroker &
+ Unicore \\ 
+ \hline
+ ZorillaResourceBrokerAdaptor & zorilla for resourcebroker &
+ Zorilla \\ 
+ \hline
+\end{tabular}
+
+The PbsResourceBrokerAdaptor, the ProActiveResourceBrokerAdaptor, and also
+the \linebreak[4]
+SgeResourceBrokerAdaptor are located in the contributed
+sub--directory of the GAT adaptors.
+\vspace*{1cm}
+
+\begin{tabular}{|c|c|c|}\hline
+ \multicolumn{3}{|c|}{\textbf{Generic Adaptor matrix JavaGAT}} \\
+ \hline\hline
+ Generice Adaptors & Preferences Name & Product \\ 
+ \hline
+ GenericAdvertServiceAdaptor & generic for AdvertService &  \\
+ \hline
+ GenericLogicalFileAdaptor & generic for LogicalFile & \\
+ \hline
+\end{tabular}
+
+By default GAT is trying to invoke any of the adaptors found in the directory
+given by the environment variable \texttt{GAT\_ADAPTOR\_PATH} or by the {\tt
+  -D} argument {\tt gat.adaptor.path} to the Java Virtual Machine, and
+if an adaptor is failing the next one is tried. Due to longer system
+timeouts, e.g.~for ssh commands, this default behaviour might slow down
+GAT operation considerably. However, it is possible to tell GAT to try
+only one, or a list of adaptors. This can be achieved by adding the list
+of adaptor names which shall be used to the preferences of GAT. To get
+the right name for an adaptor please use the names listed in the
+tables after the following scheme: if the column ``Preferences Name''
+contains ``xyz for LogicalFile'' you need to add to the Preferences:
+
+\begin{verbatim}
+  Prefs.put("LogicalFile.adaptor.name","xyz");
+\end{verbatim}
+
+where {\tt Prefs} is of type {\tt org.gridlab.gat.Preferences}.
+If the invocation of this adaptor fails, GAT fails and exits. If you
+want the GAT engine to try more then one but not all of the adaptors, you must add a list
+of names separated by spaces to the Preferences:
+
+\begin{verbatim}
+  Prefs.put("LogicalFile.adaptor.name","xyz abc efg");
+\end{verbatim}
 
 
 \section{Using Grid adaptors with GAT}
@@ -629,6 +764,7 @@ the user's proxy. The user can now impersonate herself at Grid sites
 belonging to the same VO as she does and will receive authorization
 compliant to the granted capabilities.
 
+%%\newpage
 \subsubsection{Configuration of the gLite adaptor}
 
 To be able to make the VOMS-proxy request on behalf of the user, the gLite adaptor needs to know a few additional pieces of data:
