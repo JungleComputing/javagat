@@ -24,10 +24,7 @@ import gov.lbl.srm.StorageResourceManager.SrmStatusOfGetRequestRequest;
 import gov.lbl.srm.StorageResourceManager.SrmStatusOfGetRequestResponse;
 import gov.lbl.srm.StorageResourceManager.SrmStatusOfPutRequestRequest;
 import gov.lbl.srm.StorageResourceManager.SrmStatusOfPutRequestResponse;
-import gov.lbl.srm.StorageResourceManager.TAccessPattern;
-import gov.lbl.srm.StorageResourceManager.TConnectionType;
 import gov.lbl.srm.StorageResourceManager.TDirOption;
-import gov.lbl.srm.StorageResourceManager.TFileStorageType;
 import gov.lbl.srm.StorageResourceManager.TFileType;
 import gov.lbl.srm.StorageResourceManager.TGetFileRequest;
 import gov.lbl.srm.StorageResourceManager.TGetRequestFileStatus;
@@ -45,6 +42,8 @@ import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.net.URLStreamHandler;
+import java.net.URLStreamHandlerFactory;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -61,6 +60,7 @@ import org.apache.axis.types.URI;
 import org.apache.axis.types.UnsignedLong;
 import org.apache.axis.types.URI.MalformedURIException;
 import org.globus.axis.gsi.GSIConstants;
+import org.globus.axis.transport.GSIHTTPSender;
 import org.globus.axis.transport.HTTPSSender;
 import org.globus.axis.util.Util;
 import org.globus.gsi.GlobusCredential;
@@ -71,9 +71,6 @@ import org.gridlab.gat.io.attributes.GroupPrincipal;
 import org.gridlab.gat.io.attributes.PosixFileAttributes;
 import org.gridlab.gat.io.attributes.PosixFilePermission;
 import org.gridlab.gat.io.attributes.UserPrincipal;
-import org.gridlab.gat.io.cpi.gliteMultiUser.srm.SRMGroup;
-import org.gridlab.gat.io.cpi.gliteMultiUser.srm.SRMUser;
-import org.gridlab.gat.io.cpi.gliteMultiUser.srm.SrmConnection;
 import org.ietf.jgss.GSSCredential;
 import org.ietf.jgss.GSSException;
 import org.slf4j.Logger;
@@ -83,6 +80,7 @@ import org.slf4j.LoggerFactory;
  * Non-GAT specific functionality to connect with SRM v2.
  * 
  * @author Max Berger, Thomas Zangerl, Jerome Revillard
+ * @author Stefan Bozic
  * 
  */
 public class SrmConnection {
@@ -111,21 +109,28 @@ public class SrmConnection {
 	 * Create a new SRM connection to the given host. All operations called later must include the same host in their
 	 * URI.
 	 * 
-	 * @param host The Host to connect to.
-	 * @param proxyPath the path to the proxy credentials
-	 * @throws IOException if the connection fails.
+	 * @param host
+	 *            The Host to connect to.
+	 * @param proxyPath
+	 *            the path to the proxy credentials
+	 * @throws IOException
+	 *             if the connection fails.
 	 */
 	public SrmConnection(String host, final String proxyPath) throws IOException {
 		// Set provider
 		LOGGER.debug("Registering httpg transport");
 		SimpleProvider provider = new SimpleProvider();
 		SimpleTargetedChain c = null;
+
 		c = new SimpleTargetedChain(new HTTPSSender());
 		provider.deployTransport("https", c);
+
 		c = new SimpleTargetedChain(new HTTPSender());
 		provider.deployTransport("http", c);
-		c = new SimpleTargetedChain(new org.globus.axis.transport.GSIHTTPSender());
+
+		c = new SimpleTargetedChain(new GSIHTTPSender());
 		provider.deployTransport("httpg", c);
+
 		Util.registerTransport();
 
 		// System.out.println(org.apache.axis.constants.Style.RPC);
@@ -133,11 +138,14 @@ public class SrmConnection {
 		SRMServiceLocator locator = new SRMServiceLocator(provider);
 		LOGGER.info("getting srm service at " + host);
 
+		HttpgURLStreamHandlerFactory httpgfac = new HttpgURLStreamHandlerFactory();
+
 		try {
-			URL.setURLStreamHandlerFactory(new org.globus.net.GlobusURLStreamHandlerFactory());
+			URL.setURLStreamHandlerFactory(httpgfac);
 		} catch (Error e) {
 			// ignore
 		}
+
 		URI wsEndpoint;
 		try {
 			wsEndpoint = new URI("httpg", null, host, 8443, "/srm/managerv2", null, null);
@@ -170,10 +178,12 @@ public class SrmConnection {
 	/**
 	 * Returns the transport url for the file to download.
 	 * 
-	 * @param uriSpec the uri of the file to download
+	 * @param uriSpec
+	 *            the uri of the file to download
 	 * @return the transport url for the file to download.
 	 * 
-	 * @throws IOException an exception that might occurs
+	 * @throws IOException
+	 *             an exception that might occurs
 	 */
 	public String getTURLForFileDownload(String uriSpec) throws IOException {
 
@@ -259,12 +269,15 @@ public class SrmConnection {
 	/**
 	 * Returns the transport url for the file to upload.
 	 * 
-	 * @param src the url of the source file
-	 * @param dest the url of the destination file
+	 * @param src
+	 *            the url of the source file
+	 * @param dest
+	 *            the url of the destination file
 	 * 
 	 * @return the uri for the file to upload
 	 * 
-	 * @throws IOException an exception that might occurs
+	 * @throws IOException
+	 *             an exception that might occurs
 	 */
 	public URI getTURLForFileUpload(String src, String dest) throws IOException {
 		URI uri = new URI(dest);
@@ -281,15 +294,16 @@ public class SrmConnection {
 
 		srmPrepToPutReq.setArrayOfFileRequests(new ArrayOfTPutFileRequest(putFileRequests));
 		srmPrepToPutReq.setUserRequestDescription("Some user request description");
-//		srmPrepToPutReq.setDesiredFileLifeTime(60);
+		// srmPrepToPutReq.setDesiredFileLifeTime(60);
 		srmPrepToPutReq.setDesiredPinLifeTime(60);
-//		srmPrepToPutReq.setDesiredFileStorageType(TFileStorageType.PERMANENT);
-//		
-//		//Transfer Parameters
+		// srmPrepToPutReq.setDesiredFileStorageType(TFileStorageType.PERMANENT);
+		//		
+		// //Transfer Parameters
 		TTransferParameters transferParameters = new TTransferParameters();
-//		transferParameters.setConnectionType(TConnectionType.WAN);
-//		transferParameters.setAccessPattern(TAccessPattern.TRANSFER_MODE);
-		transferParameters.setArrayOfTransferProtocols(new ArrayOfString(new String[]{"srm", "gsiftp", "dcap", "http"}));
+		// transferParameters.setConnectionType(TConnectionType.WAN);
+		// transferParameters.setAccessPattern(TAccessPattern.TRANSFER_MODE);
+		transferParameters.setArrayOfTransferProtocols(new ArrayOfString(
+				new String[] { "srm", "gsiftp", "dcap", "http" }));
 
 		srmPrepToPutReq.setTransferParameters(transferParameters);
 		LOGGER.info("Sending put request");
@@ -299,14 +313,14 @@ public class SrmConnection {
 		this.activeToken = requestToken;
 
 		LOGGER.info("Received the following request token: " + requestToken);
-		//sleep 4 sec like in the srmcp command
+		// sleep 4 sec like in the srmcp command
 		try {
 			Thread.sleep(4000);
 		} catch (InterruptedException e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
 		}
-		
+
 		TPutRequestFileStatus fileStatus = response.getArrayOfFileStatuses().getStatusArray(0);
 		TReturnStatus status = response.getReturnStatus();
 
@@ -317,8 +331,7 @@ public class SrmConnection {
 		realRequest.setRequestToken(requestToken);
 
 		realRequest.setArrayOfTargetSURLs(new ArrayOfAnyURI(new URI[] { uri }));
-		
-		
+
 		while ((status.getStatusCode().equals(TStatusCode.SRM_REQUEST_QUEUED))
 				|| (status.getStatusCode().equals(TStatusCode.SRM_REQUEST_INPROGRESS))) {
 			try {
@@ -358,7 +371,8 @@ public class SrmConnection {
 	/**
 	 * Finalize the file upload. Sends a put-done request and sets the active token to <code>null</code>.
 	 * 
-	 * @throws IOException an excpetion that might occurs
+	 * @throws IOException
+	 *             an excpetion that might occurs
 	 */
 	public void finalizeFileUpload() throws IOException {
 		SrmPutDoneRequest putDoneRequest = new SrmPutDoneRequest();
@@ -385,8 +399,10 @@ public class SrmConnection {
 	/**
 	 * Removes a file with the given uri from the SE.
 	 * 
-	 * @param uri the uri of the file to remove
-	 * @throws IOException an exception that might occurs
+	 * @param uri
+	 *            the uri of the file to remove
+	 * @throws IOException
+	 *             an exception that might occurs
 	 */
 	public void removeFile(String uri) throws IOException {
 		SrmRmRequest removalRequest = new SrmRmRequest();
@@ -415,7 +431,7 @@ public class SrmConnection {
 	 * @param uri the uri to list
 	 * 
 	 * @return a SRMPosixFile that holds the listing
-	 * @throws IOException
+	 * @throws IOException an exception that might occurs
 	 */
 	public SRMPosixFile ls(String uri) throws IOException {
 		SrmLsRequest srmLsRequest = new SrmLsRequest();
@@ -429,7 +445,7 @@ public class SrmConnection {
 		if (!returnStatus.getStatusCode().equals(TStatusCode.SRM_SUCCESS)) {
 			throw new IOException(returnStatus.getExplanation() + " (" + returnStatus.getStatusCode() + ")");
 		}
-				
+
 		return new SRMPosixFile(response.getDetails().getPathDetailArray()[0]);
 	}
 
@@ -439,7 +455,7 @@ public class SrmConnection {
 	 * @param uri the uri to list
 	 * 
 	 * @return a SRMPosixFile that holds the listing
-	 * @throws IOException
+	 * @throws IOException an exception that might occurs
 	 */
 	public List<String> realLs(String uri) throws IOException {
 		SrmLsRequest srmLsRequest = new SrmLsRequest();
@@ -453,33 +469,38 @@ public class SrmConnection {
 		if (!returnStatus.getStatusCode().equals(TStatusCode.SRM_SUCCESS)) {
 			throw new IOException(returnStatus.getExplanation() + " (" + returnStatus.getStatusCode() + ")");
 		}
-		
+
 		List<String> paths = new ArrayList<String>();
-		
+
 		for (TMetaDataPathDetail detail : response.getDetails().getPathDetailArray()) {
 			paths.add(detail.getPath());
-			
-			for(TMetaDataPathDetail subDetail : detail.getArrayOfSubPaths().getPathDetailArray()) {
+
+			for (TMetaDataPathDetail subDetail : detail.getArrayOfSubPaths().getPathDetailArray()) {
 				paths.add(subDetail.getPath());
 			}
 		}
-		
+
 		return paths;
-	}	
-	
-	
-	
+	}
+
 	/**
 	 * Changes the permission to a given uri.
 	 * 
-	 * @param uri the uri where to changes permission
-	 * @param tPermissionType the type of permission
-	 * @param ownerTPermissionMode the owner permissions
-	 * @param arrayOfTGroupPermissions the group permissions
-	 * @param otherTPermissionMode the other permissions
-	 * @param arrayOfTUserPermissions the array of user permissions
+	 * @param uri
+	 *            the uri where to changes permission
+	 * @param tPermissionType
+	 *            the type of permission
+	 * @param ownerTPermissionMode
+	 *            the owner permissions
+	 * @param arrayOfTGroupPermissions
+	 *            the group permissions
+	 * @param otherTPermissionMode
+	 *            the other permissions
+	 * @param arrayOfTUserPermissions
+	 *            the array of user permissions
 	 * 
-	 * @throws IOException an exception that might occurrs
+	 * @throws IOException
+	 *             an exception that might occurrs
 	 */
 	public void setPermissions(String uri, TPermissionType tPermissionType, TPermissionMode ownerTPermissionMode,
 			ArrayOfTGroupPermission arrayOfTGroupPermissions, TPermissionMode otherTPermissionMode,
@@ -535,8 +556,8 @@ public class SrmConnection {
 		/**
 		 * Constructor
 		 * 
-		 * @param tMetaDataPathDetail
-		 * @throws IOException
+		 * @param tMetaDataPathDetail metadata path details
+		 * @throws IOException an exception that might occurs
 		 */
 		protected SRMPosixFile(TMetaDataPathDetail tMetaDataPathDetail) throws IOException {
 			this.tMetaDataPathDetail = tMetaDataPathDetail;
@@ -677,7 +698,7 @@ public class SrmConnection {
 		 */
 		public long lastModifiedTime() {
 			return (tMetaDataPathDetail.getLastModificationTime() != null ? tMetaDataPathDetail
-					.getLastModificationTime().getTimeInMillis() : -1L);			
+					.getLastModificationTime().getTimeInMillis() : -1L);
 		}
 
 		/**
@@ -735,4 +756,14 @@ public class SrmConnection {
 		}
 
 	}
+
+	private class HttpgURLStreamHandlerFactory implements URLStreamHandlerFactory {
+		public URLStreamHandler createURLStreamHandler(String protocol) {
+			if (protocol.equalsIgnoreCase("httpg")) {
+				return new org.globus.net.protocol.httpg.Handler();
+			}
+			return null;
+		}
+	}
+
 }

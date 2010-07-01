@@ -1,5 +1,9 @@
 package org.gridlab.gat.resources.security.gliteMultiUser;
 
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -14,6 +18,7 @@ import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.Preferences;
 import org.gridlab.gat.resources.cpi.gliteMultiUser.GliteConstants;
+import org.gridlab.gat.security.CredentialSecurityContext;
 import org.gridlab.gat.security.MyProxyServerCredentialSecurityContext;
 import org.gridlab.gat.security.SecurityContext;
 import org.ietf.jgss.GSSCredential;
@@ -37,20 +42,21 @@ public class GliteSecurityUtils {
 	public final static String PROXY_PREFIX = "x509_";
 
 	/**
-	 * If a proxy is going to be reused it should at least have a remaining
-	 * lifetime of 20 minutes. Otherwise the jobs will be rejected by the system
+	 * If a proxy is going to be reused it should at least have a remaining lifetime of 20 minutes. Otherwise the jobs
+	 * will be rejected by the system
 	 */
 	public final static int MINIMUM_PROXY_REMAINING_LIFETIME = 20 * 60;
 
 	/**
-	 * Retrieves a voms-proxy. Try to reuse an existing voms-proxy from disk if
-	 * the remaining lifetime is big enough.
+	 * Retrieves a voms-proxy. Try to reuse an existing voms-proxy from disk if the remaining lifetime is big enough.
 	 * 
-	 * @param context The GAT context.
-	 * @param useCache marks that the disk should be search for an existing
-	 *            voms-proxy
+	 * @param context
+	 *            The GAT context.
+	 * @param useCache
+	 *            marks that the disk should be search for an existing voms-proxy
 	 * @return a voms-proxy
-	 * @throws GATInvocationException an exception that might occurs.
+	 * @throws GATInvocationException
+	 *             an exception that might occurs.
 	 */
 	public static GlobusCredential getVOMSProxy(GATContext context, boolean useCache) throws GATInvocationException {
 		String userVomsProxyLocation = getPathToUserVomsProxy(context);
@@ -85,9 +91,11 @@ public class GliteSecurityUtils {
 	/**
 	 * Creates a voms-proxy.
 	 * 
-	 * @param context The GAT context
+	 * @param context
+	 *            The GAT context
 	 * @return <code>true</code> if the voms-proxy has been created successfully
-	 * @throws GATInvocationException an exception that might occurs.
+	 * @throws GATInvocationException
+	 *             an exception that might occurs.
 	 */
 	private static GlobusCredential createVOMSProxy(GATContext context) throws GATInvocationException {
 		// Must be a unique ID!
@@ -109,6 +117,8 @@ public class GliteSecurityUtils {
 				myproxyContext = (MyProxyServerCredentialSecurityContext) securityContext;
 			}
 		}
+
+		// TODO add support for CredentialSecurityContext
 
 		if (null == myproxyContext) {
 			return null;
@@ -152,24 +162,94 @@ public class GliteSecurityUtils {
 	}
 
 	/**
-	 * Creates the path to the user voms-proxy on the disk. The userId is stored
-	 * as {@link Preferences} in the {@link GATContext}
+	 * Creates the path to the user voms-proxy on the disk. The userId is stored as {@link Preferences} in the
+	 * {@link GATContext}
 	 * 
-	 * @param context the gat context
+	 * @param context
+	 *            the gat context
 	 * @return the path to the user voms-proxy
-	 * @throws GATInvocationException an exception that might occurs.
+	 * @throws GATInvocationException
+	 *             an exception that might occurs.
 	 */
 	public static String getPathToUserVomsProxy(GATContext context) throws GATInvocationException {
 		// Must be a unique ID!
 		String userId = (String) context.getPreferences().get(GliteConstants.PREFERENCE_PROXY_USER_ID);
+
 		String proxyDirectory = (String) context.getPreferences().get(GliteConstants.PREFERENCE_VOMS_PROXY_DIRECTORY);
+		if (null != proxyDirectory && !proxyDirectory.endsWith("/") && !proxyDirectory.endsWith("\\")) {
+			proxyDirectory = proxyDirectory + File.separator;
+		}
 
 		if (null == userId) {
 			throw new GATInvocationException(
 					"For retrieving the path to a user voms-proxy, there must be a unique userId specified in the GATContext Preferences.");
 		}
 
+		if (null == proxyDirectory) {
+			throw new GATInvocationException(
+					"For retrieving the path to a user voms-proxy, there must be a voms-proxy directory specified in the GATContext Preferences.");
+		}
+
 		return proxyDirectory + PROXY_PREFIX + userId;
+	}
+
+	/**
+	 * Ensure the gatContext contains only a gLite compatible security context. It does so by removing the old context
+	 * and adding a single security context containing the voms proxy.
+	 * <p>
+	 * The security context is passed as byte array with the contents of the proxy. The reasons behind this are:
+	 * <ul>
+	 * <li>the original credentials do not gave the gLite specific extensions and will fail on some WMS servers (while
+	 * working on others).
+	 * <li>If the globus credentials would be created here, the class would be incompatible to the globus credentials
+	 * class loaded in the context of the globus adaptor's classloader.
+	 * <li>The globus adaper is fully capable of re-creating the credential information from a byte array.
+	 * </ul>
+	 * 
+	 * @param gatContext
+	 *            GATContext in which to replace the security information.
+	 */
+	public static void replaceSecurityContextWithGliteContext(final GATContext gatContext, String vomsProxyPath) {
+		CredentialSecurityContext gsc = null;
+		try {
+			final ByteArrayOutputStream baos = new ByteArrayOutputStream();
+			final java.io.FileInputStream fis = new java.io.FileInputStream(vomsProxyPath);
+			final byte[] buffer = new byte[1024];
+			while (fis.read(buffer) != -1) {
+				baos.write(buffer);
+			}
+			gsc = new CredentialSecurityContext(baos.toByteArray());
+		} catch (final FileNotFoundException e2) {
+			e2.printStackTrace();
+		} catch (final IOException e) {
+			e.printStackTrace();
+		}
+		if (gsc != null) {
+			gatContext.removeSecurityContexts();
+			gatContext.addSecurityContext(gsc);
+		}
+	}
+
+	/**
+	 * Defines some glite specific preferences.
+	 * 
+	 * @param preferences
+	 *            the preference instance
+	 */
+	public static void addGliteSecurityPreferences(final Preferences preferences) {
+		preferences.put(GliteConstants.PREFERENCE_VIRTUAL_ORGANISATION, "<no default>");
+		preferences.put(GliteConstants.PREFERENCE_VIRTUAL_ORGANISATION_GROUP, "");
+		preferences.put(GliteConstants.PREFERENCE_VIRTUAL_ORGANISATION_ROLE, "");
+		preferences.put(GliteConstants.PREFERENCE_VIRTUAL_ORGANISATION_CAPABILITY, "");
+		preferences.put(GliteConstants.PREFERENCE_VIRTUAL_ORGANISATION_HOST_DN, "<no default>");
+		preferences.put(GliteConstants.PREFERENCE_VIRTUAL_ORGANISATION_SERVER_URL, "<no default>");
+		preferences.put(GliteConstants.PREFERENCE_VIRTUAL_ORGANISATION_SERVER_PORT, "<no default>");
+		preferences.put(GliteConstants.PREFERENCE_VOMS_MIN_LIFETIME, Integer
+				.toString(GliteSecurityUtils.MINIMUM_PROXY_REMAINING_LIFETIME));
+		preferences.put(GliteConstants.PREFERENCE_VOMS_NEW_LIFETIME, Integer
+				.toString(GliteSecurityUtils.STANDARD_NEW_PROXY_LIFETIME));
+		preferences.put(GliteConstants.PREFERENCE_VOMS_CREATE_NEW_PROXY, "ondemand");
+		preferences.put(GliteConstants.PREFERENCE_SYNCH_LFC_DPM_PERMS, "false");
 	}
 
 }

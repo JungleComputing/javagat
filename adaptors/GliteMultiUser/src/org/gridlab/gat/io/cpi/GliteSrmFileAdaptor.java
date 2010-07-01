@@ -31,6 +31,7 @@ import org.slf4j.LoggerFactory;
  * information!
  * 
  * @author: Max Berger
+ * @author: Stefan Bozic
  */
 @SuppressWarnings("serial")
 public class GliteSrmFileAdaptor extends FileCpi {
@@ -41,15 +42,21 @@ public class GliteSrmFileAdaptor extends FileCpi {
 
     private static final String GLITE_SRM_FILE_ADAPTOR = "GliteSrmFileAdaptor";
 
-    private static final Logger LOGGER = LoggerFactory
-            .getLogger(GliteSrmFileAdaptor.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(GliteSrmFileAdaptor.class);
 
     private final boolean localFile;
 
     private final SrmConnector connector;
 
+    /**
+     * Constructor
+     * @param gatCtx the GAT Context
+     * @param location the srm location
+     * @throws GATObjectCreationException an exception that might occurs
+     * @throws GATInvocationException an exception that might occurs
+     */
     public GliteSrmFileAdaptor(GATContext gatCtx, URI location)
-            throws GATObjectCreationException {
+            throws GATObjectCreationException, GATInvocationException {
         super(gatCtx, location);
              
         if (location.isCompatible("file") && location.refersToLocalHost()) {
@@ -62,12 +69,13 @@ public class GliteSrmFileAdaptor extends FileCpi {
             }
         }
         
-        //this.connector = new SrmConnector(GliteSecurityUtils.getProxyPath(gatContext));//FIXME 
-        this.connector =  null;//FIXME
+        this.connector = new SrmConnector(GliteSecurityUtils.getPathToUserVomsProxy(gatContext)); 
         LOGGER.info("Instantiated gLiteSrmFileAdaptor for " + location);
     }
 
-    /** {@inheritDoc} */
+    /** 
+     * @see FileCpi#getSupportedCapabilities() 
+     * */
     public static Map<String, Boolean> getSupportedCapabilities() {
         Map<String, Boolean> capabilities = FileCpi.getSupportedCapabilities();
         capabilities.put("copy", true);
@@ -83,7 +91,7 @@ public class GliteSrmFileAdaptor extends FileCpi {
      */
     public static Preferences getSupportedPreferences() {
         Preferences preferences = ResourceBrokerCpi.getSupportedPreferences();
-        //GliteSecurityUtils.addGliteSecurityPreferences(preferences);//FIXME
+        GliteSecurityUtils.addGliteSecurityPreferences(preferences);
         return preferences;
     }
     
@@ -96,28 +104,31 @@ public class GliteSrmFileAdaptor extends FileCpi {
                             + ": " + GliteSrmFileAdaptor.CANNOT_HANDLE_THIS_URI
                             + dest);
                 }
-                //@SuppressWarnings("unused")
-                //String proxyFile = GliteSecurityUtils.touchVomsProxy(gatContext);//FIXME
+                
+                GliteSecurityUtils.getVOMSProxy(gatContext, true);
+                String proxyFile = GliteSecurityUtils.getPathToUserVomsProxy(gatContext);
+                
                 LOGGER.info("SRM/Copy: Uploading " + location + " to " + dest);
                 String turl = connector.getTURLForFileUpload(location, dest);
                 LOGGER.info("SRM/Copy: TURL: " + turl);
+                
                 GATContext newContext = (GATContext) gatContext.clone();
                 newContext.addPreference("File.adaptor.name", "GridFTP");
-                //GliteSecurityUtils.replaceSecurityContextWithGliteContext(newContext);//FIXME
+                GliteSecurityUtils.replaceSecurityContextWithGliteContext(newContext, proxyFile);
                 File transportFile = GAT.createFile(newContext, location);
                 transportFile.copy(new URI(turl));
                 connector.finalizeFileUpload(dest);
             } else {
-                //@SuppressWarnings("unused")
-                //String proxyFile = GliteSecurityUtils.touchVomsProxy(gatContext);//FIXME
-                LOGGER
-                        .info("SRM/Copy: Downloading " + location + " to "
-                                + dest);
+                GliteSecurityUtils.getVOMSProxy(gatContext, true);
+                String proxyFile = GliteSecurityUtils.getPathToUserVomsProxy(gatContext);
+                
+                LOGGER.info("SRM/Copy: Downloading " + location + " to " + dest);
                 String turl = connector.getTURLForFileDownload(location);
                 LOGGER.info("SRM/Copy: TURL: " + turl);
+                
                 GATContext newContext = (GATContext) gatContext.clone();
                 newContext.addPreference("File.adaptor.name", "GridFTP");
-                //GliteSecurityUtils.replaceSecurityContextWithGliteContext(newContext);//FIXME
+                GliteSecurityUtils.replaceSecurityContextWithGliteContext(newContext, proxyFile);
                 File transportFile = GAT.createFile(newContext, turl);
                 transportFile.copy(new URI(dest.getPath()));
             }
@@ -133,6 +144,7 @@ public class GliteSrmFileAdaptor extends FileCpi {
                     + GliteSrmFileAdaptor.CANNOT_HANDLE_THIS_URI + location);
         }
         try {
+            GliteSecurityUtils.getVOMSProxy(gatContext, true);
             connector.delete(location);
         } catch (IOException e) {
             // throw new GATInvocationException(GLITE_SRM_FILE_ADAPTOR, e);
@@ -141,9 +153,13 @@ public class GliteSrmFileAdaptor extends FileCpi {
         return true;
     }
     
-    @Override
+    /**
+     * @see FileCpi#list()
+     */
     public String[] list() throws GATInvocationException {
     	try {
+            GliteSecurityUtils.getVOMSProxy(gatContext, true);
+            
 			List<String> result = connector.realLs(location); 
 			return (String[]) result.toArray(new String[result.size()]);
 		} catch (IOException e) {
@@ -152,7 +168,9 @@ public class GliteSrmFileAdaptor extends FileCpi {
     	return null; 
     }
 
-    /** {@inheritDoc} */
+    /**
+     * @see FileCpi#getFileAttributeView(Class, boolean)
+     */
     @SuppressWarnings("unchecked")
 	public <V extends FileAttributeView> V getFileAttributeView(Class<V> type, boolean followSymbolicLinks)  throws GATInvocationException {
     	if (localFile) {
@@ -160,7 +178,7 @@ public class GliteSrmFileAdaptor extends FileCpi {
                     + CANNOT_HANDLE_THIS_URI + location);
         }
     	if(PosixFileAttributeView.class.equals(type)){
-    		//return (V) new PosixSrmFileAttributeView(location, followSymbolicLinks, connector, gatContext);//FIXME
+    		return (V) new PosixSrmFileAttributeView(location, followSymbolicLinks, connector, gatContext);
     	}
     	return null;
     }
