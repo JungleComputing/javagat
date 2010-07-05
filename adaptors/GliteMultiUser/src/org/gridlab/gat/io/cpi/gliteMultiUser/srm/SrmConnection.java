@@ -1,6 +1,45 @@
 package org.gridlab.gat.io.cpi.gliteMultiUser.srm;
 
-import gov.lbl.srm.StorageResourceManager.*;
+import gov.lbl.srm.StorageResourceManager.ArrayOfAnyURI;
+import gov.lbl.srm.StorageResourceManager.ArrayOfString;
+import gov.lbl.srm.StorageResourceManager.ArrayOfTGetFileRequest;
+import gov.lbl.srm.StorageResourceManager.ArrayOfTGroupPermission;
+import gov.lbl.srm.StorageResourceManager.ArrayOfTPutFileRequest;
+import gov.lbl.srm.StorageResourceManager.ArrayOfTUserPermission;
+import gov.lbl.srm.StorageResourceManager.ISRM;
+import gov.lbl.srm.StorageResourceManager.SRMServiceLocator;
+import gov.lbl.srm.StorageResourceManager.SrmLsRequest;
+import gov.lbl.srm.StorageResourceManager.SrmLsResponse;
+import gov.lbl.srm.StorageResourceManager.SrmMkdirRequest;
+import gov.lbl.srm.StorageResourceManager.SrmMkdirResponse;
+import gov.lbl.srm.StorageResourceManager.SrmPrepareToGetRequest;
+import gov.lbl.srm.StorageResourceManager.SrmPrepareToGetResponse;
+import gov.lbl.srm.StorageResourceManager.SrmPrepareToPutRequest;
+import gov.lbl.srm.StorageResourceManager.SrmPrepareToPutResponse;
+import gov.lbl.srm.StorageResourceManager.SrmPutDoneRequest;
+import gov.lbl.srm.StorageResourceManager.SrmPutDoneResponse;
+import gov.lbl.srm.StorageResourceManager.SrmRmRequest;
+import gov.lbl.srm.StorageResourceManager.SrmRmResponse;
+import gov.lbl.srm.StorageResourceManager.SrmSetPermissionRequest;
+import gov.lbl.srm.StorageResourceManager.SrmSetPermissionResponse;
+import gov.lbl.srm.StorageResourceManager.SrmStatusOfGetRequestRequest;
+import gov.lbl.srm.StorageResourceManager.SrmStatusOfGetRequestResponse;
+import gov.lbl.srm.StorageResourceManager.SrmStatusOfPutRequestRequest;
+import gov.lbl.srm.StorageResourceManager.SrmStatusOfPutRequestResponse;
+import gov.lbl.srm.StorageResourceManager.TDirOption;
+import gov.lbl.srm.StorageResourceManager.TFileType;
+import gov.lbl.srm.StorageResourceManager.TGetFileRequest;
+import gov.lbl.srm.StorageResourceManager.TGetRequestFileStatus;
+import gov.lbl.srm.StorageResourceManager.TMetaDataPathDetail;
+import gov.lbl.srm.StorageResourceManager.TOverwriteMode;
+import gov.lbl.srm.StorageResourceManager.TPermissionMode;
+import gov.lbl.srm.StorageResourceManager.TPermissionType;
+import gov.lbl.srm.StorageResourceManager.TPutFileRequest;
+import gov.lbl.srm.StorageResourceManager.TPutRequestFileStatus;
+import gov.lbl.srm.StorageResourceManager.TReturnStatus;
+import gov.lbl.srm.StorageResourceManager.TSURLReturnStatus;
+import gov.lbl.srm.StorageResourceManager.TStatusCode;
+import gov.lbl.srm.StorageResourceManager.TTransferParameters;
 
 import java.io.File;
 import java.io.IOException;
@@ -74,12 +113,9 @@ public class SrmConnection {
 	 * Create a new SRM connection to the given host. All operations called later must include the same host in their
 	 * URI.
 	 * 
-	 * @param host
-	 *            The Host to connect to.
-	 * @param proxyPath
-	 *            the path to the proxy credentials
-	 * @throws IOException
-	 *             if the connection fails.
+	 * @param host The Host to connect to.
+	 * @param proxyPath the path to the proxy credentials
+	 * @throws IOException if the connection fails.
 	 */
 	public SrmConnection(String host, final String proxyPath) throws IOException {
 		// Set provider
@@ -141,12 +177,10 @@ public class SrmConnection {
 	/**
 	 * Returns the transport url for the file to download.
 	 * 
-	 * @param uriSpec
-	 *            the uri of the file to download
+	 * @param uriSpec the uri of the file to download
 	 * @return the transport url for the file to download.
 	 * 
-	 * @throws IOException
-	 *             an exception that might occurs
+	 * @throws IOException an exception that might occurs
 	 */
 	public String getTURLForFileDownload(String uriSpec) throws IOException {
 
@@ -232,15 +266,12 @@ public class SrmConnection {
 	/**
 	 * Returns the transport url for the file to upload.
 	 * 
-	 * @param src
-	 *            the url of the source file
-	 * @param dest
-	 *            the url of the destination file
+	 * @param src the url of the source file
+	 * @param dest the url of the destination file
 	 * 
 	 * @return the uri for the file to upload
 	 * 
-	 * @throws IOException
-	 *             an exception that might occurs
+	 * @throws IOException an exception that might occurs
 	 */
 	public URI getTURLForFileUpload(String src, String dest) throws IOException {
 		URI uri = new URI(dest);
@@ -254,18 +285,18 @@ public class SrmConnection {
 		UnsignedLong expFileSize = new UnsignedLong(localFile.length());
 		TPutFileRequest putFileRequest = new TPutFileRequest(uri, expFileSize);
 		TPutFileRequest[] putFileRequests = new TPutFileRequest[] { putFileRequest };
-		      
+
 		srmPrepToPutReq.setArrayOfFileRequests(new ArrayOfTPutFileRequest(putFileRequests));
 		srmPrepToPutReq.setOverwriteOption(TOverwriteMode.ALWAYS);
-		srmPrepToPutReq.setAuthorizationID("SRMClient");		
-		
+		srmPrepToPutReq.setAuthorizationID("SRMClient");
+
 		// //Transfer Parameters
 		TTransferParameters transferParameters = new TTransferParameters();
 		// transferParameters.setConnectionType(TConnectionType.WAN);
 		// transferParameters.setAccessPattern(TAccessPattern.TRANSFER_MODE);
 		transferParameters.setArrayOfTransferProtocols(new ArrayOfString(
-				//new String[] { "srm", "gsiftp", "dcap", "http" }));
-				new String[] { "gsiftp"}));
+		// new String[] { "srm", "gsiftp", "dcap", "http" }));
+				new String[] { "gsiftp" }));
 
 		srmPrepToPutReq.setTransferParameters(transferParameters);
 		LOGGER.info("Sending put request");
@@ -276,12 +307,12 @@ public class SrmConnection {
 
 		LOGGER.info("Received the following request token: " + requestToken);
 
-		//FIXME I dont know why the Thread has to sleep here. The code is from Max Berger
+		// FIXME I dont know why the Thread has to sleep here. The code is from Max Berger
 		// sleep 4 sec like in the srmcp command
 		try {
 			Thread.sleep(4000);
 		} catch (InterruptedException e1) {
-			LOGGER.warn("Sleep interrupted" , e1);
+			LOGGER.warn("Sleep interrupted", e1);
 		}
 
 		TPutRequestFileStatus fileStatus = response.getArrayOfFileStatuses().getStatusArray(0);
@@ -329,7 +360,7 @@ public class SrmConnection {
 			LOGGER.info("The status returned is: " + status.getExplanation());
 			throw new IOException(status.getStatusCode() + ": " + fileStatus.getStatus().getStatusCode());
 		}
-		
+
 		this.activeUploadURI = uri;
 		return transportURL;
 	}
@@ -337,8 +368,7 @@ public class SrmConnection {
 	/**
 	 * Finalize the file upload. Sends a put-done request and sets the active token to <code>null</code>.
 	 * 
-	 * @throws IOException
-	 *             an excpetion that might occurs
+	 * @throws IOException an excpetion that might occurs
 	 */
 	public void finalizeFileUpload() throws IOException {
 		SrmPutDoneRequest putDoneRequest = new SrmPutDoneRequest();
@@ -365,10 +395,8 @@ public class SrmConnection {
 	/**
 	 * Removes a file with the given uri from the SE.
 	 * 
-	 * @param uri
-	 *            the uri of the file to remove
-	 * @throws IOException
-	 *             an exception that might occurs
+	 * @param uri the uri of the file to remove
+	 * @throws IOException an exception that might occurs
 	 */
 	public void removeFile(String uri) throws IOException {
 		SrmRmRequest removalRequest = new SrmRmRequest();
@@ -458,20 +486,20 @@ public class SrmConnection {
 	 * @throws GATInvocationException an exception that might occurs
 	 */
 	public boolean mkDir(String uri) throws GATInvocationException {
-        boolean sucessful = false;
-        
+		boolean sucessful = false;
+
 		LOGGER.debug("mkDir : " + uri.toString());
-		
-		//Extract the path and the new directory name from the uri
+
+		// Extract the path and the new directory name from the uri
 		URI newDirUri;
 		try {
 			newDirUri = new URI(uri);
 		} catch (MalformedURIException e1) {
 			throw new GATInvocationException("Malformed URI for new directory", e1);
 		}
-		
-		String newDirPath = newDirUri.getPath();		
-		
+
+		String newDirPath = newDirUri.getPath();
+
 		if (newDirPath.endsWith("/")) {
 			newDirPath = newDirPath.substring(0, newDirPath.length() - 1);
 			try {
@@ -481,63 +509,59 @@ public class SrmConnection {
 			}
 		}
 
-        LOGGER.debug("Srm createDirectory() : " + newDirPath);
-        
-		//TODO Implement exists() and throw an exception if the directory already exists        
-		//        if (exists(filePath)) {
-		//            throw new GATInvocationException("SRM create dir: dir already exists " + filePath);
-		//        }
-            
-        try {            
-            SrmMkdirRequest srmMkdirRequest = new SrmMkdirRequest();
-            srmMkdirRequest.setSURL(newDirUri);
-            SrmMkdirResponse srmMkdirResponse = service.srmMkdir(srmMkdirRequest);
+		LOGGER.debug("Srm createDirectory() : " + newDirPath);
 
-            if (srmMkdirResponse != null) {
-                if (srmMkdirResponse.getReturnStatus() != null) {
-                    if (!srmMkdirResponse.getReturnStatus().getStatusCode().equals(TStatusCode.SRM_SUCCESS) &&
-                            !srmMkdirResponse.getReturnStatus().getStatusCode().equals(TStatusCode.SRM_DONE) &&
-                            !srmMkdirResponse.getReturnStatus().getStatusCode().equals(TStatusCode.SRM_REQUEST_INPROGRESS) &&
-                            !srmMkdirResponse.getReturnStatus().getStatusCode().equals(TStatusCode.SRM_REQUEST_QUEUED)) {
-                        LOGGER.error("SrmFileManager createDirectory() failed: status code: " + srmMkdirResponse.getReturnStatus().getStatusCode().toString() +
-                                ", explanation: " + srmMkdirResponse.getReturnStatus().getExplanation());
-                        throw new GATInvocationException("SRM mkDir failed: status code: " + srmMkdirResponse.getReturnStatus().getStatusCode().toString() +
-                                ", explanation: " + srmMkdirResponse.getReturnStatus().getExplanation());
-                    }
-                    
-                    LOGGER.info("mkdir() successful: status code: " + srmMkdirResponse.getReturnStatus().getStatusCode().toString() +
-                            ", explanation: " + srmMkdirResponse.getReturnStatus().getExplanation());
-                    sucessful = true;
-                }
-            }
-        } catch (Exception e) {
-            LOGGER.error(e.getMessage(), e);
-            throw new GATInvocationException("SRM create directory error:" + uri, e);
-        }
-        
-        return sucessful;
+		// TODO Implement exists() and throw an exception if the directory already exists
+		// if (exists(filePath)) {
+		// throw new GATInvocationException("SRM create dir: dir already exists " + filePath);
+		// }
+
+		try {
+			SrmMkdirRequest srmMkdirRequest = new SrmMkdirRequest();
+			srmMkdirRequest.setSURL(newDirUri);
+			SrmMkdirResponse srmMkdirResponse = service.srmMkdir(srmMkdirRequest);
+
+			if (srmMkdirResponse != null) {
+				if (srmMkdirResponse.getReturnStatus() != null) {
+					if (!srmMkdirResponse.getReturnStatus().getStatusCode().equals(TStatusCode.SRM_SUCCESS)
+							&& !srmMkdirResponse.getReturnStatus().getStatusCode().equals(TStatusCode.SRM_DONE)
+							&& !srmMkdirResponse.getReturnStatus().getStatusCode().equals(
+									TStatusCode.SRM_REQUEST_INPROGRESS)
+							&& !srmMkdirResponse.getReturnStatus().getStatusCode().equals(
+									TStatusCode.SRM_REQUEST_QUEUED)) {
+						LOGGER.error("SrmFileManager createDirectory() failed: status code: "
+								+ srmMkdirResponse.getReturnStatus().getStatusCode().toString() + ", explanation: "
+								+ srmMkdirResponse.getReturnStatus().getExplanation());
+						throw new GATInvocationException("SRM mkDir failed: status code: "
+								+ srmMkdirResponse.getReturnStatus().getStatusCode().toString() + ", explanation: "
+								+ srmMkdirResponse.getReturnStatus().getExplanation());
+					}
+
+					LOGGER.info("mkdir() successful: status code: "
+							+ srmMkdirResponse.getReturnStatus().getStatusCode().toString() + ", explanation: "
+							+ srmMkdirResponse.getReturnStatus().getExplanation());
+					sucessful = true;
+				}
+			}
+		} catch (Exception e) {
+			LOGGER.error(e.getMessage(), e);
+			throw new GATInvocationException("SRM create directory error:" + uri, e);
+		}
+
+		return sucessful;
 	}
-	
-	
-	
+
 	/**
 	 * Changes the permission to a given uri.
 	 * 
-	 * @param uri
-	 *            the uri where to changes permission
-	 * @param tPermissionType
-	 *            the type of permission
-	 * @param ownerTPermissionMode
-	 *            the owner permissions
-	 * @param arrayOfTGroupPermissions
-	 *            the group permissions
-	 * @param otherTPermissionMode
-	 *            the other permissions
-	 * @param arrayOfTUserPermissions
-	 *            the array of user permissions
+	 * @param uri the uri where to changes permission
+	 * @param tPermissionType the type of permission
+	 * @param ownerTPermissionMode the owner permissions
+	 * @param arrayOfTGroupPermissions the group permissions
+	 * @param otherTPermissionMode the other permissions
+	 * @param arrayOfTUserPermissions the array of user permissions
 	 * 
-	 * @throws IOException
-	 *             an exception that might occurrs
+	 * @throws IOException an exception that might occurrs
 	 */
 	public void setPermissions(String uri, TPermissionType tPermissionType, TPermissionMode ownerTPermissionMode,
 			ArrayOfTGroupPermission arrayOfTGroupPermissions, TPermissionMode otherTPermissionMode,
