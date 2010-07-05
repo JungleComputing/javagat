@@ -1,6 +1,25 @@
-FIXED BUGS AND ADDITIONS in trunk version with respect to version 2.0.5
+FIXED BUGS AND ADDITIONS in version 2.1.0 with respect to version 2.0.5
+- local file adaptor: rename() did not work properly.
+- modified axis client config mechanism for Globus and Gridsam adaptors:
+  the mechanism no longer depends on a System property. Instead, each
+  adaptor has its own jndi.properties file.
+- Added "getSupportedScheme()" methods to adaptors, so that engine can
+  check which adaptors are applicable for a specific scheme, without
+  actually invoking the adaptor constructor.
+- A ScheduledExecutor class has been added to the GATEngine utilities.
+  This is a useful class for adaptors that have to execute a job
+  periodically. Using this class, they don't have to create their own
+  thread.
+- various predefined String constants have been introduced, see
+  the Javadoc of the SoftwareDescription API.
+- commandlineSsh file adaptor now implements createNewFile() and length().
+- there have been various fixes and additions to the Glite adaptors.
+- RandomAccessFile adaptors have been added for Globus and SftpTrilead.
 - adaptor order was not quite deterministic yet, so that different copies
   of the same javagat release could have different behaviour.
+- Globus File adaptors have been made far more robust (thanks to
+  Stefan Bozic and Bastian Boegel).
+- The GT4 file adaptor now actually seems to work.
 - FTP file adaptor copy method did CR-LF translation on copy.
 - FileCpi.getParentFile() was wrong in case of an absolute URI with a
   relative path where the host part refers to the local host.

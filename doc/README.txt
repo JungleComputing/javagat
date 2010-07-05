@@ -1,4 +1,5 @@
-Hi,
+INTRODUCTION
+------------
 
 This is the Java implementation of the GridLab GAT (Grid Application Toolkit).
 You normally install this software on your workstation or laptop, you don't 
@@ -9,7 +10,8 @@ for the Java GAT.
 
 For more information on the GAT in general, see www.gridlab.org.
 
-This software consists of two parts. The GAT engine and the GAT adaptors 
+This software consists of three two parts. The GAT API, the GAT engine
+and the GAT adaptors.
 
 SETTING UP YOUR ENVIRONMENT
 ---------------------------
@@ -22,11 +24,11 @@ variable.
 
 For example (depending on the os and shell you use):
 
-export GAT_LOCATION=/home/rob/JavaGAT-2.0.5.
+export GAT_LOCATION=/home/rob/JavaGAT-2.1.0.
 
 or 
 
-set GAT_LOCATION=C:\JavaGAT-2.0.5.
+set GAT_LOCATION=C:\JavaGAT-2.1.0.
 
 you might want to put this line in your .bashrc (or equivalent)
 
@@ -40,6 +42,9 @@ Ant is open source software and can be downloaded from www.apache.org.
 
 You can build the JavaGAT engine by typing "ant" in the Java GAT root
 directory. To build the javadoc of the JavaGAT API, type "ant javadoc".
+
+Of course, if you downloaded the binary release, you don't have to build
+JavaGAT (in fact, you can't because that release does not contain sources).
 
 
 RUNNING GAT APPLICATIONS
@@ -67,6 +72,21 @@ are located in the "doc/javadoc" directory.
 For more documentation, please go to 
 
 http://www.gridlab.org/WorkPackages/wp-1/documentation.html
+
+
+JavaGAT has its own web-page: http://www.cs.vu.nl/ibis/javagat.html.
+
+REPOSITORY
+----------
+
+The current JavaGAT source repository tree is accessible through SVN at
+"https://gforge.cs.vu.nl/svn/javagat/trunk".  You can check it
+out anonymously using the command
+"svn checkout https://gforge.cs.vu.nl/svn/javagat/trunk javagat".
+
+There is a branch for the current release (2.1.0), at
+https://gforge.cs.vu.nl/svn/javagat/branches/2.1.0. Bug fixes
+will find its way into this branch, and also in the trunk.
 
 Have fun!
 
