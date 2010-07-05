@@ -31,6 +31,7 @@ import org.globus.gsi.GlobusCredential;
 import org.globus.gsi.GlobusCredentialException;
 import org.globus.gsi.gssapi.GlobusGSSCredentialImpl;
 import org.globus.gsi.gssapi.auth.NoAuthorization;
+import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.io.attributes.GroupPrincipal;
 import org.gridlab.gat.io.attributes.PosixFileAttributes;
 import org.gridlab.gat.io.attributes.PosixFilePermission;
@@ -256,7 +257,7 @@ public class SrmConnection {
 		      
 		srmPrepToPutReq.setArrayOfFileRequests(new ArrayOfTPutFileRequest(putFileRequests));
 		srmPrepToPutReq.setOverwriteOption(TOverwriteMode.ALWAYS);
-		srmPrepToPutReq.setAuthorizationID("/C=DE/O=GermanGrid/CN=Stefan Bozic");		
+		srmPrepToPutReq.setAuthorizationID("SRMClient");		
 		
 		// //Transfer Parameters
 		TTransferParameters transferParameters = new TTransferParameters();
@@ -274,12 +275,13 @@ public class SrmConnection {
 		this.activeToken = requestToken;
 
 		LOGGER.info("Received the following request token: " + requestToken);
+
+		//FIXME I dont know why the Thread has to sleep here. The code is from Max Berger
 		// sleep 4 sec like in the srmcp command
 		try {
 			Thread.sleep(4000);
 		} catch (InterruptedException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
+			LOGGER.warn("Sleep interrupted" , e1);
 		}
 
 		TPutRequestFileStatus fileStatus = response.getArrayOfFileStatuses().getStatusArray(0);
@@ -448,6 +450,76 @@ public class SrmConnection {
 		return paths;
 	}
 
+	/**
+	 * Creates a new directory on a SRM resource.
+	 * 
+	 * @param uri the URI which represents the directory to create
+	 * @return <code>true</code> if the directory has been created successfully.
+	 * @throws GATInvocationException an exception that might occurs
+	 */
+	public boolean mkDir(String uri) throws GATInvocationException {
+        boolean sucessful = false;
+        
+		LOGGER.debug("mkDir : " + uri.toString());
+		
+		//Extract the path and the new directory name from the uri
+		URI newDirUri;
+		try {
+			newDirUri = new URI(uri);
+		} catch (MalformedURIException e1) {
+			throw new GATInvocationException("Malformed URI for new directory", e1);
+		}
+		
+		String newDirPath = newDirUri.getPath();		
+		
+		if (newDirPath.endsWith("/")) {
+			newDirPath = newDirPath.substring(0, newDirPath.length() - 1);
+			try {
+				newDirUri.setPath(newDirPath);
+			} catch (MalformedURIException e) {
+				e.printStackTrace();
+			}
+		}
+
+        LOGGER.debug("Srm createDirectory() : " + newDirPath);
+        
+		//TODO Implement exists() and throw an exception if the directory already exists        
+		//        if (exists(filePath)) {
+		//            throw new GATInvocationException("SRM create dir: dir already exists " + filePath);
+		//        }
+            
+        try {            
+            SrmMkdirRequest srmMkdirRequest = new SrmMkdirRequest();
+            srmMkdirRequest.setSURL(newDirUri);
+            SrmMkdirResponse srmMkdirResponse = service.srmMkdir(srmMkdirRequest);
+
+            if (srmMkdirResponse != null) {
+                if (srmMkdirResponse.getReturnStatus() != null) {
+                    if (!srmMkdirResponse.getReturnStatus().getStatusCode().equals(TStatusCode.SRM_SUCCESS) &&
+                            !srmMkdirResponse.getReturnStatus().getStatusCode().equals(TStatusCode.SRM_DONE) &&
+                            !srmMkdirResponse.getReturnStatus().getStatusCode().equals(TStatusCode.SRM_REQUEST_INPROGRESS) &&
+                            !srmMkdirResponse.getReturnStatus().getStatusCode().equals(TStatusCode.SRM_REQUEST_QUEUED)) {
+                        LOGGER.error("SrmFileManager createDirectory() failed: status code: " + srmMkdirResponse.getReturnStatus().getStatusCode().toString() +
+                                ", explanation: " + srmMkdirResponse.getReturnStatus().getExplanation());
+                        throw new GATInvocationException("SRM mkDir failed: status code: " + srmMkdirResponse.getReturnStatus().getStatusCode().toString() +
+                                ", explanation: " + srmMkdirResponse.getReturnStatus().getExplanation());
+                    }
+                    
+                    LOGGER.info("mkdir() successful: status code: " + srmMkdirResponse.getReturnStatus().getStatusCode().toString() +
+                            ", explanation: " + srmMkdirResponse.getReturnStatus().getExplanation());
+                    sucessful = true;
+                }
+            }
+        } catch (Exception e) {
+            LOGGER.error(e.getMessage(), e);
+            throw new GATInvocationException("SRM create directory error:" + uri, e);
+        }
+        
+        return sucessful;
+	}
+	
+	
+	
 	/**
 	 * Changes the permission to a given uri.
 	 * 

@@ -156,11 +156,29 @@ public class GliteSrmFileAdaptor extends FileCpi {
             GliteSecurityUtils.getVOMSProxy(gatContext, true);
             connector.delete(location);
         } catch (IOException e) {
-            // throw new GATInvocationException(GLITE_SRM_FILE_ADAPTOR, e);
+        	LOGGER.info("An exception occurs during deletion of file " + toURI().toString() , e);
             return false;
         }
         return true;
     }
+
+    /** {@inheritDoc} */
+    @Override
+    public boolean mkdir() throws GATInvocationException {
+        if (localFile) {
+            throw new GATInvocationException(GLITE_SRM_FILE_ADAPTOR + ": " + GliteSrmFileAdaptor.CANNOT_HANDLE_THIS_URI + location);
+        }
+        
+        try {
+            GliteSecurityUtils.getVOMSProxy(gatContext, true);
+            connector.mkDir(location);
+        } catch (IOException e) {
+        	LOGGER.info("An exception occurs during mkdir of " + toURI().toString() , e);
+            return false;
+        }
+        return true;
+    }    
+    
     
     /**
      * @see FileCpi#list()
