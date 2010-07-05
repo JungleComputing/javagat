@@ -77,7 +77,12 @@ public class LocalFileAdaptor extends FileCpi {
                     "Cannot use remote files with the local file adaptor, URI is: "
                             + location);
         }
-
+        
+        f = getFile(location);
+    }
+    
+    private File getFile(URI location) {
+        File file;
         URI correctedURI = newcorrectURI(location);
 
         logger.debug("corrected uri '" + location + "' to '" + correctedURI
@@ -85,7 +90,7 @@ public class LocalFileAdaptor extends FileCpi {
 
         if ((correctedURI.getPath() == null)
                 || (correctedURI.getPath().equals(""))) {
-            f = new File(".");
+            file = new File(".");
         } else {
             String path = correctedURI.getPath();
             if (java.io.File.separatorChar == '\\') {
@@ -95,8 +100,9 @@ public class LocalFileAdaptor extends FileCpi {
                 }
                 path = path.replace("/", "\\");
             }
-            f = new File(path);
+            file = new File(path);
         }
+        return file;
     }
 
     private URI newcorrectURI(URI in) {
@@ -746,8 +752,7 @@ public class LocalFileAdaptor extends FileCpi {
         if (! arg.refersToLocalHost()) {
             throw new GATInvocationException("LocalFile: cannot rename to remote destination");
         }
-        File tmp = new File(arg.toJavaURI());
-
+        File tmp = getFile(arg);
         return f.renameTo(tmp);
     }
 
