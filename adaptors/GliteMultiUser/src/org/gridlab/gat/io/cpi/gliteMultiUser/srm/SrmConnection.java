@@ -1,42 +1,6 @@
 package org.gridlab.gat.io.cpi.gliteMultiUser.srm;
 
-import gov.lbl.srm.StorageResourceManager.ArrayOfAnyURI;
-import gov.lbl.srm.StorageResourceManager.ArrayOfString;
-import gov.lbl.srm.StorageResourceManager.ArrayOfTGetFileRequest;
-import gov.lbl.srm.StorageResourceManager.ArrayOfTGroupPermission;
-import gov.lbl.srm.StorageResourceManager.ArrayOfTPutFileRequest;
-import gov.lbl.srm.StorageResourceManager.ArrayOfTUserPermission;
-import gov.lbl.srm.StorageResourceManager.ISRM;
-import gov.lbl.srm.StorageResourceManager.SRMServiceLocator;
-import gov.lbl.srm.StorageResourceManager.SrmLsRequest;
-import gov.lbl.srm.StorageResourceManager.SrmLsResponse;
-import gov.lbl.srm.StorageResourceManager.SrmPrepareToGetRequest;
-import gov.lbl.srm.StorageResourceManager.SrmPrepareToGetResponse;
-import gov.lbl.srm.StorageResourceManager.SrmPrepareToPutRequest;
-import gov.lbl.srm.StorageResourceManager.SrmPrepareToPutResponse;
-import gov.lbl.srm.StorageResourceManager.SrmPutDoneRequest;
-import gov.lbl.srm.StorageResourceManager.SrmPutDoneResponse;
-import gov.lbl.srm.StorageResourceManager.SrmRmRequest;
-import gov.lbl.srm.StorageResourceManager.SrmRmResponse;
-import gov.lbl.srm.StorageResourceManager.SrmSetPermissionRequest;
-import gov.lbl.srm.StorageResourceManager.SrmSetPermissionResponse;
-import gov.lbl.srm.StorageResourceManager.SrmStatusOfGetRequestRequest;
-import gov.lbl.srm.StorageResourceManager.SrmStatusOfGetRequestResponse;
-import gov.lbl.srm.StorageResourceManager.SrmStatusOfPutRequestRequest;
-import gov.lbl.srm.StorageResourceManager.SrmStatusOfPutRequestResponse;
-import gov.lbl.srm.StorageResourceManager.TDirOption;
-import gov.lbl.srm.StorageResourceManager.TFileType;
-import gov.lbl.srm.StorageResourceManager.TGetFileRequest;
-import gov.lbl.srm.StorageResourceManager.TGetRequestFileStatus;
-import gov.lbl.srm.StorageResourceManager.TMetaDataPathDetail;
-import gov.lbl.srm.StorageResourceManager.TPermissionMode;
-import gov.lbl.srm.StorageResourceManager.TPermissionType;
-import gov.lbl.srm.StorageResourceManager.TPutFileRequest;
-import gov.lbl.srm.StorageResourceManager.TPutRequestFileStatus;
-import gov.lbl.srm.StorageResourceManager.TReturnStatus;
-import gov.lbl.srm.StorageResourceManager.TSURLReturnStatus;
-import gov.lbl.srm.StorageResourceManager.TStatusCode;
-import gov.lbl.srm.StorageResourceManager.TTransferParameters;
+import gov.lbl.srm.StorageResourceManager.*;
 
 import java.io.File;
 import java.io.IOException;
@@ -132,8 +96,6 @@ public class SrmConnection {
 		provider.deployTransport("httpg", c);
 
 		Util.registerTransport();
-
-		// System.out.println(org.apache.axis.constants.Style.RPC);
 
 		SRMServiceLocator locator = new SRMServiceLocator(provider);
 		LOGGER.info("getting srm service at " + host);
@@ -291,19 +253,18 @@ public class SrmConnection {
 		UnsignedLong expFileSize = new UnsignedLong(localFile.length());
 		TPutFileRequest putFileRequest = new TPutFileRequest(uri, expFileSize);
 		TPutFileRequest[] putFileRequests = new TPutFileRequest[] { putFileRequest };
-
+		      
 		srmPrepToPutReq.setArrayOfFileRequests(new ArrayOfTPutFileRequest(putFileRequests));
-		srmPrepToPutReq.setUserRequestDescription("Some user request description");
-		// srmPrepToPutReq.setDesiredFileLifeTime(60);
-		srmPrepToPutReq.setDesiredPinLifeTime(60);
-		// srmPrepToPutReq.setDesiredFileStorageType(TFileStorageType.PERMANENT);
-		//		
+		srmPrepToPutReq.setOverwriteOption(TOverwriteMode.ALWAYS);
+		srmPrepToPutReq.setAuthorizationID("/C=DE/O=GermanGrid/CN=Stefan Bozic");		
+		
 		// //Transfer Parameters
 		TTransferParameters transferParameters = new TTransferParameters();
 		// transferParameters.setConnectionType(TConnectionType.WAN);
 		// transferParameters.setAccessPattern(TAccessPattern.TRANSFER_MODE);
 		transferParameters.setArrayOfTransferProtocols(new ArrayOfString(
-				new String[] { "srm", "gsiftp", "dcap", "http" }));
+				//new String[] { "srm", "gsiftp", "dcap", "http" }));
+				new String[] { "gsiftp"}));
 
 		srmPrepToPutReq.setTransferParameters(transferParameters);
 		LOGGER.info("Sending put request");
@@ -362,8 +323,11 @@ public class SrmConnection {
 				transportURL = fileStatus.getTransferURL();
 				LOGGER.info("Received transfer URL: " + transportURL);
 			}
-		} else
+		} else {
+			LOGGER.info("The status returned is: " + status.getExplanation());
 			throw new IOException(status.getStatusCode() + ": " + fileStatus.getStatus().getStatusCode());
+		}
+		
 		this.activeUploadURI = uri;
 		return transportURL;
 	}
@@ -467,6 +431,7 @@ public class SrmConnection {
 		TReturnStatus returnStatus = response.getReturnStatus();
 		LOGGER.info("Return status code " + returnStatus.getStatusCode());
 		if (!returnStatus.getStatusCode().equals(TStatusCode.SRM_SUCCESS)) {
+			LOGGER.info(returnStatus.getStatusCode() + returnStatus.getExplanation());
 			throw new IOException(returnStatus.getExplanation() + " (" + returnStatus.getStatusCode() + ")");
 		}
 
@@ -754,7 +719,6 @@ public class SrmConnection {
 		public TPermissionMode getOtherTPermissionMode() {
 			return otherTPermissionMode;
 		}
-
 	}
 
 	private class HttpgURLStreamHandlerFactory implements URLStreamHandlerFactory {

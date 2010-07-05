@@ -97,7 +97,12 @@ public class GliteSrmFileAdaptor extends FileCpi {
     
     /** {@inheritDoc} */
     public void copy(URI dest) throws GATInvocationException {
-        try {
+
+    	//GridFtpClient: for 2-party transfer must be DataChannelAuthentication.SELF or DataChannelAuthentication.NONE 
+    	Preferences fileAdapterPrefs = new Preferences();
+    	fileAdapterPrefs.put("ftp.server.noauthentication", "true");
+    	
+    	try {
             if (localFile) {
                 if (!dest.isCompatible(GliteSrmFileAdaptor.SRM_PROTOCOL)) {
                     throw new GATInvocationException(GLITE_SRM_FILE_ADAPTOR
@@ -114,7 +119,9 @@ public class GliteSrmFileAdaptor extends FileCpi {
                 
                 GATContext newContext = (GATContext) gatContext.clone();
                 newContext.addPreference("File.adaptor.name", "GridFTP");
+                newContext.addPreferences(fileAdapterPrefs);
                 GliteSecurityUtils.replaceSecurityContextWithGliteContext(newContext, proxyFile);
+                
                 File transportFile = GAT.createFile(newContext, location);
                 transportFile.copy(new URI(turl));
                 connector.finalizeFileUpload(dest);
@@ -127,7 +134,9 @@ public class GliteSrmFileAdaptor extends FileCpi {
                 LOGGER.info("SRM/Copy: TURL: " + turl);
                 
                 GATContext newContext = (GATContext) gatContext.clone();
+                newContext.addPreferences(fileAdapterPrefs);
                 newContext.addPreference("File.adaptor.name", "GridFTP");
+                
                 GliteSecurityUtils.replaceSecurityContextWithGliteContext(newContext, proxyFile);
                 File transportFile = GAT.createFile(newContext, turl);
                 transportFile.copy(new URI(dest.getPath()));
@@ -163,7 +172,7 @@ public class GliteSrmFileAdaptor extends FileCpi {
 			List<String> result = connector.realLs(location); 
 			return (String[]) result.toArray(new String[result.size()]);
 		} catch (IOException e) {
-			e.printStackTrace();
+			LOGGER.error("An error occurs during ls", e);
 		}
     	return null; 
     }
