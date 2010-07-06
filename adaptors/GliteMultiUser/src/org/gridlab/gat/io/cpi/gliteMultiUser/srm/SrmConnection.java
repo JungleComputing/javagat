@@ -182,8 +182,7 @@ public class SrmConnection {
 	 * 
 	 * @throws IOException an exception that might occurs
 	 */
-	public String getTURLForFileDownload(String uriSpec) throws IOException {
-
+	public String getTURLForFileDownload(String uriSpec) throws IOException {		
 		URI uri = new URI(uriSpec);
 		String transportURL = "";
 
@@ -197,9 +196,14 @@ public class SrmConnection {
 		// dirOpt is not supported!
 		TDirOption dirOpt = null;
 
+		//Transfer Parameters
+		TTransferParameters transferParameters = new TTransferParameters();
+		transferParameters.setArrayOfTransferProtocols(new ArrayOfString(new String[] { "gsiftp" }));				
+		
 		TGetFileRequest getFileRequest = new TGetFileRequest(uri, dirOpt);
 		srmPrepToGetReq.setArrayOfFileRequests(new ArrayOfTGetFileRequest(new TGetFileRequest[] { getFileRequest }));
-
+		srmPrepToGetReq.setTransferParameters(transferParameters);
+		
 		LOGGER.info("Sending get request");
 
 		SrmPrepareToGetResponse response = service.srmPrepareToGet(srmPrepToGetReq);
