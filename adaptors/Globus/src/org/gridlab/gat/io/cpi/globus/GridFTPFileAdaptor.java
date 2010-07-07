@@ -14,6 +14,7 @@ import org.globus.ftp.FTPClient;
 import org.globus.ftp.GridFTPClient;
 import org.globus.ftp.GridFTPSession;
 import org.globus.ftp.exception.ServerException;
+import org.globus.gsi.GlobusCredential;
 import org.globus.gsi.gssapi.GlobusGSSCredentialImpl;
 import org.gridlab.gat.AdaptorNotApplicableException;
 import org.gridlab.gat.CouldNotInitializeCredentialException;
@@ -28,6 +29,7 @@ import org.gridlab.gat.URI;
 import org.gridlab.gat.io.File;
 import org.gridlab.gat.io.cpi.FileCpi;
 import org.gridlab.gat.security.globus.GlobusSecurityUtils;
+import org.gridlab.gat.security.globus.VomsSecurityUtils;
 import org.ietf.jgss.GSSCredential;
 import org.ietf.jgss.GSSException;
 import org.slf4j.Logger;
@@ -474,17 +476,17 @@ public class GridFTPFileAdaptor extends GlobusFileAdaptor {
 	 * @param additionalPreferences attributes for the connection
 	 * @param hostURI the host to connect to
 	 * @return an instance of {@link GridFTPClient} to the given parameters
-	 * @throws GATInvocationException
-	 * @throws InvalidUsernameOrPasswordException
+	 * @throws GATInvocationException an exception that might occurs
+	 * @throws InvalidUsernameOrPasswordException an exception that might occurs
 	 */
 	protected static GridFTPClient doWorkCreateClient(GATContext context, Preferences additionalPreferences, URI hostURI)
 			throws GATInvocationException, InvalidUsernameOrPasswordException {
 		try {
 			GATContext gatContext = (GATContext) context.clone();
 			gatContext.addPreferences(additionalPreferences);
-			GSSCredential credential = GlobusSecurityUtils.getGlobusCredential(gatContext, "gridftp", hostURI,
-					DEFAULT_GRIDFTP_PORT);
-
+			
+			GSSCredential credential = getCredential(context, hostURI);
+			
 			if (logger.isDebugEnabled()) {
 				logger.debug("credential: \n"
 						+ (credential == null ? "NULL" : ((GlobusGSSCredentialImpl) credential).getGlobusCredential()
@@ -533,12 +535,38 @@ public class GridFTPFileAdaptor extends GlobusFileAdaptor {
 	}
 
 	/**
+	 * Retrieves the users credential.
+	 * When a vomsServerUrl is set as preference in the {@link GATContext}, the method returns a voms-proxy-credential.
+	 * Otherwise a standard globus credential is returned.
+	 * 
+	 * @param context the gat context
+	 * @param hostURI the host to connect to
+	 * @return a Credential 
+	 * 
+	 * @throws GSSException
+	 * @throws GATInvocationException
+	 */
+	private static GSSCredential getCredential(GATContext context, URI hostURI) throws GSSException, GATInvocationException {
+		GSSCredential credential = null;
+		//If voms parameters are set create a voms proxy, else use standard globus proxy. 
+		if (context.getPreferences().containsKey("vomsServerURL")) {
+			GlobusCredential globusCred = VomsSecurityUtils.getVOMSProxy(context, true);
+			credential = new GlobusGSSCredentialImpl(globusCred, GSSCredential.INITIATE_AND_ACCEPT);
+		} 
+		else {
+			credential = GlobusSecurityUtils.getGlobusCredential(context, "gridftp", hostURI, DEFAULT_GRIDFTP_PORT);
+		}
+		
+		return credential;
+	}
+	
+	/**
 	 * The key of the caching table is build up from the hostUri and the User-DN-Name.
 	 * 
 	 * @param hostURI the {@link URI} of the host to connect to
 	 * @param userName the user name
 	 * @return the key for the connection cache
-	 * @throws GSSException
+	 * @throws GSSException an exception that might occurs
 	 */
 	private static String getCacheKey(URI hostURI, String userName) throws GSSException {
 		return hostURI.getHost() + HOSTNAME_USER_SEPARATOR + userName;
@@ -646,17 +674,20 @@ public class GridFTPFileAdaptor extends GlobusFileAdaptor {
 			logger.debug("doWorkDestroyClient");
 		}
 
+		//The credential and the context will be needed to retrieve the DN of the user
+		//which is part of the key for the ftpclient in the cache
 		GATContext gatContext = (GATContext) context.clone();
 		gatContext.addPreferences(preferences);
-		GSSCredential credential = GlobusSecurityUtils.getGlobusCredential(gatContext, "gridftp", hostURI,
-				DEFAULT_GRIDFTP_PORT);
 
 		String cacheKey = null;
 
 		try {
+			GSSCredential credential = getCredential(gatContext, hostURI);			
 			cacheKey = getCacheKey(hostURI, credential.getName().toString());
 		} catch (GSSException e1) {
 			logger.error("Cannot obtain credential to create cache key.", e1);
+		} catch (GATInvocationException e) {
+			logger.error("Cannot obtain credential to create cache key.", e);
 		}
 
 		if (!USE_CLIENT_CACHING || null == cacheKey || !putInCache(cacheKey, c)) {
