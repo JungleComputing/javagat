@@ -41,7 +41,7 @@ public class SecurityContextUtils {
 	}
 
 	/**
-	 * Returns a list of security contexts that can be used for the given adaptor.
+	 * Returns a list of security contexts that can be used for the given host.
 	 * 
 	 * @param context the gatContext that contains the securityContexts
 	 * @param type the fully qualified type name of the security context

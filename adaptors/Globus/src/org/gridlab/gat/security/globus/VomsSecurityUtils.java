@@ -31,14 +31,31 @@ import org.slf4j.LoggerFactory;
  */
 public class VomsSecurityUtils {
 
+	/** Constant */
     public static final String PREFERENCE_VIRTUAL_ORGANISATION = "VirtualOrganisation";
+	
+    /** Constant */
     public static final String PREFERENCE_VIRTUAL_ORGANISATION_GROUP = "VirtualOrganisationGroup";
+    
+	/** Constant */
     public static final String PREFERENCE_VIRTUAL_ORGANISATION_ROLE = "VirtualOrganisationRole";
+    
+	/** Constant */
     public static final String PREFERENCE_VIRTUAL_ORGANISATION_CAPABILITY = "VirtualOrganisationCapability";
+    
+	/** Constant */
     public static final String PREFERENCE_VIRTUAL_ORGANISATION_HOST_DN = "vomsHostDN";
+    
+	/** Constant */
     public static final String PREFERENCE_VIRTUAL_ORGANISATION_SERVER_URL = "vomsServerURL";
-    public static final String PREFERENCE_VIRTUAL_ORGANISATION_SERVER_PORT = "vomsServerPort";	
+    
+	/** Constant */
+    public static final String PREFERENCE_VIRTUAL_ORGANISATION_SERVER_PORT = "vomsServerPort";
+    
+	/** Constant */
     public static final String PREFERENCE_VOMS_PROXY_DIRECTORY = "glite.vomsProxyDirectory";
+    
+	/** Constant */
     public static final String PREFERENCE_PROXY_USER_ID = "glite.vomsProxyUserId";	
     
 	/** The Logger */
