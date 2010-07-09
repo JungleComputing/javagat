@@ -130,7 +130,7 @@ public class GliteSecurityUtils {
 		final String myProxyPwd = myproxyContext.getPassword();
 
 		// Retrieve the proxy from the myproxy server
-		GSSCredential myProxyCred = MyProxySecurityUtils.getCredentialFromMyProxyServer(myProxyHost, myProxyPort,
+		GSSCredential myProxyCred = MyProxySecurityUtils.getCredentialFromMyProxyServer(context, myProxyHost, myProxyPort,
 				myProxyUser, myProxyPwd);
 
 		// Cast the proxy to a globus credential
