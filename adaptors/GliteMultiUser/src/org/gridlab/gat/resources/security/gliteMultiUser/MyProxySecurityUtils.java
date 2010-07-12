@@ -23,6 +23,7 @@ public class MyProxySecurityUtils {
 
 	/**
 	 * Retrieve GSSCredential from a MyProxyServer
+	 * @param gatContext the gat context
 	 * 
 	 * @param host hostname of the MyProxy Server
 	 * @param port port of the MyProxy Server
@@ -30,6 +31,8 @@ public class MyProxySecurityUtils {
 	 * @param password associated password
 	 * 
 	 * @return retrieved GSSCredential
+	 * 
+	 * @throws CouldNotInitializeCredentialException an exception that might occurs 
 	 */
 	public static GSSCredential getCredentialFromMyProxyServer(GATContext gatContext, String host, int port, String user, String password) throws CouldNotInitializeCredentialException {// NOPMD
         if (logger.isDebugEnabled()) {
@@ -62,7 +65,7 @@ public class MyProxySecurityUtils {
                     }
                 }
             }
-            GSSCredential credRetrieved = proxy.get(hostGSSCred, user, password, 2 /* lifetime */);
+            GSSCredential credRetrieved = proxy.get(hostGSSCred, user, password, GliteSecurityUtils.STANDARD_NEW_PROXY_LIFETIME);
             return credRetrieved;
 
             
