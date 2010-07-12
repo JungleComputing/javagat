@@ -336,11 +336,14 @@ public class GridFTPFileAdaptor extends GlobusFileAdaptor {
 	 * @param uri the uri of the host
 	 */
 	private static ReentrantLock createHostLock(URI uri) {
-		final String host = uri.getHost();
+		String host = uri.getHost();
 		ReentrantLock lock = null;
 
 		synchronized (lockTable) {
-			if (null != host) {
+			if (null != host && !host.isEmpty()) {
+				lock = lockTable.get(host);
+			} else {
+				host = "localhost";
 				lock = lockTable.get(host);
 			}
 
@@ -362,11 +365,14 @@ public class GridFTPFileAdaptor extends GlobusFileAdaptor {
 	 * @param uri the uri of the host
 	 */
 	private static ReentrantLock getHostLock(URI uri) {
-		final String host = uri.getHost();
+		String host = uri.getHost();
 		ReentrantLock lock = null;
 
 		synchronized (lockTable) {
-			if (null != host) {
+			if (null != host && !host.isEmpty()) {
+				lock = lockTable.get(host);
+			} else {
+				host = "localhost";
 				lock = lockTable.get(host);
 			}
 		}
