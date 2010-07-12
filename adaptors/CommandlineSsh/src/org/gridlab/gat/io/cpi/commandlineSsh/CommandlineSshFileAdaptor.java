@@ -147,10 +147,27 @@ public class CommandlineSshFileAdaptor extends FileCpi {
         return exitVal == 0;
     }
     
+    // Protect against special characters for (most) unix shells.
+    private static String protectAgainstShellMetas(String s) {
+        char[] chars = s.toCharArray();
+        StringBuffer b = new StringBuffer();
+        b.append('\'');
+        for (char c : chars) {
+            if (c == '\'') {
+                b.append('\'');
+                b.append('\\');
+                b.append('\'');
+            }
+            b.append(c);
+        }
+        b.append('\'');
+        return b.toString();
+    }
+    
     private CommandRunner runSshCommand(String... params) throws GATInvocationException {
         ArrayList<String> command = getSshCommand();
         for (String p : params) {
-            command.add(p);
+            command.add(protectAgainstShellMetas(p));
         }
         
         if (logger.isDebugEnabled()) {
