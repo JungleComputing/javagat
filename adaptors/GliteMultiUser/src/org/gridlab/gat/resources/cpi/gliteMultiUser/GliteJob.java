@@ -341,6 +341,7 @@ public class GliteJob extends JobCpi {
 
 			return gliteJobID;
 		} catch (Exception e) {
+			LOGGER.error("Ann error occurs during submitting the job.", e);
 			throw new GATInvocationException("Ann error occurs during submitting the job.", e);
 		}
 	}
@@ -348,7 +349,7 @@ public class GliteJob extends JobCpi {
 	/**
 	 * Stage in the files that are described in the swDescription of the job.
 	 * 
-	 * @param sandboxJobID
+	 * @param sandboxJobID the sandbox path
 	 */
 	private void stageInSandboxFiles(String sandboxJobID) {
 		List<File> sandboxFiles = new ArrayList<File>();
