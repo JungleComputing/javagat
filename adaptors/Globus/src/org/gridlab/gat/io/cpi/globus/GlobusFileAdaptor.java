@@ -1476,6 +1476,11 @@ public abstract class GlobusFileAdaptor extends FileCpi {
         
         // if there are more tokens, just add them
         while (tokens.hasMoreTokens()) {
+            String s = tokens.nextToken();
+            if (s.equals("->")) {
+                // symbolic link! Skip.
+                break;
+            }
             res += " " + tokens.nextToken();
         }
 
