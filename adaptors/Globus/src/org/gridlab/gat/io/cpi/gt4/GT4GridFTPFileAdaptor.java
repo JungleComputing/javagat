@@ -232,7 +232,9 @@ public class GT4GridFTPFileAdaptor extends GT4FileAdaptor {
      * 
      */
     public void copy(URI dest) throws GATInvocationException {
-        
+        if (dest.refersToLocalHost() && location.refersToLocalHost()) {
+            throw new GATInvocationException("local-->local copy not implemented by GT4 adaptor");
+        }
         if (! exists()) {
             throw new GATInvocationException(
                     "the source file does not exist, location = " + location);
@@ -276,7 +278,7 @@ public class GT4GridFTPFileAdaptor extends GT4FileAdaptor {
                 // leave everything as it is
             }
         }
-        if (dest.isLocal()) {
+        if (dest.refersToLocalHost()) {
             if (logger.isDebugEnabled()) {
                 logger.debug("GT4GridFTPFileAdaptor: copy remote to local");
             }
