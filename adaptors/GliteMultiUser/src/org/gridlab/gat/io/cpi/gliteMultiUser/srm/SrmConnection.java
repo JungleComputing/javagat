@@ -45,8 +45,6 @@ import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.net.URLStreamHandler;
-import java.net.URLStreamHandlerFactory;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -55,7 +53,10 @@ import java.util.concurrent.TimeUnit;
 
 import javax.xml.rpc.ServiceException;
 
+import org.apache.axis.MessageContext;
 import org.apache.axis.SimpleTargetedChain;
+import org.apache.axis.client.AxisClient;
+import org.apache.axis.client.Call;
 import org.apache.axis.client.Stub;
 import org.apache.axis.configuration.SimpleProvider;
 import org.apache.axis.transport.http.HTTPSender;
@@ -118,6 +119,27 @@ public class SrmConnection {
 	 * @throws IOException if the connection fails.
 	 */
 	public SrmConnection(String host, final String proxyPath) throws IOException {
+
+		// Changing classloader
+		ClassLoader savedClassLoader = Thread.currentThread().getContextClassLoader();
+		// Thread.currentThread().setContextClassLoader(this.getClass().getClassLoader());
+
+		LOGGER.info("SavedClassloader: " + savedClassLoader);
+		LOGGER.info("CurrentClassloader: " + this.getClass().getClassLoader());
+		LOGGER.info("URLClassloader: " + URL.class.getClassLoader());
+		LOGGER.info("UtilClassloader: " + Util.class.getClassLoader());
+
+		// Set URL Handler for httpg
+		HttpgURLStreamHandlerFactory httpgfac = new HttpgURLStreamHandlerFactory();
+
+		try {
+			URL.setURLStreamHandlerFactory(httpgfac);
+			LOGGER.info("URLClassloader: " + URL.class.getClassLoader());
+		} catch (Error e) {
+			//In an application server this exception always accurs. So log only...
+			LOGGER.debug("Cannot set HTTPG scheme for URLs", e);
+		}
+
 		// Set provider
 		LOGGER.debug("Registering httpg transport");
 		SimpleProvider provider = new SimpleProvider();
@@ -132,23 +154,20 @@ public class SrmConnection {
 		c = new SimpleTargetedChain(new GSIHTTPSender());
 		provider.deployTransport("httpg", c);
 
-		Util.registerTransport();
+		AxisClient ac = new AxisClient(provider);
+		SRMServiceLocator locator = new SRMServiceLocator(ac.getClientEngine().getConfig());
+		locator.setEngine(ac);
 
-		SRMServiceLocator locator = new SRMServiceLocator(provider);
+		// SRMServiceLocator locator = new SRMServiceLocator(provider);
 		LOGGER.info("getting srm service at " + host);
-
-		HttpgURLStreamHandlerFactory httpgfac = new HttpgURLStreamHandlerFactory();
-
-		try {
-			URL.setURLStreamHandlerFactory(httpgfac);
-		} catch (Error e) {
-			// ignore
-		}
 
 		URI wsEndpoint;
 		try {
 			wsEndpoint = new URI("httpg", null, host, 8443, "/srm/managerv2", null, null);
-			this.service = locator.getsrm(new URL(wsEndpoint.toString()));
+			URL serviceUrl = new URL(wsEndpoint.getScheme(), wsEndpoint.getHost(), wsEndpoint.getPort(), wsEndpoint
+					.getPath(), new org.globus.net.protocol.httpg.Handler());
+
+			this.service = locator.getsrm(serviceUrl);
 
 			LOGGER.info("Delegating proxy credentials");
 			GlobusCredential credential = new GlobusCredential(proxyPath);
@@ -156,6 +175,17 @@ public class SrmConnection {
 			((Stub) this.service)._setProperty(GSIConstants.GSI_CREDENTIALS, gssCredential);
 			((Stub) this.service)._setProperty(GSIConstants.GSI_AUTHORIZATION, NoAuthorization.getInstance());
 			((Stub) this.service)._setProperty(GSIConstants.GSI_MODE, GSIConstants.GSI_MODE_NO_DELEG);
+
+			Util.reregisterTransport();
+			if (MessageContext.getCurrentContext() != null)
+				MessageContext.getCurrentContext().setClassLoader(this.getClass().getClassLoader());
+			if (MessageContext.getCurrentContext() != null)
+				MessageContext.getCurrentContext().setTransportName("httpg");
+
+			Call.initialize();
+			Call.addTransportPackage("org.globus.axis.transport");
+			Call.setTransportForProtocol("httpg", org.globus.axis.transport.GSIHTTPTransport.class);
+
 		} catch (MalformedURIException e) {
 			LOGGER.warn(e.toString());
 			throw new IOException(SrmConnection.COULD_NOT_CREATE_SRM_CONNECTION_DUE_TO_MALFORMED_URI);
@@ -172,6 +202,11 @@ public class SrmConnection {
 			LOGGER.warn(e.toString());
 			throw new IOException(SrmConnection.COULD_NOT_LOAD_CREDENTIALS);
 		}
+
+		// finally {
+		// // Restoring original, previously saved, classloader
+		// Thread.currentThread().setContextClassLoader(savedClassLoader);
+		// }
 	}
 
 	/**
@@ -182,7 +217,7 @@ public class SrmConnection {
 	 * 
 	 * @throws IOException an exception that might occurs
 	 */
-	public String getTURLForFileDownload(String uriSpec) throws IOException {		
+	public String getTURLForFileDownload(String uriSpec) throws IOException {
 		URI uri = new URI(uriSpec);
 		String transportURL = "";
 
@@ -196,14 +231,14 @@ public class SrmConnection {
 		// dirOpt is not supported!
 		TDirOption dirOpt = null;
 
-		//Transfer Parameters
+		// Transfer Parameters
 		TTransferParameters transferParameters = new TTransferParameters();
-		transferParameters.setArrayOfTransferProtocols(new ArrayOfString(new String[] { "gsiftp" }));				
-		
+		transferParameters.setArrayOfTransferProtocols(new ArrayOfString(new String[] { "gsiftp" }));
+
 		TGetFileRequest getFileRequest = new TGetFileRequest(uri, dirOpt);
 		srmPrepToGetReq.setArrayOfFileRequests(new ArrayOfTGetFileRequest(new TGetFileRequest[] { getFileRequest }));
 		srmPrepToGetReq.setTransferParameters(transferParameters);
-		
+
 		LOGGER.info("Sending get request");
 
 		SrmPrepareToGetResponse response = service.srmPrepareToGet(srmPrepToGetReq);
@@ -456,8 +491,10 @@ public class SrmConnection {
 	 * @throws IOException an exception that might occurs
 	 */
 	public List<String> realLs(String uri) throws IOException {
+		URI requestUri = new URI(uri);
+		
 		SrmLsRequest srmLsRequest = new SrmLsRequest();
-		srmLsRequest.setArrayOfSURLs(new ArrayOfAnyURI(new URI[] { new URI(uri) }));
+		srmLsRequest.setArrayOfSURLs(new ArrayOfAnyURI(new URI[] { requestUri }));
 		srmLsRequest.setAllLevelRecursive(false);
 		srmLsRequest.setFullDetailedList(true);
 		LOGGER.info("Invoking getPermissions request for URI " + uri);
@@ -472,10 +509,11 @@ public class SrmConnection {
 		List<String> paths = new ArrayList<String>();
 
 		for (TMetaDataPathDetail detail : response.getDetails().getPathDetailArray()) {
-			paths.add(detail.getPath());
+			//paths.add(fileName);
 
 			for (TMetaDataPathDetail subDetail : detail.getArrayOfSubPaths().getPathDetailArray()) {
-				paths.add(subDetail.getPath());
+				String fileName = subDetail.getPath().replace(requestUri.getPath(), "");
+				paths.add(fileName);
 			}
 		}
 
@@ -820,14 +858,4 @@ public class SrmConnection {
 			return otherTPermissionMode;
 		}
 	}
-
-	private class HttpgURLStreamHandlerFactory implements URLStreamHandlerFactory {
-		public URLStreamHandler createURLStreamHandler(String protocol) {
-			if (protocol.equalsIgnoreCase("httpg")) {
-				return new org.globus.net.protocol.httpg.Handler();
-			}
-			return null;
-		}
-	}
-
 }
