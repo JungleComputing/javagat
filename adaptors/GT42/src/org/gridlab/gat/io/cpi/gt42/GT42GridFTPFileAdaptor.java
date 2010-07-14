@@ -232,6 +232,10 @@ public class GT42GridFTPFileAdaptor extends GT42FileAdaptor {
     public void copy(URI dest) throws GATInvocationException {
         // determinate dest is a directory, and pass the filename if it is,
         // otherwise it will fail
+        
+        if (dest.refersToLocalHost() && location.refersToLocalHost()) {
+            throw new GATInvocationException("local-->local copy not implemented by GT42 adaptor");
+        }
         if (determineIsDirectory()) {
             copyDirectory(gatContext, null, toURI(), dest);
             return;
