@@ -6,6 +6,8 @@ FIXED BUGS AND ADDITIONS in version 2.1.0 with respect to version 2.0.5
 - Added "getSupportedScheme()" methods to adaptors, so that engine can
   check which adaptors are applicable for a specific scheme, without
   actually invoking the adaptor constructor.
+- Added adaptor-specific schemes, which, for instance, allows one to use
+  the "glite" scheme to select the gLite adaptor.
 - A ScheduledExecutor class has been added to the GATEngine utilities.
   This is a useful class for adaptors that have to execute a job
   periodically. Using this class, they don't have to create their own
@@ -21,13 +23,14 @@ FIXED BUGS AND ADDITIONS in version 2.1.0 with respect to version 2.0.5
   Stefan Bozic and Bastian Boegel).
 - The GT4 file adaptor now actually seems to work.
 - FTP file adaptor copy method did CR-LF translation on copy.
+- FTP adaptor did not deal with symbolic links properly.
 - FileCpi.getParentFile() was wrong in case of an absolute URI with a
   relative path where the host part refers to the local host.
 - Zorilla adaptor now sets up connection lazily and not in the resource broker
   constructor --> avoids 30-second delay.
 - gat.adaptor.path System property now again indicates a File.pathSeparator-
   separated path of directories (as it used to do in version 1.7).
-- work in progress on the Unicore adaptor to make a unicore job advertisable,
+- Unicore adaptor is modified to make a unicore job advertisable,
   so that another javaGAT instance can later obtain the results.
 
 FIXED BUGS AND ADDITIONS in version 2.0.5 with respect to version 2.0.4
