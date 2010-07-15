@@ -80,8 +80,8 @@ public class SshTrileadFileAdaptor extends FileCpi {
                         "aes256-ctr,aes192-ctr,aes128-ctr,blowfish-ctr,aes256-cbc,aes192-cbc,aes128-cbc,blowfish-cbc");
         preferences.put("sshtrilead.tcp.nodelay", "true");
         preferences.put("sshtrilead.use.cached.connections", "true");
-        preferences.put("sshtrilead.connect.timeout", "0");
-        preferences.put("sshtrilead.kex.timeout", "0");
+        preferences.put("sshtrilead.connect.timeout", "5000");
+        preferences.put("sshtrilead.kex.timeout", "5000");
         
         // Added: preferences for hostkey checking. Defaults are what used to be ....
         preferences.put("sshtrilead.strictHostKeyChecking", "false");
@@ -570,7 +570,7 @@ public class SshTrileadFileAdaptor extends FileCpi {
         newConnection.setClient2ServerCiphers(client2server);
         newConnection.setServer2ClientCiphers(server2client);
         newConnection.setTCPNoDelay(tcpNoDelay);
-        int connectTimeout = 0;
+        int connectTimeout = 5000;
         String connectTimeoutString = (String) context.getPreferences().get(
                 "sshtrilead.connect.timeout");
         if (connectTimeoutString != null) {
@@ -582,7 +582,7 @@ public class SshTrileadFileAdaptor extends FileCpi {
                         + t);
             }
         }
-        int kexTimeout = 0;
+        int kexTimeout = 5000;
         String kexTimeoutString = (String) context.getPreferences().get(
         "sshtrilead.kex.timeout");
         if (kexTimeoutString != null) {

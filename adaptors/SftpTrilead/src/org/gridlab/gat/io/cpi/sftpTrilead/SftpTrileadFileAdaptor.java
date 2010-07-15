@@ -61,6 +61,8 @@ public class SftpTrileadFileAdaptor extends FileCpi {
         preferences.put("sftptrilead.cipher.client2server", "<sftp default>");
         preferences.put("sftptrilead.cipher.server2client", "<sftp default>");
         preferences.put("sftptrilead.tcp.nodelay", "true");
+        preferences.put("sftptrilead.connect.timeout", "5000");
+        preferences.put("sftptrilead.kex.timeout", "5000");
         return preferences;
     }
     
@@ -200,8 +202,32 @@ public class SftpTrileadFileAdaptor extends FileCpi {
 
         res.connection = new Connection(location.resolveHost(), port);
 
+        int connectTimeout = 5000;
+        String connectTimeoutString = (String) gatContext.getPreferences().get(
+                "sftptrilead.connect.timeout");
+        if (connectTimeoutString != null) {
+            try {
+                connectTimeout = Integer.parseInt(connectTimeoutString);
+            } catch (Throwable t) {
+                logger
+                .info("'sftptrilead.connect.timeout' set, but could not be parsed: "
+                        + t);
+            }
+        }
+        int kexTimeout = 5000;
+        String kexTimeoutString = (String) gatContext.getPreferences().get(
+        "sftptrilead.kex.timeout");
+        if (kexTimeoutString != null) {
+            try {
+                kexTimeout = Integer.parseInt(kexTimeoutString);
+            } catch (Throwable t) {
+                logger
+                .info("'sftptrilead.kex.timeout' set, but could not be parsed: "
+                        + t);
+            }
+        }
         try {
-            res.connection.connect(verifier);
+            res.connection.connect(verifier, connectTimeout, kexTimeout);
         } catch (IOException e) {
             throw new GATInvocationException("sftpTrilead", e);
         }

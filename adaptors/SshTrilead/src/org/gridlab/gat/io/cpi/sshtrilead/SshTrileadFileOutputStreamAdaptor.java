@@ -53,8 +53,8 @@ public class SshTrileadFileOutputStreamAdaptor extends FileOutputStreamCpi {
                         "aes256-ctr,aes192-ctr,aes128-ctr,blowfish-ctr,aes256-cbc,aes192-cbc,aes128-cbc,blowfish-cbc");
         preferences.put("sshtrilead.tcp.nodelay", "false");
         preferences.put("sshtrilead.use.cached.connections", "true");
-        preferences.put("sshtrilead.connect.timeout", "0");
-        preferences.put("sshtrilead.kex.timeout", "0");
+        preferences.put("sshtrilead.connect.timeout", "5000");
+        preferences.put("sshtrilead.kex.timeout", "5000");
         
         // Added: preferences for hostkey checking. Defaults are what used to be ....
         preferences.put("sshtrilead.strictHostKeyChecking", "false");

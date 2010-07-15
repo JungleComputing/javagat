@@ -25,6 +25,8 @@ public class SftpTrileadRandomAccessFileAdaptor extends RandomAccessFileCpi {
         preferences.put("sftptrilead.cipher.client2server", "<sftp default>");
         preferences.put("sftptrilead.cipher.server2client", "<sftp default>");
         preferences.put("sftptrilead.tcp.nodelay", "true");
+        preferences.put("sftptrilead.connect.timeout", "5000");
+        preferences.put("sftptrilead.kex.timeout", "5000");
         return preferences;
     }
     
