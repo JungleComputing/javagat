@@ -143,7 +143,7 @@ public class GliteLfnFileAdaptor extends FileCpi {
                 	lfcConnector.create(dest, guid, filesize);
                     lfcConnector.addReplica(guid, target);
                 } catch (IOException e) {
-                	LOGGER.error(GLITE_LFC_FILE_ADAPTOR + ": Unable to add the replica to the LFC - "+e.getMessage());
+                	LOGGER.info(GLITE_LFC_FILE_ADAPTOR + ": Unable to add the replica to the LFC - "+e.getMessage());
                     // If an error occurs, remove the created file from the SE
                     org.gridlab.gat.io.File toDeleteFile = GAT.createFile(LfcUtil.getSRMContext(gatContext), target);
                     toDeleteFile.delete();
@@ -167,11 +167,11 @@ public class GliteLfnFileAdaptor extends FileCpi {
 	                    srmFile.copy(dest);
 	                    success = true;
                 	}catch (GATInvocationException e) {
-                		LOGGER.error(GLITE_LFC_FILE_ADAPTOR + ": Unable to donwload "+ location + " from: "+someReplica.toString()+" - "+e.getMessage());
+                		LOGGER.info(GLITE_LFC_FILE_ADAPTOR + ": Unable to donwload "+ location + " from: "+someReplica.toString()+" - "+e.getMessage());
 					}
                 }
                 if(!success){
-                	LOGGER.error(GLITE_LFC_FILE_ADAPTOR + ": Unable to donwload "+ location + " from any replica location");
+                	LOGGER.info(GLITE_LFC_FILE_ADAPTOR + ": Unable to donwload "+ location + " from any replica location");
                 	throw new GATInvocationException(GLITE_LFC_FILE_ADAPTOR + ": Unable to donwload "+ location + " any replica location");
                 }
             }
@@ -247,7 +247,7 @@ public class GliteLfnFileAdaptor extends FileCpi {
             LOGGER.info("Deleting " + lfn);
             return lfcConnector.deletePath(lfn);
         } catch (IOException e) {
-            LOGGER.error(e.toString());
+            LOGGER.info(e.toString());
             return false;
         }
     }
@@ -371,7 +371,7 @@ public class GliteLfnFileAdaptor extends FileCpi {
 				return null;
 			}
 		} catch (IOException e) {
-			LOGGER.error("Unable to list the directory "+location+": "+e.getMessage());
+			LOGGER.info("Unable to list the directory "+location+": "+e.getMessage());
 			return null;
 		}
     }
@@ -388,7 +388,7 @@ public class GliteLfnFileAdaptor extends FileCpi {
 			lfcConnector.mkdir(location.getPath());
 			return true;
 		} catch (IOException e) {
-			LOGGER.error(GLITE_LFC_FILE_ADAPTOR + ": Unable to create the "+location+" directory:" + e.getMessage());
+			LOGGER.info(GLITE_LFC_FILE_ADAPTOR + ": Unable to create the "+location+" directory:" + e.getMessage());
 			return false;
 		}
     }
@@ -410,7 +410,7 @@ public class GliteLfnFileAdaptor extends FileCpi {
 			lfcConnector.rename(location.getPath(), newFile.toGATURI().getPath());
 			return true;
 		} catch (IOException e) {
-			LOGGER.error(GLITE_LFC_FILE_ADAPTOR + ": Unable to create the "+location+" directory:" + e.getMessage());
+			LOGGER.info(GLITE_LFC_FILE_ADAPTOR + ": Unable to create the "+location+" directory:" + e.getMessage());
 			return false;
 		}
     }

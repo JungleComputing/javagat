@@ -446,7 +446,7 @@ public final class GliteSecurityUtils {
 
         final String voName = GliteConstants.getVO(context);
         if (voName == null) {
-        	GliteSecurityUtils.LOGGER.error(GliteConstants.PREFERENCE_VIRTUAL_ORGANISATION + " must be set for gLite adaptor");
+        	GliteSecurityUtils.LOGGER.info(GliteConstants.PREFERENCE_VIRTUAL_ORGANISATION + " must be set for gLite adaptor");
             throw new GATInvocationException(
                     GliteConstants.PREFERENCE_VIRTUAL_ORGANISATION
                             + " must be set for gLite adaptor");
@@ -467,7 +467,7 @@ public final class GliteSecurityUtils {
         }
 
         if (!voInfo.isValid()) {
-        	GliteSecurityUtils.LOGGER.error("Could not determine settings for VO: " + voName + ". "
+        	GliteSecurityUtils.LOGGER.info("Could not determine settings for VO: " + voName + ". "
                     + voInfo + " Please set them in preferences.");
             throw new GATInvocationException(
                     "Could not determine settings for VO: " + voName + ". "
@@ -494,7 +494,7 @@ public final class GliteSecurityUtils {
             manager.saveProxyToFile(proxyFile);
 
         } catch (final Exception e) {
-        	GliteSecurityUtils.LOGGER.error("Could not create VOMS proxy. VO: " + voName + " voInfo: "
+        	GliteSecurityUtils.LOGGER.info("Could not create VOMS proxy. VO: " + voName + " voInfo: "
                     + voInfo + ", requestCode: " + requestCode, e);
             throw new GATInvocationException(
                     "Could not create VOMS proxy. VO: " + voName + " voInfo: "
@@ -562,9 +562,9 @@ public final class GliteSecurityUtils {
             gsc = new CredentialSecurityContext(baos.toByteArray());
         } catch (final FileNotFoundException e2) {
             GliteSecurityUtils.LOGGER
-                    .error("The file denoted by gridProxyFile does not exist");
+                    .info("The file denoted by gridProxyFile does not exist");
         } catch (final IOException e) {
-            GliteSecurityUtils.LOGGER.error("Error reading the proxy file");
+            GliteSecurityUtils.LOGGER.info("Error reading the proxy file");
         }
         if (gsc != null) {
             gatContext.removeSecurityContexts();

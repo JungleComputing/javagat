@@ -33,7 +33,7 @@ public abstract class AbstractJDL {
             fileWriter.close();
             success = true;
         } catch (IOException e) {
-            LOGGER.error("Unable to save the JDL file in "+jdlFileName,e);
+            LOGGER.info("Unable to save the JDL file in "+jdlFileName,e);
         }
 
         return success;

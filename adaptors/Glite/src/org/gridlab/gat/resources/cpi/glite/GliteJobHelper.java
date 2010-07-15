@@ -174,7 +174,7 @@ public class GliteJobHelper {
 			wmsService.getDelegationServiceStub().putProxy(delegationId, new String(GrDPX509Util.certChainToByte(finalCerts)));
 
 		} catch (Exception e) {
-			LOGGER.error("Problem while delegating a certificate to WMS: " + wmsService.getWmsURL(), e);
+			LOGGER.info("Problem while delegating a certificate to WMS: " + wmsService.getWmsURL(), e);
 			throw new GATObjectCreationException(GliteResourceBrokerAdaptor.GLITE_RESOURCE_BROKER_ADAPTOR, e);
 		}
 		LOGGER.debug("Delegation DONE - ID: "+delegationId);
@@ -192,7 +192,7 @@ public class GliteJobHelper {
 		try {
 			jobIdStructType = wmsService.getWMProxyServiceStub().jobRegister(jdlString, delegationId);
 		} catch (Exception e) {
-			LOGGER.error("Problem while registering the new job: " + wmsService.getWmsURL(), e);
+			LOGGER.info("Problem while registering the new job: " + wmsService.getWmsURL(), e);
 			throw new GATInvocationException("Problem while registering the new job: " + wmsService.getWmsURL(), e);
 		}
 		LOGGER.debug("New job registered: "+ jobIdStructType.getId());
@@ -205,7 +205,7 @@ public class GliteJobHelper {
 		try {
 			wmsService.getWMProxyServiceStub().jobStart(jobIdStructType.getId());
 		} catch (Exception e) {
-			LOGGER.error("Problem starting the job " + jobIdStructType.getId() + " on "+wmsService.getWmsURL(), e);
+			LOGGER.info("Problem starting the job " + jobIdStructType.getId() + " on "+wmsService.getWmsURL(), e);
 			throw new GATInvocationException("Problem starting the job " + jobIdStructType.getId() + " on "+wmsService.getWmsURL(), e);
 		}
 		LOGGER.debug("Job started: "+ jobIdStructType.getId());
@@ -219,7 +219,7 @@ public class GliteJobHelper {
 				StringAndLongList sl = wmsService.getWMProxyServiceStub().getOutputFileList(jobIdStructTypes[i].getId(), "gsiftp");
 				list = sl.getFile();
 			} catch (Exception e) {
-				LOGGER.error("Could not receive output due to security problems", e);
+				LOGGER.info("Could not receive output due to security problems", e);
 				postStageException = new GATInvocationException(e.toString());
 			}
 		
@@ -241,13 +241,13 @@ public class GliteJobHelper {
 						f.copy(destForPostStagedFile(f2,softwareDescriptions));
 					} catch (GATInvocationException e) {
 						postStageException = e;
-						LOGGER.error(e.toString());
+						LOGGER.info(e.toString());
 					} catch (URISyntaxException e) {
 						postStageException = new GATInvocationException(e.toString());
-						LOGGER.error("An error occured when building URIs for the poststaged files", e);
+						LOGGER.info("An error occured when building URIs for the poststaged files", e);
 					} catch (GATObjectCreationException e) {
 						postStageException = new GATInvocationException(e.toString());
-						LOGGER.error("Could not create GAT file when retrieving output", e);
+						LOGGER.info("Could not create GAT file when retrieving output", e);
 					}
 				}
 			}
@@ -257,7 +257,7 @@ public class GliteJobHelper {
 				try {
 					wmsService.getWMProxyServiceStub().jobPurge(jobIdStructTypes[i].getId());
 				} catch (Exception e) {
-					LOGGER.error("Unable to purge the job!", e);
+					LOGGER.info("Unable to purge the job!", e);
 				}
 			}
 		}

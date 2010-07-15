@@ -122,10 +122,10 @@ public class GliteJobBasic extends JobCpi implements GliteJobInterface {
 		try {
 			userCredential = new GlobusGSSCredentialImpl(new GlobusCredential(proxyFile), GSSCredential.INITIATE_AND_ACCEPT);
 		} catch (GSSException e) {
-            LOGGER.error(e.toString());
+            LOGGER.info(e.toString());
             throw new GATInvocationException("Failed to load credentials");
         } catch (GlobusCredentialException e) {
-            LOGGER.error(e.toString());
+            LOGGER.info(e.toString());
             throw new GATInvocationException("Failed to load credentials");
         }
 		
@@ -187,9 +187,9 @@ public class GliteJobBasic extends JobCpi implements GliteJobInterface {
 		try{
 			jobStatus = lbService.queryJobState(jobIdStructType);
 		} catch (GenericFault e) {
-			LOGGER.error(e.toString());
+			LOGGER.info(e.toString());
 		} catch (RemoteException e) {
-			LOGGER.error("gLite Error: LoggingAndBookkeeping service only works in glite 3.1 or higher", e);
+			LOGGER.info("gLite Error: LoggingAndBookkeeping service only works in glite 3.1 or higher", e);
 		}
 		if(processJobStatus(jobStatus)){
 			MetricEvent event = new MetricEvent(this, state, statusMetric, System.currentTimeMillis());
