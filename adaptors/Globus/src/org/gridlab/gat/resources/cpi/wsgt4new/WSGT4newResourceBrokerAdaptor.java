@@ -3,15 +3,9 @@ package org.gridlab.gat.resources.cpi.wsgt4new;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import javax.xml.rpc.ServiceException;
-import javax.xml.rpc.Stub;
-
-import org.globus.wsrf.WSRFConstants;
-import org.globus.wsrf.impl.security.authorization.NoAuthorization;
 import org.apache.axis.AxisProperties;
 import org.apache.axis.EngineConfigurationFactory;
 import org.apache.axis.components.uuid.UUIDGen;
@@ -20,13 +14,6 @@ import org.apache.axis.message.addressing.Address;
 import org.apache.axis.message.addressing.EndpointReferenceType;
 import org.apache.axis.message.addressing.ReferencePropertiesType;
 import org.apache.axis.types.URI.MalformedURIException;
-import org.oasis.wsrf.properties.QueryExpressionType;
-import org.oasis.wsrf.properties.QueryResourcePropertiesResponse;
-import org.oasis.wsrf.properties.QueryResourceProperties_Element;
-import org.oasis.wsrf.properties.QueryResourceProperties_PortType;
-import org.oasis.wsrf.properties.WSResourcePropertiesServiceAddressingLocator;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.globus.common.ResourceManagerContact;
 import org.globus.exec.client.GramJob;
 import org.globus.exec.utils.ManagedJobConstants;
@@ -46,10 +33,8 @@ import org.gridlab.gat.io.File;
 import org.gridlab.gat.monitoring.Metric;
 import org.gridlab.gat.monitoring.MetricListener;
 import org.gridlab.gat.resources.AbstractJobDescription;
-import org.gridlab.gat.resources.HardwareResource;
 import org.gridlab.gat.resources.Job;
 import org.gridlab.gat.resources.JobDescription;
-import org.gridlab.gat.resources.ResourceDescription;
 import org.gridlab.gat.resources.SoftwareDescription;
 import org.gridlab.gat.resources.WrapperJobDescription;
 import org.gridlab.gat.resources.cpi.ResourceBrokerCpi;
@@ -57,6 +42,8 @@ import org.gridlab.gat.resources.cpi.Sandbox;
 import org.gridlab.gat.resources.cpi.WrapperJobCpi;
 import org.gridlab.gat.security.globus.GlobusSecurityUtils;
 import org.ietf.jgss.GSSCredential;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Implements the <code>ResourceBrokerCpi</code> abstract class.
@@ -522,19 +509,17 @@ public class WSGT4newResourceBrokerAdaptor extends ResourceBrokerCpi {
         return scheme + "://" + brokerURI.getHost() + ":" + port + path;
     }
     
+    /*
     public List<HardwareResource> findResources(ResourceDescription s)
             throws GATInvocationException {
 
         // Create index service EPR
         
         int port = brokerURI.getPort(8443);
-        String scheme = "https";
-        if (brokerURI.getScheme() != null && !brokerURI.getScheme().equals("any")) {
-            scheme = brokerURI.getScheme();
-        }
+
         String path = "/wsrf/services/DefaultIndexService";
 
-        String indexURI = scheme + "://" + brokerURI.getHost() + ":" + port + path;
+        String indexURI = "https://" + brokerURI.getHost() + ":" + port + path;
         // String indexURI =
         // "https://gt4test.lrz-muenchen.de:8443/wsrf/services/DefaultIndexService";
         EndpointReferenceType indexEPR = new EndpointReferenceType();
@@ -600,5 +585,6 @@ public class WSGT4newResourceBrokerAdaptor extends ResourceBrokerCpi {
         System.out.println("88888888888888888888888");
         throw new UnsupportedOperationException("Not implemented");
     }
+    */
 
 }
