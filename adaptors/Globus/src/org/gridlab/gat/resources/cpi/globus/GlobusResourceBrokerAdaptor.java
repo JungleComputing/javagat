@@ -71,6 +71,10 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
             .getLogger(GlobusResourceBrokerAdaptor.class);
 
     static boolean shutdownInProgress = false;
+    
+    private final String contact;
+    
+    private boolean pinged = false;
 
     public static void init() {
         GATEngine.registerUnmarshaller(GlobusJob.class);
@@ -79,6 +83,11 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
     public GlobusResourceBrokerAdaptor(GATContext gatContext, URI brokerURI)
             throws GATObjectCreationException {
         super(gatContext, brokerURI);
+        if (brokerURI.getScheme() != null) {
+            contact = brokerURI.toString().replace(brokerURI.getScheme() + "://", "");
+        } else {
+            contact = brokerURI.toString();
+        }
     }
 
     protected String createRSL(JobDescription description, String host,
@@ -241,10 +250,10 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
     }
 
     private void runGramJobPolling(GSSCredential credential, String rsl,
-            String contact) throws GATInvocationException {
+            String host) throws GATInvocationException {
         GramJob j = new GramJob(credential, rsl);
         try {
-            Gram.request(contact, j);
+            Gram.request(host, j);
         } catch (GramException e) {
             if (logger.isDebugEnabled()) {
                 logger.debug("could not run job: "
@@ -308,6 +317,17 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
     public Job submitJob(AbstractJobDescription abstractDescription,
             MetricListener listener, String metricDefinitionName)
             throws GATInvocationException {
+ 
+        GSSCredential credential = getCredential(getHostname());
+        
+        if (! pinged) {
+            try {
+                Gram.ping(credential, contact);
+                pinged = true;
+            } catch(Throwable e) {
+                throw new GATInvocationException("GlobusResourceBroker: Could not ping resource manager");
+            }
+        }
 
         if (!(abstractDescription instanceof JobDescription)) {
             throw new GATInvocationException(
@@ -324,10 +344,10 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
             useGramSandbox = true;
         }
         if (useGramSandbox) {
-            return submitJobGramSandbox(description, listener,
+            return submitJobGramSandbox(credential, description, listener,
                     metricDefinitionName);
         } else {
-            return submitJobGatSandbox(description, listener,
+            return submitJobGatSandbox(credential, description, listener,
                     metricDefinitionName);
         }
     }
@@ -387,22 +407,12 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
         }
     }
 
-    public Job submitJobGramSandbox(JobDescription description,
+    public Job submitJobGramSandbox(GSSCredential credential, JobDescription description,
             MetricListener listener, String metricDefinitionName)
             throws GATInvocationException {
         // long start = System.currentTimeMillis();
         String host = getHostname();
-        String contact = brokerURI.toString();
-        if (brokerURI.getScheme() != null) {
-            contact = contact.replace(brokerURI.getScheme() + "://", "");
-        }
 
-        URI hostUri;
-        try {
-            hostUri = new URI(host);
-        } catch (Exception e) {
-            throw new GATInvocationException("globus broker", e);
-        }
         GlobusJob job = new GlobusJob(gatContext, description, null);
 
         // if special preference "globus.exitvalue.enable" is set to true,
@@ -431,16 +441,6 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
         String rsl = createRSL(description, host, null, pre, post);
         if (logger.isInfoEnabled()) {
             logger.info("RSL: " + rsl);
-        }
-
-        GSSCredential credential = null;
-        try {
-            credential = GlobusSecurityUtils.getGlobusCredential(gatContext,
-                    "gram", hostUri, ResourceManagerContact.DEFAULT_PORT);
-        } catch (CouldNotInitializeCredentialException e) {
-            throw new GATInvocationException("globus", e);
-        } catch (CredentialExpiredException e) {
-            throw new GATInvocationException("globus", e);
         }
 
         GramJob j = new GramJob(credential, rsl);
@@ -488,20 +488,13 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
         return job;
     }
 
-    public Job submitJobGatSandbox(JobDescription description,
+    public Job submitJobGatSandbox(GSSCredential credential, JobDescription description,
             MetricListener listener, String metricDefinitionName)
             throws GATInvocationException {
         // long start = System.currentTimeMillis();
         // choose the first of the set descriptions to retrieve the hostname
         // etc.
         String host = getHostname();
-
-        String contact = brokerURI.toString();
-        if (brokerURI.getScheme() != null) {
-            contact = contact.replace(brokerURI.getScheme() + "://", "");
-        }
-
-        GSSCredential credential = getCredential(host);
 
         String random = "" + Math.random();
         // if special preference "globus.exitvalue.enable" is set to true,
