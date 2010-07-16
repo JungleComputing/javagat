@@ -28,6 +28,9 @@ import org.gridlab.gat.io.File;
 @SuppressWarnings("serial")
 public class GT42GridFTPFileAdaptor extends GT42FileAdaptor {
     
+    public static String getDescription() {
+        return "The GT42 GridFTP File Adaptor implements the File object for Globus 4.2 using the gsiftp protocol.";
+    }
     public static String[] getSupportedSchemes() {
         return new String[] { "gt42", "gridftp", "gsiftp", "file", ""};
     }

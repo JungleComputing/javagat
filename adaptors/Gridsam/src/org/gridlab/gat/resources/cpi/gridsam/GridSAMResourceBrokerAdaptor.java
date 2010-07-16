@@ -29,6 +29,10 @@ import org.slf4j.LoggerFactory;
 
 public class GridSAMResourceBrokerAdaptor extends ResourceBrokerCpi {
 
+    public static String getDescription() {
+        return "The Gridsam ResourceBroker Adaptor implements the ResourceBroker object on Gridsam.";
+    }
+
     public static Map<String, Boolean> getSupportedCapabilities() {
         Map<String, Boolean> capabilities = ResourceBrokerCpi
                 .getSupportedCapabilities();

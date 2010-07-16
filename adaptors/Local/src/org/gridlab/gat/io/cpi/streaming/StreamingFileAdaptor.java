@@ -21,6 +21,10 @@ import org.gridlab.gat.io.cpi.FileCpi;
 @SuppressWarnings("serial")
 public class StreamingFileAdaptor extends FileCpi {
 
+    public static String getDescription() {
+        return "The Streaming File Adaptor only implements the File copy operation, by creating a JavaGAT FileInputStream to read the source, and a JavaGAT FileOutputStream to write the destination.";
+    }
+
     public static Map<String, Boolean> getSupportedCapabilities() {
         Map<String, Boolean> capabilities = FileCpi.getSupportedCapabilities();
         capabilities.put("copy", true);

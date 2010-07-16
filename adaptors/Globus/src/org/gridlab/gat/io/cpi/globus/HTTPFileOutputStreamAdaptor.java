@@ -10,6 +10,10 @@ import org.gridlab.gat.URI;
 
 public class HTTPFileOutputStreamAdaptor extends GlobusFileOutputStreamAdaptor {
     
+    public static String getDescription() {
+        return "The HTTP FileOutputStream Adaptor implements the FileOutputStream object using the http: protocol.";
+    }
+
     public static String[] getSupportedSchemes() {
         return new String[] { "http", "file", ""};
     }

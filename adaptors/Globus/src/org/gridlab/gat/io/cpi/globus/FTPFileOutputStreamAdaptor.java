@@ -16,6 +16,10 @@ import org.gridlab.gat.security.cpi.SecurityContextUtils;
 
 public class FTPFileOutputStreamAdaptor extends GlobusFileOutputStreamAdaptor {
     
+    public static String getDescription() {
+        return "The FTP FileOutputStream Adaptor implements the FileOutputStream object using FTP.";
+    }
+
     public static String[] getSupportedSchemes() {
         return new String[] { "ftp", "file", ""};
     }

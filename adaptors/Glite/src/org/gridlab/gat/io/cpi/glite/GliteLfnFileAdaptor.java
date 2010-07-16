@@ -41,38 +41,15 @@ public class GliteLfnFileAdaptor extends FileCpi {
 
     private static final String LFN = "lfn";
     private static final String CANNOT_HANDLE_THIS_URI = "cannot handle this URI: ";
+
+    public static String getDescription() {
+        return "The GliteLfn File Adaptor implements the File object for the Glite LFCs, accessed via lfn: scheme.";
+    }
     
     public static String[] getSupportedSchemes() {
         return new String[] { "glitelfn", LFN, "file", ""};
     }
     
-    protected static final Logger LOGGER = LoggerFactory.getLogger(GliteLfnFileAdaptor.class);
-
-    private LfcConnector lfcConnector;
-
-    private boolean localFile;
-
-    private final String vo;
-    
-    public GliteLfnFileAdaptor(GATContext gatCtx, URI _location)
-            throws GATObjectCreationException {
-    	super(gatCtx, _location);
-        vo = GliteConstants.getVO(gatContext);
-        if (location.isCompatible("file") && location.refersToLocalHost()) {
-            localFile = true;
-        } else {
-            localFile = false;
-            lfcConnector = LfcUtil.initLfcConnector(gatContext, location, vo);
-            try {
-            	this.location = this.location.setHost(lfcConnector.getServer());
-                this.location = this.location.setPort(lfcConnector.getPort());
-            } catch (URISyntaxException e) {
-                LOGGER.warn(e.getMessage());
-            }
-            LOGGER.info("Instantiated gliteLfnFileAdaptor for " + location);
-        }
-    }
-
     public static Map<String, Boolean> getSupportedCapabilities() {
         Map<String, Boolean> capabilities = FileCpi.getSupportedCapabilities();
         capabilities.put("copy", true);
@@ -102,6 +79,33 @@ public class GliteLfnFileAdaptor extends FileCpi {
         return capabilities;
     }
     
+    protected static final Logger LOGGER = LoggerFactory.getLogger(GliteLfnFileAdaptor.class);
+
+    private LfcConnector lfcConnector;
+
+    private boolean localFile;
+
+    private final String vo;
+    
+    public GliteLfnFileAdaptor(GATContext gatCtx, URI _location)
+            throws GATObjectCreationException {
+    	super(gatCtx, _location);
+        vo = GliteConstants.getVO(gatContext);
+        if (location.isCompatible("file") && location.refersToLocalHost()) {
+            localFile = true;
+        } else {
+            localFile = false;
+            lfcConnector = LfcUtil.initLfcConnector(gatContext, location, vo);
+            try {
+            	this.location = this.location.setHost(lfcConnector.getServer());
+                this.location = this.location.setPort(lfcConnector.getPort());
+            } catch (URISyntaxException e) {
+                LOGGER.warn(e.getMessage());
+            }
+            LOGGER.info("Instantiated gliteLfnFileAdaptor for " + location);
+        }
+    }
+
     /**
      * Used by CreateDefaultPropertiesFile to generate default
      * javagat.properties.

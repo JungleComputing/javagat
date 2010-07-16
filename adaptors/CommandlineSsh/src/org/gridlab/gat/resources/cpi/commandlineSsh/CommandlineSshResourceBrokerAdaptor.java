@@ -30,6 +30,10 @@ import org.gridlab.gat.security.commandlinessh.CommandlineSshSecurityUtils;
 
 public class CommandlineSshResourceBrokerAdaptor extends ResourceBrokerCpi {
 
+    public static String getDescription() {
+        return "The CommandlineSsh ResourceBroker Adaptor implements the ResourceBroker object using ssh commands.";
+    }
+
     public static Map<String, Boolean> getSupportedCapabilities() {
         Map<String, Boolean> capabilities = ResourceBrokerCpi
                 .getSupportedCapabilities();

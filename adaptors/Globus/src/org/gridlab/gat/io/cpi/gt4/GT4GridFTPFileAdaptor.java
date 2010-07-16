@@ -28,6 +28,10 @@ import org.gridlab.gat.io.File;
 @SuppressWarnings("serial")
 public class GT4GridFTPFileAdaptor extends GT4FileAdaptor {
         
+    public static String getDescription() {
+        return "The GT4 File Adaptor implements the File object on Globus 4.0 using the Globus COG abstraction kit.";
+    }
+
     public static String[] getSupportedSchemes() {
         return new String[] { "gt4", "gridftp", "gsiftp", "file", ""};
     }

@@ -20,6 +20,10 @@ import org.gridlab.gat.security.cpi.SecurityContextUtils;
 @SuppressWarnings("serial")
 public class FTPFileAdaptor extends GlobusFileAdaptor {
 
+    public static String getDescription() {
+        return "The FTP File Adaptor implements the File object using FTP.";
+    }
+
     public static Map<String, Boolean> getSupportedCapabilities() {
         Map<String, Boolean> capabilities = GlobusFileAdaptor
                 .getSupportedCapabilities();

@@ -38,6 +38,10 @@ import org.gridlab.gat.io.FileInterface;
  */
 public class GenericAdvertServiceAdaptor extends AdvertServiceCpi {
 
+    public static String getDescription() {
+        return "The Generic AdvertService Adaptor implements the Advert Service object using a JavaGAT File object.";
+    }
+
     public static Map<String, Boolean> getSupportedCapabilities() {
         Map<String, Boolean> capabilities = AdvertServiceCpi
                 .getSupportedCapabilities();

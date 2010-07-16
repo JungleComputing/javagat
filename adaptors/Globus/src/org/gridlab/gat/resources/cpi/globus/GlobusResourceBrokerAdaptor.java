@@ -46,6 +46,10 @@ import org.ietf.jgss.GSSException;
  */
 public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
 
+    public static String getDescription() {
+        return "The Globus ResourceBroker Adaptor implements the ResourceBroker object for Globus (non-ws).";
+    }
+
     public static Map<String, Boolean> getSupportedCapabilities() {
         Map<String, Boolean> capabilities = ResourceBrokerCpi
                 .getSupportedCapabilities();

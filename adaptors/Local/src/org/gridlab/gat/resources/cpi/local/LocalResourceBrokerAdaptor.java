@@ -62,6 +62,10 @@ import org.gridlab.gat.resources.cpi.WrapperJobCpi;
  */
 public class LocalResourceBrokerAdaptor extends ResourceBrokerCpi {
 
+    public static String getDescription() {
+        return "The Local ResourceBroker Adaptor implements the ResourceBroker using the Java ProcessBuilder facility.";
+    }
+
     public static Map<String, Boolean> getSupportedCapabilities() {
         Map<String, Boolean> capabilities = ResourceBrokerCpi
                 .getSupportedCapabilities();

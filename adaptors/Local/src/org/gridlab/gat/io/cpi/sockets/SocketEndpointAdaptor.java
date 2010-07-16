@@ -26,6 +26,10 @@ import org.gridlab.gat.io.cpi.EndpointCpi;
 @SuppressWarnings("serial")
 public class SocketEndpointAdaptor extends EndpointCpi implements Serializable {
 
+    public static String getDescription() {
+        return "The Socket Endpoint Adaptor implements the EndPoint object on top of Java sockets.";
+    }
+
     public static Map<String, Boolean> getSupportedCapabilities() {
         Map<String, Boolean> capabilities = EndpointCpi
                 .getSupportedCapabilities();

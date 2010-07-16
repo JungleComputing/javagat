@@ -58,6 +58,10 @@ import org.gridlab.gat.resources.cpi.WrapperJobCpi;
 public class LocalQResourceBrokerAdaptor extends ResourceBrokerCpi implements
         Runnable {
 
+    public static String getDescription() {
+        return "The LocalQ ResourceBroker Adaptor implements the ResourceBroker object using the Java ProcessBuilder facility, but in contrast with the Local ResourceBroker Adaptor, this one has a job queue and can run a number of jobs simultaneously, see the localq.max.concurrent.jobs preference.";
+    }
+
     public static Preferences getSupportedPreferences() {
         Preferences preferences = ResourceBrokerCpi.getSupportedPreferences();
         preferences.put("localq.max.concurrent.jobs", "<number of cores>");

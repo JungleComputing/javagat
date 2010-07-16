@@ -13,6 +13,10 @@ import org.gridlab.gat.io.cpi.FileInputStreamCpi;
 
 public class LocalFileInputStreamAdaptor extends FileInputStreamCpi {
 
+    public static String getDescription() {
+        return "The Local FileInputStream Adaptor is a simple wrapper around the java.io.FileInputStream object.";
+    }
+    
     public static Map<String, Boolean> getSupportedCapabilities() {
         Map<String, Boolean> capabilities = FileInputStreamCpi
                 .getSupportedCapabilities();

@@ -60,6 +60,10 @@ public class UnicoreResourceBrokerAdaptor extends ResourceBrokerCpi {
 	
     protected static Logger logger = LoggerFactory.getLogger(UnicoreResourceBrokerAdaptor.class);
 	
+    public static String getDescription() {
+        return "The Unicore ResourceBroker Adaptor implements the ResourceBroker object on Unicore 6.";
+    }
+
     public static Map<String, Boolean> getSupportedCapabilities() {
         Map<String, Boolean> capabilities = ResourceBrokerCpi
                 .getSupportedCapabilities();

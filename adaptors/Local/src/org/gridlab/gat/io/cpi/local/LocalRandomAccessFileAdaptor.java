@@ -20,6 +20,10 @@ import org.gridlab.gat.io.cpi.RandomAccessFileCpi;
 @SuppressWarnings("serial")
 public class LocalRandomAccessFileAdaptor extends RandomAccessFileCpi {
 
+    public static String getDescription() {
+        return "The Local RandomAccessFile Adaptor is a simple wrapper around the java.io.RandomAccessFile object.";
+    }
+    
     public static Map<String, Boolean> getSupportedCapabilities() {
         Map<String, Boolean> capabilities = RandomAccessFileCpi.getSupportedCapabilities();
         capabilities.put("close", true);

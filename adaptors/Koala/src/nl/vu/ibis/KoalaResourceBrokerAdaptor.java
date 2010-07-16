@@ -24,15 +24,14 @@ import org.koala.common.RFModuleFactory;
 
 public class KoalaResourceBrokerAdaptor extends ResourceBrokerCpi {
 
-	// Added for JavaGAT 2.0
-	public static Map<String, Boolean> getSupportedCapabilities() {
-        Map<String, Boolean> capabilities = new HashMap<String, Boolean>();
-        capabilities.put("beginMultiJob", false);
-        capabilities.put("endMultiJob", false);
-        capabilities.put("findResources", false); // NOTE fuzzy semantics!
-        capabilities.put("reserveResource", false);
-        capabilities.put("submitJob", true);
+    public static String getDescription() {
+        return "The Koala ResourceBroker Adaptor implements the ResourceBroker object on the Koala distributed scheduler.";
+    }
 
+    public static Map<String, Boolean> getSupportedCapabilities() {
+        Map<String, Boolean> capabilities = ResourceBrokerCpi
+                            .getSupportedCapabilities();
+        capabilities.put("submitJob", true);
         return capabilities;
     }
     

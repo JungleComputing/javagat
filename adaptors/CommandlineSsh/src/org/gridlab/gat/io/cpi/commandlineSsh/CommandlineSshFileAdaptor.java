@@ -39,6 +39,10 @@ public class CommandlineSshFileAdaptor extends FileCpi {
     private static final String SSH_STRICT_HOST_KEY_CHECKING = "commandlinessh.StrictHostKeyChecking";
     
     public static final int SSH_PORT = 22;
+
+    public static String getDescription() {
+        return "The CommandlineSsh File Adaptor implements the File object using ssh commands.";
+    }
    
     public static Preferences getSupportedPreferences() {
         Preferences p = FileCpi.getSupportedPreferences();

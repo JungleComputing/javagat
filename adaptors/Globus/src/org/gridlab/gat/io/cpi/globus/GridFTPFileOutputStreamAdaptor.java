@@ -45,6 +45,10 @@ class GridFTPOutputStream extends FTPOutputStream {
 public class GridFTPFileOutputStreamAdaptor extends
         GlobusFileOutputStreamAdaptor {
     
+    public static String getDescription() {
+        return "The GridFTP FileOutputStream Adaptor implements the FileOutputStream object using Globus GSIFTP.";
+    }
+
     public static String[] getSupportedSchemes() {
         return new String[] { "globus", "gsiftp", "file", ""};
     }

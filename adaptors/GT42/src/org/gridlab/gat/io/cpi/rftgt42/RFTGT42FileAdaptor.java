@@ -98,13 +98,6 @@ import org.slf4j.LoggerFactory;
 
 class RFTGT42NotifyCallback implements NotifyCallback {
 
-    public static Map<String, Boolean> getSupportedCapabilities() {
-        Map<String, Boolean> capabilities = FileCpi.getSupportedCapabilities();
-        capabilities.put("delete", true);
-        capabilities.put("copy", true);
-        return capabilities;
-    }
-
     protected static Logger logger = LoggerFactory
             .getLogger(RFTGT42NotifyCallback.class);
 
@@ -177,6 +170,21 @@ public class RFTGT42FileAdaptor extends FileCpi {
         }
     }
 
+    public static Map<String, Boolean> getSupportedCapabilities() {
+        Map<String, Boolean> capabilities = FileCpi.getSupportedCapabilities();
+        capabilities.put("delete", true);
+        capabilities.put("copy", true);
+        return capabilities;
+    }
+
+    public static String getDescription() {
+        return "The RFTGT42 File Adaptor implements the File object on Globus 4.2 using the Globus Reliable File Transfer (RFT) protocol.";
+    }
+
+    public static String[] getSupportedSchemes() {
+        return new String[] { "rftgt42", "gsiftp", "gridftp", "file", ""};
+    }
+    
     public static final Authorization DEFAULT_AUTHZ = HostAuthorization
             .getInstance();
 

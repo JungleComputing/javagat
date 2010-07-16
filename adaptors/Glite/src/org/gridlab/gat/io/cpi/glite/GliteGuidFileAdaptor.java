@@ -53,6 +53,19 @@ public class GliteGuidFileAdaptor extends FileCpi {
     private static final Logger LOGGER = LoggerFactory
             .getLogger(GliteGuidFileAdaptor.class);
     
+
+    public static String getDescription() {
+        return "The GliteGUID File Adaptor implements the File object for the Glite LFCs, accessed via the guid: scheme.";
+    }
+
+    public static Map<String, Boolean> getSupportedCapabilities() {
+        Map<String, Boolean> capabilities = FileCpi.getSupportedCapabilities();
+        capabilities.put("copy", true);
+        capabilities.put("createNewFile", true);
+        capabilities.put("delete", true);
+        return capabilities;
+    }
+
     public static String[] getSupportedSchemes() {
         return new String[] { "gliteguid", GUID, "file", ""};
     }
@@ -76,14 +89,6 @@ public class GliteGuidFileAdaptor extends FileCpi {
                     vo);
             LOGGER.info("Instantiated gLiteGuidFileAdaptor for " + location);
         }
-    }
-
-    public static Map<String, Boolean> getSupportedCapabilities() {
-        Map<String, Boolean> capabilities = FileCpi.getSupportedCapabilities();
-        capabilities.put("copy", true);
-        capabilities.put("createNewFile", true);
-        capabilities.put("delete", true);
-        return capabilities;
     }
 
     /**

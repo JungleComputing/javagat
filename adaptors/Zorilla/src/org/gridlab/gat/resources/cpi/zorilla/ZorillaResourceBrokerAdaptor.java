@@ -34,6 +34,10 @@ import org.gridlab.gat.resources.cpi.WrapperJobCpi;
 public class ZorillaResourceBrokerAdaptor extends ResourceBrokerCpi implements
         Callback, Runnable {
 
+    public static String getDescription() {
+        return "The Zorilla ResourceBroker Adaptor implements the ResourceBroker object on the Zorilla P2P system.";
+    }
+
     public static Map<String, Boolean> getSupportedCapabilities() {
         Map<String, Boolean> capabilities = ResourceBrokerCpi
                 .getSupportedCapabilities();

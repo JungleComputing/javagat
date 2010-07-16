@@ -15,6 +15,10 @@ import org.gridlab.gat.io.cpi.FileCpi;
 @SuppressWarnings("serial")
 public class SrcToLocalToDestCopyFileAdaptor extends FileCpi {
 
+    public static String getDescription() {
+        return "The SrcToLocalToDest File Adaptor only implements the File copy operation, via a local temporary file. Its purpose is to allow copying of a file from one adaptor to another.";
+    }
+
     public static Map<String, Boolean> getSupportedCapabilities() {
         Map<String, Boolean> capabilities = FileCpi.getSupportedCapabilities();
         capabilities.put("copy", true);

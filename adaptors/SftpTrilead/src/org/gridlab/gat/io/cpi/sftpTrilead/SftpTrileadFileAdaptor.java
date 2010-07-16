@@ -38,6 +38,10 @@ import com.trilead.ssh2.sftp.ErrorCodes;
 @SuppressWarnings("serial")
 public class SftpTrileadFileAdaptor extends FileCpi {
 
+    public static String getDescription() {
+        return "The SftpTrilead File Adaptor implements the File object using the SFTP support of the trilead ssh library. Trilead ssh is an open source full java ssh library. On the server side, the 'scp' program must be in the PATH. Connections with a remote ssh server can be made by using the username + password, username + keyfile, or with only a username, depending on the client and server settings.";
+    }
+
     public static Map<String, Boolean> getSupportedCapabilities() {
         Map<String, Boolean> capabilities = FileCpi.getSupportedCapabilities();
         capabilities.put("createNewFile", true);

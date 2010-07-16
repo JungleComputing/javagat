@@ -27,6 +27,10 @@ import org.ietf.jgss.GSSCredential;
  */
 public class HTTPSFileOutputStreamAdaptor extends GlobusFileOutputStreamAdaptor {
     
+    public static String getDescription() {
+        return "The HTTPS FileOutputStream Adaptor implements the FileOutputStream object using the https: protocol.";
+    }
+
     public static String[] getSupportedSchemes() {
         return new String[] { "https", "file", ""};
     }

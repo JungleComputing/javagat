@@ -150,6 +150,10 @@ public class RFTGT4FileAdaptor extends FileCpi {
 
     private static final int DEFAULT_GRIDFTP_PORT = 2811;
     
+    public static String getDescription() {
+        return "The RFTGT4 File Adaptor implements the File object on Globus 4.0 using the Globus Reliable File Transfer (RFT) protocol.";
+    }
+
     public static String[] getSupportedSchemes() {
         return new String[] { "rftgt4", "gsiftp", "gridftp", "file", ""};
     }

@@ -17,6 +17,10 @@ import com.trilead.ssh2.SFTPv3FileHandle;
 
 public class SftpTrileadRandomAccessFileAdaptor extends RandomAccessFileCpi {
 
+    public static String getDescription() {
+        return "The SftpTrilead RandomAccessFile Adaptor implements the RandomAccessFile object using the SFTP support of the trilead ssh library. Trilead ssh is an open source full java ssh library. On the server side, the 'scp' program must be in the PATH. Connections with a remote ssh server can be made by using the username + password, username + keyfile, or with only a username, depending on the client and server settings.";
+    }
+
     public static Preferences getSupportedPreferences() {
         Preferences preferences = RandomAccessFileCpi.getSupportedPreferences();
 

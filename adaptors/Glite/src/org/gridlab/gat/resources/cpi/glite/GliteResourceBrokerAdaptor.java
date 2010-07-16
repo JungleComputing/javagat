@@ -57,39 +57,8 @@ public class GliteResourceBrokerAdaptor extends ResourceBrokerCpi {
     private static final Logger LOGGER = LoggerFactory
             .getLogger(ResourceBrokerCpi.class);
 
-    private LDAPResourceFinder ldapResourceFinder;
-
-    private final List<UriAndCount> resourceBrokerURIs = new ArrayList<UriAndCount>();
-
-    private static class UriAndCount implements Comparable<UriAndCount> {
-        private static final int LIMIT = 3;
-        private final URI uri;
-        private int count;
-
-        public UriAndCount(URI uri) {
-            this.uri = uri;
-            this.count = 0;
-        }
-
-        /** {@inheritDoc} */
-        public int compareTo(UriAndCount o) {
-            return o.count - this.count;
-        }
-
-        public URI getURI() {
-            return uri;
-        }
-
-        public void increaseCount() {
-            if (count < LIMIT)
-                count++;
-        }
-
-        public void decreaseCount() {
-            if (count > -LIMIT)
-                count--;
-        }
-
+    public static String getDescription() {
+        return "The Glite Resourcebroker Adaptor implements the ResourceBroker for gLite WMS job submission.";
     }
 
     public static Map<String, Boolean> getSupportedCapabilities() {
@@ -124,6 +93,41 @@ public class GliteResourceBrokerAdaptor extends ResourceBrokerCpi {
      */
     public static String[] getSupportedSchemes() {
         return new String[] { "ldap", "ldaps", "http", "https", "glite"};
+    }
+
+    private LDAPResourceFinder ldapResourceFinder;
+
+    private final List<UriAndCount> resourceBrokerURIs = new ArrayList<UriAndCount>();
+
+    private static class UriAndCount implements Comparable<UriAndCount> {
+        private static final int LIMIT = 3;
+        private final URI uri;
+        private int count;
+
+        public UriAndCount(URI uri) {
+            this.uri = uri;
+            this.count = 0;
+        }
+
+        /** {@inheritDoc} */
+        public int compareTo(UriAndCount o) {
+            return o.count - this.count;
+        }
+
+        public URI getURI() {
+            return uri;
+        }
+
+        public void increaseCount() {
+            if (count < LIMIT)
+                count++;
+        }
+
+        public void decreaseCount() {
+            if (count > -LIMIT)
+                count--;
+        }
+
     }
 
     /**

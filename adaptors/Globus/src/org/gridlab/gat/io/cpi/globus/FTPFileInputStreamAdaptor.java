@@ -30,6 +30,10 @@ import org.gridlab.gat.security.cpi.SecurityContextUtils;
  */
 public class FTPFileInputStreamAdaptor extends GlobusFileInputStreamAdaptor {
     
+    public static String getDescription() {
+        return "The FTP FileInputStream Adaptor implements the FileInputStream object using FTP.";
+    }
+
     public static String[] getSupportedSchemes() {
         return new String[] { "ftp", "file", ""};
     }

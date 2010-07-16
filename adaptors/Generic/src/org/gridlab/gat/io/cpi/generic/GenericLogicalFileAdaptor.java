@@ -11,7 +11,12 @@ import org.gridlab.gat.io.cpi.LogicalFileCpi;
 
 @SuppressWarnings("serial")
 public class GenericLogicalFileAdaptor extends LogicalFileCpi {
+
     
+    public static String getDescription() {
+        return "The Generic LogicalFile Adaptor implements the LogicalFile object in memory, and is advertisable";
+    }
+
     /**
      * This constructor creates a LocalLogicalFileAdaptor corresponding to the
      * passed URI instance and uses the passed GATContext to broker resources.

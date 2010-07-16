@@ -46,6 +46,10 @@ import org.slf4j.LoggerFactory;
 
 public class GT42ResourceBrokerAdaptor extends ResourceBrokerCpi {
 
+    public static String getDescription() {
+        return "The GT42 ResourceBroker Adaptor implements the ResourceBroker object on Globus 4.2 WS.";
+    }
+
     public static Map<String, Boolean> getSupportedCapabilities() {
         Map<String, Boolean> capabilities = ResourceBrokerCpi
                 .getSupportedCapabilities();

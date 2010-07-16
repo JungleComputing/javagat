@@ -13,6 +13,10 @@ import org.gridlab.gat.io.cpi.FileOutputStreamCpi;
 
 public class LocalFileOutputStreamAdaptor extends FileOutputStreamCpi {
 
+    public static String getDescription() {
+        return "The Local FileOutputStream Adaptor is a simple wrapper around the java.io.FileOutputStream object.";
+    }
+    
     public static Map<String, Boolean> getSupportedCapabilities() {
         Map<String, Boolean> capabilities = FileOutputStreamCpi
                 .getSupportedCapabilities();

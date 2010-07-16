@@ -72,18 +72,17 @@ abstract public class GT4FileAdaptor extends FileCpi {
         return capabilities;
     }
 
+    static final int DEFAULT_GRIDFTP_PORT = 2811;
+
+    static String[] providers = { "gsiftp", "local", "gt2ft", "condor", "ssh",
+            "gt4ft", "gt4", "gsiftp-old", "gt3.2.1", "gt2", "ftp", "webdav" };
+
+    protected static Logger logger = LoggerFactory.getLogger(GT4FileAdaptor.class);
     FileResource resource = null;
 
     String srcProvider;
 
     private boolean localFile = false;
-
-    static final int DEFAULT_GRIDFTP_PORT = 2811;
-
-    String[] providers = { "gsiftp", "local", "gt2ft", "condor", "ssh",
-            "gt4ft", "gt4", "gsiftp-old", "gt3.2.1", "gt2", "ftp", "webdav" };
-
-    protected static Logger logger = LoggerFactory.getLogger(GT4FileAdaptor.class);
 
     /**
      * Creates new GAT GT4 file object. The constructor is called by the

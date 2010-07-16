@@ -19,6 +19,10 @@ public class SftpTrileadFileInputStreamAdaptor extends FileInputStreamCpi {
     
     protected static Logger logger = LoggerFactory.getLogger(SftpTrileadFileInputStreamAdaptor.class);
     
+    public static String getDescription() {
+        return "The SftpTrilead FileInputStream Adaptor implements the FileInputStream object using the SFTP support of the trilead ssh library. Trilead ssh is an open source full java ssh library. On the server side, the 'scp' program must be in the PATH. Connections with a remote ssh server can be made by using the username + password, username + keyfile, or with only a username, depending on the client and server settings.";
+    }
+
     public static Map<String, Boolean> getSupportedCapabilities() {
         Map<String, Boolean> capabilities = FileInputStreamCpi
                 .getSupportedCapabilities();
@@ -31,10 +35,6 @@ public class SftpTrileadFileInputStreamAdaptor extends FileInputStreamCpi {
         capabilities.put("skip", true);
 
         return capabilities;
-    }
-    
-    public static String getDescription() {
-        return "The SftpTrilead FileInputStream Adaptor implements the FileInputStream object using the trilead ssh library.";
     }
     
     public static Preferences getSupportedPreferences() {

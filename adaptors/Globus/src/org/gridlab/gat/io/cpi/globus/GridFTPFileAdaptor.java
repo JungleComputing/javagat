@@ -33,6 +33,10 @@ import org.slf4j.LoggerFactory;
 @SuppressWarnings("serial")
 public class GridFTPFileAdaptor extends GlobusFileAdaptor {
 
+    public static String getDescription() {
+        return "The GridFTP File Adaptor implements the File object using Globus GSIFTP.";
+    }
+
     public static Preferences getSupportedPreferences() {
         Preferences p = GlobusFileAdaptor.getSupportedPreferences();
         p.put("ftp.connection.protection", "<default taken from globus>");

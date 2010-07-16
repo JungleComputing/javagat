@@ -42,6 +42,29 @@ public class GliteSrmFileAdaptor extends FileCpi {
     public static String[] getSupportedSchemes() {
         return new String[] { "glitesrm", SRM_PROTOCOL, "file", ""};
     }
+
+    public static String getDescription() {
+        return "The GliteSRM File Adaptor implements the File object for the gLite SRM protocol.";
+    }
+
+    public static Map<String, Boolean> getSupportedCapabilities() {
+        Map<String, Boolean> capabilities = FileCpi.getSupportedCapabilities();
+        capabilities.put("copy", true);
+        capabilities.put("delete", true);
+        return capabilities;
+    }
+
+    /**
+     * Used by CreateDefaultPropertiesFile to generate default
+     * javagat.properties.
+     * 
+     * @return Properties and their default values.
+     */
+    public static Preferences getSupportedPreferences() {
+        Preferences preferences = FileCpi.getSupportedPreferences();
+        GliteSecurityUtils.addGliteSecurityPreferences(preferences);
+        return preferences;
+    }
     
     private static final Logger LOGGER = LoggerFactory
             .getLogger(GliteSrmFileAdaptor.class);
@@ -65,25 +88,6 @@ public class GliteSrmFileAdaptor extends FileCpi {
         LOGGER.info("Instantiated gLiteSrmFileAdaptor for " + location);
     }
 
-    public static Map<String, Boolean> getSupportedCapabilities() {
-        Map<String, Boolean> capabilities = FileCpi.getSupportedCapabilities();
-        capabilities.put("copy", true);
-        capabilities.put("delete", true);
-        return capabilities;
-    }
-
-    /**
-     * Used by CreateDefaultPropertiesFile to generate default
-     * javagat.properties.
-     * 
-     * @return Properties and their default values.
-     */
-    public static Preferences getSupportedPreferences() {
-        Preferences preferences = FileCpi.getSupportedPreferences();
-        GliteSecurityUtils.addGliteSecurityPreferences(preferences);
-        return preferences;
-    }
-    
     /** {@inheritDoc} */
     public void copy(URI dest) throws GATInvocationException {
         try {

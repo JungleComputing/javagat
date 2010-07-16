@@ -35,9 +35,9 @@ public class SshTrileadFileOutputStreamAdaptor extends FileOutputStreamCpi {
     }
     
     public static String getDescription() {
-        return "The SshTrilead FileOutputStream Adaptor implements the FileOutputStream object using the trilead ssh library.";
+        return "The SshTrilead FileOutputStream Adaptor implements the FileOutputStream object using the trilead ssh library. Trilead ssh is an open source full java ssh library. On the server side, the 'scp' program must be in the PATH. Connections with a remote ssh server can be made by using the username + password, username + keyfile, or with only a username, depending on the client and server settings.";
     }
-    
+
     public static Preferences getSupportedPreferences() {
         Preferences preferences = FileOutputStreamCpi.getSupportedPreferences();
         

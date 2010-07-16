@@ -21,6 +21,10 @@ import org.slf4j.LoggerFactory;
 
 public class GridFTPRandomAccessFileAdaptor extends RandomAccessFileCpi {
     
+    public static String getDescription() {
+        return "The GridFTP RandomAccessFile Adaptor implements the RandomAccessFile object using Globus GSIFTP.";
+    }
+
     public static Preferences getSupportedPreferences() {
         Preferences p = RandomAccessFileCpi.getSupportedPreferences();
         p.put("ftp.connection.protection", "<default taken from globus>");

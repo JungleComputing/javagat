@@ -54,6 +54,10 @@ import org.slf4j.LoggerFactory;
  */
 public class WSGT4newResourceBrokerAdaptor extends ResourceBrokerCpi {
 
+    public static String getDescription() {
+        return "The WSGT4new ResourceBroker Adaptor implements the ResourceBroker object for Globus-4.0 WS.";
+    }
+
     public static Map<String, Boolean> getSupportedCapabilities() {
         Map<String, Boolean> capabilities = ResourceBrokerCpi
                 .getSupportedCapabilities();

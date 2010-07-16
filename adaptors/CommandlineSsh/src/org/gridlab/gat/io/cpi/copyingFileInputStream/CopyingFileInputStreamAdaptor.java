@@ -23,6 +23,10 @@ import org.gridlab.gat.io.cpi.commandlineSsh.CommandlineSshFileAdaptor;
  */
 public class CopyingFileInputStreamAdaptor extends FileInputStreamCpi {
     
+    public static String getDescription() {
+        return "The Copying FileInputStream Adaptor implements the FileInputStream object by creating a local copy of a file using the CommandlineSsh File adaptor.";
+    }
+
     public static Map<String, Boolean> getSupportedCapabilities() {
         Map<String, Boolean> capabilities = FileInputStreamCpi
                 .getSupportedCapabilities();
