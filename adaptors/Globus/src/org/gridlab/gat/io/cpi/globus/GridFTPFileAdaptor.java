@@ -295,19 +295,21 @@ public class GridFTPFileAdaptor extends GlobusFileAdaptor {
 				destLock = createHostLock(dest);
 
 				srcCanLock = srcLock.tryLock();
-				logger.debug("source can be locked: " + srcCanLock);
+				logger.debug("@@@ tryLock(): " + src + " canLock: " + srcCanLock  + " holdcount: " + srcLock.getHoldCount() + " " + srcLock);
 				destCanLock = destLock.tryLock();
-				logger.debug("dest can be locked: " + srcCanLock);
+				logger.debug("@@@ tryLock(): " + dest + " canLock: " + destCanLock  + " holdcount: " + destLock.getHoldCount() + " " + destLock);
 
 			} finally {
 				// we cannot obtain both locks
 				if (!srcCanLock || !destCanLock) {
 					if (srcCanLock) {
 						srcLock.unlock();
+						logger.debug("@@@ unlock uri: " + src + " holdcount: " + srcLock.getHoldCount() + " " + srcLock);						
 					}
 
 					if (destCanLock) {
 						destLock.unlock();
+						logger.debug("@@@ unlock uri: " + dest + " holdcount: " + destLock.getHoldCount() + " " + destLock);
 					}
 
 					try {
@@ -320,8 +322,10 @@ public class GridFTPFileAdaptor extends GlobusFileAdaptor {
 						super.copy(dest);
 						copyDone = true;
 					} finally {
-						srcLock.unlock();
+						srcLock.unlock();						
+						logger.debug("@@@ unlock uri: " + src  + " holdcount: " + srcLock.getHoldCount() + " " + srcLock);
 						destLock.unlock();
+						logger.debug("@@@ unlock uri: " + dest  + " holdcount: " + destLock.getHoldCount() + " " + destLock);
 					}
 				}
 			}
@@ -336,6 +340,8 @@ public class GridFTPFileAdaptor extends GlobusFileAdaptor {
 	 * @param uri the uri of the host
 	 */
 	private static ReentrantLock createHostLock(URI uri) {
+		logger.debug("@@@ createHostLock(uri) uri: " + uri);
+		
 		String host = uri.getHost();
 		ReentrantLock lock = null;
 
@@ -349,7 +355,8 @@ public class GridFTPFileAdaptor extends GlobusFileAdaptor {
 
 			if (lock == null) {
 				lock = new ReentrantLock(true);
-
+				logger.debug("@@@ new ReentrantLock for " + host + " " + lock);
+				
 				if (null != host) {
 					lockTable.put(host, lock);
 				}
@@ -365,6 +372,8 @@ public class GridFTPFileAdaptor extends GlobusFileAdaptor {
 	 * @param uri the uri of the host
 	 */
 	private static ReentrantLock getHostLock(URI uri) {
+		logger.debug("@@@ getHostLock(uri) uri: " + uri);
+		
 		String host = uri.getHost();
 		ReentrantLock lock = null;
 
@@ -390,12 +399,15 @@ public class GridFTPFileAdaptor extends GlobusFileAdaptor {
 	 */
 	protected FTPClient createClient(GATContext gatContext, Preferences additionalPreferences, URI hostURI)
 			throws GATInvocationException, InvalidUsernameOrPasswordException {
-		// try to get the lock for this host
 		URI src = fixURI(toURI());
+		
+		logger.debug("@@@ createClient uri: " + src);
+		// try to get the lock for this host
+		
 		ReentrantLock lock = null;
 		lock = createHostLock(src);
 		lock.lock();
-
+		logger.debug("@@@ lock() uri " + src + " holdcount: " + lock.getHoldCount() + " " + lock);
 		return doWorkCreateClient(gatContext, additionalPreferences, hostURI);
 	}
 
@@ -407,21 +419,21 @@ public class GridFTPFileAdaptor extends GlobusFileAdaptor {
 	protected void destroyClient(GATContext context, FTPClient c, URI hostURI, Preferences preferences)
 			throws CouldNotInitializeCredentialException, CredentialExpiredException,
 			InvalidUsernameOrPasswordException {
-		logger.debug("destroyClient");
-
 		// First destroy the client, do this before releasing the lock to avoid problems with other threads that might
 		// use the same client from cache!
 		doWorkDestroyClient(context, c, hostURI, preferences);
 
 		// then remove the lock for the URI
 		URI src = fixURI(toURI());
+		
+		logger.debug("@@@ destroyClient uri: " + src);
 		ReentrantLock lock = null;
 
 		lock = getHostLock(src);
 
 		if (lock != null && lock.isLocked()) {
 			lock.unlock();
-			logger.debug("called unlock() in mkdirs");
+			logger.debug("@@@ unlock() uri: " + src  + " holdcount: " + lock.getHoldCount() + " " + lock);
 		}
 	}
 
@@ -575,7 +587,13 @@ public class GridFTPFileAdaptor extends GlobusFileAdaptor {
 	 * @throws GSSException an exception that might occurs
 	 */
 	private static String getCacheKey(URI hostURI, String userName) throws GSSException {
-		return hostURI.getHost() + HOSTNAME_USER_SEPARATOR + userName;
+		String host = hostURI.getHost() ;
+		
+		if (null == host || host.isEmpty()) {
+			host = "localhost";
+		}
+		
+		return host + HOSTNAME_USER_SEPARATOR + userName;
 	}
 
 	/**
