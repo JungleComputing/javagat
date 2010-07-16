@@ -184,12 +184,12 @@ public class GliteSrmFileAdaptor extends FileCpi {
 		try {
 			GliteSecurityUtils.getVOMSProxy(gatContext, true);
 
-			List<String> result = connector.realLs(location);
+			List<String> result = connector.listFileNames(location);
 			return (String[]) result.toArray(new String[result.size()]);
 		} catch (IOException e) {
 			LOGGER.error("An error occurs during ls", e);
+			throw new GATInvocationException("An error occurs during ls", e);
 		}
-		return null;
 	}
 
 	/**
@@ -199,19 +199,29 @@ public class GliteSrmFileAdaptor extends FileCpi {
 	 * @throws GATInvocationException an exception that might occurs
 	 */
 	public FileInfo[] listFileInfo() throws GATInvocationException {
-		String[] list = list();
-		FileInfo[] fileInfos = null;
+		try {
+			GliteSecurityUtils.getVOMSProxy(gatContext, true);
 
-		if (null != list && list.length > 0) {
-			fileInfos = new FileInfo[list.length];
+			List<FileInfo> result = connector.listFileInfos(location);
+			return (FileInfo[]) result.toArray(new FileInfo[result.size()]);
+		} catch (IOException e) {
+			LOGGER.error("An error occurs during ls", e);
+			throw new GATInvocationException("An error occurs during ls", e);
+		}		
+		
+//		String[] list = list();
+//		FileInfo[] fileInfos = null;
+//
+//		if (null != list && list.length > 0) {
+//			fileInfos = new FileInfo[list.length];
+//
+//			for (int i = 0 ; i < list.length; i++) {
+//				FileInfo info = new FileInfo(list[i]);
+//				fileInfos[i] = info;
+//			}
+//		}
 
-			for (int i = 0 ; i < list.length; i++) {
-				FileInfo info = new FileInfo(list[i]);
-				fileInfos[i] = info;
-			}
-		}
-
-		return fileInfos;
+//		return fileInfos;
 	} // public FileInfo[] listFileInfo() throws GATInvocationException
 
 	/**

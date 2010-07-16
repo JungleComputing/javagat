@@ -45,6 +45,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -72,6 +73,8 @@ import org.globus.gsi.GlobusCredentialException;
 import org.globus.gsi.gssapi.GlobusGSSCredentialImpl;
 import org.globus.gsi.gssapi.auth.NoAuthorization;
 import org.gridlab.gat.GATInvocationException;
+import org.gridlab.gat.io.FileInfo;
+import org.gridlab.gat.io.FileInfo.FileType;
 import org.gridlab.gat.io.attributes.GroupPrincipal;
 import org.gridlab.gat.io.attributes.PosixFileAttributes;
 import org.gridlab.gat.io.attributes.PosixFilePermission;
@@ -136,7 +139,7 @@ public class SrmConnection {
 			URL.setURLStreamHandlerFactory(httpgfac);
 			LOGGER.info("URLClassloader: " + URL.class.getClassLoader());
 		} catch (Error e) {
-			//In an application server this exception always accurs. So log only...
+			//In an application server like tomcat, this exception will always occurs. So log only...
 			LOGGER.debug("Cannot set HTTPG scheme for URLs", e);
 		}
 
@@ -487,10 +490,10 @@ public class SrmConnection {
 	 * 
 	 * @param uri the uri to list
 	 * 
-	 * @return a SRMPosixFile that holds the listing
+	 * @return an array with the names of the filesin the given uri
 	 * @throws IOException an exception that might occurs
 	 */
-	public List<String> realLs(String uri) throws IOException {
+	public List<String> listFileNames(String uri) throws IOException {
 		URI requestUri = new URI(uri);
 		
 		SrmLsRequest srmLsRequest = new SrmLsRequest();
@@ -509,8 +512,6 @@ public class SrmConnection {
 		List<String> paths = new ArrayList<String>();
 
 		for (TMetaDataPathDetail detail : response.getDetails().getPathDetailArray()) {
-			//paths.add(fileName);
-
 			for (TMetaDataPathDetail subDetail : detail.getArrayOfSubPaths().getPathDetailArray()) {
 				String fileName = subDetail.getPath().replace(requestUri.getPath(), "");
 				paths.add(fileName);
@@ -520,6 +521,135 @@ public class SrmConnection {
 		return paths;
 	}
 
+	/**
+	 * Invokes a ls with the given uri.
+	 * 
+	 * @param uri the uri to list
+	 * 
+	 * @return an array with the names of the filesin the given uri
+	 * @throws IOException an exception that might occurs
+	 */
+	public List<FileInfo> listFileInfos(String uri) throws IOException {
+		List<FileInfo> fileInfos = new ArrayList<FileInfo>();
+		
+		URI requestUri = new URI(uri);
+		
+		SrmLsRequest srmLsRequest = new SrmLsRequest();
+		srmLsRequest.setArrayOfSURLs(new ArrayOfAnyURI(new URI[] { requestUri }));
+		srmLsRequest.setAllLevelRecursive(false);
+		srmLsRequest.setFullDetailedList(true);
+		LOGGER.info("Invoking getPermissions request for URI " + uri);
+		SrmLsResponse response = service.srmLs(srmLsRequest);
+		TReturnStatus returnStatus = response.getReturnStatus();
+		LOGGER.info("Return status code " + returnStatus.getStatusCode());
+		if (!returnStatus.getStatusCode().equals(TStatusCode.SRM_SUCCESS)) {
+			LOGGER.info(returnStatus.getStatusCode() + returnStatus.getExplanation());
+			throw new IOException(returnStatus.getExplanation() + " (" + returnStatus.getStatusCode() + ")");
+		}		
+
+		for (TMetaDataPathDetail detail : response.getDetails().getPathDetailArray()) {
+			for (TMetaDataPathDetail subDetail : detail.getArrayOfSubPaths().getPathDetailArray()) {
+				FileInfo info = createFileInfo(subDetail, requestUri);				
+				fileInfos.add(info);
+			}
+		}
+
+		return fileInfos;
+	}	
+	
+	
+	private FileInfo createFileInfo(TMetaDataPathDetail subDetail, URI requestUri) {
+		
+
+		String fileName = subDetail.getPath().replace(requestUri.getPath(), "");
+		//Remove a starting slash
+		if (fileName.startsWith("/")) {
+			fileName = fileName.substring(1);
+		}
+		
+		FileInfo info = new FileInfo(fileName);
+		
+		// Size
+		info.setSize(subDetail.getSize().longValue());
+		
+		//Type
+		if (subDetail.getType().equals(TFileType.DIRECTORY)) {
+			info.setFileType(FileType.directory);
+		} else if(subDetail.getType().equals(TFileType.LINK)) {
+			info.setFileType(FileType.softlink);
+		} else if(subDetail.getType().equals(TFileType.FILE)) {
+			info.setFileType(FileType.file);
+		}
+		
+		//Date and Time
+		DateFormat dateformat = DateFormat.getDateInstance(DateFormat.MONTH_FIELD | DateFormat.DATE_FIELD);
+		String date = dateformat.format(subDetail.getCreatedAtTime().getTime());
+		
+		DateFormat timeformat = DateFormat.getTimeInstance();
+		String time = timeformat.format(subDetail.getCreatedAtTime().getTime());
+		
+		info.setDateTime(date, time);
+		
+		//User Permission		
+		if (subDetail.getOwnerPermission().getMode().equals(TPermissionMode.NONE)) {
+			info.setUserPermissions(false, false, false);
+		} else if (subDetail.getOwnerPermission().getMode().equals(TPermissionMode.R)) {
+			info.setUserPermissions(true, false, false);
+		} else if (subDetail.getOwnerPermission().getMode().equals(TPermissionMode.RW)) {
+			info.setUserPermissions(true, true, false);
+		} else if (subDetail.getOwnerPermission().getMode().equals(TPermissionMode.RWX)) {
+			info.setUserPermissions(true, true, true);
+		} else if (subDetail.getOwnerPermission().getMode().equals(TPermissionMode.RX)) {
+			info.setUserPermissions(true, false, true);
+		} else if (subDetail.getOwnerPermission().getMode().equals(TPermissionMode.W)) {
+			info.setUserPermissions(false, true, false);
+		} else if (subDetail.getOwnerPermission().getMode().equals(TPermissionMode.WX)) {
+			info.setUserPermissions(false, true, true);
+		} else if (subDetail.getOwnerPermission().getMode().equals(TPermissionMode.X)) {
+			info.setUserPermissions(false, false, true);
+		}
+			
+		//Group Permission		
+		if (subDetail.getGroupPermission().getMode().equals(TPermissionMode.NONE)) {
+			info.setGroupPermissions(false, false, false);
+		} else if (subDetail.getGroupPermission().getMode().equals(TPermissionMode.R)) {
+			info.setGroupPermissions(true, false, false);
+		} else if (subDetail.getGroupPermission().getMode().equals(TPermissionMode.RW)) {
+			info.setGroupPermissions(true, true, false);
+		} else if (subDetail.getGroupPermission().getMode().equals(TPermissionMode.RWX)) {
+			info.setGroupPermissions(true, true, true);
+		} else if (subDetail.getGroupPermission().getMode().equals(TPermissionMode.RX)) {
+			info.setGroupPermissions(true, false, true);
+		} else if (subDetail.getGroupPermission().getMode().equals(TPermissionMode.W)) {
+			info.setGroupPermissions(false, true, false);
+		} else if (subDetail.getGroupPermission().getMode().equals(TPermissionMode.WX)) {
+			info.setGroupPermissions(false, true, true);
+		} else if (subDetail.getGroupPermission().getMode().equals(TPermissionMode.X)) {
+			info.setGroupPermissions(false, false, true);
+		}		
+		
+		//Other Permission		
+		if (subDetail.getOtherPermission().equals(TPermissionMode.NONE)) {
+			info.setAllPermissions(false, false, false);
+		} else if (subDetail.getOtherPermission().equals(TPermissionMode.R)) {
+			info.setAllPermissions(true, false, false);
+		} else if (subDetail.getOtherPermission().equals(TPermissionMode.RW)) {
+			info.setAllPermissions(true, true, false);
+		} else if (subDetail.getOtherPermission().equals(TPermissionMode.RWX)) {
+			info.setAllPermissions(true, true, true);
+		} else if (subDetail.getOtherPermission().equals(TPermissionMode.RX)) {
+			info.setAllPermissions(true, false, true);
+		} else if (subDetail.getOtherPermission().equals(TPermissionMode.W)) {
+			info.setAllPermissions(false, true, false);
+		} else if (subDetail.getOtherPermission().equals(TPermissionMode.WX)) {
+			info.setAllPermissions(false, true, true);
+		} else if (subDetail.getOtherPermission().equals(TPermissionMode.X)) {
+			info.setAllPermissions(false, false, true);
+		}			
+		
+		return info;
+	}
+	
 	/**
 	 * Creates a new directory on a SRM resource.
 	 * 

@@ -12,6 +12,7 @@ import java.util.TreeMap;
 
 import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.URI;
+import org.gridlab.gat.io.FileInfo;
 import org.gridlab.gat.io.cpi.gliteMultiUser.srm.SrmConnection.SRMPosixFile;
 
 /**
@@ -122,16 +123,28 @@ public class SrmConnector {
 	}
 
 	/**
-	 * Get the permissions associated to a file.
+	 * Lists the file names to a given {@link URI}.
 	 * 
 	 * @param srmURI the URI for the file.
 	 * @return the permissions
 	 * @throws IOException if a problem occurs
 	 */
-	public List<String> realLs(URI srmURI) throws IOException {
+	public List<String> listFileNames(URI srmURI) throws IOException {
 		SrmConnection connection = new SrmConnection(srmURI.getHost(), proxyPath);
-		return connection.realLs(srmURI.toString());
+		return connection.listFileNames(srmURI.toString());
 	}
+	
+	/**
+	 * Lists all the {@link FileInfo}s to a given {@link URI}.
+	 * 
+	 * @param srmURI the URI for the file.
+	 * @return the permissions
+	 * @throws IOException if a problem occurs
+	 */
+	public List<FileInfo> listFileInfos(URI srmURI) throws IOException {
+		SrmConnection connection = new SrmConnection(srmURI.getHost(), proxyPath);
+		return connection.listFileInfos(srmURI.toString());
+	}	
 
 	/**
 	 * @param srmURI the URI for the file.
