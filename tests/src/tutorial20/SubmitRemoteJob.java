@@ -35,18 +35,21 @@ public class SubmitRemoteJob {
         JobDescription jd = new JobDescription(sd);
         
         Preferences prefs = new Preferences();
+        /*
         prefs.put("VirtualOrganisation", "pvier");
         prefs.put("vomsServerURL", "voms.grid.sara.nl");
         prefs.put("vomsServerPort", "30000");
         prefs.put("vomsHostDN", "/O=dutchgrid/O=hosts/OU=sara.nl/CN=voms.grid.sara.nl");
+        */
         
         CertificateSecurityContext ctxt = new CertificateSecurityContext(
                 new URI(System.getProperty("user.home") + "/.globus/userkey.pem"),
                 new URI(System.getProperty("user.home") + "/.globus/usercert.pem"),
                 getPassphrase()
                 );
-        
+
         GATContext context = new GATContext();
+
         context.addPreferences(prefs);
         context.addSecurityContext(ctxt);
         ResourceBroker broker = GAT.createResourceBroker(context, new URI(args[0]));
