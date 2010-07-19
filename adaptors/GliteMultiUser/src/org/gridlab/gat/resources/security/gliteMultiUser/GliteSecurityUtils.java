@@ -50,13 +50,10 @@ public class GliteSecurityUtils {
 	/**
 	 * Retrieves a voms-proxy. Try to reuse an existing voms-proxy from disk if the remaining lifetime is big enough.
 	 * 
-	 * @param context
-	 *            The GAT context.
-	 * @param useCache
-	 *            marks that the disk should be search for an existing voms-proxy
+	 * @param context The GAT context.
+	 * @param useCache marks that the disk should be search for an existing voms-proxy
 	 * @return a voms-proxy
-	 * @throws GATInvocationException
-	 *             an exception that might occurs.
+	 * @throws GATInvocationException an exception that might occurs.
 	 */
 	public static GlobusCredential getVOMSProxy(GATContext context, boolean useCache) throws GATInvocationException {
 		String userVomsProxyLocation = getPathToUserVomsProxy(context);
@@ -91,11 +88,9 @@ public class GliteSecurityUtils {
 	/**
 	 * Creates a voms-proxy.
 	 * 
-	 * @param context
-	 *            The GAT context
+	 * @param context The GAT context
 	 * @return <code>true</code> if the voms-proxy has been created successfully
-	 * @throws GATInvocationException
-	 *             an exception that might occurs.
+	 * @throws GATInvocationException an exception that might occurs.
 	 */
 	private static GlobusCredential createVOMSProxy(GATContext context) throws GATInvocationException {
 		// Must be a unique ID!
@@ -130,8 +125,8 @@ public class GliteSecurityUtils {
 		final String myProxyPwd = myproxyContext.getPassword();
 
 		// Retrieve the proxy from the myproxy server
-		GSSCredential myProxyCred = MyProxySecurityUtils.getCredentialFromMyProxyServer(context, myProxyHost, myProxyPort,
-				myProxyUser, myProxyPwd);
+		GSSCredential myProxyCred = MyProxySecurityUtils.getCredentialFromMyProxyServer(context, myProxyHost,
+				myProxyPort, myProxyUser, myProxyPwd);
 
 		// Cast the proxy to a globus credential
 		GlobusCredential globusCred = ((GlobusGSSCredentialImpl) myProxyCred).getGlobusCredential();
@@ -165,17 +160,18 @@ public class GliteSecurityUtils {
 	 * Creates the path to the user voms-proxy on the disk. The userId is stored as {@link Preferences} in the
 	 * {@link GATContext}
 	 * 
-	 * @param context
-	 *            the gat context
+	 * @param context the gat context
 	 * @return the path to the user voms-proxy
-	 * @throws GATInvocationException
-	 *             an exception that might occurs.
+	 * @throws GATInvocationException an exception that might occurs.
 	 */
 	public static String getPathToUserVomsProxy(GATContext context) throws GATInvocationException {
 		// Must be a unique ID!
 		String userId = (String) context.getPreferences().get(GliteConstants.PREFERENCE_PROXY_USER_ID);
 
 		String proxyDirectory = (String) context.getPreferences().get(GliteConstants.PREFERENCE_VOMS_PROXY_DIRECTORY);
+
+		String vo = (String) context.getPreferences().get(GliteConstants.PREFERENCE_VIRTUAL_ORGANISATION);
+
 		if (null != proxyDirectory && !proxyDirectory.endsWith("/") && !proxyDirectory.endsWith("\\")) {
 			proxyDirectory = proxyDirectory + File.separator;
 		}
@@ -190,7 +186,12 @@ public class GliteSecurityUtils {
 					"For retrieving the path to a user voms-proxy, there must be a voms-proxy directory specified in the GATContext Preferences.");
 		}
 
-		return proxyDirectory + PROXY_PREFIX + userId;
+		if (null == vo) {
+			throw new GATInvocationException(
+					"For retrieving the path to a user voms-proxy, there must be a vo specified in the GATContext Preferences.");
+		}
+
+		return proxyDirectory + PROXY_PREFIX + userId + "_" + vo;
 	}
 
 	/**
@@ -206,8 +207,7 @@ public class GliteSecurityUtils {
 	 * <li>The globus adaper is fully capable of re-creating the credential information from a byte array.
 	 * </ul>
 	 * 
-	 * @param gatContext
-	 *            GATContext in which to replace the security information.
+	 * @param gatContext GATContext in which to replace the security information.
 	 */
 	public static void replaceSecurityContextWithGliteContext(final GATContext gatContext, String vomsProxyPath) {
 		CredentialSecurityContext gsc = null;
@@ -233,8 +233,7 @@ public class GliteSecurityUtils {
 	/**
 	 * Defines some glite specific preferences.
 	 * 
-	 * @param preferences
-	 *            the preference instance
+	 * @param preferences the preference instance
 	 */
 	public static void addGliteSecurityPreferences(final Preferences preferences) {
 		preferences.put(GliteConstants.PREFERENCE_VIRTUAL_ORGANISATION, "<no default>");
