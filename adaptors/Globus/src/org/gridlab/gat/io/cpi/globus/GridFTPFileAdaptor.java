@@ -295,21 +295,26 @@ public class GridFTPFileAdaptor extends GlobusFileAdaptor {
 				destLock = createHostLock(dest);
 
 				srcCanLock = srcLock.tryLock();
-				logger.debug("@@@ tryLock(): " + src + " canLock: " + srcCanLock  + " holdcount: " + srcLock.getHoldCount() + " " + srcLock);
+				logger.debug("@@@ tryLock(): " + src + " canLock: " + srcCanLock + " holdcount: "
+						+ srcLock.getHoldCount() + " " + srcLock);
 				destCanLock = destLock.tryLock();
-				logger.debug("@@@ tryLock(): " + dest + " canLock: " + destCanLock  + " holdcount: " + destLock.getHoldCount() + " " + destLock);
+				logger.debug("@@@ tryLock(): " + dest + " canLock: " + destCanLock + " holdcount: "
+						+ destLock.getHoldCount() + " " + destLock);
 
 			} finally {
 				// we cannot obtain both locks
 				if (!srcCanLock || !destCanLock) {
 					if (srcCanLock) {
 						srcLock.unlock();
-						logger.debug("@@@ unlock uri: " + src + " holdcount: " + srcLock.getHoldCount() + " " + srcLock);						
+						logger
+								.debug("@@@ unlock uri: " + src + " holdcount: " + srcLock.getHoldCount() + " "
+										+ srcLock);
 					}
 
 					if (destCanLock) {
 						destLock.unlock();
-						logger.debug("@@@ unlock uri: " + dest + " holdcount: " + destLock.getHoldCount() + " " + destLock);
+						logger.debug("@@@ unlock uri: " + dest + " holdcount: " + destLock.getHoldCount() + " "
+								+ destLock);
 					}
 
 					try {
@@ -322,10 +327,13 @@ public class GridFTPFileAdaptor extends GlobusFileAdaptor {
 						super.copy(dest);
 						copyDone = true;
 					} finally {
-						srcLock.unlock();						
-						logger.debug("@@@ unlock uri: " + src  + " holdcount: " + srcLock.getHoldCount() + " " + srcLock);
+						srcLock.unlock();
+						logger
+								.debug("@@@ unlock uri: " + src + " holdcount: " + srcLock.getHoldCount() + " "
+										+ srcLock);
 						destLock.unlock();
-						logger.debug("@@@ unlock uri: " + dest  + " holdcount: " + destLock.getHoldCount() + " " + destLock);
+						logger.debug("@@@ unlock uri: " + dest + " holdcount: " + destLock.getHoldCount() + " "
+								+ destLock);
 					}
 				}
 			}
@@ -341,7 +349,7 @@ public class GridFTPFileAdaptor extends GlobusFileAdaptor {
 	 */
 	private static ReentrantLock createHostLock(URI uri) {
 		logger.debug("@@@ createHostLock(uri) uri: " + uri);
-		
+
 		String host = uri.getHost();
 		ReentrantLock lock = null;
 
@@ -356,7 +364,7 @@ public class GridFTPFileAdaptor extends GlobusFileAdaptor {
 			if (lock == null) {
 				lock = new ReentrantLock(true);
 				logger.debug("@@@ new ReentrantLock for " + host + " " + lock);
-				
+
 				if (null != host) {
 					lockTable.put(host, lock);
 				}
@@ -373,7 +381,7 @@ public class GridFTPFileAdaptor extends GlobusFileAdaptor {
 	 */
 	private static ReentrantLock getHostLock(URI uri) {
 		logger.debug("@@@ getHostLock(uri) uri: " + uri);
-		
+
 		String host = uri.getHost();
 		ReentrantLock lock = null;
 
@@ -398,17 +406,23 @@ public class GridFTPFileAdaptor extends GlobusFileAdaptor {
 	 * @param hostURI the uri of the FTP host
 	 */
 	protected FTPClient createClient(GATContext gatContext, Preferences additionalPreferences, URI hostURI)
-			throws GATInvocationException, InvalidUsernameOrPasswordException {
-		URI src = fixURI(toURI());
+			throws GATInvocationException, InvalidUsernameOrPasswordException {		
+		logger.debug("@@@ createClient for uri: " + hostURI);
+		FTPClient client = doWorkCreateClient(gatContext, additionalPreferences, hostURI);
 		
-		logger.debug("@@@ createClient uri: " + src);
-		// try to get the lock for this host
-		
-		ReentrantLock lock = null;
-		lock = createHostLock(src);
-		lock.lock();
-		logger.debug("@@@ lock() uri " + src + " holdcount: " + lock.getHoldCount() + " " + lock);
-		return doWorkCreateClient(gatContext, additionalPreferences, hostURI);
+		//Only create a lock when a client has been successfully created.
+		if (null != client) {
+			logger.debug("@@@ createClient sucessful: " + client);
+			URI src = fixURI(toURI());		
+			// try to get the lock for this host
+			ReentrantLock lock = null;
+			lock = createHostLock(src);
+			lock.lock();
+			logger.debug("@@@ lock() uri " + src + " holdcount: " + lock.getHoldCount() + " " + lock);
+		} else {
+			logger.debug("@@@ createClient NOT sucessful: " + client);			
+		}
+		return client;
 	}
 
 	/**
@@ -421,19 +435,23 @@ public class GridFTPFileAdaptor extends GlobusFileAdaptor {
 			InvalidUsernameOrPasswordException {
 		// First destroy the client, do this before releasing the lock to avoid problems with other threads that might
 		// use the same client from cache!
-		doWorkDestroyClient(context, c, hostURI, preferences);
+		try {
+			if (null != c) {
+				doWorkDestroyClient(context, c, hostURI, preferences);
+			}
+		} finally {
+			// then remove the lock for the URI
+			URI src = fixURI(toURI());
 
-		// then remove the lock for the URI
-		URI src = fixURI(toURI());
-		
-		logger.debug("@@@ destroyClient uri: " + src);
-		ReentrantLock lock = null;
+			logger.debug("@@@ destroyClient uri: " + src);
+			ReentrantLock lock = null;
 
-		lock = getHostLock(src);
+			lock = getHostLock(src);
 
-		if (lock != null && lock.isLocked()) {
-			lock.unlock();
-			logger.debug("@@@ unlock() uri: " + src  + " holdcount: " + lock.getHoldCount() + " " + lock);
+			if (lock != null && lock.isLocked()) {
+				lock.unlock();
+				logger.debug("@@@ unlock() uri: " + src + " holdcount: " + lock.getHoldCount() + " " + lock);
+			}
 		}
 	}
 
@@ -502,9 +520,9 @@ public class GridFTPFileAdaptor extends GlobusFileAdaptor {
 		try {
 			GATContext gatContext = (GATContext) context.clone();
 			gatContext.addPreferences(additionalPreferences);
-			
+
 			GSSCredential credential = getCredential(context, hostURI);
-			
+
 			if (logger.isDebugEnabled()) {
 				logger.debug("credential: \n"
 						+ (credential == null ? "NULL" : ((GlobusGSSCredentialImpl) credential).getGlobusCredential()
@@ -553,31 +571,30 @@ public class GridFTPFileAdaptor extends GlobusFileAdaptor {
 	}
 
 	/**
-	 * Retrieves the users credential.
-	 * When a vomsServerUrl is set as preference in the {@link GATContext}, the method returns a voms-proxy-credential.
-	 * Otherwise a standard globus credential is returned.
+	 * Retrieves the users credential. When a vomsServerUrl is set as preference in the {@link GATContext}, the method
+	 * returns a voms-proxy-credential. Otherwise a standard globus credential is returned.
 	 * 
 	 * @param context the gat context
 	 * @param hostURI the host to connect to
-	 * @return a Credential 
+	 * @return a Credential
 	 * 
 	 * @throws GSSException
 	 * @throws GATInvocationException
 	 */
-	private static GSSCredential getCredential(GATContext context, URI hostURI) throws GSSException, GATInvocationException {
+	private static GSSCredential getCredential(GATContext context, URI hostURI) throws GSSException,
+			GATInvocationException {
 		GSSCredential credential = null;
-		//If voms parameters are set create a voms proxy, else use standard globus proxy. 
+		// If voms parameters are set create a voms proxy, else use standard globus proxy.
 		if (context.getPreferences().containsKey("vomsServerURL")) {
 			GlobusCredential globusCred = VomsSecurityUtils.getVOMSProxy(context, true);
 			credential = new GlobusGSSCredentialImpl(globusCred, GSSCredential.INITIATE_AND_ACCEPT);
-		} 
-		else {
+		} else {
 			credential = GlobusSecurityUtils.getGlobusCredential(context, "gridftp", hostURI, DEFAULT_GRIDFTP_PORT);
 		}
-		
+
 		return credential;
 	}
-	
+
 	/**
 	 * The key of the caching table is build up from the hostUri and the User-DN-Name.
 	 * 
@@ -587,12 +604,12 @@ public class GridFTPFileAdaptor extends GlobusFileAdaptor {
 	 * @throws GSSException an exception that might occurs
 	 */
 	private static String getCacheKey(URI hostURI, String userName) throws GSSException {
-		String host = hostURI.getHost() ;
-		
+		String host = hostURI.getHost();
+
 		if (null == host || host.isEmpty()) {
 			host = "localhost";
 		}
-		
+
 		return host + HOSTNAME_USER_SEPARATOR + userName;
 	}
 
@@ -698,15 +715,15 @@ public class GridFTPFileAdaptor extends GlobusFileAdaptor {
 			logger.debug("doWorkDestroyClient");
 		}
 
-		//The credential and the context will be needed to retrieve the DN of the user
-		//which is part of the key for the ftpclient in the cache
+		// The credential and the context will be needed to retrieve the DN of the user
+		// which is part of the key for the ftpclient in the cache
 		GATContext gatContext = (GATContext) context.clone();
 		gatContext.addPreferences(preferences);
 
 		String cacheKey = null;
 
 		try {
-			GSSCredential credential = getCredential(gatContext, hostURI);			
+			GSSCredential credential = getCredential(gatContext, hostURI);
 			cacheKey = getCacheKey(hostURI, credential.getName().toString());
 		} catch (GSSException e1) {
 			logger.error("Cannot obtain credential to create cache key.", e1);
