@@ -207,21 +207,7 @@ public class GliteSrmFileAdaptor extends FileCpi {
 		} catch (IOException e) {
 			LOGGER.error("An error occurs during ls", e);
 			throw new GATInvocationException("An error occurs during ls", e);
-		}		
-		
-//		String[] list = list();
-//		FileInfo[] fileInfos = null;
-//
-//		if (null != list && list.length > 0) {
-//			fileInfos = new FileInfo[list.length];
-//
-//			for (int i = 0 ; i < list.length; i++) {
-//				FileInfo info = new FileInfo(list[i]);
-//				fileInfos[i] = info;
-//			}
-//		}
-
-//		return fileInfos;
+		}
 	} // public FileInfo[] listFileInfo() throws GATInvocationException
 
 	/**
@@ -237,5 +223,22 @@ public class GliteSrmFileAdaptor extends FileCpi {
 			return (V) new PosixSrmFileAttributeView(location, followSymbolicLinks, connector, gatContext);
 		}
 		return null;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.gridlab.gat.io.cpi.FileCpi#getAbsolutePath()
+	 */
+	public String getAbsolutePath() throws GATInvocationException {
+		// for srm resources the path of the URI is equal to the Absolute path
+		String path = getPath();
+
+		// an uri path never starts with a slash, so add this to obtain a absolute path
+		if (!path.startsWith("/")) {
+			path = "/" + path;
+		}
+
+		return path;
 	}
 }
