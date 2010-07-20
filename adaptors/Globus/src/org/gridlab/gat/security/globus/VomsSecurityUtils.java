@@ -192,9 +192,12 @@ public class VomsSecurityUtils {
 	 */
 	public static String getPathToUserVomsProxy(GATContext context) throws GATInvocationException {
 		// Must be a unique ID!
-		String userId = (String) context.getPreferences().get(PREFERENCE_PROXY_USER_ID);
+		String userId = (String) context.getPreferences().get("glite.vomsProxyUserId");
 
-		String proxyDirectory = (String) context.getPreferences().get(PREFERENCE_VOMS_PROXY_DIRECTORY);
+		String proxyDirectory = (String) context.getPreferences().get("glite.vomsProxyDirectory");
+
+		String vo = (String) context.getPreferences().get("VirtualOrganisation");
+
 		if (null != proxyDirectory && !proxyDirectory.endsWith("/") && !proxyDirectory.endsWith("\\")) {
 			proxyDirectory = proxyDirectory + File.separator;
 		}
@@ -209,7 +212,12 @@ public class VomsSecurityUtils {
 					"For retrieving the path to a user voms-proxy, there must be a voms-proxy directory specified in the GATContext Preferences.");
 		}
 
-		return proxyDirectory + PROXY_PREFIX + userId;
+		if (null == vo) {
+			throw new GATInvocationException(
+					"For retrieving the path to a user voms-proxy, there must be a vo specified in the GATContext Preferences.");
+		}
+
+		return proxyDirectory + PROXY_PREFIX + userId + "_" + vo;
 	}
 
 	/**
