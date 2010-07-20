@@ -94,6 +94,8 @@ import org.slf4j.LoggerFactory;
  */
 public class SrmConnection {
 
+	// TODO create caching mechanism for srm connections
+
 	private static final String AUTHORIZATION_ID = "SRMClient";
 
 	/** Error message */
@@ -126,22 +128,17 @@ public class SrmConnection {
 	 * @throws IOException if the connection fails.
 	 */
 	public SrmConnection(String host, final String proxyPath) throws IOException {
-
-		// Changing classloader
-		ClassLoader savedClassLoader = Thread.currentThread().getContextClassLoader();
-		// Thread.currentThread().setContextClassLoader(this.getClass().getClassLoader());
-
-		LOGGER.info("SavedClassloader: " + savedClassLoader);
-		LOGGER.info("CurrentClassloader: " + this.getClass().getClassLoader());
-		LOGGER.info("URLClassloader: " + URL.class.getClassLoader());
-		LOGGER.info("UtilClassloader: " + Util.class.getClassLoader());
+		// In the vine toolkit they reported problems with the classloading. Print the classloaders for debugging
+		LOGGER.debug("SavedClassloader: " + Thread.currentThread().getContextClassLoader());
+		LOGGER.debug("CurrentClassloader: " + this.getClass().getClassLoader());
+		LOGGER.debug("URLClassloader: " + URL.class.getClassLoader());
+		LOGGER.debug("UtilClassloader: " + Util.class.getClassLoader());
 
 		// Set URL Handler for httpg
 		HttpgURLStreamHandlerFactory httpgfac = new HttpgURLStreamHandlerFactory();
 
 		try {
 			URL.setURLStreamHandlerFactory(httpgfac);
-			LOGGER.info("URLClassloader: " + URL.class.getClassLoader());
 		} catch (Error e) {
 			// In an application server like tomcat, this exception will always occurs. So log only...
 			LOGGER.debug("Cannot set HTTPG scheme for URLs", e);
@@ -165,7 +162,6 @@ public class SrmConnection {
 		SRMServiceLocator locator = new SRMServiceLocator(ac.getClientEngine().getConfig());
 		locator.setEngine(ac);
 
-		// SRMServiceLocator locator = new SRMServiceLocator(provider);
 		LOGGER.info("getting srm service at " + host);
 
 		URI wsEndpoint;
@@ -209,11 +205,6 @@ public class SrmConnection {
 			LOGGER.warn(e.toString());
 			throw new IOException(SrmConnection.COULD_NOT_LOAD_CREDENTIALS);
 		}
-
-		// finally {
-		// // Restoring original, previously saved, classloader
-		// Thread.currentThread().setContextClassLoader(savedClassLoader);
-		// }
 	}
 
 	/**
