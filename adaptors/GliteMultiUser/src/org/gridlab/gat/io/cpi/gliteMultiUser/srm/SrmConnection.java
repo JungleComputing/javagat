@@ -4,6 +4,7 @@ import gov.lbl.srm.StorageResourceManager.ArrayOfAnyURI;
 import gov.lbl.srm.StorageResourceManager.ArrayOfString;
 import gov.lbl.srm.StorageResourceManager.ArrayOfTGetFileRequest;
 import gov.lbl.srm.StorageResourceManager.ArrayOfTGroupPermission;
+import gov.lbl.srm.StorageResourceManager.ArrayOfTMetaDataPathDetail;
 import gov.lbl.srm.StorageResourceManager.ArrayOfTPutFileRequest;
 import gov.lbl.srm.StorageResourceManager.ArrayOfTUserPermission;
 import gov.lbl.srm.StorageResourceManager.ISRM;
@@ -92,6 +93,9 @@ import org.slf4j.LoggerFactory;
  * 
  */
 public class SrmConnection {
+
+	private static final String AUTHORIZATION_ID = "SRMClient";
+
 	/** Error message */
 	private static final String COULD_NOT_LOAD_CREDENTIALS = "Could not load Credentials";
 
@@ -139,7 +143,7 @@ public class SrmConnection {
 			URL.setURLStreamHandlerFactory(httpgfac);
 			LOGGER.info("URLClassloader: " + URL.class.getClassLoader());
 		} catch (Error e) {
-			//In an application server like tomcat, this exception will always occurs. So log only...
+			// In an application server like tomcat, this exception will always occurs. So log only...
 			LOGGER.debug("Cannot set HTTPG scheme for URLs", e);
 		}
 
@@ -226,7 +230,7 @@ public class SrmConnection {
 
 		LOGGER.info("Creating get request for URI " + uriSpec);
 		SrmPrepareToGetRequest srmPrepToGetReq = new SrmPrepareToGetRequest();
-		srmPrepToGetReq.setAuthorizationID("SRMClient");
+		srmPrepToGetReq.setAuthorizationID(AUTHORIZATION_ID);
 
 		// don't check out ANY directories
 		// TDirOption dirOpt = new TDirOption(Boolean.FALSE, false, new
@@ -322,7 +326,7 @@ public class SrmConnection {
 
 		LOGGER.info("Creating put request for URI " + uri);
 		SrmPrepareToPutRequest srmPrepToPutReq = new SrmPrepareToPutRequest();
-		srmPrepToPutReq.setAuthorizationID("SRMClient");
+		srmPrepToPutReq.setAuthorizationID(AUTHORIZATION_ID);
 
 		UnsignedLong expFileSize = new UnsignedLong(localFile.length());
 		TPutFileRequest putFileRequest = new TPutFileRequest(uri, expFileSize);
@@ -330,7 +334,7 @@ public class SrmConnection {
 
 		srmPrepToPutReq.setArrayOfFileRequests(new ArrayOfTPutFileRequest(putFileRequests));
 		srmPrepToPutReq.setOverwriteOption(TOverwriteMode.ALWAYS);
-		srmPrepToPutReq.setAuthorizationID("SRMClient");
+		srmPrepToPutReq.setAuthorizationID(AUTHORIZATION_ID);
 
 		// //Transfer Parameters
 		TTransferParameters transferParameters = new TTransferParameters();
@@ -415,7 +419,7 @@ public class SrmConnection {
 	public void finalizeFileUpload() throws IOException {
 		SrmPutDoneRequest putDoneRequest = new SrmPutDoneRequest();
 		putDoneRequest.setArrayOfSURLs(new ArrayOfAnyURI(new URI[] { activeUploadURI }));
-		putDoneRequest.setAuthorizationID("SRMClient");
+		putDoneRequest.setAuthorizationID(AUTHORIZATION_ID);
 		putDoneRequest.setRequestToken(activeToken);
 
 		LOGGER.info("Sending put-done request for URI " + activeUploadURI);
@@ -495,7 +499,7 @@ public class SrmConnection {
 	 */
 	public List<String> listFileNames(String uri) throws IOException {
 		URI requestUri = new URI(uri);
-		
+
 		SrmLsRequest srmLsRequest = new SrmLsRequest();
 		srmLsRequest.setArrayOfSURLs(new ArrayOfAnyURI(new URI[] { requestUri }));
 		srmLsRequest.setAllLevelRecursive(false);
@@ -531,9 +535,9 @@ public class SrmConnection {
 	 */
 	public List<FileInfo> listFileInfos(String uri) throws IOException {
 		List<FileInfo> fileInfos = new ArrayList<FileInfo>();
-		
+
 		URI requestUri = new URI(uri);
-		
+
 		SrmLsRequest srmLsRequest = new SrmLsRequest();
 		srmLsRequest.setArrayOfSURLs(new ArrayOfAnyURI(new URI[] { requestUri }));
 		srmLsRequest.setAllLevelRecursive(false);
@@ -545,52 +549,50 @@ public class SrmConnection {
 		if (!returnStatus.getStatusCode().equals(TStatusCode.SRM_SUCCESS)) {
 			LOGGER.info(returnStatus.getStatusCode() + returnStatus.getExplanation());
 			throw new IOException(returnStatus.getExplanation() + " (" + returnStatus.getStatusCode() + ")");
-		}		
+		}
 
 		for (TMetaDataPathDetail detail : response.getDetails().getPathDetailArray()) {
 			for (TMetaDataPathDetail subDetail : detail.getArrayOfSubPaths().getPathDetailArray()) {
-				FileInfo info = createFileInfo(subDetail, requestUri);				
+				FileInfo info = createFileInfo(subDetail, requestUri);
 				fileInfos.add(info);
 			}
 		}
 
 		return fileInfos;
-	}	
-	
-	
+	}
+
 	private FileInfo createFileInfo(TMetaDataPathDetail subDetail, URI requestUri) {
-		
 
 		String fileName = subDetail.getPath().replace(requestUri.getPath(), "");
-		//Remove a starting slash
+		// Remove a starting slash
 		if (fileName.startsWith("/")) {
 			fileName = fileName.substring(1);
 		}
-		
+
 		FileInfo info = new FileInfo(fileName);
-		
+
 		// Size
 		info.setSize(subDetail.getSize().longValue());
-		
-		//Type
+
+		// Type
 		if (subDetail.getType().equals(TFileType.DIRECTORY)) {
 			info.setFileType(FileType.directory);
-		} else if(subDetail.getType().equals(TFileType.LINK)) {
+		} else if (subDetail.getType().equals(TFileType.LINK)) {
 			info.setFileType(FileType.softlink);
-		} else if(subDetail.getType().equals(TFileType.FILE)) {
+		} else if (subDetail.getType().equals(TFileType.FILE)) {
 			info.setFileType(FileType.file);
 		}
-		
-		//Date and Time
+
+		// Date and Time
 		DateFormat dateformat = DateFormat.getDateInstance(DateFormat.MONTH_FIELD | DateFormat.DATE_FIELD);
 		String date = dateformat.format(subDetail.getCreatedAtTime().getTime());
-		
+
 		DateFormat timeformat = DateFormat.getTimeInstance();
 		String time = timeformat.format(subDetail.getCreatedAtTime().getTime());
-		
+
 		info.setDateTime(date, time);
-		
-		//User Permission		
+
+		// User Permission
 		if (subDetail.getOwnerPermission().getMode().equals(TPermissionMode.NONE)) {
 			info.setUserPermissions(false, false, false);
 		} else if (subDetail.getOwnerPermission().getMode().equals(TPermissionMode.R)) {
@@ -608,8 +610,8 @@ public class SrmConnection {
 		} else if (subDetail.getOwnerPermission().getMode().equals(TPermissionMode.X)) {
 			info.setUserPermissions(false, false, true);
 		}
-			
-		//Group Permission		
+
+		// Group Permission
 		if (subDetail.getGroupPermission().getMode().equals(TPermissionMode.NONE)) {
 			info.setGroupPermissions(false, false, false);
 		} else if (subDetail.getGroupPermission().getMode().equals(TPermissionMode.R)) {
@@ -626,9 +628,9 @@ public class SrmConnection {
 			info.setGroupPermissions(false, true, true);
 		} else if (subDetail.getGroupPermission().getMode().equals(TPermissionMode.X)) {
 			info.setGroupPermissions(false, false, true);
-		}		
-		
-		//Other Permission		
+		}
+
+		// Other Permission
 		if (subDetail.getOtherPermission().equals(TPermissionMode.NONE)) {
 			info.setAllPermissions(false, false, false);
 		} else if (subDetail.getOtherPermission().equals(TPermissionMode.R)) {
@@ -645,11 +647,11 @@ public class SrmConnection {
 			info.setAllPermissions(false, true, true);
 		} else if (subDetail.getOtherPermission().equals(TPermissionMode.X)) {
 			info.setAllPermissions(false, false, true);
-		}			
-		
+		}
+
 		return info;
 	}
-	
+
 	/**
 	 * Creates a new directory on a SRM resource.
 	 * 
@@ -721,6 +723,61 @@ public class SrmConnection {
 		}
 
 		return sucessful;
+	}
+
+	/**
+	 * Checks if the given file or directory exists on a srm resource.
+	 * 
+	 * @param path the path to check
+	 * @return <code>true</code> if the given path exists on the storage resource.
+	 * @throws GATInvocationException an exception that might occurs.
+	 */
+	public boolean exists(String path) throws GATInvocationException {
+		LOGGER.debug("exists : " + path.toString());
+
+		// Extract the path and the new directory name from the uri
+		URI fileUri;
+		try {
+			fileUri = new URI(path);
+		} catch (MalformedURIException e1) {
+			throw new GATInvocationException("Malformed URI for new directory", e1);
+		}
+
+		try {
+			SrmLsRequest lsRequest = new SrmLsRequest();
+			lsRequest.setAuthorizationID(AUTHORIZATION_ID);
+			lsRequest.setNumOfLevels(Integer.valueOf(1));
+			lsRequest.setAllLevelRecursive(Boolean.FALSE);
+			lsRequest.setFullDetailedList(Boolean.TRUE);
+			lsRequest.setArrayOfSURLs(new ArrayOfAnyURI(new org.apache.axis.types.URI[] { fileUri }));
+
+			SrmLsResponse lsResponse = service.srmLs(lsRequest);
+			if (lsResponse != null) {
+				if (lsResponse.getReturnStatus() != null) {
+					if (!lsResponse.getReturnStatus().getStatusCode().equals(TStatusCode.SRM_SUCCESS)
+							&& !lsResponse.getReturnStatus().getStatusCode().equals(TStatusCode.SRM_DONE)
+							&& !lsResponse.getReturnStatus().getStatusCode().equals(TStatusCode.SRM_REQUEST_QUEUED)
+							&& !lsResponse.getReturnStatus().getStatusCode().equals(TStatusCode.SRM_REQUEST_INPROGRESS)) {
+						LOGGER.error("exists() failed: status code: "
+								+ lsResponse.getReturnStatus().getStatusCode().toString() + ", explanation: "
+								+ lsResponse.getReturnStatus().getExplanation());
+						// throw new FileException("SRM create input stream failed: status code: " +
+						// lsResponse.getReturnStatus().getStatusCode().toString() +
+						// ", explanation: " + lsResponse.getReturnStatus().getExplanation());
+					}
+				}
+			}
+
+			ArrayOfTMetaDataPathDetail details = lsResponse.getDetails();
+			TMetaDataPathDetail[] detailArray = details.getPathDetailArray();
+			TFileType type = detailArray[0].getType();
+
+			LOGGER.debug("exists() type: " + type);
+			// If type is not null then file or directory exists
+			return (type != null);
+		} catch (Exception e) {
+			throw new GATInvocationException("Error occurs during calling exist for: " + path, e);
+		}
 	}
 
 	/**

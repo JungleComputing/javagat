@@ -35,16 +35,22 @@ import org.slf4j.LoggerFactory;
 @SuppressWarnings("serial")
 public class GliteSrmFileAdaptor extends FileCpi {
 
+	/** String constant for the protocol */
 	private static final String SRM_PROTOCOL = "srm";
 
+	/** error message for incompatible URIs */
 	private static final String CANNOT_HANDLE_THIS_URI = "cannot handle this URI: ";
 
+	/** the adaptor name */
 	private static final String GLITE_SRM_FILE_ADAPTOR = "GliteSrmFileAdaptor";
 
+	/** logger instance */
 	private static final Logger LOGGER = LoggerFactory.getLogger(GliteSrmFileAdaptor.class);
 
+	/** flag that indicates wheter its a local file or not */
 	private final boolean localFile;
 
+	/** The connector to the storage resource. It handles the connection and security issues. */
 	private final SrmConnector connector;
 
 	/**
@@ -210,6 +216,21 @@ public class GliteSrmFileAdaptor extends FileCpi {
 		}
 	} // public FileInfo[] listFileInfo() throws GATInvocationException
 
+    
+	/** 
+	 * @see org.gridlab.gat.io.cpi.FileCpi#exists()
+	 */
+	public boolean exists() throws GATInvocationException {
+		try {
+			GliteSecurityUtils.getVOMSProxy(gatContext, true);
+			return connector.exists(location);
+		} catch (IOException e) {
+			LOGGER.error("An error occurs during ls", e);
+			throw new GATInvocationException("An error occurs during ls", e);
+		}
+    }	
+	
+	
 	/**
 	 * @see FileCpi#getFileAttributeView(Class, boolean)
 	 */
@@ -225,9 +246,7 @@ public class GliteSrmFileAdaptor extends FileCpi {
 		return null;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
+	/**
 	 * @see org.gridlab.gat.io.cpi.FileCpi#getAbsolutePath()
 	 */
 	public String getAbsolutePath() throws GATInvocationException {

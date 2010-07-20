@@ -147,6 +147,19 @@ public class SrmConnector {
 	}	
 
 	/**
+	 * Checks if the given path exists on a srm resource.
+	 * 
+	 * @param srmURI the {@link URI} to check
+	 * @return <code>true</code> if the given path exists on the storage resource.
+	 * @throws IOException an exception that might occurs
+	 * @throws GATInvocationException an exception that might occurs
+	 */
+	public boolean exists(URI srmURI) throws IOException, GATInvocationException {
+		SrmConnection connection = new SrmConnection(srmURI.getHost(), proxyPath);
+		return connection.exists(srmURI.toString());
+	}
+	
+	/**
 	 * @param srmURI the URI for the file.
 	 * @param tPermissionType How do we set the following permissions (add, delete or change them).
 	 * @param ownerTPermissionMode The owner permissions
