@@ -194,7 +194,7 @@ public class GliteSrmFileAdaptor extends FileCpi {
 			return (String[]) result.toArray(new String[result.size()]);
 		} catch (IOException e) {
 			LOGGER.error("An error occurs during ls", e);
-			throw new GATInvocationException("An error occurs during ls", e);
+			throw new GATInvocationException("An error occurs during list", e);
 		}
 	}
 
@@ -212,7 +212,7 @@ public class GliteSrmFileAdaptor extends FileCpi {
 			return (FileInfo[]) result.toArray(new FileInfo[result.size()]);
 		} catch (IOException e) {
 			LOGGER.error("An error occurs during ls", e);
-			throw new GATInvocationException("An error occurs during ls", e);
+			throw new GATInvocationException("An error occurs during listFileInfo", e);
 		}
 	} // public FileInfo[] listFileInfo() throws GATInvocationException
 
@@ -226,10 +226,36 @@ public class GliteSrmFileAdaptor extends FileCpi {
 			return connector.exists(location);
 		} catch (IOException e) {
 			LOGGER.error("An error occurs during ls", e);
-			throw new GATInvocationException("An error occurs during ls", e);
+			throw new GATInvocationException("An error occurs during exists", e);
 		}
     }	
 	
+	/**
+	 * @see FileCpi#isFile()
+	 */
+    public boolean isFile() throws GATInvocationException {
+		try {
+			GliteSecurityUtils.getVOMSProxy(gatContext, true);
+			return connector.isFile(location);
+		} catch (IOException e) {
+			LOGGER.error("An error occurs during ls", e);
+			throw new GATInvocationException("An error occurs during isFile", e);
+		}
+    }	
+	
+    /**
+     * @see FileCpi#isDirectory()
+     */
+    public boolean isDirectory() throws GATInvocationException {
+		try {
+			GliteSecurityUtils.getVOMSProxy(gatContext, true);
+			return connector.isDirectory(location);
+		} catch (IOException e) {
+			LOGGER.error("An error occurs during ls", e);
+			throw new GATInvocationException("An error occurs during isFile", e);
+		}
+    }    
+    
 	
 	/**
 	 * @see FileCpi#getFileAttributeView(Class, boolean)

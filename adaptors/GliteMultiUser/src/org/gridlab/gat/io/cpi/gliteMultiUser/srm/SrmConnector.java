@@ -147,7 +147,7 @@ public class SrmConnector {
 	}	
 
 	/**
-	 * Checks if the given path exists on a srm resource.
+	 * Checks if the given path exists.
 	 * 
 	 * @param srmURI the {@link URI} to check
 	 * @return <code>true</code> if the given path exists on the storage resource.
@@ -158,6 +158,33 @@ public class SrmConnector {
 		SrmConnection connection = new SrmConnection(srmURI.getHost(), proxyPath);
 		return connection.exists(srmURI.toString());
 	}
+	
+	
+	/**
+	 * Checks if the given path is a file.
+	 * 
+	 * @param srmURI the {@link URI} to check
+	 * @return <code>true</code> if the given path is a file
+	 * @throws IOException an exception that might occurs
+	 * @throws GATInvocationException an exception that might occurs
+	 */
+	public boolean isFile(URI srmURI) throws IOException, GATInvocationException {
+		SrmConnection connection = new SrmConnection(srmURI.getHost(), proxyPath);
+		return connection.isFile(srmURI.toString());
+	}	
+	
+	/**
+	 * Checks if the given path is a directory.
+	 * 
+	 * @param srmURI the {@link URI} to check
+	 * @return <code>true</code> if the given path is a directory
+	 * @throws IOException an exception that might occurs
+	 * @throws GATInvocationException an exception that might occurs
+	 */
+	public boolean isDirectory(URI srmURI) throws IOException, GATInvocationException {
+		SrmConnection connection = new SrmConnection(srmURI.getHost(), proxyPath);
+		return connection.isDirectory(srmURI.toString());
+	}		
 	
 	/**
 	 * @param srmURI the URI for the file.

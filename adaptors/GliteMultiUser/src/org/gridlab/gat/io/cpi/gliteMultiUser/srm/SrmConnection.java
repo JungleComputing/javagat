@@ -465,12 +465,8 @@ public class SrmConnection {
 	 * @throws IOException an exception that might occurs
 	 */
 	public SRMPosixFile ls(String uri) throws IOException {
-		SrmLsRequest srmLsRequest = new SrmLsRequest();
-		srmLsRequest.setArrayOfSURLs(new ArrayOfAnyURI(new URI[] { new URI(uri) }));
-		srmLsRequest.setAllLevelRecursive(false);
-		srmLsRequest.setFullDetailedList(true);
-		LOGGER.info("Invoking getPermissions request for URI " + uri);
-		SrmLsResponse response = service.srmLs(srmLsRequest);
+		SrmLsResponse response = list(uri);
+
 		TReturnStatus returnStatus = response.getReturnStatus();
 		LOGGER.info("Return status code " + returnStatus.getStatusCode());
 		if (!returnStatus.getStatusCode().equals(TStatusCode.SRM_SUCCESS)) {
@@ -478,6 +474,30 @@ public class SrmConnection {
 		}
 
 		return new SRMPosixFile(response.getDetails().getPathDetailArray()[0]);
+	}
+
+	private SrmLsResponse list(String uri) throws IOException {
+		SrmLsRequest srmLsRequest = new SrmLsRequest();
+		srmLsRequest.setArrayOfSURLs(new ArrayOfAnyURI(new URI[] { new URI(uri) }));
+		srmLsRequest.setAllLevelRecursive(false);
+		srmLsRequest.setFullDetailedList(true);
+		SrmLsResponse response = service.srmLs(srmLsRequest);
+
+		if (response != null) {
+			if (response.getReturnStatus() != null) {
+				if (!response.getReturnStatus().getStatusCode().equals(TStatusCode.SRM_SUCCESS)
+						&& !response.getReturnStatus().getStatusCode().equals(TStatusCode.SRM_DONE)
+						&& !response.getReturnStatus().getStatusCode().equals(TStatusCode.SRM_REQUEST_QUEUED)
+						&& !response.getReturnStatus().getStatusCode().equals(TStatusCode.SRM_REQUEST_INPROGRESS)) {
+					LOGGER.error("exists() failed: status code: "
+							+ response.getReturnStatus().getStatusCode().toString() + ", explanation: "
+							+ response.getReturnStatus().getExplanation());
+					throw new IOException("SRM ls was not successful.");
+				}
+			}
+		}
+
+		return response;
 	}
 
 	/**
@@ -491,13 +511,9 @@ public class SrmConnection {
 	public List<String> listFileNames(String uri) throws IOException {
 		URI requestUri = new URI(uri);
 
-		SrmLsRequest srmLsRequest = new SrmLsRequest();
-		srmLsRequest.setArrayOfSURLs(new ArrayOfAnyURI(new URI[] { requestUri }));
-		srmLsRequest.setAllLevelRecursive(false);
-		srmLsRequest.setFullDetailedList(true);
-		LOGGER.info("Invoking getPermissions request for URI " + uri);
-		SrmLsResponse response = service.srmLs(srmLsRequest);
-		TReturnStatus returnStatus = response.getReturnStatus();
+		SrmLsResponse lsResponse = list(uri);
+
+		TReturnStatus returnStatus = lsResponse.getReturnStatus();
 		LOGGER.info("Return status code " + returnStatus.getStatusCode());
 		if (!returnStatus.getStatusCode().equals(TStatusCode.SRM_SUCCESS)) {
 			LOGGER.info(returnStatus.getStatusCode() + returnStatus.getExplanation());
@@ -506,7 +522,7 @@ public class SrmConnection {
 
 		List<String> paths = new ArrayList<String>();
 
-		for (TMetaDataPathDetail detail : response.getDetails().getPathDetailArray()) {
+		for (TMetaDataPathDetail detail : lsResponse.getDetails().getPathDetailArray()) {
 			for (TMetaDataPathDetail subDetail : detail.getArrayOfSubPaths().getPathDetailArray()) {
 				String fileName = subDetail.getPath().replace(requestUri.getPath(), "");
 				paths.add(fileName);
@@ -529,20 +545,16 @@ public class SrmConnection {
 
 		URI requestUri = new URI(uri);
 
-		SrmLsRequest srmLsRequest = new SrmLsRequest();
-		srmLsRequest.setArrayOfSURLs(new ArrayOfAnyURI(new URI[] { requestUri }));
-		srmLsRequest.setAllLevelRecursive(false);
-		srmLsRequest.setFullDetailedList(true);
-		LOGGER.info("Invoking getPermissions request for URI " + uri);
-		SrmLsResponse response = service.srmLs(srmLsRequest);
-		TReturnStatus returnStatus = response.getReturnStatus();
+		SrmLsResponse lsResponse = list(uri);
+
+		TReturnStatus returnStatus = lsResponse.getReturnStatus();
 		LOGGER.info("Return status code " + returnStatus.getStatusCode());
 		if (!returnStatus.getStatusCode().equals(TStatusCode.SRM_SUCCESS)) {
 			LOGGER.info(returnStatus.getStatusCode() + returnStatus.getExplanation());
 			throw new IOException(returnStatus.getExplanation() + " (" + returnStatus.getStatusCode() + ")");
 		}
 
-		for (TMetaDataPathDetail detail : response.getDetails().getPathDetailArray()) {
+		for (TMetaDataPathDetail detail : lsResponse.getDetails().getPathDetailArray()) {
 			for (TMetaDataPathDetail subDetail : detail.getArrayOfSubPaths().getPathDetailArray()) {
 				FileInfo info = createFileInfo(subDetail, requestUri);
 				fileInfos.add(info);
@@ -676,10 +688,9 @@ public class SrmConnection {
 
 		LOGGER.debug("Srm createDirectory() : " + newDirPath);
 
-		// TODO Implement exists() and throw an exception if the directory already exists
-		// if (exists(filePath)) {
-		// throw new GATInvocationException("SRM create dir: dir already exists " + filePath);
-		// }
+		if (exists(newDirPath)) {
+			throw new GATInvocationException("SRM create dir: dir already exists " + newDirPath);
+		}
 
 		try {
 			SrmMkdirRequest srmMkdirRequest = new SrmMkdirRequest();
@@ -719,45 +730,21 @@ public class SrmConnection {
 	/**
 	 * Checks if the given file or directory exists on a srm resource.
 	 * 
-	 * @param path the path to check
+	 * @param uri the path to check
 	 * @return <code>true</code> if the given path exists on the storage resource.
 	 * @throws GATInvocationException an exception that might occurs.
 	 */
-	public boolean exists(String path) throws GATInvocationException {
-		LOGGER.debug("exists : " + path.toString());
+	public boolean exists(String uri) throws GATInvocationException {
+		LOGGER.debug("exists : " + uri.toString());
 
-		// Extract the path and the new directory name from the uri
-		URI fileUri;
 		try {
-			fileUri = new URI(path);
+			new URI(uri);
 		} catch (MalformedURIException e1) {
-			throw new GATInvocationException("Malformed URI for new directory", e1);
+			throw new GATInvocationException("Malformed !", e1);
 		}
 
 		try {
-			SrmLsRequest lsRequest = new SrmLsRequest();
-			lsRequest.setAuthorizationID(AUTHORIZATION_ID);
-			lsRequest.setNumOfLevels(Integer.valueOf(1));
-			lsRequest.setAllLevelRecursive(Boolean.FALSE);
-			lsRequest.setFullDetailedList(Boolean.TRUE);
-			lsRequest.setArrayOfSURLs(new ArrayOfAnyURI(new org.apache.axis.types.URI[] { fileUri }));
-
-			SrmLsResponse lsResponse = service.srmLs(lsRequest);
-			if (lsResponse != null) {
-				if (lsResponse.getReturnStatus() != null) {
-					if (!lsResponse.getReturnStatus().getStatusCode().equals(TStatusCode.SRM_SUCCESS)
-							&& !lsResponse.getReturnStatus().getStatusCode().equals(TStatusCode.SRM_DONE)
-							&& !lsResponse.getReturnStatus().getStatusCode().equals(TStatusCode.SRM_REQUEST_QUEUED)
-							&& !lsResponse.getReturnStatus().getStatusCode().equals(TStatusCode.SRM_REQUEST_INPROGRESS)) {
-						LOGGER.error("exists() failed: status code: "
-								+ lsResponse.getReturnStatus().getStatusCode().toString() + ", explanation: "
-								+ lsResponse.getReturnStatus().getExplanation());
-						// throw new FileException("SRM create input stream failed: status code: " +
-						// lsResponse.getReturnStatus().getStatusCode().toString() +
-						// ", explanation: " + lsResponse.getReturnStatus().getExplanation());
-					}
-				}
-			}
+			SrmLsResponse lsResponse = list(uri);
 
 			ArrayOfTMetaDataPathDetail details = lsResponse.getDetails();
 			TMetaDataPathDetail[] detailArray = details.getPathDetailArray();
@@ -767,7 +754,73 @@ public class SrmConnection {
 			// If type is not null then file or directory exists
 			return (type != null);
 		} catch (Exception e) {
-			throw new GATInvocationException("Error occurs during calling exist for: " + path, e);
+			throw new GATInvocationException("Error occurs during calling exist for: " + uri, e);
+		}
+	}
+
+	/**
+	 * Checks if the given path is a file.
+	 * 
+	 * @param uri the path to check
+	 * @return <code>true</code> if the given path is a file.
+	 * @throws GATInvocationException an exception that might occurs.
+	 */
+	public boolean isFile(String uri) throws GATInvocationException {
+		LOGGER.debug("exists : " + uri.toString());
+
+		// Validate the uri
+		try {
+			new URI(uri);
+		} catch (MalformedURIException e1) {
+			throw new GATInvocationException("Malformed URI!", e1);
+		}
+
+		try {
+			SrmLsResponse lsResponse = list(uri);
+
+			ArrayOfTMetaDataPathDetail details = lsResponse.getDetails();
+			TMetaDataPathDetail[] detailArray = details.getPathDetailArray();
+			TFileType type = detailArray[0].getType();
+
+			LOGGER.debug("exists() type: " + type);
+
+			// check for the file type
+			return (type != null && type.equals(TFileType.FILE));
+		} catch (Exception e) {
+			throw new GATInvocationException("Error occurs during calling isFile for: " + uri, e);
+		}
+	}
+
+	/**
+	 * Checks if the given path is a directory.
+	 * 
+	 * @param uri the path to check
+	 * @return <code>true</code> if the given path is a directory
+	 * @throws GATInvocationException an exception that might occurs.
+	 */
+	public boolean isDirectory(String uri) throws GATInvocationException {
+		LOGGER.debug("exists : " + uri.toString());
+
+		// Validate the uri
+		try {
+			new URI(uri);
+		} catch (MalformedURIException e1) {
+			throw new GATInvocationException("Malformed URI!", e1);
+		}
+
+		try {
+			SrmLsResponse lsResponse = list(uri);
+
+			ArrayOfTMetaDataPathDetail details = lsResponse.getDetails();
+			TMetaDataPathDetail[] detailArray = details.getPathDetailArray();
+			TFileType type = detailArray[0].getType();
+
+			LOGGER.debug("exists() type: " + type);
+
+			// check for the file type
+			return (type != null && type.equals(TFileType.DIRECTORY));
+		} catch (Exception e) {
+			throw new GATInvocationException("Error occurs during calling isFile for: " + uri, e);
 		}
 	}
 
