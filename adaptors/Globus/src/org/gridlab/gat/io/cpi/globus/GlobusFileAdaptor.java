@@ -235,7 +235,7 @@ public abstract class GlobusFileAdaptor extends FileCpi {
             HostPort hp = destClient.setPassive();
             srcClient.setActive(hp);
 
-            boolean append = true;
+            boolean append = false;
             String remoteSrcFile = src.getPath();
             String remoteDestFile = dest.getPath();
 
