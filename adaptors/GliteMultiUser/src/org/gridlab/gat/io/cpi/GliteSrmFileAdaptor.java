@@ -107,7 +107,16 @@ public class GliteSrmFileAdaptor extends FileCpi {
 		fileAdapterPrefs.put("ftp.server.noauthentication", "true");
 
 		try {
-			if (localFile) {
+
+			if (toURI().refersToLocalHost() && dest.refersToLocalHost()) {
+				if (logger.isDebugEnabled()) {
+					logger.debug("Globus file: copy local to local");
+				}
+				throw new GATInvocationException("cannot copy from local ('" + toURI() + "') to local ('" + dest + "')");
+			}
+
+			// Uploads the file to the storage
+			if (toURI().refersToLocalHost()) {
 				if (!dest.isCompatible(GliteSrmFileAdaptor.SRM_PROTOCOL)) {
 					throw new GATInvocationException(GLITE_SRM_FILE_ADAPTOR + ": "
 							+ GliteSrmFileAdaptor.CANNOT_HANDLE_THIS_URI + dest);
@@ -128,7 +137,11 @@ public class GliteSrmFileAdaptor extends FileCpi {
 				File transportFile = GAT.createFile(newContext, location);
 				transportFile.copy(new URI(turl));
 				connector.finalizeFileUpload(dest);
-			} else {
+				return;
+			}
+
+			// Downloads the file from the storage
+			if (dest.refersToLocalHost()) {
 				GliteSecurityUtils.getVOMSProxy(gatContext, true);
 				String proxyFile = GliteSecurityUtils.getPathToUserVomsProxy(gatContext);
 
@@ -143,7 +156,25 @@ public class GliteSrmFileAdaptor extends FileCpi {
 				GliteSecurityUtils.replaceSecurityContextWithGliteContext(newContext, proxyFile);
 				File transportFile = GAT.createFile(newContext, turl);
 				transportFile.copy(new URI(dest.getPath()));
+				return;
 			}
+
+			// Copys the file from a storage resource to another storage resource
+			GliteSecurityUtils.getVOMSProxy(gatContext, true);
+			String proxyFile = GliteSecurityUtils.getPathToUserVomsProxy(gatContext);
+
+			String srcUrl = connector.getTURLForFileDownload(location);
+			String destUrl = connector.getTURLForFileUpload(location, dest);
+
+			GATContext newContext = (GATContext) gatContext.clone();
+			newContext.addPreference("File.adaptor.name", "GridFTP");
+			newContext.addPreferences(fileAdapterPrefs);
+			GliteSecurityUtils.replaceSecurityContextWithGliteContext(newContext, proxyFile);
+
+			File transportFile = GAT.createFile(newContext, srcUrl);
+			File destFile = GAT.createFile(newContext, destUrl);
+			transportFile.copy(destFile.toGATURI());
+			connector.finalizeFileUpload(dest);
 		} catch (Exception e) {
 			throw new GATInvocationException(GLITE_SRM_FILE_ADAPTOR, e);
 		}
@@ -216,8 +247,7 @@ public class GliteSrmFileAdaptor extends FileCpi {
 		}
 	} // public FileInfo[] listFileInfo() throws GATInvocationException
 
-    
-	/** 
+	/**
 	 * @see org.gridlab.gat.io.cpi.FileCpi#exists()
 	 */
 	public boolean exists() throws GATInvocationException {
@@ -228,12 +258,12 @@ public class GliteSrmFileAdaptor extends FileCpi {
 			LOGGER.error("An error occurs during ls", e);
 			throw new GATInvocationException("An error occurs during exists", e);
 		}
-    }	
-	
+	}
+
 	/**
 	 * @see FileCpi#isFile()
 	 */
-    public boolean isFile() throws GATInvocationException {
+	public boolean isFile() throws GATInvocationException {
 		try {
 			GliteSecurityUtils.getVOMSProxy(gatContext, true);
 			return connector.isFile(location);
@@ -241,12 +271,12 @@ public class GliteSrmFileAdaptor extends FileCpi {
 			LOGGER.error("An error occurs during ls", e);
 			throw new GATInvocationException("An error occurs during isFile", e);
 		}
-    }	
-	
-    /**
-     * @see FileCpi#isDirectory()
-     */
-    public boolean isDirectory() throws GATInvocationException {
+	}
+
+	/**
+	 * @see FileCpi#isDirectory()
+	 */
+	public boolean isDirectory() throws GATInvocationException {
 		try {
 			GliteSecurityUtils.getVOMSProxy(gatContext, true);
 			return connector.isDirectory(location);
@@ -254,9 +284,8 @@ public class GliteSrmFileAdaptor extends FileCpi {
 			LOGGER.error("An error occurs during ls", e);
 			throw new GATInvocationException("An error occurs during isFile", e);
 		}
-    }    
-    
-	
+	}
+
 	/**
 	 * @see FileCpi#getFileAttributeView(Class, boolean)
 	 */
