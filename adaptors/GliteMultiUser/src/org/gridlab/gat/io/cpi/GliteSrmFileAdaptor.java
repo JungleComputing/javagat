@@ -23,13 +23,7 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Adapter for the SRM (v2) protocol for JavaGAT.
- * <p>
- * Please note: This adapter is to be considered experimental. It may or may not work for you, and there is no guarantee
- * that the interface or parameters will be compatible with future versions.
- * <p>
- * Please read the documentation in <tt>/doc/GliteAdaptor</tt> for further information!
  * 
- * @author: Max Berger
  * @author: Stefan Bozic
  */
 @SuppressWarnings("serial")
@@ -155,7 +149,7 @@ public class GliteSrmFileAdaptor extends FileCpi {
 
 				GliteSecurityUtils.replaceSecurityContextWithGliteContext(newContext, proxyFile);
 				File transportFile = GAT.createFile(newContext, turl);
-				transportFile.copy(new URI(dest.getPath()));
+				transportFile.copy(dest);
 				return;
 			}
 
@@ -224,7 +218,7 @@ public class GliteSrmFileAdaptor extends FileCpi {
 			List<String> result = connector.listFileNames(location);
 			return (String[]) result.toArray(new String[result.size()]);
 		} catch (IOException e) {
-			LOGGER.error("An error occurs during ls", e);
+			LOGGER.error("An error occurs during list", e);
 			throw new GATInvocationException("An error occurs during list", e);
 		}
 	}
@@ -242,7 +236,7 @@ public class GliteSrmFileAdaptor extends FileCpi {
 			List<FileInfo> result = connector.listFileInfos(location);
 			return (FileInfo[]) result.toArray(new FileInfo[result.size()]);
 		} catch (IOException e) {
-			LOGGER.error("An error occurs during ls", e);
+			LOGGER.error("An error occurs during listFileInfo", e);
 			throw new GATInvocationException("An error occurs during listFileInfo", e);
 		}
 	} // public FileInfo[] listFileInfo() throws GATInvocationException
@@ -255,7 +249,7 @@ public class GliteSrmFileAdaptor extends FileCpi {
 			GliteSecurityUtils.getVOMSProxy(gatContext, true);
 			return connector.exists(location);
 		} catch (IOException e) {
-			LOGGER.error("An error occurs during ls", e);
+			LOGGER.error("An error occurs during exists", e);
 			throw new GATInvocationException("An error occurs during exists", e);
 		}
 	}
@@ -268,7 +262,7 @@ public class GliteSrmFileAdaptor extends FileCpi {
 			GliteSecurityUtils.getVOMSProxy(gatContext, true);
 			return connector.isFile(location);
 		} catch (IOException e) {
-			LOGGER.error("An error occurs during ls", e);
+			LOGGER.error("An error occurs during isFile", e);
 			throw new GATInvocationException("An error occurs during isFile", e);
 		}
 	}
@@ -281,8 +275,26 @@ public class GliteSrmFileAdaptor extends FileCpi {
 			GliteSecurityUtils.getVOMSProxy(gatContext, true);
 			return connector.isDirectory(location);
 		} catch (IOException e) {
-			LOGGER.error("An error occurs during ls", e);
-			throw new GATInvocationException("An error occurs during isFile", e);
+			LOGGER.error("An error occurs during isDirectory", e);
+			throw new GATInvocationException("An error occurs during isDirectory", e);
+		}
+	}
+
+	/**
+	 * @see FileCpi#renameTo(File)
+	 */
+	public boolean renameTo(File dest) throws GATInvocationException {
+		try {
+			if (location.getHost().equals(dest.toGATURI().getHost())) {
+				GliteSecurityUtils.getVOMSProxy(gatContext, true);
+				return connector.renameTo(location, dest.toGATURI());
+			} else {
+				LOGGER.error("Both files must be on the same host!");
+				return false;
+			}
+		} catch (IOException e) {
+			LOGGER.error("An error occurs during renameTo", e);
+			throw new GATInvocationException("An error occurs during renameTo", e);
 		}
 	}
 

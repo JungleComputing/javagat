@@ -13,6 +13,8 @@ import gov.lbl.srm.StorageResourceManager.SrmLsRequest;
 import gov.lbl.srm.StorageResourceManager.SrmLsResponse;
 import gov.lbl.srm.StorageResourceManager.SrmMkdirRequest;
 import gov.lbl.srm.StorageResourceManager.SrmMkdirResponse;
+import gov.lbl.srm.StorageResourceManager.SrmMvRequest;
+import gov.lbl.srm.StorageResourceManager.SrmMvResponse;
 import gov.lbl.srm.StorageResourceManager.SrmPrepareToGetRequest;
 import gov.lbl.srm.StorageResourceManager.SrmPrepareToGetResponse;
 import gov.lbl.srm.StorageResourceManager.SrmPrepareToPutRequest;
@@ -46,6 +48,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.rmi.RemoteException;
 import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -822,6 +825,74 @@ public class SrmConnection {
 		} catch (Exception e) {
 			throw new GATInvocationException("Error occurs during calling isFile for: " + uri, e);
 		}
+	}
+
+	/**
+	 * Moves a file on a srm resource. This method is also used for renaming.
+	 * 
+	 * @param filePath the old path/name of the file
+	 * @param newFilePath the new path/name of the file
+	 * 
+	 * @return <code>true</code> if the files has been moved successful.
+	 * @throws GATInvocationException an exception that might occurs during movement
+	 */
+	public boolean moveFile(String filePath, String newFilePath) throws GATInvocationException {
+		LOGGER.debug("moveFile() filePath: " + filePath + ", newFilePath: " + newFilePath);
+
+		URI fromSurl;
+		URI toSurl;
+
+		try {
+			fromSurl = new URI(filePath);
+		} catch (MalformedURIException e) {
+			LOGGER.error("Error with the src uri.", e);
+			return false;
+		}
+
+		try {
+			toSurl = new URI(newFilePath);
+		} catch (MalformedURIException e) {
+			LOGGER.error("Error with the dest uri.", e);
+			return false;
+		}
+
+		// Changing classloader
+		ClassLoader savedClassLoader = Thread.currentThread().getContextClassLoader();
+		Thread.currentThread().setContextClassLoader(this.getClass().getClassLoader());
+		try {
+			SrmMvRequest srmMvRequest = new SrmMvRequest();
+			srmMvRequest.setAuthorizationID(AUTHORIZATION_ID);
+			srmMvRequest.setFromSURL(fromSurl);
+			srmMvRequest.setToSURL(toSurl);
+			SrmMvResponse srmMvResult = service.srmMv(srmMvRequest);
+			String result = null;
+			if (srmMvResult != null) {
+				result = srmMvResult.getReturnStatus().getStatusCode().getValue();
+				if (srmMvResult.getReturnStatus() != null) {
+					if (!srmMvResult.getReturnStatus().getStatusCode().equals(TStatusCode.SRM_SUCCESS)
+							&& !srmMvResult.getReturnStatus().getStatusCode().equals(TStatusCode.SRM_DONE)
+							&& !srmMvResult.getReturnStatus().getStatusCode().equals(TStatusCode.SRM_REQUEST_QUEUED)
+							&& !srmMvResult.getReturnStatus().getStatusCode()
+									.equals(TStatusCode.SRM_REQUEST_INPROGRESS)) {
+						LOGGER.error("moveFile() failed: status code: "
+								+ srmMvResult.getReturnStatus().getStatusCode().toString() + ", explanation: "
+								+ srmMvResult.getReturnStatus().getExplanation());
+						throw new GATInvocationException("SRM move files failed: status code: "
+								+ srmMvResult.getReturnStatus().getStatusCode().toString() + ", explanation: "
+								+ srmMvResult.getReturnStatus().getExplanation());
+					}
+				}
+			}
+			if (result != null && result.equals(TStatusCode._SRM_SUCCESS)) {
+				return true;
+			}
+		} catch (RemoteException e) {
+			LOGGER.error("moveFile() error.", e);
+		}
+		// Restoring original, previously saved, classloader
+		Thread.currentThread().setContextClassLoader(savedClassLoader);
+
+		return false;
 	}
 
 	/**

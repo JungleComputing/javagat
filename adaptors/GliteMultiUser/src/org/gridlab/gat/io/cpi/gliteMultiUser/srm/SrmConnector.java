@@ -18,7 +18,6 @@ import org.gridlab.gat.io.cpi.gliteMultiUser.srm.SrmConnection.SRMPosixFile;
 /**
  * GAT-Specific functionality for accessing an SRM.
  * 
- * @author Max Berger
  * @author Stefan Bozic
  */
 public class SrmConnector {
@@ -133,7 +132,7 @@ public class SrmConnector {
 		SrmConnection connection = new SrmConnection(srmURI.getHost(), proxyPath);
 		return connection.listFileNames(srmURI.toString());
 	}
-	
+
 	/**
 	 * Lists all the {@link FileInfo}s to a given {@link URI}.
 	 * 
@@ -144,7 +143,7 @@ public class SrmConnector {
 	public List<FileInfo> listFileInfos(URI srmURI) throws IOException {
 		SrmConnection connection = new SrmConnection(srmURI.getHost(), proxyPath);
 		return connection.listFileInfos(srmURI.toString());
-	}	
+	}
 
 	/**
 	 * Checks if the given path exists.
@@ -158,8 +157,7 @@ public class SrmConnector {
 		SrmConnection connection = new SrmConnection(srmURI.getHost(), proxyPath);
 		return connection.exists(srmURI.toString());
 	}
-	
-	
+
 	/**
 	 * Checks if the given path is a file.
 	 * 
@@ -171,8 +169,8 @@ public class SrmConnector {
 	public boolean isFile(URI srmURI) throws IOException, GATInvocationException {
 		SrmConnection connection = new SrmConnection(srmURI.getHost(), proxyPath);
 		return connection.isFile(srmURI.toString());
-	}	
-	
+	}
+
 	/**
 	 * Checks if the given path is a directory.
 	 * 
@@ -184,8 +182,23 @@ public class SrmConnector {
 	public boolean isDirectory(URI srmURI) throws IOException, GATInvocationException {
 		SrmConnection connection = new SrmConnection(srmURI.getHost(), proxyPath);
 		return connection.isDirectory(srmURI.toString());
-	}		
-	
+	}
+
+	/**
+	 * Renames a file.
+	 * 
+	 * @param oldURI the {@link URI} of the old filename
+	 * @param newURI the {@link URI} of the new filename
+	 * 
+	 * @return <code>true</code> if the file has been renamed successfully
+	 * @throws IOException an exception that might occurs
+	 * @throws GATInvocationException an exception that might occurs
+	 */
+	public boolean renameTo(URI oldURI, URI newURI) throws IOException, GATInvocationException {
+		SrmConnection connection = new SrmConnection(oldURI.getHost(), proxyPath);
+		return connection.moveFile(oldURI.toString(), newURI.toString());
+	}
+
 	/**
 	 * @param srmURI the URI for the file.
 	 * @param tPermissionType How do we set the following permissions (add, delete or change them).
