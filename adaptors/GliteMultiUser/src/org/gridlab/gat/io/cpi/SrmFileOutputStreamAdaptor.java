@@ -13,7 +13,7 @@ import org.gridlab.gat.GATObjectCreationException;
 import org.gridlab.gat.Preferences;
 import org.gridlab.gat.URI;
 import org.gridlab.gat.io.cpi.gliteMultiUser.srm.SrmConnector;
-import org.gridlab.gat.io.cpi.globus.GridFTPFileOutputStreamAdaptor;
+
 import org.gridlab.gat.resources.security.gliteMultiUser.GliteSecurityUtils;
 
 /**
