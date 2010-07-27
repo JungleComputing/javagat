@@ -61,7 +61,7 @@ public class SrmConnector {
 	public String getTURLForFileUpload(URI source, URI dest) throws IOException {
 		SrmConnection connection = new SrmConnection(dest.getHost(), proxyPath);
 		activeUploads.put(dest, connection);
-		return connection.getTURLForFileUpload(source.getPath(), dest.toString()).toString();
+		return connection.getTURLForFileUpload(source != null ? source.getPath() : null, dest.toString()).toString();
 	}
 
 	/**

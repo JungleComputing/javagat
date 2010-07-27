@@ -306,7 +306,7 @@ public class SrmConnection {
 	/**
 	 * Returns the transport url for the file to upload.
 	 * 
-	 * @param src the url of the source file
+	 * @param src the url of the source file, can be null 
 	 * @param dest the url of the destination file
 	 * 
 	 * @return the uri for the file to upload
@@ -316,14 +316,22 @@ public class SrmConnection {
 	public URI getTURLForFileUpload(String src, String dest) throws IOException {
 		URI uri = new URI(dest);
 		URI transportURL = null;
-		File localFile = new File(src);
 
 		LOGGER.info("Creating put request for URI " + uri);
 		SrmPrepareToPutRequest srmPrepToPutReq = new SrmPrepareToPutRequest();
 		srmPrepToPutReq.setAuthorizationID(AUTHORIZATION_ID);
 
-		UnsignedLong expFileSize = new UnsignedLong(localFile.length());
-		TPutFileRequest putFileRequest = new TPutFileRequest(uri, expFileSize);
+		TPutFileRequest putFileRequest;
+		
+		if (null != src && !src.isEmpty()) {
+			File localFile = new File(src);
+			UnsignedLong expFileSize = new UnsignedLong(localFile.length());
+			putFileRequest = new TPutFileRequest(uri, expFileSize);
+		} else {
+			putFileRequest = new TPutFileRequest();
+			putFileRequest.setTargetSURL(uri);
+		}
+		
 		TPutFileRequest[] putFileRequests = new TPutFileRequest[] { putFileRequest };
 
 		srmPrepToPutReq.setArrayOfFileRequests(new ArrayOfTPutFileRequest(putFileRequests));
