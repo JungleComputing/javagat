@@ -37,6 +37,8 @@
 			<manifest>
 				<attribute name="ResourceBrokerCpi-class" value="org.gridlab.gat.resources.cpi.gliteMultiUser.GliteMultiUserResourceBrokerAdaptor" />
 				<attribute name="FileCpi-class" value="org.gridlab.gat.io.cpi.GliteSrmFileAdaptor" />
+				<attribute name="FileInputStreamCpi-class" value="org.gridlab.gat.io.cpi.SrmFileInputStreamAdaptor" />
+				<attribute name="FileOutputStreamCpi-class" value="org.gridlab.gat.io.cpi.SrmFileOutputStreamAdaptor" />
 			</manifest>
 		</jar>
 
