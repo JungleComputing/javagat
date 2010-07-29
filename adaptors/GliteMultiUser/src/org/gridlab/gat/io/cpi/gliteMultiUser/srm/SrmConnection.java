@@ -836,6 +836,43 @@ public class SrmConnection {
 	}
 
 	/**
+	 * Returns the length of the file to the given uri.
+	 * 
+	 * @param uri the uri to the file
+	 * @return The length, in bytes, of the file denoted by this abstract pathname, or 0L if the file does not exist. 
+	 * Some operating systems may return 0L for pathnames denoting system-dependent entities such as devices or pipes. 
+	 * @throws GATInvocationException an exception that might occurs.
+	 */
+	public long length(String uri) throws GATInvocationException {
+		LOGGER.debug("exists : " + uri.toString());
+
+		try {
+			new URI(uri);
+		} catch (MalformedURIException e1) {
+			throw new GATInvocationException("Malformed !", e1);
+		}
+
+		try {
+			SrmLsResponse lsResponse = list(uri);
+
+			ArrayOfTMetaDataPathDetail details = lsResponse.getDetails();
+			TMetaDataPathDetail[] detailArray = details.getPathDetailArray();
+			TFileType type = detailArray[0].getType();
+
+			LOGGER.debug("exists() type: " + type);
+			// If type is not null then file exists			
+			if (type != null && type.equals(TFileType.FILE)) {
+				return detailArray[0].getSize().longValue();
+			}
+		} catch (Exception e) {
+			throw new GATInvocationException("Error occurs during calling exist for: " + uri, e);
+		}
+		
+		return 0l;
+	}	
+	
+	
+	/**
 	 * Moves a file on a srm resource. This method is also used for renaming.
 	 * 
 	 * @param filePath the old path/name of the file

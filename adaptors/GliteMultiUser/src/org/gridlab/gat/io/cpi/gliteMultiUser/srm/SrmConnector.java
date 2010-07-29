@@ -200,6 +200,19 @@ public class SrmConnector {
 	}
 
 	/**
+	 * Lists all the {@link FileInfo}s to a given {@link URI}.
+	 * 
+	 * @param srmURI the URI for the file.
+	 * @return the permissions
+	 * @throws IOException if a problem occurs
+	 * @throws GATInvocationException 
+	 */
+	public long length(URI srmURI) throws IOException, GATInvocationException {
+		SrmConnection connection = new SrmConnection(srmURI.getHost(), proxyPath);
+		return connection.length(srmURI.toString());
+	}	
+	
+	/**
 	 * @param srmURI the URI for the file.
 	 * @param tPermissionType How do we set the following permissions (add, delete or change them).
 	 * @param ownerTPermissionMode The owner permissions
