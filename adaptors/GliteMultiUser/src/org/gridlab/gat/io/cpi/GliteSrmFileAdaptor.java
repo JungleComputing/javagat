@@ -299,6 +299,19 @@ public class GliteSrmFileAdaptor extends FileCpi {
 	}
 
 	/**
+	 * @see FileCpi#length()
+	 */
+	public long length() throws GATInvocationException {
+		try {
+			GliteSecurityUtils.getVOMSProxy(gatContext, true);
+			return connector.length(location);
+		} catch (IOException e) {
+			LOGGER.error("An error occurs during isDirectory", e);
+			throw new GATInvocationException("An error occurs during isDirectory", e);
+		}
+	}
+
+	/**
 	 * @see FileCpi#getFileAttributeView(Class, boolean)
 	 */
 	@SuppressWarnings("unchecked")
