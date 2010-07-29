@@ -71,6 +71,8 @@ public class SrmFileInputStreamAdaptor extends FileInputStreamCpi {
 			Preferences additionalPreferences = new Preferences();
 			additionalPreferences.put("ftp.connection.passive", "false");
 			additionalPreferences.put("file.adaptor.name", "gridftp");
+			additionalPreferences.put("ftp.server.noauthentication", "true");
+			
 
 			InputStream input = GAT.createFileInputStream(gatContext, additionalPreferences, location);
 
