@@ -49,6 +49,7 @@ import org.slf4j.LoggerFactory;
  * GridFTPFileAdaptor#CLEANUP_INTERVALL} by a special thread.
  * 
  * @author Stefan Bozic
+ * @author Bastian Boegel
  */
 @SuppressWarnings("serial")
 public class GridFTPFileAdaptor extends GlobusFileAdaptor {

@@ -1322,19 +1322,22 @@ public abstract class GlobusFileAdaptor extends FileCpi {
      */
     @Override
     public String getHomeDirectory() throws GATInvocationException {
-        FTPClient client = null;
+    	FTPClient client = null;
 
-        try {
-            client = createClient(toURI());
-            client.changeDir("~");
-            return client.getCurrentDir();
-        } catch (Exception e) {
-            throw new GATInvocationException("gridftp", e);
-        } finally {
-            if (client != null) {
-                destroyClient(client, toURI(), gatContext.getPreferences());
-            }
-        }
+    	try {
+    		client = createClient(toURI());
+    		String oldDir = client.getCurrentDir();
+    		client.changeDir("~");
+    		String homeDir = client.getCurrentDir();
+    		client.changeDir(oldDir);
+    		return homeDir;
+    	} catch (Exception e) {
+    		throw new GATInvocationException("gridftp", e);
+    	} finally {
+    		if (client != null) {
+    			destroyClient(client, toURI(), gatContext.getPreferences());
+    		}
+    	}
     }
     
     /*

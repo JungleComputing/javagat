@@ -62,6 +62,7 @@ import org.slf4j.LoggerFactory;
  * Implements the <code>ResourceBrokerCpi</code> abstract class.
  * 
  * @author Stefan Bozic
+ * @author Bastian Boegel
  */
 public class WSGT4newResourceBrokerAdaptor extends ResourceBrokerCpi {
 
@@ -157,6 +158,16 @@ public class WSGT4newResourceBrokerAdaptor extends ResourceBrokerCpi {
 		String maxMemory = (String) sd.getAttributes().get("gt4new.maxMemory");
 		String minMemory = (String) sd.getAttributes().get("gt4new.minMemory");
 
+		String extensionEMail = (String) sd.getAttributes().get("gt4new.extensions.email");
+		String extensionEMailOnAbort = (String) sd.getAttributes().get("gt4new.extensions.emailOnAbort");
+		String extensionEMailOnExecution = (String) sd.getAttributes().get("gt4new.extensions.emailOnExecution");
+		String extensionEMailOnTermination = (String) sd.getAttributes().get("gt4new.extensions.emailOnTermination");
+
+		String extensionNodes = (String) sd.getAttributes().get("gt4new.extensions.node");
+
+		// The resource allocation groups are numbered starting with 0
+		Integer extensionRAGCount = (Integer) sd.getAttributes().get("gt4new.extensions.rag.count");
+		
 		if (null != scheduler && null != wsa) {
 			rsl += "<factoryEndpoint ";
 			rsl += "xmlns:gram=\"http://www.globus.org/namespaces/2004/10/gram/job\" ";
@@ -215,7 +226,68 @@ public class WSGT4newResourceBrokerAdaptor extends ResourceBrokerCpi {
 			rsl += jobType;
 			rsl += "</jobType>";
 		}
+		
+		String extensions = "";
+		
+		// Mail extensions
+		if (extensionEMail != null) {
+			extensions += "<email_address>" + extensionEMail + "</email_address>";
+		}
+		if (extensionEMailOnAbort != null) {
+			extensions += "<emailonabort>" + extensionEMailOnAbort + "</emailonabort>";
+		}
+		if (extensionEMailOnExecution != null) {
+			extensions += "<emailonexecution>" + extensionEMailOnExecution + "</emailonexecution>";
+		}
+		if (extensionEMailOnTermination != null) {
+			extensions += "<emailontermination>" + extensionEMailOnTermination + "</emailontermination>";
+		}
+		
+		if (extensionNodes != null) {
+			extensions += "<nodes>" + extensionNodes + "</nodes>";
+		}
 
+		// resource allocation groups
+		if (extensionRAGCount != null) {
+			for (int i = 0; i < extensionRAGCount.intValue(); i++) {
+				String extensionRAGHostName = (String) sd.getAttributes().get("gt4new.extensions.rag.hostName." + i);
+				String extensionRAGHostType = (String) sd.getAttributes().get("gt4new.extensions.rag.hostType." + i);
+				Integer extensionRAGHostCount = (Integer) sd.getAttributes().get("gt4new.extensions.rag.hostCount." + i);
+				Integer extensionRAGCpuCount = (Integer) sd.getAttributes().get("gt4new.extensions.rag.cpuCount." + i);
+				Integer extensionRAGCpusPerHost = (Integer) sd.getAttributes().get("gt4new.extensions.rag.cpusPerHost." + i);
+				Integer extensionRAGProcessesPerHost = (Integer) sd.getAttributes().get("gt4new.extensions.rag.processesPerHost." + i);
+				Integer extensionRAGProcessCount = (Integer) sd.getAttributes().get("gt4new.extensions.rag.processCount." + i);
+				String rag = "<resourceAllocationGroup>";
+				if (extensionRAGHostName != null) {
+					rag += "<hostName>" + extensionRAGHostName + "</hostName>";
+				}
+				if (extensionRAGHostType != null) {
+					rag += "<hostType>" + extensionRAGHostType + "</hostType>";
+				}
+				if (extensionRAGHostCount != null) {
+					rag += "<hostCount>" + extensionRAGHostCount + "</hostCount>";
+				}
+				if (extensionRAGCpuCount != null) {
+					rag += "<cpuCount>" + extensionRAGCpuCount + "</cpuCount>";
+				}
+				if (extensionRAGCpusPerHost != null) {
+					rag += "<cpusPerHost>" + extensionRAGCpusPerHost + "</cpusPerHost>";
+				}
+				if (extensionRAGProcessesPerHost != null) {
+					rag += "<processesPerHost>" + extensionRAGProcessesPerHost + "</processesPerHost>";
+				}
+				if (extensionRAGProcessCount != null) {
+					rag += "<processCount>" + extensionRAGProcessCount + "</processCount>";
+				}
+				rag += "</resourceAllocationGroup>";
+				extensions += rag;
+			}
+		}
+
+		if (!extensions.isEmpty()) {
+			rsl += "<extensions>" + extensions + "</extensions>";
+		}
+		
 		// set times
 		if (maxTime != null) {
 			rsl += "<maxTime>" + maxTime + "</maxTime>";
