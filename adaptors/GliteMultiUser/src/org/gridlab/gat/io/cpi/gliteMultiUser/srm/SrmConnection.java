@@ -23,6 +23,8 @@ import gov.lbl.srm.StorageResourceManager.SrmPutDoneRequest;
 import gov.lbl.srm.StorageResourceManager.SrmPutDoneResponse;
 import gov.lbl.srm.StorageResourceManager.SrmRmRequest;
 import gov.lbl.srm.StorageResourceManager.SrmRmResponse;
+import gov.lbl.srm.StorageResourceManager.SrmRmdirRequest;
+import gov.lbl.srm.StorageResourceManager.SrmRmdirResponse;
 import gov.lbl.srm.StorageResourceManager.SrmSetPermissionRequest;
 import gov.lbl.srm.StorageResourceManager.SrmSetPermissionResponse;
 import gov.lbl.srm.StorageResourceManager.SrmStatusOfGetRequestRequest;
@@ -306,7 +308,7 @@ public class SrmConnection {
 	/**
 	 * Returns the transport url for the file to upload.
 	 * 
-	 * @param src the url of the source file, can be null 
+	 * @param src the url of the source file, can be null
 	 * @param dest the url of the destination file
 	 * 
 	 * @return the uri for the file to upload
@@ -322,7 +324,7 @@ public class SrmConnection {
 		srmPrepToPutReq.setAuthorizationID(AUTHORIZATION_ID);
 
 		TPutFileRequest putFileRequest;
-		
+
 		if (null != src && !src.isEmpty()) {
 			File localFile = new File(src);
 			UnsignedLong expFileSize = new UnsignedLong(localFile.length());
@@ -331,7 +333,7 @@ public class SrmConnection {
 			putFileRequest = new TPutFileRequest();
 			putFileRequest.setTargetSURL(uri);
 		}
-		
+
 		TPutFileRequest[] putFileRequests = new TPutFileRequest[] { putFileRequest };
 
 		srmPrepToPutReq.setArrayOfFileRequests(new ArrayOfTPutFileRequest(putFileRequests));
@@ -446,7 +448,7 @@ public class SrmConnection {
 	 * @param uri the uri of the file to remove
 	 * @throws IOException an exception that might occurs
 	 */
-	public void removeFile(String uri) throws IOException {
+	public boolean removeFile(String uri) throws IOException {
 		SrmRmRequest removalRequest = new SrmRmRequest();
 		removalRequest.setArrayOfSURLs(new ArrayOfAnyURI(new URI[] { new URI(uri) }));
 		SrmRmResponse response = null;
@@ -463,7 +465,40 @@ public class SrmConnection {
 
 		LOGGER.info("Return status code " + returnStatus.getStatusCode());
 		if (!returnStatus.getStatusCode().equals(TStatusCode.SRM_SUCCESS)) {
-			throw new IOException(returnStatus.getStatusCode().toString());
+			LOGGER.error(returnStatus.getStatusCode().toString());
+			return false;
+		} else {
+			return true;
+		}
+	}
+
+	/**
+	 * Removes a directory with the given uri from the SE.
+	 * 
+	 * @param uri the uri of the directory to remove
+	 * @throws IOException an exception that might occurs
+	 */
+	public boolean removeDirectory(String uri) throws IOException {
+		SrmRmdirRequest removalRequest = new SrmRmdirRequest();
+		removalRequest.setSURL(new URI(uri));
+
+		SrmRmdirResponse response = null;
+
+		LOGGER.info("Invoking delete request for URI " + uri);
+		response = service.srmRmdir(removalRequest);
+
+		if (response.getReturnStatus() != null) {
+			TReturnStatus fileStatus = response.getReturnStatus();
+			LOGGER.info("file status code " + fileStatus.getStatusCode());
+		}
+
+		TReturnStatus returnStatus = response.getReturnStatus();
+
+		LOGGER.info("Return status code " + returnStatus.getStatusCode());
+		if (!returnStatus.getStatusCode().equals(TStatusCode.SRM_SUCCESS)) {
+			return false;
+		} else {
+			return true;
 		}
 	}
 
@@ -699,7 +734,7 @@ public class SrmConnection {
 
 		LOGGER.debug("Srm createDirectory() : " + newDirPath);
 
-		if (exists(newDirPath)) {
+		if (exists(newDirUri.toString())) {
 			throw new GATInvocationException("SRM create dir: dir already exists " + newDirPath);
 		}
 
@@ -765,7 +800,8 @@ public class SrmConnection {
 			// If type is not null then file or directory exists
 			return (type != null);
 		} catch (Exception e) {
-			throw new GATInvocationException("Error occurs during calling exist for: " + uri, e);
+			// throw new GATInvocationException("Error occurs during calling exist for: " + uri, e);
+			return false;
 		}
 	}
 
@@ -839,8 +875,9 @@ public class SrmConnection {
 	 * Returns the length of the file to the given uri.
 	 * 
 	 * @param uri the uri to the file
-	 * @return The length, in bytes, of the file denoted by this abstract pathname, or 0L if the file does not exist. 
-	 * Some operating systems may return 0L for pathnames denoting system-dependent entities such as devices or pipes. 
+	 * @return The length, in bytes, of the file denoted by this abstract pathname, or 0L if the file does not exist.
+	 *         Some operating systems may return 0L for pathnames denoting system-dependent entities such as devices or
+	 *         pipes.
 	 * @throws GATInvocationException an exception that might occurs.
 	 */
 	public long length(String uri) throws GATInvocationException {
@@ -860,18 +897,17 @@ public class SrmConnection {
 			TFileType type = detailArray[0].getType();
 
 			LOGGER.debug("exists() type: " + type);
-			// If type is not null then file exists			
+			// If type is not null then file exists
 			if (type != null && type.equals(TFileType.FILE)) {
 				return detailArray[0].getSize().longValue();
 			}
 		} catch (Exception e) {
 			throw new GATInvocationException("Error occurs during calling exist for: " + uri, e);
 		}
-		
+
 		return 0l;
-	}	
-	
-	
+	}
+
 	/**
 	 * Moves a file on a srm resource. This method is also used for renaming.
 	 * 

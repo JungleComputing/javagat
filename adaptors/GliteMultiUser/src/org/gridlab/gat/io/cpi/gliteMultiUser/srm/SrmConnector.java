@@ -90,11 +90,22 @@ public class SrmConnector {
 	 * @param srmURI the URI for the file.
 	 * @throws IOException if the file cannot be deleted (e.g. it does not exist).
 	 */
-	public void delete(URI srmURI) throws IOException {
+	public boolean deleteFile(URI srmURI) throws IOException {
 		SrmConnection connection = new SrmConnection(srmURI.getHost(), proxyPath);
-		connection.removeFile(srmURI.toString());
+		return connection.removeFile(srmURI.toString());
 	}
 
+	/**
+	 * Delete a directory on a SRM.
+	 * 
+	 * @param srmURI the URI for the directory.
+	 * @throws IOException if the file cannot be deleted (e.g. it does not exist).
+	 */
+	public boolean deleteDirectory(URI srmURI) throws IOException {
+		SrmConnection connection = new SrmConnection(srmURI.getHost(), proxyPath);
+		return connection.removeDirectory(srmURI.toString());
+	}	
+	
 	/**
 	 * Get the permissions associated to a file.
 	 * 
