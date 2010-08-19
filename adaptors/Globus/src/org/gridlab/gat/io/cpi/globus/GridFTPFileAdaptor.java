@@ -487,7 +487,15 @@ public class GridFTPFileAdaptor extends GlobusFileAdaptor {
     protected FTPClient createClient(GATContext gatContext,
             Preferences additionalPreferences, URI hostURI)
             throws GATInvocationException, InvalidUsernameOrPasswordException {
-        return doWorkCreateClient(gatContext, additionalPreferences, hostURI);
+        FTPClient client = doWorkCreateClient(gatContext, additionalPreferences, hostURI);
+        //Only create a lock when a client has been successfully created.
+        if (client != null) {
+            URI src = fixURI(toURI());
+            // try to get the lock for this host
+            ReentrantLock lock = getHostLock(src);
+            lock.lock();
+        }
+        return client;
     }
 
     /**
@@ -721,7 +729,17 @@ public class GridFTPFileAdaptor extends GlobusFileAdaptor {
         throws CouldNotInitializeCredentialException, CredentialExpiredException,
             InvalidUsernameOrPasswordException {
         logger.debug("destroyClient");
-        doWorkDestroyClient(context, c, hostURI);
+        try {
+            if (c != null) {
+                doWorkDestroyClient(context, c, hostURI);
+            }
+        } finally {
+            URI src = fixURI(toURI());
+            ReentrantLock lock = getHostLock(src);
+            if (lock != null && lock.isLocked()) {
+                lock.unlock();
+            }
+        }
     }
 
     /**
