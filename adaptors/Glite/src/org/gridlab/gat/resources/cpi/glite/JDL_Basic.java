@@ -25,8 +25,10 @@ import java.util.TreeSet;
 import java.util.Map.Entry;
 
 import org.gridlab.gat.GATObjectCreationException;
+import org.gridlab.gat.resources.HardwareResourceDescription;
 import org.gridlab.gat.resources.ResourceDescription;
 import org.gridlab.gat.resources.SoftwareDescription;
+import org.gridlab.gat.resources.SoftwareResourceDescription;
 
 public class JDL_Basic extends AbstractJDL{
 
@@ -278,25 +280,25 @@ public class JDL_Basic extends AbstractJDL{
 
         for (String resDesc : map.keySet()) {
 
-            if (resDesc.equals("os.name")) {
+            if (resDesc.equals(SoftwareResourceDescription.OS_NAME)) {
                 requirements.add("other.GlueHostOperatingSystemName == \""
                         + map.get(resDesc) + "\"");
-            } else if (resDesc.equals("os.release")) {
+            } else if (resDesc.equals(SoftwareResourceDescription.OS_RELEASE)) {
                 requirements.add("other.GlueHostOperatingSystemRelease ==  \""
                         + map.get(resDesc) + "\"");
-            } else if (resDesc.equals("os.version")) {
+            } else if (resDesc.equals(SoftwareResourceDescription.OS_VERSION)) {
                 requirements.add("other.GlueHostOperatingSystemVersion ==  \""
                         + map.get(resDesc) + "\"");
-            } else if (resDesc.equals("os.type")) {
+            } else if (resDesc.equals(SoftwareResourceDescription.OS_TYPE)) {
                 requirements.add("other.GlueHostProcessorModel ==  \""
                         + map.get(resDesc) + "\"");
-            } else if (resDesc.equals("cpu.type")) {
+            } else if (resDesc.equals(HardwareResourceDescription.CPU_TYPE)) {
                 requirements.add("other.GlueHostProcessorModel == \""
                         + map.get(resDesc) + "\"");
             } else if (resDesc.equals("machine.type")) {
                 requirements.add("other.GlueHostProcessorModel ==  \""
                         + map.get(resDesc) + "\"");
-            } else if (resDesc.equals(GliteConstants.RESOURCE_MACHINE_NODE)) {
+            } else if (resDesc.equals(HardwareResourceDescription.MACHINE_NODE)) {
                 // add requirements for multiple sites
                 if (map.get(resDesc) instanceof List) {
                     addCEListToRequirements((List<Object>) map.get(resDesc));
@@ -304,21 +306,21 @@ public class JDL_Basic extends AbstractJDL{
                     requirements.add("other.GlueCEUniqueID == \""
                             + map.get(resDesc) + "\"");
                 }
-            } else if (resDesc.equals("cpu.speed")) {
+            } else if (resDesc.equals(HardwareResourceDescription.CPU_SPEED)) {
                 // gat: float & GHz
                 // gLite: int & Mhz
                 float gatspeed = new Float((String) map.get(resDesc));
                 int gLiteSpeed = (int) (gatspeed * 1000);
                 requirements.add("other.GlueHostProcessorClockSpeed >= "
                         + gLiteSpeed);
-            } else if (resDesc.equals("memory.size")) {
+            } else if (resDesc.equals(HardwareResourceDescription.MEMORY_SIZE)) {
                 // gat: float & GB
                 // gLite: int & MB
                 float gatRAM = (Float) map.get(resDesc);
                 int gLiteRAM = (int) (gatRAM * 1024);
                 requirements.add("other.GlueHostMainMemoryRAMSize >= "
                         + gLiteRAM);
-            } else if (resDesc.equals("disk.size")) {
+            } else if (resDesc.equals(HardwareResourceDescription.DISK_SIZE)) {
                 float gatDS = new Float((String) map.get(resDesc));
                 int gLiteDS = (int) gatDS;
                 requirements.add("other.GlueSESizeFree >= " + gLiteDS); // or

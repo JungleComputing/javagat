@@ -34,7 +34,7 @@ public class GliteHardwareResource extends HardwareResourceCpi {
     /** {@inheritDoc} */
     public ResourceDescription getResourceDescription() {
         HardwareResourceDescription hrd = new HardwareResourceDescription();
-        hrd.addResourceAttribute(GliteConstants.RESOURCE_MACHINE_NODE, queId);
+        hrd.addResourceAttribute(HardwareResourceDescription.MACHINE_NODE, queId);
         return hrd;
     }
 
