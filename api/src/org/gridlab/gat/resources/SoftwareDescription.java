@@ -127,6 +127,9 @@ public class SoftwareDescription implements java.io.Serializable {
 
     /** Indicates the job type: single|multiple|mpi|condor|... */
     public static final String JOB_TYPE = "job.type";
+
+    /** Indicates a job queue: FORK, SGE, PBS, ... */
+    public static final String JOB_QUEUE = "job.queue";
      
     /** Indicates the project to use, for accounting purposes. */
     public static final String PROJECT = "project";
