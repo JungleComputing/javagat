@@ -44,7 +44,6 @@ public class GridSAMResourceBrokerAdaptor extends ResourceBrokerCpi {
     public static Preferences getSupportedPreferences() {
         Preferences preferences = ResourceBrokerCpi.getSupportedPreferences();
         preferences.put("gridsam.sandbox.host", "<no default>");
-        preferences.put("gridsam.sandbox.root", "/tmp");
         return preferences;
     }
     
