@@ -71,7 +71,8 @@ public class WSGT4newResourceBrokerAdaptor extends ResourceBrokerCpi {
     public static Preferences getSupportedPreferences() {
         Preferences preferences = ResourceBrokerCpi.getSupportedPreferences();
         preferences.put("wsgt4new.sandbox.gram", "false");
-        preferences.put("wsgt4new.factory.type", "<FORK CONSTANT>");
+        preferences.put("wsgt4new.factory.type", "<FORK CONSTANT>");    // TODO: deprecate,
+                                                                        // in favor of JOB_QUEUE.
         return preferences;
     }
     
@@ -437,7 +438,10 @@ public class WSGT4newResourceBrokerAdaptor extends ResourceBrokerCpi {
             gramjob.addListener(wsgt4job);
 
             String factoryType = (String) gatContext.getPreferences().get(
-            "wsgt4new.factory.type");
+                    "wsgt4new.factory.type");   // TODO: deprecate. Use JOB_QUEUE instead.
+            if (factoryType == null || factoryType.equals("")) {
+                factoryType = (String) sd.getAttributes().get(SoftwareDescription.JOB_QUEUE);
+            }
             if (factoryType == null || factoryType.equals("")) {
                 factoryType = ManagedJobFactoryConstants.FACTORY_TYPE.FORK;
                 if (logger.isDebugEnabled()) {
