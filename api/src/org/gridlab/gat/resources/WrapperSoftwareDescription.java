@@ -120,9 +120,14 @@ public class WrapperSoftwareDescription extends JavaSoftwareDescription {
         } else {
             if (gatLocation.startsWith("/")) {
                 return ".:" + gatLocation + "/lib/*";
-            } else {
-                return ".:" + "../" + gatLocation + "/lib/*";
             }
+            if (getStringAttribute(SANDBOX_ROOT, null) != null) {
+                throw new Error("If SANDBOX_ROOT is specified, the GAT location must be an absolute path");
+            }
+            if (getBooleanAttribute(SANDBOX_USEROOT, false)) {
+                return ".:" + gatLocation + "/lib/*";
+            }
+            return ".:" + "../" + gatLocation + "/lib/*";
         }
 
     }
@@ -153,18 +158,21 @@ public class WrapperSoftwareDescription extends JavaSoftwareDescription {
             result.put("gat.adaptor.path", "lib/adaptors");
         } else {
             if (gatLocation.startsWith("/")) {
-                result
-                        .put("log4j.configuration", "file:"
+                result.put("log4j.configuration", "file:"
                                 + gatLocation
                                 + "/log4j.properties");
                 result.put("gat.adaptor.path", gatLocation
                         + "/lib/adaptors");
-
+            } else if (getStringAttribute(SANDBOX_ROOT, null) != null) {
+                throw new Error("If SANDBOX_ROOT is specified, the GAT location must be an absolute path");
+            } else if (getBooleanAttribute(SANDBOX_USEROOT, false)) {
+                result.put("log4j.configuration", "file:"
+                                + gatLocation  + "/log4j.properties");
+                result.put("gat.adaptor.path", gatLocation + "/lib/adaptors");
             } else {
-                result
-                        .put("log4j.configuration", "file:../"
-                                + gatLocation
-                                + "/log4j.properties");
+                result.put("log4j.configuration", "file:../"
+                        + gatLocation
+                        + "/log4j.properties");
                 result.put("gat.adaptor.path", "../"
                         + gatLocation + "/lib/adaptors");
             }
