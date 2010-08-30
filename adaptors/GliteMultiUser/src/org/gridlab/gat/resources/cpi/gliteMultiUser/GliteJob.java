@@ -1,8 +1,5 @@
 package org.gridlab.gat.resources.cpi.gliteMultiUser;
 
-import java.io.ByteArrayOutputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
@@ -57,7 +54,6 @@ import org.gridlab.gat.resources.cpi.JobCpi;
 import org.gridlab.gat.resources.cpi.Sandbox;
 import org.gridlab.gat.resources.cpi.SerializedJob;
 import org.gridlab.gat.resources.security.gliteMultiUser.GliteSecurityUtils;
-import org.gridlab.gat.security.CredentialSecurityContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -94,11 +90,6 @@ public class GliteJob extends JobCpi {
 
 	/** The {@link URL} to the Workload Management System (WMS) */
 	private URL wmsURL = null;
-
-	/**
-	 * is <code>true</code> if the Job is done and the poststaging has been done.
-	 */
-	private boolean outputDone = false;
 
 	/** The id of the job. */
 	private String gliteJobID;
@@ -138,6 +129,10 @@ public class GliteJob extends JobCpi {
 
 	/** Web Service Port_Type */
 	private LoggingAndBookkeepingPortType lbPortType = null;
+
+	private URI stdOut;
+
+	private URI stdErr;
 
 	/**
 	 * Logging and Bookkeeping service url
@@ -214,7 +209,7 @@ public class GliteJob extends JobCpi {
 		try {
 			this.wmsURL = new URL(sj.getBrokerUri());
 		} catch (MalformedURLException e) {
-			throw new GATInvocationException("Could not create WMS URL", e);
+			throw new GATInvocationException("Error during unmarshalling the job.", e);
 		}
 
 		// Tell the engine that we provide job.status events
@@ -240,8 +235,9 @@ public class GliteJob extends JobCpi {
 		if (System.getProperty("sslProtocol") == null) {
 			System.setProperty("sslProtocol", "SSLv3");
 		}
-		
-		AxisProperties.setProperty(EngineConfigurationFactory.SYSTEM_PROPERTY_NAME, GLiteEngineConfigurationFactory.class.getName());
+
+		AxisProperties.setProperty(EngineConfigurationFactory.SYSTEM_PROPERTY_NAME,
+				GLiteEngineConfigurationFactory.class.getName());
 		logger.info("set axis.EngineConfigFactory: " + GLiteEngineConfigurationFactory.class.getName());
 	}
 
@@ -450,6 +446,24 @@ public class GliteJob extends JobCpi {
 		map.put("sandBoxUri", sandboxUri);
 		map.put("cpuTime", cpuTime);
 
+		try {
+			// if the job has been finished, try to retrieve the uris for stdOut and stdErr
+			if ((this.state == Job.JobState.DONE_SUCCESS) || (this.state == Job.JobState.DONE_FAILURE)) {
+				if (null == stdOut) {
+					stdOut = getFileOutputUri("std.out");
+				}
+
+				if (null == stdErr) {
+					stdErr = getFileOutputUri("std.err");
+				}
+
+				map.put("stdOutUri", stdOut);
+				map.put("stdErrUri", stdErr);
+			}
+		} catch (Exception e) {
+			LOGGER.error(e.toString());
+		}
+
 		return map;
 	}
 
@@ -461,31 +475,27 @@ public class GliteJob extends JobCpi {
 			initLBSoapService();
 		}
 
-		if (outputDone) { // API is ready with POST STAGING
-			this.gLiteState = "Cleared";
-		} else {
-			try {
-				final JobStatus js = lbPortType.jobStatus(gliteJobID, new JobFlags());
-				final StatName state = js.getState();
-				this.gLiteState = state.toString();
-				this.destination = js.getDestination();
-				String failure = js.getFailureReasons();
+		try {
+			final JobStatus js = lbPortType.jobStatus(gliteJobID, new JobFlags());
+			final StatName state = js.getState();
+			this.gLiteState = state.toString();
+			this.destination = js.getDestination();
+			String failure = js.getFailureReasons();
 
-				if (null != failure && !failure.isEmpty()) {
-					LOGGER.error(failure);
-				}
-
-				processStateTimes(js.getStateEnterTimes());
-
-				if (state == StatName.DONE) {
-					exitStatus = js.getExitCode();
-					cpuTime = js.getCpuTime();
-				}
-			} catch (GenericFault e) {
-				LOGGER.error(e.toString());
-			} catch (RemoteException e) {
-				LOGGER.error("gLite Error: LoggingAndBookkeeping service only works in glite 3.1 or higher", e);
+			if (null != failure && !failure.isEmpty()) {
+				LOGGER.error(failure);
 			}
+
+			processStateTimes(js.getStateEnterTimes());
+
+			if (state == StatName.DONE) {
+				exitStatus = js.getExitCode();
+				cpuTime = js.getCpuTime();
+			}
+		} catch (GenericFault e) {
+			LOGGER.error(e.toString());
+		} catch (RemoteException e) {
+			LOGGER.error("gLite Error: LoggingAndBookkeeping service only works in glite 3.1 or higher", e);
 		}
 	}
 
@@ -524,7 +534,7 @@ public class GliteJob extends JobCpi {
 	/**
 	 * Retrieves the times for the interesting states
 	 * 
-	 * @param stateTimes
+	 * @param stateTimes the times when the job enters a state
 	 */
 	private void processStateTimes(StateEnterTimesItem[] stateTimes) {
 		for (StateEnterTimesItem item : stateTimes) {
@@ -547,6 +557,8 @@ public class GliteJob extends JobCpi {
 	 * been called. The time interval the lookup thread will still wait till cancelation ater calling stop() is defined
 	 * in the UDPATE_INTV_AFTER_JOB_KILL variable in the JobStatusLookUp Thread. This has become necessary because some
 	 * jobs would hang forever in a state even after calling the stop method.
+	 * 
+	 * @throws GATInvocationException an exception that might occurs
 	 */
 	public void stop() throws GATInvocationException {
 		if (state == JobState.POST_STAGING || state == JobState.STOPPED || state == JobState.SUBMISSION_ERROR) {
@@ -560,7 +572,7 @@ public class GliteJob extends JobCpi {
 		}
 	}
 
-	/*
+	/**
 	 * @see org.gridlab.gat.advert.Advertisable#marshal()
 	 */
 	public String marshal() {
@@ -600,37 +612,6 @@ public class GliteJob extends JobCpi {
 
 		SerializedJob sj = (SerializedJob) GATEngine.defaultUnmarshal(SerializedJob.class, s, GliteJob.class.getName());
 
-		// // if this job was created within this JVM, just return a reference to
-		// // the job
-		// synchronized (JobCpi.class) {
-		// for (int i = 0; i < jobList.size(); i++) {
-		// JobCpi j = (JobCpi) jobList.get(i);
-		// if (j instanceof WSGT4newJob) {
-		// WSGT4newJob gj = (WSGT4newJob) j;
-		// if (sj.getJobId().equals(gj.g)) {
-		// if (logger.isDebugEnabled()) {
-		// logger.debug("returning existing job: " + gj);
-		// }
-		//
-		// try {
-		// //Its not possible to reset the credentials to a job object.
-		// //So create a WSGT4 instance if the credential is getting expired.
-		// GSSCredential credential = gj.job.getCredentials();
-		// if (credential.getRemainingLifetime() == 0) {
-		// logger.debug("Credential expired. Create a new Job instance.");
-		// jobList.remove(gj);
-		// gj = null;
-		// return new WSGT4newJob(context, sj);
-		// }
-		// } catch (Exception e) {
-		// throw new RuntimeException("Cannot retrieve new credentials for job.", e);
-		// }
-		//
-		// return gj;
-		// }
-		// }
-		// }
-		// }
 		try {
 			retVal = new GliteJob(context, sj);
 		} catch (GATInvocationException e) {
@@ -654,67 +635,21 @@ public class GliteJob extends JobCpi {
 		return this.state;
 	}
 
+	/**
+	 * @see org.gridlab.gat.resources.cpi.JobCpi#getStdout()
+	 */
 	@Override
 	public InputStream getStdout() throws GATInvocationException {
 		FileInputStream retVal = null;
 
-		StringAndLongType[] list = null;
 		try {
-			StringAndLongList sl = getWmProxy().getOutputFileList(gliteJobID, "gsiftp");
-			list = sl.getFile();
-
-			GATContext newContext = new GATContext();
-			newContext.addPreference("file.adaptor.name", "gridftp");
-
-			GliteSecurityUtils.replaceSecurityContextWithGliteContext(newContext, vomsProxyPath);			
-
-			for (int i = 0; i < list.length; i++) {
-				URI uri1 = new URI(list[i].getName());
-				URI uri2 = new URI(uri1.getScheme() + "://" + uri1.getHost() + ":" + uri1.getPort() + "//"
-						+ uri1.getPath());
-
-				if (uri1.getRawPath().contains("std.out")) {
-					File stdOut = GAT.createFile(newContext, uri2);
-					retVal = GAT.createFileInputStream(stdOut);
-					break;
-				}
-			}
-		} catch (OperationNotAllowedFaultException e) {
-			throw new GATInvocationException("The job has the wrong state to perform this action.", e);
-		} catch (Exception e) {
-			throw new GATInvocationException("An error occurs during receifing the StdOut.", e);
-		}
-
-		return retVal;
-	}
-
-	@Override
-	public InputStream getStderr() throws GATInvocationException {
-		FileInputStream retVal = null;
-
-		StringAndLongType[] list = null;
-		try {
-			StringAndLongList sl = getWmProxy().getOutputFileList(gliteJobID, "gsiftp");
-			list = sl.getFile();
-
 			GATContext newContext = new GATContext();
 			newContext.addPreference("file.adaptor.name", "gridftp");
 
 			GliteSecurityUtils.replaceSecurityContextWithGliteContext(newContext, vomsProxyPath);
 
-			for (int i = 0; i < list.length; i++) {
-				URI uri1 = new URI(list[i].getName());
-				URI uri2 = new URI(uri1.getScheme() + "://" + uri1.getHost() + ":" + uri1.getPort() + "//"
-						+ uri1.getPath());
-
-				if (uri1.getRawPath().contains("std.err")) {
-					File stdOut = GAT.createFile(newContext, uri2);
-					retVal = GAT.createFileInputStream(stdOut);
-					break;
-				}
-			}
-		} catch (OperationNotAllowedFaultException e) {
-			throw new GATInvocationException("The job has the wrong state to perform this action.", e);
+			File stdOut = GAT.createFile(newContext, getFileOutputUri("std.out"));
+			retVal = GAT.createFileInputStream(stdOut);
 		} catch (Exception e) {
 			throw new GATInvocationException("An error occurs during receifing the StdOut.", e);
 		}
@@ -722,5 +657,54 @@ public class GliteJob extends JobCpi {
 		return retVal;
 	}
 
+	/**
+	 * @see org.gridlab.gat.resources.cpi.JobCpi#getStderr()
+	 */
+	@Override
+	public InputStream getStderr() throws GATInvocationException {
+		FileInputStream retVal = null;
 
+		try {
+			GATContext newContext = new GATContext();
+			newContext.addPreference("file.adaptor.name", "gridftp");
+
+			GliteSecurityUtils.replaceSecurityContextWithGliteContext(newContext, vomsProxyPath);
+
+			File stdOut = GAT.createFile(newContext, getFileOutputUri("std.err"));
+			retVal = GAT.createFileInputStream(stdOut);
+		} catch (Exception e) {
+			throw new GATInvocationException("An error occurs during receifing the StdOut.", e);
+		}
+
+		return retVal;
+	}
+
+	/***
+	 * Return the output {@link URI} to a given filename
+	 * 
+	 * @param filename the filename for which to retrieve the URI
+	 * @return the {@link URI} to a given output file
+	 * 
+	 * @throws OperationNotAllowedFaultException this exception occurs if the job is in a wrong state to retrieve output
+	 *             informations.
+	 * @throws Exception an other exception that might occurs
+	 */
+	private URI getFileOutputUri(String filename) throws OperationNotAllowedFaultException, Exception {
+		URI stdErrUri = null;
+		StringAndLongType[] list = null;
+
+		StringAndLongList sl = getWmProxy().getOutputFileList(gliteJobID, "gsiftp");
+		list = sl.getFile();
+
+		for (int i = 0; i < list.length; i++) {
+			URI uri1 = new URI(list[i].getName());
+			URI uri2 = new URI(uri1.getScheme() + "://" + uri1.getHost() + ":" + uri1.getPort() + "//" + uri1.getPath());
+
+			if (uri1.getRawPath().contains(filename)) {
+				stdErrUri = uri2;
+			}
+		}
+
+		return stdErrUri;
+	}
 }
