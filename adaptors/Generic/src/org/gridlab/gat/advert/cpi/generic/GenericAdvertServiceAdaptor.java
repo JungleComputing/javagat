@@ -335,6 +335,10 @@ public class GenericAdvertServiceAdaptor extends AdvertServiceCpi {
             throw new GATInvocationException("local advert", e);
         }
     }
+    
+    public String toString() {
+        return database.toString();
+    }
 
     @SuppressWarnings("serial")
     static class Entry implements Serializable {
@@ -354,6 +358,10 @@ public class GenericAdvertServiceAdaptor extends AdvertServiceCpi {
 
         public MetaData getMetaData() {
             return metadata;
+        }
+        
+        public String toString() {
+            return "<" + path + ", " + metadata + ">";
         }
     }
 }
