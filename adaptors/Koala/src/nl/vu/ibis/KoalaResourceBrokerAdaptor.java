@@ -2,7 +2,6 @@ package nl.vu.ibis;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
-import java.util.HashMap;
 import java.util.Map;
 
 import org.slf4j.Logger;
