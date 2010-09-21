@@ -8,6 +8,8 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.URISyntaxException;
+import java.util.Date;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -59,8 +61,13 @@ import org.gridlab.gat.resources.WrapperJobDescription.WrappedJobInfo;
  */
 
 public class Wrapper {
+    
+    private final SimpleDateFormat dateFormatter 
+            = new SimpleDateFormat("yyyyMMdd-HHmmss");
 
     public static final String WRAPPER_COMMON_DIR = "WRAPPER_COMMON_DIR";
+    
+    public static final String WRAPPER_START_TIME = "WRAPPER_START_TIME";
     
     private static Logger logger = LoggerFactory.getLogger(Wrapper.class);
 
@@ -79,6 +86,8 @@ public class Wrapper {
     private String wrapperCommonSrc;
     
     private String wrapperCommonDest;
+    
+    private final String startTime = dateFormatter.format(new Date());
 
     /**
      * Starts a wrapper with given arguments
@@ -238,14 +247,14 @@ public class Wrapper {
             return description;
         }
         JobDescription jobDescription = (JobDescription) description;
-
-        if (wrapperCommonDest != null) {
-            Map<String, Object> env = jobDescription.getSoftwareDescription().getEnvironment();
-            if (env == null) {
-                env = new HashMap<String, Object>();
-                jobDescription.getSoftwareDescription().setEnvironment(env);
-                env = jobDescription.getSoftwareDescription().getEnvironment();
-            }
+        Map<String, Object> env = jobDescription.getSoftwareDescription().getEnvironment();
+        if (env == null) {
+            env = new HashMap<String, Object>();
+            jobDescription.getSoftwareDescription().setEnvironment(env);
+            env = jobDescription.getSoftwareDescription().getEnvironment();
+        }
+        env.put(WRAPPER_START_TIME, startTime);
+        if (wrapperCommonDest != null) {            
             env.put(WRAPPER_COMMON_DIR, wrapperCommonDest);
         }
         
