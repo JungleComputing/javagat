@@ -272,7 +272,6 @@ public class Wrapper {
                         logger.error("Got Exception", e);
                     }
                 }
-
             }
         }
         
@@ -304,9 +303,12 @@ public class Wrapper {
         java.io.File sandbox = new java.io.File(".");
         String sandboxPath = sandbox.getAbsolutePath();
         File stdout = jobDescription.getSoftwareDescription().getStdout();
+        String jobName = jobDescription.getSoftwareDescription().getStringAttribute(
+                "job.name", null);
         if (stdout != null) {
+            String outName = jobName == null ? (".stdout_" + id) : (jobName + ".stdout");
             try {
-                File out = GAT.createFile(prefs, new URI(sandboxPath + "/.stdout_" + id));
+                File out = GAT.createFile(prefs, new URI(sandboxPath + "/" + outName));
                 jobDescription.getSoftwareDescription().setStdout(out);
                 postStaged.put(out,
                         GAT.createFile(prefs, rewriteURI(stdout.toGATURI(), origin)));
@@ -316,8 +318,9 @@ public class Wrapper {
         }
         File stderr = jobDescription.getSoftwareDescription().getStderr();
         if (stderr != null) {
+            String errName = jobName == null ? (".stderr_" + id) : (jobName + ".stderr");
             try {
-                File err = GAT.createFile(prefs, new URI(sandboxPath + "/.stderr_" + id));
+                File err = GAT.createFile(prefs, new URI(sandboxPath + "/" + errName));
                 jobDescription.getSoftwareDescription().setStderr(err);
                 postStaged.put(err,
                         GAT.createFile(prefs, rewriteURI(stderr.toGATURI(), origin)));
@@ -327,8 +330,9 @@ public class Wrapper {
         }
         File stdin = jobDescription.getSoftwareDescription().getStdin();
         if (stdin != null) {
+            String inName = jobName == null ? (".stdin_" + id) : (jobName + ".stdin");
             try {
-                File in = GAT.createFile(prefs, new URI(sandboxPath + "/.stdin_" + id));
+                File in = GAT.createFile(prefs, new URI(sandboxPath + "/" + inName));
                 jobDescription.getSoftwareDescription().setStdin(in);
                 preStaged.put(
                         GAT.createFile(prefs,
