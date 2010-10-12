@@ -718,7 +718,7 @@ public class GATEngine {
         try {
             String[] result = (String[]) m.invoke((Object) null, (Object[]) null);
             if (logger.isInfoEnabled()) {
-                logger.info("Supported schemes of class " + clazz.getName() + ": " + result);
+                logger.info("Supported schemes of class " + clazz.getName() + ": " + Arrays.toString(result));
             }
             return result;
         } catch (Throwable t) {
