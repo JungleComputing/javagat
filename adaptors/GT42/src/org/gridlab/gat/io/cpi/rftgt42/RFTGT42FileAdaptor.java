@@ -240,12 +240,6 @@ public class RFTGT42FileAdaptor extends FileCpi {
     public RFTGT42FileAdaptor(GATContext gatContext, URI location)
             throws GATObjectCreationException {
         super(gatContext, location);
-        if (!location.isCompatible("gsiftp")
-                && !location.isCompatible("gridftp")
-                && !location.isCompatible("file")) {
-            throw new AdaptorNotApplicableException("cannot handle this URI: "
-                    + location);
-        }
     
         // TODO: may be it is possible on the local host...
         if (!location.hasAbsolutePath()) {
