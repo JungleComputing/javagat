@@ -130,8 +130,33 @@ public class SshTrileadFileAdaptor extends FileCpi {
             if (! (o instanceof ConnectionKey)) {
                 return false;
             }
+            if (logger.isDebugEnabled()) {
+                logger.debug("Comparing connection keys " + this + " and " + o);
+            }
             ConnectionKey k = (ConnectionKey) o;
-            return k.host.equals(host) && k.context.equals(context);
+            if (k.host.equals(host)) {
+                if (logger.isDebugEnabled()) {
+                    logger.debug("hosts compare equal");
+                }
+                if (k.context.equals(context)) {
+                    if (logger.isDebugEnabled()) {
+                        logger.debug("contexts compare equal");
+                    }
+                    return true;
+                }
+                if (logger.isDebugEnabled()) {
+                    logger.debug("contexts compare NOT equal");
+                }
+                return false;
+            }
+            if (logger.isDebugEnabled()) {
+                logger.debug("hosts compare NOT equal");
+            }
+            return false;
+        }
+            
+        public String toString() {
+            return "(" + host + ", " + context + ")";
         }
     }
     
@@ -559,10 +584,13 @@ public class SshTrileadFileAdaptor extends FileCpi {
         logger.info("getting connection for host: " + host);
         ConnectionKey key = new ConnectionKey(host, (GATContext) context.clone());
         if (useCachedConnection) {
+            logger.info("looking for a cached connection");
             Connection c = connections.get(key);
             if (c != null) {
                 logger.info("returning cached connection");
                 return c;
+            } else {
+                logger.info("not found");
             }
         }
         Connection newConnection = new Connection(host, fixedURI
@@ -913,6 +941,14 @@ public class SshTrileadFileAdaptor extends FileCpi {
                 return isDirCache.get(fixedURI);
             }
         }
+        if (fixedURI.refersToLocalHost()) {
+            java.io.File f = new java.io.File(fixedURI.getPath());
+            boolean isDir = f.isDirectory();
+            if (isDirCacheEnable) {
+                isDirCache.put(fixedURI, isDir);
+            }
+            return isDir;
+        }
         if (isWindows(gatContext, location)) {
             throw new UnsupportedOperationException("Not implemented");
         } else {
@@ -1176,6 +1212,10 @@ public class SshTrileadFileAdaptor extends FileCpi {
     }
 
     public long lastModified() throws GATInvocationException {
+        if (fixedURI.refersToLocalHost()) {
+            java.io.File f = new java.io.File(fixedURI.getPath());
+            return f.lastModified();
+        }
         if (isWindows(gatContext, location)) {
             throw new UnsupportedOperationException("Not implemented");
         } else {
