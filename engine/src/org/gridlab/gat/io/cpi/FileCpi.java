@@ -668,10 +668,10 @@ public abstract class FileCpi extends MonitorableCpi implements FileInterface, j
                 sourcePath = sourcePath.substring(0, sourcePath.length() - 1);
             }
             if (sourcePath.length() > 0) {
-                int start = sourcePath.lastIndexOf(File.separator) + 1;
+                int start = sourcePath.lastIndexOf("/") + 1;
                 String separator = "";
-                if (!dest.toString().endsWith(File.separator)) {
-                    separator = File.separator;
+                if (!dest.toString().endsWith("/")) {
+                    separator = "/";
                 }
                 try {
                     dest = new URI(dest.toString() + separator
