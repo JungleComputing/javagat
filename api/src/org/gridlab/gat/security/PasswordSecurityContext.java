@@ -46,4 +46,11 @@ public class PasswordSecurityContext extends SecurityContext {
     public int hashCode() {
         return username.hashCode();
     }
+    
+    public String toString() {
+        return "PasswordSecurityContext("
+                    + ((username == null) ? "" : ("username = " + username))
+                    + ((dataObjects == null) ? "" : (" userdata = " + dataObjects))
+                    + ")";
+    }
 }

@@ -89,5 +89,12 @@ public class CredentialSecurityContext extends SecurityContext {
     public void setCredential(Object credential) {
         this.credential = credential;
     }
+    
+    public String toString() {
+        return "CredentialSecurityContext(credential = " + credential
+                    + ((username == null) ? "" : (" username = " + username))
+                    + ((dataObjects == null) ? "" : (" userdata = " + dataObjects))
+                    + ")";
+    }
 
 }

@@ -203,4 +203,23 @@ public class GATContext implements Cloneable, Serializable {
         return c.preferences.equals(preferences)
                 && c.securityContexts.equals(securityContexts);
     }
+    
+    public String toString() {
+        StringBuffer b = new StringBuffer();
+        b.append("{");
+        if (preferences != null) {
+            b.append(preferences.toString());
+            b.append(", ");
+        }
+        boolean first = true;
+        for (SecurityContext c : securityContexts) {
+            if (! first) {
+                b.append(", ");
+            }
+            b.append(c.toString());
+            first = false;
+        }
+        b.append("}");
+        return b.toString();
+    }
 }

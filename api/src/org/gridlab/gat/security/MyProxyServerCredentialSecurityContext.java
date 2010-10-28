@@ -99,4 +99,12 @@ public class MyProxyServerCredentialSecurityContext extends SecurityContext {
     public int hashCode() {
         return host.hashCode();
     }
+    
+    public String toString() {
+        return "MyProxyServerCredentialSecurityContext(host = " + host
+                    + " port = " + port
+                    + ((username == null) ? "" : (" username = " + username))
+                    + ((dataObjects == null) ? "" : (" userdata = " + dataObjects))
+                    + ")";
+    }
 }
