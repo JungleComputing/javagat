@@ -383,7 +383,7 @@ public class WSGT4newResourceBrokerAdaptor extends ResourceBrokerCpi {
 			}
 
 			Map<File, File> postStaged = sd.getPostStaged();
-			if (preStaged != null) {
+			if (postStaged != null) {
 				Set<File> keys = postStaged.keySet();
 				Iterator<File> i = keys.iterator();
 				rsl += "<fileStageOut>";

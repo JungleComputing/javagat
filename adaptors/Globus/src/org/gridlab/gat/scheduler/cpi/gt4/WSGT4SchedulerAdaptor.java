@@ -47,6 +47,7 @@ import org.slf4j.LoggerFactory;
  * informations by querying the MDS with a WebService call.
  * 
  * @author Stefan Bozic
+ * @author Bastian Boegel
  */
 public class WSGT4SchedulerAdaptor extends SchedulerCpi implements Scheduler {
 
@@ -76,15 +77,24 @@ public class WSGT4SchedulerAdaptor extends SchedulerCpi implements Scheduler {
 
 	/**
 	 * Constructor. Initialize the path to the axis client-config file.
-	 * 
-	 * @param gatContext
-	 *            the {@link GATContext}
-	 * @param uri
-	 *            the {@link URI} of the MDS.
+	 * Using default port 8443
+	 * @param gatContext The {@link GATContext}
+	 * @param uri The {@link URI} of the MDS.
 	 */
 	public WSGT4SchedulerAdaptor(final GATContext gatContext, final URI uri) {
-		super(gatContext, uri);
+		super(gatContext, uri, 8443);
 	}
+
+	/**
+	 * Constructor. Initialize the path to the axis client-config file.
+	 * 
+	 * @param gatContext The {@link GATContext}
+	 * @param uri The {@link URI} of the MDS.
+	 * @param port The port of the MDS.
+	 */
+	public WSGT4SchedulerAdaptor(final GATContext gatContext, final URI uri, final Integer port) {
+		super(gatContext, uri, port);
+	} // public WSGT4SchedulerAdaptor(final GATContext gatContext, final URI uri, final Integer port)
 
 	/*
 	 * (non-Javadoc)
@@ -97,7 +107,7 @@ public class WSGT4SchedulerAdaptor extends SchedulerCpi implements Scheduler {
 
 		try {
 			final String myURL = "https://" + getInformationSystemUri().getHost()
-					+ ":8443/wsrf/services/DefaultIndexService";
+					+ ":" + port + "/wsrf/services/DefaultIndexService";
 			final WSResourcePropertiesServiceAddressingLocator locator = new WSResourcePropertiesServiceAddressingLocator();
 
 			final QueryResourceProperties_PortType port;
@@ -129,7 +139,7 @@ public class WSGT4SchedulerAdaptor extends SchedulerCpi implements Scheduler {
 				messageElement = entries[ii];
 
 				if (messageElement == null) {
-					LOGGER.debug("Entry is null!");
+					LOGGER.trace("Entry is null!");
 					continue;
 				}
 
@@ -137,6 +147,7 @@ public class WSGT4SchedulerAdaptor extends SchedulerCpi implements Scheduler {
 				queueList.addAll(getJobQueuesFromEntry(entry));
 
 			}
+			LOGGER.debug("Got " + queueList.size() + " queues for mds: " + informationSystemUri.getHost());
 		} catch (Exception e1) {
 			throw new GATInvocationException("WSGT4SchedulerAdaptor", e1);
 		}
@@ -230,7 +241,7 @@ public class WSGT4SchedulerAdaptor extends SchedulerCpi implements Scheduler {
 							if (hosts[h].getName() != null
 									&& hosts[h].getName().trim().toLowerCase().startsWith(hostName.toLowerCase())) {
 								HostType hostType = hosts[h];
-								LOGGER.debug("MainMemory " + hostType.getMainMemory());
+								LOGGER.trace("MainMemory " + hostType.getMainMemory());
 							}
 
 						}
@@ -250,7 +261,7 @@ public class WSGT4SchedulerAdaptor extends SchedulerCpi implements Scheduler {
 	 * @return a {@link List} of {@link Queue}
 	 */
 	private List<Queue> getJobQueuesFromEntry(final EntryType entryType) {
-		LOGGER.debug("new EntryType " + entryType.getTypeDesc().toString());
+		LOGGER.trace("new EntryType " + entryType.getTypeDesc().toString());
 		List<Queue> queues = new ArrayList<Queue>();
 
 		GLUECERPType gluece = null; // it is not required - if null then we have
@@ -275,11 +286,11 @@ public class WSGT4SchedulerAdaptor extends SchedulerCpi implements Scheduler {
 						continue;
 					}
 					String name = computingElements[i].getName();
-					LOGGER.debug("name" + ":" + name);
+					LOGGER.trace("name" + ":" + name);
 					currentQueue.setName(name);
 
 					String uniqueId = computingElements[i].getUniqueID();
-					LOGGER.debug("uniqueid" + ":" + uniqueId);
+					LOGGER.trace("uniqueid" + ":" + uniqueId);
 					currentQueue.setUniqueId(uniqueId);
 
 					InfoType info = computingElements[i].getInfo();
@@ -287,25 +298,25 @@ public class WSGT4SchedulerAdaptor extends SchedulerCpi implements Scheduler {
 					if (info != null) {
 
 						if (info.getLRMSType() != null && !info.getLRMSType().equals("")) {
-							LOGGER.debug("LRM: " + info.getLRMSType());
+							LOGGER.trace("LRM: " + info.getLRMSType());
 							currentQueue.setLrm(info.getLRMSType());
 						}
 						if (info.getLRMSVersion() != null && !info.getLRMSVersion().equals("")) {
-							LOGGER.debug("LRM_Version: " + info.getLRMSVersion());
+							LOGGER.trace("LRM_Version: " + info.getLRMSVersion());
 							currentQueue.setLrmVersion(info.getLRMSVersion());
 						}
 						if (info.getGRAMVersion() != null && !info.getGRAMVersion().equals("")) {
-							LOGGER.debug("GRAM_Version: " + info.getGRAMVersion());
+							LOGGER.trace("GRAM_Version: " + info.getGRAMVersion());
 							currentQueue.setGramVersion(info.getGRAMVersion());
 						}
 						if (info.getHostName() != null && !info.getHostName().equals("")) {
-							LOGGER.debug("HOSTNAME: " + info.getHostName());
+							LOGGER.trace("HOSTNAME: " + info.getHostName());
 						}
 						if (info.getGatekeeperPort() != null && !info.getGatekeeperPort().equals("")) {
-							LOGGER.debug("GATEKEEPERPORT_ATTRIBUTE: " + info.getGatekeeperPort());
+							LOGGER.trace("GATEKEEPERPORT_ATTRIBUTE: " + info.getGatekeeperPort());
 						}
 						if (info.getTotalCPUs() != null && !info.getTotalCPUs().equals("")) {
-							LOGGER.debug("TOTALCPUS_ATTRIBUTE: " + info.getTotalCPUs());
+							LOGGER.trace("TOTALCPUS_ATTRIBUTE: " + info.getTotalCPUs());
 							currentQueue.setTotalCpus(Long.valueOf(info.getTotalCPUs()));
 						}
 
@@ -315,29 +326,29 @@ public class WSGT4SchedulerAdaptor extends SchedulerCpi implements Scheduler {
 					if (state != null) {
 
 						if (state.getStatus() != null && !state.getStatus().equals("")) {
-							LOGGER.debug("STATE_STATUS_ATTRIBUTE: " + state.getStatus());
+							LOGGER.trace("STATE_STATUS_ATTRIBUTE: " + state.getStatus());
 							currentQueue.setStatus(state.getStatus());
 						}
 						if (!Integer.toString(state.getTotalJobs()).equals("")) {
-							LOGGER.debug("STATE_TOTALJOBS_ATTRIBUTE: " + state.getTotalJobs());
+							LOGGER.trace("STATE_TOTALJOBS_ATTRIBUTE: " + state.getTotalJobs());
 							currentQueue.setTotalJobs(Long.valueOf(state.getTotalJobs()));
 						}
 						if (!Integer.toString(state.getRunningJobs()).equals("")) {
-							LOGGER.debug("STATE_RUNNINGJOBS_ATTRIBUTE: " + state.getRunningJobs());
+							LOGGER.trace("STATE_RUNNINGJOBS_ATTRIBUTE: " + state.getRunningJobs());
 							currentQueue.setRunningJobs(Long.valueOf(state.getRunningJobs()));
 						}
 						if (!Integer.toString(state.getWaitingJobs()).equals("")) {
-							LOGGER.debug("STATE_WAITINGJOBS_ATTRIBUTE: " + state.getWaitingJobs());
+							LOGGER.trace("STATE_WAITINGJOBS_ATTRIBUTE: " + state.getWaitingJobs());
 							currentQueue.setWaitingJobs(Long.valueOf(state.getWaitingJobs()));
 						}
 						if (!Integer.toString(state.getWorstResponseTime()).equals("")) {
-							LOGGER.debug("STATE_WORSTRESPONSETIME_ATTRIBUTE: " + state.getWorstResponseTime());
+							LOGGER.trace("STATE_WORSTRESPONSETIME_ATTRIBUTE: " + state.getWorstResponseTime());
 						}
 						if (!Integer.toString(state.getEstimatedResponseTime()).equals("")) {
-							LOGGER.debug("STATE_ESTIMATEDRESPONSETIME_ATTRIBUTE: " + state.getEstimatedResponseTime());
+							LOGGER.trace("STATE_ESTIMATEDRESPONSETIME_ATTRIBUTE: " + state.getEstimatedResponseTime());
 						}
 						if (!Integer.toString(state.getFreeCPUs()).equals("")) {
-							LOGGER.debug("NUM_FREE_NODES_ATTRIBUTE: " + state.getFreeCPUs());
+							LOGGER.trace("NUM_FREE_NODES_ATTRIBUTE: " + state.getFreeCPUs());
 							currentQueue.setFreeCpus(Long.valueOf(state.getFreeCPUs()));
 						}
 					}
@@ -385,7 +396,7 @@ public class WSGT4SchedulerAdaptor extends SchedulerCpi implements Scheduler {
 				hostname = ia.getCanonicalHostName();
 				return hostname;
 			} catch (UnknownHostException ex) {
-				LOGGER.debug("UnknownHost: " + hostname, ex);
+				LOGGER.trace("UnknownHost: " + hostname, ex);
 				return null;
 			}
 
@@ -395,7 +406,7 @@ public class WSGT4SchedulerAdaptor extends SchedulerCpi implements Scheduler {
 				InetAddress ia = InetAddress.getByName(hostname);
 				hostname = ia.getCanonicalHostName();
 			} catch (UnknownHostException ex) {
-				LOGGER.debug("UnknownHost: " + hostname, ex);
+				LOGGER.trace("UnknownHost: " + hostname, ex);
 			}
 		}
 

@@ -24,6 +24,7 @@ import org.slf4j.LoggerFactory;
  * This class defines globus specific security methods.
  * 
  * @author rob
+ * @author Bastian Boegel
  * @author Stefan Bozic
  */
 public class GlobusSecurityUtils {
@@ -239,10 +240,8 @@ public class GlobusSecurityUtils {
 					}
 				}
 			}
-			GSSCredential credRetrieved = proxy.get(hostGSSCred, user, password, 2 /* lifetime */);
+			GSSCredential credRetrieved = proxy.get(hostGSSCred, user, password, 300 /* lifetime */);
 			return credRetrieved;
-
-			// return proxy.get(user, password, 2 /* lifetime */);
 		} catch (MyProxyException e) {
 			if (logger.isDebugEnabled()) {
 				logger.debug("getting credential from MyProxyServer failed: " + e);

@@ -15,6 +15,7 @@ import org.gridlab.gat.scheduler.Scheduler;
  * scheduler and the queues to a resource.
  * 
  * @author Stefan Bozic
+ * @author Bastian Boegel
  */
 public abstract class SchedulerCpi extends MonitorableCpi implements Scheduler {
 
@@ -31,14 +32,34 @@ public abstract class SchedulerCpi extends MonitorableCpi implements Scheduler {
 	protected URI informationSystemUri;
 
 	/**
+	 * The port for the uri of the information system.
+	 */
+	protected Integer port;
+	
+	/**
 	 * Constructor.
 	 * 
-	 * @param uri the location of the scheduler
 	 * @param gatContext the gatContext.
+	 * @param uri the location of the scheduler
 	 */
 	protected SchedulerCpi(GATContext gatContext, URI uri) {
 		this.gatContext = gatContext;
 		this.informationSystemUri = uri;
+
+		queues = new ArrayList<Queue>();
+	}
+
+	/**
+	 * Constructor.
+	 * 
+	 * @param gatContext the gatContext.
+	 * @param uri the location of the scheduler
+	 * @param port The port.
+	 */
+	protected SchedulerCpi(GATContext gatContext, URI uri, Integer port) {
+		this.gatContext = gatContext;
+		this.informationSystemUri = uri;
+		this.port = port;
 
 		queues = new ArrayList<Queue>();
 	}
