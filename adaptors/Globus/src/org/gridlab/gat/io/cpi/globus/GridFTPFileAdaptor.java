@@ -205,6 +205,8 @@ public class GridFTPFileAdaptor extends GlobusFileAdaptor {
 	/**
 	 * Sets gsiftp as protocoll for the given {@link URI}. {@link FileCpi#fixURI(URI, String)} does also some additional
 	 * modification to the {@link URI}.
+	 * @param in the uri to fix
+	 * @return the fixed uri
 	 */
 	protected URI fixURI(URI in) {
 		return fixURI(in, "gsiftp");
@@ -401,10 +403,15 @@ public class GridFTPFileAdaptor extends GlobusFileAdaptor {
 	/**
 	 * Creates an FTP Client to a given URI.
 	 * 
-	 * This method use {@link ReentrantLock} for allowing only one thread to communicate to an gridftp server at one
+	 * This method use {@link ReentrantLock} to allow only one thread to communicate with an gridftp server at one
 	 * time. This is done due to limited connections allowed from one client to a gridftp server.
+	 * @param gatContext teh gat context
+	 * @param additionalPreferences gat preferences for the connection
 	 * 
 	 * @param hostURI the uri of the FTP host
+	 * @return an ftp client
+	 * @throws GATInvocationException an exception that might occurs 
+	 * @throws InvalidUsernameOrPasswordException an exception that might occurs
 	 */
 	protected FTPClient createClient(GATContext gatContext, Preferences additionalPreferences, URI hostURI)
 			throws GATInvocationException, InvalidUsernameOrPasswordException {		
@@ -579,8 +586,8 @@ public class GridFTPFileAdaptor extends GlobusFileAdaptor {
 	 * @param hostURI the host to connect to
 	 * @return a Credential
 	 * 
-	 * @throws GSSException
-	 * @throws GATInvocationException
+	 * @throws GSSException an exception that might occurs
+	 * @throws GATInvocationException an exception that might occurs
 	 */
 	private static GSSCredential getCredential(GATContext context, URI hostURI) throws GSSException,
 			GATInvocationException {
