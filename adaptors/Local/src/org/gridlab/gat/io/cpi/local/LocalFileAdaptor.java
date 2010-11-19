@@ -146,7 +146,10 @@ public class LocalFileAdaptor extends FileCpi {
         return in;
     }
     
-    protected void copyDir(String sourcePath, String destPath) throws GATInvocationException {
+    protected void copyDir(File sourceFile, File destFile) throws GATInvocationException {
+        
+        String sourcePath = sourceFile.getPath();
+        String destPath = destFile.getPath();
         
         if (logger.isDebugEnabled()) {
             logger.debug("copyDir '" + sourcePath + "' to '" + destPath + "'");
@@ -154,7 +157,6 @@ public class LocalFileAdaptor extends FileCpi {
 
         boolean existingDir = false;
 
-        java.io.File destFile = new File(destPath);
         if (destFile.exists()) {
             // check whether the target is an existing file
             if ( !destFile.isDirectory()) {   
@@ -177,9 +179,6 @@ public class LocalFileAdaptor extends FileCpi {
         } else {
             // because copy dir a to dir b ends up as b/a we've to add /a to the
             // dest.
-            if (sourcePath.endsWith("/")) {
-                sourcePath = sourcePath.substring(0, sourcePath.length() - 1);
-            }
             if (sourcePath.length() > 0) {
                 int start = sourcePath.lastIndexOf(File.separator) + 1;
                 String separator = "";
@@ -213,7 +212,7 @@ public class LocalFileAdaptor extends FileCpi {
         }
 
         // list all the files and copy recursively.
-        File[] files = new File(sourcePath).listFiles();
+        File[] files = sourceFile.listFiles();
         if (files == null) {
             if (logger.isDebugEnabled()) {
                 logger.debug("copyDirectory: no files in src directory: "
@@ -237,13 +236,14 @@ public class LocalFileAdaptor extends FileCpi {
                 logger.debug("src is dir: " + file.isDirectory());
             }
 
+            File newDest = new File(newDestString);
             if (file.isFile()) {
                 if (logger.isDebugEnabled()) {
                     logger.debug("copyDir: copying " + file);
                 }
-                copy(file, new File(newDestString));
+                copy(file, newDest);
             } else if (file.isDirectory()) {
-                copyDir(file.getPath(), newDestString);
+                copyDir(file, newDest);
             } else {
                 throw new GATInvocationException(
                         "don't know how to handle file: " + file.getPath()
@@ -281,6 +281,8 @@ public class LocalFileAdaptor extends FileCpi {
             return;
         }
 
+        File destFile = getFile(destination);
+        
         if (!exists()) {
             throw new GATInvocationException(
                     "the local source file does not exist, path = " + path);
@@ -291,7 +293,7 @@ public class LocalFileAdaptor extends FileCpi {
                 logger.debug("local copy, it is a dir");
             }
 
-            copyDir(path, destPath);
+            copyDir(f, destFile);
 
             return;
         }
@@ -300,7 +302,6 @@ public class LocalFileAdaptor extends FileCpi {
             logger.debug("local copy, it is a file");
         }
 
-        File destFile = new File(destPath);
         if (gatContext.getPreferences().containsKey("file.create")) {
             if (((String) gatContext.getPreferences().get("file.create"))
                     .equalsIgnoreCase("true")) {
