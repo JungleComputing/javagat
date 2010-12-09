@@ -371,7 +371,7 @@ public class WSGT4newJob extends JobCpi implements GramJobListener {
 							// Its not possible to reset the credentials to a job object.
 							// So create a WSGT4 instance if the credential is getting expired.
 							GSSCredential credential = gj.job.getCredentials();
-							if (credential.getRemainingLifetime() == 0) {
+							if ((credential == null) || (credential.getRemainingLifetime() == 0)) {
 								logger.debug("Credential expired. Create a new Job instance.");
 								jobList.remove(gj);
 								gj = null;

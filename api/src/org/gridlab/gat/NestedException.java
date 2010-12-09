@@ -57,6 +57,9 @@ class NestedException extends Exception {
         }
 
         String shortName = null;
+        if (adaptor == null) {
+        	adaptor = "MISSING ADAPTOR NAME";
+        }
         int pos = adaptor.lastIndexOf(".");
         if (pos < 0) {
             shortName = adaptor;
