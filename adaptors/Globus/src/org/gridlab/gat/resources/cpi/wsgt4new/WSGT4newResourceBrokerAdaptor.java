@@ -2,6 +2,7 @@ package org.gridlab.gat.resources.cpi.wsgt4new;
 
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -446,6 +447,7 @@ public class WSGT4newResourceBrokerAdaptor extends ResourceBrokerCpi {
 
 		boolean useGramSandbox = false;
 		boolean useGatSandbox = false;
+		Date terminationTime = (Date) sd.getAttributes().get("gt4new.terminationTime");
 
 		if (sandboxType != null && sandboxType.equals("gram")) {
 			useGramSandbox = true;
@@ -504,6 +506,11 @@ public class WSGT4newResourceBrokerAdaptor extends ResourceBrokerCpi {
 		// end modification.
 		gramjob.setMessageProtectionType(Constants.ENCRYPTION);
 		gramjob.setDelegationEnabled(true);
+
+		if (terminationTime != null) {
+			logger.debug("Set gt4new.terminationTime to " + terminationTime.toString());
+			gramjob.setTerminationTime(terminationTime);
+		}
 
 		// inform the wsgt4 job of which gram job is related to it.
 		wsgt4job.setGramJob(gramjob);
