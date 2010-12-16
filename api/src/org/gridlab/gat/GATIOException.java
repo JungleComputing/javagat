@@ -13,7 +13,7 @@ public class GATIOException extends IOException {
     Exception cause;
 
     public GATIOException(Exception e) {
-        super();
+        super(e);
         cause = e;
     }
 
