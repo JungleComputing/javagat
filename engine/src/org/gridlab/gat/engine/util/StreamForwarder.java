@@ -1,5 +1,6 @@
 package org.gridlab.gat.engine.util;
 
+import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -27,7 +28,7 @@ public class StreamForwarder implements Runnable {
     }
 
     public StreamForwarder(InputStream in, OutputStream out, String name) {
-        this.in = in;
+        this.in = new BufferedInputStream(in);
         this.out = out;
         this.name = name;
         ScheduledExecutor.schedule(this, 0, 50);
@@ -37,7 +38,7 @@ public class StreamForwarder implements Runnable {
     }
 
     public void run() {
-        byte[] buffer = new byte[1024];
+        byte[] buffer = new byte[4096];
 
         try {
             int read;
