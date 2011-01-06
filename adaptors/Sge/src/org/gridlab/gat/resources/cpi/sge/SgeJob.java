@@ -258,14 +258,13 @@ public class SgeJob extends JobCpi {
             m.put("scheduletime", null);
             m.put("resManName", "Sun Grid Engine");
             m.put("state", state.toString());
-            m.put("resManState", Integer.toString(session
-                    .getJobProgramStatus(jobID)));
             m.put("adaptor.job.id", jobID);
             m.put("starttime", time.get("start"));
             m.put("stoptime", time.get("stop"));
             m.put("submissiontime", time.get("submission"));
             m.put("poststage.exception", postStageException);
-
+            m.put("resManState", Integer.toString(session
+                    .getJobProgramStatus(jobID)));
         } catch (DrmaaException e) {
             if (logger.isDebugEnabled()) {
                 logger.debug("-- SGEJob EXCEPTION --");
