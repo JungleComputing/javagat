@@ -253,12 +253,9 @@ public class URI implements Serializable, Comparable<Object> {
 	} catch (UnknownHostException e) {
 	    return false;
 	}
-	    
-	System.out.println("Host IP = " + hostip);
             
 	for (InetAddress myAddress : myAddresses) {
 	    String myIP = myAddress.getHostAddress();
-	    System.out.println("myIP = " + myIP);
 	    if (hostip.equals(myIP)) {
 		return true;
 	    }
@@ -266,8 +263,6 @@ public class URI implements Serializable, Comparable<Object> {
 		return true;
 	    }
 	}
-        
-
 
         return false;
     }
