@@ -10,16 +10,30 @@
     <property name="lib" location="${gat.location}/lib" />
     <property name="doc" location="${gat.location}/doc/javadoc" />
     <property name="java.debug.value" value="true" />
+    <property name="external" location="external" />
+
+    <path id="external_jars">
+	<fileset dir="${external}">
+	    <include name="*.jar" />
+	</fileset>
+    </path>
 
     <target name="compile" description="compile the source ">
         <mkdir dir="${tmp}" />
         <mkdir dir="${lib}" />
 
         <!-- Compile the java code from ${src} into ${tmp} -->
-        <javac source="1.5" target="1.5" srcdir="${src}" destdir="${tmp}" debug="on" />
+        <javac source="1.5" target="1.5" srcdir="${src}" destdir="${tmp}" debug="on">
+	    <classpath refid="external_jars" />
+	</javac>
 
         <!-- Put everything in ${tmp} into the GAT.jar file -->
         <jar jarfile="${lib}/GAT-API.jar" basedir="${tmp}" />
+
+	<!-- Copy external libraries to lib directory -->
+	<copy todir="${lib}">
+	    <fileset dir="${external}" />
+	</copy>
 
         <delete dir="${tmp}" />
     </target>

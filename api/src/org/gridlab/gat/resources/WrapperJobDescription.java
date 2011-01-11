@@ -1,10 +1,11 @@
 package org.gridlab.gat.resources;
 
+import ibis.util.IPUtils;
+
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
-import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -359,7 +360,7 @@ public class WrapperJobDescription extends JobDescription {
             FileOutputStream tmp = new FileOutputStream(f);
             ObjectOutputStream out = new ObjectOutputStream(tmp);
             out.writeObject(new URI("any://"
-                    + InetAddress.getLocalHost().getCanonicalHostName() + "/"
+                    + IPUtils.getLocalHostAddress().getCanonicalHostName() + "/"
                     + System.getProperty("user.dir")));
             out.writeInt(level);
             out.writeInt(wrapperJobIndex);
