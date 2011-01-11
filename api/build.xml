@@ -44,6 +44,7 @@
         <delete dir="${doc}" />
         <javadoc destdir="${doc}" access="public" use="true" notree="false" nonavbar="false" noindex="false" splitindex="true" version="true" nodeprecatedlist="false" nodeprecated="false" verbose="false" classpath="${lib}/GAT-API.jar">
             <link href="http://java.sun.com/j2se/1.5/docs/api/" />
+	    <classpath refid="external_jars" />
 
             <fileset dir="${src}">
                 <include name="**/*.java" />
