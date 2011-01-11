@@ -163,8 +163,13 @@ public class SgeResourceBrokerAdaptor extends ResourceBrokerCpi {
             JobTemplate jt = SGEsession.createJobTemplate();
             jt.setRemoteCommand(getExecutable(description));
             if (sandbox != null) {
-                jt.setWorkingDirectory(System.getProperty("user.home") + "/"
-                        + sandbox.getSandbox());
+        	String s = sandbox.getSandbox();
+        	if (s.startsWith("/")) {
+        	    jt.setWorkingDirectory(s);
+        	} else {
+        	    jt.setWorkingDirectory(System.getProperty("user.home") + "/"
+        		    + sandbox.getSandbox());
+        	}
             }
             if (logger.isInfoEnabled()) {
                 logger.info("Remote command: " + jt.getRemoteCommand());
@@ -192,6 +197,9 @@ public class SgeResourceBrokerAdaptor extends ResourceBrokerCpi {
                     .setNativeSpecification("-pe * "
                             + description.getResourceCount());
 
+            if (logger.isDebugEnabled()) {
+        	logger.debug("Starting SGE job: " + jt);
+            }
             sgeJob.setJobID(SGEsession.runJob(jt));
             sgeJob.setState(Job.JobState.SCHEDULED);
             sgeJob.startListener();
