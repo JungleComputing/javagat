@@ -212,7 +212,8 @@ public class URI implements Serializable, Comparable<Object> {
      * @return true if the URI refers to the localhost, false otherwise
      */
     public boolean refersToLocalHost() {
-        if (u.getHost() == null) {
+	String host = u.getHost();
+        if (host == null) {
             return true;
         }
 
@@ -220,21 +221,35 @@ public class URI implements Serializable, Comparable<Object> {
             return false;
         }
 
-        if (u.getHost().equals("localhost")) {
+        if (host.equals("localhost")) {
             return true;
         }
 
-        if (getLocalHostName().equals(u.getHost())) {
+        if (getLocalHostName().equals(host)) {
             return true;
         }
 
-        if (getLocalCanonicalHostName().equals(u.getHost())) {
+        if (getLocalCanonicalHostName().equals(host)) {
             return true;
         }
 
         String[] localhostIPs = getLocalHostIPs();
         if (localhostIPs != null) {
+            String hostip = null;
+            
+            try {
+		hostip = InetAddress.getByName(host).getHostAddress();
+	    } catch (UnknownHostException e1) {
+		// Ignore
+	    }
+	    
+	    System.out.println("Host IP = " + hostip);
+            
             for (String localhostIP : localhostIPs) {
+        	System.out.println("localhostIP = " + localhostIP);
+        	if (hostip.equals(localhostIP)) {
+        	    return true;
+        	}
                 if (localhostIP.equals(u.getHost())) {
                     return true;
                 }
