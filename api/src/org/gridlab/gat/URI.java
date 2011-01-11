@@ -4,11 +4,17 @@ package org.gridlab.gat;
 
 import java.io.IOException;
 import java.io.Serializable;
+import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.net.MalformedURLException;
+import java.net.NetworkInterface;
+import java.net.SocketException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
+import java.util.Enumeration;
+import java.util.List;
 
 /**
  * This class implements URIs. It is API compatible with the java.net.{@link java.net.URI}.
@@ -233,44 +239,35 @@ public class URI implements Serializable, Comparable<Object> {
             return true;
         }
 
-        String[] localhostIPs = getLocalHostIPs();
-        if (localhostIPs != null) {
-            String hostip = null;
-            
-            try {
-		hostip = InetAddress.getByName(host).getHostAddress();
-	    } catch (UnknownHostException e1) {
-		// Ignore
-	    }
-	    
-	    System.out.println("Host IP = " + hostip);
-            
-            for (String localhostIP : localhostIPs) {
-        	System.out.println("localhostIP = " + localhostIP);
-        	if (hostip.equals(localhostIP)) {
-        	    return true;
-        	}
-                if (localhostIP.equals(u.getHost())) {
-                    return true;
-                }
-                try {
-		    if (InetAddress.getByName(localhostIP).getCanonicalHostName().equals(u.getHost())) {
-			return true;
-		    }
-		} catch (UnknownHostException e) {
-		    // ignore
-		}
-            }
-        }
+        String hostip = null;
 
-        String[] localhostIPsFromHostName = getLocalHostIPsFromHostName();
-        if (localhostIPsFromHostName != null) {
-            for (String localhostIP : localhostIPsFromHostName) {
-                if (localhostIP.equals(u.getHost())) {
-                    return true;
-                }
-            }
+        try {
+            hostip = InetAddress.getByName(host).getHostAddress();
+        } catch (UnknownHostException e1) {
+            return false;
         }
+        
+        InetAddress[] myAddresses = null;
+	try {
+	    myAddresses = getLocalHostAddresses();
+	} catch (UnknownHostException e) {
+	    return false;
+	}
+	    
+	System.out.println("Host IP = " + hostip);
+            
+	for (InetAddress myAddress : myAddresses) {
+	    String myIP = myAddress.getHostAddress();
+	    System.out.println("myIP = " + myIP);
+	    if (hostip.equals(myIP)) {
+		return true;
+	    }
+	    if (myIP.equals(host)) {
+		return true;
+	    }
+	}
+        
+
 
         return false;
     }
@@ -849,37 +846,6 @@ public class URI implements Serializable, Comparable<Object> {
         return "localhost";
     }
 
-    private String[] getLocalHostIPs() {
-        try {
-            InetAddress[] all = InetAddress.getAllByName("localhost");
-            String[] res = new String[all.length];
-            for (int i = 0; i < all.length; i++) {
-                res[i] = all[i].getHostAddress();
-            }
-            return res;
-        } catch (IOException e) {
-            // ignore
-        }
-        return null;
-    }
-
-    private String[] getLocalHostIPsFromHostName() {
-        try {
-            InetAddress a = InetAddress.getLocalHost();
-            if (a != null) {
-                InetAddress[] all = InetAddress.getAllByName(a.getHostName());
-                String[] res = new String[all.length];
-                for (int i = 0; i < all.length; i++) {
-                    res[i] = all[i].getHostAddress();
-                }
-                return res;
-            }
-        } catch (IOException e) {
-            // ignore
-        }
-        return null;
-    }
-
     /*
      * Copyright 2000-2001,2004 The Apache Software Foundation.
      * 
@@ -1017,6 +983,114 @@ public class URI implements Serializable, Comparable<Object> {
             }
 
             buf.append(uri.substring(startIdx));
+        }
+    }
+    
+    // list of all addresses of this machine.
+    private static InetAddress[] addresses;
+    
+    /**
+     * Returns a sorted list of all local addresses of this machine. The list is
+     * sorted as follows:
+     * <ul>
+     * <li>Global Addresses</li>
+     * <li>Site local Addresses</li>
+     * <li>Link local Addresses</li>
+     * <li>Loopback addresses</li>
+     * </ul>
+     * 
+     * If a global, site or link local address is present the loopback address
+     * is ommited from the result.
+     * 
+     * @return a sorted list of all local addresses of this machine.
+     * @throws UnknownHostException
+     *             in case no address could be found.
+     */
+    private static synchronized InetAddress[] getLocalHostAddresses()
+            throws UnknownHostException {
+
+        if (addresses == null) {
+            // Get all the local addresses, including IPv6 ones, but excluding
+            // loopback addresses, and sort them.
+            // TODO: removed ipv6 for now!!
+            addresses = getAllHostAddresses(true, true);
+
+            if (addresses == null || addresses.length == 0) {
+                // Oh dear, we don't have a network... Let's see if there is
+                // a loopback available...
+                // TODO: removed ipv6 for now!!
+                addresses = getAllHostAddresses(false, true);
+            }
+
+            if (addresses == null || addresses.length == 0) {
+                throw new UnknownHostException(
+                        "could not determine addresseses for localhost");
+            }
+
+        }
+
+        return addresses.clone();
+    }
+
+    /**
+     * Returns all IP addresses that could be found on this machine. If desired,
+     * loopback and/or IPv6 addresses can be ignored.
+     * 
+     * @param ignoreLoopback
+     *            ignore loopback addresses
+     * @param ignoreIP6
+     *            ignore IPv6 addresses
+     * 
+     * @return all IP addresses found that adhere to the restrictions.
+     */
+    private static InetAddress[] getAllHostAddresses(boolean ignoreLoopback,
+            boolean ignoreIP6) {
+
+        ArrayList<InetAddress> list = new ArrayList<InetAddress>();
+
+        try {
+            Enumeration<NetworkInterface> interfaces =
+                    NetworkInterface.getNetworkInterfaces();
+            while (interfaces.hasMoreElements()) {
+                NetworkInterface networkInterface = interfaces.nextElement();
+                getAllHostAddresses(networkInterface, list, ignoreLoopback,
+                        ignoreIP6);
+            }
+        } catch (SocketException e) {
+            // IGNORE
+        }
+
+        return list.toArray(new InetAddress[list.size()]);
+    }
+
+    /**
+     * Adds all IP addresses that are bound to a specific network interface to a
+     * list. If desired, loopback and/or IPv6 addresses can be ignored.
+     * 
+     * @param nw
+     *            the network interface for which the addresses are determined
+     * @param target
+     *            the list used to store the addresses
+     * @param ignoreLoopback
+     *            ignore loopback addresses
+     * @param ignoreIP6
+     *            ignore IPv6 addresses
+     */
+    private static void getAllHostAddresses(NetworkInterface nw,
+            List<InetAddress> target, boolean ignoreLoopback, boolean ignoreIP6) {
+
+        Enumeration<InetAddress> e2 = nw.getInetAddresses();
+
+        while (e2.hasMoreElements()) {
+
+            InetAddress tmp = e2.nextElement();
+
+            boolean t1 = !ignoreLoopback || !tmp.isLoopbackAddress();
+            boolean t2 = !ignoreIP6 || (tmp instanceof Inet4Address);
+
+            if (t1 && t2) {
+                target.add(tmp);
+            }
         }
     }
 
