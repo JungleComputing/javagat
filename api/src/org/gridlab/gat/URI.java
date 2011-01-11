@@ -8,6 +8,7 @@ import java.net.InetAddress;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.net.UnknownHostException;
 
 /**
  * This class implements URIs. It is API compatible with the java.net.{@link java.net.URI}.
@@ -237,6 +238,13 @@ public class URI implements Serializable, Comparable<Object> {
                 if (localhostIP.equals(u.getHost())) {
                     return true;
                 }
+                try {
+		    if (InetAddress.getByName(localhostIP).getCanonicalHostName().equals(u.getHost())) {
+			return true;
+		    }
+		} catch (UnknownHostException e) {
+		    // ignore
+		}
             }
         }
 
