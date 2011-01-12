@@ -229,6 +229,10 @@ public class LocalJob extends JobCpi {
         } catch (IOException e) {
             // ignore
         }
+               
+        if (kill) {
+            p.destroy();
+        }
         
         if (outputStreamFile != null) {
             outputStreamFile.waitUntilFinished();
@@ -246,11 +250,7 @@ public class LocalJob extends JobCpi {
                 // ignored
             }
         }
-            
-        if (kill) {
-            p.destroy();
-        }
-        
+
         if (!skipPostStage) {
             setState(JobState.POST_STAGING);
             waitForTrigger(JobState.POST_STAGING);
