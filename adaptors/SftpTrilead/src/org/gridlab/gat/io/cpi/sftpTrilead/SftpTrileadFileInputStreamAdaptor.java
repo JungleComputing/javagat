@@ -195,6 +195,9 @@ public class SftpTrileadFileInputStreamAdaptor extends FileInputStreamCpi {
             int sz = len > 32768 ? 32768 : len;
             try {
                 sz = connection.sftpClient.read(handle, currpos, b, offset, sz);
+                if (logger.isDebugEnabled()) {
+                    logger.debug("sftpTrileadFileInputStream: read returns " + sz);
+                }
             } catch (Throwable e) {
                 logger.debug("SftpTrileadFileInputStreamAdaptor.read", e);
                 throw new GATInvocationException("SftpTrileadFileInputStreamAdaptor", e);
