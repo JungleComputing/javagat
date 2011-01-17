@@ -185,6 +185,16 @@ public class SgeResourceBrokerAdaptor extends ResourceBrokerCpi {
                 }
                 jt.setJobEnvironment(environment);
             }
+            
+            long maxTime = getLongAttribute(description, SoftwareDescription.TIME_MAX, -1);
+            if (maxTime > 0) {
+        	jt.setHardRunDurationLimit(maxTime * 60);
+            }
+
+            long maxWallTime = getLongAttribute(description, SoftwareDescription.WALLTIME_MAX, -1);
+            if (maxWallTime > 0) {
+        	jt.setHardWallclockTimeLimit(maxWallTime * 60);
+            }
 
             if (sd.getStdout() != null) {
                 jt.setOutputPath(host + ":" + sd.getStdout().getName());
