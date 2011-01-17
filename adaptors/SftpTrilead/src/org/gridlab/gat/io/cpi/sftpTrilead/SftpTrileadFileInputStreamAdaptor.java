@@ -203,6 +203,9 @@ public class SftpTrileadFileInputStreamAdaptor extends FileInputStreamCpi {
                 throw new GATInvocationException("SftpTrileadFileInputStreamAdaptor", e);
             }
             if (sz < 0) {
+        	if (cnt == 0) {
+        	    return -1;
+        	}
                 return cnt;
             }
             currpos += sz;
