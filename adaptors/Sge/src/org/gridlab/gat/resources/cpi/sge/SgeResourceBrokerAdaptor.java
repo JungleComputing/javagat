@@ -187,13 +187,17 @@ public class SgeResourceBrokerAdaptor extends ResourceBrokerCpi {
             }
             
             long maxTime = getLongAttribute(description, SoftwareDescription.TIME_MAX, -1);
+	    String toNative = "";
             if (maxTime > 0) {
-        	jt.setHardRunDurationLimit(maxTime * 60);
+        	// jt.setHardRunDurationLimit(maxTime * 60);	not supported on SGE?
+        	// jt.setSoftRunDurationLimit(maxTime * 60);	not supported on SGE?
             }
 
             long maxWallTime = getLongAttribute(description, SoftwareDescription.WALLTIME_MAX, -1);
             if (maxWallTime > 0) {
-        	jt.setHardWallclockTimeLimit(maxWallTime * 60);
+        	// jt.setHardWallclockTimeLimit(maxWallTime * 60);  not supported by SGE?
+        	// jt.setSoftWallclockTimeLimit(maxWallTime * 60);  not supported by SGE?
+		toNative += "-l h_rt=" + (maxWallTime*60) + " ";
             }
 
             if (sd.getStdout() != null) {
@@ -203,9 +207,9 @@ public class SgeResourceBrokerAdaptor extends ResourceBrokerCpi {
             if (sd.getStderr() != null) {
                 jt.setErrorPath(host + ":" + sd.getStderr().getName());
             }
-            jt
-                    .setNativeSpecification("-pe * "
-                            + description.getResourceCount());
+	    toNative += "-pe * " + description.getResourceCount();
+
+            jt.setNativeSpecification(toNative);
 
             if (logger.isDebugEnabled()) {
         	logger.debug("Starting SGE job: " + jt);
