@@ -199,6 +199,11 @@ public class SgeResourceBrokerAdaptor extends ResourceBrokerCpi {
         	// jt.setSoftWallclockTimeLimit(maxWallTime * 60);  not supported by SGE?
 		toNative += "-l h_rt=" + (maxWallTime*60) + " ";
             }
+            
+            String queue = getStringAttribute(description, SoftwareDescription.JOB_QUEUE, null);
+            if (queue != null) {
+        	toNative += "-l qname=" + queue + " ";
+            }
 
             if (sd.getStdout() != null) {
                 jt.setOutputPath(host + ":" + sd.getStdout().getName());
