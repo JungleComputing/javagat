@@ -213,10 +213,13 @@ public class SgeResourceBrokerAdaptor extends ResourceBrokerCpi {
                 jt.setErrorPath(host + ":" + sd.getStderr().getName());
             }
 
-	    String jobType = getStringAttribute(description, SoftwareDescription.JOB_TYPE, "prun");
-	    toNative += "-pe " + jobType + " " + description.getResourceCount();
-
-            jt.setNativeSpecification(toNative);
+	    if (description.getResourceCount() > 1) {
+		String jobType = getStringAttribute(description, SoftwareDescription.JOB_TYPE, "prun");
+		toNative += "-pe " + jobType + " " + description.getResourceCount();
+	    }
+	    if (! toNative.equals("")) {
+	        jt.setNativeSpecification(toNative);
+	    }
 
             if (logger.isDebugEnabled()) {
         	logger.debug("Starting SGE job: " + jt);
