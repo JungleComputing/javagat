@@ -212,7 +212,9 @@ public class SgeResourceBrokerAdaptor extends ResourceBrokerCpi {
             if (sd.getStderr() != null) {
                 jt.setErrorPath(host + ":" + sd.getStderr().getName());
             }
-	    toNative += "-pe * " + description.getResourceCount();
+
+	    String jobType = getStringAttribute(description, SoftwareDescription.JOB_TYPE, "prun");
+	    toNative += "-pe " + jobType + " " + description.getResourceCount();
 
             jt.setNativeSpecification(toNative);
 
