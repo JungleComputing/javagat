@@ -140,6 +140,12 @@ public class SshTrileadJob extends JobCpi {
         }
         if (session != null) {
             session.close();
+            // Give job some time to actually finish/cleanup.
+            try {
+		Thread.sleep(5000);
+	    } catch (InterruptedException e) {
+		// ignored
+	    }
         }
         if (!skipPostStage) {
             setState(JobState.POST_STAGING);
