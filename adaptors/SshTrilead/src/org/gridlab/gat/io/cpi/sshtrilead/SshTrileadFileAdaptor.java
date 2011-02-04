@@ -629,10 +629,12 @@ public class SshTrileadFileAdaptor extends FileCpi {
         String username = (String) securityInfo.get("username");
         String password = (String) securityInfo.get("password");
         java.io.File keyFile = (java.io.File) securityInfo.get("keyfile");
+        boolean defaultInfo = securityInfo.get("default") != null;
 
         boolean connected = false;
 
         if (username != null && password != null) {
+            // Definitely not a default context.
             try {
                 connected = newConnection.authenticateWithPassword(
                         username, password);
@@ -645,6 +647,23 @@ public class SshTrileadFileAdaptor extends FileCpi {
             }
             if (logger.isDebugEnabled()) {
                 logger.debug("authentication with password: " + connected);
+            }
+        }
+        if (! connected && defaultInfo && username != null) {
+            // Try ssh-agent.
+            try {
+                connected = newConnection.authenticateWithPublicKey(username);
+            } catch (IOException e) {
+                if (logger.isDebugEnabled()) {
+                    logger
+                    .debug("exception caught during authentication with public key: ",
+                            e);
+                }
+            }
+            if (logger.isDebugEnabled()) {
+                logger
+                .debug("authentication with public key: "
+                        + connected);
             }
         }
         if (!connected && username != null && keyFile != null) {

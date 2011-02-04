@@ -94,6 +94,8 @@ public class SshTrileadSecurityUtils {
         securityInfo.put("username", SecurityContextUtils.getUser(gatContext,
                 null, location));
         securityInfo.put("keyfile", getDefaultPrivateKeyfile());
+        securityInfo.put("default", "");	// Just its presence indicates that this
+        					// is a default security context.
         return securityInfo;
     }
 
