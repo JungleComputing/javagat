@@ -14,4 +14,6 @@ public class SftpTrileadUserInfo {
     String password;
 
     File privateKey;
+    
+    boolean defaultContext;
 }

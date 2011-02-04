@@ -104,6 +104,7 @@ public class SftpTrileadSecurityUtils {
         info.privateKey = getDefaultPrivateKey();
         info.username = SecurityContextUtils
                 .getUser(gatContext, null, location);
+        info.defaultContext = true;
         return info;
     }
 

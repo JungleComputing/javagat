@@ -246,6 +246,14 @@ public class SftpTrileadFileAdaptor extends FileCpi {
         } catch (IOException e) {
             // ignored
         }
+        
+        if (! authenticated && res.userInfo.defaultContext) {
+            try {
+		authenticated = res.connection.authenticateWithPublicKey(res.userInfo.username);
+	    } catch (IOException e) {
+		// ignored
+	    }
+        }
         if (!authenticated) {
             // try key-based authentication
             try {
