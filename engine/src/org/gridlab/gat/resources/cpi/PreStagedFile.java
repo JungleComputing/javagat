@@ -85,11 +85,7 @@ public class PreStagedFile extends StagedFile {
         setResolvedSrc(origSrc);
 
         if (origDest != null) { // already set manually
-            if (origDest.isAbsolute()) {
-                inSandbox = false;
-            } else {
-                inSandbox = true;
-            }
+            inSandbox = ! origDest.isAbsolute();
             setResolvedDest(resolve(origDest, false));
         } else {
             inSandbox = true;
@@ -128,7 +124,10 @@ public class PreStagedFile extends StagedFile {
                     + " to " + resolvedDest.toGATURI());
         }
         //HACK
-        resolvedDest.getParentFile().mkdirs();
+        if (origDest != null) {
+            // Otherwise, destination is sandbox, which exists already.
+            resolvedDest.getParentFile().mkdirs();
+        }
         
         resolvedSrc.copy(resolvedDest.toGATURI());
     }

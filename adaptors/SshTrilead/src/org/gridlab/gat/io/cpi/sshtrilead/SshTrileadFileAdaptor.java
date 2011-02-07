@@ -301,7 +301,9 @@ public class SshTrileadFileAdaptor extends FileCpi {
         if (! recognizedScheme(destination.getScheme(), getSupportedSchemes())) {
             throw new GATInvocationException("SshTrileadFileAdaptor.copy: unrecognized scheme");
         }
-        logger.debug("destination: " + destination);
+        if (logger.isDebugEnabled()) {
+            logger.debug("destination: " + destination);
+        }
         SCPClient client = null;
         try {
             client = getConnection(destination, gatContext,
@@ -312,19 +314,21 @@ public class SshTrileadFileAdaptor extends FileCpi {
                     client2serverCiphers, server2clientCiphers, verifier)
                     .createSCPClient();
         }
+        
+        SshTrileadFileAdaptor destinationFile = new SshTrileadFileAdaptor(gatContext, destination);
 
-        FileInterface destinationFile = GAT.createFile(gatContext, destination)
-                .getFileInterface();
         String remoteDir = null;
         String remoteFileName = null;
 
         if (gatContext.getPreferences().containsKey("file.create")) {
             if (((String) gatContext.getPreferences().get("file.create"))
                     .equalsIgnoreCase("true")) {
-                File destinationParentFile = destinationFile.getParentFile();
-                if (destinationParentFile != null) {
-                    destinationParentFile.getFileInterface().mkdirs();
-                }
+        	String parentPath = destinationFile.getParent();
+        	if (parentPath != null) {
+        	    URI parentUri = destinationFile.toURI().setPath(parentPath);
+        	    SshTrileadFileAdaptor parent = new SshTrileadFileAdaptor(gatContext, parentUri);
+        	    parent.mkdirs();
+        	}
             }
         }
         if (destination.hasAbsolutePath()) {
@@ -365,7 +369,7 @@ public class SshTrileadFileAdaptor extends FileCpi {
             try {
                 String path = remoteDir + "/" + getName();
                 URI d = destination.setPath(path);
-                destinationFile = GAT.createFile(gatContext, d).getFileInterface();
+                destinationFile = new SshTrileadFileAdaptor(gatContext, d);
                 destinationFile.setLastModified(lastModified());
             } catch(Throwable e) {
                 // ignored
@@ -581,7 +585,14 @@ public class SshTrileadFileAdaptor extends FileCpi {
         if (host == null) {
             host = fixedURI.resolveHost();
         }
-        logger.info("getting connection for host: " + host);
+        if (logger.isInfoEnabled()) {
+            logger.info("getting connection for host: " + host);
+        }
+        
+        // Get security info before cloning, otherwise connections are set up twice, because
+        // the second time, the context is different. --Ceriel
+        Map<String, Object> securityInfo = SshTrileadSecurityUtils.getSshTrileadCredential(
+        	context, "sshtrilead", fixedURI, fixedURI.getPort(SSH_PORT));
         ConnectionKey key = new ConnectionKey(host, (GATContext) context.clone());
         if (useCachedConnection) {
             logger.info("looking for a cached connection");
@@ -592,6 +603,9 @@ public class SshTrileadFileAdaptor extends FileCpi {
             } else {
                 logger.info("not found");
             }
+        }
+        if (logger.isDebugEnabled()) {
+            logger.debug("Setting up connection to " + host, new Throwable());
         }
         Connection newConnection = new Connection(host, fixedURI
                 .getPort(SSH_PORT));
@@ -623,9 +637,7 @@ public class SshTrileadFileAdaptor extends FileCpi {
             }
         }
         newConnection.connect(verifier, connectTimeout, kexTimeout);
-        Map<String, Object> securityInfo = SshTrileadSecurityUtils
-        .getSshTrileadCredential(context, "sshtrilead", fixedURI,
-                fixedURI.getPort(SSH_PORT));
+
         String username = (String) securityInfo.get("username");
         String password = (String) securityInfo.get("password");
         java.io.File keyFile = (java.io.File) securityInfo.get("keyfile");
@@ -896,16 +908,20 @@ public class SshTrileadFileAdaptor extends FileCpi {
     }
 
     public boolean exists() throws GATInvocationException {
-        logger.info("exists: ls -d " + getFixedPath());
 
         if (existsCacheEnable) {
             if (existsCache.containsKey(fixedURI)) {
                 return existsCache.get(fixedURI);
             }
         }
+ 
         if (isWindows(gatContext, location)) {
             throw new UnsupportedOperationException("Not implemented");
         } else {
+            if (logger.isInfoEnabled()) {
+        	logger.info("exists: ls -d " + getFixedPath());
+            }
+
             String[] result;
             try {
                 result = execCommand("ls -d " + protectAgainstShellMetas(getFixedPath()));
@@ -1001,6 +1017,14 @@ public class SshTrileadFileAdaptor extends FileCpi {
                 return isFileCache.get(fixedURI);
             }
         }
+        if (fixedURI.refersToLocalHost()) {
+            java.io.File f = new java.io.File(fixedURI.getPath());
+            boolean isFile = f.isFile();
+            if (isFileCacheEnable) {
+                isFileCache.put(fixedURI, isFile);
+            }
+            return isFile;
+        }
         if (isWindows(gatContext, location)) {
             throw new UnsupportedOperationException("Not implemented");
         } else {
@@ -1053,6 +1077,14 @@ public class SshTrileadFileAdaptor extends FileCpi {
             if (listCache.containsKey(fixedURI)) {
                 return listCache.get(fixedURI);
             }
+        }
+        if (fixedURI.refersToLocalHost()) {
+            java.io.File f = new java.io.File(fixedURI.getPath());
+            String[] l = f.list();
+            if (listCacheEnable) {
+                listCache.put(fixedURI, l);
+            }
+            return l;
         }
         if (isWindows(gatContext, location)) {
             throw new UnsupportedOperationException("Not implemented");
