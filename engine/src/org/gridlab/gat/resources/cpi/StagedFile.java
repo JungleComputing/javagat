@@ -72,7 +72,9 @@ public abstract class StagedFile {
     protected File resolve(File f, boolean useNameOnly)
             throws GATInvocationException {
         URI uri = f.toGATURI();
-        logger.info("resolving uri: " + uri);
+        if (logger.isInfoEnabled()) {
+            logger.info("resolving uri: " + uri);
+        }
         if (uri.getAuthority() == null || useNameOnly) {
             try {
                 uri = uri.setAuthority(authority);
@@ -80,7 +82,9 @@ public abstract class StagedFile {
                 throw new GATInvocationException("StageFile", e);
             }
         }
-        logger.info("authority done: " + uri);
+        if (logger.isInfoEnabled()) {
+            logger.info("authority done: " + uri);
+        }
         if (uri.getScheme() == null) {
             try {
                 uri = uri.setScheme("any");
@@ -88,7 +92,9 @@ public abstract class StagedFile {
                 throw new GATInvocationException("StageFile", e);
             }
         }
-        logger.info("scheme done: " + uri);
+        if (logger.isInfoEnabled()) {
+            logger.info("scheme done: " + uri);
+        }
         if (useNameOnly) {
             if (f.isDirectory()) {
                 try {
@@ -104,11 +110,15 @@ public abstract class StagedFile {
                 }
             }
         }
-        logger.info("path done: " + uri + "\npath: " + uri.getUnresolvedPath());
+        if (logger.isInfoEnabled()) {
+            logger.info("path done: " + uri + "\npath: " + uri.getUnresolvedPath());
+        }
         if (!uri.hasAbsolutePath()) {
             try {
-                logger.info("setting path to :" + sandbox + "/"
-                        + uri.getUnresolvedPath());
+        	if (logger.isInfoEnabled()) {
+        	    logger.info("setting path to :" + sandbox + "/"
+        		    + uri.getUnresolvedPath());
+        	}
                 uri = uri.setPath(sandbox + "/" + uri.getUnresolvedPath());
             } catch (URISyntaxException e) {
                 throw new GATInvocationException("StageFile", e);
@@ -127,9 +137,17 @@ public abstract class StagedFile {
                 throw new GATInvocationException("StageFile", e);
             }
         }
-        logger.info("sandbox done: " + uri);
+        if (logger.isInfoEnabled()) {
+            logger.info("sandbox done: " + uri);
+        }
+        GATContext ctxt = f.getFileInterface().getGATContext();
+        if (this instanceof PostStagedFile) {
+            // Make file adaptor copy time as well on poststaging, if supported.
+            ctxt = (GATContext) ctxt.clone();
+            ctxt.addPreference("file.copytime", "true");
+        }
         try {
-            return GAT.createFile(f.getFileInterface().getGATContext(), uri);
+            return GAT.createFile(ctxt, uri);
         } catch (GATObjectCreationException e) {
             throw new GATInvocationException("StageFile", e);
         }

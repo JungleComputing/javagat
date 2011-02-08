@@ -137,9 +137,7 @@ public class PreStagedFileSet {
                 files[i].prestage();
             } catch (Throwable e) {
                 if (logger.isInfoEnabled()) {
-                    logger
-                            .info("prestage failed, removing already staged files: "
-                                    + e);
+                    logger.info("prestage failed, removing already staged files: ", e);
                 }
 
                 throw new GATInvocationException("resource broker cpi", e);

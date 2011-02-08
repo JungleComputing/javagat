@@ -676,35 +676,32 @@ public abstract class FileCpi extends MonitorableCpi implements FileInterface, j
                 try {
                     dest = new URI(dest.toString() + separator
                             + sourcePath.substring(start));
+                    destFile = GAT.createFile(gatContext, additionalPreferences, dest).getFileInterface();
                 } catch (URISyntaxException e) {
                     // should not happen
-                }
+                } catch (GATObjectCreationException e) {
+                    throw new GATInvocationException("file cpi", e);
+		}
             }
         }
         if (logger.isDebugEnabled()) {
             logger.debug("dest=" + dest);
         }
         // create destination dir
-        try {
-            destFile = GAT.createFile(gatContext, additionalPreferences, dest)
-                    .getFileInterface();
-            if (gatContext.getPreferences().containsKey("file.create")
-                    && ((String) gatContext.getPreferences().get("file.create"))
-                            .equalsIgnoreCase("true")) {
-                destFile.mkdirs();
-            } else {
-                // if source is a dir 'dir1' and dest is a dir 'dir2' then the
-                // result of dir1.copy(dir2) will be dir2/dir1/.. so even if the
-                // 'file.create' flag isn't set, create the dir1 in dir2 before
-                // copying the files.
-                boolean mkdir = destFile.mkdir();
-                if (logger.isDebugEnabled()) {
-                    logger.debug("mkdir: " + mkdir);
-                }
-            }
-        } catch (GATObjectCreationException e) {
-            throw new GATInvocationException("file cpi", e);
+
+        boolean targetDirCreated = false;
+        if (gatContext.getPreferences().containsKey("file.create")
+        	&& ((String) gatContext.getPreferences().get("file.create"))
+        	.equalsIgnoreCase("true")) {
+            targetDirCreated = destFile.mkdirs();
+        } else {
+            // if source is a dir 'dir1' and dest is a dir 'dir2' then the
+            // result of dir1.copy(dir2) will be dir2/dir1/.. so even if the
+            // 'file.create' flag isn't set, create the dir1 in dir2 before
+            // copying the files.
+            targetDirCreated = destFile.mkdir();
         }
+
         FileInterface dir = null;
 
         try {
@@ -738,16 +735,23 @@ public abstract class FileCpi extends MonitorableCpi implements FileInterface, j
             } catch (URISyntaxException e) {
                 throw new GATInvocationException("file cpi", e);
             }
-            logger.debug("new dest: " + newDest.toString());
-            logger.debug("src is file: " + f.isFile());
-            logger.debug("src is dir: " + f.isDirectory());
-
+            if (logger.isDebugEnabled()) {
+        	logger.debug("new dest: " + newDest.toString());
+        	logger.debug("src is file: " + f.isFile());
+        	logger.debug("src is dir: " + f.isDirectory());
+            }
             if (f.isFile()) {
                 if (logger.isDebugEnabled()) {
                     logger.debug("copyDirectory: copying " + f);
                 }
-
-                f.copy(newDest);
+                if (targetDirCreated) {
+                    // Optimization: call a version of copy that does not do
+                    // checks for destination, and such. We know that we just
+                    // created the directory ...
+                    f.safeCopy(newDest);
+                } else {
+                    f.copy(newDest);
+                }
             } else if (f.isDirectory()) {
                 if (logger.isDebugEnabled()) {
                     logger.debug("copyDirectory: copying dir " + f);
@@ -761,6 +765,11 @@ public abstract class FileCpi extends MonitorableCpi implements FileInterface, j
                                 + " (links are not supported).");
             }
         }
+    }
+    
+    // Default implementation checks. Adaptors can re-implement to do better.
+    public void safeCopy(URI dest) throws GATInvocationException {
+	copy(dest);
     }
 
     public static void recursiveDeleteDirectory(GATContext gatContext,

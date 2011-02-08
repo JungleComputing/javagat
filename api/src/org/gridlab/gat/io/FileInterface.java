@@ -218,4 +218,18 @@ public interface FileInterface extends Monitorable, Advertisable,
 
     /** See {@link java.io.File#toURL()}. */
     public URL toURL() throws MalformedURLException;
+    
+    /**
+     * This method copies the physical file represented by this File instance to
+     * a physical file identified by the passed URI.
+     * No checks are performed. It is assumed that the source is a file, and that
+     * the destination directory exists.
+     * For internal use only.!
+     * @param loc
+     *                The new location
+     * @throws GATInvocationException
+     *                 Thrown upon problems accessing the remote instance
+     */
+    public void safeCopy(URI loc) throws GATInvocationException;
+
 }

@@ -462,10 +462,15 @@ public abstract class GlobusFileAdaptor extends FileCpi {
             setActiveOrPassive(client, gatContext.getPreferences());
             destFile = new java.io.File(dest.getPath());
             client.get(src.getPath(), destFile);
-            try {
-                destFile.setLastModified(lastModified());
-            } catch(Throwable e) {
-                // ignored
+            if (gatContext.getPreferences().containsKey("file.copytime")) {
+                if (((String) gatContext.getPreferences().get("file.copytime"))
+                        .equalsIgnoreCase("true")) {
+                    try {
+                        destFile.setLastModified(lastModified());
+                    } catch(Throwable e) {
+                        // ignored
+                    }
+                }
             }
         } catch (Exception e) {
             throw new GATInvocationException("gridftp", e);

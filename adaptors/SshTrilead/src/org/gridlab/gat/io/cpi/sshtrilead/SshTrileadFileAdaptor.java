@@ -294,6 +294,35 @@ public class SshTrileadFileAdaptor extends FileCpi {
         }
     }
 
+    public void safeCopy(URI destination) throws GATInvocationException {
+        destination = fixURI(destination, null);
+        if (fixedURI.refersToLocalHost()) {
+            // put the file
+            try {
+                safePut(destination);
+            } catch (Exception e) {
+                if (e instanceof GATInvocationException) {
+                    throw (GATInvocationException) e;
+                }
+                throw new GATInvocationException("SshTrileadFileAdaptor", e);
+            }
+        } else {
+            if (destination.refersToLocalHost()) {
+                // get the file
+                try {
+                    safeGet(destination);
+                } catch (Exception e) {
+                    if (e instanceof GATInvocationException) {
+                        throw (GATInvocationException) e;
+                    }
+                    throw new GATInvocationException("SshTrileadFileAdaptor", e);
+                }
+            } else {
+                remoteScp(destination);
+            }
+        }
+    }
+
     private void put(URI destination) throws Exception {
         if (destination.refersToLocalHost()) {
             throw new GATInvocationException("SshTrileadFileAdaptor cannot copy local to local");
@@ -366,25 +395,39 @@ public class SshTrileadFileAdaptor extends FileCpi {
             logger.debug("put " + getFixedPath() + ", " + remoteDir + ", "
                     + mode);
             client.put(getFixedPath(), remoteDir, mode);
-            try {
-                String path = remoteDir + "/" + getName();
-                URI d = destination.setPath(path);
-                destinationFile = new SshTrileadFileAdaptor(gatContext, d);
-                destinationFile.setLastModified(lastModified());
-            } catch(Throwable e) {
-                // ignored
+            /*
+            if (gatContext.getPreferences().containsKey("file.copytime")) {
+                if (((String) gatContext.getPreferences().get("file.copytime"))
+                        .equalsIgnoreCase("true")) {
+                    try {
+                        String path = remoteDir + "/" + getName();
+                        URI d = destination.setPath(path);
+                        destinationFile = new SshTrileadFileAdaptor(gatContext, d);
+                        destinationFile.setLastModified(lastModified());
+                    } catch(Throwable e) {
+                        // ignored
+                    }
+                }
             }
+            */
         } else if (sourceFile.isDirectory()) {
             copyDir(destination);
         } else if (sourceFile.isFile()) {
             logger.debug("put " + getFixedPath() + ", " + remoteFileName + ", "
                     + remoteDir + ", " + mode);
             client.put(getFixedPath(), remoteFileName, remoteDir, mode);
-            try {
-                destinationFile.setLastModified(lastModified());
-            } catch(Throwable e) {
-                // ignored
+            /*
+            if (gatContext.getPreferences().containsKey("file.copytime")) {
+                if (((String) gatContext.getPreferences().get("file.copytime"))
+                        .equalsIgnoreCase("true")) {
+                    try {
+                        destinationFile.setLastModified(lastModified());
+                    } catch(Throwable e) {
+                        // ignored
+                    }
+                }
             }
+            */
         } else {
             throw new GATInvocationException("cannot copy this file '"
                     + fixedURI + "' to '" + remoteFileName + "' in dir '"
@@ -393,6 +436,72 @@ public class SshTrileadFileAdaptor extends FileCpi {
                     + sourceFile.isDirectory() + ", dest is dir: "
                     + destinationFile.isDirectory());
         }
+    }
+
+    private void safePut(URI destination) throws Exception {
+        if (destination.refersToLocalHost()) {
+            throw new GATInvocationException("SshTrileadFileAdaptor cannot copy local to local");
+        }
+        if (! recognizedScheme(destination.getScheme(), getSupportedSchemes())) {
+            throw new GATInvocationException("SshTrileadFileAdaptor.copy: unrecognized scheme");
+        }
+        if (logger.isDebugEnabled()) {
+            logger.debug("destination: " + destination);
+        }
+        SCPClient client = null;
+        try {
+            client = getConnection(destination, gatContext,
+                    connectionCacheEnable, tcpNoDelay, client2serverCiphers,
+                    server2clientCiphers, verifier).createSCPClient();
+        } catch (IOException e) {
+            client = getConnection(destination, gatContext, false, tcpNoDelay,
+                    client2serverCiphers, server2clientCiphers, verifier)
+                    .createSCPClient();
+        }
+        
+        SshTrileadFileAdaptor destinationFile = new SshTrileadFileAdaptor(gatContext, destination);
+
+        String remoteDir = null;
+        String remoteFileName = null;
+
+        if (destination.hasAbsolutePath()) {
+            remoteDir = destinationFile.getParent();
+        } else {
+            remoteDir = ".";
+            String parent = destinationFile.getParent();
+            if (parent != null) {
+        	String separator;
+        	if (isWindows(gatContext, destination)) {
+        	    separator = "\\";
+        	} else {
+        	    separator = "/";
+        	}
+        	if (parent.startsWith(separator)) {
+        	    remoteDir = parent;
+        	} else {
+        	    remoteDir += separator + parent;
+        	}
+            }
+        }
+        remoteFileName = destinationFile.getName();
+        String mode = getMode(gatContext, DEFAULT_MODE);
+        java.io.File sourceFile = new java.io.File(getFixedPath());
+
+        logger.debug("put " + getFixedPath() + ", " + remoteFileName + ", "
+        	+ remoteDir + ", " + mode);
+        client.put(getFixedPath(), remoteFileName, remoteDir, mode);
+        /*
+            if (gatContext.getPreferences().containsKey("file.copytime")) {
+                if (((String) gatContext.getPreferences().get("file.copytime"))
+                        .equalsIgnoreCase("true")) {
+                    try {
+                        destinationFile.setLastModified(lastModified());
+                    } catch(Throwable e) {
+                        // ignored
+                    }
+                }
+            }
+        */
     }
 
     private String getMode(GATContext gatContext, String defaultMode)
@@ -456,10 +565,15 @@ public class SshTrileadFileAdaptor extends FileCpi {
                 createNewFile(dest, getMode(gatContext, DEFAULT_MODE));
             }
             client.get(getFixedPath(), new java.io.FileOutputStream(dest));
-            try {
-                new java.io.File(dest).setLastModified(lastModified());
-            } catch(Throwable e) {
-                // ignored
+            if (gatContext.getPreferences().containsKey("file.copytime")) {
+                if (((String) gatContext.getPreferences().get("file.copytime"))
+                        .equalsIgnoreCase("true")) {
+                    try {
+                        new java.io.File(dest).setLastModified(lastModified());
+                    } catch(Throwable e) {
+                        // ignored
+                    }
+                }
             }
         } else {
             throw new GATInvocationException("cannot copy this file '"
@@ -470,6 +584,36 @@ public class SshTrileadFileAdaptor extends FileCpi {
         }
     }
 
+    private void safeGet(URI destination) throws Exception {
+        SCPClient client = null;
+        try {
+            client = getConnection(fixedURI, gatContext, connectionCacheEnable,
+                    tcpNoDelay, client2serverCiphers, server2clientCiphers, verifier)
+                    .createSCPClient();
+        } catch (IOException e) {
+            client = getConnection(fixedURI, gatContext, false, tcpNoDelay,
+                    client2serverCiphers, server2clientCiphers, verifier)
+                    .createSCPClient();
+        }
+        
+        String dest = destination.getPath();
+
+        if (java.io.File.separator.equals("/")) {
+            createNewFile(dest, getMode(gatContext, DEFAULT_MODE));
+        }
+        client.get(getFixedPath(), new java.io.FileOutputStream(dest));
+        if (gatContext.getPreferences().containsKey("file.copytime")) {
+            if (((String) gatContext.getPreferences().get("file.copytime"))
+        	    .equalsIgnoreCase("true")) {
+        	try {
+        	    new java.io.File(dest).setLastModified(lastModified());
+        	} catch(Throwable e) {
+        	    // ignored
+        	}
+            }
+        }
+    }
+ 
     private boolean isWindows(GATContext context, URI destination)
             throws GATInvocationException {
         return isWindows(context, destination, isWindowsCacheEnable);
@@ -499,7 +643,7 @@ public class SshTrileadFileAdaptor extends FileCpi {
         }
         String[] result;
         try {
-            result = file.execCommand("ls");
+            result = file.execCommand("ls -d");
         } catch (Exception e) {
             throw new GATInvocationException("sshtrilead", e);
         }
@@ -605,7 +749,7 @@ public class SshTrileadFileAdaptor extends FileCpi {
             }
         }
         if (logger.isDebugEnabled()) {
-            logger.debug("Setting up connection to " + host, new Throwable());
+            logger.debug("Setting up connection to " + host);
         }
         Connection newConnection = new Connection(host, fixedURI
                 .getPort(SSH_PORT));
@@ -1007,7 +1151,9 @@ public class SshTrileadFileAdaptor extends FileCpi {
         if (res == null) {
             throw new Error("path not specified correctly in URI: " + fixedURI);
         }
-        logger.debug("fixed path = " + res);
+        if (logger.isDebugEnabled()) {
+            logger.debug("fixed path = " + res);
+        }
         return res;
     }
 
