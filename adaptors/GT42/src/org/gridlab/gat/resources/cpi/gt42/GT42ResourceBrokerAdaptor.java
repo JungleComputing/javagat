@@ -95,17 +95,9 @@ public class GT42ResourceBrokerAdaptor extends ResourceBrokerCpi {
 
     protected GSSCredential getCred() throws GATInvocationException {
         GSSCredential cred = null;
-        URI location = null;
-        try {
-            location = new URI(getHostname());
-        } catch (Exception e) {
-            throw new GATInvocationException(
-                    "GT4.2 Job: getSecurityContext, initialization of location failed, "
-                            + e);
-        }
         try {
             cred = GlobusSecurityUtils.getGlobusCredential(gatContext,
-                    "gt42", location, ResourceManagerContact.DEFAULT_PORT);
+                    "gt42", brokerURI, ResourceManagerContact.DEFAULT_PORT);
         } catch (Exception e) {
             throw new GATInvocationException(
                     "GT42Job: could not initialize credentials, " + e);

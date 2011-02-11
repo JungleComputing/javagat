@@ -103,17 +103,10 @@ public class WSGT4newResourceBrokerAdaptor extends ResourceBrokerCpi {
     
     protected GSSCredential getCred() throws GATInvocationException {
         GSSCredential cred = null;
-        URI location = null;
-        try {
-            location = new URI(getHostname());
-        } catch (Exception e) {
-            throw new GATInvocationException(
-                    "WSGT4Job: getSecurityContext, initialization of location failed, "
-                            + e);
-        }
+ 
         try {
             cred = GlobusSecurityUtils.getGlobusCredential(gatContext,
-                    "wsgt4new", location, ResourceManagerContact.DEFAULT_PORT);
+                    "wsgt4new", brokerURI, ResourceManagerContact.DEFAULT_PORT);
         } catch (Exception e) {
             throw new GATInvocationException(
                     "WSGT4Job: could not initialize credentials, " + e);

@@ -5,7 +5,6 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -140,8 +139,7 @@ public class GlobusJob extends JobCpi implements GramJobListener,
 
         URI hostUri;
         try {
-            URL u = new URL(globusJobID);
-            hostUri = new URI(u.getHost());
+            hostUri = new URI(globusJobID);
         } catch (Exception e) {
             throw new GATObjectCreationException("globus job", e);
         }

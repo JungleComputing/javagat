@@ -1,6 +1,5 @@
 package org.gridlab.gat.resources.cpi.wsgt4new;
 
-import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -119,8 +118,7 @@ public class WSGT4newJob extends JobCpi implements GramJobListener, Runnable {
 
         URI hostUri;
         try {
-            URL u = new URL(submissionID);
-            hostUri = new URI(u.getHost());
+             hostUri = new URI(submissionID);
         } catch (Exception e) {
             throw new GATObjectCreationException("globus job", e);
         }
@@ -128,7 +126,7 @@ public class WSGT4newJob extends JobCpi implements GramJobListener, Runnable {
         GSSCredential credential = null;
         try {
             credential = GlobusSecurityUtils.getGlobusCredential(gatContext,
-                "ws-gram", hostUri, ResourceManagerContact.DEFAULT_PORT);
+                "wsgt4new", hostUri, ResourceManagerContact.DEFAULT_PORT);
         } catch (CouldNotInitializeCredentialException e) {
             throw new GATObjectCreationException("globus", e);
         } catch (CredentialExpiredException e) {
