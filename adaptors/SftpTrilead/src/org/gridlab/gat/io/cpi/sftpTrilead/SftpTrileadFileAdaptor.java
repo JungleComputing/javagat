@@ -849,8 +849,6 @@ public class SftpTrileadFileAdaptor extends FileCpi {
             c = getConnection(gatContext, dest, verifier, client2serverCiphers,
                     server2clientCiphers, tcpNoDelay);
             String destPath = dest.getPath();
-            FileInterface destFile = GAT.createFile(gatContext, dest)
-                    .getFileInterface();
             if (destPath.endsWith(File.separator)) {
                 String sourcePath = src.getPath();
                 if (sourcePath.length() > 0) {

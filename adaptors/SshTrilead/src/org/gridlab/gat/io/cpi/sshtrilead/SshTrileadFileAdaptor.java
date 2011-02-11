@@ -485,10 +485,11 @@ public class SshTrileadFileAdaptor extends FileCpi {
         }
         remoteFileName = destinationFile.getName();
         String mode = getMode(gatContext, DEFAULT_MODE);
-        java.io.File sourceFile = new java.io.File(getFixedPath());
 
-        logger.debug("put " + getFixedPath() + ", " + remoteFileName + ", "
-        	+ remoteDir + ", " + mode);
+        if (logger.isDebugEnabled()) {
+            logger.debug("put " + getFixedPath() + ", " + remoteFileName + ", "
+        	    + remoteDir + ", " + mode);
+        }
         client.put(getFixedPath(), remoteFileName, remoteDir, mode);
         /*
             if (gatContext.getPreferences().containsKey("file.copytime")) {
