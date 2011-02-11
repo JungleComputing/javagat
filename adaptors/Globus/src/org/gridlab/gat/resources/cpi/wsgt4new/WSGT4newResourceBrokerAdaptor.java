@@ -114,7 +114,7 @@ public class WSGT4newResourceBrokerAdaptor extends ResourceBrokerCpi {
         }
         try {
             cred = GlobusSecurityUtils.getGlobusCredential(gatContext,
-                    "ws-gram", location, ResourceManagerContact.DEFAULT_PORT);
+                    "wsgt4new", location, ResourceManagerContact.DEFAULT_PORT);
         } catch (Exception e) {
             throw new GATInvocationException(
                     "WSGT4Job: could not initialize credentials, " + e);

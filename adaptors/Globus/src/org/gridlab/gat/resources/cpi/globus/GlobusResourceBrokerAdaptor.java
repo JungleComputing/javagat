@@ -382,7 +382,7 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
         GSSCredential credential = null;
         try {
             credential = GlobusSecurityUtils.getGlobusCredential(gatContext,
-                    "gram", hostUri, ResourceManagerContact.DEFAULT_PORT);
+                    "globus", hostUri, ResourceManagerContact.DEFAULT_PORT);
         } catch (CouldNotInitializeCredentialException e) {
             throw new GATInvocationException("globus", e);
         } catch (CredentialExpiredException e) {
