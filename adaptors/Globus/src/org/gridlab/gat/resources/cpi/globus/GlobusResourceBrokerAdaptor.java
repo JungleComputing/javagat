@@ -322,7 +322,7 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
             MetricListener listener, String metricDefinitionName)
             throws GATInvocationException {
  
-        GSSCredential credential = getCredential(getHostname());
+        GSSCredential credential = getCredential();
         
         if (! pinged) {
             try {
@@ -370,19 +370,13 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
         return false;
     }
 
-    private GSSCredential getCredential(String host)
+    private GSSCredential getCredential()
             throws GATInvocationException {
-        URI hostUri;
-        try {
-            hostUri = new URI(host);
-        } catch (Exception e) {
-            throw new GATInvocationException("globus broker", e);
-        }
 
         GSSCredential credential = null;
         try {
             credential = GlobusSecurityUtils.getGlobusCredential(gatContext,
-                    "globus", hostUri, ResourceManagerContact.DEFAULT_PORT);
+                    "globus", brokerURI, ResourceManagerContact.DEFAULT_PORT);
         } catch (CouldNotInitializeCredentialException e) {
             throw new GATInvocationException("globus", e);
         } catch (CredentialExpiredException e) {

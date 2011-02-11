@@ -1,6 +1,5 @@
 package org.gridlab.gat.resources.cpi.gt42;
 
-import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -111,8 +110,7 @@ public class GT42Job extends JobCpi implements GramJobListener, Runnable {
 
         URI hostUri;
         try {
-            URL u = new URL(submissionID);
-            hostUri = new URI(u.getHost());
+            hostUri = new URI(submissionID);
         } catch (Exception e) {
             throw new GATObjectCreationException("globus job", e);
         }
