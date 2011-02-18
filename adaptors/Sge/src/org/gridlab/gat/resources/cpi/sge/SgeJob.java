@@ -41,35 +41,32 @@ public class SgeJob extends JobCpi {
     Metric statusMetric;
 
     private Session session;
+    
+    private JobListener jsl;
 
     private Hashtable<String, Long> time = new Hashtable<String, Long>();
 
     /**
-     * The jobStartListener runs in a thread and checks the job's state. When it
-     * detects a state transition from SCHEDULED to RUN, it writes the time and
-     * exits
+     * The JobListener runs in a thread and checks the job's state. When it
+     * detects a state transition from SCHEDULED to RUN, it notes the time and
+     * waits for the job to terminate.
      */
-    private class jobStartListener implements Runnable {
+    private class JobListener extends Thread {
 
-        int state = 0x00;
+        private int state = 0x00;
 
-        final int SLEEP = 250;
+        private static final int SLEEP = 1000;
 
-        Session session = null;
-
-        String jobID = null;
-
-        Hashtable<String, Long> time = null;
-
-        public jobStartListener(Session session, String jobID,
-                Hashtable<String, Long> time) {
-            this.session = session;
-            this.jobID = jobID;
-            this.time = time;
-        }
-
+        private boolean done = false;
+        
+        private boolean mustPoststage = true;
+        
         public void run() {
+            
+            JobInfo info = null;
+            
             while (state != Session.RUNNING) {
+        	// Busy wait loop, but only until job is running.
                 try {
                     state = session.getJobProgramStatus(jobID);
                     if (state == Session.FAILED) {
@@ -89,59 +86,66 @@ public class SgeJob extends JobCpi {
             // Now we're in RUNNING state - set the time and start the
             // jobStopListener
             time.put("start", new Long(System.currentTimeMillis()));
-            setState(JobState.RUNNING);
-
-            jobStopListener jsl = new jobStopListener(this.session, this.jobID,
-                    time);
-            new Thread(jsl).start();
-        }
-    }
-
-    /**
-     * The jobStopListener runs in a thread and checks the job's state. When it
-     * detects a state transition from RUN to STOP, it writes the time and exits
-     */
-    private class jobStopListener implements Runnable {
-
-        private final Session session;
-
-        private final String jobID;
-
-        private final Hashtable<String, Long> time;
-        
-        private JobInfo info = null;
-
-        public jobStopListener(Session session, String jobID,
-                Hashtable<String, Long> time) {
-            this.session = session;
-            this.jobID = jobID;
-            this.time = time;
-        }
-
-        public void run() {
-            try {
-                info = session.wait(jobID, Session.TIMEOUT_WAIT_FOREVER);
-            } catch (DrmaaException e) {
-                if (logger.isDebugEnabled()) {
-                    logger.debug("-- SGEJob EXCEPTION --");
-                    logger.debug("Got an exception while waiting", e);
+            
+            if (state == Session.RUNNING) {
+                setState(JobState.RUNNING);
+                try {
+                    info = session.wait(jobID, Session.TIMEOUT_WAIT_FOREVER);
+                } catch (DrmaaException e) {
+                    if (logger.isDebugEnabled()) {
+                        logger.debug("-- SGEJob EXCEPTION --");
+                        logger.debug("Got an exception while waiting", e);
+                    }
                 }
             }
+            
+            boolean poststage;
+            synchronized(this) {
+        	 poststage = mustPoststage;	
+            }
 
-            setState(JobState.POST_STAGING);
-            if (sandbox != null) {
-                sandbox.retrieveAndCleanup(SgeJob.this);
+            if (poststage) {
+        	setState(JobState.POST_STAGING);
+        	if (sandbox != null) {
+        	    sandbox.retrieveAndCleanup(SgeJob.this);
+        	}
             }
-            if (info == null) {
-                setState(JobState.STOPPED);
-            }
-            else if (info.wasAborted()) {
-                setState(JobState.SUBMISSION_ERROR);
+            if (state == Session.FAILED || (info != null && info.wasAborted())) {
+        	setState(JobState.SUBMISSION_ERROR);
             } else {
                 setState(JobState.STOPPED);
             }
+            try {
+                session.exit();
+            } catch (DrmaaException e) {
+                if (logger.isDebugEnabled()) {
+                    logger.debug("-- SGEJob EXCEPTION --");
+                    logger.debug(
+                            "Got an exception while trying to exit session",
+                            e);
+                }
+            }
             // Now we're in a final state - set the time and exit
             time.put("stop", new Long(System.currentTimeMillis()));
+        }
+        
+        public synchronized void stop(boolean mustPoststage) {
+            this.mustPoststage = mustPoststage;
+            try {
+                session.control(jobID, Session.TERMINATE);
+            } catch (DrmaaException e) {
+                if (logger.isDebugEnabled()) {
+                    logger.debug("-- SGEJob EXCEPTION --");
+                    logger.debug(
+                            "Got an exception while trying to TERMINATE job:",
+                            e);
+                }
+            }
+            try {
+		jsl.join();
+	    } catch (InterruptedException e1) {
+		// ignore
+	    }
         }
     }
 
@@ -167,8 +171,7 @@ public class SgeJob extends JobCpi {
     }
 
     protected void startListener() {
-        jobStartListener jsl = new jobStartListener(this.session, this.jobID,
-                time);
+        jsl = new JobListener();
         new Thread(jsl).start();
     }
 
@@ -282,12 +285,8 @@ public class SgeJob extends JobCpi {
         int retVal = -255;
         try {
             info = session.wait(jobID, Session.TIMEOUT_NO_WAIT);
-            if (info != null) {
-                if (info.hasExited()) {
-                    retVal = info.getExitStatus();
-                } else {
-                    retVal = -255;
-                }
+            if (info != null && info.hasExited()) {
+                retVal = info.getExitStatus();
             }
         } catch (ExitTimeoutException ete) {
             /*
@@ -315,23 +314,8 @@ public class SgeJob extends JobCpi {
             throw new GATInvocationException(
                     "Cant stop(): job is not in a running state");
         } else {
-            try {
-                session.control(jobID, Session.TERMINATE);
-                if (!(gatContext.getPreferences().containsKey(
-                        "job.stop.poststage") && gatContext.getPreferences()
-                        .get("job.stop.poststage").equals("false"))) {
-                    setState(JobState.POST_STAGING);
-                    sandbox.retrieveAndCleanup(this);
-                }
-                setState(JobState.STOPPED);
-            } catch (DrmaaException e) {
-                if (logger.isDebugEnabled()) {
-                    logger.debug("-- SGEJob EXCEPTION --");
-                    logger.debug(
-                            "Got an exception while trying to TERMINATE job:",
-                            e);
-                }
-            }
+            jsl.stop(!(gatContext.getPreferences().containsKey("job.stop.poststage")
+        	    && gatContext.getPreferences().get("job.stop.poststage").equals("false")));
         }
     }
 }
