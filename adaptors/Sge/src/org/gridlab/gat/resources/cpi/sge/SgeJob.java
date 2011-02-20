@@ -115,16 +115,6 @@ public class SgeJob extends JobCpi {
             } else {
                 setState(JobState.STOPPED);
             }
-            try {
-                session.exit();
-            } catch (DrmaaException e) {
-                if (logger.isDebugEnabled()) {
-                    logger.debug("-- SGEJob EXCEPTION --");
-                    logger.debug(
-                            "Got an exception while trying to exit session",
-                            e);
-                }
-            }
             // Now we're in a final state - set the time and exit
             time.put("stop", new Long(System.currentTimeMillis()));
         }
