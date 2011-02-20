@@ -2,7 +2,6 @@ package org.gridlab.gat.resources.cpi;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.util.HashMap;
 
@@ -91,23 +90,31 @@ public class WrappedJobCpi extends JobCpi implements Runnable {
     public void run() {
         do {
             JobState newstate = null;
-            ObjectInputStream in = null;
+            ObjectInputStream oin = null;
+            FileInputStream fin = null;
             try {
-                in = new ObjectInputStream(new FileInputStream(info.getJobStateFileName()));
-                newstate = (JobState) in.readObject();
+        	fin = new FileInputStream(info.getJobStateFileName());
+                oin = new ObjectInputStream(fin);
+                newstate = (JobState) oin.readObject();
             } catch (Exception e) {
                 if (logger.isDebugEnabled()) {
                     logger.debug("", e);
                 }
-            }
-            if (in != null) {
-                try {
-                    in.close();
-                } catch (IOException e) {
-                    if (logger.isDebugEnabled()) {
-                        logger.debug("", e);
-                    }
-                }
+            } finally {
+        	if (fin != null) {
+        	    if (oin != null) {
+        		try {
+        		    oin.close();
+        		} catch(Throwable e) {
+        		    // ignored
+        		}
+        	    }
+        	    try {
+        		fin.close();
+        	    } catch (Throwable e) {
+        		// ignored
+        	    }
+        	}
             }
             if (newstate != null) {
                 File monitorFile = new File(info.getJobStateFileName());
