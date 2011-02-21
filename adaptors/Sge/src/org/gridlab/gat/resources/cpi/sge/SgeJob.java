@@ -115,6 +115,7 @@ public class SgeJob extends JobCpi {
             } else {
                 setState(JobState.STOPPED);
             }
+            finished();
             // Now we're in a final state - set the time and exit
             time.put("stop", new Long(System.currentTimeMillis()));
         }
