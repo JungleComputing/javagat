@@ -1,74 +1,50 @@
-<project name="UnicoreAdaptor" default="build" basedir=".">
-	<description>Build file for JavaGAT Unicore Adaptors.</description>
+<project name="Unicore6Adaptor" default="build" basedir=".">
+	<description>Build file for JavaGAT Unicore6 Adaptor.</description>
 
-	<property name="gat.location" location="../.." />
+	<property name="gat.location" location="../../" />
 	<property name="engine_path" location="${gat.location}/lib" />
 
 	<property name="src" location="src" />
 	<property name="tmp" location="tmp" />
-	<property name="lib" location="${gat.location}/lib/adaptors/UnicoreAdaptor" />
+	<property name="lib" location="${gat.location}/lib/adaptors/Unicore6Adaptor" />
 	<property name="external" location="external" />
+	<property name="shared" location="../shared" />
 	<property name="java.debug.value" value="true" />
 
 	<path id="external_jars">
+		<fileset dir="${shared}">
+			<include name="*.jar" />
+		</fileset>
 		<fileset dir="${external}">
 			<include name="*.jar" />
 		</fileset>
 		<fileset dir="${engine_path}">
-			<include name="GAT-API.jar" />
-			<include name="GAT-engine.jar" />
-			<include name="xercesImpl.jar" />
-			<include name="xmlParserAPIs.jar" />
-			<include name="castor-1.1.1-xml.jar" />
-			<include name="commons-logging-1.1.jar" />
+			<include name="*.jar" />
 		</fileset>
 	</path>
 
-
 	<target name="build" depends="clean" description="build the JARs and documentation">
-	    <!-- Create the distribution end tmp directory -->
-	    <mkdir dir="${lib}" />
-
-	    <!-- Copy external libraries to lib directory -->
-	    <copy todir="${lib}">
-		<fileset dir="${external}">
-			<include name="*.jar" />
-		</fileset>
-	    </copy>
-
-		<!-- Create the tmp directory -->
+		<!-- Create the distribution end tmp directory -->
+		<mkdir dir="${lib}" />
 		<mkdir dir="${tmp}" />
-		
 
 		<!-- Compile the java code from ${src} into ${tmp} -->
 		<javac source="1.5" target="1.5" srcdir="${src}" destdir="${tmp}" debug="on">
 			<classpath refid="external_jars" />
 		</javac>
 
-        <!-- create a list with necessary jar files for the classpaths manifest -->
-        
-	    <path id = "hila-libs" >
-		<fileset dir = "${lib}" >
-		   <include name = "dom4j-1.6.1.jar" />
-		   <include name = "hila-api-1.0-SNAPSHOT.jar" />
-		   <include name = "hila-common-1.0-SNAPSHOT.jar" />
-		   <include name = "hila-unicore6-1.0-SNAPSHOT-jar-with-dependencies.jar" />
-		</fileset>
-	    </path>
-
-	    <!-- pathconvert for having all the jar files as a string variable in the later build... -->
-
-	    <pathconvert property="hila-jars" refid="hila-libs" pathsep=" " dirsep="/">
-		<map from="/" to="/"/>
-            <map from="${gat.location}/lib/adaptors/UnicoreAdaptor/" to=""/>
-	    </pathconvert>
-
-		<jar jarfile="${lib}/UnicoreAdaptor.jar" basedir="${tmp}" includes="**">
+		<jar jarfile="${lib}/Unicore6Adaptor.jar" basedir="${tmp}" includes="**">
 			<manifest>
-				<attribute name="ResourceBrokerCpi-class" value="org.gridlab.gat.resources.cpi.unicore.UnicoreResourceBrokerAdaptor" />
-                                <attribute name="Class-Path" value = "${hila-jars}" />
+				<attribute name="ResourceBrokerCpi-class" value="org.gridlab.gat.resources.cpi.unicore6.Unicore6ResourceBrokerAdaptor" />
 			</manifest>
 		</jar>
+
+		<!-- Copy external libraries to lib directory -->
+		<copy todir="${lib}">
+			<fileset dir="${external}">
+				<include name="*.jar" />
+			</fileset>
+		</copy>
 
 		<delete dir="${tmp}" />
 
