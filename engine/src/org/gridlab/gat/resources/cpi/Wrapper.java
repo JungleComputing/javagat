@@ -6,7 +6,7 @@ import org.slf4j.LoggerFactory;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
+import java.io.DataOutputStream;
 import java.net.URISyntaxException;
 import java.util.Date;
 import java.text.SimpleDateFormat;
@@ -408,7 +408,7 @@ public class Wrapper {
         }
 
         public void processMetricEvent(MetricEvent event) {
-            ObjectOutputStream out = null;
+            DataOutputStream out = null;
             try {
                 // create a new file and write the state to it. This file is
                 // copied
@@ -425,8 +425,8 @@ public class Wrapper {
                 java.io.File tmp = java.io.File.createTempFile(".JavaGAT",
                         "jobstate");
                 tmp.createNewFile();
-                out = new ObjectOutputStream(new java.io.FileOutputStream(tmp));
-                out.writeObject(event.getValue());
+                out = new DataOutputStream(new java.io.FileOutputStream(tmp));
+                out.writeUTF((String) event.getValue());
                 out.flush();
                 out.close();
                 File remoteFile = GAT.createFile(prefs, dest);
