@@ -426,7 +426,7 @@ public class Wrapper {
                         "jobstate");
                 tmp.createNewFile();
                 out = new DataOutputStream(new java.io.FileOutputStream(tmp));
-                out.writeUTF((String) event.getValue());
+                out.writeUTF(((JobState) event.getValue()).name());
                 out.flush();
                 out.close();
                 File remoteFile = GAT.createFile(prefs, dest);
