@@ -61,6 +61,8 @@ public class SgeJob extends JobCpi {
         
         private boolean mustPoststage = true;
         
+        private boolean killed = false;
+        
         public void run() {
             
             JobInfo info = null;
@@ -105,6 +107,14 @@ public class SgeJob extends JobCpi {
             }
 
             if (poststage) {
+        	if (killed) {
+                    // Give job some time to actually finish/cleanup.
+                    try {
+        		Thread.sleep(5000);
+        	    } catch (InterruptedException e) {
+        		// ignored
+        	    }
+        	}
         	setState(JobState.POST_STAGING);
         	if (sandbox != null) {
         	    sandbox.retrieveAndCleanup(SgeJob.this);
@@ -122,6 +132,7 @@ public class SgeJob extends JobCpi {
         
         public synchronized void stop(boolean mustPoststage) {
             this.mustPoststage = mustPoststage;
+            this.killed = true;
             try {
                 session.control(jobID, Session.TERMINATE);
             } catch (DrmaaException e) {
