@@ -18,7 +18,9 @@ import org.slf4j.LoggerFactory;
  * @author Andreas Bender
  */
 public class Unicore6SecurityUtils {
-	/** The Logger */
+	/**
+	 * the logger
+	 */
 	private static final Logger LOGGER = LoggerFactory.getLogger(Unicore6SecurityUtils.class);
 
 	/**

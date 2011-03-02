@@ -20,7 +20,7 @@
 		<ant dir="Generic" />
 		<!-- ant dir="Glite" / -->
 		<ant dir="GliteMultiUser" />
-		<!-- ant dir="Unicore" / -->
+		<ant dir="Unicore" />
 		<!-- ant dir="Koala" / -->
 	</target>
 

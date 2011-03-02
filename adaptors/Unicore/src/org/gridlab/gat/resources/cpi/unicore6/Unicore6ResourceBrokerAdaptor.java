@@ -32,6 +32,8 @@ import eu.unicore.hila.exceptions.HiLAException;
 import eu.unicore.hila.exceptions.HiLALocationSyntaxException;
 import eu.unicore.hila.grid.Site;
 import eu.unicore.hila.grid.job.JSDLBuilder;
+import eu.unicore.hila.grid.unicore6.SiteLocator;
+import eu.unicore.hila.grid.unicore6.Unicore6Grid;
 
 /**
  * Resource Broker Adaptor for Unicore6.
@@ -44,6 +46,8 @@ public class Unicore6ResourceBrokerAdaptor extends ResourceBrokerCpi {
 	protected static final Logger LOGGER = LoggerFactory.getLogger(Unicore6ResourceBrokerAdaptor.class);
 
 	protected String username = null;
+
+	protected List<String> registries = null;
 
 	/**
 	 * @see ResourceBrokerCpi#getSupportedCapabilities()
@@ -64,8 +68,11 @@ public class Unicore6ResourceBrokerAdaptor extends ResourceBrokerCpi {
 	 *            the broker URI like "unicore6:/<user-name>@sites/<site-name>"
 	 * @throws GATObjectCreationException
 	 *             an exception might occur during creation
+	 * @throws GATInvocationException
+	 *             is thrown when no registry is defined
 	 */
-	public Unicore6ResourceBrokerAdaptor(GATContext gatContext, URI brokerURI) throws GATObjectCreationException {
+	public Unicore6ResourceBrokerAdaptor(GATContext gatContext, URI brokerURI) throws GATObjectCreationException,
+			GATInvocationException {
 
 		super(gatContext, brokerURI);
 
@@ -82,12 +89,10 @@ public class Unicore6ResourceBrokerAdaptor extends ResourceBrokerCpi {
 			}
 		}
 
-		// Scanner scanner = new Scanner(brokerURI.toString());
-		// username = scanner.findInLine("/(.*)@");
-		//
-		// if (username != null) {
-		// username = username.substring(1, username.length() - 1);
-		// }
+		registries = (List<String>) gatContext.getPreferences().get("registries");
+		if (registries == null) {//registries may also be available in the HiLA preferences file
+			throw new GATInvocationException("gatContext.getPreferences().get(\"registries\") is null");
+		}
 	}
 
 	/**
@@ -166,16 +171,42 @@ public class Unicore6ResourceBrokerAdaptor extends ResourceBrokerCpi {
 		List<HardwareResource> resources = new ArrayList<HardwareResource>();
 
 		Location location;
-		if (username != null) {
-			location = new Location(java.net.URI.create("unicore6:/" + username + "@sites/"));
+		List<? extends Resource> sites = null;
+
+		if (registries != null) {
+			SiteLocator locator = SiteLocator.getInstance();
+
+			try {
+				location = new Location("unicore6:/");
+				Unicore6Grid grid = Unicore6Grid.locate(location);
+
+				if (username != null) {
+					sites = locator.getAllSites(registries, grid.getProperties(), new Location("unicore6:/" + username
+							+ "@sites/"));
+				} else {
+					sites = locator.getAllSites(registries, grid.getProperties(), new Location("unicore6:/sites/"));
+				}
+
+			} catch (HiLAException e) {
+				throw new GATInvocationException("Error while retrieving sites.", e);
+			}
 		} else {
-			location = new Location(java.net.URI.create("unicore6:/sites/"));
+			if (username != null) {
+				location = new Location(java.net.URI.create("unicore6:/" + username + "@sites/"));
+			} else {
+				location = new Location(java.net.URI.create("unicore6:/sites/"));
+			}
+
+			try {
+				Resource resource = location.locate();
+				sites = resource.getChildren();
+
+			} catch (HiLAException e) {
+				throw new GATInvocationException("Error while retrieving sites.", e);
+			}
 		}
 
-		try {
-			Resource resource = location.locate();
-			List<Resource> sites = resource.getChildren();
-
+		if (sites != null) {
 			for (Resource site : sites) {
 				if (site != null) {
 					HardwareResource hwRes = new Unicore6SiteResource(gatContext);
@@ -183,8 +214,6 @@ public class Unicore6ResourceBrokerAdaptor extends ResourceBrokerCpi {
 					resources.add(hwRes);
 				}
 			}
-		} catch (HiLAException e) {
-			throw new GATInvocationException("Error while retrieving sites.", e);
 		}
 
 		return resources;
@@ -237,10 +266,10 @@ public class Unicore6ResourceBrokerAdaptor extends ResourceBrokerCpi {
 			unicoreJob.setSoftwareDescription(softwareDescr);
 			unicoreJob.setJobID(hilaJob.getId());
 		} catch (HiLALocationSyntaxException e) {
-			e.printStackTrace();
+			// e.printStackTrace();
 			throw new GATInvocationException("UnicoreResourceBrokerAdaptor", e);
 		} catch (HiLAException e) {
-			e.printStackTrace();
+			// e.printStackTrace();
 			throw new GATInvocationException("UnicoreResourceBrokerAdaptor", e);
 		}
 		return unicoreJob;
