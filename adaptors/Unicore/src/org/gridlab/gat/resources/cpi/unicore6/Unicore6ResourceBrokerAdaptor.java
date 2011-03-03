@@ -54,22 +54,30 @@ public class Unicore6ResourceBrokerAdaptor extends ResourceBrokerCpi {
 	 */
 	public static Map<String, Boolean> getSupportedCapabilities() {
 		Map<String, Boolean> capabilities = ResourceBrokerCpi.getSupportedCapabilities();
+		capabilities.put("findResources", true);
 		capabilities.put("submitJob", true);
 
 		return capabilities;
 	}
 
+//	/**
+//	 * @see ResourceBrokerCpi#getSupportedPreferences()
+//	 */
+//	public static Preferences getSupportedPreferences() {
+//		Preferences preferences = ResourceBrokerCpi.getSupportedPreferences();
+//
+//		preferences.put("registries", "true");
+//
+//		return preferences;
+//	}
+
 	/**
 	 * Constructor.
 	 * 
-	 * @param gatContext
-	 *            the GAT context
-	 * @param brokerURI
-	 *            the broker URI like "unicore6:/<user-name>@sites/<site-name>"
-	 * @throws GATObjectCreationException
-	 *             an exception might occur during creation
-	 * @throws GATInvocationException
-	 *             is thrown when no registry is defined
+	 * @param gatContext the GAT context
+	 * @param brokerURI the broker URI like "unicore6:/<user-name>@sites/<site-name>"
+	 * @throws GATObjectCreationException an exception might occur during creation
+	 * @throws GATInvocationException is thrown when no registry is defined
 	 */
 	public Unicore6ResourceBrokerAdaptor(GATContext gatContext, URI brokerURI) throws GATObjectCreationException,
 			GATInvocationException {
@@ -90,7 +98,7 @@ public class Unicore6ResourceBrokerAdaptor extends ResourceBrokerCpi {
 		}
 
 		registries = (List<String>) gatContext.getPreferences().get("registries");
-		if (registries == null) {//registries may also be available in the HiLA preferences file
+		if (registries == null) {// registries may also be available in the HiLA preferences file
 			throw new GATInvocationException("gatContext.getPreferences().get(\"registries\") is null");
 		}
 	}
@@ -105,11 +113,9 @@ public class Unicore6ResourceBrokerAdaptor extends ResourceBrokerCpi {
 	/**
 	 * Creates the JSDL represented by a {@link JobDescription} based on the given {@link SoftwareDescription}.
 	 * 
-	 * @param sd
-	 *            the software description with the job parameters
+	 * @param sd the software description with the job parameters
 	 * @return the job description
-	 * @throws GATInvocationException
-	 *             an exception might occur during creation
+	 * @throws GATInvocationException an exception might occur during creation
 	 */
 	public eu.unicore.hila.grid.job.JobDescription createJobDescription(SoftwareDescription sd)
 			throws GATInvocationException {
@@ -119,7 +125,7 @@ public class Unicore6ResourceBrokerAdaptor extends ResourceBrokerCpi {
 		// FIXME: Change, whenever SofwareDescription offers JobName.
 		jsdlBuilder.setTaskName("Unicore-GAT" + sd.getExecutable());
 
-		jsdlBuilder.setExecutable(sd.getExecutable());
+		jsdlBuilder.setExecutable("$PWD/"+sd.getExecutable()); //"$PWD" could be a problem with windows sites
 
 		String[] jobArgs = sd.getArguments();
 
@@ -259,7 +265,8 @@ public class Unicore6ResourceBrokerAdaptor extends ResourceBrokerCpi {
 
 			eu.unicore.hila.grid.Job hilaJob = unicoreJob.getSite().submit(createJobDescription(softwareDescr));
 
-			// prestageFiles(softwareDescr, hilaJob.getWorkingDirectory());
+			prestageFiles(softwareDescr, hilaJob.getWorkingDirectory());
+			 
 			hilaJob.startASync();
 			unicoreJob.setState(Job.JobState.SCHEDULED);
 			unicoreJob.setJob(hilaJob);
@@ -278,62 +285,62 @@ public class Unicore6ResourceBrokerAdaptor extends ResourceBrokerCpi {
 	/**
 	 * Initialize the security
 	 * 
-	 * @param gatContext
-	 *            the GAT context
-	 * @throws GATInvocationException
-	 *             an exception that might occurs
+	 * @param gatContext the GAT context
+	 * @throws GATInvocationException an exception that might occurs
 	 */
 	private void initSecurity(GATContext gatContext) throws GATInvocationException {
 		Unicore6SecurityUtils.saveAssertion(gatContext);
 	}
 
-	// /**
-	// * Stages the input files to the unicore working directory.
-	// *
-	// * @param sd the software description
-	// * @param workingDir the worki
-	// * @throws GATInvocationException
-	// */
-	// private void prestageFiles(SoftwareDescription sd, eu.unicore.hila.grid.File workingDir)
-	// throws GATInvocationException {
-	//
-	// java.io.File locFile;
-	//
-	// Map<org.gridlab.gat.io.File, org.gridlab.gat.io.File> preStaged = null;
-	// /**
-	// * * fill in with elements of software description. Right now this concerns pre and poststaging dataset.
-	// */
-	// preStaged = sd.getPreStaged();
-	// if (preStaged != null) {
-	// for (java.io.File srcFile : preStaged.keySet()) {
-	// java.io.File destFile = preStaged.get(srcFile);
-	//
-	// String srcName = srcFile.getPath();
-	//
-	// if (destFile == null) {
-	// logger.debug("ignoring prestaged file, no destination set!");
-	// continue;
-	// }
-	// locFile = new java.io.File(srcName);
-	// logger.debug("Prestage: Name of destfile: '" + destFile.getName() + "'");
-	//
-	// try {
-	// eu.unicore.hila.grid.File remFile = (File) workingDir.getChild(destFile.getName());// FIXME
-	// remFile.importFromLocalFile(locFile, true).block();
-	// if (locFile.canExecute()) {
-	// try {
-	// remFile.chmod(true, false, true);
-	// } catch (HiLAException e) {
-	// e.printStackTrace();
-	// logger.warn("chmod failure of" + remFile.getName()
-	// + "might cause that the program can't be executed");
-	// }
-	// }
-	// } catch (HiLAException e) {
-	// e.printStackTrace();
-	// throw new GATInvocationException("UNCICORE Adaptor: creating remfile for prestaging failed");
-	// }
-	// }
-	// }
-	// }
+	 /**
+	 * Stages the input files to the unicore working directory.
+	 *
+	 * @param sd the software description
+	 * @param workingDir the working Directory
+	 * @throws GATInvocationException
+	 */
+	 private void prestageFiles(SoftwareDescription sd, eu.unicore.hila.grid.File workingDir)
+	 throws GATInvocationException {
+		
+		java.io.File locFile;
+
+		Map<org.gridlab.gat.io.File, org.gridlab.gat.io.File> preStaged = null;
+		/**
+		 * * fill in with elements of software description. Right now this concerns pre and poststaging dataset.
+		 */
+		preStaged = sd.getPreStaged();
+		if (preStaged != null) {
+			for (java.io.File srcFile : preStaged.keySet()) {
+				java.io.File destFile = preStaged.get(srcFile);
+
+				String srcPath = srcFile.getPath();
+
+				if (destFile == null) {
+					LOGGER.debug("ignoring prestaged file, no destination set!");
+					continue;
+				}
+				locFile = new java.io.File(srcPath);
+				LOGGER.debug("Prestage: Name of destfile: '" + destFile.getName() + "'");
+
+				try {
+					eu.unicore.hila.grid.File remFile = (eu.unicore.hila.grid.File) workingDir.getChild(destFile
+							.getName());
+					remFile.importFromLocalFile(locFile, true).block();
+					
+					if (locFile.canExecute()) {
+						try {
+							remFile.chmod(true, false, true);
+						} catch (HiLAException e) {
+							e.printStackTrace();
+							LOGGER.warn("chmod failure of" + remFile.getName()
+									+ "might cause that the program can't be executed");
+						}
+					}
+				} catch (HiLAException e) {
+					e.printStackTrace();
+					throw new GATInvocationException("UNCICORE Adaptor: creating remfile for prestaging failed");
+				}
+			}
+		}
+	 }
 }
