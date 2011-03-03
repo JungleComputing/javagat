@@ -107,29 +107,40 @@ public class GliteSecurityUtils {
 
 		MyProxyServerCredentialSecurityContext myproxyContext = null;
 
+		CredentialSecurityContext credContext = null;
+		
 		for (SecurityContext securityContext : securityContexts) {
 			if (securityContext instanceof MyProxyServerCredentialSecurityContext) {
 				myproxyContext = (MyProxyServerCredentialSecurityContext) securityContext;
-			}
+			} else if(securityContext instanceof CredentialSecurityContext) {
+				credContext = (CredentialSecurityContext) securityContext;
+			} 
 		}
 
-		// TODO add support for CredentialSecurityContext
+		GlobusCredential globusCred = null;
+		
+		// If no security context is available throw excpetion
+		if (null == myproxyContext && null == credContext) {
+			throw new GATInvocationException("No valid security context in the GATContext.");
+		} 
+		// Use CredentialSecurityContext
+		else if (null != credContext) {
+			globusCred = ((GlobusGSSCredentialImpl) credContext.getCredential()).getGlobusCredential();
+		} 
+		// use MyProxyServerCredentialSecurityContext
+		else {
+			final String myProxyHost = myproxyContext.getHost();
+			final int myProxyPort = myproxyContext.getPort();
+			final String myProxyUser = myproxyContext.getUsername();
+			final String myProxyPwd = myproxyContext.getPassword();
 
-		if (null == myproxyContext) {
-			return null;
+			// Retrieve the proxy from the myproxy server
+			GSSCredential myProxyCred = MyProxySecurityUtils.getCredentialFromMyProxyServer(context, myProxyHost,
+					myProxyPort, myProxyUser, myProxyPwd);
+
+			// Cast the proxy to a globus credential
+			globusCred = ((GlobusGSSCredentialImpl) myProxyCred).getGlobusCredential();			
 		}
-
-		final String myProxyHost = myproxyContext.getHost();
-		final int myProxyPort = myproxyContext.getPort();
-		final String myProxyUser = myproxyContext.getUsername();
-		final String myProxyPwd = myproxyContext.getPassword();
-
-		// Retrieve the proxy from the myproxy server
-		GSSCredential myProxyCred = MyProxySecurityUtils.getCredentialFromMyProxyServer(context, myProxyHost,
-				myProxyPort, myProxyUser, myProxyPwd);
-
-		// Cast the proxy to a globus credential
-		GlobusCredential globusCred = ((GlobusGSSCredentialImpl) myProxyCred).getGlobusCredential();
 
 		// Specify the voms settings for creating a voms-proxy
 		VOMSServerInfo serverInfo = new VOMSServerInfo();
