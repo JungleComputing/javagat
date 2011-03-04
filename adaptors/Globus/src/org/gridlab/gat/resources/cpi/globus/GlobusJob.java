@@ -533,7 +533,14 @@ public class GlobusJob extends JobCpi implements GramJobListener,
             setSubmissionTime();
         } else if (state == JobState.RUNNING) {
             setStartTime();
+        } else if (state == JobState.POST_STAGING) {
+            if (starttime == 0) {
+        	setState(JobState.RUNNING);
+            }
         } else if (state == JobState.STOPPED || state == JobState.SUBMISSION_ERROR) {
+            if (starttime == 0) {
+        	setState(JobState.RUNNING);
+            }
             setStopTime();
         }
         this.state = state;
