@@ -57,7 +57,7 @@ public class SerializedJob extends SerializedBase implements Serializable, Adver
         this.jobDescription = jobDescription;
         this.sandbox = sandbox;
         this.jobId = jobId;
-        this.submissiontime = starttime;
+        this.submissiontime = submissiontime;
         this.starttime = starttime;
         this.stoptime = stoptime;
 

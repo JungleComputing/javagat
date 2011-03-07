@@ -50,11 +50,16 @@ public class Unicore6Job extends JobCpi {
 	private Job job;
 	private SoftwareDescription softwareDescription;
 
+	{
+		starttime = -1L;
+		stoptime = -1L;
+		submissiontime = -1L;
+	}
+
 	/**
 	 * constructor of UnicoreJob
 	 * 
-	 * @param gatContext
-	 *            The gatContext
+	 * @param gatContext The gatContext
 	 * @param jobDescription
 	 * @param sandbox
 	 */
@@ -193,7 +198,7 @@ public class Unicore6Job extends JobCpi {
 	}
 
 	/**
-	 * Refreshes the state of the job by calling Hila.
+	 * Refreshes the state of the job by calling HiLA.
 	 */
 	protected synchronized void refreshState() {
 		JobState oldState = state;// TODO delete?
@@ -203,34 +208,26 @@ public class Unicore6Job extends JobCpi {
 			TaskStatus status = job.status();
 			logger.debug("Job status in refreshState(): " + status.toString());
 
-			if (submissiontime == 0L) {
-				setSubmissionTime();
-			}
 			if (status.equals(TaskStatus.RUNNING)) {
-				if (starttime == 0L) {
+				if (starttime == -1L) {
 					setStartTime();
 				}
 				state = JobState.RUNNING;
-			}
-
-			if (status.equals(TaskStatus.FAILED)) {
+			} else if (status.equals(TaskStatus.FAILED)) {
 				state = JobState.SUBMISSION_ERROR;
-			}
-
-			if (status.equals(TaskStatus.SUCCESSFUL) || status.equals(TaskStatus.ABORTED)) {
-				if (stoptime == 0L) {
+			} else if (status.equals(TaskStatus.ABORTED)) {
+				if (stoptime == -1L) {
 					setStopTime();
 				}
-				state = JobState.STOPPED;
-			}
-
-			/* Job is active but suspended */
-
-			if (status.equals(TaskStatus.NEW)) {
-				state = JobState.SCHEDULED;
-			}
-
-			if (status.equals(TaskStatus.PENDING)) {
+				state = JobState.ABORTED;
+			} else if (status.equals(TaskStatus.SUCCESSFUL)) {
+				if (stoptime == -1L) {
+					setStopTime();
+				}
+				state = JobState.DONE_SUCCESS;
+			} else if (status.equals(TaskStatus.NEW)) {
+				state = JobState.READY;
+			} else if (status.equals(TaskStatus.PENDING)) {
 				state = JobState.SCHEDULED;
 			}
 
@@ -257,7 +254,7 @@ public class Unicore6Job extends JobCpi {
 			try {
 				job.abort();
 				state = JobState.STOPPED;
-				if (stoptime == 0L) {
+				if (stoptime == -1L) {
 					stoptime = System.currentTimeMillis();
 				}
 				logger.debug("Unicore Job " + job.getId() + " stopped by user");
@@ -364,14 +361,12 @@ public class Unicore6Job extends JobCpi {
 									true).block();// (realDestFile,
 													// true).block();FIXME
 						}
-
 					}
-
 				}
 			}
 		} catch (HiLAException e) {
-			e.printStackTrace();
-			throw new GATInvocationException("UNICORE Adaptor: loading Storage for poststaging failed");
+			// e.printStackTrace();
+			throw new GATInvocationException("UNICORE Adaptor: loading Storage for poststaging failed", e);
 		}
 
 		/**
@@ -395,9 +390,10 @@ public class Unicore6Job extends JobCpi {
 		try {
 			rc = job.getExitCode();
 		} catch (HiLAException e) {
-			e.printStackTrace();
+			// e.printStackTrace();
 			rc = -1;
-			throw new GATInvocationException("UNICORE Adaptor: loading Storage for poststaging exit value file failed");
+			throw new GATInvocationException("UNICORE Adaptor: loading Storage for poststaging exit value file failed",
+					e);
 		}
 		return rc;
 	}
@@ -407,32 +403,35 @@ public class Unicore6Job extends JobCpi {
 	 */
 
 	public Map<String, Object> getInfo() throws GATInvocationException {
-		HashMap<String, Object> m = new HashMap<String, Object>();
+		HashMap<String, Object> map = new HashMap<String, Object>();
 		refreshState();
 		try {
-			m.put("adaptor.job.id", job.getId());
-			m.put("hostname", hostname);
-			if (state == JobState.INITIAL || state == JobState.UNKNOWN || state == JobState.SCHEDULED) {
-				m.put("starttime", null);
-			} else {
-				m.put("starttime", starttime);
-			}
-			if (state != JobState.STOPPED) {
-				m.put("stoptime", null);
-			} else {
-				m.put("stoptime", stoptime);
-				poststageFiles(softwareDescription, job);
-			}
-
-			m.put("state", state.toString());
+			map.put("jobID", jobID);
+			map.put("adaptor.job.id", job.getId());
+			// map.put("hostname", hostname);
+			map.put("submissiontime", submissiontime);
+			map.put("starttime", starttime);
+			map.put("stoptime", stoptime);
+			map.put("state", state.toString());
+			// if (state == JobState.INITIAL || state == JobState.UNKNOWN || state == JobState.SCHEDULED) {
+			// map.put("starttime", -1L);
+			// } else {
+			// map.put("starttime", starttime);
+			// }
+			// if (state != JobState.STOPPED) {
+			// map.put("stoptime", -1L);
+			// } else {
+			// map.put("stoptime", stoptime);
+			// // poststageFiles(softwareDescription, job);//TODO
+			// }
 
 		} catch (HiLAException e) {
 			logger.error("HilaException in getInfo()");
-			e.printStackTrace();
-			throw new GATInvocationException("HilaException in getInfo()" + e);
+			// e.printStackTrace();
+			throw new GATInvocationException("HilaException in getInfo()", e);
 		}
 
-		return m;
+		return map;
 	}
 
 	protected void setSite(Site site) {
@@ -473,6 +472,7 @@ public class Unicore6Job extends JobCpi {
 	}
 
 	public synchronized JobState getState() {
+		logger.debug("Refresh status for job!");
 		refreshState();
 		return state;
 	}

@@ -60,16 +60,16 @@ public class Unicore6ResourceBrokerAdaptor extends ResourceBrokerCpi {
 		return capabilities;
 	}
 
-//	/**
-//	 * @see ResourceBrokerCpi#getSupportedPreferences()
-//	 */
-//	public static Preferences getSupportedPreferences() {
-//		Preferences preferences = ResourceBrokerCpi.getSupportedPreferences();
-//
-//		preferences.put("registries", "true");
-//
-//		return preferences;
-//	}
+	// /**
+	// * @see ResourceBrokerCpi#getSupportedPreferences()
+	// */
+	// public static Preferences getSupportedPreferences() {
+	// Preferences preferences = ResourceBrokerCpi.getSupportedPreferences();
+	//
+	// preferences.put("registries", "true");
+	//
+	// return preferences;
+	// }
 
 	/**
 	 * Constructor.
@@ -125,7 +125,7 @@ public class Unicore6ResourceBrokerAdaptor extends ResourceBrokerCpi {
 		// FIXME: Change, whenever SofwareDescription offers JobName.
 		jsdlBuilder.setTaskName("Unicore-GAT" + sd.getExecutable());
 
-		jsdlBuilder.setExecutable("$PWD/"+sd.getExecutable()); //"$PWD" could be a problem with windows sites
+		jsdlBuilder.setExecutable("$PWD/" + sd.getExecutable()); // "$PWD" could be a problem with windows sites
 
 		String[] jobArgs = sd.getArguments();
 
@@ -145,7 +145,7 @@ public class Unicore6ResourceBrokerAdaptor extends ResourceBrokerCpi {
 
 		// ResourcesType resources = ResourcesType.Factory.newInstance();
 		// FileSystemType fileSystem = resources.addNewFileSystem();
-		// fileSystem.setName("USPACE");// FIXME correct???
+		// fileSystem.setName("USPACE");// is this correct?
 		// fileSystem.setDescription("Unicore working dir");
 		// jsdlBuilder.setResources(resources);
 
@@ -264,9 +264,10 @@ public class Unicore6ResourceBrokerAdaptor extends ResourceBrokerCpi {
 			}
 
 			eu.unicore.hila.grid.Job hilaJob = unicoreJob.getSite().submit(createJobDescription(softwareDescr));
+			unicoreJob.setSubmissionTime();
 
 			prestageFiles(softwareDescr, hilaJob.getWorkingDirectory());
-			 
+
 			hilaJob.startASync();
 			unicoreJob.setState(Job.JobState.SCHEDULED);
 			unicoreJob.setJob(hilaJob);
@@ -274,10 +275,10 @@ public class Unicore6ResourceBrokerAdaptor extends ResourceBrokerCpi {
 			unicoreJob.setJobID(hilaJob.getId());
 		} catch (HiLALocationSyntaxException e) {
 			// e.printStackTrace();
-			throw new GATInvocationException("UnicoreResourceBrokerAdaptor", e);
+			throw new GATInvocationException("Unicore6ResourceBrokerAdaptor", e);
 		} catch (HiLAException e) {
 			// e.printStackTrace();
-			throw new GATInvocationException("UnicoreResourceBrokerAdaptor", e);
+			throw new GATInvocationException("Unicore6ResourceBrokerAdaptor", e);
 		}
 		return unicoreJob;
 	}
@@ -292,16 +293,16 @@ public class Unicore6ResourceBrokerAdaptor extends ResourceBrokerCpi {
 		Unicore6SecurityUtils.saveAssertion(gatContext);
 	}
 
-	 /**
+	/**
 	 * Stages the input files to the unicore working directory.
-	 *
+	 * 
 	 * @param sd the software description
 	 * @param workingDir the working Directory
 	 * @throws GATInvocationException
 	 */
-	 private void prestageFiles(SoftwareDescription sd, eu.unicore.hila.grid.File workingDir)
-	 throws GATInvocationException {
-		
+	private void prestageFiles(SoftwareDescription sd, eu.unicore.hila.grid.File workingDir)
+			throws GATInvocationException {
+
 		java.io.File locFile;
 
 		Map<org.gridlab.gat.io.File, org.gridlab.gat.io.File> preStaged = null;
@@ -326,7 +327,7 @@ public class Unicore6ResourceBrokerAdaptor extends ResourceBrokerCpi {
 					eu.unicore.hila.grid.File remFile = (eu.unicore.hila.grid.File) workingDir.getChild(destFile
 							.getName());
 					remFile.importFromLocalFile(locFile, true).block();
-					
+
 					if (locFile.canExecute()) {
 						try {
 							remFile.chmod(true, false, true);
@@ -337,10 +338,10 @@ public class Unicore6ResourceBrokerAdaptor extends ResourceBrokerCpi {
 						}
 					}
 				} catch (HiLAException e) {
-					e.printStackTrace();
-					throw new GATInvocationException("UNCICORE Adaptor: creating remfile for prestaging failed");
+					// e.printStackTrace();
+					throw new GATInvocationException("UNCICORE Adaptor: creating remfile for prestaging failed", e);
 				}
 			}
 		}
-	 }
+	}
 }
