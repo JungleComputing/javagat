@@ -144,6 +144,9 @@ public class SgeJob extends JobCpi {
             finished();
             // Now we're in a final state - set the time and exit
             time.put("stop", new Long(System.currentTimeMillis()));
+            if (logger.isInfoEnabled()) {
+        	logger.info("Finished job ID: " + jobID);
+            }
         }
         
         public void stop(boolean mustPoststage) {
@@ -178,6 +181,9 @@ public class SgeJob extends JobCpi {
     }
 
     protected void setJobID(String jobID) {
+	if (logger.isInfoEnabled()) {
+	    logger.info("Got job ID: " + jobID);
+	}
         this.jobID = jobID;
         time.put("submission", new Long(System.currentTimeMillis()));
     }
