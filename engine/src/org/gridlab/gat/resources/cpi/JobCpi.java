@@ -91,7 +91,7 @@ public abstract class JobCpi extends MonitorableCpi implements Job {
                 SoftwareDescription.STOP_ON_EXIT, true)) {
             stopOnExit = false;
         }
-        if (stopOnExit) {
+        if (stopOnExit && ! (this instanceof WrappedJobCpi)) {
             synchronized (JobCpi.class) {
                 if (shutdownInProgress) {
                     throw new Error(
@@ -249,7 +249,7 @@ public abstract class JobCpi extends MonitorableCpi implements Job {
                 }
                 try {
                     j.stop();
-                } catch (Exception e) {
+                } catch (Throwable e) {
                     // ignore
                 }
             }
