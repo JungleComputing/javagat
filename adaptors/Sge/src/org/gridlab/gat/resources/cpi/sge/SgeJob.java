@@ -15,6 +15,7 @@ import java.util.Map;
 import org.ggf.drmaa.DrmaaException;
 import org.ggf.drmaa.ExitTimeoutException;
 import org.ggf.drmaa.JobInfo;
+import org.ggf.drmaa.JobTemplate;
 import org.ggf.drmaa.Session;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
@@ -59,14 +60,17 @@ public class SgeJob extends JobCpi {
 
         private boolean done = false;
         
-        private boolean mustPoststage = true;
+        private boolean terminated = false;
         
-        private boolean killed = false;
+        private JobInfo info = null;
+        
+        public JobListener(Session SGEsession, JobTemplate jt) throws DrmaaException {           
+            setJobID(SGEsession.runJob(jt));
+            setState(JobState.SCHEDULED);
+        }
         
         public void run() {
-            
-            JobInfo info = null;
-            
+
             while (state != Session.RUNNING) {
         	// Busy wait loop, but only until job is running.
                 try {
@@ -89,7 +93,7 @@ public class SgeJob extends JobCpi {
             // jobStopListener
             time.put("start", new Long(System.currentTimeMillis()));
             
-            if (state == Session.RUNNING) {
+            if (state == Session.RUNNING || state == Session.DONE) {
                 setState(JobState.RUNNING);
                 try {
                     info = session.wait(jobID, Session.TIMEOUT_WAIT_FOREVER);
@@ -101,20 +105,32 @@ public class SgeJob extends JobCpi {
                 }
             }
             
-            boolean poststage;
-            synchronized(this) {
-        	 poststage = mustPoststage;	
+            terminate(true, true);
+        }
+        
+        private synchronized void terminate(boolean fromThread, boolean mustPoststage) {
+            
+            if (terminated) {
+        	return;
             }
-
-            if (poststage) {
-        	if (killed) {
-                    // Give job some time to actually finish/cleanup.
-                    try {
-        		Thread.sleep(5000);
-        	    } catch (InterruptedException e) {
-        		// ignored
-        	    }
+            terminated = true;
+            
+            if (! fromThread) {
+        	// Give job some time to actually finish/cleanup.
+        	// It was killed, after all.
+        	try {
+        	    wait(2000);
+        	} catch (InterruptedException e) {
+        	    // ignored
         	}
+            }
+            try {
+		jsl.join();
+	    } catch (Throwable e1) {
+		// ignore
+	    }
+            
+            if (mustPoststage) {
         	setState(JobState.POST_STAGING);
         	if (sandbox != null) {
         	    sandbox.retrieveAndCleanup(SgeJob.this);
@@ -130,24 +146,18 @@ public class SgeJob extends JobCpi {
             time.put("stop", new Long(System.currentTimeMillis()));
         }
         
-        public synchronized void stop(boolean mustPoststage) {
-            this.mustPoststage = mustPoststage;
-            this.killed = true;
+        public void stop(boolean mustPoststage) {
             try {
-                session.control(jobID, Session.TERMINATE);
+        	session.control(jobID, Session.TERMINATE);
             } catch (DrmaaException e) {
-                if (logger.isDebugEnabled()) {
-                    logger.debug("-- SGEJob EXCEPTION --");
-                    logger.debug(
-                            "Got an exception while trying to TERMINATE job:",
-                            e);
-                }
+        	if (logger.isDebugEnabled()) {
+        	    logger.debug("-- SGEJob EXCEPTION --");
+        	    logger.debug(
+        		    "Got an exception while trying to TERMINATE job:",
+        		    e);
+        	}
             }
-            try {
-		jsl.join();
-	    } catch (InterruptedException e1) {
-		// ignore
-	    }
+            terminate(false, mustPoststage);
         }
     }
 
@@ -172,8 +182,8 @@ public class SgeJob extends JobCpi {
         time.put("submission", new Long(System.currentTimeMillis()));
     }
 
-    protected void startListener() {
-        jsl = new JobListener();
+    protected void startListener(Session s, JobTemplate jt) throws DrmaaException {
+        jsl = new JobListener(s, jt);
         new Thread(jsl).start();
     }
 
@@ -319,5 +329,9 @@ public class SgeJob extends JobCpi {
             jsl.stop(!(gatContext.getPreferences().containsKey("job.stop.poststage")
         	    && gatContext.getPreferences().get("job.stop.poststage").equals("false")));
         }
+    }
+    
+    public String toString() {
+	return jobID;
     }
 }

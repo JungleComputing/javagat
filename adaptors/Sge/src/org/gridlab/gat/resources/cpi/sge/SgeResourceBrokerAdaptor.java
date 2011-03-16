@@ -224,9 +224,7 @@ public class SgeResourceBrokerAdaptor extends ResourceBrokerCpi {
             if (logger.isDebugEnabled()) {
         	logger.debug("Starting SGE job: " + jt);
             }
-            sgeJob.setJobID(SGEsession.runJob(jt));
-            sgeJob.setState(Job.JobState.SCHEDULED);
-            sgeJob.startListener();
+            sgeJob.startListener(SGEsession, jt);
             SGEsession.deleteJobTemplate(jt);
             return job;
         } catch (DrmaaException e) {
