@@ -13,7 +13,6 @@ import java.util.Hashtable;
 import java.util.Map;
 
 import org.ggf.drmaa.DrmaaException;
-import org.ggf.drmaa.ExitTimeoutException;
 import org.ggf.drmaa.JobInfo;
 import org.ggf.drmaa.JobTemplate;
 import org.ggf.drmaa.Session;
@@ -109,6 +108,14 @@ public class SgeJob extends JobCpi {
             }
             
             terminate(true, true);
+        }
+        
+
+        public synchronized int getExitStatus() {
+            if (info != null && info.hasExited()) {
+        	return info.getExitStatus();
+            }
+            return -255;
         }
         
         private synchronized void terminate(boolean fromThread, boolean mustPoststage) {
@@ -295,27 +302,7 @@ public class SgeJob extends JobCpi {
     }
 
     public int getExitStatus() {
-        JobInfo info = null;
-        int retVal = -255;
-        try {
-            info = session.wait(jobID, Session.TIMEOUT_NO_WAIT);
-            if (info != null && info.hasExited()) {
-                retVal = info.getExitStatus();
-            }
-        } catch (ExitTimeoutException ete) {
-            /*
-             * This exception is OK - it's always thrown, when the job is still
-             * running. Just ignore and do nothing...
-             */
-        } catch (DrmaaException e) {
-            /* This kind of exception is NOT OK - something ugly happened... */
-            if (logger.isDebugEnabled()) {
-                logger.debug("-- SGEJob EXCEPTION --");
-                logger.debug("Got an exception while retrieving JobInfo:", e);
-            }
-        }
-
-        return retVal;
+	return jsl.getExitStatus();
     }
 
     public void stop() throws GATInvocationException {
