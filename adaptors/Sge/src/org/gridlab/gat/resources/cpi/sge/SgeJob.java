@@ -103,6 +103,9 @@ public class SgeJob extends JobCpi {
                         logger.debug("Got an exception while waiting", e);
                     }
                 }
+                if (logger.isInfoEnabled()) {
+                    logger.info("SGE job " + jobID + " got back from SGE");
+                }
             }
             
             terminate(true, true);
@@ -116,19 +119,12 @@ public class SgeJob extends JobCpi {
             terminated = true;
             
             if (! fromThread) {
-        	// Give job some time to actually finish/cleanup.
-        	// It was killed, after all.
         	try {
-        	    wait(2000);
-        	} catch (InterruptedException e) {
-        	    // ignored
+        	    jsl.join();
+        	} catch (Throwable e1) {
+        	    // ignore
         	}
             }
-            try {
-		jsl.join();
-	    } catch (Throwable e1) {
-		// ignore
-	    }
             
             if (mustPoststage) {
         	setState(JobState.POST_STAGING);

@@ -84,8 +84,8 @@ public class SgeResourceBrokerAdaptor extends ResourceBrokerCpi {
     }
     
     public static void end() {
-        if (logger.isDebugEnabled()) {
-            logger.debug("SGEResourceBrokerAdaptor end");
+        if (logger.isInfoEnabled()) {
+            logger.info("SGEResourceBrokerAdaptor end");
         }
 
         if (SGEsession != null) {
