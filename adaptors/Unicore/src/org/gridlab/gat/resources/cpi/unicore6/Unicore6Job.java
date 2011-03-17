@@ -202,8 +202,22 @@ public class Unicore6Job extends JobCpi {
 	 */
 	protected synchronized void refreshState() {
 		JobState oldState = state;// TODO delete?
-		logger.debug("Getting job status in refreshState()");
-
+//		logger.debug("Getting job status in refreshState()");
+//		logger.debug("jobinfo12"+job.getName()+" : "+job.getTaskName()+" : "+job.getLocation());
+//	
+//		try {
+//			logger.debug(job.getLog());
+//		} catch (HiLAException e3) {
+//			// TODO Auto-generated catch block
+//			e3.printStackTrace();
+//		}
+//		
+//try {
+//logger.debug(job.getId());
+//} catch (HiLAException e1) {
+//	// TODO Auto-generated catch block
+//	e1.printStackTrace();
+//}
 		try {
 			TaskStatus status = job.status();
 			logger.debug("Job status in refreshState(): " + status.toString());
@@ -322,7 +336,6 @@ public class Unicore6Job extends JobCpi {
 						true).block();// (outputFile,
 										// true);// .block;
 				// TODO?
-				// moveFile(remoteStdoutFile.getAbsolutePath(), stdoutFileName);
 			}
 			// }
 			// if (localStderrFile != null) {
@@ -330,11 +343,8 @@ public class Unicore6Job extends JobCpi {
 			if (remoteStderrFile != null) {
 				File outputFile = new File(remoteStderrFile.getName());
 				remoteStderrFile.exportToLocalFile(new java.io.File("C:\\export\\" + outputFile.getName() + ".txt"),
-						true).block();// exportToLocalFile(outputFile,
-										// true);// .block;
-										// FIXME
+						true).block(); // FIXME
 				// TODO?
-				// moveFile(remoteStderrFile.getAbsolutePath(), stderrFileName);
 			}
 			// }
 
@@ -358,8 +368,7 @@ public class Unicore6Job extends JobCpi {
 							java.io.File realDestFile = new java.io.File(
 									SerializedUnicoreJob.realPath(((org.gridlab.gat.io.File) destFile).toGATURI()));
 							file.exportToLocalFile(new java.io.File("C:\\export\\" + realDestFile.getName() + ".txt"),
-									true).block();// (realDestFile,
-													// true).block();FIXME
+									true).block();// FIXME
 						}
 					}
 				}
@@ -405,14 +414,22 @@ public class Unicore6Job extends JobCpi {
 	public Map<String, Object> getInfo() throws GATInvocationException {
 		HashMap<String, Object> map = new HashMap<String, Object>();
 		refreshState();
-		try {
+//		try {
 			map.put("jobID", jobID);
-			map.put("adaptor.job.id", job.getId());
+//			map.put("adaptor.job.id", job.getId());
+			map.put("adaptor.job.id", job.getLocation().getStringValue());
 			// map.put("hostname", hostname);
 			map.put("submissiontime", submissiontime);
 			map.put("starttime", starttime);
 			map.put("stoptime", stoptime);
 			map.put("state", state.toString());
+			
+			try {
+				map.put("sandBoxUri", job.getWorkingDirectory().getLocation().toString());
+			} catch (HiLAException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 			// if (state == JobState.INITIAL || state == JobState.UNKNOWN || state == JobState.SCHEDULED) {
 			// map.put("starttime", -1L);
 			// } else {
@@ -425,11 +442,11 @@ public class Unicore6Job extends JobCpi {
 			// // poststageFiles(softwareDescription, job);//TODO
 			// }
 
-		} catch (HiLAException e) {
-			logger.error("HilaException in getInfo()");
-			// e.printStackTrace();
-			throw new GATInvocationException("HilaException in getInfo()", e);
-		}
+//		} catch (HiLAException e) {
+//			logger.error("HilaException in getInfo()");
+//			// e.printStackTrace();
+//			throw new GATInvocationException("HilaException in getInfo()", e);
+//		}
 
 		return map;
 	}

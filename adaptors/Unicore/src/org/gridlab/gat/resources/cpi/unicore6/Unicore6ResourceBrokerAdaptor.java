@@ -79,6 +79,7 @@ public class Unicore6ResourceBrokerAdaptor extends ResourceBrokerCpi {
 	 * @throws GATObjectCreationException an exception might occur during creation
 	 * @throws GATInvocationException is thrown when no registry is defined
 	 */
+	@SuppressWarnings("unchecked")
 	public Unicore6ResourceBrokerAdaptor(GATContext gatContext, URI brokerURI) throws GATObjectCreationException,
 			GATInvocationException {
 
@@ -339,7 +340,7 @@ public class Unicore6ResourceBrokerAdaptor extends ResourceBrokerCpi {
 					}
 				} catch (HiLAException e) {
 					// e.printStackTrace();
-					throw new GATInvocationException("UNCICORE Adaptor: creating remfile for prestaging failed", e);
+					throw new GATInvocationException("UNICORE Adaptor: creating remfile for prestaging failed", e);
 				}
 			}
 		}

@@ -1,5 +1,5 @@
 <project name="Unicore6Adaptor" default="build" basedir=".">
-	<description>Build file for JavaGAT Unicore6 Adaptor.</description>
+	<description>Build file for JavaGAT Unicore6 Adaptors.</description>
 
 	<property name="gat.location" location="../../" />
 	<property name="engine_path" location="${gat.location}/lib" />
@@ -35,6 +35,8 @@
 
 		<jar jarfile="${lib}/Unicore6Adaptor.jar" basedir="${tmp}" includes="**">
 			<manifest>
+				<attribute name="FileCpi-class" value="org.gridlab.gat.io.cpi.unicore6.Unicore6FileAdaptor"/>
+				<attribute name="FileInputStreamCpi-class" value="org.gridlab.gat.io.cpi.unicore6.Unicore6FileInputStreamAdaptor" />
 				<attribute name="ResourceBrokerCpi-class" value="org.gridlab.gat.resources.cpi.unicore6.Unicore6ResourceBrokerAdaptor" />
 			</manifest>
 		</jar>
