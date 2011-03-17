@@ -32,6 +32,14 @@ public interface FileInterface extends Monitorable, Advertisable,
     public GATContext getGATContext();
 
     /**
+     * An alternative transport {@link URI} for this file.
+     * 
+     * @return the transport URI for this file
+     * @throws GATInvocationException 
+     */
+    public URI getTransportURI() throws GATInvocationException;
+    
+    /**
      * This method returns the URI of this File
      * 
      * @return The URI of this File

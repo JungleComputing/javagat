@@ -55,7 +55,12 @@ import org.gridlab.gat.monitoring.Monitorable;
 public class File extends java.io.File implements Monitorable, Advertisable,
         java.io.Serializable {
     org.gridlab.gat.io.FileInterface f;
-
+    
+    /**
+     * An alternative transport URI for this file.
+     */
+    protected URI transportURI = null;
+    
     /**
      * Do not use this constructor, it is for internal GAT use.
      */
@@ -64,6 +69,19 @@ public class File extends java.io.File implements Monitorable, Advertisable,
         this.f = f;
     }
 
+    /**
+	 * @return the transportURI
+	 */
+	public URI getTransportURI() throws GATInvocationException {
+		return f.getTransportURI();
+	}    
+	/**
+	 * @param transportURI the transportURI to set
+	 */
+	public void setTransportURI(URI transportURI) {
+		this.transportURI = transportURI;
+	}   
+    
     /**
      * This method copies the physical file represented by this File instance to
      * a physical file identified by the passed URI.

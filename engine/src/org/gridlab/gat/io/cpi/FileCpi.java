@@ -93,8 +93,8 @@ public abstract class FileCpi extends MonitorableCpi implements FileInterface, j
     protected GATContext gatContext;
 
     protected URI location;
-
-    protected boolean ignoreHiddenFiles = false;
+    
+	protected boolean ignoreHiddenFiles = false;
 
     /**
      * Constructs a FileCpi instance which corresponds to the physical file
@@ -243,6 +243,14 @@ public abstract class FileCpi extends MonitorableCpi implements FileInterface, j
         throw new UnsupportedOperationException("Not implemented");
     }
 
+    
+    /**
+     * Returns the transport uri of the file.
+     */
+    public URI getTransportURI() throws GATInvocationException {
+        return toURI();
+    }
+    
     public boolean delete() throws GATInvocationException {
         throw new UnsupportedOperationException("Not implemented");
     }
