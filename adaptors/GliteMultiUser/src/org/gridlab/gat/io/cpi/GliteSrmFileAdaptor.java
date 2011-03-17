@@ -31,9 +31,9 @@ public class GliteSrmFileAdaptor extends FileCpi {
 
 	/** String constant for the protocol */
 	private static final String SRM_PROTOCOL = "srm";
-	
+
 	/** String constant for the protocol */
-	private static final String GSIFTP_PROTOCOL = "gsiftp";	
+	private static final String GSIFTP_PROTOCOL = "gsiftp";
 
 	/** error message for incompatible URIs */
 	private static final String CANNOT_HANDLE_THIS_URI = "cannot handle this URI: ";
@@ -96,6 +96,21 @@ public class GliteSrmFileAdaptor extends FileCpi {
 		return preferences;
 	}
 
+	/**
+	 * 
+	 */
+	public URI getTransportURI() throws GATInvocationException {
+		try {
+			GliteSecurityUtils.getVOMSProxy(gatContext, true);
+			URI transportURI = connector.getTURLForFileDownload(location);
+
+			return transportURI;
+
+		} catch (Exception e) {
+			throw new GATInvocationException(GLITE_SRM_FILE_ADAPTOR, e);
+		}
+	}
+
 	/** {@inheritDoc} */
 	public void copy(URI dest) throws GATInvocationException {
 		logger.info("copy(URI dest)");
@@ -114,7 +129,8 @@ public class GliteSrmFileAdaptor extends FileCpi {
 
 			// localhost -> srm
 			if (toURI().refersToLocalHost()) {
-				if (!dest.isCompatible(GliteSrmFileAdaptor.SRM_PROTOCOL) && !dest.isCompatible(GliteSrmFileAdaptor.GSIFTP_PROTOCOL)) {
+				if (!dest.isCompatible(GliteSrmFileAdaptor.SRM_PROTOCOL)
+						&& !dest.isCompatible(GliteSrmFileAdaptor.GSIFTP_PROTOCOL)) {
 					throw new GATInvocationException(GLITE_SRM_FILE_ADAPTOR + ": "
 							+ GliteSrmFileAdaptor.CANNOT_HANDLE_THIS_URI + dest);
 				}
@@ -123,8 +139,8 @@ public class GliteSrmFileAdaptor extends FileCpi {
 				String proxyFile = GliteSecurityUtils.getPathToUserVomsProxy(gatContext);
 
 				LOGGER.info("SRM/Copy: Uploading " + location + " to " + dest);
-				String turl = connector.getTURLForFileUpload(location, dest);
-				LOGGER.info("SRM/Copy: TURL: " + turl);
+				URI turl = connector.getTURLForFileUpload(location, dest);
+				LOGGER.info("SRM/Copy: TURL: " + turl.toString());
 
 				GATContext newContext = (GATContext) gatContext.clone();
 				newContext.addPreference("File.adaptor.name", "GridFTP");
@@ -132,7 +148,7 @@ public class GliteSrmFileAdaptor extends FileCpi {
 				GliteSecurityUtils.replaceSecurityContextWithGliteContext(newContext, proxyFile);
 
 				File transportFile = GAT.createFile(newContext, location);
-				transportFile.copy(new URI(turl));
+				transportFile.copy(turl);
 				connector.finalizeFileUpload(dest);
 				return;
 			}
@@ -143,7 +159,7 @@ public class GliteSrmFileAdaptor extends FileCpi {
 				String proxyFile = GliteSecurityUtils.getPathToUserVomsProxy(gatContext);
 
 				LOGGER.info("SRM/Copy: Downloading " + location + " to " + dest);
-				String turl = connector.getTURLForFileDownload(location);
+				URI turl = connector.getTURLForFileDownload(location);
 				LOGGER.info("SRM/Copy: TURL: " + turl);
 
 				GATContext newContext = (GATContext) gatContext.clone();
@@ -156,31 +172,31 @@ public class GliteSrmFileAdaptor extends FileCpi {
 				return;
 			}
 
-			// srm -> gsiftp 
+			// srm -> gsiftp
 			if (dest.getScheme().equals("gsiftp")) {
 				GliteSecurityUtils.getVOMSProxy(gatContext, true);
 				String proxyFile = GliteSecurityUtils.getPathToUserVomsProxy(gatContext);
 
 				LOGGER.info("SRM/Copy: Downloading " + location + " to " + dest);
-				String turl = connector.getTURLForFileDownload(location);
+				URI turl = connector.getTURLForFileDownload(location);
 				LOGGER.info("SRM/Copy: TURL: " + turl);
-				
+
 				GATContext newContext = (GATContext) gatContext.clone();
 				newContext.addPreferences(fileAdapterPrefs);
 				newContext.addPreference("File.adaptor.name", "GridFTP");
 
 				GliteSecurityUtils.replaceSecurityContextWithGliteContext(newContext, proxyFile);
 				File transportFile = GAT.createFile(newContext, turl);
-				
-				transportFile.copy(dest);				
+
+				transportFile.copy(dest);
 			}
-			
+
 			// srm -> srm
 			GliteSecurityUtils.getVOMSProxy(gatContext, true);
 			String proxyFile = GliteSecurityUtils.getPathToUserVomsProxy(gatContext);
 
-			String srcUrl = connector.getTURLForFileDownload(location);
-			String destUrl = connector.getTURLForFileUpload(location, dest);
+			URI srcUrl = connector.getTURLForFileDownload(location);
+			URI destUrl = connector.getTURLForFileUpload(location, dest);
 
 			GATContext newContext = (GATContext) gatContext.clone();
 			newContext.addPreference("File.adaptor.name", "GridFTP");
@@ -199,33 +215,33 @@ public class GliteSrmFileAdaptor extends FileCpi {
 	/** {@inheritDoc} */
 	public boolean delete() throws GATInvocationException {
 		boolean deleteSuccess = false;
-		
+
 		logger.info("delete()");
 		if (localFile) {
 			throw new GATInvocationException(GLITE_SRM_FILE_ADAPTOR + ": " + GliteSrmFileAdaptor.CANNOT_HANDLE_THIS_URI
 					+ location);
 		}
-		
+
 		try {
 			GliteSecurityUtils.getVOMSProxy(gatContext, true);
-			
+
 			if (isFile()) {
 				deleteSuccess = connector.deleteFile(location);
 			} else if (isDirectory()) {
 				deleteSuccess = connector.deleteDirectory(location);
 			}
-			
+
 		} catch (IOException e) {
 			LOGGER.info("An exception occurs during deletion of file " + toURI().toString(), e);
 		}
-		
+
 		return deleteSuccess;
 	}
 
 	/** {@inheritDoc} */
 	@Override
 	public boolean mkdir() throws GATInvocationException {
-		logger.info("mkdir()");		
+		logger.info("mkdir()");
 		if (localFile) {
 			throw new GATInvocationException(GLITE_SRM_FILE_ADAPTOR + ": " + GliteSrmFileAdaptor.CANNOT_HANDLE_THIS_URI
 					+ location);
@@ -240,7 +256,6 @@ public class GliteSrmFileAdaptor extends FileCpi {
 		}
 		return true;
 	}
-	
 
 	/**
 	 * @see FileCpi#list()
@@ -295,7 +310,7 @@ public class GliteSrmFileAdaptor extends FileCpi {
 	 * @see FileCpi#isFile()
 	 */
 	public boolean isFile() throws GATInvocationException {
-		logger.info("isFile()");		
+		logger.info("isFile()");
 		try {
 			GliteSecurityUtils.getVOMSProxy(gatContext, true);
 			return connector.isFile(location);
@@ -371,7 +386,7 @@ public class GliteSrmFileAdaptor extends FileCpi {
 	 * @see org.gridlab.gat.io.cpi.FileCpi#getAbsolutePath()
 	 */
 	public String getAbsolutePath() throws GATInvocationException {
-		logger.info("getAbsolutePath()");		
+		logger.info("getAbsolutePath()");
 		// for srm resources the path of the URI is equal to the Absolute path
 		String path = getPath();
 
@@ -381,5 +396,12 @@ public class GliteSrmFileAdaptor extends FileCpi {
 		}
 
 		return path;
+	}
+
+	/**
+	 * @see FileCpi#canRead()
+	 */
+	public boolean canRead() throws GATInvocationException {
+		return true;
 	}
 }

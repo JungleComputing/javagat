@@ -49,8 +49,8 @@ public class SrmFileInputStreamAdaptor extends FileInputStreamCpi {
 		srmConnector = new SrmConnector(GliteSecurityUtils.getPathToUserVomsProxy(gatContext));
 
 		// for streaming we need a gridftp uri
-		String gridFtpUrl = srmConnector.getTURLForFileDownload(location);
-		this.location = new URI(gridFtpUrl);
+		
+		this.location = srmConnector.getTURLForFileDownload(location);
 
 		// now try to create a stream.
 		try {
