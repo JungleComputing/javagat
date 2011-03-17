@@ -6,6 +6,7 @@ import gov.lbl.srm.StorageResourceManager.TPermissionMode;
 import gov.lbl.srm.StorageResourceManager.TPermissionType;
 
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -43,10 +44,16 @@ public class SrmConnector {
 	 * @param srmURI the URI of the file, including the srm:// prefix.
 	 * @return a Transport URL, which is a GridFTP path.
 	 * @throws IOException if no TURL can be created.
+	 * @throws URISyntaxException is thrown when the the transport uri has an invalid syntax
 	 */
-	public String getTURLForFileDownload(URI srmURI) throws IOException {
+	public URI getTURLForFileDownload(URI srmURI) throws IOException, URISyntaxException {
+		URI retVal = null;
 		SrmConnection connection = new SrmConnection(srmURI.getHost(), proxyPath);
-		return connection.getTURLForFileDownload(srmURI.toString());
+		String uri = connection.getTURLForFileDownload(srmURI.toString());
+
+		retVal = new URI(uri);
+
+		return retVal;
 	}
 
 	/**
@@ -57,11 +64,18 @@ public class SrmConnector {
 	 * @param dest Destination file URI, must be srm://
 	 * @return a Transport URL, which is a GridFTP path.
 	 * @throws IOException if no TURL can be created.
+	 * @throws URISyntaxException is thrown when the the transport uri has an invalid syntax
 	 */
-	public String getTURLForFileUpload(URI source, URI dest) throws IOException {
+	public URI getTURLForFileUpload(URI source, URI dest) throws IOException, URISyntaxException {
+		URI retVal = null;
 		SrmConnection connection = new SrmConnection(dest.getHost(), proxyPath);
 		activeUploads.put(dest, connection);
-		return connection.getTURLForFileUpload(source != null ? source.getPath() : null, dest.toString()).toString();
+		String uri = connection.getTURLForFileUpload(source != null ? source.getPath() : null, dest.toString())
+				.toString();
+
+		retVal = new URI(uri);
+
+		return retVal;
 	}
 
 	/**
@@ -104,8 +118,8 @@ public class SrmConnector {
 	public boolean deleteDirectory(URI srmURI) throws IOException {
 		SrmConnection connection = new SrmConnection(srmURI.getHost(), proxyPath);
 		return connection.removeDirectory(srmURI.toString());
-	}	
-	
+	}
+
 	/**
 	 * Get the permissions associated to a file.
 	 * 
@@ -216,13 +230,13 @@ public class SrmConnector {
 	 * @param srmURI the URI for the file.
 	 * @return the permissions
 	 * @throws IOException if a problem occurs
-	 * @throws GATInvocationException 
+	 * @throws GATInvocationException
 	 */
 	public long length(URI srmURI) throws IOException, GATInvocationException {
 		SrmConnection connection = new SrmConnection(srmURI.getHost(), proxyPath);
 		return connection.length(srmURI.toString());
-	}	
-	
+	}
+
 	/**
 	 * @param srmURI the URI for the file.
 	 * @param tPermissionType How do we set the following permissions (add, delete or change them).
