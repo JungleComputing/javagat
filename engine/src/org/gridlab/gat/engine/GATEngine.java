@@ -814,12 +814,19 @@ public class GATEngine {
             logger
                     .debug("shutting down the GAT engine: shutting down adaptors");
         }
+        
+        // Try and terminate jobs before ending adaptors. Changed order. --Ceriel
+        try {
+            JobCpi.end();
+        } catch(Throwable e) {
+            // ignore, could be because JobCpi has never been instantiated and
+            // GAT.end() is called from within shutdown hook.
+        }
 
         for (List<Adaptor> adaptorList : engine.adaptorLists.values()) {
             for (Adaptor adaptor : adaptorList) {
                 Class<?> c = adaptor.adaptorClass;
                 
-
                 // invoke the "end" static method of the class
                 try {
                     Method m = c.getMethod("end", (Class[]) null);
@@ -828,13 +835,6 @@ public class GATEngine {
                     // ignore
                 }
             }
-        }
-
-        try {
-            JobCpi.end();
-        } catch(Throwable e) {
-            // ignore, could be because JobCpi has never been instantiated and
-            // GAT.end() is called from within shutdown hook.
         }
         
         ScheduledExecutor.end();
