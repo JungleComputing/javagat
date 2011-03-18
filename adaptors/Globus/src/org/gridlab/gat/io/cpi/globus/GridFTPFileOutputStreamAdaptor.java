@@ -16,9 +16,7 @@ import org.gridlab.gat.Preferences;
 import org.gridlab.gat.URI;
 
 class GridFTPOutputStream extends FTPOutputStream {
-    public GridFTPOutputStream(String file, boolean passive, int type,
-            GridFTPClient gridFtp, boolean append) throws IOException,
-            FTPException {
+    public GridFTPOutputStream(String file, boolean passive, int type, GridFTPClient gridFtp, boolean append) throws IOException, FTPException {
         ftp = gridFtp;
 
         put(passive, type, file, append);
@@ -43,12 +41,10 @@ class GridFTPOutputStream extends FTPOutputStream {
     
 }
 
-public class GridFTPFileOutputStreamAdaptor extends
-        GlobusFileOutputStreamAdaptor {
+public class GridFTPFileOutputStreamAdaptor extends GlobusFileOutputStreamAdaptor {
     GridFTPClient c;
 
-    public GridFTPFileOutputStreamAdaptor(GATContext gatContext, URI location,
-            Boolean append) throws GATObjectCreationException {
+    public GridFTPFileOutputStreamAdaptor(GATContext gatContext, URI location, Boolean append) throws GATObjectCreationException {
         super(gatContext, location, append);
 
         if (!location.isCompatible("gsiftp")) {
@@ -76,11 +72,9 @@ public class GridFTPFileOutputStreamAdaptor extends
             Preferences additionalPreferences = new Preferences();
             additionalPreferences.put("ftp.connection.passive", "false");
 
-            c = GridFTPFileAdaptor.doWorkCreateClient(gatContext,
-                    additionalPreferences, location);
+            c = GridFTPFileAdaptor.doCreateLongClient(gatContext, additionalPreferences, location);
 
-            GridFTPOutputStream output = new GridFTPOutputStream(path,
-                    true /* passive */, GridFTPSession.TYPE_IMAGE, c, append);
+            GridFTPOutputStream output = new GridFTPOutputStream(path, true /* passive */, GridFTPSession.TYPE_IMAGE, c, append);
 
             return output;
         } catch (Exception e) {
@@ -90,7 +84,6 @@ public class GridFTPFileOutputStreamAdaptor extends
 
     public void close() throws GATInvocationException {
         super.close();
-        GridFTPFileAdaptor.doWorkDestroyClient(gatContext, c, location, gatContext
-                .getPreferences());
+        GridFTPFileAdaptor.doDestroyLongClient(gatContext, c, location, gatContext.getPreferences());
     }
 }

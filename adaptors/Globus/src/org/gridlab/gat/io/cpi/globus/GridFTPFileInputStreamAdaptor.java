@@ -30,13 +30,11 @@ class GridFTPInputStream extends FTPInputStream {
 public class GridFTPFileInputStreamAdaptor extends GlobusFileInputStreamAdaptor {
     GridFTPClient c;
 
-    public GridFTPFileInputStreamAdaptor(GATContext gatContext, URI location)
-            throws GATObjectCreationException {
+    public GridFTPFileInputStreamAdaptor(GATContext gatContext, URI location) throws GATObjectCreationException {
         super(gatContext, location);
 
         if (!location.isCompatible("gsiftp")) {
-            throw new AdaptorNotApplicableException("cannot handle this URI: "
-                    + location);
+            throw new AdaptorNotApplicableException("cannot handle this URI: " + location);
         }
 
         // now try to create a stream.
@@ -59,11 +57,9 @@ public class GridFTPFileInputStreamAdaptor extends GlobusFileInputStreamAdaptor 
             Preferences additionalPreferences = new Preferences();
             additionalPreferences.put("ftp.connection.passive", "false");
 
-            c = GridFTPFileAdaptor.doWorkCreateClient(gatContext,
-                    additionalPreferences, location);
+            c = GridFTPFileAdaptor.doCreateLongClient(gatContext, additionalPreferences, location);
 
-            GridFTPInputStream input = new GridFTPInputStream(path,
-                    true /* passive */, GridFTPSession.TYPE_IMAGE, c);
+            GridFTPInputStream input = new GridFTPInputStream(path, true /* passive */, GridFTPSession.TYPE_IMAGE, c);
             return input;
         } catch (Exception e) {
             throw new GATInvocationException("gridftp", e);
@@ -72,7 +68,6 @@ public class GridFTPFileInputStreamAdaptor extends GlobusFileInputStreamAdaptor 
 
     public void close() throws GATInvocationException {
         super.close();
-        GridFTPFileAdaptor.doWorkDestroyClient(gatContext, c, location, gatContext
-                .getPreferences());
+        GridFTPFileAdaptor.doDestroyLongClient(gatContext, c, location, gatContext.getPreferences());
     }
 }

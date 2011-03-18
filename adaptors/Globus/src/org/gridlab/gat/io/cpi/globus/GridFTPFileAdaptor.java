@@ -38,15 +38,19 @@ import org.slf4j.LoggerFactory;
 /**
  * This class provides {@link File} operations via an {@link GridFTPClient} to GAT.
  * 
- * Locking: Because of a limited number of allowed open gridftp connections for a client to a gridftp server
- * (default=10, but this can be defined by the resource administrator), this adaptor allows only one File-operation to a
- * gridftp server at the same time. This will be forced by using an {@link ReentrantLock}. The locks are stored in a
- * {@link Hashtable} which are accessible by the hostname.
+ * Locking: Because of a limited number of allowed open GridFTP connections for
+ * a client to a GridFTP server (default=10, but this can be defined by the 
+ * resource administrator), this adaptor allows only one File-operation to a
+ * GridFTP server at the same time. This will be forced by using an 
+ * {@link ReentrantLock}. The locks are stored in a {@link Hashtable} which 
+ * are accessible by the host name.
  * 
- * Caching: To optimize the Connection Handling, this class provides a Cache for opened {@link GridFTPClient}. The
- * clients will be stores in a {@link Hashtable} where the userId and the hostname are used as key and the
- * {@link GridFTPClient} as value. The cache will automatically cleanup unused {@link GridFTPClient} every {@literal
- * GridFTPFileAdaptor#CLEANUP_INTERVALL} by a special thread.
+ * Caching: To optimize the Connection Handling, this class provides a Cache 
+ * for opened {@link GridFTPClient}. The clients will be stores in a 
+ * {@link Hashtable} where the userId and the host name are used as key and the
+ * {@link GridFTPClient} as value. The cache will automatically cleanup unused 
+ * {@link GridFTPClient} every {@literal GridFTPFileAdaptor#CLEANUP_INTERVALL} 
+ * by a special thread.
  * 
  * @author Stefan Bozic
  * @author Bastian Boegel
@@ -68,6 +72,12 @@ public class GridFTPFileAdaptor extends GlobusFileAdaptor {
 
 	/** This map is used to synchronize file operation per host. */
 	private static Hashtable<String, ReentrantLock> lockTable = new Hashtable<String, ReentrantLock>();
+
+	/** 
+	 * This map is used to synchronize long file operation per host 
+	 * (e.g. copy). 
+	 */
+	private static Hashtable<String, ReentrantLock> longLockTable = new Hashtable<String, ReentrantLock>();
 
 	/** Indicated that {@link GAT#end()} has been called. */
 	private static boolean end = false;
@@ -203,7 +213,8 @@ public class GridFTPFileAdaptor extends GlobusFileAdaptor {
 	}
 
 	/**
-	 * Sets gsiftp as protocoll for the given {@link URI}. {@link FileCpi#fixURI(URI, String)} does also some additional
+	 * Sets gsiftp as protocoll for the given {@link URI}. 
+	 * {@link FileCpi#fixURI(URI, String)} does also some additional
 	 * modification to the {@link URI}.
 	 * @param in the uri to fix
 	 * @return the fixed uri
@@ -226,7 +237,8 @@ public class GridFTPFileAdaptor extends GlobusFileAdaptor {
 	}
 
 	/**
-	 * Returns a {@link Preferences} instance with the supported attributes, e.g. the number of authentication retries.
+	 * Returns a {@link Preferences} instance with the supported attributes, 
+	 * e.g. the number of authentication retries.
 	 * 
 	 * @return a {@link Preferences} instance with the supported attributes.
 	 */
@@ -237,8 +249,9 @@ public class GridFTPFileAdaptor extends GlobusFileAdaptor {
 	}
 
 	/**
-	 * Set security parameters such as data channel authentication (defined by the GridFTP protocol) and data channel
-	 * protection (defined by RFC 2228). If you do not specify these, data channels are authenticated by default.
+	 * Set security parameters such as data channel authentication (defined by
+	 * the GridFTP protocol) and data channel protection (defined by RFC 2228).
+	 * If you do not specify these, data channels are authenticated by default.
 	 * 
 	 * @param c the client
 	 * @param preferences might include configuration settings
@@ -294,30 +307,25 @@ public class GridFTPFileAdaptor extends GlobusFileAdaptor {
 			boolean destCanLock = false;
 
 			try {
-				srcLock = createHostLock(src);
-				destLock = createHostLock(dest);
+				srcLock = getLongHostLock(src, true);
+				destLock = getLongHostLock(dest, true);
 
 				srcCanLock = srcLock.tryLock();
-				logger.debug("@@@ tryLock(): " + src + " canLock: " + srcCanLock + " holdcount: "
-						+ srcLock.getHoldCount() + " " + srcLock);
+				logger.debug("@@@ tryLock(): " + src + " canLock: " + srcCanLock + " holdcount: " + srcLock.getHoldCount() + " " + srcLock);
 				destCanLock = destLock.tryLock();
-				logger.debug("@@@ tryLock(): " + dest + " canLock: " + destCanLock + " holdcount: "
-						+ destLock.getHoldCount() + " " + destLock);
+				logger.debug("@@@ tryLock(): " + dest + " canLock: " + destCanLock + " holdcount: " + destLock.getHoldCount() + " " + destLock);
 
 			} finally {
 				// we cannot obtain both locks
 				if (!srcCanLock || !destCanLock) {
 					if (srcCanLock) {
 						srcLock.unlock();
-						logger
-								.debug("@@@ unlock uri: " + src + " holdcount: " + srcLock.getHoldCount() + " "
-										+ srcLock);
+						logger.debug("@@@ unlock uri: " + src + " holdcount: " + srcLock.getHoldCount() + " " + srcLock);
 					}
 
 					if (destCanLock) {
 						destLock.unlock();
-						logger.debug("@@@ unlock uri: " + dest + " holdcount: " + destLock.getHoldCount() + " "
-								+ destLock);
+						logger.debug("@@@ unlock uri: " + dest + " holdcount: " + destLock.getHoldCount() + " " + destLock);
 					}
 
 					try {
@@ -331,12 +339,9 @@ public class GridFTPFileAdaptor extends GlobusFileAdaptor {
 						copyDone = true;
 					} finally {
 						srcLock.unlock();
-						logger
-								.debug("@@@ unlock uri: " + src + " holdcount: " + srcLock.getHoldCount() + " "
-										+ srcLock);
+						logger.debug("@@@ unlock uri: " + src + " holdcount: " + srcLock.getHoldCount() + " " + srcLock);
 						destLock.unlock();
-						logger.debug("@@@ unlock uri: " + dest + " holdcount: " + destLock.getHoldCount() + " "
-								+ destLock);
+						logger.debug("@@@ unlock uri: " + dest + " holdcount: " + destLock.getHoldCount() + " " + destLock);
 					}
 				}
 			}
@@ -344,8 +349,9 @@ public class GridFTPFileAdaptor extends GlobusFileAdaptor {
 	}
 
 	/**
-	 * Returns a {@link ReentrantLock} to a given host. This method will create a new {@link ReentrantLock} if it doesnt
-	 * exists in the lock table
+	 * Returns a {@link ReentrantLock} to a given host. This method will 
+	 * create a new {@link ReentrantLock} if it doesn't exists in the lock 
+	 * table.
 	 * 
 	 * @return the monitor object
 	 * @param uri the uri of the host
@@ -374,7 +380,7 @@ public class GridFTPFileAdaptor extends GlobusFileAdaptor {
 			}
 		}
 		return lock;
-	}
+	} // private static ReentrantLock createHostLock(URI uri)
 
 	/**
 	 * Returns the {@link ReentrantLock} to a given host from the lock table
@@ -398,30 +404,84 @@ public class GridFTPFileAdaptor extends GlobusFileAdaptor {
 		}
 
 		return lock;
-	}
+	} // private static ReentrantLock getHostLock(URI uri)
+
+	/**
+	 * Returns a {@link ReentrantLock} to a given host for long interactions.
+	 * 
+	 * @param uri The uri of the host.
+	 * @param createNewIfNotExist Indicates, if a new lock should be created if
+	 *        it doesn't exist yet.
+	 * @return The monitor object.
+	 */
+	private static ReentrantLock getLongHostLock(URI uri, boolean createNewIfNotExist) {
+		logger.debug("@@@ createHostLock(uri) uri: " + uri);
+
+		String host = uri.getHost();
+		ReentrantLock lock = null;
+
+		synchronized (longLockTable) {
+			if (null != host && !host.isEmpty()) {
+				lock = longLockTable.get(host);
+			} else {
+				host = "localhost";
+				lock = longLockTable.get(host);
+			}
+
+			if ((lock == null) && (createNewIfNotExist)) {
+				lock = new ReentrantLock(true);
+				logger.debug("@@@ new long ReentrantLock for " + host + " " + lock);
+
+				if (null != host) {
+					longLockTable.put(host, lock);
+				}
+			}
+		}
+		return lock;
+	} // private static ReentrantLock getLongHostLock(URI uri, boolean createNewIfNotExist)
 
 	/**
 	 * Creates an FTP Client to a given URI.
 	 * 
-	 * This method use {@link ReentrantLock} to allow only one thread to communicate with an gridftp server at one
-	 * time. This is done due to limited connections allowed from one client to a gridftp server.
-	 * @param gatContext teh gat context
-	 * @param additionalPreferences gat preferences for the connection
+	 * This method use {@link ReentrantLock} to allow only one thread to 
+	 * communicate with an GridFTP server at one time. This is done due to 
+	 * limited connections allowed from one client to a GridFTP server.
+	 * @param gatContext The {@link GATContext}
+	 * @param additionalPreferences GAT preferences for the connection
 	 * 
 	 * @param hostURI the uri of the FTP host
-	 * @return an ftp client
+	 * @return an FTP client
 	 * @throws GATInvocationException an exception that might occurs 
-	 * @throws InvalidUsernameOrPasswordException an exception that might occurs
+	 * @throws InvalidUsernameOrPasswordException an exception that might 
+	 *         occurs
 	 */
-	protected FTPClient createClient(GATContext gatContext, Preferences additionalPreferences, URI hostURI)
-			throws GATInvocationException, InvalidUsernameOrPasswordException {		
+	protected FTPClient createClient(GATContext gatContext, Preferences additionalPreferences, URI hostURI) throws GATInvocationException, InvalidUsernameOrPasswordException {
+		return doCreateClient(gatContext, additionalPreferences, hostURI);
+	}
+	
+	/**
+	 * Creates an FTP Client to a given URI.
+	 * 
+	 * This method use {@link ReentrantLock} to allow only one thread to 
+	 * communicate with an GridFTP server at one time. This is done due to 
+	 * limited connections allowed from one client to a GridFTP server.
+	 * @param gatContext The {@link GATContext}
+	 * @param additionalPreferences GAT preferences for the connection
+	 * 
+	 * @param hostURI the uri of the FTP host
+	 * @return an FTP client
+	 * @throws GATInvocationException an exception that might occurs 
+	 * @throws InvalidUsernameOrPasswordException an exception that might 
+	 *         occurs
+	 */
+	protected static GridFTPClient doCreateClient(GATContext gatContext, Preferences additionalPreferences, URI hostURI) throws GATInvocationException, InvalidUsernameOrPasswordException {		
 		logger.debug("@@@ createClient for uri: " + hostURI);
-		FTPClient client = doWorkCreateClient(gatContext, additionalPreferences, hostURI);
-		
-		//Only create a lock when a client has been successfully created.
+		GridFTPClient client = doWorkCreateClient(gatContext, additionalPreferences, hostURI);
+
+		// Only create a lock when a client has been successfully created.
 		if (null != client) {
 			logger.debug("@@@ createClient sucessful: " + client);
-			URI src = fixURI(toURI());		
+			URI src = fixURI(hostURI, "gsiftp");		
 			// try to get the lock for this host
 			ReentrantLock lock = null;
 			lock = createHostLock(src);
@@ -431,25 +491,86 @@ public class GridFTPFileAdaptor extends GlobusFileAdaptor {
 			logger.debug("@@@ createClient NOT sucessful: " + client);			
 		}
 		return client;
-	}
+	} // protected FTPClient createClient(GATContext gatContext, Preferences additionalPreferences, URI hostURI) throws GATInvocationException, InvalidUsernameOrPasswordException
 
 	/**
-	 * Destroy the {@link FTPClient} or put it in the cache if caching is used. This method will also release the
-	 * {@link ReentrantLock} from the host.
+	 * Creates a "long" FTP Client to a given URI.
+	 * 
+	 * This method use {@link ReentrantLock} to allow only one thread to 
+	 * communicate with an GridFTP server at one time. This is done due to 
+	 * limited connections allowed from one client to a GridFTP server.
+	 * @param gatContext The {@link GATContext}
+	 * @param additionalPreferences GAT preferences for the connection
+	 * 
+	 * @param hostURI the uri of the FTP host
+	 * @return an FTP client
+	 * @throws GATInvocationException an exception that might occurs 
+	 * @throws InvalidUsernameOrPasswordException an exception that might 
+	 *         occurs
 	 */
 	@Override
-	protected void destroyClient(GATContext context, FTPClient c, URI hostURI, Preferences preferences)
-			throws CouldNotInitializeCredentialException, CredentialExpiredException,
-			InvalidUsernameOrPasswordException {
-		// First destroy the client, do this before releasing the lock to avoid problems with other threads that might
-		// use the same client from cache!
+	protected FTPClient createLongClient(GATContext gatContext, Preferences additionalPreferences, URI hostURI) throws GATInvocationException, InvalidUsernameOrPasswordException {
+		return doCreateLongClient(gatContext, additionalPreferences, hostURI);
+	} // protected FTPClient createLongClient(GATContext gatContext, Preferences additionalPreferences, URI hostURI) throws GATInvocationException, InvalidUsernameOrPasswordException
+	
+	/**
+	 * Creates a "long" FTP Client to a given URI.
+	 * 
+	 * This method use {@link ReentrantLock} to allow only one thread to 
+	 * communicate with an GridFTP server at one time. This is done due to 
+	 * limited connections allowed from one client to a GridFTP server.
+	 * @param gatContext The {@link GATContext}
+	 * @param additionalPreferences GAT preferences for the connection
+	 * 
+	 * @param hostURI the uri of the FTP host
+	 * @return an FTP client
+	 * @throws GATInvocationException an exception that might occurs 
+	 * @throws InvalidUsernameOrPasswordException an exception that might 
+	 *         occurs
+	 */
+	protected static GridFTPClient doCreateLongClient(GATContext gatContext, Preferences additionalPreferences, URI hostURI) throws GATInvocationException, InvalidUsernameOrPasswordException {		
+		logger.debug("@@@ createLongClient for uri: " + hostURI);
+		GridFTPClient client = doWorkCreateClient(gatContext, additionalPreferences, hostURI);
+
+		//Only create a lock when a client has been successfully created.
+		if (null != client) {
+			logger.debug("@@@ createLongClient sucessful: " + client);
+			URI src = fixURI(hostURI, "gsiftp");
+			// try to get the lock for this host
+			ReentrantLock lock = null;
+			lock = getLongHostLock(src, true);
+			lock.lock();
+			logger.debug("@@@ lock() uri " + src + " holdcount: " + lock.getHoldCount() + " " + lock);
+		} else {
+			logger.debug("@@@ createLongClient NOT sucessful: " + client);			
+		}
+		return client;
+	} // protected GridFTPClient createLongClient(GATContext gatContext, Preferences additionalPreferences, URI hostURI) throws GATInvocationException, InvalidUsernameOrPasswordException
+
+	/**
+	 * Destroy the {@link FTPClient} or put it in the cache if caching is used.
+	 * This method will also release the {@link ReentrantLock} from the host.
+	 */
+	@Override
+	protected void destroyClient(GATContext context, FTPClient c, URI hostURI, Preferences preferences) throws CouldNotInitializeCredentialException, CredentialExpiredException, InvalidUsernameOrPasswordException {
+		doDestroyClient(context, c, hostURI, preferences);
+	} // protected void destroyClient(GATContext context, FTPClient c, URI hostURI, Preferences preferences) throws CouldNotInitializeCredentialException, CredentialExpiredException, InvalidUsernameOrPasswordException
+	
+	/**
+	 * Destroy the {@link FTPClient} or put it in the cache if caching is used.
+	 * This method will also release the {@link ReentrantLock} from the host.
+	 */
+	protected static void doDestroyClient(GATContext context, FTPClient c, URI hostURI, Preferences preferences) throws CouldNotInitializeCredentialException, CredentialExpiredException, InvalidUsernameOrPasswordException {
+		// First destroy the client, do this before releasing the lock to avoid
+		// problems with other threads that might use the same client from 
+		// cache!
 		try {
 			if (null != c) {
 				doWorkDestroyClient(context, c, hostURI, preferences);
 			}
 		} finally {
 			// then remove the lock for the URI
-			URI src = fixURI(toURI());
+			URI src = fixURI(hostURI, "gsiftp");
 
 			logger.debug("@@@ destroyClient uri: " + src);
 			ReentrantLock lock = null;
@@ -461,11 +582,48 @@ public class GridFTPFileAdaptor extends GlobusFileAdaptor {
 				logger.debug("@@@ unlock() uri: " + src + " holdcount: " + lock.getHoldCount() + " " + lock);
 			}
 		}
-	}
+	} // protected static void doDestroyClient(GATContext context, FTPClient c, URI hostURI, Preferences preferences) throws CouldNotInitializeCredentialException, CredentialExpiredException, InvalidUsernameOrPasswordException
 
 	/**
-	 * Return a {@link GridFTPClient} instance from the cache if an entry to the key exists. Return <code>null</code> if
-	 * there is no cache value for the given key.
+	 * Destroy the {@link FTPClient} or put it in the cache if caching is used.
+	 * This method will also release the {@link ReentrantLock} from the host.
+	 */
+	@Override
+	protected void destroyLongClient(GATContext context, FTPClient c, URI hostURI, Preferences preferences) throws CouldNotInitializeCredentialException, CredentialExpiredException, InvalidUsernameOrPasswordException {
+		doDestroyLongClient(context, c, hostURI, preferences);
+	} // protected void destroyLongClient(GATContext context, FTPClient c, URI hostURI, Preferences preferences) throws CouldNotInitializeCredentialException, CredentialExpiredException, InvalidUsernameOrPasswordException
+	
+	/**
+	 * Destroy the {@link FTPClient} or put it in the cache if caching is used.
+	 * This method will also release the {@link ReentrantLock} from the host.
+	 */
+	protected static void doDestroyLongClient(GATContext context, FTPClient c, URI hostURI, Preferences preferences) throws CouldNotInitializeCredentialException, CredentialExpiredException, InvalidUsernameOrPasswordException {
+		// First destroy the client, do this before releasing the lock to avoid problems with other threads that might
+		// use the same client from cache!
+		try {
+			if (null != c) {
+				doWorkDestroyClient(context, c, hostURI, preferences);
+			}
+		} finally {
+			// then remove the lock for the URI
+			URI src = fixURI(hostURI, "gsiftp");
+
+			logger.debug("@@@ destroyLongClient uri: " + src);
+			ReentrantLock lock = null;
+
+			lock = getLongHostLock(src, false);
+
+			if (lock != null && lock.isLocked()) {
+				lock.unlock();
+				logger.debug("@@@ unlock() uri: " + src + " holdcount: " + lock.getHoldCount() + " " + lock);
+			}
+		}
+	} // protected void destroyLongClient(GATContext context, FTPClient c, URI hostURI, Preferences preferences) throws CouldNotInitializeCredentialException, CredentialExpiredException, InvalidUsernameOrPasswordException
+
+	/**
+	 * Return a {@link GridFTPClient} instance from the cache if an entry to 
+	 * the key exists. Return <code>null</code> if there is no cache value for 
+	 * the given key.
 	 * 
 	 * @param key indicates an instance in the cache.
 	 * @return a {@link GridFTPClient} instance from the cache.
@@ -487,15 +645,16 @@ public class GridFTPFileAdaptor extends GlobusFileAdaptor {
 	}
 
 	/**
-	 * Puts a {@link GridFTPClient} instance inside the cache, but only if the cache contains no other value for key.
-	 * Returns <code>true</code> if the client has been successfully stored inside the cache, returns <code>false</code>
-	 * otherwise.
+	 * Puts a {@link GridFTPClient} instance inside the cache, but only if the
+	 * cache contains no other value for key. Returns <code>true</code> if the
+	 * client has been successfully stored inside the cache, returns 
+	 * <code>false</code> otherwise.
 	 * 
 	 * 
 	 * @param key indicates an instance in the cache.
 	 * @param c the client to put inside the cache.
-	 * @return <code>true</code> if the client has been successfully stored inside the cache, returns <code>false</code>
-	 *         otherwise.
+	 * @return <code>true</code> if the client has been successfully stored 
+	 *         inside the cache, returns <code>false</code> otherwise.
 	 */
 	private static boolean putInCache(String key, FTPClient c) {
 		logger.debug("putInCache( " + key + " )");
@@ -514,7 +673,8 @@ public class GridFTPFileAdaptor extends GlobusFileAdaptor {
 	}
 
 	/**
-	 * Returns a {@link GridFTPClient} instance, configured for the given parameters.
+	 * Returns a {@link GridFTPClient} instance, configured for the given 
+	 * parameters.
 	 * 
 	 * @param context the context with security option etc.
 	 * @param additionalPreferences attributes for the connection
@@ -524,7 +684,7 @@ public class GridFTPFileAdaptor extends GlobusFileAdaptor {
 	 * @throws InvalidUsernameOrPasswordException an exception that might occurs
 	 */
 	protected static GridFTPClient doWorkCreateClient(GATContext context, Preferences additionalPreferences, URI hostURI)
-			throws GATInvocationException, InvalidUsernameOrPasswordException {
+	throws GATInvocationException, InvalidUsernameOrPasswordException {
 		try {
 			GATContext gatContext = (GATContext) context.clone();
 			gatContext.addPreferences(additionalPreferences);
@@ -532,9 +692,7 @@ public class GridFTPFileAdaptor extends GlobusFileAdaptor {
 			GSSCredential credential = getCredential(context, hostURI);
 
 			if (logger.isDebugEnabled()) {
-				logger.debug("credential: \n"
-						+ (credential == null ? "NULL" : ((GlobusGSSCredentialImpl) credential).getGlobusCredential()
-								.toString()));
+				logger.debug("credential: \n" + (credential == null ? "NULL" : ((GlobusGSSCredentialImpl) credential).getGlobusCredential().toString()));
 			}
 
 			String host = hostURI.resolveHost();
@@ -579,8 +737,10 @@ public class GridFTPFileAdaptor extends GlobusFileAdaptor {
 	}
 
 	/**
-	 * Retrieves the users credential. When a vomsServerUrl is set as preference in the {@link GATContext}, the method
-	 * returns a voms-proxy-credential. Otherwise a standard globus credential is returned.
+	 * Retrieves the users credential. When a vomsServerUrl is set as 
+	 * preference in the {@link GATContext}, the method returns a 
+	 * voms-proxy-credential. Otherwise a standard globus credential is 
+	 * returned.
 	 * 
 	 * @param context the gat context
 	 * @param hostURI the host to connect to
@@ -590,7 +750,7 @@ public class GridFTPFileAdaptor extends GlobusFileAdaptor {
 	 * @throws GATInvocationException an exception that might occurs
 	 */
 	private static GSSCredential getCredential(GATContext context, URI hostURI) throws GSSException,
-			GATInvocationException {
+	GATInvocationException {
 		GSSCredential credential = null;
 		// If voms parameters are set create a voms proxy, else use standard globus proxy.
 		if (context.getPreferences().containsKey("vomsServerURL")) {
@@ -716,8 +876,7 @@ public class GridFTPFileAdaptor extends GlobusFileAdaptor {
 	 * @throws InvalidUsernameOrPasswordException an Exception that might occurs
 	 */
 	protected static void doWorkDestroyClient(GATContext context, FTPClient c, URI hostURI, Preferences preferences)
-			throws CouldNotInitializeCredentialException, CredentialExpiredException,
-			InvalidUsernameOrPasswordException {
+	throws CouldNotInitializeCredentialException, CredentialExpiredException, InvalidUsernameOrPasswordException {
 
 		if (logger.isDebugEnabled()) {
 			logger.debug("doWorkDestroyClient");
@@ -755,9 +914,10 @@ public class GridFTPFileAdaptor extends GlobusFileAdaptor {
 	}
 
 	/***
-	 * Performs cleanup operations on the {@link FTPClient} cache if {@link GAT#end()} has been called. Removes all
-	 * cached {@link FTPClient} from the {@link HashMap} and closes their connection. At least set the {@link HashMap}
-	 * to null.
+	 * Performs cleanup operations on the {@link FTPClient} cache if 
+	 * {@link GAT#end()} has been called. Removes all cached {@link FTPClient}
+	 * from the {@link HashMap} and closes their connection. At least set the 
+	 * {@link HashMap} to null.
 	 */
 	public static void end() {
 		end = true;
@@ -774,7 +934,8 @@ public class GridFTPFileAdaptor extends GlobusFileAdaptor {
 	}
 
 	/**
-	 * Delete the {@link GridFTPClient} cache. Closes all open {@link GridFTPClient} and remove the from the
+	 * Delete the {@link GridFTPClient} cache. Closes all open 
+	 * {@link GridFTPClient} and remove the from the
 	 * {@link HashMap}. At last set the instance to <code>null</code>
 	 */
 	private static void deleteCache() {
@@ -822,7 +983,10 @@ public class GridFTPFileAdaptor extends GlobusFileAdaptor {
 		/** The {@link FTPClient} to cache. */
 		private FTPClient client = null;
 
-		/** Indicates the {@link Date} when this instance is inserted into the cache. */
+		/** 
+		 * Indicates the {@link Date} when this instance is inserted into the 
+		 * cache. 
+		 */
 		private Date lastUsage = new Date();
 
 		/**
