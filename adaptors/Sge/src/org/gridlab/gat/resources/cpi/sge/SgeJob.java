@@ -123,6 +123,19 @@ public class SgeJob extends JobCpi {
             if (terminated) {
         	return;
             }
+            // Terminate job. I don't think it does any harm and it may prevent
+            // jobs from continuing to run in case JavaGAT gets killed with a soft kill.
+            // --Ceriel
+            try {
+        	session.control(jobID, Session.TERMINATE);
+            } catch (Throwable e) {
+        	if (logger.isDebugEnabled()) {
+        	    logger.debug("-- SGEJob EXCEPTION --");
+        	    logger.debug(
+        		    "Got an exception while trying to TERMINATE job:",
+        		    e);
+        	}
+            }
             terminated = true;
             
             if (! fromThread) {
