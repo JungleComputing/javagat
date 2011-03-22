@@ -51,6 +51,8 @@ public abstract class JobCpi extends MonitorableCpi implements Job {
     protected static ArrayList<Job> jobList = new ArrayList<Job>();
 
     protected static boolean shutdownInProgress = false;
+    
+    protected static boolean shutdownDone = false;
 
     protected final int jobID = allocJobID();
 
@@ -233,6 +235,13 @@ public abstract class JobCpi extends MonitorableCpi implements Job {
         public void run() {
             synchronized (JobCpi.class) {
                 if (shutdownInProgress) {
+                    while (! shutdownDone) {
+                	try {
+                	    JobCpi.class.wait();
+                	} catch (InterruptedException e) {
+                	    // ignore
+                	}
+                    }
                     return;
                 }
                 shutdownInProgress = true;
@@ -252,6 +261,10 @@ public abstract class JobCpi extends MonitorableCpi implements Job {
                 } catch (Throwable e) {
                     // ignore
                 }
+            }
+            synchronized(JobCpi.class) {
+        	shutdownDone = true;
+        	JobCpi.class.notifyAll();
             }
         }
     }
