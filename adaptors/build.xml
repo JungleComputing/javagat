@@ -29,6 +29,7 @@
 		<ant dir="Local" />
 		<ant dir="SftpTrilead" />
 		<ant dir="SshTrilead" />
+		<ant dir="Sge" />
 		<ant dir="Generic" />
 	</target>
 
