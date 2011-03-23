@@ -21,6 +21,15 @@
 		<ant dir="Koala" />
 	</target>
 
+	<target name="light" description="build local, sshtrilead, sftptrilead, commandlinessh adaptors">
+		<ant dir="shared" />
+		<ant dir="CommandlineSsh" />
+		<ant dir="Local" />
+		<ant dir="SftpTrilead" />
+		<ant dir="SshTrilead" />
+		<ant dir="Generic" />
+	</target>
+
 	<target name="build-with-contributed" description="build all tested and contributed adaptors" depends="build">
 		<ant dir="contributed" />
 	</target>

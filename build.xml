@@ -12,10 +12,17 @@
 		<ant dir="tests" />
 	</target>
 
-	<target name="android" depends="clean" description="build everything">
+	<target name="android" depends="clean" description="build everything for Android">
 		<ant dir="api" />
 		<ant dir="engine" target="android" />
 		<ant dir="adaptors" />
+		<ant dir="tests" />
+	</target>
+
+	<target name="light" depends="clean" description="build JavaGAT-light: only local, sshtrilead, sftptrilead, commandlinessh">
+		<ant dir="api" />
+		<ant dir="engine" />
+		<ant dir="adaptors" target="light" />
 		<ant dir="tests" />
 	</target>
 
