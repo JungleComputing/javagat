@@ -22,7 +22,9 @@
 	</target>
 
 	<target name="light" description="build local, sshtrilead, sftptrilead, commandlinessh adaptors">
+		<!--
 		<ant dir="shared" />
+		-->
 		<ant dir="CommandlineSsh" />
 		<ant dir="Local" />
 		<ant dir="SftpTrilead" />
