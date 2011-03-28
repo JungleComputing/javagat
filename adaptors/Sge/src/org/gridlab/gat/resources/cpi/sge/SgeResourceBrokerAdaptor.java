@@ -215,11 +215,10 @@ public class SgeResourceBrokerAdaptor extends ResourceBrokerCpi {
 
 	    if (description.getResourceCount() > 1) {
 		String jobType = getStringAttribute(description, SoftwareDescription.JOB_TYPE, "prun");
-		toNative += "-pe " + jobType + " " + description.getResourceCount();
+		toNative += "-pe " + jobType + " " + description.getResourceCount() + " ";
 	    }
-	    if (! toNative.equals("")) {
-	        jt.setNativeSpecification(toNative);
-	    }
+	    toNative += "-w n";	// Added to avoid "no suitable queues" error message. --Ceriel
+	    jt.setNativeSpecification(toNative);
 
             if (logger.isDebugEnabled()) {
         	logger.debug("Starting SGE job: " + jt);
