@@ -300,6 +300,8 @@ public class GridFTPFileAdaptor extends GlobusFileAdaptor {
 		// try to obtain the locks for both hosts
 
 		boolean copyDone = false;
+		// if file is bigger then 20 MB use a long lock
+		boolean needLongLock = (isDirectory()) || (length() > (20*1024*1024));
 
 		// Retry this operation every second
 		while (copyDone == false) {
@@ -307,8 +309,15 @@ public class GridFTPFileAdaptor extends GlobusFileAdaptor {
 			boolean destCanLock = false;
 
 			try {
-				srcLock = getLongHostLock(src, true);
-				destLock = getLongHostLock(dest, true);
+				if (needLongLock) {
+					logger.debug("using long lock for copying");
+					srcLock = getLongHostLock(src, true);
+					destLock = getLongHostLock(dest, true);
+				} else {
+					logger.debug("using normal (short) lock for copying");
+					srcLock = createHostLock(src);
+					destLock = createHostLock(dest);
+				}
 
 				srcCanLock = srcLock.tryLock();
 				logger.debug("@@@ tryLock(): " + src + " canLock: " + srcCanLock + " holdcount: " + srcLock.getHoldCount() + " " + srcLock);
@@ -415,7 +424,7 @@ public class GridFTPFileAdaptor extends GlobusFileAdaptor {
 	 * @return The monitor object.
 	 */
 	private static ReentrantLock getLongHostLock(URI uri, boolean createNewIfNotExist) {
-		logger.debug("@@@ createHostLock(uri) uri: " + uri);
+		logger.debug("@@@ getLongHostLock uri: " + uri);
 
 		String host = uri.getHost();
 		ReentrantLock lock = null;
