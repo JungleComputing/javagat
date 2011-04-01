@@ -20,6 +20,7 @@ import org.ggf.drmaa.SessionFactory;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.GATObjectCreationException;
+import org.gridlab.gat.Preferences;
 import org.gridlab.gat.URI;
 import org.gridlab.gat.monitoring.Metric;
 import org.gridlab.gat.monitoring.MetricListener;
@@ -59,6 +60,12 @@ public class SgeResourceBrokerAdaptor extends ResourceBrokerCpi {
 
     public static String[] getSupportedSchemes() {
         return new String[] { "sge", "" };
+    }
+    
+    public static Preferences getSupportedPreferences() {
+        Preferences preferences = ResourceBrokerCpi.getSupportedPreferences();
+        preferences.put("sge.native.flags", "");
+        return preferences;
     }
 
     protected static Logger logger = LoggerFactory
@@ -217,6 +224,10 @@ public class SgeResourceBrokerAdaptor extends ResourceBrokerCpi {
 		String jobType = getStringAttribute(description, SoftwareDescription.JOB_TYPE, "prun");
 		toNative += "-pe " + jobType + " " + description.getResourceCount() + " ";
 	    }
+	    String s = (String) gatContext.getPreferences().get("sge.native.flags");
+            if (s != null) {
+        	toNative += s + " ";
+            }
 	    toNative += "-w n";	// Added to avoid "no suitable queues" error message. --Ceriel
 	    jt.setNativeSpecification(toNative);
 
