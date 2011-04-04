@@ -230,11 +230,24 @@ public class GridFTPReadOnlyRandomAccessFileAdaptor extends RandomAccessFileCpi 
             byte[] b = buffer.getBuffer();
             int l = buffer.getLength();
             long o = buffer.getOffset();
+            if (o < 0) {
+            	o = 0;
+            }
             if (logger.isDebugEnabled()) {
                 logger.debug("Read buffer, b.length = " + b.length + ", l = " + l + ", o = " + o);
                 logger.debug("buf.length = " + buf.length + ", off = " + off + ", len = " + len);
             }
-            System.arraycopy(b, 0, buf, 0, Math.min(l, len));
+            
+            if ((l + this.writtenLen) > this.len) {
+            	// more data then the buffer can take
+            	l = this.len - this.writtenLen;
+            }
+            int offset = this.off + this.writtenLen;
+            if (l > 0) {
+            	System.arraycopy(b, (int)o, buf, offset, l);
+            } else {
+            	logger.warn("Buffer full, ignoring data from resource!");
+            }
             synchronized(this) {
                 writtenLen += Math.min(l, len);
             }
