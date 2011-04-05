@@ -123,6 +123,9 @@ public class GT42ResourceBrokerAdaptor extends ResourceBrokerCpi {
         }
 
         String queue = (String) sd.getAttributes().get("machine.queue");
+        if (queue == null) {
+            queue = sd.getStringAttribute(SoftwareDescription.JOB_QUEUE, null);
+        }
         if (null != queue) {
             rsl += "<queue>" + queue + "</queue>";
         }

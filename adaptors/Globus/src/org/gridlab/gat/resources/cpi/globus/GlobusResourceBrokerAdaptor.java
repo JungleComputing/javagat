@@ -218,9 +218,15 @@ public class GlobusResourceBrokerAdaptor extends ResourceBrokerCpi {
             rsl += ")";
         }
 
+        // Usage of "globus.queue" left here for backwards compatibility.
         String queue = getStringAttribute(description, "globus.queue", null);
         if (queue != null) {
             rsl += " (queue = " + queue + ")";
+        } else {
+            queue = sd.getStringAttribute(SoftwareDescription.JOB_QUEUE, null);
+            if (queue != null) {
+        	rsl += " (queue = " + queue + ")";
+            }
         }
 
         String timeout = getStringAttribute(description,
