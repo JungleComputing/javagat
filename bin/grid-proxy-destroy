@@ -23,4 +23,4 @@ add_to_gat_classpath () {
 
 add_to_gat_classpath ${GAT_LOCATION}/lib/adaptors/shared
 
-java -DUID=${UID} -classpath ${GAT_LOCATION}/lib/adaptors/GlobusAdaptor/cog-jglobus.jar:${GAT_CLASSPATH} org.globus.tools.ProxyDestroy "$@"
+java -DUID=${UID} -classpath ${GAT_LOCATION}/lib/adaptors/GlobusAdaptor/GlobusAdaptor.jar:${GAT_CLASSPATH} org.globus.tools.ProxyDestroy "$@"
