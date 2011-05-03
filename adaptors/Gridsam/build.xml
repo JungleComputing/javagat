@@ -35,6 +35,7 @@
 		</javac>
 
 		<jar jarfile="${lib}/GridsamAdaptor.jar" basedir="${tmp}" includes="**">
+			<zipgroupfileset dir="external" includes="*.jar" excludes="activation.jar,xalan.jar" /> 
 			<manifest>
 				<attribute name="ResourceBrokerCpi-class" value="org.gridlab.gat.resources.cpi.gridsam.GridSAMResourceBrokerAdaptor" />
 			</manifest>
@@ -43,7 +44,8 @@
 		<!-- Copy external libraries to lib directory -->
 		<copy todir="${lib}">
 			<fileset dir="${external}">
-				<include name="*.jar" />
+				<include name="activation.jar" />
+				<include name="xalan.jar" />
 			</fileset>
 		</copy>
 		<copy todir="${lib}/endorsed">

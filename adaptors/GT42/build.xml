@@ -40,6 +40,8 @@
 		</copy>
 
 		<jar jarfile="${lib}/GT42Adaptor.jar" basedir="${tmp}" includes="**">
+		    <zipgroupfileset dir="external" includes="*.jar"
+			excludes="xalan-2.6.jar,wsrf_core.jar,cog-provider*.jar,globus_wsrf_gram_utils.jar,wsrf_provider_jce.jar" />
 			<manifest>
 				<!--<attribute name="FileCpi-class" value="org.gridlab.gat.io.cpi.globus.FTPFileAdaptor,org.gridlab.gat.io.cpi.globus.GridFTPFileAdaptor,org.gridlab.gat.io.cpi.gt4.GT4GridFTPFileAdaptor,org.gridlab.gat.io.cpi.gt4.GT4LocalFileAdaptor,org.gridlab.gat.io.cpi.rftgt4.RFTGT4FileAdaptor" />-->
 				<!--<attribute name="FileCpi-class" value="org.gridlab.gat.io.cpi.rftgt42.RFTGT42FileAdaptor,org.gridlab.gat.io.cpi.gt42.GT42GridFTPFileAdaptor"/>-->
@@ -51,7 +53,11 @@
 		<!-- Copy external libraries to lib directory -->
 		<copy todir="${lib}">
 			<fileset dir="${external}">
-				<include name="*.jar" />
+				<include name="xalan-2.6.jar" />
+				<include name="wsrf_core.jar" />
+				<include name="cog-provider*.jar" />
+				<include name="globus_wsrf_gram_utils.jar" />
+				<include name="wsrf_provider_jce.jar" />
 			</fileset>
 		</copy>
 

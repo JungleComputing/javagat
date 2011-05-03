@@ -34,6 +34,8 @@
 		</javac>
 
 		<jar jarfile="${lib}/GliteAdaptor.jar" basedir="${tmp}" includes="**">
+			<zipgroupfileset dir="${external}" includes="*.jar"
+			                     excludes="cog-jglobus*.jar, activation.jar"/>
 			<manifest>
 				<attribute name="ResourceBrokerCpi-class" value="org.gridlab.gat.resources.cpi.glite.GliteResourceBrokerAdaptor" />
 				<attribute name="FileCpi-class" value="org.gridlab.gat.io.cpi.glite.GliteGuidFileAdaptor,org.gridlab.gat.io.cpi.glite.GliteSrmFileAdaptor,org.gridlab.gat.io.cpi.glite.GliteLfnFileAdaptor" />
@@ -43,7 +45,8 @@
 		<!-- Copy external libraries to lib directory -->
 		<copy todir="${lib}">
 			<fileset dir="${external}">
-				<include name="*.jar" />
+				<include name="cog-jglobus-1.4.jar" />
+				<include name="activation.jar" />
 			</fileset>
 		</copy>
 
