@@ -739,128 +739,133 @@ public class SshTrileadFileAdaptor extends FileCpi {
         Map<String, Object> securityInfo = SshTrileadSecurityUtils.getSshTrileadCredential(
         	context, "sshtrilead", fixedURI, fixedURI.getPort(SSH_PORT));
         ConnectionKey key = new ConnectionKey(host, (GATContext) context.clone());
-        if (useCachedConnection) {
-            logger.info("looking for a cached connection");
-            Connection c = connections.get(key);
-            if (c != null) {
-                logger.info("returning cached connection");
-                return c;
+        
+        Connection newConnection;
+        
+        synchronized(connections) {
+            if (useCachedConnection) {
+        	logger.info("looking for a cached connection");
+        	Connection c = connections.get(key);
+        	if (c != null) {
+        	    logger.info("returning cached connection");
+        	    return c;
+        	} else {
+        	    logger.info("not found");
+        	}
+            }
+            if (logger.isDebugEnabled()) {
+        	logger.debug("Setting up connection to " + host);
+            }
+            newConnection = new Connection(host, fixedURI
+        	    .getPort(SSH_PORT));
+            newConnection.setClient2ServerCiphers(client2server);
+            newConnection.setServer2ClientCiphers(server2client);
+            newConnection.setTCPNoDelay(tcpNoDelay);
+            int connectTimeout = 5000;
+            String connectTimeoutString = (String) context.getPreferences().get(
+            "sshtrilead.connect.timeout");
+            if (connectTimeoutString != null) {
+        	try {
+        	    connectTimeout = Integer.parseInt(connectTimeoutString);
+        	} catch (Throwable t) {
+        	    logger
+        	    .info("'sshtrilead.connect.timeout' set, but could not be parsed: "
+        		    + t);
+        	}
+            }
+            int kexTimeout = 5000;
+            String kexTimeoutString = (String) context.getPreferences().get(
+            "sshtrilead.kex.timeout");
+            if (kexTimeoutString != null) {
+        	try {
+        	    kexTimeout = Integer.parseInt(kexTimeoutString);
+        	} catch (Throwable t) {
+        	    logger
+        	    .info("'sshtrilead.kex.timeout' set, but could not be parsed: "
+        		    + t);
+        	}
+            }
+            newConnection.connect(verifier, connectTimeout, kexTimeout);
+
+            String username = (String) securityInfo.get("username");
+            String password = (String) securityInfo.get("password");
+            java.io.File keyFile = (java.io.File) securityInfo.get("keyfile");
+            boolean defaultInfo = securityInfo.get("default") != null;
+
+            boolean connected = false;
+
+            if (username != null && password != null) {
+        	// Definitely not a default context.
+        	try {
+        	    connected = newConnection.authenticateWithPassword(
+        		    username, password);
+        	} catch (IOException e) {
+        	    if (logger.isDebugEnabled()) {
+        		logger
+        		.debug("exception caught during authentication with password: ",
+        			e);
+        	    }
+        	}
+        	if (logger.isDebugEnabled()) {
+        	    logger.debug("authentication with password: " + connected);
+        	}
+            }
+            if (! connected && defaultInfo && username != null) {
+        	// Try ssh-agent.
+        	try {
+        	    connected = newConnection.authenticateWithPublicKey(username);
+        	} catch (IOException e) {
+        	    if (logger.isDebugEnabled()) {
+        		logger
+        		.debug("exception caught during authentication with public key: ",
+        			e);
+        	    }
+        	}
+        	if (logger.isDebugEnabled()) {
+        	    logger
+        	    .debug("authentication with public key: "
+        		    + connected);
+        	}
+            }
+            if (!connected && username != null && keyFile != null) {
+        	try {
+        	    connected = newConnection.authenticateWithPublicKey(
+        		    username, keyFile, password);
+        	} catch (IOException e) {
+        	    if (logger.isDebugEnabled()) {
+        		logger
+        		.debug("exception caught during authentication with public key: ",
+        			e);
+        	    }
+        	}
+        	if (logger.isDebugEnabled()) {
+        	    logger
+        	    .debug("authentication with public key: "
+        		    + connected);
+        	}
+            }
+            if (!connected && username != null) {
+        	try {
+        	    connected = newConnection.authenticateWithNone(username);
+        	} catch (IOException e) {
+        	    if (logger.isDebugEnabled()) {
+        		logger
+        		.debug("exception caught during authentication with username: "
+        			+ e);
+        	    }
+        	}
+        	if (logger.isDebugEnabled()) {
+        	    logger.debug("authentication with username: " + connected);
+        	}
+            }
+
+            if (!connected) {
+        	throw new Exception("unable to authenticate");
             } else {
-                logger.info("not found");
+        	logger.info("putting connection for host " + host
+        		+ " into cache");
+        	connections.put(key, newConnection);
             }
-        }
-        if (logger.isDebugEnabled()) {
-            logger.debug("Setting up connection to " + host);
-        }
-        Connection newConnection = new Connection(host, fixedURI
-                .getPort(SSH_PORT));
-        newConnection.setClient2ServerCiphers(client2server);
-        newConnection.setServer2ClientCiphers(server2client);
-        newConnection.setTCPNoDelay(tcpNoDelay);
-        int connectTimeout = 5000;
-        String connectTimeoutString = (String) context.getPreferences().get(
-                "sshtrilead.connect.timeout");
-        if (connectTimeoutString != null) {
-            try {
-                connectTimeout = Integer.parseInt(connectTimeoutString);
-            } catch (Throwable t) {
-                logger
-                .info("'sshtrilead.connect.timeout' set, but could not be parsed: "
-                        + t);
-            }
-        }
-        int kexTimeout = 5000;
-        String kexTimeoutString = (String) context.getPreferences().get(
-        "sshtrilead.kex.timeout");
-        if (kexTimeoutString != null) {
-            try {
-                kexTimeout = Integer.parseInt(kexTimeoutString);
-            } catch (Throwable t) {
-                logger
-                .info("'sshtrilead.kex.timeout' set, but could not be parsed: "
-                        + t);
-            }
-        }
-        newConnection.connect(verifier, connectTimeout, kexTimeout);
-
-        String username = (String) securityInfo.get("username");
-        String password = (String) securityInfo.get("password");
-        java.io.File keyFile = (java.io.File) securityInfo.get("keyfile");
-        boolean defaultInfo = securityInfo.get("default") != null;
-
-        boolean connected = false;
-
-        if (username != null && password != null) {
-            // Definitely not a default context.
-            try {
-                connected = newConnection.authenticateWithPassword(
-                        username, password);
-            } catch (IOException e) {
-                if (logger.isDebugEnabled()) {
-                    logger
-                    .debug("exception caught during authentication with password: ",
-                            e);
-                }
-            }
-            if (logger.isDebugEnabled()) {
-                logger.debug("authentication with password: " + connected);
-            }
-        }
-        if (! connected && defaultInfo && username != null) {
-            // Try ssh-agent.
-            try {
-                connected = newConnection.authenticateWithPublicKey(username);
-            } catch (IOException e) {
-                if (logger.isDebugEnabled()) {
-                    logger
-                    .debug("exception caught during authentication with public key: ",
-                            e);
-                }
-            }
-            if (logger.isDebugEnabled()) {
-                logger
-                .debug("authentication with public key: "
-                        + connected);
-            }
-        }
-        if (!connected && username != null && keyFile != null) {
-            try {
-                connected = newConnection.authenticateWithPublicKey(
-                        username, keyFile, password);
-            } catch (IOException e) {
-                if (logger.isDebugEnabled()) {
-                    logger
-                    .debug("exception caught during authentication with public key: ",
-                            e);
-                }
-            }
-            if (logger.isDebugEnabled()) {
-                logger
-                .debug("authentication with public key: "
-                        + connected);
-            }
-        }
-        if (!connected && username != null) {
-            try {
-                connected = newConnection.authenticateWithNone(username);
-            } catch (IOException e) {
-                if (logger.isDebugEnabled()) {
-                    logger
-                    .debug("exception caught during authentication with username: "
-                            + e);
-                }
-            }
-            if (logger.isDebugEnabled()) {
-                logger.debug("authentication with username: " + connected);
-            }
-        }
-
-        if (!connected) {
-            throw new Exception("unable to authenticate");
-        } else {
-            logger.info("putting connection for host " + host
-                    + " into cache");
-            connections.put(key, newConnection);
         }
         if (logger.isInfoEnabled()) {
             long start = System.currentTimeMillis();
