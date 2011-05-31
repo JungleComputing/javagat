@@ -24,11 +24,11 @@ variable.
 
 For example (depending on the os and shell you use):
 
-export GAT_LOCATION=/home/rob/JavaGAT-2.1.0.
+export GAT_LOCATION=/home/rob/JavaGAT-2.1.1.
 
 or 
 
-set GAT_LOCATION=C:\JavaGAT-2.1.0.
+set GAT_LOCATION=C:\JavaGAT-2.1.1.
 
 you might want to put this line in your .bashrc (or equivalent)
 
@@ -84,8 +84,8 @@ The current JavaGAT source repository tree is accessible through SVN at
 out anonymously using the command
 "svn checkout https://gforge.cs.vu.nl/svn/javagat/trunk javagat".
 
-There is a branch for the current release (2.1.0), at
-https://gforge.cs.vu.nl/svn/javagat/branches/2.1.0. Bug fixes
+There is a branch for the current release (2.1.1), at
+https://gforge.cs.vu.nl/svn/javagat/branches/2.1.1. Bug fixes
 will find its way into this branch, and also in the trunk.
 
 Have fun!
