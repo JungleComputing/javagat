@@ -1,3 +1,38 @@
+FIXED BUGS AND ADDITIONS in version 2.1.1 with respect to version 2.1.0
+- reduced the number of jar-files in the lib directory by combining them
+  where possible. This reduces the number of open files in any JavaGAT
+  application significantly.
+- gLite adaptor: use string constants from HardwareResourceDescription
+  where possible.
+- GridFTPFileAdaptor: create a lock when an FTP client has succesfully
+  been created.
+- GlobusJob: there were scenarios where starttime was never set.
+- GlobusResourceBroker: now also looks at the SoftwareDescription.JOB_QUEUE
+  attribute, in addition to the globus.queue attribute, which still is
+  supported for backwards compatibility.
+- WSGT4newResourceBrokerAdaptor: now also looks at the
+  SoftwareDescription.JOB_QUEUE attribute, in addition to the machine.queue
+  attribute, which still is supported for backwards compatibility.
+- GT42ResourceBrokerAdaptor: now also looks at the
+  SoftwareDescription.JOB_QUEUE attribute, in addition to the machine.queue
+  attribute, which still is supported for backwards compatibility.
+- LocalFileAdaptor made to work on Windows.
+- LocalJob: when stopped, actually destroy Java process before waiting until
+  the output streams are finished (otherwise, you can wait for a long time ...).
+- modifications to SshTrilead and SftpTrilead adaptors to support a new
+  version of the sshtrilead library, which we modified to have some ssh-agent
+  support.
+- Fixed SftpTrileadFileInputStreamAdaptor to recognize EOF properly.
+- Various improvements to the SGEResourceBroker (we had someone use it ...)
+- prevent SshTrileadFileAdaptor from executing stuff through ssh when it can
+  do it locally.
+- URI: improved refersToLocalHost method.
+- GATEngine: try to terminate jobs before ending adaptors.
+- FileCpi: copyDirectory path manipulation was wrong for Windows.
+- JobCpi: improved shutdown hook to make a second invocation wait until the
+  first one is done. This prevents GAT.end to call end() on the adaptors
+  before the job shutdown is done.
+
 FIXED BUGS AND ADDITIONS in version 2.1.0 with respect to version 2.0.5
 - local file adaptor: rename() did not work properly.
 - modified axis client config mechanism for Globus and Gridsam adaptors:
