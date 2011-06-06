@@ -17,6 +17,7 @@ cp -R tests JavaGAT-$1
 cp -R doc JavaGAT-$1
 cp -R bin JavaGAT-$1
 cp *.txt JavaGAT-$1
+rm -f JavaGAT-$1/TODO.txt
 cp *.properties JavaGAT-$1
 find JavaGAT-$1 -name .svn -exec rm -rf {} \; 2> /dev/null
 find JavaGAT-$1 -name \*~ -exec rm -rf {} \; 2> /dev/null
