@@ -483,23 +483,54 @@ public class GridFTPFileAdaptor extends GlobusFileAdaptor {
 	 * @throws InvalidUsernameOrPasswordException an exception that might 
 	 *         occurs
 	 */
-	protected static GridFTPClient doCreateClient(GATContext gatContext, Preferences additionalPreferences, URI hostURI) throws GATInvocationException, InvalidUsernameOrPasswordException {		
-		logger.debug("@@@ createClient for uri: " + hostURI);
-		GridFTPClient client = doWorkCreateClient(gatContext, additionalPreferences, hostURI);
+	protected static GridFTPClient doCreateClient(GATContext gatContext, Preferences additionalPreferences, URI hostURI) throws GATInvocationException, InvalidUsernameOrPasswordException {
+		URI src = fixURI(hostURI, "gsiftp");		
+		// try to get the lock for this host
+		ReentrantLock lock = null;
+		lock = createHostLock(src);
+		lock.lock();
+		logger.debug("@@@ lock() uri " + src + " holdcount: " + lock.getHoldCount() + " " + lock);
 
-		// Only create a lock when a client has been successfully created.
-		if (null != client) {
-			logger.debug("@@@ createClient sucessful: " + client);
-			URI src = fixURI(hostURI, "gsiftp");		
-			// try to get the lock for this host
-			ReentrantLock lock = null;
-			lock = createHostLock(src);
-			lock.lock();
-			logger.debug("@@@ lock() uri " + src + " holdcount: " + lock.getHoldCount() + " " + lock);
-		} else {
-			logger.debug("@@@ createClient NOT sucessful: " + client);			
+		logger.debug("@@@ createClient for uri: " + hostURI);
+		try {
+			GridFTPClient client = doWorkCreateClient(gatContext, additionalPreferences, hostURI);
+
+			if (null != client) {
+				logger.debug("@@@ createClient sucessful: " + client);
+			} else {
+				// if the client could not be created, release the lock
+				logger.debug("@@@ createClient NOT sucessful: " + client);
+				lock.unlock();
+			}
+			return client;
+		} catch (Exception e) {
+			// if any exception occurs, release the locks.
+			lock.unlock();
+			if (e instanceof GATInvocationException) {
+				throw (GATInvocationException) e;
+			} else {
+				throw new GATInvocationException("GridFTPFileAdaptor", e);
+			}
 		}
-		return client;
+		
+		
+		
+//		logger.debug("@@@ createClient for uri: " + hostURI);
+//		GridFTPClient client = doWorkCreateClient(gatContext, additionalPreferences, hostURI);
+//
+//		// Only create a lock when a client has been successfully created.
+//		if (null != client) {
+//			logger.debug("@@@ createClient sucessful: " + client);
+//			URI src = fixURI(hostURI, "gsiftp");		
+//			// try to get the lock for this host
+//			ReentrantLock lock = null;
+//			lock = createHostLock(src);
+//			lock.lock();
+//			logger.debug("@@@ lock() uri " + src + " holdcount: " + lock.getHoldCount() + " " + lock);
+//		} else {
+//			logger.debug("@@@ createClient NOT sucessful: " + client);			
+//		}
+//		return client;
 	} // protected FTPClient createClient(GATContext gatContext, Preferences additionalPreferences, URI hostURI) throws GATInvocationException, InvalidUsernameOrPasswordException
 
 	/**
@@ -538,22 +569,53 @@ public class GridFTPFileAdaptor extends GlobusFileAdaptor {
 	 *         occurs
 	 */
 	protected static GridFTPClient doCreateLongClient(GATContext gatContext, Preferences additionalPreferences, URI hostURI) throws GATInvocationException, InvalidUsernameOrPasswordException {		
-		logger.debug("@@@ createLongClient for uri: " + hostURI);
-		GridFTPClient client = doWorkCreateClient(gatContext, additionalPreferences, hostURI);
+		URI src = fixURI(hostURI, "gsiftp");		
+		// try to get the lock for this host
+		ReentrantLock lock = null;
+		lock = getLongHostLock(src, true);
+		lock.lock();
+		logger.debug("@@@ long lock() uri " + src + " holdcount: " + lock.getHoldCount() + " " + lock);
 
-		//Only create a lock when a client has been successfully created.
-		if (null != client) {
-			logger.debug("@@@ createLongClient sucessful: " + client);
-			URI src = fixURI(hostURI, "gsiftp");
-			// try to get the lock for this host
-			ReentrantLock lock = null;
-			lock = getLongHostLock(src, true);
-			lock.lock();
-			logger.debug("@@@ lock() uri " + src + " holdcount: " + lock.getHoldCount() + " " + lock);
-		} else {
-			logger.debug("@@@ createLongClient NOT sucessful: " + client);			
+		logger.debug("@@@ createLongClient for uri: " + hostURI);
+		try {
+			GridFTPClient client = doWorkCreateClient(gatContext, additionalPreferences, hostURI);
+
+			if (null != client) {
+				logger.debug("@@@ createLongClient sucessful: " + client);
+			} else {
+				// if the client could not be created, release the lock
+				logger.debug("@@@ createLongClient NOT sucessful: " + client);
+				lock.unlock();
+			}
+			return client;
+		} catch (Exception e) {
+			// if any exception occurs, release the locks.
+			lock.unlock();
+			if (e instanceof GATInvocationException) {
+				throw (GATInvocationException) e;
+			} else {
+				throw new GATInvocationException("GridFTPFileAdaptor", e);
+			}
 		}
-		return client;
+
+		
+		
+//		logger.debug("@@@ createLongClient for uri: " + hostURI);
+//		GridFTPClient client = doWorkCreateClient(gatContext, additionalPreferences, hostURI);
+//
+//		//Only create a lock when a client has been successfully created.
+//		if (null != client) {
+//			logger.debug("@@@ createLongClient sucessful: " + client);
+//			URI src = fixURI(hostURI, "gsiftp");
+//			// try to get the lock for this host
+//			ReentrantLock lock = null;
+//			lock = getLongHostLock(src, true);
+//			lock.lock();
+//			logger.debug("@@@ lock() uri " + src + " holdcount: " + lock.getHoldCount() + " " + lock);
+//		} else {
+//			logger.debug("@@@ createLongClient NOT sucessful: " + client);			
+//		}
+//		return client;
 	} // protected GridFTPClient createLongClient(GATContext gatContext, Preferences additionalPreferences, URI hostURI) throws GATInvocationException, InvalidUsernameOrPasswordException
 
 	/**
