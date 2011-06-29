@@ -14,6 +14,7 @@ import java.math.BigInteger;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.Vector;
 
@@ -355,7 +356,7 @@ public class MercuryMonitorableAdaptor extends MonitorableCpi {
         return null;
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     public void addMetricListener(MetricListener metricListener, Metric metric)
             throws GATInvocationException {
         MonitorizedMetric mm = lookupMonitorizedMetricByMetric(metric);
@@ -378,7 +379,7 @@ public class MercuryMonitorableAdaptor extends MonitorableCpi {
             MonitorArg[] args = null;
 
             if (metric.getMetricParameters() != null) {
-                Set arg = metric.getMetricParameters().entrySet();
+                Set<Entry<String, Object>> arg = metric.getMetricParameters().entrySet();
                 Object[] entries = arg.toArray();
                 args = new MonitorArg[arg.size()];
 
@@ -744,7 +745,7 @@ public class MercuryMonitorableAdaptor extends MonitorableCpi {
             return null;
         }
 
-        Set arg = metric.getMetricParameters().entrySet();
+        Set<?> arg = metric.getMetricParameters().entrySet();
         Object[] entries = arg.toArray();
         MonitorArg[] args = new MonitorArg[arg.size()];
 

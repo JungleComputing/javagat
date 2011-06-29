@@ -73,7 +73,7 @@ public class OutputForwarder extends Thread {
             }
         }
 
-        int count = 0;
+        // int count = 0;
 
         try {
             while (true) {
@@ -102,7 +102,7 @@ public class OutputForwarder extends Thread {
                 }
 
                 if (destination != null) {
-                    count++;
+                    // count++;
                     destination.write(res);
                 }
             }

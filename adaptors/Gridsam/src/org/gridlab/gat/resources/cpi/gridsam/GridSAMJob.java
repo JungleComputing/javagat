@@ -69,7 +69,7 @@ public class GridSAMJob extends JobCpi {
             }
         }
 
-        @SuppressWarnings("unchecked")
+        @SuppressWarnings("rawtypes")
         public void run() {
             while (true) {
 
