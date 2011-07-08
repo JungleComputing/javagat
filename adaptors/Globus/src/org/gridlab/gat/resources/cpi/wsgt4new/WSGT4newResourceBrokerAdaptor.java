@@ -504,6 +504,14 @@ public class WSGT4newResourceBrokerAdaptor extends ResourceBrokerCpi {
 			gramjob.setAuthorization(HostAuthorization.getInstance());
 		}
 		// end modification.
+		
+		String serverDn = (String) sd.getAttributes().get("gt4new.serverDn");
+		if ((serverDn != null) && (!serverDn.isEmpty())) {
+			// if a server dn was set, use that to identify the server
+			gramjob.setAuthorization(new org.globus.wsrf.impl.security.authorization.IdentityAuthorization(serverDn));
+		}
+
+		
 		gramjob.setMessageProtectionType(Constants.ENCRYPTION);
 		gramjob.setDelegationEnabled(true);
 
