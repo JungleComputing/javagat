@@ -500,8 +500,6 @@ public class WSGT4newResourceBrokerAdaptor extends ResourceBrokerCpi {
 			if (logger.isDebugEnabled()) {
 				logger.debug("submitJob: credential = " + cred);
 			}
-		} else {
-			gramjob.setAuthorization(HostAuthorization.getInstance());
 		}
 		// end modification.
 		
@@ -509,6 +507,11 @@ public class WSGT4newResourceBrokerAdaptor extends ResourceBrokerCpi {
 		if ((serverDn != null) && (!serverDn.isEmpty())) {
 			// if a server dn was set, use that to identify the server
 			gramjob.setAuthorization(new org.globus.wsrf.impl.security.authorization.IdentityAuthorization(serverDn));
+			logger.debug("setAuthorization to IdentityAuthorization with dn=" + serverDn);
+		} else {
+			// if there is no dn set, use HostAuthorization to identify the server
+			gramjob.setAuthorization(HostAuthorization.getInstance());
+			logger.debug("setAuthorization to HostAuthorization");
 		}
 
 		
