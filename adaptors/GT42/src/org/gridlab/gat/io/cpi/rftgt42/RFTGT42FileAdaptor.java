@@ -108,7 +108,7 @@ class RFTGT42NotifyCallback implements NotifyCallback {
         this.transfer = transfer;
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     public void deliver(List topicPath, EndpointReferenceType producer,
             Object messageWrapper) {
         try {
