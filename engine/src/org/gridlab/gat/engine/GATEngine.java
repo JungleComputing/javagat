@@ -26,8 +26,6 @@ import java.util.jar.Attributes;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.exolab.castor.xml.Marshaller;
 import org.exolab.castor.xml.Unmarshaller;
 import org.gridlab.gat.AdaptorInfo;
@@ -39,6 +37,8 @@ import org.gridlab.gat.advert.Advertisable;
 import org.gridlab.gat.advert.cpi.SerializedBase;
 import org.gridlab.gat.engine.util.ScheduledExecutor;
 import org.gridlab.gat.resources.cpi.JobCpi;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author rob
@@ -51,8 +51,8 @@ public class GATEngine {
 	protected static Logger logger = LoggerFactory.getLogger(GATEngine.class);
 
 	/**
-	 * A helper class to compare file names, so that they can be sorted,
-	 * and the order becomes predictable and reproducible.
+	 * A helper class to compare file names, so that they can be sorted, and the order becomes predictable and
+	 * reproducible.
 	 */
 	private static class FileComparator implements Comparator<File> {
 		public int compare(File f1, File f2) {
@@ -61,13 +61,12 @@ public class GATEngine {
 	}
 
 	/**
-	 * A helper class to get the call context. It subclasses SecurityManager
-	 * to make getClassContext() accessible. Don't install this as an actual
-	 * security manager!
+	 * A helper class to get the call context. It subclasses SecurityManager to make getClassContext() accessible. Don't
+	 * install this as an actual security manager!
 	 */
 	private static final class CallerResolver extends SecurityManager {
 		protected Class<?>[] getClassContext() {
-			return super.getClassContext ();
+			return super.getClassContext();
 		}
 	}
 
@@ -79,8 +78,8 @@ public class GATEngine {
 	private static GATEngine gatEngine = null;
 
 	/**
-	 * A list of methods that have been registered as unmarshallers for GAT
-	 * advertizable objects. Elements are of type Class
+	 * A list of methods that have been registered as unmarshallers for GAT advertizable objects. Elements are of type
+	 * Class
 	 */
 	private static Vector<Class<?>> unmarshallers = new Vector<Class<?>>();
 
@@ -106,11 +105,8 @@ public class GATEngine {
 		// settings in log4j.properties, so change the level of the parent
 		// logger
 		/*
-		 * Not supported by slf4j.
-        if (VERBOSE)
-            logger.getParent().setLevel(Level.INFO);
-        if (DEBUG)
-            logger.getParent().setLevel(Level.DEBUG);
+		 * Not supported by slf4j. if (VERBOSE) logger.getParent().setLevel(Level.INFO); if (DEBUG)
+		 * logger.getParent().setLevel(Level.DEBUG);
 		 */
 
 		if (logger.isDebugEnabled()) {
@@ -126,23 +122,20 @@ public class GATEngine {
 		if (adaptorPath == null) {
 			throw new Error("gat.adaptor.path not set!");
 		}
-		StringTokenizer st = new StringTokenizer(adaptorPath,
-				File.pathSeparator);
+		StringTokenizer st = new StringTokenizer(adaptorPath, File.pathSeparator);
 		while (st.hasMoreTokens()) {
 			String dir = st.nextToken();
 			logger.debug("readJarFiles: dir = " + dir);
 
 			File adaptorRoot = new File(dir);
 			if (!adaptorRoot.isDirectory()) {
-				logger.warn("Specified gat.adaptor.path entry " + dir
-						+ " is not a directory");
+				logger.warn("Specified gat.adaptor.path entry " + dir + " is not a directory");
 				continue;
 			}
 
 			ClassLoader sharedLoader;
 			try {
-				sharedLoader = loadDirectory(new File(adaptorRoot, "shared"),
-						superparentLoader, false);
+				sharedLoader = loadDirectory(new File(adaptorRoot, "shared"), superparentLoader, false, false);
 			} catch (Throwable e) {
 				if (logger.isDebugEnabled()) {
 					logger.debug("Got exception when loading shared directory", e);
@@ -179,11 +172,9 @@ public class GATEngine {
 	}
 
 	/**
-	 * This method tries to determine a suitable classloader to be used
-	 * as parent classloader for the URLClassloaders of the adaptors.
-	 * Sometimes, the classloader that loaded the GATEngine class is not
-	 * a good candidate because this probably is just the system classloader.
-	 * A better candidate might be the classloader of the class that prompted
+	 * This method tries to determine a suitable classloader to be used as parent classloader for the URLClassloaders of
+	 * the adaptors. Sometimes, the classloader that loaded the GATEngine class is not a good candidate because this
+	 * probably is just the system classloader. A better candidate might be the classloader of the class that prompted
 	 * the loading of javaGAT in the first place, or the context classloader.
 	 * 
 	 * @return the classloader to be used.
@@ -225,15 +216,19 @@ public class GATEngine {
 
 		// If the system classloader is a child of the result found so far,
 		// use the system classloader instead.
-		if (isChild (result, systemLoader)) {
+		if (isChild(result, systemLoader)) {
 			result = systemLoader;
 		}
+
+		// FIXME added for testing of Unicore adaptor!!!
+		//result = systemLoader;
 
 		return result;
 	}
 
 	/**
 	 * Determines if loader l2 is a child of loader l1.
+	 * 
 	 * @param l1
 	 * @param l2
 	 * @return true if l2 is a child of l1.
@@ -252,16 +247,13 @@ public class GATEngine {
 		return false;
 	}
 
-
 	private void orderAdaptorLists() {
 		AdaptorOrderPolicy adaptorOrderPolicy;
 
 		String policy = System.getProperty("adaptor.order.policy");
 		if (logger.isTraceEnabled()) {
 			if (policy != null) {
-				logger
-				.trace("custom adaptor order policy specified: "
-						+ policy);
+				logger.trace("custom adaptor order policy specified: " + policy);
 			} else {
 				logger.trace("no custom adaptor order policy specified");
 			}
@@ -280,8 +272,7 @@ public class GATEngine {
 			try {
 				adaptorOrderPolicy = (AdaptorOrderPolicy) c.newInstance();
 			} catch (Exception e) {
-				throw new Error("adaptor policy " + policy
-						+ " could not be instantiated: " + e);
+				throw new Error("adaptor policy " + policy + " could not be instantiated: " + e);
 			}
 			if (logger.isTraceEnabled()) {
 				logger.trace("using adaptor ordering policy: " + policy);
@@ -335,8 +326,7 @@ public class GATEngine {
 
 	public static String[] getAdaptorTypes() {
 		GATEngine gatEngine = GATEngine.getGATEngine();
-		return gatEngine.adaptorLists.keySet().toArray(
-				new String[gatEngine.adaptorLists.keySet().size()]);
+		return gatEngine.adaptorLists.keySet().toArray(new String[gatEngine.adaptorLists.keySet().size()]);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -352,32 +342,26 @@ public class GATEngine {
 			Map<String, Boolean> capabilities = null;
 			try {
 				Class<?> adaptorClass = adaptor.getAdaptorClass();
-				Method infoMethod = adaptorClass.getMethod(
-						"getSupportedCapabilities", (Class[]) null);
-				capabilities = (Map<String, Boolean>) infoMethod.invoke(null,
-						(Object[]) null);
+				Method infoMethod = adaptorClass.getMethod("getSupportedCapabilities", (Class[]) null);
+				capabilities = (Map<String, Boolean>) infoMethod.invoke(null, (Object[]) null);
 			} catch (Exception e) {
 			}
 			Preferences preferences = null;
 			try {
 				Class<?> adaptorClass = adaptor.getAdaptorClass();
-				Method infoMethod = adaptorClass.getMethod(
-						"getSupportedPreferences", (Class[]) null);
-				preferences = (Preferences) infoMethod.invoke(null,
-						(Object[]) null);
+				Method infoMethod = adaptorClass.getMethod("getSupportedPreferences", (Class[]) null);
+				preferences = (Preferences) infoMethod.invoke(null, (Object[]) null);
 			} catch (Exception e) {
 			}
 			String description = "not available";
 			try {
 				Class<?> adaptorClass = adaptor.getAdaptorClass();
-				Method infoMethod = adaptorClass.getMethod("getDescription",
-						(Class[]) null);
+				Method infoMethod = adaptorClass.getMethod("getDescription", (Class[]) null);
 				description = (String) infoMethod.invoke(null, (Object[]) null);
 			} catch (Exception e) {
 			}
-			result[i++] = new AdaptorInfo(adaptor.getName(), adaptor
-					.getAdaptorClass().getSimpleName(), cpiName, preferences,
-					capabilities, description);
+			result[i++] = new AdaptorInfo(adaptor.getName(), adaptor.getAdaptorClass().getSimpleName(), cpiName,
+					preferences, capabilities, description);
 
 		}
 		return result;
@@ -392,8 +376,7 @@ public class GATEngine {
 			}
 		});
 		if (adaptorDirs.length == 0) {
-			logger.warn("gat.adaptor.path contains '" + adaptorRoot
-					+ "', but it doesn't contain any adaptor");
+			logger.warn("gat.adaptor.path contains '" + adaptorRoot + "', but it doesn't contain any adaptor");
 		}
 
 		// Sort the list of directories, to make sure that the order is deterministic.
@@ -402,35 +385,30 @@ public class GATEngine {
 		HashMap<String, ClassLoader> adaptorClassLoaders = new HashMap<String, ClassLoader>();
 		for (File adaptorDir : adaptorDirs) {
 			try {
-				adaptorClassLoaders.put(adaptorDir.getName(), loadDirectory(
-						adaptorDir, parentLoader, true));
+				adaptorClassLoaders.put(adaptorDir.getName(), loadDirectory(adaptorDir, parentLoader, true, false));
 				if (logger.isDebugEnabled()) {
 					logger.debug("loading adaptor SUCCESS: " + adaptorDir);
 				}
 			} catch (Throwable e) {
 				if (logger.isDebugEnabled()) {
-					logger.debug("loading adaptor FAILED: " + adaptorDir + " ("
-							+ e + ")");
+					logger.debug("loading adaptor FAILED: " + adaptorDir + " (" + e + ")");
 				}
 			}
 		}
 	}
 
-	private ClassLoader loadDirectory(File adaptorDir, ClassLoader parentForDir, boolean mustContainAdaptorJar) throws Exception {
+	private ClassLoader loadDirectory(File adaptorDir, ClassLoader parentForDir, boolean mustContainAdaptorJar,
+			boolean selfFirst) throws Exception {
 		List<URL> adaptorPathURLs = new ArrayList<URL>();
 		final Attributes attributes;
 		if (mustContainAdaptorJar) {
-			File adaptorJarFile = new File(adaptorDir.getPath()
-					+ File.separator + adaptorDir.getName() + ".jar");
+			File adaptorJarFile = new File(adaptorDir.getPath() + File.separator + adaptorDir.getName() + ".jar");
 			if (!adaptorJarFile.exists()) {
-				throw new Exception("found adaptor dir '"
-						+ adaptorDir.getPath()
-						+ "' that doesn't contain an adaptor named '"
-						+ adaptorJarFile.getPath() + "'");
+				throw new Exception("found adaptor dir '" + adaptorDir.getPath()
+						+ "' that doesn't contain an adaptor named '" + adaptorJarFile.getPath() + "'");
 			}
 			JarFile adaptorJar = new JarFile(adaptorJarFile, true);
-			attributes = adaptorJar.getManifest()
-			.getMainAttributes();
+			attributes = adaptorJar.getManifest().getMainAttributes();
 			adaptorPathURLs.add(adaptorJarFile.toURI().toURL());
 		} else {
 			attributes = new Attributes();
@@ -447,22 +425,17 @@ public class GATEngine {
 				for (String externalJar : externalJars)
 					logger.trace("\t" + externalJar);
 			} else {
-				logger
-				.trace(adaptorDir
-						+ " doesn't contain external jar files");
+				logger.trace(adaptorDir + " doesn't contain external jar files");
 			}
 		}
 		if (externalJars != null) {
 			for (String externalJar : externalJars) {
-				adaptorPathURLs.add(new File(adaptorDir, externalJar).toURI()
-						.toURL());
+				adaptorPathURLs.add(new File(adaptorDir, externalJar).toURI().toURL());
 			}
 		}
-		URL[] urls = adaptorPathURLs.toArray(new URL[adaptorPathURLs.size()]); 
+		URL[] urls = adaptorPathURLs.toArray(new URL[adaptorPathURLs.size()]);
 		if (logger.isTraceEnabled()) {
-			logger
-			.trace("URLs used for the URL class loader constructed from: "
-					+ adaptorDir);
+			logger.trace("URLs used for the URL class loader constructed from: " + adaptorDir);
 			if (urls != null) {
 				for (URL url : urls) {
 					logger.trace("\t" + url);
@@ -471,7 +444,15 @@ public class GATEngine {
 				logger.trace("\tno URLs");
 			}
 		}
-		URLClassLoader adaptorLoader = new URLClassLoader(urls, parentForDir);
+
+		ClassLoader adaptorLoader = null;
+
+		if (selfFirst) {
+			adaptorLoader = new SelfFirstClassLoader(urls, parentForDir);
+		} else {
+			adaptorLoader = new URLClassLoader(urls, parentForDir);
+		}
+
 		// We've a class loader, now have a look at which adaptors are inside
 		// this jar.
 		Set<Object> keys = attributes.keySet();
@@ -480,25 +461,20 @@ public class GATEngine {
 				// this is an adaptor!
 
 				// now get the cpi name (for 'FileCpi' the cpi name is 'File')
-				String cpiName = ((Attributes.Name) key).toString().replace(
-						"Cpi-class", "");
-				String[] adaptorClasses = attributes.getValue(
-						(Attributes.Name) key).split(",");
+				String cpiName = ((Attributes.Name) key).toString().replace("Cpi-class", "");
+				String[] adaptorClasses = attributes.getValue((Attributes.Name) key).split(",");
 				if (logger.isTraceEnabled()) {
-					logger.trace("found " + adaptorClasses.length
-							+ " adaptors implementing cpi: " + cpiName);
+					logger.trace("found " + adaptorClasses.length + " adaptors implementing cpi: " + cpiName);
 				}
 				for (String adaptorClass : adaptorClasses) {
 					try {
 						if (logger.isTraceEnabled()) {
 							logger.trace("\tloading adaptor: " + adaptorClass);
 						}
-						Thread.currentThread().setContextClassLoader(
-								adaptorLoader);
+						Thread.currentThread().setContextClassLoader(adaptorLoader);
 						Class<?> clazz = adaptorLoader.loadClass(adaptorClass);
 
 						callInitializer(clazz);
-
 
 						// if there are no adaptors loaded for this cpi name,
 						// make a new list of adaptors that are loaded for this
@@ -510,12 +486,10 @@ public class GATEngine {
 						// belonging to this cpi name. So get this list and add
 						// the new adaptor to it. Also pass through the
 						// attributes in a preferences object.
-						adaptorLists.get(cpiName).add(
-								new Adaptor(cpiName, clazz));
+						adaptorLists.get(cpiName).add(new Adaptor(cpiName, clazz));
 					} catch (Exception e) {
 						if (logger.isTraceEnabled()) {
-							logger.trace("\t\tfailed loading adaptor: "
-									+ adaptorClass + " (" + e + ")");
+							logger.trace("\t\tfailed loading adaptor: " + adaptorClass + " (" + e + ")");
 						}
 					}
 				}
@@ -549,8 +523,7 @@ public class GATEngine {
 	/**
 	 * Obtains File's in the optional directory.
 	 * 
-	 * @param f
-	 *                a directory to list
+	 * @param f a directory to list
 	 * @return a list of files in the passed directory
 	 */
 	protected List<File> getFiles(File f) {
@@ -584,8 +557,7 @@ public class GATEngine {
 	/**
 	 * Obtains JarFile's in the optional directory that are GAT jar's
 	 * 
-	 * @param dir
-	 *                the directory to get the jar files from
+	 * @param dir the directory to get the jar files from
 	 * @return a list of JarFile objects
 	 */
 	protected List<JarFile> getJarFiles(String dir) {
@@ -629,20 +601,18 @@ public class GATEngine {
 	}
 
 	/**
-	 * This method unmarshals an advertizable GAT object. The unmarshal method
-	 * must be registered first
+	 * This method unmarshals an advertizable GAT object. The unmarshal method must be registered first
 	 * 
 	 * @param input
 	 * @return
 	 * @throws GATInvocationException
 	 */
-	public Advertisable unmarshalAdvertisable(GATContext gatContext,
-			String input) throws GATInvocationException {
+	public Advertisable unmarshalAdvertisable(GATContext gatContext, String input) throws GATInvocationException {
 		if (input == null) {
 			throw new NullPointerException("cannot unmarshal null String");
 		}
-		synchronized(this) {
-			if (! unmarshallersAdded) {
+		synchronized (this) {
+			if (!unmarshallersAdded) {
 				unmarshallersAdded = true;
 				// Find out which adaptors actually have unmarshallers, if we have
 				// not done this yet.
@@ -655,10 +625,10 @@ public class GATEngine {
 						}
 					}
 				}
-			}            
+			}
 		}
 
-		// first check if the given input string contains the class name tag with the 
+		// first check if the given input string contains the class name tag with the
 		// current class name. If so then try only this class and throw any exception
 		// back
 		for (int i = 0; i < unmarshallers.size(); i++) {
@@ -668,8 +638,7 @@ public class GATEngine {
 				logger.debug("matching unmarshaller found : " + c.getCanonicalName());
 				try {
 					Method m = c.getMethod("unmarshal", unmarshalParams);
-					Advertisable res = (Advertisable) m.invoke(null, new Object[] {
-							gatContext, input });
+					Advertisable res = (Advertisable) m.invoke(null, new Object[] { gatContext, input });
 
 					if (res != null) {
 						if (logger.isDebugEnabled()) {
@@ -681,16 +650,12 @@ public class GATEngine {
 					}
 				} catch (InvocationTargetException e1) {
 					if (logger.isDebugEnabled()) {
-						logger.debug("unmarshaller for "
-								+ c.getName()
-								+ " failed:", e1.getTargetException());
+						logger.debug("unmarshaller for " + c.getName() + " failed:", e1.getTargetException());
 					}
 					throw new GATInvocationException(e1.getMessage(), e1);
 				} catch (Throwable e) {
 					if (logger.isDebugEnabled()) {
-						logger.debug("unmarshaller for "
-								+ c.getName()
-								+ " failed:", e);
+						logger.debug("unmarshaller for " + c.getName() + " failed:", e);
 					}
 					throw new GATInvocationException(e.getMessage(), e);
 				}
@@ -704,8 +669,7 @@ public class GATEngine {
 
 			try {
 				Method m = c.getMethod("unmarshal", unmarshalParams);
-				Advertisable res = (Advertisable) m.invoke(null, new Object[] {
-						gatContext, input });
+				Advertisable res = (Advertisable) m.invoke(null, new Object[] { gatContext, input });
 
 				if (res != null) {
 					if (logger.isDebugEnabled()) {
@@ -717,16 +681,12 @@ public class GATEngine {
 				}
 			} catch (InvocationTargetException e1) {
 				if (logger.isDebugEnabled()) {
-					logger.debug("unmarshaller for "
-							+ c.getName()
-							+ " failed:", e1.getTargetException());
+					logger.debug("unmarshaller for " + c.getName() + " failed:", e1.getTargetException());
 				}
 				// ignore and try next unmarshaller
 			} catch (Throwable e) {
 				if (logger.isDebugEnabled()) {
-					logger.debug("unmarshaller for "
-							+ c.getName()
-							+ " failed:", e);
+					logger.debug("unmarshaller for " + c.getName() + " failed:", e);
 				}
 				// ignore and try next unmarshaller
 			}
@@ -745,22 +705,17 @@ public class GATEngine {
 		return res;
 
 		/*
-		 * for(int i=0; i <marshallers.size(); i++) { Class c = (Class)
-		 * marshallers.get(i);
+		 * for(int i=0; i <marshallers.size(); i++) { Class c = (Class) marshallers.get(i);
 		 * 
-		 * try { Method m = c.getMethod("marshal", new Class[]
-		 * {Advertisable.class}); String res = (String) m.invoke(null, new
-		 * Object[] {advert}); if(res != null) { // success! return res; } }
-		 * catch (Exception e) { throw new GATInvocationException("could not
-		 * find or execute marshal method: " + e); } }
+		 * try { Method m = c.getMethod("marshal", new Class[] {Advertisable.class}); String res = (String)
+		 * m.invoke(null, new Object[] {advert}); if(res != null) { // success! return res; } } catch (Exception e) {
+		 * throw new GATInvocationException("could not find or execute marshal method: " + e); } }
 		 * 
-		 * throw new GATInvocationException("could not find suitable
-		 * marshaller");
+		 * throw new GATInvocationException("could not find suitable marshaller");
 		 */
 	}
 
-	private static Class<?>[] unmarshalParams = new Class[] { GATContext.class,
-		String.class };
+	private static Class<?>[] unmarshalParams = new Class[] { GATContext.class, String.class };
 
 	private static boolean containsUnmarshaller(Class<?> clazz) {
 		// test for marshal and unmarshal methods.
@@ -777,7 +732,7 @@ public class GATEngine {
 		Method m;
 		try {
 			m = clazz.getMethod("init", (Class[]) null);
-		} catch(Throwable e) {
+		} catch (Throwable e) {
 			return;
 		}
 		try {
@@ -814,8 +769,7 @@ public class GATEngine {
 
 		try {
 			if (logger.isDebugEnabled()) {
-				logger.debug("default unmarshaller start, type = " + type
-						+ " string = " + s);
+				logger.debug("default unmarshaller start, type = " + type + " string = " + s);
 			}
 
 			Unmarshaller unmarshaller = new Unmarshaller(type);
@@ -841,19 +795,18 @@ public class GATEngine {
 
 	public static Advertisable defaultUnmarshal(Class<?> type, String s, String expectedClass) {
 		Advertisable a = defaultUnmarshal(type, s);
-		if (! (a instanceof SerializedBase)) {
+		if (!(a instanceof SerializedBase)) {
 			throw new Error("could not unmarshal object: not a SerializedBase.");
 		}
-		if (!((SerializedBase)a).checkClassname(expectedClass)) {
-			throw new Error("could not unmarshal object: found " + ((SerializedBase)a).getClassname()
-					+ " instead of " + expectedClass);
+		if (!((SerializedBase) a).checkClassname(expectedClass)) {
+			throw new Error("could not unmarshal object: found " + ((SerializedBase) a).getClassname() + " instead of "
+					+ expectedClass);
 		}
 		return a;
 	}
 
 	/**
-	 * This method should not be called by the user, it is called by the GAT
-	 * class. Use GAT.end() instead.
+	 * This method should not be called by the user, it is called by the GAT class. Use GAT.end() instead.
 	 */
 	public static void end() {
 		GATEngine engine = getGATEngine();
@@ -871,8 +824,7 @@ public class GATEngine {
 		}
 
 		if (logger.isDebugEnabled()) {
-			logger
-			.debug("shutting down the GAT engine: shutting down adaptors");
+			logger.debug("shutting down the GAT engine: shutting down adaptors");
 		}
 
 		for (List<Adaptor> adaptorList : engine.adaptorLists.values()) {
@@ -898,10 +850,8 @@ public class GATEngine {
 		}
 	}
 
-	public static Object createAdaptorProxy(String cpiName,
-			Class<?> interfaceClass, GATContext gatContext,
-			Class<?>[] parameterTypes, Object[] tmpParams)
-	throws GATObjectCreationException {
+	public static Object createAdaptorProxy(String cpiName, Class<?> interfaceClass, GATContext gatContext,
+			Class<?>[] parameterTypes, Object[] tmpParams) throws GATObjectCreationException {
 		GATEngine gatEngine = GATEngine.getGATEngine();
 		List<Adaptor> adaptors = gatEngine.adaptorLists.get(cpiName);
 		if (adaptors == null) {
@@ -912,8 +862,7 @@ public class GATEngine {
 			if (logger.isDebugEnabled()) {
 				logger.debug("old adaptor order: \n" + adaptors.toString());
 			}
-			adaptors = reorderAdaptorList(adaptors, cpiName, gatContext
-					.getPreferences());
+			adaptors = reorderAdaptorList(adaptors, cpiName, gatContext.getPreferences());
 			if (logger.isDebugEnabled()) {
 				logger.debug("new adaptor order: \n" + adaptors.toString());
 			}
@@ -923,31 +872,26 @@ public class GATEngine {
 		Class<?>[] implementedInterfaces = interfaceClass.getInterfaces();
 		if (implementedInterfaces != null) {
 			for (Class<?> implementedInterface : implementedInterfaces) {
-				if (implementedInterface.getName().equals(
-						"org.gridlab.gat.SingleAdaptorPerProxy")) {
+				if (implementedInterface.getName().equals("org.gridlab.gat.SingleAdaptorPerProxy")) {
 					singleAdaptorPerProxy = true;
 					break;
 				}
 			}
 		}
 
-		AdaptorInvocationHandler handler = new AdaptorInvocationHandler(
-				adaptors, gatContext, parameterTypes, tmpParams,
-				singleAdaptorPerProxy);
+		AdaptorInvocationHandler handler = new AdaptorInvocationHandler(adaptors, gatContext, parameterTypes,
+				tmpParams, singleAdaptorPerProxy);
 
-		Object proxy = Proxy.newProxyInstance(interfaceClass.getClassLoader(),
-				new Class[] { interfaceClass }, handler);
+		Object proxy = Proxy.newProxyInstance(interfaceClass.getClassLoader(), new Class[] { interfaceClass }, handler);
 		return proxy;
 	}
 
-	private static List<Adaptor> reorderAdaptorList(List<Adaptor> adaptors,
-			String cpiName, Preferences preferences)
+	private static List<Adaptor> reorderAdaptorList(List<Adaptor> adaptors, String cpiName, Preferences preferences)
 			throws GATObjectCreationException {
 
 		int removed = 0;
 
-		logger.debug("reordering, cpiname: " + cpiName + ", preferences: "
-				+ preferences);
+		logger.debug("reordering, cpiname: " + cpiName + ", preferences: " + preferences);
 
 		// parse the orderingString
 		// all adaptor names are separated by a ',' and adaptors that should
@@ -979,8 +923,7 @@ public class GATEngine {
 			if (names[i].startsWith("!")) {
 				removed++;
 				names[i] = names[i].substring(1); // remove the '!'
-				int pos = result
-				.indexOf(getAdaptor(names[i], cpiName, adaptors));
+				int pos = result.indexOf(getAdaptor(names[i], cpiName, adaptors));
 				// if the adaptor is found, remove it from the list
 				if (pos >= 0) {
 					result.remove(pos);
@@ -991,8 +934,8 @@ public class GATEngine {
 						insertPosition--;
 				} else {
 					if (logger.isInfoEnabled()) {
-						logger.info("Found non existing adaptor in " + cpiName
-								+ ".adaptor.name preference: " + names[i]);
+						logger.info("Found non existing adaptor in " + cpiName + ".adaptor.name preference: "
+								+ names[i]);
 					}
 				}
 			} else if (names[i].equals("")) {
@@ -1004,16 +947,15 @@ public class GATEngine {
 				// when the current position is before the insert position, it
 				// means that the adaptor is already inserted, so don't insert
 				// it again
-				int currentPosition = result.indexOf(getAdaptor(names[i],
-						cpiName, adaptors));
+				int currentPosition = result.indexOf(getAdaptor(names[i], cpiName, adaptors));
 				if (currentPosition >= insertPosition) {
 					// place the adaptor on the proper position
 					result.add(insertPosition, result.remove(currentPosition));
 					insertPosition++;
 				} else if (currentPosition < 0) {
 					if (logger.isInfoEnabled()) {
-						logger.info("Found non existing adaptor in " + cpiName
-								+ ".adaptor.name preference: " + names[i]);
+						logger.info("Found non existing adaptor in " + cpiName + ".adaptor.name preference: "
+								+ names[i]);
 					}
 				}
 			}
@@ -1028,18 +970,15 @@ public class GATEngine {
 			}
 		} else if (insertPosition == 0 && removed < names.length) {
 			// nothing inserted, but it was not all removals ...
-			throw new GATObjectCreationException(
-					"no adaptors available for preference: \"" + cpiName
+			throw new GATObjectCreationException("no adaptors available for preference: \"" + cpiName
 					+ ".adaptor.name\", \"" + nameString + "\"");
 		}
 		return result;
 	}
 
-	private static Adaptor getAdaptor(String shortName, String cpiName,
-			List<Adaptor> adaptors) {
+	private static Adaptor getAdaptor(String shortName, String cpiName, List<Adaptor> adaptors) {
 		for (Adaptor adaptor : adaptors) {
-			if (adaptor.getShortAdaptorClassName().equalsIgnoreCase(
-					shortName + cpiName + "Adaptor")) {
+			if (adaptor.getShortAdaptorClassName().equalsIgnoreCase(shortName + cpiName + "Adaptor")) {
 				return adaptor;
 			}
 		}
@@ -1067,4 +1006,42 @@ public class GATEngine {
 		}
 		return null;
 	}
+
+	/**
+	 * This classloader will look if he has already loaded the class. If not, he try to find and load the class with the
+	 * specified name from the URL search path. If the class cannot be found there the classloader will delegate the
+	 * class loading to the parent classloader.
+	 * 
+	 * @author Stefan Bozic
+	 */
+	private class SelfFirstClassLoader extends URLClassLoader {
+
+		/**
+		 * Constructor
+		 * 
+		 * @param urls The urls which contains jars
+		 * @param parent the parent classloader
+		 */
+		public SelfFirstClassLoader(URL[] urls, ClassLoader parent) {
+			super(urls, parent);
+		}
+
+		@Override
+		protected synchronized Class<?> loadClass(String name, boolean resolve) throws ClassNotFoundException {
+			Class<?> c = null;
+
+			c = findLoadedClass(name);
+			if (c == null) {
+				try {
+					c = findClass(name);
+				} catch (Exception e) {
+					c = super.loadClass(name, resolve);
+				}
+			}
+
+			return c;
+		}
+
+	}
+
 }
