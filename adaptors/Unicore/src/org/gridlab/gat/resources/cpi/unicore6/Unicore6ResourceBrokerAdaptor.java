@@ -1,10 +1,8 @@
 package org.gridlab.gat.resources.cpi.unicore6;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import org.ggf.schemas.jsdl.x2005.x11.jsdl.JobDefinitionDocument;
 import org.gridlab.gat.AdaptorNotApplicableException;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
@@ -20,6 +18,7 @@ import org.gridlab.gat.resources.JobDescription;
 import org.gridlab.gat.resources.ResourceDescription;
 import org.gridlab.gat.resources.SoftwareDescription;
 import org.gridlab.gat.resources.cpi.ResourceBrokerCpi;
+import org.gridlab.gat.resources.security.unicore6.HiLAHelper;
 import org.gridlab.gat.resources.security.unicore6.Unicore6SecurityUtils;
 import org.gridlab.gat.security.AssertionSecurityContext;
 import org.gridlab.gat.security.SecurityContext;
@@ -31,9 +30,7 @@ import eu.unicore.hila.Resource;
 import eu.unicore.hila.exceptions.HiLAException;
 import eu.unicore.hila.exceptions.HiLALocationSyntaxException;
 import eu.unicore.hila.grid.Site;
-import eu.unicore.hila.grid.job.JSDLBuilder;
-import eu.unicore.hila.grid.unicore6.SiteLocator;
-import eu.unicore.hila.grid.unicore6.Unicore6Grid;
+import eu.unicore.hila.job.model.JobModel;
 
 /**
  * Resource Broker Adaptor for Unicore6.
@@ -118,21 +115,22 @@ public class Unicore6ResourceBrokerAdaptor extends ResourceBrokerCpi {
 	 * @return the job description
 	 * @throws GATInvocationException an exception might occur during creation
 	 */
-	public eu.unicore.hila.grid.job.JobDescription createJobDescription(SoftwareDescription sd)
-			throws GATInvocationException {
+	public JobModel createJobDescription(SoftwareDescription sd) throws GATInvocationException {
 
-		JSDLBuilder jsdlBuilder = new JSDLBuilder();
+		JobModel model = new JobModel();
 
-		// FIXME: Change, whenever SofwareDescription offers JobName.
-		jsdlBuilder.setTaskName("Unicore-GAT" + sd.getExecutable());
+		model.setTaskName("Unicore-GAT" + sd.getExecutable());
+		// jsdlBuilder.setTaskName("Unicore-GAT" + sd.getExecutable());
 
-		jsdlBuilder.setExecutable("$PWD/" + sd.getExecutable()); // "$PWD" could be a problem with windows sites
+		model.setExecutable("$PWD/" + sd.getExecutable());
+		// jsdlBuilder.setExecutable("$PWD/" + sd.getExecutable()); // "$PWD" could be a problem with windows sites
 
 		String[] jobArgs = sd.getArguments();
 
 		if (jobArgs != null) {
 			for (String argument : jobArgs) {
-				jsdlBuilder.addArgument(argument);
+				model.addArgument(argument);
+				// jsdlBuilder.addArgument(argument);
 			}
 		}
 
@@ -150,79 +148,37 @@ public class Unicore6ResourceBrokerAdaptor extends ResourceBrokerCpi {
 		// fileSystem.setDescription("Unicore working dir");
 		// jsdlBuilder.setResources(resources);
 
-		JobDefinitionDocument tempJobDefDocument = null;
+		// JobDefinitionDocument tempJobDefDocument = null;
+		//
+		// try {
+		// //model.
+		// tempJobDefDocument = jsdlBuilder.getJsdl();
+		// } catch (HiLAException e) {
+		// throw new GATInvocationException("Unicore JSDL handling exception", e);
+		// }
+		//
+		// final JobDefinitionDocument jobDefDocument = tempJobDefDocument;
+		//
+		// eu.unicore.hila.grid.job.JobDescription jobDescription = new eu.unicore.hila.grid.job.JobDescription() {
+		// public Object getActualJobDescription() {
+		// return jobDefDocument;
+		// }
+		// };
 
-		try {
-			tempJobDefDocument = jsdlBuilder.getJsdl();
-		} catch (HiLAException e) {
-			throw new GATInvocationException("Unicore JSDL handling exception", e);
-		}
-
-		final JobDefinitionDocument jobDefDocument = tempJobDefDocument;
-
-		eu.unicore.hila.grid.job.JobDescription jobDescription = new eu.unicore.hila.grid.job.JobDescription() {
-			public Object getActualJobDescription() {
-				return jobDefDocument;
-			}
-		};
-
-		return jobDescription;
+		return model;
 	}
 
 	/**
 	 * Returns the available site names.
+	 * 
+	 * @param resourceDescription
+	 * @return
+	 * @throws GATInvocationException
 	 */
 	public List<HardwareResource> findResources(ResourceDescription resourceDescription) throws GATInvocationException {
 		initSecurity(gatContext);
 
-		List<HardwareResource> resources = new ArrayList<HardwareResource>();
-
-		Location location;
-		List<? extends Resource> sites = null;
-
-		if (registries != null) {
-			SiteLocator locator = SiteLocator.getInstance();
-
-			try {
-				location = new Location("unicore6:/");
-				Unicore6Grid grid = Unicore6Grid.locate(location);
-
-				if (username != null) {
-					sites = locator.getAllSites(registries, grid.getProperties(), new Location("unicore6:/" + username
-							+ "@sites/"));
-				} else {
-					sites = locator.getAllSites(registries, grid.getProperties(), new Location("unicore6:/sites/"));
-				}
-
-			} catch (HiLAException e) {
-				throw new GATInvocationException("Error while retrieving sites.", e);
-			}
-		} else {
-			if (username != null) {
-				location = new Location(java.net.URI.create("unicore6:/" + username + "@sites/"));
-			} else {
-				location = new Location(java.net.URI.create("unicore6:/sites/"));
-			}
-
-			try {
-				Resource resource = location.locate();
-				sites = resource.getChildren();
-
-			} catch (HiLAException e) {
-				throw new GATInvocationException("Error while retrieving sites.", e);
-			}
-		}
-
-		if (sites != null) {
-			for (Resource site : sites) {
-				if (site != null) {
-					HardwareResource hwRes = new Unicore6SiteResource(gatContext);
-					hwRes.getResourceDescription().addResourceAttribute("sitename", site.getName());
-					resources.add(hwRes);
-				}
-			}
-		}
-
+		List<HardwareResource> resources = HiLAHelper.findResources(gatContext, registries, username);
 		return resources;
 	}
 
@@ -240,9 +196,20 @@ public class Unicore6ResourceBrokerAdaptor extends ResourceBrokerCpi {
 
 		SoftwareDescription softwareDescr = unicoreJobDescr.getSoftwareDescription();
 
-		String host = "unicore6:" + brokerURI.getPath();
+		String brokerPath = "unicore6:" + brokerURI.getPath(); // The path of the uri as submitted by the user
 
-		LOGGER.debug("Unicore adaptor will use '" + host + "' as execution host");
+		// get sitename
+//		String siteNameWithTimeStamp = HiLAHelper.getCurrentSiteNameWithTimeStamp(gatContext, registries, username,
+//				brokerPath.substring(brokerPath.lastIndexOf('/') + 1));
+//
+//		if (null == siteNameWithTimeStamp) {
+//			throw new GATInvocationException("Cannot retrieve sitename with a timestamp!");
+//		}
+
+//		//The uri as submitted by the user
+//		String siteUri = "unicore6:" + brokerPath.substring(0, brokerPath.lastIndexOf('/') + 1) + siteNameWithTimeStamp; 
+
+		LOGGER.debug("Unicore adaptor will use '" + brokerPath + "' to submit the job");
 
 		Unicore6Job unicoreJob = new Unicore6Job(gatContext, unicoreJobDescr, null);
 
@@ -252,7 +219,7 @@ public class Unicore6ResourceBrokerAdaptor extends ResourceBrokerCpi {
 		}
 
 		try {
-			Resource resource = new Location(host).locate();
+			Resource resource = new Location(brokerPath).locate();
 
 			if (resource instanceof Site) {
 				unicoreJob.setSite((Site) resource);
@@ -270,6 +237,9 @@ public class Unicore6ResourceBrokerAdaptor extends ResourceBrokerCpi {
 			prestageFiles(softwareDescr, hilaJob.getWorkingDirectory());
 
 			hilaJob.startASync();
+			// Metadata metaData = hilaJob.getMetadata();
+			String taskName = hilaJob.getTaskName();
+
 			unicoreJob.setState(Job.JobState.SCHEDULED);
 			unicoreJob.setJob(hilaJob);
 			unicoreJob.setSoftwareDescription(softwareDescr);
