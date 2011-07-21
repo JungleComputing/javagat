@@ -119,21 +119,17 @@ public class Unicore6ResourceBrokerAdaptor extends ResourceBrokerCpi {
 
 		JobModel model = new JobModel();
 
-		model.setTaskName("Unicore-GAT" + sd.getExecutable());
-		// jsdlBuilder.setTaskName("Unicore-GAT" + sd.getExecutable());
-
-		model.setExecutable("$PWD/" + sd.getExecutable());
-		// jsdlBuilder.setExecutable("$PWD/" + sd.getExecutable()); // "$PWD" could be a problem with windows sites
+		model.setTaskName("Unicore-GAT-" + sd.getExecutable());		
+		model.setExecutable(sd.getExecutable());
 
 		String[] jobArgs = sd.getArguments();
 
 		if (jobArgs != null) {
 			for (String argument : jobArgs) {
 				model.addArgument(argument);
-				// jsdlBuilder.addArgument(argument);
 			}
 		}
-
+		
 		// Map<org.gridlab.gat.io.File, org.gridlab.gat.io.File>
 		// preStagedFiles=sd.getPreStaged();
 		// for(Entry<org.gridlab.gat.io.File, org.gridlab.gat.io.File>
@@ -302,6 +298,10 @@ public class Unicore6ResourceBrokerAdaptor extends ResourceBrokerCpi {
 					if (locFile.canExecute()) {
 						try {
 							remFile.chmod(true, false, true);
+							
+							if (remFile.isExecutable() == false) {
+								LOGGER.warn("chmod failure of" + remFile.getName() + "might cause that the program can't be executed");
+							}
 						} catch (HiLAException e) {
 							e.printStackTrace();
 							LOGGER.warn("chmod failure of" + remFile.getName()
