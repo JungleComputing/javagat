@@ -98,7 +98,7 @@ public class GridFTPReadOnlyRandomAccessFileAdaptor extends RandomAccessFileCpi 
         readPrefs.put("ftp.connection.passive", "true");
 
 		try {
-			client = GridFTPFileAdaptor.doWorkCreateClient(gatContext, readPrefs, location);
+			client = GridFTPFileAdaptor.doCreateClient(gatContext, readPrefs, location);
 			client.setType(GridFTPSession.TYPE_IMAGE);
 			client.setPassive();
 			client.setLocalActive();
@@ -127,8 +127,12 @@ public class GridFTPReadOnlyRandomAccessFileAdaptor extends RandomAccessFileCpi 
 	@Override
 	public void close() throws GATInvocationException {
 		isClosed = true;
-		if (client != null) {
-			GridFTPFileAdaptor.doDestroyClient(gatContext, client, location, null);
+		try {
+			if (client != null) {
+				GridFTPFileAdaptor.doDestroyClient(gatContext, client, location, null);
+			}
+		} catch (Exception e) {
+			logger.error("Error closing stream", e);
 		}
 	} // public void close() throws GATInvocationException
 	
