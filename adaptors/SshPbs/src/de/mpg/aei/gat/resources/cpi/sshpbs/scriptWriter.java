@@ -19,17 +19,11 @@ import java.util.Date;*/
 
 public class scriptWriter extends PrintWriter {
 //    private static final DateFormat sFormatter = new SimpleDateFormat("yyyyMMddHHmm.ss");
-    private String mSuffix = "#PBS";
+    private String mSuffix;
 
     public scriptWriter (Writer out, String suffix) {
     	super(out);
     	mSuffix = suffix;
-    }
-
-    public void addParam(String opt, Object param) {
-        if (param != null) {
-            addOption(opt, null);
-        }
     }
 
     public void addString(String opt, Object param) {
