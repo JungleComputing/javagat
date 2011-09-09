@@ -14,6 +14,7 @@ import java.io.IOException;
 import java.lang.StringBuffer;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Map;
 import java.util.HashMap;
 
@@ -180,7 +181,6 @@ public class SshPbsResourceBrokerAdaptor extends ResourceBrokerCpi {
 	 * CommandLinesshAdaptor, still requires testing!
 	 */
 
-	String path = getExecutable(description);
 	String authority = getAuthority();
 	if (authority == null) {
 	    authority = "localhost";
@@ -478,8 +478,6 @@ public class SshPbsResourceBrokerAdaptor extends ResourceBrokerCpi {
     String sshPbsSubmission(SshPbsJob PbsJob, JobDescription description,
 	    String qsubFileName, Sandbox sandbox) throws GATInvocationException {
 
-	String JobID = null;
-
 	String username = securityInfo.get("username");
 	// String password = securityInfo.get("password");
 
@@ -515,7 +513,9 @@ public class SshPbsResourceBrokerAdaptor extends ResourceBrokerCpi {
 	    }
 
 	    String ScpRes[] = PbsJob.singleResult(scpCommand);
-	    // logger.debug("result string of scp: ' " + ScpRes[0] + "'");
+	    if (logger.isDebugEnabled()) {
+		logger.debug("result string of scp: '" + Arrays.toString(ScpRes) + "'");
+	    }
 
 	    /**
 	     * and create the ssh command for qsub...

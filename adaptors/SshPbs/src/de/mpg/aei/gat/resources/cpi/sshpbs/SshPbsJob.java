@@ -119,10 +119,6 @@ public class SshPbsJob extends JobCpi {
 	this.stoptime = sj.getStoptime();
 	this.submissiontime = sj.getSubmissiontime();
 
-	ClassLoader saved = Thread.currentThread().getContextClassLoader();
-	Thread.currentThread().setContextClassLoader(
-		this.getClass().getClassLoader());
-
 	// reconstruct enough of the software description to be able to
 	// poststage.
 
@@ -452,7 +448,7 @@ public class SshPbsJob extends JobCpi {
 		}
 		pbsLine = null;
 	    }
-	    if (pbsLine != null) {
+	    if (pbsLine == null) {
 		logger.debug("no job status information for '" + this.jobID
 			+ "' found.");
 		// if was running, assume it is finished now.
@@ -647,14 +643,17 @@ public class SshPbsJob extends JobCpi {
 	    scpCommand.add(username + "@" + host + ":.rc." + jobID);
 	    scpCommand.add(homeDir + "/.rc." + jobID);
 
+	    String[] outStr;
 	    try {
-		String outStr[] = singleResult(scpCommand);
-		logger.info("SshPbsJob scp of exit status file request returned:"
-			+ outStr);
-
-		/**
-		 * delete the remote file with the exit status
-		 */
+		outStr = singleResult(scpCommand);
+		logger.debug("SshPbsJob scp of exit status file request returned:"
+			+ Arrays.toString(outStr));
+	    } catch (IOException e) {
+		logger.debug("Failed scp " + username + "@" + host + ":.rc."
+			+ jobID + " " + homeDir + "/.rc." + jobID);
+		
+	    } finally {
+		// delete the remote file with the exit status
 
 		ArrayList<String> rmCommand = new ArrayList<String>();
 		rmCommand.add("/usr/bin/ssh");
@@ -669,17 +668,12 @@ public class SshPbsJob extends JobCpi {
 		rmCommand.add(username + "@" + host);
 		rmCommand.add("rm " + ".rc." + jobID);
 		try {
-		    String outrmStr[] = singleResult(rmCommand);
+		    outStr = singleResult(rmCommand);
 		} catch (IOException e) {
-		    logger.error("failed ssh " + username + "@" + host
-			    + " rm .rc." + jobID);
-		    e.printStackTrace();
+		    logger.debug("failed ssh " + username + "@" + host
+			    + " rm .rc." + jobID, e);
+		    // ignore?
 		}
-
-	    } catch (IOException e) {
-		logger.error("Failed scp " + username + "@" + host + ":~/.rc."
-			+ jobID + " " + homeDir + "/.rc." + jobID);
-		e.printStackTrace();
 	    }
 	}
     }
