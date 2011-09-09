@@ -77,7 +77,7 @@ public class LocalResourceBrokerAdaptor extends ResourceBrokerCpi {
     }
     
     public static String[] getSupportedSchemes() {
-        return new String[] { "local", ""};
+        return new String[] { "local", "fork", ""};
     }
 
     protected static Logger logger = LoggerFactory
