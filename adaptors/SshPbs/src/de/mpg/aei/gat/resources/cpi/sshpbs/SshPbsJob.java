@@ -60,6 +60,8 @@ public class SshPbsJob extends JobCpi {
     int ssh_port;
     
     boolean use_sge;
+    
+    private JobListener jsl;
 
     /**
      * security stuff for offline monitoring
@@ -157,35 +159,42 @@ public class SshPbsJob extends JobCpi {
     }
 
     /**
-     * The jobStartListener runs in a thread and checks the job's state. When it
-     * detects a state transition from SCHEDULED to RUN, it writes the time and
-     * exits
+     * The jobListener runs in a thread and checks the job's state.
      */
-    private class jobStartListener implements Runnable {
+    private class JobListener extends Thread {
 
 	final int SLEEP = 250;
 
 	String jobID = null;
 	SoftwareDescription Soft = null;
 
-	public jobStartListener(String jobID, SoftwareDescription Soft) {
-	    // this.session = session;
+	private boolean terminated;
 
+	public JobListener(String jobID, SoftwareDescription Soft) {
+	    // this.session = session;
 	    this.jobID = jobID;
 	    this.Soft = Soft;
 	}
 
 	public void run() {
 	    for (;;) {
-		JobState s = getState();
-		if (s != JobState.RUNNING && s != JobState.SCHEDULED) {
-		    logger.debug("Job Status is:  " + s.toString());
-		    if (s == JobState.SUBMISSION_ERROR) {
+		try {
+		    setState();
+		} catch (GATInvocationException e) {
+		    logger.debug("GATInvocationException caught in thread jobListener");
+		    setState(JobState.SUBMISSION_ERROR);
+		}		    
+		    
+		if (state != JobState.RUNNING && state != JobState.SCHEDULED) {
+		    logger.debug("Job Status is:  " + state.toString());
+		    if (state == JobState.SUBMISSION_ERROR) {
 			logger.debug("Job submission failed");
 			break;
-		    } else if (s == JobState.STOPPED || s == JobState.POST_STAGING) {
+		    } else if (state == JobState.STOPPED || state == JobState.POST_STAGING) {
 			break;
 		    }
+		} else {
+		    break;
 		}
 		try {
 		    Thread.sleep(SLEEP);
@@ -195,40 +204,10 @@ public class SshPbsJob extends JobCpi {
 	    }
 
 	    // Now we're in RUNNING state - set the time and start the
-	    // jobStopListener
+	    // jobListener
 
 	    starttime = System.currentTimeMillis();
-
-	    if (state != JobState.STOPPED && state != JobState.SUBMISSION_ERROR
-		    && state != JobState.POST_STAGING) {
-		jobStopListener jsl = new jobStopListener(this.jobID, this.Soft);
-		Thread t = new Thread(jsl);
-		t.setDaemon(true);
-		t.start();
-	    } else {
-		logger.debug("will get poststagefiles from jobstartlistener");
-		// poststageFiles(Soft);
-	    }
-	}
-    }
-
-    /**
-     * The jobStopListener runs in a thread and checks the job's state. When it
-     * detects a state transition from RUN to STOP, it writes the time and exits
-     */
-    private class jobStopListener implements Runnable {
-
-	final int SLEEP = 250;
-	SoftwareDescription Soft = null;
-
-	String jobID = null;
-
-	public jobStopListener(String jobID, SoftwareDescription Soft) {
-	    this.jobID = jobID;
-	    this.Soft = Soft;
-	}
-
-	public void run() {
+	    
 	    try {
 		while (state != JobState.STOPPED && state != JobState.POST_STAGING) {
 		    if (state == JobState.SUBMISSION_ERROR) {
@@ -236,10 +215,10 @@ public class SshPbsJob extends JobCpi {
 			break;
 		    }
 		    logger.debug("SshPbs Job still running");
-		    setState();
 		    Thread.sleep(SLEEP);
+		    setState();
 		}
-
+		terminate(true, true);
 		// Now we're in STOPPED state - set the time and exit
 
 		setState(JobState.POST_STAGING);
@@ -248,19 +227,50 @@ public class SshPbsJob extends JobCpi {
 		poststageFiles(Soft);
 		stoptime = System.currentTimeMillis();
 		setState(JobState.STOPPED);
-
 	    } catch (InterruptedException e) {
-		logger.debug("InterruptedException caught in thread jobStopListener");
+		logger.debug("InterruptedException caught in thread jobListener");
 		setState(JobState.SUBMISSION_ERROR);
-		e.printStackTrace();
 	    } catch (GATInvocationException e) {
-		logger.debug("GATInvocationException caught in thread jobStopListener");
-		System.out.println("SshPbs Adaptor: error in posstaging");
+		logger.debug("GATInvocationException caught in thread jobListener");
 		setState(JobState.SUBMISSION_ERROR);
-		e.printStackTrace();
 	    }
 	}
+	
+	private synchronized void terminate(boolean fromThread, boolean mustPoststage) {
+           
+            if (terminated) {
+        	return;
+            }
+
+            terminated = true;
+            
+            if (! fromThread) {
+        	try {
+        	    jsl.join();
+        	} catch (Throwable e1) {
+        	    // ignore
+        	}
+            }
+            
+            if (mustPoststage) {
+        	setState(JobState.POST_STAGING);
+        	poststageFiles(Soft);
+            }
+	    stoptime = System.currentTimeMillis();
+	    setState(JobState.STOPPED);
+            finished();
+             if (logger.isInfoEnabled()) {
+        	logger.info("Finished job ID: " + jobID);
+            }
+        }
+        
+        public void stop(boolean mustPoststage) {
+            SshPbsJobStop(); // SshPbsJobStop still needs to be implemented.
+	    logger.debug("SshPbs Job " + jobID + " stopped by user");
+            terminate(false, mustPoststage);
+        }
     }
+
 
     /*
      * public String getJobID() { return jobID; }
@@ -277,7 +287,7 @@ public class SshPbsJob extends JobCpi {
     }
 
     protected void startListener() {
-	jobStartListener jsl = new jobStartListener(this.jobID, this.Soft);
+	jsl = new JobListener(this.jobID, this.Soft);
 	Thread t = new Thread(jsl);
 	t.setDaemon(true);
 	t.start();
@@ -542,7 +552,9 @@ public class SshPbsJob extends JobCpi {
     }
 
     public synchronized void stop() throws GATInvocationException {
+	
 	setState();
+		
         if (state == JobState.POST_STAGING || state == JobState.STOPPED
                 || state == JobState.SUBMISSION_ERROR) {
             return;
@@ -553,6 +565,8 @@ public class SshPbsJob extends JobCpi {
 	    throw new GATInvocationException(
 		    "Cant stop(): job is not in a running state");
 	} else {
+	    jsl.stop(!(gatContext.getPreferences().containsKey("job.stop.poststage")
+        	    && gatContext.getPreferences().get("job.stop.poststage").equals("false")));
 	    SshPbsJobStop(); // SshPbsJobStop still needs to be implemented.
 	    state = JobState.STOPPED;
 	    if (stoptime == 0L) {
@@ -610,8 +624,7 @@ public class SshPbsJob extends JobCpi {
 	}
     }
 
-    private synchronized void poststageFiles(SoftwareDescription sd)
-	    throws GATInvocationException {
+    private synchronized void poststageFiles(SoftwareDescription sd) {
 
 	if (b_PostStage) {
 	    logger.debug("no post staging. b_PostStage = " + b_PostStage);
