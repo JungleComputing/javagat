@@ -89,7 +89,7 @@ public abstract class GlobusFileAdaptor extends FileCpi {
 	static final int DEFAULT_HTTPS_PORT = 443;
 
 	static final int NO_SUCH_FILE_OR_DIRECTORY = 550;
-
+        
 	// cache dir info, getting it can be an expensive operation, especially on
 	// old servers.
 	private static HashMap<URI, Integer> isDirCache = new HashMap<URI, Integer>();
@@ -264,26 +264,38 @@ public abstract class GlobusFileAdaptor extends FileCpi {
 			String remoteDestFile = dest.getPath();
 
 			srcClient.transfer(remoteSrcFile, destClient, remoteDestFile, false, null);
-		} catch (Exception e) {
-			try {
-				// use a local tmp file.
-				java.io.File tmp = null;
-				tmp = java.io.File.createTempFile("GATgridFTP", ".tmp");
-				URI u = new URI("any:///" + tmp.getPath());
-				if (logger.isDebugEnabled()) {
-					logger.debug("thirdparty copy failed, using temp file: " + u, e);
-				}
-				tmpFile = GAT.createFile(gatContext, u);
+                } catch (Exception e) {
+                        if (!(e instanceof ClientException && ((ClientException)e).getCode() == 7)){
+                            try {
+                                    // use a local tmp file.
+                                    java.io.File tmp = null;
+                                    tmp = java.io.File.createTempFile("GATgridFTP", ".tmp");
+                                    URI u = new URI("any:///" + tmp.getPath());
+                                    if (logger.isDebugEnabled()) {
+                                            logger.debug("thirdparty copy failed, using temp file: " + u, e);
+                                    }
+                                    tmpFile = GAT.createFile(gatContext, u);
 
-				copyToLocal(src, u);
-				tmpFile.copy(dest);
-			} catch (Exception e2) {
-				GATInvocationException oops = new GATInvocationException();
-				oops.add("Globus file", e);
-				oops.add("Globus file", e2);
+                                    copyToLocal(src, u);
+                                    tmpFile.copy(dest);
+                            } catch (Exception e2) {
+                                    GATInvocationException oops = new GATInvocationException();
+                                    oops.add("Globus file", e);
+                                    oops.add("Globus file", e2);
 
-				throw oops;
-			}
+                                    throw oops;
+                            }
+                        } else if (srcClient != null) {
+                            try{
+                                srcClient.abort();
+                            } catch (Exception se) {
+                                GATInvocationException oops = new GATInvocationException();
+                                oops.add("Globus file", se);
+                                throw oops;
+                            }
+                            GATInvocationException oops = new GATInvocationException("Copy task was cancelled");
+                            throw oops;
+                        }
 		} finally {
 			if (srcClient != null) {
 				destroyLongClient(gatContext, srcClient, src, additionalPreferences);
@@ -302,7 +314,7 @@ public abstract class GlobusFileAdaptor extends FileCpi {
 			}
 		}
 	}
-
+        
 	public boolean createNewFile() throws GATInvocationException {
 		if (exists()) {
 			return false;
