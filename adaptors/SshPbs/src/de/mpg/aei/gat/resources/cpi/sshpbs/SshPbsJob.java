@@ -377,7 +377,7 @@ public class SshPbsJob extends JobCpi {
 	 */
 
 	String username = securityInfo.get("username");
-	String host = brokerURI.getHost();;
+	String host = brokerURI.getHost();
 
 	if (host == null) {
 	    host = "localhost";
