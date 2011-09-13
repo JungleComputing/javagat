@@ -26,6 +26,7 @@ import org.gridlab.gat.advert.Advertisable;
 import org.gridlab.gat.engine.GATEngine;
 import org.gridlab.gat.monitoring.Metric;
 import org.gridlab.gat.monitoring.MetricDefinition;
+import org.gridlab.gat.monitoring.MetricEvent;
 import org.gridlab.gat.resources.JobDescription;
 import org.gridlab.gat.resources.SoftwareDescription;
 import org.gridlab.gat.resources.cpi.JobCpi;
@@ -155,7 +156,12 @@ public class SshPbsJob extends JobCpi {
     }
 
     protected synchronized void setState(JobState state) {
-	this.state = state;
+	if (this.state != state) {
+	    this.state = state;
+	    MetricEvent v = new MetricEvent(this, state, statusMetric, System
+		    .currentTimeMillis());
+	    fireMetric(v);
+	}
     }
 
     /**
@@ -221,10 +227,6 @@ public class SshPbsJob extends JobCpi {
 		terminate(true, true);
 		// Now we're in STOPPED state - set the time and exit
 
-		setState(JobState.POST_STAGING);
-		// task.getOutcomeFiles();
-		logger.debug("will get poststagefiles from jobstoplistener");
-		poststageFiles(Soft);
 		stoptime = System.currentTimeMillis();
 		setState(JobState.STOPPED);
 	    } catch (InterruptedException e) {
@@ -373,8 +375,6 @@ public class SshPbsJob extends JobCpi {
             return;
         }
 
-	JobState oldState = state;
-
 	logger.debug("Getting task status in setState()");
 
 	/**
@@ -406,9 +406,9 @@ public class SshPbsJob extends JobCpi {
 	    String pbsState[] = singleResult(command);
 	    s = mapPbsStatetoGAT(pbsState);
 	    if (s != JobState.STOPPED) {
-		state = s;
+		setState(s);
 	    } else {
-		state = JobState.POST_STAGING;
+		setState(JobState.POST_STAGING);
 	    }
 	} catch (IOException e) {
 	    logger.error("retrieving job status sshpbsjob failed");
@@ -428,9 +428,6 @@ public class SshPbsJob extends JobCpi {
 	    if (stoptime == 0L) {
 		setStopTime();
 	    }
-	}
-	if (state != oldState) {
-	    notifyAll();
 	}
     }
 
@@ -780,22 +777,33 @@ public class SshPbsJob extends JobCpi {
 	    m.put(HOSTNAME, null);
 	}
 
-	if (state == JobState.INITIAL || state == JobState.UNKNOWN
-		|| state == JobState.SCHEDULED) {
-	    m.put(STARTTIME, null);
-	} else {
-	    m.put(STARTTIME, starttime);
-	}
-	if (state != JobState.STOPPED) {
-	    m.put(STOPTIME, null);
-	} else {
-	    m.put(STOPTIME, stoptime);
-	    poststageFiles(Soft);
-	}
+        m.put(STATE, state.toString());
 
-	m.put(STATE, state.toString());
+        if (state == JobState.INITIAL || state == JobState.UNKNOWN
+                || state == JobState.SCHEDULED) {
+            m.put(STARTTIME, null);
+        } else {
+            m.put(STARTTIME, starttime);
+        }
+        if (state != JobState.STOPPED) {
+            m.put(STOPTIME, null);
+        } else {
+            m.put(STOPTIME, stoptime);
+        }
+        if (submissiontime != 0) {
+            m.put(SUBMISSIONTIME, submissiontime);
+        } else {
+            m.put(SUBMISSIONTIME, null);
+        }
+        m.put(POSTSTAGE_EXCEPTION, postStageException);
+        if (deleteException != null) {
+            m.put("delete.exception", deleteException);
+        }
+        if (wipeException != null) {
+            m.put("wipe.exception", wipeException);
+        }
 
-	return m;
+        return m;
     }
 
     /**
@@ -819,6 +827,9 @@ public class SshPbsJob extends JobCpi {
 	ProcessBuilder builder = new ProcessBuilder(command);
 	
         try {
+            if (logger.isDebugEnabled()) {
+        	logger.debug("Running command: " + Arrays.toString(command.toArray(new String[command.size()])));
+            }
 	    Process proc = builder.start();
 	    proc.waitFor();
 	    if (proc.exitValue() == 0) {

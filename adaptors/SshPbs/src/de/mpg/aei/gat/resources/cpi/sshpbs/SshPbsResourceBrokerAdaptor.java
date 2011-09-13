@@ -17,6 +17,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.HashMap;
+import java.util.Set;
 
 import org.gridlab.gat.AdaptorNotApplicableException;
 import org.gridlab.gat.GATContext;
@@ -197,7 +198,7 @@ public class SshPbsResourceBrokerAdaptor extends ResourceBrokerCpi {
 
 	// Sandbox sandbox = null;
 	Sandbox sandbox = new Sandbox(gatContext, description, authority, null,
-		true, false, false, false);
+		true, true, true, true);
 
 	/* Handle pre-/poststaging */
 	/*
@@ -401,7 +402,7 @@ public class SshPbsResourceBrokerAdaptor extends ResourceBrokerCpi {
 		if (sd.getStderr() != null) {
 		    job.addString("e", sd.getStderr().getName().toString());
 		}
-
+		
 		/**
 		 * the arguments for the executable...
 		 */
@@ -425,17 +426,29 @@ public class SshPbsResourceBrokerAdaptor extends ResourceBrokerCpi {
 
 		// Set working directory of job.
 		job.println("cd " + directory);
+		
+		// Support environment.
+		Map<String, Object> env = sd.getEnvironment();
+		if (env != null) {
+		    Set<String> s = env.keySet();
+		    Object[] keys = s.toArray();
+
+		    for (int i = 0; i < keys.length; i++) {
+			String val = (String) env.get(keys[i]);
+			job.println(keys[i] + "=" + val + " && export " + keys[i]);
+		    }
+                }
 
 		// cmd.append("$HOME/" + sandbox.getSandboxPath() + "/" +
 		// sd.getExecutable().toString());
 		// No, that assumes that the executable is in
 		// the sandbox. We don't know that. --Ceriel
-		cmd.append(sd.getExecutable().toString());
+		cmd.append(protectAgainstShellMetas(sd.getExecutable().toString()));
 		if (sd.getArguments() != null) {
 		    String[] args = sd.getArguments();
 		    for (int i = 0; i < args.length; ++i) {
 			cmd.append(" ");
-			cmd.append(args[i]);
+			cmd.append(protectAgainstShellMetas(args[i]));
 		    }
 		}
 		job.println(cmd.toString());
@@ -448,7 +461,7 @@ public class SshPbsResourceBrokerAdaptor extends ResourceBrokerCpi {
 		 * "  echo \"retvalue = $RETVALUE\" > $HOME.rc.$PBS_JOBID");
 		 */
 
-		job.println("  echo \"retvalue = $?\" > $HOME/.rc.$PBS_JOBID");
+		job.println("  echo \"retvalue = $?\" > $HOME/.rc." + (use_sge ? "$JOB_ID" : "$PBS_JOBID"));
 
 	    } catch (Exception e) {
 		e.printStackTrace();
@@ -537,8 +550,18 @@ public class SshPbsResourceBrokerAdaptor extends ResourceBrokerCpi {
 		command.add("&&");
 	    }
 	    command.add("qsub");
+            if (use_sge) {
+        	// Make qsub use current directory as working directory.
+        	// This is normal behaviour for PBS, but not for SGE, which has a separate option for this.
+        	command.add("-cwd");
+            }
             command.add("-C");
             command.add("'" + PREFIX + "'");
+            if (use_sge) {
+        	// Make qsub use current directory as working directory.
+        	// This is normal behaviour for PBS, but not for SGE, which has a separate option for this.
+        	command.add("-cwd");
+            }
 	    command.add(qsubFile.getName());
 
 	    String[] PbsJobID = PbsJob.singleResult(command);
@@ -546,6 +569,12 @@ public class SshPbsResourceBrokerAdaptor extends ResourceBrokerCpi {
 	    // Check for SGE qsub result ...
 	    if (result.startsWith("Your job ")) {
 		result = result.split(" ")[2];
+	    }
+	    
+	    try {
+		qsubFile.delete();
+	    } catch(Throwable e) {
+		logger.debug("Could not remove qsub script");
 	    }
 
 	    return result;
@@ -555,5 +584,22 @@ public class SshPbsResourceBrokerAdaptor extends ResourceBrokerCpi {
 	} catch (IOException e) {
 	    throw new GATInvocationException("Got IOException", e);
 	}
+    }
+    
+    // Protect against special characters for (most) unix shells.
+    private static String protectAgainstShellMetas(String s) {
+        char[] chars = s.toCharArray();
+        StringBuffer b = new StringBuffer();
+        b.append('\'');
+        for (char c : chars) {
+            if (c == '\'') {
+                b.append('\'');
+                b.append('\\');
+                b.append('\'');
+            }
+            b.append(c);
+        }
+        b.append('\'');
+        return b.toString();
     }
 }
