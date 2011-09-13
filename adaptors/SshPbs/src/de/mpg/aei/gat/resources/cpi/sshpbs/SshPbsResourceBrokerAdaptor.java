@@ -336,12 +336,6 @@ public class SshPbsResourceBrokerAdaptor extends ResourceBrokerCpi {
 		    Memsize = new String("");
 		}
 
-		Nodes = (String) rd_HashMap
-			.get(HardwareResourceDescription.CPU_COUNT);
-		if (Nodes == null) {
-		    Nodes = new String("1");
-		}
-		
 		String lString = null;
 		
 		if (use_sge) {
@@ -358,6 +352,11 @@ public class SshPbsResourceBrokerAdaptor extends ResourceBrokerCpi {
 		    }
 		    
 		} else {
+		    Nodes = (String) rd_HashMap
+			    .get(HardwareResourceDescription.CPU_COUNT);
+		    if (Nodes == null) {
+			Nodes = "" + description.getResourceCount();
+		    }
 		    if (Queue.length() == 0) {
 			lString = new String("walltime=" + Time + ",file="
 				+ Filesize + ",mem=" + Memsize + ",nodes=" + Nodes);

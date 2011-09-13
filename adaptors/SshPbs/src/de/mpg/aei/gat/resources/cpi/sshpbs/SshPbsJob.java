@@ -44,25 +44,16 @@ public class SshPbsJob extends JobCpi {
 
     private static final String homeDir = System.getProperty("user.home");
 
-    /**
-     * the global boolean b_PostStage is used for marking the poststage for a
-     * job having taken place. This is necessary to avoid a secondary
-     * poststaging which will occur with offline monitoring, because the
-     * unmarschalling and the getInfo method try to poststage.
-     */
-
-    private boolean b_PostStage = false;
-
     private String jobID;
     private MetricDefinition statusMetricDefinition;
     Metric statusMetric;
     private SoftwareDescription Soft;
-
-    int ssh_port;
     
     boolean use_sge;
     
     private JobListener jsl;
+    
+    Integer exitStatus = null;
 
     /**
      * security stuff for offline monitoring
@@ -92,7 +83,6 @@ public class SshPbsJob extends JobCpi {
 	 */
 
 	brokerURI = broker.getBrokerURI();
-	ssh_port = SshPbsResourceBrokerAdaptor.getPort(gatContext, brokerURI);
 	state = JobState.INITIAL;
 
 	HashMap<String, Object> returnDef = new HashMap<String, Object>();
@@ -261,7 +251,12 @@ public class SshPbsJob extends JobCpi {
 	    stoptime = System.currentTimeMillis();
 	    setState(JobState.STOPPED);
             finished();
-             if (logger.isInfoEnabled()) {
+            try {
+        	getExitStatus();
+            } catch(Throwable e) {
+        	// Should not happen.
+            }
+            if (logger.isInfoEnabled()) {
         	logger.info("Finished job ID: " + jobID);
             }
         }
@@ -411,10 +406,9 @@ public class SshPbsJob extends JobCpi {
 		setState(JobState.POST_STAGING);
 	    }
 	} catch (IOException e) {
-	    logger.error("retrieving job status sshpbsjob failed");
-	    e.printStackTrace();
+	    logger.debug("retrieving job status sshpbsjob failed");
 	    throw new GATInvocationException(
-		    "Unable to retrieve the Job Status");
+		    "Unable to retrieve the Job Status", e);
 	}
 
 	if (submissiontime == 0L) {
@@ -623,67 +617,61 @@ public class SshPbsJob extends JobCpi {
 
     private synchronized void poststageFiles(SoftwareDescription sd) {
 
-	if (b_PostStage) {
-	    logger.debug("no post staging. b_PostStage = " + b_PostStage);
-	    return;
-	} else {
+	/**
+	 * let the sandbox do the poststage...
+	 */
 
-	    /**
-	     * let the sandbox do the poststage...
-	     */
+	setState(JobState.POST_STAGING);
+	sandbox.retrieveAndCleanup(this);
 
-	    setState(JobState.POST_STAGING);
-	    sandbox.retrieveAndCleanup(this);
+	/**
+	 * poststage the file which contains the exit status of the
+	 * aplication...
+	 */
 
-	    /**
-	     * poststage the file which contains the exit status of the
-	     * aplication...
-	     */
+	String username = securityInfo.get("username");
+	int ssh_port = SshPbsResourceBrokerAdaptor.getPort(gatContext, brokerURI);
+	String host = brokerURI.getHost();
+	if (host == null) {
+	    host = "localhost";
+	}
 
-	    String username = securityInfo.get("username");
-	    ssh_port = SshPbsResourceBrokerAdaptor.getPort(gatContext, brokerURI);
-	    String host = brokerURI.getHost();
-	    if (host == null) {
-		host = "localhost";
+	ArrayList<String> scpCommand = new ArrayList<String>();
+
+	scpCommand.add("/usr/bin/scp");
+	scpCommand.add(username + "@" + host + ":.rc." + jobID);
+	scpCommand.add(homeDir + "/.rc." + jobID);
+
+	String[] outStr;
+	try {
+	    outStr = singleResult(scpCommand);
+	    logger.debug("SshPbsJob scp of exit status file request returned:"
+		    + Arrays.toString(outStr));
+	} catch (IOException e) {
+	    logger.debug("Failed scp " + username + "@" + host + ":.rc."
+		    + jobID + " " + homeDir + "/.rc." + jobID);
+
+	} finally {
+	    // delete the remote file with the exit status
+
+	    ArrayList<String> rmCommand = new ArrayList<String>();
+	    rmCommand.add("/usr/bin/ssh");
+	    if (ssh_port != SshPbsResourceBrokerAdaptor.SSH_PORT) {
+		rmCommand.add("-p");
+		rmCommand.add("" + ssh_port);
 	    }
-
-	    ArrayList<String> scpCommand = new ArrayList<String>();
-
-	    scpCommand.add("/usr/bin/scp");
-	    scpCommand.add(username + "@" + host + ":.rc." + jobID);
-	    scpCommand.add(homeDir + "/.rc." + jobID);
-
-	    String[] outStr;
+	    rmCommand.add("-o");
+	    rmCommand.add("BatchMode=yes");
+	    // rmCommand.add("-t");
+	    // rmCommand.add("-t");
+	    rmCommand.add(username + "@" + host);
+	    rmCommand.add("rm " + ".rc." + jobID);
 	    try {
-		outStr = singleResult(scpCommand);
-		logger.debug("SshPbsJob scp of exit status file request returned:"
-			+ Arrays.toString(outStr));
+		outStr = singleResult(rmCommand);
 	    } catch (IOException e) {
-		logger.debug("Failed scp " + username + "@" + host + ":.rc."
-			+ jobID + " " + homeDir + "/.rc." + jobID);
-		
-	    } finally {
-		// delete the remote file with the exit status
-
-		ArrayList<String> rmCommand = new ArrayList<String>();
-		rmCommand.add("/usr/bin/ssh");
-		if (ssh_port != SshPbsResourceBrokerAdaptor.SSH_PORT) {
-		    rmCommand.add("-p");
-		    rmCommand.add("" + ssh_port);
-		}
-		rmCommand.add("-o");
-		rmCommand.add("BatchMode=yes");
-		// rmCommand.add("-t");
-		// rmCommand.add("-t");
-		rmCommand.add(username + "@" + host);
-		rmCommand.add("rm " + ".rc." + jobID);
-		try {
-		    outStr = singleResult(rmCommand);
-		} catch (IOException e) {
-		    logger.debug("failed ssh " + username + "@" + host
-			    + " rm .rc." + jobID, e);
-		    // ignore?
-		}
+		logger.debug("failed ssh " + username + "@" + host
+			+ " rm .rc." + jobID, e);
+		// ignore?
 	    }
 	}
     }
@@ -702,15 +690,21 @@ public class SshPbsJob extends JobCpi {
      * 
      * @return int rc
      * @author Alexander Beck-Ratzka, AEI, 21.9.2010.
+     * @throws GATInvocationException 
      * 
      */
 
-    public int getExitStatus() {
+    public synchronized int getExitStatus() throws GATInvocationException {
+        if (state != JobState.STOPPED && state != JobState.SUBMISSION_ERROR) {
+            throw new GATInvocationException(
+                    "not in STOPPED or SUBMISSION_ERROR state");
+        }
+        
+	if (exitStatus != null) {
+	    return exitStatus.intValue();
+	}
 
-	/**
-	 * retrieve the exit status from the file $HOME/.rc.PBS_JOBID
-	 * 
-	 */
+	// Retrieve the exit status from the file $HOME/.rc.PBS_JOBID
 
 	String marker = "retvalue = ";
 	String line = null;
@@ -734,23 +728,22 @@ public class SshPbsJob extends JobCpi {
 		rc = Integer.parseInt(rc_String);
 	    }
 	    fi.delete();
+	    exitStatus = new Integer(rc);
 	    return rc;
 
 	} catch (FileNotFoundException e) {
-	    logger.error("SshPbs adaptor: exit value file " + fileName
+	    logger.debug("SshPbs adaptor: exit value file " + fileName
 		    + " not found!");
-	    e.printStackTrace();
+	    exitStatus = new Integer(-1);
 	    return -1;
 	} catch (IOException e) {
 	    try {
 		rExit.close();
 	    } catch (IOException e1) {
-		// TODO Auto-generated catch block
-		logger.error("SshPbs adaptor: Close error after read error on "
+		logger.debug("SshPbs adaptor: Close error after read error on "
 			+ fileName);
-		e1.printStackTrace();
 	    }
-	    e.printStackTrace();
+	    exitStatus = new Integer(-1);
 	    return -1;
 	}
     }
