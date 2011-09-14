@@ -25,6 +25,8 @@ public class CommandlineSshFileAdaptor extends FileCpi {
         capabilities.put("copy", true);
         capabilities.put("createNewFile", true);  
         capabilities.put("delete", true);
+        capabilities.put("getAbsolutePath", true);
+        capabilities.put("getAbsoluteFile", true);
         capabilities.put("isDirectory", true);
         capabilities.put("isFile", true);
         capabilities.put("length", true);
@@ -252,6 +254,37 @@ public class CommandlineSshFileAdaptor extends FileCpi {
         } catch (Exception e) {
             throw new GATInvocationException("file cpi", e);
         }
+    }
+    
+    public org.gridlab.gat.io.File getAbsoluteFile()
+            throws GATInvocationException {
+        String absUri = fixedURI.toString().replace(fixedURI.getPath(),
+                getAbsolutePath());
+        try {
+            return GAT.createFile(gatContext, new URI(absUri));
+        } catch (Exception e) {
+            return null; // never executed
+        }
+    }
+
+    public String getAbsolutePath() throws GATInvocationException {
+	
+	String fixed = fixedURI.getPath();
+	if (fixed.startsWith("/")) {
+	    return fixed;
+	}
+
+	CommandRunner command = runSshCommand("echo","~");
+	if (command.getExitCode() != 0) {
+	    if (logger.isInfoEnabled()) {
+		logger.info("command failed, error = " + command.getStderr());
+	    }
+	    throw new GATInvocationException("Could not execute \"echo ~\"");
+	}
+	
+	String result = command.getStdout();
+
+	return result.replace("\n", "") + "/" + fixed;        
     }
 
     public boolean mkdir() throws GATInvocationException {
