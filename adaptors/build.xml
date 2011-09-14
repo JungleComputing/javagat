@@ -14,6 +14,7 @@
 		<ant dir="SftpTrilead" />
 		<ant dir="Sge" />
 		<ant dir="SshTrilead" />
+		<ant dir="SshPbs" />
 		<ant dir="Zorilla" />
 		<ant dir="Generic" />
 		<ant dir="Glite" />
@@ -29,6 +30,7 @@
 		<ant dir="Local" />
 		<ant dir="SftpTrilead" />
 		<ant dir="SshTrilead" />
+		<ant dir="SshPbs" />
 		<ant dir="Sge" />
 		<ant dir="Generic" />
 	</target>
@@ -51,6 +53,7 @@
 		<ant dir="SftpTrilead" target="clean" />
 		<ant dir="Sge" target="clean" />
 		<ant dir="SshTrilead" target="clean" />
+		<ant dir="SshPbs" target="clean" />
 		<ant dir="Zorilla" target="clean" />
 		<ant dir="Generic" target="clean" />
 		<ant dir="Glite" target="clean" />
@@ -93,6 +96,10 @@
 
 	<target name="sshtrilead" description="build SshTrilead adaptor">
 		<ant dir="SshTrilead" />
+	</target>
+
+	<target name="sshpbs" description="build SshPbs adaptor">
+		<ant dir="SshPbs" />
 	</target>
 
 	<target name="zorilla" description="build Zorilla adaptor">
