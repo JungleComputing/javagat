@@ -289,11 +289,12 @@ public abstract class GlobusFileAdaptor extends FileCpi {
                             try{
                                 srcClient.abort();
                             } catch (Exception se) {
-                                GATInvocationException oops = new GATInvocationException();
+                                GATInvocationException oops = new GATInvocationException("Copy task failed during abortion");
                                 oops.add("Globus file", se);
                                 throw oops;
                             }
                             GATInvocationException oops = new GATInvocationException("Copy task was cancelled");
+                            oops.add("Globus file",e);
                             throw oops;
                         }
 		} finally {

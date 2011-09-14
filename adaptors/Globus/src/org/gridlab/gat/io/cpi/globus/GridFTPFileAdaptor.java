@@ -340,7 +340,7 @@ public class GridFTPFileAdaptor extends GlobusFileAdaptor {
 					try {
 						Thread.sleep(2000);
 					} catch (InterruptedException e) {
-						logger.warn("An exception occurs while retrying to obtain the locks for copying.", e);
+						throw new GATInvocationException("GridFTPFileAdaptor", e);
 					}
 				} else {
 					try {
