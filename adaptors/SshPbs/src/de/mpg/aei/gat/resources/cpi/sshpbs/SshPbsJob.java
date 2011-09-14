@@ -12,6 +12,7 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -107,10 +108,17 @@ public class SshPbsJob extends JobCpi {
 	    logger.debug("reconstructing SshPbsJob: " + sj);
 	}
 
+	try {
+	    this.brokerURI = new URI(sj.getBrokerURI());
+	} catch (URISyntaxException e) {
+	    throw new GATObjectCreationException("Could not create brokerURI", e);
+	}
+	this.use_sge = sj.isUse_sge();
 	this.jobID = sj.getJobId();
 	this.starttime = sj.getStarttime();
 	this.stoptime = sj.getStoptime();
 	this.submissiontime = sj.getSubmissiontime();
+	this.securityInfo = SshPbsResourceBrokerAdaptor.getSecurityInfo(gatContext, brokerURI);
 
 	// reconstruct enough of the software description to be able to
 	// poststage.
@@ -146,8 +154,19 @@ public class SshPbsJob extends JobCpi {
     }
 
     protected synchronized void setState(JobState state) {
+	if (submissiontime == 0) {
+	    setSubmissionTime();
+	}
 	if (this.state != state) {
 	    this.state = state;
+	    if (state == JobState.RUNNING || state == JobState.POST_STAGING || state == JobState.STOPPED) {
+		if (starttime == 0) {
+		    setStartTime();
+		}
+	    }
+	    if (state == JobState.STOPPED) {
+		setStopTime();
+	    }
 	    MetricEvent v = new MetricEvent(this, state, statusMetric, System
 		    .currentTimeMillis());
 	    fireMetric(v);
@@ -159,7 +178,7 @@ public class SshPbsJob extends JobCpi {
      */
     private class JobListener extends Thread {
 
-	final int SLEEP = 250;
+	final int SLEEP = 1000;
 
 	String jobID = null;
 	SoftwareDescription Soft = null;
@@ -180,9 +199,8 @@ public class SshPbsJob extends JobCpi {
 		    logger.debug("GATInvocationException caught in thread jobListener");
 		    setState(JobState.SUBMISSION_ERROR);
 		}		    
-		    
+		logger.debug("Job Status is:  " + state.toString());
 		if (state != JobState.RUNNING && state != JobState.SCHEDULED) {
-		    logger.debug("Job Status is:  " + state.toString());
 		    if (state == JobState.SUBMISSION_ERROR) {
 			logger.debug("Job submission failed");
 			break;
@@ -202,7 +220,7 @@ public class SshPbsJob extends JobCpi {
 	    // Now we're in RUNNING state - set the time and start the
 	    // jobListener
 
-	    starttime = System.currentTimeMillis();
+	    setStartTime();
 	    
 	    try {
 		while (state != JobState.STOPPED && state != JobState.POST_STAGING) {
@@ -215,10 +233,6 @@ public class SshPbsJob extends JobCpi {
 		    setState();
 		}
 		terminate(true, true);
-		// Now we're in STOPPED state - set the time and exit
-
-		stoptime = System.currentTimeMillis();
-		setState(JobState.STOPPED);
 	    } catch (InterruptedException e) {
 		logger.debug("InterruptedException caught in thread jobListener");
 		setState(JobState.SUBMISSION_ERROR);
@@ -248,7 +262,6 @@ public class SshPbsJob extends JobCpi {
         	setState(JobState.POST_STAGING);
         	poststageFiles(Soft);
             }
-	    stoptime = System.currentTimeMillis();
 	    setState(JobState.STOPPED);
             finished();
             try {
@@ -317,7 +330,7 @@ public class SshPbsJob extends JobCpi {
 	    }
 
 	    sj = new SerializedSshPbsJob(getClass().getName(), jobDescription,
-		    sandbox, jobID, submissiontime, starttime, stoptime, Soft);
+		    sandbox, jobID, submissiontime, starttime, stoptime, Soft, brokerURI, use_sge);
 
 	}
 	String res = GATEngine.defaultMarshal(sj);
@@ -409,19 +422,6 @@ public class SshPbsJob extends JobCpi {
 	    logger.debug("retrieving job status sshpbsjob failed");
 	    throw new GATInvocationException(
 		    "Unable to retrieve the Job Status", e);
-	}
-
-	if (submissiontime == 0L) {
-	    setSubmissionTime();
-	}
-	if (state.equals(JobState.RUNNING)) {
-	    if (starttime == 0L) {
-		setStartTime();
-	    }
-	} else if (s.equals(JobState.STOPPED)) {
-	    if (stoptime == 0L) {
-		setStopTime();
-	    }
 	}
     }
 

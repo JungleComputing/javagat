@@ -100,7 +100,7 @@ public class SshPbsResourceBrokerAdaptor extends ResourceBrokerCpi {
 	// allow ssh port override.
 	ssh_port = getPort(gatContext, brokerURI);
 	
-	securityInfo = getSecurityInfo(gatContext, brokerURI, ssh_port);
+	securityInfo = getSecurityInfo(gatContext, brokerURI);
 	
 	// Determine if we need to use SGE syntax instead of PBS.
         use_sge = ((String) gatContext.getPreferences().get(SSH_SGE_STRING, "false"))
@@ -128,13 +128,17 @@ public class SshPbsResourceBrokerAdaptor extends ResourceBrokerCpi {
     }
 
     static Map<String, String> getSecurityInfo(GATContext gatContext,
-	    URI brokerURI, int ssh_port) throws GATObjectCreationException {
+	    URI brokerURI) throws GATObjectCreationException {
 
 	Map<String, String> securityInfo;
 
+	if (logger.isDebugEnabled()) {
+	    logger.debug("context: " + gatContext);
+	    logger.debug("broker: " + brokerURI);
+	}
 	try {
 	    securityInfo = SshPbsSecurityUtils.getSshCredential(gatContext,
-		    "sshpbs", brokerURI, ssh_port);
+		    "sshpbs", brokerURI, getPort(gatContext, brokerURI));
 	} catch (Throwable e) {
 	    logger.info("SshPbsResourceBrokerAdaptor: failed to retrieve credentials"
 		    + e);

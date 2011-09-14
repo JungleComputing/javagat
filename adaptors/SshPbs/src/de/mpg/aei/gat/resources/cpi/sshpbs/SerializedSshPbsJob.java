@@ -2,6 +2,7 @@ package de.mpg.aei.gat.resources.cpi.sshpbs;
 
 import java.util.Map;
 
+import org.gridlab.gat.URI;
 import org.gridlab.gat.io.File;
 import org.gridlab.gat.resources.JobDescription;
 import org.gridlab.gat.resources.SoftwareDescription;
@@ -19,16 +20,21 @@ public class SerializedSshPbsJob extends SerializedJob {
     private String[] toStageOut;
 
     private String[] stagedOut;
+    
+    private String brokerURI;
+    
+    private boolean use_sge;
 
     public SerializedSshPbsJob() {
     }
 
     public SerializedSshPbsJob(String classname, JobDescription jobDescription,
 	    Sandbox sandbox, String jobId, long submissiontime, long starttime,
-	    long stoptime, SoftwareDescription sd) {
+	    long stoptime, SoftwareDescription sd, URI brokerURI, boolean use_sge) {
 	super(classname, jobDescription, sandbox, jobId, submissiontime,
 		starttime, stoptime);
-
+	this.brokerURI = brokerURI.toString();
+	this.use_sge = use_sge;
 	// Get what is needed from the software description to deal with
 	// poststaging.
 	File s = sd.getStdout();
@@ -64,11 +70,8 @@ public class SerializedSshPbsJob extends SerializedJob {
 		 * some logs here...
 		 */
 
-		logger.debug("srcFile.getName " + srcFile.getName().toString());
-		if (destFile != null) {
-		    logger.debug("destFile.toString() " + destFile.toString());
-		    logger.debug("realpath(destFile.toURI() "
-			    + realPath(destFile.toGATURI()));
+		if (logger.isDebugEnabled()) {
+		    logger.debug("Poststage: src = " + toStageOut[index] + ", dest = " + stagedOut[index]);
 		}
 
 		index++;
@@ -114,11 +117,7 @@ public class SerializedSshPbsJob extends SerializedJob {
     private static boolean isWindowsPath(String s) {
 	String subStr = s.substring(0, 2);
 
-	if (subStr.matches("[a-zA-Z][:]")) {
-	    return true;
-	} else {
-	    return false;
-	}
+	return subStr.matches("[a-zA-Z][:]");
     }
 
     public String getStdout() {
@@ -152,4 +151,22 @@ public class SerializedSshPbsJob extends SerializedJob {
     public void setStagedOut(String[] stagedOut) {
 	this.stagedOut = stagedOut;
     }
+    
+
+    public String getBrokerURI() {
+        return brokerURI;
+    }
+
+    public void setBrokerURI(String brokerURI) {
+        this.brokerURI = brokerURI;
+    }
+    
+    public boolean isUse_sge() {
+        return use_sge;
+    }
+
+    public void setUse_sge(boolean use_sge) {
+        this.use_sge = use_sge;
+    }
+
 }
