@@ -3,7 +3,6 @@
  */
 package org.gridlab.gat.resources.cpi.local;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.lang.reflect.Field;
@@ -210,50 +209,64 @@ public class LocalJob extends JobCpi {
         return exitStatus;
     }
 
-    public synchronized void stop() throws GATInvocationException {
+    public void stop() throws GATInvocationException {
         stop(gatContext.getPreferences().containsKey("job.stop.poststage")
                 && gatContext.getPreferences().get("job.stop.poststage")
                         .equals("false"), true);
     }
+    
+    private boolean stopping = false;
 
-    private synchronized void stop(boolean skipPostStage, boolean kill)
+    private void stop(boolean skipPostStage, boolean kill)
             throws GATInvocationException {
-        if (state == JobState.POST_STAGING
-                || state == JobState.STOPPED
-                || state == JobState.SUBMISSION_ERROR) {
-            return;
-        }
-        
-        try {
-            p.getOutputStream().close();
-        } catch (IOException e) {
-            // ignore
-        }
-               
-        if (kill) {
-            p.destroy();
-        }
-        
-        if (outputStreamFile != null) {
-            outputStreamFile.waitUntilFinished();
-            try {
-                outputStreamFile.close();
-            } catch(Throwable e) {
-                // ignored
-            }
-        }
-        if (errorStreamFile != null) {
-            errorStreamFile.waitUntilFinished();
-            try {
-                errorStreamFile.close();
-            } catch(Throwable e) {
-                // ignored
-            }
-        }
+	synchronized(this) {
+	    if (stopping) {
+		return;
+	    }
+	    stopping = true;
+	    if (state == JobState.POST_STAGING
+		    || state == JobState.STOPPED
+		    || state == JobState.SUBMISSION_ERROR) {
+		return;
+	    }
+	}
+
+	try {
+	    p.getOutputStream().close();
+	} catch (Throwable e) {
+	    // ignored
+	}
+
+	if (kill) {
+	    p.destroy();
+	}
+
+	if (outputStreamFile != null) {
+	    outputStreamFile.waitUntilFinished();
+	    try {
+		outputStreamFile.close();
+	    } catch(Throwable e) {
+		// ignored
+	    }
+	}
+	if (errorStreamFile != null) {
+	    errorStreamFile.waitUntilFinished();
+	    try {
+		errorStreamFile.close();
+	    } catch(Throwable e) {
+		// ignored
+	    }
+	}
+	if (! skipPostStage) {
+	    setState(JobState.POST_STAGING);
+	} else {
+	    setState(JobState.STOPPED);
+	}
 
         if (!skipPostStage) {
-            setState(JobState.POST_STAGING);
-            waitForTrigger(JobState.POST_STAGING);
+            if (! kill) {
+        	waitForTrigger(JobState.POST_STAGING);
+            }
             sandbox.retrieveAndCleanup(this);
         }
 
