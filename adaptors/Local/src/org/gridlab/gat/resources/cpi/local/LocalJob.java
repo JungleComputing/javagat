@@ -257,13 +257,9 @@ public class LocalJob extends JobCpi {
 		// ignored
 	    }
 	}
-	if (! skipPostStage) {
-	    setState(JobState.POST_STAGING);
-	} else {
-	    setState(JobState.STOPPED);
-	}
 
         if (!skipPostStage) {
+            setState(JobState.POST_STAGING);
             if (! kill) {
         	waitForTrigger(JobState.POST_STAGING);
             }
