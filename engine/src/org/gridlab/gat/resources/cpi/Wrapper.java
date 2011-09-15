@@ -439,7 +439,7 @@ public class Wrapper {
                         }
                     }
                     count++;
-                     try {
+                    try {
                         Thread.sleep(1000);
                     } catch (InterruptedException e) {
                         // ignore
@@ -449,7 +449,7 @@ public class Wrapper {
                     localFile.copy(dest);
                 }
                 if (logger.isDebugEnabled()) {
-                    logger.debug("Created status file " + dest.getPath());
+                    logger.debug("Created status file " + dest + " for event " + event);
                 }
                 tmp.delete();
             } catch (GATObjectCreationException e) {
