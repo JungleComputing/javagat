@@ -157,6 +157,9 @@ public class WrapperJobCpi extends MonitorableCpi implements WrapperJob, MetricL
         // forward the metrics from the wrapperjob
         MetricEvent e;
         if (event.getSource() == wrapperJob) {
+            if (logger.isDebugEnabled()) {
+        	logger.debug("Event source is wrapper job");
+            }
             e = new MetricEvent(this, event.getValue(), metric, event.getEventTime());
         } else {
             e = event;
