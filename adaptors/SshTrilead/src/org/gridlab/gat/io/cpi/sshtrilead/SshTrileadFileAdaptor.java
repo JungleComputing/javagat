@@ -6,12 +6,11 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URISyntaxException;
 import java.text.SimpleDateFormat;
+import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.gridlab.gat.GAT;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
@@ -24,6 +23,8 @@ import org.gridlab.gat.io.FileInterface;
 import org.gridlab.gat.io.cpi.FileCpi;
 import org.gridlab.gat.security.sshtrilead.HostKeyVerifier;
 import org.gridlab.gat.security.sshtrilead.SshTrileadSecurityUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.trilead.ssh2.Connection;
 import com.trilead.ssh2.SCPClient;
@@ -179,7 +180,7 @@ public class SshTrileadFileAdaptor extends FileCpi {
     private static Map<URI, String[]> listCache = new HashMap<URI, String[]>();
     
     public static void end() {
-        connections.clear();
+        killConnections();
         isDirCache.clear();
         isFileCache.clear();
         existsCache.clear();
@@ -333,16 +334,8 @@ public class SshTrileadFileAdaptor extends FileCpi {
         if (logger.isDebugEnabled()) {
             logger.debug("destination: " + destination);
         }
-        SCPClient client = null;
-        try {
-            client = getConnection(destination, gatContext,
-                    connectionCacheEnable, tcpNoDelay, client2serverCiphers,
-                    server2clientCiphers, verifier).createSCPClient();
-        } catch (IOException e) {
-            client = getConnection(destination, gatContext, false, tcpNoDelay,
-                    client2serverCiphers, server2clientCiphers, verifier)
-                    .createSCPClient();
-        }
+        
+        SCPClient client = getSCPClient();
         
         SshTrileadFileAdaptor destinationFile = new SshTrileadFileAdaptor(gatContext, destination);
 
@@ -448,16 +441,8 @@ public class SshTrileadFileAdaptor extends FileCpi {
         if (logger.isDebugEnabled()) {
             logger.debug("destination: " + destination);
         }
-        SCPClient client = null;
-        try {
-            client = getConnection(destination, gatContext,
-                    connectionCacheEnable, tcpNoDelay, client2serverCiphers,
-                    server2clientCiphers, verifier).createSCPClient();
-        } catch (IOException e) {
-            client = getConnection(destination, gatContext, false, tcpNoDelay,
-                    client2serverCiphers, server2clientCiphers, verifier)
-                    .createSCPClient();
-        }
+        
+        SCPClient client = getSCPClient();
         
         SshTrileadFileAdaptor destinationFile = new SshTrileadFileAdaptor(gatContext, destination);
 
@@ -523,16 +508,9 @@ public class SshTrileadFileAdaptor extends FileCpi {
     }
 
     private void get(URI destination) throws Exception {
-        SCPClient client = null;
-        try {
-            client = getConnection(fixedURI, gatContext, connectionCacheEnable,
-                    tcpNoDelay, client2serverCiphers, server2clientCiphers, verifier)
-                    .createSCPClient();
-        } catch (IOException e) {
-            client = getConnection(fixedURI, gatContext, false, tcpNoDelay,
-                    client2serverCiphers, server2clientCiphers, verifier)
-                    .createSCPClient();
-        }
+
+	SCPClient client = getSCPClient();
+
         FileInterface destinationFile = GAT.createFile(gatContext, destination)
                 .getFileInterface();
 
@@ -586,17 +564,9 @@ public class SshTrileadFileAdaptor extends FileCpi {
     }
 
     private void safeGet(URI destination) throws Exception {
-        SCPClient client = null;
-        try {
-            client = getConnection(fixedURI, gatContext, connectionCacheEnable,
-                    tcpNoDelay, client2serverCiphers, server2clientCiphers, verifier)
-                    .createSCPClient();
-        } catch (IOException e) {
-            client = getConnection(fixedURI, gatContext, false, tcpNoDelay,
-                    client2serverCiphers, server2clientCiphers, verifier)
-                    .createSCPClient();
-        }
-        
+	
+        SCPClient client = getSCPClient();
+
         String dest = destination.getPath();
 
         if (java.io.File.separator.equals("/")) {
@@ -711,21 +681,111 @@ public class SshTrileadFileAdaptor extends FileCpi {
         new CommandRunner("chmod",  mode, localfile);
     }
     
-    Session getSession() throws Exception {
+    public static Session getSession(URI fixedURI, GATContext context,
+            boolean useCachedConnection, boolean tcpNoDelay,
+            String[] client2server, String[] server2client,
+            HostKeyVerifier verifier) throws GATInvocationException, IOException {
+	Connection connection;
+        connection = getConnection(fixedURI, context,
+                    useCachedConnection, tcpNoDelay, client2server,
+                    server2client, verifier);
         try {
-            return getConnection(fixedURI, gatContext,
-                    connectionCacheEnable, tcpNoDelay, client2serverCiphers,
-                    server2clientCiphers, verifier).openSession();
+            return connection.openSession();
         } catch (IOException e) {
-            return getConnection(fixedURI, gatContext, false, tcpNoDelay,
-                    client2serverCiphers, server2clientCiphers, verifier).openSession();
+            ConnectionKey key = getKey(fixedURI, context);
+            if (key != null) {
+        	synchronized(connections) {
+        	    connections.remove(key);
+        	}
+            }
+            connection.close();
+            if (useCachedConnection) {
+        	connection = getConnection(fixedURI, context, false, tcpNoDelay,
+                    client2server, server2client, verifier);
+        	try {
+        	    return connection.openSession();
+        	} catch(IOException e1) {
+        	    connection.close();
+        	    throw e1;
+        	}
+            }
+            throw e;
         }
+    }
+    
+    Session getSession() throws IOException, GATInvocationException {
+        return getSession(fixedURI, gatContext,
+                    connectionCacheEnable, tcpNoDelay, client2serverCiphers,
+                    server2clientCiphers, verifier);
+    }
+    
+    SCPClient getSCPClient() throws IOException, GATInvocationException {
+	Connection connection;
+        connection = getConnection(fixedURI, gatContext,
+                    connectionCacheEnable, tcpNoDelay, client2serverCiphers,
+                    server2clientCiphers, verifier);
+        try {
+            return connection.createSCPClient();
+        } catch (IOException e) {
+            ConnectionKey key = getKey(fixedURI, gatContext);
+            if (key != null) {
+        	synchronized(connections) {
+        	    connections.remove(key);
+        	}
+            }
+            connection.close();
+            if (connectionCacheEnable) {
+        	connection = getConnection(fixedURI, gatContext, false, tcpNoDelay,
+                    client2serverCiphers, server2clientCiphers, verifier);
+        	try {
+        	    return connection.createSCPClient();
+        	} catch(IOException e1) {
+        	    connection.close();
+        	    throw e1;
+        	}
+            }
+            throw e;
+        }
+    }
+    
+
+    public static ConnectionKey getKey(URI fixedURI, GATContext context) {
+        String host = fixedURI.getHost();
+        if (host == null) {
+            host = fixedURI.resolveHost();
+        }
+        if (logger.isInfoEnabled()) {
+            logger.info("getting key for host: " + host);
+        }
+        
+        // Get security info before cloning, otherwise connections are set up twice, because
+        // the second time, the context is different. --Ceriel
+        Map<String, Object> securityInfo;
+	try {
+	    securityInfo = SshTrileadSecurityUtils.getSshTrileadCredential(
+	    	context, "sshtrilead", fixedURI, fixedURI.getPort(SSH_PORT));
+	} catch (Throwable e) {
+	    return null;
+	}
+        return new ConnectionKey(host, (GATContext) context.clone());    
+    }
+    
+    private static void killConnections() {
+	Collection<Connection> cns = connections.values();
+	for (Connection c : cns) {
+	    try {
+		c.close();
+	    } catch(Throwable e) {
+		// ignored
+	    }
+	}
+	connections.clear();
     }
  
     public static Connection getConnection(URI fixedURI, GATContext context,
             boolean useCachedConnection, boolean tcpNoDelay,
             String[] client2server, String[] server2client,
-            HostKeyVerifier verifier) throws Exception {
+            HostKeyVerifier verifier) throws GATInvocationException {
         String host = fixedURI.getHost();
         if (host == null) {
             host = fixedURI.resolveHost();
@@ -736,8 +796,13 @@ public class SshTrileadFileAdaptor extends FileCpi {
         
         // Get security info before cloning, otherwise connections are set up twice, because
         // the second time, the context is different. --Ceriel
-        Map<String, Object> securityInfo = SshTrileadSecurityUtils.getSshTrileadCredential(
-        	context, "sshtrilead", fixedURI, fixedURI.getPort(SSH_PORT));
+        Map<String, Object> securityInfo;
+	try {
+	    securityInfo = SshTrileadSecurityUtils.getSshTrileadCredential(
+	    	context, "sshtrilead", fixedURI, fixedURI.getPort(SSH_PORT));
+	} catch (Throwable e) {
+	    throw new GATInvocationException("Could not get credentials", e);
+	}
         ConnectionKey key = new ConnectionKey(host, (GATContext) context.clone());
         
         Connection newConnection;
@@ -760,7 +825,11 @@ public class SshTrileadFileAdaptor extends FileCpi {
         	    .getPort(SSH_PORT));
             newConnection.setClient2ServerCiphers(client2server);
             newConnection.setServer2ClientCiphers(server2client);
-            newConnection.setTCPNoDelay(tcpNoDelay);
+            try {
+		newConnection.setTCPNoDelay(tcpNoDelay);
+	    } catch (IOException e1) {
+		// ignore
+	    }
             int connectTimeout = 5000;
             String connectTimeoutString = (String) context.getPreferences().get(
             "sshtrilead.connect.timeout");
@@ -785,7 +854,13 @@ public class SshTrileadFileAdaptor extends FileCpi {
         		    + t);
         	}
             }
-            newConnection.connect(verifier, connectTimeout, kexTimeout);
+            try {
+		newConnection.connect(verifier, connectTimeout, kexTimeout);
+	    } catch (IOException e1) {
+		// Connection setup failed.
+		newConnection.close();
+		throw new GATInvocationException("Could not connect", e1);
+	    }
 
             String username = (String) securityInfo.get("username");
             String password = (String) securityInfo.get("password");
@@ -860,7 +935,8 @@ public class SshTrileadFileAdaptor extends FileCpi {
             }
 
             if (!connected) {
-        	throw new Exception("unable to authenticate");
+        	newConnection.close();
+        	throw new GATInvocationException("unable to authenticate");
             } else {
         	logger.info("putting connection for host " + host
         		+ " into cache");
@@ -884,48 +960,43 @@ public class SshTrileadFileAdaptor extends FileCpi {
     private String[] execCommand(String cmd) throws IOException, Exception {
         logger.info("command: " + cmd + ", uri: " + fixedURI);
         String[] result = new String[3];
-        Session session = null;
+        Session session = getSession();
         try {
-            session = getConnection(fixedURI, gatContext,
-                    connectionCacheEnable, tcpNoDelay, client2serverCiphers,
-                    server2clientCiphers, verifier).openSession();
-        } catch (IOException e) {
-            session = getConnection(fixedURI, gatContext, false, tcpNoDelay,
-                    client2serverCiphers, server2clientCiphers, verifier).openSession();
-        }
-        session.execCommand(cmd);
-        // see http://www.trilead.com/Products/Trilead-SSH-2-Java/FAQ/#blocking
-        InputStream stdout = new StreamGobbler(session.getStdout());
-        InputStream stderr = new StreamGobbler(session.getStderr());
-        BufferedReader br = new BufferedReader(new InputStreamReader(stdout));
-        result[STDOUT] = "";
-        result[STDERR] = "";
-        StringBuffer out = new StringBuffer();
-        while (true) {
-            String line = br.readLine();
-            if (line == null) {
-                break;
+            session.execCommand(cmd);
+            // see http://www.trilead.com/Products/Trilead-SSH-2-Java/FAQ/#blocking
+            InputStream stdout = new StreamGobbler(session.getStdout());
+            InputStream stderr = new StreamGobbler(session.getStderr());
+            BufferedReader br = new BufferedReader(new InputStreamReader(stdout));
+            result[STDOUT] = "";
+            result[STDERR] = "";
+            StringBuffer out = new StringBuffer();
+            while (true) {
+        	String line = br.readLine();
+        	if (line == null) {
+        	    break;
+        	}
+        	out.append(line);
+        	out.append("\n");
             }
-            out.append(line);
-            out.append("\n");
-        }
-        result[STDOUT] = out.toString();
-        br = new BufferedReader(new InputStreamReader(stderr));
-        StringBuffer err = new StringBuffer();
-        while (true) {
-            String line = br.readLine();
-            if (line == null) {
-                break;
+            result[STDOUT] = out.toString();
+            br = new BufferedReader(new InputStreamReader(stderr));
+            StringBuffer err = new StringBuffer();
+            while (true) {
+        	String line = br.readLine();
+        	if (line == null) {
+        	    break;
+        	}
+        	err.append(line);
+        	err.append("\n");
             }
-            err.append(line);
-            err.append("\n");
+            result[STDERR] = err.toString();
+            while (session.getExitStatus() == null) {
+        	Thread.sleep(500);
+            }
+            result[EXIT_VALUE] = "" + session.getExitStatus();
+        } finally {
+            session.close();
         }
-        result[STDERR] = err.toString();
-        while (session.getExitStatus() == null) {
-            Thread.sleep(500);
-        }
-        result[EXIT_VALUE] = "" + session.getExitStatus();
-        session.close();
         if (logger.isDebugEnabled()) {
             logger.debug("STDOUT: " + result[STDOUT]);
             logger.debug("STDERR: " + result[STDERR]);

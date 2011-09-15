@@ -66,6 +66,9 @@ public class SshTrileadJob extends JobCpi {
         MetricEvent v = new MetricEvent(this, state, statusMetric, System
                 .currentTimeMillis());
         fireMetric(v);
+        if (state == JobState.SUBMISSION_ERROR) {
+            finished();
+        }
     }
 
     public synchronized Map<String, Object> getInfo()

@@ -18,6 +18,7 @@ import org.gridlab.gat.monitoring.Metric;
 import org.gridlab.gat.monitoring.MetricListener;
 import org.gridlab.gat.resources.AbstractJobDescription;
 import org.gridlab.gat.resources.Job;
+import org.gridlab.gat.resources.Job.JobState;
 import org.gridlab.gat.resources.JobDescription;
 import org.gridlab.gat.resources.SoftwareDescription;
 import org.gridlab.gat.resources.WrapperJobDescription;
@@ -273,22 +274,18 @@ public class SshTrileadResourceBrokerAdaptor extends ResourceBrokerCpi {
 
         Session session = null;
         try {
-            try {
-                session = SshTrileadFileAdaptor.getConnection(brokerURI,
+            session = SshTrileadFileAdaptor.getSession(brokerURI,
                         gatContext, connectionCacheEnable, tcpNoDelay,
-                        client2serverCiphers, server2clientCiphers, verifier)
-                        .openSession();
-            } catch (IOException e) {
-                session = SshTrileadFileAdaptor.getConnection(brokerURI,
-                        gatContext, false, tcpNoDelay, client2serverCiphers,
-                        server2clientCiphers, verifier).openSession();
-            }
+                        client2serverCiphers, server2clientCiphers, verifier);
             if (stoppable) {
                 logger.info("starting dumb pty");
                 session.requestDumbPTY();
             }
             // session.startShell();
         } catch (Exception e) {
+            if (session != null) {
+        	session.close();
+            }
             throw new GATInvocationException("Unable to connect!", e);
         }
         
@@ -308,6 +305,9 @@ public class SshTrileadResourceBrokerAdaptor extends ResourceBrokerCpi {
                     new StreamForwarder(session.getStderr(), null);
                 }
             } catch (GATObjectCreationException e) {
+                if (session != null) {
+                    session.close();
+                }
                 throw new GATInvocationException(
                         "Unable to create file output stream for stderr!", e);
             }
@@ -325,6 +325,9 @@ public class SshTrileadResourceBrokerAdaptor extends ResourceBrokerCpi {
                     new StreamForwarder(session.getStdout(), null);
                 }
             } catch (GATObjectCreationException e) {
+                if (session != null) {
+                    session.close();
+                }
                 throw new GATInvocationException(
                         "Unable to create file output stream for stdout!", e);
             }
@@ -336,6 +339,9 @@ public class SshTrileadResourceBrokerAdaptor extends ResourceBrokerCpi {
                 new StreamForwarder(GAT.createFileInputStream(sd.getStdin()),
                         session.getStdin());
             } catch (GATObjectCreationException e) {
+                if (session != null) {
+                    session.close();
+                }
                 throw new GATInvocationException(
                         "Unable to create file input stream for stdin!", e);
             }
@@ -348,6 +354,10 @@ public class SshTrileadResourceBrokerAdaptor extends ResourceBrokerCpi {
             session.execCommand(command);
             // session.getStdin().write((command + "\n").getBytes());
         } catch (IOException e) {
+            if (session != null) {
+                session.close();
+            }
+            sshJob.setState(JobState.SUBMISSION_ERROR);
             throw new GATInvocationException("execution failed!", e);
         }
         sshJob.setSubmissionTime();
