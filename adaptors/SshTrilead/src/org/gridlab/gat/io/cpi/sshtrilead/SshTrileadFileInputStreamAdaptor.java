@@ -204,10 +204,21 @@ public class SshTrileadFileInputStreamAdaptor extends FileInputStreamCpi {
                     err.append("\n");
                 }
                 result[SshTrileadFileAdaptor.STDERR] = err.toString();
-                while (session.getExitStatus() == null) {
-                    Thread.sleep(500);
+                
+                // Sometimes hangs here??? Added count. --Ceriel
+                int sleepcount = 0;
+                Integer exitValue = session.getExitStatus();
+                while (sleepcount < 5 && exitValue == null) {
+                    Thread.sleep(100);
+                    exitValue = session.getExitStatus();
+                    sleepcount++;
                 }
-                result[SshTrileadFileAdaptor.EXIT_VALUE] = "" + session.getExitStatus();
+                if (exitValue == null) {
+            	// No exit status available; Assume 0.
+                    result[SshTrileadFileAdaptor.EXIT_VALUE] = "0";
+                } else {
+                    result[SshTrileadFileAdaptor.EXIT_VALUE] = "" + exitValue;
+                }
 
                 if (logger.isDebugEnabled()) {
                     logger.debug("STDERR: " + result[SshTrileadFileAdaptor.STDERR]);
