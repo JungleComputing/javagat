@@ -44,4 +44,10 @@ public class scriptWriter extends PrintWriter {
             println();
         }
     }
+    
+    public void addString(String s) {
+	print(mSuffix);
+	print (" ");
+	println(s);
+    }
 }

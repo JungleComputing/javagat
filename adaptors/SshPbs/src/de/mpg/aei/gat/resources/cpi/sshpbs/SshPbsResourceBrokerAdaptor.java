@@ -371,7 +371,11 @@ public class SshPbsResourceBrokerAdaptor extends ResourceBrokerCpi {
 		    }
 		}
 		job.addString("l", lString);
-
+		
+		String nativeFlags = (String) gatContext.getPreferences().get("sshpbs.native.flags");
+		if (nativeFlags != null) {
+		    job.addString(nativeFlags);
+		}
 
 		// Name for the job.
 		HwArg = (String) rd_HashMap.get("Jobname");
