@@ -335,7 +335,33 @@ public class SshTrileadFileAdaptor extends FileCpi {
             logger.debug("destination: " + destination);
         }
         
-        SCPClient client = getSCPClient();
+        SCPClient client;
+        
+	Connection connection = getConnection(destination, gatContext,
+                    connectionCacheEnable, tcpNoDelay, client2serverCiphers,
+                    server2clientCiphers, verifier);
+        try {
+            client =  connection.createSCPClient();
+        } catch (IOException e) {
+            ConnectionKey key = getKey(fixedURI, gatContext);
+            if (key != null) {
+        	synchronized(connections) {
+        	    connections.remove(key);
+        	}
+            }
+            connection.close();
+            if (connectionCacheEnable) {
+        	connection = getConnection(fixedURI, gatContext, false, tcpNoDelay,
+                    client2serverCiphers, server2clientCiphers, verifier);
+        	try {
+        	    client = connection.createSCPClient();
+        	} catch(IOException e1) {
+        	    connection.close();
+        	    throw e1;
+        	}
+            }
+            throw e;
+        }
         
         SshTrileadFileAdaptor destinationFile = new SshTrileadFileAdaptor(gatContext, destination);
 
