@@ -13,7 +13,6 @@ import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
 import org.gridlab.gat.GATObjectCreationException;
 import org.gridlab.gat.URI;
-import org.gridlab.gat.io.File;
 import org.gridlab.gat.io.FileInputStream;
 import org.gridlab.gat.io.FileOutputStream;
 import org.gridlab.gat.io.cpi.FileCpi;
@@ -42,14 +41,14 @@ public class StreamingFileAdaptor extends FileCpi {
      * @see org.gridlab.gat.io.cpi.FileCpi#copy(org.gridlab.gat.URI)
      */
     public void copy(URI dest) throws GATInvocationException {
+	DataInputStream dataIn = null;
+	DataOutputStream dataOut = null;
         try {
             FileInputStream in = GAT
                     .createFileInputStream(gatContext, location);
-            DataInputStream dataIn = new DataInputStream(in);
-            File dstFile = GAT.createFile(gatContext, dest);
-            FileOutputStream out = GAT.createFileOutputStream(gatContext,
-                    dstFile);
-            DataOutputStream dataOut = new DataOutputStream(out);
+            dataIn = new DataInputStream(in);
+            FileOutputStream out = GAT.createFileOutputStream(gatContext, dest);
+            dataOut = new DataOutputStream(out);
             byte[] buffer = new byte[1024];
             while (true) {
                 int len = dataIn.read(buffer);
@@ -58,38 +57,60 @@ public class StreamingFileAdaptor extends FileCpi {
                 }
                 dataOut.write(buffer, 0, len);
             }
-            dataIn.close();
-            dataOut.flush();
-            dataOut.close();
         } catch (Exception e) {
             if (e instanceof GATInvocationException) {
                 throw (GATInvocationException) e;
             }
             throw new GATInvocationException("StreamingFileAdaptor", e);
+        } finally {
+            if (dataIn != null) {
+        	try {
+        	    dataIn.close();
+        	} catch(Throwable e) {
+        	    // ignored
+        	}
+            }
+            if (dataOut != null) {
+        	try {
+        	    dataOut.flush();
+        	} catch(Throwable e) {
+        	    // ignored
+        	}
+        	try {
+        	    dataOut.close();
+        	} catch(Throwable e) {
+        	    // ignored
+        	}
+            }
         }
     }
 
-    // this method does *not* work for empty files
     public boolean exists() throws GATInvocationException {
+	
+	FileInputStream in = null;
+	
         if (!(location.isCompatible("http") || location.isCompatible("https") || location
                 .isCompatible("ftp"))) {
             throw new UnsupportedOperationException("Not implemented");
         } else {
             try {
-                FileInputStream in = GAT.createFileInputStream(gatContext,
+                in = GAT.createFileInputStream(gatContext,
                         location);
-                int res = in.read();
-                try {
-                    in.close();
-                } catch (IOException e) {
-                    logger.info("closing failed: " + e);
-                }
-                return res != -1;
+                in.read();
+                return true;
             } catch (GATObjectCreationException e) {
                 throw new GATInvocationException("StreamingFileAdaptor"
                         + e.toString("    "));
             } catch (IOException e) {
-                throw new GATInvocationException("StreamingFileAdaptor" + e);
+                return false;
+            } finally {
+        	if (in != null) {
+        	    try {
+        		in.close();
+        	    } catch (Throwable e) {
+        		// ignored
+        	    }
+        	}
             }
         }
 
