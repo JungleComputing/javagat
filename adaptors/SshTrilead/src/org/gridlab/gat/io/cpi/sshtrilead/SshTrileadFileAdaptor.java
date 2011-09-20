@@ -786,9 +786,9 @@ public class SshTrileadFileAdaptor extends FileCpi {
         
         // Get security info before cloning, otherwise connections are set up twice, because
         // the second time, the context is different. --Ceriel
-        Map<String, Object> securityInfo;
 	try {
-	    securityInfo = SshTrileadSecurityUtils.getSshTrileadCredential(
+	    // getSshTrileadCredential affects the contents of the GATContext.
+	    SshTrileadSecurityUtils.getSshTrileadCredential(
 	    	context, "sshtrilead", fixedURI, fixedURI.getPort(SSH_PORT));
 	} catch (Throwable e) {
 	    return null;
