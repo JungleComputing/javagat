@@ -90,8 +90,12 @@ public class CopyingFileInputStreamAdaptor extends FileInputStreamCpi {
             f.copy(dest);
 
             localFile = new java.io.File(path);
+            localFile.deleteOnExit();
             in = new FileInputStream(localFile);
-        } catch (Exception e) {
+        } catch (Throwable e) {
+            if (localFile != null) {
+        	localFile.delete();
+            }
             throw new GATObjectCreationException("copying inputstream", e);
         }
     }
