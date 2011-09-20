@@ -9,6 +9,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.Collection;
 import java.util.Hashtable;
 import java.util.Map;
 import java.util.Vector;
@@ -96,6 +97,17 @@ public class SftpTrileadFileAdaptor extends FileCpi {
     private boolean tcpNoDelay;
     
     private URI fixedURI;
+    
+    public static void end() {
+	Collection<SftpTrileadConnection> connections = clienttable.values();
+	for (SftpTrileadConnection conn : connections) {
+	    try {
+		doWorkCloseConnection(conn);
+	    } catch(Throwable e) {
+		// ignored
+	    }
+	}
+    }
     
     public SftpTrileadFileAdaptor(GATContext gatContext, URI location)
             throws GATObjectCreationException {
