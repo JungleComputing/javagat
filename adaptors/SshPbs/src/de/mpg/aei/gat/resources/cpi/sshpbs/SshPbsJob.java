@@ -304,10 +304,12 @@ public class SshPbsJob extends JobCpi {
     }
 
     public synchronized JobState getState() {
-	try {
-	    setState();
-	} catch (GATInvocationException e) {
-	    logger.error("setState failed in getState");
+	if (this.jobID != null) {
+	    try {
+		setState();
+	    } catch (GATInvocationException e) {
+		logger.debug("setState failed in getState");
+	    }
 	}
 	return state;
     }
@@ -418,7 +420,7 @@ public class SshPbsJob extends JobCpi {
 	    } else {
 		setState(JobState.POST_STAGING);
 	    }
-	} catch (IOException e) {
+	} catch (Throwable e) {
 	    logger.debug("retrieving job status sshpbsjob failed");
 	    throw new GATInvocationException(
 		    "Unable to retrieve the Job Status", e);
@@ -810,7 +812,7 @@ public class SshPbsJob extends JobCpi {
      * @author Alexander Beck-Ratzka, AEI, July 2010
      */
 
-    public synchronized String[] singleResult(ArrayList<String> command)
+    public static synchronized String[] singleResult(ArrayList<String> command)
 	    throws IOException {
 	
 	ArrayList<String> result = new ArrayList<String>();

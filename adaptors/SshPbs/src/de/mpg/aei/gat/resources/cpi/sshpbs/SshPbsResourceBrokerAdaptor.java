@@ -83,6 +83,8 @@ public class SshPbsResourceBrokerAdaptor extends ResourceBrokerCpi {
 
     private boolean use_sge = false;
     
+    private boolean knownBackend = false;
+    
     private final int ssh_port;
 
     private Map<String, String> securityInfo;
@@ -107,8 +109,13 @@ public class SshPbsResourceBrokerAdaptor extends ResourceBrokerCpi {
                 .equalsIgnoreCase("true");
 	if (brokerURI.getScheme().equals("sshsge")) {
 	    use_sge = true;
-	}
-        
+	    knownBackend = true;
+	} else if (brokerURI.getScheme().equals("sshpbs")) {
+	    use_sge = false;
+	    knownBackend = true;
+	} else {
+	    // Don't know yet.
+	}        
     }
 
     static int getPort(GATContext gatContext, URI brokerURI) {
@@ -176,6 +183,40 @@ public class SshPbsResourceBrokerAdaptor extends ResourceBrokerCpi {
 		    "can only handle JobDescriptions: "
 			    + abstractDescription.getClass());
 	}
+	
+	String host = getHostname();
+	if (host == null) {
+	    host = "localhost";
+	}
+	
+	// First, if backend is not known yet, try and find out. If SGE, the
+	// environment variable SGE_ROOT should be set on the remote side.
+	if (! knownBackend) {
+	    ArrayList<String> command = new ArrayList<String>();
+	    command.add("/usr/bin/ssh");
+	    if (ssh_port != SSH_PORT) {
+		command.add("-p");
+		command.add("" + ssh_port);
+	    }
+	    command.add("-o");
+	    command.add("BatchMode=yes");
+	    // command.add("-t");
+	    // command.add("-t");
+	    String username = securityInfo.get("username");
+	    command.add(username + "@" + host);
+	    command.add("echo");
+	    command.add("'$SGE_ROOT'");
+
+	    try {
+		String[] result = SshPbsJob.singleResult(command);
+		knownBackend = true;
+		use_sge = (result[0] != null && ! result[0].equals(""));	    
+	    } catch (Throwable e) {
+		// Default to PBS in case of trouble.
+		knownBackend = true;
+		use_sge = false;
+	    }
+	}
 
 	JobDescription description = (JobDescription) abstractDescription;
 
@@ -189,11 +230,6 @@ public class SshPbsResourceBrokerAdaptor extends ResourceBrokerCpi {
 	String authority = getAuthority();
 	if (authority == null) {
 	    authority = "localhost";
-	}
-
-	String host = getHostname();
-	if (host == null) {
-	    host = "localhost";
 	}
 
 	if (logger.isDebugEnabled()) {
@@ -322,8 +358,10 @@ public class SshPbsResourceBrokerAdaptor extends ResourceBrokerCpi {
 
 		Time = (String) rd_HashMap.get("cpu.walltime");
 		if (Time == null) {
-		    Time = sd.getStringAttribute(
-			    SoftwareDescription.WALLTIME_MAX, null);
+		    Long l = sd.getLongAttribute(SoftwareDescription.WALLTIME_MAX, -1L);
+		    if (l != -1L) {
+			Time = "" + l;
+		    }
 		}
 		if (Time == null && ! use_sge) {
 		    Time = new String("00:01:00");
@@ -351,7 +389,7 @@ public class SshPbsResourceBrokerAdaptor extends ResourceBrokerCpi {
 			if (lString != null) {
 			    lString += ",";
 			}
-			long maxWallTime = getLongAttribute(description, SoftwareDescription.WALLTIME_MAX, -1);
+			long maxWallTime = getLongAttribute(description, SoftwareDescription.WALLTIME_MAX, 15);
 			lString = "h_rt=" + (maxWallTime*60);
 		    }
 		    
@@ -532,7 +570,7 @@ public class SshPbsResourceBrokerAdaptor extends ResourceBrokerCpi {
 			+ qsubFile.getName().toString());
 	    }
 
-	    String ScpRes[] = PbsJob.singleResult(scpCommand);
+	    String ScpRes[] = SshPbsJob.singleResult(scpCommand);
 	    if (logger.isDebugEnabled()) {
 		logger.debug("result string of scp: '" + Arrays.toString(ScpRes) + "'");
 	    }
@@ -571,7 +609,7 @@ public class SshPbsResourceBrokerAdaptor extends ResourceBrokerCpi {
             }
 	    command.add(qsubFile.getName());
 
-	    String[] PbsJobID = PbsJob.singleResult(command);
+	    String[] PbsJobID = SshPbsJob.singleResult(command);
 	    String result = PbsJobID[0];
 	    // Check for SGE qsub result ...
 	    if (result.startsWith("Your job ")) {
