@@ -202,14 +202,6 @@ public class Wrapper {
             File wrapperCommonDestFile = GAT.createFile(preferences, wrapperCommonDest);
             wrapperCommonDestFile.recursivelyDeleteDirectory();
         }
-        try {
-            Thread.sleep(2000);		// Sleep a short while, to give status changes of
-            				// wrapped jobs some time to be passed on, so that the
-            				// application sees those before it sees the termination
-            				// of the wrapper.
-        } catch(Throwable e) {
-            // ignored.
-        }
     }
     
     void waitForTrigger(File file) {
@@ -460,6 +452,21 @@ public class Wrapper {
                     logger.debug("Created status file " + dest + " for event " + event);
                 }
                 tmp.delete();
+                // Wait until submitter has seen the state change before notifying wrapper.
+                count = 0;
+                while (count < 30) {
+                    synchronized(this.getClass()) {
+                        if (! remoteFile.exists()) {
+                            break;
+                        }
+                    }
+                    count++;
+                    try {
+                        Thread.sleep(1000);
+                    } catch (InterruptedException e) {
+                        // ignore
+                    }
+                }
             } catch (GATObjectCreationException e) {
                 logger.error("Got Exception", e);
             } catch (Throwable e) {

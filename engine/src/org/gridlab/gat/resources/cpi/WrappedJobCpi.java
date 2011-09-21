@@ -117,22 +117,22 @@ public class WrappedJobCpi extends JobCpi implements Runnable {
         	    }
         	}
             }
-            if (newstate != null) {
+            if (newstate != null) {        	
+                state = newstate;
+                fireStateMetric(state);
+                
                 File monitorFile = new File(info.getJobStateFileName());
                 if (!monitorFile.delete()) {
                     logger.error("Could not delete job status file!");
                 }
-
-                state = newstate;
-                fireStateMetric(state);
-            }
-
-            try {
-                Thread.sleep(1000);
-            } catch (InterruptedException e) {
-                if (logger.isInfoEnabled()) {
-                    logger.info("", e);
-                }
+            } else {
+        	try {
+        	    Thread.sleep(1000);
+        	} catch (InterruptedException e) {
+        	    if (logger.isInfoEnabled()) {
+        		logger.info("", e);
+        	    }
+        	}
             }
         } while (state != JobState.STOPPED
                 && state != JobState.SUBMISSION_ERROR);
