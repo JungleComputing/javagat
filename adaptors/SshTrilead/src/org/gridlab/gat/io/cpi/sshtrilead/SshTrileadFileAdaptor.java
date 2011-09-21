@@ -343,7 +343,7 @@ public class SshTrileadFileAdaptor extends FileCpi {
         try {
             client =  connection.createSCPClient();
         } catch (IOException e) {
-            ConnectionKey key = getKey(fixedURI, gatContext);
+            ConnectionKey key = getKey(destination, gatContext);
             if (key != null) {
         	synchronized(connections) {
         	    connections.remove(key);
@@ -351,7 +351,7 @@ public class SshTrileadFileAdaptor extends FileCpi {
             }
             connection.close();
             if (connectionCacheEnable) {
-        	connection = getConnection(fixedURI, gatContext, false, tcpNoDelay,
+        	connection = getConnection(destination, gatContext, false, tcpNoDelay,
                     client2serverCiphers, server2clientCiphers, verifier);
         	try {
         	    client = connection.createSCPClient();
@@ -468,7 +468,33 @@ public class SshTrileadFileAdaptor extends FileCpi {
             logger.debug("destination: " + destination);
         }
         
-        SCPClient client = getSCPClient();
+        SCPClient client;
+        
+	Connection connection = getConnection(destination, gatContext,
+                    connectionCacheEnable, tcpNoDelay, client2serverCiphers,
+                    server2clientCiphers, verifier);
+        try {
+            client =  connection.createSCPClient();
+        } catch (IOException e) {
+            ConnectionKey key = getKey(destination, gatContext);
+            if (key != null) {
+        	synchronized(connections) {
+        	    connections.remove(key);
+        	}
+            }
+            connection.close();
+            if (connectionCacheEnable) {
+        	connection = getConnection(destination, gatContext, false, tcpNoDelay,
+                    client2serverCiphers, server2clientCiphers, verifier);
+        	try {
+        	    client = connection.createSCPClient();
+        	} catch(IOException e1) {
+        	    connection.close();
+        	    throw e1;
+        	}
+            }
+            throw e;
+        }
         
         SshTrileadFileAdaptor destinationFile = new SshTrileadFileAdaptor(gatContext, destination);
 
@@ -817,7 +843,7 @@ public class SshTrileadFileAdaptor extends FileCpi {
             host = fixedURI.resolveHost();
         }
         if (logger.isInfoEnabled()) {
-            logger.info("getting connection for host: " + host);
+            logger.info("getting connection for URI: " + fixedURI + ", host: " + host);
         }
         
         // Get security info before cloning, otherwise connections are set up twice, because
