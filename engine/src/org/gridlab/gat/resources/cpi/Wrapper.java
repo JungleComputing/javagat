@@ -202,6 +202,14 @@ public class Wrapper {
             File wrapperCommonDestFile = GAT.createFile(preferences, wrapperCommonDest);
             wrapperCommonDestFile.recursivelyDeleteDirectory();
         }
+        try {
+            Thread.sleep(2000);		// Sleep a short while, to give status changes of
+            				// wrapped jobs some time to be passed on, so that the
+            				// application sees those before it sees the termination
+            				// of the wrapper.
+        } catch(Throwable e) {
+            // ignored.
+        }
     }
     
     void waitForTrigger(File file) {
