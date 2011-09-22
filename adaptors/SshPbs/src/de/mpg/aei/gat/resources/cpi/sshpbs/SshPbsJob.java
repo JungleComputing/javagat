@@ -50,8 +50,6 @@ public class SshPbsJob extends JobCpi {
     Metric statusMetric;
     private SoftwareDescription Soft;
     
-    boolean use_sge;
-    
     private JobListener jsl;
     
     Integer exitStatus = null;
@@ -73,10 +71,9 @@ public class SshPbsJob extends JobCpi {
      */
     protected SshPbsJob(GATContext gatContext,
 	    SshPbsResourceBrokerAdaptor broker, JobDescription jobDescription,
-	    Sandbox sandbox, Map<String, String> securityInfo, boolean use_sge) {
+	    Sandbox sandbox, Map<String, String> securityInfo) {
 	super(gatContext, jobDescription, sandbox);
 	this.securityInfo = securityInfo;
-	this.use_sge = use_sge;
 
 	/**
 	 * broker necessary for security context which is required for getting a
@@ -113,7 +110,6 @@ public class SshPbsJob extends JobCpi {
 	} catch (URISyntaxException e) {
 	    throw new GATObjectCreationException("Could not create brokerURI", e);
 	}
-	this.use_sge = sj.isUse_sge();
 	this.jobID = sj.getJobId();
 	this.starttime = sj.getStarttime();
 	this.stoptime = sj.getStoptime();
@@ -332,7 +328,7 @@ public class SshPbsJob extends JobCpi {
 	    }
 
 	    sj = new SerializedSshPbsJob(getClass().getName(), jobDescription,
-		    sandbox, jobID, submissiontime, starttime, stoptime, Soft, brokerURI, use_sge);
+		    sandbox, jobID, submissiontime, starttime, stoptime, Soft, brokerURI);
 
 	}
 	String res = GATEngine.defaultMarshal(sj);
@@ -407,9 +403,6 @@ public class SshPbsJob extends JobCpi {
 	command.add(username + "@" + host);
 
 	command.add("qstat");
-	if (! use_sge) {
-	    command.add(this.jobID);
-	}
 
 	JobState s;
 	try {
@@ -461,62 +454,45 @@ public class SshPbsJob extends JobCpi {
 		}
 		return JobState.UNKNOWN;
 	    } else {
-		if (use_sge) {
-		    // Format is:
-		    // JobID Prio JobName JobOwner JobState .....
-		    String[] splits = pbsLine.split(" ");
-		    if (splits.length < 5) {
-			return JobState.UNKNOWN;
-		    }
-		    String status = splits[4];
-		    if (status.indexOf('t') >= 0) {	// transfer
-			return JobState.SCHEDULED;
-		    }
-		    if (status.indexOf('w') >= 0) {	// waiting
-			return JobState.SCHEDULED;
-		    }
-		    if (status.indexOf('h') >= 0) {	// hold
-			return JobState.ON_HOLD;
-		    }
-		    if (status.indexOf('r') >= 0) {	// running
-			return JobState.RUNNING;
-		    }
-		    if (status.indexOf('R') >= 0) {	// restarted
-			return JobState.RUNNING;
-		    }
-		    if (status.indexOf('s') >= 0 || status.indexOf('S') >= 0) {	// suspended
-			return JobState.RUNNING;
-		    }
-		    if (status.indexOf('x') >= 0) {	// exit
-			return JobState.STOPPED;
-		    }
-		    if (status.indexOf('E') >= 0) {	// error
-			return JobState.SUBMISSION_ERROR;
-		    }
+		// For SGE, format is:
+		// JobID Prio JobName JobOwner JobState .....
+		// For PBS, format is
+		// JobID JobName JobOwner CpuTime JobState ....
+		// So, in both cases, the 5'th column gives the job state.
+		// Below is combined job-state determination for SGE and PBS ...
+		String[] splits = pbsLine.split(" ");
+		if (splits.length < 5) {
 		    return JobState.UNKNOWN;
-		} else {
-		    if (pbsLine.indexOf('W') >= 0) { // waiting
-			return JobState.SCHEDULED;
-		    } else if (pbsLine.indexOf('Q') >= 0) { // queued
-			return JobState.SCHEDULED;
-		    } else if (pbsLine.indexOf('T') >= 0) { // transition
-			return JobState.SCHEDULED;
-		    }
-		    // if (mState.indexOf('H') >= 0) {
-		    // return Job.HOLD;
-		    // }
-		    else if (pbsLine.indexOf('S') >= 0) { // suspended
-			return JobState.RUNNING;
-		    } else if (pbsLine.indexOf('R') >= 0) { // running
-			return JobState.RUNNING;
-		    } else if (pbsLine.indexOf('E') >= 0) { // exiting
-			return JobState.STOPPED;
-		    } else if (pbsLine.indexOf('C') >= 0) { // exiting
-			return JobState.STOPPED;
-		    } else {
-			return JobState.UNKNOWN;
-		    }
 		}
+		String status = splits[4];
+		if (status.indexOf('t') >= 0 || status.indexOf('T') >= 0) {	// transfer
+		    return JobState.SCHEDULED;
+		}
+		if (status.indexOf('w') >= 0 || status.indexOf('W') >= 0) {	// waiting
+		    return JobState.SCHEDULED;
+		}
+		if (status.indexOf('Q') >= 0) { // Queued
+		    return JobState.SCHEDULED;
+		}
+		if (status.indexOf('h') >= 0 || status.indexOf('H') >= 0) {	// hold
+		    return JobState.ON_HOLD;
+		}
+		if (status.indexOf('r') >= 0) {	// running
+		    return JobState.RUNNING;
+		}
+		if (status.indexOf('R') >= 0) {	// restarted
+		    return JobState.RUNNING;
+		}
+		if (status.indexOf('s') >= 0 || status.indexOf('S') >= 0) {	// suspended
+		    return JobState.RUNNING;
+		}
+		if (status.indexOf('x') >= 0 || status.indexOf('C') >= 0) {	// exit
+		    return JobState.STOPPED;
+		}
+		if (status.indexOf('E') >= 0) {	// error or exiting
+		    return JobState.STOPPED;
+		}
+		return JobState.UNKNOWN;
 	    }
 	}
     }
