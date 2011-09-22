@@ -583,7 +583,18 @@ public class SshTrileadFileAdaptor extends FileCpi {
                 createNewFile(dest, getMode(gatContext,
                         DEFAULT_MODE));
             }
-            client.get(getFixedPath(), new java.io.FileOutputStream(dest));
+            // client.get(getFixedPath(), new java.io.FileOutputStream(dest));
+            // No, that does not close the output stream! --Ceriel
+            java.io.FileOutputStream d = new java.io.FileOutputStream(dest);
+            try {
+        	client.get(getFixedPath(), d);
+            } finally {
+        	try {
+        	    d.close();
+        	} catch(Throwable e) {
+        	    // ignored.
+        	}
+            }
             try {
                 new java.io.File(dest).setLastModified(lastModified());
             } catch(Throwable e) {
@@ -595,7 +606,19 @@ public class SshTrileadFileAdaptor extends FileCpi {
             if (java.io.File.separator.equals("/")) {
                 createNewFile(dest, getMode(gatContext, DEFAULT_MODE));
             }
-            client.get(getFixedPath(), new java.io.FileOutputStream(dest));
+            
+            // client.get(getFixedPath(), new java.io.FileOutputStream(dest));
+            // No, that does not close the output stream! --Ceriel
+            java.io.FileOutputStream d = new java.io.FileOutputStream(dest);
+            try {
+        	client.get(getFixedPath(), d);
+            } finally {
+        	try {
+        	    d.close();
+        	} catch(Throwable e) {
+        	    // ignored.
+        	}
+            }
             if (gatContext.getPreferences().containsKey("file.copytime")) {
                 if (((String) gatContext.getPreferences().get("file.copytime"))
                         .equalsIgnoreCase("true")) {
@@ -624,7 +647,19 @@ public class SshTrileadFileAdaptor extends FileCpi {
         if (java.io.File.separator.equals("/")) {
             createNewFile(dest, getMode(gatContext, DEFAULT_MODE));
         }
-        client.get(getFixedPath(), new java.io.FileOutputStream(dest));
+        // client.get(getFixedPath(), new java.io.FileOutputStream(dest));
+        // No, that does not close the output stream! --Ceriel
+        java.io.FileOutputStream d = new java.io.FileOutputStream(dest);
+        try {
+    	    client.get(getFixedPath(), d);
+        } finally {
+            try {
+        	d.close();
+            } catch(Throwable e) {
+        	// ignored.
+            }
+        }
+        
         if (gatContext.getPreferences().containsKey("file.copytime")) {
             if (((String) gatContext.getPreferences().get("file.copytime"))
         	    .equalsIgnoreCase("true")) {
