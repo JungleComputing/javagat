@@ -224,6 +224,10 @@ public class SgeResourceBrokerAdaptor extends ResourceBrokerCpi {
 		String jobType = getStringAttribute(description, SoftwareDescription.JOB_TYPE, "prun");
 		toNative += "-pe " + jobType + " " + description.getResourceCount() + " ";
 	    }
+	    
+	    if (description.getProcessCount() > 1) {
+		toNative += "-t " + description.getProcessCount() + " ";
+	    }
 	    String s = (String) gatContext.getPreferences().get("sge.native.flags");
             if (s != null) {
         	toNative += s + " ";
