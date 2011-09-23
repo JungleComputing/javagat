@@ -149,6 +149,8 @@ public class JobDescription extends AbstractJobDescription {
                         .toString());
         res += ", resource: "
                 + (resource == null ? "null" : resource.toString());
+        
+        res += ", resourceCount: " + resourceCount + ", processCount: " + processCount;
 
         res += ")";
 
