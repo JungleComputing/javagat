@@ -162,37 +162,31 @@ public class SshPbsResourceBrokerAdaptor extends ResourceBrokerCpi {
 		    "can only handle JobDescriptions: "
 			    + abstractDescription.getClass());
 	}
-	
-	String host = getHostname();
-	if (host == null) {
-	    host = "localhost";
-	}
 
 	JobDescription description = (JobDescription) abstractDescription;
-
-	/**
-	 * the code (host and authority) below is an extract of the
-	 * CommandLinesshAdaptor, still requires testing!
-	 */
+	
+	int nproc = description.getProcessCount();
+	
+	if (nproc != 1) {
+	    throw new GATInvocationException("SGE/PBS cannot start multiple processes.");
+	}
 
 	String authority = getAuthority();
 	if (authority == null) {
 	    authority = "localhost";
+	}
+		
+	String host = getHostname();
+	if (host == null) {
+	    host = "localhost";
 	}
 
 	if (logger.isDebugEnabled()) {
 	    logger.debug("SshPbs adaptor will use '" + host + "' as execution host");
 	}
 
-	// Sandbox sandbox = null;
 	Sandbox sandbox = new Sandbox(gatContext, description, authority, null,
 		true, true, true, true);
-
-	/* Handle pre-/poststaging */
-	/*
-	 * if (host != null) { sandbox = new Sandbox(gatContext, description,
-	 * host, null, false, true, true, true); }
-	 */
 
 	SshPbsJob sshPbsJob = new SshPbsJob(gatContext, this, description, sandbox,
 		securityInfo);
@@ -281,7 +275,7 @@ public class SshPbsResourceBrokerAdaptor extends ResourceBrokerCpi {
 		rd_HashMap = new HashMap<String, Object>();
 	    }
 	}
-
+	
 	try {
 	    temp = java.io.File.createTempFile("pbs", null);
 	    try {
@@ -320,18 +314,13 @@ public class SshPbsResourceBrokerAdaptor extends ResourceBrokerCpi {
 		if (Nodes == null) {
 		    Nodes = description.getResourceCount();
 		}
-		
+
 		if (Nodes > 1) {
 		    String jobType = getStringAttribute(description, SoftwareDescription.JOB_TYPE, "prun");
-		    lString = "-pe " + jobType + " " + Nodes;
+		    job.addSgeOption("pe", jobType + " " + Nodes);
 		}
-		if (Time != -1L) {
-		    if (lString != null) {
-			lString += ",";
-		    }
-		    lString = "h_rt=" + (Time*60);
-		}
-		job.addSgeOption("l", lString);
+
+		job.addSgeOption("l", "h_rt=" + (Time*60));
 
 	
 		lString = "";
@@ -348,9 +337,6 @@ public class SshPbsResourceBrokerAdaptor extends ResourceBrokerCpi {
 		    lString += "mem=" + Memsize + ",";
 		}
 		lString += "nodes=" + Nodes;
-		if (Queue.length() != 0) {
-		    lString += ":" + Queue;
-		}
 		
 		job.addPbsOption("l", lString);
 		
