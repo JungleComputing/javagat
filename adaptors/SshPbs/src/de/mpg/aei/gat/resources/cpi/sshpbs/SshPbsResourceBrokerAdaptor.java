@@ -168,7 +168,7 @@ public class SshPbsResourceBrokerAdaptor extends ResourceBrokerCpi {
 	int nproc = description.getProcessCount();
 	
 	if (nproc != 1) {
-	    throw new GATInvocationException("SGE/PBS cannot start multiple processes.");
+	    throw new GATInvocationException("SGE/PBS adaptor cannot start multiple processes.");
 	}
 
 	String authority = getAuthority();

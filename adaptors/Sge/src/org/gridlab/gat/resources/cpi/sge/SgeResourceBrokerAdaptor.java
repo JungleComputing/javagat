@@ -225,8 +225,13 @@ public class SgeResourceBrokerAdaptor extends ResourceBrokerCpi {
 		toNative += "-pe " + jobType + " " + description.getResourceCount() + " ";
 	    }
 	    
+	    /* No, does not work. This makes each job need the specified resources. --Ceriel
 	    if (description.getProcessCount() > 1) {
 		toNative += "-t " + description.getProcessCount() + " ";
+	    }
+	    */
+	    if (description.getProcessCount() > 1) {
+		throw new GATInvocationException("SGE adaptor cannot handle processCount > 1");
 	    }
 	    String s = (String) gatContext.getPreferences().get("sge.native.flags");
             if (s != null) {
