@@ -1108,6 +1108,14 @@ public class SshTrileadFileAdaptor extends FileCpi {
                 return canReadCache.get(fixedURI);
             }
         }
+        if (fixedURI.refersToLocalHost()) {
+            java.io.File f = new java.io.File(fixedURI.getPath());
+            boolean canread = f.canRead();
+            if (canReadCacheEnable) {
+                canReadCache.put(fixedURI, canread);
+            }
+            return canread;
+        }
         if (isWindows(gatContext, location)) {
             throw new UnsupportedOperationException("Not implemented");
         } else {
@@ -1158,8 +1166,16 @@ public class SshTrileadFileAdaptor extends FileCpi {
     public boolean canWrite() throws GATInvocationException {
         if (canWriteCacheEnable) {
             if (canWriteCache.containsKey(fixedURI)) {
-                return canWriteCache.get(fixedURI);
+                return canWriteCache.get(fixedURI);           
             }
+        }
+        if (fixedURI.refersToLocalHost()) {
+            java.io.File f = new java.io.File(fixedURI.getPath());
+            boolean canwrite = f.canWrite();
+            if (canWriteCacheEnable) {
+                canWriteCache.put(fixedURI, canwrite);
+            }
+            return canwrite;
         }
         if (isWindows(gatContext, location)) {
             throw new UnsupportedOperationException("Not implemented");
@@ -1182,6 +1198,16 @@ public class SshTrileadFileAdaptor extends FileCpi {
         if (exists()) {
             return false;
         }
+        java.io.File f = new java.io.File(fixedURI.getPath());
+        try {
+            boolean result = f.createNewFile();
+            if (existsCacheEnable && result) {
+                existsCache.put(fixedURI, true);
+            }
+        } catch(Exception e) {
+            throw new GATInvocationException("sshtrilead", e);
+        }
+    
         // TODO: this is not atomic.
         if (isWindows(gatContext, location)) {
             throw new UnsupportedOperationException("Not implemented");
@@ -1212,9 +1238,18 @@ public class SshTrileadFileAdaptor extends FileCpi {
                 existsCache.remove(fixedURI);
             }
         }
+        if (fixedURI.refersToLocalHost()) {
+            java.io.File f = new java.io.File(fixedURI.getPath());
+            try {
+                return f.delete();
+            } catch(Exception e) {
+                throw new GATInvocationException("sshtrilead", e);
+            }
+        }
         if (isWindows(gatContext, location)) {
             throw new UnsupportedOperationException("Not implemented");
         } else {
+
             String[] result;
             try {
                 result = execCommand("rm -rf " + protectAgainstShellMetas(getFixedPath()));
@@ -1233,6 +1268,18 @@ public class SshTrileadFileAdaptor extends FileCpi {
             }
         }
  
+        if (fixedURI.refersToLocalHost()) {
+            java.io.File f = new java.io.File(fixedURI.getPath());
+            try {
+                boolean result = f.exists();
+                if (existsCacheEnable && result) {
+                    existsCache.put(fixedURI, true);
+                }
+            } catch(Exception e) {
+                throw new GATInvocationException("sshtrilead", e);
+            }
+        }
+        
         if (isWindows(gatContext, location)) {
             throw new UnsupportedOperationException("Not implemented");
         } else {
@@ -1268,6 +1315,11 @@ public class SshTrileadFileAdaptor extends FileCpi {
     }
 
     public String getAbsolutePath() throws GATInvocationException {
+        if (fixedURI.refersToLocalHost()) {
+            java.io.File f = new java.io.File(fixedURI.getPath());
+            return f.getAbsolutePath();
+        }
+        
         if (isWindows(gatContext, location)) {
             throw new UnsupportedOperationException("Not implemented");
         } else {
@@ -1372,6 +1424,10 @@ public class SshTrileadFileAdaptor extends FileCpi {
     }
 
     public long length() throws GATInvocationException {
+        if (fixedURI.refersToLocalHost()) {
+            java.io.File f = new java.io.File(fixedURI.getPath());
+            return f.length();
+        }
         if (isWindows(gatContext, location)) {
             throw new UnsupportedOperationException("Not implemented");
         } else {
@@ -1452,6 +1508,10 @@ public class SshTrileadFileAdaptor extends FileCpi {
     }
 
     public boolean mkdir() throws GATInvocationException {
+        if (fixedURI.refersToLocalHost()) {
+            java.io.File f = new java.io.File(fixedURI.getPath());
+            return f.mkdir();
+        }
         if (isWindows(gatContext, location)) {
             throw new UnsupportedOperationException("Not implemented");
         } else {
@@ -1475,6 +1535,10 @@ public class SshTrileadFileAdaptor extends FileCpi {
     }
 
     public boolean mkdirs() throws GATInvocationException {
+        if (fixedURI.refersToLocalHost()) {
+            java.io.File f = new java.io.File(fixedURI.getPath());
+            return f.mkdirs();
+        }
         if (exists()) {
             return false;
         }
@@ -1567,6 +1631,10 @@ public class SshTrileadFileAdaptor extends FileCpi {
 
     public boolean setLastModified(long lastModified)
             throws GATInvocationException {
+        if (fixedURI.refersToLocalHost()) {
+            java.io.File f = new java.io.File(fixedURI.getPath());
+            return f.setLastModified(lastModified);
+        }
         if (isWindows(gatContext, location)) {
             throw new UnsupportedOperationException("Not implemented");
         } else {
@@ -1614,6 +1682,10 @@ public class SshTrileadFileAdaptor extends FileCpi {
     }
 
     public boolean setReadOnly() throws GATInvocationException {
+        if (fixedURI.refersToLocalHost()) {
+            java.io.File f = new java.io.File(fixedURI.getPath());
+            return f.setReadOnly();
+        }
         if (isWindows(gatContext, location)) {
             throw new UnsupportedOperationException("Not implemented");
         } else {
