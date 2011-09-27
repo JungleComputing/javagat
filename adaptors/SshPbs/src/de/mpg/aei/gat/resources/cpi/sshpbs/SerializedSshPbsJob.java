@@ -53,19 +53,13 @@ public class SerializedSshPbsJob extends SerializedJob {
 		File destFile = postStaged.get(srcFile);
 		toStageOut[index] = srcFile.getName();
 
-		/**
-		 * destFile = srcFile if no destFile has been given.
-		 */
+		// destFile = srcFile if no destFile has been given.
 
 		if (destFile == null) {
 		    stagedOut[index] = srcFile.getName();
 		} else {
 		    stagedOut[index] = realPath(destFile.toGATURI());
 		}
-
-		/**
-		 * some logs here...
-		 */
 
 		if (logger.isDebugEnabled()) {
 		    logger.debug("Poststage: src = " + toStageOut[index] + ", dest = " + stagedOut[index]);
@@ -89,10 +83,8 @@ public class SerializedSshPbsJob extends SerializedJob {
 
 	String path = null;
 	String stringURI = null;
-
-	/**
-	 * assume that the URI has the protocol definition ended with '://'
-	 */
+	
+	// assume that the URI has the protocol definition ended with '://'
 
 	stringURI = uri.toString();
 	int pathBegin = stringURI.indexOf("://");

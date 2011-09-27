@@ -54,11 +54,8 @@ public class SshPbsJob extends JobCpi {
     
     Integer exitStatus = null;
 
-    /**
-     * security stuff for offline monitoring
-     */
-
     private URI brokerURI;
+    
     private Map<String, String> securityInfo;
 
     /**
@@ -75,10 +72,8 @@ public class SshPbsJob extends JobCpi {
 	super(gatContext, jobDescription, sandbox);
 	this.securityInfo = securityInfo;
 
-	/**
-	 * broker necessary for security context which is required for getting a
-	 * ssh connection for offline monitoring.
-	 */
+	// brokerURI necessary for security context which is required for getting a
+	// ssh connection for off-line monitoring.
 
 	brokerURI = broker.getBrokerURI();
 	state = JobState.INITIAL;
@@ -170,7 +165,7 @@ public class SshPbsJob extends JobCpi {
     }
 
     /**
-     * The jobListener runs in a thread and checks the job's state.
+     * The JobListener runs in a thread and checks the job's state.
      */
     private class JobListener extends Thread {
 
@@ -277,11 +272,6 @@ public class SshPbsJob extends JobCpi {
         }
     }
 
-
-    /*
-     * public String getJobID() { return jobID; }
-     */
-
     /**
      * @param jobID
      * @uml.property name="jobID"
@@ -348,7 +338,7 @@ public class SshPbsJob extends JobCpi {
 		.defaultUnmarshal(SerializedSshPbsJob.class, s);
 
 	// if this job was created within this JVM, just return a reference to
-	// the job
+	// the job.
 	synchronized (JobCpi.class) {
 	    for (int i = 0; i < jobList.size(); i++) {
 		JobCpi j = (JobCpi) jobList.get(i);
@@ -383,9 +373,7 @@ public class SshPbsJob extends JobCpi {
 
 	logger.debug("Getting task status in setState()");
 
-	/**
-	 * getting the status via ssh ... qstat
-	 */
+	//  getting the status via ssh ... qstat
 
 	String username = securityInfo.get("username");
 	String host = brokerURI.getHost();
@@ -498,7 +486,7 @@ public class SshPbsJob extends JobCpi {
     }
 
     /**
-     * method removeBlanksToOne: exchange several blanks in a string a let only
+     * Method removeBlanksToOne: exchange several blanks in a string a let only
      * one as a delimiter between word.
      * 
      * @author - A. Beck-Ratzka, AEI.
@@ -536,7 +524,7 @@ public class SshPbsJob extends JobCpi {
 	} else {
 	    jsl.stop(!(gatContext.getPreferences().containsKey("job.stop.poststage")
         	    && gatContext.getPreferences().get("job.stop.poststage").equals("false")));
-	    SshPbsJobStop(); // SshPbsJobStop still needs to be implemented.
+	    SshPbsJobStop();
 	    state = JobState.STOPPED;
 	    if (stoptime == 0L) {
 		stoptime = System.currentTimeMillis();
@@ -546,9 +534,7 @@ public class SshPbsJob extends JobCpi {
     }
 
     /**
-     * SshPbsJobStop
-     * 
-     * Stop pbs jobs started via an ssh command on a remote cluster by omitting
+     * Stop pbs jobs started via an ssh command on a remote cluster by emitting
      * a qdel command via ssh. Only necessary is the jobID.
      * 
      * The job itself is executed using the method singleResult.
@@ -558,19 +544,12 @@ public class SshPbsJob extends JobCpi {
 
     private synchronized void SshPbsJobStop() {
 
-	/**
-	 * securityinfo, getAuthority and getHostname still requires a
-	 * solution..
-	 */
-
 	String username = securityInfo.get("username");
 
 	String host = brokerURI.getHost();
 	if (host == null) {
 	    host = "localhost";
 	}
-
-	// String host = "buran.aei.mpg.de";
 
 	ArrayList<String> command = new ArrayList<String>();
 
@@ -595,17 +574,13 @@ public class SshPbsJob extends JobCpi {
 
     private synchronized void poststageFiles(SoftwareDescription sd) {
 
-	/**
-	 * let the sandbox do the poststage...
-	 */
+	// let the sandbox do the poststage...
 
 	setState(JobState.POST_STAGING);
 	sandbox.retrieveAndCleanup(this);
 
-	/**
-	 * poststage the file which contains the exit status of the
-	 * aplication...
-	 */
+	// poststage the file which contains the exit status of the
+	// aplication...
 
 	String username = securityInfo.get("username");
 	int ssh_port = SshPbsResourceBrokerAdaptor.getPort(gatContext, brokerURI);
