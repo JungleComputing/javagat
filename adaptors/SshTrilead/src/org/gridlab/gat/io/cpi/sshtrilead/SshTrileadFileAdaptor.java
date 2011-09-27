@@ -579,10 +579,8 @@ public class SshTrileadFileAdaptor extends FileCpi {
         String dest = destination.getPath();
         if (destinationFile.isDirectory() && isFile()) {
             dest = dest + "/" + getName();
-            if (java.io.File.separator.equals("/")) {
-                createNewFile(dest, getMode(gatContext,
-                        DEFAULT_MODE));
-            }
+            createNewFile(dest, getMode(gatContext, DEFAULT_MODE));
+
             // client.get(getFixedPath(), new java.io.FileOutputStream(dest));
             // No, that does not close the output stream! --Ceriel
             java.io.FileOutputStream d = new java.io.FileOutputStream(dest);
@@ -603,9 +601,7 @@ public class SshTrileadFileAdaptor extends FileCpi {
         } else if (isDirectory()) {
             copyDir(destination);
         } else if (isFile()) {
-            if (java.io.File.separator.equals("/")) {
-                createNewFile(dest, getMode(gatContext, DEFAULT_MODE));
-            }
+            createNewFile(dest, getMode(gatContext, DEFAULT_MODE));
             
             // client.get(getFixedPath(), new java.io.FileOutputStream(dest));
             // No, that does not close the output stream! --Ceriel
@@ -643,10 +639,9 @@ public class SshTrileadFileAdaptor extends FileCpi {
         SCPClient client = getSCPClient();
 
         String dest = destination.getPath();
-
-        if (java.io.File.separator.equals("/")) {
-            createNewFile(dest, getMode(gatContext, DEFAULT_MODE));
-        }
+        
+        createNewFile(dest, getMode(gatContext, DEFAULT_MODE));
+        
         // client.get(getFixedPath(), new java.io.FileOutputStream(dest));
         // No, that does not close the output stream! --Ceriel
         java.io.FileOutputStream d = new java.io.FileOutputStream(dest);
@@ -762,10 +757,19 @@ public class SshTrileadFileAdaptor extends FileCpi {
     
        
 
-    private void createNewFile(String localfile, String mode)
+    private boolean createNewFile(String localfile, String mode)
             throws GATInvocationException {
-        new CommandRunner("touch", localfile);
-        new CommandRunner("chmod",  mode, localfile);
+	java.io.File f = new java.io.File(localfile);
+	boolean result;
+	try {
+	    result = f.createNewFile();
+	} catch (IOException e) {
+	    throw new GATInvocationException("Could not create file", e);
+	}
+        if (java.io.File.separator.equals("/")) {
+            new CommandRunner("chmod",  mode, localfile);
+        }
+        return result;
     }
     
     public static Session getSession(URI fixedURI, GATContext context,
@@ -1198,14 +1202,8 @@ public class SshTrileadFileAdaptor extends FileCpi {
         if (exists()) {
             return false;
         }
-        java.io.File f = new java.io.File(fixedURI.getPath());
-        try {
-            boolean result = f.createNewFile();
-            if (existsCacheEnable && result) {
-                existsCache.put(fixedURI, true);
-            }
-        } catch(Exception e) {
-            throw new GATInvocationException("sshtrilead", e);
+        if (fixedURI.refersToLocalHost()) {
+            return createNewFile(fixedURI.getPath(), getMode(gatContext, DEFAULT_MODE));
         }
     
         // TODO: this is not atomic.
