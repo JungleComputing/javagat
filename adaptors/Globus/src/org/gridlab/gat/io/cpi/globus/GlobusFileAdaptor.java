@@ -476,7 +476,7 @@ public abstract class GlobusFileAdaptor extends FileCpi {
             throw new GATInvocationException("gridftp", e);
         } finally {
             if (client != null) {
-                destroyClient(client, dest);
+                destroyClient(client, src);
             }
         }
     }
@@ -1319,7 +1319,7 @@ public abstract class GlobusFileAdaptor extends FileCpi {
                 throw new GATInvocationException("gridftp", e);
             } finally {
                 if (client != null)
-                    destroyClient(client, toURI());
+                    destroyClient(client, location);
             }
             return true;
         } else {

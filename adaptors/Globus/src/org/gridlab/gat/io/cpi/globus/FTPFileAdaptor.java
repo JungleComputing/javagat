@@ -198,6 +198,7 @@ public class FTPFileAdaptor extends GlobusFileAdaptor {
                 return isDirectory();
             } finally {
                 destroyClient(client, toURI());
+                client = null;
             }
         } catch (Exception e) {
             if (e instanceof GATInvocationException) {
