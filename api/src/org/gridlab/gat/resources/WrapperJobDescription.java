@@ -3,9 +3,9 @@ package org.gridlab.gat.resources;
 import ibis.util.IPUtils;
 
 import java.io.FileOutputStream;
-import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -86,7 +86,7 @@ public class WrapperJobDescription extends JobDescription {
 
         private Preferences preferences;
 
-        private String jobStateFileName;
+        private URI jobStateFileName;
         
         private int wrappedJobIndex;
         
@@ -154,7 +154,7 @@ public class WrapperJobDescription extends JobDescription {
          * @return the filename of the file that will be used for forwarding the
          *         {@link JobState} of the wrapped {@link Job}.
          */
-        public String getJobStateFileName() {
+        public URI getJobStateFileName() {
             return jobStateFileName;
         }
         
@@ -175,14 +175,14 @@ public class WrapperJobDescription extends JobDescription {
         }
 
         public void generateJobStateFileName() {
+            String path = triggerDirectory.getPath();
+            path += "/jobstate_" + wrapperJobIndex + "_" + wrappedJobIndex;
             try {
-                java.io.File file = java.io.File.createTempFile(".JavaGAT",
-                        "jobstate");
-                this.jobStateFileName = file.getPath();
-                file.delete();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+		this.jobStateFileName = triggerDirectory.setPath(path);
+	    } catch (URISyntaxException e) {
+		// Should not happen.
+		e.printStackTrace();
+	    }
         }
     }
 
@@ -408,7 +408,7 @@ public class WrapperJobDescription extends JobDescription {
      *         {@link JobState} of the wrapped {@link Job} belonging to this
      *         {@link JobDescription}.
      */
-    public String getJobStateFileName(JobDescription description) {
+    public URI getJobStateFileName(JobDescription description) {
         for (WrappedJobInfo info : jobInfos) {
             if (info.getJobDescription() == description) {
                 return info.jobStateFileName;
