@@ -2,11 +2,12 @@ package org.gridlab.gat.resources.cpi;
 
 import java.io.DataInputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.util.HashMap;
 
+import org.gridlab.gat.GAT;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
+import org.gridlab.gat.io.FileInputStream;
 import org.gridlab.gat.monitoring.Metric;
 import org.gridlab.gat.monitoring.MetricDefinition;
 import org.gridlab.gat.monitoring.MetricEvent;
@@ -93,7 +94,7 @@ public class WrappedJobCpi extends JobCpi implements Runnable {
             DataInputStream din = null;
             FileInputStream fin = null;
             try {
-        	fin = new FileInputStream(info.getJobStateFileName());
+        	fin = GAT.createFileInputStream(gatContext, info.getJobStateFileName());
                 din = new DataInputStream(fin);
                 String s = din.readUTF();
                 newstate = JobState.valueOf(s);
@@ -121,8 +122,12 @@ public class WrappedJobCpi extends JobCpi implements Runnable {
                 state = newstate;
                 fireStateMetric(state);
                 
-                File monitorFile = new File(info.getJobStateFileName());
-                if (!monitorFile.delete()) {
+                try {
+                    File monitorFile = GAT.createFile(gatContext, info.getJobStateFileName());
+                    if (!monitorFile.delete()) {
+                	logger.error("Could not delete job status file!");
+                    }
+                } catch(Throwable e) {
                     logger.error("Could not delete job status file!");
                 }
             } else {

@@ -372,7 +372,7 @@ public class Wrapper {
             this.info = info;
             this.wrappedId = wrappedId;
             setDaemon(false);
-            setName(info.getJobStateFileName());
+            setName(info.getJobStateFileName().getPath());
         }
 
         public void run() {
@@ -399,7 +399,7 @@ public class Wrapper {
 
     class JobListener implements MetricListener {
 
-        private String filename;
+        private URI filename;
         private Preferences prefs;
 
         public JobListener(WrappedJobInfo info) {
@@ -421,7 +421,7 @@ public class Wrapper {
                 // as the file exists, once the state is read, the new state can
                 // be
                 // written.
-                URI dest = initiator.setPath(filename);
+                URI dest = this.filename;
                 java.io.File tmp = java.io.File.createTempFile(".JavaGAT",
                         "jobstate");
                 tmp.createNewFile();
