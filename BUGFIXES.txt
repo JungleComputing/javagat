@@ -1,3 +1,25 @@
+FIXED BUGS AND ADDITIONS in current version with respect to version 2.1.1
+- added various package-info.java files, replacing package.html.
+- added resource count and process count to JobDescription.toString().
+- added an SSH-PBS and SSH-SGE resource broker adaptor (SshPbs).
+  The PBS version was written by Alexander Beck-Ratzka and extended by
+  Ceriel Jacobs to also support SGE.
+- the javadoc entry in api/build.xml referred to a no longer existing URL.
+- added an "end()" method to the SftpTrilead file adaptor to close all
+  connections.
+- the Streaming file adaptor did not always close files correctly.
+- the Local resourcebroker adaptor now also recognizes the scheme "fork".
+- the Local resourcebroker adaptor sometimes caused deadlocks in termination.
+- fixed a couple of issues with the GridFTP File adaptor connection cache.
+- the SshTrilead file adaptor was sometimes leaking connections, which resulted
+  in too many sshd processes on the server side.
+- there were various instances where the SshTrilead file adaptor used an ssh
+  connection, even for local operations.
+- for "copy to local" operations, the SshTrilead file adaptor did not close
+  the destination file correctly.
+- added getAbsoluteFile() and getAbsolutePath() implementations to the
+  Commandline ssh adaptor.
+
 FIXED BUGS AND ADDITIONS in version 2.1.1 with respect to version 2.1.0
 - reduced the number of jar-files in the lib directory by combining them
   where possible. This reduces the number of open files in any JavaGAT
