@@ -80,8 +80,8 @@ public class StreamForwarder implements Runnable {
             if (out != null) {
                 out.write(buffer, 0, read);
                 out.flush();
-                if (logger.isInfoEnabled()) {
-                    logger.info(name + " forwarded: "
+                if (logger.isTraceEnabled()) {
+                    logger.trace(name + " forwarded: "
                         + new String(buffer, 0, read));
                 }
             } else {
@@ -91,10 +91,14 @@ public class StreamForwarder implements Runnable {
             }
 
         } catch (IOException e) {
-            logger.info(name + ": caught exception: " + e);
-            StringWriter writer = new StringWriter();
-            e.printStackTrace(new PrintWriter(writer));
-            logger.debug(name + ": stacktrace: \n" + writer.toString());
+            if (logger.isInfoEnabled()) {
+        	logger.info(name + ": caught exception: " + e);
+            }
+            if (logger.isDebugEnabled()) {
+        	StringWriter writer = new StringWriter();
+        	e.printStackTrace(new PrintWriter(writer));
+        	logger.debug(name + ": stacktrace: \n" + writer.toString());
+            }
             synchronized (this) {
                 finished = true;
                 notifyAll();
@@ -114,10 +118,12 @@ public class StreamForwarder implements Runnable {
     }
     
     public void close() {
-        try {
-            out.close();
-        } catch (Throwable e) {
-            // ignored
-        }
+	if (out != null) {
+	    try {
+		out.close();
+	    } catch (Throwable e) {
+		// ignored
+	    }
+	}
     }
 }
