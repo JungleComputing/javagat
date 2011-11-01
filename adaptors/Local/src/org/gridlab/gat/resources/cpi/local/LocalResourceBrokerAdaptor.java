@@ -132,9 +132,9 @@ public class LocalResourceBrokerAdaptor extends ResourceBrokerCpi {
                     "The job description does not contain a software description");
         }
 
-        if (description.getProcessCount() != 1) {
+        if (description.getProcessCount() < 1) {
             throw new GATInvocationException(
-                    "Adaptor cannot handle: process count > 1: "
+                    "Adaptor cannot handle: process count < 1: "
                             + description.getProcessCount());
         }
 
@@ -176,51 +176,32 @@ public class LocalResourceBrokerAdaptor extends ResourceBrokerCpi {
         String exe;
         if (sandbox.getResolvedExecutable() != null) {
             exe = sandbox.getResolvedExecutable().getPath();
+            // try to set the executable bit, it might be lost
+            try {
+                new CommandRunner("chmod", "+x", exe);
+            } catch (Throwable t) {
+                // ignore
+            }
         } else {
             exe = getExecutable(description);
         }
-
-        ProcessBuilder builder = new ProcessBuilder();
         
-        // try to set the executable bit, it might be lost
-        try {
-            new CommandRunner("chmod", "+x", exe);
-        } catch (Throwable t) {
-            // ignore
-        }
-
-        builder.command().add(exe);
         String[] args = getArgumentsArray(description);
-        if (args != null) {
-            for (String arg : args) {
-                builder.command().add(arg);
-            }
-        }
-
-        java.io.File f = new java.io.File(sandbox.getSandboxPath());
-               
-        builder.directory(f);
         
-        // fill in the environment
+        java.io.File f = new java.io.File(sandbox.getSandboxPath());
+        
         Map<String, Object> env = sd.getEnvironment();
-        if (env != null) {
-            Map<String, String> e = builder.environment();
-            e.clear();
-            for (Map.Entry<String, Object> entry : env.entrySet()) {
-                builder.environment().put(entry.getKey(),
-                        (String) entry.getValue());
-            }
-        }
+        
+        ProcessBundle bundle = new ProcessBundle(description.getProcessCount(), exe, args, f, env);
 
-        Process p = null;
         localJob.setSubmissionTime();
         localJob.setState(Job.JobState.SCHEDULED);
         try {
             localJob.setState(Job.JobState.RUNNING);
             localJob.waitForTrigger(Job.JobState.RUNNING);
             localJob.setStartTime();
-            p = builder.start();
-            localJob.setProcess(p);
+            bundle.startBundle();
+            localJob.setProcess(bundle);
         } catch (IOException e) {
             throw new CommandNotFoundException("LocalResourceBrokerAdaptor", e);
         }
@@ -232,7 +213,7 @@ public class LocalResourceBrokerAdaptor extends ResourceBrokerCpi {
                 if (sd.getStderr() != null) {
                     OutputStream err = GAT.createFileOutputStream(gatContext, sd.getStderr());
                     // to file
-                    StreamForwarder forwarder = new StreamForwarder(p.getErrorStream(), err, sd
+                    StreamForwarder forwarder = new StreamForwarder(bundle.getStderr(), err, sd
                             .getExecutable()
                             + " [stderr]");
                     localJob.setErrorStream(forwarder);
@@ -241,7 +222,7 @@ public class LocalResourceBrokerAdaptor extends ResourceBrokerCpi {
                     }
                 } else {
                     // or throw it away
-                    new StreamForwarder(p.getErrorStream(), null, sd
+                    new StreamForwarder(bundle.getStderr(), null, sd
                             .getExecutable()
                             + " [stderr]");
                 }
@@ -257,7 +238,7 @@ public class LocalResourceBrokerAdaptor extends ResourceBrokerCpi {
                 if (sd.getStdout() != null) {
                     // to file
                     OutputStream out = GAT.createFileOutputStream(gatContext, sd.getStdout());
-                    StreamForwarder forwarder = new StreamForwarder(p.getInputStream(), out, sd
+                    StreamForwarder forwarder = new StreamForwarder(bundle.getStdout(), out, sd
                             .getExecutable()
                             + " [stdout]");
                     localJob.setOutputStream(forwarder);
@@ -266,7 +247,7 @@ public class LocalResourceBrokerAdaptor extends ResourceBrokerCpi {
                     }
                 } else {
                     // or throw it away
-                    new StreamForwarder(p.getInputStream(), null, sd
+                    new StreamForwarder(bundle.getStdout(), null, sd
                             .getExecutable()
                             + " [stdout]");
                 }
@@ -275,13 +256,12 @@ public class LocalResourceBrokerAdaptor extends ResourceBrokerCpi {
                         "Unable to create file output stream for stdout!", e);
             }
         }
-
+        
         if (!sd.streamingStdinEnabled() && sd.getStdin() != null) {
             // forward the stdin from file
             try {
                 InputStream in = GAT.createFileInputStream(gatContext, sd.getStdin());
-                new StreamForwarder(in, p.getOutputStream(),
-                        sd.getExecutable() + " [stdin]");
+                bundle.setStdin(sd.getExecutable(), in);
             } catch (GATObjectCreationException e) {
                 throw new GATInvocationException(
                         "Unable to create file input stream for stdin!", e);

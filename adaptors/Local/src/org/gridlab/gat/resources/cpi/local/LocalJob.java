@@ -33,7 +33,7 @@ public class LocalJob extends JobCpi {
 
     protected static Logger logger = LoggerFactory.getLogger(LocalJob.class);
 
-    private Process p;
+    private ProcessBundle p;
 
     private int exitStatus = 0;
 
@@ -124,13 +124,13 @@ public class LocalJob extends JobCpi {
         }
     }
 
-    protected void setProcess(Process p) {
-        this.p = p;
+    protected void setProcess(ProcessBundle bundle) {
+        this.p = bundle;
         Field f = null;
         try {
-            f = p.getClass().getDeclaredField("pid");
+            f = bundle.getClass().getDeclaredField("pid");
             f.setAccessible(true);
-            processID = Integer.parseInt(f.get(p).toString()); // toString
+            processID = Integer.parseInt(f.get(bundle).toString()); // toString
             // ignore exceptions // necessary?
         } catch (SecurityException e) {
         } catch (NoSuchFieldException e) {
@@ -204,7 +204,7 @@ public class LocalJob extends JobCpi {
      */
     public synchronized int getExitStatus() throws GATInvocationException {
         if (state != JobState.STOPPED) {
-            throw new GATInvocationException("not in RUNNING state");
+            throw new GATInvocationException("not in STOPPED state");
         }
         return exitStatus;
     }
@@ -232,13 +232,13 @@ public class LocalJob extends JobCpi {
 	}
 
 	try {
-	    p.getOutputStream().close();
+	    p.closeInput();
 	} catch (Throwable e) {
 	    // ignored
 	}
 
 	if (kill) {
-	    p.destroy();
+	    p.kill();
 	}
 
 	if (outputStreamFile != null) {
@@ -273,7 +273,7 @@ public class LocalJob extends JobCpi {
 
     public OutputStream getStdin() throws GATInvocationException {
         if (jobDescription.getSoftwareDescription().streamingStdinEnabled()) {
-            return p.getOutputStream();
+            return p.getStdin();
         } else {
             throw new GATInvocationException("stdin streaming is not enabled!");
         }
@@ -281,7 +281,7 @@ public class LocalJob extends JobCpi {
 
     public InputStream getStdout() throws GATInvocationException {
         if (jobDescription.getSoftwareDescription().streamingStdoutEnabled()) {
-            return p.getInputStream();
+            return p.getStdout();
         } else {
             throw new GATInvocationException("stdout streaming is not enabled!");
         }
@@ -289,7 +289,7 @@ public class LocalJob extends JobCpi {
 
     public InputStream getStderr() throws GATInvocationException {
         if (jobDescription.getSoftwareDescription().streamingStderrEnabled()) {
-            return p.getErrorStream();
+            return p.getStderr();
         } else {
             throw new GATInvocationException("stderr streaming is not enabled!");
         }
@@ -309,20 +309,7 @@ public class LocalJob extends JobCpi {
         }
 
         public void run() {
-            try {
-                p.waitFor();
-            } catch (InterruptedException e) {
-                if (logger.isDebugEnabled()) {
-                    logger.debug("p.waitFor is interrupted (local)");
-                }
-            }
-            try {
-                exitStatus = p.exitValue();
-            } catch (NullPointerException e) {
-                if (logger.isDebugEnabled()) {
-                    logger.debug("unable to retrieve exit status");
-                }
-            }
+            exitStatus = p.getExitStatus();
             try {
                 LocalJob.this.stop(false, false);
             } catch (GATInvocationException e) {
