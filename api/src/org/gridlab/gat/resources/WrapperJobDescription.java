@@ -2,6 +2,7 @@ package org.gridlab.gat.resources;
 
 import ibis.util.IPUtils;
 
+import java.io.BufferedOutputStream;
 import java.io.FileOutputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
@@ -358,7 +359,7 @@ public class WrapperJobDescription extends JobDescription {
             f = File.createTempFile("GAT", "jobDescription");
             f.deleteOnExit();
             FileOutputStream tmp = new FileOutputStream(f);
-            ObjectOutputStream out = new ObjectOutputStream(tmp);
+            ObjectOutputStream out = new ObjectOutputStream(new BufferedOutputStream(tmp));
             out.writeObject(new URI("any://"
                     + IPUtils.getLocalHostAddress().getCanonicalHostName() + "/"
                     + System.getProperty("user.dir")));
