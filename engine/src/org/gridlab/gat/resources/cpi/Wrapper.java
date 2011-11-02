@@ -3,10 +3,12 @@ package org.gridlab.gat.resources.cpi;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.BufferedInputStream;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
-import java.io.DataOutputStream;
+import java.io.BufferedOutputStream;
+import java.io.ObjectOutputStream;
 import java.net.URISyntaxException;
 import java.util.Date;
 import java.text.SimpleDateFormat;
@@ -24,6 +26,7 @@ import org.gridlab.gat.io.File;
 import org.gridlab.gat.monitoring.MetricEvent;
 import org.gridlab.gat.monitoring.MetricListener;
 import org.gridlab.gat.resources.AbstractJobDescription;
+import org.gridlab.gat.resources.Job;
 import org.gridlab.gat.resources.JobDescription;
 import org.gridlab.gat.resources.ResourceBroker;
 import org.gridlab.gat.resources.SoftwareDescription;
@@ -113,8 +116,8 @@ public class Wrapper {
         if (logger.isDebugEnabled()) {
             logger.debug("Starting JavaGAT Wrapper Application");
         }
-        ObjectInputStream in = new ObjectInputStream(new FileInputStream(
-                "wrapper.info"));
+        ObjectInputStream in = new ObjectInputStream(new BufferedInputStream(
+        	new FileInputStream("wrapper.info")));
         this.initiator = (URI) in.readObject();
         int level = in.readInt();
         wrapperId = in.readInt();
@@ -408,7 +411,7 @@ public class Wrapper {
         }
 
         public void processMetricEvent(MetricEvent event) {
-            DataOutputStream out = null;
+            ObjectOutputStream out = null;
             try {
                 // create a new file and write the state to it. This file is
                 // copied
@@ -425,8 +428,9 @@ public class Wrapper {
                 java.io.File tmp = java.io.File.createTempFile(".JavaGAT",
                         "jobstate");
                 tmp.createNewFile();
-                out = new DataOutputStream(new java.io.FileOutputStream(tmp));
-                out.writeUTF(((JobState) event.getValue()).name());
+                out = new ObjectOutputStream(new BufferedOutputStream(
+                	new java.io.FileOutputStream(tmp)));
+                out.writeObject(((Job)(event.getSource())).getInfo());
                 out.flush();
                 out.close();
                 File remoteFile = GAT.createFile(prefs, dest);

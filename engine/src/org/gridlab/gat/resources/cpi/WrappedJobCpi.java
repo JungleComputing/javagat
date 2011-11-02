@@ -1,8 +1,10 @@
 package org.gridlab.gat.resources.cpi;
 
-import java.io.DataInputStream;
+import java.io.ObjectInputStream;
+import java.io.BufferedInputStream;
 import java.io.File;
 import java.util.HashMap;
+import java.util.Map;
 
 import org.gridlab.gat.GAT;
 import org.gridlab.gat.GATContext;
@@ -45,6 +47,8 @@ public class WrappedJobCpi extends JobCpi implements Runnable {
     private Metric statusMetric;
     
     private WrappedJobInfo info;
+    
+    Map<String, Object> jobInfo = null;
 
     /**
      * Creates a new WrappedJob.
@@ -88,15 +92,18 @@ public class WrappedJobCpi extends JobCpi implements Runnable {
         fireMetric(v);
     }
 
+    @SuppressWarnings("unchecked")
     public void run() {
         do {
             JobState newstate = null;
-            DataInputStream din = null;
+            ObjectInputStream din = null;
             FileInputStream fin = null;
             try {
         	fin = GAT.createFileInputStream(gatContext, info.getJobStateFileName());
-                din = new DataInputStream(fin);
-                String s = din.readUTF();
+                din = new ObjectInputStream(new BufferedInputStream(fin));
+                
+                jobInfo = (Map<String, Object>) din.readObject();
+                String s = (String) jobInfo.get("state");
                 newstate = JobState.valueOf(s);
             } catch (Throwable e) {
                 if (logger.isDebugEnabled()) {
@@ -142,6 +149,10 @@ public class WrappedJobCpi extends JobCpi implements Runnable {
         } while (state != JobState.STOPPED
                 && state != JobState.SUBMISSION_ERROR);
         finished();
+    }
+    
+    public Map<String, Object> getInfo() {
+	return new HashMap<String, Object>(jobInfo);
     }
     
     public String toString() {
