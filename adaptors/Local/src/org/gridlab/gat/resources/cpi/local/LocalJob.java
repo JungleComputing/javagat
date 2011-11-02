@@ -5,7 +5,6 @@ package org.gridlab.gat.resources.cpi.local;
 
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -126,16 +125,7 @@ public class LocalJob extends JobCpi {
 
     protected void setProcess(ProcessBundle bundle) {
         this.p = bundle;
-        Field f = null;
-        try {
-            f = bundle.getClass().getDeclaredField("pid");
-            f.setAccessible(true);
-            processID = Integer.parseInt(f.get(bundle).toString()); // toString
-            // ignore exceptions // necessary?
-        } catch (SecurityException e) {
-        } catch (NoSuchFieldException e) {
-        } catch (IllegalAccessException e) {
-        }
+        processID = bundle.getProcessID();
     }
 
     protected void setState(JobState state) {

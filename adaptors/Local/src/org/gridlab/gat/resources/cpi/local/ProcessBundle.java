@@ -163,26 +163,26 @@ public class ProcessBundle implements Runnable {
 		    r.close();
 		}
 	    }
+	    closedStreams = readerThreads.length;
 	}
     }
 
     private static class Reader implements Runnable { 
 
-	int             available = 0;
-	int             pos = 0;
-	byte[]          buffer; 
-	InputStream     stream;
-	IOException     exception = null;
-	MergingInputStream merger;
+	private int available = 0;
+	private int pos = 0;
+	private final byte[] buffer = new byte[4096]; 
+	private final InputStream stream;
+	private IOException exception = null;
+	private final MergingInputStream merger;
 
 	Reader(MergingInputStream merger, InputStream stream) { 
 	    this.stream = stream;
 	    this.merger = merger;
-	    buffer = new byte[4096];
 	}
 
 	public synchronized void run() { 
-	    while (true) { 
+	    for (;;) {
 		int len;
 		try { 
 		    len = stream.read(buffer);
@@ -196,14 +196,13 @@ public class ProcessBundle implements Runnable {
 		synchronized (merger) {
 		    merger.notify();
 		    if (len < 0) { 	
-			try { 
-			    stream.close();
-			} catch(IOException ex) {
+			try {
+			    close();
+			} catch (IOException e) {
 			    // ignore
 			}
 			merger.closedStreams++;
-			ScheduledExecutor.remove(this);
-			return;
+			break;
 		    }
 		}
 		do { 
@@ -212,8 +211,9 @@ public class ProcessBundle implements Runnable {
 		    } catch(InterruptedException ex) { 
 			// ignore
 		    }
-		} while(available != 0);
+		} while (available != 0);
 	    }
+	    ScheduledExecutor.remove(this);
 	}
 
 	synchronized int read() throws IOException { 
@@ -242,11 +242,10 @@ public class ProcessBundle implements Runnable {
 	    return len;
 	}
 
-	void close() throws IOException {
+	synchronized void close() throws IOException {
 	    stream.close();
-	    synchronized(this) {
-		notify();
-	    }
+	    available = 0;
+	    notify();
 	}
     }
 
@@ -255,7 +254,8 @@ public class ProcessBundle implements Runnable {
     private InputStream stdout = null;
     private InputStream stderr = null;
     private boolean done = false;
-    
+    private int processID;
+
     public ProcessBundle(int count, String exe, String[] args, File dir, Map<String, Object> env) {
 	processes = new ProcessRunner[count];
 	for (int i = 0; i < count; i++) {
@@ -277,6 +277,7 @@ public class ProcessBundle implements Runnable {
 		throw e;
 	    }
 	}
+	processID = processes[0].getProcessID();
 	ScheduledExecutor.schedule(this, 0, 50);
     }
     
@@ -338,6 +339,10 @@ public class ProcessBundle implements Runnable {
     public int getExitStatus() {
 	waitFor();
 	return processes[0].getExitStatus();
+    }
+        
+    public int getProcessID() {
+        return processID;
     }
 
     @Override

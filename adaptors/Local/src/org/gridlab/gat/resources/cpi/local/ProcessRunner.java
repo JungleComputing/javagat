@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.lang.reflect.Field;
 import java.util.Map;
 
 import org.gridlab.gat.engine.util.ScheduledExecutor;
@@ -20,6 +21,7 @@ public class ProcessRunner implements Runnable {
     private int exitStatus;
     private boolean done = false;
 
+    private int processID;
 
     public ProcessRunner(String exe, String[] args, File dir, Map<String, Object> env) {
 	builder.command().add(exe);
@@ -47,6 +49,16 @@ public class ProcessRunner implements Runnable {
 	    logger.debug("Starting local process: " +  builder.command());
 	}
 	process = builder.start();
+        Field f = null;
+        try {
+            f = process.getClass().getDeclaredField("pid");
+            f.setAccessible(true);
+            processID = Integer.parseInt(f.get(process).toString());
+            // ignore exceptions
+        } catch (SecurityException e) {
+        } catch (NoSuchFieldException e) {
+        } catch (IllegalAccessException e) {
+        }
 	ScheduledExecutor.schedule(this, 0, 50);
     }
     
@@ -113,5 +125,9 @@ public class ProcessRunner implements Runnable {
 		// ignore
 	    }
 	}
+    }
+    
+    public int getProcessID() {
+        return processID;
     }
 }
