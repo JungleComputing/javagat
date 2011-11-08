@@ -351,23 +351,10 @@ public class ProcessBundle implements Runnable {
 	    r.waitFor();
 	}
 	ScheduledExecutor.remove(this);
+
 	synchronized(this) {
 	    done = true;
 	    notifyAll();
-	}
-	if (stdout != null) {
-	    try {
-		stdout.close();
-	    } catch (Throwable e) {
-		// ignore
-	    }
-	}
-	if (stderr != null) {
-	    try {
-		stderr.close();
-	    } catch (Throwable e) {
-		// ignore
-	    }
 	}
     }
     
