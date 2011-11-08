@@ -526,7 +526,9 @@ public class File extends java.io.File implements Monitorable, Advertisable,
         try {
             return f.mkdir();
         } catch (Exception e) {
-            return false;
+        	System.out.println("XXXXX File.java:mkdir() throwing RuntimeException");
+        	throw new RuntimeException(e);
+//            return false;
         }
     }
 
@@ -537,7 +539,9 @@ public class File extends java.io.File implements Monitorable, Advertisable,
         try {
             return f.mkdirs();
         } catch (Exception e) {
-            return false;
+        	System.out.println("XXXXX File.java:mkdirs() throwing RuntimeException");
+        	throw new RuntimeException(e);
+//            return false;
         }
     }
 
@@ -701,5 +705,9 @@ public class File extends java.io.File implements Monitorable, Advertisable,
             throws IOException {
         stream.writeObject(toGATURI());
         stream.writeObject(getFileInterface().getGATContext());
+    }
+    
+    public Throwable getLastCaughtException() {
+    	return f.getLastCaughtException();
     }
 }

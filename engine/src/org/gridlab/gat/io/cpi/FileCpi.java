@@ -95,6 +95,8 @@ public abstract class FileCpi extends MonitorableCpi implements FileInterface, j
     protected URI location;
     
 	protected boolean ignoreHiddenFiles = false;
+	
+	protected Throwable lastCaughtException = null;
 
     /**
      * Constructs a FileCpi instance which corresponds to the physical file
@@ -532,20 +534,26 @@ public abstract class FileCpi extends MonitorableCpi implements FileInterface, j
     }
 
     public boolean mkdirs() throws GATInvocationException {
-        if (exists()) {
-            return false;
-        }
-        if (mkdir()) {
-            return true;
-        }
+    	try {
+    		if (exists()) {
+    			return false;
+    		}
+    		if (mkdir()) {
+    			return true;
+    		}
 
-        FileInterface parent = getParentFile().getFileInterface();
+    		FileInterface parent = getParentFile().getFileInterface();
 
-        if (parent == null) {
-            return false;
-        }
+    		if (parent == null) {
+    			return false;
+    		}
 
-        return parent.mkdirs() && mkdir();
+    		return parent.mkdirs() && mkdir();
+    	} catch (Throwable t) {
+    		System.out.println("FileCpi.mkdir caught Throwable: " + t.getMessage());
+    		t.printStackTrace();
+    		throw new GATInvocationException("filecpi", t);
+    	}
     }
 
     public boolean renameTo(File arg0) throws GATInvocationException {
@@ -925,4 +933,9 @@ public abstract class FileCpi extends MonitorableCpi implements FileInterface, j
             }
         }
     }
+    
+    public Throwable getLastCaughtException() {
+		return lastCaughtException;
+	} // public Throwable getLastCaughtException()
+    
 }

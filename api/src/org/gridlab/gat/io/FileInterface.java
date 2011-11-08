@@ -239,4 +239,10 @@ public interface FileInterface extends Monitorable, Advertisable,
 
     /** See {@link java.io.File#toURL()}. */
     public URL toURL() throws MalformedURLException;
+    
+    /**
+     * Returns the last caught exception.
+     * @return
+     */
+    public Throwable getLastCaughtException();
 }

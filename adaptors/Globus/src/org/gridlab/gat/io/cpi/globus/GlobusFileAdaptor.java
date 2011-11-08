@@ -1154,6 +1154,9 @@ public abstract class GlobusFileAdaptor extends FileCpi {
 		String remotePath = getPath();
 		client = createClient(toURI());
 		try {
+			if (client.exists(remotePath)) {
+				return false;
+			}
 			client.makeDir(remotePath);
 			if (gatContext.getPreferences().containsKey("file.chmod")) {
 				chmod(client, remotePath, gatContext);
@@ -1161,8 +1164,9 @@ public abstract class GlobusFileAdaptor extends FileCpi {
 			setIsDir(toURI(), true);
 		} catch (Exception e) {
 			if (logger.isDebugEnabled()) {
-				logger.debug("gridftp", e);
+				logger.debug("gridftpXXXXX", e);
 			}
+			lastCaughtException = e;
 			return false;
 		} finally {
 			if (client != null) {
