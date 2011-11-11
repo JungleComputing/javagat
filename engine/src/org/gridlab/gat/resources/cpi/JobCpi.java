@@ -243,9 +243,9 @@ public abstract class JobCpi extends MonitorableCpi implements Job {
                         break;
                     j = jobList.remove(0);
                 }
-                if (logger.isInfoEnabled()) {
-                    logger.info("stopping job: " + j);
-                }
+//                if (logger.isInfoEnabled()) {
+//                    logger.info("stopping job: " + j);
+//                }
 //                try {
 //                    j.stop();
 //                } catch (Exception e) {
