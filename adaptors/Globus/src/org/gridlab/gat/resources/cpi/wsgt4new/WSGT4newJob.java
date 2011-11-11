@@ -380,7 +380,7 @@ public class WSGT4newJob extends JobCpi implements GramJobListener {
 						} catch (Exception e) {
 							throw new RuntimeException("Cannot retrieve new credentials for job.", e);
 						}
-
+						gj.gatContext = context;
 						return gj;
 					}
 				}

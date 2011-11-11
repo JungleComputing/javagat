@@ -1283,7 +1283,13 @@ public abstract class GlobusFileAdaptor extends FileCpi {
 			String oldDir = client.getCurrentDir();
 			client.changeDir("~");
 			String homeDir = client.getCurrentDir();
-			client.changeDir(oldDir);
+			try {
+				client.changeDir(oldDir);
+			} catch (Exception e) {
+				// an exception can occur if old directory does not exist any more
+				// --> don't fail if that is the case.
+				logger.warn("getHomeDirectory(): Could not change back to old directory: " + e.getMessage());
+			}
 			return homeDir;
 		} catch (Exception e) {
 			throw new GATInvocationException("gridftp", e);
