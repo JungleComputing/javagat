@@ -22,16 +22,19 @@ public class SerializedSshPbsJob extends SerializedJob {
     private String[] stagedOut;
     
     private String brokerURI;
+    
+    private String returnValueFile;
 
     public SerializedSshPbsJob() {
     }
 
     public SerializedSshPbsJob(String classname, JobDescription jobDescription,
 	    Sandbox sandbox, String jobId, long submissiontime, long starttime,
-	    long stoptime, SoftwareDescription sd, URI brokerURI) {
+	    long stoptime, SoftwareDescription sd, URI brokerURI, String returnValueFile) {
 	super(classname, jobDescription, sandbox, jobId, submissiontime,
 		starttime, stoptime);
 	this.brokerURI = brokerURI.toString();
+	this.returnValueFile = returnValueFile;
 	// Get what is needed from the software description to deal with
 	// poststaging.
 	File s = sd.getStdout();
@@ -148,6 +151,14 @@ public class SerializedSshPbsJob extends SerializedJob {
 
     public void setBrokerURI(String brokerURI) {
         this.brokerURI = brokerURI;
+    }
+
+    public String getReturnValueFile() {
+        return returnValueFile;
+    }
+
+    public void setReturnValueFile(String returnValueFile) {
+        this.returnValueFile = returnValueFile;
     }
 
 }

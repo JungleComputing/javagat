@@ -186,12 +186,20 @@ public class SshPbsResourceBrokerAdaptor extends ResourceBrokerCpi {
 	if (logger.isDebugEnabled()) {
 	    logger.debug("SshPbs adaptor will use '" + host + "' as execution host");
 	}
-
+	
+	// Create filename for return value.
+	String returnValueFile = ".rc." + Math.random();
+	try {
+	    description.getSoftwareDescription().addPostStagedFile(GAT.createFile(gatContext, new URI(returnValueFile)));
+	} catch (Throwable e) {
+	    // O well, we tried.
+	}
+	
 	Sandbox sandbox = new Sandbox(gatContext, description, authority, null,
 		true, true, true, true);
 
 	SshPbsJob sshPbsJob = new SshPbsJob(gatContext, this, description, sandbox,
-		securityInfo);
+		securityInfo, returnValueFile);
 	
         Job job = null;
         if (description instanceof WrapperJobDescription) {
@@ -208,7 +216,7 @@ public class SshPbsResourceBrokerAdaptor extends ResourceBrokerCpi {
 	    sshPbsJob.addMetricListener(listener, metric);
 	}
 
-	String jobid = PBS_Submit(sshPbsJob, description, sandbox);
+	String jobid = PBS_Submit(sshPbsJob, description, sandbox, returnValueFile);
 
 	if (jobid != null) {
 	    sshPbsJob.setState(Job.JobState.SCHEDULED);
@@ -231,7 +239,7 @@ public class SshPbsResourceBrokerAdaptor extends ResourceBrokerCpi {
      * @author Alexander Beck-Ratzka, AEI, July 2010.
      */
 
-    private String PBS_Submit(SshPbsJob PbsJob, JobDescription description, Sandbox sandbox)
+    private String PBS_Submit(SshPbsJob PbsJob, JobDescription description, Sandbox sandbox, String returnValueFile)
 	    throws GATInvocationException {
 
 	String jobid = null;
@@ -240,7 +248,7 @@ public class SshPbsResourceBrokerAdaptor extends ResourceBrokerCpi {
 	 * Create the qsub script...
 	 */
 
-	String qsubFileName = createQsubScript(description, sandbox);
+	String qsubFileName = createQsubScript(description, sandbox, returnValueFile);
 	if (qsubFileName != null) {
 	    jobid = sshPbsSubmission(PbsJob, description, qsubFileName,
 		    sandbox);
@@ -251,7 +259,7 @@ public class SshPbsResourceBrokerAdaptor extends ResourceBrokerCpi {
 	return (jobid);
     }
 
-    String createQsubScript(JobDescription description, Sandbox sandbox)
+    String createQsubScript(JobDescription description, Sandbox sandbox, String returnValueFile)
 	    throws GATInvocationException {
 
 	String Queue = null;
@@ -321,8 +329,9 @@ public class SshPbsResourceBrokerAdaptor extends ResourceBrokerCpi {
 		job.addSgeOption("pe", jobType + " " + Nodes);
 	    }
 
-	    job.addSgeOption("l", "h_rt=" + (Time*60));
-
+	    if (Time != -1L) {
+		job.addSgeOption("l", "h_rt=" + (Time*60));
+	    }
 
 	    lString = "";
 	    if (Time != -1L) {
@@ -382,20 +391,20 @@ public class SshPbsResourceBrokerAdaptor extends ResourceBrokerCpi {
 		job.addOption("e", sd.getStderr().getName().toString());
 	    }
 
+	    String sandboxDir = sandbox.getSandboxPath();
+	    if (sandboxDir == null) {
+		sandboxDir = "$HOME";
+	    } else {
+		java.io.File f = new java.io.File(sandbox.getSandboxPath());
+		if (! f.isAbsolute()) {
+		    sandboxDir = "$HOME/" + sandboxDir;
+		}
+	    }
+	    
 	    String directory = sd.getStringAttribute(
 		    SoftwareDescription.DIRECTORY, null);
 	    if (directory == null) {
-		String sandboxPath = sandbox.getSandboxPath();
-		if (sandboxPath == null) {
-		    directory = "$HOME";
-		} else {
-		    java.io.File f = new java.io.File(sandbox.getSandboxPath());
-		    if (! f.isAbsolute()) {
-			directory = "$HOME/" + sandboxPath;
-		    } else {
-			directory = sandboxPath;
-		    }
-		}
+		directory = sandboxDir;
 	    }
 
 	    // Set working directory of job.
@@ -430,8 +439,7 @@ public class SshPbsResourceBrokerAdaptor extends ResourceBrokerCpi {
 	    }
 	    job.println(cmd.toString());
 
-	    // PBS uses PBS_JOBID, SGE uses JOB_ID. So, this should work for both.
-	    job.println("  echo \"retvalue = $?\" > $HOME/.rc.$JOB_ID$PBS_JOBID");
+	    job.println("echo \"retvalue = $?\" > " + sandboxDir + "/" + returnValueFile);
 
 	} catch (Throwable e) {
 	    throw new GATInvocationException(
