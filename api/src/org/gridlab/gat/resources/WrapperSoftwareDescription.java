@@ -152,7 +152,12 @@ public class WrapperSoftwareDescription extends JavaSoftwareDescription {
     }
 
     public Map<String, String> getJavaSystemProperties() {
-        Map<String, String> result = new HashMap<String, String>();
+        Map<String, String> result = super.getJavaSystemProperties();
+        if (result == null) {
+            result = new HashMap<String, String>();
+            super.setJavaSystemProperties(result);
+            result = super.getJavaSystemProperties();
+        }
         if (gatLocation == null) {
             result.put("log4j.configuration", "file:log4j.properties");
             result.put("gat.adaptor.path", "lib/adaptors");
