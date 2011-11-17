@@ -18,7 +18,8 @@
 		<fileset dir="${external}">
 			<include name="*.jar" />
 		</fileset>
-		<fileset file="${api}">
+		<fileset dir="${lib}">
+			<include name="*.jar" />
 		</fileset>
 	</path>
 

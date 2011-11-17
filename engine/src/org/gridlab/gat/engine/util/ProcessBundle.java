@@ -1,4 +1,6 @@
-package org.gridlab.gat.resources.cpi.local;
+package org.gridlab.gat.engine.util;
+
+import ibis.util.ThreadPool;
 
 import java.io.File;
 import java.io.IOException;
@@ -6,8 +8,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Map;
 
-import org.gridlab.gat.engine.util.ScheduledExecutor;
-import org.gridlab.gat.engine.util.StreamForwarder;
 
 public class ProcessBundle implements Runnable {
     
@@ -109,7 +109,7 @@ public class ProcessBundle implements Runnable {
 	    readerThreads = new Reader[streams.length];
 	    for (int i = 0; i < streams.length; i++) { 
 		readerThreads[i] = new Reader(this, streams[i]);
-		ScheduledExecutor.schedule(readerThreads[i], 0, 50);
+		ThreadPool.createNew(readerThreads[i], "MergingInputStreamReader");
 	    }
 	    index = 0;
 	}
@@ -213,7 +213,6 @@ public class ProcessBundle implements Runnable {
 		    }
 		} while (available != 0);
 	    }
-	    ScheduledExecutor.remove(this);
 	}
 
 	synchronized int read() throws IOException { 
@@ -278,7 +277,7 @@ public class ProcessBundle implements Runnable {
 	    }
 	}
 	processID = processes[0].getProcessID();
-	ScheduledExecutor.schedule(this, 0, 50);
+	ThreadPool.createNew(this, "ProcessBundleWaiter");
     }
     
     public void closeInput() {
@@ -350,7 +349,6 @@ public class ProcessBundle implements Runnable {
 	for (ProcessRunner r : processes) {
 	    r.waitFor();
 	}
-	ScheduledExecutor.remove(this);
 
 	synchronized(this) {
 	    done = true;

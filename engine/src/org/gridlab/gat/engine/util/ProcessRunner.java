@@ -1,4 +1,6 @@
-package org.gridlab.gat.resources.cpi.local;
+package org.gridlab.gat.engine.util;
+
+import ibis.util.ThreadPool;
 
 import java.io.File;
 import java.io.IOException;
@@ -7,7 +9,6 @@ import java.io.OutputStream;
 import java.lang.reflect.Field;
 import java.util.Map;
 
-import org.gridlab.gat.engine.util.ScheduledExecutor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -59,7 +60,7 @@ public class ProcessRunner implements Runnable {
         } catch (NoSuchFieldException e) {
         } catch (IllegalAccessException e) {
         }
-	ScheduledExecutor.schedule(this, 0, 50);
+        ThreadPool.createNew(this, "ProcessWaiter");
     }
     
     public OutputStream getStdin() {
@@ -93,7 +94,6 @@ public class ProcessRunner implements Runnable {
             done = true;
             notifyAll();
         }
-        ScheduledExecutor.remove(this);
     }
         
     public synchronized int getExitStatus() {
