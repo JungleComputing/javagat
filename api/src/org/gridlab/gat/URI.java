@@ -799,6 +799,9 @@ public class URI implements Serializable, Comparable<Object> {
             return new URI(getScheme(), null, "///"
                     + path, getQuery(), getFragment());
         }
+        if (getScheme() == null && getAuthority() == null) {
+            return new URI(getScheme(), getAuthority(), path, getQuery(), getFragment());
+        }
         return new URI(getScheme(), getAuthority(), "/"
                 + path, getQuery(), getFragment());
     }
