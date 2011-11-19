@@ -71,7 +71,8 @@ public abstract class StagedFile {
 
     protected File resolve(File f, boolean useNameOnly)
             throws GATInvocationException {
-        URI uri = f.toGATURI();
+        URI origUri = f.toGATURI();
+        URI uri = origUri;
         if (logger.isInfoEnabled()) {
             logger.info("resolving uri: " + uri);
         }
@@ -85,16 +86,35 @@ public abstract class StagedFile {
         if (logger.isInfoEnabled()) {
             logger.info("authority done: " + uri);
         }
-        if (uri.getScheme() == null) {
+        
+        if (uri.getScheme() == null || useNameOnly) {
+            // Fix: Don't use scheme of source if destination is not given.
+            // So, also test for useNameOnly here.
+            // --Ceriel
             try {
                 uri = uri.setScheme("any");
             } catch (URISyntaxException e) {
                 throw new GATInvocationException("StageFile", e);
             }
         }
+        
         if (logger.isInfoEnabled()) {
             logger.info("scheme done: " + uri);
         }
+        
+        if (uri.refersToLocalHost()) {
+            // Destination is local host.
+            String path = origUri.getPath();
+            try {
+        	uri = new URI(path);
+	        if (logger.isInfoEnabled()) {
+	            logger.info("local done: " + uri);
+	        }
+	    } catch (URISyntaxException e) {
+		throw new GATInvocationException("StageFile", e);
+	    }
+        }
+        
         if (useNameOnly) {
             if (f.isDirectory()) {
                 try {
@@ -105,6 +125,10 @@ public abstract class StagedFile {
             } else {
                 try {
                     uri = uri.setPath(f.getName());
+                    if (logger.isInfoEnabled()) {
+                	logger.info("local done: f.getName() = " + f.getName() + ", uri = " + uri);
+    	            }
+                    
                 } catch (URISyntaxException e) {
                     throw new GATInvocationException("StageFile", e);
                 }
