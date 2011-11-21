@@ -528,7 +528,6 @@ public class SshPbsJob extends JobCpi {
 	} else {
 	    jsl.stop(!(gatContext.getPreferences().containsKey("job.stop.poststage")
         	    && gatContext.getPreferences().get("job.stop.poststage").equals("false")));
-	    SshPbsJobStop();
 	    state = JobState.STOPPED;
 	    if (stoptime == 0L) {
 		stoptime = System.currentTimeMillis();
