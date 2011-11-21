@@ -35,6 +35,7 @@ import org.gridlab.gat.GATObjectCreationException;
 import org.gridlab.gat.Preferences;
 import org.gridlab.gat.advert.Advertisable;
 import org.gridlab.gat.advert.cpi.SerializedBase;
+import org.gridlab.gat.engine.util.FileWaiter;
 import org.gridlab.gat.engine.util.ScheduledExecutor;
 import org.gridlab.gat.resources.cpi.JobCpi;
 
@@ -822,6 +823,8 @@ public class GATEngine {
             // ignore, could be because JobCpi has never been instantiated and
             // GAT.end() is called from within shutdown hook.
         }
+        
+        FileWaiter.end();
 
         for (List<Adaptor> adaptorList : engine.adaptorLists.values()) {
             for (Adaptor adaptor : adaptorList) {
