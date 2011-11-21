@@ -9,6 +9,7 @@ import java.util.Map;
 import org.gridlab.gat.GAT;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
+import org.gridlab.gat.engine.util.FileWaiter;
 import org.gridlab.gat.io.FileInputStream;
 import org.gridlab.gat.monitoring.Metric;
 import org.gridlab.gat.monitoring.MetricDefinition;
@@ -92,9 +93,23 @@ public class WrappedJobCpi extends JobCpi implements Runnable {
         fireMetric(v);
     }
 
+    FileWaiter waiter = null;
+    
     @SuppressWarnings("unchecked")
     public void run() {
+	String s = info.getJobStateFileName().toString();
+	int index = s.lastIndexOf("/");
+	String directory = s.substring(0, index);
+	String file = s.substring(index+1);
+	try {
+	    waiter = FileWaiter.createFileWaiter(GAT.createFile(gatContext, directory));
+	} catch (Throwable e) {
+	    logger.debug("Should not happen: ", e);
+	    return;
+	}
+	
         do {
+            waiter.waitFor(file);
             JobState newstate = null;
             ObjectInputStream din = null;
             FileInputStream fin = null;
@@ -103,7 +118,7 @@ public class WrappedJobCpi extends JobCpi implements Runnable {
                 din = new ObjectInputStream(new BufferedInputStream(fin));
                 
                 jobInfo = (Map<String, Object>) din.readObject();
-                String s = (String) jobInfo.get("state");
+                s = (String) jobInfo.get("state");
                 newstate = JobState.valueOf(s);
             } catch (Throwable e) {
                 if (logger.isDebugEnabled()) {
@@ -137,14 +152,6 @@ public class WrappedJobCpi extends JobCpi implements Runnable {
                 } catch(Throwable e) {
                     logger.error("Could not delete job status file!");
                 }
-            } else {
-        	try {
-        	    Thread.sleep(1000);
-        	} catch (InterruptedException e) {
-        	    if (logger.isInfoEnabled()) {
-        		logger.info("", e);
-        	    }
-        	}
             }
         } while (state != JobState.STOPPED
                 && state != JobState.SUBMISSION_ERROR);
