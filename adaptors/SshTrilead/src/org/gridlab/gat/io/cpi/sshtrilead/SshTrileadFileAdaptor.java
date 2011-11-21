@@ -60,15 +60,15 @@ public class SshTrileadFileAdaptor extends FileCpi {
 
     public static Preferences getSupportedPreferences() {
         Preferences preferences = FileCpi.getSupportedPreferences();
-        preferences.put("sshtrilead.caching.canread", "true");
-        preferences.put("sshtrilead.caching.canwrite", "true");
-        preferences.put("sshtrilead.caching.exists", "true");
-        preferences.put("sshtrilead.caching.isdirectory", "true");
-        preferences.put("sshtrilead.caching.isfile", "true");
-        preferences.put("sshtrilead.caching.ishidden", "true");
-        preferences.put("sshtrilead.caching.lastmodified", "true");
-        preferences.put("sshtrilead.caching.length", "true");
-        preferences.put("sshtrilead.caching.list", "true");
+        preferences.put("sshtrilead.caching.canread", "false");
+        preferences.put("sshtrilead.caching.canwrite", "false");
+        preferences.put("sshtrilead.caching.exists", "false");
+        preferences.put("sshtrilead.caching.isdirectory", "false");
+        preferences.put("sshtrilead.caching.isfile", "false");
+        preferences.put("sshtrilead.caching.ishidden", "false");
+        preferences.put("sshtrilead.caching.lastmodified", "false");
+        preferences.put("sshtrilead.caching.length", "false");
+        preferences.put("sshtrilead.caching.list", "false");
         preferences.put("sshtrilead.caching.iswindows", "true");
         preferences.put("sshtrilead.caching.iscsh", "true");
         preferences
