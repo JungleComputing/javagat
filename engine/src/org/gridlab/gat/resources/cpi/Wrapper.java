@@ -186,7 +186,40 @@ public class Wrapper {
                         = info.getJobDescription().getSoftwareDescription();
                 sd.addAttribute("triggerDirectory", triggerDirURI.toString());
             }
-            new Submitter(info, i).start();
+            ResourceBroker broker = null;
+            Preferences prefs = info.getPreferences();
+            try {
+                broker = GAT.createResourceBroker(prefs, info
+                        .getBrokerURI());
+            } catch (GATObjectCreationException e) {
+        	System.err.println("Could not create resource broker to submit wrapped job " + wrapperId);
+        	System.err.println("Its job description: " + info.getJobDescription());
+                System.err.println("The exception: " + e);
+                e.printStackTrace(System.err);
+                // Could not create resource broker, so no job started.
+                // Act like job is done, or wrapper will not terminate.
+                synchronized(this) {
+                    jobsDone++;
+                }
+            }
+
+            if (broker != null) {
+        	try {
+        	    broker.submitJob(modify(prefs, info.getJobDescription(), initiator, i),
+        		    new JobListener(info),
+        		    "job.status");
+        	} catch (GATInvocationException e) {
+        	    System.err.println("Could not submit wrapped job " + wrapperId);
+        	    System.err.println("Its job description: " + info.getJobDescription());
+        	    System.err.println("The exception: " + e);
+        	    e.printStackTrace(System.err);
+        	    // No job started, so act like it is done, otherwise wrapper will not terminate.
+        	    synchronized(this) {
+        		jobsDone++;
+        	    }
+        	}
+            }
+
         }
 
         synchronized (this) {
@@ -364,55 +397,6 @@ public class Wrapper {
             logger.error("Got Exception", e);
         }
         return uri;
-    }
-
-    class Submitter extends Thread {
-
-        private WrappedJobInfo info;
-        private int wrappedId;
-        
-        public Submitter(WrappedJobInfo info, int wrappedId) {
-            this.info = info;
-            this.wrappedId = wrappedId;
-            setDaemon(false);
-            setName(info.getJobStateFileName().getPath());
-        }
-
-        public void run() {
-            ResourceBroker broker = null;
-            Preferences prefs = info.getPreferences();
-            try {
-                broker = GAT.createResourceBroker(prefs, info
-                        .getBrokerURI());
-            } catch (GATObjectCreationException e) {
-        	System.err.println("Could not create resource broker to submit wrapped job " + wrapperId);
-        	System.err.println("Its job description: " + info.getJobDescription());
-                System.err.println("The exception: " + e);
-                e.printStackTrace(System.err);
-                // Could not create resource broker, so no job started.
-                // Act like job is done, or wrapper will not terminate.
-                synchronized(Wrapper.this) {
-                    jobsDone++;
-                    Wrapper.this.notifyAll();
-                }
-            }
-
-            try {
-                broker.submitJob(modify(prefs, info.getJobDescription(), initiator, wrappedId),
-                        new JobListener(info),
-                        "job.status");
-            } catch (GATInvocationException e) {
-        	System.err.println("Could not submit wrapped job " + wrapperId);
-        	System.err.println("Its job description: " + info.getJobDescription());
-                System.err.println("The exception: " + e);
-                e.printStackTrace(System.err);
-                // No job started, so act like it is done, otherwise wrapper will not terminate.
-                synchronized(Wrapper.this) {
-                    jobsDone++;
-                    Wrapper.this.notifyAll();
-                }
-            }
-        }
     }
 
     class JobListener implements MetricListener {
