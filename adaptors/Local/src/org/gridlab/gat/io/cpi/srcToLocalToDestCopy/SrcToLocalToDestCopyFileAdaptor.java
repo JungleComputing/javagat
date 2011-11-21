@@ -8,6 +8,7 @@ import java.util.Map;
 import org.gridlab.gat.GAT;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
+import org.gridlab.gat.GATObjectCreationException;
 import org.gridlab.gat.URI;
 import org.gridlab.gat.io.File;
 import org.gridlab.gat.io.cpi.FileCpi;
@@ -25,8 +26,12 @@ public class SrcToLocalToDestCopyFileAdaptor extends FileCpi {
         return capabilities;
     }
 
-    public SrcToLocalToDestCopyFileAdaptor(GATContext gatContext, URI location) {
+    public SrcToLocalToDestCopyFileAdaptor(GATContext gatContext, URI location) throws GATObjectCreationException {
         super(gatContext, location);
+        if (toURI().refersToLocalHost()) {
+            throw new GATObjectCreationException(
+                    "SrcToLocalToDestCopyFileAdaptor can only be used for remote files");
+        }
     }
 
     /*
@@ -35,16 +40,10 @@ public class SrcToLocalToDestCopyFileAdaptor extends FileCpi {
      * @see org.gridlab.gat.io.cpi.FileCpi#copy(org.gridlab.gat.URI)
      */
     public void copy(URI dest) throws GATInvocationException {
-        // We don't have to handle the local case, the GAT engine will select
-        // the local adaptor.
-        if (dest.refersToLocalHost()) {
+	// Specific adaptors should implement the "copy to local".
+	if (dest.refersToLocalHost()) {
             throw new GATInvocationException(
                     "SrcToLocalToDestCopyFileAdaptor destination refers to localhost");
-        }
-
-        if (toURI().refersToLocalHost()) {
-            throw new GATInvocationException(
-                    "SrcToLocalToDestCopyFileAdaptor source refers to localhost");
         }
 
         File tmpFile = null;
