@@ -148,6 +148,7 @@ public abstract class StagedFile {
                 throw new GATInvocationException("StageFile", e);
             }
         }
+        /*
         if (f.isDirectory()) {
             try {
                 relativeURI = new URI(f.getPath());
@@ -155,12 +156,15 @@ public abstract class StagedFile {
                 throw new GATInvocationException("StageFile", e);
             }
         } else {
+        */
             try {
                 relativeURI = new URI(f.getName());
             } catch (URISyntaxException e) {
                 throw new GATInvocationException("StageFile", e);
             }
+        /*
         }
+        */
         if (logger.isInfoEnabled()) {
             logger.info("sandbox done: " + uri);
         }
