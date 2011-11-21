@@ -335,34 +335,6 @@ public class SshTrileadFileAdaptor extends FileCpi {
             logger.debug("destination: " + destination);
         }
         
-        SCPClient client;
-        
-	Connection connection = getConnection(destination, gatContext,
-                    connectionCacheEnable, tcpNoDelay, client2serverCiphers,
-                    server2clientCiphers, verifier);
-        try {
-            client =  connection.createSCPClient();
-        } catch (IOException e) {
-            ConnectionKey key = getKey(destination, gatContext);
-            if (key != null) {
-        	synchronized(connections) {
-        	    connections.remove(key);
-        	}
-            }
-            connection.close();
-            if (connectionCacheEnable) {
-        	connection = getConnection(destination, gatContext, false, tcpNoDelay,
-                    client2serverCiphers, server2clientCiphers, verifier);
-        	try {
-        	    client = connection.createSCPClient();
-        	} catch(IOException e1) {
-        	    connection.close();
-        	    throw e1;
-        	}
-            }
-            throw e;
-        }
-        
         SshTrileadFileAdaptor destinationFile = new SshTrileadFileAdaptor(gatContext, destination);
 
         String remoteDir = null;
@@ -410,6 +382,41 @@ public class SshTrileadFileAdaptor extends FileCpi {
         remoteFileName = destinationFile.getName();
         String mode = getMode(gatContext, DEFAULT_MODE);
         java.io.File sourceFile = new java.io.File(getFixedPath());
+        
+        SCPClient client;
+        
+	Connection connection = getConnection(destination, gatContext,
+                    connectionCacheEnable, tcpNoDelay, client2serverCiphers,
+                    server2clientCiphers, verifier);
+        try {
+            client =  connection.createSCPClient();
+        } catch (IOException e) {
+            ConnectionKey key = getKey(destination, gatContext);
+            if (key != null) {
+        	synchronized(connections) {
+        	    connections.remove(key);
+        	}
+            }
+            connection.close();
+            if (logger.isDebugEnabled()) {
+        	logger.debug("createSCPClient to " + destination + " got exception", e);
+            }
+            if (connectionCacheEnable) {
+        	connection = getConnection(destination, gatContext, false, tcpNoDelay,
+                    client2serverCiphers, server2clientCiphers, verifier);
+        	try {
+        	    client = connection.createSCPClient();
+        	} catch(IOException e1) {
+                    if (logger.isDebugEnabled()) {
+                	logger.debug("createSCPClient to " + destination + " got second exception", e1);
+                    }
+        	    connection.close();
+        	    throw e1;
+        	}
+            } else {
+        	throw e;
+            }
+        }
         if (destinationFile.isDirectory() && sourceFile.isFile()) {
             logger.debug("put " + getFixedPath() + ", " + remoteDir + ", "
                     + mode);
@@ -483,6 +490,9 @@ public class SshTrileadFileAdaptor extends FileCpi {
         	}
             }
             connection.close();
+            if (logger.isDebugEnabled()) {
+        	logger.debug("createSCPClient to " + destination + " got exception", e);
+            }
             if (connectionCacheEnable) {
         	connection = getConnection(destination, gatContext, false, tcpNoDelay,
                     client2serverCiphers, server2clientCiphers, verifier);
@@ -490,10 +500,15 @@ public class SshTrileadFileAdaptor extends FileCpi {
         	    client = connection.createSCPClient();
         	} catch(IOException e1) {
         	    connection.close();
+        	    if (logger.isDebugEnabled()) {
+                	logger.debug("createSCPClient to " + destination + " got second exception", e1);
+                    }
+        	    
         	    throw e1;
         	}
+            } else {
+        	throw e;
             }
-            throw e;
         }
         
         SshTrileadFileAdaptor destinationFile = new SshTrileadFileAdaptor(gatContext, destination);
@@ -790,6 +805,10 @@ public class SshTrileadFileAdaptor extends FileCpi {
         	}
             }
             connection.close();
+            if (logger.isDebugEnabled()) {
+        	logger.debug("openSession got exception", e);
+            }
+            
             if (useCachedConnection) {
         	connection = getConnection(fixedURI, context, false, tcpNoDelay,
                     client2server, server2client, verifier);
@@ -797,6 +816,9 @@ public class SshTrileadFileAdaptor extends FileCpi {
         	    return connection.openSession();
         	} catch(IOException e1) {
         	    connection.close();
+                    if (logger.isDebugEnabled()) {
+                	logger.debug("openSession got second exception", e1);
+                    }
         	    throw e1;
         	}
             }
@@ -818,6 +840,9 @@ public class SshTrileadFileAdaptor extends FileCpi {
         try {
             return connection.createSCPClient();
         } catch (IOException e) {
+            if (logger.isDebugEnabled()) {
+        	logger.debug("createSCPClient got exception", e);
+            }
             ConnectionKey key = getKey(fixedURI, gatContext);
             if (key != null) {
         	synchronized(connections) {
@@ -832,6 +857,9 @@ public class SshTrileadFileAdaptor extends FileCpi {
         	    return connection.createSCPClient();
         	} catch(IOException e1) {
         	    connection.close();
+                    if (logger.isDebugEnabled()) {
+                	logger.debug("createSCPClient got second exception", e);
+                    }
         	    throw e1;
         	}
             }
@@ -950,6 +978,9 @@ public class SshTrileadFileAdaptor extends FileCpi {
 	    } catch (IOException e1) {
 		// Connection setup failed.
 		newConnection.close();
+		if (logger.isDebugEnabled()) {
+		    logger.debug("Could not connect, closing" + host);
+		}
 		throw new GATInvocationException("Could not connect", e1);
 	    }
 
@@ -1027,10 +1058,21 @@ public class SshTrileadFileAdaptor extends FileCpi {
 
             if (!connected) {
         	newConnection.close();
+		if (logger.isDebugEnabled()) {
+		    logger.debug("Could not authenticate, closing" + host);
+		}
         	throw new GATInvocationException("unable to authenticate");
             } else {
         	logger.info("putting connection for host " + host
         		+ " into cache");
+        	Connection c = connections.get(key);
+        	if (c != null) {
+        	    try {
+        		c.close();
+        	    } catch(Throwable e) {
+        		// ignore
+        	    }
+        	}
         	connections.put(key, newConnection);
             }
         }
