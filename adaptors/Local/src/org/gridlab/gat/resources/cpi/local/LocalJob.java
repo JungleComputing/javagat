@@ -8,13 +8,12 @@ import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.gridlab.gat.GAT;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
-import org.gridlab.gat.URI;
+import org.gridlab.gat.GATObjectCreationException;
 import org.gridlab.gat.engine.GATEngine;
+import org.gridlab.gat.engine.util.FileWaiter;
 import org.gridlab.gat.engine.util.ProcessBundle;
 import org.gridlab.gat.engine.util.StreamForwarder;
 import org.gridlab.gat.io.File;
@@ -24,6 +23,8 @@ import org.gridlab.gat.monitoring.MetricEvent;
 import org.gridlab.gat.resources.JobDescription;
 import org.gridlab.gat.resources.cpi.JobCpi;
 import org.gridlab.gat.resources.cpi.Sandbox;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author rob
@@ -75,6 +76,8 @@ public class LocalJob extends JobCpi {
         outputStreamFile = out;
     }
     
+    private FileWaiter waiter = null;
+    
     // Wait for the creation of a special file (by the application).
     void waitForTrigger(JobState state) throws GATInvocationException {
         
@@ -84,41 +87,29 @@ public class LocalJob extends JobCpi {
         if (jobName == null) {
             return;
         }
-        File file;
-        try {
-            URI u = new URI(triggerDirectory);
-            String path = u.getPath() + "/" + jobName + "." + state.toString().substring(0,3);
-            file = GAT.createFile(gatContext, u.setPath(path));
-        } catch (Throwable e) {
-            throw new GATInvocationException("Could not wait for trigger base", e);
+        
+        if (waiter == null) {
+            try {
+		waiter = FileWaiter.createFileWaiter(GAT.createFile(gatContext, triggerDirectory));
+	    } catch (GATObjectCreationException e) {
+		throw new GATInvocationException("Could not create", e);
+	    }
         }
 
-        long interval = 500;
-        int  maxcount = 64;
-        int count = 0;
-        
-        for (;;) {
-            synchronized(this.getClass()) {
-                // avoid simultaneous access
-                if (file.exists()) {
-                    break;
-                }
-            }    
-            try {
-                Thread.sleep(interval);
-            } catch(InterruptedException e) {
-                // ignored
-            }
-            count++;
-            if (count == maxcount) {
-                // back-off a bit.
-                if (interval < 8000) {
-                    maxcount += maxcount;
-                    interval += interval;
-                }
-                count = 0;
-            }
+        if (jobName == null) {
+            return;
         }
+        
+        String filename = jobName + "." + state.toString().substring(0,3);
+        File file;
+	try {
+	    file = GAT.createFile(gatContext, triggerDirectory + "/" + filename);
+	} catch (GATObjectCreationException e) {
+	    throw new GATInvocationException("Could not create");
+	}
+	
+        waiter.waitFor(filename);
+
         synchronized(this.getClass()) {
             file.delete();
         }
