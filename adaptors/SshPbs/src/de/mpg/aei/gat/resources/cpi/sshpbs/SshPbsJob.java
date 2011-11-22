@@ -270,8 +270,10 @@ public class SshPbsJob extends JobCpi {
         }
         
         public void stop(boolean mustPoststage) {
-            SshPbsJobStop(); // SshPbsJobStop still needs to be implemented.
-	    logger.debug("SshPbs Job " + jobID + " stopped by user");
+            SshPbsJobStop();
+            if (logger.isDebugEnabled()) {
+        	logger.debug("SshPbs Job " + jobID + " stopped by user");
+            }
             terminate(false, mustPoststage);
         }
     }
@@ -567,11 +569,10 @@ public class SshPbsJob extends JobCpi {
 	command.add(jobID);
 
 	try {
-	    String[] outStr = singleResult(command);
-	    logger.info("SshPbsJob stop request returned:" + outStr[0]);
+	    singleResult(command);
 	} catch (IOException e) {
-	    logger.error("Failed to stop sshPbs job: " + jobID);
-	    e.printStackTrace();
+	    logger.info("Failed to stop sshPbs job: " + jobID, e);
+	    // TODO: what to do here?
 	}
     }
 
@@ -731,6 +732,10 @@ public class SshPbsJob extends JobCpi {
 		br.close();
 	    }
 	}
-	return result.toArray(new String[result.size()]);
+        String[] retval = result.toArray(new String[result.size()]);
+        if (logger.isDebugEnabled()) {
+            logger.debug("Result = " + Arrays.toString(retval));
+        }
+	return retval;
     }
 }

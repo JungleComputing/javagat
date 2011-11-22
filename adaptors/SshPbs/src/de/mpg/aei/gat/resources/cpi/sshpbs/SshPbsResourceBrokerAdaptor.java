@@ -498,9 +498,6 @@ public class SshPbsResourceBrokerAdaptor extends ResourceBrokerCpi {
 	    }
 
 	    String ScpRes[] = SshPbsJob.singleResult(scpCommand);
-	    if (logger.isDebugEnabled()) {
-		logger.debug("result string of scp: '" + Arrays.toString(ScpRes) + "'");
-	    }
 
 	    /**
 	     * and create the ssh command for qsub...
