@@ -154,7 +154,6 @@ public class WrappedJobCpi extends JobCpi implements Runnable {
             }
         } while (state != JobState.STOPPED
                 && state != JobState.SUBMISSION_ERROR);
-        finished();
     }
     
     public Map<String, Object> getInfo() {
