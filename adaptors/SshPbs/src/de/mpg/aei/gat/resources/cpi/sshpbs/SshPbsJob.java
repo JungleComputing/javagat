@@ -198,6 +198,8 @@ public class SshPbsJob extends JobCpi {
 		    } catch (GATInvocationException e) {
 			logger.debug("GATInvocationException caught in thread jobListener");
 			setState(JobState.SUBMISSION_ERROR);
+		    } catch(InterruptedException e) {
+			// Try again ...
 		    }
 		    if (logger.isDebugEnabled()) {
 			logger.debug("Job Status is:  " + state.toString());
@@ -312,8 +314,8 @@ public class SshPbsJob extends JobCpi {
 	if (this.jobID != null) {
 	    try {
 		setState();
-	    } catch (GATInvocationException e) {
-		logger.debug("setState failed in getState");
+	    } catch (Throwable e) {
+		logger.debug("setState failed in getState", e);
 	    }
 	}
 	return state;
@@ -383,7 +385,7 @@ public class SshPbsJob extends JobCpi {
 	this.Soft = Soft;
     }
 
-    protected synchronized void setState() throws GATInvocationException {
+    protected synchronized void setState() throws GATInvocationException, InterruptedException {
 	
         if (state == JobState.POST_STAGING || state == JobState.STOPPED
                 || state == JobState.SUBMISSION_ERROR) {
@@ -420,7 +422,7 @@ public class SshPbsJob extends JobCpi {
 	    } else {
 		setState(JobState.POST_STAGING);
 	    }
-	} catch (Throwable e) {
+	} catch (IOException e) {
 	    logger.debug("retrieving job status sshpbsjob failed");
 	    throw new GATInvocationException(
 		    "Unable to retrieve the Job Status", e);
@@ -529,7 +531,11 @@ public class SshPbsJob extends JobCpi {
 
     public void stop() throws GATInvocationException {
 	
-	setState();
+	try {
+	    setState();
+	} catch(Throwable e) {
+	    // ignore
+	}
 		
         if (state == JobState.POST_STAGING || state == JobState.STOPPED
                 || state == JobState.SUBMISSION_ERROR) {
@@ -583,7 +589,7 @@ public class SshPbsJob extends JobCpi {
 
 	try {
 	    singleResult(command);
-	} catch (IOException e) {
+	} catch (Throwable e) {
 	    logger.info("Failed to stop sshPbs job: " + jobID, e);
 	    // TODO: what to do here?
 	}
@@ -652,7 +658,11 @@ public class SshPbsJob extends JobCpi {
 	HashMap<String, Object> m = new HashMap<String, Object>();
 
 	if (state != JobState.STOPPED && state != JobState.POST_STAGING && state != JobState.SUBMISSION_ERROR) {
-	    setState();
+	    try {
+		setState();
+	    } catch (Throwable e) {
+		// ignore?
+	    }
 	}
 	m.put(ADAPTOR_JOB_ID, jobID);
 	if (state == JobState.RUNNING) {
@@ -703,10 +713,11 @@ public class SshPbsJob extends JobCpi {
      * @throws IOException
      * 
      * @author Alexander Beck-Ratzka, AEI, July 2010
+     * @throws InterruptedException 
      */
 
     public static synchronized String[] singleResult(ArrayList<String> command)
-	    throws IOException {
+	    throws IOException, InterruptedException {
 	
 	ArrayList<String> result = new ArrayList<String>();
 	String line = null;
@@ -738,8 +749,6 @@ public class SshPbsJob extends JobCpi {
 			    + Arrays.toString(result.toArray(new String[0])));
 		}
 	    }
-	} catch (InterruptedException ex) {
-	    throw new IOException("process was interupted");
 	} finally {
 	    if (br != null) {
 		br.close();
