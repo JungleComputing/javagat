@@ -7,6 +7,8 @@
 
 package de.mpg.aei.gat.resources.cpi.sshpbs;
 
+import ibis.util.ThreadPool;
+
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
@@ -171,14 +173,16 @@ public class SshPbsJob extends JobCpi {
     /**
      * The JobListener runs in a thread and checks the job's state.
      */
-    private class JobListener extends Thread {
+    private class JobListener implements Runnable {
 
-	final int SLEEP = 1000;
+	final int SLEEP = 5000;
 
 	String jobID = null;
 	SoftwareDescription Soft = null;
 
 	private boolean terminated;
+	
+	private boolean finished;
 
 	public JobListener(String jobID, SoftwareDescription Soft) {
 	    // this.session = session;
@@ -187,54 +191,63 @@ public class SshPbsJob extends JobCpi {
 	}
 
 	public void run() {
-	    for (;;) {
+	    try {
+		for (;;) {
+		    try {
+			setState();
+		    } catch (GATInvocationException e) {
+			logger.debug("GATInvocationException caught in thread jobListener");
+			setState(JobState.SUBMISSION_ERROR);
+		    }
+		    if (logger.isDebugEnabled()) {
+			logger.debug("Job Status is:  " + state.toString());
+		    }
+		    if (state != JobState.RUNNING && state != JobState.SCHEDULED) {
+			if (state == JobState.SUBMISSION_ERROR) {
+			    logger.debug("Job submission failed");
+			    break;
+			} else if (state == JobState.STOPPED || state == JobState.POST_STAGING) {
+			    break;
+			}
+		    } else {
+			break;
+		    }
+		    try {
+			Thread.sleep(SLEEP);
+		    } catch(InterruptedException e) {
+			// ignore
+		    }
+		}
+
+		// Now we're in RUNNING state - set the time and start the
+		// jobListener
+
+		setStartTime();
+
 		try {
-		    setState();
+		    while (state != JobState.STOPPED && state != JobState.POST_STAGING) {
+			if (state == JobState.SUBMISSION_ERROR) {
+			    logger.error("SshPbs job " + jobID + "failed");
+			    break;
+			}
+			logger.debug("SshPbs Job still running");
+			Thread.sleep(SLEEP);
+			setState();
+		    }
+		    terminate(true, true);
+		} catch (InterruptedException e) {
+		    logger.debug("InterruptedException caught in thread jobListener");
+		    setState(JobState.SUBMISSION_ERROR);
 		} catch (GATInvocationException e) {
 		    logger.debug("GATInvocationException caught in thread jobListener");
 		    setState(JobState.SUBMISSION_ERROR);
-		}		    
-		logger.debug("Job Status is:  " + state.toString());
-		if (state != JobState.RUNNING && state != JobState.SCHEDULED) {
-		    if (state == JobState.SUBMISSION_ERROR) {
-			logger.debug("Job submission failed");
-			break;
-		    } else if (state == JobState.STOPPED || state == JobState.POST_STAGING) {
-			break;
-		    }
-		} else {
-		    break;
 		}
-		try {
-		    Thread.sleep(SLEEP);
-		} catch(InterruptedException e) {
-		    // ignore
+	    } finally {
+		synchronized(this) {
+		    finished = true;
+		    notifyAll();
 		}
-	    }
-
-	    // Now we're in RUNNING state - set the time and start the
-	    // jobListener
-
-	    setStartTime();
-	    
-	    try {
-		while (state != JobState.STOPPED && state != JobState.POST_STAGING) {
-		    if (state == JobState.SUBMISSION_ERROR) {
-			logger.error("SshPbs job " + jobID + "failed");
-			break;
-		    }
-		    logger.debug("SshPbs Job still running");
-		    Thread.sleep(SLEEP);
-		    setState();
-		}
-		terminate(true, true);
-	    } catch (InterruptedException e) {
-		logger.debug("InterruptedException caught in thread jobListener");
-		setState(JobState.SUBMISSION_ERROR);
-	    } catch (GATInvocationException e) {
-		logger.debug("GATInvocationException caught in thread jobListener");
-		setState(JobState.SUBMISSION_ERROR);
-	    }
+	    } 
 	}
 	
 	private synchronized void terminate(boolean fromThread, boolean mustPoststage) {
@@ -246,10 +259,12 @@ public class SshPbsJob extends JobCpi {
             terminated = true;
             
             if (! fromThread) {
-        	try {
-        	    jsl.join();
-        	} catch (Throwable e1) {
-        	    // ignore
+        	while (! finished) {
+        	    try {
+        		wait();
+        	    } catch(Throwable e) {
+        		// ignore
+        	    }
         	}
             }
             
@@ -290,9 +305,7 @@ public class SshPbsJob extends JobCpi {
 
     protected void startListener() {
 	jsl = new JobListener(this.jobID, this.Soft);
-	Thread t = new Thread(jsl);
-	t.setDaemon(true);
-	t.start();
+	ThreadPool.createNew(jsl, "JobListener " + this.jobID);
     }
 
     public synchronized JobState getState() {
@@ -514,7 +527,7 @@ public class SshPbsJob extends JobCpi {
 	return (result);
     }
 
-    public synchronized void stop() throws GATInvocationException {
+    public void stop() throws GATInvocationException {
 	
 	setState();
 		
