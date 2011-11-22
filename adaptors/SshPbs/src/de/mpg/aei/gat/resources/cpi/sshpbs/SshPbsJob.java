@@ -713,11 +713,10 @@ public class SshPbsJob extends JobCpi {
      * @throws IOException
      * 
      * @author Alexander Beck-Ratzka, AEI, July 2010
-     * @throws InterruptedException 
      */
 
     public static synchronized String[] singleResult(ArrayList<String> command)
-	    throws IOException, InterruptedException {
+	    throws IOException {
 	
 	ArrayList<String> result = new ArrayList<String>();
 	String line = null;
@@ -730,7 +729,11 @@ public class SshPbsJob extends JobCpi {
         	logger.debug("Running command: " + Arrays.toString(command.toArray(new String[command.size()])));
             }
 	    Process proc = builder.start();
-	    proc.waitFor();
+	    try {
+		proc.waitFor();
+	    } catch(InterruptedException e) {
+		proc.destroy();
+	    }
 	    if (proc.exitValue() == 0) {
 		br = new BufferedReader(new InputStreamReader(
 			proc.getInputStream()));

@@ -540,8 +540,6 @@ public class SshPbsResourceBrokerAdaptor extends ResourceBrokerCpi {
 	    throw new GATInvocationException("Could not create qsub script", e);
 	} catch (IOException e) {
 	    throw new GATInvocationException("Got IOException", e);
-	} catch(InterruptedException e) {
-	    throw new GATInvocationException("Submit command got interrupted");
 	}
     }
     
