@@ -146,10 +146,10 @@ public class WrappedJobCpi extends JobCpi implements Runnable {
                 try {
                     File monitorFile = GAT.createFile(gatContext, info.getJobStateFileName());
                     if (!monitorFile.delete()) {
-                	logger.error("Could not delete job status file!");
+                	logger.info("Could not delete job status file!");
                     }
                 } catch(Throwable e) {
-                    logger.error("Could not delete job status file!");
+                    logger.info("Could not delete job status file!");
                 }
             }
         } while (state != JobState.STOPPED
