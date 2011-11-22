@@ -3,6 +3,8 @@ package org.gridlab.gat.resources.cpi;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import ibis.util.ThreadPool;
+
 import java.io.BufferedInputStream;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -186,7 +188,7 @@ public class Wrapper {
                         = info.getJobDescription().getSoftwareDescription();
                 sd.addAttribute("triggerDirectory", triggerDirURI.toString());
             }
-            new Submitter(info, i).start();
+            ThreadPool.createNew(new Submitter(info, i), info.getJobStateFileName().getPath());
             if (i < infos.size() - 1) {
                 // Sleep a bit, just to prevent huge simultaneous access to servers.
                 try {
@@ -338,7 +340,7 @@ public class Wrapper {
         return uri;
     }
 
-    class Submitter extends Thread {
+    class Submitter implements Runnable {
 
         private WrappedJobInfo info;
         private int wrappedId;
@@ -346,16 +348,13 @@ public class Wrapper {
         public Submitter(WrappedJobInfo info, int wrappedId) {
             this.info = info;
             this.wrappedId = wrappedId;
-            setDaemon(false);
-            setName(info.getJobStateFileName().getPath());
         }
 
         public void run() {
             ResourceBroker broker = null;
             Preferences prefs = info.getPreferences();
             try {
-                broker = GAT.createResourceBroker(prefs, info
-                        .getBrokerURI());
+                broker = GAT.createResourceBroker(prefs, info.getBrokerURI());
             } catch (GATObjectCreationException e) {
         	System.err.println("Could not create resource broker to submit wrapped job " + wrapperId);
         	System.err.println("Its job description: " + info.getJobDescription());

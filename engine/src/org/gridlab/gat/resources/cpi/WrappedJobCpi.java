@@ -1,5 +1,7 @@
 package org.gridlab.gat.resources.cpi;
 
+import ibis.util.ThreadPool;
+
 import java.io.ObjectInputStream;
 import java.io.BufferedInputStream;
 import java.io.File;
@@ -78,10 +80,7 @@ public class WrappedJobCpi extends JobCpi implements Runnable {
         }
 
         // start a thread that monitors the job state, by monitoring a file
-        Thread thread = new Thread(this);
-        thread.setDaemon(true);
-        thread.setName("Wrapped Job State Monitor " + getJobID());
-        thread.start();
+        ThreadPool.createNew(this, "Wrapped Job State Monitor " + getJobID());
     }
 
     private void fireStateMetric(JobState state) {
