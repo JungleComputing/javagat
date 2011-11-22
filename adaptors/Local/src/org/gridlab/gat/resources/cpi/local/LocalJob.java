@@ -95,10 +95,6 @@ public class LocalJob extends JobCpi {
 		throw new GATInvocationException("Could not create", e);
 	    }
         }
-
-        if (jobName == null) {
-            return;
-        }
         
         String filename = jobName + "." + state.toString().substring(0,3);
         File file;
@@ -108,10 +104,23 @@ public class LocalJob extends JobCpi {
 	    throw new GATInvocationException("Could not create");
 	}
 	
+	if (logger.isDebugEnabled()) {
+	    logger.debug("Waiting for " + filename + " in directory " + triggerDirectory);
+	}
+	
         waiter.waitFor(filename);
+        
+	if (logger.isDebugEnabled()) {
+	    logger.debug("Finished waiting for " + filename + " in directory " + triggerDirectory);
+	}
+        
 
         synchronized(this.getClass()) {
-            file.delete();
+            if (! file.delete()) {
+        	if (logger.isDebugEnabled()) {
+        	    logger.debug("Could not remove " + file.toGATURI());
+        	}
+            }
         }
     }
 
