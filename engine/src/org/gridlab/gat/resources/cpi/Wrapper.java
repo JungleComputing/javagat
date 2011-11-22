@@ -187,10 +187,13 @@ public class Wrapper {
                 sd.addAttribute("triggerDirectory", triggerDirURI.toString());
             }
             new Submitter(info, i).start();
-            try {
-        	Thread.sleep(1000);
-            } catch(Throwable e) {
-        	// ignore
+            if (i < infos.size() - 1) {
+                // Sleep a bit, just to prevent huge simultaneous access to servers.
+                try {
+                    Thread.sleep(1000);
+                } catch(Throwable e) {
+                    // ignore-
+                }
             }
         }
 
