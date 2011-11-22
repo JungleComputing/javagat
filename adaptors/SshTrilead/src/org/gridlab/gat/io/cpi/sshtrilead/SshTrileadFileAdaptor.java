@@ -383,77 +383,80 @@ public class SshTrileadFileAdaptor extends FileCpi {
         String mode = getMode(gatContext, DEFAULT_MODE);
         java.io.File sourceFile = new java.io.File(getFixedPath());
         
-        SCPClient client;
+        if (sourceFile.isFile()) {
+            SCPClient client;
+            
+            Connection connection = getConnection(destination, gatContext,
+        	    connectionCacheEnable, tcpNoDelay, client2serverCiphers,
+        	    server2clientCiphers, verifier);
+            try {
+        	client =  connection.createSCPClient();
+            } catch (IOException e) {
+        	ConnectionKey key = getKey(destination, gatContext);
+        	if (key != null) {
+        	    synchronized(connections) {
+        		connections.remove(key);
+        	    }
+        	}
+        	connection.close();
+        	if (logger.isDebugEnabled()) {
+        	    logger.debug("createSCPClient to " + destination + " got exception", e);
+        	}
+        	if (connectionCacheEnable) {
+        	    connection = getConnection(destination, gatContext, false, tcpNoDelay,
+        		    client2serverCiphers, server2clientCiphers, verifier);
+        	    try {
+        		client = connection.createSCPClient();
+        	    } catch(IOException e1) {
+        		if (logger.isDebugEnabled()) {
+        		    logger.debug("createSCPClient to " + destination + " got second exception", e1);
+        		}
+        		connection.close();
+        		throw e1;
+        	    }
+        	} else {
+        	    throw e;
+        	}
+            }
         
-	Connection connection = getConnection(destination, gatContext,
-                    connectionCacheEnable, tcpNoDelay, client2serverCiphers,
-                    server2clientCiphers, verifier);
-        try {
-            client =  connection.createSCPClient();
-        } catch (IOException e) {
-            ConnectionKey key = getKey(destination, gatContext);
-            if (key != null) {
-        	synchronized(connections) {
-        	    connections.remove(key);
+            if (destinationFile.isDirectory()) {
+        	logger.debug("put " + getFixedPath() + ", " + remoteDir + ", "
+        		+ mode);
+        	client.put(getFixedPath(), remoteDir, mode);
+        	/*
+        	if (gatContext.getPreferences().containsKey("file.copytime")) {
+        	    if (((String) gatContext.getPreferences().get("file.copytime"))
+        		    .equalsIgnoreCase("true")) {
+        		try {
+        		    String path = remoteDir + "/" + getName();
+        		    URI d = destination.setPath(path);
+        		    destinationFile = new SshTrileadFileAdaptor(gatContext, d);
+        		    destinationFile.setLastModified(lastModified());
+        		} catch(Throwable e) {
+        		    // ignored
+        		}
+        	    }
         	}
-            }
-            connection.close();
-            if (logger.isDebugEnabled()) {
-        	logger.debug("createSCPClient to " + destination + " got exception", e);
-            }
-            if (connectionCacheEnable) {
-        	connection = getConnection(destination, gatContext, false, tcpNoDelay,
-                    client2serverCiphers, server2clientCiphers, verifier);
-        	try {
-        	    client = connection.createSCPClient();
-        	} catch(IOException e1) {
-                    if (logger.isDebugEnabled()) {
-                	logger.debug("createSCPClient to " + destination + " got second exception", e1);
-                    }
-        	    connection.close();
-        	    throw e1;
-        	}
+		*/
             } else {
-        	throw e;
-            }
-        }
-        if (destinationFile.isDirectory() && sourceFile.isFile()) {
-            logger.debug("put " + getFixedPath() + ", " + remoteDir + ", "
-                    + mode);
-            client.put(getFixedPath(), remoteDir, mode);
-            /*
-            if (gatContext.getPreferences().containsKey("file.copytime")) {
-                if (((String) gatContext.getPreferences().get("file.copytime"))
-                        .equalsIgnoreCase("true")) {
-                    try {
-                        String path = remoteDir + "/" + getName();
-                        URI d = destination.setPath(path);
-                        destinationFile = new SshTrileadFileAdaptor(gatContext, d);
-                        destinationFile.setLastModified(lastModified());
-                    } catch(Throwable e) {
-                        // ignored
+                logger.debug("put " + getFixedPath() + ", " + remoteFileName + ", "
+                        + remoteDir + ", " + mode);
+                client.put(getFixedPath(), remoteFileName, remoteDir, mode);
+                /*
+                if (gatContext.getPreferences().containsKey("file.copytime")) {
+                    if (((String) gatContext.getPreferences().get("file.copytime"))
+                            .equalsIgnoreCase("true")) {
+                        try {
+                            destinationFile.setLastModified(lastModified());
+                        } catch(Throwable e) {
+                            // ignored
+                        }
                     }
                 }
+                */
             }
-            */
         } else if (sourceFile.isDirectory()) {
             copyDir(destination);
-        } else if (sourceFile.isFile()) {
-            logger.debug("put " + getFixedPath() + ", " + remoteFileName + ", "
-                    + remoteDir + ", " + mode);
-            client.put(getFixedPath(), remoteFileName, remoteDir, mode);
-            /*
-            if (gatContext.getPreferences().containsKey("file.copytime")) {
-                if (((String) gatContext.getPreferences().get("file.copytime"))
-                        .equalsIgnoreCase("true")) {
-                    try {
-                        destinationFile.setLastModified(lastModified());
-                    } catch(Throwable e) {
-                        // ignored
-                    }
-                }
-            }
-            */
         } else {
             throw new GATInvocationException("cannot copy this file '"
                     + fixedURI + "' to '" + remoteFileName + "' in dir '"
@@ -576,9 +579,7 @@ public class SshTrileadFileAdaptor extends FileCpi {
 
     private void get(URI destination) throws Exception {
 
-	SCPClient client = getSCPClient();
-
-        FileInterface destinationFile = GAT.createFile(gatContext, destination)
+	FileInterface destinationFile = GAT.createFile(gatContext, destination)
                 .getFileInterface();
 
         if (gatContext.getPreferences().containsKey("file.create")) {
@@ -592,60 +593,69 @@ public class SshTrileadFileAdaptor extends FileCpi {
         }
 
         String dest = destination.getPath();
-        if (destinationFile.isDirectory() && isFile()) {
-            dest = dest + "/" + getName();
-            createNewFile(dest, getMode(gatContext, DEFAULT_MODE));
+        if (isFile()) {
+            SCPClient client = getSCPClient();
 
-            // client.get(getFixedPath(), new java.io.FileOutputStream(dest));
-            // No, that does not close the output stream! --Ceriel
-            java.io.FileOutputStream d = new java.io.FileOutputStream(dest);
-            try {
-        	client.get(getFixedPath(), d);
-            } finally {
+            if (destinationFile.isDirectory()) {
+        	dest = dest + "/" + getName();
+        	createNewFile(dest, getMode(gatContext, DEFAULT_MODE));
+
+        	// client.get(getFixedPath(), new java.io.FileOutputStream(dest));
+        	// No, that does not close the output stream! --Ceriel
+        	java.io.FileOutputStream d = new java.io.FileOutputStream(dest);
         	try {
-        	    d.close();
-        	} catch(Throwable e) {
-        	    // ignored.
+        	    client.get(getFixedPath(), d);
+        	} finally {
+        	    try {
+        		d.close();
+        	    } catch(Throwable e) {
+        		// ignored.
+        	    }
         	}
-            }
-            try {
-                new java.io.File(dest).setLastModified(lastModified());
-            } catch(Throwable e) {
-                // ignored
+                if (gatContext.getPreferences().containsKey("file.copytime")) {
+                    if (((String) gatContext.getPreferences().get("file.copytime"))
+                	    .equalsIgnoreCase("true")) {
+                	try {
+                	    new java.io.File(dest).setLastModified(lastModified());
+                	} catch(Throwable e) {
+                	    // ignored
+                	}
+                    }
+                }
+            } else {
+        	createNewFile(dest, getMode(gatContext, DEFAULT_MODE));
+
+        	// client.get(getFixedPath(), new java.io.FileOutputStream(dest));
+        	// No, that does not close the output stream! --Ceriel
+        	java.io.FileOutputStream d = new java.io.FileOutputStream(dest);
+        	try {
+        	    client.get(getFixedPath(), d);
+        	} finally {
+        	    try {
+        		d.close();
+        	    } catch(Throwable e) {
+        		// ignored.
+        	    }
+        	}
+        	if (gatContext.getPreferences().containsKey("file.copytime")) {
+        	    if (((String) gatContext.getPreferences().get("file.copytime"))
+        		    .equalsIgnoreCase("true")) {
+        		try {
+        		    new java.io.File(dest).setLastModified(lastModified());
+        		} catch(Throwable e) {
+        		    // ignored
+        		}
+        	    }
+        	}
             }
         } else if (isDirectory()) {
             copyDir(destination);
-        } else if (isFile()) {
-            createNewFile(dest, getMode(gatContext, DEFAULT_MODE));
-            
-            // client.get(getFixedPath(), new java.io.FileOutputStream(dest));
-            // No, that does not close the output stream! --Ceriel
-            java.io.FileOutputStream d = new java.io.FileOutputStream(dest);
-            try {
-        	client.get(getFixedPath(), d);
-            } finally {
-        	try {
-        	    d.close();
-        	} catch(Throwable e) {
-        	    // ignored.
-        	}
-            }
-            if (gatContext.getPreferences().containsKey("file.copytime")) {
-                if (((String) gatContext.getPreferences().get("file.copytime"))
-                        .equalsIgnoreCase("true")) {
-                    try {
-                        new java.io.File(dest).setLastModified(lastModified());
-                    } catch(Throwable e) {
-                        // ignored
-                    }
-                }
-            }
         } else {
             throw new GATInvocationException("cannot copy this file '"
-                    + fixedURI + "' to '" + destination
-                    + "'! (Reason: src is file: " + isFile()
-                    + ", src is dir: " + isDirectory()
-                    + ", target is dir: " + destinationFile.isDirectory());
+        	    + fixedURI + "' to '" + destination
+        	    + "'! (Reason: src is file: " + isFile()
+        	    + ", src is dir: " + isDirectory()
+        	    + ", target is dir: " + destinationFile.isDirectory());
         }
     }
 
