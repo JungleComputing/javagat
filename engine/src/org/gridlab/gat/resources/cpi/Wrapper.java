@@ -319,7 +319,7 @@ public class Wrapper {
         return description;
     }
 
-    private URI rewriteURI(URI uri, URI origin) {
+    static URI rewriteURI(URI uri, URI origin) {
         try {
             if (uri.isAbsolute()) {
                 String auth = uri.getAuthority();
