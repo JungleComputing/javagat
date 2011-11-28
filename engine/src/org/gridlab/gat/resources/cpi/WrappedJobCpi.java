@@ -5,12 +5,14 @@ import ibis.util.ThreadPool;
 import java.io.ObjectInputStream;
 import java.io.BufferedInputStream;
 import java.io.File;
+import java.net.URISyntaxException;
 import java.util.HashMap;
 import java.util.Map;
 
 import org.gridlab.gat.GAT;
 import org.gridlab.gat.GATContext;
 import org.gridlab.gat.GATInvocationException;
+import org.gridlab.gat.URI;
 import org.gridlab.gat.engine.util.FileWaiter;
 import org.gridlab.gat.io.FileInputStream;
 import org.gridlab.gat.monitoring.Metric;
@@ -96,7 +98,23 @@ public class WrappedJobCpi extends JobCpi implements Runnable {
     
     @SuppressWarnings("unchecked")
     public void run() {
-	String s = info.getJobStateFileName().toString();
+	// Since the WrappedJobCpi runs on the submitting host, the jobstate filename
+	// (which may be relative, and if so, is relative to where the wrapper runs),
+	// must be rewritten.
+	URI jobState = info.getJobStateFileName();
+	if (! jobState.isAbsolute()) {
+	    String host = info.getBrokerURI().getHost();
+	    URI hostURI = null;
+	    try {
+		hostURI = new URI("any://" + host + "/blabla");
+	    } catch (URISyntaxException e) {
+		// Should not happen
+		hostURI = info.getBrokerURI();
+	    }
+	    jobState = Wrapper.rewriteURI(jobState, hostURI);
+	}
+
+	String s = jobState.toString();
 	int index = s.lastIndexOf("/");
 	String directory = s.substring(0, index);
 	String file = s.substring(index+1);
@@ -113,7 +131,7 @@ public class WrappedJobCpi extends JobCpi implements Runnable {
             ObjectInputStream din = null;
             FileInputStream fin = null;
             try {
-        	fin = GAT.createFileInputStream(gatContext, info.getJobStateFileName());
+        	fin = GAT.createFileInputStream(gatContext, jobState);
                 din = new ObjectInputStream(new BufferedInputStream(fin));
                 
                 jobInfo = (Map<String, Object>) din.readObject();
