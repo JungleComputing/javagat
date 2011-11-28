@@ -112,6 +112,9 @@ public class WrappedJobCpi extends JobCpi implements Runnable {
 		hostURI = info.getBrokerURI();
 	    }
 	    jobState = Wrapper.rewriteURI(jobState, hostURI);
+	    if (logger.isDebugEnabled()) {
+		logger.debug("Resulting jobStateFile = " + jobState);
+	    }
 	}
 
 	String s = jobState.toString();
