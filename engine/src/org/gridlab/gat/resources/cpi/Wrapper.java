@@ -152,8 +152,6 @@ public class Wrapper {
         preferences.put("file.adaptor.name", "local");
         preferences.put("file.directory.copy", "contents");
                
-        URI triggerDirURI = rewriteURI(triggerDirectory, initiator);
-        
         if (infos.size() != 0 && wrapperCommonSrc != null && wrapperCommonDest != null) {            
             File wrapperCommonSrcFile = GAT.createFile(preferences, wrapperCommonSrc);
             wrapperCommonDest = wrapperCommonDest + java.io.File.separator
@@ -166,11 +164,11 @@ public class Wrapper {
             if ("true".equals(wrapperCommonTrigger)) {
                 File file = null;
                 try {
-                    file = GAT.createFile(infos.get(0).getPreferences(), triggerDirURI);
+                    file = GAT.createFile(infos.get(0).getPreferences(), triggerDirectory);
                     FileWaiter w = FileWaiter.createFileWaiter(file);
                     w.waitFor("WrapperCommonTrigger." + wrapperId);
                     file = GAT.createFile(infos.get(0).getPreferences(),
-                	    triggerDirURI.setPath(triggerDirURI.getPath() + "/WrapperCommonTrigger." + wrapperId));
+                	    triggerDirectory.setPath(triggerDirectory.getPath() + "/WrapperCommonTrigger." + wrapperId));
                     file.delete();
                 } catch (Throwable e) {
                     logger.warn("Could not wait for trigger", e);
@@ -186,7 +184,7 @@ public class Wrapper {
             if (scheduledType == ScheduledType.COORDINATED) {
                 SoftwareDescription sd 
                         = info.getJobDescription().getSoftwareDescription();
-                sd.addAttribute("triggerDirectory", triggerDirURI.toString());
+                sd.addAttribute("triggerDirectory", triggerDirectory.toString());
             }
             ThreadPool.createNew(new Submitter(info, i), info.getJobStateFileName().getPath());
             if (i < infos.size() - 1) {
