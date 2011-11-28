@@ -496,7 +496,7 @@ public class SshPbsResourceBrokerAdaptor extends ResourceBrokerCpi {
 			+ qsubFile.getName().toString());
 	    }
 
-	    String ScpRes[] = SshPbsJob.singleResult(scpCommand);
+	    SshPbsJob.singleResult(scpCommand);
 
 	    /**
 	     * and create the ssh command for qsub...
