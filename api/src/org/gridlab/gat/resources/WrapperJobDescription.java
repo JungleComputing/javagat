@@ -419,12 +419,14 @@ public class WrapperJobDescription extends JobDescription {
     }
     
     /**
-     * Sets the (local) directory where the trigger files will be written
+     * Sets the directory where the trigger files will be written
      * to. This method can only be invoked once. 
      * The user has to create the trigger files itself.
+     * Note: the location specified, if not absolute, is to be regarded
+     * as relative to where the wrapper job actually is running.
      * 
-     * @param location
-     * @throws Exception
+     * @param location the location of the trigger directory.
+     * @throws Exception when the trigger directory is already set.
      */
     public static void setTriggerDirectory(URI location)
             throws Exception {
