@@ -104,6 +104,9 @@ public class SshTrileadFileOutputStreamAdaptor extends FileOutputStreamCpi {
         }
 
         try {
+            if(logger.isInfoEnabled()) {
+        	logger.info("SshTrileadFileOutputStreamAdaptor: closing session");
+            }
             session = file.getSession();
         } catch(Throwable e) {
             throw new GATObjectCreationException("Could not create stream", e);
@@ -249,6 +252,9 @@ public class SshTrileadFileOutputStreamAdaptor extends FileOutputStreamCpi {
                 }
                 return result;
             } finally {
+        	if(logger.isInfoEnabled()) {
+        	    logger.info("SshTrileadFileOutputStreamAdaptor: closing session");
+        	}
                 session.close();
             }
         }

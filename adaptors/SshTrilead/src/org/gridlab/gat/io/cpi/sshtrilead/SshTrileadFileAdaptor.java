@@ -1101,7 +1101,9 @@ public class SshTrileadFileAdaptor extends FileCpi {
     }
 
     private String[] execCommand(String cmd) throws IOException, Exception {
-        logger.info("command: " + cmd + ", uri: " + fixedURI);
+	if (logger.isInfoEnabled()) {
+	    logger.info("execCommand: " + cmd + ", uri: " + fixedURI);
+	}
         String[] result = new String[3];
         Session session = getSession();
         try {
@@ -1148,6 +1150,9 @@ public class SshTrileadFileAdaptor extends FileCpi {
         	result[EXIT_VALUE] = "" + exitValue;
             }
         } finally {
+            if (logger.isInfoEnabled()) {
+        	logger.info("ExecCommand closes session");
+            }
             session.close();
         }
         if (logger.isDebugEnabled()) {

@@ -91,11 +91,14 @@ public class SshTrileadFileInputStreamAdaptor extends FileInputStreamCpi {
         }
 
         try {
+            if (logger.isInfoEnabled()) {
+        	logger.info("SshTrileadFileInputStreamAdaptor: getting session");
+            }
             session = file.getSession();
         } catch(Throwable e) {
             throw new GATObjectCreationException("Could not create stream", e);
         }
-        sessionOutputStream = session.getStdout();
+        sessionOutputStream = new StreamGobbler(session.getStdout());
         String command = "cat < " + SshTrileadFileAdaptor.protectAgainstShellMetas(file.getFixedPath());
         job = new InputStreamRunner(command);
         job.setDaemon(true);
@@ -192,7 +195,7 @@ public class SshTrileadFileInputStreamAdaptor extends FileInputStreamCpi {
                 session.execCommand(cmd);
                 // see http://www.trilead.com/Products/Trilead-SSH-2-Java/FAQ/#blocking
                 InputStream stderr = new StreamGobbler(session.getStderr());
-
+                
                 BufferedReader br = new BufferedReader(new InputStreamReader(stderr));
                 StringBuffer err = new StringBuffer();
                 while (true) {
@@ -226,6 +229,9 @@ public class SshTrileadFileInputStreamAdaptor extends FileInputStreamCpi {
                 }
                 return result;
             } finally {
+                if (logger.isInfoEnabled()) {
+                    logger.info("SshTrileadFileInputStreamAdaptor: closing session");
+                }
                 session.close();
             }
         }
