@@ -139,14 +139,28 @@ public class SshTrileadFileAdaptor extends FileCpi {
                 if (logger.isDebugEnabled()) {
                     logger.debug("hosts compare equal");
                 }
-                if (k.context.equals(context)) {
+                if (k.context.getSecurityContexts().equals(context.getSecurityContexts())) {
                     if (logger.isDebugEnabled()) {
-                        logger.debug("contexts compare equal");
+                        logger.debug("security contexts compare equal");
                     }
-                    return true;
+                    Preferences p1 = k.context.getPreferences();
+                    Preferences p2 = context.getPreferences();
+                    if (p1.get("sshtrilead.strictHostKeyChecking", "false").equals(
+                	    p2.get("sshtrilead.strictHostKeyChecking", "false"))
+                	&& p1.get("sshtrilead.noHostKeyChecking", "true").equals(
+                            p2.get("sshtrilead.noHostKeyChecking", "true"))) {
+                        if (logger.isDebugEnabled()) {
+                            logger.debug("relevant preferences compare equal");
+                        }
+                        return true;
+                    }
+                    if (logger.isDebugEnabled()) {
+                        logger.debug("relevant preferences compare NOT equal");
+                    }
+                    return false;
                 }
                 if (logger.isDebugEnabled()) {
-                    logger.debug("contexts compare NOT equal");
+                    logger.debug("security contexts compare NOT equal");
                 }
                 return false;
             }
