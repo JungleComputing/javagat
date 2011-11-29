@@ -9,6 +9,7 @@ import java.text.SimpleDateFormat;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.gridlab.gat.GAT;
@@ -21,6 +22,8 @@ import org.gridlab.gat.engine.util.CommandRunner;
 import org.gridlab.gat.io.File;
 import org.gridlab.gat.io.FileInterface;
 import org.gridlab.gat.io.cpi.FileCpi;
+import org.gridlab.gat.security.SecurityContext;
+import org.gridlab.gat.security.cpi.SecurityContextUtils;
 import org.gridlab.gat.security.sshtrilead.HostKeyVerifier;
 import org.gridlab.gat.security.sshtrilead.SshTrileadSecurityUtils;
 import org.slf4j.Logger;
@@ -117,10 +120,12 @@ public class SshTrileadFileAdaptor extends FileCpi {
     private static class ConnectionKey {
         final String host;
         final GATContext context;
+        final int port;
         
-        public ConnectionKey(String host, GATContext context) {
+        public ConnectionKey(String host, int port, GATContext context) {
             this.host = host;
             this.context = context;
+            this.port = port;
         }
         
         public int hashCode() {
@@ -135,37 +140,51 @@ public class SshTrileadFileAdaptor extends FileCpi {
                 logger.debug("Comparing connection keys " + this + " and " + o);
             }
             ConnectionKey k = (ConnectionKey) o;
+            if (k.port == port) {
+        	if (logger.isDebugEnabled()) {
+        	    logger.debug("ports compare equal");
+        	}
+            } else {
+        	if (logger.isDebugEnabled()) {
+        	    logger.debug("ports compare NOT equal");
+        	}
+        	return false;
+            }
             if (k.host.equals(host)) {
                 if (logger.isDebugEnabled()) {
                     logger.debug("hosts compare equal");
                 }
-                if (k.context.getSecurityContexts().equals(context.getSecurityContexts())) {
-                    if (logger.isDebugEnabled()) {
-                        logger.debug("security contexts compare equal");
-                    }
-                    Preferences p1 = k.context.getPreferences();
-                    Preferences p2 = context.getPreferences();
-                    if (p1.get("sshtrilead.strictHostKeyChecking", "false").equals(
-                	    p2.get("sshtrilead.strictHostKeyChecking", "false"))
-                	&& p1.get("sshtrilead.noHostKeyChecking", "true").equals(
-                            p2.get("sshtrilead.noHostKeyChecking", "true"))) {
-                        if (logger.isDebugEnabled()) {
-                            logger.debug("relevant preferences compare equal");
-                        }
-                        return true;
-                    }
-                    if (logger.isDebugEnabled()) {
-                        logger.debug("relevant preferences compare NOT equal");
-                    }
-                    return false;
-                }
+            }else {
+        	if (logger.isDebugEnabled()) {
+        	    logger.debug("hosts compare NOT equal");
+        	}
+        	return false;
+            }
+            List<SecurityContext> l1 = SecurityContextUtils.getValidSecurityContexts(context, "sshtrilead", host, port);
+            List<SecurityContext> l2 = SecurityContextUtils.getValidSecurityContexts(k.context, "sshtrilead", host, port);
+            if (l1.equals(l2)) {
+        	if (logger.isDebugEnabled()) {
+        	    logger.debug("relevant security contexts compare equal");
+        	}
+            } else {
                 if (logger.isDebugEnabled()) {
-                    logger.debug("security contexts compare NOT equal");
+                    logger.debug("relevant security contexts compare NOT equal");
                 }
                 return false;
             }
+            Preferences p1 = k.context.getPreferences();
+            Preferences p2 = context.getPreferences();
+            if (p1.get("sshtrilead.strictHostKeyChecking", "false").equals(
+        	    p2.get("sshtrilead.strictHostKeyChecking", "false"))
+        	    && p1.get("sshtrilead.noHostKeyChecking", "true").equals(
+        		    p2.get("sshtrilead.noHostKeyChecking", "true"))) {
+        	if (logger.isDebugEnabled()) {
+        	    logger.debug("relevant preferences compare equal");
+        	}
+        	return true;
+            }
             if (logger.isDebugEnabled()) {
-                logger.debug("hosts compare NOT equal");
+        	logger.debug("relevant preferences compare NOT equal");
             }
             return false;
         }
@@ -894,6 +913,7 @@ public class SshTrileadFileAdaptor extends FileCpi {
 
     public static ConnectionKey getKey(URI fixedURI, GATContext context) {
         String host = fixedURI.getHost();
+        int port = fixedURI.getPort(SSH_PORT);
         if (host == null) {
             host = fixedURI.resolveHost();
         }
@@ -906,11 +926,11 @@ public class SshTrileadFileAdaptor extends FileCpi {
 	try {
 	    // getSshTrileadCredential affects the contents of the GATContext.
 	    SshTrileadSecurityUtils.getSshTrileadCredential(
-	    	context, "sshtrilead", fixedURI, fixedURI.getPort(SSH_PORT));
+	    	context, "sshtrilead", fixedURI, port);
 	} catch (Throwable e) {
 	    return null;
 	}
-        return new ConnectionKey(host, (GATContext) context.clone());    
+        return new ConnectionKey(host, port, (GATContext) context.clone());    
     }
     
     private static void killConnections() {
@@ -930,6 +950,7 @@ public class SshTrileadFileAdaptor extends FileCpi {
             String[] client2server, String[] server2client,
             HostKeyVerifier verifier) throws GATInvocationException {
         String host = fixedURI.getHost();
+        int port = fixedURI.getPort(SSH_PORT);
         if (host == null) {
             host = fixedURI.resolveHost();
         }
@@ -942,11 +963,11 @@ public class SshTrileadFileAdaptor extends FileCpi {
         Map<String, Object> securityInfo;
 	try {
 	    securityInfo = SshTrileadSecurityUtils.getSshTrileadCredential(
-	    	context, "sshtrilead", fixedURI, fixedURI.getPort(SSH_PORT));
+	    	context, "sshtrilead", fixedURI, port);
 	} catch (Throwable e) {
 	    throw new GATInvocationException("Could not get credentials", e);
 	}
-        ConnectionKey key = new ConnectionKey(host, (GATContext) context.clone());
+        ConnectionKey key = new ConnectionKey(host, port, (GATContext) context.clone());
         
         Connection newConnection;
         
