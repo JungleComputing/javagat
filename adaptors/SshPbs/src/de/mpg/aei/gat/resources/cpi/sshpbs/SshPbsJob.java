@@ -13,7 +13,7 @@ import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
+import java.io.StringReader;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -27,6 +27,7 @@ import org.gridlab.gat.GATObjectCreationException;
 import org.gridlab.gat.URI;
 import org.gridlab.gat.advert.Advertisable;
 import org.gridlab.gat.engine.GATEngine;
+import org.gridlab.gat.engine.util.CommandRunner;
 import org.gridlab.gat.monitoring.Metric;
 import org.gridlab.gat.monitoring.MetricDefinition;
 import org.gridlab.gat.monitoring.MetricEvent;
@@ -718,49 +719,45 @@ public class SshPbsJob extends JobCpi {
     public static synchronized String[] singleResult(ArrayList<String> command)
 	    throws IOException {
 	
-	ArrayList<String> result = new ArrayList<String>();
-	String line = null;
+	
+	if (logger.isDebugEnabled()) {
+	    logger.debug("Running command: " + Arrays.toString(command.toArray(new String[command.size()])));
+	}
+	
+	CommandRunner run;
+	
+	try {
+	    run = new CommandRunner(command);
+	} catch (GATInvocationException e1) {
+	    throw new IOException("Command not found");
+	}
+	
 	BufferedReader br = null;
-	
-	ProcessBuilder builder = new ProcessBuilder(command);
-	
-        try {
-            if (logger.isDebugEnabled()) {
-        	logger.debug("Running command: " + Arrays.toString(command.toArray(new String[command.size()])));
-            }
-	    Process proc = builder.start();
-	    try {
-		proc.waitFor();
-	    } catch(InterruptedException e) {
-		proc.destroy();
-	    }
-	    if (proc.exitValue() == 0) {
-		br = new BufferedReader(new InputStreamReader(
-			proc.getInputStream()));
-		while ((line = br.readLine()) != null) {
-		    result.add(line);
-		}
+	ArrayList<String> result = new ArrayList<String>();
+	try {
+	    String line;	   
+	    if (run.getExitCode() == 0) {
+		br = new BufferedReader(new StringReader(run.getStdout()));
 	    } else {
-		br = new BufferedReader(new InputStreamReader(
-			proc.getErrorStream()));
-		while ((line = br.readLine()) != null) {
-		    result.add(line);
-		}
-		if (!command.get(0).toString().contains("scp")
-			|| !command.get(0).toString().contains("rm")) {
-		    throw new IOException("rejected: "
-			    + Arrays.toString(result.toArray(new String[0])));
-		}
+		br = new BufferedReader(new StringReader(run.getStderr()));
+	    }
+	    while ((line = br.readLine()) != null) {
+		result.add(line);
+	    }
+	    if (run.getExitCode() != 0 && (!command.get(0).toString().contains("scp")
+		    || !command.get(0).toString().contains("rm"))) {
+		throw new IOException("rejected: "
+			+ Arrays.toString(result.toArray(new String[0])));
 	    }
 	} finally {
 	    if (br != null) {
 		br.close();
 	    }
 	}
-        String[] retval = result.toArray(new String[result.size()]);
-        if (logger.isDebugEnabled()) {
-            logger.debug("Result = " + Arrays.toString(retval));
-        }
+	String[] retval = result.toArray(new String[result.size()]);
+	if (logger.isDebugEnabled()) {
+	    logger.debug("Result = " + Arrays.toString(retval));
+	}
 	return retval;
     }
 }
