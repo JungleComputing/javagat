@@ -68,6 +68,10 @@ public class WrapperJobCpi extends MonitorableCpi implements WrapperJob, MetricL
     public int getJobID() {
         return jobID;
     }
+    
+    Job getWrapperJob() {
+	return wrapperJob;
+    }
 
     public Job getJob(JobDescription description) throws GATInvocationException {
         return wrappedJobs.get(description);

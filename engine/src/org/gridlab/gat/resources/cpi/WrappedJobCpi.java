@@ -5,7 +5,6 @@ import ibis.util.ThreadPool;
 import java.io.ObjectInputStream;
 import java.io.BufferedInputStream;
 import java.io.File;
-import java.net.URISyntaxException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -53,6 +52,8 @@ public class WrappedJobCpi extends JobCpi implements Runnable {
     
     private WrappedJobInfo info;
     
+    private final WrapperJobCpi wrapper;
+    
     Map<String, Object> jobInfo = null;
 
     /**
@@ -67,6 +68,7 @@ public class WrappedJobCpi extends JobCpi implements Runnable {
         super(gatContext, info.getJobDescription(), null);
         
         this.info = info;
+        this.wrapper = wrapper;
 
         // Tell the engine that we provide job.status events
         HashMap<String, Object> returnDef = new HashMap<String, Object>();
@@ -103,15 +105,14 @@ public class WrappedJobCpi extends JobCpi implements Runnable {
 	// must be rewritten.
 	URI jobState = info.getJobStateFileName();
 	if (! jobState.isAbsolute()) {
-	    String host = info.getBrokerURI().getHost();
-	    URI hostURI = null;
+	    String authority = ((JobCpi) wrapper.getWrapperJob()).sandbox.getAuthority();
 	    try {
-		hostURI = new URI("any://" + host + "/blabla");
-	    } catch (URISyntaxException e) {
-		// Should not happen
-		hostURI = info.getBrokerURI();
+		jobState = jobState.setScheme("any");
+		jobState = jobState.setAuthority(authority);
+	    } catch(Throwable e) {
+		logger.debug("Modifying jobState URI gave exception", e);
 	    }
-	    jobState = Wrapper.rewriteURI(jobState, hostURI);
+
 	    if (logger.isDebugEnabled()) {
 		logger.debug("Resulting jobStateFile = " + jobState);
 	    }
