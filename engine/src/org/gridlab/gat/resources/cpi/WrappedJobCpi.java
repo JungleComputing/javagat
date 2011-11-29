@@ -166,7 +166,7 @@ public class WrappedJobCpi extends JobCpi implements Runnable {
                 fireStateMetric(state);
                 
                 try {
-                    File monitorFile = GAT.createFile(gatContext, info.getJobStateFileName());
+                    File monitorFile = GAT.createFile(gatContext, jobState);
                     if (!monitorFile.delete()) {
                 	logger.info("Could not delete job status file!");
                     }
