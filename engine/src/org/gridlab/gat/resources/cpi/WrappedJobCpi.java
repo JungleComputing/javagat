@@ -102,8 +102,9 @@ public class WrappedJobCpi extends JobCpi implements Runnable {
     public void run() {
 	// Since the WrappedJobCpi runs on the submitting host, the jobstate filename
 	// (which may be relative, and if so, is relative to where the wrapper runs),
-	// must be rewritten.
+	// must be rewritten. Also, we use the gatContext of the wrapper job here.
 	URI jobState = info.getJobStateFileName();
+	GATContext context = ((JobCpi) wrapper.getWrapperJob()).gatContext;
 	if (! jobState.isAbsolute()) {
 	    String authority = ((JobCpi) wrapper.getWrapperJob()).sandbox.getAuthority();
 	    try {
@@ -123,7 +124,7 @@ public class WrappedJobCpi extends JobCpi implements Runnable {
 	String directory = s.substring(0, index);
 	String file = s.substring(index+1);
 	try {
-	    waiter = FileWaiter.createFileWaiter(GAT.createFile(gatContext, directory));
+	    waiter = FileWaiter.createFileWaiter(GAT.createFile(context, directory));
 	} catch (Throwable e) {
 	    logger.debug("Should not happen: ", e);
 	    return;
@@ -135,7 +136,7 @@ public class WrappedJobCpi extends JobCpi implements Runnable {
             ObjectInputStream din = null;
             FileInputStream fin = null;
             try {
-        	fin = GAT.createFileInputStream(gatContext, jobState);
+        	fin = GAT.createFileInputStream(context, jobState);
                 din = new ObjectInputStream(new BufferedInputStream(fin));
                 
                 jobInfo = (Map<String, Object>) din.readObject();
@@ -166,7 +167,7 @@ public class WrappedJobCpi extends JobCpi implements Runnable {
                 fireStateMetric(state);
                 
                 try {
-                    File monitorFile = GAT.createFile(gatContext, jobState);
+                    File monitorFile = GAT.createFile(context, jobState);
                     if (!monitorFile.delete()) {
                 	logger.info("Could not delete job status file!");
                     }
