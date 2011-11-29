@@ -151,6 +151,7 @@ public class WrapperJobDescription extends JobDescription {
         /**
          * Returns the filename of the file that will be used for forwarding the
          * {@link JobState} of the wrapped {@link Job}.
+         * If relative, it is relative to where the wrapper job runs.
          * 
          * @return the filename of the file that will be used for forwarding the
          *         {@link JobState} of the wrapped {@link Job}.
@@ -175,7 +176,7 @@ public class WrapperJobDescription extends JobDescription {
             return wrapperJobIndex;
         }
 
-        public void generateJobStateFileName() {
+        void generateJobStateFileName() {
             String path = triggerDirectory.getPath();
             path += "/jobstate_" + wrapperJobIndex + "_" + wrappedJobIndex;
             try {
@@ -360,9 +361,10 @@ public class WrapperJobDescription extends JobDescription {
             f.deleteOnExit();
             FileOutputStream tmp = new FileOutputStream(f);
             ObjectOutputStream out = new ObjectOutputStream(new BufferedOutputStream(tmp));
-            out.writeObject(new URI("any://"
+            URI originator = new URI("any://"
                     + IPUtils.getLocalHostAddress().getCanonicalHostName() + "/"
-                    + System.getProperty("user.dir")));
+                    + System.getProperty("user.dir"));
+            out.writeObject(originator);
             out.writeInt(level);
             out.writeInt(wrapperJobIndex);
             String wrapperCommonSrc = (String) softwareDescription.getAttributes().get(WRAPPER_COMMON_SRC);
@@ -373,7 +375,7 @@ public class WrapperJobDescription extends JobDescription {
             out.writeObject(sandboxTrigger);
             synchronized (WrapperJobDescription.class) {
                 if (triggerDirectory == null) {
-                    triggerDirectory = new URI(System.getProperty("user.dir"));
+                    triggerDirectory = originator;
                 }
                 File triggerDir = GAT.createFile(context, triggerDirectory);
                 if (triggerDir.exists()) {
@@ -402,6 +404,7 @@ public class WrapperJobDescription extends JobDescription {
      * Returns the filename of the file that's used to forward the
      * {@link JobState} of the wrapped {@link Job} belonging to this
      * {@link JobDescription}.
+     * Path is relative to the wrapper location, or absolute.
      * 
      * @param description
      *                the description of the wrapped {@link Job}.
