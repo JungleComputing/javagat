@@ -135,30 +135,32 @@ public class WrappedJobCpi extends JobCpi implements Runnable {
             JobState newstate = null;
             ObjectInputStream din = null;
             FileInputStream fin = null;
-            try {
-        	fin = GAT.createFileInputStream(context, jobState);
-                din = new ObjectInputStream(new BufferedInputStream(fin));
-                
-                jobInfo = (Map<String, Object>) din.readObject();
-                s = (String) jobInfo.get("state");
-                newstate = JobState.valueOf(s);
-            } catch (Throwable e) {
-                if (logger.isDebugEnabled()) {
-                    logger.debug("", e);
-                }
-            } finally {
-        	if (fin != null) {
-        	    if (din != null) {
+            synchronized(this.getClass()) {
+        	try {
+        	    fin = GAT.createFileInputStream(context, jobState);
+        	    din = new ObjectInputStream(new BufferedInputStream(fin));
+
+        	    jobInfo = (Map<String, Object>) din.readObject();
+        	    s = (String) jobInfo.get("state");
+        	    newstate = JobState.valueOf(s);
+        	} catch (Throwable e) {
+        	    if (logger.isDebugEnabled()) {
+        		logger.debug("", e);
+        	    }
+        	} finally {
+        	    if (fin != null) {
+        		if (din != null) {
+        		    try {
+        			din.close();
+        		    } catch(Throwable e) {
+        			// ignored
+        		    }
+        		}
         		try {
-        		    din.close();
-        		} catch(Throwable e) {
+        		    fin.close();
+        		} catch (Throwable e) {
         		    // ignored
         		}
-        	    }
-        	    try {
-        		fin.close();
-        	    } catch (Throwable e) {
-        		// ignored
         	    }
         	}
             }
@@ -166,13 +168,15 @@ public class WrappedJobCpi extends JobCpi implements Runnable {
                 state = newstate;
                 fireStateMetric(state);
                 
-                try {
-                    File monitorFile = GAT.createFile(context, jobState);
-                    if (!monitorFile.delete()) {
+                synchronized(this.getClass()) {
+                    try {
+                	File monitorFile = GAT.createFile(context, jobState);
+                	if (!monitorFile.delete()) {
+                	    logger.info("Could not delete job status file!");
+                	}
+                    } catch(Throwable e) {
                 	logger.info("Could not delete job status file!");
                     }
-                } catch(Throwable e) {
-                    logger.info("Could not delete job status file!");
                 }
             }
         } while (state != JobState.STOPPED
