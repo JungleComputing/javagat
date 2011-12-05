@@ -101,20 +101,7 @@ public abstract class StagedFile {
         if (logger.isInfoEnabled()) {
             logger.info("scheme done: " + uri);
         }
-        
-        if (uri.refersToLocalHost()) {
-            // Destination is local host.
-            String path = origUri.getPath();
-            try {
-        	uri = new URI(path);
-	        if (logger.isInfoEnabled()) {
-	            logger.info("local done: " + uri);
-	        }
-	    } catch (URISyntaxException e) {
-		throw new GATInvocationException("StageFile", e);
-	    }
-        }
-        
+               
         if (useNameOnly) {
             if (f.isDirectory()) {
                 try {
