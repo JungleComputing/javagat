@@ -261,6 +261,9 @@ public class SshPbsResourceBrokerAdaptor extends ResourceBrokerCpi {
     String createQsubScript(JobDescription description, Sandbox sandbox, String returnValueFile)
 	    throws GATInvocationException {
 
+	// TODO: generate separate script for the job itself? That way, we could have a shell-independent
+	// qsub script which just executes /bin/sh jobscript.
+	
 	String Queue = null;
 	long Time = -1;
 	String Filesize = null;
@@ -459,7 +462,7 @@ public class SshPbsResourceBrokerAdaptor extends ResourceBrokerCpi {
      * @return the job ID of the PBS job on the remote host
      */
 
-    String sshPbsSubmission(SshPbsJob PbsJob, JobDescription description,
+    private String sshPbsSubmission(SshPbsJob PbsJob, JobDescription description,
 	    String qsubFileName, Sandbox sandbox) throws GATInvocationException {
 
 	String username = securityInfo.get("username");
@@ -489,11 +492,9 @@ public class SshPbsResourceBrokerAdaptor extends ResourceBrokerCpi {
 	    scpCommand.add(qsubFileName);
 	    if (sandbox.getSandboxPath() != null) {
 		scpCommand.add(username + "@" + host + ":"
-			+ sandbox.getSandboxPath().toString() + "/"
-			+ qsubFile.getName().toString());
+			+ sandbox.getSandboxPath().toString());
 	    } else {
-		scpCommand.add(username + "@" + host + ":"
-			+ qsubFile.getName().toString());
+		scpCommand.add(username + "@" + host + ":");
 	    }
 
 	    SshPbsJob.singleResult(scpCommand);
