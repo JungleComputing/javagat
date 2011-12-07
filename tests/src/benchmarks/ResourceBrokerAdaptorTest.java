@@ -256,8 +256,14 @@ public class ResourceBrokerAdaptorTest implements MetricListener {
             }
             floep.deleteOnExit();
         }
+        java.io.File tmp = new java.io.File("tmp");
+        if (!tmp.exists()) {
+                tmp.mkdir();
+                tmp.deleteOnExit();
+        }
         try {
             sd.addPreStagedFile(GAT.createFile(gatContext, preferences, "floep"));
+            sd.addPreStagedFile(GAT.createFile(gatContext, preferences, "tmp"));
             sd.setStdout(GAT.createFile(gatContext, preferences, "stdout"));
         } catch (GATObjectCreationException e) {
             return new AdaptorTestResultEntry(false, 0L, e);
