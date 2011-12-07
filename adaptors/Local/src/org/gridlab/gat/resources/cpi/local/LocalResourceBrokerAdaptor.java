@@ -102,7 +102,7 @@ public class LocalResourceBrokerAdaptor extends ResourceBrokerCpi {
                             + brokerURI.toString());
         }
         
-        String path = brokerURI.getPath();
+        String path = brokerURI.getUnresolvedPath();
         if (path != null && ! path.equals("")) {
             throw new GATObjectCreationException(
                     "The LocalResourceBrokerAdaptor does not understand the specified path: " + path);
