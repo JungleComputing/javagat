@@ -312,7 +312,7 @@ public class URI implements Serializable, Comparable<Object> {
             path = "/" + path;
         }
         if (path == null || path.equals("")) {
-            return null;
+            return path;
         }
 
         if ((u.getScheme() == null) && (u.getHost() == null)) {
