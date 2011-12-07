@@ -1,61 +1,61 @@
 <project name="JavaGAT" default="build" basedir=".">
 
-	<description>
-	      Build file for the Java GAT
-    	</description>
+    <description>
+	Build file for the Java GAT
+    </description>
 
 
-	<target name="build" depends="clean" description="build everything">
-		<ant dir="api" />
-		<ant dir="engine" />
-		<ant dir="adaptors" />
-		<ant dir="tests" />
-	</target>
+    <target name="build" depends="clean" description="build everything">
+	<ant dir="api" />
+	<ant dir="engine" />
+	<ant dir="adaptors" />
+	<ant dir="tests" />
+    </target>
 
-	<target name="android" depends="clean" description="build everything for Android">
-		<ant dir="api" />
-		<ant dir="engine" target="android" />
-		<ant dir="adaptors" />
-		<ant dir="tests" />
-	</target>
+    <target name="android" depends="clean" description="build everything for Android">
+	<ant dir="api" />
+	<ant dir="engine" target="android" />
+	<ant dir="adaptors" />
+	<ant dir="tests" />
+    </target>
 
-	<target name="light" depends="clean" description="build JavaGAT-light: only local, sshtrilead, sftptrilead, commandlinessh">
-		<ant dir="api" />
-		<ant dir="engine" />
-		<ant dir="adaptors" target="light" />
-		<ant dir="tests" />
-	</target>
+    <target name="light" depends="clean" description="build JavaGAT-light: only local, sshtrilead, sftptrilead, commandlinessh">
+	<ant dir="api" />
+	<ant dir="engine" />
+	<ant dir="adaptors" target="light" />
+	<ant dir="tests" />
+    </target>
 
-	<target name="javadoc" description="build javadoc">
-		<ant dir="api" target="javadoc" />
-	</target>
+    <target name="javadoc" description="build javadoc">
+	<ant dir="api" target="javadoc" />
+    </target>
 
-	<target name="api" description="build the api">
-		<ant dir="api" />
-	</target>
+    <target name="api" description="build the api">
+	<ant dir="api" />
+    </target>
 
-	<target name="engine" description="build the engine">
-		<ant dir="engine" />
-	</target>
+    <target name="engine" description="build the engine">
+	<ant dir="engine" />
+    </target>
 
-	<target name="adaptors" description="build the adaptors">
-		<ant dir="adaptors" />
-	</target>
+    <target name="adaptors" description="build the adaptors">
+	<ant dir="adaptors" />
+    </target>
 
-	<target name="tests" description="build the test programs">
-		<ant dir="tests" />
-	</target>
+    <target name="tests" description="build the test programs">
+	<ant dir="tests" />
+    </target>
 
-	<target name="clean" description="clean up">
-		<ant dir="api" target="clean" />
-		<ant dir="engine" target="clean" />
-		<ant dir="adaptors" target="clean" />
-		<ant dir="tests" target="clean" />
-		<delete dir="lib" />
-	</target>
+    <target name="clean" description="clean up">
+	<ant dir="api" target="clean" />
+	<ant dir="engine" target="clean" />
+	<ant dir="adaptors" target="clean" />
+	<ant dir="tests" target="clean" />
+	<delete dir="lib" />
+    </target>
 
-	<target name="allclean" depends="clean" description="clean up everything">
-		<delete dir="doc/javadoc" />
-	</target>
+    <target name="allclean" depends="clean" description="clean up everything">
+	<delete dir="doc/javadoc" />
+    </target>
 
 </project>

@@ -1,61 +1,63 @@
 <project name="GliteAdaptor" default="build" basedir=".">
-	<description>Build file for JavaGAT Glite Adaptors.</description>
+    <description>Build file for JavaGAT Glite Adaptors.</description>
 
-	<property name="gat.location" location="../../" />
-	<property name="engine_path" location="${gat.location}/lib" />
+    <property name="gat.location" location="../../" />
+    <property name="engine_path" location="${gat.location}/lib" />
 
-	<property name="src" location="src" />
-	<property name="tmp" location="tmp" />
-	<property name="lib" location="${gat.location}/lib/adaptors/GliteAdaptor" />
-	<property name="external" location="external" />
-	<property name="shared" location="../shared" />
-	<property name="java.debug.value" value="true" />
+    <property name="src" location="src" />
+    <property name="tmp" location="tmp" />
+    <property name="lib" location="${gat.location}/lib/adaptors/GliteAdaptor" />
+    <property name="external" location="external" />
+    <property name="shared" location="../shared" />
+    <property name="java.debug.value" value="true" />
 
-	<path id="external_jars">
-		<fileset dir="${shared}">
-			<include name="*.jar" />
-		</fileset>
-		<fileset dir="${external}">
-			<include name="*.jar" />
-		</fileset>
-		<fileset dir="${engine_path}">
-			<include name="*.jar" />
-		</fileset>
-	</path>
+    <property name="build.sysclasspath" value="ignore"/>
 
-	<target name="build" depends="clean" description="build the JARs and documentation">
-		<!-- Create the distribution end tmp directory -->
-		<mkdir dir="${lib}" />
-		<mkdir dir="${tmp}" />
+    <path id="external_jars">
+	<fileset dir="${shared}">
+	    <include name="*.jar" />
+	</fileset>
+	<fileset dir="${external}">
+	    <include name="*.jar" />
+	</fileset>
+	<fileset dir="${engine_path}">
+	    <include name="*.jar" />
+	</fileset>
+    </path>
 
-		<!-- Compile the java code from ${src} into ${tmp} -->
-		<javac source="1.5" target="1.5" srcdir="${src}" destdir="${tmp}" debug="on">
-			<classpath refid="external_jars" />
-		</javac>
+    <target name="build" depends="clean" description="build the JARs and documentation">
+	<!-- Create the distribution end tmp directory -->
+	<mkdir dir="${lib}" />
+	<mkdir dir="${tmp}" />
 
-		<jar jarfile="${lib}/GliteAdaptor.jar" basedir="${tmp}" includes="**">
-			<zipgroupfileset dir="${external}" includes="*.jar"
-			                     excludes="cog-jglobus*.jar, activation.jar"/>
-			<manifest>
-				<attribute name="ResourceBrokerCpi-class" value="org.gridlab.gat.resources.cpi.glite.GliteResourceBrokerAdaptor" />
-				<attribute name="FileCpi-class" value="org.gridlab.gat.io.cpi.glite.GliteGuidFileAdaptor,org.gridlab.gat.io.cpi.glite.GliteSrmFileAdaptor,org.gridlab.gat.io.cpi.glite.GliteLfnFileAdaptor" />
-			</manifest>
-		</jar>
+	<!-- Compile the java code from ${src} into ${tmp} -->
+	<javac source="1.5" target="1.5" srcdir="${src}" destdir="${tmp}" debug="on">
+	    <classpath refid="external_jars" />
+	</javac>
 
-		<!-- Copy external libraries to lib directory -->
-		<copy todir="${lib}">
-			<fileset dir="${external}">
-				<include name="cog-jglobus-1.4.jar" />
-				<include name="activation.jar" />
-			</fileset>
-		</copy>
+	<jar jarfile="${lib}/GliteAdaptor.jar" basedir="${tmp}" includes="**">
+	    <zipgroupfileset dir="${external}" includes="*.jar"
+		excludes="cog-jglobus*.jar, activation.jar"/>
+	    <manifest>
+		<attribute name="ResourceBrokerCpi-class" value="org.gridlab.gat.resources.cpi.glite.GliteResourceBrokerAdaptor" />
+		<attribute name="FileCpi-class" value="org.gridlab.gat.io.cpi.glite.GliteGuidFileAdaptor,org.gridlab.gat.io.cpi.glite.GliteSrmFileAdaptor,org.gridlab.gat.io.cpi.glite.GliteLfnFileAdaptor" />
+	    </manifest>
+	</jar>
 
-		<delete dir="${tmp}" />
+	<!-- Copy external libraries to lib directory -->
+	<copy todir="${lib}">
+	    <fileset dir="${external}">
+		<include name="cog-jglobus-1.4.jar" />
+		<include name="activation.jar" />
+	    </fileset>
+	</copy>
 
-	</target>
+	<delete dir="${tmp}" />
 
-	<target name="clean" description="clean up">
-		<delete dir="${tmp}" />
-	</target>
+    </target>
+
+    <target name="clean" description="clean up">
+	<delete dir="${tmp}" />
+    </target>
 
 </project>

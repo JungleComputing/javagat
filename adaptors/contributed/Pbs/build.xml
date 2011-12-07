@@ -1,53 +1,55 @@
 <project name="PbsAdaptor" default="build" basedir=".">
-	<description>Build file for JavaGAT Pbs Adaptors.</description>
+    <description>Build file for JavaGAT Pbs Adaptors.</description>
 
-	<property name="gat.location" location="../../.." />
-	<property name="engine_path" location="${gat.location}/lib" />
+    <property name="gat.location" location="../../.." />
+    <property name="engine_path" location="${gat.location}/lib" />
 
-	<property name="src" location="src" />
-	<property name="tmp" location="tmp" />
-	<property name="lib" location="${gat.location}/lib/adaptors/PbsAdaptor" />
-	<property name="external" location="external" />
-	<property name="java.debug.value" value="true" />
+    <property name="src" location="src" />
+    <property name="tmp" location="tmp" />
+    <property name="lib" location="${gat.location}/lib/adaptors/PbsAdaptor" />
+    <property name="external" location="external" />
+    <property name="java.debug.value" value="true" />
 
-	<path id="external_jars">
-		<fileset dir="${external}">
-			<include name="*.jar" />
-		</fileset>
-		<fileset dir="${engine_path}">
-			<include name="*.jar" />
-		</fileset>
-	</path>
+    <property name="build.sysclasspath" value="ignore"/>
 
-	<target name="build" depends="clean" description="build the JARs and documentation">
-		<!-- Create the distribution end tmp directory -->
-		<mkdir dir="${lib}" />
-		<mkdir dir="${tmp}" />
+    <path id="external_jars">
+	<fileset dir="${external}">
+	    <include name="*.jar" />
+	</fileset>
+	<fileset dir="${engine_path}">
+	    <include name="*.jar" />
+	</fileset>
+    </path>
 
-		<!-- Compile the java code from ${src} into ${tmp} -->
-		<javac source="1.5" target="1.5" srcdir="${src}" destdir="${tmp}" debug="on">
-			<classpath refid="external_jars" />
-		</javac>
+    <target name="build" depends="clean" description="build the JARs and documentation">
+	<!-- Create the distribution end tmp directory -->
+	<mkdir dir="${lib}" />
+	<mkdir dir="${tmp}" />
 
-		<jar jarfile="${lib}/PbsAdaptor.jar" basedir="${tmp}" includes="**">
-			<manifest>
-				<attribute name="ResourceBrokerCpi-class" value="org.gridlab.gat.resources.cpi.pbs_resource.PbsResourceBrokerAdaptor" />
-			</manifest>
-		</jar>
+	<!-- Compile the java code from ${src} into ${tmp} -->
+	<javac source="1.5" target="1.5" srcdir="${src}" destdir="${tmp}" debug="on">
+	    <classpath refid="external_jars" />
+	</javac>
 
-		<!-- Copy external libraries to lib directory -->
-		<copy todir="${lib}">
-			<fileset dir="${external}">
-				<include name="*.jar" />
-			</fileset>
-		</copy>
-		
-		<delete dir="${tmp}" />
+	<jar jarfile="${lib}/PbsAdaptor.jar" basedir="${tmp}" includes="**">
+	    <manifest>
+		<attribute name="ResourceBrokerCpi-class" value="org.gridlab.gat.resources.cpi.pbs_resource.PbsResourceBrokerAdaptor" />
+	    </manifest>
+	</jar>
 
-	</target>
+	<!-- Copy external libraries to lib directory -->
+	<copy todir="${lib}">
+	    <fileset dir="${external}">
+		<include name="*.jar" />
+	    </fileset>
+	</copy>
 
-	<target name="clean" description="clean up">
-		<delete dir="${tmp}" />
-	</target>
+	<delete dir="${tmp}" />
+
+    </target>
+
+    <target name="clean" description="clean up">
+	<delete dir="${tmp}" />
+    </target>
 
 </project>
