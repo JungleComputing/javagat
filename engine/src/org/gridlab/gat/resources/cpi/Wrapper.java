@@ -364,6 +364,7 @@ public class Wrapper {
                     jobsDone++;
                     Wrapper.this.notifyAll();
                 }
+                return;
             }
 
             try {
