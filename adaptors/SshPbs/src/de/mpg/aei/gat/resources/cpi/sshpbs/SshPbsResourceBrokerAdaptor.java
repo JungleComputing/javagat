@@ -312,9 +312,6 @@ public class SshPbsResourceBrokerAdaptor extends ResourceBrokerCpi {
 	    Time = sd.getLongAttribute(SoftwareDescription.WALLTIME_MAX, -1L);
 
 	    Filesize = (String) rd_HashMap.get("file.size");
-	    if (Filesize == null) {
-		Filesize = new String("");
-	    }
 
 	    Memsize = (Float) rd_HashMap.get(HardwareResourceDescription.MEMORY_SIZE);
 
