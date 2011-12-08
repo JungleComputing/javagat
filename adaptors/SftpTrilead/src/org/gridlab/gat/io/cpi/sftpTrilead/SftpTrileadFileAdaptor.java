@@ -399,6 +399,7 @@ public class SftpTrileadFileAdaptor extends FileCpi {
         if (a == null) {
             return 0L;
         }
+        System.out.println("LastModified: " + a.mtime);
         return a.mtime;
     }
 
@@ -812,7 +813,7 @@ public class SftpTrileadFileAdaptor extends FileCpi {
                     try {
                         long l = lastModified();
                         if (l != 0L) {
-                            destinationFile.setLastModified(l);
+                            destinationFile.setLastModified(l * 1000L);
                         }
                     } catch(Throwable e) {
                         // O well, we tried
