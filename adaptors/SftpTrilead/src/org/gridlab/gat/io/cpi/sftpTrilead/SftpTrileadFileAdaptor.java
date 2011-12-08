@@ -399,7 +399,6 @@ public class SftpTrileadFileAdaptor extends FileCpi {
         if (a == null) {
             return 0L;
         }
-        System.out.println("LastModified: " + a.mtime);
         return a.mtime;
     }
 
