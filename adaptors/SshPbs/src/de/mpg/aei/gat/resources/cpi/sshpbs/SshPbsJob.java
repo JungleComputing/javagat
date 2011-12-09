@@ -439,6 +439,9 @@ public class SshPbsJob extends JobCpi {
      * @author A. Beck-Ratzka, AEI, 14.09.2010
      */
 
+    private boolean sawJob = false;
+    private int missedJob = 0;
+    
     private JobState mapPbsStatetoGAT(String[] pbsState) {
 
 	String pbsLine = null;
@@ -450,6 +453,7 @@ public class SshPbsJob extends JobCpi {
 	    for (int ii = 0; ii < pbsState.length; ii++) {
 		pbsLine = removeBlanksToOne(pbsState[ii]);
 		if (pbsLine.contains(this.jobID)) {
+		    sawJob = true;
 		    break;
 		}
 		pbsLine = null;
@@ -457,12 +461,21 @@ public class SshPbsJob extends JobCpi {
 	    if (pbsLine == null) {
 		logger.debug("no job status information for '" + this.jobID
 			+ "' found.");
-		// if was running, assume it is finished now.
-		if (state == JobState.RUNNING || state == JobState.SCHEDULED) {
+		// if we saw it before, assume it is finished now.
+		if (sawJob) {
 		    logger.debug("But is was present earlier, so we assume it finished.");
 		    return JobState.STOPPED;
 		}
-		return JobState.UNKNOWN;
+		missedJob++;
+		if (missedJob >= 5) {
+		    // arbitrary threshold. Problem is, there may be a gap between successful
+		    // submission of the job and its appearance in qstat output. But it may
+		    // also not appear because it is already finished ...
+		    logger.debug("But is was not present for a while, so we assume it finished.");
+		    return JobState.STOPPED;
+		}
+		// Return current state.
+		return state;
 	    } else {
 		// For SGE, format is:
 		// JobID Prio JobName JobOwner JobState .....

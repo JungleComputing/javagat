@@ -303,9 +303,7 @@ public class SshPbsResourceBrokerAdaptor extends ResourceBrokerCpi {
 		Queue = sd.getStringAttribute(
 			SoftwareDescription.JOB_QUEUE, null);
 	    }
-	    if (Queue == null) {
-		Queue = new String("");
-	    } else {
+	    if (Queue != null) {
 		job.addOption("q", Queue);
 	    }
 
