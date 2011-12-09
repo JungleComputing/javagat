@@ -358,7 +358,10 @@ public class SshPbsResourceBrokerAdaptor extends ResourceBrokerCpi {
 	    // Name for the job.
 	    HwArg = (String) rd_HashMap.get("Jobname");
 	    if (HwArg == null) {
-		HwArg = System.getProperty("user.name");
+		HwArg = getBrokerURI().getUserInfo();
+		if (HwArg == null || "".equals(HwArg)) {
+		    HwArg = System.getProperty("user.name");
+		}
 	    }
 
 	    if (HwArg != null)
