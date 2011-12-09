@@ -6,9 +6,9 @@ public class AdaptorTestResultEntry {
 
     private long time;
 
-    private Exception e;
+    private Throwable e;
 
-    public AdaptorTestResultEntry(boolean result, long time, Exception e) {
+    public AdaptorTestResultEntry(boolean result, long time, Throwable e) {
         this.result = result;
         this.time = time;
         this.e = e;
@@ -22,7 +22,7 @@ public class AdaptorTestResultEntry {
         return time;
     }
 
-    public Exception getException() {
+    public Throwable getException() {
         return e;
     }
 

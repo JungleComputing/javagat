@@ -176,13 +176,22 @@ public class ResourceBrokerAdaptorTest implements MetricListener {
             return new AdaptorTestResultEntry(false, 0L, e);
         }
         long start = System.currentTimeMillis();
+        Job job;
         try {
-            broker.submitJob(jd, this, "job.status");
+            job = broker.submitJob(jd, this, "job.status");
         } catch (GATInvocationException e) {
             return new AdaptorTestResultEntry(false, 0L, e);
         }
         waitForJob();
-
+        try {
+	    Map<String, Object> info = job.getInfo();
+	    Throwable ex = (Throwable) info.get("poststage.exception");
+	    if (ex != null) {
+		return new AdaptorTestResultEntry(false, 0L, ex);
+	    }
+	} catch (GATInvocationException e) {
+	    return new AdaptorTestResultEntry(false, 0L, e);
+	}
         long stop = System.currentTimeMillis();
         String result;
         try {
@@ -219,13 +228,22 @@ public class ResourceBrokerAdaptorTest implements MetricListener {
             return new AdaptorTestResultEntry(false, 0L, e);
         }
         long start = System.currentTimeMillis();
+        Job job;
         try {
-            broker.submitJob(jd, this, "job.status");
+            job = broker.submitJob(jd, this, "job.status");
         } catch (GATInvocationException e) {
             return new AdaptorTestResultEntry(false, 0L, e);
         }
         waitForJob();
-
+        try {
+	    Map<String, Object> info = job.getInfo();
+	    Throwable ex = (Throwable) info.get("poststage.exception");
+	    if (ex != null) {
+		return new AdaptorTestResultEntry(false, 0L, ex);
+	    }
+	} catch (GATInvocationException e) {
+	    return new AdaptorTestResultEntry(false, 0L, e);
+	}
         long stop = System.currentTimeMillis();
         String result;
         try {
@@ -279,12 +297,22 @@ public class ResourceBrokerAdaptorTest implements MetricListener {
             return new AdaptorTestResultEntry(false, 0L, e);
         }
         long start = System.currentTimeMillis();
+        Job job;
         try {
-            broker.submitJob(jd, this, "job.status");
+            job = broker.submitJob(jd, this, "job.status");
         } catch (GATInvocationException e) {
             return new AdaptorTestResultEntry(false, 0L, e);
         }
         waitForJob();
+        try {
+	    Map<String, Object> info = job.getInfo();
+	    Throwable ex = (Throwable) info.get("poststage.exception");
+	    if (ex != null) {
+		return new AdaptorTestResultEntry(false, 0L, ex);
+	    }
+	} catch (GATInvocationException e) {
+	    return new AdaptorTestResultEntry(false, 0L, e);
+	}
         long stop = System.currentTimeMillis();
         String result;
         try {
@@ -320,12 +348,22 @@ public class ResourceBrokerAdaptorTest implements MetricListener {
             return new AdaptorTestResultEntry(false, 0L, e);
         }
         long start = System.currentTimeMillis();
+        Job job;
         try {
-            broker.submitJob(jd, this, "job.status");
+            job = broker.submitJob(jd, this, "job.status");
         } catch (GATInvocationException e) {
             return new AdaptorTestResultEntry(false, 0L, e);
         }
         waitForJob();
+        try {
+	    Map<String, Object> info = job.getInfo();
+	    Throwable ex = (Throwable) info.get("poststage.exception");
+	    if (ex != null) {
+		return new AdaptorTestResultEntry(false, 0L, ex);
+	    }
+	} catch (GATInvocationException e) {
+	    return new AdaptorTestResultEntry(false, 0L, e);
+	}
         long stop = System.currentTimeMillis();
         return new AdaptorTestResultEntry(
                 new java.io.File("flap.txt").exists(), (stop - start), null);
@@ -355,12 +393,22 @@ public class ResourceBrokerAdaptorTest implements MetricListener {
             return new AdaptorTestResultEntry(false, 0L, e);
         }
         long start = System.currentTimeMillis();
+        Job job;
         try {
-            broker.submitJob(jd, this, "job.status");
+            job = broker.submitJob(jd, this, "job.status");
         } catch (GATInvocationException e) {
             return new AdaptorTestResultEntry(false, 0L, e);
         }
         waitForJob();
+        try {
+	    Map<String, Object> info = job.getInfo();
+	    Throwable ex = (Throwable) info.get("poststage.exception");
+	    if (ex != null) {
+		return new AdaptorTestResultEntry(false, 0L, ex);
+	    }
+	} catch (GATInvocationException e) {
+	    return new AdaptorTestResultEntry(false, 0L, e);
+	}
         long stop = System.currentTimeMillis();
         boolean success = false;
         try {
