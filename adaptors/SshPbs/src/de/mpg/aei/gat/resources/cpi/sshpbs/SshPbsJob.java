@@ -445,6 +445,7 @@ public class SshPbsJob extends JobCpi {
     private JobState mapPbsStatetoGAT(String[] pbsState) {
 
 	String pbsLine = null;
+	String[] splits = null;
 
 	if (pbsState == null) {
 	    logger.error("Error in mapPbsStatetoGAT: no PbsState returned");
@@ -452,13 +453,18 @@ public class SshPbsJob extends JobCpi {
 	} else {
 	    for (int ii = 0; ii < pbsState.length; ii++) {
 		pbsLine = removeBlanksToOne(pbsState[ii]);
-		if (pbsLine.contains(this.jobID)) {
+		splits = pbsLine.split(" ");
+		// Note: PBS qstat sometimes does not print the complete job identifier.
+		// On lisa.sara.nl, for example, if the job identifier is 5823458.batch1.irc.sara.nl,
+		// qstat only prints 5823458.batch1. --Ceriel
+		if (this.jobID.startsWith(splits[0])) {
 		    sawJob = true;
+		    splits = pbsLine.split(" ");
 		    break;
 		}
-		pbsLine = null;
+		splits = null;
 	    }
-	    if (pbsLine == null) {
+	    if (splits == null) {
 		logger.debug("no job status information for '" + this.jobID
 			+ "' found.");
 		// if we saw it before, assume it is finished now.
@@ -483,7 +489,6 @@ public class SshPbsJob extends JobCpi {
 		// JobID JobName JobOwner CpuTime JobState ....
 		// So, in both cases, the 5'th column gives the job state.
 		// Below is combined job-state determination for SGE and PBS ...
-		String[] splits = pbsLine.split(" ");
 		if (splits.length < 5) {
 		    return JobState.UNKNOWN;
 		}
@@ -769,7 +774,9 @@ public class SshPbsJob extends JobCpi {
 	}
 	String[] retval = result.toArray(new String[result.size()]);
 	if (logger.isDebugEnabled()) {
-	    logger.debug("Result = " + Arrays.toString(retval));
+	    for (int i = 0; i < retval.length; i++) {
+		logger.debug("Result[" + i + "] = " + retval[i]);
+	    }
 	}
 	return retval;
     }
