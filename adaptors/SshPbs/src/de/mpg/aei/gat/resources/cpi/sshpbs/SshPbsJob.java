@@ -42,11 +42,10 @@ import org.gridlab.gat.resources.cpi.Sandbox;
 
 public class SshPbsJob extends JobCpi {
 
-    private static String regexString = "[ ][ ]";
+    // private static String regexString = "[ ][ ]";
+    private static String regexString = "\\s\\s*";
 
     private static final long serialVersionUID = 1L;
-
-    private static final String homeDir = System.getProperty("user.home");
 
     private String jobID;
     private MetricDefinition statusMetricDefinition;
@@ -458,8 +457,8 @@ public class SshPbsJob extends JobCpi {
 		// On lisa.sara.nl, for example, if the job identifier is 5823458.batch1.irc.sara.nl,
 		// qstat only prints 5823458.batch1. --Ceriel
 		if (this.jobID.startsWith(splits[0])) {
+                    logger.debug("Found job: " + splits[0] + ", JobID = " + this.jobID);
 		    sawJob = true;
-		    splits = pbsLine.split(" ");
 		    break;
 		}
 		splits = null;
@@ -540,10 +539,12 @@ public class SshPbsJob extends JobCpi {
 
 	String result = null;
 
-	result = changeString.replaceAll(regexString, " ");
+	result = changeString.trim().replaceAll(regexString, " ");
+        /*
 	while (result.contains("  ")) {
 	    result = result.replaceAll(regexString, " ");
 	}
+        */
 
 	return (result);
     }
