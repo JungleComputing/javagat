@@ -113,6 +113,7 @@ public class CommandlineSshSecurityUtils {
         credential.put("privatekeyfile", getDefaultPrivateKeyfile(gatContext));
         credential.put("username", SecurityContextUtils.getUser(gatContext,
                 null, location));
+        credential.put("default", "");
         return credential;
     }
 

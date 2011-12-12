@@ -126,6 +126,20 @@ public class CommandlineSshResourceBrokerAdaptor extends ResourceBrokerCpi {
             }
         }
     }
+    
+    private String getUserName() {
+	String user = brokerURI.getUserInfo();
+        if (user != null) {
+            return user;
+        }
+        if (! securityInfo.containsKey("default")) {
+            user = securityInfo.get("username");
+            if (user != null) {
+        	return user;
+            }
+        }
+	return null;
+    }
 
     public Job submitJob(AbstractJobDescription abstractDescription,
             MetricListener listener, String metricDefinitionName)
@@ -200,7 +214,7 @@ public class CommandlineSshResourceBrokerAdaptor extends ResourceBrokerCpi {
         // and let the sandbox prestage the files!
         sandbox.prestage();
 
-        String username = securityInfo.get("username");
+        String username = getUserName();
         String password = securityInfo.get("password");
         int privateKeySlot = -1;
         try {
@@ -218,7 +232,11 @@ public class CommandlineSshResourceBrokerAdaptor extends ResourceBrokerCpi {
 
         if (windows) {
             command.add("sexec");
-            command.add(username + "@" + authority);
+            if (username != null) {
+        	command.add(username + "@" + authority);
+            } else {
+        	command.add(authority);
+            }
             command.add("-unat=yes");
             if (ssh_port != SSH_PORT) {
                 command.add("-P");
@@ -257,13 +275,18 @@ public class CommandlineSshResourceBrokerAdaptor extends ResourceBrokerCpi {
             command.add("-o");
             command.add("StrictHostKeyChecking=" + (strictHostKeyChecking ? "yes" : "no"));
             // Forcing pseudo tty requires more than one -t option ... --Ceriel
+            // TODO: this kills stderr! stderr output is now sent to stdout!
             command.add("-t");
             command.add("-t");
             if (!sd.streamingStdinEnabled() && sd.getStdin() == null) {
                 // Redirect stdin from the job to /dev/null.
                 command.add("-n");
             }
-            command.add(username + "@" + host);
+            if (username != null) {
+        	command.add(username + "@" + host);
+            } else {
+        	command.add(host);
+            }
             if (sandbox.getSandboxPath() != null) {
                 command.add("cd");
                 command.add(sandbox.getSandboxPath());

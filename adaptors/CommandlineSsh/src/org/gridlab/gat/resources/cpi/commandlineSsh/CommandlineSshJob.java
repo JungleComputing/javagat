@@ -171,10 +171,10 @@ public class CommandlineSshJob extends JobCpi {
     public synchronized void stop() throws GATInvocationException {
         stop(gatContext.getPreferences().containsKey("job.stop.poststage")
                 && gatContext.getPreferences().get("job.stop.poststage")
-                .equals("false"));
+                .equals("false"), true);
     }
 
-    private synchronized void stop(boolean skipPostStage)
+    private synchronized void stop(boolean skipPostStage, boolean kill)
     throws GATInvocationException {
         if (state == JobState.POST_STAGING
                 || state == JobState.STOPPED
@@ -182,7 +182,7 @@ public class CommandlineSshJob extends JobCpi {
             return;
         }
               
-        if (p != null) {
+        if (p != null && kill) {
             p.destroy();
         }
         
@@ -252,7 +252,7 @@ public class CommandlineSshJob extends JobCpi {
                 }
             }
             try {
-                CommandlineSshJob.this.stop();
+                CommandlineSshJob.this.stop(false, false);
             } catch (GATInvocationException e) {
                 if (logger.isDebugEnabled()) {
                     logger.debug("unable to stop job: " + e);
