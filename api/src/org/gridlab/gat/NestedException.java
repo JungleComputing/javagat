@@ -121,8 +121,6 @@ class NestedException extends Exception {
 
         for (int i = 0; i < throwables.size(); i++) {
 
-            throwables.get(i).printStackTrace();
-
             String msg = throwables.get(i).getMessage();
 
             if (msg == null) {
