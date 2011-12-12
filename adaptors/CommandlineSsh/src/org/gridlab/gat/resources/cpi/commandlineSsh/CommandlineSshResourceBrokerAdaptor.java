@@ -43,14 +43,15 @@ public class CommandlineSshResourceBrokerAdaptor extends ResourceBrokerCpi {
     }
     
     private static final String SSH_STRICT_HOST_KEY_CHECKING = "commandlinessh.StrictHostKeyChecking";
-    
-    private static final String SSH_PORT_STRING = "commandlinessh.ssh.port";    
+    private static final String SSH_PORT_STRING = "commandlinessh.ssh.port";   
+    private static final String SSH_STOPPABLE = "commandlinessh.stoppable";
 
     public static final int SSH_PORT = 22;
     
     public static Preferences getSupportedPreferences() {
         Preferences p = ResourceBrokerCpi.getSupportedPreferences();
         p.put(SSH_STRICT_HOST_KEY_CHECKING, "false");
+        p.put(SSH_STOPPABLE, "false");
         p.put(SSH_PORT_STRING, "" + SSH_PORT);
         return p;
     }
@@ -274,10 +275,14 @@ public class CommandlineSshResourceBrokerAdaptor extends ResourceBrokerCpi {
             command.add("BatchMode=yes");
             command.add("-o");
             command.add("StrictHostKeyChecking=" + (strictHostKeyChecking ? "yes" : "no"));
-            // Forcing pseudo tty requires more than one -t option ... --Ceriel
-            // TODO: this kills stderr! stderr output is now sent to stdout!
-            command.add("-t");
-            command.add("-t");
+            boolean stoppable = "true".equalsIgnoreCase((String) gatContext
+                    .getPreferences().get(SSH_STOPPABLE));
+            if (stoppable) {
+        	// Forcing pseudo tty requires more than one -t option ... --Ceriel
+        	// TODO: this kills stderr! stderr output is now sent to stdout!
+        	command.add("-t");
+        	command.add("-t");
+            }
             if (!sd.streamingStdinEnabled() && sd.getStdin() == null) {
                 // Redirect stdin from the job to /dev/null.
                 command.add("-n");
